@@ -42,8 +42,9 @@ writing's model is [Article pages](article-pages.md); share roles are
   cells resolve their runs the same way. `resolveArticleSuggestions` with every decision `reject` is the rejected
   view, with `accept` the accepted one.
 - **Review settings** (`document.review`, a nullable TEXT column, schema step V9): JSON `{ links: string[], people:
-{ key, name }[], agents: boolean, seen: { key, name, at }[] }`, each list bounded (`SUGGEST_ONLY_MAX_LINKS` 100,
-  `SUGGEST_ONLY_MAX_PEOPLE` 200, `seen` 200 most recent). Read defensively (`parseReviewSettings`); absent is all off.
+{ key, name }[], agents: boolean, seen: { key, name, at }[], pins: { key, code, at }[] }`, each list bounded
+  (`SUGGEST_ONLY_MAX_LINKS` 100, `SUGGEST_ONLY_MAX_PEOPLE` 200, `seen` and `pins` 200 most recent, one pin per key).
+  Read defensively (`parseReviewSettings`, `parseStoredReview`); absent is all off.
 
 ## Behaviour and state
 
@@ -61,10 +62,17 @@ writing's model is [Article pages](article-pages.md); share roles are
 ### The room
 
 - `gateClientOp` is unchanged; `RoomParticipantWrites.applyArticleOp` passes `suggestBy` (the session's collab key)
-  when `suggestOnlyFor(readReview(), session)`; `applyParticipantArticleOps(tab, flow, ops, { suggestBy })` then
+  when `suggestOnlyFor(readReview(), session)`: its share code is in `links`, its collab key in `people`, or its
+  verified collab key (`session.collabKey`, from `X-Verified-Collab-Key`, never the presence key the client names)
+  pinned to a code still in `links`. Only a `participate` session is ever held, so a person who opens as an Editor
+  (a direct grant or an Editor link) is not; `applyParticipantArticleOps(tab, flow, ops, { suggestBy })` then
   refuses `not-suggestion` when `suggestionRuleHolds` fails, which resyncs the sender.
 - `applyContentOp` passes `{ marginComment: true }` for such a session: `applyParticipantOp` then takes an `add` of an
   `article-note` element whose `articleNote` is `comment`, `ARTICLE_NOTE_SIZE` square, and nothing else new.
+- The pin: the share code is the client's to send (`?s=`), so a person could otherwise drop it to escape. On a
+  Participant's `hello` with a verified collab key and a share code in `links`, the room records `{ key, code, at }`
+  in `pins` (`withReviewPinned`; one write, with `seen`'s, only when new). A guest's verified key is its browser's
+  collab key, so the pin holds that browser.
 - On a Participant's `hello` the room records `{ key, name }` in `seen` (only when new or renamed) and sends that
   socket a system op `{ kind: 'op', from: 'system', op: { kind: 'review', suggestOnly } }` (never sequenced or
   relayed; `review` is in `SYSTEM_OP_KINDS`, so the gate drops one from a client socket). `PUT /review` sends every
@@ -73,8 +81,10 @@ writing's model is [Article pages](article-pages.md); share roles are
 
 ### The routes
 
-- `GET /api/documents/:id/review` (Editor): `{ review: ReviewSettings & { seen } }`. `PUT` (Editor) with
-  `{ links, people, agents }`: parsed, bounded, stored, the room told; answers the stored settings. Anyone else `403`.
+- `GET /api/documents/:id/review` (Editor): `{ review: ReviewSettings & { seen, pins } }`. `PUT` (Editor) with
+  `{ links, people, agents, lift? }`: parsed, bounded, stored with `seen` kept and `pins` kept but for the keys in
+  `lift` and those whose code left `links` (`reviewFromSettings`), the room told; answers the stored settings. Anyone
+  else `403`. The Share dialog shows a pinned person's row on and sends `lift: [key]` when it is turned off.
 - Token reads (`ctx.token`) of `GET /api/documents/:id` and its tab route answer each tab through
   `withArticlesRejected`.
 
@@ -152,7 +162,9 @@ writing's model is [Article pages](article-pages.md); share roles are
 
 ## Security and trust
 
-- Suggest Only is decided by the room from the session's verified share code and collab key, never the client.
+- Suggest Only is decided by the room from the session's share code and verified collab key, never the client's
+  mode. Leaving out the share code changes nothing for a person once pinned, and a pin is keyed by the verified
+  collab key alone, so naming another key slips nothing.
 - A Participant cannot accept, reject, edit or remove anyone else's suggestion, nor forge `ai` or `g`; names are
   display identity, as on presence.
 - Agent reads never carry unaccepted text (token reads, agent views and Markdown are the rejected view).
@@ -193,6 +205,7 @@ writing's model is [Article pages](article-pages.md); share roles are
 | The suggestion rule                                   | `packages/document/src/article-suggestions.test.ts` "suggestion rule"                                       |
 | A Suggest Only Participant's frame refused or applied | `packages/document/src/participant-article.test.ts`, `apps/api/src/room-participant.test.ts`                |
 | Review settings parsed, bounded, Editor-only routes   | `packages/api-schema/src/review.test.ts`, `apps/api/src/routes/review-route.test.ts`                        |
+| Held by a Suggest Only link without `?s=`; Editor not | `apps/api/src/document-room/document-room-review.test.ts` "a person pinned to a Suggest Only link"          |
 | Agent write as suggestions                            | `packages/edit-operations/src/pages/article-suggest.test.ts`, `apps/api/src/routes/tab-pages-route.test.ts` |
 | Markdown is the rejected view                         | `packages/document/src/article-markdown.test.ts`                                                            |
 | Suggesting transactions                               | `apps/editor/lib/article/article-suggest.test.ts`                                                           |

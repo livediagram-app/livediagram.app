@@ -6210,6 +6210,27 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "ReviewPin": {
+    "additionalProperties": false,
+    "description": "A person who arrived through a Suggest Only link, held to it on every later session whatever link (or none) they open with, while that link stays on Suggest Only. `key` is the server-verified collab key; `code` the link's.",
+    "properties": {
+      "at": {
+        "type": "number"
+      },
+      "code": {
+        "type": "string"
+      },
+      "key": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "key",
+      "code",
+      "at"
+    ],
+    "type": "object"
+  },
   "ReviewResponse": {
     "additionalProperties": false,
     "description": "`GET` and `PUT /api/documents/:id/review`'s answer.",
@@ -6245,10 +6266,16 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "ReviewSettings": {
     "additionalProperties": false,
-    "description": "What an Editor sets: the Suggest Only links (share codes) and people (collab keys), and Assistants Suggest.",
+    "description": "What an Editor sets: the Suggest Only links (share codes) and people (collab keys), and Assistants Suggest. `lift`, sent only, names people whose pins go (they were on Suggest Only through a link).",
     "properties": {
       "agents": {
         "type": "boolean"
+      },
+      "lift": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
       },
       "links": {
         "items": {
@@ -7395,7 +7422,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "StoredReview": {
     "additionalProperties": false,
-    "description": "What the document keeps: the settings, and the people seen joining as Participants.",
+    "description": "What the document keeps: the settings, the people seen joining as Participants, and the pins.",
     "properties": {
       "agents": {
         "type": "boolean"
@@ -7412,6 +7439,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "pins": {
+        "items": {
+          "$ref": "#/components/schemas/ReviewPin"
+        },
+        "type": "array"
+      },
       "seen": {
         "items": {
           "$ref": "#/components/schemas/ReviewSeen"
@@ -7423,6 +7456,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "agents",
       "links",
       "people",
+      "pins",
       "seen"
     ],
     "type": "object"

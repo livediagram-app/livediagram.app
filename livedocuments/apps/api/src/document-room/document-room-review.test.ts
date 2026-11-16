@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 // Suggest Only, the people seen joining, and each Participant told where it stands.
 vi.mock('./document-room-content', () => ({ ensureSchema: () => {} }));
 
+import { applyParticipantArticleOps, type Tab } from '@livedocuments/document';
 import type { DocumentRoom } from './document-room';
 import {
   participantJoined,
@@ -133,5 +134,77 @@ describe('the room’s review settings', () => {
       { kind: 'op', from: 'system', op: { kind: 'review', suggestOnly: true } },
     ]);
     expect(e.log).toEqual([]);
+  });
+
+  // The share code is the client's to send (`?s=`): a person who opened a Suggest Only link once is held to it on
+  // every later session, whatever they open with, until the Editor lifts them or the link (role tests).
+  describe('a person pinned to a Suggest Only link', () => {
+    const article: Tab = {
+      id: 't1',
+      name: 'Tab',
+      elements: [],
+      articles: { f1: { blocks: [{ id: 'b1', type: 'paragraph', runs: [{ text: 'Hello' }] }] } },
+    } as never;
+    const directWrite = [
+      {
+        kind: 'put' as const,
+        block: { id: 'b1', type: 'paragraph' as const, runs: [{ text: 'Hello there' }] },
+      },
+    ];
+    const writeAs = (suggestBy: string | null) =>
+      applyParticipantArticleOps(article, 'f1', directWrite, suggestBy ? { suggestBy } : {});
+
+    it('opened through the link, then reopened without ?s=: still suggesting, and a direct write refused', () => {
+      const { room, writes, join } = fakeRoom(JSON.stringify({ links: ['C1'] }));
+      const first = part('A', { shareCode: 'C1', collabKey: 'key-A' });
+      const one = join(first);
+      participantJoined(room, one.ws, first as never, first.presence as never);
+      expect((JSON.parse(writes.at(-1)!) as { pins: unknown }).pins).toEqual([
+        { key: 'key-A', code: 'C1', at: expect.any(Number) },
+      ]);
+      // A later session with no share code: the same verified key.
+      const again = part('A2', { shareCode: null, collabKey: 'key-A' });
+      const two = join(again);
+      participantJoined(room, two.ws, again as never, again.presence as never);
+      expect(two.log).toEqual([
+        { kind: 'op', from: 'system', op: { kind: 'review', suggestOnly: true } },
+      ]);
+      const by = suggestByOf(room, again as never);
+      expect(by).toBe('key-A');
+      expect(writeAs(by)).toEqual({ result: 'refused', reason: 'not-suggestion' });
+      // Without the pin the same write would have gone straight in.
+      expect(writeAs(null).result).toBe('applied');
+    });
+
+    it('pins only a server-verified key: a key the client named is not held', () => {
+      const { room, writes, join } = fakeRoom(JSON.stringify({ links: ['C1'] }));
+      const named = part('B', { shareCode: 'C1' });
+      const s = join(named);
+      participantJoined(room, s.ws, named as never, named.presence as never);
+      expect((JSON.parse(writes.at(-1)!) as { pins: unknown }).pins).toEqual([]);
+    });
+
+    it('leaves a person with an Editor grant alone, pinned or not', () => {
+      const { room } = fakeRoom(
+        JSON.stringify({ links: ['C1'], pins: [{ key: 'key-E', code: 'C1', at: 1 }] }),
+      );
+      const editor = {
+        presence: { id: 'E', name: 'E', color: '#abc', role: 'edit', key: 'key-E' },
+        collabKey: 'key-E',
+        shareCode: null,
+      };
+      expect(suggestByOf(room, editor as never)).toBeNull();
+    });
+
+    it('lets go once the Editor lifts the link', () => {
+      const { room, setStored } = fakeRoom(
+        JSON.stringify({ links: ['C1'], pins: [{ key: 'key-A', code: 'C1', at: 1 }] }),
+      );
+      const again = part('A', { shareCode: null, collabKey: 'key-A' });
+      expect(suggestByOf(room, again as never)).toBe('key-A');
+      setStored(JSON.stringify({ links: [], pins: [{ key: 'key-A', code: 'C1', at: 1 }] }));
+      reviewChanged(room);
+      expect(suggestByOf(room, again as never)).toBeNull();
+    });
   });
 });

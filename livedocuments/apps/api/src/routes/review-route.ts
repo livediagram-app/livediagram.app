@@ -6,6 +6,7 @@
 import {
   parseReviewSettings,
   parseStoredReview,
+  reviewFromSettings,
   type ReviewResponse,
   type StoredReview,
 } from '@livedocuments/api-schema';
@@ -51,7 +52,8 @@ export async function handleReviewRoute(
       { error: 'invalid_review', message: 'send links, people and agents' },
       { status: 400 },
     );
-  const review: StoredReview = { ...parseReviewSettings(body), seen: stored.seen };
+  // The pins stay but for those the Editor lifted and those whose link left Suggest Only.
+  const review: StoredReview = reviewFromSettings(stored, parseReviewSettings(body));
   await ctx.env.DOCUMENT_DB.prepare('UPDATE document SET review = ? WHERE id = ?')
     .bind(JSON.stringify(review), id)
     .run();
@@ -59,6 +61,7 @@ export async function handleReviewRoute(
     documentId: id,
     links: review.links.length,
     people: review.people.length,
+    pins: review.pins.length,
     agents: review.agents,
   });
   try {

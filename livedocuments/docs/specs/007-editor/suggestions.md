@@ -90,12 +90,18 @@ the selection (⌘⌥M too). A Participant's margin note is a comment, never an 
   when it was made), each with a **Suggest Only** switch, and the people who have joined through a Participant link
   (by their name), each with the same switch. A link turned on makes every Participant who opens it suggest; a person
   turned on suggests through any Participant link. Nothing else changes: the link's level is the index's, as always.
+- **A Suggest Only link holds the person**: someone who opens a Suggest Only link (signed in, or a guest's browser)
+  stays on Suggest Only on every later visit while that link is on, however they come back: without the link's code,
+  or through another Participant link. Their row in the list shows on, "Suggest Only, from the Suggest Only link they
+  opened". Turning their row off, or the link off, lets them go. Someone who also holds an Editor grant (their own
+  invite or an Editor link) edits as an Editor whenever they open the document as one.
 - **Assistants Suggest**: the same section's first switch, "An assistant’s edits to articles arrive as suggestions to
   accept or reject", off by default. On, every article write an assistant makes on the document is suggestions
   ([Pages for agents](../024-agents/pages-for-agents.md#suggestions)).
 - **Stored on the document**, in its own room (`document.review`), never the index: the share codes, the people's
-  collab keys (and names, to list them), and the assistants' switch. A person is listed once they have joined as a
-  Participant; at most 200 are kept (the most recent), and at most 100 links are switched on.
+  collab keys (and names, to list them), the assistants' switch, and the people held by a Suggest Only link (their
+  collab key and the link). A person is listed once they have joined as a Participant; at most 200 are kept (the most
+  recent), at most 200 held, and at most 100 links are switched on.
 - **Live**: a change reaches every open Participant at once; their writing switches mode from the next keystroke.
 
 ## The server is the rule

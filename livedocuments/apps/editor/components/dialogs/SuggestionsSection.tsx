@@ -191,12 +191,20 @@ export function SuggestionsSection({
               <div className={GROUP}>People</div>
               <div className={CARD}>
                 {review.seen.map((person) => {
-                  const on = review.people.some((p) => p.key === person.key);
+                  // On by name, or pinned: they came through a Suggest Only link, which holds them on every visit.
+                  const pinned = review.pins.some(
+                    (p) => p.key === person.key && review.links.includes(p.code),
+                  );
+                  const on = pinned || review.people.some((p) => p.key === person.key);
                   return (
                     <SwitchRow
                       key={person.key}
                       title={person.name || 'Guest'}
-                      detail="Suggest Only, through any Participant link"
+                      detail={
+                        pinned
+                          ? 'Suggest Only, from the Suggest Only link they opened'
+                          : 'Suggest Only, through any Participant link'
+                      }
                       checked={on}
                       busy={busy}
                       onChange={(next) =>
@@ -206,6 +214,8 @@ export function SuggestionsSection({
                             people: next
                               ? [...review.people, { key: person.key, name: person.name }]
                               : review.people.filter((p) => p.key !== person.key),
+                            // Off lifts the pin too.
+                            ...(next ? {} : { lift: [person.key] }),
                           },
                           next ? 'SuggestOnlyPersonOn' : 'SuggestOnlyPersonOff',
                         )

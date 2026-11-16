@@ -119,19 +119,33 @@ const storedFlow = (db: SqliteD1): ArticleFlow => {
 afterEach(() => vi.restoreAllMocks());
 
 describe('the review settings', () => {
-  it('an Editor reads and sets them, the people seen kept, and the room is told', async () => {
+  it('an Editor reads and sets them, the people seen and the pins kept but for those lifted, and the room is told', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const { db, room } = await setUp();
     const empty = await review(db, 'GET');
     expect(empty.status).toBe(200);
     expect(await empty.json<ReviewResponse>()).toEqual({
-      review: { links: [], people: [], agents: false, seen: [] },
+      review: { links: [], people: [], agents: false, seen: [], pins: [] },
     });
-    db.sql
-      .prepare('UPDATE document SET review = ?')
-      .run(JSON.stringify({ seen: [{ key: 'k1', name: 'Sam', at: 3 }] }));
+    db.sql.prepare('UPDATE document SET review = ?').run(
+      JSON.stringify({
+        links: ['CODE1', 'CODE2'],
+        seen: [{ key: 'k1', name: 'Sam', at: 3 }],
+        pins: [
+          { key: 'k1', code: 'CODE1', at: 3 },
+          { key: 'k2', code: 'CODE2', at: 3 },
+          { key: 'k3', code: 'CODE1', at: 3 },
+        ],
+      }),
+    );
     const set = await review(db, 'PUT', {
-      body: { links: ['CODE1', 'CODE1'], people: [{ key: 'k1', name: 'Sam' }], agents: true },
+      // CODE2 leaves Suggest Only (its pin goes with it) and k3 is lifted; k1's pin stays.
+      body: {
+        links: ['CODE1', 'CODE1'],
+        people: [{ key: 'k1', name: 'Sam' }],
+        agents: true,
+        lift: ['k3'],
+      },
     });
     expect(set.status).toBe(200);
     const answer = await set.json<ReviewResponse>();
@@ -140,6 +154,7 @@ describe('the review settings', () => {
       people: [{ key: 'k1', name: 'Sam' }],
       agents: true,
       seen: [{ key: 'k1', name: 'Sam', at: 3 }],
+      pins: [{ key: 'k1', code: 'CODE1', at: 3 }],
     });
     expect(room.posted).toEqual(['/review']);
     expect((await (await review(db, 'GET')).json<ReviewResponse>()).review).toEqual(answer.review);

@@ -6,6 +6,7 @@ import {
   NO_REVIEW,
   parseStoredReview,
   suggestOnlyFor,
+  withReviewPinned,
   withReviewSeen,
   type StoredReview,
 } from '@livedocuments/api-schema';
@@ -40,8 +41,13 @@ const keyOf = (session: SessionAttachment): string | null =>
 export function suggestByOf(room: DocumentRoom, session: SessionAttachment): string | null {
   if (session.presence?.role !== 'participate') return null;
   const key = keyOf(session);
-  if (!suggestOnlyFor(readRoomReview(room), { shareCode: session.shareCode, collabKey: key }))
-    return null;
+  const review = readRoomReview(room);
+  const at = {
+    shareCode: session.shareCode,
+    collabKey: key,
+    verifiedKey: session.collabKey ?? null,
+  };
+  if (!suggestOnlyFor(review, at)) return null;
   return key ?? '\u0000';
 }
 
@@ -49,8 +55,8 @@ export function suggestByOf(room: DocumentRoom, session: SessionAttachment): str
 const tellSuggestOnly = (room: DocumentRoom, ws: WebSocket, suggestOnly: boolean) =>
   sendTo(room, ws, { kind: 'op', from: 'system', op: { kind: 'review', suggestOnly } });
 
-/** A Participant said hello: noted for the Share dialog's list (one write when it is new or renamed), and told
- *  whether it suggests. */
+/** A Participant said hello: noted for the Share dialog's list, pinned to Suggest Only when it came through a Suggest
+ *  Only link with a verified collab key (one write when either is new), and told whether it suggests. */
 export function participantJoined(
   room: DocumentRoom,
   ws: WebSocket,
@@ -61,7 +67,13 @@ export function participantJoined(
   const key = keyOf(session);
   const review = readRoomReview(room);
   if (key) {
-    const next = withReviewSeen(review, { key, name: presence.name }, Date.now());
+    const now = Date.now();
+    const seen = withReviewSeen(review, { key, name: presence.name }, now);
+    // Pinned by the server-verified key alone: a key the client named could be changed to slip the pin.
+    const next =
+      session.collabKey && session.shareCode
+        ? withReviewPinned(seen, session.collabKey, session.shareCode, now)
+        : seen;
     if (next !== review && room.storedSchema()) {
       room.state.storage.sql.exec('UPDATE document SET review = ?', JSON.stringify(next));
       cache.set(room, next);

@@ -13,12 +13,21 @@ export type ReviewPerson = { key: string; name: string };
 // Someone who joined through a Participant link, so the Share dialog can list them; `at` is when, epoch ms.
 export type ReviewSeen = ReviewPerson & { at: number };
 
-/** What an Editor sets: the Suggest Only links (share codes) and people (collab keys), and Assistants Suggest. */
-export type ReviewSettings = { links: string[]; people: ReviewPerson[]; agents: boolean };
-/** What the document keeps: the settings, and the people seen joining as Participants. */
-export type StoredReview = ReviewSettings & { seen: ReviewSeen[] };
+/** What an Editor sets: the Suggest Only links (share codes) and people (collab keys), and Assistants Suggest.
+ *  `lift`, sent only, names people whose pins go (they were on Suggest Only through a link). */
+export type ReviewSettings = {
+  links: string[];
+  people: ReviewPerson[];
+  agents: boolean;
+  lift?: string[];
+};
+/** A person who arrived through a Suggest Only link, held to it on every later session whatever link (or none) they
+ *  open with, while that link stays on Suggest Only. `key` is the server-verified collab key; `code` the link's. */
+export type ReviewPin = { key: string; code: string; at: number };
+/** What the document keeps: the settings, the people seen joining as Participants, and the pins. */
+export type StoredReview = Omit<ReviewSettings, 'lift'> & { seen: ReviewSeen[]; pins: ReviewPin[] };
 
-export const NO_REVIEW: StoredReview = { links: [], people: [], agents: false, seen: [] };
+export const NO_REVIEW: StoredReview = { links: [], people: [], agents: false, seen: [], pins: [] };
 
 const key = (v: unknown): v is string =>
   typeof v === 'string' && v.length > 0 && v.length <= MAX_KEY;
@@ -45,11 +54,57 @@ export function parseReviewSettings(v: unknown): ReviewSettings {
   const links = Array.isArray(r.links)
     ? [...new Set((r.links as unknown[]).filter(key))].slice(0, SUGGEST_ONLY_MAX_LINKS)
     : [];
+  const lift = Array.isArray(r.lift)
+    ? [...new Set((r.lift as unknown[]).filter(key))].slice(0, SUGGEST_ONLY_MAX_PEOPLE)
+    : [];
   return {
     links,
     people: people(r.people, SUGGEST_ONLY_MAX_PEOPLE),
     agents: r.agents === true,
+    ...(lift.length > 0 ? { lift } : {}),
   };
+}
+
+function pinsOf(v: unknown): ReviewPin[] {
+  if (!Array.isArray(v)) return [];
+  const out: ReviewPin[] = [];
+  const taken = new Set<string>();
+  for (const raw of v as unknown[]) {
+    const p = raw as Record<string, unknown> | null;
+    if (!p || typeof p !== 'object' || !key(p.key) || !key(p.code) || taken.has(p.key)) continue;
+    taken.add(p.key);
+    out.push({
+      key: p.key,
+      code: p.code,
+      at: typeof p.at === 'number' && Number.isFinite(p.at) ? p.at : 0,
+    });
+    if (out.length >= SUGGEST_ONLY_MAX_PEOPLE) break;
+  }
+  return out;
+}
+
+/** The stored review an Editor's settings make: the sent settings, the people seen kept, and the pins kept but for
+ *  those lifted and those whose link is no longer on Suggest Only. */
+export function reviewFromSettings(stored: StoredReview, sent: ReviewSettings): StoredReview {
+  const { lift = [], ...settings } = sent;
+  const pins = stored.pins.filter((p) => !lift.includes(p.key) && settings.links.includes(p.code));
+  return { ...settings, seen: stored.seen, pins };
+}
+
+/** The review with `key` pinned to Suggest Only link `code`; the same object when it already is. */
+export function withReviewPinned(
+  review: StoredReview,
+  pinKey: string,
+  code: string,
+  at: number,
+): StoredReview {
+  if (!key(pinKey) || !key(code) || !review.links.includes(code)) return review;
+  if (review.pins.some((p) => p.key === pinKey && p.code === code)) return review;
+  const pins = [{ key: pinKey, code, at }, ...review.pins.filter((p) => p.key !== pinKey)].slice(
+    0,
+    SUGGEST_ONLY_MAX_PEOPLE,
+  );
+  return { ...review, pins };
 }
 
 /** A stored row (JSON text, or null for none), read defensively. */
@@ -69,7 +124,9 @@ export function parseStoredReview(text: string | null | undefined): StoredReview
       seen.push({ ...p, at: typeof at === 'number' && Number.isFinite(at) ? at : 0 });
     }
   }
-  return { ...parseReviewSettings(raw), seen };
+  const { lift: _lift, ...settings } = parseReviewSettings(raw);
+  void _lift;
+  return { ...settings, seen, pins: pinsOf(r && typeof r === 'object' ? r.pins : null) };
 }
 
 /** The review with `person` noted as having joined as a Participant (most recent first, bounded); the same object
@@ -90,14 +147,19 @@ export function withReviewSeen(
   return { ...review, seen };
 }
 
-/** Whether a Participant session suggests: its share code is a Suggest Only link, or its collab key a Suggest Only
- *  person. */
+/** Whether a Participant session suggests: its share code is a Suggest Only link, its collab key a Suggest Only
+ *  person, or its verified collab key pinned to a link still on Suggest Only (it arrived through one before, so
+ *  opening without the link's code changes nothing). */
 export function suggestOnlyFor(
-  review: ReviewSettings,
-  session: { shareCode?: string | null; collabKey?: string | null },
+  review: Pick<ReviewSettings, 'links' | 'people'> & { pins?: readonly ReviewPin[] },
+  session: { shareCode?: string | null; collabKey?: string | null; verifiedKey?: string | null },
 ): boolean {
   if (session.shareCode && review.links.includes(session.shareCode)) return true;
-  return Boolean(session.collabKey && review.people.some((p) => p.key === session.collabKey));
+  if (session.collabKey && review.people.some((p) => p.key === session.collabKey)) return true;
+  const pinned = session.verifiedKey;
+  return Boolean(
+    pinned && review.pins?.some((p) => p.key === pinned && review.links.includes(p.code)),
+  );
 }
 
 /** The room's word to one Participant session on whether it suggests: a system op to its socket alone, sent when it

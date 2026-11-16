@@ -3,9 +3,11 @@ import {
   NO_REVIEW,
   parseReviewSettings,
   parseStoredReview,
+  reviewFromSettings,
   suggestOnlyFor,
   SUGGEST_ONLY_MAX_LINKS,
   SUGGEST_ONLY_MAX_PEOPLE,
+  withReviewPinned,
   withReviewSeen,
 } from './review';
 
@@ -72,6 +74,30 @@ describe('review settings', () => {
         { key: 'k', name: 'Sam', at: 5 },
         { key: 'j', name: '', at: 0 },
       ],
+      pins: [],
+    });
+    expect(
+      parseStoredReview(
+        JSON.stringify({
+          links: ['a'],
+          lift: ['k'],
+          pins: [
+            { key: 'k', code: 'a', at: 2 },
+            { key: 'k', code: 'b', at: 3 },
+            { key: 'j', code: 'a', at: 'x' },
+            { key: 'i' },
+          ],
+        }),
+      ),
+    ).toEqual({
+      links: ['a'],
+      people: [],
+      agents: false,
+      seen: [],
+      pins: [
+        { key: 'k', code: 'a', at: 2 },
+        { key: 'j', code: 'a', at: 0 },
+      ],
     });
     expect(parseStoredReview('null').seen).toEqual([]);
   });
@@ -95,5 +121,38 @@ describe('review settings', () => {
     expect(suggestOnlyFor(review, { shareCode: 'code2', collabKey: 'key1' })).toBe(true);
     expect(suggestOnlyFor(review, { shareCode: 'code2', collabKey: 'key2' })).toBe(false);
     expect(suggestOnlyFor(review, {})).toBe(false);
+  });
+
+  // A signed-in person or a guest's browser who came through a Suggest Only link once stays on it, whatever link (or
+  // none) they open with later: the share code is the client's to send or leave out.
+  it('pins a person to the Suggest Only link they came through, until the link or the person is lifted', () => {
+    const base = { ...NO_REVIEW, links: ['code1'] };
+    const pinned = withReviewPinned(base, 'key1', 'code1', 7);
+    expect(pinned.pins).toEqual([{ key: 'key1', code: 'code1', at: 7 }]);
+    expect(withReviewPinned(pinned, 'key1', 'code1', 8)).toBe(pinned);
+    // Only a link on Suggest Only pins.
+    expect(withReviewPinned(base, 'key1', 'code9', 8)).toBe(base);
+    expect(withReviewPinned(base, '', 'code1', 8)).toBe(base);
+    // Reopened without the code: still suggesting, by the verified key alone.
+    expect(suggestOnlyFor(pinned, { shareCode: null, verifiedKey: 'key1' })).toBe(true);
+    expect(suggestOnlyFor(pinned, { shareCode: null, collabKey: 'key1' })).toBe(false);
+    expect(suggestOnlyFor(pinned, { verifiedKey: 'key2' })).toBe(false);
+    // The Editor lifting the person, or the link, frees them.
+    const lifted = reviewFromSettings(pinned, {
+      links: ['code1'],
+      people: [],
+      agents: false,
+      lift: ['key1'],
+    });
+    expect(lifted.pins).toEqual([]);
+    expect(suggestOnlyFor(lifted, { verifiedKey: 'key1' })).toBe(false);
+    const linkOff = reviewFromSettings(pinned, { links: [], people: [], agents: false });
+    expect(linkOff.pins).toEqual([]);
+    const kept = reviewFromSettings(pinned, { links: ['code1'], people: [], agents: true });
+    expect(kept).toEqual({ ...pinned, agents: true });
+    expect('lift' in kept).toBe(false);
+    // A stale pin (its link off) suggests nothing even before it is cleared.
+    expect(suggestOnlyFor({ ...pinned, links: [] }, { verifiedKey: 'key1' })).toBe(false);
+    expect(parseReviewSettings({ links: [], lift: ['k', 'k', 3] }).lift).toEqual(['k']);
   });
 });
