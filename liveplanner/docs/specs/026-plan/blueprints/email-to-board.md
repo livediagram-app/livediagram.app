@@ -123,7 +123,7 @@ CREATE TABLE IF NOT EXISTS email_intake_senders (
   whole); `attachments` when any; `fromEmail` the sender. Read through `readItemCreate`.
 - `attachPictures`: no media client → every picture dropped `not_saved`. Each attachment in order: type not one of
   `ATTACHMENT_TYPES` → `not_picture`; bytes over `INTAKE_PICTURE_MAX` → `too_big`; past `ITEM_ATTACHMENTS_MAX`
-  attached → `too_many`; else `media.upload` as the plan owner (`mediaOwner`), document the plan; a refusal →
+  attached → `too_many`; else `media.upload` as the plan owner (`mediaOwner`), claimed for the plan; a refusal →
   `not_saved`; success → `grantImage` (the room's `recordImageGrant`) and an attachment entry.
 - The email person: `{ id: 'email:' + first 12 hex of sha256(sender), name: sender (cut to 80), color
 EMAIL_PERSON_COLOR }`.

@@ -802,6 +802,16 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Plan|Changed|Roadmap': "Someone changed a published roadmap's settings, keeping its link.",
   'Plan|Copied|Roadmap': "Someone copied a published roadmap's link.",
   'Plan|Ended|Roadmap': 'Someone unpublished a roadmap: its link stopped at once.',
+  'UI|Opened|EmailIntake': 'Someone opened Email to Board from the tab menu.',
+  'Plan|Created|EmailIntake':
+    "Someone turned on a board's own email address: mail to it becomes cards in its first column.",
+  'Plan|Changed|EmailIntakeAddress':
+    'Someone gave a board a new email address: the old one refuses mail at once.',
+  'Plan|Changed|EmailIntakeSenders':
+    "Someone changed who can send to a board's address (Plan Members or Anyone with the Address).",
+  'Plan|Copied|EmailIntake': "Someone copied a board's email address.",
+  'Plan|Ended|EmailIntake': "Someone turned off a board's email address: mail to it is refused.",
+  'Plan|Created|EmailCard': "Mail to a board's address passed its checks and became a card.",
   'UI|Opened|MyWorkCalendarFeed': "Someone opened Subscribe to Calendar from the Inbox's header.",
   'Plan|Created|MyWorkCalendarFeed':
     'Someone made a private calendar link to the cards assigned to them across their plans.',
