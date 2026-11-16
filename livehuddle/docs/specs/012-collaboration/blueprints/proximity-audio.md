@@ -101,7 +101,7 @@ per notify, `{ mic: boolean, camera: boolean, active: boolean, cameraAction: boo
 Each handler reads `callActions()` when it fires and calls `toggleMute` or `toggleCamera`, the dock's own functions,
 so the store, telemetry and the dock follow exactly as from a press. Only a change is applied: the state is compared
 with the last applied one (a level tick changes nothing), handlers are set or cleared only when `mic`/`cameraAction`
-flip, and the active flags sent only when they change. Not live clears both handlers (`setActionHandler(action,
+flip, and the active flags sent as the actions register and then only when they change. Not live clears both handlers (`setActionHandler(action,
 null)`). `hangup` is never registered. Stop clears both and unsubscribes. `mediaSessionOf(nav = globalThis.navigator)`
 returns `navigator.mediaSession` or `null`; with `null` the watch subscribes to nothing. Each `setActionHandler` and
 `set…Active` call is wrapped: a browser that throws for an action it does not know (Firefox, Safari) or lacks the
@@ -271,8 +271,8 @@ token. The editor logs through `debugLog('calls', …)`.
 | A failed connection renews, within the budget                  | `apps/editor/lib/calls/proximity-call.test.ts`                                       |
 | Characters committed while the page is hidden                  | `apps/editor/app/document/[id]/presence-coalescer.test.ts`                           |
 | Click to Hear while held and someone is heard                  | `apps/editor/components/calls/CallStripGroup.test.tsx`                               |
-| Media Session: handlers toggle the dock's state, report, clear | `apps/editor/lib/calls/call-media-session.test.ts`                                   |
-| No Media Session, unknown actions: nothing, no throw           | `apps/editor/lib/calls/call-media-session.test.ts`                                   |
+| Media Session: handlers toggle the dock's state, report, clear | `apps/editor/lib/calls/call-media-session.test.tsx`                                  |
+| No Media Session, unknown actions: nothing, no throw           | `apps/editor/lib/calls/call-media-session.test.tsx`                                  |
 | A voice moved less than `PLACE_EPSILON` is left; 0 and 1 land  | `apps/editor/lib/calls/audio-graph.test.ts`                                          |
 | 20 heard voices: AudioParam events a second, bounded           | `apps/editor/lib/calls/call-receiver.perf.test.ts`                                   |
 | 50 walkers: the call's scene about 10 a second                 | `apps/editor/components/canvas/CanvasCharactersLayer.perf.test.tsx`                  |
