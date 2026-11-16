@@ -5,7 +5,8 @@
 //   DELETE /api/internal/items/:id                          drop everything the item stores, end its sessions
 //   POST   /api/internal/items/purge          {ids}          the same for up to BULK_PURGE_MAX items (a closed account)
 //   POST   /api/internal/items/:id/revoke     {codes, reason?}  end the sessions of revoked or rescoped links
-//   POST   /api/internal/items/:id/notices    {type, ...}    what happened, for an email (index-client notices.ts)
+//   POST   /api/internal/items/:id/notices    {type, ...}    what happened, for an email (index-client notices.ts,
+//                                                           approvals.ts)
 //   POST   /api/internal/items/:id/workbench-close {pairingId}  a workbench pairing's access ended: close its sessions
 //                                                            in the item's room (liveworkspace/docs/specs/011-workbench/workbench.md)
 //   POST   /api/internal/items/:id/standing {archived, trashed, at}  where the item stands at the index after an
@@ -56,6 +57,7 @@
 import {
   COMMUNITY_STATES_MAX,
   isItemCommunityState,
+  parseApprovalNotice,
   parseItemNotice,
   parseItemStanding,
   TITLE_MAX,
@@ -304,8 +306,24 @@ export async function handleInternalItems(
     return json({ ok: true });
   }
 
-  if (rest.length === 2 && rest[1] === 'notices' && request.method === 'POST' && handlers.notice) {
-    const notice = parseItemNotice(await bodyOf(request));
+  if (rest.length === 2 && rest[1] === 'notices' && request.method === 'POST') {
+    const body = await bodyOf(request);
+    // An approval request (approvals.md "The email"): the app's own handler emails the approvers; an app without
+    // the door takes the notice and sends nothing.
+    const approval = parseApprovalNotice(body);
+    if (approval) {
+      const ask = handlers.approvalRequested;
+      if (ask) {
+        waitUntil(
+          ask(id, approval).catch((err: unknown) => {
+            console.warn('[internal] notice failed', { type: approval.type, error: String(err) });
+          }),
+        );
+      }
+      return json({ ok: true }, 202);
+    }
+    if (!handlers.notice) return notFound();
+    const notice = parseItemNotice(body);
     if (!notice) return badRequest('invalid notice');
     const run = handlers.notice;
     waitUntil(

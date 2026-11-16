@@ -8,6 +8,7 @@
 // a notification problem can't break the request that triggered it.
 
 import type { TeamPerson } from '@liveworkspace/auth-client';
+import type { ApprovalNotice } from '@liveworkspace/index-client';
 import { accountsAllowance, createNotifier } from '@liveworkspace/index-app';
 import { accountCredentials } from '../auth/accounts';
 import { isAccountIdShape } from '@livediagram/api-schema';
@@ -20,6 +21,7 @@ import type { DocumentEnv, Env } from '../types';
 import { emailEnabled, sendEmail } from './client';
 import {
   actionAssignedEmail,
+  approvalRequestedEmail,
   commentNotificationEmail,
   documentJoinedEmail,
   firstShareEmail,
@@ -77,6 +79,7 @@ const notifier = createNotifier<Env, RenderedEmail>({
     firstShare: firstShareEmail,
     joined: documentJoinedEmail,
     actionAssigned: actionAssignedEmail,
+    approvalRequested: approvalRequestedEmail,
     mentioned: (env, authorName, canvas, text) =>
       mentionedEmail(env, authorName, canvas.name, canvas.id, text),
   },
@@ -85,6 +88,14 @@ const notifier = createNotifier<Env, RenderedEmail>({
 // The owner just made a canvas: the tenth celebrates, once (docs/specs/014-identity/transactional-email.md #6).
 export const notifyMilestone = (env: Env, ownerId: string): Promise<void> =>
   notifier.notifyMilestone(env, ownerId);
+
+// Someone asked these people to approve a document (the index's `approval_requested` notice,
+// routes/internal-items.ts). Opt-out with assigned actions (notifyActionAssigned).
+export const notifyApprovalRequested = (
+  env: Env,
+  id: string,
+  notice: ApprovalNotice,
+): Promise<void> => notifier.notifyApprovalRequested(env, id, notice);
 
 // Someone made a share link for the first time (the index's `shared` notice, routes/internal-items.ts).
 export const notifyFirstShare = (env: Env, actorId: string): Promise<void> =>

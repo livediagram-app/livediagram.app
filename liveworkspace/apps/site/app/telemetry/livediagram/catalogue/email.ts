@@ -114,6 +114,12 @@ export const ACTION_EMAILS = email(
   'A teammate was emailed about work assigned to them.',
 );
 
+export const APPROVAL_EMAILS = email(
+  'ApprovalRequested',
+  'Approval Requests',
+  'Someone was emailed because a teammate asked them to approve their work.',
+);
+
 export const MENTION_EMAILS = email(
   'Mentioned',
   'Mention Notifications',
@@ -164,6 +170,7 @@ export const EMAIL_KIND_METRICS: readonly Metric[] = [
   DOCUMENT_JOINED_EMAILS,
   COMMENT_EMAILS,
   ACTION_EMAILS,
+  APPROVAL_EMAILS,
   MENTION_EMAILS,
   FORM_RESPONSE_EMAILS,
   FORM_SUSPENDED_EMAILS,
