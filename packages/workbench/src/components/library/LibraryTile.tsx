@@ -67,13 +67,14 @@ export function LibraryTile({
         }
         className="flex w-full flex-col items-center gap-1 rounded-md p-1 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:text-slate-100 dark:hover:bg-slate-800 dark:hover:text-white"
       >
-        <span className="flex h-12 w-full items-center justify-center overflow-hidden rounded bg-white ring-1 ring-slate-200 dark:ring-slate-700">
+        <span className="relative flex h-12 w-full items-center justify-center overflow-hidden rounded bg-white ring-1 ring-slate-200 dark:ring-slate-700">
           {item.preview ? (
             // A data URL in a plain <img>: inert, the SVG never runs. Decorative: the button carries the name.
+            // Absolutely placed, so a wide preview's own size never widens the palette's flyout.
             <img
               src={previewSrc(item.preview)}
               alt=""
-              className="max-h-full max-w-full object-contain p-0.5"
+              className="absolute inset-0 h-full w-full object-contain p-0.5"
             />
           ) : (
             (thumbnail ?? null)

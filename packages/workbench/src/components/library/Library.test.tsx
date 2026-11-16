@@ -3,6 +3,7 @@
 // to Library to Personal or a team, the palette's groups and tidy controls by role, the hidden count, and refusals in
 // words.
 import type { LibraryItemSummary, LibraryListResponse } from '@liveworkspace/media';
+import { useState } from 'react';
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { LibraryError, type LibraryApi } from '../../lib/library/library-api';
@@ -87,6 +88,33 @@ describe('without the Library', () => {
     render(<Editor api={null} />);
     expect(screen.queryByRole('button', { name: /Save selected elements/ })).toBeNull();
     expect(screen.getByText('No Library')).toBeTruthy();
+  });
+});
+
+describe('an api that arrives later', () => {
+  it('never remounts the editor, and loads on the first need after it arrives', async () => {
+    let mounts = 0;
+    function Probe() {
+      const [n] = useState(() => ++mounts);
+      return <p>mount {n}</p>;
+    }
+    const api = fakeApi();
+    const { rerender } = render(
+      <LibraryProvider api={null}>
+        <Probe />
+        <Palette onInsert={vi.fn()} />
+      </LibraryProvider>,
+    );
+    expect(screen.getByText('No Library')).toBeTruthy();
+    rerender(
+      <LibraryProvider api={api}>
+        <Probe />
+        <Palette onInsert={vi.fn()} />
+      </LibraryProvider>,
+    );
+    expect(mounts).toBe(1);
+    await screen.findByRole('button', { name: 'Insert My Box from Personal' });
+    expect(api.list).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -286,6 +314,33 @@ describe('Save to Library', () => {
       'This library is full. Delete something to make room.',
     );
     expect(screen.getByRole('dialog')).toBeTruthy();
+  });
+
+  it('ignores Escape while a save is in flight, then closes on Escape again', async () => {
+    let finish: () => void = () => {};
+    const api = fakeApi({
+      save: vi.fn(
+        () =>
+          new Promise<LibraryItemSummary>((resolve) => {
+            finish = () => resolve(LIST.items[0]!);
+          }),
+      ),
+    });
+    render(<Editor api={api} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Save selected elements to Library' }));
+    await screen.findByRole('dialog');
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    });
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.getByRole('dialog')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Saving…' })).toBeTruthy();
+    await act(async () => finish());
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    fireEvent.click(screen.getByRole('button', { name: 'Save selected elements to Library' }));
+    await screen.findByRole('dialog');
+    fireEvent.keyDown(document, { key: 'Escape' });
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
   });
 
   it('won’t save without a name, and cancels', async () => {

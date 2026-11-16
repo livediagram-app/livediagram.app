@@ -71,7 +71,8 @@ export function LibraryProvider({
   onSaved?: (scope: 'personal' | 'team') => void;
   children: React.ReactNode;
 }) {
-  if (!api) return <>{children}</>;
+  // One element type whether or not there is an api, so the editor below never remounts when the api arrives (an
+  // owner resolving after load) or goes.
   return (
     <LoadedLibraryProvider api={api} localItems={localItems} onSaved={onSaved}>
       {children}
@@ -85,7 +86,7 @@ function LoadedLibraryProvider({
   onSaved,
   children,
 }: {
-  api: LibraryApi;
+  api: LibraryApi | null;
   localItems?: readonly LocalLibraryItem[];
   onSaved?: (scope: 'personal' | 'team') => void;
   children: React.ReactNode;
@@ -97,6 +98,7 @@ function LoadedLibraryProvider({
   const loadSeq = useRef(0);
 
   const reload = useCallback(() => {
+    if (!api) return;
     const seq = ++loadSeq.current;
     setRemote((s) => (s.status === 'ready' ? s : { ...s, status: 'loading' }));
     api.list().then(
@@ -119,12 +121,13 @@ function LoadedLibraryProvider({
     );
   }, [api]);
 
-  const asked = useRef(false);
+  // Loaded once per api: a new one (another owner) loads afresh on its first need.
+  const askedFor = useRef<LibraryApi | null>(null);
   const ensureLoaded = useCallback(() => {
-    if (asked.current) return;
-    asked.current = true;
+    if (!api || askedFor.current === api) return;
+    askedFor.current = api;
     reload();
-  }, [reload]);
+  }, [api, reload]);
 
   // The editor's own shape libraries join Personal, less those the Library has already copied.
   const local = useMemo(
@@ -160,38 +163,39 @@ function LoadedLibraryProvider({
     async (item: LibraryItemSummary) => {
       const held = local.find((l) => l.summary.id === item.id);
       if (held) return { width: item.width, height: item.height, elements: held.elements };
-      return attempt(() => api.place(item.id), false);
+      return api ? attempt(() => api.place(item.id), false) : null;
     },
     [api, attempt, local],
   );
 
-  const value = useMemo<LibraryContextValue>(
-    () => ({
-      state,
-      notice,
-      reload,
-      ensureLoaded,
-      requestSave: (next) => {
-        // The dialog's team list and folder suggestions come from the list.
-        ensureLoaded();
-        setNotice(null);
-        setDraft(next);
+  const value = useMemo<LibraryContextValue | null>(
+    () =>
+      api && {
+        state,
+        notice,
+        reload,
+        ensureLoaded,
+        requestSave: (next) => {
+          // The dialog's team list and folder suggestions come from the list.
+          ensureLoaded();
+          setNotice(null);
+          setDraft(next);
+        },
+        place,
+        rename: async (item, title) => (await attempt(() => api.rename(item.id, title))) !== null,
+        renameFolder: async (group, from, to) =>
+          (await attempt(() =>
+            api.renameFolder({ scope: group.scope, teamId: group.teamId, from, to }),
+          )) !== null,
+        remove: async (item) =>
+          (await attempt(async () => api.remove(item.id).then(() => true))) === true,
       },
-      place,
-      rename: async (item, title) => (await attempt(() => api.rename(item.id, title))) !== null,
-      renameFolder: async (group, from, to) =>
-        (await attempt(() =>
-          api.renameFolder({ scope: group.scope, teamId: group.teamId, from, to }),
-        )) !== null,
-      remove: async (item) =>
-        (await attempt(async () => api.remove(item.id).then(() => true))) === true,
-    }),
     [api, attempt, ensureLoaded, notice, place, reload, state],
   );
 
   const save = useCallback(
     async (choice: SaveToLibraryChoice) => {
-      if (!draft) return;
+      if (!draft || !api) return;
       await api.save({
         scope: choice.scope,
         teamId: choice.teamId,
@@ -212,7 +216,7 @@ function LoadedLibraryProvider({
     <LibraryContext.Provider value={value}>
       {children}
       <SaveToLibraryDialog
-        open={draft !== null}
+        open={api !== null && draft !== null}
         count={draft?.elements.length ?? 0}
         suggestedTitle={draft?.suggestedTitle ?? ''}
         teams={state.teams}

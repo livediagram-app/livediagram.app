@@ -63,10 +63,21 @@ type SaveToLibraryProps = {
 
 export function SaveToLibraryDialog(props: SaveToLibraryProps) {
   const titleId = useId();
+  // While a save is in flight, Escape and the backdrop don't close the dialog: the save would land with no dialog
+  // left to show its refusal.
+  const [busy, setBusy] = useState(false);
+  const onSave = async (choice: SaveToLibraryChoice) => {
+    setBusy(true);
+    try {
+      await props.onSave(choice);
+    } finally {
+      setBusy(false);
+    }
+  };
   return (
-    <Dialog open={props.open} onClose={props.onClose} titleId={titleId} size="sm">
+    <Dialog open={props.open} onClose={busy ? () => {} : props.onClose} titleId={titleId} size="sm">
       {/* Mounted per opening, so each starts afresh from its own selection. */}
-      {props.open ? <SaveToLibraryForm {...props} titleId={titleId} /> : null}
+      {props.open ? <SaveToLibraryForm {...props} onSave={onSave} titleId={titleId} /> : null}
     </Dialog>
   );
 }
@@ -116,16 +127,15 @@ function SaveToLibraryForm({
         void submit();
       }}
     >
-      <div className="px-6 pt-5">
-        <DialogHeader
-          title={<span id={titleId}>Save to Library</span>}
-          subtitle={
-            count === 1
-              ? 'Keep a copy of this element to place in any document, in every app.'
-              : `Keep a copy of these ${count} elements to place in any document, in every app.`
-          }
-        />
-      </div>
+      <DialogHeader
+        title={<span id={titleId}>Save to Library</span>}
+        subtitle={
+          count === 1
+            ? 'Keep a copy of this element to place in any document, in every app.'
+            : `Keep a copy of these ${count} elements to place in any document, in every app.`
+        }
+      />
+
       <div className="flex flex-col gap-4 px-6 py-4">
         <label className="flex flex-col gap-1.5">
           <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Name</span>
@@ -137,7 +147,7 @@ function SaveToLibraryForm({
             placeholder="Name this item"
           />
         </label>
-        <fieldset className="flex flex-col gap-1.5">
+        <fieldset className="flex min-w-0 flex-col gap-1.5">
           <legend className="mb-1.5 text-sm font-medium text-slate-700 dark:text-slate-200">
             Save to
           </legend>
@@ -175,7 +185,7 @@ function SaveToLibraryForm({
                     <span className="truncate text-sm font-medium text-slate-800 dark:text-slate-100">
                       {d.label}
                     </span>
-                    <span className="truncate text-xs text-slate-600 dark:text-slate-400">
+                    <span className="text-xs leading-snug text-slate-600 dark:text-slate-400">
                       {d.line}
                     </span>
                   </span>

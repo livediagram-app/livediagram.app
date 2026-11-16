@@ -98,7 +98,8 @@ is where people save their own shapes and components, to Personal or a team, and
   offset, as a gap), centred on its row; a run of clicks lines up left to right. A drag lands exactly
   where it is dropped.
 - Tiles are buttons in a list per section: reachable by Tab, activated by Enter or Space (placing at
-  the view's centre), named "Insert <title> from <library>" for screen readers.
+  the view's centre), named "Insert <title> from <section>" for screen readers, where the section is
+  the Library's (Personal, where shape libraries sit as folders, or a team's name).
 - The palette, and with it My shapes, is not offered on a read-only tab (a view-role share) or in
   Draw mode (its dock replaces the palette); a locked tab places nothing.
 - The list loads once per owner when the editor opens; an import or a change
