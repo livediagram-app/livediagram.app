@@ -196,3 +196,12 @@ a dense grid of one family of elements, screenshot the canvas in focus mode, and
 render the same tab's export beside it, in both light and dark paper.
 `svg-render-fidelity.test.ts` and the per-card tests pin the marks each face
 draws.
+
+## PDF
+
+A PDF is the tab's SVG export drawn as vectors by the shared writer
+([Vector PDF](../../../liveworkspace/docs/specs/013-export/vector-pdf.md)): shapes and lines are paths, letters are
+outlines in the faces the SVG embeds (text in a system stack set in Inter), and an invisible text layer lets a reader
+select, search and read the words aloud. What PDF has no form for (a shadow, a blur, a soft mask) is a picture of that
+element alone, and a page the writer can't draw falls back to the canvas render above, laid on white. Each
+page is its CSS size at 0.75 pt per px. The writer loads only when a PDF is exported.
