@@ -22,6 +22,14 @@ export const quietCommunityTelemetry: CommunitySiteTelemetry = {
   searched: noop,
   selected: noop,
   openedHelp: noop,
+  forum: {
+    opened: noop,
+    openedTopic: noop,
+    postedTopic: noop,
+    postedReply: noop,
+    reacted: noop,
+    markedAnswer: noop,
+  },
 };
 
 function TestHelpLink({ article, children, className }: CommunityHelpLinkProps) {

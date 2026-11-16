@@ -30,8 +30,13 @@ APP_ORIGIN_LIVEPLANNER = "https://www.liveplanner.app"
 APP_ORIGIN_LIVEDOCUMENTS = "https://www.livedocuments.app"
 APP_ORIGIN_LIVEDESIGN = "https://www.livedesign.app"
 APP_ORIGIN_LIVEHUDDLE = "https://www.livehuddle.app"
+# The Forum's account check (liveworkspace/docs/specs/007-community/community.md "Forum routes"): access tokens are
+# checked offline against `${ACCOUNTS_URL}/api/auth`'s keys, addressed to any app API, as the index and Drive check them.
+ACCOUNTS_URL = "https://www.liveworkspace.app"
+INDEX_AUDIENCES = "https://livediagram.app/api,https://liveplanner.app/api,https://livedocuments.app/api,https://livedesign.app/api,https://livehuddle.app/api"
 
-# Every five minutes: the sweep checks each app's posts checked longest ago against the index, through the app.
+# Every five minutes: the sweep checks each app's posts checked longest ago against the index, through the app, and the
+# Forum's posts waiting for the check are asked again.
 [triggers]
 crons = ["*/5 * * * *"]
 
@@ -49,6 +54,19 @@ name = "COMMUNITY_RATE_LIMITER"
 namespace_id = "1102"
 simple = { limit = 30, period = 60 }
 
+# Accounts, which access tokens' key set is fetched through (src/forum/account.ts): a Worker's fetch to another Worker's
+# route on its own zone can stall. Without it the public route is used.
+[[services]]
+binding = "ACCOUNTS"
+service = "liveworkspace-accounts"
+
+# Workers AI for the Forum's check (community.md "The Forum", "The check"): no key, no secret, the binding is the
+# credential, billed in Neurons on this account (10,000 a day free), at most FORUM_CHECKS_PER_DAY checks a day
+# (src/config.ts). Optional: without it every new Forum post waits as Pending. A local run (ENVIRONMENT development)
+# never asks it: posts list as if checked, unless FORUM_CHECK_LOCAL=ai in .dev.vars asks the real check.
+[ai]
+binding = "AI"
+
 [env.staging]
 name = "liveworkspace-community-staging"
 routes = [{ pattern = "staging.liveworkspace.app/api/community*", zone_name = "liveworkspace.app" }]
@@ -61,6 +79,8 @@ APP_ORIGIN_LIVEPLANNER = "https://staging.liveplanner.app"
 APP_ORIGIN_LIVEDOCUMENTS = "https://staging.livedocuments.app"
 APP_ORIGIN_LIVEDESIGN = "https://staging.livedesign.app"
 APP_ORIGIN_LIVEHUDDLE = "https://staging.livehuddle.app"
+ACCOUNTS_URL = "https://staging.liveworkspace.app"
+INDEX_AUDIENCES = "https://staging.livediagram.app/api,https://staging.liveplanner.app/api,https://staging.livedocuments.app/api,https://staging.livedesign.app/api,https://staging.livehuddle.app/api"
 
 [env.staging.triggers]
 crons = ["*/5 * * * *"]
@@ -75,3 +95,11 @@ migrations_dir = "migrations"
 name = "COMMUNITY_RATE_LIMITER"
 namespace_id = "2102"
 simple = { limit = 30, period = 60 }
+
+# Bindings don't inherit into an environment: the accounts binding and Workers AI (above), restated.
+[[env.staging.services]]
+binding = "ACCOUNTS"
+service = "liveworkspace-accounts-staging"
+
+[env.staging.ai]
+binding = "AI"

@@ -13,7 +13,7 @@
 
 import { createLazyTrack, type TelemetryTrack } from '@liveworkspace/telemetry-client';
 import { DEVICE_PREFERENCES } from '@liveworkspace/settings/device';
-import type { CommunityApp, CommunityReportReason } from '@liveworkspace/community';
+import type { CommunityApp, CommunityReportReason, ForumReaction } from '@liveworkspace/community';
 import { pageApp, workspaceOrigin } from '@/lib/explorer/page-app';
 
 /** The gallery filters the Community sends as `Community·Selected·<type>`. */
@@ -30,6 +30,15 @@ export type CommunitySiteTelemetry = {
   selected: (what: CommunitySelection) => void;
   /** A help deep link followed (`UI·Opened·<article id>`, as every help deep link sends). */
   openedHelp: (article: 'sharing' | 'finding') => void;
+  /** The Forum's (community.md "The Forum", "Telemetry"); its reports send `reported` as the gallery's do. */
+  forum: {
+    opened: () => void;
+    openedTopic: () => void;
+    postedTopic: () => void;
+    postedReply: () => void;
+    reacted: (reaction: ForumReaction) => void;
+    markedAnswer: () => void;
+  };
 };
 
 // Next inlines `process.env.NEXT_PUBLIC_*` at build time: on in production unless turned off, in development only
@@ -88,6 +97,17 @@ function selected(what: CommunitySelection) {
   }
 }
 
+function reacted(reaction: ForumReaction) {
+  switch (reaction) {
+    case 'helpful':
+      return siteTrack('Community', 'Reacted', 'Helpful');
+    case 'thanks':
+      return siteTrack('Community', 'Reacted', 'Thanks');
+    case 'celebrate':
+      return siteTrack('Community', 'Reacted', 'Celebrate');
+  }
+}
+
 export const communityTelemetry: CommunitySiteTelemetry = {
   openedPost: () => siteTrack('Community', 'Opened', 'Post'),
   likedPost: () => siteTrack('Community', 'Liked', 'Post'),
@@ -100,6 +120,14 @@ export const communityTelemetry: CommunitySiteTelemetry = {
     article === 'sharing'
       ? siteTrack('UI', 'Opened', 'community')
       : siteTrack('UI', 'Opened', 'finding-community-documents'),
+  forum: {
+    opened: () => siteTrack('Community', 'Opened', 'Forum'),
+    openedTopic: () => siteTrack('Community', 'Opened', 'Topic'),
+    postedTopic: () => siteTrack('Community', 'Posted', 'Topic'),
+    postedReply: () => siteTrack('Community', 'Posted', 'Reply'),
+    reacted,
+    markedAnswer: () => siteTrack('Community', 'Marked', 'Answer'),
+  },
 };
 
 /** For tests: forget the page's emitter. */
