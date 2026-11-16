@@ -19,7 +19,7 @@ import {
 } from '@liveworkspace/index-app';
 import { indexAppClient } from '../index-service';
 import { mergeChangesetsIntoSave } from '../changesets/merge-on-save';
-import { hasNewComments, rewriteCommentAuthors } from '../comments';
+import { newCommentsBy, rewriteCommentAuthors } from '../comments';
 import { changesetMergePages, getTab, isTabRevStale, upsertTabAtRev } from '../db';
 import { getParticipant } from '../liveworkspace/profiles';
 import { emailEnabled } from '../email/client';
@@ -208,16 +208,19 @@ export async function writeTabSave(
     // (document-room/document-outbox.ts), at most once a minute.
     // docs/specs/014-identity/transactional-email.md (#1): an edit-role visitor adding a comment
     // notifies the owner. Their own comment only, read from the authors the server just set.
-    if (
-      emailEnabled(env) &&
-      owner !== existing.ownerId &&
-      hasNewComments(sanitised.elements, existingTab?.elements ?? [], owner)
-    ) {
+    // A new comment that @-mentions the owner leaves them the mention email alone (email/comment-owner-email.ts).
+    const added =
+      emailEnabled(env) && owner !== existing.ownerId
+        ? newCommentsBy(sanitised.elements, existingTab?.elements ?? [], owner)
+        : [];
+    if (added.length > 0) {
       ctx.waitUntil?.(
         notifyNewComment(
           env,
-          { id, ownerId: existing.ownerId, name: existing.name },
+          { id, ownerId: existing.ownerId, name: existing.name, teamId: existing.teamId },
           writerParticipant?.name ?? null,
+          false,
+          added,
         ),
       );
     }

@@ -262,16 +262,27 @@ export function hasNewComments(
   prevElements: Element[],
   authorId: string,
 ): boolean {
+  return newCommentsBy(nextElements, prevElements, authorId).length > 0;
+}
+
+// The comments `nextElements` adds that `authorId` wrote (hasNewComments' rule), for the owner email to tell whether
+// each one @-mentions the owner (email/comment-owner-email.ts).
+export function newCommentsBy(
+  nextElements: Element[],
+  prevElements: Element[],
+  authorId: string,
+): Comment[] {
   const seen = new Set<string>();
   for (const el of prevElements) {
     for (const c of threadOf(el)?.comments ?? []) seen.add(c.id);
   }
+  const out: Comment[] = [];
   for (const el of nextElements) {
     for (const c of threadOf(el)?.comments ?? []) {
-      if (!seen.has(c.id) && c.authorId === authorId) return true;
+      if (!seen.has(c.id) && c.authorId === authorId) out.push(c);
     }
   }
-  return false;
+  return out;
 }
 
 // One tab's threads as the document listing serves them (agent-presence blueprint "REST"): in the outline's order,
