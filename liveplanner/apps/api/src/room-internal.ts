@@ -18,6 +18,8 @@ export type InternalRoom = {
   readSelections: (tabId: string, person: string) => Promise<unknown>;
   readLedger: (tabId: string, since?: number) => Promise<unknown>;
   epoch: () => string;
+  // A relayed op that changed a Sheet: documents watching it are told (plan-room/sheet-watchers.ts).
+  sheetChanged?: (op: unknown) => void;
 };
 
 // The room ops the worker originates through /mutation: a view-role visitor's comment, an agent
@@ -48,6 +50,7 @@ export async function answerInternal(
     if (body.ordered === true) room.broadcastOrderedSystemOp(op);
     else room.broadcastSystemOp(op);
     room.closeSessionsOfChangedLink(op);
+    room.sheetChanged?.(op);
     await room.clearAgentsFor(op);
     return new Response(null, { status: 204 });
   }

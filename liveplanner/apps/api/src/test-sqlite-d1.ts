@@ -214,6 +214,24 @@ function testPlanRooms(
       (await import('./plan-room/plan-export')).exportPlanTables(env, planId),
     exportComments: async (planId: string) =>
       (await import('./plan-room/plan-export')).exportPlanComments(env, planId),
+    // A chart in another app reading a Sheet (plan-room.ts listSheets and readSheetRange), its watch kept on the test
+    // database as the room keeps it in its own.
+    listSheets: async (planId: string) =>
+      (await import('./plan-room/sheet-source')).listPlanSheets(env, planId),
+    readSheetRange: async (
+      planId: string,
+      ask: import('@liveworkspace/index-client').SheetRangeAsk,
+      watcher: string | null,
+    ) => {
+      const result = await (
+        await import('./plan-room/sheet-source')
+      ).readPlanSheetRange(env, planId, ask);
+      if (result.status === 'ok' && watcher) {
+        const { SheetWatches } = await import('./plan-room/sheet-watchers');
+        new SheetWatches(nodeItemSql(sql), () => null).watch(planId, ask.sheetId, watcher);
+      }
+      return result;
+    },
     hasTab: async (planId: string, tabId: string) =>
       (await import('./db/tabs')).planHasTab(env, planId, tabId),
     item: async (planId: string, itemId: string) =>

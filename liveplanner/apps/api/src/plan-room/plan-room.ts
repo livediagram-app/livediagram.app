@@ -114,6 +114,11 @@ import { purgedAt } from './plan-room-purged';
 import { RemovalGuard } from './removal-guard-store';
 import { answerFeedCall, type FeedRoomAnswer, type FeedRoomCall } from '../calendar/feed-room';
 import { notFound } from '../responses';
+import { indexAppClient } from '../index-service';
+import { SheetWatches } from './sheet-watchers';
+import { listPlanSheets, readPlanSheetRange } from './sheet-source';
+import type { SheetListResult, SheetRangeResult } from '@liveworkspace/index-app';
+import type { SheetRangeAsk } from '@liveworkspace/index-client';
 
 // One SQLite-backed Durable Object per plan id (docs/specs/015-api/api.md "Storage" and "Realtime model"). It is
 // two things at once:
@@ -230,6 +235,8 @@ export class PlanRoom extends DurableObject<Env> {
   planId: string | null = null;
   schemaReady = false;
   planRowReady = false;
+  // Documents whose charts read this plan's Sheets, told when a Sheet changes (sheet-watchers.ts).
+  readonly sheetWatches: SheetWatches;
   // When the plan was purged (plan-room-purged.ts): null when it is not, undefined until read.
   purgedAt: number | null | undefined = undefined;
   // The outbox's next push (null: nothing pending), the last one, and whether one is running now.
@@ -311,6 +318,9 @@ export class PlanRoom extends DurableObject<Env> {
         }
       : undefined;
     this.ledger = new RoomLedgerStore(state.storage, LEDGER_RULES);
+    this.sheetWatches = new SheetWatches(state.storage.sql, () =>
+      this.roomEnv ? indexAppClient(this.roomEnv) : null,
+    );
     this.head = roomHead(this);
     this.participantWrites = roomParticipantWrites(this);
     this.scopedStructure = new RoomScopedStructure(cachedStoredTab(this.roomEnv));
@@ -414,6 +424,26 @@ export class PlanRoom extends DurableObject<Env> {
 
   exportComments(planId: string): Promise<ExportCommentsResult> {
     return exportComments(this, planId);
+  }
+
+  // A chart in another app reading this plan's Sheets (liveworkspace/docs/specs/004-index/sheet-sources.md): its Sheets
+  // for a picker, and one range of one, with a watch for the document that asked (sheet-source.ts).
+  async listSheets(planId: string): Promise<SheetListResult> {
+    if (this.holdsNothing()) return { status: 'not_found' };
+    this.bindPlan(planId);
+    return listPlanSheets(this.requireEnv(), planId);
+  }
+
+  async readSheetRange(
+    planId: string,
+    ask: SheetRangeAsk,
+    watcher: string | null,
+  ): Promise<SheetRangeResult> {
+    if (this.holdsNothing()) return { status: 'not_found' };
+    this.bindPlan(planId);
+    const result = await readPlanSheetRange(this.requireEnv(), planId, ask);
+    if (result.status === 'ok' && watcher) this.sheetWatches.watch(planId, ask.sheetId, watcher);
+    return result;
   }
 
   // A new plan from a Drive file (routes/internal-file.ts read it): its content lands as a copy's does, and it

@@ -92,5 +92,10 @@ export function roomInternal(room: PlanRoom): InternalRoom {
     readSelections: (tabId, person) => room.selections.read(tabId, liveSessions(room), person),
     readLedger: (tabId, since) => room.ledger.read(tabId, since),
     epoch: () => room.epoch,
+    sheetChanged: (op) => {
+      const o = op as { kind?: unknown; sheetId?: unknown } | null;
+      if (o?.kind === 'sheets' && typeof o.sheetId === 'string')
+        room.sheetWatches.changed(o.sheetId);
+    },
   };
 }
