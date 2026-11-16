@@ -58,8 +58,8 @@ describe('htmlToText', () => {
   it('stays linear on hostile input', () => {
     const amps = '&'.repeat(200_000);
     const tags = '<'.repeat(100_000) + '>';
-    expect(cpuMsOf(() => htmlToText(amps))).toBeLessThan(cpuBudgetMs(150));
-    expect(cpuMsOf(() => htmlToText(tags))).toBeLessThan(cpuBudgetMs(150));
+    expect(cpuMsOf(() => htmlToText(amps))).toBeLessThan(cpuBudgetMs(50));
+    expect(cpuMsOf(() => htmlToText(tags))).toBeLessThan(cpuBudgetMs(50));
   });
 });
 
@@ -143,8 +143,8 @@ describe('stripQuotedReply', () => {
     const openers = 'On x wrote\n'.repeat(60_000);
     const quotes = '>\n'.repeat(64_000) + 'end';
     const spaces = ' '.repeat(100_000);
-    expect(cpuMsOf(() => stripQuotedReply(openers))).toBeLessThan(cpuBudgetMs(150));
-    expect(cpuMsOf(() => stripQuotedReply(quotes))).toBeLessThan(cpuBudgetMs(150));
+    expect(cpuMsOf(() => stripQuotedReply(openers))).toBeLessThan(cpuBudgetMs(50));
+    expect(cpuMsOf(() => stripQuotedReply(quotes))).toBeLessThan(cpuBudgetMs(50));
     expect(cpuMsOf(() => stripQuotedReply(spaces))).toBeLessThan(cpuBudgetMs(50));
   });
 });

@@ -19,14 +19,17 @@ export type MimePart = {
   children: MimePart[];
 };
 
-const CHUNK = 0x2000;
+const CHUNK = 0x8000;
 
-/** The bytes as a byte string: one character per byte, so indexes are byte offsets. */
+/** The bytes as a byte string: one character per byte, so indexes are byte offsets. Built a chunk at a time (an
+ *  apply's argument list stays well under any engine's limit), the chunks joined once. */
 export function byteString(bytes: Uint8Array): string {
-  let out = '';
+  const parts: string[] = [];
   for (let at = 0; at < bytes.length; at += CHUNK)
-    out += String.fromCharCode(...bytes.subarray(at, at + CHUNK));
-  return out;
+    parts.push(
+      String.fromCharCode.apply(null, bytes.subarray(at, at + CHUNK) as unknown as number[]),
+    );
+  return parts.join('');
 }
 
 /** A byte string's bytes. */
@@ -212,29 +215,26 @@ export function decodeBody(raw: string, encoding: string | undefined): string {
     return atob(clean);
   }
   if (kind === 'quoted-printable') {
+    // Runs between `=` copied whole; each `=` is a soft break, an escaped byte, or kept as it stands.
     let out = '';
-    for (let i = 0; i < raw.length; i++) {
-      const c = raw[i]!;
-      if (c !== '=') {
-        out += c;
-        continue;
-      }
-      if (raw[i + 1] === '\n') {
-        i += 1;
-        continue;
-      }
-      if (raw[i + 1] === '\r' && raw[i + 2] === '\n') {
-        i += 2;
-        continue;
-      }
-      const byte = hexByte(raw, i + 1);
-      if (byte < 0) out += c;
+    let at = 0;
+    for (;;) {
+      const eq = raw.indexOf('=', at);
+      if (eq < 0) return out + raw.slice(at);
+      out += raw.slice(at, eq);
+      if (raw[eq + 1] === '\n') at = eq + 2;
+      else if (raw[eq + 1] === '\r' && raw[eq + 2] === '\n') at = eq + 3;
       else {
-        out += String.fromCharCode(byte);
-        i += 2;
+        const byte = hexByte(raw, eq + 1);
+        if (byte < 0) {
+          out += '=';
+          at = eq + 1;
+        } else {
+          out += String.fromCharCode(byte);
+          at = eq + 3;
+        }
       }
     }
-    return out;
   }
   return raw;
 }

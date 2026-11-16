@@ -122,6 +122,8 @@ describe('readInboundMail', () => {
         '\r\n',
       ),
     );
-    expect(cpuMsOf(() => readInboundMail(raw, opts))).toBeLessThan(cpuBudgetMs(150));
+    // Warmed on a small message first, so the budget is the work's and not the first compile's.
+    readInboundMail(raw.subarray(0, 4096), opts);
+    expect(cpuMsOf(() => readInboundMail(raw, opts))).toBeLessThan(cpuBudgetMs(50));
   });
 });

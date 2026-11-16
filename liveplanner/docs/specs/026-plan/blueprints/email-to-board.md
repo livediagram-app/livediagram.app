@@ -180,16 +180,16 @@ verdict's reason, `made`, `gone`, `refused_sender`, `busy`, `unavailable`), each
 ## Testing
 
 - `packages/items` `from-email.test.ts`; the `email` tag's activity words in the editor.
-- `apps/api` `email-intake/intake-code.test.ts`, `intake-card.test.ts` (title, no subject, description cut with the
-  dropped line whole, attachments), `intake-pictures.test.ts` (each drop reason, the cap, grants),
-  `intake-members.test.ts` (owner, joined members only, accounts down), `intake-store.test.ts` (hour caps, the sender
-  prune), `email-handler.test.ts` (every refusal and the drop through a fake message, a made card end to end through
-  the room), `routes/email-intake-routes.test.ts` (owner, team member and Editor link manage; Participant, Viewer,
-  tab link, token, workbench and Community refused with nothing changed; new address stops the old at once; turn off;
-  unavailable; 405; invalid bodies).
-- Editor: `email-intake-gate.test.ts`, `email-intake-client.test.ts`, `EmailIntakeDialog.test.tsx` (with the host and
-  the menu row; each state, copy, New Address and Turn Off confirms, Who Can Send saving), `ItemPanelLayout` From email
-  row.
+- `apps/api` `email-intake/intake-parts.test.ts` (the code and recipient; the card: title, no subject, description
+  cut with the dropped line whole, attachments; the directory entry; plan members: owner, joined members only,
+  accounts down; pictures: each drop reason, the cap, grants), `email-handler.test.ts` (every refusal and the drop
+  through a fake message, the hour cap for one sender, made cards end to end through the room),
+  `routes/email-intake-routes.test.ts` (owner, team member, guest owner and Editor link manage; tab link, Participant,
+  Viewer, tokens, workbench and link visitor refused with nothing changed; new address stops the old at once; turn
+  off; unavailable; 405; invalid bodies; a board gone).
+- Editor: `email-intake-client.test.ts` (the gate and the four calls), `EmailIntakeDialog.test.tsx` (with the host and
+  the menu row; each state, copy, New Address and Turn Off confirms, Who Can Send saving and going back),
+  `ItemPanel.navigation.test.tsx` (the From email row), `activity-words.test.ts` (the `email` tag).
 
 ## Constants and configuration
 
