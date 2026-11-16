@@ -666,7 +666,6 @@
     "./components/palette/theme-picker-cards": "./src/components/palette/theme-picker-cards.tsx",
     "./components/palette/ThemeBrowser": "./src/components/palette/ThemeBrowser.tsx",
     "./components/palette/palette-tile-finish": "./src/components/palette/palette-tile-finish.ts",
-    "./components/palette/StripScroller": "./src/components/palette/StripScroller.tsx",
     "./components/palette/ToolbarStripRail": "./src/components/palette/ToolbarStripRail.tsx",
     "./components/palette/StripOpenerPanel": "./src/components/palette/StripOpenerPanel.tsx",
     "./components/primitives/MovablePanel": "./src/components/primitives/MovablePanel.tsx",
