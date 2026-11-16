@@ -4,6 +4,9 @@
 export * from '@liveworkspace/diagram-lint/constants';
 
 export const LINT_MAX_ASPECT = 3;
+// A bar no wider than this (a sequence diagram's lifeline or activation) is crossed by lines, never hidden behind
+// (LN8, LN13).
+export const LINT_BAR_MAX_PX = 16;
 // A member reaching its frame's border (LN13).
 export const LINT_CONTAIN_TOLERANCE_PX = 2;
 // "Most" of a frame's arrows: more than half of at least three (LN12).

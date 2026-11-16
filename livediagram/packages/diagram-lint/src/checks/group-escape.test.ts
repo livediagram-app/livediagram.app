@@ -51,4 +51,12 @@ describe('group-escape', () => {
       of(lint(tabOf(frame('lane', 0, 0, 200, 200, 'lane'), box('a', 120, 20))), 'group-escape'),
     ).toEqual([]);
   });
+
+  it('passes a thin unlabelled bar: a lifeline runs through its fragment frames', () => {
+    const bar = box('life', 90, -100, { label: '', width: 14, height: 600 });
+    expect(of(lint(tabOf(frame('f', 0, 0, 200, 200), bar)), 'group-escape')).toEqual([]);
+    expect(
+      of(lint(tabOf(frame('f', 0, 0, 200, 200), { ...bar, label: 'Life' })), 'group-escape'),
+    ).toHaveLength(1);
+  });
 });

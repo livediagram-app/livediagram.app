@@ -467,7 +467,7 @@ function side(x: number, y: number, cards: Map<string, ShapeElement>): Element[]
     };
     out.push(note, {
       ...createPinnedArrow(note.id, 'w', cards.get(s.about)!.id, 'e'),
-      arrowStyle: 'curved',
+      arrowStyle: 'angled',
       strokeColor: '#94a3b8',
       strokeWidth: 1.5,
       strokeStyle: 'dotted',

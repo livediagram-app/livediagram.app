@@ -2,12 +2,18 @@
 // connected boxes, at least half of all boxes (LN11). An unlabelled shape is decoration (a key's sample, the card
 // behind a block of text), never a node left out.
 
-import type { ElementId } from '@livediagram/document';
+import type { BoxedElement, ElementId } from '@livediagram/document';
 import { createRingTest } from '@liveworkspace/diagram-lint/ring';
 import { LINT_GRAPH_MIN_CONNECTED, LINT_GRAPH_MIN_SHARE } from '../constants';
 import { refOf } from '../context';
 import { fixes } from '../fixes';
 import type { Check } from './types';
+
+// A template's own furniture (its scaffold layer: stage headings, lane chips) and a key are never nodes left out.
+const SCAFFOLD_LAYER = 'layer:template:scaffold';
+const isFurniture = (box: BoxedElement) =>
+  Reflect.get(box, 'layerId') === SCAFFOLD_LAYER ||
+  (box.type === 'shape' && box.shape === 'diagram-key');
 
 export const nodeIsolated: Check = (ctx) => {
   const connected = new Set<ElementId>(ctx.connecting.flatMap((d) => [d.from!.id, d.to!.id]));
@@ -25,7 +31,11 @@ export const nodeIsolated: Check = (ctx) => {
   const ringed = createRingTest(ctx.boxes.filter((b) => connected.has(b.id)));
   return ctx.boxes
     .filter(
-      (box) => box.type === 'shape' && !touched.has(box.id) && (box.label ?? '').trim() !== '',
+      (box) =>
+        box.type === 'shape' &&
+        !touched.has(box.id) &&
+        (box.label ?? '').trim() !== '' &&
+        !isFurniture(box),
     )
     .filter((box) => !ringed(box))
     .map((box) => {
