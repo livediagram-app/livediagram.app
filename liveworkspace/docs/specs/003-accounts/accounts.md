@@ -60,7 +60,16 @@ go over.
 An invitation is a member row with the invited address, `invited` until answered. Accepting it
 takes a signed-in account whose **verified** address is the one invited (signing in by code, or
 with Google, verifies it). The invitation email links to the Explorer's Invites (`/explorer/invites`),
-where it waits with the team's name, organisation and member count, beside **Accept** and **Decline**. Accepting or declining tells the team's admins by
+where it waits with the team's name, organisation and member count, beside **Accept** and **Decline**.
+Opened signed out (the usual case for someone new), Invites never says there are none: it says the
+invitations wait for whoever signs in with the invited address and offers **Sign In** and **Create
+Account**, both coming back to Invites; it shows nothing of the invitation itself. The email's link
+carries the invitation's own token (`/explorer/invites?invite=<token>`, the Decline link's), never the
+address: signed out, the page reads the invited address with it (`GET
+/api/account/invitations/decline/<token>`, which says `email` only while the invitation waits),
+keeps it in the tab's `sessionStorage`, takes the token out of the address bar, and the sign-in and
+sign-up pages fill it into their email field. So the address rides in no URL, no `Referer` and no
+log, and only the token's holder, who has the email, ever reads it. Accepting or declining tells the team's admins by
 email, once per answer and never the person who answered (invited as an admin, they are one by then), unless an admin has turned that off (the `notifyInviteResponse` setting, `false`, in the
 `all` scope; [Settings](#settings)). That email links to the account's settings on liveworkspace.app,
 where it is turned off, and sends it as `List-Unsubscribe`.
@@ -460,6 +469,16 @@ The editors' accounts bridge, the Explorer on an app's address and the marketing
 call it after their first token answer, and never later, so a session that ends under an open page
 never reloads it; the marketing pages still leave a visitor who started using the page alone. A guest,
 whose hint was never `1`, never bounces this way.
+
+A page that has gone on a bounce, this way or the boot script's, is leaving, and settles nothing: the
+script marks it (`silentSignInLeaving`), `retrySilentSignIn` answers true, and the editors' accounts bridge
+and the Explorer on an app's address then never settle as a guest, and the guest hand-off
+(`@liveworkspace/index-client`) starts no navigation of its own. Before, the page settled as a guest the
+moment the answer came, its guest hand-off's navigation replaced the bounce's before the accounts site was
+asked, and someone who had just signed in to liveworkspace opened the app signed out, and stayed so on
+reload (the tab's mark was spent). A refresh token that the accounts site refuses because its session
+ended (a sign-out elsewhere) is no sign-out of this app alone: it clears the hint and the refresh cookie,
+never sets the signed-out mark, so the bounce that follows asks the accounts site.
 
 **An answer that never came.** Only the app's API says a page is signed out: a `401` (or an ok answer)
 with `signedIn: false`. A token request that fails, takes over 10 s, or answers anything else (a `5xx`,

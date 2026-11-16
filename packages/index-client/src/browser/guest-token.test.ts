@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { guestRenewalCookie } from '@liveworkspace/auth-client/guest-renewal';
+import { SILENT_LEAVING_GLOBAL } from '@liveworkspace/auth-client/silent';
 import { guestTokenFor } from '../testing';
 import {
   createGuestTokens,
@@ -92,6 +93,26 @@ describe('the handoff', () => {
     expect(w.win.localStorage.getItem(KEY)).toBe(token);
     expect(t.readGuestToken()?.id).toBe('guest_new');
     expect(onNewGuest).toHaveBeenCalledOnce();
+  });
+
+  // Work Tracker 1007: a page that settled as a guest while its silent sign-in bounce was out sent the browser here
+  // instead, cutting the bounce short, and someone signed in to liveworkspace came back a guest.
+  it('starts none while the page is leaving on a silent sign-in bounce, and waits as if it had', async () => {
+    vi.stubGlobal(SILENT_LEAVING_GLOBAL, true);
+    const settled = vi.fn();
+    void tokens().startGuestHandoff().then(settled);
+    vi.runAllTimers();
+    await Promise.resolve();
+    expect(w.replace).not.toHaveBeenCalled();
+    expect(settled).not.toHaveBeenCalled();
+    expect(w.win.sessionStorage.getItem('app:guest-handoff')).toBeNull();
+  });
+
+  it('goes no further when a bounce goes out between the start and the next task', () => {
+    void tokens().startGuestHandoff();
+    vi.stubGlobal(SILENT_LEAVING_GLOBAL, true);
+    vi.runAllTimers();
+    expect(w.replace).not.toHaveBeenCalled();
   });
 
   it("keeps nothing for a stranger's state, and starts no other handoff for a while", () => {

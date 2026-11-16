@@ -129,6 +129,7 @@ function ExplorerInner({
   accounts,
   signedIn,
   signInHref,
+  signUpHref,
   signInBanner,
   prefetchThumbnail,
   onViewToggled,
@@ -208,6 +209,7 @@ function ExplorerInner({
         accounts={accounts}
         signedIn={signedIn}
         signInHref={signInHref}
+        signUpHref={signUpHref}
         prefetchThumbnail={prefetchThumbnail}
         onViewToggled={onViewToggled}
       >

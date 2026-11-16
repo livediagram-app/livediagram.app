@@ -190,7 +190,9 @@ export function appAccountAnswer(now = Date.now()): Promise<AppAccountAnswer> {
     // never do; the retry itself is once per page.
     if (!answered) {
       answered = true;
-      retrySilentSignIn();
+      // Gone on the bounce: the page is leaving, so nothing settles (no guest hand-off cuts it short, Work Tracker
+      // 1007).
+      if (retrySilentSignIn()) return new Promise<never>(() => {});
     }
     return asked;
   });
