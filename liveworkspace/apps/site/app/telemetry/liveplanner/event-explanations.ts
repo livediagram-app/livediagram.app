@@ -796,6 +796,12 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Plan|Shared|CalendarFeedGoogle': 'Someone handed their new calendar link to Google Calendar.',
   'Plan|Shared|CalendarFeedApple': 'Someone handed their new calendar link to Apple Calendar.',
   'Plan|Ended|CalendarFeed': 'Someone turned off their calendar link.',
+  'UI|Opened|Roadmap': 'Someone opened Publish as Roadmap from the tab menu.',
+  'Plan|Created|Roadmap':
+    'Someone published a board as a public roadmap: a page of its chosen columns, card types and fields.',
+  'Plan|Changed|Roadmap': "Someone changed a published roadmap's settings, keeping its link.",
+  'Plan|Copied|Roadmap': "Someone copied a published roadmap's link.",
+  'Plan|Ended|Roadmap': 'Someone unpublished a roadmap: its link stopped at once.',
   'UI|Opened|MyWorkCalendarFeed': "Someone opened Subscribe to Calendar from the Inbox's header.",
   'Plan|Created|MyWorkCalendarFeed':
     'Someone made a private calendar link to the cards assigned to them across their plans.',
