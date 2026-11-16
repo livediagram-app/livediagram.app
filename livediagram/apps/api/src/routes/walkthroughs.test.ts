@@ -72,7 +72,7 @@ async function record(opts: Opts = {}) {
     }),
   });
   expect(started.status).toBe(201);
-  const { walkthrough } = (await started.json()) as { walkthrough: { id: string } };
+  const { walkthrough } = await started.json<{ walkthrough: { id: string } }>();
   const put = await call('PUT', `/api/walkthroughs/${walkthrough.id}/media?d=doc`, opts, {
     headers: { 'Content-Type': 'audio/webm', 'Content-Length': String(WEBM.byteLength) },
     body: WEBM,
@@ -86,13 +86,13 @@ describe('an Editor', () => {
     const empty = await call('GET', '/api/walkthroughs?d=doc');
     expect(await empty.json()).toEqual({ walkthroughs: [], canRecord: true });
     const id = await record();
-    const listed = (await (await call('GET', '/api/walkthroughs?d=doc')).json()) as {
-      walkthroughs: { id: string; mine: boolean; canDelete: boolean; title: string }[];
-    };
+    const listed = await (
+      await call('GET', '/api/walkthroughs?d=doc')
+    ).json<{ walkthroughs: { id: string; mine: boolean; canDelete: boolean; title: string }[] }>();
     expect(listed.walkthroughs).toMatchObject([{ id, mine: true, canDelete: true, title: 'Tour' }]);
-    const read = (await (await call('GET', `/api/walkthroughs/${id}?d=doc`)).json()) as {
-      events: typeof EVENTS;
-    };
+    const read = await (
+      await call('GET', `/api/walkthroughs/${id}?d=doc`)
+    ).json<{ events: typeof EVENTS }>();
     // The hidden element's press never reached storage.
     expect(read.events.events).toEqual([{ t: 10, k: 'point', id: 'e1' }]);
     const media = await call('GET', `/api/walkthroughs/${id}/media?d=doc`);
@@ -110,12 +110,9 @@ describe('a Viewer', () => {
   it('plays, but neither records nor deletes another’s', async () => {
     const id = await record();
     resolveDocumentGrant.mockResolvedValue(VIEW);
-    const listed = (await (
+    const listed = await (
       await call('GET', '/api/walkthroughs?d=doc', { owner: 'user_bo' })
-    ).json()) as {
-      walkthroughs: { mine: boolean; canDelete: boolean }[];
-      canRecord: boolean;
-    };
+    ).json<{ walkthroughs: { mine: boolean; canDelete: boolean }[]; canRecord: boolean }>();
     expect(listed).toMatchObject({
       canRecord: false,
       walkthroughs: [{ mine: false, canDelete: false }],
