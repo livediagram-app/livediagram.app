@@ -13,6 +13,7 @@ import type { CallsCaller } from '@/lib/api/calls';
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { callSelf, resetCallSelf, setCallActions, setCallSelf, setCallsMode } from './calls-store';
+import { watchCallMediaSession } from './call-media-session';
 import { canCapture, LocalPreview, type PreviewCapture } from './local-preview';
 import { LocalMic } from './local-mic';
 import type { ViewRect } from './bubbles';
@@ -270,7 +271,10 @@ export function useProximityCall(deps: ProximityCallDeps): void {
       raiseHand: () => callRef.current?.raiseHand(),
       lowerHand: () => callRef.current?.lowerHand(),
     });
+    // The browser's own call controls run these same actions while a call is live (proximity-audio.md "Outside the tab").
+    const stopMediaSession = watchCallMediaSession();
     return () => {
+      stopMediaSession();
       joinRef.current = null;
       stop();
       preview.stopAll();

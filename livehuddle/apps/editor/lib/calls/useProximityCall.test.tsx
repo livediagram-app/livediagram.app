@@ -172,6 +172,34 @@ describe('useProximityCall', () => {
       expect(call.stop).toHaveBeenCalled();
     });
 
+    // proximity-audio.md "Outside the tab" (Work Tracker 992).
+    it('gives the browser its call controls while live, the dock’s own actions, and clears them on leaving', async () => {
+      const handlers = new Map<string, (() => void) | null>();
+      Object.defineProperty(navigator, 'mediaSession', {
+        configurable: true,
+        value: {
+          setActionHandler: (action: string, h: (() => void) | null) => handlers.set(action, h),
+        },
+      });
+      try {
+        const hook = mount();
+        await waitFor(() => expect(calls.made).toHaveLength(1));
+        const call = calls.made[0]!;
+        expect(handlers.size).toBe(0);
+        act(() => setCallSelf({ phase: 'live' }));
+        act(() => handlers.get('togglemicrophone')!());
+        expect(call.toggleMute).toHaveBeenCalledTimes(1);
+        await act(async () => handlers.get('togglecamera')!());
+        expect(call.toggleCamera).toHaveBeenCalledTimes(1);
+        hook.rerender({ ...base, inMode: false });
+        expect(handlers.get('togglemicrophone')).toBeNull();
+        expect(handlers.get('togglecamera')).toBeNull();
+        hook.unmount();
+      } finally {
+        Reflect.deleteProperty(navigator, 'mediaSession');
+      }
+    });
+
     it('waits for the capabilities, and never joins with calls off', async () => {
       let answer: (v: unknown) => void = () => {};
       caps.apiGetCapabilities.mockReturnValue(
