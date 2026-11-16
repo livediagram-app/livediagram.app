@@ -22,6 +22,8 @@ describe('verifiedSessionOf', () => {
         'X-Verified-Grant-Exp': '1700000000',
         'X-Verified-Item-Owner': 'o',
         'X-Verified-Item-Team': '',
+        'X-Verified-View-Only': '1',
+        'X-Verified-Api-Token': '9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d',
       }),
     );
     expect(v).toEqual({
@@ -39,7 +41,17 @@ describe('verifiedSessionOf', () => {
       documentId: 'd',
       grantExp: 1_700_000_000_000,
       head: { owner: 'o', team: null },
+      viewOnly: true,
+      apiToken: '9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d',
     });
+    // The attachment keeps both, the token clamped; a person's socket keeps neither.
+    const kept = newSessionAttachment({ ...v, apiToken: 'x'.repeat(500) }, 'p1');
+    expect(kept.viewOnly).toBe(true);
+    expect(kept.apiToken).toHaveLength(64);
+    const person = verifiedSessionOf(upgrade({ 'X-Verified-View-Only': '0' }));
+    expect(person).toMatchObject({ viewOnly: false, apiToken: null });
+    expect('viewOnly' in newSessionAttachment(person, 'p2')).toBe(false);
+    expect('apiToken' in newSessionAttachment(person, 'p2')).toBe(false);
   });
 
   it('ignores a role it does not know', () => {

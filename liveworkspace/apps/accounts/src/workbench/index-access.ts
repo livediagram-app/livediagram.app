@@ -11,6 +11,7 @@ import {
 } from '@liveworkspace/index-client';
 import type { Env } from '../env.ts';
 import type { WorkbenchLevel } from './store.ts';
+import type { RoomsToClose } from './store-types.ts';
 
 export type ItemAccess =
   { ok: true; level: WorkbenchLevel } | { ok: false; status: 404 | 410 | 503; error: string };
@@ -74,11 +75,12 @@ export async function ownerReachesFolder(
   }
 }
 
-// Closes the rooms a pairing's sessions had open, through the index, which holds each app's key
-// (POST /internal/workbench-close). Best effort: a session whose rows are gone already fails every check.
+// Closes the rooms a pairing's sessions had open, or a revoked token's room tickets opened, through the index, which
+// holds each app's key (POST /internal/workbench-close, naming the pairing or the token). Best effort: a session whose
+// rows are gone already fails every check, and a token's lapse with their ticket.
 export async function closeRooms(
   env: Env,
-  rooms: readonly { app: string; pairingId: string; itemIds: string[] }[],
+  rooms: readonly RoomsToClose[],
 ): Promise<{ closed: number; unreached: number }> {
   const key = env.INDEX_MERGE_KEY?.trim();
   let closed = 0;
@@ -106,7 +108,7 @@ export async function closeRooms(
       unreached += room.itemIds.length;
       console.warn('[workbench] room close failed', {
         app: room.app,
-        pairingId: room.pairingId,
+        ...('pairingId' in room ? { pairingId: room.pairingId } : { tokenId: room.tokenId }),
         error: String(err),
       });
     }

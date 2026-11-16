@@ -3,19 +3,21 @@
 //
 //   POST workbench/session {session}                      a `lvw_` session as this app may use it, or 404 {reason}
 //   POST workbench/rooms   {ownerId, sessionId, itemId}    a workspace session joined an item's room
+//   POST workbench/token-rooms {ownerId, tokenId, itemId, until}  an API token's room ticket opened an item's room
 //   POST allowance         {personId, kind, max, windowMs, count}  take from a sender's allowance; answers {taken}
 
 import { appOfSite, type SiteId } from '@liveworkspace/sites';
 import { GUEST_ID, USER_ID } from '../ids.ts';
 import type { Env } from '../env.ts';
 import { teamsClaim } from '../teams.ts';
-import { sessionTokenFacts } from './revoke.ts';
+import { liveTokenFacts, sessionTokenFacts } from './revoke.ts';
 import {
   WORKBENCH_QUOTA_MAX,
   WORKBENCH_SESSION_PATTERN,
   workbenchStoreOf,
   workbenchStoreOfSecret,
 } from './store.ts';
+import { WORKBENCH_TOKEN_ROOM_AHEAD_MAX_MS } from './store-types.ts';
 
 const json = (body: unknown, status = 200) =>
   Response.json(body, { status, headers: { 'cache-control': 'no-store' } });
@@ -47,6 +49,7 @@ export async function handleWorkbenchInternal(
   if (
     route !== 'POST workbench/session' &&
     route !== 'POST workbench/rooms' &&
+    route !== 'POST workbench/token-rooms' &&
     route !== 'POST allowance'
   )
     return null;
@@ -93,6 +96,31 @@ export async function handleWorkbenchInternal(
     if (!isId(sessionId) || !isId(itemId)) return error(400, 'invalid_value');
     const noted = await workbenchStoreOf(ns, ownerId).noteSessionRoom(sessionId, app, itemId);
     return noted ? new Response(null, { status: 204 }) : error(404, 'not_found');
+  }
+
+  // An API token's room ticket opened an item's room of this app (liveworkspace/docs/specs/011-workbench/workbench.md
+  // "A token's rooms"): noted in the token owner's store until the ticket lapses, so revoking the token closes it. Only
+  // a live token of that owner is noted; anything else is a 404 and nothing is kept.
+  if (route === 'POST workbench/token-rooms') {
+    const { ownerId, tokenId, itemId, until } = body;
+    if (typeof ownerId !== 'string' || !USER_ID.test(ownerId)) return error(400, 'invalid_owner');
+    if (!isId(tokenId) || !isId(itemId)) return error(400, 'invalid_value');
+    if (
+      typeof until !== 'number' ||
+      !Number.isSafeInteger(until) ||
+      until <= now ||
+      until > now + WORKBENCH_TOKEN_ROOM_AHEAD_MAX_MS
+    )
+      return error(400, 'invalid_until');
+    if (!(await liveTokenFacts(env.AUTH_DB, tokenId, ownerId, now))) return error(404, 'not_found');
+    const kept = await workbenchStoreOf(ns, ownerId).noteTokenRoom({
+      personId: ownerId,
+      tokenId,
+      app,
+      itemId,
+      until,
+    });
+    return kept ? new Response(null, { status: 204 }) : error(409, 'token_rooms_full');
   }
 
   // The sender's allowance, kept per app in their store: `<app>:<kind>`.

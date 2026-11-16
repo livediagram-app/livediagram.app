@@ -21,3 +21,15 @@ export const ROOM_FULL_RETRY_MS = 60_000;
 export function roomIsFull(connections: number): boolean {
   return connections >= ROOM_MAX_CONNECTIONS;
 }
+
+// How many view-only sockets one room holds beside its people (livediagram's docs/specs/015-api/api.md "A room holds at
+// most 100 connections"): an MCP server's live view watches through a view-only ticket and never says hello, so it
+// takes no seat a person could have, but every op still goes to it. Its own cap bounds that fan-out: at most
+// ROOM_MAX_CONNECTIONS + ROOM_MAX_VIEW_ONLY sends per op. A view past it is turned away with ROOM_FULL_CLOSE, and the
+// view falls back to its snapshot.
+export const ROOM_MAX_VIEW_ONLY = 50;
+
+// Whether a room already holding `views` view-only sockets must turn the next view away.
+export function viewOnlyRoomIsFull(views: number): boolean {
+  return views >= ROOM_MAX_VIEW_ONLY;
+}

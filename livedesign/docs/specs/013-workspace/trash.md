@@ -154,6 +154,16 @@ design keeps its own copy, and the copies stay in step. Trashing a design does
 not touch its tabs, which stay in step while it waits in the Trash; purging it
 removes its copies and tells the other designs it left, so theirs carry on.
 
+### Open editors
+
+A trash made anywhere (the editor, the Explorer, the REST API, MCP) is the index's: it tells the app where the item
+now stands (`POST /api/internal/items/:id/standing`, one-explorer-contracts.md "Where an item stands") off the trash's
+own path. On `trashed: true` the api posts `{op: {kind: 'design-trashed'}}` to the design's room (`tellTrashed`,
+`@liveworkspace/api-kit/room-access-client`), which sends it from `system` to every session and closes each socket,
+as for any `design-trashed` op. Open editors and MCP views show the trashed state at once. The notice is fire-and-forget (a
+room that cannot be reached is logged, and its sessions end at their next grant renewal), and the room keeps nothing
+of it, so a restore reopens as before.
+
 ## The purge
 
 liveworkspace's index purges every design that has been in the Trash for 30

@@ -19,6 +19,42 @@ describe('closeWorkbenchSessions', () => {
     );
   });
 
+  it("asks the item's room to close a revoked token's sockets", async () => {
+    const roomFetch = vi.fn(async () => new Response(null, { status: 204 }));
+    const { closeTokenSessions } = createRoomAccessClient(roomFetch);
+    expect(await closeTokenSessions({ env: 1 }, 'd1', 'tok1')).toBe(true);
+    expect(roomFetch).toHaveBeenCalledWith(
+      { env: 1 },
+      'd1',
+      '/close-sessions',
+      expect.objectContaining({ body: JSON.stringify({ match: 'token', tokenId: 'tok1' }) }),
+      ROOM_ACCESS_CLOSE_TIMEOUT_MS,
+    );
+  });
+
+  // trash.md "Open editors": the product's trashed op, through the room's own /broadcast.
+  it("tells the item's room it was trashed, and answers false when it can't", async () => {
+    const roomFetch = vi.fn(async () => new Response(null, { status: 204 }));
+    const { tellTrashed } = createRoomAccessClient(roomFetch);
+    expect(await tellTrashed({ env: 1 }, 'd1', 'design-trashed')).toBe(true);
+    expect(roomFetch).toHaveBeenCalledWith(
+      { env: 1 },
+      'd1',
+      '/broadcast',
+      expect.objectContaining({ body: JSON.stringify({ op: { kind: 'design-trashed' } }) }),
+      ROOM_ACCESS_CLOSE_TIMEOUT_MS,
+    );
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const down = createRoomAccessClient(async () => {
+      throw new Error('down');
+    });
+    expect(await down.tellTrashed({ env: 1 }, 'd1', 'document-trashed')).toBe(false);
+    const refused = createRoomAccessClient(async () => new Response(null, { status: 500 }));
+    expect(await refused.tellTrashed({ env: 1 }, 'd1', 'document-trashed')).toBe(false);
+    expect(warn).toHaveBeenCalledTimes(2);
+    warn.mockRestore();
+  });
+
   // Best-effort: the pairing is already ended, and every later join meets it.
   it('logs and answers false when the room refuses or cannot be reached', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});

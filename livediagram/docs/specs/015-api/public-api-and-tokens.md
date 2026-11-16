@@ -298,7 +298,7 @@ same way the rest of the signed-in surface is. A token can only ever be minted
 by, and act as, a signed-in account. Creation returns the secret **once**
 (shown in the manager to copy, never retrievable again); the row then shows only
 the public id + metadata. Revoke is immediate (the lookup filters
-`revoked = 0`). The category states the fixed 6-month expiry ([§3.2](#32-storage))
+`revoked = 0`); see [Revoking a token](#revoking-a-token) for what it closes. The category states the fixed 6-month expiry ([§3.2](#32-storage))
 so rotation isn't a surprise.
 
 **Per-account cap: 10.** A `POST /api/tokens` is refused (`409`) once the owner
@@ -315,6 +315,23 @@ token_limit_reached`.
 user's data, tokens included: the tokens are the liveworkspace account's, and closing the account there deletes
 them, so no credential outlives the account. livediagram keeps no copy; their workbench pairings and sessions, which hang
 off their tokens, are liveworkspace's and close with the account there.
+
+### Revoking a token
+
+A revoke ends every live thing the token holds, at once, not when it next calls:
+
+- Its REST and MCP calls fail on the next request (the lookup above).
+- Its workbench pairings and sessions end, and their rooms close (liveworkspace's workbench.md "Ending access").
+- Its own room tickets' sockets close. A room ticket minted through a token (`POST
+/api/documents/:id/room-ticket`, an MCP server's live view or a CLI) is sealed with the token's id beside its grant
+  (`rt2~`, `@liveworkspace/index-app/room-ticket`), and the upgrade forwards it to the room as
+  `X-Verified-Api-Token`, kept on the socket. Off the mint's path the api tells liveworkspace the room it opened
+  (`POST /api/account/internal/workbench/token-rooms {ownerId, tokenId, itemId, until}`, `until` being the ticket's
+  grant lapse), and accounts keeps that note in the token owner's workbench store until the lapse, at most 500 per
+  token. On revoke accounts closes each noted room through the index (`/internal/workbench-close {app, tokenId,
+itemIds}`), the index calls the app's door with `{tokenId}`, and the room closes the sockets carrying that token
+  (`{match: 'token'}`, `4005 access-changed`). No other token's sockets and no person's are touched, and no canvas
+  that token never opened is asked: the fan-out is the noted rooms only.
 
 ### 3.6a A token's view of itself
 

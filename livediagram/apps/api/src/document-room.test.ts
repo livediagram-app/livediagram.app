@@ -1,6 +1,12 @@
 import { MAX_TAB_ID_LEN } from './document-room-rules';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { DOCUMENT_FORMAT, ROOM_FULL_CLOSE, ROOM_MAX_CONNECTIONS } from '@livediagram/api-schema';
+import {
+  DOCUMENT_FORMAT,
+  ROOM_FULL_CLOSE,
+  ROOM_MAX_CONNECTIONS,
+  ROOM_MAX_VIEW_ONLY,
+} from '@livediagram/api-schema';
+import { VIEW_ONLY_TAG } from './document-room/room-sockets';
 import type { ParticipantPresence, RoomIncoming } from '@livediagram/api-schema';
 import {
   MUTATION_OP_KINDS,
@@ -74,8 +80,10 @@ const receivedOf = <K extends RoomIncoming['kind']>(ws: FakeSocket, kind: K) =>
 // closed sockets — that pruning is the runtime's job, not the room's).
 type FakeState = {
   sockets: WebSocket[];
-  acceptWebSocket: (ws: WebSocket) => void;
-  getWebSockets: () => WebSocket[];
+  // Each socket's hibernation tags, as acceptWebSocket was given them.
+  tags: Map<WebSocket, string[]>;
+  acceptWebSocket: (ws: WebSocket, tags?: string[]) => void;
+  getWebSockets: (tag?: string) => WebSocket[];
   // Backs the persisted epoch/seq (docs/specs/012-collaboration/resync-without-reload.md). Shared across DocumentRoom
   // instances built from the same FakeState, which is exactly what a
   // hibernation wake looks like: same storage, fresh instance.
@@ -120,10 +128,15 @@ function makeSocket(): FakeSocket {
 function makeState(store: Map<string, unknown> = new Map()): FakeState {
   const state: FakeState = {
     sockets: [],
-    acceptWebSocket: (ws) => {
+    tags: new Map(),
+    acceptWebSocket: (ws, tags = []) => {
       state.sockets.push(ws);
+      state.tags.set(ws, tags);
     },
-    getWebSockets: () => [...state.sockets],
+    getWebSockets: (tag) =>
+      tag === undefined
+        ? [...state.sockets]
+        : state.sockets.filter((ws) => state.tags.get(ws)?.includes(tag)),
     store,
     alarms: [],
     storage: {
@@ -171,6 +184,33 @@ function newRoom(): { room: DocumentRoom; state: FakeState } {
     return fetch(request);
   };
   return { room, state };
+}
+
+// A view-only ticket's socket (an MCP view), opened through the API token `apiToken` (or none), as room-grants.ts
+// accepts it.
+function acceptWatcher(
+  room: DocumentRoom,
+  ws: WebSocket,
+  viewOnly: boolean,
+  apiToken: string | null,
+): void {
+  room.acceptSession(
+    ws,
+    'view',
+    false,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    viewOnly,
+    apiToken,
+  );
 }
 
 function presence(id: string, role?: 'edit' | 'view'): ParticipantPresence {
@@ -2399,6 +2439,40 @@ describe('DocumentRoom tab-scoped sessions', () => {
 
   // docs/specs/015-api/api.md "Access changes end the sessions they affect": the api's internal
   // /close-sessions ends only the matched sessions, with 4005, and broadcasts nothing.
+  // docs/specs/015-api/public-api-and-tokens.md "Revoking a token": the sockets its room tickets opened, only.
+  it("closes a revoked token's sockets, and leaves another token's and a person's open", async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const TOKEN = '9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d';
+    const OTHER = '00000000-0000-4000-8000-000000000000';
+    const { room } = newRoom();
+    const sockets = [makeSocket(), makeSocket(), makeSocket()].map((ws) => {
+      const closable = ws as FakeSocket & { closed?: [number, string] };
+      (closable as unknown as { close: (c: number, r: string) => void }).close = (c, r) => {
+        closable.closed = [c, r];
+      };
+      return closable;
+    });
+    const [revoked, other, person] = sockets as [
+      (typeof sockets)[0],
+      (typeof sockets)[0],
+      (typeof sockets)[0],
+    ];
+    acceptWatcher(room, asWs(revoked), true, TOKEN);
+    acceptWatcher(room, asWs(other), true, OTHER);
+    room.acceptSession(asWs(person), 'edit');
+    const res = await room.fetch(
+      new Request('https://room/close-sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ match: 'token', tokenId: TOKEN }),
+      }),
+    );
+    expect(res.status).toBe(204);
+    expect(revoked.closed).toEqual([4005, 'access-changed']);
+    expect(other.closed).toBeUndefined();
+    expect(person.closed).toBeUndefined();
+  });
+
   describe('POST /close-sessions', () => {
     const TAG = 'a'.repeat(64);
     const closeSessions = (room: DocumentRoom, body: unknown) =>
@@ -2805,6 +2879,52 @@ describe('DocumentRoom capacity', () => {
     expect(state.getWebSockets()).toHaveLength(ROOM_MAX_CONNECTIONS);
   });
 
+  // docs/specs/015-api/api.md "A room holds at most 100 connections": a view-only ticket's socket (an MCP view)
+  // takes no person's seat, and the views have a cap of their own.
+  const seedView = (state: FakeState) => {
+    const ws = makeSocket();
+    state.acceptWebSocket(asWs(ws), [VIEW_ONLY_TAG]);
+  };
+
+  it('still admits a view to a room full of people', () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const { room, state } = newRoom();
+    for (let i = 0; i < ROOM_MAX_CONNECTIONS; i++) seedSession(state, makeSocket(), null);
+    expect(room.turnAwayIfFull(upgrade().ws)).toBe(true);
+    const view = upgrade();
+    expect(room.turnAwayIfFull(view.ws, true)).toBe(false);
+    expect(view.server.close).not.toHaveBeenCalled();
+  });
+
+  it('never lets views fill the room, and turns away the view past their own cap', () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const { room, state } = newRoom();
+    for (let i = 0; i < ROOM_MAX_VIEW_ONLY - 1; i++) seedView(state);
+    // A person still joins beside the views.
+    expect(room.turnAwayIfFull(upgrade().ws)).toBe(false);
+    expect(room.turnAwayIfFull(upgrade().ws, true)).toBe(false);
+    seedView(state);
+    const over = upgrade();
+    expect(room.turnAwayIfFull(over.ws, true)).toBe(true);
+    expect(over.server.close).toHaveBeenCalledWith(ROOM_FULL_CLOSE, 'room-full');
+    // People fill their 100 seats with 50 views beside them.
+    for (let i = 0; i < ROOM_MAX_CONNECTIONS - 1; i++) seedSession(state, makeSocket(), null);
+    expect(room.turnAwayIfFull(upgrade().ws)).toBe(false);
+    seedSession(state, makeSocket(), null);
+    expect(room.turnAwayIfFull(upgrade().ws)).toBe(true);
+  });
+
+  it('marks a view-only socket so its room counts it apart', () => {
+    const { room, state } = newRoom();
+    const view = makeSocket();
+    const person = makeSocket();
+    acceptWatcher(room, asWs(view), true, null);
+    room.acceptSession(asWs(person), 'edit');
+    expect(state.getWebSockets(VIEW_ONLY_TAG)).toEqual([asWs(view)]);
+    expect(view.attachment).toMatchObject({ viewOnly: true });
+    expect(person.attachment).not.toHaveProperty('viewOnly');
+  });
+
   it('counts its sockets in well under a millisecond at the cap (it runs on every upgrade)', () => {
     vi.spyOn(console, 'warn').mockImplementation(() => {});
     const { room, state } = newRoom();
@@ -2813,6 +2933,47 @@ describe('DocumentRoom capacity', () => {
     const start = cpuNowMs();
     for (let i = 0; i < n; i++) room.turnAwayIfFull(upgrade().ws);
     expect((cpuNowMs() - start) / n).toBeLessThan(cpuBudgetMs(1));
+  });
+});
+
+// docs/specs/013-workspace/trash.md "Open editors": a canvas moved to the Trash anywhere (the api, MCP delete_document,
+// the Explorer) tells its room through the index's standing push, and the room ends every session at once.
+describe('DocumentRoom trashed', () => {
+  const closable = () => {
+    const ws = makeSocket() as FakeSocket & { closed?: [number, string] };
+    (ws as unknown as { close: (code: number, reason: string) => void }).close = (code, reason) => {
+      ws.closed = [code, reason];
+    };
+    return ws;
+  };
+
+  it('sends document-trashed to every session, then closes each with 4004', async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const { room, state } = newRoom();
+    const editor = closable();
+    const view = closable();
+    seedSession(state, editor, presence('p-a', 'edit'));
+    seedSession(state, view, null);
+
+    expect(await room.trashed('doc-1')).toBe(2);
+
+    for (const ws of [editor, view]) {
+      expect(received(ws).at(-1)).toMatchObject({
+        kind: 'op',
+        from: 'system',
+        op: { kind: 'document-trashed' },
+      });
+      expect(ws.closed).toEqual([4004, 'document-trashed']);
+    }
+  });
+
+  it('keeps nothing, so a restored canvas opens its room as before', async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const { room, state } = newRoom();
+    expect(await room.trashed('doc-1')).toBe(0);
+    const ws = makeSocket();
+    room.acceptSession(asWs(ws), 'edit');
+    expect(state.getWebSockets()).toEqual([asWs(ws)]);
   });
 });
 

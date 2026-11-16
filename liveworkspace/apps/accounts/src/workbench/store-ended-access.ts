@@ -5,6 +5,18 @@
 import type { Row } from './store-schema.ts';
 import { type RoomsToClose, sessionPrefixOf, type WorkbenchEndReason } from './store-types.ts';
 
+// A revoked token's own rooms (store.ts `noteTokenRoom`), by app: its room tickets' sockets close there.
+export function tokenRoomsToClose(tokenId: string, rows: Row[]): RoomsToClose[] {
+  const byApp = new Map<string, string[]>();
+  for (const row of rows) {
+    const app = row.app as string;
+    byApp.set(app, [...(byApp.get(app) ?? []), row.item_id as string]);
+  }
+  const rooms = [...byApp].map(([app, itemIds]) => ({ app, tokenId, itemIds }));
+  if (rooms.length > 0) console.info('[workbench] token rooms', { tokenId, rooms: rows.length });
+  return rooms;
+}
+
 export function roomsOfEndedAccess(
   pairings: Row[],
   sessions: Row[],

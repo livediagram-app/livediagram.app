@@ -12,7 +12,7 @@ describe('NotFound', () => {
     const onCreateNew = vi.fn();
     const onOpenExplorer = vi.fn();
     render(<NotFound noun="design" onCreateNew={onCreateNew} onOpenExplorer={onOpenExplorer} />);
-    expect(screen.getByRole('heading', { name: 'Design not found' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Design Not Found' })).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Open Explorer' }));
     expect(onOpenExplorer).toHaveBeenCalledOnce();
     fireEvent.click(screen.getByRole('button', { name: 'New Design' }));
@@ -21,7 +21,7 @@ describe('NotFound', () => {
 
   it('names the file in the word it is given', () => {
     render(<NotFound noun="plan" onCreateNew={() => {}} />);
-    expect(screen.getByRole('heading', { name: 'Plan not found' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Plan Not Found' })).toBeTruthy();
     expect(
       screen.getByText(
         'This plan doesn’t exist or isn’t yours. Open one from the Explorer or start fresh.',
@@ -32,7 +32,7 @@ describe('NotFound', () => {
 
   it('names a page, not a file, for an address with no file', () => {
     render(<NotFound noun="design" page onCreateNew={() => {}} onOpenExplorer={() => {}} />);
-    expect(screen.getByRole('heading', { name: 'Page not found' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Page Not Found' })).toBeTruthy();
     expect(
       screen.getByText(
         'There is no page at this address. Open a design from the Explorer or start fresh.',

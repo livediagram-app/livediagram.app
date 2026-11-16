@@ -25,7 +25,7 @@ import { deleteAccount } from '../db/account';
 import { mergeMediaOwner } from '../media';
 import { purgeDesignPreviews } from '../db/designs';
 import { designRoom } from '../design-client';
-import { closeWorkbenchSessions } from '../room-access-client';
+import { closeWorkbenchSessions, tellTrashed } from '../room-access-client';
 import { reportServerEvent } from '../server-telemetry';
 import { importDesignFileFor } from './internal-file';
 import { designFromTemplate } from './internal-template';
@@ -90,6 +90,12 @@ export function handleInternalItems(
       // connected tab at the end of the design's tab bar.
       connectedTab: (id, write) => designRoom(env, id).addConnectedTab(write),
       workbenchClose: (id, pairingId) => closeWorkbenchSessions(env, id, pairingId),
+      // Where the design stands after an archive, move, trash or restore (docs/specs/013-workspace/trash.md "Open
+      // editors"): trashed anywhere (the api, MCP, the Explorer), its room tells every editor and
+      // closes. Nothing is kept, so a restore reopens as before.
+      standing: async (id, standing) => {
+        if (standing.trashed) await tellTrashed(env, id, 'design-trashed');
+      },
       copy: async (from, to, tabId, copier, title) => {
         // The source as the copier may take it: anyone but the owner takes the comments as the tab read serves them;
         // through the design's Community post's link, without its comments or the people on its actions.

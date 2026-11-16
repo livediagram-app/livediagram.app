@@ -54,6 +54,18 @@ them), and anyone else, a share-link visitor included, as for a canvas that does
 still serves, for the Trash's own rows. Its room admits nobody: trashing closes its sockets (`document-trashed`), an
 upgrade with a trashed grant is refused 410, and a session renewing with one is closed as the trashing closes it.
 
+### Open editors
+
+A trash made anywhere (the editor, the Explorer, the REST API, MCP `delete_document`) is the index's: it marks the
+item and tells the app where the item now stands (`POST /api/internal/items/:id/standing {archived, trashed, at}`,
+one-explorer-contracts.md "Where an item stands") off the trash's own path, with its usual retries. On
+`trashed: true` the api tells the canvas's room (`DocumentRoom.trashed`), which sends `document-trashed` from
+`system` to every session and then closes each socket with `4004` (`DOCUMENT_TRASHED_CLOSE`), agents' presence
+cleared with them. An open editor shows the deleted card at once rather than on its next save, and an MCP view
+(`view_live`) shows "This document moved to the Trash." The notice is fire-and-forget: the trash never waits on the
+room, and a room that cannot be reached is logged; its sessions then end at their next grant renewal, which the
+trashed grant refuses. The room keeps nothing of it, so a restored canvas's room admits people as before.
+
 When the api answers a canvas as not found, the editor asks the index whether it is in the Trash
 (`isTrashedInIndex`, `@liveworkspace/workbench/lib/editor-arrival`, which `apps/editor/lib/document-trashed.ts` re-exports): the index's item outlives the trashing, so it can tell a
 trashed canvas from one that does not exist. A trashed one shows the deleted card in place of the canvas: Restore for

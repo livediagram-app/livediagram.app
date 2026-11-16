@@ -8,6 +8,7 @@
 //   POST   /api/internal/items/:id/notices    {type, ...}    what happened, for an email (index-client notices.ts,
 //                                                           approvals.ts)
 //   POST   /api/internal/items/:id/workbench-close {pairingId}  a workbench pairing's access ended: close its sessions
+//          (or {tokenId}: an API token was revoked: close the sockets its room tickets opened)
 //                                                            in the item's room (liveworkspace/docs/specs/011-workbench/workbench.md)
 //   POST   /api/internal/items/:id/standing {archived, trashed, at}  where the item stands at the index after an
 //                                                            archive, move out, trash or restore (standing.ts in
@@ -292,10 +293,20 @@ export async function handleInternalItems(
     rest.length === 2 &&
     rest[1] === 'workbench-close' &&
     request.method === 'POST' &&
-    handlers.workbenchClose
+    (handlers.workbenchClose || handlers.tokenClose)
   ) {
-    const pairingId = (await bodyOf(request))?.['pairingId'];
+    const body = await bodyOf(request);
+    // A revoked API token's sockets: the body names `tokenId` instead of a pairing.
+    if (body?.['tokenId'] !== undefined) {
+      const tokenId = body['tokenId'];
+      if (!validId(tokenId)) return badRequest('tokenId must be a token id');
+      if (!handlers.tokenClose) return notFound();
+      const reached = await handlers.tokenClose(id, tokenId).catch(() => false);
+      return reached ? json({ ok: true }) : json({ ok: false }, 503);
+    }
+    const pairingId = body?.['pairingId'];
     if (!validId(pairingId)) return badRequest('pairingId must be a pairing id');
+    if (!handlers.workbenchClose) return notFound();
     const reached = await handlers.workbenchClose(id, pairingId).catch(() => false);
     return reached ? json({ ok: true }) : json({ ok: false }, 503);
   }

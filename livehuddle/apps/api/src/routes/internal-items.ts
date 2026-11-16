@@ -25,6 +25,7 @@ import { countCommunityCopy } from '../community-service';
 import { deleteAccount, mergeGuest } from '../db/account';
 import { purgeDocumentPreviews } from '../db/documents';
 import { documentRoom } from '../document-client';
+import { tellTrashed } from '../room-access-client';
 import { forgetImageRefs } from '../document-room/document-outbox';
 import { notifyFirstShare } from '../email/notifications';
 import { personStore } from '../person-client';
@@ -62,6 +63,12 @@ export function handleInternalItems(
     communityKey: env.COMMUNITY_KEY,
     waitUntil,
     handlers: {
+      // Where the document stands after an archive, move, trash or restore (docs/specs/013-workspace/trash.md "Open
+      // editors"): trashed anywhere (the api, MCP delete_document, the Explorer), its room tells every editor and
+      // closes. Nothing is kept, so a restore reopens as before.
+      standing: async (id, standing) => {
+        if (standing.trashed) await tellTrashed(env, id, 'document-trashed');
+      },
       // Where Community posts' items stand, as the index reads them, for the Community's sweep.
       communityStates: (posts) => askIndexCommunityStates(indexAppClient(env), posts),
       purge: async (id) => {

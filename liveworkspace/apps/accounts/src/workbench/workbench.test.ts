@@ -9,6 +9,7 @@ import { addClient, addUser, testD1 } from '../test-d1.ts';
 import { mintApiToken } from '../tokens.ts';
 import { closeAccountWorkbench } from './revoke.ts';
 import { WORKBENCH_SESSION_GRACE_MS } from './store.ts';
+import { WORKBENCH_TOKEN_ROOM_GRACE_MS } from './store-types.ts';
 import { memoryWorkbench, type MemoryWorkbench } from './test-store.ts';
 
 const BASE = 'https://liveworkspace.app';
@@ -537,6 +538,55 @@ describe('ending access', () => {
     });
     expect(self.status).toBe(200);
     expect(await ns.entryOf('user_ada').core.listPairings(null)).toEqual([]);
+  });
+
+  // public-api-and-tokens.md "Revoking a token": the rooms a token's own room tickets opened (an MCP view) close too.
+  it("closes the rooms a revoked token's room tickets opened, and no other token's", async () => {
+    const a = await token();
+    const b = await token();
+    const note = (tokenId: string, itemId: string, basic = DIAGRAM, until = Date.now() + 600_000) =>
+      call('/internal/workbench/token-rooms', {
+        method: 'POST',
+        basic,
+        app: null,
+        body: { ownerId: 'user_ada', tokenId, itemId, until },
+      });
+    expect((await note(a.id, 'canvas1')).status).toBe(204);
+    expect((await note(a.id, 'canvas1')).status).toBe(204);
+    expect((await note(a.id, 'plan9', PLANNER)).status).toBe(204);
+    expect((await note(b.id, 'canvas2')).status).toBe(204);
+    // Only a live token of that owner, and an `until` within a ticket's life.
+    expect((await note('nope', 'canvas1')).status).toBe(404);
+    expect((await note(a.id, 'canvas1', DIAGRAM, Date.now() + 3_600_000)).status).toBe(400);
+    expect((await note(a.id, 'canvas1', DIAGRAM, Date.now() - 1)).status).toBe(400);
+
+    expect((await call(`/tokens/${a.id}`, { method: 'DELETE', app: null })).status).toBe(200);
+    await settle();
+    const closes = indexCalls
+      .filter((c) => c.url === '/api/index/internal/workbench-close')
+      .map((c) => c.body);
+    expect(closes).toEqual(
+      expect.arrayContaining([
+        { app: 'livediagram', tokenId: a.id, itemIds: ['canvas1'] },
+        { app: 'liveplanner', tokenId: a.id, itemIds: ['plan9'] },
+      ]),
+    );
+    expect(JSON.stringify(closes)).not.toContain(b.id);
+  });
+
+  it("keeps a token's room note only until its ticket lapses", async () => {
+    const t = await token();
+    const until = Date.now() + 600_000;
+    await call('/internal/workbench/token-rooms', {
+      method: 'POST',
+      basic: DIAGRAM,
+      app: null,
+      body: { ownerId: 'user_ada', tokenId: t.id, itemId: 'canvas1', until },
+    });
+    const { storage, core } = ns.entryOf('user_ada');
+    expect(storage.alarmAt).toBe(until + WORKBENCH_TOKEN_ROOM_GRACE_MS);
+    await core.alarm(storage.alarmAt!);
+    expect(storage.dropped).toBe(1);
   });
 
   it('drops a pairing whose token stopped working when the list is read', async () => {

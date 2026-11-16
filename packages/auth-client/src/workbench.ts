@@ -171,6 +171,43 @@ export function createWorkbenchRoomNoter(
   };
 }
 
+// Tells accounts an API token's room ticket opened an item's room until `until` (the ticket's grant lapse, epoch ms),
+// so revoking the token closes that room's sockets at once (each product's docs/specs/015-api/public-api-and-tokens.md
+// "Revoking a token"). Remembered per isolate by the latest `until` sent: a mint that moves it on is sent again (one
+// call per ticket, about one each ten minutes per open view), a repeat is not.
+export function createTokenRoomNoter(
+  credentials: ClientCredentials,
+  options: { maxEntries?: number; fetcher?: typeof fetch } = {},
+) {
+  const maxEntries = options.maxEntries ?? WORKBENCH_SESSION_CACHE_MAX;
+  const fetcher = options.fetcher ?? globalFetch;
+  const noted = new Map<string, number>();
+  return async function note(input: {
+    ownerId: string;
+    tokenId: string;
+    itemId: string;
+    until: number;
+  }): Promise<boolean> {
+    const key = `${input.tokenId} ${input.itemId}`;
+    if ((noted.get(key) ?? 0) >= input.until) return true;
+    const response = await call(
+      credentials,
+      '/workbench/token-rooms',
+      { method: 'POST', body: input },
+      fetcher,
+    );
+    if (!response.ok) return false;
+    noted.delete(key);
+    while (noted.size >= maxEntries) {
+      const oldest = noted.keys().next().value;
+      if (oldest === undefined) break;
+      noted.delete(oldest);
+    }
+    noted.set(key, input.until);
+    return true;
+  };
+}
+
 // Takes up to `count` uses of a sender's allowance (`kind`, at most `max` in any `windowMs`), kept per app in the
 // sender's own store at accounts; answers how many it took. Throws when accounts can't answer, so the caller sends
 // nothing (the allowance is what keeps a sender's emails from becoming spam).

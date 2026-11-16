@@ -59,14 +59,17 @@ export function createTabEntryEffects(
     // element-count transitions (and explicit requests), so it is called through an effect event.
     const fit = useEffectEvent(() => fitToScreen());
     useEffect(() => {
-      if (!hydrated || !activeId || typeof window === 'undefined') return;
+      // Only a tab that is really there: one whose content has loaded (fetched, seeded or made here). A load that
+      // ended on a status screen (not found, archived, deleted, an error) leaves the placeholder tab, whose random id
+      // would otherwise land on the address of an item that never opened.
+      if (!hydrated || !activeId || !tabLoaded || typeof window === 'undefined') return;
       const url = new URL(window.location.href);
       // An address that names no item (the new route's "Unknown addresses") has no tab to pin.
       if (!isEditorPath(url.pathname)) return;
       if (url.hash === `#t=${activeId}`) return;
       url.hash = `t=${activeId}`;
       window.history.replaceState(historyState(), '', url.toString());
-    }, [hydrated, activeId]);
+    }, [hydrated, activeId, tabLoaded]);
 
     const lastFittedTabRef = useRef<string | null>(null);
     // The warm-painted tab's fit and the body it fitted, until the catch-up has landed on it.

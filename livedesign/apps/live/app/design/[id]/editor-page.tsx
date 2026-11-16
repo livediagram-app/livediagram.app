@@ -152,7 +152,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
     return !appChrome ? (
       <EmbedShell frame={workspaceFrame}>{card}</EmbedShell>
     ) : (
-      <StatusShell title="Design deleted">{card}</StatusShell>
+      <StatusShell title="Design Deleted">{card}</StatusShell>
     );
   }
 
@@ -166,7 +166,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
     return !appChrome ? (
       <EmbedShell frame={workspaceFrame}>{card}</EmbedShell>
     ) : (
-      <StatusShell title="Couldn’t load design">{card}</StatusShell>
+      <StatusShell title="Couldn’t Load Design">{card}</StatusShell>
     );
   }
 
@@ -191,10 +191,10 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
       <StatusShell
         title={
           page
-            ? 'Page not found'
+            ? 'Page Not Found'
             : accessEnded !== null
               ? 'No Longer Shared With You'
-              : 'Design not found'
+              : 'Design Not Found'
         }
       >
         <NotFound
@@ -214,7 +214,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
   // embed the gate renders headerless inside the iframe (docs/specs/013-workspace/embeds.md).
   if (sharePasswordGate) {
     return (
-      <StatusShell title="Password required" showHeader={!embedMode}>
+      <StatusShell title="Password Required" showHeader={!embedMode}>
         <SharePasswordGate
           invalid={sharePasswordGate.invalid}
           ownerName={designOwnerName}
@@ -270,6 +270,9 @@ function StatusShell({
   showHeader?: boolean;
   children: ReactNode;
 }) {
+  // The tab names the screen, not the item it stands in for (useBrowserTabTitle's `status`): a missing
+  // design's tab never reads as an empty one.
+  useBrowserTabTitle(`${title} | livedesign`, { status: true });
   return (
     <div className="flex h-dvh flex-col">
       {showHeader ? (

@@ -12,7 +12,7 @@ describe('NotFound', () => {
     const onCreateNew = vi.fn();
     const onOpenExplorer = vi.fn();
     render(<NotFound onCreateNew={onCreateNew} onOpenExplorer={onOpenExplorer} />);
-    expect(screen.getByRole('heading', { name: 'Design not found' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Design Not Found' })).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Open Explorer' }));
     expect(onOpenExplorer).toHaveBeenCalledOnce();
     fireEvent.click(screen.getByRole('button', { name: 'New Design' }));
@@ -21,7 +21,7 @@ describe('NotFound', () => {
 
   it('names a page, not a design, for an address with no design', () => {
     render(<NotFound page onCreateNew={() => {}} onOpenExplorer={() => {}} />);
-    expect(screen.getByRole('heading', { name: 'Page not found' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Page Not Found' })).toBeTruthy();
   });
 
   it('leaves Open Explorer out where there is nowhere to open it (an embed)', () => {

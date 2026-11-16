@@ -29,7 +29,7 @@ import { documentRoom } from '../document-client';
 import { forgetImageRefs } from '../document-room/document-outbox';
 import { notifyApprovalRequested, notifyFirstShare } from '../email/notifications';
 import { personStore } from '../person-client';
-import { closeWorkbenchSessions } from '../room-access-client';
+import { closeTokenSessions, closeWorkbenchSessions } from '../room-access-client';
 import { reportServerEvent } from '../server-telemetry';
 import { importDocumentFileFor } from './internal-file';
 import { documentFromTemplate } from './internal-template';
@@ -130,6 +130,14 @@ export function handleInternalItems(
       connectedTab: (id, write) => documentRoom(env, id).addConnectedTab(write),
       // A workbench pairing's access ended at liveworkspace: its sockets in this canvas's room close.
       workbenchClose: (id, pairingId) => closeWorkbenchSessions(env, id, pairingId),
+      // An API token was revoked at liveworkspace: the sockets its room tickets opened here (its live views) close.
+      tokenClose: (id, tokenId) => closeTokenSessions(env, id, tokenId),
+      // Where the canvas stands after an archive, move out, trash or restore (the index calls it off its own path, so
+      // the room call costs the trash nothing). Into the Trash, from anywhere: its room ends every session now
+      // (docs/specs/013-workspace/trash.md). Nothing else here runs on its own clock for a put-away canvas.
+      standing: async (id, standing) => {
+        if (standing.trashed) await documentRoom(env, id).trashed();
+      },
     },
   });
 }

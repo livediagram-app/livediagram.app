@@ -10,30 +10,37 @@
 //     or was removed from the document's team.
 //   - `workbench`: the sockets one workbench pairing opened (each product's docs/specs/013-workspace/workbench-embeds.md). The
 //     pairing was removed or its token revoked; they close with WORKBENCH_ENDED_CLOSE.
+//   - `token`: the sockets one API token's room tickets opened (an MCP server's live view, a CLI), which carry the
+//     token's id (each product's docs/specs/015-api/public-api-and-tokens.md "Revoking a token"). The token was
+//     revoked; they close with ACCESS_CHANGED_CLOSE.
 
 export type AccessCloseMatch =
   | { match: 'share-code' }
   | { match: 'person'; personTag: string }
-  | { match: 'workbench'; pairingId: string };
+  | { match: 'workbench'; pairingId: string }
+  | { match: 'token'; tokenId: string };
 
 type SessionAccess = {
   shareCode?: string | null;
   personTag?: string | null;
   workbenchPairing?: string | null;
+  apiToken?: string | null;
 };
 
 // A person tag is a SHA-256 hex digest (person-tag.ts).
 const PERSON_TAG = /^[0-9a-f]{64}$/;
-// A workbench pairing id is a UUID (crypto.randomUUID).
+// A workbench pairing id, and an API token id, is a UUID (crypto.randomUUID).
 const PAIRING_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+const TOKEN_ID = PAIRING_ID;
 
 // The match a request body names, or null when it names none the room knows.
 export function parseAccessCloseMatch(body: unknown): AccessCloseMatch | null {
   if (!body || typeof body !== 'object') return null;
-  const { match, personTag, pairingId } = body as {
+  const { match, personTag, pairingId, tokenId } = body as {
     match?: unknown;
     personTag?: unknown;
     pairingId?: unknown;
+    tokenId?: unknown;
   };
   if (match === 'share-code') return { match };
   if (match === 'person' && typeof personTag === 'string' && PERSON_TAG.test(personTag)) {
@@ -41,6 +48,9 @@ export function parseAccessCloseMatch(body: unknown): AccessCloseMatch | null {
   }
   if (match === 'workbench' && typeof pairingId === 'string' && PAIRING_ID.test(pairingId)) {
     return { match, pairingId };
+  }
+  if (match === 'token' && typeof tokenId === 'string' && TOKEN_ID.test(tokenId)) {
+    return { match, tokenId };
   }
   return null;
 }
@@ -53,5 +63,6 @@ export function sessionMatchesAccessClose(
   if (close.match === 'share-code') return !!session.shareCode;
   if (close.match === 'workbench')
     return !!session.workbenchPairing && session.workbenchPairing === close.pairingId;
+  if (close.match === 'token') return !!session.apiToken && session.apiToken === close.tokenId;
   return !!session.personTag && session.personTag === close.personTag;
 }

@@ -21,6 +21,24 @@ vi.mock('../server-telemetry', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../server-telemetry')>()),
   reportServerEvent,
 }));
+// The rooms a standing push told the canvas was trashed (docs/specs/013-workspace/trash.md "Open editors").
+const trashedRooms = vi.hoisted(() => [] as string[]);
+vi.mock('../document-client', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../document-client')>();
+  return {
+    ...actual,
+    documentRoom: (...args: Parameters<typeof actual.documentRoom>) => {
+      const room = actual.documentRoom(...args);
+      return {
+        ...room,
+        trashed: async () => {
+          trashedRooms.push(args[1]);
+          return room.trashed();
+        },
+      };
+    },
+  };
+});
 vi.mock('../community-service', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../community-service')>()),
   countCommunityCopy,
@@ -216,6 +234,21 @@ describe('POST /api/internal/items/:id/notices', () => {
     );
     expect(reportServerEvent).toHaveBeenCalledWith(env, 'Document', 'Joined', 'Participate');
     expect(notifyFirstShare).not.toHaveBeenCalled();
+  });
+});
+
+// docs/specs/013-workspace/trash.md "Open editors": the index pushes where an item stands after every trash, by the
+// api, MCP delete_document or the Explorer alike, and a trashed canvas's room closes its sessions.
+describe('POST /api/internal/items/:id/standing', () => {
+  it("tells a trashed canvas's room, and never an archived or restored one's", async () => {
+    trashedRooms.length = 0;
+    const { send } = arrange();
+    const stand = (id: string, archived: boolean, trashed: boolean) =>
+      send('POST', `items/${id}/standing`, { archived, trashed, at: 1 });
+    expect((await stand('A', false, true)).status).toBe(200);
+    expect((await stand('B', true, false)).status).toBe(200);
+    expect((await stand('C', false, false)).status).toBe(200);
+    expect(trashedRooms).toEqual(['A']);
   });
 });
 
