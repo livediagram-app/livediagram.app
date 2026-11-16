@@ -33,7 +33,7 @@ room gate, its editor wiring).
 | `react/useCanvasSuggestions.ts`    | mode, list, refetch on the room's word, submit, accept, reject, notices, telemetry                              |
 | `react/suggestions-store.ts`       | the overlay's external store and context                                                                        |
 | `react/SuggestionGhostOverlay.tsx` | the ghosts, in canvas space                                                                                     |
-| `react/SuggestionsBar.tsx`         | the bar, the mode switch, the review list                                                                       |
+| `react/SuggestionsBar.tsx`         | the header action, the panel, the mode switch, the review list                                                  |
 | `react/SuggestOnlySection.tsx`     | the Share dialog's Suggestions section                                                                          |
 
 Per product (`<api>` is each product's `apps/api/src`):
@@ -48,7 +48,7 @@ Per product (`<api>` is each product's `apps/api/src`):
 | room message gate                             | refuses a Suggest Only Participant's element ops unless live-only                                               |
 | editor `useEditorUndoState.ts`                | commit and tick through `capture.wrap`                                                                          |
 | editor `editor-state/useEditorSuggestions.ts` | the slice composing `useCanvasSuggestions`                                                                      |
-| editor canvas layer and view                  | `SuggestionGhostOverlay` and `SuggestionsBar` mounted; the store provided                                       |
+| editor canvas layer and view                  | `SuggestionGhostOverlay` mounted, `SuggestionsHeaderAction` in the header; the store provided                   |
 | editor room-op receive                        | `takeSuggestionsRoomOp` first                                                                                   |
 
 ## Interfaces and contracts
@@ -106,7 +106,7 @@ socket on join and on every change.
 
 ## Performance and limits
 
-- Nothing on first load: the bar renders nothing without suggestions for a Participant; the list is one indexed query
+- Nothing on first load: the action renders nothing without suggestions for a Participant; the list is one indexed query
   (`tab_id, created_at`, LIMIT 100) when a tab opens and when the room says it changed.
 - The overlay reads an external store: a suggestion arriving re-renders the overlay alone. `ghostsOf` is linear in
   elements plus ops.
@@ -143,17 +143,24 @@ None.
 
 ## Presentation and UX
 
-- **Bar**: a white pill (`rounded-full`, border, shadow) centred at the canvas's top edge, below the title bar. Editor:
-  `SegmentedToggle` Editing / Suggesting, a divider, the count button. Suggest Only: a brand-tinted **Suggesting** chip
-  with a pencil, then the count. The count shows a brand badge with the number.
-- **Review list**: a 22rem card under the bar; header with the count in words and Reject All / Accept All; rows with the
-  author's dot, name and time, the description, the flag, and round Reject (x) and Accept (check) buttons.
+- **Suggest action**: `SuggestionsHeaderAction`, passed as the `EditorHeader`'s `leadAction` (before livedesign's
+  Prototype): the header's full-height action button (`HEADER_ACTION_BTN`), a pencil over **Suggest** or
+  **Suggesting**, the brand tint while suggesting, a brand `CountBadge` on the pencil's corner. Hidden for a
+  Participant with nothing to read.
+- **Panel**: a 22rem card (`min(22rem, 100vw - 1rem)`) in a portal at `--z-modal`, 6px under the action and
+  right-aligned to it, kept 8px inside the viewport, so a selection's toolbar never draws over it. Escape, a press
+  outside or a resize closes it. Editor: a Mode row with `SegmentedToggle` Editing / Suggesting. Suggest Only: a
+  brand-tinted line with a pencil. Then the header with the count in words and Reject All / Accept All, and the rows
+  with the author's dot, name and time, the description, the flag, and round Reject (x) and Accept (check) buttons.
+- **Role pill**: reads **Suggesting** in the Participant's tone whenever `suggestingNow()` (the room's Suggest Only, or
+  an Editor's own Suggesting mode, which `useCanvasSuggestions` publishes with `setSelfSuggesting`).
 - **Ghosts**: 2px dashed border in the author's colour, 12% tint (18% for your own gathering one), 3px outset, 6px
   radius; removals a solid border and a 135° hatch at 40%; the chip a white pill above the top-left corner.
 - **Directions considered**: (1) drawing each suggestion's real elements translucent over the canvas (most faithful,
   but needs each product's element renderer inside the overlay and doubles the canvas's render cost); (2) a side panel
-  listing suggestions (heavier, competes with the Properties panel); (3) the chosen bounds ghosts with a floating bar:
-  the same in every product, cheap, and readable at any zoom.
+  listing suggestions (heavier, competes with the Properties panel); (3) the chosen bounds ghosts with the control in the title
+  bar: the same in every product, cheap, and readable at any zoom. A bar floating at the canvas's top edge was tried
+  first and dropped: every product's palette toolbar sits there and took its presses.
 
 ## Defaults ledger
 

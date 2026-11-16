@@ -23,10 +23,14 @@ articles.
 
 ## Suggesting
 
-- **An Editor** switches between **Editing** and **Suggesting** in the canvas's Suggestions bar, at the top edge of
-  the canvas. Suggesting is per person and per visit; it starts off.
-- **A Participant on Suggest Only** always suggests: the bar shows a **Suggesting** chip in place of the switch, and
-  the title bar's role pill reads **Suggesting**. While suggesting, they may make any change to the active tab's
+- **The Suggest action** sits in the title bar, beside Share, at every width (on a phone too), so the canvas's own
+  toolbars never cover it. It reads **Suggest**, or **Suggesting** in the brand tint while this person suggests, and
+  its icon carries the active tab's suggestion count. A press opens the Suggestions panel under it.
+- **An Editor** switches between **Editing** and **Suggesting** at the top of the panel. Suggesting is per person and
+  per visit; it starts off. While it is on, the title bar's role pill reads **Suggesting**, in the Participant's tone,
+  as a document editor's does.
+- **A Participant on Suggest Only** always suggests: the panel says so in place of the switch, and the role pill
+  reads **Suggesting** in the Participant's tone. While suggesting, they may make any change to the active tab's
   elements an Editor could (draw, move, resize, restyle, write, delete, paste); each becomes a suggestion.
 - **One gesture is one suggestion**: a drag that lands, a paste, a typed label, a burst of nudges (changes within half
   a second of each other) gathers into one. While gathering, the change draws as a ghost in the person's own colour
@@ -45,7 +49,7 @@ articles.
   a dashed box where it would end up, with a dotted outline where it is now and a dashed line between them when it
   moves; an element taken out as its box struck with a hatch. Each carries a chip with a dot in the author's colour,
   a mark (+, pencil, minus) and the author's name; a conflicted one adds **Changed since**.
-- **The review list** opens from the bar's count (**3 Suggestions**): one row per suggestion, oldest first, with its
+- **The review list** fills the Suggestions panel, under its count in words (**3 suggestions**): one row per suggestion, oldest first, with its
   author's dot and name (**(you)** on your own), how long ago, what it does in words (**Add 2 elements**, **Add 1,
   change 1**; never the elements' text) and a **Changed since** flag when it is a conflict. Pointing at a row or
   focusing it brings its ghosts forward and steps the others back. Escape closes it.
