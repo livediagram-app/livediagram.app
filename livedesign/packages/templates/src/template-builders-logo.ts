@@ -14,6 +14,7 @@
 // passed.
 
 import { createShape, createText, type Element, type Page } from '@livedesign/design';
+import { inDisplayFace } from './logo-display-face';
 import { heading, type Kit } from './page-layout-kit';
 import { pageKits, templateLogoPage } from './template-page-kit';
 
@@ -26,6 +27,8 @@ const INK = '#1f2937';
 const TAGLINE = '#92400e';
 
 const BRAND = 'Sunny Side';
+// The wordmark's display face (docs/specs/007-editor/logo-pages.md "Branding templates"): a warm, high-contrast serif.
+export const LOGO_DESIGN_FACE = 'dm-serif-display';
 const TAG = 'Small-batch, roasted at dawn';
 
 // The lockups are drawn at this multiple of their artboard-sheet size: page scale on the 1024
@@ -64,17 +67,19 @@ function wordmark(
   color: string,
   align: 'left' | 'center',
 ): Element {
-  return {
-    ...createText(x, y),
-    width: w,
-    height: 44 * S,
-    label: BRAND,
-    textSize: 'lg',
-    textScale: S,
-    textBold: true,
-    textColor: color,
-    textAlignX: align,
-  };
+  return inDisplayFace(
+    {
+      ...createText(x, y),
+      width: w,
+      height: 44 * S,
+      label: BRAND,
+      textSize: 'lg',
+      textScale: S,
+      textColor: color,
+      textAlignX: align,
+    },
+    LOGO_DESIGN_FACE,
+  );
 }
 
 function tagline(x: number, y: number, w: number, align: 'left' | 'center'): Element {
@@ -93,7 +98,7 @@ function tagline(x: number, y: number, w: number, align: 'left' | 'center'): Ele
 type Variant = 'horizontal' | 'stacked' | 'app-icon' | 'horizontal-tag' | 'stacked-tag' | 'mono';
 
 // One lockup composed around the artboard centre (bx, by). Widths are the
-// measured ink of the Inter wordmark at `lg` (about 170px, times S) plus its
+// ink of the DM Serif Display wordmark at `lg` (about 170px, times S) plus its
 // padding and a little slack, so it never wraps, so the horizontal lockups sit optically centred instead of
 // trailing an empty text box.
 function lockup(variant: Variant, bx: number, by: number): Element[] {
