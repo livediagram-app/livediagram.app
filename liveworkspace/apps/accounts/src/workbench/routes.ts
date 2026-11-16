@@ -3,6 +3,7 @@
 // answers are the app's own (apps.ts holds its words).
 //
 //   POST   tickets                          an API token: a ticket, or 428 pairing_required with the pairing URL
+//   POST   embed-tickets                    the person's own token: a live embed's view ticket (embed-routes.ts)
 //   POST   sessions                         the ticket is the credential: a session
 //   DELETE sessions/current                 a session ends itself
 //   POST   pairing-requests                 an API token asks to pair (or is paired already)
@@ -18,6 +19,7 @@
 import { WORKBENCH_CODE_PATTERN } from './store.ts';
 import { type WorkbenchContext, fail, notFound } from './route-kit.ts';
 import { endCurrentSession, mintTicket, redeemTicket } from './ticket-routes.ts';
+import { mintEmbedTicket } from './embed-routes.ts';
 import {
   answerPairing,
   listPairings,
@@ -28,6 +30,7 @@ import {
 } from './pairing-routes.ts';
 
 export {
+  LIVE_EMBED_SESSION_TTL_MS,
   WORKBENCH_NAME_MAX_LENGTH,
   WORKBENCH_ORIGIN_MAX_LENGTH,
   WORKBENCH_POLL_INTERVAL_S,
@@ -50,6 +53,8 @@ export async function handleWorkbench(ctx: WorkbenchContext, parts: string[]): P
 
   if (section === 'tickets' && parts.length === 1)
     return method === 'POST' ? mintTicket(ctx) : wrong();
+  if (section === 'embed-tickets' && parts.length === 1)
+    return method === 'POST' ? mintEmbedTicket(ctx) : wrong();
   if (section === 'sessions' && parts.length === 1)
     return method === 'POST' ? redeemTicket(ctx) : wrong();
   if (section === 'sessions' && code === 'current' && parts.length === 2)

@@ -57,6 +57,7 @@ import {
   oneOfRule,
 } from '@liveworkspace/model-core/validate-primitives';
 import { isRecord } from '@liveworkspace/model-core/is-record';
+import { LIVE_EMBED_CHECKS } from '@liveworkspace/element-model/live-item';
 import {
   TABLE_CELLS_MAX,
   TABLE_COLS_MAX,
@@ -435,7 +436,10 @@ function boxedIssue(el: Record<string, unknown>): ElementValidationIssue | null 
       return pathIssue(el);
     case 'text':
       return firstFieldIssue(el, TEXT_FIELD_CHECKS);
-    // sticky / annotation / link-card / video carry no extra required fields.
+    // A live embed's link and snapshot (liveworkspace/docs/specs/004-index/live-embeds.md "Security").
+    case 'video':
+      return firstFieldIssue(el, LIVE_EMBED_CHECKS);
+    // sticky / link-card carry no extra required fields.
     default:
       return null;
   }

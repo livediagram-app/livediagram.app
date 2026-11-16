@@ -60,3 +60,12 @@ thumbnail, the same code in every app ([Previews: Pasting a share link](../../..
 - Hiding the "Open in liveplanner" badge (it is deliberately not configurable).
 - A signed-in editor inside a developer tool: that is a [workbench embed](workbench-embeds.md), served under `/embed`
   so it may be framed, and admitted by a workbench ticket rather than a share code.
+
+## Live embeds of a plan
+
+Another app's item can show a plan live, read-only, inside it ([Live embeds](../../../../liveworkspace/docs/specs/004-index/live-embeds.md),
+Work Tracker 930). The frame is this app's [workbench embed](workbench-embeds.md) (`/embed/workbench?d=<id>`) opened by
+an **embed ticket**: minted by the host page with the reader's own access, always at the view level, bound to the host
+app's origin, and renewed through the host before its 30 minutes run out. The page is the workbench page as it is, at
+a view session: the editor read-only, with Open in liveplanner one click away. A reader without their own access never
+reaches this frame: the host shows its snapshot instead.

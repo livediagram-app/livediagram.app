@@ -13,6 +13,9 @@ import type { WorkbenchLevel, WorkbenchPairingRow } from './store.ts';
 export const WORKBENCH_TICKET_TTL_MS = 60_000;
 export const WORKBENCH_SESSION_TTL_MS = 8 * 60 * 60 * 1000;
 export const WORKBENCH_TICKETS_PER_MINUTE = 30;
+// A live embed's session (liveworkspace/docs/specs/004-index/live-embeds.md "Loading only on screen"): renewed through
+// the host while it stays live, so a reader who loses access loses the frame within this.
+export const LIVE_EMBED_SESSION_TTL_MS = 30 * 60 * 1000;
 export const WORKBENCH_NAME_MAX_LENGTH = 40;
 export const WORKBENCH_ORIGIN_MAX_LENGTH = 255;
 // How often the waiting CLI asks again, in seconds (the device flow's).
@@ -128,6 +131,13 @@ export async function signedInAccount(ctx: WorkbenchContext): Promise<string | n
     return null;
   const session = await ctx.auth.api.getSession({ headers: ctx.request.headers }).catch(() => null);
   return session?.user.id ?? null;
+}
+
+// A live embed's tickets share one bucket per person.
+export async function embedLimited(ctx: WorkbenchContext, personId: string): Promise<boolean> {
+  const limiter = ctx.env.WORKBENCH_LIMITER;
+  if (!limiter) return false;
+  return !(await limiter.limit({ key: `workbench-embed:${personId}` })).success;
 }
 
 // The mint and the pairing request share one bucket per token.

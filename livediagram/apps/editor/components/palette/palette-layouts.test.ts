@@ -119,7 +119,7 @@ describe('palette layouts', () => {
   });
 
   // A layout that drops a group's last tile keeps the group's end: Diagram and Workshop leave out the embeds,
-  // whose Website ends Media's first group after Image, and Image ends it there instead.
+  // whose Live Embed ends Media's first group after Image, and Image ends it there instead.
   it("keeps Media's divider after Image where the embeds are left out", () => {
     for (const mode of ['diagram', 'workshop'] as const) {
       const media = paletteCategoriesFor(mode).find((c) => c.id === 'media')!;

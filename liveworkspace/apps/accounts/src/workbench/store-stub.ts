@@ -11,6 +11,7 @@ export type WorkbenchStoreApi = Pick<
   | 'answerPairingRequest'
   | 'pairingRequestStatus'
   | 'findPairing'
+  | 'embedPairing'
   | 'readPairing'
   | 'listPairings'
   | 'mintTicket'

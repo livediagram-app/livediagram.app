@@ -10,7 +10,7 @@ import { appOfSite, type SiteId } from '@liveworkspace/sites';
 import { GUEST_ID, USER_ID } from '../ids.ts';
 import type { Env } from '../env.ts';
 import { teamsClaim } from '../teams.ts';
-import { liveTokenFacts } from './revoke.ts';
+import { liveTokenFacts, sessionTokenFacts } from './revoke.ts';
 import {
   WORKBENCH_QUOTA_MAX,
   WORKBENCH_SESSION_PATTERN,
@@ -69,7 +69,7 @@ export async function handleWorkbenchInternal(
     const session = store ? await store.readSession(secret) : null;
     if (!session || session.app !== app) return refused('unknown');
     const [token, teams] = await Promise.all([
-      liveTokenFacts(env.AUTH_DB, session.tokenId, session.ownerId, now),
+      sessionTokenFacts(env.AUTH_DB, session.tokenId, session.ownerId, now),
       teamsClaim(env.AUTH_DB, session.ownerId),
     ]);
     if (!token) return refused('revoked');

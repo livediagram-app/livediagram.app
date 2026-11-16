@@ -98,7 +98,7 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   technology: 0,
   // The Library's body is the person's saved items (liveworkspace/docs/specs/006-media/libraries.md), no tiles.
   library: 0,
-  media: 10,
+  media: 11,
   // With the Devices row (DEVICES_ROW_TILE), which opens the seven frames.
   components: 14,
   concepts: 8,

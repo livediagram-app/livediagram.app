@@ -135,6 +135,7 @@ export function useEditorInteraction({
     linkPickerInitialMode,
     openLinkPicker,
     applyElementLink,
+    applyLiveEmbed,
     followLink,
   } = useElementLinks({
     currentSelectionIds,
@@ -403,6 +404,7 @@ export function useEditorInteraction({
       linkPickerInitialMode,
       openLinkPicker,
       applyElementLink,
+      applyLiveEmbed,
       voteReview,
       voteResults,
       jumpToVoteResult,
