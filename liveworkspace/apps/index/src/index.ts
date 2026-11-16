@@ -30,6 +30,7 @@ import { sweepEvents } from './events';
 import { sweepTeamAudit } from './team-audit';
 import { kickWebhooks, queuedCount } from './webhooks/outbox';
 import { handleItemWebhooks, handleWebhooks } from './webhooks/routes';
+import { handleKits } from './kits';
 import { handleTeamAudit } from './team-audit-read';
 import { handleItemShare, handleShareCode, handleShared } from './sharing';
 import { handleSpacePreviews } from './space-previews';
@@ -66,6 +67,8 @@ const PERSON_ROUTES: Record<string, (ctx: PersonContext) => Promise<Response>> =
   trash: handleTrash,
   webhooks: (ctx) => handleWebhooks(ctx),
   'team-audit': (ctx) => handleTeamAudit(ctx),
+  // A project kit, started, finished or removed (kits.ts).
+  kits: handleKits,
 };
 
 async function route(ctx: RouteContext): Promise<Response> {
@@ -145,6 +148,8 @@ const routeLabel = createApiRouteLabel(
     'calendar-feeds',
     'cards',
     'trash',
+    'kits',
+    'remove',
     'restore',
     'archive',
     'archived',
