@@ -74,6 +74,9 @@ With the Path tool in hand:
 - **Finishing an open path:** **Enter**, **Escape**, **double-click**, or picking another tool
   commits it (two nodes or more). **Escape** with fewer than two nodes cancels; a further Escape
   puts the tool down.
+  The double-click is the tool's wherever it lands: over an element it never opens that element's text
+  editor, picker or menu (the canvas takes it ahead of the element, as for the
+  [Polygon tool](../008-canvas/polygon-tool.md)).
 - **Continuing a path:** with the tool in hand, the pointer over an **end node of an open path**
   shows a continue ring; a click resumes drawing from that end, appending to that same element.
   Clicking the other end node of the path being continued closes it.
