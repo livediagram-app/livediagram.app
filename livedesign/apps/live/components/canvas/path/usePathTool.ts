@@ -290,6 +290,8 @@ export function usePathTool({
       return edit.beginEditPress(e);
     },
     handlePathDoubleClick: () => draw.handlePathDoubleClick() || editing !== null,
+    // A path being drawn takes a double-click wherever it lands, over an element too (polygon-tool.md).
+    handlePathDrawDoubleClick: draw.handlePathDoubleClick,
     elements: shownElements,
     draftView,
     editView,
