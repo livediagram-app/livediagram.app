@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { avatarColour } from '@liveworkspace/account-menu/initials';
+import { isSafeColourValue } from '@liveworkspace/auth-client/account-name';
 import type { ForumAuthor } from '@liveworkspace/community';
 import { appAccount } from '@/lib/explorer/app-session';
 import { pageApp } from '@/lib/explorer/page-app';
@@ -75,11 +77,37 @@ export const useForumAccount: () => ForumAccount =
     ? useAppForumAccount
     : useWorkspaceForumAccount;
 
-/** The author a write sends: a colour the service can keep, or none for it to pick one from the account. */
+const HEX = /^#[0-9a-f]{6}$/i;
+const INHERITED = 'rgb(1, 2, 3)';
+
+/** A CSS colour as `#rrggbb`, read the way the browser paints it (a theme variable, a named colour); null when it
+ *  can't be read. */
+function cssHex(colour: string): string | null {
+  if (HEX.test(colour)) return colour.toLowerCase();
+  if (typeof document === 'undefined' || !document.body) return null;
+  // The probe sits in a box painted an unlikely colour: a value that doesn't resolve (an unknown variable) inherits
+  // it, and reads as unknown rather than as that colour.
+  const box = document.createElement('span');
+  box.style.color = INHERITED;
+  const probe = document.createElement('span');
+  probe.style.color = colour;
+  if (!probe.style.color) return null;
+  box.appendChild(probe);
+  document.body.appendChild(box);
+  const painted = getComputedStyle(probe).color;
+  box.remove();
+  if (painted === INHERITED) return null;
+  const rgb = /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)$/.exec(painted);
+  if (!rgb || (rgb[4] !== undefined && Number(rgb[4]) === 0)) return null;
+  return `#${[rgb[1], rgb[2], rgb[3]].map((n) => Number(n).toString(16).padStart(2, '0')).join('')}`;
+}
+
+/** The author a write sends: their name, and the presence colour the header's avatar is painted from, as the
+ *  `#rrggbb` the service keeps (liveworkspace/docs/specs/007-community/community.md "The Forum", "Who can do what"):
+ *  the profile's colour, resolved when it is a theme variable, or for Automatic the one the avatar picks from the
+ *  name. So the dot on a post is the same colour as the account in the header. */
 export function authorOf(account: SignedIn): ForumAuthor {
-  const color = account.author.color;
-  return {
-    name: account.author.name,
-    color: color && /^#[0-9a-f]{6}$/i.test(color) ? color : '',
-  };
+  const { name, color } = account.author;
+  const resolved = color && isSafeColourValue(color) ? cssHex(color) : null;
+  return { name, color: resolved ?? avatarColour(name).value };
 }

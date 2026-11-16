@@ -504,7 +504,7 @@ A reply turning `listed` sets its topic's `activity_at` in the same batch. `hidd
 6. `checkForumText(env, name, title, body)`: the day's `checks` counter against `FORUM_CHECKS_PER_DAY` (500), then
    `AI.run(FORUM_CHECK_MODEL, { messages: [{ role: 'user', content }] })` raced against `FORUM_CHECK_TIMEOUT_MS`
    (10 s); `readVerdict` reads `{ response: { safe } }`, `{ safe }` or a string starting `safe` / `unsafe`, and
-   anything else as unavailable. Development with `FORUM_CHECK_LOCAL=pass` answers `pass` without asking.
+   anything else as unavailable. Development answers `pass` without asking, unless `FORUM_CHECK_LOCAL=ai`.
 7. One batch: the row, and for a listed reply its topic's `activity_at`.
 8. `201 { topic }` / `{ reply }`, or `200 { post }` for an edit: the post as its author sees it.
 
@@ -556,8 +556,8 @@ topic_id IS NULL`, `idx_forum_replies (topic_id, state, created_at)`, `idx_forum
   field.
 - The public never sees an account id: a post answers `own`, never `author_id`.
 - Reports and their per-network budget are the gallery's.
-- Nothing is listed unchecked: only `checkForumText` answering `pass` writes `listed`; the local pass needs both
-  `ENVIRONMENT=development` and `FORUM_CHECK_LOCAL=pass`.
+- Nothing is listed unchecked: only `checkForumText` answering `pass` writes `listed`; the local pass needs
+  `ENVIRONMENT=development` (and no `FORUM_CHECK_LOCAL=ai`).
 - CORS: `Authorization` joins the allowed headers; writes answer only an app's own origins, as the gallery's.
 
 ### Observability (Forum)
@@ -575,8 +575,9 @@ topic_id IS NULL`, `idx_forum_replies (topic_id, state, created_at)`, `idx_forum
 - `COM2`: a report answers the same `204` whether or not it hid the post.
 - `COM3`: an unknown stored category reads as `other`, and a malformed `tags` column as no tags.
 - `COM4`: the sweep stamps a post the app's door did not answer for, so it waits a full interval.
-- `COM5`: a Forum author's colour that isn't a `#rrggbb` hex (a theme variable) is sent empty, and the service picks
-  one from the account.
+- `COM5`: a Forum author's colour is the one the header's avatar is painted from, sent as `#rrggbb`: the profile's
+  presence colour (a theme variable resolved the way the browser paints it), or for Automatic the one picked from
+  the name. The service picks one from the account only when none arrives.
 - `COM6`: a Forum list's later pages carry no token: they are the listed topics alone, the same for everyone.
 - `COM7`: the topic page is one static shell, not indexed (`robots: noindex`); its title names the topic once it
   loads. Topic heads in each app's router are a follow-up.

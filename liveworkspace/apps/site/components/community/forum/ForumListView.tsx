@@ -9,7 +9,7 @@ import {
   type ForumCategory,
   type ForumSort,
 } from '@liveworkspace/community';
-import { Button, EmptyState, Select } from '@liveworkspace/ui';
+import { Button, EmptyState, SOLID_BRAND_DARK_CONTROL, Select } from '@liveworkspace/ui';
 import { LoadError } from '../shared/LoadError';
 import { ForumIcon } from '../shared/icons';
 import {
@@ -69,7 +69,7 @@ export function ForumListView({
                 onClick={() => choose({ category: c.id })}
                 className={`h-8 shrink-0 cursor-pointer rounded-full px-3 text-sm font-medium transition-colors duration-micro focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 ${
                   active
-                    ? 'bg-brand-600 text-white dark:bg-brand-500 dark:text-slate-950'
+                    ? `bg-brand-700 text-white hover:bg-brand-800 ${SOLID_BRAND_DARK_CONTROL} dark:text-white`
                     : 'bg-white text-slate-600 ring-1 ring-inset ring-slate-200 hover:bg-slate-50 hover:text-slate-900 dark:bg-slate-900 dark:text-slate-300 dark:ring-slate-700 dark:hover:bg-slate-800 dark:hover:text-white'
                 }`}
               >
