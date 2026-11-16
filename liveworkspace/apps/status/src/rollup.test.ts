@@ -1,7 +1,7 @@
 import type { CheckResult } from '@liveworkspace/status';
 import { describe, expect, it } from 'vitest';
 import { type Incident, stepIncidents } from './incidents';
-import { percentile, rollupDay, uptimeTenths } from './rollup';
+import { addToDay, percentile, rollupDay, uptimeTenths } from './rollup';
 import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // liveworkspace/docs/specs/009-status/status.md "The hourly run": a day's rollup, and incidents from consecutive checks.
@@ -42,6 +42,35 @@ describe('rollupDay', () => {
     const started = cpuNowMs();
     for (let i = 0; i < 1000; i++) for (let s = 0; s < 35; s++) rollupDay(checks);
     expect(cpuNowMs() - started).toBeLessThan(cpuBudgetMs(1000));
+  });
+});
+
+describe('addToDay', () => {
+  it('adds one check to a stored day: counts and worst move, the medians stay', () => {
+    const day = rollupDay([
+      { state: 'up', ms: 80 },
+      { state: 'up', ms: 120 },
+    ]);
+    expect(addToDay(day, { state: 'down', ms: 5_000 })).toEqual({
+      checks: 3,
+      up: 2,
+      slow: 0,
+      down: 1,
+      p50: 80,
+      p95: 120,
+      worst: 'down',
+    });
+    expect(addToDay(day, { state: 'slow', ms: 1_700 })).toMatchObject({ slow: 1, worst: 'slow' });
+  });
+
+  it('starts a day from the check alone, and takes the first answer’s time on a day with none', () => {
+    expect(addToDay(null, { state: 'up', ms: 90 })).toEqual(rollupDay([{ state: 'up', ms: 90 }]));
+    const neverAnswered = rollupDay([{ state: 'down', ms: 5_000 }]);
+    expect(addToDay(neverAnswered, { state: 'up', ms: 70 })).toMatchObject({ p50: 70, p95: 70 });
+    expect(addToDay(neverAnswered, { state: 'down', ms: 5_000 })).toMatchObject({
+      p50: null,
+      p95: null,
+    });
   });
 });
 
@@ -144,5 +173,43 @@ describe('stepIncidents', () => {
     const step = stepIncidents([a, gone], new Map(), 300, new Set(['a']));
     expect(step.changed).toEqual([{ ...gone, endedAt: 300 }]);
     expect(step.after).toEqual([a]);
+  });
+
+  it('opens one for a confirmed service only on its second down in a row, starting at the first', () => {
+    const down: CheckResult = { state: 'down', code: null, ms: 5_000, error: 'timeout' };
+    const results = new Map([['index', down]]);
+    // No check before this one in time, or one that answered: nothing yet.
+    for (const before of [null, { at: 100, state: 'up' as const, error: null }]) {
+      const step = stepIncidents([], results, 400, undefined, new Map([['index', before]]));
+      expect(step.opened).toEqual([]);
+    }
+    const step = stepIncidents(
+      [],
+      results,
+      400,
+      undefined,
+      new Map([['index', { at: 100, state: 'down' as const, error: 'status' as const }]]),
+    );
+    expect(step.opened).toEqual([
+      {
+        id: null,
+        service: 'index',
+        startedAt: 100,
+        lastAt: 400,
+        endedAt: null,
+        worst: 'down',
+        checks: 2,
+        error: 'status',
+      },
+    ]);
+    // The first error, or this one's when the first had none.
+    const noError = stepIncidents(
+      [],
+      results,
+      400,
+      undefined,
+      new Map([['index', { at: 100, state: 'down' as const, error: null }]]),
+    );
+    expect(noError.opened[0]!.error).toBe('timeout');
   });
 });

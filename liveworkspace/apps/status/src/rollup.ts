@@ -48,6 +48,23 @@ export function rollupDay(checks: readonly DayCheck[]): DayRollup {
   };
 }
 
+/** A stored day with one more check added, for the 5-minute run, which doesn't read the day's checks: the counts and
+ *  the worst state move; the medians stay as stored (the hourly run works them out again), or this check's time on a
+ *  day's first answered check. */
+export function addToDay(day: DayRollup | null, check: DayCheck): DayRollup {
+  if (!day) return rollupDay([check]);
+  const answered = check.state !== 'down';
+  return {
+    checks: day.checks + 1,
+    up: day.up + (check.state === 'up' ? 1 : 0),
+    slow: day.slow + (check.state === 'slow' ? 1 : 0),
+    down: day.down + (answered ? 0 : 1),
+    p50: day.p50 ?? (answered ? check.ms : null),
+    p95: day.p95 ?? (answered ? check.ms : null),
+    worst: worse(day.worst, check.state),
+  };
+}
+
 /** A day's uptime in tenths of a percent: the checks that answered (up or slow) over all of them. */
 export function uptimeTenths(r: Pick<DayRollup, 'checks' | 'up' | 'slow'>): number | null {
   return r.checks === 0 ? null : Math.round(((r.up + r.slow) * 1000) / r.checks);

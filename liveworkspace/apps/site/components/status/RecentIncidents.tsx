@@ -12,10 +12,12 @@ import { STATE_LOOK, StateBadge } from './status-ui';
 const AllClearIcon = lucideGlyph(lucideCircleCheck, 18);
 
 const ERROR_WORDS: Record<string, string> = {
-  timeout: 'No answer in 10 s',
+  // In time: 10 s, or 5 s for the signed-in Explorer check.
+  timeout: 'No answer in time',
   network: 'No answer',
   status: 'Answered with the wrong status',
   not_json: 'Answered with a page, not the service',
+  sign_in: 'Couldn’t sign in as a guest to check',
 };
 
 // In the reader's locale, made once (@liveworkspace/ui/date-format).

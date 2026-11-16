@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { type CheckResult, median, runProbe, summarise, viewServices } from './probe';
-import { allServices, statusGroups, type Probe } from '@liveworkspace/status';
+import { type CheckResult, median, runProbe, runRound, summarise, viewServices } from './probe';
+import { allServices, statusGroups, type Probe, workerServices } from '@liveworkspace/status';
 
 // liveworkspace/docs/specs/010-site/site.md "Status": what each answer means.
 
@@ -68,6 +68,25 @@ describe('runProbe', () => {
       cache: 'no-store',
       credentials: 'omit',
     });
+  });
+});
+
+describe('runRound', () => {
+  it('never makes the Worker’s signed-in check: no credential, and the index’s anonymous check instead', async () => {
+    const groups = statusGroups('production');
+    const asked: Array<{ url: string; init: RequestInit }> = [];
+    await runRound(groups, async (url, init) => {
+      asked.push({ url: url as string, init: init ?? {} });
+      return new Response('{}', { status: 200, headers: { 'Content-Type': 'application/json' } });
+    });
+    const signedIn = workerServices(groups).map((s) => s.worker.url);
+    expect(signedIn).toEqual(['/api/index/placement-defaults']);
+    expect(asked.map((a) => a.url)).toContain('/api/index/jwks');
+    for (const { url, init } of asked) {
+      expect(signedIn.some((path) => url.endsWith(path))).toBe(false);
+      expect(init.credentials).toBe('omit');
+      expect(init.headers).toBeUndefined();
+    }
   });
 });
 

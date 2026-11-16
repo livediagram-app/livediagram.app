@@ -12,9 +12,9 @@ export const TIMEOUT_MS = 10_000;
 // A stored check's state. The browser adds `reached`, `checking` and `skipped` of its own (lib/status/probe.ts).
 export type CheckState = 'up' | 'slow' | 'down';
 
-// Why a check was down, as a short code: no answer in time, no answer at all, a status code it shouldn't give, or
-// HTML where a Worker's JSON was expected.
-export type CheckError = 'timeout' | 'network' | 'status' | 'not_json';
+// Why a check was down, as a short code: no answer in time, no answer at all, a status code it shouldn't give,
+// HTML where a Worker's JSON was expected, or (the signed-in check alone) a guest hand-off that gave no token.
+export type CheckError = 'timeout' | 'network' | 'status' | 'not_json' | 'sign_in';
 
 /** What is wrong with an answer the checker can read, or null when it is the one expected. A `reach` probe is only
  *  ever read on the server, where any 2xx or 3xx is up. */

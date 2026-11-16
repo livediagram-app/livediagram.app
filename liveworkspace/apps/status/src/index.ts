@@ -7,8 +7,10 @@ import { json, under } from '@liveworkspace/index-app/worker-http';
 import { createApiRouteLabel } from '@liveworkspace/telemetry/error-tokens';
 import { STATUS_API_PATH } from '@liveworkspace/status';
 import { handleRead } from './api';
+import { SIGNED_IN_CRON } from './config';
 import type { Env } from './env';
 import { runOnce } from './run';
+import { runSignedIn } from './signed-in-run';
 
 // The route words a failure is logged under (`Get.Status.History`).
 const routeLabel = createApiRouteLabel(new Set(['status']), new Set(['history']));
@@ -27,7 +29,17 @@ const worker = {
     );
   },
 
+  // The 5-minute trigger runs the signed-in Explorer check alone; any other is the hourly run, which makes it too.
   async scheduled(event: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
+    if (event.cron === SIGNED_IN_CRON) {
+      ctx.waitUntil(
+        runSignedIn(env, event.scheduledTime).then(
+          (report) => console.info(JSON.stringify({ run: 'status-signed-in', ...report })),
+          (err: unknown) => console.error('status signed-in run failed', err),
+        ),
+      );
+      return;
+    }
     ctx.waitUntil(
       runOnce(env, event.scheduledTime).then(
         (report) => console.info(JSON.stringify({ run: 'status', ...report })),

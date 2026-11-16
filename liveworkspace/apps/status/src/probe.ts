@@ -14,6 +14,27 @@ import { PROBE_CONCURRENCY, USER_AGENT } from './config';
 export type Fetch = (request: Request) => Promise<Response>;
 export type Clock = () => number;
 
+/** `work`, given up on after `ms`: the timer both aborts its signal and ends the wait, so a fetch that ignores its
+ *  signal can't hold the run. A timeout rejects, with `controller.signal.aborted` set. */
+export async function withTimeout<T>(
+  work: (signal: AbortSignal) => Promise<T>,
+  ms: number,
+  controller = new AbortController(),
+): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timedOut = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => {
+      controller.abort();
+      reject(new Error('timeout'));
+    }, ms);
+  });
+  try {
+    return await Promise.race([work(controller.signal), timedOut]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 /** Check one address. Never throws: a failure is a `down` result with its error code. */
 export async function probeOne(
   probe: Probe,
@@ -23,28 +44,22 @@ export async function probeOne(
   timeoutMs = TIMEOUT_MS,
 ): Promise<CheckResult> {
   const controller = new AbortController();
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  // The timer both aborts the request and ends the wait, so a fetch that ignores its signal can't hold the run.
-  const timedOut = new Promise<never>((_, reject) => {
-    timer = setTimeout(() => {
-      controller.abort();
-      reject(new Error('timeout'));
-    }, timeoutMs);
-  });
   const started = now();
   const elapsed = () => Math.max(0, Math.round(now() - started));
   try {
-    const res = await Promise.race([
-      fetchImpl(
-        new Request(url, {
-          method: probe.method,
-          redirect: 'follow',
-          headers: { 'User-Agent': USER_AGENT, Accept: 'application/json, */*;q=0.5' },
-          signal: controller.signal,
-        }),
-      ),
-      timedOut,
-    ]);
+    const res = await withTimeout(
+      (signal) =>
+        fetchImpl(
+          new Request(url, {
+            method: probe.method,
+            redirect: 'follow',
+            headers: { 'User-Agent': USER_AGENT, Accept: 'application/json, */*;q=0.5' },
+            signal,
+          }),
+        ),
+      timeoutMs,
+      controller,
+    );
     const ms = elapsed();
     // The body is never read: cancel it so the connection is freed.
     await res.body?.cancel().catch(() => {});
@@ -53,8 +68,6 @@ export async function probeOne(
   } catch {
     const error: CheckError = controller.signal.aborted ? 'timeout' : 'network';
     return { state: 'down', code: null, ms: Math.min(elapsed(), timeoutMs), error };
-  } finally {
-    clearTimeout(timer);
   }
 }
 
@@ -76,7 +89,14 @@ export async function pooled<T>(
   return out;
 }
 
-export type ProbeTarget = { id: string; probe: Probe; url: string; fetch: Fetch };
+// `run`, where set, makes the check in place of a plain probe of `url` (the signed-in check, signed-in.ts).
+export type ProbeTarget = {
+  id: string;
+  probe: Probe;
+  url: string;
+  fetch: Fetch;
+  run?: () => Promise<CheckResult>;
+};
 
 /** Check every target, PROBE_CONCURRENCY at a time. */
 export async function probeAll(
@@ -85,7 +105,7 @@ export async function probeAll(
   timeoutMs?: number,
 ): Promise<Map<string, CheckResult>> {
   const results = await pooled(
-    targets.map((t) => () => probeOne(t.probe, t.url, t.fetch, now, timeoutMs)),
+    targets.map((t) => () => t.run?.() ?? probeOne(t.probe, t.url, t.fetch, now, timeoutMs)),
     PROBE_CONCURRENCY,
   );
   return new Map(targets.map((t, i) => [t.id, results[i]!]));

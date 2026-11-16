@@ -41,6 +41,27 @@ export type Check =
   | { mode: 'derived'; from: readonly string[]; rule: 'same' | 'any'; note: string }
   | { mode: 'skipped'; reason: string };
 
+// A check only the status Worker makes, never the page (liveworkspace/docs/specs/009-status/status.md "The signed-in
+// check"): a signed-in call, with a credential the Worker holds as a secret. Here are only its addresses and timings;
+// the credential is never in this list, which the page also reads.
+//  - `signed-in`: mint a fresh guest token through `via`'s own `/api/auth/guest`, then call `url` (on
+//    liveworkspace.app) with it as the Bearer. Up when the answer is one of `ok`, and JSON.
+export type WorkerProbe = {
+  kind: 'signed-in';
+  url: string;
+  ok: readonly number[];
+  // The app whose door starts the guest hand-off, as that app's page does.
+  via: AppSiteId;
+  // How often it is checked, in minutes. Its second down check in a row opens an incident, never its first.
+  everyMinutes: number;
+  // No answer from the call in this long, and it is down.
+  timeoutMs: number;
+};
+
+// The signed-in Explorer check's timings (status.md "The signed-in check").
+export const SIGNED_IN_TIMEOUT_MS = 5_000;
+export const SIGNED_IN_EVERY_MINUTES = 5;
+
 export type IconName =
   | 'globe'
   | 'key'
@@ -66,6 +87,8 @@ export type Service = {
   // What the check is, in a few words, for the row's detail line.
   label: string;
   check: Check;
+  // The check the status Worker makes in place of `check`, where it holds the credential; the page keeps `check`.
+  worker?: WorkerProbe;
 };
 
 export type ServiceGroup = {
@@ -86,7 +109,7 @@ export function environmentOf(host: string): StatusEnvironment {
   return 'production';
 }
 
-type AppSiteId = Exclude<SiteId, 'liveworkspace.app'>;
+export type AppSiteId = Exclude<SiteId, 'liveworkspace.app'>;
 
 // Each app's MCP Worker's local port (its wrangler.toml `[dev] port`). The MCP server is optional per app: an app with
 // no entry ships none, and its group has no MCP row (livehuddle, livehuddle/docs/specs/002-project-scope/not-in-livehuddle.md).
@@ -165,6 +188,15 @@ function platformGroup(): ServiceGroup {
         icon: 'folder',
         label: 'GET /api/index/jwks',
         check: read('/api/index/jwks', 'GET', [200], true),
+        // jwks never reads a token, so it stayed green through the 2026-11-13 outage of every signed-in call.
+        worker: {
+          kind: 'signed-in',
+          url: '/api/index/placement-defaults',
+          ok: [200],
+          via: 'livediagram.app',
+          everyMinutes: SIGNED_IN_EVERY_MINUTES,
+          timeoutMs: SIGNED_IN_TIMEOUT_MS,
+        },
       },
       {
         id: `${g}:community`,
@@ -320,7 +352,22 @@ export function probedServices(
   );
 }
 
+/** Every service the status Worker checks signed in, with its Worker-only probe, in page order. */
+export function workerServices(
+  groups: readonly ServiceGroup[],
+): Array<Service & { worker: WorkerProbe }> {
+  return allServices(groups).filter((s): s is Service & { worker: WorkerProbe } => !!s.worker);
+}
+
+/** Where a Worker-only probe's guest hand-off starts: its app's address in `env`, as on the page. */
+export function handoffOrigin(probe: WorkerProbe, env: StatusEnvironment): string {
+  return appOrigin(
+    APP_SITES.find((s) => s.id === probe.via)!,
+    env,
+  );
+}
+
 /** A probe's absolute address: liveworkspace.app's own paths on `platformOrigin`, anything else as written. */
-export function resolveProbeUrl(probe: Probe, platformOrigin: string): string {
+export function resolveProbeUrl(probe: Probe | WorkerProbe, platformOrigin: string): string {
   return probe.url.startsWith('/') ? `${platformOrigin.replace(/\/$/, '')}${probe.url}` : probe.url;
 }

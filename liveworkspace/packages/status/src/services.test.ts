@@ -4,10 +4,12 @@ import {
   allServices,
   appOrigin,
   environmentOf,
+  handoffOrigin,
   mcpOrigin,
   probedServices,
   resolveProbeUrl,
   statusGroups,
+  workerServices,
 } from './services';
 
 // liveworkspace/docs/specs/010-site/site.md "Status": the one list of services the page and the status Worker both check.
@@ -107,6 +109,29 @@ describe('the status page’s services', () => {
     expect(resolveProbeUrl(api!.check.probe, 'https://lw.example')).toBe(
       'https://www.livediagram.app/api/capabilities',
     );
+  });
+
+  it('checks the Explorer index signed in from the Worker alone, with no credential anywhere in the list', () => {
+    const signed = workerServices(groups);
+    expect(signed.map((s) => s.id)).toEqual(['liveworkspace:index']);
+    // The page keeps the anonymous check.
+    expect(signed[0]!.check).toMatchObject({ mode: 'probe', probe: { url: '/api/index/jwks' } });
+    const probe = signed[0]!.worker;
+    expect(probe).toMatchObject({
+      kind: 'signed-in',
+      url: '/api/index/placement-defaults',
+      ok: [200],
+      everyMinutes: 5,
+      timeoutMs: 5_000,
+    });
+    expect(resolveProbeUrl(probe, 'https://www.liveworkspace.app')).toBe(
+      'https://www.liveworkspace.app/api/index/placement-defaults',
+    );
+    expect(handoffOrigin(probe, 'production')).toBe('https://www.livediagram.app');
+    expect(handoffOrigin(probe, 'staging')).toBe('https://staging.livediagram.app');
+    expect(handoffOrigin(probe, 'development')).toMatch(/^http:\/\/localhost:\d+$/);
+    for (const env of ['production', 'staging', 'development'] as const)
+      expect(JSON.stringify(statusGroups(env))).not.toMatch(/lw_guest|bearer|STATUS_GUEST_COOKIE/i);
   });
 
   it('keeps one round small: 31 requests, under a Worker’s 50 subrequests with room to spare', () => {

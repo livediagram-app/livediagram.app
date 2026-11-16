@@ -219,7 +219,7 @@ describe('StatusBoard with the hourly history', () => {
     expect(item.textContent).toContain('API · liveplanner');
     expect(item.textContent).toContain('Down');
     expect(item.textContent).toContain('Ongoing');
-    expect(item.textContent).toContain('No answer in 10 s');
+    expect(item.textContent).toContain('No answer in time');
   });
 
   it('leaves out the realtime rooms’ copies of the API’s incidents, and shows the latest ten at first', async () => {

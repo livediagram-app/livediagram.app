@@ -215,6 +215,7 @@ function ServiceRow({
 const ERROR_DETAIL: Record<string, string> = {
   timeout: 'Timed out',
   network: 'No answer',
+  sign_in: 'Guest sign-in failed',
 };
 
 // When the hourly run was: "Checked by liveworkspace 23 min ago".

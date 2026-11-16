@@ -13,7 +13,10 @@ routes = [
 ]
 workers_dev = false
 
-# No secrets. Every check is a public address (docs/specs/009-status/status.md).
+# One secret, set by the owner on each environment, never in this file: STATUS_GUEST_COOKIE, the signed lw_guest
+# cookie of the guest the signed-in Explorer check mints its tokens for (docs/specs/009-status/status.md "The
+# signed-in check"). Unset, that check is skipped and the Explorer index is checked anonymously. Every other check is a
+# public address.
 [vars]
 ENVIRONMENT = "production"
 # liveworkspace.app's origin, where its own services are checked.
@@ -32,9 +35,10 @@ name = "READ_RATE_LIMITER"
 namespace_id = "1104"
 simple = { limit = 60, period = 60 }
 
-# Every hour, at minute 7: check every service, store it, roll up the day, prune past 90 days.
+# Every hour, at minute 7: check every service, store it, roll up the day, prune past 90 days. And at every other
+# 5 minutes (src/config.ts SIGNED_IN_CRON): the signed-in Explorer check alone.
 [triggers]
-crons = ["7 * * * *"]
+crons = ["7 * * * *", "2,12,17,22,27,32,37,42,47,52,57 * * * *"]
 
 [env.staging]
 name = "liveworkspace-status-staging"
@@ -57,4 +61,4 @@ namespace_id = "2104"
 simple = { limit = 60, period = 60 }
 
 [env.staging.triggers]
-crons = ["7 * * * *"]
+crons = ["7 * * * *", "2,12,17,22,27,32,37,42,47,52,57 * * * *"]

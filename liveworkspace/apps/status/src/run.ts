@@ -13,32 +13,53 @@ import {
   HISTORY_DAYS,
   probedServices,
   resolveProbeUrl,
-  type StatusEnvironment,
+  type ServiceGroup,
   statusGroups,
+  workerServices,
 } from '@liveworkspace/status';
-import { RETENTION_DAYS } from './config';
+import { RETENTION_DAYS, SIGNED_IN_LOOKBACK_MS } from './config';
 import type { Env } from './env';
-import { type Incident, stepIncidents } from './incidents';
+import { environmentOfWorker } from './environment';
+import { type Incident, type PreviousCheck, stepIncidents } from './incidents';
 import { type Clock, type Fetch, probeAll, type ProbeTarget } from './probe';
 import { type DayCheck, type DayRollup, rollupDay } from './rollup';
+import { signedInTarget } from './signed-in';
 import { buildHistory, buildLatest, type DailyRow } from './snapshot';
 
-export function environmentOfWorker(env: Env): StatusEnvironment {
-  return env.ENVIRONMENT === 'staging' || env.ENVIRONMENT === 'development'
-    ? env.ENVIRONMENT
-    : 'production';
+export { environmentOfWorker };
+
+/** The services checked signed in this run: none without the secret, when each keeps its anonymous check. */
+export function signedInServices(env: Env, groups: readonly ServiceGroup[]) {
+  return env.STATUS_GUEST_COOKIE ? workerServices(groups) : [];
 }
 
-/** Every address one run checks, with the fetch that reaches it. */
-export function probeTargets(env: Env, fetchImpl: Fetch): ProbeTarget[] {
+/** Every address one run checks, with the fetch that reaches it; a service checked signed in, signed in. */
+export function probeTargets(env: Env, fetchImpl: Fetch, now?: Clock): ProbeTarget[] {
   const groups = statusGroups(environmentOfWorker(env));
-  return probedServices(groups).map((s) => ({
-    id: s.id,
-    probe: s.check.probe,
-    url: resolveProbeUrl(s.check.probe, env.PLATFORM_ORIGIN),
-    fetch: fetchImpl,
-  }));
+  const signed = new Map(
+    signedInServices(env, groups).map((s) => [s.id, signedInTarget(env, s, fetchImpl, now)]),
+  );
+  return probedServices(groups).map(
+    (s) =>
+      signed.get(s.id) ?? {
+        id: s.id,
+        probe: s.check.probe,
+        url: resolveProbeUrl(s.check.probe, env.PLATFORM_ORIGIN),
+        fetch: fetchImpl,
+      },
+  );
 }
+
+/** How many checks an hour each signed-in service gets, for the pooled uptimes (buildHistory's `perHour`). */
+export const perHourOf = (services: ReturnType<typeof signedInServices>) =>
+  new Map(services.map((s) => [s.id, 60 / s.worker.everyMinutes]));
+
+// A service's check before `at`, within SIGNED_IN_LOOKBACK_MS: `checks`' key leads with `at`, so it is one short range.
+export const PREVIOUS_CHECK_SQL =
+  'SELECT at, state, error FROM checks WHERE at >= ? AND at < ? AND service = ? ORDER BY at DESC LIMIT 1';
+
+export const previousCheckOf = (r: D1Result | undefined): PreviousCheck | null =>
+  ((r?.results ?? [])[0] as PreviousCheck | undefined) ?? null;
 
 export type RunReport = {
   at: number;
@@ -51,9 +72,11 @@ export type RunReport = {
   // From D1's own counts, for the logs (docs/specs/009-status/status.md "Performance").
   rowsRead: number;
   rowsWritten: number;
+  // Whether the Explorer index was checked signed in, or anonymously for want of the secret.
+  signedIn: 'checked' | 'no_secret';
 };
 
-type IncidentRow = {
+export type IncidentRow = {
   id: number;
   service: string;
   started_at: number;
@@ -64,7 +87,7 @@ type IncidentRow = {
   error: CheckError | null;
 };
 
-const toIncident = (r: IncidentRow): Incident => ({
+export const toIncident = (r: IncidentRow): Incident => ({
   id: r.id,
   service: r.service,
   startedAt: r.started_at,
@@ -75,7 +98,22 @@ const toIncident = (r: IncidentRow): Incident => ({
   error: r.error,
 });
 
-const INCIDENT_COLUMNS = 'id, service, started_at, last_at, ended_at, worst, checks, error';
+export const INCIDENT_COLUMNS = 'id, service, started_at, last_at, ended_at, worst, checks, error';
+
+export const INSERT_CHECK_SQL =
+  'INSERT OR REPLACE INTO checks (at, service, state, code, ms, error) VALUES (?, ?, ?, ?, ?, ?)';
+export const UPSERT_DAY_SQL = `INSERT INTO daily (day, service, checks, up, slow, down, p50, p95, worst) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT (day, service) DO UPDATE SET checks = excluded.checks, up = excluded.up, slow = excluded.slow,
+     down = excluded.down, p50 = excluded.p50, p95 = excluded.p95, worst = excluded.worst`;
+export const INSERT_INCIDENT_SQL =
+  'INSERT INTO incidents (service, started_at, last_at, ended_at, worst, checks, error) VALUES (?, ?, ?, ?, ?, ?, ?)';
+export const UPDATE_INCIDENT_SQL =
+  'UPDATE incidents SET last_at = ?, ended_at = ?, worst = ?, checks = ?, error = ? WHERE id = ?';
+/** D1's own count of rows read or written over a batch's results, for the logs. */
+export const metaSum = (list: D1Result[], key: 'rows_read' | 'rows_written') =>
+  list.reduce((n, r) => n + (Number((r.meta as Record<string, unknown>)?.[key]) || 0), 0);
+
+export const PUT_SNAPSHOT_SQL = 'INSERT OR REPLACE INTO snapshots (key, at, body) VALUES (?, ?, ?)';
 
 /** Check every service now and store it. `results` hands in the checks (tests); otherwise they are made here. */
 export async function runOnce(
@@ -91,10 +129,11 @@ export async function runOnce(
   const db = env.STATUS_DB;
   const groups = statusGroups(environmentOfWorker(env));
   const services = allServices(groups);
+  const signedIn = signedInServices(env, groups);
   const probed =
     options.results ??
     (await probeAll(
-      probeTargets(env, options.fetch ?? ((r) => fetch(r))),
+      probeTargets(env, options.fetch ?? ((r) => fetch(r)), options.now),
       options.now,
       options.timeoutMs,
     ));
@@ -110,7 +149,7 @@ export async function runOnce(
   const from = addDays(today, -(HISTORY_DAYS - 1));
   const since = dayStart(from);
 
-  const [todayChecks, openRows, dailyRows, closedRows] = await db.batch([
+  const [todayChecks, openRows, dailyRows, closedRows, ...previousRows] = await db.batch([
     db
       .prepare('SELECT service, state, ms FROM checks WHERE at >= ? AND at < ?')
       .bind(dayStart(today), at),
@@ -125,6 +164,10 @@ export async function runOnce(
         `SELECT ${INCIDENT_COLUMNS} FROM incidents WHERE ended_at >= ? ORDER BY started_at DESC LIMIT 50`,
       )
       .bind(since),
+    // The signed-in check's previous one, for its second-down-in-a-row rule.
+    ...signedIn.map((s) =>
+      db.prepare(PREVIOUS_CHECK_SQL).bind(at - SIGNED_IN_LOOKBACK_MS, at, s.id),
+    ),
   ]);
 
   // Today's rollups: the day's earlier checks with this run's.
@@ -141,7 +184,8 @@ export async function runOnce(
   }));
 
   const open = ((openRows!.results ?? []) as IncidentRow[]).map(toIncident);
-  const step = stepIncidents(open, results, at, new Set(services.map((s) => s.id)));
+  const confirm = new Map(signedIn.map((s, i) => [s.id, previousCheckOf(previousRows[i])]));
+  const step = stepIncidents(open, results, at, new Set(services.map((s) => s.id)), confirm);
   const closed = ((closedRows!.results ?? []) as IncidentRow[]).map(toIncident);
 
   const latest = buildLatest(at, results);
@@ -153,25 +197,14 @@ export async function runOnce(
     daily: [...((dailyRows!.results ?? []) as DailyRow[]), ...todayRows],
     incidents: [...closed, ...step.after],
     latest,
+    perHour: perHourOf(signedIn),
   });
 
-  const insertCheck = db.prepare(
-    'INSERT OR REPLACE INTO checks (at, service, state, code, ms, error) VALUES (?, ?, ?, ?, ?, ?)',
-  );
-  const upsertDay = db.prepare(
-    `INSERT INTO daily (day, service, checks, up, slow, down, p50, p95, worst) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-     ON CONFLICT (day, service) DO UPDATE SET checks = excluded.checks, up = excluded.up, slow = excluded.slow,
-     down = excluded.down, p50 = excluded.p50, p95 = excluded.p95, worst = excluded.worst`,
-  );
-  const insertIncident = db.prepare(
-    'INSERT INTO incidents (service, started_at, last_at, ended_at, worst, checks, error) VALUES (?, ?, ?, ?, ?, ?, ?)',
-  );
-  const updateIncident = db.prepare(
-    'UPDATE incidents SET last_at = ?, ended_at = ?, worst = ?, checks = ?, error = ? WHERE id = ?',
-  );
-  const putSnapshot = db.prepare(
-    'INSERT OR REPLACE INTO snapshots (key, at, body) VALUES (?, ?, ?)',
-  );
+  const insertCheck = db.prepare(INSERT_CHECK_SQL);
+  const upsertDay = db.prepare(UPSERT_DAY_SQL);
+  const insertIncident = db.prepare(INSERT_INCIDENT_SQL);
+  const updateIncident = db.prepare(UPDATE_INCIDENT_SQL);
+  const putSnapshot = db.prepare(PUT_SNAPSHOT_SQL);
   const writes: D1PreparedStatement[] = [
     ...[...results].map(([service, r]) =>
       insertCheck.bind(at, service, r.state, r.code, r.ms, r.error),
@@ -198,8 +231,7 @@ export async function runOnce(
 
   const count = (state: CheckResult['state']) =>
     [...results.values()].filter((r) => r.state === state).length;
-  const sum = (list: D1Result[], key: 'rows_read' | 'rows_written') =>
-    list.reduce((n, r) => n + (Number((r.meta as Record<string, unknown>)?.[key]) || 0), 0);
+  const sum = metaSum;
   return {
     at,
     checked: results.size,
@@ -209,8 +241,9 @@ export async function runOnce(
     opened: step.opened.length,
     closed: step.changed.filter((i) => i.endedAt !== null).length,
     rowsRead:
-      sum([todayChecks!, openRows!, dailyRows!, closedRows!], 'rows_read') +
+      sum([todayChecks!, openRows!, dailyRows!, closedRows!, ...previousRows], 'rows_read') +
       sum(written, 'rows_read'),
     rowsWritten: sum(written, 'rows_written'),
+    signedIn: env.STATUS_GUEST_COOKIE ? 'checked' : 'no_secret',
   };
 }

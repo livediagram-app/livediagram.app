@@ -1,8 +1,13 @@
 // Incidents (liveworkspace/docs/specs/009-status/status.md "The hourly run"): outages only. A run of consecutive down checks of one
 // service, from its first down check to the first check after it that answered (up or slow). Each run opens, extends or
-// closes them. A slow hour is no incident: the day's bar shows it. Pure.
+// closes them. A slow hour is no incident: the day's bar shows it. The signed-in Explorer check, every 5 minutes, opens
+// one only on its second down check in a row ("The signed-in check"), so one slow key fetch on a cold isolate isn't an
+// outage. Pure.
 
-import type { CheckError, CheckResult } from '@liveworkspace/status';
+import type { CheckError, CheckResult, CheckState } from '@liveworkspace/status';
+
+// A service's check before this run's, for the services that open an incident only on their second down in a row.
+export type PreviousCheck = { at: number; state: CheckState; error: CheckError | null };
 
 export type Incident = {
   // The row's id, or null for one this run opens.
@@ -30,12 +35,15 @@ export type IncidentStep = {
 };
 
 /** One run's effect on the open incidents. A service missing from `results` this run leaves its incident as it is,
- *  unless it is no longer on the list at all (`listed`): then nothing will ever close it, so this run does. */
+ *  unless it is no longer on the list at all (`listed`): then nothing will ever close it, so this run does. A service
+ *  in `confirm` opens one only when its check before this one (null for none in time) was down too: the incident then
+ *  starts at that one, with its error. */
 export function stepIncidents(
   open: readonly Incident[],
   results: ReadonlyMap<string, CheckResult>,
   at: number,
   listed?: ReadonlySet<string>,
+  confirm?: ReadonlyMap<string, PreviousCheck | null>,
 ): IncidentStep {
   const byService = new Map(open.map((i) => [i.service, i]));
   const opened: Incident[] = [];
@@ -63,7 +71,7 @@ export function stepIncidents(
       after.push(extended);
       continue;
     }
-    const fresh: Incident = {
+    let fresh: Incident = {
       id: null,
       service,
       startedAt: at,
@@ -73,6 +81,12 @@ export function stepIncidents(
       checks: 1,
       error: r.error,
     };
+    if (confirm?.has(service)) {
+      const before = confirm.get(service);
+      // Its first down check in a row: no incident yet.
+      if (before?.state !== 'down') continue;
+      fresh = { ...fresh, startedAt: before.at, checks: 2, error: before.error ?? r.error };
+    }
     opened.push(fresh);
     after.push(fresh);
   }

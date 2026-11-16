@@ -247,3 +247,92 @@ describe('runOnce', () => {
     expect(batches).toEqual([4, 87]);
   });
 });
+
+describe('runOnce with the signed-in Explorer check', () => {
+  const INDEX = 'liveworkspace:index';
+  const signedEnv = () => testEnv({ STATUS_GUEST_COOKIE: 'guest_test.not-a-real-signature' });
+
+  // Every service answers as it should; the hand-off and the index call, signed in.
+  const world =
+    (seen: Request[]): Fetch =>
+    async (r) => {
+      seen.push(r);
+      const url = new URL(r.url);
+      const state = url.searchParams.get('state');
+      if (url.hostname === 'www.livediagram.app' && url.pathname === '/api/auth/guest') {
+        const next = `https://lw.example/api/auth/guest?state=${state}`;
+        return new Response(null, { status: 302, headers: { Location: next } });
+      }
+      if (url.pathname === '/api/auth/guest') {
+        const back = `https://www.livediagram.app/auth/guest#guest_token=t&state=${state}`;
+        return new Response(null, { status: 302, headers: { Location: back } });
+      }
+      const status = r.method === 'OPTIONS' ? 204 : url.pathname === '/api/previews' ? 404 : 200;
+      return new Response(status === 204 ? null : '{}', {
+        status,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    };
+
+  it('checks the index signed in, in place of the anonymous jwks, within 40 requests', async () => {
+    const env = signedEnv();
+    const seen: Request[] = [];
+    const report = await runOnce(env, T0, { fetch: world(seen) });
+    expect(report).toMatchObject({ checked: 41, down: 0, signedIn: 'checked' });
+    const paths = seen.map((r) => new URL(r.url).pathname);
+    expect(paths).toContain('/api/index/placement-defaults');
+    expect(paths).not.toContain('/api/index/jwks');
+    expect(seen).toHaveLength(33);
+    expect(seen.length).toBeLessThan(40);
+  });
+
+  it('keeps the anonymous check without the secret, and says so', async () => {
+    const seen: Request[] = [];
+    const report = await runOnce(testEnv(), T0, { fetch: world(seen) });
+    expect(report.signedIn).toBe('no_secret');
+    expect(seen.map((r) => new URL(r.url).pathname)).toContain('/api/index/jwks');
+    expect(seen).toHaveLength(31);
+  });
+
+  it('opens no incident on the index’s first down check, and one on its second in a row', async () => {
+    const env = signedEnv();
+    const index: CheckResult = { state: 'down', code: 401, ms: 4_000, error: 'status' };
+    await runOnce(env, T0, { results: results({ [INDEX]: index }) });
+    expect(rows(env, 'SELECT * FROM incidents')).toEqual([]);
+    // A 5-minute check stored in between, down too.
+    const between = T0 + HOUR - 300_000;
+    env.raw
+      .prepare('INSERT INTO checks VALUES (?, ?, ?, ?, ?, ?)')
+      .run(between, INDEX, 'down', 401, 4000, 'status');
+    const report = await runOnce(env, T0 + HOUR, { results: results({ [INDEX]: index }) });
+    expect(report.opened).toBe(1);
+    expect(rows(env, 'SELECT started_at, checks FROM incidents')).toEqual([
+      { started_at: between, checks: 2 },
+    ]);
+  });
+
+  it('weighs the 5-minute service as an hourly one in its group’s uptime, but counts every check in its own', async () => {
+    const env = signedEnv();
+    // Today so far: 11 earlier checks of the index, 6 of them down; with this run's, 6 of 12.
+    const insert = env.raw.prepare('INSERT INTO checks VALUES (?, ?, ?, ?, ?, ?)');
+    for (let i = 1; i <= 11; i++)
+      insert.run(T0 - i * 300_000, INDEX, i <= 6 ? 'down' : 'up', 200, 90, null);
+    await runOnce(env, T0, { results: results() });
+    const history = snapshot<StatusHistory>(env, 'history');
+    expect(history.services[INDEX]!.p).toBe(50);
+    // liveworkspace's five other services one check each, all up; the index weighs one check, half answered.
+    expect(history.uptime!.groups.liveworkspace).toBe(Math.round((5.5 / 6) * 10_000) / 100);
+  });
+
+  it('reads the index’s previous check in the same read batch', async () => {
+    const env = signedEnv();
+    const batches: number[] = [];
+    const db = env.STATUS_DB;
+    env.STATUS_DB = {
+      prepare: db.prepare.bind(db),
+      batch: (stmts: D1PreparedStatement[]) => (batches.push(stmts.length), db.batch(stmts)),
+    } as unknown as D1Database;
+    await runOnce(env, T0, { results: results() });
+    expect(batches).toEqual([5, 87]);
+  });
+});
