@@ -9,8 +9,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { APPROVAL_NOTE_MAX, type ApprovalDecisionInput } from '@liveworkspace/index-client';
 import { Button, TextArea } from '@liveworkspace/ui';
-import { DOCUMENT_CHECK } from '../library/event-icons';
-import { Glyph } from '../ui/icons';
+import { ApprovalGlyph, DOCUMENT_CHECK } from './glyphs';
 import { decidedWords, dueWords, isOverdue, personName } from './approval-words';
 import { useApprovalDoor } from './door';
 
@@ -78,9 +77,7 @@ export function ApprovalBanner() {
         aria-hidden
         className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-200"
       >
-        <Glyph size={16} units={24}>
-          <path d={DOCUMENT_CHECK} />
-        </Glyph>
+        <ApprovalGlyph d={DOCUMENT_CHECK} size={16} />
       </span>
       {decided ? (
         <>

@@ -14,4 +14,5 @@ export {
   type ApprovalTeamPerson,
 } from './door';
 export { ApprovalBadge } from './ApprovalBadge';
-export { ApprovalBanner } from './ApprovalBanner';
+// The banner's slot under the name the editors use; the banner itself loads when someone is named.
+export { ApprovalBannerSlot as ApprovalBanner } from './BannerSlot';

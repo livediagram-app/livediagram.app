@@ -7,21 +7,9 @@
 // words. No approval, or a cancelled one, draws nothing.
 
 import { HoverCard } from '@liveworkspace/ui';
-import { DOCUMENT_CHECK, FLAG } from '../library/event-icons';
-import { Glyph } from '../ui/icons';
+import { ApprovalGlyph, STATUS_GLYPH } from './glyphs';
 import { badgeSummary, statusWords, type StatusTone } from './approval-words';
 import { useApprovalDoor } from './door';
-
-const CLOCK = 'M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z';
-const PENCIL =
-  'M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z';
-
-const GLYPH: Record<StatusTone, string> = {
-  awaiting: CLOCK,
-  changes: FLAG,
-  approved: DOCUMENT_CHECK,
-  changed: PENCIL,
-};
 
 // The role pill's shape (19px, 10px semibold, a ring), so the two read as one row.
 const PILL =
@@ -47,9 +35,7 @@ const HOVER: Record<StatusTone, string> = {
 export function ApprovalPill({ label, tone }: { label: string; tone: StatusTone }) {
   return (
     <span className={`${PILL} ${BADGE_TONE[tone]}`} data-approval-status={tone}>
-      <Glyph size={11} units={24}>
-        <path d={GLYPH[tone]} />
-      </Glyph>
+      <ApprovalGlyph d={STATUS_GLYPH[tone]} size={11} />
       <span className="text-optical-line text-optical-caps">{label}</span>
     </span>
   );
@@ -61,11 +47,7 @@ export function ApprovalBadge() {
   if (!ctx?.approval || !words) return null;
   const summary = badgeSummary(ctx.approval);
   const open = ctx.openApprovalTab;
-  const glyph = (
-    <Glyph size={11} units={24}>
-      <path d={GLYPH[words.tone]} />
-    </Glyph>
-  );
+  const glyph = <ApprovalGlyph d={STATUS_GLYPH[words.tone]} size={11} />;
   return (
     <HoverCard title={words.label} description={summary}>
       {open ? (

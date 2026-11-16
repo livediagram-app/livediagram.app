@@ -14,6 +14,7 @@ import type { ReactNode } from 'react';
 import { ShareDialog } from '../dialogs/ShareDialog';
 import { ApprovalBadge } from './ApprovalBadge';
 import { ApprovalBanner } from './ApprovalBanner';
+import { ApprovalBannerSlot } from './BannerSlot';
 import { ApprovalPanel } from './ApprovalPanel';
 import { requestErrorWords } from './ApprovalForm';
 import {
@@ -316,6 +317,18 @@ describe('the banner (a Viewer’s one write)', () => {
       expect(container.textContent).toBe('');
       unmount();
     }
+  });
+});
+
+describe('the banner’s slot', () => {
+  it('loads the banner for someone named, and nothing for anyone else', async () => {
+    const { unmount } = wrap(doorOf(fakeClient(approvalOf())), <ApprovalBannerSlot />);
+    await screen.findByRole('button', { name: 'Approve' });
+    unmount();
+    const client = fakeClient(approvalOf());
+    const { container } = wrap(doorOf(client, { viewerId: 'user_z' }), <ApprovalBannerSlot />);
+    await waitFor(() => expect(client.getApproval).toHaveBeenCalled());
+    expect(container.textContent).toBe('');
   });
 });
 
