@@ -183,7 +183,7 @@ export function actionAssignedEmail(
 // docs/specs/012-collaboration/comment-mentions.md: a teammate @-mentioned the recipient in a comment. The
 // author and document name come from server state (the notify-mention route);
 // the quote is the author's own words, escaped and cut at a word.
-// Someone asked the recipient to approve a document (liveworkspace/docs/specs/004-index/approvals.md "The email"):
+// Someone asked the recipient to approve a canvas (liveworkspace/docs/specs/004-index/approvals.md "The email"):
 // who asked, the document, the day hoped for and their note. Opt-out with assigned actions (notifyActionAssigned).
 export function approvalRequestedEmail(env: Env, input: ApprovalEmailInput): RenderedEmail {
   const base = appBaseUrl(env);
@@ -191,8 +191,8 @@ export function approvalRequestedEmail(env: Env, input: ApprovalEmailInput): Ren
   const who = name ? escapeHtml(name) : 'A teammate';
   const whoText = name ? escapeText(name) : 'A teammate';
   const title = input.item.name.trim();
-  const item = title ? escapeHtml(title) : 'a shared document';
-  const itemText = title ? escapeText(title) : 'a document';
+  const item = title ? escapeHtml(title) : 'a shared canvas';
+  const itemText = title ? escapeText(title) : 'a canvas';
   const due = input.due ? APPROVAL_DUE.format(new Date(`${input.due}T00:00:00Z`)) : null;
   const note = input.note?.trim()
     ? escapeHtml(
@@ -208,7 +208,7 @@ export function approvalRequestedEmail(env: Env, input: ApprovalEmailInput): Ren
       heading: 'Your approval is requested',
       intro: `<strong>${who}</strong> asked you to approve <strong>${item}</strong>${due ? ` by <strong>${due}</strong>` : ''}. Open it to approve it or request changes.`,
       ...(note ? { outro: note } : {}),
-      ctaText: 'Review the document',
+      ctaText: 'Review the canvas',
       ctaHref: `${base}/document/${encodeURIComponent(input.item.id)}`,
       footer: manageNotificationsFooter(
         env,

@@ -77,6 +77,14 @@ export function auditSentence(event: TeamAuditEvent, teamId: string): AuditSente
       return { who, action: 'restored', target: title, after: 'from the Trash' };
     case 'deleted':
       return { who, action: 'deleted', target: title, after: 'for good' };
+    case 'approval_requested':
+      return { who, action: 'asked for approval of', target: title };
+    case 'approval_approved':
+      return { who, action: 'approved', target: title };
+    case 'approval_changes_requested':
+      return { who, action: 'requested changes to', target: title };
+    case 'approval_cancelled':
+      return { who, action: 'cancelled the approval request on', target: title };
     case 'webhook_added':
       return { who, action: 'added the webhook', target: detail.host ?? title };
     case 'webhook_removed':
@@ -101,6 +109,14 @@ export function auditDetail(event: TeamAuditEvent): string | null {
       return detail.from ? `Was ${quoted(detail.from)}` : null;
     case 'deleted':
       return detail.reason === 'offline' ? 'Taken offline' : null;
+    case 'approval_requested': {
+      const count = Number(detail.approvers ?? '0') || 0;
+      return count === 1 ? '1 approver' : count > 1 ? `${count} approvers` : null;
+    }
+    case 'approval_approved':
+      return detail.complete ? 'Approved by everyone' : null;
+    case 'approval_cancelled':
+      return detail.replaced ? 'Asked again' : null;
     case 'webhook_added':
     case 'webhook_removed':
       return isWebhookKind(detail.kind) ? WEBHOOK_KIND_WORDS[detail.kind] : null;

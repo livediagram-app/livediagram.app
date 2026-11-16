@@ -4,6 +4,7 @@
 // SplitViewFrame by EditorView, which lays them across both panes side by side
 // (docs/specs/007-editor/split-view.md); each renders nothing where its bar is hidden.
 
+import { ApprovalBadge } from '@liveworkspace/explorer/approvals';
 import { memo } from 'react';
 import { truncateName, type Tab } from '@livedocuments/document';
 import { withStableEventProps } from '@liveworkspace/workbench/components/primitives/withStableEventProps';
@@ -89,12 +90,15 @@ export const EditorViewHeader = memo(function EditorViewHeader(view: {
           readOnly={readOnly}
           renameNonce={renameNonce}
           rolePill={
-            <RolePill
-              role={roleLevel}
-              ownerName={ownerName}
-              isSelf={isSelf}
-              onToggle={canToggleRole ? () => chrome.get().toggleViewPreview() : undefined}
-            />
+            <>
+              <RolePill
+                role={roleLevel}
+                ownerName={ownerName}
+                isSelf={isSelf}
+                onToggle={canToggleRole ? () => chrome.get().toggleViewPreview() : undefined}
+              />
+              <ApprovalBadge />
+            </>
           }
           // docs/specs/012-collaboration/presentation-mode.md "The header's Present button": only
           // while the deck has a slide to show, on a desktop, once the document is up. Every role.

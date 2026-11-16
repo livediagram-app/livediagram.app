@@ -6,7 +6,7 @@ import { approvalRequestedEmail } from './templates';
 const env = { APP_BASE_URL: 'https://app.test' } as unknown as Env;
 
 describe('approvalRequestedEmail', () => {
-  it('names who asked, the document, the day and the note, and opens the document', () => {
+  it('names who asked, the canvas, the day and the note, and opens the canvas', () => {
     const email = approvalRequestedEmail(env, {
       requesterName: 'Ada <Lovelace>',
       item: { id: 'item 1', name: 'Q3 & Q4' },
@@ -24,15 +24,15 @@ describe('approvalRequestedEmail', () => {
     expect(email.unsubscribeUrl).toEqual(expect.any(String));
   });
 
-  it('says a teammate and a shared document when it knows neither, and cuts a long note', () => {
+  it('says a teammate and a shared canvas when it knows neither, and cuts a long note', () => {
     const email = approvalRequestedEmail(env, {
       requesterName: null,
       item: { id: 'i', name: '  ' },
       note: 'x'.repeat(300),
       due: null,
     });
-    expect(email.subject).toBe('A teammate asked you to approve a document');
-    expect(email.html).toContain('<strong>a shared document</strong>. Open it');
+    expect(email.subject).toBe('A teammate asked you to approve a canvas');
+    expect(email.html).toContain('<strong>a shared canvas</strong>. Open it');
     expect(email.html).toContain(`${'x'.repeat(200)}…`);
     const bare = approvalRequestedEmail(env, {
       requesterName: ' ',

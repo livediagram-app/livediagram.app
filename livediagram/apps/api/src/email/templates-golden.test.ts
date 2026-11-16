@@ -52,7 +52,7 @@ const FIXTURES: Record<string, unknown[][]> = {
 };
 
 const EXPECTED: Record<string, string> = {
-  approvalRequestedEmail: '25aa5797dc0f49f00df99f683be7e86a2f7341f88b92a1def29c217a49ad3f33',
+  approvalRequestedEmail: '84d2eeb4113cfa1f69e1929c675447ea192991f70ecf3a9d49b9b993de3f4a8a',
   accountDeletedEmail: 'ae0e557fc4e9ae95a751c2d6aa83f425ed6ab153b1d81cb4f75eb2117dce2e80',
   actionAssignedEmail: '3e569c9ff6f7bd92289a2dec8e9f3b7e59a0a32a30f36e7d1d405d812bfe42fe',
   commentNotificationEmail: '754e13d9ecb99b4faeeb1413ddd6264e62d08144e89dd8403f1a32edea2f6f06',

@@ -89,7 +89,7 @@ const notifier = createNotifier<Env, RenderedEmail>({
 export const notifyMilestone = (env: Env, ownerId: string): Promise<void> =>
   notifier.notifyMilestone(env, ownerId);
 
-// Someone asked these people to approve a document (the index's `approval_requested` notice,
+// Someone asked these people to approve a canvas (the index's `approval_requested` notice,
 // routes/internal-items.ts). Opt-out with assigned actions (notifyActionAssigned).
 export const notifyApprovalRequested = (
   env: Env,

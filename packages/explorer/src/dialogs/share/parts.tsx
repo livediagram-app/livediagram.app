@@ -92,8 +92,9 @@ export const PASS_BIN =
 
 export type ShareTab = { id: string; name: string };
 
-// The dialog's own two tabs: its passes, and the host's (livediagram's Community).
-export type ShareView = 'passes' | 'app';
+// The dialog's tabs: its passes, the host's (livediagram's Community) and, for an Editor where the editor offers
+// approvals, Approval (approvals.md).
+export type ShareView = 'passes' | 'app' | 'approval';
 
 // '' stands for every tab: All tabs, then each tab by name in order.
 export function ScopeOptions({ tabs }: { tabs: ShareTab[] }) {
