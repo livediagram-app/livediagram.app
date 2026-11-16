@@ -237,8 +237,12 @@ describe('notifyMentioned', () => {
   it('sends the quote to the verified address, or the invite address, once', async () => {
     const { notifier, deps, sent } = setup({ reachable: { user_priya: 'priya@x.com' } });
     vi.spyOn(console, 'warn').mockImplementation(() => {});
-    await notifier.notifyMentioned(on, { ...input, recipients: [priya, invited] });
-    await notifier.notifyMentioned(on, input);
+    expect(await notifier.notifyMentioned(on, { ...input, recipients: [priya, invited] })).toEqual([
+      priya.id,
+      invited.id,
+    ]);
+    // The same quote again is a refused claim: nobody emailed, and the caller hears so.
+    expect(await notifier.notifyMentioned(on, input)).toEqual([]);
     expect(deps.recipients).toHaveBeenCalledWith(on, ['user_priya'], 'notifyMentions');
     expect(sent.map((e) => [e.to, e.subject])).toEqual([
       ['priya@x.com', 'Sam mentioned you in Roadmap'],
@@ -248,9 +252,9 @@ describe('notifyMentioned', () => {
 
   it('does nothing when email is off, for no one, or when the recipient opted out', async () => {
     const { notifier, sent } = setup();
-    await notifier.notifyMentioned(off, input);
-    await notifier.notifyMentioned(on, { ...input, recipients: [] });
-    await notifier.notifyMentioned(on, input);
+    expect(await notifier.notifyMentioned(off, input)).toEqual([]);
+    expect(await notifier.notifyMentioned(on, { ...input, recipients: [] })).toEqual([]);
+    expect(await notifier.notifyMentioned(on, input)).toEqual([]);
     expect(sent).toEqual([]);
   });
 });

@@ -9,7 +9,8 @@ import type { ConnectedTabWrite } from '@liveworkspace/index-client';
 import { documentHasTab } from '../db/tabs';
 import { documentPlacesImage } from '../db/image-refs';
 import { documentMayServeImage } from '../db/image-grants';
-import { notifyDocumentJoin, notifyMentioned } from '../email/notifications';
+import { notifyDocumentJoin } from '../email/notifications';
+import { mentionThenOwner } from '../email/mention-then-owner';
 import { actionNotices, type NoticeDocument } from '../liveworkspace/action-notices';
 import type { ActionNotice, MentionNotice } from '../document-client';
 import { communityCheckDueAt, openCommunityCode, readCommunityPost } from './community-post';
@@ -262,12 +263,7 @@ export async function notifyMention(
 ): Promise<boolean> {
   const document = await noticeDocument(room, documentId);
   if (!document) return false;
-  room.state.waitUntil(
-    notifyMentioned(room.requireEnv(), {
-      ...input,
-      document: { id: document.id, name: document.name },
-    }).catch(() => {}),
-  );
+  room.state.waitUntil(mentionThenOwner(room.requireEnv(), document, input).catch(() => {}));
   return true;
 }
 

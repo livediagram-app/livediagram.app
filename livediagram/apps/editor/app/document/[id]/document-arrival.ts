@@ -58,7 +58,7 @@ export type BootstrapSet = {
   setSessionCommunity: SetState<CommunitySession | null>;
   // The one tab a tab-scoped link opens (docs/specs/013-workspace/tab-scoped-share-links.md); null = all.
   setSessionTabScope: (scope: string | null) => void;
-  setSharePasswordGate: SetState<{ invalid: boolean } | null>;
+  setSharePasswordGate: SetState<{ invalid: boolean; changed?: boolean } | null>;
   setIdentityPromptOpen: SetState<boolean>;
 };
 

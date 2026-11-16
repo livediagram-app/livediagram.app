@@ -15,7 +15,8 @@ import {
   type ReactNode,
 } from 'react';
 
-type Tone = 'info' | 'success' | 'error';
+// `warning`: something happened to the person that they should know, not their mistake (a revoked link on arrival).
+type Tone = 'info' | 'success' | 'warning' | 'error';
 type Hold = 'hover' | 'focus';
 type Toast = { id: number; tone: Tone; text: string; action?: { label: string; run: () => void } };
 
@@ -136,6 +137,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           <div
             key={t.id}
             role={t.tone === 'error' ? 'alert' : 'status'}
+            data-tone={t.tone}
             onMouseEnter={() => pause(t.id, 'hover')}
             onMouseLeave={() => resume(t.id, 'hover')}
             onFocus={() => pause(t.id, 'focus')}
@@ -147,9 +149,11 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               className={`h-2 w-2 shrink-0 rounded-full ${
                 t.tone === 'error'
                   ? 'bg-rose-500'
-                  : t.tone === 'success'
-                    ? 'bg-emerald-500'
-                    : 'bg-brand-500'
+                  : t.tone === 'warning'
+                    ? 'bg-amber-500'
+                    : t.tone === 'success'
+                      ? 'bg-emerald-500'
+                      : 'bg-brand-500'
               }`}
             />
             <span className="min-w-0 flex-1">{t.text}</span>

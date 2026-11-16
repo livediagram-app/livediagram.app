@@ -49,7 +49,7 @@ type WorkbenchBootstrapDeps = {
     setLoadingDesign: SetState<boolean>;
     setSessionShareCode: SetState<string | null>;
     setSessionTabScope: (scope: string | null) => void;
-    setSharePasswordGate: SetState<{ invalid: boolean } | null>;
+    setSharePasswordGate: SetState<{ invalid: boolean; changed?: boolean } | null>;
   };
 };
 

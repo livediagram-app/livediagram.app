@@ -76,7 +76,10 @@ export function useEditorRealtime() {
   // points at a password-protected document and they haven't supplied a
   // valid password yet. Read early by the preferences + capabilities
   // gates.
-  const [sharePasswordGate, setSharePasswordGate] = useState<{ invalid: boolean } | null>(null);
+  const [sharePasswordGate, setSharePasswordGate] = useState<{
+    invalid: boolean;
+    changed?: boolean;
+  } | null>(null);
   // The role granted to the current session. Owners always have 'edit';
   // visitors get whatever role their share code carried. Drives the
   // save / op-broadcast gates so view-only visitors can't push edits.
