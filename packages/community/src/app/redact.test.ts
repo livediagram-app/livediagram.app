@@ -55,6 +55,25 @@ describe('redactElementsForCommunity', () => {
     expect(frozen).toEqual({ id: 'chart', type: 'shape', pieSlices: [{ label: 'Q1', value: 4 }] });
   });
 
+  it("drops a live embed's link and keeps its snapshot", () => {
+    const embed = {
+      id: 'embed',
+      type: 'video',
+      embedProvider: 'live',
+      liveItem: { app: 'liveplanner', itemId: 'plan_secret' },
+      liveName: 'Roadmap',
+      livePoster: 'data:image/webp;base64,AAAA',
+    };
+    const [frozen] = redactElementsForCommunity([embed]);
+    expect(frozen).toEqual({
+      id: 'embed',
+      type: 'video',
+      embedProvider: 'live',
+      liveName: 'Roadmap',
+      livePoster: 'data:image/webp;base64,AAAA',
+    });
+  });
+
   it('keeps an action but not the people on it', () => {
     expect(out[1]!.action).toEqual({
       ...action,

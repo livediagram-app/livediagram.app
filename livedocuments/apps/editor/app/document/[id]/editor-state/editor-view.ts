@@ -248,6 +248,7 @@ export function editorView({
     linkPickerInitialMode: inputSlice.linkPickerInitialMode,
     openLinkPicker: inputSlice.openLinkPicker,
     applyElementLink: inputSlice.applyElementLink,
+    applyLiveEmbed: inputSlice.applyLiveEmbed,
     cellLinkPickerOpenFor: elementsSlice.cellLinkPickerOpenFor,
     setCellLinkPickerOpenFor: elementsSlice.setCellLinkPickerOpenFor,
     openCellLinkPicker: elementsSlice.openCellLinkPicker,

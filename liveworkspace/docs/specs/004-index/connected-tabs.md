@@ -167,6 +167,12 @@ and says why; a failure says why on the row, in words ("This file has too many l
 as it was. Loading shows quiet placeholder rows; nothing recent says so with a way to the Explorer; a failed load says
 so with Try Again.
 
+## Embedding it live
+
+A connected tab only goes to its file. To show the file live, read-only, inside the host, an Editor places a
+[live embed](live-embeds.md) and picks it from Choose a File, which lists the host's connected files first. A live
+embed never uses the connection's pass: each reader sees the file with their own access, or its snapshot.
+
 ## Removing
 
 Removing a connected tab (its tab menu's Remove, the same as any tab) removes the tab and nothing of the target. The

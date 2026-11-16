@@ -201,7 +201,7 @@ export function ElementFaceRouter(props: ElementFaceRouterProps) {
             }
           />
         ) : element.type === 'video' ? (
-          <VideoView element={element} />
+          <VideoView element={element} canChoose={!readOnly && !isLocked} />
         ) : element.type === 'link-card' ? (
           <LinkCardView
             element={element}

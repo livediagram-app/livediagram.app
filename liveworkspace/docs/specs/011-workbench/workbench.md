@@ -55,6 +55,7 @@ naming another app gives nothing that app's own address would not.
 | Route                                             | Who                                  | What                                                  |
 | ------------------------------------------------- | ------------------------------------ | ----------------------------------------------------- |
 | `POST tickets`                                    | an API token (`lwt_`)                | mint a ticket, or `428 pairing_required` with the URL |
+| `POST embed-tickets`                              | the person's own token, on an app    | a live embed's view ticket (below)                    |
 | `POST sessions`                                   | nobody: the ticket is the credential | redeem a ticket for a session (`lvw_`)                |
 | `DELETE sessions/current`                         | a session (`lvw_`)                   | end that session                                      |
 | `POST pairing-requests`                           | an API token                         | ask to pair, or `paired` when already                 |
@@ -139,6 +140,33 @@ wb_meta             (key, value)        -- whose store it is
    never holds the owner's grant in a form it could use bare; its renewals are sealed tickets of the same pairing; room messages never touch the workbench service. A workspace session
    that joins a room tells accounts once per isolate (`POST internal/workbench/rooms`), off the response's path, so
    ending its access closes that room too.
+
+## Live embed tickets
+
+A [live embed](../004-index/live-embeds.md) opens its target in the target app's workbench frame, with the reader's own
+access at the view level. Its tickets come from the same store, with no API token and no pairing request: the person is
+reading in one of our own apps, so there is nothing to approve.
+
+- **Mint** (`POST embed-tickets`, on the host app's address, which forwards it here as for every workbench route). The
+  bearer is the person's own access or guest token for an app: never an API token, a workbench session or a share code
+  (`403 token_required` for those, `401 sign_in_required` with none). The body is
+  `{ target: <app>, itemId, origin }`: `target` one of `LIVE_EMBED_APPS`, `origin` the host page's origin, which must be
+  one of the apps' origins in this environment (any loopback origin in development), else `400 invalid_origin`. Limited
+  per person by `WORKBENCH_LIMITER` (`workbench-embed:<personId>`). The index is asked for the person's own grant on
+  the item (`ownerItemAccess`): `404 not_found` out of reach, `410 <noun>_trashed` in the Trash, `503
+index_unavailable` when it cannot answer. A guest token mints for the guest's own access, as an account's does. The answer, `201 { ticket, path, expiresAt }`, gives the frame's path
+  (`/embed/workbench?d=<itemId>`), which the host puts on the target's origin, and the ticket for its fragment.
+- **The embed pairing.** The ticket hangs on one pairing per target app and host origin in the person's store, made on
+  the first mint: `token_id` is `embed` (`EMBED_TOKEN_ID`), which no API token can be, `scope` is the item scope and its
+  name "Live embeds". It is never listed in Settings > API tokens, never ended by a token's revocation or a dead-token
+  clean-up, and goes by itself once its last ticket and session have lapsed (the store's alarm), or with the account.
+- **Redeem** is `POST sessions`, as for every ticket. For an embed ticket there is no token to check; the reader's own
+  grant is asked again, the level is `view` whatever it says, and the session lives `LIVE_EMBED_SESSION_TTL_MS`
+  (30 minutes).
+- **Check.** An app's check of an embed session (`POST internal/workbench/session`) answers `level: 'view'` and the
+  session's own expiry; it needs no token row.
+- **Renew.** The frame asks its parent for a ticket before its session ends; the host mints another the same way, so
+  each renewal checks the reader's access again.
 
 ## Ending access
 

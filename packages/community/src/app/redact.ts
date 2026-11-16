@@ -10,7 +10,9 @@
 //   voters get neutral per-card ids, a Q&A note loses its author, a roll call's names become "Participant n";
 // - the tab's dot vote keeps its counts per element with neutral voter ids, and loses who started it;
 // - a chart linked to a sheet in another item (`chartSheetSource`, livedocuments pie-chart.md "Charts linked to a
-//   liveplanner sheet") keeps its last values and loses the link, so a stranger is told of no other item.
+//   liveplanner sheet") keeps its last values and loses the link, so a stranger is told of no other item;
+// - a live embed (`liveItem`, liveworkspace/docs/specs/004-index/live-embeds.md) keeps its snapshot and loses the link,
+//   for the same reason.
 //
 // The placeholders are per card, so a count, an average or a "3 people voted" reads the same, and
 // nothing ties one card's "p1" to another's.
@@ -45,6 +47,7 @@ type PeopleFields = {
   qaNotes?: { author?: unknown; voters?: string[] }[];
   rollCall?: { name: string }[];
   chartSheetSource?: unknown;
+  liveItem?: unknown;
 };
 
 function hasPeople(e: PeopleFields): boolean {
@@ -56,7 +59,8 @@ function hasPeople(e: PeopleFields): boolean {
     Array.isArray(e.responses) ||
     Array.isArray(e.qaNotes) ||
     Array.isArray(e.rollCall) ||
-    e.chartSheetSource !== undefined,
+    e.chartSheetSource !== undefined ||
+    e.liveItem !== undefined,
   );
 }
 
@@ -64,7 +68,13 @@ export function redactElementsForCommunity<E extends object>(elements: E[]): E[]
   return elements.map((el) => {
     const e = el as E & PeopleFields;
     if (!hasPeople(e)) return el;
-    const { commentThread: _thread, cellComments: _cells, chartSheetSource: _source, ...rest } = e;
+    const {
+      commentThread: _thread,
+      cellComments: _cells,
+      chartSheetSource: _source,
+      liveItem: _live,
+      ...rest
+    } = e;
     const out = { ...rest } as E & PeopleFields;
     if (e.action) out.action = anonymiseAction(e.action);
     if (Array.isArray(e.actions)) out.actions = e.actions.map(anonymiseAction);

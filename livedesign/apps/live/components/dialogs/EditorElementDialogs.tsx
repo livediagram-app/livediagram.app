@@ -14,6 +14,8 @@ import {
 import { screenLinkChoices, wireframeTabPages } from '@/lib/screen-link-choices';
 
 import { track } from '@/lib/telemetry';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
+import { connectedTargets } from '@liveworkspace/workbench/components/connect/tab-connection';
 import { canEditSankey } from '@/lib/sankey-edit';
 import { getTheme, themeChartPalette } from '@/lib/themes';
 import { useEditorContext } from '@/app/design/[id]/EditorContext';
@@ -21,6 +23,13 @@ import { useCloseVanishedDialogs } from '@/components/dialogs/useCloseVanishedDi
 
 const NO_PAGES: readonly never[] = [];
 
+const LiveEmbedPicker = dynamic(
+  () =>
+    import('@liveworkspace/workbench/components/live-embed/LiveEmbedPicker').then(
+      (m) => m.LiveEmbedPicker,
+    ),
+  { ssr: false },
+);
 const LinkPickerDialog = dynamic(
   () => import('@/components/dialogs/LinkPickerDialog').then((m) => m.LinkPickerDialog),
   { ssr: false },
@@ -58,6 +67,7 @@ export function EditorElementDialogs() {
     designList,
     designId,
     applyElementLink,
+    applyLiveEmbed,
     setLinkPickerOpenForId,
     cellLinkPickerOpenFor,
     applyCellLink,
@@ -130,6 +140,8 @@ export function EditorElementDialogs() {
   // only, validated as a YouTube link. Every other element keeps the full
   // tab / design / URL choice.
   const linkTarget = activeTab.elements.find((e) => e.id === linkPickerOpenForId);
+  // A live embed chooses a file, not a link (liveworkspace/docs/specs/004-index/live-embeds.md "Making one").
+  const liveEmbedTarget = linkTarget?.type === 'video' && linkTarget.embedProvider === 'live';
   // The provider the embed was created for, when it came from one of the
   // provider tiles (docs/specs/009-elements/embed-providers.md). Names the dialog; the validator still accepts
   // ANY supported link, because refusing one that plainly works is pedantry.
@@ -173,7 +185,22 @@ export function EditorElementDialogs() {
 
   return (
     <>
-      {linkPickerOpenForId !== null && linkTarget && linkPickable(linkTarget) ? (
+      {linkPickerOpenForId !== null && liveEmbedTarget && !isReadOnly && designId ? (
+        <LiveEmbedPicker
+          client={indexClient}
+          hostId={designId}
+          connectedIds={[...connectedTargets(tabs).keys()]}
+          onChoose={(choice) => {
+            applyLiveEmbed(choice);
+            track('Element', 'Added', 'LiveEmbed');
+          }}
+          onClose={() => setLinkPickerOpenForId(null)}
+        />
+      ) : null}
+      {linkPickerOpenForId !== null &&
+      linkTarget &&
+      linkPickable(linkTarget) &&
+      !liveEmbedTarget ? (
         <LinkPickerDialog
           title={linkTarget?.type === 'video' ? 'Link embed' : 'Link element'}
           urlOnly={urlOnly}

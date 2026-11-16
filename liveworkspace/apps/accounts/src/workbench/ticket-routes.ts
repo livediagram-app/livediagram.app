@@ -6,8 +6,9 @@ import { readProfiles } from '../profiles.ts';
 import { teamsClaim } from '../teams.ts';
 import { appBaseUrl, appOfRequest, dialectOf, scopeOfWire, type Dialect } from './apps.ts';
 import { ownerItemAccess, ownerReachesFolder } from './index-access.ts';
-import { liveTokenFacts } from './revoke.ts';
+import { sessionTokenFacts } from './revoke.ts';
 import {
+  EMBED_TOKEN_ID,
   pairingCovers,
   sessionPrefixOf,
   WORKBENCH_SESSION_PATTERN,
@@ -18,6 +19,7 @@ import {
   type WorkbenchReach,
 } from './store.ts';
 import {
+  LIVE_EMBED_SESSION_TTL_MS,
   WORKBENCH_SESSION_TTL_MS,
   WORKBENCH_TICKET_TTL_MS,
   type WorkbenchContext,
@@ -213,8 +215,9 @@ export async function redeemTicket(ctx: WorkbenchContext): Promise<Response> {
   const consumed = await store.consumeTicket(ticket, app, now);
   if (!consumed.ok) return invalidTicket(consumed.reason);
   const t = consumed.ticket;
-  // Its token must still work, and caps the level by its own read-only switch.
-  const token = await liveTokenFacts(env.AUTH_DB, t.tokenId, t.ownerId, now);
+  // Its token must still work, and caps the level by its own read-only switch. A live embed's is always read-only and
+  // its session short (workbench.md "Live embed tickets").
+  const token = await sessionTokenFacts(env.AUTH_DB, t.tokenId, t.ownerId, now);
   if (!token) return invalidTicket('unknown');
 
   let ceiling = t.role;
@@ -243,7 +246,8 @@ export async function redeemTicket(ctx: WorkbenchContext): Promise<Response> {
     t.scope === 'item'
       ? { scope: 'item', itemId: t.itemId, folderId: null }
       : { scope: 'workspace', itemId: null, folderId: t.folderId };
-  const expiresAt = Math.min(now + WORKBENCH_SESSION_TTL_MS, token.expiresAt);
+  const ttl = t.tokenId === EMBED_TOKEN_ID ? LIVE_EMBED_SESSION_TTL_MS : WORKBENCH_SESSION_TTL_MS;
+  const expiresAt = Math.min(now + ttl, token.expiresAt);
   const opened = await store.openSession({
     personId: t.ownerId,
     pairingId: t.pairingId,

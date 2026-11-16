@@ -11,6 +11,8 @@ import {
   type WorkbenchPairingRow,
   type WorkbenchReach,
   type WorkbenchScope,
+  EMBED_PAIRING_NAME,
+  EMBED_TOKEN_ID,
 } from './store-types.ts';
 import type { Row } from './store-schema.ts';
 
@@ -101,6 +103,23 @@ export function recordApprovedPairing(
     request.name,
     request.scope,
     now,
+  );
+}
+
+// A live embed's pairing for an app and host origin, made once (store-types.ts EMBED_TOKEN_ID).
+export function recordEmbedPairing(
+  sql: SqlExec,
+  input: { app: string; origin: string; now: number },
+): void {
+  sql.exec(
+    `INSERT INTO wb_pairings (id, app, token_id, origin, name, scope, created_at) VALUES (?, ?, ?, ?, ?, 'item', ?)
+     ON CONFLICT (app, token_id, origin) DO NOTHING`,
+    crypto.randomUUID(),
+    input.app,
+    EMBED_TOKEN_ID,
+    input.origin,
+    EMBED_PAIRING_NAME,
+    input.now,
   );
 }
 
@@ -222,7 +241,7 @@ export function hasRows(sql: SqlExec): boolean {
 }
 
 // What has lapsed: tickets and requests past their expiry, sessions past their grace, allowance uses past their
-// window. Answers how many rows went.
+// window, and live embed pairings left with neither. Answers how many rows went.
 export function sweepLapsed(sql: SqlExec, now: number): number {
   let deleted = 0;
   const run = (query: string, ...bindings: unknown[]) => {
@@ -232,5 +251,12 @@ export function sweepLapsed(sql: SqlExec, now: number): number {
   run('DELETE FROM wb_pairing_requests WHERE expires_at <= ?', now);
   run('DELETE FROM wb_sessions WHERE expires_at <= ?', now - WORKBENCH_SESSION_GRACE_MS);
   run('DELETE FROM wb_quota WHERE until <= ?', now);
+  // A live embed's pairing goes with its last ticket and session: it is no standing access.
+  run(
+    `DELETE FROM wb_pairings WHERE token_id = ?
+       AND NOT EXISTS (SELECT 1 FROM wb_tickets t WHERE t.pairing_id = wb_pairings.id)
+       AND NOT EXISTS (SELECT 1 FROM wb_sessions s WHERE s.pairing_id = wb_pairings.id)`,
+    EMBED_TOKEN_ID,
+  );
   return deleted;
 }
