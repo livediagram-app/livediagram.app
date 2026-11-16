@@ -32,6 +32,9 @@ const SETTINGS_PACKAGE = `${ROOT}/../packages/settings-ui/src`;
 const ICONS_PACKAGE = `${ROOT}/../packages/icons/src`;
 // The Share dialog's Community tab is every app's (@liveworkspace/community-ui), rendered by the editor as its own.
 const COMMUNITY_UI_PACKAGE = `${ROOT}/../packages/community-ui/src`;
+// The Community page itself, its gallery and its Forum, is liveworkspace's site (liveworkspace/apps/site), served on
+// the app's address as the app's own.
+const COMMUNITY_SITE = `${ROOT}/../liveworkspace/apps/site/components/community`;
 // The shared editor chrome (@liveworkspace/workbench): the comment thread's reactions, the Collaborators modal's
 // footer and the rest every editor renders as its own.
 const WORKBENCH_PACKAGE = `${ROOT}/../packages/workbench/src`;
@@ -110,6 +113,7 @@ function editorSource(): string {
   walk(`${ROOT}/../packages/ui/src`);
   walk(ICONS_PACKAGE);
   walk(COMMUNITY_UI_PACKAGE);
+  walk(COMMUNITY_SITE);
   walk(WORKBENCH_PACKAGE);
   walk(SNAPSHOTS_PACKAGE);
   return all.toLowerCase();

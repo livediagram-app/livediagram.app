@@ -269,7 +269,7 @@ describe('the Forum list', () => {
     answer = () => Response.json({ error: 'rate_limited' }, { status: 429 });
     fireEvent.click(screen.getByRole('button', { name: 'Post Question' }));
     await screen.findByText(/posted a lot in the last hour/);
-    expect((screen.getByLabelText('Title') as HTMLInputElement).value).toBe('Where is the grid?');
+    expect(screen.getByLabelText<HTMLInputElement>('Title').value).toBe('Where is the grid?');
     expect(h.push).not.toHaveBeenCalled();
   });
 });
