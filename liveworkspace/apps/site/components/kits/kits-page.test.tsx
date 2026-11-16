@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { IndexError, KITS, type KitRun } from '@liveworkspace/index-client';
+import { IndexError, KITS, type KitRun, type KitStartInput } from '@liveworkspace/index-client';
 import { KitsPage } from './KitsPage';
 
 // Start a Project in every state (liveworkspace/docs/specs/010-site/site.md "Start a Project"): the kits as a radio
@@ -33,7 +33,7 @@ function draw(answers: (KitRun | Error)[] = []) {
     return a!;
   };
   const client = {
-    startKit: vi.fn(next),
+    startKit: vi.fn((_input: KitStartInput) => next()),
     removeKit: vi.fn(async () => {
       const a = queue.shift();
       if (a instanceof Error) throw a;
@@ -124,7 +124,7 @@ describe('a run', () => {
   it('names the project after the kit when left empty, and spins while it works', async () => {
     let finish: (run: KitRun) => void = () => {};
     const client = {
-      startKit: vi.fn(() => new Promise<KitRun>((r) => (finish = r))),
+      startKit: vi.fn((_input: KitStartInput) => new Promise<KitRun>((r) => (finish = r))),
       removeKit: vi.fn(),
     };
     render(<KitsPage client={client} />);
