@@ -106,12 +106,12 @@ it; **Open Explorer** goes to `/explorer`. An embed or a workbench frame shows t
 back, in a workspace frame), since nothing inside a frame moves it out. The code is
 `@liveworkspace/workbench/lib/archived` and the card's `archived` variant.
 
-
 The owner opening an archived space's address directly gets this card, never the load-error screen: the api relays the index's refusal as `409 archived`, which the arrival (`openOwnAddress`, `@liveworkspace/workbench/lib/editor-arrival`) takes as the archived answer (`isArchivedLoadError`), not a failed load. Only that exact answer: any other failure keeps its error screen.
 
 ### The tab title
 
 The browser tab names what the page shows. An open space names it ("<name> | livehuddle"); a status screen in its place names the screen instead, in Title Case: **Space Not Found**, **Page Not Found**, **Space Archived**, **Space Deleted**, **Couldn’t Load Space**, **Password Required** ("Space Not Found | livehuddle"), so a missing space's tab never reads as an empty one (`useBrowserTabTitle`'s `status`, held by the editor page's status shell). A load that ends on a status screen pins no tab on the address: the `#t=<tab>` pin waits for a tab whose content has loaded (`useTabEntryEffects`), so the placeholder tab's id never lands on the address of an item that never opened.
+
 ### A failed load is not a missing document
 
 NotFound means "this document doesn't exist, or isn't yours". A load
