@@ -15,7 +15,7 @@ import { templateMatchesQuery } from './template-search';
 import { TEMPLATES } from './templates';
 
 // docs/specs/008-canvas/canvas-and-palette.md "Template categories", docs/specs/007-editor/templates-by-mode.md "The
-// catalogue": the twenty-six Spaces in eight categories by the kind of place they are, the blank in none.
+// catalogue": the thirty Spaces in eight categories by the kind of place they are, the blank in none.
 describe('template categories', () => {
   const ids = TEMPLATE_CATEGORIES.map((c) => c.id);
 
@@ -70,8 +70,16 @@ describe('template categories', () => {
       'coworking-space',
       'team-pod',
       'focus-library',
+      'interview-suite',
+      'client-lounge',
     ]);
-    expect(inCategory('events')).toEqual(['all-hands-hall', 'training-room', 'expo-hall']);
+    expect(inCategory('events')).toEqual([
+      'all-hands-hall',
+      'training-room',
+      'expo-hall',
+      'classroom',
+      'hackathon-hall',
+    ]);
     expect(inCategory('recreation')).toEqual(['rooftop-bar', 'cafe']);
     expect(inCategory('outdoor')).toEqual(['garden-retreat', 'city-park', 'beach-offsite']);
     expect(inCategory('campus')).toEqual([
@@ -147,6 +155,11 @@ describe('template search words', () => {
     expect(find('live music')).toEqual(['music-hall', 'festival-field']);
     expect(find('festival')).toEqual(['festival-field']);
     expect(find('food stalls')).toEqual(['festival-field']);
+    // Work Tracker 1076's Spaces, by the job they do.
+    expect(find('hiring')).toEqual(['interview-suite']);
+    expect(find('boardroom')).toEqual(['client-lounge']);
+    expect(find('lesson')).toEqual(['classroom']);
+    expect(find('hackathon')).toEqual(['hackathon-hall']);
     // Cross-listed in Outdoor, the Festival Field is found by that category's words too.
     expect(find('outdoors')).toEqual(expect.arrayContaining(['beach-offsite', 'festival-field']));
     expect(find('venue')).toEqual(

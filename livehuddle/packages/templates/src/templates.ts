@@ -1,7 +1,7 @@
 import { headlineCase, isUntitledName, titleCase } from '@livehuddle/api-schema';
 import { UNTITLED_DOCUMENT_NAME, isUntitledDocumentName } from './legacy-untitled';
 
-// The catalogue (docs/specs/007-editor/templates-by-mode.md "The catalogue"): Blank Space and the twenty-six Spaces, every
+// The catalogue (docs/specs/007-editor/templates-by-mode.md "The catalogue"): Blank Space and the thirty Spaces, every
 // one opening on a meeting board. livehuddle is for meeting in Spaces; the retrospectives, workshops, planning and
 // strategy boards and the quizzes and games are livediagram's (docs/specs/002-project-scope/not-in-livehuddle.md).
 export type TemplateKind =
@@ -38,7 +38,14 @@ export type TemplateKind =
   | 'city-townhouse'
   | 'country-cottage'
   | 'music-hall'
-  | 'festival-field';
+  | 'festival-field'
+  // The Spaces Work Tracker 1076 added: two for meeting people from outside the team (Office), and two for learning
+  // and making together (Events) (virtual-office-template.md "Interview Suite and Client Lounge", "Classroom and
+  // Hackathon Hall").
+  | 'interview-suite'
+  | 'client-lounge'
+  | 'classroom'
+  | 'hackathon-hall';
 
 export type TemplateDescriptor = {
   kind: TemplateKind;
@@ -249,6 +256,34 @@ export const TEMPLATES: TemplateDescriptor[] = [
     title: 'Festival Field',
     description:
       'An open-air festival in Avatar mode: a main stage and a crowd field, three food stalls, a bar tent and a campfire area.',
+    extra: true,
+  },
+  {
+    kind: 'interview-suite',
+    title: 'Interview Suite',
+    description:
+      'Interviews in Avatar mode: a waiting area with a front desk, two closed interview rooms with signs to knock at, and a debrief room.',
+    extra: true,
+  },
+  {
+    kind: 'client-lounge',
+    title: 'Client Lounge',
+    description:
+      'A place to host clients in Avatar mode: a front desk, a lounge with a coffee bar, a glass pitch room, a boardroom and a quiet room.',
+    extra: true,
+  },
+  {
+    kind: 'classroom',
+    title: 'Classroom',
+    description:
+      'A class in Avatar mode: a classroom of desks facing a Screen and Bring Focus, and three breakout rooms with a Timer each.',
+    extra: true,
+  },
+  {
+    kind: 'hackathon-hall',
+    title: 'Hackathon Hall',
+    description:
+      'A hackathon in Avatar mode: team tables on the floor, a demo stage, a mentor room, a nap room and a snack bar.',
     extra: true,
   },
 ];
