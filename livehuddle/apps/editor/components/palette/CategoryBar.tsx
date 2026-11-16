@@ -1,8 +1,8 @@
 'use client';
 
 import { Fragment, useEffect, useRef, useState, type KeyboardEvent, type RefObject } from 'react';
+import { STRIP_RAIL_SCROLL } from '@/components/chrome/toolbar-surface';
 import { track } from '@/lib/telemetry';
-import { StripRail } from '@liveworkspace/workbench/components/palette/StripScroller';
 import type { PendingDraw } from '@/lib/draw-mode';
 import {
   StripPopover,
@@ -181,11 +181,11 @@ export function CategoryBarButtons({
     }
   };
   return (
-    // A phone's row swipes, with a fade and a scroll button at each edge with more beyond it (StripScroller).
-    <StripRail
-      scrollable={scrollable}
-      label={ariaLabel}
-      itemsKey={categories.map((c) => c.id).join(',')}
+    <div
+      role="toolbar"
+      aria-label={ariaLabel}
+      {...(scrollable ? { 'data-strip-rail': '' } : {})}
+      className={`flex items-center ${scrollable ? STRIP_RAIL_SCROLL : ''}`}
     >
       {categories.map((c, i) => {
         const open = bar.isOpen(c.id);
@@ -257,7 +257,7 @@ export function CategoryBarButtons({
           </Fragment>
         );
       })}
-    </StripRail>
+    </div>
   );
 }
 

@@ -9,8 +9,8 @@ import {
   type ReactNode,
   type RefObject,
 } from 'react';
+import { STRIP_RAIL_SCROLL } from '@liveworkspace/workbench/components/chrome/toolbar-surface';
 import { track } from '@/lib/telemetry';
-import { StripRail } from '@liveworkspace/workbench/components/palette/StripScroller';
 import type { PendingDraw } from '@/lib/draw-mode';
 import {
   StripPopover,
@@ -212,11 +212,11 @@ export function CategoryBarButtons({
     }
   };
   return (
-    // A phone's row swipes, with a fade and a scroll button at each edge with more beyond it (StripScroller).
-    <StripRail
-      scrollable={scrollable}
-      label="Palette categories"
-      itemsKey={visible.map((c) => c.id).join(',')}
+    <div
+      role="toolbar"
+      aria-label="Palette categories"
+      {...(scrollable ? { 'data-strip-rail': '' } : {})}
+      className={`flex items-center ${scrollable ? STRIP_RAIL_SCROLL : ''}`}
     >
       {visible.map((c, i) => {
         const open = bar.isOpen(c.id);
@@ -303,7 +303,7 @@ export function CategoryBarButtons({
           onKeyDown={(e) => onKeyDown(e, visible.length)}
         />
       ) : null}
-    </StripRail>
+    </div>
   );
 }
 
