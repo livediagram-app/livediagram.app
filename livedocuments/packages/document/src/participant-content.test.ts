@@ -359,8 +359,8 @@ describe('applyParticipantOp: quotes, stat rows and comparison tables', () => {
 // A Participant on Suggest Only may comment on selected text (docs/specs/007-editor/suggestions.md "Comments on
 // selected text"): its one add is a margin note's comment marker.
 describe('applyParticipantOp: a margin comment on Suggest Only', () => {
-  const note = (extra: Record<string, unknown> = {}): Element =>
-    ({
+  const note = (extra: Record<string, unknown> = {}): Element => {
+    const el = {
       id: 'n1',
       type: 'article-note',
       x: 0,
@@ -370,7 +370,9 @@ describe('applyParticipantOp: a margin comment on Suggest Only', () => {
       aspectLocked: true,
       articleNote: 'comment',
       ...extra,
-    }) as Element;
+    };
+    return el as Element;
+  };
   it('adds a comment marker', () => {
     const r = applied(
       applyParticipantOp(
