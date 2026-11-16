@@ -6,11 +6,12 @@ import {
   pathPassesThrough,
   queryElementGrid,
   type BoxedElement,
+  type Element,
   type Point,
   type Rect,
 } from '@livediagram/document';
 import { arrowName, arrowSelector } from '../arrow-names';
-import { boxBounds, isLintBox } from '../boxes';
+import { boxBounds, isBackdrop, isLintBox } from '../boxes';
 import { LINT_LABEL_RUN_PAD, LINT_OVERLAP_TOLERANCE_PX } from '../constants';
 import { padded, refOf } from '../context';
 import { fixes } from '../fixes';
@@ -105,6 +106,10 @@ const cellOf = (id: string, r: Rect): BoxedElement => ({
 });
 
 export const labelCollision: Check = (ctx) => {
+  // A box a label can land on: never a backdrop (a panel wholly holding a group, as every quadrant and band of a
+  // matrix does), which a label sits on by design, as an arrow crosses it (arrow-behind-box).
+  const blocks = (el: Element): el is BoxedElement =>
+    isLintBox(el) && !isBackdrop(el, queryElementGrid(ctx.grid, boxBounds(el)));
   // Two grids over the drawable arrows, in their order (blueprint "Performance and limits"): each route's bounds, and
   // each label's plate. A plate asks them for the routes that may strike it and the plates that may cover it, so
   // the check costs each label its neighbourhood, not the tab; scanning every arrow per label was quadratic.
@@ -123,7 +128,7 @@ export const labelCollision: Check = (ctx) => {
     if (!layout) return [];
     const plate = plateOf(layout);
     const hit = queryElementGrid(ctx.grid, padded(ctx, plate))
-      .filter(isLintBox)
+      .filter(blocks)
       .filter((box) => overlaps(plate, boxBounds(box)));
     // Another arrow's label over this one (two exits' "Yes" and "No" stacked on one point): each pair once.
     const labels = near(plates, plate)
@@ -157,7 +162,7 @@ export const labelCollision: Check = (ctx) => {
           strikesOf(r, c).length === 0 &&
           !near(plates, r).some(({ cell }) => cell.id !== d.arrow.id && overlaps(r, cell)) &&
           !queryElementGrid(ctx.grid, padded(ctx, r))
-            .filter(isLintBox)
+            .filter(blocks)
             .some((box) => overlaps(r, boxBounds(box)))
         );
       });

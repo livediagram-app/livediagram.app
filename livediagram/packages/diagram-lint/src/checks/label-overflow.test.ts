@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { labelBoxSize } from '@livediagram/document';
 import { box, lint, of, tabOf } from '../fixtures/build';
+import { labelParagraphs } from './label-overflow';
 
 describe('label-overflow', () => {
   it('fires when a label needs more lines than its box holds', () => {
@@ -33,6 +34,41 @@ describe('label-overflow', () => {
       of(lint(tabOf(box('a', 0, 0, { label: long, shape: 'pie-chart' }))), 'label-overflow'),
     ).toEqual([]);
     expect(of(lint(tabOf(box('a', 0, 0, { label: undefined }))), 'label-overflow')).toEqual([]);
+  });
+
+  it('measures a rich label by its runs: small detail lines under a title fit where the box size would not', () => {
+    const runs = [
+      { text: 'Totals', bold: true },
+      { text: '\nLead time 27 d', size: 'sm' },
+      { text: '\nFlow efficiency 13%', size: 'sm' },
+      { text: '\nRolled 35%', size: 'sm' },
+    ];
+    const label = runs.map((r) => r.text).join('');
+    const rich = box('a', 0, 0, { width: 220, height: 120, textSize: 'lg', label, richText: runs });
+    expect(of(lint(tabOf(rich)), 'label-overflow')).toEqual([]);
+    // The same words all at the box's size need more room than it has.
+    const plain = box('a', 0, 0, { width: 220, height: 120, textSize: 'lg', label });
+    expect(of(lint(tabOf(plain)), 'label-overflow')).toHaveLength(1);
+    // Runs that only bold or colour carry no size, so the label measures as one block.
+    expect(labelParagraphs('ab', [{ text: 'ab', bold: true }], 16, false)).toEqual([
+      { text: 'ab', px: 16 },
+    ]);
+    // A break opening a run sizes the line after it, and a blank line keeps the label's own size.
+    expect(
+      labelParagraphs(
+        'a\n\nb',
+        [
+          { text: 'a', size: 'sm' },
+          { text: '\n\nb', size: 'lg' },
+        ],
+        16,
+        false,
+      ),
+    ).toEqual([
+      { text: 'a', px: 14 },
+      { text: '', px: 16 },
+      { text: 'b', px: 32 },
+    ]);
   });
 
   it('never fires on a box sized for its label, as graph authoring sizes it', () => {
