@@ -167,8 +167,11 @@ describe("a team item's events", () => {
       method: 'DELETE',
       auth: owner.auth,
     });
+    // Both rows can land in the same millisecond, so compare them by title, not by arrival order.
     expect(
-      log('team_off').map((r) => [r.type, r.title, r.actor_id, r.detail && JSON.parse(r.detail)]),
+      log('team_off')
+        .map((r) => [r.type, r.title, r.actor_id, r.detail && JSON.parse(r.detail)] as const)
+        .sort((x, y) => String(x[1]).localeCompare(String(y[1]))),
     ).toEqual([
       ['trashed', 'A', 'user_au5', null],
       ['deleted', 'B', 'user_au4', { reason: 'offline' }],
