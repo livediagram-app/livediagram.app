@@ -139,6 +139,37 @@ describe('importSvgText: geometry', () => {
     expect(paths[0]!.strokeWidth).toBe('thick');
   });
 
+  it('fits a line icon no larger than its thickest stroke allows at Extra thick, centred', async () => {
+    // A 24-unit icon with 2-unit strokes would fit a 400 px box at 16.7x, its strokes 33 px: capped at 3.5x (7 px).
+    const { paths } = await shapes(
+      svg(
+        '<path d="M2 2 L22 22" fill="none" stroke="#000" stroke-width="2"/><rect x="2" y="2" width="4" height="4" fill="#f00"/>',
+        'viewBox="0 0 24 24"',
+      ),
+      { x: 0, y: 0, width: 400, height: 400 },
+    );
+    expect(paths[0]!.strokeWidth).toBe('extra-thick');
+    expect(paths[0]!.width).toBeCloseTo(70, 5);
+    expect(paths[0]!.x).toBeCloseTo(200 - 35, 5);
+    // The filled square scales with it: 4 units at 3.5x.
+    expect(paths[1]!.width).toBeCloseTo(14, 5);
+  });
+
+  it('fills the box when its strokes land within the presets, and with no strokes at all', async () => {
+    const thin = await shapes(
+      svg('<path d="M0 0 L100 100" fill="none" stroke="#000" stroke-width="0.5"/>'),
+      { x: 0, y: 0, width: 400, height: 400 },
+    );
+    expect(thin.paths[0]!.width).toBeCloseTo(400, 5);
+    const filled = await shapes(svg('<rect width="10" height="10"/>', 'viewBox="0 0 10 10"'), {
+      x: 0,
+      y: 0,
+      width: 400,
+      height: 400,
+    });
+    expect(filled.paths[0]!.width).toBeCloseTo(400, 5);
+  });
+
   it('keeps a closed contour closed by a final node in an open unfilled path', async () => {
     const { paths } = await shapes(
       svg('<path d="M0 0 L50 0 L50 50 Z M60 60 L90 90" fill="none" stroke="red"/>'),

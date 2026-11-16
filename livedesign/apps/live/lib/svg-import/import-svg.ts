@@ -2,7 +2,7 @@
 // safe area), or the reason it must be placed as a picture instead. Parses only through parseInert; the document
 // is read, never inserted. Every import is one `[svg-import]` log line.
 import { parseInert } from '@liveworkspace/trusted-types';
-import { MAX_PATH_NODES, type PathElement } from '@livedesign/design';
+import { BORDER_STROKE_PX, MAX_PATH_NODES, type PathElement } from '@livedesign/design';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { drawnToPath, nodeCount } from './build';
 import { SVG_IMPORT_MAX_BYTES, SVG_RESCALE_FACTOR } from './constants';
@@ -48,12 +48,25 @@ function boxOf(drawn: readonly Drawn[]): Box | null {
   return contoursBox(drawn.flatMap((d) => d.contours));
 }
 
-// The uniform scale and offset that fit `box` into `into`, centred; null when the box has no size.
-function fitMatrix(box: Box, into: SvgLandingBox): Matrix | null {
+/** The largest fit scale at which every stroke lands at or under Extra thick (strokes snap to presets, so past it a
+ *  bold line icon would arrive as hairlines); Infinity when nothing is stroked. */
+export function strokeCap(drawn: readonly Drawn[]): number {
+  let widest = 0;
+  for (const d of drawn) if (d.stroke && d.stroke.width > widest) widest = d.stroke.width;
+  return widest > 0 ? BORDER_STROKE_PX['extra-thick'] / widest : Infinity;
+}
+
+// The uniform scale and offset that fit `box` into `into`, centred, the scale at most `maxScale`; null when the box
+// has no size.
+function fitMatrix(box: Box, into: SvgLandingBox, maxScale: number): Matrix | null {
   const w = box.x1 - box.x0;
   const h = box.y1 - box.y0;
   if (!(w > 0) && !(h > 0)) return null;
-  const s = Math.min(w > 0 ? into.width / w : Infinity, h > 0 ? into.height / h : Infinity);
+  const s = Math.min(
+    w > 0 ? into.width / w : Infinity,
+    h > 0 ? into.height / h : Infinity,
+    maxScale,
+  );
   const tx = into.x + (into.width - w * s) / 2 - box.x0 * s;
   const ty = into.y + (into.height - h * s) / 2 - box.y0 * s;
   return [s, 0, 0, s, tx, ty];
@@ -109,14 +122,14 @@ async function run(
   let walked = walkSvg(root, guess);
   if (!walked.ok) return { kind: 'picture', reason: walked.reason };
   let box = boxOf(walked.drawn);
-  let fit = box ? fitMatrix(box, into) : null;
+  let fit = box ? fitMatrix(box, into, strokeCap(walked.drawn)) : null;
   if (fit && fit[0] > guess * SVG_RESCALE_FACTOR) {
     guess = fit[0];
     walked = walkSvg(root, guess);
     // The same file walks the same way: only the arc precision changed.
     if (!walked.ok) return { kind: 'picture', reason: walked.reason };
     box = boxOf(walked.drawn);
-    fit = box ? fitMatrix(box, into) : null;
+    fit = box ? fitMatrix(box, into, strokeCap(walked.drawn)) : null;
   }
   if (!fit) return { kind: 'empty', report: walked.report };
   const scale = fit[0];

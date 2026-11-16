@@ -53,7 +53,9 @@ Scope, by file (under `apps/live/`):
 3. **Element cap.** `root.getElementsByTagName('*').length + 1 > SVG_IMPORT_MAX_ELEMENTS`: `picture / too-many-elements`.
 4. **Walk** with a guessed `pxPerUnit = min(into.width / viewport.width, into.height / viewport.height)`. Visited elements
    (uses expanded) past `SVG_IMPORT_MAX_ELEMENTS`: `picture / too-many-elements`.
-5. **Fit.** The drawn box (`contoursBox`, the curves' extremes) fitted uniformly and centred into `into`. No box, or a
+5. **Fit.** The drawn box (`contoursBox`, the curves' extremes) fitted uniformly and centred into `into`. The fit
+   scale is capped at `BORDER_STROKE_PX['extra-thick']` over the widest stroke, so no landed stroke passes the
+   thickest preset (`strokeCap`). No box, or a
    box of no width and no height: `empty`. When the fit scale passes the guess by `SVG_RESCALE_FACTOR`, walk again at
    the fit scale (D14) and refit.
 6. **Per drawn element:** contours carried by the fit matrix; a `nonzero` filled element traced

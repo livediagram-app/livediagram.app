@@ -29,7 +29,10 @@ they may paste. Import to Tab keeps the tab menu's own gate, and refuses a locke
 
 - **Selected and fitted to the page.** The shapes land on one page: the page under the drop point; else the page
   someone is on; else the page nearest the middle of the view. The whole import is scaled uniformly (up or down) so its
-  drawn box fills the page's safe area (the page less its margin), and centred in it. Every new path is selected, so
+  drawn box fills the page's safe area (the page less its margin), and centred in it. An import with strokes is
+  never scaled past the size where its thickest stroke lands at Extra thick (7 px): strokes snap to presets, so a
+  24 px line icon blown up to fill a logo page would arrive as hairlines of its bold source. It lands smaller,
+  centred, with every line the weight it was drawn at. Every new path is selected, so
   the next move (recolour, nudge, combine) takes them all.
 - **One path per SVG element.** Each `<path>`, `<rect>`, `<circle>`, `<ellipse>`, `<line>`, `<polyline>` and
   `<polygon>` becomes one path element; a `<use>` of one of them inside the file becomes one more.
@@ -68,7 +71,8 @@ they may paste. Import to Tab keeps the tab menu's own gate, and refuses a locke
   takes the inherited `color`. Colours are read in hex (3, 4, 6 and 8 digits), `rgb()`/`rgba()`, `hsl()`/`hsla()`,
   the CSS named colours and `transparent`, and stored as six-digit hex.
 - **Stroke width** is the stroke's landed width snapped to the nearest of the five presets (None, Thin, Medium,
-  Thick, Extra thick). A path with no stroke stores None, so the theme's line is never drawn round a filled mark.
+  Thick, Extra thick). The fit above keeps every landed stroke at or under Extra thick, so no stroke is
+  capped below its source weight. A path with no stroke stores None, so the theme's line is never drawn round a filled mark.
 - **Opacity**: the element's `opacity`, multiplied down its groups, times its `fill-opacity` (its `stroke-opacity`
   when it has no fill), stored as the path's opacity.
 - **Gradients take their first stop**: a fill or stroke of `url(#gradient)` takes the gradient's first stop colour
