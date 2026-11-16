@@ -15,6 +15,10 @@ import { documentHandOver, shareHelpHref, trackShare } from '@/lib/explorer-shar
 import { randomName } from '@/lib/identity';
 import { useToast } from '@/hooks/ui/useToast';
 
+const SuggestionsSection = dynamic(
+  () => import('@/components/dialogs/SuggestionsSection').then((m) => m.SuggestionsSection),
+  { ssr: false },
+);
 const ExportTabDialog = dynamic(
   () => import('@/components/dialogs/ExportTabDialog').then((m) => m.ExportTabDialog),
   { ssr: false },
@@ -77,6 +81,8 @@ function OpenEditorTabDialogs() {
     documentTeamId,
     setSelfParticipant,
     slideDeck,
+    sessionRole,
+    sessionShareCode,
   } = useEditorContext();
   const toast = useToast();
   // The selection the export covers, read from the store while a selection export is open
@@ -187,6 +193,18 @@ function OpenEditorTabDialogs() {
           // to show").
           firstTabEmpty={
             !!activeTab && tabs[0]?.id === activeTab.id && activeTab.elements.length === 0
+          }
+          // Suggest Only and Assistants Suggest (docs/specs/007-editor/suggestions.md "Suggest Only"): an Editor's.
+          appSection={
+            sessionRole === 'edit' ? (
+              <SuggestionsSection
+                documentId={documentId}
+                ownerId={selfParticipant.id}
+                shareCode={sessionShareCode}
+                tabs={tabs}
+                onError={(text) => toast.error(text)}
+              />
+            ) : undefined
           }
           onClose={() => setShareDialogOpen(false)}
         />

@@ -464,6 +464,66 @@ html[data-presenting] .article-flow .article-note {
   border-bottom-color: transparent;
 }
 
+/* Suggestions (docs/specs/007-editor/suggestions.md "What a suggestion is"): each in its author's colour (--sg-c,
+   set on the mark or the block), the brand's when it has none. An insertion is underlined on a soft tint of it; a
+   deletion is struck through, its words muted; a format change shows its new format over a dotted underline; a
+   suggested paragraph break is a small pilcrow at its paragraph's start, underlined (put in) or struck (taken out).
+   Translucent tints, so they read on a dark page as on paper. */
+.article-flow .article-sg {
+  --sg: var(--sg-c, #6366f1);
+  border-radius: 2px;
+}
+.article-flow .article-sg-ins {
+  text-decoration: underline 2px var(--sg);
+  text-underline-offset: 3px;
+  text-decoration-skip-ink: none;
+  background: color-mix(in srgb, var(--sg) 14%, transparent);
+}
+.article-flow .article-sg-del {
+  text-decoration: line-through 2px var(--sg);
+  color: color-mix(in srgb, currentColor 55%, transparent);
+}
+.article-flow .article-sg-fmt {
+  text-decoration: underline dotted 2px var(--sg);
+  text-underline-offset: 3px;
+}
+.article-flow .article-sg-pilcrow {
+  --sg: var(--sg-c, #6366f1);
+  display: inline-block;
+  margin-right: 0.15em;
+  padding: 0 0.15em;
+  border-radius: 3px;
+  color: var(--sg);
+  background: color-mix(in srgb, var(--sg) 12%, transparent);
+  font: 600 0.8em/1 var(--article-body-font);
+  font-style: normal;
+  vertical-align: 0.1em;
+  user-select: none;
+  cursor: default;
+}
+.article-flow .article-sg-pilcrow-ins {
+  text-decoration: underline 1.5px var(--sg);
+}
+.article-flow .article-sg-pilcrow-del {
+  text-decoration: line-through 1.5px var(--sg);
+}
+
+/* The rejected view's words while a deck runs, and for a Viewer (suggestions.md "Everywhere a page goes"):
+   insertions hidden, deletions read as plain text, the marks and pilcrows gone. A format change keeps its new
+   formatting on screen; an export sets the old. */
+html[data-presenting] .article-flow .article-sg-ins,
+html[data-suggestions-hidden] .article-flow .article-sg-ins,
+html[data-presenting] .article-flow .article-sg-pilcrow,
+html[data-suggestions-hidden] .article-flow .article-sg-pilcrow {
+  display: none;
+}
+html[data-presenting] .article-flow .article-sg,
+html[data-suggestions-hidden] .article-flow .article-sg {
+  text-decoration: none;
+  background: none;
+  color: inherit;
+}
+
 /* On a phone the page toolbar takes the Toolbar strip's place at the top of the canvas
    (docs/specs/007-editor/article-pages.md "On a phone"): the strip stands aside while it shows.
    The attribute is TOOLBAR_TOP_ATTR (page-toolbar-placement.ts). */

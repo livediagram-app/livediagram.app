@@ -29,11 +29,18 @@ const always = () => true;
 
 const isLocked = (el: Element) => (el as { locked?: boolean }).locked === true;
 
-export function resolveEditorCapabilities(level: AccessLevel): EditorCapabilities {
+/** `suggestOnly`: a Participant on Suggest Only (docs/specs/007-editor/suggestions.md "Suggest Only") writes its
+ *  articles as suggestions alone: no element's words, no Replace. */
+export function resolveEditorCapabilities(
+  level: AccessLevel,
+  { suggestOnly = false }: { suggestOnly?: boolean } = {},
+): EditorCapabilities {
   if (level === 'edit')
     return { level, takePart: true, writeText: always, writeArticle: true, replace: 'any' };
   if (level === 'view')
     return { level, takePart: false, writeText: never, writeArticle: false, replace: false };
+  if (suggestOnly)
+    return { level, takePart: true, writeText: never, writeArticle: true, replace: false };
   return {
     level,
     takePart: true,

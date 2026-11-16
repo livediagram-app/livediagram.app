@@ -1,3 +1,4 @@
+import { resetSuggestState, setSuggestAuthor } from '@/lib/article/article-suggest-store';
 import { useEffect, useEffectEvent, useRef } from 'react';
 import { noteAccessEnded } from '@/lib/access-notice';
 import type { AgentPresence } from '@livedocuments/api-schema';
@@ -82,6 +83,16 @@ export function useRoomConnection(opts: RoomConnectionOptions) {
     shareCode: sessionShareCode,
   }));
   const announceSelf = useEffectEvent(() => roomRef.current?.updateSelf(selfForRoom()));
+  // Who a suggestion made here is by (docs/specs/007-editor/suggestions.md "What a suggestion is"): the collab key the
+  // room pinned, and the name and colour it shows.
+  const { key: selfKey, name: selfName, color: selfColor } = selfParticipant;
+  useEffect(() => {
+    setSuggestAuthor(
+      selfKey ? { by: selfKey, n: selfName, ...(selfColor ? { c: selfColor } : {}) } : null,
+    );
+  }, [selfKey, selfName, selfColor]);
+  // A document closed leaves no mode or Suggest Only behind for the next one.
+  useEffect(() => () => resetSuggestState(), []);
   const announcedPicture = useRef(picture);
   useEffect(() => {
     if (announcedPicture.current === picture) return;

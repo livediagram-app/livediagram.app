@@ -1,3 +1,4 @@
+import { useSuggestedToast } from '../useSuggestedToast';
 import { useModeDefaultTool } from '@liveworkspace/workbench/hooks/editor/useModeDefaultTool';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useCommentMentions } from '@/hooks/collab/useCommentMentions';
@@ -164,6 +165,11 @@ export function useEditorCollaboration({
     revealInView: (tabId, ids) => revealChangesetRef.current?.(tabId, ids),
     toast,
     canUndo: canEdit,
+  });
+  // An assistant's article write as suggestions: "<name> suggested N edits" with Review (useSuggestedToast).
+  useSuggestedToast({
+    toast,
+    revealInView: (tabId, ids) => revealChangesetRef.current?.(tabId, ids),
   });
   // Realtime room: WebSocket per shared document (presence + ops). See
   // useRoomConnection.
