@@ -74,8 +74,6 @@ export async function handleWalkthroughDoor(input: WalkthroughDoorInput): Promis
     return json(result.body, { status: result.status });
   };
 
-  if (!calls) return json({ error: UNAVAILABLE }, { status: 503 });
-  if (!itemId) return refuse('missing_item', 400);
   const id = path[0];
   const route =
     path.length === 0
@@ -92,6 +90,10 @@ export async function handleWalkthroughDoor(input: WalkthroughDoorInput): Promis
     media: ['GET', 'PUT'],
   };
   if (!allowed[route].includes(method)) return refuse('not_found', 404);
+  // Only a route that is one gets this far, so a path the door doesn't serve answers 404 whether or not the
+  // service is there.
+  if (!calls) return json({ error: UNAVAILABLE }, { status: 503 });
+  if (!itemId) return refuse('missing_item', 400);
 
   const access = await input.access(itemId);
   if (access instanceof Response) return access;

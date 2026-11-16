@@ -67,4 +67,10 @@ export async function purgeDocumentPreviews(env: Env, id: string): Promise<void>
   } catch (err) {
     console.warn('[purge] previews not dropped', { documentId: id, error: String(err) });
   }
+  // And its walkthroughs, media and all (liveworkspace/docs/specs/006-media/walkthroughs.md "Deleting").
+  try {
+    await media.walkthroughs.purge(id);
+  } catch (err) {
+    console.warn('[purge] walkthroughs not dropped', { documentId: id, error: String(err) });
+  }
 }

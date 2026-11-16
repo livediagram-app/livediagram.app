@@ -195,6 +195,11 @@ const TAGS = [
   },
   { name: 'Images', description: 'Upload, list, and reference image assets.' },
   {
+    name: 'Walkthroughs',
+    description:
+      'Recorded narrations of a document: voice, camera path, slide steps and pointer, to play back over it.',
+  },
+  {
     name: 'Library',
     description: 'Save shapes and components to Personal or a team, and place them in any app.',
   },
