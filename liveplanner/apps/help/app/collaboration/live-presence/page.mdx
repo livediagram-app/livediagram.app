@@ -44,6 +44,17 @@ What you see depends on the tab:
 
 Someone who joins late sees what is already held: the cards others have open and the cells they have selected.
 
+## Held while someone else has it
+
+When an Editor or a Participant selects something, it is gently **held** for everyone else, so two people don't fight over the same thing at once. It wears the holder's colour as an outline and you can't select, drag or edit it until they let go. A few details:
+
+- **A whole selection is held.** If they select several things at once, every one of them is held, not just the one they clicked.
+- **A Viewer holds nothing.** A Viewer's selection only shows who is looking.
+- **Letting go isn't quite instant.** While the change they just made is still being saved, it stays held so nobody's edit is lost: a moment, and never more than about 10 seconds if the save keeps failing. Otherwise it frees up as soon as they click away, switch tab or leave.
+- **It is a guard, not a guarantee.** The hold keeps collisions rare, but it can't stop two people racing within the same instant, or a script using an [API token](/help/account-and-data/api-tokens/), which never sees it. If two people do change the same thing, the last change to arrive wins.
+
+If something stays held for good, its holder has probably wandered off with it still selected: ask them to click away. See [Real-Time Collaboration Problems](/help/troubleshooting/collaboration-issues/).
+
 ## Agents at work
 
 An AI agent or a script working on a plan with an [API token](/help/account-and-data/api-tokens/) can show itself while it works. It appears as an avatar of its own, named after its owner ("Webber's Agent") in their colour and marked with a small star, on the tab it last read or changed:

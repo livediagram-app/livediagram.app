@@ -1170,11 +1170,16 @@ WHERE dirty = 0` and the presence of a dirty row (then now). `noteWrite()` (afte
     field widgets 15 ms (`field-widget-stats.perf.test.ts`); the flow chart's read 296 ms, 2.46 MB
     (`flow-route.test.ts`, 500 ms); the three flow charts drawn 230 to 300 ms in jsdom, a dot a card on Cycle Time
     (`FlowViews.test.tsx`, budget 600 ms, was 250 ms at 2,000).
-  - Board redraws in jsdom: a Tab Style pick that changes no card 11 to 80 ms, a theme that redraws every face 2.0
-    to 2.5 s (`PlanBoardView.busy.perf.test.tsx`, budgets 250 ms and 6,000 ms, was 3,000; 4.2 s inside the loaded full suite); a remote filter change
-    that swaps 1,667 cards 1.3 to 1.9 s (`PlanBoardView.filter.perf.test.tsx`, budget 3,000 ms, was 1,500). jsdom
-    draws every face a change shows; a browser draws only the runs near the view, so neither grows with the cap
-    there.
+  - Board redraws in jsdom, laid out as a browser lays them out (Work Tracker 987, 988: `test/board-layout.ts` stands
+    in for the layout jsdom lacks, so a busy board draws the runs near the view and a placeholder for each far run, as
+    the mount test does, instead of every card a change shows): a Tab Style pick that changes no card 5 to 13 ms, a
+    theme that redraws the 355 near cards 210 to 340 ms (`PlanBoardView.busy.perf.test.tsx`, budgets 250 ms and
+    1,500 ms, was 6,000; near faces under 600 of the 5,000); a remote filter change that redraws 66 to 78 near cards
+    110 to 270 ms (`PlanBoardView.filter.perf.test.tsx`, budget 1,000 ms, was 3,000; near faces under 400 and above 0,
+    so a stand-in that drew nothing fails). Before, with every card drawn: a theme 2.0 to 2.5 s (4.2 s inside the loaded
+    full suite) and a filter change 1.6 to 2.1 s for 1,667 faces, each busy test 5.7 to 9.5 s of wall time (61 s under
+    coverage); after, each takes 0.5 to 1.0 s (1.6 s under coverage, the longest). The projection and widget counts
+    stay asserted, and `draws a busy board in runs, a quiet one without` keeps the unstubbed jsdom path.
   - Automations on a full plan: a wake of 25 triggers past 50 writing branch rules 2.2 s (budget 3 s), a blocker of
     the whole plan 2.0 s (4 s), 50 time rules due at once 0.5 s (1.5 s) (`automations.perf.test.ts`).
 - Projection is O(n log n) per board render, memoised on `(setup, items map identity)`.
