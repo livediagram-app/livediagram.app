@@ -179,6 +179,15 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M9 6.5l3-3 3 3M12 3.5v5.5" />
     </Glyph>
   ),
+  // An envelope whose flap points down into a card below it: mail that lands as a card.
+  'email-to-board': (
+    <Glyph>
+      <rect x="3" y="4" width="13" height="9" rx="1.5" />
+      <path d="M3.5 4.8l6 4.4 6-4.4" />
+      <rect x="10" y="15" width="11" height="6" rx="1" />
+      <path d="M13 18h5M19.5 9.5v3.5l-1.5-1.5M19.5 13l1.5-1.5" />
+    </Glyph>
+  ),
   // A pen over a squiggle with a dashed spotlight ring round it: a guided look at Draw.
   'plan-tour': (
     <Glyph>

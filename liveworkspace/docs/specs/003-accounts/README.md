@@ -8,4 +8,5 @@ Follow the references below only as needed; never upfront.
   signed link, its email and the Settings category
 - ./push.md - when working on phone notifications: devices, the per-kind switches, Web Push and VAPID, what an app hands accounts to send, the installable sites and their push-only service worker
 - ./email.md - when working on how the platform sends email: Cloudflare Email Service, the senders, the templates
+- ./inbound-email.md - when working on mail the platform takes in: Email Routing to an app's Worker, the shared reader, SPF/DKIM/DMARC from Authentication-Results, quoted reply stripping
 - ./blueprints/README.md - when implementing an accounts spec: the blueprints hold the engineering detail derived from it
