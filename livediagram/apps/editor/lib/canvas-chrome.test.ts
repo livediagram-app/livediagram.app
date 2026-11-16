@@ -1,5 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { canvasCursorClass, computeDockAnchor } from './canvas-chrome';
+import { canvasCursorClass, computeDockAnchor, elementsInertTool } from './canvas-chrome';
+
+// docs/specs/008-canvas/canvas-and-palette.md: Spotlight, Laser and isometric view make the canvas layer
+// pointer-inert, so no press selects or moves an element (Work Tracker 1040 added Laser).
+describe('elementsInertTool', () => {
+  it.each(['spotlight', 'laser', 'isometric'])('makes the layer inert under %s', (tool) => {
+    expect(elementsInertTool(tool)).toBe(true);
+  });
+
+  it.each(['select', 'pan', 'eraser', 'format', 'slide-deck'])('leaves %s live', (tool) => {
+    expect(elementsInertTool(tool)).toBe(false);
+  });
+});
 
 describe('computeDockAnchor', () => {
   const canvas = { left: 0, top: 0, width: 1000 };

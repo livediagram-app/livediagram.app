@@ -149,6 +149,17 @@ export function useCanvasSurfaceGestures({
     }
   };
 
+  // Laser (docs/specs/008-canvas/canvas-and-palette.md) is non-editing: the canvas layer is inert, but an
+  // arrow's `stroke` hit band, an arrow label and a Selection Mode chip keep pointer-events of their own,
+  // and their handlers select on any button. A press on one of them is the canvas's instead. The middle
+  // button keeps its pan, and a right press on a mode chip keeps the chip's menu (mode-button.md).
+  const isLaserElementPress = (e: { target: EventTarget | null; button: number }) => {
+    if (canvasTool !== 'laser' || e.button === 1) return false;
+    const target = e.target as Element | null;
+    if (!(target instanceof Node) || !wrapperRef.current?.contains(target)) return false;
+    return !(e.button === 2 && target.closest?.('[data-mode-button-chip]'));
+  };
+
   const onPointerDownCapture = (e: ReactPointerEvent) => {
     lastPointerType.current = e.pointerType;
     // Pointer-downs that land on a floating panel (palette, context
@@ -238,6 +249,16 @@ export function useCanvasSurfaceGestures({
       );
       return;
     }
+    // Laser on an element (see isLaserElementPress): a mouse or pen drag pans, the same as on the
+    // empty canvas, and never selects or moves the element (Work Tracker 1040). A finger keeps
+    // drawing the laser; it just doesn't select either.
+    if (isLaserElementPress(e)) {
+      focusCanvas();
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.button === 0 && e.pointerType !== 'touch') startPan(e);
+      return;
+    }
     // Whiteboard, Select in hand (docs/specs/023-draw-mode/draw-mode.md "Selecting"): Shift + press always
     // drags a selection box that adds to the selection, even when it starts on an element, and a
     // Shift-click on an element toggles it. A handle keeps its own Shift behaviour.
@@ -300,6 +321,12 @@ export function useCanvasSurfaceGestures({
   };
 
   const onContextMenuCapture = (e: ReactMouseEvent) => {
+    // Laser: an element's menu would select it (see isLaserElementPress). Nothing opens.
+    if (isLaserElementPress(e)) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
     // Spotlight tool (docs/specs/008-canvas/canvas-and-palette.md): right-click shrinks the light instead of
     // opening any menu. Capture phase + stopPropagation so it intercepts
     // right-clicks ANYWHERE — including over an element, whose own
