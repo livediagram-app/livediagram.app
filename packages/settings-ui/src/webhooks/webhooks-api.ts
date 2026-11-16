@@ -271,7 +271,11 @@ const MESSAGES: Record<string, string> = {
 };
 
 // The refusals that are about the address itself, said by its field rather than at the foot of the form.
-const ADDRESS_ERRORS = new Set(['webhook_url_invalid', 'webhook_url_private', 'webhook_url_unresolved']);
+const ADDRESS_ERRORS = new Set([
+  'webhook_url_invalid',
+  'webhook_url_private',
+  'webhook_url_unresolved',
+]);
 
 /** Whether a refusal is the address's: its shape, a private network, or a host that doesn't resolve. */
 export const isAddressError = (error: string): boolean => ADDRESS_ERRORS.has(error);
