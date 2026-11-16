@@ -21,6 +21,12 @@ add a sticky. The Participant level is the middle: take part in the design, neve
 | **Participant** | `participate` | All of Viewer; comment, reply, resolve and reopen; react; add, write and arrange stickies and text; place images and swap their pictures; write on any element, a table's cells included (see [What a Participant changes](#what-a-participant-changes)).                                                                                                                                                   |
 | **Editor**      | `edit`        | All of Participant; change anything on the pages, its tabs and its tools' configuration.                                                                                                                                                                                                                                                                                                                    |
 
+- **Suggest Only on the canvas.** An Editor may set a Participant link, or a person, to **Suggest Only** in the
+  Share dialog's Suggestions section ([Canvas suggestions](../012-collaboration/canvas-suggestions.md)). Such a
+  Participant's changes to a tab's elements are always suggestions an Editor accepts or rejects; the room refuses
+  any element change it makes straight in, but for comments, reactions and votes. The setting is the item's own
+  (its room), never the index's: the link's level stays `participate`. Any Participant or Editor sees a tab's
+  suggestions; a Viewer sees none and makes none.
 - **The levels are a ladder**: every level holds everything below it.
 - **A Viewer only looks.** A comment and a reaction are both taking
   part, which is a Participant's. A Viewer's selection shows its badge and holds nothing: it never stops anyone

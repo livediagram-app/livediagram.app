@@ -29,6 +29,7 @@ Paths in these specs are relative to `liveworkspace/` (`apps/accounts/…`), exc
 - ./011-workbench/README.md - when working on workbench pairings, tickets and sessions
 - ./012-migrate/README.md - when working on the move from the historical livediagram.app, or on what is left of Clerk
 - ./013-export/README.md - when working on an export every product shares: the PDF writer (`@liveworkspace/vector-export`)
+- ./014-suggestions/README.md - when working on suggestions on a canvas in any product, or Suggest Only (`@liveworkspace/suggestions`)
 
 ## Workflow
 

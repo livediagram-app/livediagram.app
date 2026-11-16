@@ -49,6 +49,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ sites                    liveworkspace's sites, for every logo's site switcher, and the one profile picture URL rule (`/picture`)
 │  ├─ source-ast               parses the repo's own TypeScript, for the static guards that read code
 │  ├─ style-guards             the motion tokens and the motion, optical and touch-target guards
+│  ├─ suggestions              canvas suggestions in every product: the rule, the store, the routes' logic, Suggest Only, the capture, the ghosts and the bar
 │  ├─ tailwind-config          the Tailwind theme every app paints with, sky by default; each other product re-declares its ramps
 │  ├─ template-previews        the template previews' hover motion, fan and story parts, the template search and catalogue, the templates' inks, and the analysis templates' data, for every editor
 │  ├─ telemetry                the telemetry contract: apps, batch format, dashboard summary
