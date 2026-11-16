@@ -12,7 +12,9 @@ import { buildReferenceBoard } from './reference-board';
 // Runs against the signed-in export (`.next/out-signed-in`, from build-signed-in.mjs), whose E2E auth bridge signs
 // the account in from local storage. Run with the stack up on it:
 //   E2E_PERF=1 E2E_BASE_URL=http://localhost:<editor port> pnpm exec playwright test --project=perf warm-open
-// WARM_OPEN_RUNS sets the runs per mode (default 12). It reports and never fails on a number.
+// WARM_OPEN_RUNS sets the runs per mode (default 12). It reports and never fails on a number. Beside content and
+// editable it reports how long after auth answered the ordinary load's first request (the participant) went out: the
+// e2e auth bridge answers as it reads the test's session, so that read is when auth answered.
 
 const RUNS = Number(process.env.WARM_OPEN_RUNS ?? 12);
 // A realistic connection: 100 ms round trip, 10 Mbps down, 5 Mbps up (every request, the api's included).
@@ -27,7 +29,13 @@ const LAST_SEEN_DB = 'livediagram-last-seen';
 const ELEMENTS = 200;
 
 type Mode = 'cold' | 'warm';
-type Run = { mode: Mode; paint: number; interactive: number };
+type Run = {
+  mode: Mode;
+  paint: number;
+  interactive: number;
+  authAnswered: number | null;
+  participantAfterAuth: number | null;
+};
 
 // Before any page script: the first frame with an element of the document on screen, on the performance clock.
 function watchFirstPaint(): void {
@@ -46,9 +54,21 @@ function watchFirstPaint(): void {
   requestAnimationFrame(tick);
 }
 
+// Before any page script: when auth answered, the e2e auth bridge's first read of the test's session.
+function watchAuth(sessionKey: string): void {
+  const w = window as unknown as { __authAnswered: number | null };
+  w.__authAnswered = null;
+  const getItem = Storage.prototype.getItem;
+  Storage.prototype.getItem = function (key: string) {
+    if (key === sessionKey && w.__authAnswered === null) w.__authAnswered = performance.now();
+    return getItem.call(this, key);
+  };
+}
+
 async function newContext(browser: Browser, baseURL: string): Promise<BrowserContext> {
   const context = await browser.newContext({ baseURL, viewport: { width: 1440, height: 900 } });
   await context.addInitScript(watchFirstPaint);
+  await context.addInitScript(watchAuth, E2E_SESSION_KEY);
   await context.addInitScript(() => localStorage.setItem('livediagram:v2:name-confirmed', '1'));
   return context;
 }
@@ -99,13 +119,24 @@ async function openOnce(context: BrowserContext, url: string, mode: Mode): Promi
   await page.goto(url);
   const read = () =>
     page.evaluate(() => {
-      const w = window as unknown as { __warmOpen: { paint: number | null } };
+      const w = window as unknown as {
+        __warmOpen: { paint: number | null };
+        __authAnswered: number | null;
+      };
       const end = (name: string) => {
         const m = performance.getEntriesByName(name, 'measure')[0];
         return m ? m.startTime + m.duration : null;
       };
+      const participant = performance
+        .getEntriesByType('resource')
+        .find((e) => new URL(e.name).pathname.startsWith('/api/participants/'));
       return {
         paint: w.__warmOpen.paint,
+        authAnswered: w.__authAnswered,
+        participantAfterAuth:
+          participant && w.__authAnswered !== null
+            ? participant.startTime - w.__authAnswered
+            : null,
         warmPaint: end('warm-paint'),
         catchUp: end('warm-catch-up'),
       };
@@ -122,12 +153,28 @@ async function openOnce(context: BrowserContext, url: string, mode: Mode): Promi
   // The next open's copy: the one this open kept.
   await expect.poll(() => copyKept(page)).toBe(true);
   await page.close();
-  return { mode, paint: r.paint!, interactive: mode === 'warm' ? r.catchUp! : r.paint! };
+  return {
+    mode,
+    paint: r.paint!,
+    interactive: mode === 'warm' ? r.catchUp! : r.paint!,
+    authAnswered: r.authAnswered,
+    participantAfterAuth: r.participantAfterAuth,
+  };
 }
 
 const percentile = (values: number[], p: number): number => {
   const sorted = [...values].sort((a, b) => a - b);
   return Math.round(sorted[Math.min(sorted.length - 1, Math.floor((sorted.length - 1) * p))]!);
+};
+
+// A timing the runs may lack (no session read, or no participant request), at percentile `p`; null when none had it.
+const percentileOf = (
+  runs: Run[],
+  key: 'authAnswered' | 'participantAfterAuth',
+  p: number,
+): number | null => {
+  const values = runs.flatMap((r) => (r[key] === null ? [] : [r[key]]));
+  return values.length ? percentile(values, p) : null;
 };
 
 async function measure(context: BrowserContext, url: string): Promise<Record<string, unknown>> {
@@ -160,6 +207,11 @@ async function measure(context: BrowserContext, url: string): Promise<Record<str
         of.map((r) => r.interactive),
         0.9,
       ),
+      // Work Tracker 960: auth answers as early warm as cold, and the participant request goes out within 50 ms of it.
+      authAnsweredMedian: percentileOf(of, 'authAnswered', 0.5),
+      authAnsweredP90: percentileOf(of, 'authAnswered', 0.9),
+      participantAfterAuthMedian: percentileOf(of, 'participantAfterAuth', 0.5),
+      participantAfterAuthP90: percentileOf(of, 'participantAfterAuth', 0.9),
     };
   }
   return summary;
