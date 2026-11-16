@@ -1,9 +1,11 @@
 // The one DrawingML theme a written deck carries (docs/specs/020-import-export/blueprints/office-export.md "The
-// fixed parts"): Office's own colours and Calibri, the three fill, line, effect and background styles the schema asks
-// for, and nothing that styles content, since every shape the export writes names its own colours and faces. Pure
-// data.
+// fixed parts"): Office's own colours, the deck's faces as its major and minor fonts (Calibri for a deck with none),
+// and the three fill, line, effect and background styles the schema asks for. Nothing styles content, since every
+// shape the export writes names its own colours and faces. Pure.
 
-import { XML_DECL } from './ooxml';
+import { XML_DECL, xmlText } from './ooxml';
+import { pitchFamilyOf } from './ooxml-fonts';
+import type { PptxDeck } from './pptx-types';
 
 const SYS = (name: string, last: string) => `<a:sysClr val="${name}" lastClr="${last}"/>`;
 const RGB = (hex: string) => `<a:srgbClr val="${hex}"/>`;
@@ -11,7 +13,56 @@ const PH = '<a:solidFill><a:schemeClr val="phClr"/></a:solidFill>';
 
 export const THEME_TYPE = 'application/vnd.openxmlformats-officedocument.theme+xml';
 
-export const THEME_XML =
+/** The theme's two latin faces: the minor (body) font and the major (heading) font. */
+export type ThemeFonts = { major: string; minor: string };
+
+export const DEFAULT_THEME_FONT = 'Calibri';
+
+/** The deck's faces as its theme names them: the minor is the face with the most characters, the major the face with
+ *  the most characters in the largest text (a tie goes to the face met first); Calibri for a deck naming none
+ *  (docs/specs/020-import-export/office-export.md "Fonts are named, never embedded"). One pass over the runs. */
+export function themeFontsOf(deck: PptxDeck): ThemeFonts {
+  const total = new Map<string, number>();
+  let largest = 0;
+  let atLargest = new Map<string, number>();
+  for (const slide of deck.slides) {
+    for (const item of slide.items) {
+      if (item.kind !== 'shape' || !item.body) continue;
+      for (const para of item.body.paragraphs) {
+        for (const run of para.runs) {
+          if (!run.font || run.text === '') continue;
+          const n = run.text.length;
+          total.set(run.font, (total.get(run.font) ?? 0) + n);
+          if (run.sizePt > largest) {
+            largest = run.sizePt;
+            atLargest = new Map();
+          }
+          if (run.sizePt === largest) atLargest.set(run.font, (atLargest.get(run.font) ?? 0) + n);
+        }
+      }
+    }
+  }
+  const top = (m: Map<string, number>): string => {
+    let best = DEFAULT_THEME_FONT;
+    let most = 0;
+    for (const [face, n] of m)
+      if (n > most) {
+        best = face;
+        most = n;
+      }
+    return best;
+  };
+  return { major: top(atLargest), minor: top(total) };
+}
+
+// A face named with its pitch and family, as a run names it, so an app without it picks a close stand-in.
+const latin = (face: string): string =>
+  face === DEFAULT_THEME_FONT
+    ? `<a:latin typeface="${DEFAULT_THEME_FONT}"/>`
+    : `<a:latin typeface="${xmlText(face)}" pitchFamily="${pitchFamilyOf(face)}" charset="0"/>`;
+
+/** The theme part (`ppt/theme/theme1.xml` and the notes master's `theme2.xml`). */
+export const themeXml = (fonts: ThemeFonts): string =>
   `${XML_DECL}<a:theme xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" name="livedocuments">` +
   '<a:themeElements>' +
   '<a:clrScheme name="livedocuments">' +
@@ -23,8 +74,8 @@ export const THEME_XML =
   `<a:hlink>${RGB('2563EB')}</a:hlink><a:folHlink>${RGB('7C3AED')}</a:folHlink>` +
   '</a:clrScheme>' +
   '<a:fontScheme name="livedocuments">' +
-  '<a:majorFont><a:latin typeface="Calibri Light"/><a:ea typeface=""/><a:cs typeface=""/></a:majorFont>' +
-  '<a:minorFont><a:latin typeface="Calibri"/><a:ea typeface=""/><a:cs typeface=""/></a:minorFont>' +
+  `<a:majorFont>${latin(fonts.major)}<a:ea typeface=""/><a:cs typeface=""/></a:majorFont>` +
+  `<a:minorFont>${latin(fonts.minor)}<a:ea typeface=""/><a:cs typeface=""/></a:minorFont>` +
   '</a:fontScheme>' +
   '<a:fmtScheme name="livedocuments">' +
   `<a:fillStyleLst>${PH}${PH}${PH}</a:fillStyleLst>` +
