@@ -72,7 +72,8 @@ board of the template shows some, and every plan view on its Dashboard has somet
   every path exactly as a [spreadsheet template's](#spreadsheet-templates) Sheet is; the template's Dashboard shows
   them beside its boards.
 - **A template may hold a Form tab** whose responses go to one of its own tabs: Help Desk's **Contact Form** feeds
-  its Tickets board, Event Planner's **RSVP** its RSVP Responses sheet. The catalogue names the form's starter and
+  its Tickets board, Event Planner's **RSVP** its RSVP Responses sheet, and Kanban Board, Bug Tracker, Hiring Pipeline
+  and Feedback Board have theirs ([Forms a template holds](#forms-a-template-holds)). The catalogue names the form's starter and
   the tab it feeds, and the form is made with its tab on every path below, unpublished
   ([Forms](../030-forms/forms.md#starting-a-form), "In a plan template").
 - **Where a person makes one**:
@@ -150,12 +151,12 @@ its Detailed cards add Under the Title.
 
 | Type            | Id                | Glyph     | Colour           | Fields                                                                                                                                                                                                                                                                                                                                                                                                                                    | On the card     | Default State  |
 | --------------- | ----------------- | --------- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------- | -------------- |
-| Bug             | `bug`             | bug       | red `#dc2626`    | A Task's (Parent among them), then **Steps to Reproduce** (Long Text) and **Environment** (Text)                                                                                                                                                                                                                                                                                                                                          |                 | New            |
+| Bug             | `bug`             | bug       | red `#dc2626`    | A Task's (Parent among them), then **Steps to Reproduce** (Long Text), **Environment** (Text) and **Email** (Email: who reported it)                                                                                                                                                                                                                                                                                                      |                 | New            |
 | Story           | `story`           | story     | violet `#7c3aed` | A Task's                                                                                                                                                                                                                                                                                                                                                                                                                                  |                 | Backlog        |
-| Request         | `request`         | inbox     | orange `#ea580c` | Description, Status, Assignee, Priority, Votes, Labels; **Requested By** (Text)                                                                                                                                                                                                                                                                                                                                                           | Requested By    | New            |
+| Request         | `request`         | inbox     | orange `#ea580c` | Description, Status, Assignee, Priority, Votes, Labels; **Requested By** (Text), **Email** (Email)                                                                                                                                                                                                                                                                                                                                        | Requested By    | New            |
 | Content         | `content`         | megaphone | pink `#db2777`   | Description, Status, Assignee, Votes, Labels, Due, Checklist; **Channel** (Choice: Blog, Newsletter, Social, Video, Podcast), **Link** (Link)                                                                                                                                                                                                                                                                                             | Channel         | Ideas          |
 | Role            | `role`            | briefcase | cyan `#0891b2`   | Description, Status, Assignee (the hiring manager), Priority, Colour, Start, Due, Labels; **Team** (Text), **Location** (Text), **Employment** (Choice: Full-time, Part-time, Contract, Internship)                                                                                                                                                                                                                                       | Team            | Opening Soon   |
-| Candidate       | `candidate`       | user-plus | pink `#db2777`   | Description, Status, Assignee (who looks after them), Labels, Due (the next step), Checklist; **Role** (Card: Role), **Source** (Choice: Referral, Job Board, Inbound, Agency, Sourced), **Profile** (Link)                                                                                                                                                                                                                               |                 | Applied        |
+| Candidate       | `candidate`       | user-plus | pink `#db2777`   | Description, Status, Assignee (who looks after them), Labels, Due (the next step), Checklist; **Role** (Card: Role), **Source** (Choice: Referral, Job Board, Inbound, Agency, Sourced), **Profile** (Link), **Email** (Email)                                                                                                                                                                                                            |                 | Applied        |
 | Onboarding Task | `onboarding-task` | checklist | green `#16a34a`  | Description, Status, Assignee, Due, Checklist; **New Starter** (Card: Candidate)                                                                                                                                                                                                                                                                                                                                                          |                 | Before Day One |
 | Objective       | `objective`       | target    | amber `#d97706`  | Description, Status, Assignee, Priority, Colour, Start, Due, Labels                                                                                                                                                                                                                                                                                                                                                                       |                 | Draft          |
 | Key Result      | `key-result`      | trend     | teal `#0d9488`   | Description, Status, Assignee, Due, Checklist; **Objective** (Card: Objective), **Baseline**, **Target**, **Current** (Numbers)                                                                                                                                                                                                                                                                                                           | Current, Target | Not Started    |
@@ -168,6 +169,71 @@ its Detailed cards add Under the Title.
   Objective, a Milestone's Goal and an Onboarding Task's New Starter are what their boards lay their rows by. A
   Milestone is a step on the way to a personal goal: it is reached when it is in a done column, so it needs no
   numbers.
+- A Request's, a Bug's and a Candidate's **Email** is where a template's form puts the sender's address
+  ([Forms a template holds](#forms-a-template-holds)), so the form brings no field of its own; a Ticket has had one
+  from the start.
+
+### Card templates the ready-made types hold
+
+Eight ready-made types come with [card templates](item-types.md#card-templates), so a board that brings one (a
+template's or a preset's) offers its kinds of card already filled in from **Add card**'s menu. They are the type's
+own, as a person's are: renamed, changed or deleted in the type editor, and never put back. Each holds only what a
+template may (a description, a checklist, labels and the type's own text, choice and long text fields); none holds a
+title, so its card takes the type's new-card title.
+
+| Type            | Card templates                                                                                                                                                                                                                                                                                   |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Bug             | **Crash** (label crash; Steps to Reproduce laid out; checks: reproduced on the latest build, crash log attached, versions affected), **Visual Glitch** (label ui; a screenshot, light and dark, a phone), **Slow Screen** (label performance; how long, how much data, against the last release) |
+| Story           | **User Story** (As a, I want, So that; checks: acceptance criteria agreed, designs linked, estimated), **Spike** (label spike; the question and its time box; options written up, recommendation shared)                                                                                         |
+| Request         | **Feature Request** (label feature; what they want to do and why; checks: how they do it today, similar requests linked), **Access Request** (label access; which tool and what level; approved, granted, told)                                                                                  |
+| Content         | **Blog Post** (Channel Blog; outline, draft, edit, images with alt text, search title), **Newsletter** (Channel Newsletter; lead story, links checked, test send, scheduled), **Social Post** (Channel Social; copy, image or video, alt text, scheduled)                                        |
+| Candidate       | **Interview Loop** (screen, skills, team, references, decision), **Referral** (Source Referral; who referred them and why; thank the referrer, screen call)                                                                                                                                      |
+| Onboarding Task | **Laptop and Accounts** (order the laptop, email and calendar, chat, password manager, tools), **First Week Plan** (meet the team, coffee with a buddy, a first small task, end-of-week check-in)                                                                                                |
+| Deal            | **Inbound Lead** (Source Inbound; qualify budget, decision maker and timeline, book a demo), **Renewal** (label renewal; usage review, pricing agreed, contract sent, signed)                                                                                                                    |
+| Ticket          | **Something's Broken** (label bug; steps, a screenshot, passed to engineering), **Billing Question** (label billing; find the invoice, explain the charge, refund if due), **Refund Request** (label refund; order found, within the window, refunded, customer told)                            |
+
+- A test holds every card template to what a type's templates accept (`readCardTemplates`, refusing): only fields the
+  type offers, of kinds a template sets.
+- The five default types (Project, Task, Note, Idea, Action) hold none: they are every project's, and a template on
+  them would arrive in plans that never asked for it.
+
+## What a template shows off
+
+A template is the first thing a person sees of liveplanner, so each uses the features that fit its work, set up and
+working, not described:
+
+- **Card templates** where people file the same kind of card again and again, on the ready-made types above.
+- **A form wired to its board** where people outside the team send the work in (below).
+- **Flow charts** on the Dashboard of every **delivery** template (one whose work flows to done under WIP limits):
+  Cumulative Flow, Cycle Time and Throughput ([Plan views](plan-views.md#flow-charts)). Project Planner, Kanban Board,
+  Bug Tracker, Feedback Board, Help Desk, Sprint Board and Editorial Pipeline carry them.
+- **The calendar feed** on every date-heavy template: its How this works note ends "Subscribe to Calendar from the
+  tab menu to see these dates in your own calendar" ([Calendar feed](calendar-feed.md)). Project Planner, Weekly
+  Planner, Content Calendar, Event Planner, Study Planner, Client Onboarding, Editorial Pipeline and Trip Planner say
+  so.
+- **WIP limits, votes, hand-offs, rows by a field** and the rest, each where the work needs it (the tables below).
+- **Automations rules are not made by a template.** A rule acts for a signed-in Editor and runs on the plan's
+  server-side alarm, so a plan made by a guest or in This Browser could hold none, and a template's rule would have
+  no one to be **Made by** ([Automations](automations.md#copies-exports-and-deletes): "A plan made from a template
+  has none"). The Automations screen's Templates gallery fills its rules from the plan's own columns and types, so a
+  template's plan is ready for them.
+
+### Forms a template holds
+
+| Template        | Form tab         | Starter         | Its responses                                     | Left out            |
+| --------------- | ---------------- | --------------- | ------------------------------------------------- | ------------------- |
+| Kanban Board    | **Request Form** | Contact         | Requests on **Requests**, in New                  |                     |
+| Bug Tracker     | **Bug Report**   | Bug Report      | Bugs on **Triage**, in New                        | Severity            |
+| Hiring Pipeline | **Application**  | Job Application | Candidates on **Pipeline**, in Applied            | Years of Experience |
+| Feedback Board  | **Request Form** | Contact         | Requests on **Feedback**, in New                  |                     |
+| Event Planner   | **RSVP**         | Event RSVP      | Rows on **RSVP Responses**                        |                     |
+| Help Desk       | **Contact Form** | Contact         | Tickets on **Tickets**, in New (Name as Customer) |                     |
+
+- **Left out**: a starter question whose field the target's card type lacks and that the work does not need is left
+  out of the template's form, so the form brings no field of its own: a Bug's priority is the team's call in triage,
+  not the reporter's Severity, and a Candidate's experience is in their answer. The entry names the questions it
+  leaves out by the field they map to (`leaveOut`).
+- Each form's Responses figure sits on its template's Dashboard, beside the boards.
 
 ## The templates
 
@@ -183,39 +249,47 @@ One tab (named as any new tab is), empty: no board, so the tab shows Plan's **St
 
 Projects on a roadmap and a timeline, broken into tasks, run in sprints and walked every day.
 
-| Tab           | Holds                                                                                                                                                                                               |
-| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Roadmap       | Board **Roadmap**: Now, Next, Later, Shipped (done); Projects; start and due dates. Gantt Chart under it. How this works                                                                            |
-| Backlog       | Board **Backlog**: Backlog, Ready, This Sprint ⇄; a row per project; Stories, Tasks and Bugs; estimates and priority                                                                                |
-| Sprint        | Board **Sprint**: This Sprint ⇄, In Progress (WIP 3) ⇄, Blocked (red) ⇄, In Review ⇄, Done ⇄; a row per person; Stories, Tasks and Bugs; points. Cards by Field and Priority by Status under it     |
-| Daily Standup | Board **Daily Standup**: In Progress ⇄, Blocked ⇄, In Review ⇄, Done ⇄; a row per person; Stories, Tasks and Bugs; Detailed cards. How we run it, a 15 minute timer and a picker for who goes first |
+| Tab           | Holds                                                                                                                                                                                                                                    |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Roadmap       | Board **Roadmap**: Now, Next, Later, Shipped (done); Projects; start and due dates. Gantt Chart under it. How this works                                                                                                                 |
+| Backlog       | Board **Backlog**: Backlog, Ready, This Sprint ⇄; a row per project; Stories, Tasks and Bugs; estimates and priority                                                                                                                     |
+| Sprint        | Board **Sprint**: This Sprint ⇄, In Progress (WIP 3) ⇄, Blocked (red) ⇄, In Review ⇄, Done ⇄; a row per person; Stories, Tasks and Bugs; points. Cards by Field, Priority by Status, Cumulative Flow, Cycle Time and Throughput under it |
+| Daily Standup | Board **Daily Standup**: In Progress ⇄, Blocked ⇄, In Review ⇄, Done ⇄; a row per person; Stories, Tasks and Bugs; Detailed cards. How we run it, a 15 minute timer and a picker for who goes first                                      |
 
 - How this works: add a Project for each piece of work on Roadmap and give it dates (the Gantt draws them);
-  break it into Stories, Tasks and Bugs on Backlog, each under its project; move what the team takes on to This Sprint; walk
-  Daily Standup each morning.
+  break it into Stories, Tasks and Bugs on Backlog, each under its project (a Story or Bug from its card templates);
+  move what the team takes on to This Sprint; walk Daily Standup each morning; subscribe to Calendar from the tab menu
+  to see these dates in your own calendar.
 
 ### Kanban Board
 
 Continuous flow: requests come in, are accepted onto the board, and flow to Done under WIP limits. It stays in
 the Kanban boards family.
 
-| Tab      | Holds                                                                                                                               |
-| -------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| Board    | Board **Kanban**: Backlog ⇄, To Do, In Progress (WIP 3), Review (WIP 2), Done; Tasks and Requests                                   |
-| Requests | Board **Requests**: New, Needs Info (amber), Backlog ⇄ (green: accepted, it lands on the Board), Declined; Requests. How this works |
-| Flow     | Dashboard: Item Count, Completion, Stale Cards, Unassigned; Cards by Field, Priority by Status, Due Calendar                        |
+| Tab          | Holds                                                                                                                                         |
+| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Board        | Board **Kanban**: Backlog ⇄, To Do, In Progress (WIP 3), Review (WIP 2), Done; Tasks and Requests                                             |
+| Requests     | Board **Requests**: New, Needs Info (amber), Backlog ⇄ (green: accepted, it lands on the Board), Declined; Requests. How this works           |
+| Request Form | Form **Request Form**: the Contact starter, each message a Request in Requests' New; unpublished                                              |
+| Flow         | Dashboard: Item Count, Completion, Stale Cards, Unassigned, Request Form's Responses; Cumulative Flow, Cycle Time, Throughput, Cards by Field |
+
+- How this works: publish Request Form and share its link, so requests land in New; add your own there too; ask in
+  Needs Info when one is unclear; accept one by moving it to Backlog (it lands on the Board tab); say why in a comment
+  when you decline.
 
 ### Bug Tracker
 
 Bugs triaged by priority, then fixed, reviewed and released.
 
-| Tab    | Holds                                                                                                                                  |
-| ------ | -------------------------------------------------------------------------------------------------------------------------------------- |
-| Triage | Board **Triage**: New, Needs Info (amber), Confirmed ⇄, Won't Fix, Duplicate (no done column); a row per priority; Bugs. How we triage |
-| Fixing | Board **Fixing**: Confirmed ⇄, Fixing (WIP 4), In Review, Fixed (done), Released; a row per person; Bugs                               |
-| Health | Dashboard: Item Count, Priorities, Stale Cards, Unassigned, Contact Form's Responses; Priority by Status, Cards by Field, Due Calendar |
+| Tab        | Holds                                                                                                                                                        |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Triage     | Board **Triage**: New, Needs Info (amber), Confirmed ⇄, Won't Fix, Duplicate (no done column); a row per priority; Bugs. How we triage                       |
+| Bug Report | Form **Bug Report**: the Bug Report starter without Severity, each report a Bug in Triage's New; unpublished                                                 |
+| Fixing     | Board **Fixing**: Confirmed ⇄, Fixing (WIP 4), In Review, Fixed (done), Released; a row per person; Bugs                                                     |
+| Health     | Dashboard: Item Count, Priorities, Stale Cards, Unassigned, Bug Report's Responses; Priority by Status, Cards by Field, Cycle Time, Throughput, Due Calendar |
 
-- How we triage: Urgent is broken for everyone (fix now), High blocks someone, Medium has a workaround, Low is
+- How we triage: publish Bug Report and share its link, so reports land in New; start your own from Crash, Visual
+  Glitch or Slow Screen; Urgent is broken for everyone (fix now), High blocks someone, Medium has a workaround, Low is
   polish; give each confirmed bug an owner.
 
 ### Team Retro
@@ -244,40 +318,49 @@ A person's (or a small team's) week, fed from an inbox, with what is due on a ca
 | Calendar  | Dashboard: Due Soon, Completion, Item Count; Due Calendar across the full width         |
 
 - How this works: capture everything in Inbox; each Monday, give the week's cards a day on This Week (the
-  card's status picker lists the days); what waits on someone else goes in Waiting On.
+  card's status picker lists the days); what waits on someone else goes in Waiting On; subscribe to Calendar from the
+  tab menu to see these dates in your own calendar.
 
 ### Content Calendar
 
 Ideas voted on and approved, produced through review to published, and every publish date on a calendar.
 
-| Tab        | Holds                                                                                                                                          |
-| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| Ideas      | Board **Ideas**: Ideas, Shortlisted, Approved ⇄, Parked; Content; a **Vote** button (5 dots each)                                              |
-| Production | Board **Production**: Approved ⇄, Drafting, In Review, Scheduled, Published (done); Content and Tasks; labels and due dates (the publish date) |
-| Calendar   | Dashboard: Due Soon, Completion, People; Due Calendar and Cards by Field                                                                       |
+| Tab        | Holds                                                                                                                                                          |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Ideas      | Board **Ideas**: Ideas, Shortlisted, Approved ⇄, Parked; Content; a **Vote** button (5 dots each)                                                              |
+| Production | Board **Production**: Approved ⇄, Drafting, In Review, Scheduled, Published (done); Content and Tasks; labels and due dates (the publish date). How this works |
+| Calendar   | Dashboard: Due Soon, Completion, People; Due Calendar and Cards by Field                                                                                       |
+
+- How this works: start each piece from its card template (Blog Post, Newsletter or Social Post) and work down its
+  checklist; set Due to the publish date; move it along as it is written, reviewed and scheduled; subscribe to Calendar
+  from the tab menu to see these dates in your own calendar.
 
 ### Hiring Pipeline
 
 Open roles, the candidates for each, and the new starter's first month.
 
-| Tab        | Holds                                                                                                                                        |
-| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| Roles      | Board **Roles**: Opening Soon, Open, Offer Out, Filled (done); Roles; start and due dates. Gantt Chart of the Roles under it                 |
-| Pipeline   | Board **Pipeline**: Applied, Screen, Interview, Offer, Hired (done), Not Progressing; a row per role (Role); Candidates; stale cards         |
-| Onboarding | Board **Onboarding**: Before Day One, First Week, First Month, Done (done); a row per new starter (New Starter); Onboarding Tasks; due dates |
+| Tab         | Holds                                                                                                                                                                                              |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Roles       | Board **Roles**: Opening Soon, Open, Offer Out, Filled (done); Roles; start and due dates. Gantt Chart of the Roles under it                                                                       |
+| Pipeline    | Board **Pipeline**: Applied, Screen, Interview, Offer, Hired (done), Not Progressing; a row per role (Role); Candidates; stale cards. Item Count, Stale Cards, Unassigned; Cycle Time. How it fits |
+| Application | Form **Application**: the Job Application starter without Years of Experience, each application a Candidate in Pipeline's Applied; unpublished                                                     |
+| Onboarding  | Board **Onboarding**: Before Day One, First Week, First Month, Done (done); a row per new starter (New Starter); Onboarding Tasks; due dates                                                       |
+| Overview    | Dashboard: the views and note above, and Application's Responses figure, beside each tab                                                                                                           |
 
-- How it fits: each Role is a card on Roles; each Candidate names their Role, so the Pipeline lays a row per role,
-  and a Role's panel lists its candidates (Linked as Role, with **New Candidate**); once hired, a Candidate is the
-  New Starter their Onboarding Tasks name, a row each.
+- How it fits: each Role is a card on Roles; publish Application and share its link, so applicants land in Applied;
+  each Candidate names their Role, so the Pipeline lays a row per role, and a Role's panel lists its candidates
+  (Linked as Role, with **New Candidate**); start a candidate from Interview Loop or Referral; once hired, a Candidate
+  is the New Starter their Onboarding Tasks name, a row each.
 
 ### OKRs
 
 Objectives for the period and the key results that measure them, checked in on each week.
 
-| Tab        | Holds                                                                                                                                                          |
-| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Objectives | Board **Objectives**: Draft, Committed, Achieved (done), Missed; Objectives; start and due dates. Gantt Chart of the Objectives under it                       |
-| Milestones | Board **Milestones**: Not Started, In Progress (teal), Done (green, done); a row per goal (Goal); Milestones; due dates and checklist progress. How this works |
+| Tab         | Holds                                                                                                                                                                                                                         |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Objectives  | Board **Objectives**: Draft, Committed, Achieved (done), Missed; Objectives; start and due dates. Gantt Chart of the Objectives under it                                                                                      |
+| Key Results | Board **Key Results**: Not Started, On Track (green), At Risk (amber), Off Track (red), Done (done); a row per objective (Objective); Key Results; due dates and checklist progress. Cards by Field under it. How we check in |
+| Overview    | Dashboard: the views and note above, beside each tab                                                                                                                                                                          |
 
 - How we check in: each week, update every key result's Current, move it to the column it is in and say why in a comment; anything
   At Risk or Off Track gets its next steps on its checklist.
@@ -299,13 +382,16 @@ Workstreams on a timeline, a checklist per workstream, and the go/no-go on launc
 
 Requests from users, voted on and reviewed, and the ones planned followed to shipped.
 
-| Tab      | Holds                                                                                                                    |
-| -------- | ------------------------------------------------------------------------------------------------------------------------ |
-| Feedback | Board **Feedback**: New, Under Review, Planned ⇄, Not Planned; Requests; a **Vote** button (3 dots each). How this works |
-| Delivery | Board **Delivery**: Planned ⇄, Building, Shipped (done); Requests and Tasks; a row per person                            |
+| Tab          | Holds                                                                                                                             |
+| ------------ | --------------------------------------------------------------------------------------------------------------------------------- |
+| Feedback     | Board **Feedback**: New, Under Review, Planned ⇄, Not Planned; Requests; a **Vote** button (3 dots each). How this works          |
+| Request Form | Form **Request Form**: the Contact starter, each message a Request in Feedback's New; unpublished                                 |
+| Delivery     | Board **Delivery**: Planned ⇄, Building, Shipped (done); Requests and Tasks; a row per person. Cycle Time and Throughput under it |
+| Overview     | Dashboard: the views and note above, and Request Form's Responses figure, beside each tab                                         |
 
-- How this works: add each request as a Request; vote on what matters; review the top voted each week; Planned
-  moves it to Delivery.
+- How this works: publish Request Form and share its link, so requests land in New; add your own as a Request (a
+  Feature Request from its card template); press Vote and vote on what matters; review the top voted each week;
+  Planned moves it to Delivery.
 
 ### Event Planner
 
@@ -323,7 +409,8 @@ with what is due on a calendar.
 
 - How this works: add a Workstream for each part of the event (venue, catering, speakers), with its dates; break each
   into Tasks on Tasks, under its workstream; publish RSVP and share its link, each reply landing on RSVP Responses;
-  keep the Guest List as replies come in; watch what is due on Overview.
+  keep the Guest List as replies come in; watch what is due on Overview; subscribe to Calendar from the tab menu to see
+  these dates in your own calendar.
 
 ### Sales CRM
 
@@ -344,15 +431,16 @@ pipeline on a dashboard.
 A support queue: tickets by priority from new to closed, a contact form whose messages land as tickets, and the help
 articles they lead to.
 
-| Tab            | Holds                                                                                                                                                              |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Tickets        | Board **Tickets**: New, Open, Waiting on Customer (amber), Resolved (green, done), Closed; a row per priority; Tickets; due dates. How we work the queue           |
-| Contact Form   | Form **Contact Form**: the Contact starter (Name to Customer, Email, Subject to Title, Message to Description), each message a Ticket in Tickets' New; unpublished |
-| Knowledge Base | Board **Knowledge Base**: To Write, Drafting, In Review, Published (done); Notes (one per article); labels                                                         |
-| Overview       | Dashboard: Item Count, Priorities, Stale Cards, Unassigned; Priority by Status and Cards by Field, beside each tab                                                 |
+| Tab            | Holds                                                                                                                                                                |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tickets        | Board **Tickets**: New, Open, Waiting on Customer (amber), Resolved (green, done), Closed; a row per priority; Tickets; due dates. How we work the queue             |
+| Contact Form   | Form **Contact Form**: the Contact starter (Name to Customer, Email, Subject to Title, Message to Description), each message a Ticket in Tickets' New; unpublished   |
+| Knowledge Base | Board **Knowledge Base**: To Write, Drafting, In Review, Published (done); Notes (one per article); labels                                                           |
+| Overview       | Dashboard: Item Count, Priorities, Stale Cards, Unassigned, Contact Form's Responses; Priority by Status, Cards by Field, Cycle Time and Throughput, beside each tab |
 
 - How we work the queue: publish the Contact Form and share its link, so messages arrive as tickets in New; every new
-  ticket gets an owner and a priority; urgent first, then the oldest; Waiting on
+  ticket gets an owner and a priority (one you log yourself can start from Something's Broken, Billing Question or
+  Refund Request); urgent first, then the oldest; Waiting on
   Customer while you need their reply; Resolved once they confirm, Closed a week later; a question asked twice
   becomes an article on Knowledge Base.
 
@@ -398,7 +486,70 @@ A student's coursework and revision, by subject, with every deadline on a calend
 | Calendar    | Dashboard: Due Soon, Completion, Item Count; Due Calendar across the full width                                                         |
 
 - How this works: add each assignment with its subject as a label and its due date; break big ones into steps on its
-  checklist; add a card per exam topic on Revision; move a topic to Confident once you can explain it without notes.
+  checklist; add a card per exam topic on Revision; move a topic to Confident once you can explain it without notes;
+  subscribe to Calendar from the tab menu to see these dates in your own calendar.
+
+### Sprint Board
+
+One team's sprint run for flow: a backlog made ready, work pulled under WIP limits, and the flow charts read at the
+retro. Lighter than Project Planner (no roadmap, no standup board); in the Kanban boards family as Project Planner is.
+
+| Tab     | Holds                                                                                                                                                            |
+| ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Sprint  | Board **Sprint**: To Do ⇄, In Progress (WIP 3), In Review (WIP 2), Blocked (red), Done (done); a row per person; Stories, Tasks and Bugs; estimates and priority |
+| Backlog | Board **Backlog**: Backlog, Ready (green), To Do ⇄; Stories, Tasks and Bugs; estimates and priority. How this works                                              |
+| Flow    | Dashboard: Item Count, Completion, Stale Cards, Unassigned; Cumulative Flow, Cycle Time, Throughput and Cards by Field                                           |
+
+- How this works: write each piece of work as a Story, Task or Bug (a User Story or Spike from its card template);
+  estimate it and move it to Ready once the team understands it; at planning, move what fits to To Do (it lands on
+  Sprint); keep In Progress under its limit and finish before you start; name what holds a card up in its Blocked By
+  and move it to Blocked; read Flow at the retro.
+
+### Client Onboarding
+
+Each new client from signed to live: their stages on a timeline, the tasks for each, and what is due on a calendar.
+
+| Tab      | Holds                                                                                                                                                                                             |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Clients  | Board **Clients**: Signed, Kickoff, Setup, Training, Live (green, done); Projects (one per client); start and due dates (the go-live). Gantt Chart under it                                       |
+| Tasks    | Board **Tasks**: To Do, Doing, Waiting on Client (amber), Done (done); a row per client (Parent); Tasks; checklists and due dates. Due Soon, Completion, Unassigned; Due Calendar. How this works |
+| Overview | Dashboard: the views and note above, beside each tab                                                                                                                                              |
+
+- How this works: add a Client card for each new customer, with their start and go-live dates; break the onboarding
+  into Tasks under each client (kickoff call, data import, admin training); Waiting on Client while they owe you
+  something; move the client along as each stage finishes, Live once they use it every day; subscribe to Calendar from
+  the tab menu to see these dates in your own calendar.
+
+### Editorial Pipeline
+
+Pitches voted on and commissioned, then written, edited and fact-checked under WIP limits to published, with the
+flow of finished pieces on a dashboard. Content Calendar plans a marketing team's posts; this runs an editorial desk.
+
+| Tab        | Holds                                                                                                                                                                                                                                                                       |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pitches    | Board **Pitches**: Pitched, Shortlisted, Commissioned ⇄ (green), Declined; Content; votes; a **Vote** button (3 dots each)                                                                                                                                                  |
+| Production | Board **Production**: Commissioned ⇄, Drafting (WIP 4), Editing (WIP 2), Fact Check, Scheduled, Published (done); Content and Tasks; due dates (the publish date). Due Soon, Completion, Stale Cards; Cumulative Flow, Cycle Time, Throughput, Due Calendar. How this works |
+| Overview   | Dashboard: the views and note above, beside each tab                                                                                                                                                                                                                        |
+
+- How this works: pitch a piece on Pitches and vote on the ones worth writing; commission it and it lands in
+  Production; start it from its card template (Blog Post, Newsletter or Social Post); keep Editing under its limit so
+  drafts never pile up; set Due to the publish date; subscribe to Calendar from the tab menu to see these dates in
+  your own calendar.
+
+### Trip Planner
+
+A group trip: ideas voted onto the days, every booking with its date to book by, and who packs what.
+
+| Tab       | Holds                                                                                                                                                                                     |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Itinerary | Board **Itinerary**: Ideas, Day 1, Day 2, Day 3, Day 4 (no done column); Ideas and Notes; votes; a **Vote** button (3 dots each)                                                          |
+| Bookings  | Board **Bookings**: To Book, Booked (teal), Paid (green, done); Tasks, labelled Travel, Stay, Food or Activities; due dates (book by). Due Soon, Completion; Due Calendar. How this works |
+| Packing   | Board **Packing**: To Pack, Packed (done); a row per person; Tasks; checklists                                                                                                            |
+| Overview  | Dashboard: the views and note above, beside each tab                                                                                                                                      |
+
+- How this works: add each idea to Itinerary's Ideas and vote on the ones you want; move the winners onto a day; add
+  every flight, stay and ticket to Bookings with the date to book it by; Booked once confirmed, Paid once settled;
+  share out the packing on Packing; subscribe to Calendar from the tab menu to see these dates in your own calendar.
 
 ## Spreadsheet templates
 
