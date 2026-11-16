@@ -35,7 +35,7 @@ the public read and vote, the vote field and its sort, the editor's Publish as R
 - `apps/api/src/routes/roadmap-routes.ts`: `handleRoadmapRoutes(ctx)`, dispatched from
   `project-subresource-routes.ts` after the calendar feed's.
 - `apps/api/src/routes/roadmap-public-route.ts`: `handleRoadmaps(ctx)`, the worker's `roadmaps` case: the path's
-  shape (plain `404 not_found`) and method (`405`), so the OpenAPI probe and a bad path never wake a room, then the room's `roadmap(planId, request)` RPC (`plan-room.ts`, `plan-client.ts`), which answers null-plan
+  shape (plain `404 not_found`) and method (`405`), so the OpenAPI probe and a bad path never wake a room, then the room's `roadmap(planId, request)` RPC (`plan-room.ts` handing it to `roadmap/roadmap-room.ts`, `plan-client.ts`), which answers null-plan
   ids `404` without making a schema (`bindStoredPlan`).
 - `apps/api/src/index.ts`: `/api/roadmaps` limited per network on `FORM_RATE_LIMITER` (`roadmap:` for votes,
   `roadmap-read:` for reads) and kept out of the per-owner write limit, as `/api/forms` is.
