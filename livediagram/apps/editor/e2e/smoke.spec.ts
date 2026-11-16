@@ -15,14 +15,13 @@ import {
 // tests can't reach. Every test also fails on any uncaught page error
 // (the `pageErrors` fixture).
 
-test('the new-document wizard renders', async ({ page, pageErrors }) => {
+// /new asks nothing (docs/specs/007-editor/new-document-route.md "No welcome step"): it makes a canvas on arrival and
+// opens it on Start Diagramming, under the document's own address.
+test('/new makes a canvas and opens it on its start', async ({ page, pageErrors }) => {
   await page.goto('/new');
-  await expect(page.getByText('New Canvas', { exact: false })).toBeVisible();
-  // The Mode step is the client-rendered heart of the wizard (docs/specs/007-editor/new-document-route.md
-  // "No welcome step"); its three mode cards (Diagram, Draw, Workshop) prove the picker mounted, not just the shell.
-  const modes = page.getByRole('group', { name: 'What are you making?' });
-  await expect(modes).toBeVisible();
-  await expect(modes.locator('[data-new-mode]')).toHaveCount(3);
+  await expect(page.locator('[data-canvas-a11y-root]')).toBeAttached({ timeout: 30_000 });
+  await expect(page.getByRole('region', { name: /^Start Diagramming$/ })).toBeVisible();
+  expect(new URL(page.url()).pathname).toMatch(/^\/document\/[^/]+$/);
   expectNoPageErrors(pageErrors);
 });
 
@@ -32,7 +31,7 @@ test('the new-document wizard renders', async ({ page, pageErrors }) => {
 test.describe('a first visit', () => {
   test.use({ freshVisitor: true });
 
-  test('goes through the guest handoff and comes back to the wizard with a guest token', async ({
+  test('goes through the guest handoff and comes back to make the canvas with a guest token', async ({
     page,
     pageErrors,
   }) => {
@@ -46,8 +45,9 @@ test.describe('a first visit', () => {
       return at >= 0 && at < visited.length - 1;
     };
     await expect.poll(cameBack, { timeout: 15_000 }).toBe(true);
-    await expect(page.getByRole('group', { name: 'What are you making?' })).toBeVisible();
-    expect(visited.at(-1)).toMatch(/^\/new\/?$/);
+    await expect(page.locator('[data-canvas-a11y-root]')).toBeAttached({ timeout: 30_000 });
+    const back = visited.findIndex((path) => path.startsWith('/auth/guest'));
+    expect(visited.slice(back + 1)).toContainEqual(expect.stringMatching(/^\/new\/?$/));
     expect(
       await page.evaluate(() => localStorage.getItem('livediagram:v2:guest-token')),
     ).toBeTruthy();
@@ -55,14 +55,13 @@ test.describe('a first visit', () => {
   });
 });
 
-// The editor header carries no apps menu over the new-document wizard: the product's links live in the Explorer
+// The editor header carries no apps menu over a new canvas: the product's links live in the Explorer
 // panel's footer (docs/specs/013-workspace/explorer-structure.md "Layout").
-test('the new-document wizard shows with no apps menu in the header', async ({
-  page,
-  pageErrors,
-}) => {
+test('a new canvas opens with no apps menu in the header', async ({ page, pageErrors }) => {
   await page.goto('/new');
-  await expect(page.locator('[data-new-mode="diagram"]')).toBeVisible();
+  await expect(page.getByRole('region', { name: /^Start Diagramming$/ })).toBeVisible({
+    timeout: 30_000,
+  });
   await expect(page.getByRole('button', { name: /^switch section/i })).toHaveCount(0);
   expectNoPageErrors(pageErrors);
 });

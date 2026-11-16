@@ -13,7 +13,6 @@ import {
   expect,
   expectNoPageErrors,
   test,
-  untilHydrated,
   mintGuest,
 } from './fixtures';
 import { auditOptical, OPTICAL_TOLERANCE_PX } from '@liveworkspace/e2e-kit/optical';
@@ -56,17 +55,6 @@ async function openSeededEditor(page: Page, baseURL: string): Promise<Locator> {
 }
 
 test.describe('Optical alignment audit', () => {
-  // A visitor with no identity leaves /new for the guest handoff the moment the page hydrates (fixtures.ts
-  // serverNewUrl), which destroyed the page mid-audit: the wizard is audited as a minted guest, who stays.
-  test('the New Canvas wizard', async ({ page, pageErrors }) => {
-    await darkVisitor(page, await mintGuest(page.request));
-    await page.goto('/new');
-    await page.getByText('New Canvas', { exact: false }).first().waitFor();
-    await untilHydrated(page.getByRole('button', { name: /^create$/i }));
-    await expectCentred(page, 'wizard');
-    expectNoPageErrors(pageErrors);
-  });
-
   // One editor screen per test: each 4x audit is CPU-bound, so four of them in one test left it at the
   // mercy of whatever else the runner was doing within one 30-second budget.
   test('the editor with its default panels', async ({ page, pageErrors, baseURL }) => {
@@ -129,7 +117,7 @@ test('initials with a tailed capital centre on their cap band', async ({ page })
   // A minted guest, so /new stays put rather than leaving for the guest handoff mid-audit.
   await adoptGuest(page, await mintGuest(page.request));
   await page.goto('/new');
-  await page.getByText('New Canvas', { exact: false }).first().waitFor();
+  await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
   await page.evaluate(() => {
     const disc = document.createElement('span');
     disc.setAttribute('aria-label', 'Tailed initials');

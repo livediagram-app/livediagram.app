@@ -161,18 +161,16 @@ export async function untilHydrated(locator: Locator): Promise<void> {
     .toBe(true);
 }
 
-// The wizard asks only for a mode (docs/specs/007-editor/new-document-route.md "No welcome step"): choosing one
-// creates the document there and then, and lands on the editor with the mode's start screen over the canvas
+// /new asks nothing (docs/specs/007-editor/new-document-route.md "No welcome step"): `?mode=` makes the document in
+// that mode on arrival, and it lands on the editor with the mode's start screen over the canvas
 // (docs/specs/007-editor/start-diagramming.md).
 // Resolves to the new document's id; `url` carries a `/new?folder=` / `?team=` context. Without one the document is
 // made on livediagram (serverNewUrl), so a spec can seed it, share it or watch its saves; pass `'/new'` for a guest's
 // own create, which keeps it in This Browser.
 export async function createInMode(page: Page, mode: string, url?: string): Promise<string> {
-  await page.goto(url ?? (await serverNewUrl(page)));
-  await page.getByText('New Canvas', { exact: false }).waitFor();
-  const card = page.locator(`[data-new-mode="${mode}"]`);
-  await untilHydrated(card);
-  await card.click();
+  const target = new URL(url ?? (await serverNewUrl(page)), 'http://e2e.invalid');
+  target.searchParams.set('mode', mode);
+  await page.goto(`${target.pathname}${target.search}`);
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
   return new URL(page.url()).pathname.split('/').pop()!;
 }
