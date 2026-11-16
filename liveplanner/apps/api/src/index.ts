@@ -30,6 +30,7 @@ import { MAX_IMAGE_BYTES } from '@liveworkspace/media';
 import { handleImages } from './routes/images';
 import { handleAccount } from './routes/account';
 import { handlePlanDrafts } from './routes/plan-drafts';
+import { handleIntakeEmail } from './email-intake/email-handler';
 import { handleFormDrafts } from './routes/form-drafts';
 import { handleEvents } from './routes/events';
 import { handleCatalogues } from './routes/catalogues';
@@ -417,6 +418,10 @@ const worker = {
       },
     );
     return withServerRelease(response, env.BUILD_ID);
+  },
+  // Email to Board (docs/specs/026-plan/email-to-board.md): Email Routing's catch-all for the intake domain.
+  async email(message: ForwardableEmailMessage, env: Env): Promise<void> {
+    await handleIntakeEmail(message, env);
   },
 } satisfies ExportedHandler<Env>;
 

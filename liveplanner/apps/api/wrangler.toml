@@ -33,6 +33,11 @@ port = 8887
 # The sender for outbound email (the EMAIL binding, below; liveworkspace/docs/specs/003-accounts/email.md).
 EMAIL_FROM = "liveplanner <hello@liveplanner.app>"
 
+# Email to Board (docs/specs/026-plan/email-to-board.md): board addresses are `board-<code>@` this domain, whose MX and
+# Email Routing catch-all route hand every message to this Worker's `email()` handler. Not set on staging (its
+# [vars] below leave it out), so staging makes no addresses and takes no mail.
+EMAIL_INTAKE_DOMAIN = "in.liveplanner.app"
+
 # The central index (liveworkspace/docs/specs/004-index/one-explorer.md): where every plan is filed and who may open it. The
 # grants this api checks are signed by `${INDEX_ORIGIN}/api/index/jwks`, and the plan rooms push their summaries
 # there with INDEX_KEY (a secret, below). Local dev: `INDEX_ORIGIN=http://127.0.0.1:8793` in `.dev.vars`.

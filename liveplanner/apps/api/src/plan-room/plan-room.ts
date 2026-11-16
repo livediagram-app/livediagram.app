@@ -54,6 +54,16 @@ import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/m
 import { type RouteIdentity } from './plan-route';
 import { answerRoomRoadmap } from '../roadmap/roadmap-room';
 import {
+  deliverIntake,
+  type IntakeDelivery,
+  type IntakeOutcome,
+} from '../email-intake/intake-delivery';
+import {
+  readDirectoryEntry,
+  writeDirectoryEntry,
+  type IntakeEntry,
+} from '../email-intake/intake-directory';
+import {
   MAINTENANCE_KEY,
   restoreContentState,
   ensureSchema,
@@ -610,6 +620,36 @@ export class PlanRoom extends DurableObject<Env> {
   // A visitor's public roadmap read or vote, as no one (../roadmap/roadmap-room.ts).
   async roadmap(planId: string, request: Request): Promise<Response> {
     return answerRoomRoadmap(this, planId, request);
+  }
+
+  // One message to a board's address (../email-intake/intake-delivery.ts). An id nothing has written answers `gone`
+  // and stays empty.
+  async emailIntake(planId: string, delivery: IntakeDelivery): Promise<IntakeOutcome> {
+    if (!bindStoredPlan(this, planId)) return 'gone';
+    const sql = this.state.storage.sql;
+    return deliverIntake(
+      {
+        env: this.requireEnv(),
+        putAway: this.standing.putAway,
+        grant: (imageId) => recordImageGrant(sql, planId, imageId, Date.now()),
+        wrote: () => noteWrite(this),
+        waitUntil: (p) => this.state.waitUntil(p),
+      },
+      planId,
+      delivery,
+      Date.now(),
+    );
+  }
+
+  // ---------- RPC: Email to Board's directory (../email-intake/intake-directory.ts) --------------------------------
+
+  // Only on a code's `~mail:` instance, never a plan's: one storage key, no plan schema made or read.
+  intakeEntry(): Promise<IntakeEntry | null> {
+    return readDirectoryEntry(this.state.storage);
+  }
+
+  setIntakeEntry(entry: IntakeEntry | null): Promise<void> {
+    return writeDirectoryEntry(this.state.storage, entry);
   }
 
   // ---------- RPC: Describe a Plan's count (plan-draft-count.ts) -------------------------------------------------

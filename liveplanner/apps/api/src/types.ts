@@ -116,6 +116,9 @@ export type Env = {
   SHARE_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Per-network limiter for a form link's reads and responses (docs/specs/030-forms/forms.md "Abuse and limits").
   FORM_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
+  // Email to Board's domain (docs/specs/026-plan/email-to-board.md): board addresses are `board-<code>@` it. A
+  // [vars] string; unset (staging, tests by default), Email to Board is off: no address is made and no mail taken.
+  EMAIL_INTAKE_DOMAIN?: string;
   // Telemetry on/off switch (docs/specs/017-telemetry/telemetry.md) for this worker's own events. A plain
   // wrangler.toml [vars] string; only the literal "true" enables it.
   // Absent/anything-else keeps telemetry fully off — the unconfigured

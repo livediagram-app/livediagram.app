@@ -54,7 +54,9 @@ export type ItemHistoryTag =
   | 'automation'
   | 'automation_ai'
   | 'github'
-  | 'automation_github';
+  | 'automation_github'
+  // A card an email made (docs/specs/026-plan/email-to-board.md "What a message makes").
+  | 'email';
 
 // An entry as the plan stores it: its author as the card names them (a hashed id, a name, a colour).
 export type StoredHistoryEntry = {
@@ -281,6 +283,7 @@ const TAGS: readonly string[] = [
   'automation_ai',
   'github',
   'automation_github',
+  'email',
 ];
 const CHANGE_KINDS = new Set([
   'created',
