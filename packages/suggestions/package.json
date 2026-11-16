@@ -14,6 +14,7 @@
     "./client": "./src/client.ts",
     "./room-signal": "./src/room-signal.ts",
     "./openapi": "./src/openapi.ts",
+    "./telemetry": "./src/telemetry.ts",
     "./react/SuggestionsBar": "./src/react/SuggestionsBar.tsx",
     "./react/SuggestionGhostOverlay": "./src/react/SuggestionGhostOverlay.tsx",
     "./react/SuggestOnlySection": "./src/react/SuggestOnlySection.tsx",

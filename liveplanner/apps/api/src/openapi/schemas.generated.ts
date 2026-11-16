@@ -12753,7 +12753,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "ReviewResponse": {
     "additionalProperties": false,
-    "description": "`GET` and `PUT /api/documents/:id/review`'s answer.",
+    "description": "`GET` and `PUT /api/<items>/:id/review`'s answer.",
     "properties": {
       "review": {
         "$ref": "#/components/schemas/StoredReview"
@@ -14811,7 +14811,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "StoredReview": {
     "additionalProperties": false,
-    "description": "What the document keeps: the settings, the people seen joining as Participants, and the pins.",
+    "description": "What the item keeps: the settings, the people seen joining as Participants, and the pins.",
     "properties": {
       "agents": {
         "type": "boolean"

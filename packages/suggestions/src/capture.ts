@@ -27,6 +27,9 @@ export type SuggestCaptureDeps<T extends CaptureTab<E>, E extends SuggestionElem
   // The product's fingerprint (the element without its live multi-writer fields): a change that alters only those
   // (a comment, a reaction, a vote) is never a suggestion, so it lands as it always does.
   fingerprint?: (element: E) => string;
+  // A change to the tab's own fields alone (not its elements) that goes straight through rather than being refused:
+  // livedocuments' article writing, which has a suggesting mode of its own.
+  passThrough?: (before: T, after: T) => boolean;
 };
 
 export type SuggestCapture<T extends CaptureTab<E>, E extends SuggestionElement> = {
@@ -110,7 +113,9 @@ export function createSuggestCapture<T extends CaptureTab<E>, E extends Suggesti
     if (!nextTab || othersChanged) return deps.refuse();
     const viewTab = byId.get(tabId)!;
     if (nextTab === viewTab || nextTab.elements === seen) {
-      if (nextTab !== viewTab && !sameTabFields(nextTab, viewTab)) deps.refuse();
+      if (nextTab === viewTab || sameTabFields(nextTab, viewTab)) return;
+      if (deps.passThrough?.(viewTab, nextTab)) apply(mapTabs);
+      else deps.refuse();
       return;
     }
     if (liveOnly(seen, nextTab.elements)) {

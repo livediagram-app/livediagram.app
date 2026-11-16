@@ -5,7 +5,13 @@ import { el, type El } from './test/fixtures';
 
 type Tab = { id: string; name: string; elements: El[] };
 
-function setup(opts: { suggesting?: string | null; pointer?: boolean } = {}) {
+function setup(
+  opts: {
+    suggesting?: string | null;
+    pointer?: boolean;
+    passThrough?: (a: Tab, b: Tab) => boolean;
+  } = {},
+) {
   let tabs: Tab[] = [
     { id: 't1', name: 'One', elements: [el('a'), el('b')] },
     { id: 't2', name: 'Two', elements: [el('z')] },
@@ -20,6 +26,7 @@ function setup(opts: { suggesting?: string | null; pointer?: boolean } = {}) {
     propose: (tabId, ops) => proposed.push([tabId, ops]),
     refuse,
     pointerDown: () => pointer,
+    ...(opts.passThrough ? { passThrough: opts.passThrough } : {}),
   });
   const apply = vi.fn((map: (t: Tab[]) => Tab[]) => {
     tabs = map(tabs);
@@ -116,6 +123,15 @@ describe('createSuggestCapture', () => {
     s.commit((ts) => ts.filter((t) => t.id !== 't1'));
     expect(s.refuse).toHaveBeenCalledTimes(4);
     expect(s.proposed).toEqual([]);
+  });
+
+  it('lets a tab-field change through where the product says so', () => {
+    const s = setup({ passThrough: (a, b) => a.name !== b.name });
+    s.commit((ts) => ts.map((t) => (t.id === 't1' ? { ...t, name: 'Renamed' } : t)));
+    expect(s.refuse).not.toHaveBeenCalled();
+    expect(s.tabs()[0]!.name).toBe('Renamed');
+    s.commit((ts) => ts.map((t) => (t.id === 't1' ? { ...t, kind: 'x' } : t)));
+    expect(s.refuse).toHaveBeenCalledTimes(1);
   });
 
   it('ignores a no-op and refuses a tab the session is not on', () => {

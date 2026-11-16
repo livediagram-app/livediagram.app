@@ -1,5 +1,6 @@
 'use client';
 
+import { useEditorSuggestions } from './editor-state/useEditorSuggestions';
 import type { EditorSurface } from '@liveworkspace/workbench/lib/editor-surface';
 import { editorView } from './editor-state/editor-view';
 import { useEditorCollaboration } from './editor-state/useEditorCollaboration';
@@ -144,7 +145,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     persistenceSlice,
     collaborationSlice,
   });
-  return editorView({
+  // Suggestions on the canvas (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md).
+  const canvasSuggestions = useEditorSuggestions({ designSlice, selectionSlice, sessionSlice });
+  const view = editorView({
     designSlice,
     selectionSlice,
     toolsSlice,
@@ -162,4 +165,5 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     styleSlice,
     inputSlice,
   });
+  return { ...view, canvasSuggestions };
 }

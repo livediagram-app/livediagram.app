@@ -1,4 +1,5 @@
 import { setRemoteBesideTab } from '@liveworkspace/workbench/lib/split-presence';
+import { takeSuggestionsRoomOp } from '@liveworkspace/suggestions/room-signal';
 import { noteAccessEnded } from '@/lib/access-notice';
 import type { RoomHandlers } from '@/lib/api-client';
 import { parseLaserConfig } from '@/lib/laser-config';
@@ -214,5 +215,10 @@ export function receiveRoomOp(
     // The document went to the Trash. System-only, like the share ops:
     // the room refuses it from a client socket.
     if (from === 'system') receiveDocumentTrashed();
+  } else if (op.kind === 'suggestions' || op.kind === 'review') {
+    // A tab's canvas suggestions changed, or where this session stands on Suggest Only
+    // (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Live"). System-only: the room refuses either
+    // from a client socket.
+    if (from === 'system') takeSuggestionsRoomOp(op);
   }
 }

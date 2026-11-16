@@ -1,8 +1,7 @@
-// A document's review settings (livedocuments/docs/specs/007-editor/suggestions.md "Suggest Only", and on every canvas
-// liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Suggest Only"): the Participant links and
-// people whose writing in articles is always suggestions, and whether an assistant's article writes are. Stored in
-// the document's own room (`document.review`), set by an Editor from the Share dialog, read by the room on every
-// Participant frame. Read defensively: whatever is stored or sent is parsed and bounded here.
+// An item's review settings (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Suggest Only", and
+// livedocuments/docs/specs/007-editor/suggestions.md "Suggest Only"): the Participant links and people whose changes
+// are always suggestions, and whether an assistant's article writes are. Stored on the item's own row in its room
+// (a `review` column), set by an Editor from the Share dialog, read by the room on every Participant frame. Read defensively: whatever is stored or sent is parsed and bounded here.
 
 export const SUGGEST_ONLY_MAX_LINKS = 100;
 export const SUGGEST_ONLY_MAX_PEOPLE = 200;
@@ -25,7 +24,7 @@ export type ReviewSettings = {
 /** A person who arrived through a Suggest Only link, held to it on every later session whatever link (or none) they
  *  open with, while that link stays on Suggest Only. `key` is the server-verified collab key; `code` the link's. */
 export type ReviewPin = { key: string; code: string; at: number };
-/** What the document keeps: the settings, the people seen joining as Participants, and the pins. */
+/** What the item keeps: the settings, the people seen joining as Participants, and the pins. */
 export type StoredReview = Omit<ReviewSettings, 'lift'> & { seen: ReviewSeen[]; pins: ReviewPin[] };
 
 export const NO_REVIEW: StoredReview = { links: [], people: [], agents: false, seen: [], pins: [] };
@@ -167,5 +166,5 @@ export function suggestOnlyFor(
  *  joins and on every change. */
 export type ReviewOp = { kind: 'review'; suggestOnly: boolean };
 
-/** `GET` and `PUT /api/documents/:id/review`'s answer. */
+/** `GET` and `PUT /api/<items>/:id/review`'s answer. */
 export type ReviewResponse = { review: StoredReview };

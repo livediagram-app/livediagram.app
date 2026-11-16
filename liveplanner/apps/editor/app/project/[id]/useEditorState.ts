@@ -19,6 +19,7 @@ import { useEditorTabTools } from './editor-state/useEditorTabTools';
 import { useEditorStyle } from './editor-state/useEditorStyle';
 import { useEditorInteraction } from './editor-state/useEditorInteraction';
 import { useEditorShortcuts } from './editor-state/useEditorShortcuts';
+import { useEditorSuggestions } from './editor-state/useEditorSuggestions';
 
 // The editor's state, composed from its slices (editor-state/, docs/development/architecture.md "The editor's
 // shape"). Each slice is one hook that takes the slices before it and hands back what the slices after it, and
@@ -166,7 +167,14 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     styleSlice,
     interactionSlice,
   );
-  return buildEditorView({
+  // Suggestions on the canvas (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md).
+  const canvasSuggestions = useEditorSuggestions(
+    env,
+    selectionSlice,
+    projectSlice,
+    collaborationSlice,
+  );
+  const view = buildEditorView({
     env,
     selectionSlice,
     projectSlice,
@@ -184,4 +192,5 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     interactionSlice,
     shortcutsSlice,
   });
+  return { ...view, canvasSuggestions };
 }

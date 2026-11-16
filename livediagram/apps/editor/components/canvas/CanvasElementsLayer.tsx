@@ -20,6 +20,7 @@ import {
   type ArrowElement,
   type ElementIndex,
   stackedElementIds,
+  elementBounds,
 } from '@livediagram/document';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { type QuickConnectDirection } from '@/lib/canvas';
@@ -32,6 +33,7 @@ import {
   type SelectionGripHosts,
 } from '@liveworkspace/workbench/components/canvas/SelectionGripsLayer';
 import { ChangesetRevealOverlay } from '@/components/canvas/ChangesetRevealOverlay';
+import { SuggestionGhostOverlay } from '@liveworkspace/suggestions/react/SuggestionGhostOverlay';
 import { AgentFocusOverlay } from '@/components/canvas/AgentFocusOverlay';
 import { LayerSelectionChrome } from '@/components/canvas/LayerSelectionChrome';
 import type { CanvasSelectionInput } from '@/hooks/canvas/useCanvasSelectionView';
@@ -373,6 +375,14 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
         {/* What a relayed changeset touched (docs/specs/024-agents/agent-changesets.md "In the editor"):
           above the elements, below the selection chrome. */}
         <ChangesetRevealOverlay elements={elements} tabId={props.activeTabId ?? ''} />
+
+        {/* What suggestions would change, each in its author's colour
+          (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Seeing a suggestion"). */}
+        <SuggestionGhostOverlay
+          elements={elements}
+          tabId={props.activeTabId ?? ''}
+          boundsOf={elementBounds}
+        />
 
         {/* The grips layer (docs/specs/008-canvas/canvas-and-palette.md "Resize"): above every element, so
           no grip is ever covered. The canvas's own grips go in here; each element's are portalled in. */}

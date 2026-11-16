@@ -111,8 +111,9 @@ assistant's own edits keep [agent changesets](../../../livediagram/docs/specs/02
 
 ## Telemetry
 
-- `Element · Changed · CanvasSuggesting`, `CanvasEditing` (the switch), `CanvasSuggestion`, `SuggestOnlySuggestion`
-  (a suggestion made), `SuggestionAccepted`, `SuggestionRejected`, `SuggestionsAcceptAll`, `SuggestionsRejectAll`.
+- `Element · Changed · CanvasSuggesting`, `CanvasEditing` (the switch), `CanvasSuggestionMade`,
+  `CanvasSuggestionSuggestOnly` (a suggestion made), `CanvasSuggestionAccepted`, `CanvasSuggestionRejected`,
+  `CanvasSuggestionsAcceptedAll`, `CanvasSuggestionsRejectedAll`.
 - `<Item> · Shared · SuggestOnlyLinkOn`, `SuggestOnlyLinkOff`, `SuggestOnlyPersonOn`, `SuggestOnlyPersonOff`.
 - Never content, never a name.
 

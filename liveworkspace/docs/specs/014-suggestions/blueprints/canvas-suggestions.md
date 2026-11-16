@@ -21,11 +21,12 @@ room gate, its editor wiring).
 | ---------------------------------- | ---------------------------------------------------------------------------------------------------- |
 | `suggestion.ts`                    | types, limits, `mintSuggestionId`, `parseSuggestionOps`, `parseStoredSuggestion`, `parseDecision`     |
 | `plan.ts`                          | `baseOf`, `opsMismatch`, `staleTargets`, `planAccept`, `ghostsOf`, `describeSuggestion`, `suggestionOpsBetween` |
-| `store.ts`                         | `CANVAS_SUGGESTIONS_SCHEMA`, `suggestionStore(db)` over the room's D1-shaped `DOCUMENT_DB`           |
+| `store.ts`                         | `CANVAS_SUGGESTIONS_SCHEMA`, `suggestionStore(db)` over the room's D1-shaped `*_DB` binding           |
 | `route.ts`                         | `answerSuggestions(action, body, door)`: the role rule, submit, accept, reject                       |
 | `review.ts`                        | Suggest Only settings (moved from `@livedocuments/api-schema`, which re-exports it)                  |
 | `room-review.ts`                   | `createRoomReview`: cached settings, `suggestByOf`, `joined`, `changed`                               |
 | `room-signal.ts`                   | the editor's bus for the room's `suggestions` and `review` system ops                                |
+| `telemetry.ts`                     | the closed telemetry types, read by the telemetry dashboards' emitter checks                         |
 | `client.ts`                        | `suggestionsClient(request)`: list, submit, accept, reject                                           |
 | `capture.ts`                       | `createSuggestCapture`: wraps the editor's history commit and tick; gathers a gesture                |
 | `react/useSuggestCapture.ts`       | the capture made once per editor, pointer tracking, the bridge                                       |
