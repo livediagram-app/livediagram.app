@@ -96,6 +96,13 @@ filed in. Who holds them is the index's to say: it issues the owner and team mem
 sharing, moves and the Trash to them ([one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md)
 "Sharing and access"). No level grants any of them. The full ownership model is [Later](#later).
 
+- **Publishing a board as a public roadmap** is an ownership power, as sharing is: it shows the plan to anyone with
+  the roadmap link, so the owner and team members publish, change and Unpublish it, and no share link does at any
+  level (Editor, Participant or Viewer), nor a tab-scoped grant, an API token or a workbench session
+  ([Public roadmap](../026-plan/public-roadmap.md)). What the page may show is a fixed **field allowlist**: a card's
+  title, and only when chosen its description, number, card type, labels, Start Date and Due Date, and its vote total
+  when voting is on. People, comments, threads, custom fields and every other field are never sent to a visitor.
+
 ## Share links
 
 Share links are the index's, made and managed in the shared Share dialog (`ShareDialog` in

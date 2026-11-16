@@ -124,8 +124,10 @@ Stored on the element, shared by everyone, undone like any element edit:
   the second where the first ties, then rank where both tie. The fields a board can sort by: **Priority**,
   **Estimate**, **Start Date** and **Due Date** (when its types offer them), **Created At** and **Last Edited At**
   (always: every type offers them, [Items](items.md#created-and-last-edited); sorted by the moment, not the day),
-  then every custom **Number**, **Currency**, **Date**, **Rating** and
-  **Choice** field the card types the board shows offer (a Choice by its options' order). A card with no value for a
+  **Votes** (when its types offer it: the card's vote total, session votes and a [public roadmap](public-roadmap.md)'s
+  upvotes together, a card with none counting 0), then every custom **Number**, **Currency**, **Date**, **Rating** and
+  **Choice** field the card types the board shows offer (a Choice by its options' order), and each custom **Votes**
+  field by its total. A card with no value for a
   level (or whose type does not have the field) comes after those that have one, whichever way that level runs. The
   directions read by kind: Priority **Highest First** or **Lowest First**; a number, currency, estimate or rating
   **Lowest First** or **Highest First**; a date **Earliest First** or **Latest First**; a Choice **In Option Order**
@@ -149,7 +151,7 @@ Stored on the element, shared by everyone, undone like any element edit:
   checklist progress). Title always shows.
 - **Voting** is not a board setting: a vote is the tab's session vote (Collaborate, Vote), cast on the cards the
   board shows ([Session tools](../012-collaboration/session-tools.md) "Voting on Plan cards"); a card shows the
-  votes it has gathered.
+  votes it has gathered, a published board's public upvotes among them ([Public roadmap](public-roadmap.md)).
 - **Saved filters**: up to 8 named quick filters ([Board widgets](board-widgets.md#saved-filters)), shown as
   chips in the Filter widget. Each keeps the words, Only Mine, the field chips and the widget narrowings it was
   saved with; saving, renaming, updating and deleting one is an Editor's set-up change (undone as any), while
