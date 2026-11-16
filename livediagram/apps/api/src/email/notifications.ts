@@ -19,6 +19,7 @@ import { getParticipant } from '../liveworkspace/profiles';
 import { teamPeople } from '../liveworkspace/team-people';
 import type { DocumentEnv, Env } from '../types';
 import { emailEnabled, sendEmail } from './client';
+import { ownerEmailCoveredByMention, type MentionedComment } from './comment-owner-email';
 import {
   actionAssignedEmail,
   approvalRequestedEmail,
@@ -41,14 +42,17 @@ async function recipient(env: Env, id: string, setting: NotifySetting): Promise<
 
 // Someone OTHER than the owner left a comment on a canvas the owner owns
 // (docs/specs/014-identity/transactional-email.md #1). Immediate, opt-out (notifyComments). Best-effort; never blocks
-// the comment write. The comment text is deliberately NOT included.
+// the comment write. The comment text is deliberately NOT included. `comments`: the new comments it is for, so one
+// that @-mentions the owner leaves them the mention email alone (comment-owner-email.ts); left out, it always goes.
 export async function notifyNewComment(
   env: DocumentEnv,
-  liveDoc: { id: string; ownerId: string; name: string },
+  liveDoc: { id: string; ownerId: string; name: string; teamId?: string | null },
   commenterName: string | null,
   ai = false,
+  comments: readonly MentionedComment[] = [],
 ): Promise<void> {
   if (!emailEnabled(env) || !isAccountIdShape(liveDoc.ownerId)) return;
+  if (await ownerEmailCoveredByMention(env, liveDoc, comments)) return;
   const to = await recipient(env, liveDoc.ownerId, 'notifyComments');
   if (!to) return;
   // Throttle so a burst of comments is one email, not one per comment.
@@ -130,7 +134,7 @@ export function notifyActionAssigned(
 // A teammate's comment @-mentioned these people (docs/specs/012-collaboration/comment-mentions.md "The email"): the
 // notify-mention route checked the canvas is the team's, the author one of its joined people and each recipient one
 // of its people other than the author. A canvas comment reaches the canvas's storage only with the next tab save, so
-// the route carries its text. Opt-out (notifyMentions).
+// the route carries its text. Opt-out (notifyMentions). Answers the ids of the people it emailed.
 export function notifyMentioned(
   env: DocumentEnv,
   input: {
@@ -140,7 +144,7 @@ export function notifyMentioned(
     document: { id: string; name: string };
     commentText: string;
   },
-): Promise<void> {
+): Promise<string[]> {
   const { document, ...rest } = input;
   return notifier.notifyMentioned(env, { ...rest, item: document });
 }

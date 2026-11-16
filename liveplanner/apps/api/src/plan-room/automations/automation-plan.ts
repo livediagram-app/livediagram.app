@@ -1,5 +1,5 @@
 // The plan as its rules read it (docs/specs/026-plan/automations.md "Conditions", "Actions"; blueprint automations.md
-// "The run"): its card types, the columns its boards name, its boards' saved filters, its Form tabs and its people
+// "The run"): its card types, the columns its boards name, its boards (and their saved filters), its Form tabs and its people
 // (whom a card holds, the owner and the team's joined members, each by the hashed id cards carry), read once per wake
 // or per request. The people from accounts are best-effort: without the accounts Worker they are the cards' alone.
 import {
@@ -84,6 +84,22 @@ function savedFiltersOf(
   return out;
 }
 
+// The Plan boards on the plan's tabs, by element id and title (Email Received's board; intake-boards.ts names them so).
+function planBoardsOf(
+  tabs: readonly { elements: readonly unknown[] }[],
+): { id: string; name: string }[] {
+  const out: { id: string; name: string }[] = [];
+  for (const tab of tabs) {
+    for (const raw of tab.elements) {
+      const el = raw as { id?: unknown; shape?: unknown; planBoard?: unknown } | null;
+      if (el?.shape !== 'plan-board' || typeof el.id !== 'string') continue;
+      const setup = normaliseBoardSetup(el.planBoard);
+      if (setup) out.push({ id: el.id, name: setup.title.trim() || 'Board' });
+    }
+  }
+  return out;
+}
+
 // The owner and the team's joined members, as cards name them, with the account id behind each.
 async function accountPeople(
   env: PlanEnv,
@@ -149,6 +165,7 @@ export async function readAutomationPlan(env: PlanEnv, planId: string): Promise<
       people: [...people.values()],
       savedFilters: savedFiltersOf(tabs),
       formTabs: outlines.filter((t) => t.kind === 'form').map((t) => t.id),
+      boards: planBoardsOf(tabs),
       // A Link Cards step's chosen card in the Trash is gone, as a deleted one is (spec "Conditions").
       cards: new Set(items.filter((i) => !isTrashed(i)).map((i) => i.id)),
     },

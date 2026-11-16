@@ -50,11 +50,12 @@ describe('needsWords', () => {
       needsWords([
         { kind: 'filter', id: 't/x' },
         { kind: 'form', id: 'f' },
+        { kind: 'board', id: 'b9' },
         { kind: 'webhook', id: 'w' },
         { kind: 'unheard', name: 'Time Spent' },
       ]),
     ).toBe(
-      'A saved filter is gone · A Form tab is gone · A webhook is gone · Field Changed never hears Time Spent',
+      'A saved filter is gone · A Form tab is gone · A board is gone · A webhook is gone · Field Changed never hears Time Spent',
     );
     expect(needsWords([])).toBe('');
   });

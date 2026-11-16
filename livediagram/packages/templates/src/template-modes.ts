@@ -58,6 +58,9 @@ const TEMPLATE_MODES: Partial<Record<TemplateKind, EditorMode>> = {
   swot: 'workshop',
   'empathy-map': 'workshop',
   journey: 'workshop',
+  // A sprint is planned, and interviews synthesised, by the team together.
+  'sprint-planning': 'workshop',
+  'interview-synthesis': 'workshop',
 };
 
 /** The mode a template's tab opens in. */

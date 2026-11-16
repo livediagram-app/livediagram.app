@@ -49,7 +49,18 @@ export const SUGGESTING_HINT = 'You suggest changes; an Editor accepts or reject
 // An Editor who switched the canvas to Suggesting (canvas-suggestions.md "Suggesting").
 export const SELF_SUGGESTING_HINT = 'Your changes become suggestions to accept or reject';
 
-export function roleOwnerLabel(ownerName: string | null, isSelf: boolean): string {
+// The document's team, on a team canvas: its name, or null where this session does not know it (a link visitor
+// outside the team).
+export type OwnerTeam = { name: string | null };
+
+export function roleOwnerLabel(
+  ownerName: string | null,
+  isSelf: boolean,
+  team: OwnerTeam | null = null,
+): string {
+  // A team owns a team canvas: every joined member edits it and holds the owner's chrome, so "Owned by you" told
+  // each of them they owned it (editor-app.md "Role pill").
+  if (team) return team.name ? `Owned by ${team.name}` : 'Owned by a team';
   if (isSelf) return 'Owned by you';
   return ownerName ? `Owned by ${ownerName}` : '';
 }
@@ -58,15 +69,18 @@ export function RolePill({
   role,
   ownerName,
   isSelf,
+  team = null,
   onToggle,
 }: {
   role: Role;
   ownerName: string | null;
   isSelf: boolean;
+  // Set on a team canvas (useRoleIndicator).
+  team?: OwnerTeam | null;
   onToggle?: () => void;
 }) {
   const hintId = useId();
-  const owner = roleOwnerLabel(ownerName, isSelf);
+  const owner = roleOwnerLabel(ownerName, isSelf, team);
   // Suggesting, whatever level the session's gestures run at: a Participant on Suggest Only (the room's word; its
   // gestures open as an Editor's, so `role` reads edit) or an Editor who switched the canvas to Suggesting. Either
   // way the pill takes the Participant's tone.

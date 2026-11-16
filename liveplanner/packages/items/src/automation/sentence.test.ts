@@ -4,6 +4,7 @@ import { automationDayWords } from './conditions';
 import {
   actionChip,
   conditionChip,
+  outlineBoardName,
   outlineFieldName,
   outlinePersonName,
   outlineTabName,
@@ -533,5 +534,31 @@ describe('the actions after Phase 3 and Wait', () => {
     expect(wait(28)).toBe('Wait 1 Day 4 Hours');
     expect(wait(49)).toBe('Wait 2 Days 1 Hour');
     expect(wait(720)).toBe('Wait 30 Days');
+  });
+});
+
+// Work Tracker 1163: "When [Email Received] on [Support] from [@example.com]".
+describe('Email Received in words', () => {
+  const boards = { ...OUTLINE, boardNames: new Map([['b1', 'Support']]) };
+
+  it('names the board and the From it narrows to', () => {
+    expect(
+      triggerParts({ kind: 'email_received', board: 'b1', sender: '@example.com' }, boards),
+    ).toEqual([
+      { word: 'When' },
+      { chip: 'Email Received', trigger: true },
+      { word: 'on' },
+      { chip: 'Support' },
+      { word: 'from' },
+      { chip: '@example.com' },
+    ]);
+    expect(triggerParts({ kind: 'email_received' }, boards)).toHaveLength(2);
+  });
+
+  it('reads a gone board by its id, or in words for the editor', () => {
+    expect(triggerParts({ kind: 'email_received', board: 'b9' }, OUTLINE).at(-1)).toEqual({
+      chip: 'b9',
+    });
+    expect(outlineBoardName('b9', { ...OUTLINE, goneWords: true })).toBe('a board no longer here');
   });
 });

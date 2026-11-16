@@ -1,6 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { EmailIntakeResponse } from '@liveplanner/api-schema';
-import { FROM_EMAIL_FIELD, defaultCatalogue, type Item } from '@liveplanner/items';
+import {
+  FROM_EMAIL_FIELD,
+  defaultCatalogue,
+  type AutomationRun,
+  type Item,
+} from '@liveplanner/items';
 import {
   automationWorld,
   type AutomationWorld,
@@ -265,5 +270,85 @@ describe('which mail is taken', () => {
     await deliver(over);
     expect(over.rejected).toBe(REJECTIONS.busy);
     expect(await cards()).toHaveLength(20);
+  });
+});
+
+// Work Tracker 1163 (automations.md "Email Received"): an email card queues one created event, which an Email
+// Received rule and a Card Created rule each run on once; {{from}} reads the bare sender.
+describe('rules on email cards', () => {
+  const runs = async () =>
+    (await (await w.call('GET', '/runs')).json<{ runs: AutomationRun[] }>()).runs;
+
+  it('runs Email Received and Card Created once each, filling {{from}}', async () => {
+    await w.rule({
+      name: 'Thank the sender',
+      trigger: { kind: 'email_received', board: 'b1', sender: '@example.com' },
+      steps: [{ kind: 'comment', text: 'Thanks, {{from}}' }],
+    });
+    await w.rule({
+      name: 'Label new',
+      trigger: { kind: 'card_created' },
+      steps: [{ kind: 'add_label', label: 'new' }],
+    });
+    await w.rule({
+      name: 'Form only',
+      trigger: { kind: 'form_response' },
+      steps: [{ kind: 'flag' }],
+    });
+    const m = message(plain(['It jams.']));
+    await deliver(m);
+    expect(m.rejected).toBeNull();
+    const queued = planEnv()
+      .PLAN_DB.prepare('SELECT COUNT(*) AS n FROM automation_queue')
+      .first<{ n: number }>();
+    expect((await queued)?.n).toBe(1);
+    await w.plans.get('A')!.room.alarm();
+    const done = await runs();
+    expect(done.map((r) => r.ruleName).sort()).toEqual(['Label new', 'Thank the sender']);
+    expect(done.every((r) => r.result === 'done')).toBe(true);
+    const mail = done.find((r) => r.ruleName === 'Thank the sender')!;
+    expect(mail.steps[0]).toMatchObject({
+      kind: 'trigger',
+      text: 'An email from ada@example.com made the card',
+    });
+    const [card] = await cards();
+    expect(card!.fields['labels']).toEqual(['new']);
+    expect(card!.fields['flagged']).not.toBe(true);
+    const threads = w.plans.get('A')!.db.prepare('SELECT comments FROM card_threads').all();
+    expect(JSON.stringify(threads)).toContain('Thanks, ada@example.com');
+  });
+
+  it('hears no card from another sender or board', async () => {
+    await w.rule({
+      name: 'Only Bo',
+      trigger: { kind: 'email_received', sender: 'bo@example.com' },
+      steps: [{ kind: 'flag' }],
+    });
+    await w.rule({
+      name: 'Other board',
+      trigger: { kind: 'email_received', board: 'b9' },
+      steps: [{ kind: 'flag' }],
+    });
+    await deliver(message(plain(['It jams.'])));
+    await w.plans.get('A')!.room.alarm();
+    expect(await runs()).toEqual([]);
+  });
+
+  it('tests on a card as if an email from nobody made it, and lists the boards for agents', async () => {
+    const [c] = [await w.make('A', { title: 'One' })];
+    const rule = {
+      name: 'Thank',
+      trigger: { kind: 'email_received' },
+      conditions: [],
+      steps: [{ kind: 'comment', text: 'From {{from}} via {{person}}' }],
+      chain: false,
+      timeZone: 'UTC',
+    };
+    const res = await w.call('POST', '/test', { rule, item: c.id });
+    const { run } = await res.json<{ run: AutomationRun }>();
+    expect(run.result).toBe('done');
+    expect(run.steps[0]).toMatchObject({ kind: 'trigger', text: 'Email made the card' });
+    const list = await (await w.call('GET', '')).json<{ boards: unknown }>();
+    expect(list.boards).toEqual([{ id: 'b1', name: expect.any(String) }]);
   });
 });

@@ -552,3 +552,15 @@ hosted vars (`apps/api/hosted-vars.json`, checked on the live deployment afterwa
 written: each Worker's were set on it with `wrangler secret put` and survive a deploy. The only
 credential is the repository secret **`CLOUDFLARE_API_TOKEN`**: a token for the liveworkspace account
 with Workers Scripts and D1 edit rights.
+
+**Zone settings.** A deploy writes Workers and their routes, never a zone's settings; what the code relies on is
+recorded here, so it can't drift silently.
+
+- **HTTPS only** is in code, not in a zone setting: every router and `liveworkspace-redirect` answer plain HTTP with a
+  redirect to HTTPS (`@liveworkspace/sites/https-redirect`, liveworkspace/docs/specs/010-site/site.md "Only over HTTPS").
+  Turning on **SSL/TLS > Edge Certificates > Always Use HTTPS** in each zone (liveworkspace.app, livediagram.app,
+  liveplanner.app, livedocuments.app, livedesign.app, livehuddle.app) is an optional belt-and-braces step: it also
+  covers the platform services' own `/api` routes on liveworkspace.app and `staging.liveworkspace.app`'s pages, which
+  no redirecting Worker fronts. It was off in every zone on 2026-11-15 (`http://www.` answered `200`).
+- **HSTS preload** is not set: the sites send `Strict-Transport-Security: max-age=31536000; includeSubDomains`.
+  Adding `preload` and submitting to hstspreload.org is the owner's call, once every subdomain is HTTPS-only.

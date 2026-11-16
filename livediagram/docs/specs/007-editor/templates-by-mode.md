@@ -99,7 +99,8 @@ unchanged; only the mode they open in moved from Diagram.
   (`raci-matrix`), **User Story Map** (`user-story-map`), **SWOT** (`swot`), **PESTLE Analysis**
   (`pestle-analysis`), **Business Model Canvas** (`business-model-canvas`), **Value Proposition Canvas**
   (`value-proposition-canvas`), **Stakeholder map** (`stakeholder-map`), **Opportunity Solution Tree**
-  (`opportunity-solution-tree`) and **KWL Chart** (`kwl-chart`, a class's board). **A board built from sticky notes
+  (`opportunity-solution-tree`), **KWL Chart** (`kwl-chart`, a class's board), **Sprint Planning** (`sprint-planning`) and
+  **Interview Synthesis** (`interview-synthesis`). **A board built from sticky notes
   for a group to add theirs to is a Workshop template**: a note per voice is the room's work. SWOT, Empathy Map and
   User Journey moved from Diagram for it; a Diagram template may still carry a sticky or two as an annotation (Family
   Tree, Flywheel, Sequence Diagram) and stays a diagram, and a sticky board one person keeps for themselves stays a

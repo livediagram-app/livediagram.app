@@ -119,6 +119,9 @@ function lineEnding(r: Reader, b: FootBreak): Line | null {
 // inside on its own, so it moves back whole or not at all) and where that row ends, else the first line after it.
 function lineAfterBreak(r: Reader, rows: RowReader, pos: number): { line: Line; to: number } {
   const node = r.view.state.doc.nodeAt(pos);
+  // A heading comes back only with what follows it (keptWithHeading): the line after it decides.
+  if (node && isHeading(node) && pos + node.nodeSize < r.view.state.doc.content.size)
+    return lineAfterBreak(r, rows, pos + node.nodeSize);
   if (node?.type === S.nodes.table_row)
     return { line: rowFoot(rows, node, pos), to: pos + node.nodeSize };
   if (node?.type === S.nodes.table && node.firstChild) {
@@ -144,16 +147,30 @@ function firstPast(r: Reader, col: number, limit: number): number {
   return lo;
 }
 
+const HEADINGS: ReadonlySet<unknown> = new Set(['h1', 'h2', 'h3']);
+const isHeading = (n: PMNode) => n.type === S.nodes.paragraph && HEADINGS.has(n.attrs.style);
+
+// A heading keeps with what follows it (the stylesheet's break-after: avoid, which a page's own break does not
+// honour): a block break straight after a heading moves before it, unless that heading starts the writing.
+function keptWithHeading(doc: PMNode, pos: number): number {
+  const $p = doc.resolve(pos);
+  const before = $p.nodeBefore;
+  return $p.depth === 0 && before && isHeading(before) && $p.index() > 1
+    ? pos - before.nodeSize
+    : pos;
+}
+
 /** The break that ends a page's text before `pos`: inside a block's lines a box there; at a block's start, or in a
- *  table, the block itself (the row, or the table at its first row). */
+ *  table, the block itself (the row, or the table at its first row), and a heading just above it with it. */
 export function breakAt(doc: PMNode, page: number, pos: number): FootBreak {
   const $p = doc.resolve(pos);
   for (let d = $p.depth; d > 0; d--) {
     if ($p.node(d).type !== S.nodes.table_row) continue;
-    return { page, pos: $p.index(d - 1) === 0 ? $p.before(d - 1) : $p.before(d), block: true };
+    if ($p.index(d - 1) > 0) return { page, pos: $p.before(d), block: true };
+    return { page, pos: keptWithHeading(doc, $p.before(d - 1)), block: true };
   }
-  if ($p.depth === 0) return { page, pos, block: true };
-  if ($p.parentOffset === 0) return { page, pos: $p.before(), block: true };
+  if ($p.depth === 0) return { page, pos: keptWithHeading(doc, pos), block: true };
+  if ($p.parentOffset === 0) return { page, pos: keptWithHeading(doc, $p.before()), block: true };
   return { page, pos, block: false };
 }
 

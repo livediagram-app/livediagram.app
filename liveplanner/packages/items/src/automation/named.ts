@@ -14,6 +14,8 @@ export interface RuleNames {
   types: readonly ItemTypeDef[];
   people: readonly { id: string; name: string }[];
   tabs: readonly { id: string; name: string }[];
+  // The plan's Plan boards (Email Received's board), by element id and title; absent, a board is kept as given.
+  boards?: readonly { id: string; name: string }[];
 }
 
 type Json = Record<string, unknown>;
@@ -54,7 +56,7 @@ function fieldNamer(names: RuleNames): Namer {
   };
 }
 
-// A person: an id kept; else the one person whose name it is, as list_rules lists them (case and spacing aside); a
+// A person (or a board): an id kept; else the one person whose name it is, as list_rules lists them (case and spacing aside); a
 // name nobody has, or two people share, kept as written, so the rule needs attention rather than name the wrong one.
 function personNamer(people: RuleNames['people']): Namer {
   return (ref) => {
@@ -72,7 +74,14 @@ const personFieldOf =
     field === 'assignee' ||
     types.some((t) => t.custom?.some((f) => f.id === field && f.kind === 'person'));
 
-type Namers = { status: Namer; type: Namer; field: Namer; person: Namer; tab: Namer };
+type Namers = {
+  status: Namer;
+  type: Namer;
+  field: Namer;
+  person: Namer;
+  tab: Namer;
+  board: Namer;
+};
 // What the walk also reads: which fields hold a person (a Set Field's picked person is named as one).
 type Walker = Namers & {
   personField: (field: string) => boolean;
@@ -99,6 +108,8 @@ function namersOf(names: RuleNames): Namers {
       (t) => t.id,
       (t) => t.name,
     ),
+    // A board by its title as a person by name: one board alone holding it, else kept as written.
+    board: personNamer(names.boards ?? []),
   };
 }
 
@@ -115,6 +126,7 @@ function nameTrigger(t: Json, n: Namers): void {
   name(t, 'types', n.type);
   name(t, 'fields', n.field);
   name(t, 'formTab', n.tab);
+  name(t, 'board', n.board);
 }
 
 function nameCondition(c: Json, n: Namers): void {
@@ -214,6 +226,7 @@ export function ruleWithRefs<T>(
     field: maps.field ?? same,
     person: maps.person ?? same,
     tab: maps.tab ?? same,
+    board: maps.board ?? same,
     typeField: opts.typeField ?? ((_, ref) => (maps.field ?? same)(ref)),
   };
   if (isObject(out['trigger'])) nameTrigger(out['trigger'], n);

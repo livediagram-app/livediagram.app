@@ -1,15 +1,12 @@
 // The written templates (docs/specs/008-canvas/canvas-and-palette.md "Written documents"): articles written out as a
 // real document of their kind, each using what an article holds the way that document would (tables, a table of
-// contents, a header and footer, page numbers, a code block). Written as Markdown and read by the article's own
-// Markdown reader, so the words stay easy to edit here; the first two lines become the title and subtitle, and a
+// contents, a header and footer, page numbers, footnotes, a code block). Written as Markdown and read by the article's
+// own Markdown reader, so the words stay easy to edit here; the first two lines become the title and subtitle, and a
 // divider a page break. Pure data: the tab's pages and writing, merged in by templateCanvasOverrides.
-import {
-  parseMarkdownBlocks,
-  type ArticleBlock,
-  type ArticleStyle,
-  type Tab,
-} from '@livedocuments/document';
+import { type ArticleBlock, type ArticleStyle, type Tab } from '@livedocuments/document';
 import { articleTabOverrides } from './article-template';
+import { markdownArticleBlocks } from './article-markdown-blocks';
+import { MORE_ARTICLE_TEMPLATES, type MoreArticleTemplateKind } from './article-templates-2';
 
 export type ArticleTemplateKind =
   | 'meeting-notes'
@@ -17,9 +14,10 @@ export type ArticleTemplateKind =
   | 'business-proposal'
   | 'design-doc'
   | 'status-report'
-  | 'cover-letter';
+  | 'cover-letter'
+  | MoreArticleTemplateKind;
 
-type ArticleTemplate = {
+export type ArticleTemplate = {
   // The flow's id, and the prefix of its blocks' ids.
   flow: string;
   style: ArticleStyle;
@@ -202,12 +200,14 @@ Half on signing, half on launch. Prices exclude VAT.
 
 # Why Northwind
 
-We have built shops for eleven independent food and drink brands since 2021. Our last, for Field Bakery, raised online orders by 64% in its first quarter.
+We have built shops for eleven independent food and drink brands since 2021. Our last, for Field Bakery, raised online orders by 64% in its first quarter.[^1]
 
 # Next steps
 
 - [ ] A thirty-minute call to answer your questions
 - [ ] Sign the proposal by 30 April to start on 10 May
+
+[^1]: Online orders from January to March 2026 against the same months of 2025, from Field Bakery's own shop reports.
 `,
   },
   'design-doc': {
@@ -227,7 +227,7 @@ We have built shops for eleven independent food and drink brands since 2021. Our
 
 ## Context
 
-Today every edit goes straight to the server. On a train or a plane, the app shows a spinner and the edit is lost if the app is closed. Offline editing is the most requested feature in the last two surveys.
+Today every edit goes straight to the server. On a train or a plane, the app shows a spinner and the edit is lost if the app is closed. Offline editing is the most requested feature in the last two surveys.[^1]
 
 ## Goals
 
@@ -273,6 +273,8 @@ The server merges changes by operation, not by whole note, so two people typing 
 
 - [ ] How long do we keep a queue for a device that never comes back?
 - [ ] Do we show people when a merge changed their text?
+
+[^1]: The customer surveys of October 2026 (1,240 replies) and January 2027 (980 replies), where 41% and then 46% asked for it.
 `,
   },
   'status-report': {
@@ -303,7 +305,7 @@ The server merges changes by operation, not by whole note, so two people typing 
 
 ## Numbers
 
-- **Budget:** £61,000 spent of £90,000 (68%), against 70% planned
+- **Budget:** £61,000 spent of £90,000 (68%), against 70% planned[^1]
 - **Scope:** 3 changes requested, 2 accepted, 1 moved to after launch
 - **Quality:** 14 open bugs, none blocking launch
 
@@ -323,6 +325,8 @@ The server merges changes by operation, not by whole note, so two people typing 
 ## Decisions needed
 
 - [ ] Approve the fallback payment page if the bank has not replied by 11 April
+
+[^1]: Planned spend from the budget approved on 4 November; spend from the finance ledger at 31 March.
 `,
   },
   'cover-letter': {
@@ -353,30 +357,19 @@ Yours sincerely,
 Alex Morgan
 `,
   },
+  ...MORE_ARTICLE_TEMPLATES,
 };
-
-/** The kinds written as articles here. */
-export function isArticleTemplate(kind: string): kind is ArticleTemplateKind {
-  return Object.hasOwn(ARTICLE_TEMPLATES, kind);
-}
 
 // A template's blocks, each with an id of its own and the same on every build: the first two headings are the title
 // and subtitle, a divider the page break, and each table's columns its own shares.
 function articleTemplateBlocks(kind: ArticleTemplateKind): ArticleBlock[] {
   const t = ARTICLE_TEMPLATES[kind];
-  let table = 0;
-  return parseMarkdownBlocks(t.markdown.trim()).map((block, i): ArticleBlock => {
-    const id = `b-${t.flow.slice(4)}-${i + 1}`;
-    if (block.type === 'divider') return { id, type: 'pageBreak' };
-    if (i < 2 && block.type === 'paragraph')
-      return { ...block, id, style: i === 0 ? 'title' : 'subtitle' };
-    if (block.type === 'table') {
-      const shares = t.columns?.[table++];
-      if (shares && shares.length === block.cols.length)
-        return { ...block, id, cols: block.cols.map((c, n) => ({ ...c, w: shares[n]! })) };
-    }
-    return { ...block, id };
-  });
+  return markdownArticleBlocks(t.flow.slice(4), t.markdown, t.columns);
+}
+
+/** The kinds written as articles here. */
+export function isArticleTemplate(kind: string): kind is ArticleTemplateKind {
+  return Object.hasOwn(ARTICLE_TEMPLATES, kind);
 }
 
 /** A written template's pages and writing (opens in Pages). */

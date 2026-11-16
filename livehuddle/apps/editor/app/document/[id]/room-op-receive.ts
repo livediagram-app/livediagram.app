@@ -2,7 +2,7 @@ import { receiveKnockOp } from '@/lib/office/knock-inbox';
 import { receiveBellOp } from '@/lib/office/reception-bell';
 import { receiveGameOp } from '@/lib/table-games/table-game-inbox';
 import { setRemoteBesideTab } from '@liveworkspace/workbench/lib/split-presence';
-import { noteAccessEnded } from '@/lib/access-notice';
+import { explorerHref } from '@liveworkspace/workbench/lib/explorer-href';
 import { parseViewport } from '@livehuddle/api-schema';
 import type { RoomHandlers } from '@/lib/api-client';
 import type { PresenceCoalescer } from './presence-coalescer';
@@ -40,7 +40,6 @@ export function receiveRoomOp(
   roleByPresenceRef: { readonly current: ReadonlyMap<string, string | undefined> },
 ): void {
   const {
-    documentId,
     markSeen,
     saveBaseline,
     ownWrites,
@@ -212,9 +211,10 @@ export function receiveRoomOp(
     // closes its socket either way. Everyone else keeps their session.
     const effect = shareLinkOpEffect(op, from, sessionShareCodeRef.current);
     if (effect === 'leave') {
-      // The Explorer says why we arrived (lib/access-notice.ts), rather than landing without a word.
-      noteAccessEnded(documentId, 'revoked');
-      window.location.assign('/explorer');
+      // The Explorer says why we arrived, rather than landing without a word. The note rides in the address: the
+      // Explorer is liveworkspace's page (liveworkspace/docs/specs/010-site/site.md "Addresses handed over"), which never
+      // read a note left in this app's storage.
+      window.location.assign(explorerHref('', '?ended=revoked'));
     } else if (effect === 'reload') window.location.reload();
   } else if (op.kind === 'tab-saved') {
     // A peer's save landed (docs/specs/006-document/delta-saves.md "A peer's save moves the base copy"): its element

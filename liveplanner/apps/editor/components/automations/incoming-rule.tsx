@@ -20,6 +20,8 @@ export type IncomingRule = {
   // Whether the rule is on a GitHub trigger: Insert a Value then offers the pull request's values (automations.md
   // "GitHub triggers").
   github?: boolean;
+  // Whether the rule is on Email Received: Insert a Value then offers the sender (automations.md "Email Received").
+  email?: boolean;
 };
 
 const NONE: IncomingRule = {

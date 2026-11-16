@@ -8,6 +8,7 @@ import { axeViolations } from '@liveworkspace/vitest-config/axe';
 import { createFakeIndex, makeItem } from '../test/fakeClient';
 import type { ExplorerView } from '../views';
 import { MoveToFolderDialog } from '../dialogs/MoveToFolderDialog';
+import { SkeletonRows } from './EmptyPane';
 import { Explorer } from './Explorer';
 import { VIEW_MODE_KEY } from './useViewMode';
 
@@ -65,6 +66,13 @@ describe.each(['list', 'card'] as const)('the Explorer in its %s layout', (mode)
     await screen.findByRole('button', { name: /^New / });
     expect(await axeViolations()).toEqual([]);
     empty.unmount();
+  });
+
+  it('has none while a list is still loading', async () => {
+    // The loading rows show until the index answers, so the Recent check above can meet them on a slow runner.
+    render(<SkeletonRows />);
+    expect(screen.getByRole('status', { name: 'Loading' }).getAttribute('aria-busy')).toBe('true');
+    expect(await axeViolations()).toEqual([]);
   });
 
   it('has none with an item menu open', async () => {

@@ -17,6 +17,7 @@ Follow the references below only as needed; never upfront.
 - ./tidy-up.md - when implementing or changing the tidiers (Auto-align, Auto Layout), their verdicts, preview or cost
 - ./finish.md - when implementing or changing finishes: resolution, Professional fallbacks, sketch strokes, hatching, sketched arrowheads, the Finish menu and dialog tab
 - ./accent-edge.md - when implementing or changing the accent edge: kinds, geometry, colour, the Border row or its export
+- ./template-content.md - when changing what a template ships beyond its elements: stacked pages, deck builds and a deck's chart data
 - ./DEFAULTS.md - when a canvas blueprint applies a default the spec leaves open
 - ./COMPLETENESS.md - when checking which completeness categories a canvas blueprint covers
 - ./text-effects.md - when implementing or changing run highlights and gradients, or the text shadow

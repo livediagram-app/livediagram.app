@@ -299,6 +299,100 @@ describe('the start panel', () => {
     expect(onClose).toHaveBeenCalledTimes(2);
   });
 
+  // Work Tracker 1026: a press on the panel's background, or the canvas focused as it opens, left the focus outside
+  // the panel, and Escape went to the canvas instead.
+  it('closes on Escape with the focus on the page or the canvas, ahead of the canvas’s own Escape', () => {
+    const onClose = vi.fn();
+    const canvasEscape = vi.fn();
+    window.addEventListener('keydown', canvasEscape);
+    const canvas = document.createElement('div');
+    canvas.setAttribute('data-canvas-root', '');
+    canvas.tabIndex = -1;
+    document.body.append(canvas);
+    try {
+      const { unmount } = render(<Sheet {...base({ onClose })} />);
+      (document.activeElement as HTMLElement | null)?.blur();
+      fireEvent.keyDown(document.body, { key: 'Escape' });
+      expect(onClose).toHaveBeenCalledTimes(1);
+      expect(canvasEscape).not.toHaveBeenCalled();
+      canvas.focus();
+      fireEvent.keyDown(canvas, { key: 'Escape' });
+      expect(onClose).toHaveBeenCalledTimes(2);
+      // Another key, a composing Escape and one already handled are left alone.
+      fireEvent.keyDown(canvas, { key: 'a' });
+      fireEvent.keyDown(canvas, { key: 'Escape', isComposing: true });
+      const handled = new KeyboardEvent('keydown', {
+        key: 'Escape',
+        bubbles: true,
+        cancelable: true,
+      });
+      handled.preventDefault();
+      canvas.dispatchEvent(handled);
+      expect(onClose).toHaveBeenCalledTimes(2);
+      // A field elsewhere keeps its Escape.
+      const field = document.createElement('input');
+      document.body.append(field);
+      field.focus();
+      fireEvent.keyDown(field, { key: 'Escape' });
+      expect(onClose).toHaveBeenCalledTimes(2);
+      field.remove();
+      // Stepped aside for a palette popover, it takes no Escape; gone, the canvas has Escape back.
+      act(() => setPalettePopoverOpen(true));
+      canvas.focus();
+      fireEvent.keyDown(canvas, { key: 'Escape' });
+      expect(onClose).toHaveBeenCalledTimes(2);
+      act(() => setPalettePopoverOpen(false));
+      unmount();
+      canvasEscape.mockClear();
+      fireEvent.keyDown(canvas, { key: 'Escape' });
+      expect(onClose).toHaveBeenCalledTimes(2);
+      expect(canvasEscape).toHaveBeenCalledTimes(1);
+    } finally {
+      window.removeEventListener('keydown', canvasEscape);
+      canvas.remove();
+    }
+  });
+
+  it('closes on Escape with the focus left on the tab bar’s Add Tab, not from its fields or menus', () => {
+    const onClose = vi.fn();
+    const bar = document.createElement('div');
+    bar.setAttribute('data-editor-tabbar', '');
+    const add = document.createElement('button');
+    const rename = document.createElement('input');
+    const textarea = document.createElement('textarea');
+    const editable = document.createElement('div');
+    editable.contentEditable = 'true';
+    editable.tabIndex = 0;
+    Object.defineProperty(editable, 'isContentEditable', { value: true });
+    const menu = document.createElement('div');
+    menu.setAttribute('role', 'menu');
+    const item = document.createElement('button');
+    menu.append(item);
+    bar.append(add, rename, textarea, editable, menu);
+    document.body.append(bar);
+    try {
+      render(<Sheet {...base({ onClose })} />);
+      for (const kept of [rename, textarea, editable, item]) {
+        kept.focus();
+        fireEvent.keyDown(kept, { key: 'Escape' });
+      }
+      expect(onClose).not.toHaveBeenCalled();
+      add.focus();
+      fireEvent.keyDown(add, { key: 'Escape' });
+      expect(onClose).toHaveBeenCalledTimes(1);
+    } finally {
+      bar.remove();
+    }
+  });
+
+  it('leaves Escape outside it alone where it cannot close', () => {
+    render(<Sheet {...base({ onClose: undefined })} />);
+    (document.activeElement as HTMLElement | null)?.blur();
+    const event = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+    document.body.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(false);
+  });
+
   it('offers Connect File with the foot actions under it, and its list in the cards’ place', () => {
     const onPick = vi.fn();
     render(

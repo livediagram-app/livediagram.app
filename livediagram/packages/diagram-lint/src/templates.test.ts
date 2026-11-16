@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildTemplateTab, TEMPLATES, templateCatalogue } from '@livediagram/templates';
 import { THEMES } from '@livediagram/document';
-import type { LintCode } from '@livediagram/api-schema';
 import { lint } from './fixtures/build';
 
 // Templates are the editor's own drawings: none of them should draw an error.
@@ -33,43 +32,13 @@ describe('templates', () => {
     },
   );
 
-  // What add_tab and create_document lint a template with (its colours its own): no warning. The arrow, lifeline,
-  // group-frame and crossing warnings that once stood on templates that draw correctly are gone (Work Tracker 1033);
-  // these are the others still standing (a label estimated to wrap past its box, an isolated key or note, a label
-  // over a box), each a template to redraw or a rule to refine. The list may only shrink: a template that no longer
-  // warns must leave it, and a new warning anywhere fails.
-  const STANDING: Readonly<Record<string, readonly LintCode[]>> = {
-    mindmap: ['label-overflow'],
-    'mindmap-tree': ['label-overflow'],
-    'approval-workflow': ['label-overflow'],
-    'milestone-timeline': ['node-isolated'],
-    'cloud-architecture': ['label-collision'],
-    'uml-class': ['node-isolated'],
-    'state-machine': ['label-collision', 'label-overflow'],
-    sailboat: ['label-overflow'],
-    'incident-postmortem': ['label-overflow'],
-    'crazy-eights': ['group-escape'],
-    'stakeholder-map': ['label-collision'],
-    'risk-matrix': ['label-overflow'],
-    'wardley-map': ['label-collision'],
-    'service-blueprint': ['node-isolated'],
-    'value-proposition-canvas': ['label-overflow'],
-    'family-tree': ['node-isolated'],
-    'value-stream-map': ['label-overflow'],
-    'comic-strip': ['label-overflow'],
-    'doodle-warmup': ['label-overflow'],
-    'pre-mortem': ['label-overflow'],
-    'concept-map': ['label-overflow', 'node-isolated'],
-  };
-  it.each(catalogue)('%s lints with no warning beyond the standing ones', (kind) => {
+  // What add_tab and create_document lint a template with (its colours its own): no warning at all. The arrow,
+  // lifeline, group-frame and crossing warnings went in Work Tracker 1033, the last standing ones (labels past their
+  // box, isolated notes and markers, labels over a quadrant) in Work Tracker 1075. A new warning anywhere fails.
+  it.each(catalogue)('%s lints with no warning', (kind) => {
     const report = lint(buildTemplateTab('t', 'T', kind), { coloured: new Set() });
-    const warned = [
-      ...new Set(report.findings.filter((f) => f.severity === 'warning').map((f) => f.code)),
-    ].sort();
-    expect(warned).toEqual([...(STANDING[kind] ?? [])].sort());
-  });
-
-  it('keeps no standing warning for a template that is gone', () => {
-    expect(Object.keys(STANDING).filter((kind) => !catalogue.some((k) => k === kind))).toEqual([]);
+    expect(
+      report.findings.filter((f) => f.severity === 'warning').map((f) => `${f.code}: ${f.message}`),
+    ).toEqual([]);
   });
 });

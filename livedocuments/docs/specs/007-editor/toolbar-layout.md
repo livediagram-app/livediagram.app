@@ -217,6 +217,22 @@ still reopens on the group it was left on. Nothing about the bar is stored acros
 - On a desktop, the menu box (the Explorer button, top left) ends with the open tab's name, after a
   hairline, as in every editor (the one `TabNameInBox`, `@liveworkspace/workbench`). It is the chrome's ink, 14 px at regular weight (never bold), cut short
   with an ellipsis past 16rem (sooner while the box heads Pages mode's Contents sidebar, [Pages mode](pages-mode.md) "Joined to the menu box"), and follows a rename at once. The box shows a name alone, never an icon beside it.
+- **Never under the strip.** Where the strip in the same row leaves the box less room than it wants (a tablet or a
+  narrow window, 640 to 1024px, where even the crowded strip at the right reached back over a long name), the box
+  ends a strip's gap (8px) short of the strip and the name gives way first, cut short with its ellipsis sooner
+  (`useMenuCardRoom`, `@liveworkspace/workbench`, measured from the strip's real place as it moves). The menu button keeps its size at every width, never capped or cut; only the name truncates. Shorter
+  still, the box steps down (`useMenuCardFit`, `menu-card-form.ts`):
+  - **Whole** while the button and a readable name slot (4rem) fit, or the whole box does (a short name needs no
+    more than its own width).
+  - **Icon** below that, in an editor with a mode switch (livediagram): the switch drops to its icon alone. This
+    editor has none, so its box goes straight from whole to bare.
+  - **Bare** where even then no readable slot is left: the name and its hairline hide (the name stays in the tab
+    strip and the window title), never a sliver, and nothing is capped.
+
+  The strip still decides where it goes from the box as it would stand whole (`menuNaturalRight`, kept while the box
+  is compact), so neither the cap nor a compact form un-crowds the strip and pulls it back over the box; a wide
+  window still moves a crowded strip right and shows a long name. With room to spare, as usual, nothing changes.
+
 - A click (a tap) on it renames the tab in place, for someone who may change the
   document's tabs: Enter or leaving saves, Escape puts it back; up to 60 characters.
 - Not on a phone: the top row is the strip's there.
@@ -323,7 +339,9 @@ panels in their corners, the bottom-row popovers over their buttons. What change
     menu button). Off a phone, a strip narrower than **360 px** (`PALETTE_TRAY_MIN_WIDTH_PX`; an article's strip
     while its page is locked holds only the selection mode and Search) gives the tray 360 px centred under it, kept
     8 px inside the window, so a message is never cut to its first letter. It follows the card as it moves, including when the card's whole-pixel box re-centres it a beat
-    after a resize (the category bar dropping its names left the tray off-centre until it watched that box).
+    after a resize (the category bar dropping its names left the tray off-centre until it watched that box). It also follows a move with no resize at all (the strip re-centring as the tab-name pill beside it changes
+    width on a tab switch, a delete or a reload, or going crowded and back): one IntersectionObserver whose margin is
+    the card's own box (`watchMove`, shared) hears a move of a pixel or more and costs nothing while the strip is still.
   - One row at the strip's type size (13 px): a leading icon (or the modifier's key chip), the message, then
     its actions as small text buttons at the end (**Cancel**, **Done**) and any toggles the message carries. On a
     phone (below `sm`) a message too long for the row wraps to a second line instead of cutting off, so "Tap to

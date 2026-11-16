@@ -168,6 +168,7 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   timeline: 'planning',
   'milestone-timeline': 'planning',
   'milestone-timeline-vertical': 'planning',
+  'sprint-planning': 'planning',
   // Processes and Workflows: how work gets done, step by step.
   flowchart: 'processes',
   swimlane: 'processes',
@@ -182,6 +183,7 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'user-story-map': 'product',
   'service-blueprint': 'product',
   sitemap: 'product',
+  'interview-synthesis': 'product',
   'opportunity-solution-tree': 'product',
   // A comic strip tells a user's story in panels, as a storyboard does.
   'comic-strip': 'product',
@@ -212,6 +214,9 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'event-storming': 'software',
   'threat-model': 'software',
   'incident-postmortem': 'software',
+  'c4-context': 'software',
+  'c4-container': 'software',
+  'architecture-decision-record': 'software',
   // Strategy: where the business stands and where it goes.
   swot: 'strategy',
   'pestle-analysis': 'strategy',
@@ -237,6 +242,9 @@ export const TEMPLATE_ALSO_IN: Readonly<
   'crazy-eights': ['meetings', 'product'],
   // Research synthesis is product work too.
   'affinity-map': ['product'],
+  // A decision record is a decision first; sprint planning is a meeting the team runs.
+  'architecture-decision-record': ['decisions'],
+  'sprint-planning': ['meetings'],
   // A concept map is a map of ideas, as a mind map is.
   'concept-map': ['ideas'],
   // Visual notes are taken in meetings and talks.

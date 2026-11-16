@@ -138,7 +138,8 @@ export type Notifier<E> = {
   notifyJoin(env: E, item: NotifierItem & { ownerId: string }, joinerId: string): Promise<void>;
   notifyActionAssigned(env: E, input: ActionAssignedInput): Promise<void>;
   notifyMentions(env: E, input: MentionsInput): Promise<void>;
-  notifyMentioned(env: E, input: MentionedInput): Promise<void>;
+  /** Answers the ids of the people it emailed (the caller may fall back for anyone left out). */
+  notifyMentioned(env: E, input: MentionedInput): Promise<string[]>;
   notifyApprovalRequested(env: E, itemId: string, notice: ApprovalNotice): Promise<void>;
 };
 
@@ -330,13 +331,14 @@ export function createNotifier<E, M extends NotifierEmail = NotifierEmail>(
     // A comment @-mentioned these people, already checked by the caller (the item is the team's, the author one of
     // its joined people, each recipient one of its people other than the author): each gets one email for it.
     async notifyMentioned(env, input) {
-      if (!deps.enabled(env) || input.recipients.length === 0) return;
+      if (!deps.enabled(env) || input.recipients.length === 0) return [];
       const addresses = await teamAddresses(env, input.recipients, 'notifyMentions');
       const pending = input.recipients.flatMap((person) => {
         const to = addresses.get(person.id);
         return to
           ? [
               {
+                id: person.id,
                 to,
                 parts: [
                   'mention',
@@ -349,7 +351,7 @@ export function createNotifier<E, M extends NotifierEmail = NotifierEmail>(
             ]
           : [];
       });
-      if (pending.length === 0) return;
+      if (pending.length === 0) return [];
       const allowed = await claimTeamNotices(
         env,
         input.authorUserId,
@@ -362,9 +364,9 @@ export function createNotifier<E, M extends NotifierEmail = NotifierEmail>(
         input.commentText,
         null,
       );
-      await Promise.all(
-        pending.filter((_, i) => allowed[i]).map(({ to }) => deps.send(env, { ...email, to })),
-      );
+      const sent = pending.filter((_, i) => allowed[i]);
+      await Promise.all(sent.map(({ to }) => deps.send(env, { ...email, to })));
+      return sent.map(({ id }) => id);
     },
 
     // Someone asked these people to approve an item (the index's `approval_requested` notice). Each approver who has

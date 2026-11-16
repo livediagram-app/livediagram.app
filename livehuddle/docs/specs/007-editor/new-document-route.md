@@ -94,6 +94,25 @@ only, opening the app in a new tab. Only the editor's own empty route (`/documen
 document id went to `/new`, so a mistyped or retired page made a new
 Space with no word of what went wrong.
 
+### Which not-found card
+
+Every refusal the api answers 404 is the same card; what it says depends only on what the visitor brought and who
+they are, never on whether the space exists, so a missing space and a private one always read alike. The first case that
+fits wins (`notFoundReason`, `@liveworkspace/workbench/lib/not-found-reason`, the same in every editor):
+
+- **Page Not Found**: the address names no space.
+- **No Longer Shared With You**: the space was open a moment ago and access ended.
+- **Link Not Valid** ("This link isn’t valid. It may have been turned off or copied incompletely. Ask whoever shared
+  it for a new one."): the address carries a share code (`?s=`) the api refused, unknown, revoked or expired alike.
+  No "404" line.
+- **Space Not Found** with **Sign In** ("This space doesn’t exist, or you need to sign in to open it."): a signed-out
+  visitor. Sign In comes back to the same address.
+- **Space Not Found** ("This space doesn’t exist or isn’t yours."): anyone else.
+
+In an embed a refused share code reads **No Longer Shared** ("This space is no longer shared at this link. Ask whoever
+shared it for a new one.") with no buttons, and the embed's browser tab names the card ("No Longer Shared | livehuddle").
+An embed never offers Sign In.
+
 ### Archived
 
 A space its owner moved to Archived ([one-explorer.md "Archived"](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#archived))
@@ -110,7 +129,7 @@ The owner opening an archived space's address directly gets this card, never the
 
 ### The tab title
 
-The browser tab names what the page shows. An open space names it ("<name> | livehuddle"); a status screen in its place names the screen instead, in Title Case: **Space Not Found**, **Page Not Found**, **Space Archived**, **Space Deleted**, **Couldn’t Load Space**, **Password Required** ("Space Not Found | livehuddle"), so a missing space's tab never reads as an empty one (`useBrowserTabTitle`'s `status`, held by the editor page's status shell). A load that ends on a status screen pins no tab on the address: the `#t=<tab>` pin waits for a tab whose content has loaded (`useTabEntryEffects`), so the placeholder tab's id never lands on the address of an item that never opened.
+The browser tab names what the page shows. An open space names it ("<name> | livehuddle"); a status screen in its place names the screen instead, in Title Case: **Space Not Found**, **Page Not Found**, **Link Not Valid**, **No Longer Shared With You**, **Space Archived**, **Space Deleted**, **Couldn’t Load Space**, **Password Required** ("Space Not Found | livehuddle"), so a missing space's tab never reads as an empty one (`useBrowserTabTitle`'s `status`, held by the editor page's status shell). A load that ends on a status screen pins no tab on the address: the `#t=<tab>` pin waits for a tab whose content has loaded (`useTabEntryEffects`), so the placeholder tab's id never lands on the address of an item that never opened.
 
 ### A failed load is not a missing document
 

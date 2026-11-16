@@ -112,7 +112,9 @@ CREATE TABLE IF NOT EXISTS email_intake_senders (
   its tab with a first column and type (`intakeBoardsOf`) else `gone`; `senders === 'members'`: the plan row's owner
   and team → `planMemberAddresses`; `'unavailable'` → `unavailable`; the sender not in it → `countIntake(refused)`,
   `refused_sender`; `takeIntakeHour(code, senderHash, now)` false → `busy`; then `attachPictures`, `emailCardCreate`,
-  `createMany` (by the email person), `relay`, `appendItemHistory(..., 'email', { role: 'system' })`, `noteWrite`,
+  `createMany` (by the email person), `relay`, `appendItemHistory(..., 'email', { role: 'system', email: { from:
+sender, board: board.id } })` (the one created event Card Created and Email Received both hear, automations
+  blueprint "Email Received"), `noteWrite`,
   `countIntake(made, now)`, the server event, `made`.
 - `takeIntakeHour`: one statement on the row (`INTAKE_CARDS_PER_HOUR`) and one on the sender row
   (`INTAKE_SENDER_PER_HOUR`), after `DELETE ... WHERE hour_start <= now - HOUR`; when the sender's is over, the

@@ -427,18 +427,27 @@ function side(x: number, y: number, cards: Map<string, ShapeElement>): Element[]
   );
   const howY = mutedY + 56;
   out.push({
+    // Reading matter, not a person: an unlabelled panel under the words, so it is never a node left unlinked.
     ...createShape('square', x, howY),
     width: SIDE_W,
     height: 104,
+    label: '',
+    fillColor: '#f8fafc',
+    strokeColor: '#cbd5e1',
+    borderRadius: 'md',
+    themeLockFill: true,
+    ...CONTENT,
+  });
+  out.push({
+    ...createText(x + 12, howY + 8),
+    width: SIDE_W - 24,
+    height: 88,
     label:
       'To add someone, duplicate a card (Shift + drag) and retype it, then draw a line from their parents’ dot, or from their partner to a new dot.',
     textSize: 'sm',
     textColor: INK,
     textAlignX: 'left',
-    fillColor: '#f8fafc',
-    strokeColor: '#cbd5e1',
-    borderRadius: 'md',
-    themeLockFill: true,
+    textAlignY: 'middle',
     ...CONTENT,
   });
   let sy = howY + 128;

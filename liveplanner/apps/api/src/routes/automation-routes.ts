@@ -10,6 +10,7 @@ import {
   AUTOMATION_RULES_MAX,
   AUTOMATION_RUNS_PER_DAY,
   INCOMING_WEBHOOK_PERSON,
+  EMAIL_TEST_PERSON,
   automationPerson,
   freeRuleName,
   isPersonless,
@@ -185,6 +186,8 @@ async function list(ctx: PlanRouteContext, g: Gated): Promise<Response> {
       id: f.filter.id,
       name: f.filter.name,
     })),
+    // The Plan boards by title, which Email Received's board names.
+    boards: [...(plan.outline.boards ?? [])],
   };
   return json(answer);
 }
@@ -376,19 +379,23 @@ async function test(ctx: PlanRouteContext, g: Gated): Promise<Response> {
   };
   // A time trigger's rule runs as at its moment: by Automation, no person behind it; an Incoming Webhook rule's as if
   // a call had named the card, with an empty payload; a GitHub rule's as if one of the card's pull requests had just
-  // done what its trigger hears, by GitHub.
+  // done what its trigger hears, by GitHub; an Email Received rule's as if an email from nobody had made the card
+  // ({{from}} reads nothing).
   const trigger = rule.trigger;
-  const event: AutomationEvent = isPersonless(trigger)
-    ? {
-        ...manualEvent(g, card.id, 't'),
-        ...(isTimeTrigger(trigger)
-          ? { kind: 'time' as const, by: automationPerson(rule.name) }
-          : isGithubTrigger(trigger)
-            ? { kind: 'github' as const, by: GITHUB_PERSON, github: heardOfTrigger(trigger) }
-            : { kind: 'incoming' as const, by: INCOMING_WEBHOOK_PERSON, cards: 1 }),
-        role: 'system',
-      }
-    : manualEvent(g, card.id, 't');
+  const event: AutomationEvent =
+    trigger.kind === 'email_received'
+      ? { ...manualEvent(g, card.id, 't'), kind: 'created', by: EMAIL_TEST_PERSON, role: 'system' }
+      : isPersonless(trigger)
+        ? {
+            ...manualEvent(g, card.id, 't'),
+            ...(isTimeTrigger(trigger)
+              ? { kind: 'time' as const, by: automationPerson(rule.name) }
+              : isGithubTrigger(trigger)
+                ? { kind: 'github' as const, by: GITHUB_PERSON, github: heardOfTrigger(trigger) }
+                : { kind: 'incoming' as const, by: INCOMING_WEBHOOK_PERSON, cards: 1 }),
+            role: 'system',
+          }
+        : manualEvent(g, card.id, 't');
   // Whose turn it is for a saved rule (shown, never taken).
   const saved = typeof raw['ruleId'] === 'string' ? g.hook.store.get(raw['ruleId']) : null;
   const turn = saved ? g.hook.store.turn(saved.id) : 0;

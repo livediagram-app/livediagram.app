@@ -3,7 +3,7 @@ import type { TemplateKind } from '@livedocuments/templates';
 import { pv } from '@liveworkspace/template-previews/motion';
 
 // Group 21: the slide decks built from slide layouts (docs/specs/008-canvas/canvas-and-palette.md "Templates on
-// pages"): Launch Keynote, Quarterly Review, Team Welcome, Workshop Kickoff and Class Lesson. Each is three 16:9 slides fanned
+// pages"): Launch Keynote, Quarterly Review, Team Welcome, Workshop Kickoff, Class Lesson and Board Update. Each is three 16:9 slides fanned
 // back to front: two pale slides of its body (a heading and a hint of the layout on each) behind its title slide on
 // its own dark colours, with a hint of the motion it opens on (aurora lights, a mesh of colour, bokeh, waves, drifting
 // colour) and the
@@ -97,6 +97,20 @@ const DECKS: Partial<Record<TemplateKind, Deck>> = {
       <>
         <ellipse cx="32" cy="38" rx="14" ry="7" fill={`url(#${id}-g1)`} />
         <ellipse cx="58" cy="27" rx="11" ry="6" fill={`url(#${id}-g1)`} />
+      </>
+    ),
+  },
+  // The board update: a night mesh behind its title, three numbers on the slide behind.
+  'board-update': {
+    from: '#0f172a',
+    to: '#334155',
+    light: '#f1f5f9',
+    accent: '#475569',
+    body: 'stats',
+    motion: (id) => (
+      <>
+        <circle cx="28" cy="27" r="11" fill={`url(#${id}-g2)`} />
+        <circle cx="57" cy="36" r="10" fill={`url(#${id}-g1)`} />
       </>
     ),
   },

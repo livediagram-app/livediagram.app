@@ -104,6 +104,12 @@ The server decides everything that matters:
 - Each recipient's **"Someone Mentions Me in a Comment"** preference
   (`notifyMentions`, default on) is honoured; an invited member with no
   account has no preferences and is emailed at their invite address.
+- **The canvas's owner gets one email per comment.** A comment that mentions the owner would also trigger the
+  owner's new-comment email ([Transactional email](../014-identity/transactional-email.md) #3) on the comment's own
+  path. That path holds it back when the owner is mentioned in every new comment, the canvas is a team's and the
+  owner's `notifyMentions` is on (`ownerEmailCoveredByMention`, `apps/api/src/email/comment-owner-email.ts`). The
+  mention route then sends it after all if the owner was among the recipients but their mention email did not go
+  (refused claim, hourly cap): `notifyMentioned` answers whom it emailed.
 - `commentText` is required, at most 5000 characters; the email
   quotes the first 280, cut at a word with an ellipsis.
 - Each email is **claimed** before it goes (in the document's own

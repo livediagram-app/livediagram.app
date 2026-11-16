@@ -91,7 +91,8 @@ export type ArrivalSetters<Role, Community> = {
   setSessionCommunity: (community: Community | null) => void;
   // The one tab a tab-scoped link opens (docs/specs/013-workspace/tab-scoped-share-links.md); null = all.
   setSessionTabScope: (scope: string | null) => void;
-  setSharePasswordGate: (gate: { invalid: boolean }) => void;
+  // `changed`: the refused password was the one this browser remembered, so the owner changed it.
+  setSharePasswordGate: (gate: { invalid: boolean; changed?: boolean }) => void;
   setIdentityPromptOpen: (open: boolean) => void;
 };
 
@@ -205,7 +206,12 @@ export async function openShareLink<
     }
     // A copy never shows behind the gate.
     forgetCopy(product.lastSeen, self.id, id, shareCodeParam);
-    set.setSharePasswordGate({ invalid: resolution.invalid });
+    // A remembered password the index refused is not the visitor's mistake: the owner changed it. The gate says so,
+    // with no mismatch line; only a password the visitor typed is "didn't match" (share-password.md).
+    const changed = resolution.invalid && cachedPassword !== null;
+    set.setSharePasswordGate(
+      changed ? { invalid: false, changed: true } : { invalid: resolution.invalid },
+    );
     set.setLoading(false);
     set.setNameConfirmed(product.hasConfirmedName());
     return false;

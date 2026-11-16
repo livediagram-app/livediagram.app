@@ -92,6 +92,44 @@ describe('the palette tray', () => {
     }
   });
 
+  // Work Tracker 1027: the strip re-centres when the tab-name pill beside it changes width (a tab switch, a delete, a
+  // reload), moving without resizing, and the tray stayed where the strip had been.
+  it('re-measures the tray slot when the strip moves without resizing', () => {
+    let moved: (entries: { intersectionRatio: number }[]) => void = () => {};
+    vi.stubGlobal(
+      'IntersectionObserver',
+      class {
+        constructor(cb: typeof moved) {
+          moved = cb;
+        }
+        observe() {}
+        disconnect() {}
+      },
+    );
+    try {
+      const root = document.createElement('div');
+      root.setAttribute('data-toolbar-palette', '');
+      const card = document.createElement('div');
+      card.setAttribute('data-tour-id', 'palette');
+      const rect = vi
+        .spyOn(card, 'getBoundingClientRect')
+        .mockReturnValue(new DOMRect(300, 12, 600, 46));
+      root.append(card);
+      document.body.append(root);
+      render(<Banner onAction={() => {}} />);
+      const slot = () =>
+        (document.querySelector('[data-palette-tray]') as HTMLElement).parentElement!;
+      expect(slot().style.left).toBe('300px');
+      act(() => moved([{ intersectionRatio: 1 }]));
+      rect.mockReturnValue(new DOMRect(560, 12, 600, 46));
+      act(() => moved([{ intersectionRatio: 0.6 }]));
+      expect(slot().style.left).toBe('560px');
+      expect(slot().style.width).toBe('600px');
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('sits a mode banner just under the strip, apart from it and no wider', () => {
     mountStrip();
     const onAction = vi.fn();

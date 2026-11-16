@@ -30,7 +30,7 @@ import {
   type ArticleStyle,
   withArticleStyleChanged,
   withArticlePageCount,
-  shouldGrowForAbsentWriter,
+  absentWriterPageCount,
   withZonesSettled,
   type ArticleBlock,
   type ArticleFlow,
@@ -47,10 +47,12 @@ import {
 import { articleTextBox } from '@/lib/article/article-flow-geometry';
 import { articleLocked } from '@/lib/article/article-lock';
 import {
+  articleGrowFloor,
   clearArticleGrow,
   isArticleGrowPending,
   isArticleSettleClaimed,
   markArticleGrow,
+  noteArticleGrown,
 } from '@/lib/article/article-grow-store';
 import { track } from '@/lib/telemetry';
 import type { FlowLayout, FocusRequest } from '@/components/canvas/article/ArticleEditor';
@@ -220,37 +222,43 @@ export function useArticles(deps: {
     [tabId],
   );
 
-  // An article no writer here is settling: grown once, after an agent's write or as the tab loads
-  // (docs/specs/024-agents/pages-for-agents.md "Pages for the writing"). Measured only once the
-  // web fonts are in, so a fallback font's longer lines never add a page.
+  // An article no writer here is settling: grown after an agent's write or as the tab loads, then the pages that grow
+  // added settled on the next few lay-outs, measured on the real pages (docs/specs/024-agents/pages-for-agents.md
+  // "Pages for the writing"). Measured only once the web fonts are in, so a fallback font's longer lines never add a
+  // page.
   const growForAbsentWriter = useCallback(
     (layout: FlowLayout) => {
       const d = latest.current;
-      if (!isArticleGrowPending(tabId, layout.flow)) return;
+      const { flow } = layout;
+      if (!isArticleGrowPending(tabId, flow)) return;
       if (typeof document !== 'undefined' && document.fonts?.status === 'loading') return;
-      clearArticleGrow(tabId, layout.flow);
-      if (!d.canEdit) return;
+      const t = d.activeTab;
+      if (!d.canEdit || t.id !== tabId || !articlesOf(t)[flow])
+        return clearArticleGrow(tabId, flow);
+      const own = pagesOf(t).filter((p) => p.flow === flow);
+      const count = absentWriterPageCount({
+        local: false,
+        pending: true,
+        needed: layout.pagesNeeded,
+        have: own.length,
+        locked: t.locked === true || own.some((p) => p.locked === true),
+        floor: articleGrowFloor(tabId, flow),
+      });
+      if (count === null) return clearArticleGrow(tabId, flow);
+      noteArticleGrown(tabId, flow, own.length);
+      debugLog('[article] grown for an absent writer', {
+        tabId,
+        flow,
+        from: own.length,
+        to: count,
+      });
       d.tickTabs((ts) => {
-        const out = ts.map((t) => {
-          if (t.id !== tabId || t.locked === true || !articlesOf(t)[layout.flow]) return t;
-          const own = pagesOf(t).filter((p) => p.flow === layout.flow);
-          const grow = shouldGrowForAbsentWriter({
-            local: false,
-            pending: true,
-            needed: layout.pagesNeeded,
-            have: own.length,
-            locked: own.some((p) => p.locked === true),
-          });
-          if (!grow) return t;
-          debugLog('[article] grown for an absent writer', {
-            tabId,
-            flow: layout.flow,
-            from: own.length,
-            to: layout.pagesNeeded,
-          });
-          return withArticlePageCount(t, layout.flow, layout.pagesNeeded);
-        });
-        return out.every((t, i) => t === ts[i]) ? ts : out;
+        const out = ts.map((x) =>
+          x.id === tabId && x.locked !== true && articlesOf(x)[flow]
+            ? withArticlePageCount(x, flow, count)
+            : x,
+        );
+        return out.every((x, i) => x === ts[i]) ? ts : out;
       });
     },
     [tabId],

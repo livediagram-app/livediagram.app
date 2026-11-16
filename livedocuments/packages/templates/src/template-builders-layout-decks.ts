@@ -6,31 +6,55 @@
 // still gradient, so they read and print plainly.
 // Pure: the pages are declared once and the elements built on them.
 import {
+  isBoxed,
   layOutPages,
   pageInkFor,
   type Element,
+  type LaidOutPage,
   type Page,
   type PageBackground,
   type PageMotion,
   type PageMotionColouringId,
+  type ShapeElement,
   type ThemeGradientName,
 } from '@livedocuments/document';
 import { buildPageLayout } from './page-layout-build';
 import type { PageLayoutId } from './page-layouts';
 import { themeGradientBackground, themeMotionBackground } from './template-backgrounds';
 import { templateSlidePage } from './template-page-kit';
+import { BOARD_UPDATE } from './template-board-update';
 
 export type LayoutDeckKind =
-  'launch-keynote' | 'quarterly-review' | 'team-welcome' | 'workshop-kickoff' | 'class-lesson';
+  | 'launch-keynote'
+  | 'quarterly-review'
+  | 'team-welcome'
+  | 'workshop-kickoff'
+  | 'class-lesson'
+  | 'board-update';
 
-type DeckSlide = {
+// A slide chart's own figures (docs/specs/008-canvas/blueprints/template-content.md "Deck chart data"), merged over
+// the first chart its layout makes so the bars say what the words say.
+type DeckChart = Partial<
+  Pick<
+    ShapeElement,
+    'pieSlices' | 'lineCategories' | 'lineSeries' | 'chartLegend' | 'chartLegendPosition'
+  >
+>;
+
+export type DeckSlide = {
   name: string;
   layout: PageLayoutId;
   // The layout's text, in the order it writes it (the same count: layout-decks.test.ts pins it).
   labels: readonly string[];
+  // Its points come in one column at a time while presenting (template-content.md "Builds"): this many equal columns
+  // across the slide, below its heading and above its source line.
+  build?: number;
+  chart?: DeckChart;
+  // Each progress ring's fill, in the order the layout draws them, so a ring shows the figure written on it.
+  progress?: readonly number[];
 };
 
-type LayoutDeck = {
+export type LayoutDeck = {
   // The opening and closing slides' animated background, in one of the theme's colourings (a
   // template's backgrounds are the theme's own: template-backgrounds).
   motion: PageMotion;
@@ -42,6 +66,10 @@ type LayoutDeck = {
 
 const animated = (d: LayoutDeck): PageBackground => themeMotionBackground(d.motion, d.dark);
 const still = (d: LayoutDeck): PageBackground => themeGradientBackground(d.light);
+
+// The band of a slide whose columns build (template-content.md "Constants"): below its heading, above its source line.
+export const BUILD_TOP = 0.28;
+export const BUILD_FOOT = 0.9;
 
 export const LAYOUT_DECKS: Record<LayoutDeckKind, LayoutDeck> = {
   // A product launch keynote for a made-up note-taking app, Lumen: the hook, why it matters, what
@@ -73,6 +101,7 @@ export const LAYOUT_DECKS: Record<LayoutDeckKind, LayoutDeck> = {
       {
         name: 'What It Does',
         layout: 'slide-three-points',
+        build: 3,
         labels: [
           'What is new in 2.0',
           'Recall',
@@ -103,6 +132,7 @@ export const LAYOUT_DECKS: Record<LayoutDeckKind, LayoutDeck> = {
       {
         name: 'Launch Plan',
         layout: 'slide-process-flow',
+        build: 4,
         labels: [
           'From today to everyone',
           'Four steps over the next eight weeks.',
@@ -167,6 +197,16 @@ export const LAYOUT_DECKS: Record<LayoutDeckKind, LayoutDeck> = {
       {
         name: 'The Quarter',
         layout: 'slide-big-chart',
+        chart: {
+          pieSlices: [
+            { label: 'Apr', value: 1840 },
+            { label: 'May', value: 2010 },
+            { label: 'Jun', value: 2260 },
+            { label: 'Jul', value: 2390 },
+            { label: 'Aug', value: 2650 },
+            { label: 'Sep', value: 2980 },
+          ],
+        },
         labels: [
           'Tickets solved each month',
           'More solved every month since we moved to one queue.',
@@ -178,6 +218,7 @@ export const LAYOUT_DECKS: Record<LayoutDeckKind, LayoutDeck> = {
       {
         name: 'Goals',
         layout: 'slide-goals',
+        build: 3,
         labels: [
           'Against our goals for the year',
           '72%',
@@ -250,6 +291,7 @@ export const LAYOUT_DECKS: Record<LayoutDeckKind, LayoutDeck> = {
       {
         name: 'Your First Week',
         layout: 'slide-objectives',
+        build: 3,
         labels: [
           'By Friday you will have',
           'Three things to do, and lots of help to do them.',
@@ -366,6 +408,7 @@ export const LAYOUT_DECKS: Record<LayoutDeckKind, LayoutDeck> = {
       {
         name: 'How It Runs',
         layout: 'slide-process-flow',
+        build: 4,
         labels: [
           'How each round runs',
           'Same rhythm every time, so you can focus on ideas.',
@@ -423,6 +466,7 @@ export const LAYOUT_DECKS: Record<LayoutDeckKind, LayoutDeck> = {
       {
         name: 'We Will Learn',
         layout: 'slide-objectives',
+        build: 3,
         labels: [
           'By the end of today',
           'Three things you will be able to do.',
@@ -449,6 +493,7 @@ export const LAYOUT_DECKS: Record<LayoutDeckKind, LayoutDeck> = {
       {
         name: 'The Cycle',
         layout: 'slide-process-flow',
+        build: 4,
         labels: [
           'Four stages, one circle',
           'The same water, round and round for millions of years.',
@@ -486,6 +531,8 @@ export const LAYOUT_DECKS: Record<LayoutDeckKind, LayoutDeck> = {
       },
     ],
   },
+  // A quarterly update to a startup's board (template-board-update.ts).
+  'board-update': BOARD_UPDATE,
 };
 
 /** A deck's pages: one 16:9 slide page per slide, the first and last on its animated background. */
@@ -497,6 +544,20 @@ export function layoutDeckPages(kind: LayoutDeckKind): Page[] {
   );
 }
 
+const CHART_SHAPES: ReadonlySet<string> = new Set(['bar-chart', 'line-chart', 'pie-chart']);
+
+// An element in the slide's build band takes its column's step, left to right, rising in; an arrow follows its ends
+// and anything above or below the band is there from the start (template-content.md "Builds").
+function withColumnBuild(el: Element, page: LaidOutPage, columns: number): Element {
+  if (!isBoxed(el)) return el;
+  const { x, y, width, height } = page.rect;
+  const cx = el.x + el.width / 2 - x;
+  const cy = el.y + el.height / 2 - y;
+  if (cy < height * BUILD_TOP || cy > height * BUILD_FOOT) return el;
+  const column = Math.min(columns - 1, Math.max(0, Math.floor((cx / width) * columns)));
+  return { ...el, build: { order: column + 1, effect: 'rise' } } as Element;
+}
+
 /** A deck's elements: each slide's layout on its page, its text the deck's own. */
 export function buildLayoutDeck(kind: LayoutDeckKind): Element[] {
   const deck = LAYOUT_DECKS[kind];
@@ -505,14 +566,24 @@ export function buildLayoutDeck(kind: LayoutDeckKind): Element[] {
   const built = pages.flatMap((page, i) => {
     const slide = deck.slides[i]!;
     let at = 0;
+    let charted = false;
+    let ring = 0;
     return buildPageLayout(slide.layout, page).map((el) => {
       const own = el;
-      const out = { ...el };
+      let out: Element = { ...el };
       if (typeof own.label === 'string' && own.label.length > 0) {
         if (at < slide.labels.length) out.label = slide.labels[at]!;
         at += 1;
       }
-      return out;
+      if (slide.chart && !charted && out.type === 'shape' && CHART_SHAPES.has(out.shape)) {
+        out = { ...out, ...slide.chart };
+        charted = true;
+      }
+      if (slide.progress && out.type === 'shape' && out.shape === 'progress-ring') {
+        const progress = slide.progress[ring++];
+        if (progress !== undefined) out = { ...out, progress };
+      }
+      return slide.build ? withColumnBuild(out, page, slide.build) : out;
     });
   });
   // Each page's content inked for its background, as a fill picked in the editor is (re-inking):

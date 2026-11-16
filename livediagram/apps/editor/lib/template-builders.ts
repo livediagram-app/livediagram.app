@@ -15,7 +15,9 @@ export {
   buildTemplate,
   isDefaultDocumentName,
   templateCanvasOverrides,
+  templateSlides,
   untitledNameForTemplate,
+  withAppendedSlides,
 } from '@livediagram/templates';
 
 export function buildTemplatedTab(

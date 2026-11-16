@@ -100,6 +100,56 @@ describe('notifyNewComment', () => {
   });
 });
 
+// One comment, one email (comment-owner-email.ts): a comment that @-mentions the owner of a team's canvas leaves them
+// the mention email alone, unless they turned mention emails off.
+describe('notifyNewComment and a mention of the owner', () => {
+  const teamDoc = { ...liveDoc, teamId: 'team-1' };
+  const mention = (userId: string) => ({
+    mentions: [{ userId, name: 'Owner', handle: 'owner' }],
+  });
+  // The owner's switches: comment emails on, mention emails as given.
+  function owner(mentionsOn: boolean) {
+    vi.mocked(notifyRecipients).mockImplementation(
+      async (_env, _ids, setting) =>
+        new Map(setting === 'notifyMentions' && !mentionsOn ? [] : [['user_u1', 'owner@x.com']]),
+    );
+    vi.mocked(claimCommentNotify).mockResolvedValue(true);
+  }
+
+  it('sends no owner email when the owner is mentioned and their mention emails are on', async () => {
+    owner(true);
+    await notifyNewComment(env, teamDoc, 'Anna', false, [mention('user_u1')]);
+    expect(notifyRecipients).toHaveBeenCalledWith(env, ['user_u1'], 'notifyMentions');
+    expect(claimCommentNotify).not.toHaveBeenCalled();
+    expect(sendEmail).not.toHaveBeenCalled();
+  });
+
+  it('still sends the owner email when the owner is not mentioned', async () => {
+    owner(true);
+    await notifyNewComment(env, teamDoc, 'Anna', false, [mention('user_other'), {}]);
+    expect(notifyRecipients).not.toHaveBeenCalledWith(env, ['user_u1'], 'notifyMentions');
+    expect(sendEmail).toHaveBeenCalledOnce();
+  });
+
+  it('still sends the owner email when only some new comments mention the owner', async () => {
+    owner(true);
+    await notifyNewComment(env, teamDoc, 'Anna', false, [mention('user_u1'), {}]);
+    expect(sendEmail).toHaveBeenCalledOnce();
+  });
+
+  it('still sends the owner email when the owner turned mention emails off', async () => {
+    owner(false);
+    await notifyNewComment(env, teamDoc, 'Anna', false, [mention('user_u1')]);
+    expect(sendEmail).toHaveBeenCalledOnce();
+  });
+
+  it('still sends the owner email on a canvas that is no team’s: no mention email goes there', async () => {
+    owner(true);
+    await notifyNewComment(env, liveDoc, 'Anna', false, [mention('user_u1')]);
+    expect(sendEmail).toHaveBeenCalledOnce();
+  });
+});
+
 describe('actionAssignedEmail (docs/specs/012-collaboration/assigned-actions.md)', () => {
   it('names the assigner, document, and action, links to the document', () => {
     const e = actionAssignedEmail(

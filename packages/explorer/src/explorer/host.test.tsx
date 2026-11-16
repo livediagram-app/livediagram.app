@@ -59,8 +59,9 @@ describe('a host’s own chrome', () => {
         arrivalNotice="The link you opened that plan with was revoked."
       />,
     );
-    expect(
-      await screen.findAllByText('The link you opened that plan with was revoked.'),
-    ).toHaveLength(1);
+    const said = await screen.findAllByText('The link you opened that plan with was revoked.');
+    expect(said).toHaveLength(1);
+    // In the warning tone (amber), as each product's share-roles.md "Losing access is explained" says.
+    expect(said[0]!.closest('[role="status"]')?.getAttribute('data-tone')).toBe('warning');
   });
 });

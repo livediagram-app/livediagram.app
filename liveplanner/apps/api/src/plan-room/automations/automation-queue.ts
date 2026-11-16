@@ -27,6 +27,8 @@ export type HistorySource = {
   chain?: number;
   // The Form tab whose response made the card.
   form?: string;
+  // An email that made the card (Email to Board): its sender and the board whose address took it.
+  email?: { from: string; board: string };
   // A run a GitHub trigger started: its card writes are tagged 'automation_github' (drawn as GitHub's).
   via?: 'github';
 };
@@ -58,6 +60,7 @@ export async function eventsOfWrites(
     role: 'editor' as AutomationRole,
     ...(source.rule !== undefined ? { rule: source.rule, chain: source.chain ?? 0 } : {}),
     ...(source.form !== undefined ? { form: source.form } : {}),
+    ...(source.email !== undefined ? { email: source.email } : {}),
   };
   for (const w of writes) {
     // A card put back (an undo of its delete, a redo of its making, an offline plan's sync) is no new card: its

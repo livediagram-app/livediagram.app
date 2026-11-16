@@ -10,7 +10,7 @@ import {
   withUnitMoved,
 } from './article-pages';
 import { articlesOf } from './article-flow';
-import { shouldGrowForAbsentWriter } from './article-pages';
+import { absentWriterPageCount } from './article-pages';
 import { pagesOf, layOutPages, type Page } from './page';
 import type { Element } from './index';
 
@@ -204,14 +204,27 @@ describe('a duplicated article keeps its margin notes to itself', () => {
 });
 
 describe('growing an article for an absent writer', () => {
-  const base = { local: false, pending: true, needed: 3, have: 1, locked: false };
+  const base = { local: false, pending: true, needed: 3, have: 1, locked: false, floor: null };
 
   it('grows only when waiting to, short of pages, unlocked and not the writer', () => {
-    expect(shouldGrowForAbsentWriter(base)).toBe(true);
-    expect(shouldGrowForAbsentWriter({ ...base, local: true })).toBe(false);
-    expect(shouldGrowForAbsentWriter({ ...base, pending: false })).toBe(false);
-    expect(shouldGrowForAbsentWriter({ ...base, locked: true })).toBe(false);
-    expect(shouldGrowForAbsentWriter({ ...base, needed: 1 })).toBe(false);
-    expect(shouldGrowForAbsentWriter({ ...base, needed: 0, have: 2 })).toBe(false);
+    expect(absentWriterPageCount(base)).toBe(3);
+    expect(absentWriterPageCount({ ...base, local: true })).toBeNull();
+    expect(absentWriterPageCount({ ...base, pending: false })).toBeNull();
+    expect(absentWriterPageCount({ ...base, locked: true })).toBeNull();
+    expect(absentWriterPageCount({ ...base, needed: 1 })).toBeNull();
+    expect(absentWriterPageCount({ ...base, needed: 0, have: 2 })).toBeNull();
+  });
+
+  it('once grown, settles the pages it added: more, fewer, never under its floor', () => {
+    // Grown from 1 to 3: measured on 3 real pages it needs 4 (a footnote's room), or 2 (a page over).
+    expect(absentWriterPageCount({ ...base, have: 3, needed: 4, floor: 1 })).toBe(4);
+    expect(absentWriterPageCount({ ...base, have: 3, needed: 2, floor: 1 })).toBe(2);
+    // Never under the pages it found, and nothing when it already fits.
+    expect(absentWriterPageCount({ ...base, have: 4, needed: 1, floor: 2 })).toBe(2);
+    expect(absentWriterPageCount({ ...base, have: 2, needed: 1, floor: 2 })).toBeNull();
+    expect(absentWriterPageCount({ ...base, have: 3, needed: 3, floor: 1 })).toBeNull();
+    expect(
+      absentWriterPageCount({ ...base, have: 3, needed: 2, floor: 1, locked: true }),
+    ).toBeNull();
   });
 });

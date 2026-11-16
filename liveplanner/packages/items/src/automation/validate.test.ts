@@ -553,3 +553,60 @@ describe('Send Email to typed-in addresses', () => {
     expect('body' in r).toBe(true);
   });
 });
+
+// Work Tracker 1163: Email Received's board and From, its {{from}}, and nobody of the plan behind it.
+describe('Email Received', () => {
+  const read = (trigger: unknown, extra: Record<string, unknown> = {}) =>
+    readRuleBody(withRule({ trigger, ...extra }));
+
+  it('keeps its board and its From as the rule keeps them', () => {
+    expect(read({ kind: 'email_received' })).toMatchObject({
+      body: { trigger: { kind: 'email_received' } },
+    });
+    const r = read({ kind: 'email_received', board: 'b1', sender: ' Example.COM ' });
+    expect('body' in r && r.body.trigger).toEqual({
+      kind: 'email_received',
+      board: 'b1',
+      sender: '@example.com',
+    });
+    const blank = read({ kind: 'email_received', sender: '' });
+    expect('body' in blank && blank.body.trigger).toEqual({ kind: 'email_received' });
+  });
+
+  it('refuses a From that is neither an address nor a domain', () => {
+    for (const sender of ['ana@', 'example', 7])
+      expect(read({ kind: 'email_received', sender })).toMatchObject({
+        path: 'trigger.sender',
+        message: 'trigger.sender must be an email address or a domain',
+      });
+    expect(pathOf(withRule({ trigger: { kind: 'email_received', board: 3 } }))).toBe(
+      'trigger.board',
+    );
+  });
+
+  it('knows {{from}} only in an Email Received rule', () => {
+    const step = { kind: 'comment', text: 'Thanks {{from}}' };
+    expect('body' in read({ kind: 'email_received' }, { steps: [step] })).toBe(true);
+    expect('body' in read({ kind: 'card_created' }, { steps: [step] })).toBe(false);
+  });
+
+  it('refuses Who Did It and whoever triggered it', () => {
+    expect(
+      read(
+        { kind: 'email_received' },
+        { conditions: [{ kind: 'who', who: [{ role: 'editor' }] }] },
+      ),
+    ).toMatchObject({
+      path: 'conditions.0',
+      message: 'Email Received has no person behind it to check',
+    });
+    expect(
+      pathOf(
+        withRule({
+          trigger: { kind: 'email_received' },
+          steps: [{ kind: 'assign', to: { trigger: true } }],
+        }),
+      ),
+    ).toBe('steps.0');
+  });
+});

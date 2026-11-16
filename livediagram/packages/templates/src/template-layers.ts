@@ -104,6 +104,16 @@ export function templateLayers(kind: TemplateKind): Layer[] | undefined {
       return layered('Plan', 'Goals');
     case 'network-diagram':
       return layered('Tiers', 'Network');
+    case 'c4-context':
+      return layered('Context', 'Systems');
+    case 'c4-container':
+      return layered('Boundary', 'Containers');
+    case 'architecture-decision-record':
+      return layered('Record', 'Decision');
+    case 'sprint-planning':
+      return layered('Board', 'Stories');
+    case 'interview-synthesis':
+      return layered('Board', 'Notes');
     // Tier lanes stay put while components and their wiring move.
     case 'system-architecture':
       return layered('Tiers', 'Components');

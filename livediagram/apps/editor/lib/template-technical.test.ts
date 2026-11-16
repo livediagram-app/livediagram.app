@@ -330,20 +330,32 @@ describe('class diagram (uml-class)', () => {
     expect(into('«abstract» Payment', 'triangle-hollow')).toHaveLength(2);
     expect(into('Order', 'diamond')).toHaveLength(1);
     expect(into('Restaurant', 'diamond-hollow')).toHaveLength(1);
-    expect(links.filter((a) => a.arrowheadShape === 'line')).toHaveLength(4);
-    // Every non-generalisation line names its role and both multiplicities.
-    for (const a of links.filter((a) => a.arrowheadShape !== 'triangle-hollow')) {
+    expect(links.filter((a) => a.arrowheadShape === 'line' && !a.strokeStyle)).toHaveLength(4);
+    // The enumeration hangs off the class that uses it by a dashed dependency.
+    expect(into('«enumeration» OrderStatus', 'line')).toMatchObject([
+      { strokeStyle: 'dashed', label: '«use» status' },
+    ]);
+    // Every association, composition and aggregation names its role and both multiplicities.
+    for (const a of links.filter((a) => a.arrowheadShape !== 'triangle-hollow' && !a.strokeStyle)) {
       expect(a.label).toMatch(/ · [0-9.*]+ : [0-9.*]+$/);
     }
   });
 
-  it('keys the four line ends in the free corner', () => {
+  it('keys the five relationship lines in the free corner', () => {
     const key = arrowsOf(els).filter((a) => a.from.kind === 'free');
     expect(key.map((a) => a.arrowheadShape)).toEqual([
       'triangle-hollow',
       'diamond',
       'diamond-hollow',
       'line',
+      'line',
+    ]);
+    expect(key.map((a) => a.strokeStyle)).toEqual([
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      'dashed',
     ]);
     expect(texts(els)).toContain('Reading the lines');
   });

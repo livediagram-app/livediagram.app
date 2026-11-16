@@ -141,7 +141,9 @@ function triggerLine(
     event.kind === 'created'
       ? event.form
         ? `A form response made the card`
-        : `${who} made the card`
+        : event.email
+          ? `An email from ${event.email.from} made the card`
+          : `${who} made the card`
       : event.kind === 'moved'
         ? `${who} moved it from ${column(event.from)} to ${column(event.to)}`
         : event.kind === 'changed'
@@ -323,6 +325,8 @@ export async function runRule(
       ...(cardless ? { cardless: true } : {}),
       // A GitHub run's pull request, for its values (a Wait's held event keeps it).
       ...(event.pull ? { github: event.pull } : {}),
+      // An Email Received run's sender, for {{from}} (a Wait's held event keeps it).
+      ...(event.email ? { email: event.email.from } : {}),
       turn: opts.turn ?? (opts.dry ? 0 : deps.store.turn(rule.id)),
       ...(items ? { items } : {}),
     };

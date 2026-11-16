@@ -8,7 +8,8 @@ test('a rich paste into an article keeps its text and formatting', async ({ page
   await page.goto('/new?template=article');
   const editor = page.locator('.ProseMirror').first();
   await editor.waitFor({ timeout: 30_000 });
-  await editor.click();
+  // The writing's box spans every page of the article, its middle the gap between two pages: click its first line.
+  await editor.locator('[data-block-id]').first().click();
   await page.keyboard.press('End');
   await page.keyboard.press('Enter');
   await page.evaluate(() => {

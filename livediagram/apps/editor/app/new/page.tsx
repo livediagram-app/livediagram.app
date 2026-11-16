@@ -56,7 +56,11 @@ import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { handStartQuery } from '@liveworkspace/workbench/components/start/start-query';
 import { closeStartForBlank } from '@/components/start/close-start-for-blank';
 import { isBlankTemplate } from '@livediagram/templates';
-import { NEW_DOCUMENT_THEME_ID, newDocumentTab } from '@/lib/new-document-content';
+import {
+  NEW_DOCUMENT_THEME_ID,
+  newDocumentPresentation,
+  newDocumentTab,
+} from '@/lib/new-document-content';
 
 // In-place handoff (docs/specs/007-editor/new-document-route.md): once a document is created, this page
 // renders the editor itself under the rewritten /document/<id> URL instead of paying for a second page
@@ -257,12 +261,14 @@ export default function NewDocumentPage() {
     }
     // The template's tab, or one blank tab (lib/new-document-content.ts).
     const tab = newDocumentTab({ templateKind, themeId, tabId });
+    // A presented template's slides, so Present runs it in talk order from the start.
+    const presentation = newDocumentPresentation(templateKind, tab);
     try {
       if (offline) {
         // Offline Mode (docs/specs/006-document/offline-mode.md): create the document in IndexedDB only. This
         // also registers its id so every later load / save routes local.
         await offlineCreateDocument(
-          { id: documentId, name: documentName, tabs: [tab] },
+          { id: documentId, name: documentName, tabs: [tab], presentation },
           Date.now(),
         );
       } else {
@@ -273,6 +279,7 @@ export default function NewDocumentPage() {
           id: documentId,
           name: documentName,
           tabs: [tab],
+          ...(presentation ? { presentation } : {}),
           // Passed through as given: absent is no choice (a default folder may answer), a null
           // folder the root chosen on purpose (docs/specs/013-workspace/default-folders.md).
           teamId: settings.teamId,

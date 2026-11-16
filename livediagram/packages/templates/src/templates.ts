@@ -173,6 +173,13 @@ export type TemplateKind =
   | 'onboarding-plan'
   | 'concept-map'
   | 'network-diagram'
+  // The templates review batch (Work Tracker 1075, docs/specs/008-canvas/canvas-and-palette.md "Templates"): the C4
+  // model's context and container levels, an architecture decision record, sprint planning and an interview synthesis.
+  | 'c4-context'
+  | 'c4-container'
+  | 'architecture-decision-record'
+  | 'sprint-planning'
+  | 'interview-synthesis'
   // Workshop mode's blank (docs/specs/012-collaboration/workshop-mode.md "Templates").
   | 'blank-session';
 
@@ -754,6 +761,41 @@ export const TEMPLATES: TemplateDescriptor[] = [
     title: 'Network Diagram',
     description:
       'An office network in tiers: router, firewall and switches, VLANs with their subnets, Wi-Fi, VPN and an IP plan.',
+    extra: true,
+  },
+  {
+    kind: 'c4-context',
+    title: 'C4 System Context',
+    description:
+      'Level 1 of the C4 model: the people who use a system, the system itself and what it depends on, every arrow labelled.',
+    extra: true,
+  },
+  {
+    kind: 'c4-container',
+    title: 'C4 Container Diagram',
+    description:
+      'Level 2 of the C4 model: the apps, services and stores inside a system boundary, each with its technology.',
+    extra: true,
+  },
+  {
+    kind: 'architecture-decision-record',
+    title: 'Architecture Decision Record',
+    description:
+      'One decision on one page: context, drivers, the options scored, the decision, what changes and what it costs.',
+    extra: true,
+  },
+  {
+    kind: 'sprint-planning',
+    title: 'Sprint Planning',
+    description:
+      'Plan a sprint as a team: the goal, capacity, stories pulled into Committed, a stretch vote and a confidence check.',
+    extra: true,
+  },
+  {
+    kind: 'interview-synthesis',
+    title: 'Interview Synthesis',
+    description:
+      'Turn customer interviews into decisions: quotes tinted by who said them, themes, insights and How Might We questions.',
     extra: true,
   },
 ];

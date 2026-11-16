@@ -13,6 +13,7 @@ import { EDITOR_MODES, editorModeLabel, type EditorMode, type Tab } from '@lived
 import { useEditorMode, type EditorModeState } from '@/hooks/editor/useEditorMode';
 import { useViewPreview } from '@/app/document/[id]/useViewPreview';
 import { EditorModeProvider } from './editor-mode-context';
+import { MenuCardFormContext } from '@liveworkspace/workbench/components/chrome/menu-card-form';
 import { EditorModeSwitch } from './EditorModeSwitch';
 import { TabModeIcon } from './TabModeIcon';
 import { StartModeSwitch } from '@/components/start/StartModeSwitch';
@@ -59,6 +60,26 @@ describe('EditorModeSwitch chip', () => {
     expect(chip().textContent).toBe('Workshop');
     expect(chip().querySelectorAll('svg').length).toBeGreaterThan(0);
   });
+
+  // Work Tracker 1038: in a menu box short of room beside a crowded strip, the icon alone, named by a tooltip too.
+  it.each(['icon', 'bare'] as const)(
+    'shows the icon alone in a menu box in its %s form, with a tooltip naming it',
+    (form) => {
+      render(
+        <MenuCardFormContext.Provider value={form}>
+          <EditorModeProvider
+            value={{ mode: 'draw', setMode: vi.fn(), canSwitch: true, canEdit: true }}
+          >
+            <EditorModeSwitch />
+          </EditorModeProvider>
+        </MenuCardFormContext.Provider>,
+      );
+      expect(chip().textContent).toBe('');
+      expect(chip().getAttribute('aria-label')).toBe('Editor mode: Draw');
+      // The tooltip's trigger wraps it (display: contents); a keyboard focus shows it at once.
+      expect(chip().parentElement?.className).toBe('contents');
+    },
+  );
 
   it('shows the icon alone on a phone, keeping its accessible name', () => {
     renderSwitch('draw', {}, { iconOnly: true });

@@ -12,6 +12,10 @@ export type SharePasswordGateProps = {
   // True when the visitor already submitted a wrong password (vs the
   // first prompt), so we show an error line.
   invalid: boolean;
+  // The password this browser remembered for the link was refused: the owner changed it. Not the visitor's mistake,
+  // so no mismatch line; the gate says the password changed and asks for the new one (share-password.md
+  // "Remembered per link").
+  changed?: boolean;
   // The owner's display name, for context ("X's design"), or
   // null when we don't know it yet.
   ownerName: string | null;
@@ -24,7 +28,13 @@ export type SharePasswordGateProps = {
 // session and re-runs the bootstrap, which either hydrates or re-shows
 // this gate with `invalid` set. Each editor binds its noun once, in its own
 // components/dialogs/SharePasswordGate.tsx.
-export function SharePasswordGate({ noun, invalid, ownerName, onSubmit }: SharePasswordGateProps) {
+export function SharePasswordGate({
+  noun,
+  invalid,
+  changed = false,
+  ownerName,
+  onSubmit,
+}: SharePasswordGateProps) {
   const [value, setValue] = useState('');
 
   const submit = () => {
@@ -50,9 +60,11 @@ export function SharePasswordGate({ noun, invalid, ownerName, onSubmit }: ShareP
             {`This ${noun} is password-protected`}
           </h1>
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            {ownerName
-              ? `Enter the password ${ownerName} set to open this ${noun}.`
-              : `Enter the password the owner set to open this ${noun}.`}
+            {changed
+              ? `The password for this ${noun} was changed. Enter the new one to open it.`
+              : ownerName
+                ? `Enter the password ${ownerName} set to open this ${noun}.`
+                : `Enter the password the owner set to open this ${noun}.`}
           </p>
         </div>
         <TextInput

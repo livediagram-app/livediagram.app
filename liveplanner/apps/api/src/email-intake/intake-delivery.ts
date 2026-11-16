@@ -123,12 +123,14 @@ export async function deliverIntake(
   const made = await createMany(ctx, { projectId: planId, owner: by.id }, [create], { by });
   if (made instanceof Response) return made.status === 413 ? 'failed' : 'busy';
   relay(ctx, planId, made.items, [], made.rev);
+  // One created event for the card: Card Created and Email Received rules both hear it (automations.md "Email
+  // Received"), each running once.
   await appendItemHistory(
     env,
     planId,
     made.items.map((after) => ({ before: null, after })),
     'email',
-    { role: 'system' },
+    { role: 'system', email: { from: sender, board: board.id } },
   );
   room.wrote();
   await countIntake(env, intake.code, 'made', now);

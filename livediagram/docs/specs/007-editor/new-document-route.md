@@ -92,6 +92,31 @@ only, opening the app in a new tab. Only the editor's own empty route (`/documen
 `/document/placeholder`) hands off to `/new`. Before, every address without a
 document id went to `/new`, so a mistyped or retired page made a new canvas with no word of what went wrong.
 
+### Which not-found card
+
+Every refusal the api answers 404 is the same card; what it says depends only on what the visitor brought and who
+they are, never on whether the canvas exists, so a missing canvas and a private one always read alike. In order (the
+first that fits wins; `notFoundReason`, `@liveworkspace/workbench/lib/not-found-reason`):
+
+| Case         | When                                                                                               | Title                         | Says                                                                                                              | Buttons                    |
+| ------------ | -------------------------------------------------------------------------------------------------- | ----------------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| Page         | the address names no canvas                                                                        | **Page Not Found**            | "There is no page at this address. Open a canvas from the Explorer or start fresh."                               | Open Explorer, New Canvas  |
+| Access ended | the canvas was open a moment ago and access ended ([Share roles](../013-workspace/share-roles.md)) | **No Longer Shared With You** | "Your access to this canvas was removed while you had it open. Ask its owner to share it with you again."         | Open Explorer, New Canvas  |
+| Dead link    | the address carries a share code (`?s=`) the api refused: unknown, revoked or expired alike        | **Link Not Valid**            | "This link isn’t valid. It may have been turned off or copied incompletely. Ask whoever shared it for a new one." | Open Explorer, New Canvas  |
+| Sign in      | the visitor is signed out (a guest, or nobody)                                                     | **Canvas Not Found**          | "This canvas doesn’t exist, or you need to sign in to open it."                                                   | Open Explorer, **Sign In** |
+| Missing      | anyone else                                                                                        | **Canvas Not Found**          | "This canvas doesn’t exist or isn’t yours. Open one from the Explorer or start fresh."                            | Open Explorer, New Canvas  |
+
+Sign In goes to `/sign-in/?redirect_url=<this address>`, so signing in comes straight back to the same canvas
+(`useAuthHrefs`). A signed-in visitor without access keeps the plain Missing copy: signing in again would not help.
+The dead link and access-ended cards carry no "404" line; the others do.
+
+**In an embed** ([Embeds](../013-workspace/embeds.md)) the same cases hold with two differences: a refused share
+code reads **No Longer Shared** ("This canvas is no longer shared at this link. Ask whoever shared it for a new one.")
+with no buttons at all, since a New Canvas button inside someone else's page leads nowhere they meant to go; and an
+embed never offers Sign In (it has no sign-in of its own), so a signed-out embed reads as Missing. The other cases keep
+New Canvas, opening the app in a new tab. The embed's browser tab names the card too ("No Longer Shared |
+livediagram"), never "Untitled canvas".
+
 ### Archived
 
 A canvas its owner moved to Archived ([one-explorer.md "Archived"](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#archived))
@@ -108,7 +133,7 @@ The owner opening an archived canvas's address directly gets this card, never th
 
 ### The tab title
 
-The browser tab names what the page shows. An open canvas names it ("<name> | livediagram"); a status screen in its place names the screen instead, in Title Case: **Canvas Not Found**, **Page Not Found**, **Canvas Archived**, **Canvas Deleted**, **Couldn’t Load Canvas**, **Password Required** ("Canvas Not Found | livediagram"), so a missing canvas's tab never reads as an empty one (`useBrowserTabTitle`'s `status`, held by the editor page's status shell). A load that ends on a status screen pins no tab on the address: the `#t=<tab>` pin waits for a tab whose content has loaded (`useTabEntryEffects`), so the placeholder tab's id never lands on the address of an item that never opened.
+The browser tab names what the page shows. An open canvas names it ("<name> | livediagram"); a status screen in its place names the screen instead, in Title Case: **Canvas Not Found**, **Page Not Found**, **Link Not Valid**, **No Longer Shared With You**, **Canvas Archived**, **Canvas Deleted**, **Couldn’t Load Canvas**, **Password Required** ("Canvas Not Found | livediagram"), so a missing canvas's tab never reads as an empty one (`useBrowserTabTitle`'s `status`, held by the editor page's status shell). A load that ends on a status screen pins no tab on the address: the `#t=<tab>` pin waits for a tab whose content has loaded (`useTabEntryEffects`), so the placeholder tab's id never lands on the address of an item that never opened.
 
 ### A failed load is not a missing document
 
@@ -179,7 +204,8 @@ knowing about when adding another.
 ### Canvas Not Found
 
 1. URL is `/document/<id>` but the API returns 404.
-2. The not-found surface renders; its "Create new document" CTA navigates to `/new`.
+2. The not-found surface renders ("Which not-found card" above); its New Canvas button navigates to `/new`, and a
+   signed-out visitor's Sign In comes back to the same address.
 
 ## Editor route state
 

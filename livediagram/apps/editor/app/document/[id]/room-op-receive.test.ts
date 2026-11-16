@@ -49,3 +49,35 @@ describe('a received tab-saved', () => {
     expect(() => receive(['t1'])).not.toThrow();
   });
 });
+
+// docs/specs/013-workspace/share-roles.md "Losing access is explained": a session on a revoked pass leaves for the
+// Explorer with the reason in the address, which the Explorer reads (liveworkspace's explorer-landing) and drops.
+describe('a received share-revoked', () => {
+  function revoke(code: string, sessionCode: string | null) {
+    const assign = vi.fn();
+    vi.stubGlobal('window', { location: { assign, reload: vi.fn() } });
+    const opts = {
+      markSeen: vi.fn(),
+      sessionShareCodeRef: { current: sessionCode },
+    } as unknown as RoomConnectionOptions;
+    receiveRoomOp(
+      'system',
+      { kind: 'share-revoked', code },
+      {} as PresenceCoalescer,
+      opts,
+      new Map(),
+      new Map(),
+    );
+    vi.unstubAllGlobals();
+    return assign;
+  }
+
+  it('sends the session on the revoked link to the Explorer, saying why in the address', () => {
+    expect(revoke('c1', 'c1')).toHaveBeenCalledWith('/explorer?ended=revoked');
+  });
+
+  it('leaves every other session where it is', () => {
+    expect(revoke('c1', 'c2')).not.toHaveBeenCalled();
+    expect(revoke('c1', null)).not.toHaveBeenCalled();
+  });
+});

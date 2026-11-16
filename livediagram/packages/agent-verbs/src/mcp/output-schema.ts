@@ -110,7 +110,8 @@ export const createDocumentOutput = {
     .array(z.string())
     .optional()
     .describe(
-      'What a graph or Mermaid tab could not keep of what it asked (a nested subgraph folded), each naming its tab.',
+      'What a graph or Mermaid tab could not keep of what it asked (a nested subgraph folded), and the slides a ' +
+        'presented template added to the deck, each naming its tab.',
     ),
 };
 
@@ -126,7 +127,8 @@ const changesetAnswer = {
     .array(z.string())
     .optional()
     .describe(
-      'What the graph or Mermaid could not keep of what it asked (a nested subgraph folded).',
+      'What the graph or Mermaid could not keep of what it asked (a nested subgraph folded), and the slides a ' +
+        'presented template added to the deck.',
     ),
 };
 

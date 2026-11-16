@@ -201,10 +201,16 @@ export async function startTemplateDocument(
 // rhythm and insertion tests need neighbours to place against, so this writes
 // a row around that note through the api and reloads. The three are copies of
 // the seeded note (so they carry exactly its stationery), one rhythm step apart.
+/** A canvas sticky note's wrapper, whichever role it takes: `img` when only drawn, `group` once it shows an
+ *  indicator such as a note (lib/element-names.ts elementRole). */
+export const STICKY_NOTE = '[data-element-id][aria-label^="Sticky note"]';
+
 export async function startEventStormingRow(page: Page): Promise<void> {
   await startTemplateDocument(page, 'Software', /^Event storming/i);
+  // The seed note carries the template's run sheet as its note, so it shows a note indicator and takes the
+  // `group` role rather than `img` (lib/element-names.ts elementRole): find it by its wrapper's name instead.
+  await page.locator('[data-canvas-a11y-root]').locator(STICKY_NOTE).first().waitFor();
   const notes = page.locator('[data-canvas-a11y-root]').getByRole('img', { name: /^Sticky note/ });
-  await notes.first().waitFor();
   const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
   const documentId = new URL(page.url()).pathname.split('/').filter(Boolean).pop()!;
   const headers = await pageOwnerHeaders(page, { 'Content-Type': 'application/json' }, documentId);
@@ -237,6 +243,8 @@ export async function startEventStormingRow(page: Page): Promise<void> {
         ...seed,
         id: crypto.randomUUID(),
         label,
+        // Events someone wrote on the board: the run sheet stays with the template's seed, which this row replaces.
+        note: undefined,
         x: seed.x + (i - 1) * step,
         rotation: i % 2 === 0 ? -1.1 : 1.1,
       }));

@@ -269,9 +269,9 @@ export function templatePreviewGroup5(kind: TemplateKind): ReactElement | null {
         </svg>
       );
     case 'article':
-      // An article (docs/specs/007-editor/article-pages.md): a page of writing, a title over lines
-      // with a heading, a bulleted pair and a small chart in the text. Hover story: a new line is
-      // written at the foot.
+      // The Project Brief (docs/specs/007-editor/article-pages.md): a page of writing passed round, its header with
+      // the document's name, a title over the summary, the goals in a table and the plan as a numbered list, the
+      // page number at the foot. Hover story: the goals are written in, row by row.
       return (
         <svg width="72" height="40" viewBox="0 0 80 44" aria-hidden>
           <rect
@@ -284,30 +284,93 @@ export function templatePreviewGroup5(kind: TemplateKind): ReactElement | null {
             stroke="rgb(203 213 225)"
             strokeWidth="0.9"
           />
-          <rect x="27" y="7" width="17" height="3" rx="1" fill="rgb(15 23 42)" />
-          <rect x="27" y="12" width="24" height="1.4" rx="0.7" fill="rgb(148 163 184)" />
-          <rect x="27" y="15" width="26" height="1.4" rx="0.7" fill="rgb(148 163 184)" />
-          <rect x="27" y="19" width="11" height="2" rx="1" fill="rgb(51 65 85)" />
-          <circle cx="28" cy="24" r="0.9" fill="rgb(14 165 233)" />
-          <rect x="30" y="23.3" width="10" height="1.4" rx="0.7" fill="rgb(148 163 184)" />
-          <circle cx="28" cy="27" r="0.9" fill="rgb(14 165 233)" />
-          <rect x="30" y="26.3" width="8" height="1.4" rx="0.7" fill="rgb(148 163 184)" />
-          <rect x="43" y="22" width="10" height="8" rx="1" fill="rgb(240 249 255)" />
-          <rect x="44.5" y="26" width="2" height="3" fill="rgb(56 189 248)" />
-          <rect x="47.5" y="24" width="2" height="5" fill="rgb(14 165 233)" />
-          <rect x="50.5" y="25" width="2" height="4" fill="rgb(2 132 199)" />
-          <rect x="27" y="33" width="26" height="1.4" rx="0.7" fill="rgb(148 163 184)" />
-          <path
-            className="pv-draw"
-            pathLength="1"
-            strokeDasharray="0 1"
-            d="M27 37.2 L48 37.2"
+          <rect x="26" y="4.6" width="9" height="0.8" rx="0.4" fill="rgb(148 163 184)" />
+          <rect x="49" y="4.6" width="5" height="0.8" rx="0.4" fill="rgb(148 163 184)" />
+          <line x1="26" y1="6.4" x2="54" y2="6.4" stroke="rgb(226 232 240)" strokeWidth="0.3" />
+          <rect x="26" y="8.4" width="17" height="3" rx="1" fill="rgb(15 23 42)" />
+          <rect x="26" y="13" width="26" height="1.2" rx="0.6" fill="rgb(148 163 184)" />
+          <rect x="26" y="15.2" width="22" height="1.2" rx="0.6" fill="rgb(148 163 184)" />
+          <rect x="26" y="18.2" width="9" height="1.6" rx="0.8" fill="rgb(51 65 85)" />
+          <rect x="26" y="20.8" width="28" height="2.4" fill="rgb(224 242 254)" />
+          <rect
+            x="26"
+            y="20.8"
+            width="28"
+            height="7.2"
             fill="none"
-            stroke="rgb(100 116 139)"
-            strokeWidth="1.4"
-            strokeLinecap="round"
-            style={pv({ '--pv-at': '400ms', '--pv-dur': '900ms' })}
+            stroke="rgb(203 213 225)"
+            strokeWidth="0.3"
           />
+          <line x1="26" y1="23.2" x2="54" y2="23.2" stroke="rgb(203 213 225)" strokeWidth="0.25" />
+          <line x1="26" y1="25.6" x2="54" y2="25.6" stroke="rgb(203 213 225)" strokeWidth="0.25" />
+          <line
+            x1="37.2"
+            y1="20.8"
+            x2="37.2"
+            y2="28"
+            stroke="rgb(203 213 225)"
+            strokeWidth="0.25"
+          />
+          <line
+            x1="48.4"
+            y1="20.8"
+            x2="48.4"
+            y2="28"
+            stroke="rgb(203 213 225)"
+            strokeWidth="0.25"
+          />
+          <rect x="27" y="21.6" width="6" height="0.8" rx="0.4" fill="rgb(3 105 161)" />
+          <rect x="38.2" y="21.6" width="6" height="0.8" rx="0.4" fill="rgb(3 105 161)" />
+          <rect x="49.4" y="21.6" width="3" height="0.8" rx="0.4" fill="rgb(3 105 161)" />
+          {[24, 26.4].map((y, i) => (
+            <g key={y}>
+              <rect
+                className="pv-grow-x"
+                x="27"
+                y={y}
+                width={[9, 8][i]}
+                height="0.8"
+                rx="0.4"
+                fill="rgb(148 163 184)"
+                style={pv({ '--pv-at': `${400 + i * 300}ms` })}
+              />
+              <rect
+                className="pv-grow-x"
+                x="38.2"
+                y={y}
+                width={[8, 9][i]}
+                height="0.8"
+                rx="0.4"
+                fill="rgb(148 163 184)"
+                style={pv({ '--pv-at': `${550 + i * 300}ms` })}
+              />
+              <rect
+                className="pv-grow-x"
+                x="49.4"
+                y={y}
+                width="4"
+                height="0.8"
+                rx="0.4"
+                fill="rgb(148 163 184)"
+                style={pv({ '--pv-at': `${700 + i * 300}ms` })}
+              />
+            </g>
+          ))}
+          <rect x="26" y="30.4" width="7" height="1.6" rx="0.8" fill="rgb(51 65 85)" />
+          {[33.2, 35.4].map((y, i) => (
+            <g key={y}>
+              <rect x="26" y={y} width="1.4" height="1.2" rx="0.3" fill="rgb(14 165 233)" />
+              <rect
+                x="28.6"
+                y={y}
+                width={[22, 18][i]}
+                height="1.2"
+                rx="0.6"
+                fill="rgb(148 163 184)"
+              />
+            </g>
+          ))}
+          <rect x="39" y="38.8" width="2" height="0.8" rx="0.4" fill="rgb(148 163 184)" />
         </svg>
       );
     default:

@@ -92,6 +92,11 @@ const TEMPLATE_FAMILY: Record<TemplateKind, TemplateFamily | null> = {
   'onboarding-plan': null,
   'concept-map': null,
   'network-diagram': null,
+  'c4-context': null,
+  'c4-container': null,
+  'architecture-decision-record': null,
+  'sprint-planning': null,
+  'interview-synthesis': null,
 };
 
 /** The family a document made from this template belongs to; null for no template or no family. */

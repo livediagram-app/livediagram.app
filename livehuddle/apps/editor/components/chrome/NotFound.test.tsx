@@ -20,7 +20,7 @@ describe('NotFound', () => {
   });
 
   it('names a page, not a document, for an address with no document', () => {
-    render(<NotFound page onCreateNew={() => {}} onOpenExplorer={() => {}} />);
+    render(<NotFound reason="page" onCreateNew={() => {}} onOpenExplorer={() => {}} />);
     expect(screen.getByRole('heading', { name: 'Page Not Found' })).toBeTruthy();
   });
 

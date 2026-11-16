@@ -324,3 +324,21 @@ describe('Field Changed on a field no write changes', () => {
     expect(ruleNeeds(rule, outline)).toEqual(['Field Changed never hears Time Spent']);
   });
 });
+
+// Work Tracker 1163: an Email Received rule whose board is gone needs attention, where the caller read the boards.
+describe('Email Received board', () => {
+  const rule = (board?: string) =>
+    ruleBody({ trigger: { kind: 'email_received', ...(board ? { board } : {}) } });
+
+  it('needs attention for a board the plan no longer has', () => {
+    const outline = { ...OUTLINE, boards: [{ id: 'b1', name: 'Support' }] };
+    expect(ruleNeeds(rule('b9'), outline)).toEqual(['Board b9 is gone']);
+    expect(ruleNeedItems(rule('b9'), outline)).toEqual([{ kind: 'board', id: 'b9' }]);
+    expect(ruleNeeds(rule('b1'), outline)).toEqual([]);
+    expect(ruleNeeds(rule(), outline)).toEqual([]);
+  });
+
+  it('checks nothing when the caller did not read the boards', () => {
+    expect(ruleNeeds(rule('b9'), OUTLINE)).toEqual([]);
+  });
+});

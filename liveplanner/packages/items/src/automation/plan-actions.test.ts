@@ -539,3 +539,13 @@ describe('a Set Field the card’s type lacks', () => {
     expect(r.patch).toEqual({ clear: ['f-when'] });
   });
 });
+
+// Work Tracker 1163: an Email Received run's sender fills {{from}}.
+describe('{{from}} in a run', () => {
+  it('fills the sender into a comment', () => {
+    const r = done(
+      one({ kind: 'comment', text: 'Thanks, {{from}}' }, bug(), { email: 'ana@example.com' }),
+    );
+    expect(r.comments).toEqual(['Thanks, ana@example.com']);
+  });
+});
