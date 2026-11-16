@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import worker from './index';
 import { movedCookies } from './moved-cookies';
@@ -82,6 +85,71 @@ describe('the bare domain in production', () => {
     expect(seen.map((r) => r.url)).toEqual(cases.map(([href]) => href));
     // Authorization reaches the site as it was sent: nothing is redirected that carries one.
     expect(seen[2]!.headers.get('Authorization')).toBe('Bearer t');
+  });
+});
+
+// Plain HTTP goes to HTTPS (liveworkspace/docs/specs/010-site/site.md "Only over HTTPS"): the route
+// `http://www.liveworkspace.app/*` brings www.'s plain-HTTP visits here, and the bare domain's come anyway.
+describe('only over HTTPS', () => {
+  it('sends http://www. to the same path and query over https, never asking the site', async () => {
+    const { SITE, seen } = site();
+    for (const method of ['GET', 'HEAD']) {
+      const res = await call('http://www.liveworkspace.app/x?y=1', { method }, { SITE });
+      expect(res.status).toBe(301);
+      expect(res.headers.get('Location')).toBe('https://www.liveworkspace.app/x?y=1');
+    }
+    const post = await call('http://www.liveworkspace.app/sign-in', { method: 'POST' }, { SITE });
+    expect(post.status).toBe(308);
+    expect(post.headers.get('Location')).toBe('https://www.liveworkspace.app/sign-in');
+    expect(seen).toEqual([]);
+  });
+
+  it('sends a bare-domain page load straight to https://www. in one hop, and anything else to https', async () => {
+    const { SITE, seen } = site();
+    const page = await call('http://liveworkspace.app/explorer?x=1', {}, { SITE });
+    expect(page.headers.get('Location')).toBe('https://www.liveworkspace.app/explorer?x=1');
+    const api = await call('http://liveworkspace.app/api/x', { method: 'POST' }, { SITE });
+    expect(api.status).toBe(308);
+    expect(api.headers.get('Location')).toBe('https://liveworkspace.app/api/x');
+    expect(seen).toEqual([]);
+  });
+
+  it('passes https and a visit Cloudflare marks as HTTPS to the site, so it cannot loop', async () => {
+    const { SITE, seen } = site();
+    const https = await call('https://www.liveworkspace.app/x', {}, { SITE });
+    const marked = await call(
+      'http://www.liveworkspace.app/x',
+      { headers: { 'CF-Visitor': '{"scheme":"https"}' } },
+      { SITE },
+    );
+    expect([https.status, marked.status]).toEqual([200, 200]);
+    expect(seen).toHaveLength(2);
+  });
+
+  it('never redirects locally, even with the production host in request.url', async () => {
+    const fetched: string[] = [];
+    vi.stubGlobal('fetch', async (request: Request) => {
+      fetched.push(request.url);
+      return new Response('local site');
+    });
+    const local = await call(
+      'http://www.liveworkspace.app/x',
+      {},
+      { DEPLOY_ENV: 'local', SITE_ORIGIN: 'http://localhost:3000' },
+    );
+    expect(local.status).toBe(200);
+    expect(fetched).toEqual(['http://localhost:3000/x']);
+  });
+
+  it('runs on www. only for plain HTTP: its route there names the http:// scheme', () => {
+    const toml = readFileSync(
+      join(dirname(fileURLToPath(import.meta.url)), '../wrangler.toml'),
+      'utf8',
+    );
+    expect(toml).toContain(
+      '{ pattern = "http://www.liveworkspace.app/*", zone_name = "liveworkspace.app" }',
+    );
+    expect(toml).not.toMatch(/pattern = "(https:\/\/)?www\.liveworkspace\.app/);
   });
 });
 

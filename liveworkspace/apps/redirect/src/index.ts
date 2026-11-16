@@ -3,7 +3,11 @@
 // answers one 301 to www. (moving a session from before the move with it, moved-cookies.ts), and everything else goes
 // to the site Worker as before. Production only: staging and local development have one host each, and `wrangler dev`
 // hands a Worker its route's production host, so DEPLOY_ENV (set on both) passes everything through.
+//
+// It also answers plain HTTP on www.liveworkspace.app (its route `http://www.liveworkspace.app/*`, HTTP only, so an HTTPS
+// visit never runs it) and on the bare domain: one redirect to the same address over HTTPS (site.md "Only over HTTPS").
 
+import { httpsRedirect } from '@liveworkspace/sites/https-redirect';
 import { workspaceWwwRedirect } from '@liveworkspace/sites/workspace-proxy';
 import { movedCookies } from './moved-cookies';
 
@@ -28,8 +32,13 @@ async function toSite(request: Request, env: Env): Promise<Response> {
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
-    const redirect = env.DEPLOY_ENV ? null : workspaceWwwRedirect(request, new URL(request.url));
-    if (!redirect) return toSite(request, env);
+    const url = new URL(request.url);
+    const redirect = env.DEPLOY_ENV ? null : workspaceWwwRedirect(request, url);
+    if (!redirect) {
+      // Anything else over plain HTTP: the same address over HTTPS, before the site is ever asked.
+      const https = env.DEPLOY_ENV === 'local' ? null : httpsRedirect(request, url);
+      return https ?? toSite(request, env);
+    }
     const moved = movedCookies(request.headers.get('Cookie'));
     if (moved.length === 0) return redirect;
     // Moving cookies is this browser's alone: never kept by a cache, and asked again until it has moved.

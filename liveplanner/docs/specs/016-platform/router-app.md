@@ -18,6 +18,19 @@ help path missing its `/help` goes straight to `www.liveplanner.app/help/…`. O
 `DEPLOY_ENV`; `wrangler dev` hands a local router its production host), and `www.`, `staging.` and local hosts never
 redirect, so there is no loop and neither staging nor local development leads to production.
 
+## Only over HTTPS
+
+Every request over plain HTTP to `liveplanner.app`, `www.liveplanner.app` or `staging.liveplanner.app` answers one redirect to the same
+host, path and query over `https://` (`httpsRedirect`, `@liveworkspace/sites/https-redirect`, Work Tracker 1057): `301`
+for a `GET` or `HEAD`, `308` for any other method so a `POST` stays a `POST` with its body, with
+`Cache-Control: public, max-age=86400`. It covers every path, `/api` included, and a WebSocket upgrade over `ws://`
+(a browser refuses one from an HTTPS page anyway). It runs right after the bare domain's redirect, which already sends
+a page load on `http://liveplanner.app` straight to `https://www.liveplanner.app` in one hop, and before anything is forwarded,
+so the page, its cookies and the `Strict-Transport-Security` header only ever arrive encrypted. The scheme is read
+from `request.url`, where Cloudflare passes the visitor's; a request whose `CF-Visitor` header says `https` is never
+redirected, so a rewritten URL cannot loop. Staging redirects too; a local router never does (`DEPLOY_ENV=local`:
+`wrangler dev` hands it its production host), and local, `*.test` and `workers.dev` hosts are never on the list.
+
 ## Opening on the Explorer
 
 Right after the bare domain's `301`, the router asks `openExplorerRedirect` (`@liveworkspace/sites/open-explorer`,

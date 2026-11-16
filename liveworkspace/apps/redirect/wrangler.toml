@@ -7,7 +7,14 @@ compatibility_date = "2026-05-29"
 # www.liveworkspace.app, everything else goes to the site Worker. A zone route rather than a custom domain, so the site
 # keeps its custom domain (and certificate) on the bare host and nothing is detached while this deploys; the APIs'
 # routes on liveworkspace.app (/api/auth/*, /api/index* and the rest) are more specific, so they still win.
-routes = [{ pattern = "liveworkspace.app/*", zone_name = "liveworkspace.app" }]
+# `http://www.liveworkspace.app/*` matches plain HTTP only (a route with a scheme matches only that scheme), so a visit
+# over http:// to www. is sent to HTTPS (site.md "Only over HTTPS") while every HTTPS visit still goes straight to the
+# site's custom domain and runs no Worker. A route wins over a custom domain on the same host; the APIs' path routes are
+# more specific than either, so they still win.
+routes = [
+  { pattern = "liveworkspace.app/*", zone_name = "liveworkspace.app" },
+  { pattern = "http://www.liveworkspace.app/*", zone_name = "liveworkspace.app" },
+]
 workers_dev = false
 
 [[services]]
