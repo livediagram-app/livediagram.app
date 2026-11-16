@@ -215,3 +215,8 @@ One pure engine, `@livedocuments/edit-operations`, on top of `@livedocuments/doc
 - Refs, slug ids, kind words, membership and the content origin come from `@livedocuments/document`, shared with the
   views and the lint, as do the label cap and the MCP's normalisation.
 - The api runs it for every changeset; the CLI runs it only to parse and to print.
+- An article write as suggestions ([Pages for agents](pages-for-agents.md#suggestions)) is the same engine's
+  `suggestArticleWrite(before, after, author)` (`packages/edit-operations/src/pages/article-suggest.ts`): it compares
+  the written article with the stored one's rejected view, block by block and word by word, and returns the article
+  with suggestion marks instead of the new words, and the counts the answer gives. Element operations (canvas and
+  slide elements) have no suggestion form.

@@ -48,6 +48,11 @@ A Participant edits **text**, and nothing else.
   Participant's writing.
 - **A Participant never grows the pages.** When its writing needs another page, an Editor's screen lays the article
   out and adds it, as it does for an agent's writing.
+- **Suggest Only.** An Editor may set a Participant link, or a person, to **Suggest Only** in the Share dialog's
+  Suggestions section ([Suggestions](../007-editor/suggestions.md#suggest-only)). Such a Participant's writing in an
+  article is always suggestions an Editor accepts or rejects, never writing straight in, and it may put a comment on
+  selected text. The setting is the document's own (its room), never the index's: the link's level stays
+  `participate`.
 - **A Participant holds what it writes**, as an Editor does: the paragraph or cell it types in is held for it until
   it lets go, and others' holds hold it back ([Article pages](../007-editor/article-pages.md#holding-a-paragraph)).
   A Viewer holds nothing.
@@ -129,6 +134,12 @@ once a document is open.
   article writing is relayed block by block, marked for an Editor's screen to grow the pages.
 - **A held-back gesture says so.** When the editor holds back a change a Participant may not make, it shows one
   short notice for the burst ("As a participant you can edit text and comment.") rather than failing silently.
+- **Suggest Only is the room's rule too.** For a Participant on a Suggest Only link or set Suggest Only by person,
+  the room checks each article frame against the suggestion rule (the rejected view unchanged, only its own
+  suggestions added, everyone else's left as they were) and refuses the frame whole otherwise
+  ([Suggestions](../007-editor/suggestions.md#the-server-is-the-rule)). Its one element change is adding a margin
+  note's comment marker. The room tells each Participant session whether it suggests (`review` frame) when it joins
+  and whenever the setting changes.
 - **A link to one tab stays on it**: writing for any other tab is dropped.
 - **Placing images is an Editor's.** An image someone else owns is granted to a document only when its owner is a
   team member or an Editor there; a Participant's access places no image.

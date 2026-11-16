@@ -176,6 +176,11 @@ The room's answer is the source; when the room cannot be reached, nothing counts
   share a toast, and Undo on it reverts each, newest first. After Undo it reads "Undone", or "Undone, 2 kept
   because they changed since". Undo is offered only to a session that may edit (the revert's own rule, above): a Viewer
   or a Participant, or an Editor previewing as one, sees Show alone, since the api would refuse the revert.
+- **An assistant's article write as suggestions** ([Pages for agents](pages-for-agents.md#suggestions)) toasts
+  "Claude suggested 6 edits · Review", with the assistant's name: **Review** brings the change's first suggestion into
+  view with its card open, where an Editor accepts or rejects each, or **Accept All** for the change. Its suggestions
+  are not a changeset, so there is no Undo: rejecting them is the undo. Slide and canvas elements have no suggestion
+  form and keep **Show** and **Undo**.
 - The toast stays up for the answer time ([Toasts](../004-interface-design/toasts.md#timing), 10 seconds, paused
   while hovered or focused), or until dismissed; a newer burst from the same token replaces it. It is an information toast, so
   the "Show notifications" preference silences it; the outline still shows.
