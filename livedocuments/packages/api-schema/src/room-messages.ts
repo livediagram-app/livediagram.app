@@ -1,3 +1,4 @@
+import type { SuggestionsRoomOp } from '@liveworkspace/suggestions/room-signal';
 import type { TabConnectionWire } from '@liveworkspace/api-schema/tab-connection';
 import type { TabSavedOp } from '@liveworkspace/api-schema/tab-delta';
 import type { AgentPresence } from '@liveworkspace/api-schema/agent-presence';
@@ -116,6 +117,8 @@ export const SYSTEM_OP_KINDS = [
   'changeset',
   // The room's word on whether this session suggests (docs/specs/007-editor/suggestions.md "Suggest Only").
   'review',
+  // A tab's canvas suggestions changed (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Live").
+  'suggestions',
 ] as const;
 
 // The whole vocabulary. Every op the editor sends or handles is one of these
@@ -455,6 +458,10 @@ export type RoomOp =
   // One changeset the api applied (docs/specs/024-agents/agent-changesets.md "What the room does").
   // Worker-originated through /mutation.
   | ChangesetRoomOp
+  // A tab's canvas suggestions changed (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Live"): from
+  // the room ('system') to every Participant and Editor socket, never a Viewer's, carrying no content; an editor that
+  // shows the tab reads them again.
+  | SuggestionsRoomOp
   // The document went to the Trash (docs/specs/013-workspace/trash.md). Every
   // session shows the deleted state; the room then closes every socket (4004).
   // Worker-originated, like share-revoked.

@@ -10,6 +10,7 @@
 // Made on first use, never on construction (plan-db.ts `ensureSchema`): a Durable Object a stray id wakes
 // stores nothing. Versioned by `_plan_schema`; a later change adds a step to STEPS, never edits one.
 
+import { CANVAS_SUGGESTIONS_SCHEMA } from '@liveworkspace/suggestions/store';
 import {
   TAB_CONNECTION_SCHEMA,
   migrationSchema,
@@ -538,6 +539,19 @@ const V31 = itemsBytesStep;
 // settings and vote cap.
 const V32 = ROADMAPS_SCHEMA;
 
+// Canvas suggestions (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Stored on the item"): their
+// table, beside the tabs; and the plan's review settings ("Suggest Only"), JSON or NULL, on its row. Asks before
+// the ALTER, so it is safe however far a room got.
+const V33 = (exec: Exec) => {
+  exec(CANVAS_SUGGESTIONS_SCHEMA);
+  const have = new Set(
+    exec('PRAGMA table_info(plan)')
+      .toArray()
+      .map((c) => String(c.name)),
+  );
+  if (!have.has('review')) exec('ALTER TABLE plan ADD COLUMN review TEXT NULL');
+};
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -571,6 +585,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V30,
   V31,
   V32,
+  V33,
 ];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;

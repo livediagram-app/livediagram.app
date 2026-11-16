@@ -35,6 +35,7 @@
     "@liveworkspace/migration": "workspace:*",
     "@liveworkspace/settings": "workspace:*",
     "@liveworkspace/sites": "workspace:*",
+    "@liveworkspace/suggestions": "workspace:^",
     "@liveworkspace/telemetry": "workspace:*"
   },
   "devDependencies": {

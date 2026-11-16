@@ -10,6 +10,7 @@
 // Made on first use, never on construction (design-db.ts `ensureSchema`): a Durable Object a stray id wakes
 // stores nothing. Versioned by `_design_schema`; a later change adds a step to STEPS, never edits one.
 
+import { CANVAS_SUGGESTIONS_SCHEMA } from '@liveworkspace/suggestions/store';
 import { COMMUNITY_POST_TABLE } from '@liveworkspace/community/app';
 import {
   TAB_CONNECTION_SCHEMA,
@@ -299,7 +300,13 @@ const V6 = outboxRetrySchema();
 // tab already there reads as not connected.
 const V7 = TAB_CONNECTION_SCHEMA;
 
-const STEPS: readonly string[] = [V1, V2, V3, V4, V5, V6, V7];
+// Canvas suggestions (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Stored on the item"): their
+// table, beside the tabs; and the design's review settings ("Suggest Only"), JSON or NULL, on its row.
+const V8 = `${CANVAS_SUGGESTIONS_SCHEMA}
+ALTER TABLE design ADD COLUMN review TEXT NULL;
+`;
+
+const STEPS: readonly string[] = [V1, V2, V3, V4, V5, V6, V7, V8];
 
 export const DESIGN_SCHEMA_VERSION = STEPS.length;
 

@@ -11,6 +11,7 @@
 // Made on first use, never on construction (document-db.ts `ensureSchema`): a Durable Object a stray id wakes
 // stores nothing. Versioned by `_document_schema`; a later change adds a step to STEPS, never edits one.
 
+import { CANVAS_SUGGESTIONS_SCHEMA } from '@liveworkspace/suggestions/store';
 import { COMMUNITY_POST_TABLE } from '@liveworkspace/community/app';
 import {
   TAB_CONNECTION_SCHEMA,
@@ -306,7 +307,22 @@ const V9 = (exec: Exec) => {
   if (!have.has('review')) exec('ALTER TABLE document ADD COLUMN review TEXT NULL');
 };
 
-const STEPS: readonly (string | ((exec: Exec) => void))[] = [V1, V2, V3, V4, V5, V6, V7, V8, V9];
+// Canvas suggestions on slides and infographics (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md
+// "Stored on the item"): their table, beside the tabs.
+const V10 = CANVAS_SUGGESTIONS_SCHEMA;
+
+const STEPS: readonly (string | ((exec: Exec) => void))[] = [
+  V1,
+  V2,
+  V3,
+  V4,
+  V5,
+  V6,
+  V7,
+  V8,
+  V9,
+  V10,
+];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;
 
