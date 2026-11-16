@@ -87,6 +87,18 @@ describe('AccountsBridge', () => {
     expect(retrySilentSignIn).not.toHaveBeenCalled();
   });
 
+  // Work Tracker 1007: settling as a guest while the bounce was out started the guest hand-off, whose navigation
+  // replaced the bounce's, and someone signed in to liveworkspace stayed a guest here.
+  it('settles nothing once the silent sign-in has gone on its bounce', async () => {
+    retrySilentSignIn.mockReturnValueOnce(true);
+    fetchMock.mockResolvedValue(new Response('{"signedIn":false}', { status: 401 }));
+    const onState = vi.fn<(s: DeferredAuthState) => void>();
+    render(<AccountsBridge onState={onState} />);
+    await waitFor(() => expect(retrySilentSignIn).toHaveBeenCalled());
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(onState).not.toHaveBeenCalled();
+  });
+
   // liveworkspace/docs/specs/003-accounts/accounts.md "An answer that never came": a token request that fails says
   // nothing about the session, and settling as a guest on it opened the person's own items as not found.
   it('keeps asking while the api cannot be reached, and never settles as a guest on it', async () => {

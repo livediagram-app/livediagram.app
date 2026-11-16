@@ -303,6 +303,28 @@ describe('POST /api/auth/token when the accounts site is slow or bound (accounts
     expect((await call(routes(), '/api/auth/token', post)).status).toBe(401);
   });
 
+  // Work Tracker 1007: a refresh token whose session ended (a global sign-out from another app) is no sign-out of this
+  // app alone, so the signed-out mark stays unset and the silent sign-in that follows still asks the accounts site.
+  it('leaves the signed-out mark alone on a refused refresh, so the silent sign-in still asks', async () => {
+    fetchMock.mockResolvedValueOnce(
+      Response.json(
+        { error: 'invalid_grant', error_description: 'session not found' },
+        { status: 400 },
+      ),
+    );
+    const res = await call(routes(), '/api/auth/token', post);
+    expect(res.status).toBe(401);
+    expect(setCookies(res)).not.toContain('x_signed_out=');
+    expect(setCookies(res)).not.toContain('x_silent=');
+    const bounce = await call(routes(), '/api/auth/silent?return=%2Fdocument%2Fd1', {
+      headers: { Cookie: 'x_signed_in=0' },
+    });
+    expect(bounce.status).toBe(302);
+    expect(bounce.headers.get('location')).toMatch(
+      /^https:\/\/accounts\.example\/api\/auth\/oauth2\/authorize\?.*prompt=none/,
+    );
+  });
+
   it('goes through the ACCOUNTS binding when there is one, the public route only when it throws', async () => {
     const id = jwt({ sub: 'u' });
     const bound = vi.fn(async (_input: string, _init?: RequestInit) => tokenResponse(id));
