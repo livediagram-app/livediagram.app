@@ -90,7 +90,7 @@ function Harness({ server, initialTab = 't1' }: { server: Server; initialTab?: s
   return (
     <>
       <span data-testid="tab">{tab}</span>
-      <WalkthroughsButton walkthroughs={walkthroughs} />
+      <WalkthroughsButton menu={walkthroughs.menu} />
       <div id="canvas-root" style={{ position: 'relative' }}>
         <div data-canvas-content="">
           <div data-element-id="e1" />

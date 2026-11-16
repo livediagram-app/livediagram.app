@@ -233,7 +233,7 @@ export function useRecorder(
     const fingerprints: Record<string, string> = {};
     for (const tab of started.tabs) {
       const print = h.fingerprint(tab);
-      if (print) fingerprints[tab] = print;
+      if (typeof print === 'string') fingerprints[tab] = print;
     }
     const sealed = sealWalkthroughEvents({
       v: 1,

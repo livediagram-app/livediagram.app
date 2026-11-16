@@ -152,12 +152,16 @@ export function buildTimeline(
   };
 }
 
-/** The tabs whose content changed since the walkthrough was recorded: a tab gone counts as changed. */
+/** The tabs whose content changed since the walkthrough was recorded: a tab gone counts as changed, a tab that can't
+ *  be told yet (undefined) does not. */
 export function editedSince(
   recorded: Readonly<Record<string, string>>,
-  now: (tab: string) => string | null,
+  now: (tab: string) => string | null | undefined,
 ): string[] {
-  return Object.keys(recorded).filter((tab) => now(tab) !== recorded[tab]);
+  return Object.keys(recorded).filter((tab) => {
+    const print = now(tab);
+    return print !== undefined && print !== recorded[tab];
+  });
 }
 
 /**

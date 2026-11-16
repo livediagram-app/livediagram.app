@@ -5,7 +5,7 @@
 // and after every save and delete), whether the caller may record, and the recorder, the hiding and the player.
 
 import type { WalkthroughSummary } from '@liveworkspace/media/walkthrough';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { walkthroughApi } from './api';
 import type { WalkthroughHost } from './host';
 import { useHidden } from './useHidden';
@@ -14,10 +14,28 @@ import { useRecorder } from './useRecorder';
 
 export type Walkthroughs = ReturnType<typeof useWalkthroughs>;
 
+/** What the header's button needs: one value that changes only with the list. */
+export type WalkthroughsMenu = {
+  available: boolean;
+  list: readonly WalkthroughSummary[];
+  canRecord: boolean;
+  // The walkthrough being fetched to play, for its row's spinner.
+  loading: string | null;
+  record: () => void;
+  play: (id: string) => void;
+  remove: (id: string) => Promise<boolean>;
+};
+
+const NONE: readonly WalkthroughSummary[] = [];
+
+// The latest the list waits for the editor to be idle, and the wait where the browser can't say.
+const LIST_IDLE_MAX_MS = 3000;
+const LIST_DELAY_MS = 300;
+
 export function useWalkthroughs(host: WalkthroughHost) {
   const { itemId, api: deps, canvasRoot } = host;
   const api = useMemo(() => (itemId ? walkthroughApi(deps, itemId) : null), [deps, itemId]);
-  const [list, setList] = useState<WalkthroughSummary[] | null>(null);
+  const [list, setList] = useState<readonly WalkthroughSummary[] | null>(null);
   const [canRecord, setCanRecord] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -28,11 +46,19 @@ export function useWalkthroughs(host: WalkthroughHost) {
     setCanRecord(listed?.canRecord ?? false);
   }, [api]);
 
+  // Asked once the editor is idle after the item opens, so the list never competes with the canvas's own first load.
   useEffect(() => {
     setList(null);
     setCanRecord(false);
-    void refresh();
-  }, [refresh]);
+    if (!api) return;
+    const idle = globalThis.requestIdleCallback;
+    if (idle) {
+      const handle = idle(() => void refresh(), { timeout: LIST_IDLE_MAX_MS });
+      return () => cancelIdleCallback(handle);
+    }
+    const timer = setTimeout(() => void refresh(), LIST_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [api, refresh]);
 
   const [recorderOpen, setRecorderOpen] = useState(false);
   const hiding = useHidden(canvasRoot, recorderOpen);
@@ -65,29 +91,40 @@ export function useWalkthroughs(host: WalkthroughHost) {
     [api],
   );
 
+  // The header's menu reads these through the latest recorder and player, so the menu's value holds still while a
+  // recording ticks (an editor's memoised header renders again only when the list does).
+  const latest = useRef({ player, recorder });
+  useEffect(() => {
+    latest.current = { player, recorder };
+  });
   const record = useCallback(() => {
-    player.close();
+    latest.current.player.close();
     setNotice(null);
-    recorder.open();
-  }, [player, recorder]);
+    latest.current.recorder.open();
+  }, []);
 
-  const play = useCallback(
-    (id: string) => {
-      if (recorder.phase.kind !== 'off') return;
-      setNotice(null);
-      void player.open(id);
-    },
-    [player, recorder.phase.kind],
-  );
+  const play = useCallback((id: string) => {
+    if (latest.current.recorder.phase.kind !== 'off') return;
+    setNotice(null);
+    void latest.current.player.open(id);
+  }, []);
 
   const discard = useCallback(() => {
     recorder.close();
     hiding.clear();
   }, [recorder, hiding]);
 
+  const available = api !== null && list !== null && (list.length > 0 || canRecord);
+  const loading = player.phase.kind === 'loading' ? player.phase.id : null;
+  const menu = useMemo<WalkthroughsMenu>(
+    () => ({ available, list: list ?? NONE, canRecord, loading, record, play, remove }),
+    [available, list, canRecord, loading, record, play, remove],
+  );
+
   return {
-    available: api !== null && list !== null && (list.length > 0 || canRecord),
-    list: list ?? [],
+    menu,
+    available,
+    list: list ?? NONE,
     canRecord,
     notice,
     dismissNotice: () => setNotice(null),

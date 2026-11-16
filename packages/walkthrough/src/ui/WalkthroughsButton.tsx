@@ -23,13 +23,13 @@ import {
 } from '@liveworkspace/workbench/components/chrome/header-action';
 import { useLayoutEffect, useRef, useState } from 'react';
 import { formatClock } from '../timeline';
-import type { Walkthroughs } from '../useWalkthroughs';
+import type { WalkthroughsMenu } from '../useWalkthroughs';
 import { PlayIcon, RecordIcon, WalkthroughIcon } from './icons';
 
 const MENU_WIDTH = 336;
 const MARGIN = 8;
 
-export function WalkthroughsButton({ walkthroughs }: { walkthroughs: Walkthroughs }) {
+export function WalkthroughsButton({ menu: walkthroughs }: { menu: WalkthroughsMenu }) {
   // The button the menu hangs from, while it is open.
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const open = anchor !== null;
@@ -88,7 +88,7 @@ function WalkthroughsMenu({
   onClose,
 }: {
   anchor: HTMLElement;
-  walkthroughs: Walkthroughs;
+  walkthroughs: WalkthroughsMenu;
   onClose: () => void;
 }) {
   const panel = useRef<HTMLDivElement>(null);
@@ -123,8 +123,7 @@ function WalkthroughsMenu({
     !confirming,
   );
 
-  const { list, canRecord, player } = walkthroughs;
-  const loadingId = player.phase.kind === 'loading' ? player.phase.id : null;
+  const { list, canRecord, loading: loadingId } = walkthroughs;
 
   return (
     <Portal>

@@ -34,8 +34,9 @@ export type WalkthroughHost = {
   // Opens a tab; false when the item no longer has it.
   showTab: (tab: string) => boolean;
   slides?: WalkthroughSlides | undefined;
-  // A tab's content fingerprint (fingerprintOf), or null when the tab is gone.
-  fingerprint: (tab: string) => string | null;
+  // A tab's content fingerprint (fingerprintOf): null when the tab is gone, undefined when it can't be told yet (a tab
+  // not loaded).
+  fingerprint: (tab: string) => string | null | undefined;
   // The selected elements' ids, for Hide Selection.
   selection: () => readonly string[];
   // The recorder's name as the list shows it to others.

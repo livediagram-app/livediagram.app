@@ -119,8 +119,9 @@ describe('the timeline', () => {
 
 describe('edits and the clock', () => {
   it('names the tabs changed or gone since recording', () => {
-    const now: Record<string, string> = { a: 'x', b: 'changed' };
-    expect(editedSince({ a: 'x', b: 'y', c: 'z' }, (t) => now[t] ?? null)).toEqual(['b', 'c']);
+    const now: Record<string, string | undefined> = { a: 'x', b: 'changed', d: undefined };
+    const read = (t: string) => (t in now ? now[t] : null);
+    expect(editedSince({ a: 'x', b: 'y', c: 'z', d: 'w' }, read)).toEqual(['b', 'c']);
   });
 
   it('fingerprints content and tells it apart', () => {
