@@ -151,6 +151,9 @@ importers:
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../../../packages/sites
+      '@liveworkspace/snapshots':
+        specifier: workspace:*
+        version: link:../../../packages/snapshots
       '@liveworkspace/telemetry':
         specifier: workspace:*
         version: link:../../../packages/telemetry
@@ -409,6 +412,9 @@ importers:
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../../../packages/sites
+      '@liveworkspace/snapshots':
+        specifier: workspace:*
+        version: link:../../../packages/snapshots
       '@liveworkspace/style-guards':
         specifier: workspace:*
         version: link:../../../packages/style-guards
@@ -1316,6 +1322,9 @@ importers:
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../../../packages/sites
+      '@liveworkspace/snapshots':
+        specifier: workspace:*
+        version: link:../../../packages/snapshots
       '@liveworkspace/telemetry':
         specifier: workspace:*
         version: link:../../../packages/telemetry
@@ -1507,6 +1516,9 @@ importers:
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../../../packages/sites
+      '@liveworkspace/snapshots':
+        specifier: workspace:*
+        version: link:../../../packages/snapshots
       '@liveworkspace/style-guards':
         specifier: workspace:*
         version: link:../../../packages/style-guards
@@ -2519,6 +2531,9 @@ importers:
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../../../packages/sites
+      '@liveworkspace/snapshots':
+        specifier: workspace:*
+        version: link:../../../packages/snapshots
       '@liveworkspace/telemetry':
         specifier: workspace:*
         version: link:../../../packages/telemetry
@@ -2686,6 +2701,9 @@ importers:
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../../../packages/sites
+      '@liveworkspace/snapshots':
+        specifier: workspace:*
+        version: link:../../../packages/snapshots
       '@liveworkspace/style-guards':
         specifier: workspace:*
         version: link:../../../packages/style-guards
@@ -3666,6 +3684,9 @@ importers:
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../../../packages/sites
+      '@liveworkspace/snapshots':
+        specifier: workspace:*
+        version: link:../../../packages/snapshots
       '@liveworkspace/telemetry':
         specifier: workspace:*
         version: link:../../../packages/telemetry
@@ -3781,6 +3802,9 @@ importers:
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../../../packages/sites
+      '@liveworkspace/snapshots':
+        specifier: workspace:*
+        version: link:../../../packages/snapshots
       '@liveworkspace/style-guards':
         specifier: workspace:*
         version: link:../../../packages/style-guards
@@ -4657,6 +4681,9 @@ importers:
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../../../packages/sites
+      '@liveworkspace/snapshots':
+        specifier: workspace:*
+        version: link:../../../packages/snapshots
       '@liveworkspace/telemetry':
         specifier: workspace:*
         version: link:../../../packages/telemetry
@@ -4830,6 +4857,9 @@ importers:
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../../../packages/sites
+      '@liveworkspace/snapshots':
+        specifier: workspace:*
+        version: link:../../../packages/snapshots
       '@liveworkspace/style-guards':
         specifier: workspace:*
         version: link:../../../packages/style-guards

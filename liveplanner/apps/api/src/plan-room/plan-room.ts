@@ -103,6 +103,7 @@ import {
   broadcast,
   broadcastSystemOp,
   broadcastOrderedSystemOp,
+  closeAllReverted,
 } from './plan-room-sockets';
 import { webSocketMessage } from './plan-room-frames';
 import { answerHookCall, type HookAnswer, type HookCall } from './automations/automation-incoming';
@@ -308,6 +309,7 @@ export class PlanRoom extends DurableObject<Env> {
           ROOM_PEOPLE: () => roomPeople(this),
           AUTOMATIONS: this.automations,
           REMOVAL_GUARD: new RemovalGuard(state.storage),
+          SNAPSHOT_REVERTED: () => closeAllReverted(this),
         }
       : undefined;
     this.ledger = new RoomLedgerStore(state.storage, LEDGER_RULES);

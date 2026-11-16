@@ -7,6 +7,7 @@
 import type { PlanRouteContext, RouteContext, WorkbenchContext } from '../routes/context';
 import { handleForms } from '../routes/forms';
 import { handlePlanRequest } from '../routes/projects';
+import { servePlanSnapshots } from './plan-snapshots';
 import type { TeamClaim } from '@liveworkspace/auth-client';
 import type { PlanGrant } from '../index-service';
 import type { PlanEnv } from '../types';
@@ -74,6 +75,8 @@ export async function answerPlanRequest(
     community,
     waitUntil,
   };
-  // A throw crosses back to the worker, which logs it and answers 500 as for any route (index.ts).
-  return ctx.segments[1] === 'forms' ? handleForms(ctx) : handlePlanRequest(ctx);
+  // A throw crosses back to the worker, which logs it and answers 500 as for any route (index.ts). Snapshots answer
+  // their own routes and fence a write from before a revert (plan-snapshots.ts).
+  if (ctx.segments[1] === 'forms') return handleForms(ctx);
+  return servePlanSnapshots(ctx, () => handlePlanRequest(ctx));
 }

@@ -79,6 +79,7 @@ import {
   sendToPresence,
   broadcast,
   broadcastSystemOp,
+  closeAllReverted,
 } from './design-room-sockets';
 import { webSocketMessage } from './design-room-frames';
 import {
@@ -256,6 +257,7 @@ export class DesignRoom extends DurableObject<Env> {
           DESIGN_DB: this.db.asD1(),
           DESIGN_ROOM: localNamespace(this, env.DESIGN_ROOM),
           ROOM_PEOPLE: () => roomPeople(this),
+          SNAPSHOT_REVERTED: () => closeAllReverted(this),
         }
       : undefined;
     this.ledger = new RoomLedgerStore(state.storage, LEDGER_RULES);

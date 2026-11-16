@@ -10,6 +10,7 @@ import {
   ROOM_FULL_MESSAGE,
   ROOM_FULL_RETRY_MS,
 } from '@liveworkspace/api-schema/room-capacity';
+import { SNAPSHOT_REVERTED_CLOSE } from '@liveworkspace/api-schema/room-wire';
 import type { OpRefusedMessage } from '@liveworkspace/api-schema/room-refusal';
 import type { TimingHandle } from '@liveworkspace/telemetry-client';
 import { debugLog } from './debug-log';
@@ -50,6 +51,10 @@ export type RoomClientHandlers<Op, Participant> = {
   // A workbench session's pairing or token ended (docs/specs/013-workspace/workbench-embeds.md): the
   // room closed it with WORKBENCH_ENDED_CLOSE; the connector stops and the page turns read-only.
   onWorkbenchEnded?: () => void;
+  // A snapshot's revert replaced the item in place (liveworkspace/docs/specs/013-snapshots/snapshots.md "Every open
+  // client"): the room closed every session with SNAPSHOT_REVERTED_CLOSE. The connector stops; the page reloads onto
+  // the reverted content unless the caller handles it.
+  onSnapshotReverted?: () => void;
   // The room already holds ROOM_MAX_CONNECTIONS (docs/specs/015-api/api.md "Room size") and closed this
   // connection with ROOM_FULL_CLOSE. Called once per spell of being turned away (a join resets it); the
   // connector keeps trying every ROOM_FULL_RETRY_MS, and whenever the tab is shown again.
@@ -441,6 +446,13 @@ export function connectRoomClient<
         closed = true;
         settleTimings(false);
         handlers.onWorkbenchEnded?.();
+        return;
+      }
+      if (event?.code === SNAPSHOT_REVERTED_CLOSE) {
+        closed = true;
+        settleTimings(false);
+        if (handlers.onSnapshotReverted) handlers.onSnapshotReverted();
+        else globalThis.location?.reload();
         return;
       }
       // A full room: say so once, then wait parked for the tab to be shown again or the minute's retry, whichever
