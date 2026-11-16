@@ -44,9 +44,9 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
       return buildOnDesignPage('storyboard', buildStoryboard);
     case 'floor-plan':
       return buildOnDesignPage('floor-plan', buildFloorPlan);
-    // An article's writing and page are tab data (templateCanvasOverrides), not elements; a blank
-    // illustration is its one empty page, which asks what it is for, and a blank of a page kind its one
-    // empty page of that kind (blank-page-templates.ts).
+    // An article's writing and page are tab data (templateCanvasOverrides), not elements, as are the written
+    // templates' (article-templates.ts) and a stack of flashcards'; a blank illustration is its one empty page, which
+    // asks what it is for, and a blank of a page kind its one empty page of that kind (blank-page-templates.ts).
     case 'article':
     case 'working-backwards':
     case 'blank-illustration':
@@ -64,6 +64,11 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
     case 'design-doc':
     case 'status-report':
     case 'cover-letter':
+    case 'product-one-pager':
+    case 'research-report':
+    case 'newsletter':
+    case 'case-study':
+    case 'onboarding-handbook':
       return [];
     // Built on their own pages (template-pages.ts), whatever the centre.
     case 'event-poster':
@@ -87,6 +92,7 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
     case 'team-welcome':
     case 'workshop-kickoff':
     case 'class-lesson':
+    case 'board-update':
       return buildLayoutDeck(kind);
   }
 }

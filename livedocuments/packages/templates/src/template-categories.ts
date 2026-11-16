@@ -147,6 +147,12 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'meeting-notes': 'team',
   'workshop-kickoff': 'team',
   'team-welcome': 'team',
+  'product-one-pager': 'plans',
+  'research-report': 'reports',
+  'board-update': 'reports',
+  newsletter: 'marketing',
+  'case-study': 'marketing',
+  'onboarding-handbook': 'team',
 };
 
 // Cross-listing: the other categories a template is also shown in, where someone would genuinely look for it there.
@@ -163,6 +169,12 @@ export const TEMPLATE_ALSO_IN: Readonly<
   'how-it-works': ['learning'],
   // A poster is how an event is marketed.
   'event-poster': ['marketing'],
+  // A one-pager is how a product idea is pitched; a board update is a pitch for the next decision.
+  'product-one-pager': ['pitches'],
+  'board-update': ['pitches'],
+  // A team's newsletter goes round the team; a case study proposes the next project.
+  newsletter: ['team'],
+  'case-study': ['plans'],
 };
 
 /** A template's primary category; null for the blanks, which are in none. */
