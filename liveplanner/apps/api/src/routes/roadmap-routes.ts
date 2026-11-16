@@ -95,9 +95,7 @@ function settingsOf(
   );
   const fieldsRaw = raw['fields'];
   const fields =
-    Array.isArray(fieldsRaw) && fieldsRaw.length === 0
-      ? []
-      : picked(fieldsRaw, ROADMAP_FIELDS);
+    Array.isArray(fieldsRaw) && fieldsRaw.length === 0 ? [] : picked(fieldsRaw, ROADMAP_FIELDS);
   if (!columns || !types || !fields || typeof raw['voting'] !== 'boolean') return invalid();
   const formCode = raw['formCode'] ?? null;
   if (formCode !== null && typeof formCode !== 'string') return invalid();

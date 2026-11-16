@@ -1,11 +1,18 @@
 import { describe, expect, it } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import {
   ROADMAP_COLUMN_CARDS_MAX,
   ROADMAP_DESCRIPTION_MAX,
   ROADMAP_FIELDS,
   type RoadmapSettings,
 } from '@liveplanner/api-schema';
-import { ITEM_TYPES, presetSetup, type Item, type ItemTypeDef } from '@liveplanner/items';
+import {
+  ITEMS_MAX,
+  ITEM_TYPES,
+  presetSetup,
+  type Item,
+  type ItemTypeDef,
+} from '@liveplanner/items';
 import { formLook } from '@liveplanner/project';
 import { onRoadmap, publicCardOf, publicRoadmapOf } from './roadmap-view';
 
@@ -259,5 +266,34 @@ describe('publicRoadmapOf', () => {
     });
     expect(out.columns[0]!.count).toBe(ROADMAP_COLUMN_CARDS_MAX + 5);
     expect(out.columns[0]!.cards).toHaveLength(ROADMAP_COLUMN_CARDS_MAX);
+  });
+
+  // Every read builds the page fresh (no-store), so a plan at the card cap must stay cheap to read.
+  it('builds a roadmap of a plan at ITEMS_MAX cards within budget', () => {
+    const items = Array.from({ length: ITEMS_MAX }, (_, i) =>
+      card(
+        {
+          title: `Idea ${i}`,
+          description: 'd'.repeat(300),
+          status: ['todo', 'doing', 'done', 'backlog'][i % 4]!,
+          labels: ['a', 'b'],
+          votes: { [`rv:${i}`]: 1 },
+        },
+        { rank: `r${String(ITEMS_MAX - i).padStart(5, '0')}` },
+      ),
+    );
+    const input = {
+      settings: settings({ fields: [...ROADMAP_FIELDS] }),
+      setup: { ...setup, sortBy: [{ field: 'votes', dir: 'desc' as const }] },
+      items,
+      types,
+      look,
+      voter: 'rv:1',
+      suggestPath: null,
+    };
+    const ms = cpuMsOf(() => {
+      for (let i = 0; i < 5; i++) publicRoadmapOf(input);
+    });
+    expect(ms / 5).toBeLessThan(cpuBudgetMs(60));
   });
 });
