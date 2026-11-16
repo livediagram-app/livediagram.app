@@ -22,7 +22,8 @@ import { expect, startBlankProject, test } from '../fixtures';
 // until the board has drawn and held for two seconds, and from the reload until the same. Never fails on a number.
 // Run against a production build: `E2E_PERF=1 pnpm exec playwright test --project=perf big-board`.
 // BIG_BOARD_THROTTLE (a fixed rate), BIG_BOARD_TRACE=1 (a Chromium trace of each in test-results/perf),
-// BIG_BOARD_PROFILE=1 (a CPU profile of each there, its heaviest functions printed).
+// BIG_BOARD_PROFILE=1 (a CPU profile of each there, its heaviest functions printed), BIG_BOARD_PHONE=1 (a phone-sized
+// screen).
 
 const OUT = 'test-results/perf';
 const CANVAS = '[data-canvas-a11y-root]';
@@ -103,7 +104,11 @@ test(`a ${ITEMS_MAX}-card board imported, then opened`, async ({ page, browser }
   const json = bigBoardExport();
   expect(json.length).toBeGreaterThan(5 * 1024 * 1024);
 
-  await page.setViewportSize({ width: 1440, height: 900 });
+  // BIG_BOARD_PHONE=1: a phone's screen (390 by 844), with BIG_BOARD_THROTTLE set to a phone's rate (4 is a mid-range
+  // phone, 6 a low-end one), for the plan-board.md "A big board's first draw" phone numbers.
+  await page.setViewportSize(
+    process.env.BIG_BOARD_PHONE ? { width: 390, height: 844 } : { width: 1440, height: 900 },
+  );
   await startBlankProject(page);
   await page
     .getByRole('navigation', { name: 'Categories' })

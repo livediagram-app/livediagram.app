@@ -77,6 +77,13 @@ export default defineConfig({
         /workbench-(embed|workspace)\.spec\.ts/,
       ],
     },
+    // Firefox runs the one spec whose behaviour differs by engine: a guest's token renewal (a form post across
+    // origins, a 303 and its cookies, then Back), docs/specs/003-system-architecture/e2e-smoke.md "Firefox".
+    {
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'] },
+      testMatch: /guest-renewal\.spec\.ts/,
+    },
     // The optical audit of the help centre, telemetry dashboard and marketing site, and the marketing
     // header's phone fit: the suites that need their builds, so CI gives them their own job and the
     // shards build only live

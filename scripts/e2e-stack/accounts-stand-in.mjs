@@ -30,6 +30,10 @@ export function createAccountsStandIn({
   // The accounts origin the api and the index both trust: the stand-in on this live origin.
   const ACCOUNTS_ORIGIN = `http://127.0.0.1:${EDITOR_PORT}${ACCOUNTS_PATH}`;
 
+  // The accounts site's cookies (liveworkspace/apps/accounts guests.ts): the guest it vouches for, and a renewal's proof.
+  const GUEST_COOKIE = 'lw_guest';
+  const PROOF_COOKIE = 'lw_guest_proof';
+
   const b64url = (buf) => Buffer.from(buf).toString('base64url');
 
   // The client the api worker is started with (below), as register-client.ts would make it.
@@ -131,6 +135,32 @@ export function createAccountsStandIn({
       });
       req.on('error', reject);
     });
+  }
+
+  function readForm(req) {
+    return new Promise((resolve, reject) => {
+      const chunks = [];
+      req.on('data', (c) => chunks.push(c));
+      req.on('end', () =>
+        resolve(Object.fromEntries(new URLSearchParams(Buffer.concat(chunks).toString('utf8')))),
+      );
+      req.on('error', reject);
+    });
+  }
+
+  function parseCookies(header) {
+    const cookies = {};
+    for (const part of String(header ?? '').split(';')) {
+      const at = part.indexOf('=');
+      if (at > 0) cookies[part.slice(0, at).trim()] = part.slice(at + 1).trim();
+    }
+    return cookies;
+  }
+
+  // The claims of a guest token this stack minted and that hasn't expired, or null.
+  function guestClaims(jwt) {
+    const claims = accessTokenClaims(jwt);
+    return claims?.kind === 'guest' && String(claims.sub).startsWith('guest_') ? claims : null;
   }
 
   function sendJson(res, status, body) {
@@ -269,7 +299,7 @@ export function createAccountsStandIn({
   // A guest token shaped like the accounts Worker's (liveworkspace/apps/accounts/src/guests.ts): 45 days long,
   // told apart from an access token by `kind: "guest"`.
   const GUEST_TOKEN_TTL_SECONDS = 45 * 24 * 60 * 60;
-  function mintGuestToken(guestId = `guest_${randomUUID()}`) {
+  function mintGuestToken(guestId = `guest_${randomUUID()}`, ttlSeconds = GUEST_TOKEN_TTL_SECONDS) {
     const now = Math.floor(Date.now() / 1000);
     const header = b64url(JSON.stringify({ alg: 'RS256', kid: ACCOUNTS_KID, typ: 'JWT' }));
     const payload = b64url(
@@ -279,7 +309,7 @@ export function createAccountsStandIn({
         iss: `http://127.0.0.1:${EDITOR_PORT}${ACCOUNTS_PATH}/api/auth`,
         aud: API_RESOURCE,
         iat: now,
-        exp: now + GUEST_TOKEN_TTL_SECONDS,
+        exp: now + ttlSeconds,
       }),
     );
     const signature = sign('sha256', Buffer.from(`${header}.${payload}`), accountsKey.privateKey);
@@ -319,7 +349,6 @@ export function createAccountsStandIn({
       return true;
     }
     if (pathname === `${ACCOUNTS_PATH}/api/auth/guest`) {
-      // A new guest for every handoff: each browser context is its own visitor, and the app keeps the token.
       const redirectUri = url.searchParams.get('redirect_uri') ?? '';
       const state = url.searchParams.get('state') ?? '';
       if (!/^http:\/\/(localhost|127\.0\.0\.1):\d+\/auth\/guest$/.test(redirectUri)) {
@@ -327,14 +356,52 @@ export function createAccountsStandIn({
         res.end('redirect_uri must be this stack');
         return true;
       }
-      const fragment = new URLSearchParams({ guest_token: mintGuestToken().token, state });
-      res.writeHead(302, { Location: `${redirectUri}#${fragment}`, 'Cache-Control': 'no-store' });
+      const doorPath = `${ACCOUNTS_PATH}/api/auth/guest`;
+      // A renewing page posts the guest token it holds as proof (liveworkspace/docs/specs/003-accounts/accounts.md
+      // "Renewing without the cookie"): taken only from the app's own origin, kept two minutes in a cookie the GET
+      // then reads, and answered by a 303 to the same address.
+      if (req.method === 'POST') {
+        readForm(req)
+          .then((form) => {
+            const fromApp = req.headers.origin === new URL(redirectUri).origin;
+            const headers = { Location: `${doorPath}${url.search}`, 'Cache-Control': 'no-store' };
+            if (fromApp && guestClaims(form.guest_token)) {
+              headers['Set-Cookie'] =
+                `${PROOF_COOKIE}=${form.guest_token}; Path=${doorPath}; Max-Age=120; HttpOnly; SameSite=Lax`;
+            }
+            res.writeHead(303, headers);
+            res.end();
+          })
+          .catch(() => sendJson(res, 400, { error: 'invalid_form' }));
+        return true;
+      }
+      // The guest the cookie names wins, else the proof's guest, else a new one: each browser context is its own
+      // visitor, and the app keeps the token.
+      const cookies = parseCookies(req.headers.cookie);
+      const named = /^guest_[\w-]+$/.test(cookies[GUEST_COOKIE] ?? '')
+        ? cookies[GUEST_COOKIE]
+        : null;
+      const guestId = named ?? guestClaims(cookies[PROOF_COOKIE])?.sub ?? `guest_${randomUUID()}`;
+      const fragment = new URLSearchParams({ guest_token: mintGuestToken(guestId).token, state });
+      res.writeHead(302, {
+        Location: `${redirectUri}#${fragment}`,
+        'Cache-Control': 'no-store',
+        'Set-Cookie': [
+          `${GUEST_COOKIE}=${guestId}; Path=${ACCOUNTS_PATH}; Max-Age=31536000; HttpOnly; SameSite=Lax`,
+          `${PROOF_COOKIE}=; Path=${doorPath}; Max-Age=0`,
+        ],
+      });
       res.end();
       return true;
     }
     if (pathname === '/e2e/guest-token') {
+      // `sub` names the guest and `expires_in` (seconds) shortens the token: a guest whose token is about to lapse.
+      const sub = url.searchParams.get('sub') ?? '';
+      const expiresIn = Number(url.searchParams.get('expires_in')) || GUEST_TOKEN_TTL_SECONDS;
       res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
-      res.end(JSON.stringify(mintGuestToken()));
+      res.end(
+        JSON.stringify(mintGuestToken(/^guest_[\w-]+$/.test(sub) ? sub : undefined, expiresIn)),
+      );
       return true;
     }
     if (pathname === `${ACCOUNTS_PATH}/api/auth/jwks`) {
