@@ -7,6 +7,7 @@
 // layouts) can import it without pulling in the category
 // bodies, and without the import cycle an earlier dialog reached from inside a body once closed.
 
+import { LibraryIcon } from '@liveworkspace/workbench/components/library/library-icons';
 import {
   BuildTabIcon,
   ConceptsTabIcon,
@@ -84,6 +85,15 @@ export const PALETTE_CATEGORIES: {
     description:
       'Ready-made blocks that follow the tab theme: the Card, Badge and Step number, the web components (Banner, Callout, Stat row, Big Number, Quote, Process, Hero, Header) and the code block and checklist. Each is one element that re-flows as you resize it, with every line of text editable in place.',
     icon: <ComponentsTabIcon />,
+  },
+  {
+    // The Library every app shares (liveworkspace/docs/specs/006-media/libraries.md): saved shapes and components,
+    // yours and your teams'.
+    id: 'library',
+    label: 'Library',
+    group: 2,
+    description: 'What you and your teams saved, to place in any document, in every app.',
+    icon: <LibraryIcon />,
   },
   {
     id: 'icons',

@@ -7,6 +7,7 @@ import {
 import { TourOfferButton } from '@liveworkspace/workbench/components/tour/TourOfferButton';
 import { SettingsIcon, SearchGlyph } from '@/components/chrome/tab-bar-icons';
 import { HoverCard } from '@liveplanner/ui';
+import { SnapshotsButton } from '@liveworkspace/snapshots/ui';
 import { AutomationsButton } from '@/components/automations/AutomationsButton';
 
 // The right-hand control cluster shared by the editor's bottom tab bar and
@@ -51,6 +52,7 @@ export function ChromeControls({
       {/* Automations (docs/specs/026-plan/automations.md "Where it lives"): drawn only inside an AutomationsHost
           with a scope, so an Editor of the whole plan; the Explorer's bar has none. */}
       <AutomationsButton labelled={labelled} />
+      <SnapshotsButton labelled={labelled} />
       {onOpenSettings ? (
         <HoverCard title={settingsLabel} description={settingsDescription}>
           <button type="button" onClick={onOpenSettings} aria-label={settingsLabel} className={BTN}>

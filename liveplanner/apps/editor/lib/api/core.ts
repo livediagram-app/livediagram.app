@@ -57,6 +57,7 @@ export {
   stripUiTabFields,
   wsUrl,
 } from '@liveworkspace/workbench/lib/api/core';
+import { createSnapshotFence } from '@liveworkspace/snapshots/client';
 
 // The share-password cache's localStorage prefix (share-password.md): one entry per share code, so a returning
 // visitor on a protected plan doesn't retype the password every load.
@@ -85,6 +86,9 @@ const core = createApiCore({
     refusal: (url, init) => confinementRefusal(url, init),
     noteResponse: (init, res) => noteWorkbenchResponse(init, res),
   },
+  // The snapshot generation fence (liveworkspace/docs/specs/014-snapshots/snapshots.md "The generation fence"): every
+  // request names the generation this page last saw, and a write refused as from before a revert reloads the page.
+  fence: createSnapshotFence('projects'),
   sharePasswordCachePrefix: SHARE_PASSWORD_CACHE_PREFIX,
 });
 

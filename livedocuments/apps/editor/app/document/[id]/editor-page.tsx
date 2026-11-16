@@ -1,5 +1,6 @@
 'use client';
 
+import { EditorLibraryProvider } from '@/components/primitives/EditorLibraryProvider';
 import dynamic from 'next/dynamic';
 import { useEffect, useState, type ReactNode } from 'react';
 import { setSessionSharePassword } from '@/lib/api-client';
@@ -242,7 +243,10 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
         <MentionContext.Provider value={state.commentMentions}>
           {/* Who reacts to comments, and how (docs/specs/012-collaboration/comment-reactions.md). */}
           <CommentReactionsProvider value={state.commentReactions}>
-            <EditorView />
+            {/* The Library every app shares (liveworkspace/docs/specs/006-media/libraries.md). */}
+            <EditorLibraryProvider ownerId={ownerId}>
+              <EditorView />
+            </EditorLibraryProvider>
           </CommentReactionsProvider>
         </MentionContext.Provider>
         {/* Moving this browser's documents in This Browser after signing in

@@ -93,10 +93,14 @@ const ROW_FIELDS = ['designId', 'orderIndex', 'updatedAt', 'rev', 'folder', 'con
 
 // Read a file's text as a new design's content: another kind, an unreadable envelope or a malformed tab is
 // `invalid_file`; a tab past the tab cap `too_large` (docs/specs/015-api/api.md "Tab size").
-export function readDesignFile(text: string): DesignFileRead {
+// `keepIds` reads it back into the design it came from, as a snapshot's revert does (design-snapshots.ts): its tabs
+// keep their ids, so links, comments and history still point at them.
+export function readDesignFile(text: string, opts: { keepIds?: boolean } = {}): DesignFileRead {
   const parsed = parseDesignEnvelope(text);
   if (!parsed.ok) return { ok: false, failure: 'invalid_file' };
-  const { tabs, components } = copyDesignEnvelope(parsed.envelope);
+  const { tabs, components } = opts.keepIds
+    ? { tabs: parsed.envelope.design.tabs, components: parsed.envelope.design.components ?? [] }
+    : copyDesignEnvelope(parsed.envelope);
   const copied: DesignCopy['tabs'] = [];
   for (const [index, incoming] of tabs.entries()) {
     const tab = migrateIncomingTab(incoming);

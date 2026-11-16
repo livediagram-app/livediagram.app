@@ -322,6 +322,38 @@ export function itemTabWrites<Env, Tab extends WritableTab, Stats extends { elem
     return true;
   }
 
+  // A revert to a snapshot (liveworkspace/docs/specs/014-snapshots/snapshots.md "Revert", step 3): the item's tabs
+  // become exactly `tabs`, in their order and folders, with their own ids. Every one is written as a save writes it, in
+  // one batch, so each revision moves forward (a draft kept over an older one is never replayed) and its stats and
+  // reference indexes follow; a tab the item holds that `tabs` lacks is then removed as a tab delete removes it. A
+  // tab's connection column is left as it is. Answers how many were written and removed.
+  async function replaceTabs(
+    env: Env,
+    itemId: string,
+    tabs: readonly { tab: Tab; folder: string | null }[],
+    now = Date.now(),
+  ): Promise<{ written: number; removed: number }> {
+    const d1 = db(env);
+    const held = await d1
+      .prepare(`SELECT tab_id FROM ${links} WHERE ${key} = ?`)
+      .bind(itemId)
+      .all<{ tab_id: string }>();
+    const keep = new Set(tabs.map((t) => t.tab.id));
+    const statements = tabs.flatMap(({ tab, folder }, orderIndex) => [
+      ...tabWriteStatements(env, itemId, tab, orderIndex, { advance: true }, now),
+      d1
+        .prepare(`UPDATE ${links} SET folder = ? WHERE ${key} = ? AND tab_id = ?`)
+        .bind(folder, itemId, tab.id),
+    ]);
+    if (statements.length > 0) await d1.batch(statements);
+    let removed = 0;
+    for (const { tab_id } of held.results ?? []) {
+      if (keep.has(tab_id)) continue;
+      if ((await deleteTabRow(env, itemId, tab_id)) !== null) removed += 1;
+    }
+    return { written: tabs.length, removed };
+  }
+
   return {
     tabWriteStatements,
     upsertTab,
@@ -330,5 +362,6 @@ export function itemTabWrites<Env, Tab extends WritableTab, Stats extends { elem
     seedTabs,
     deleteTabRow,
     swapTabData,
+    replaceTabs,
   };
 }

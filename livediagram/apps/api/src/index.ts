@@ -15,6 +15,7 @@ import { handleOauthExchange } from './routes/oauth';
 import { DocumentRoom } from './document-room/document-room';
 import { PersonStore } from './person-store/person-store';
 import { handleInternalItems } from './routes/internal-items';
+import { handleInternalShapeLibraries, handleLibrary } from './routes/library';
 import { handleLegacyGuestClaim } from './routes/legacy-guest';
 import { handleLocalParts, LOCAL_PARTS_MAX_BYTES } from './routes/migration';
 import { CORS_HEADERS, forbidden, json, notFound, payloadTooLarge, rateLimited } from './responses';
@@ -96,6 +97,9 @@ async function routeApiRequest(
 
   // The One Explorer index's server-to-server doors into a document's content (routes/internal-items.ts): their
   // own key, never a person's identity, so answered before identity and the per-owner limits.
+  // The Library's read of a person's shape libraries in place (routes/library.ts), with the media key.
+  if (segments[1] === 'internal' && segments[2] === 'shape-libraries' && segments.length === 3)
+    return handleInternalShapeLibraries(request, env);
   if (segments[1] === 'internal')
     return handleInternalItems(request, env, (p) => executionCtx?.waitUntil(p));
 
@@ -326,6 +330,8 @@ async function routeApiRequest(
       return await handleFolders(ctx);
     case 'shape-libraries':
       return await handleShapeLibraries(ctx);
+    case 'library':
+      return await handleLibrary(ctx);
     case 'teams':
       return await handleTeams(ctx);
     case 'tokens':

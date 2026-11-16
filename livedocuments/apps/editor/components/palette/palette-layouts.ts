@@ -39,7 +39,11 @@ const ICONS_WITH_STICKERS =
   'Single-colour glyphs for any idea, and colour stickers to react, mark status and celebrate.';
 
 // The categories whose body is its own content rather than a list of tiles.
-export const CATALOGUE_CATEGORIES: ReadonlySet<string> = new Set(['icons', 'technology']);
+export const CATALOGUE_CATEGORIES: ReadonlySet<string> = new Set([
+  'icons',
+  'technology',
+  'library',
+]);
 
 // The concept graphics, then the Sankey (Pages mode's Concepts).
 const CONCEPTS_WITH_SANKEY = [...tilesForCategory('concepts').map((t) => t.id), 'tools:sankey'];
@@ -82,6 +86,7 @@ const PAGES: PaletteLayout = {
     { id: 'concepts', tiles: CONCEPTS_WITH_SANKEY },
     { id: 'components', tiles: PAGES_COMPONENTS },
     { id: 'icons', stickers: true, description: ICONS_WITH_STICKERS },
+    { id: 'library' },
     { id: 'media' },
     // The charts and meters, then the Table: a page reports in rows as often as in a chart.
     {
@@ -115,6 +120,7 @@ const PAGES_SLIDE: PaletteLayout = {
       tiles: PAGES_COMPONENTS.filter((id) => id !== 'components:header'),
     },
     { id: 'icons', stickers: true, description: ICONS_WITH_STICKERS },
+    { id: 'library' },
   ],
 };
 

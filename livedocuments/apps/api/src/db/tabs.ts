@@ -74,6 +74,7 @@ export const {
   renameTab,
   seedTabs,
   deleteTabRow,
+  replaceTabs,
   swapTabData,
 } = itemTabWrites<DocumentEnv, Tab, TabStats>({
   db,

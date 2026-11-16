@@ -21,6 +21,7 @@ import { selectionMoving, useCanvasGesture } from '@liveworkspace/workbench/lib/
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { FloatingToolbar } from '@/components/chrome/FloatingToolbar';
 import { MultiSelectionToolbar } from '@/components/canvas/MultiSelectionToolbar';
+import { libraryDraftOf } from '@/lib/library-draft';
 import { SelectionPopover } from '@/components/canvas/SelectionPopover';
 import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 import { useOptionalEditorContext } from '@/app/design/[id]/EditorContext';
@@ -164,6 +165,7 @@ export function CanvasSelectionToolbars({
                 : undefined
             }
             onDuplicate={readOnly ? undefined : selected ? onDuplicateSelected : undefined}
+            saveToLibrary={readOnly || !selected ? undefined : () => libraryDraftOf([selected])}
             // Intra-layer z-order (docs/specs/006-design/layers.md): stack within the element's own
             // band. The element menu's Bring to Front moves LAYERS; these
             // are the missing nudge for two things on the same one.
@@ -245,6 +247,11 @@ export function CanvasSelectionToolbars({
                 .every((el) => el.locked === true)}
               selectedElements={elements.filter((el) => multiSelectedIds.has(el.id))}
               onDuplicate={props.onDuplicateMultiSelected}
+              onSaveToLibrary={
+                readOnly
+                  ? undefined
+                  : () => libraryDraftOf(elements.filter((el) => multiSelectedIds.has(el.id)))
+              }
               onCombine={!readOnly && props.canCombine?.() ? props.onCombine : undefined}
               onDelete={props.onDeleteMultiSelected}
               onToggleLock={props.onToggleLockMultiSelected}

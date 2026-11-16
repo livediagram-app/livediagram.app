@@ -1,4 +1,5 @@
 import { pageStep } from '@liveworkspace/workbench/lib/page-step';
+import { useLibraryElementInsert } from '@/hooks/canvas/useLibraryElementInsert';
 import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
 import { useRef } from 'react';
 import { selectAllIds } from '@/lib/select-all-ids';
@@ -92,6 +93,7 @@ export function useEditorInput({
     setViewportZoom,
     zoomRef,
     getViewportCanvasRect,
+    getViewportCenter,
     scrollIntoView,
     keyboardEnabled,
     isPinchingRef,
@@ -272,6 +274,16 @@ export function useEditorInput({
   // otherwise. Written by the canvas host on every pointer move; read by paste
   //.
   const canvasPointerRef = useRef<{ x: number; y: number } | null>(null);
+  // Items placed from the palette's Library (liveworkspace/docs/specs/006-media/libraries.md): like a paste, one
+  // commit, selected.
+  const insertLibraryItem = useLibraryElementInsert({
+    activeTab,
+    editsBlocked: isReadOnly || editsBlocked || createBlocked,
+    commit,
+    setSelectedId,
+    setMultiSelectedIds,
+    getViewportCenter,
+  });
   const { copySelection, pasteFromClipboard, dropBoardFile, hasClipboard } = useClipboard({
     isReadOnly,
     createBlocked,
@@ -416,6 +428,7 @@ export function useEditorInput({
     canvasPointerRef,
     copySelection,
     pasteFromClipboard,
+    insertLibraryItem,
     dropBoardFile,
     hasClipboard,
     toggleZenMode,

@@ -36,7 +36,7 @@ describe('stripTilesFor', () => {
   it('always offers More for the categories whose body is more than tiles', () => {
     // The two searchable catalogues can only be fully
     // reached through More.
-    for (const id of ['icons', 'technology']) {
+    for (const id of ['icons', 'technology', 'library']) {
       expect(stripTilesFor(id, NONE).hasMore, id).toBe(true);
     }
   });

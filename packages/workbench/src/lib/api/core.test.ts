@@ -115,6 +115,25 @@ describe('apiFetch', () => {
     expect(noteResponse).toHaveBeenCalledWith({ method: 'post' }, res);
   });
 
+  it('stamps every request through the fence, a grant or not, and lets it read every response', async () => {
+    const stamp = vi.fn((_input: string, init: RequestInit | undefined) => ({
+      ...init,
+      headers: { ...(init?.headers as Record<string, string> | undefined), 'X-Gen': '2' },
+    }));
+    const note = vi.fn();
+    const { core } = setup({ fence: { stamp, note } });
+    const res = new Response('ok');
+    fetchMock.mockResolvedValue(res);
+    await core.apiFetch('/api/x', { method: 'PUT' });
+    expect(fetchMock).toHaveBeenLastCalledWith('/api/x', {
+      method: 'PUT',
+      headers: { 'X-Grant': 'g', 'X-Gen': '2' },
+    });
+    await core.apiFetch('/api/x', undefined, { grant: false });
+    expect(fetchMock).toHaveBeenLastCalledWith('/api/x', { headers: { 'X-Gen': '2' } });
+    expect(note).toHaveBeenCalledWith(res);
+  });
+
   it('sends as it is with grant: false', async () => {
     const { core, config } = setup();
     fetchMock.mockResolvedValue(new Response('ok'));
