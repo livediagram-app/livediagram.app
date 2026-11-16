@@ -7,7 +7,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { SuggestCapture, CaptureTab } from '../capture';
 import type { Decision, SuggestionsClient } from '../client';
-import { onSuggestionsChanged } from '../room-signal';
+import { onSuggestionsChanged, setSelfSuggesting } from '../room-signal';
 import type { SuggestionLevel } from '../route';
 import type {
   CanvasSuggestion,
@@ -163,6 +163,14 @@ export function useCanvasSuggestions<T extends CaptureTab<E>, E extends Suggesti
     store.set({ tabId, suggestions, self });
   }, [store, tabId, suggestions, self]);
   useEffect(() => capture.subscribe(() => store.set({ draft: capture.draft() })), [capture, store]);
+
+  // An Editor's own Suggesting mode, for the title bar's role pill (it reads Suggesting, as a Participant's on
+  // Suggest Only does).
+  const selfSuggesting = suggesting && !suggestOnly;
+  useEffect(() => {
+    setSelfSuggesting(selfSuggesting);
+    return () => setSelfSuggesting(false);
+  }, [selfSuggesting]);
 
   const setMode = useCallback(
     (next: SuggestMode) => {

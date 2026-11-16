@@ -16,6 +16,7 @@ import { appHrefOfPlace } from '@/lib/workbench/workspace-place';
 import { TabBar } from '@/components/chrome/TabBar';
 import { LandscapeBarFold } from '@/components/chrome/LandscapeBars';
 import { RolePill } from '@/components/chrome/RoleIndicator';
+import { SuggestionsHeaderAction } from '@liveworkspace/suggestions/react/SuggestionsBar';
 // Each major area fails on its own and reports which one it was (docs/specs/017-telemetry/telemetry.md).
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import type { useEditorContext } from './EditorContext';
@@ -89,6 +90,9 @@ export function editorViewHeader(
           readOnly={isStructureReadOnly}
           renameNonce={renameDocumentNonce}
           rolePill={<RolePill {...role} />}
+          // Editing or Suggesting, and the review (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md):
+          // in the title bar at every width, so the canvas's toolbars never cover it.
+          leadAction={<SuggestionsHeaderAction suggestions={ctx.canvasSuggestions} />}
           // docs/specs/012-collaboration/presentation-mode.md "The header's Present button": only
           // while the deck has a slide to show, on a desktop, once the document is up. Every role.
           present={

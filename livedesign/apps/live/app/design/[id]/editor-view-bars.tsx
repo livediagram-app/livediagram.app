@@ -17,6 +17,7 @@ import { appHrefOfPlace } from '@/lib/workbench/workspace-place';
 import { TabBar } from '@/components/chrome/TabBar';
 import { LandscapeBarFold } from '@/components/chrome/LandscapeBars';
 import { RolePill } from '@/components/chrome/RoleIndicator';
+import { SuggestionsHeaderAction } from '@liveworkspace/suggestions/react/SuggestionsBar';
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import type { useEditorContext } from './EditorContext';
 import type { useRoleIndicator } from './useRoleIndicator';
@@ -94,7 +95,14 @@ export function editorViewHeader(
           readOnly={isStructureReadOnly}
           renameNonce={renameDesignNonce}
           rolePill={<RolePill {...role} />}
-          leadAction={prototype}
+          // Editing or Suggesting, and the review (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md):
+          // in the title bar at every width, so the canvas's toolbars never cover it.
+          leadAction={
+            <>
+              <SuggestionsHeaderAction suggestions={ctx.canvasSuggestions} />
+              {prototype}
+            </>
+          }
           onOpenAccount={() => openSettingsOn('account')}
           onOpenShare={() => {
             setShareDialogOpen(true);

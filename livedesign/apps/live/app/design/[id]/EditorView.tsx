@@ -18,7 +18,6 @@ import { CanvasFinishProvider } from '@liveworkspace/workbench/components/canvas
 import { SketchFilterDefs } from '@/components/canvas/SketchFilterDefs';
 import { ChangesetRevealContext } from '@/components/canvas/ChangesetRevealOverlay';
 import { SuggestionsContext } from '@liveworkspace/suggestions/react/suggestions-store';
-import { SuggestionsBarStrip } from '@liveworkspace/suggestions/react/SuggestionsBar';
 import { AgentFocusContext } from '@/components/canvas/AgentFocusOverlay';
 import { SelectionStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
@@ -308,10 +307,6 @@ export function EditorView() {
                             </AreaErrorBoundary>
                             {/* At the canvas's top edge, under the header and any Community bar. */}
                             {landscapeBarsHandle}
-                            {/* Editing or Suggesting, and the review (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md). */}
-                            {appChrome && !embedMode ? (
-                              <SuggestionsBarStrip suggestions={ctx.canvasSuggestions} />
-                            ) : null}
                             <AreaErrorBoundary
                               area="Canvas"
                               fallback="panel"

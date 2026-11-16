@@ -1,31 +1,38 @@
 'use client';
 
-// The canvas's suggestions bar (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Suggesting" and
-// "Reviewing"; blueprint "Presentation and UX"): a small floating bar at the canvas's top edge.
-//   - An Editor: the mode switch, Editing or Suggesting, then the tab's suggestion count, which opens the review list.
-//   - A Participant on Suggest Only: a Suggesting chip (no switch: it always suggests), then the count.
-//   - Any other Participant: the count, only while the tab has suggestions.
-// The review list sits under the bar, in place: one row per suggestion (its author, what it does, when, and a flag
+// The canvas's suggestions control (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Suggesting" and
+// "Reviewing"; blueprint "Presentation and UX"): a header action in the editor's title bar, reading Suggest or
+// Suggesting, its glyph carrying the tab's suggestion count. A press opens the panel under it:
+//   - An Editor: the mode switch, Editing or Suggesting, then the review list.
+//   - A Participant on Suggest Only: a line saying it suggests (no switch: it always does), then the list.
+//   - Any other Participant: the list; the action shows only while the tab has suggestions.
+// The review list: one row per suggestion (its author, what it does, when, and a flag
 // when the canvas changed since), with Accept and Reject for an Editor and Take Back on your own; Accept All and
 // Reject All head it. Pointing at a row brings its ghost forward. Escape closes it and gives the focus back.
-import { useEffect, useId, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import {
   CheckIcon,
-  ChevronDownIcon,
   CloseIcon,
+  CountBadge,
+  HoverCard,
   PencilIcon,
+  Portal,
   SegmentedToggle,
   Tooltip,
   relativeSince,
 } from '@liveworkspace/ui';
+import {
+  HEADER_ACTION_BTN,
+  HEADER_ACTION_TONE,
+  HeaderGlyph,
+} from '@liveworkspace/workbench/components/chrome/header-action';
 import { describeSuggestion } from '../plan';
 import type { CanvasSuggestion, SuggestionElement } from '../suggestion';
 import type { CanvasSuggestions, SuggestMode } from './useCanvasSuggestions';
 
-const BAR =
-  'pointer-events-auto flex items-center gap-1 rounded-full border border-slate-200 bg-white/95 p-1 shadow-md backdrop-blur dark:border-slate-700 dark:bg-slate-900/95';
-const COUNT =
-  'flex h-7 cursor-pointer items-center gap-1.5 rounded-full px-2.5 text-xs font-semibold text-slate-700 transition-colors duration-micro hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:text-slate-200 dark:hover:bg-slate-800';
+// The header action while this person suggests: the brand tint, so the mode reads at a glance.
+const SUGGESTING_TONE =
+  'bg-brand-50 text-brand-700 hover:bg-brand-100 dark:bg-brand-500/15 dark:text-brand-200 dark:hover:bg-brand-500/25';
 const ICON_BUTTON =
   'flex size-7 cursor-pointer items-center justify-center rounded-full text-slate-500 transition-colors duration-micro hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 disabled:cursor-not-allowed disabled:opacity-50 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100';
 const TEXT_BUTTON =
@@ -43,7 +50,14 @@ const MODE_OPTIONS = [
 const countWords = (n: number) =>
   n === 0 ? 'No suggestions' : n === 1 ? '1 suggestion' : `${n} suggestions`;
 
-export function SuggestionsBar<E extends SuggestionElement>({
+// Where the panel opens: under its button, right-aligned to it, kept inside the viewport.
+const PANEL_WIDTH_REM = 22;
+const PANEL_GAP_PX = 6;
+const EDGE_PX = 8;
+
+/** The suggestions control in the editor's title bar (the header's lead action, beside Share): a header action at
+ *  every width, so the canvas's own toolbars never cover it. Its glyph carries the count; a press opens the panel. */
+export function SuggestionsHeaderAction<E extends SuggestionElement>({
   suggestions: s,
   now: given,
 }: {
@@ -51,8 +65,9 @@ export function SuggestionsBar<E extends SuggestionElement>({
   // The clock rows read "4 min ago" against (the editor's shared one, so every row agrees).
   now?: number;
 }) {
-  const [open, setOpen] = useState(false);
-  const listId = useId();
+  const [place, setPlace] = useState<{ top: number; right: number } | null>(null);
+  const open = place !== null;
+  const panelId = useId();
   // Its own clock when the editor hands none, read a minute at a time.
   const [clock, setClock] = useState(() => Date.now());
   useEffect(() => {
@@ -61,89 +76,109 @@ export function SuggestionsBar<E extends SuggestionElement>({
     return () => clearInterval(timer);
   }, [given]);
   const now = given ?? clock;
-  const countRef = useRef<HTMLButtonElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const editor = s.level === 'edit';
   const n = s.suggestions.length;
   // Nothing to show a Participant who neither suggests nor has anything to read.
   const shown = s.enabled && (editor || s.suggestOnly || n > 0);
+  const { focus } = s;
+  const close = useCallback(
+    (refocus: boolean) => {
+      setPlace(null);
+      focus(null);
+      if (refocus) buttonRef.current?.focus();
+    },
+    [focus],
+  );
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return;
       e.stopPropagation();
-      setOpen(false);
-      s.focus(null);
-      countRef.current?.focus();
+      close(true);
     };
+    const onDown = (e: PointerEvent) => {
+      const t = e.target as Node | null;
+      if (panelRef.current?.contains(t) || buttonRef.current?.contains(t)) return;
+      close(false);
+    };
+    const onResize = () => close(false);
     window.addEventListener('keydown', onKey, true);
-    return () => window.removeEventListener('keydown', onKey, true);
-  }, [open, s]);
+    window.addEventListener('pointerdown', onDown, true);
+    window.addEventListener('resize', onResize);
+    return () => {
+      window.removeEventListener('keydown', onKey, true);
+      window.removeEventListener('pointerdown', onDown, true);
+      window.removeEventListener('resize', onResize);
+    };
+  }, [open, close]);
   if (!shown) return null;
+  const word = s.suggesting ? 'Suggesting' : 'Suggest';
+  const toggle = () => {
+    if (open) return close(false);
+    const at = buttonRef.current?.getBoundingClientRect();
+    if (!at) return;
+    const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+    const width = Math.min(PANEL_WIDTH_REM * rem, window.innerWidth - 2 * EDGE_PX);
+    const right = Math.max(
+      EDGE_PX,
+      Math.min(window.innerWidth - at.right, window.innerWidth - width - EDGE_PX),
+    );
+    setPlace({ top: at.bottom + PANEL_GAP_PX, right });
+  };
   return (
-    <div className="pointer-events-none flex flex-col items-center gap-2" data-suggestions-bar="">
-      <div className={BAR}>
-        {editor ? (
-          <SegmentedToggle<SuggestMode>
-            label="Mode"
-            value={s.mode}
-            onChange={s.setMode}
-            options={MODE_OPTIONS}
-            className="rounded-full border-0 bg-slate-100 dark:bg-slate-800 [&_button]:rounded-full"
-          />
-        ) : s.suggestOnly ? (
-          <Tooltip label="Suggesting">
-            <span
-              tabIndex={0}
-              aria-describedby={`${listId}-hint`}
-              className="flex h-7 items-center gap-1.5 rounded-full bg-brand-50 px-2.5 text-xs font-semibold text-brand-700 ring-1 ring-brand-200 dark:bg-brand-500/15 dark:text-brand-200 dark:ring-brand-500/30"
-            >
-              <PencilIcon size={14} aria-hidden />
-              Suggesting
-              <span id={`${listId}-hint`} className="sr-only">
-                {SUGGEST_ONLY_HINT}
-              </span>
-            </span>
-          </Tooltip>
-        ) : null}
-        {editor || s.suggestOnly ? (
-          <span aria-hidden className="mx-0.5 h-4 w-px bg-slate-200 dark:bg-slate-700" />
-        ) : null}
+    <>
+      <HoverCard
+        title={s.suggesting ? 'Suggesting' : 'Suggestions'}
+        description={
+          s.suggestOnly
+            ? SUGGEST_ONLY_HINT
+            : editor && s.suggesting
+              ? 'Your changes become suggestions. Switch back to Editing, or review.'
+              : editor
+                ? 'Switch to Suggesting, and review what others suggest.'
+                : 'What others suggest on this tab.'
+        }
+      >
         <button
-          ref={countRef}
+          ref={buttonRef}
           type="button"
           aria-expanded={open}
-          aria-controls={listId}
-          onClick={() => {
-            setOpen((o) => !o);
-            if (open) s.focus(null);
-          }}
-          className={COUNT}
+          aria-controls={open ? panelId : undefined}
+          aria-label={`${word}. ${countWords(n)}`}
+          data-suggestions-action=""
+          onClick={toggle}
+          className={`${HEADER_ACTION_BTN} ${s.suggesting ? SUGGESTING_TONE : HEADER_ACTION_TONE}`}
         >
-          {n > 0 ? (
-            <span className="flex min-w-5 items-center justify-center rounded-full bg-brand-600 px-1.5 py-0.5 text-[11px] leading-none text-white">
-              {n}
+          <HeaderGlyph>
+            <span className="relative inline-flex">
+              <PencilIcon size={14} aria-hidden />
+              {n > 0 ? (
+                <CountBadge
+                  tone="brand"
+                  count={n}
+                  className="absolute -top-2 left-2.5 ring-2 ring-white dark:ring-slate-900"
+                />
+              ) : null}
             </span>
-          ) : null}
-          <span>{n === 0 ? 'No suggestions' : n === 1 ? 'Suggestion' : 'Suggestions'}</span>
-          <ChevronDownIcon
-            size={14}
-            aria-hidden
-            className={`transition-transform duration-micro ${open ? 'rotate-180' : ''}`}
-          />
+          </HeaderGlyph>
+          <span aria-hidden>{word}</span>
         </button>
-      </div>
-      {open ? (
-        <ReviewList
-          id={listId}
-          s={s}
-          now={now}
-          onDone={() => {
-            setOpen(false);
-            s.focus(null);
-          }}
-        />
+      </HoverCard>
+      {place ? (
+        <Portal>
+          <div
+            ref={panelRef}
+            className="fixed z-[var(--z-modal)]"
+            style={{ top: place.top, right: place.right }}
+            data-suggestions-panel=""
+          >
+            <ReviewList id={panelId} s={s} now={now} onDone={() => close(true)} />
+          </div>
+        </Portal>
       ) : null}
-    </div>
+    </>
   );
 }
 
@@ -164,8 +199,24 @@ function ReviewList<E extends SuggestionElement>({
     <section
       id={id}
       aria-label="Suggestions"
-      className="pointer-events-auto w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-900"
+      className="w-[min(22rem,calc(100vw-1rem))] animate-fade-in overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl shadow-slate-900/15 dark:border-slate-700 dark:bg-slate-900"
     >
+      {editor ? (
+        <div className="flex items-center justify-between gap-2 border-b border-slate-100 px-3 py-2 dark:border-slate-800">
+          <span className="text-xs font-medium text-slate-600 dark:text-slate-300">Mode</span>
+          <SegmentedToggle<SuggestMode>
+            label="Mode"
+            value={s.mode}
+            onChange={s.setMode}
+            options={MODE_OPTIONS}
+          />
+        </div>
+      ) : s.suggestOnly ? (
+        <p className="flex items-center gap-1.5 border-b border-slate-100 bg-brand-50 px-3 py-2 text-xs font-medium text-brand-800 dark:border-slate-800 dark:bg-brand-500/10 dark:text-brand-200">
+          <PencilIcon size={14} aria-hidden />
+          {SUGGEST_ONLY_HINT}
+        </p>
+      ) : null}
       <header className="flex items-center gap-2 border-b border-slate-100 px-3 py-2 dark:border-slate-800">
         <h2 className="flex-1 text-sm font-semibold text-slate-800 dark:text-slate-100">
           {countWords(n)}
@@ -287,21 +338,5 @@ function Row<E extends SuggestionElement>({
         </button>
       ) : null}
     </li>
-  );
-}
-
-/** The bar where an editor mounts it: floating at the canvas's top edge, centred, over the canvas and below the
- *  editor's dialogs. Takes no room in the layout, so the canvas never shifts as it shows or hides. */
-export function SuggestionsBarStrip<E extends SuggestionElement>({
-  suggestions,
-}: {
-  suggestions: CanvasSuggestions<E>;
-}) {
-  return (
-    <div className="relative z-[var(--z-toolbar)] h-0">
-      <div className="pointer-events-none absolute inset-x-0 top-3 flex justify-center px-4">
-        <SuggestionsBar suggestions={suggestions} />
-      </div>
-    </div>
   );
 }

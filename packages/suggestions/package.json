@@ -29,7 +29,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@liveworkspace/ui": "workspace:*"
+    "@liveworkspace/ui": "workspace:*",
+    "@liveworkspace/workbench": "workspace:*"
   },
   "peerDependencies": {
     "react": "^19.3.0",

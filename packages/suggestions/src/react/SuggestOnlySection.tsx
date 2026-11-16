@@ -204,7 +204,7 @@ export function SuggestOnlySection({
                   <SwitchRow
                     key={link.code}
                     title={tabName(link.tabId)}
-                    detail={`${madeOn(link.createdAt)} · Suggest Only`}
+                    detail={`${madeOn(link.createdAt)} · ${on ? 'Suggest Only' : 'Changes apply directly'}`}
                     checked={on}
                     busy={busy}
                     onChange={(next) =>
@@ -240,7 +240,9 @@ export function SuggestOnlySection({
                       detail={
                         pinned
                           ? 'Suggest Only, from the Suggest Only link they opened'
-                          : 'Suggest Only, through any Participant link'
+                          : on
+                            ? 'Suggest Only, through any Participant link'
+                            : 'Changes apply directly'
                       }
                       checked={on}
                       busy={busy}

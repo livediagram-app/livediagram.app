@@ -4,6 +4,8 @@ import {
   onSuggestionsChanged,
   roomSuggestOnly,
   setRoomSuggestOnly,
+  setSelfSuggesting,
+  suggestingNow,
   suggestionsRoomOp,
   takeSuggestionsRoomOp,
 } from './room-signal';
@@ -28,6 +30,23 @@ describe('room-signal', () => {
     expect(heard).toHaveBeenCalledTimes(1);
     setRoomSuggestOnly(false);
     expect(heard).toHaveBeenCalledTimes(2);
+    off();
+  });
+
+  it('says this session suggests on Suggest Only or in its own Suggesting mode, telling only a change', () => {
+    const heard = vi.fn();
+    const off = onRoomSuggestOnly(heard);
+    setRoomSuggestOnly(false);
+    expect(suggestingNow()).toBe(false);
+    setSelfSuggesting(true);
+    setSelfSuggesting(true);
+    expect(suggestingNow()).toBe(true);
+    expect(heard).toHaveBeenCalledTimes(1);
+    setSelfSuggesting(false);
+    setRoomSuggestOnly(true);
+    expect(suggestingNow()).toBe(true);
+    setRoomSuggestOnly(false);
+    expect(suggestingNow()).toBe(false);
     off();
   });
 

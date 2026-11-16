@@ -49,3 +49,17 @@ export function onRoomSuggestOnly(listener: () => void): () => void {
   suggestOnlyListeners.add(listener);
   return () => void suggestOnlyListeners.delete(listener);
 }
+
+// This person's own Suggesting mode (an Editor who switched to Suggesting), set by the editor's suggestions hook, so
+// the title bar's role pill can say so without reaching into the editor's state.
+let selfSuggesting = false;
+
+export function setSelfSuggesting(on: boolean): void {
+  if (selfSuggesting === on) return;
+  selfSuggesting = on;
+  for (const l of suggestOnlyListeners) l();
+}
+
+/** Whether this session suggests right now: on Suggest Only (the room's word), or an Editor in Suggesting mode. The
+ *  role pill reads it, listening through `onRoomSuggestOnly`, which hears both. */
+export const suggestingNow = (): boolean => suggestOnly || selfSuggesting;

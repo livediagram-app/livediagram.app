@@ -8064,6 +8064,9 @@ importers:
       '@liveworkspace/ui':
         specifier: workspace:*
         version: link:../ui
+      '@liveworkspace/workbench':
+        specifier: workspace:*
+        version: link:../workbench
     devDependencies:
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
