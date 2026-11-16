@@ -28,7 +28,6 @@ import {
   type CatalogueChange,
   type ItemTypeCatalogue,
   type ItemTypeDef,
-  defaultTypesToAdd,
   ITEM_TYPES_MAX,
   withInheritance,
 } from '@liveplanner/items';
@@ -54,8 +53,6 @@ export type ItemTypesSlice = {
   // Types added together, as one change; any whose id the catalogue already has is skipped, and the catalogue's
   // cap holds.
   addTypes: (defs: readonly ItemTypeDef[]) => void;
-  // Any of the five default types the project lacks, after its types (Add Default Types); one change.
-  addDefaultTypes: () => void;
   // The whole catalogue a board's types leave (catalogueWithBoardTypes), as one change.
   saveCatalogue: (next: ItemTypeCatalogue) => void;
   // A change that follows another (docs/specs/026-plan/item-types.md "The statuses a type uses": statuses joining
@@ -257,13 +254,6 @@ export function useItemTypes(opts: {
       }),
     [withTypes],
   );
-  const addDefaultTypes = useCallback(
-    () =>
-      withTypes((ts) =>
-        [...ts, ...defaultTypesToAdd(ts)].slice(0, Math.max(ts.length, ITEM_TYPES_MAX)),
-      ),
-    [withTypes],
-  );
   const saveCatalogue = useCallback((next: ItemTypeCatalogue) => change(() => next), [change]);
   const quietChange = useCallback(
     (remake: Remake) => {
@@ -290,21 +280,10 @@ export function useItemTypes(opts: {
       saveType,
       deleteType,
       addTypes,
-      addDefaultTypes,
       saveCatalogue,
       quietChange,
       receive,
     }),
-    [
-      catalogue,
-      types,
-      saveType,
-      deleteType,
-      addTypes,
-      addDefaultTypes,
-      saveCatalogue,
-      quietChange,
-      receive,
-    ],
+    [catalogue, types, saveType, deleteType, addTypes, saveCatalogue, quietChange, receive],
   );
 }

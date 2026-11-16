@@ -49,11 +49,11 @@ export function FormFill({
   );
   const summaryRef = useRef<HTMLDivElement>(null);
   const topRef = useRef<HTMLDivElement>(null);
-  // The error summary takes focus when it appears, so a screen reader hears it and the keyboard starts there.
-  const summaryKey = fill.summary.join(',');
+  // The error summary takes focus when Next or Submit is refused, so a screen reader hears it and the keyboard starts
+  // there. Keyed on the refusal count, not the list: fixing an answer shortens the list and must leave focus in the field.
   useEffect(() => {
-    if (summaryKey) summaryRef.current?.focus();
-  }, [summaryKey]);
+    if (fill.refusals > 0) summaryRef.current?.focus();
+  }, [fill.refusals]);
   // A new section starts at its top (not the first: the page above it, a status bar, stays in view).
   const shownSection = useRef(fill.section);
   useEffect(() => {
