@@ -174,6 +174,49 @@ Follows the composite-component pattern ([Timeline rail](timeline-rail.md)): a d
 `ShapeKind` + small `ShapeElement` fields + a bespoke `*View` + a borderless variant + a
 context-menu category. New chart kinds reuse it under the same Data palette category.
 
+## Charts linked to a liveplanner sheet
+
+Weekly reports and decks get their numbers copied by hand from spreadsheets, and the charts go stale. A chart can
+instead take its data from a range of a liveplanner Sheet and keep in step with it (Work Tracker 940). It stays a
+native chart: drawn in the document's theme, styled and exported like any other; only its numbers come from the
+sheet. The platform's side (the range read, the door, the change signal) is
+[liveworkspace sheet-sources.md](../../../../liveworkspace/docs/specs/004-index/sheet-sources.md).
+
+- **Link to Sheet.** The chart's Data section starts with a **Sheet** row: **Link to Sheet** opens a dialog to pick a
+  plan (the person's liveplanner plans, most recent first, with Find a plan), one of its Sheets, and a range typed as
+  in a spreadsheet (`B2:E9`, prefilled with the sheet's filled extent). A preview under the range shows what the chart
+  will draw (its categories and series, or why it cannot: "That range is not on the sheet."). **Link** writes the
+  read onto the chart (its slices, or its categories and series, keeping colours by position as liveplanner's own
+  charts do) with the source, as one undo step. The dialog notes that the numbers are saved in the document, so
+  everyone who can open it sees them.
+- **The source** (`chartSheetSource`) names the plan, the sheet and the range by stable row and column ids (so rows
+  inserted inside it are read, and moves are followed), with the plan's and sheet's names, the range as A1 text and
+  when it was last read (`readAt`), as last read.
+- **Linked to.** A linked chart shows a quiet line along its top edge, inside its frame, while it is hovered or
+  selected: a sheet glyph, then "Linked to <plan> · updated 2 min ago" (the time ticks on its own, "just now" under a
+  minute). The Sheet row in its Data section says the same, with the sheet and range under it ("Budget · B2:E9"),
+  and offers **Update** (read again now) and **Unlink**.
+- **Keeping in step.** While the document is open, each linked chart on the open tab is read on open and again
+  whenever its sheet changes (the room's `source-changed` frame), never by polling. Each person reads with their own
+  access:
+  - who can open the plan sees the values it holds now; an Editor's editor also saves them on the chart, quietly
+    (no undo step), so the saved values follow;
+  - who cannot open the plan sees the values last saved on the chart only, and the line says "Linked to <plan> ·
+    saved 2 h ago" with no Update;
+  - when the read fails (the network, the plan's app down) the line offers **Update**, which tries again.
+- **While linked**, the slice and series rows of the Data section are read only ("These numbers come from the
+  sheet.") and Edit Data is not offered: the next read would overwrite a hand edit. Chart type, palette, legend,
+  values, axis and animation stay the Editor's.
+- **The range breaks** when a corner row or column is deleted or the sheet is deleted: the chart keeps its values,
+  and the line says "The linked range is gone." with **Link to Sheet** in the Data section to pick it again.
+- **Unlink** removes the source and keeps the last values, as one undo step.
+- **Exports and copies.** An export (SVG, PNG, PDF, the document's file) draws the saved values and carries no source,
+  as does a copy made through a Community link and a Community visitor's read. A duplicate, a copy-paste or a tab
+  copied within livedocuments keeps the source.
+- **Who may.** Link to Sheet, Update and Unlink are an Editor's (`can.editContent`). A Participant and a Viewer see
+  the line and the live values on the terms above; they never write.
+- **Telemetry.** `Element·Changed·ChartSheetLink` on Link, `Element·Changed·ChartSheetUnlink` on Unlink.
+
 ## Chart palettes
 
 Without a chart-level palette, saying "this chart is greys" would mean opening

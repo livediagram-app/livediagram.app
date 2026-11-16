@@ -39,6 +39,14 @@ Scope, by file:
 | `apps/editor/hooks/canvas/useChartSetters.ts`                                                                                          | Data, legend and animation setters                                                                                                                                      |
 | `apps/editor/hooks/canvas/useStylePreview.ts`                                                                                          | `previewChartPalette` / `commitChartPalette`                                                                                                                            |
 | `apps/editor/hooks/canvas/useDataShapeSetters.ts`                                                                                      | `setLegendItemsSelected`                                                                                                                                                |
+| `../packages/element-model/src/chart-sheet-source.ts`                                                                                 | `ChartSheetSource`, `isChartSheetSource`, `withoutSheetSources`: the linked source on a chart                                                                           |
+| `../packages/element-model/src/chart-table.ts`                                                                                        | `ChartTable`, `chartFieldsFromTable`: a read's data fields for a chart, colours kept by position (shared with liveplanner)                                              |
+| `apps/editor/lib/sheet-links.ts`                                                                                                      | `sheetLinkKey`, `linkedChartsOn`, `sourceAfterRead`, `sameChartData`, `linkedAgo`: pure helpers for linked charts                                                      |
+| `apps/editor/hooks/canvas/useSheetLinkedCharts.ts`                                                                                    | Reads each linked chart on the open tab on open and on `source-changed`; the live overlay, the statuses, the quiet save                                                |
+| `apps/editor/components/canvas/SheetLinkedCharts.tsx`                                                                                 | `SheetLinksContext`, `SheetLinkedChart` (overlay + the Linked to line on the canvas)                                                                                    |
+| `apps/editor/components/palette/SheetLinkSection.tsx`                                                                                 | The Data section's Sheet row: Link to Sheet, Linked to, Update, Unlink                                                                                                  |
+| `apps/editor/components/dialogs/LinkSheetDialog.tsx`                                                                                  | The Link to Sheet dialog: plan, sheet, range, preview                                                                                                                   |
+| `apps/api/src/document-room/source-changed.ts`                                                                                        | The `source-changed` door: the room's frame to every session                                                                                                            |
 | `apps/editor/components/canvas/EditorCanvasHost.tsx`                                                                                   | Passes `themeChartPalette(getTheme(activeTab.theme))` to the canvas                                                                                                     |
 
 ## Domain and naming
@@ -180,6 +188,25 @@ independent of the key (D106).
 The data setters match every chart kind, so a mixed pie and line selection writes both field sets
 onto both [GE2].
 
+### Linked to a sheet (spec "Charts linked to a liveplanner sheet")
+
+1. **Link**: `LinkSheetDialog` lists `indexClient.listItems({ apps: ['liveplanner'], view: 'recent' })`, then
+   `indexClient.listSheets(planId)`, then reads the typed range with `indexClient.readSheetRange` (debounced
+   `LINK_PREVIEW_DEBOUNCE_MS`, 300) for the preview. Link commits `{ ...chartFieldsFromTable(el, read.table),
+   chartSheetSource: sourceAfterRead(read) }` on the selected chart, telemetry `ChartSheetLink`.
+2. **Reads**: `useSheetLinkedCharts` keys each linked chart of the open tab by `sheetLinkKey(source)`
+   (`itemId|sheetId|range|cols`), reads each key once on open, on a tab change and on a `source-changed` frame naming its
+   plan and sheet, with the document's grant and `watch: {itemId: documentId}`. One read in flight per key; a frame
+   while one is in flight reads once more after it.
+3. **Statuses** per key: `live` (read now), `saved` (refused: 404, the person cannot open the plan), `gone`
+   (`409 range_gone`, or 404 for a sheet that was there), `failed` (anything else). The overlay holds the live
+   fields; an element draws `{ ...el, ...overlay }` (`SheetLinkedChart`).
+4. **Quiet save**: with `can.editContent`, a live read whose fields differ from the element's (`sameChartData`) is
+   saved with `tick` (no undo step), its `chartSheetSource` given the new names, A1 and `readAt`.
+5. **Unlink**: commits `{ chartSheetSource: undefined }`, telemetry `ChartSheetUnlink`.
+6. **Freezing**: `withoutSheetSources(elements)` in the file export (`document-file.ts`), the Community copy and the
+   Community visitor's read (`redact-document.ts`).
+
 ## Interfaces and contracts
 
 ```ts
@@ -239,6 +266,7 @@ data rows → `null`.
 | `chartVariant`                             | persisted | the kind's first chart type    |
 | `textSize`                                 | persisted | `'md'` (14 px key)             |
 | `legendItems`                              | persisted | no rows                        |
+| `chartSheetSource`                         | persisted | not linked; dropped by exports and Community copies |
 | colour ramps, layout rects                 | derived   | recomputed per render          |
 
 Field names keep the `pie*` prefix across all three charts so saved documents need no migration.
@@ -334,6 +362,11 @@ fallbacks are silent [GE12].
 | Grow / pop once, spin / pulse loop               | none [GE11]                                                                                                                                |                                                                     |
 | Readout on hover regardless of the key           | none [GE11]                                                                                                                                |                                                                     |
 
+| Linked chart reads, statuses, quiet save and frame   | useSheetLinkedCharts cases                                                                                                                 | `apps/editor/hooks/canvas/useSheetLinkedCharts.test.tsx`            |
+| Link dialog: plan, sheet, range, preview, refusals   | LinkSheetDialog cases                                                                                                                      | `apps/editor/components/dialogs/LinkSheetDialog.test.tsx`           |
+| Sheet row: Editor only, Linked to, Update, Unlink    | SheetLinkSection cases                                                                                                                     | `apps/editor/components/palette/SheetLinkSection.test.tsx`          |
+| Source validated, frozen in exports and copies       | chart sheet source cases                                                                                                                   | `../packages/element-model/src/chart-sheet-source.test.ts`          |
+
 ## Constants and configuration
 
 | Name                                   | Value                                                 | Provenance / safe range              |
@@ -354,3 +387,5 @@ fallbacks are silent [GE12].
 | `DOUGHNUT_HOLE`                        | 0.55 of the radius                                    | Spec "Chart types"; 0.3 to 0.75      |
 | `AREA_FILL_OPACITY`                    | 0.25                                                  | Spec "Chart types"; 0.15 to 0.4      |
 | `SCATTER_TICKS`                        | 5                                                     | Spec "Chart types"; 3 to 7           |
+| `LINK_PREVIEW_DEBOUNCE_MS`             | 300                                                   | Typing pause before a preview read   |
+| `LINKED_AGO_TICK_MS`                   | 30 000                                                | The Linked to line's clock           |
