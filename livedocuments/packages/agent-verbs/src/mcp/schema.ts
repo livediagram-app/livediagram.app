@@ -249,6 +249,14 @@ export const updateDocumentShape = {
     .optional()
     .describe(`Replace mode: the full new element list. ${ELEMENT_SCHEMA_HINT}`),
   layout: layoutField,
+  as: z
+    .enum(['suggestions', 'direct'])
+    .optional()
+    .describe(
+      'Taken for the same call shape as write_article. Canvas and slide elements have no suggestion form: their ' +
+        'changes land as one change a person can Show or Undo. To suggest changes to an article\u2019s words, ' +
+        'use write_article with as "suggestions".',
+    ),
   ops: z
     .array(
       z.object({
