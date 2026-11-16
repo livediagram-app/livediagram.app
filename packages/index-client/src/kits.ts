@@ -48,9 +48,9 @@ export const KITS: readonly Kit[] = [
     summary: 'Run the launch, tell its story, map the road ahead and gather everyone.',
     parts: [
       { slot: 'plan', app: 'liveplanner', template: 'product-launch', name: 'Launch Plan' },
-      { slot: 'keynote', app: 'livedocuments', template: 'launch-keynote', name: 'Keynote' },
+      { slot: 'keynote', app: 'livedocuments', template: 'launch-keynote', name: 'Launch Keynote' },
       { slot: 'roadmap', app: 'livediagram', template: 'roadmap', name: 'Roadmap' },
-      { slot: 'space', app: 'livehuddle', template: 'all-hands-hall', name: 'Launch Hall' },
+      { slot: 'space', app: 'livehuddle', template: 'all-hands-hall', name: 'Launch Room' },
     ],
   },
   {

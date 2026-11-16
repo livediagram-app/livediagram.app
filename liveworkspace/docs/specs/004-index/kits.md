@@ -37,7 +37,8 @@ Signed in only: a kit makes items, folders and share links, which a guest cannot
 sees the kits with a prompt to sign in, which brings them back to the same page. An app acting for a person (an API
 token's, the Drive mirror, the data export) cannot start one: agents make items through their own apps.
 
-The person picks a kit, names the project (the kit's title until they type, at most `FOLDER_NAME_MAX`), and picks the
+The person picks a kit, names the project (the kit's title until they type, at most `KIT_NAME_MAX`, 60 characters,
+so a part's name, the project's and the part's together, stays short enough for any app's title), and picks the
 **role** the kit's connections give: Editor first and chosen, then Participant and Viewer, as Connect File offers them
 (owner's choice, 2026-11-15). Their words for a screen reader: "Anyone who can open one of these files can edit the
 others." (Participant: "take part in", Viewer: "view"). Then one press, **Create Project**, makes the run:

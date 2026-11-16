@@ -554,8 +554,8 @@ Explorer does.
   part's app logo (its Living Prism) and the part's name over the app's name. The cards are one radio group
   ("Kit"): pressing a card chooses it, its border and a tick in the deep shade of liveworkspace's accent; arrow keys
   move between them. The first kit is chosen as the page opens. Two columns from `md`, one on a phone.
-- **The setup**, under the cards, in place (no dialog): **Project name** (the chosen kit's title as its placeholder,
-  used when left empty, at most `FOLDER_NAME_MAX`), **Role** as the three-way switch Connect File draws (Editor,
+- **The setup**, under the cards, in place (no dialog): **Project Name** (the chosen kit's title as its placeholder,
+  used when left empty, at most `KIT_NAME_MAX`), **Role** as the three-way switch Connect File draws (Editor,
   Participant, Viewer; Editor chosen), with its words under it, the only line under a control on this page because
   it is the one choice that shares: "Anyone who can open one of these files can edit the others." (take part in,
   view). When the chosen role is one a part's app does not offer, a second line says what that part gets instead

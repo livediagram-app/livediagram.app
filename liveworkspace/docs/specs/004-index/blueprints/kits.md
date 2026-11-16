@@ -52,7 +52,7 @@ the repository root.
 
 1. A person by their own token (`401` without); a guest is `403 sign_in_required`; an app acting for a person
    (`person.app`, `drive`, `export`) is `403 forbidden`.
-2. The kit, the level (`LEVELS`) and the name (`FOLDER_NAME_MAX`, trimmed, not empty) are read whole before anything
+2. The kit, the level (`LEVELS`) and the name (`KIT_NAME_MAX`, 60, trimmed, not empty) are read whole before anything
    is written.
 3. The folder: a retry's `folderId` must be a folder in the person's personal scope (`404 folder_not_found` else);
    otherwise a new one is inserted at the top of their personal tree, as `POST /folders` makes one.

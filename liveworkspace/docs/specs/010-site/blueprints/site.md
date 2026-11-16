@@ -357,6 +357,7 @@ The pages, their layout and their states are in [site.md](../site.md); the share
 | `account`     | 4     |
 | `drive`       | 5     |
 | `explorer`    | 6     |
+| `kits`        | 5     |
 | `landing`     | 10    |
 | `settings`    | 7     |
 | `status`      | 5     |
@@ -527,6 +528,7 @@ The site sends its own telemetry through `@liveworkspace/telemetry-client` (`lib
 | `lib/appearance/**`                                                                                                                                                                                                    | 2        | the site's Appearance: each app's key on its address, the boot script, the store                                                       |
 | `lib/status`, `components/status`                                                                                                                                                                                      | 4        | the status page                                                                                                                        |
 | `lib/drive`, `components/drive`                                                                                                                                                                                        | 2        | Drive connect pages and switch dialog                                                                                                  |
+| `components/kits`                                                                                                                                                                                                      | 2        | Start a Project: its words, and the page in every state                                                                                |
 | root guards (`appearance-guard`, `dark-pair-guard`, `hover-tie-guard`, `optical-guard`, `touch-target-guard`, `trusted-types-guard`, `motion-budget`, `asset-prefix`, `cache-headers`) and `e2e/trusted-types.spec.ts` | 9        | site-wide rules: themes, dark pairs across stylesheets, optics, touch targets, Trusted Types, motion, the asset prefix and its caching |
 | `packages/sites`, `packages/account-menu`, `packages/settings-ui`                                                                                                                                                      | the rest | the shared pieces the site renders                                                                                                     |
 
@@ -604,6 +606,8 @@ The site sends its own telemetry through `@liveworkspace/telemetry-client` (`lib
 - `liveworkspace/apps/site/lib/stylesheet-scan.ts`
 - `liveworkspace/apps/site/components/LazyPageError.test.tsx`
 - `liveworkspace/apps/site/components/drive/drive-switch-dialog.test.tsx`
+- `liveworkspace/apps/site/components/kits/kit-words.test.ts`
+- `liveworkspace/apps/site/components/kits/kits-page.test.tsx`
 - `liveworkspace/apps/site/components/settings/site-settings-dialog.test.tsx`
 - `liveworkspace/apps/site/components/status/StatusBoard.test.tsx`
 - `liveworkspace/apps/site/components/teams/teams-ui.test.tsx`
