@@ -27,6 +27,25 @@ describe('useBrowserTabTitle', () => {
     await waitFor(() => expect(document.title).toBe('Thomas HQ | livehuddle'));
   });
 
+  // A status screen (Canvas Not Found) names the tab over the item's own title, which the page still holds.
+  it('lets a status screen name the tab over the item, and hands it back when the screen goes', async () => {
+    const page = renderHook(({ t }: { t: string }) => useBrowserTabTitle(t), {
+      initialProps: { t: 'Untitled canvas | livediagram' },
+    });
+    const screen = renderHook(() =>
+      useBrowserTabTitle('Canvas Not Found | livediagram', { status: true }),
+    );
+    expect(document.title).toBe('Canvas Not Found | livediagram');
+    // The item's title changing under the screen does not take the tab back.
+    page.rerender({ t: 'Roadmap | livediagram' });
+    expect(document.title).toBe('Canvas Not Found | livediagram');
+    document.querySelector('title')!.textContent = 'livediagram';
+    await waitFor(() => expect(document.title).toBe('Canvas Not Found | livediagram'));
+    screen.unmount();
+    expect(document.title).toBe('Roadmap | livediagram');
+    page.unmount();
+  });
+
   it('leaves the title alone while there is none to show, follows a rename, and stops once unmounted', async () => {
     document.title = 'Form | liveplanner';
     const { rerender, unmount } = renderHook(

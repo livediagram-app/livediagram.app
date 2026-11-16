@@ -260,6 +260,31 @@ describe('openOwnAddress', () => {
     expect(e.calls).toContain('loadError:true');
   });
 
+  // The owner opening an archived item's address: the api relays the index's `409 archived`. It ends on not found
+  // (the editor's archived card), never on the error screen that blames the connection.
+  it('ends an archived item on not found, never the error screen', async () => {
+    const archived = Object.assign(new Error('load failed: 409'), {
+      status: 409,
+      code: 'archived',
+    });
+    const a = harness({ loadOwn: vi.fn(async () => Promise.reject(archived)) });
+    expect(await openOwnAddress(a.product, a.run, own)).toBe(false);
+    expect(a.calls).toEqual([
+      'step:item',
+      'itemId:"i1"',
+      'notFound:true',
+      'hydrated:true',
+      'loading:false',
+      'nameConfirmed:false',
+    ]);
+    // Another 409 is a real failure, and keeps the error screen.
+    const other = Object.assign(new Error('load failed: 409'), { status: 409, code: 'busy' });
+    const o = harness({ loadOwn: vi.fn(async () => Promise.reject(other)) });
+    expect(await openOwnAddress(o.product, o.run, own)).toBe(false);
+    expect(o.calls).toContain('loadError:true');
+    expect(o.calls).not.toContain('notFound:true');
+  });
+
   it('asks the index whether a missing item is in the Trash', async () => {
     getItem.mockResolvedValueOnce({ item: { trashedAt: 5 } });
     const t = harness();

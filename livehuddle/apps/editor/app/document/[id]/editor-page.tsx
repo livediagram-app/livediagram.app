@@ -134,7 +134,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
     return !appChrome ? (
       <EmbedShell>{card}</EmbedShell>
     ) : (
-      <StatusShell title="Space deleted">{card}</StatusShell>
+      <StatusShell title="Space Deleted">{card}</StatusShell>
     );
   }
 
@@ -148,7 +148,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
     return !appChrome ? (
       <EmbedShell>{card}</EmbedShell>
     ) : (
-      <StatusShell title="Couldn’t load space">{card}</StatusShell>
+      <StatusShell title="Couldn’t Load Space">{card}</StatusShell>
     );
   }
 
@@ -170,10 +170,10 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
       <StatusShell
         title={
           page
-            ? 'Page not found'
+            ? 'Page Not Found'
             : accessEnded !== null
               ? 'No Longer Shared With You'
-              : 'Space not found'
+              : 'Space Not Found'
         }
       >
         <NotFound
@@ -193,7 +193,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
   // embed the gate renders headerless inside the iframe (docs/specs/013-workspace/embeds.md).
   if (sharePasswordGate) {
     return (
-      <StatusShell title="Password required" showHeader={!embedMode}>
+      <StatusShell title="Password Required" showHeader={!embedMode}>
         <SharePasswordGate
           invalid={sharePasswordGate.invalid}
           ownerName={documentOwnerName}
@@ -241,6 +241,9 @@ function StatusShell({
   showHeader?: boolean;
   children: ReactNode;
 }) {
+  // The tab names the screen, not the item it stands in for (useBrowserTabTitle's `status`): a missing
+  // space's tab never reads as an empty one.
+  useBrowserTabTitle(`${title} | livehuddle`, { status: true });
   return (
     <div className="flex h-dvh flex-col">
       {showHeader ? (
