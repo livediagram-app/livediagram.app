@@ -157,8 +157,11 @@ SN24. The dialog: `Dialog size="md" phoneSheet`, `DialogHeader title="Snapshots"
 `li` in a `ul aria-label="Snapshots"`; the confirm replaces the row's actions, focuses its safe button (Cancel), and
 Escape inside it cancels the confirm rather than closing the dialog.
 
-SN25. States: loading (`LoadingSweep`), empty (`CompactEmptyState`), error (a `role="alert"` line), busy (the busy
-button's label: "Taking…", "Reverting…", "Deleting…"; every other action disabled).
+SN25. States: loading (`LoadingSweep`), empty (`CompactEmptyState`), the list failed (`CompactEmptyState` in a
+`role="alert"` with a Try Again button that fetches it again; `useSnapshots` keeps `listFailed` apart from `error`),
+error (a `role="alert"` line for a refused action), busy (the busy button's label: "Taking…", "Reverting…",
+"Deleting…"; every other action disabled). Below `sm` the row's `Before revert` badge sits on its own line under the
+name (`flex-col`), so a long automatic name stays readable on a phone.
 
 SN26. Words (`snapshot-words.ts`): the time label (`15 Nov, 14:32` in the viewer's locale), "You" for the viewer's own,
 sizes in KB or MB with one decimal under 10.

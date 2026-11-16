@@ -74,6 +74,16 @@ describe('SnapshotsButton', () => {
     expect(container.querySelector('[data-snapshots-button]')).toBeNull();
   });
 
+  it('draws the icon alone when not labelled', () => {
+    render(
+      <SnapshotsDoorProvider door={{ api: fakeApi([]), noun: 'plan', viewerId: null }}>
+        <SnapshotsButton />
+      </SnapshotsDoorProvider>,
+    );
+    const button = screen.getByRole('button', { name: 'Snapshots' });
+    expect(button.textContent).toBe('');
+  });
+
   it('opens the dialog, empty, and takes a named snapshot', async () => {
     const api = fakeApi([]);
     mount({ api, noun: 'plan', viewerId: 'user_a' });
@@ -93,6 +103,20 @@ describe('SnapshotsButton', () => {
     mount({ api, noun: 'design', viewerId: null });
     await open();
     expect(await screen.findByText('Taking another removes the oldest, “Snap 4”.')).toBeTruthy();
+  });
+
+  it('puts the Before revert badge on its own line below sm, and keeps the bin pad off Revert', async () => {
+    const api = fakeApi([snap(1, { kind: 'before-revert', name: 'A long snapshot name' })]);
+    mount({ api, noun: 'plan', viewerId: null });
+    await open();
+    const line = (await screen.findByText('Before revert')).parentElement!;
+    expect(line.hasAttribute('data-snapshot-title-line')).toBe(true);
+    const classes = line.className.split(' ');
+    expect(classes).toEqual(expect.arrayContaining(['flex-col', 'items-start', 'sm:flex-row']));
+    expect(screen.getByText('A long snapshot name').className.split(' ')).toContain('max-w-full');
+    // The bin's 44px touch pad is anchored to the bin itself, so on a phone it never covers Revert.
+    const bin = screen.getByRole('button', { name: 'Delete snapshot' }).className.split(' ');
+    expect(bin).toEqual(expect.arrayContaining(['relative', 'touch-target']));
   });
 
   it('confirms Revert in place, can cancel by button and Escape, then reverts and reloads', async () => {
@@ -144,6 +168,13 @@ describe('SnapshotsButton', () => {
     await screen.findByText('No snapshots yet');
     fireEvent.click(screen.getByRole('button', { name: 'Take Snapshot' }));
     expect((await screen.findByRole('alert')).textContent).toBe('This is too large to snapshot.');
+    api.take = vi.fn(async () => {
+      throw new Error('offline');
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Take Snapshot' }));
+    await waitFor(() =>
+      expect(screen.getByRole('alert').textContent).toBe('Something went wrong. Try again.'),
+    );
   });
 
   it('shows the generic message when the list fails, and closes', async () => {
@@ -151,8 +182,13 @@ describe('SnapshotsButton', () => {
     api.list.mockRejectedValueOnce(new Error('offline'));
     mount({ api, noun: 'plan', viewerId: null });
     await open();
-    expect((await screen.findByRole('alert')).textContent).toBe('Something went wrong. Try again.');
-    expect(screen.getByText('No snapshots yet')).toBeTruthy();
+    expect(await screen.findByText("Couldn't load snapshots")).toBeTruthy();
+    expect(screen.getByRole('alert').textContent).toContain('Check your connection');
+    expect(screen.queryByText('No snapshots yet')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Try Again' }));
+    expect(await screen.findByText('No snapshots yet')).toBeTruthy();
+    expect(screen.queryByText("Couldn't load snapshots")).toBeNull();
+    expect(api.list).toHaveBeenCalledTimes(2);
     fireEvent.click(screen.getByRole('button', { name: /close/i }));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
   });

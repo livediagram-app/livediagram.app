@@ -17,6 +17,9 @@ export type SnapshotsState = {
   snapshots: SnapshotSummary[] | null;
   kept: number;
   error: string | null;
+  /** The list's own fetch failed: the dialog says so with Try Again rather than an empty list. */
+  listFailed: boolean;
+  retry: () => void;
   busy: SnapshotBusy;
   reverted: boolean;
   take: (name: string) => Promise<boolean>;
@@ -34,6 +37,7 @@ export function useSnapshots(
   const [snapshots, setSnapshots] = useState<SnapshotSummary[] | null>(null);
   const [kept, setKept] = useState(5);
   const [error, setError] = useState<string | null>(null);
+  const [listFailed, setListFailed] = useState(false);
   const [busy, setBusy] = useState<SnapshotBusy>(null);
   const [reverted, setReverted] = useState(false);
   const live = useRef(true);
@@ -44,10 +48,11 @@ export function useSnapshots(
       if (!live.current) return;
       setSnapshots(list.snapshots);
       setKept(list.kept);
-    } catch (err) {
+      setListFailed(false);
+    } catch {
       if (!live.current) return;
       setSnapshots((prev) => prev ?? []);
-      setError(messageOf(err));
+      setListFailed(true);
     }
   }, [api]);
 
@@ -107,5 +112,11 @@ export function useSnapshots(
     [api, reload, run],
   );
 
-  return { snapshots, kept, error, busy, reverted, take, revert, remove };
+  const retry = useCallback(() => {
+    setListFailed(false);
+    setSnapshots(null);
+    void refresh();
+  }, [refresh]);
+
+  return { snapshots, kept, error, listFailed, retry, busy, reverted, take, revert, remove };
 }

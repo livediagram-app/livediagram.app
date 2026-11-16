@@ -56,8 +56,12 @@ export function SnapshotRow({
     >
       <div className="flex items-center gap-3">
         <div className="min-w-0 flex-1">
-          <div className="flex min-w-0 items-center gap-2">
-            <span className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">
+          {/* Below sm the badge takes its own line, so a phone keeps the name readable. */}
+          <div
+            data-snapshot-title-line=""
+            className="flex min-w-0 flex-col items-start gap-1 sm:flex-row sm:items-center sm:gap-2"
+          >
+            <span className="max-w-full truncate text-sm font-medium text-slate-900 dark:text-slate-100">
               {title}
             </span>
             {snapshot.kind === 'before-revert' ? (
@@ -88,7 +92,7 @@ export function SnapshotRow({
               onClick={() => onConfirm('delete')}
               aria-label="Delete snapshot"
               title="Delete snapshot"
-              className="touch-target text-slate-500 hover:text-red-700 dark:text-slate-400 dark:hover:text-red-300"
+              className="relative touch-target text-slate-500 hover:text-red-700 dark:text-slate-400 dark:hover:text-red-300"
             >
               <BinGlyph />
             </Button>

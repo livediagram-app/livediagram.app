@@ -109,11 +109,13 @@ It opens the **Snapshots** dialog (a sheet on a phone):
 - A name field ("Name this snapshot (optional)") and **Take Snapshot**. With five kept, a line under it says which
   snapshot the next one removes.
 - The snapshots, newest first. Each row: its name (or its time), then who took it, how long ago and its size; a
-  `Before revert` badge on an automatic one. Two actions: **Revert** and **Delete** (a bin, named "Delete snapshot").
+  `Before revert` badge on an automatic one (on a phone the badge takes its own line under the name). Two actions: **Revert** and **Delete** (a bin, named "Delete snapshot").
 - Revert and Delete each confirm **in place**, in the row: Revert says "Everyone's work since then is replaced. A
   snapshot of the <item> as it is now is taken first, so you can undo this." with **Cancel** and **Revert**; Delete
   says "Delete this snapshot? This can't be undone." with **Cancel** and **Delete**.
 - Empty: "No snapshots yet" and "Take one before a big change, so you can come back to it."
+- The list failed to load: "Couldn't load snapshots", "Check your connection, then try again." and **Try Again**,
+  never the empty state, which would say there are none.
 - While a request runs its button says so and the others wait; a refusal shows its message in the dialog.
 
 ## API

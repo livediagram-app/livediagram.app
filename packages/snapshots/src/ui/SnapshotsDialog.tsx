@@ -112,6 +112,20 @@ export function SnapshotsDialog({
           <div className="flex justify-center py-10" aria-label="Loading snapshots" role="status">
             <LoadingSweep />
           </div>
+        ) : list.length === 0 && state.listFailed ? (
+          <div role="alert">
+            <CompactEmptyState
+              icon={<SnapshotGlyph size={18} />}
+              title="Couldn't load snapshots"
+              description="Check your connection, then try again."
+              className="py-8"
+              action={
+                <Button variant="secondary" size="sm" onClick={state.retry}>
+                  Try Again
+                </Button>
+              }
+            />
+          </div>
         ) : list.length === 0 ? (
           <CompactEmptyState
             icon={<SnapshotGlyph size={18} />}
