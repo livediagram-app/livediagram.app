@@ -230,8 +230,12 @@ export function usePlanItems(opts: {
   onRead?: (pullRequests: readonly PullRequestStatus[] | undefined) => void;
   // The plan's card types as the editor holds them, read when a refusal names a field (items.md "Limits").
   typesOf?: () => readonly ItemTypeDef[];
+  // The cards a warm open painted from the last seen copy (docs/specs/006-project/offline-mode.md "Warm open of a
+  // cloud project"): shown, read-only, while there is no project id yet; the first load replaces them whole.
+  warm?: ItemStoreState | null;
 }): PlanItems {
   const { projectId, ready, ownerId, name, color, shareCode, tabScope } = opts;
+  const warm = projectId ? null : (opts.warm ?? null);
   // Handed over fresh each render: read at call time, so `send` and `write` keep their identity.
   const callbacks = useLatest({
     pushUndo: opts.pushUndo,
@@ -244,6 +248,21 @@ export function usePlanItems(opts: {
   const [store, setStore] = useState<ItemStoreState>(EMPTY_ITEM_STORE);
   const [status, setStatus] = useState<PlanItemsStatus>('loading');
   const [personId, setPersonId] = useState<string | null>(null);
+  // The warm cards on screen (adjusted while rendering, so they show in the paint's own frame), and gone when the warm
+  // paint leaves before a project id arrives (someone else's copy).
+  const [warmShown, setWarmShown] = useState<ItemStoreState | null>(null);
+  if (warm && warm !== warmShown) {
+    setWarmShown(warm);
+    setStore(warm);
+    setStatus('ready');
+  } else if (!warm && !projectId && warmShown) {
+    setWarmShown(null);
+    setStore(EMPTY_ITEM_STORE);
+    setStatus('loading');
+  }
+  // The store a load still finds untouched since the warm paint is replaced whole, not merged by revision.
+  const warmShownRef = useRef(warmShown);
+  useAssignRef(warmShownRef, warmShown);
   // The newest store, which an optimistic write also moves on at once (before React renders it).
   const storeRef = useRef(store);
   useAssignRef(storeRef, store);
@@ -322,7 +341,15 @@ export function usePlanItems(opts: {
         (prev) =>
           keepPracticeItems(
             withWritesLaid(
-              withWaitingItems(refetchedItemStore(prev, fetched, unconfirmed), queueOf(), layBy()),
+              withWaitingItems(
+                refetchedItemStore(
+                  prev === warmShownRef.current ? EMPTY_ITEM_STORE : prev,
+                  fetched,
+                  unconfirmed,
+                ),
+                queueOf(),
+                layBy(),
+              ),
               flying,
               layBy(),
             ),

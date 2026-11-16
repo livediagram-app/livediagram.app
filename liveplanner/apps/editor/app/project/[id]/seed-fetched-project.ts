@@ -3,6 +3,11 @@ import type { SavedItemTypes } from '@/lib/api/item-types';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type { Tab } from '@liveplanner/project';
 import type { Project } from '@liveplanner/api-schema';
+import type {
+  LastSeenCopy,
+  LastSeenFirstTab,
+} from '@liveworkspace/workbench/lib/api/last-seen-copies';
+import { keptWarmTab } from '@liveworkspace/workbench/lib/warm-open';
 import { apiLoadTabRevisioned } from '@/lib/api-client';
 import { setCommunityState } from '@liveworkspace/community-ui/editor';
 import { track } from '@/lib/telemetry';
@@ -18,7 +23,7 @@ type SetState<T> = Dispatch<SetStateAction<T>>;
 // name, the #t=<id> hash tab pick, and the shareable / team / owner
 // fields. The branches keep what genuinely differs — isOwner / session
 // role / share-code bookkeeping and the identity-prompt rules.
-export function makeSeedFetchedProject(deps: {
+export type SeedDeps = {
   activeId: string;
   // Whether this editor's first-tab read is an open of the project, for the reader's Home
   // (docs/specs/013-workspace/explorer-home.md "Opens"): true in the editor, false in an embed.
@@ -41,26 +46,74 @@ export function makeSeedFetchedProject(deps: {
   setProjectTeamId: SetState<string | null>;
   setLoadedExistingProject: SetState<boolean>;
   setLoadedTabIds: SetState<Set<string>>;
-}) {
+  // The first tab the warm open painted (docs/specs/006-project/offline-mode.md "Warm open of a cloud project"), or
+  // null: read at the revision the fresh fetch answers, the painted tab is kept, so an unchanged tab is not drawn again.
+  warmFirstTab?: () => LastSeenFirstTab<unknown> | null;
+  // The tab the person moved to while the warm open showed, or null: the load that catches up keeps it when the
+  // fresh tabs still hold it and the link's tab scope allows it, rather than jumping back to the first tab.
+  keepActiveId?: () => string | null;
+};
+
+// The project as the editor shows it, from a load or from the last seen copy: the tabs (placeholders, the first one
+// filled), the name and card types, the tab the address pins, and the shareable, team and owner fields.
+function showProject(
+  deps: SeedDeps,
+  fetched: Project,
+  tabs: Tab[],
+  firstId: string | null,
+  tabScope: string | null,
+) {
+  const { activeId, resetTabs, setActiveId, setProjectName, setProjectItemTypes } = deps;
+  resetTabs(tabs);
+  setProjectName(fetched.name);
+  setProjectItemTypes({
+    itemTypes: readItemTypeCatalogue(fetched.itemTypes ?? null),
+    itemTypesRev: fetched.itemTypesRev ?? 0,
+  });
+  // Prefer the tab id pinned in the URL fragment (#t=<id>) when
+  // it points at a real loaded tab: round-trips the user back
+  // to whichever tab they last had open before a refresh.
+  {
+    const usable = (tabId: string | null | undefined): tabId is string =>
+      !!tabId && tabs.some((t) => t.id === tabId) && !isTabOutOfScope(tabId, tabScope);
+    const kept = deps.keepActiveId?.();
+    const hashMatch = window.location.hash.match(/t=([^&]+)/);
+    const hashedId = hashMatch ? hashMatch[1] : null;
+    if (usable(kept)) setActiveId(kept);
+    else setActiveId(usable(hashedId) ? hashedId : (firstId ?? activeId));
+  }
+  deps.setLoadedExistingProject(true);
+  deps.setProjectShareable(fetched.shareable);
+  setCommunityState(fetched.id, fetched.communityState ?? null);
+  deps.setProjectTeamId(fetched.teamId ?? null);
+  deps.setProjectShareCode(fetched.shareCode);
+  deps.setProjectOwnerId(fetched.ownerId);
+  deps.setProjectOwnerName(fetched.ownerName ?? null);
+  deps.setProjectOwnerColor(fetched.ownerColor ?? null);
+}
+
+/** The warm open's paint (offline-mode.md "Warm open of a cloud project"): the last seen copy shown as the seed shows a
+ *  load, its first tab from the copy. Nothing is fetched, saved, marked loaded or counted: the load that catches up
+ *  does all of that. */
+export function makePaintLastSeen(deps: SeedDeps) {
+  return (copy: LastSeenCopy<Project, unknown>) => {
+    const tabs = placeholdersFromSummaries(copy.item.tabs);
+    const firstId = firstTabToLoad(copy.item.tabs, copy.access.tabScope);
+    const index = tabs.findIndex((t) => t.id === firstId);
+    if (copy.firstTab && index >= 0) tabs[index] = copy.firstTab.tab as Tab;
+    showProject(deps, copy.item, tabs, firstId, copy.access.tabScope);
+  };
+}
+
+export function makeSeedFetchedProject(deps: SeedDeps) {
   const {
-    activeId,
     recordOpen,
-    resetTabs,
     lastSavedTabsRef,
     lastSavedNameRef,
     loadedTabIdsRef,
     noteChangesetSeen,
-    setActiveId,
-    setProjectName,
-    setProjectItemTypes,
-    setProjectOwnerColor,
-    setProjectOwnerId,
-    setProjectOwnerName,
-    setProjectShareable,
-    setProjectShareCode,
-    setProjectTeamId,
-    setLoadedExistingProject,
     setLoadedTabIds,
+    warmFirstTab,
   } = deps;
   // `tabShareCode` is the share code the per-tab fetch presents as
   // authorisation: the visitor's session code, or null for the owner.
@@ -73,7 +126,7 @@ export function makeSeedFetchedProject(deps: {
     fetched: Project,
     tabShareCode: string | null,
     tabScope: string | null,
-  ) => {
+  ): Promise<LastSeenFirstTab<Tab> | null> => {
     // Lazy per-tab fetch (docs/specs/006-project/per-tab-storage.md): the active tab (first in the
     // summaries, or the scoped one) gets its full payload inline so the first
     // paint has real content; the rest land as placeholders and the
@@ -81,11 +134,14 @@ export function makeSeedFetchedProject(deps: {
     const placeholderTabs: Tab[] = placeholdersFromSummaries(fetched.tabs);
     const firstId = firstTabToLoad(fetched.tabs, tabScope);
     const firstIndex = placeholderTabs.findIndex((t) => t.id === firstId);
+    let painted: LastSeenFirstTab<Tab> | null = null;
     if (firstId && firstIndex >= 0) {
       const loaded = await apiLoadTabRevisioned(selfId, fetched.id, firstId, tabShareCode, {
         open: recordOpen,
       }).catch(() => null);
-      const first = loaded?.tab ?? null;
+      const first = loaded
+        ? (keptWarmTab<Tab>(warmFirstTab?.(), firstId, loaded.rev) ?? loaded.tab)
+        : null;
       // Only mark the tab loaded when the eager fetch actually
       // returned content. If it failed (e.g. a transient 403 from
       // a request that raced ahead of the account token / session
@@ -96,6 +152,7 @@ export function makeSeedFetchedProject(deps: {
       // effect after bootstrap — loaded fine.
       if (first) {
         placeholderTabs[firstIndex] = first;
+        painted = { id: firstId, rev: loaded!.rev, tab: first };
         noteChangesetSeen(firstId, loaded!.rev);
         loadedTabIdsRef.current.add(firstId);
         setLoadedTabIds((prev) => new Set(prev).add(firstId));
@@ -104,7 +161,6 @@ export function makeSeedFetchedProject(deps: {
         track('Tab', 'Loaded');
       }
     }
-    resetTabs(placeholderTabs);
     // Seed the autosave's "last saved" mirror with the hydrated
     // state so the first save-cycle treats it as unchanged.
     // Otherwise the autosave would diff the EMPTY-elements
@@ -113,33 +169,11 @@ export function makeSeedFetchedProject(deps: {
     // before the lazy-load could populate it.
     lastSavedTabsRef.current = placeholderTabs;
     lastSavedNameRef.current = fetched.name;
-    setProjectName(fetched.name);
-    setProjectItemTypes({
-      itemTypes: readItemTypeCatalogue(fetched.itemTypes ?? null),
-      itemTypesRev: fetched.itemTypesRev ?? 0,
-    });
-    // Prefer the tab id pinned in the URL fragment (#t=<id>) when
-    // it points at a real loaded tab — round-trips the user back
-    // to whichever tab they last had open before a refresh.
-    {
-      const hashMatch = window.location.hash.match(/t=([^&]+)/);
-      const hashedId = hashMatch ? hashMatch[1] : null;
-      const pickFromHash =
-        hashedId &&
-        placeholderTabs.some((t) => t.id === hashedId) &&
-        !isTabOutOfScope(hashedId, tabScope);
-      setActiveId(pickFromHash ? hashedId : (firstId ?? activeId));
-    }
-    setLoadedExistingProject(true);
-    setProjectShareable(fetched.shareable);
-    setCommunityState(fetched.id, fetched.communityState ?? null);
-    setProjectTeamId(fetched.teamId ?? null);
-    setProjectShareCode(fetched.shareCode);
-    setProjectOwnerId(fetched.ownerId);
-    setProjectOwnerName(fetched.ownerName ?? null);
-    setProjectOwnerColor(fetched.ownerColor ?? null);
+    showProject(deps, fetched, placeholderTabs, firstId, tabScope);
     // Telemetry (docs/specs/017-telemetry/telemetry.md): an existing project was opened — every open,
     // owner URL or share URL, the counterpart to Project/Created.
     track('Project', 'Loaded');
+    // The first tab as painted, for the last seen copy (offline-mode.md "Warm open of a cloud project").
+    return painted;
   };
 }

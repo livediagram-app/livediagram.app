@@ -59,9 +59,13 @@ export function deriveTabLoadState(input: {
   errored: boolean;
   elementsLength: number;
   templateChosen: boolean;
+  // A warm open painted another tab from the last seen copy (docs/specs/006-project/offline-mode.md "Warm open of a
+  // cloud project"): this one has no body until the load, so it shows the tab loader rather than an empty canvas.
+  warmWithoutBody?: boolean;
 }): TabLoadState {
-  // Pre-hydration / no project: the project-level loader owns the screen.
-  if (!input.hydrated || !input.hasProject) return 'ready';
+  // Pre-hydration / no project: the project-level loader owns the screen, or the warm paint does.
+  if (!input.hydrated) return input.warmWithoutBody ? 'loading' : 'ready';
+  if (!input.hasProject) return 'ready';
   if (input.errored) return 'error';
   if (input.loaded) return 'ready';
   // Not loaded yet. Only a tab with nothing local to paint should show

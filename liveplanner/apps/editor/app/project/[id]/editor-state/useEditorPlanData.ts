@@ -1,6 +1,7 @@
 import { planHidesCursors } from '@/lib/plan-cursors';
 import { usePlanPresence } from '@/hooks/plan/usePlanPresence';
 import { usePlanItems } from '@/hooks/plan/usePlanItems';
+import { usePlanCopyFollow } from '../usePlanCopyFollow';
 import {
   type PullRequestStatusesSlice,
   usePullRequestStatuses,
@@ -67,7 +68,7 @@ export function useEditorPlanData(
   collaborationSlice: EditorCollaborationSlice,
   persistenceSlice: EditorPersistenceSlice,
 ) {
-  const { accountUserId, workbench, workbenchMode } = env;
+  const { accountUserId, embedMode, workbench, workbenchMode } = env;
   const { activeId, selectionStore, sessionTabScope, setActiveId, setSelectedId } = selectionSlice;
   const {
     applyRemoteOp,
@@ -91,6 +92,7 @@ export function useEditorPlanData(
     tabs,
     tickTabs,
     voteSelfId,
+    warmPlan,
   } = projectSlice;
   const { canvasTool, setCanvasTool } = dialogsSlice;
   const {
@@ -127,6 +129,8 @@ export function useEditorPlanData(
   const planItems = usePlanItems({
     projectId,
     ready: hydrated,
+    // A warm open's kept cards, shown until the first load (offline-mode.md "Warm open of a cloud project").
+    warm: warmPlan?.cards ?? null,
     ownerId: selfParticipant.id,
     name: selfParticipant.name,
     color: selfParticipant.color,
@@ -199,8 +203,22 @@ export function useEditorPlanData(
   // the lazily loaded sheet chunk through it, once a Sheet is drawn.
   const sheetsCommitRef = useRef<((map: (els: Element[]) => Element[]) => void) | null>(null);
   const sheetsPlaceRef = useRef<SheetsBridge['placeElement'] | null>(null);
+  // The last seen copy keeps the cards and the first tab's sheets (offline-mode.md "Warm open of a cloud project").
+  const planCopy = usePlanCopyFollow({
+    reader: selfParticipant.id,
+    projectId,
+    following: hydrated && realtime.projectServerStored && !embedMode && !workbenchMode,
+    // The warm store is the copy's own: only what a load read is followed back.
+    loaded: hydrated && planItems.status === 'ready' && planItems.store !== warmPlan?.cards,
+    store: planItems.store,
+    practiceCount: planItems.practiceIds.size,
+    tabs,
+    tabScope: sessionTabScope,
+  });
   const sheets = useSheetsBridge({
     projectId: projectId ?? '',
+    warm: warmPlan?.sheets ?? null,
+    onTabRead: planCopy.onSheetsRead,
     ownerId: selfParticipant.id,
     shareCode: sessionShareCode,
     tabScope: sessionTabScope,

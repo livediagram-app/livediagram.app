@@ -67,11 +67,16 @@ const DOM_WORDS =
 const OTHER_APP_PATHS = /^\s*(livediagram|livedocuments|livehuddle): '\/document\/',$/;
 // livedocuments, the liveworkspace app whose items are Documents, named as the app it is.
 const OTHER_APP_NAME = /\blivedocuments(\.app)?\b/g;
+// A link into another app's own spec folder for its items (the shared warm open's livediagram blueprint).
+const OTHER_APP_SPEC_PATH =
+  /\/(livediagram|livedocuments|livehuddle)\/docs\/specs\/006-document\//g;
 // A line stating the rule itself.
 const RULE = /never "document"/;
 const NAMED = /document/i;
 const misnames = (line: string, file = '') =>
-  NAMED.test(line.replace(DOM_WORDS, '').replace(OTHER_APP_NAME, '')) &&
+  NAMED.test(
+    line.replace(DOM_WORDS, '').replace(OTHER_APP_NAME, '').replace(OTHER_APP_SPEC_PATH, '/'),
+  ) &&
   !DOM_DOCUMENT.test(line) &&
   !FLOWCHART_DOCUMENT.test(line) &&
   !PAGE_SEARCH_WORDS.test(line) &&
@@ -119,5 +124,11 @@ describe('a project is never called a document', () => {
     expect(flagged('const documents = await listDocuments();')).toBe(true);
     expect(flagged('const id = row.documentId;')).toBe(true);
     expect(flagged('el.ownerDocument; // see the documentation')).toBe(false);
+    expect(flagged('[Warm open](../../livediagram/docs/specs/006-document/offline-mode.md)')).toBe(
+      false,
+    );
+    expect(
+      flagged('[Warm open](../../livediagram/docs/specs/006-document/x.md#a-cloud-document)'),
+    ).toBe(true);
   });
 });

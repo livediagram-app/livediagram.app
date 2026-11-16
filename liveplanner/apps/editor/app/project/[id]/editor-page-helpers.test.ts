@@ -383,6 +383,12 @@ describe('deriveTabLoadState', () => {
     expect(deriveTabLoadState({ ...base, hasProject: false })).toBe('ready');
   });
 
+  // docs/specs/006-project/offline-mode.md "Warm open of a cloud project": only the warm-painted tab has a body.
+  it('loads another tab than the warm-painted one before hydration', () => {
+    expect(deriveTabLoadState({ ...base, hydrated: false, warmWithoutBody: true })).toBe('loading');
+    expect(deriveTabLoadState({ ...base, hydrated: false, warmWithoutBody: false })).toBe('ready');
+  });
+
   it('loads an unfetched, empty tab so the empty-canvas card never flashes', () => {
     expect(deriveTabLoadState(base)).toBe('loading');
   });

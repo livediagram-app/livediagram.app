@@ -9,7 +9,8 @@
 // after one was dropped reads every loaded tab again, as a rejoin does.
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef } from 'react';
 import type { RoomOp, SheetPresenceOp, SheetsRoomOp } from '@liveplanner/api-schema';
-import type { SheetPerson } from '@liveplanner/sheets';
+import type { SheetJson, SheetPerson } from '@liveplanner/sheets';
+import type { KeptSheets } from '@/lib/last-seen-plan';
 import type { BoxedElement, Element } from '@liveplanner/project';
 import type { SheetsScope } from '@/lib/api/sheets';
 import type { ItemUndoStep } from '@/hooks/plan/item-undo-journal';
@@ -65,6 +66,11 @@ export type SheetsBridge = {
   sheetRetitled: (sheetId: string, title: string) => void;
   // The sheet chunk attaches its handlers; the returned function detaches them.
   attach: (handlers: SheetsHandlers) => () => void;
+  // The first tab's sheets a warm open painted from the last seen copy (docs/specs/006-project/offline-mode.md "Warm
+  // open of a cloud project"), seeded into a store as it is made; null when there are none.
+  warm?: KeptSheets | null;
+  // Told each tab's sheets as a load read them (the last seen copy keeps the first tab's).
+  onTabRead?: (tabId: string, sheets: readonly SheetJson[]) => void;
 };
 
 export const SheetsBridgeContext = createContext<SheetsBridge | null>(null);
@@ -93,6 +99,8 @@ export function useSheetsBridge(opts: {
   tickElements: (map: (els: Element[]) => Element[]) => void;
   selectElement: (id: string) => void;
   sheetRetitled: (sheetId: string, title: string) => void;
+  warm?: KeptSheets | null;
+  onTabRead?: (tabId: string, sheets: readonly SheetJson[]) => void;
 }) {
   const handlers = useRef<SheetsHandlers | null>(null);
   // An op (or a rejoin's resync) reached no store since the last attach: the store's loaded tabs may be behind.
@@ -106,6 +114,8 @@ export function useSheetsBridge(opts: {
   const tickElements = useLatest(opts.tickElements);
   const selectElement = useLatest(opts.selectElement);
   const sheetRetitled = useLatest(opts.sheetRetitled);
+  const onTabRead = useLatest(opts.onTabRead);
+  const warm = opts.warm ?? null;
   const attach = useCallback((h: SheetsHandlers) => {
     handlers.current = h;
     if (missed.current) {
@@ -137,6 +147,8 @@ export function useSheetsBridge(opts: {
       selectElement: (id) => selectElement.current(id),
       sheetRetitled: (sheetId, title) => sheetRetitled.current(sheetId, title),
       attach,
+      warm,
+      onTabRead: (tabId, sheets) => onTabRead.current?.(tabId, sheets),
     }),
     [
       projectId,
@@ -158,6 +170,8 @@ export function useSheetsBridge(opts: {
       selectElement,
       sheetRetitled,
       attach,
+      warm,
+      onTabRead,
     ],
   );
   // Sheet changes a reload kept waiting (docs/specs/007-editor/offline-changes.md "Kept across a reload") go as soon
