@@ -92,6 +92,10 @@ export function deriveCanvasSelection(input: {
   // other's verbs, so the menu — the deliberate, more specific gesture —
   // owns the moment and the popover (with its pluses) stands down.
   elementMenuOpen?: boolean;
+  // An image is being cropped on the canvas (docs/specs/009-elements/picture-crop-and-mask.md "Cropping in the
+  // editor"): the crop's handles and bar own the moment, so the selection toolbar and the pluses stand down until
+  // it ends, however it ends.
+  cropping?: boolean;
   // Where an arrow's label is drawn, if it has one. The label belongs to its
   // line (docs/specs/008-canvas/arrow-labels.md), so the floating toolbars
   // clear it as they clear the line.
@@ -109,6 +113,7 @@ export function deriveCanvasSelection(input: {
     tabLocked,
     readOnly,
     elementMenuOpen,
+    cropping = false,
     labelRectOf,
     plusBlocked,
   } = input;
@@ -137,6 +142,7 @@ export function deriveCanvasSelection(input: {
   const showPopover = !!(
     selected &&
     !elementMenuOpen &&
+    !cropping &&
     editingId !== selected.id &&
     !isPaintMode &&
     multiSelectedIds.size === 0 &&
@@ -145,6 +151,7 @@ export function deriveCanvasSelection(input: {
   const showPlus = !!(
     selected &&
     !elementMenuOpen &&
+    !cropping &&
     selectedIsBoxed &&
     // Quick-connect works on a single element. A marquee multi-select stays
     // suppressed: it's a transient selection, not a unit you chain from.

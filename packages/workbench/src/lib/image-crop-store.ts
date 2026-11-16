@@ -41,3 +41,8 @@ export function useIsImageCropping(id: string): boolean {
     () => false,
   );
 }
+
+/** The image being cropped, or null: the selection chrome reads it to stand down while any crop is open. */
+export function useImageCropId(): string | null {
+  return useSyncExternalStore(subscribe, imageCropId, () => null);
+}

@@ -20,7 +20,7 @@ Scope, by file:
 | `../packages/workbench/src/lib/image-canvas-draw.ts`               | `drawPictureOnCanvas`: the same layout and clip on a 2D canvas, for `apps/live/lib/export-tab-canvas-draw.ts`                                                                                                                                                   |
 | `../packages/workbench/src/lib/image-greyscale.ts`                 | `canvasFilters`, `greyPixels`, `greyCopy`: the canvas filter, else a grey copy of the pixels                                                                                                                                                                    |
 | `apps/live/components/canvas/ImageElementView.tsx`                 | The canvas face: laid-out `<img>`, `clip-path`, `filter`; mounts the overlay and tracks `ImageCrop`                                                                                                                                                             |
-| `../packages/workbench/src/lib/image-crop-store.ts`                | The one image being cropped (`startImageCrop`, `endImageCrop`, `imageCropId`, `useIsImageCropping`)                                                                                                                                                             |
+| `../packages/workbench/src/lib/image-crop-store.ts`                | The one image being cropped (`startImageCrop`, `endImageCrop`, `imageCropId`, `useIsImageCropping`, `useImageCropId`)                                                                                                                                           |
 | `../packages/workbench/src/lib/image-crop-math.ts`                 | `cropSessionStart`, `panPicture`, `dragFrame`, `cropZoom`, `zoomPicture`, `fitAspect`, `resetCrop`, `cropSessionResult`, `localDelta`                                                                                                                           |
 | `../packages/workbench/src/components/canvas/ImageCropOverlay.tsx` | The veil, frame, handles and gestures, in the grips layer                                                                                                                                                                                                       |
 | `../packages/workbench/src/components/canvas/ImageCropBar.tsx`     | Aspect, Zoom, Reset, Cancel, Done                                                                                                                                                                                                                               |
@@ -62,6 +62,11 @@ The layout, the mask paths, the crop math and the session are livedocuments' blu
 - `ImageCropOverlay` mounts in `BoxGripsPortal` from `ImageElementView` while `useIsImageCropping(element.id)` and the
   image has a picture, is selected, unlocked and `onCommitCrop` is given. `BoxedElementView` passes
   `showHandles && !cropping`.
+- While any image is cropped, `useCanvasSelectionView` reads `useImageCropId()` and hands `cropping: id !== null` to
+  `deriveCanvasSelection` (`apps/live/lib/canvas-selection.ts`), which turns `showPopover` (the selection toolbar) and
+  `showPlus` (the quick-add buttons) off; the store ending turns them back on, whichever way it ends (Done, Enter,
+  Cancel, Escape, a press off the picture, Ctrl or Cmd+Z / Y, the selection moving, the image unmounting). The undo
+  keys end the crop without consuming the key, so the editor's undo or redo still runs.
 - Apply calls `imageContext.onCommitImageCrop(id, result)` once: one `commit`, refused for a locked element
   (`el.locked`) and by the tab's lock through `commit`.
 

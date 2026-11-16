@@ -69,7 +69,9 @@ image on the canvas:
 
 - **What shows**: the whole picture at the size it is drawn, the part outside the box dimmed under a dark veil; the
   box as a white frame with faint thirds lines; eight handles on the frame (four corners, four edges), the same size on
-  screen at any zoom. The element's own resize handles step aside while it is cropped.
+  screen at any zoom. The element's own resize handles step aside while it is cropped, and so do the selection
+  toolbar over it and the quick-add **+** buttons round it, so nothing competes with the crop handles and the bar;
+  all three come back as cropping ends, however it ends.
 - **Moving the picture**: dragging anywhere on the picture (inside the frame or the dimmed part) slides the picture
   under the frame. It never leaves a gap: the frame always lies on the picture.
 - **Changing the crop**: dragging a handle moves that edge or corner of the frame, never past the picture's edge and
@@ -83,8 +85,8 @@ image on the canvas:
     frame's centre, kept covering the frame.
   - **Reset** (back to the whole picture at the box's size, still cropping), **Cancel** and **Done**.
 - **Ending**: **Done** or Enter applies; **Cancel** or Escape leaves the image as it was; a press anywhere off the
-  picture applies, as clicking away does in a design app. Selecting another element, an undo, the image leaving the
-  tab or losing its picture ends cropping without a change.
+  picture applies, as clicking away does in a design app. Selecting another element, an undo (Ctrl or Cmd+Z, which
+  then undoes as usual), the image leaving the tab or losing its picture ends cropping without a change.
 - **What Done stores**, one edit and one undo step: the box becomes the frame (it can move and change size) and
   `crop` the part of the picture under it. Nothing is stored when the frame and the picture are where they began.
 - **Rotation**: a rotated image is cropped in its own frame: the veil, the frame and the handles turn with it, and a
