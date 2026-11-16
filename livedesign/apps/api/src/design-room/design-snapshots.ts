@@ -7,7 +7,6 @@ import type { Tab } from '@livedesign/design';
 import {
   serveSnapshots,
   type SnapshotCaller,
-  type SnapshotDb,
   type SnapshotDoor,
 } from '@liveworkspace/snapshots/server';
 import { componentInsertStatements } from '../db/components';
@@ -44,7 +43,7 @@ export function designSnapshotDoor(env: DesignEnv, designId: string): SnapshotDo
             ...(JSON.parse(t.data) as Omit<Tab, 'id' | 'name'>),
             id: t.id,
             name: t.name,
-          } as Tab,
+          },
           folder: t.folder,
         })),
       );
@@ -75,7 +74,7 @@ export function serveDesignSnapshots(
   const [api, collection, designId, ...rest] = ctx.segments;
   if (api !== 'api' || collection !== 'designs' || !designId) return handle();
   return serveSnapshots({
-    db: ctx.env.DESIGN_DB as unknown as SnapshotDb,
+    db: ctx.env.DESIGN_DB,
     itemId: designId,
     request: ctx.request,
     rest,

@@ -7,7 +7,6 @@ import type { Tab } from '@livedocuments/document';
 import {
   serveSnapshots,
   type SnapshotCaller,
-  type SnapshotDb,
   type SnapshotDoor,
 } from '@liveworkspace/snapshots/server';
 import { replaceTabs } from '../db/tabs';
@@ -30,7 +29,7 @@ export function documentSnapshotDoor(
       const read = readDocumentFile(text, { keepIds: true });
       if (!read.ok) return read.failure === 'too_large' ? 'too_large' : 'invalid';
       const tabs = read.content.copy.tabs.map((t) => ({
-        tab: { ...(JSON.parse(t.data) as Omit<Tab, 'id' | 'name'>), id: t.id, name: t.name } as Tab,
+        tab: { ...(JSON.parse(t.data) as Omit<Tab, 'id' | 'name'>), id: t.id, name: t.name },
         folder: t.folder,
       }));
       await replaceTabs(env, documentId, tabs);
@@ -65,7 +64,7 @@ export function serveDocumentSnapshots(
   const [api, collection, documentId, ...rest] = ctx.segments;
   if (api !== 'api' || collection !== 'documents' || !documentId) return handle();
   return serveSnapshots({
-    db: ctx.env.DOCUMENT_DB as unknown as SnapshotDb,
+    db: ctx.env.DOCUMENT_DB,
     itemId: documentId,
     request: ctx.request,
     rest,

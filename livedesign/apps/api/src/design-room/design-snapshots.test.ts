@@ -93,7 +93,7 @@ describe('design snapshots', () => {
     const { db, env, send, reverted } = await arrange();
     const taken = await send('POST', '/snapshots', { body: { name: 'Before' } });
     expect(taken.status).toBe(201);
-    const { snapshot } = (await taken.json()) as { snapshot: { id: string } };
+    const { snapshot } = await taken.json<{ snapshot: { id: string } }>();
 
     // Edit: change a tab, delete one, add one, swap the component library.
     await upsertTab(env, 'A', { id: 't1', name: 'Renamed', elements: [] }, 0);
@@ -127,9 +127,11 @@ describe('design snapshots', () => {
     expect(revAfter).toBeGreaterThan(revBefore);
 
     // The automatic snapshot holds the edit, so the revert can be undone.
-    const list = (await (await send('GET', '/snapshots')).json()) as {
+    const list = await (
+      await send('GET', '/snapshots')
+    ).json<{
       snapshots: { id: string; kind: string }[];
-    };
+    }>();
     expect(list.snapshots.map((s) => s.kind)).toEqual(['before-revert', 'manual']);
     await send('POST', `/snapshots/${list.snapshots[0]!.id}/revert`);
     expect((await getTab(env, 'A', 't3'))?.name).toBe('New');
@@ -139,9 +141,11 @@ describe('design snapshots', () => {
   it('keeps the latest five: a sixth drops the oldest', async () => {
     const { send } = await arrange();
     for (let i = 0; i < 6; i += 1) await send('POST', '/snapshots', { body: { name: `n${i}` } });
-    const list = (await (await send('GET', '/snapshots')).json()) as {
+    const list = await (
+      await send('GET', '/snapshots')
+    ).json<{
       snapshots: { name: string }[];
-    };
+    }>();
     expect(list.snapshots.map((s) => s.name)).toEqual(['n5', 'n4', 'n3', 'n2', 'n1']);
   });
 
@@ -163,7 +167,7 @@ describe('design snapshots', () => {
   it('fences a write from before the revert and passes everything else on', async () => {
     const { send } = await arrange();
     const taken = await send('POST', '/snapshots', { body: {} });
-    const { snapshot } = (await taken.json()) as { snapshot: { id: string } };
+    const { snapshot } = await taken.json<{ snapshot: { id: string } }>();
     await send('POST', `/snapshots/${snapshot.id}/revert`);
     const stale = await send('PUT', '/tabs/t1', { headers: { [SNAPSHOT_GENERATION_HEADER]: '0' } });
     expect(stale.status).toBe(409);

@@ -9,7 +9,6 @@ import type { Tab } from '@liveplanner/project';
 import {
   serveSnapshots,
   type SnapshotCaller,
-  type SnapshotDb,
   type SnapshotDoor,
 } from '@liveworkspace/snapshots/server';
 import { replaceTabs } from '../db/tabs';
@@ -120,7 +119,7 @@ export function planSnapshotDoor(env: PlanEnv, planId: string): SnapshotDoor {
             ...(JSON.parse(t.data) as Omit<Tab, 'id' | 'name'>),
             id: t.id,
             name: t.name,
-          } as Tab,
+          },
           folder: t.folder,
         })),
         now,
@@ -152,7 +151,7 @@ export function servePlanSnapshots(
   const [api, collection, planId, ...rest] = ctx.segments;
   if (api !== 'api' || collection !== 'projects' || !planId) return handle();
   return serveSnapshots({
-    db: ctx.env.PLAN_DB as unknown as SnapshotDb,
+    db: ctx.env.PLAN_DB,
     itemId: planId,
     request: ctx.request,
     rest,
