@@ -187,6 +187,64 @@ export const linkFromCode = defineVerb({
   },
 });
 
+// Where `link review` writes its pictures and comment by default (repository-link blueprint RL46).
+export const REVIEW_OUT_DIR = 'livediagram-review';
+
+// `link review` (docs/specs/027-repositories/repository-link.md "Pull request review"; blueprint link-review.md):
+// before and after pictures of the mirror files a change touched, from git alone, so it needs no host.
+export const linkReview = defineVerb({
+  id: 'link.review',
+  summary: 'Before and after pictures of changed mirror files',
+  description:
+    'Compares the mirror files changed between the merge base of <base> and <head> (HEAD by default), and writes a before and an after PNG of each changed tab, changed elements outlined, plus comment.md for the pull request. Reads git only: no sign-in.',
+  behaviour: 'read',
+  local: true,
+  offline: true,
+  input: z.object({
+    base: z.string().min(1).describe('The commit or branch the change is compared with'),
+    head: z.string().min(1).default('HEAD').describe('The changed commit; HEAD by default'),
+    out: z
+      .string()
+      .min(1)
+      .default(REVIEW_OUT_DIR)
+      .describe(`Where to write; ${REVIEW_OUT_DIR} by default`),
+    imageUrl: z
+      .string()
+      .refine((url) => url.includes('{file}'), 'needs {file} where the picture’s name goes')
+      .optional()
+      .describe('Each picture’s address in the comment, {file} its name'),
+  }),
+  output: z.object({
+    comment: z.string(),
+    documents: z.number(),
+    tabs: z.number(),
+    drawn: z.number(),
+    listed: z.number(),
+    skipped: z.number(),
+    pictures: z.array(z.object({ file: z.string(), width: z.number(), height: z.number() })),
+    lines: z.array(z.string()),
+  }),
+  text: ({ lines }) => lines,
+  json: ({ comment, documents, tabs, drawn, listed, skipped, pictures }) => ({
+    comment,
+    documents,
+    tabs,
+    drawn,
+    listed,
+    skipped,
+    pictures,
+  }),
+  quiet: ({ comment }) => [comment],
+  cli: {
+    positionals: ['base', 'head'],
+    examples: [
+      'livediagram link review origin/main',
+      'livediagram link review main HEAD --out review',
+    ],
+    prints: 'the comment’s path, then <picture>  <width>×<height> · <n> KB per picture',
+  },
+});
+
 export const sync = defineVerb({
   id: 'sync',
   files: true,

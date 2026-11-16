@@ -20,3 +20,14 @@ export const SYNC_CONCURRENCY = 2;
 // As LIST_DEFAULT_LIMIT (CLI19), RL38.
 export const PICKER_PAGE = 20;
 export const SYNC_REPORTS_KEPT = 20;
+// `link review` (docs/specs/027-repositories/blueprints/link-review.md "Constants and configuration").
+export const REVIEW_MAX_TABS = 10;
+export const REVIEW_COMMENT_MAX_CHARS = 60_000;
+// RL46: sharp on a high-density screen, the pixel buffer bounded.
+export const REVIEW_PNG_SCALE = 2;
+export const REVIEW_PNG_MAX_SIDE = 2_400;
+export const REVIEW_FILE_HEX = 16;
+// RL47.
+export const REVIEW_MARK_OFFSET = 6;
+export const REVIEW_MARK_STROKE = 3;
+export const REVIEW_MARKER = '<!-- livediagram-review -->';

@@ -1,7 +1,8 @@
 # Repository link
 
 **Status: first slice built.** The link file, the `none`, `index` and `files` mirror levels, every sync state,
-`link init|status|ls`, `sync` (`--relocate`, `--dry-run`, `--all`) and `sync --watch` (CLI 0.2). Planned, and marked so where
+`link init|status|ls`, `sync` (`--relocate`, `--dry-run`, `--all`) and `sync --watch` (CLI 0.2), and
+[Pull request review](#pull-request-review) (`link review` and its GitHub Action, CLI 0.3). Planned, and marked so where
 they are specified: the merge of `ahead` and `diverged` documents, `local-new` creation, `sync --resolve`, the git
 hooks and the merge driver, `link status --fail-behind`, and [Diagram sources](diagram-sources.md).
 
@@ -197,6 +198,7 @@ report and the changeset's summary.
 | `link ls`                                           | The covered documents, as `document ls` prints them                                                                          |
 | `link from-code [<file>...] [--doc <d>]`            | Draws `wrangler.toml` / Compose files as a tab ([Infrastructure code import](../020-import-export/infrastructure-import.md)) |
 | `sync [--watch] [--relocate] [--dry-run] [--all]`   | One sync of the link; `--watch` keeps syncing until interrupted                                                              |
+| `link review <base> [<head>] [--out <dir>]`         | Before and after pictures of changed mirror files, and a comment ([Pull request review](#pull-request-review))               |
 | `sync --resolve <file>`                             | Planned: a mirror file git left conflicted, resolved by the driver's table                                                   |
 | `link hooks install\|uninstall`                     | Planned: the git hooks and the merge driver ([Git](#git))                                                                    |
 
@@ -268,6 +270,75 @@ livediagram's history from local changes by each copy's own record: a tab whose 
 `link status` answers whether the committed snapshots are current; it fails a build only when asked
 (`--fail-behind`), and without a token it says so and exits 0.
 
+## Pull request review
+
+A reviewer of a pull request that changes a mirror file sees the file's text diff, not the diagram. `link review`
+draws what changed, and a GitHub Action posts it on the pull request, so a diagram change is reviewed as a picture.
+
+### `link review`
+
+`livediagram link review <base> [<head>] [--out <dir>] [--image-url <template>]` reads only git and the mirror files:
+no profile, no token, no request to livediagram. `<head>` defaults to `HEAD`; the comparison runs from the merge base
+of the two, as a pull request's diff does.
+
+- **What it compares.** Every `*.livediagram.json` at or below the working directory that git says changed between
+  the merge base and `<head>`, read at both commits. A file is paired with its earlier copy by its document's id, so
+  a file `sync --relocate` moved is one document, not a removal and an addition. A file that is not a mirror file
+  (no `livediagramSync`, conflict markers, invalid) is named in the comment as not drawn, never an error.
+- **Tabs.** A tab whose elements and settings are unchanged is skipped. A changed tab gets a **before** and an
+  **after** picture; a tab only at `<head>` gets only an after picture, a tab only at the merge base only a before
+  picture. Tab order follows `<head>`'s document, then the removed tabs.
+- **Outlines.** Each changed element is outlined where it is drawn: on the after picture an added element in green,
+  solid, and a changed one in amber, dashed; on the before picture a removed element in red, dotted, and a changed
+  one in amber, dashed. An element whose only change is on a hidden layer is not outlined. Colour is never the only
+  mark: each kind has its own line and the comment names them.
+- **Pictures** are drawn by the same renderer as `graph render` and the editor's export, from the mirror file
+  alone. Images and media the file only references are drawn as the export's placeholder box, and the comment says
+  so for a tab that holds any.
+- **Output.** PNGs and `comment.md` in `--out` (default `livediagram-review`). Each picture is named by a hash of its
+  drawing, so an unchanged picture keeps its name from push to push. `--image-url` is the address each picture is
+  linked at, `{file}` standing for its name; without it the comment links the bare names, so it reads beside the
+  pictures. stdout carries the lines `comment.md` and each picture's line, and `--json` the counts the Action reads.
+- **The comment** opens with a hidden marker (`<!-- livediagram-review -->`) so the Action finds its own comment.
+  Per document, its name, an **Open in livediagram** link to the document at the mirror file's host, the file's
+  path, and per drawn tab its name, its counts (added, changed, removed) and the pictures side by side. With no
+  changed tab the comment says so in one line.
+- **Large pull requests.** At most `REVIEW_MAX_TABS` tabs are drawn; the rest are listed by document and tab name
+  with their counts, under one line saying how many were not drawn. The comment stays under
+  `REVIEW_COMMENT_MAX_CHARS`, GitHub's limit less a margin, by listing instead of drawing whatever would pass it.
+- **stdout carries data only.** A line a shared module prints to the console goes to stderr, so `--json` stays
+  one JSON value.
+- Exit 0 whether or not anything changed; a base or head git cannot resolve, a missing merge base (a shallow clone)
+  or no git work tree exits 2 naming the fix.
+
+### The GitHub Action
+
+`livediagram/apps/cli/github-action` in this repository: a composite action a repository adds to a workflow run on
+`pull_request`. It uses only the workflow's own `GITHUB_TOKEN` (`contents: write` for the pictures,
+`pull-requests: write` for the comment), so it works on a private repository with no secret and no livediagram
+account, and never through liveplanner's GitHub App, which is read-only by spec.
+
+1. It runs `link review` with the pull request's base and head commits, through the published CLI.
+2. **Pictures** are committed to a branch of the repository itself, `livediagram-previews`, under
+   `pr-<number>/`, and linked as `https://github.com/<owner>/<repo>/blob/livediagram-previews/pr-<number>/<file>?raw=true`.
+   They need no outside host, and GitHub shows them to exactly the people who may read the repository: a private
+   repository's pictures stay private. A push that loses a race with another pull request's run starts again
+   from the branch's new tip, up to `REVIEW_PUSH_ATTEMPTS` times.
+3. **One comment** per pull request: the Action looks for a comment of its own (the bot's login) opening with the
+   marker and edits it in place on every push; it posts one only when the first push with diagram changes comes.
+   When a later push leaves no changed tab, the comment is edited to say so; with no comment yet and nothing
+   changed it posts nothing.
+4. **A pull request from a fork** gets a read-only token: the Action uploads the pictures and `comment.md` as a
+   workflow artifact, names it in the job summary, and passes.
+
+### Review limits
+
+| Constant                   | Value | Why                                                                      |
+| -------------------------- | ----- | ------------------------------------------------------------------------ |
+| `REVIEW_MAX_TABS`          | 10    | A reviewer looks at ten pairs of pictures; past that a list reads better |
+| `REVIEW_COMMENT_MAX_CHARS` | 60000 | GitHub refuses a comment over 65536 characters                           |
+| `REVIEW_PUSH_ATTEMPTS`     | 3     | Two pull requests' runs racing settle within a couple of retries         |
+
 ## Local sync state
 
 Per link, never committed: inside a git work tree at `<git dir>/livediagram/<link id>/` (each worktree its own),
@@ -300,4 +371,6 @@ holds the base snapshots (the latest `SYNC_BASES_KEPT` per tab), the pending pro
 - CLI debug fingerprints: `[sync] state`, `[sync] wrote`, `[sync] sent`, `[sync] merged`, `[sync] lost-local-value`,
   `[sync] gone`, `[sync] unreadable`, `[sync] pending`, `[sync] resolved`, `[sync] refused`, `[sync] lock-wait`, each with the document and tab ids, never content.
 - Telemetry: category `Cli`, action `Used`, type the verb (`LinkInit`, `Sync`, `SyncWatch`, `LinkHooks`), as every
-  command ([CLI](../015-api/cli.md#telemetry)).
+  command ([CLI](../015-api/cli.md#telemetry)). `link review` runs offline, as `graph render` does, and sends none.
+- `link review` debug fingerprints: `[review] range`, `[review] file`, `[review] skipped`, `[review] tab`,
+  `[review] capped`, with commit ids, document and tab ids and counts, never content.

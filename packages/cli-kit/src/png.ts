@@ -8,6 +8,8 @@ import { CliError } from './cli-error';
 import { EXIT } from './exit-codes';
 
 export type Picture = { path: string; width: number; height: number; bytes: number };
+// How large a PNG is drawn: `scale` times the SVG's size, its longer side at most `maxSide` px when given.
+export type PictureSize = { scale: number; maxSide?: number };
 
 const renderers = new WeakMap<CliIo, ReturnType<typeof createPngRenderer>>();
 
@@ -49,12 +51,17 @@ export async function writePicture(
   svg: string,
   format: 'svg' | 'png',
   npmPackage: string,
+  size: PictureSize = { scale: 1 },
 ): Promise<Picture> {
   if (format === 'svg') {
     await io.files.write(path, svg);
     return { path, ...svgSize(svg), bytes: new TextEncoder().encode(svg).length };
   }
-  const { png, width, height } = await rendererFor(io, npmPackage).renderPng(svg);
+  const { png, width, height } = await rendererFor(io, npmPackage).renderPng(
+    svg,
+    size.scale,
+    size.maxSide,
+  );
   await io.files.writeBytes(path, png);
   return { path, width, height, bytes: png.length };
 }

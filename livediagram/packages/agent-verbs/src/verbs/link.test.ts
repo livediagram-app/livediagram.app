@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { linkFromCode, linkInit, linkLs, linkStatus, MIRROR_LEVELS, sync } from './link';
+import {
+  linkFromCode,
+  linkInit,
+  linkLs,
+  linkReview,
+  linkStatus,
+  MIRROR_LEVELS,
+  REVIEW_OUT_DIR,
+  sync,
+} from './link';
 
 // The repository link's verbs (docs/specs/027-repositories/blueprints/repository-link.md "The verbs"): declared
 // here, run by the CLI (CLI55); what they print is theirs.
@@ -104,5 +113,39 @@ describe('link from-code', () => {
     const dry = { text: '', id: null, dryRun: true, graph };
     expect(linkFromCode.json!(dry)).toBe(graph);
     expect(linkFromCode.quiet!(dry)).toEqual([]);
+  });
+});
+
+describe('link review', () => {
+  it('takes a base, a head (HEAD), an out directory and an image address holding {file}', () => {
+    expect(linkReview.input.parse({ base: 'origin/main' })).toEqual({
+      base: 'origin/main',
+      head: 'HEAD',
+      out: REVIEW_OUT_DIR,
+    });
+    expect(
+      linkReview.input.parse({ base: 'a', head: 'b', out: 'r', imageUrl: 'https://x/{file}' }),
+    ).toEqual({ base: 'a', head: 'b', out: 'r', imageUrl: 'https://x/{file}' });
+    const refused = linkReview.input.safeParse({ base: 'a', imageUrl: 'https://x/' });
+    expect(refused.success).toBe(false);
+    expect(refused.error!.issues[0]!.message).toBe('needs {file} where the picture’s name goes');
+    expect(linkReview.input.safeParse({ base: '' }).success).toBe(false);
+  });
+
+  it('prints its lines, answers the counts as JSON and the comment’s path when quiet', () => {
+    const counts = {
+      comment: 'r/comment.md',
+      documents: 1,
+      tabs: 2,
+      drawn: 2,
+      listed: 0,
+      skipped: 0,
+      pictures: [{ file: 'a.png', width: 10, height: 20 }],
+    };
+    const result = { ...counts, lines: ['r/comment.md', 'r/a.png  10×20 · 1 KB'] };
+    expect(linkReview.text!(result)).toEqual(result.lines);
+    expect(linkReview.json!(result)).toEqual(counts);
+    expect(linkReview.quiet!(result)).toEqual(['r/comment.md']);
+    expect(linkReview.offline).toBe(true);
   });
 });
