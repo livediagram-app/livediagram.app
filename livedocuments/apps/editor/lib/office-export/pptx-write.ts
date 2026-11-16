@@ -15,7 +15,7 @@ import {
   type OoxmlPart,
   type OoxmlRel,
 } from './ooxml';
-import { THEME_TYPE, THEME_XML } from './ooxml-theme';
+import { THEME_TYPE, themeFontsOf, themeXml } from './ooxml-theme';
 import {
   notesMasterXml,
   presentationXml,
@@ -94,12 +94,13 @@ export function writePptx(deck: PptxDeck, when: Date = new Date()): Uint8Array<A
     { id: `rId${after + 2}`, type: REL.theme, target: 'theme/theme1.xml' },
     { id: `rId${after + 3}`, type: REL.tableStyles, target: 'tableStyles.xml' },
   ]);
+  const theme = themeXml(themeFontsOf(deck));
   parts.push(
     { path: 'ppt/presProps.xml', xml: PRES_PROPS_XML, type: PPTX_TYPES.presProps },
     { path: 'ppt/viewProps.xml', xml: VIEW_PROPS_XML, type: PPTX_TYPES.viewProps },
     { path: 'ppt/tableStyles.xml', xml: TABLE_STYLES_XML, type: PPTX_TYPES.tableStyles },
-    { path: 'ppt/theme/theme1.xml', xml: THEME_XML, type: THEME_TYPE },
-    { path: 'ppt/theme/theme2.xml', xml: THEME_XML, type: THEME_TYPE },
+    { path: 'ppt/theme/theme1.xml', xml: theme, type: THEME_TYPE },
+    { path: 'ppt/theme/theme2.xml', xml: theme, type: THEME_TYPE },
     { path: MASTER, xml: slideMasterXml(), type: PPTX_TYPES.slideMaster },
     { path: LAYOUT, xml: slideLayoutXml(), type: PPTX_TYPES.slideLayout },
     { path: NOTES_MASTER, xml: notesMasterXml(), type: PPTX_TYPES.notesMaster },

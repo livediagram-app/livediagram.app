@@ -10,7 +10,7 @@ Scope, by file (under `apps/editor/lib/office-export/` unless marked):
 | `ooxml.ts`                                        | `writeOoxmlPackage`: content types, relationships, core and app properties, then the zip                     |
 | `ooxml-colour.ts`                                 | `ooxmlColour`: a CSS colour as six hex digits and an alpha, `NO_PAINT`, or null; `fontFaceName`              |
 | `ooxml-fonts.ts`                                  | `officeFace`: a face's family, pitch and safe `altName`; `fontTableXml` (Word); `pitchFamilyOf` (PowerPoint) |
-| `ooxml-theme.ts`                                  | The one theme part both files carry                                                                          |
+| `ooxml-theme.ts`                                  | The deck's theme part: `themeFontsOf` (minor, major) and `themeXml`; Word carries none                       |
 | `pptx-types.ts`, `docx-types.ts`                  | What each writer takes, already in the file's units                                                          |
 | `pptx-native.ts`                                  | `nativeSlideItem`: a text element or basic shape as a native shape, or null for a picture                    |
 | `pptx-build.ts`                                   | `buildDeck`: the tab's pages into slides, through a `PageDrawer` for pictures                                |

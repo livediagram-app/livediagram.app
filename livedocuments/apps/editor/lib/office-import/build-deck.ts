@@ -18,6 +18,7 @@ import {
 } from '@livedocuments/document';
 import { pictureElement } from './build-article';
 import { EMU_PER_PT } from './limits';
+import { fitTextBox } from './text-fit';
 import type { PptxRead, SlideItem } from './pptx';
 import type { PictureOutcome } from './store-images';
 import { zipKey } from './zip';
@@ -62,7 +63,8 @@ export function buildDeckTab(
     // The deck centred on the page when their shapes differ.
     const ox = page.rect.x + (page.rect.width - read.cx * scale) / 2;
     const oy = page.rect.y + (page.rect.height - read.cy * scale) / 2;
-    for (const item of slide.items) elements.push(elementOf(item, scale, ox, oy, outcomes));
+    for (const item of slide.items)
+      elements.push(elementOf(item, scale, ox, oy, outcomes, page.rect));
     if (slide.notes || slide.hidden) {
       slides.push({
         pageId: page.id,
@@ -90,6 +92,7 @@ function elementOf(
   ox: number,
   oy: number,
   outcomes: ReadonlyMap<string, PictureOutcome>,
+  pageRect: { x: number; width: number },
 ): Element {
   const box = {
     x: Math.round(ox + item.box.x * scale),
@@ -100,12 +103,21 @@ function elementOf(
   if (item.kind === 'picture') {
     return pictureElement(item.picture, outcomes.get(zipKey(item.picture.path)), box);
   }
+  const size = slideTextSize(item.sizePt * EMU_PER_PT * scale);
+  // A box PowerPoint sizes to its text (no wrap, or shape autofit) grows to it, so no word is cut off.
+  const fitted = fitTextBox(
+    box,
+    { label: item.label, px: size.textSize * (size.textScale ?? 1), bold: item.bold },
+    item,
+    pageRect,
+  );
   const text: TextElement = {
     id: crypto.randomUUID(),
     type: 'text',
     ...box,
+    ...fitted,
     label: item.label,
-    ...slideTextSize(item.sizePt * EMU_PER_PT * scale),
+    ...size,
     textAlignX: item.alignX,
     textAlignY: item.alignY,
     ...(item.bold ? { textBold: true } : {}),

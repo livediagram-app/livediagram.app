@@ -301,6 +301,27 @@ export function masterStyleSize(
   return sz !== undefined && sz > 0 ? sz / 100 : undefined;
 }
 
+/** How a shape's text sits in its box: `wrap="none"` keeps it on one line (the box is as wide as the text), and
+ *  `a:spAutoFit` sizes the box to the text. The first of the shape, its layout's and its master's that says. */
+export function bodyFitOf(shapes: readonly (XmlElement | undefined)[]): {
+  noWrap: boolean;
+  autoFit: boolean;
+} {
+  let noWrap: boolean | undefined;
+  let autoFit: boolean | undefined;
+  for (const s of shapes) {
+    const bodyPr = path(s, 'p:txBody', 'a:bodyPr');
+    if (!bodyPr) continue;
+    if (noWrap === undefined && bodyPr.attrs.wrap !== undefined)
+      noWrap = bodyPr.attrs.wrap === 'none';
+    if (autoFit === undefined) {
+      if (child(bodyPr, 'a:spAutoFit')) autoFit = true;
+      else if (child(bodyPr, 'a:noAutofit') || child(bodyPr, 'a:normAutofit')) autoFit = false;
+    }
+  }
+  return { noWrap: noWrap ?? false, autoFit: autoFit ?? false };
+}
+
 /** `a:normAutofit`'s font scale (1 when the text is not shrunk to fit). */
 export function fontScaleOf(shape: XmlElement | undefined): number {
   const fit = find(path(shape, 'p:txBody', 'a:bodyPr'), 'a:normAutofit');
