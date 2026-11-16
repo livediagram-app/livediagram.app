@@ -60,6 +60,14 @@ async function importBoards(page: Page, boards: 1 | 2): Promise<void> {
   await expect(page.getByTestId('import-documents')).toContainText('Sprint board');
 }
 
+// Home shows each item once, in the first of New, Most Used and Recent it qualifies for
+// (liveworkspace/docs/specs/004-index/one-explorer.md "Each item shows once"), so a just-made document is in New. Four
+// newer ones, made with markUsed: false (never a use), take New's four places, so where the earlier ones land shows
+// whether making them was a use.
+async function fillNew(page: Page, headers: Record<string, string>): Promise<void> {
+  for (let i = 1; i <= 4; i++) await apiCreate(page, headers, `Newer ${i}`, { markUsed: false });
+}
+
 // Home's opened documents: the Most Used and Recent sections, grids on a wide screen, strips on a phone.
 const homeOpened = (page: Page) =>
   page.getByRole('region', { name: /^(Most Used|Recent)$/ }).getByRole('listitem');
@@ -71,6 +79,7 @@ test('an API client’s document is in Home’s Most Used or Recent unless it sa
   const headers = await signedIn(page, freshUserId('maker'));
   await apiCreate(page, headers, 'Made by a script');
   await apiCreate(page, headers, 'One of a batch', { markUsed: false });
+  await fillNew(page, headers);
 
   await page.goto('/explorer/home');
   await expect(homeOpened(page).getByRole('link', { name: 'Made by a script' })).toBeVisible({
@@ -84,7 +93,7 @@ test('signed in, a single imported board is in Home’s Most Used or Recent; a t
   page,
   pageErrors,
 }) => {
-  await signedIn(page, freshUserId('importer'));
+  const headers = await signedIn(page, freshUserId('importer'));
   await importBoards(page, 2);
   await page.goto('/explorer/home');
   await expect(page.getByRole('region', { name: 'Recent' })).toContainText(/will gather here\./, {
@@ -92,6 +101,7 @@ test('signed in, a single imported board is in Home’s Most Used or Recent; a t
   });
 
   await importBoards(page, 1);
+  await fillNew(page, headers);
   await page.goto('/explorer/home');
   await expect(homeOpened(page).getByRole('link')).toHaveCount(1);
   await expect(homeOpened(page).getByRole('link', { name: 'Sprint board' })).toBeVisible();
