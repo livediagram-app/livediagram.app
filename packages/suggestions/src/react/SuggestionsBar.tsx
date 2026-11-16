@@ -80,9 +80,13 @@ export function useSuggestionsToolsItem<E extends SuggestionElement>(
   const [clock, setClock] = useState(() => Date.now());
   useEffect(() => {
     if (given !== undefined || !open) return;
-    setClock(Date.now());
+    // Read once as it opens (on the next tick, not in the effect's own pass), then a minute at a time.
+    const first = setTimeout(() => setClock(Date.now()), 0);
     const timer = setInterval(() => setClock(Date.now()), 60_000);
-    return () => clearInterval(timer);
+    return () => {
+      clearTimeout(first);
+      clearInterval(timer);
+    };
   }, [given, open]);
   const now = given ?? clock;
   const editor = s?.level === 'edit';

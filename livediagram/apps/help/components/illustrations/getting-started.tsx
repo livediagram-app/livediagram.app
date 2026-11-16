@@ -3,15 +3,7 @@
 // guest vs account, and the essential keyboard shortcuts. Composed only from
 // the shared primitives so the house style holds.
 
-import {
-  Scene,
-  Shape,
-  Arrow,
-  Dialog,
-  Button,
-  Label,
-  Avatar,
-} from '@liveworkspace/help-site/art/primitives';
+import { Scene, Shape, Arrow, Label, Avatar } from '@liveworkspace/help-site/art/primitives';
 
 /** Quick-connect: a selected shape shows + buttons on its sides; clicking one opens a card of
  *  icon buttons (Duplicate, Arrow, Pencil, Text), and dragging Arrow onto a second shape pins
