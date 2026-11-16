@@ -44,6 +44,7 @@ import {
   TOOLBAR_LIBRARY_SELECTOR,
   ToolbarLibraryButton,
 } from '@liveworkspace/workbench/components/palette/ToolbarLibraryButton';
+import { LibraryIcon } from '@liveworkspace/workbench/components/library/library-icons';
 import { TOOLBAR_SEARCH_SELECTOR, ToolbarSearchButton, ToolbarSearchPanel } from './ToolbarSearch';
 import { BrowseMemoryContext, useBrowseMemory } from './PaletteCategoryBrowser';
 import { CATEGORY_BAR_MODES } from './category-flyout-groups';
@@ -478,7 +479,9 @@ export function ToolbarPalette(props: Props) {
                         <ToolbarLibraryButton
                           open={library.open}
                           onToggle={toggleLibrary}
-                          icon={libraryTab.icon}
+                          // The Library's own glyph, as in every app (libraries.md), not the My shapes tab's, whose ink sits
+                          // a pixel low in an icon-only square.
+                          icon={<LibraryIcon />}
                           description={libraryTab.description}
                         />
                       ) : null}

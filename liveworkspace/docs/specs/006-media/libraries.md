@@ -58,7 +58,9 @@ other: an Editor's palette has it, a Participant's (Participate alone) and a Vie
 
 **The Library sits beside Search.** On the Toolbar strip it is not a category: it holds what people saved, not
 what the app ships, so it is an icon-only button at the strip's far right, just before Search (`ToolbarLibraryButton`,
-`packages/workbench/src/components/palette/ToolbarLibraryButton.tsx`), with a hover card ("Library" and its line). It
+`packages/workbench/src/components/palette/ToolbarLibraryButton.tsx`), with the Library's glyph (`LibraryIcon`,
+`packages/workbench/src/components/library/library-icons.tsx`) in every app, centred in its square, and a hover card
+("Library" and its line). It
 opens the Library's body in the strip's popover, as Search opens its own; opening one closes the other. In livediagram,
 livedocuments and livedesign alike. In the Palette panel, where every category is a row, the Library stays its last
 row (`libraryLast`, `packages/workbench/src/components/palette/library-last.ts`).
