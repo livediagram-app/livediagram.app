@@ -7,6 +7,7 @@ Follow the references below only as needed; never upfront.
 - ./connected-tabs.md - when working on connected tabs: a tab in one item that opens another, in any app, its pass, both ways, opening and removing
 - ./sheet-sources.md - when a chart in one app draws from a sheet in another: the range read on each reader's own access, the door, the change signal, freezing
 - ./team-audit-log.md - when working on the team audit log: what a team's admins can look back on, how it is written, kept a year, anonymised and read
+- ./approvals.md - when working on approvals: asking named people to approve an item, their decisions, the badge, Changed Since Approval, who may approve (a Viewer included), the email, History and the audit log
 - ./webhooks.md - when working on webhooks: one document's, who adds them (its editors), the events, Slack and Teams, delivery and retries, SSRF and secrets
 - ./dialog-hero-header.md - when building a dialog's hero header: the band, title mark and title every app's main dialogs wear, its colours, the title's face and each dialog's art
 - ./index-service.md - when working on the index Worker itself: who calls it, the decisions the contract left open, its secrets, performance, local running, deploys

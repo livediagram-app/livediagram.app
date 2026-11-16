@@ -554,6 +554,9 @@ minute, with retries ([When a push fails](#when-a-push-fails)):
 - `PUT /app/items/:id/summary`: `{summary, updatedAt}`. An `updatedAt` more than five minutes ahead is taken as
   now, as an event's `at` is: a clock running fast can't pin the item to the top of every list, where a later push
   could never bring it down.
+  `updatedAt` is the item's newest content save, so it is also the item's revision: the index keeps it as the item's
+  `content_at`, which only moves forward and nothing else writes, for an approval's Changed Since Approval
+  ([approvals.md](approvals.md#changed-since-approval-the-items-revision)).
 - `PUT /app/items/:id/collab/:tabId`: the tab's comment threads and actions, replacing that tab's rows:
   `{tabName?, threads: [{elementId, elementLabel, resolved, commentCount, participantIds, mentionedIds,
 latestText, latestAuthorName, latestAuthorColor?, latestAuthorId?, resolvedById?, agentIds?, card?, firstAt,
@@ -775,7 +778,9 @@ copy for a year, so the sweep never cuts it short.
 
 - The index records `created` (with `source` when an AI or import made it, `copiedFrom` for a copy),
   `renamed` (`from`), `moved` (`folderName`, `teamId`, and `fromTeamId` when it changed team), `trashed`, `restored`,
-  `shared` (`level`), `unshared` and `favourited` in the same batch as the change. An empty item its app tidies away
+  `shared` (`level`), `unshared` and `favourited` in the same batch as the change. An approval request, decision or
+  cancel records `approval_requested`, `approval_approved`, `approval_changes_requested` or `approval_cancelled`
+  ([approvals.md](approvals.md#history-and-the-team-audit-log)). An empty item its app tidies away
   is not news. An item created with `synced: true` (kept offline in one browser, put back under its own id) records
   `synced` instead of `created`. An item taken offline for good (`DELETE /items/:id?permanent=true&reason=offline`)
   leaves no event: it is gone, and so is its History. A joined teammate taking a team item offline sends the team's

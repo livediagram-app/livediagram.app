@@ -12,6 +12,7 @@ Follow the references below only as needed; never upfront.
 - ./connected-tabs.md - when working on connected tabs: the build order, the connections table, the make, open and removal doors, each app's column and door
 - ./sheet-sources.md - when working on sheet sources: the index's two routes, the doors' contract, the watch and the change signal, limits and tests
 - ./team-audit-log.md - when working on the team audit log: its table, the write path beside each event, the sweep, anonymising and the admins' read and CSV, and the Audit Log on a team's view
+- ./approvals.md - when working on approvals: the tables, the routes and their checks, the revision, the notice and email, the editor kit
 - ./webhooks.md - when working on webhooks: the tables, the outbox statement, the dispatcher, the address check, the messages
 - ./archive.md - when working on Archived: the archive, the archive scope, the move out, the refusals and the
   Explorer's Archived view

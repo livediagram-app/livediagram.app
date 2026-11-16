@@ -53,3 +53,5 @@ One row per default applied where a spec is silent. Each code is cited in its bl
 | IDX48 | webhooks        | an automation send's card link is kept only on the app's own origin, else dropped (the chat opens the plan).                                 |
 | IDX49 | webhooks        | an automation send with a blank message refuses the push (`invalid_sends`); a blank rule name or card title reads `Untitled`.                |
 | IDX50 | webhooks        | an automation send dated ahead is dated now; one sent again after its delivery was trimmed (20 finished kept) queues again.                  |
+| IDX51 | approvals       | a closed account's approval rows are anonymised (`deleted`), not deleted, so a request's count of approvers stays true.                      |
+| IDX52 | approvals       | an approval request's email follows the approver's Actions Assigned to Me switch; approvals have no switch of their own.                     |
