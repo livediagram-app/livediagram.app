@@ -634,21 +634,29 @@ app knows who owns the document and whether it may be published).
 
 Measured against the real schema in SQLite, with 1,000 posts by 40 owners:
 
-| Request               | D1 statements                    | Body    |
-| --------------------- | -------------------------------- | ------- |
-| Gallery page (24)     | 1 (2 with a key, for its hearts) | 10.9 KB |
-| One post with related | 2                                | 3.1 KB  |
-| Featured              | 2                                | 2.6 KB  |
-| Start With            | 1                                | 4.6 KB  |
-| Facets                | 2                                | 153 B   |
-| Sitemap               | 1                                | 46 KB   |
-| Like                  | 4 (one batch)                    | 28 B    |
-| Report                | 3                                | 0       |
-| Publish               | 6                                | 370 B   |
-| Sync of 500 documents | 1 batch of at most 5             | 0       |
-| Sweep, per app        | 1 read, 1 batch of at most 6     | 0       |
-| Hidden since          | 1                                | 13 B    |
+| Request                    | D1 statements                    | Body    |
+| -------------------------- | -------------------------------- | ------- |
+| Gallery page (24)          | 1 (2 with a key, for its hearts) | 10.9 KB |
+| One post with related      | 2                                | 3.1 KB  |
+| Featured                   | 2                                | 2.6 KB  |
+| Start With                 | 1                                | 4.6 KB  |
+| Facets                     | 2                                | 153 B   |
+| Sitemap                    | 1                                | 46 KB   |
+| Like                       | 4 (one batch)                    | 28 B    |
+| Report                     | 3                                | 0       |
+| Publish                    | 6                                | 370 B   |
+| Sync of 500 documents      | 1 batch of at most 5             | 0       |
+| Sweep, per app             | 1 read, 1 batch of at most 6     | 0       |
+| Hidden since               | 1                                | 13 B    |
+| Forum page (20), signed in | 2                                | 7.8 KB  |
+| Forum topic, 200 replies   | 3                                | 84 KB   |
 
+- The Forum's two reads are measured with 2,000 topics by 40 authors and 50 topics at the 200-reply cap
+  (`apps/community/src/forum/forum.test.ts` "at scale", which keeps both statement counts and a CPU budget): a page
+  is the reader's own waiting topics, then the page with each topic's reply count on `forum_posts (topic_id, state,
+created_at)`; a topic is the question, its replies, then every post's reactions in one query. Under 20 ms of CPU
+  each, the token check included. A write adds one counter upsert and, while the check answers, one Workers AI call
+  bounded by `FORUM_CHECK_TIMEOUT_MS` and capped at `FORUM_CHECKS_PER_DAY`.
 - Every list and count is one indexed query per app (`posts (app, …, state, document_state, …)`). All Apps' list
   and count lead with the state instead (`posts (state, document_state, …)`, migration 0002), so they stay one
   indexed query across every app.

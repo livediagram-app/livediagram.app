@@ -14,6 +14,7 @@ import {
 } from '@liveworkspace/community';
 import { exportJWK, generateKeyPair, SignJWT, type JWK } from 'jose';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
 import worker from '../index';
 import { FORUM_CHECK_MODEL, FORUM_CHECKS_PER_DAY, FORUM_RETRY_EVERY_MS } from '../config';
 import type { Env, ForumAi } from '../env';
@@ -776,5 +777,78 @@ describe('the check', () => {
     );
     await Promise.allSettled(waits);
     expect(error).toHaveBeenCalledWith('[forum] retry failed', expect.anything());
+  });
+});
+
+// Measured: a signed-in reader's page is their own waiting topics, then the page (with its reply counts); a topic is
+// the question, its replies, then every post's reactions at once.
+const LIST_STATEMENTS = 2;
+const READ_STATEMENTS = 3;
+
+describe('at scale', () => {
+  // 2,000 topics by 40 authors, the first 50 each with a full topic of replies, every post with reactions: a page of
+  // the list, and the fullest topic, each stay a few statements and well inside a Worker's CPU.
+  function seed() {
+    const post = db.sql.prepare(
+      `INSERT INTO forum_posts (id, topic_id, category, author_id, author_name, author_color, title, body, state,
+         created_at, activity_at) VALUES (?, ?, 'livediagram', ?, 'Someone', '#2563eb', ?, ?, 'listed', ?, ?)`,
+    );
+    const react = db.sql.prepare(
+      `INSERT INTO forum_reactions (post_id, account_id, reaction, created_at) VALUES (?, ?, 'helpful', 0)`,
+    );
+    db.sql.exec('BEGIN');
+    for (let t = 0; t < 2000; t++) {
+      post.run(`t${t}`, null, `user_${t % 40}`, `Question number ${t}`, 'x'.repeat(400), t, t);
+      for (let k = 0; k < 3; k++) react.run(`t${t}`, `user_${k}`);
+      if (t < 50)
+        for (let r = 0; r < FORUM_REPLIES_MAX; r++) {
+          post.run(`t${t}r${r}`, `t${t}`, `user_${r % 40}`, '', 'y'.repeat(200), t + r, t + r);
+          react.run(`t${t}r${r}`, 'user_1');
+        }
+    }
+    db.sql.exec('COMMIT');
+  }
+
+  // The env with its database counting the statements it prepares.
+  function counted(): { env: Env; statements: () => number } {
+    let n = 0;
+    const counting = new Proxy(env.COMMUNITY_DB, {
+      get(target, prop) {
+        if (prop === 'prepare')
+          return (query: string) => {
+            n++;
+            return target.prepare(query);
+          };
+        const value = Reflect.get(target, prop) as unknown;
+        return typeof value === 'function'
+          ? (value as (...args: unknown[]) => unknown).bind(target)
+          : value;
+      },
+    });
+    return { env: { ...env, COMMUNITY_DB: counting }, statements: () => n };
+  }
+
+  it('lists a page, and reads the fullest topic, in a few statements and little CPU', async () => {
+    seed();
+    const listing = counted();
+    let page: ForumTopicsResponse = { topics: [], nextOffset: null };
+    const listMs = await cpuMsOfAsync(async () => {
+      const res = await call('/topics', as(ada), listing.env);
+      page = (await res.json()) as ForumTopicsResponse;
+    });
+    expect(page.topics).toHaveLength(FORUM_PAGE_SIZE);
+
+    const reading = counted();
+    let topic: ForumTopicResponse | null = null;
+    const readMs = await cpuMsOfAsync(async () => {
+      const res = await call('/topics/t0', as(ada), reading.env);
+      topic = (await res.json()) as ForumTopicResponse;
+    });
+    expect(topic!.replies).toHaveLength(FORUM_REPLIES_MAX);
+    expect(listing.statements()).toBeLessThanOrEqual(LIST_STATEMENTS);
+    expect(reading.statements()).toBeLessThanOrEqual(READ_STATEMENTS);
+    // CPU-time budgets for a shared CI runner, far above what each takes.
+    expect(listMs).toBeLessThan(cpuBudgetMs(500));
+    expect(readMs).toBeLessThan(cpuBudgetMs(500));
   });
 });
