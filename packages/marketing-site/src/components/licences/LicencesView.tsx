@@ -26,7 +26,8 @@ export function LicencesView({
   browserIntro,
   serverIntro = PRODUCT_SERVER_INTRO,
 }: {
-  manifest: LicencesManifest;
+  /** Null in development when the generator never ran (loadLicencesManifestForPage): the page says so calmly. */
+  manifest: LicencesManifest | null;
   title: string;
   lede: ReactNode;
   /** Who sends code to the browser ("the editor, this website and the help centre"). */
@@ -41,7 +42,8 @@ export function LicencesView({
         {title}
       </h1>
       <p className="mt-3 text-lg text-slate-600 dark:text-slate-300">{lede}</p>
-      {manifest.sections.map((section) => (
+      {manifest ? null : <NotGenerated />}
+      {manifest?.sections.map((section) => (
         <Section
           key={section.side}
           section={section}
@@ -50,6 +52,21 @@ export function LicencesView({
         />
       ))}
     </>
+  );
+}
+
+// A development server's page before the generator has run: the list is made when the site is built, so it isn't
+// here yet. Never shown in production, where a build without the list fails.
+function NotGenerated() {
+  return (
+    <p
+      data-licences-not-generated=""
+      className="mt-12 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-300"
+    >
+      The list isn&rsquo;t generated in local development: it&rsquo;s made each time the site is
+      built. Run <code className="font-mono text-slate-900 dark:text-slate-100">pnpm licences</code>{' '}
+      in this app to see it here.
+    </p>
   );
 }
 

@@ -1,6 +1,6 @@
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 import { Footer } from '@/components/Footer';
-import { loadLicencesManifest } from '@liveworkspace/marketing-site/lib/licences-manifest';
+import { loadLicencesManifestForPage } from '@liveworkspace/marketing-site/lib/licences-manifest';
 import { LicencesView } from '@liveworkspace/marketing-site/components/licences/LicencesView';
 import { pageMetadata, SiteHeader } from '@liveplanner/ui';
 
@@ -15,7 +15,7 @@ export const metadata = pageMetadata({
 // Not a landing-funnel surface, so the header's calls to action carry no
 // `via` (blueprint D15); otherwise the bar is every marketing page's (marketing-site.md "Header").
 export default function LicencesPage() {
-  const manifest = loadLicencesManifest();
+  const manifest = loadLicencesManifestForPage();
   return (
     <>
       <BreadcrumbJsonLd name="Licences" path="/licences" />

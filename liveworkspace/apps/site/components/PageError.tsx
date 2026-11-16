@@ -2,6 +2,8 @@
 
 import { lucideTriangleAlert } from '@liveworkspace/icons/lucide';
 import { Button, buttonClassName, ButtonContent, lucideGlyph } from '@liveworkspace/ui';
+import { useEffect } from 'react';
+import { paintStoredAppearance } from '@/lib/appearance/appearance-keys';
 import { ErrorCard } from './ErrorCard';
 import { usePageErrorTitle } from './page-error-title';
 
@@ -16,6 +18,10 @@ export const PAGE_ERROR_STATUS_LEAD = 'Still not working?';
 // fails.
 export function PageError({ onRetry }: { onRetry: () => void }) {
   usePageErrorTitle();
+  // Light or dark as the rest of the site, like the 404 page, even where the failed page's <html> came back without
+  // the pre-paint script's class (a development server's error page). Here, in the card's own chunk, so no page's
+  // first load carries it.
+  useEffect(() => paintStoredAppearance(), []);
   return (
     <ErrorCard
       icon={<WarningIcon />}
