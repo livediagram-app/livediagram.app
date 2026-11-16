@@ -29,6 +29,8 @@ export type ExplorerExtras = {
   // A guest sees the Sign in to access Teams nudge.
   signedIn: boolean;
   signInHref?: string;
+  // Where a guest makes an account (Invites offers it beside Sign In).
+  signUpHref?: string;
   // The host loads an item's preview ahead, as its Details row comes near the screen.
   prefetchThumbnail?: (item: Item) => void;
   // A real switch of the List / Card / Details toggle (`UI / Toggled / <type>`).
@@ -45,6 +47,7 @@ export type ExtrasProps = {
   accounts?: ExplorerAccounts | null;
   signedIn?: boolean;
   signInHref?: string;
+  signUpHref?: string;
   prefetchThumbnail?: (item: Item) => void;
   onViewToggled?: (type: ViewModeTelemetry) => void;
 };
@@ -105,6 +108,7 @@ export function ExtrasProvider({
   accounts = null,
   signedIn = true,
   signInHref,
+  signUpHref,
   prefetchThumbnail,
   onViewToggled,
   children,
@@ -152,6 +156,7 @@ export function ExtrasProvider({
       people,
       signedIn,
       signInHref,
+      signUpHref,
       prefetchThumbnail: prefetchOnce,
       onViewToggled,
       sharedCount,
@@ -163,6 +168,7 @@ export function ExtrasProvider({
       people,
       signedIn,
       signInHref,
+      signUpHref,
       prefetchOnce,
       onViewToggled,
       sharedCount,

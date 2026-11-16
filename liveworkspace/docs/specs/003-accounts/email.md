@@ -24,6 +24,11 @@ no third-party provider and no API key: a Worker sends through its `send_email` 
   development prints each email to its log instead.
 - **Locally.** `wrangler dev` simulates the binding. It prints each email and saves its text and HTML to files,
   so local sign-in works without sending anything.
+- **The markup says its charset.** Every email's HTML opens `<!doctype html><html><head>` with
+  `<meta charset="utf-8">`, the same as an `http-equiv` Content-Type, and a viewport meta, before its body
+  (`EMAIL_HEAD` in `@liveworkspace/email/layout`, which the apps' shared layout and accounts' frame both use). The
+  MIME part already says UTF-8, but a message saved as a file, forwarded, or opened by a webmail preview or a client
+  that ignores the part's charset otherwise reads it as Latin-1, and "You’re" turns into "Youâ€™re".
 
 ## Senders
 

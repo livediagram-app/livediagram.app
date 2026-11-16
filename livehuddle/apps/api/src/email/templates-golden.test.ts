@@ -45,15 +45,15 @@ const FIXTURES: Record<string, unknown[][]> = {
 };
 
 const EXPECTED: Record<string, string> = {
-  accountDeletedEmail: 'd596d847791909014f7e17e5e4ef5884c0fd64acf81929aba70da286d0404d65',
-  actionAssignedEmail: '201fbb2d8ab0960375463e0fd329387f6a19d7946a27edaca3f47b4d6ead47ea',
-  callsBudgetEmail: '4998781c8fccebe8f82c62220b0e1444087de35369d4335fcf206c96c7fd4714',
-  commentNotificationEmail: '28d201d0db3f0ddc9f64b75bad8de592c7ab313be7755bf2aef1bf47c4e9eee3',
-  documentJoinedEmail: '74256549955c41b93097e5e32ad54ae288e16fa35b1157ee95ae93e0d8eb0862',
-  firstShareEmail: 'dd49866d9ee31068aa9d88178f7344dfdea3a30b065748d0938e3b807c947e6f',
+  accountDeletedEmail: 'be280ad9d2030912e275eb18daa3be536650c180d2b4a5a6a382290f0268a37d',
+  actionAssignedEmail: '4b0e1703f6e836b6e86aebca77e41e1665e612fce2e44683ca6d0f0aa3155015',
+  callsBudgetEmail: 'fd3baf5c60a12764b3ddbf89b1cebe95586b0f5e90643d8c25f52fe0a3c485a3',
+  commentNotificationEmail: '4d5c95d4863c0fefa9abb9ae3cc0fd8ee8c0aaab1329f4ff613b17b3a60dd163',
+  documentJoinedEmail: 'd6869259fc2a455ea6c9ee1bbe3cdea593331dec95e4cd612295aa1d78764c68',
+  firstShareEmail: '75250c23815d831dd8a88ffb5d1c1ab8a101b66c2cb340c19b5e581c2c4cbe9b',
   mentionQuote: '8d3f68955246da293e50ef5ebbe33ecdd4a4b7e9d61945db180b8771a547ead9',
-  mentionedEmail: '1afd04218d4590dde23788cb80ca33a502d93ac9dae3eb7f5b736133bf413c64',
-  milestoneEmail: '7edfed3fff516e383115fe96323d502aebb187d6926b6aab9c2e7721cb81c8c0',
+  mentionedEmail: '2cd80eaebc581b5a0ced67e5535a2e7ded4f050af56424a9ef1092548527070e',
+  milestoneEmail: 'b45062b3d00495c480898408a302b951a518f8392e1022e73671e5006ba52e79',
 };
 
 function renders(): Record<string, string> {

@@ -628,6 +628,7 @@ redo it (or drop it once upstream batches the lookup) and keep that test passing
 | `SILENT_RETURN_ATTRIBUTE`            | `'data-silent-return'`                                                   | `silent.ts`          |
 | `SILENT_RETURN_MAX_LENGTH`           | `1500`                                                                   | `silent.ts`          |
 | `SILENT_RETRY_GLOBAL`                | `'__liveworkspaceSilentSignIn'`                                          | `silent.ts`          |
+| `SILENT_LEAVING_GLOBAL`              | `'__liveworkspaceSilentLeaving'`                                         | `silent.ts`          |
 | `WORKBENCH_SESSION_VALID_FOR_MS`     | `60_000`                                                                 | `workbench.ts`       |
 | `WORKBENCH_SESSION_INVALID_FOR_MS`   | `10_000`                                                                 | `workbench.ts`       |
 | `WORKBENCH_SESSION_CACHE_MAX`        | `1_000`                                                                  | `workbench.ts`       |

@@ -3,6 +3,7 @@ import { lucideFolder } from '@liveworkspace/icons/lucide';
 import { PLATFORM_SITE, type SiteId } from '@liveworkspace/sites';
 import type { CSSProperties, ReactNode } from 'react';
 import { listedApps } from '@/lib/apps';
+import { AccountTileLink } from './AccountActions';
 import { AppMark } from './AppLogo';
 import {
   ConnectedArt,
@@ -47,12 +48,7 @@ export function Promises() {
             title="One account, every app"
             body="Sign in once at liveworkspace.app, with Google or a code by email. Every app that uses it knows you, and opening the next one needs no second sign-in."
           >
-            <a
-              href="/sign-up?return=%2F"
-              className="relative touch-target-y mt-4 inline-flex w-fit items-center gap-1 font-semibold text-slate-900 underline-offset-4 hover:underline dark:text-white"
-            >
-              Create your account <span aria-hidden>→</span>
-            </a>
+            <AccountTileLink />
           </Tile>
           <Tile
             art={<LiveArt />}

@@ -42,7 +42,8 @@ import {
   codeDayMessage,
   field,
 } from './sign-in-flow-model';
-import { NameFields, GoogleGlyph } from './SignInFlowParts';
+import { NameFields, GoogleGlyph, SignedInNextSteps } from './SignInFlowParts';
+import { forgetInvitedAddress, invitedAddress } from '@/lib/invited-address';
 export { codeDayMessage } from './sign-in-flow-model';
 
 // Signing in and registering (liveworkspace/docs/specs/010-site/site.md "Accounts"): an email code, or Google, and
@@ -74,6 +75,14 @@ export function SignInFlow({ flow }: { flow: Flow }) {
   // step doesn't run a fresh check (and show the widget again) right after the email step's.
   const captchaSpent = useRef(false);
   const nameStepGiven = useRef<HTMLInputElement>(null);
+  const emailField = useRef<HTMLInputElement>(null);
+
+  // Arrived from an invitation (the Explorer's Invites kept the invited address in this tab, lib/invited-address.ts):
+  // the address the invitation was sent to is filled in, so the account made is the one invited.
+  useEffect(() => {
+    const given = invitedAddress();
+    if (given && emailField.current && !emailField.current.value) emailField.current.value = given;
+  }, []);
 
   const setError = (message: string) => {
     setErrorText(message);
@@ -247,6 +256,7 @@ export function SignInFlow({ flow }: { flow: Flow }) {
 
   // The last step: leaves the page (busy stays on until the browser has gone), or lets go of busy where it stays.
   async function finish() {
+    forgetInvitedAddress();
     const query = window.location.search;
     if (isRegistering(query)) {
       const next = nextUrl(
@@ -264,6 +274,9 @@ export function SignInFlow({ flow }: { flow: Flow }) {
     const back = returnPath(query);
     if (back) return window.location.assign(back);
     setBusy(null);
+    // The code step's banners ("We sent you a new code.") are over.
+    setNotice('');
+    setErrorText('');
     setTitle("You're signed in");
     setStep('done');
   }
@@ -273,7 +286,14 @@ export function SignInFlow({ flow }: { flow: Flow }) {
     setBusy('resend');
     const sent = await sendCode(email);
     setBusy(null);
-    if (sent) setNotice('We sent you a new code.');
+    if (sent) {
+      setNotice('We sent you a new code.');
+      setDigits(EMPTY_CODE);
+    }
+    // Back to the first box, as after a wrong code, so the new code can be typed straight away: the boxes and the
+    // Resend button were disabled while it sent, which left focus on the page body. After the render that enables
+    // them again (a disabled box takes no focus).
+    requestAnimationFrame(() => digitBoxes.current?.focus());
   }
 
   async function google(given: SignInOptions | null = options) {
@@ -392,6 +412,7 @@ export function SignInFlow({ flow }: { flow: Flow }) {
                 Email
               </label>
               <input
+                ref={emailField}
                 id="email"
                 name="email"
                 type="email"
@@ -477,11 +498,7 @@ export function SignInFlow({ flow }: { flow: Flow }) {
           </form>
         )}
 
-        {step === 'done' && (
-          <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-            You&apos;re signed in. You can close this tab, or go back to the app you came from.
-          </p>
-        )}
+        {step === 'done' && <SignedInNextSteps />}
 
         <div ref={captchaBox} className="mt-4 empty:hidden" />
 

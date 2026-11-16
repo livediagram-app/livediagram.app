@@ -15,6 +15,7 @@
 
 import { guestRenewalCookie } from '@liveworkspace/auth-client/guest-renewal';
 import { isSameSitePath } from '@liveworkspace/auth-client/return-path';
+import { silentSignInLeaving } from '@liveworkspace/auth-client/silent';
 
 // Under the token's 45 days (liveworkspace/apps/accounts GUEST_TOKEN_TTL_SECONDS), so a fresh one is never replaced
 // at once: a handoff about once a month while the guest keeps using the app. Its `lw_guest` cookie on liveworkspace
@@ -149,7 +150,11 @@ export function createGuestTokens(opts: GuestTokenOptions): GuestTokens {
 
   // Send the browser for a guest token, coming back to `returnTo` (this page by default). Resolves only when no
   // handoff is started (one failed a moment ago); otherwise the page is leaving and it never resolves.
+  // A page already leaving on a silent sign-in bounce starts none either, and waits as if it had: a second navigation
+  // would replace the bounce's before the accounts site is asked, and someone signed in to liveworkspace would come
+  // back a guest (liveworkspace/docs/specs/003-accounts/accounts.md "A hint that outlived its session").
   const startGuestHandoff = (returnTo?: string): Promise<void> => {
+    if (silentSignInLeaving()) return new Promise(() => {});
     if (typeof window === 'undefined' || inFrame() || recentlyFailed(Date.now())) {
       return Promise.resolve();
     }
@@ -169,6 +174,8 @@ export function createGuestTokens(opts: GuestTokenOptions): GuestTokens {
     // Renewing a token it holds, it leaves the token for the api's guest door, which posts it on as proof.
     const to = `${opts.apiBase}/auth/guest?state=${encodeURIComponent(state)}`;
     setTimeout(() => {
+      // A bounce that went out since (the page's first token answer, settling meanwhile) goes on alone.
+      if (silentSignInLeaving()) return;
       if (held) leaveRenewalToken(opts.apiBase, held.token);
       window.location.replace(to);
     }, 0);

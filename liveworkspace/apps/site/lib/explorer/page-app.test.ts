@@ -140,6 +140,24 @@ describe("the app's session", () => {
     expect(again).toHaveBeenCalledTimes(1);
   });
 
+  // Work Tracker 1007: settling as a guest while the bounce was out started the guest hand-off, whose navigation
+  // replaced the bounce's, and the person stayed a guest though signed in to liveworkspace.
+  it('settles nothing once the silent sign-in has gone on its bounce', async () => {
+    vi.stubGlobal(SILENT_RETRY_GLOBAL, () => true);
+    document.cookie = 'lp_signed_in=1; path=/';
+    vi.stubGlobal(
+      'fetch',
+      vi.fn<typeof fetch>(async () => {
+        document.cookie = 'lp_signed_in=0; path=/';
+        return Response.json({ signedIn: false }, { status: 401 });
+      }),
+    );
+    const settled = vi.fn();
+    void appAccount().then(settled);
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(settled).not.toHaveBeenCalled();
+  });
+
   it('is who the Explorer asks the index as', async () => {
     document.cookie = 'lp_signed_in=1; path=/';
     expect(await workspaceIdentity()).toMatchObject({ kind: 'account', sub: 'user_1' });

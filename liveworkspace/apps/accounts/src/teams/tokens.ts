@@ -93,12 +93,19 @@ const declineStatus = (row: DeclineRow): DeclineStatus =>
       : 'expired'
     : (row.status as DeclineStatus);
 
+// The invitation a token names, as the email's Decline page and its Answer link show it. While it waits, the invited
+// address too, so the Explorer's Invites can fill it into the sign-up form without it riding in any URL (accounts.md
+// "Invitations"): only the token's holder, who has the email, ever reads it.
 export async function readDeclineToken(
   db: D1Database,
   token: unknown,
-): Promise<{ teamName: string; status: DeclineStatus } | null> {
+): Promise<{ teamName: string; status: DeclineStatus; email?: string } | null> {
   const row = await declineRow(db, token);
-  return row ? { teamName: row.teamName, status: declineStatus(row) } : null;
+  if (!row) return null;
+  const status = declineStatus(row);
+  return status === 'invited'
+    ? { teamName: row.teamName, status, email: row.email }
+    : { teamName: row.teamName, status };
 }
 
 // Declines the invitation a token names. Saying no twice changes nothing; an expired invitation
