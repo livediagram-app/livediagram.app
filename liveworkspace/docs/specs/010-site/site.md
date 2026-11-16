@@ -594,6 +594,11 @@ are `app/community/`, `components/community/` and `lib/community/`.
   The rail (Appearance) and this site's footer follow, the footer's links leading to liveworkspace.app in full on
   an app's address.
 - **A post** opens on its own app's address; a link to one here moves there.
+- **Gallery and Forum.** Two tabs under the hero, **Gallery** (`/community`) and **Forum** (`/community/forum`, a
+  topic at `/community/forum/topic?id=`), links that keep the page's address. The Forum is one for every app, the same
+  topics on each app's address and here ([007-community](../007-community/community.md#the-forum) "The Forum");
+  asking, replying, reacting and marking an answer take the page's account (the app's session on its address, this
+  site's here).
 - **Search engines.** The gallery is indexable (`Community · liveworkspace`, canonical `/community`, in the
   sitemap). On an app's address the router makes its head the app's own, and fills each post's.
 

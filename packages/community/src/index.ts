@@ -3,6 +3,7 @@
 export * from './apps';
 export * from './authors';
 export * from './categories';
+export * from './forum';
 export * from './network';
 export * from './post';
 export * from './query';

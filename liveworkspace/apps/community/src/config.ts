@@ -22,3 +22,12 @@ export const MAX_BODY_BYTES = 64 * 1024;
 // has this long to answer before that app waits for the next run.
 export const COMMUNITY_SWEEP_EVERY_MS = 10 * 60_000;
 export const COMMUNITY_SWEEP_TIMEOUT_MS = 10_000;
+
+// The Forum's check (community.md "The Forum", "The check"): Workers AI's content safety model, how long it may take,
+// how many checks a UTC day may make in all, and the cron's retry of posts waiting as Pending.
+export const FORUM_CHECK_MODEL = '@cf/meta/llama-guard-3-8b';
+export const FORUM_CHECK_TIMEOUT_MS = 10_000;
+export const FORUM_CHECKS_PER_DAY = 500;
+export const FORUM_RETRY_BATCH = 10;
+// Just under the cron's five minutes, so each run asks again for what the last could not answer.
+export const FORUM_RETRY_EVERY_MS = 4 * 60_000;

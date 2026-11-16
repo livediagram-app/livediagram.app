@@ -68,6 +68,15 @@ Scope, by file:
 | `packages/sites/src/index.ts`                                              | `APP_ITEMS[app].share.communityPath`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | `liveworkspace/apps/site/lib/explorer/share.ts`                            | `communityShareOf(item, account, communityOn, signInHref)`, `COMMUNITY_SHARE_APPS` (every app with a `communityPath`), `communityShareAppsHere(here)`                                                                                                                                                                                                                                                                                                                                                                                                         |
 | `liveworkspace/apps/site/lib/explorer/community-apps.ts`                   | `useCommunityAppsOn(apps, ask)`: `(app) => on`, asking an app's capabilities the first time one of its items is shared                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `liveworkspace/apps/community/src/forum/routes.ts`                         | `handleForum`: the Forum's routes under `/forum`, each write's account check, rate count and check, in order                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `liveworkspace/apps/community/src/forum/store.ts`                          | The Forum's SQL: `listTopics`, `ownWaitingTopics`, `readTopic`, `insertForumPost`, `editForumPost`, `deleteForumPost`, `setAnswer`, `setReaction`, `reactionsFor`, `recordForumReport`, `forgetForumAuthor`, `settleCheck`                                                                                                                                                                                                                                                                                                                                    |
+| `liveworkspace/apps/community/src/forum/check.ts`                          | `checkForumText` (the `AI` binding's content safety model, bounded, capped a day), `readVerdict`, `retryForumChecks` (the cron's Pending retry)                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `liveworkspace/apps/community/src/forum/account.ts`                        | `forumAccountOf(request, env)`: the bearer's account id, verified offline (`@liveworkspace/auth-client` `createVerifier`, accounts' keys through the `ACCOUNTS` binding); guests and anything else null                                                                                                                                                                                                                                                                                                                                                       |
+| `liveworkspace/apps/community/src/forum/rate.ts`                           | `countAgainst(env, subject, bucketMs, limit, now)`: one upsert on `forum_counters` that answers whether the count stayed within its limit; `pruneForumCounters`                                                                                                                                                                                                                                                                                                                                                                                               |
+| `liveworkspace/apps/community/migrations/0007_forum.sql`                   | `forum_posts`, `forum_reactions`, `forum_reports`, `forum_counters` and their indexes                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `packages/community/src/forum.ts`                                          | The Forum's contract: `FORUM_CATEGORIES`, `forumCategoryOfApp`, `FORUM_REACTIONS`, states, sorts, every limit, the wire shapes, `validateForumTopic`, `validateForumReply`, `validateForumEdit`, `validateForumAuthor`, `parseForumListQuery`, `forumQueryParams`, `forumExcerpt`, `FORUM_HOME_PATH`, `forumTopicPath`                                                                                                                                                                                                                                        |
+| `liveworkspace/apps/site/app/community/forum/`                             | The Forum's routes: `page.tsx` (the list, canonical `/community/forum`), `topic/page.tsx` (one topic's shell)                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `liveworkspace/apps/site/components/community/forum/`                      | `CommunityTabs` (Gallery and Forum), `ForumListView` over `useForumTopics`, `ForumComposer` (Ask a Question), `ForumTopicView` over `useForumTopic`, `ForumPostCard` (a topic's or a reply's words, author, state, actions), `ForumReactions`, `ReplyComposer`, `useForumAccount` (the page's account), `forum-api.ts` (`createForumApi`)                                                                                                                                                                                                                     |
 
 ## Domain and naming
 
@@ -402,6 +411,21 @@ Every list is one indexed query plus one row; a sync is at most four statements;
 | `COMMUNITY_START_MIN_LIKES`          | `5`                                              | `post.ts`                           | Start With                |
 | `COMMUNITY_START_LINE_MAX`           | `120`                                            | `post.ts`                           | Start With's line         |
 | `COMMUNITY_SITEMAP_MAX`              | `5000`                                           | `post.ts`                           | sitemap                   |
+| `FORUM_TITLE_MIN` / `_MAX`           | `5` / `120`                                      | `packages/community/src/forum.ts`   | `validateForumTopic`      |
+| `FORUM_BODY_MIN` / `_MAX`            | `10` / `5000`                                    | `forum.ts`                          | topics, edits             |
+| `FORUM_REPLY_MIN`                    | `2`                                              | `forum.ts`                          | replies                   |
+| `FORUM_AUTHOR_NAME_MAX`              | `60`                                             | `forum.ts`                          | `validateForumAuthor`     |
+| `FORUM_PAGE_SIZE`                    | `20`                                             | `forum.ts`                          | the list                  |
+| `FORUM_MAX_OFFSET`                   | `2000`                                           | `forum.ts`                          | the list                  |
+| `FORUM_REPLIES_MAX`                  | `200`                                            | `forum.ts`                          | replies per topic         |
+| `FORUM_EXCERPT_MAX`                  | `160`                                            | `forum.ts`                          | the list's line           |
+| `FORUM_WRITES_PER_HOUR`              | `20`                                             | `forum.ts`                          | `countAgainst`            |
+| `FORUM_REACTIONS_PER_HOUR`           | `200`                                            | `forum.ts`                          | `countAgainst`            |
+| `FORUM_CHECKS_PER_DAY`               | `500`                                            | `apps/community/src/config.ts`      | `checkForumText`          |
+| `FORUM_CHECK_MODEL`                  | `'@cf/meta/llama-guard-3-8b'`                    | `config.ts`                         | `checkForumText`          |
+| `FORUM_CHECK_TIMEOUT_MS`             | `10_000`                                         | `config.ts`                         | `checkForumText`          |
+| `FORUM_RETRY_BATCH`                  | `10`                                             | `config.ts`                         | `retryForumChecks`        |
+| `FORUM_RETRY_EVERY_MS`               | `4 * 60_000`                                     | `config.ts`                         | `retryForumChecks`        |
 | `LIST_MAX_AGE_S`                     | `30`                                             | `apps/community/src/config.ts`      | lists, facets             |
 | `FEATURED_MAX_AGE_S`                 | `60`                                             | `config.ts`                         | featured, Start With      |
 | `SITEMAP_MAX_AGE_S`                  | `3600`                                           | `config.ts`                         | sitemap                   |
@@ -427,6 +451,120 @@ Cron `*/5 * * * *` (both environments): the sweep. Vars `APP_ORIGIN_LIVEDIAGRAM`
 
 D1, the rate-limit binding, `caches.default`. Author pictures are URLs the app sends (`https://` only); the service
 never fetches them.
+
+## The Forum
+
+Derived from [community.md "The Forum"](../community.md#the-forum) and "Forum routes".
+
+### Domain and naming (Forum)
+
+| Term        | Identifier                                                                                            | Meaning                                          |
+| ----------- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| Topic       | `forum_posts` row with `topic_id IS NULL`; `ForumTopic`                                               | A question: title, body, category                |
+| Reply       | `forum_posts` row with `topic_id` set; `ForumReply`                                                   | An answer to a topic, one level deep             |
+| Forum post  | either; id `newPostId()`                                                                              | What is edited, deleted, reacted to and reported |
+| Category    | `ForumCategory`: `general`, `livediagram`, `liveplanner`, `livedocuments`, `livedesign`, `livehuddle` | `FORUM_CATEGORIES`: General and the apps' names  |
+| Forum state | `ForumPostState`: `pending`, `listed`, `refused`, `hidden`                                            | The check's and the reports' verdict             |
+| Reaction    | `ForumReaction`: `helpful`, `thanks`, `celebrate`                                                     | One per account per post per kind                |
+| Answer      | `forum_posts.answer_id` on a topic                                                                    | The reply its author marked                      |
+| Account     | `author_id`, `forum_reactions.account_id`: the access token's `sub`                                   | Never in a public answer                         |
+| Own         | `own: true` on a post the token's account wrote                                                       | Edit, Delete, its waiting states                 |
+
+### States (Forum)
+
+| From                  | Event                                                                     | To                                   |
+| --------------------- | ------------------------------------------------------------------------- | ------------------------------------ |
+| none                  | a write the check passes                                                  | `listed`                             |
+| none                  | a write the check fails                                                   | `refused`                            |
+| none                  | a write the check can't answer (no `AI`, an error, 10 s, unreadable, cap) | `pending`, `check_tries` 1           |
+| `pending`             | the cron's retry passes / fails                                           | `listed` / `refused`                 |
+| `pending`             | the cron's retry can't answer                                             | `pending`, `checked_at` now, tries+1 |
+| `listed` or `refused` | an edit by its author (checked again)                                     | `listed`, `refused` or `pending`     |
+| `listed`              | a third report, 3 distinct keys and 3 distinct network hashes             | `hidden`, `hidden_at` now (final)    |
+| any                   | `DELETE` by its author                                                    | none; a topic's replies cascade      |
+| any                   | `/app/copiers/forget` with `owner` its author                             | none, with the account's reactions   |
+
+A reply turning `listed` sets its topic's `activity_at` in the same batch. `hidden` is never edited (`409 post_hidden`).
+
+### A write, in order (`handleForum`)
+
+1. `forumAccountOf`: no bearer, a guest's, an API token's, an expired or forged one: `401 sign_in_required`.
+2. The body, read through `readCappedBody` (`MAX_BODY_BYTES`), JSON; else `400 invalid_body`.
+3. Validation (`validateForumTopic`, `validateForumReply`, `validateForumEdit`, `validateForumAuthor`): text trimmed,
+   `\r\n` to `\n`, three or more newlines to two, the title's whitespace collapsed; the first failure
+   `400 invalid_category` / `invalid_title` / `invalid_body` / `invalid_author`.
+4. For a reply, an edit, a delete, the answer and a reaction: the target, visible to the caller and in the state the
+   action needs, else `404 not_found`; someone else's post for an edit or delete `404`; an edit of a hidden post
+   `409 post_hidden`; a reply to a topic with `FORUM_REPLIES_MAX` (200) replies `409 topic_full`.
+5. `countAgainst`: `w:<account>` per hour against `FORUM_WRITES_PER_HOUR` (20) for a topic, reply or edit;
+   `r:<account>` per hour against `FORUM_REACTIONS_PER_HOUR` (200) for a reaction. Past it `429 rate_limited`.
+6. `checkForumText(env, name, title, body)`: the day's `checks` counter against `FORUM_CHECKS_PER_DAY` (500), then
+   `AI.run(FORUM_CHECK_MODEL, { messages: [{ role: 'user', content }] })` raced against `FORUM_CHECK_TIMEOUT_MS`
+   (10 s); `readVerdict` reads `{ response: { safe } }`, `{ safe }` or a string starting `safe` / `unsafe`, and
+   anything else as unavailable. Development with `FORUM_CHECK_LOCAL=pass` answers `pass` without asking.
+7. One batch: the row, and for a listed reply its topic's `activity_at`.
+8. `201 { topic }` / `{ reply }`, or `200 { post }` for an edit: the post as its author sees it.
+
+### Reads (Forum)
+
+- **List** `listTopics(env, query, now)`: `topic_id IS NULL AND state = 'listed'`, and `category = ?`; `unanswered`
+  keeps the topics whose answer is not a listed reply. Ordered `activity_at DESC, id` (`active`) or
+  `created_at DESC, id` (`new`, `unanswered`), `LIMIT 21 OFFSET offset`; `nextOffset` as the gallery's, capped at
+  `FORUM_MAX_OFFSET` (2000). Each row's `replyCount` is a correlated count of listed replies on
+  `idx_forum_replies (topic_id, state, created_at)`, and `answered` whether its answer is a listed reply. On the first
+  page a signed-in reader's own `pending`, `refused` and `hidden` topics (`ownWaitingTopics`, at most 20, on
+  `idx_forum_author`) come first, in the list's category.
+- **A topic** `readTopic`: the topic when `listed` or the reader's own, else `404`; its replies `listed` or the reader's
+  own (none of a hidden topic for anyone else), the answer first then by `created_at`, at most `FORUM_REPLIES_MAX`;
+  one reaction read for all of them (`reactionsFor`: counts by post and kind, and the reader's own).
+- Answers with a token are `private, no-store`; without, `public, max-age=30` (`LIST_MAX_AGE_S`).
+
+### Reports (Forum)
+
+`POST /forum/posts/:id/report`: the community key (`400 community_key_required`), the per-network
+`COMMUNITY_RATE_LIMITER`, a listed post (`404`), `readReport` (the gallery's), then `recordForumReport`: `INSERT OR
+IGNORE` by `(post_id, reporter_key)` and, when it inserted, `UPDATE … SET state = 'hidden', hidden_at` at
+`COMMUNITY_AUTO_HIDE_REPORTERS` distinct keys and network hashes. `204` either way.
+
+### The cron (Forum)
+
+After the sweep, `retryForumChecks`: with an `AI` binding (or the local pass), up to `FORUM_RETRY_BATCH` (10)
+`pending` posts with `checked_at <= now - FORUM_RETRY_EVERY_MS` (4 minutes), oldest first on `idx_forum_pending`,
+checked together as a write is and each settled (`settleCheck`); then `pruneForumCounters` deletes counter buckets
+older than two days.
+
+### Data (Forum, migration 0007)
+
+| Table             | Key                               | Columns                                                                                                                                                                                                                                                                            |
+| ----------------- | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `forum_posts`     | `id`                              | `topic_id` (null for a topic; cascade), `category`, `author_id`, `author_name`, `author_color`, `title` (`''` for a reply), `body`, `state` (`CHECK` four), `answer_id` (`ON DELETE SET NULL`), `check_tries`, `checked_at`, `hidden_at`, `created_at`, `edited_at`, `activity_at` |
+| `forum_reactions` | `(post_id, account_id, reaction)` | `reaction` (`CHECK` three), `created_at`; cascade; `idx_forum_reactions_account`                                                                                                                                                                                                   |
+| `forum_reports`   | `(post_id, reporter_key)`         | `network_hash`, `reason` (`CHECK` five), `note`, `created_at`; cascade                                                                                                                                                                                                             |
+| `forum_counters`  | `(subject, bucket)`               | `n`: `w:<account>` and `r:<account>` per hour, `checks` per UTC day                                                                                                                                                                                                                |
+
+Indexes: `idx_forum_topics_active (state, activity_at DESC) WHERE topic_id IS NULL`, `idx_forum_topics_new (state,
+created_at DESC) WHERE topic_id IS NULL`, `idx_forum_topics_category (category, state, activity_at DESC) WHERE
+topic_id IS NULL`, `idx_forum_replies (topic_id, state, created_at)`, `idx_forum_author (author_id)`,
+`idx_forum_pending (checked_at) WHERE state = 'pending'`.
+
+### Security (Forum)
+
+- Every write but a report verifies an account token offline; the account id is the token's `sub`, never a body
+  field.
+- The public never sees an account id: a post answers `own`, never `author_id`.
+- Reports and their per-network budget are the gallery's.
+- Nothing is listed unchecked: only `checkForumText` answering `pass` writes `listed`; the local pass needs both
+  `ENVIRONMENT=development` and `FORUM_CHECK_LOCAL=pass`.
+- CORS: `Authorization` joins the allowed headers; writes answer only an app's own origins, as the gallery's.
+
+### Observability (Forum)
+
+| Level  | Line                                                         | Where       |
+| ------ | ------------------------------------------------------------ | ----------- |
+| `log`  | `[forum] posted { kind, state }`, `[forum] edited { state }` | `routes.ts` |
+| `log`  | `[forum] auto-hidden { postId }`                             | `routes.ts` |
+| `log`  | `[forum] settled { listed, refused, waiting }`               | `check.ts`  |
+| `warn` | `[forum] check failed { reason }`                            | `check.ts`  |
 
 ## Defaults ledger
 

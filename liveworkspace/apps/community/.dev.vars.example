@@ -13,3 +13,10 @@ APP_ORIGIN_LIVEPLANNER=
 APP_ORIGIN_LIVEDOCUMENTS=
 APP_ORIGIN_LIVEDESIGN=
 APP_ORIGIN_LIVEHUDDLE=
+# The Forum (community.md "Running it locally"): access tokens checked against the local site's accounts, addressed to
+# the local apps' API resource (API_RESOURCE in each api's .dev.vars), as the Drive service's .dev.vars has them.
+ACCOUNTS_URL=http://localhost:3000
+INDEX_AUDIENCES=http://localhost/api
+# A local run has no Workers AI login, so the Forum's check can't answer and posts wait as Pending. `pass` lists them as
+# if checked; it is read only in development.
+FORUM_CHECK_LOCAL=pass

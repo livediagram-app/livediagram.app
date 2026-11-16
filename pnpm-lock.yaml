@@ -5955,6 +5955,9 @@ importers:
 
   liveworkspace/apps/community:
     dependencies:
+      '@liveworkspace/auth-client':
+        specifier: workspace:*
+        version: link:../../../packages/auth-client
       '@liveworkspace/community':
         specifier: workspace:*
         version: link:../../../packages/community
@@ -5977,6 +5980,9 @@ importers:
       '@types/node':
         specifier: ^26.6.6
         version: 26.6.6
+      jose:
+        specifier: ^6.2.17
+        version: 6.2.17
       oxlint:
         specifier: ^1.93.0
         version: 1.93.0(oxlint-tsgolint@7.0.2007)
@@ -6926,6 +6932,9 @@ importers:
         specifier: workspace:*
         version: link:../sites
     devDependencies:
+      '@liveworkspace/vitest-config':
+        specifier: workspace:^
+        version: link:../vitest-config
       '@types/node':
         specifier: ^26.6.6
         version: 26.6.6
