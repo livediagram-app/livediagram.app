@@ -14,6 +14,7 @@ import type { CanvasTool, PaletteProps } from './palette.types';
 import { buildCanvasToolOptions } from './canvas-tool-options';
 import { paletteCategoryTabs } from './palette-category-tabs';
 import { useShapeLibraries } from '@/components/primitives/ShapeLibraryProvider';
+import { useLibrary } from '@liveworkspace/workbench/components/library/LibraryProvider';
 import type { PaletteAddHandlers } from './palette-add-handlers';
 import {
   paletteCategoriesFor,
@@ -95,6 +96,9 @@ export function usePaletteCatalogue({
   // appears / disappears as the viewport crosses the breakpoint; a client
   // mount reads it synchronously, so there's no flicker.
   const { libraries } = useShapeLibraries();
+  // The Library every app shares (liveworkspace/docs/specs/006-media/libraries.md): offered to an Editor whenever it
+  // is there, so its empty state says how to fill it.
+  const sharedLibrary = useLibrary();
   // The viewer's editor mode picks the palette layout (palette-layouts).
   const editorMode = useEditorModeState()?.mode ?? DEFAULT_EDITOR_MODE;
   const isMobile = useIsMobileViewport();
@@ -216,7 +220,7 @@ export function usePaletteCatalogue({
   // The mode's palette layout (palette-layouts): its categories, in order, with their tiles. My
   // shapes shows only when the owner has a shape to place (docs/specs/013-workspace/shape-libraries.md);
   // Event Storming only on an ES board (docs/specs/021-event-storming/event-storming.md).
-  const hasLibraryShapes = libraries.some((l) => l.items.length > 0);
+  const hasLibraryShapes = !!sharedLibrary || libraries.some((l) => l.items.length > 0);
   const categories = participant
     ? participantPaletteCategories(editorMode, !!esBoard)
     : paletteCategoriesFor(editorMode, { esBoard: !!esBoard }).filter(

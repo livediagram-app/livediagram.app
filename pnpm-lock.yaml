@@ -8204,6 +8204,9 @@ importers:
       '@liveworkspace/index-client':
         specifier: workspace:*
         version: link:../index-client
+      '@liveworkspace/media':
+        specifier: workspace:*
+        version: link:../media
       '@liveworkspace/model-core':
         specifier: workspace:*
         version: link:../model-core

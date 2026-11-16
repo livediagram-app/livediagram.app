@@ -1,4 +1,5 @@
 import type { EmbedProvider } from '@livedocuments/document';
+import type { LibraryInsertItem } from '@liveworkspace/workbench/hooks/canvas/useLibraryItemInsert';
 import type { ShapeKind, TextPresetId } from '@livedocuments/document';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { PaletteTint } from '@/components/palette/palette-controls';
@@ -38,6 +39,8 @@ export type PaletteProps = {
   // element carrying the chosen tech-catalogue id. Picked from the
   // Technology tab's searchable grid; never dropped inside a shape.
   onAddTechIcon: (iconId: string) => void;
+  // Places an item from the Library (liveworkspace/docs/specs/006-media/libraries.md).
+  onInsertLibraryItem: (item: LibraryInsertItem<unknown>) => void;
   // A Write text style; none, a Paragraph.
   onAddText: (preset?: TextPresetId) => void;
   onAddSticky: () => void;

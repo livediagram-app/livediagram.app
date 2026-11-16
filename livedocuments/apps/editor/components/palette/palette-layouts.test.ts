@@ -39,7 +39,16 @@ describe('palette layouts', () => {
   });
 
   it('narrows Pages to the categories a visual page is made of', () => {
-    expect(ids()).toEqual(['shapes', 'write', 'concepts', 'components', 'icons', 'media', 'data']);
+    expect(ids()).toEqual([
+      'shapes',
+      'write',
+      'concepts',
+      'components',
+      'icons',
+      'library',
+      'media',
+      'data',
+    ]);
   });
 
   // The owner's request (2026-11-15): Devices folds into Components as a parent row, and Icons holds the stickers.
@@ -103,6 +112,7 @@ describe('palette layouts', () => {
       'concepts',
       'components',
       'icons',
+      'library',
     ]);
     expect(slide.find((c) => c.id === 'media')!.group).toBe(0);
     expect(slide.find((c) => c.id === 'components')!.tiles!.map((t) => t.id)).not.toContain(

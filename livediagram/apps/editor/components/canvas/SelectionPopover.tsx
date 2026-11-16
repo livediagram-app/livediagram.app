@@ -1,4 +1,6 @@
 import { useRef, type ReactNode } from 'react';
+import { SaveToLibraryButton } from '@liveworkspace/workbench/components/library/SaveToLibraryButton';
+import type { LibrarySaveDraft } from '@liveworkspace/workbench/components/library/LibraryProvider';
 import { useEdgeAwarePlacement } from '@liveworkspace/workbench/hooks/canvas/useEdgeAwarePlacement';
 import { FloatingTitle } from '@liveworkspace/workbench/components/chrome/FloatingTitle';
 import { CommentIcon, DuplicateIcon, LockIcon, TrashIcon, HoverCard } from '@livediagram/ui';
@@ -61,6 +63,8 @@ type SelectionPopoverProps = {
   // live only in the right-click context menu). Omitted in read-only /
   // view-role mode.
   onDuplicate?: () => void;
+  // Save to Library (liveworkspace/docs/specs/006-media/libraries.md): the selection as an item, beside Duplicate.
+  saveToLibrary?: () => LibrarySaveDraft | null;
   // Intra-LAYER z-order (docs/specs/006-document/layers.md gained no z-nudge until now): stack this
   // element in front of / behind its band-mates WITHOUT moving it between
   // layers, which is what the element menu's Bring to Front does.
@@ -98,6 +102,10 @@ type SelectionPopoverProps = {
 const GAP_DEFAULT = 48;
 const GAP_COMPACT = 16;
 
+// The toolbar's resting button, for the Library's own button beside Duplicate.
+const POPOVER_BUTTON =
+  'flex h-8 w-8 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white';
+
 export function SelectionPopover({
   bounds,
   canvasOffset,
@@ -113,6 +121,7 @@ export function SelectionPopover({
   cardinality,
   onAddMindSibling,
   onDuplicate,
+  saveToLibrary,
   onBringToFront,
   onSendToBack,
   onOpenComments,
@@ -261,6 +270,9 @@ export function SelectionPopover({
               >
                 <DuplicateIcon />
               </PopoverButton>
+              {saveToLibrary ? (
+                <SaveToLibraryButton draft={saveToLibrary} className={POPOVER_BUTTON} />
+              ) : null}
               <Divider />
             </>
           ) : null}

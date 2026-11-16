@@ -2,6 +2,8 @@ import type { Element } from '@livedesign/design';
 import { DuplicateIcon, EllipsisIcon, LockIcon, TrashIcon, HoverCard, Glyph } from '@livedesign/ui';
 import type { CombineOp } from '@/lib/combine/combine';
 import { CombineMenuButton } from '@/components/canvas/CombineMenu';
+import { SaveToLibraryButton } from '@liveworkspace/workbench/components/library/SaveToLibraryButton';
+import type { LibrarySaveDraft } from '@liveworkspace/workbench/components/library/LibraryProvider';
 import { buildFilterGroups, SelectionFilterMenu } from '@/components/canvas/SelectionFilterMenu';
 import {
   TOOLBAR_BTN,
@@ -17,6 +19,8 @@ type MultiSelectionToolbarProps = {
   // per-kind buckets.
   selectedElements: Element[];
   onDuplicate: () => void;
+  // Save to Library (liveworkspace/docs/specs/006-media/libraries.md): the selection as one item. Omitted read-only.
+  onSaveToLibrary?: () => LibrarySaveDraft | null;
   // Combine (docs/specs/007-editor/logo-pages.md "Combine"): shown only while the selection can be
   // combined.
   onCombine?: (op: CombineOp) => void;
@@ -39,6 +43,7 @@ export function MultiSelectionToolbar({
   allLocked,
   selectedElements,
   onDuplicate,
+  onSaveToLibrary,
   onCombine,
   onDelete,
   onToggleLock,
@@ -89,6 +94,14 @@ export function MultiSelectionToolbar({
           <DuplicateIcon size={14} />
         </button>
       </HoverCard>
+      {onSaveToLibrary ? (
+        <SaveToLibraryButton
+          draft={onSaveToLibrary}
+          className={TOOLBAR_BTN}
+          iconSize={14}
+          multiple
+        />
+      ) : null}
       {onCombine ? <CombineMenuButton onCombine={onCombine} /> : null}
       {/* Duplicate copies the selection; everything after acts ON it
           (export, then lock / delete) — the divider marks that

@@ -11,6 +11,7 @@ import { selectionMoving, useCanvasGesture } from '@liveworkspace/workbench/lib/
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { FloatingToolbar } from '@/components/chrome/FloatingToolbar';
 import { MultiSelectionToolbar } from '@/components/canvas/MultiSelectionToolbar';
+import { libraryDraftOf } from '@/lib/library-draft';
 
 // The floating multi-selection toolbar (docs/specs/008-canvas/canvas-and-palette.md), riding a sibling wrapper
 // that mirrors the canvas transform so it counter-scales with zoom and floats over the selection. A single
@@ -78,6 +79,11 @@ export function CanvasSelectionToolbars({
                 .every((el) => el.locked === true)}
               selectedElements={elements.filter((el) => multiSelectedIds.has(el.id))}
               onDuplicate={props.onDuplicateMultiSelected}
+              onSaveToLibrary={
+                readOnly
+                  ? undefined
+                  : () => libraryDraftOf(elements.filter((el) => multiSelectedIds.has(el.id)))
+              }
               onDelete={props.onDeleteMultiSelected}
               onToggleLock={props.onToggleLockMultiSelected}
               onFilter={readOnly ? undefined : props.onFilterMultiSelected}

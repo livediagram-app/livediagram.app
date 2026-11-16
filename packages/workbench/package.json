@@ -679,7 +679,17 @@
     "./components/canvas/PaletteDragGhost": "./src/components/canvas/PaletteDragGhost.tsx",
     "./components/canvas/paper-kit": "./src/components/canvas/paper-kit.tsx",
     "./lib/editor-viewport-defaults": "./src/lib/editor-viewport-defaults.ts",
-    "./lib/hex-colour": "./src/lib/hex-colour.ts"
+    "./lib/hex-colour": "./src/lib/hex-colour.ts",
+    "./components/library/LibraryProvider": "./src/components/library/LibraryProvider.tsx",
+    "./components/library/LibraryPaletteTab": "./src/components/library/LibraryPaletteTab.tsx",
+    "./components/library/SaveToLibraryDialog": "./src/components/library/SaveToLibraryDialog.tsx",
+    "./components/library/LibraryTile": "./src/components/library/LibraryTile.tsx",
+    "./components/library/library-icons": "./src/components/library/library-icons.tsx",
+    "./hooks/canvas/useLibraryItemInsert": "./src/hooks/canvas/useLibraryItemInsert.ts",
+    "./lib/library/library-api": "./src/lib/library/library-api.ts",
+    "./lib/library/library-groups": "./src/lib/library/library-groups.ts",
+    "./components/library/SaveToLibraryButton": "./src/components/library/SaveToLibraryButton.tsx",
+    "./lib/library/library-draft": "./src/lib/library/library-draft.ts"
   },
   "scripts": {
     "lint": "oxlint",
@@ -703,6 +713,7 @@
     "@liveworkspace/explorer": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
     "@liveworkspace/index-client": "workspace:*",
+    "@liveworkspace/media": "workspace:*",
     "@liveworkspace/model-core": "workspace:*",
     "@liveworkspace/page-background": "workspace:*",
     "@liveworkspace/settings-ui": "workspace:^",
