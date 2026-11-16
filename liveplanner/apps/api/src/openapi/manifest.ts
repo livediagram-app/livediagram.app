@@ -1027,7 +1027,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'projects',
     tag: 'Email to Board',
     summary:
-      "A new address for the board: the old one refuses mail at once; Who Can Send and the counts are kept. 404 for a board with no address. An Editor of the whole plan, in person.",
+      'A new address for the board: the old one refuses mail at once; Who Can Send and the counts are kept. 404 for a board with no address. An Editor of the whole plan, in person.',
     auth: 'clerk',
     statuses: [200, 400, 401, 403, 404, 405, 503],
   },
