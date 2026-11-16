@@ -204,7 +204,8 @@ function summaryBand(x0: number, top: number, h: number): Element[] {
 
 const FINDING_PAD = 18;
 const FINDING_HEAD_H = 62;
-const NOTE_H = 64;
+// Two lines of a finding at md, so the longer ones never clip.
+const NOTE_H = 88;
 const NOTE_GAP = 10;
 
 function findingsHeight(): number {

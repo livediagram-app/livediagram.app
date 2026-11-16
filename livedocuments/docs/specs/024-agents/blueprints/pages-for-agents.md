@@ -23,7 +23,7 @@ function and a test here; nothing here adds design.
 | article frames    | `tabArticleOps(before, after, { agent })`, `ARTICLE_FRAME_CHARS` (moved)                                                                                                                      | `packages/api-schema/src/article-frames.ts`                                               |
 | submit            | `submitPages`, `pagesRoomOps`                                                                                                                                                                 | `apps/api/src/changesets/pages.ts`                                                        |
 | relay             | `relayPages`                                                                                                                                                                                  | `apps/api/src/room-client.ts`                                                             |
-| grow marks        | `markArticleGrow`, `isArticleGrowPending`, `clearArticleGrow`; `shouldGrowForAbsentWriter`                                                                                                    | `apps/editor/lib/article/article-grow-store.ts`, `packages/document/src/article-pages.ts` |
+| grow marks        | `markArticleGrow`, `isArticleGrowPending`, `clearArticleGrow`, `noteArticleGrown`; `absentWriterPageCount`                                                                                    | `apps/editor/lib/article/article-grow-store.ts`, `packages/document/src/article-pages.ts` |
 | icon check        | `isIconId`, `iconsLike`                                                                                                                                                                       | `../packages/icons/src/search.ts`                                                         |
 | route             | `handleTabPages`                                                                                                                                                                              | `apps/api/src/routes/tab-pages-route.ts`                                                  |
 | verbs             | `changePages`, `writeArticle`, `readArticle`, `pagesTabOf`                                                                                                                                    | `packages/agent-verbs/src/pages/pages-calls.ts`                                           |
@@ -149,10 +149,15 @@ which change 1 made the page it added; nothing deleted.`; otherwise `pageRemoved
 - `apps/editor/lib/article/article-grow-store.ts` holds the marks (tab and flow). `room-op-apply.ts` marks a flow on
   an incoming `article` op with `agent: true`; `useArticles` marks every flow of the active tab as it loads.
 - `useArticles` `onLayout` with `!layout.local` calls `growForAbsentWriter`: a marked flow, once web fonts are
-  loaded (`document.fonts.status`), clears its mark and, when the pure decision says so, ticks
-  `withArticlePageCount(t, flow, pagesNeeded)` (grow only) and logs `[article] grown for an absent writer`.
-- The pure decision is `shouldGrowForAbsentWriter({ local, pending, needed, have, locked })` in
-  `packages/document/src/article-pages.ts`.
+  loaded (`document.fonts.status`), asks the pure decision for a page count and, when it gives one, ticks
+  `withArticlePageCount(t, flow, count)` and logs `[article] grown for an absent writer`. The first grow records the
+  count it found (`noteArticleGrown`, the floor) and keeps the mark, so the next lay-outs, measured on the real
+  pages, settle the pages it added; the mark clears when a lay-out needs no change, when the editor may not edit,
+  or after `ARTICLE_GROW_SETTLE_TRIES` (4) grows.
+- The pure decision is `absentWriterPageCount({ local, pending, needed, have, locked, floor })` in
+  `packages/document/src/article-pages.ts`: null for the writer, an unmarked or locked flow; with no floor (nothing
+  grown yet) `needed` when it is more than `have`, else null; with a floor, `max(needed, floor)` when that differs
+  from `have`, else null. So pages a person had are never removed.
 
 ## Interfaces and contracts
 

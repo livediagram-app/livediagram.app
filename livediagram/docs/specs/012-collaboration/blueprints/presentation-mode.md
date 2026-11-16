@@ -65,6 +65,34 @@ export function slideTransitionType(
 export function whenScreenSettles(ready: () => void): () => void;
 ```
 
+Decks a template seeds (spec "Decks a template seeds"):
+
+```ts
+// packages/templates/src/template-slides-data.ts: hand-written, in talk order
+export type TemplateSlideSpec = {
+  name: string;
+  notes: string;
+  anchors?: readonly string[]; // absent = the overview, every drawn element
+  rows?: boolean; // widen to the board's width
+  under?: boolean; // take in what sits straight under the region
+};
+export const TEMPLATE_SLIDES: Partial<Record<TemplateKind, readonly TemplateSlideSpec[]>>;
+// packages/templates/src/template-slides.ts
+export function isPresentedTemplate(kind: TemplateKind): boolean;
+export function templateSlides(kind: TemplateKind, tab: Tab, newId: () => string): Slide[];
+export function withAppendedSlides(
+  presentation: string | null,
+  added: readonly Slide[],
+): string | null;
+// apps/editor: useSlideDeck(...).appendSlides(slides); lib/new-document-content.ts newDocumentPresentation(kind, tab)
+// apps/mcp/src/template-deck.ts
+export function appendTemplateDeck(env, token, documentId, kind, tab): Promise<string | null>; // the note
+```
+
+A slide's region is the union of its anchors (first line of a label or page title, whole match first, then as a
+prefix) and each anchor's panel: the smallest element round it under `PANEL_MAX_SHARE` of the board. Its members are
+the elements whose centre lies in the region and that are no bigger than it; arrows are left to `resolveSlide`.
+
 ## Errors and edge cases
 
 | Case                                               | Handling                                                             |
@@ -77,6 +105,10 @@ export function whenScreenSettles(ready: () => void): () => void;
 | The tab hidden mid-move                            | The browser skips the animation; the state is already committed      |
 | Fullscreen refused or failing to exit              | Logged; the deck runs in the window                                  |
 | Leaving mid-move                                   | Unchanged: the exit restores the view in the same commit             |
+| A template slide's anchor is gone from the tab     | That slide is left out; the others seed                              |
+| A template lands on a tab with work on it          | Nothing lands, so no slides are appended                             |
+| `add_tab` cannot read or write the deck            | The tab stays made; the result's note says the slides were not added |
+| A viewer (read only) picks nothing                 | `appendSlides` is a no-op when read only                             |
 
 ## Performance and limits
 
@@ -102,15 +134,18 @@ Reduced motion (either source) cuts. The slide announcer, focus and the HUD's co
 
 ## Testing
 
-| Rule                                   | Test                                                                                     |
-| -------------------------------------- | ---------------------------------------------------------------------------------------- |
-| Types per transition and direction     | `slide-transition.test.ts`: `slideTransitionType`                                        |
-| A move runs in a typed transition      | `PresentationHost.test.tsx`: `addTransitionType` called with the move's type             |
-| Reduced motion and None start none     | `PresentationHost.test.tsx`                                                              |
-| Quick steps all land                   | `PresentationHost.test.tsx`: three steps before a commit land three slides on            |
-| The entrance waits, then reveals typed | `PresentationHost.test.tsx` with `whenScreenSettles` driven                              |
-| Refusals are logged                    | `PresentationOverlay.test.tsx`                                                           |
-| It moves, lands and stays fast         | `e2e/presentation-mode.spec.ts`; `e2e/perf/slide-transition.perf.ts` (Chromium, Firefox) |
+| Rule                                    | Test                                                                                     |
+| --------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Types per transition and direction      | `slide-transition.test.ts`: `slideTransitionType`                                        |
+| A move runs in a typed transition       | `PresentationHost.test.tsx`: `addTransitionType` called with the move's type             |
+| Reduced motion and None start none      | `PresentationHost.test.tsx`                                                              |
+| Quick steps all land                    | `PresentationHost.test.tsx`: three steps before a commit land three slides on            |
+| The entrance waits, then reveals typed  | `PresentationHost.test.tsx` with `whenScreenSettles` driven                              |
+| Refusals are logged                     | `PresentationOverlay.test.tsx`                                                           |
+| It moves, lands and stays fast          | `e2e/presentation-mode.spec.ts`; `e2e/perf/slide-transition.perf.ts` (Chromium, Firefox) |
+| Every presented template finds its deck | `packages/templates/src/template-slides.test.ts`                                         |
+| Create seeds, add_tab appends           | `apps/mcp/src/template-deck.test.ts`; `create-in-place.test.ts`                          |
+| A pick in the editor appends            | `useTemplateFlow.deck.test.ts`; `useSlideDeck.append.test.ts`                            |
 
 ## Constants and configuration
 
@@ -118,6 +153,8 @@ Reduced motion (either source) cuts. The slide announcer, focus and the HUD's co
 | -------------------- | --------------------------------------- | --------------- | ---------- |
 | `SETTLE_FAILSAFE_MS` | 600                                     | Spec "Entering" | 300–1000   |
 | `--lvd-slide-ms`     | 220 / 380 / 620 (Quick / Normal / Slow) | `SLIDE_SPEEDS`  | Spec       |
+| `PANEL_MAX_SHARE`    | 0.4 of the board's area                 | Template decks  | 0.25–0.6   |
+| `UNDER_GAP`          | 48 px                                   | Template decks  | 24–80      |
 
 ## Defaults ledger
 

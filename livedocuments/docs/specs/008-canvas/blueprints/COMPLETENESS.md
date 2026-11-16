@@ -233,3 +233,15 @@
 - [x] Testing
 - [x] Constants and configuration
 - [x] Defaults ledger
+
+## template-content
+
+- [x] Domain and naming
+- [x] Behaviour and state
+- [x] Interfaces and contracts
+- [x] Data and persistence
+- [x] Errors and edge cases
+- [x] Performance and limits
+- [x] Testing
+- [x] Constants and configuration
+- [x] Defaults ledger

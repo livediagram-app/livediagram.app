@@ -8,6 +8,7 @@ import { workingBackwardsOverrides } from './template-working-backwards';
 import { articleTemplateOverridesFor, isArticleTemplate } from './article-templates';
 import { blankPageTemplateOverrides } from './blank-page-templates';
 import { flashcardTemplateOverrides, isFlashcardTemplate } from './flashcard-templates';
+import { templateArrangement } from './template-arrangement';
 import { templateLayers } from './template-layers';
 import { templatePages } from './template-pages';
 import type { TemplateKind } from './templates';
@@ -44,5 +45,7 @@ export function templateCanvasOverrides(kind: TemplateKind): Partial<Tab> {
   // The templates on pages (canvas-and-palette.md "Templates on pages"); their builders place every element on them.
   const pages = templatePages(kind);
   if (pages) overrides.pages = pages;
+  // Stacked where a sequence is the point (template-arrangement.ts).
+  Object.assign(overrides, templateArrangement(kind));
   return overrides;
 }

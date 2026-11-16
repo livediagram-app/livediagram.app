@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react';
-import type { EditorMode, Tab } from '@livediagram/document';
+import type { EditorMode, Slide, Tab } from '@livediagram/document';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { getTheme, recolourElementsForTheme } from '@/lib/themes';
 import type { TemplateKind } from '@livediagram/templates';
@@ -44,6 +44,9 @@ export function useTemplateFlow(opts: {
   // Puts down whatever tool is in hand, for Select (docs/specs/023-draw-mode/draw-mode.md "Opening tool"): a
   // template's content makes the tab one with content, and such a tab opens on Select.
   putToolDown: () => void;
+  // Puts a presented template's slides on after the deck's own (docs/specs/012-collaboration/presentation-mode.md
+  // "Decks a template seeds").
+  appendSlides: (slides: readonly Slide[]) => void;
   // A tab a template adds has no server row to fetch yet (useEditorState's markTabLoaded).
 }) {
   const {
@@ -61,6 +64,7 @@ export function useTemplateFlow(opts: {
     setIdentityPromptOpen,
     requestFit,
     putToolDown,
+    appendSlides,
   } = opts;
 
   // The visitor name prompt: Join keeps the name typed (or the one they had), Cancel the one they had.
@@ -91,6 +95,7 @@ export function useTemplateFlow(opts: {
       buildTemplate,
       templateCanvasOverrides,
       isDefaultDocumentName,
+      templateSlides,
       untitledNameForTemplate,
     } = await import('@/lib/template-builders');
     // The first tab's template names a document still on a default name ("Untitled Flowchart",
@@ -105,7 +110,8 @@ export function useTemplateFlow(opts: {
     // wears (docs/specs/007-editor/start-diagramming.md "The panel"), and the tab's backdrop is left as it is. Sticky
     // notes keep their own colour, as `addBoxed` does; multi-colour themes tint each branch a different hue
     // (recolourElementsForTheme, docs/specs/011-theme/multicolour-themes.md), the same helper /new's create uses.
-    const theme = getTheme(tabs.find((t) => t.id === activeId)?.theme);
+    const activeTab = tabs.find((t) => t.id === activeId);
+    const theme = getTheme(activeTab?.theme);
     const elements = recolourElementsForTheme(rawElements, theme);
     const overrides = templateCanvasOverrides(kind);
     const opensIn = templateOpensIn(overrides);
@@ -126,6 +132,12 @@ export function useTemplateFlow(opts: {
         };
       }),
     );
+    // A presented template runs as slides in its talk order, after whatever the deck already shows
+    // (docs/specs/012-collaboration/presentation-mode.md "Decks a template seeds").
+    if (activeTab) {
+      const slides = templateSlides(kind, { ...activeTab, elements }, () => crypto.randomUUID());
+      if (slides.length > 0) appendSlides(slides);
+    }
     // The scaffold replaced the tab's content, so frame it. Blank leaves the view where it is.
     // It also turns the tab into one with content, which opens on Select: a pen picked up for the empty tab is
     // put down, so its style panel doesn't sit over the board and the first click selects.

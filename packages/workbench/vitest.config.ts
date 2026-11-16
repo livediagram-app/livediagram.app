@@ -62,6 +62,17 @@ const HELD_AT_100 = [
   // The selection toolbar's placement every editor's FloatingToolbar and SelectionPopover share
   // (docs/specs/008-canvas/canvas-performance.md "A gesture frame never reads layout after writing it").
   'src/hooks/canvas/useEdgeAwarePlacement.ts',
+  // Escape on a start panel with the focus outside it (start-diagramming.md "Search", Work Tracker 1026).
+  'src/components/start/useStartEscape.ts',
+  // A toolbar moving without resizing, and the menu box's room beside the strip (toolbar-layout.md, Work Tracker
+  // 1027 and 1038).
+  'src/lib/watch-move.ts',
+  'src/components/chrome/useMenuCardRoom.ts',
+  // A selection toolbar re-placing as an obstacle arrives (Work Tracker 1032).
+  'src/hooks/canvas/toolbar-obstacle.ts',
+  // The menu box's uncapped edge (Work Tracker 1038).
+  'src/components/canvas/menu-join.tsx',
+  'src/components/chrome/menu-card-form.ts',
   // The dot-vote overlay livediagram and liveplanner both mount (docs/specs/012-collaboration/session-tools.md).
   'src/components/canvas/ElementVoteOverlay.tsx',
   'src/components/canvas/VoteStepper.tsx',

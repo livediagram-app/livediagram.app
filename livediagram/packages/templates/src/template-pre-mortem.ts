@@ -47,7 +47,7 @@ const GROUPS: Group[] = [
     x: 0,
     y: 560,
     reasons: [
-      'Sign-in broke on older Android phones',
+      'Sign-in broke on old Androids',
       'The API fell over on launch day',
       'No crash reports until week 3',
     ],

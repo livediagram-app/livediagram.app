@@ -67,7 +67,7 @@ export function buildDoodleWarmup(cx: number, cy: number): Element[] {
 
   // The rules and the timer.
   out.push(
-    note(x0, y0 + TOP, 290, 270, RULES, 'yellow', {
+    note(x0, y0 + TOP, 290, 300, RULES, 'yellow', {
       textSize: 'lg',
       textAlignX: 'left',
       textAlignY: 'top',

@@ -46,8 +46,8 @@ const CONCEPTS: readonly Concept[] = [
   { id: 'roots', label: 'Roots', col: COLS[0]!, row: 3, tone: 'plain' },
   { id: 'leaves', label: 'Leaves', col: COLS[1]!, row: 3, tone: 'plain' },
   { id: 'chlorophyll', label: 'Chlorophyll', col: COLS[2]!, row: 3, tone: 'plain' },
-  { id: 'growth', label: 'Growth and energy', col: COLS[3]!, row: 3, tone: 'plain' },
-  { id: 'animals', label: 'Animals and people', col: COLS[4]!, row: 3, tone: 'plain' },
+  { id: 'growth', label: 'Growth', col: COLS[3]!, row: 3, tone: 'plain' },
+  { id: 'animals', label: 'Animals', col: COLS[4]!, row: 3, tone: 'plain' },
 ];
 
 // Every link: from, to, the linking words, and whether it is a cross-link between branches.
@@ -73,6 +73,37 @@ const PROPOSITIONS = [
   'Photosynthesis needs sunlight.',
   'Leaves contain chlorophyll.',
 ];
+
+// A green plate of reading matter (the focus question, a sentence read off the map): an unlabelled panel with its
+// words on top, so it reads as the page's text, never as a concept waiting for a link.
+function plate(
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  text: { label: string; textSize: 'sm' | 'md'; textBold?: boolean },
+): Element[] {
+  return [
+    {
+      ...createShape('square', x, y),
+      width,
+      height,
+      label: '',
+      fillColor: '#f0fdf4',
+      strokeColor: '#86efac',
+      themeLockFill: true,
+    },
+    {
+      ...createText(x + 8, y + 2),
+      width: width - 16,
+      height: height - 4,
+      ...text,
+      textColor: '#14532d',
+      textAlignX: 'center',
+      textAlignY: 'middle',
+    },
+  ];
+}
 
 export function buildConceptMap(cx: number, cy: number): Element[] {
   const boxW = 200;
@@ -104,17 +135,11 @@ export function buildConceptMap(cx: number, cy: number): Element[] {
       'Photosynthesis · concept map',
       'Read every arrow as a sentence: a concept, the linking words, then the next concept. Add a concept, then link it to two others.',
     ),
-    {
-      ...createShape('square', x0, y0 + TECH_HEADER_H + 24),
-      width: mapW,
-      height: questionH,
+    ...plate(x0, y0 + TECH_HEADER_H + 24, mapW, questionH, {
       label: 'Focus question: how do plants make their food?',
       textSize: 'md',
       textBold: true,
-      textColor: '#14532d',
-      fillColor: '#f0fdf4',
-      strokeColor: '#86efac',
-    },
+    }),
   ];
 
   const nodes = new Map<string, Element>();
@@ -169,16 +194,12 @@ export function buildConceptMap(cx: number, cy: number): Element[] {
       textBold: true,
       textAlignX: 'left',
     },
-    ...PROPOSITIONS.map((sentence, i): Element => ({
-      ...createShape('square', sideX, mapTop + i * (stripH + stripGap)),
-      width: sideW,
-      height: stripH,
-      label: sentence,
-      textSize: 'sm',
-      textColor: '#14532d',
-      fillColor: '#f0fdf4',
-      strokeColor: '#86efac',
-    })),
+    ...PROPOSITIONS.flatMap((sentence, i) =>
+      plate(sideX, mapTop + i * (stripH + stripGap), sideW, stripH, {
+        label: sentence,
+        textSize: 'sm',
+      }),
+    ),
     {
       ...createSticky(sideX, turnY),
       width: sideW,

@@ -13,24 +13,24 @@ export const SECTION_TEMPLATES_MAX = 9;
 export const SECTION_TEMPLATE_KINDS: Readonly<Record<string, readonly TemplateKind[]>> = {
   articles: [
     'article',
+    'research-report',
     'business-proposal',
     'meeting-notes',
+    'case-study',
     'design-doc',
     'status-report',
-    'working-backwards',
-    'lesson-plan',
-    'cover-letter',
+    'newsletter',
     'blank-article',
   ],
   slides: [
     'slide-deck',
     'launch-keynote',
+    'board-update',
     'talk-flashcards',
     'quarterly-review',
     'pitch-flashcards',
     'class-lesson',
     'team-welcome',
-    'class-presentation',
     'blank-slide-deck',
   ],
   infographics: [
@@ -51,6 +51,7 @@ export const SECTION_TEMPLATE_KINDS: Readonly<Record<string, readonly TemplateKi
     'article',
     'design-doc',
     'team-welcome',
+    'onboarding-handbook',
     'storyboard',
   ],
 };

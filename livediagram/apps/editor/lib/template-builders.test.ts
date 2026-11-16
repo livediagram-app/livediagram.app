@@ -109,6 +109,11 @@ const ALL_KINDS = [
   'onboarding-plan',
   'concept-map',
   'network-diagram',
+  'c4-context',
+  'c4-container',
+  'architecture-decision-record',
+  'sprint-planning',
+  'interview-synthesis',
   'blank-session',
 ] as const satisfies readonly TemplateKind[];
 

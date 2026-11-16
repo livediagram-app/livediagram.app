@@ -230,7 +230,11 @@ Where a line breaks is measured by the editor, so the server never sets an artic
 - An article whose writing reaches past its last page is grown by an editor that is not its writer at two moments
   only: the first lay-out after **an agent's write** reaches it (the relayed `article` op says `agent: true`), and
   the first lay-out after **the tab loads** (a writer who left before settling). Pages are added, never removed, as
-  the writer's would be; shrinking stays the writer's. The grow waits until the page's web fonts are in, so a
+  the writer's would be; shrinking stays the writer's. The one exception is the pages that grow itself just added:
+  the writing is measured across the pages that exist, so a footnote or a repeated table header on a page not there
+  yet takes no room, and a grow from one page can land a page short or a page over. Once it has grown, the editor
+  measures again on the real pages and settles the pages it added (more, or fewer, never under the count it found),
+  for up to four lay-outs, then stops. The grow waits until the page's web fonts are in, so a
   lay-out measured in a fallback font never adds a page the real type does not need. Any other time the writer settles, as today, so two devices
   measuring type a line apart never take turns adding and removing a page.
 - Two editors growing it at once each send their pages; the `tab-meta` patch is the last one's, whole, so the row

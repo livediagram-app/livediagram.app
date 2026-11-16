@@ -8,6 +8,7 @@ import {
   startEventStormingRow,
   startTemplateDocument,
   paletteTile,
+  STICKY_NOTE,
 } from './fixtures';
 
 // End-to-end smoke suite (docs/specs/003-system-architecture/e2e-smoke.md). Small by design: it answers "does
@@ -123,12 +124,13 @@ test('an event-storming board stays a board across a reload', async ({ page, pag
   await expect(notation.first()).toBeVisible();
   // The seeded timeline of orange events (docs/specs/021-event-storming/event-storming.md).
   const canvas = page.locator('[data-canvas-a11y-root]');
-  const note = canvas.getByRole('img', { name: /sticky/i }).first();
+  // The seed carries the run sheet as its note, so its indicator makes it a `group`, not an `img`.
+  const note = canvas.locator(STICKY_NOTE).first();
   await expect(note).toBeVisible();
   // The starter is one domain event and nothing else: no text element
   // (docs/specs/021-event-storming/event-storming.md Phase 1).
-  await expect(canvas.getByRole('img')).toHaveCount(1);
-  await expect(canvas.getByRole('img', { name: /Board Created/i })).toHaveCount(1);
+  await expect(canvas.locator('[data-element-id]')).toHaveCount(1);
+  await expect(canvas.getByRole('group', { name: /Board Created/i })).toHaveCount(1);
   // Workshop notes are written in capitals (docs/specs/021-event-storming/event-storming.md). Only a browser can
   // answer this one: the stored label keeps its typed casing, so the caps
   // exist purely as the rendered treatment.

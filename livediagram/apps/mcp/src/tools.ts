@@ -19,10 +19,12 @@ import {
   resolveGraphInput,
   withNewButtonModes,
   type Element,
+  type Slide,
   type Tab,
 } from '@livediagram/document';
 import {
   buildTemplateTab,
+  withAppendedSlides,
   resolveTemplate,
   templateCatalogue,
   templateFamilyOf,
@@ -72,6 +74,7 @@ import {
   submitChangeset,
 } from './changeset-client';
 import { registerTool } from './tool-annotations';
+import { appendTemplateDeck, deckNote, slidesForTemplateTab } from './template-deck';
 import { registerArchiveTools } from './archive-tools';
 import { registerThreadTools } from './thread-tools';
 import { registerViewTool, VIEW_TOOL_META } from './view-tab';
@@ -161,6 +164,9 @@ export function registerTools(server: McpServer, env: Env): void {
       const templateTabIds = new Set<string>();
       // Elements given beside a template, added to its tab once the document exists.
       const withTemplate: { tab: Tab; operations: unknown[] }[] = [];
+      // A presented template's slides, in tab order: the new document's deck (presentation-mode.md "Decks a
+      // template seeds").
+      const slides: Slide[] = [];
       for (const [index, given] of inputTabs.entries()) {
         const tabId = crypto.randomUUID();
         // An unnamed tab is named after its template, as the editor names one (templateTabName), else "Tab n".
@@ -190,6 +196,9 @@ export function registerTools(server: McpServer, env: Env): void {
           }
           tabs.push(built);
           templateTabIds.add(tabId);
+          const seeded = slidesForTemplateTab(kind, built);
+          if (seeded.length) graphNotes.push(deckNote(seeded.length, built.name));
+          slides.push(...seeded);
           continue;
         }
         // Graph-first (docs/specs/015-api/mcp-server.md §4.7): the server builds + lays out the boxes
@@ -245,6 +254,7 @@ export function registerTools(server: McpServer, env: Env): void {
             tabs,
             source: 'mcp',
             intent,
+            ...(slides.length ? { presentation: withAppendedSlides(null, slides) } : {}),
             ...(args.markUsed !== undefined ? { markUsed: args.markUsed } : {}),
           }),
         },
@@ -384,6 +394,10 @@ export function registerTools(server: McpServer, env: Env): void {
         token,
         `/documents/${encodeURIComponent(args.documentId)}/tabs/${encodeURIComponent(tabId)}`,
       );
+      // A presented template's slides go on after the deck's own (docs/specs/015-api/mcp-server.md §4.3a).
+      const kind = args.template ? resolveTemplate(args.template) : null;
+      const deck = kind ? await appendTemplateDeck(env, token, args.documentId, kind, tab) : null;
+      const notes = [...(input.notes ?? []), ...(deck ? [deck] : [])];
       return imageResult(
         {
           documentId: args.documentId,
@@ -394,7 +408,7 @@ export function registerTools(server: McpServer, env: Env): void {
           rev: tab.rev,
           text: mcpResultText(answer.text),
           lint: lintLineOf(answer.lint),
-          ...(input.notes ? { notes: input.notes } : {}),
+          ...(notes.length ? { notes } : {}),
         },
         tab,
         { env, token },

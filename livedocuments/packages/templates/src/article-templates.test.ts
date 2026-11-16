@@ -5,7 +5,9 @@ import {
   isArticleTemplate,
   type ArticleTemplateKind,
 } from './article-templates';
+import { articleTemplateOverrides } from './article-template';
 import { templateCanvasOverrides } from './template-canvas-overrides';
+import { workingBackwardsOverrides } from './template-working-backwards';
 
 // docs/specs/008-canvas/canvas-and-palette.md "Written documents".
 const KINDS: readonly ArticleTemplateKind[] = [
@@ -15,6 +17,11 @@ const KINDS: readonly ArticleTemplateKind[] = [
   'design-doc',
   'status-report',
   'cover-letter',
+  'product-one-pager',
+  'research-report',
+  'newsletter',
+  'case-study',
+  'onboarding-handbook',
 ];
 
 const flowOf = (kind: ArticleTemplateKind) => {
@@ -55,6 +62,11 @@ describe('the written templates', () => {
       'design-doc': 1,
       'status-report': 2,
       'cover-letter': 0,
+      'product-one-pager': 2,
+      'research-report': 1,
+      newsletter: 1,
+      'case-study': 2,
+      'onboarding-handbook': 2,
     });
     for (const kind of KINDS)
       for (const t of tables(flowOf(kind).blocks)) {
@@ -67,13 +79,20 @@ describe('the written templates', () => {
     expect(timings?.type === 'table' && timings.cols.map((c) => c.w)).toEqual([0.18, 0.32, 0.5]);
   });
 
-  it('lead the proposal and the design doc with a table of contents over their headings', () => {
-    for (const kind of ['business-proposal', 'design-doc'] as const) {
+  it('lead the long documents with a table of contents over their headings', () => {
+    for (const kind of [
+      'business-proposal',
+      'design-doc',
+      'research-report',
+      'newsletter',
+      'onboarding-handbook',
+    ] as const) {
       const { blocks } = flowOf(kind);
       const toc = blocks.find((b) => b.type === 'toc');
       expect(toc, kind).toBeDefined();
       expect(
         articleTocEntries(blocks, toc?.type === 'toc' && toc.depth ? toc.depth : 3).length,
+        kind,
       ).toBeGreaterThan(4);
     }
     // The proposal's title page stands alone, with no header or footer.
@@ -111,6 +130,43 @@ describe('the written templates', () => {
     expect(address?.type === 'paragraph' && address.runs).toEqual([
       { text: 'Jordan Blake\nHead of Customer Experience\nHarbour Coffee\nBristol BS8 1AA' },
     ]);
+  });
+
+  it('cite their figures in footnotes where a real document of their kind would', () => {
+    const notes = (kind: ArticleTemplateKind) =>
+      flowOf(kind).blocks.flatMap((b) =>
+        'runs' in b ? b.runs.filter((r) => r.fn !== undefined).map((r) => r.fn!) : [],
+      );
+    const counts = Object.fromEntries(KINDS.map((k) => [k, notes(k).length]));
+    expect(counts).toEqual({
+      'meeting-notes': 0,
+      'lesson-plan': 0,
+      'business-proposal': 1,
+      'design-doc': 1,
+      'status-report': 1,
+      'cover-letter': 0,
+      'product-one-pager': 0,
+      'research-report': 3,
+      newsletter: 0,
+      'case-study': 1,
+      'onboarding-handbook': 2,
+    });
+    // Every note has its text: no definition left in the writing, no empty note.
+    for (const kind of KINDS)
+      for (const fn of notes(kind)) expect(fn.length, kind).toBeGreaterThan(20);
+  });
+
+  it('write the Project Brief and Working Backwards as documents that are passed round', () => {
+    const brief = articleTemplateOverrides().articles!['art-brief']!;
+    expect(brief.style).toEqual({ header: { left: '{name}', right: 'Draft' }, pageNumbers: true });
+    expect(tables(brief.blocks)).toHaveLength(1);
+    expect(brief.blocks.filter((b) => b.type === 'list' && b.list === 'todo')).toHaveLength(2);
+    expect(brief.blocks.some((b) => 'runs' in b && b.runs.some((r) => r.fn))).toBe(true);
+    const prfaq = workingBackwardsOverrides().articles!['art-prfaq']!;
+    expect(prfaq.style?.footer).toEqual({
+      left: 'Confidential draft',
+      right: 'Page {page} of {pages}',
+    });
   });
 
   it('names only the written templates', () => {

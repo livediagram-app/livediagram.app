@@ -328,15 +328,20 @@ function withNotesRelinked(doc: ArticleFlow, idMap: ReadonlyMap<string, string>)
   return doc.style ? { blocks, style: doc.style } : { blocks };
 }
 
-/** Whether an editor that is not an article's writer grows it to the pages its writing needs
- *  (docs/specs/024-agents/pages-for-agents.md "Pages for the writing"): only when it is waiting
- *  to (an agent wrote it, or the tab just loaded), never past a lock, and only to add pages. */
-export function shouldGrowForAbsentWriter(state: {
+/** How many pages an editor that is not an article's writer gives it (docs/specs/024-agents/pages-for-agents.md "Pages
+ *  for the writing"), or null to leave it: only when it is waiting to (an agent wrote it, or the tab just loaded),
+ *  never past a lock. Before it has grown (`floor` null) only to add pages; once it has, measured again on the real
+ *  pages, it settles the pages it added, never under the count it found (`floor`). */
+export function absentWriterPageCount(state: {
   local: boolean;
   pending: boolean;
   needed: number;
   have: number;
   locked: boolean;
-}): boolean {
-  return !state.local && state.pending && !state.locked && state.needed > state.have;
+  floor: number | null;
+}): number | null {
+  if (state.local || !state.pending || state.locked) return null;
+  if (state.floor === null) return state.needed > state.have ? state.needed : null;
+  const count = Math.max(state.needed, state.floor);
+  return count === state.have ? null : count;
 }

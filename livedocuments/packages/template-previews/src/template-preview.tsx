@@ -10,6 +10,7 @@ import { templatePreviewGroup21 } from './template-preview-21';
 import { templatePreviewGroup25 } from './template-preview-25';
 import { templatePreviewGroup26 } from './template-preview-26';
 import { templatePreviewGroup27 } from './template-preview-27';
+import { templatePreviewGroup28 } from './template-preview-28';
 
 // Static SVG preview tiles, one branch per TemplateKind, rendered by the
 // editor's template picker and the marketing site's template gallery
@@ -32,6 +33,7 @@ export function TemplatePreview({ kind }: { kind: TemplateKind }): ReactElement 
     templatePreviewGroup21(kind) ??
     templatePreviewGroup25(kind) ??
     templatePreviewGroup26(kind) ??
-    templatePreviewGroup27(kind)
+    templatePreviewGroup27(kind) ??
+    templatePreviewGroup28(kind)
   );
 }
