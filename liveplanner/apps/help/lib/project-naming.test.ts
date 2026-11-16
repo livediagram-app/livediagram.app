@@ -128,7 +128,9 @@ describe('a project is never called a document', () => {
       false,
     );
     expect(
-      flagged('[Warm open](../../livediagram/docs/specs/006-document/x.md#a-cloud-document)'),
+      flagged(
+        '[Warm open](../../livediagram/docs/specs/006-document/offline-mode.md#a-cloud-document)',
+      ),
     ).toBe(true);
   });
 });

@@ -114,7 +114,7 @@ absent until followed and null past its cap.
 | The whole copy over `LAST_SEEN_MAX_CHARS`                  | The shared store keeps none and removes the older one                                      |
 | Practice cards on the board (the Plan tour)                | Cards not followed until they go; the kept cards stay as they were                         |
 | A card the copy kept that the server refused               | The catch-up's first load takes the server's store whole                                   |
-| A Dashboard tile reading a sheet during the warm paint     | Its loading state until the catch-up (nothing is fetched without the plan)                 |
+| A Dashboard (or any tab) with a chart from a sheet's cells | No warm open: the copy keeps only the first tab's own sheets                               |
 | A tab-scoped link                                          | The kept cards and sheets are what that scope read; the copy is read only by the same code |
 
 ## Security and trust
@@ -132,8 +132,29 @@ under their scope; nothing is derived or widened. With no plan known the stores 
 
 The follows run on effects (the store's identity, a tab read), never on a keystroke, and write nothing themselves:
 the follower's refresh writes the newest copy at most once per `LAST_SEEN_REFRESH_MS`. `cardsForCopy` is a length
-check (O(1)) and hands the store over by reference; `sheetsForCopy` counts cells (O(sheets)). The measurements are
-in the spec's section and below.
+check (O(1)) and hands the store over by reference; `sheetsForCopy` counts cells (O(sheets)).
+
+**The copy's size and write.** Card JSON measured (Node, CPU time, 25 runs, median / p95): 100 cards with 40-word
+descriptions 66,700 characters (667 a card), stringify 0.10 / 0.31 ms; 1,000 cards 668,201 characters, 0.93 /
+1.07 ms; 2,000 cards with 80-word descriptions (the 1.5 MB plan) 1,758,239 characters, 2.27 / 2.50 ms. In headless
+Chromium (15 runs, median) a copy at the card cap (668,292 characters) stringifies in 0.4 ms, its IndexedDB put lands
+in 0.4 ms and its `JSON.parse` at the next open takes 0.8 ms. The 1.5 MB plan keeps no cards (`cards: null`), so its
+copy is 72 characters plus its first tab and writes in 0.1 ms; past `LAST_SEEN_MAX_CHARS` the shared store would
+have refused it anyway.
+
+**Measured on production builds.** `e2e/perf/warm-open.perf.ts` (the `perf` project, `E2E_PERF=1`) makes a guest's
+Kanban plan on the server and opens it at its own address against the production export on the e2e stack, cold (the
+copy store deleted first, the open as it was before) and warm, 12 each interleaved, every one a fresh navigation in
+one browser context, the network emulated over CDP at 100 ms round trip, 10 Mbps down, 5 Mbps up. "Content" is the
+first frame with a card on screen; "editable" is the catch-up's `warm-catch-up` mark (a cold open is editable when
+its cards paint). Medians / p90 from navigation start:
+
+| Way in                          | Cold: content and editable | Warm: content | Warm: editable   |
+| ------------------------------- | -------------------------- | ------------- | ---------------- |
+| A guest, the plan's own address | 829 / 836 ms               | 390 / 397 ms  | 1,036 / 1,051 ms |
+
+The cards show about 440 ms (53%) sooner. The catch-up makes the plan editable about 200 ms later than a cold open,
+as in the other editors; the person reads the board meanwhile.
 
 ## Observability
 
@@ -144,20 +165,22 @@ The shared marks and logs: `debugLog('[load] warm open from the last seen copy')
 
 ## Testing
 
-| Rule                                                 | Test                                                                                          |
-| ---------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| Caps and which first tabs paint                      | `lib/last-seen-plan.test.ts`                                                                  |
-| Follow item folds fields and schedules once          | `last-seen-follower.test.ts` "follows the item's other fields …"                              |
-| Paint, catch-up, roles, someone else, lost access    | `useIdentityBootstrap.warm.test.tsx`                                                          |
-| A revoked share link forgets the copy                | `useIdentityBootstrap.warm.test.tsx` "forgets a revoked link's copies …"                      |
-| Board / Sheet / Dashboard paint, Form waits          | `useIdentityBootstrap.warm.test.tsx` "paints a … first tab …", "waits for the load on a Form" |
-| Seed answers, paints, keeps the painted tab          | `seed-fetched-project.test.ts`                                                                |
-| Cards shown before the plan is known, replaced whole | `usePlanItems.warm.test.tsx`                                                                  |
-| Cards and sheets follow, practice cards and caps     | `usePlanCopyFollow.test.tsx`                                                                  |
-| No sheet fetch without a plan, seeded tab, tab reads | `sheet-store-client.test.ts` "warm …"                                                         |
-| Other tabs load while the warm paint shows           | `editor-page-helpers.test.ts` "loads a tab without a body while the warm open shows …"        |
-| Sign-out clears                                      | `AccountsBridge.test.tsx`                                                                     |
-| History state on the `#t=` pin                       | the shared `useTabEntryEffects.test.tsx`; `useTabEntryEffects.test.tsx` here                  |
+| Rule                                                 | Test                                                                                                                                             |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Caps and which first tabs paint                      | `lib/last-seen-plan.test.ts`                                                                                                                     |
+| Another app's spec links pass the naming guard       | `apps/help/lib/project-naming.test.ts`                                                                                                           |
+| Follow item folds fields and schedules once          | `last-seen-follower.test.ts` "follows the item's other fields …"                                                                                 |
+| Paint, catch-up, roles, someone else, lost access    | `useIdentityBootstrap.warm.test.tsx`                                                                                                             |
+| A revoked share link forgets the copy                | `useIdentityBootstrap.warm.test.tsx` "forgets a revoked link's copies …"                                                                         |
+| Board / Sheet / Dashboard paint, Form waits          | `useIdentityBootstrap.warm.test.tsx` "paints a … first tab from what the copy kept", "waits for the load on a … first tab the copy cannot paint" |
+| Seed answers, paints, keeps the painted tab          | `seed-fetched-project.test.ts`                                                                                                                   |
+| Cards shown before the plan is known, replaced whole | `usePlanItems.warm.test.ts`                                                                                                                      |
+| Cards and sheets follow, practice cards and caps     | `usePlanCopyFollow.test.tsx`                                                                                                                     |
+| No sheet fetch without a plan, seeded tab, tab reads | `sheet-store-warm.test.ts`                                                                                                                       |
+| Other tabs load while the warm paint shows           | `editor-page-helpers.test.ts` "loads another tab than the warm-painted one before hydration"                                                     |
+| Sign-out clears                                      | `AccountsBridge.test.tsx`                                                                                                                        |
+| Warm against cold on production builds               | `e2e/perf/warm-open.perf.ts` (reports, never fails on a number)                                                                                  |
+| History state on the `#t=` pin                       | the shared `useTabEntryEffects.test.tsx`; `useTabEntryEffects.test.tsx` here                                                                     |
 
 ## Defaults ledger
 

@@ -217,6 +217,12 @@ What the first tab is decides whether the copy paints:
 - `ProjectLoad` keeps timing the fresh copy's first frame; the warm paint is timed on its own as the performance
   measures `warm-paint` and `warm-catch-up` and in the field as the `WarmPaint` timing, from the same start.
 
+**Measured** on the production export (headless Chromium, the e2e stack, a guest's Kanban plan at its own address,
+100 ms round trip at 10 Mbps, 12 cold and 12 warm opens interleaved, medians / p90 from navigation start): the cards
+are on screen at **829 / 836 ms** cold (the open as it was before) and **390 / 397 ms** warm, about 440 ms (53%)
+sooner. The plan is editable at 1,036 / 1,051 ms warm against 829 / 836 ms cold: the catch-up lands about 200 ms
+later than a cold open, the same trade the other editors make (their reads wait behind the paint's work).
+
 The bindings are set out in the [Last seen copy blueprint](blueprints/last-seen-copy.md), which names its
 measurements.
 
