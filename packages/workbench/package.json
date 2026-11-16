@@ -646,6 +646,7 @@
     "./components/palette/StickerPickerTab": "./src/components/palette/StickerPickerTab.tsx",
     "./components/palette/category-browser-types": "./src/components/palette/category-browser-types.ts",
     "./components/palette/IconPickerTab": "./src/components/palette/IconPickerTab.tsx",
+    "./components/palette/IconsCategoryTab": "./src/components/palette/IconsCategoryTab.tsx",
     "./components/palette/TechPickerTab": "./src/components/palette/TechPickerTab.tsx",
     "./components/palette/tile-caption": "./src/components/palette/tile-caption.ts",
     "./components/palette/PaletteToolRows": "./src/components/palette/PaletteToolRows.tsx",

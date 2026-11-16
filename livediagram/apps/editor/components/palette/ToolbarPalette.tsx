@@ -1,6 +1,7 @@
 'use client';
 
 import { onPaletteCategoryRequest } from '@/lib/palette-category-request';
+import { openedPaletteCategory } from '@liveworkspace/workbench/components/palette/IconsCategoryTab';
 import type { Element } from '@livediagram/document';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { ChevronDownIcon, EllipsisIcon, HoverCard } from '@livediagram/ui';
@@ -134,7 +135,9 @@ export function ToolbarPalette(props: Props) {
   // Another surface asking for a category (a board's + asks for Widgets).
   useEffect(
     () =>
-      onPaletteCategoryRequest((id) => {
+      onPaletteCategoryRequest((asked) => {
+        // Stickers is the Icons category's Stickers side now (IconsCategoryTab).
+        const id = openedPaletteCategory(asked);
         if (tabs.some((t) => t.id === id)) setCategoryId(id);
       }),
     [tabs],

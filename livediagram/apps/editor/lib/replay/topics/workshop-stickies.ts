@@ -3,6 +3,7 @@ import { frameOf, typedAt, type Chapter, type Topic, type Waypoint } from '../to
 import {
   bar,
   carryAt,
+  iconsSide,
   learnTiles,
   placed,
   railRow,
@@ -14,7 +15,7 @@ import {
 } from './workshop-shared';
 
 // Stickies and Stickers (docs/specs/007-editor/watch-it-built.md "The curriculum", Workshop): three stickies from
-// Write, an idea typed on each, then two stickers from Stickers' Reactions dropped on them.
+// Write, an idea typed on each, then two stickers from Reactions, on the Icons category's Stickers side, dropped on them.
 
 // The ids are read by the telemetry dashboard (computed-emitters.ts TOUR_STEP_SOURCE) as `TourStep<Id>`.
 export const CHAPTERS: readonly Chapter[] = [
@@ -67,11 +68,12 @@ export const WRITE = [0, 1, 2].map((i) => ({
   select: 700 + i * 2300,
   type: [1000 + i * 2300, 2300 + i * 2300] as const,
 }));
-// Stickers: open it, pick Reactions on its rail, carry a sticker out; again for the second. Closing puts the rail
-// back on its first group (replay-dom.ts byRailGroup), so each visit picks Reactions again.
+// Stickers: open Icons, turn it to its Stickers side, pick Reactions on its rail, carry a sticker out; again for the
+// second. Closing puts the rail back on its first group and the switch back on Icons (replay-dom.ts byRailGroup,
+// icons-stickers), so each visit picks both again.
 export const STICK = [
-  { open: 900, group: 1700, carry: [2500, 3500] as const },
-  { open: 4300, group: 5000, carry: [5700, 6700] as const },
+  { open: 900, side: 1300, group: 1700, carry: [2500, 3500] as const },
+  { open: 4300, side: 4650, group: 5000, carry: [5700, 6700] as const },
 ] as const;
 
 const CARRIES: readonly Carry[] = [
@@ -176,7 +178,14 @@ export const stickies: Topic<StickiesLayout> = {
         STICK.map((s) => [s.open, s.carry[0] + 200] as const),
       )
     )
-      open.push('bar-stickers');
+      open.push('bar-icons');
+    if (
+      within(
+        ms,
+        STICK.map((s) => [s.side, s.carry[0] + 200] as const),
+      )
+    )
+      open.push('icons-stickers');
     if (
       within(
         ms,
@@ -202,7 +211,8 @@ export const stickies: Topic<StickiesLayout> = {
         press: true,
       }));
     return STICK.flatMap((s, n): Waypoint[] => [
-      { at: s.open, to: bar('bar-stickers'), press: true },
+      { at: s.open, to: bar('bar-icons'), press: true },
+      { at: s.side, to: iconsSide('Stickers'), press: true },
       { at: s.group, to: railRow('stickers', 2), press: true },
       { at: s.carry[0], to: tile(n === 0 ? TILES.thumbs : TILES.heart), press: true },
       { at: s.carry[1], to: { kind: 'element', id: n === 0 ? DEMO_IDS.thumbs : DEMO_IDS.heart } },

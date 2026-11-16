@@ -99,7 +99,11 @@ export function InfoFooter({ def }: { def: PaletteTileDef | null }) {
           ? {
               name: tileDisplayName(def),
               text: def.variants?.length ? (
-                'Choose a preset to start from.'
+                def.parentOf ? (
+                  `Choose one of the ${def.variants.length} ${def.parentOf}.`
+                ) : (
+                  'Choose a preset to start from.'
+                )
               ) : def.action.type === 'open' ? (
                 `Browse ${def.label}.`
               ) : (
@@ -278,7 +282,7 @@ function Card(item: ItemProps) {
         </span>
         <span className="line-clamp-2 text-[11.5px] leading-snug text-slate-500 dark:text-slate-400">
           {def.variants?.length ? (
-            `${def.variants.length} presets`
+            `${def.variants.length} ${def.parentOf ?? 'presets'}`
           ) : (
             <PointerWords text={def.blurb ?? def.description} />
           )}

@@ -64,7 +64,7 @@ export type ShapeKind =
   | 'star'
   // Speech bubble / callout: a rounded body with a tail at the bottom-left.
   | 'speech-bubble'
-  // UI device frames (wireframing). See docs/specs/008-canvas/canvas-and-palette.md "Devices" accordion.
+  // UI device frames (wireframing). See docs/specs/008-canvas/canvas-and-palette.md "Devices".
   | 'browser'
   | 'monitor'
   | 'laptop'

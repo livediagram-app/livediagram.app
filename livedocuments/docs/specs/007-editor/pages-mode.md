@@ -110,11 +110,11 @@ offering what that page is made of and nothing it has no use for; within a kind 
 one category.
 
 - **Design** (infographic pages): Shapes,
-  Write, Concepts, Components, Devices, Icons, Stickers, Media, Data.
+  Write, Concepts, Components (with the Devices row), Icons (with the stickers), Media, Data.
 - **Slide** (slide pages): in Common **Write**, **Shapes**, **Media** (with
   its embeds: a video, a prototype or a page a talk plays); in Structure **Data**,
-  **Concepts**, **Components** (no website Header) and **Devices** (a screenshot in a frame); then
-  **Icons** and **Stickers**.
+  **Concepts** and **Components** (no website Header; its Devices row frames a screenshot); then
+  **Icons**, with the stickers.
 - **Article** (article pages): the strip holds the article's
   formatting in place of the category bar: its page toolbar, docked ([Article pages](article-pages.md)
   "The page toolbar"). Search keeps the Design palette. Offered on an article page alone

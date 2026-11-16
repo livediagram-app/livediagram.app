@@ -7,15 +7,17 @@ import {
 import { TourOfferButton } from '@liveworkspace/workbench/components/tour/TourOfferButton';
 import { SettingsIcon, GithubIcon, SearchGlyph } from '@/components/chrome/tab-bar-icons';
 import { REPO_URL, HoverCard } from '@livedocuments/ui';
+import { HistoryButton } from '@/components/versions/HistoryButton';
 
 // The right-hand control cluster shared by the editor's bottom tab bar and
-// the Explorer's bottom bar (docs/specs/007-editor/editor-app.md): search, the open-source GitHub
-// link, settings, and the dark-mode toggle. Each callback-driven control
+// the Explorer's bottom bar (docs/specs/007-editor/editor-app.md): search, History (the editor's, on a stored
+// document), the open-source GitHub link, settings, and the dark-mode toggle. Each callback-driven control
 // renders only when its handler is supplied; dark-mode is always shown, and
 // GitHub unless the host opts out. Keyboard shortcuts live in Settings' Keyboard category. Rendered as a fragment
 // so each host drops it straight into its own bar flex row.
 export function ChromeControls({
   onOpenSearch,
+  onOpenHistory,
   onOpenSettings,
   settingsLabel = 'Settings',
   settingsDescription = 'Configure editor behaviour.',
@@ -24,6 +26,9 @@ export function ChromeControls({
   appearance = true,
 }: {
   onOpenSearch?: () => void;
+  // Version History (docs/specs/006-document/version-history.md "In the editor"): the editor passes it on a
+  // document stored on the server; the Explorer's bar never does.
+  onOpenHistory?: () => void;
   onOpenSettings?: () => void;
   // The editor's settings are per-document; the Explorer's read the same
   // synced preferences. Let the host phrase the hover card.
@@ -52,6 +57,7 @@ export function ChromeControls({
           </button>
         </HoverCard>
       ) : null}
+      {onOpenHistory ? <HistoryButton onOpen={onOpenHistory} labelled={labelled} /> : null}
       {github ? (
         <>
           {/* Open-source repo link (the codebase is public + MIT, docs/specs/002-project-scope/open-source-and-business-model.md). An

@@ -27,13 +27,13 @@ function PaletteFrame({
 }
 
 /** A search field inside the palette body. */
-function SearchField({ y, text }: { y: number; text: string }) {
+function SearchField({ y, text, w = 276 }: { y: number; text: string; w?: number }) {
   return (
     <g>
       <rect
         x={72}
         y={y}
-        width={276}
+        width={w}
         height={24}
         rx={7}
         className="fill-slate-50 stroke-slate-200"
@@ -59,7 +59,51 @@ function SearchField({ y, text }: { y: number; text: string }) {
   );
 }
 
-/** Stickers: a search for "approved" finds the badge, and the emoji land on die-cut plates. */
+/** The Icons | Stickers switch beside the search field, `side` pressed. */
+function SideSwitch({ y, side }: { y: number; side: 'Icons' | 'Stickers' }) {
+  const x = 252;
+  const half = 48;
+  return (
+    <g>
+      <rect
+        x={x}
+        y={y}
+        width={half * 2}
+        height={24}
+        rx={7}
+        className="fill-slate-50 stroke-slate-200"
+        strokeWidth={1.5}
+      />
+      {(['Icons', 'Stickers'] as const).map((name, i) => (
+        <g key={name}>
+          {name === side ? (
+            <rect
+              x={x + 2 + i * half}
+              y={y + 2}
+              width={half - 4}
+              height={20}
+              rx={5}
+              className="fill-white stroke-slate-200"
+              strokeWidth={1}
+            />
+          ) : null}
+          <Label
+            x={x + half / 2 + i * half}
+            y={y + 12}
+            anchor="middle"
+            size={9.5}
+            weight={name === side ? 600 : 400}
+            tone={name === side ? 'strong' : 'muted'}
+          >
+            {name}
+          </Label>
+        </g>
+      ))}
+    </g>
+  );
+}
+
+/** Stickers: the Icons category turned to its Stickers side, the badges and the emoji on die-cut plates. */
 export function StickersSheet() {
   const emoji = ['👍', '🎉', '🔥', '❤️', '✅', '⚠️', '🚀', '💡'];
   const badges = [
@@ -68,8 +112,9 @@ export function StickersSheet() {
   ];
   return (
     <Scene w={420} h={262} bg="plain">
-      <PaletteFrame category="Stickers" h={244}>
-        <SearchField y={76} text="Search stickers" />
+      <PaletteFrame category="Icons" h={244}>
+        <SearchField y={76} w={172} text="Search icons and stickers" />
+        <SideSwitch y={76} side="Stickers" />
         {/* Stickers keep their own colours in either appearance. */}
         <g className="help-art-as-drawn">
           {badges.map((b, i) => {

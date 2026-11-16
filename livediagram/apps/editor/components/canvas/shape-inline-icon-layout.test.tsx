@@ -62,4 +62,31 @@ describe('ShapeInlineIconLayout', () => {
     expect(layout.style.gap).toBe(`${inlineIconGap(iconSize, false)}px`);
     expect(getByText('Cloud')).toBeTruthy();
   });
+
+  // A box from an infrastructure import wears a Technology icon (docs/specs/020-import-export/infrastructure-import.md):
+  // it draws the brand tile, as the export does, not the line-art placeholder.
+  it('draws a Technology icon as its tile, and line art otherwise', () => {
+    const props = {
+      position: 'left' as const,
+      iconStroke: '#000',
+      isEditing: false,
+      editor: null,
+      label: 'db',
+      textColor: '#000',
+      textSize: 'md' as const,
+      alignX: 'center' as const,
+      alignY: 'middle' as const,
+      padding: 14,
+    };
+    const shape = { ...createShape('square', 0, 0), width: 240, height: 80 } as ShapeElement;
+    const tech = render(
+      <ShapeInlineIconLayout {...props} element={{ ...shape, iconId: 'postgres' }} />,
+    );
+    expect(tech.container.querySelector('rect[rx="4.5"]')).toBeTruthy();
+    tech.unmount();
+    const line = render(
+      <ShapeInlineIconLayout {...props} element={{ ...shape, iconId: 'cloud' }} />,
+    );
+    expect(line.container.querySelector('rect[rx="4.5"]')).toBeNull();
+  });
 });

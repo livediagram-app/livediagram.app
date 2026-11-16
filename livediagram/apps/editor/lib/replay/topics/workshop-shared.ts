@@ -25,6 +25,17 @@ export const tile = (label: string): CursorTarget => ({
   selector: `[data-tour-id="palette-category-menu"] [aria-label="${label}"]`,
 });
 
+/** The Icons category's Icons | Stickers switch (IconsCategoryTab.tsx, its `[role="group"][aria-label="Browse"]`). */
+export const ICONS_SIDE_SELECTOR =
+  '[data-tour-id="palette-category-menu"] [role="group"][aria-label="Browse"] button';
+
+/** One side of that switch, by its words. */
+export const iconsSide = (label: 'Icons' | 'Stickers'): CursorTarget => ({
+  kind: 'find',
+  selector: ICONS_SIDE_SELECTOR,
+  text: label,
+});
+
 /** A group's row on the open flyout's rail (PaletteCategoryRail.tsx `<nav aria-label="<things> groups">`), by place. */
 export const railRow = (things: string, n: number): CursorTarget => ({
   kind: 'find',

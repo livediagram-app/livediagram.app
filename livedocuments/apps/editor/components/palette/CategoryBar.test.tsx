@@ -287,6 +287,27 @@ describe('a tile’s side panel', () => {
     expect(side()).toBeNull();
   });
 
+  // The owner's request (2026-11-15): the Devices row in Components opens the frames as Card opens its presets.
+  it('opens the Devices row’s frames beside the flyout, each placing its own device', () => {
+    const h = show();
+    fireEvent.click(button('Components'), { detail: 1 });
+    const row = within(flyout()!).getByRole('button', { name: 'Devices' });
+    expect(row.textContent).toContain('7 devices');
+    expect(row.getAttribute('draggable')).toBeNull();
+    fireEvent.click(row);
+    expect(row.getAttribute('aria-expanded')).toBe('true');
+    expect(side()!.querySelector('h3')?.textContent).toBe('Devices');
+    fireEvent.pointerEnter(within(side()!).getByRole('button', { name: 'Add Phone' }));
+    expect(side()!.querySelector('[data-flyout-footer]')?.textContent).toContain('Phone');
+    fireEvent.pointerEnter(row);
+    expect(flyout()!.querySelector('[data-flyout-footer]')?.textContent).toContain(
+      'Choose one of the 7 devices.',
+    );
+    fireEvent.click(within(side()!).getByRole('button', { name: 'Add Phone' }));
+    expect(h.onAddShape).toHaveBeenCalledWith('phone', expect.anything());
+    expect(side()).toBeNull();
+  });
+
   it('drops the side panel when the flyout moves to another category', () => {
     show();
     fireEvent.click(button('Components'), { detail: 1 });

@@ -28,6 +28,11 @@ describe('searchableElementTiles', () => {
     expect(tiles[0]?.id).toBe('shapes:square');
     expect(ids(searchableElementTiles({ hasImage: true }))).toEqual(ids(tiles));
     expect(ids(tiles)).toEqual(expect.arrayContaining(['data:pie', 'devices:phone']));
+    // The Devices row only opens its frames: Search lists the frames, never the row.
+    expect(ids(tiles)).not.toContain('components:devices');
+    expect(ids(searchElementTiles({ query: 'smartwatch', hasImage: true }))[0]).toBe(
+      'devices:smartwatch',
+    );
   });
 
   it('leaves out the image-upload tiles where the editor has none', () => {

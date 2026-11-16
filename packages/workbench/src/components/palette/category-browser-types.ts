@@ -25,6 +25,8 @@ export type CategoryBrowserProps<T> = {
   things: string;
   loading?: boolean;
   loadingMessage?: string;
+  // A control beside the search box: the Icons category's Icons | Stickers switch (IconsCategoryTab).
+  searchAccessory?: ReactNode;
 };
 
 /** The editor's browse component, generic over what its groups hold. */

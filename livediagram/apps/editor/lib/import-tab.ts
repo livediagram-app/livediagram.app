@@ -22,6 +22,8 @@ export type ImportOutcome =
       documents?: { id: string; name: string }[];
       // The shape libraries a draw.io import made (docs/specs/013-workspace/shape-libraries.md).
       libraries?: { id: string; name: string }[];
+      // The report's line under the dialog title, when "board" is the wrong word (an infrastructure import).
+      subtitle?: string;
     }
   | { status: 'cancelled' }
   | { status: 'error'; error: string };

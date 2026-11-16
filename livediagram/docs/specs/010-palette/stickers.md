@@ -4,8 +4,8 @@ Status: shipped
 
 ## What
 
-A **Stickers** category in the palette, in the **Decorate** band ([Palette top-level categories and bands](palette-top-level-categories.md)),
-between Icons and Tech, and a **`sticker` shape kind** behind it.
+The **Stickers** side of the palette's Icons category (owner, 2026-11-15: Icons and Stickers became one category, an Icons | Stickers switch picking the side and one search finding both; [Canvas and palette](../008-canvas/canvas-and-palette.md) "Icons category"), in the **Decorate** band ([Palette top-level categories and bands](palette-top-level-categories.md)),
+and a **`sticker` shape kind** behind it. Before that it was a category of its own, between Icons and Tech.
 
 A sticker is the thing you slap on a canvas: a die-cut plate with a soft shadow,
 in colours that are its own. Two flavours:

@@ -56,6 +56,31 @@ export function createStickerPickerTab({
     );
   }
 
+  // A grid of stickers, four to a row. `bounded` caps it at its own scroll height, for a browse whose pane does not
+  // scroll; the Icons category's grouped search results (IconsCategoryTab) leave it to the pane.
+  function StickerGrid({
+    stickers,
+    addSticker,
+    bounded = true,
+  }: {
+    stickers: StickerDef[];
+    addSticker: (stickerId: string) => void;
+    bounded?: boolean;
+  }) {
+    return (
+      // Four columns, with a badge spanning two of them: a word pill at
+      // one column's width would be unreadable, and a separate grid per
+      // flavour would break the "search shows you everything at once" rule.
+      <div
+        className={`grid grid-cols-4 items-center justify-items-center gap-1 overflow-x-hidden ${bounded ? 'max-h-72 overflow-y-auto' : ''}`}
+      >
+        {stickers.map((sticker) => (
+          <StickerTile key={sticker.id} sticker={sticker} onAdd={addSticker} />
+        ))}
+      </div>
+    );
+  }
+
   // The Stickers browse's groups, also the Toolbar strip's tiles for the category. Group artwork = the group's first
   // sticker, the same "a category looks like what it holds" rule the Icons and Tools tabs follow.
   function stickerBrowseGroups(): BrowserCategory<StickerDef>[] {
@@ -102,16 +127,7 @@ export function createStickerPickerTab({
         // The parent already searched every sticker for this query, so results
         // come back rather than being recomputed here.
         search={() => stickerResults}
-        renderItems={(stickers) => (
-          // Four columns, with a badge spanning two of them — a word pill at
-          // one column's width would be unreadable, and a separate grid per
-          // flavour would break the "search shows you everything at once" rule.
-          <div className="grid max-h-72 grid-cols-4 items-center justify-items-center gap-1 overflow-y-auto overflow-x-hidden">
-            {stickers.map((sticker) => (
-              <StickerTile key={sticker.id} sticker={sticker} onAdd={addSticker} />
-            ))}
-          </div>
-        )}
+        renderItems={(stickers) => <StickerGrid stickers={stickers} addSticker={addSticker} />}
         query={stickerQuery}
         onQueryChange={setStickerQuery}
         searchInput={{
@@ -128,5 +144,5 @@ export function createStickerPickerTab({
     );
   }
 
-  return { StickerPickerTab, stickerBrowseGroups };
+  return { StickerPickerTab, StickerGrid, stickerBrowseGroups };
 }
