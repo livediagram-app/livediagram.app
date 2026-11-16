@@ -211,8 +211,9 @@ function typePage(k: Kit): Element[] {
       textBold: true,
     }),
     display(
+      // Syne's capitals are wide: the alphabet set a size down fits the line as the face draws it.
       k.text(W * 0.34, y + u * 9, W * 0.66, u * 6, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', {
-        textSize: 'lg',
+        textSize: 'md',
         fontWeight: 700,
       }),
     ),
