@@ -184,7 +184,8 @@ Four events, written in the batch that makes the change, with the actor named as
 
 - **History.** They show in the item's History ([one-explorer-contracts.md "The event log"](one-explorer-contracts.md#the-event-log))
   under their own filter, **Approvals**: "Approval Requested", "Approved" ("Approved by everyone" on the closing one),
-  "Changes Requested", "Approval Cancelled", the note quoted beneath.
+  "Changes Requested", "Approval Cancelled" ("Approval Asked Again" when a new request replaced it), the note quoted
+  beneath.
 - **Team audit log.** On a team's item each is copied into the team's audit log, kept a year
   ([team-audit-log.md](team-audit-log.md)): who asked whom, who approved and who asked for changes is a sign-off
   record a team looks back on. The Event filter lists them under the items' group.
@@ -196,14 +197,15 @@ Three surfaces, the same in every app that offers approvals, from `@liveworkspac
 host builds a door from its gate and hands it to the provider; nothing is read for anyone without a door.
 
 - **The badge**, in the header's pills after the role pill: Awaiting n of m (amber, a clock), Changes Requested (rose,
-  a speech mark), Approved (green, a tick), Changed Since Approval (amber outline, a pencil). Its tooltip names the
+  a flag), Approved (green, a checked page), Changed Since Approval (amber outline, a pencil). Its tooltip names the
   requester, the due day (and Overdue) and who has and hasn't answered. For an Editor of the whole item it opens the
   Share dialog on its Approval tab. Like every header pill it shows from `sm` up.
 - **The banner**, under the header, for a named approver of the open request: "<Requester> asked you to approve this
   <noun>", the note, the due day, and **Request Changes** and **Approve**. Request Changes opens a note field in place
   ("What needs to change?") with **Cancel** and **Send**; Send is off until there is a note. Once they have decided
   the banner says so ("You approved this. Waiting on 2 more.", "You asked for changes.") with **Change Decision**, and
-  can be closed for the session. On a phone it wraps under its words, its buttons 44 px tall.
+  can be closed for the session. When their answer is the one that closes the request it says "Everyone has
+  approved." without Change Decision. On a phone it wraps under its words, its buttons 44 px tall.
 - **The Share dialog's Approval tab**, beside Passes (and Community where the app has one), for an Editor of the whole
   item:
   - With no request (or a cancelled one): **Approvers**, a checklist of whom they may name (the team's members, then

@@ -9,17 +9,17 @@ Scope, by file:
 | ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | `liveworkspace/apps/index/migrations/0019_approvals.sql`                                  | `approvals`, `approval_people`, their indexes, and `items.content_at`                                                              |
 | `liveworkspace/apps/index/src/approvals.ts`                                               | the routes: `handleApproval` (`GET`, `POST`, `DELETE /items/:id/approval`, `POST …/decision`, `GET …/people`)                      |
-| `liveworkspace/apps/index/src/approval-rows.ts`                                           | reading an item's approval and its people into the wire `Approval` (`readApproval`, `approvalOf`, `statusOf`)                      |
-| `liveworkspace/apps/index/src/approval-people.ts`                                         | who may be named: `nameable` (owner, Shared with me, team through accounts) and the candidates read                                |
+| `liveworkspace/apps/index/src/approval-rows.ts`                                           | reading an item's approval and its people into the wire `Approval` (`readApproval`, `namedIn`, `approvalOf`)                       |
+| `liveworkspace/apps/index/src/approval-people.ts`                                         | who may be named: `checkNameable` (owner, Shared with me, team through accounts) and `approvalCandidates`                          |
 | `liveworkspace/apps/index/src/app-routes.ts`                                              | the summary push sets `content_at = MAX(COALESCE(content_at, 0), updatedAt)`                                                       |
-| `liveworkspace/apps/index/src/account-purge.ts`                                           | a closed account's approvals and decisions anonymised (`approvalPurgeStatements`)                                                  |
+| `liveworkspace/apps/index/src/account-purge.ts`                                           | a closed account's approvals and decisions anonymised (three statements beside `byPerson`)                                         |
 | `liveworkspace/apps/index/src/index.ts`                                                   | routes `items/:id/approval…` and labels `approval`, `decision`                                                                     |
 | `packages/index-client/src/approvals.ts`                                                  | the wire types, limits, `parseApprovalNotice`, `isApprovalDay`                                                                     |
 | `packages/index-client/src/constants.ts`                                                  | the four event kinds in `ITEM_EVENT_TYPES` and `TEAM_AUDIT_ITEM_TYPES`, their audit labels                                         |
 | `packages/index-client/src/client.ts`                                                     | `getApproval`, `requestApproval`, `decideApproval`, `cancelApproval`, `approvalPeople`                                             |
 | `packages/index-app/src/internal.ts`, `internal-contract.ts`                              | the `approval_requested` notice to the `approvalRequested` handler (202 and nothing without one)                                   |
 | `packages/index-app/src/notifier.ts`                                                      | `notifyApprovalRequested`: the approvers' addresses (`notifyActionAssigned`), one email each through the app's `approvalRequested` |
-| `packages/explorer/src/approvals/*`                                                       | the door, provider and state (`useApprovalState`), the badge, the banner, the Share dialog's Approval tab, words and glyphs        |
+| `packages/explorer/src/approvals/*`                                                       | `door.tsx` (`useEditorApprovalDoor`, `ApprovalDoorProvider`), the badge, the banner, the Approval tab's form and panel, words      |
 | `packages/explorer/src/dialogs/ShareDialog.tsx`, `share/ShareTabs.tsx`                    | the Approval tab beside Passes when a door is open                                                                                 |
 | `packages/explorer/src/library/history-*.ts`, `event-icons.tsx`, `explorer/audit/rows.ts` | the four kinds' History labels, tone, filter, glyphs and audit sentences                                                           |
 | each app's `apps/api/src/routes/internal-items.ts`, `email/*`                             | the notice handler and the email template                                                                                          |
@@ -113,7 +113,8 @@ ALTER TABLE items ADD COLUMN content_at INTEGER NULL;
 
 - An approver gone from the item still counts; their place waits. Cancel and ask again without them (spec).
 - The item in the Trash or archived: `loadItem` already limits it to its owner and team; requests and decisions on a
-  trashed or archived item answer 404 `approval_not_found` for decisions and 409 `item_unavailable` for a request.
+  request on a trashed or archived item answers 404 `not_found`. An open request's approvers may still answer while
+  they reach it.
 - Accounts unreachable while naming a team member: the request is refused 503 `approvals_unavailable` rather than
   sent to someone the index couldn't check. Names unreachable: names are null (`IDX33`'s rule).
 - An unknown `decision` is 400 `invalid_body`.
@@ -151,9 +152,10 @@ ALTER TABLE items ADD COLUMN content_at INTEGER NULL;
   closing an account.
 - `packages/index-client/src/approvals.test.ts`: the notice parser and the day check.
 - `packages/index-app/src/notifier.test.ts`, `internal.test.ts`: the approval email and the door.
-- `packages/explorer/src/approvals/*.test.tsx`: the badge per status, the banner's decide flow, the Approval tab's
-  form, list and states.
-- Each app: its share-roles test pins that a Viewer may approve and nothing else.
+- `packages/explorer/src/approvals/*.test.ts(x)`: the badge per status, the banner's decide flow, the Approval tab's
+  form, list and states, the door's gate, and the four kinds in History and the Audit Log.
+- Each app: `lib/approvals-roles.test.tsx` pins that only an Editor of the whole item asks, that a named Editor,
+  Participant or Viewer approves, and that a guest has no door.
 
 ## Constants and configuration
 
