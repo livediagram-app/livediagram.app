@@ -33,8 +33,8 @@ port = 8887
 # The sender for outbound email (the EMAIL binding, below; liveworkspace/docs/specs/003-accounts/email.md).
 EMAIL_FROM = "liveplanner <hello@liveplanner.app>"
 
-# Email to Board (docs/specs/026-plan/email-to-board.md): board addresses are `board-<code>@` this domain, whose MX and
-# Email Routing catch-all route hand every message to this Worker's `email()` handler. Not set on staging (its
+# Email to Board (docs/specs/026-plan/email-to-board.md): board addresses are `board+<code>@` this domain, whose MX and
+# Email Routing rule for `board@` (subaddressing on, so `board+<code>@` matches) hand every message to this Worker's `email()` handler. Not set on staging (its
 # [vars] below leave it out), so staging makes no addresses and takes no mail.
 EMAIL_INTAKE_DOMAIN = "in.liveplanner.app"
 

@@ -52,7 +52,7 @@ export const EMAIL_INTAKE_ERRORS = [
 export type EmailIntakeError = (typeof EMAIL_INTAKE_ERRORS)[number];
 
 /** The local part every board address starts with. */
-export const EMAIL_INTAKE_PREFIX = 'board-';
+export const EMAIL_INTAKE_PREFIX = 'board+';
 
 /** A board's address for its code on the intake domain. */
 export const emailIntakeAddress = (code: string, domain: string): string =>

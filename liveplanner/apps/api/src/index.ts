@@ -419,7 +419,7 @@ const worker = {
     );
     return withServerRelease(response, env.BUILD_ID);
   },
-  // Email to Board (docs/specs/026-plan/email-to-board.md): Email Routing's catch-all for the intake domain.
+  // Email to Board (docs/specs/026-plan/email-to-board.md): Email Routing's `board@` rule on the intake domain (subaddressing on).
   async email(message: ForwardableEmailMessage, env: Env): Promise<void> {
     await handleIntakeEmail(message, env);
   },

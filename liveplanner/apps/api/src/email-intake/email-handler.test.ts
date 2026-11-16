@@ -186,10 +186,10 @@ describe('what a message makes', () => {
 describe('which mail is taken', () => {
   it('refuses an address that is not one', async () => {
     for (const to of [
-      'board-abc@in.liveplanner.test',
+      'board+abc@in.liveplanner.test',
       address.replace(DOMAIN, 'other.test'),
       'hello@in.liveplanner.test',
-      `board-${'a'.repeat(26)}@${DOMAIN}`,
+      `board+${'a'.repeat(26)}@${DOMAIN}`,
     ]) {
       const m = message(plain(['x']), { to });
       await deliver(m);

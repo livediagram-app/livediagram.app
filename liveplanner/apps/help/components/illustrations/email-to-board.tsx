@@ -130,7 +130,7 @@ export function EmailDialog() {
           className="fill-slate-50 stroke-slate-200"
         />
         <Label x={x + 8} y={dy + 75} size={9} tone="body" className="fill-slate-600 font-mono">
-          board-2peys2lkq3…@in.liveplanner.app
+          board+2peys2lkq3…@in.liveplanner.app
         </Label>
         <Button x={x + w - 84} y={dy + 61} w={84} label="Copy Address" variant="primary" />
         <Label x={x} y={dy + 102} size={8.5} tone="muted">

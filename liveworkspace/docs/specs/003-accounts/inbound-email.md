@@ -9,7 +9,9 @@ proved who they are, and cuts it down to what a person wrote. What the mail make
 ## How mail arrives
 
 - **Routing.** An app's intake subdomain (liveplanner's `in.liveplanner.app`) has Email Routing's MX records and one
-  catch-all rule that sends every address on it to the app's api Worker. The root domain's own mail (its `hello@`
+  rule that sends its single address (liveplanner's `board@`) to the app's api Worker, with subaddressing on so
+  `board+<code>@` matches it too. Not the catch-all: Email Routing has one per zone, shared with the root domain,
+  and the root domain's catch-all already forwards its own mail elsewhere. The root domain's own mail (its `hello@`
   sender, its SPF and DKIM) is left alone. Inbound routing is free; the Worker's CPU time is billed as any request.
 - **The handler.** The Worker's default export gains an `email(message, env, ctx)` handler beside `fetch`. It reads
   the envelope (`message.from`, `message.to`), the declared size (`message.rawSize`) and the raw MIME stream once.

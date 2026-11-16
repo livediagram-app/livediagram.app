@@ -6,7 +6,7 @@ People moving from Trello (an address per board), Asana (an address per project)
 it; until now the only ways in were retyping a message or sharing a Form link (Work Tracker 874).
 
 Mail comes in through the platform's inbound email ([inbound-email.md](../../../../liveworkspace/docs/specs/003-accounts/inbound-email.md)):
-Email Routing on `in.liveplanner.app` hands every message to the api Worker's `email()` handler, the platform's reader
+Email Routing on `in.liveplanner.app` (one rule for `board@`, with subaddressing on) hands every message to the api Worker's `email()` handler, the platform's reader
 parses it and checks the sender's SPF, DKIM and DMARC, and liveplanner's door turns it into a card. The owner chose
 this subdomain on the card (2026-11-15, option (a)).
 
@@ -14,7 +14,7 @@ this subdomain on the card (2026-11-15, option (a)).
 
 | Term              | Meaning                                                                                | Not                    |
 | ----------------- | -------------------------------------------------------------------------------------- | ---------------------- |
-| **board address** | A board's secret address, `board-<code>@in.liveplanner.app`                            | inbox, alias, mailbox  |
+| **board address** | A board's secret address, `board+<code>@in.liveplanner.app`                            | inbox, alias, mailbox  |
 | **address code**  | The random part of the address: 26 characters of lower-case base32 (128 bits)          | token, key, password   |
 | **Who Can Send**  | The board's setting: **Plan Members** (the default) or **Anyone with the Address**     | allowlist, permissions |
 | **plan members**  | The plan's owner and the people in its team, by the address their account has verified | collaborators, sharers |
@@ -99,7 +99,7 @@ made by no person:
 
 In order; the first that fails decides:
 
-1. **The address** must be one: `board-<code>@` the intake domain, the code the right shape. Else refused, "No such
+1. **The address** must be one: `board+<code>@` the intake domain, the code the right shape. Else refused, "No such
    address."
 2. **Size**: at most **20 MB**, as declared. Else refused, "This message is too big for Email to Board."
 3. **The sender's rate**: at most 60 messages a minute from one envelope sender across every board. Else refused,

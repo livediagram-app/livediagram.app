@@ -29,7 +29,7 @@ const BOARD: EmailIntakeBoard = {
   column: 'Inbox',
 };
 const OTHER: EmailIntakeBoard = { ...BOARD, id: 'b2', title: 'Bugs', column: 'Triage' };
-const ADDRESS = 'board-abcdefghijklmnopqrstuvwxyz@in.liveplanner.app';
+const ADDRESS = 'board+abcdefghijklmnopqrstuvwxyz@in.liveplanner.app';
 const on = (i: Partial<EmailIntake> = {}): EmailIntake => ({
   boardId: 'b1',
   address: ADDRESS,
@@ -118,7 +118,7 @@ describe('Email to Board', () => {
     expect(screen.getByText(/^3 cards made · 1 refused · Last card 2 hours ago$/)).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'New Address' }));
     expect(screen.getByText('Make a new address?')).toBeTruthy();
-    const next = 'board-zyxwvutsrqponmlkjihgfedcba@in.liveplanner.app';
+    const next = 'board+zyxwvutsrqponmlkjihgfedcba@in.liveplanner.app';
     client.newEmailIntakeAddress.mockResolvedValue({ intake: on({ address: next }) });
     fireEvent.click(screen.getAllByRole('button', { name: 'New Address' }).at(-1)!);
     await waitFor(() =>

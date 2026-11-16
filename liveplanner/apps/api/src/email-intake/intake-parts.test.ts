@@ -36,14 +36,15 @@ describe('intake-code', () => {
 
   it('reads a recipient on the domain only', () => {
     const code = newIntakeCode();
-    expect(codeOfRecipient(` Board-${code.toUpperCase()}@IN.Example.com`, 'in.example.com')).toBe(
+    expect(codeOfRecipient(` Board+${code.toUpperCase()}@IN.Example.com`, 'in.example.com')).toBe(
       code,
     );
-    expect(codeOfRecipient(`board-${code}@other.com`, 'in.example.com')).toBeNull();
-    expect(codeOfRecipient(`board-${code}@in.example.com`, undefined)).toBeNull();
+    expect(codeOfRecipient(`board+${code}@other.com`, 'in.example.com')).toBeNull();
+    expect(codeOfRecipient(`board+${code}@in.example.com`, undefined)).toBeNull();
     expect(codeOfRecipient('no-at-sign', 'in.example.com')).toBeNull();
     expect(codeOfRecipient(`card-${code}@in.example.com`, 'in.example.com')).toBeNull();
-    expect(codeOfRecipient(`board-${code.slice(1)}1@in.example.com`, 'in.example.com')).toBeNull();
+    expect(codeOfRecipient(`board-${code}@in.example.com`, 'in.example.com')).toBeNull();
+    expect(codeOfRecipient(`board+${code.slice(1)}1@in.example.com`, 'in.example.com')).toBeNull();
     expect(isIntakeCode('short')).toBe(false);
   });
 

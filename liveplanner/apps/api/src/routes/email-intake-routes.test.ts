@@ -21,8 +21,8 @@ vi.mock(
 );
 
 const DOMAIN = 'in.liveplanner.test';
-const ADDRESS = new RegExp(`^board-[a-z2-7]{26}@${DOMAIN.replace(/\./g, '\\.')}$`);
-const codeOf = (address: string) => address.slice('board-'.length, address.indexOf('@'));
+const ADDRESS = new RegExp(`^board\\+[a-z2-7]{26}@${DOMAIN.replace(/\./g, '\\.')}$`);
+const codeOf = (address: string) => address.slice('board+'.length, address.indexOf('@'));
 
 let w: AutomationWorld;
 const planEnv = (): PlanEnv => w.plans.get('A')!.room.requireEnv();

@@ -10,7 +10,7 @@ and the editor's Email to Board dialog. The message itself is read by the platfo
 | Spec term      | Identifier                                                                                                                                    |
 | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | board address  | `EmailIntake` (api-schema) `{ boardId, address, senders, createdAt, made, refused, dropped, lastAt }`; row `IntakeRow`, table `email_intakes` |
-| address code   | `code`, `INTAKE_CODE_PATTERN` `^[a-z2-7]{26}$`, made by `newIntakeCode()`; local part `board-<code>`                                          |
+| address code   | `code`, `INTAKE_CODE_PATTERN` `^[a-z2-7]{26}$`, made by `newIntakeCode()`; local part `board+<code>`                                          |
 | Who Can Send   | `EmailIntakeSenders` `'members' \| 'anyone'`, `EMAIL_INTAKE_SENDERS`                                                                          |
 | plan members   | `planMemberAddresses(env, ownerId, teamId)` → `Set<string>` \| `'unavailable'`                                                                |
 | New Address    | `newIntakeAddress(env, planId, boardId, now)`                                                                                                 |
@@ -98,7 +98,7 @@ CREATE TABLE IF NOT EXISTS email_intake_senders (
 - `DELETE /:boardId`: `turnOffIntake` then `unfileIntake`; 204 either way.
 - Writes without `EMAIL_INTAKE_DOMAIN`: 503 `email_intake_unavailable`.
 - `handleIntakeEmail(message, env, ctx)`, each refusal `message.setReject(text)` and a log:
-  1. `codeOfRecipient(message.to, env.EMAIL_INTAKE_DOMAIN)`: domain equal (case-insensitive), local part `board-` and
+  1. `codeOfRecipient(message.to, env.EMAIL_INTAKE_DOMAIN)`: domain equal (case-insensitive), local part `board+` and
      a code matching the pattern after lower-casing; else `no_address`.
   2. `message.rawSize > INTAKE_MESSAGE_MAX` → `too_big`.
   3. `FORM_RATE_LIMITER.limit({ key: 'mail:' + sha256(envelope sender) })` fails → `sender_rate`.

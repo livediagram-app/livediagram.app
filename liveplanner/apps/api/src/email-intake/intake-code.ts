@@ -1,6 +1,6 @@
 // A board address's code (docs/specs/026-plan/email-to-board.md "The address"; blueprint email-to-board.md "Domain and
 // naming"): 16 random bytes in lowercase base32, so an address survives any mail server's case folding, behind
-// `board-` on the intake domain.
+// `board+` on the intake domain.
 import { EMAIL_INTAKE_PREFIX } from '@liveplanner/api-schema';
 
 export const INTAKE_CODE_BYTES = 16;
