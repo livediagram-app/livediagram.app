@@ -10,6 +10,7 @@ import { buildLogoExploration, isLogoExplorationKind } from './template-builders
 import { settleChips, type Element } from '@livedesign/design';
 import type { TemplateKind } from './templates';
 import { buildLogoDesign } from './template-builders-logo';
+import { buildBrandBoard } from './template-builders-brand-board';
 
 // Build the elements for a given template, centred on the supplied canvas
 // point. Each template is intentionally small and editable; users grow them.
@@ -30,6 +31,8 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
       return [];
     case 'logo-design':
       return buildLogoDesign(cx, cy);
+    case 'logo-brand-board':
+      return buildBrandBoard(cx, cy);
     // A blank of a page kind is its one empty page of that kind (blank-page-templates.ts).
     case 'blank-logo':
     case 'blank-wireframe-phone':

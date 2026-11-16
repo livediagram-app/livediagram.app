@@ -53,6 +53,10 @@ const ALL_KINDS = [
   'wireframe-video-app',
   'wireframe-fitness-watch',
   'wireframe-watch-music',
+  'wireframe-launch-site',
+  'wireframe-account-settings',
+  'wireframe-class-booking',
+  'logo-brand-board',
 ] as const satisfies readonly TemplateKind[];
 
 // Real exhaustiveness check: any TemplateKind missing from
@@ -107,6 +111,10 @@ const PAGED_KINDS = [
   'wireframe-video-app',
   'wireframe-fitness-watch',
   'wireframe-watch-music',
+  'wireframe-launch-site',
+  'wireframe-account-settings',
+  'wireframe-class-booking',
+  'logo-brand-board',
 ] as const;
 
 // An element's centre, from its box or, for an arrow, its free endpoints' midpoint.

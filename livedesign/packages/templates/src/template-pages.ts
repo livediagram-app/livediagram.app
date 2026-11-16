@@ -4,6 +4,7 @@
 // (the picker, /new, the MCP worker) lands the pages and the elements together.
 import type { Page } from '@livedesign/design';
 import { logoDesignPages } from './template-builders-logo';
+import { brandBoardPages } from './template-builders-brand-board';
 import { isWireframeFlowKind, wireframeFlowPages } from './template-builders-wireframe-flows';
 import { isLogoExplorationKind, logoExplorationPages } from './template-builders-logo-explorations';
 import type { TemplateKind } from './templates';
@@ -15,6 +16,8 @@ export function templatePages(kind: TemplateKind): Page[] | undefined {
   switch (kind) {
     case 'logo-design':
       return logoDesignPages();
+    case 'logo-brand-board':
+      return brandBoardPages();
     default:
       return undefined;
   }
