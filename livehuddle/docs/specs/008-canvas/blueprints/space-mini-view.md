@@ -6,21 +6,23 @@ stage](../../012-collaboration/meeting-rooms-and-stage.md) "Raise hand".
 
 ## Files
 
-| File                                                      | Role                                                                                                                      |
-| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `apps/editor/lib/mini-view/mini-view-window.ts`           | The one window: `miniViewSupported`, `openMiniView`, `closeMiniView`, `toggleMiniView`, `useMiniViewWindow`, `focusSpace` |
-| `apps/editor/lib/mini-view/mini-view-styles.ts`           | `mirrorDocumentLook`: the opener's stylesheets, `<html>` classes and theme copied into the window                         |
-| `apps/editor/lib/mini-view/mini-view-knock.ts`            | The knock on show: `showMiniKnock`, `clearMiniKnock`, `useMiniKnock`, `resetMiniKnock`                                    |
-| `apps/editor/lib/mini-view/mini-view-people.ts`           | Pure: `miniViewPeople` (the rows and groups), `miniPeopleKey` (their by-value key)                                        |
-| `apps/editor/components/calls/mini-view/MiniViewHost.tsx` | Mounted by the characters layer: renders the mini view into the window (its own root) while open; closes it on unmount    |
-| `apps/editor/components/calls/mini-view/MiniView.tsx`     | The window's content: header, knock, groups                                                                               |
-| `apps/editor/components/calls/mini-view/MiniViewRow.tsx`  | One row: `MiniBust`, name, status, hand, bars                                                                             |
-| `apps/editor/test/fake-pip-window.ts`                     | The tests' stand-in window and API (`fakePipWindow`, `installPip`, `removePip`)                                           |
-| `apps/editor/components/calls/PopOutSegment.tsx`          | The Call dock's Pop Out                                                                                                   |
-| `apps/editor/components/calls/CallDock.tsx`               | Draws Pop Out last, handing it whether a share is on                                                                      |
-| `apps/editor/components/calls/CallStripGroup.tsx`         | `callGroupShows(self, actions)`: the group's own early returns as one predicate                                           |
-| `apps/editor/lib/office/useMeetingPieces.ts`              | Shows a knock that reaches you in the mini view too, and clears it on an answer from either place                         |
-| `packages/icons` (monorepo)                               | `lucidePictureInPicture2`, vendored                                                                                       |
+| File                                                          | Role                                                                                                                      |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `apps/editor/lib/mini-view/mini-view-window.ts`               | The one window: `miniViewSupported`, `openMiniView`, `closeMiniView`, `toggleMiniView`, `useMiniViewWindow`, `focusSpace` |
+| `apps/editor/lib/mini-view/mini-view-styles.ts`               | `mirrorDocumentLook`: the opener's stylesheets, `<html>` classes and theme copied into the window                         |
+| `apps/editor/lib/mini-view/mini-view-knock.ts`                | The knock on show: `showMiniKnock`, `clearMiniKnock`, `useMiniKnock`, `resetMiniKnock`                                    |
+| `apps/editor/lib/mini-view/mini-view-people.ts`               | Pure: `miniViewPeople` (the rows and groups), `miniPeopleKey` (their by-value key)                                        |
+| `apps/editor/components/calls/mini-view/MiniViewHost.tsx`     | Mounted by the characters layer: renders the mini view into the window (its own root) while open; closes it on unmount    |
+| `apps/editor/components/calls/mini-view/MiniView.tsx`         | The window's content: header, knock, groups                                                                               |
+| `apps/editor/components/calls/mini-view/MiniViewRow.tsx`      | One row: `MiniBust`, name, status, hand, bars                                                                             |
+| `apps/editor/components/calls/mini-view/MiniViewControls.tsx` | Your microphone and camera at the window's foot, the Call dock's own buttons (Work Tracker 992)                           |
+| `apps/editor/components/calls/MicAndCameraSegments.tsx`       | The dock's microphone (live and preview) and Camera buttons, shared by the dock and the mini view                         |
+| `apps/editor/test/fake-pip-window.ts`                         | The tests' stand-in window and API (`fakePipWindow`, `installPip`, `removePip`)                                           |
+| `apps/editor/components/calls/PopOutSegment.tsx`              | The Call dock's Pop Out                                                                                                   |
+| `apps/editor/components/calls/CallDock.tsx`                   | Draws Pop Out last, handing it whether a share is on                                                                      |
+| `apps/editor/components/calls/CallStripGroup.tsx`             | `callGroupShows(self, actions)`: the group's own early returns as one predicate                                           |
+| `apps/editor/lib/office/useMeetingPieces.ts`                  | Shows a knock that reaches you in the mini view too, and clears it on an answer from either place                         |
+| `packages/icons` (monorepo)                                   | `lucidePictureInPicture2`, vendored                                                                                       |
 
 ## Domain and naming
 
@@ -96,6 +98,19 @@ moves a level to 0 when stale, as on the canvas. Per row:
   yours from `self.hand` (`raised` or `speaking`).
 - Bars: `barHeight(level)` from `TalkingBars`, three bars, the middle one full, the outer ones at 60%.
 
+### Your controls (`MiniViewControls`, Work Tracker 992)
+
+The last child of `MiniView`'s column, `shrink-0`. It reads `useCallSelf` and `useCallActions` and draws nothing
+without actions or without `canSpeak`. Inside `CallNames` (true: named) and `CallHoverCards` (false), it draws
+`miniMicSegment(self, actions)` and, while `selfCamera(self) === 'on'`, `CameraSegment`:
+
+- `miniMicSegment`: live (`available` and `phase === 'live'`) → `LiveMicSegment`, the dock's microphone; no call
+  (`!available`, the kill switch's pause, or `phase === 'error'`) → `PreviewMicSegment` (null without
+  `canPreviewMic`); `off` or `joining` in a call → null.
+- With neither button the bar draws nothing (`empty:hidden`), so no empty footer.
+- `CallHoverCards` (in `CallSegment.tsx`, default true): false passes `disabled` to each `HoverCard`, so no card
+  is drawn in the opener's document; the hidden description stays for `aria-describedby`.
+
 ### Knocks (`mini-view-knock.ts`)
 
 A module store holding at most one `MiniKnock`. `showMiniKnock(k)` replaces any knock on show and (re)starts a timer
@@ -156,6 +171,8 @@ Answers go through the same `answer` as the toast, so the room's checks are unch
 - Row: 40 px high; a 28 px bust (an SVG of `HeadFront` over a shoulders rect in the person's colour, `crispEdges`)
   ringed 2 px in their colour while speaking; the name (truncated); the status dot and label under it, small; at the
   end the hand badge (20 px amber round, the hand glyph) and the bars (three 3 px bars, up to 12 px).
+- Controls bar: `border-t` like the header's, `py-2`, the buttons centred with the dock's `gap-0.5`, 36 px and named
+  (Mic, Muted, Blocked, Mic Off, Camera), on the window's surface.
 - Copy: Pop Out's cards as the spec gives them; **You**; "Nobody else is here yet." under your row when alone.
 
 ## Accessibility
@@ -190,6 +207,7 @@ nothing until opened. No layout shift: Pop Out takes its place in the dock on fi
 | Rows: speaking, hand, DND, Viewer's own row, knock answer, focus  | `MiniView.test.tsx`                                   |
 | Host draws while open, closes on unmount, keeps presses in window | `MiniViewHost.test.tsx`                               |
 | A knock reaches the mini view; an answer clears it                | `mini-view-knock.test.ts`, `useMeetingPieces.test.ts` |
+| Your controls: the dock's mic per phase, camera while on, roles   | `MiniViewControls.test.tsx`                           |
 
 ## Constants and configuration
 
@@ -202,4 +220,4 @@ nothing until opened. No layout shift: Pop Out takes its place in the dock on fi
 
 ## Defaults ledger
 
-D132 to D134 in [DEFAULTS.md](DEFAULTS.md).
+D132 to D135 in [DEFAULTS.md](DEFAULTS.md).
