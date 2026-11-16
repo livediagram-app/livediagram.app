@@ -365,6 +365,7 @@ export { lucideTextCursorInput } from './lucide/text-cursor-input';
 export { lucideTextQuote } from './lucide/text-quote';
 export { lucideThermometer } from './lucide/thermometer';
 export { lucideThumbsDown } from './lucide/thumbs-down';
+export { lucideThumbsUp } from './lucide/thumbs-up';
 export { lucideTicket } from './lucide/ticket';
 export { lucideTimer } from './lucide/timer';
 export { lucideToggleRight } from './lucide/toggle-right';
