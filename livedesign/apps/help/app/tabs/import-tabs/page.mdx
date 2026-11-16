@@ -5,13 +5,13 @@ import { ImportMenu, ImportWarning } from '@/components/illustrations/tabs';
 export const metadata = helpMetadata({
   title: 'Importing a Tab',
   description:
-    'Import a JSON tab export into a tab by pasting text or picking a file. It replaces the tab contents.',
+    'Import a JSON tab export into a tab, replacing its contents, or bring an SVG in as editable shapes.',
   path: '/help/tabs/import-tabs/',
 });
 
 <ArticleLayout
   title="Importing a Tab"
-  description="Bring a tab's contents in from pasted text or a file. Import a JSON tab into the active tab."
+  description="Bring a tab's contents in from pasted text or a file: a JSON tab, or an SVG as editable shapes."
   categoryTitle="Tabs"
   categorySlug="tabs"
 >
@@ -20,13 +20,24 @@ export const metadata = helpMetadata({
 
 ## Importing JSON
 
-Open the tab's menu (the **⋯** button on the active tab, or right-click the tab) and choose **Import**. You can also run **Import…** from the [command palette](/help/search-panel/the-search-panel/command-palette/). The **Import to Tab** dialog opens at **JSON**, which reads a livedesign tab export (a `.livedesign-tab.json` file) and restores it exactly, pages and all, the highest-fidelity round trip.
+Open the tab's menu (the **⋯** button on the active tab, or right-click the tab) and choose **Import**. You can also run **Import…** from the [command palette](/help/search-panel/the-search-panel/command-palette/). The **Import to Tab** dialog offers two formats. **JSON** reads a livedesign tab export (a `.livedesign-tab.json` file) and restores it exactly, pages and all, the highest-fidelity round trip.
 
 <Figure caption="The tab menu holds Import, beside Export and Clear.">
   <ImportMenu />
 </Figure>
 
 **Paste or write** the text into the box and press **Import**, or press **Import a file instead** to pick one from disk. Either way the tab updates once it parses.
+
+## Importing an SVG
+
+**SVG** brings a logo, icon or brand mark in as **shapes you can edit**: every shape in the file becomes a path you can recolour, reshape with the [Pen](/help/palette/tools/drawing/) and combine. Paste the SVG markup or pick a `.svg` file. Unlike JSON, an SVG **adds** to the tab instead of replacing it: the shapes land on the page you are on, scaled to fit inside its margins, and stay selected so your next move takes them all.
+
+You can skip the dialog too: **drop** an `.svg` file on a page, or **paste** one (or SVG markup copied from a design tool or code editor) onto the canvas.
+
+- Shapes keep their colours, outlines and opacity. Outline widths snap to the nearest of the five line weights.
+- A letter or mark with holes, such as an O, comes in as one shape with its holes.
+- What a shape can't carry is listed when the import finishes: text (outline it before exporting, or retype it), masks, filters and clip paths, embedded pictures and pattern fills. A gradient fill takes its first colour.
+- A very large file (over 2 MB, or over 5,000 shapes) is placed as a picture instead, and a note says so.
 
 Dropping a `.json` file straight onto the canvas doesn't import it: a small note points you to **Import** in the tab menu, since importing replaces the tab.
 
