@@ -1,4 +1,5 @@
 import type { ReadableStore } from '@liveworkspace/workbench/lib/state-store';
+import type { LibraryInsertItem } from '@liveworkspace/workbench/hooks/canvas/useLibraryItemInsert';
 import type { SnapGuideStore } from '@/hooks/canvas/useSnapGuideState';
 import type { RemoteSelector } from '@/lib/presence-rows';
 import type { Dispatch, SetStateAction } from 'react';
@@ -168,6 +169,8 @@ export type CanvasProps = {
   onAddSticker: (stickerId: string) => void;
   // Add a Technology (brand) icon as a standalone element (docs/specs/010-palette/technology-icons.md).
   onAddTechIcon: (iconId: string) => void;
+  // Places an item from the palette's Library (liveworkspace/docs/specs/006-media/libraries.md).
+  onInsertLibraryItem: (item: LibraryInsertItem<unknown>) => void;
   onAddTable: () => void;
   onAddLinkCard: () => void;
   onAddVideo: (provider?: EmbedProvider) => void;

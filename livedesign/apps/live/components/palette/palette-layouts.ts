@@ -44,7 +44,11 @@ const ICONS_WITH_STICKERS =
   'Single-colour glyphs for any idea, and colour stickers to react, mark status and celebrate.';
 
 // The categories whose body is its own content rather than a list of tiles.
-export const CATALOGUE_CATEGORIES: ReadonlySet<string> = new Set(['icons', 'technology']);
+export const CATALOGUE_CATEGORIES: ReadonlySet<string> = new Set([
+  'icons',
+  'technology',
+  'library',
+]);
 
 /** A category's own tile ids, less the named ones: for a layout that drops a tile or two. A dropped tile that ends a
  *  group (`dividerAfter`) leaves its divider after the tile kept before it, so the group still ends there. */
@@ -118,6 +122,7 @@ const PAGES: PaletteLayout = {
     { id: 'concepts', tiles: CONCEPTS_WITH_SANKEY },
     { id: 'components', tiles: PAGES_COMPONENTS },
     { id: 'icons', stickers: true, description: ICONS_WITH_STICKERS },
+    { id: 'library' },
     { id: 'media' },
     // The charts and meters, then the Table: a page reports in rows as often as in a chart.
     {
@@ -174,6 +179,7 @@ const PAGES_WIREFRAME: PaletteLayout = {
     { id: 'shapes' },
     { id: 'write', tiles: PAGES_WRITE },
     { id: 'icons', stickers: true, description: ICONS_WITH_STICKERS },
+    { id: 'library' },
     { id: 'media' },
     {
       id: 'data',
@@ -212,6 +218,7 @@ const PAGES_LOGO: PaletteLayout = {
     // for a comment on the design.
     { id: 'write', tiles: ['tools:text-title', 'tools:text-subtitle', DIVIDE, 'tools:sticky'] },
     { id: 'icons' },
+    { id: 'library' },
     // A picture to trace or to set the mark beside.
     { id: 'media', tiles: ['tools:image'] },
   ],

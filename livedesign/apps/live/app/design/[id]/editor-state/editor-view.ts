@@ -97,6 +97,7 @@ export function editorView({
     // Clipboard copy, plus paste + its enabled flag for the canvas menu's Paste row.
     copySelection: inputSlice.copySelection,
     pasteFromClipboard: inputSlice.pasteFromClipboard,
+    insertLibraryItem: inputSlice.insertLibraryItem,
     dropBoardFile: inputSlice.dropBoardFile,
     hasClipboard: inputSlice.hasClipboard,
     ...toolsSlice.panelLayout,
