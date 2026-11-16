@@ -48,7 +48,7 @@ export function ImportMenu() {
  *  bring. */
 export function ImportChooser() {
   const W = 440;
-  const H = 302;
+  const H = 366;
   const dx = 20;
   const dy = 8;
   const x = dx + 16;
@@ -125,7 +125,7 @@ export function ImportChooser() {
   const toolsY = dy + 128;
   return (
     <Scene w={W} h={H}>
-      <Dialog x={dx} y={dy} w={400} h={288} title="Import" sceneW={W} sceneH={H}>
+      <Dialog x={dx} y={dy} w={400} h={352} title="Import" sceneW={W} sceneH={H}>
         <Label x={x} y={dy + 52} size={8.5} weight={700} tone="muted">
           INTO THIS TAB
         </Label>
@@ -169,6 +169,32 @@ export function ImportChooser() {
         <Label x={x} y={toolsY + ROW * tools.length + 14} size={9} tone="muted">
           A one-off copy into a new Board tab or plan, after a preview.
         </Label>
+        <Label x={x} y={toolsY + ROW * tools.length + 38} size={8.5} weight={700} tone="muted">
+          A WHOLE PLAN
+        </Label>
+        <rect
+          x={x}
+          y={toolsY + ROW * tools.length + 46}
+          width={w}
+          height={ROW}
+          rx={7}
+          className="fill-white stroke-slate-200"
+          strokeWidth={1}
+        />
+        {row(
+          toolsY + ROW * tools.length + 46,
+          'fill-brand-50',
+          <path
+            d="M9 3.2 14.6 6.4v5.2L9 14.8 3.4 11.6V6.4Zm0 3.2v8.4M3.4 6.4 9 9.6l5.6-3.2"
+            className="fill-none stroke-brand-600"
+            strokeWidth={1.1}
+            strokeLinejoin="round"
+          />,
+          'liveplanner Plan',
+          'A whole plan’s .liveplanner file from Export. Makes a new plan.',
+          '.liveplanner',
+          true,
+        )}
       </Dialog>
     </Scene>
   );
@@ -177,7 +203,7 @@ export function ImportChooser() {
 /** The Export Tab dialog: a card per format, text formats first, then the image formats. */
 export function ExportMenu() {
   const W = 420;
-  const H = 200;
+  const H = 212;
   const dx = 20;
   const dy = 12;
   const cards: [string, string][] = [
@@ -186,10 +212,11 @@ export function ExportMenu() {
     ['PNG', 'png'],
     ['SVG', 'svg'],
     ['PDF', 'pdf'],
+    ['Whole Plan', 'plan'],
   ];
   return (
     <Scene w={W} h={H}>
-      <Dialog x={dx} y={dy} w={380} h={176} title="Export Tab" sceneW={W} sceneH={H}>
+      <Dialog x={dx} y={dy} w={380} h={188} title="Export Tab" sceneW={W} sceneH={H}>
         {cards.map(([title, badge], i) => (
           <FormatCard
             key={title}
