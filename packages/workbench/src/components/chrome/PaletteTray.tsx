@@ -9,6 +9,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { EDITOR_VIEWPORT_ATTR } from '../../lib/editor-viewport';
+import { watchMove } from '../../lib/watch-move';
 
 // The strip's card: the Palette in the Toolbar layout (ToolbarPalette's `data-tour-id="palette"` card).
 const STRIP_CARD = '[data-toolbar-palette] [data-tour-id="palette"]';
@@ -72,6 +73,9 @@ export function useToolbarBox(selector: string, active = true): StripBox | null 
     if (!active) return;
     let watched: HTMLElement | null = null;
     let watchedParent: HTMLElement | null = null;
+    // A move without a resize (the strip re-centring as the tab-name pill beside it changes width, a tab switch or
+    // delete, the strip going crowded and back): watchMove, which costs nothing while the card is still.
+    let stopMove: () => void = () => {};
     const observer =
       typeof ResizeObserver !== 'undefined' ? new ResizeObserver(() => update()) : null;
     const arrival =
@@ -81,6 +85,8 @@ export function useToolbarBox(selector: string, active = true): StripBox | null 
       if (card !== watched) {
         if (watched) observer?.unobserve(watched);
         if (card) observer?.observe(card);
+        stopMove();
+        stopMove = card ? watchMove(card, () => update()) : () => {};
         watched = card;
       }
       // Its wrapper too: the strip's card is centred inside a whole-pixel box (SnapWidth's outer box, the card's
@@ -105,6 +111,7 @@ export function useToolbarBox(selector: string, active = true): StripBox | null 
     return () => {
       observer?.disconnect();
       arrival?.disconnect();
+      stopMove();
       window.removeEventListener('resize', update);
     };
   }, [active, selector]);
