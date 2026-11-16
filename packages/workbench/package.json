@@ -701,7 +701,9 @@
     "./lib/library/library-api": "./src/lib/library/library-api.ts",
     "./lib/library/library-groups": "./src/lib/library/library-groups.ts",
     "./components/library/SaveToLibraryButton": "./src/components/library/SaveToLibraryButton.tsx",
-    "./lib/library/library-draft": "./src/lib/library/library-draft.ts"
+    "./lib/library/library-draft": "./src/lib/library/library-draft.ts",
+    "./components/start/useStartEscape": "./src/components/start/useStartEscape.ts",
+    "./lib/watch-move": "./src/lib/watch-move.ts"
   },
   "scripts": {
     "lint": "oxlint",
