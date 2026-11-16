@@ -54,6 +54,13 @@ describe('JoinPage', () => {
     expect(bdi?.parentElement?.textContent).toBe('\u202Eevil org · 3 members');
   });
 
+  it('breaks a long organisation and team name anywhere, so a name with no spaces wraps inside the card', async () => {
+    act(() => root.render(<JoinPage />));
+    await act(async () => new Promise((r) => setTimeout(r, 0)));
+    expect(container.querySelector('p bdi')?.parentElement?.className).toMatch(/\bwrap-anywhere\b/);
+    expect(container.querySelector('h1')?.className).toMatch(/\bwrap-anywhere\b/);
+  });
+
   it('isolates the team’s name in its heading and on Join, so a right-to-left name keeps the button the right way round', async () => {
     act(() => root.render(<JoinPage />));
     await act(async () => new Promise((r) => setTimeout(r, 0)));

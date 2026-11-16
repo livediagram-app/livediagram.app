@@ -97,11 +97,12 @@ export function JoinPage() {
           <p className="mt-6 text-sm font-semibold tracking-[.18em] text-slate-500 uppercase dark:text-slate-400">
             You’re invited to join
           </p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight break-words text-slate-900 dark:text-white">
+          <h1 className="mt-2 max-w-full text-3xl font-semibold tracking-tight wrap-anywhere text-slate-900 dark:text-white">
             <bdi>{state.preview.teamName}</bdi>
           </h1>
-          {/* The organisation is someone's typing, isolated so its direction never turns the count around. */}
-          <p className="mt-2 text-slate-600 dark:text-slate-400">
+          {/* The organisation is someone's typing, isolated so its direction never turns the count around, and
+              broken anywhere so a long name with no spaces wraps inside the card. */}
+          <p className="mt-2 max-w-full text-slate-600 wrap-anywhere dark:text-slate-400">
             {state.preview.organisation ? (
               <>
                 <bdi>{state.preview.organisation}</bdi> ·{' '}
