@@ -5,7 +5,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./layout": "./src/layout.ts"
+    "./layout": "./src/layout.ts",
+    "./inbound": "./src/inbound/index.ts"
   },
   "scripts": {
     "lint": "oxlint",

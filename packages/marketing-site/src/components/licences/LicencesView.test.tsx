@@ -64,6 +64,21 @@ describe('LicencesView', () => {
     expect(html).toContain('0 works');
   });
 
+  it('says calmly that the list isn’t generated yet, with no sections, when there is no manifest', () => {
+    const none = renderToStaticMarkup(
+      <LicencesView
+        manifest={null}
+        title="Third-party licences"
+        lede="liveworkspace.app"
+        browserIntro="x"
+      />,
+    );
+    expect(none).toContain('data-licences-not-generated');
+    expect(none).toContain('pnpm licences');
+    expect(none).not.toContain('<h2');
+    expect(html).not.toContain('data-licences-not-generated');
+  });
+
   it('says what runs the server side, the product’s services unless the site names its own', () => {
     expect(html).toContain('Bundled into the API, MCP server and router');
     const own = renderToStaticMarkup(

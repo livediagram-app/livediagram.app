@@ -22,7 +22,7 @@ import type { ThisBrowserItem } from '../this-browser';
 import { BrowserIcon } from './host';
 import { LocalPreview } from './LocalPreview';
 import { useThisBrowserSpace } from './this-browser-space/space';
-import type { Words } from '../words';
+import { kindWords, type Words } from '../words';
 import { useExplorer } from './context';
 import { useExtras } from './extras';
 import { FolderMosaic } from './FolderMosaic';
@@ -272,7 +272,9 @@ function SpaceTile({
 /** This Browser's tile: up to four of its newest items, each the app's picture of a local item, over the teal disc,
  *  its name and a line from the list itself. A link to its view, as the others are. */
 function ThisBrowserTile({ live }: { live: readonly ThisBrowserItem[] }) {
-  const { viewHref, navigate, kind, app } = useExplorer();
+  const { viewHref, navigate, app } = useExplorer();
+  // This Browser keeps the app's own items, so its line counts them in its words.
+  const kind = kindWords(app);
   const now = useNow();
   const lineId = useId();
   const view: ExplorerView = { kind: 'offline' };

@@ -23,6 +23,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'connect-github': '#334155',
   'calendar-feed': '#0369a1',
   'public-roadmap': '#c2410c',
+  'email-to-board': '#0f766e',
   'describe-a-plan': '#9333ea',
   'plan-tour': '#0284c7',
   dashboards: '#0ea5e9',

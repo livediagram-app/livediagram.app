@@ -10,6 +10,8 @@ import type { ExplorerView } from '../views';
 import { Explorer } from '../explorer/Explorer';
 import { landOnMyWork } from '../explorer/TeamPane';
 import { ExplorerPanel } from '../panel/ExplorerPanel';
+import { avatarFill } from '@liveworkspace/account-menu/initials';
+import { memberFill } from './TeamCard';
 import { lastAdmin, memberName, orderMembers, removalCopy } from './rules';
 
 const details = (over: Partial<TeamDetails['team']> = {}): TeamDetails => ({
@@ -135,6 +137,31 @@ describe('a team’s view', () => {
     expect(screen.getByText('Kai Moss')).toBeTruthy();
     expect(screen.getByText('Invited')).toBeTruthy();
     expect(await screen.findByText('Item 1')).toBeTruthy();
+  });
+
+  it("paints each member's disc as their account button is painted, own colour or Automatic", async () => {
+    const team = details();
+    team.members[1]!.color = '#2563eb';
+    page({ kind: 'team', id: 't1' }, fakeHost(team));
+    await card();
+    const disc = (id: string) =>
+      document.querySelector<HTMLElement>(`[data-team-member="${id}"] [data-optical="disc"]`)!;
+    const rgb = (colour: string) => {
+      const probe = document.createElement('span');
+      probe.style.backgroundColor = colour;
+      return probe.style.backgroundColor;
+    };
+    // A custom colour, and Automatic (picked from the name), each the header avatar's own fill for that account.
+    expect(rgb(avatarFill('Ann Lee', '#2563eb'))).not.toBe('');
+    expect(disc('m2').style.backgroundColor).toBe(rgb(avatarFill('Ann Lee', '#2563eb')));
+    expect(disc('m2').textContent).toBe('AL');
+    expect(disc('m1').style.backgroundColor).toBe(rgb(avatarFill('Sam Doe', null)));
+    // An invitation by the name its row shows, made from its address.
+    expect(disc('m3').style.backgroundColor).toBe(rgb(avatarFill('Kai Moss', null)));
+    // The member row's fill and the account button's are one function of the same account.
+    for (const color of ['#f97316', '#2563eb', null]) {
+      expect(memberFill({ color }, 'Ada Quinn')).toBe(avatarFill('Ada Quinn', color));
+    }
   });
 
   it('isolates the organisation, names and addresses, so right-to-left text turns nothing else around', async () => {
@@ -380,6 +407,10 @@ describe('a team’s view', () => {
   it('is a not-found card for a team the person is not in', async () => {
     page({ kind: 'team', id: 'gone' }, fakeHost(null));
     expect(await screen.findByText('Team not found')).toBeTruthy();
+    // Nothing offers to make or filter anything in a team that isn't there.
+    expect(screen.queryByRole('group', { name: 'View mode' })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^(Create|New Plan|New Folder)/ })).toBeNull();
+    expect(screen.queryByRole('group', { name: 'Filters' })).toBeNull();
     // White on brand-600 (sky, liveworkspace's brand) is 4.09:1: the way back is the shared primary Button, on 700;
     // the 404 label lightens on the dark card (rose-600 there is 3.49:1).
     const notFound = (await screen.findByText('Team not found')).closest('div')!;

@@ -430,6 +430,10 @@ exporting. Linking the element again, or clearing its link, mends it.
   lands; when the screen shown is deleted the player moves to the first screen, and when the tab stops being a
   wireframe tab it closes.
 - A screen is drawn as an export draws it: the frame, the content cut to the screen, the system bars over it.
+- A screen's typefaces come from the page, never from the screen's own markup: the editor's one webfonts stylesheet is
+  already linked in every route (a direct share-link open too), and the display faces its elements use are linked once
+  by the player as the canvas links them, so each font is requested once. The screen drops the export's `@import` of the
+  same stylesheet.
 
 ### Sharing a prototype
 

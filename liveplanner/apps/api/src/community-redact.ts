@@ -17,6 +17,7 @@
 import { redactTabForCommunity } from '@liveworkspace/community/app';
 import { FROM_FORM_FIELD, type FormDefinition } from '@liveplanner/forms';
 import {
+  FROM_EMAIL_FIELD,
   customFieldOf,
   isItemPerson,
   readItemTypeCatalogue,
@@ -75,10 +76,13 @@ function anonymiseTime(value: TimeValueLike): ItemFieldValue {
   };
 }
 
-// A form's response card (forms/respond.ts): made by the form, or carrying the response it came from.
+// A form's response card (forms/respond.ts): made by the form, or carrying the response it came from. An email's card
+// (email-intake/intake-delivery.ts) is kept alike: its sender's address and words are no more the plan's to show.
 export function isResponseCard(item: Pick<Item, 'fields' | 'createdBy'>): boolean {
   return (
     item.fields[FROM_FORM_FIELD] !== undefined ||
+    item.fields[FROM_EMAIL_FIELD] !== undefined ||
+    (typeof item.createdBy?.id === 'string' && item.createdBy.id.startsWith('email:')) ||
     (typeof item.createdBy?.id === 'string' && item.createdBy.id.startsWith(FORM_PERSON_PREFIX))
   );
 }

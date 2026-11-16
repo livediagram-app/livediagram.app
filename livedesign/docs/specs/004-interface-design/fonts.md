@@ -229,6 +229,9 @@ SVG / PDF paint the same typeface the canvas does, never the UI sans.
 - **The Logo Kit outlines instead** ([Logo pages](../007-editor/logo-pages.md) "Outlined text"): its `logo.svg`
   draws text as letter outlines read from the same embedded faces, since vector editors ignore `@font-face`. Every
   other SVG keeps live text.
+- **Where the page has the faces, the SVG declares nothing.** A caller that draws the SVG inside the page (the
+  Prototype player's screens) sets `fontsFromPage`, so the markup carries no `@import` and the stylesheet is not
+  requested a second time.
 - Both paths emit nothing at all when no element or tab picked a font, so an
   ordinary export is byte-identical to what it was before fonts existed.
 - The PNG drawer awaits `document.fonts.ready` before painting: rasterising

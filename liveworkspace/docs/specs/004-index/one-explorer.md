@@ -123,8 +123,16 @@ Canvas, and so on. On liveworkspace.app in no app, where the list shows every ap
 Create) is a menu of every app's kind, each with its logo and its app's name; New Folder sits beside them where the
 view takes one. Words about the person's whole collection follow the list: under All Apps they are **files** ("12
 files", "Keep your files safe"), and the hero asks "what are you working on today?"; words about one item keep its
-app's kind. It goes to the app's new-item route, where the app creates the Durable Object and
+app's kind. In no app, where New offers every app's kind, the Explorer's own sentences say **files** too (the
+Default Folders dialog, Use as Default, a folder's Delete words), never the kind of the app New would make by default;
+what one app makes or keeps keeps that app's word (an import's line, This Browser's tile). Help follows the same rule:
+in no app there is no view Help button, no sign-in banner article and no help in Search, since liveworkspace.app has
+no Explorer articles of its own and one app's would speak of its kind alone; the Share dialog's help is always the
+item's own app's. It goes to the app's new-item route, where the app creates the Durable Object and
 registers it in the index in one step, then opens it.
+
+An empty folder says "Add a <kind> or a subfolder", so its New is a menu of both, New <Kind> (each app's kind in no
+app) and **New Subfolder**, as the header's Create is; elsewhere the empty state's New makes the kind alone.
 
 #### What you can make, on Home's hero
 
@@ -508,6 +516,10 @@ liveworkspace.app.
   it can't reach the store, a toast says it couldn't rename. Delete deletes it for good, as any This Browser item. On
   liveworkspace.app, which can't read an app's store, Archived lists the account's documents alone, as This Browser
   there is a link into the app.
+- **Move Folder.** A folder moves within its own space, so its Move dialog offers that space alone, headed by the
+  space's name (My Work, or the team's), never "Choose a Space" with nothing to choose, and said once: the top
+  level's card under it reads "Top level" ("Not in a folder" in My Work), not the space again; where the person has teams,
+  the line under the title says "Folders move within their space. Pick where in <space> it should live."
 - **Change Folder.** "Choose a Space" lists My Work and each team, then, under a divider, **Archived** ("Out of every
   list, and closed") as a space of its own that holds no folders: choosing it and Move Here archives the document.
   It is offered only where Move to Archived would be. For an archived document Archived is where it is now, so the
@@ -808,7 +820,11 @@ The journeys, one way each:
    keeps its **New Team** tile, a shortcut for filing the item being moved into a team made on the spot (name
    only); it is the same team and the same request.
 2. **Run a team.** Choose the team (sidebar or panel rail). Its view opens on the team's card, above its library:
-   the organisation, how many have joined and how many are invited; every member with their role; and, by role:
+   the organisation, how many have joined and how many are invited; every member with their role, on a disc of
+   their Google picture over their initials, painted as their account button in the header is
+   (`@liveworkspace/account-menu` `avatarFill`): their presence colour (the members list's `color`), else, on
+   Automatic, the colour picked from the name the row shows (an invitation's made from its address), shaded until
+   the white initials read at AA; and, by role:
    - **Invite** (admins): an address and Member or Admin, at the foot of the card. The invitation is emailed.
    - **Invite by Link** (admins): turn the join link on, copy it, make a new one (the old one stops working),
      or turn it off. It lasts 7 days. Turning it on or off here moves the keyboard to what took the pressed
@@ -825,7 +841,8 @@ The journeys, one way each:
      sidebar without a reload: the page reads the person's teams again when they come back to the tab (at most
      once in 30 seconds, as the Inbox does), and a team's view that finds they are no longer in it drops the team
      from the sidebar there and then, showing Team not found. A team left here comes back only when a read of the
-     list made after the leave names it again (the person was added back elsewhere).
+     list made after the leave names it again (the person was added back elsewhere). Team not found stands alone:
+     no filters, layout toggle or Create, since nothing can be made or found in a team the person is not in.
      In the editor's panel the team's pane has a **Members** button that opens the same card in a dialog; leaving
      or deleting there closes it, goes Home and puts the keyboard on the rail's Home.
 3. **Answer an invitation.** Sidebar › Spaces › **Invites** (shown while any wait, with their count): a card per
@@ -833,7 +850,9 @@ The journeys, one way each:
    so in a toast. With none waiting it says where the teams are (Spaces) and offers **New Team**. When the teams
    couldn't be read (offline, refused) it says so, with **Try again**, rather than waiting for ever.
 4. **Join by link.** The link (`liveworkspace.app/join?token=…`) lands on a thin page that shows the team and
-   joins it, then opens the team's view in the Explorer. Signed out, it signs in and comes back.
+   joins it, then opens the team's view in the Explorer. Signed out, it signs in and comes back. A long team or
+   organisation name wraps inside its card, broken anywhere when it has no spaces, so a phone never scrolls
+   sideways; the Explorer's team card and Invites cut theirs to one line instead.
 5. **Decline from an email.** The email's Decline link (`/join/decline?token=…`) is a thin page that declines
    without an account, and points at the Explorer's Invites to accept instead.
 

@@ -223,6 +223,12 @@ export function ExplorerDialogs() {
           }
           currentTeamId={folder.teamId}
           currentFolderId={folder.parentId}
+          // With teams about, say why only this space is offered.
+          subtitle={
+            teams.length > 0
+              ? `Folders move within their space. Pick where in ${team?.name ?? (folder.teamId ? 'the team' : 'My Work')} it should live.`
+              : undefined
+          }
           onPick={(dest) => void folders.move(folder.id, dest.folderId)}
           onClose={close}
         />
@@ -238,7 +244,7 @@ export function ExplorerDialogs() {
         loadTabs: loadTabs ? () => loadTabs(item) : undefined,
         shareUrl: shareUrl ?? defaultShareUrl,
         handOver: shareHost?.handOver?.(item),
-        helpHref: shareHost?.helpHref,
+        helpHref: shareHost?.helpHrefFor?.(item) ?? shareHost?.helpHref,
         onTelemetry: shareHost?.onTelemetry
           ? (action: Parameters<ShareTelemetry>[0], type: string) =>
               shareHost.onTelemetry?.(action, type, item)

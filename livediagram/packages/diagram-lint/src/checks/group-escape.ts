@@ -1,7 +1,7 @@
 // `group-escape` (warning): a box reaches past its frame by more than LINT_CONTAIN_TOLERANCE_PX on a side,
 // measured on its bounds as drawn (LN13).
 
-import { boxBounds } from '../boxes';
+import { boxBounds, isThinBar } from '../boxes';
 import { LINT_CONTAIN_TOLERANCE_PX } from '../constants';
 import { refOf } from '../context';
 import { fixes } from '../fixes';
@@ -10,6 +10,8 @@ import type { Check } from './types';
 
 export const groupEscape: Check = (ctx) =>
   ctx.boxes.flatMap((box) => {
+    // A sequence diagram's lifeline runs through its fragments' frames by design.
+    if (isThinBar(box)) return [];
     const frame = frameOf(ctx, box);
     if (!frame) return [];
     const b = boxBounds(box);

@@ -55,6 +55,29 @@ describe("the Community page's telemetry", () => {
     ]);
   });
 
+  it("sends the Forum's events, each a preset type", () => {
+    h.host = 'livediagram';
+    const { forum } = communityTelemetry;
+    forum.opened();
+    forum.openedTopic();
+    forum.postedTopic();
+    forum.postedReply();
+    forum.reacted('helpful');
+    forum.reacted('thanks');
+    forum.reacted('celebrate');
+    forum.markedAnswer();
+    expect(h.sent).toEqual([
+      ['Community', 'Opened', 'Forum'],
+      ['Community', 'Opened', 'Topic'],
+      ['Community', 'Posted', 'Topic'],
+      ['Community', 'Posted', 'Reply'],
+      ['Community', 'Reacted', 'Helpful'],
+      ['Community', 'Reacted', 'Thanks'],
+      ['Community', 'Reacted', 'Celebrate'],
+      ['Community', 'Marked', 'Answer'],
+    ]);
+  });
+
   it('sends nothing on liveworkspace.app, where no app is the sender', () => {
     communityTelemetry.likedPost();
     communityTelemetry.searched();

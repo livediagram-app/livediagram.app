@@ -168,7 +168,11 @@ moves between them, and the one account that joins them.
    app** (`#apps`). Signed in, nothing on the page asks the person to sign up: it says "You're signed in to every
    app. Pick up where you left off." over **Open Explorer** (`/explorer`) and **Pick an app**. Until the page knows
    (`useSession`), it shows the signed-out words, right for most visitors; the two states have the same lines and
-   buttons, so the swap moves nothing (`components/landing/AccountActions.tsx`).
+   buttons, so the swap moves nothing (`components/landing/AccountActions.tsx`). The banner is a card with a surface
+   of its own in both modes (slate-950 on the light page; slate-900 with a white hairline on the dark one, whose page
+   is slate-950), and its two glows (sky toward the lower left, violet toward the upper right) are gradients that
+   each reach transparent at their own box's nearest side within the card, so neither shows a cut edge. The
+   headline balances its lines, so no word is left alone on the last one.
 5. **Footer**: Our Apps (each app's logo, linking to its site), Platform (Comparison, which points at each app's
    comparisons, the Community, every app's posts together, the telemetry dashboard and Status) and Legal (the
    privacy policy, Terms of Use, Report a Vulnerability and Licences). Report a Vulnerability opens the repository's
@@ -231,7 +235,10 @@ liveworkspace's own tables: the same generator (`@liveworkspace/licences`) and p
 (`@liveworkspace/marketing-site`), with the site's apps, overrides and embedded works in
 `apps/site/lib/licences/`. The site's build regenerates it before `next build` and checks the export
 after; its intro links each app's own page. Each app's declared dependencies are tested to appear
-(`apps/site/lib/licences/licences.test.ts`).
+(`apps/site/lib/licences/licences.test.ts`). A development server doesn't run the generator, so there, with no
+`generated/licences.json`, the page says calmly that the list isn't generated locally and how to make it
+(`pnpm licences`), rather than failing (`loadLicencesManifestForPage`, every product's page alike); a build without
+the list still fails.
 
 ### Comparison (`/compare`)
 
@@ -589,11 +596,21 @@ are `app/community/`, `components/community/` and `lib/community/`.
   switcher, the slanted hairline and the app's logo, which leads back to the app; the account control on the right
   (the app's session on its address). No search in the middle: the gallery's own search box is the page's. The
   switcher leads each site to its Community ([site-switcher.md](site-switcher.md#on-a-community-page)).
+- **Its footer's links.** The page is one static file for every address, so the server HTML cannot know the host. Its
+  footer is therefore drawn with liveworkspace.app's origin in full in the served HTML (never a bare path such as
+  `/compare`, which an app's address 404s), so search crawlers, visitors without JavaScript and an early click land on a
+  page that answers. After hydration the origin is the page's own workspace (staging's on a staging address, a relative
+  path on liveworkspace.app itself); both come from the same `workspaceOriginFor` rule.
 - **Its look.** The page wears the colours of the app whose address it is on (`data-community-app`, the same ramps
   as the Explorer's, `app/app-colours.css`), liveworkspace's slate here; the hero's wash takes the app's colour too.
   The rail (Appearance) and this site's footer follow, the footer's links leading to liveworkspace.app in full on
   an app's address.
 - **A post** opens on its own app's address; a link to one here moves there.
+- **Gallery and Forum.** Two tabs under the hero, **Gallery** (`/community`) and **Forum** (`/community/forum`, a
+  topic at `/community/forum/topic?id=`), links that keep the page's address. The Forum is one for every app, the same
+  topics on each app's address and here ([007-community](../007-community/community.md#the-forum) "The Forum");
+  asking, replying, reacting and marking an answer take the page's account (the app's session on its address, this
+  site's here).
 - **Search engines.** The gallery is indexable (`Community · liveworkspace`, canonical `/community`, in the
   sitemap). On an app's address the router makes its head the app's own, and fills each post's.
 
@@ -998,7 +1015,10 @@ pressable again, and so does coming Back to a page the browser kept.
   Page**", linking [Status](#status-status) (`/status`, which an app's address sends here). A failure in the root
   layout itself gets the same card in a page of its own, with `lang`, the stylesheet and the appearance setting,
   so it is light or dark as the rest of the site: it keeps the light or dark the failed page was showing, without
-  loading the Appearance setting's code into every page. The card's code loads only when a page fails, so it costs no
+  loading the Appearance setting's code into every page. The card follows the chosen appearance as the 404 page
+  does, even where the failed page's `<html>` came back without the pre-paint script's class (a development server
+  renders the layout again on the client): once it shows, it applies the address's setting by the boot script's rule
+  (`paintStoredAppearance`). The card's code loads only when a page fails, so it costs no
   page its first load; when that code can't load (offline), the same title, heading, line and actions show
   without the card's styling.
 - An address the site has no page for shows the same card, drawn on the server so it needs no script: the title

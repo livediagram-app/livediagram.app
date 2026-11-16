@@ -1374,6 +1374,26 @@ theme, with the page answering throughout.
   before the next frame, as before.
   Find a Card and the Filter reach every card, near or not; the browser's own find in page and a screen reader's
   reading cursor reach the cards near the view.
+  **Measured at 5,000 cards** (the plan's cap, `ITEMS_MAX`; 2026-11-16, a production build, Chromium, a
+  laptop, `e2e/perf/big-board.perf.ts` with each card carrying a long description, a tab export of about 14 MB;
+  longest main-thread task and longest frame gap, from the Import press and from the reload until the board has drawn
+  and held two seconds; the page's own boot is in the tasks; 57 to 66 of the 5,000 cards are built, runs near 17 of 1,279):
+
+  | Profile                                           | Import: task / gap | Open: task / gap |
+  | ------------------------------------------------- | ------------------ | ---------------- |
+  | Desktop 1440 by 900, 3x CPU (the calibrated rate) | 131 / 167 ms       | 98 / 150 ms      |
+  | Phone 390 by 844, 4x (a mid-range phone)          | 161 / 183 ms       | 134 / 200 ms     |
+  | Phone 390 by 844, 6x (a low-end phone)            | 539 / 550 ms       | 210 / 283 ms     |
+
+  Opening holds the page about a tenth of a second on a desktop, as at 2,000 cards, and no longer than a fifth of a
+  second on a phone up to 6x. **Importing** is the one over budget: 131 ms on a desktop against the tenth of a second, and one
+  539 ms task at 6x. The task was not profiled (`BIG_BOARD_PROFILE=1` does it); the import is the only step that
+  handles the whole 14 MB export at once, so reading and checking it is the first suspect. Not fixed here: no small,
+  safe change was found. The next step is to profile the import, then read it in slices that yield between them, or
+  window the loading (draw the columns and the cards in view from the first slice, then the rest) as the open already
+  does. Until then the cap stays at 5,000: the
+  slow case is a low-end phone importing a board that large, and that is a one-off action, not one that repeats.
+
 - **A drag stays smooth.** Carrying a card on a 2,000-card board keeps up with the pointer or finger, on an iPad too:
   picking a card up and letting it go redraw only that card (its copy appearing over the page never restyles the
   board), a drop gap opening or closing in a long column slides the cards below it rather than redrawing them, the

@@ -5991,6 +5991,9 @@ importers:
 
   liveworkspace/apps/community:
     dependencies:
+      '@liveworkspace/auth-client':
+        specifier: workspace:*
+        version: link:../../../packages/auth-client
       '@liveworkspace/community':
         specifier: workspace:*
         version: link:../../../packages/community
@@ -6013,6 +6016,9 @@ importers:
       '@types/node':
         specifier: ^26.6.6
         version: 26.6.6
+      jose:
+        specifier: ^6.2.17
+        version: 6.2.17
       oxlint:
         specifier: ^1.93.0
         version: 1.93.0(oxlint-tsgolint@7.0.2007)
@@ -6644,6 +6650,9 @@ importers:
       '@liveworkspace/icons':
         specifier: workspace:*
         version: link:../icons
+      '@liveworkspace/model-core':
+        specifier: workspace:*
+        version: link:../model-core
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../settings
@@ -6962,6 +6971,9 @@ importers:
         specifier: workspace:*
         version: link:../sites
     devDependencies:
+      '@liveworkspace/vitest-config':
+        specifier: workspace:^
+        version: link:../vitest-config
       '@types/node':
         specifier: ^26.6.6
         version: 26.6.6
@@ -7305,6 +7317,9 @@ importers:
 
   packages/explorer:
     dependencies:
+      '@liveworkspace/account-menu':
+        specifier: workspace:*
+        version: link:../account-menu
       '@liveworkspace/api-schema':
         specifier: workspace:*
         version: link:../api-schema
@@ -7320,6 +7335,9 @@ importers:
       '@liveworkspace/index-client':
         specifier: workspace:*
         version: link:../index-client
+      '@liveworkspace/model-core':
+        specifier: workspace:*
+        version: link:../model-core
       '@liveworkspace/settings':
         specifier: workspace:^
         version: link:../settings

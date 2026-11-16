@@ -11,6 +11,7 @@
 // first load of every route stays free of it; it publishes the same distilled
 // DeferredAuthState the app tree already consumes.
 
+import { namesOf } from '@liveworkspace/auth-client/account-names';
 import { askSignOut } from '@liveworkspace/auth-client/sign-out';
 import {
   askToken,
@@ -32,6 +33,9 @@ import {
 type SessionUser = {
   id: string;
   email: string | null;
+  // The ID token's given and family names (the api's `/api/auth/token` user), for the first and last name.
+  givenName?: string | null;
+  familyName?: string | null;
   name: string | null;
   // The ID token's Google picture and Show My Google Picture switch (apps/api/src/routes/auth.ts AuthUser).
   picture?: string | null;
@@ -84,25 +88,9 @@ async function endSession(returnTo = '/'): Promise<string | null> {
   return (await askSignOut(returnTo, { apiBase: API_BASE })).next;
 }
 
-// The name the app shows: the account's own, split at its first space, else the email's local part.
-// An account made by signing in with a code has no name until one is set at the accounts site.
-export function namesOf(user: SessionUser): {
-  firstName: string | null;
-  lastName: string | null;
-  fullName: string | null;
-} {
-  const name = user.name?.trim();
-  if (name) {
-    const space = name.indexOf(' ');
-    return {
-      firstName: space > 0 ? name.slice(0, space) : name,
-      lastName: space > 0 ? name.slice(space + 1).trim() || null : null,
-      fullName: name,
-    };
-  }
-  const local = user.email?.split('@')[0]?.trim() || null;
-  return { firstName: local, lastName: null, fullName: local };
-}
+// The names the app shows, the shared rule (@liveworkspace/auth-client/account-names): the first and last name
+// the accounts site asked for, else the whole name split at its first space, else the email's local part.
+export { namesOf };
 
 function stateOf(session: Session | null): DeferredAuthState {
   if (!session) return { ...DEFERRED_AUTH_DEFAULT, authLoaded: true };

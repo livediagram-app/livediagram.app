@@ -2,6 +2,10 @@
 
 // EditorView's own hooks, each one concern read from the editor's context: the header's Community state, the
 // guest sign-in nudge, the canvas style the covers draw, and Automations' scope and gate.
+import {
+  emailIntakeScopeFor,
+  type EmailIntakeScope,
+} from '@/components/email-intake/email-intake-gate';
 import { useCallback, useMemo } from 'react';
 import { useCommunityEnabled } from '@liveworkspace/community-ui';
 import {
@@ -112,6 +116,22 @@ export function useEditorCalendarFeed(
 // member on a plan saved to the server, a guest owner included; null (no tab menu row) for everyone else.
 export function useEditorRoadmap(ctx: EditorContextValue, isOffline: boolean): RoadmapScope | null {
   return roadmapScopeFor({
+    hydrated: ctx.hydrated,
+    embed: ctx.embedMode,
+    workbench: !!ctx.workbench,
+    offline: isOffline,
+    scope: ctx.plan.context?.itemsScope ?? null,
+  });
+}
+
+// Email to Board's scope (docs/specs/026-plan/email-to-board.md "Who may manage an address"): an Editor of the whole
+// plan, in person, on a plan saved to the server.
+export function useEditorEmailIntake(
+  ctx: EditorContextValue,
+  isOffline: boolean,
+): EmailIntakeScope | null {
+  return emailIntakeScopeFor({
+    level: ctx.can.level,
     hydrated: ctx.hydrated,
     embed: ctx.embedMode,
     workbench: !!ctx.workbench,

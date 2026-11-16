@@ -160,6 +160,10 @@ are.` when any held (`1 match ... was left as it is.`).
   alone; the editor, the canvas and the pages do not render for it. Measured on a 100-page article in WebKit
   at 1180x820: typing a five-letter query, the editor's renders 12 → 0, the pages' title bars 576 → 0, every
   component's renders 13,312 → 105; five Enters through the matches 11,145 → 80; opening the bar 2,241 → 38.
+- While the bar is shut, `EditorFindHost` skips a typing commit (`sameDepsButWriting`), so its `deps` prop is the tab
+  as it last rendered. Opening the bar re-renders it once (`FindHost`'s `onOpenChange`), which reads the newest
+  `findDeps` from the chrome store, so the first search gathers the writing as it is (Work Tracker 1051: a fresh
+  article's typed words read "No Results"; `FindHost.test.tsx` "searches the writing as it is when the bar opens").
 - Decorations rebuilt only on a store change; mapped otherwise.
 
 ## Presentation and UX

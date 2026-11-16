@@ -102,7 +102,7 @@ article's margins.
   curated Google fonts, which most machines lack. So each is written with what an app needs to pick a close
   stand-in: Word gets a `word/fontTable.xml` entry per face with its family (swiss, roman, modern, script), pitch
   and an `altName` (a face every Windows and Mac Office install has: Arial, Arial Narrow, Georgia, Times New Roman,
-  Courier New or Comic Sans MS), and PowerPoint gets the face's `pitchFamily` beside its name. Code therefore falls
+  Courier New or Comic Sans MS), and PowerPoint gets the face's `pitchFamily` beside its name, in each run and in the deck's theme: the theme's minor (body) font is the face with the most characters, its major (heading) font the face with the most characters in the largest text, and both are Calibri for a deck naming no face (a Word file carries no theme). Code therefore falls
   back to a fixed-width face, never a proportional one. A face the table does not know still gets its name and a
   sans-serif or serif guess from its stack. Keynote, Pages and Google's apps read the same hints.
 - **The style travels as styles**: the article's heading and body fonts, text size, line and paragraph spacing,

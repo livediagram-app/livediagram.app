@@ -40,8 +40,8 @@ export const CHAPTERS: readonly Chapter[] = [
     name: 'Stickers',
     shortName: 'React',
     ms: 7500,
-    say: 'Open Stickers and drop one on a sticky to react to it.',
-    sayTouch: 'Tap Stickers and drag one onto a sticky to react to it.',
+    say: 'Turn Icons to Stickers and drop one on a sticky to react to it.',
+    sayTouch: 'Turn Icons to Stickers and drag one onto a sticky to react to it.',
   },
 ];
 

@@ -1,24 +1,16 @@
 import { isSafeColourValue } from '@liveworkspace/auth-client/account-name';
+import { initialsOf } from '@liveworkspace/model-core/names';
 import {
   PRESENCE_COLOURS,
   presenceColour,
   type PresenceColour,
 } from '@liveworkspace/settings/presence';
 
-// The words of a name, or of an email's local part (`ada.lovelace@…`, `ada_lovelace`).
-function wordsOf(name: string): string[] {
-  const trimmed = name.trim();
-  const local = trimmed.includes('@') && !/\s/.test(trimmed) ? trimmed.split('@')[0]! : trimmed;
-  return local.split(/[\s._-]+/).filter(Boolean);
-}
-
-// A person's initials, for their avatar (accounts keep no pictures): always two letters where the name has
-// them, the first letters of their first and last names, or the first two of the one name they gave.
-export function initials(name: string): string {
-  const parts = wordsOf(name);
-  if (parts.length === 0) return '?';
-  if (parts.length === 1) return [...parts[0]!].slice(0, 2).join('').toUpperCase();
-  return ([...parts[0]!][0]! + [...parts[parts.length - 1]!][0]!).toUpperCase();
+// A person's initials, for their avatar: the shared rule every app's avatars use (@liveworkspace/model-core
+// initialsOf), always two letters where the name has them, the first letters of their first and last names, or the
+// first two of the one name they gave, punctuation and symbols skipped. An email reads as its local part's words.
+export function initials(name: string, fallback?: string | null): string {
+  return initialsOf(name, fallback);
 }
 
 // The avatar's colour: one of the presence colours, picked from the name, so the same person has the same disc

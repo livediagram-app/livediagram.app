@@ -1177,6 +1177,57 @@ export const PLAN_ROADMAPS_UNPUBLISHED = chart(
   { types: ['Roadmap'], rising: 'neutral' },
 );
 
+// Email to Board (docs/specs/026-plan/email-to-board.md "Telemetry", in the liveplanner folder): addresses turned on,
+// re-addressed, their senders changed, copied and turned off, and the cards mail made (the api's own count). Its
+// dialog opening is a Dialogs & Panels chart (features.ts). Never a plan, a board, an address or a sender.
+export const PLAN_EMAIL_INTAKES_ON = chart(
+  'Plan',
+  'Created',
+  'Board Addresses Turned On',
+  'Turn On pressed in Email to Board: a board given its own secret address, mail to which becomes cards.',
+  { types: ['EmailIntake'] },
+);
+
+export const PLAN_EMAIL_INTAKES_READDRESSED = chart(
+  'Plan',
+  'Changed',
+  'Board Addresses Replaced',
+  'New Address confirmed: a board given a new address, the old one refusing mail at once.',
+  { types: ['EmailIntakeAddress'], rising: 'neutral' },
+);
+
+export const PLAN_EMAIL_INTAKE_SENDERS = chart(
+  'Plan',
+  'Changed',
+  'Who Can Send Changed',
+  "A board address's Who Can Send changed between Plan Members and Anyone with the Address.",
+  { types: ['EmailIntakeSenders'], rising: 'neutral' },
+);
+
+export const PLAN_EMAIL_INTAKES_COPIED = chart(
+  'Plan',
+  'Copied',
+  'Board Addresses Copied',
+  "A board's address copied from Email to Board.",
+  { types: ['EmailIntake'] },
+);
+
+export const PLAN_EMAIL_INTAKES_OFF = chart(
+  'Plan',
+  'Ended',
+  'Board Addresses Turned Off',
+  'Turn Off confirmed: a board address refusing mail from then on.',
+  { types: ['EmailIntake'], rising: 'neutral' },
+);
+
+export const PLAN_EMAIL_CARDS = chart(
+  'Plan',
+  'Created',
+  'Cards Made from Email',
+  "A card made by mail to a board's address that passed its checks, counted by the api.",
+  { types: ['EmailCard'] },
+);
+
 export const PLAN_COLUMNS_COLLAPSED = chart(
   'Plan',
   'Toggled',
@@ -1608,6 +1659,12 @@ const PLAN_BOARDS_MEMBERS = [
   PLAN_ROADMAPS_CHANGED,
   PLAN_ROADMAPS_COPIED,
   PLAN_ROADMAPS_UNPUBLISHED,
+  PLAN_EMAIL_INTAKES_ON,
+  PLAN_EMAIL_INTAKES_READDRESSED,
+  PLAN_EMAIL_INTAKE_SENDERS,
+  PLAN_EMAIL_INTAKES_COPIED,
+  PLAN_EMAIL_INTAKES_OFF,
+  PLAN_EMAIL_CARDS,
   PLAN_COLUMNS_COLLAPSED,
   PLAN_SETUP_CHANGED,
   PLAN_CALENDAR_MOVES,
@@ -1642,6 +1699,8 @@ export const PLAN_BOARDS: MetricStack = {
       m !== PLAN_CALENDAR_FEEDS_RESET &&
       m !== PLAN_CALENDAR_FEED_OPTIONS &&
       m !== PLAN_ROADMAPS_CHANGED &&
+      m !== PLAN_EMAIL_INTAKES_READDRESSED &&
+      m !== PLAN_EMAIL_INTAKE_SENDERS &&
       m !== PLAN_VIEW_STATUSES &&
       m !== PLAN_VIEW_RANGE &&
       m !== PLAN_CARD_STYLES &&

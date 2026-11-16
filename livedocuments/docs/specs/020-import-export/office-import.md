@@ -85,6 +85,11 @@ sits on the slide, scaled from the deck's size to the page's.
   on the page (past the editor's largest size, 48 px, that size scaled up, as a resized headline is); bold or
   italic when every run is; the first paragraph's alignment, else its list style's (the shape's, its layout's,
   its master's), else the master's text style's.
+  A box PowerPoint sizes to its text keeps showing all of it: one with `wrap="none"` (the shape's, else its layout's,
+  its master's) stays on **one line**, its box widened to the text (kept inside the page: only where the page cannot
+  hold the line does it wrap, at the page's edge), and one with `spAutoFit` **grows to the height of its text**, so no
+  imported word is cut off below the box. The import has no screen to measure with, so the width and height are
+  estimated from the text size, on the generous side; a box never shrinks.
 - **Pictures** become **image** elements in the picture's box (a picture put into a placeholder, with no place of
   its own, in its layout's, then its master's); a cropped picture fills its box (cover).
 - **Groups** are opened: their members are placed through the group's own scaling.

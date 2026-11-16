@@ -107,10 +107,10 @@ describe('readCookie and configured', () => {
 });
 
 describe('the options a product binds', () => {
-  it('adds familyName to the user only when asked', async () => {
+  it('gives the user the family name beside the given name', async () => {
     const id = jwt({ sub: 'u', given_name: 'Ada', family_name: ' Lovelace ' });
     fetchMock.mockResolvedValueOnce(tokenResponse(id));
-    const withFamily = routes({ familyName: true });
+    const withFamily = routes();
     const res = await call(withFamily, '/api/auth/token', {
       method: 'POST',
       headers: { Cookie: 'x_refresh=r1' },
@@ -127,12 +127,6 @@ describe('the options a product binds', () => {
       'pictureHidden',
     ]);
     expect(body.user.familyName).toBe('Lovelace');
-    fetchMock.mockResolvedValueOnce(tokenResponse(id));
-    const plain = await call(routes(), '/api/auth/token', {
-      method: 'POST',
-      headers: { Cookie: 'x_refresh=r1' },
-    });
-    expect((await plain.json()).user).not.toHaveProperty('familyName');
   });
 
   it('says the token age only when asked, and only with an issue time', async () => {

@@ -1169,6 +1169,18 @@ export const articles: Article[] = [
     group: 'Kinds of Page',
   },
   {
+    slug: 'make-sizes',
+    title: 'Make Sizes',
+    description:
+      'Turn one photo into a photo page for every social format, then export them all as one .zip.',
+    keywords:
+      'make sizes resize social sizes formats instagram post story linkedin banner x header facebook cover youtube thumbnail custom crop fill export all sizes zip batch photo',
+    category: 'Pages',
+    categorySlug: 'pages/photo-pages',
+    parentSlug: 'photo-pages',
+    group: 'Kinds of Page',
+  },
+  {
     slug: 'pages-tour',
     title: 'The Pages Tour',
     description:
@@ -1937,6 +1949,16 @@ export const articles: Article[] = [
     description: 'Publish a design to the public gallery for others to view and copy.',
     keywords:
       'community gallery public publish showcase inspiration examples share design proud like likes copy copies tags category report moderation discover browse portfolio',
+    category: 'Collaboration',
+    categorySlug: 'collaboration/sharing',
+    parentSlug: 'sharing',
+  },
+  {
+    slug: 'request-approval',
+    title: 'Request Approval',
+    description: 'Ask named people to approve a design, and see where their answers stand.',
+    keywords:
+      'approve approval sign off review request changes approver badge awaiting approved changed since approval due note audit history',
     category: 'Collaboration',
     categorySlug: 'collaboration/sharing',
     parentSlug: 'sharing',

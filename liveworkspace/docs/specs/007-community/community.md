@@ -50,7 +50,10 @@ Each app offers the same Community, in its own words and look, built from the sa
   NFC-normalised, so a tag publishes, searches and links the same however it was typed; livediagram's
   [025-community](../../../../livediagram/docs/specs/025-community/community.md#tags) "Tags" has the detail.
 - **The link's doors**: the read-only view, the card image and copying, through a community link the post owns.
-- **Moderation**: reports alone, as below, the same for every app.
+- **Moderation**: reports alone, as below, the same for every app. The Forum adds a check on the server of every post
+  and edit before anyone else sees it ("The Forum" below).
+- **The Forum**: a **Forum** tab beside the gallery, where people ask questions and discuss the apps: one forum for
+  every app, with a category per app and General ("The Forum" below).
 - **Categories**: each app's are its Start With template categories (below), so a gallery's filters speak its
   product's language and the publish dialog offers only that app's.
 - **Start With**: the app's new-document template picker shows each category's most liked Community posts of the
@@ -227,6 +230,88 @@ options)`: each group's matching tiles after its matching templates, a group onl
    and go to `communityStartHref(post)` (`communityViewerPath`, so liveplanner's goes to `/project/shared`).
 7. Add the type to the app's telemetry explanations, and its categories' drift test (above).
 
+## The Forum
+
+People ask questions and talk about the apps in the **Forum** (Work Tracker 942): one forum for every app, on the
+Community page beside the gallery, served at each app's `/community/forum` and on liveworkspace.app's, the same posts
+wherever it is read.
+
+**Its pages.** The Community page has two tabs under its hero, **Gallery** (`/community`) and **Forum**
+(`/community/forum`), links that keep the page's address (the app's, or liveworkspace.app's). The Forum lists its
+topics; a topic opens at `/community/forum/topic?id=`, its question and its replies.
+
+**Categories.** **General**, then one per app in `COMMUNITY_APPS` order (`livediagram`, `liveplanner`,
+`livedocuments`, `livedesign`, `livehuddle`), each named as the app is (`FORUM_CATEGORIES`). The list starts on
+every category; a category menu narrows it. On an app's address, a new question starts in that app's category.
+
+**Topics and replies.** A topic is a question: a title (5 to 120 characters) and a body (10 to 5,000), in one
+category. Replies are one level deep: each answers the topic, never another reply (2 to 5,000 characters each, at most
+200 a topic). Text is plain: paragraphs and line breaks are kept, nothing else is formatted, and links are not made
+clickable. The list sorts by **Latest Activity** (a topic moves up when a reply is listed), **Newest** or
+**Unanswered** (no marked answer, newest first), 20 a page with Load More.
+
+**Reactions.** Three, on a topic or a reply: **Helpful**, **Thanks** and **Celebrate**, each one per person, pressed
+again to take it back. Each shows its count; the ones the reader gave are marked.
+
+**The answer.** The topic's author marks one listed reply **Answer** (and can unmark it, or mark another). The answer
+shows first among the replies, marked, and the topic shows **Answered** in the list. When the answer is deleted, the
+topic is unanswered again.
+
+**Who can do what.** Anyone reads, signed in or not. Posting a topic, replying, reacting and marking the answer need a
+signed-in account, checked by the service on every write (an account access token, "The API" below); a guest or a
+signed-out visitor sees **Sign In to Ask** and **Sign In to Reply** in their place, which come back to the same page.
+Authors edit and delete their own topics and replies; nobody else can. Deleting a topic deletes its replies. Anyone
+reports a topic or a reply, as they report a gallery post.
+
+**Authors are shown publicly** by the name and colour their account shows (its given name, as the page's header has
+it), never an id or an address.
+
+**The check.** Every topic, reply and edit is checked on the server before anyone else sees it, by a content safety
+model on Workers AI (the service's optional `AI` binding: no key, no secret, Workers AI's free daily allowance; the
+same way liveplanner's Automations ask it). The check reads the title, the body and the author's name together:
+
+- **Passes**: the post is **listed**, and everyone sees it.
+- **Fails**: the post is **refused**. Only its author sees it, marked "Didn't pass the community check", and they can
+  edit it (which checks it again) or delete it.
+- **Can't answer** (no binding, an error, more than 10 seconds, an answer it can't read, or the day's checks used):
+  the post waits as **Pending**, shown to its author only, marked "Pending: being checked". The service's cron asks
+  again every five minutes, oldest first, and lists or refuses it then. Nothing is ever listed unchecked.
+
+An edit of a listed post is checked the same way: until it passes, the post shows to its author alone again
+(**Pending** or **refused**), with the new words. The checks a day are capped (`FORUM_CHECKS_PER_DAY`, 500), so the
+allowance can't be run past; past the cap new posts wait as Pending for the next day's.
+
+**Reports** hide a forum post exactly as they hide a gallery post: three reports from three browsers on three networks
+hide it for good (**hidden**), with the same reasons and the same optional note, keyed by the same per-browser
+community key, and limited per network the same way. A hidden post shows to its author alone, marked Hidden, and can't
+be edited; its author can still delete it. A hidden topic hides its replies with it. Nobody removes or bans by hand
+(owner, 2026-11-15: reports plus the server check only).
+
+**Limits per account**, counted in the service's database by the hour: 20 writes (a topic, a reply or an edit) and
+200 reactions. Past either, the write is refused `429 rate_limited` and the page says to wait a little.
+
+**Closing an account** removes everything its author wrote in the Forum, their topics (with every reply under them),
+their replies and their reactions, the moment the app the account closed in tells the service
+(`POST /app/copiers/forget` with the `owner`, the call that already removes their gallery posts).
+
+**On the page.**
+
+- The list: a row per topic, its title, the category, who asked and when, how many replies, and **Answered** when it
+  has one. The author's own Pending, refused and Hidden topics show in the list for them alone, marked.
+- **Ask a Question** opens a composer in place above the list (title, category, the question), **Post Question** and
+  **Cancel**; posted, the page opens the new topic. Signed out it reads **Sign In to Ask**.
+- The topic: the question, its reactions, Edit, Delete (each its author's) and Report (everyone else's); then the
+  replies, the answer first, each with its reactions, **Mark as Answer** for the topic's author, Edit, Delete and
+  Report; then **Reply** in place at the foot. Edit turns the post's words into a field in place, **Save** and
+  **Cancel**; Delete asks in place, **Delete** and **Keep**.
+- Empty, loading and failed: "No questions yet. Be the first to ask." (with Ask a Question), placeholder rows, and
+  "We couldn't load the Forum." with Try Again. A topic that is gone or hidden says "This topic isn't here.", with a
+  way back to the Forum.
+
+The Forum's telemetry follows the gallery's: on an app's address, in that app's name (`Community·Opened·Forum`,
+`·Opened·Topic`, `·Posted·Topic`, `·Posted·Reply`, `·Reacted·<Reaction>`, `·Marked·Answer`, `·Reported·<Reason>`); on
+liveworkspace.app, nothing.
+
 ## What lives where
 
 The service holds the **listing**; the app holds the **document**.
@@ -301,6 +386,32 @@ and its staging; and localhost in development), so another site's page can't lik
 visitor's browser. Likes and reports are rate-limited per network (30 a minute; IPv4 /24, IPv6 /56, an
 IPv4-mapped IPv6 address as its IPv4 /24).
 
+### Forum routes
+
+`/api/community/forum/*` is the Forum ("The Forum" above), one for every app, so it names no `?app=`. Reads are
+public and need no identity; a read that carries an account token also answers that person's own Pending, refused
+and Hidden posts, marks which posts are theirs (`own`) and which reactions they gave, and is never cached. Every
+write but a report needs a signed-in account: `Authorization: Bearer <access token>`, checked offline against the
+accounts Worker's published keys as the index and the Drive service check it (issuer `${ACCOUNTS_URL}/api/auth`, any
+app API's audience, `INDEX_AUDIENCES`). A guest token, an API token, an expired or forged one answers
+`401 sign_in_required`. A report carries the browser's community key, as a gallery report does.
+
+| Route                                          | What it does                                                                 |
+| ---------------------------------------------- | ---------------------------------------------------------------------------- |
+| `GET /forum/topics`                            | 20 topics (`category`, `sort` `active`/`new`/`unanswered`, `offset`)         |
+| `POST /forum/topics`                           | `{ category, title, body, author }`: a new topic, checked; `201 { topic }`   |
+| `GET /forum/topics/<id>`                       | The topic and its replies (the answer first); `404` when not to be seen      |
+| `POST /forum/topics/<id>/replies`              | `{ body, author }`: a reply, checked; `201 { reply }`                        |
+| `PUT`/`DELETE /forum/topics/<id>/answer`       | `{ reply }`: mark or unmark the answer, the topic's author only              |
+| `PATCH /forum/posts/<id>`                      | `{ title?, body }`: an edit by its author, checked again                     |
+| `DELETE /forum/posts/<id>`                     | Delete by its author (a topic takes its replies)                             |
+| `PUT`/`DELETE /forum/posts/<id>/reactions/<r>` | React or take it back (`helpful`, `thanks`, `celebrate`); `{ reactions }`    |
+| `POST /forum/posts/<id>/report`                | `{ reason, note? }`, with `X-Community-Key`; `204` always, as a gallery post |
+
+`author` is how the page shows the person, `{ name, color }` (the name 1 to 60 characters, checked with the post;
+a colour that isn't `#rrggbb` is replaced by one picked from the account id). A write answers its post's `state`
+(`listed`, `pending` or `refused`), so the page can say at once whether it is waiting.
+
 ### App routes
 
 `/api/community/app/*` is for an app's own Workers, never a browser. Each request names the app in
@@ -316,7 +427,7 @@ time; a key only speaks for its own app. These routes send no CORS headers.
 | `GET /app/hidden?since=<ms>`         | The posts hidden after reports since then, for the app to close links    |
 | `GET /app/mine?owner=&…`             | My Shares: the owner's posts and totals; passes on `X-Community-Key`     |
 | `POST /app/copies`                   | `{ document, copier, ip }`: someone copied the document through its link |
-| `POST /app/copiers/forget`           | An account deleted: `{ copier, owner? }`, its copies and its posts go    |
+| `POST /app/copiers/forget`           | An account deleted: `{ copier, owner? }`, its copies, posts, Forum go    |
 | `POST /app/copiers/merge`            | A guest's copies moving to their account                                 |
 
 A publish carries the owner, the community link's code, the document's state, how the author is
@@ -398,6 +509,8 @@ deleted, so those links close at once. Only the gallery's card lags, by up to on
 | Both           | The app's own `COMMUNITY_ENABLED` still switches its Community off                                  |
 | api Worker     | The sweep's door (`/api/internal/items/community-states`) takes the same `COMMUNITY_KEY` as bearer  |
 | The service    | `APP_ORIGIN_<APP>` vars: where each app answers the sweep's door. Unset, that app is not swept      |
+| The service    | `ACCOUNTS_URL`, `INDEX_AUDIENCES` vars and the `ACCOUNTS` binding: the Forum's account check        |
+| The service    | The optional `[ai]` binding `AI`: the Forum's check. Without it every new Forum post waits Pending  |
 
 Without `COMMUNITY_KEY`, an app has no Community: it reports `communityEnabled: false`, and publishing
 answers 404. The service's own `COMMUNITY_ENABLED` (`false`, `0` or `off`) answers every route 404.
@@ -421,6 +534,11 @@ Community page is the site's (http://localhost:3000/community, and each app's ro
 service through the site's own `/api/community`. Development accepts writes from any
 `localhost` page and skips the edge cache.
 
+A local run never spends real Workers AI checks: with `ENVIRONMENT` `development` the Forum lists posts as if the
+check passed, whether or not `wrangler dev` is logged in. `FORUM_CHECK_LOCAL=ai` in `.dev.vars` asks the real check
+instead. Neither is read outside development: a deployed service never skips the check. The Forum's account check reads the local site's keys
+(`ACCOUNTS_URL=http://localhost:3000`, `INDEX_AUDIENCES=http://localhost/api`, as the Drive service's `.dev.vars`).
+
 ## Deploys
 
 CI's deploy ships it ([docs/ci.md](../../../../docs/ci.md#deploys) at the repository root): staging on every push to `main`, production through the manual gate, both on the liveworkspace Cloudflare account. The Worker is in the first tier, so its D1 migrations (`apps/community/migrations`) apply before its code,
@@ -434,7 +552,8 @@ Secrets are set once per environment with `wrangler secret put` and survive ever
 `COMMUNITY_KEY`. An app whose key is not set yet answers its app routes 401 and has no Community, the others are
 unaffected.
 
-Its cron (`*/5 * * * *`, staging too) runs the sweep. The apps' origins it calls are plain vars in
+Its cron (`*/5 * * * *`, staging too) runs the sweep, and asks the Forum's check again for posts waiting as Pending.
+The `[ai]` binding is in both environments, as liveplanner's api has it. The apps' origins it calls are plain vars in
 `apps/community/wrangler.toml` (`APP_ORIGIN_LIVEDIAGRAM` and the rest, each app's `www.` origin, staging's
 `staging.` ones), as the index's and the media service's are.
 
@@ -515,21 +634,29 @@ app knows who owns the document and whether it may be published).
 
 Measured against the real schema in SQLite, with 1,000 posts by 40 owners:
 
-| Request               | D1 statements                    | Body    |
-| --------------------- | -------------------------------- | ------- |
-| Gallery page (24)     | 1 (2 with a key, for its hearts) | 10.9 KB |
-| One post with related | 2                                | 3.1 KB  |
-| Featured              | 2                                | 2.6 KB  |
-| Start With            | 1                                | 4.6 KB  |
-| Facets                | 2                                | 153 B   |
-| Sitemap               | 1                                | 46 KB   |
-| Like                  | 4 (one batch)                    | 28 B    |
-| Report                | 3                                | 0       |
-| Publish               | 6                                | 370 B   |
-| Sync of 500 documents | 1 batch of at most 5             | 0       |
-| Sweep, per app        | 1 read, 1 batch of at most 6     | 0       |
-| Hidden since          | 1                                | 13 B    |
+| Request                    | D1 statements                    | Body    |
+| -------------------------- | -------------------------------- | ------- |
+| Gallery page (24)          | 1 (2 with a key, for its hearts) | 10.9 KB |
+| One post with related      | 2                                | 3.1 KB  |
+| Featured                   | 2                                | 2.6 KB  |
+| Start With                 | 1                                | 4.6 KB  |
+| Facets                     | 2                                | 153 B   |
+| Sitemap                    | 1                                | 46 KB   |
+| Like                       | 4 (one batch)                    | 28 B    |
+| Report                     | 3                                | 0       |
+| Publish                    | 6                                | 370 B   |
+| Sync of 500 documents      | 1 batch of at most 5             | 0       |
+| Sweep, per app             | 1 read, 1 batch of at most 6     | 0       |
+| Hidden since               | 1                                | 13 B    |
+| Forum page (20), signed in | 2                                | 7.8 KB  |
+| Forum topic, 200 replies   | 3                                | 84 KB   |
 
+- The Forum's two reads are measured with 2,000 topics by 40 authors and 50 topics at the 200-reply cap
+  (`apps/community/src/forum/forum.test.ts` "at scale", which keeps both statement counts and a CPU budget): a page
+  is the reader's own waiting topics, then the page with each topic's reply count on `forum_posts (topic_id, state,
+created_at)`; a topic is the question, its replies, then every post's reactions in one query. Under 20 ms of CPU
+  each, the token check included. A write adds one counter upsert and, while the check answers, one Workers AI call
+  bounded by `FORUM_CHECK_TIMEOUT_MS` and capped at `FORUM_CHECKS_PER_DAY`.
 - Every list and count is one indexed query per app (`posts (app, …, state, document_state, …)`). All Apps' list
   and count lead with the state instead (`posts (state, document_state, …)`, migration 0002), so they stay one
   indexed query across every app.

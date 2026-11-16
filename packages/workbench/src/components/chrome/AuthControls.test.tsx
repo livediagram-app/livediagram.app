@@ -122,6 +122,18 @@ describe('AuthControls', () => {
     expect(signOut).toHaveBeenCalledWith({ redirectUrl: '/' });
   });
 
+  it('shows two initials, from the first and last names, as liveworkspace.app does', () => {
+    const { unmount } = renderControls(
+      signedIn({ firstName: 'Ada', lastName: 'Quinn', fullName: 'Ada Quinn' }),
+    );
+    const disc = () =>
+      screen.getByRole('button', { name: 'Account menu' }).querySelector('[aria-hidden]');
+    expect(disc()?.textContent).toBe('AQ');
+    unmount();
+    renderControls(signedIn({ firstName: 'Webber' }));
+    expect(disc()?.textContent).toBe('WE');
+  });
+
   it("draws the session's picture in the header slot", () => {
     renderControls(signedIn({ firstName: 'Webber', picture: PICTURE }));
     const img = screen.getByRole('button', { name: 'Account menu' }).querySelector('img');

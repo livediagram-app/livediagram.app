@@ -4,7 +4,7 @@
 // `live-app.md` in livedesign):
 //
 //   - signed out → a "Sign in" action that returns here after sign-in
-//   - signed in  → the account's picture (over its initial) and first name, opening a menu with Account and Sign Out
+//   - signed in  → the account's picture (over its two initials, as liveworkspace.app's) and first name, opening a menu with Account and Sign Out
 //
 // It reads the deferred auth context the AuthProvider supplies, so it works anywhere under the provider. While the
 // session is still loading (first paint, before the token request answers) it renders nothing, so the header doesn't
@@ -25,7 +25,7 @@ import {
 } from '@liveworkspace/ui';
 import { cutText } from '@liveworkspace/model-core/text-cut';
 import { workbench } from '../../bindings';
-import { accountInitial } from '../../lib/account-avatar';
+import { accountInitials } from '../../lib/account-avatar';
 import { useDeferredAuth } from '../providers/deferred-auth';
 import { useAuthHrefs } from './auth-routes';
 import {
@@ -114,7 +114,7 @@ export function AuthControls({ onOpenAccount, picture }: AuthControlsProps) {
             aria-hidden
             className={`bg-brand-700 text-[10px] font-semibold text-white ${SOLID_BRAND_DARK}`}
           >
-            {accountInitial(user)}
+            {accountInitials(user)}
           </PictureDisc>
         </HeaderGlyph>
         <span className="max-w-[4.5rem] truncate">{pillLabel ?? 'Account'}</span>

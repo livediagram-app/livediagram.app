@@ -24,6 +24,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   inspect: '#dc2626',
   prototypes: '#0891b2',
   'photo-pages': '#c026d3',
+  'make-sizes': '#db2777',
   articles: '#0d9488',
   'exporting-pages': '#9333ea',
   'using-tabs': '#3b82f6',
@@ -81,6 +82,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'assigned-actions': '#22c55e',
   // Collaboration → Sharing guides
   'share-passwords': '#475569',
+  'request-approval': '#16a34a',
   community: '#ec4899',
   'finding-community-documents': '#8b5cf6',
   'share-link-expiry': '#f59e0b',

@@ -15,6 +15,13 @@ import './landing-motion.css';
 
 const CheckIcon = lucideGlyph(lucideCheck, 14);
 
+// The closing banner's glows: each a box within the card whose gradient reaches transparent at the box's nearest
+// side (closest-side), so it fades out on every side before the card's edge; its centre leans toward its corner.
+const CLOSING_GLOW = 'pointer-events-none absolute inset-y-0 w-4/5';
+const CLOSING_SKY = 'bg-[radial-gradient(closest-side_at_40%_60%,rgb(14_165_233/0.4),transparent)]';
+const CLOSING_VIOLET =
+  'bg-[radial-gradient(closest-side_at_60%_40%,rgb(139_92_246/0.45),transparent)]';
+
 export const metadata: Metadata = { alternates: { canonical: '/' } };
 
 // What each app is for, in the order work moves through them, for the hero's first paragraph.
@@ -104,16 +111,24 @@ export default function Home() {
         <Promises />
 
         <section className="px-4 py-20 sm:px-6 sm:py-28">
-          <div className="relative mx-auto max-w-7xl overflow-hidden rounded-[2rem] bg-slate-950 px-6 py-16 text-center sm:px-12 sm:py-20">
+          {/* The closing banner: a card with its own surface in both modes (a lighter slate and a hairline on the dark
+              page), and two glows that each fade to nothing inside their own box, held within the card, so no edge
+              of either is ever cut straight (site.md "The front door", Paint). */}
+          <div
+            data-closing-banner=""
+            className="relative mx-auto max-w-7xl overflow-hidden rounded-[2rem] bg-slate-950 px-6 py-16 text-center ring-1 ring-white/10 ring-inset sm:px-12 sm:py-20 dark:bg-slate-900"
+          >
+            <div aria-hidden data-hero-glow className={`${CLOSING_GLOW} left-0 ${CLOSING_SKY}`} />
             <div
               aria-hidden
-              className="absolute inset-0 bg-[radial-gradient(50%_70%_at_0%_100%,rgb(14_165_233/0.35),transparent_70%),radial-gradient(50%_70%_at_100%_0%,rgb(139_92_246/0.4),transparent_70%)]"
+              data-hero-glow
+              className={`${CLOSING_GLOW} right-0 ${CLOSING_VIOLET}`}
             />
             <div className="relative">
               <span className="mx-auto flex size-20 items-center justify-center rounded-full bg-white/5 ring-1 ring-white/10">
                 <BrandMark variant="full" accentColor={PLATFORM_SITE.accent} className="size-14" />
               </span>
-              <h2 className="mx-auto mt-8 max-w-2xl text-3xl font-semibold tracking-tight text-white sm:text-5xl">
+              <h2 className="mx-auto mt-8 max-w-2xl text-3xl font-semibold tracking-tight text-balance text-white sm:text-5xl">
                 One account. Every app. Always live.
               </h2>
               <ClosingActions />

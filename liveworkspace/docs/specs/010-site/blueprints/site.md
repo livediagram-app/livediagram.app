@@ -635,6 +635,7 @@ The site sends its own telemetry through `@liveworkspace/telemetry-client` (`lib
 - `liveworkspace/apps/site/lib/explorer/page-app.test.ts`
 - `liveworkspace/apps/site/lib/explorer/platform-welcome.test.ts`
 - `liveworkspace/apps/site/lib/explorer/previews.test.tsx`
+- `liveworkspace/apps/site/lib/explorer/search.test.ts`
 - `liveworkspace/apps/site/lib/explorer/share.test.ts`
 - `liveworkspace/apps/site/lib/explorer/telemetry.test.ts`
 - `liveworkspace/apps/site/lib/explorer/welcome.test.ts`

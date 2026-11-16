@@ -23,8 +23,9 @@ export function originApp(request: Request, env: Env): CommunityApp | 'localhost
 
 // What every app page may do across sites: read (with its community key), like, unlike and report. The
 // key and the JSON body make these "non-simple" requests, so the browser asks first (OPTIONS).
-const ALLOWED_METHODS = 'GET, PUT, DELETE, POST';
-const ALLOWED_HEADERS = 'Content-Type, X-Community-Key';
+const ALLOWED_METHODS = 'GET, PUT, DELETE, POST, PATCH';
+// The Forum's writes carry the person's access token (community.md "Forum routes").
+const ALLOWED_HEADERS = 'Content-Type, X-Community-Key, Authorization';
 
 // The CORS headers for a public route's answer. Reads are public, so any page may read them (and one
 // edge-cached answer serves every app's pages); a write is only answered to an app's own pages, so

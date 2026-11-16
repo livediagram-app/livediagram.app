@@ -43,3 +43,23 @@ export function siteAppearanceBootScript(): string {
     `document.documentElement.classList.add('dark')}catch(e){}`
   );
 }
+
+/**
+ * Paints the address's Appearance on <html> after the fact, by the boot script's rule: for a page whose <html> was
+ * drawn afresh without that script having run, as a development server's error page is (the client renders the
+ * layout again, and a script React inserts never runs). Storage denied leaves the page as it is.
+ */
+export function paintStoredAppearance(): void {
+  try {
+    const stored = localStorage.getItem(appearanceKeyForHost(location.host));
+    const dark =
+      stored === 'dark' ||
+      (stored !== 'light' &&
+        typeof matchMedia === 'function' &&
+        matchMedia(DARK_MEDIA_QUERY).matches);
+    // Only ever adds it, as the boot script does: a page already dark was painted so by the same rule.
+    if (dark) document.documentElement.classList.add('dark');
+  } catch {
+    // Nothing to read: the page keeps what it has.
+  }
+}

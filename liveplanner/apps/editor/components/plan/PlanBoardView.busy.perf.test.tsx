@@ -3,8 +3,8 @@
 // it changes what a card shows (a theme: each card once), inside a CPU budget (not wall-clock: a busy runner
 // stretches wall time, not CPU; docs/specs/003-system-architecture/testing.md).
 import { act, cleanup, render } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
 import { ITEMS_MAX, ITEM_TYPES, presetSetup, type Item } from '@liveplanner/items';
 import type { Finish, ShapeElement } from '@liveplanner/project';
 import { PlanBoardView } from './PlanBoardView';
@@ -13,6 +13,7 @@ import { PlanProvider, type PlanContextValue } from './PlanContext';
 import { PlanTextScaleProvider } from './PlanTextScaleContext';
 import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 import { SelectionStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
+import { stubBoardLayout } from '../../test/board-layout';
 import { CanvasSurfaceProvider } from '@/components/canvas/CanvasSurfaceContext';
 import { FaceFinishProvider } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 import { markResponseOpened, resetFreshResponses } from '@/components/forms/fresh-responses';
@@ -31,7 +32,14 @@ vi.mock('./PlanCardFace', async (orig) => {
   };
 });
 
-afterEach(cleanup);
+// The board is laid out as a browser lays it out (test/board-layout.ts): a busy board draws the runs near the view and
+// a placeholder for each far one, where jsdom's zero-sized boxes would draw all 5,000 cards in every test.
+beforeEach(stubBoardLayout);
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+  vi.restoreAllMocks();
+});
 
 const STATUSES = ['todo', 'doing', 'review', 'done'];
 const PEOPLE = ['Sam', 'Ana', 'Lee', 'Kim', 'Raj'];
@@ -108,16 +116,19 @@ type Style = {
 };
 
 const BUSY_CARDS = ITEMS_MAX;
-// Measured locally: a pick that redraws no card 15-60 ms (it was 1,100-2,300 ms, redrawing every card), a theme
-// 730-930 ms (every card once, as it must). CI's coverage run measured a theme at 6,906 ms of CPU, past the old 2,000
-// (scaled to 6,000 there). At 5,000 cards (ITEMS_MAX): a pick that redraws no card 11-80 ms, a theme 2,010-2,470 ms
-// alone and 4,170 ms inside the whole editor suite on a loaded machine. The face counts catch any extra redraw; the
-// budget catches a redraw that costs far more per face.
+// Measured locally, CPU time, at 5,000 cards (ITEMS_MAX). With every card drawn (jsdom's zero-sized boxes put every run
+// near the view) a pick that redraws no card took 11-80 ms and a theme 2,010-2,470 ms alone, 4,170 ms inside the whole
+// editor suite on a loaded machine, and each test mounted all 5,000 faces (5.7 to 9.5 s a test, 61 s under coverage).
+// Laid out as a browser lays it out (test/board-layout.ts) the board mounts the near runs' faces alone: see the PR and
+// the item-store blueprint for the numbers. The face counts catch any extra redraw; the budgets catch a redraw that
+// costs far more per face or draws far runs.
 const NO_CARD_BUDGET_MS = 250;
-const THEME_BUDGET_MS = 6000;
+const THEME_BUDGET_MS = 1500;
+// Far above the near runs' faces a browser draws (measured below), far below the 5,000 of every card.
+const NEAR_FACES_MAX = 600;
 
 describe('A Tab Style pick on a busy board', () => {
-  it(`redraws only the cards it changes, inside its budget (${BUSY_CARDS} cards)`, () => {
+  it(`redraws only the cards it changes, inside its budget (${BUSY_CARDS} cards)`, async () => {
     const value = plan(BUSY_CARDS);
     const store = createSelectionStore();
     const tree = (s: Style) => (
@@ -135,15 +146,22 @@ describe('A Tab Style pick on a busy board', () => {
     );
     let s: Style = { el: element(), finish: 'flexible', size: 'medium', surface: 'light' };
     const r = render(tree(s));
+    await act(async () => {}); // the near runs' cards are drawn after the board's own commit
     const mounted = counts.face;
-    expect(mounted).toBeGreaterThan(BUSY_CARDS / 2);
-    const pick = (next: Style) => {
+    // The cards a browser draws: the runs near the view, some but nowhere near all 5,000.
+    expect(mounted).toBeGreaterThan(0);
+    expect(mounted).toBeLessThan(NEAR_FACES_MAX);
+    const pick = async (next: Style) => {
       counts.face = 0;
       s = next;
-      const ms = cpuMsOf(() => act(() => r.rerender(tree(s))));
+      const ms = await cpuMsOfAsync(() =>
+        act(async () => {
+          r.rerender(tree(s));
+        }),
+      );
       return { ms, faces: counts.face };
     };
-    pick({ ...s, el: element() }); // warm up
+    await pick({ ...s, el: element() }); // warm up
     for (const next of [
       { ...s, el: element() }, // a backdrop or pattern: a new element, the same colours
       { ...s, finish: 'marker' as const },
@@ -151,7 +169,9 @@ describe('A Tab Style pick on a busy board', () => {
       { ...s, finish: 'flexible' as const },
       { ...s, size: 'large' as const },
     ]) {
-      const { ms, faces } = pick(next);
+      const { ms, faces } = await pick(next);
+      // Read by `BUSY_PERF=1 vitest run …` to record the numbers in the blueprint.
+      if (process.env['BUSY_PERF']) console.log('pick', JSON.stringify({ ms, faces }));
       expect(faces).toBe(0);
       expect(ms).toBeLessThan(cpuBudgetMs(NO_CARD_BUDGET_MS));
     }
@@ -159,7 +179,8 @@ describe('A Tab Style pick on a busy board', () => {
       { strokeColor: '#0ea5e9', fillColor: '#f0f9ff' },
       { strokeColor: '#e11d48', fillColor: '#fff1f2' },
     ]) {
-      const { ms, faces } = pick({ ...s, el: element(colours) });
+      const { ms, faces } = await pick({ ...s, el: element(colours) });
+      if (process.env['BUSY_PERF']) console.log('theme', JSON.stringify({ ms, faces, mounted }));
       expect(faces).toBe(mounted);
       expect(ms).toBeLessThan(cpuBudgetMs(THEME_BUDGET_MS));
     }
@@ -167,7 +188,7 @@ describe('A Tab Style pick on a busy board', () => {
 
   // docs/specs/026-plan/plan-board.md "A drag stays smooth": picking a card up (the plan's dragging card, this person's
   // presence on it) changes nothing a card draws, so no card redraws; every card did.
-  it('redraws no card as a card is picked up', () => {
+  it('redraws no card as a card is picked up', async () => {
     const value = plan(BUSY_CARDS);
     const tree = (v: PlanContextValue) => (
       <SelectionStoreProvider store={createSelectionStore()}>
@@ -177,6 +198,7 @@ describe('A Tab Style pick on a busy board', () => {
       </SelectionStoreProvider>
     );
     const r = render(tree(value));
+    await act(async () => {});
     counts.face = 0;
     r.rerender(
       tree({
@@ -192,7 +214,7 @@ describe('A Tab Style pick on a busy board', () => {
   // docs/specs/026-plan/plan-board.md "A drag stays smooth": letting a card go in another column changes that card
   // alone (the store keeps every other card's object), so only it and the cards of the runs it leaves and joins
   // (card-runs.ts, CARD_RUN_MAX each) are drawn again; every card on the board was.
-  it('redraws only the moved card and its runs as a card is dropped', () => {
+  it('redraws only the moved card and its runs as a card is dropped', async () => {
     const value = plan(BUSY_CARDS);
     const tree = (v: PlanContextValue) => (
       <SelectionStoreProvider store={createSelectionStore()}>
@@ -202,18 +224,21 @@ describe('A Tab Style pick on a busy board', () => {
       </SelectionStoreProvider>
     );
     const r = render(tree(value));
+    await act(async () => {});
     const moved = new Map(value.items);
     const card = moved.get('i1')!;
     moved.set('i1', { ...card, fields: { ...card.fields, status: 'review' } });
     counts.face = 0;
-    r.rerender(tree({ ...value, items: moved }));
+    await act(async () => {
+      r.rerender(tree({ ...value, items: moved }));
+    });
     expect(counts.face).toBeGreaterThan(0);
     expect(counts.face).toBeLessThanOrEqual(1 + 2 * CARD_RUN_MAX);
   }, 120_000);
 
   // docs/specs/030-forms/forms.md "Hearing about responses": opening a response's card takes its New mark off that
   // card alone; every card's face redrew (730 to 930 ms on 2,000 cards).
-  it('redraws only the opened response’s card as a response is opened', () => {
+  it('redraws only the opened response’s card as a response is opened', async () => {
     resetFreshResponses();
     const value = plan(BUSY_CARDS);
     const now = Date.now();
@@ -232,6 +257,7 @@ describe('A Tab Style pick on a busy board', () => {
         </PlanProvider>
       </SelectionStoreProvider>,
     );
+    await act(async () => {});
     counts.face = 0;
     act(() => markResponseOpened(value.items.get('i2')!));
     expect(counts.face).toBeLessThanOrEqual(1);
@@ -244,6 +270,9 @@ describe('A Tab Style pick on a busy board', () => {
   // docs/specs/026-plan/plan-board.md "Cards out of view wait": a busy board's cards sit in runs the browser skips out
   // of view (card-runs.ts); a quiet board draws its cards straight in their lists.
   it('draws a busy board in runs, a quiet one without', () => {
+    // No layout stand-in: every run reads as near in jsdom, so every card of the 400 is drawn, each inside its run.
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
     const tree = (n: number) => (
       <SelectionStoreProvider store={createSelectionStore()}>
         <PlanProvider value={plan(n)}>

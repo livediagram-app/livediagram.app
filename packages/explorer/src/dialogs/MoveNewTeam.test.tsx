@@ -57,3 +57,37 @@ describe('New Team in the Move dialog', () => {
     expect(screen.queryByRole('button', { name: /New Team/ })).toBeNull();
   });
 });
+
+describe('the heading with one space to offer', () => {
+  it('names the space, never "Choose a Space" with none to choose', () => {
+    open();
+    expect(screen.queryByText('Choose a Space')).toBeNull();
+    // The static heading, no chip repeating it.
+    const heading = screen.getAllByText('My Work')[0]!.parentElement!;
+    expect(heading.tagName).toBe('DIV');
+    expect(heading.textContent).toBe('My Work');
+    // Said once: the top level's card under it doesn't name the space again.
+    expect(screen.getAllByText('My Work')).toHaveLength(1);
+    expect(screen.getByText('Top level')).toBeTruthy();
+    expect(screen.getByText('Not in a folder')).toBeTruthy();
+  });
+
+  it('names the team for a team folder moving within its team', () => {
+    render(
+      <MoveToFolderDialog
+        subjectName="Specs"
+        subjectKind="folder"
+        teams={[{ id: 't1', name: 'Design', folders: [] }]}
+        currentTeamId="t1"
+        subtitle="Folders move within their space. Pick where in Design it should live."
+        onPick={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    );
+    expect(screen.queryByText('Choose a Space')).toBeNull();
+    expect(
+      screen.getByText('Folders move within their space. Pick where in Design it should live.'),
+    ).toBeTruthy();
+    expect(screen.getAllByText('Design').length).toBeGreaterThan(0);
+  });
+});
