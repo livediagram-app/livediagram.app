@@ -7,13 +7,7 @@ import {
   seedDocument,
   shareLink,
 } from './audit-screens';
-import {
-  dismissQuickTour,
-  expect,
-  expectNoPageErrors,
-  test,
-  mintGuest,
-} from './fixtures';
+import { dismissQuickTour, expect, expectNoPageErrors, test, mintGuest } from './fixtures';
 
 // Contrast audit, dark mode (docs/specs/003-system-architecture/e2e-smoke.md; the palette it guards is
 // docs/specs/004-interface-design/color-scheme.md, Dark palette (Steel)). Every visible text node on each
