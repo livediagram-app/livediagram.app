@@ -80,6 +80,8 @@ Mode chip) are claimed in the capture phase: `isLaserElementPress` (the tool is 
 wrapper, not the middle button, and not a right press on a `[data-mode-button-chip]`) stops it and, for a primary
 press by anything but a finger, starts the pan (`startPan`). `onContextMenuCapture` swallows the context menu of the
 same presses, so an arrow's menu never selects it. `pickCanvasTool('laser')` clears the selection, as Spotlight does.
+The right press on a mode chip (`isModeChipRightPress`) is exempt from Spotlight's capture handlers too, so the chip's
+menu opens there instead of the light shrinking (mode-button.md).
 
 **Right-click or long-press on the empty canvas** (`useCanvasSurfaceGestures`): both open through
 `openCanvasMenu(x, y)` = `onDeselect()`, then `onCanvasContextMenu?.(x, y)`. The right-click opens on

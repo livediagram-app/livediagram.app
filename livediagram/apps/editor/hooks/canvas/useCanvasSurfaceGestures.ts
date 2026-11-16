@@ -149,6 +149,11 @@ export function useCanvasSurfaceGestures({
     }
   };
 
+  // A right press on a Selection Mode chip keeps the chip's own menu in every pointer-inert mode, so a
+  // presenter's control bar can be reconfigured mid-presentation (docs/specs/009-elements/mode-button.md).
+  const isModeChipRightPress = (e: { target: EventTarget | null; button: number }) =>
+    e.button === 2 && !!(e.target as Element | null)?.closest?.('[data-mode-button-chip]');
+
   // Laser (docs/specs/008-canvas/canvas-and-palette.md) is non-editing: the canvas layer is inert, but an
   // arrow's `stroke` hit band, an arrow label and a Selection Mode chip keep pointer-events of their own,
   // and their handlers select on any button. A press on one of them is the canvas's instead. The middle
@@ -157,7 +162,7 @@ export function useCanvasSurfaceGestures({
     if (canvasTool !== 'laser' || e.button === 1) return false;
     const target = e.target as Element | null;
     if (!(target instanceof Node) || !wrapperRef.current?.contains(target)) return false;
-    return !(e.button === 2 && target.closest?.('[data-mode-button-chip]'));
+    return !isModeChipRightPress(e);
   };
 
   const onPointerDownCapture = (e: ReactPointerEvent) => {
@@ -223,7 +228,12 @@ export function useCanvasSurfaceGestures({
     // so a right-click would otherwise select the arrow under the cursor.
     // Middle-mouse (button 1) is the exception — it falls through to pan.
     // Space-held also falls through so it can pan.
-    if (canvasTool === 'spotlight' && !spaceHeldRef.current && e.button !== 1) {
+    if (
+      canvasTool === 'spotlight' &&
+      !spaceHeldRef.current &&
+      e.button !== 1 &&
+      !isModeChipRightPress(e)
+    ) {
       focusCanvas();
       e.preventDefault();
       e.stopPropagation();
@@ -332,7 +342,7 @@ export function useCanvasSurfaceGestures({
     // right-clicks ANYWHERE — including over an element, whose own
     // onContextMenu would otherwise open the element menu. The bubble
     // handler below also bails in spotlight as a belt-and-braces guard.
-    if (canvasTool !== 'spotlight') return;
+    if (canvasTool !== 'spotlight' || isModeChipRightPress(e)) return;
     e.preventDefault();
     e.stopPropagation();
     spotlight.shrink();

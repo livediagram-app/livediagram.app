@@ -16,6 +16,7 @@ const setMarquee = vi.fn();
 // The element handlers a press must never reach under Laser: a press selects and starts the drag.
 const elementPress = vi.fn();
 const elementMenu = vi.fn();
+const spotlight = { grow: vi.fn(), shrink: vi.fn() };
 
 function Surface({ tool }: { tool: string }) {
   const mainRef = useRef<HTMLElement>(null);
@@ -31,7 +32,7 @@ function Surface({ tool }: { tool: string }) {
     spaceHeldRef: { current: false },
     setPan,
     setMarquee,
-    spotlight: {},
+    spotlight,
     isoCamera: {},
     beginPendingDrawGesture: () => false,
     onDeselect: vi.fn(),
@@ -165,6 +166,33 @@ describe('a Laser right-click', () => {
     press(getByTestId('chip'), { button: 2 });
     fireEvent.contextMenu(getByTestId('chip'), { button: 2 });
     expect(elementMenu).toHaveBeenCalledWith('mode-button');
+  });
+});
+
+// mode-button.md: a mode chip keeps its menu in Spotlight too; everywhere else a right-click shrinks the light.
+describe('a Spotlight right-click', () => {
+  it("on a mode chip opens the button's menu instead of shrinking the light", () => {
+    const { getByTestId } = render(<Surface tool="spotlight" />);
+    press(getByTestId('chip'), { button: 2 });
+    fireEvent.contextMenu(getByTestId('chip'), { button: 2 });
+    expect(elementMenu).toHaveBeenCalledWith('mode-button');
+    expect(spotlight.shrink).not.toHaveBeenCalled();
+  });
+
+  it('on any other element shrinks the light and opens nothing', () => {
+    const { getByTestId } = render(<Surface tool="spotlight" />);
+    press(getByTestId('shape'), { button: 2 });
+    fireEvent.contextMenu(getByTestId('shape'), { button: 2 });
+    expect(elementPress).not.toHaveBeenCalled();
+    expect(elementMenu).not.toHaveBeenCalled();
+    expect(spotlight.shrink).toHaveBeenCalledTimes(1);
+  });
+
+  it('a left press on a mode chip still grows the light', () => {
+    const { getByTestId } = render(<Surface tool="spotlight" />);
+    press(getByTestId('chip'));
+    expect(spotlight.grow).toHaveBeenCalledTimes(1);
+    expect(elementPress).not.toHaveBeenCalled();
   });
 });
 
