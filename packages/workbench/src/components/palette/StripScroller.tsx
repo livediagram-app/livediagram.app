@@ -7,17 +7,28 @@ import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-prefer
 
 // A strip rail that gives way and scrolls sideways (docs/specs/007-editor/toolbar-layout.md "Names fit or go"), with a
 // way to see that it does: each edge with more beyond it carries a fade in the card's own colour and a small scroll
-// button. The fade covers the item the edge cuts, so no label shows cut mid-word, and the button reads as "more this
-// way" to a mouse, which has no swipe. A press scrolls to the next whole item past the edge (smoothly, or at once under
-// reduced motion). The buttons stay out of the Tab order: the arrow keys walk the bar, and the browser scrolls a
+// button. The fade is sized to the item the edge cuts and covers it whole (solid over all of it, soft only over the
+// gap short of it), so no label ever reads cut mid-word, and the button reads as "more this way" to a
+// mouse, which has no swipe. A press scrolls past everything shown, so the item the fade hid lands first, whole, past
+// the other edge (smoothly, or at once under reduced motion): as far as a press can go without skipping an item. The buttons stay out of the Tab order: the arrow keys walk the bar, and the browser scrolls a
 // focused item into view. An edge with nothing beyond it shows neither.
 
 /** The room an edge's fade and button take, in px: what a press keeps clear of the next item. */
 export const STRIP_SCROLL_EDGE_PX = 44;
 
+/** The soft part of a fade, just short of the item it hides (over the gap before it), in px. */
+export const STRIP_FADE_SOFT_PX = 6;
+
 export type StripOverflow = { start: boolean; end: boolean };
 
 const NONE: StripOverflow = { start: false, end: false };
+
+/** How wide each edge's fade is, in px: 0 where the edge has nothing beyond it. */
+export type StripCovers = { start: number; end: number };
+
+const NO_COVERS: StripCovers = { start: 0, end: 0 };
+
+type Item = { offsetLeft: number; offsetWidth: number };
 
 // Whether the scroller has more beyond each edge. A pixel of slack absorbs fractional widths.
 export function stripOverflowOf(el: {
@@ -30,36 +41,86 @@ export function stripOverflowOf(el: {
   return { start: el.scrollLeft > 1, end: el.scrollLeft < room - 1 };
 }
 
-// Where a press on an edge's button scrolls to: the first item the far edge cuts, laid whole past the fade on its
-// side. Items are measured against the scroller (offsetLeft is from its padding edge, the frame scrollLeft uses).
+// How wide each edge's fade must be to hide the item it cuts whole: from the edge to that item's far side, never less
+// than the button's room nor more than the view less the other edge's. An item is cut when any of it lies under the
+// button's room. Items are measured against the scroller (offsetLeft is from its padding edge,
+// the frame scrollLeft uses).
+export function stripEdgeCovers(
+  el: { scrollLeft: number; scrollWidth: number; clientWidth: number },
+  items: readonly Item[],
+): StripCovers {
+  const overflow = stripOverflowOf(el);
+  if (!overflow.start && !overflow.end) return NO_COVERS;
+  const { scrollLeft, clientWidth } = el;
+  const viewEnd = scrollLeft + clientWidth;
+  const most = Math.max(STRIP_SCROLL_EDGE_PX, clientWidth - STRIP_SCROLL_EDGE_PX);
+  const cover = (px: number) => Math.ceil(Math.min(most, Math.max(STRIP_SCROLL_EDGE_PX, px)));
+  let end = 0;
+  if (overflow.end) {
+    const cut = cutAt(el, items, 'end');
+    end = cover(cut ? viewEnd - cut.offsetLeft : 0);
+  }
+  let start = 0;
+  if (overflow.start) {
+    const cut = cutAt(el, items, 'start');
+    start = cover(cut ? cut.offsetLeft + cut.offsetWidth - scrollLeft : 0);
+  }
+  return { start, end };
+}
+
+// The item an edge cuts: the nearest to the middle that lies, any of it, under that edge's button room.
+function cutAt(
+  el: { scrollLeft: number; clientWidth: number },
+  items: readonly Item[],
+  side: 'start' | 'end',
+): Item | undefined {
+  const { scrollLeft, clientWidth } = el;
+  if (side === 'end') {
+    const viewEnd = scrollLeft + clientWidth;
+    return items.find(
+      (item) =>
+        item.offsetLeft < viewEnd &&
+        item.offsetLeft + item.offsetWidth > viewEnd - STRIP_SCROLL_EDGE_PX,
+    );
+  }
+  return [...items]
+    .reverse()
+    .find(
+      (item) =>
+        item.offsetLeft + item.offsetWidth > scrollLeft &&
+        item.offsetLeft < scrollLeft + STRIP_SCROLL_EDGE_PX,
+    );
+}
+
+// Where a press on an edge's button scrolls to: past everything shown, so the item that edge's fade hides lands first,
+// whole, past the other edge's button room. That is as far as a press can go without skipping an item. Where no item
+// is hidden there (or one wider than the view), it moves the view less both buttons' room.
 export function stripScrollTarget(
   el: { scrollLeft: number; clientWidth: number },
-  items: readonly { offsetLeft: number; offsetWidth: number }[],
+  items: readonly Item[],
   side: 'start' | 'end',
 ): number {
   const { scrollLeft, clientWidth } = el;
+  const page = Math.max(STRIP_SCROLL_EDGE_PX, clientWidth - 2 * STRIP_SCROLL_EDGE_PX);
+  const cut = cutAt(el, items, side);
   if (side === 'end') {
-    const visibleEnd = scrollLeft + clientWidth - STRIP_SCROLL_EDGE_PX;
-    const next = items.find((item) => item.offsetLeft + item.offsetWidth > visibleEnd);
-    return next ? next.offsetLeft - STRIP_SCROLL_EDGE_PX : scrollLeft + clientWidth;
+    const to = cut ? cut.offsetLeft - STRIP_SCROLL_EDGE_PX : 0;
+    return to > scrollLeft + 1 ? to : scrollLeft + page;
   }
-  const visibleStart = scrollLeft + STRIP_SCROLL_EDGE_PX;
-  const previous = [...items].reverse().find((item) => item.offsetLeft < visibleStart);
-  return previous
-    ? previous.offsetLeft + previous.offsetWidth - clientWidth + STRIP_SCROLL_EDGE_PX
-    : scrollLeft - clientWidth;
+  const to = cut ? cut.offsetLeft + cut.offsetWidth + STRIP_SCROLL_EDGE_PX - clientWidth : 0;
+  return cut && to < scrollLeft - 1 ? to : scrollLeft - page;
 }
 
-// Follows the scroller's overflow as it scrolls, resizes or its items change. One state write per change of either
-// edge, never per scroll frame.
-function useStripOverflow(ref: RefObject<HTMLElement | null>, itemsKey: string): StripOverflow {
-  const [overflow, setOverflow] = useState<StripOverflow>(NONE);
+// Follows each edge's fade as the scroller scrolls, resizes or its items change. One state write per change of a
+// fade's width (a whole pixel), never per scroll frame where nothing changes.
+function useStripCovers(ref: RefObject<HTMLElement | null>, itemsKey: string): StripCovers {
+  const [covers, setCovers] = useState<StripCovers>(NO_COVERS);
   useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
     const sync = () =>
-      setOverflow((was) => {
-        const now = stripOverflowOf(el);
+      setCovers((was) => {
+        const now = stripEdgeCovers(el, [...el.children] as HTMLElement[]);
         return was.start === now.start && was.end === now.end ? was : now;
       });
     sync();
@@ -72,7 +133,7 @@ function useStripOverflow(ref: RefObject<HTMLElement | null>, itemsKey: string):
       ro?.disconnect();
     };
   }, [ref, itemsKey]);
-  return overflow;
+  return covers;
 }
 
 export function StripScroller({
@@ -89,7 +150,7 @@ export function StripScroller({
   children: ReactNode;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const overflow = useStripOverflow(ref, itemsKey);
+  const covers = useStripCovers(ref, itemsKey);
   const scroll = (side: 'start' | 'end') => {
     const el = ref.current;
     if (!el) return;
@@ -110,8 +171,12 @@ export function StripScroller({
       >
         {children}
       </div>
-      {overflow.start ? <StripEdge side="start" onPress={() => scroll('start')} /> : null}
-      {overflow.end ? <StripEdge side="end" onPress={() => scroll('end')} /> : null}
+      {covers.start > 0 ? (
+        <StripEdge side="start" width={covers.start} onPress={() => scroll('start')} />
+      ) : null}
+      {covers.end > 0 ? (
+        <StripEdge side="end" width={covers.end} onPress={() => scroll('end')} />
+      ) : null}
     </div>
   );
 }
@@ -141,16 +206,29 @@ export function StripRail({
   );
 }
 
-// One edge's fade and button. The fade lets presses through to the strip; only the button takes them.
-function StripEdge({ side, onPress }: { side: 'start' | 'end'; onPress: () => void }) {
+// One edge's fade and button: solid in the card's colour for `width` px (over the item it hides), then soft for a few
+// pixels short of it, over the gap. The fade lets presses through to the strip; only the button takes them.
+function StripEdge({
+  side,
+  width,
+  onPress,
+}: {
+  side: 'start' | 'end';
+  width: number;
+  onPress: () => void;
+}) {
   const end = side === 'end';
   const name = end ? 'Scroll Right' : 'Scroll Left';
   return (
     <div
       data-strip-edge={side}
-      className={`pointer-events-none absolute inset-y-0 flex w-11 items-center ${
-        end ? 'right-0 justify-end bg-gradient-to-l' : 'left-0 justify-start bg-gradient-to-r'
-      } from-white from-50% to-transparent dark:from-slate-900`}
+      style={{
+        width: width + STRIP_FADE_SOFT_PX,
+        backgroundImage: `linear-gradient(to ${end ? 'left' : 'right'}, var(--strip-fade) calc(100% - ${STRIP_FADE_SOFT_PX}px), transparent)`,
+      }}
+      className={`pointer-events-none absolute inset-y-0 flex items-center [--strip-fade:var(--color-white)] dark:[--strip-fade:var(--color-slate-900)] ${
+        end ? 'right-0 justify-end' : 'left-0 justify-start'
+      }`}
     >
       <Tooltip label={name}>
         <button

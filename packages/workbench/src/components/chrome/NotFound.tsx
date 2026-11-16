@@ -40,7 +40,7 @@ const capitalised = (word: string) => word.charAt(0).toUpperCase() + word.slice(
 
 export type NotFoundProps = {
   // The product's word for what the address opens, in lower case and taking "a" ('design', 'plan'):
-  // the card reads "Design not found", "Open a design", "New Design".
+  // the card reads "Design Not Found", "Open a design", "New Design".
   noun: string;
   onCreateNew: () => void;
   // Opens the Explorer; absent (an embed) leaves the one button.
@@ -117,10 +117,10 @@ export function NotFound({
           className={`${accessEnded ? 'mt-4' : 'mt-1'} text-xl font-semibold text-slate-900 dark:text-slate-100`}
         >
           {page
-            ? 'Page not found'
+            ? 'Page Not Found'
             : accessEnded
               ? 'No Longer Shared With You'
-              : `${Noun} not found`}
+              : `${Noun} Not Found`}
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
           {page
