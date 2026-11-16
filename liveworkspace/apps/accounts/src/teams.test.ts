@@ -208,6 +208,18 @@ describe('teams', () => {
     expect((await listMyTeams(db, ADA.id))[0]!.members.map((m) => m.picture)).toEqual([null, null]);
   });
 
+  it("gives each joined member's presence colour, null for Automatic and for an invitation", async () => {
+    const teamId = await teamWith(BEA);
+    await inviteMember(db, ADA, teamId, CY.email, 'member');
+    sql
+      .prepare('INSERT INTO profile (owner_id, color, created_at, updated_at) VALUES (?, ?, 1, 1)')
+      .run(BEA.id, '#f97316');
+    const colours = Object.fromEntries(
+      (await listMembers(db, teamId)).map((m) => [m.email, m.color]),
+    );
+    expect(colours).toEqual({ [ADA.email!]: null, [BEA.email!]: '#f97316', [CY.email!]: null });
+  });
+
   it('hands a team on when its only admin closes their account', async () => {
     const shared = await teamWith(BEA);
     const solo = (await createTeam(db, ADA, 'Solo')) as { ok: true; value: { id: string } };

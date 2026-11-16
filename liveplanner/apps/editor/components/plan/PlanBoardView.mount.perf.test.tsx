@@ -14,6 +14,7 @@ import { CARD_RUN_MAX } from './card-runs';
 import { PlanProvider, type PlanContextValue } from './PlanContext';
 import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 import { SelectionStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
+import { stubBoardLayout } from '../../test/board-layout';
 
 const counts = vi.hoisted(() => ({ face: 0 }));
 vi.mock('./PlanCardFace', async (orig) => {
@@ -88,33 +89,7 @@ const element = {
   planBoard: { ...presetSetup('kanban'), widgets: [] },
 } as unknown as ShapeElement;
 
-const box = (top: number, height: number) =>
-  ({ top, bottom: top + height, left: 0, right: 300, width: 300, height, x: 0, y: top }) as DOMRect;
-
-// A browser's IntersectionObserver that never reports (the board's own first pass decides what is near), and runs
-// laid one under another by the order they are first read: the first few sit in the body's 800 px view.
-beforeEach(() => {
-  class QuietIO {
-    observe() {}
-    unobserve() {}
-    disconnect() {}
-  }
-  vi.stubGlobal('IntersectionObserver', QuietIO);
-  const tops = new WeakMap<Element, number>();
-  let next = 0;
-  vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
-    this: HTMLElement,
-  ) {
-    if (!this.hasAttribute('data-plan-run')) return box(0, 800);
-    let top = tops.get(this);
-    if (top === undefined) {
-      top = next;
-      next += 400;
-      tops.set(this, top);
-    }
-    return box(top, 400);
-  });
-});
+beforeEach(stubBoardLayout);
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();

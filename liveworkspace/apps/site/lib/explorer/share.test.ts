@@ -184,6 +184,14 @@ describe('the Community tab on liveworkspace.app', () => {
     expect(shareHostFor('livediagram').community!(canvas as never)).toBeUndefined();
   });
 
+  it('sends an item’s sharing help to its own app, whichever app the page is for', () => {
+    const host = shareHostFor('liveplanner');
+    expect(host.helpHrefFor!(canvas as never)!('sharing')).toMatch(
+      /^https:\/\/www\.livediagram\.app\/help\//,
+    );
+    expect(host.helpHrefFor!({ ...canvas, app: 'nope' } as never)).toBeUndefined();
+  });
+
   it('lists the apps with a Community tab, and on an app’s own address only that app', () => {
     expect(COMMUNITY_SHARE_APPS).toEqual([
       'livediagram',

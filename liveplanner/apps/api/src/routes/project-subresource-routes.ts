@@ -29,6 +29,7 @@ import { handlePlanRoute } from './plan-route';
 import { handleAutomationRoutes } from './automation-routes';
 import { handleGithubRoutes } from './github-routes';
 import { handleCalendarFeedRoutes } from './calendar-feed-routes';
+import { handleEmailIntakeRoutes } from './email-intake-routes';
 import { handleRoadmapRoutes } from './roadmap-routes';
 import {
   COMMUNITY_CONTENT,
@@ -241,6 +242,9 @@ export async function handleProjectSubresources(ctx: PlanRouteContext): Promise<
   // The plan's public roadmaps (docs/specs/026-plan/public-roadmap.md "Managing a roadmap").
   const roadmaps = await handleRoadmapRoutes(ctx);
   if (roadmaps) return roadmaps;
+  // The plan's board addresses (docs/specs/026-plan/email-to-board.md "Managing an address").
+  const emailIntake = await handleEmailIntakeRoutes(ctx);
+  if (emailIntake) return emailIntake;
 
   // /api/projects/<id>/tabs/<tabId>/link — share a tab from another of the caller's plans into this one.
   const linked = await handleTabLink(ctx);

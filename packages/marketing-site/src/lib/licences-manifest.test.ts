@@ -3,7 +3,11 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-import { loadLicencesManifest, parseLicencesManifest } from './licences-manifest';
+import {
+  loadLicencesManifest,
+  loadLicencesManifestForPage,
+  parseLicencesManifest,
+} from './licences-manifest';
 
 const valid = { schemaVersion: 1, sections: [], texts: {} };
 
@@ -47,5 +51,33 @@ describe('loadLicencesManifest', () => {
     expect(() => loadLicencesManifest(dir)).toThrow(
       expect.objectContaining({ name: 'LicencesManifestMissing' }),
     );
+  });
+});
+
+describe('loadLicencesManifestForPage', () => {
+  it('reads the manifest, and is null in development when the generator never ran', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'licences-manifest-'));
+    expect(loadLicencesManifestForPage(dir, false)).toBeNull();
+    mkdirSync(join(dir, 'generated'));
+    writeFileSync(join(dir, 'generated', 'licences.json'), JSON.stringify(valid));
+    expect(loadLicencesManifestForPage(dir, false)).toEqual(valid);
+  });
+
+  it('still fails a production build without one, and a broken one anywhere', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'licences-manifest-'));
+    expect(() => loadLicencesManifestForPage(dir, true)).toThrow(
+      expect.objectContaining({ name: 'LicencesManifestMissing' }),
+    );
+    mkdirSync(join(dir, 'generated'));
+    writeFileSync(join(dir, 'generated', 'licences.json'), '{');
+    expect(() => loadLicencesManifestForPage(dir, false)).toThrow(
+      expect.objectContaining({ name: 'LicencesManifestInvalid' }),
+    );
+  });
+
+  it('reads the environment by default: not production under test, so a missing manifest is null', () => {
+    expect(
+      loadLicencesManifestForPage(mkdtempSync(join(tmpdir(), 'licences-manifest-'))),
+    ).toBeNull();
   });
 });

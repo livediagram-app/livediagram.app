@@ -46,11 +46,17 @@ jobs so the wall time is the slowest job, not the sum:
 Only the sites audit opens help and marketing, so only its job pays for their builds. Marketing builds after the
 others, as `turbo.json` orders it: its licences page runs Next's analyzer in each other app on that
 app's Turbopack cache, and beside the app's own build the two corrupt it.
-Locally `test:e2e` runs the `chromium` and `sites` projects together, as one run.
+Locally `test:e2e` runs the `chromium`, `firefox` and `sites` projects together, as one run.
 
 Cost controls, all in `e2e-product.yml` and `playwright.config.ts`:
 
-- **Chromium only** (`--project=chromium`); no Firefox / WebKit.
+- **Chromium, and Firefox for one spec** (`--project=chromium --project=firefox`; no WebKit): the `firefox` project
+  runs only `guest-renewal.spec.ts`, since a guest's token renewal (a form post across origins, a `303` and its
+  cookies, then Back) is where engines differ. It renews a guest whose token is about to lapse with the `lw_guest`
+  cookie gone, checks the guest keeps their id on a new 45-day token, and that Back from the page it opens lands on the
+  page before, with no second plan made (the renewal takes no history entry). The accounts stand-in answers the
+  renewal as the accounts Worker does: it takes the posted token as proof only from the app's own origin, and the guest
+  its `lw_guest` cookie names wins over the proof's.
 - **Playwright's container image** (`mcr.microsoft.com/playwright:v<version>-noble`) runs the job:
   Chromium and its system libraries come with it, so no run downloads a browser or apt-installs its
   dependencies. The tag is the locked `@playwright/test` version; the workflow's first check fails,
@@ -280,7 +286,7 @@ tests where it's cheap.
 
 ## Layout
 
-- `apps/editor/playwright.config.ts`: the `chromium` and `sites` projects (plus the opt-in ones),
+- `apps/editor/playwright.config.ts`: the `chromium`, `firefox` and `sites` projects (plus the opt-in ones),
   `webServer` → `scripts/e2e-stack.mjs`, `reuseExistingServer` locally.
 - `apps/editor/e2e/*.spec.ts`: the spec files above. Playwright collects only `.spec.ts` (`testMatch`); a
   `.test.ts` beside them is a Vitest unit test of a pure helper (`optical-snap.test.ts`, `perf/*.test.ts`),

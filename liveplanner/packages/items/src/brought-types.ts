@@ -349,7 +349,7 @@ export function broughtTypesToAdd(
   return out;
 }
 
-// The default types the project lacks (Add Default Types), in their order, as many as there is room for.
+// The default types the project lacks (an agent's `add_default_types`), in their order, as many as there is room for.
 export function defaultTypesToAdd(types: readonly ItemTypeDef[]): ItemTypeDef[] {
   return broughtTypesToAdd(DEFAULT_TYPE_IDS, types).slice(
     0,

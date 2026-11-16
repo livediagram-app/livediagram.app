@@ -5,8 +5,8 @@
 // shows or hides are drawn. Inside a CPU budget (not wall-clock: docs/specs/003-system-architecture/testing.md).
 import { Profiler } from 'react';
 import { act, cleanup, render } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
 import {
   ITEMS_MAX,
   ITEM_TYPES,
@@ -19,6 +19,7 @@ import { PlanBoardView } from './PlanBoardView';
 import { PlanProvider, type PlanContextValue } from './PlanContext';
 import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 import { SelectionStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
+import { stubBoardLayout } from '../../test/board-layout';
 
 const counts = vi.hoisted(() => ({ face: 0, project: 0, due: 0, points: 0 }));
 vi.mock('./PlanCardFace', async (orig) => {
@@ -57,7 +58,14 @@ vi.mock('@liveplanner/plan-art', async (orig) => {
   };
 });
 
-afterEach(cleanup);
+// The board is laid out as a browser lays it out (test/board-layout.ts): a busy board draws the runs near the view and
+// a placeholder for each far one, where jsdom's zero-sized boxes would draw every card a change shows.
+beforeEach(stubBoardLayout);
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+  vi.restoreAllMocks();
+});
 
 const STATUSES = ['todo', 'doing', 'review', 'done'];
 const PEOPLE = ['Sam', 'Ana', 'Lee', 'Kim', 'Raj'];
@@ -132,13 +140,16 @@ const element = (filter?: BoardFilter): ShapeElement =>
   ) as ShapeElement;
 
 const BUSY_CARDS = ITEMS_MAX;
-// Measured locally on this machine: see board-widgets blueprint "Performance and limits" for the numbers. jsdom draws
-// every card a change shows (1,667 faces at 5,000 cards, 1.3 to 1.9 s; 667 at 2,000, 540 to 760 ms), where a browser
-// draws only the runs near the view, so the budget follows the faces drawn; the counts above catch a second projection.
-const FILTER_BUDGET_MS = 3000;
+// Measured locally, CPU time: with every card drawn (jsdom's zero-sized boxes put every run near the view) a change drew
+// 1,667 faces in 1.6 to 2.1 s at 5,000 cards; laid out as a browser lays it out (test/board-layout.ts) it draws the near
+// runs' 66 to 78 faces in 110 to 260 ms, as a browser would. The budget still fails a change that draws every card (a
+// run's far cards built again is 20x the faces); the counts catch a second projection or a widget recounting.
+const FILTER_BUDGET_MS = 1000;
+// A change redraws the near runs' cards, not the board's: far above the measured 78, far below the 1,667 of every card.
+const NEAR_FACES_MAX = 400;
 
 describe('A remote filter change on a busy board', () => {
-  it(`projects once, recounts no widget and keeps the unfiltered cards (${BUSY_CARDS} cards)`, () => {
+  it(`projects once, recounts no widget and keeps the unfiltered cards (${BUSY_CARDS} cards)`, async () => {
     const value = plan(BUSY_CARDS);
     const tree = (el: ShapeElement) => (
       <SelectionStoreProvider store={createSelectionStore()}>
@@ -148,22 +159,28 @@ describe('A remote filter change on a busy board', () => {
       </SelectionStoreProvider>
     );
     const r = render(tree(element({ priority: 'high' })));
-    const change = (filter?: BoardFilter) => {
+    await act(async () => {}); // the near runs' cards are drawn after the board's own commit
+    const change = async (filter?: BoardFilter) => {
       counts.face = 0;
       counts.project = 0;
       counts.due = 0;
       counts.points = 0;
-      const ms = cpuMsOf(() => act(() => r.rerender(tree(element(filter)))));
+      // The change and the transition that draws the near runs' cards after it (mount.perf's "A big board's first draw").
+      const ms = await cpuMsOfAsync(() =>
+        act(async () => {
+          r.rerender(tree(element(filter)));
+        }),
+      );
       return { ms, ...counts };
     };
-    change({ priority: 'medium' }); // warm up
+    await change({ priority: 'medium' }); // warm up
     const runs = [
-      change({ priority: 'low' }),
-      change({ priority: 'high' }),
-      change({ priority: 'medium' }),
+      await change({ priority: 'low' }),
+      await change({ priority: 'high' }),
+      await change({ priority: 'medium' }),
     ];
     // A change that leaves the same cards shown (every card is a Task) draws no card again.
-    const same = change({ priority: 'medium', type: 'task' });
+    const same = await change({ priority: 'medium', type: 'task' });
     // Read by `FILTER_PERF=1 vitest run …` to record the numbers in the blueprint.
     if (process.env['FILTER_PERF']) console.log('filter change', JSON.stringify({ runs, same }));
     expect(same.face).toBe(0);
@@ -171,6 +188,9 @@ describe('A remote filter change on a busy board', () => {
     for (const run of runs) {
       // One projection: the filtered one. The unfiltered one the widgets count is kept.
       expect(run.project).toBe(1);
+      // Only the cards a browser would draw: some (the near runs are redrawn), never the whole filtered board.
+      expect(run.face).toBeGreaterThan(0);
+      expect(run.face).toBeLessThan(NEAR_FACES_MAX);
       // No widget recounts: the cards they count are the same list.
       expect(run.due).toBe(0);
       expect(run.points).toBe(0);

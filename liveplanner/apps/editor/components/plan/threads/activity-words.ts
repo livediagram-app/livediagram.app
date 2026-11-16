@@ -185,7 +185,9 @@ export function changeLine(
           ? 'Created this card from a form response'
           : entry.tag === 'repeat'
             ? 'Created this card from a repeating card'
-            : 'Created this card';
+            : entry.tag === 'email'
+              ? 'Created this card from an email'
+              : 'Created this card';
       return {
         glyph: 'created',
         parts: change.status ? [t(`${how} in `), statusChip(ctx, change.status)] : [t(how)],

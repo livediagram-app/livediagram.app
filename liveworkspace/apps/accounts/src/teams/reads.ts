@@ -218,6 +218,9 @@ export interface Member {
   createdAt: number;
   // A joined member's published Google picture; null for an invitation.
   picture: string | null;
+  // A joined member's presence colour (Settings › Profile), null for Automatic or an invitation: their disc in the
+  // members list wears it, as their avatar does everywhere else.
+  color: string | null;
 }
 
 // Joined members, then open invitations, then the ones turned down; admins first in each.
@@ -225,7 +228,8 @@ export async function listMembers(db: D1Database, teamId: string): Promise<Membe
   const { results } = await db
     .prepare(
       `SELECT m.id, m.userId, m.email, u.name, m.role, m.status, m.expiredAt, m.createdAt,
-              CASE WHEN m.status = 'joined' THEN ${MEMBER_PICTURE} END AS picture
+              CASE WHEN m.status = 'joined' THEN ${MEMBER_PICTURE} END AS picture,
+              CASE WHEN m.status = 'joined' THEN p.color END AS color
        FROM team_member m LEFT JOIN "user" u ON u.id = m.userId
        LEFT JOIN profile p ON p.owner_id = m.userId
        WHERE m.teamId = ? AND m.status IN ('invited', 'joined', 'declined')
@@ -238,5 +242,6 @@ export async function listMembers(db: D1Database, teamId: string): Promise<Membe
     ...member,
     expired: expiredAt !== null,
     picture: profilePictureOf(member.picture),
+    color: member.color ?? null,
   }));
 }

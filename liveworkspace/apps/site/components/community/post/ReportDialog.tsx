@@ -5,6 +5,7 @@ import {
   COMMUNITY_REPORT_NOTE_MAX,
   COMMUNITY_REPORT_REASONS,
   type CommunityPost,
+  type CommunityReportInput,
   type CommunityReportReason,
 } from '@liveworkspace/community';
 import { Button, Dialog, DialogCloseButton, DialogHeader, TextArea } from '@liveworkspace/ui';
@@ -17,15 +18,27 @@ type Phase = 'editing' | 'sending' | 'sent' | 'failed' | 'gone';
 // Report This Document (livediagram/docs/specs/025-community/community.md "Reports and moderation"): a reason as radio rows, an optional note of up to 300 characters with a counter, Send Report,
 // then a thank-you that says what happens next (enough reports take a post down; nobody reviews by hand). The shared
 // Dialog shell: it traps focus, closes on Escape or a press on the backdrop, and hands focus back to Report; on a
-// phone it rises as a sheet.
+// phone it rises as a sheet. The Forum reports its posts through the same dialog (`send`, with `noun` "post"):
+// liveworkspace/docs/specs/007-community/community.md "The Forum", "Reports".
 export function ReportDialog({
   post,
+  send,
+  noun,
   onClose,
-}: {
-  post: Pick<CommunityPost, 'id' | 'app'>;
+}: (
+  | { post: Pick<CommunityPost, 'id' | 'app'>; send?: undefined }
+  | {
+      post?: undefined;
+      /** Sends the report somewhere else than the gallery's (a Forum post). */
+      send: (input: CommunityReportInput) => Promise<void>;
+    }
+) & {
+  /** What the post is called in the dialog's words, when it isn't the page's gallery noun. */
+  noun?: string;
   onClose: () => void;
 }) {
-  const { api, words, telemetry, HelpLink } = useCommunitySite();
+  const { api, words: siteWords, telemetry, HelpLink } = useCommunitySite();
+  const words = { noun: noun ?? siteWords.noun };
   const bodyRef = useRef<HTMLDivElement>(null);
   const titleId = useId();
   const noteId = useId();
@@ -52,8 +65,8 @@ export function ReportDialog({
     if (!reason || phase === 'sending') return;
     setPhase('sending');
     const trimmed = note.trim();
-    api
-      .reportPost(post.id, post.app, { reason, note: trimmed ? trimmed : null })
+    const input = { reason, note: trimmed ? trimmed : null };
+    (post ? api.reportPost(post.id, post.app, input) : send(input))
       .then(() => {
         telemetry.reported(reason);
         setPhase('sent');

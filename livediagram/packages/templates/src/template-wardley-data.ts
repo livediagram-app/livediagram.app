@@ -46,7 +46,7 @@ export const WARDLEY_COMPONENTS: readonly WardleyComponent[] = [
   { id: 'group', label: 'Group ordering', evolution: 0.33, visibility: 0.74 },
   { id: 'menu', label: 'Menu and dietary filters', evolution: 0.62, visibility: 0.7 },
   { id: 'split', label: 'Split payment', evolution: 0.55, visibility: 0.6 },
-  { id: 'restaurants', label: 'Restaurant network', evolution: 0.68, visibility: 0.5 },
+  { id: 'restaurants', label: 'Restaurant network', evolution: 0.68, visibility: 0.47 },
   {
     id: 'scheduling',
     label: 'Delivery scheduling',

@@ -240,7 +240,12 @@ export function ExplorerShell() {
     [app],
   );
   const teams = useMemo(() => teamsOfToken(identity?.token ?? null), [identity]);
-  const helpHref = useMemo(() => helpHrefFor(app), [app]);
+  // In no app the Explorer mixes every app's work, and liveworkspace.app has no Explorer articles of its own: no Help
+  // button sends the reader to one app's help (the last app's) as if it were the platform's.
+  const helpHref = useMemo(
+    () => (arrived.app ? helpHrefFor(arrived.app) : undefined),
+    [arrived.app],
+  );
   // The app's Image Gallery and Shape Libraries, where it keeps them (stable per app).
   const library = libraryHosts(app);
   // Its "Import from" sources, each opening the app's /import page (stable per app).
@@ -314,10 +319,12 @@ export function ExplorerShell() {
   );
   const signInBanner = useMemo(
     () => ({
-      helpHref: `${siteOfApp(app).url}/help/getting-started/guest-vs-account/`,
+      helpHref: arrived.app
+        ? `${siteOfApp(arrived.app).url}/help/getting-started/guest-vs-account/`
+        : undefined,
       onTelemetry: trackSignInBanner,
     }),
-    [app],
+    [arrived.app],
   );
 
   // This Browser: the app's own list on its address, else a link to the app's offline view (useExplorerThisBrowser).
@@ -490,7 +497,7 @@ export function ExplorerShell() {
             itemHref={itemHref}
             teams={teams}
             renderAppLogo={renderAppLogo}
-            helpApp={app}
+            helpApp={arrived.app}
             signedIn={signedIn}
             onOpen={openResult}
             onClose={closeSearch}

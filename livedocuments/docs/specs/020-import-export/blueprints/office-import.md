@@ -17,7 +17,8 @@ Scope, by file (under `apps/editor/lib/office-import/` unless marked):
 | `docx.ts`                                       | `readDocx`: the body walked into `DocxBlock`s and the pictures they name                   |
 | `docx-parts.ts`                                 | The walker's pure parts: a to-do's box, alignment, field links, table parts, a VML size    |
 | `docx-footnotes.ts`                             | `readFootnotes`: each footnote's plain text by id                                          |
-| `pptx-shapes.ts`                                | Placeholders, transforms and a text body into a slide's items                              |
+| `pptx-shapes.ts`                                | Placeholders, transforms, a text body and its fit (`bodyFitOf`) into a slide's items       |
+| `text-fit.ts`                                   | `fitTextBox`: a no-wrap box widened, an autofit box grown to its text (estimated, linear)  |
 | `pptx.ts`                                       | `readPptx`: slides, their items, notes and hidden flags, the deck size                     |
 | `store-images.ts`                               | `storePictures`: each picture once, three at a time, through an `ImportImageSession`       |
 | `build-article.ts`                              | `buildArticleTab`: blocks + stored images into an article tab (zones parked off the page)  |
@@ -377,6 +378,7 @@ logged by the pipeline as `[import-images]`.
 | Pictures once each, cap, failures              | `store-images.test.ts`                                 |
 | Zones parked and settled by the editor's pass  | `build-article.test.ts`                                |
 | Slide pages, scale, sizes                      | `build-deck.test.ts`                                   |
+| No-wrap and autofit text boxes                 | `text-fit.test.ts`, `real-files.test.ts`               |
 | Report lines                                   | `report.test.ts`                                       |
 | End to end, sizes, errors                      | `index.test.ts`                                        |
 | 100-page and 50-slide budgets                  | `office-import.perf.test.ts`                           |

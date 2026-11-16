@@ -63,6 +63,7 @@ describe('changeLine', () => {
     expect(words({ kind: 'created', status: 'doing' })).toBe('Created this card in In Progress');
     expect(words({ kind: 'created' }, 'form')).toBe('Created this card from a form response');
     expect(words({ kind: 'created' }, 'repeat')).toBe('Created this card from a repeating card');
+    expect(words({ kind: 'created' }, 'email')).toBe('Created this card from an email');
     expect(words({ kind: 'moved', from: 'doing', to: 'review' })).toBe(
       'Moved In Progress → Review',
     );

@@ -45,10 +45,10 @@ export function ImportMenu() {
 
 /** The one Import dialog's list (docs/specs/026-plan/plan-tabs.md "The Import dialog"): on a Board tab, its own CSV
  *  under Into This Tab, then the four tools under A Board from Another Tool, each with its mark and what file to
- *  bring. */
+ *  bring, and A Whole Plan, the liveplanner Plan row for a plan's own .liveplanner file. */
 export function ImportChooser() {
   const W = 440;
-  const H = 302;
+  const H = 366;
   const dx = 20;
   const dy = 8;
   const x = dx + 16;
@@ -62,25 +62,43 @@ export function ImportChooser() {
     hint: string,
     file: string,
     last: boolean,
-  ) => (
-    <g key={label}>
-      <rect x={x + 10} y={y + 7} width={18} height={18} rx={4.5} className={tile} />
-      <g transform={`translate(${x + 10} ${y + 7})`}>{mark}</g>
-      <Label x={x + 38} y={y + 11} size={10} weight={600} tone="strong">
-        {label}
-      </Label>
-      <Label x={x + 38} y={y + 23} size={8.5} tone="muted">
-        {hint}
-      </Label>
-      <rect x={x + w - 36} y={y + 10} width={28} height={12} rx={3} className="fill-slate-100" />
-      <Label x={x + w - 22} y={y + 16} size={7.5} weight={700} anchor="middle" tone="body">
-        {file}
-      </Label>
-      {last ? null : (
-        <line x1={x} y1={y + ROW} x2={x + w} y2={y + ROW} className="stroke-slate-100" />
-      )}
-    </g>
-  );
+  ) => {
+    // The file chip fits its text: `.liveplanner` is wider than `CSV`.
+    const chip = Math.max(28, file.length * 5 + 8);
+    return (
+      <g key={label}>
+        <rect x={x + 10} y={y + 7} width={18} height={18} rx={4.5} className={tile} />
+        <g transform={`translate(${x + 10} ${y + 7})`}>{mark}</g>
+        <Label x={x + 38} y={y + 11} size={10} weight={600} tone="strong">
+          {label}
+        </Label>
+        <Label x={x + 38} y={y + 23} size={8.5} tone="muted">
+          {hint}
+        </Label>
+        <rect
+          x={x + w - 8 - chip}
+          y={y + 10}
+          width={chip}
+          height={12}
+          rx={3}
+          className="fill-slate-100"
+        />
+        <Label
+          x={x + w - 8 - chip / 2}
+          y={y + 16}
+          size={7.5}
+          weight={700}
+          anchor="middle"
+          tone="body"
+        >
+          {file}
+        </Label>
+        {last ? null : (
+          <line x1={x} y1={y + ROW} x2={x + w} y2={y + ROW} className="stroke-slate-100" />
+        )}
+      </g>
+    );
+  };
   const tools: [string, ReactNode, string, string, string][] = [
     [
       'fill-indigo-500',
@@ -125,7 +143,7 @@ export function ImportChooser() {
   const toolsY = dy + 128;
   return (
     <Scene w={W} h={H}>
-      <Dialog x={dx} y={dy} w={400} h={288} title="Import" sceneW={W} sceneH={H}>
+      <Dialog x={dx} y={dy} w={400} h={352} title="Import" sceneW={W} sceneH={H}>
         <Label x={x} y={dy + 52} size={8.5} weight={700} tone="muted">
           INTO THIS TAB
         </Label>
@@ -169,6 +187,32 @@ export function ImportChooser() {
         <Label x={x} y={toolsY + ROW * tools.length + 14} size={9} tone="muted">
           A one-off copy into a new Board tab or plan, after a preview.
         </Label>
+        <Label x={x} y={toolsY + ROW * tools.length + 38} size={8.5} weight={700} tone="muted">
+          A WHOLE PLAN
+        </Label>
+        <rect
+          x={x}
+          y={toolsY + ROW * tools.length + 46}
+          width={w}
+          height={ROW}
+          rx={7}
+          className="fill-white stroke-slate-200"
+          strokeWidth={1}
+        />
+        {row(
+          toolsY + ROW * tools.length + 46,
+          'fill-brand-50',
+          <path
+            d="M9 3.2 14.6 6.4v5.2L9 14.8 3.4 11.6V6.4Zm0 3.2v8.4M3.4 6.4 9 9.6l5.6-3.2"
+            className="fill-none stroke-brand-600"
+            strokeWidth={1.1}
+            strokeLinejoin="round"
+          />,
+          'liveplanner Plan',
+          'A plan’s own file from Export. Makes a new plan.',
+          '.liveplanner',
+          true,
+        )}
       </Dialog>
     </Scene>
   );
@@ -177,7 +221,7 @@ export function ImportChooser() {
 /** The Export Tab dialog: a card per format, text formats first, then the image formats. */
 export function ExportMenu() {
   const W = 420;
-  const H = 200;
+  const H = 212;
   const dx = 20;
   const dy = 12;
   const cards: [string, string][] = [
@@ -189,7 +233,7 @@ export function ExportMenu() {
   ];
   return (
     <Scene w={W} h={H}>
-      <Dialog x={dx} y={dy} w={380} h={176} title="Export Tab" sceneW={W} sceneH={H}>
+      <Dialog x={dx} y={dy} w={380} h={188} title="Export Tab" sceneW={W} sceneH={H}>
         {cards.map(([title, badge], i) => (
           <FormatCard
             key={title}
@@ -200,6 +244,8 @@ export function ExportMenu() {
             badge={badge}
           />
         ))}
+        {/* The plan's own file, not the tab's: a row of its own after the tab's formats */}
+        <FormatCard x={dx + 16} y={dy + 50 + 2 * 40} w={346} title="Whole Plan" badge="plan" />
       </Dialog>
     </Scene>
   );

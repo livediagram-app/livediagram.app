@@ -334,6 +334,8 @@ export * from './github';
 export * from './calendar-feed';
 // The public roadmap (docs/specs/026-plan/public-roadmap.md).
 export * from './roadmap';
+// Email to Board (docs/specs/026-plan/email-to-board.md).
+export * from './email-intake';
 export * from './sheets';
 export * from './telemetry-schema';
 export * from './timing-telemetry';

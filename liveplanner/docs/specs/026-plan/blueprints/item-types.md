@@ -5,20 +5,19 @@ Derived from [Item types](../item-types.md). Contract for the type catalogue: it
 
 ## Domain and naming
 
-| Spec term         | Identifier                                                                                                                                                                                                                                                                                                                                  |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| item type         | `ItemTypeDef` (`item-types.ts`): `id`, `label`, `newTitle`, `glyph`, `color`, `fields`, `custom?`                                                                                                                                                                                                                                           |
-| type catalogue    | `ItemTypeCatalogue` `{ version: 1, types }` (`type-catalogue.ts`); null = not chosen (defaults)                                                                                                                                                                                                                                             |
-| custom field      | `CustomFieldDef` `{ id, label, kind, options?, linkType?, linkTypes?, calculation?, formula?, result?, currency?, through?, aggregate?, source?, showAs?, onCard?, required?, notifies? }`; kinds `CUSTOM_FIELD_KINDS` (person, labels, colour, checklist and image among them, reading as their built-in fields do: `customFieldValue.ts`) |
-| required field    | `required: true` on a `CustomFieldDef`; `canBeRequired(kind)`, `missingRequiredFields`, `requiredCleared` (`required-fields.ts`)                                                                                                                                                                                                            |
-| notifying field   | a Person field that tells its person (spec "Notifies"): `notifies: true` on a person `CustomFieldDef`, the Assignee unless `assigneeNotifies: false` on the `ItemTypeDef`; `notifyingFieldsOf`, `notifiedPeople`, `isNotified` (`notify-fields.ts`)                                                                                         |
-| glyph set         | `PLAN_GLYPHS` (`glyphs.ts`), ids `PlanGlyphId`; `planGlyphPath(id)`; `PLAN_GLYPH_CATEGORIES`                                                                                                                                                                                                                                                |
-| card type (UI)    | the panel `CardTypesPanel`, its button in `PlanCardsClusterStrip`, the editor `ItemTypeEditor`                                                                                                                                                                                                                                              |
-| Add Default Types | `ItemTypesSlice.addDefaultTypes()` (`defaultTypesToAdd`, appended; one undo step), behind a `ConfirmPopover`                                                                                                                                                                                                                                |
-| default types     | `ITEM_TYPES` (`item-types.ts`); ready-made types `READY_MADE_CARD_TYPES` (`brought-types.ts`)                                                                                                                                                                                                                                               |
-| base type         | an `ItemTypeDef` another names in `inherits`; `inheritingTypesOf(baseId, types)`, `basesFor(typeId, types)` (`type-inheritance.ts`)                                                                                                                                                                                                         |
-| inherited type    | an `ItemTypeDef` with `inherits` (its base id) and `ownFields`; `baseOf`, `inheritedFieldIds`, `withInheritance`, `inheritFrom`, `detachType` (`type-inheritance.ts`)                                                                                                                                                                       |
-| card template     | `CardTemplate` `{ id, name, fields }` (`card-templates.ts`) on `ItemTypeDef.templates?`; `readCardTemplates`, `cardTemplateFields`, `newCardTemplateId`, `cardTemplatesBytes`                                                                                                                                                               |
+| Spec term       | Identifier                                                                                                                                                                                                                                                                                                                                  |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| item type       | `ItemTypeDef` (`item-types.ts`): `id`, `label`, `newTitle`, `glyph`, `color`, `fields`, `custom?`                                                                                                                                                                                                                                           |
+| type catalogue  | `ItemTypeCatalogue` `{ version: 1, types }` (`type-catalogue.ts`); null = not chosen (defaults)                                                                                                                                                                                                                                             |
+| custom field    | `CustomFieldDef` `{ id, label, kind, options?, linkType?, linkTypes?, calculation?, formula?, result?, currency?, through?, aggregate?, source?, showAs?, onCard?, required?, notifies? }`; kinds `CUSTOM_FIELD_KINDS` (person, labels, colour, checklist and image among them, reading as their built-in fields do: `customFieldValue.ts`) |
+| required field  | `required: true` on a `CustomFieldDef`; `canBeRequired(kind)`, `missingRequiredFields`, `requiredCleared` (`required-fields.ts`)                                                                                                                                                                                                            |
+| notifying field | a Person field that tells its person (spec "Notifies"): `notifies: true` on a person `CustomFieldDef`, the Assignee unless `assigneeNotifies: false` on the `ItemTypeDef`; `notifyingFieldsOf`, `notifiedPeople`, `isNotified` (`notify-fields.ts`)                                                                                         |
+| glyph set       | `PLAN_GLYPHS` (`glyphs.ts`), ids `PlanGlyphId`; `planGlyphPath(id)`; `PLAN_GLYPH_CATEGORIES`                                                                                                                                                                                                                                                |
+| card type (UI)  | the panel `CardTypesPanel`, its button in `PlanCardsClusterStrip`, the editor `ItemTypeEditor`                                                                                                                                                                                                                                              |
+| default types   | `ITEM_TYPES` (`item-types.ts`); ready-made types `READY_MADE_CARD_TYPES` (`brought-types.ts`)                                                                                                                                                                                                                                               |
+| base type       | an `ItemTypeDef` another names in `inherits`; `inheritingTypesOf(baseId, types)`, `basesFor(typeId, types)` (`type-inheritance.ts`)                                                                                                                                                                                                         |
+| inherited type  | an `ItemTypeDef` with `inherits` (its base id) and `ownFields`; `baseOf`, `inheritedFieldIds`, `withInheritance`, `inheritFrom`, `detachType` (`type-inheritance.ts`)                                                                                                                                                                       |
+| card template   | `CardTemplate` `{ id, name, fields }` (`card-templates.ts`) on `ItemTypeDef.templates?`; `readCardTemplates`, `cardTemplateFields`, `newCardTemplateId`, `cardTemplatesBytes`                                                                                                                                                               |
 
 ## Package `@liveplanner/items`
 
@@ -315,7 +314,7 @@ change)` (exactly `after` on `before`; otherwise deleted types removed, changed 
   the type they follow in `after`, first when they lead, last when that type is gone; never empty) and
   `inverseCatalogueChange`.
 - `hooks/plan/useItemTypes.ts` (`ItemTypesSlice`): `catalogue` (stored with the pending changes rebased over it),
-  `types`, `saveType`, `deleteType` (never the last), `addTypes`, `addDefaultTypes`, `saveCatalogue` (a whole
+  `types`, `saveType`, `deleteType` (never the last), `addTypes`, `saveCatalogue` (a whole
   catalogue, one step), `receive` (a room op at a lower revision than held is ignored). A change is a
   `CatalogueChange` from the catalogue shown, pending at once, saved one at a time through `lib/api/item-types.ts`
   (`saveItemTypes(scope, catalogue, expectedRev)`, offline-aware) as `rebaseCatalogueChange(stored, change)` naming the
@@ -1396,7 +1395,7 @@ cards, children)` adds "{names} will keep a copy of its settings."
 
 - Panel rows are focusable list items named "<Name>, N items"; Enter or Space opens the editor. Swatches and
   glyphs are radio groups with names ("Cyan", "Chat glyph"). The editor's problems are named in text beside
-  Save. Copy: "Card Types", "+ Add Type", "Add Default Types", its confirm "Add {list} to this project’s card types? They go after the ones you have, and nothing you have changes." with "Add Types", "New Card Type", "Edit Card Type",
+  Save. Copy: "Card Types", "+ Add Type", "New Card Type", "Edit Card Type",
   "+ Add Field", "Search fields", "Search fields, like money or date", "Ready to use", "Or make your own", "Add Field",
   "Pick what the new field holds.", "Close", the nine category names and lines, the thirty-three tile names
   (the variants: "Several People", "Time Tracking", "Date and Time Range", "Several Cards", "Blocked By",
@@ -1556,7 +1555,7 @@ hasCards)` answers `defaultCatalogue()` for a null catalogue with cards (offline
   they are. Nothing in the interface sets a type apart: `CardTypesPanel` is one list (`aria-label` "Card Types").
 
 `CardTypesPanel` rows are cards (stripe, tinted glyph tile, "N fields", count pill, pencil; the row opens the
-editor), with a dashed Add Type tile and Add Default Types under it while `defaultTypesToAdd(types)` is not empty.
+editor), with a dashed Add Type tile under it.
 The item panel's Parent lists Projects.
 
 ## Glyph set

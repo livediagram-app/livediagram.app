@@ -8841,7 +8841,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "automation",
       "automation_ai",
       "github",
-      "automation_github"
+      "automation_github",
+      "email"
     ],
     "type": "string"
   },

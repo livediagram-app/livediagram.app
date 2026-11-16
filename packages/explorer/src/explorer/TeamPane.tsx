@@ -96,7 +96,7 @@ function TeamMembersSkeleton() {
   );
 }
 
-function TeamNotFound() {
+export function TeamNotFound() {
   const { words } = useExplorer();
   return (
     <div data-team-not-found="">

@@ -32,3 +32,4 @@ One row per default applied where a spec is silent. Each code is cited in its bl
 | ACC26 | data-export           | the readable pictures are each tab at twice its size, at most 4096 px on the long side, up to 20 tabs an item.                                                       |
 | ACC27 | data-export           | the emailed link and the file last 3 days; the R2 rule deletes anything older than 4 days.                                                                           |
 | ACC28 | settings-and-profiles | Reset All Settings keeps `telemetryEnabled` (`RESET_KEEPS`): a usage-events opt-out is a consent, not a preference.                                                  |
+| ACC29 | inbound-email         | an attachment with no name is called `attachment`; an HTML-only message is read as text with its links dropped, never kept as HTML.                                  |

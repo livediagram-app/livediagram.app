@@ -14,6 +14,8 @@ import { openZip } from '../office-import/zip';
 import { parseXml } from '../office-import/xml';
 import { buildDeck, cutTo, deckSize, placementFor, backgroundKind } from './pptx-build';
 import { MediaStore, writePptx } from './pptx-write';
+import { themeFontsOf } from './ooxml-theme';
+import type { PptxDeck, PptxRun, PptxShape } from './pptx-types';
 import { everyKindDeck, fakeDrawer, ONE_PIXEL_PNG } from './test-tabs';
 
 // docs/specs/020-import-export/office-export.md "PowerPoint: one slide a page": the deck read back through the
@@ -426,5 +428,70 @@ describe('PowerPoint export', () => {
     expect(store.nameOf(Uint8Array.from([1, 2])).added).toBe(true);
     expect(store.nameOf(Uint8Array.from([1, 2])).added).toBe(false);
     expect(store.nameOf(Uint8Array.from([2, 1])).name).toBe('image2.png');
+  });
+});
+
+// Work Tracker 906: the theme's fonts follow the deck's faces (office-export.md "Fonts are named, never embedded").
+describe('the deck theme fonts', () => {
+  const run = (text: string, sizePt: number, font?: string): PptxRun => ({
+    text,
+    sizePt,
+    colour: null,
+    bold: false,
+    italic: false,
+    underline: false,
+    strike: false,
+    ...(font ? { font } : {}),
+  });
+  const deckOf = (runs: PptxRun[]): PptxDeck => {
+    const shape: PptxShape = {
+      kind: 'shape',
+      name: 'Text',
+      box: { x: 0, y: 0, cx: 1, cy: 1 },
+      rotation: 0,
+      txBox: true,
+      geometry: 'rect',
+      fill: null,
+      line: null,
+      body: {
+        anchor: 't',
+        insets: [0, 0, 0, 0],
+        paragraphs: [{ align: 'l', runs, lineHeightPt: 12 }],
+      },
+    };
+    return {
+      title: 'T',
+      cx: 9_144_000,
+      cy: 6_858_000,
+      slides: [{ background: null, items: [shape] }],
+    };
+  };
+  const themeOf = async (deck: PptxDeck) =>
+    (await everyPart(writePptx(deck))).get('ppt/theme/theme1.xml')!;
+
+  it('names the face of most characters as the minor and the largest text as the major, with a stand-in', async () => {
+    const deck = deckOf([
+      run('Heading', 40, 'Lora'),
+      run('Body copy that runs on and on.', 12, 'Inter'),
+    ]);
+    expect(themeFontsOf(deck)).toEqual({ major: 'Lora', minor: 'Inter' });
+    const xml = await themeOf(deck);
+    expect(xml).toContain('<a:majorFont><a:latin typeface="Lora" pitchFamily="18" charset="0"/>');
+    expect(xml).toContain('<a:minorFont><a:latin typeface="Inter" pitchFamily="34" charset="0"/>');
+    expect(() => parseXml(xml)).not.toThrow();
+    // The notes master's theme is the same one.
+    expect((await everyPart(writePptx(deck))).get('ppt/theme/theme2.xml')).toBe(xml);
+  });
+
+  it('falls back to Calibri for a deck naming no face, and escapes a face name', async () => {
+    expect(themeFontsOf(deckOf([run('Plain', 18)]))).toEqual({
+      major: 'Calibri',
+      minor: 'Calibri',
+    });
+    const plain = await themeOf(deckOf([run('Plain', 18)]));
+    expect(plain).toContain('<a:minorFont><a:latin typeface="Calibri"/>');
+    const odd = await themeOf(deckOf([run('x', 12, 'A "B" & <C>')]));
+    expect(odd).toContain('typeface="A &quot;B&quot; &amp; &lt;C&gt;"');
+    expect(() => parseXml(odd)).not.toThrow();
   });
 });

@@ -59,7 +59,7 @@ export async function takeInviteFromAddress(signedOut: boolean): Promise<void> {
   if (token === null) return;
   url.searchParams.delete(INVITE_PARAM);
   try {
-    window.history.replaceState(window.history.state, '', url.pathname + url.search + url.hash);
+    window.history.replaceState(null, '', url.pathname + url.search + url.hash);
   } catch {
     // A sealed history: the token stays in the bar, which only its holder has.
   }

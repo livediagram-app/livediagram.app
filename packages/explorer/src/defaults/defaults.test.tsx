@@ -32,7 +32,10 @@ const folder = (id: string, over: Partial<Folder> = {}): Folder => ({
   ...over,
 });
 
-function page(index: ReturnType<typeof createFakeIndex>) {
+function page(
+  index: ReturnType<typeof createFakeIndex>,
+  extra: Partial<React.ComponentProps<typeof Explorer>> = {},
+) {
   render(
     <Explorer
       app="liveplanner"
@@ -43,6 +46,7 @@ function page(index: ReturnType<typeof createFakeIndex>) {
       onCreate={vi.fn()}
       lensTemplates={TEMPLATES}
       heroHidden
+      {...extra}
     />,
   );
 }
@@ -204,6 +208,24 @@ describe('in the Explorer', () => {
       expect(index.placementDefaults.has('liveplanner:template:kanban')).toBe(false),
     );
     expect(kanban.checked).toBe(true);
+  });
+
+  it('speaks of files, not the default app’s kind, where New offers every app (liveworkspace.app in no app)', async () => {
+    const index = createFakeIndex({ folders: [folder('Boards')] });
+    page(index, {
+      newApps: ['livediagram', 'liveplanner'],
+      filter: 'all',
+      onFilterChange: vi.fn(),
+    });
+    fireEvent.click(
+      (await screen.findAllByRole('button', { name: 'Menu for Boards' })).find(
+        (b) => !b.closest('nav'),
+      )!,
+    );
+    fireEvent.click(await screen.findByRole('menuitem', { name: 'Delete Folder' }));
+    const dialog = await screen.findByRole('dialog');
+    expect(dialog.textContent).toContain('Its files and subfolders move to My Work.');
+    expect(dialog.textContent).not.toContain('plans');
   });
 
   it('warns before deleting a default folder, and forgets the default with it', async () => {

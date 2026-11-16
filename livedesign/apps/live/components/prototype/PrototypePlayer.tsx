@@ -21,6 +21,7 @@ import {
   type PlayerState,
   type ScreenChange,
 } from '@/lib/prototype-player';
+import { useDisplayFonts } from '@/hooks/canvas/useDisplayFonts';
 import { PrototypeBar } from './PrototypeBar';
 import { PrototypeScreen } from './PrototypeScreen';
 
@@ -69,6 +70,9 @@ export function PrototypePlayer({
   const index = shown ? pages.indexOf(shown) : -1;
   const hotspots = shown ? prototypeHotspots(tab, shown, pages) : [];
   const phone = useIsMobileViewport();
+  // The display faces the screens use: linked once, as the canvas links them, so a direct share-link open has them
+  // too (the screens carry no stylesheet of their own).
+  useDisplayFonts(tab.elements);
 
   // The hotspots' flash: lit on a press off them, for a moment.
   const [lit, setLit] = useState(false);

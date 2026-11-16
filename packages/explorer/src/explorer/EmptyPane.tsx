@@ -155,6 +155,8 @@ export function EmptyPane({
   words,
   onCreate,
   createLabel,
+  onCreateFolder,
+  folderLabel = 'New Folder',
   children,
   compact = false,
 }: {
@@ -164,6 +166,9 @@ export function EmptyPane({
   /** New, offered where the view's words call for it: the host's kind, or the chosen app's (NewItemButton). */
   onCreate?: (app?: App) => void;
   createLabel?: string;
+  /** New Folder (New Subfolder inside a folder) beside New in one menu, as the header's Create offers them. */
+  onCreateFolder?: () => void;
+  folderLabel?: string;
   children?: ReactNode;
 }) {
   const copy = emptyCopy(view, words);
@@ -178,6 +183,7 @@ export function EmptyPane({
         <NewItemButton
           label={createLabel ?? `New ${words.one}`}
           onCreate={onCreate}
+          folder={onCreateFolder ? { label: folderLabel, onCreate: onCreateFolder } : undefined}
           icon={<PlusIcon size={14} />}
           className={EMPTY_CTA}
         />

@@ -87,4 +87,22 @@ describe('node-isolated', () => {
       ),
     ).toEqual([]);
   });
+
+  it('skips a template’s furniture: a scaffold-layer chip and a key', () => {
+    const lonely = (extra: Record<string, unknown>) =>
+      of(
+        lint(
+          tabOf(
+            box('a', 0, 0),
+            box('b', 300, 0),
+            arrow('x', 'a', 'b'),
+            box('alone', 0, 200, extra),
+          ),
+        ),
+        'node-isolated',
+      );
+    expect(lonely({ layerId: 'layer:template:scaffold' })).toEqual([]);
+    expect(lonely({ shape: 'diagram-key' })).toEqual([]);
+    expect(lonely({ layerId: 'layer:template:content' })).toHaveLength(1);
+  });
 });

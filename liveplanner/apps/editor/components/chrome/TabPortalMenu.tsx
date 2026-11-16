@@ -32,6 +32,7 @@ import { lucideLink } from '@liveworkspace/icons/lucide';
 import type { ConnectedTabMenu } from '@liveworkspace/workbench/components/connect/tab-connection';
 import { CalendarFeedMenuRow } from '@/components/calendar-feed/CalendarFeedMenuRow';
 import { RoadmapMenuRow } from '@/components/roadmap/RoadmapMenuRow';
+import { EmailIntakeMenuRow } from '@/components/email-intake/EmailIntakeMenuRow';
 
 const ConnectAgainIcon = lucideGlyph(lucideLink, 16);
 
@@ -368,6 +369,9 @@ export function PortalMenu({
           {/* A board out as a public page (docs/specs/026-plan/public-roadmap.md "Where it lives"): the plan's owner or
             a team member, on a tab holding a Plan board. */}
           <RoadmapMenuRow onClose={onClose} />
+          {/* Mail in as cards (docs/specs/026-plan/email-to-board.md "Where it lives"): an Editor of the whole plan,
+            on a tab holding a Plan board. */}
+          <EmailIntakeMenuRow onClose={onClose} />
           <MenuActionRow
             plain
             icon={<ClearIcon />}

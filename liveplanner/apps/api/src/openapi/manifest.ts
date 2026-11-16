@@ -1076,6 +1076,46 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
+    path: '/projects/{id}/email-intake',
+    segment: 'projects',
+    tag: 'Email to Board',
+    summary:
+      "The plan's board addresses (Email to Board): each address with Who Can Send and its counts, the boards that may have one with the column new cards land in, and whether this deployment takes mail at all. An Editor of the whole plan, in person: never a Participant, a Viewer, a link to one tab, an API token or a workbench session.",
+    auth: 'clerk',
+    statuses: [200, 401, 403, 404, 405],
+  },
+  {
+    method: 'PUT',
+    path: '/projects/{id}/email-intake/{boardId}',
+    segment: 'projects',
+    tag: 'Email to Board',
+    summary:
+      "Turn a board's address on (201, a new secret address) or change Who Can Send (200): { senders: 'members' | 'anyone' }. A board with no column for new cards is refused. 503 where this deployment takes no mail. An Editor of the whole plan, in person.",
+    auth: 'clerk',
+    statuses: [200, 201, 400, 401, 403, 404, 405, 503],
+  },
+  {
+    method: 'POST',
+    path: '/projects/{id}/email-intake/{boardId}/new-address',
+    segment: 'projects',
+    tag: 'Email to Board',
+    summary:
+      'A new address for the board: the old one refuses mail at once; Who Can Send and the counts are kept. 404 for a board with no address. An Editor of the whole plan, in person.',
+    auth: 'clerk',
+    statuses: [200, 400, 401, 403, 404, 405, 503],
+  },
+  {
+    method: 'DELETE',
+    path: '/projects/{id}/email-intake/{boardId}',
+    segment: 'projects',
+    tag: 'Email to Board',
+    summary:
+      "Turn off a board's address: it refuses mail at once; turning it on again makes a new one. 204 whether or not it had one. An Editor of the whole plan, in person.",
+    auth: 'clerk',
+    statuses: [204, 400, 401, 403, 404, 405],
+  },
+  {
+    method: 'GET',
     path: '/projects/{id}/calendar-feed',
     segment: 'projects',
     tag: 'Calendar',
