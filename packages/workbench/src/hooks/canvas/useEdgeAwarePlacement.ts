@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  useEffect,
   useEffectEvent,
   useLayoutEffect,
   useRef,
@@ -10,6 +11,7 @@ import {
 } from 'react';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '../../lib/clamp-to-viewport';
 import type { Rect } from '@liveworkspace/model-core/geometry-primitives';
+import { TOOLBAR_OBSTACLE_EVENT } from './toolbar-obstacle';
 
 type XY = { x: number; y: number };
 
@@ -28,6 +30,8 @@ function chromeBoxes(self: Element): Box[] {
   const boxes: Box[] = [];
   for (const el of document.querySelectorAll(CHROME)) {
     if (el.contains(self)) continue;
+    // Drawn but hidden (the Quick Style panel waits at the corner, hidden, until its spot is measured): no obstacle.
+    if (el.checkVisibility?.({ visibilityProperty: true }) === false) continue;
     const b = el.getBoundingClientRect();
     if (b.width === 0 || b.height === 0) continue;
     boxes.push(b);
@@ -199,6 +203,17 @@ export function useEdgeAwarePlacement(
     const ny = dy / zoom;
     if (nx !== adjust.x || ny !== adjust.y) setAdjust({ x: nx, y: ny });
   });
+  // An obstacle arriving, resizing, moving or going (toolbar-obstacle.ts) places the box again, with a fresh flip:
+  // the Quick Style panel mounts after a fresh selection's toolbar has placed. Not while suspended for a drag.
+  useEffect(() => {
+    if (suspended) return;
+    const onObstacle = () => {
+      flipSigRef.current = '';
+      place();
+    };
+    window.addEventListener(TOOLBAR_OBSTACLE_EVENT, onObstacle);
+    return () => window.removeEventListener(TOOLBAR_OBSTACLE_EVENT, onObstacle);
+  }, [suspended]);
   useLayoutEffect(() => {
     if (!suspended) place();
   }, [

@@ -79,7 +79,9 @@ toolbar (z above the panels) was drawn over the panel's swatches. The toolbar tr
 (`data-toolbar-obstacle`): it flips to the element's other side when that side is clear, and when both sides cover
 the panel it slides sideways, the shorter way past it that stays inside the canvas
 ([Selection popover](canvas-and-palette.md#selection-popover)). The panel keeps its spot, so it never jumps as a
-selection moves; only the toolbar, which already re-places as the selection or the view changes, gives way.
+selection moves; only the toolbar, which already re-places as the selection or the view changes, gives way. The
+panel mounts and takes its spot a beat after a fresh selection's toolbar has placed, so it tells the toolbar when it
+arrives, moves, resizes or goes (`useToolbarObstacle`, once a frame at most), and the toolbar places itself again.
 
 - **Not on phones.** A phone's canvas has no spare edge, and the context menu covers the same
   choices. The panel shows from the `sm` breakpoint up.

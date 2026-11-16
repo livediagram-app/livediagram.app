@@ -68,6 +68,10 @@ const HELD_AT_100 = [
   // 1027 and 1038).
   'src/lib/watch-move.ts',
   'src/components/chrome/useMenuCardRoom.ts',
+  // A selection toolbar re-placing as an obstacle arrives (Work Tracker 1032).
+  'src/hooks/canvas/toolbar-obstacle.ts',
+  // The menu box's uncapped edge (Work Tracker 1038).
+  'src/components/canvas/menu-join.tsx',
   // The dot-vote overlay livediagram and liveplanner both mount (docs/specs/012-collaboration/session-tools.md).
   'src/components/canvas/ElementVoteOverlay.tsx',
   'src/components/canvas/VoteStepper.tsx',

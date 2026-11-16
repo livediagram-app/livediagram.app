@@ -703,7 +703,8 @@
     "./components/library/SaveToLibraryButton": "./src/components/library/SaveToLibraryButton.tsx",
     "./lib/library/library-draft": "./src/lib/library/library-draft.ts",
     "./components/start/useStartEscape": "./src/components/start/useStartEscape.ts",
-    "./lib/watch-move": "./src/lib/watch-move.ts"
+    "./lib/watch-move": "./src/lib/watch-move.ts",
+    "./hooks/canvas/toolbar-obstacle": "./src/hooks/canvas/toolbar-obstacle.ts"
   },
   "scripts": {
     "lint": "oxlint",

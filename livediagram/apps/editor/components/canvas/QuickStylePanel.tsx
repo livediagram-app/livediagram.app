@@ -5,6 +5,7 @@
 // menu stays the complete home of every setting; this is the fast path to a
 // handful of them, and never grows into the old Editor panel.
 
+import { useToolbarObstacle } from '@liveworkspace/workbench/hooks/canvas/toolbar-obstacle';
 import { useRef, useState, type PointerEvent } from 'react';
 import {
   BorderRadiusIcon,
@@ -181,6 +182,8 @@ export function QuickStylePanel({
   const active = !hidden && !isMobile && view !== null;
   const panelRef = useRef<HTMLDivElement>(null);
   const spot = useQuickStylePlacement(panelRef, active);
+  // A selection's toolbar re-places as the panel arrives, takes its spot or resizes (toolbar-obstacle.ts).
+  useToolbarObstacle(panelRef, active);
   const [editing, setEditing] = useState<Editing | null>(null);
   // A popover outlives neither the panel nor its swatch.
   const editingGone =

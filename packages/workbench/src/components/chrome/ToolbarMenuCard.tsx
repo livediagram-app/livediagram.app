@@ -44,7 +44,8 @@ export function ToolbarMenuCard({
   const scale = useUiScale('toolbar');
   const scaled = !inline && scale !== 1;
   // Never under the strip: a long tab name truncates short of it (useMenuCardRoom, toolbar-layout.md "The tab's
-  // name"). Not inline, where the strip's row holds the card, nor joined, where it spans the sidebar.
+  // name"). Only the name gives way: the button and the mode switch keep their size (shrink-0 below). Not inline,
+  // where the strip's row holds the card, nor joined, where it spans the sidebar.
   const cardRef = useRef<HTMLDivElement>(null);
   const room = useMenuCardRoom(cardRef, !inline && joinedWidth === undefined);
   const joined = !inline && joinedWidth !== undefined;
@@ -69,7 +70,7 @@ export function ToolbarMenuCard({
       className={
         inline
           ? 'flex items-center gap-1'
-          : `pointer-events-auto absolute left-3 top-3 z-[var(--z-toolbar)] flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40 ${PHONE_TOOLBAR_ITEMS} ${MENU_CARD_FRAME_MOTION} ${joined ? MENU_CARD_JOINED : ''}`
+          : `pointer-events-auto absolute left-3 top-3 z-[var(--z-toolbar)] flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40 ${PHONE_TOOLBAR_ITEMS} [&>:not([data-tab-name-in-box])]:shrink-0 ${MENU_CARD_FRAME_MOTION} ${joined ? MENU_CARD_JOINED : ''}`
       }
       onPointerDown={(e) => e.stopPropagation()}
       onContextMenu={(e) => {

@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
-import { renderHook } from '@testing-library/react';
+import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '../../lib/clamp-to-viewport';
+import { noteToolbarObstacle } from './toolbar-obstacle';
 import { overlapsChrome, sidewaysClear, useEdgeAwarePlacement } from './useEdgeAwarePlacement';
 
 // Each editor's docs/specs/008-canvas/canvas-performance.md: a gesture frame never reads layout. While the selection
@@ -235,6 +236,42 @@ describe('useEdgeAwarePlacement sliding off the chrome', () => {
     expect(h.result.current.style.left).toBe(150 + dx);
     const toolbar = rect(100 + dx, 300, 400 + dx, 340);
     expect(toolbar.left >= panelRect.right || toolbar.right <= panelRect.left).toBe(true);
+  });
+
+  // The verifier's order: the toolbar places for a fresh selection, then the Quick Style panel mounts under it.
+  it('places again when an obstacle arrives after it placed, but not while suspended', () => {
+    // The box as drawn: it carries its sideways nudge, as a real one does.
+    let h: ReturnType<typeof setup> | null = null;
+    const drawn = () => {
+      const dx = ((h?.result.current.style.left as number | undefined) ?? 150) - 150;
+      return rect(100 + dx, 300, 400 + dx, 340);
+    };
+    h = setup(drawn, { initial: { x: 100 } });
+    expect(h.result.current.placeAbove).toBe(true);
+    expect(h.result.current.style.left).toBe(150);
+    // Mounted hidden at the corner first: no obstacle yet.
+    const panel = document.createElement('div');
+    panel.setAttribute('data-toolbar-obstacle', '');
+    panel.getBoundingClientRect = () => rect(8, 200, 260, 600);
+    (panel as unknown as { checkVisibility: () => boolean }).checkVisibility = () => false;
+    document.body.append(panel);
+    act(() => noteToolbarObstacle());
+    expect(h.result.current.style.left).toBe(150);
+    // Then at its spot: suspended for a drag, nothing; resumed, the toolbar flips and slides off it.
+    (panel as unknown as { checkVisibility: () => boolean }).checkVisibility = () => true;
+    h.rerender({ x: 100, suspended: true });
+    const before = h.measures();
+    act(() => noteToolbarObstacle());
+    expect(h.measures()).toBe(before);
+    expect(h.result.current.style.left).toBe(150);
+    // Resumed with the selection where it was (no geometry change): only the note places it again. Both sides
+    // cover the panel here, so it slides past the panel's right edge.
+    act(() => noteToolbarObstacle());
+    expect(h.measures()).toBe(before);
+    h.rerender({ x: 100, suspended: false });
+    act(() => noteToolbarObstacle());
+    expect(h.measures()).toBeGreaterThan(before);
+    expect(h.result.current.style.left).toBe(150 + 260 + EDGE - 100);
   });
 
   it('stays put beside chrome it does not cover', () => {

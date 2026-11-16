@@ -354,6 +354,38 @@ describe('the start panel', () => {
     }
   });
 
+  it('closes on Escape with the focus left on the tab bar’s Add Tab, not from its fields or menus', () => {
+    const onClose = vi.fn();
+    const bar = document.createElement('div');
+    bar.setAttribute('data-editor-tabbar', '');
+    const add = document.createElement('button');
+    const rename = document.createElement('input');
+    const textarea = document.createElement('textarea');
+    const editable = document.createElement('div');
+    editable.contentEditable = 'true';
+    editable.tabIndex = 0;
+    Object.defineProperty(editable, 'isContentEditable', { value: true });
+    const menu = document.createElement('div');
+    menu.setAttribute('role', 'menu');
+    const item = document.createElement('button');
+    menu.append(item);
+    bar.append(add, rename, textarea, editable, menu);
+    document.body.append(bar);
+    try {
+      render(<Sheet {...base({ onClose })} />);
+      for (const kept of [rename, textarea, editable, item]) {
+        kept.focus();
+        fireEvent.keyDown(kept, { key: 'Escape' });
+      }
+      expect(onClose).not.toHaveBeenCalled();
+      add.focus();
+      fireEvent.keyDown(add, { key: 'Escape' });
+      expect(onClose).toHaveBeenCalledTimes(1);
+    } finally {
+      bar.remove();
+    }
+  });
+
   it('leaves Escape outside it alone where it cannot close', () => {
     render(<Sheet {...base({ onClose: undefined })} />);
     (document.activeElement as HTMLElement | null)?.blur();
