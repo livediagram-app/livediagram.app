@@ -107,6 +107,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   community: '#ec4899',
   'finding-community-documents': '#8b5cf6',
   'share-passwords': '#475569',
+  'request-approval': '#16a34a',
   'share-link-expiry': '#f59e0b',
   'one-tab': '#14b8a6',
   embeds: '#6366f1',

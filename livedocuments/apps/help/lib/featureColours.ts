@@ -83,6 +83,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'assigned-actions': '#22c55e',
   // Collaboration → Sharing guides
   'share-passwords': '#475569',
+  'request-approval': '#16a34a',
   community: '#ec4899',
   'finding-community-documents': '#8b5cf6',
   'share-link-expiry': '#f59e0b',
