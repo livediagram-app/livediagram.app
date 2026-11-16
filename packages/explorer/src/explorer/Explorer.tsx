@@ -315,7 +315,8 @@ function ArrivalNotice({ text }: { text: string }) {
   useEffect(() => {
     if (said.current === text) return;
     said.current = text;
-    toast.show(text);
+    // A warning: the person lost access to something (a revoked link), which is news, not their mistake.
+    toast.show(text, { tone: 'warning' });
   }, [text, toast]);
   return null;
 }
