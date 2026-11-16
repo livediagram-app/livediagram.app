@@ -104,6 +104,39 @@ describe('connectRoomClient', () => {
     room.close();
   });
 
+  it('hands a source-changed frame to its handler, ids only (sheet-sources.md)', () => {
+    const onSourceChanged = vi.fn();
+    const room = connectRoomClient<
+      Op,
+      Op,
+      { id: string },
+      { id: string; name: string; color: string },
+      Handlers
+    >(
+      wireFor(),
+      'r1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {}, onSourceChanged },
+      { ticket: 'T' },
+    );
+    const socket = FakeSocket.all[0]!;
+    socket.fire('open');
+    socket.fire('message', {
+      data: JSON.stringify({
+        kind: 'source-changed',
+        app: 'liveplanner',
+        itemId: 'plan_1',
+        sheetIds: ['s1'],
+      }),
+    });
+    expect(onSourceChanged).toHaveBeenCalledWith({
+      app: 'liveplanner',
+      itemId: 'plan_1',
+      sheetIds: ['s1'],
+    });
+    room.close();
+  });
+
   it('pings with the wire frame after a quiet spell', () => {
     connectRoomClient(
       wireFor(),
