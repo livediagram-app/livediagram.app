@@ -98,7 +98,7 @@ export function LiveEmbedView({
           title={name}
           sandbox={FRAME_SANDBOX}
           referrerPolicy="no-referrer"
-          className={`absolute inset-0 h-full w-full border-0 bg-white transition-opacity duration-300 motion-reduce:transition-none dark:bg-slate-900 ${
+          className={`absolute inset-0 h-full w-full border-0 bg-white transition-opacity duration-200 motion-reduce:transition-none dark:bg-slate-900 ${
             frame.ready ? 'opacity-100' : 'opacity-0'
           } ${using ? '' : 'pointer-events-none'}`}
         />
@@ -225,7 +225,7 @@ function Snapshot({
         alt=""
         aria-hidden
         draggable={false}
-        className={`pointer-events-none absolute inset-0 h-full w-full object-cover transition-[filter] duration-300 motion-reduce:transition-none ${
+        className={`pointer-events-none absolute inset-0 h-full w-full object-cover transition-[filter] duration-200 motion-reduce:transition-none ${
           dim ? 'blur-[1.5px] saturate-50' : ''
         }`}
       />
