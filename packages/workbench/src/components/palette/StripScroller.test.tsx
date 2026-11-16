@@ -87,7 +87,7 @@ describe('StripScroller', () => {
     );
     expect(container.querySelector('[data-strip-edge="end"]')).not.toBeNull();
     expect(container.querySelector('[data-strip-edge="start"]')).toBeNull();
-    scroller.scrollTo = vi.fn() as unknown as typeof scroller.scrollTo;
+    scroller.scrollTo = vi.fn();
     fireEvent.click(getByRole('button', { name: 'Scroll Right' }));
     expect(scroller.scrollTo).toHaveBeenCalledWith(
       expect.objectContaining({ left: expect.any(Number) }),
