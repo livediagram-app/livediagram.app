@@ -1541,8 +1541,14 @@ a board takes (Kanban: Tasks and Actions, Sprint: Stories, Tasks and Bugs, Bug T
 `TEMPLATE_CARD_TYPES` (`packages/items/src/template-card-types/`: `kit.ts` field makers, then `delivery.ts`,
 `personal.ts` and `business.ts`, pure data, run through `withComments`) are the Plan templates' own types, each id
 prefixed by its template ([Plan templates](../plan-templates.md#card-types-a-template-makes)); no template names a
-ready-made id. `BOARD_CARD_TYPES` is both catalogues and `boardCardType(id)` finds one, which `broughtTypesToAdd` and a
-template form's target use.
+ready-made id. They are the subpath `@liveplanner/items/template-card-types`, never the barrel, so the editor's first
+load holds none of them. The subpath also exports `BOARD_CARD_TYPES` (both catalogues), and evaluating it calls
+`provideTemplateCardTypes(TEMPLATE_CARD_TYPES)` (`brought-types.ts`): `boardCardType(id)` finds a ready-made type, else
+a provided template type, which `broughtTypesToAdd` and a template form's target use. `templateCardTypesProvided()`
+says whether the subpath has loaded; each path that makes a template's tabs imports it (and names an export, so a
+bundler keeps it). The editor's `usePresetCardTypes` imports it before bringing a board that names an id neither the
+plan nor the ready-made types know, and keeps the catalogue it last saved until the next render (`savedRef`), so two
+brings in one tick never save over each other.
 
 - `boardTypeIdsOf(elements)`: each `plan-board`'s `addTypes`; nothing for one that names none (Blank), Archive or
   All Cards.

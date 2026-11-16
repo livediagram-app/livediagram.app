@@ -5,7 +5,7 @@
 // the example team below; `ref` names a card another card links to (a Story's project, a Candidate's role).
 // plan-template-seeds.ts resolves this into the creates the item store takes.
 
-import type { Priority } from '@liveplanner/items';
+import type { Priority, RepeatRule } from '@liveplanner/items';
 import type { PlanTemplateKind } from './plan-template-catalogue';
 import { USE_CASE_SEEDS } from './plan-template-seed-data-use-cases';
 import { WORKFLOW_SEEDS } from './plan-template-seed-data-workflows';
@@ -44,6 +44,9 @@ export type SeedCard = {
   custom?: Readonly<Record<string, string | number>>;
   // Dots on the card, one each from as many example voters.
   votes?: number;
+  // A repeat rule (docs/specs/026-plan/items.md "Repeating cards"), less the stamps the made card takes: `from` is the
+  // day the project is made and `timeZone` its maker's (plan-template-seeds.ts).
+  repeat?: Omit<RepeatRule, 'from' | 'timeZone' | 'until'>;
   archived?: true;
 };
 
@@ -585,6 +588,19 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         title: 'Prepare the demo',
         assignee: 'maya',
         priority: 'medium',
+      },
+      // The routine that closes each week, made again every Friday (plan-templates.md "Example cards").
+      {
+        type: 'wk-note',
+        status: 'fri',
+        title: 'Weekly review',
+        labels: ['Routine'],
+        checklist: [
+          ['Inbox cleared', false],
+          ['This week looked back on', false],
+          ['Next week’s three things picked', false],
+        ],
+        repeat: { every: 'week', days: [5], status: 'fri' },
       },
       {
         type: 'wk-todo',

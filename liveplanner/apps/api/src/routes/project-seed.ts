@@ -16,6 +16,12 @@ import {
 import { engineLog } from '../changesets/log';
 import { engineRefusal } from '../changesets/request';
 import { isRecord } from '@liveplanner/project';
+import { TEMPLATE_CARD_TYPES } from '@liveplanner/items/template-card-types';
+import { provideTemplateCardTypes } from '@liveplanner/items';
+
+// The Plan templates' own card types, so its seeded template tabs can bring them (docs/specs/026-plan/plan-templates.md "Card
+// types a template makes"). A subpath, kept out of the editor's first load.
+provideTemplateCardTypes(TEMPLATE_CARD_TYPES);
 
 const SOURCES = ['template'] as const;
 

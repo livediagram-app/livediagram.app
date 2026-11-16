@@ -6,7 +6,7 @@
 // Maya, as an offline plan's are before its maker is known. A form template is made only by the editor, so it has no
 // file.
 import { projectToEnvelopeText, type EnvelopeSheet } from '@liveplanner/project';
-import { catalogueWithBoardTypes, itemPlacer, makeItem, type Item } from '@liveplanner/items';
+import { catalogueWithBoardTypes, itemPlacer, makeItem, type Item, provideTemplateCardTypes } from '@liveplanner/items';
 import {
   buildTemplateTabs,
   hasTemplateSheets,
@@ -23,6 +23,11 @@ import { materialiseTemplateSheets } from '@liveplanner/templates/template-sheet
 import { itemFromTemplate, type TemplateFile, type TemplateInput } from '@liveworkspace/index-app';
 import { importProjectFileFor } from './internal-file';
 import type { Env } from '../types';
+import { TEMPLATE_CARD_TYPES } from '@liveplanner/items/template-card-types';
+
+// The Plan templates' own card types, so the template it makes can bring them (docs/specs/026-plan/plan-templates.md "Card
+// types a template makes"). A subpath, kept out of the editor's first load.
+provideTemplateCardTypes(TEMPLATE_CARD_TYPES);
 
 // A template's example cards as the file carries them: numbered from 1, placed in their columns in order.
 function exampleCards(kind: Parameters<typeof planTemplateSeedItems>[0], now: number): Item[] {

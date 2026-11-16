@@ -27,6 +27,13 @@ board of the template shows some, and every plan view on its Dashboard has somet
   and a Calendar never open stale: a project started two weeks ago and due in three.
 - **Archived examples.** Team Retro's **Past Retros** board shows two archived notes from the sprint before, and
   Meeting Agenda's **Past Meetings** two topics from the meeting before.
+- **Repeating examples.** A card whose work comes round on a rule carries a [repeat](items.md#repeating-cards) of its
+  own: Weekly Planner's **Weekly review** repeats every week on Friday, landing in Friday. Its `from` is the day the
+  project is made and its `timeZone` the maker's (the browser's; the API's seeded create uses UTC), so its first copy
+  is the next Friday after today. It is an example card like the rest (Clear Example Cards trashes it, which stops it
+  while it is in the Trash); its copies are ordinary cards, as every repeat's are. A plan in This Browser holds the
+  rule and makes copies once it is saved to an account. A seed names only `every`, `days`, `date` and `status`, and a
+  test holds every seeded rule to what `readRepeatRule` accepts.
 - **They are marked.** Every example card carries the `example` flag ([Items](items.md#example-cards)), so the
   project knows which cards a template made however they have since moved.
 - **Where they are made.** Only where a **person** makes the template: the New Project wizard (the cards ride the
@@ -51,7 +58,7 @@ board of the template shows some, and every plan view on its Dashboard has somet
 - **Blank Plan and the spreadsheet templates** have no boards, so no example cards; a spreadsheet template's Sheet is
   already filled in ([Spreadsheet templates](#spreadsheet-templates)).
 - **The catalogue.** `PLAN_TEMPLATE_SEEDS` (`packages/templates/src/plan-template-seed-data.ts`), pure data, resolved
-  by `planTemplateSeedItems(kind, today)` into the item store's creates. A test holds every card to a board of its
+  by `planTemplateSeedItems(kind, today, newId, timeZone)` into the item store's creates. A test holds every card to a board of its
   template that shows it, every board to at least one card, and every card to what the item store accepts.
 
 ## Domain language
@@ -148,6 +155,14 @@ The catalogue below still lists, per tab, the metrics, charts and rail it brings
   Story's Parent is an Initiative, a Launch Check's Workstream a Workstream).
 - **Completed On** (a Date) is on every type whose finish a rule stamps: the delivery templates' work, a Key Result,
   a Milestone and a To-Do (named Done On there), so [Stamp the Finish Date](#starter-rules) has a field to set.
+- **Loaded only to make a template.** `TEMPLATE_CARD_TYPES` is a subpath of its own
+  (`@liveplanner/items/template-card-types`), out of the items barrel, so opening a plan never loads it: a plan reads
+  its types from its own catalogue, and only a board being made looks a type up by id. Importing the subpath hands the
+  catalogue to the lookup (`provideTemplateCardTypes`). The paths that make a template's tabs import it: the editor's
+  template builders (loaded when a template is picked, or on /new), the api's and the MCP's template paths, the
+  agents' board verbs, and the starter rules. A board that appears on an open tab naming a type the plan lacks and the
+  ready-made catalogue does not know (a collaborator's template tab whose types someone deleted) loads it first, then
+  brings the type.
 - **Tests** hold each template's types to a catalogue a project accepts (`validateItemTypeCatalogue`), every type to
   at least one card template its type accepts (`readCardTemplates`, refusing), and every plan template to bringing
   none of the default or ready-made types.
@@ -443,6 +458,8 @@ A person's (or a small team's) week, fed from an inbox, with what is due on a ca
 - How this works: capture everything in Inbox; each Monday, give the week's cards a day on This Week (the
   card's status picker lists the days); what waits on someone else goes in Waiting On; subscribe to Calendar from the
   tab menu to see these dates in your own calendar.
+- Its **Weekly review** note repeats every Friday into Friday ([Example cards](#example-cards)), so the routine that
+  closes a week shows how a repeating card works.
 
 ### Content Calendar
 

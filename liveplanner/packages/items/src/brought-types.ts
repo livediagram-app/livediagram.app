@@ -21,7 +21,6 @@ import {
 import { normaliseBoardSetup } from './board';
 import { boardTypeStatuses } from './type-statuses';
 import { READY_MADE_CARD_TEMPLATES as CARD_TEMPLATES } from './ready-made-card-templates';
-import { TEMPLATE_CARD_TYPES } from './template-card-types';
 
 const WORK = [
   'title',
@@ -345,16 +344,22 @@ const MORE_CARD_TYPES: readonly ItemTypeDef[] = BROUGHT.map((t) => ({
 // types, then the thirteen the templates and presets add. None is set apart from a type a person makes.
 export const READY_MADE_CARD_TYPES: readonly ItemTypeDef[] = [...ITEM_TYPES, ...MORE_CARD_TYPES];
 
-// Every type a board can bring by id: the ready-made types, then the Plan templates' own (template-card-types/), each
-// made for its one template (docs/specs/026-plan/plan-templates.md "Card types a template makes").
-export const BOARD_CARD_TYPES: readonly ItemTypeDef[] = [
-  ...READY_MADE_CARD_TYPES,
-  ...TEMPLATE_CARD_TYPES,
-];
+// The Plan templates' own types (template-card-types/), once a path that makes a template's tabs has provided them
+// (docs/specs/026-plan/plan-templates.md "Card types a template makes"): a subpath of their own, so opening a plan
+// never loads them. A plan reads its types from its own catalogue; only a board being made looks one up by id.
+let templateTypes: readonly ItemTypeDef[] = [];
 
-/** The type a board brings by `id`, ready-made or a template's own. */
+/** Hands the Plan templates' own types to `boardCardType`; `@liveplanner/items/template-card-types` exports them. */
+export function provideTemplateCardTypes(types: readonly ItemTypeDef[]): void {
+  templateTypes = types;
+}
+
+/** Whether the Plan templates' own types have been provided. */
+export const templateCardTypesProvided = (): boolean => templateTypes.length > 0;
+
+/** The type a board brings by `id`: a ready-made one, else a provided template type. */
 export const boardCardType = (id: string): ItemTypeDef | undefined =>
-  BOARD_CARD_TYPES.find((t) => t.id === id);
+  READY_MADE_CARD_TYPES.find((t) => t.id === id) ?? templateTypes.find((t) => t.id === id);
 
 const DEFAULT_TYPE_IDS: readonly string[] = ITEM_TYPES.map((t) => t.id);
 

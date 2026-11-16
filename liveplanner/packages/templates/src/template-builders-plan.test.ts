@@ -1,6 +1,5 @@
 import {
   READY_MADE_CARD_TYPES,
-  TEMPLATE_CARD_TYPES,
   catalogueWithBoardTypes,
   PLAN_BOARD_PRESET_IDS,
   isPlanViewId,
@@ -10,6 +9,7 @@ import {
 } from '@liveplanner/items';
 import { isValidElement, type Element } from '@liveplanner/project';
 import { describe, expect, it } from 'vitest';
+import { TEMPLATE_CARD_TYPES } from '@liveplanner/items/template-card-types';
 import {
   PLAN_TEMPLATE_KINDS,
   PLAN_TEMPLATE_TABS,

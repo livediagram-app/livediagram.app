@@ -7,8 +7,7 @@ import {
   catalogueWithBoardTypes,
   legacyCatalogue,
   validateItemTypeCatalogue,
-  type ItemTypeCatalogue,
-} from '@liveplanner/items';
+  type ItemTypeCatalogue, provideTemplateCardTypes } from '@liveplanner/items';
 import type { Tab } from '@liveplanner/project';
 import { isValidTab, migrateIncomingTab } from '@liveplanner/project';
 import { capStoredName } from '../names';
@@ -32,6 +31,11 @@ import { notifyMilestone } from '../email/notifications';
 import { initPlan } from '../plan-room/plan-content';
 import { gateEdit, requireOwner, type PlanRouteContext, readBody } from './context';
 import { makeStarterRules, starterRulesAsked } from './starter-rules';
+import { TEMPLATE_CARD_TYPES } from '@liveplanner/items/template-card-types';
+
+// The Plan templates' own card types, so a create's template tabs can bring them (docs/specs/026-plan/plan-templates.md "Card
+// types a template makes"). A subpath, kept out of the editor's first load.
+provideTemplateCardTypes(TEMPLATE_CARD_TYPES);
 
 export function intentRejected(): Response {
   return json({ error: INTENT_INVALID }, { status: 400 });

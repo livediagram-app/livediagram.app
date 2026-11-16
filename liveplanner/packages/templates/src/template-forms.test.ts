@@ -7,7 +7,7 @@ import {
   readForm,
   type FormDefinition,
 } from '@liveplanner/forms';
-import { TEMPLATE_CARD_TYPES } from '@liveplanner/items';
+import { TEMPLATE_CARD_TYPES } from '@liveplanner/items/template-card-types';
 import type { Tab } from '@liveplanner/project';
 import { describe, expect, it } from 'vitest';
 import { PLAN_TEMPLATE_KINDS, PLAN_TEMPLATE_TABS, type BoardSpec } from './plan-template-catalogue';

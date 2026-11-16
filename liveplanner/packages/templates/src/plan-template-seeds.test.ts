@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
+import { TEMPLATE_CARD_TYPES } from '@liveplanner/items/template-card-types';
 import {
-  TEMPLATE_CARD_TYPES,
   itemTitle,
+  readRepeatRule,
   readItemCreate,
   type PlanBoardSetup,
 } from '@liveplanner/items';
-import { planTemplateSeedItems, seedDate, seedToday } from './plan-template-seeds';
+import { planTemplateSeedItems, seedDate, seedTimeZone, seedToday } from './plan-template-seeds';
 import { PLAN_TEMPLATE_SEEDS } from './plan-template-seed-data';
 import {
   PLAN_TEMPLATE_KINDS,
@@ -109,7 +110,7 @@ describe('Plan template example cards', () => {
         expect(type, `${kind} ${create.type}`).toBeDefined();
         for (const [field, value] of Object.entries(create.fields)) {
           // An example's own marks, not a field.
-          if (field === 'example' || field === 'archived') continue;
+          if (field === 'example' || field === 'archived' || field === 'repeat') continue;
           const label = `${kind} ${create.type} ${field}`;
           expect(type!.fields, label).toContain(field);
           const custom = type!.custom?.find((f) => f.id === field);
@@ -119,6 +120,28 @@ describe('Plan template example cards', () => {
         }
       }
     }
+  });
+
+  // plan-templates.md "Example cards": Repeating examples.
+  it('repeat where their work comes round, from the day they are made in their maker’s time zone', () => {
+    const made = planTemplateSeedItems('weekly-planner', TODAY, ids, 'Europe/London');
+    const review = made.find((c) => c.fields['title'] === 'Weekly review')!;
+    const rule = readRepeatRule(review.fields['repeat']);
+    expect(rule).toEqual({
+      every: 'week',
+      days: [5],
+      status: 'fri',
+      from: TODAY,
+      timeZone: 'Europe/London',
+    });
+    expect(review.place?.status).toBe('fri');
+    // Every seeded rule is one the item store keeps, and only Weekly Planner's review repeats.
+    const repeating = PLAN_TEMPLATE_KINDS.flatMap((kind) =>
+      planTemplateSeedItems(kind, TODAY, ids).filter((c) => c.fields['repeat'] !== undefined),
+    );
+    expect(repeating.map((c) => c.fields['title'])).toEqual(['Weekly review']);
+    for (const c of repeating) expect(readRepeatRule(c.fields['repeat'])?.timeZone).toBe('UTC');
+    expect(typeof seedTimeZone()).toBe('string');
   });
 
   it('date from the day they are made', () => {

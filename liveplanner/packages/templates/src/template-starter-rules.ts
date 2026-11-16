@@ -16,14 +16,18 @@ import {
   type AutomationStep,
   type AutomationTemplateFill,
   type AutomationTemplatePlan,
-  type AutomationTemplateId,
-} from '@liveplanner/items';
+  type AutomationTemplateId, provideTemplateCardTypes } from '@liveplanner/items';
 import { buildTemplateTabs } from './template-tab';
 import {
   hasStarterRules,
   type PlanTemplateKind,
   type StarterRuleKind,
 } from './plan-template-kinds';
+import { TEMPLATE_CARD_TYPES } from '@liveplanner/items/template-card-types';
+
+// The Plan templates' own card types, so the template whose rules these are can bring them (docs/specs/026-plan/plan-templates.md "Card
+// types a template makes"). A subpath, kept out of the editor's first load.
+provideTemplateCardTypes(TEMPLATE_CARD_TYPES);
 
 type Starter = { id: AutomationTemplateId; on: boolean };
 

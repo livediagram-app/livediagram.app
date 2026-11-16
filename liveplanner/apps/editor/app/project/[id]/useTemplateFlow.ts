@@ -166,9 +166,9 @@ export function useTemplateFlow(opts: {
     if (tabs[0]?.id === activeId) markPendingStarterRules(activeId, kind);
     // A Plan template's boards open on its worked example (docs/specs/026-plan/plan-templates.md "Example cards").
     if (isPlanTemplateKind(kind)) {
-      const { planTemplateSeedItems, seedToday } =
+      const { planTemplateSeedItems, seedToday, seedTimeZone } =
         await import('@liveplanner/templates/plan-template-seeds');
-      const seeds = planTemplateSeedItems(kind, seedToday());
+      const seeds = planTemplateSeedItems(kind, seedToday(), undefined, seedTimeZone());
       if (seeds.length) seedCards(seeds);
     }
     // The scaffold replaced the tab's content, so frame it and return to the Hand tool Plan starts on
