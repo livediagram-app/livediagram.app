@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import {
+  ARTICLE_GROW_SETTLE_TRIES,
   ARTICLE_SETTLE_WINDOW_MS,
+  articleGrowFloor,
   clearArticleGrow,
   isArticleGrowPending,
   isArticleSettleClaimed,
   markArticleGrow,
   markArticleSettle,
+  noteArticleGrown,
 } from './article-grow-store';
 
 describe('article grow marks', () => {
@@ -15,6 +18,19 @@ describe('article grow marks', () => {
     expect(isArticleGrowPending('t', 'f')).toBe(true);
     clearArticleGrow('t', 'f');
     expect(isArticleGrowPending('t', 'f')).toBe(false);
+  });
+
+  it('keeps a grown mark to settle what it added: the first grow sets the floor, a few grows at most', () => {
+    noteArticleGrown('t', 'gone', 1);
+    expect(isArticleGrowPending('t', 'gone')).toBe(false);
+    markArticleGrow('t', 'g');
+    expect(articleGrowFloor('t', 'g')).toBeNull();
+    noteArticleGrown('t', 'g', 1);
+    noteArticleGrown('t', 'g', 3);
+    expect(articleGrowFloor('t', 'g')).toBe(1);
+    for (let i = 2; i < ARTICLE_GROW_SETTLE_TRIES; i++) noteArticleGrown('t', 'g', 4);
+    expect(isArticleGrowPending('t', 'g')).toBe(false);
+    expect(articleGrowFloor('t', 'g')).toBeNull();
   });
 });
 

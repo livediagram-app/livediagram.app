@@ -71,6 +71,25 @@ describe('breakAt', () => {
     expect(breakAt(doc, 1, firstRow + 2)).toEqual({ page: 1, pos: table, block: true });
     expect(breakAt(doc, 1, secondRow + 2)).toEqual({ page: 1, pos: secondRow, block: true });
   });
+  it('takes a heading straight above the break with it, never the one that starts the writing', () => {
+    const h = (id: string) => ({
+      id,
+      type: 'paragraph' as const,
+      style: 'h1' as const,
+      runs: [{ text: 'Head' }],
+    });
+    const p = (id: string) => ({ id, type: 'paragraph' as const, runs: [{ text: 'Body text' }] });
+    const kept = blocksToDoc([p('a'), h('b'), p('c'), h('d'), newArticleTable('t', 2, 2, true)]);
+    // a: 11, b: 6 (positions 11 to 17), c: 11 (17 to 28), d: 6 (28 to 34), the table from 34.
+    expect(breakAt(kept, 0, 17)).toEqual({ page: 0, pos: 11, block: true });
+    expect(breakAt(kept, 0, 18)).toEqual({ page: 0, pos: 11, block: true });
+    expect(breakAt(kept, 0, 37)).toEqual({ page: 0, pos: 28, block: true });
+    // Inside a body's lines, or after a body, nothing moves.
+    expect(breakAt(kept, 0, 20)).toEqual({ page: 0, pos: 20, block: false });
+    expect(breakAt(kept, 0, 28)).toEqual({ page: 0, pos: 28, block: true });
+    const first = blocksToDoc([h('x'), p('y')]);
+    expect(breakAt(first, 0, 6)).toEqual({ page: 0, pos: 6, block: true });
+  });
 });
 
 // A layout the tests can reason about: every place in the writing is one step along a line of 10, five lines (of 20
