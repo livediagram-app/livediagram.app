@@ -3,11 +3,13 @@
 // A live embed's face (liveworkspace/docs/specs/004-index/live-embeds.md "What a reader sees"; each host's
 // docs/specs/013-workspace/embeds.md "Live embeds"): the Embed element showing another app's file. The snapshot is
 // always underneath; on screen and in a place among the page's few, the file's own read-only frame fades in over it.
-// A reader who cannot open the file sees the snapshot and Request Access; a file gone says so; a failure offers Try
-// Again. The face is pointer-inert but for its few controls, so the canvas drags, selects and pans over it, and the
-// frame takes the pointer only while Use the file is on.
+// A reader who cannot open the file sees the snapshot made unreadable, asked of its owner, and Open in its own app; a
+// file gone says so; a failure offers Try Again. The face is pointer-inert but for its few controls, so the canvas
+// drags, selects and pans over it, and the frame takes the pointer only while Use the file is on. Those controls sit
+// above the element, clear of the file's own content, counter-scaled to one size on screen at any zoom.
 import { useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { BrandMark } from '@liveworkspace/brand';
+import { useCanvasZoom } from '../canvas/CanvasZoomContext';
 import { Tooltip, lucideGlyph } from '@liveworkspace/ui';
 import {
   lucideExternalLink,
@@ -78,108 +80,119 @@ export function LiveEmbedView({
   if (!live && using) setUsing(false);
   const href =
     liveItem && host !== null ? liveEmbedItemHref(liveItem.app, liveItem.itemId, host) : null;
+  const noAccess = frame.state === 'no-access';
 
   return (
     <div
       ref={rootRef}
       data-live-embed={frame.state}
-      className={`group relative h-full w-full overflow-hidden rounded-[inherit] bg-slate-100 dark:bg-slate-900 ${className}`}
+      className="group relative h-full w-full rounded-[inherit]"
     >
-      <Snapshot
-        poster={livePoster}
-        app={liveItem?.app}
-        dim={!live && !!liveItem && frame.state !== 'idle' && frame.state !== 'loading'}
-      />
-
-      {live ? (
-        <iframe
-          ref={frameRef}
-          src={frame.src}
-          title={name}
-          sandbox={FRAME_SANDBOX}
-          referrerPolicy="no-referrer"
-          className={`absolute inset-0 h-full w-full border-0 bg-white transition-opacity duration-200 motion-reduce:transition-none dark:bg-slate-900 ${
-            frame.ready ? 'opacity-100' : 'opacity-0'
-          } ${using ? '' : 'pointer-events-none'}`}
+      <div
+        className={`relative h-full w-full overflow-hidden rounded-[inherit] bg-slate-100 dark:bg-slate-900 ${className}`}
+      >
+        <Snapshot
+          poster={livePoster}
+          app={liveItem?.app}
+          look={
+            noAccess
+              ? 'obscured'
+              : !live && !!liveItem && frame.state !== 'idle' && frame.state !== 'loading'
+                ? 'dim'
+                : 'clear'
+          }
         />
-      ) : null}
 
-      {!liveItem ? (
-        livePoster ? null : (
-          <Centre>
-            <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-200">
-              {words.emptyTitle(canChoose)}
+        {live ? (
+          <iframe
+            ref={frameRef}
+            src={frame.src}
+            title={name}
+            sandbox={FRAME_SANDBOX}
+            referrerPolicy="no-referrer"
+            className={`absolute inset-0 h-full w-full border-0 bg-white transition-opacity duration-200 motion-reduce:transition-none dark:bg-slate-900 ${
+              frame.ready ? 'opacity-100' : 'opacity-0'
+            } ${using ? '' : 'pointer-events-none'}`}
+          />
+        ) : null}
+
+        {!liveItem ? (
+          livePoster ? null : (
+            <Centre>
+              <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-200">
+                {words.emptyTitle(canChoose)}
+              </span>
+              <span className="text-[10px] leading-snug text-slate-500 dark:text-slate-400">
+                {words.emptyLine}
+              </span>
+            </Centre>
+          )
+        ) : noAccess ? (
+          <Centre glass>
+            <span className="text-slate-500 dark:text-slate-300">
+              <LockGlyph />
+            </span>
+            <span className="text-[11px] font-semibold text-slate-800 dark:text-slate-100">
+              {words.noAccess(name)}
             </span>
             <span className="text-[10px] leading-snug text-slate-500 dark:text-slate-400">
-              {words.emptyLine}
+              {words.noAccessLine}
+            </span>
+            {href ? (
+              <a
+                href={href}
+                target="_blank"
+                rel="noreferrer noopener"
+                {...keepFromCanvas}
+                onClick={(e) => e.stopPropagation()}
+                className="pointer-events-auto mt-1 cursor-pointer rounded-md bg-brand-700 px-2.5 py-1 text-[11px] font-semibold text-white transition hover:bg-brand-800 dark:bg-brand-400 dark:text-slate-950 dark:hover:bg-brand-300"
+              >
+                {words.open(liveItem.app)}
+              </a>
+            ) : null}
+          </Centre>
+        ) : frame.state === 'gone' ? (
+          <Centre glass>
+            <span className="text-[11px] font-semibold text-slate-800 dark:text-slate-100">
+              {words.gone}
+            </span>
+            <span className="text-[10px] leading-snug text-slate-500 dark:text-slate-400">
+              {words.goneLine(canChoose)}
             </span>
           </Centre>
-        )
-      ) : frame.state === 'no-access' ? (
-        <Centre glass>
-          <span className="text-slate-500 dark:text-slate-300">
-            <LockGlyph />
-          </span>
-          <span className="text-[11px] font-semibold text-slate-800 dark:text-slate-100">
-            {words.noAccess(name)}
-          </span>
-          <span className="text-[10px] leading-snug text-slate-500 dark:text-slate-400">
-            {words.noAccessLine}
-          </span>
-          {href ? (
-            <a
-              href={href}
-              target="_blank"
-              rel="noreferrer noopener"
+        ) : frame.state === 'failed' ? (
+          <Centre glass>
+            <span className="text-[11px] font-semibold text-slate-800 dark:text-slate-100">
+              {words.failed(name)}
+            </span>
+            <button
+              type="button"
               {...keepFromCanvas}
-              onClick={(e) => e.stopPropagation()}
-              className="pointer-events-auto mt-1 cursor-pointer rounded-md bg-brand-700 px-2.5 py-1 text-[11px] font-semibold text-white transition hover:bg-brand-800 dark:bg-brand-400 dark:text-slate-950 dark:hover:bg-brand-300"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSettled(false);
+                frame.retry();
+              }}
+              className="pointer-events-auto mt-1 flex cursor-pointer items-center gap-1.5 rounded-md bg-slate-900/80 px-2.5 py-1 text-[11px] font-semibold text-white transition hover:bg-slate-900 dark:bg-white/15 dark:hover:bg-white/25"
             >
-              {words.requestAccess}
-            </a>
-          ) : null}
-        </Centre>
-      ) : frame.state === 'gone' ? (
-        <Centre glass>
-          <span className="text-[11px] font-semibold text-slate-800 dark:text-slate-100">
-            {words.gone}
-          </span>
-          <span className="text-[10px] leading-snug text-slate-500 dark:text-slate-400">
-            {words.goneLine(canChoose)}
-          </span>
-        </Centre>
-      ) : frame.state === 'failed' ? (
-        <Centre glass>
-          <span className="text-[11px] font-semibold text-slate-800 dark:text-slate-100">
-            {words.failed(name)}
-          </span>
-          <button
-            type="button"
-            {...keepFromCanvas}
-            onClick={(e) => {
-              e.stopPropagation();
-              setSettled(false);
-              frame.retry();
-            }}
-            className="pointer-events-auto mt-1 flex cursor-pointer items-center gap-1.5 rounded-md bg-slate-900/80 px-2.5 py-1 text-[11px] font-semibold text-white transition hover:bg-slate-900 dark:bg-white/15 dark:hover:bg-white/25"
-          >
-            <RetryGlyph />
-            {words.tryAgain}
-          </button>
-        </Centre>
-      ) : null}
+              <RetryGlyph />
+              {words.tryAgain}
+            </button>
+          </Centre>
+        ) : null}
 
-      {liveItem ? (
-        <NameChip
-          app={liveItem.app}
-          name={name}
-          live={live && frame.ready}
-          loading={frame.state === 'loading' || (live && !frame.ready)}
-        />
-      ) : null}
+        {liveItem ? (
+          <NameChip
+            app={liveItem.app}
+            name={name}
+            live={live && frame.ready}
+            loading={frame.state === 'loading' || (live && !frame.ready)}
+          />
+        ) : null}
+      </div>
 
       {liveItem && href ? (
-        <div className="pointer-events-none absolute left-1.5 top-1.5 flex gap-1 opacity-0 transition focus-within:opacity-100 group-hover:opacity-100 motion-reduce:transition-none">
+        <Controls>
           {live && frame.ready ? (
             <Control
               label={using ? words.stopUsing : words.use}
@@ -197,13 +210,32 @@ export function LiveEmbedView({
               aria-label={words.open(liveItem.app)}
               {...keepFromCanvas}
               onClick={(e) => e.stopPropagation()}
-              className="pointer-events-auto flex h-6 w-6 cursor-pointer items-center justify-center rounded-md bg-black/60 text-white backdrop-blur transition hover:bg-black/80"
+              className="pointer-events-auto flex h-7 w-7 cursor-pointer items-center justify-center rounded-md bg-slate-900/85 text-white shadow-sm transition hover:bg-slate-900 dark:bg-slate-700 dark:hover:bg-slate-600"
             >
               <OpenGlyph />
             </a>
           </Tooltip>
-        </div>
+        </Controls>
       ) : null}
+    </div>
+  );
+}
+
+// Use the file and Open: a row just above the element's top left, outside the file's own content, at one size on
+// screen whatever the zoom (counter-scaled, as the canvas's other chrome on an element is), shown on hover or focus.
+function Controls({ children }: { children: ReactNode }) {
+  const zoom = useCanvasZoom();
+  return (
+    <div
+      data-live-embed-controls=""
+      style={{
+        transform: `scale(${1 / zoom})`,
+        transformOrigin: 'bottom left',
+        marginBottom: 6 / zoom,
+      }}
+      className="pointer-events-none absolute bottom-full left-0 z-10 flex gap-1 opacity-0 transition focus-within:opacity-100 group-hover:opacity-100 motion-reduce:transition-none"
+    >
+      {children}
     </div>
   );
 }
@@ -212,11 +244,12 @@ export function LiveEmbedView({
 function Snapshot({
   poster,
   app,
-  dim,
+  look,
 }: {
   poster: string | undefined;
   app: LiveItem['app'] | undefined;
-  dim: boolean;
+  // obscured: a reader without access, for whom no word of it may be readable.
+  look: 'clear' | 'dim' | 'obscured';
 }) {
   if (poster)
     return (
@@ -225,9 +258,8 @@ function Snapshot({
         alt=""
         aria-hidden
         draggable={false}
-        className={`pointer-events-none absolute inset-0 h-full w-full object-cover transition-[filter] duration-200 motion-reduce:transition-none ${
-          dim ? 'blur-[1.5px] saturate-50' : ''
-        }`}
+        data-snapshot={look}
+        className={`pointer-events-none absolute inset-0 h-full w-full object-cover transition-[filter] duration-200 motion-reduce:transition-none ${LOOK[look]}`}
       />
     );
   return (
@@ -243,6 +275,14 @@ function Snapshot({
     </div>
   );
 }
+
+// No word of the snapshot survives the obscured look: a 24 px blur over a poster drawn at most 480 px wide is wider
+// than any of its letters, and the slight scale keeps the blur's soft edge out of the frame.
+const LOOK = {
+  clear: '',
+  dim: 'blur-[1.5px] saturate-50',
+  obscured: 'scale-110 blur-xl saturate-50 opacity-70',
+} as const;
 
 function Centre({ glass = false, children }: { glass?: boolean; children: ReactNode }) {
   return (
@@ -317,10 +357,10 @@ function Control({
           e.stopPropagation();
           onPress();
         }}
-        className={`pointer-events-auto flex h-6 w-6 cursor-pointer items-center justify-center rounded-md backdrop-blur transition ${
+        className={`pointer-events-auto flex h-7 w-7 cursor-pointer items-center justify-center rounded-md shadow-sm transition ${
           pressed
             ? 'bg-brand-700 text-white dark:bg-brand-400 dark:text-slate-950'
-            : 'bg-black/60 text-white hover:bg-black/80'
+            : 'bg-slate-900/85 text-white hover:bg-slate-900 dark:bg-slate-700 dark:hover:bg-slate-600'
         }`}
       >
         {children}

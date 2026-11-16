@@ -7,6 +7,7 @@ vi.mock('@/lib/api/card-threads', () => ({ fetchThreads: vi.fn(), writeThread: v
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 import { fetchThreads, writeThread } from '@/lib/api/card-threads';
+import { WorkbenchConfinedError } from '@/lib/api/workbench-confinement';
 import { track } from '@/lib/telemetry';
 import { createThreadStore, itemsWithCounts, useThreadCount } from './thread-store';
 import { threadRefusalMessage, useCardThreads } from './useCardThreads';
@@ -67,6 +68,14 @@ describe('loading', () => {
     vi.mocked(fetchThreads).mockRejectedValue(new Error('down'));
     const { result } = hook();
     await waitFor(() => expect(result.current.status).toBe('error'));
+  });
+
+  it('keeps quiet when a confined workbench session refuses threads', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.mocked(fetchThreads).mockRejectedValue(new WorkbenchConfinedError('Get.Projects'));
+    const { result } = hook();
+    await waitFor(() => expect(result.current.status).toBe('error'));
+    expect(warn).not.toHaveBeenCalled();
   });
 
   it('waits for the items', () => {

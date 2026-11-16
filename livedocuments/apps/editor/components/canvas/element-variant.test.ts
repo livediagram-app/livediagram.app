@@ -306,3 +306,27 @@ describe('describeVariant: text shadow', () => {
     expect(describeVariant(make('text'), false, false, null).style?.textShadow).toBeUndefined();
   });
 });
+
+// A live embed clips its own face to the radius, so its controls can sit just above the element
+// (liveworkspace/docs/specs/004-index/live-embeds.md "What a reader sees"); every other embed is clipped by the wrapper.
+describe('the Embed wrapper', () => {
+  const embed = (embedProvider: string) =>
+    ({
+      id: 'e',
+      type: 'video',
+      x: 0,
+      y: 0,
+      width: 480,
+      height: 270,
+      embedProvider,
+    }) as unknown as BoxedElement;
+
+  it('leaves a live embed unclipped and clips every other embed', () => {
+    expect(describeVariant(embed('live'), false, false, null).className).not.toContain(
+      'overflow-hidden',
+    );
+    expect(describeVariant(embed('youtube'), false, false, null).className).toContain(
+      'overflow-hidden',
+    );
+  });
+});

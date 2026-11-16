@@ -73,7 +73,7 @@ element made from the palette's **Live Embed** tile (`embedProvider: 'live'`), d
   `livePoster` (its snapshot). Only an Editor chooses: a Participant and a Viewer see the embed as everyone does, and
   the dialog never opens for them.
 - **Each reader's own access.** Every reader sees the file live only with their own access to it, opened read-only in
-  its app's frame; anyone else sees the snapshot and **Request Access**. Nothing here mints a share link.
+  its app's frame; anyone else sees the snapshot made unreadable and **Open in <App>**, with "Ask its owner to share it with you". Nothing here mints a share link.
 - **On screen only.** A frame is asked for only while the element is on screen, at most three at once in the page,
   and given up two seconds after it leaves.
 - **Open** opens the file in its own app in a new browser tab; **Use the file** hands the pointer to the frame, and

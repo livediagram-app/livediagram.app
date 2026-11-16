@@ -68,16 +68,16 @@ Work Tracker 930.
 
 The face (`LiveEmbedView`), from `liveItem`, the slot and the frame hook:
 
-| State     | When                                                            | Shows                                                            |
-| --------- | --------------------------------------------------------------- | ---------------------------------------------------------------- |
-| empty     | no `liveItem`, no poster                                        | "Double-click to choose a file" (or "No file chosen yet")        |
-| frozen    | no `liveItem`, a poster (a Community copy)                      | the poster alone                                                 |
-| idle      | a link, no slot (off screen, over the cap, nested)              | snapshot, name chip, Open                                        |
-| loading   | a slot, ticket asked                                            | snapshot, chip with a pulse                                      |
-| live      | a ticket: the frame mounted, `ready` after hello                | frame fading in over the snapshot, Live chip, Use the file, Open |
-| no-access | refusal 401/403/404, `ended` revoked/refused, a renewal refused | blurred snapshot, lock, Request Access                           |
-| gone      | 410, `ended` trashed                                            | "This file is no longer there."                                  |
-| failed    | anything else                                                   | "<name> could not be shown just now.", Try Again                 |
+| State     | When                                                            | Shows                                                                                                                 |
+| --------- | --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| empty     | no `liveItem`, no poster                                        | "Double-click to choose a file" (or "No file chosen yet")                                                             |
+| frozen    | no `liveItem`, a poster (a Community copy)                      | the poster alone                                                                                                      |
+| idle      | a link, no slot (off screen, over the cap, nested)              | snapshot, name chip, Open                                                                                             |
+| loading   | a slot, ticket asked                                            | snapshot, chip with a pulse                                                                                           |
+| live      | a ticket: the frame mounted, `ready` after hello                | frame fading in over the snapshot, Live chip, Use the file, Open                                                      |
+| no-access | refusal 401/403/404, `ended` revoked/refused, a renewal refused | obscured snapshot (`data-snapshot="obscured"`, `blur-xl`), lock, "Ask its owner to share it with you.", Open in <App> |
+| gone      | 410, `ended` trashed                                            | "This file is no longer there."                                                                                       |
+| failed    | anything else                                                   | "<name> could not be shown just now.", Try Again                                                                      |
 
 - no-access, gone and failed give the slot back (`settledWithoutFrame`) and stand until the link changes or Try Again.
 - Leaving the slot drops a live frame; the next slot asks a new ticket.
@@ -165,7 +165,9 @@ originHost, kind }`.
 
 - Tile: Media, embed group, "Live Embed", after Website, the window-with-a-live-dot art.
 - Face: the snapshot fills the element (`object-cover`); a glass name chip bottom left (app logo, name, Live dot);
-  controls top left on hover or focus (Use the file, Open), as the provider embeds place theirs; state cards centred
+  controls in a row above the element's top left on hover or focus (Use the file, Open), counter-scaled by
+  `useCanvasZoom` to 28 px on screen; the host's Embed wrapper drops its `overflow-hidden` for a live embed so the row
+  shows, the face clipping itself to the radius; state cards centred
   on frosted glass.
 - Picker: the shared Dialog, "Choose a File", subtitle on everyone's own access; Connect list rows and ink.
 
