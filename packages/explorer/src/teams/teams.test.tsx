@@ -10,6 +10,9 @@ import type { ExplorerView } from '../views';
 import { Explorer } from '../explorer/Explorer';
 import { landOnMyWork } from '../explorer/TeamPane';
 import { ExplorerPanel } from '../panel/ExplorerPanel';
+import { presenceColourForKey } from '@liveworkspace/settings/presence';
+import { avatarFill } from '../ui/avatar-fill';
+import { memberFill } from './TeamCard';
 import { lastAdmin, memberName, orderMembers, removalCopy } from './rules';
 
 const details = (over: Partial<TeamDetails['team']> = {}): TeamDetails => ({
@@ -135,6 +138,33 @@ describe('a team’s view', () => {
     expect(screen.getByText('Kai Moss')).toBeTruthy();
     expect(screen.getByText('Invited')).toBeTruthy();
     expect(await screen.findByText('Item 1')).toBeTruthy();
+  });
+
+  it("paints each member's disc in their presence colour, and Automatic in the colour the apps give them", async () => {
+    const team = details();
+    team.members[1]!.color = '#f97316';
+    page({ kind: 'team', id: 't1' }, fakeHost(team));
+    await card();
+    const disc = (id: string) =>
+      document.querySelector<HTMLElement>(`[data-team-member="${id}"] [data-optical="disc"]`)!;
+    const rgb = (hex: string) => {
+      const probe = document.createElement('span');
+      probe.style.backgroundColor = hex;
+      return probe.style.backgroundColor;
+    };
+    // Their own colour, shaded until the white initials read at AA.
+    expect(disc('m2').style.backgroundColor).toBe(rgb(avatarFill('#f97316')!));
+    expect(disc('m2').textContent).toBe('AL');
+    // Automatic: keyed by the account, as every app keys it; an invitation by its address.
+    expect(disc('m1').style.backgroundColor).toBe(
+      rgb(avatarFill(presenceColourForKey('user_me'))!),
+    );
+    expect(disc('m3').style.backgroundColor).toBe(
+      rgb(avatarFill(presenceColourForKey('kai.moss@x.test'))!),
+    );
+    expect(memberFill({ id: 'm', userId: 'u', email: null, color: 'oklch(70% 0.1 200)' })).toBe(
+      avatarFill(presenceColourForKey('u')),
+    );
   });
 
   it('isolates the organisation, names and addresses, so right-to-left text turns nothing else around', async () => {
@@ -380,6 +410,10 @@ describe('a team’s view', () => {
   it('is a not-found card for a team the person is not in', async () => {
     page({ kind: 'team', id: 'gone' }, fakeHost(null));
     expect(await screen.findByText('Team not found')).toBeTruthy();
+    // Nothing offers to make or filter anything in a team that isn't there.
+    expect(screen.queryByRole('group', { name: 'View mode' })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^(Create|New Plan|New Folder)/ })).toBeNull();
+    expect(screen.queryByRole('group', { name: 'Filters' })).toBeNull();
     // White on brand-600 (sky, liveworkspace's brand) is 4.09:1: the way back is the shared primary Button, on 700;
     // the 404 label lightens on the dark card (rose-600 there is 3.49:1).
     const notFound = (await screen.findByText('Team not found')).closest('div')!;

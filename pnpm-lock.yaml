@@ -6608,6 +6608,9 @@ importers:
       '@liveworkspace/icons':
         specifier: workspace:*
         version: link:../icons
+      '@liveworkspace/model-core':
+        specifier: workspace:*
+        version: link:../model-core
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../settings
@@ -7284,6 +7287,9 @@ importers:
       '@liveworkspace/index-client':
         specifier: workspace:*
         version: link:../index-client
+      '@liveworkspace/model-core':
+        specifier: workspace:*
+        version: link:../model-core
       '@liveworkspace/settings':
         specifier: workspace:^
         version: link:../settings
@@ -7824,6 +7830,10 @@ importers:
         version: 5.1.0(@types/node@26.6.6)(@vitest/coverage-v8@5.1.0)(jsdom@31.0.0(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
 
   packages/settings:
+    dependencies:
+      '@liveworkspace/model-core':
+        specifier: workspace:*
+        version: link:../model-core
     devDependencies:
       oxlint:
         specifier: ^1.93.0

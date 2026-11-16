@@ -22,6 +22,8 @@ export type TeamMember = {
   // A joined member's published Google picture (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures"), read with the
   // members list; null or absent for none.
   picture?: string | null;
+  // A joined member's presence colour (Settings › Profile), null or absent for Automatic: their disc wears it.
+  color?: string | null;
 };
 
 /** The team's join link, for its admins: anyone signed in who opens it joins as a member, until it ends. */

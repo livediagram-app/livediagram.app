@@ -6,6 +6,7 @@ import {
   PROFILE_NAME_MAX,
   presenceColour,
 } from './index';
+import { presenceColourForKey } from './presence';
 
 // WCAG 2 contrast between two #rrggbb colours.
 function luminance(hex: string): number {
@@ -44,6 +45,23 @@ describe('presence colours', () => {
     expect(presenceColour('#123456')).toBeUndefined();
     expect(presenceColour(null)).toBeUndefined();
     expect(presenceColour('')).toBeUndefined();
+  });
+});
+
+describe('presenceColourForKey', () => {
+  it('picks the same palette colour for the same key, as the apps pick for Automatic', () => {
+    const colour = presenceColourForKey('user_abc');
+    expect(PRESENCE_COLOUR_VALUES).toContain(colour);
+    expect(presenceColourForKey('user_abc')).toBe(colour);
+    // The apps' colorForKey over the same palette (livediagram api-schema participant-colours.ts).
+    let hash = 0x811c9dc5;
+    for (const ch of 'user_abc') hash = Math.imul(hash ^ ch.charCodeAt(0), 0x01000193);
+    expect(colour).toBe(PRESENCE_COLOUR_VALUES[Math.abs(hash | 0) % PRESENCE_COLOUR_VALUES.length]);
+  });
+
+  it('spreads keys across the palette', () => {
+    const keys = Array.from({ length: 40 }, (_, i) => `user_${i}`);
+    expect(new Set(keys.map(presenceColourForKey)).size).toBeGreaterThan(5);
   });
 });
 

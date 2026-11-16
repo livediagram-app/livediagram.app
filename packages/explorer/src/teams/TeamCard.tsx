@@ -11,6 +11,9 @@ import { useCallback, useEffect, useId, useRef, useState, type FormEvent } from 
 import { isAbort } from '../data/errors';
 import { teamErrorMessage, type TeamDetails, type TeamMember, type TeamRole } from '../data/teams';
 import { Button, ConfirmDialog, PictureDisc } from '@liveworkspace/ui';
+import { initialsOf as personInitials } from '@liveworkspace/model-core/names';
+import { presenceColourForKey } from '@liveworkspace/settings/presence';
+import { avatarFill } from '../ui/avatar-fill';
 import { LIST_CARD } from '../ui/classes';
 import { CloseIcon, LinkIcon, PencilIcon, TrashIcon } from '../ui/icons';
 import { MenuActionRow, PortalMenu } from '../ui/Menu';
@@ -85,6 +88,14 @@ export function initialsOf(name: string): string {
   // Code points, so a team named "🚀 Launch" shows its rocket, not half of it.
   const first = (word: string | undefined) => (word ? Array.from(word)[0]! : '');
   return (first(parts[0]) + (parts.length > 1 ? first(parts.at(-1)) : '')).toUpperCase() || '?';
+}
+
+/** A member's disc: their own presence colour, else the one every app gives someone on Automatic (keyed by their
+ *  account, else their address, settings presenceColourForKey), shaded until white initials read at AA (avatarFill).
+ *  A custom colour that isn't #rgb or #rrggbb takes the Automatic one. */
+export function memberFill(m: Pick<TeamMember, 'color' | 'userId' | 'email' | 'id'>): string {
+  const automatic = presenceColourForKey(m.userId ?? m.email ?? m.id);
+  return (m.color ? avatarFill(m.color) : null) ?? avatarFill(automatic) ?? automatic;
 }
 
 type Asking =
@@ -377,11 +388,10 @@ function TeamMemberRow({
         pictureUrl={state === 'joined' ? m.picture : null}
         name={name}
         size={32}
-        className={`flex bg-brand-500 text-xs font-semibold text-white ${
-          waiting || answered ? 'opacity-50' : ''
-        }`}
+        style={{ backgroundColor: memberFill(m) }}
+        className={`flex text-xs font-semibold text-white ${waiting || answered ? 'opacity-50' : ''}`}
       >
-        {initialsOf(name)}
+        {personInitials(name, m.email)}
       </PictureDisc>
       <span className="min-w-0 flex-1">
         <span className="flex items-center gap-1.5">

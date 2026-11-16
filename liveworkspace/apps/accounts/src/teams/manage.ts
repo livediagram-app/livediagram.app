@@ -57,7 +57,9 @@ export async function createTeam(
     role: 'admin',
     memberCount: 1,
     invitedCount: 0,
-    members: [{ id: memberId, name: null, email: memberEmail, role: 'admin', picture: null }],
+    members: [
+      { id: memberId, name: null, email: memberEmail, role: 'admin', picture: null, color: null },
+    ],
   });
 }
 
