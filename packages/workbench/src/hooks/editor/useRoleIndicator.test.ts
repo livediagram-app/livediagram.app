@@ -13,6 +13,7 @@ describe('createUseRoleIndicator', () => {
       role: 'edit',
       ownerName: 'Olive',
       isSelf: true,
+      team: null,
       onToggle: toggleViewPreview,
     });
     ctx = { isOwner: false, can: { level: 'view' }, canToggleRole: false, toggleViewPreview };
@@ -20,7 +21,25 @@ describe('createUseRoleIndicator', () => {
       role: 'view',
       ownerName: null,
       isSelf: false,
+      team: null,
       onToggle: undefined,
+    });
+  });
+
+  it('names the owning team where the editor resolves one, leaving isSelf and the toggle alone', () => {
+    const toggleViewPreview = vi.fn();
+    const ctx = { isOwner: true, can: { level: 'edit' }, canToggleRole: true, toggleViewPreview };
+    const useRoleIndicator = createUseRoleIndicator({
+      useEditorContext: () => ctx,
+      resolveOwnerBadge: () => ({ name: 'Olive' }),
+      resolveOwnerTeam: () => ({ name: 'Design' }),
+    });
+    expect(useRoleIndicator()).toEqual({
+      role: 'edit',
+      ownerName: 'Olive',
+      isSelf: true,
+      team: { name: 'Design' },
+      onToggle: toggleViewPreview,
     });
   });
 });

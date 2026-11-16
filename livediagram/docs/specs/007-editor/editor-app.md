@@ -73,7 +73,12 @@ The **role pill** says whether you are editing, participating in or viewing this
 - **Level with the visibility badge.** Both are 19 px pills centred on the title's line: neither sits higher or lower.
 - **Who owns the document** is disclosed progressively: a Tooltip on the pill reads "Owned by <name>" ("Owned by you"
   for the owner), and the pill's accessible name carries the same words after its role. There is no separate owner
-  badge. With no known owner (the owner has never joined the room), the pill has no Tooltip.
+  badge. With no known owner (the owner has never joined the room), the pill has no Tooltip. **On a team canvas** (a
+  document in a team library, [Team shared documents](../013-workspace/team-shared-documents.md)) the team owns it, so
+  the pill names the team for everyone, its members and link visitors alike: "Owned by <team name>", or "Owned by a
+  team" where the session does not know the team's name (a visitor outside the team). Every joined member holds edit
+  and gets the owner's chrome, so "Owned by you" there told each of them they owned it. Who gets the toggle is
+  unchanged: it still follows your role.
 - **A toggle when your role allows editing.** For the owner, and equally for a visitor whose link grants edit, the pill is a
   button: each click steps **Editing**, then **Participating**, a preview of the document as a Participant sees and
   works it ([Share roles](../013-workspace/share-roles.md)), then **Viewing**, a read-only preview as a view-link

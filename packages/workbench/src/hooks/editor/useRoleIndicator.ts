@@ -14,11 +14,16 @@ export function createUseRoleIndicator<Role, Ctx extends RoleContext<Role>>(deps
   useEditorContext: () => Ctx;
   // Who the pill discloses as the owner, read off the same context.
   resolveOwnerBadge: (ctx: Ctx) => { name: string } | null;
+  // The team that owns a team canvas (its name, or null where the session does not know it); null on a personal
+  // document. Optional: an editor without team canvases leaves it out. It changes only the words, never `isSelf` or
+  // who gets the toggle.
+  resolveOwnerTeam?: (ctx: Ctx) => { name: string | null } | null;
 }) {
   return function useRoleIndicator(): {
     role: Role;
     ownerName: string | null;
     isSelf: boolean;
+    team: { name: string | null } | null;
     onToggle?: () => void;
   } {
     const ctx = deps.useEditorContext();
@@ -27,6 +32,7 @@ export function createUseRoleIndicator<Role, Ctx extends RoleContext<Role>>(deps
       role: ctx.can.level,
       ownerName: owner?.name ?? null,
       isSelf: ctx.isOwner,
+      team: deps.resolveOwnerTeam?.(ctx) ?? null,
       onToggle: ctx.canToggleRole ? ctx.toggleViewPreview : undefined,
     };
   };

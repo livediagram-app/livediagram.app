@@ -17,6 +17,14 @@ describe('roleOwnerLabel', () => {
     expect(roleOwnerLabel('Ada', true)).toBe('Owned by you');
     expect(roleOwnerLabel(null, false)).toBe('');
   });
+
+  // Work Tracker 1035: every member of a team holds the owner's chrome on its canvases.
+  it('names the team on a team canvas, for self and others alike', () => {
+    expect(roleOwnerLabel('Ada', true, { name: 'Design' })).toBe('Owned by Design');
+    expect(roleOwnerLabel('Ada', false, { name: 'Design' })).toBe('Owned by Design');
+    expect(roleOwnerLabel(null, false, { name: null })).toBe('Owned by a team');
+    expect(roleOwnerLabel('Ada', true, null)).toBe('Owned by you');
+  });
 });
 
 describe('RolePill', () => {
@@ -40,6 +48,19 @@ describe('RolePill', () => {
     );
     fireEvent.click(pill);
     expect(onToggle).toHaveBeenCalledTimes(1);
+  });
+
+  it('names the team on a team canvas, keeping the toggle where the role allows it', () => {
+    const onToggle = vi.fn();
+    render(<RolePill role="edit" ownerName="Ada" isSelf team={{ name: 'Design' }} onToggle={onToggle} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Editing. Owned by Design' }));
+    expect(onToggle).toHaveBeenCalledTimes(1);
+    cleanup();
+    render(<RolePill role="view" ownerName="Ada" isSelf={false} team={{ name: null }} />);
+    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.getByText('Viewing').closest('[tabindex]')!.textContent).toContain(
+      'Owned by a team',
+    );
   });
 
   it('offers the way back while previewing', () => {
