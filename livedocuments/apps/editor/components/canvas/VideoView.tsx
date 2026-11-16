@@ -19,6 +19,7 @@ import {
 import { track } from '@/lib/telemetry';
 import { bodySetClass } from '@/lib/animation-classes';
 import { useFrameBlocked } from '@liveworkspace/workbench/components/canvas/use-frame-blocked';
+import { LiveEmbedView } from '@liveworkspace/workbench/components/live-embed/LiveEmbedView';
 
 // Inner content of a video element (docs/specs/009-elements/youtube-video.md): a YouTube poster frame with a
 // play button, which swaps for the real player when pressed.
@@ -36,7 +37,30 @@ import { useFrameBlocked } from '@liveworkspace/workbench/components/canvas/use-
 //   (docs/specs/002-project-scope/open-source-and-business-model.md); we should not be silently
 //   shipping people to Google on page load.
 
-export function VideoView({ element }: { element: VideoElement }) {
+export function VideoView({
+  element,
+  canChoose = false,
+}: {
+  element: VideoElement;
+  // An Editor on an unlocked embed, who picks a live embed's file (a double-click).
+  canChoose?: boolean;
+}) {
+  // A live embed (liveworkspace/docs/specs/004-index/live-embeds.md): another app's file, live and read-only.
+  if (element.embedProvider === 'live')
+    return (
+      <LiveEmbedView
+        liveItem={element.liveItem}
+        liveName={element.liveName}
+        livePoster={element.livePoster}
+        hostName="livedocuments"
+        canChoose={canChoose}
+        className={bodySetClass(element, 'media') ?? ''}
+      />
+    );
+  return <ProviderEmbed element={element} />;
+}
+
+function ProviderEmbed({ element }: { element: VideoElement }) {
   const url = element.link?.kind === 'url' ? element.link.url : undefined;
   const target = embedTargetFor(url);
   const [playing, setPlaying] = useState(false);

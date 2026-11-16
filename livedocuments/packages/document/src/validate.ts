@@ -54,6 +54,7 @@ import {
   oneOfRule,
 } from '@liveworkspace/model-core/validate-primitives';
 import { isRecord } from '@liveworkspace/model-core/is-record';
+import { LIVE_EMBED_CHECKS } from '@liveworkspace/element-model/live-item';
 
 export type { ElementValidationIssue } from '@liveworkspace/model-core/validate-primitives';
 
@@ -349,7 +350,10 @@ function boxedIssue(el: Record<string, unknown>): ElementValidationIssue | null 
       return el.articleNote === 'comment' || el.articleNote === 'action'
         ? null
         : issue('articleNote', oneOfRule(['comment', 'action']));
-    // sticky / link-card / video carry no extra required fields.
+    // A live embed's link and snapshot (liveworkspace/docs/specs/004-index/live-embeds.md "Security").
+    case 'video':
+      return firstFieldIssue(el, LIVE_EMBED_CHECKS);
+    // sticky / link-card carry no extra required fields.
     default:
       return null;
   }

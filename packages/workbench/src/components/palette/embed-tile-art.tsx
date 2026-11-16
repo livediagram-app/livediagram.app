@@ -19,6 +19,20 @@ export function CodeBlockTileArt() {
   );
 }
 
+// A live embed (liveworkspace/docs/specs/004-index/live-embeds.md): a window onto another file, two shapes joined
+// inside, and the live dot.
+export function LiveEmbedTileArt() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <rect x="2" y="4" width="20" height="16" rx="3" stroke="currentColor" strokeWidth="1.7" />
+      <rect x="5.5" y="10" width="4.5" height="4" rx="1" fill="currentColor" />
+      <rect x="13" y="13" width="5" height="4" rx="1" fill="currentColor" opacity="0.55" />
+      <path d="M10 12h1.5a1 1 0 0 1 1 1v2H13" stroke="currentColor" strokeWidth="1.3" />
+      <circle cx="18" cy="7.5" r="1.6" fill="#10b981" />
+    </svg>
+  );
+}
+
 export function YouTubeTileArt() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>

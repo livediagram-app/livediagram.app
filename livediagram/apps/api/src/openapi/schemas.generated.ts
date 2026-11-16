@@ -2471,7 +2471,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "loom",
       "figma",
       "gdocs",
-      "website"
+      "website",
+      "live"
     ],
     "type": "string"
   },
@@ -3869,6 +3870,31 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "info"
     ],
     "type": "string"
+  },
+  "LiveEmbedApp": {
+    "enum": [
+      "livediagram",
+      "liveplanner",
+      "livedocuments",
+      "livedesign"
+    ],
+    "type": "string"
+  },
+  "LiveItem": {
+    "additionalProperties": false,
+    "properties": {
+      "app": {
+        "$ref": "#/components/schemas/LiveEmbedApp"
+      },
+      "itemId": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "app",
+      "itemId"
+    ],
+    "type": "object"
   },
   "MediaAnimation": {
     "enum": [
@@ -7999,6 +8025,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "link": {
         "$ref": "#/components/schemas/ElementLink"
+      },
+      "liveItem": {
+        "$ref": "#/components/schemas/LiveItem"
+      },
+      "liveName": {
+        "type": "string"
+      },
+      "livePoster": {
+        "type": "string"
       },
       "locked": {
         "type": "boolean"

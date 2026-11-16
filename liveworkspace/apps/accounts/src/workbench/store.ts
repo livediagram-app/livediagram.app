@@ -13,6 +13,7 @@
 // for the earliest such moment, and cleared once nothing will. A store left with nothing deletes itself.
 
 import {
+  EMBED_TOKEN_ID,
   type ConsumedTicket,
   type EndedAccess,
   type InvalidTicketReason,
@@ -58,6 +59,7 @@ import {
   livePairingRequest,
   nextLapseOf,
   recordApprovedPairing,
+  recordEmbedPairing,
   sweepLapsed,
   takeQuotaUses,
 } from './store-statements.ts';
@@ -238,6 +240,20 @@ export class WorkbenchCore {
     if (!this.#started()) return null;
     const row = this.#first(`SELECT ${PAIRING_COLUMNS} FROM wb_pairings WHERE id = ?`, id);
     return row ? toPairing(row) : null;
+  }
+
+  // A live embed's pairing for an app and host origin (workbench.md "Live embed tickets"), made on first use.
+  async embedPairing(input: {
+    personId: string;
+    app: string;
+    origin: string;
+    now: number;
+  }): Promise<WorkbenchPairingRow> {
+    this.#ensure(input.personId);
+    recordEmbedPairing(this.#sql, input);
+    const pairing = await this.findPairing(input.app, EMBED_TOKEN_ID, input.origin);
+    if (!pairing) throw new Error('workbench: an embed pairing was not recorded');
+    return pairing;
   }
 
   // Every pairing (of one app, or all), newest first. The caller drops those of tokens no longer live.
@@ -455,6 +471,8 @@ export class WorkbenchCore {
 }
 
 export {
+  EMBED_PAIRING_NAME,
+  EMBED_TOKEN_ID,
   WORKBENCH_SESSION_PREFIX,
   WORKBENCH_TICKET_BYTES,
   WORKBENCH_PAIRING_CODE_BYTES,
