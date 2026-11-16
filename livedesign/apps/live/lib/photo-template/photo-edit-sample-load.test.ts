@@ -18,6 +18,14 @@ describe('the Photo Edit sample files', () => {
     expect(total).toBeLessThan(160_000);
   });
 
+  it('fetches each file from where the bundler put it', async () => {
+    const f = vi.fn(fromDisk);
+    vi.stubGlobal('fetch', f);
+    expect(await loadPhotoEditSample()).not.toBeNull();
+    expect(f).toHaveBeenCalledTimes(SAMPLE_FILES.length);
+    vi.unstubAllGlobals();
+  });
+
   it('is none at all when a file fails to come or is not the file', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     expect(await loadPhotoEditSample(async () => new Response(null, { status: 404 }))).toBeNull();
