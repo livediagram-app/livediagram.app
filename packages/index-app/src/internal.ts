@@ -38,6 +38,9 @@
 //                                                            liveworkspace/docs/specs/003-accounts/data-export.md)
 //   POST   /api/internal/items/import     {owner, folderId, name, file}  a new item for `owner` from a file: the
 //                                                            Drive mirror's Import as a copy. Takes DRIVE_KEY too.
+//   POST   /api/internal/items/from-template {owner, folderId, name, template}  a new item for `owner` from one of
+//                                                            the app's templates, a project kit's part
+//                                                            (template-item.ts, liveworkspace/docs/specs/004-index/kits.md)
 //   PUT    /api/internal/items/:id/migration  MigrationRoomPayload  an old livediagram.app document's part written
 //                                                            into the item's room with its own times (docs/migration.md
 //                                                            "The apps' migration door"). Takes MIGRATION_KEY too.
@@ -68,6 +71,7 @@ import {
 import { answerDataExport, isDataExportFormat } from './data-export-door';
 import { answerSheetSourceDoor, isSheetSourceDoor } from './sheet-source-doors';
 import { BULK_PURGE_MAX, purgeEach } from './purge';
+import { templateDoor } from './template-item';
 import { bearerMatches } from './timing-safe';
 import {
   type Copier,
@@ -112,6 +116,8 @@ export type {
   ImportResult,
   InternalItemHandlers,
   InternalItemsOptions,
+  TemplateInput,
+  TemplateResult,
 } from './internal-contract';
 export { MIGRATION_MAX_BYTES, PERSON_ITEMS_MAX } from './internal-doors';
 
@@ -250,6 +256,8 @@ export async function handleInternalItems(
   if (exporting)
     return handlers.export ? exportItem(url, request, id, handlers.export) : notFound();
   if (importing) return handlers.import ? importItem(request, handlers.import) : notFound();
+  if (rest.length === 1 && id === 'from-template' && request.method === 'POST')
+    return handlers.fromTemplate ? templateDoor(request, handlers.fromTemplate) : notFound();
   if (migrating)
     return handlers.migrate ? migrateItem(request, id, app, handlers.migrate) : notFound();
 

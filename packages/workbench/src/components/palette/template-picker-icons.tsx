@@ -10,15 +10,8 @@ export function FolderOpenIcon() {
   );
 }
 
-// Inline spinner for the wizard's Create button while the host commits.
-export function Spinner() {
-  return (
-    <Glyph size={13} units={16} className="animate-spin" strokeLinejoin="miter">
-      <circle cx="8" cy="8" r="6" strokeOpacity="0.25" />
-      <path d="M14 8a6 6 0 0 0-6-6" />
-    </Glyph>
-  );
-}
+// The wizard's Create button's spinner is the shared one.
+export { Spinner } from '@liveworkspace/ui';
 
 export function SparkleIcon() {
   return (

@@ -10,6 +10,7 @@ Follow the references below only as needed; never upfront.
 - ./inbox.md - when an app pushes a summary, threads, actions or forms, or when building the Inbox
 - ./events.md - when recording events, reading an item's History, or the daily sweep
 - ./connected-tabs.md - when working on connected tabs: the build order, the connections table, the make, open and removal doors, each app's column and door
+- ./kits.md - when working on project kits: the run's wire shapes, the index's two routes, the apps' template door, tests
 - ./sheet-sources.md - when working on sheet sources: the index's two routes, the doors' contract, the watch and the change signal, limits and tests
 - ./live-embeds.md - when working on live embeds: the element's fields and checks, the embed ticket, the slots, the host's
   side of the frame's messages, snapshots, limits and tests

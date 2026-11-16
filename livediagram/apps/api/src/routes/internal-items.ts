@@ -32,6 +32,7 @@ import { personStore } from '../person-client';
 import { closeWorkbenchSessions } from '../room-access-client';
 import { reportServerEvent } from '../server-telemetry';
 import { importDocumentFileFor } from './internal-file';
+import { documentFromTemplate } from './internal-template';
 import { indexAppClient } from '../index-service';
 import { capStoredName } from '../names';
 import type { Env } from '../types';
@@ -112,6 +113,8 @@ export function handleInternalItems(
       exportComments: (id) => documentRoom(env, id).exportComments(),
       // A new canvas from a Drive file, as its owner's (routes/internal-file.ts).
       import: (input) => importDocumentFileFor(env, input),
+      // A new item from one of this app's templates, a project kit's part (internal-template.ts).
+      fromTemplate: (input) => documentFromTemplate(env, input),
       // An old livediagram.app document's livediagram part, into its canvas's room (document-migration.ts). A tab over
       // the tab cap refuses the whole part (413) before the room is called.
       migrate: async (payload) => {

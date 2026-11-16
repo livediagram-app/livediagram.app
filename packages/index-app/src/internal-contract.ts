@@ -147,6 +147,9 @@ export type InternalItemHandlers = {
   // Where Community posts' items stand, as the index reads them (the app's index client `communityStates`), for the
   // Community's sweep. An app without it answers 404.
   communityStates?: (posts: CommunityStateAsk[]) => Promise<CommunityStateAnswer[]>;
+  // A new item for `owner` from one of the app's templates (template-item.ts `itemFromTemplate`), a project kit's
+  // part (liveworkspace/docs/specs/004-index/kits.md "The apps' door"). An app without it answers 404.
+  fromTemplate?: (input: TemplateInput) => Promise<TemplateResult>;
 } & DataExportHandlers &
   SheetSourceHandlers;
 
@@ -156,6 +159,17 @@ export type ImportInput = { owner: string; folderId: string | null; name: string
 
 export type ImportResult =
   { status: 'ok'; id: string } | { status: 'invalid_file' } | { status: 'too_large' };
+
+// The template door's body: whose item it is (an account id), the folder of theirs it goes in (null: the top), its
+// name, and the template's kind, as the app's `/new?template=` takes it.
+export type TemplateInput = {
+  owner: string;
+  folderId: string | null;
+  name: string;
+  template: string;
+};
+
+export type TemplateResult = { status: 'ok'; id: string } | { status: 'unknown_template' };
 
 // The largest import body the door reads: a Durable Object RPC message's cap, which an item's content crosses whole.
 // A bigger body is refused by its Content-Length before it is read.

@@ -49,7 +49,7 @@ export async function bodyOf(request: Request): Promise<Record<string, unknown> 
 export const PERSON_ITEMS_MAX = 100;
 const PERSON_ID = /^(user|guest)_[A-Za-z0-9-]{1,64}$/;
 const GUEST_ID = /^guest_[A-Za-z0-9-]{1,64}$/;
-const USER_ID = /^user_[A-Za-z0-9-]{1,64}$/;
+export const USER_ID = /^user_[A-Za-z0-9-]{1,64}$/;
 
 export async function personMerged(
   request: Request,

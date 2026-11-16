@@ -406,6 +406,8 @@ export const INDEX_ERRORS = [
   'connection_target_gone',
   'connection_link_removed',
   'wrong_app',
+  // Project kits (kits.md): a guest starting one.
+  'sign_in_required',
   // Archived (one-explorer-contracts.md "Archived"): what the owner hears from a grant, an open, a copy, a favourite or
   // a share while it is archived; a teammate who isn't its owner archiving it; an item in the Trash archived.
   'archived',
