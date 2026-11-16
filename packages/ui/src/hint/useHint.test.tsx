@@ -299,7 +299,7 @@ describe('useHint, pressing', () => {
   });
 
   it('still long-presses a control that stops its presses from bubbling', () => {
-    render(<Harness kind="tooltip" stopPresses />);
+    render(<Harness kind="hover-card" stopPresses />);
     fireEvent.pointerDown(button(), touch);
     advance(HINT_LONG_PRESS_MS);
     expect(tip()).not.toBeNull();
@@ -390,9 +390,20 @@ describe('useHint, after a press', () => {
 });
 
 describe('useHint, touch long press', () => {
-  it('opens after the long press, eats the click that follows, and lingers after lift', () => {
+  it('never opens a tooltip on touch: a long press is for a hover card', () => {
     const onClick = vi.fn();
     render(<Harness kind="tooltip" onClick={onClick} />);
+    fireEvent.pointerDown(button(), { ...touch, clientX: 10, clientY: 10 });
+    advance(HINT_LONG_PRESS_MS * 2);
+    expect(tip()).toBeNull();
+    fireEvent.pointerUp(button(), touch);
+    fireEvent.click(button());
+    expect(onClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('opens after the long press, eats the click that follows, and lingers after lift', () => {
+    const onClick = vi.fn();
+    render(<Harness kind="hover-card" onClick={onClick} />);
     fireEvent.pointerDown(button(), { ...touch, clientX: 10, clientY: 10 });
     advance(HINT_LONG_PRESS_MS);
     expect(tip()?.dataset.source).toBe('touch');
@@ -407,7 +418,7 @@ describe('useHint, touch long press', () => {
 
   it('lets a later tap through when the browser sent no click after the long press', () => {
     const onClick = vi.fn();
-    render(<Harness kind="tooltip" onClick={onClick} />);
+    render(<Harness kind="hover-card" onClick={onClick} />);
     fireEvent.pointerDown(button(), touch);
     advance(HINT_LONG_PRESS_MS);
     fireEvent.pointerUp(button(), touch);
@@ -418,7 +429,7 @@ describe('useHint, touch long press', () => {
   });
 
   it('is cancelled by a finger that moves past the slop', () => {
-    render(<Harness kind="tooltip" />);
+    render(<Harness kind="hover-card" />);
     fireEvent.pointerDown(button(), { ...touch, clientX: 10, clientY: 10 });
     fireEvent.pointerMove(button(), { ...touch, clientX: 21, clientY: 10 });
     advance(HINT_LONG_PRESS_MS);
@@ -427,7 +438,7 @@ describe('useHint, touch long press', () => {
 
   it('never opens from a tap, and the tap clicks', () => {
     const onClick = vi.fn();
-    render(<Harness kind="tooltip" onClick={onClick} />);
+    render(<Harness kind="hover-card" onClick={onClick} />);
     fireEvent.pointerDown(button(), touch);
     advance(HINT_LONG_PRESS_MS - 1);
     fireEvent.pointerUp(button(), touch);
@@ -439,7 +450,7 @@ describe('useHint, touch long press', () => {
 
   it('leaves a control that shows its own words alone', () => {
     const onClick = vi.fn();
-    render(<Harness kind="tooltip" text="Keep results" onClick={onClick} />);
+    render(<Harness kind="hover-card" text="Keep results" onClick={onClick} />);
     fireEvent.pointerDown(button(), touch);
     advance(HINT_LONG_PRESS_MS * 2);
     expect(tip()).toBeNull();

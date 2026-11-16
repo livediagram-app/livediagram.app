@@ -13,6 +13,7 @@ import {
   type ThisBrowserItem,
 } from '../../this-browser';
 import { useExplorer } from '../context';
+import { LOCAL_ROW_KEY } from '../sidebar/expansion';
 import { useThisBrowserFolders, useThisBrowserItems, thenReload } from '../ThisBrowser';
 
 /** The placement browser's id for This Browser, drawn as a space beside the teams. No team's id looks like it. */
@@ -123,5 +124,5 @@ export function useRenameLocalFolder(): (id: string, name: string) => void {
 }
 
 /** The sidebar's open-row keys: This Browser's own row, and each local folder's. */
-export const LOCAL_ROW_KEY = 'this-browser';
+export { LOCAL_ROW_KEY };
 export const localKey = (folderId: string) => `local:${folderId}`;

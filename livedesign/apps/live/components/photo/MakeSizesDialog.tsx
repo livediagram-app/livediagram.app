@@ -233,34 +233,30 @@ export function MakeSizesDialog({
             Formats
           </p>
           <div className="flex items-center gap-1">
-            <Tooltip label="Tick as many formats as the tab has room for">
-              <Button
-                variant="ghost"
-                size="sm"
-                ref={selectAllRef}
-                disabled={busy !== null || full}
-                onClick={() => {
-                  keep(new Set(order.slice(0, room)));
-                  refocus.current = 'clear';
-                }}
-              >
-                Select All
-              </Button>
-            </Tooltip>
-            <Tooltip label="Untick every format">
-              <Button
-                variant="ghost"
-                size="sm"
-                ref={clearRef}
-                disabled={busy !== null || !ticked.size}
-                onClick={() => {
-                  keep(new Set());
-                  refocus.current = 'all';
-                }}
-              >
-                Clear
-              </Button>
-            </Tooltip>
+            <Button
+              variant="ghost"
+              size="sm"
+              ref={selectAllRef}
+              disabled={busy !== null || full}
+              onClick={() => {
+                keep(new Set(order.slice(0, room)));
+                refocus.current = 'clear';
+              }}
+            >
+              Select All
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              ref={clearRef}
+              disabled={busy !== null || !ticked.size}
+              onClick={() => {
+                keep(new Set());
+                refocus.current = 'all';
+              }}
+            >
+              Clear
+            </Button>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">

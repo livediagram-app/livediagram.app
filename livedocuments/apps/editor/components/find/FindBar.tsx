@@ -60,11 +60,14 @@ function BarButton({
   expanded,
   controls,
   disabled,
+  plain = false,
   onPress,
   children,
 }: {
   label: string;
   keys?: string;
+  // A universal glyph (a step chevron, the close X) that needs no tooltip (tooltips-hover-cards-popovers.md).
+  plain?: boolean;
   pressed?: boolean;
   expanded?: boolean;
   controls?: string;
@@ -73,24 +76,23 @@ function BarButton({
   children: ReactNode;
 }) {
   const name = keys ? `${label} (${keyLabel(keys)})` : label;
-  return (
-    <Tooltip label={name}>
-      <button
-        type="button"
-        aria-label={name}
-        aria-pressed={pressed}
-        aria-expanded={expanded}
-        aria-controls={controls}
-        disabled={disabled}
-        onClick={onPress}
-        className={`touch-target relative flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-md transition focus-visible:outline-2 focus-visible:outline-brand-600 disabled:cursor-not-allowed disabled:opacity-35 ${
-          pressed ? TOOLBAR_CONTROL_PRESSED : TOOLBAR_CONTROL_REST
-        }`}
-      >
-        {children}
-      </button>
-    </Tooltip>
+  const button = (
+    <button
+      type="button"
+      aria-label={name}
+      aria-pressed={pressed}
+      aria-expanded={expanded}
+      aria-controls={controls}
+      disabled={disabled}
+      onClick={onPress}
+      className={`touch-target relative flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-md transition focus-visible:outline-2 focus-visible:outline-brand-600 disabled:cursor-not-allowed disabled:opacity-35 ${
+        pressed ? TOOLBAR_CONTROL_PRESSED : TOOLBAR_CONTROL_REST
+      }`}
+    >
+      {children}
+    </button>
   );
+  return plain ? button : <Tooltip label={name}>{button}</Tooltip>;
 }
 
 export function FindBar({ find }: { find: FindView }) {
@@ -124,7 +126,7 @@ export function FindBar({ find }: { find: FindView }) {
   const count = findCountLabel(find);
   const none = find.count === 0;
   const replaceable = find.count - find.heldCount;
-  // Each button's name says why it is off when it is: the same words as its tooltip.
+  // Each button's name says why it is off when it is: the same words as its tooltip, shown only then.
   const replaceName = find.currentHeld
     ? `Replace: ${HELD_REASON[find.currentHeld]}`
     : `Replace (${keyLabel('Enter')})`;
@@ -230,18 +232,19 @@ export function FindBar({ find }: { find: FindView }) {
         <span aria-hidden className={`${TOOLBAR_DIVIDER} phone:hidden`} />
         <BarButton
           label="Previous Match"
+          plain
           keys="Shift-Enter"
           disabled={none}
           onPress={find.previous}
         >
           <UpIcon />
         </BarButton>
-        <BarButton label="Next Match" keys="Enter" disabled={none} onPress={find.next}>
+        <BarButton label="Next Match" keys="Enter" plain disabled={none} onPress={find.next}>
           <DownIcon />
         </BarButton>
         {/* The article on all this, in a new tab; a phone's row has no room (the header's Help is there). */}
         <HelpArticleLink article="findAndReplace" size="md" className="phone:hidden" />
-        <BarButton label="Close Find" keys="Escape" onPress={find.close}>
+        <BarButton label="Close Find" keys="Escape" plain onPress={find.close}>
           <CloseIcon />
         </BarButton>
       </div>
@@ -266,7 +269,8 @@ export function FindBar({ find }: { find: FindView }) {
               className={`${FIELD} px-2.5`}
             />
             <div className="flex shrink-0 items-center gap-1">
-              <Tooltip label={replaceName}>
+              {/* Replace and Replace All say what they do; a tooltip only says why one cannot. */}
+              <Tooltip label={find.currentHeld ? replaceName : ''}>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -278,7 +282,7 @@ export function FindBar({ find }: { find: FindView }) {
                   Replace
                 </Button>
               </Tooltip>
-              <Tooltip label={replaceAllName}>
+              <Tooltip label={!none && replaceable === 0 ? replaceAllName : ''}>
                 <Button
                   variant="primary"
                   size="sm"

@@ -81,7 +81,6 @@ export const DescribePrompt = forwardRef<
               variant="secondary"
               size="xs"
               disabled={busy}
-              title={e.text}
               onClick={() => {
                 onText(e.text);
                 focus();

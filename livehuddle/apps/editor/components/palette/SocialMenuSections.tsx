@@ -14,7 +14,6 @@ import {
 } from '@livehuddle/document';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { useFollowingDraft } from '@liveworkspace/workbench/hooks/ui/useFollowingDraft';
-import { Tooltip } from '@livehuddle/ui';
 import { cutText } from '@liveworkspace/model-core/text-cut';
 import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
 import { typedClockZone } from '@/lib/zone-time';
@@ -169,16 +168,14 @@ function ZoneRow({
         aria-label={`Label for ${zone.zone}`}
         className={FIELD}
       />
-      <Tooltip label={`Remove ${zone.label}`}>
-        <button
-          type="button"
-          onClick={onRemove}
-          aria-label={`Remove ${zone.label}`}
-          className={`${SECONDARY} w-7 shrink-0 px-0`}
-        >
-          ×
-        </button>
-      </Tooltip>
+      <button
+        type="button"
+        onClick={onRemove}
+        aria-label={`Remove ${zone.label}`}
+        className={`${SECONDARY} w-7 shrink-0 px-0`}
+      >
+        ×
+      </button>
     </li>
   );
 }

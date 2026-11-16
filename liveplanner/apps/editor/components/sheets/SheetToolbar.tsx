@@ -279,17 +279,15 @@ export function SheetToolbar({
         ))}
       </div>
       {folded.length ? (
-        <Tooltip label="More">
-          <button
-            type="button"
-            aria-label="More"
-            aria-haspopup="menu"
-            className="ml-auto flex h-9 w-9 cursor-pointer items-center justify-center rounded-md text-xl leading-none hover:bg-black/5 dark:hover:bg-white/10"
-            onClick={(e) => setMenu({ kind: 'more', anchor: e.currentTarget })}
-          >
-            ⋯
-          </button>
-        </Tooltip>
+        <button
+          type="button"
+          aria-label="More"
+          aria-haspopup="menu"
+          className="ml-auto flex h-9 w-9 cursor-pointer items-center justify-center rounded-md text-xl leading-none hover:bg-black/5 dark:hover:bg-white/10"
+          onClick={(e) => setMenu({ kind: 'more', anchor: e.currentTarget })}
+        >
+          ⋯
+        </button>
       ) : null}
       {/* Search, not on a phone: its room goes to the category's buttons. */}
       {phone ? null : (
@@ -299,22 +297,20 @@ export function SheetToolbar({
             className={`${folded.length ? '' : 'ml-auto '}mx-1 h-5 w-px shrink-0`}
             style={{ backgroundColor: c.palette.cardBorder }}
           />
-          <Tooltip label="Search for a function">
-            <button
-              ref={searchButton}
-              type="button"
-              aria-label="Search"
-              aria-haspopup="menu"
-              aria-expanded={searchAt !== null}
-              className="flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-md px-2 text-[13px] font-semibold transition hover:bg-black/5 dark:hover:bg-white/10"
-              onClick={(e) => setSearchAt(e.currentTarget)}
-            >
-              <span aria-hidden className="flex items-center [&_svg]:size-4">
-                <SearchIcon />
-              </span>
-              Search
-            </button>
-          </Tooltip>
+          <button
+            ref={searchButton}
+            type="button"
+            aria-label="Search"
+            aria-haspopup="menu"
+            aria-expanded={searchAt !== null}
+            className="flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-md px-2 text-[13px] font-semibold transition hover:bg-black/5 dark:hover:bg-white/10"
+            onClick={(e) => setSearchAt(e.currentTarget)}
+          >
+            <span aria-hidden className="flex items-center [&_svg]:size-4">
+              <SearchIcon />
+            </span>
+            Search
+          </button>
         </>
       )}
       {end ? (

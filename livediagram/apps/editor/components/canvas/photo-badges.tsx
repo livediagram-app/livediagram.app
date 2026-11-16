@@ -6,7 +6,7 @@
 // them, not the note (docs/specs/008-canvas/canvas-performance.md).
 
 import { ICON_STROKE_PX_SMALL } from '@liveworkspace/icons';
-import { Glyph, Tooltip } from '@livediagram/ui';
+import { Glyph } from '@livediagram/ui';
 import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 
 // A dashed accent frame just outside the paper, in the alignment guides' own language, saying "this
@@ -29,20 +29,18 @@ export function PhotoMatchedBadge({ readAs }: { readAs: string | undefined }) {
   const zoom = useCanvasZoom();
   const label = photoMatchedLabel(readAs);
   return (
-    <Tooltip label={label}>
-      <span
-        data-photo-matched=""
-        role="img"
-        aria-label={label}
-        className="pointer-events-auto absolute -right-2 -top-2 flex items-center justify-center rounded-full bg-slate-700 text-white shadow dark:bg-slate-200 dark:text-slate-900"
-        style={{ width: 18 / zoom, height: 18 / zoom }}
-      >
-        {/* Sized in canvas px so it reads 12px on screen at any zoom; Glyph's stroke is on-screen px. */}
-        <Glyph size={12 / zoom} units={24} weight={ICON_STROKE_PX_SMALL}>
-          <path d="M5 13l4 4L19 7" />
-        </Glyph>
-      </span>
-    </Tooltip>
+    <span
+      data-photo-matched=""
+      role="img"
+      aria-label={label}
+      className="pointer-events-auto absolute -right-2 -top-2 flex items-center justify-center rounded-full bg-slate-700 text-white shadow dark:bg-slate-200 dark:text-slate-900"
+      style={{ width: 18 / zoom, height: 18 / zoom }}
+    >
+      {/* Sized in canvas px so it reads 12px on screen at any zoom; Glyph's stroke is on-screen px. */}
+      <Glyph size={12 / zoom} units={24} weight={ICON_STROKE_PX_SMALL}>
+        <path d="M5 13l4 4L19 7" />
+      </Glyph>
+    </span>
   );
 }
 

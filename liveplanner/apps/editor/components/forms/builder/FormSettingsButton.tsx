@@ -5,7 +5,7 @@
 // opened on the one asked for (a paused form's Fix opens Responses Go To). An Editor's alone.
 import { useState } from 'react';
 import type { Tab } from '@liveplanner/project';
-import { Tooltip, lucideGlyph } from '@liveplanner/ui';
+import { lucideGlyph } from '@liveplanner/ui';
 import { lucideSettings } from '@liveworkspace/icons/lucide';
 import type { FormLinkState } from '@/hooks/forms/useFormLink';
 import { DestinationPicker } from './DestinationPicker';
@@ -34,25 +34,23 @@ export function FormSettingsButton({
   const [anchor, setAnchor] = useState<HTMLButtonElement | null>(null);
   return (
     <>
-      <Tooltip label="Form Settings">
-        <button
-          ref={setAnchor}
-          type="button"
-          aria-label="Form Settings"
-          aria-haspopup="dialog"
-          aria-expanded={open !== false}
-          data-dock-button
-          onClick={() => (open === false ? onOpen(null) : onClose())}
-          className={`flex h-8 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-md px-2 text-[13px] font-medium transition ${
-            open !== false
-              ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
-              : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
-          }`}
-        >
-          <CogIcon aria-hidden />
-          Settings
-        </button>
-      </Tooltip>
+      <button
+        ref={setAnchor}
+        type="button"
+        aria-label="Form Settings"
+        aria-haspopup="dialog"
+        aria-expanded={open !== false}
+        data-dock-button
+        onClick={() => (open === false ? onOpen(null) : onClose())}
+        className={`flex h-8 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-md px-2 text-[13px] font-medium transition ${
+          open !== false
+            ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
+            : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
+        }`}
+      >
+        <CogIcon aria-hidden />
+        Settings
+      </button>
       {open !== false && anchor ? (
         <FormSheet anchor={anchor} name="Form Settings" width={320} onClose={onClose}>
           <Sections tabs={tabs} link={link} first={open} onLeave={onClose} />

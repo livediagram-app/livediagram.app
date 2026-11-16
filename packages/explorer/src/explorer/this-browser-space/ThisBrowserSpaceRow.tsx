@@ -22,10 +22,13 @@ type Rename = { renamingId: string | null; setRenamingId: (id: string | null) =>
 export function ThisBrowserSpaceRow({
   expanded,
   toggle,
+  toggleSpace,
   rename,
 }: {
   expanded: ReadonlySet<string>;
   toggle: (key: string) => void;
+  // Its own row's chevron: opening a space folds the others (one-explorer.md "One space open at a time").
+  toggleSpace: (key: string) => void;
   rename: Rename;
 }) {
   const { view, navigate, expansion } = useExplorer();
@@ -55,7 +58,7 @@ export function ThisBrowserSpaceRow({
       badgeLabel={`${live.length} in Browser Storage`}
       expandable={roots.length > 0}
       expanded={expanded.has(LOCAL_ROW_KEY)}
-      onToggleExpand={() => toggle(LOCAL_ROW_KEY)}
+      onToggleExpand={() => toggleSpace(LOCAL_ROW_KEY)}
       onContextMenu={menu.onContextMenu}
       trailing={
         <>

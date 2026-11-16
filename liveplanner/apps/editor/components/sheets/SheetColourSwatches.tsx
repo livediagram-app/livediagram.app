@@ -5,7 +5,6 @@
 // Palette's first five colours drawn with the one swatch, the cell's own picked, and More colours (Quick Style's
 // four-dot glyph) that opens the full picker.
 // One Tab stop, the arrows move through the row (the picker's keyboard).
-import { Tooltip } from '@liveplanner/ui';
 import { ColourSwatch } from '@/components/colour/ColourSwatch';
 import { MoreColoursGlyph } from '@/components/colour/MoreColoursGlyph';
 import { optionMatches, themeOptions } from '@/components/colour/colour-options';
@@ -57,19 +56,17 @@ export function SheetColourSwatches({
           onClick={() => onPick(option.colour)}
         />
       ))}
-      <Tooltip label={`More ${name}s`}>
-        <button
-          type="button"
-          aria-label={`More ${name}s`}
-          aria-haspopup="menu"
-          data-colour-key=""
-          tabIndex={-1}
-          className="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:hover:bg-slate-800"
-          onClick={(e) => onMore(e.currentTarget)}
-        >
-          <MoreColoursGlyph />
-        </button>
-      </Tooltip>
+      <button
+        type="button"
+        aria-label={`More ${name}s`}
+        aria-haspopup="menu"
+        data-colour-key=""
+        tabIndex={-1}
+        className="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:hover:bg-slate-800"
+        onClick={(e) => onMore(e.currentTarget)}
+      >
+        <MoreColoursGlyph />
+      </button>
     </span>
   );
 }

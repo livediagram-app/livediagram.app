@@ -4,7 +4,7 @@
 // every status menu for its cards lists them. A row moves by dragging its grip (a mouse, a pen or a finger; the row
 // follows the pointer and the rows it passes slide aside, Escape puts it back) or by Alt+Up and Alt+Down on the
 // grip; its cross turns the state off. Numbered, so the order reads at a glance.
-import { CloseIcon, Tooltip } from '@liveplanner/ui';
+import { CloseIcon } from '@liveplanner/ui';
 import { HANDLE_TOUCH, useHandleReorder } from '@/components/primitives/useHandleReorder';
 import { GripIcon } from './ItemTypeFieldMenu';
 import { ICON_BUTTON } from './ItemTypeFieldForms';
@@ -57,24 +57,22 @@ export function ItemTypeStatusOrder({
                 : 'border-slate-200 shadow-sm dark:border-slate-700'
             }`}
           >
-            <Tooltip label={`Move ${s.name}`}>
-              <button
-                type="button"
-                aria-label={`Move ${s.name}`}
-                disabled={shown.length < 2}
-                {...handle}
-                onKeyDown={(e) => {
-                  if (!e.altKey || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) return;
-                  const to = i + (e.key === 'ArrowUp' ? -1 : 1);
-                  if (to < 0 || to >= shown.length) return;
-                  e.preventDefault();
-                  place(s.status, to);
-                }}
-                className={`flex h-7 w-5 shrink-0 cursor-grab items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 active:cursor-grabbing disabled:cursor-default disabled:opacity-40 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-300 ${HANDLE_TOUCH}`}
-              >
-                <GripIcon />
-              </button>
-            </Tooltip>
+            <button
+              type="button"
+              aria-label={`Move ${s.name}`}
+              disabled={shown.length < 2}
+              {...handle}
+              onKeyDown={(e) => {
+                if (!e.altKey || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) return;
+                const to = i + (e.key === 'ArrowUp' ? -1 : 1);
+                if (to < 0 || to >= shown.length) return;
+                e.preventDefault();
+                place(s.status, to);
+              }}
+              className={`flex h-7 w-5 shrink-0 cursor-grab items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 active:cursor-grabbing disabled:cursor-default disabled:opacity-40 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-300 ${HANDLE_TOUCH}`}
+            >
+              <GripIcon />
+            </button>
             <span
               aria-hidden
               className="w-5 shrink-0 text-right text-[11px] font-semibold tabular-nums text-slate-500 dark:text-slate-400"
@@ -89,16 +87,14 @@ export function ItemTypeStatusOrder({
             <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-slate-800 dark:text-slate-100">
               {s.name}
             </span>
-            <Tooltip label={`Turn Off ${s.name}`}>
-              <button
-                type="button"
-                aria-label={`Turn Off ${s.name}`}
-                className={`${ICON_BUTTON} cursor-pointer`}
-                onClick={() => onChange(used.filter((x) => x !== s.status))}
-              >
-                <CloseIcon size={10} />
-              </button>
-            </Tooltip>
+            <button
+              type="button"
+              aria-label={`Turn Off ${s.name}`}
+              className={`${ICON_BUTTON} cursor-pointer`}
+              onClick={() => onChange(used.filter((x) => x !== s.status))}
+            >
+              <CloseIcon size={10} />
+            </button>
           </li>
         );
       })}

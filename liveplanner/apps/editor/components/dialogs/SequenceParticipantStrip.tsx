@@ -213,28 +213,24 @@ export function SequenceParticipantStrip({
             })}
           </div>
           <div className="flex items-center">
-            <Tooltip label="Move Left">
-              <button
-                type="button"
-                aria-label="Move left"
-                disabled={at <= 0}
-                onClick={() => move(-1)}
-                className={TOOL}
-              >
-                <LeftIcon />
-              </button>
-            </Tooltip>
-            <Tooltip label="Move Right">
-              <button
-                type="button"
-                aria-label="Move right"
-                disabled={at >= participants.length - 1}
-                onClick={() => move(1)}
-                className={TOOL}
-              >
-                <RightIcon />
-              </button>
-            </Tooltip>
+            <button
+              type="button"
+              aria-label="Move left"
+              disabled={at <= 0}
+              onClick={() => move(-1)}
+              className={TOOL}
+            >
+              <LeftIcon />
+            </button>
+            <button
+              type="button"
+              aria-label="Move right"
+              disabled={at >= participants.length - 1}
+              onClick={() => move(1)}
+              className={TOOL}
+            >
+              <RightIcon />
+            </button>
             <Tooltip
               label={
                 participants.length <= SEQ_PARTICIPANTS_MIN

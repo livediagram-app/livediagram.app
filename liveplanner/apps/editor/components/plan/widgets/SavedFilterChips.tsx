@@ -135,25 +135,23 @@ export function SavedFilterChips({
               <span className="truncate">{filter.name}</span>
             </button>
             {canEdit ? (
-              <Tooltip label="Saved Filter Options">
-                <button
-                  type="button"
-                  aria-label={`Saved Filter Options: ${filter.name}`}
-                  aria-haspopup="menu"
-                  className="flex h-full w-5 cursor-pointer items-center justify-center border-l transition hover:bg-black/5 dark:hover:bg-white/10"
-                  style={{ borderColor: on ? `${palette.focus}55` : palette.border }}
-                  onClick={(e) => {
-                    const r = e.currentTarget.getBoundingClientRect();
-                    setMenu({
-                      id: filter.id,
-                      at: { x: r.left, y: r.bottom + 4 },
-                      el: e.currentTarget,
-                    });
-                  }}
-                >
-                  <ChevronDownIcon size={12} />
-                </button>
-              </Tooltip>
+              <button
+                type="button"
+                aria-label={`Saved Filter Options: ${filter.name}`}
+                aria-haspopup="menu"
+                className="flex h-full w-5 cursor-pointer items-center justify-center border-l transition hover:bg-black/5 dark:hover:bg-white/10"
+                style={{ borderColor: on ? `${palette.focus}55` : palette.border }}
+                onClick={(e) => {
+                  const r = e.currentTarget.getBoundingClientRect();
+                  setMenu({
+                    id: filter.id,
+                    at: { x: r.left, y: r.bottom + 4 },
+                    el: e.currentTarget,
+                  });
+                }}
+              >
+                <ChevronDownIcon size={12} />
+              </button>
             ) : null}
           </span>
         );

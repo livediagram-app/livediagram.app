@@ -5,7 +5,7 @@
 // selected is Done too.
 import { useEffect } from 'react';
 import { lucideCheck, lucidePackage } from '@liveworkspace/icons/lucide';
-import { lucideGlyph, Tooltip } from '@livedesign/ui';
+import { lucideGlyph } from '@livedesign/ui';
 
 const ComponentIcon = lucideGlyph(lucidePackage, 16);
 const DoneIcon = lucideGlyph(lucideCheck, 16);
@@ -45,17 +45,15 @@ export function ComponentSessionBar({
         Editing <span className="font-semibold">{name}</span>
         <span className="hidden text-slate-500 sm:inline"> · changes reach every instance</span>
       </span>
-      <Tooltip label="Finish editing the component (Escape)">
-        <button
-          type="button"
-          data-component-done=""
-          onClick={onDone}
-          className="flex cursor-pointer items-center gap-1 rounded-full bg-brand-700 px-3 py-1 text-sm font-semibold text-white transition hover:bg-brand-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
-        >
-          <DoneIcon />
-          Done
-        </button>
-      </Tooltip>
+      <button
+        type="button"
+        data-component-done=""
+        onClick={onDone}
+        className="flex cursor-pointer items-center gap-1 rounded-full bg-brand-700 px-3 py-1 text-sm font-semibold text-white transition hover:bg-brand-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
+      >
+        <DoneIcon />
+        Done
+      </button>
     </div>
   );
 }

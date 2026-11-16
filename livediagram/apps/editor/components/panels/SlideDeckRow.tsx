@@ -7,7 +7,7 @@ import { sanitizedHtml } from '@liveworkspace/trusted-types/sanitize';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { slideName, type Slide } from '@livediagram/document';
 import { lucideFileText } from '@liveworkspace/icons/lucide';
-import { HoverCard, lucideGlyph, Tooltip, htmlProps } from '@livediagram/ui';
+import { HoverCard, lucideGlyph, htmlProps } from '@livediagram/ui';
 import { EyeOffIcon } from '@/components/panels/layers-panel-icons';
 
 const NotesIcon = lucideGlyph(lucideFileText, 11);
@@ -164,11 +164,9 @@ export function SlideDeckRow({
             <span className="truncate">{source}</span>
             {/* Quiet markers for what the slide carries: its notes, its minutes, that it is hidden. */}
             {slide.notes ? (
-              <Tooltip label="Has speaker notes">
-                <span role="img" aria-label="Has speaker notes" className="flex shrink-0">
-                  <NotesIcon />
-                </span>
-              </Tooltip>
+              <span role="img" aria-label="Has speaker notes" className="flex shrink-0">
+                <NotesIcon />
+              </span>
             ) : null}
             {slide.minutes ? (
               <span className="shrink-0 tabular-nums">{slide.minutes} min</span>

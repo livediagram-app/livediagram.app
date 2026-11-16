@@ -11,7 +11,7 @@ import {
   type AutomationAction,
   type AutomationAssignee,
 } from '@liveplanner/items';
-import { CloseIcon, Tooltip } from '@liveplanner/ui';
+import { CloseIcon } from '@liveplanner/ui';
 import type { AutomationOutline } from '../automation-outline';
 import { PanelField, PanelSelect } from './panel-parts';
 import { PersonPicker } from './PeopleActionPanel';
@@ -66,16 +66,14 @@ function InTurn({
                   {i + 1}
                 </span>
                 {name}
-                <Tooltip label={`Remove ${name}`}>
-                  <button
-                    type="button"
-                    aria-label={`Remove ${name}`}
-                    onClick={() => onChange(people.filter((p) => p !== id))}
-                    className="touch-target relative inline-flex size-5 cursor-pointer items-center justify-center rounded text-brand-700 transition hover:bg-brand-100 hover:text-brand-900 motion-reduce:transition-none dark:text-brand-300 dark:hover:bg-brand-500/25 dark:hover:text-white"
-                  >
-                    <CloseIcon size={10} />
-                  </button>
-                </Tooltip>
+                <button
+                  type="button"
+                  aria-label={`Remove ${name}`}
+                  onClick={() => onChange(people.filter((p) => p !== id))}
+                  className="touch-target relative inline-flex size-5 cursor-pointer items-center justify-center rounded text-brand-700 transition hover:bg-brand-100 hover:text-brand-900 motion-reduce:transition-none dark:text-brand-300 dark:hover:bg-brand-500/25 dark:hover:text-white"
+                >
+                  <CloseIcon size={10} />
+                </button>
               </li>
             );
           })}

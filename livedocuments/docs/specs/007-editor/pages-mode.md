@@ -242,7 +242,7 @@ The **Project Brief** template (kind `article`) in /new starts a tab with one ar
   field, or on closing the panel), then its **Page** section while it has a size or orientation to
   choose (the **Size** tiles, each drawn to scale, and **Orientation**, Portrait / Landscape on the
   shared segmented control), then the action row (Split Into Pages on a Fit to Content page,
-  Duplicate, Move left, Move right, Delete) as icon buttons with tooltips. No tabs: everything else
+  Duplicate, Move left, Move right, Delete) as icon buttons with tooltips, but for the move chevrons. No tabs: everything else
   a page has is a button beside the cog ("Beside the cog" below), its **Background** included on
   every kind (an infographic, slide or article page and a card), so the panel never repeats it. With
   no Page section (a card), one hairline parts the name from the actions.

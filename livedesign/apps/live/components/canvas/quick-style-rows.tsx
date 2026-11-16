@@ -164,48 +164,55 @@ export function QuickRadioRow<V extends string | number>({
         {options.map((o, i) => {
           const checked = i === checkedIndex;
           const swatch = o.swatch !== undefined;
-          return (
+          const tile = (
+            <button
+              key={String(o.value)}
+              ref={(node) => {
+                refs.current[i] = node;
+              }}
+              type="button"
+              role={swatch ? undefined : 'radio'}
+              aria-checked={swatch ? undefined : checked}
+              aria-pressed={swatch ? checked : undefined}
+              aria-label={o.name}
+              tabIndex={i === tabStop ? 0 : -1}
+              data-colour-key={swatch ? '' : undefined}
+              data-overridden={o.overridden ? '' : undefined}
+              onClick={() => onChoose(o.value)}
+              onKeyDown={(e) => onKeyDown(e, i)}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                openContext(i);
+              }}
+              className={
+                swatch
+                  ? 'group relative flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500'
+                  : `flex h-7 w-full items-center justify-center rounded-md transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${
+                      checked
+                        ? 'bg-brand-50 text-brand-700 ring-1 ring-brand-300 dark:bg-brand-500/15 dark:text-brand-200 dark:ring-brand-500/40'
+                        : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
+                    }`
+              }
+            >
+              {swatch ? (
+                <SwatchChip
+                  colour={o.swatch!}
+                  none={o.none === true}
+                  picked={checked}
+                  marked={o.overridden === true}
+                />
+              ) : (
+                o.content
+              )}
+            </button>
+          );
+          // A swatch sits in its labelled colour row and needs no tooltip; a glyph tile keeps one.
+          return swatch ? (
+            tile
+          ) : (
             <Tooltip key={String(o.value)} label={o.name}>
-              <button
-                ref={(node) => {
-                  refs.current[i] = node;
-                }}
-                type="button"
-                role={swatch ? undefined : 'radio'}
-                aria-checked={swatch ? undefined : checked}
-                aria-pressed={swatch ? checked : undefined}
-                aria-label={o.name}
-                tabIndex={i === tabStop ? 0 : -1}
-                data-colour-key={swatch ? '' : undefined}
-                data-overridden={o.overridden ? '' : undefined}
-                onClick={() => onChoose(o.value)}
-                onKeyDown={(e) => onKeyDown(e, i)}
-                onContextMenu={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  openContext(i);
-                }}
-                className={
-                  swatch
-                    ? 'group relative flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500'
-                    : `flex h-7 w-full items-center justify-center rounded-md transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${
-                        checked
-                          ? 'bg-brand-50 text-brand-700 ring-1 ring-brand-300 dark:bg-brand-500/15 dark:text-brand-200 dark:ring-brand-500/40'
-                          : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
-                      }`
-                }
-              >
-                {swatch ? (
-                  <SwatchChip
-                    colour={o.swatch!}
-                    none={o.none === true}
-                    picked={checked}
-                    marked={o.overridden === true}
-                  />
-                ) : (
-                  o.content
-                )}
-              </button>
+              {tile}
             </Tooltip>
           );
         })}

@@ -190,38 +190,32 @@ export function SheetFormatRules({
                           </span>
                         </span>
                       </button>
-                      <Tooltip label="Move Up">
-                        <button
-                          type="button"
-                          aria-label="Move Up"
-                          disabled={at <= 0}
-                          className="cursor-pointer rounded px-1 text-slate-500 hover:bg-slate-100 dark:text-slate-400 disabled:cursor-default disabled:opacity-30 dark:hover:bg-slate-800"
-                          onClick={() => actions.moveFormatRule(rule.id, -1)}
-                        >
-                          ↑
-                        </button>
-                      </Tooltip>
-                      <Tooltip label="Move Down">
-                        <button
-                          type="button"
-                          aria-label="Move Down"
-                          disabled={at >= rules.length - 1}
-                          className="cursor-pointer rounded px-1 text-slate-500 hover:bg-slate-100 dark:text-slate-400 disabled:cursor-default disabled:opacity-30 dark:hover:bg-slate-800"
-                          onClick={() => actions.moveFormatRule(rule.id, 1)}
-                        >
-                          ↓
-                        </button>
-                      </Tooltip>
-                      <Tooltip label="Delete Rule">
-                        <button
-                          type="button"
-                          aria-label="Delete Rule"
-                          className="cursor-pointer rounded px-1 text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
-                          onClick={() => actions.removeFormatRule(rule.id)}
-                        >
-                          ✕
-                        </button>
-                      </Tooltip>
+                      <button
+                        type="button"
+                        aria-label="Move Up"
+                        disabled={at <= 0}
+                        className="cursor-pointer rounded px-1 text-slate-500 hover:bg-slate-100 dark:text-slate-400 disabled:cursor-default disabled:opacity-30 dark:hover:bg-slate-800"
+                        onClick={() => actions.moveFormatRule(rule.id, -1)}
+                      >
+                        ↑
+                      </button>
+                      <button
+                        type="button"
+                        aria-label="Move Down"
+                        disabled={at >= rules.length - 1}
+                        className="cursor-pointer rounded px-1 text-slate-500 hover:bg-slate-100 dark:text-slate-400 disabled:cursor-default disabled:opacity-30 dark:hover:bg-slate-800"
+                        onClick={() => actions.moveFormatRule(rule.id, 1)}
+                      >
+                        ↓
+                      </button>
+                      <button
+                        type="button"
+                        aria-label="Delete Rule"
+                        className="cursor-pointer rounded px-1 text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+                        onClick={() => actions.removeFormatRule(rule.id)}
+                      >
+                        ✕
+                      </button>
                     </li>
                   );
                 })}

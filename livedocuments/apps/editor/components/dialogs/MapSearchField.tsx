@@ -105,8 +105,8 @@ export function MapSearchField({
         aria-activedescendant={
           rows.length ? `${listId}-${Math.min(walk, rows.length - 1)}` : undefined
         }
-        title={disabled ? `${label}: the limit is reached` : label}
-        placeholder={placeholder}
+        // Full, it says so where it is read: no hover title (tooltips-hover-cards-popovers.md).
+        placeholder={disabled ? 'The limit is reached' : placeholder}
         disabled={disabled}
         value={q}
         onChange={(e) => {

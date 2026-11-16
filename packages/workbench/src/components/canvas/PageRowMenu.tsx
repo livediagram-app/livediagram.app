@@ -262,26 +262,24 @@ export function PageRowMenuButton({
   menu: PageRowMenuState;
 }) {
   return (
-    <Tooltip label="More Actions">
-      <EllipsisTriggerButton
-        ref={(el) => menu.registerTrigger(id, el)}
-        size="md"
-        expanded={menu.openId === id}
-        label={`More Actions for ${name}`}
-        onPointerDown={(e) => e.stopPropagation()}
-        onClick={(e) => {
-          e.stopPropagation();
+    <EllipsisTriggerButton
+      ref={(el) => menu.registerTrigger(id, el)}
+      size="md"
+      expanded={menu.openId === id}
+      label={`More Actions for ${name}`}
+      onPointerDown={(e) => e.stopPropagation()}
+      onClick={(e) => {
+        e.stopPropagation();
+        menu.toggle(id);
+      }}
+      onKeyDown={(e) => {
+        keepRowKeys(e);
+        if (menu.openId !== id && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+          e.preventDefault();
           menu.toggle(id);
-        }}
-        onKeyDown={(e) => {
-          keepRowKeys(e);
-          if (menu.openId !== id && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
-            e.preventDefault();
-            menu.toggle(id);
-          }
-        }}
-      />
-    </Tooltip>
+        }
+      }}
+    />
   );
 }
 

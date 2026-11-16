@@ -64,7 +64,6 @@ export function MapMenuSections({
           variant="secondary"
           size="xs"
           className="mt-1.5 w-full"
-          title="Choose countries to highlight and places to pin"
           onClick={() => h.onEditMap(target.id)}
         >
           Edit Map

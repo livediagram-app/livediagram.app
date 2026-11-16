@@ -7,7 +7,7 @@
 // large target. A Viewer sees the chips alone. Full at FIELD_VALUES_MAX, Add is disabled and says why.
 import { forwardRef, type CSSProperties, type ReactNode, type Ref } from 'react';
 import { FIELD_VALUES_MAX } from '@liveplanner/items';
-import { CloseIcon, PlusIcon, Tooltip } from '@liveplanner/ui';
+import { CloseIcon, PlusIcon } from '@liveplanner/ui';
 import { TINT_CHIP } from './label-colour';
 
 export interface FieldChip {
@@ -87,40 +87,36 @@ export const FieldChips = forwardRef(function FieldChips(
           {disabled ? (
             <span aria-hidden className="w-1.5" />
           ) : (
-            <Tooltip label={`Remove ${chip.name}`}>
-              <button
-                type="button"
-                aria-label={`Remove ${chip.name} from ${label}`}
-                onClick={() => onRemove(chip.key)}
-                className={`mr-0.5 flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 max-sm:size-6 ${
-                  chip.colour
-                    ? 'hover:bg-black/10 dark:hover:bg-white/15'
-                    : 'text-slate-500 hover:bg-slate-200 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white'
-                }`}
-              >
-                <CloseIcon size={11} />
-              </button>
-            </Tooltip>
+            <button
+              type="button"
+              aria-label={`Remove ${chip.name} from ${label}`}
+              onClick={() => onRemove(chip.key)}
+              className={`mr-0.5 flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 max-sm:size-6 ${
+                chip.colour
+                  ? 'hover:bg-black/10 dark:hover:bg-white/15'
+                  : 'text-slate-500 hover:bg-slate-200 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white'
+              }`}
+            >
+              <CloseIcon size={11} />
+            </button>
           )}
         </span>
       ))}
       {disabled ? null : (
-        <Tooltip label={addLabel}>
-          <button
-            ref={addRef}
-            id={id}
-            type="button"
-            disabled={full}
-            aria-label={addLabel}
-            aria-haspopup="listbox"
-            aria-expanded={open}
-            aria-controls={open ? listId : undefined}
-            onClick={onAdd}
-            className="ml-auto flex size-6 shrink-0 items-center justify-center rounded text-slate-500 transition enabled:cursor-pointer enabled:hover:bg-slate-100 enabled:hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 disabled:opacity-40 max-sm:size-7 dark:text-slate-400 dark:enabled:hover:bg-slate-800 dark:enabled:hover:text-white"
-          >
-            <PlusIcon size={13} />
-          </button>
-        </Tooltip>
+        <button
+          ref={addRef}
+          id={id}
+          type="button"
+          disabled={full}
+          aria-label={addLabel}
+          aria-haspopup="listbox"
+          aria-expanded={open}
+          aria-controls={open ? listId : undefined}
+          onClick={onAdd}
+          className="ml-auto flex size-6 shrink-0 items-center justify-center rounded text-slate-500 transition enabled:cursor-pointer enabled:hover:bg-slate-100 enabled:hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 disabled:opacity-40 max-sm:size-7 dark:text-slate-400 dark:enabled:hover:bg-slate-800 dark:enabled:hover:text-white"
+        >
+          <PlusIcon size={13} />
+        </button>
       )}
     </div>
   );

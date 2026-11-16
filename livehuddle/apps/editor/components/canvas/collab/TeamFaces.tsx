@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { CountBadge, Glyph, lazyPanel, Tooltip } from '@livehuddle/ui';
+import { CountBadge, Glyph, lazyPanel } from '@livehuddle/ui';
 import {
   CALENDAR_GRID,
   CALENDAR_HEADER,
@@ -186,29 +186,27 @@ function CalendarWallFace({ element, walking }: { element: ShapeElement; walking
         {play ? <PageLift play={play} x={play.side < 0 ? art.width : 0} y={art.height} /> : null}
       </svg>
       {walking ? <ReaderHit label="Open the Calendar" onOpen={() => setReading(true)} /> : null}
-      <Tooltip label="Open Calendar">
-        <button
-          type="button"
-          className={`${PILL} -top-[14px]`}
-          aria-label={`Open Calendar, ${count} ${count === 1 ? 'note' : 'notes'}`}
-          aria-expanded={anchor !== null}
-          {...pieceControlProps}
-          {...prefetch}
-          onClick={(e) => {
-            e.stopPropagation();
-            if (walking) {
-              setReading(true);
-              return;
-            }
-            const at = e.currentTarget;
-            setAnchor((v) => (v ? null : at));
-          }}
-        >
-          <CalendarGlyph />
-          Calendar
-          {count > 0 ? <CountBadge count={count} className="-my-1" /> : null}
-        </button>
-      </Tooltip>
+      <button
+        type="button"
+        className={`${PILL} -top-[14px]`}
+        aria-label={`Open Calendar, ${count} ${count === 1 ? 'note' : 'notes'}`}
+        aria-expanded={anchor !== null}
+        {...pieceControlProps}
+        {...prefetch}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (walking) {
+            setReading(true);
+            return;
+          }
+          const at = e.currentTarget;
+          setAnchor((v) => (v ? null : at));
+        }}
+      >
+        <CalendarGlyph />
+        Calendar
+        {count > 0 ? <CountBadge count={count} className="-my-1" /> : null}
+      </button>
       {anchor ? (
         <CalendarWallPopover element={element} anchor={anchor} onClose={() => setAnchor(null)} />
       ) : null}
@@ -237,28 +235,26 @@ function SuggestionBoxFace({ element, walking }: { element: ShapeElement; walkin
       {walking ? (
         <ReaderHit label="Open the Suggestion Box" onOpen={() => setReading(true)} />
       ) : null}
-      <Tooltip label="Drop an Idea">
-        <button
-          type="button"
-          className={`${PILL} top-[calc(100%+3px)]`}
-          aria-label="Open the Suggestion Box"
-          aria-expanded={anchor !== null}
-          {...pieceControlProps}
-          {...prefetch}
-          onClick={(e) => {
-            e.stopPropagation();
-            if (walking) {
-              setReading(true);
-              return;
-            }
-            const at = e.currentTarget;
-            setAnchor((v) => (v ? null : at));
-          }}
-        >
-          <BulbGlyph />
-          Suggest
-        </button>
-      </Tooltip>
+      <button
+        type="button"
+        className={`${PILL} top-[calc(100%+3px)]`}
+        aria-label="Open the Suggestion Box"
+        aria-expanded={anchor !== null}
+        {...pieceControlProps}
+        {...prefetch}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (walking) {
+            setReading(true);
+            return;
+          }
+          const at = e.currentTarget;
+          setAnchor((v) => (v ? null : at));
+        }}
+      >
+        <BulbGlyph />
+        Suggest
+      </button>
       {anchor ? (
         <SuggestionBoxPopover element={element} anchor={anchor} onClose={() => setAnchor(null)} />
       ) : null}

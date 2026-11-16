@@ -12,7 +12,7 @@ import {
   type FormCover,
   type FormSection,
 } from '@liveplanner/forms';
-import { TrashIcon, Tooltip } from '@liveplanner/ui';
+import { TrashIcon } from '@liveplanner/ui';
 import { patchForm, deleteSection, updateSection } from '@liveplanner/forms';
 import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import { BackgroundSection } from '@/components/canvas/page-background-section';
@@ -184,16 +184,14 @@ export function SectionHeader({
           Section {index + 1} of {count}
         </span>
         {b.canEdit ? (
-          <Tooltip label="Delete Section">
-            <button
-              type="button"
-              aria-label={`Delete section ${index + 1}`}
-              onClick={() => b.actions.changeForm((f) => deleteSection(f, section.id))}
-              className="flex h-6 w-6 cursor-pointer items-center justify-center rounded opacity-80 hover:bg-white/20 hover:opacity-100"
-            >
-              <TrashIcon size={14} />
-            </button>
-          </Tooltip>
+          <button
+            type="button"
+            aria-label={`Delete section ${index + 1}`}
+            onClick={() => b.actions.changeForm((f) => deleteSection(f, section.id))}
+            className="flex h-6 w-6 cursor-pointer items-center justify-center rounded opacity-80 hover:bg-white/20 hover:opacity-100"
+          >
+            <TrashIcon size={14} />
+          </button>
         ) : null}
       </div>
       <div className="px-6 pb-4 pt-3 max-sm:px-4">

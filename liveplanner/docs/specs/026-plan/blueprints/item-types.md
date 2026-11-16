@@ -908,7 +908,7 @@ dots }` under the field's id. `votesFieldsOf(type)` lists the type's Votes field
   reduced motion); `states` and `display` show their tabs. The button and the running tour are the shared `ShowMeButton` /
   `ShowMeStage` (`ShowMe.tsx`, [Show Me](../../007-editor/show-me.md)); `CardTypeTour.tsx` keeps the literal telemetry.
 
-- **Edit Field** (spec "Fields and Tabs": Edit Field). `ItemTypeFieldRow`'s pencil (`Tooltip` "Edit Field",
+- **Edit Field** (spec "Fields and Tabs": Edit Field). `ItemTypeFieldRow`'s pencil (no `Tooltip`,
   `aria-label` "Edit {Name}", `aria-haspopup="dialog"`) calls `onEdit(opener)`; `ItemTypeLayoutEditor` keeps
   `editing: { id, opener }` (only a custom field neither inherited nor newer has a pencil; the inline
   `CustomFieldForm` is no longer rendered in a row, the component stays for its own tests and settings) and renders

@@ -86,29 +86,27 @@ export function ZoneBar({
     >
       {onMoveStart ? (
         <>
-          <Tooltip label="Drag to Move">
-            <button
-              type="button"
-              aria-label="Drag to Move"
-              aria-keyshortcuts={onMoveStep ? 'ArrowUp ArrowDown' : undefined}
-              data-zone-grip=""
-              onPointerDown={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                onMoveStart(e);
-              }}
-              onKeyDown={(e) => {
-                const by = zoneGripStep(e.key);
-                if (!by || !onMoveStep) return;
-                e.preventDefault();
-                e.stopPropagation();
-                onMoveStep(by);
-              }}
-              className="flex h-7 w-6 cursor-grab touch-none items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 active:cursor-grabbing dark:hover:bg-slate-800 dark:hover:text-slate-200"
-            >
-              <Grip />
-            </button>
-          </Tooltip>
+          <button
+            type="button"
+            aria-label="Drag to Move"
+            aria-keyshortcuts={onMoveStep ? 'ArrowUp ArrowDown' : undefined}
+            data-zone-grip=""
+            onPointerDown={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              onMoveStart(e);
+            }}
+            onKeyDown={(e) => {
+              const by = zoneGripStep(e.key);
+              if (!by || !onMoveStep) return;
+              e.preventDefault();
+              e.stopPropagation();
+              onMoveStep(by);
+            }}
+            className="flex h-7 w-6 cursor-grab touch-none items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 active:cursor-grabbing dark:hover:bg-slate-800 dark:hover:text-slate-200"
+          >
+            <Grip />
+          </button>
           <Sep />
         </>
       ) : null}

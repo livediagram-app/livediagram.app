@@ -22,7 +22,6 @@ import {
   CompactEmptyState,
   CountBadge,
   SearchIcon,
-  Tooltip,
   lucideGlyph,
   noMatchTitle,
   safeInset,
@@ -453,22 +452,20 @@ export function createStartPanel<
             >
               <HelpLink article={helpArticle} variant="icon" />
               {onClose ? (
-                <Tooltip label="Close">
-                  <button
-                    type="button"
-                    aria-label="Close"
-                    onClick={onClose}
-                    className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg transition hover:bg-[var(--start-hover)]"
-                    style={
-                      {
-                        color: header.band.muted,
-                        '--start-hover': startTint(palette, 7),
-                      } as CSSProperties
-                    }
-                  >
-                    <CloseGlyph />
-                  </button>
-                </Tooltip>
+                <button
+                  type="button"
+                  aria-label="Close"
+                  onClick={onClose}
+                  className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg transition hover:bg-[var(--start-hover)]"
+                  style={
+                    {
+                      color: header.band.muted,
+                      '--start-hover': startTint(palette, 7),
+                    } as CSSProperties
+                  }
+                >
+                  <CloseGlyph />
+                </button>
               ) : null}
             </div>
           </header>

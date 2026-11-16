@@ -4,7 +4,7 @@
 // Layouts, and an article's Style and Text (docs/specs/007-editor/pages-mode.md "Beside the cog"). Pressed while its tool is on for
 // the page (or, with no `on`, tinted while its popover is open), named beside its icon on a
 // desktop, the popover anchored under it; on a phone it opens as a bottom sheet instead.
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactElement, type ReactNode } from 'react';
 import { Tooltip, useClickOutside, useEscape } from '@livedocuments/ui';
 import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import { BottomSheet } from '@liveworkspace/workbench/components/primitives/BottomSheet';
@@ -81,7 +81,7 @@ export function TitlePopoverButton({
     <>
       {/* Its name: whether it is on is aria-pressed and the pressed look. */}
       {headless ? null : (
-        <Tooltip label={name}>
+        <TriggerHint name={name} labelled={labelled}>
           <button
             ref={setAnchor}
             type="button"
@@ -99,7 +99,7 @@ export function TitlePopoverButton({
             {icon}
             {labelled ? <span aria-hidden>{name}</span> : null}
           </button>
-        </Tooltip>
+        </TriggerHint>
       )}
       {open && mobile ? (
         <TitleSheet name={name} onClose={close} onEscape={onEscape}>
@@ -171,4 +171,17 @@ function TitleSheet({
       <div className="pb-2">{children}</div>
     </BottomSheet>
   );
+}
+
+// Named beside its icon (a desktop), the trigger needs no tooltip; icon-only, it keeps one.
+function TriggerHint({
+  name,
+  labelled,
+  children,
+}: {
+  name: string;
+  labelled: boolean;
+  children: ReactElement;
+}) {
+  return labelled ? children : <Tooltip label={name}>{children}</Tooltip>;
 }

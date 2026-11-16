@@ -7,7 +7,7 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { lucideClock } from '@liveworkspace/icons/lucide';
 import { noteCardSpeakingSeconds, speakingTimeLabel, type NoteCard } from '@livedocuments/document';
-import { ChevronLeftIcon, ChevronRightIcon, lucideGlyph, Tooltip } from '@livedocuments/ui';
+import { ChevronLeftIcon, ChevronRightIcon, lucideGlyph } from '@livedocuments/ui';
 import { FLASHCARD_FLIP_MS, motionReduced } from '@/lib/flashcard-flip';
 import { FLASHCARD_STACK_INSET_X, FLASHCARD_STACK_STEP_Y } from '@/lib/flashcard-stack';
 
@@ -156,7 +156,6 @@ export function PresenterNoteCards({
         <div className="mt-2 flex items-center justify-between gap-1 rounded-xl bg-slate-900/80 p-1 backdrop-blur">
           <ViewerButton
             label="Previous Card"
-            hint="↑"
             disabled={index === 0}
             onPress={() => onCard(index - 1)}
           >
@@ -166,27 +165,25 @@ export function PresenterNoteCards({
           {count <= VIEWER_DOTS_MAX ? (
             <div className="flex items-center gap-1">
               {cards.map((c, i) => (
-                <Tooltip key={c.id} label={`Go to Card ${i + 1}`}>
-                  <button
-                    type="button"
-                    aria-label={`Go to Card ${i + 1}`}
-                    aria-current={i === index ? 'true' : undefined}
-                    onClick={() => onCard(i)}
-                    className="flex h-5 w-3 cursor-pointer items-center justify-center"
-                  >
-                    <span
-                      className={`block h-1.5 rounded-full transition-all ${
-                        i === index ? 'w-3 bg-brand-300' : 'w-1.5 bg-white/30 hover:bg-white/60'
-                      }`}
-                    />
-                  </button>
-                </Tooltip>
+                <button
+                  key={c.id}
+                  type="button"
+                  aria-label={`Go to Card ${i + 1}`}
+                  aria-current={i === index ? 'true' : undefined}
+                  onClick={() => onCard(i)}
+                  className="flex h-5 w-3 cursor-pointer items-center justify-center"
+                >
+                  <span
+                    className={`block h-1.5 rounded-full transition-all ${
+                      i === index ? 'w-3 bg-brand-300' : 'w-1.5 bg-white/30 hover:bg-white/60'
+                    }`}
+                  />
+                </button>
               ))}
             </div>
           ) : null}
           <ViewerButton
             label="Next Card"
-            hint="↓"
             disabled={index === count - 1}
             onPress={() => onCard(index + 1)}
           >
@@ -205,28 +202,24 @@ export function PresenterNoteCards({
 
 function ViewerButton({
   label,
-  hint,
   disabled,
   onPress,
   children,
 }: {
   label: string;
-  hint: string;
   disabled: boolean;
   onPress: () => void;
   children: React.ReactNode;
 }) {
   return (
-    <Tooltip label={`${label} (${hint})`}>
-      <button
-        type="button"
-        aria-label={label}
-        disabled={disabled}
-        onClick={onPress}
-        className="flex h-7 cursor-pointer items-center gap-1 rounded-lg px-2 text-[12px] font-medium text-white/85 transition hover:bg-white/10 disabled:cursor-default disabled:text-white/25 disabled:hover:bg-transparent [&_svg]:h-3.5 [&_svg]:w-3.5"
-      >
-        {children}
-      </button>
-    </Tooltip>
+    <button
+      type="button"
+      aria-label={label}
+      disabled={disabled}
+      onClick={onPress}
+      className="flex h-7 cursor-pointer items-center gap-1 rounded-lg px-2 text-[12px] font-medium text-white/85 transition hover:bg-white/10 disabled:cursor-default disabled:text-white/25 disabled:hover:bg-transparent [&_svg]:h-3.5 [&_svg]:w-3.5"
+    >
+      {children}
+    </button>
   );
 }

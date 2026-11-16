@@ -133,7 +133,7 @@ body: true })`; a `plan_draft_*` body with a `message` throws `PlanDraftRefusal(
   `ProblemText` (rose, `role="status"`). `draft-edits.ts`: `freshName`, `withKind`, `newDraftType`, `problemsByPath`.
 - Part 3: `PlanDraftRules.tsx`, the Starter Rules section under the card types (only with rules): its line
   (`STARTER_RULES_LINE`, or `STARTER_RULES_LEFT_OUT` with no rows where they can't be made), each rule a card with the
-  shared `Switch` (`Make <name> on`, a Tooltip saying made on or off), its name (`TextInput`, `AUTOMATION_NAME_MAX`),
+  shared `Switch` (`Make <name> on`, no Tooltip: a switch beside its label), its name (`TextInput`, `AUTOMATION_NAME_MAX`),
   Remove Rule (ghost, `TrashIcon`, words hidden on a phone) and `SentenceChips` of `planDraftRuleSentence` (dimmed
   while off), its problems in `ProblemText`, the card's border rose while the rule has one. `PlanDraftPreview` takes
   `rulesMade`, renames columns through `withColumnName`, and a type's change through `withType` (`withTypeName`, then

@@ -219,16 +219,14 @@ export function TimeSpentField({
                   </span>
                 </span>
                 {mayTouch(e.by) ? (
-                  <Tooltip label={`Remove ${time} by ${who.name}`}>
-                    <button
-                      type="button"
-                      aria-label={`Remove ${time} by ${who.name}`}
-                      className={QUIET_BUTTON}
-                      onClick={() => void onTime({ op: 'remove', entry: e.id })}
-                    >
-                      <DiscardIcon />
-                    </button>
-                  </Tooltip>
+                  <button
+                    type="button"
+                    aria-label={`Remove ${time} by ${who.name}`}
+                    className={QUIET_BUTTON}
+                    onClick={() => void onTime({ op: 'remove', entry: e.id })}
+                  >
+                    <DiscardIcon />
+                  </button>
                 ) : (
                   <span className="w-7 shrink-0" aria-hidden />
                 )}

@@ -166,7 +166,7 @@ Headings: 10px, semibold, uppercase, slate-500, 6px above their row.
 ## Accessibility
 
 - Root: `role="group"`, `aria-label={label}`. Each heading's row: `role="group"`, `aria-labelledby` its heading.
-- Swatches: `<button aria-pressed>` with `aria-label` and a `Tooltip` of the same name.
+- Swatches: `<button aria-pressed>` with `aria-label` and no `Tooltip` (the labelled colour row names it).
 - Focus ring: 2px brand, `focus-visible` only. Selection ring brand-500 / brand-300, at least 3:1 on the panel.
 - Reduced motion: no hover scale.
 

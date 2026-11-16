@@ -7,7 +7,7 @@
 // Shared by the Gradient tool's options and the Gradient Map adjustment.
 import { useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import type { Gradient } from '@livedesign/photo-engine';
-import { Button, Tooltip } from '@livedesign/ui';
+import { Button } from '@livedesign/ui';
 import { standardGroup } from '@/components/colour/colour-options';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { PREVIEW_CHECKER } from '@/components/dialogs/ImageExportPanel';
@@ -157,19 +157,18 @@ export function GradientEditor({
         </p>
         <div className="grid grid-cols-3 gap-1.5">
           {gradientPresets(foreground, background).map((p) => (
-            <Tooltip key={p.name} label={p.name}>
-              <button
-                type="button"
-                aria-label={p.name}
-                onClick={() => {
-                  setChosen({ kind: 'colour', index: 0 });
-                  onChange(p.gradient);
-                }}
-                className="h-6 rounded border border-slate-200 p-0.5 hover:border-brand-500 dark:border-slate-700"
-              >
-                <Strip gradient={p.gradient} />
-              </button>
-            </Tooltip>
+            <button
+              key={p.name}
+              type="button"
+              aria-label={p.name}
+              onClick={() => {
+                setChosen({ kind: 'colour', index: 0 });
+                onChange(p.gradient);
+              }}
+              className="h-6 rounded border border-slate-200 p-0.5 hover:border-brand-500 dark:border-slate-700"
+            >
+              <Strip gradient={p.gradient} />
+            </button>
           ))}
         </div>
       </div>
@@ -282,19 +281,17 @@ export function PhotoGradientField({
   const [open, setOpen] = useState(false);
   return (
     <>
-      <Tooltip label={label}>
-        <button
-          ref={setAnchor}
-          type="button"
-          aria-label={label}
-          aria-haspopup="dialog"
-          aria-expanded={open}
-          onClick={() => setOpen((o) => !o)}
-          className="h-6 w-24 shrink-0 rounded border border-slate-300 p-0.5 hover:border-brand-500 dark:border-slate-600"
-        >
-          <Strip gradient={value} reverse={reverse} />
-        </button>
-      </Tooltip>
+      <button
+        ref={setAnchor}
+        type="button"
+        aria-label={label}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        onClick={() => setOpen((o) => !o)}
+        className="h-6 w-24 shrink-0 rounded border border-slate-300 p-0.5 hover:border-brand-500 dark:border-slate-600"
+      >
+        <Strip gradient={value} reverse={reverse} />
+      </button>
       {open && anchor ? (
         <AnchoredPopover
           anchor={anchor}

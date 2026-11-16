@@ -12,7 +12,7 @@ import {
   normaliseBoardSetup,
   type PlanBoardSetup,
 } from '@liveplanner/items';
-import { Button, ChevronDownIcon, Tooltip, lucideGlyph } from '@liveplanner/ui';
+import { Button, ChevronDownIcon, lucideGlyph } from '@liveplanner/ui';
 import { lucideClipboardList } from '@liveworkspace/icons/lucide';
 import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import { ClusterPanel } from '@/components/canvas/ClusterPanel';
@@ -110,21 +110,19 @@ export function BoardConfigureDialog({
       headerEnd={
         offersForm ? (
           // A form whose responses come to this board (docs/specs/030-forms/forms.md "Starting a form").
-          <Tooltip label="Collect cards for this board from anyone with a link">
-            <Button
-              variant="secondary"
-              size="sm"
-              // No room beside the title on a phone (docs/specs/026-plan/plan-board.md "Configure").
-              className="max-sm:hidden"
-              onClick={() => {
-                onClose();
-                plan.newFormFor?.(element.id);
-              }}
-            >
-              <FormIcon aria-hidden />
-              Create Form
-            </Button>
-          </Tooltip>
+          <Button
+            variant="secondary"
+            size="sm"
+            // No room beside the title on a phone (docs/specs/026-plan/plan-board.md "Configure").
+            className="max-sm:hidden"
+            onClick={() => {
+              onClose();
+              plan.newFormFor?.(element.id);
+            }}
+          >
+            <FormIcon aria-hidden />
+            Create Form
+          </Button>
         ) : undefined
       }
     >

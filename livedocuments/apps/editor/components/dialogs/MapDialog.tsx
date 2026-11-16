@@ -7,7 +7,7 @@
 // Cancel or Escape leaves the map as it was.
 
 import { useMemo, useState } from 'react';
-import { Button, DialogCloseButton, DialogHeader, Select, Tooltip } from '@livedocuments/ui';
+import { Button, DialogCloseButton, DialogHeader, Select } from '@livedocuments/ui';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { SegmentedRadio } from '@liveworkspace/workbench/components/primitives/SegmentedRadio';
 import {
@@ -235,24 +235,22 @@ export function MapDialog({
               <ul className="mb-2 flex flex-wrap gap-1.5" aria-label="Highlighted countries">
                 {highlights.map((code) => (
                   <li key={code}>
-                    <Tooltip label={`Remove ${nameOf(code)}`}>
-                      <button
-                        type="button"
-                        aria-label={`Remove ${nameOf(code)}`}
-                        onClick={() => toggleCountry(code)}
-                        className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-slate-200 bg-white py-0.5 pl-2 pr-1.5 text-[12px] text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-                      >
-                        <span
-                          aria-hidden
-                          className="h-2 w-2 rounded-full"
-                          style={{ background: accent }}
-                        />
-                        {nameOf(code)}
-                        <span aria-hidden className="text-slate-500 dark:text-slate-400">
-                          ×
-                        </span>
-                      </button>
-                    </Tooltip>
+                    <button
+                      type="button"
+                      aria-label={`Remove ${nameOf(code)}`}
+                      onClick={() => toggleCountry(code)}
+                      className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-slate-200 bg-white py-0.5 pl-2 pr-1.5 text-[12px] text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                    >
+                      <span
+                        aria-hidden
+                        className="h-2 w-2 rounded-full"
+                        style={{ background: accent }}
+                      />
+                      {nameOf(code)}
+                      <span aria-hidden className="text-slate-500 dark:text-slate-400">
+                        ×
+                      </span>
+                    </button>
                   </li>
                 ))}
               </ul>

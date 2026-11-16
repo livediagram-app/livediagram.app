@@ -19,15 +19,7 @@ import {
   type PlanDraftFieldKind,
   type PlanDraftType,
 } from '@liveplanner/items';
-import {
-  Button,
-  CloseIcon,
-  PlusIcon,
-  Select,
-  TextInput,
-  Tooltip,
-  TrashIcon,
-} from '@liveplanner/ui';
+import { Button, CloseIcon, PlusIcon, Select, TextInput, TrashIcon } from '@liveplanner/ui';
 import { CardTypeTile } from '@/components/plan/CardTypeTile';
 import { CUSTOM_KIND_LABELS } from '@/components/plan/ItemTypeFieldForms';
 import { NameChips, ProblemText } from './NameChips';
@@ -93,18 +85,16 @@ export function PlanDraftTypeCard({
             className="min-w-0 flex-1 font-semibold"
           />
         )}
-        <Tooltip label={`Remove ${name}`}>
-          <Button
-            variant="ghost"
-            size="xs"
-            aria-label={`Remove ${name}`}
-            onClick={onRemove}
-            className="shrink-0"
-          >
-            <TrashIcon size={14} aria-hidden />
-            <span className="max-sm:hidden">Remove Type</span>
-          </Button>
-        </Tooltip>
+        <Button
+          variant="ghost"
+          size="xs"
+          aria-label={`Remove ${name}`}
+          onClick={onRemove}
+          className="shrink-0"
+        >
+          <TrashIcon size={14} aria-hidden />
+          <span className="max-sm:hidden">Remove Type</span>
+        </Button>
       </div>
       {nameProblem ? <ProblemText>{nameProblem}</ProblemText> : null}
       {kept ? (
@@ -117,21 +107,19 @@ export function PlanDraftTypeCard({
               {type.builtInFields.map((f) => (
                 <span key={f} className={CHIP}>
                   {BUILT_IN_FIELD_NAMES[f]}
-                  <Tooltip label={`Remove ${BUILT_IN_FIELD_NAMES[f]}`}>
-                    <button
-                      type="button"
-                      aria-label={`Remove ${BUILT_IN_FIELD_NAMES[f]}`}
-                      onClick={() =>
-                        onChange({
-                          ...type,
-                          builtInFields: type.builtInFields.filter((x) => x !== f),
-                        })
-                      }
-                      className="flex size-5 cursor-pointer items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-200 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 motion-reduce:transition-none pointer-coarse:size-8 dark:hover:bg-slate-700 dark:hover:text-slate-200"
-                    >
-                      <CloseIcon size={11} />
-                    </button>
-                  </Tooltip>
+                  <button
+                    type="button"
+                    aria-label={`Remove ${BUILT_IN_FIELD_NAMES[f]}`}
+                    onClick={() =>
+                      onChange({
+                        ...type,
+                        builtInFields: type.builtInFields.filter((x) => x !== f),
+                      })
+                    }
+                    className="flex size-5 cursor-pointer items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-200 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 motion-reduce:transition-none pointer-coarse:size-8 dark:hover:bg-slate-700 dark:hover:text-slate-200"
+                  >
+                    <CloseIcon size={11} />
+                  </button>
                 </span>
               ))}
               {type.builtInFields.length === 0 ? (
@@ -261,16 +249,14 @@ function FieldRow({
             </option>
           ))}
         </Select>
-        <Tooltip label={`Remove ${label}`}>
-          <button
-            type="button"
-            aria-label={`Remove ${label}`}
-            onClick={onRemove}
-            className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-200 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 motion-reduce:transition-none pointer-coarse:size-10 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100"
-          >
-            <CloseIcon size={14} />
-          </button>
-        </Tooltip>
+        <button
+          type="button"
+          aria-label={`Remove ${label}`}
+          onClick={onRemove}
+          className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-200 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 motion-reduce:transition-none pointer-coarse:size-10 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100"
+        >
+          <CloseIcon size={14} />
+        </button>
       </div>
       {nameProblem ? <ProblemText>{nameProblem}</ProblemText> : null}
       {kindProblem ? <ProblemText>{kindProblem}</ProblemText> : null}

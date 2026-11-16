@@ -370,7 +370,7 @@ WCAG 2.2 AA.
   [Tooltips, hover cards and popovers](../004-interface-design/tooltips-hover-cards-popovers.md)).
 - Focus is always visible. Every option is a target of at least 24 × 24 px, including the
   compact swatches whose colour draws smaller inside it.
-- An overridden swatch says so in its name and tooltip ("Custom orange, in place of Green"), not
+- An overridden swatch says so in its name ("Custom orange, in place of Green"), not
   only through its marker. Its popover is a labelled dialog ("Custom colour for Green, Stroke"),
   reached by right-click, Shift+F10 or the context-menu key, and Escape returns focus to the swatch.
 - **Section titles are separate from the names**: a row's accessible name does not depend on its

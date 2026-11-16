@@ -200,7 +200,6 @@ export class TocView implements NodeView {
         b.dataset.tocDepth = String(d.depth);
         b.setAttribute('aria-pressed', String(d.depth === depth));
         b.setAttribute('aria-label', d.name);
-        b.title = d.name;
         chips.appendChild(b);
       }
       parts.push(chips);

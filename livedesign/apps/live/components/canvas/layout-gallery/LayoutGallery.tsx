@@ -15,7 +15,7 @@ import {
   warmLayoutPlaceholders,
   type PageLayoutId,
 } from '@livedesign/templates';
-import { lucideGlyph, NoMatches, Tooltip } from '@livedesign/ui';
+import { lucideGlyph, NoMatches } from '@livedesign/ui';
 import { FilterSearchBox } from '@liveworkspace/workbench/components/primitives/FilterSearchBox';
 import { CategoryChips } from '@liveworkspace/workbench/components/primitives/CategoryChips';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
@@ -147,23 +147,21 @@ export function LayoutGallery({
             autoFocus={autoFocus}
           />
         </div>
-        <Tooltip label="A random layout from those shown">
-          <button
-            type="button"
-            onClick={surprise}
-            disabled={shownCount === 0}
-            className="flex h-[30px] shrink-0 items-center gap-1.5 rounded-lg bg-brand-50 px-2.5 text-xs font-semibold text-brand-700 ring-1 ring-brand-200 transition hover:bg-brand-100 focus-visible:outline-2 focus-visible:outline-brand-600 disabled:opacity-50 dark:bg-brand-500/15 dark:text-brand-100 dark:ring-brand-400/30 dark:hover:bg-brand-500/25"
+        <button
+          type="button"
+          onClick={surprise}
+          disabled={shownCount === 0}
+          className="flex h-[30px] shrink-0 items-center gap-1.5 rounded-lg bg-brand-50 px-2.5 text-xs font-semibold text-brand-700 ring-1 ring-brand-200 transition hover:bg-brand-100 focus-visible:outline-2 focus-visible:outline-brand-600 disabled:opacity-50 dark:bg-brand-500/15 dark:text-brand-100 dark:ring-brand-400/30 dark:hover:bg-brand-500/25"
+        >
+          <span
+            aria-hidden
+            className={rolling ? 'animate-dice-roll' : ''}
+            onAnimationEnd={() => setRolling(false)}
           >
-            <span
-              aria-hidden
-              className={rolling ? 'animate-dice-roll' : ''}
-              onAnimationEnd={() => setRolling(false)}
-            >
-              <DicesIcon />
-            </span>
-            Surprise Me
-          </button>
-        </Tooltip>
+            <DicesIcon />
+          </span>
+          Surprise Me
+        </button>
       </div>
       <CategoryChips
         chips={chips}

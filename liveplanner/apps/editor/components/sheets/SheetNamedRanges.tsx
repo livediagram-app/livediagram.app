@@ -2,7 +2,7 @@
 
 // Sheet Settings' Named Ranges (docs/specs/029-sheets/sheet.md "Named ranges"): each name with its range, Go To
 // (selects it) and, for an Editor, Remove (one undo step). Names are made in the name box.
-import { CloseIcon, Tooltip } from '@liveplanner/ui';
+import { CloseIcon } from '@liveplanner/ui';
 import { formatRange, posRangeOf } from '@liveplanner/sheets';
 import { useSheetController } from './sheet-controller';
 import type { SheetActions } from './useSheetActions';
@@ -57,21 +57,19 @@ export function SheetNamedRanges({
               </button>
             ) : null}
             {c.canShape ? (
-              <Tooltip label={`Remove ${x.name}`}>
-                <button
-                  type="button"
-                  aria-label={`Remove ${x.name}`}
-                  className="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100"
-                  onClick={() =>
-                    c.write(
-                      { kind: 'layout', changes: [{ k: 'name', name: x.name, range: null }] },
-                      'Name',
-                    )
-                  }
-                >
-                  <CloseIcon size={11} />
-                </button>
-              </Tooltip>
+              <button
+                type="button"
+                aria-label={`Remove ${x.name}`}
+                className="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100"
+                onClick={() =>
+                  c.write(
+                    { kind: 'layout', changes: [{ k: 'name', name: x.name, range: null }] },
+                    'Name',
+                  )
+                }
+              >
+                <CloseIcon size={11} />
+              </button>
             ) : null}
           </li>
         );

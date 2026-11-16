@@ -14,7 +14,7 @@ import {
 } from '@livedocuments/document';
 import { PagedCarousel } from '@liveworkspace/workbench/components/primitives/PagedCarousel';
 import { RANGE_SLIDER } from '@liveworkspace/workbench/components/primitives/surface-classes';
-import { CheckIcon, Tooltip } from '@livedocuments/ui';
+import { CheckIcon } from '@livedocuments/ui';
 import { fillCss, type ThemeBackgroundPreset } from '@/lib/page-paint';
 import {
   colouringOf,
@@ -114,34 +114,33 @@ export function AnimatedBackgroundChoices({
           const f = fillFor(m.id);
           const on = motion === m.id;
           return (
-            <Tooltip key={m.id} label={`${m.label}: ${m.description}`}>
-              <button
-                type="button"
-                role="radio"
-                aria-checked={on}
-                aria-label={m.label}
-                onClick={() => {
-                  track('Tab', 'Changed', 'PageBackgroundAnimated');
-                  onPick(f);
-                }}
-                onPointerEnter={() => onPreview(f)}
-                onFocus={() => onPreview(f)}
-                className={`flex flex-col items-center gap-1 rounded-lg p-1 text-[11px] font-medium text-slate-700 transition hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-200 dark:hover:bg-slate-800 ${
-                  on ? 'bg-brand-50 ring-2 ring-inset ring-brand-500 dark:bg-brand-500/15' : ''
-                }`}
+            <button
+              key={m.id}
+              type="button"
+              role="radio"
+              aria-checked={on}
+              aria-label={m.label}
+              onClick={() => {
+                track('Tab', 'Changed', 'PageBackgroundAnimated');
+                onPick(f);
+              }}
+              onPointerEnter={() => onPreview(f)}
+              onFocus={() => onPreview(f)}
+              className={`flex flex-col items-center gap-1 rounded-lg p-1 text-[11px] font-medium text-slate-700 transition hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-200 dark:hover:bg-slate-800 ${
+                on ? 'bg-brand-50 ring-2 ring-inset ring-brand-500 dark:bg-brand-500/15' : ''
+              }`}
+            >
+              <span
+                aria-hidden
+                className="relative block overflow-hidden rounded ring-1 ring-inset ring-slate-900/10 dark:ring-white/15"
+                style={{ width: TILE_W, height: TILE_H, background: fillCss(f) }}
               >
-                <span
-                  aria-hidden
-                  className="relative block overflow-hidden rounded ring-1 ring-inset ring-slate-900/10 dark:ring-white/15"
-                  style={{ width: TILE_W, height: TILE_H, background: fillCss(f) }}
-                >
-                  {f.kind === 'gradient' ? (
-                    <PageMotionLayer motion={m.id} fill={f} width={TILE_W} height={TILE_H} />
-                  ) : null}
-                </span>
-                {m.label}
-              </button>
-            </Tooltip>
+                {f.kind === 'gradient' ? (
+                  <PageMotionLayer motion={m.id} fill={f} width={TILE_W} height={TILE_H} />
+                ) : null}
+              </span>
+              {m.label}
+            </button>
           );
         }}
       />
@@ -157,47 +156,42 @@ export function AnimatedBackgroundChoices({
           const on = current === c.id;
           const target = motion ? fillFor(motion, c.id) : null;
           return (
-            <Tooltip key={c.id} label={c.label}>
-              <button
-                type="button"
-                role="radio"
-                aria-checked={on}
-                aria-label={c.label}
-                onClick={() => {
-                  setChosen(c.id);
-                  setCustomOpen(false);
-                  if (target) onPick(target);
-                }}
-                onPointerEnter={() => target && onPreview(target)}
-                onFocus={() => target && onPreview(target)}
-                className={`flex h-7 w-7 items-center justify-center rounded-full ring-1 ring-inset ring-slate-900/10 transition hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 motion-reduce:hover:scale-100 dark:ring-white/15 ${
-                  on ? 'outline outline-2 outline-offset-2 outline-brand-500' : ''
-                }`}
-                style={{ background: `linear-gradient(160deg, ${from}, ${to})` }}
-              >
-                {on ? <CheckIcon className="h-3.5 w-3.5 text-white mix-blend-difference" /> : null}
-              </button>
-            </Tooltip>
+            <button
+              key={c.id}
+              type="button"
+              role="radio"
+              aria-checked={on}
+              aria-label={c.label}
+              onClick={() => {
+                setChosen(c.id);
+                setCustomOpen(false);
+                if (target) onPick(target);
+              }}
+              onPointerEnter={() => target && onPreview(target)}
+              onFocus={() => target && onPreview(target)}
+              className={`flex h-7 w-7 items-center justify-center rounded-full ring-1 ring-inset ring-slate-900/10 transition hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 motion-reduce:hover:scale-100 dark:ring-white/15 ${
+                on ? 'outline outline-2 outline-offset-2 outline-brand-500' : ''
+              }`}
+              style={{ background: `linear-gradient(160deg, ${from}, ${to})` }}
+            >
+              {on ? <CheckIcon className="h-3.5 w-3.5 text-white mix-blend-difference" /> : null}
+            </button>
           );
         })}
         {motion ? (
-          <Tooltip label="Custom Colours">
-            <button
-              type="button"
-              role="radio"
-              aria-checked={!!custom}
-              aria-label="Custom Colours"
-              onClick={() => setCustomOpen(true)}
-              className={`flex h-7 w-7 items-center justify-center rounded-full ring-1 ring-inset ring-slate-900/10 transition hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 motion-reduce:hover:scale-100 dark:ring-white/15 ${
-                custom ? 'outline outline-2 outline-offset-2 outline-brand-500' : ''
-              }`}
-              style={{ background: custom ? fillCss(custom) : RAINBOW }}
-            >
-              {custom ? (
-                <CheckIcon className="h-3.5 w-3.5 text-white mix-blend-difference" />
-              ) : null}
-            </button>
-          </Tooltip>
+          <button
+            type="button"
+            role="radio"
+            aria-checked={!!custom}
+            aria-label="Custom Colours"
+            onClick={() => setCustomOpen(true)}
+            className={`flex h-7 w-7 items-center justify-center rounded-full ring-1 ring-inset ring-slate-900/10 transition hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 motion-reduce:hover:scale-100 dark:ring-white/15 ${
+              custom ? 'outline outline-2 outline-offset-2 outline-brand-500' : ''
+            }`}
+            style={{ background: custom ? fillCss(custom) : RAINBOW }}
+          >
+            {custom ? <CheckIcon className="h-3.5 w-3.5 text-white mix-blend-difference" /> : null}
+          </button>
         ) : null}
       </div>
       {/* The two colours of the author's own, as the Gradient category's custom editor sets them;

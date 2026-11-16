@@ -358,7 +358,7 @@ Where each is set, so a setting lives with what it changes, never in one central
   too) shift 1.5% toward the board's ink, easing in and out over 250 ms (at once with reduced motion). Nothing else
   changes and nothing moves. Under the Sketch finish, whose drawing is a still copy, the same wash is laid over the
   drawing. Not on a touch screen, nor on a slot board.
-- **Collapse Column**: a column's head offers **Collapse Column** (two arrows closing on a column's edge, at its right, with that tooltip, always shown,
+- **Collapse Column**: a column's head offers **Collapse Column** (two arrows closing on a column's edge, at its right, a chevron named for screen readers with no tooltip, always shown,
   a little quieter at rest and full strength on hover and focus), and for someone who may edit, its cog's toolbar too. Collapsed, the
   column is a thin strip (`COLLAPSED_COLUMN_PX`) in its place: its colour bar and an **Expand Column** button (the arrows opening out from the edge) at the
   top, then its name written top to bottom (no count badge; the count is in its accessible name), the whole strip

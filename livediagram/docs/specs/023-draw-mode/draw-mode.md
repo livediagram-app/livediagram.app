@@ -420,7 +420,7 @@ Shapes or Settings.
     a swatch to press. **The warning's line is always reserved**, empty
     until needed, so it never shifts the picker.
   - **Width:** Fine, Medium, Bold, Thick, Heavy, Broad.
-  - Each swatch has its name as its tooltip and accessible name ("Blue",
+  - Each swatch has its name as its accessible name, no tooltip ("Blue",
     "#ff6b00"); arrow keys move focus through every swatch and +
     (wrapping), Enter picks, Escape closes.
 - Markers 2 and 3 start as **Blue** and **Red**. **Existing strokes

@@ -3,7 +3,7 @@
 // The toolbar's Font (docs/specs/029-sheets/sheet.md "Formatting"): a button naming the active cell's font in its own
 // face, left of Font Size, opening the Font menu (SheetToolbarMenus). Unset, the sheet's font: Default.
 import { FONTS, resolveFontStack } from '@liveplanner/project';
-import { ChevronDownIcon, Tooltip } from '@liveplanner/ui';
+import { ChevronDownIcon } from '@liveplanner/ui';
 
 // The button's width on the toolbar: room for the longest name (Space Grotesk, Shantell Sans) at 12px, and the chevron.
 export const FONT_BUTTON_PX = 132;
@@ -24,28 +24,26 @@ export function SheetFontButton({
 }) {
   const label = fontLabel(font);
   return (
-    <Tooltip label="Font">
-      <button
-        type="button"
-        aria-label={`Font: ${label}`}
-        aria-haspopup="menu"
-        className={`flex h-7 shrink-0 cursor-pointer items-center justify-between gap-1 rounded-md border px-2 text-[12px] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${
-          tone
-            ? 'hover:bg-black/5 dark:hover:bg-white/10'
-            : 'border-slate-200 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800'
-        }`}
-        style={{
-          width: FONT_BUTTON_PX,
-          ...(tone ? { borderColor: tone.line, color: tone.text } : {}),
-        }}
-        onPointerDown={(e) => e.stopPropagation()}
-        onClick={(e) => onOpen(e.currentTarget)}
-      >
-        <span className="truncate" style={{ fontFamily: resolveFontStack(font) }}>
-          {label}
-        </span>
-        <ChevronDownIcon size={12} />
-      </button>
-    </Tooltip>
+    <button
+      type="button"
+      aria-label={`Font: ${label}`}
+      aria-haspopup="menu"
+      className={`flex h-7 shrink-0 cursor-pointer items-center justify-between gap-1 rounded-md border px-2 text-[12px] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${
+        tone
+          ? 'hover:bg-black/5 dark:hover:bg-white/10'
+          : 'border-slate-200 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800'
+      }`}
+      style={{
+        width: FONT_BUTTON_PX,
+        ...(tone ? { borderColor: tone.line, color: tone.text } : {}),
+      }}
+      onPointerDown={(e) => e.stopPropagation()}
+      onClick={(e) => onOpen(e.currentTarget)}
+    >
+      <span className="truncate" style={{ fontFamily: resolveFontStack(font) }}>
+        {label}
+      </span>
+      <ChevronDownIcon size={12} />
+    </button>
   );
 }
