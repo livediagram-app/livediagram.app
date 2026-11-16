@@ -1,0 +1,44 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Snapshots',
+  description:
+    'Take a snapshot of the whole design before a big change, keep the latest five, and revert to one to put everything back as it was.',
+  path: '/help/collaboration/snapshots/',
+});
+
+<ArticleLayout
+  title="Snapshots"
+  description="Save points for the whole design: take one before a big change, revert to it if the change goes wrong."
+  categoryTitle="Collaboration"
+  categorySlug="collaboration"
+  subArticles={getSubArticles('snapshots')}
+>
+
+A snapshot keeps the whole design as it is right now, so you can try a big change (a reorganisation, an import, a clean-up with a teammate or an AI assistant) knowing you can put everything back in one step.
+
+## Taking a snapshot
+
+Press **Snapshots** (the camera) in the bar along the bottom of the editor, just before Settings. Give the snapshot a name if you like, such as "Before the workshop", and press **Take Snapshot**. Without a name it is called by the time it was taken.
+
+Each snapshot lists its name, who took it, how long ago and its size. The latest **five** are kept: when five are there, the dialog says which one taking another will remove, and the oldest goes.
+
+## Reverting to a snapshot
+
+Press **Revert** on a snapshot's row and confirm. The design goes back to exactly how it was: every tab, its folders and the component library. The design's name, its comments and who it is shared with stay as they are.
+
+Reverting replaces everyone's work since that snapshot, so first it takes a snapshot of the design as it is now, marked **Before revert**. If you change your mind, revert to that one.
+
+Everyone who has the design open sees it reload onto the reverted version straight away, so nobody keeps working on what was replaced.
+
+## Deleting a snapshot
+
+Press the bin on a snapshot's row and confirm. A deleted snapshot can't be brought back.
+
+## Who can use snapshots
+
+Editors of the whole design take, revert and delete snapshots. Participants, Viewers and people with a link to one tab don't see them. Snapshots are there on designs stored on the server: a design kept in **This Browser** has none, and AI assistants and scripts using an API token can't use them.
+
+</ArticleLayout>

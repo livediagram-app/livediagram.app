@@ -5,6 +5,7 @@
  *  are drawn from a cool palette around it (sky / indigo / teal / violet /
  *  emerald / amber / rose) so cards stay coherent with the product. */
 export const FEATURE_ENTITY_HEX: Record<string, string> = {
+  snapshots: '#0d9488',
   'panel-layout': '#6366f1',
   toolbar: '#6366f1',
   'context-menus': '#6366f1',

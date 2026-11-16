@@ -159,7 +159,7 @@ export const categories: Category[] = [
     title: 'Collaboration',
     description:
       'Work together in real time: comments, assigned actions, live presence, teams, sharing, and session tools.',
-    articleCount: 7,
+    articleCount: 8,
     kind: 'feature',
   },
   {
@@ -1739,6 +1739,15 @@ export const articles: Article[] = [
     description: 'A shared countdown or stopwatch, live dot-voting, and polls.',
     keywords:
       'timer voting workshop meeting facilitation retro countdown poll polls survey pulse check',
+    category: 'Collaboration',
+    categorySlug: 'collaboration',
+  },
+  {
+    slug: 'snapshots',
+    title: 'Snapshots',
+    description: 'Save points for the whole document: take one, keep five, revert to one.',
+    keywords:
+      'snapshot save point restore revert undo backup checkpoint version rollback go back earlier copy',
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },
