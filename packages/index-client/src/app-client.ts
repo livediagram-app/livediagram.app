@@ -125,6 +125,14 @@ export function createIndexAppClient({ app, key, baseUrl, fetch: doFetch }: Inde
     // feeds").
     calendarFeedByToken: async (tokenHash: string) =>
       (await get<{ personId: string }>(`/calendar-feeds/${enc(tokenHash)}`))?.personId ?? null,
+    // Watched sheets changed (sheet-sources.md): the index tells each watcher's app; `gone` are watchers to forget.
+    sheetChanged: async (
+      itemId: string,
+      sheetIds: readonly string[],
+      watchers: readonly string[],
+    ): Promise<string[]> =>
+      (await post<{ gone: string[] }>(`/items/${enc(itemId)}/sheet-changed`, { sheetIds, watchers }))
+        .gone,
     communityStates: async (posts: readonly CommunityStateAsk[]): Promise<CommunityStateAnswer[]> =>
       (await post<{ states: CommunityStateAnswer[] }>('/community/states', { posts })).states,
   };

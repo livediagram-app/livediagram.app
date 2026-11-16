@@ -1,11 +1,18 @@
 // The calls liveworkspace's services make on each app's internal doors, built once (liveworkspace/docs/specs/005-drive/
 // drive.md "Contracts > The apps", liveworkspace/docs/specs/003-accounts/data-export.md "The apps"): an item's
 // whole-item file, a tab drawn as SVG, its boards and sheets as CSV, its comment threads, a new item from a file, and
-// where an item opens. Each caller hands in its own origins and keys (the Drive mirror its DRIVE_KEY_<APP>, the data
+// where an item opens, and a sheet source's sheets and one range of one (sheet-sources.md). Each caller hands in its own origins and keys (the Drive mirror its DRIVE_KEY_<APP>, the data
 // export its DATA_EXPORT_KEY_<APP>), so one client serves both and each key opens only what the app lets it.
 
 import { etagVersion, type ExportTable, type ExportThread } from '@liveworkspace/index-app';
-import type { App } from '@liveworkspace/index-client';
+import {
+  isSheetListing,
+  isSheetRangeDoorRead,
+  type App,
+  type SheetListing,
+  type SheetRangeAsk,
+  type SheetRangeDoorRead,
+} from '@liveworkspace/index-client';
 import { APP_ITEMS } from '@liveworkspace/sites';
 
 export type ImportAnswer =
@@ -26,6 +33,15 @@ export interface AppDoors {
   importFile(app: App, input: ImportInput): Promise<ImportAnswer>;
   // Where the item opens, or null when the app's origin isn't configured.
   itemUrl(app: App, itemId: string): string | null;
+  // Sheet sources (liveworkspace/docs/specs/004-index/sheet-sources.md), on the app's own index key: a source's sheets,
+  // and what one range holds now (with `watcher`, a reader item the source tells when the sheet changes). A refusal
+  // or failure is a DoorError carrying the app's status (404 missing, 409 range gone, 400 malformed).
+  listSheets(app: App, itemId: string): Promise<SheetListing[]>;
+  readSheetRange(
+    app: App,
+    itemId: string,
+    ask: SheetRangeAsk & { watcher?: string | null },
+  ): Promise<SheetRangeDoorRead>;
 }
 
 export type AppDoorsConfig = {
@@ -154,6 +170,41 @@ export function createAppDoors(
       if (res.status === 400) return { ok: false, error: 'invalid_file' };
       if (res.status === 413) return { ok: false, error: 'too_large' };
       return { ok: false, error: 'failed' };
+    },
+
+    async listSheets(app, itemId) {
+      const { origin, key } = door(app);
+      const res = await doFetch(`${origin}/api/internal/items/${encodeURIComponent(itemId)}/sheets`, {
+        headers: { Authorization: `Bearer ${key}` },
+        signal: AbortSignal.timeout(timeoutMs),
+      });
+      if (res.status !== 200) {
+        await res.body?.cancel();
+        throw new DoorError(res.status, `${caller}: sheets ${res.status}`);
+      }
+      const sheets = await jsonField<unknown[]>(res, 'sheets', caller);
+      if (!sheets.every(isSheetListing)) throw new DoorError(200, `${caller}: malformed sheets`);
+      return sheets;
+    },
+
+    async readSheetRange(app, itemId, { watcher, ...ask }) {
+      const { origin, key } = door(app);
+      const res = await doFetch(
+        `${origin}/api/internal/items/${encodeURIComponent(itemId)}/sheet-range`,
+        {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify(watcher ? { ...ask, watcher } : ask),
+          signal: AbortSignal.timeout(timeoutMs),
+        },
+      );
+      if (res.status !== 200) {
+        await res.body?.cancel();
+        throw new DoorError(res.status, `${caller}: sheet-range ${res.status}`);
+      }
+      const read = (await res.json().catch(() => null)) as unknown;
+      if (!isSheetRangeDoorRead(read)) throw new DoorError(200, `${caller}: malformed sheet-range`);
+      return read;
     },
 
     itemUrl(app, itemId) {
