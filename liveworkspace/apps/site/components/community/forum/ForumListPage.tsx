@@ -33,8 +33,9 @@ export function ForumListPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
   return (
+    // The same width as the Gallery tab, so the heading and the tabs stay put between them.
     <div className="community-hero">
-      <div className="mx-auto flex max-w-5xl flex-col gap-10 px-4 pt-12 sm:px-6 sm:pt-16 md:px-8">
+      <div className="mx-auto flex max-w-7xl flex-col gap-10 px-4 pt-12 sm:px-6 sm:pt-16 md:px-8">
         <ForumHero
           action={
             ready && !asking ? (

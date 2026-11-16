@@ -67,8 +67,13 @@ export function useForumTopic(
   const replacePost = useCallback(
     (post: ForumPost) => {
       setData((before) => {
+        // An edit's answer never carries the marked answer (only the topic read and Mark as Answer set it), so the
+        // topic keeps the one it has.
         if (post.id === before.topic.id)
-          return { ...before, topic: { ...before.topic, ...post, topicId: null } };
+          return {
+            ...before,
+            topic: { ...before.topic, ...post, topicId: null, answerId: before.topic.answerId },
+          };
         return {
           ...before,
           replies: before.replies.map((r) =>

@@ -410,6 +410,26 @@ describe('a Forum topic', () => {
     expect(screen.queryByRole('button', { name: 'Report' })).toBeTruthy();
   });
 
+  it('keeps the marked answer when the asker edits the question', async () => {
+    h.account = signedIn();
+    answer = read(topic({ own: true, answerId: 'r2' }), [reply('r1'), reply('r2')]);
+    render(<ForumTopicPage />, { wrapper });
+    await screen.findByText('Reply r2');
+    fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
+    fireEvent.change(screen.getByLabelText('Your Question', { selector: 'textarea[aria-label]' }), {
+      target: { value: 'Clearer words.' },
+    });
+    // The service's edit answers the topic without its answer.
+    answer = () =>
+      Response.json({
+        post: topic({ own: true, body: 'Clearer words.', editedAt: T0 + 5000, answerId: null }),
+      });
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    await screen.findByText('Clearer words.');
+    expect(within(screen.getAllByRole('listitem')[0]!).getByText('Answer')).toBeTruthy();
+    expect(screen.getByRole('button', { name: /Unmark Answer/ })).toBeTruthy();
+  });
+
   it('asks before deleting its own reply: Keep leaves it, Delete removes it', async () => {
     h.account = signedIn('Bo');
     answer = read(topic(), [reply('r1', { own: true })]);
