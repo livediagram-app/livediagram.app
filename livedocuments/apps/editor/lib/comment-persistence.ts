@@ -17,18 +17,31 @@ export type CommentSession = {
   tabId: string;
   selfId: string;
   shareCode: string | null;
+  // The name on this session's cursor: what its comments are signed with when the server knows no other.
+  selfName?: string;
 };
 
 type Thread = { comments: readonly { id: string }[] } | undefined;
 
 export function commentPersisters(session: CommentSession) {
-  const { readOnly, documentId, tabId, selfId, shareCode } = session;
+  const { readOnly, documentId, tabId, selfId, shareCode, selfName } = session;
   const endpoint = readOnly && documentId !== null ? documentId : null;
   return {
     add: (elementId: string, text: string, mentions?: CommentMention[], cell?: string) =>
       endpoint === null
         ? undefined
-        : () => apiAddComment(selfId, endpoint, tabId, elementId, text, shareCode, mentions, cell),
+        : () =>
+            apiAddComment(
+              selfId,
+              endpoint,
+              tabId,
+              elementId,
+              text,
+              shareCode,
+              mentions,
+              cell,
+              selfName,
+            ),
     remove: (commentId: string) =>
       endpoint === null
         ? undefined

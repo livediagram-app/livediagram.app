@@ -69,7 +69,12 @@ writing's model is [Article pages](article-pages.md); share roles are
   refuses `not-suggestion` when `suggestionRuleHolds` fails, which resyncs the sender.
 - `applyContentOp` passes `{ marginComment: true }` for such a session: `applyParticipantOp` then takes an `add` of an
   `article-note` element whose `articleNote` is `comment`, `ARTICLE_NOTE_SIZE` square, and nothing else new.
-- The pin: the share code is the client's to send (`?s=`), so a person could otherwise drop it to escape. On a
+- The session's share code: the upgrade route (`routes/document-room-routes.ts`) stamps `X-Verified-Share-Code` from
+  the grant the ticket carries, its `link` claim (the index signs it for a guest or a signed-in person who opened a
+  link, as for a link visitor's `link:<code>` subject), never from the upgrade URL, which is logged and the client's.
+  A grant with no link (the owner, the team, a direct invite) names none.
+- The pin: the grant names the link a person is on now; one who later holds access another way (another
+  Participant link) would no longer be on the Suggest Only one. On a
   Participant's `hello` with a verified collab key and a share code in `links`, the room records `{ key, code, at }`
   in `pins` (`withReviewPinned`; one write, with `seen`'s, only when new). A guest's verified key is its browser's
   collab key, so the pin holds that browser.
@@ -157,6 +162,12 @@ writing's model is [Article pages](article-pages.md); share roles are
 - A suggestion whose block another person holds waits (`waiting`), said by the notice.
 - A Participant's frame that fails the rule is refused whole (`not-suggestion`) and resynced.
 - A join with no text block before it keeps the block (words) or drops it (empty).
+- A peer's write across several list items (an assistant's suggestions landing in an open Editor's tab) replaces
+  those items whole; the decorations plugin (`article-plugins.ts`) counts its set and builds it fresh when a mapped
+  set lost any, so the list markers stay.
+- A Participant's margin comment is saved through `POST …/comments` (a Participant has no autosave); the route signs
+  it with the profile name, else the `name` the editor sends (the cursor's, bounded to 80), else "Anonymous". An
+  agent's sent name is never read.
 - IME composition while suggesting: each composition transaction is rewritten like typing; a browser that loses the
   composition when marks change ends the word early (the letters land).
 
@@ -199,17 +210,18 @@ writing's model is [Article pages](article-pages.md); share roles are
 
 ## Testing
 
-| Rule                                                  | Test                                                                                                        |
-| ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| Rejected and accepted views, breaks join              | `packages/document/src/article-suggestions.test.ts`                                                         |
-| The suggestion rule                                   | `packages/document/src/article-suggestions.test.ts` "suggestion rule"                                       |
-| A Suggest Only Participant's frame refused or applied | `packages/document/src/participant-article.test.ts`, `apps/api/src/room-participant.test.ts`                |
-| Review settings parsed, bounded, Editor-only routes   | `packages/api-schema/src/review.test.ts`, `apps/api/src/routes/review-route.test.ts`                        |
-| Held by a Suggest Only link without `?s=`; Editor not | `apps/api/src/document-room/document-room-review.test.ts` "a person pinned to a Suggest Only link"          |
-| Agent write as suggestions                            | `packages/edit-operations/src/pages/article-suggest.test.ts`, `apps/api/src/routes/tab-pages-route.test.ts` |
-| Markdown is the rejected view                         | `packages/document/src/article-markdown.test.ts`                                                            |
-| Suggesting transactions                               | `apps/editor/lib/article/article-suggest.test.ts`                                                           |
-| Accept and reject in the editor                       | `apps/editor/lib/article/article-suggest.test.ts` "deciding suggestions"                                    |
+| Rule                                                         | Test                                                                                                                                                   |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Rejected and accepted views, breaks join                     | `packages/document/src/article-suggestions.test.ts`                                                                                                    |
+| The suggestion rule                                          | `packages/document/src/article-suggestions.test.ts` "suggestion rule"                                                                                  |
+| A Suggest Only Participant's frame refused or applied        | `packages/document/src/participant-article.test.ts`, `apps/api/src/room-participant.test.ts`                                                           |
+| Review settings parsed, bounded, Editor-only routes          | `packages/api-schema/src/review.test.ts`, `apps/api/src/routes/review-route.test.ts`                                                                   |
+| Held by a Suggest Only link, however they return; Editor not | `apps/api/src/document-room/document-room-review.test.ts` "a person pinned to a Suggest Only link", `apps/api/src/routes/document-room-routes.test.ts` |
+| Agent write as suggestions                                   | `packages/edit-operations/src/pages/article-suggest.test.ts`, `apps/api/src/routes/tab-pages-route.test.ts`                                            |
+| Markdown is the rejected view                                | `packages/document/src/article-markdown.test.ts`                                                                                                       |
+| Suggesting transactions                                      | `apps/editor/lib/article/article-suggest.test.ts`                                                                                                      |
+| List markers through a peer write                            | `apps/editor/lib/article/article-plugins.test.ts`                                                                                                      |
+| Accept and reject in the editor                              | `apps/editor/lib/article/article-suggest.test.ts` "deciding suggestions"                                                                               |
 
 ## Constants and configuration
 

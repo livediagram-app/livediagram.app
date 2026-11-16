@@ -179,7 +179,14 @@ function sameShape(a: PMNode, b: PMNode): boolean {
   return true;
 }
 
-type DecorationsState = { set: DecorationSet; editable: boolean; caretEmpty: number };
+// `count`: how many decorations `set` holds. A change of the same shape keeps every one, so a mapped set holding
+// fewer lost some: a node replaced whole (a peer's write across several list items) takes its marker with it.
+type DecorationsState = {
+  set: DecorationSet;
+  editable: boolean;
+  caretEmpty: number;
+  count: number;
+};
 
 const decorationsKey = new PluginKey<DecorationsState>('article-decorations');
 
@@ -190,7 +197,8 @@ const decorationsKey = new PluginKey<DecorationsState>('article-decorations');
 export function decorationsPlugin(isEditable: () => boolean): Plugin<DecorationsState> {
   const fresh = (state: EditorState): DecorationsState => {
     const editable = isEditable();
-    return { set: decorations(state, editable), editable, caretEmpty: caretEmptyBlock(state) };
+    const set = decorations(state, editable);
+    return { set, editable, caretEmpty: caretEmptyBlock(state), count: set.find().length };
   };
   return new Plugin<DecorationsState>({
     key: decorationsKey,
@@ -202,7 +210,9 @@ export function decorationsPlugin(isEditable: () => boolean): Plugin<Decorations
         if (!tr.docChanged) return caretEmpty === prev.caretEmpty ? prev : fresh(state);
         const caretWas = prev.caretEmpty < 0 ? -1 : tr.mapping.map(prev.caretEmpty);
         if (caretEmpty !== caretWas || !sameShape(tr.before, tr.doc)) return fresh(state);
-        return { set: prev.set.map(tr.mapping, tr.doc), editable: prev.editable, caretEmpty };
+        const set = prev.set.map(tr.mapping, tr.doc);
+        if (set.find().length !== prev.count) return fresh(state);
+        return { set, editable: prev.editable, caretEmpty, count: prev.count };
       },
     },
     props: {

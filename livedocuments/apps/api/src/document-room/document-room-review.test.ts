@@ -176,6 +176,20 @@ describe('the room’s review settings', () => {
       expect(writeAs(null).result).toBe('applied');
     });
 
+    it('holds a guest or signed-in person who comes back through another, ordinary Participant link', () => {
+      const { room, writes, join } = fakeRoom(JSON.stringify({ links: ['C1'] }));
+      for (const key of ['guest-key', 'user-key']) {
+        const first = part(key, { shareCode: 'C1', collabKey: key });
+        const s = join(first);
+        participantJoined(room, s.ws, first as never, first.presence as never);
+        const other = part(`${key}-2`, { shareCode: 'C2', collabKey: key });
+        expect(suggestByOf(room, other as never)).toBe(key);
+      }
+      expect(
+        (JSON.parse(writes.at(-1)!) as { pins: { key: string }[] }).pins.map((p) => p.key),
+      ).toEqual(['user-key', 'guest-key']);
+    });
+
     it('pins only a server-verified key: a key the client named is not held', () => {
       const { room, writes, join } = fakeRoom(JSON.stringify({ links: ['C1'] }));
       const named = part('B', { shareCode: 'C1' });

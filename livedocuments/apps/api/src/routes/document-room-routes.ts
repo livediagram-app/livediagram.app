@@ -68,10 +68,12 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     const { claims, workbench } = opened;
     const role: AccessLevel = roomTicketLevel(opened);
     const person = linkCodeOf(claims.sub) ? null : claims.sub;
-    // The share code a session came in by, so revoking it closes exactly its sockets: a link visitor's grant
-    // names it; a person who opened a link says so on `?s=` (it only ever closes, so it needs no proof).
+    // The share code a session came in by, from the grant the index signed (its `link` claim, set for a person who
+    // opened a link as for a link visitor; one-explorer-contracts.md "Grants"), never from the upgrade URL, which is
+    // logged and the client's to change. Revoking the link closes exactly its sockets, and the room holds a Suggest
+    // Only link's people to it (docs/specs/007-editor/suggestions.md "Suggest Only").
     const linkCode = linkCodeOf(claims.sub);
-    const shareCode = linkCode ?? (url.searchParams.get('s')?.slice(0, 64) || null);
+    const shareCode = claims.link?.slice(0, 64) || linkCode;
     if (linkCode && (await isCommunityCode(env, id, linkCode))) return forbidden('community_link');
     const forwarded = new Request(request);
     // Every trust header is stamped UNCONDITIONALLY: `new Request` copies the client's own headers, and the room

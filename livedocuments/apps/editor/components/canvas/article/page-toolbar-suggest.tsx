@@ -12,7 +12,7 @@ import {
   lucidePencilLine,
   lucideX,
 } from '@liveworkspace/icons/lucide';
-import { ChevronDownIcon, lucideGlyph, Tooltip } from '@livedocuments/ui';
+import { ChevronDownIcon, lucideGlyph, SOLID_BRAND_DARK_CONTROL, Tooltip } from '@livedocuments/ui';
 import {
   TOOLBAR_CONTROL_PRESSED,
   TOOLBAR_CONTROL_REST,
@@ -28,7 +28,8 @@ const ReviewGlyph = lucideGlyph(lucideListChecks, 14);
 
 const MODE_LABEL: Record<SuggestMode, string> = { editing: 'Editing', suggesting: 'Suggesting' };
 
-/** The toolbar's mode button: the mode in force, its glyph alone on a phone. */
+/** The toolbar's mode button: the mode in force, its glyph alone on a phone, where Suggesting is a solid brand fill so
+ *  the two modes never look alike without the words. */
 export function SuggestModeButton({
   mode,
   expanded,
@@ -42,11 +43,14 @@ export function SuggestModeButton({
 }) {
   const label = MODE_LABEL[mode];
   const suggesting = mode === 'suggesting';
-  const tone = expanded
-    ? TOOLBAR_CONTROL_PRESSED
-    : suggesting
-      ? 'bg-brand-50 text-brand-700 hover:bg-brand-100 dark:bg-brand-500/15 dark:text-brand-300 dark:hover:bg-brand-500/25'
-      : TOOLBAR_CONTROL_REST;
+  const tone =
+    suggesting && phone
+      ? `bg-brand-700 text-white hover:bg-brand-800 ${SOLID_BRAND_DARK_CONTROL}`
+      : expanded
+        ? TOOLBAR_CONTROL_PRESSED
+        : suggesting
+          ? 'bg-brand-50 text-brand-700 hover:bg-brand-100 dark:bg-brand-500/15 dark:text-brand-300 dark:hover:bg-brand-500/25'
+          : TOOLBAR_CONTROL_REST;
   return (
     <Tooltip label={`Mode: ${label}`}>
       <button

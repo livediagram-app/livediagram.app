@@ -187,6 +187,29 @@ describe('add', () => {
   });
 });
 
+// A Participant with no profile name (a guest, or a Suggest Only Participant's margin comment) signs with the name on
+// their cursor, never "Anonymous"; a profile name wins, and an agent's sent name is never read.
+describe('the name a comment is signed with', () => {
+  it("takes the caller's cursor name when it has no profile name, and only then", async () => {
+    seed([shape('a'), shape('b'), shape('c')]);
+    const post = async (elementId: string, extra: Partial<Call>) =>
+      (
+        await (
+          await call({
+            path: '/tabs/t1/comments',
+            body: { elementId, text: 'x', name: '  Sam  ' },
+            ...extra,
+          })
+        ).json<{ comment: Comment }>()
+      ).comment.authorName;
+    expect(await post('a', { owner: 'guest', code: 'VIEW' })).toBe('Sam');
+    expect(await post('b', {})).toBe('Webber');
+    expect(
+      await post('c', { owner: 'guest', code: 'VIEW', body: { elementId: 'c', text: 'x' } }),
+    ).toBe('Anonymous');
+  });
+});
+
 describe('reply, resolve and reopen', () => {
   it('replies on the thread holding a comment, and reopens a resolved one by replying', async () => {
     seed([shape('a', { commentThread: { resolved: true, comments: [comment('c1')] } })]);

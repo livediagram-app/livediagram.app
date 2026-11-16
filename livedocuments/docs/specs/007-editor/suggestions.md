@@ -53,7 +53,8 @@ A suggestion is never called a "revision" or a "tracked change" in the interface
   ("Change the writing directly") and **Suggesting** ("Your changes become suggestions to accept or reject"), then,
   under **Review**, the article's suggestion count ("6 suggestions", "No suggestions"), **Accept All** and **Reject
   All**. The mode is the person's, for every article on the tab, for as long as the editor is open; it starts at
-  Editing. On a phone the button shows its glyph alone.
+  Editing. On a phone the button shows its glyph alone, and **Suggesting** fills it in solid brand colour so the two
+  modes never look alike.
 - **A Participant on Suggest Only** is always suggesting, with no mode to change: the role pill reads **Suggesting**
   ("You suggest changes; an Editor accepts or rejects them"), and a small **Comment** button shows in the page's right
   margin beside selected text (see "Comments on selected text").
@@ -81,7 +82,8 @@ A suggestion is never called a "revision" or a "tracked change" in the interface
 A margin note ([Comments and actions](article-pages.md#comments-and-actions)) sits beside a suggestion like any text,
 so a suggestion and its discussion sit together. Anyone who may suggest may put a comment on selected text: an Editor
 from the page toolbar as before, and a Participant on Suggest Only from the **Comment** button in the margin beside
-the selection (⌘⌥M too). A Participant's margin note is a comment, never an action.
+the selection (⌘⌥M too). A Participant's margin note is a comment, never an action, signed with their name (the one
+their cursor shows) like any comment.
 
 ## Suggest Only
 
