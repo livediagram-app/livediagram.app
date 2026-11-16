@@ -10,7 +10,12 @@ import { INDEX_APP, indexFor } from '../index-service';
 import { capStoredName } from '../names';
 import type { Env } from '../types';
 
-export function importDesignFileFor(env: Env, input: ImportInput): Promise<ImportResult> {
+// `source`: a Drive file's `import`, or a project kit's `template` (internal-template.ts).
+export function importDesignFileFor(
+  env: Env,
+  input: ImportInput,
+  source: 'import' | 'template' = 'import',
+): Promise<ImportResult> {
   return importItemAs(
     indexFor(env, { kind: 'delegate', personId: input.owner, teams: [] }),
     INDEX_APP,
@@ -21,5 +26,7 @@ export function importDesignFileFor(env: Env, input: ImportInput): Promise<Impor
       write: (id, content, name) =>
         designRoom(env, id).importFile({ ...content, name, ownerId: input.owner }),
     },
+    undefined,
+    source,
   );
 }

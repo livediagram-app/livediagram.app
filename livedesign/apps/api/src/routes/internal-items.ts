@@ -28,6 +28,7 @@ import { designRoom } from '../design-client';
 import { closeWorkbenchSessions } from '../room-access-client';
 import { reportServerEvent } from '../server-telemetry';
 import { importDesignFileFor } from './internal-file';
+import { designFromTemplate } from './internal-template';
 import { indexAppClient } from '../index-service';
 import { capStoredName } from '../names';
 import type { Env } from '../types';
@@ -122,6 +123,8 @@ export function handleInternalItems(
       exportComments: (id) => designRoom(env, id).exportComments(),
       // A new design from a Drive file, as its owner's (routes/internal-file.ts).
       import: (input) => importDesignFileFor(env, input),
+      // A new item from one of this app's templates, a project kit's part (internal-template.ts).
+      fromTemplate: (input) => designFromTemplate(env, input),
     },
   });
 }

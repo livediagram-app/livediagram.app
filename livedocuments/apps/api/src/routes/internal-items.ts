@@ -29,6 +29,7 @@ import { documentRoom } from '../document-client';
 import { closeWorkbenchSessions } from '../room-access-client';
 import { reportServerEvent } from '../server-telemetry';
 import { importDocumentFileFor } from './internal-file';
+import { documentFromTemplate } from './internal-template';
 import { indexAppClient } from '../index-service';
 import { capStoredName } from '../names';
 import type { Env } from '../types';
@@ -100,6 +101,8 @@ export function handleInternalItems(
       exportComments: (id) => documentRoom(env, id).exportComments(),
       // A new document from a Drive file, as its owner's (routes/internal-file.ts).
       import: (input) => importDocumentFileFor(env, input),
+      // A new item from one of this app's templates, a project kit's part (internal-template.ts).
+      fromTemplate: (input) => documentFromTemplate(env, input),
       // A workbench pairing's access ended at liveworkspace: its sockets in this document's room close.
       // An old livediagram.app document's livedocuments part, into its document's room (document-room/document-migration.ts). A tab
       // over the tab cap refuses the whole part (413) before the room is called.

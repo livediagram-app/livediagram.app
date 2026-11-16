@@ -100,9 +100,12 @@ const publicUrl = (app: App) => siteOfApp(app).url;
  *  points at (`#t=<tab>&el=<element>&open=…`, or a card's `&item=`: the editors' deep link, `placeHash`). */
 export const itemHref: ItemHref = (item, at) => {
   const query = item.sharedVia ? `?s=${encodeURIComponent(item.sharedVia)}` : '';
-  const pin = placeHash(at);
-  return `${appUrl(item.app)}${APP_ITEMS[item.app].itemPath}${encodeURIComponent(item.id)}${query}${pin}`;
+  return `${appItemHref(item.app, item.id)}${query}${placeHash(at)}`;
 };
+
+/** An item of the person's own, in its app, by its id alone (a project kit's part). */
+export const appItemHref = (app: App, id: string): string =>
+  `${appUrl(app)}${APP_ITEMS[app].itemPath}${encodeURIComponent(id)}`;
 
 /** A share link opens in the item's app, at the address whose page head names the item. */
 export const shareUrl: ShareUrl = (link, item) =>

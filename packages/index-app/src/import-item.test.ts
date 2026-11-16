@@ -35,6 +35,12 @@ describe('importItemAs', () => {
     expect(s.write).toHaveBeenCalledWith('NEW', 'content of FILE', 'LOGO');
   });
 
+  it('records the source it is given, a kit’s template', async () => {
+    const { client, createItem } = index();
+    await importItemAs(client, 'livedesign', INPUT, steps(), () => 'NEW', 'template');
+    expect(createItem).toHaveBeenCalledWith(expect.objectContaining({ source: 'template' }));
+  });
+
   it('answers a file it refuses without touching the index', async () => {
     const { client, createItem } = index();
     for (const failure of ['invalid_file', 'too_large'] as const) {
