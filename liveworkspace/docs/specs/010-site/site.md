@@ -117,9 +117,9 @@ moves between them, and the one account that joins them.
 1. **Hero**: "Everything your team makes, live in one workspace", then two short paragraphs, never one block:
    the first names each app in its accent and what it is for (sketch, plan, write it up, make it look right, talk
    it through), the second says one account opens them all and every link opens straight into the work. Under the
-   calls to action, three ticked promises: Open source, No sign-up needed, No trackers or ads. Two calls to
-   action: **Create your free account** (`/sign-up`, back here after) and **Explore the apps**.
-   Signed in, they are hidden. Beside it, the platform's prism
+   calls to action, three ticked promises: Open source, No sign-up needed (Free in every app, signed in), No
+   trackers or ads. Two calls to action: **Create your free account** (`/sign-up`, back here after) and **Explore
+   the apps**. Signed in, they are hidden. Beside it, the platform's prism
    with the apps' logos round it at the points of a pentagon, each joined to it by a line in its accent, read
    clockwise in the
    order work moves through them, and someone at work in each, drawn as that app shows them: a cursor in
@@ -155,14 +155,20 @@ moves between them, and the one account that joins them.
 3. **What every app shares** (`#what-you-get`, `components/landing/Promises.tsx`): "Different apps,
    the same promises", thirteen tiles that fill every row (18 cells over three columns, 16 over two), each with a small piece of the product drawn
    in the apps' colours (`components/landing/PromiseArt.tsx`) above its words and no icon: one
-   account (the large tile, the sign-in box beside each app signed in, with Create your account);
+   account (the large tile, the sign-in box beside each app signed in, with Create your account, or, signed in,
+   Open your Explorer);
    live by default (people in the work as each app shows them: a cursor on a canvas, a ring on a held card, a
    character in a Space; the words promise real-time collaboration, never a cursor in every app); share by link (the share box); one Explorer for
    everything (full width: the words beside a folder holding a Canvas, a Plan, a Document, a
    Design and a Space, two by two with the Space across the foot); connected across apps (a plan's tab bar holding connected files from the other apps, one open as a preview; two columns wide on a tablet); one Inbox; teams across every app; one key for scripts and AI (a token in a
    terminal, checked against every app's API by a script, since there is no liveworkspace CLI); a copy in your Google Drive (the liveworkspace folder in Drive, a file from each app, each synced); on your phone, too (an installed app's notification on a home screen of the apps); open about data (a public chart, linking `/telemetry`); yours to keep (a sign-in code
    and one close for every app); completely free.
-4. **Closing call to action**: "One account. Every app. Always live."
+4. **Closing call to action**: "One account. Every app. Always live." Signed out, it says "Or start your work as a
+   guest without signing in at all." over **Create your free account** (`/sign-up`, back here after) and **Pick an
+   app** (`#apps`). Signed in, nothing on the page asks the person to sign up: it says "You're signed in to every
+   app. Pick up where you left off." over **Open Explorer** (`/explorer`) and **Pick an app**. Until the page knows
+   (`useSession`), it shows the signed-out words, right for most visitors; the two states have the same lines and
+   buttons, so the swap moves nothing (`components/landing/AccountActions.tsx`).
 5. **Footer**: Our Apps (each app's logo, linking to its site), Platform (Comparison, which points at each app's
    comparisons, the Community, every app's posts together, the telemetry dashboard and Status) and Legal (the
    privacy policy, Terms of Use, Report a Vulnerability and Licences). Report a Vulnerability opens the repository's

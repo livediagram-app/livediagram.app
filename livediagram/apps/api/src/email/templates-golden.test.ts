@@ -52,15 +52,15 @@ const FIXTURES: Record<string, unknown[][]> = {
 };
 
 const EXPECTED: Record<string, string> = {
-  approvalRequestedEmail: '84d2eeb4113cfa1f69e1929c675447ea192991f70ecf3a9d49b9b993de3f4a8a',
-  accountDeletedEmail: 'ae0e557fc4e9ae95a751c2d6aa83f425ed6ab153b1d81cb4f75eb2117dce2e80',
-  actionAssignedEmail: '3e569c9ff6f7bd92289a2dec8e9f3b7e59a0a32a30f36e7d1d405d812bfe42fe',
-  commentNotificationEmail: '754e13d9ecb99b4faeeb1413ddd6264e62d08144e89dd8403f1a32edea2f6f06',
-  documentJoinedEmail: '8c5ac483c58b9c0af37ea7b166fda1f6a6f95b83436c93433c39960f9ea361f9',
-  firstShareEmail: '5d66c144dd8b8fe0f0973dfc09d24b9579e3840595b3f64db7124f0c7ba25592',
+  approvalRequestedEmail: '3ba2c270959aed8ea4624df95bd6086da6195a1752f6dfde25da60658d064294',
+  accountDeletedEmail: '1b07282d2497f934456a72e517b0bb5d4845e5950625eb5f286c518d9e178b24',
+  actionAssignedEmail: 'e255fad94a57b364978e26d7d5dc2d2b39671537f97857ff486d48ac749a9b27',
+  commentNotificationEmail: '7780ada686b51f7782047fb716870c195aad656dbdb13b9b901be679bdb4f17b',
+  documentJoinedEmail: '1c50577b4dd6ee28a0e7f66b5358d3ebadab61a997d196fd0283f48f44d25450',
+  firstShareEmail: '277ec806d6e4f8d3d2278d159f522c26fdd261376bf87e016c279a3c2bb22bca',
   mentionQuote: '8d3f68955246da293e50ef5ebbe33ecdd4a4b7e9d61945db180b8771a547ead9',
-  mentionedEmail: '43860f8fcfcaa8a2fbd6532ee0a566c0c6ffdac73255390f071a60ac3fd9d033',
-  milestoneEmail: '7fee0c9bead4ec9fe8dd1f4143492781a58de746a53297bdddea1091fd81fe38',
+  mentionedEmail: '813b78f2511c1ba75e3c35076357e92187f11dd75b21906fa316bc309f02b604',
+  milestoneEmail: '306ffb43e6929cd70631d1f3c82ff0e40a3aeef4916646bb849545bdb790189d',
 };
 
 function renders(): Record<string, string> {

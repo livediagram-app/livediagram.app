@@ -44,6 +44,15 @@ length), so one build of the site serves production and staging. Both ask for an
 address that has no name yet is asked for one after the code, before going back to the app.
 The card's line under the heading reads "One free account that works for every app in liveworkspace."
 
+The code step keeps the keyboard in the code: focus is on the first box when the step opens, after a wrong code,
+and after **Resend code** (sent or refused), so the new code can be typed at once; a sent Resend also empties the
+boxes and says "We sent you a new code." A sign-in opened at `/sign-in` itself, with nowhere to go back to, ends on
+a **You're signed in** card that drops the code step's banners and offers the way on: **Open Explorer**
+(`/explorer`) and **Go Home** (`/`), paths on the address it is on, so on an app's own address they are that app's.
+An address kept for the tab by the Explorer's Invites (an invitation email opened signed out,
+[accounts.md](accounts.md#invitations)) is filled into the email field of both pages, and forgotten once signed
+in.
+
 **Turnstile** checks once per code sent. A token goes with each send and is spent by it; the widget resets only
 when the next send needs a fresh token (Resend, or a new address), so the code step doesn't show the widget again
 straight after the email step's check.

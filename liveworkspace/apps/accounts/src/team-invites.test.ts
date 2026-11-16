@@ -183,6 +183,7 @@ describe('declining from the email', () => {
     expect(await readDeclineToken(db, declineToken)).toEqual({
       teamName: 'Design',
       status: 'invited',
+      email: BEA.email,
     });
     expect(await declineByToken(db, declineToken, T0)).toMatchObject({
       ok: true,
@@ -191,6 +192,11 @@ describe('declining from the email', () => {
     expect(await declineByToken(db, declineToken, T0)).toMatchObject({
       ok: true,
       value: { status: 'declined', declined: false },
+    });
+    // Answered, the address is no longer said.
+    expect(await readDeclineToken(db, declineToken)).toEqual({
+      teamName: 'Design',
+      status: 'declined',
     });
     expect(await listMyInvitations(db, BEA.email)).toEqual([]);
   });
@@ -494,7 +500,13 @@ describe('the account API routes', () => {
     expect(await (await call(`/invitations/decline/${token}`)).json()).toEqual({
       teamName: 'Design',
       status: 'invited',
+      email: BEA.email,
     });
+    // The Answer link carries the same token, to the Explorer's Invites, never the address.
+    expect(mail[0]!.text).toContain(
+      `https://liveworkspace.app/explorer/invites?invite=${encodeURIComponent(token)}`,
+    );
+    expect(mail[0]!.text).not.toMatch(/explorer\/invites\?[^\s]*@/);
     const declined = await call(`/invitations/decline/${token}`, 'POST', {});
     expect(await declined.json()).toEqual({ teamName: 'Design', status: 'declined' });
     expect(mail.at(-1)).toMatchObject({
