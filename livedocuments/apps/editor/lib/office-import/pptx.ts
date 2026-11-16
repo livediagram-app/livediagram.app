@@ -14,6 +14,7 @@ import {
   DEFAULT_SIZE_PT,
   IDENTITY,
   anchorOf,
+  bodyFitOf,
   boxOf,
   bulletDefault,
   fontScaleOf,
@@ -43,6 +44,9 @@ export type SlideTextItem = {
   bold: boolean;
   italic: boolean;
   underline: boolean;
+  // `wrap="none"` (one line, the box as wide as its text) and `spAutoFit` (the box as tall as its text).
+  noWrap: boolean;
+  autoFit: boolean;
 };
 export type SlidePictureItem = { kind: 'picture'; box: EmuBox; picture: OfficePicture };
 export type SlideItem = SlideTextItem | SlidePictureItem;
@@ -122,6 +126,7 @@ function textShape(shape: XmlElement, map: GroupMap, ctx: SlideContext): void {
     bold: body.bold,
     italic: body.italic,
     underline: body.underline,
+    ...bodyFitOf([shape, layoutShape, masterShape]),
   });
 }
 

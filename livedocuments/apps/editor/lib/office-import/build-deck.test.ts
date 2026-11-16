@@ -14,6 +14,8 @@ const text = (x: number, y: number, label: string, sizePt = 44) => ({
   bold: true,
   italic: true,
   underline: true,
+  noWrap: false,
+  autoFit: false,
 });
 
 describe('buildDeckTab', () => {

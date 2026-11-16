@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { readDocx, type DocxBlock } from './docx';
 import { openOfficePackage } from './package';
 import { readPptx, type SlideTextItem } from './pptx';
+import { buildDeckTab } from './build-deck';
+import { pagesOf, layOutPages, type TextElement } from '@livedocuments/document';
 
 // Real files, written by Word and PowerPoint and kept as they came (real-files/README.md names each one's source
 // and licence): the importer reads what the apps wrote, not only what the test builders mimic
@@ -47,6 +49,23 @@ describe('real PowerPoint files', () => {
     const deck = await pptx('txt-font-typeface.pptx');
     expect(deck.slides).toHaveLength(1);
     expect(deck.slides[0]!.items).toHaveLength(5);
+  });
+
+  // Work Tracker 1078: the first box is `wrap="none"` with `spAutoFit`; it imports on one line, its box widened to
+  // the text, so "kind" is not cut off below it.
+  it('imports a no-wrap, autofit text box on one line with its box widened to its text', async () => {
+    const read = await pptx('txt-font-typeface.pptx');
+    const first = read.slides[0]!.items[0] as SlideTextItem;
+    expect(first.label).toBe('Baseline default textbox, no adjustments of any kind');
+    expect(first).toMatchObject({ noWrap: true, autoFit: true });
+    const { tab } = buildDeckTab(read, new Map(), 'Deck');
+    const el = tab.elements[0] as TextElement;
+    const px = Number(el.textSize);
+    const stated = Math.round((first.box.cx / read.cx) * layOutPages(pagesOf(tab))[0]!.rect.width);
+    expect(el.width).toBeGreaterThanOrEqual(stated);
+    expect(el.height).toBeGreaterThanOrEqual(px * 1.25);
+    // One line: the box is wider than the words' estimated width.
+    expect(el.width).toBeGreaterThan(el.label!.length * px * 0.4);
   });
 });
 
