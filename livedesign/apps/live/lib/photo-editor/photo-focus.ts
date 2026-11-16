@@ -38,3 +38,12 @@ export function photoFocusOf(
   }
   return best;
 }
+
+// The controls and panels that float over the canvas: a press on one stays the control's.
+const CHROME =
+  'button, a, input, textarea, select, [role="menu"], [role="dialog"], [data-floating-panel]';
+
+/** Whether a press lands on chrome over the canvas rather than on the canvas itself. */
+export function pressIsChrome(target: Element | null): boolean {
+  return !!target?.closest?.(CHROME);
+}

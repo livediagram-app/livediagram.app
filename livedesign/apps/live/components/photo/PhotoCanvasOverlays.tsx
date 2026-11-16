@@ -19,6 +19,7 @@ import { useFreeTransform } from '@/lib/photo-editor/tools/transform-tool';
 import { photoPointer, photoPress } from '@/lib/photo-editor/photo-pointer';
 import { track } from '@/lib/telemetry';
 import { photoStarted } from '@/lib/photo-editor/start-photo';
+import { pressIsChrome } from '@/lib/photo-editor/photo-focus';
 import { PhotoTextEditor } from './PhotoTextEditor';
 import { StartPhotoCard } from './StartPhotoCard';
 import { PhotoToolOverlay } from './PhotoToolOverlay';
@@ -120,13 +121,15 @@ export function PhotoCanvasOverlays({
   const ringRef = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
 
-  // A press on any photo page takes it into focus.
+  // A press on any photo page takes it into focus; a press on the chrome floating over one (the tools, a panel's
+  // layer eye) is the chrome's, never the page's under it (photo-pages.md "Focus").
   useEffect(() => {
     const down = (e: PointerEvent) => {
-      const el = (e.target as Element | null)?.closest?.('[data-page-id]');
+      const target = e.target as Element | null;
+      const el = target?.closest?.('[data-page-id]');
       const id = el?.getAttribute('data-page-id');
       if (id && pages.some((p) => p.id === id && p.kind === 'photo')) photo.press(id);
-      else
+      else if (!pressIsChrome(target))
         for (const p of document.querySelectorAll('[data-photo-page]')) {
           const r = p.getBoundingClientRect();
           if (
