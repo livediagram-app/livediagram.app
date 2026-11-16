@@ -234,32 +234,96 @@ and each flow under the category of what it is for ([Template categories](../008
   Wireframe** (iPhone), **Blank Tablet Wireframe** (iPad), **Blank Website Wireframe** (Browser),
   **Blank Laptop Wireframe** and **Blank Watch Wireframe**.
 - **Flows**, a row of wireframe pages, each named for its screen and laid out from a wireframe layout
-  (`WIREFRAME_FLOWS` in `packages/templates/src/wireframe-flow-data.ts`):
+  (`WIREFRAME_FLOWS` in `packages/templates/src/wireframe-flow-data.ts`), **linked so it plays in Prototype mode
+  as it opens** ([Clickable prototypes](#clickable-prototypes)):
 
-| Template                | Device  | Screens                                               |
-| ----------------------- | ------- | ----------------------------------------------------- |
-| Mobile App Wireframe    | iPhone  | Onboarding, Sign In, Home, Product, Checkout          |
-| Social App Wireframe    | iPhone  | Feed, Stories, Post, New Post, Notifications, Profile |
-| Delivery App Wireframe  | iPhone  | Shop, Search, Item, Cart, Tracking                    |
-| Travel App Wireframe    | iPhone  | Search, Results, Boarding Pass, Explore               |
-| Ride App Wireframe      | iPhone  | Sign In, Where To, Your Ride, Updates                 |
-| Music App Wireframe     | iPhone  | Browse, Search, Now Playing, Podcast                  |
-| App Sign Up Wireframe   | iPhone  | Welcome, Sign Up, Verify, Permissions, Get Started    |
-| Website Wireframe       | Browser | Home, Pricing, Sign In                                |
-| Online Store Wireframe  | Browser | Shop, Product, Cart, Checkout                         |
-| Blog Wireframe          | Browser | Blog, Article, Contact                                |
-| Company Site Wireframe  | Browser | Home, Team, Help, Contact                             |
-| Web App Wireframe       | Laptop  | Overview, Orders, Settings                            |
-| Project Tool Wireframe  | Laptop  | Board, Tasks, Calendar, Team                          |
-| Team Inbox Wireframe    | Laptop  | Inbox, Conversation, Notifications, Settings          |
-| Tablet App Wireframe    | iPad    | Discover, Messages, Profile                           |
-| Video App Wireframe     | iPad    | Browse, Search, Watch, Profile                        |
-| Watch App Wireframe     | Watch   | Glance, Today, Alert                                  |
-| Fitness Watch Wireframe | Watch   | Workout, Heart Rate, Timer, Weather                   |
-| Watch Music Wireframe   | Watch   | Now Playing, Up Next                                  |
+| Template                   | Device  | Screens                                               |
+| -------------------------- | ------- | ----------------------------------------------------- |
+| Mobile App Wireframe       | iPhone  | Onboarding, Sign In, Home, Product, Checkout          |
+| Social App Wireframe       | iPhone  | Feed, Stories, Post, New Post, Notifications, Profile |
+| Delivery App Wireframe     | iPhone  | Shop, Search, Item, Cart, Tracking                    |
+| Travel App Wireframe       | iPhone  | Search, Results, Boarding Pass, Explore               |
+| Ride App Wireframe         | iPhone  | Sign In, Where To, Your Ride, Updates                 |
+| Music App Wireframe        | iPhone  | Browse, Search, Now Playing, Podcast                  |
+| App Sign Up Wireframe      | iPhone  | Welcome, Sign Up, Verify, Permissions, Get Started    |
+| Account Settings Wireframe | iPhone  | Profile, Edit Profile, Settings, Help                 |
+| Class Booking Wireframe    | iPhone  | Studios, Class, Book, Booked                          |
+| Website Wireframe          | Browser | Home, Pricing, Sign In                                |
+| Launch Site Wireframe      | Browser | Home, Pricing, Sign Up, Verify, Welcome               |
+| Online Store Wireframe     | Browser | Shop, Product, Cart, Checkout                         |
+| Blog Wireframe             | Browser | Blog, Article, Contact                                |
+| Company Site Wireframe     | Browser | Home, Team, Help, Contact                             |
+| Web App Wireframe          | Laptop  | Overview, Orders, Settings                            |
+| Project Tool Wireframe     | Laptop  | Board, Tasks, Calendar, Team                          |
+| Team Inbox Wireframe       | Laptop  | Inbox, Conversation, Notifications, Settings          |
+| Tablet App Wireframe       | iPad    | Discover, Messages, Profile                           |
+| Video App Wireframe        | iPad    | Browse, Search, Watch, Profile                        |
+| Watch App Wireframe        | Watch   | Glance, Today, Alert                                  |
+| Fitness Watch Wireframe    | Watch   | Workout, Heart Rate, Timer, Weather                   |
+| Watch Music Wireframe      | Watch   | Now Playing, Up Next                                  |
 
 A flow only uses layouts made for its device's form: the watch layouts on a watch, the rest on a phone, tablet,
-laptop or browser (`template-builders.test.ts` pins it).
+laptop or browser (`template-flows.test.ts` pins it).
+
+### A flow's own words
+
+A flow's screens are the layouts' screens in the flow's own words, so every screen reads as part of one product:
+
+- **Its name**: a flow may name its product (`brand`), which stands for the layouts' "Your App" wherever it
+  appears (the nav's brand, "Sign in to Your App").
+- **Its copy**: a flow, or one of its screens, may change any of a layout's words (`copy`): a search for linen
+  shirts becomes flights from London to Lisbon on the Travel App's Results, a photo gallery becomes albums on
+  the Music App's Browse. A word the layout writes more than once takes the flow's words in turn. A screen's copy
+  wins over its flow's.
+- No screen reads as another app's (a travel search listing shirts, a ride's updates liking a photo), no placeholder
+  stands where a real name, product or price fits ("Product Name"), the prices and totals of one flow agree from
+  screen to screen, and no list repeats a row it already showed. Every word fits its box
+  (`page-lint`'s `templates.test.ts` pins it for every template).
+
+### A flow's links
+
+Every flow opens linked, so pressing **Prototype** on a fresh template walks through it:
+
+- **The next step**: each screen's obvious next-step controls are screen links to the screen they lead to
+  (Continue, Sign In, a product or a result, Add to Cart, Checkout, a tab bar's or nav's entries), named in the
+  flow's data by the control's words, or by its icon (`icon:arrow-left`).
+- **Back**: a screen's back arrow is a back link, except after a flow's last step (an order placed, a class
+  booked), where it goes to the flow's first screen, as the app would.
+- **Transition**: **Slide** on a phone, tablet or watch, **Instant** (absent) in a browser or on a laptop.
+- **Every screen is reached**: from the first screen, following the links reaches every other screen of the flow.
+- **The page ids** are the template's own (`page-1`, `page-2`, ...), which the template's pages keep wherever it is
+  applied (the start, `/new`, an agent's tab), so a link never arrives broken.
+
+The controls that come linked:
+
+| Template                   | Comes linked                                                                                                        |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Mobile App Wireframe       | Continue and Skip, Sign In, a product, Add to Cart, Pay, the back arrows                                            |
+| Social App Wireframe       | Stories, a post, the bell, the tab bar, Your Story, Cancel and Post, a name to its profile                          |
+| Delivery App Wireframe     | the search field, a product, the bag, Add to Cart, Checkout, the back arrows                                        |
+| Travel App Wireframe       | Search Flights, a flight, Trips, the destination, the back arrows                                                   |
+| Ride App Wireframe         | Sign In, Choose a Ride, Confirm Standard                                                                            |
+| Music App Wireframe        | an album, Podcasts, Search, a song, Play, the back arrows                                                           |
+| App Sign Up Wireframe      | Continue and Skip, Create Account, Verify, Continue, the back arrows                                                |
+| Account Settings Wireframe | Edit Profile, the settings cog, Cancel and Save, Profile, Help, Home, the back arrow                                |
+| Class Booking Wireframe    | a studio, Book a Spot, Pay, Done, the back arrows                                                                   |
+| Website Wireframe          | the nav's Pricing and brand, Log In, Get Started, Start Free, Choose, Start Trial, Sign In                          |
+| Launch Site Wireframe      | the nav's Pricing and brand, Log In, Get Started, Start Free, Choose, Start Trial, the logo, Create Account, Verify |
+| Online Store Wireframe     | a product, the nav's Shop, Add to Cart, Checkout, Pay                                                               |
+| Blog Wireframe             | the featured post, the nav's Latest and About, the brand                                                            |
+| Company Site Wireframe     | the nav's Team, Help and Contact, the brand, Book a Demo                                                            |
+| Web App Wireframe          | the sidebar's and nav's entries, Recent Orders                                                                      |
+| Project Tool Wireframe     | the sidebar's entries, a task, Upcoming, the Team page's nav                                                        |
+| Team Inbox Wireframe       | a message, Reply, the sidebar's Mentions and Settings, the nav's entries                                            |
+| Tablet App Wireframe       | the nav's Messages and profile, the Profile screen's nav                                                            |
+| Video App Wireframe        | Search, a video, a result, the nav's Home and profile                                                               |
+| Watch App Wireframe        | the step count, Messages, Dismiss (back)                                                                            |
+| Fitness Watch Wireframe    | the heart rate, the time, the run, Cancel (back)                                                                    |
+| Watch Music Wireframe      | the song, Up Next (back)                                                                                            |
+
+`template-builders-wireframe-flows.test.ts` pins the links: every named control is on its screen, every link names
+one of the flow's screens and never its own, every back arrow is a back link, every screen is reached, and pressing
+Continue on a fresh Mobile App Wireframe's Onboarding goes to Sign In.
 
 ## Export
 
