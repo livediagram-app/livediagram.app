@@ -35,6 +35,11 @@ add a sticky. The Participant level is the middle: take part in the design, neve
   Participant or an Editor named as an approver may **Approve** or **Request Changes** on the design's open
   approval request. It writes the decision and nothing else, and only for someone named; asking for approval and
   cancelling are an Editor's of the whole design.
+- **Make Sizes and Export All Sizes** ([Photo pages](../031-photo/photo-pages.md#making-sizes)): **Make Sizes** is an
+  Editor's alone, and only where the Editor may add pages (a tab holds up to 10 photo pages); a Participant has no
+  photo tools and a Viewer none either, so neither is offered it. **Export All Sizes** (the Photo card's **All Sizes**
+  format, and the Make Sizes toast's action) writes nothing to the design, so it is a Viewer's too, wherever the design
+  allows exports, as every export is.
 - **A checklist tick is editing**: it is one shared value, not a person's answer.
 
 ## What a Participant changes
