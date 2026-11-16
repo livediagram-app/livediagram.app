@@ -8,6 +8,7 @@ import { resolveCredential } from './auth/credentials';
 import { callApi, guideOf, installSkill, login, logout, status } from './commands/local';
 import { exportAll, type ExportInput } from './commands/export';
 import type { FromCodeInput } from './commands/from-code';
+import type { ReviewInput } from './commands/review';
 import { linkInit, linkLs, linksFor, linkStatus } from './commands/link';
 import { pullDocument, type PullInput } from './commands/pull';
 import { pullFileOf, pullFileView, type ViewInput } from './commands/pull-file-views';
@@ -57,6 +58,11 @@ function runOffline(io: CliIo, verb: Verb, input: Input, log: DebugLog): Promise
   if (verb.id === 'link.from-code' && input.dryRun)
     return import('./commands/from-code').then(({ linkFromCode }) =>
       linkFromCode(io, null, input as FromCodeInput, log),
+    );
+  // `link review` reads git and the mirror files only (repository-link.md "Pull request review").
+  if (verb.id === 'link.review')
+    return import('./commands/review').then(({ linkReview }) =>
+      linkReview(io, input as ReviewInput),
     );
   if (verb.id === 'graph.lint') {
     const file = input.file as string;
