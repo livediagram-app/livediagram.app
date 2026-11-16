@@ -139,6 +139,25 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+describe('RoomLedgerStore: clear', () => {
+  it('drops every entry and index row after what was queued, over more than one page', async () => {
+    const { ledger, store } = setup();
+    for (let i = 0; i < 140; i += 1) ledger.record(note(`e${i}`, `n${i}`, 'x'), i + 1);
+    store.set('other', 1);
+    await ledger.clear();
+    expect([...store.keys()].filter((k) => k.startsWith('ledger:'))).toEqual([]);
+    expect(indexRows(store)).toEqual([]);
+    expect(store.get('other')).toBe(1);
+    // A failed clear leaves the chain usable.
+    const broken = new RoomLedgerStore(
+      { ...makeStorage().storage, list: () => Promise.reject(new Error('down')) },
+      rules,
+    );
+    await broken.clear();
+    await broken.settled();
+  });
+});
+
 describe('RoomLedgerStore: recording', () => {
   it('stamps each entry with the op that last changed it, and hands the product the entry without it', async () => {
     const { ledger, store, now } = setup();

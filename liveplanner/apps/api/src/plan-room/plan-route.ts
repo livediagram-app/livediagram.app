@@ -8,6 +8,7 @@ import type { PlanRouteContext, RouteContext, WorkbenchContext } from '../routes
 import { handleForms } from '../routes/forms';
 import { answerRoadmap } from '../roadmap/roadmap-public';
 import { handlePlanRequest } from '../routes/projects';
+import { servePlanSnapshots } from './plan-snapshots';
 import type { TeamClaim } from '@liveworkspace/auth-client';
 import type { PlanGrant } from '../index-service';
 import type { PlanEnv } from '../types';
@@ -88,9 +89,10 @@ export async function answerPlanRequest(
     community,
     waitUntil,
   };
-  // A throw crosses back to the worker, which logs it and answers 500 as for any route (index.ts).
+  // A throw crosses back to the worker, which logs it and answers 500 as for any route (index.ts). Snapshots answer
+  // their own routes and fence a write from before a revert (plan-snapshots.ts).
   if (ctx.segments[1] === 'forms') return handleForms(ctx);
   // A public roadmap's read or vote, reached only through the room's `roadmap` RPC, which answers as no one.
   if (ctx.segments[1] === 'roadmaps') return answerRoadmap(ctx);
-  return handlePlanRequest(ctx);
+  return servePlanSnapshots(ctx, () => handlePlanRequest(ctx));
 }

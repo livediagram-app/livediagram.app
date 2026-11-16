@@ -3,6 +3,8 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createShape, type BoxedElement, type Element } from '@livedocuments/document';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
+import { LibraryProvider } from '@liveworkspace/workbench/components/library/LibraryProvider';
+import type { LibraryApi } from '@liveworkspace/workbench/lib/library/library-api';
 import { ElementMenuQuickBar, quickBarItems } from './ElementMenuQuickBar';
 
 // docs/specs/008-canvas/element-menu-quick-bar.md: one row, Assign Action and Add Comment, Delete at the right.
@@ -115,5 +117,37 @@ describe('ElementMenuQuickBar', () => {
       />,
     );
     expect(container.firstChild).toBeNull();
+  });
+
+  // Save to Library (liveworkspace/docs/specs/006-media/libraries.md): livedocuments has no toolbar for one element,
+  // so it saves from here, beside the others, where the editor has the Library; not on a locked element.
+  it('offers Save to Library where the editor has the Library, and opens its dialog', async () => {
+    const api = {
+      list: vi.fn(async () => ({
+        items: [],
+        teams: [],
+        hidden: 0,
+        legacy: { unavailable: [], copied: [], writable: true },
+      })),
+    } as unknown as LibraryApi;
+    const onClose = vi.fn();
+    const bar = (target: Element) => (
+      <LibraryProvider api={api}>
+        <ElementMenuQuickBar
+          target={target}
+          props={handlers() as unknown as EditorContextMenuProps}
+          attachments
+          onDelete={vi.fn()}
+          onClose={onClose}
+        />
+      </LibraryProvider>
+    );
+    const { rerender } = render(bar(square({ locked: true })));
+    expect(labels()).not.toContain('Save to Library');
+    rerender(bar(square()));
+    expect(labels()).toEqual(['Assign Action', 'Add Comment', 'Save to Library', 'Delete']);
+    fireEvent.click(screen.getByRole('button', { name: 'Save to Library' }));
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(await screen.findByRole('dialog')).toBeTruthy();
   });
 });

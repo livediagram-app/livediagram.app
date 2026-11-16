@@ -4,6 +4,7 @@ import {
   ROOM_FULL_CLOSE,
   ROOM_FULL_REASON,
   roomIsFull,
+  SNAPSHOT_REVERTED_CLOSE,
 } from '@livehuddle/api-schema';
 import {
   sessionMatchesAccessClose,
@@ -160,6 +161,13 @@ export function closeSessionsForAccessChange(room: DocumentRoom, close: AccessCl
 export function closeAllIfTrashed(room: DocumentRoom, op: unknown): void {
   if ((op as { kind?: unknown } | null)?.kind !== 'document-trashed') return;
   closeSockets(room, () => [DOCUMENT_TRASHED_CLOSE, 'document-trashed']);
+}
+
+// A snapshot's revert replaced the Space in place (document-snapshots.ts): the ledger's entries describe content that
+// is gone, so it is cleared, and every session is closed so each editor reloads onto the reverted Space.
+export function closeAllReverted(room: DocumentRoom): void {
+  void room.ledger.clear();
+  closeSockets(room, () => [SNAPSHOT_REVERTED_CLOSE, 'snapshot-reverted']);
 }
 
 // What the presence relay reads of a session: its tab, the other pane of a split, whether it batches, and whether it

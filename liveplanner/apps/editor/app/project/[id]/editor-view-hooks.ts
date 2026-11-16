@@ -6,7 +6,7 @@ import {
   emailIntakeScopeFor,
   type EmailIntakeScope,
 } from '@/components/email-intake/email-intake-gate';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useCommunityEnabled } from '@liveworkspace/community-ui';
 import {
   itemIsPublic,
@@ -14,7 +14,9 @@ import {
   useCommunityState,
 } from '@liveworkspace/community-ui/editor';
 import { useSignInNudge as useSharedSignInNudge } from '@liveworkspace/workbench/hooks/ui/useSignInNudge';
+import { useItemSnapshotsDoor } from '@liveworkspace/snapshots/ui';
 import { API_BASE } from '@/lib/api-client';
+import { apiFetch, apiHeaders } from '@/lib/api/core';
 import type { resolveViewBackdrop } from '@/lib/view-backdrop';
 import { SIGNIN_BANNER_DISMISS_KEY } from '@/components/chrome/SignInBanner';
 import { automationsScopeFor } from '@/components/automations/automations-gate';
@@ -159,4 +161,32 @@ export function useEditorAutomations(ctx: EditorContextValue, isOffline: boolean
     sync: ctx.syncToCloud,
   });
   return { automationsScope, automationsGate };
+}
+
+// Snapshots (docs/specs/013-workspace/snapshots.md "In the editor"): an Editor of the whole plan stored on the server,
+// never in This Browser or an embed. The api answers everyone else 404 all the same, so this is presentation.
+export function useEditorSnapshots(ctx: EditorContextValue, isOffline: boolean) {
+  const scope = ctx.plan.context?.itemsScope ?? null;
+  const allowed =
+    ctx.hydrated &&
+    !isOffline &&
+    !ctx.embedMode &&
+    !ctx.isStructureReadOnly &&
+    ctx.can.level === 'edit' &&
+    scope !== null &&
+    scope.tabId === null;
+  const ownerId = scope?.ownerId ?? '';
+  const shareCode = scope?.shareCode ?? null;
+  const headers = useCallback(
+    (opts: { body?: boolean }) => apiHeaders(ownerId, { share: shareCode, body: opts.body }),
+    [ownerId, shareCode],
+  );
+  return useItemSnapshotsDoor({
+    allowed,
+    itemUrl: scope ? `${API_BASE}/projects/${encodeURIComponent(scope.projectId)}` : null,
+    noun: 'plan',
+    viewerId: ctx.selfParticipant.id,
+    apiFetch,
+    apiHeaders: headers,
+  });
 }

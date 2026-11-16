@@ -32,13 +32,13 @@ elements) and **Draw** (the gesture tools plus Frame). The **User / actor** tile
 **The category bar has bands**, the way the canvas-tool dropdown got them
 ([Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md)):
 
-| Band          | Categories                                                                                                                     |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| **Common**    | Shapes, Write, and Draw on a logo page ([logo pages](../007-editor/logo-pages.md#the-logo-palette))                            |
-| **Structure** | Concepts ([Concept graphics](../009-elements/concept-graphics.md)), Components (with the Devices row)                          |
-| **Decorate**  | Icons (with the stickers), Media                                                                                               |
-| **Dynamic**   | Data                                                                                                                           |
-| **Screen**    | Components and Elements, first, on a wireframe page ([wireframe pages](../007-editor/wireframe-pages.md#the-elements-palette)) |
+| Band          | Categories                                                                                                                                             |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Common**    | Shapes, Write, and Draw on a logo page ([logo pages](../007-editor/logo-pages.md#the-logo-palette))                                                    |
+| **Structure** | Concepts ([Concept graphics](../009-elements/concept-graphics.md)), Components (with the Devices row)                                                  |
+| **Decorate**  | Icons (with the stickers), [Library](../../../../liveworkspace/docs/specs/006-media/libraries.md) (after Icons, for an Editor with the Library), Media |
+| **Dynamic**   | Data                                                                                                                                                   |
+| **Screen**    | Components and Elements, first, on a wireframe page ([wireframe pages](../007-editor/wireframe-pages.md#the-elements-palette))                         |
 
 ## Why flatten
 

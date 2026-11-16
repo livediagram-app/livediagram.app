@@ -190,4 +190,7 @@ export type PlanEnv = Env & {
   ROOM_PEOPLE?: () => ReadonlySet<string>;
   AUTOMATIONS?: PlanAutomations;
   REMOVAL_GUARD?: RemovalGuard;
+  // A snapshot's revert landed (docs/specs/013-workspace/snapshots.md): the room forgets its ledger and closes every
+  // socket with SNAPSHOT_REVERTED_CLOSE.
+  SNAPSHOT_REVERTED?: (generation: number) => void;
 };

@@ -11,6 +11,9 @@ import {
   CommentMenuIcon,
   RemoveIcon,
 } from '@liveworkspace/workbench/components/palette/context-menu-icons';
+import { useLibrary } from '@liveworkspace/workbench/components/library/LibraryProvider';
+import { SaveToLibraryButton } from '@liveworkspace/workbench/components/library/SaveToLibraryButton';
+import { libraryDraftOf } from '@/lib/library-draft';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 
 type QuickBarItem = { key: string; label: string; icon: ReactNode; on: boolean; run: () => void };
@@ -66,7 +69,10 @@ export function ElementMenuQuickBar({
   const locked = target.locked === true;
   // Only a boxed element takes them: arrows are never commented on or assigned.
   const items = attachments && isBoxed(target) ? quickBarItems(target, props) : [];
-  if (!items.length && !onDelete) return null;
+  // Save to Library (liveworkspace/docs/specs/006-media/libraries.md): livedocuments has no single-element toolbar, so
+  // a single element saves from here. Not on a locked element; the menu opens for an Editor only.
+  const saveable = useLibrary() !== null && !locked;
+  if (!items.length && !onDelete && !saveable) return null;
   return (
     <div
       role="toolbar"
@@ -91,6 +97,13 @@ export function ElementMenuQuickBar({
           </button>
         </Tooltip>
       ))}
+      {saveable ? (
+        <SaveToLibraryButton
+          draft={() => libraryDraftOf([target])}
+          className={`${BUTTON} ${REST}`}
+          onOpened={onClose}
+        />
+      ) : null}
       {onDelete ? (
         <Tooltip label={locked ? 'Locked. Unlock it to delete.' : 'Delete'}>
           <button

@@ -452,6 +452,9 @@ export const ACCESS_CHANGED_CLOSE = 4005;
 // the page turns read-only and does not reconnect.
 export const WORKBENCH_ENDED_CLOSE = 4006;
 
+// A snapshot's revert replaced the plan in place (docs/specs/013-workspace/snapshots.md): every editor reloads.
+export { SNAPSHOT_REVERTED_CLOSE } from '@liveworkspace/api-schema/room-wire';
+
 // The close code for a session whose grant lapsed without a fresh one (GrantRenewMessage): the editor fetches a
 // new grant and reconnects.
 export const GRANT_LAPSED_CLOSE = 4007;

@@ -74,6 +74,7 @@ import { renewGrant, roomFetch } from './room-grants';
 import {
   broadcast,
   closeAllIfTrashed,
+  closeAllReverted,
   closeSessionsForAccessChange,
   closeSessionsOfChangedLink,
   closeSockets,
@@ -313,6 +314,7 @@ export class DocumentRoom extends DurableObject<Env> {
           DOCUMENT_DB: this.db.asD1(),
           DOCUMENT_ROOM: localNamespace(this, env.DOCUMENT_ROOM),
           ROOM_PEOPLE: () => roomPeople(this),
+          SNAPSHOT_REVERTED: () => closeAllReverted(this),
         }
       : undefined;
     this.ledger = new RoomLedgerStore(state.storage, LEDGER_RULES);

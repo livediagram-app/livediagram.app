@@ -5,6 +5,7 @@
  *  are drawn from a cool, on-brand palette (sky / indigo / teal / violet /
  *  emerald / amber / rose) so cards stay coherent with the product. */
 export const FEATURE_ENTITY_HEX: Record<string, string> = {
+  snapshots: '#0d9488',
   'planning-basics': '#7c3aed',
   'panel-layout': '#6366f1',
   'zoom-controls': '#6366f1',

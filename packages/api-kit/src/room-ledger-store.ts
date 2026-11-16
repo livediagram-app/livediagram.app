@@ -170,6 +170,23 @@ export class RoomLedgerStore<E extends object, L> {
       .catch(() => {});
   }
 
+  // Every entry and its index row gone, on the write chain after whatever was queued (a revert to a snapshot,
+  // liveworkspace/docs/specs/014-snapshots/snapshots.md "Revert"): nothing recorded on the content before it is merged
+  // into a save after it. The floor and marks stay; an emptied ledger reads as empty whatever they say.
+  clear(): Promise<void> {
+    const run = this.queue.then(async () => {
+      for (const prefix of [LEDGER_KEY_PREFIX, LEDGER_INDEX_PREFIX]) {
+        for (;;) {
+          const page = await this.storage.list({ prefix, limit: LEDGER_UPKEEP_PAGE });
+          if (page.size === 0) break;
+          await Promise.all([...page.keys()].map((key) => this.storage.delete(key)));
+        }
+      }
+    });
+    this.queue = run.catch(() => {});
+    return this.queue;
+  }
+
   // Resolves once every write already queued has landed, so a purge cannot be followed by a late put.
   settled(): Promise<void> {
     return this.queue;

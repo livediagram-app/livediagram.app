@@ -4,6 +4,8 @@
 // unsupported file) are answers the app passes on to its editor as they are.
 
 import type { MediaApp } from './apps';
+import { LIBRARY_PATH } from './library';
+import { libraryCalls } from './library-client';
 import {
   IMAGE_HEIGHT_HEADER,
   IMAGE_NAME_HEADER,
@@ -148,6 +150,11 @@ export function createMediaClient({ app, key, url, fetch: doFetch = fetch }: Med
       json<{ deleted: number }>(
         await call(`/owners/${encodeURIComponent(owner)}`, { method: 'DELETE' }),
       ),
+
+    /** The Library (liveworkspace/docs/specs/006-media/libraries.md): Personal and team items every app reads. */
+    library: libraryCalls(async <T>(path: string, body: unknown) =>
+      json<T>(await call(`${LIBRARY_PATH}${path}`, send('POST', body))),
+    ),
   };
 }
 

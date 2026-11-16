@@ -255,6 +255,13 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M21 12a8 8 0 01-11.6 7.1L3 21l1.9-6.4A8 8 0 1121 12z" />
     </Glyph>
   ),
+  // A camera: a save point taken of the whole item. Not a clock (history's) and not a page (export's).
+  snapshots: (
+    <Glyph>
+      <path d="M4 8.5h3.2L8.8 6h6.4l1.6 2.5H20v10H4z" />
+      <circle cx="12" cy="13.3" r="3.2" />
+    </Glyph>
+  ),
   'live-presence': (
     <Glyph>
       <path d="M4 5l7 14 2.2-5.8L19 11 4 5z" />

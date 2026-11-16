@@ -1,4 +1,6 @@
 import type { PaletteKind } from '@/lib/palette-kind';
+import { useLibrary } from '@liveworkspace/workbench/components/library/LibraryProvider';
+import type { LibraryInsertItem } from '@liveworkspace/workbench/hooks/canvas/useLibraryItemInsert';
 import type { EmbedProvider } from '@livedocuments/document';
 import { useEffect, useState } from 'react';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
@@ -38,6 +40,7 @@ export function usePaletteCatalogue({
   onAddIcon,
   onAddSticker,
   onAddTechIcon,
+  onInsertLibraryItem,
   onAddText,
   onAddSticky,
   onAddTable,
@@ -88,6 +91,9 @@ export function usePaletteCatalogue({
   const addIcon = (iconId: string) => armed(() => onAddIcon(iconId))();
   const addSticker = (stickerId: string) => armed(() => onAddSticker(stickerId))();
   const addTechIcon = (iconId: string) => armed(() => onAddTechIcon(iconId))();
+  // An item from the Library (liveworkspace/docs/specs/006-media/libraries.md) lands at once, like a paste.
+  const insertLibraryItem = (item: LibraryInsertItem<unknown>) =>
+    armed(() => onInsertLibraryItem(item))();
   const addText = (preset?: import('@livedocuments/document').TextPresetId) =>
     armed(() => onAddText(preset))();
   const addSticky = armed(onAddSticky);
@@ -167,8 +173,13 @@ export function usePaletteCatalogue({
   // where the band changes, so the array IS the bar's order.
   // In Pages mode, the palette's kind (lib/palette-kind.ts): the tab's. Each kind is its own layout
   // (palette-layouts.ts).
-  const categories = paletteCategoriesFor({ pagesKind: paletteKind });
+  // The Library (liveworkspace/docs/specs/006-media/libraries.md) only where the editor has one.
+  const hasLibrary = useLibrary() !== null;
+  const categories = paletteCategoriesFor({ pagesKind: paletteKind }).filter(
+    (c) => hasLibrary || c.id !== 'library',
+  );
   const tabs = paletteCategoryTabs({
+    insertLibraryItem,
     categories,
     pendingDraw,
     tileActions,

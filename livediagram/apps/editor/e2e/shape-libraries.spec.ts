@@ -116,12 +116,12 @@ test('a draw.io library becomes a shape library, placed from My shapes', async (
   await startBlankDocument(page);
   const libraryCategory = page.locator('[data-category-bar-button][aria-label="Library"]');
   await libraryCategory.click();
-  await page.getByRole('button', { name: 'Insert Service from House shapes' }).click();
+  await page.getByRole('button', { name: 'Insert Service from Personal' }).click();
   await expect.poll(() => storedElements(page), { timeout: 15_000 }).toBe(1);
   // Placing a shape puts the flyout away (docs/specs/007-editor/toolbar-layout.md "The category bar"), so open it
   // again.
   await libraryCategory.click();
-  await page.getByRole('button', { name: 'Insert Request from House shapes' }).click();
+  await page.getByRole('button', { name: 'Insert Request from Personal' }).click();
   await expect.poll(() => storedElements(page), { timeout: 15_000 }).toBe(4);
   // Two clicks in a row never cover one another (spec "Consecutive clicks never cover one another").
   const shapes = (await stored(page)).filter((e) => e.type === 'shape');

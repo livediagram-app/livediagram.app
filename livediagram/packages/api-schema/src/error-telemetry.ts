@@ -35,6 +35,7 @@ export const API_ROUTE_RESOURCES: ReadonlySet<string> = new Set([
   'share',
   'community',
   'images',
+  'library',
   'documents',
   'folders',
   'shape-libraries',

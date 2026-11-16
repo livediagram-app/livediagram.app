@@ -165,6 +165,34 @@ describe('connectRoomClient', () => {
     expect(FakeSocket.all).toHaveLength(1);
   });
 
+  it('stops on a snapshot revert and reloads, or calls the caller instead', () => {
+    const reload = vi.fn();
+    vi.stubGlobal('location', { reload });
+    connectRoomClient(
+      wireFor(),
+      'r1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {} },
+    );
+    FakeSocket.all[0]!.fire('open');
+    FakeSocket.all[0]!.fire('close', { code: 4009 });
+    vi.runOnlyPendingTimers();
+    expect(reload).toHaveBeenCalledOnce();
+    expect(FakeSocket.all).toHaveLength(1);
+    const onSnapshotReverted = vi.fn();
+    connectRoomClient(
+      wireFor(),
+      'r2',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {}, onSnapshotReverted },
+    );
+    FakeSocket.all[1]!.fire('open');
+    FakeSocket.all[1]!.fire('close', { code: 4009 });
+    expect(onSnapshotReverted).toHaveBeenCalledOnce();
+    expect(reload).toHaveBeenCalledOnce();
+    vi.unstubAllGlobals();
+  });
+
   it('holds only mutation ops while the socket is down', () => {
     const room = connectRoomClient(
       wireFor(),

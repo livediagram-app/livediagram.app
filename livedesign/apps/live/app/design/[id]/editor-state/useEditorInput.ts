@@ -1,4 +1,5 @@
 import { pageStep } from '@liveworkspace/workbench/lib/page-step';
+import { useLibraryElementInsert } from '@/hooks/canvas/useLibraryElementInsert';
 import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
 import { useRef } from 'react';
 import { selectAllIds } from '@/lib/select-all-ids';
@@ -92,8 +93,14 @@ export function useEditorInput({
     participant,
   } = sessionSlice;
   const { componentLibrary, loadAllTabs, activeTab, editorMode } = collaborationSlice;
-  const { setViewportZoom, zoomRef, getViewportCanvasRect, scrollIntoView, isPinchingRef } =
-    viewportSlice;
+  const {
+    setViewportZoom,
+    zoomRef,
+    getViewportCanvasRect,
+    getViewportCenter,
+    scrollIntoView,
+    isPinchingRef,
+  } = viewportSlice;
   const { lockedByOther } = commentsSlice;
   const { pagesMode, activeTabLocked, editsBlocked, commit } = pagesSlice;
   const { componentActions } = componentsSlice;
@@ -292,6 +299,16 @@ export function useEditorInput({
     setMultiSelectedIds,
     toast,
   });
+  // Items placed from the palette's Library (liveworkspace/docs/specs/006-media/libraries.md): like a paste, one
+  // commit, selected.
+  const insertLibraryItem = useLibraryElementInsert({
+    activeTab,
+    editsBlocked: isReadOnly || editsBlocked || createBlocked,
+    commit,
+    setSelectedId,
+    setMultiSelectedIds,
+    getViewportCenter,
+  });
   const { copySelection, pasteFromClipboard, dropBoardFile, placePictureFile, hasClipboard } =
     useClipboard({
       importSvg,
@@ -454,6 +471,7 @@ export function useEditorInput({
     canvasPointerRef,
     copySelection,
     pasteFromClipboard,
+    insertLibraryItem,
     dropBoardFile,
     // The Import dialog's SVG panel (svg-import.md): the same importer, the picture fallback beside it.
     importSvgText: (text: string, file?: File) =>

@@ -19,6 +19,7 @@ import { OpeningScreen } from '@/components/chrome/OpeningScreen';
 // "Offline"); its recovery tools are the lazy part.
 import { LoadErrorCard } from '@/components/chrome/LoadErrorCard';
 import { ShapeLibraryProvider } from '@/components/primitives/ShapeLibraryProvider';
+import { EditorLibraryProvider } from '@/components/primitives/EditorLibraryProvider';
 import { ConversionHandoff } from '@/components/dialogs/ConversionHandoff';
 import { LocalStorePrompts } from '@/components/dialogs/LocalStorePrompts';
 import { EditorContext } from './EditorContext';
@@ -243,7 +244,11 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
           {/* The owner's shape libraries, for the palette's My shapes
               (docs/specs/013-workspace/shape-libraries.md). */}
           <ShapeLibraryProvider ownerId={ownerId}>
-            <EditorView />
+            {/* The Library every app shares, with those shape libraries in Personal
+                (liveworkspace/docs/specs/006-media/libraries.md). */}
+            <EditorLibraryProvider ownerId={ownerId}>
+              <EditorView />
+            </EditorLibraryProvider>
           </ShapeLibraryProvider>
         </CommentReactionsProvider>
       </MentionContext.Provider>

@@ -76,6 +76,7 @@ function memoryBucket() {
         size: found.bytes.byteLength,
         customMetadata: found.customMetadata ?? {},
         text: async () => new TextDecoder().decode(found.bytes),
+        arrayBuffer: async () => found.bytes.slice().buffer,
       };
     },
     list: async ({ prefix = '' }: { prefix?: string; cursor?: string } = {}) => ({

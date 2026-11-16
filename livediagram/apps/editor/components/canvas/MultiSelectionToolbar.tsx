@@ -7,6 +7,8 @@ import {
   HoverCard,
   Glyph,
 } from '@livediagram/ui';
+import { SaveToLibraryButton } from '@liveworkspace/workbench/components/library/SaveToLibraryButton';
+import type { LibrarySaveDraft } from '@liveworkspace/workbench/components/library/LibraryProvider';
 import { buildFilterGroups, SelectionFilterMenu } from '@/components/canvas/SelectionFilterMenu';
 import {
   TOOLBAR_BTN,
@@ -22,6 +24,8 @@ type MultiSelectionToolbarProps = {
   // per-kind buckets.
   selectedElements: Element[];
   onDuplicate: () => void;
+  // Save to Library (liveworkspace/docs/specs/006-media/libraries.md): the selection as one item. Omitted read-only.
+  onSaveToLibrary?: () => LibrarySaveDraft | null;
   onDelete: () => void;
   onToggleLock: () => void;
   // Narrows the selection to one kind (Filter Selection menu). Omitted for
@@ -41,6 +45,7 @@ export function MultiSelectionToolbar({
   allLocked,
   selectedElements,
   onDuplicate,
+  onSaveToLibrary,
   onDelete,
   onToggleLock,
   onFilter,
@@ -90,6 +95,14 @@ export function MultiSelectionToolbar({
           <DuplicateIcon size={14} />
         </button>
       </HoverCard>
+      {onSaveToLibrary ? (
+        <SaveToLibraryButton
+          draft={onSaveToLibrary}
+          className={TOOLBAR_BTN}
+          iconSize={14}
+          multiple
+        />
+      ) : null}
       {/* Duplicate copies the selection; everything after acts ON it
           (export, then lock / delete) — the divider marks that
           boundary, same as the one after More above. */}

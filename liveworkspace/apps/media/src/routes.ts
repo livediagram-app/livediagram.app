@@ -46,6 +46,8 @@ import {
 import { stripJpegMetadata } from './jpeg-strip';
 import { deleteItemPreviews } from './previews/store';
 import { claimRef, syncRefs } from './refs';
+import { handleLibrary } from './library/routes';
+import { deleteOwnerItems, mergeOwnerItems } from './library/store';
 import { timingSafeEqual } from '@liveworkspace/index-app/timing-safe';
 
 const isId = (value: unknown): value is string =>
@@ -202,6 +204,11 @@ export async function handleApp(
     return json({ deleted: await deleteItemPreviews(bucket, indexAppOf(app), itemId) });
   }
 
+  // POST /app/library/<route>: the Library (liveworkspace/docs/specs/006-media/libraries.md "The API").
+  if (segments[0] === 'library' && segments.length === 2 && method === 'POST') {
+    return handleLibrary(env, bucket, app, segments[1]!, await readJson(request));
+  }
+
   // GET /app/usage?owner=: which documents, in any app, place each of the owner's images.
   if (segments[0] === 'usage' && segments.length === 1 && method === 'GET') {
     if (!isId(owner)) return badRequest('invalid_owner');
@@ -224,16 +231,20 @@ export async function handleApp(
         return badRequest('invalid_body');
       }
       const merged = await mergeOwner(env, body.from, body.to);
+      // Their Personal library goes with their pictures (libraries.md "Account and guest lifecycle").
+      const items = await mergeOwnerItems(env, body.from, body.to);
       console.info('[media] merged a guest', {
         app,
         moved: merged.moved.length,
         kept: merged.kept.length,
+        items,
       });
       return json(merged);
     }
     // DELETE /app/owners/<owner>: an account deleted, so every image it uploaded goes.
     if (segments.length === 2 && method === 'DELETE' && isId(segments[1])) {
       const ids = await deleteOwnerRows(env, segments[1]);
+      await deleteOwnerItems(env, segments[1]);
       for (let i = 0; i < ids.length; i += 1000) {
         try {
           await bucket.delete(ids.slice(i, i + 1000));

@@ -60,6 +60,7 @@ export const {
   renameTab,
   seedTabs,
   deleteTabRow,
+  replaceTabs,
   swapTabData,
 } = itemTabWrites<PlanEnv, Tab, StoredTabStats>({
   db,

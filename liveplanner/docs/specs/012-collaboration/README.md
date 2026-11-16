@@ -27,6 +27,9 @@ liveplanner keeps no per-tab activity log: nothing records each undoable commit 
   changed it), read in its panel, kept in the plan's Durable Object and bounded per card. It is not a tab or plan log,
   covers cards alone (never canvas elements, tabs or sheets), and offers no Revert. (The owner's decision,
   2026-10-30.)
+- **Snapshots are not a log**: [Snapshots](../013-workspace/snapshots.md) are manual save points of the whole plan,
+  the latest five kept, with a Revert of the whole plan to one of them. Nothing records edits one by one and there is
+  still no per-entry Revert. (The owner's direction, 2026-11-15, Work Tracker 948.)
 
 - There is no change-log table for tabs, no `/api/projects/:id/log` endpoint, and no `log` / `log-remove` room op.
 - liveplanner has no `activityPanelEnabled` preference and no revert hover preview ([User preferences](../007-editor/user-preferences.md)).
