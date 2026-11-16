@@ -5,8 +5,8 @@ only (This Browser, [Offline Mode](offline-mode.md)). More stores may come (GitH
 one of them: it is a mirror of cloud documents, not a place a document is stored
 ([Google Drive is a mirror, not a location](#google-drive-is-a-mirror-not-a-location)).
 
-**Nobody is asked.** The New Canvas wizard ([Dedicated route for new-document creation](../007-editor/new-document-route.md#one-step-wizard))
-has no Location step: every new document is stored in the default location for who is creating it, below. A document
+**Nobody is asked.** New Canvas ([Dedicated route for new-document creation](../007-editor/new-document-route.md#no-welcome-step))
+asks nothing: every new document is stored in the default location for who is creating it, below. A document
 moves between the two afterwards with [Offline Mode](offline-mode.md)'s **Sync Canvas** and **Take Offline**.
 (A Location step would be answered with the default by most people before they had anything on the canvas.) A
 document in This Browser says what it is on the document itself: the editor header's
@@ -28,8 +28,8 @@ Why a guest starts local: [Auth + guest access → Guest documents start local](
 
 - One function answers it: `defaultSaveLocationFor({ signedIn })` in
   `apps/editor/lib/save-locations.ts`. Every create from `/new` asks it at commit, through
-  `resolveSaveLocation` in `useNewDocumentLocation` (`apps/editor/app/new/useNewDocumentLocation.ts`): a mode chosen
-  in the wizard, its **Create** and **Skip**, and the wizard-less links (`/new?template=`, `/new?blank=1`).
+  `resolveSaveLocation` in `useNewDocumentLocation` (`apps/editor/app/new/useNewDocumentLocation.ts`): a plain `/new`
+  and its links (`/new?mode=`, `/new?template=`, `/new?blank=1`).
 - A `/new?folder=` / `?team=` context names a server place, so it is
   livediagram whoever is creating.
 - Before sign-in has answered, `signedIn` is the `ld_signed_in` hint cookie
@@ -141,12 +141,11 @@ is.
 - `apps/editor/lib/save-locations.ts` (+ test): the ids and helpers above.
 - `apps/editor/app/new/useNewDocumentLocation.ts`: `resolveSaveLocation`, the location every create from `/new` uses.
 - `apps/editor/components/start/StartSaveSwitch.tsx`: the start screen's Sync Canvas to Server switch, over `@liveworkspace/ui`'s `SaveSwitch` ([On the start screen](#on-the-start-screen)).
-- `apps/editor/app/new/NewSaveSwitch.tsx`: the same row in `/new`'s wizard, choosing the create's location.
 - `apps/editor/app/new/page.tsx`: derives the offline create branch from the location id.
 
 ## References
 
-See [Dedicated route for new-document creation](../007-editor/new-document-route.md) (the wizard),
+See [Dedicated route for new-document creation](../007-editor/new-document-route.md) (`/new`),
 [Offline Mode](offline-mode.md) (the browser-only store),
 [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) (events),
 [Help app](../018-help/help-app.md) (help).

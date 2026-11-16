@@ -1,24 +1,23 @@
 'use client';
 
-// The element menu's quick bar (docs/specs/008-canvas/element-menu-quick-bar.md): a row of glyph buttons above the
-// menu's first category, so what gets reached for on any element is one press away rather than inside a category.
-// Assign Action, Add Comment, Add Link and Add Note at the left (an element that has one says so, tinted, and the
-// button reads View / Edit); Clear Styles alone at the right, apart from them, as it changes the element's look rather
-// than attaching to it. Each button closes the menu as it runs, as the tiles it replaces did.
-import type { ReactNode } from 'react';
-import { isBoxed, type BoxedElement, type Element } from '@livediagram/document';
-import { Tooltip } from '@livediagram/ui';
+// The element menu's quick bar (docs/specs/008-canvas/element-menu-quick-bar.md "Kind tools"): a row of glyph buttons
+// above the menu's first category holding the element kind's own verbs (a mind node's Add Child and Add Sibling, a
+// flowchart step's, a relationship's cardinality), which the floating selection toolbar no longer carries. Not drawn on
+// an element with none. Also here: quickBarItems, the Resources category's rows.
+import type { ResourceItem } from '@liveworkspace/workbench/components/palette/ResourcesFlyout';
+import { elementKindLabel, type BoxedElement, type Element } from '@livediagram/document';
 import {
   ActionMenuIcon,
   CommentMenuIcon,
   LinkMenuIcon,
   NoteMenuIcon,
 } from '@/components/palette/context-menu-icons';
+import { ElementKindToolButtons, useElementKindTools } from '@/components/canvas/element-kind-tools';
+import { PopoverButton } from '@/components/canvas/SelectionPopoverButton';
 import { ClearStylesGlyph } from '@/components/canvas/quick-style-rows';
 import { useClearStyles } from '@liveworkspace/workbench/lib/clear-styles-store';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 
-type QuickBarItem = { key: string; label: string; icon: ReactNode; on: boolean; run: () => void };
 
 // The items the bar offers on `target`, in order: what attaches to it. A link card and a video take their link from
 // their own Link category, so the generic Add Link is not offered on them.
@@ -28,12 +27,13 @@ export function quickBarItems(
     EditorContextMenuProps,
     'onAssignAction' | 'onOpenComments' | 'onLinkElement' | 'onOpenNote'
   >,
-): QuickBarItem[] {
+): ResourceItem[] {
   const comments = (target as { commentThread?: { comments: readonly unknown[] } }).commentThread;
   const hasComments = !!comments && comments.comments.length > 0;
-  const items: QuickBarItem[] = [
+  const items: ResourceItem[] = [
     {
       key: 'action',
+      detail: 'What a click on it does',
       label: target.action ? 'View Action' : 'Assign Action',
       icon: <ActionMenuIcon />,
       on: !!target.action,
@@ -41,6 +41,7 @@ export function quickBarItems(
     },
     {
       key: 'comment',
+      detail: 'A thread to talk it over',
       label: hasComments ? 'View Comments' : 'Add Comment',
       icon: <CommentMenuIcon />,
       on: hasComments,
@@ -50,6 +51,7 @@ export function quickBarItems(
   if (target.type !== 'link-card' && target.type !== 'video')
     items.push({
       key: 'link',
+      detail: 'A page or tab it opens',
       label: target.link ? 'Edit Link' : 'Add Link',
       icon: <LinkMenuIcon />,
       on: !!target.link,
@@ -57,6 +59,7 @@ export function quickBarItems(
     });
   items.push({
     key: 'note',
+    detail: 'Words kept behind it',
     label: target.note ? 'Edit Note' : 'Add Note',
     icon: <NoteMenuIcon />,
     on: !!target.note,
@@ -65,70 +68,42 @@ export function quickBarItems(
   return items;
 }
 
-const BUTTON =
-  'relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-md transition focus-visible:outline-2 focus-visible:outline-brand-600';
-const REST =
-  'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white';
-const ON =
-  'bg-brand-50 text-brand-700 hover:bg-brand-100 dark:bg-brand-500/15 dark:text-brand-200 dark:hover:bg-brand-500/25';
-
 export function ElementMenuQuickBar({
   target,
-  props,
-  attachments,
   onClose,
 }: {
   target: Element;
-  props: EditorContextMenuProps;
-  // Whether the element takes actions, comments, links and notes (never an arrow).
-  attachments: boolean;
   onClose: () => void;
 }) {
+  // The element kind's own verbs (element-kind-tools.tsx): Add Child, Add Step, cardinality and the like.
+  const tools = useElementKindTools(target.id);
+  // Clear Styles, last at the right after Save to Library: on an element whose look the Quick Style panel can reset.
   const clearStyles = useClearStyles();
   const canClear = !!clearStyles && clearStyles.targetIds.has(target.id);
-  // Only a boxed element takes them: arrows are never linked, noted, commented on or assigned.
-  const items = attachments && isBoxed(target) ? quickBarItems(target, props) : [];
-  if (!items.length && !canClear) return null;
+  if (!tools && !canClear) return null;
   return (
     <div
       role="toolbar"
-      aria-label="Quick actions"
+      aria-label={`${elementKindLabel(target)} tools`}
       data-element-quick-bar=""
-      className="flex items-center gap-0.5 border-b border-slate-100 px-1.5 py-1 dark:border-slate-800"
+      // A press on a verb runs it and closes the menu; a dropdown (Step Type, Lane, cardinality) closes it on its pick.
+      onClickCapture={(e) => {
+        const b = (e.target as HTMLElement).closest('button');
+        if (b && !b.hasAttribute('aria-haspopup')) queueMicrotask(onClose);
+      }}
+      className="flex items-center gap-0.5 border-b border-slate-100 px-1.5 py-1 dark:border-slate-800 [&>[aria-hidden]:last-child]:hidden"
     >
-      {items.map((item) => (
-        <Tooltip key={item.key} label={item.label}>
-          <button
-            type="button"
-            aria-label={item.label}
-            aria-pressed={item.on || undefined}
-            data-quick-bar={item.key}
-            onClick={() => {
-              item.run();
-              onClose();
-            }}
-            className={`${BUTTON} ${item.on ? ON : REST}`}
-          >
-            {item.icon}
-          </button>
-        </Tooltip>
-      ))}
+      {tools ? <ElementKindToolButtons tools={tools} /> : null}
       {canClear ? (
-        <Tooltip label="Clear Styles">
-          <button
-            type="button"
-            aria-label="Clear Styles"
-            data-quick-bar="clear-styles"
-            onClick={() => {
-              // Tracked as the panel's Clear Styles is (QuickClearStyles): one action, two ways in.
-              clearStyles.clear();
-              onClose();
-            }}
-            className={`${BUTTON} ${REST} ml-auto`}
+        <span className={tools?.saveToLibrary ? 'flex items-center' : 'ml-auto flex items-center'}>
+          <PopoverButton
+            label="Clear Styles"
+            description="Put this element back to the tab's theme."
+            onClick={() => clearStyles.clear()}
           >
             <ClearStylesGlyph />
-          </button>
-        </Tooltip>
+          </PopoverButton>
+        </span>
       ) : null}
     </div>
   );

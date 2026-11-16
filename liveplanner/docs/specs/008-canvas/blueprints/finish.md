@@ -398,7 +398,7 @@ is. `svgChecklistShape`, `svgLegendShape` and a stored tab window's frame letter
 - `components/palette/FinishSection.tsx`: a `MenuAccordionSection` titled **Finish** holding `OptionRows`
   (`kind="single"`, label "Drawn As") with rows `follow-tab`, `flexible`, `professional`, `sketch`, `marker`: a glyph, the
   `FINISH_LABELS` name and the `FINISH_DETAILS` line. Hover previews through `OptionRows`' `onPreview` /
-  `onPreviewEnd` (mouse only); click commits. Mounted by `ElementColourBorderSections` (the Style flyout, arrows
+  `onPreviewEnd` (mouse only); click commits. Mounted by `ElementColourBorderSections` (the Appearance flyout, arrows
   included) when `supportsFinish(target)`, and by `MultiStyleSections` for the first finish-taking member;
   `resolveOwnFinish(el)` picks the checked row.
 - `components/plan/OptionRows.tsx`: optional `onPreview(id)` / `onPreviewEnd()`.

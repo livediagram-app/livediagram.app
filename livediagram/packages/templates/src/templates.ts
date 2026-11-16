@@ -72,7 +72,7 @@ export type TemplateKind =
   // Town Hall Q&A (docs/specs/012-collaboration/qa-board.md): an audience Q&A board beside the panel, a
   // run-of-show agenda, a facilitator kit and a follow-ups checklist.
   | 'town-hall'
-  // Quizzes & Games (docs/specs/012-collaboration/quiz-and-game-templates.md): a pub quiz on Quiz cards with a
+  // Games (docs/specs/012-collaboration/quiz-and-game-templates.md): a pub quiz on Quiz cards with a
   // scoreboard, icebreakers spun on Pickers, and three party games run on polls, timers and reaction pads.
   | 'pub-quiz'
   | 'icebreaker-questions'

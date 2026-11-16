@@ -116,17 +116,17 @@ categories](../../../../liveworkspace/docs/specs/007-community/community.md#movi
 | ----------- | --------------------- |
 | `ideas`     | Brainstorming         |
 | `decisions` | Decisions             |
-| `goals`     | Goals & Metrics       |
-| `meetings`  | Meetings & Workshops  |
-| `people`    | People & Teams        |
+| `goals`     | Goals       |
+| `meetings`  | Meetings  |
+| `people`    | Teams        |
 | `planning`  | Planning              |
-| `processes` | Processes & Workflows |
-| `product`   | Product & UX          |
-| `games`     | Quizzes & Games       |
+| `processes` | Processes |
+| `product`   | Product          |
+| `games`     | Games       |
 | `retros`    | Retrospectives        |
-| `software`  | Software & IT         |
+| `software`  | Software         |
 | `strategy`  | Strategy              |
-| `learning`  | Teaching & Learning   |
+| `learning`  | Learning   |
 | `other`     | Something Else        |
 
 Virtual Spaces (`spaces`) was retired on 9 November 2026, when Spaces moved to livehuddle

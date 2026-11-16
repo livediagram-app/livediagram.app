@@ -5,7 +5,7 @@ welcome keeps its `avatarTourSeen` record, so nobody who took this tour is welco
 records what the tour was.
 
 A short, optional guided tour of [Avatar mode](avatar-mode.md), started from the footer's **Start Avatar Tour**
-button. It is built like every tour ([Tours](../007-editor/editor-tour.md)): the same Start Tour button, anchored
+button. It is built like every tour ([Tours](../007-editor/editor-tour.md)): the same Get Started button, anchored
 step cards, glide, dimming ring, Skip, Back and closing card, driven by the same engine. Where this spec is silent,
 the shared tour rules hold.
 
@@ -13,12 +13,12 @@ the shared tour rules hold.
 
 | Term               | Means                                                                              |
 | ------------------ | ---------------------------------------------------------------------------------- |
-| **Avatar tour**    | This tour. On the Start Tour button: **Start Avatar Tour**                         |
+| **Avatar tour**    | This tour. On the Get Started button: **Start Avatar Tour**                         |
 | **Avatar palette** | The palette strip while walking ([Avatar mode](avatar-mode.md#the-avatar-palette)) |
 
 ## Where it appears
 
-- **On the Start Tour button, in Avatar mode**, which a person enters by pressing a
+- **On the Get Started button, in Avatar mode**, which a person enters by pressing a
   [Selection Mode button](../009-elements/mode-button.md) set to Avatar. The footer's button, left of Search
   ([Tours](../007-editor/editor-tour.md#where-it-appears)), reads **Start Avatar Tour** while the avatar is
   the tool in hand: ahead of the Workshop tour, behind a selected element's own tour (`TOUR_OFFER_RANK.tool`). The
@@ -81,7 +81,7 @@ bottom bar as the other tours' do.
 
 Every tour's funnel, with its own tokens:
 
-- **Offer**: `UI` · `Opened` · `AvatarTourOffer` the first time the Start Tour button shows this tour in a page
+- **Offer**: `UI` · `Opened` · `AvatarTourOffer` the first time the Get Started button shows this tour in a page
   load. Until 25 October 2026 it counted the welcome card showing, and `UI` · `Closed` · `AvatarTourOffer` counted
   **No**; nothing sends Closed now.
 - **Start**: `UI` · `Started` · `AvatarTour` on a press of the button (or the Settings rerun).

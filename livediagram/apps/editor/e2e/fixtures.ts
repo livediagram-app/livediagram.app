@@ -161,7 +161,7 @@ export async function untilHydrated(locator: Locator): Promise<void> {
     .toBe(true);
 }
 
-// The wizard asks only for a mode (docs/specs/007-editor/new-document-route.md "One-step wizard"): choosing one
+// The wizard asks only for a mode (docs/specs/007-editor/new-document-route.md "No welcome step"): choosing one
 // creates the document there and then, and lands on the editor with the mode's start screen over the canvas
 // (docs/specs/007-editor/start-diagramming.md).
 // Resolves to the new document's id; `url` carries a `/new?folder=` / `?team=` context. Without one the document is

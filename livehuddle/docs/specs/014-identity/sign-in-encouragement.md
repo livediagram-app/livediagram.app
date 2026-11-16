@@ -52,7 +52,7 @@ dismiss it to reach the timer. It is drawn over the canvas, and is additionally 
   Explorer panel): they reach up into the banner's band and it lay over their lower rows, so it steps aside until the
   panel closes (a `[data-dock-button]` control with `aria-expanded="true"`).
 
-A tour needs no such rule: tours start from the footer's Start Tour button and every card is drawn in the tour's
+A tour needs no such rule: tours start from the footer's Get Started button and every card is drawn in the tour's
 popover ([Diagram tour](../007-editor/editor-tour.md) "Where it appears"), never in the banner's band.
 
 The delay is per editor session (per page load); it isn't persisted

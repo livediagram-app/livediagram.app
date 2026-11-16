@@ -146,6 +146,8 @@ export function useDashboardTourOffer({
           },
           onShown: () => track('UI', 'Opened', 'DashboardTourOffer'),
           seen: planTrackSeen(ctx.userPreferences, 'dashboards'),
+          // Its own start panel, drawn as the Get Started popover (TourStart).
+          ownPanel: true,
         }
       : null,
   );
@@ -185,7 +187,7 @@ export function DashboardTourStage({
         name="Dashboards Tour"
         heading="Layout View"
         line="See how this dashboard is built: its grid of twelve columns, each slot’s span and each row’s height. Then a few quick changes on the real dashboard, which Undo takes back."
-        tracks={[{ id: 'dashboards', title: 'Layout View', line: '', taken: false }]}
+        tracks={[{ id: 'dashboards', title: 'Layout View', line: '', missions: 4, taken: false }]}
         startLabel="Show the Grid"
         onPick={tour.begin}
         onClose={tour.cancel}

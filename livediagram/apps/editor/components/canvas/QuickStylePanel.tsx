@@ -5,7 +5,9 @@
 // menu stays the complete home of every setting; this is the fast path to a
 // handful of them, and never grows into the old Editor panel.
 
-import { useRef, useState, type PointerEvent } from 'react';
+import { ElementKindToolButtons, hasKindVerbs, useElementKindTools } from '@/components/canvas/element-kind-tools';
+import { ButtonLabelsContext } from '@/components/canvas/SelectionPopoverButton';
+import { Children, useRef, useState, type PointerEvent, type ReactNode } from 'react';
 import {
   BorderRadiusIcon,
   BorderStrokeIcon,
@@ -180,7 +182,7 @@ export function QuickStylePanel({
   const { view } = quickStyle;
   const active = !hidden && !isMobile && view !== null;
   const panelRef = useRef<HTMLDivElement>(null);
-  const spot = useQuickStylePlacement(panelRef, active);
+  const spot = useQuickStylePlacement(panelRef, active, 'left', view?.targetIds);
   const [editing, setEditing] = useState<Editing | null>(null);
   // A popover outlives neither the panel nor its swatch.
   const editingGone =
@@ -227,22 +229,16 @@ export function QuickStylePanel({
           showTitles={titles}
           onEditSwatch={(role, slot, anchor) => setEditing({ role, slot, anchor })}
         />
+        {/* The element kind's own verbs (a mind node's Add Child, a flowchart step's Add Step), under the look. */}
+        {view.targetIds.length === 1 ? <QuickKindTools id={view.targetIds[0]!} titles={titles} /> : null}
         {view.targetIds.length > 0 ? (
-          <div className="flex flex-col gap-1 border-t border-slate-200 pt-2 dark:border-slate-800">
-            {titles ? (
-              <span
-                aria-hidden
-                className="select-none px-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
-              >
-                Actions
-              </span>
-            ) : null}
+          <div className="flex flex-col border-t border-slate-200 pt-1.5 dark:border-slate-800">
             <div role="group" aria-label="Actions">
               <button
                 type="button"
                 onClick={quickStyle.clearStyles}
                 data-testid="quick-style-clear"
-                className="flex h-7 w-full items-center justify-center gap-1.5 rounded-md text-xs font-medium text-slate-700 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:text-slate-200 dark:hover:bg-slate-800"
+                className="flex h-6 w-full items-center justify-center gap-1.5 rounded-md text-xs font-medium text-slate-700 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:text-slate-200 dark:hover:bg-slate-800"
               >
                 <ClearStylesGlyph />
                 Clear Styles
@@ -272,11 +268,46 @@ export function QuickStylePanel({
 // switching between a one-colour and an eight-colour row, or between modes, must not resize the panel, and a swatch row
 // never wraps and is never clipped, so the width counts the targets, their gaps, the padding and
 // the border exactly. The rows put their targets side by side, touching.
+// The selected element's kind verbs, as the element menu's bar has them (element-kind-tools.tsx); none, nothing.
+function QuickKindTools({ id, titles }: { id: string; titles: boolean }) {
+  const tools = useElementKindTools(id);
+  if (!tools || !hasKindVerbs(tools)) return null;
+  return (
+    <div className="flex flex-col gap-0.5 border-t border-slate-200 pt-1.5 dark:border-slate-800">
+      {titles ? (
+        <span
+          aria-hidden
+          className="select-none px-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
+        >
+          Tools
+        </span>
+      ) : null}
+      <div
+        role="toolbar"
+        aria-label="Element tools"
+        data-quick-kind-tools=""
+        className="flex flex-wrap items-center gap-0.5 [&>[aria-hidden]:last-child]:hidden"
+      >
+        <ButtonLabelsContext.Provider value>
+          <ElementKindToolButtons tools={tools} save={false} />
+        </ButtonLabelsContext.Provider>
+      </div>
+    </div>
+  );
+}
+
+// Two rows side by side, each half the panel; a lone row takes the whole line.
+function QuickPair({ children }: { children: ReactNode }) {
+  const rows = Children.toArray(children);
+  if (!rows.length) return null;
+  return <div className={rows.length > 1 ? 'grid grid-cols-2 gap-2.5' : 'contents'}>{rows}</div>;
+}
+
 export function panelFrame(): { className: string; width: number; padding: number } {
   const targets = QUICK_ROW_TARGETS;
   const border = 2 * QUICK_BORDER_PX;
   return {
-    className: 'gap-2.5',
+    className: 'gap-1.5',
     width: targets * QUICK_TARGET_PX + 2 * QUICK_COMPACT_PADDING_PX + border,
     padding: QUICK_COMPACT_PADDING_PX,
   };
@@ -392,20 +423,8 @@ function QuickStyleSections({
           />
         ) : null;
       })}
-      {width ? (
-        <QuickRadioRow
-          title="Stroke width"
-          testId="quick-style-width"
-          showTitle={showTitles}
-          options={QUICK_WIDTHS.map((w) => ({
-            value: w,
-            name: WIDTH_NAMES[w],
-            content: <BorderStrokeIcon value={w} />,
-          }))}
-          value={width.value}
-          onChoose={quickStyle.setWidth}
-        />
-      ) : null}
+      {/* Paired two to a line, so the panel stays short: style with width, text with icon alignment. */}
+      <QuickPair>
       {style ? (
         <QuickRadioRow
           title="Stroke style"
@@ -420,6 +439,21 @@ function QuickStyleSections({
           onChoose={quickStyle.setStrokeStyle}
         />
       ) : null}
+      {width ? (
+        <QuickRadioRow
+          title="Stroke width"
+          testId="quick-style-width"
+          showTitle={showTitles}
+          options={QUICK_WIDTHS.map((w) => ({
+            value: w,
+            name: WIDTH_NAMES[w],
+            content: <BorderStrokeIcon value={w} />,
+          }))}
+          value={width.value}
+          onChoose={quickStyle.setWidth}
+        />
+      ) : null}
+      </QuickPair>
       {corners ? (
         <QuickRadioRow
           title="Corners"
@@ -435,6 +469,7 @@ function QuickStyleSections({
           onChoose={quickStyle.setCorners}
         />
       ) : null}
+      <QuickPair>
       {textAlign ? (
         <QuickRadioRow
           title="Text alignment"
@@ -463,6 +498,7 @@ function QuickStyleSections({
           onChoose={quickStyle.setIconAlign}
         />
       ) : null}
+      </QuickPair>
     </>
   );
 }

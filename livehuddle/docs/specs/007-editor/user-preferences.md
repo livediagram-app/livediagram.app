@@ -686,10 +686,10 @@ and the dialog stays as the one complete, browsable index of them.
   Tour** and **Receptionist's Welcome**, each with a line saying where it is on offer and a **Learn more**
   to its article, under one **Offer Again** section note: switch one back on
   and close Settings to take it again, straight away if it is on offer where you
-  are, otherwise from the footer's Start Tour button when you get there. (Until
+  are, otherwise from the footer's Get Started button when you get there. (Until
   25 October 2026 each tour offered itself once, and the switch decided whether
   it would offer itself again; from then until 1 November 2026 every tour stayed
-  on the Start Tour button whenever it could run, taken or not. Now a taken tour
+  on the Get Started button whenever it could run, taken or not. Now a taken tour
   leaves the button, and its switch is what brings it back: on puts the tour back
   on the button, off takes it away, [Tours](editor-tour.md#where-it-appears).) (The tours used
   to be an Onboarding Tutorials grid of five switches inside
@@ -706,7 +706,7 @@ and the dialog stays as the one complete, browsable index of them.
   for the element (**Portal**), on while its kind is not yet taken (`elementTourKinds`, and a stored
   `elementToursSeen` counting every kind taken). There is no switch over them all while the Portal is the only
   toured kind. Element tours
-  need no relaunch: the Start Tour button offers one whenever such an element is selected. A category may mark any section
+  need no relaunch: the Get Started button offers one whenever such an element is selected. A category may mark any section
   closed this way (`collapsedSections`); Settings opened on one of its rows opens it.
 
   **Toggle groups.** Several related switches that share one description are
@@ -716,8 +716,8 @@ and the dialog stays as the one complete, browsable index of them.
   truncating. None is in use.
 
   **Button Labels** (Appearance › Interface, `dockButtonNames`, on by default)
-  names the editor's bottom buttons beside their icons: the footer bar's Search,
-  Settings and theme, and the bottom-right cluster's (Style and
+  names the editor's bottom buttons beside their icons: the footer bar's Tools and
+  Settings (the theme toggle is always icon only), and the bottom-right cluster's (Style and
   the rest) on a desktop wide enough for them ([Editor app](editor-app.md)). Off,
   they are icons alone, each still named in its hover card. A phone always shows
   icons alone, so the row is desktop only there.

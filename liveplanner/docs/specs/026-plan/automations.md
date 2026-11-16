@@ -912,12 +912,11 @@ time it is put away or comes back ([one-explorer-contracts.md](../../../../livew
 
 ### The footer button
 
-**Automations** sits in the editor's footer cluster between **Search** and **Settings**
-([Editor app](../007-editor/editor-app.md)), with a lightning-bolt icon, labelled from `sm` up like its neighbours,
-icon-only on a phone (a 40 px target). Its hover card reads **Automations**: "Rules that move, assign and tell people
-about cards for you." It is drawn only for an Editor on a plan saved to an account. A badge beside it counts the
-rules that are on (none on, no badge), and its name says so ("Automations, 3 on"). A rule that paused itself turns
-the badge amber, or with no badge puts a small amber dot on the icon, until it is resumed or turned off. It opens the Automations screen and sends
+**Automations** is the first row of the editor footer's **Tools** menu ([The footer's Tools
+menu](../../../../liveworkspace/docs/specs/004-index/footer-tools-menu.md), left of **Search**), with a lightning-bolt
+icon. It is there only for an Editor on a plan saved to an account. A badge at the row's right edge counts the rules
+that are on (none on, no badge). A rule that paused itself turns the badge amber and puts a small amber dot on the
+Tools button, whose name then says so ("Tools, a rule is paused"), until it is resumed or turned off. It opens the Automations screen and sends
 `UI · Opened · Automations`.
 
 ### The Automations screen

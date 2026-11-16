@@ -1,4 +1,4 @@
-// The quiz boards of the Quizzes & Games category (docs/specs/012-collaboration/quiz-and-game-templates.md): the Pub
+// The quiz boards of the Games category (docs/specs/012-collaboration/quiz-and-game-templates.md): the Pub
 // Quiz and Icebreaker Questions. Like the other session boards they are RUN rather than filled in, so each tool sits
 // beside the words that say when to press it. The party games (Two Truths and a Lie, Would You Rather, Find
 // Someone Who Bingo) live next door in template-builders-party-games.ts.

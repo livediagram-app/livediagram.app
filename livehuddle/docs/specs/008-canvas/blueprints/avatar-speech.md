@@ -98,7 +98,7 @@ closes the composer, tracks `Canvas · Used · AvatarMessage` or `AvatarMessageP
 
 ### Tour
 
-As the Workshop tour's host (`WorkshopTourHost`), with: on offer on the footer's Start Tour button in Avatar mode, at
+As the Workshop tour's host (`WorkshopTourHost`), with: on offer on the footer's Get Started button in Avatar mode, at
 `TOUR_OFFER_RANK.tool`; `canWork` without the
 `isReadOnly` gate; steps filtered by `{ canSpeak, mobile }`. Every step rings a part of the avatar palette that is always on screen
 while walking (`palette`, `avatar-character`, `avatar-actions`, `avatar-message`), so no step opens or closes

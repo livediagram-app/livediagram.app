@@ -60,11 +60,12 @@ under the pointer as a category is switched.
 
   | Mode     | Bar                                                                   |
   | -------- | --------------------------------------------------------------------- |
-  | Diagram  | Shapes, Write, Draw · Diagrams, Concepts, Layout · Icons, Tech, Media |
-  | Workshop | Shapes, Write, Draw · Layout · Ask, Session · Icons, Media · Data     |
+  | Diagram  | Shapes, Write, Draw · Diagrams, Concepts, Layout · Icons, Tech        |
+  | Workshop | Shapes, Write, Draw · Layout · Ask, Session · Icons · Data            |
 
-  Library joins after Shapes while the person has a [shape library](../013-workspace/shape-libraries.md) to place
-  from, as My shapes does in the picker.
+  Media is not a category of its own in either mode: its Image and Avatar close Layout, as a **Pictures** group
+  after its Containers and Parts (owner, 2026-11-16). The Library is not on the bar either: it is the icon button
+  beside Search ([Libraries](../../../liveworkspace/docs/specs/006-media/libraries.md)).
 
 - **Names fit or go.** The bar shows its names while the strip, named, fits the room the centred strip may take
   (the editor's width less the top-left menu card, measured, on both sides); otherwise the glyphs alone
@@ -303,7 +304,7 @@ every add.
 - **Layout** (Diagram): Lane, Frame, Stack, Boundary, Timeline | Diagram key, Card, Badge, Step number, headed
   **Containers** and **Parts** in the flyout.
 - **Components**: the cards (Code, Checklist, Entity) | the website blocks.
-- **Media**: Image | the embeds | Avatar.
+- **Media** (search only now: its Image and Avatar sit in Layout's Pictures group): Image | the embeds | Avatar.
 - **Data**: the charts (Pie, Bar, Line, Legend) | the meters (Progress, Donut, Rating).
 - **Behaviour**: the Selection Mode buttons | everything else.
 - **Event Storming**: the notation | Hotspot.
@@ -543,3 +544,5 @@ their bottom-row buttons. What changes to fit the width:
 The [Toolbar Layout](/help/palette/toolbar-layout/) article (Palette →
 Palette Settings) explains the strip, More, the menu button and how it
 fits a phone, with three figures.
+
+Zoom out, Zoom in, Undo and Redo carry no hover card (owner, 2026-11-16): their glyphs say what they do, and each keeps its accessible name.

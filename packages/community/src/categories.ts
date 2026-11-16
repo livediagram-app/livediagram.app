@@ -8,8 +8,8 @@ import type { CommunityApp } from './apps';
 // test), so the two cannot drift.
 //
 // One service holds every app's posts, and each gallery filters by its own app's set, so a post's category must be one
-// of its app's. Ids repeat across apps with different meanings and labels (`meetings` is livediagram's Meetings &
-// Workshops and liveplanner's Meetings), so a label, a blurb and a telemetry type are looked up by app and id.
+// of its app's. Ids repeat across apps with different meanings and labels (`meetings` is livediagram's Meetings, for
+// sessions, and liveplanner's Meetings), so a label, a blurb and a telemetry type are looked up by app and id.
 
 export type CommunityCategoryDef = {
   // Stored on the post.
@@ -44,22 +44,28 @@ export const COMMUNITY_APP_CATEGORIES = {
       type: 'Decisions',
     },
     {
+      id: 'games',
+      label: 'Games',
+      blurb: 'Quizzes, icebreakers and games for the room.',
+      type: 'Games',
+    },
+    {
       id: 'goals',
-      label: 'Goals & Metrics',
+      label: 'Goals',
       blurb: 'OKRs, metric trees, funnels and growth loops.',
       type: 'Goals',
     },
     {
-      id: 'meetings',
-      label: 'Meetings & Workshops',
-      blurb: 'Agendas, Q&A and formats for running a session.',
-      type: 'Meetings',
+      id: 'learning',
+      label: 'Learning',
+      blurb: 'Concept maps, KWL charts and visual notes.',
+      type: 'Learning',
     },
     {
-      id: 'people',
-      label: 'People & Teams',
-      blurb: 'Org charts, roles, onboarding and family trees.',
-      type: 'People',
+      id: 'meetings',
+      label: 'Meetings',
+      blurb: 'Agendas, Q&A and formats for running a session.',
+      type: 'Meetings',
     },
     {
       id: 'planning',
@@ -69,21 +75,15 @@ export const COMMUNITY_APP_CATEGORIES = {
     },
     {
       id: 'processes',
-      label: 'Processes & Workflows',
+      label: 'Processes',
       blurb: 'Flowcharts and workflows for how work gets done.',
       type: 'Processes',
     },
     {
       id: 'product',
-      label: 'Product & UX',
+      label: 'Product',
       blurb: 'Prototypes, personas, journeys and discovery.',
       type: 'Product',
-    },
-    {
-      id: 'games',
-      label: 'Quizzes & Games',
-      blurb: 'Quizzes, icebreakers and games for the room.',
-      type: 'Games',
     },
     {
       id: 'retros',
@@ -93,7 +93,7 @@ export const COMMUNITY_APP_CATEGORIES = {
     },
     {
       id: 'software',
-      label: 'Software & IT',
+      label: 'Software',
       blurb: 'Architecture, data, networks and incidents.',
       type: 'Software',
     },
@@ -104,10 +104,10 @@ export const COMMUNITY_APP_CATEGORIES = {
       type: 'Strategy',
     },
     {
-      id: 'learning',
-      label: 'Teaching & Learning',
-      blurb: 'Concept maps, KWL charts and visual notes.',
-      type: 'Learning',
+      id: 'people',
+      label: 'Teams',
+      blurb: 'Org charts, roles, onboarding and family trees.',
+      type: 'People',
     },
     OTHER,
   ],

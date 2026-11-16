@@ -1,5 +1,8 @@
 'use client';
 
+import { lucideGlyph } from '@liveworkspace/ui';
+import { lucideClipboardList } from '@liveworkspace/icons/lucide';
+
 // Orchestrates the Forms tour (docs/specs/030-forms/forms.md "The Forms tour"). Mounted in EditorView once a Form tab
 // has been open. While an Editor has a Form tab open, it offers the tour on the footer's Start Tour button ("Start
 // Forms Tour"); a press there, or Show Me Around in the form's cog, starts it. It never starts or prompts on its own. Its destination step opens the board
@@ -26,7 +29,7 @@ import {
   useTourEngine,
   type TourOutcome,
 } from '@liveworkspace/workbench/components/tour/useTourEngine';
-import { TOUR_OFFER_RANK, useOfferTour } from '@liveworkspace/workbench/components/tour/tour-offer';
+import { TOUR_OFFER_RANK, stepsLength, useOfferTour } from '@liveworkspace/workbench/components/tour/tour-offer';
 
 const FORM_TOUR_COPY = {
   helpHref: '/help/plan/forms/',
@@ -179,6 +182,9 @@ export function FormTourHost() {
           start,
           onShown: () => track('UI', 'Opened', 'FormTourOffer'),
           seen,
+          icon: <FormTourGlyph />,
+          // Its length in steps, for this form as it is now, counted only as Get Started opens.
+          length: () => stepsLength(formTourSteps({ destination: destKind }).length),
         }
       : null,
   );
@@ -209,3 +215,5 @@ export function FormTourHost() {
 
   return <TourStage engine={engine} ariaPrefix="Forms tour" copy={FORM_TOUR_COPY} />;
 }
+
+const FormTourGlyph = lucideGlyph(lucideClipboardList, 18);

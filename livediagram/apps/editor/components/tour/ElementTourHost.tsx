@@ -40,6 +40,7 @@ import {
 import {
   TOUR_OFFER_RANK,
   tourNameOf,
+  stepsLength,
   useOfferTour,
 } from '@liveworkspace/workbench/components/tour/tour-offer';
 
@@ -165,17 +166,19 @@ export function ElementTourHost() {
   };
 
   const activeTabRef = useLatest(ctx.activeTab);
+  // What a tour's steps need from the page: built as it plays, and as Get Started counts its steps.
+  const tourEnv = () => ({
+    hasMore: document.getElementById('selection-more-actions') !== null,
+    touch,
+    elements: activeTabRef.current.elements,
+  });
   const play = (el: Element, k: ElementTourKind) => {
     const d = ELEMENT_TOUR_DEFS[k];
     answer(k);
     track('UI', 'Started', d.token);
     debugLog('[element-tour] play', { kind: k });
     setSteps(
-      d.steps(el, {
-        hasMore: document.getElementById('selection-more-actions') !== null,
-        touch,
-        elements: activeTabRef.current.elements,
-      }),
+      d.steps(el, tourEnv()),
     );
     setTouring({ id: el.id, kind: k });
     engineRef.current.start();
@@ -204,6 +207,11 @@ export function ElementTourHost() {
             if (el) playRef.current(el, offerKind);
           },
           onShown: () => track('UI', 'Opened', `${ELEMENT_TOUR_DEFS[offerKind].token}Offer`),
+          // Its length in steps, counted only as Get Started opens.
+          length: () => {
+            const el = activeTabRef.current.elements.find((e) => e.id === offerId);
+            return el ? stepsLength(ELEMENT_TOUR_DEFS[offerKind].steps(el, tourEnv()).length) : undefined;
+          },
           seen: elementTourSeen(ctx.userPreferences, offerKind),
         }
       : null,

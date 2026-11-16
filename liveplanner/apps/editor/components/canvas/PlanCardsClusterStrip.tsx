@@ -2,7 +2,7 @@
 
 import { isTrashed } from '@liveplanner/items';
 import { useState, type SyntheticEvent } from 'react';
-import { EllipsisIcon, PlanCardsIcon, SearchIcon, TrashIcon } from '@liveplanner/ui';
+import { EllipsisIcon, PlanCardsIcon, TrashIcon } from '@liveplanner/ui';
 import {
   MenuActionRow,
   PortalMenu,
@@ -18,27 +18,21 @@ const stopPress = (e: SyntheticEvent) => e.stopPropagation();
 
 // Plan mode's buttons in the bottom-right cluster, one strip as Undo and Redo are, where Layers sits in the other
 // modes: the **Trash** on its left (docs/specs/026-plan/items.md "Trash"; given only off a phone, to an editor),
-// then **Find a Card** (items.md "Finding a card"), the search over every card in the project, then **Card
-// Types** (docs/specs/026-plan/item-types.md "The Card Types panel"). Each opens its own panel above it. While a
-// card is dragged the Trash steps out of the strip as a wide drop target beside it. With no card types
-// (item-types.md "The type catalogue") Find a Card would surface nothing, so only Card Types shows, and
-// the Trash while it holds cards (deleting the last type sends its cards there, to restore once a type exists).
-// On a wide desktop each is named beside its icon (useDockNames), as the other strips' buttons are, in one short
-// word (Trash, Find, Types); the accessible names and hover cards keep the fuller labels, which contain them.
-// Card Types, like the Trash, is an editor's (item-types.md "The Card Types panel", Share roles): absent, a
-// Participant's or Viewer's strip holds only Find a Card, and with no card types nothing shows at all.
+// then **Card Types** (docs/specs/026-plan/item-types.md "The Card Types panel"). Each opens its own panel above it.
+// While a card is dragged the Trash steps out of the strip as a wide drop target beside it. With no card types
+// (item-types.md "The type catalogue") the Trash shows only while it holds cards (deleting the last type sends its
+// cards there, to restore once a type exists). Finding a card is the editor's Search (owner, 2026-11-16: the Find a
+// Card panel is gone). On a wide desktop each is named beside its icon (useDockNames), in one short word (Trash,
+// Types); the accessible names and hover cards keep the fuller labels. Card Types, like the Trash, is an editor's
+// (item-types.md "The Card Types panel", Share roles): a Participant's or Viewer's strip is not drawn.
 export function PlanCardsClusterStrip({
-  finderOpen,
-  onToggleFinder,
   types,
   trash,
   folded = false,
 }: {
   // On a phone beside the Session strip (docs/specs/012-collaboration/session-tools.md "The Session strip"): the
-  // strip folds into one More Card Tools button, whose menu holds Find a Card, Card Types and the Trash.
+  // strip folds into one More Card Tools button, whose menu holds Card Types and the Trash.
   folded?: boolean;
-  finderOpen: boolean;
-  onToggleFinder: (button: HTMLElement) => void;
   // The Card Types button: its panel's state and toggle. Absent (anyone but an editor), the strip has none.
   types?: { open: boolean; onToggle: (button: HTMLElement) => void } | undefined;
   // The Trash button: its panel's state and toggle. Absent, the strip has none.
@@ -49,24 +43,13 @@ export function PlanCardsClusterStrip({
   const hasTypes = (plan?.types.length ?? 1) > 0;
   const showsTrash = !!trash && (hasTypes || hasTrashed(plan?.items.values()));
   const trashInStrip = showsTrash && !dragging;
-  // Nothing to show: a non-editor on a plan with no card types (no Find a Card, no Card Types, no Trash).
-  if (!hasTypes && !types && !showsTrash) return null;
-  // The fold makes room for three buttons; without Card Types (a non-editor, never given the Trash) there is at
-  // most Find a Card, which shows as itself.
+  // Nothing to show: no Card Types (a non-editor) and no Trash.
+  if (!types && !showsTrash) return null;
+  // The fold makes room for both buttons.
   if (folded && types)
     return (
       <FoldedPlanStrip
         rows={[
-          ...(hasTypes
-            ? [
-                {
-                  label: 'Find a Card',
-                  icon: <SearchIcon size={18} />,
-                  open: finderOpen,
-                  onPick: onToggleFinder,
-                },
-              ]
-            : []),
           {
             label: 'Card Types',
             icon: <PlanCardsIcon size={18} />,
@@ -93,22 +76,9 @@ export function PlanCardsClusterStrip({
         {trash && trashInStrip ? (
           <TrashSegment popoverOpen={trash.open} onTogglePopover={trash.onToggle} />
         ) : null}
-        {hasTypes ? (
-          <ClusterPopoverSegment
-            // A divider when the Trash sits to its left.
-            divided={trashInStrip}
-            label="Find a Card"
-            hoverTitle="Cards"
-            hoverDescription="Every card in this plan: search them, find the ones on no board, and open any of them."
-            icon={<SearchIcon size={18} />}
-            name="Find"
-            popoverOpen={finderOpen}
-            onTogglePopover={onToggleFinder}
-          />
-        ) : null}
         {types ? (
           <ClusterPopoverSegment
-            divided={hasTypes || trashInStrip}
+            divided={trashInStrip}
             label="Open Card Types"
             hoverTitle="Card Types"
             hoverDescription="The kinds of card this plan's boards hold, and the fields each one has."
@@ -144,7 +114,7 @@ function FoldedPlanStrip({ rows }: { rows: FoldedRow[] }) {
         <ClusterPopoverSegment
           label="More card tools"
           hoverTitle="Cards"
-          hoverDescription="Find a Card, Card Types and the Trash."
+          hoverDescription="Card Types and the Trash."
           icon={<EllipsisIcon size={18} />}
           dataTourId="card-types"
           popoverOpen={menuOpen || !!panelOpen}

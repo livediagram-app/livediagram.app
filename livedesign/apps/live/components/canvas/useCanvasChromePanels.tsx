@@ -7,6 +7,7 @@ import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import type { PanelId } from '@/lib/panel-layout';
 import { loadPhotoPanel } from '@/lib/editor-deferred-code';
 import { visibleLayerElements } from '@livedesign/design';
+import { ItemToolsHost } from '@/components/panels/ItemToolsHost';
 import { LazyExplorer } from '@/components/panels/LazyExplorer';
 import { ViewMinimap } from '@/components/canvas/view-readers';
 import type { CanvasChromeProps } from './CanvasChrome';
@@ -173,20 +174,29 @@ export function useCanvasChromePanels({
   // Withheld (the workbench frame, a phone held sideways), an open Explorer closes.
   const explorerHidden = !!props.explorerHidden;
   useWithheldExplorerCloses(explorerHidden, explorerOpen, closeDockPanel);
-  const explorerEl =
-    zenMode || explorerHidden || !explorerOpened ? null : (
-      <LazyExplorer
-        currentDesignId={currentDesignId}
-        inboxOpenAction={inboxOpenAction}
+  // History and Webhooks in the footer's Tools, there from the start (ItemToolsHost), the Explorer or not.
+  const explorerEl = (
+    <>
+      <ItemToolsHost
+        currentDocumentId={currentDesignId}
         currentShareCode={currentShareCode ?? null}
-        onRenameCurrent={onRenameCurrentDesign}
-        onNewDesign={explorerHandlers.onNewDesign}
-        menuActions={explorerMenu}
-        popoverOpen={explorerOpen}
-        popoverAnchor={activeDockAnchor ?? undefined}
-        onPopoverClose={closeDockPanel}
+        onWebhooks={explorerMenu?.onWebhooks}
       />
-    );
+      {zenMode || explorerHidden || !explorerOpened ? null : (
+        <LazyExplorer
+          currentDesignId={currentDesignId}
+          inboxOpenAction={inboxOpenAction}
+          currentShareCode={currentShareCode ?? null}
+          onRenameCurrent={onRenameCurrentDesign}
+          onNewDesign={explorerHandlers.onNewDesign}
+          menuActions={explorerMenu}
+          popoverOpen={explorerOpen}
+          popoverAnchor={activeDockAnchor ?? undefined}
+          onPopoverClose={closeDockPanel}
+        />
+      )}
+    </>
+  );
 
   // Collaborate panel (docs/specs/012-collaboration/assigned-actions.md §5): a popover hanging above its
   // cluster button after Layers, in every layout (the button opens it through

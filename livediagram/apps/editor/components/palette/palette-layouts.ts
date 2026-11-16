@@ -96,6 +96,9 @@ const DIAGRAM_DIAGRAMS = [
   'tools:entity',
 ];
 
+// Image and Avatar; no embedded pages.
+const MEDIA_WITHOUT_EMBEDS = tilesExcept('media', ...EMBED_TILES);
+
 // Layout (Diagram and Workshop): the containers a diagram or a board is arranged in, then the parts that label
 // it, the Card, Badge and Step number borrowed from Components.
 const LAYOUT_TILES = [
@@ -108,6 +111,10 @@ const LAYOUT_TILES = [
   'components:card',
   'components:badge',
   'components:step',
+  // Media merged in (owner, 2026-11-16): a picture or an avatar is placed as a frame or a badge is, so the image and
+  // avatar sit at Layout's end rather than in a category of two.
+  DIVIDE,
+  ...MEDIA_WITHOUT_EMBEDS,
 ];
 
 // Workshop's Layout: the same, with the Timeline after the containers, as Workshop has no Concepts (where the
@@ -121,8 +128,6 @@ const WORKSHOP_LAYOUT_TILES = [
 // The concept graphics, then the Sankey (Diagram's Concepts).
 const CONCEPTS_WITH_SANKEY = [...tilesForCategory('concepts').map((t) => t.id), 'tools:sankey'];
 
-// Image and Avatar; no embedded pages.
-const MEDIA_WITHOUT_EMBEDS = tilesExcept('media', ...EMBED_TILES);
 
 // The tiles no mode's strip holds, found only by searching (docs/specs/007-editor/toolbar-layout.md "Search: every
 // element type"): the Code block, the embeds, the devices and the page blocks (Hero, Header, Banner, Stat row,
@@ -181,7 +186,6 @@ const DIAGRAM: PaletteLayout = {
     { id: 'event-storming', boardOnly: true },
     { id: 'icons' },
     { id: 'technology' },
-    { id: 'media', tiles: MEDIA_WITHOUT_EMBEDS },
   ],
 };
 
@@ -240,7 +244,6 @@ const WORKSHOP: PaletteLayout = {
     // No Concepts: concept graphics lay out an idea for a diagram (docs/specs/009-elements/concept-graphics.md),
     // which a session does not stop to draw.
     { id: 'icons', stickers: true, description: ICONS_WITH_STICKERS },
-    { id: 'media', tiles: MEDIA_WITHOUT_EMBEDS },
     // The charts and meters: a session reads results and sets targets as often as a page reports them.
     { id: 'data' },
   ],

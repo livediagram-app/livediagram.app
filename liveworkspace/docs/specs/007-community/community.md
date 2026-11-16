@@ -79,7 +79,7 @@ shared gallery link opens on the app's own posts. All Apps lists every app's pos
 there (it is one app's, on its own address); switching to All Apps takes `is:mine` out of the search.
 
 **The category menu on All Apps.** Ids repeat across apps with different meanings (`meetings` is livediagram's
-Meetings & Workshops and liveplanner's Meetings; `planning` is livediagram's Planning and liveplanner's Projects and
+Meetings and liveplanner's Meetings; `planning` is livediagram's Planning and liveplanner's Projects and
 Teams), so All Apps never offers a bare id. Its Category menu lists each app's categories under the app's name (a
 heading per app, in `COMMUNITY_APPS` order), each with that app's count (the facets' `apps`), and a screen reader
 hears the app with each row ("Meetings, liveplanner"). Choosing one writes the category with its app,
@@ -152,7 +152,7 @@ posts to the closest new id (below), so a retired id is only a row the migration
 
 | App                 | Categories (id: label), then `other`: Something Else                                                                                                                                                                                                                                                                                                          |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `livediagram.app`   | `ideas`: Brainstorming, `decisions`: Decisions, `goals`: Goals & Metrics, `meetings`: Meetings & Workshops, `people`: People & Teams, `planning`: Planning, `processes`: Processes & Workflows, `product`: Product & UX, `games`: Quizzes & Games, `retros`: Retrospectives, `software`: Software & IT, `strategy`: Strategy, `learning`: Teaching & Learning |
+| `livediagram.app`   | `ideas`: Brainstorming, `decisions`: Decisions, `goals`: Goals, `meetings`: Meetings, `people`: Teams, `planning`: Planning, `processes`: Processes, `product`: Product, `games`: Games, `retros`: Retrospectives, `software`: Software, `strategy`: Strategy, `learning`: Learning |
 | `liveplanner.app`   | `support`: Customer Support, `education`: Education, `events`: Events, `finance`: Finance, `hiring`: Hiring and People, `marketing`: Marketing, `meetings`: Meetings, `personal`: Personal, `product`: Product and Engineering, `planning`: Projects and Teams, `sales`: Sales                                                                                |
 | `livedocuments.app` | `careers`: Careers, `events`: Events, `home`: Home, `learning`: Learning, `marketing`: Marketing, `pitches`: Pitches, `plans`: Plans, `reports`: Reports, `speeches`: Talks, `team`: Teams                                                                                                                                                                    |
 | `livedesign.app`    | `branding`: Branding, `health`: Health and Fitness, `media`: Music and Video, `photos`: Photos, `shopping`: Shopping, `onboarding`: Sign Up and Onboarding, `social`: Social and Messaging, `travel`: Travel and Transport, `websites`: Websites, `work`: Work and Productivity                                                                               |

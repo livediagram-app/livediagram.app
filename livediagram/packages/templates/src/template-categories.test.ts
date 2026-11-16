@@ -21,17 +21,17 @@ describe('template categories', () => {
     expect(TEMPLATE_CATEGORIES.map((c) => c.label)).toEqual([
       'Brainstorming',
       'Decisions',
-      'Goals & Metrics',
-      'Meetings & Workshops',
-      'People & Teams',
+      'Goals',
+      'Meetings',
+      'Teams',
       'Planning',
-      'Processes & Workflows',
-      'Product & UX',
-      'Quizzes & Games',
+      'Processes',
+      'Product',
+      'Games',
       'Retrospectives',
-      'Software & IT',
+      'Software',
       'Strategy',
-      'Teaching & Learning',
+      'Learning',
     ]);
     const labels = TEMPLATE_CATEGORIES.map((c) => c.label);
     expect(labels).toEqual([...labels].sort((a, b) => a.localeCompare(b, 'en')));

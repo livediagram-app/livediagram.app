@@ -2,7 +2,7 @@
 
 **Show Me** is a guided tour of one surface, run there and then on the surface itself, when the person presses
 the **Show Me** button. It is the on-the-spot cousin of the [Pages tour](pages-tour.md) and the [element tours](element-tours.md), which
-are started from the footer's Start Tour button; Show Me is started from its own button on the surface it
+are started from the footer's Get Started button; Show Me is started from its own button on the surface it
 teaches, and no tour offers itself. It exists for surfaces where people make something real in
 several steps whose ideas are not visible at a glance.
 

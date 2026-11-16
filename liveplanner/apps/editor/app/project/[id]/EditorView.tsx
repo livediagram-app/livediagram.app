@@ -15,7 +15,6 @@ import { CanvasSurfaceProvider } from '@/components/canvas/CanvasSurfaceContext'
 import { CanvasFinishProvider } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 import { SketchFilterDefs } from '@/components/canvas/SketchFilterDefs';
 import { ChangesetRevealContext } from '@/components/canvas/ChangesetRevealOverlay';
-import { SuggestionsContext } from '@liveworkspace/suggestions/react/suggestions-store';
 import { AgentFocusContext } from '@/components/canvas/AgentFocusOverlay';
 import { SelectionStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
@@ -292,9 +291,6 @@ export function EditorView() {
                                                   fallbackClassName="flex-1"
                                                 >
                                                   {/* The outlines relayed changesets draw (docs/specs/024-agents/agent-changesets.md). */}
-                                                  <SuggestionsContext.Provider
-                                                    value={ctx.canvasSuggestions.store}
-                                                  >
                                                     <ChangesetRevealContext.Provider
                                                       value={ctx.changesetReveals}
                                                     >
@@ -325,7 +321,6 @@ export function EditorView() {
                                                         </CommentBadgesContext.Provider>
                                                       </AgentFocusContext.Provider>
                                                     </ChangesetRevealContext.Provider>
-                                                  </SuggestionsContext.Provider>
                                                   {ctx.plan.openItemId ||
                                                   ctx.plan.editingType ||
                                                   ctx.plan.requiredFields ? (

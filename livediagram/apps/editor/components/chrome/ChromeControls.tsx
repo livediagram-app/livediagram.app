@@ -7,7 +7,14 @@ import {
 import { TourOfferButton } from '@liveworkspace/workbench/components/tour/TourOfferButton';
 import { SettingsIcon, GithubIcon, SearchGlyph } from '@/components/chrome/tab-bar-icons';
 import { REPO_URL, HoverCard } from '@livediagram/ui';
-import { SnapshotsButton } from '@liveworkspace/snapshots/ui';
+import { useSnapshotsToolsItem } from '@liveworkspace/snapshots/ui';
+import {
+  ChromeToolsMenu,
+  type ChromeToolsItem,
+} from '@liveworkspace/workbench/components/chrome/ChromeToolsMenu';
+import { useSuggestionsToolsItem } from '@liveworkspace/suggestions/react/SuggestionsBar';
+import type { CanvasSuggestions } from '@liveworkspace/suggestions/react/useCanvasSuggestions';
+import type { Element as SuggestionCanvasElement } from '@livediagram/document';
 
 // The right-hand control cluster shared by the editor's bottom tab bar and
 // the Explorer's bottom bar (docs/specs/007-editor/editor-app.md): search, the open-source GitHub
@@ -17,14 +24,16 @@ import { SnapshotsButton } from '@liveworkspace/snapshots/ui';
 // so each host drops it straight into its own bar flex row.
 export function ChromeControls({
   onOpenSearch,
+  suggestions,
   onOpenSettings,
   settingsLabel = 'Settings',
-  settingsDescription = 'Configure editor behaviour.',
   labelled = false,
   github = true,
   appearance = true,
 }: {
   onOpenSearch?: () => void;
+  // The canvas's suggestions (the editor's; the Explorer's bar has none): Suggest's row and the panel it opens.
+  suggestions?: CanvasSuggestions<SuggestionCanvasElement>;
   onOpenSettings?: () => void;
   // The editor's settings are per-document; the Explorer's read the same
   // synced preferences. Let the host phrase the hover card.
@@ -39,20 +48,22 @@ export function ChromeControls({
   appearance?: boolean;
 }) {
   const BTN = labelled ? `${CHROME_BTN} ${CHROME_BTN_LABELLED}` : CHROME_BTN;
+  const suggest = useSuggestionsToolsItem(suggestions);
+  const snapshots = useSnapshotsToolsItem();
+  // Search, first in Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md).
+  const search: ChromeToolsItem | null = onOpenSearch
+    ? { id: 'search', group: 'find', label: 'Search', description: 'Find canvases, tabs and elements.', icon: <SearchGlyph />, onSelect: () => onOpenSearch() }
+    : null;
   return (
     <>
-      {/* The Start Tour button, first in the cluster and immediately left of Search: the one way into a tour,
+      {/* The Get Started button, first in the cluster and left of Tools: the one way into a tour,
           drawn only while one is on offer (docs/specs/007-editor/editor-tour.md "Where it appears"). Leading the cluster, it comes and
           goes without moving the controls beside it. */}
       <TourOfferButton labelled={labelled} />
-      {onOpenSearch ? (
-        <HoverCard title="Search" description="Find canvases, folders, tabs and elements.">
-          <button type="button" onClick={onOpenSearch} aria-label="Search" className={BTN}>
-            <SearchGlyph />
-            <ChromeLabel show={labelled}>Search</ChromeLabel>
-          </button>
-        </HoverCard>
-      ) : null}
+      {/* Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md): the tools that work on the
+          whole item, in one menu, drawn only while it holds one. */}
+      <ChromeToolsMenu labelled={labelled} items={[search, suggest.item, snapshots]} />
+      {suggest.panel}
       {github ? (
         <>
           {/* Open-source repo link (the codebase is public + MIT, docs/specs/002-project-scope/open-source-and-business-model.md). An
@@ -83,18 +94,13 @@ export function ChromeControls({
           </span>
         </>
       ) : null}
-      {/* Snapshots, just before Settings in every app (docs/specs/013-workspace/snapshots.md "In the editor"):
-          drawn only inside the editor's door, so only for an Editor of the whole item. */}
-      <SnapshotsButton labelled={labelled} />
       {onOpenSettings ? (
-        <HoverCard title={settingsLabel} description={settingsDescription}>
-          <button type="button" onClick={onOpenSettings} aria-label={settingsLabel} className={BTN}>
-            <SettingsIcon />
-            <ChromeLabel show={labelled}>Settings</ChromeLabel>
-          </button>
-        </HoverCard>
+        <button type="button" onClick={onOpenSettings} aria-label={settingsLabel} className={BTN}>
+          <SettingsIcon />
+          <ChromeLabel show={labelled}>Settings</ChromeLabel>
+        </button>
       ) : null}
-      {appearance ? <AppearanceToggle labelled={labelled} /> : null}
+      {appearance ? <AppearanceToggle /> : null}
     </>
   );
 }

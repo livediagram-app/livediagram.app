@@ -25,7 +25,7 @@ someone in it: a host people meet as they arrive, who answers what they ask, in 
 | **A greeting**             | the Receptionist walking to his pad and waving when somebody appears on it                          |
 | **The welcome**            | Your first greeting: his bubble with the topics, on your screen only                                |
 | **A topic**                | One thing the Receptionist can explain: a reply in his bubble, then his one-line answer             |
-| **Ask Receptionist**       | The footer's Start Tour button while you walk on a tab with the Receptionist; it calls him over     |
+| **Ask Receptionist**       | The footer's Get Started button while you walk on a tab with the Receptionist; it calls him over     |
 
 ## Where he is
 
@@ -102,7 +102,7 @@ that agree to a second agree on the Receptionist.
 - **A press on the Receptionist or his bubble is never a walk**: like a call bubble, it is chrome over the canvas, so tapping a
   reply on a phone does not walk you to the spot behind it.
 - **An open bubble keeps him where he is**: the welcome holds him by the pad until it closes, as a conversation does.
-- **Two ways**: press the Receptionist (his label for a screen reader is **Ask Receptionist**), or the footer's Start Tour button, which
+- **Two ways**: press the Receptionist (his label for a screen reader is **Ask Receptionist**), or the footer's Get Started button, which
   reads **Ask Receptionist** while you walk on a tab with the Receptionist (`TOUR_OFFER_RANK.tool`, where the Avatar tour sat). Unlike
   a tour it stays on the button: the Receptionist answers as often as he is asked.
 - **He comes to you.** On your screen only, the Receptionist walks from wherever he is to stand beside you, then opens his bubble.

@@ -91,7 +91,7 @@ apps/api/src/routes/automation-source.ts   writeSource(ctx) (who made a route's 
 
 apps/api/src/routes/automation-routes.ts   the routes below; gate: whole-plan edit, signed-in person or their token
 apps/editor/components/automations/
-  AutomationsButton.tsx       the footer button (in ChromeControls between Search and Settings), amber dot
+  automations-tools-item.tsx   the footer Tools menu's Automations row (useAutomationsToolsItem), count, amber dot
   AutomationsDialog.tsx       the screen: tabs, meter, Rules and Audit Trail views, phone sheet
   RefreshButton.tsx           Refresh beside the meter: reads the list and the open Audit Trail again
   RulesList.tsx, RuleRow.tsx, RulesEmpty.tsx

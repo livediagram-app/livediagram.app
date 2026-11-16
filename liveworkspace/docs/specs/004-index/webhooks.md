@@ -215,8 +215,7 @@ webhook, with the same address, secret, retries, pausing and Recent Deliveries; 
 ## Managing them
 
 From the document's own ⋯ menu wherever it is listed (the Explorer in every app and on liveworkspace.app, and the
-Explorer panel inside each editor), and from the open document's own menu in each editor (the Explorer header's ⋯,
-beside Share and Export): **Webhooks**, offered to anyone signed in who can edit the whole document (an editor also
+Explorer panel inside each editor), and, for the open document in each editor, from the footer's **Tools** ([footer-tools-menu.md](./footer-tools-menu.md)): **Webhooks**, offered to anyone signed in who can edit the whole document (an editor also
 leaves it off for a Viewer, a Participant or a one-tab link, which it knows). It opens a
 dialog titled "Webhooks for “<document>”" whose line says that what is set here applies to this document
 only. It wears the dialog hero header ([dialog-hero-header.md](./dialog-hero-header.md)): a payload leaving the

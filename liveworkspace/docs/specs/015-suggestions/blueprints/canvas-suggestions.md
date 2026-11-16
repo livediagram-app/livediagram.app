@@ -33,7 +33,7 @@ room gate, its editor wiring).
 | `react/useCanvasSuggestions.ts`    | mode, list, refetch on the room's word, submit, accept, reject, notices, telemetry                              |
 | `react/suggestions-store.ts`       | the overlay's external store and context                                                                        |
 | `react/SuggestionGhostOverlay.tsx` | the ghosts, in canvas space                                                                                     |
-| `react/SuggestionsBar.tsx`         | the header action, the panel, the mode switch, the review list                                                  |
+| `react/SuggestionsBar.tsx`         | the Tools menu's Suggest row, the panel, the mode switch, the review list                                        |
 | `react/SuggestOnlySection.tsx`     | the Share dialog's Suggestions section                                                                          |
 
 Per product (`<api>` is each product's `apps/api/src`):
@@ -143,12 +143,12 @@ None.
 
 ## Presentation and UX
 
-- **Suggest action**: `SuggestionsHeaderAction`, passed as the `EditorHeader`'s `leadAction` (before livedesign's
-  Prototype): the header's full-height action button (`HEADER_ACTION_BTN`), a pencil over **Suggest** or
-  **Suggesting**, the brand tint while suggesting, a brand `CountBadge` on the pencil's corner. Hidden for a
-  Participant with nothing to read.
-- **Panel**: a 22rem card (`min(22rem, 100vw - 1rem)`) in a portal at `--z-modal`, 6px under the action and
-  right-aligned to it, kept 8px inside the viewport, so a selection's toolbar never draws over it. Escape, a press
+- **Suggest row**: `useSuggestionsToolsItem(suggestions)` gives the footer Tools menu's row (id `suggestions`, "Suggest Changes", a pencil,
+  **Suggest** or **Suggesting**, a brand `CountBadge` as its aside, `attention: 'brand'` for an Editor with suggestions
+  waiting) and the panel; each editor's `ChromeControls` takes `suggestions` from its tab bar. Null for a Viewer and
+  for a Participant with nothing to read.
+- **Panel**: a 22rem card (`min(22rem, 100vw - 1rem)`) in a portal at `--z-modal`, 6px from the Tools button on the
+  side with more room (above, in the footer) and right-aligned to it, kept 8px inside the viewport, so a selection's toolbar never draws over it. Escape, a press
   outside or a resize closes it. Editor: a Mode row with `SegmentedToggle` Editing / Suggesting. Suggest Only: a
   brand-tinted line with a pencil. Then the header with the count in words and Reject All / Accept All, and the rows
   with the author's dot, name and time, the description, the flag, and round Reject (x) and Accept (check) buttons.

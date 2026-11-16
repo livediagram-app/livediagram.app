@@ -180,18 +180,21 @@ export function ElementAppearanceSections({
             they're the same collapsible sections as before (shared with the
             multi-selection menu, which still stacks them inline), all
             starting closed. ── */}
-      {showStyle ? (
-        <MenuFlyoutSection title="Style" icon={<StyleMenuGlyph />} {...flyoutProps('style')}>
+      {showStyle || isIcon || hasInlineIcon || showMarkers || showAlignment ? (
+        <MenuFlyoutSection title="Appearance" icon={<StyleMenuGlyph />} {...flyoutProps('style')}>
           {/* Which Presets grid this element gets: shape looks, a sticky's
               pad of note colours, a code block's colour scheme, or an arrow's
               line looks. See PresetSections. */}
+          {showStyle ? (
           <TargetPresetsSection
             target={target}
             props={props}
             accordion={sectionProps('presets')}
             onClose={onClose}
           />
+          ) : null}
           {/* Colours + Border accordions — see ElementColourBorderSections. */}
+          {showStyle ? (
           <ElementColourBorderSections
             props={props}
             target={target}
@@ -208,6 +211,194 @@ export function ElementAppearanceSections({
             arrowheadColorHandlers={arrowheadColorHandlers}
             strokeColorHandlers={strokeColorHandlers}
           />
+          ) : null}
+          {/* Icon and Text sit inside Appearance (owner, 2026-11-16): how the element looks, all in one place. */}
+          {/* Icon — a Technology icon element's fixed tile size (docs/specs/010-palette/technology-icons.md).
+                The mark renders at a preset pixel size regardless of the box;
+                these tiles pick the preset. */}
+          {isIcon && isTechIconId((target as { iconId?: string }).iconId) ? (
+            <>
+              <MenuAccordionSection
+                title="Icon"
+                icon={<IconCategoryGlyph />}
+                {...sectionProps('icon-size')}
+              >
+                <IconSizeTiles
+                  value={(target as { iconSize?: IconSize }).iconSize ?? DEFAULT_ICON_SIZE}
+                  onSet={props.onSetIconSize}
+                  onPreview={props.onPreviewIconSize}
+                  onPreviewEnd={props.onPreviewStyleEnd}
+                />
+              </MenuAccordionSection>
+            </>
+          ) : null}
+          {/* Weight — a line-art icon's thin / regular / bold stroke (docs/specs/004-interface-design/iconography.md). */}
+          {isIcon && !isTechIconId((target as { iconId?: string }).iconId) ? (
+            <>
+              <MenuAccordionSection
+                title="Weight"
+                icon={<IconCategoryGlyph />}
+                {...sectionProps('icon-weight')}
+              >
+                <IconWeightTiles
+                  iconId={(target as { iconId?: string }).iconId}
+                  value={(target as { iconWeight?: IconWeight }).iconWeight ?? DEFAULT_ICON_WEIGHT}
+                  onSet={props.onSetIconWeight}
+                  onPreview={props.onPreviewIconWeight}
+                  onPreviewEnd={props.onPreviewStyleEnd}
+                />
+              </MenuAccordionSection>
+            </>
+          ) : null}
+          {/* Icon — re-place or remove a shape's inline icon. Sits directly
+                above Markers (both are shape-content controls); the Icon position
+                grid here is now the only way to move the icon, since drag-to-
+                reposition was removed. */}
+          {hasInlineIcon ? (
+            <>
+              <MenuAccordionSection title="Icon" icon={<IconCategoryGlyph />} {...sectionProps('icon')}>
+                {/* A card, callout, header or boundary places its own icon, so it offers no position. */}
+                {positionsInlineIcon(target) ? (
+                  <>
+                    <p className="px-3 pb-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">
+                      Icon position
+                    </p>
+                    <IconPositionGrid
+                      current={(target as { iconPosition?: string }).iconPosition ?? 'left'}
+                      onPick={(pos) =>
+                        props.onSetIconPosition(
+                          target.id,
+                          (target as { iconId?: string }).iconId ?? '',
+                          pos,
+                        )
+                      }
+                      onPreview={(pos) =>
+                        props.onPreviewIconPosition(
+                          target.id,
+                          (target as { iconId?: string }).iconId ?? '',
+                          pos,
+                        )
+                      }
+                      onPreviewEnd={props.onPreviewStyleEnd}
+                    />
+                    <ContextMenuDivider />
+                  </>
+                ) : null}
+
+                <div className="px-2 py-1.5">
+                  <MenuTile
+                    icon={<RemoveIconGlyph />}
+                    label="Remove Icon"
+                    onClick={() => {
+                      props.onRemoveIcon(target.id);
+                      onClose();
+                    }}
+                  />
+                </div>
+              </MenuAccordionSection>
+            </>
+          ) : null}
+          {/* ── Text band (docs/specs/008-canvas/canvas-and-palette.md): every text control for the element —
+                typography (Font / Size / Padding / Alignment) plus Markers
+                (docs/specs/009-elements/shape-markers.md) — grouped under one "Text" row that opens them in a side
+                flyout, so they don't lengthen the menu's vertical stack. The row
+                only shows when the element has text (showMarkers / showAlignment
+                both require a non-empty label). Sub-categories all start closed:
+                auto-expanding the first one flipped the shared one-open-section
+                scaffold, collapsing whichever inline accordion the user had open
+                in the host menu behind the flyout. Sits in the style band
+                (no separator of its own), beside Style + Animation. ── */}
+          {showMarkers || showAlignment ? (
+            <MenuFlyoutSection title="Text" icon={<TextGlyph />} {...flyoutProps('text')}>
+              {/* Text Style (docs/specs/008-canvas/canvas-and-palette.md "Text styles"): a text's Write style, first,
+                  since it sets the size and weight the sections below fine-tune. */}
+              {showAlignment &&
+              target.type === 'text' &&
+              props.onSetTextStyle &&
+              props.onPreviewTextStyle ? (
+                <TextStyleSection
+                  current={textPresetOfElement(target)}
+                  section={sectionProps('text-style')}
+                  onSet={props.onSetTextStyle}
+                  onPreview={props.onPreviewTextStyle}
+                  onPreviewEnd={props.onPreviewStyleEnd}
+                />
+              ) : null}
+              {/* Typography — Font / Size / Padding, shared with the rich-text
+                  toolbar's overflow menu. Applies to the element's whole label. */}
+              {showAlignment ? (
+                <TypographySections
+                  currentFont={(target as { font?: string }).font ?? null}
+                  currentSize={(target as { textSize?: TextSize }).textSize ?? 'sm'}
+                  presetPx={presetPxFor(target.type)}
+                  padding={(target as { padding?: Padding }).padding ?? defaultPadding(target)}
+                  onSetFont={props.onSetFont}
+                  onSetSize={props.onSetTextSize}
+                  onSetPadding={props.onSetPadding}
+                  onPreviewFont={props.onPreviewFont}
+                  onPreviewSize={props.onPreviewTextSize}
+                  onPreviewPadding={props.onPreviewPadding}
+                  onPreviewEnd={props.onPreviewStyleEnd}
+                  sectionProps={sectionProps}
+                  // A text on a logo page also takes a display face (docs/specs/007-editor/logo-pages.md).
+                  displayFontsOffered={target.type === 'text' && !!props.wordmarkOffered}
+                />
+              ) : null}
+              {/* Wordmark type on a logo page (docs/specs/007-editor/logo-pages.md). */}
+              {showAlignment &&
+              target.type === 'text' &&
+              props.wordmarkOffered &&
+              props.onSetWordmark &&
+              props.onPreviewWordmark ? (
+                <WordmarkSection
+                  element={target}
+                  section={sectionProps('wordmark')}
+                  onSet={props.onSetWordmark}
+                  onPreview={props.onPreviewWordmark}
+                  onPreviewEnd={props.onPreviewStyleEnd}
+                />
+              ) : null}
+              {/* Alignment — the text toolbar's 3×3 grid, here too for discovery. */}
+              {showAlignment ? (
+                <MenuAccordionSection
+                  title="Alignment"
+                  icon={
+                    <AlignLinesIcon
+                      dir={(target as { textAlignX?: TextAlignX }).textAlignX ?? 'center'}
+                    />
+                  }
+                  {...sectionProps('text-align')}
+                >
+                  <div className="px-2 py-1.5">
+                    <AlignmentGrid
+                      alignX={(target as { textAlignX?: TextAlignX }).textAlignX ?? 'center'}
+                      alignY={(target as { textAlignY?: TextAlignY }).textAlignY ?? 'middle'}
+                      onChange={props.onSetTextAlign}
+                      onPreview={props.onPreviewTextAlign}
+                      onPreviewEnd={props.onPreviewStyleEnd}
+                    />
+                  </div>
+                </MenuAccordionSection>
+              ) : null}
+              {showMarkers ? (
+                <MenuAccordionSection
+                  title="Markers"
+                  icon={<MarkersMenuGlyph />}
+                  {...sectionProps('markers')}
+                >
+                  <MarkerTiles
+                    marker={shapeTarget?.marker ?? null}
+                    size={shapeTarget?.markerSize ?? 'scale'}
+                    onSet={props.onSetMarker}
+                    onSetSize={props.onSetMarkerSize}
+                    onPreview={props.onPreviewMarker}
+                    onPreviewSize={props.onPreviewMarkerSize}
+                    onPreviewEnd={props.onPreviewStyleEnd}
+                  />
+                </MenuAccordionSection>
+              ) : null}
+            </MenuFlyoutSection>
+          ) : null}
         </MenuFlyoutSection>
       ) : null}
       <ElementDataSections
@@ -224,195 +415,6 @@ export function ElementAppearanceSections({
         sectionProps={sectionProps}
         flyoutProps={flyoutProps}
       />
-      {/* Icon — a Technology icon element's fixed tile size (docs/specs/010-palette/technology-icons.md).
-            The mark renders at a preset pixel size regardless of the box;
-            these tiles pick the preset. */}
-      {isIcon && isTechIconId((target as { iconId?: string }).iconId) ? (
-        <>
-          <MenuGroupSeparator />
-          <MenuAccordionSection
-            title="Icon"
-            icon={<IconCategoryGlyph />}
-            {...sectionProps('icon-size')}
-          >
-            <IconSizeTiles
-              value={(target as { iconSize?: IconSize }).iconSize ?? DEFAULT_ICON_SIZE}
-              onSet={props.onSetIconSize}
-              onPreview={props.onPreviewIconSize}
-              onPreviewEnd={props.onPreviewStyleEnd}
-            />
-          </MenuAccordionSection>
-        </>
-      ) : null}
-      {/* Weight — a line-art icon's thin / regular / bold stroke (docs/specs/004-interface-design/iconography.md). */}
-      {isIcon && !isTechIconId((target as { iconId?: string }).iconId) ? (
-        <>
-          <MenuGroupSeparator />
-          <MenuAccordionSection
-            title="Weight"
-            icon={<IconCategoryGlyph />}
-            {...sectionProps('icon-weight')}
-          >
-            <IconWeightTiles
-              iconId={(target as { iconId?: string }).iconId}
-              value={(target as { iconWeight?: IconWeight }).iconWeight ?? DEFAULT_ICON_WEIGHT}
-              onSet={props.onSetIconWeight}
-              onPreview={props.onPreviewIconWeight}
-              onPreviewEnd={props.onPreviewStyleEnd}
-            />
-          </MenuAccordionSection>
-        </>
-      ) : null}
-      {/* Icon — re-place or remove a shape's inline icon. Sits directly
-            above Markers (both are shape-content controls); the Icon position
-            grid here is now the only way to move the icon, since drag-to-
-            reposition was removed. */}
-      {hasInlineIcon ? (
-        <>
-          <MenuGroupSeparator />
-          <MenuAccordionSection title="Icon" icon={<IconCategoryGlyph />} {...sectionProps('icon')}>
-            {/* A card, callout, header or boundary places its own icon, so it offers no position. */}
-            {positionsInlineIcon(target) ? (
-              <>
-                <p className="px-3 pb-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">
-                  Icon position
-                </p>
-                <IconPositionGrid
-                  current={(target as { iconPosition?: string }).iconPosition ?? 'left'}
-                  onPick={(pos) =>
-                    props.onSetIconPosition(
-                      target.id,
-                      (target as { iconId?: string }).iconId ?? '',
-                      pos,
-                    )
-                  }
-                  onPreview={(pos) =>
-                    props.onPreviewIconPosition(
-                      target.id,
-                      (target as { iconId?: string }).iconId ?? '',
-                      pos,
-                    )
-                  }
-                  onPreviewEnd={props.onPreviewStyleEnd}
-                />
-                <ContextMenuDivider />
-              </>
-            ) : null}
-
-            <div className="px-2 py-1.5">
-              <MenuTile
-                icon={<RemoveIconGlyph />}
-                label="Remove Icon"
-                onClick={() => {
-                  props.onRemoveIcon(target.id);
-                  onClose();
-                }}
-              />
-            </div>
-          </MenuAccordionSection>
-        </>
-      ) : null}
-      {/* ── Text band (docs/specs/008-canvas/canvas-and-palette.md): every text control for the element —
-            typography (Font / Size / Padding / Alignment) plus Markers
-            (docs/specs/009-elements/shape-markers.md) — grouped under one "Text" row that opens them in a side
-            flyout, so they don't lengthen the menu's vertical stack. The row
-            only shows when the element has text (showMarkers / showAlignment
-            both require a non-empty label). Sub-categories all start closed:
-            auto-expanding the first one flipped the shared one-open-section
-            scaffold, collapsing whichever inline accordion the user had open
-            in the host menu behind the flyout. Sits in the style band
-            (no separator of its own), beside Style + Animation. ── */}
-      {showMarkers || showAlignment ? (
-        <MenuFlyoutSection title="Text" icon={<TextGlyph />} {...flyoutProps('text')}>
-          {/* Text Style (docs/specs/008-canvas/canvas-and-palette.md "Text styles"): a text's Write style, first,
-              since it sets the size and weight the sections below fine-tune. */}
-          {showAlignment &&
-          target.type === 'text' &&
-          props.onSetTextStyle &&
-          props.onPreviewTextStyle ? (
-            <TextStyleSection
-              current={textPresetOfElement(target)}
-              section={sectionProps('text-style')}
-              onSet={props.onSetTextStyle}
-              onPreview={props.onPreviewTextStyle}
-              onPreviewEnd={props.onPreviewStyleEnd}
-            />
-          ) : null}
-          {/* Typography — Font / Size / Padding, shared with the rich-text
-              toolbar's overflow menu. Applies to the element's whole label. */}
-          {showAlignment ? (
-            <TypographySections
-              currentFont={(target as { font?: string }).font ?? null}
-              currentSize={(target as { textSize?: TextSize }).textSize ?? 'sm'}
-              presetPx={presetPxFor(target.type)}
-              padding={(target as { padding?: Padding }).padding ?? defaultPadding(target)}
-              onSetFont={props.onSetFont}
-              onSetSize={props.onSetTextSize}
-              onSetPadding={props.onSetPadding}
-              onPreviewFont={props.onPreviewFont}
-              onPreviewSize={props.onPreviewTextSize}
-              onPreviewPadding={props.onPreviewPadding}
-              onPreviewEnd={props.onPreviewStyleEnd}
-              sectionProps={sectionProps}
-              // A text on a logo page also takes a display face (docs/specs/007-editor/logo-pages.md).
-              displayFontsOffered={target.type === 'text' && !!props.wordmarkOffered}
-            />
-          ) : null}
-          {/* Wordmark type on a logo page (docs/specs/007-editor/logo-pages.md). */}
-          {showAlignment &&
-          target.type === 'text' &&
-          props.wordmarkOffered &&
-          props.onSetWordmark &&
-          props.onPreviewWordmark ? (
-            <WordmarkSection
-              element={target}
-              section={sectionProps('wordmark')}
-              onSet={props.onSetWordmark}
-              onPreview={props.onPreviewWordmark}
-              onPreviewEnd={props.onPreviewStyleEnd}
-            />
-          ) : null}
-          {/* Alignment — the text toolbar's 3×3 grid, here too for discovery. */}
-          {showAlignment ? (
-            <MenuAccordionSection
-              title="Alignment"
-              icon={
-                <AlignLinesIcon
-                  dir={(target as { textAlignX?: TextAlignX }).textAlignX ?? 'center'}
-                />
-              }
-              {...sectionProps('text-align')}
-            >
-              <div className="px-2 py-1.5">
-                <AlignmentGrid
-                  alignX={(target as { textAlignX?: TextAlignX }).textAlignX ?? 'center'}
-                  alignY={(target as { textAlignY?: TextAlignY }).textAlignY ?? 'middle'}
-                  onChange={props.onSetTextAlign}
-                  onPreview={props.onPreviewTextAlign}
-                  onPreviewEnd={props.onPreviewStyleEnd}
-                />
-              </div>
-            </MenuAccordionSection>
-          ) : null}
-          {showMarkers ? (
-            <MenuAccordionSection
-              title="Markers"
-              icon={<MarkersMenuGlyph />}
-              {...sectionProps('markers')}
-            >
-              <MarkerTiles
-                marker={shapeTarget?.marker ?? null}
-                size={shapeTarget?.markerSize ?? 'scale'}
-                onSet={props.onSetMarker}
-                onSetSize={props.onSetMarkerSize}
-                onPreview={props.onPreviewMarker}
-                onPreviewSize={props.onPreviewMarkerSize}
-                onPreviewEnd={props.onPreviewStyleEnd}
-              />
-            </MenuAccordionSection>
-          ) : null}
-        </MenuFlyoutSection>
-      ) : null}
       {/* ── Content group: Line / Pointer / Text / Icon / Image / Table / Link ── */}
     </>
   );

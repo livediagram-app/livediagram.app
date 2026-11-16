@@ -58,7 +58,8 @@ import { OpacityRow } from '@/components/palette/context-menu-rows';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import { useContextMenuScaffold } from '@liveworkspace/workbench/components/palette/useContextMenuScaffold';
 import { ElementContentSections } from './ElementContentSections';
-import { ElementMenuQuickBar } from './ElementMenuQuickBar';
+import { ElementMenuQuickBar, quickBarItems } from './ElementMenuQuickBar';
+import { ResourcesFlyout } from '@liveworkspace/workbench/components/palette/ResourcesFlyout';
 import { ElementAppearanceSections } from './ElementAppearanceSections';
 import { MirrorCopyGlyph } from '@/components/canvas/logo-glyphs';
 import { MultiSelectionContextMenu } from './MultiSelectionContextMenu';
@@ -154,11 +155,9 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
         anchorBottom={anchorBottom}
       >
         {/* The quick bar (docs/specs/008-canvas/element-menu-quick-bar.md): Assign Action, Comment, Link and Note, and
-            Clear Styles at its right, above every category rather than folded into Collaborate and Resources. */}
+            Clear Styles at its right, above every category. */}
         <ElementMenuQuickBar
           target={target}
-          props={props}
-          attachments={showCollaborateGroup}
           onClose={onClose}
         />
         {/* Layer — pinned FIRST in the menu (before the type-specific
@@ -328,6 +327,13 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
           colorProps={colorProps}
           textColorHandlers={textColorHandlers}
           labelFillHandlers={labelFillHandlers}
+        />
+        {/* Resources (docs/specs/008-canvas/element-menu-quick-bar.md "Resources"): what attaches to the element,
+            in one flyout laid out as Appearance's Finish list, the menu's last category. Arrows take none. */}
+        <ResourcesFlyout
+          items={showCollaborateGroup && isBoxed(target) ? quickBarItems(target, props) : []}
+          flyout={flyoutProps('resources')}
+          onClose={onClose}
         />
       </ContextMenu>
     );

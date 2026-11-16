@@ -199,7 +199,7 @@ It opens the real menu rather than a second copy of each form. A per-kind popove
 
 Three kinds draw a **richer `…` of their own** instead (`drawsOwnElementMenu`): the Timer's length presets, the Session button's dots / question, the Done check's round controls. Those are the settings worth one press mid-session, and they are never a dead end: each ends with an **All Settings…** row into the full menu. The shared button is suppressed for exactly those kinds, because two ellipses in the same corner of the same card is a bug you can see from across the room.
 
-**An open element menu follows the selection.** Clicking another element while the single-element menu is open retargets the menu to the newly-selected element in place (same screen position) instead of dismissing it, so the same tweak can be applied to several elements one after another with one click each. The retarget preserves the menu's expanded state: the open accordion (scaffold `sectionProps`) and the open flyout (`flyoutProps`) both stay open, showing the new element's values, so styling five shapes via the Style flyout never re-drills the category path.
+**An open element menu follows the selection.** Clicking another element while the single-element menu is open retargets the menu to the newly-selected element in place (same screen position) instead of dismissing it, so the same tweak can be applied to several elements one after another with one click each. The retarget preserves the menu's expanded state: the open accordion (scaffold `sectionProps`) and the open flyout (`flyoutProps`) both stay open, showing the new element's values, so styling five shapes via the Appearance flyout never re-drills the category path.
 
 Control groups (rendered as context-menu categories, hidden when their gate doesn't apply):
 
@@ -608,7 +608,7 @@ move the canvas's own transform, never a scroll. Pinned by `e2e/chrome-drift.spe
 
 ## Templates
 
-A template is picked where the work begins: on an empty tab's **start** ([Template starts](../007-editor/start-diagramming.md)), each holding every template of its mode, rail of groups beside a grid, with a search that also finds the other modes' templates ([Found in other modes](../007-editor/start-diagramming.md#found-in-other-modes)). The New Canvas wizard asks only for a mode ([New document route](../007-editor/new-document-route.md#one-step-wizard)). There is no template picker over the editor: every template is on a start. There is no theme step: a document starts on the Default theme and the Theme and canvas controls change it later.
+A template is picked where the work begins: on an empty tab's **start** ([Template starts](../007-editor/start-diagramming.md)), each holding every template of its mode, rail of groups beside a grid, with a search that also finds the other modes' templates ([Found in other modes](../007-editor/start-diagramming.md#found-in-other-modes)). The New Canvas wizard asks only for a mode ([New document route](../007-editor/new-document-route.md#no-welcome-step)). There is no template picker over the editor: every template is on a start. There is no theme step: a document starts on the Default theme and the Theme and canvas controls change it later.
 
 ### The catalogue
 
@@ -625,7 +625,7 @@ The catalogue (`packages/templates/src/templates.ts`, pinned by `templates.test.
 - **Timeline**: the quick, status-at-a-glance line (the milestone timelines are the presentation pieces), presentation-ready all the same: a bold title ("Plateful · the 2027 product year"), a muted one-line how-to and a three-entry status legend sit above a forward-pointing spine (arrowhead at the future end) carrying six evenly spaced product milestones (Kick-off in January to Year-two plan in November). The spine is drawn in two runs: a heavier green run over what has happened up to Today and a slate run over what is coming, so progress reads before any label does. Each milestone is a status-coloured disc (`themeLockFill`, so it survives any theme: green for done, a larger blue for the one in progress, hollow for up next) carrying its glyph (flag, users, phone, send, monitor, calendar), with its month in the status ink, its title (bold for the one in progress) and a muted one-line detail ("1,200 testers in three cities") stacked above or below, alternating so six never crowd. A dashed red **Today** marker with a pill sits midway between the in-progress milestone and the next one, clear of both labels, from above the label row to just under the spine, for the user to drag along as the year moves. Title, caption, spine and legend are the "Spine" layer; discs, glyphs, labels and the Today marker are "Milestones".
 - **Blank Whiteboard** (kind id `whiteboard`, was Whiteboard). No elements: a general tab that opens in Draw mode ([Editor modes](../007-editor/editor-modes.md), [Draw mode](../023-draw-mode/draw-mode.md)). Shown as a quick-pick beside Blank Diagram, never in a category grid.
 - **Sketchnote**, **Rich Picture**, **Comic Strip**, **Doodle Warm-Up**, **Paper Prototype**, **Journey Doodle**, **Pre-Mortem** and **Idea Garden** open in Draw mode. What each holds is in [Templates by mode](../007-editor/templates-by-mode.md).
-- **Pub Quiz**, **Icebreaker Questions**, **Two Truths and a Lie**, **Would You Rather** and **Find Someone Who Bingo** (kind ids `pub-quiz`, `icebreaker-questions`, `two-truths-and-a-lie`, `would-you-rather`, `people-bingo`) open in Workshop and file under Quizzes & Games. What each holds is in [Quiz and game templates](../012-collaboration/quiz-and-game-templates.md).
+- **Pub Quiz**, **Icebreaker Questions**, **Two Truths and a Lie**, **Would You Rather** and **Find Someone Who Bingo** (kind ids `pub-quiz`, `icebreaker-questions`, `two-truths-and-a-lie`, `would-you-rather`, `people-bingo`) open in Workshop and file under Games. What each holds is in [Quiz and game templates](../012-collaboration/quiz-and-game-templates.md).
 
 Marked `extra` in the catalogue (metadata only; nothing gates on it):
 
@@ -760,23 +760,27 @@ marketing landing page's template gallery and its folded category cards): `TEMPL
 the declared categories by label (`localeCompare`, English, case ignored), never hand-ordered, so a new category lands
 in its place. Popular is not a category and stays the shelf above them.
 
+**Names.** A label is one plain word or phrase, never two joined by "&" (**Games**, not Quizzes & Games): the
+short name reads at a glance on a rail and a chip. The word a label leaves out stays findable through the category's
+search words (`searchWords`: Games finds "quizzes", Teams "people", Learning "teaching").
+
 | Category              | Id          | Description                                        | Templates (primary)                                                                                                                                                                             | Also shown                                                             |
 | --------------------- | ----------- | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
 | Brainstorming         | `ideas`     | Mind maps and boards for getting ideas out.        | Mind Map, Tree Mind Map, Bubble Map, Brainstorm Board, Idea Garden, Affinity Map, Crazy 8s                                                                                                      | Concept Map                                                            |
 | Decisions             | `decisions` | Priorities, trade-offs, risks and root causes.     | Prioritization Matrix, Eisenhower Matrix, Decision Tree, Comparison Table, Risk Matrix, Pre-Mortem, Fishbone                                                                                    | Venn Diagram                                                           |
-| Goals & Metrics       | `goals`     | OKRs, metric trees, funnels and growth loops.      | OKR Tree, Objectives Planner, Metric Tree, Funnel, Flywheel, Sankey Diagram                                                                                                                     | Opportunity Solution Tree                                              |
-| Meetings & Workshops  | `meetings`  | Agendas, Q&A and formats for running a session.    | Meeting Agenda, Workshop Board, Lean Coffee, Town Hall Q&A                                                                                                                                      | Brainstorm Board, Crazy 8s, Sketchnote, Event Storming, All-Hands Hall |
-| People & Teams        | `people`    | Org charts, roles, onboarding and family trees.    | Org Chart, RACI Matrix, 30-60-90 Day Plan, Family Tree                                                                                                                                          | Stakeholder Map                                                        |
+| Games       | `games`     | Quizzes, icebreakers and games for the room.       | Pub Quiz, Icebreaker Questions, Two Truths and a Lie, Would You Rather, Find Someone Who Bingo, Doodle Warm-Up                                                                                  |                                                                        |
+| Goals       | `goals`     | OKRs, metric trees, funnels and growth loops.      | OKR Tree, Objectives Planner, Metric Tree, Funnel, Flywheel, Sankey Diagram                                                                                                                     | Opportunity Solution Tree                                              |
+| Learning   | `learning`  | Concept maps, KWL charts and visual notes.         | Concept Map, KWL Chart, Sketchnote                                                                                                                                                              | Mind Map, Bubble Map, Venn Diagram, Timeline, Family Tree, Pub Quiz    |
+| Meetings  | `meetings`  | Agendas, Q&A and formats for running a session.    | Meeting Agenda, Workshop Board, Lean Coffee, Town Hall Q&A                                                                                                                                      | Brainstorm Board, Crazy 8s, Sketchnote, Event Storming, All-Hands Hall |
 | Planning              | `planning`  | Gantt charts, roadmaps and timelines of work.      | Gantt Chart, Roadmap, Timeline, Horizontal Milestone Timeline, Vertical Milestone Timeline                                                                                                      | RACI Matrix, User Story Map, 30-60-90 Day Plan, Eisenhower Matrix      |
-| Processes & Workflows | `processes` | Flowcharts and workflows for how work gets done.   | Flowchart, Swimlane Flowchart, Approval Workflow, Value Stream Map                                                                                                                              | Decision Tree, Data Flow Diagram, Service Blueprint, Event Storming    |
-| Product & UX          | `product`   | Prototypes, personas, journeys and discovery.      | Paper Prototype, User Journey, Journey Doodle, User Persona, Empathy Map, User Story Map, Service Blueprint, Sitemap, Opportunity Solution Tree, Comic Strip, Venn Diagram                      | Crazy 8s, Affinity Map, Value Proposition Canvas                       |
-| Quizzes & Games       | `games`     | Quizzes, icebreakers and games for the room.       | Pub Quiz, Icebreaker Questions, Two Truths and a Lie, Would You Rather, Find Someone Who Bingo, Doodle Warm-Up                                                                                  |                                                                        |
+| Processes | `processes` | Flowcharts and workflows for how work gets done.   | Flowchart, Swimlane Flowchart, Approval Workflow, Value Stream Map                                                                                                                              | Decision Tree, Data Flow Diagram, Service Blueprint, Event Storming    |
+| Product          | `product`   | Prototypes, personas, journeys and discovery.      | Paper Prototype, User Journey, Journey Doodle, User Persona, Empathy Map, User Story Map, Service Blueprint, Sitemap, Opportunity Solution Tree, Comic Strip, Venn Diagram                      | Crazy 8s, Affinity Map, Value Proposition Canvas                       |
 | Retrospectives        | `retros`    | Look back as a team and agree what to change.      | Retrospective, Start, Stop, Continue, Mad, Sad, Glad, 4Ls, Sailboat                                                                                                                             | Incident Postmortem, Pre-Mortem                                        |
-| Software & IT         | `software`  | Architecture, data, networks and incidents.        | System Architecture, Cloud Architecture, Network Diagram, Database Schema, Sequence Diagram, Class Diagram, State Machine, Data Flow Diagram, Event Storming, Threat Model, Incident Postmortem |                                                                        |
+| Software         | `software`  | Architecture, data, networks and incidents.        | System Architecture, Cloud Architecture, Network Diagram, Database Schema, Sequence Diagram, Class Diagram, State Machine, Data Flow Diagram, Event Storming, Threat Model, Incident Postmortem |                                                                        |
 | Strategy              | `strategy`  | Frameworks for where the business stands and goes. | SWOT, PESTLE Analysis, Business Model Canvas, Value Proposition Canvas, Wardley Map, Rich Picture, Stakeholder Map, Pyramid                                                                     | Roadmap, OKR Tree, Flywheel, Pre-Mortem                                |
-| Teaching & Learning   | `learning`  | Concept maps, KWL charts and visual notes.         | Concept Map, KWL Chart, Sketchnote                                                                                                                                                              | Mind Map, Bubble Map, Venn Diagram, Timeline, Family Tree, Pub Quiz    |
+| Teams        | `people`    | Org charts, roles, onboarding and family trees.    | Org Chart, RACI Matrix, 30-60-90 Day Plan, Family Tree                                                                                                                                          | Stakeholder Map                                                        |
 
-Primary counts, in the table's order: 7, 7, 6, 4, 4, 5, 4, 11, 6, 5, 11, 8, 3 and 4 (85 templates, every one but the
+Primary counts, in the table's order: 7, 7, 6, 6, 3, 4, 5, 4, 11, 5, 11, 8, 4 and 4 (85 templates, every one but the
 three blanks, one per mode; pinned by `template-categories.test.ts`). Kanban, Finance, Spreadsheets and Forms went to
 liveplanner with Plan mode ([Editor modes](../007-editor/editor-modes.md)).
 
@@ -784,10 +788,9 @@ liveplanner with Plan mode ([Editor modes](../007-editor/editor-modes.md)).
 Timelines and Technical sat beside Strategy and Workshops), which put an approval flowchart and a value stream map,
 both maps of a process, in different places, and filed the OKR tree under Org Charts because it is drawn as a tree.
 Each category now names a job someone arrives with: run a retro, plan the quarter, decide what comes first, map how
-work flows, design a product, teach a topic. Workshops split into **Meetings & Workshops**, and **Retrospectives**, the sessions the Workshop start used to group its templates by; Org Charts became **People &
-Teams**; Timelines became **Planning**; Technical became **Software & IT**; Design became **Product & UX**; the
+work flows, design a product, teach a topic. Workshops split into **Meetings**, and **Retrospectives**, the sessions the Workshop start used to group its templates by; Org Charts became **Teams**; Timelines became **Planning**; Technical became **Software**; Design became **Product**; the
 strategy grab bag split into **Strategy** (where the business stands), **Decisions** (what to do first, and what
-could go wrong) and **Goals & Metrics** (what to aim at and measure); and **Teaching & Learning** is new, for the
+could go wrong) and **Goals** (what to aim at and measure); and **Learning** is new, for the
 classroom and for anyone learning a topic.
 
 - **One primary category each.** Every template but the blanks has exactly one primary category
@@ -809,8 +812,8 @@ classroom and for anyone learning a topic.
   stored in a document, a URL or a telemetry event, so an id can change freely (the regroup retired `mindmaps`,
   `hierarchies`, `timelines`, `flowcharts`, `design` and `technical`).
 - **Search words.** A category may carry words a search also finds its templates by, beyond its label
-  (`searchWords`): Processes & Workflows answers "flowcharts", People & Teams "org" and "hr", Software & IT
-  "technical", "engineering" and "developer", Teaching & Learning "school", "classroom" and "students", so the words
+  (`searchWords`): Processes answers "flowcharts", Teams "org" and "hr", Software
+  "technical", "engineering" and "developer", Learning "school", "classroom" and "students", so the words
   the old labels carried still find their templates.
 - **Under a mode filter** (the marketing gallery's) a category shows only its templates of that mode (primary or
   cross-listed); a category left with none is skipped, as its tile is.
@@ -1711,3 +1714,10 @@ alike; a text field still takes its primary-selection paste from the browser.
 Pasting foreign text as a text element is the obvious next step and is
 deliberately not built: it needs the viewport centre in canvas coordinates,
 which lives in `Canvas` rather than in the clipboard hook.
+
+## Icon and Text live in Appearance (owner, 2026-11-16)
+
+The element menu's Appearance flyout holds everything about how the element looks: Presets, Colours, Border, Shadow,
+Finish, then Icon (a tech icon's size, a line icon's weight, a shape's inline icon) and Text. Neither is a row of its
+own in the menu any more. A flyout with one section inside, Tools holding only Mind Map for example, is never a row of
+its own: the section stands in the menu in its place, counting through any group of sections a host builds inline.

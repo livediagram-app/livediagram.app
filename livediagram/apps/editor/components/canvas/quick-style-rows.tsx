@@ -104,7 +104,7 @@ export function QuickRadioRow<V extends string | number>({
   };
 
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex min-w-0 flex-col gap-0.5">
       {showTitle ? (
         <span
           aria-hidden
@@ -136,8 +136,8 @@ export function QuickRadioRow<V extends string | number>({
             : isSwatchRow
               ? 'flex'
               : columns
-                ? 'grid gap-1'
-                : 'grid grid-cols-3 gap-1'
+                ? 'grid gap-0.5 rounded-lg bg-slate-100 p-0.5 dark:bg-slate-800/70'
+                : 'grid grid-cols-3 gap-0.5 rounded-lg bg-slate-100 p-0.5 dark:bg-slate-800/70'
         }
         style={
           isSwatchRow && columns
@@ -179,10 +179,10 @@ export function QuickRadioRow<V extends string | number>({
               className={
                 swatch
                   ? 'group relative flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500'
-                  : `flex h-7 w-full items-center justify-center rounded-md transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${
+                  : `flex h-6 w-full items-center justify-center rounded-md transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${
                       checked
-                        ? 'bg-brand-50 text-brand-700 ring-1 ring-brand-300 dark:bg-brand-500/15 dark:text-brand-200 dark:ring-brand-500/40'
-                        : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
+                        ? 'bg-white text-brand-700 shadow-sm ring-1 ring-brand-300 dark:bg-slate-900 dark:text-brand-200 dark:ring-brand-500/50'
+                        : 'text-slate-600 hover:bg-white/70 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-900/60 dark:hover:text-white'
                     }`
               }
             >

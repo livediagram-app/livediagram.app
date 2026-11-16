@@ -37,7 +37,7 @@ multiplayer canvas, so the tour also previews working together.
 
 ## Where it appears
 
-- **The footer's Start Tour button offers it** in each mode, reading **Watch It Built**, at the mode tour's rank
+- **The footer's Get Started button offers it** in each mode, reading **Watch It Built**, at the mode tour's rank
   (`TOUR_OFFER_RANK.mode`), under the same rules as every tour ([Diagram tour](editor-tour.md#where-it-appears)): to an
   Editor, once the editor is ready and the tab's start is done; never in read-only, an embed, a locked tab or for a
   Participant. It never starts or offers itself. It is on the button while the mode has a topic not yet taken, and back
@@ -76,7 +76,7 @@ view. Lines name clicks on a computer and taps on a touch screen.
 | **Look and Feel** | Give the whole tab a new look and background.      | **Open Style**: presses the footer's Style; the real Tab Style dialog opens and the player moves to the top. **Pick a Look**: presses two looks on its first page in turn (Spectrum, then Whiteboard, or the next ones when the tab already wears one); the canvas, the demo and the dialog restyle as a press would. **Canvas**: opens Fine-tune's Canvas and picks a new background (Graph, or Lines) |
 | **Style a Shape** | Border, shadow and font for one shape.             | **Border**: right-clicks the shape, opens Style, then Border, and picks Thick, then Dashed. **Shadow**: opens Shadow and picks Lifted. **Font**: opens Text, then Font, and picks Kalam (handwriting); the menu closes. (Colours are The Basics' Style chapter)                                                                                                                                         |
 | **Find Anything** | Search every shape by name or use, and drop it in. | **Search**: presses Search on the strip and types "database". **Drop**: drags the Database result onto the canvas (a cylinder). **Again**: searches "decision" and drags the Decision result (a diamond) beside it                                                                                                                                                                                      |
-| **Tidy Up**       | Lay a messy flow out neatly in one press.          | **The Mess**: five joined steps land one by one, each a little off. **Tidy Up**: opens the footer's Tidy Up and picks Auto Layout; the shapes glide to exactly where that press puts them (lib/tab-cleanup.ts)                                                                                                                                                                                          |
+| **Tidy**       | Lay a messy flow out neatly in one press.          | **The Mess**: five joined steps land one by one, each a little off. **Tidy**: opens the footer's Tidy Up and picks Auto Layout; the shapes glide to exactly where that press puts them (lib/tab-cleanup.ts)                                                                                                                                                                                          |
 
 ### Draw
 

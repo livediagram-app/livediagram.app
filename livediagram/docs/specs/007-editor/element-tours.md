@@ -1,12 +1,12 @@
 # Element tours
 
 An **element tour** teaches one complex element type, on the element itself: what its parts mean, how to read it and
-how to change it. It is started from the footer's Start Tour button while an element of that type is selected, and it
+how to change it. It is started from the footer's Get Started button while an element of that type is selected, and it
 walks through the real element the person selected, not a sample.
 
 It sits beside the mode tours (the [Diagram tour](editor-tour.md) and its siblings) and [Show Me](show-me.md) (started
 from a button on one surface). Like the mode tours it never offers itself: the one way in is the
-Start Tour button ([Diagram tour](editor-tour.md) "Where it appears").
+Get Started button ([Diagram tour](editor-tour.md) "Where it appears").
 
 The toured kinds: the [Sankey diagram](../009-elements/sankey.md), and the
 [concept graphics](../009-elements/concept-graphics.md) layer stack, pyramid, funnel, cycle, hub and spoke, onion and chevron process; the
@@ -23,17 +23,17 @@ livediagram](../002-project-scope/not-in-livediagram.md); its `PortalTour*` seri
 | Term                  | Means                                                                                        |
 | --------------------- | -------------------------------------------------------------------------------------------- |
 | **Element tour**      | This pattern, and one tour of it (the **Sankey tour**)                                       |
-| **Start Tour button** | The footer button that starts every tour ([Diagram tour](editor-tour.md) "Where it appears") |
+| **Get Started button** | The footer button that starts every tour ([Diagram tour](editor-tour.md) "Where it appears") |
 | **Toured kind**       | An element type that has an element tour (`sankey`, `chart`, …)                              |
 | **Selection toolbar** | The floating toolbar over a single selection ([Canvas](../008-canvas/canvas-and-palette.md)) |
 
 ## Naming
 
-On the Start Tour button an element tour is named from its closing card's eyebrow, in title case, without the word
+On the Get Started button an element tour is named from its closing card's eyebrow, in title case, without the word
 "tour": **Start Sankey Tour**, **Start Hub and Spoke Tour**, **Start Diagram Key Tour** (`tourNameOf`). Its Settings
 section is still called **Show Me**. "Element tour" is the code's and the specs' word only.
 
-## On the Start Tour button
+## On the Get Started button
 
 - **Most specific first.** While a toured element is selected its tour is the one the button offers, ahead of a tool
   in hand and the tab's mode tour (`TOUR_OFFER_RANK.element`).
@@ -53,7 +53,7 @@ section is still called **Show Me**. "Element tour" is the code's and the specs'
 - A synced user preference, `elementTourKinds`, lists the toured kinds whose tour has been started, so the record
   follows the account ([User preferences](user-preferences.md)). Until 25 October 2026 it listed the kinds whose
   offer had been answered (Play or Cancel) and hid the offer for them; from then until 1 November 2026 it only fed
-  the Settings rows. Now it hides that kind's tour from the Start Tour button again, until its switch is turned on.
+  the Settings rows. Now it hides that kind's tour from the Get Started button again, until its switch is turned on.
 - `elementToursSeen` counts every kind as taken: **Show Me on Every Element** switched off writes it (with every kind
   listed), and so did the retired [Power user mode](power-user-mode.md)'s preset, which listed none. Turning a kind's
   switch back on lifts it, keeping every other kind answered.
@@ -66,7 +66,7 @@ how many are on (`1 of 1 On`). Opened, it shows the section's line, then **Show 
 over them all (on while any is not yet taken; off marks every kind taken, on forgets every run), with one switch per
 toured kind nested beneath it, named for the element alone: **Sankey Diagram**, linking the Sankey Diagram article.
 The kinds stay listed while the switch over them is off, so one can be offered again on its own.
-On means "not yet taken": switching one on forgets its run and puts that kind's tour back on the Start Tour button
+On means "not yet taken": switching one on forgets its run and puts that kind's tour back on the Get Started button
 whenever such an element is selected; off takes it off the button. The accordion opens on its own when Settings is
 opened on one of its rows (a search result) or on the section. The switch over them all is **Show Me on Every
 Element**.
@@ -431,7 +431,7 @@ its style and its meanings are an Editor's), never `isReadOnly` alone.
 
 Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour`, `PyramidTour`, `FunnelTour`, `CycleTour`, `HubTour`, `OnionTour`, `ChevronsTour`, `TimelineTour`, `MindMapTour`, `FlowchartTour`, `OrgChartTour`, `SequenceTour`, `ChartTour`, `StackTour`, `EntityTour`, `LaneTour`, `BoundaryTour`, `DiagramKeyTour`), named in its registry entry:
 
-- **Offer**: `UI` · `Opened` · `<Kind>TourOffer` the first time the Start Tour button shows that kind's tour in a
+- **Offer**: `UI` · `Opened` · `<Kind>TourOffer` the first time the Get Started button shows that kind's tour in a
   page load. Until 25 October 2026 it counted the offer toolbar showing, and `UI` · `Closed` · `<Kind>TourOffer`
   counted **Cancel**; nothing sends Closed now, and its explanation stays for the history.
 - **Start**: `UI` · `Started` · `<Kind>Tour` on a press of the button.
@@ -477,7 +477,7 @@ help article's tour section; and a section here.
 
 - `apps/editor/lib/element-tours.ts`: the toured kinds, their names, their edit gates, and the taken list.
 - `../packages/workbench/src/lib/element-keyed-store.ts`: the per-element module store behind what a step shows.
-- `apps/editor/components/tour/ElementTourHost.tsx`: publishes the tour to the Start Tour button (`useOfferTour`), runs it, ends it.
+- `apps/editor/components/tour/ElementTourHost.tsx`: publishes the tour to the Get Started button (`useOfferTour`), runs it, ends it.
 - `apps/editor/components/tour/element-tour-defs.ts`: one definition per toured kind.
 - `apps/editor/components/tour/element-tour-api.ts`: what a step may do on its element.
 - `apps/editor/components/tour/sankey-element-tour-steps.ts`: the Sankey tour's steps.

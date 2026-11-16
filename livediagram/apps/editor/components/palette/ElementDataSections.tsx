@@ -285,12 +285,8 @@ export function ElementDataSections({
               onSetDrivers={props.onSetDecisionDrivers}
             />
           ) : null}
-          <ElementLayoutToolSections
-            props={props}
-            shapeTarget={shapeTarget}
-            isChip={isChip}
-            sectionProps={sectionProps}
-          />
+          {/* Called, not rendered: hookless, its fragment counts section by section for the flyout's lone-section promotion. */}
+          {ElementLayoutToolSections({ props, shapeTarget, isChip, sectionProps })}
           {/* Record (docs/specs/009-elements/entity.md) — the fields: name + optional type, add / remove. */}
           {isEntity ? (
             <MenuAccordionSection
@@ -391,17 +387,8 @@ export function ElementDataSections({
               flyoutProps={flyoutProps('flowchart')}
             />
           ) : null}
-          <ElementBehaviourToolSections
-            props={props}
-            shapeTarget={shapeTarget}
-            isModeButton={isModeButton}
-            isPortal={isPortal}
-            isSessionButton={isSessionButton}
-            isReveal={isReveal}
-            isPicker={isPicker}
-            isReactionPad={isReactionPad}
-            sectionProps={sectionProps}
-          />
+          {/* Called, not rendered: hookless, its fragment counts section by section for the flyout's lone-section promotion. */}
+          {ElementBehaviourToolSections({ props, shapeTarget, isModeButton, isPortal, isSessionButton, isReveal, isPicker, isReactionPad, sectionProps })}
           {/* Chart (docs/specs/009-elements/pie-chart.md) — display options. Legend placement: Off + 4 sides. */}
           {isChart ? (
             <MenuAccordionSection

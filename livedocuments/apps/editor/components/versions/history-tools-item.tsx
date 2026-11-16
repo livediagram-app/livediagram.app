@@ -1,15 +1,9 @@
 'use client';
 
-// The footer's History button (docs/specs/006-document/version-history.md "In the editor"): in the bottom bar's
-// cluster between Search and Settings, as liveplanner's Automations is, for every role, on a document stored on the
-// server once it is up. Labelled from `sm` up like its neighbours, icon-only on a phone. It opens Version History on
-// the open tab.
-import { Glyph, HoverCard } from '@livedocuments/ui';
-import {
-  CHROME_BTN,
-  CHROME_BTN_LABELLED,
-  ChromeLabel,
-} from '@liveworkspace/workbench/components/chrome/chrome-button';
+// The footer's History row (docs/specs/006-document/version-history.md "In the editor"): in the bottom bar's More
+// menu, for every role, on a document stored on the server once it is up. It opens Version History on the open tab.
+import { Glyph } from '@livedocuments/ui';
+import type { ChromeToolsItem } from '@liveworkspace/workbench/components/chrome/ChromeToolsMenu';
 import { track } from '@/lib/telemetry';
 import { openVersionHistory } from '@/lib/version-history-store';
 
@@ -43,30 +37,10 @@ export function openHistoryFromFooter(activeTabId: string): void {
   openVersionHistory(activeTabId);
 }
 
-export function HistoryButton({
-  onOpen,
-  labelled = false,
-}: {
-  onOpen: () => void;
-  labelled?: boolean;
-}) {
-  return (
-    <HoverCard
-      title="Version History"
-      description="Look back at earlier versions of this tab, and restore one."
-    >
-      <button
-        type="button"
-        data-tour-id="version-history"
-        onClick={onOpen}
-        aria-label="History"
-        className={labelled ? `${CHROME_BTN} ${CHROME_BTN_LABELLED}` : CHROME_BTN}
-      >
-        <HistoryIcon size={14} />
-        <ChromeLabel show={labelled}>History</ChromeLabel>
-      </button>
-    </HoverCard>
-  );
+/** The History row in the footer's Tools menu (liveworkspace/docs/specs/004-index/footer-tools-menu.md). */
+export function historyToolsItem(onOpen: () => void): ChromeToolsItem {
+  return { id: 'history', group: 'versions', label: 'Version History',
+    description: 'Earlier versions of this tab, to restore.', icon: <HistoryIcon size={16} />, onSelect: onOpen };
 }
 
 // A clock face with an arrow turning back round it: going back in time.

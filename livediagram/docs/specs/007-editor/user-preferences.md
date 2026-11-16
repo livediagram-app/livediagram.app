@@ -269,7 +269,7 @@ type UserPreferences = {
   notifyInviteResponse?: boolean;
 
   // The Diagram tour's taken record, now Watch It Built (docs/specs/007-editor/watch-it-built.md). True once a run has ended
-  // (completed or skipped; written as a run starts too). While true the footer's Start Tour button
+  // (completed or skipped; written as a run starts too). While true the footer's Get Started button
   // does not offer the tour; Settings' Getting Started › "Watch It Built" row (inverted) clears it, and turning
   // it on and closing Settings reruns the tour when it could run. Missing / undefined === not seen.
   tourSeen?: boolean;
@@ -406,8 +406,8 @@ Missing key === undefined === default behaviour. Concretely:
   read, so the next write stores the blob without them: `activityPanelEnabled` and `activityRevertHoverPreview` (there
   is no Activity panel; Undo and Redo always show in the bottom-right cluster), `illustrateModeEnabled`,
   `infographicModeEnabled` and `planModeEnabled` (every mode is always offered,
-  [Editor modes](editor-modes.md#every-mode-always-offered)), `skipLocationStep` (the New Document wizard never asks
-  where a document goes, [New document route](new-document-route.md#one-step-wizard)), and `aiAssistanceEnabled` and
+  [Editor modes](editor-modes.md#every-mode-always-offered)), `skipLocationStep` (`/new` never asks
+  where a document goes, [New document route](new-document-route.md#no-welcome-step)), and `aiAssistanceEnabled` and
   `aiSuggestedPrompts` (there is no in-editor AI assistant; connected AI tools work through the
   [MCP server](../015-api/mcp-server.md)), and `powerUserMode`, `powerUserBaseline`, `minimalChrome` and
   `powerUserOfferShown` ([Power user mode](power-user-mode.md) is retired). Dropping them reverts nothing: whatever
@@ -739,10 +739,10 @@ and the dialog stays as the one complete, browsable index of them.
   Tour**, **Workshop Tour** and **Draw Tour**, each with a line saying where it is on offer and a **Learn more**
   to its article, under one **Offer Again** section note: switch one back on
   and close Settings to take it again, straight away if it is on offer where you
-  are, otherwise from the footer's Start Tour button when you get there. (Until
+  are, otherwise from the footer's Get Started button when you get there. (Until
   25 October 2026 each tour offered itself once, and the switch decided whether
   it would offer itself again; from then until 1 November 2026 every tour stayed
-  on the Start Tour button whenever it could run, taken or not. Now a taken tour
+  on the Get Started button whenever it could run, taken or not. Now a taken tour
   leaves the button, and its switch is what brings it back: on puts the tour back
   on the button, off takes it away, [Diagram tour](editor-tour.md) "Where it
   appears".) (The tours used
@@ -766,7 +766,7 @@ and the dialog stays as the one complete, browsable index of them.
   as a tour of several tracks (`tourTracksSwitch`, `../packages/workbench/src/lib/tour-tracks.ts`: on while any track is not yet taken, off
   marks every track taken, on forgets every run) against `elementToursSeen` and `elementTourKinds`, with one switch per toured
   kind nested under it, named for the element (**Sankey Diagram**). Element tours
-  need no relaunch: the Start Tour button offers one whenever such an element is selected. A category may mark any section
+  need no relaunch: the Get Started button offers one whenever such an element is selected. A category may mark any section
   closed this way (`collapsedSections`); Settings opened on one of its rows opens it.
 
   **Toggle groups.** Several related switches that share one description are
@@ -776,8 +776,8 @@ and the dialog stays as the one complete, browsable index of them.
   truncating. None is in use.
 
   **Button Labels** (Appearance › Interface, `dockButtonNames`, on by default)
-  names the editor's bottom buttons beside their icons: the footer bar's Search,
-  Settings and theme, and the bottom-right cluster's (Layers, Style, Tidy Up and
+  names the editor's bottom buttons beside their icons: the footer bar's Tools and
+  Settings (the theme toggle is always icon only), and the bottom-right cluster's (Layers, Style, Tidy Up and
   the rest) on a desktop wide enough for them ([Editor app](editor-app.md)). Off,
   they are icons alone, each still named in its hover card. A phone always shows
   icons alone, so the row is desktop only there.

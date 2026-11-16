@@ -1,38 +1,31 @@
 'use client';
 
 // The canvas's suggestions control (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Suggesting" and
-// "Reviewing"; blueprint "Presentation and UX"): a header action in the editor's title bar, reading Suggest or
-// Suggesting, its glyph carrying the tab's suggestion count. A press opens the panel under it:
+// "Reviewing"; blueprint "Presentation and UX"): a row in the editor footer's Tools menu
+// (liveworkspace/docs/specs/004-index/footer-tools-menu.md), reading Suggest or Suggesting with the tab's suggestion
+// count. Choosing it opens the panel over the footer:
 //   - An Editor: the mode switch, Editing or Suggesting, then the review list.
 //   - A Participant on Suggest Only: a line saying it suggests (no switch: it always does), then the list.
-//   - Any other Participant: the list; the action shows only while the tab has suggestions.
+//   - Any other Participant: the list; the row shows only while the tab has suggestions.
 // The review list: one row per suggestion (its author, what it does, when, and a flag
 // when the canvas changed since), with Accept and Reject for an Editor and Take Back on your own; Accept All and
 // Reject All head it. Pointing at a row brings its ghost forward. Escape closes it and gives the focus back.
-import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import {
   CheckIcon,
   CloseIcon,
   CountBadge,
-  HoverCard,
   PencilIcon,
   Portal,
   SegmentedToggle,
   Tooltip,
   relativeSince,
 } from '@liveworkspace/ui';
-import {
-  HEADER_ACTION_BTN,
-  HEADER_ACTION_TONE,
-  HeaderGlyph,
-} from '@liveworkspace/workbench/components/chrome/header-action';
+import type { ChromeToolsItem } from '@liveworkspace/workbench/components/chrome/ChromeToolsMenu';
 import { describeSuggestion } from '../plan';
 import type { CanvasSuggestion, SuggestionElement } from '../suggestion';
 import type { CanvasSuggestions, SuggestMode } from './useCanvasSuggestions';
 
-// The header action while this person suggests: the brand tint, so the mode reads at a glance.
-const SUGGESTING_TONE =
-  'bg-brand-50 text-brand-700 hover:bg-brand-100 dark:bg-brand-500/15 dark:text-brand-200 dark:hover:bg-brand-500/25';
 const ICON_BUTTON =
   'flex size-7 cursor-pointer items-center justify-center rounded-full text-slate-500 transition-colors duration-micro hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 disabled:cursor-not-allowed disabled:opacity-50 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100';
 const TEXT_BUTTON =
@@ -50,44 +43,57 @@ const MODE_OPTIONS = [
 const countWords = (n: number) =>
   n === 0 ? 'No suggestions' : n === 1 ? '1 suggestion' : `${n} suggestions`;
 
-// Where the panel opens: under its button, right-aligned to it, kept inside the viewport.
+// Where the panel opens: on the side of its anchor with more room (above the footer's Tools button), right-aligned to
+// it, kept inside the viewport.
 const PANEL_WIDTH_REM = 22;
 const PANEL_GAP_PX = 6;
 const EDGE_PX = 8;
 
-/** The suggestions control in the editor's title bar (the header's lead action, beside Share): a header action at
- *  every width, so the canvas's own toolbars never cover it. Its glyph carries the count; a press opens the panel. */
-export function SuggestionsHeaderAction<E extends SuggestionElement>({
-  suggestions: s,
-  now: given,
-}: {
-  suggestions: CanvasSuggestions<E>;
-  // The clock rows read "4 min ago" against (the editor's shared one, so every row agrees).
-  now?: number;
-}) {
-  const [place, setPlace] = useState<{ top: number; right: number } | null>(null);
-  const open = place !== null;
+type Place = { right: number } & ({ top: number } | { bottom: number });
+
+function placeBeside(anchor: HTMLElement): Place {
+  const at = anchor.getBoundingClientRect();
+  const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+  const width = Math.min(PANEL_WIDTH_REM * rem, window.innerWidth - 2 * EDGE_PX);
+  const right = Math.max(
+    EDGE_PX,
+    Math.min(window.innerWidth - at.right, window.innerWidth - width - EDGE_PX),
+  );
+  const above = at.top > window.innerHeight - at.bottom;
+  return above
+    ? { right, bottom: window.innerHeight - at.top + PANEL_GAP_PX }
+    : { right, top: at.bottom + PANEL_GAP_PX };
+}
+
+/** The Tools menu's Suggest row and the panel it opens (render `panel` beside the menu). The row is null where the
+ *  person has nothing to do with suggestions: a Viewer, or a Participant who neither suggests nor has any to read. */
+export function useSuggestionsToolsItem<E extends SuggestionElement>(
+  s: CanvasSuggestions<E> | undefined,
+  given?: number,
+): { item: ChromeToolsItem | null; panel: ReactNode } {
+  const [place, setPlace] = useState<Place | null>(null);
+  const anchorRef = useRef<HTMLElement | null>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const panelId = useId();
-  // Its own clock when the editor hands none, read a minute at a time.
+  const open = place !== null;
+  // Its own clock when the editor hands none, read a minute at a time, and only while the panel is open.
   const [clock, setClock] = useState(() => Date.now());
   useEffect(() => {
-    if (given !== undefined) return;
+    if (given !== undefined || !open) return;
+    setClock(Date.now());
     const timer = setInterval(() => setClock(Date.now()), 60_000);
     return () => clearInterval(timer);
-  }, [given]);
+  }, [given, open]);
   const now = given ?? clock;
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
-  const editor = s.level === 'edit';
-  const n = s.suggestions.length;
-  // Nothing to show a Participant who neither suggests nor has anything to read.
-  const shown = s.enabled && (editor || s.suggestOnly || n > 0);
-  const { focus } = s;
+  const editor = s?.level === 'edit';
+  const n = s?.suggestions.length ?? 0;
+  const shown = !!s?.enabled && (editor || s.suggestOnly || n > 0);
+  const focus = s?.focus;
   const close = useCallback(
     (refocus: boolean) => {
       setPlace(null);
-      focus(null);
-      if (refocus) buttonRef.current?.focus();
+      focus?.(null);
+      if (refocus) anchorRef.current?.focus();
     },
     [focus],
   );
@@ -99,8 +105,7 @@ export function SuggestionsHeaderAction<E extends SuggestionElement>({
       close(true);
     };
     const onDown = (e: PointerEvent) => {
-      const t = e.target as Node | null;
-      if (panelRef.current?.contains(t) || buttonRef.current?.contains(t)) return;
+      if (panelRef.current?.contains(e.target as Node | null)) return;
       close(false);
     };
     const onResize = () => close(false);
@@ -113,73 +118,43 @@ export function SuggestionsHeaderAction<E extends SuggestionElement>({
       window.removeEventListener('resize', onResize);
     };
   }, [open, close]);
-  if (!shown) return null;
-  const word = s.suggesting ? 'Suggesting' : 'Suggest';
-  const toggle = () => {
-    if (open) return close(false);
-    const at = buttonRef.current?.getBoundingClientRect();
-    if (!at) return;
-    const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
-    const width = Math.min(PANEL_WIDTH_REM * rem, window.innerWidth - 2 * EDGE_PX);
-    const right = Math.max(
-      EDGE_PX,
-      Math.min(window.innerWidth - at.right, window.innerWidth - width - EDGE_PX),
-    );
-    setPlace({ top: at.bottom + PANEL_GAP_PX, right });
+  // Moving the panel's focus in once it is drawn, so the keyboard lands on its first control.
+  useEffect(() => {
+    if (open) panelRef.current?.querySelector<HTMLElement>('button, [tabindex="0"]')?.focus();
+  }, [open]);
+  if (!s || !shown) return { item: null, panel: null };
+  const word = s.suggesting ? 'Suggesting' : 'Suggest Changes';
+  const item: ChromeToolsItem = {
+    id: 'suggestions',
+    group: 'collaborate',
+    label: word,
+    description: s.suggestOnly
+      ? 'Your edits go to an Editor to accept.'
+      : editor
+        ? 'Propose edits and review suggestions.'
+        : 'Edits others propose on this tab.',
+    icon: <PencilIcon size={16} aria-hidden />,
+    aside: n > 0 ? <CountBadge tone="brand" count={n} /> : undefined,
+    // Suggestions waiting for an Editor put a dot on Tools, so they are seen with the menu shut.
+    ...(editor && n > 0 ? { attention: 'brand' as const, attentionLabel: countWords(n) } : {}),
+    onSelect: (anchor) => {
+      anchorRef.current = anchor;
+      if (anchor) setPlace(placeBeside(anchor));
+    },
   };
-  return (
-    <>
-      <HoverCard
-        title={s.suggesting ? 'Suggesting' : 'Suggestions'}
-        description={
-          s.suggestOnly
-            ? SUGGEST_ONLY_HINT
-            : editor && s.suggesting
-              ? 'Your changes become suggestions. Switch back to Editing, or review.'
-              : editor
-                ? 'Switch to Suggesting, and review what others suggest.'
-                : 'What others suggest on this tab.'
-        }
+  const panel = place ? (
+    <Portal>
+      <div
+        ref={panelRef}
+        className="fixed z-[var(--z-modal)]"
+        style={place}
+        data-suggestions-panel=""
       >
-        <button
-          ref={buttonRef}
-          type="button"
-          aria-expanded={open}
-          aria-controls={open ? panelId : undefined}
-          aria-label={`${word}. ${countWords(n)}`}
-          data-suggestions-action=""
-          onClick={toggle}
-          className={`${HEADER_ACTION_BTN} ${s.suggesting ? SUGGESTING_TONE : HEADER_ACTION_TONE}`}
-        >
-          <HeaderGlyph>
-            <span className="relative inline-flex">
-              <PencilIcon size={14} aria-hidden />
-              {n > 0 ? (
-                <CountBadge
-                  tone="brand"
-                  count={n}
-                  className="absolute -top-2 left-2.5 ring-2 ring-white dark:ring-slate-900"
-                />
-              ) : null}
-            </span>
-          </HeaderGlyph>
-          <span aria-hidden>{word}</span>
-        </button>
-      </HoverCard>
-      {place ? (
-        <Portal>
-          <div
-            ref={panelRef}
-            className="fixed z-[var(--z-modal)]"
-            style={{ top: place.top, right: place.right }}
-            data-suggestions-panel=""
-          >
-            <ReviewList id={panelId} s={s} now={now} onDone={() => close(true)} />
-          </div>
-        </Portal>
-      ) : null}
-    </>
-  );
+        <ReviewList id={panelId} s={s} now={now} onDone={() => close(true)} />
+      </div>
+    </Portal>
+  ) : null;
+  return { item, panel };
 }
 
 function ReviewList<E extends SuggestionElement>({

@@ -9,8 +9,7 @@ import {
   useEffect,
   useRef,
   useState,
-  type ReactNode,
-} from 'react';
+  type ReactNode, Fragment } from 'react';
 import { ChevronRightIcon, MENU_SURFACE_ATTR, useMenuKind, Portal } from '@liveworkspace/ui';
 import { useMenuItemProps } from './menu-item-props';
 import { useIsMobileViewport } from '../../hooks/ui/useIsMobileViewport';
@@ -74,8 +73,16 @@ const HOST_MENU = `[${MENU_SURFACE_ATTR}]`;
 // lost its TOOLS row and the poll button kept one. Every child of a flyout is
 // a section by construction (that is what the callers put there), so the
 // element being there is the whole test.
+// A fragment's children count one by one (a group of sections a host builds inline, such as livediagram's
+// ElementLayoutToolSections), so a flyout whose groups render one section between them still promotes it.
+function sections(children: ReactNode): ReactNode[] {
+  return Children.toArray(children).flatMap((c) =>
+    isValidElement<{ children?: ReactNode }>(c) && c.type === Fragment ? sections(c.props.children) : [c],
+  );
+}
+
 function loneSection(children: ReactNode): ReactNode | null {
-  const rendered = Children.toArray(children);
+  const rendered = sections(children);
   if (rendered.length !== 1) return null;
   const only = rendered[0];
   // A bare string or number is the one thing with no row to become.

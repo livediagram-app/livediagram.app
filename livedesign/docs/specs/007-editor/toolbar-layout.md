@@ -355,8 +355,8 @@ panels in their corners, the bottom-row popovers over their buttons. What change
   shows.
 - Zen hides the strip and the menu button along with the rest of the chrome.
 - The [Pages tour](pages-tour.md) follows the layout: its palette step rings the strip's card.
-- No tour is started from the strip: every tour's way in is the **Start Tour** button in the bottom bar,
-  immediately left of Search ([Live app](live-app.md) "Tab bar").
+- No tour is started from the strip: every tour's way in is the **Get Started** button in the bottom bar,
+  left of Tools ([Live app](live-app.md) "Tab bar").
 
 ## Motion
 

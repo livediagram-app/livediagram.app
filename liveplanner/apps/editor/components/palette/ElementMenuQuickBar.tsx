@@ -5,8 +5,8 @@
 // Assign Action, Add Link and Add Note at the left (an element that has one says so, tinted, and the button reads
 // View / Edit; no Add Comment: comment threads on canvas elements are retired, docs/specs/026-plan/plan-mode.md); Clear Styles alone at the right, apart from them, as it changes the element's look rather
 // than attaching to it. Each button closes the menu as it runs, as the tiles it replaces did.
-import type { ReactNode } from 'react';
-import { isBoxed, type BoxedElement, type Element } from '@liveplanner/project';
+import type { ResourceItem } from '@liveworkspace/workbench/components/palette/ResourcesFlyout';
+import { type BoxedElement, type Element } from '@liveplanner/project';
 import { Glyph, Tooltip } from '@liveplanner/ui';
 import {
   ActionMenuIcon,
@@ -16,17 +16,17 @@ import {
 import { useClearStyles } from '@liveworkspace/workbench/lib/clear-styles-store';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 
-type QuickBarItem = { key: string; label: string; icon: ReactNode; on: boolean; run: () => void };
 
 // The items the bar offers on `target`, in order: what attaches to it. A link card and a video take their link from
 // their own Link category, so the generic Add Link is not offered on them.
 export function quickBarItems(
   target: BoxedElement,
   props: Pick<EditorContextMenuProps, 'onAssignAction' | 'onLinkElement' | 'onOpenNote'>,
-): QuickBarItem[] {
-  const items: QuickBarItem[] = [
+): ResourceItem[] {
+  const items: ResourceItem[] = [
     {
       key: 'action',
+      detail: 'What a click on it does',
       label: target.action ? 'View Action' : 'Assign Action',
       icon: <ActionMenuIcon />,
       on: !!target.action,
@@ -36,6 +36,7 @@ export function quickBarItems(
   if (target.type !== 'link-card' && target.type !== 'video')
     items.push({
       key: 'link',
+      detail: 'A page or tab it opens',
       label: target.link ? 'Edit Link' : 'Add Link',
       icon: <LinkMenuIcon />,
       on: !!target.link,
@@ -43,6 +44,7 @@ export function quickBarItems(
     });
   items.push({
     key: 'note',
+    detail: 'Words kept behind it',
     label: target.note ? 'Edit Note' : 'Add Note',
     icon: <NoteMenuIcon />,
     on: !!target.note,
@@ -55,26 +57,17 @@ const BUTTON =
   'relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-md transition focus-visible:outline-2 focus-visible:outline-brand-600';
 const REST =
   'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white';
-const ON =
-  'bg-brand-50 text-brand-700 hover:bg-brand-100 dark:bg-brand-500/15 dark:text-brand-200 dark:hover:bg-brand-500/25';
-
 export function ElementMenuQuickBar({
   target,
-  props,
-  attachments,
   onClose,
 }: {
   target: Element;
-  props: EditorContextMenuProps;
-  // Whether the element takes actions, links and notes (never a Plan item, never an arrow).
-  attachments: boolean;
   onClose: () => void;
 }) {
   const clearStyles = useClearStyles();
   const canClear = !!clearStyles && clearStyles.targetIds.has(target.id);
   // Only a boxed element takes them: arrows are never linked, noted or assigned.
-  const items = attachments && isBoxed(target) ? quickBarItems(target, props) : [];
-  if (!items.length && !canClear) return null;
+  if (!!canClear) return null;
   return (
     <div
       role="toolbar"
@@ -82,23 +75,6 @@ export function ElementMenuQuickBar({
       data-element-quick-bar=""
       className="flex items-center gap-0.5 border-b border-slate-100 px-1.5 py-1 dark:border-slate-800"
     >
-      {items.map((item) => (
-        <Tooltip key={item.key} label={item.label}>
-          <button
-            type="button"
-            aria-label={item.label}
-            aria-pressed={item.on || undefined}
-            data-quick-bar={item.key}
-            onClick={() => {
-              item.run();
-              onClose();
-            }}
-            className={`${BUTTON} ${item.on ? ON : REST}`}
-          >
-            {item.icon}
-          </button>
-        </Tooltip>
-      ))}
       {canClear ? (
         <Tooltip label="Clear Styles">
           <button

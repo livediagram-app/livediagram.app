@@ -135,6 +135,7 @@ function ExplorerImpl({
     href.startsWith('/') ? router.push(href) : window.location.assign(href);
 
   return (
+    <>
     <MovablePanel
       helpArticle="explorerPanel"
       title="Explorer"
@@ -170,6 +171,9 @@ function ExplorerImpl({
       dismissOnOutside
     >
       <ExplorerPanel
+        // History and Webhooks live in the footer's Tools, for the open item (footer-tools-menu.md).
+        history={false}
+        webhooks={false}
         renderAppLogo={renderAppLogo}
         app="liveplanner"
         client={indexClient}
@@ -214,6 +218,7 @@ function ExplorerImpl({
       />
       {myWorkFeed.dialog}
     </MovablePanel>
+    </>
   );
 }
 

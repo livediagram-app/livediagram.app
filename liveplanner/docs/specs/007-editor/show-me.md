@@ -1,7 +1,7 @@
 # Show Me
 
 **Show Me** is a guided tour of one surface, run there and then on the surface itself, when the person presses
-the **Show Me** button. It is the on-the-spot cousin of the tours started from the footer's Start Tour button (the
+the **Show Me** button. It is the on-the-spot cousin of the tours started from the footer's Get Started button (the
 [Plan tour](../026-plan/plan-tour.md), the Forms tour and the Dashboards tour, [Editor tours](editor-tour.md) "Where
 it appears"); like them, Show Me never offers itself. It exists for surfaces where people make something real in
 several steps whose ideas are not visible at a glance, and where the button sits on the surface itself. Dashboard
@@ -15,7 +15,7 @@ records nothing.
 | ------------------- | -------------------------------------------------------------------------- |
 | **Show Me**         | This pattern, and the button that starts it. In the interface: **Show Me** |
 | **Show Me surface** | A surface that carries a Show Me button (the list below)                   |
-| **mode tour**       | A tab's own tour on the footer's Start Tour button (Plan, Forms); not this |
+| **mode tour**       | A tab's own tour on the footer's Get Started button (Plan, Forms); not this |
 
 ## Where it lives
 

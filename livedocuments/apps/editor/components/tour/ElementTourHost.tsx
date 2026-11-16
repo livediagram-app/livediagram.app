@@ -44,6 +44,7 @@ import {
 import {
   TOUR_OFFER_RANK,
   tourNameOf,
+  stepsLength,
   useOfferTour,
 } from '@liveworkspace/workbench/components/tour/tour-offer';
 
@@ -178,16 +179,18 @@ export function ElementTourHost() {
   };
 
   const elementsRef = useLatest(ctx.elements);
+  // What a tour's steps need from the page: built as it plays, and as Get Started counts its steps.
+  const tourEnv = () => ({
+    touch,
+    elements: elementsRef.current,
+  });
   const play = (el: Element, k: ElementTourKind) => {
     const d = ELEMENT_TOUR_DEFS[k];
     answer(k);
     track('UI', 'Started', d.token);
     debugLog('[element-tour] play', { kind: k });
     setSteps(
-      d.steps(el, {
-        touch,
-        elements: elementsRef.current,
-      }),
+      d.steps(el, tourEnv()),
     );
     setTouring({ id: el.id, kind: k });
     engineRef.current.start();
@@ -216,6 +219,11 @@ export function ElementTourHost() {
             if (el) playRef.current(el, offerKind);
           },
           onShown: () => track('UI', 'Opened', `${ELEMENT_TOUR_DEFS[offerKind].token}Offer`),
+          // Its length in steps, counted only as Get Started opens.
+          length: () => {
+            const el = elementsRef.current.find((e) => e.id === offerId);
+            return el ? stepsLength(ELEMENT_TOUR_DEFS[offerKind].steps(el, tourEnv()).length) : undefined;
+          },
           seen: elementTourSeen(ctx.userPreferences, offerKind),
         }
       : null,

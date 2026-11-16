@@ -2,7 +2,7 @@
 
 **Show Me** is a guided tour of one surface, run there and then on the surface itself, when the person presses
 the **Show Me** button. It is the on-demand cousin of [the Receptionist](../008-canvas/receptionist.md) and the other
-[tours](editor-tour.md), which start from the footer's Start Tour button; Show Me starts from its own button on the surface. It exists for surfaces
+[tours](editor-tour.md), which start from the footer's Get Started button; Show Me starts from its own button on the surface. It exists for surfaces
 where people make something real in several steps whose ideas are not visible at a glance. An
 [element tour](element-tours.md) is on the footer's button too, while its element is selected. (Until 25 October 2026
 the Workshop tour offered itself once, and element tours from a small toolbar beside the selection.)
@@ -13,7 +13,7 @@ the Workshop tour offered itself once, and element tours from a small toolbar be
 | ------------------- | -------------------------------------------------------------------------- |
 | **Show Me**         | This pattern, and the button that starts it. In the interface: **Show Me** |
 | **Show Me surface** | A surface that carries a Show Me button (the list below)                   |
-| **mode tour**       | The Workshop tour on the footer's Start Tour button; not this              |
+| **mode tour**       | The Workshop tour on the footer's Get Started button; not this              |
 
 ## Where it lives
 

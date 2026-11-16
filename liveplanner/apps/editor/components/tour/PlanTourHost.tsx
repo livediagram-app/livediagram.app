@@ -31,17 +31,24 @@ const KIND_TRACKS: Record<Kind, readonly BoardSheetTrack[]> = {
 };
 
 // A board's tracks on its start panel (plan-tour.md "Starting a tour").
-const BOARD_TRACK_COPY: Record<(typeof BOARD_TRACKS)[number], { title: string; line: string }> = {
+// Each track's missions are counted for its Get Started badge ("5 missions"), as livediagram's lessons give their length.
+const BOARD_TRACK_COPY: Record<
+  (typeof BOARD_TRACKS)[number],
+  { title: string; line: string; missions: number }
+> = {
   boards: {
     title: 'Using a Board',
+    missions: 5,
     line: 'Add, move, open, date and ship cards, on practice cards that never reach your plan.',
   },
   'card-types': {
     title: 'Card Types',
+    missions: 3,
     line: 'Make a kind of card, give it a field, and use it on this board.',
   },
   'board-setup': {
     title: 'Board Setup',
+    missions: 3,
     line: 'Rename a column, set a WIP limit and add a header widget.',
   },
 };
@@ -141,6 +148,8 @@ export function PlanTourHost() {
   // A press: the start panel, for the board the person sees (read from what is drawn). Nothing runs until a track is
   // picked there.
   const start = () => {
+    // The Get Started button toggles its popover, as Tools does.
+    if (runRef.current?.track === null) return close();
     if (active || otherTour || !offerKind) return;
     const boardId = visiblePlanWork(boardIds, boardRoot);
     debugLog('[plan-tour] offer', { kind: offerKind });
@@ -172,6 +181,7 @@ export function PlanTourHost() {
           start,
           onShown: () => track('UI', 'Opened', 'PlanTourOffer'),
           seen,
+          ownPanel: true,
         }
       : null,
   );

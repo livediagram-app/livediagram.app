@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { inboxCount } from '../data/useInbox';
 import { useExplorer } from '../explorer/context';
 import { MyWorkMenu } from '../explorer/menus';
@@ -75,6 +75,7 @@ export function Rail({
   onPick,
   phone,
   offlineCount,
+  top,
 }: {
   groups: PanelSectionGroup[];
   selected: PanelSection;
@@ -82,6 +83,8 @@ export function Rail({
   phone: boolean;
   // How many items this browser keeps only for itself: This Browser's count.
   offlineCount: number;
+  // Above New in the sidebar: the item open in the editor (the panel's current card, compact).
+  top?: ReactNode;
 }) {
   const { onCreate, kind, inbox, hasInbox, viewerId, teamName } = useExplorer();
   const canRunTeams = useTeams().canRun;
@@ -151,7 +154,7 @@ export function Rail({
       className={
         phone
           ? 'shrink-0 overflow-x-auto px-2.5 py-1 [scrollbar-width:none]'
-          : 'scrollbar-slim flex w-52 shrink-0 flex-col overflow-y-auto border-r border-slate-200 px-2.5 py-3 dark:border-slate-700/70'
+          : 'scrollbar-slim flex w-60 shrink-0 flex-col overflow-y-auto border-r border-slate-200 px-2.5 py-3 dark:border-slate-700/70'
       }
     >
       {phone ? (
@@ -164,6 +167,7 @@ export function Rail({
         </ul>
       ) : (
         <>
+          {top ? <div className="mb-3">{top}</div> : null}
           {newItem}
           {groups.map((g, i) =>
             g.sections.length ? (

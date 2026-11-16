@@ -24,7 +24,8 @@ livedesign's Choose a Layout (livedesign/docs/specs/007-editor/pages-mode.md "An
 Settings and liveworkspace.app's (livediagram/docs/specs/007-editor/user-preferences.md "The header",
 liveworkspace/docs/specs/010-site/site.md "Settings"), Collaborators
 (livediagram/docs/specs/012-collaboration/collaborator-enhancements.md) and Tab Style
-(livediagram/docs/specs/011-theme/canvas-and-theme-dialog.md, every app's alike).
+(livediagram/docs/specs/011-theme/canvas-and-theme-dialog.md, every app's alike), and one popover, the footer's
+Tools ([footer-tools-menu.md "The popover"](./footer-tools-menu.md)).
 
 ## The frame
 
@@ -129,6 +130,7 @@ What each dialog draws:
 | Site Settings      | liveworkspace.app's Settings: one account, every app. The same grid; the account rising in the bottom right, a cog on its shoulder; centre: the account at the hub of four app tiles, a dashed line to each, its ring spreading twice. Glyph: the Settings cog.                                                                  |
 | Collaborators      | The canvas's dots fading in from the title's side; the presence stack rising in the bottom right, three avatars overlapping, the front one in the accent with its presence ring spreading twice, a cursor pointing at it. Glyph: two people.                                                                                     |
 | Tab Style          | Rings spreading like a colour wheel's from the bottom right, where a fan of swatch chips rises from the edge, the front one in the accent lifting out of the fan twice. Glyph: a palette.                                                                                                                                        |
+| Tools              | A grid of dots fading toward the title, a pegboard's holes; in the bottom right a rail along the foot with four tools hung from it (a bolt, a pencil, a camera, a clock), the camera in the accent, bobbing twice. Glyph: a toolbox. |
 
 ## Where art lives
 
