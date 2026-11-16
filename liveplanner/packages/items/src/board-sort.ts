@@ -2,7 +2,7 @@
 // fields, then by rank. Pure: the board's projection runs it, the menu lists what it can sort by, and the agents'
 // listing orders a column's cards the same way.
 import { builtInFieldLabel } from './built-in-field-labels';
-import type { Item } from './item';
+import { itemVoteTotal, type Item } from './item';
 import type { CustomFieldDef, CustomFieldKind, ItemTypeDef } from './item-types';
 import { calculatedResultOf, hasResult } from './calculated-result';
 import { calculatedReaderOf, type CalculatedRead, type IsDoneStatus } from './calculated-fields';
@@ -39,6 +39,8 @@ export const BOARD_SORT_BUILT_INS = [
   // The card's stamps (docs/specs/026-plan/items.md "Created and Last Edited"): every type offers them.
   'createdAt',
   'updatedAt',
+  // The card's vote total, session votes and a public roadmap's upvotes together (docs/specs/026-plan/public-roadmap.md).
+  'votes',
 ] as const;
 type BuiltInSortField = (typeof BOARD_SORT_BUILT_INS)[number];
 
@@ -58,11 +60,17 @@ export const BOARD_SORT_KINDS: readonly CustomFieldKind[] = [
   'choice',
   // By level, Critical highest (docs/specs/026-plan/item-types.md "Risk").
   'risk',
+  // By its total, as the card shows it (docs/specs/026-plan/item-types.md "Comments and Votes fields").
+  'votes',
 ];
 
 // The kind a custom field sorts as: a moment and a range sort as dates do.
 const sortKindOf = (kind: CustomFieldKind): BoardSortKind =>
-  kind === 'datetime' || kind === 'daterange' ? 'date' : (kind as BoardSortKind);
+  kind === 'datetime' || kind === 'daterange'
+    ? 'date'
+    : kind === 'votes'
+      ? 'number'
+      : (kind as BoardSortKind);
 
 export type BoardSortKind =
   | 'priority'
@@ -100,6 +108,7 @@ const BUILT_IN_SORT_FIELDS: Readonly<Record<BuiltInSortField, BoardSortField>> =
   due: { id: 'due', label: 'Due Date', kind: 'date' },
   createdAt: { id: 'createdAt', label: STAMP_FIELD_LABELS.createdAt, kind: 'date' },
   updatedAt: { id: 'updatedAt', label: STAMP_FIELD_LABELS.updatedAt, kind: 'date' },
+  votes: { id: 'votes', label: 'Votes', kind: 'number' },
 };
 
 // A built-in sort field named as the board's types name it (a stamp keeps its own name).
@@ -199,12 +208,15 @@ function readerFor(
     };
   if (field === 'estimate') return (item) => num(item.fields['estimate']);
   if (field === 'start' || field === 'due') return (item) => day(item.fields[field]);
+  // A card with no votes counts 0, so it sorts among the others rather than after them.
+  if (field === 'votes') return (item) => itemVoteTotal(item);
   const def = customFieldOf(type, field);
   if (!def) return none;
   if (def.kind === 'number' || def.kind === 'currency' || def.kind === 'rating')
     return (item) => num(item.fields[field]);
   // Held to 0..100 as every reader draws it, so a stray value sorts where its bar shows.
   if (def.kind === 'percent') return (item) => percentValue(item.fields[field]);
+  if (def.kind === 'votes') return (item) => itemVoteTotal(item, field);
   if (def.kind === 'duration') return (item) => durationMinutes(def, item.fields[field]);
   if (def.kind === 'date') return (item) => day(item.fields[field]);
   if (def.kind === 'datetime') return (item) => readInstant(item.fields[field])?.ms;

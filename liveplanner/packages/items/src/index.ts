@@ -95,6 +95,7 @@ export * from './newer-fields';
 export * from './notify-fields';
 export * from './assistant';
 export * from './comments-votes-fields';
+export * from './public-votes';
 export * from './vote-count-in';
 export * from './type-catalogue-change';
 export * from './linked-cards';
