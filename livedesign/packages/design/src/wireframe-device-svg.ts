@@ -240,7 +240,9 @@ function browserFrame(W: number, H: number, paint: Paint, name?: string): string
         : `<circle cx="${cx}" cy="${r2(cy)}" r="6" fill="${c}"/>`,
     );
   });
-  const stroke = `fill="none" stroke="${ink}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"`;
+  const line = `fill="none" stroke="${ink}" stroke-linecap="round" stroke-linejoin="round"`;
+  // One stroke-width per element: a repeated attribute is invalid XML (a strict SVG reader, and the PDF writer, refuse it).
+  const stroke = `${line} stroke-width="1.8"`;
   parts.push(
     `<path d="M108 ${r2(cy - 6)}L102 ${r2(cy)}L108 ${r2(cy + 6)}" ${stroke}/>`,
     `<path d="M132 ${r2(cy - 6)}L138 ${r2(cy)}L132 ${r2(cy + 6)}" ${stroke} stroke-opacity="0.45"/>`,
@@ -258,7 +260,7 @@ function browserFrame(W: number, H: number, paint: Paint, name?: string): string
   // The lock: a shackle over a body.
   const lx = fieldX + 18;
   parts.push(
-    `<path d="M${lx - 3} ${r2(cy - 1)}V${r2(cy - 4)}A3 3 0 0 1 ${lx + 3} ${r2(cy - 4)}V${r2(cy - 1)}" ${stroke} stroke-width="1.4"/>`,
+    `<path d="M${lx - 3} ${r2(cy - 1)}V${r2(cy - 4)}A3 3 0 0 1 ${lx + 3} ${r2(cy - 4)}V${r2(cy - 1)}" ${line} stroke-width="1.4"/>`,
     `<rect x="${lx - 5}" y="${r2(cy - 1)}" width="10" height="7.5" rx="1.6" fill="${ink}"/>`,
     `<text x="${fieldX + 32}" y="${r2(cy + 4.5)}" font-family="${BAR_FONT}" font-size="13" fill="${ink}">${xmlEscape(wireframeAddress(name))}</text>`,
   );
