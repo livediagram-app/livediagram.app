@@ -108,7 +108,13 @@ client (`401 invalid_token` otherwise; `400 access_token_required` without one).
   path ride in cookies for 600 s; a return longer than 1,500 characters is not bounced. `prompt=none` answers a code or
   `login_required` at once. The boot script also leaves `window.__liveworkspaceSilentSignIn` (`SILENT_RETRY_GLOBAL`), which
   `retrySilentSignIn` calls after a page's first token answer: it bounces once when the hint was `1` at load and no longer
-  is (the session ended in another app), past the tab mark but under every other guard.
+  is (the session ended in another app), past the tab mark but under every other guard, and answers true when it went.
+  Every bounce sets `window.__liveworkspaceSilentLeaving = true` (`SILENT_LEAVING_GLOBAL`) before `location.replace`;
+  `silentSignInLeaving()` reads it. While it is set the guest hand-off (`createGuestTokens().startGuestHandoff`, checked
+  again in its next-task timer) navigates nowhere and never resolves, and the editors' accounts bridges and the site's
+  `appAccountAnswer` never settle when `retrySilentSignIn()` answered true (Work Tracker 1007: the guest hand-off's
+  navigation had replaced the bounce's). A refused refresh (`refresh_failed`) clears the refresh cookie, hint and name
+  only, never the signed-out mark.
 - Signing out: `endAccountsSession` (`POST /api/auth/end-session` with the client secret and the refresh token, so it
   runs in the app's Worker) answers the ticket, or null on any failure or after 5 s; `endSessionUrl` builds the browser's hop
   (`client_id`, `post_logout_redirect_uri`, `ticket`) ([sessions-and-guests.md](sessions-and-guests.md#ending-a-session-end-sessionts)).
@@ -208,7 +214,7 @@ Registration (`POST /oauth/register`, RFC 7591) is open, so a registered client'
 `https://livedocuments.app/api`, `https://livedesign.app/api`, `https://livehuddle.app/api`; staging their
 `staging.` twins;
 development `http://localhost/api`. `SILENT_SESSION_KEY`, `SILENT_GUARD_MAX_AGE_SECONDS` 120,
-`SIGNED_OUT_MAX_AGE_SECONDS` 400 d, `SIGNED_OUT_VALUE` `2`, `SILENT_RETURN_KEY`, `SILENT_RETURN_ATTRIBUTE`, `SILENT_RETRY_GLOBAL`,
+`SIGNED_OUT_MAX_AGE_SECONDS` 400 d, `SIGNED_OUT_VALUE` `2`, `SILENT_RETURN_KEY`, `SILENT_RETURN_ATTRIBUTE`, `SILENT_RETRY_GLOBAL`, `SILENT_LEAVING_GLOBAL`,
 `SILENT_RETURN_MAX_LENGTH` 1,500, `GUEST_STATE_PATTERN`,
 `END_SESSION_TIMEOUT_MS` 5 s
 (`packages/auth-client`); `DEVICE_CODE_TTL_S` 600, `DEVICE_POLL_INTERVAL_S` 5, `DEVICE_SLOW_DOWN_S` 5,
