@@ -27,7 +27,11 @@ export type SheetSourceHandlers = {
   // A source app's sheets, for a picker.
   listSheets?: (itemId: string) => Promise<SheetListResult>;
   // What one range holds now, and (`watcher`, a reader item's id) a watch on its sheet. Reads only that range.
-  sheetRange?: (itemId: string, ask: SheetRangeAsk, watcher: string | null) => Promise<SheetRangeResult>;
+  sheetRange?: (
+    itemId: string,
+    ask: SheetRangeAsk,
+    watcher: string | null,
+  ) => Promise<SheetRangeResult>;
   // A reader app: a sheet its item draws from changed. Tells the item's open sessions; stores nothing.
   sourceChanged?: (itemId: string, change: SourceChange) => Promise<unknown>;
 };

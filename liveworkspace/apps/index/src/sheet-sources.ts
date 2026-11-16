@@ -165,7 +165,8 @@ export async function handleSheetChanged(
       `/items/${encodeURIComponent(row.id)}/source-changed`,
       change,
     );
-    if (!result.ok) console.warn('[index] source-changed failed', { app: row.app, error: result.error });
+    if (!result.ok)
+      console.warn('[index] source-changed failed', { app: row.app, error: result.error });
   });
   const reached = new Set(told.map((r) => r.id));
   return json({ gone: unique.filter((w) => !reached.has(w)) });

@@ -46,9 +46,11 @@ describe('readSheetRangeAsk', () => {
   });
 
   it('takes A1 text, trimmed, and picked columns', () => {
-    expect(readSheetRangeAsk({ sheetId: 's1', a1: ' B2:E9 ', cols: ['c0002', 'c0003'] })).toEqual(
-      { sheetId: 's1', a1: 'B2:E9', cols: ['c0002', 'c0003'] },
-    );
+    expect(readSheetRangeAsk({ sheetId: 's1', a1: ' B2:E9 ', cols: ['c0002', 'c0003'] })).toEqual({
+      sheetId: 's1',
+      a1: 'B2:E9',
+      cols: ['c0002', 'c0003'],
+    });
   });
 
   it.each([
@@ -64,7 +66,10 @@ describe('readSheetRangeAsk', () => {
     ['A1 too long', { sheetId: 's1', a1: 'A'.repeat(25) }],
     ['empty cols', { sheetId: 's1', a1: 'A1', cols: [] }],
     ['repeated cols', { sheetId: 's1', a1: 'A1', cols: ['c0001', 'c0001'] }],
-    ['too many cols', { sheetId: 's1', a1: 'A1', cols: Array.from({ length: 14 }, (_, i) => `c${1000 + i}`) }],
+    [
+      'too many cols',
+      { sheetId: 's1', a1: 'A1', cols: Array.from({ length: 14 }, (_, i) => `c${1000 + i}`) },
+    ],
     ['a bad col', { sheetId: 's1', a1: 'A1', cols: ['C!'] }],
   ])('refuses %s', (_why, raw) => {
     expect(readSheetRangeAsk(raw)).toBeNull();
@@ -98,9 +103,9 @@ describe('answers', () => {
   });
 
   it('reads a change, without repeats', () => {
-    expect(readSourceChange({ app: 'liveplanner', itemId: 'p1', sheetIds: ['s1', 's1', 's2'] })).toEqual(
-      { app: 'liveplanner', itemId: 'p1', sheetIds: ['s1', 's2'] },
-    );
+    expect(
+      readSourceChange({ app: 'liveplanner', itemId: 'p1', sheetIds: ['s1', 's1', 's2'] }),
+    ).toEqual({ app: 'liveplanner', itemId: 'p1', sheetIds: ['s1', 's2'] });
     expect(readSourceChange({ app: 'livediagram', itemId: 'p1', sheetIds: ['s1'] })).toBeNull();
     expect(readSourceChange({ app: 'liveplanner', itemId: 'p1', sheetIds: [] })).toBeNull();
     expect(readSourceChange({ app: 'liveplanner', itemId: 'p1', sheetIds: 's1' })).toBeNull();
@@ -134,7 +139,12 @@ describe('the clients', () => {
 
   it('tells the index a sheet changed, answering the watchers gone', async () => {
     const { seen, doFetch } = fakeFetch({ gone: ['d2'] });
-    const app = createIndexAppClient({ app: 'liveplanner', key: 'k', baseUrl: 'https://x/api/index', fetch: doFetch });
+    const app = createIndexAppClient({
+      app: 'liveplanner',
+      key: 'k',
+      baseUrl: 'https://x/api/index',
+      fetch: doFetch,
+    });
     await expect(app.sheetChanged('p1', ['s1'], ['d1', 'd2'])).resolves.toEqual(['d2']);
     expect(seen[0]).toMatchObject({
       url: 'https://x/api/index/app/items/p1/sheet-changed',

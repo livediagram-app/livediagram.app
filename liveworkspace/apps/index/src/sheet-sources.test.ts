@@ -94,7 +94,9 @@ describe('reading a range', () => {
     const { ada, plan } = await setup();
     const code = await shareLink(ada.auth, plan.id, { level: 'view' });
     const bo = await person('user_bo');
-    expect((await call(`/share/${code}`, { auth: bo.auth, headers: { 'X-Share-Code': code } })).status).toBe(200);
+    expect(
+      (await call(`/share/${code}`, { auth: bo.auth, headers: { 'X-Share-Code': code } })).status,
+    ).toBe(200);
     expect((await readRange(bo.auth, plan.id)).status).toBe(200);
   });
 
@@ -194,7 +196,12 @@ describe('watching', () => {
     const watch = { sheetId: 's1', a1: 'A1', watch: { itemId: doc.id } };
     await readRange(ada.auth, plan.id, watch);
     await readRange(ada.auth, plan.id, watch, { 'X-Index-Grant': otherGrant });
-    await readRange(ada.auth, plan.id, { ...watch, watch: { itemId: plan.id } }, { 'X-Index-Grant': planGrant });
+    await readRange(
+      ada.auth,
+      plan.id,
+      { ...watch, watch: { itemId: plan.id } },
+      { 'X-Index-Grant': planGrant },
+    );
     await readRange(ada.auth, plan.id, { ...watch, watch: 'nope' });
     expect(doorCalls().map((c) => (c.body as { watcher?: string }).watcher)).toEqual([
       undefined,
@@ -228,7 +235,9 @@ describe('listing sheets', () => {
     const res = await call(`/items/${plan.id}/sheets`, { auth: ada.auth });
     expect(res.status).toBe(200);
     expect(await body(res)).toEqual({ itemId: plan.id, itemName: 'Q4 Metrics', sheets: SHEETS });
-    expect(doorCalls()[0]!.url).toBe(`https://liveplanner.app/api/internal/items/${plan.id}/sheets`);
+    expect(doorCalls()[0]!.url).toBe(
+      `https://liveplanner.app/api/internal/items/${plan.id}/sheets`,
+    );
   });
 
   it('answers as missing for a stranger and passes on a failed door', async () => {
@@ -244,7 +253,11 @@ describe('listing sheets', () => {
 });
 
 describe('the change signal', () => {
-  const KEYS: Record<string, string> = { liveplanner: 'lp-key', livediagram: 'ld-key', livedocuments: 'lvd-key' };
+  const KEYS: Record<string, string> = {
+    liveplanner: 'lp-key',
+    livediagram: 'ld-key',
+    livedocuments: 'lvd-key',
+  };
   const signal = (planId: string, input: unknown, app = 'liveplanner') =>
     call(`/app/items/${planId}/sheet-changed`, {
       method: 'POST',
@@ -283,8 +296,12 @@ describe('the change signal', () => {
 
   it("refuses another app's plan, an app without sheets, and a malformed body", async () => {
     const { plan, doc } = await setup();
-    expect((await signal(plan.id, { sheetIds: ['s1'], watchers: [doc.id] }, 'livediagram')).status).toBe(403);
-    expect((await signal(doc.id, { sheetIds: ['s1'], watchers: [plan.id] }, 'livedocuments')).status).toBe(403);
+    expect(
+      (await signal(plan.id, { sheetIds: ['s1'], watchers: [doc.id] }, 'livediagram')).status,
+    ).toBe(403);
+    expect(
+      (await signal(doc.id, { sheetIds: ['s1'], watchers: [plan.id] }, 'livedocuments')).status,
+    ).toBe(403);
     expect((await signal(plan.id, { sheetIds: [], watchers: [doc.id] })).status).toBe(400);
     expect((await signal(plan.id, { sheetIds: ['s1'], watchers: [] })).status).toBe(400);
     expect((await signal('nope_plan', { sheetIds: ['s1'], watchers: [doc.id] })).status).toBe(404);

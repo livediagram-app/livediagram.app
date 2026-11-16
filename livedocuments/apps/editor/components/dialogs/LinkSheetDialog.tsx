@@ -356,7 +356,12 @@ export function LinkSheetDialog({
 
 function ListSkeleton({ rows = 4 }: { rows?: number }) {
   return (
-    <div className="flex flex-col gap-1.5 px-1 py-1" role="status" aria-busy="true" aria-label="Loading">
+    <div
+      className="flex flex-col gap-1.5 px-1 py-1"
+      role="status"
+      aria-busy="true"
+      aria-label="Loading"
+    >
       {Array.from({ length: rows }, (_, i) => (
         <div
           key={i}

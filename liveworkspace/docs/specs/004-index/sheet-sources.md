@@ -41,13 +41,13 @@ link made. A person who can open the plan sees live values; anyone else sees the
   other sheet is `404`.
 - Answers are `Cache-Control: no-store`. They are never written to the index.
 
-| Answer                              | When                                                                    |
-| ----------------------------------- | ----------------------------------------------------------------------- |
-| `200` the read                      | the person can open the plan and the sheet and range are there          |
-| `400 invalid_range`                 | the body is not a sheet id with a range of ids or A1 text               |
-| `404 not_found`                     | no such plan, the person cannot reach it, or the sheet is gone or off their tab |
-| `409 range_gone`                    | a corner row or column of the range was deleted                         |
-| `503 source_unavailable`            | the sheet app did not answer (its doors unset, down or slow)            |
+| Answer                   | When                                                                            |
+| ------------------------ | ------------------------------------------------------------------------------- |
+| `200` the read           | the person can open the plan and the sheet and range are there                  |
+| `400 invalid_range`      | the body is not a sheet id with a range of ids or A1 text                       |
+| `404 not_found`          | no such plan, the person cannot reach it, or the sheet is gone or off their tab |
+| `409 range_gone`         | a corner row or column of the range was deleted                                 |
+| `503 source_unavailable` | the sheet app did not answer (its doors unset, down or slow)                    |
 
 ## The door
 

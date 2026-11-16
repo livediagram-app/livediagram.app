@@ -131,8 +131,12 @@ export function createIndexAppClient({ app, key, baseUrl, fetch: doFetch }: Inde
       sheetIds: readonly string[],
       watchers: readonly string[],
     ): Promise<string[]> =>
-      (await post<{ gone: string[] }>(`/items/${enc(itemId)}/sheet-changed`, { sheetIds, watchers }))
-        .gone,
+      (
+        await post<{ gone: string[] }>(`/items/${enc(itemId)}/sheet-changed`, {
+          sheetIds,
+          watchers,
+        })
+      ).gone,
     communityStates: async (posts: readonly CommunityStateAsk[]): Promise<CommunityStateAnswer[]> =>
       (await post<{ states: CommunityStateAnswer[] }>('/community/states', { posts })).states,
   };

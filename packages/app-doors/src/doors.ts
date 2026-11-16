@@ -174,10 +174,13 @@ export function createAppDoors(
 
     async listSheets(app, itemId) {
       const { origin, key } = door(app);
-      const res = await doFetch(`${origin}/api/internal/items/${encodeURIComponent(itemId)}/sheets`, {
-        headers: { Authorization: `Bearer ${key}` },
-        signal: AbortSignal.timeout(timeoutMs),
-      });
+      const res = await doFetch(
+        `${origin}/api/internal/items/${encodeURIComponent(itemId)}/sheets`,
+        {
+          headers: { Authorization: `Bearer ${key}` },
+          signal: AbortSignal.timeout(timeoutMs),
+        },
+      );
       if (res.status !== 200) {
         await res.body?.cancel();
         throw new DoorError(res.status, `${caller}: sheets ${res.status}`);
