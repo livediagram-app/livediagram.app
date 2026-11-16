@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   createEmailLayout,
+  EMAIL_HEAD,
   MENTION_QUOTE_CHARS,
   mentionQuote,
   notificationSettingsUrl,
@@ -22,6 +23,13 @@ describe('the shared email layout', () => {
   it('draws the brand, both lockups, the tagline and the default footer', () => {
     const html = layout.shell('https://www.example.app', { heading: 'Hi', intro: 'Intro' });
     expect(html.startsWith('<!doctype html>')).toBe(true);
+    // The charset in the markup itself (Work Tracker 1005), inside the first 1024 bytes where a browser looks for it
+    // in a saved file, and the viewport, both before the body.
+    expect(html.startsWith(`<!doctype html>\n<html>${EMAIL_HEAD}<body`)).toBe(true);
+    expect(EMAIL_HEAD).toContain('<meta charset="utf-8">');
+    expect(EMAIL_HEAD).toContain(
+      '<meta name="viewport" content="width=device-width, initial-scale=1">',
+    );
     expect(html).toContain('background:#555555');
     expect(html).toContain('background-color:#111111;background-image:linear-gradient');
     expect(html.match(/<span style="color:#222222">live<\/span>test/g)).toHaveLength(2);
