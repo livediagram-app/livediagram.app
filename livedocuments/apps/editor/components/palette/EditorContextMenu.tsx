@@ -147,11 +147,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
       >
         {/* The quick bar (docs/specs/008-canvas/element-menu-quick-bar.md): Assign Action and Comment, Delete at its
             right, one row above every category. */}
-        <ElementMenuQuickBar
-          target={target}
-          onDelete={props.onDeleteElement}
-          onClose={onClose}
-        />
+        <ElementMenuQuickBar target={target} onDelete={props.onDeleteElement} onClose={onClose} />
         {/* Layer — pinned FIRST in the menu (before the type-specific
             categories, which render conditionally and so would otherwise
             shuffle Layer's position around). Groups front/back + opacity +

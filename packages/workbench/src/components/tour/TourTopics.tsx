@@ -49,7 +49,9 @@ export function TourTopics<Id extends string>({
             {heading}
           </h3>
           {line ? (
-            <p className="mt-1 text-[13px] leading-snug text-slate-600 dark:text-slate-300">{line}</p>
+            <p className="mt-1 text-[13px] leading-snug text-slate-600 dark:text-slate-300">
+              {line}
+            </p>
           ) : null}
         </div>
       ) : null}

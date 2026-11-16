@@ -57,7 +57,14 @@ export function ChromeControls({
   const snapshots = useSnapshotsToolsItem();
   // Search, first in Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md).
   const search: ChromeToolsItem | null = onOpenSearch
-    ? { id: 'search', group: 'find', label: 'Search', description: 'Find documents, tabs and elements.', icon: <SearchGlyph />, onSelect: () => onOpenSearch() }
+    ? {
+        id: 'search',
+        group: 'find',
+        label: 'Search',
+        description: 'Find documents, tabs and elements.',
+        icon: <SearchGlyph />,
+        onSelect: () => onOpenSearch(),
+      }
     : null;
   return (
     <>
@@ -67,7 +74,15 @@ export function ChromeControls({
       <TourOfferButton labelled={labelled} />
       {/* Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md): the tools that work on the
           whole item, in one menu, drawn only while it holds one. */}
-      <ChromeToolsMenu labelled={labelled} items={[search, suggest.item, snapshots, onOpenHistory ? historyToolsItem(onOpenHistory) : null]} />
+      <ChromeToolsMenu
+        labelled={labelled}
+        items={[
+          search,
+          suggest.item,
+          snapshots,
+          onOpenHistory ? historyToolsItem(onOpenHistory) : null,
+        ]}
+      />
       {suggest.panel}
       {github ? (
         <>

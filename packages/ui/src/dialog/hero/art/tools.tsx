@@ -78,7 +78,15 @@ const PIECES = (
     {/* The rail, its pegs' holes, and the four tools hung from it. */}
     <path d={`M1 ${RAIL_Y}H95`} stroke="var(--hero-mark)" strokeWidth="1.5" strokeLinecap="round" />
     {[0, 1, 2, 3].map((i) => (
-      <circle key={i} cx={XS[i]! + TILE / 2} cy={RAIL_Y} r="1.75" fill="var(--hero-plate)" stroke="var(--hero-mark)" strokeWidth="1.25" />
+      <circle
+        key={i}
+        cx={XS[i]! + TILE / 2}
+        cy={RAIL_Y}
+        r="1.75"
+        fill="var(--hero-plate)"
+        stroke="var(--hero-mark)"
+        strokeWidth="1.25"
+      />
     ))}
     <Hung x={XS[0]!} glyph={BOLT} />
     <Hung x={XS[1]!} glyph={PENCIL} />

@@ -2,18 +2,18 @@
 
 // The footer's History (docs/specs/006-document/version-history.md "In the editor"; blueprint VH19).
 
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const track = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/telemetry', () => ({ track }));
 
 import {
-  HistoryButton,
+  historyToolsItem,
   offersHistory,
   openHistoryFromFooter,
   type HistoryGate,
-} from './HistoryButton';
+} from './history-tools-item';
 import { closeVersionHistory, versionHistoryState } from '@/lib/version-history-store';
 
 afterEach(() => {
@@ -49,19 +49,13 @@ describe('offersHistory', () => {
   });
 });
 
-describe('HistoryButton', () => {
-  it('opens Version History when pressed, named History beside its clock', () => {
+describe('historyToolsItem', () => {
+  it('is the Tools menu’s Version History row, in Versioning, opening it when picked', () => {
     const onOpen = vi.fn();
-    render(<HistoryButton onOpen={onOpen} labelled />);
-    const button = screen.getByRole('button', { name: 'History' });
-    expect(button.textContent).toBe('History');
-    fireEvent.click(button);
+    const item = historyToolsItem(onOpen);
+    expect(item).toMatchObject({ id: 'history', group: 'versions', label: 'Version History' });
+    item.onSelect(null);
     expect(onOpen).toHaveBeenCalledOnce();
-  });
-
-  it('is its icon alone, still named History, with labels off', () => {
-    render(<HistoryButton onOpen={() => {}} />);
-    expect(screen.getByRole('button', { name: 'History' }).textContent).toBe('');
   });
 });
 

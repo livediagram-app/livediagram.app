@@ -6,7 +6,7 @@
 // plate, its name and a quiet line under it. A row the element already has fills its plate and wears an "Added" badge,
 // and reads View / Edit. Up, Down, Home and End move between rows; each closes the menu as it runs.
 import { useRef, type KeyboardEvent, type ReactNode } from 'react';
-import { useMenuKind } from '@liveworkspace/ui';
+import { Glyph, useMenuKind } from '@liveworkspace/ui';
 import { MenuFlyoutSection } from '../primitives/MenuFlyoutSection';
 
 const ROW =
@@ -14,8 +14,8 @@ const ROW =
 const PLATE =
   'flex size-8 shrink-0 items-center justify-center rounded-[9px] transition-colors duration-micro [&_svg]:size-4';
 const PLATE_OFF =
-  'bg-brand-50 text-brand-600 ring-1 ring-inset ring-brand-500/10 group-hover:bg-brand-100 dark:bg-brand-500/10 dark:text-brand-300 dark:group-hover:bg-brand-500/20';
-const PLATE_ON = 'bg-brand-600 text-white shadow-sm dark:bg-brand-500';
+  'bg-brand-50 text-brand-700 ring-1 ring-inset ring-brand-500/10 group-hover:bg-brand-100 dark:bg-brand-500/10 dark:text-brand-300 dark:group-hover:bg-brand-500/20';
+const PLATE_ON = 'bg-brand-700 text-white shadow-sm dark:bg-brand-600';
 
 export type ResourceItem = {
   key: string;
@@ -32,19 +32,9 @@ export type ResourceItem = {
 // The glyph on the category's row: a paperclip, for what is attached to the element.
 export function ResourcesMenuGlyph() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={14}>
       <path d="M13 7.5 8.2 12.3a3.2 3.2 0 0 1-4.5-4.5l5-5a2.1 2.1 0 0 1 3 3l-5 5a1.1 1.1 0 0 1-1.5-1.5L9.7 4.8" />
-    </svg>
+    </Glyph>
   );
 }
 

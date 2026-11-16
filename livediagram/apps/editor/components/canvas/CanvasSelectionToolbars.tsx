@@ -98,41 +98,40 @@ export function CanvasSelectionToolbars({
   // Type and Lane. A relationship joining two entities: its cardinality presets.
   usePublishElementKindTools(selected?.id ?? null, {
     ...((!readOnly || !!props.participantPalette) &&
-            !selectedLocked &&
-            selected &&
-            isMindNode(selected)
-              ? {
-                  onAddMindChild: () => props.onGrowMindNode(selected.id, 'child'),
-                  onAddMindSibling: () => props.onGrowMindNode(selected.id, 'sibling'),
-                }
-              : {}),
+    !selectedLocked &&
+    selected &&
+    isMindNode(selected)
+      ? {
+          onAddMindChild: () => props.onGrowMindNode(selected.id, 'child'),
+          onAddMindSibling: () => props.onGrowMindNode(selected.id, 'sibling'),
+        }
+      : {}),
     ...((!readOnly || !!props.participantPalette) &&
-            !selectedLocked &&
-            selected &&
-            isFlowchartStep(selected)
-              ? {
-                  flowchartStep: flowchartStepToolbarFor(
-                    props.elements,
-                    selected,
-                    props.onGrowMindNode,
-                    props.flowchartActions,
-                  ),
-                }
-              : {}),
+    !selectedLocked &&
+    selected &&
+    isFlowchartStep(selected)
+      ? {
+          flowchartStep: flowchartStepToolbarFor(
+            props.elements,
+            selected,
+            props.onGrowMindNode,
+            props.flowchartActions,
+          ),
+        }
+      : {}),
     // Save to Library (liveworkspace/docs/specs/006-media/libraries.md): at the bar's right, apart from the rest.
     saveToLibrary: readOnly || !selected ? undefined : () => libraryDraftOf([selected]),
-    cardinality: 
-              !readOnly &&
-              !selectedLocked &&
-              props.entityActions &&
-              selected?.type === 'arrow' &&
-              joinsEntities(selected, elements)
-                ? {
-                    current: cardinalityLabel(selected),
-                    onPick: props.entityActions.setCardinalitySelected,
-                  }
-                : undefined
-            ,
+    cardinality:
+      !readOnly &&
+      !selectedLocked &&
+      props.entityActions &&
+      selected?.type === 'arrow' &&
+      joinsEntities(selected, elements)
+        ? {
+            current: cardinalityLabel(selected),
+            onPick: props.entityActions.setCardinalitySelected,
+          }
+        : undefined,
   });
   return (
     <>

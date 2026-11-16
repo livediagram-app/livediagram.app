@@ -339,9 +339,11 @@ function PanelInner({
             {stacked ? currentCard : null}
             {notice}
           </div>
+          {/* A rule under that top block only when it holds something: with nothing above, the popover header's own
+              rule is the one line. */}
           <div
             data-panel-body={layout}
-            className={`flex border-t border-slate-200 dark:border-slate-700/70 ${PANEL_BODY[layout]}`}
+            className={`flex [:not(:empty)+&]:border-t border-slate-200 dark:border-slate-700/70 ${PANEL_BODY[layout]}`}
           >
             <Rail
               groups={groups}

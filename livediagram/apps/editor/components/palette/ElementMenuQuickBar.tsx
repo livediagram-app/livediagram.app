@@ -12,12 +12,14 @@ import {
   LinkMenuIcon,
   NoteMenuIcon,
 } from '@/components/palette/context-menu-icons';
-import { ElementKindToolButtons, useElementKindTools } from '@/components/canvas/element-kind-tools';
+import {
+  ElementKindToolButtons,
+  useElementKindTools,
+} from '@/components/canvas/element-kind-tools';
 import { PopoverButton } from '@/components/canvas/SelectionPopoverButton';
 import { ClearStylesGlyph } from '@/components/canvas/quick-style-rows';
 import { useClearStyles } from '@liveworkspace/workbench/lib/clear-styles-store';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
-
 
 // The items the bar offers on `target`, in order: what attaches to it. A link card and a video take their link from
 // their own Link category, so the generic Add Link is not offered on them.
@@ -68,13 +70,7 @@ export function quickBarItems(
   return items;
 }
 
-export function ElementMenuQuickBar({
-  target,
-  onClose,
-}: {
-  target: Element;
-  onClose: () => void;
-}) {
+export function ElementMenuQuickBar({ target, onClose }: { target: Element; onClose: () => void }) {
   // The element kind's own verbs (element-kind-tools.tsx): Add Child, Add Step, cardinality and the like.
   const tools = useElementKindTools(target.id);
   // Clear Styles, last at the right after Save to Library: on an element whose look the Quick Style panel can reset.

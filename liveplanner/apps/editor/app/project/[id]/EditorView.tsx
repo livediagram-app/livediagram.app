@@ -199,12 +199,12 @@ export function EditorView() {
   const { automationsScope, automationsGate } = useEditorAutomations(ctx, isOffline);
   const snapshotsDoor = useEditorSnapshots(ctx, isOffline);
   // Subscribe to Calendar's scope: the tab menu's row (editor-view-hooks).
-  const calendarFeedScope = useEditorCalendarFeed(ctx, isOffline);
+  const { calendarFeedScope, calendarFeedGate } = useEditorCalendarFeed(ctx, isOffline);
   // Publish as Roadmap's scope and the active tab's boards: the tab menu's row (editor-view-hooks).
   const roadmapScope = useEditorRoadmap(ctx, isOffline);
   const roadmapBoards = useMemo(() => boardIdsOnTab(activeTab.elements), [activeTab.elements]);
   // Email to Board's scope: the tab menu's row, on the same boards (editor-view-hooks).
-  const emailIntakeScope = useEditorEmailIntake(ctx, isOffline);
+  const { emailIntakeScope, emailIntakeGate } = useEditorEmailIntake(ctx, isOffline);
 
   return (
     // Which paper the canvas is, for every element that carries no colour of
@@ -222,9 +222,13 @@ export function EditorView() {
       signedIn={!!accountUserId}
     >
       <SnapshotsDoorProvider door={snapshotsDoor}>
-        <CalendarFeedHost scope={calendarFeedScope}>
+        <CalendarFeedHost scope={calendarFeedScope} gate={calendarFeedGate}>
           <RoadmapHost scope={roadmapScope} boardIds={roadmapBoards}>
-            <EmailIntakeHost scope={emailIntakeScope} boardIds={roadmapBoards}>
+            <EmailIntakeHost
+              scope={emailIntakeScope}
+              gate={emailIntakeGate}
+              boardIds={roadmapBoards}
+            >
               <CursorsDrawnContext.Provider value={cursorsDrawn}>
                 <SelectionStoreProvider store={ctx.selectionStore}>
                   <ViewportStoreProvider store={ctx.viewport}>
@@ -291,36 +295,36 @@ export function EditorView() {
                                                   fallbackClassName="flex-1"
                                                 >
                                                   {/* The outlines relayed changesets draw (docs/specs/024-agents/agent-changesets.md). */}
-                                                    <ChangesetRevealContext.Provider
-                                                      value={ctx.changesetReveals}
+                                                  <ChangesetRevealContext.Provider
+                                                    value={ctx.changesetReveals}
+                                                  >
+                                                    {/* The focus rings of the agents present (docs/specs/024-agents/agent-presence.md). */}
+                                                    <AgentFocusContext.Provider
+                                                      value={ctx.agentFocusByElement}
                                                     >
-                                                      {/* The focus rings of the agents present (docs/specs/024-agents/agent-presence.md). */}
-                                                      <AgentFocusContext.Provider
-                                                        value={ctx.agentFocusByElement}
-                                                      >
-                                                        {/* No comment badges for a viewer in an embed (docs/specs/013-workspace/embeds.md),
+                                                      {/* No comment badges for a viewer in an embed (docs/specs/013-workspace/embeds.md),
                                                 nor for a Community visitor (docs/specs/025-community/community.md). */}
-                                                        <CommentBadgesContext.Provider
-                                                          value={
-                                                            !(embedMode && isReadOnly) &&
-                                                            !sessionCommunity
-                                                          }
-                                                        >
-                                                          {/* Indicators are editor chrome: an embed never draws them (docs/specs/008-canvas/element-indicators.md). */}
-                                                          {/* A connected tab's page stands in the board's place (connected-tabs.md), once a visitor's name prompt (drawn by the canvas host) is answered. */}
-                                                          {ctx.activeTabConnected &&
-                                                          !anyWelcomeOpen ? (
-                                                            <ConnectedTabHost />
-                                                          ) : (
-                                                            <SuppressElementIndicators
-                                                              when={embedMode}
-                                                            >
-                                                              <EditorCanvasHost />
-                                                            </SuppressElementIndicators>
-                                                          )}
-                                                        </CommentBadgesContext.Provider>
-                                                      </AgentFocusContext.Provider>
-                                                    </ChangesetRevealContext.Provider>
+                                                      <CommentBadgesContext.Provider
+                                                        value={
+                                                          !(embedMode && isReadOnly) &&
+                                                          !sessionCommunity
+                                                        }
+                                                      >
+                                                        {/* Indicators are editor chrome: an embed never draws them (docs/specs/008-canvas/element-indicators.md). */}
+                                                        {/* A connected tab's page stands in the board's place (connected-tabs.md), once a visitor's name prompt (drawn by the canvas host) is answered. */}
+                                                        {ctx.activeTabConnected &&
+                                                        !anyWelcomeOpen ? (
+                                                          <ConnectedTabHost />
+                                                        ) : (
+                                                          <SuppressElementIndicators
+                                                            when={embedMode}
+                                                          >
+                                                            <EditorCanvasHost />
+                                                          </SuppressElementIndicators>
+                                                        )}
+                                                      </CommentBadgesContext.Provider>
+                                                    </AgentFocusContext.Provider>
+                                                  </ChangesetRevealContext.Provider>
                                                   {ctx.plan.openItemId ||
                                                   ctx.plan.editingType ||
                                                   ctx.plan.requiredFields ? (

@@ -13,8 +13,8 @@ import { endRepeatWorld } from '../plan-room/test-repeat-world';
 import type { PlanEnv } from '../types';
 
 // Who may manage a board's address (docs/specs/026-plan/email-to-board.md "Who may manage an address"; share-roles.md):
-// an Editor of the whole plan, in person. A Participant, a Viewer, a link to one tab, an API token, a workbench session
-// and a link visitor are refused on every route, see nothing of the address, and change nothing.
+// an Editor of the whole plan, in person and signed in. A guest, a Participant, a Viewer, a link to one tab, an API
+// token, a workbench session and a link visitor are refused on every route, see nothing of the address, and change nothing.
 vi.mock(
   '../auth/accounts',
   async () => (await import('../plan-room/test-accounts-mock')).accountsMock,
@@ -42,8 +42,9 @@ afterEach(() => {
   endRepeatWorld();
 });
 
-const ALLOWED: Caller[] = ['owner', 'team', 'guest', 'editor_link'];
+const ALLOWED: Caller[] = ['owner', 'team', 'editor_link'];
 const REFUSED: Caller[] = [
+  'guest',
   'tab_editor_link',
   'participant',
   'viewer',

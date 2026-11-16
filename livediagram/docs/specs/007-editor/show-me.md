@@ -10,10 +10,10 @@ the mode tours offered themselves once, and element tours from a small toolbar b
 
 ## Domain language
 
-| Term                | Means                                                                                             |
-| ------------------- | ------------------------------------------------------------------------------------------------- |
-| **Show Me**         | This pattern, and the button that starts it. In the interface: **Show Me**                        |
-| **Show Me surface** | A surface that carries a Show Me button (the list below)                                          |
+| Term                | Means                                                                                              |
+| ------------------- | -------------------------------------------------------------------------------------------------- |
+| **Show Me**         | This pattern, and the button that starts it. In the interface: **Show Me**                         |
+| **Show Me surface** | A surface that carries a Show Me button (the list below)                                           |
 | **mode tour**       | One of the tours on the footer's Get Started button, in a mode (Diagram, Draw, Workshop); not this |
 
 ## Where it lives

@@ -11,10 +11,10 @@ records nothing.
 
 ## Domain language
 
-| Term                | Means                                                                      |
-| ------------------- | -------------------------------------------------------------------------- |
-| **Show Me**         | This pattern, and the button that starts it. In the interface: **Show Me** |
-| **Show Me surface** | A surface that carries a Show Me button (the list below)                   |
+| Term                | Means                                                                       |
+| ------------------- | --------------------------------------------------------------------------- |
+| **Show Me**         | This pattern, and the button that starts it. In the interface: **Show Me**  |
+| **Show Me surface** | A surface that carries a Show Me button (the list below)                    |
 | **mode tour**       | A tab's own tour on the footer's Get Started button (Plan, Forms); not this |
 
 ## Where it lives

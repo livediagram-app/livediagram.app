@@ -486,7 +486,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
           above the elements, below the selection chrome. */}
           <ChangesetRevealOverlay elements={elements} tabId={props.activeTabId ?? ''} />
 
-
           {/* The grips layer (docs/specs/008-canvas/canvas-and-palette.md "Resize"): above every element, so
           no grip is ever covered. The canvas's own grips go in here; each element's are portalled in. */}
           <SelectionGripsLayer onHosts={setGripHosts}>

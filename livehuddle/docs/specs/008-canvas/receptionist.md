@@ -25,7 +25,7 @@ someone in it: a host people meet as they arrive, who answers what they ask, in 
 | **A greeting**             | the Receptionist walking to his pad and waving when somebody appears on it                          |
 | **The welcome**            | Your first greeting: his bubble with the topics, on your screen only                                |
 | **A topic**                | One thing the Receptionist can explain: a reply in his bubble, then his one-line answer             |
-| **Ask Receptionist**       | The footer's Get Started button while you walk on a tab with the Receptionist; it calls him over     |
+| **Ask Receptionist**       | The footer's Get Started button while you walk on a tab with the Receptionist; it calls him over    |
 
 ## Where he is
 

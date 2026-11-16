@@ -9,7 +9,9 @@ import {
   useEffect,
   useRef,
   useState,
-  type ReactNode, Fragment } from 'react';
+  type ReactNode,
+  Fragment,
+} from 'react';
 import { ChevronRightIcon, MENU_SURFACE_ATTR, useMenuKind, Portal } from '@liveworkspace/ui';
 import { useMenuItemProps } from './menu-item-props';
 import { useIsMobileViewport } from '../../hooks/ui/useIsMobileViewport';
@@ -77,7 +79,9 @@ const HOST_MENU = `[${MENU_SURFACE_ATTR}]`;
 // ElementLayoutToolSections), so a flyout whose groups render one section between them still promotes it.
 function sections(children: ReactNode): ReactNode[] {
   return Children.toArray(children).flatMap((c) =>
-    isValidElement<{ children?: ReactNode }>(c) && c.type === Fragment ? sections(c.props.children) : [c],
+    isValidElement<{ children?: ReactNode }>(c) && c.type === Fragment
+      ? sections(c.props.children)
+      : [c],
   );
 }
 

@@ -388,7 +388,17 @@ export function ElementDataSections({
             />
           ) : null}
           {/* Called, not rendered: hookless, its fragment counts section by section for the flyout's lone-section promotion. */}
-          {ElementBehaviourToolSections({ props, shapeTarget, isModeButton, isPortal, isSessionButton, isReveal, isPicker, isReactionPad, sectionProps })}
+          {ElementBehaviourToolSections({
+            props,
+            shapeTarget,
+            isModeButton,
+            isPortal,
+            isSessionButton,
+            isReveal,
+            isPicker,
+            isReactionPad,
+            sectionProps,
+          })}
           {/* Chart (docs/specs/009-elements/pie-chart.md) — display options. Legend placement: Off + 4 sides. */}
           {isChart ? (
             <MenuAccordionSection

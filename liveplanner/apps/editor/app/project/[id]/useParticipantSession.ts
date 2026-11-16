@@ -21,10 +21,7 @@ export function useParticipantSession(
 ) {
   const [roomAdderKey, setAdderKey] = useState<string | null>(null);
   const adderKey = roomAdderKey ?? previewKey;
-  const can = useMemo(
-    () => resolveEditorCapabilities({ level, adderKey }),
-    [level, adderKey],
-  );
+  const can = useMemo(() => resolveEditorCapabilities({ level, adderKey }), [level, adderKey]);
   const participating = level === 'participate';
   const lastNoticeRef = useRef(0);
   // The tab a commit would make, or null to drop it. Stamps the adder on what a Participant adds.

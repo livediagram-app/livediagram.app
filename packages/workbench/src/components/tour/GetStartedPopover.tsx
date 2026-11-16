@@ -6,7 +6,7 @@
 // its length in a badge where it has one. Escape or a press outside closes it; on a phone it is a drawer across the
 // screen's foot (PopoverOrSheet). Every app opens it: livediagram's Watch It Built and liveplanner's tracks with their
 // own lessons, and any other app with the tours on offer (GetStartedButtonPopover).
-import { useId, type CSSProperties } from 'react';
+import { useId } from 'react';
 import { DialogCloseButton } from '@liveworkspace/ui';
 import { HERO_TOKEN_STYLE, HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { getStartedHeroArt } from '@liveworkspace/ui/dialog-hero-art/get-started';
@@ -45,7 +45,7 @@ export function GetStartedBody<Id extends string>({
       role="group"
       aria-labelledby={titleId}
       className="relative flex min-h-0 flex-col [border-radius:inherit] [color-scheme:light] dark:[color-scheme:dark]"
-      style={HERO_TOKEN_STYLE as CSSProperties}
+      style={HERO_TOKEN_STYLE}
     >
       <HeroDialogHeader
         art={getStartedHeroArt}

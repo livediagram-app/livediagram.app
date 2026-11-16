@@ -41,7 +41,14 @@ export function ChromeControls({
   const snapshots = useSnapshotsToolsItem();
   // Search, first in Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md).
   const search: ChromeToolsItem | null = onOpenSearch
-    ? { id: 'search', group: 'find', label: 'Search', description: 'Find spaces, tabs and elements.', icon: <SearchGlyph />, onSelect: () => onOpenSearch() }
+    ? {
+        id: 'search',
+        group: 'find',
+        label: 'Search',
+        description: 'Find spaces, tabs and elements.',
+        icon: <SearchGlyph />,
+        onSelect: () => onOpenSearch(),
+      }
     : null;
   return (
     <>

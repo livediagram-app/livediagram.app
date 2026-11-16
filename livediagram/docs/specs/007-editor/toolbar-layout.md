@@ -58,10 +58,10 @@ under the pointer as a category is switched.
   its own button beside it: putting a question to the room is the session's main act, not one of its tools.
 - **The bars:**
 
-  | Mode     | Bar                                                                   |
-  | -------- | --------------------------------------------------------------------- |
-  | Diagram  | Shapes, Write, Draw · Diagrams, Concepts, Layout · Icons, Tech        |
-  | Workshop | Shapes, Write, Draw · Layout · Ask, Session · Icons · Data            |
+  | Mode     | Bar                                                            |
+  | -------- | -------------------------------------------------------------- |
+  | Diagram  | Shapes, Write, Draw · Diagrams, Concepts, Layout · Icons, Tech |
+  | Workshop | Shapes, Write, Draw · Layout · Ask, Session · Icons · Data     |
 
   Media is not a category of its own in either mode: its Image and Avatar close Layout, as a **Pictures** group
   after its Containers and Parts (owner, 2026-11-16). The Library is not on the bar either: it is the icon button

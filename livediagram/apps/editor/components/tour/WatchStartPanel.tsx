@@ -48,7 +48,9 @@ function StandingPanel({
 }) {
   const box = useCanvasBox(canvasRef);
   useEffect(() => {
-    document.querySelector<HTMLElement>('[data-watch-start] [data-tour-topic]')?.focus({ preventScroll: true });
+    document
+      .querySelector<HTMLElement>('[data-watch-start] [data-tour-topic]')
+      ?.focus({ preventScroll: true });
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return;
       e.preventDefault();

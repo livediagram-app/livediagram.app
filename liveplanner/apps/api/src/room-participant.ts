@@ -16,10 +16,7 @@
 
 import { isRoomOpRef, type ServerMessage } from '@liveplanner/api-schema';
 import type { ElementOp, TabLedger, ParticipantOpResult } from '@liveplanner/project';
-import {
-  TabChangeQueue,
-  type TabSwapResult,
-} from '@liveworkspace/api-kit/tab-swap';
+import { TabChangeQueue, type TabSwapResult } from '@liveworkspace/api-kit/tab-swap';
 import {
   participantOpChange,
   participantTabStore,

@@ -70,6 +70,8 @@ work. A rule does it every time, at once, and says that it did.
   `?automations=1` opening the screen) and **Cancel**. After signing in the screen opens on the
   rules. **Only an Editor Can See Rules** is for a signed-in reader the api refuses, never a guest. Run Rule waits for
   sign-in too.
+- A guest on a plan in Browser Storage needs both: Tools badges the row **Sign In** then **Sync Plan**, and the gate
+  asks for the sign-in first (owner, 2026-11-16), coming back to Sync Plan's gate.
 - **Typed-in email addresses** (Send Email to addresses, [Typed-in addresses](#typed-in-addresses)) are an Editor's
   like any action: only a signed-in Editor of the whole plan, in person or through their API token, saves a rule that
   holds them. Participants, Viewers, guests and share-link visitors never see or set them.

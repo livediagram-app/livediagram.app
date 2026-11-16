@@ -39,8 +39,14 @@ export function openHistoryFromFooter(activeTabId: string): void {
 
 /** The History row in the footer's Tools menu (liveworkspace/docs/specs/004-index/footer-tools-menu.md). */
 export function historyToolsItem(onOpen: () => void): ChromeToolsItem {
-  return { id: 'history', group: 'versions', label: 'Version History',
-    description: 'Earlier versions of this tab, to restore.', icon: <HistoryIcon size={16} />, onSelect: onOpen };
+  return {
+    id: 'history',
+    group: 'versions',
+    label: 'Version History',
+    description: 'Earlier versions of this tab, to restore.',
+    icon: <HistoryIcon size={16} />,
+    onSelect: onOpen,
+  };
 }
 
 // A clock face with an arrow turning back round it: going back in time.

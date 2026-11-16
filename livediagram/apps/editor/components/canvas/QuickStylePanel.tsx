@@ -5,7 +5,11 @@
 // menu stays the complete home of every setting; this is the fast path to a
 // handful of them, and never grows into the old Editor panel.
 
-import { ElementKindToolButtons, hasKindVerbs, useElementKindTools } from '@/components/canvas/element-kind-tools';
+import {
+  ElementKindToolButtons,
+  hasKindVerbs,
+  useElementKindTools,
+} from '@/components/canvas/element-kind-tools';
 import { ButtonLabelsContext } from '@/components/canvas/SelectionPopoverButton';
 import { Children, useRef, useState, type PointerEvent, type ReactNode } from 'react';
 import {
@@ -230,7 +234,9 @@ export function QuickStylePanel({
           onEditSwatch={(role, slot, anchor) => setEditing({ role, slot, anchor })}
         />
         {/* The element kind's own verbs (a mind node's Add Child, a flowchart step's Add Step), under the look. */}
-        {view.targetIds.length === 1 ? <QuickKindTools id={view.targetIds[0]!} titles={titles} /> : null}
+        {view.targetIds.length === 1 ? (
+          <QuickKindTools id={view.targetIds[0]!} titles={titles} />
+        ) : null}
         {view.targetIds.length > 0 ? (
           <div className="flex flex-col border-t border-slate-200 pt-1.5 dark:border-slate-800">
             <div role="group" aria-label="Actions">
@@ -425,34 +431,34 @@ function QuickStyleSections({
       })}
       {/* Paired two to a line, so the panel stays short: style with width, text with icon alignment. */}
       <QuickPair>
-      {style ? (
-        <QuickRadioRow
-          title="Stroke style"
-          testId="quick-style-style"
-          showTitle={showTitles}
-          options={style.options.map((s) => ({
-            value: s,
-            name: STYLE_NAMES[s],
-            content: s === 'flowing' ? <FlowingLineGlyph /> : <BorderStyleIcon value={s} />,
-          }))}
-          value={style.value}
-          onChoose={quickStyle.setStrokeStyle}
-        />
-      ) : null}
-      {width ? (
-        <QuickRadioRow
-          title="Stroke width"
-          testId="quick-style-width"
-          showTitle={showTitles}
-          options={QUICK_WIDTHS.map((w) => ({
-            value: w,
-            name: WIDTH_NAMES[w],
-            content: <BorderStrokeIcon value={w} />,
-          }))}
-          value={width.value}
-          onChoose={quickStyle.setWidth}
-        />
-      ) : null}
+        {style ? (
+          <QuickRadioRow
+            title="Stroke style"
+            testId="quick-style-style"
+            showTitle={showTitles}
+            options={style.options.map((s) => ({
+              value: s,
+              name: STYLE_NAMES[s],
+              content: s === 'flowing' ? <FlowingLineGlyph /> : <BorderStyleIcon value={s} />,
+            }))}
+            value={style.value}
+            onChoose={quickStyle.setStrokeStyle}
+          />
+        ) : null}
+        {width ? (
+          <QuickRadioRow
+            title="Stroke width"
+            testId="quick-style-width"
+            showTitle={showTitles}
+            options={QUICK_WIDTHS.map((w) => ({
+              value: w,
+              name: WIDTH_NAMES[w],
+              content: <BorderStrokeIcon value={w} />,
+            }))}
+            value={width.value}
+            onChoose={quickStyle.setWidth}
+          />
+        ) : null}
       </QuickPair>
       {corners ? (
         <QuickRadioRow
@@ -470,34 +476,34 @@ function QuickStyleSections({
         />
       ) : null}
       <QuickPair>
-      {textAlign ? (
-        <QuickRadioRow
-          title="Text alignment"
-          testId="quick-style-text-align"
-          showTitle={showTitles}
-          options={QUICK_TEXT_ALIGNS.map((a) => ({
-            value: a,
-            name: TEXT_ALIGN_NAMES[a],
-            content: <TextAlignGlyph align={a} />,
-          }))}
-          value={textAlign.value}
-          onChoose={quickStyle.setTextAlign}
-        />
-      ) : null}
-      {iconAlign ? (
-        <QuickRadioRow
-          title="Icon alignment"
-          testId="quick-style-icon-align"
-          showTitle={showTitles}
-          options={QUICK_ICON_ALIGNS.map((a) => ({
-            value: a,
-            name: ICON_ALIGN_NAMES[a],
-            content: <IconAlignGlyph align={a} />,
-          }))}
-          value={iconAlign.value}
-          onChoose={quickStyle.setIconAlign}
-        />
-      ) : null}
+        {textAlign ? (
+          <QuickRadioRow
+            title="Text alignment"
+            testId="quick-style-text-align"
+            showTitle={showTitles}
+            options={QUICK_TEXT_ALIGNS.map((a) => ({
+              value: a,
+              name: TEXT_ALIGN_NAMES[a],
+              content: <TextAlignGlyph align={a} />,
+            }))}
+            value={textAlign.value}
+            onChoose={quickStyle.setTextAlign}
+          />
+        ) : null}
+        {iconAlign ? (
+          <QuickRadioRow
+            title="Icon alignment"
+            testId="quick-style-icon-align"
+            showTitle={showTitles}
+            options={QUICK_ICON_ALIGNS.map((a) => ({
+              value: a,
+              name: ICON_ALIGN_NAMES[a],
+              content: <IconAlignGlyph align={a} />,
+            }))}
+            value={iconAlign.value}
+            onChoose={quickStyle.setIconAlign}
+          />
+        ) : null}
       </QuickPair>
     </>
   );

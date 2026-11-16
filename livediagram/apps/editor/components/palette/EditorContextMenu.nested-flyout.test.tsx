@@ -32,13 +32,14 @@ function open(target: Element, extra: Record<string, unknown> = {}) {
 const row = (title: string) =>
   document.querySelector<HTMLElement>(`[data-menu-section="${title}"]`);
 
-describe('Tools > Mind Map in a mind node’s menu', () => {
-  it('opens Outline, Branching and Spacing, with Tools still open', () => {
+// Mind Map is Tools' lone section on a mind node, so it is promoted into the menu itself (canvas-and-palette.md, the
+// lone-section promotion): no Tools row to pass through.
+describe('Mind Map in a mind node’s menu', () => {
+  it('opens Outline, Branching and Spacing straight from the menu', () => {
     const node = { ...createShape('mind-node', 0, 0), id: 'root', label: 'Offsite' } as Element;
     open(node, { mindFlow: 'tree', mindSpacing: 'comfortable' });
-    fireEvent.click(row('Tools')!);
+    expect(row('Tools')).toBeNull();
     fireEvent.click(row('Mind Map')!);
-    expect(row('Tools')!.getAttribute('aria-expanded')).toBe('true');
     expect(row('Mind Map')!.getAttribute('aria-expanded')).toBe('true');
     for (const title of ['Outline', 'Branching', 'Spacing'])
       expect(screen.getByRole('button', { name: title })).toBeTruthy();

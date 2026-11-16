@@ -28,18 +28,19 @@ its name, one line on what it does (never wrapping: kept short enough for one li
 the band's paper under the pointer, so the list reads as the header's.
 
 The rows are grouped under small headings, in this order, a heading drawn only when its group holds a row: **Find**
-(Search), **Automate** (Automations, then Webhooks), **Collaborate** (Suggest Changes), **Versioning** (History, Snapshots, Version History). Each
+(Search), **Automate** (Automations, liveplanner's Email to Board, then Webhooks), **Collaborate** (Suggest Changes, and
+liveplanner's Subscribe to Calendar), **Versioning** (History, Snapshots, Version History). Each
 group is a labelled group for screen readers; the arrow keys walk the rows straight through the groups.
 
-| Row             | App           | Drawn when                                                     | Opens                     |
-| --------------- | ------------- | -------------------------------------------------------------- | ------------------------- |
-| **History**     | every app     | signed in, the open item not shared by link (no longer on the item's ⋯ menu inside an editor) | the History dialog for the open item |
-| **Webhooks**    | every app     | as its row on the item's ⋯ menu was (gone from the Explorer header's and every item's menu inside an editor) | the Webhooks dialog |
-| **Search**      | every app     | the host offers search (the editor and the Explorer's bar) | the Search dialog        |
-| **Automations** | liveplanner   | as its button was ([Automations](../../../../liveplanner/docs/specs/026-plan/automations.md) "The footer button") | the Automations screen    |
-| **Suggest Changes** | livediagram, livedocuments, liveplanner, livedesign | as its header action was ([Canvas suggestions](../015-suggestions/canvas-suggestions.md) "Suggesting") | the Suggestions panel, beside Tools |
-| **Snapshots**   | every app     | as its button was ([Snapshots](../014-snapshots/snapshots.md) "In the editor") | the Snapshots dialog      |
-| **History**     | livedocuments | as its button was ([Version history](../../../../livedocuments/docs/specs/006-document/version-history.md) "In the editor") | Version History on the open tab |
+| Row                 | App                                                 | Drawn when                                                                                                                  | Opens                                |
+| ------------------- | --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| **History**         | every app                                           | signed in, the open item not shared by link (no longer on the item's ⋯ menu inside an editor)                               | the History dialog for the open item |
+| **Webhooks**        | every app                                           | as its row on the item's ⋯ menu was (gone from the Explorer header's and every item's menu inside an editor)                | the Webhooks dialog                  |
+| **Search**          | every app                                           | the host offers search (the editor and the Explorer's bar)                                                                  | the Search dialog                    |
+| **Automations**     | liveplanner                                         | as its button was ([Automations](../../../../liveplanner/docs/specs/026-plan/automations.md) "The footer button")           | the Automations screen               |
+| **Suggest Changes** | livediagram, livedocuments, liveplanner, livedesign | as its header action was ([Canvas suggestions](../015-suggestions/canvas-suggestions.md) "Suggesting")                      | the Suggestions panel, beside Tools  |
+| **Snapshots**       | every app                                           | as its button was ([Snapshots](../014-snapshots/snapshots.md) "In the editor")                                              | the Snapshots dialog                 |
+| **History**         | livedocuments                                       | as its button was ([Version history](../../../../livedocuments/docs/specs/006-document/version-history.md) "In the editor") | Version History on the open tab      |
 
 - **Automations** keeps its count: the rules that are on, at the row's end (none at 0), amber when a rule
   paused itself. A paused rule also puts a small amber dot on the Tools button, so the warning the button carried
@@ -74,9 +75,26 @@ Inside an editor, History and Webhooks are on no item's ⋯ menu: the editor's E
 and `webhooks={false}`, and Tools has them for the open item. The Explorer on liveworkspace.app, with no footer, keeps
 both on its item menus.
 
-Signed out, **History** and **Webhooks** still show in Tools (owner, 2026-11-16), so everyone can find them. A press
+### Always there
+
+A tool that would work for this person but for an account or for where the item lives **always shows** in Tools
+(owner, 2026-11-16), so everyone can find it, with small badges beside its name saying everything it needs, in order:
+**Sign In** (it needs an account), then **Sync Plan** (the app's own noun: Sync Canvas, Sync Document, Sync Design,
+Sync Space; it needs the item saved to the server). Signed out on an item in This Browser, it wears both. A press opens
+that tool's gate in its place, in Automations' shape, on the first thing it needs: Sign In leaves for the sign-in page
+and comes back with the tool open; Sync syncs in place and goes on to the tool. Where neither would help (a share-link holder for a tool only an
+owner has, a Viewer for an Editor's tool, an embed) the row stays out. In liveplanner: Automations, Subscribe to Calendar and Email to Board; everywhere: History and Webhooks (each Sign In,
+then Sync).
+
+Signed out, or on an item in This Browser, **History** and **Webhooks** still show in Tools (owner, 2026-11-16), so
+everyone can find them, badged **Sign In** and **Sync <Item>** as they need. A press
 opens a small dialog in that tool's hero header (its art, name and line), a sentence on what signing in gives, and
 **Sign In** (to the app's sign-in page, coming back here) beside **Not Now**. Signed in, they behave as above: History for
 an item not shared by link, Webhooks for one who can manage them.
 
 Webhooks sits in **Automate**, under Automations where the app has them (liveplanner); there is no Connect group.
+
+liveplanner adds two of its own (owner, 2026-11-16), moved out of the tab menu so the tools that work on the whole plan
+live in one place: **Email to Board** in Automate, under Automations (mail in becomes cards with nobody filing them) and **Subscribe to
+Calendar** in Collaborate (the plan's dates in everyone's own calendar). Each shows under the same rule it had in the tab
+menu and opens the same dialog.

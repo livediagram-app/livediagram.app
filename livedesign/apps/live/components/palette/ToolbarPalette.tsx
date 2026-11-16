@@ -94,18 +94,23 @@ export function ToolbarPalette(props: ToolbarPaletteProps) {
   const setMoreOpen = more.setOpen;
   // The palette's kind: the tab's (lib/palette-kind.ts), right on the first paint.
   const paletteKind = usePaletteKind(props.tabPages);
-  const { tabs: catalogueTabs, tileActions, canvasToolOptions, onCanvasToolChange, editorMode } =
-    usePaletteCatalogue({
-      ...props,
-      paletteKind,
-      // A tile used from the More or Search popover closes it, so the canvas is clear to draw on.
-      onTileUsed: () => {
-        more.setOpen(false);
-        search.setOpen(false);
-        library.setOpen(false);
-        bar.popover.setOpen(false);
-      },
-    });
+  const {
+    tabs: catalogueTabs,
+    tileActions,
+    canvasToolOptions,
+    onCanvasToolChange,
+    editorMode,
+  } = usePaletteCatalogue({
+    ...props,
+    paletteKind,
+    // A tile used from the More or Search popover closes it, so the canvas is clear to draw on.
+    onTileUsed: () => {
+      more.setOpen(false);
+      search.setOpen(false);
+      library.setOpen(false);
+      bar.popover.setOpen(false);
+    },
+  });
   // The Library leaves the categories for its own button beside Search.
   const libraryTab = catalogueTabs.find((t) => t.id === 'library');
   const tabs = useMemo(() => catalogueTabs.filter((t) => t.id !== 'library'), [catalogueTabs]);

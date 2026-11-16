@@ -10,7 +10,10 @@
 import { useLayoutEffect, useState, type RefObject } from 'react';
 import { placeQuickStylePanel, type QuickStyleSide, type Rect } from '@/lib/quick-style-placement';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
-import { CANVAS_ROOT_SELECTOR, elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
+import {
+  CANVAS_ROOT_SELECTOR,
+  elementSelector,
+} from '@liveworkspace/workbench/lib/canvas-selectors';
 import { workbench } from '@liveworkspace/workbench/bindings';
 
 const AREA_SELECTOR = `main${CANVAS_ROOT_SELECTOR}`;

@@ -236,7 +236,7 @@ describe('QuickStylePanel chrome (docs/specs/008-canvas/quick-style-panel.md)', 
     renderPanel();
     expect(screen.getByText('Stroke width')).toBeTruthy();
     expect(screen.getByText('Stroke style')).toBeTruthy();
-    expect(screen.getByText('Actions')).toBeTruthy();
+    expect(screen.getByRole('group', { name: 'Actions' })).toBeTruthy();
   });
 
   it('has no header, and keeps its name', () => {

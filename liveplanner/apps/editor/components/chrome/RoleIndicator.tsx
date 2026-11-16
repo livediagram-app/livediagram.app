@@ -39,7 +39,6 @@ const PILL_TOGGLE_TONE: Record<Role, string> = {
   view: 'cursor-pointer transition hover:ring-amber-400 dark:hover:ring-amber-400/60',
 };
 
-
 export function roleOwnerLabel(ownerName: string | null, isSelf: boolean): string {
   if (isSelf) return 'Owned by you';
   return ownerName ? `Owned by ${ownerName}` : '';
@@ -77,11 +76,7 @@ export function RolePill({
   ) : (
     // Static for a view-link visitor, and focusable so the Tooltip naming the
     // owner can be reached by keyboard too.
-    <span
-      tabIndex={0}
-      data-role-pill={role}
-      className={`${PILL} ${PILL_TONE[tone]}`}
-    >
+    <span tabIndex={0} data-role-pill={role} className={`${PILL} ${PILL_TONE[tone]}`}>
       <span className="text-optical-line text-optical-caps">{word}</span>
       {owner ? <span className="sr-only">{`. ${owner}`}</span> : null}
     </span>

@@ -189,9 +189,7 @@ export function ElementTourHost() {
     answer(k);
     track('UI', 'Started', d.token);
     debugLog('[element-tour] play', { kind: k });
-    setSteps(
-      d.steps(el, tourEnv()),
-    );
+    setSteps(d.steps(el, tourEnv()));
     setTouring({ id: el.id, kind: k });
     engineRef.current.start();
   };
@@ -222,7 +220,9 @@ export function ElementTourHost() {
           // Its length in steps, counted only as Get Started opens.
           length: () => {
             const el = elementsRef.current.find((e) => e.id === offerId);
-            return el ? stepsLength(ELEMENT_TOUR_DEFS[offerKind].steps(el, tourEnv()).length) : undefined;
+            return el
+              ? stepsLength(ELEMENT_TOUR_DEFS[offerKind].steps(el, tourEnv()).length)
+              : undefined;
           },
           seen: elementTourSeen(ctx.userPreferences, offerKind),
         }

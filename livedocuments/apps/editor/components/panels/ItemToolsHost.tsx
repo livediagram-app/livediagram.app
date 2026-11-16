@@ -1,6 +1,9 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useItemToolsRows } from '@liveworkspace/workbench/components/chrome/useItemToolsRows';
+import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { getSessionSharePassword } from '@/lib/api-client';
@@ -19,9 +22,18 @@ export function ItemToolsHost({
   onWebhooks?: () => void;
 }) {
   const { isSignedIn, accountUserId } = useAccountBootstrap();
+  // In This Browser, both rows ask for a sync first (footer-tools-menu.md "Always there"), with Share's Sync move.
+  const { syncToCloud, selfParticipant } = useEditorContext();
+  const isOffline = useIsOfflineDocument(currentDocumentId ?? null);
+  const ready = selfParticipant.id !== 'self';
+  const offline = useMemo(
+    () => (currentDocumentId && isOffline ? { sync: syncToCloud, ready } : null),
+    [currentDocumentId, isOffline, syncToCloud, ready],
+  );
   return useItemToolsRows({
     app: 'livedocuments',
     signedIn: !!isSignedIn,
+    offline,
     onWebhooks,
     history:
       currentDocumentId && !currentShareCode

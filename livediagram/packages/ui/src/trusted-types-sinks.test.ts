@@ -14,7 +14,6 @@ describeTrustedTypesSinks({
   // geometry and stored colours that dropUnsafeColours checked). Everything else (a document's drawing, a thumbnail,
   // an export preview) goes through sanitizedHtml.
   builderMarkup: [
-    'apps/editor/app/new/early-mode-choice.ts',
     'apps/editor/app/pre-hydration-scripts.ts',
     'apps/editor/components/canvas/StickerView.tsx',
     'apps/editor/components/dialogs/LooksCarousel.tsx',

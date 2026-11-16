@@ -1,6 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { EmailMenu, EmailDialog, EmailCardFooter } from '@/components/illustrations/email-to-board';
+import { EmailDialog, EmailCardFooter } from '@/components/illustrations/email-to-board';
+import { ToolsMenuFigure } from '@/components/illustrations/tools-menu';
 
 export const metadata = helpMetadata({
   title: 'Email to Board',
@@ -25,12 +26,12 @@ An Editor of the whole plan: its owner, the members of its team, or someone who 
 ## Turn On an Address
 
 1. Open the tab holding the board.
-2. Open the tab menu: the **⋯** beside the open tab's name, or right-click the canvas.
-3. Choose **Email to Board…**. On a tab with several boards, pick one at the top.
+2. Press **Tools** in the bottom bar.
+3. Choose **Email to Board**, under Automate. On a tab with several boards, pick one at the top.
 4. Choose **Who Can Send** (below), then press **Turn On**.
 
-<Figure caption="Email to Board sits in the tab menu, below Publish as Roadmap.">
-  <EmailMenu />
+<Figure caption="Email to Board sits in Tools, under Automate.">
+  <ToolsMenuFigure highlight="Email to Board" />
 </Figure>
 
 The board's address appears, with **Copy Address**. Under it, a line says what the address has done so far: cards made, messages refused or dropped, and when the last card came in.

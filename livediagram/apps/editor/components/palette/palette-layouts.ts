@@ -128,7 +128,6 @@ const WORKSHOP_LAYOUT_TILES = [
 // The concept graphics, then the Sankey (Diagram's Concepts).
 const CONCEPTS_WITH_SANKEY = [...tilesForCategory('concepts').map((t) => t.id), 'tools:sankey'];
 
-
 // The tiles no mode's strip holds, found only by searching (docs/specs/007-editor/toolbar-layout.md "Search: every
 // element type"): the Code block, the embeds, the devices and the page blocks (Hero, Header, Banner, Stat row,
 // Process). Pages mode's palette was their home; they still work in every mode, so the strip's Search lists them as

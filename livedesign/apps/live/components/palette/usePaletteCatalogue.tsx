@@ -225,18 +225,18 @@ export function usePaletteCatalogue({
     participant
       ? participantPaletteCategories()
       : paletteCategoriesFor(editorMode, pages ? { pagesKind: paletteKind } : {})
-        .filter((c) => hasLibrary || c.id !== 'library')
-        .map((c) =>
-          c.id === 'draw' && markers.length
-            ? {
-                ...c,
-                tiles: [
-                  ...withGroupEnd(c.tiles ?? []),
-                  ...(fillTile ? [...withGroupEnd(markers), fillTile] : markers),
-                ],
-              }
-            : c,
-        ),
+          .filter((c) => hasLibrary || c.id !== 'library')
+          .map((c) =>
+            c.id === 'draw' && markers.length
+              ? {
+                  ...c,
+                  tiles: [
+                    ...withGroupEnd(c.tiles ?? []),
+                    ...(fillTile ? [...withGroupEnd(markers), fillTile] : markers),
+                  ],
+                }
+              : c,
+          ),
     'library',
   );
   const tabs = paletteCategoryTabs({

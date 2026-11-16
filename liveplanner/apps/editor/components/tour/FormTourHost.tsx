@@ -29,7 +29,11 @@ import {
   useTourEngine,
   type TourOutcome,
 } from '@liveworkspace/workbench/components/tour/useTourEngine';
-import { TOUR_OFFER_RANK, stepsLength, useOfferTour } from '@liveworkspace/workbench/components/tour/tour-offer';
+import {
+  TOUR_OFFER_RANK,
+  stepsLength,
+  useOfferTour,
+} from '@liveworkspace/workbench/components/tour/tour-offer';
 
 const FORM_TOUR_COPY = {
   helpHref: '/help/plan/forms/',

@@ -29,12 +29,23 @@ export function PopoverOrSheet({
   const sheet = useIsMobileViewport();
   if (!sheet) {
     return (
-      <AnchoredPopover anchor={anchor} name={name} width={width} align={align} pointer onClose={onClose}>
+      <AnchoredPopover
+        anchor={anchor}
+        name={name}
+        width={width}
+        align={align}
+        pointer
+        onClose={onClose}
+      >
         {children(false)}
       </AnchoredPopover>
     );
   }
-  return <Drawer anchor={anchor} name={name} onClose={onClose}>{children(true)}</Drawer>;
+  return (
+    <Drawer anchor={anchor} name={name} onClose={onClose}>
+      {children(true)}
+    </Drawer>
+  );
 }
 
 function Drawer({
@@ -53,7 +64,9 @@ function Drawer({
     anchor.focus({ preventScroll: true });
   };
   useEffect(() => {
-    document.querySelector<HTMLElement>('[data-popover-sheet] button')?.focus({ preventScroll: true });
+    document
+      .querySelector<HTMLElement>('[data-popover-sheet] button')
+      ?.focus({ preventScroll: true });
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return;
       e.preventDefault();

@@ -165,28 +165,28 @@ export function ElementAppearanceSections({
           {/* Which Presets grid this element gets: shape looks or a sticky's
               pad of note colours. See PresetSections. */}
           {showStyle ? (
-          <TargetPresetsSection
-            target={target}
-            props={props}
-            accordion={sectionProps('presets')}
-            onClose={onClose}
-          />
+            <TargetPresetsSection
+              target={target}
+              props={props}
+              accordion={sectionProps('presets')}
+              onClose={onClose}
+            />
           ) : null}
           {/* Colours + Border accordions — see ElementColourBorderSections. */}
           {showStyle ? (
-          <ElementColourBorderSections
-            props={props}
-            target={target}
-            boxed={boxed}
-            isIcon={isIcon}
-            borderable={borderable}
-            onClose={onClose}
-            sectionProps={sectionProps}
-            colorProps={colorProps}
-            textColorHandlers={textColorHandlers}
-            fillColorHandlers={fillColorHandlers}
-            strokeColorHandlers={strokeColorHandlers}
-          />
+            <ElementColourBorderSections
+              props={props}
+              target={target}
+              boxed={boxed}
+              isIcon={isIcon}
+              borderable={borderable}
+              onClose={onClose}
+              sectionProps={sectionProps}
+              colorProps={colorProps}
+              textColorHandlers={textColorHandlers}
+              fillColorHandlers={fillColorHandlers}
+              strokeColorHandlers={strokeColorHandlers}
+            />
           ) : null}
           {/* Icon and Text sit inside Appearance (owner, 2026-11-16): how the element looks, all in one place. */}
           {/* Icon — a Technology icon element's fixed tile size (docs/specs/010-palette/technology-icons.md).
@@ -232,7 +232,11 @@ export function ElementAppearanceSections({
                 reposition was removed. */}
           {hasInlineIcon ? (
             <>
-              <MenuAccordionSection title="Icon" icon={<IconCategoryGlyph />} {...sectionProps('icon')}>
+              <MenuAccordionSection
+                title="Icon"
+                icon={<IconCategoryGlyph />}
+                {...sectionProps('icon')}
+              >
                 {/* A card, callout, header or boundary places its own icon, so it offers no position. */}
                 {positionsInlineIcon(target) ? (
                   <>

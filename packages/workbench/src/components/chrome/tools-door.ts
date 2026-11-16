@@ -37,5 +37,9 @@ const NONE: readonly ChromeToolsItem[] = [];
 
 /** Every row published from outside the footer. */
 export function useToolsDoorItems(): readonly ChromeToolsItem[] {
-  return useSyncExternalStore(subscribe, () => snapshot, () => NONE);
+  return useSyncExternalStore(
+    subscribe,
+    () => snapshot,
+    () => NONE,
+  );
 }

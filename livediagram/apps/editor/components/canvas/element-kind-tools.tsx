@@ -5,7 +5,7 @@
 // in a bar at the top of the element menu, with Save to Library at its right, not on the floating selection toolbar, so that toolbar keeps the same
 // buttons on every element. The canvas, which holds the handlers, publishes them for the selected element; the menu
 // shows them when it opens on that element.
-import { useEffect, useSyncExternalStore } from 'react';
+import { useLayoutEffect, useRef, useSyncExternalStore } from 'react';
 import { MIND_CHILD_OPTION, MIND_SIBLING_OPTION } from '@/components/canvas/quick-connect-options';
 import { Divider, PopoverButton } from '@/components/canvas/SelectionPopoverButton';
 import dynamic from 'next/dynamic';
@@ -40,19 +40,47 @@ const subscribe = (l: () => void) => {
 };
 
 const hasAny = (t: ElementKindTools) =>
-  !!(t.onAddMindChild && t.onAddMindSibling) || !!t.flowchartStep || !!t.cardinality || !!t.saveToLibrary;
+  !!(t.onAddMindChild && t.onAddMindSibling) ||
+  !!t.flowchartStep ||
+  !!t.cardinality ||
+  !!t.saveToLibrary;
 
-/** The canvas: the selected element's kind tools, or none. */
+/** The canvas: the selected element's kind tools, or none. Set before paint (a layout effect), so a menu opened in the
+ *  same press catches up before it is seen; cleared when the selection goes. */
 export function usePublishElementKindTools(id: string | null, tools: ElementKindTools): void {
-  const next = id && hasAny(tools) ? { id, tools } : null;
-  // Set while rendering, so the menu opened in the same press reads them; cleared when the selection goes.
-  current = next;
-  useEffect(() => {
-    listeners.forEach((l) => l());
-    return () => {
-      if (current === next) current = null;
-    };
+  const mine = useRef<{ id: string; tools: ElementKindTools } | null>(null);
+  useLayoutEffect(() => {
+    const next = id && hasAny(tools) ? { id, tools } : null;
+    // The latest callbacks always; the menu told only when what is on offer changes, so a render that hands over fresh
+    // closures for the same tools never loops back through the menu.
+    // The same snapshot object while the offer stands, so the menu's store read stays stable across renders.
+    if (current && next && shapeOf(current) === shapeOf(next)) {
+      current.tools = next.tools;
+      mine.current = current;
+      return;
+    }
+    const changed = shapeOf(current) !== shapeOf(next);
+    current = next;
+    mine.current = next;
+    if (changed) listeners.forEach((l) => l());
   });
+  // Gone with the canvas: its last offer goes with it.
+  useLayoutEffect(
+    () => () => {
+      if (current !== null && current === mine.current) {
+        current = null;
+        listeners.forEach((l) => l());
+      }
+    },
+    [],
+  );
+}
+
+// Which element, its tools and their values (a step's type, its lane, an end's cardinality): what the menu draws. The
+// functions count only as being there. Small: a handful of fields and a chart's lane titles.
+function shapeOf(c: { id: string; tools: ElementKindTools } | null): string {
+  if (!c) return '';
+  return `${c.id}|${JSON.stringify(c.tools, (_, v: unknown) => (typeof v === 'function' ? 1 : v))}`;
 }
 
 /** The element menu: the kind tools of the element it opened on. */

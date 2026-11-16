@@ -20,12 +20,12 @@ livediagram](../002-project-scope/not-in-livediagram.md); its `PortalTour*` seri
 
 ## Domain language
 
-| Term                  | Means                                                                                        |
-| --------------------- | -------------------------------------------------------------------------------------------- |
-| **Element tour**      | This pattern, and one tour of it (the **Sankey tour**)                                       |
+| Term                   | Means                                                                                        |
+| ---------------------- | -------------------------------------------------------------------------------------------- |
+| **Element tour**       | This pattern, and one tour of it (the **Sankey tour**)                                       |
 | **Get Started button** | The footer button that starts every tour ([Diagram tour](editor-tour.md) "Where it appears") |
-| **Toured kind**       | An element type that has an element tour (`sankey`, `chart`, …)                              |
-| **Selection toolbar** | The floating toolbar over a single selection ([Canvas](../008-canvas/canvas-and-palette.md)) |
+| **Toured kind**        | An element type that has an element tour (`sankey`, `chart`, …)                              |
+| **Selection toolbar**  | The floating toolbar over a single selection ([Canvas](../008-canvas/canvas-and-palette.md)) |
 
 ## Naming
 

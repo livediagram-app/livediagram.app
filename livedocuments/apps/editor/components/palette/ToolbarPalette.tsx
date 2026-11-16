@@ -131,7 +131,12 @@ export function ToolbarPalette(props: Props) {
   }, [popoverOpen]);
   // The palette's kind: the tab's (lib/palette-kind.ts), right on the first paint.
   const paletteKind = usePaletteKind(props.tabPages);
-  const { tabs: catalogueTabs, tileActions, canvasToolOptions, onCanvasToolChange } = usePaletteCatalogue({
+  const {
+    tabs: catalogueTabs,
+    tileActions,
+    canvasToolOptions,
+    onCanvasToolChange,
+  } = usePaletteCatalogue({
     ...props,
     paletteKind,
     // A tile used from a flyout or Search closes it, so the canvas is clear to draw on.

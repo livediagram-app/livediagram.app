@@ -1,10 +1,6 @@
 import { useItemUndo } from '@/hooks/plan/useItemUndo';
 import { useCallback, useMemo, useState, useRef } from 'react';
-import {
-  type Tab,
-  stampTabKind,
-  stampNewElementLayers,
-} from '@liveplanner/project';
+import { type Tab, stampTabKind, stampNewElementLayers } from '@liveplanner/project';
 import { settleChipsInTabs } from '@/lib/settle-tabs';
 import type { WarmPlan } from '@/lib/last-seen-plan';
 import { useProjectHistory } from '@/hooks/canvas/useProjectHistory';

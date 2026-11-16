@@ -16,12 +16,12 @@ naming one of those kinds stays in `elementTourKinds`, unread.
 
 ## Domain language
 
-| Term                  | Means                                                                                        |
-| --------------------- | -------------------------------------------------------------------------------------------- |
-| **Element tour**      | This pattern, and one tour of it (the **Portal tour**)                                       |
+| Term                   | Means                                                                                        |
+| ---------------------- | -------------------------------------------------------------------------------------------- |
+| **Element tour**       | This pattern, and one tour of it (the **Portal tour**)                                       |
 | **Get Started button** | The footer button that starts every tour ([Tours](editor-tour.md#where-it-appears))          |
-| **Toured kind**       | An element type that has an element tour (`portal`)                                          |
-| **Selection toolbar** | The floating toolbar over a single selection ([Canvas](../008-canvas/canvas-and-palette.md)) |
+| **Toured kind**        | An element type that has an element tour (`portal`)                                          |
+| **Selection toolbar**  | The floating toolbar over a single selection ([Canvas](../008-canvas/canvas-and-palette.md)) |
 
 ## Naming
 

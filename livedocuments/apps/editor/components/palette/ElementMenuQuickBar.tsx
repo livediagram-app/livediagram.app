@@ -16,7 +16,6 @@ import { SaveToLibraryButton } from '@liveworkspace/workbench/components/library
 import { libraryDraftOf } from '@/lib/library-draft';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 
-
 // The items the bar offers on `target`, in order: what attaches to it.
 export function quickBarItems(
   target: BoxedElement,
@@ -64,7 +63,7 @@ export function ElementMenuQuickBar({
   // Save to Library (liveworkspace/docs/specs/006-media/libraries.md): livedocuments has no single-element toolbar, so
   // a single element saves from here. Not on a locked element; the menu opens for an Editor only.
   const saveable = useLibrary() !== null && !locked;
-  if (!!onDelete && !saveable) return null;
+  if (!onDelete && !saveable) return null;
   return (
     <div
       role="toolbar"

@@ -172,10 +172,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
       >
         {/* The quick bar (docs/specs/008-canvas/element-menu-quick-bar.md): Assign Action, Comment, Link and Note, and
             Clear Styles at its right, above every category. */}
-        <ElementMenuQuickBar
-          target={target}
-          onClose={onClose}
-        />
+        <ElementMenuQuickBar target={target} onClose={onClose} />
         {/* Layer — pinned FIRST in the menu (before the type-specific
             categories, which render conditionally and so would otherwise
             shuffle Layer's position around). Groups front/back + opacity +

@@ -55,7 +55,9 @@ export function TourStart<Id extends string>({
           id: t.id,
           title: t.title,
           line: t.line || line,
-          ...(t.missions ? { meta: `${t.missions} ${t.missions === 1 ? 'mission' : 'missions'}` } : {}),
+          ...(t.missions
+            ? { meta: `${t.missions} ${t.missions === 1 ? 'mission' : 'missions'}` }
+            : {}),
           ...(TRACK_ICONS[t.id] ? { icon: TRACK_ICONS[t.id] } : {}),
           taken: t.taken,
         }))}

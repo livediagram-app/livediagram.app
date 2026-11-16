@@ -10,6 +10,12 @@ import { SnapshotGlyph } from './glyphs';
 export function useSnapshotsToolsItem(): ChromeToolsItem | null {
   const door = useSnapshotsDoor();
   if (!door) return null;
-  return { id: 'snapshots', group: 'versions', label: 'Snapshots',
-    description: `Save points for the whole ${door.door.noun}.`, icon: <SnapshotGlyph size={16} />, onSelect: door.open };
+  return {
+    id: 'snapshots',
+    group: 'versions',
+    label: 'Snapshots',
+    description: `Save points for the whole ${door.door.noun}.`,
+    icon: <SnapshotGlyph size={16} />,
+    onSelect: door.open,
+  };
 }

@@ -18,7 +18,6 @@ import { ClearStylesGlyph } from '@/components/canvas/quick-style-rows';
 import { useClearStyles } from '@liveworkspace/workbench/lib/clear-styles-store';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 
-
 // The items the bar offers on `target`, in order: what attaches to it. A link card and a video take their link from
 // their own Link category, so the generic Add Link is not offered on them.
 export function quickBarItems(
@@ -72,17 +71,11 @@ const BUTTON =
   'relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-md transition focus-visible:outline-2 focus-visible:outline-brand-600';
 const REST =
   'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white';
-export function ElementMenuQuickBar({
-  target,
-  onClose,
-}: {
-  target: Element;
-  onClose: () => void;
-}) {
+export function ElementMenuQuickBar({ target, onClose }: { target: Element; onClose: () => void }) {
   const clearStyles = useClearStyles();
   const canClear = !!clearStyles && clearStyles.targetIds.has(target.id);
   // Only a boxed element takes them: arrows are never linked, noted, commented on or assigned.
-  if (!!canClear) return null;
+  if (!canClear) return null;
   return (
     <div
       role="toolbar"

@@ -112,22 +112,22 @@ order and one-line descriptions, then Something Else (owner, 2026-11-07). The pu
 moved by the service's migration (the platform spec's [Moving to the template
 categories](../../../../liveworkspace/docs/specs/007-community/community.md#moving-to-the-template-categories)).
 
-| id          | Label                 |
-| ----------- | --------------------- |
-| `ideas`     | Brainstorming         |
-| `decisions` | Decisions             |
-| `goals`     | Goals       |
-| `meetings`  | Meetings  |
-| `people`    | Teams        |
-| `planning`  | Planning              |
-| `processes` | Processes |
-| `product`   | Product          |
-| `games`     | Games       |
-| `retros`    | Retrospectives        |
-| `software`  | Software         |
-| `strategy`  | Strategy              |
-| `learning`  | Learning   |
-| `other`     | Something Else        |
+| id          | Label          |
+| ----------- | -------------- |
+| `ideas`     | Brainstorming  |
+| `decisions` | Decisions      |
+| `goals`     | Goals          |
+| `meetings`  | Meetings       |
+| `people`    | Teams          |
+| `planning`  | Planning       |
+| `processes` | Processes      |
+| `product`   | Product        |
+| `games`     | Games          |
+| `retros`    | Retrospectives |
+| `software`  | Software       |
+| `strategy`  | Strategy       |
+| `learning`  | Learning       |
+| `other`     | Something Else |
 
 Virtual Spaces (`spaces`) was retired on 9 November 2026, when Spaces moved to livehuddle
 ([Not in livediagram](../002-project-scope/not-in-livediagram.md)): its posts read as Something Else, moved there by

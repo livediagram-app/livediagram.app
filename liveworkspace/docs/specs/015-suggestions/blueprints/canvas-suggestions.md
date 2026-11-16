@@ -33,7 +33,7 @@ room gate, its editor wiring).
 | `react/useCanvasSuggestions.ts`    | mode, list, refetch on the room's word, submit, accept, reject, notices, telemetry                              |
 | `react/suggestions-store.ts`       | the overlay's external store and context                                                                        |
 | `react/SuggestionGhostOverlay.tsx` | the ghosts, in canvas space                                                                                     |
-| `react/SuggestionsBar.tsx`         | the Tools menu's Suggest row, the panel, the mode switch, the review list                                        |
+| `react/SuggestionsBar.tsx`         | the Tools menu's Suggest row, the panel, the mode switch, the review list                                       |
 | `react/SuggestOnlySection.tsx`     | the Share dialog's Suggestions section                                                                          |
 
 Per product (`<api>` is each product's `apps/api/src`):

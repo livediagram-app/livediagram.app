@@ -13,7 +13,7 @@ the Workshop tour offered itself once, and element tours from a small toolbar be
 | ------------------- | -------------------------------------------------------------------------- |
 | **Show Me**         | This pattern, and the button that starts it. In the interface: **Show Me** |
 | **Show Me surface** | A surface that carries a Show Me button (the list below)                   |
-| **mode tour**       | The Workshop tour on the footer's Get Started button; not this              |
+| **mode tour**       | The Workshop tour on the footer's Get Started button; not this             |
 
 ## Where it lives
 

@@ -101,12 +101,23 @@ describe('HeldRemovalsBanner', () => {
     expect(screen.queryByText(/^From /)).toBeNull();
   });
 
-  it('is a card that fills a phone and is 34 rem on a wide canvas', () => {
+  // A modal in the middle of the screen over a scrim, so the board never moves (owner, 2026-11-16).
+  it('is a centred modal that fills a phone less its gutters and is 34 rem on a wide canvas', () => {
     render(<HeldRemovalsBanner readOnly={false} />);
     act(() => hold(27));
-    const card = screen.getByRole('region').parentElement as HTMLElement;
+    const card = screen.getByRole('dialog');
+    expect(card.getAttribute('aria-modal')).toBe('true');
     const cls = card.className.split(' ');
-    expect(cls).toEqual(expect.arrayContaining(['rounded-2xl', 'w-[34rem]', 'max-w-full']));
+    expect(cls).toEqual(
+      expect.arrayContaining([
+        'fixed',
+        'top-1/2',
+        'left-1/2',
+        'rounded-2xl',
+        'w-[34rem]',
+        'max-w-[calc(100vw-1.5rem)]',
+      ]),
+    );
     expect(cls).not.toContain('rounded-full');
     const keep = screen.getByRole('button', { name: 'Keep Cards' }).className.split(' ');
     expect(keep).toEqual(expect.arrayContaining(['flex-1', 'min-h-10', 'sm:flex-none']));

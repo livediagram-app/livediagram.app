@@ -29,7 +29,11 @@ import {
   useTourEngine,
   type TourOutcome,
 } from '@liveworkspace/workbench/components/tour/useTourEngine';
-import { TOUR_OFFER_RANK, stepsLength, useOfferTour } from '@liveworkspace/workbench/components/tour/tour-offer';
+import {
+  TOUR_OFFER_RANK,
+  stepsLength,
+  useOfferTour,
+} from '@liveworkspace/workbench/components/tour/tour-offer';
 import { useStartPanelOpen } from '@liveworkspace/workbench/components/start/start-panel-open';
 import { helpArticleHref } from '@/lib/help-articles';
 
@@ -181,7 +185,8 @@ export function PagesTourHost() {
             if (!page) return undefined;
             const { shownPageTourSteps } = await import('./page-tour-steps');
             return stepsLength(
-              shownPageTourSteps(page.kind, { pageId: page.pageId, ...PAGE_PANEL }, isOnScreen).length,
+              shownPageTourSteps(page.kind, { pageId: page.pageId, ...PAGE_PANEL }, isOnScreen)
+                .length,
             );
           },
         }

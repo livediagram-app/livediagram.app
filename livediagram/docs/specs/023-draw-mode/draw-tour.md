@@ -11,7 +11,7 @@ Workshop tour's rules hold.
 
 | Term             | Means                                                               |
 | ---------------- | ------------------------------------------------------------------- |
-| **Draw tour**    | This tour. On the Get Started button: **Start Draw Tour**            |
+| **Draw tour**    | This tour. On the Get Started button: **Start Draw Tour**           |
 | **Diagram tour** | The Diagram mode tour, [Diagram tour](../007-editor/editor-tour.md) |
 | **Dock**         | Draw mode's floating bar of tool groups ([Draw mode](draw-mode.md)) |
 

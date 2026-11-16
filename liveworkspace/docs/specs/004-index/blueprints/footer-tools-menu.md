@@ -3,14 +3,14 @@
 Derived from [footer-tools-menu.md](../footer-tools-menu.md). The spec decides; this file only adds engineering
 precision. Paths are relative to the repository root.
 
-| File                                                                  | Role                                                                     |
-| --------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| `packages/workbench/src/components/chrome/ChromeToolsMenu.tsx`         | `ChromeToolsMenu` (the button and its menu), `ChromeToolsItem`, `toolsDescription` |
-| `packages/suggestions/src/react/SuggestionsBar.tsx`                   | `useSuggestionsToolsItem(suggestions)`: the Suggest row and its panel     |
-| `packages/snapshots/src/ui/snapshots-tools-item.tsx`                   | `useSnapshotsToolsItem()`: the Snapshots row, null without a door         |
-| `liveplanner/apps/editor/components/automations/automations-tools-item.tsx` | `useAutomationsToolsItem()`: the Automations row, null without a door |
-| `livedocuments/apps/editor/components/versions/history-tools-item.tsx`| `historyToolsItem(onOpen)`: the History row                               |
-| `<product>/apps/<editor>/components/chrome/ChromeControls.tsx`        | builds the rows in the spec's order and draws `ChromeToolsMenu` left of Search |
+| File                                                                        | Role                                                                               |
+| --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `packages/workbench/src/components/chrome/ChromeToolsMenu.tsx`              | `ChromeToolsMenu` (the button and its menu), `ChromeToolsItem`, `toolsDescription` |
+| `packages/suggestions/src/react/SuggestionsBar.tsx`                         | `useSuggestionsToolsItem(suggestions)`: the Suggest row and its panel              |
+| `packages/snapshots/src/ui/snapshots-tools-item.tsx`                        | `useSnapshotsToolsItem()`: the Snapshots row, null without a door                  |
+| `liveplanner/apps/editor/components/automations/automations-tools-item.tsx` | `useAutomationsToolsItem()`: the Automations row, null without a door              |
+| `livedocuments/apps/editor/components/versions/history-tools-item.tsx`      | `historyToolsItem(onOpen)`: the History row                                        |
+| `<product>/apps/<editor>/components/chrome/ChromeControls.tsx`              | builds the rows in the spec's order and draws `ChromeToolsMenu` left of Search     |
 
 FM1. `ChromeToolsItem = { id, group, label, description, icon, onSelect(anchor), aside?, attention?, attentionLabel? }`.
 `ChromeToolsMenu` takes `items` (nulls dropped) and `labelled`, and renders nothing with no items.

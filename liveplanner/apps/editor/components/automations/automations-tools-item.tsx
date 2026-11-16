@@ -24,9 +24,11 @@ export function useAutomationsToolsItem(): ChromeToolsItem | null {
     label: 'Automations',
     description: 'Rules that act on cards for you.',
     icon: <BoltIcon size={16} />,
+    ...(door.badges ? { badges: door.badges } : {}),
     onSelect: door.open,
     aside: on ? (
       <span
+        role="img"
         aria-label={`${on} on`}
         data-automations-count=""
         className={`inline-flex h-4 min-w-4 items-center justify-center rounded-[5px] px-1 text-[10px] font-semibold leading-none tabular-nums ${

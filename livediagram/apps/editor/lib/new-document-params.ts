@@ -80,5 +80,9 @@ export function newDocumentKind(search: string): {
   const link = wizardBypassKind(search);
   if (link) return { kind: link, startClosed: true, link };
   const mode = wizardPresetMode(search) ?? 'diagram';
-  return { kind: BLANK_TEMPLATE_FOR_MODE[mode], startClosed: wizardStartsBlank(search), link: null };
+  return {
+    kind: BLANK_TEMPLATE_FOR_MODE[mode],
+    startClosed: wizardStartsBlank(search),
+    link: null,
+  };
 }

@@ -12,7 +12,6 @@ import { EditPointsIcon } from '@/components/palette/palette-icons';
 import { Divider, PopoverButton } from '@/components/canvas/SelectionPopoverButton';
 import type { Rect } from '@livediagram/document';
 
-
 type SelectionPopoverProps = {
   bounds: Rect;
   canvasOffset: { x: number; y: number };

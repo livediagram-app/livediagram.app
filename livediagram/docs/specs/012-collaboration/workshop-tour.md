@@ -11,7 +11,7 @@ Skip, Back and closing card, driven by the same engine. Where this spec is silen
 
 | Term              | Means                                                                                      |
 | ----------------- | ------------------------------------------------------------------------------------------ |
-| **Workshop tour** | This tour. On the Get Started button: **Start Workshop Tour**                               |
+| **Workshop tour** | This tour. On the Get Started button: **Start Workshop Tour**                              |
 | **Diagram tour**  | The Diagram mode tour ("Start Diagram Tour"), [Diagram tour](../007-editor/editor-tour.md) |
 
 ## Where it appears

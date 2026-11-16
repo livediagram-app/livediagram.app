@@ -12,6 +12,8 @@ import {
   type ChromeToolsItem,
 } from '@liveworkspace/workbench/components/chrome/ChromeToolsMenu';
 import { useAutomationsToolsItem } from '@/components/automations/automations-tools-item';
+import { useCalendarFeedToolsItem } from '@/components/calendar-feed/calendar-feed-tools-item';
+import { useEmailIntakeToolsItem } from '@/components/email-intake/email-intake-tools-item';
 
 // The right-hand control cluster shared by the editor's bottom tab bar and
 // the Explorer's bottom bar (docs/specs/007-editor/editor-app.md): search, settings, and the
@@ -39,9 +41,18 @@ export function ChromeControls({
   const BTN = labelled ? `${CHROME_BTN} ${CHROME_BTN_LABELLED}` : CHROME_BTN;
   const automations = useAutomationsToolsItem();
   const snapshots = useSnapshotsToolsItem();
+  const emailIntake = useEmailIntakeToolsItem();
+  const calendarFeed = useCalendarFeedToolsItem();
   // Search, first in Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md).
   const search: ChromeToolsItem | null = onOpenSearch
-    ? { id: 'search', group: 'find', label: 'Search', description: 'Find plans, tabs and elements.', icon: <SearchGlyph />, onSelect: () => onOpenSearch() }
+    ? {
+        id: 'search',
+        group: 'find',
+        label: 'Search',
+        description: 'Find plans, tabs and elements.',
+        icon: <SearchGlyph />,
+        onSelect: () => onOpenSearch(),
+      }
     : null;
   return (
     <>
@@ -51,7 +62,10 @@ export function ChromeControls({
       <TourOfferButton labelled={labelled} />
       {/* Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md): the tools that work on the
           whole item, in one menu, drawn only while it holds one. */}
-      <ChromeToolsMenu labelled={labelled} items={[search, automations, snapshots]} />
+      <ChromeToolsMenu
+        labelled={labelled}
+        items={[search, automations, emailIntake, calendarFeed, snapshots]}
+      />
       {onOpenSettings ? (
         <button type="button" onClick={onOpenSettings} aria-label={settingsLabel} className={BTN}>
           <SettingsIcon />

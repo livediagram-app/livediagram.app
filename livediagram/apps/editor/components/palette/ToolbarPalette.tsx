@@ -116,17 +116,22 @@ export function ToolbarPalette(props: Props) {
     return () => setPalettePopoverOpen(false);
   }, [popoverOpen]);
   const setMoreOpen = more.setOpen;
-  const { tabs: catalogueTabs, tileActions, canvasToolOptions, onCanvasToolChange, editorMode } =
-    usePaletteCatalogue({
-      ...props,
-      // A tile used from the More or Search popover closes it, so the canvas is clear to draw on.
-      onTileUsed: () => {
-        more.setOpen(false);
-        search.setOpen(false);
-        library.setOpen(false);
-        bar.popover.setOpen(false);
-      },
-    });
+  const {
+    tabs: catalogueTabs,
+    tileActions,
+    canvasToolOptions,
+    onCanvasToolChange,
+    editorMode,
+  } = usePaletteCatalogue({
+    ...props,
+    // A tile used from the More or Search popover closes it, so the canvas is clear to draw on.
+    onTileUsed: () => {
+      more.setOpen(false);
+      search.setOpen(false);
+      library.setOpen(false);
+      bar.popover.setOpen(false);
+    },
+  });
   // The Library leaves the categories for its own button beside Search.
   const libraryTab = catalogueTabs.find((t) => t.id === 'my-shapes');
   const tabs = useMemo(() => catalogueTabs.filter((t) => t.id !== 'my-shapes'), [catalogueTabs]);

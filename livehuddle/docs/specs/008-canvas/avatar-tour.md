@@ -13,7 +13,7 @@ the shared tour rules hold.
 
 | Term               | Means                                                                              |
 | ------------------ | ---------------------------------------------------------------------------------- |
-| **Avatar tour**    | This tour. On the Get Started button: **Start Avatar Tour**                         |
+| **Avatar tour**    | This tour. On the Get Started button: **Start Avatar Tour**                        |
 | **Avatar palette** | The palette strip while walking ([Avatar mode](avatar-mode.md#the-avatar-palette)) |
 
 ## Where it appears

@@ -1,6 +1,5 @@
 # Canvas suggestions
 
-
 > liveplanner retired canvas suggestions on 2026-11-16 (its work is cards and cells, which suggestions never covered): see
 > [liveplanner's page](../../../../liveplanner/docs/specs/012-collaboration/canvas-suggestions.md). The rest of this page is the other products'.
 
