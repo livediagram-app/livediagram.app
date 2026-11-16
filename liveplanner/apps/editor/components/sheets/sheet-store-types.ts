@@ -1,6 +1,6 @@
 // The sheet store's shapes (sheet-store-client.ts): how a write is made, what the store is given, and what it keeps
 // per sheet.
-import type { Sheet, SheetLayout, SheetPerson, SheetWrite } from '@liveplanner/sheets';
+import type { Sheet, SheetJson, SheetLayout, SheetPerson, SheetWrite } from '@liveplanner/sheets';
 import type { ItemUndoStep } from '@/hooks/plan/item-undo-journal';
 import type {
   createSheet,
@@ -37,6 +37,9 @@ export type SheetStoreDeps = {
   };
   // The wait before a write is sent again; injected in tests.
   wait?: (ms: number) => Promise<void>;
+  // Told each tab's sheets as a load read them: the last seen copy keeps the first tab's (docs/specs/006-project/
+  // offline-mode.md "Warm open of a cloud project").
+  onTabRead?: (tabId: string, sheets: readonly SheetJson[]) => void;
   // The plan's queue of waiting changes and what of this session's may wait in it (docs/specs/007-editor/
   // offline-changes.md); absent, nothing is kept past the tab, as for an Offline Mode project.
 } & SheetQueueDeps;

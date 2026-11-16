@@ -67,11 +67,16 @@ const DOM_WORDS =
 const OTHER_APP_PATHS = /^\s*(livediagram|livedocuments|livehuddle): '\/document\/',$/;
 // livedocuments, the liveworkspace app whose items are Documents, named as the app it is.
 const OTHER_APP_NAME = /\blivedocuments(\.app)?\b/g;
+// A link into another app's own spec folder for its items (the shared warm open's livediagram blueprint).
+const OTHER_APP_SPEC_PATH =
+  /\/(livediagram|livedocuments|livehuddle)\/docs\/specs\/006-document\//g;
 // A line stating the rule itself.
 const RULE = /never "document"/;
 const NAMED = /document/i;
 const misnames = (line: string, file = '') =>
-  NAMED.test(line.replace(DOM_WORDS, '').replace(OTHER_APP_NAME, '')) &&
+  NAMED.test(
+    line.replace(DOM_WORDS, '').replace(OTHER_APP_NAME, '').replace(OTHER_APP_SPEC_PATH, '/'),
+  ) &&
   !DOM_DOCUMENT.test(line) &&
   !FLOWCHART_DOCUMENT.test(line) &&
   !PAGE_SEARCH_WORDS.test(line) &&
@@ -82,9 +87,19 @@ const misnames = (line: string, file = '') =>
   !GOOGLE_DOCS_PATH.test(line) &&
   !RULE.test(line);
 
+const GIT_ENV = Object.fromEntries(
+  Object.entries(process.env).filter(([key]) => !key.startsWith('GIT_')),
+) as NodeJS.ProcessEnv;
+
 function scannedFiles(): string[] {
   return (
-    execFileSync('git', ['ls-files'], { cwd: ROOT, encoding: 'utf8' })
+    // Without the hook's GIT_* variables (a pre-push run would list the whole monorepo), and room for its list.
+    execFileSync('git', ['ls-files'], {
+      cwd: ROOT,
+      env: GIT_ENV,
+      encoding: 'utf8',
+      maxBuffer: 64 * 1024 * 1024,
+    })
       .split('\n')
       // A file deleted in the working tree but not yet staged is still listed; it is not part of the change.
       .filter(
@@ -119,5 +134,13 @@ describe('a project is never called a document', () => {
     expect(flagged('const documents = await listDocuments();')).toBe(true);
     expect(flagged('const id = row.documentId;')).toBe(true);
     expect(flagged('el.ownerDocument; // see the documentation')).toBe(false);
+    expect(flagged('[Warm open](../../livediagram/docs/specs/006-document/offline-mode.md)')).toBe(
+      false,
+    );
+    expect(
+      flagged(
+        '[Warm open](../../livediagram/docs/specs/006-document/offline-mode.md#a-cloud-document)',
+      ),
+    ).toBe(true);
   });
 });

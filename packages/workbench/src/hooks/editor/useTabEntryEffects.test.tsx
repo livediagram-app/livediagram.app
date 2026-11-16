@@ -281,4 +281,30 @@ describe('useTabEntryEffects tab pin', () => {
     setup({ activeId: 't1', elementCount: 0, tabLoaded: true });
     expect(window.location.href).toBe(`${window.location.origin}/explorer/mine`);
   });
+
+  it("writes the editor's own history state with the pin, and an empty one by default", () => {
+    // Already pinned: the entry is left as it is.
+    window.history.replaceState({ old: true }, '', '/document/doc-1#t=t1');
+    const pinned = setup({ activeId: 't1', elementCount: 0, tabLoaded: true });
+    expect(window.history.state).toEqual({ old: true });
+    pinned.rerender({ activeId: 't3', elementCount: 0, tabLoaded: true });
+    expect(window.history.state).toEqual({});
+    pinned.unmount();
+    const withState = createTabEntryEffects(
+      (pathname) => pathname.startsWith('/document/'),
+      () => ({ card: true }),
+    );
+    window.history.replaceState(null, '', '/document/doc-1');
+    renderHook(() =>
+      withState({
+        hydrated: true,
+        activeId: 't2',
+        elementCount: 0,
+        tabLoaded: true,
+        fitToScreen: () => {},
+      }),
+    );
+    expect(window.history.state).toEqual({ card: true });
+    expect(window.location.hash).toBe('#t=t2');
+  });
 });

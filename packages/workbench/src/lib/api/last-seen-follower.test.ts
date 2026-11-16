@@ -136,6 +136,34 @@ describe('createLastSeenFollower', () => {
     expect(written[3]!.item.tabs[0]).not.toHaveProperty('folder');
   });
 
+  // liveplanner's cards and first tab's sheets ride the item (liveplanner's blueprints/last-seen-copy.md "Follow").
+  it("follows the item's other fields, once per change, for its own reader and item only", async () => {
+    const { follower, written, fire, pending } = setup();
+    const extra = follower as unknown as {
+      followItem: (reader: string, itemId: string, fields: Record<string, unknown>) => void;
+    };
+    extra.followItem('user_a', 'd1', { cards: ['before a keep'] });
+    await follower.remember(copy());
+    const cards = { items: ['c1'], rev: 4 };
+    extra.followItem('user_b', 'd1', { cards });
+    extra.followItem('user_a', 'd2', { cards });
+    expect(pending()).toBeNull();
+    extra.followItem('user_a', 'd1', { cards });
+    // The same value again (by identity) changes nothing; another field rides the same refresh.
+    extra.followItem('user_a', 'd1', { cards });
+    extra.followItem('user_a', 'd1', { sheets: null });
+    fire();
+    expect(written).toHaveLength(2);
+    expect(written[1]!.item).toMatchObject({ name: 'Plan', cards, sheets: null });
+    expect((written[1]!.item as unknown as { cards: unknown }).cards).toBe(cards);
+    extra.followItem('user_a', 'd1', { cards, sheets: null });
+    expect(pending()).toBeNull();
+    // A later meta follow keeps the fields.
+    follower.followMeta('user_a', 'd1', { name: 'Renamed', tabs: [tab('t1', 'One')] });
+    fire();
+    expect(written[2]!.item).toMatchObject({ name: 'Renamed', cards });
+  });
+
   it('writes nothing for a follow that changed nothing', async () => {
     const { follower, written, pending } = setup();
     await follower.remember(copy());

@@ -137,6 +137,107 @@ fresh browser profile per first visit), guest create to first canvas paint:
 The one request left is `GET /api/capabilities`; the guest id, participant and
 Explorer lists follow after the paint.
 
+## Warm open of a cloud project
+
+A cloud plan waits on three things in a row before it paints: auth settling, the participant
+([`resolveParticipant`](#instant-open)) and the first tab's fetch, then its cards. In liveplanner 181 of 410
+opens took over 2 seconds (telemetry, `ProjectLoad.*`, the 30 days to November 2026), while the live room
+connected in under a second for 290 of 331. A plan this browser has opened before paints at once from **the last
+copy seen**, the way Linear, Figma and Notion show their last synced copy and catch up in the background. It is
+the same warm open the four other editors have (livediagram's
+[Offline Mode, its warm open](../../../../livediagram/docs/specs/006-document/offline-mode.md),
+Work Tracker 890), bound to liveplanner (Work Tracker 927); what differs is that a plan's first tab may be a
+Board, a Sheet, a Dashboard or a Form, and what a Board, a Sheet or a Dashboard shows lives beside the tab.
+
+**The last copy seen.** Each time a cloud plan opens by its own address or by a share link, the editor keeps
+what that load answered in this browser: the plan's meta (name, tab list, owner fields), the first tab's body and
+revision, and how the reader came in (the role, the owner's chrome, the share code the address carried and the
+tab a tab-scoped link opens). It also keeps what the first tab draws from:
+
+- **The cards** the reader's board read (the item store as it stood), once they have loaded, so a Board or a
+  Dashboard first tab paints its cards. A plan with more than **1,000 cards** keeps none (about 670 KB of cards
+  at a typical card's size; a bigger plan's write would be slow and its copy past the store's limit), and its
+  Board or Dashboard first tab opens as it always did.
+- **The first tab's sheets**, when it is a Sheet tab, as its last read of them answered, so a Sheet first tab
+  paints its cells. Sheets holding more than **10,000 cells** together keep none, and the tab opens as it always
+  did.
+- **The tabs a Dashboard shows**, when the first tab is a Dashboard: the body of each tab its tiles draw, once
+  each has loaded, and each such Sheet tab's sheets as their last read answered, so the Dashboard's tiles paint
+  their boards and cells rather than an empty page. Their cells together have the same **10,000 cell** cap; past
+  it, or before every shown tab has loaded once, none are kept and the Dashboard opens as it always did.
+
+It lives in its own IndexedDB database (`liveplanner-last-seen`), never on the server, under the same rules as
+every editor's copy:
+
+- **Per reader.** A copy is keyed by who read it: the account id, or the guest's id. It is read back only for that
+  reader, and every load drops the copies any other reader left.
+- **Cleared on sign-out.** Signing out, and deleting the account, empties the store before the sign-out hop.
+- **Lost access forgets.** A load that ends on not found (a revoked share link, a plan no longer shared with the
+  reader), on the deleted card or behind a share password removes that plan's copy, and a share link's copies go
+  by its code too. A load that cannot reach the server keeps it.
+- **Follows the plan.** While the plan is open its copy keeps up with what the reader sees: the name and the tab
+  list each time they change, the first tab's body each time one of the reader's own saves of it lands, and the
+  cards each time the board's store changes (a card added, moved or edited, by the reader, a teammate or a rule).
+  The first tab's sheets, and a Dashboard's shown tabs, follow each read of them (the open's, a reconnect's, a
+  shown tab's load); a cell typed since shows its older
+  value for a moment at the next warm open, until the catch-up. Refreshes are gathered into at most one write
+  every 2 seconds, off the editing path, and a waiting one is written when the page is hidden or closed. While the
+  Plan tour's practice cards are on the board the cards are not followed (they are never anyone's real cards).
+- **Bounded.** At most 20 copies, the oldest seen dropped first; a copy over 1,000,000 characters of JSON is not
+  kept; a copy older than 30 days is never read. Embeds, Community posts, workbenches and This Browser plans keep
+  none.
+
+**The warm open.** Before auth settles, an address naming a cloud plan with a copy for the reader this browser
+expects paints that copy under the `'self'` placeholder, read-only, exactly as the other editors do: the reader
+expected is the guest token's id, or, when the signed-in hint says this browser is signed in, the account whose
+copies the store holds. A share link warm-opens only by the code the copy was kept under, by an address that names
+the plan or by the link's own address (`/project/shared?s=<code>`). Embeds, workbenches and This Browser plans never
+warm-open, and neither does a copy whose first tab is not the tab this open would show first (no first tab kept, or
+`#t=` naming another tab).
+
+What the first tab is decides whether the copy paints:
+
+| First tab | Paints from the copy                                                                                    |
+| --------- | ------------------------------------------------------------------------------------------------------- |
+| Board     | Its body and the cards kept; no cards kept (past the cap, or before they first loaded): opens as always |
+| Dashboard | Its body, the cards kept and the tabs its tiles show (below); otherwise opens as always                 |
+| Sheet     | Its body and its sheets kept; no sheets kept for this tab: opens as always                              |
+| Form      | Never: a form's link, its state and its responses are the server's, so a Form tab waits for the load    |
+
+A Dashboard first tab paints only when every slot can draw from the copy: each Board or Sheet tab a tile shows is
+kept (a Sheet with its sheets), and no slot reads what the copy never holds. A tile naming a Form tab, a figure or
+chart from a sheet (Sheet Metrics, a chart from a Sheet's cells) or a figure from a form (Form Metrics) keeps it
+waiting, and so does a shown tab not kept (it had not loaded, or its cells were past the cap). A tile whose tab was
+deleted paints as it says so. Until a shown tab's own load answers, its tile draws the kept body as it was seen,
+not worked on, and then the tab as loaded.
+| Any other | Its body, with what it draws as a Board or a Sheet would (a board or card needs cards, a Sheet sheets) |
+
+- **Edits wait for the participant.** The warm paint runs as a Viewer: every edit control is disabled with the
+  usual read-only look, card moves and edits, the board's shared filter (its words, chips, Only Mine and saved
+  filters) and the Automations screen stay closed, nothing is saved, no card or cell write is sent, the room does
+  not connect and no request goes out under the placeholder, until the reader resolves and the fresh copy lands.
+  A stored role never widens what the reader may do.
+- **The ordinary load catches up** behind it, unchanged: auth, the participant, the plan, the first tab and then
+  the cards and sheets. Its answer replaces the copy in place (the same tabs by id, no opening screen between) and
+  its role applies. The fresh cards replace the kept ones whole, and the fresh sheets the kept ones. A first tab
+  whose revision is the one the copy holds keeps the painted tab as it is.
+- **Someone else after all**, **lost access on catch-up**, **never a wrong not found**, **other tabs wait for the
+  load** and **another browser tab** behave as in the other editors (livediagram's spec above): a different reader
+  takes the copy off the screen for the opening screen; a load ending on not found after a warm paint forgets the
+  copy and reloads once, cold, before any not found shows; a tab switched to during the warm paint shows the tab
+  loader and is kept through the catch-up.
+- `ProjectLoad` keeps timing the fresh copy's first frame; the warm paint is timed on its own as the performance
+  measures `warm-paint` and `warm-catch-up` and in the field as the `WarmPaint` timing, from the same start.
+
+**Measured** on the production export (headless Chromium, the e2e stack, a guest's Kanban plan at its own address,
+100 ms round trip at 10 Mbps, 12 cold and 12 warm opens interleaved, medians / p90 from navigation start): the cards
+are on screen at **829 / 836 ms** cold (the open as it was before) and **390 / 397 ms** warm, about 440 ms (53%)
+sooner. The plan is editable at 1,036 / 1,051 ms warm against 829 / 836 ms cold: the catch-up lands about 200 ms
+later than a cold open, the same trade the other editors make (their reads wait behind the paint's work).
+
+The bindings are set out in the [Last seen copy blueprint](blueprints/last-seen-copy.md), which names its
+measurements.
+
 ## Archived in This Browser
 
 A plan in This Browser can be moved to Archived from the Explorer's menu, like an account's. Nothing leaves the

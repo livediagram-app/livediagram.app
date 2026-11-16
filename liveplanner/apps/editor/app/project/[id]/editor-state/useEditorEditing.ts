@@ -41,8 +41,16 @@ export function useEditorEditing(
 ) {
   const { activeId, selectionStore, setEditingId, setMultiSelectedIds, setSelectedId } =
     selectionSlice;
-  const { commitTabs, hydrated, loadedTabIds, markCheckpoint, projectId, tabLoadErrors, tickTabs } =
-    projectSlice;
+  const {
+    commitTabs,
+    hydrated,
+    loadedTabIds,
+    markCheckpoint,
+    projectId,
+    tabLoadErrors,
+    tickTabs,
+    warmTabId,
+  } = projectSlice;
   const { isReadOnly, showComments, participant, toast } = collaborationSlice;
   const { tabsRef } = persistenceSlice;
   const { activeTab, cardThreads } = planDataSlice;
@@ -81,6 +89,7 @@ export function useEditorEditing(
     errored: tabLoadErrors.has(activeId),
     elementsLength: activeTab.elements.length,
     templateChosen: activeTab.templateChosen === true,
+    warmWithoutBody: !hydrated && warmTabId !== null && activeId !== warmTabId,
   });
   // A view-only session (a 'view' share role) is read-only in exactly
   // the same way a locked tab is: no element or tab mutation may land.

@@ -28,7 +28,7 @@ export function useEditorViewport(
   planDataSlice: EditorPlanDataSlice,
 ) {
   const { activeId, readSelection, setActiveId } = selectionSlice;
-  const { hydrated, loadedTabIds } = projectSlice;
+  const { hydrated, loadedTabIds, warmTabId } = projectSlice;
   const { sharePasswordGate } = collaborationSlice;
   const { tabsRef } = persistenceSlice;
   const { activeTab } = planDataSlice;
@@ -87,7 +87,10 @@ export function useEditorViewport(
     hydrated,
     activeId,
     elementCount: activeTab.elements.length,
+    // The warm-painted tab is fitted as it paints, and again only if the catch-up replaced its body.
+    elements: activeTab.elements,
     tabLoaded: loadedTabIds.has(activeId),
+    warmTabId,
     fitToScreen: () => {
       fitToScreen();
     },
