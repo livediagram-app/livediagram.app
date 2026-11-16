@@ -47,8 +47,13 @@ test.describe('a first visit', () => {
     };
     await expect.poll(cameBack, { timeout: 15_000 }).toBe(true);
     await expect(page.locator('[data-canvas-a11y-root]')).toBeAttached({ timeout: 30_000 });
+    // Back to /new, or to the canvas /new already made: a guest's canvas is This Browser, so /new can create it and
+    // take its /document/<id> address before the handoff leaves (docs/specs/003-system-architecture/e2e-smoke.md).
     const back = visited.findIndex((path) => path.startsWith('/auth/guest'));
-    expect(visited.slice(back + 1)).toContainEqual(expect.stringMatching(/^\/new\/?$/));
+    expect(visited.slice(back + 1)).toContainEqual(
+      expect.stringMatching(/^\/(new\/?|document\/[0-9a-f-]{36})$/),
+    );
+    expect(new URL(page.url()).pathname).toMatch(/^\/document\/[0-9a-f-]{36}$/);
     expect(
       await page.evaluate(() => localStorage.getItem('livediagram:v2:guest-token')),
     ).toBeTruthy();

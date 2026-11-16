@@ -83,7 +83,8 @@ Cost controls, all in `e2e-product.yml` and `playwright.config.ts`:
   `adoptGuest` wins over it, so a spec that seeds as a guest it minted still opens as that guest. Contexts a spec makes
   itself (`browser.newContext()`, a share link's visitor) stay fresh unless the spec adopts a guest there. The first
   visit has one test of its own (`smoke.spec.ts`, under `test.use({ freshVisitor: true })`), which waits for the round
-  trip to come back before it checks the page. Signed-in and workbench runs skip it: their pages sign in.
+  trip to come back before it checks the page. It comes back to `/new`, or to `/document/<id>` when `/new` already made
+  the guest's This Browser canvas (it needs no token) and took its address before the handoff left. Signed-in and workbench runs skip it: their pages sign in.
   `e2e/guest-first.test.ts` holds every spec that opens a page to the shared fixture, and `freshVisitor` to that one
   test.
 - **A guest's `/new` is This Browser**, as in production ([Save Locations](../006-document/save-locations.md#the-default-depends-on-who-is-creating)),
