@@ -596,6 +596,11 @@ are `app/community/`, `components/community/` and `lib/community/`.
   switcher, the slanted hairline and the app's logo, which leads back to the app; the account control on the right
   (the app's session on its address). No search in the middle: the gallery's own search box is the page's. The
   switcher leads each site to its Community ([site-switcher.md](site-switcher.md#on-a-community-page)).
+- **Its footer's links.** The page is one static file for every address, so the server HTML cannot know the host. Its
+  footer is therefore drawn with liveworkspace.app's origin in full in the served HTML (never a bare path such as
+  `/compare`, which an app's address 404s), so search crawlers, visitors without JavaScript and an early click land on a
+  page that answers. After hydration the origin is the page's own workspace (staging's on a staging address, a relative
+  path on liveworkspace.app itself); both come from the same `workspaceOriginFor` rule.
 - **Its look.** The page wears the colours of the app whose address it is on (`data-community-app`, the same ramps
   as the Explorer's, `app/app-colours.css`), liveworkspace's slate here; the hero's wash takes the app's colour too.
   The rail (Appearance) and this site's footer follow, the footer's links leading to liveworkspace.app in full on
