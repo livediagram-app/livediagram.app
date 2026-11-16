@@ -68,6 +68,33 @@ This is the one part of the feature that is not free. Tab bodies live in their o
 - The api's document DTO in `@livediagram/api-schema` carries it through, and the read / save routes round-trip it.
 - Null / absent = no deck, which is every existing document.
 
+### Decks a template seeds
+
+A template people present (the Roadmap, the Business Model Canvas, the Incident Postmortem, the Gantt chart, the OKR
+tree, the funnel, the Venn diagram, the strategy pyramid, the comparison table and both milestone timelines) arrives
+with its slides, so **Present** runs it straight away in the order its talk track tells it. Each is a deck written by
+hand with the template (`template-slides-data.ts` in `@livediagram/templates`), never one guessed from the canvas:
+
+- **An overview, then each part.** The first slide shows the whole board; then one slide per part in talk order (the
+  canvas's nine blocks in their numbered order, a roadmap's goal then Now, Next and Later, a postmortem's summary,
+  timeline, five whys, lessons and actions). Every slide is named and carries the talk track's line for it as its
+  presenter notes.
+- **Found by label, held as ordinary slides.** A slide names its part by the labels on it (a heading, a card's title);
+  `templateSlides` finds them on the tab the template built, takes in the panel each sits in and whatever lies within,
+  and writes plain element ids with fresh slide ids. From then on they are the person's own slides: renamed,
+  reordered, hidden or deleted like any other. A part whose label is no longer on the tab is left out, never seeded
+  empty.
+- **Where it happens.** A document made from a presented template (`/new?template=`, the new-document wizard, the
+  workspace frame's New document, the MCP's `create_document`) is created with the deck (`newDocumentPresentation`,
+  the create's `presentation`). A presented template picked on an empty tab of a document that already exists, in the
+  editor or through the MCP's `add_tab`, **appends** its slides after the deck's own, so slides someone already made
+  keep their places. The editor appends through the deck's own save (`appendSlides`); `add_tab` reads the document's
+  deck and writes it back whole (`withAppendedSlides`), which is last-write-wins like every deck edit: someone with
+  the document open who then edits their deck without reloading writes over the appended slides (see
+  [Deck edits are ordinary document data](#deck-edits-are-ordinary-document-data)).
+- **The others seed nothing.** Workshop boards are run, not presented, and a diagram is read whole; neither touches
+  the deck.
+
 ## Entry and the Slide Deck panel
 
 **Slide Deck is a canvas tool**, alongside Select, Hand, Eraser, Format, Laser, Spotlight, Avatar and Isometric. Picking it from the tool dropdown does **not** start presenting: it opens the **Slide Deck panel**, where you build and administer the deck. Starting is a deliberate second act.
@@ -82,7 +109,7 @@ The **Slide Deck panel** is the seventh tool panel, on exactly the contract the 
 
 - **The slide list**, in deck order, each row with its position, name, tab, member count, and a **preview thumbnail** from the shared headless SVG renderer (`useSlideThumbnails`, the same renderer the Layers panel rows, the Map and the exports use). One difference from the layer previews and the reason it is its own hook: every layer preview shares ONE viewBox, the tab's content bounds, so each band shows where its elements sit. Slides cannot, because a deck spans tabs and two tabs share no coordinate space, so each slide is framed to its own bounds, which is also what the presentation does when it runs.
 - **New slide from selection**: the primary authoring path. Select elements on the canvas, press the button; the slide takes the active tab. Also **Add selection to slide** for growing one, which is offered only while you are on that slide's own tab (a slide holds one tab's elements, so adding from another tab is not a thing to disallow politely, it is a thing that cannot be expressed).
-- **An empty deck stays empty.** No seeded slides, no "one per tab" starter. A generated deck is a deck you have to read and prune before you can trust it, and pruning somebody else's guesses is slower than making the three slides you meant.
+- **An empty deck stays empty.** No "one per tab" starter, and nothing guessed from what is on the canvas. A generated deck is a deck you have to read and prune before you can trust it, and pruning somebody else's guesses is slower than making the three slides you meant. The one exception is a presented template, whose slides are written by hand with the template ([Decks a template seeds](#decks-a-template-seeds)).
 - **Remove from slide**: the other half of adding. Membership is edited for the life of the deck, not just when a slide is created.
 - **Every verb lives in the row's `…` menu**, built from the shared menu furniture the Explorer's rows and the tab context menu use, in the same shape: a quick-action icon **toolbar** (rename, notes, duplicate, with delete pinned right), then labelled accordion categories: **Selection** (add / remove what you have selected, with a line above the buttons saying what they act on) and **Visibility** (hide this slide from the run, or show it again). A menu that looks like this one and like nothing else in the app is a menu people have to learn twice.
 - **Deleting a slide asks first**, in a ConfirmPopover anchored to the row's own menu button. The elements survive, but the arrangement does not, and the arrangement is what you spent the time on. The confirm says so: "The elements stay on the canvas." ("The element stays", for one).

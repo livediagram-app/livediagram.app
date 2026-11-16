@@ -245,7 +245,7 @@ export const offlineLoadTab = store.loadTab;
 // record of uses starts with the day and the moment it was made, as a first open would
 // (docs/specs/013-workspace/explorer-home.md "Making a document"; offline-opens.ts).
 export async function offlineCreateDocument(
-  d: { id: string; name: string; tabs?: Tab[] },
+  d: { id: string; name: string; tabs?: Tab[]; presentation?: string | null },
   now: number,
   extra: {
     createdAt?: number;
@@ -261,6 +261,7 @@ export async function offlineCreateDocument(
     createdAt: extra.createdAt ?? now,
     savedAt: extra.savedAt ?? now,
     tabs: d.tabs ?? [],
+    ...(d.presentation ? { presentation: d.presentation } : {}),
     ...(extra.markUsed === false ? {} : { opens: { days: [utcDay(now)], lastOpenedAt: now } }),
   };
   return store.createRecord(rec);

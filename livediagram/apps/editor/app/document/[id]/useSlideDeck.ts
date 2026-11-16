@@ -331,6 +331,18 @@ export function useSlideDeck({
     [commitDeck, deckRef, isReadOnly],
   );
 
+  /**
+   * Slides made elsewhere, after the deck's own: a presented template's, in talk order
+   * (docs/specs/012-collaboration/presentation-mode.md "Decks a template seeds").
+   */
+  const appendSlides = useCallback(
+    (added: readonly Slide[]) => {
+      if (isReadOnly || added.length === 0) return;
+      commitDeck((prev) => ({ slides: [...prev.slides, ...added] }));
+    },
+    [commitDeck, isReadOnly],
+  );
+
   /** Move a slide to another position in the deck. Order is the deck's own. */
   const reorderSlides = useCallback(
     (fromId: string, toIndex: number) => {
@@ -428,6 +440,7 @@ export function useSlideDeck({
     deleteSlide,
     toggleSlideHidden,
     duplicateSlide,
+    appendSlides,
     reorderSlides,
     presentingAt,
     setPresentingAt,

@@ -4,7 +4,7 @@
 // same document.
 import type { Tab } from '@livediagram/document';
 import type { TemplateKind } from '@livediagram/templates';
-import { buildTemplatedTab } from '@/lib/template-builders';
+import { buildTemplatedTab, templateSlides, withAppendedSlides } from '@/lib/template-builders';
 import { templateTabName } from '@/lib/template-tab-name';
 import { getTheme } from '@/lib/themes';
 
@@ -37,4 +37,17 @@ export function newDocumentTab(input: {
     ...(theme.backgroundOpacity != null ? { backgroundOpacity: theme.backgroundOpacity } : {}),
     ...(templateChosen ? { templateChosen: true } : {}),
   };
+}
+
+// The deck a new document starts with (docs/specs/012-collaboration/presentation-mode.md "Decks a template seeds"): a
+// presented template's slides over its tab, in talk order, serialised for the create. Null for any other start.
+export function newDocumentPresentation(
+  templateKind: TemplateKind | null,
+  tab: Tab,
+): string | null {
+  if (!templateKind) return null;
+  return withAppendedSlides(
+    null,
+    templateSlides(templateKind, tab, () => crypto.randomUUID()),
+  );
 }

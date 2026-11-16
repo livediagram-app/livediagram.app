@@ -4,6 +4,8 @@ type CreateDocument = typeof import('@/lib/api-client').apiCreateDocument;
 const api = vi.hoisted(() => ({ apiCreateDocument: vi.fn<CreateDocument>() }));
 vi.mock('@/lib/api-client', () => api);
 
+import { parseStoredPresentation } from '@livediagram/document';
+import { TEMPLATE_SLIDES } from '@livediagram/templates';
 import { createDocumentInPlace, createInPlaceOf } from './create-in-place';
 
 const ORIGIN = 'https://live.test';
@@ -73,6 +75,21 @@ describe('createDocumentInPlace', () => {
     expect(made.name).not.toBe('Untitled canvas');
     expect(made.tabs?.[0]?.templateChosen).toBe(true);
     expect(made.intent).toBeDefined();
+    // A flowchart is not presented: no deck travels.
+    expect(made).not.toHaveProperty('presentation');
+  });
+
+  it('seeds a presented template’s deck, its slides on the made tab', async () => {
+    await createDocumentInPlace('user_1', {
+      folderId: undefined,
+      teamId: null,
+      templateKind: 'roadmap',
+    });
+
+    const [, made] = api.apiCreateDocument.mock.calls[0]!;
+    const deck = parseStoredPresentation(made.presentation)?.decks[0];
+    expect(deck?.slides.map((s) => s.name)).toEqual(TEMPLATE_SLIDES.roadmap!.map((s) => s.name));
+    expect(deck?.slides.every((s) => s.tabId === made.tabs?.[0]?.id)).toBe(true);
   });
 
   it('lets a refused create through to the caller', async () => {

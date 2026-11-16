@@ -895,10 +895,10 @@ and lines. The bar every template is held to (Work Tracker 1075), by what it is 
   the C4 Container Diagram's order path.
 - **Presented templates read in the order they are told.** A template people present (the Roadmap, the Business
   Model Canvas, the Incident Postmortem, the milestone timelines) reads left to right and top to bottom in the order
-  its talk track tells it, so building its slides with **New slide from selection** part by part gives the deck in
-  that order. A template ships **no slide deck**: the deck is the document's own, not a tab's
-  ([Presentation mode](../012-collaboration/presentation-mode.md) "What a slide is"), and a template only fills a
-  tab.
+  its talk track tells it, and **seeds the deck** in that order: an overview, then one named slide per part with
+  the talk track's line as its notes, on a new document's deck or after the slides an existing one already has
+  ([Presentation mode](../012-collaboration/presentation-mode.md#decks-a-template-seeds),
+  `template-slides-data.ts`). The others seed nothing.
 - **Every template lints clean.** Made as `add_tab` and `create_document` make it, every listed template lints with
   **no warning** ([Diagram lint](../024-agents/diagram-lint.md)): its labels fit their boxes, every box in a graph
   is joined to it, and no arrow's label sits on another box (`packages/diagram-lint/src/templates.test.ts`, which

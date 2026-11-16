@@ -299,6 +299,10 @@ arrows. `add_tab` does the same. A tab's `name` is optional: an unnamed template
    ([API](api.md#marking-a-document-used)) for a model making many documents in one go,
    so a batch never pushes the user's own work out of reach. Absent, nothing is sent and the
    create counts.
+   A tab made from a presented template also seeds the new document's deck with its slides, sent as the create's
+   `presentation`, in tab order when there are several
+   ([Decks a template seeds](../012-collaboration/presentation-mode.md#decks-a-template-seeds)); the result's
+   `notes` say how many slides each tab added.
 5. **Returns** the new `id`, tab count + ids, the folder ("My Work" for the root,
    or the name of the default folder it was filed in), the deep-link `url`,
    **and the rendered PNG of the first tab** so the user sees the result inline.
@@ -310,7 +314,10 @@ Add a **new tab** (its own canvas) to an existing document, the motivating case:
 `documentId`, `name`, `elements`, optional `layout`, or `template: TemplateKind`
 instead of `elements`, exactly like a `create_document` tab. Validates + lays out
 exactly like a `create_document` tab, then submits a [changeset](../024-agents/agent-changesets.md)
-that creates the tab, so anyone with the document open sees it arrive. Returns the new `tabId`, `url`,
+that creates the tab, so anyone with the document open sees it arrive. A presented template's slides are then
+appended after the document's deck (read with `GET /documents/:id`, written back whole with `PUT`,
+[Decks a template seeds](../012-collaboration/presentation-mode.md#decks-a-template-seeds)); a note says so, or that
+the tab was made without them when the deck could not be written. Returns the new `tabId`, `url`,
 and the rendered PNG. (Pair with `read_document`, which lists the document's
 existing tabs, to decide where a new one fits.)
 

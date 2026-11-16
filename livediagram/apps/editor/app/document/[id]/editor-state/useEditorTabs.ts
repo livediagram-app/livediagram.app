@@ -32,6 +32,7 @@ import type { EditorModesSlice } from './useEditorModes';
 import type { EditorViewportSlice } from './useEditorViewport';
 import type { EditorFollowingSlice } from './useEditorFollowing';
 import type { EditorEditingSlice } from './useEditorEditing';
+import type { EditorPresentationSlice } from './useEditorPresentation';
 
 // Tab and document lifecycle: tab actions, connected tabs, folders, document actions, the template flow, and the
 // tab's canvas look. A slice of useEditorState (../useEditorState.ts): it takes the slices composed before it
@@ -48,6 +49,7 @@ export function useEditorTabs({
   fromViewport,
   fromFollowing,
   fromEditing,
+  fromPresentation,
 }: {
   fromDocument: EditorDocumentSlice;
   fromHistory: EditorHistorySlice;
@@ -60,6 +62,7 @@ export function useEditorTabs({
   fromViewport: EditorViewportSlice;
   fromFollowing: EditorFollowingSlice;
   fromEditing: EditorEditingSlice;
+  fromPresentation: EditorPresentationSlice;
 }) {
   const {
     confirm,
@@ -230,6 +233,7 @@ export function useEditorTabs({
     setIdentityPromptOpen,
     requestFit,
     putToolDown: () => putToolDownRef.current(),
+    appendSlides: fromPresentation.view.slideDeck.appendSlides,
   });
 
   // One undo step per burst of a continuous control: the background
