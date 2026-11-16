@@ -6,6 +6,7 @@
 import type { MediaApp } from './apps';
 import { LIBRARY_PATH } from './library';
 import { libraryCalls } from './library-client';
+import { walkthroughCalls } from './walkthrough-client';
 import {
   IMAGE_HEIGHT_HEADER,
   IMAGE_NAME_HEADER,
@@ -155,6 +156,9 @@ export function createMediaClient({ app, key, url, fetch: doFetch = fetch }: Med
     library: libraryCalls(async <T>(path: string, body: unknown) =>
       json<T>(await call(`${LIBRARY_PATH}${path}`, send('POST', body))),
     ),
+
+    /** Walkthroughs (liveworkspace/docs/specs/006-media/walkthroughs.md): the narrated recordings of the canvas apps. */
+    walkthroughs: walkthroughCalls(call),
   };
 }
 

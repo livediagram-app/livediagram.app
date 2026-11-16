@@ -47,6 +47,11 @@ import { stripJpegMetadata } from './jpeg-strip';
 import { deleteItemPreviews } from './previews/store';
 import { claimRef, syncRefs } from './refs';
 import { handleLibrary } from './library/routes';
+import {
+  deleteOwnerWalkthroughs,
+  handleWalkthroughs,
+  mergeOwnerWalkthroughs,
+} from './walkthroughs';
 import { deleteOwnerItems, mergeOwnerItems } from './library/store';
 import { timingSafeEqual } from '@liveworkspace/index-app/timing-safe';
 
@@ -204,6 +209,11 @@ export async function handleApp(
     return json({ deleted: await deleteItemPreviews(bucket, indexAppOf(app), itemId) });
   }
 
+  // /app/walkthroughs: the canvas apps' narrated recordings (liveworkspace/docs/specs/006-media/walkthroughs.md).
+  if (segments[0] === 'walkthroughs') {
+    return handleWalkthroughs(request, env, bucket, app, url, segments);
+  }
+
   // POST /app/library/<route>: the Library (liveworkspace/docs/specs/006-media/libraries.md "The API").
   if (segments[0] === 'library' && segments.length === 2 && method === 'POST') {
     return handleLibrary(env, bucket, app, segments[1]!, await readJson(request));
@@ -233,11 +243,14 @@ export async function handleApp(
       const merged = await mergeOwner(env, body.from, body.to);
       // Their Personal library goes with their pictures (libraries.md "Account and guest lifecycle").
       const items = await mergeOwnerItems(env, body.from, body.to);
+      // And their walkthroughs (walkthroughs.md "Deleting").
+      const walkthroughs = await mergeOwnerWalkthroughs(env, body.from, body.to);
       console.info('[media] merged a guest', {
         app,
         moved: merged.moved.length,
         kept: merged.kept.length,
         items,
+        walkthroughs,
       });
       return json(merged);
     }
@@ -245,6 +258,8 @@ export async function handleApp(
     if (segments.length === 2 && method === 'DELETE' && isId(segments[1])) {
       const ids = await deleteOwnerRows(env, segments[1]);
       await deleteOwnerItems(env, segments[1]);
+      // Every walkthrough they recorded, in every app, goes with their pictures.
+      const walkthroughs = await deleteOwnerWalkthroughs(env, bucket, segments[1]);
       for (let i = 0; i < ids.length; i += 1000) {
         try {
           await bucket.delete(ids.slice(i, i + 1000));
@@ -252,7 +267,7 @@ export async function handleApp(
           console.error('[media] R2 delete failed for a deleted owner', err);
         }
       }
-      console.info('[media] forgot an owner', { app, deleted: ids.length });
+      console.info('[media] forgot an owner', { app, deleted: ids.length, walkthroughs });
       return json({ deleted: ids.length });
     }
   }
