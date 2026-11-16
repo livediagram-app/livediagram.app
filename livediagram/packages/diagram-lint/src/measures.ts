@@ -3,7 +3,7 @@
 
 import { contentBounds, pathsCross, type ElementId, type Rect } from '@livediagram/document';
 import { LINT_MAX_ARROWS } from './constants';
-import type { LintContext } from './context';
+import type { DrawableArrow, LintContext } from './context';
 
 export type Crossings = {
   pairs: number;
@@ -13,6 +13,11 @@ export type Crossings = {
 
 const intersects = (a: Rect, b: Rect) =>
   a.x <= b.x + b.width && b.x <= a.x + a.width && a.y <= b.y + b.height && b.y <= a.y + a.height;
+
+// A rule: a line with free ends and no heads (an axis, a divider, a sequence diagram's lifeline). It joins nothing, so
+// it crosses and passes behind by design.
+export const isRule = ({ arrow }: DrawableArrow) =>
+  arrow.from.kind === 'free' && arrow.to.kind === 'free' && arrow.arrowEnds === 'none';
 
 // Pairs of drawable arrows whose routes cross, each pair once; null above LINT_MAX_ARROWS (N2).
 export function crossingPairs(ctx: LintContext): Crossings | null {
@@ -26,6 +31,7 @@ export function crossingPairs(ctx: LintContext): Crossings | null {
       // A line drawn over what it crosses on purpose (routeBehind false: a lifeline, a message, a divider) crosses
       // by design.
       if (p.arrow.routeBehind === false || q.arrow.routeBehind === false) continue;
+      if (isRule(p) || isRule(q)) continue;
       if (!intersects(p.bounds, q.bounds) || !pathsCross(p.polyline, q.polyline)) continue;
       pairs++;
       for (const id of [p.arrow.id, q.arrow.id]) perArrow.set(id, (perArrow.get(id) ?? 0) + 1);

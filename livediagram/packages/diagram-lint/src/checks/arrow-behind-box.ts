@@ -1,22 +1,37 @@
 // `arrow-behind-box` (warning): an arrow passes through a box it does not connect, one finding an arrow
 // listing every such box (LN8). An arrow that opts out of route-behind is drawn over them by choice: not behind.
 
-import { boundsOfPoints, pathPassesThrough, queryElementGrid } from '@livediagram/document';
+import {
+  boundsOfPoints,
+  pathPassesThrough,
+  queryElementGrid,
+  type BoxedElement,
+} from '@livediagram/document';
 import { arrowName, arrowSelector } from '../arrow-names';
-import { isLintBox } from '../boxes';
+import { boxBounds, isBackdrop, isLintBox, isMarker, isThinBar } from '../boxes';
 import { LINT_MOVE_CLEAR } from '../constants';
-import { padded, refOf } from '../context';
+import { padded, refOf, type DrawableArrow, type LintContext } from '../context';
 import { fixes } from '../fixes';
+import { isRule } from '../measures';
 import { restyledRoutes } from '../restyle';
 import type { Check } from './types';
+
+// Whether a line through `box` is behind it: not its own end, and not a mark on a line, a thin bar (a lifeline or an
+// activation, which a line crosses) or a group's backdrop panel (a line to a member crosses its panel).
+const isBehind = (ctx: LintContext, d: DrawableArrow, box: BoxedElement) =>
+  box.id !== d.from?.id &&
+  box.id !== d.to?.id &&
+  !isMarker(box) &&
+  !isThinBar(box) &&
+  !isBackdrop(box, queryElementGrid(ctx.grid, boxBounds(box)));
 
 export const arrowBehindBox: Check = (ctx) =>
   ctx.drawable.flatMap((d) => {
     // Drawn over the boxes it crosses on purpose (routeBehind false), it passes behind none.
-    if (d.arrow.routeBehind === false) return [];
+    if (d.arrow.routeBehind === false || isRule(d)) return [];
     const behind = queryElementGrid(ctx.grid, padded(ctx, d.bounds))
       .filter(isLintBox)
-      .filter((box) => box.id !== d.from?.id && box.id !== d.to?.id)
+      .filter((box) => isBehind(ctx, d, box))
       .filter((box) => pathPassesThrough(d.polyline, box));
     if (behind.length === 0) return [];
     const boxes = behind.map((box) => refOf(ctx, box.id));
@@ -26,9 +41,7 @@ export const arrowBehindBox: Check = (ctx) =>
       ({ route }) =>
         !queryElementGrid(ctx.grid, padded(ctx, boundsOfPoints(route)!))
           .filter(isLintBox)
-          .some(
-            (box) => box.id !== d.from?.id && box.id !== d.to?.id && pathPassesThrough(route, box),
-          ),
+          .some((box) => isBehind(ctx, d, box) && pathPassesThrough(route, box)),
     );
     return [
       {

@@ -159,7 +159,9 @@ export function renderTabToSvg(source: Tab, opts: ImageExportOpts = {}): string 
   // stylesheet (the live preview, where the page has the faces already).
   const fontDefs = opts.fontCss
     ? `<defs><style type="text/css">${opts.fontCss}</style></defs>`
-    : svgFontDefs(exportFontIds(els, tab.font, tab.finish));
+    : opts.fontsFromPage
+      ? ''
+      : svgFontDefs(exportFontIds(els, tab.font, tab.finish));
   if (fontDefs) parts.push(fontDefs);
   // Element-shadow filter defs (docs/specs/008-canvas/element-shadows.md); empty string when none.
   const shadowDefs = svgShadowDefs(els);

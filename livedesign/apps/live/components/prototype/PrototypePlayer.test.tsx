@@ -3,6 +3,8 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   createShape,
+  DISPLAY_FONTS,
+  googleFontsHref,
   layOutPages,
   pagesOf,
   pageScreenRect,
@@ -72,6 +74,41 @@ afterEach(() => {
   cleanup();
   vi.useRealTimers();
   vi.restoreAllMocks();
+});
+
+describe('PrototypePlayer fonts', () => {
+  // The editor's layout links the one webfonts stylesheet (lib/export-tab.ts `fontsFromPage`); a screen that
+  // declared it again with an `@import` made every font a second request.
+  const fonted = () => {
+    const displayId = DISPLAY_FONTS[0]!.id;
+    const a = linked('a', 0, { kind: 'page', pageId: 'p2', transition: 'slide' });
+    return tabWith([
+      { ...a, label: 'Hi', font: 'caveat' },
+      { ...linked('b', 1, { kind: 'back', transition: 'slide' }), font: displayId },
+    ]);
+  };
+
+  afterEach(() => {
+    document.head.querySelectorAll('link[data-display-font]').forEach((l) => l.remove());
+  });
+
+  it('draws a screen without its own font stylesheet', () => {
+    play({ tab: fonted() });
+    const svg = document.querySelector('[data-prototype-screen="p1"]')!;
+    expect(svg.innerHTML).not.toContain('@import');
+    expect(svg.innerHTML).not.toContain('fonts.googleapis.com');
+    expect(svg.querySelector('style')).toBeNull();
+  });
+
+  it('links each display face once, for a direct share-link open with no canvas behind it', () => {
+    const displayId = DISPLAY_FONTS[0]!.id;
+    const t = fonted();
+    const { view } = play({ tab: t });
+    view.rerender(<PrototypePlayer tab={t} startId="p1" onClose={vi.fn()} copyLink={null} />);
+    const links = document.head.querySelectorAll(`link[data-display-font="${displayId}"]`);
+    expect(links).toHaveLength(1);
+    expect(links[0]!.getAttribute('href')).toBe(googleFontsHref([displayId]));
+  });
 });
 
 describe('PrototypePlayer', () => {

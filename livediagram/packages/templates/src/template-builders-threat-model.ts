@@ -106,7 +106,7 @@ const NODES: readonly { name: string; kind: Kind; x: number; y: number }[] = [
   { name: 'API gateway', kind: 'process', x: 370, y: 130 },
   { name: 'Order service', kind: 'process', x: 650, y: 130 },
   { name: 'Payment service', kind: 'process', x: 970, y: 130 },
-  { name: 'Orders DB', kind: 'store', x: 620, y: 470 },
+  { name: 'Orders DB', kind: 'store', x: 530, y: 470 },
   { name: 'Card token vault', kind: 'store', x: 940, y: 420 },
   { name: 'Webhook handler', kind: 'process', x: 970, y: 680 },
   { name: 'Stripe', kind: 'entity', x: 1290, y: 470 },
@@ -144,7 +144,7 @@ const FLOW_ANCHORS: Record<
   'Payment service>Card token vault': ['s', 'n'],
   'Payment service>Stripe': ['e', 'n'],
   'Stripe>Webhook handler': ['s', 'e'],
-  'Webhook handler>Order service': ['w', 'se'],
+  'Webhook handler>Order service': ['w', 'ne'],
 };
 
 // Where a threat's badge sits on its host (a second threat on one host takes another corner).

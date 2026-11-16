@@ -304,8 +304,9 @@ live. The pitch it opens with is the product's: a team **meets in a shared Space
   Work Tracker #423 part 2. Diagram vocabulary stays where it names a real canvas thing (a diagram key, a Mermaid diagram,
   a swimlane, a draw.io import), never as the name of what a person makes.
 - **Calls** have two articles under Collaboration, each describing what the editor does today: **Proximity Audio**
-  (`/help/collaboration/proximity-audio/`: walking in joins, muted, earshot, the microphone's states, the talking
-  bars and walking over, who may speak) and **Cameras and Screen Sharing**
+  (`/help/collaboration/proximity-audio/`: walking in joins, muted, earshot, the microphone's states, Pop Out and the
+  Mini View with the browsers that offer it (Chrome and Edge 116+, Firefox 151+, never desktop Safari or a phone), the
+  talking bars and walking over, who may speak) and **Cameras and Screen Sharing**
   (`/help/collaboration/cameras-and-screen-sharing/`: the camera, an Editor's screen share, the bubbles, maximising,
   Video Paused), linked both ways. Calls run only where they are switched on
   ([Proximity audio](../012-collaboration/proximity-audio.md#turning-calls-on)), so both say that where they are off
