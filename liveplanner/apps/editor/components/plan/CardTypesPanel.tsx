@@ -3,23 +3,15 @@
 // The Card Types panel (docs/specs/026-plan/item-types.md "The Card Types panel"): the project's item
 // types, each with its glyph and colour, its name and how many items have it. A popover hanging above
 // its button in Plan mode's bottom-right cluster. Edit and Add Card Type open the type editor, Duplicate opens it on a
-// new type filled from that one; Add Default Types adds any of the five default types the project lacks. One list:
+// new type filled from that one. One list:
 // no type is set apart from another. Someone who may only view sees the list.
 import { AddCardTypeButton } from './AddCardTypeButton';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import type { DockAnchor } from '@/lib/canvas-chrome';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
-import { ConfirmPopover } from '@liveworkspace/workbench/components/primitives/ConfirmPopover';
 import { usePlan } from './PlanContext';
-import { ITEM_TYPES_MAX, defaultTypesToAdd } from '@liveplanner/items';
-import {
-  Button,
-  DuplicateIcon,
-  EmptyState,
-  PencilIcon,
-  PlanCardsIcon,
-  Tooltip,
-} from '@liveplanner/ui';
+import { ITEM_TYPES_MAX } from '@liveplanner/items';
+import { DuplicateIcon, EmptyState, PencilIcon, PlanCardsIcon, Tooltip } from '@liveplanner/ui';
 import { CardTypeTile } from './CardTypeTile';
 import { typeSummary } from './card-type-summary';
 import { ACCENT_BG, accentVars } from './plan-palette';
@@ -34,18 +26,14 @@ export function CardTypesPanel({
   onPopoverClose: () => void;
 }) {
   const plan = usePlan();
-  // The Add Default Types button while its confirmation is open.
-  const [confirmingAt, setConfirmingAt] = useState<HTMLElement | null>(null);
   const counts = useMemo(() => {
     const n = new Map<string, number>();
     for (const it of plan?.items.values() ?? []) n.set(it.type, (n.get(it.type) ?? 0) + 1);
     return n;
   }, [plan?.items]);
   if (!plan) return null;
-  const { types, canEdit, itemTypes } = plan;
+  const { types, canEdit } = plan;
   const full = types.length >= ITEM_TYPES_MAX;
-  // Add Default Types shows only while the project lacks one of the five, and has room for it.
-  const missingDefaults = full ? [] : defaultTypesToAdd(types);
   // One type's row: its edit (stretched over the row), Duplicate, and the pencil.
   const row = (t: (typeof types)[number]) => {
     const count = counts.get(t.id) ?? 0;
@@ -157,14 +145,14 @@ export function CardTypesPanel({
     >
       <div className="flex flex-col gap-2 px-3 pb-3">
         {/* One to a row in a bordered box, as Plan's option lists are (docs/specs/026-plan/plan-board.md "Option
-            lists"). A project starts with none: the default types arrive only through Add Default Types. */}
+            lists"). A project starts with none: its types come from a board that brings them, or from the owner's own. */}
         {types.length === 0 ? (
           <EmptyState
             icon={<PlanCardsIcon size={18} />}
             title="No Card Types Yet"
             description={
               canEdit
-                ? 'Add a card type of your own, or add the default types: Project, Task, Note, Idea and Action.'
+                ? 'Add a card type of your own, or add a board that brings its types.'
                 : 'This plan has no card types yet.'
             }
           />
@@ -176,49 +164,8 @@ export function CardTypesPanel({
             {types.map(row)}
           </ul>
         )}
-        {canEdit ? (
-          <>
-            <AddCardTypeButton onClick={() => plan.editType('new')} />
-            {missingDefaults.length > 0 ? (
-              <Button
-                variant="ghost"
-                size="xs"
-                className="self-center px-2 py-0.5 text-[11px] font-normal"
-                aria-haspopup="dialog"
-                aria-expanded={confirmingAt !== null}
-                onClick={(e) => setConfirmingAt(e.currentTarget)}
-              >
-                Add Default Types
-              </Button>
-            ) : null}
-            {confirmingAt && missingDefaults.length > 0 ? (
-              <ConfirmPopover
-                anchor={confirmingAt}
-                message={addDefaultTypesMessage(missingDefaults.map((t) => t.label))}
-                confirmLabel="Add Types"
-                onConfirm={() => {
-                  setConfirmingAt(null);
-                  itemTypes.addDefaultTypes();
-                }}
-                onCancel={() => {
-                  confirmingAt.focus();
-                  setConfirmingAt(null);
-                }}
-              />
-            ) : null}
-          </>
-        ) : null}
+        {canEdit ? <AddCardTypeButton onClick={() => plan.editType('new')} /> : null}
       </div>
     </MovablePanel>
   );
-}
-
-// What Add Default Types asks before it adds (docs/specs/026-plan/item-types.md "The type catalogue"): the types it
-// will add, by name, and that nothing the project has changes.
-export function addDefaultTypesMessage(labels: readonly string[]): string {
-  const list =
-    labels.length > 1
-      ? `${labels.slice(0, -1).join(', ')} and ${labels.at(-1)}`
-      : (labels[0] ?? '');
-  return `Add ${list} to this plan’s card types? They go after the ones you have, and nothing you have changes.`;
 }
