@@ -1,6 +1,7 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useRef, type ReactNode } from 'react';
+import { useMenuCardRoom } from '@liveworkspace/workbench/components/chrome/useMenuCardRoom';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import { PHONE_TOOLBAR_ITEMS } from './phone-toolbar-items';
@@ -31,8 +32,13 @@ export function ToolbarMenuCard({
   // strip, which is scaled already.
   const scale = useUiScale('toolbar');
   const scaled = !inline && scale !== 1;
+  // Never under the strip: a long tab name truncates short of it (useMenuCardRoom, toolbar-layout.md "The tab's
+  // name"). Not inline, where the strip's row holds the card, nor joined, where it spans the sidebar.
+  const cardRef = useRef<HTMLDivElement>(null);
+  const room = useMenuCardRoom(cardRef, !inline && true);
   return (
     <div
+      ref={cardRef}
       data-dock-button={dockButton ? '' : undefined}
       // Chrome, not canvas: the canvas's capture-phase gestures skip a press inside a floating
       // panel. Without it, a press here with a Draw pen in hand started a stroke instead.
@@ -40,11 +46,12 @@ export function ToolbarMenuCard({
       data-tour-id={tourId}
       data-toolbar-menu=""
       data-region={region}
-      style={
-        scaled
+      style={{
+        ...(scaled
           ? { ...uiScaleStyle(scale), top: toSurfacePx(12, scale), left: toSurfacePx(12, scale) }
-          : undefined
-      }
+          : undefined),
+        ...(room !== null ? { maxWidth: toSurfacePx(room, scale) } : undefined),
+      }}
       className={
         inline
           ? 'flex items-center gap-1'
