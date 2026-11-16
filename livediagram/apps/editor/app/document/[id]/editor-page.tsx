@@ -26,6 +26,12 @@ import { EditorContext } from './EditorContext';
 import { EditorView } from './EditorView';
 import { useEditorState } from './useEditorState';
 import { takeAccessEnded } from '@/lib/access-notice';
+import { useAuthHrefs } from '@liveworkspace/workbench/components/chrome/auth-routes';
+import {
+  addressHasShareCode,
+  notFoundReason,
+  notFoundTitle,
+} from '@liveworkspace/workbench/lib/not-found-reason';
 import { surfaceFlags, type EditorSurface } from '@liveworkspace/workbench/lib/editor-surface';
 import { MentionContext } from '@/components/canvas/collab/comment/MentionContext';
 import { CommentReactionsProvider } from '@liveworkspace/workbench/components/comments/CommentReactionsContext';
@@ -86,6 +92,9 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
   // An access change just reloaded us (lib/access-notice.ts): taken once, on mount, so a refusal can say why. The
   // first page after the eject always takes it, whatever it shows (the editor, a password prompt, a refusal).
   const [accessEnded] = useState(() => takeAccessEnded());
+  // Where a signed-out visitor's Sign In goes: the sign-in page, back to this address (the not-found card's
+  // `sign-in` case).
+  const { signInHref } = useAuthHrefs();
   // The canvas the address names, and whether this browser holds it archived (@liveworkspace/workbench/lib/archived):
   // read once, on mount, so an archived one never opens.
   const { id: archivedId, here: archivedHere } = useArchivedAddress(
@@ -133,7 +142,9 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
       />
     );
     return !appChrome ? (
-      <EmbedShell frame={workspaceFrame}>{card}</EmbedShell>
+      <EmbedShell frame={workspaceFrame} title="Canvas Archived">
+        {card}
+      </EmbedShell>
     ) : (
       <StatusShell title="Canvas Archived">{card}</StatusShell>
     );
@@ -151,7 +162,9 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
       />
     );
     return !appChrome ? (
-      <EmbedShell frame={workspaceFrame}>{card}</EmbedShell>
+      <EmbedShell frame={workspaceFrame} title="Canvas Deleted">
+        {card}
+      </EmbedShell>
     ) : (
       <StatusShell title="Canvas Deleted">{card}</StatusShell>
     );
@@ -165,22 +178,33 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
     // Embed and workbench frames get the bare retry card: an app header + Explorer
     // panel inside someone else's page is noise (docs/specs/013-workspace/embeds.md).
     return !appChrome ? (
-      <EmbedShell frame={workspaceFrame}>{card}</EmbedShell>
+      <EmbedShell frame={workspaceFrame} title="Couldn’t Load Canvas">
+        {card}
+      </EmbedShell>
     ) : (
       <StatusShell title="Couldn’t Load Canvas">{card}</StatusShell>
     );
   }
 
   if (documentNotFound) {
-    // An address that names no document is a missing page, not a missing document. A workbench's session always
-    // names a document, whatever its frame's address.
+    // An address that names no document is a missing page, not a missing document.
     const page = !workbenchMode && !isEditorPath(window.location.pathname);
+    // Which card (new-document-route.md "Which not-found card"), never by whether the canvas exists: a
+    // share code the api refused is a dead link, unknown, revoked or expired alike, and a signed-out
+    // visitor is offered Sign In (never in a frame).
+    const reason = notFoundReason({
+      page,
+      accessEnded: accessEnded !== null,
+      shareLink: addressHasShareCode(window.location.search),
+      signedOut: appChrome && !state.accountUserId,
+    });
     // The create-new escape opens the full app in a new tab from a frame
     // (rather than navigating the host page's iframe), in place otherwise.
     return !appChrome ? (
-      <EmbedShell frame={workspaceFrame}>
+      <EmbedShell frame={workspaceFrame} title={notFoundTitle(reason, 'canvas', true)}>
         <NotFound
-          page={page}
+          reason={reason}
+          embed
           onCreateNew={() => window.open(`${window.location.origin}/new`, '_blank', 'noopener')}
           // In a workspace frame the Explorer is a step back, inside the frame.
           onOpenExplorer={workspaceFrame?.back}
@@ -189,18 +213,10 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
     ) : (
       // No Explorer panel beside it: the card stands alone and offers the Explorer as a button
       // (docs/specs/007-editor/new-document-route.md "Unknown addresses").
-      <StatusShell
-        title={
-          page
-            ? 'Page Not Found'
-            : accessEnded !== null
-              ? 'No Longer Shared With You'
-              : 'Canvas Not Found'
-        }
-      >
+      <StatusShell title={notFoundTitle(reason, 'canvas')}>
         <NotFound
-          page={page}
-          accessEnded={accessEnded !== null}
+          reason={reason}
+          signInHref={signInHref}
           onCreateNew={() => window.location.assign(`${window.location.origin}/new`)}
           onOpenExplorer={() => window.location.assign(`${window.location.origin}/explorer`)}
         />
@@ -218,6 +234,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
       <StatusShell title="Password Required" showHeader={!embedMode}>
         <SharePasswordGate
           invalid={sharePasswordGate.invalid}
+          changed={sharePasswordGate.changed}
           ownerName={documentOwnerName}
           onSubmit={(pw) => {
             setSharePasswordGate(null);
@@ -303,10 +320,14 @@ function StatusShell({
 function EmbedShell({
   children,
   frame = null,
+  title = null,
 }: {
   children: ReactNode;
   frame?: WorkspaceFrameHooks | null;
+  // The status the card stands for, naming the browser tab as the app's status shell does (never "Untitled").
+  title?: string | null;
 }) {
+  useBrowserTabTitle(title ? `${title} | livediagram` : null, { status: true });
   return (
     <main className="relative h-dvh bg-slate-50 dark:bg-slate-950">
       {frame ? <WorkbenchBackButton onBack={frame.back} backTitle={frame.backTitle} /> : null}

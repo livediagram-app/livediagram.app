@@ -31,7 +31,9 @@ describe('NotFound', () => {
   });
 
   it('names a page, not a file, for an address with no file', () => {
-    render(<NotFound noun="design" page onCreateNew={() => {}} onOpenExplorer={() => {}} />);
+    render(
+      <NotFound noun="design" reason="page" onCreateNew={() => {}} onOpenExplorer={() => {}} />,
+    );
     expect(screen.getByRole('heading', { name: 'Page Not Found' })).toBeTruthy();
     expect(
       screen.getByText(
@@ -41,7 +43,7 @@ describe('NotFound', () => {
   });
 
   it('says access ended, in place of the 404', () => {
-    render(<NotFound noun="plan" accessEnded onCreateNew={() => {}} />);
+    render(<NotFound noun="plan" reason="access-ended" onCreateNew={() => {}} />);
     expect(screen.getByRole('heading', { name: 'No Longer Shared With You' })).toBeTruthy();
     expect(screen.queryByText('404')).toBeNull();
     expect(
@@ -49,6 +51,69 @@ describe('NotFound', () => {
         'Your access to this plan was removed while you had it open. Ask its owner to share it with you again.',
       ),
     ).toBeTruthy();
+  });
+
+  it('explains a refused share link, the same for any code, with no 404', () => {
+    render(
+      <NotFound
+        noun="canvas"
+        reason="dead-link"
+        onCreateNew={() => {}}
+        onOpenExplorer={() => {}}
+      />,
+    );
+    expect(screen.getByRole('heading', { name: 'Link Not Valid' })).toBeTruthy();
+    expect(screen.queryByText('404')).toBeNull();
+    expect(
+      screen.getByText(
+        'This link isn’t valid. It may have been turned off or copied incompletely. Ask whoever shared it for a new one.',
+      ),
+    ).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'New Canvas' })).toBeTruthy();
+  });
+
+  it('says an embedded item is no longer shared, with nothing to create', () => {
+    render(<NotFound noun="canvas" reason="dead-link" embed onCreateNew={() => {}} />);
+    expect(screen.getByRole('heading', { name: 'No Longer Shared' })).toBeTruthy();
+    expect(
+      screen.getByText(
+        'This canvas is no longer shared at this link. Ask whoever shared it for a new one.',
+      ),
+    ).toBeTruthy();
+    expect(screen.queryByRole('button')).toBeNull();
+  });
+
+  it('offers a signed-out visitor Sign In, back to the same address, in place of New', () => {
+    render(
+      <NotFound
+        noun="canvas"
+        reason="sign-in"
+        signInHref="/sign-in/?redirect_url=%2Fdocument%2Fd1"
+        onCreateNew={() => {}}
+        onOpenExplorer={() => {}}
+      />,
+    );
+    expect(screen.getByRole('heading', { name: 'Canvas Not Found' })).toBeTruthy();
+    expect(screen.getByText('404')).toBeTruthy();
+    expect(
+      screen.getByText('This canvas doesn’t exist, or you need to sign in to open it.'),
+    ).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Sign In' }).getAttribute('href')).toBe(
+      '/sign-in/?redirect_url=%2Fdocument%2Fd1',
+    );
+    expect(screen.queryByRole('button', { name: 'New Canvas' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Open Explorer' })).toBeTruthy();
+  });
+
+  it('keeps New when the sign-in case has nowhere to sign in', () => {
+    render(<NotFound noun="canvas" reason="sign-in" onCreateNew={() => {}} />);
+    expect(screen.queryByRole('link', { name: 'Sign In' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'New Canvas' })).toBeTruthy();
+  });
+
+  it('shows no button row when it has no way on', () => {
+    render(<NotFound noun="canvas" />);
+    expect(screen.queryByRole('button')).toBeNull();
   });
 
   it('leaves Open Explorer out where there is nowhere to open it (an embed)', () => {

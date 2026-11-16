@@ -454,6 +454,7 @@
     "./lib/api/write-signal": "./src/lib/api/write-signal.ts",
     "./lib/app-location": "./src/lib/app-location.ts",
     "./lib/archived": "./src/lib/archived.ts",
+    "./lib/not-found-reason": "./src/lib/not-found-reason.ts",
     "./lib/arrow-geometry-cache": "./src/lib/arrow-geometry-cache.ts",
     "./lib/auth-config": "./src/lib/auth-config.ts",
     "./lib/back-out": "./src/lib/back-out.ts",

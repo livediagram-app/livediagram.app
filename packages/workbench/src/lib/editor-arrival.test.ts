@@ -137,7 +137,7 @@ describe('openShareLink', () => {
     ]);
   });
 
-  it('shows the gate, clearing a cached password the server refused', async () => {
+  it('shows the gate as changed, with no mismatch, when the remembered password is refused', async () => {
     const h = harness(
       { loadShared: vi.fn(async () => ({ passwordRequired: true as const, invalid: true })) },
       { cached: 'old' },
@@ -148,10 +148,19 @@ describe('openShareLink', () => {
       'step:share',
       'cache:null',
       'session:null',
-      'gate:{"invalid":true}',
+      'gate:{"invalid":false,"changed":true}',
       'loading:false',
       'nameConfirmed:false',
     ]);
+  });
+
+  it('shows the mismatch for a typed password the server refused', async () => {
+    const h = harness(
+      { loadShared: vi.fn(async () => ({ passwordRequired: true as const, invalid: true })) },
+      { session: 'typed' },
+    );
+    expect(await openShareLink(h.product, h.run, link)).toBe(false);
+    expect(h.calls).toContain('gate:{"invalid":true}');
   });
 
   it('shows the gate without touching an empty cache', async () => {

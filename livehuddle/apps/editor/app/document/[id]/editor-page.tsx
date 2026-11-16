@@ -19,6 +19,12 @@ import { EditorContext } from './EditorContext';
 import { EditorView } from './EditorView';
 import { useEditorState } from './useEditorState';
 import { takeAccessEnded } from '@/lib/access-notice';
+import { useAuthHrefs } from '@liveworkspace/workbench/components/chrome/auth-routes';
+import {
+  addressHasShareCode,
+  notFoundReason,
+  notFoundTitle,
+} from '@liveworkspace/workbench/lib/not-found-reason';
 import { surfaceFlags, type EditorSurface } from './editor-surface';
 import { documentIdFromPath, isEditorPath } from '@/lib/editor-path';
 import { documentGrantRefusal } from '@/lib/api/document-grants';
@@ -70,6 +76,9 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
   // An access change just reloaded us (lib/access-notice.ts): taken once, on mount, so a refusal can say why. The
   // first page after the eject always takes it, whatever it shows (the editor, a password prompt, a refusal).
   const [accessEnded] = useState(() => takeAccessEnded());
+  // Where a signed-out visitor's Sign In goes: the sign-in page, back to this address (the not-found card's
+  // `sign-in` case).
+  const { signInHref } = useAuthHrefs();
   // The space the address names, and whether this browser holds it archived (@liveworkspace/workbench/lib/archived):
   // read once, on mount, so an archived one never opens.
   const { id: archivedId, here: archivedHere } = useArchivedAddress(
@@ -115,7 +124,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
       />
     );
     return !appChrome ? (
-      <EmbedShell>{card}</EmbedShell>
+      <EmbedShell title="Space Archived">{card}</EmbedShell>
     ) : (
       <StatusShell title="Space Archived">{card}</StatusShell>
     );
@@ -132,7 +141,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
       />
     );
     return !appChrome ? (
-      <EmbedShell>{card}</EmbedShell>
+      <EmbedShell title="Space Deleted">{card}</EmbedShell>
     ) : (
       <StatusShell title="Space Deleted">{card}</StatusShell>
     );
@@ -146,7 +155,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
     // An embed gets the bare retry card: an app header + Explorer
     // panel inside someone else's page is noise (docs/specs/013-workspace/embeds.md).
     return !appChrome ? (
-      <EmbedShell>{card}</EmbedShell>
+      <EmbedShell title="Couldn’t Load Space">{card}</EmbedShell>
     ) : (
       <StatusShell title="Couldn’t Load Space">{card}</StatusShell>
     );
@@ -155,30 +164,32 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
   if (documentNotFound) {
     // An address that names no document is a missing page, not a missing document.
     const page = !isEditorPath(window.location.pathname);
+    // Which card (new-document-route.md "Which not-found card"), never by whether the space exists: a
+    // share code the api refused is a dead link, unknown, revoked or expired alike, and a signed-out
+    // visitor is offered Sign In (never in a frame).
+    const reason = notFoundReason({
+      page,
+      accessEnded: accessEnded !== null,
+      shareLink: addressHasShareCode(window.location.search),
+      signedOut: appChrome && !state.accountUserId,
+    });
     // The create-new escape opens the full app in a new tab from a frame
     // (rather than navigating the host page's iframe), in place otherwise.
     return !appChrome ? (
-      <EmbedShell>
+      <EmbedShell title={notFoundTitle(reason, 'space', true)}>
         <NotFound
-          page={page}
+          reason={reason}
+          embed
           onCreateNew={() => window.open(`${window.location.origin}/new`, '_blank', 'noopener')}
         />
       </EmbedShell>
     ) : (
       // No Explorer panel beside it: the card stands alone and offers the Explorer as a button
       // (docs/specs/007-editor/new-document-route.md "Unknown addresses").
-      <StatusShell
-        title={
-          page
-            ? 'Page Not Found'
-            : accessEnded !== null
-              ? 'No Longer Shared With You'
-              : 'Space Not Found'
-        }
-      >
+      <StatusShell title={notFoundTitle(reason, 'space')}>
         <NotFound
-          page={page}
-          accessEnded={accessEnded !== null}
+          reason={reason}
+          signInHref={signInHref}
           onCreateNew={() => window.location.assign(`${window.location.origin}/new`)}
           onOpenExplorer={() => window.location.assign(`${window.location.origin}/explorer`)}
         />
@@ -196,6 +207,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
       <StatusShell title="Password Required" showHeader={!embedMode}>
         <SharePasswordGate
           invalid={sharePasswordGate.invalid}
+          changed={sharePasswordGate.changed}
           ownerName={documentOwnerName}
           onSubmit={(pw) => {
             setSharePasswordGate(null);
@@ -263,6 +275,14 @@ function StatusShell({
 
 // The bare embed status surface (docs/specs/013-workspace/embeds.md): no header, no Explorer — an
 // app header + Explorer inside someone else's iframe would be noise.
-function EmbedShell({ children }: { children: ReactNode }) {
+function EmbedShell({
+  children,
+  title = null,
+}: {
+  children: ReactNode;
+  // The status the card stands for, naming the browser tab as the app's status shell does (never "Untitled").
+  title?: string | null;
+}) {
+  useBrowserTabTitle(title ? `${title} | livehuddle` : null, { status: true });
   return <main className="relative h-dvh bg-slate-50 dark:bg-slate-950">{children}</main>;
 }

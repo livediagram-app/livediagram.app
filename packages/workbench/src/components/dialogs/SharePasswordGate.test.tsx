@@ -24,4 +24,20 @@ describe('SharePasswordGate', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Open design' }));
     expect(onSubmit).toHaveBeenCalledWith('pw');
   });
+
+  it('says a remembered password was changed, with no mismatch line', () => {
+    render(
+      <SharePasswordGate
+        noun="canvas"
+        invalid={false}
+        changed
+        ownerName="Ada"
+        onSubmit={() => {}}
+      />,
+    );
+    expect(
+      screen.getByText('The password for this canvas was changed. Enter the new one to open it.'),
+    ).toBeTruthy();
+    expect(screen.queryByText("That password didn't match. Try again.")).toBeNull();
+  });
 });
