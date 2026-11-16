@@ -5,6 +5,7 @@
 // (docs/specs/007-editor/split-view.md). Plain functions over the editor context, not components, so the
 // view's tree is what it always was; each is null where its bar is hidden.
 
+import { ApprovalBadge } from '@liveworkspace/explorer/approvals';
 import type { ReactNode } from 'react';
 import { truncateName } from '@livediagram/document';
 import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
@@ -88,7 +89,12 @@ export function editorViewHeader(
           copying={copying}
           readOnly={isStructureReadOnly}
           renameNonce={renameDocumentNonce}
-          rolePill={<RolePill {...role} />}
+          rolePill={
+            <>
+              <RolePill {...role} />
+              <ApprovalBadge />
+            </>
+          }
           // docs/specs/012-collaboration/presentation-mode.md "The header's Present button": only
           // while the deck has a slide to show, on a desktop, once the document is up. Every role.
           present={

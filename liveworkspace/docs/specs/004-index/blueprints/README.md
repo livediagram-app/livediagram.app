@@ -15,6 +15,7 @@ Follow the references below only as needed; never upfront.
 - ./live-embeds.md - when working on live embeds: the element's fields and checks, the embed ticket, the slots, the host's
   side of the frame's messages, snapshots, limits and tests
 - ./team-audit-log.md - when working on the team audit log: its table, the write path beside each event, the sweep, anonymising and the admins' read and CSV, and the Audit Log on a team's view
+- ./approvals.md - when working on approvals: the tables, the routes and their checks, the revision, the notice and email, the editor kit
 - ./webhooks.md - when working on webhooks: the tables, the outbox statement, the dispatcher, the address check, the messages
 - ./archive.md - when working on Archived: the archive, the archive scope, the move out, the refusals and the
   Explorer's Archived view

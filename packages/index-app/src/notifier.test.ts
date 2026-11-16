@@ -274,3 +274,44 @@ describe('milestones', () => {
     expect(optedOut.deps.claimMilestone).not.toHaveBeenCalled();
   });
 });
+
+describe('notifyApprovalRequested', () => {
+  const notice = {
+    type: 'approval_requested' as const,
+    approvalId: 'ap_1',
+    requesterId: 'user_anna',
+    requesterName: 'Anna',
+    approverIds: ['user_b', 'user_c', 'guest_g'],
+    itemTitle: 'Roadmap',
+    note: 'Check the dates',
+    due: '2026-11-20',
+  };
+  const on = { email: true };
+
+  it('emails each approver with an address and the switch on, never a guest', async () => {
+    const { notifier, deps, sent } = setup({ reachable: { user_b: 'b@x.test' } });
+    deps.emails.approvalRequested = (_env, input) => ({
+      subject: `${input.requesterName} asked you to approve ${input.item.name}`,
+      html: `${input.note} ${input.due} ${input.item.id}`,
+    });
+    await notifier.notifyApprovalRequested(on, 'item_1', notice);
+    expect(deps.recipients).toHaveBeenCalledWith(on, ['user_b', 'user_c'], 'notifyActionAssigned');
+    expect(sent).toEqual([
+      {
+        subject: 'Anna asked you to approve Roadmap',
+        html: 'Check the dates 2026-11-20 item_1',
+        to: 'b@x.test',
+      },
+    ]);
+  });
+
+  it('sends nothing with email off, no template or nobody to email', async () => {
+    const { notifier, deps, sent } = setup({ reachable: { user_b: 'b@x.test' } });
+    await notifier.notifyApprovalRequested(on, 'item_1', notice);
+    deps.emails.approvalRequested = () => ({ subject: 's', html: '' });
+    await notifier.notifyApprovalRequested({ email: false }, 'item_1', notice);
+    await notifier.notifyApprovalRequested(on, 'item_1', { ...notice, approverIds: ['guest_g'] });
+    expect(sent).toEqual([]);
+    expect(deps.recipients).not.toHaveBeenCalled();
+  });
+});

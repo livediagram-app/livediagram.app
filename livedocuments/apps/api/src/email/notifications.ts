@@ -9,6 +9,7 @@
 
 import { accountsAllowance, createNotifier } from '@liveworkspace/index-app';
 import type { TeamPerson } from '@liveworkspace/auth-client';
+import type { ApprovalNotice } from '@liveworkspace/index-client';
 import { MENTIONS_MAX, type Comment } from '@livedocuments/document';
 import { ownerEmail } from '../person/account-app';
 import {
@@ -27,6 +28,7 @@ import type { Env, DocumentEnv } from '../types';
 import { emailEnabled, sendEmail } from './client';
 import {
   actionAssignedEmail,
+  approvalRequestedEmail,
   commentNotificationEmail,
   firstShareEmail,
   mentionedEmail,
@@ -81,6 +83,7 @@ const notifier = createNotifier<Env, RenderedEmail>({
     firstShare: firstShareEmail,
     joined: documentJoinedEmail,
     actionAssigned: actionAssignedEmail,
+    approvalRequested: approvalRequestedEmail,
     mentioned: (env, authorName, document, text) =>
       mentionedEmail(env, authorName, document.name, document.id, text),
   },
@@ -89,6 +92,14 @@ const notifier = createNotifier<Env, RenderedEmail>({
 // The owner just made a document: the tenth celebrates, once (docs/specs/014-identity/transactional-email.md #6).
 export const notifyMilestone = (env: Env, ownerId: string): Promise<void> =>
   notifier.notifyMilestone(env, ownerId);
+
+// Someone asked these people to approve a document (the index's `approval_requested` notice,
+// routes/internal-items.ts). Opt-out with assigned actions (notifyActionAssigned).
+export const notifyApprovalRequested = (
+  env: Env,
+  id: string,
+  notice: ApprovalNotice,
+): Promise<void> => notifier.notifyApprovalRequested(env, id, notice);
 
 // Someone made a share link for the first time (the index's `shared` notice, routes/internal-items.ts).
 export const notifyFirstShare = (env: Env, actorId: string): Promise<void> =>

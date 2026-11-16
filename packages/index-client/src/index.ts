@@ -11,3 +11,4 @@ export * from './connections';
 export * from './kits';
 export * from './webhooks';
 export * from './sheet-sources';
+export * from './approvals';

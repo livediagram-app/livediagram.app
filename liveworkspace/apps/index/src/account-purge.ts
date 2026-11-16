@@ -213,6 +213,23 @@ function personalStatements(db: Db, person: string): (() => D1PreparedStatement)
         )
         .bind(ANONYMISED_PERSON, person, CHUNK),
     byPerson('shared_with'),
+    // Approvals they asked for or were named in (approvals.md, IDX51): kept for the request's count, the person
+    // anonymised; a decision whose rename would meet another closed account's on the same request goes instead.
+    () =>
+      db
+        .prepare(
+          `UPDATE approvals SET requested_by = ? WHERE rowid IN (
+             SELECT rowid FROM approvals WHERE requested_by = ? LIMIT ?)`,
+        )
+        .bind(ANONYMISED_PERSON, person, CHUNK),
+    () =>
+      db
+        .prepare(
+          `UPDATE OR IGNORE approval_people SET person_id = ?, note = NULL WHERE rowid IN (
+             SELECT rowid FROM approval_people WHERE person_id = ? LIMIT ?)`,
+        )
+        .bind(ANONYMISED_PERSON, person, CHUNK),
+    byPerson('approval_people'),
     byPerson('placement_defaults'),
     byPerson('collab_form_reads'),
     // Their Drive mirror's flag (liveworkspace/docs/specs/005-drive/drive.md): accounts tells the service itself.

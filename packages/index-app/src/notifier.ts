@@ -21,6 +21,7 @@ import {
   type NotifyTarget,
   type TeamPerson,
 } from '@liveworkspace/auth-client';
+import type { ApprovalNotice } from '@liveworkspace/index-client';
 import { claimNotice, claimNotices, type SenderAllowance } from './notify-claims';
 
 type ClaimsDb = Parameters<typeof claimNotices>[0];
@@ -72,6 +73,8 @@ export type NotifierDeps<E, M extends NotifierEmail = NotifierEmail> = {
       actionName: string,
       description: string | null,
     ): M;
+    /** An approval request (approvals.md "The email"); an app without it sends none. */
+    approvalRequested?(env: E, input: ApprovalEmailInput): M;
     /** `partId` is the part the comment sits on (a plan's card), for the email's button. */
     mentioned(
       env: E,
@@ -81,6 +84,15 @@ export type NotifierDeps<E, M extends NotifierEmail = NotifierEmail> = {
       partId: string | null,
     ): M;
   };
+};
+
+/** What an approval request's email says. */
+export type ApprovalEmailInput = {
+  requesterName: string | null;
+  item: NotifierItem;
+  note: string | null;
+  // The day hoped for, `YYYY-MM-DD`.
+  due: string | null;
 };
 
 /** A comment as the mention email reads it. */
@@ -127,6 +139,7 @@ export type Notifier<E> = {
   notifyActionAssigned(env: E, input: ActionAssignedInput): Promise<void>;
   notifyMentions(env: E, input: MentionsInput): Promise<void>;
   notifyMentioned(env: E, input: MentionedInput): Promise<void>;
+  notifyApprovalRequested(env: E, itemId: string, notice: ApprovalNotice): Promise<void>;
 };
 
 export function createNotifier<E, M extends NotifierEmail = NotifierEmail>(
@@ -351,6 +364,29 @@ export function createNotifier<E, M extends NotifierEmail = NotifierEmail>(
       );
       await Promise.all(
         pending.filter((_, i) => allowed[i]).map(({ to }) => deps.send(env, { ...email, to })),
+      );
+    },
+
+    // Someone asked these people to approve an item (the index's `approval_requested` notice). Each approver who has
+    // an address and their Actions Assigned to Me emails on gets one; the index already checked each reaches the item
+    // and limits an item's requests a day, so no claim is kept here.
+    async notifyApprovalRequested(env, itemId, notice) {
+      const template = deps.emails.approvalRequested;
+      if (!deps.enabled(env) || !template) return;
+      const ids = notice.approverIds.filter((id) => deps.isAccount(id));
+      if (ids.length === 0) return;
+      const addresses = await deps.recipients(env, ids, 'notifyActionAssigned');
+      const email = template(env, {
+        requesterName: notice.requesterName,
+        item: { id: itemId, name: notice.itemTitle },
+        note: notice.note,
+        due: notice.due,
+      });
+      await Promise.all(
+        ids.flatMap((id) => {
+          const to = addresses.get(id);
+          return to ? [deps.send(env, { ...email, to })] : [];
+        }),
       );
     },
   };

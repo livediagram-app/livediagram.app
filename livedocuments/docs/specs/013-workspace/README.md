@@ -27,4 +27,5 @@ The Explorer, and everything it lists, lives in liveworkspace's index and its sh
 - ./live-image-share.md - when working on Live image share link: Share-link-scoped `<img>`-able SVG at `/api/share/<code>/image.svg`, served by liveworkspace's previews from the document's drawing ([Document previews](../006-document/document-snapshots.md))
 - ./share-link-previews.md - when working on what a pasted share link previews as in Slack, Teams, iMessage and the like: the document's name and a 1200 x 630 PNG share card (`/api/share/<code>/card`, `/api/share/<code>/image.png`, liveworkspace's), the editor worker's head rewrite, and the brand card everywhere else
 - ./snapshots.md - when working on Snapshots: manual save points of the whole document, the latest five kept, Revert (the platform's `014-snapshots`), and what this app's revert puts back
+- ./approvals.md - when working on Approvals: asking named people to approve the document, the Approval tab in Share, the badge and the banner, a Viewer's one write (the platform's `004-index/approvals.md`)
 - ./blueprints/README.md - when implementing a workspace spec from its blueprint (share roles, workbench embeds)

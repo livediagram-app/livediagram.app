@@ -107,7 +107,10 @@ export async function handleApp(
     // it, no later push could bring the item down from the top of every list.
     const updatedAt = Math.min(Math.floor(body.updatedAt), Date.now() + FUTURE_SLACK_MS);
     await env.INDEX_DB.prepare(
-      'UPDATE items SET summary = ?, updated_at = MAX(updated_at, ?) WHERE id = ?',
+      // `content_at`: the item's revision, its newest content save, for an approval's Changed Since Approval
+      // (approvals.md). Only forward, and written by nothing else.
+      `UPDATE items SET summary = ?1, updated_at = MAX(updated_at, ?2),
+         content_at = MAX(COALESCE(content_at, 0), ?2) WHERE id = ?3`,
     )
       .bind(text, updatedAt, itemId)
       .run();

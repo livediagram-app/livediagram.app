@@ -2,7 +2,8 @@
 
 What a team's admins can look back on: who joined, left or changed role, who shared a team document publicly or
 made or revoked its share links, which documents came into the team, left it or were deleted, and who added or
-removed webhooks on the team's documents (Work Tracker #160). It answers "who shared this?", "who joined?" and "who made that
+removed webhooks on the team's documents (Work Tracker #160), and who asked for, gave or withheld approval of
+them ([approvals.md](approvals.md), Work Tracker 937). It answers "who shared this?", "who joined?" and "who made that
 webhook?" for a team that relies on the product.
 
 It is the index's: one log for every app (platform first, [platform.md](../001-platform-scope/platform.md)), next to
@@ -15,22 +16,26 @@ event log's sweep or a purge.
 Team-level events only, never what happens inside a document: an edit, a comment or a card moved is the item's
 History and the app's (liveplanner's no-activity-log rule for content stands). A row records names and ids, never content.
 
-| Kind                  | When                                                                                                              | From      |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------- | --------- |
-| `team_invite_sent`    | An admin invites an address                                                                                       | accounts  |
-| `team_joined`         | An invitation is accepted, or someone joins by the link                                                           | accounts  |
-| `team_declined`       | An invitation is turned down                                                                                      | accounts  |
-| `team_role_changed`   | A member is made an admin, or an admin a member                                                                   | accounts  |
-| `team_member_removed` | An admin removes a member, or a member leaves (`left`)                                                            | accounts  |
-| `team_renamed`        | The team's name changes                                                                                           | accounts  |
-| `shared`              | A share link is made on a team document (`level`; `public` for a Community post's)                                | the index |
-| `unshared`            | A team document's share link is deleted, or all of them                                                           | the index |
-| `moved`               | A document moves into the team, out of it, or between teams (`fromTeamId`, `teamId`)                              | the index |
-| `trashed`             | A team document goes to the team Trash (a teammate's Take Offline included)                                       | the index |
-| `restored`            | A team document comes back from the Trash                                                                         | the index |
-| `deleted`             | A team document is deleted for good: Delete Forever, Empty Trash, or its owner's Take Offline (`reason: offline`) | the index |
-| `webhook_added`       | Someone adds a webhook to a team document (`kind`, `host`)                                                        | the index |
-| `webhook_removed`     | Someone deletes a webhook from a team document (`kind`, `host`)                                                   | the index |
+| Kind                         | When                                                                                                              | From      |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------- | --------- |
+| `team_invite_sent`           | An admin invites an address                                                                                       | accounts  |
+| `team_joined`                | An invitation is accepted, or someone joins by the link                                                           | accounts  |
+| `team_declined`              | An invitation is turned down                                                                                      | accounts  |
+| `team_role_changed`          | A member is made an admin, or an admin a member                                                                   | accounts  |
+| `team_member_removed`        | An admin removes a member, or a member leaves (`left`)                                                            | accounts  |
+| `team_renamed`               | The team's name changes                                                                                           | accounts  |
+| `shared`                     | A share link is made on a team document (`level`; `public` for a Community post's)                                | the index |
+| `unshared`                   | A team document's share link is deleted, or all of them                                                           | the index |
+| `moved`                      | A document moves into the team, out of it, or between teams (`fromTeamId`, `teamId`)                              | the index |
+| `trashed`                    | A team document goes to the team Trash (a teammate's Take Offline included)                                       | the index |
+| `restored`                   | A team document comes back from the Trash                                                                         | the index |
+| `deleted`                    | A team document is deleted for good: Delete Forever, Empty Trash, or its owner's Take Offline (`reason: offline`) | the index |
+| `approval_requested`         | Someone asks for approval of a team document (`approvers`, `due`)                                                 | the index |
+| `approval_approved`          | An approver approves it (`complete` on the last)                                                                  | the index |
+| `approval_changes_requested` | An approver asks for changes (`note`)                                                                             | the index |
+| `approval_cancelled`         | An approval request is cancelled, or replaced (`replaced`)                                                        | the index |
+| `webhook_added`              | Someone adds a webhook to a team document (`kind`, `host`)                                                        | the index |
+| `webhook_removed`            | Someone deletes a webhook from a team document (`kind`, `host`)                                                   | the index |
 
 Left out, as decided on the card: API tokens and OAuth apps belong to an account, not a team, and the index
 keeps no event of them (team-scoped tokens are a separate idea). Also left out: `team_deleted` (the team is gone,

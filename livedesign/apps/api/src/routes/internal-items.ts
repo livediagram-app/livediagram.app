@@ -20,7 +20,7 @@ import {
 } from '@liveworkspace/index-app';
 import { MAX_TAB_BYTES } from '../limits';
 import { communityService } from '../community-service';
-import { notifyFirstShare } from '../email/notifications';
+import { notifyApprovalRequested, notifyFirstShare } from '../email/notifications';
 import { deleteAccount } from '../db/account';
 import { mergeMediaOwner } from '../media';
 import { purgeDesignPreviews } from '../db/designs';
@@ -58,6 +58,8 @@ export function handleInternalItems(
       // A rescoped link (another level or tab) reloads its visitors into what it now opens; a revoked one sends
       // them away.
       revoke: (id, codes, reason) => designRoom(env, id).revokeCodes(codes, reason),
+      // An approval request (liveworkspace approvals.md): the approvers' email.
+      approvalRequested: (id, notice) => notifyApprovalRequested(env, id, notice),
       notice: (id, notice) =>
         notice.type === 'shared'
           ? notifyFirstShare(env, notice.actorId)

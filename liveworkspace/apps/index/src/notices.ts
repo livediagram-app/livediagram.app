@@ -7,6 +7,7 @@ import {
   itemNoticePath,
   OWNED_COUNT_MAX,
   type App,
+  type ApprovalNotice,
   type ItemNotice,
 } from '@liveworkspace/index-client';
 import { callApp } from './app-calls';
@@ -20,7 +21,7 @@ export function tellApp(
   waitUntil: (promise: Promise<unknown>) => void,
   env: Env,
   item: { id: string; app: App },
-  notice: ItemNotice,
+  notice: ItemNotice | ApprovalNotice,
 ): void {
   waitUntil(
     callApp(env, item.app, 'POST', itemNoticePath(item.id), notice).then((res) => {
