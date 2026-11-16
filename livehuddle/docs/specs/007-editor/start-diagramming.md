@@ -33,7 +33,8 @@ draws them.
   left as it is.
 - **Search:** the catalogue's own search (`templateMatchesQuery`, as the marketing gallery's),
   across the templates; matches are grouped under their group, each once, in rail order. Escape clears a search
-  first; with nothing to clear it closes a start that can close, as its × does.
+  first; with nothing to clear it closes a start that can close, as its × does, wherever the focus is in the panel
+  and from the canvas just after it opens (the panel's Escape comes before the canvas's while it shows).
 - **A title match leads.** A template whose name begins with what was typed (case, punctuation and hyphens ignored,
   as the search's own) is listed first, under **Best Match**, and not again under its group: an exact name before a
   longer one, then in the order the groups list them. Typing "retro" leads with Retrospective, though a template

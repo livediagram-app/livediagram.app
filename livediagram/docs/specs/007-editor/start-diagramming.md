@@ -37,7 +37,9 @@ draws them.
   across the mode's templates; matches are grouped under their group, each once, in rail order, then the matches of
   every other mode ([Found in other modes](#found-in-other-modes)). Escape clears a search first;
   with nothing to clear it closes a start that can close, as its × does (outside an open mode menu, whose Escape
-  closes only the menu).
+  closes only the menu). It does so wherever the focus is in the panel (a card, the rail, the panel's own background
+  after a click on it) and from the canvas just after the panel opens: while the panel shows, its Escape comes before
+  the canvas's (which would clear a selection), and once the panel is gone the canvas has Escape back.
 - **A title match leads.** A template whose name begins with what was typed (case, punctuation and hyphens ignored,
   as the search's own) is listed first, under **Best Match**, and not again under its group: an exact name before a
   longer one, then in the order the groups list them. Typing "flowchart" leads with Flowchart, though Design's

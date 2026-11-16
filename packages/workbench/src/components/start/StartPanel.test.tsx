@@ -300,6 +300,64 @@ describe('the start panel', () => {
     expect(onClose).toHaveBeenCalledTimes(2);
   });
 
+  // Work Tracker 1026: a press on the panel's background, or the canvas focused as it opens, left the focus outside
+  // the panel, and Escape went to the canvas instead.
+  it('closes on Escape with the focus on the page or the canvas, ahead of the canvas’s own Escape', () => {
+    const onClose = vi.fn();
+    const canvasEscape = vi.fn();
+    window.addEventListener('keydown', canvasEscape);
+    const canvas = document.createElement('div');
+    canvas.setAttribute('data-canvas-root', '');
+    canvas.tabIndex = -1;
+    document.body.append(canvas);
+    try {
+      const { unmount } = render(<Sheet {...base({ onClose })} />);
+      (document.activeElement as HTMLElement | null)?.blur();
+      fireEvent.keyDown(document.body, { key: 'Escape' });
+      expect(onClose).toHaveBeenCalledTimes(1);
+      expect(canvasEscape).not.toHaveBeenCalled();
+      canvas.focus();
+      fireEvent.keyDown(canvas, { key: 'Escape' });
+      expect(onClose).toHaveBeenCalledTimes(2);
+      // Another key, a composing Escape and one already handled are left alone.
+      fireEvent.keyDown(canvas, { key: 'a' });
+      fireEvent.keyDown(canvas, { key: 'Escape', isComposing: true });
+      const handled = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+      handled.preventDefault();
+      canvas.dispatchEvent(handled);
+      expect(onClose).toHaveBeenCalledTimes(2);
+      // A field elsewhere keeps its Escape.
+      const field = document.createElement('input');
+      document.body.append(field);
+      field.focus();
+      fireEvent.keyDown(field, { key: 'Escape' });
+      expect(onClose).toHaveBeenCalledTimes(2);
+      field.remove();
+      // Stepped aside for a palette popover, it takes no Escape; gone, the canvas has Escape back.
+      act(() => setPalettePopoverOpen(true));
+      canvas.focus();
+      fireEvent.keyDown(canvas, { key: 'Escape' });
+      expect(onClose).toHaveBeenCalledTimes(2);
+      act(() => setPalettePopoverOpen(false));
+      unmount();
+      canvasEscape.mockClear();
+      fireEvent.keyDown(canvas, { key: 'Escape' });
+      expect(onClose).toHaveBeenCalledTimes(2);
+      expect(canvasEscape).toHaveBeenCalledTimes(1);
+    } finally {
+      window.removeEventListener('keydown', canvasEscape);
+      canvas.remove();
+    }
+  });
+
+  it('leaves Escape outside it alone where it cannot close', () => {
+    render(<Sheet {...base({ onClose: undefined })} />);
+    (document.activeElement as HTMLElement | null)?.blur();
+    const event = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+    document.body.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(false);
+  });
+
   it('offers Connect File with the foot actions under it, and its list in the cards’ place', () => {
     const onPick = vi.fn();
     render(
