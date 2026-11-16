@@ -84,7 +84,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'photo-edit',
     title: 'Photo Edit',
     description:
-      'One photo page to start: open a picture or make a blank one, then edit it with layers, brushes, adjustments and filters.',
+      'A sample photo, already edited: a warm-up, a vignette through a layer mask, and a crop into an Instagram Post with Make Sizes.',
     extra: true,
   },
   {

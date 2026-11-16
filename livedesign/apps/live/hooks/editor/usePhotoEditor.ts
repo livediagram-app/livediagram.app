@@ -28,6 +28,7 @@ import { PHOTO_PIXEL_ZOOM_MAX, raiseZoomCeiling, zoomCeilingRaised, zoomMax } fr
 import { track } from '@/lib/telemetry';
 import type { PhotoSession } from '@/lib/photo-editor/session';
 import type { PhotoRuntime } from '@/lib/photo-editor/runtime';
+import { usePhotoEditSample } from './usePhotoEditSample';
 import { usePhotoFraming } from './usePhotoFraming';
 import type { PhotoPresence } from './usePhotoPresence';
 import { photoTools } from '@/lib/photo-editor/tool-state';
@@ -89,6 +90,8 @@ export function usePhotoEditor<V extends PagesModeView>({
     photoUploads.setTransport(apiTransport(() => scopeRef.current!));
     return () => photoUploads.setTransport(null);
   }, [ready, scopeRef]);
+  // The Photo Edit template's sample, set once its files are stored (usePhotoEditSample.ts).
+  usePhotoEditSample({ activeTab, commitTabs, ready, canEdit });
   // The working parts arrive once the tab has a photo page (runtime.ts): a design without one never
   // downloads the pixel engine.
   const hasPhotoPage = !!pages?.some((p) => p.kind === 'photo');

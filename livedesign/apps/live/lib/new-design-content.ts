@@ -7,6 +7,7 @@ import type { Tab } from '@livedesign/design';
 import type { TemplateKind } from '@livedesign/templates';
 import { buildTemplatedTabs } from '@/lib/template-builders';
 import { templateTabName } from '@/lib/template-tab-name';
+import { askForPhotoEditSample } from '@/lib/photo-template/photo-edit-sample-apply';
 import { getTheme } from '@/lib/themes';
 
 // The theme every new design starts in.
@@ -30,6 +31,8 @@ export async function newDesignContent(input: {
   const { templateKind, themeId, tabId, templateChosen = true } = input;
   // A template makes its tabs; the first opens.
   const built = templateKind ? buildTemplatedTabs(templateKind, themeId, tabId, 'Tab 1') : null;
+  // Photo Edit opens on its sample: the editor sets it once its files are stored (photo-edit-sample-apply.ts).
+  if (templateKind === 'photo-edit') askForPhotoEditSample(tabId);
   // The first tab is named after its template unless the template names it (template-tab-name.ts).
   const tabs =
     built && templateKind && built[0]!.name === 'Tab 1'
