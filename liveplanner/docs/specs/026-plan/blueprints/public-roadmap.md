@@ -35,7 +35,7 @@ the public read and vote, the vote field and its sort, the editor's Publish as R
 - `apps/api/src/routes/roadmap-routes.ts`: `handleRoadmapRoutes(ctx)`, dispatched from
   `project-subresource-routes.ts` after the calendar feed's.
 - `apps/api/src/routes/roadmap-public-route.ts`: `handleRoadmaps(ctx)`, the worker's `roadmaps` case: the path's
-  shape, then the room's `roadmap(planId, request)` RPC (`plan-room.ts`, `plan-client.ts`), which answers null-plan
+  shape (plain `404 not_found`) and method (`405`), so the OpenAPI probe and a bad path never wake a room, then the room's `roadmap(planId, request)` RPC (`plan-room.ts`, `plan-client.ts`), which answers null-plan
   ids `404` without making a schema (`bindStoredPlan`).
 - `apps/api/src/index.ts`: `/api/roadmaps` limited per network on `FORM_RATE_LIMITER` (`roadmap:` for votes,
   `roadmap-read:` for reads) and kept out of the per-owner write limit, as `/api/forms` is.
@@ -44,8 +44,8 @@ the public read and vote, the vote field and its sort, the editor's Publish as R
   (`roadmapScopeFor`), `roadmap-defaults.ts` (`defaultRoadmapSettings`, `TRIAGE_NAMES`), `RoadmapContext.tsx`,
   `RoadmapHost.tsx` (the door; the dialog loads on first open), `RoadmapDialog.tsx`, `RoadmapSettingsForm.tsx`,
   `RoadmapMenuRow.tsx`.
-- Editor public page: `app/roadmap/[slug]/page.tsx` (one placeholder), `lib/roadmap-path.ts`
-  (`ROADMAP_PLACEHOLDER_PATH`, `isRoadmapPath`, `roadmapFromPath`, `roadmapUrlFor`), `lib/api/roadmaps-public.ts`,
+- Editor public page: `app/roadmap/[...slug]/page.tsx` (one placeholder; a catch-all, so `next dev` serves both parts),
+  `lib/roadmap-path.ts` (`ROADMAP_PLACEHOLDER_PATH`, `isRoadmapPath`, `roadmapFromPath`), `lib/api/roadmaps-public.ts`,
   `components/roadmap/public/RoadmapPage.tsx`, `RoadmapColumn.tsx`, `RoadmapCard.tsx`, `lib/public-browser-id.ts`
   (shared with the form footer). `src/worker.ts` rewrites `/roadmap/*` onto the placeholder. `LIVE_ROUTE_SEGMENTS`
   gains `roadmap`.
@@ -98,7 +98,9 @@ CREATE UNIQUE INDEX IF NOT EXISTS roadmaps_code ON roadmaps (code);
 - Vote: body `{ card, browser, up, website }` (`card` 1..200, `browser` `ROADMAP_BROWSER_PATTERN`, `up` boolean; else
   400 `roadmap_vote_invalid`). Voting off: 404. `website` filled: 201 `{ votes: 0, voted: false }`, nothing written,
   logged `dropped`. The card must pass `onRoadmap` (else 404 `card_not_found`). `takeRoadmapVote` (500 an hour; else
-  429 `roadmap_busy`). Then `writeItemsWithRetry` with `withPublicVote`: unchanged (already voted, or not voted and
+  429 `roadmap_busy`). Then `writeVote`, a guarded write of the one card (read, `withPublicVote`, the plan fields
+  budget, `updateItemsAtRev` at the rev read, retried up to `ITEM_WRITE_RETRIES` as every item write is) with no
+  caller person, so no share grant is asked of an anonymous visitor: unchanged (already voted, or not voted and
   taking back): nothing written; full (500 voters, adding): 409 `roadmap_votes_full`, the hour's count given back. The
   write relays the card to every open editor (`relay`), keeps no history entry (as a tally keeps none), and the room
   notes the write (`noteWrite`) so the index hears of it. Answer 200 `{ votes, voted }`.
@@ -202,8 +204,9 @@ CREATE UNIQUE INDEX IF NOT EXISTS roadmaps_code ON roadmaps (code);
   next read 404), republish makes a new code, unknown code and malformed paths 404, a trashed plan 404, a deleted
   board 404, the vote (add, take back, idempotent, card not on the roadmap 404, voting off 404, hidden field
   dropped, full 409, the hourly cap 429), 405, the per-network limit (index.ts).
-- Editor: `roadmap-gate.test.ts`, `roadmap-defaults.test.ts`, `roadmap-client.test.ts`, `RoadmapDialog.test.tsx`,
-  `roadmap-path.test.ts`, `roadmaps-public.test.ts`, `RoadmapPage.test.tsx`.
+- Editor: `roadmap-gate.test.ts` (the gate, the tab's boards, the defaults and rules), `roadmap-client.test.ts`,
+  `RoadmapDialog.test.tsx` (with the host and the menu row), `roadmap-path.test.ts`, `RoadmapPage.test.tsx` (through
+  `roadmaps-public.ts`), `src/worker.test.ts` (the rewrite).
 
 ## Defaults ledger
 

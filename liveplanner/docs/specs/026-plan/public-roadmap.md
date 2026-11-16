@@ -140,7 +140,7 @@ link is gone or suspended, or once a later change sends its cards to a shown col
 ### States
 
 - **Loading**: column skeletons.
-- **Not available** (unknown code, unpublished, a plan in the Trash or gone, a board deleted): "This roadmap isn't
+- **Not available** (unknown code, unpublished, a plan archived, in the Trash or gone, a board deleted): "This roadmap isn't
   available" and "It may have been unpublished, or the link may be wrong."
 - **Error**: "We couldn't load this roadmap" with **Try Again**.
 - **An empty column**: "Nothing here yet."
@@ -153,9 +153,11 @@ link is gone or suspended, or once a later change sends its cards to a shown col
   or an Unpublish shows on the next read.
 - `POST /api/roadmaps/<plan id>/<code>/votes` with `{ card, browser, up, website }`: a vote given (`up: true`) or
   taken back; answers the card's new count and whether this browser now votes for it.
-- **One answer for every miss**: an unknown or unpublished code, a plan that was never stored, is in the Trash or
-  gone, a board deleted or turned into an All Cards board, and a malformed link answer the same `404
-roadmap_not_found`. A vote for a card not on the roadmap (another column, an unchosen type, archived, trashed) is
+- **One answer for every miss**: an unknown or unpublished code, a plan that was never stored, is archived, in the
+  Trash or gone, a board deleted or turned into an All Cards board, and a malformed code answer the same `404
+roadmap_not_found`. A path no roadmap could have (no code, a malformed plan id, another door under the code) is
+  turned away by the worker before any plan wakes, with the api's plain `404 not_found`, and a wrong method with
+  `405`. A vote for a card not on the roadmap (another column, an unchosen type, archived, trashed) is
   `404 card_not_found`, as if it did not exist.
 - Every answer carries `X-Robots-Tag: noindex` and `Referrer-Policy: no-referrer`.
 
