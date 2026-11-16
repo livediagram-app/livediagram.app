@@ -36,6 +36,19 @@ min(chroma * SOFT_CHROMA_SCALE, SOFT_MAX_CHROMA), hue)`; grey at chroma 0.
   - `standardColourAt(hex)`: `{ name, label, tone, appearance } | null` for any version's hex, case-insensitive.
   - `isHexColour(v)`: `#rrggbb` only, for the apps.
 - `quick-swatches.ts`: `colourWords(hexes)`: hue words, a repeat "Light"/"Deep", a third numbered.
+- `text-contrast.ts` ("Reading on its ground"), built on the shared re-inking maths (`worstContrast`, `inkToward`,
+  `pageGroundUnder`, `boxFill`, `keptCover`):
+  - `TEXT_CONTRAST = 4.5`, `LARGE_TEXT_CONTRAST = 3`, `LARGE_TEXT_PX = 24`, `LARGE_BOLD_TEXT_PX = 18.66`.
+  - `isLargeText(px, bold)`; `labelDrawnPx(el)` = `labelFontPx(textSize, sticky) * labelTextScale(el)`;
+    `labelIsBold(el)` = `fontWeight >= 700`, else `textBold`.
+  - `textGroundOf(el, tab, surface): TextGround | null`, `TextGround = { tones: string[]; on: 'page' | 'shape'
+| 'card' }`: the element's own opaque fill (a `box` kind, a sticky or link card); else the
+    topmost earlier-painted element under its centre (`layerBands`, hidden layers out) that covers it (an opaque
+    box fill, a kept cover's tone; `null` for a picture or widget); else its page's `pageGroundUnder` tones. `null`
+    off every page, on a picture page, or under a cover of unknown tone.
+  - `textContrast(colour, tones, large): { ratio, needed, passes, tone, suggestion } | null`: `worstContrast`,
+    the tone it is worst on, the target, and when it falls short `inkToward(colour, tones, needed, needed)` if that reaches it, else null.
+    `null` for a colour it can't read.
 
 ### `apps/live/components/colour`
 
@@ -53,8 +66,16 @@ ColourPicker({
   yours?,         // string[]: Custom colours (hex)
   boardWarning?,  // the editor's hard-to-see warning
   onPreview?, onPreviewEnd?,
+  contrast?,      // TextContrastProbe: the ground and size the Text row's colours are judged on
 })
 ```
+
+- `TextContrastProbe = { ground: TextGround; large: boolean; current: string | null; colourOf: (id) => string |
+null }`: `current` is the text's drawn colour on its ground, `colourOf` an option id's colour there (a stock
+  name in its version for the ground's surface). `ColourPicker` holds the last hovered or focused swatch's id
+  (`probe`) only while `contrast` is set, cleared when the pointer leaves the picker; the judged colour is
+  `colourOf(probe)`, else `current`. `ContrastHint` (`components/colour/ContrastHint.tsx`) renders under the
+  groups, a `role="status"` region always mounted and empty while the colour passes.
 
 - `optionMatches(option, value)`: the same id, or for a hex value the same `option.colour` in any case (a colour
   stored by name arrives as the hex it is drawn in).
@@ -80,6 +101,7 @@ ColourPicker({
 | Page background           | `components/canvas/page-background-section.tsx`, `page-background-custom.tsx` (`PAGE_COLOUR_GROUPS`) | Paper                       | soft "Light" + strong "Dark", light hex                                                                                                          | `PageFill` / undefined                |
 | Laser                     | `components/panels/LaserColourRow.tsx`                                                               | Your colour (`presence`)    | strong by name for the canvas                                                                                                                    | `presence` / name / hex               |
 | Canvas, pattern           | `components/palette/palette-controls.tsx` (`useColourWell`, `ColorSwatch`)                           | none                        | soft + strong ("Soft colours", "Strong colours") by hex for the canvas; pattern strong only                                                      | hex                                   |
+| Element menu Text row     | `ElementColourBorderSections.tsx` (`useTextContrast(target, open)`, `hooks/ui/useTextContrast.ts`)   | as the colour rows          | as the colour rows                                                                                                                               | as the colour rows; `contrast` probe  |
 | Rich-text colour          | `components/canvas/RichTextToolbar.tsx`                                                              | none                        | strong hex for the canvas                                                                                                                        | hex                                   |
 | Pie and legend rows       | `components/palette/context-menu-data-editors.tsx`                                                   | none                        | strong light hex                                                                                                                                 | hex                                   |
 
@@ -170,21 +192,23 @@ Picks are reported by each surface's own write path (`track('Element', 'Changed'
 
 ## Testing
 
-| Rule                                                      | Test                                                                                                                        |
-| --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| ten standard colours, both tones, readable                | `../packages/element-model/src/standard-colours.test.ts`                                                                    |
-| Grey is a stock colour, not hued                          | `packages/design/src/pen-colours.test.ts`                                                                                   |
-| one Tab stop, arrows wrap, Home/End                       | `apps/live/components/colour/ColourPicker.test.tsx`                                                                         |
-| pick, custom Use, value matching, yours cap               | `ColourPicker.test.tsx`                                                                                                     |
-| preview and revert                                        | `ColourPicker.test.tsx`                                                                                                     |
-| skins open, pick closes, Escape refocuses                 | `ColourSkins.test.tsx`                                                                                                      |
-| custom colours kept and listed                            | `../packages/element-model/src/custom-colours.test.ts`, `apps/live/lib/design-colours.test.ts`                              |
-| no new pickers: no colour well, editor only in the picker | `apps/live/components/colour/one-picker.test.ts`                                                                            |
-| element menu rows                                         | `components/palette/context-menu-input-rows.test.tsx`                                                                       |
-| Quick Style rows, More colours, keys                      | `components/canvas/QuickStyleBar.test.tsx`, `quick-style-rows.test.tsx`, `hooks/canvas/useQuickStyle.test.tsx`              |
-| page background                                           | `page-background-section.test.tsx`                                                                                          |
-| laser and colour wells                                    | `LaserColourRow.test.tsx`, `../packages/workbench/src/lib/laser-config.test.ts`, `components/palette/colour-wells.test.tsx` |
-| rows fit, e2e                                             | `e2e/quick-style-swatch-rows.spec.ts`, `quick-style-panel.spec.ts`                                                          |
+| Rule                                                                      | Test                                                                                                                        |
+| ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| ten standard colours, both tones, readable                                | `../packages/element-model/src/standard-colours.test.ts`                                                                    |
+| Grey is a stock colour, not hued                                          | `packages/design/src/pen-colours.test.ts`                                                                                   |
+| one Tab stop, arrows wrap, Home/End                                       | `apps/live/components/colour/ColourPicker.test.tsx`                                                                         |
+| pick, custom Use, value matching, yours cap                               | `ColourPicker.test.tsx`                                                                                                     |
+| preview and revert                                                        | `ColourPicker.test.tsx`                                                                                                     |
+| skins open, pick closes, Escape refocuses                                 | `ColourSkins.test.tsx`                                                                                                      |
+| custom colours kept and listed                                            | `../packages/element-model/src/custom-colours.test.ts`, `apps/live/lib/design-colours.test.ts`                              |
+| no new pickers: no colour well, editor only in the picker                 | `apps/live/components/colour/one-picker.test.ts`                                                                            |
+| element menu rows                                                         | `components/palette/context-menu-input-rows.test.tsx`                                                                       |
+| Quick Style rows, More colours, keys                                      | `components/canvas/QuickStyleBar.test.tsx`, `quick-style-rows.test.tsx`, `hooks/canvas/useQuickStyle.test.tsx`              |
+| page background                                                           | `page-background-section.test.tsx`                                                                                          |
+| laser and colour wells                                                    | `LaserColourRow.test.tsx`, `../packages/workbench/src/lib/laser-config.test.ts`, `components/palette/colour-wells.test.tsx` |
+| ratios, large text, grounds, pictures skipped, shade keeps hue and passes | `packages/design/src/text-contrast.test.ts`                                                                                 |
+| hint under the target, hover judges, Use applies, nothing on a picture    | `apps/live/components/colour/ContrastHint.test.tsx`, `hooks/ui/useTextContrast.test.tsx`                                    |
+| rows fit, e2e                                                             | `e2e/quick-style-swatch-rows.spec.ts`, `quick-style-panel.spec.ts`                                                          |
 
 ## Constants and configuration
 

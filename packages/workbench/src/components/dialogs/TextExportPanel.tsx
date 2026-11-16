@@ -17,6 +17,7 @@ export function TextExportPanel({
   onDownload,
   onCopied,
   onBack,
+  note,
 }: {
   // The chosen format's name, shown as the bar's chip.
   formatTitle: string;
@@ -29,6 +30,8 @@ export function TextExportPanel({
   // Fire telemetry when the text is copied to the clipboard.
   onCopied: () => void;
   onBack: () => void;
+  // What the text leaves out of the thing it was made from, named under the box; absent when nothing is.
+  note?: string;
 }) {
   const [text, setText] = useState(initialText);
   const { copied, flash } = useCopiedFlash(1500);
@@ -60,6 +63,11 @@ export function TextExportPanel({
         spellCheck={false}
         className="h-56 w-full resize-y rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 font-mono text-xs leading-relaxed text-slate-800 focus:border-brand-400 focus:ring-2 focus:ring-brand-200 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-brand-500/30"
       />
+      {note ? (
+        <p role="note" className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
+          {note}
+        </p>
+      ) : null}
       <div className="mt-4 flex items-center justify-end gap-3">
         <div className="flex items-center gap-2">
           <button

@@ -1747,7 +1747,8 @@ The Export dialog exports **pages**, not the tab's content bounds.
   slide tab and **Word** for an article tab (editable `.pptx` and `.docx`:
   [PowerPoint and Word export](../020-import-export/office-export.md)), **Print** on every kind (the current
   page or the whole document, to the printer: [Print](../020-import-export/print.md)), plus **JSON** (the tab
-  itself, a backup that imports back). Markdown is not offered: a page is not an outline.
+  itself, a backup that imports back). **Markdown** is offered on an article tab only, the article's writing
+  ([Markdown export](../020-import-export/markdown-import.md)); an infographic or slide page is not an outline.
 - **Pages**: every format asks **All pages** or **One page** (a segmented control), and with One
   page, which page (each by its label). PDF starts on All pages; PNG and SVG start on One page,
   the first.

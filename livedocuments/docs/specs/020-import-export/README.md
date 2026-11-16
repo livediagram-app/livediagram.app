@@ -2,7 +2,7 @@
 
 Follow the references below only as needed; never upfront.
 
-- ./markdown-import.md - when working on Markdown import: import a Markdown document onto the current tab as an article (one undo step), the Import dialog's JSON restore, and the Markdown summary export
+- ./markdown-import.md - when working on Markdown import: import a Markdown document onto the current tab as an article (one undo step), the Import dialog's JSON restore, and the Markdown export (an article's writing, or a summary of other tabs)
 - ./office-import.md - when working on Word and PowerPoint import: a .docx (Word, Google Docs) as an article, a .pptx (PowerPoint, Google Slides) as slide pages with their speaker notes, the file panel, the bounds on untrusted files, the named errors and the report
 - ./office-export.md - when working on PowerPoint and Word export: a slide tab as an editable .pptx (text boxes, native shapes, pictures, speaker notes) and an article tab as an editable .docx (Word styles, lists, links, zones as images), the panel, its progress and errors
 - ./import-image-pipeline.md - when working on storing outside pictures (a picked image search result, an import's images): the shared browser-side resize (2048 px, WebP) + gallery upload, Offline Mode embedding, named failures (gallery full, unsupported, too large, no image storage) and the import report
