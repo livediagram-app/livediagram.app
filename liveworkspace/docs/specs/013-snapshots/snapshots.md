@@ -75,7 +75,7 @@ A revert must reach every open client cleanly, with nothing an editor held from 
 make sure of it:
 
 - **The generation fence.** Each item has a `generation`, 0 until its first revert and advanced by every revert. Every
-  answer about the item carries it in `X-Snapshot-Generation` once it is above 0, and the editor sends back the last
+  successful answer about the item carries it in `X-Snapshot-Generation`, 0 included, and the editor sends back the last
   one it saw on every request about that item. A write (any method but GET, HEAD and OPTIONS, other than the snapshot
   routes themselves) that names an older generation is refused with 409 `snapshot_reverted` before it reaches a
   handler, and the editor reloads on that answer. A request that names no generation (an agent's token, the CLI, an

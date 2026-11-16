@@ -33,9 +33,10 @@ export function fenceStaleWrite(request: Request, generation: number): Response 
   });
 }
 
-/** SN17: the response with the item's generation on it, once there has been a revert. */
+/** SN17: the response with the item's generation on it, 0 before any revert, so every editor that has read the item
+ *  names the generation it holds from then on (a socket's upgrade carries none). */
 export function stampGeneration(response: Response, generation: number): Response {
-  if (generation <= 0 || response.status === 101) return response;
+  if (response.status === 101) return response;
   const headers = new Headers(response.headers);
   headers.set(SNAPSHOT_GENERATION_HEADER, String(generation));
   return new Response(response.body, {

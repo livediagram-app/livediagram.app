@@ -8,7 +8,7 @@
 // content replace) and its caller (its edit gate): the snapshot routes answer here, every other write meets the fence,
 // and every answer carries the item's generation.
 
-import { fenceStaleWrite, stampGeneration } from './fence';
+import { fenceStaleWrite, requestGeneration, stampGeneration } from './fence';
 import { SNAPSHOTS_KEPT, SNAPSHOT_NAME_MAX } from './limits';
 import {
   advanceGeneration,
@@ -113,12 +113,15 @@ export async function serveSnapshots(opts: ServeSnapshots): Promise<Response> {
     const answer = await answerSnapshotRoute(opts);
     return stampGeneration(answer, await readGeneration(opts.db, opts.itemId));
   }
-  const generation = await readGeneration(opts.db, opts.itemId);
-  const fenced = fenceStaleWrite(opts.request, generation);
-  if (fenced) return fenced;
+  // The generation is read only for a write that names one (the fence), and for an answer that succeeded (the stamp):
+  // a refusal teaches the editor nothing, and a path the app does not serve never reaches the item's store.
+  if (requestGeneration(opts.request) !== null) {
+    const fenced = fenceStaleWrite(opts.request, await readGeneration(opts.db, opts.itemId));
+    if (fenced) return fenced;
+  }
   const response = await opts.handle();
-  // A handler that reverted nothing leaves the generation as it was read.
-  return stampGeneration(response, generation);
+  if (response.status >= 400 || response.status === 101) return response;
+  return stampGeneration(response, await readGeneration(opts.db, opts.itemId));
 }
 
 type Route =

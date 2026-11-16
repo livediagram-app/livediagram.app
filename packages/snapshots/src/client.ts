@@ -58,8 +58,9 @@ export function createSnapshotFence(
   return {
     stamp(input, init) {
       const id = itemIdOf(collection, input);
-      const generation = id === null ? 0 : (known.get(id) ?? 0);
-      if (generation <= 0) return init;
+      // Nothing until this page has read the item: its first answer says the generation, 0 before any revert.
+      const generation = id === null ? undefined : known.get(id);
+      if (generation === undefined) return init;
       const headers = new Headers(init?.headers);
       headers.set(SNAPSHOT_GENERATION_HEADER, String(generation));
       return { ...init, headers };
@@ -70,7 +71,7 @@ export function createSnapshotFence(
       const id = itemIdOf(collection, response.url);
       const generation = Number(raw);
       if (id !== null && Number.isSafeInteger(generation)) {
-        if (generation > (known.get(id) ?? 0)) known.set(id, generation);
+        if (generation > (known.get(id) ?? -1)) known.set(id, generation);
       }
       // A write refused by the fence: this page holds the item from before a revert.
       if (response.status === 409 && response.headers.get(SNAPSHOT_FENCED_HEADER) === '1')

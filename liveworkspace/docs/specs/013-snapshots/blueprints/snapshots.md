@@ -118,16 +118,18 @@ SN16. `fenceStaleWrite(request, generation)`: when `generation > 0`, the method 
 request carries `X-Snapshot-Generation`, and its value is a whole number below `generation`, answers 409
 `{ error: 'snapshot_reverted', message }`. Otherwise `null`. The snapshot routes are exempt (the app calls them first).
 
-SN17. `stampGeneration(response, generation)`: a copy of the response with `X-Snapshot-Generation` set, when
-`generation > 0`; the same response otherwise. A WebSocket upgrade (status 101) is never copied.
+SN17. `stampGeneration(response, generation)`: a copy of the response with `X-Snapshot-Generation` set, 0 included,
+so an editor that has read the item names a generation from then on and its first revert is fenced too. A WebSocket
+upgrade (status 101) is never copied.
 
-SN18. Each app's in-room router (`answer*Request`) runs: snapshot routes, then the fence, then its handlers, and stamps
-every answer.
+SN18. Each app's in-room router (`answer*Request`) runs: snapshot routes, then the fence (reading the generation only
+for a write that names one), then its handlers, and stamps every answer below 400. A refusal is not stamped, so a path
+the app does not serve never reaches the item's store.
 
 SN19. The editor's half (`createSnapshotFence(collection)`): `stamp(input, init)` adds the header to a request whose
-path is `/api/<collection>/<id>…` when a generation above 0 is known for that id; `note(response)` keeps the highest
+path is `/api/<collection>/<id>…` once a generation (0 included) is known for that id; `note(response)` keeps the highest
 generation each response's URL names. Each app binds it in `lib/api/core.ts` through `createApiCore`'s
-`stampRequest` and `noteResponse` hooks, so every request, the unload flush included, carries it.
+`fence` hook (`stamp` and `note`), so every request, the unload flush included, carries it.
 
 SN20. A 409 `snapshot_reverted`, or the room's close code 4009, reloads the page (`reloadAfterRevert`), once.
 

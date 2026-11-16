@@ -249,11 +249,15 @@ describe('serveSnapshots: the fence', () => {
   it('refuses a write from before the revert, passes reads, current and unnamed writes, and stamps answers', async () => {
     const { db } = testDb();
     const { door } = item();
-    // Before any revert: nothing stamped.
+    // Before any revert: stamped 0, so the editor names it from then on. A refusal is not stamped.
     const before = await serve(db, door, 'PUT', ['tabs', 't1'], {
       headers: { [SNAPSHOT_GENERATION_HEADER]: '0' },
     });
-    expect(before.headers.get(SNAPSHOT_GENERATION_HEADER)).toBeNull();
+    expect(before.headers.get(SNAPSHOT_GENERATION_HEADER)).toBe('0');
+    const refused = await serve(db, door, 'GET', ['nope'], {
+      handle: async () => new Response('missing', { status: 404 }),
+    });
+    expect(refused.headers.get(SNAPSHOT_GENERATION_HEADER)).toBeNull();
     await takeSnapshot(db, { itemId: 'p1', text: 'old', name: null, kind: 'manual', author: null });
     const [target] = await listSnapshots(db, 'p1');
     await serve(db, door, 'POST', ['snapshots', target!.id, 'revert']);
