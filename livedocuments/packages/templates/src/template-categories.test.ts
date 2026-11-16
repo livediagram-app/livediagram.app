@@ -59,12 +59,12 @@ describe('template categories', () => {
       events: 2,
       home: 2,
       learning: 3,
-      marketing: 4,
+      marketing: 6,
       pitches: 3,
-      plans: 4,
-      reports: 4,
+      plans: 5,
+      reports: 6,
       speeches: 2,
-      team: 3,
+      team: 4,
     });
   });
 
@@ -120,6 +120,11 @@ describe('template search words', () => {
     );
     expect(find('minutes')).toEqual(['meeting-notes']);
     expect(find('rfc')).toEqual(['design-doc']);
+    expect(find('handbook')).toEqual(['onboarding-handbook']);
+    expect(find('footnotes')).toEqual(['research-report']);
+    expect(find('case study')).toEqual(['case-study']);
+    expect(find('board')).toContain('board-update');
+    expect(find('newsletter')).toEqual(['newsletter']);
     expect(find('poster zebra')).toEqual([]);
     expect(find('')).toHaveLength(TEMPLATES.length);
   });

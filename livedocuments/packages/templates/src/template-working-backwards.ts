@@ -4,8 +4,9 @@
 // to-do list for the review. Written as Markdown and read by the article's own Markdown reader, so the words stay easy
 // to edit here; the first two lines become the title and subtitle, and the one divider the page break.
 // Pure data: the tab's pages and writing, merged in by templateCanvasOverrides.
-import { parseMarkdownBlocks, type ArticleBlock, type Tab } from '@livedocuments/document';
+import type { Tab } from '@livedocuments/document';
 import { articleTabOverrides } from './article-template';
+import { markdownArticleBlocks } from './article-markdown-blocks';
 
 const FLOW_ID = 'art-prfaq';
 
@@ -101,19 +102,12 @@ Fewer than one in five first-time customers ordering again within a month of the
 - [ ] A pilot with 200 households is agreed
 `;
 
-// The PR/FAQ's blocks, each with an id of its own and the same on every build: the first two headings are the title
-// and subtitle, the divider the page break before the FAQs.
-function workingBackwardsBlocks(): ArticleBlock[] {
-  return parseMarkdownBlocks(PRFAQ.trim()).map((block, i): ArticleBlock => {
-    const id = `b-prfaq-${i + 1}`;
-    if (block.type === 'divider') return { id, type: 'pageBreak' };
-    if (i < 2 && block.type === 'paragraph')
-      return { ...block, id, style: i === 0 ? 'title' : 'subtitle' };
-    return { ...block, id };
-  });
-}
-
-/** The Working Backwards template's pages and writing (opens in Pages, in the Report look). */
+/** The Working Backwards template's pages and writing (opens in Pages, in the Report look): a draft passed round
+ *  before the review, so a "Confidential draft" footer and "Page n of m". Its blocks' ids are the same on every
+ *  build: the first two headings the title and subtitle, the divider the page break before the FAQs. */
 export function workingBackwardsOverrides(): Partial<Tab> {
-  return articleTabOverrides(FLOW_ID, workingBackwardsBlocks(), { look: 'report' });
+  return articleTabOverrides(FLOW_ID, markdownArticleBlocks('prfaq', PRFAQ), {
+    look: 'report',
+    footer: { left: 'Confidential draft', right: 'Page {page} of {pages}' },
+  });
 }

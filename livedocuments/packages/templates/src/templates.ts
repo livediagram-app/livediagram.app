@@ -54,7 +54,15 @@ export type TemplateKind =
   | 'status-report'
   | 'cover-letter'
   // A lesson deck built from the slide layouts, like the decks above.
-  | 'class-lesson';
+  | 'class-lesson'
+  // More written documents (article-templates-2.ts).
+  | 'product-one-pager'
+  | 'research-report'
+  | 'newsletter'
+  | 'case-study'
+  | 'onboarding-handbook'
+  // A board update deck built from the slide layouts (template-board-update.ts).
+  | 'board-update';
 
 export type TemplateDescriptor = {
   kind: TemplateKind;
@@ -118,7 +126,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'live-card',
     title: 'Group Card',
     description:
-      'A greeting card the whole team signs, on two card pages: a cover with a photo, and an inside of signed notes with a slot for yours.',
+      'A greeting card the whole team signs, opened like a real one: a cover with a photo, then an inside of signed notes with a slot for yours.',
     extra: true,
   },
   {
@@ -146,7 +154,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'article',
     title: 'Project Brief',
     description:
-      'A project brief, written on pages like a doc: headings and lists to write over, room for charts and drawings in the text.',
+      'A project brief for a real change: the summary, why now, the goals in a table, the plan and the open questions, with a header and page numbers.',
     extra: true,
   },
   {
@@ -202,14 +210,14 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'social-carousel',
     title: 'Social Carousel',
     description:
-      'Five square slides for a LinkedIn or Instagram carousel: a hook, three tips and a call to action, swipe cues included.',
+      'Five square slides for a LinkedIn or Instagram carousel, stacked to flip through: a hook, three tips and a call to action.',
     extra: true,
   },
   {
     kind: 'launch-keynote',
     title: 'Launch Keynote',
     description:
-      'A six-slide launch keynote on an animated aurora: the hook, what is new, the beta in three numbers, the launch plan and the ask.',
+      'A six-slide launch keynote on an animated aurora: the hook, what is new, the beta in three numbers, the launch plan and the ask, its points building one at a time.',
     extra: true,
   },
   {
@@ -237,7 +245,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'talk-flashcards',
     title: 'Conference Talk',
     description:
-      'A 15-minute talk on six flashcards, from the opening question to the close, with cues for where to pause.',
+      "A conference talk on six cue cards, from the opening question to the close, with cues for where to pause and each card's speaking time.",
     extra: true,
   },
   {
@@ -251,14 +259,14 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'pitch-flashcards',
     title: 'Product Pitch',
     description:
-      'A two-minute pitch on five flashcards: the hook, the problem, the answer, the proof and the ask.',
+      'A short investor pitch on five cue cards: the hook, the problem, the answer, the proof and the ask.',
     extra: true,
   },
   {
     kind: 'class-presentation',
     title: 'School Presentation',
     description:
-      'A five-minute class talk on the water cycle, on five flashcards: the question, three stages and what to remember.',
+      'A class talk on the water cycle, on five cue cards: the question, three stages and what to remember.',
     extra: true,
   },
   {
@@ -293,7 +301,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'status-report',
     title: 'Status Report',
     description:
-      'A monthly project status report: the headline, each workstream in a status table, risks and what happens next.',
+      'A monthly project status report: the headline, each workstream in a status table, the budget with its source, risks and next steps.',
     extra: true,
   },
   {
@@ -308,6 +316,48 @@ export const TEMPLATES: TemplateDescriptor[] = [
     title: 'Class Lesson',
     description:
       'A six-slide science lesson on drifting colour: what we will learn, a question, the steps, a check and the homework.',
+    extra: true,
+  },
+  {
+    kind: 'product-one-pager',
+    title: 'Product One-Pager',
+    description:
+      'A new feature on one page: the problem, who it is for, what we build and how we measure it, each in a table, and what we will not do.',
+    extra: true,
+  },
+  {
+    kind: 'research-report',
+    title: 'Research Report',
+    description:
+      'A study written up: a title page, contents, the method in a table, the findings and recommendations, and every source in a footnote.',
+    extra: true,
+  },
+  {
+    kind: 'newsletter',
+    title: 'Newsletter',
+    description:
+      "A roastery's monthly newsletter: an In This Issue contents, a lead story, new coffees in a table, a quote and what is on.",
+    extra: true,
+  },
+  {
+    kind: 'case-study',
+    title: 'Case Study',
+    description:
+      "A client success story: the project at a glance, the challenge, what was done, the results in a table, and the client's words.",
+    extra: true,
+  },
+  {
+    kind: 'onboarding-handbook',
+    title: 'Onboarding Handbook',
+    description:
+      "A new joiner's first month: contents, the first week as a checklist, who to ask and the tools in tables, time off and pay.",
+    extra: true,
+  },
+  {
+    kind: 'board-update',
+    title: 'Board Update',
+    description:
+      'A seven-slide quarterly update to a board: the quarter in three numbers, revenue against plan on a chart, goals as rings, the one risk and the decision.',
     extra: true,
   },
 ];

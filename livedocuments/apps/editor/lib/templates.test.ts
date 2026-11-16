@@ -66,6 +66,12 @@ describe('TEMPLATES catalogue', () => {
     'status-report',
     'cover-letter',
     'class-lesson',
+    'product-one-pager',
+    'research-report',
+    'newsletter',
+    'case-study',
+    'onboarding-handbook',
+    'board-update',
   ];
 
   // Hidden templates are buildable but never listed, so every user-facing
@@ -73,15 +79,15 @@ describe('TEMPLATES catalogue', () => {
   // The mechanism is generic; nothing ships hidden today.
   const listed = TEMPLATES.filter((t) => !t.hidden);
 
-  it('lists exactly 35 templates (1 default + 34 extra)', () => {
-    expect(listed).toHaveLength(35);
+  it('lists exactly 41 templates (1 default + 40 extra)', () => {
+    expect(listed).toHaveLength(41);
   });
 
-  it('splits cleanly into 1 default + 34 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
+  it('splits cleanly into 1 default + 40 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
     const defaults = listed.filter((t) => !t.extra);
     const extras = listed.filter((t) => t.extra);
     expect(defaults).toHaveLength(1);
-    expect(extras).toHaveLength(34);
+    expect(extras).toHaveLength(40);
   });
 
   it('ships no hidden templates', () => {
@@ -133,6 +139,11 @@ describe('TEMPLATES catalogue', () => {
           'design-doc',
           'status-report',
           'cover-letter',
+          'product-one-pager',
+          'research-report',
+          'newsletter',
+          'case-study',
+          'onboarding-handbook',
         ].includes(kind);
       expect(tab.elements.length).toBeGreaterThan(empty ? -1 : 0);
     }
@@ -152,7 +163,10 @@ describe('templateCanvasOverrides', () => {
     const o = templateCanvasOverrides('working-backwards');
     expect(o.pages).toEqual([expect.objectContaining({ kind: 'article', flow: 'art-prfaq' })]);
     const flow = o.articles!['art-prfaq']!;
-    expect(flow.style).toEqual({ look: 'report' });
+    expect(flow.style).toEqual({
+      look: 'report',
+      footer: { left: 'Confidential draft', right: 'Page {page} of {pages}' },
+    });
     const text = (b: (typeof flow.blocks)[number]) =>
       'runs' in b ? b.runs.map((r) => r.text).join('') : '';
     const styled = (style: string) =>
