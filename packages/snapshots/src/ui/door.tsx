@@ -10,6 +10,7 @@ import {
   createContext,
   lazy,
   Suspense,
+  useCallback,
   useContext,
   useMemo,
   useState,
@@ -56,6 +57,58 @@ export function useItemSnapshotsDoor(input: {
     // The host passes stable apiFetch and apiHeaders (module functions, or memoised on who is asking).
     [allowed, itemUrl, noun, viewerId, apiFetch, apiHeaders],
   );
+}
+
+/** The editor's door from its session (liveworkspace/docs/specs/013-snapshots/snapshots.md "In the editor"): an Editor
+ *  of the whole item stored on the server, never in This Browser, an embed, the workbench frame or a tab-scoped link
+ *  (which reads as structure read-only), and never before the editor knows who is asking. The api refuses everyone
+ *  else all the same, so this is presentation. */
+export function useEditorSnapshotsDoor(input: {
+  hydrated: boolean;
+  isOffline: boolean;
+  embedMode: boolean;
+  workbench: unknown;
+  isStructureReadOnly: boolean;
+  level: string;
+  itemId: string | null;
+  selfId: string | null;
+  shareCode: string | null;
+  /** The app's api base and item collection: `${apiBase}/${collection}/<id>`. */
+  apiBase: string;
+  collection: string;
+  noun: string;
+  apiFetch: SnapshotsApiDeps['apiFetch'];
+  apiHeaders: (
+    ownerId: string,
+    opts: { share: string | null; body?: boolean },
+  ) => Promise<HeadersInit>;
+}): SnapshotsDoor | null {
+  const ownerId = input.selfId && input.selfId !== 'self' ? input.selfId : null;
+  const allowed =
+    input.hydrated &&
+    !input.isOffline &&
+    !input.embedMode &&
+    !input.workbench &&
+    !input.isStructureReadOnly &&
+    input.level === 'edit' &&
+    ownerId !== null;
+  const { shareCode, apiHeaders } = input;
+  const headers = useCallback(
+    // Called only through an open door, which needs an owner.
+    (opts: { body?: boolean }) =>
+      apiHeaders(String(ownerId), { share: shareCode, body: opts.body }),
+    [apiHeaders, ownerId, shareCode],
+  );
+  return useItemSnapshotsDoor({
+    allowed,
+    itemUrl: input.itemId
+      ? `${input.apiBase}/${input.collection}/${encodeURIComponent(input.itemId)}`
+      : null,
+    noun: input.noun,
+    viewerId: ownerId,
+    apiFetch: input.apiFetch,
+    apiHeaders: headers,
+  });
 }
 
 export function SnapshotsDoorProvider({

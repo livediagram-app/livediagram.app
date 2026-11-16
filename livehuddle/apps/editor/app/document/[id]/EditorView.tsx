@@ -58,8 +58,12 @@ import { useEditorUiScales } from '@liveworkspace/workbench/hooks/ui/useEditorUi
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { ClearStylesHost } from '@/components/canvas/ClearStylesHost';
 import { EditorStartPanels } from '@/components/start/EditorStartPanels';
-import { SnapshotsDoorProvider } from '@liveworkspace/snapshots/ui';
-import { useEditorSnapshots } from './useEditorSnapshots';
+import { SnapshotsDoorProvider, useEditorSnapshotsDoor } from '@liveworkspace/snapshots/ui';
+import {
+  API_BASE as SNAPSHOTS_API_BASE,
+  apiFetch as snapshotsFetch,
+  apiHeaders as snapshotsHeaders,
+} from '@/lib/api/core';
 
 // Loaded when first drawn (docs/specs/016-platform/web-performance.md): search while it is open. Its code is
 // fetched once the editor is idle (EDITOR_SURFACE_CODE), so opening it does not wait.
@@ -76,16 +80,21 @@ export function EditorView() {
   // "This Browser" header badge and hides server-only actions (Share).
   const isOffline = useIsOfflineDocument(ctx.documentId);
   // Snapshots (docs/specs/013-workspace/snapshots.md): the footer's button and dialog, for an Editor of the whole item.
-  const snapshotsDoor = useEditorSnapshots({
+  const snapshotsDoor = useEditorSnapshotsDoor({
     hydrated: ctx.hydrated,
     isOffline,
     embedMode: ctx.embedMode,
     workbench: null,
     isStructureReadOnly: ctx.isStructureReadOnly,
     level: ctx.can.level,
-    documentId: ctx.documentId,
+    itemId: ctx.documentId,
     selfId: ctx.selfParticipant?.id ?? null,
     shareCode: ctx.sessionShareCode,
+    apiBase: SNAPSHOTS_API_BASE,
+    collection: 'documents',
+    noun: 'Space',
+    apiFetch: snapshotsFetch,
+    apiHeaders: snapshotsHeaders,
   });
   // A full page load the app starts itself (a stale build, a chunk recovery) waits for these edits
   // to be saved (docs/specs/016-platform/stale-builds.md).

@@ -3,7 +3,12 @@ import { act, fireEvent, render, renderHook, screen, waitFor } from '@testing-li
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { resetRevertReload, SnapshotsApiError, type SnapshotsApi } from '../client';
 import type { SnapshotSummary } from '../wire';
-import { SnapshotsDoorProvider, useItemSnapshotsDoor, type SnapshotsDoor } from './door';
+import {
+  SnapshotsDoorProvider,
+  useEditorSnapshotsDoor,
+  useItemSnapshotsDoor,
+  type SnapshotsDoor,
+} from './door';
 import { SnapshotsButton } from './SnapshotsButton';
 import { useSnapshots } from './useSnapshots';
 import {
@@ -182,6 +187,54 @@ describe('SnapshotsButton', () => {
     fireEvent.submit(form);
     expect(api.take).toHaveBeenCalledTimes(1);
     await act(async () => finish());
+  });
+});
+
+describe('useEditorSnapshotsDoor', () => {
+  const session = {
+    hydrated: true,
+    isOffline: false,
+    embedMode: false,
+    workbench: null as unknown,
+    isStructureReadOnly: false,
+    level: 'edit',
+    itemId: 'd 1' as string | null,
+    selfId: 'u' as string | null,
+    shareCode: 'abc' as string | null,
+  };
+  it('opens only for an Editor of the whole stored item, with its share code on every call', async () => {
+    const apiFetch = vi.fn(async () => new Response(JSON.stringify({ snapshots: [], kept: 5 })));
+    const apiHeaders = vi.fn(async () => ({}));
+    const { result, rerender } = renderHook(
+      (props: typeof session) =>
+        useEditorSnapshotsDoor({
+          ...props,
+          apiBase: '/api',
+          collection: 'documents',
+          noun: 'document',
+          apiFetch,
+          apiHeaders,
+        }),
+      { initialProps: session },
+    );
+    expect(result.current?.noun).toBe('document');
+    await result.current!.api.list();
+    expect(apiFetch).toHaveBeenCalledWith('/api/documents/d%201/snapshots', expect.anything());
+    expect(apiHeaders).toHaveBeenCalledWith('u', { share: 'abc', body: false });
+    for (const closed of [
+      { hydrated: false },
+      { isOffline: true },
+      { embedMode: true },
+      { workbench: {} },
+      { isStructureReadOnly: true },
+      { level: 'view' },
+      { selfId: 'self' },
+      { selfId: null },
+      { itemId: null },
+    ]) {
+      rerender({ ...session, ...closed });
+      expect(result.current).toBeNull();
+    }
   });
 });
 

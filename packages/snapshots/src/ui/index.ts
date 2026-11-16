@@ -2,6 +2,7 @@
 // host provides, the footer's button, and the dialog it opens.
 export {
   SnapshotsDoorProvider,
+  useEditorSnapshotsDoor,
   useItemSnapshotsDoor,
   useSnapshotsDoor,
   type SnapshotsDoor,
