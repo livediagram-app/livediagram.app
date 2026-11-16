@@ -46,8 +46,12 @@ export function buildTrainingRoom(cx: number, cy: number): Element[] {
         { kind: 'meeting-table', x: 768, y: 528 },
         { kind: 'coffee-machine', x: 40, y: 48 },
         { kind: 'water-cooler', x: 130, y: 40 },
-        { kind: 'plant', x: 920, y: 60 },
-        { kind: 'plant', x: 1020, y: 60 },
+        // A Timer beside Bring Focus, to timebox the group work (docs/specs/009-elements/timer-and-stopwatch.md).
+        { kind: 'timer', x: 904, y: 56 },
+        { kind: 'plant', x: 1036, y: 60 },
+        // A Suggestion Box by the way out, for feedback on the session: anonymous, and only Editors read it
+        // (docs/specs/009-elements/team-pieces.md "Suggestion Box").
+        { kind: 'suggestion-box', x: 24, y: 676 },
       ],
     },
   ];
@@ -63,7 +67,7 @@ export function buildTrainingRoom(cx: number, cy: number): Element[] {
       width: 300,
       sticker: 'emoji-microphone',
       subtitle:
-        'Teach from the stage, then work it through round the tables. Bring Focus brings everyone back.',
+        'Teach from the stage, then work it through round the tables. The Timer keeps time, and Bring Focus brings everyone back.',
     },
     [
       focus,
