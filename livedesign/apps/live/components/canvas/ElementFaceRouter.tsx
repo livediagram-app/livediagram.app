@@ -141,7 +141,7 @@ export function ElementFaceRouter({
           stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)}
         />
       ) : element.type === 'video' ? (
-        <VideoView element={element} />
+        <VideoView element={element} canChoose={!readOnly && !isLocked} />
       ) : element.type === 'link-card' ? (
         <LinkCardView
           element={element}

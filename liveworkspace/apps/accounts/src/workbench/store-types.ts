@@ -134,3 +134,9 @@ export type WorkbenchStorage = {
   deleteAlarm(): Promise<void>;
   deleteAll(): Promise<void>;
 };
+
+// A live embed's pairing (liveworkspace/docs/specs/011-workbench/workbench.md "Live embed tickets"): its token id, which
+// no API token's id can be, and its name. Made on a reader's first embed ticket for an app and host origin, never
+// listed, and gone with its last ticket and session.
+export const EMBED_TOKEN_ID = 'embed';
+export const EMBED_PAIRING_NAME = 'Live embeds';

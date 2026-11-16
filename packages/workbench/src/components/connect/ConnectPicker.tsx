@@ -40,12 +40,12 @@ export type ConnectInk = {
 };
 
 // The app's own look when no ink is handed in: slate on white, and its dark counterpart.
-const DEFAULT_INK = PANEL_INK;
+export const CONNECT_DEFAULT_INK = PANEL_INK;
 
 // The both-ways switch's off track in a themed panel: the theme's muted ink, faint, as SaveSwitchRow draws it.
 const THEMED_OFF_TRACK = 'color-mix(in srgb, var(--cp-muted) 45%, transparent)';
 
-function inkStyle(ink: ConnectInk | undefined): CSSProperties {
+export function inkStyle(ink: ConnectInk | undefined): CSSProperties {
   const base = {
     '--cp-hover': 'color-mix(in srgb, var(--cp-text) 6%, transparent)',
   } as CSSProperties;
@@ -140,7 +140,7 @@ export function ConnectPicker({
   return (
     <div
       data-connect-picker=""
-      className={`flex flex-col text-[var(--cp-text)] ${ink ? '' : DEFAULT_INK}`}
+      className={`flex flex-col text-[var(--cp-text)] ${ink ? '' : CONNECT_DEFAULT_INK}`}
       style={inkStyle(ink)}
     >
       <div className="grid gap-3 sm:grid-cols-2 sm:gap-4">
