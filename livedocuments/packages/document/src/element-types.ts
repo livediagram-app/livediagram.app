@@ -41,6 +41,7 @@ import type {
 import type { IconSize } from '@liveworkspace/model-core/icon-size';
 import type { IconWeight } from '@liveworkspace/model-core/icon-weight';
 import type { EmbedProvider } from './youtube';
+import type { LiveItem } from '@liveworkspace/element-model/live-item';
 import type { HeroCaption, StatItem } from './web-components';
 import type { ImageCredit } from './image-credit';
 import type {
@@ -1162,6 +1163,12 @@ export type VideoElement = {
   // and it renders Vimeo, because refusing a link that plainly works would be
   // pedantry.
   embedProvider?: EmbedProvider;
+  // A live embed (`embedProvider: 'live'`, liveworkspace/docs/specs/004-index/live-embeds.md): the item it shows, by
+  // its app and index id (never a share code), and the snapshot drawn when it is not live: the item's name and a
+  // small raster picture, both as last seen. @liveworkspace/element-model/live-item checks them.
+  liveItem?: LiveItem;
+  liveName?: string;
+  livePoster?: string;
   // NOTE there is no `videoId` field, deliberately. The YouTube URL lives in
   // `link` (a url-kind ElementLink) and the id is parsed from it on demand by
   // `youtubeVideoId` (youtube.ts). A link card caches its preview in `meta`
