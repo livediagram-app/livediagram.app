@@ -8,6 +8,7 @@
 import dynamic from 'next/dynamic';
 import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
 import { SheetLinkIcon } from '@livedocuments/ui';
+import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 import {
   chartFieldsFromTable,
   type ChartSheetSource,
@@ -128,21 +129,43 @@ const DOT: Record<'live' | 'quiet' | 'warn', string> = {
   warn: 'bg-amber-500',
 };
 
-// "Linked to Q3 Budget · updated 2 min ago" along a linked chart's top edge, while it is hovered or selected. It
+// "Linked to Q3 Budget · updated 2 min ago" just above a linked chart's top edge, while it is hovered or selected. It
 // takes no pointer, so it never gets in the way of a drag.
 export function SheetLinkLine({ element, selected }: { element: Element; selected: boolean }) {
   const links = useSheetLinks();
-  const now = useRelativeNow();
   if (!links || element.type !== 'shape' || !element.chartSheetSource) return null;
-  const line = sheetLinkLine(
-    element.chartSheetSource,
-    links.statusOf(element.chartSheetSource),
-    now,
+  return (
+    <SheetLinkPill
+      source={element.chartSheetSource}
+      status={links.statusOf(element.chartSheetSource)}
+      selected={selected}
+    />
   );
+}
+
+// The line itself, mounted only for a linked chart, so only those follow the zoom. It is counter-scaled (1/zoom) like
+// the canvas's other chrome, so it reads at one size on screen at any zoom; a long plan name truncates past 20rem, the freshness always shows.
+function SheetLinkPill({
+  source,
+  status,
+  selected,
+}: {
+  source: ChartSheetSource;
+  status: SheetLinkStatus | undefined;
+  selected: boolean;
+}) {
+  const now = useRelativeNow();
+  const zoom = useCanvasZoom();
+  const line = sheetLinkLine(source, status, now);
   return (
     <div
       data-sheet-link-line
-      className={`pointer-events-none absolute bottom-full left-0 z-10 mb-1.5 flex max-w-full items-center gap-1.5 rounded-full border border-slate-200 bg-white/95 py-0.5 pr-2.5 pl-1.5 text-[11px] leading-4 whitespace-nowrap text-slate-600 shadow-sm transition-opacity duration-150 dark:border-slate-700 dark:bg-slate-900/95 dark:text-slate-300 ${
+      style={{
+        transform: `scale(${1 / zoom})`,
+        transformOrigin: 'bottom left',
+        marginBottom: 6 / zoom,
+      }}
+      className={`pointer-events-none absolute bottom-full left-0 z-10 flex max-w-80 items-center gap-1.5 rounded-full border border-slate-200 bg-white/95 py-0.5 pr-2.5 pl-1.5 text-[11px] leading-4 whitespace-nowrap text-slate-600 shadow-sm transition-opacity duration-150 dark:border-slate-700 dark:bg-slate-900/95 dark:text-slate-300 ${
         selected ? 'opacity-100' : 'opacity-0 group-hover/el:opacity-100'
       }`}
     >
@@ -160,7 +183,9 @@ export function SheetLinkLine({ element, selected }: { element: Element; selecte
       <span aria-hidden className="text-slate-300 dark:text-slate-600">
         ·
       </span>
-      <span className={line.tone === 'warn' ? 'text-amber-700 dark:text-amber-300' : ''}>
+      <span
+        className={`shrink-0 ${line.tone === 'warn' ? 'text-amber-700 dark:text-amber-300' : ''}`}
+      >
         {line.detail}
       </span>
     </div>

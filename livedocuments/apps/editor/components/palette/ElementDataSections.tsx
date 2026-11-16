@@ -206,6 +206,7 @@ export function ElementDataSections({
               {shapeTarget ? (
                 <SheetLinkSection
                   chart={shapeTarget}
+                  onClose={props.onClose}
                   rows={
                     isLine ? (
                       <LineDataSummary

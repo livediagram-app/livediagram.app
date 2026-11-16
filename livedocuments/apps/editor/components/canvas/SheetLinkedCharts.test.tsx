@@ -105,6 +105,9 @@ describe('SheetLinksHost', () => {
     await waitFor(() => expect(screen.getByTestId('values').textContent).toBe('10,20'));
     expect(screen.getByText('Budget')).toBeTruthy();
     expect(screen.getByText('updated just now')).toBeTruthy();
+    // Counter-scaled to the canvas zoom (1 outside a canvas), so it reads at one size on screen.
+    const line = document.querySelector<HTMLElement>('[data-sheet-link-line]')!;
+    expect(line.style.transform).toBe('scale(1)');
   });
 
   it('unlinks keeping the values, in one commit, and says so', async () => {

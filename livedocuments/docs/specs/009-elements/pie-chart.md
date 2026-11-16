@@ -192,10 +192,11 @@ sheet. The platform's side (the range read, the door, the change signal) is
 - **The source** (`chartSheetSource`) names the plan, the sheet and the range by stable row and column ids (so rows
   inserted inside it are read, and moves are followed), with the plan's and sheet's names, the range as A1 text and
   when it was last read (`readAt`), as last read.
-- **Linked to.** A linked chart shows a quiet line along its top edge, inside its frame, while it is hovered or
-  selected: a sheet glyph, then "Linked to <plan> · updated 2 min ago" (the time ticks on its own, "just now" under a
-  minute). The Sheet row in its Data section says the same, with the sheet and range under it ("Budget · B2:E9"),
-  and offers **Update** (read again now) and **Unlink**.
+- **Linked to.** A linked chart shows a quiet line just above its top edge, while it is hovered or selected, at one
+  size on screen whatever the zoom (counter-scaled like the canvas's other chrome), a long plan name cut short: a
+  sheet glyph, then "Linked to <plan> · updated 2 min ago" (the time ticks on its own, "just now" under a minute).
+  The Sheet row in its Data section says the same, with the sheet and range under it ("Budget · B2:E9"), and
+  offers **Update** (read again now) and **Unlink**.
 - **Keeping in step.** While the document is open, each linked chart on the open tab is read on open and again
   whenever its sheet changes (the room's `source-changed` frame), never by polling. Each person reads with their own
   access:

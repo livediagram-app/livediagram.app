@@ -343,10 +343,14 @@ export function LinkSheetDialog({
         <p className="mr-auto hidden text-xs text-slate-500 sm:block dark:text-slate-400">
           The values are saved in the document, so people who can't open the plan still see them.
         </p>
-        <Button variant="secondary" onClick={onClose}>
+        <Button variant="secondary" onClick={onClose} className="shrink-0">
           Cancel
         </Button>
-        <Button onClick={() => void link()} disabled={!ready || empty || linking}>
+        <Button
+          onClick={() => void link()}
+          disabled={!ready || empty || linking}
+          className="shrink-0 whitespace-nowrap"
+        >
           {linking ? 'Linking…' : current ? 'Update Link' : 'Link'}
         </Button>
       </DialogFooter>

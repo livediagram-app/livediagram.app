@@ -119,19 +119,22 @@ describe('SheetLinkSection', () => {
     unlink: vi.fn(),
     ...over,
   });
+  const onClose = vi.fn();
   const show = (value: SheetLinks, chart: ShapeElement) =>
     render(
       <SheetLinksContext.Provider value={value}>
-        <SheetLinkSection chart={chart} rows={<p>rows</p>} />
+        <SheetLinkSection chart={chart} rows={<p>rows</p>} onClose={onClose} />
       </SheetLinksContext.Provider>,
     );
 
-  it('offers an Editor Link to Sheet under the rows, and a Viewer only the rows', () => {
+  it('offers an Editor Link to Sheet under the rows, closing the menu, and a Viewer only the rows', () => {
     const editor = links();
+    onClose.mockClear();
     show(editor, bar());
     expect(screen.getByText('rows')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Link to Sheet…' }));
     expect(editor.openLink).toHaveBeenCalled();
+    expect(onClose).toHaveBeenCalledTimes(1);
     cleanup();
     show(links({ canEdit: false }), bar());
     expect(screen.queryByRole('button', { name: 'Link to Sheet…' })).toBeNull();
@@ -164,8 +167,24 @@ describe('SheetLinkSection', () => {
     expect(screen.queryByRole('button', { name: 'Update' })).toBeNull();
   });
 
+  it('gives an Editor who cannot open the plan Change and Unlink, but no Update', () => {
+    act(() => {
+      show(links({ statusOf: () => ({ kind: 'saved' }) }), bar({ chartSheetSource: sourceOf() }));
+    });
+    expect(screen.getByText(/a sheet you can't open, as last saved/)).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Update' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Change…' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Unlink' })).toBeTruthy();
+  });
+
   it('draws the rows alone outside an editor', () => {
-    render(<SheetLinkSection chart={bar({ chartSheetSource: sourceOf() })} rows={<p>rows</p>} />);
+    render(
+      <SheetLinkSection
+        chart={bar({ chartSheetSource: sourceOf() })}
+        rows={<p>rows</p>}
+        onClose={onClose}
+      />,
+    );
     expect(screen.getByText('rows')).toBeTruthy();
   });
 });
