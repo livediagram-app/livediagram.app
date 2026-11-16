@@ -45,7 +45,7 @@ export function ImportMenu() {
 
 /** The one Import dialog's list (docs/specs/026-plan/plan-tabs.md "The Import dialog"): on a Board tab, its own CSV
  *  under Into This Tab, then the four tools under A Board from Another Tool, each with its mark and what file to
- *  bring. */
+ *  bring, and A Whole Plan, the liveplanner Plan row for a plan's own .liveplanner file. */
 export function ImportChooser() {
   const W = 440;
   const H = 366;
@@ -62,25 +62,43 @@ export function ImportChooser() {
     hint: string,
     file: string,
     last: boolean,
-  ) => (
-    <g key={label}>
-      <rect x={x + 10} y={y + 7} width={18} height={18} rx={4.5} className={tile} />
-      <g transform={`translate(${x + 10} ${y + 7})`}>{mark}</g>
-      <Label x={x + 38} y={y + 11} size={10} weight={600} tone="strong">
-        {label}
-      </Label>
-      <Label x={x + 38} y={y + 23} size={8.5} tone="muted">
-        {hint}
-      </Label>
-      <rect x={x + w - 36} y={y + 10} width={28} height={12} rx={3} className="fill-slate-100" />
-      <Label x={x + w - 22} y={y + 16} size={7.5} weight={700} anchor="middle" tone="body">
-        {file}
-      </Label>
-      {last ? null : (
-        <line x1={x} y1={y + ROW} x2={x + w} y2={y + ROW} className="stroke-slate-100" />
-      )}
-    </g>
-  );
+  ) => {
+    // The file chip fits its text: `.liveplanner` is wider than `CSV`.
+    const chip = Math.max(28, file.length * 5 + 8);
+    return (
+      <g key={label}>
+        <rect x={x + 10} y={y + 7} width={18} height={18} rx={4.5} className={tile} />
+        <g transform={`translate(${x + 10} ${y + 7})`}>{mark}</g>
+        <Label x={x + 38} y={y + 11} size={10} weight={600} tone="strong">
+          {label}
+        </Label>
+        <Label x={x + 38} y={y + 23} size={8.5} tone="muted">
+          {hint}
+        </Label>
+        <rect
+          x={x + w - 8 - chip}
+          y={y + 10}
+          width={chip}
+          height={12}
+          rx={3}
+          className="fill-slate-100"
+        />
+        <Label
+          x={x + w - 8 - chip / 2}
+          y={y + 16}
+          size={7.5}
+          weight={700}
+          anchor="middle"
+          tone="body"
+        >
+          {file}
+        </Label>
+        {last ? null : (
+          <line x1={x} y1={y + ROW} x2={x + w} y2={y + ROW} className="stroke-slate-100" />
+        )}
+      </g>
+    );
+  };
   const tools: [string, ReactNode, string, string, string][] = [
     [
       'fill-indigo-500',
@@ -191,7 +209,7 @@ export function ImportChooser() {
             strokeLinejoin="round"
           />,
           'liveplanner Plan',
-          'A whole plan’s .liveplanner file from Export. Makes a new plan.',
+          'A plan’s own file from Export. Makes a new plan.',
           '.liveplanner',
           true,
         )}
@@ -212,7 +230,6 @@ export function ExportMenu() {
     ['PNG', 'png'],
     ['SVG', 'svg'],
     ['PDF', 'pdf'],
-    ['Whole Plan', 'plan'],
   ];
   return (
     <Scene w={W} h={H}>
@@ -227,6 +244,8 @@ export function ExportMenu() {
             badge={badge}
           />
         ))}
+        {/* The plan's own file, not the tab's: a row of its own after the tab's formats */}
+        <FormatCard x={dx + 16} y={dy + 50 + 2 * 40} w={346} title="Whole Plan" badge="plan" />
       </Dialog>
     </Scene>
   );
