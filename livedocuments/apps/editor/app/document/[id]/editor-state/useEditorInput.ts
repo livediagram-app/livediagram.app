@@ -131,6 +131,7 @@ export function useEditorInput({
     linkPickerInitialMode,
     openLinkPicker,
     applyElementLink,
+    applyLiveEmbed,
     followLink,
   } = useElementLinks({
     currentSelectionIds,
@@ -389,6 +390,7 @@ export function useEditorInput({
     linkPickerInitialMode,
     openLinkPicker,
     applyElementLink,
+    applyLiveEmbed,
     followLink,
     beginEdit,
     commitLabel,

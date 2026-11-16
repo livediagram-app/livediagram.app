@@ -101,7 +101,7 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   wireframe: 8,
   icons: 0,
   technology: 0,
-  media: 9,
+  media: 10,
   // With the Devices row (DEVICES_ROW_TILE), which opens the seven frames.
   components: 12,
   concepts: 8,

@@ -29,6 +29,7 @@ export function ConnectRow({
   error,
   now,
   onPress,
+  busyLabel = 'Connecting',
 }: {
   item: Item;
   state: ConnectRowState;
@@ -36,6 +37,8 @@ export function ConnectRow({
   error: string | null;
   now: number;
   onPress: () => void;
+  // What a row in progress says (Connect, or a live embed's Adding).
+  busyLabel?: string;
 }) {
   const errorId = useId();
   const reasonId = useId();
@@ -81,7 +84,7 @@ export function ConnectRow({
             {detail}
           </span>
         </span>
-        <RowEnd kind={kind} />
+        <RowEnd kind={kind} busyLabel={busyLabel} />
       </button>
       {error ? (
         <p
@@ -97,7 +100,7 @@ export function ConnectRow({
 }
 
 // The row's trailing mark: what a press does.
-function RowEnd({ kind }: { kind: ConnectRowState['kind'] }) {
+function RowEnd({ kind, busyLabel }: { kind: ConnectRowState['kind']; busyLabel: string }) {
   if (kind === 'connected')
     return (
       <span className="flex shrink-0 items-center gap-1 rounded-full bg-[var(--cp-column)] px-2 py-0.5 text-[11px] font-semibold text-[var(--cp-text)]">
@@ -109,7 +112,7 @@ function RowEnd({ kind }: { kind: ConnectRowState['kind'] }) {
     return (
       <span className="flex shrink-0 items-center gap-1.5 text-[12px] font-medium text-[var(--cp-muted)]">
         <Spinner />
-        Connecting
+        {busyLabel}
       </span>
     );
   if (kind === 'blocked') return null;

@@ -37,7 +37,7 @@ describe('elementTileSections', () => {
   });
 
   it("finds the tiles on no strip in every mode, as this mode's", () => {
-    expect(SEARCH_ONLY_TILE_IDS.length).toBe(19);
+    expect(SEARCH_ONLY_TILE_IDS.length).toBe(20);
     for (const mode of ['diagram', 'workshop'] as const) {
       const { here, elsewhere } = elementTileSections({ mode, hasImage: true });
       for (const id of SEARCH_ONLY_TILE_IDS) {

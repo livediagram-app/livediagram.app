@@ -33,3 +33,32 @@ describe('VideoView', () => {
     expect(screen.getByLabelText('Play video')).toBeTruthy();
   });
 });
+
+// A live embed (liveworkspace/docs/specs/004-index/live-embeds.md "Making one"): only an Editor of this file, who may
+// set an embed's link here, is asked to choose its file; a Participant or Viewer is told none is chosen, and nothing
+// is framed before the element is on screen.
+describe('VideoView as a live embed, by role', () => {
+  const live = (): VideoElement => ({ ...createVideo(0, 0, 'live') });
+
+  it('asks an Editor to choose a file', () => {
+    render(<VideoView element={live()} canChoose />);
+    expect(screen.getByText('Double-click to choose a file')).toBeTruthy();
+  });
+
+  it.each(['Participant', 'Viewer'])('tells a %s no file is chosen, offering no choice', () => {
+    const { container } = render(<VideoView element={live()} canChoose={false} />);
+    expect(screen.getByText('No file chosen yet')).toBeTruthy();
+    expect(screen.queryByText('Double-click to choose a file')).toBeNull();
+    expect(container.querySelector('iframe')).toBeNull();
+  });
+
+  it('shows a chosen file as its snapshot and name, never a frame off screen', () => {
+    const { container } = render(
+      <VideoView
+        element={{ ...live(), liveItem: { app: 'liveplanner', itemId: 'p1' }, liveName: 'Roadmap' }}
+      />,
+    );
+    expect(screen.getByText('Roadmap')).toBeTruthy();
+    expect(container.querySelector('iframe')).toBeNull();
+  });
+});

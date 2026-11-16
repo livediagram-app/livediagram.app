@@ -70,6 +70,7 @@ const EMBED_TILES = [
   'media:embed-figma',
   'media:embed-gdocs',
   'media:embed-website',
+  'media:embed-live',
 ];
 
 // Write's own tiles and the Callout (a headed note, as much a diagram's as a page's), then the Comment

@@ -132,6 +132,7 @@ export function useEditorInput({
     linkPickerInitialMode,
     openLinkPicker,
     applyElementLink,
+    applyLiveEmbed,
     linkElementToScreen,
     followLink,
   } = useElementLinks({
@@ -428,6 +429,7 @@ export function useEditorInput({
     linkPickerInitialMode,
     openLinkPicker,
     applyElementLink,
+    applyLiveEmbed,
     linkElementToScreen,
     followLink,
     beginEdit,
