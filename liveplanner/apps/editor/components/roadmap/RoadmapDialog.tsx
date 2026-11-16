@@ -194,7 +194,10 @@ export function RoadmapDialog({
         subtitle="A public page of the cards you choose."
         onClose={onClose}
       />
-      <div className="flex flex-col gap-4 px-4 py-4 sm:px-6" data-roadmap-dialog-state={state}>
+      <div
+        className="scrollbar-slim flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-contain px-4 py-4 sm:px-6"
+        data-roadmap-dialog-state={state}
+      >
         {state === 'loading' ? (
           <div className="flex h-24 items-center justify-center" aria-busy="true">
             <span className="sr-only">Loading your roadmap</span>

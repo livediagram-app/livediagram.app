@@ -370,7 +370,8 @@ export function withBoardSortPick(
     return levels;
   }
   if (pick.field === null) return levels.slice(0, level);
-  levels[level] =
-    at?.field === pick.field ? at : { field: pick.field, dir: defaultBoardSortDir(pick.kind) };
+  // Votes, like Priority, starts on the most wanted first.
+  const dir = pick.field === 'votes' ? 'desc' : defaultBoardSortDir(pick.kind);
+  levels[level] = at?.field === pick.field ? at : { field: pick.field, dir };
   return levels[1]?.field === levels[0]!.field ? levels.slice(0, 1) : levels;
 }

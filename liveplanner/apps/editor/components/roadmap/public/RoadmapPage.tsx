@@ -159,8 +159,10 @@ export function RoadmapPage() {
           />
         ) : null}
         {page.kind === 'ready' ? (
-          <>
-            <header className="mx-auto flex w-full max-w-[1200px] flex-col gap-4 px-4 sm:flex-row sm:items-end sm:justify-between sm:px-6">
+          // The header and the columns share one width, centred, so the title lines up with the first column
+          // and Suggest an Idea with the last.
+          <div className="mx-auto w-fit max-w-full">
+            <header className="flex w-full flex-col gap-4 px-4 sm:flex-row sm:items-end sm:justify-between sm:gap-8 sm:px-6">
               <div className="min-w-0">
                 <h1 className="text-[28px] font-semibold tracking-tight text-slate-900 [overflow-wrap:anywhere] sm:text-[32px] dark:text-slate-50">
                   {page.data.title}
@@ -183,7 +185,7 @@ export function RoadmapPage() {
                 </a>
               ) : null}
             </header>
-            <p role="status" aria-live="polite" className="mx-auto max-w-[1200px] px-4 sm:px-6">
+            <p role="status" aria-live="polite" className="px-4 sm:px-6">
               {notice ? (
                 <span className="mt-4 inline-block rounded-lg bg-amber-50 px-3 py-2 text-[13px] text-amber-900 ring-1 ring-amber-200 dark:bg-amber-950/60 dark:text-amber-100 dark:ring-amber-900">
                   {notice}
@@ -191,8 +193,8 @@ export function RoadmapPage() {
               ) : null}
             </p>
             {/* Side by side from a small screen up, scrolling sideways when they outgrow it; stacked on a phone. */}
-            <div className="mt-6 overflow-x-auto pb-2">
-              <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-4 px-4 sm:w-max sm:min-w-full sm:flex-row sm:items-start sm:px-6">
+            <div className="mt-6 overflow-x-auto pb-2 pt-px">
+              <div className="flex flex-col gap-4 px-4 sm:w-max sm:flex-row sm:items-start sm:px-6">
                 {page.data.columns.map((column, i) => (
                   <RoadmapColumn
                     key={`${i}-${column.name}`}
@@ -207,7 +209,7 @@ export function RoadmapPage() {
             <footer className="mt-10 flex justify-center">
               <MadeWithLiveplanner />
             </footer>
-          </>
+          </div>
         ) : null}
       </div>
     </main>

@@ -125,7 +125,7 @@ Stored on the element, shared by everyone, undone like any element edit:
   **Estimate**, **Start Date** and **Due Date** (when its types offer them), **Created At** and **Last Edited At**
   (always: every type offers them, [Items](items.md#created-and-last-edited); sorted by the moment, not the day),
   **Votes** (when its types offer it: the card's vote total, session votes and a [public roadmap](public-roadmap.md)'s
-  upvotes together, a card with none counting 0), then every custom **Number**, **Currency**, **Date**, **Rating** and
+  upvotes together, a card with none counting 0; it starts on Highest First, the most wanted at the top), then every custom **Number**, **Currency**, **Date**, **Rating** and
   **Choice** field the card types the board shows offer (a Choice by its options' order), and each custom **Votes**
   field by its total. A card with no value for a
   level (or whose type does not have the field) comes after those that have one, whichever way that level runs. The

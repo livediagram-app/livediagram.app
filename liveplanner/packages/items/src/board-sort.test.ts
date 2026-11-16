@@ -319,6 +319,9 @@ describe('the menu’s picks', () => {
       by(['due', 'desc']),
     );
     expect(withBoardSortPick(by(['due', 'asc']), 0, { field: 'f-x' })).toEqual(by(['f-x', 'asc']));
+    expect(withBoardSortPick(undefined, 0, { field: 'votes', kind: 'number' })).toEqual(
+      by(['votes', 'desc']),
+    );
   });
 
   it('adds, changes and drops Then By, and None at Sort By turns it all off', () => {
