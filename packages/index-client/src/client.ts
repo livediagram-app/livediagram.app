@@ -50,6 +50,7 @@ import type {
 } from './types';
 import type { CreateWebhookInput, UpdateWebhookInput, Webhook, WebhookDelivery } from './webhooks';
 import { type ConnectionInput, type ConnectionMade, type ConnectionOpen } from './connections';
+import type { KitRemoveInput, KitRun, KitStartInput } from './kits';
 import type { SheetList, SheetRangeAsk, SheetRangeRead } from './sheet-sources';
 import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 import { enc, queryString, refusal, type Query } from './index-error';
@@ -306,6 +307,12 @@ export function createIndexClient({
       call<ConnectionOpen>(`/connections/${enc(id)}`, { grant, signal: options.signal }),
     takeBackConnection: (id: string, grant: string) =>
       call<void>(`/connections/${enc(id)}`, { method: 'DELETE', grant }),
+
+    // Project kits (kits.md), signed in only: start one (or, with `folderId` and `made`, finish one that was partly
+    // made), and remove what a run made.
+    startKit: (input: KitStartInput) => call<KitRun>('/kits', { method: 'POST', body: input }),
+    removeKit: (input: KitRemoveInput) =>
+      call<void>('/kits/remove', { method: 'POST', body: input }),
 
     // Sheet sources (sheet-sources.md), on the person's own access: a plan's Sheets, and what one range holds now.
     // `watch` names the reader item (with its grant) the plan should tell when the sheet changes.

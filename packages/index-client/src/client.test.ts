@@ -493,3 +493,20 @@ describe('calendar feeds', () => {
     expect(seen[0]!.headers.get('X-Index-App')).toBe('liveplanner');
   });
 });
+
+describe('createIndexClient kits', () => {
+  it("starts and removes a kit with the person's token", async () => {
+    const { seen, doFetch } = fakeFetch((s) =>
+      s.url.endsWith('/remove') ? new Response(null, { status: 204 }) : Response.json({ ok: true }),
+    );
+    const client = createIndexClient({ getToken: () => 'tok', fetch: doFetch });
+    await client.startKit({ kit: 'website-build', level: 'edit', name: 'Apollo' });
+    await client.removeKit({ folderId: 'f1', made: { board: 'i1' } });
+    expect(seen.map((s) => `${s.method} ${s.url}`)).toEqual([
+      'POST /api/index/kits',
+      'POST /api/index/kits/remove',
+    ]);
+    expect(seen[0]!.body).toEqual({ kit: 'website-build', level: 'edit', name: 'Apollo' });
+    expect(seen[1]!.headers.get('Authorization')).toBe('Bearer tok');
+  });
+});

@@ -8,5 +8,6 @@ export * from './grant';
 export * from './notices';
 export * from './standing';
 export * from './connections';
+export * from './kits';
 export * from './webhooks';
 export * from './sheet-sources';
