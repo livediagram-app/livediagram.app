@@ -7,8 +7,10 @@ import {
   FORUM_MAX_OFFSET,
   FORUM_PAGE_SIZE,
   FORUM_REACTIONS,
+  FORUM_POPULAR_WINDOW_MS,
   FORUM_REPLIES_MAX,
   forumExcerpt,
+  isCommunityApp,
   isForumCategory,
   isForumReaction,
   noForumReactions,
@@ -29,6 +31,7 @@ export type ForumRow = {
   id: string;
   topic_id: string | null;
   category: string;
+  app: string | null;
   author_id: string;
   author_name: string;
   author_color: string;
@@ -46,7 +49,7 @@ export type ForumRow = {
 type TopicRow = ForumRow & { reply_count: number; answered: number };
 
 const COLS =
-  'id, topic_id, category, author_id, author_name, author_color, title, body, state, answer_id, check_tries, checked_at, created_at, edited_at, activity_at';
+  'id, topic_id, category, app, author_id, author_name, author_color, title, body, state, answer_id, check_tries, checked_at, created_at, edited_at, activity_at';
 const T_COLS = COLS.split(', ')
   .map((c) => `t.${c}`)
   .join(', ');
@@ -61,12 +64,14 @@ const authorOf = (row: ForumRow): ForumAuthor => ({
   color: row.author_color,
 });
 const categoryOf = (row: ForumRow) => (isForumCategory(row.category) ? row.category : 'general');
+const appOf = (row: ForumRow) => (isCommunityApp(row.app) ? row.app : null);
 const isOwn = (row: ForumRow, viewer: string | null) => viewer !== null && row.author_id === viewer;
 
 export function topicSummary(row: TopicRow, viewer: string | null): ForumTopicSummary {
   return {
     id: row.id,
     category: categoryOf(row),
+    app: appOf(row),
     title: row.title,
     excerpt: forumExcerpt(row.body),
     author: authorOf(row),
@@ -109,6 +114,7 @@ export function forumTopic(
     ...forumReply(row, viewer, reactions),
     topicId: null,
     category: categoryOf(row),
+    app: appOf(row),
     title: row.title,
     answerId: answerListed ? row.answer_id : null,
   };
@@ -129,6 +135,7 @@ export const visibleTo = (row: ForumRow, viewer: string | null) =>
 export async function listTopics(
   env: Env,
   query: ForumListQuery,
+  now = Date.now(),
 ): Promise<{ rows: TopicRow[]; nextOffset: number | null }> {
   const where = ["t.topic_id IS NULL AND t.state = 'listed'"];
   const binds: unknown[] = [];
@@ -136,8 +143,24 @@ export async function listTopics(
     where.push('t.category = ?');
     binds.push(query.category);
   }
-  if (query.sort === 'unanswered') where.push(UNANSWERED);
-  const order = query.sort === 'active' ? 't.activity_at DESC, t.id' : 't.created_at DESC, t.id';
+  if (query.app) {
+    where.push('t.app = ?');
+    binds.push(query.app);
+  }
+  // Unanswered is a Question with no marked answer: other kinds of post have no answer to wait for.
+  if (query.sort === 'unanswered') where.push(`t.category = 'question'`, UNANSWERED);
+  // Popular: replies and reactions on the topic, among the topics active in the window (idx_forum_topics_active
+  // bounds the scan; each count is a key-prefix read).
+  if (query.sort === 'popular') {
+    where.push('t.activity_at >= ?');
+    binds.push(now - FORUM_POPULAR_WINDOW_MS);
+  }
+  const order =
+    query.sort === 'active'
+      ? 't.activity_at DESC, t.id'
+      : query.sort === 'popular'
+        ? `reply_count + (SELECT COUNT(*) FROM forum_reactions x WHERE x.post_id = t.id) DESC, t.activity_at DESC, t.id`
+        : 't.created_at DESC, t.id';
   const result = await env.COMMUNITY_DB.prepare(
     `SELECT ${T_COLS}, ${TOPIC_EXTRAS} FROM forum_posts t WHERE ${where.join(' AND ')}
       ORDER BY ${order} LIMIT ? OFFSET ?`,
@@ -152,18 +175,20 @@ export async function listTopics(
   };
 }
 
-/** A reader's own topics nobody else sees yet (waiting, refused or hidden), newest first, in the list's category. */
+/** A reader's own topics nobody else sees yet (waiting, refused or hidden), newest first, in the list's category and
+ *  app. */
 export async function ownWaitingTopics(
   env: Env,
   viewer: string,
-  category: ForumListQuery['category'],
+  { category, app }: Pick<ForumListQuery, 'category' | 'app'>,
 ): Promise<TopicRow[]> {
   const result = await env.COMMUNITY_DB.prepare(
     `SELECT ${T_COLS}, ${TOPIC_EXTRAS} FROM forum_posts t
       WHERE t.author_id = ?1 AND t.topic_id IS NULL AND t.state <> 'listed' AND (?2 IS NULL OR t.category = ?2)
+        AND (?4 IS NULL OR t.app = ?4)
       ORDER BY t.created_at DESC, t.id LIMIT ?3`,
   )
-    .bind(viewer, category, FORUM_PAGE_SIZE)
+    .bind(viewer, category, FORUM_PAGE_SIZE, app)
     .all<TopicRow>();
   return result.results ?? [];
 }
@@ -231,6 +256,7 @@ const bumpTopic = (env: Env, topicId: string, now: number) =>
 export type NewForumPost = {
   topicId: string | null;
   category: string;
+  app: string | null;
   accountId: string;
   author: ForumAuthor;
   title: string;
@@ -247,13 +273,14 @@ export async function insertForumPost(
   const id = newPostId();
   const statements = [
     env.COMMUNITY_DB.prepare(
-      `INSERT INTO forum_posts (id, topic_id, category, author_id, author_name, author_color, title, body, state,
+      `INSERT INTO forum_posts (id, topic_id, category, app, author_id, author_name, author_color, title, body, state,
          check_tries, checked_at, created_at, activity_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?)`,
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?)`,
     ).bind(
       id,
       post.topicId,
       post.category,
+      post.app,
       post.accountId,
       post.author.name,
       post.author.color,

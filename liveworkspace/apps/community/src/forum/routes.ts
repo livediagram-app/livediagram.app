@@ -138,7 +138,7 @@ async function list(env: Env, url: URL, viewer: string | null): Promise<Response
   const query = parseForumListQuery(url.searchParams);
   const [{ rows, nextOffset }, own] = await Promise.all([
     listTopics(env, query),
-    viewer && query.offset === 0 ? ownWaitingTopics(env, viewer, query.category) : [],
+    viewer && query.offset === 0 ? ownWaitingTopics(env, viewer, query) : [],
   ]);
   const body: ForumTopicsResponse = {
     topics: [...own, ...rows].map((row) => topicSummary(row, viewer)),
@@ -180,13 +180,14 @@ async function createTopic(
   const author = validateForumAuthor(body.author, account);
   if (!author.ok) return badRequest(author.error);
   if (!(await underWriteLimit(env, account, now))) return rateLimited();
-  const { category, title, body: text } = input.value;
+  const { category, app, title, body: text } = input.value;
   const verdict = await checkForumText(env, checkedText(author.value.name, title, text), now);
   const row = await insertForumPost(
     env,
     {
       topicId: null,
       category,
+      app,
       accountId: account,
       author: author.value,
       title,
@@ -228,6 +229,7 @@ async function createReply(
     {
       topicId: topic.id,
       category: topic.category,
+      app: null,
       accountId: account,
       author: author.value,
       title: '',
@@ -303,7 +305,14 @@ async function answer(
 ): Promise<Response> {
   if (!account) return unauthorised();
   const topic = await ownPost(env, topicId, account);
-  if (!topic || topic.topic_id !== null || topic.state !== 'listed') return notFound();
+  // Only a Question has an answer: another kind of post is a conversation.
+  if (
+    !topic ||
+    topic.topic_id !== null ||
+    topic.state !== 'listed' ||
+    topic.category !== 'question'
+  )
+    return notFound();
   if (request.method === 'DELETE') {
     await setAnswer(env, topic.id, null);
     return json({ answerId: null });

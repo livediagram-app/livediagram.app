@@ -25,21 +25,21 @@ type Page = {
 };
 
 // The Forum's list (liveworkspace/docs/specs/007-community/community.md "The Forum", "Topics and replies"): the first
-// page for the category and sort, once the page knows who is reading (a signed-in reader's own waiting topics come
+// page for the category, app and sort, once the page knows who is reading (a signed-in reader's own waiting topics come
 // with it), then Load More. Each answer carries the query it is for, so a newer query shows as loading until its own
 // answer comes, and a slower older answer never lands on it.
 export function useForumTopics(
   api: ForumApi,
   account: ForumAccount,
-  query: Pick<ForumListQuery, 'category' | 'sort'>,
+  query: Pick<ForumListQuery, 'category' | 'app' | 'sort'>,
 ): ForumTopicsState {
   const [page, setPage] = useState<Page | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const known = account.status !== 'checking';
   const getToken = account.status === 'in' ? account.getToken : null;
-  const { category, sort } = query;
-  const key = `${category ?? ''}|${sort}|${attempt}|${account.status}`;
+  const { category, app, sort } = query;
+  const key = `${category ?? ''}|${app ?? ''}|${sort}|${attempt}|${account.status}`;
 
   useEffect(() => {
     if (!known) return;
@@ -47,7 +47,11 @@ export function useForumTopics(
     void (async () => {
       try {
         const token = getToken ? await getToken() : null;
-        const first = await api.listTopics({ category, sort, offset: 0 }, token, controller.signal);
+        const first = await api.listTopics(
+          { category, app, sort, offset: 0 },
+          token,
+          controller.signal,
+        );
         if (controller.signal.aborted) return;
         setPage({
           key,
@@ -63,7 +67,7 @@ export function useForumTopics(
       }
     })();
     return () => controller.abort();
-  }, [api, known, getToken, category, sort, key]);
+  }, [api, known, getToken, category, app, sort, key]);
 
   const current = page?.key === key ? page : null;
 
@@ -75,7 +79,7 @@ export function useForumTopics(
     void (async () => {
       try {
         // Later pages are the listed topics alone, the same for everyone.
-        const more = await api.listTopics({ category, sort, offset }, null);
+        const more = await api.listTopics({ category, app, sort, offset }, null);
         setPage((before) => {
           if (!before || before.key !== forKey) return before;
           const seen = new Set(before.topics.map((t) => t.id));
@@ -95,7 +99,7 @@ export function useForumTopics(
         setLoadingMore(false);
       }
     })();
-  }, [api, current, loadingMore, category, sort]);
+  }, [api, current, loadingMore, category, app, sort]);
 
   const retry = useCallback(() => setAttempt((n) => n + 1), []);
 

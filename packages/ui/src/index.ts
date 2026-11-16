@@ -64,6 +64,11 @@ export { DialogFooter } from './dialog/DialogFooter';
 export { ConfirmDialog, type ConfirmDialogProps } from './dialog/ConfirmDialog';
 export { ConfirmPopover, splitConfirmMessage } from './ConfirmPopover';
 export { usePopoverLayer, openPopoverCount } from './popover-stack';
+export {
+  ResponsivePopover,
+  placeResponsivePopover,
+  type ResponsivePopoverProps,
+} from './ResponsivePopover';
 export * from './menu';
 export * from './optical';
 export { POPOVER_VIEWPORT_MARGIN, clampIntoRange } from './popover';

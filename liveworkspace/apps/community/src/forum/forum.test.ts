@@ -4,6 +4,7 @@
 // writes are counted; authors edit and delete their own; a closed account's Forum goes with it.
 import {
   FORUM_PAGE_SIZE,
+  FORUM_POPULAR_WINDOW_MS,
   FORUM_REPLIES_MAX,
   FORUM_WRITES_PER_HOUR,
   type ForumReactions,
@@ -115,7 +116,8 @@ function as(bearer: string | null, init: RequestInit = {}, value?: unknown): Req
 
 const AUTHOR = { name: 'Ada', color: '#F97316' };
 const QUESTION = {
-  category: 'livediagram',
+  category: 'question',
+  app: 'livediagram.app',
   title: 'How do I  export a diagram?',
   body: 'I want a PNG of the whole canvas.\r\n\r\n\r\n\r\nIs there a way?',
   author: AUTHOR,
@@ -199,7 +201,7 @@ describe('reading', () => {
           `INSERT INTO forum_posts (id, category, author_id, author_name, author_color, title, body, state, created_at, activity_at)
            VALUES (?, ?, 'user_x', 'X', '#000000', ?, 'A body long enough', 'listed', ?, ?)`,
         )
-        .run(`t${i}`, i % 2 ? 'general' : 'liveplanner', `Topic ${i}`, now + i, now - i);
+        .run(`t${i}`, i % 2 ? 'general' : 'tips', `Topic ${i}`, now + i, now - i);
     }
     const first = await list();
     expect(first.body.topics).toHaveLength(FORUM_PAGE_SIZE);
@@ -214,6 +216,55 @@ describe('reading', () => {
     expect(general.body.topics.every((t) => t.category === 'general')).toBe(true);
     // An unknown category reads as every category, an unknown sort as Latest Activity.
     expect((await list('?category=nope&sort=nope')).body.topics[0]!.id).toBe('t0');
+  });
+
+  it("keeps a topic's app apart from its category, and filters by it", async () => {
+    await ask();
+    await ask(ada, { app: null, category: 'tips', title: 'A tip for every app' });
+    await ask(ada, { app: 'liveplanner.app', title: 'A planner question' });
+    const diagram = await list('?app=livediagram');
+    expect(diagram.body.topics.map((t) => [t.category, t.app])).toEqual([
+      ['question', 'livediagram.app'],
+    ]);
+    expect((await list('?app=liveplanner.app')).body.topics).toHaveLength(1);
+    // An unknown app reads as every app; Any App posts carry null.
+    const every = await list('?app=nope');
+    expect(every.body.topics).toHaveLength(3);
+    expect(every.body.topics.find((t) => t.category === 'tips')!.app).toBeNull();
+  });
+
+  it('ranks Popular by replies and reactions among the topics active in its window', async () => {
+    const now = Date.now();
+    const insert = db.sql.prepare(
+      `INSERT INTO forum_posts (id, topic_id, category, author_id, author_name, author_color, title, body, state, created_at, activity_at)
+       VALUES (?, ?, 'general', 'user_x', 'X', '#000000', ?, 'A body long enough', 'listed', ?, ?)`,
+    );
+    insert.run('quiet', null, 'Quiet topic', now, now);
+    insert.run('busy', null, 'Busy topic', now - 10, now - 10);
+    insert.run('liked', null, 'Liked topic', now - 20, now - 20);
+    insert.run(
+      'old',
+      null,
+      'Old topic',
+      now - FORUM_POPULAR_WINDOW_MS - 1000,
+      now - FORUM_POPULAR_WINDOW_MS - 1000,
+    );
+    for (const id of ['b1', 'b2']) insert.run(id, 'busy', '', now, now);
+    for (const id of ['o1', 'o2', 'o3', 'o4'])
+      insert.run(
+        id,
+        'old',
+        '',
+        now - FORUM_POPULAR_WINDOW_MS - 1000,
+        now - FORUM_POPULAR_WINDOW_MS - 1000,
+      );
+    db.sql
+      .prepare(
+        `INSERT INTO forum_reactions (post_id, account_id, reaction, created_at) VALUES ('liked', 'user_y', 'helpful', ?)`,
+      )
+      .run(now);
+    const popular = await list('?sort=popular');
+    expect(popular.body.topics.map((t) => t.id)).toEqual(['busy', 'liked', 'quiet']);
   });
 
   it('answers 404 for a missing topic, a reply read as a topic, and an unknown route', async () => {
@@ -302,7 +353,8 @@ describe('a new topic', () => {
       state: 'listed',
       own: true,
       answerId: null,
-      category: 'livediagram',
+      category: 'question',
+      app: 'livediagram.app',
     });
     const run = (env.AI as { run: ReturnType<typeof vi.fn> }).run;
     expect(run).toHaveBeenCalledWith(FORUM_CHECK_MODEL, {
@@ -321,6 +373,8 @@ describe('a new topic', () => {
   it('names the first field that fails', async () => {
     const cases: [Record<string, unknown>, string][] = [
       [{ category: 'diagrams' }, 'invalid_category'],
+      [{ category: 'livediagram' }, 'invalid_category'],
+      [{ app: 'example.com' }, 'invalid_app'],
       [{ title: 'Hey' }, 'invalid_title'],
       [{ title: 'x'.repeat(121) }, 'invalid_title'],
       [{ body: 'short' }, 'invalid_body'],
@@ -483,7 +537,7 @@ describe('replies and the answer', () => {
     expect(await empty.json()).toEqual({ error: 'invalid_body' });
     const insert = db.sql.prepare(
       `INSERT INTO forum_posts (id, topic_id, category, author_id, author_name, author_color, body, state, created_at, activity_at)
-       VALUES (?, ?, 'livediagram', 'user_x', 'X', '#000000', 'Reply', 'listed', 1, 1)`,
+       VALUES (?, ?, 'question', 'user_x', 'X', '#000000', 'Reply', 'listed', 1, 1)`,
     );
     for (let i = 0; i < FORUM_REPLIES_MAX; i++) insert.run(`r${i}`, topic!.id);
     const full = await reply(topic!.id);
@@ -532,6 +586,17 @@ describe('replies and the answer', () => {
     expect((await call(`/posts/${first!.id}`, as(bea, { method: 'DELETE' }))).status).toBe(204);
     expect((await read(topic!.id)).body!.topic.answerId).toBeNull();
     expect((await list()).body.topics[0]).toMatchObject({ answered: false, replyCount: 1 });
+  });
+
+  it('belongs to Questions alone: another kind of post has none to mark, nor waits as Unanswered', async () => {
+    const { topic } = await ask(ada, { category: 'showcase' });
+    const { reply: r } = await reply(topic!.id);
+    const res = await call(
+      `/topics/${topic!.id}/answer`,
+      as(ada, { method: 'PUT' }, { reply: r!.id }),
+    );
+    expect(res.status).toBe(404);
+    expect((await list('?sort=unanswered')).body.topics).toEqual([]);
   });
 });
 
@@ -806,7 +871,7 @@ describe('at scale', () => {
   function seed() {
     const post = db.sql.prepare(
       `INSERT INTO forum_posts (id, topic_id, category, author_id, author_name, author_color, title, body, state,
-         created_at, activity_at) VALUES (?, ?, 'livediagram', ?, 'Someone', '#2563eb', ?, ?, 'listed', ?, ?)`,
+         created_at, activity_at) VALUES (?, ?, 'question', ?, 'Someone', '#2563eb', ?, ?, 'listed', ?, ?)`,
     );
     const react = db.sql.prepare(
       `INSERT INTO forum_reactions (post_id, account_id, reaction, created_at) VALUES (?, ?, 'helpful', 0)`,

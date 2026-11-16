@@ -20,6 +20,13 @@ import {
   lucideTriangleAlert,
   lucideUser,
   lucideUsers,
+  lucideShapes,
+  lucideSlidersHorizontal,
+  lucideCircleHelp,
+  lucideLightbulb,
+  lucideBugOff,
+  lucidePresentation,
+  lucideFlame,
 } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@liveworkspace/ui';
 
@@ -31,6 +38,10 @@ export { HeartIcon } from '@liveworkspace/ui';
 export const HashIcon = lucideGlyph(lucideHash, 15);
 export const SortIcon = lucideGlyph(lucideArrowUpDown, 15);
 export const CategoryIcon = lucideGlyph(lucideLayoutGrid, 15);
+// A forum post about Any App: liveworkspace, or every app.
+export const AnyAppIcon = lucideGlyph(lucideShapes, 16);
+// The Forum list's one Filters control on a phone.
+export const FiltersIcon = lucideGlyph(lucideSlidersHorizontal, 16);
 export const FlagIcon = lucideGlyph(lucideFlag, 14);
 export const BackIcon = lucideGlyph(lucideArrowLeft, 16);
 export const FullScreenIcon = lucideGlyph(lucideMaximize2, 14);
@@ -51,4 +62,11 @@ export const PendingIcon = lucideGlyph(lucideClock, 14);
 export const RefusedIcon = lucideGlyph(lucideCircleAlert, 14);
 export const EditIcon = lucideGlyph(lucidePencil, 14);
 export const DeleteIcon = lucideGlyph(lucideTrash2, 14);
-export const AskIcon = lucideGlyph(lucidePlus, 16);
+export const NewPostIcon = lucideGlyph(lucidePlus, 16);
+// The Forum's categories, one glyph each (forum/categories.tsx).
+export const QuestionIcon = lucideGlyph(lucideCircleHelp, 16);
+export const TipIcon = lucideGlyph(lucideLightbulb, 16);
+export const BugReportIcon = lucideGlyph(lucideBugOff, 16);
+export const ShowcaseIcon = lucideGlyph(lucidePresentation, 16);
+// The topic page sidebar's Popular Posts.
+export const PopularIcon = lucideGlyph(lucideFlame, 16);
