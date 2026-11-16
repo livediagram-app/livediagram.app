@@ -242,6 +242,12 @@ env var:
 The visitor's address travels as `X-Liveworkspace-Client-IP` (`WORKSPACE_CLIENT_IP_HEADER`), set from
 `CF-Connecting-IP`, never from what the caller sent. `workspace-proxy.test.ts` holds all four routers to this.
 
+Every forward goes through `forwardOr502`: `502` (`no-store`) when the origin can't be reached, and `504` (`no-store`)
+when its headers haven't come back within `FORWARD_DEADLINE_MS` (30 s). The deadline is the request's own timer
+(`forwardDeadlineFor`), cleared once the headers arrive, so a streaming body is never cut; it is skipped for an
+`Upgrade`, a body over `FORWARD_UPLOAD_BYTES` (1 MiB) and a loopback origin (a local stack). `forward-or-502.test.ts`
+drives it with fake timers.
+
 ## Errors and edge cases
 
 | Case                                            | Answer                                                |
@@ -442,7 +448,8 @@ Each service's own tests are in its blueprint.
 `https://www.liveworkspace.app`; `WORKSPACE_PROXY_HEADER` `X-Liveworkspace-Proxy`; `WORKSPACE_CLIENT_IP_HEADER`
 `X-Liveworkspace-Client-IP`; `ACCOUNTS_ON_APP_PATH` `/api/workspace/auth`; `FLOW_COOKIE_PREFIX` `lw_flow.`;
 `FLOW_COOKIE_MAX_AGE_SECONDS` 900; `SITE_ASSET_PREFIX` `/_liveworkspace`; `DRIVE_PATH` `/api/drive`; `PREVIEWS_PATH`
-`/api/previews`; `STATUS_PATH` `/status`; `LOOP_DETECTED` 508 (`packages/sites/src/workspace-proxy.ts`). Each router's
+`/api/previews`; `STATUS_PATH` `/status`; `LOOP_DETECTED` 508; `FORWARD_DEADLINE_MS` 30,000; `FORWARD_UPLOAD_BYTES`
+1,048,576 (`packages/sites/src/workspace-proxy.ts`). Each router's
 `WORKSPACE_ORIGIN` and `INDEX_ORIGIN` vars. `WORKSPACE_PROXY_SECRET_HEADER` `X-Liveworkspace-Proxy-Secret`, and the
 `WORKSPACE_PROXY_SECRET` secret on each router, accounts and the index. `UNAVAILABLE_RETRY_AFTER_SECONDS` 5
 (`packages/api-kit/src/request-failure.ts`): the `Retry-After` of every storage and accounts outage; long enough for a

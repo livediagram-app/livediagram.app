@@ -4,7 +4,12 @@
 // team and names its people (team-audit-log.md "Who reads it"). A token's `teams` claim can be an hour old, so it is
 // never trusted for this.
 
-import { readTeamsClaim, type TeamClaim } from '@liveworkspace/auth-client';
+import {
+  accountsFetch,
+  deadlineSignal,
+  readTeamsClaim,
+  type TeamClaim,
+} from '@liveworkspace/auth-client';
 import { accountsUrl, type Env } from './env';
 
 /** Teams of a person's now (those they run, or every one they are in), or null when accounts can't say (unreachable,
@@ -12,18 +17,20 @@ import { accountsUrl, type Env } from './env';
 export type AdminTeams = (personId: string) => Promise<ReadonlySet<string> | null>;
 export type PersonTeams = AdminTeams;
 
-const TIMEOUT_MS = 3_000;
+// Reads on a page's path (the audit log, a webhook's check), each with an answer when accounts can't say: 3 s.
+export const TIMEOUT_MS = 3_000;
 
 // The person's teams as accounts answers now; none for an id it refuses, null when it can't say.
 async function teamsNow(env: Env, personId: string): Promise<TeamClaim[] | null> {
   const key = env.MERGE_KEY?.trim();
   if (!key) return null;
   try {
-    const res = await fetch(`${accountsUrl(env)}/api/account/index/teams`, {
+    // Over the ACCOUNTS binding (a fetch to accounts' public route can stall), the public route without one.
+    const res = await accountsFetch(env.ACCOUNTS)(`${accountsUrl(env)}/api/account/index/teams`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId: personId }),
-      signal: AbortSignal.timeout(TIMEOUT_MS),
+      signal: deadlineSignal(TIMEOUT_MS),
     });
     // An id accounts refuses (a closed account's `deleted`) is in nothing and runs nothing.
     if (res.status === 400) return [];
@@ -52,11 +59,11 @@ const NAMES_CALLS_AT_ONCE = 4;
 // One call's names: `POST /api/account/index/people`, the shared key.
 async function namesNow(env: Env, key: string, ids: string[]): Promise<[string, string][] | null> {
   try {
-    const res = await fetch(`${accountsUrl(env)}/api/account/index/people`, {
+    const res = await accountsFetch(env.ACCOUNTS)(`${accountsUrl(env)}/api/account/index/people`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ ids }),
-      signal: AbortSignal.timeout(TIMEOUT_MS),
+      signal: deadlineSignal(TIMEOUT_MS),
     });
     if (!res.ok) return null;
     const { people } = (await res.json()) as { people?: { id?: unknown; name?: unknown }[] };

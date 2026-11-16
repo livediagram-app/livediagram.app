@@ -330,23 +330,66 @@ function loop(reason: string): Response {
   });
 }
 
+// How long a forward waits for its answer's headers (liveworkspace/docs/specs/003-accounts/accounts.md "When the
+// accounts site doesn't answer"). A Worker's fetch to another Worker's public route can stall (2026-11-13 and
+// 2026-11-15), and nothing else would end it before the browser gives up. 30 s leaves room for the slowest healthy
+// answers (a Drive open that downloads from Google first, a first PNG preview render) and still answers well before
+// Cloudflare's own 100 s.
+export const FORWARD_DEADLINE_MS = 30_000;
+// A request body larger than this is an upload: sending it is part of the wait for the headers, so it isn't timed.
+export const FORWARD_UPLOAD_BYTES = 1024 * 1024;
+
+const LOOPBACK_HOSTS: ReadonlySet<string> = new Set(['127.0.0.1', 'localhost', '[::1]']);
+
+/** The deadline for `request`'s headers, or null when it isn't timed: a WebSocket upgrade, an upload, or a loopback
+ *  origin (a local stack, where a cold dev server can take longer than the deadline to compile a page). */
+export function forwardDeadlineFor(request: Request): number | null {
+  if (request.headers.has('Upgrade')) return null;
+  if (LOOPBACK_HOSTS.has(new URL(request.url).hostname)) return null;
+  const length = Number(request.headers.get('Content-Length') ?? 0);
+  if (length > FORWARD_UPLOAD_BYTES) return null;
+  return FORWARD_DEADLINE_MS;
+}
+
+const plainNoStore = (status: number, text: string) =>
+  new Response(text, {
+    status,
+    headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' },
+  });
+
 /**
  * A forward to a downstream origin (an app, the index, Drive, liveworkspace, the previews service): its answer, or,
  * when the origin can't be reached at all (locally, a stack started without that server), `502` naming `what` and the
- * origin, `no-store`, never a throw out of the router as a bare 500 ("Network connection lost").
+ * origin, `no-store`, never a throw out of the router as a bare 500 ("Network connection lost"). When its headers
+ * haven't come back by `deadlineMs` (forwardDeadlineFor), the fetch is aborted and the answer is `504`, `no-store`.
+ * Only the headers are timed: once they arrive the timer is cleared, so a streaming body runs as long as it runs.
  */
 export function forwardOr502(
   request: Request,
   what = 'the downstream',
   doFetch: typeof fetch = fetch,
+  deadlineMs: number | null = forwardDeadlineFor(request),
 ): Promise<Response> {
-  return doFetch(request).catch(
-    () =>
-      new Response(`router: ${what} at ${new URL(request.url).origin} could not be reached`, {
-        status: 502,
-        headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' },
-      }),
-  );
+  const at = new URL(request.url).origin;
+  const unreachable = () => plainNoStore(502, `router: ${what} at ${at} could not be reached`);
+  if (deadlineMs === null) return doFetch(request).catch(unreachable);
+  return new Promise((resolve) => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => {
+      controller.abort();
+      resolve(plainNoStore(504, `router: ${what} at ${at} did not answer in time`));
+    }, deadlineMs);
+    doFetch(request, { signal: controller.signal }).then(
+      (response) => {
+        clearTimeout(timer);
+        resolve(response);
+      },
+      () => {
+        clearTimeout(timer);
+        resolve(unreachable());
+      },
+    );
+  });
 }
 
 /** A redirect from liveworkspace that points inside a forwarded route comes back to the app's own address, so the

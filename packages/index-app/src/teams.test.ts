@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { ACCOUNT_WRITE_TIMEOUT_MS } from '@liveworkspace/auth-client';
 import {
   accountsTeamReader,
   createTeamAccess,
@@ -123,5 +124,28 @@ describe('makeTeamFor (New Team in every app)', () => {
       throw new TypeError('network');
     }) as unknown as typeof fetch;
     expect((await makeTeamFor(CREDENTIALS, 'jwt', { name: 'A' }, 0, down)).status).toBe(503);
+  });
+
+  it('answers 504 team_create_unconfirmed within the deadline when liveworkspace stalls (Work Tracker 958)', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.useFakeTimers();
+    try {
+      // Never answers on its own, only to its signal: the team may or may not have been made.
+      const stalled = ((_url: string, init?: RequestInit) =>
+        new Promise<Response>((_resolve, reject) => {
+          init?.signal?.addEventListener('abort', () => reject(init.signal!.reason));
+        })) as unknown as typeof fetch;
+      let answer: unknown = null;
+      const pending = makeTeamFor(CREDENTIALS, 'jwt', { name: 'A' }, 0, stalled).then(
+        (a) => (answer = a),
+      );
+      await vi.advanceTimersByTimeAsync(ACCOUNT_WRITE_TIMEOUT_MS - 1);
+      expect(answer).toBeNull();
+      await vi.advanceTimersByTimeAsync(1);
+      await pending;
+      expect(answer).toEqual({ status: 504, body: { error: 'team_create_unconfirmed' } });
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
