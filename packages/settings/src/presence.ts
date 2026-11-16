@@ -1,5 +1,3 @@
-import { fnv1aString } from '@liveworkspace/model-core/string-hash';
-
 // The presence colours every app offers (liveworkspace/docs/specs/003-accounts/accounts.md "Profiles"): the colour
 // collaborators see on a person's cursor, comments and avatar, in every app and on liveworkspace.app.
 // One palette, so a colour picked in one place is a named swatch in all of them. Each is a Tailwind
@@ -37,14 +35,6 @@ const BY_VALUE = new Map(PRESENCE_COLOURS.map((c) => [c.value, c]));
 // or none).
 export function presenceColour(color: string | null | undefined): PresenceColour | undefined {
   return color ? BY_VALUE.get(color.toLowerCase()) : undefined;
-}
-
-/** The colour someone with Automatic takes (no colour of their own), as every app picks it for them: FNV-1a over
- *  their key (the account's id, else their email), onto the palette. The same key gives the same colour on every
- *  device and render, in the apps' presence and in the Explorer's member list alike. */
-export function presenceColourForKey(key: string): string {
-  // `| 0` reads the hash as signed, the way the apps have always picked colours, so no key changes colour.
-  return PRESENCE_COLOUR_VALUES[Math.abs(fnv1aString(key) | 0) % PRESENCE_COLOUR_VALUES.length]!;
 }
 
 // The display name's limit, as the accounts Worker keeps it (liveworkspace/apps/accounts src/profiles.ts

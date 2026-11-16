@@ -255,9 +255,29 @@ export function PlacementBrowser({
         onClick={back}
         gap="tight"
       />
+      {/* Where the heading above already names the space (one space, at its top), the top level's card doesn't name
+          it again. */}
       <PlacementCard
-        label={open ? open.name : teamId ? (shownTeam?.rootLabel ?? 'Team Library') : 'My Work'}
-        sub={open ? 'This folder' : teamId ? spaceName : 'Top level'}
+        label={
+          open
+            ? open.name
+            : teamId
+              ? (shownTeam?.rootLabel ?? 'Team Library')
+              : hasOverview
+                ? 'My Work'
+                : 'Top level'
+        }
+        sub={
+          open
+            ? 'This folder'
+            : !hasOverview
+              ? teamId
+                ? 'Top level'
+                : 'Not in a folder'
+              : teamId
+                ? spaceName
+                : 'Top level'
+        }
         icon={
           open ? (
             <FolderPlaceIcon />

@@ -19,9 +19,6 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": {
-    "@liveworkspace/model-core": "workspace:*"
-  },
   "devDependencies": {
     "oxlint": "^1.93.0",
     "typescript": "^7.0.2",

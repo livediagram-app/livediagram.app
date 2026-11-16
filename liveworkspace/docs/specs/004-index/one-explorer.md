@@ -517,7 +517,8 @@ liveworkspace.app.
   liveworkspace.app, which can't read an app's store, Archived lists the account's documents alone, as This Browser
   there is a link into the app.
 - **Move Folder.** A folder moves within its own space, so its Move dialog offers that space alone, headed by the
-  space's name (My Work, or the team's), never "Choose a Space" with nothing to choose; where the person has teams,
+  space's name (My Work, or the team's), never "Choose a Space" with nothing to choose, and said once: the top
+  level's card under it reads "Top level" ("Not in a folder" in My Work), not the space again; where the person has teams,
   the line under the title says "Folders move within their space. Pick where in <space> it should live."
 - **Change Folder.** "Choose a Space" lists My Work and each team, then, under a divider, **Archived** ("Out of every
   list, and closed") as a space of its own that holds no folders: choosing it and Move Here archives the document.
@@ -820,9 +821,10 @@ The journeys, one way each:
    only); it is the same team and the same request.
 2. **Run a team.** Choose the team (sidebar or panel rail). Its view opens on the team's card, above its library:
    the organisation, how many have joined and how many are invited; every member with their role, on a disc of
-   their Google picture over their initials in their presence colour (the members list's `color`; on Automatic, the
-   colour every app gives them, `presenceColourForKey` over their account id, an invitation's over its address),
-   shaded until the white initials read at AA; and, by role:
+   their Google picture over their initials, painted as their account button in the header is
+   (`@liveworkspace/account-menu` `avatarFill`): their presence colour (the members list's `color`), else, on
+   Automatic, the colour picked from the name the row shows (an invitation's made from its address), shaded until
+   the white initials read at AA; and, by role:
    - **Invite** (admins): an address and Member or Admin, at the foot of the card. The invitation is emailed.
    - **Invite by Link** (admins): turn the join link on, copy it, make a new one (the old one stops working),
      or turn it off. It lasts 7 days. Turning it on or off here moves the keyboard to what took the pressed

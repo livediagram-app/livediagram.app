@@ -10,8 +10,7 @@ import type { ExplorerView } from '../views';
 import { Explorer } from '../explorer/Explorer';
 import { landOnMyWork } from '../explorer/TeamPane';
 import { ExplorerPanel } from '../panel/ExplorerPanel';
-import { presenceColourForKey } from '@liveworkspace/settings/presence';
-import { avatarFill } from '../ui/avatar-fill';
+import { avatarFill } from '@liveworkspace/account-menu/initials';
 import { memberFill } from './TeamCard';
 import { lastAdmin, memberName, orderMembers, removalCopy } from './rules';
 
@@ -140,31 +139,29 @@ describe('a team’s view', () => {
     expect(await screen.findByText('Item 1')).toBeTruthy();
   });
 
-  it("paints each member's disc in their presence colour, and Automatic in the colour the apps give them", async () => {
+  it("paints each member's disc as their account button is painted, own colour or Automatic", async () => {
     const team = details();
-    team.members[1]!.color = '#f97316';
+    team.members[1]!.color = '#2563eb';
     page({ kind: 'team', id: 't1' }, fakeHost(team));
     await card();
     const disc = (id: string) =>
       document.querySelector<HTMLElement>(`[data-team-member="${id}"] [data-optical="disc"]`)!;
-    const rgb = (hex: string) => {
+    const rgb = (colour: string) => {
       const probe = document.createElement('span');
-      probe.style.backgroundColor = hex;
+      probe.style.backgroundColor = colour;
       return probe.style.backgroundColor;
     };
-    // Their own colour, shaded until the white initials read at AA.
-    expect(disc('m2').style.backgroundColor).toBe(rgb(avatarFill('#f97316')!));
+    // A custom colour, and Automatic (picked from the name), each the header avatar's own fill for that account.
+    expect(rgb(avatarFill('Ann Lee', '#2563eb'))).not.toBe('');
+    expect(disc('m2').style.backgroundColor).toBe(rgb(avatarFill('Ann Lee', '#2563eb')));
     expect(disc('m2').textContent).toBe('AL');
-    // Automatic: keyed by the account, as every app keys it; an invitation by its address.
-    expect(disc('m1').style.backgroundColor).toBe(
-      rgb(avatarFill(presenceColourForKey('user_me'))!),
-    );
-    expect(disc('m3').style.backgroundColor).toBe(
-      rgb(avatarFill(presenceColourForKey('kai.moss@x.test'))!),
-    );
-    expect(memberFill({ id: 'm', userId: 'u', email: null, color: 'oklch(70% 0.1 200)' })).toBe(
-      avatarFill(presenceColourForKey('u')),
-    );
+    expect(disc('m1').style.backgroundColor).toBe(rgb(avatarFill('Sam Doe', null)));
+    // An invitation by the name its row shows, made from its address.
+    expect(disc('m3').style.backgroundColor).toBe(rgb(avatarFill('Kai Moss', null)));
+    // The member row's fill and the account button's are one function of the same account.
+    for (const color of ['#f97316', '#2563eb', null]) {
+      expect(memberFill({ color }, 'Ada Quinn')).toBe(avatarFill('Ada Quinn', color));
+    }
   });
 
   it('isolates the organisation, names and addresses, so right-to-left text turns nothing else around', async () => {

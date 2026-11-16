@@ -66,6 +66,10 @@ describe('the heading with one space to offer', () => {
     const heading = screen.getAllByText('My Work')[0]!.parentElement!;
     expect(heading.tagName).toBe('DIV');
     expect(heading.textContent).toBe('My Work');
+    // Said once: the top level's card under it doesn't name the space again.
+    expect(screen.getAllByText('My Work')).toHaveLength(1);
+    expect(screen.getByText('Top level')).toBeTruthy();
+    expect(screen.getByText('Not in a folder')).toBeTruthy();
   });
 
   it('names the team for a team folder moving within its team', () => {

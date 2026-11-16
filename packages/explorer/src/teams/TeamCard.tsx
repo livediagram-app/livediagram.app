@@ -12,8 +12,7 @@ import { isAbort } from '../data/errors';
 import { teamErrorMessage, type TeamDetails, type TeamMember, type TeamRole } from '../data/teams';
 import { Button, ConfirmDialog, PictureDisc } from '@liveworkspace/ui';
 import { initialsOf as personInitials } from '@liveworkspace/model-core/names';
-import { presenceColourForKey } from '@liveworkspace/settings/presence';
-import { avatarFill } from '../ui/avatar-fill';
+import { avatarFill } from '@liveworkspace/account-menu/initials';
 import { LIST_CARD } from '../ui/classes';
 import { CloseIcon, LinkIcon, PencilIcon, TrashIcon } from '../ui/icons';
 import { MenuActionRow, PortalMenu } from '../ui/Menu';
@@ -90,12 +89,11 @@ export function initialsOf(name: string): string {
   return (first(parts[0]) + (parts.length > 1 ? first(parts.at(-1)) : '')).toUpperCase() || '?';
 }
 
-/** A member's disc: their own presence colour, else the one every app gives someone on Automatic (keyed by their
- *  account, else their address, settings presenceColourForKey), shaded until white initials read at AA (avatarFill).
- *  A custom colour that isn't #rgb or #rrggbb takes the Automatic one. */
-export function memberFill(m: Pick<TeamMember, 'color' | 'userId' | 'email' | 'id'>): string {
-  const automatic = presenceColourForKey(m.userId ?? m.email ?? m.id);
-  return (m.color ? avatarFill(m.color) : null) ?? avatarFill(automatic) ?? automatic;
+/** A member's disc, by the account control's own rule (@liveworkspace/account-menu avatarFill), so it is the colour
+ *  of their account button in the header: their own presence colour, else (Automatic) the one picked from the name
+ *  the row shows, shaded until white initials read at AA. */
+export function memberFill(m: Pick<TeamMember, 'color'>, name: string): string {
+  return avatarFill(name, m.color);
 }
 
 type Asking =
@@ -388,7 +386,7 @@ function TeamMemberRow({
         pictureUrl={state === 'joined' ? m.picture : null}
         name={name}
         size={32}
-        style={{ backgroundColor: memberFill(m) }}
+        style={{ backgroundColor: memberFill(m, name) }}
         className={`flex text-xs font-semibold text-white ${waiting || answered ? 'opacity-50' : ''}`}
       >
         {personInitials(name, m.email)}
