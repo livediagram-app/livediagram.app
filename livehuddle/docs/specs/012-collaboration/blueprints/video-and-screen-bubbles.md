@@ -40,12 +40,23 @@ the track (`replaceTrack`, `null` while off), so turning a camera off and on nev
 **The call** (`lib/calls/call-video.ts`, driven by `proximity-call.ts`): `toggleCamera()` opens the camera (`getUserMedia` at
 `CAMERA_CONSTRAINTS`), publishes it with `CAMERA_ENCODINGS` (`f` then `h`), stores it as your own media and sends the
 `call-track` op with `video`; off stops the track, swaps `null` in and sends `video: null`. `toggleScreen()` opens
-`getDisplayMedia` at `SCREEN_CONSTRAINTS`, sets `contentHint = 'detail'`, publishes with one encoding
+the picker through `pickScreen(getDisplayMedia)` (below), sets `contentHint = 'detail'`, publishes with one encoding
 (`SCREEN_MAX_BITRATE`, `SCREEN_MAX_FPS`) and stops on the track's `ended` (the browser's own Stop) as on the button.
 A mode that no longer allows `video` or `screen` stops both and drops every bubble. A `visibilitychange` re-picks.
 
+**The picker hints** (`lib/calls/screen-picker.ts`, #953), the one way both pickers open: `pickScreen(getDisplayMedia,
+Controller?)` asks at `SCREEN_CONSTRAINTS`, which carries the size and frame-rate caps plus `selfBrowserSurface:
+'exclude'` (livehuddle's own tab is not offered) and `surfaceSwitching: 'include'` (Share this tab instead, on the same
+track). Where the browser has `CaptureController` (feature-detected on `globalThis`, Chromium 109+), a fresh one rides
+in the options as `controller`, and `setFocusBehavior('no-focus-change')` is called in the same microtask the picker
+resolves in (a later call throws and the focus change goes ahead): only for a `browser` or `window` surface (from the
+track's `getSettings().displaySurface`, or always when the browser does not say), never throwing (a refusal is
+swallowed; the share goes on). Without one (Firefox, Safari) the options carry no `controller` and the two hints are
+ignored by the browser. A switch keeps the track, so its constraints (the 1080p cap), its `contentHint` and its
+sender's encoding carry over; the track only changes size.
+
 **Local preview** (`lib/calls/local-preview.ts`, in the canvas chunk, never the call's): `LocalPreview` captures the
-camera (`getUserMedia` at `CAMERA_CONSTRAINTS`) or a screen (`getDisplayMedia` at `SCREEN_CONSTRAINTS`, `contentHint`
+camera (`getUserMedia` at `CAMERA_CONSTRAINTS`) or a screen (`pickScreen`, as the call does, `contentHint`
 `detail`, stopped on `ended`) with no call, shows it as your own media and keeps `previewCamera` / `previewScreen`.
 A stop while capture is pending cancels it (a generation count). `take(kind)` hands a stream over without stopping it.
 The constraints live in `lib/calls/media-constraints.ts` (re-exported by `call-config.ts`), so the preview pulls no

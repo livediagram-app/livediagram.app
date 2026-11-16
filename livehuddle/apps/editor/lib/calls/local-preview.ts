@@ -5,7 +5,8 @@
 import { useSyncExternalStore } from 'react';
 import { callSelf, onCallSelf, SELF_MEDIA_ID, setCallMedia, setCallSelf } from './calls-store';
 import type { CallMedia, CallSelf } from './calls-store';
-import { CAMERA_CONSTRAINTS, SCREEN_CONSTRAINTS } from './media-constraints';
+import { CAMERA_CONSTRAINTS } from './media-constraints';
+import { pickScreen } from './screen-picker';
 
 export type PreviewKind = 'camera' | 'screen';
 
@@ -126,7 +127,8 @@ export class LocalPreview {
     const getDisplayMedia =
       this.capture.getDisplayMedia ??
       ((o: DisplayMediaStreamOptions) => navigator.mediaDevices.getDisplayMedia(o));
-    return getDisplayMedia(SCREEN_CONSTRAINTS);
+    // The same picker hints and focus as the call's (screen-picker.ts).
+    return pickScreen(getDisplayMedia);
   }
 }
 

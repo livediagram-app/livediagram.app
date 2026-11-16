@@ -11,11 +11,11 @@ import { callSelf, SELF_MEDIA_ID, setCallMedia, setCallSelf } from './calls-stor
 import {
   CAMERA_CONSTRAINTS,
   CAMERA_ENCODINGS,
-  SCREEN_CONSTRAINTS,
   SCREEN_ENCODINGS,
   userMediaOf,
   type ProximityCallInput,
 } from './call-config';
+import { pickScreen } from './screen-picker';
 import type { SfuSession } from './sfu-session';
 
 /** What the camera and the screen need of their call. */
@@ -144,7 +144,8 @@ export class CallVideo {
       ((o: DisplayMediaStreamOptions) => navigator.mediaDevices.getDisplayMedia(o));
     let stream: MediaStream;
     try {
-      stream = await getDisplayMedia(SCREEN_CONSTRAINTS);
+      // The picker hints and Conditional Focus, as the local preview opens it (screen-picker.ts).
+      stream = await pickScreen(getDisplayMedia);
     } catch {
       // Cancelled in the browser's picker, or refused: back to off, never an error.
       if (!this.host.stopped()) setCallSelf({ screen: 'off' });

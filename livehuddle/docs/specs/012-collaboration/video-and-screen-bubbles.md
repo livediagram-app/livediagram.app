@@ -24,7 +24,8 @@ On top of earshot, a bubble is received only while it can be seen:
   centred where the screen's middle is, never anchored at its top-left corner (a bug until 2026-11-06 left everyone to
   your right and below you unreceived when zoomed in).
 - **A hidden tab receives none.** While the page is hidden (another browser tab, a minimised window), every video and
-  screen subscription closes; voices carry on. Coming back opens them again. [The mini
+  screen subscription closes; voices carry on. Coming back opens them again. Sharing a tab or a window never hides
+  the page by itself: the picker keeps you on livehuddle ([The screen share](#the-screen-share-318)). [The mini
   view](../008-canvas/avatar-mode.md#the-mini-view) keeps the people in sight meanwhile, without video: it changes
   nothing here.
 - **At most 6 camera bubbles at once**, the nearest. Further cameras in earshot show their character only.
@@ -64,6 +65,20 @@ waits for it.
 
 - **Share Screen** sits beside the camera, for an **Editor** only ([Share roles](#share-roles)). It opens the
   browser's own picker (`getDisplayMedia`): a screen, a window or a tab.
+- **The picker hints come first** (#953), the same for the call's picker and the [local preview](#local-preview)'s,
+  so you never lose sight of the room while you present:
+  - **livehuddle's own tab is left out of the picker** (`selfBrowserSurface: 'exclude'`), so a share can never send
+    the room back into itself (a hall of mirrors that grows each time a bubble shows the share).
+  - **You stay on livehuddle** after picking a tab or a window (Conditional Focus: a `CaptureController` asks for
+    `no-focus-change` the moment the picker resolves; owner, 2026-11-15: "the presenter stays on livehuddle for both
+    tab and window shares"). The page stays visible, so the hidden-tab rule above never closes your subscriptions:
+    you keep seeing everyone's cameras, the other share and the room. To look at what you share, switch to it as
+    usual (one more click than before). A whole screen changes no focus either way.
+  - **Share this tab instead** (`surfaceSwitching: 'include'`): the browser's sharing bar offers to switch to the
+    tab you are on, on the same track. Viewers' bubbles never drop or come back; the 1080p cap and the text tuning
+    below stay, because they belong to the track, not the tab.
+  - Chrome and Edge (109 and later) honour all three. Firefox and Safari have no `CaptureController` and ignore the
+    two options, so they share exactly as before, with no error.
 - Capped for cost and clarity: up to **1920×1080 at 5 to 15 frames a second**, tuned for text (`contentHint`
   `detail`), at most **1 Mbps**, one layer.
 - **While you share, the sharing controls join the Call dock** (owner, 2026-11-06: "When I am sharing my screen,
