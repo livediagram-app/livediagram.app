@@ -57,6 +57,17 @@ describe('display faces in templates', () => {
     expect(broken).toEqual([]);
   });
 
+  it('measures a face per letter, its space and punctuation, and knows no other face', () => {
+    expect(displayFaceMeasure(undefined, 400, 10)).toBeNull();
+    expect(displayFaceMeasure('inter', 400, 10)).toBeNull();
+    const regular = displayFaceMeasure('syne', 400, 100)!;
+    const bold = displayFaceMeasure('syne', 700, 100)!;
+    expect(bold('Tandem')).toBeGreaterThan(regular('Tandem'));
+    expect(regular('W')).toBeGreaterThan(regular('i'));
+    expect(regular('a b')).toBeGreaterThan(regular('ab'));
+    expect(regular('a!')).toBeGreaterThan(regular('a'));
+  });
+
   it('catches the wrap the estimate missed: Tandem in Syne Bold in a box too narrow for it', () => {
     const t = {
       id: 'x',
