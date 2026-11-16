@@ -906,3 +906,13 @@ export const LOOK_AND_FEEL: MetricStack = {
   headline: [THEMES_CHOSEN, CANVAS_STYLES_PICKED],
   seeAlso: { section: 'lookfeel', label: 'See Each Preset in Features › Look & Feel' },
 };
+
+// A live embed's frame going live (liveworkspace/docs/specs/004-index/live-embeds.md "Telemetry"): a file from
+// another app shown live inside this one, with the reader's own access. Never which file.
+export const LIVE_EMBEDS_SHOWN = chart(
+  'Canvas',
+  'Used',
+  'Live Embeds Shown',
+  'A file from another of our apps shown live and read-only inside a Live Embed, with the reader’s own access.',
+  { types: ['LiveEmbed'] },
+);
