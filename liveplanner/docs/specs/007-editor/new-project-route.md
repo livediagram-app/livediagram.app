@@ -82,7 +82,7 @@ A genuinely unknown address (a mistyped page, `/explorer/mine`, or a page an
 older build had) reaches the editor through the same slot. It names no
 project (`projectIdFromPath` reads no id off anything but
 `/project/<id>`) and carries no share link, so the editor shows the in-app
-`<NotFound>` card at once, titled **Page not found**
+`<NotFound>` card at once, titled **Page Not Found**
 ("There is no page at this address. Open a project from the Explorer or
 start fresh.") with its **Open Explorer** and **New Project** buttons, and asks
 the API for nothing. A project that is missing or not yours gets the same card
@@ -97,7 +97,7 @@ A mistyped or retired page never makes a new project.
 
 A plan its owner moved to Archived ([one-explorer.md "Archived"](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#archived))
 never opens. The index refuses its grant as `archived` (to its owner; anyone else hears it is missing, and gets
-**Plan not found**), or this browser holds it archived ([offline-mode.md "Archived in This Browser"](../006-project/offline-mode.md#archived-in-this-browser)).
+**Plan Not Found**), or this browser holds it archived ([offline-mode.md "Archived in This Browser"](../006-project/offline-mode.md#archived-in-this-browser)).
 Either way the editor shows the same card in place of the plan, titled **Plan Archived** ("This plan is archived, so it
 can't be opened or edited. Move it out of Archived with Change Folder to work on it again.") with a slate archive-box
 tile and no 404. **Change Folder** goes to `/explorer/archived?move=<id>`, where the Explorer opens Change Folder on

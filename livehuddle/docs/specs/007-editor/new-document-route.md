@@ -82,11 +82,11 @@ A genuinely unknown address (a mistyped page, `/explorer/mine`, or a page an
 older build had) reaches the editor through the same slot. It names no
 document (`documentIdFromPath` reads no id off anything but
 `/document/<id>`) and carries no share link, so the editor shows the in-app
-`<NotFound>` card at once, titled **Page not found**
+`<NotFound>` card at once, titled **Page Not Found**
 ("There is no page at this address. Open a document from the Explorer or
 start fresh.") with its **Open Explorer** and **New Space** buttons, and asks
 the API for nothing. A document that is missing or not yours gets the same card
-titled **Space not found**. The card stands alone under the app header, with
+titled **Space Not Found**. The card stands alone under the app header, with
 no Explorer panel beside it: its buttons are the way on (Open Explorer goes to
 `/explorer`, New Space to `/new`). An embed shows the card with New Space
 only, opening the app in a new tab. Only the editor's own empty route (`/document`,
@@ -98,7 +98,7 @@ Space with no word of what went wrong.
 
 A space its owner moved to Archived ([one-explorer.md "Archived"](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#archived))
 never opens. The index refuses its grant as `archived` (to its owner; anyone else hears it is missing, and gets
-**Space not found**), or this browser holds it archived ([offline-mode.md "Archived in This Browser"](../006-document/offline-mode.md#archived-in-this-browser)).
+**Space Not Found**), or this browser holds it archived ([offline-mode.md "Archived in This Browser"](../006-document/offline-mode.md#archived-in-this-browser)).
 Either way the editor shows the same card in place of the space, titled **Space Archived** ("This space is archived, so it
 can't be opened or edited. Move it out of Archived with Change Folder to work on it again.") with a slate archive-box
 tile and no 404. **Change Folder** goes to `/explorer/archived?move=<id>`, where the Explorer opens Change Folder on
@@ -174,7 +174,7 @@ knowing about when adding another.
 2. An Editor sees Start a Space in the middle of the canvas ([Template starts](start-diagramming.md));
    a Participant or Viewer the empty-canvas card ([The empty-canvas hint](#the-empty-canvas-hint)).
 
-### Space not found
+### Space Not Found
 
 1. URL is `/document/<id>` but the API returns 404.
 2. The not-found surface renders; its "Create new document" CTA navigates to `/new`.
