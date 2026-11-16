@@ -162,8 +162,9 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
   }
 
   if (documentNotFound) {
-    // An address that names no document is a missing page, not a missing document.
-    const page = !isEditorPath(window.location.pathname);
+    // An address that names no document is a missing page, not a missing document. An embed is never
+    // a missing page: its address is the embed route itself, not the editor path.
+    const page = appChrome && !isEditorPath(window.location.pathname);
     // Which card (new-document-route.md "Which not-found card"), never by whether the space exists: a
     // share code the api refused is a dead link, unknown, revoked or expired alike, and a signed-out
     // visitor is offered Sign In (never in a frame).

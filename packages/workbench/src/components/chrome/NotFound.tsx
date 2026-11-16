@@ -17,9 +17,13 @@ import {
   lucideGlyph,
 } from '@liveworkspace/ui';
 import { notFoundTitle, type NotFoundReason } from '../../lib/not-found-reason';
-import { lucideFolder } from '@liveworkspace/icons/lucide';
+import { lucideFolder, lucideLogIn, lucideUnlink } from '@liveworkspace/icons/lucide';
 
 const FolderIcon = lucideGlyph(lucideFolder, 16);
+// A share link that no longer opens anything: the tile's glyph, at the size and weight of the CircleXIcon it stands in for.
+const UnlinkIcon = lucideGlyph(lucideUnlink, 28);
+// The Sign In button's glyph, beside the Open Explorer folder.
+const SignInIcon = lucideGlyph(lucideLogIn, 16);
 
 // Lucide's archive box, drawn as the Explorer's Archived row draws it, so the card and the row read as one place.
 function ArchiveBoxIcon({ size = 24 }: { size?: number }) {
@@ -44,53 +48,6 @@ function ArchiveBoxIcon({ size = 24 }: { size?: number }) {
 }
 
 const capitalised = (word: string) => word.charAt(0).toUpperCase() + word.slice(1);
-
-// Lucide's unlink, for a share link that no longer opens anything.
-function UnlinkIcon({ size = 24 }: { size?: number }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.75}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <path d="m18.84 12.25 1.72-1.71h-.02a5.004 5.004 0 0 0-.12-7.07 5.006 5.006 0 0 0-6.95 0l-1.72 1.71" />
-      <path d="m5.17 11.75-1.71 1.71a5.004 5.004 0 0 0 .12 7.07 5.006 5.006 0 0 0 6.95 0l1.71-1.71" />
-      <path d="M8 2v3" />
-      <path d="M2 8h3" />
-      <path d="M16 19v3" />
-      <path d="M19 16h3" />
-    </svg>
-  );
-}
-
-// Lucide's log-in, on the Sign In button.
-function SignInIcon({ size = 16 }: { size?: number }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
-      <path d="m10 17 5-5-5-5" />
-      <path d="M15 12H3" />
-    </svg>
-  );
-}
 
 export type NotFoundProps = {
   // The product's word for what the address opens, in lower case and taking "a" ('design', 'plan'):

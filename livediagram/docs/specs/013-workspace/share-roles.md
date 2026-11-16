@@ -142,7 +142,7 @@ and moves stay with the owner and joined team members. No level grants any of th
   another link of the same level is still live; a newer link reaches them only if they open it. A visit recorded
   before links were recorded keeps the older rule (the oldest live link of its level and scope) until its next open.
 - **Losing access is explained, never silent.** A session open on a revoked pass leaves for the Explorer at
-  `/explorer?ended=revoked`, which shows a warning toast once ("The link you opened that canvas with was revoked, so
+  `/explorer?ended=revoked`, which shows a toast once ("The link you opened that canvas with was revoked, so
   it is no longer open to you.") and drops the parameter from the address. The reason rides in the address because
   the Explorer is liveworkspace's page (liveworkspace/docs/specs/010-site/site.md "Addresses handed over"): a note in
   this app's `sessionStorage` was never read there, lingered for its minute and could explain a later, unrelated
