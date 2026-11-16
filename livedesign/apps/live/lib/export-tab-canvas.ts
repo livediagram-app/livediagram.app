@@ -19,6 +19,7 @@ import {
   canvasSurface,
   boxedNeedsSvgRaster,
   contentBounds,
+  describeBoxedExport,
   EXPORT_BG,
   EXPORT_PADDING,
   r2,
@@ -40,6 +41,13 @@ import { paintMotionFrame } from './page-motion-canvas';
 import { embeddedFontFaceCss } from './export-fonts';
 import { expandForExport } from './component-registry';
 import { backgroundPatternDefs, type ImageExportOpts } from './export-tab-parts';
+import {
+  boundsWithInk,
+  inkProbeMargin,
+  inkRasterPad,
+  measureInk,
+  type InkRect,
+} from './export-ink-bounds';
 
 // Rasterise an SVG string to an Image (for drawing the pattern onto the PNG /
 // PDF canvas). Browser-only; the canvas renderer is never reached in non-DOM
@@ -64,6 +72,18 @@ const renderedScale = new WeakMap<HTMLCanvasElement, number>();
 /** The scale `renderTabToCanvas` drew this canvas at (CSS px x scale = pixels); 1 if unknown. */
 export function renderedExportScale(canvas: HTMLCanvasElement): number {
   return renderedScale.get(canvas) ?? 1;
+}
+
+// A rasterised element's pad round its box: 2 px for stroke overflow, the rotated bounding box's sweep when it is
+// turned (svgBoxed bakes the rotation into the markup), and a shadow's offset + blur
+// (docs/specs/008-canvas/element-shadows.md), whose filter def the fragment inlines.
+function rasterBasePad(el: BoxedElement): number {
+  const diag = Math.hypot(el.width, el.height);
+  const shadow = supportsShadow(el) && el.shadow ? el.shadow : undefined;
+  const shadowPad = shadow
+    ? Math.max(Math.abs(shadow.offsetX), Math.abs(shadow.offsetY)) + shadow.blur
+    : 0;
+  return (el.rotation ? (diag - Math.min(el.width, el.height)) / 2 + 2 : 2) + shadowPad;
 }
 
 export async function renderTabToCanvas(
@@ -105,15 +125,73 @@ export async function renderTabToCanvas(
   const labels = arrowLabelPass(tab.elements, {
     fontFamilyOf: (a) => arrowLabelFontStack(a, tab.font, tab.finish),
   });
-  const bounds = frame ? frame.bounds : contentBounds(els, labels, tab.elements);
+  const boxBounds = frame ? frame.bounds : contentBounds(els, labels, tab.elements);
   const pad = frame ? 0 : (opts.padding ?? EXPORT_PADDING);
+  const canvas = document.createElement('canvas');
+  // No 2D context (a non-DOM test run): the canvas is only sized, nothing is drawn or measured.
+  const ctx = canvas.getContext('2d');
+  // Background colour, painted across the whole canvas; the pattern (if on) sits over it.
+  const bgColor = tab.backgroundColor ?? EXPORT_BG;
+  // Elements that carry no colours of their own are drawn in the ink of the
+  // paper being exported onto (docs/specs/007-editor/live-app.md), so a dark canvas exports dark-canvas
+  // elements rather than pale ones.
+  const surface = frame ? frame.surface : (opts.surface ?? canvasSurface(bgColor));
+  // The tab default face (docs/specs/004-interface-design/fonts.md) every element without its own inherits.
+  const tabFont = tab.font;
+  // Webfont bytes for the faces in play. A rasterised fragment is loaded as
+  // an <img>, which blocks external resources outright, so a marker note
+  // would come back in the fallback face unless the font travels INSIDE the
+  // markup. Fetched once here and inlined into every fragment below.
+  const fontCss = ctx
+    ? (opts.fontCss ?? (await embeddedFontFaceCss(exportFontIds(els, tab.font, tab.finish))))
+    : '';
+  // The canvas drawers paint through the DOM's own font set, so wait for it
+  // to settle: rasterising mid-swap bakes the fallback face into the PNG.
+  if (ctx) await document.fonts?.ready;
+  const fontDefs = fontCss ? `<defs><style type="text/css">${fontCss}</style></defs>` : '';
+  // Elements the canvas drawers can't reproduce (tables, freehand, shape
+  // silhouettes, rotation, icon glyphs: boxedNeedsSvgRaster) rasterise via
+  // the SAME svg markup the SVG export emits, so the PNG/PDF output can't
+  // drift from it.
+  const rastered = ctx
+    ? els.filter(
+        (el): el is BoxedElement =>
+          el.type !== 'arrow' &&
+          isBoxed(el) &&
+          boxedNeedsSvgRaster(el, resolveIconArtLoaded, resolveStickerArtLoaded, tab.finish),
+      )
+    : [];
+  // A text's ink can reach past its box (docs/specs/020-import-export/export-fidelity.md "Ink past a text's box is
+  // kept"): each rasterised text is measured once at 1x, its raster padded by the ink past its box, and an export
+  // cut to its content grows to take that ink in.
+  const inkPads = new Map<string, number>();
+  const inks: InkRect[] = [];
+  const probe = document.createElement('canvas');
+  for (const el of rastered) {
+    if (el.type !== 'text') continue;
+    const basePad = rasterBasePad(el);
+    const size = describeBoxedExport(el, { tabFont, surface }).label?.size ?? 0;
+    const margin = basePad + inkProbeMargin(size);
+    const area = {
+      x: el.x - margin,
+      y: el.y - margin,
+      w: el.width + margin * 2,
+      h: el.height + margin * 2,
+    };
+    const ink = await measureInk(fragment(el, margin, 1), area, svgToImage, probe);
+    if (!ink) continue;
+    inks.push(ink);
+    const inkPad = inkRasterPad(el, ink, basePad);
+    if (inkPad > basePad) inkPads.set(el.id, inkPad);
+  }
+  // A page's edge is the picture's edge; only an export cut to its content grows.
+  const bounds = frame || inks.length === 0 ? boxBounds : boundsWithInk(boxBounds, inks);
   const draw = bounds;
   // 2x for crisp output, lowered so no side passes the largest canvas every browser draws (a Fit to
   // Content page reaches 19200 px, docs/specs/007-editor/pages-mode.md "Sizes").
   const scale = exportScale(opts.scale ?? 2, draw.w + pad * 2, draw.h + pad * 2);
   const w = (draw.w + pad * 2) * scale;
   const h = (draw.h + pad * 2) * scale;
-  const canvas = document.createElement('canvas');
   // A part pixel rounds up, so an element cut to its own box (Inspect's export, 360.5 x 55.9) keeps its last row
   // and column; a hair under a whole one (float noise) stays whole, and no side passes the canvas limit.
   const pixels = (n: number) =>
@@ -121,15 +199,8 @@ export async function renderTabToCanvas(
   canvas.width = pixels(w);
   canvas.height = pixels(h);
   renderedScale.set(canvas, scale);
-  const ctx = canvas.getContext('2d');
   if (!ctx) return canvas;
   ctx.scale(scale, scale);
-  // Background colour, painted across the whole canvas; the pattern (if on) sits over it.
-  const bgColor = tab.backgroundColor ?? EXPORT_BG;
-  // Elements that carry no colours of their own are drawn in the ink of the
-  // paper being exported onto (docs/specs/007-editor/live-app.md), so a dark canvas exports dark-canvas
-  // elements rather than pale ones.
-  const surface = frame ? frame.surface : (opts.surface ?? canvasSurface(bgColor));
   // The paper under the content: a hollow arrowhead is filled with it, as on the canvas.
   const paper = frame ? EXPORT_PAPER : bgColor;
   ctx.fillStyle = paper;
@@ -186,61 +257,14 @@ export async function renderTabToCanvas(
   // `ordered` keeps frame sections behind their contents
   // (docs/specs/008-canvas/canvas-and-palette.md).
   const resolveImage = opts.images ? (id: string) => opts.images!.get(id)?.image : undefined;
-  // Elements the canvas drawers can't reproduce (tables, freehand, shape
-  // silhouettes, rotation, icon glyphs: boxedNeedsSvgRaster) rasterise via
-  // the SAME svg markup the SVG export emits, so the PNG/PDF output can't
-  // drift from it. Pre-rendered async here (the draw loop below stays
-  // sync), padded for stroke overflow, and for the rotated bounding box
-  // when the element carries a rotation, since svgBoxed bakes the rotation
-  // into the markup and it sweeps outside the unrotated box. A failed
-  // rasterise falls back to drawBoxed's plain box.
-  // The tab default face (docs/specs/004-interface-design/fonts.md) every element without its own inherits.
-  const tabFont = tab.font;
-  // Webfont bytes for the faces in play. A rasterised fragment is loaded as
-  // an <img>, which blocks external resources outright, so a marker note
-  // would come back in the fallback face unless the font travels INSIDE the
-  // markup. Fetched once here and inlined into every fragment below.
-  const fontCss =
-    opts.fontCss ?? (await embeddedFontFaceCss(exportFontIds(els, tab.font, tab.finish)));
-  // The canvas drawers paint through the DOM's own font set, so wait for it
-  // to settle: rasterising mid-swap bakes the fallback face into the PNG.
-  await document.fonts?.ready;
-  const fontDefs = fontCss ? `<defs><style type="text/css">${fontCss}</style></defs>` : '';
+  // The rasterised elements, pre-rendered async here (the draw loop below
+  // stays sync) with their pad (rasterBasePad, or the measured ink's). A
+  // failed rasterise falls back to drawBoxed's plain box.
   const rasterImages = new Map<string, { image: HTMLImageElement; pad: number }>();
-  for (const el of els) {
-    if (el.type === 'arrow' || !isBoxed(el)) continue;
-    if (!boxedNeedsSvgRaster(el, resolveIconArtLoaded, resolveStickerArtLoaded, tab.finish))
-      continue;
-    const diag = Math.hypot(el.width, el.height);
-    // A shadow sweeps outside the box by its offset + blur (docs/specs/008-canvas/element-shadows.md);
-    // grow the raster pad so it isn't clipped, and inline its filter
-    // def (the fragment has no design <defs> to resolve against).
-    const shadow = supportsShadow(el) && el.shadow ? el.shadow : undefined;
-    const shadowPad = shadow
-      ? Math.max(Math.abs(shadow.offsetX), Math.abs(shadow.offsetY)) + shadow.blur
-      : 0;
-    const pad = (el.rotation ? (diag - Math.min(el.width, el.height)) / 2 + 2 : 2) + shadowPad;
-    const w = el.width + pad * 2;
-    const h = el.height + pad * 2;
-    const svg =
-      `<svg xmlns="http://www.w3.org/2000/svg" width="${r2(w * scale)}" height="${r2(h * scale)}"` +
-      ` viewBox="${r2(el.x - pad)} ${r2(el.y - pad)} ${r2(w)} ${r2(h)}">` +
-      `${fontDefs}${svgShadowDefs([el])}${svgBoxed(el, {
-        resolveIconArt: resolveIconArtLoaded,
-        resolveStickerArt: resolveStickerArtLoaded,
-        // An image drawn this way (a shadow, a turn, an accent edge, a finish) embeds its bytes
-        // like the SVG export, not the empty-image placeholder.
-        resolveImageHref: (id) => opts.images?.get(id)?.href,
-        tabFont,
-        tabFinish: tab.finish,
-        sketchBackdrop: backdrops.has(el.id),
-        surface,
-        tagColours,
-        ...chartInk,
-        resolveTabWindow: opts.resolveTabWindow,
-      })}</svg>`;
+  for (const el of rastered) {
+    const pad = inkPads.get(el.id) ?? rasterBasePad(el);
     try {
-      rasterImages.set(el.id, { image: await svgToImage(svg), pad });
+      rasterImages.set(el.id, { image: await svgToImage(fragment(el, pad, scale)), pad });
     } catch {
       // Fall through to drawBoxed's plain box below.
     }
@@ -328,6 +352,31 @@ export async function renderTabToCanvas(
     }
   }
   return canvas;
+
+  // One element's SVG markup, the SAME the SVG export emits, over its box grown by `pad` each side, `at` pixels
+  // per canvas px.
+  function fragment(el: BoxedElement, pad: number, at: number): string {
+    const w = el.width + pad * 2;
+    const h = el.height + pad * 2;
+    return (
+      `<svg xmlns="http://www.w3.org/2000/svg" width="${r2(w * at)}" height="${r2(h * at)}"` +
+      ` viewBox="${r2(el.x - pad)} ${r2(el.y - pad)} ${r2(w)} ${r2(h)}">` +
+      `${fontDefs}${svgShadowDefs([el])}${svgBoxed(el, {
+        resolveIconArt: resolveIconArtLoaded,
+        resolveStickerArt: resolveStickerArtLoaded,
+        // An image drawn this way (a shadow, a turn, an accent edge, a finish) embeds its bytes
+        // like the SVG export, not the empty-image placeholder.
+        resolveImageHref: (id) => opts.images?.get(id)?.href,
+        tabFont,
+        tabFinish: tab.finish,
+        sketchBackdrop: backdrops.has(el.id),
+        surface,
+        tagColours,
+        ...chartInk,
+        resolveTabWindow: opts.resolveTabWindow,
+      })}</svg>`
+    );
+  }
 
   function drawOne(c: CanvasRenderingContext2D, el: BoxedElement, alpha: number) {
     const raster = rasterImages.get(el.id);

@@ -8,11 +8,12 @@ import { useMemo } from 'react';
 import type { Element } from '@livedesign/design';
 import { deriveCanvasSelection } from '@/lib/canvas-selection';
 import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
+import { useImageCropId } from '@liveworkspace/workbench/lib/image-crop-store';
 import { usePreviewedElements } from './usePreviewedElements';
 
 export type CanvasSelectionInput = Omit<
   Parameters<typeof deriveCanvasSelection>[0],
-  'selectedId' | 'multiSelectedIds'
+  'selectedId' | 'multiSelectedIds' | 'cropping'
 >;
 
 type CanvasSelectionView = ReturnType<typeof deriveCanvasSelection>;
@@ -27,6 +28,7 @@ const derived = new WeakMap<
     input: CanvasSelectionInput;
     selectedId: string | null;
     multiSelectedIds: ReadonlySet<string>;
+    cropping: boolean;
     view: CanvasSelectionView;
   }
 >();
@@ -36,17 +38,25 @@ export function sharedCanvasSelection(
   elements: Element[],
   selectedId: string | null,
   multiSelectedIds: ReadonlySet<string>,
+  cropping = false,
 ): CanvasSelectionView {
   const last = derived.get(elements);
   if (
     last &&
     last.input === input &&
     last.selectedId === selectedId &&
-    last.multiSelectedIds === multiSelectedIds
+    last.multiSelectedIds === multiSelectedIds &&
+    last.cropping === cropping
   )
     return last.view;
-  const view = deriveCanvasSelection({ ...input, elements, selectedId, multiSelectedIds });
-  derived.set(elements, { input, selectedId, multiSelectedIds, view });
+  const view = deriveCanvasSelection({
+    ...input,
+    elements,
+    selectedId,
+    multiSelectedIds,
+    cropping,
+  });
+  derived.set(elements, { input, selectedId, multiSelectedIds, cropping, view });
   return view;
 }
 
@@ -59,8 +69,11 @@ export function useCanvasSelectionView(
 ): CanvasSelectionView {
   const { selectedId, multiSelectedIds } = useSelectionOf(whole);
   const elements = usePreviewedElements(input.elements, tabId);
+  // An image being cropped stands the selection toolbar and the pluses down
+  // (docs/specs/009-elements/picture-crop-and-mask.md "Cropping in the editor").
+  const cropping = useImageCropId() !== null;
   return useMemo(
-    () => sharedCanvasSelection(input, elements, selectedId, multiSelectedIds),
-    [input, elements, selectedId, multiSelectedIds],
+    () => sharedCanvasSelection(input, elements, selectedId, multiSelectedIds, cropping),
+    [input, elements, selectedId, multiSelectedIds, cropping],
   );
 }

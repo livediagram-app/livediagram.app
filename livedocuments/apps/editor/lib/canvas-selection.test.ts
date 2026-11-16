@@ -283,6 +283,35 @@ describe('deriveCanvasSelection — popover yields to an open context menu', () 
   });
 });
 
+// docs/specs/009-elements/picture-crop-and-mask.md "Cropping in the editor": the crop's handles and bar own the
+// moment, so the selection toolbar and the quick-add pluses stand down while an image is cropped.
+describe('deriveCanvasSelection — the selection chrome yields to a crop', () => {
+  // A picture here takes no pluses of its own (takesQuickConnect), so a box stands in to show they stand down.
+  const pic = {
+    id: 'p',
+    type: 'shape',
+    shape: 'square',
+    x: 0,
+    y: 0,
+    width: 200,
+    height: 120,
+  } as unknown as Element;
+
+  it('hides the toolbar and the pluses while cropping', () => {
+    const s = derive({ elements: [pic], selectedId: 'p', cropping: true });
+    expect(s.showPopover).toBe(false);
+    expect(s.showPlus).toBe(false);
+    // The selection itself is kept, for the crop to work on.
+    expect(s.selected?.id).toBe('p');
+  });
+
+  it('brings them back once cropping ends', () => {
+    const s = derive({ elements: [pic], selectedId: 'p', cropping: false });
+    expect(s.showPopover).toBe(true);
+    expect(s.showPlus).toBe(true);
+  });
+});
+
 // An arrow's label belongs to its line (docs/specs/008-canvas/arrow-labels.md), so the
 // floating toolbars treat it as part of the arrow and never float over it.
 describe('deriveCanvasSelection — an arrow label is part of its arrow', () => {

@@ -102,13 +102,20 @@ export function ImageCropOverlay({
     setSession((s) => panPicture(s, dx, dy)),
   );
 
-  // Enter applies, Escape cancels, the arrows nudge the picture; a press anywhere off the picture and the bar applies.
+  // Enter applies, Escape cancels, an undo or redo cancels, the arrows nudge the picture; a press anywhere off the
+  // picture and the bar applies.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape' || e.key === 'Enter') {
         e.preventDefault();
         e.stopPropagation();
         finishEvent(e.key === 'Enter');
+        return;
+      }
+      // An undo or redo ends the crop with no change and is left to run as usual.
+      const key = e.key.toLowerCase();
+      if ((e.ctrlKey || e.metaKey) && (key === 'z' || key === 'y')) {
+        finishEvent(false);
         return;
       }
       const step = e.shiftKey ? 10 : 1;
