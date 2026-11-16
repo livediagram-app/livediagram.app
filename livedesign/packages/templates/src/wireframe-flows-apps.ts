@@ -61,8 +61,22 @@ export const APP_FLOWS: Partial<Record<WireframeFlowKind, WireframeFlow>> = {
       {
         name: 'Discover',
         layout: 'wf-home-feed',
-        copy: { Following: 'Messages' },
-        links: { Messages: 'Messages', 'icon:user': 'Profile' },
+        copy: {
+          Following: 'Messages',
+          Design: 'Hikes',
+          Music: 'Cities',
+          'Weekend in the Hills': 'Three Days in Porto',
+          'A Slower Morning': 'Lisbon by Tram',
+          'City Food Guide': 'Night Markets of Taipei',
+          'Notes on Design': 'Walking the Dolomites',
+          '12 min · Saved by 1.2k people': [
+            '8 min · Saved by 940 people',
+            '5 min · Saved by 2.1k people',
+            '11 min · Saved by 610 people',
+            '14 min · Saved by 3.4k people',
+          ],
+        },
+        links: { Messages: 'Messages', 'icon:user': 'Profile', 'Three Days in Porto': 'Messages' },
       },
       { name: 'Messages', layout: 'wf-chat', links: BACK_ARROW },
       {
@@ -202,7 +216,9 @@ export const APP_FLOWS: Partial<Record<WireframeFlowKind, WireframeFlow>> = {
           'Search places': 'Search Lisbon',
           'Corner Coffee': 'Time Out Market',
           '★ 4.7 · Café · 0.3 mi · Open until 6 pm': '★ 4.6 · Food hall · 0.4 km · Open late',
+          Call: 'My Trip',
         },
+        links: { 'My Trip': 'Boarding Pass', 'Search Lisbon': 'Search' },
       },
     ],
   },
@@ -214,6 +230,7 @@ export const APP_FLOWS: Partial<Record<WireframeFlowKind, WireframeFlow>> = {
       {
         name: 'Sign In',
         layout: 'wf-sign-in',
+        copy: { 'Welcome Back': 'Ready to Ride?' },
         links: { 'Sign In': 'Where To', 'Continue with Google': 'Where To' },
       },
       {
@@ -260,6 +277,7 @@ export const APP_FLOWS: Partial<Record<WireframeFlowKind, WireframeFlow>> = {
           'replied to your comment.': 'Your first ride is on us.',
           Inbox: 'Trips',
         },
+        links: { Home: 'Where To', Trips: 'Your Ride', 'Sam is here': 'Your Ride' },
       },
     ],
   },
@@ -326,7 +344,18 @@ export const APP_FLOWS: Partial<Record<WireframeFlowKind, WireframeFlow>> = {
       },
       { name: 'Verify', layout: 'wf-verify-code', links: { ...BACK_ARROW, Verify: 'Permissions' } },
       { name: 'Permissions', layout: 'wf-permissions', links: { Continue: 'Get Started' } },
-      { name: 'Get Started', layout: 'wf-empty-state' },
+      {
+        name: 'Get Started',
+        layout: 'wf-empty-state',
+        copy: {
+          Projects: 'This Week',
+          'Nothing Here Yet': 'Your Week Is Clear',
+          'Projects you create will show up here.': 'Add a plan and Planwell finds it a time.',
+          'Create a Project': 'Plan Something',
+        },
+        // Planning something starts the tour again; Profile goes back to what the app may use.
+        links: { 'Plan Something': 'Welcome', Profile: 'Permissions' },
+      },
     ],
   },
   // A video app on a tablet: find something, then watch it.
@@ -438,6 +467,15 @@ export const APP_FLOWS: Partial<Record<WireframeFlowKind, WireframeFlow>> = {
       {
         name: 'Profile',
         layout: 'wf-profile',
+        copy: {
+          '@jordan · Product designer': 'Member since March 2024',
+          '248': '14',
+          Posts: 'Orders',
+          '12.4k': '3',
+          Followers: 'Addresses',
+          '310': '2',
+          Following: 'Cards',
+        },
         links: { 'Edit Profile': 'Edit Profile', 'icon:settings': 'Settings' },
       },
       { name: 'Edit Profile', layout: 'wf-edit-profile', links: { Cancel: BACK, Save: 'Profile' } },

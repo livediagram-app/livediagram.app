@@ -25,6 +25,15 @@ import { buildTemplateTab } from './template-tab';
 const KINDS = Object.keys(WIREFRAME_FLOWS) as WireframeFlowKind[];
 const labelOf = (el: Element) => (el as { label?: string }).label;
 const linkOf = (el: Element) => (el as { link?: ScreenLink }).link;
+// The interface's own phrases, which any app may say ("A flow's own words").
+const INTERFACE_PHRASES = new Set([
+  'Forgot Password?',
+  'Continue with Google',
+  'New here? Create Account',
+  'I agree to the Terms and Privacy Policy',
+  'Already have an account? Sign In',
+  'Didn’t get it? Resend in 0:42',
+]);
 const isBackArrow = (el: Element) =>
   el.type === 'shape' && el.shape === 'icon' && el.iconId === 'arrow-left';
 
@@ -102,6 +111,28 @@ describe('a flow’s links', () => {
     ).toEqual(pages.map((_, i) => i));
   });
 
+  it.each(KINDS)('%s: leaves no screen a dead end', (kind) => {
+    const dead = buildWireframeFlowScreens(kind)
+      .map((els, i) =>
+        els.some((el) => linkOf(el)) ? null : WIREFRAME_FLOWS[kind].screens[i]!.name,
+      )
+      .filter(Boolean);
+    expect(dead, kind).toEqual([]);
+  });
+
+  it('links every Project Tool screen to every other', () => {
+    const flow = WIREFRAME_FLOWS['wireframe-project-tool'];
+    buildWireframeFlowScreens('wireframe-project-tool').forEach((els, i) => {
+      const to = new Set(
+        els.flatMap((el) => {
+          const l = linkOf(el);
+          return l?.kind === 'page' ? [l.pageId] : [];
+        }),
+      );
+      expect(to.size, flow.screens[i]!.name).toBe(flow.screens.length - 1);
+    });
+  });
+
   it.each(KINDS)('%s: slides on a phone, tablet or watch and changes at once elsewhere', (kind) => {
     const slide = FLOW_SLIDE_DEVICES.has(WIREFRAME_FLOWS[kind].device);
     const links = buildWireframeFlowScreens(kind)
@@ -173,6 +204,47 @@ describe('a flow’s own words', () => {
     expect(words('wireframe-watch-music', 'Up Next')).not.toContain('Design Review');
     expect(words('wireframe-mobile-app', 'Product')).not.toContain('Product Name');
     expect(words('wireframe-music-app', 'Podcast')).not.toMatch(/Oct -/);
+  });
+
+  it('names a different product in every flow', () => {
+    const brands = KINDS.map((k) => WIREFRAME_FLOWS[k].brand).filter(Boolean);
+    expect(new Set(brands).size).toBe(brands.length);
+  });
+
+  // A screen's sentences (its longer words) and its words with the brand set aside, flow by flow.
+  const screens = KINDS.flatMap((kind) => {
+    const flow = WIREFRAME_FLOWS[kind];
+    return buildWireframeFlowScreens(kind).map((els, i) => {
+      const labels = els.map(labelOf).filter((l): l is string => !!l);
+      return {
+        kind,
+        at: `${kind} ${flow.screens[i]!.name}`,
+        layout: flow.screens[i]!.layout,
+        words: labels.map((l) => (flow.brand ? l.split(flow.brand).join('·') : l)).join('|'),
+        sentences: new Set(labels.filter((l) => l.length >= 16 && !INTERFACE_PHRASES.has(l))),
+      };
+    });
+  });
+  const pairs = screens.flatMap((a, i) =>
+    screens
+      .slice(i + 1)
+      .flatMap((b) => (a.kind !== b.kind && a.layout === b.layout ? [[a, b] as const] : [])),
+  );
+
+  it('reads no screen as another flow’s with the name swapped', () => {
+    const same = pairs.filter(([a, b]) => a.words === b.words).map(([a, b]) => `${a.at} = ${b.at}`);
+    expect(same).toEqual([]);
+  });
+
+  it('shares no more than half of a screen’s sentences with another flow’s', () => {
+    const close = pairs
+      .filter(([a, b]) => {
+        const n = Math.min(a.sentences.size, b.sentences.size);
+        const shared = [...a.sentences].filter((l) => b.sentences.has(l)).length;
+        return n >= 2 && shared * 2 > n;
+      })
+      .map(([a, b]) => `${a.at} ~ ${b.at}`);
+    expect(close).toEqual([]);
   });
 
   it('gives a repeated word the flow’s words in turn, the rest keeping the last, and the brand in place', () => {
