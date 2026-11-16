@@ -1,7 +1,8 @@
 // Accounts' workbench service ending a pairing's access (liveworkspace/docs/specs/011-workbench/workbench.md "Ending access"): it asks
 // here, with its merge key, to tell an app to close the rooms that pairing's sessions joined, since this Worker
 // already holds each app's key and origin. POST /internal/workbench-close {app, pairingId, itemIds} answers 200
-// {closed, unreached} once every app call has settled.
+// {closed, unreached} once every app call has settled. A revoked API token's rooms come the same way, naming
+// `tokenId` instead of `pairingId`: the app closes the sockets that token's room tickets opened.
 
 import { isApp } from '@liveworkspace/index-client';
 import { callApp, eachLimited } from './app-calls';
@@ -23,11 +24,18 @@ export async function handleWorkbenchClose(request: Request, env: Env): Promise<
   const body = await readObject(request);
   const app = body?.app;
   const pairingId = body?.pairingId;
+  const tokenId = body?.tokenId;
   const itemIds = body?.itemIds;
+  // One of the two, never both.
+  const who =
+    typeof pairingId === 'string' && PAIRING_ID.test(pairingId) && tokenId === undefined
+      ? { pairingId }
+      : typeof tokenId === 'string' && PAIRING_ID.test(tokenId) && pairingId === undefined
+        ? { tokenId }
+        : null;
   if (
     !isApp(app) ||
-    typeof pairingId !== 'string' ||
-    !PAIRING_ID.test(pairingId) ||
+    !who ||
     !Array.isArray(itemIds) ||
     itemIds.length > WORKBENCH_CLOSE_MAX_ITEMS ||
     !itemIds.every(isId)
@@ -42,7 +50,7 @@ export async function handleWorkbenchClose(request: Request, env: Env): Promise<
       app,
       'POST',
       `/items/${encodeURIComponent(itemId)}/workbench-close`,
-      { pairingId },
+      who,
     );
     if (!result.ok) unreached.push(itemId);
   });

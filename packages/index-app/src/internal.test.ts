@@ -98,6 +98,21 @@ describe('handleInternalItems', () => {
     expect((await send('POST', path('A'), { pairingId: 'p1' }, {})).status).toBe(404);
   });
 
+  it("closes a revoked token's sockets through the same door, naming the token", async () => {
+    const tokenClose = vi.fn(async (itemId: string) => itemId === 'A');
+    const path = (id: string) => `/api/internal/items/${id}/workbench-close`;
+    const ok = await send('POST', path('A'), { tokenId: 't1' }, { tokenClose });
+    expect(await ok.json()).toEqual({ ok: true });
+    expect(tokenClose).toHaveBeenCalledWith('A', 't1');
+    expect((await send('POST', path('B'), { tokenId: 't1' }, { tokenClose })).status).toBe(503);
+    expect((await send('POST', path('A'), { tokenId: '' }, { tokenClose })).status).toBe(400);
+    // An app that closes no token's sockets, and one that closes no pairing's.
+    const workbenchClose = vi.fn(async () => true);
+    expect((await send('POST', path('A'), { tokenId: 't1' }, { workbenchClose })).status).toBe(404);
+    expect((await send('POST', path('A'), { pairingId: 'p1' }, { tokenClose })).status).toBe(404);
+    expect(workbenchClose).not.toHaveBeenCalled();
+  });
+
   it('takes a notice at once and works it out off the path', async () => {
     const pending: Promise<unknown>[] = [];
     const notice = vi.fn(async () => {});

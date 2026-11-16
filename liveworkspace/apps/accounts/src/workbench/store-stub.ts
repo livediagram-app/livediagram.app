@@ -19,6 +19,7 @@ export type WorkbenchStoreApi = Pick<
   | 'readSession'
   | 'endSession'
   | 'noteSessionRoom'
+  | 'noteTokenRoom'
   | 'endAccess'
   | 'takeQuota'
   | 'close'

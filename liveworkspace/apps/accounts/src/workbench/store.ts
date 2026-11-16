@@ -29,6 +29,7 @@ import {
   WORKBENCH_SESSION_ROOMS_MAX,
   WORKBENCH_SESSION_SECRET_BYTES,
   WORKBENCH_TICKET_BYTES,
+  WORKBENCH_TOKEN_ROOMS_MAX,
   type WorkbenchEndReason,
   type WorkbenchEndTarget,
   type WorkbenchLevel,
@@ -43,12 +44,13 @@ import {
   PAIRING_COLUMNS,
   type Row,
   SCHEMA,
+  TOKEN_ROOMS_SCHEMA,
   toConsumedTicket,
   toPairing,
   toPairingRequest,
   toSessionRead,
 } from './store-schema.ts';
-import { roomsOfEndedAccess } from './store-ended-access.ts';
+import { roomsOfEndedAccess, tokenRoomsToClose } from './store-ended-access.ts';
 import {
   checkQuotaInput,
   hasRows,
@@ -97,13 +99,19 @@ export class WorkbenchCore {
     this.#ready =
       this.#rows("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'wb_pairings'")
         .length > 0;
+    // A store made before a token's rooms were kept takes their table now, once per instance.
+    if (this.#ready) this.#exec(TOKEN_ROOMS_SCHEMA);
     return this.#ready;
+  }
+
+  #exec(schema: string): void {
+    for (const statement of schema.split(';')) if (statement.trim()) this.#sql.exec(statement);
   }
 
   // Makes the tables on the store's first write, noting whose store it is.
   #ensure(personId: string): void {
     if (!this.#started()) {
-      for (const statement of SCHEMA.split(';')) if (statement.trim()) this.#sql.exec(statement);
+      this.#exec(SCHEMA);
       this.#ready = true;
     }
     if (this.#person === null) {
@@ -364,6 +372,39 @@ export class WorkbenchCore {
     return true;
   }
 
+  // An API token's room ticket opened an item's room of this app until `until` (its grant's lapse): noted, or moved
+  // on, so revoking the token closes it (workbench.md "A token's rooms"). At most WORKBENCH_TOKEN_ROOMS_MAX per token;
+  // a note past it is dropped, and that room's sockets lapse with their ticket. Answers whether it is kept.
+  async noteTokenRoom(input: {
+    personId: string;
+    tokenId: string;
+    app: string;
+    itemId: string;
+    until: number;
+  }): Promise<boolean> {
+    const { personId, tokenId, app, itemId, until } = input;
+    this.#ensure(personId);
+    const kept = this.#rows(
+      `INSERT INTO wb_token_rooms (token_id, app, item_id, until)
+       SELECT ?, ?, ?, ?
+        WHERE EXISTS (SELECT 1 FROM wb_token_rooms WHERE token_id = ? AND app = ? AND item_id = ?)
+           OR (SELECT COUNT(*) FROM wb_token_rooms WHERE token_id = ?) < ?
+       ON CONFLICT (token_id, app, item_id) DO UPDATE SET until = MAX(until, excluded.until)
+       RETURNING 1`,
+      tokenId,
+      app,
+      itemId,
+      until,
+      tokenId,
+      app,
+      itemId,
+      tokenId,
+      WORKBENCH_TOKEN_ROOMS_MAX,
+    );
+    await this.#schedule();
+    return kept.length > 0;
+  }
+
   // ----- Ending access -----
 
   // Removes the pairings (and with a token, its requests), then answers the rooms their sessions had open, for the
@@ -387,10 +428,20 @@ export class WorkbenchCore {
         WHERE s.pairing_id IN (${ofTarget})`,
       key,
     );
+    // A revoked token's own rooms: those its room tickets opened (its live views), whatever pairing it has.
+    const tokenRooms = byToken
+      ? this.#rows('SELECT app, item_id FROM wb_token_rooms WHERE token_id = ?', key)
+      : [];
     this.#sql.exec(`DELETE FROM wb_pairings WHERE ${column} = ?`, key);
-    if (byToken) this.#sql.exec('DELETE FROM wb_pairing_requests WHERE token_id = ?', key);
+    if (byToken) {
+      this.#sql.exec('DELETE FROM wb_pairing_requests WHERE token_id = ?', key);
+      this.#sql.exec('DELETE FROM wb_token_rooms WHERE token_id = ?', key);
+    }
 
-    const rooms = roomsOfEndedAccess(pairings, sessions, joined, reason);
+    const rooms = [
+      ...roomsOfEndedAccess(pairings, sessions, joined, reason),
+      ...(byToken ? tokenRoomsToClose(key, tokenRooms) : []),
+    ];
     await this.#settle();
     return { pairings: pairings.length, sessions: sessions.length, rooms };
   }

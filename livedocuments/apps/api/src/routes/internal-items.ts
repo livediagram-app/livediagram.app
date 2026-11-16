@@ -26,7 +26,7 @@ import { purgeDocumentPreviews } from '../db/documents';
 import { forgetImageRefs } from '../document-room/document-outbox';
 import { mediaClient, mediaOwner } from '../media';
 import { documentRoom } from '../document-client';
-import { closeWorkbenchSessions } from '../room-access-client';
+import { closeWorkbenchSessions, tellTrashed } from '../room-access-client';
 import { reportServerEvent } from '../server-telemetry';
 import { importDocumentFileFor } from './internal-file';
 import { indexAppClient } from '../index-service';
@@ -108,6 +108,12 @@ export function handleInternalItems(
         return documentRoom(env, payload.id).importMigrated(payload);
       },
       workbenchClose: (id, pairingId) => closeWorkbenchSessions(env, id, pairingId),
+      // Where the document stands after an archive, move, trash or restore (docs/specs/013-workspace/trash.md "Open
+      // editors"): trashed anywhere (the api, MCP delete_document, the Explorer), its room tells every editor and
+      // closes. Nothing is kept, so a restore reopens as before.
+      standing: async (id, standing) => {
+        if (standing.trashed) await tellTrashed(env, id, 'document-trashed');
+      },
       // The reverse of a connection made both ways (liveworkspace/docs/specs/004-index/connected-tabs.md): one
       // connected tab at the end of the document's tab bar.
       connectedTab: (id, write) => documentRoom(env, id).addConnectedTab(write),

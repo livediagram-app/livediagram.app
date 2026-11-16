@@ -125,6 +125,10 @@ export type InternalItemHandlers = {
   // A workbench pairing was unpaired, its token revoked or its account closed (liveworkspace/docs/specs/011-workbench/workbench.md
   // "Ending access"): close that pairing's sessions in the item's room. Answers whether the room was reached.
   workbenchClose?: (itemId: string, pairingId: string) => Promise<boolean>;
+  // An API token was revoked (liveworkspace/docs/specs/003-accounts/accounts.md "API tokens"): close the sockets its
+  // room tickets opened in the item's room (an MCP server's live view). The same door as workbenchClose, its body
+  // naming `tokenId` instead. Answers whether the room was reached.
+  tokenClose?: (itemId: string, tokenId: string) => Promise<boolean>;
   // Where the item stands at the index after an archive, move out, trash or restore (one-explorer-contracts.md "Where an
   // item stands"): the app stops work it does on its own clock for the item while it is put away. An app without it
   // answers 200 and does nothing; one that throws answers 503, which the index logs and drops.

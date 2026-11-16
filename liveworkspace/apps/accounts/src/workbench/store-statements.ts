@@ -7,6 +7,7 @@ import {
   type SqlExec,
   WORKBENCH_QUOTA_MAX,
   WORKBENCH_SESSION_GRACE_MS,
+  WORKBENCH_TOKEN_ROOM_GRACE_MS,
   type WorkbenchLevel,
   type WorkbenchPairingRow,
   type WorkbenchReach,
@@ -207,7 +208,14 @@ export function nextLapseOf(sql: SqlExec): number | null {
        UNION ALL SELECT MIN(until) FROM wb_quota)`,
     WORKBENCH_SESSION_GRACE_MS,
   );
-  return typeof row?.at === 'number' ? row.at : null;
+  // A token's rooms on their own: a compound SELECT holds at most five terms (D1's limit, kept here too).
+  const rooms = firstOf(
+    sql,
+    'SELECT MIN(until) + ? AS at FROM wb_token_rooms',
+    WORKBENCH_TOKEN_ROOM_GRACE_MS,
+  );
+  const lapses = [row?.at, rooms?.at].filter((at): at is number => typeof at === 'number');
+  return lapses.length > 0 ? Math.min(...lapses) : null;
 }
 
 // Whether the store holds any row at all; one left with none deletes itself.
@@ -217,12 +225,12 @@ export function hasRows(sql: SqlExec): boolean {
       sql,
       `SELECT 1 FROM wb_pairings UNION ALL SELECT 1 FROM wb_pairing_requests UNION ALL SELECT 1 FROM wb_tickets
        UNION ALL SELECT 1 FROM wb_sessions UNION ALL SELECT 1 FROM wb_quota LIMIT 1`,
-    ) !== null
+    ) !== null || firstOf(sql, 'SELECT 1 FROM wb_token_rooms LIMIT 1') !== null
   );
 }
 
 // What has lapsed: tickets and requests past their expiry, sessions past their grace, allowance uses past their
-// window. Answers how many rows went.
+// window, a token's rooms past their ticket's lapse and grace. Answers how many rows went.
 export function sweepLapsed(sql: SqlExec, now: number): number {
   let deleted = 0;
   const run = (query: string, ...bindings: unknown[]) => {
@@ -232,5 +240,6 @@ export function sweepLapsed(sql: SqlExec, now: number): number {
   run('DELETE FROM wb_pairing_requests WHERE expires_at <= ?', now);
   run('DELETE FROM wb_sessions WHERE expires_at <= ?', now - WORKBENCH_SESSION_GRACE_MS);
   run('DELETE FROM wb_quota WHERE until <= ?', now);
+  run('DELETE FROM wb_token_rooms WHERE until <= ?', now - WORKBENCH_TOKEN_ROOM_GRACE_MS);
   return deleted;
 }

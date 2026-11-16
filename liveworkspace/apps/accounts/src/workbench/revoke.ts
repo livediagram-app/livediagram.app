@@ -47,7 +47,8 @@ export async function tokenBySecret(
     .first<{ id: string; userId: string }>();
 }
 
-// A token was revoked: its pairings and requests go, and their rooms close. Never fails the revoke.
+// A token was revoked: its pairings and requests go, and their rooms close, with the rooms its own room tickets opened
+// (an MCP server's live view). Never fails the revoke.
 export async function endTokenWorkbench(
   env: Env,
   userId: string,

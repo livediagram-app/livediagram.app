@@ -40,9 +40,10 @@ export async function roomFetch(
   const server = pair[1];
   // A full room answers the upgrade and closes it at once (docs/specs/015-api/api.md "A room holds at most
   // 100 connections"): the close code is the only thing a browser can read, an HTTP refusal reads as 1006.
-  if (room.turnAwayIfFull(server)) return new Response(null, { status: 101, webSocket: client });
   // Server-resolved facts (set by the api worker before forwarding the upgrade): room-session.ts.
   const v = verifiedSessionOf(request);
+  if (room.turnAwayIfFull(server, v.viewOnly))
+    return new Response(null, { status: 101, webSocket: client });
   room.acceptSession(
     server,
     v.verifiedRole,
@@ -57,6 +58,8 @@ export async function roomFetch(
     v.grantExp ?? null,
     v.collabKey ?? null,
     v.reactionPerson ?? null,
+    v.viewOnly,
+    v.apiToken,
   );
   if (v.documentId) {
     room.bindDocument(v.documentId);

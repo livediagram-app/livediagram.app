@@ -54,6 +54,9 @@ export class WorkbenchStore extends DurableObject<Env> implements WorkbenchStore
   noteSessionRoom(...a: Parameters<Core['noteSessionRoom']>) {
     return this.core.noteSessionRoom(...a);
   }
+  noteTokenRoom(...a: Parameters<Core['noteTokenRoom']>) {
+    return this.core.noteTokenRoom(...a);
+  }
   endAccess(...a: Parameters<Core['endAccess']>) {
     return this.core.endAccess(...a);
   }

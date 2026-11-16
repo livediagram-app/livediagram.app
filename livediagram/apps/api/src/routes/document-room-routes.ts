@@ -23,7 +23,7 @@ import {
 import { personTagFor } from '../person-tag';
 import { badRequest, documentTrashed, forbidden, json, notFound } from '../responses';
 import { networkTagFor } from '../vote-integrity';
-import { noteWorkbenchRoom } from '../auth/workbench-session';
+import { noteTokenRoom, noteWorkbenchRoom } from '../auth/workbench-session';
 import { type RouteContext } from './context';
 import { resolveDocumentGrant } from './document-grant';
 import type { Env } from '../types';
@@ -75,18 +75,34 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     if (grant.trashed) return documentTrashed();
     if (await isCommunityCode(env, id, grant.shareCode)) return forbidden('community_link');
     const workbench = ctx.workbench ?? null;
+    // The API token minting it (an MCP server's live view, a CLI), outside a workbench session (whose pairing closes
+    // with its token already): sealed into the ticket, so revoking the token closes the sockets it opens.
+    const token = workbench ? null : (ctx.token?.id ?? null);
     // A workbench session is sealed to its pairing at its own cap (held to view when it asks for a view-only
     // ticket); a view-only ticket otherwise is the grant sealed with the cap alone, so its holder never has the
-    // grant bare.
+    // grant bare; a token's ticket carries the token, with the cap it asked for or none.
     const ticket = await sealRoomTicket(
       env,
       grant.token,
       workbench
         ? { pairing: workbench.pairingId, cap: cap ?? workbench.level }
-        : cap
-          ? { pairing: null, cap }
+        : cap || token
+          ? { pairing: null, cap, token }
           : null,
     );
+    // ...and liveworkspace notes the room against the token until the ticket's grant lapses, which is how a revoke
+    // finds the rooms to close without asking every canvas (public-api-and-tokens.md "Revoking a token").
+    const owner = token ? ctx.resolveOwner() : null;
+    if (token && owner) {
+      const noted = noteTokenRoom(env, {
+        ownerId: owner,
+        tokenId: token,
+        itemId: id,
+        until: grant.exp * 1000,
+      });
+      if (ctx.waitUntil) ctx.waitUntil(noted);
+      else await noted;
+    }
     // A workspace session joins many rooms; each is recorded at liveworkspace, off the response's path, so ending
     // its access closes them all (WB55).
     if (workbench?.scope === 'workspace') {
@@ -107,7 +123,7 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     const id = segments[2]!;
     const opened = await openRoomTicket(indexService, env, url.searchParams.get('t'), id);
     if (!opened) return forbidden();
-    const { claims, workbench, cap } = opened;
+    const { claims, workbench, cap, token } = opened;
     if (claims.trashed) return documentTrashed();
     const role: AccessLevel = roomTicketLevel(opened);
     const linkCode = linkCodeOf(claims.sub);
@@ -142,6 +158,10 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     // and be sent others' (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures"). Set on every path, like the rest.
     forwarded.headers.set('X-Verified-Account', person && isAccountIdShape(person) ? '1' : '0');
     forwarded.headers.set('X-Verified-Workbench-Pairing', workbench?.pairing ?? '');
+    // A view-only ticket's socket (the MCP view's) watches: the room counts it apart from the people. And the API
+    // token whose ticket this is, so revoking it closes the socket.
+    forwarded.headers.set('X-Verified-View-Only', cap ? '1' : '0');
+    forwarded.headers.set('X-Verified-Api-Token', token ?? '');
     forwarded.headers.set('X-Verified-Adder', (await adderKeyOf(id, role, person)) ?? '');
     forwarded.headers.set('X-Verified-Document', id);
     // The caller's network, hashed with the canvas id (docs/specs/012-collaboration/vote-integrity.md): what caps

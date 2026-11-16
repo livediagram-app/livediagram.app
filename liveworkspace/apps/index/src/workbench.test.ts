@@ -50,6 +50,17 @@ describe('POST /internal/workbench-close', () => {
     expect(h.appCalls[0]!.headers.get('Authorization')).toBe('Bearer lp-key');
   });
 
+  // A revoked API token's rooms (public-api-and-tokens.md "Revoking a token"): the app hears the token, not a pairing.
+  it("tells the app to close a revoked token's rooms, naming the token", async () => {
+    h.appAnswer = () => new Response(null, { status: 204 });
+    const res = await close({ app: 'liveplanner', tokenId: 't_1', itemIds: ['d1'] });
+    expect(await body(res)).toEqual({ closed: 1, unreached: [] });
+    expect(h.appCalls[0]!.url).toBe(
+      'https://liveplanner.app/api/internal/items/d1/workbench-close',
+    );
+    expect(h.appCalls[0]!.body).toEqual({ tokenId: 't_1' });
+  });
+
   it('keeps at most ten closes in flight', async () => {
     let inFlight = 0;
     let most = 0;
@@ -72,6 +83,11 @@ describe('POST /internal/workbench-close', () => {
     ).toBe(401);
     expect((await close({ app: 'nope', pairingId: 'p', itemIds: [] })).status).toBe(400);
     expect((await close({ app: 'liveplanner', pairingId: 'p', itemIds: 'a' })).status).toBe(400);
+    // A pairing or a token, never both and never neither.
+    expect(
+      (await close({ app: 'liveplanner', pairingId: 'p', tokenId: 't', itemIds: [] })).status,
+    ).toBe(400);
+    expect((await close({ app: 'liveplanner', itemIds: [] })).status).toBe(400);
     const tooMany = Array.from({ length: 501 }, (_, i) => `i${i}`);
     expect((await close({ app: 'liveplanner', pairingId: 'p', itemIds: tooMany })).status).toBe(
       400,

@@ -82,6 +82,7 @@ import {
   relaySessionOf,
   sendToPresence,
   turnAwayIfFull,
+  VIEW_ONLY_TAG,
 } from './room-sockets';
 import { alarm, armAlarm, purge } from './room-lifecycle';
 import { roomMessage } from './room-message';
@@ -524,6 +525,11 @@ export class DocumentRoom extends DurableObject<Env> {
     return rpc.revokeCodes(this, documentId, codes, reason);
   }
 
+  // The canvas went to the Trash at the index: every session hears it and closes (room-rpc.ts closeTrashed).
+  trashed(documentId: string): Promise<number> {
+    return rpc.closeTrashed(this, documentId);
+  }
+
   joined(documentId: string, personId: string): Promise<void> {
     return rpc.joined(this, documentId, personId);
   }
@@ -589,8 +595,8 @@ export class DocumentRoom extends DurableObject<Env> {
     return renewGrant(this, ws, ticket);
   }
 
-  turnAwayIfFull(server: WebSocket): boolean {
-    return turnAwayIfFull(this, server);
+  turnAwayIfFull(server: WebSocket, viewOnly = false): boolean {
+    return turnAwayIfFull(this, server, viewOnly);
   }
 
   // Admit one server-side socket into the room: pin its hibernation-proof
@@ -614,6 +620,10 @@ export class DocumentRoom extends DurableObject<Env> {
     // The person stamped on its reactions (X-Verified-Reaction-Person,
     // docs/specs/012-collaboration/comment-reactions.md).
     reactionPerson: string | null = null,
+    // A view-only ticket's socket (X-Verified-View-Only): it watches, counted apart from the people (room-sockets.ts).
+    viewOnly = false,
+    // The API token whose ticket opened it (X-Verified-Api-Token), so revoking the token closes it.
+    apiToken: string | null = null,
   ): void {
     ws.serializeAttachment(
       newSessionAttachment(
@@ -630,6 +640,8 @@ export class DocumentRoom extends DurableObject<Env> {
           adderKey,
           documentId,
           grantExp,
+          viewOnly,
+          apiToken,
         },
         crypto.randomUUID(),
       ),
@@ -638,7 +650,7 @@ export class DocumentRoom extends DurableObject<Env> {
     // delivery (webSocketMessage / webSocketClose / webSocketError) and
     // may evict this DO between events. NOT ws.accept(), which would pin
     // the DO in memory for the socket's whole life.
-    this.state.acceptWebSocket(ws);
+    this.state.acceptWebSocket(ws, viewOnly ? [VIEW_ONLY_TAG] : []);
   }
 
   // Read a socket's session attachment (room-session.ts); frames from a null one are dropped.

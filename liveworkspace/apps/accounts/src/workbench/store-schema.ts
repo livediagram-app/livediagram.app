@@ -83,6 +83,14 @@ CREATE TABLE IF NOT EXISTS wb_session_rooms (
   item_id    TEXT NOT NULL,
   PRIMARY KEY (session_id, item_id)
 );
+CREATE TABLE IF NOT EXISTS wb_token_rooms (
+  token_id TEXT    NOT NULL,
+  app      TEXT    NOT NULL,
+  item_id  TEXT    NOT NULL,
+  until    INTEGER NOT NULL,
+  PRIMARY KEY (token_id, app, item_id)
+);
+CREATE INDEX IF NOT EXISTS wb_token_rooms_until ON wb_token_rooms (until);
 CREATE TABLE IF NOT EXISTS wb_quota (
   kind  TEXT    NOT NULL,
   at    INTEGER NOT NULL,
@@ -94,6 +102,16 @@ CREATE TABLE IF NOT EXISTS wb_meta (
   key   TEXT PRIMARY KEY,
   value      NOT NULL
 )`;
+
+// The table a store made before it existed takes on its next start (every statement is IF NOT EXISTS).
+export const TOKEN_ROOMS_SCHEMA = `CREATE TABLE IF NOT EXISTS wb_token_rooms (
+  token_id TEXT    NOT NULL,
+  app      TEXT    NOT NULL,
+  item_id  TEXT    NOT NULL,
+  until    INTEGER NOT NULL,
+  PRIMARY KEY (token_id, app, item_id)
+);
+CREATE INDEX IF NOT EXISTS wb_token_rooms_until ON wb_token_rooms (until)`;
 
 export type Row = Record<string, unknown>;
 
