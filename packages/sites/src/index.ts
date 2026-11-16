@@ -44,9 +44,43 @@ declare const process: { env: Record<string, string | undefined> } | undefined;
 
 const LOCAL = typeof process !== 'undefined' && process.env.NODE_ENV === 'development';
 
-/** A site's address: its live origin, or its local port when `local` (a dev server by default). */
-export function siteUrl(id: SiteId, live: string, local = LOCAL): string {
-  return local ? `http://localhost:${LOCAL_PORTS[id]}` : live;
+/** A stack run in another port block names its own routers (site-switcher.md): `<site>=<origin>` pairs, comma
+ *  separated, each a loopback `http` origin; anything else in it is ignored. A plain split, no pattern. */
+export function parseLocalOrigins(text: string | undefined): Partial<Record<SiteId, string>> {
+  const origins: Partial<Record<SiteId, string>> = {};
+  for (const pair of (text ?? '').split(',')) {
+    const at = pair.indexOf('=');
+    if (at < 0) continue;
+    const id = pair.slice(0, at).trim();
+    if (!Object.hasOwn(LOCAL_PORTS, id)) continue;
+    let url: URL;
+    try {
+      url = new URL(pair.slice(at + 1).trim());
+    } catch {
+      continue;
+    }
+    if (url.protocol !== 'http:' || (url.hostname !== 'localhost' && url.hostname !== '127.0.0.1'))
+      continue;
+    origins[id as SiteId] = url.origin;
+  }
+  return origins;
+}
+
+// Next inlines NEXT_PUBLIC_ variables by name, so this reads as written.
+const LOCAL_ORIGINS = parseLocalOrigins(
+  typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_LOCAL_ORIGINS : undefined,
+);
+
+/** A site's address: its live origin, or, when `local` (a dev server by default), the stack's own address for it or
+ *  its block's first port. */
+export function siteUrl(
+  id: SiteId,
+  live: string,
+  local = LOCAL,
+  origins: Partial<Record<SiteId, string>> = LOCAL_ORIGINS,
+): string {
+  if (!local) return live;
+  return origins[id] ?? `http://localhost:${LOCAL_PORTS[id]}`;
 }
 
 export const PLATFORM_SITE: Site = {
