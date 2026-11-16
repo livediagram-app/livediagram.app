@@ -48,6 +48,7 @@ import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import type { useContextMenuScaffold } from '@liveworkspace/workbench/components/palette/useContextMenuScaffold';
 import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { inkSwatch, shownColour } from '@/components/palette/ink-row';
+import { useTextContrast } from '@/hooks/ui/useTextContrast';
 
 type Scaffold = ReturnType<typeof useContextMenuScaffold>;
 
@@ -87,6 +88,8 @@ export function ElementColourBorderSections({
   // (docs/specs/007-editor/live-app.md) — otherwise the menu offers a light-canvas blue beside a grey
   // shape.
   const surface = useCanvasSurface();
+  // Whether the text reads where it sits, judged only while the Text row's picker is open.
+  const textContrast = useTextContrast(target, colorProps('text').open);
   const finishSrc = supportsFinish(target) ? target : undefined;
   const borderStrokeVal: BorderStroke =
     (target as { strokeWidth?: BorderStroke }).strokeWidth ??
@@ -155,6 +158,7 @@ export function ElementColourBorderSections({
                 defaultTextColor(target as BoxedElement, surface),
               )}
               ink={inkSwatch(target, 'text', surface)}
+              contrast={textContrast}
               {...textColorHandlers}
               {...colorProps('text')}
               {...props.colourPalette}

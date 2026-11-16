@@ -1,0 +1,50 @@
+# Comments rendered diagram changes on a pull request (docs/specs/027-repositories/repository-link.md
+# "The GitHub Action"; blueprint link-review.md "The Action"). Uses only the workflow's own GITHUB_TOKEN.
+name: livediagram review
+description: Draws the diagrams a pull request changes, before and after, and keeps one comment on it up to date.
+author: livediagram
+branding:
+  icon: image
+  color: blue
+
+inputs:
+  token:
+    description: The token that commits the pictures and writes the comment.
+    default: ${{ github.token }}
+  cli-version:
+    description: The @livediagram/cli version that runs link review.
+    default: '0.3.0'
+  base:
+    description: The commit the pull request is compared with.
+    default: ${{ github.event.pull_request.base.sha }}
+  head:
+    description: The pull request's commit.
+    default: ${{ github.event.pull_request.head.sha }}
+  branch:
+    description: The branch of this repository the pictures are committed to.
+    default: livediagram-previews
+
+outputs:
+  tabs:
+    description: How many tabs the pull request changed.
+    value: ${{ steps.review.outputs.tabs }}
+
+runs:
+  using: composite
+  steps:
+    - id: review
+      shell: bash
+      run: bash "$GITHUB_ACTION_PATH/review.sh"
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+        REVIEW_CLI_VERSION: ${{ inputs.cli-version }}
+        REVIEW_BASE: ${{ inputs.base }}
+        REVIEW_HEAD: ${{ inputs.head }}
+        REVIEW_BRANCH: ${{ inputs.branch }}
+        REVIEW_PR: ${{ github.event.pull_request.number }}
+        REVIEW_FORK: ${{ github.event.pull_request.head.repo.full_name != github.repository }}
+    - if: steps.review.outputs.fork == 'true'
+      uses: actions/upload-artifact@v7
+      with:
+        name: livediagram-review
+        path: ${{ runner.temp }}/livediagram-review

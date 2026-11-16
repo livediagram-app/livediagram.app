@@ -1,6 +1,6 @@
 # CLI
 
-**Status: published.** `@livediagram/cli` is on npm (0.1.0, 2026-10-06; 0.2.0 adds `link`, `sync` and `workbench`; 0.3.0, not yet on npm, adds `folder` and `workbench --workspace`). Every command below signs in through the
+**Status: published.** `@livediagram/cli` is on npm (0.1.0, 2026-10-06; 0.2.0 adds `link`, `sync` and `workbench`; 0.3.0, not yet on npm, adds `folder`, `workbench --workspace` and `link review`). Every command below signs in through the
 browser, a device code or a token kept in the system's keychain, and is counted on the dashboard. The help centre
 article is `/help/developers/cli/` (Developers). The update check is planned ([Distribution](#distribution)).
 
@@ -54,6 +54,7 @@ Resource, then verb. `doc` and `el` are accepted for `document` and `element`.
 | `link status\|ls [--all]`                                                      | A [repository link](../027-repositories/repository-link.md)'s documents and states                                                                                     |
 | `link from-code [<file>...] [--doc <d>] [--env <e>] [--dry-run]`               | Draws `wrangler.toml` and Compose files as a laid-out tab, new or added to `--doc` ([Infrastructure code import](../020-import-export/infrastructure-import.md))       |
 | `sync [--watch] [--relocate] [--dry-run] [--all]`                              | Mirrors the link's documents into the repository; `--watch` keeps doing it                                                                                             |
+| `link review <base> [<head>] [--out <d>] [--image-url <u>]`                    | Pictures of changed mirror files and a pull request comment, offline ([Pull request review](../027-repositories/repository-link.md#pull-request-review))               |
 | `workbench open <doc>\|--workspace [--folder <f>] [--tab <t>] --origin <o>`    | A single-use link that opens the document, or the whole workspace (on Home, or a folder), live in a paired workbench                                                   |
 | `workbench pair --origin <origin> [--name <name>] [--workspace]`               | Pairs the token with a workbench, approved once in the browser; `--workspace` asks for the whole workspace                                                             |
 | `template ls\|view`, `icon search <text>`, `image ls [name]`, `image add <file | url>`, `image rm <ids…>`, `schema [kind]`                                                                                                                              | The catalogues, the image gallery an image element's `imageId=` takes (listed, added to, removed from) ([Image element](../009-elements/images.md#agents)), and the element format, from the api |

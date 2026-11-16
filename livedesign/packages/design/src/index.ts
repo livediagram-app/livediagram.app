@@ -141,6 +141,7 @@ export * from './page-ink';
 export * from './page-ink-contrast';
 export * from './page-ink-ground';
 export * from './page-ink-rules';
+export * from './text-contrast';
 export * from './paginate';
 export * from './page-units';
 export * from './page-paint';

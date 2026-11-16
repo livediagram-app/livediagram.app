@@ -2,15 +2,20 @@
 // or PNG writer, naming this CLI's package when its renderer's files are missing.
 
 import type { CliIo } from '../io';
-import { writePicture as writePictureOf, type Picture } from '@liveworkspace/cli-kit/png';
+import {
+  writePicture as writePictureOf,
+  type Picture,
+  type PictureSize,
+} from '@liveworkspace/cli-kit/png';
 import { NPM_PACKAGE } from '../config/version';
 
 export { pictureLine, svgSize, type Picture } from '@liveworkspace/cli-kit/png';
 
-// Writes the drawing as SVG or, for a `.png` path, as a PNG.
+// Writes the drawing as SVG or, for a `.png` path, as a PNG at `size` (scale 1 by default).
 export const writePicture = (
   io: CliIo,
   path: string,
   svg: string,
   format: 'svg' | 'png',
-): Promise<Picture> => writePictureOf(io, path, svg, format, NPM_PACKAGE);
+  size?: PictureSize,
+): Promise<Picture> => writePictureOf(io, path, svg, format, NPM_PACKAGE, size);

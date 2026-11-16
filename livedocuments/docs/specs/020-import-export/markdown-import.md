@@ -1,7 +1,7 @@
 # Markdown import
 
 Import a Markdown document onto the current tab as an **article**, replacing the tab's contents (one undo step puts
-them back), and export a tab as a Markdown summary. The goal is to bring in writing from anywhere (notes, READMEs,
+them back), and export an article as Markdown, or any other tab as a Markdown summary. The goal is to bring in writing from anywhere (notes, READMEs,
 outlines exported from other tools) as pages of formatted text, ready to edit.
 
 livediagram built a mind-map tree from a Markdown outline. livedocuments has no tree diagram: the same file becomes an
@@ -92,15 +92,37 @@ clearer than silently growing the tab list, and Undo makes it safe.)
 
 ## Markdown export
 
-The export side emits a flat, human-readable **summary** (`## Elements`, the _labelled_ elements, and
+### An article tab
+
+An article tab's Export offers a **Markdown** card (after Word, before JSON). It opens the shared text panel
+(`TextExportPanel`) filled by `articleToMarkdown`, the writer an agent's `article get` uses, so the text is in the form
+this import reads: **Copy** puts it on the clipboard and **Download .md** saves it (`<document> - <tab>.md`). Edits in
+the panel's box never change the article.
+
+- A tab holding several articles writes them in page order, a `\pagebreak` line between, the later ones' title and
+  subtitle written as `#` and `##` headings (front matter belongs only at the top).
+- **What it leaves out is named, never dropped silently.** Under the text the panel says how many pictures and how
+  many other items (charts, shapes, drawings) sit beside the writing and are not in the file, and how many empty drawing
+  spots in the text (zones, not counting one that holds a counted item) were left out, since `[zone id]` names a drawing only the article it came from has. It says
+  nothing when nothing was left out. Page look, header and footer are not Markdown either; the JSON export keeps them.
+- **Round trip:** importing the file back (this page's "What it reads") gives the same blocks: types, styles, lists,
+  levels, checkboxes, marks, links, tables and footnotes (`[^1]` with the notes at the end).
+- Every role that can open Export sees it; it reads the tab and changes nothing.
+- Telemetry: `Document / Exported / Markdown`, as the outline's.
+
+### Any other tab, and a selection
+
+Slide and infographic tabs (and a canvas tab's selection) keep today's Markdown: a flat, human-readable **summary**
+(`## Elements`, the _labelled_ elements, and
 `## Connections`, every arrow that joins two elements: a labelled one as `- *label*: A → B`, an unlabelled one as
 `- A → B`, since an unlabelled arrow is usually the main path; a free line with no label stays out),
 sorted for reading, to drop into a doc, PR, or notes. It is deliberately **lossy** (no nesting, unlabelled
-elements omitted) because it's a summary, not a reconstruction; the faithful round-trip is the JSON export.
+elements omitted) because it's a summary, not a reconstruction; the faithful round-trip is the JSON export. A
+Pages tab's other kinds offer no Markdown card.
 
 ## Implementation
 
 The dialog is `apps/editor/components/dialogs/ImportTabDialog.tsx`, and `useTabActions.importIntoActiveTab` replaces
-the active tab. The Markdown reader is `apps/editor/lib/markdown-import.ts`, dynamically imported so it stays out of the
+the active tab. The article export is `articleTabMarkdown` (`packages/document/src/article-markdown-export.ts`), shown by `ExportTabDialog` through `TextExportPanel`'s `note`. The Markdown reader is `apps/editor/lib/markdown-import.ts`, dynamically imported so it stays out of the
 initial editor bundle. See also [Document structure](../006-document/document-structure.md) (element model) and
 [Canvas and palette](../008-canvas/canvas-and-palette.md) (import/export menu).
