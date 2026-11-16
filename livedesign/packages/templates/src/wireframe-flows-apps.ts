@@ -64,7 +64,7 @@ export const APP_FLOWS: Partial<Record<WireframeFlowKind, WireframeFlow>> = {
         copy: { Following: 'Messages' },
         links: { Messages: 'Messages', 'icon:user': 'Profile' },
       },
-      { name: 'Messages', layout: 'wf-chat' },
+      { name: 'Messages', layout: 'wf-chat', links: BACK_ARROW },
       {
         name: 'Profile',
         layout: 'wf-profile',
@@ -107,7 +107,7 @@ export const APP_FLOWS: Partial<Record<WireframeFlowKind, WireframeFlow>> = {
       {
         name: 'Post',
         layout: 'wf-post-detail',
-        links: { 'Jordan Lee': 'Profile', 'Add a comment…': 'New Post' },
+        links: { ...BACK_ARROW, 'Jordan Lee': 'Profile', 'Add a comment…': 'New Post' },
       },
       { name: 'New Post', layout: 'wf-compose-post', links: { Cancel: BACK, Post: 'Feed' } },
       {

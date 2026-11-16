@@ -1,6 +1,6 @@
 // The wireframe flows in a browser or on a laptop (docs/specs/007-editor/wireframe-pages.md "Templates"):
 // each flow's screens in its own words and linked. Pure data, gathered in wireframe-flow-data.ts.
-import { type WireframeFlow, type WireframeFlowKind } from './wireframe-flow-kit';
+import { BACK_ARROW, type WireframeFlow, type WireframeFlowKind } from './wireframe-flow-kit';
 
 export const WEB_FLOWS: Partial<Record<WireframeFlowKind, WireframeFlow>> = {
   // A marketing site: the landing page, pricing and the way in.
@@ -168,7 +168,7 @@ export const WEB_FLOWS: Partial<Record<WireframeFlowKind, WireframeFlow>> = {
           Settings: 'Settings',
         },
       },
-      { name: 'Conversation', layout: 'wf-chat' },
+      { name: 'Conversation', layout: 'wf-chat', links: BACK_ARROW },
       {
         name: 'Notifications',
         layout: 'wf-notifications',

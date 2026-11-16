@@ -151,11 +151,11 @@ categories, and the watch's:
   steppers, a promo code and the total; a summary column on a computer), **Checkout** (delivery and
   payment fields, a summary and Pay), **Order Tracking** (an order's steps from placed to delivered;
   a map and the item beside on a computer).
-- **Social**: **Profile** (an avatar, a name, three stats and a grid of pictures), **Post** (a photo
+- **Social**: **Profile** (an avatar, a name, three stats and a grid of pictures), **Post** (a back arrow and a photo
   post, its reactions and comments; the comments beside the picture on a computer), **Stories Feed**
   (a row of stories over the feed; suggestions beside on a computer), **New Post** (writing a post
-  with photos and tools; a dialog over the dimmed screen on a computer), **Chat** (a conversation and
-  a message field; the conversations beside on a computer), **Notifications** (today's and earlier
+  with photos and tools; a dialog over the dimmed screen on a computer), **Chat** (a back arrow, a conversation and
+  a message field; the conversations beside on a computer, under a back arrow), **Notifications** (today's and earlier
   activity, unread marked).
 - **Work**: **Dashboard** (four figures, a chart and a list), **Kanban Board** (columns of task
   cards; one column at a time behind chips on a phone), **Task List** (today's tasks to tick off),
@@ -299,7 +299,7 @@ The controls that come linked:
 | Template                   | Comes linked                                                                                                        |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------- |
 | Mobile App Wireframe       | Continue and Skip, Sign In, a product, Add to Cart, Pay, the back arrows                                            |
-| Social App Wireframe       | Stories, a post, the bell, the tab bar, Your Story, Cancel and Post, a name to its profile                          |
+| Social App Wireframe       | Stories, a post, the bell, the tab bar, Your Story, Cancel and Post, a name to its profile, the Post's back arrow   |
 | Delivery App Wireframe     | the search field, a product, the bag, Add to Cart, Checkout, the back arrows                                        |
 | Travel App Wireframe       | Search Flights, a flight, Trips, the destination, the back arrows                                                   |
 | Ride App Wireframe         | Sign In, Choose a Ride, Confirm Standard                                                                            |
@@ -314,8 +314,8 @@ The controls that come linked:
 | Company Site Wireframe     | the nav's Team, Help and Contact, the brand, Book a Demo                                                            |
 | Web App Wireframe          | the sidebar's and nav's entries, Recent Orders                                                                      |
 | Project Tool Wireframe     | the sidebar's entries, a task, Upcoming, the Team page's nav                                                        |
-| Team Inbox Wireframe       | a message, Reply, the sidebar's Mentions and Settings, the nav's entries                                            |
-| Tablet App Wireframe       | the nav's Messages and profile, the Profile screen's nav                                                            |
+| Team Inbox Wireframe       | a message, Reply, the sidebar's Mentions and Settings, the nav's entries, the Conversation's back arrow             |
+| Tablet App Wireframe       | the nav's Messages and profile, the Profile screen's nav, the Messages back arrow                                   |
 | Video App Wireframe        | Search, a video, a result, the nav's Home and profile                                                               |
 | Watch App Wireframe        | the step count, Messages, Dismiss (back)                                                                            |
 | Fitness Watch Wireframe    | the heart rate, the time, the run, Cancel (back)                                                                    |

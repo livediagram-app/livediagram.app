@@ -160,7 +160,9 @@ export const chat = responsive(
   (u) => {
     const { W, H } = u;
     const side = Math.min(340, Math.round(W * 0.3));
-    u.heading(0, 0, side, 'Messages', 26);
+    // Back out of the conversations, as the phone's chat goes back.
+    u.icon(0, 6, 24, 'arrow-left', WF.ink);
+    u.heading(36, 0, side - 36, 'Messages', 26);
     u.field(0, 52, side, 44, 'Search', 'search');
     // Each thread's last message, so the list reads as real conversations.
     const people: readonly [string, string][] = [
