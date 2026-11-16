@@ -102,6 +102,10 @@ sharing, moves and the Trash to them ([one-explorer-contracts.md](../../../../li
   ([Public roadmap](../026-plan/public-roadmap.md)). What the page may show is a fixed **field allowlist**: a card's
   title, and only when chosen its description, number, card type, labels, Start Date and Due Date, and its vote total
   when voting is on. People, comments, threads, custom fields and every other field are never sent to a visitor.
+- **A board's email address** ([Email to Board](../026-plan/email-to-board.md)) is an Editor's: turning it on, copying
+  it, making a new one, turning it off and choosing Who Can Send belong to an Editor of the whole plan (the owner, a
+  team member, an Editor link), in person. A Participant and a Viewer never see the address (it would let them add
+  cards by mail past their level), nor does a tab-scoped grant, an API token or a workbench session.
 
 ## Share links
 

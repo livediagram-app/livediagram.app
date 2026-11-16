@@ -14,6 +14,7 @@ Follow the references below only as needed; never upfront.
 - ./data-export.md - when working on Download All My Data: the export service, its job and zip, the doors, the link
   and the Settings category
 - ./push.md - when working on phone notifications: devices, Web Push and VAPID, the pusher, the Phone settings and the service worker
+- ./inbound-email.md - when working on the shared inbound mail reader: MIME parts, Authentication-Results, quoted replies
 - ./email.md - when working on any email accounts sends, the onboarding series or what apps' notification emails ask
 - ./DEFAULTS.md - when you need a default the accounts specs leave open
 - ./COMPLETENESS.md - when checking which completeness categories each accounts blueprint covers
