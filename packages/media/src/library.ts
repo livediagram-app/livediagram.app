@@ -20,7 +20,7 @@ export const LIBRARY_ITEMS_PER_SCOPE_MAX = 500;
 export const LIBRARY_ITEM_BYTES_MAX = 256 * 1024;
 export const LIBRARY_ITEM_ELEMENTS_MAX = 500;
 // One item's preview SVG. A larger drawing is not kept, and its tile shows the title alone.
-export const LIBRARY_PREVIEW_BYTES_MAX = 48 * 1024;
+export const LIBRARY_PREVIEW_BYTES_MAX = 16 * 1024;
 // An item's width or height, in canvas units.
 export const LIBRARY_ITEM_SIDE_MAX = 100_000;
 // The apps whose old shape libraries the service reads in place, and how long it waits for each.
