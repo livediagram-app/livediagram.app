@@ -3,7 +3,7 @@ import { act, fireEvent, render, renderHook, screen, waitFor } from '@testing-li
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { resetRevertReload, SnapshotsApiError, type SnapshotsApi } from '../client';
 import type { SnapshotSummary } from '../wire';
-import { SnapshotsDoorProvider, type SnapshotsDoor } from './door';
+import { SnapshotsDoorProvider, useItemSnapshotsDoor, type SnapshotsDoor } from './door';
 import { SnapshotsButton } from './SnapshotsButton';
 import { useSnapshots } from './useSnapshots';
 import {
@@ -182,6 +182,28 @@ describe('SnapshotsButton', () => {
     fireEvent.submit(form);
     expect(api.take).toHaveBeenCalledTimes(1);
     await act(async () => finish());
+  });
+});
+
+describe('useItemSnapshotsDoor', () => {
+  it('is null unless allowed with a route, and keeps one api per item and caller', async () => {
+    const apiFetch = vi.fn(async () => new Response(JSON.stringify({ snapshots: [], kept: 5 })));
+    const apiHeaders = async () => ({});
+    const { result, rerender } = renderHook(
+      (props: { allowed: boolean; itemUrl: string | null }) =>
+        useItemSnapshotsDoor({ ...props, noun: 'plan', viewerId: 'u', apiFetch, apiHeaders }),
+      { initialProps: { allowed: false, itemUrl: '/api/projects/p' as string | null } },
+    );
+    expect(result.current).toBeNull();
+    rerender({ allowed: true, itemUrl: null });
+    expect(result.current).toBeNull();
+    rerender({ allowed: true, itemUrl: '/api/projects/p' });
+    const first = result.current;
+    expect(first?.noun).toBe('plan');
+    rerender({ allowed: true, itemUrl: '/api/projects/p' });
+    expect(result.current).toBe(first);
+    await first!.api.list();
+    expect(apiFetch).toHaveBeenCalledWith('/api/projects/p/snapshots', expect.anything());
   });
 });
 

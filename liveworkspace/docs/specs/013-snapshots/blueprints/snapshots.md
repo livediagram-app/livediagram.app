@@ -4,20 +4,20 @@ Derived from [snapshots.md](../snapshots.md). Codes SN1 to SN30 are cited from t
 
 ## Domain and naming
 
-| Term                  | Identifier                                     | Meaning                                                        |
-| --------------------- | ---------------------------------------------- | -------------------------------------------------------------- |
-| snapshot              | `SnapshotSummary` (wire), `snapshots` (table)  | one save point of a whole item                                 |
-| kind                  | `SnapshotKind` = `'manual' \| 'before-revert'` | taken by hand, or by a revert first                            |
-| body                  | `snapshot_chunks.data`                         | the item's export file text, in pieces                         |
-| generation            | `snapshot_state.generation`                    | how many reverts the item has had                              |
-| the fence             | `fenceStaleWrite`                              | the server's refusal of a write from before the last revert    |
-| the door              | `SnapshotDoor`                                 | what an app hands the shared routes: export and replace        |
-| the room's part       | `SNAPSHOT_REVERTED` on the room env            | what the room does after a revert: close sockets, clear ledger |
+| Term            | Identifier                                     | Meaning                                                        |
+| --------------- | ---------------------------------------------- | -------------------------------------------------------------- |
+| snapshot        | `SnapshotSummary` (wire), `snapshots` (table)  | one save point of a whole item                                 |
+| kind            | `SnapshotKind` = `'manual' \| 'before-revert'` | taken by hand, or by a revert first                            |
+| body            | `snapshot_chunks.data`                         | the item's export file text, in pieces                         |
+| generation      | `snapshot_state.generation`                    | how many reverts the item has had                              |
+| the fence       | `fenceStaleWrite`                              | the server's refusal of a write from before the last revert    |
+| the door        | `SnapshotDoor`                                 | what an app hands the shared routes: export and replace        |
+| the room's part | `SNAPSHOT_REVERTED` on the room env            | what the room does after a revert: close sockets, clear ledger |
 
 ## Package layout (packages/snapshots, `@liveworkspace/snapshots`)
 
 - `src/limits.ts` (SN1): `SNAPSHOTS_KEPT = 5`, `SNAPSHOT_MAX_BYTES = 32 * 1024 * 1024`, `SNAPSHOT_CHUNK_CHARS =
-  600_000` (one UTF-16 unit is at most 3 UTF-8 bytes, so a chunk is at most 1.8 MB, under the 2 MB row limit),
+600_000` (one UTF-16 unit is at most 3 UTF-8 bytes, so a chunk is at most 1.8 MB, under the 2 MB row limit),
   `SNAPSHOT_NAME_MAX = 80`.
 - `src/wire.ts` (SN2): `SnapshotSummary { id, name, kind, author: { id, name, color } | null, createdAt, bytes }`,
   the list, take, revert answers, error codes, `SNAPSHOT_GENERATION_HEADER = 'X-Snapshot-Generation'`, and
@@ -86,12 +86,12 @@ one. No table yet reads 0 without creating one. `advanceGeneration` writes `gene
 
 SN10. Routes, after the app's item route (`rest` is the path after `/api/<items>/<id>/`):
 
-| `rest`                  | Method | Does                     |
-| ----------------------- | ------ | ------------------------ |
-| `snapshots`             | GET    | list (SN7)               |
-| `snapshots`             | POST   | take (SN4), kind manual  |
-| `snapshots/<id>`        | DELETE | delete (SN8)             |
-| `snapshots/<id>/revert` | POST   | revert (SN12)            |
+| `rest`                  | Method | Does                    |
+| ----------------------- | ------ | ----------------------- |
+| `snapshots`             | GET    | list (SN7)              |
+| `snapshots`             | POST   | take (SN4), kind manual |
+| `snapshots/<id>`        | DELETE | delete (SN8)            |
+| `snapshots/<id>/revert` | POST   | revert (SN12)           |
 
 Anything else under `snapshots` is 405 or 404 as the shape says.
 
@@ -99,8 +99,8 @@ SN11. The caller: `{ itemId, person: { id, name, color } | null, token: boolean,
 `snapshots_need_a_person`, checked first, before any read. `mayUse` false is 404 `not_found`.
 
 SN12. Revert, in order: read the target (SN6; `null` is 422 `snapshot_unreadable`, missing is 404); export the item
-now (`door.exportFile()`); take it as `before-revert` named `Before reverting to <target name, or "the snapshot of
-<time>">` capped at 80 (refused take is 413, nothing changes); `door.replaceContent(text)` (`invalid` is 422,
+now (`door.exportFile()`); take it as `before-revert` named `Before reverting to "<target name>"`, or `Before reverting`
+for an unnamed target, capped at 80 code points (refused take is 413, nothing changes); `door.replaceContent(text)` (`invalid` is 422,
 `too_large` 413; a throw propagates as 500 after the safety snapshot already stands); `advanceGeneration`;
 `door.afterRevert(generation)`. Answers `{ reverted: { snapshotId, safetySnapshotId, generation } }`.
 
@@ -171,15 +171,15 @@ moving focus into it; no motion beyond the dialog's own.
 
 ## Errors and edge cases
 
-| Case                                         | Handling                                                   |
-| -------------------------------------------- | ---------------------------------------------------------- |
-| Item too large to snapshot                   | 413 `snapshot_too_large`, nothing written (take or revert) |
-| Snapshot chunks missing or short             | 422 `snapshot_unreadable`, nothing changes                 |
-| File the door cannot read                    | 422 `snapshot_unreadable`; the safety snapshot stands       |
-| Reverting to the oldest of five              | read first (SN12), then pruned by the safety snapshot      |
-| Two reverts at once                          | each runs whole inside the object; the second wins, both safety snapshots kept within the cap |
-| A save in flight during the revert           | fenced (SN16) once its editor saw the old generation        |
-| An item never started                        | the routes answer 404 (the app's gate finds no item)       |
+| Case                               | Handling                                                                                      |
+| ---------------------------------- | --------------------------------------------------------------------------------------------- |
+| Item too large to snapshot         | 413 `snapshot_too_large`, nothing written (take or revert)                                    |
+| Snapshot chunks missing or short   | 422 `snapshot_unreadable`, nothing changes                                                    |
+| File the door cannot read          | 422 `snapshot_unreadable`; the safety snapshot stands                                         |
+| Reverting to the oldest of five    | read first (SN12), then pruned by the safety snapshot                                         |
+| Two reverts at once                | each runs whole inside the object; the second wins, both safety snapshots kept within the cap |
+| A save in flight during the revert | fenced (SN16) once its editor saw the old generation                                          |
+| An item never started              | the routes answer 404 (the app's gate finds no item)                                          |
 
 ## Security and trust
 

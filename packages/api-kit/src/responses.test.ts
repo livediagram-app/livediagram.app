@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { BASE_ALLOWED_HEADERS, corsHeaders, createResponses } from './responses';
+import {
+  BASE_ALLOWED_HEADERS,
+  BASE_EXPOSED_HEADERS,
+  corsHeaders,
+  createResponses,
+} from './responses';
 
 const CORS_HEADERS = corsHeaders({ allowHeaders: ['X-Product-Client'], exposeHeaders: ['ETag'] });
 const {
@@ -202,7 +207,9 @@ describe('corsHeaders', () => {
     for (const h of ['Authorization', 'Content-Type', 'X-Index-Grant', 'X-Share-Code'])
       expect(allow).toContain(h);
     expect(allow).not.toContain('X-Owner-Id');
-    expect(CORS_HEADERS['Access-Control-Expose-Headers']).toBe('ETag');
+    expect(CORS_HEADERS['Access-Control-Expose-Headers']).toBe(
+      ['ETag', ...BASE_EXPOSED_HEADERS].join(', '),
+    );
   });
 
   it('allows the five HTTP methods the editors use', () => {

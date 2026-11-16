@@ -53,8 +53,8 @@ stay well under the object's storage. Deleting the item deletes its snapshots wi
 Revert replaces the item's content in place with the snapshot's. Its steps, in order, all inside the item's object:
 
 1. **Read the snapshot** being reverted to, whole. An unreadable one is refused and nothing changes.
-2. **Take an automatic snapshot of the item as it is now** (`before-revert`, named "Before reverting to <name or
-   time>"). This is the safety net and is **never skipped**: if it cannot be taken (the item is too large, the write
+2. **Take an automatic snapshot of the item as it is now** (`before-revert`, named `Before reverting to "<name>"`, or
+   `Before reverting` for an unnamed one). This is the safety net and is **never skipped**: if it cannot be taken (the item is too large, the write
    fails), the revert is refused and nothing changes. With five kept it removes the oldest, which is never the one
    being reverted to: step 1 already holds that one.
 3. **Replace the content.** The tabs become the snapshot's, in its order and folders, with their own ids, so share
@@ -89,13 +89,13 @@ make sure of it:
 
 Share roles as every app applies them (each app's `013-workspace/share-roles.md`):
 
-| Who                                                                                                    | Snapshots                                                      |
-| ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------- |
+| Who                                                                                                      | Snapshots                                                      |
+| -------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
 | An **Editor** of the whole item: its owner, its team, an edit link to the whole item, a guest's own item | Sees the list, takes, reverts and deletes                      |
-| An Editor through a link **confined to one tab**                                                       | Nothing: no button, and the routes answer as missing           |
-| A **Participant** or a **Viewer**                                                                      | Nothing: no button, and the routes answer as missing           |
-| An **API token** (agents, MCP, CLI)                                                                    | Refused (403 `snapshots_need_a_person`), an Editor's included  |
-| A Community visitor, a workbench frame, an item in **This Browser**                                    | Nothing: no button (a This Browser item has no Durable Object) |
+| An Editor through a link **confined to one tab**                                                         | Nothing: no button, and the routes answer as missing           |
+| A **Participant** or a **Viewer**                                                                        | Nothing: no button, and the routes answer as missing           |
+| An **API token** (agents, MCP, CLI)                                                                      | Refused (403 `snapshots_need_a_person`), an Editor's included  |
+| A Community visitor, a workbench frame, an item in **This Browser**                                      | Nothing: no button (a This Browser item has no Durable Object) |
 
 ## In the editor
 
@@ -120,12 +120,12 @@ It opens the **Snapshots** dialog (a sheet on a phone):
 
 Under each app's item route (`/api/projects/<id>`, `/api/documents/<id>`, `/api/designs/<id>`):
 
-| Method and path                           | Does                                | Answers                                                 |
-| ----------------------------------------- | ----------------------------------- | ------------------------------------------------------- |
-| `GET    …/snapshots`                      | Lists them, newest first, no bodies | 200 `{ snapshots, kept }`                               |
-| `POST   …/snapshots` `{ name? }`          | Takes one of the item now           | 201 `{ snapshot }`, 413 `snapshot_too_large`            |
-| `DELETE …/snapshots/<snapshotId>`         | Deletes one                         | 204, 404                                                |
-| `POST   …/snapshots/<snapshotId>/revert`  | Reverts to one (steps above)        | 200 `{ reverted }`, 404, 413, 422 `snapshot_unreadable` |
+| Method and path                          | Does                                | Answers                                                 |
+| ---------------------------------------- | ----------------------------------- | ------------------------------------------------------- |
+| `GET    …/snapshots`                     | Lists them, newest first, no bodies | 200 `{ snapshots, kept }`                               |
+| `POST   …/snapshots` `{ name? }`         | Takes one of the item now           | 201 `{ snapshot }`, 413 `snapshot_too_large`            |
+| `DELETE …/snapshots/<snapshotId>`        | Deletes one                         | 204, 404                                                |
+| `POST   …/snapshots/<snapshotId>/revert` | Reverts to one (steps above)        | 200 `{ reverted }`, 404, 413, 422 `snapshot_unreadable` |
 
 Each refuses a token (403) and answers 404 to anyone else who may not use snapshots.
 
