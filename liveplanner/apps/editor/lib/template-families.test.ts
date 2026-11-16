@@ -23,7 +23,7 @@ describe('templateFamilyOf', () => {
 
   it('gives a family to the retro and the Kanban boards only', () => {
     const members = TEMPLATES.filter((t) => templateFamilyOf(t.kind) !== null).map((t) => t.kind);
-    // docs/specs/026-plan/plan-templates.md: the Project Planner runs its sprints on a Kanban board.
-    expect(members.sort()).toEqual(['kanban', 'project-planner', 'team-retro']);
+    // docs/specs/026-plan/plan-templates.md: Project Planner and Sprint Board run their sprints on a Kanban board.
+    expect(members.sort()).toEqual(['kanban', 'project-planner', 'sprint-board', 'team-retro']);
   });
 });
