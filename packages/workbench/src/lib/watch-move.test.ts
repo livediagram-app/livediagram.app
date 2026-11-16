@@ -83,6 +83,34 @@ describe('watchMove', () => {
     expect(latest().options.threshold).toBe(1e-7);
   });
 
+  it('cuts the margin afresh on a window resize, and hears a move made before the first report', () => {
+    vi.stubGlobal('IntersectionObserver', FakeObserver);
+    vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(800);
+    vi.spyOn(document.documentElement, 'clientHeight', 'get').mockReturnValue(900);
+    const { el, spy } = box(new DOMRect(234, 12, 552, 46));
+    const onMove = vi.fn();
+    const stop = watchMove(el, onMove);
+    report(1);
+    // The window grows back to 1440px: the margin measured against 800px would hide the strip re-centring.
+    vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(1440);
+    window.dispatchEvent(new Event('resize'));
+    expect(FakeObserver.all).toHaveLength(2);
+    expect(FakeObserver.all[0]!.disconnected).toBe(true);
+    expect(latest().options.rootMargin).toBe('-12px -654px -842px -234px');
+    // The strip re-centres before the new observer's first report: that report is a move, not the still state.
+    spy.mockReturnValue(new DOMRect(444, 12, 552, 46));
+    report(0);
+    expect(onMove).toHaveBeenCalledTimes(1);
+    expect(latest().options).toMatchObject({
+      rootMargin: '-12px -444px -842px -444px',
+      threshold: 1,
+    });
+    stop();
+    window.dispatchEvent(new Event('resize'));
+    expect(latest().disconnected).toBe(true);
+    expect(FakeObserver.all).toHaveLength(3);
+  });
+
   it('watches nothing for a box with no size, or without IntersectionObserver', () => {
     vi.stubGlobal('IntersectionObserver', FakeObserver);
     const { el } = box(new DOMRect(0, 0, 0, 0));
