@@ -10,6 +10,7 @@ import { remapElementRefs, savableElements, type Element, type Tab } from '@live
 import type { BoardScene } from '@/lib/board-scene/scene';
 import type { DrawioInput } from '@/lib/drawio/import';
 import { DRAWIO_TAB_FILE_ACCEPT } from '@/lib/drawio/limits';
+import { INFRA_FILE_ACCEPT, INFRA_FILE_MAX_BYTES, infraImportOutcome } from '@/lib/infra-import';
 import { mergeImportedTab } from '@/lib/import-merge';
 import { getTheme } from '@/lib/themes';
 import type { ImportOutcome } from '@/lib/import-tab';
@@ -43,7 +44,7 @@ export function remintTabElements<T extends Pick<Tab, 'elements'>>(tab: T): T {
   return { ...tab, elements: remintElements(tab.elements).elements };
 }
 
-export type ImportFormat = 'json' | 'markdown' | 'mermaid' | 'excalidraw' | 'drawio';
+export type ImportFormat = 'json' | 'markdown' | 'mermaid' | 'excalidraw' | 'drawio' | 'infra';
 type ImportProgressListener = (progress: ImportImageProgress) => void;
 
 const EXCALIDRAW_TELEMETRY_TYPE = {
@@ -192,10 +193,51 @@ export function useTabImport({
     return drawioOutcome(result.report, pages, images);
   };
 
+  // A wrangler.toml or Compose file drawn as an architecture tab (docs/specs/020-import-export/infrastructure-import.md
+  // "The editor"): the parsers load here, the graph builder lays it out as the agents' graphs are, one replace.
+  const importInfra = async (text: string, fileName?: string): Promise<ImportOutcome> => {
+    const active = tabs.find((t) => t.id === activeId);
+    const [infra, { layoutGraph, rederiveColorPresetForTheme }] = await Promise.all([
+      import('@livediagram/document/infra-code'),
+      import('@livediagram/document'),
+    ]);
+    const result = infra.infraGraph([{ ...(fileName ? { name: fileName } : {}), text }]);
+    if (!result.ok) return { status: 'error', error: result.error.message };
+    const theme = getTheme(active?.theme);
+    const elements = layoutGraph(result.graph).map((el) =>
+      el.type === 'shape' && el.colorPreset ? rederiveColorPresetForTheme(el, theme) : el,
+    );
+    replaceActiveTabContent({
+      id: activeId,
+      name: active?.name ?? '',
+      elements,
+      theme: active?.theme,
+    });
+    const format = result.files[0]!.format;
+    track('Tab', 'Imported', format === 'wrangler' ? 'Wrangler' : 'Compose');
+    debugLog('[infra-import]', {
+      format,
+      nodes: result.graph.nodes.length,
+      edges: result.graph.edges.length,
+      skipped: result.skipped.length,
+      leftOut: result.leftOut,
+    });
+    return infraImportOutcome(elements, {
+      skippedLine: infra.skippedLine(result.skipped),
+      skippedKeys: result.skipped.length,
+      leftOut: result.leftOut,
+      maxNodes: infra.INFRA_MAX_NODES,
+      linesLeftOut: result.linesLeftOut,
+      linesKept: result.graph.edges.length,
+    });
+  };
+
   const importTextIntoActiveTab = async (
     format: ImportFormat,
     text: string,
     onProgress?: ImportProgressListener,
+    // The picked file's name, for a format that reads it (infra: which format, and the drawing's subtitle).
+    fileName?: string,
   ): Promise<ImportOutcome> => {
     const active = tabs.find((t) => t.id === activeId);
     if (active?.locked) {
@@ -204,6 +246,7 @@ export function useTabImport({
 
     if (format === 'drawio') return importDrawioInput({ kind: 'text', text }, onProgress);
     if (format === 'excalidraw') return importExcalidraw(text, onProgress);
+    if (format === 'infra') return importInfra(text, fileName);
 
     if (format === 'mermaid') {
       const {
@@ -275,10 +318,22 @@ export function useTabImport({
             ? '.excalidraw,.json,application/json,.png,image/png,.svg,image/svg+xml'
             : format === 'drawio'
               ? DRAWIO_TAB_FILE_ACCEPT
-              : '.json,application/json';
+              : format === 'infra'
+                ? INFRA_FILE_ACCEPT
+                : '.json,application/json';
     const { pickTabFile } = await import('@/lib/import-tab');
-    const picked = await pickTabFile(accept);
+    // An infrastructure file past its cap is refused unread (infrastructure-import.md "Limits").
+    const picked = await pickTabFile(
+      accept,
+      format === 'infra' ? { maxBytes: INFRA_FILE_MAX_BYTES } : {},
+    );
     if (!picked) return { status: 'cancelled' };
+    if (picked.tooBig)
+      return {
+        status: 'error',
+        error:
+          'That file is over 1 MB, larger than any wrangler.toml or Compose file. Pick the file itself.',
+      };
     // A .drawio.png is binary, so draw.io reads the bytes.
     if (format === 'drawio') {
       return importDrawioInput(
@@ -290,7 +345,7 @@ export function useTabImport({
     if (format === 'excalidraw') {
       return importExcalidraw(new Uint8Array(await picked.file.arrayBuffer()), onProgress);
     }
-    return importTextIntoActiveTab(format, picked.text);
+    return importTextIntoActiveTab(format, picked.text, onProgress, picked.name);
   };
 
   return { replaceActiveTabContent, importIntoActiveTab, importTextIntoActiveTab };

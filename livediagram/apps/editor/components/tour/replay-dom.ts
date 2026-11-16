@@ -3,6 +3,7 @@ import { revealInScrollers } from '@liveworkspace/workbench/components/tour/tour
 import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 import type { CursorTarget, Point } from '@/lib/replay/topic';
 import { dockItemSelector } from '@/lib/replay/topics/draw-shared';
+import { ICONS_SIDE_SELECTOR } from '@/lib/replay/topics/workshop-shared';
 
 // Watch It Built's hands on the real chrome (docs/specs/007-editor/blueprints/watch-it-built.md "Driving the chrome"):
 // finding what Example points at, and opening or closing the editor's own panels by pressing their own buttons, so
@@ -169,11 +170,21 @@ export const OPENABLES: Record<string, Openable> = {
       else press('[data-tour-id="tab-style-fine-tune"] button[aria-label^="Canvas"]');
     },
   },
-  // Workshop's category bar (palette-layouts.ts WORKSHOP, session-category.tsx): Write, Ask, Session, Stickers.
+  // Workshop's category bar (palette-layouts.ts WORKSHOP, session-category.tsx): Write, Ask, Session, Icons.
   'bar-write': byBar('bar-write'),
   'bar-collab-ask': byBar('bar-collab-ask'),
   'bar-session': byBar('bar-session'),
-  'bar-stickers': byBar('bar-stickers'),
+  'bar-icons': byBar('bar-icons'),
+  // The Icons category's Stickers side (IconsCategoryTab.tsx). Opening presses Stickers on its switch; closing presses
+  // Icons, where the category opens for someone who never picked, so the replay leaves the side as it starts.
+  'icons-stickers': {
+    isOpen: () =>
+      findNode(ICONS_SIDE_SELECTOR, 'Stickers')?.getAttribute('aria-pressed') === 'true',
+    toggle: () => {
+      const on = findNode(ICONS_SIDE_SELECTOR, 'Stickers')?.getAttribute('aria-pressed') === 'true';
+      findNode(ICONS_SIDE_SELECTOR, on ? 'Icons' : 'Stickers')?.click();
+    },
+  },
   // Session's groups (session-category.tsx SESSION_GROUP_IDS: Tools, Record, React, ...) and Stickers' (stickers.ts
   // STICKER_CATEGORIES: Badges, Reactions, ...), on the open flyout's rail.
   'session-tools': byRailGroup('session tools', 1),

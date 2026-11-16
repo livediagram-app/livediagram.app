@@ -1442,9 +1442,9 @@ export const articles: Article[] = [
     slug: 'import-tabs',
     title: 'Importing a Tab',
     description:
-      'Import JSON, a Mermaid diagram (flowchart, state, or ER), a Markdown outline, an Excalidraw scene or PNG / SVG export, or a draw.io diagram (a tab per page) into the active tab, or paste a drawing copied in Excalidraw onto the canvas.',
+      'Import JSON, a Mermaid diagram (flowchart, state, or ER), a Markdown outline, an Excalidraw scene or PNG / SVG export, a draw.io diagram (a tab per page), or a wrangler.toml or docker-compose file drawn as an architecture diagram into the active tab, or paste a drawing copied in Excalidraw onto the canvas.',
     keywords:
-      'import json mermaid markdown excalidraw drawio draw.io diagrams.net mxfile pages file files paste upload load convert migrate png svg image images picture photo gallery placeholder embedded scene copy clipboard ctrl v cmd v drag drop whiteboard new document explorer import from canvas',
+      'import json mermaid markdown excalidraw drawio wrangler toml docker compose yaml infrastructure architecture cloudflare workers services draw.io diagrams.net mxfile pages file files paste upload load convert migrate png svg image images picture photo gallery placeholder embedded scene copy clipboard ctrl v cmd v drag drop whiteboard new document explorer import from canvas',
     category: 'Tabs',
     categorySlug: 'tabs',
   },

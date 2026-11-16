@@ -49,7 +49,7 @@ sketching.
 ## What Diagram gives up
 
 - **The Collaborate elements** (every Ask, Tools, Record, React, Selection Mode and Navigate
-  tile) and **the Stickers category** leave Diagram's palette.
+  tile) and **the stickers** (the Icons category's Stickers side) leave Diagram's palette.
 - **The Session strip** leaves Diagram entirely (below).
 - **Diagram keeps two Collaborate tiles in Write:** the **Comment panel** and the **Action card**
   (`collab:comment-pin`, `collab:action-card`), because comments and assigned actions belong to
@@ -90,7 +90,7 @@ stop to draw):
 | Common      | Shapes, My shapes (with a shape library), Write, Draw |
 | Structure   | Layout                                                |
 | Collaborate | Ask, Tools, Record, React, Selection Mode, Navigate   |
-| Decorate    | Icons, Stickers, Media                                |
+| Decorate    | Icons (with the stickers), Media                      |
 | Dynamic     | Data                                                  |
 
 - **Popular** (the landing category), fixed: Square, Sticky note, Text, Frame, Arrow, Image, then behind a divider **Ask**,
@@ -116,7 +116,7 @@ stop to draw):
   - **Selection Mode**: one button per selection mode.
   - **Navigate**: Portal, Bring focus.
 - **On the strip, the category bar** ([Toolbar layout](../007-editor/toolbar-layout.md#the-category-bar)) shows the
-  layout as **Shapes, Write, Draw · Layout · Ask, Session · Icons, Stickers, Media · Data**: no Popular; and Tools, Record, React, Selection Mode
+  layout as **Shapes, Write, Draw · Layout · Ask, Session · Icons, Media · Data** (Icons holding the stickers on its Stickers side): no Popular; and Tools, Record, React, Selection Mode
   and Navigate gathered into **Session**, browsed in two panes (the groups down the side, a search across all of
   them). **Ask** keeps its own button: putting a question to the room is the session's main act.
 
@@ -124,7 +124,7 @@ stop to draw):
   click in front of each, with a group browser one level down. Six categories put every group one
   pick away in the category picker and let the toolbar strip show each group's tiles directly.
 
-- Technology, Components, Devices, Data and Event Storming are not offered: they build diagrams
+- Technology, Components, the device frames, Data and Event Storming are not offered: they build diagrams
   and pages, not sessions.
 - A **Participant** gets the participant palette Workshop's landing category gives
   ([Participant share role](#share-roles)): sticky notes and text, and an image.

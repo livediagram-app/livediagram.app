@@ -6,6 +6,7 @@ import {
   DIVIDE,
   PALETTE_LAYOUTS,
   paletteCategoriesFor,
+  paletteCategoryOffered,
   paletteLandingCategory,
   participantTiles,
 } from './palette-layouts';
@@ -56,12 +57,23 @@ describe('palette layouts', () => {
       'write',
       'concepts',
       'components',
-      'devices',
       'icons',
-      'stickers',
       'media',
       'data',
     ]);
+  });
+
+  // The owner's request (2026-11-15): Devices folds into Components as a parent row, and Icons holds the stickers.
+  it('files the Devices row in Components and the stickers in Icons', () => {
+    const cats = paletteCategoriesFor('pages');
+    const row = cats
+      .find((c) => c.id === 'components')!
+      .tiles!.find((t) => t.id === 'components:devices')!;
+    expect(row.parentOf).toBe('devices');
+    expect(row.variants!.map((t) => t.id)).toEqual(tilesForCategory('devices').map((t) => t.id));
+    expect(cats.find((c) => c.id === 'icons')!.stickers).toBe(true);
+    expect(paletteCategoryOffered('pages', 'stickers')).toBe(true);
+    expect(paletteCategoryOffered('pages', 'devices')).toBe(false);
   });
 
   it('lands on Popular', () => {
@@ -122,6 +134,8 @@ describe('palette layouts', () => {
   it('gives a logo page its own palette: Draw, Shapes, Write, Icons, Media (logo-pages.md)', () => {
     const logo = paletteCategoriesFor('pages', { pagesKind: 'logo' });
     expect(logo.map((c) => c.id)).toEqual(['popular', 'draw', 'shapes', 'write', 'icons', 'media']);
+    // A logo's Icons is the glyphs alone: no Stickers side.
+    expect(logo.find((c) => c.id === 'icons')!.stickers).toBeUndefined();
     const tilesOf = (id: string) => logo.find((c) => c.id === id)!.tiles!.map((t) => t.id);
     expect(tilesOf('draw')).toEqual([
       'logo:pen',
@@ -150,6 +164,8 @@ describe('the Pages kinds', () => {
     expect(ids.slice(0, 3)).toEqual(['popular', 'components', 'wireframe']);
     expect(ids).not.toContain('concepts');
     expect(ids).not.toContain('devices');
+    const components = wireframe.find((c) => c.id === 'components')!.tiles!.map((t) => t.id);
+    expect(components).not.toContain('components:devices');
     const band = wireframe[1]!.group;
     expect(wireframe[2]!.group).toBe(band);
     expect(wireframe[3]!.group).not.toBe(band);

@@ -58,10 +58,10 @@ under the pointer as a category is switched.
   its own button beside it: putting a question to the room is the session's main act, not one of its tools.
 - **The bars:**
 
-  | Mode     | Bar                                                                         |
-  | -------- | --------------------------------------------------------------------------- |
-  | Diagram  | Shapes, Write, Draw · Diagrams, Concepts, Layout · Icons, Tech, Media       |
-  | Workshop | Shapes, Write, Draw · Layout · Ask, Session · Icons, Stickers, Media · Data |
+  | Mode     | Bar                                                                   |
+  | -------- | --------------------------------------------------------------------- |
+  | Diagram  | Shapes, Write, Draw · Diagrams, Concepts, Layout · Icons, Tech, Media |
+  | Workshop | Shapes, Write, Draw · Layout · Ask, Session · Icons, Media · Data     |
 
   Library joins after Shapes while the person has a [shape library](../013-workspace/shape-libraries.md) to place
   from, as My shapes does in the picker.
@@ -138,7 +138,7 @@ the window. Resting on the tile for 150 ms opens it, a press opens it at once, a
 resting on another tile closes it. On a phone it lies over the flyout. Its header names the tile and says what can
 change after a preset is placed; its presets are one column of cards, placing and dragging as any tile.
 
-### Icons, Stickers, Technology and Session: two panes
+### Icons, Technology and Session: two panes
 
 A catalogue's flyout browses as **two panes** ([Browsing the palette by category](../010-palette/palette-category-browse.md)):
 the groups down a 188 px rail on the left, each its glyph, name and count badge, the open one raised with a brand
@@ -146,6 +146,8 @@ edge; the open group's entries on the right under a sticky heading with its coun
 top that cuts across every group ("Results for “…”"). Nothing to drill into or back out of. The panes keep one
 height, so switching group never moves the flyout. Each reopens on the group it was left on, for the page load
 (`BrowseMemory`); a query is not kept.
+
+**Icons holds the stickers** (owner, 2026-11-15): one category, an **Icons | Stickers** switch beside its search box picking which catalogue the panes browse (remembered in this browser), and one search over both whose results come in two labelled groups, Icons then Stickers ([Canvas and palette](../008-canvas/canvas-and-palette.md) "Icons category"). Diagram offers no stickers, so its Icons shows the icons alone, with no switch.
 
 ## Search: every element type
 
@@ -253,14 +255,15 @@ its catalogue a moment later focuses the field as soon as it appears); on a phon
 because focusing would raise the keyboard over the popover.
 
 More appears when the category has more than twelve tiles, and always for
-Icons, Stickers, Technology, Behaviour and My shapes, whose bodies carry
+Icons, Technology, Behaviour and My shapes, whose bodies carry
 more than tiles (search, group browsing, the person's libraries; My shapes has no strip tiles
 of its own, so More is its only way in). It sits outside the
 animated tile rail, so it rides the rail's width change.
 
-**Icons, Stickers and Technology show their groups** where a strip shows their tiles (no mode's strip does since
+**Icons and Technology show their groups** where a strip shows their tiles (no mode's strip does since
 the category bar; their flyouts browse in two panes): the strip's tiles
-for one of them are its browse groups (the Icons groups, the Sticker groups, the Technology providers),
+for one of them are its browse groups (the Icons groups, the Technology providers; the stickers are the Icons
+category's Stickers side, with no strip of their own),
 each drawn as an opener rather than a tile (its first entry with a chevron, as the strip's pickers are, so it reads
 as a group to open rather than an icon to drag) with the group's name on its hover card, in the browse's own order. Pressing one
 opens a popover centred under that tile (on a phone it spans the screen, as More's does), showing **that group's
@@ -291,13 +294,12 @@ every add.
 - **Layout** (Diagram): Lane, Frame, Stack, Boundary, Timeline | Diagram key, Card, Badge, Step number, headed
   **Containers** and **Parts** in the flyout.
 - **Components**: the cards (Code, Checklist, Entity) | the website blocks.
-- **Devices**: desktop (Browser, Monitor, Laptop) | mobile (Phone, Tablet, Foldable, Watch).
 - **Media**: Image | the embeds | Avatar.
 - **Data**: the charts (Pie, Bar, Line, Legend) | the meters (Progress, Donut, Rating).
 - **Behaviour**: the Selection Mode buttons | everything else.
 - **Event Storming**: the notation | Hotspot.
 
-Popular divides where its tiles' own groups do (after the Diamond), and the Icons / Stickers /
+Popular divides where its tiles' own groups do (after the Diamond), and the Icons (with its stickers) and
 Technology catalogues have none. A category
 has two at most. A divider shows only between two tiles both on the strip, and on a phone's
 swiping strip only while a tile on each side of it is at least partly in view: scrolled to where

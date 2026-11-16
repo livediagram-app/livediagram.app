@@ -3,25 +3,25 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
 import { ICON_CATEGORIES } from '@/lib/icons';
-import { STICKER_CATEGORIES } from '@liveworkspace/workbench/lib/stickers';
 import { CatalogueGroupTile, catalogueStripGroups } from './catalogue-strip-groups';
 import { BrowseStartGroup, PaletteCategoryBrowser } from './PaletteCategoryBrowser';
 import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
-// docs/specs/007-editor/toolbar-layout.md "More": Icons, Stickers and Technology show their browse groups on the
-// strip, each opening the browse on that group.
+// docs/specs/007-editor/toolbar-layout.md "More": Icons and Technology show their browse groups on the strip, each
+// opening the browse on that group. The stickers are the Icons category's Stickers side, with no strip of their own.
 
 beforeAll(() => ensureIconCatalogs());
 
 describe('catalogueStripGroups', () => {
-  it('is the browse groups for the three catalogues, in their order', () => {
+  it('is the browse groups for the two catalogues, in their order', () => {
     expect(catalogueStripGroups('icons')?.map((g) => g.id)).toEqual(
       ICON_CATEGORIES.map((c) => c.id),
     );
-    expect(catalogueStripGroups('stickers')?.map((g) => g.id)).toEqual(
-      STICKER_CATEGORIES.map((c) => c.id),
-    );
     expect(catalogueStripGroups('technology')?.length).toBeGreaterThan(0);
+  });
+
+  it('has no strip for the stickers, which are a side of Icons, not a category', () => {
+    expect(catalogueStripGroups('stickers')).toBeNull();
   });
 
   it('is built once the catalogues have loaded, not on every strip render', () => {

@@ -81,10 +81,16 @@ function tilesOnTab(
   });
 }
 
+/** A layout's tiles with each parent row (the Devices row) swapped for the elements it gathers, so Search finds each
+ *  frame by name and never offers a row that only opens. */
+export function withRowChildren(tiles: readonly PaletteTileDef[]): PaletteTileDef[] {
+  return tiles.flatMap((t) => (t.parentOf && t.variants ? [...t.variants] : [t]));
+}
+
 /** Every element tile the palette offers, in layout order (a layout files each tile in one category, so each is
  *  here once). The catalogue categories (Icons, Stickers, ...) hold no tiles and so add none. */
 export function paletteElementTiles(): PaletteTileDef[] {
-  return paletteCategoriesFor().flatMap((c) => c.tiles ?? []);
+  return paletteCategoriesFor().flatMap((c) => withRowChildren(c.tiles ?? []));
 }
 
 /** The query's matches, ranked exact name, name prefix, name substring, then keyword only; ties

@@ -185,8 +185,8 @@ export const VERSION_OPENED = chart(
   'Version',
   'Opened',
   'Version History Opened',
-  'Somebody opened Version History from the header to look at earlier versions.',
-  { types: ['Header'] },
+  "Somebody opened Version History from the editor's footer to look at earlier versions.",
+  { types: ['Footer'] },
 );
 
 export const VERSION_NAMED = chart(

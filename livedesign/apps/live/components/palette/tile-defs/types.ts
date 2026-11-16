@@ -155,5 +155,9 @@ export type PaletteTileDef = {
   variants?: readonly PaletteTileDef[];
   // The line under the presets popover's title: what can still change after one is placed.
   variantsHint?: string;
+  // The row gathers separate elements rather than presets of one (the Devices row, the plural noun its side panel
+  // counts them in): Search and the tile counts list each of them in place of the row, and pressing the row only opens
+  // them.
+  parentOf?: string;
   action: PaletteTileAction;
 };

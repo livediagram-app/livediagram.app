@@ -5,6 +5,7 @@ import {
   DIVIDE,
   PALETTE_LAYOUTS,
   paletteCategoriesFor,
+  paletteCategoryOffered,
 } from './palette-layouts';
 import { tileById, tilesForCategory } from './palette-tile-defs';
 
@@ -38,17 +39,28 @@ describe('palette layouts', () => {
   });
 
   it('narrows Pages to the categories a visual page is made of', () => {
-    expect(ids()).toEqual([
-      'shapes',
-      'write',
-      'concepts',
-      'components',
-      'devices',
-      'icons',
-      'stickers',
-      'media',
-      'data',
-    ]);
+    expect(ids()).toEqual(['shapes', 'write', 'concepts', 'components', 'icons', 'media', 'data']);
+  });
+
+  // The owner's request (2026-11-15): Devices folds into Components as a parent row, and Icons holds the stickers.
+  it.each(['design', 'slide'] as const)(
+    'files the Devices row in Components and the stickers in Icons in %s',
+    (pagesKind) => {
+      const cats = paletteCategoriesFor({ pagesKind });
+      const components = cats.find((c) => c.id === 'components')!.tiles!;
+      const row = components.find((t) => t.id === 'components:devices')!;
+      expect(row.parentOf).toBe('devices');
+      expect(row.variants!.map((t) => t.id)).toEqual(tilesForCategory('devices').map((t) => t.id));
+      expect(cats.find((c) => c.id === 'icons')!.stickers).toBe(true);
+      expect(cats.map((c) => c.id)).not.toContain('devices');
+      expect(cats.map((c) => c.id)).not.toContain('stickers');
+    },
+  );
+
+  it('still offers stickers, as the Icons category’s Stickers side', () => {
+    expect(paletteCategoryOffered('stickers')).toBe(true);
+    expect(paletteCategoryOffered('icons')).toBe(true);
+    expect(paletteCategoryOffered('devices')).toBe(false);
   });
 
   it('files the Sankey last in Concepts, and keeps Write to its notes', () => {
@@ -90,9 +102,7 @@ describe('palette layouts', () => {
       'data',
       'concepts',
       'components',
-      'devices',
       'icons',
-      'stickers',
     ]);
     expect(slide.find((c) => c.id === 'media')!.group).toBe(0);
     expect(slide.find((c) => c.id === 'components')!.tiles!.map((t) => t.id)).not.toContain(

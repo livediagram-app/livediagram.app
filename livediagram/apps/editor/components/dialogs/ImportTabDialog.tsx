@@ -87,6 +87,16 @@ const FORMATS: {
       '<mxfile>\n  <diagram name="Page-1">\n    <mxGraphModel>…</mxGraphModel>\n  </diagram>\n</mxfile>',
     note: { article: 'importTabs', label: 'See what carries over from draw.io' },
   },
+  {
+    // docs/specs/020-import-export/infrastructure-import.md "The editor".
+    key: 'infra',
+    title: 'Infrastructure',
+    description:
+      'A wrangler.toml or docker-compose file. Draws each Worker or service with its bindings, dependencies and networks.',
+    placeholder:
+      'services:\n  web:\n    image: nginx\n    depends_on: [api]\n  api:\n    build: .\n    depends_on: [db]\n  db:\n    image: postgres:16\n\n# or a wrangler.toml',
+    note: { article: 'importTabs', label: 'See what a wrangler.toml or Compose file draws' },
+  },
 ];
 
 // Counterpart to ExportTabDialog: pick a format to import INTO the current
@@ -132,11 +142,13 @@ export function ImportTabDialog({
         title="Import to Tab"
         subtitle={
           report
-            ? report.scene
-              ? "Here's how your board came across."
-              : report.images
-                ? "Here's how your images came across."
-                : "Here's how your import came across."
+            ? report.subtitle
+              ? report.subtitle
+              : report.scene
+                ? "Here's how your board came across."
+                : report.images
+                  ? "Here's how your images came across."
+                  : "Here's how your import came across."
             : activeFormat
               ? `Paste your ${activeFormat.title}, or import a file.`
               : 'Pick a format to import into the current tab.'
@@ -258,7 +270,9 @@ function FormatIcon({ kind }: { kind: Format }) {
           ? 'excali'
           : kind === 'drawio'
             ? 'drawio'
-            : 'json';
+            : kind === 'infra'
+              ? 'infra'
+              : 'json';
   return (
     <svg width="36" height="20" viewBox="0 0 36 20" aria-hidden>
       <rect

@@ -86,20 +86,19 @@ describe('tool blurbs', () => {
 // fails this test, and the failure is the prompt to re-read that category's
 // description and decide whether it still describes what is in the tab.
 //
-// Categories filled from a catalogue rather than from tiles (Icons, Stickers,
-// Technology) hold none, and are pinned at 0 so that stays true by intent
+// Categories filled from a catalogue rather than from tiles (Icons, with its
+// stickers, and Technology) hold none, and are pinned at 0 so that stays true by intent
 // rather than by accident.
 const TILES_PER_CATEGORY: Record<string, number> = {
   shapes: 13,
   build: 3,
   write: 8,
   draw: 3,
-  devices: 7,
   icons: 0,
-  stickers: 0,
   technology: 0,
   media: 10,
-  components: 13,
+  // With the Devices row (DEVICES_ROW_TILE), which opens the seven frames.
+  components: 14,
   concepts: 8,
   data: 8,
 };

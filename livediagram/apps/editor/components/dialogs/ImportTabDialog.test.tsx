@@ -110,6 +110,41 @@ describe('ImportTabDialog on a phone', () => {
   });
 });
 
+// docs/specs/020-import-export/infrastructure-import.md "The editor": the Infrastructure card, its paste and its
+// report in place of "board".
+describe('ImportTabDialog, infrastructure', () => {
+  it('offers Infrastructure, passes the paste to it and shows its report', async () => {
+    const onImportText = vi.fn(async (): Promise<ImportOutcome> => ({
+      status: 'done',
+      subtitle: "Here's how your infrastructure came across.",
+      scene: {
+        landed: { shape: 3, connector: 2 },
+        degraded: [],
+        skipped: [{ rule: 'Keys not drawn: vars', count: 1 }],
+      },
+    }));
+    render(
+      <ImportTabDialog
+        tabName="Arch"
+        onImportFile={vi.fn()}
+        onImportText={onImportText}
+        onClose={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /^Infrastructure/ }));
+    expect(screen.getByText('Paste your Infrastructure, or import a file.')).toBeTruthy();
+    const field = screen.getByRole('textbox', { name: 'Infrastructure to import' });
+    expect((field as HTMLTextAreaElement).placeholder).toContain('services:');
+    expect(screen.getByText('See what a wrangler.toml or Compose file draws')).toBeTruthy();
+    fireEvent.change(field, { target: { value: 'name = "api"' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Import' }));
+    const report = await screen.findByTestId('import-image-report');
+    expect(onImportText).toHaveBeenCalledWith('infra', 'name = "api"', expect.any(Function));
+    expect(screen.getByText("Here's how your infrastructure came across.")).toBeTruthy();
+    expect(report.textContent).toContain('Keys not drawn: vars');
+  });
+});
+
 // A screen reader hears what the paste field is for, and why an import did not land.
 describe('ImportTabDialog for a screen reader', () => {
   it('names the paste field for its format and announces an error', async () => {

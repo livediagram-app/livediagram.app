@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { linkInit, linkLs, linkStatus, MIRROR_LEVELS, sync } from './link';
+import { linkFromCode, linkInit, linkLs, linkStatus, MIRROR_LEVELS, sync } from './link';
 
 // The repository link's verbs (docs/specs/027-repositories/blueprints/repository-link.md "The verbs"): declared
 // here, run by the CLI (CLI55); what they print is theirs.
@@ -81,5 +81,28 @@ describe('sync', () => {
     expect(sync.exitCode!(result)).toBe(1);
     expect(sync.telemetryType!(sync.input.parse({ watch: true }))).toBe('SyncWatch');
     expect(sync.telemetryType!(sync.input.parse({}))).toBe('Sync');
+  });
+});
+
+describe('link from-code', () => {
+  it('takes files, a document, a name, an environment and --dry-run, and prints the graph only on a dry run', () => {
+    expect(
+      linkFromCode.input.parse({
+        files: ['wrangler.toml'],
+        doc: 'Arch',
+        name: 'Api',
+        env: 'staging',
+        dryRun: true,
+      }),
+    ).toEqual({ files: ['wrangler.toml'], doc: 'Arch', name: 'Api', env: 'staging', dryRun: true });
+    expect(linkFromCode.input.safeParse({ name: '' }).success).toBe(false);
+    const graph = { nodes: [], edges: [] };
+    const made = { text: 'tab t1 "Api"', id: 't1', dryRun: false, graph: null };
+    expect(linkFromCode.text!(made)).toEqual(['tab t1 "Api"']);
+    expect(linkFromCode.json!(made)).toEqual({ id: 't1', text: 'tab t1 "Api"' });
+    expect(linkFromCode.quiet!(made)).toEqual(['t1']);
+    const dry = { text: '', id: null, dryRun: true, graph };
+    expect(linkFromCode.json!(dry)).toBe(graph);
+    expect(linkFromCode.quiet!(dry)).toEqual([]);
   });
 });
