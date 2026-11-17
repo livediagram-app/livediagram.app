@@ -96,6 +96,24 @@ describe('read-only API token enforcement (docs/specs/015-api/mcp-server.md §4.
     expect(other.status).toBe(403);
   });
 
+  // docs/specs/015-api/api.md: the MCP view's view-only ticket writes nothing and admits only a watcher.
+  it('lets a read-only token mint a view-only room ticket, and no other', async () => {
+    const mint = (query: string) =>
+      worker.fetch(
+        new Request(`https://api.test/api/projects/d1/room-ticket${query}`, {
+          method: 'POST',
+          headers: RO,
+        }),
+        env(),
+      );
+    expect((await mint('?cap=view')).status).not.toBe(403);
+    for (const query of ['', '?cap=edit', '?cap=participate']) {
+      const res = await mint(query);
+      expect(res.status, query).toBe(403);
+      expect(await res.json()).toEqual({ error: 'read_only_token' });
+    }
+  });
+
   // Workbenches are liveworkspace's (liveworkspace/docs/specs/011-workbench/workbench.md): the api forwards them as liveplanner, before
   // any token check of its own, and accounts checks the credential.
   it('forwards /api/workbench/* to liveworkspace untouched, read-only token and all', async () => {

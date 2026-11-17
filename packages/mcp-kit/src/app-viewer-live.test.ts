@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { VIEWER_SCRIPT } from './app-viewer-script';
+import { VIEWER_SCRIPT, viewerScript } from './app-viewer-script';
 
 // docs/specs/015-api/mcp-server.md "Live updates": the view's wiring, run in a stand-in frame. The host is a list of
 // the JSON-RPC messages the page posts and the answers this test gives; the room is a stand-in WebSocket.
@@ -39,7 +39,7 @@ class FakeSocket {
   }
 }
 
-function frame() {
+function frame(script = VIEWER_SCRIPT) {
   const els: Record<string, FakeEl> = {};
   const el = (id: string) =>
     (els[id] ??= {
@@ -71,7 +71,7 @@ function frame() {
     open: () => {},
   };
   // oxlint-disable-next-line typescript/no-implied-eval, typescript/no-unsafe-call -- runs the page's own script, as the frame does
-  new Function('window', 'document', 'WebSocket', VIEWER_SCRIPT)(win, doc, FakeSocket);
+  new Function('window', 'document', 'WebSocket', script)(win, doc, FakeSocket);
 
   const deliver = (data: unknown) => onWindow.message!.forEach((f) => f({ data }));
   const calls = (name: string) => sent.filter((m) => m.params?.name === name);
@@ -325,5 +325,67 @@ describe('the view following a document live', () => {
       documentId: 'd1',
       tabId: 't1',
     });
+  });
+});
+
+// livedesign's and livedocuments' mcp-server.md "Live updates": a view of pages follows its file the same way, by its
+// own id key, in its own words, and for the ops its room relays.
+describe('a page view following a design live', () => {
+  async function following() {
+    const f = frame(viewerScript('livedesign', { idKey: 'designId', word: 'design' }));
+    f.answer('ui/initialize', { hostContext: {} });
+    f.deliver({
+      jsonrpc: '2.0',
+      method: 'ui/notifications/tool-result',
+      params: { structuredContent: { designId: 'g1', tabId: 't1' } },
+    });
+    await f.flush();
+    f.answer('view_tab', { structuredContent: { ...TAB, designId: 'g1', pageId: 'p2' } });
+    await f.flush();
+    f.answer('view_live', {
+      structuredContent: {
+        designId: 'g1',
+        url: 'wss://www.acme.app/api/designs/g1/ws',
+        ticket: 'rt2~s',
+        expiresAt: Date.now() + 600_000,
+      },
+    });
+    await f.flush();
+    return f;
+  }
+
+  it('asks by the design’s id and redraws the page shown for its photo, component and tab-list changes', async () => {
+    const f = await following();
+    expect(f.calls('view_live')[0]!.params!.arguments).toEqual({ designId: 'g1' });
+    const ws = FakeSocket.all[0]!;
+    expect(ws.url).toBe('wss://www.acme.app/api/designs/g1/ws?t=rt2~s');
+    ws.onopen!();
+    expect(f.live().title).toBe('Live: this view follows the design as people change it.');
+    for (const change of [
+      op({ kind: 'photo', tabId: 't1' }),
+      op({ kind: 'component', main: 'm1' }),
+      op({ kind: 'design-meta', tabs: [] }),
+    ]) {
+      ws.frame(change);
+      await vi.advanceTimersByTimeAsync(1_500);
+      expect(f.calls('view_tab').at(-1)!.params!.arguments).toEqual({
+        designId: 'g1',
+        tabId: 't1',
+        pageId: 'p2',
+      });
+      f.answer('view_tab', { structuredContent: { ...TAB, designId: 'g1', pageId: 'p2' } });
+      await f.flush();
+    }
+    expect(f.calls('view_tab')).toHaveLength(4);
+  });
+
+  it('stops when the design moves to the Trash, saying so in its words', async () => {
+    const f = await following();
+    FakeSocket.all[0]!.onopen!();
+    FakeSocket.all[0]!.frame(op({ kind: 'design-trashed' }));
+    expect(f.live().textContent).toBe('Snapshot');
+    expect(f.live().title).toMatch(
+      /^This design moved to the Trash\. Showing the tab as drawn at /,
+    );
   });
 });

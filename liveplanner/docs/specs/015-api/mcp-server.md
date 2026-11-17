@@ -1046,10 +1046,9 @@ mcp-server.md "Interactive view (MCP Apps)"); liveplanner's view shows a **board
 
 - **The view resource.** The server lists `ui://liveplanner/view.html` (`text/html;profile=mcp-app`), the shared
   viewer page in its board form (`@liveworkspace/mcp-kit/app-view`,
-  `viewerHtml('liveplanner', { idKey: 'projectId', board: true, live: false })`) with its script and styles inline,
+  `viewerHtml('liveplanner', { idKey: 'projectId', board: true })`) with its script and styles inline,
   its size held under `VIEWER_HTML_BUDGET_BYTES` (24 KB) by a test. It draws the board as plain HTML from text, never
-  markup it is sent, and fetches nothing: its `_meta.ui.csp` allows no connection and no resource domain
-  (`connectDomains: []`, `resourceDomains: []`), and it asks for a border.
+  markup it is sent, and fetches nothing: its `_meta.ui.csp` allows one connection only, the WebSocket to this deployment's own api (`connectDomains: ["wss://<editor host>"]`, from `CONSENT_BASE_URL`), no resource domain, and it asks for a border.
 - **The tools that link it.** `list_items` and `read_project` carry `_meta.ui.resourceUri` (and the older flat
   `ui/resourceUri` key) in their definitions. Their results are unchanged but for `list_items` naming its
   `projectId`, so the view knows the plan.
@@ -1072,8 +1071,34 @@ mcp-server.md "Interactive view (MCP Apps)"); liveplanner's view shows a **board
 - **Authority.** The view holds no lasting credential. It reads only through the host's own connection to this
   server, so every `view_tab` is the user's token through the api's ordinary read gate, and a read-only token reads as
   it does today. No share link is minted, ever. The view is read-only for every token, whatever its share role.
-- **Live updates.** Not yet: the view shows the board as it was when drawn, and its header carries no live mark. A new
-  tool result draws it afresh.
+- **Live updates.** Once drawn, the view follows the plan through its room, as livediagram's does (its mcp-server.md
+  "Live updates"), and draws the board again when it changes:
+  - **The ticket.** The view asks for it through the host (`tools/call view_live`); the server mints it for the
+    token's owner with `POST /api/projects/:id/room-ticket?cap=view` ([api.md](api.md)), the index's grant on this
+    plan sealed with the cap `view` and no pairing (`rt2~…`,
+    [one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "A
+    view-only ticket"). So it is short-lived (the grant's 10 minutes), names one plan, admits only at `view` whatever
+    the owner's own level (an Editor, Participant or Viewer token alike, and a read-only token), and is the owner's
+    access as the index has it at the mint: a person whose access was revoked gets none (the mint's 404). It is never
+    a share link, and never in a text block, the PNG, a log line or the tool's telemetry, only in `view_live`'s
+    structured content, which a host with MCP Apps hands the view alone. A revoked token stops the view at its next
+    mint, within the ticket's 10 minutes (this room keeps no token on its sockets, so none closes at once).
+  - **The socket.** The view opens `wss://<editor host>/api/projects/:id/ws?t=<ticket>` and never sends a frame,
+    so it is in no one's roster and draws no cursor. A relayed `op` that changes what the view shows (cards written (`items`), card types (`item-types`), `tab`, `el`, `tab-meta`, `el-delta`, a `changeset`, on
+    the shown tab or naming none), a save landing (`tab-saved`) or a change to the tab list (`project-meta`) schedules
+    one `view_tab`, at most one every `LIVE_REDRAW_MS` (1.5 s) however busy the room; presence ops and other tabs'
+    changes draw nothing. The scroll position survives a redraw, and a card that held focus keeps it. A redraw that fails, or answers another tab than the one shown, keeps
+    what the view has.
+  - **Reconnects and Snapshot.** As livediagram's: a fresh ticket `LIVE_RENEW_BEFORE_MS` (30 s) before one lapses, a
+    dropped socket retried from 1 s doubling to 30 s for at most 6 tries, a hidden frame holding no socket. The
+    header's mark reads **Live**, **Reconnecting** or **Snapshot**; Snapshot (a refused mint, the tries run out, or
+    the plan moved to the Trash: `project-trashed` or the close 4004) keeps what the view last drew, its title saying
+    why and when.
+  - **Cost.** A plan with no open view gets no ticket and no socket. An open view is one idle socket on the room, one
+    mint every 10 minutes, and at most one `view_tab` per `LIVE_REDRAW_MS` while people edit.
+- **`view_live`**: `{ projectId }`. Read. The view's own tool, kept from the model like `view_tab`: the socket's
+  address (`url`), the ticket and when it lapses (`expiresAt`, epoch ms). Its text block is one line without the
+  ticket. Edits in the view stay livediagram's: this view is read-only for every token.
 - **Cost.** One `view_tab` reads the items and the plan once (the reads `list_items` makes) and groups the cards by
   column in one pass. A test holds building the view of a 2,000-card board to a CPU budget and its size to under
   64 KB.

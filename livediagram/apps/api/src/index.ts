@@ -25,6 +25,7 @@ import {
   createWorkbenchBearer,
 } from '@liveworkspace/api-kit/bearer-credentials';
 import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
+import { isViewOnlyRoomTicketMint } from '@liveworkspace/index-app';
 import {
   guardRequest,
   UNAVAILABLE_RETRY_AFTER_SECONDS,
@@ -185,12 +186,7 @@ async function routeApiRequest(
     request.method === 'DELETE' && segments[1] === 'tokens' && segments[2] === 'current';
   // Nor does a view-only room ticket (docs/specs/015-api/api.md, the MCP view's live updates): it writes nothing
   // and admits only a watcher, at view.
-  const isViewOnlyTicket =
-    request.method === 'POST' &&
-    segments[1] === 'documents' &&
-    segments.length === 4 &&
-    segments[3] === 'room-ticket' &&
-    url.searchParams.get('cap') === 'view';
+  const isViewOnlyTicket = isViewOnlyRoomTicketMint(request.method, segments, url, 'documents');
   if (tokenAuth?.readOnly && isWrite && !isSelfRevoke && !isViewOnlyTicket) {
     return forbidden('read_only_token');
   }

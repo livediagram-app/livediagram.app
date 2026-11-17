@@ -20,6 +20,7 @@ import {
   createWorkbenchBearer,
 } from '@liveworkspace/api-kit/bearer-credentials';
 import { clientIp, clientNetwork, clientRateKey } from '@liveworkspace/api-kit/client-ip';
+import { isViewOnlyRoomTicketMint } from '@liveworkspace/index-app';
 import {
   guardRequest,
   UNAVAILABLE_RETRY_AFTER_SECONDS,
@@ -193,7 +194,10 @@ async function routeApiRequest(
   // A token revoking itself escalates nothing, so any token may (docs/specs/015-api/blueprints/cli.md).
   const isSelfRevoke =
     request.method === 'DELETE' && segments[1] === 'tokens' && segments[2] === 'current';
-  if (tokenAuth?.readOnly && isWrite && !isSelfRevoke) {
+  // Nor does a view-only room ticket (docs/specs/015-api/api.md, the MCP view's live updates): it writes nothing
+  // and admits only a watcher, at view.
+  const isViewOnlyTicket = isViewOnlyRoomTicketMint(request.method, segments, url, 'projects');
+  if (tokenAuth?.readOnly && isWrite && !isSelfRevoke && !isViewOnlyTicket) {
     return forbidden('read_only_token');
   }
   // Reject oversized bodies up front so a hostile payload never reaches a route's

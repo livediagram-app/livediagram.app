@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { viewerScript } from './app-viewer-script';
 import { boardViewerScript } from './app-viewer-board-script';
 
@@ -29,6 +29,11 @@ class FakeEl {
   children: FakeEl[] = [];
   onclick: (() => void) | null = null;
   on: Record<string, Listener[]> = {};
+  // Where it is scrolled: emptied, it holds nothing to scroll, so a browser puts it back at the start.
+  scrollTop = 0;
+  scrollLeft = 0;
+  // The element that has focus, as document.activeElement reads it.
+  static active: FakeEl | null = null;
   private text = '';
   constructor(id: string, tag = 'div') {
     this.id = id;
@@ -40,6 +45,14 @@ class FakeEl {
   set textContent(v: string) {
     this.text = v;
     this.children = [];
+    this.scrollTop = 0;
+    this.scrollLeft = 0;
+  }
+  focus() {
+    FakeEl.active = this;
+  }
+  querySelectorAll(selector: string): FakeEl[] {
+    return this.all(selector.replace(/^\./, ''));
   }
   setAttribute(k: string, v: string) {
     this.attrs[k] = v;
@@ -63,7 +76,8 @@ class FakeEl {
   }
 }
 
-function frame(script: string) {
+function frame(script: string, Socket: unknown = class {}) {
+  FakeEl.active = null;
   const els: Record<string, FakeEl> = {};
   const el = (id: string) => (els[id] ??= new FakeEl(id));
   const sent: Msg[] = [];
@@ -75,6 +89,9 @@ function frame(script: string) {
     documentElement: { dataset: {} as Record<string, string> },
     body: { scrollWidth: 600 },
     addEventListener: () => {},
+    get activeElement() {
+      return FakeEl.active;
+    },
   };
   const win = {
     parent: { postMessage: (m: Msg) => void sent.push(m) },
@@ -82,7 +99,7 @@ function frame(script: string) {
     open: vi.fn(),
   };
   // oxlint-disable-next-line typescript/no-implied-eval, typescript/no-unsafe-call -- runs the page's own script, as the frame does
-  new Function('window', 'document', 'WebSocket', script)(win, doc, class {});
+  new Function('window', 'document', 'WebSocket', script)(win, doc, Socket);
   const deliver = (data: unknown) => onWindow.message!.forEach((f) => f({ data }));
   const pendingCall = (name: string) =>
     sent.find((x) => (x.method === name || x.params?.name === name) && !x.answered);
@@ -237,7 +254,7 @@ const BOARD = {
 
 describe('the board view', () => {
   async function board(structuredContent: Record<string, unknown> = BOARD) {
-    const f = frame(boardViewerScript('liveplanner', 'projectId'));
+    const f = frame(boardViewerScript('liveplanner', { idKey: 'projectId', word: 'plan' }));
     f.answer('ui/initialize', {});
     await f.flush();
     f.result({ projectId: 'p1', boards: [] });
@@ -330,9 +347,155 @@ describe('the board view', () => {
     expect(f.pendingCall('ui/open-link')).toBeUndefined();
     f.result({ name: 'nothing' });
     expect(f.el('note').textContent).toBe('Nothing to show for this result.');
-    const g = frame(boardViewerScript('liveplanner', 'projectId'));
+    const g = frame(boardViewerScript('liveplanner', { idKey: 'projectId', word: 'plan' }));
     g.answer('ui/initialize', undefined, { code: -1 });
     await g.flush();
     expect(g.el('note').textContent).toBe('This chat could not start the view.');
+  });
+});
+
+// liveplanner's mcp-server.md "Live updates": the board follows its plan's room, as the canvas follows a document.
+class FakeSocket {
+  static all: FakeSocket[] = [];
+  closed: number | null = null;
+  onopen: (() => void) | null = null;
+  onmessage: ((e: { data: string }) => void) | null = null;
+  onclose: ((e: { code: number }) => void) | null = null;
+  url: string;
+  constructor(url: string) {
+    this.url = url;
+    FakeSocket.all.push(this);
+  }
+  close(code: number) {
+    this.closed = code;
+  }
+  frame(data: unknown) {
+    this.onmessage?.({ data: JSON.stringify(data) });
+  }
+}
+const op = (o: Record<string, unknown>) => ({ kind: 'op', from: 'p', op: o });
+
+describe('the board view following its plan live', () => {
+  afterEach(() => vi.useRealTimers());
+
+  async function following() {
+    FakeSocket.all = [];
+    const f = frame(
+      boardViewerScript('liveplanner', { idKey: 'projectId', word: 'plan' }),
+      FakeSocket,
+    );
+    f.answer('ui/initialize', {});
+    await f.flush();
+    f.result({ projectId: 'p1', boards: [] });
+    await f.flush();
+    f.answer('view_tab', { structuredContent: BOARD });
+    await f.flush();
+    vi.useFakeTimers();
+    f.answer('view_live', {
+      structuredContent: {
+        projectId: 'p1',
+        url: 'wss://www.acme.app/api/projects/p1/ws',
+        ticket: 'rt2~sealed',
+        expiresAt: Date.now() + 600_000,
+      },
+    });
+    await vi.advanceTimersByTimeAsync(0);
+    return f;
+  }
+  const viewTabs = (f: ReturnType<typeof frame>) =>
+    f.sent.filter((m) => m.params?.name === 'view_tab');
+
+  it('asks by the plan’s id and opens its room, marked Live in the plan’s words', async () => {
+    const f = await following();
+    const asked = f.sent.find((m) => m.params?.name === 'view_live')!;
+    expect(asked.params!.arguments).toEqual({ projectId: 'p1' });
+    expect(FakeSocket.all.map((w) => w.url)).toEqual([
+      'wss://www.acme.app/api/projects/p1/ws?t=rt2~sealed',
+    ]);
+    FakeSocket.all[0]!.onopen!();
+    expect(f.el('live').textContent).toBe('Live');
+    expect(f.el('live').title).toBe('Live: this view follows the plan as people change it.');
+  });
+
+  it('draws the board again for a card written, once a beat, keeping its scroll and the focused card', async () => {
+    const f = await following();
+    const ws = FakeSocket.all[0]!;
+    ws.onopen!();
+    const board = f.el('board');
+    board.scrollTop = 120;
+    board.scrollLeft = 300;
+    board.all('card')[1]!.focus();
+    ws.frame(op({ kind: 'plan-presence', tabId: 't1' }));
+    ws.frame(op({ kind: 'el', tabId: 't2' }));
+    ws.frame(op({ kind: 'sheets' }));
+    await vi.advanceTimersByTimeAsync(5_000);
+    expect(viewTabs(f)).toHaveLength(1);
+    for (let i = 0; i < 10; i++) ws.frame(op({ kind: 'items', upserts: [] }));
+    ws.frame(op({ kind: 'item-types' }));
+    await vi.advanceTimersByTimeAsync(1_500);
+    expect(viewTabs(f)).toHaveLength(2);
+    expect(viewTabs(f)[1]!.params!.arguments).toEqual({ projectId: 'p1', tabId: 't1' });
+    const before = board.all('card')[1]!;
+    const renamed = structuredClone(BOARD);
+    renamed.boards[0]!.columns[0]!.cards[1]!.title = 'Ship it today';
+    f.answer('view_tab', { structuredContent: renamed });
+    await vi.advanceTimersByTimeAsync(0);
+    const cards = board.all('card');
+    expect(cards[1]!.textContent).toBe('#2Ship it today');
+    expect(cards[1]).not.toBe(before);
+    expect([board.scrollTop, board.scrollLeft]).toEqual([120, 300]);
+    expect(FakeEl.active).toBe(cards[1]);
+    // A redraw says nothing, and asks for no second ticket.
+    expect(f.el('note').hidden).toBe(true);
+    expect(f.sent.filter((m) => m.params?.name === 'view_live')).toHaveLength(1);
+  });
+
+  it('keeps the board it has when a redraw fails or answers another tab', async () => {
+    const f = await following();
+    const ws = FakeSocket.all[0]!;
+    ws.onopen!();
+    ws.frame(op({ kind: 'project-meta', tabs: [] }));
+    await vi.advanceTimersByTimeAsync(1_500);
+    f.answer('view_tab', {
+      structuredContent: { ...BOARD, tabId: 't2', name: 'Bugs', boards: [] },
+    });
+    await vi.advanceTimersByTimeAsync(0);
+    expect(f.el('title').textContent).toBe('Sprint');
+    expect(f.el('board').all('card')).toHaveLength(2);
+    ws.frame(op({ kind: 'items', upserts: [] }));
+    await vi.advanceTimersByTimeAsync(1_500);
+    f.answer('view_tab', { isError: true });
+    await vi.advanceTimersByTimeAsync(0);
+    expect(f.el('board').all('card')).toHaveLength(2);
+    expect(f.el('note').hidden).toBe(true);
+    expect(f.el('live').textContent).toBe('Live');
+  });
+
+  it('stops for good when the plan moves to the Trash, saying so in the plan’s words', async () => {
+    const f = await following();
+    FakeSocket.all[0]!.onopen!();
+    FakeSocket.all[0]!.frame(op({ kind: 'project-trashed' }));
+    expect(f.el('live').textContent).toBe('Snapshot');
+    expect(f.el('live').title).toMatch(
+      /^This plan moved to the Trash\. Showing the board as drawn at /,
+    );
+    expect(FakeSocket.all[0]!.closed).toBe(1000);
+    await vi.advanceTimersByTimeAsync(60_000);
+    expect(f.sent.filter((m) => m.params?.name === 'view_live')).toHaveLength(1);
+  });
+
+  it('follows nothing on a page built without live updates', async () => {
+    FakeSocket.all = [];
+    const f = frame(
+      boardViewerScript('liveplanner', { idKey: 'projectId', live: false }),
+      FakeSocket,
+    );
+    f.answer('ui/initialize', {});
+    await f.flush();
+    f.result({ projectId: 'p1' });
+    await f.flush();
+    f.answer('view_tab', { structuredContent: BOARD });
+    await f.flush();
+    expect(f.sent.some((m) => m.params?.name === 'view_live')).toBe(false);
   });
 });
