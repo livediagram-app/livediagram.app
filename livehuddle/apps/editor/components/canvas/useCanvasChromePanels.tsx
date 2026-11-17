@@ -121,6 +121,7 @@ export function useCanvasChromePanels({
       {chromeAway || explorerHidden || !explorerOpened ? null : (
         <LazyExplorer
           currentDocumentId={currentDocumentId}
+          currentTitle={props.documentName}
           currentShareCode={currentShareCode ?? null}
           onRenameCurrent={onRenameCurrentDocument}
           onNewDocument={explorerHandlers.onNewDocument}
