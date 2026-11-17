@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   canSplitFlashcardAt,
+  cardsSummary,
+  flashcardStackSummary,
+  flashcardWords,
   flashcardBlocks,
   flashcardCut,
   flashcardSpeakingSeconds,
@@ -290,5 +293,49 @@ describe('Split Onto a New Card', () => {
     expect(withFlashcardSplit(tabOf([card('a')]), 'a', 'b', 'n', 'f-n')).toEqual({
       refused: 'nothing_to_move',
     });
+  });
+});
+
+// docs/specs/007-editor/flashcards.md "The whole talk": the stack's total, rounded once.
+describe("a stack's whole talk", () => {
+  const card = (words: number): ArticleFlow => ({
+    blocks: [{ id: 'p', type: 'paragraph', runs: [{ text: 'word '.repeat(words).trim() }] }],
+  });
+
+  it('says how many cards and how long, with "about"', () => {
+    expect(cardsSummary(10, 360, { about: true })).toBe('10 cards · about 6 min');
+    expect(cardsSummary(1, 44, { about: true })).toBe('1 card · about 45 sec');
+    expect(cardsSummary(3, 120)).toBe('3 cards · 2 min');
+    expect(cardsSummary(2, 0)).toBe('2 cards');
+    expect(cardsSummary(0, 30)).toBeNull();
+  });
+
+  it("adds every card's words first, then rounds once", () => {
+    // Three cards of 10 words: each says 5 s rounded up from 4.6 (15 s added up), the whole 30 words 14 s.
+    const flows = [card(10), card(10), card(10)];
+    const rowsAdded = flows.reduce((sum, f) => sum + flashcardSpeakingSeconds(f), 0);
+    expect(rowsAdded).toBe(15);
+    expect(flashcardStackSummary(flows)).toBe('3 cards · about 15 sec');
+    expect(flashcardStackSummary(Array.from({ length: 6 }, () => card(130)))).toBe(
+      '6 cards · about 6 min',
+    );
+  });
+
+  it('counts every card, an empty one or one with no writing included', () => {
+    expect(flashcardStackSummary([card(65), newFlashcardFlow(), undefined])).toBe(
+      '3 cards · about 30 sec',
+    );
+  });
+
+  it('shows no total for a stack with no words', () => {
+    expect(flashcardStackSummary([newFlashcardFlow(), newFlashcardFlow()])).toBeNull();
+    expect(flashcardStackSummary([])).toBeNull();
+  });
+
+  it("keeps each card's count per writing object", () => {
+    const flow = card(7);
+    expect(flashcardWords(flow)).toBe(7);
+    expect(flashcardWords(flow)).toBe(7);
+    expect(flashcardWords({ ...flow })).toBe(7);
   });
 });

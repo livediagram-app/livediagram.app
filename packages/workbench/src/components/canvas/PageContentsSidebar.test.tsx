@@ -31,11 +31,13 @@ function Sidebar({
   focusPage = () => {},
   onMinimise = () => {},
   stack,
+  summary,
 }: {
   pages?: typeof PAGES;
   focusPage?: (id: string) => void;
   onMinimise?: () => void;
   stack?: { on: boolean; onToggle: () => void };
+  summary?: string | null;
 }) {
   const contents = usePageContents({
     view: { pages, focusPage },
@@ -63,6 +65,7 @@ function Sidebar({
       top={64}
       onMinimise={onMinimise}
       stack={stack}
+      summary={summary}
     />
   );
 }
@@ -186,5 +189,19 @@ describe('ContentsSidebar', () => {
     expect(contentsClusterLeft(true, scale)).toBe(onScreen + 16);
     expect(contentsClusterLeft(true, scale)!).toBeGreaterThan(contentsClusterLeft(true, 1)!);
     expect(contentsClusterLeft(false, scale)).toBeNull();
+  });
+});
+
+// livedocuments' flashcards.md "The whole talk": the sidebar has no header, so the summary heads its list.
+describe('the sidebar summary', () => {
+  it('heads the list with the summary, and has no head without one', () => {
+    const { unmount } = render(<Sidebar summary="3 cards · about 2 min" />);
+    const head = document.querySelector('[data-contents-summary]');
+    expect(head?.textContent).toBe('3 cards · about 2 min');
+    const list = screen.getAllByRole('list')[0]!;
+    expect(head!.compareDocumentPosition(list) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    unmount();
+    render(<Sidebar />);
+    expect(document.querySelector('[data-contents-summary]')).toBeNull();
   });
 });
