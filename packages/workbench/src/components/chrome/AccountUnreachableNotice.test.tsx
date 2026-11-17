@@ -2,6 +2,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ACCOUNT_UNREACHABLE_COPY, AccountUnreachableNotice } from './AccountUnreachableNotice';
+import { CORNER_CLUSTER_CLEARANCE } from './corner-cluster-clearance';
 
 afterEach(cleanup);
 
@@ -26,5 +27,12 @@ describe('AccountUnreachableNotice', () => {
     } finally {
       vi.unstubAllGlobals();
     }
+  });
+
+  it('sits clear of the canvas corner cluster', () => {
+    render(<AccountUnreachableNotice onRetry={() => {}} />);
+    const cls = screen.getByRole('status').className.split(' ');
+    expect(cls).toContain(CORNER_CLUSTER_CLEARANCE);
+    expect(cls).not.toContain('bottom-20');
   });
 });

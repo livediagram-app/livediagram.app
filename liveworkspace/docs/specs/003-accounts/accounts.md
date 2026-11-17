@@ -571,7 +571,9 @@ stayed on its placeholders. So:
   nobody signed in could open their own work while their app's api was up (Work Tracker 1082). While it waits, from
   the first unknown answer (a `5xx`, a network error, no answer in 10 s) or after 5 s with none, the editor shows a
   calm notice, **Can’t reach your account right now**, with **Try Again** (a reload), and goes on by itself the moment
-  the accounts bridge's asks (`askTokenUntilKnown`) get an answer. A `401` is still signed out at once, so a person
+  the accounts bridge's asks (`askTokenUntilKnown`) get an answer. The notice sits bottom centre, clear of the
+  canvas's bottom-right cluster (undo, redo, zoom) at every width and UI scale, so on a phone it never covers the zoom
+  controls (`CORNER_CLUSTER_CLEARANCE` in `@liveworkspace/workbench`). A `401` is still signed out at once, so a person
   whose session really ended becomes a guest as before.
 
 Every other Worker call to the accounts site, or to liveworkspace through an app's router, is bounded the same way,
