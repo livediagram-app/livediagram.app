@@ -19,6 +19,7 @@ import {
   duplicateRule,
   listAutomations,
   listRuns,
+  readRuleSummary,
   runRule,
   testRule,
   toggleRule,
@@ -64,6 +65,15 @@ describe('automations-client', () => {
       'POST /api/projects/p%201/automations/r1/run {"item":"i1"}',
       'GET /api/projects/p%201/automations/runs',
       'GET /api/projects/p%201/automations/runs?rule=r1&result=failed&since=5&limit=200',
+    ]);
+  });
+
+  it('asks a rule’s summary by its id or its name, on a tab link with its tab', async () => {
+    await readRuleSummary({ ...SCOPE, tabId: null }, { ruleId: 'r 1', name: 'Done' });
+    await readRuleSummary({ ...SCOPE, tabId: 't1' }, { name: 'Done & Dusted' });
+    expect(calls()).toEqual([
+      'GET /api/projects/p%201/automations/summary?rule=r+1',
+      'GET /api/projects/p%201/automations/summary?name=Done+%26+Dusted&tabId=t1',
     ]);
   });
 

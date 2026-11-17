@@ -1,5 +1,6 @@
 // A plan's Automations, `/api/projects/:id/automations` (docs/specs/026-plan/automations.md; blueprint
-// automations.md "Routes", "Agents and the CLI"), inside the plan's room. Every route is an Editor's of the whole plan,
+// automations.md "Routes", "Agents and the CLI"), inside the plan's room. Every route but a rule's read-only summary
+// (automation-summary-route.ts, anyone who may read the plan) is an Editor's of the whole plan,
 // signed in or through that person's API token (a read-only token lists and reads the Audit Trail, nothing else),
 // never a workbench session and never through a link confined to one tab: anyone else is answered 403
 // `automations_need_editor`. A rule is checked by @liveplanner/items readRuleBody; it is on once it has an action.
@@ -52,6 +53,7 @@ import { runRule } from '../plan-room/automations/automation-runner';
 import type { PlanAutomations } from '../plan-room/automations/automation-queue';
 import { hookInfos } from '../plan-room/automations/automation-incoming';
 import { draftRule } from './automation-draft-route';
+import { automationSummary } from './automation-summary-route';
 import { makeSecret } from './automation-hook-routes';
 import { writer } from './item-route-kit';
 import { githubConfig } from '../github/github-config';
@@ -485,9 +487,11 @@ function doorOf(ctx: PlanRouteContext): Door | 'method' | null {
   return null;
 }
 
-// `/api/projects/:id/automations[/…]`, or null for any other path.
+// `/api/projects/:id/automations[/…]`, or null for any other path. A rule's summary is a reader's, so it is answered
+// before the Editor's gate (automation-summary-route.ts).
 export async function handleAutomationRoutes(ctx: PlanRouteContext): Promise<Response | null> {
   if (ctx.segments[3] !== 'automations') return null;
+  if (ctx.segments.length === 5 && ctx.segments[4] === 'summary') return automationSummary(ctx);
   const door = doorOf(ctx);
   if (door === null) return null;
   if (door === 'method') return methodNotAllowed();

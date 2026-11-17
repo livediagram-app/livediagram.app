@@ -1201,6 +1201,27 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     responseSchema: 'AutomationRunsResponse',
     statuses: [200, 401, 403, 404, 405, 410],
   },
+  {
+    method: 'GET',
+    path: '/projects/{id}/automations/summary',
+    segment: 'projects',
+    tag: 'Automations',
+    summary:
+      'One rule as anyone who can read the plan sees it, read-only: its name, whether it is on, its trigger, conditions and steps in words, and who made it and when. Typed-in addresses, webhooks, senders, repositories and an AI step’s ask read as plain labels. A link to one tab passes tabId and reads only a rule that acted on a card that tab shows. 404 automation_not_found for a rule gone.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    query: [
+      { name: 'rule', required: false, description: 'A rule id (a comment’s mark).' },
+      {
+        name: 'name',
+        required: false,
+        description: 'A rule’s name, any case (a history line’s), when no id is given.',
+      },
+      ITEM_TAB_QUERY,
+    ],
+    responseSchema: 'AutomationSummaryResponse',
+    statuses: [200, 401, 403, 404, 405, 410],
+  },
   // The project's plan for agents (docs/specs/026-plan/plan-agents.md).
   {
     method: 'GET',

@@ -4,6 +4,9 @@
 import type {
   AutomationNeed,
   AutomationRule,
+  AutomationRuleSummary,
+  AutomationSummaryLine,
+  AutomationSummaryStep,
   AutomationRuleBody,
   AutomationRuleStats,
   AutomationRun,
@@ -13,6 +16,9 @@ import type {
 export type {
   AutomationNeed,
   AutomationRule,
+  AutomationRuleSummary,
+  AutomationSummaryLine,
+  AutomationSummaryStep,
   AutomationRuleBody,
   AutomationRuleStats,
   AutomationRun,
@@ -41,6 +47,13 @@ export type AutomationListedRule = AutomationRule & {
   attention: AutomationNeed[];
   hook?: AutomationHookInfo;
 };
+
+// A rule as anyone who may read the plan sees it (`GET /automations/summary?rule=` or `?name=`; spec "On cards"): built
+// from an allow-list (@liveplanner/items automationRuleSummary), never the stored rule. A rule gone answers 404
+// `automation_not_found`.
+export interface AutomationSummaryResponse {
+  rule: AutomationRuleSummary;
+}
 
 // Make Secret and Regenerate (`POST /automations/:ruleId/secret`): the secret, shown this once, and the rule's hook.
 export interface AutomationSecretResponse {

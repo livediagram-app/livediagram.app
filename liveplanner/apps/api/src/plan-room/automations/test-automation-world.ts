@@ -21,7 +21,9 @@ export type Caller =
   | 'token_participant'
   | 'token_tab'
   | 'workbench'
-  | 'link_visitor';
+  | 'link_visitor'
+  // A visitor through a view share link with a guest's token and no account, as the editor always gives one.
+  | 'link_guest';
 
 const LEVELS: Record<Caller, string> = {
   owner: 'edit',
@@ -37,6 +39,7 @@ const LEVELS: Record<Caller, string> = {
   token_tab: 'edit',
   workbench: 'edit',
   link_visitor: 'edit',
+  link_guest: 'view',
 };
 
 const isToken = (who: Caller) => who === 'token' || who.startsWith('token_');
@@ -56,7 +59,7 @@ const WORKBENCH = {
 } as never;
 
 export function identityOf(planId: string, who: Caller): RouteIdentity {
-  const account = who === 'guest' || who === 'link_visitor' ? null : USER;
+  const account = who === 'guest' || who === 'link_visitor' || who === 'link_guest' ? null : USER;
   const owner = who === 'link_visitor' ? null : (account ?? 'guest_owner');
   return {
     accountUserId: isToken(who) || who === 'workbench' ? null : account,
@@ -77,7 +80,11 @@ export function identityOf(planId: string, who: Caller): RouteIdentity {
       team: who === 'team' ? 'team_1' : null,
       exp: 9e9,
       shareCode:
-        who.endsWith('link') || who === 'participant' || who === 'viewer' || who === 'link_visitor'
+        who.endsWith('link') ||
+        who === 'participant' ||
+        who === 'viewer' ||
+        who === 'link_visitor' ||
+        who === 'link_guest'
           ? 'code1'
           : null,
     } as never,
