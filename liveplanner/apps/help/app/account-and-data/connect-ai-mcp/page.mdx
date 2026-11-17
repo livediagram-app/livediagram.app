@@ -85,7 +85,15 @@ When the AI changes a tab you have open, you see it happen: the change arrives s
 
 In an AI tool that shows interactive results (Claude does), listing a plan's cards or reading a plan also opens a small view of its board beside the answer: each column with its card count (and its WIP limit, when it has one) and the cards in the board's order. Switch between the plan's Board tabs, and click a card to open it in the editor. The view is read-only: nothing you do in it changes the plan.
 
-A big board shows the first cards of each column and a **+ N more** button that opens the board in the editor, so the view stays quick. It uses your own connection, never a share link, and shows the board as it was when it opened; ask the AI again, or open the editor, to see later changes.
+A big board shows the first cards of each column and a **+ N more** button that opens the board in the editor, so the view stays quick. It uses your own connection.
+
+While it is open, the view follows the plan. When you or someone else changes it, the view draws the board again within a moment, and keeps your place. A small mark in its header says how it is keeping up:
+
+- **Live**: it is following the plan.
+- **Reconnecting**: the connection dropped, and it is trying again.
+- **Snapshot**: it has stopped following, for example because your access was removed, the connection kept dropping, or the plan moved to the Trash. It keeps showing what it last drew, and its tooltip says why and when.
+
+To follow along, the view uses a short-lived pass that only lets it watch, never a share link.
 
 The AI does the thinking; liveplanner checks, saves and shows what it produces. The MCP server runs no AI model of its own. New plans an AI creates go where any new plan goes: into your default folder when you have set one (**Settings**, **Plans**, **Where New Plans Go**), otherwise at the root of **My Work**.
 
