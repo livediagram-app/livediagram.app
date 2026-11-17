@@ -397,8 +397,15 @@ describe('a view-only ticket (the MCP view)', () => {
       const grant = grantFor({ item: 'p1', sub: 'user_a', owner: 'user_a', level });
       const res = await mint(env, grant);
       expect(res?.status).toBe(200);
-      const answer = await res!.json<{ ticket: string; expiresAt: number; adderKey?: string }>();
+      const answer = await res!.json<{
+        ticket: string;
+        expiresAt: number;
+        adderKey?: string;
+        level: string;
+      }>();
       expect(answer.ticket.startsWith('rt2~')).toBe(true);
+      // The caller's own level, which the view offers edits by; the ticket still admits at view.
+      expect(answer.level).toBe(level);
       expect(answer.ticket).not.toContain(grant);
       expect(answer.expiresAt).toBe((NOW + 600) * 1000);
       expect(answer.adderKey).toBeUndefined();
@@ -468,6 +475,32 @@ describe('a view-only ticket (the MCP view)', () => {
     expect(seen[0]!.headers.get('X-Verified-View-Only')).toBe('1');
   });
 
+  // mcp-server.md "Edits in the view": a read-only token's level reads view whatever its person may do, so the view
+  // draws no edit control; its writes are refused at the choke point anyway.
+  it('answers a read-only token’s level as view, over an edit grant', async () => {
+    const { env } = roomEnv();
+    const grant = grantFor({ item: 'p1', sub: 'user_a', owner: 'user_a', level: 'edit' });
+    const ask = (readOnly: boolean) =>
+      handleDocumentRoomRoutes(
+        makeTestRouteContext('POST', '/api/documents/p1/room-ticket?cap=view', {
+          env,
+          owner: 'user_a',
+          token: { id: 'tok-1', readOnly, name: 'Claude' },
+          headers: { [ITEM_GRANT_HEADER]: grant },
+          grant: null,
+          waitUntil: () => {},
+        }),
+      );
+    expect((await (await ask(true))!.json<{ level: string }>()).level).toBe('view');
+    expect((await (await ask(false))!.json<{ level: string }>()).level).toBe('edit');
+  });
+
+  it('says no level on a ticket without the cap', async () => {
+    const { env } = roomEnv();
+    const res = await mint(env, grantFor({ item: 'p1', sub: 'user_a' }), '');
+    expect(await res!.json()).not.toHaveProperty('level');
+  });
+
   it("stamps no token and no view on a person's own ticket, over a spoofed header", async () => {
     noteTokenRoom.mockClear();
     const { env, seen } = roomEnv();
@@ -509,7 +542,8 @@ describe('a view-only ticket (the MCP view)', () => {
         grant: null,
       }),
     );
-    const { ticket } = await res!.json<{ ticket: string }>();
+    const { ticket, level } = await res!.json<{ ticket: string; level: string }>();
+    expect(level).toBe('edit');
     await upgrade(env, `/api/documents/p1/ws?t=${encodeURIComponent(ticket)}`);
     expect(seen[0]!.headers.get('X-Verified-Role')).toBe('view');
     expect(seen[0]!.headers.get('X-Verified-Workbench-Pairing')).toBe('wp-1');

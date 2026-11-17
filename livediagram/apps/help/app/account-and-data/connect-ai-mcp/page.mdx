@@ -67,7 +67,18 @@ When the AI changes a canvas you have open, you see it happen: the change arrive
 
 ## Interactive view
 
-In an AI tool that shows interactive results (Claude does), creating, changing or reading a canvas also opens a small view of the tab beside the answer. You can pan and zoom it, switch between the canvas's tabs, and click a box to open it in the editor. The view is read-only: nothing you do in it changes the canvas.
+In an AI tool that shows interactive results (Claude does), creating, changing or reading a canvas also opens a small view of the tab beside the answer. You can pan and zoom it, switch between the canvas's tabs, and click a box to open it in the editor.
+
+### Editing in the view
+
+When the connection can edit the canvas (it isn't **Read-only access**, and you can edit the canvas yourself), the view's header shows an **Edit** button. Press it, and the view lets you make two quick changes without leaving the chat:
+
+- **Rename**: double-click a shape, text or sticky (or select it and press **Rename** or Enter), type, and press Enter. Escape leaves it as it was.
+- **Move**: drag a box to where you want it. With a box selected, the arrow keys nudge it 10 pixels (1 with Shift). A frame or lane brings what it holds.
+
+Click a box to select it; a small bar above it offers **Rename** and **Open** (the editor at that box), and says when something can only be moved in the editor (a badge, or the box it's attached to) or is **Locked**. Tab steps through the boxes, and Escape clears the selection, then leaves Edit. Each change saves as soon as you finish it, as one change in the canvas's history, and everyone with the canvas open sees it straight away. Anything bigger (adding, deleting, restyling, connecting) stays in the editor, or you can ask the AI.
+
+With a **Read-only access** connection, or on a canvas you can only view or take part in, there's no **Edit** button and the view stays read-only. Our server checks every change, so the view can't make one your access doesn't allow.
 
 While it is open, the view follows the canvas. When you or someone else edits the tab, it draws the tab again within a moment, and your pan and zoom stay where they were. A small mark in its header says how it is keeping up:
 
@@ -75,7 +86,7 @@ While it is open, the view follows the canvas. When you or someone else edits th
 - **Reconnecting**: the connection dropped, and it is trying again.
 - **Snapshot**: it has stopped following, for example because your access was removed, the connection kept dropping, or the canvas moved to the Trash. It keeps showing the tab as it last drew it, and its tooltip says why and when.
 
-The view uses your own connection and a short-lived pass that only lets it watch, never a share link. The picture of the tab in the chat stays too, so the answer still makes sense in tools without the view.
+The view uses your own connection and a short-lived pass that only lets it watch, never a share link; a change you make in it goes through that same connection, checked like any other. The picture of the tab in the chat stays too, so the answer still makes sense in tools without the view.
 
 The AI does the thinking; livediagram validates, lays out, saves, and renders what it produces. The MCP server runs no AI model of its own. New canvases an AI creates land at the root of **My Work** (or your default folder, if you set one), each with a **Made by AI** badge; the **Made by AI** filter lists them all, wherever you file them.
 

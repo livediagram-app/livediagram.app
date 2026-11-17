@@ -944,6 +944,12 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
           type: 'integer',
           description: 'A view-only ticket: when it lapses, epoch milliseconds.',
         },
+        level: {
+          type: 'string',
+          enum: ['view', 'participate', 'edit'],
+          description:
+            'A view-only ticket: your own level on the document (always view for a read-only token). The ticket still admits at view.',
+        },
       },
       required: ['ticket'],
     },

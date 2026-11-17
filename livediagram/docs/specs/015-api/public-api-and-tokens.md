@@ -184,7 +184,9 @@ single dispatch choke point with `403 read_only_token`
 credential rather than content: `GET /api/documents/:id/share`, whose links and password would let it
 open an edit link. One `POST` passes it, because it writes nothing and admits only a watcher:
 `POST /api/documents/:id/room-ticket?cap=view`, the view-only room ticket the MCP server's interactive view
-follows a document with ([MCP server §5a](mcp-server.md)). Read-only tokens are minted through the MCP
+follows a document with ([MCP server §5a](mcp-server.md)); its answer names the caller's level as `view` for a
+read-only token, so the view draws no edit control, and an edit made through the view is an ordinary changeset
+`POST` that the same choke point refuses. Read-only tokens are minted through the MCP
 consent screen (a "read-only access" checkbox), giving a cautious user a way to
 let an AI tool VIEW their documents without granting edit. There is still no
 finer-grained scope vocabulary (per-resource, per-verb); that remains deferred
