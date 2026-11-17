@@ -63,7 +63,8 @@ them like any other element edit.
 
 ## The popover
 
-`NotePopover` is **`w-[26rem]` (416px)** wide with an editing surface of
+`NotePopover` is **416px (26rem)** wide, **capped at the viewport less its 8px edge margins** so on a phone it fits
+the screen (374px at 390px wide) and stays wholly on it, with an editing surface of
 **11rem minimum, vertically resizable to 24rem**, and the viewport flip /
 clamp maths tracks its height. The chrome is the "Note" caption, the
 `Cmd-Enter saves, Esc cancels` hint, and the Delete note action.

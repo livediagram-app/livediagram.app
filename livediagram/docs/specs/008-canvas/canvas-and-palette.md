@@ -743,7 +743,9 @@ the title, notes, tools and checklists are the content.
   Ordering Platform** is the one filled system in the middle, its job in a line; the four external systems it relies
   on (Payments provider, Routing API, Email and SMS, Restaurant POS) are grey cards along the bottom.
   Every relationship is a labelled arrow saying what flows and how ("Places orders and tracks them · HTTPS"); a key
-  names Person, Software system and External system. Layers "Context" / "Systems"; graph paper.
+  names Person, Software system and External system. A short label sits on one line rather than leaving its
+  protocol alone on a second: its arrow carries a 160px label width, and the side people and systems stand 200px
+  clear of the platform so the sideways arrows have that room. Layers "Context" / "Systems"; graph paper.
 - **C4 Container Diagram** (Diagram): level 2, zooming into the same platform ("Plateful · containers"). A **system
   boundary** in the boundary's **C4 style** ("Plateful Ordering Platform", its meta line "Software system" in
   brackets in the bottom-left corner, as the C4 model draws one) holds its containers, each a card naming its
