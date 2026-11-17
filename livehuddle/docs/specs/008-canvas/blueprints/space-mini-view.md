@@ -206,10 +206,11 @@ canvas's six bubbles cost, and nothing once it closes.
   14 px text, `overflow-y: auto` on the list.
 - Header: **In the Space** and the count (`tabular-nums`, slate), **Back to Space** as a small brand-tinted button
   with the arrow-up-right glyph. Pressing the header or a row also calls `focusSpace`.
-- Tiles: under the knock, `px-2 pt-2`, a `grid grid-cols-2 gap-1.5`; each tile `aspect-video rounded-lg`, a 2 px ring
+- Tiles: under the knock, `px-2 pt-2`, a `grid grid-cols-2 gap-3`; each tile `aspect-video rounded-lg`, a 2 px ring
   in the person's colour (`box-shadow`, as the canvas bubble) and its 22% tint on slate-900 until the first frame;
   the name chip `text-[11px] font-medium text-white` on `bg-slate-950/70`, `rounded-md`, 4 px in from the bottom
-  left, truncated. `focus-visible` draws the brand outline. 320 px wide, two tiles are about 150 by 84 px each.
+  left, truncated. `focus-visible` draws a 2 px brand outline (`brand-600`, dark `brand-400`) 4 px out, so a 2 px band of the window's surface
+  separates it from the colour ring and it reads on every person colour. 320 px wide, two tiles are about 146 by 82 px each.
 - Knock: an amber card under the header, "Sam is knocking", **Let In** (solid amber) and **Not Now** (quiet).
 - Group headings: 11 px uppercase slate, **Near You** and **In the Space**.
 - Row: 40 px high; a 28 px bust (an SVG of `HeadFront` over a shoulders rect in the person's colour, `crispEdges`)

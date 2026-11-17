@@ -38,11 +38,12 @@ export function miniTiles(
   return tiles.length === 0 ? NO_TILES : tiles;
 }
 
-// A lone tile fills the row; an odd last one sits centred at one column's width.
+// The focus outline sits 4 px out, past the 2 px colour ring with a gap of the window's surface between, so it reads
+// on every person colour in light and dark; the 12 px gap keeps it clear of the next tile. A lone tile fills the row; an odd last one sits centred at one column's width.
 function spanOf(index: number, count: number): string {
   if (count === 1) return 'col-span-2';
   if (count % 2 === 1 && index === count - 1)
-    return 'col-span-2 w-[calc(50%-3px)] justify-self-center';
+    return 'col-span-2 w-[calc(50%-6px)] justify-self-center';
   return '';
 }
 
@@ -71,7 +72,7 @@ function MiniViewTileView({
         aria-label={level > 0 ? `${title}, speaking` : title}
         onClick={focusSpace}
         style={style}
-        className="relative block aspect-video w-full cursor-pointer overflow-hidden rounded-lg shadow-[0_0_0_2px_var(--mini-tile-ring)] transition-[box-shadow,scale] duration-150 hover:shadow-[0_0_0_3px_var(--mini-tile-ring)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100"
+        className="relative block aspect-video w-full cursor-pointer overflow-hidden rounded-lg shadow-[0_0_0_2px_var(--mini-tile-ring)] transition-[box-shadow,scale] duration-150 hover:shadow-[0_0_0_3px_var(--mini-tile-ring)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-600 dark:focus-visible:outline-brand-400 active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100"
       >
         <MediaVideo stream={stream} fit="cover" />
         <span
@@ -99,7 +100,7 @@ export function MiniViewTiles({
 }) {
   if (tiles.length === 0) return null;
   return (
-    <ul aria-label={TILES_LABEL} className="grid shrink-0 grid-cols-2 gap-1.5 px-2 pt-2">
+    <ul aria-label={TILES_LABEL} className="grid shrink-0 grid-cols-2 gap-3 px-2 pt-2">
       {tiles.map((tile, i) => (
         <MiniViewTile
           key={tile.person.id}
