@@ -374,7 +374,7 @@ export function ChromeToolsMenu({
               ref={view ? undefined : measureList}
               data-tools-popover=""
               // Never under 300 px, list or tool (owner, 2026-11-17), unless the screen is shorter.
-              className="relative flex max-h-[inherit] min-h-[min(325px,calc(100dvh-2rem))] flex-1 flex-col [border-radius:inherit] [color-scheme:light] dark:[color-scheme:dark]"
+              className="relative flex max-h-[inherit] min-h-[min(400px,calc(100dvh-2rem))] flex-1 flex-col [border-radius:inherit] [color-scheme:light] dark:[color-scheme:dark]"
               style={HERO_TOKEN_STYLE}
             >
               <p aria-live="polite" data-tools-live="" className="sr-only">
