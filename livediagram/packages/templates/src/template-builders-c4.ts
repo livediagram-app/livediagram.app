@@ -5,8 +5,8 @@
 //   - C4 Container Diagram: the same platform opened up, a system boundary holding its apps, services and stores, each
 //     naming its technology, with the order's path drawn flowing.
 // The third level, the Component Diagram, is template-builders-c4-component.ts, built from the parts exported here.
-// C4's own palette: people a deep blue, the system in focus a mid blue, everything outside it grey. Every card keeps
-// its fill under a dark theme (themeLockFill), so its white text always has its blue or grey behind it. The key, the
+// C4's own palette (c4-look.ts): people a deep blue, the system in focus a mid blue, everything outside it grey. Every
+// card keeps its fill and its ink under every theme (themeLockFill, themeLockText), so its text always reads. The key, the
 // header and the boundary are the scaffold; the cards and arrows the content.
 //
 // Pure: takes a centre (cx, cy), returns a fresh Element[].

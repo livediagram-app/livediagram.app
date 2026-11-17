@@ -1,9 +1,13 @@
 import { describe, expect, it } from 'vitest';
+import { themeHalf } from '@liveworkspace/element-model/theme-halves';
 import {
   C4_CARD_W,
   C4_DATABASE_H,
+  C4_KINDS,
   C4_LOOK,
   applyC4Variant,
+  c4CardFields,
+  c4DatabaseFields,
   c4CardHeight,
   c4CardWidth,
   c4NodeElement,
@@ -13,6 +17,13 @@ import {
 } from './c4-look';
 import { applyShapeVariant, withVariantColours } from './shape-variants';
 import { createShape } from './shape-factory';
+import {
+  THEMES,
+  contrastRatio,
+  recolourElementForTheme,
+  resetThemeElement,
+  switchThemeElement,
+} from './index';
 
 // The C4 look (docs/specs/010-palette/build-category.md "The C4 model"): one palette and card for the templates, the
 // palette's tiles and the graph's c4 style.
@@ -102,5 +113,42 @@ describe('the C4 palette variants', () => {
     expect(applyShapeVariant(card, undefined)).toEqual(card);
     expect(withVariantColours(card, 'c4-system')).toMatchObject({ fillColor: C4_LOOK.system.fill });
     expect(withVariantColours(card, undefined)).toEqual(card);
+  });
+});
+
+// docs/specs/008-canvas/canvas-and-palette.md "Templates", the C4 levels read under every theme.
+describe('the C4 look under every theme', () => {
+  const kinds = ['person', 'system', 'container', 'component', 'external'] as const;
+  const cards = kinds.map((kind) => ({
+    kind,
+    el: { ...createShape('card', 0, 0), ...c4CardFields(kind, 'Name', 'Meta', 'Body') },
+  }));
+  const store = { ...createShape('cylinder', 0, 0), ...c4DatabaseFields('Orders', 'PostgreSQL') };
+  const halves = THEMES.flatMap((t) => [themeHalf(t, 'light'), themeHalf(t, 'dark')]);
+
+  it('puts each ink at 4.5:1 or more on its fill', () => {
+    for (const k of C4_KINDS) {
+      const { fill, ink } = C4_LOOK[k];
+      expect(contrastRatio(fill, ink), k).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it('keeps every fill and ink through a recolour, a switch and a reset, in both halves of every theme', () => {
+    for (const { kind, el } of [...cards, { kind: 'database' as const, el: store }]) {
+      const want = { fillColor: C4_LOOK[kind].fill, textColor: C4_LOOK[kind].ink };
+      for (const theme of halves) {
+        const id = `${kind} on ${theme.id}`;
+        expect(recolourElementForTheme(el, theme), id).toMatchObject(want);
+        expect(resetThemeElement(el, theme), id).toMatchObject(want);
+        expect(switchThemeElement(el, halves[0]!, theme), id).toMatchObject(want);
+      }
+    }
+  });
+
+  it('still themes the stroke', () => {
+    const midnight = THEMES.find((t) => t.id === 'midnight')!;
+    expect(recolourElementForTheme(cards[0]!.el, midnight).strokeColor).toBe(
+      midnight.elementStroke,
+    );
   });
 });

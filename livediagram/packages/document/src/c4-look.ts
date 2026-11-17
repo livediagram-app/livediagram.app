@@ -4,8 +4,9 @@
 // style can never drift apart.
 //
 // C4's own colours: people a deep blue, the software system in focus a mid blue, its containers a lighter blue, their
-// components lighter still with dark ink, and everything outside the system grey. Every element keeps its fill under
-// a dark theme (themeLockFill), so its text always has its own colour behind it. Pure.
+// components lighter still with dark ink, and everything outside the system grey. Every element keeps its fill and its
+// ink under every theme (themeLockFill, themeLockText), so its text always reads on its own colour: each ink is at
+// least 4.5:1 on its fill (C4's container blue and grey are a shade deeper than Structurizr's for that). Pure.
 
 import { createShape } from './shape-factory';
 import type { Element } from './index';
@@ -36,7 +37,7 @@ export const C4_LOOK: Readonly<
     icon: 'box',
     name: 'Software system',
   },
-  container: { fill: '#438dd5', edge: '#2e6295', ink: '#ffffff', icon: 'box', name: 'Container' },
+  container: { fill: '#2f78c4', edge: '#235a93', ink: '#ffffff', icon: 'box', name: 'Container' },
   component: {
     fill: '#85bbf0',
     edge: '#5d82a8',
@@ -45,15 +46,15 @@ export const C4_LOOK: Readonly<
     name: 'Component',
   },
   database: {
-    fill: '#438dd5',
-    edge: '#2e6295',
+    fill: '#2f78c4',
+    edge: '#235a93',
     ink: '#ffffff',
     icon: 'database',
     name: 'Database',
   },
   external: {
-    fill: '#8a8a8a',
-    edge: '#6b6b6b',
+    fill: '#737373',
+    edge: '#575757',
     ink: '#ffffff',
     icon: 'globe',
     name: 'External system',
@@ -115,6 +116,7 @@ export function c4CardFields(
     strokeColor: hue.edge,
     textColor: hue.ink,
     themeLockFill: true,
+    themeLockText: true,
   };
 }
 
@@ -128,6 +130,7 @@ export function c4DatabaseFields(name: string, tech: string): Partial<Shape> {
     strokeColor: hue.edge,
     textColor: hue.ink,
     themeLockFill: true,
+    themeLockText: true,
   };
 }
 
@@ -226,6 +229,7 @@ export function withC4VariantColours<E extends object>(
     strokeColor: hue.edge,
     textColor: hue.ink,
     themeLockFill: true,
+    themeLockText: true,
   } as E;
 }
 

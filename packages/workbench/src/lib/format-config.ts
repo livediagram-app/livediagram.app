@@ -71,6 +71,7 @@ const FIELD_GROUP: Record<string, FormatGroup> = {
   // Text.
   textColor: 'text',
   textSwatch: 'text',
+  themeLockText: 'text',
   textSize: 'text',
   textAlignX: 'text',
   textAlignY: 'text',
