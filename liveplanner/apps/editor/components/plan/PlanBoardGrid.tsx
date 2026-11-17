@@ -160,7 +160,8 @@ function planBoardLaneCell(
   const cellTypes = addTypes;
   // A phone's covering board: the bottom controls' clearance inside its last cells, so the columns run to the foot and
   // their last cards still scroll up clear of the controls (phone-board.ts endClearance).
-  const clearance = v.look.endClearance && laneIndex === v.lanes.length - 1 ? v.look.endClearance : '';
+  const clearance =
+    v.look.endClearance && laneIndex === v.lanes.length - 1 ? v.look.endClearance : '';
   return (
     <div
       key={col.column.id}
