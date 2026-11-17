@@ -9,9 +9,14 @@ import {
   TEMPLATE_CATEGORIES,
   templateCategory,
   templateMatchesQuery,
+  templatePageKind,
   type TemplateDescriptor,
   type TemplateKind,
 } from '@livedocuments/templates';
+import type { PageKind } from '@livedocuments/document';
+
+// What the start shows (start-diagramming.md "Page type"): every template, or only those opening on one kind of page.
+export type StartPageType = 'all' | PageKind;
 
 type TemplateStartGroup = {
   id: string;
@@ -53,10 +58,12 @@ const byKind = new Map(TEMPLATES.map((t) => [t.kind, t]));
 /** A template's descriptor. */
 export const templateOf = (kind: TemplateKind): TemplateDescriptor => byKind.get(kind)!;
 
-function build(): TemplateStart {
+function build(type: StartPageType): TemplateStart {
+  // A page type keeps only the templates opening on that kind of page (templatePageKind).
+  const ofType = (k: TemplateKind) => type === 'all' || templatePageKind(k) === type;
   // Blank Illustration leaves the same empty tab the × does, so it is offered nowhere. Blank Tab is made by name only (an agent's add_tab, a `/new?blank` link), in no category, so on no start either.
   const listed = TEMPLATES.filter(
-    (t) => !t.hidden && t.kind !== BLANK_TEMPLATE && t.kind !== 'blank',
+    (t) => !t.hidden && t.kind !== BLANK_TEMPLATE && t.kind !== 'blank' && ofType(t.kind),
   ).map((t) => t.kind);
   const rest: TemplateStartGroup[] = OWN_GROUPS.map((g, i, all) => ({
     ...g,
@@ -78,4 +85,14 @@ function build(): TemplateStart {
   return { groups, search };
 }
 
-export const TEMPLATE_START: TemplateStart = build();
+export const TEMPLATE_START: TemplateStart = build('all');
+
+// Each page type's start, built the first time it is chosen and kept: a handful at most.
+const BY_TYPE = new Map<StartPageType, TemplateStart>([['all', TEMPLATE_START]]);
+
+/** The start showing only `type`'s templates (every template for 'all'). */
+export function templateStartFor(type: StartPageType): TemplateStart {
+  let start = BY_TYPE.get(type);
+  if (!start) BY_TYPE.set(type, (start = build(type)));
+  return start;
+}

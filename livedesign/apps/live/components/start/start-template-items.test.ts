@@ -5,8 +5,9 @@ import {
   TEMPLATE_CATEGORIES,
   popularKindsFor,
   templateCategory,
+  templatePageKind,
 } from '@livedesign/templates';
-import { TEMPLATE_STARTS } from './start-template-items';
+import { TEMPLATE_STARTS, templateStartFor } from './start-template-items';
 
 // docs/specs/007-editor/start-diagramming.md
 describe('the Pages template start', () => {
@@ -61,5 +62,45 @@ describe('Start Making Pages', () => {
       for (const k of g.kinds) expect(templateCategory(k), k).toBe(g.id);
     const kinds = groups.slice(1).flatMap((g) => g.kinds);
     expect(new Set(kinds).size).toBe(kinds.length);
+  });
+});
+
+// docs/specs/007-editor/start-diagramming.md "Page type"
+describe('the start by page type', () => {
+  const listed = TEMPLATES.filter((t) => !t.hidden && t.kind !== 'blank').map((t) => t.kind);
+  const TYPES = ['logo', 'wireframe', 'photo'] as const;
+
+  it('is the whole start under All Pages', () => {
+    expect(templateStartFor('pages', 'all')).toBe(TEMPLATE_STARTS.pages);
+  });
+
+  it('holds only that kind of page, every group holding something, built once', () => {
+    for (const type of TYPES) {
+      const start = templateStartFor('pages', type);
+      expect(templateStartFor('pages', type)).toBe(start);
+      for (const g of start.groups) {
+        expect(g.kinds.length, `${type} ${g.id}`).toBeGreaterThan(0);
+        for (const k of g.kinds) expect(templatePageKind(k), `${type} ${k}`).toBe(type);
+      }
+    }
+  });
+
+  it('files every listed template under exactly one page type', () => {
+    for (const k of listed) {
+      const homes = TYPES.filter((type) =>
+        templateStartFor('pages', type).groups.some(
+          (g) => g.id !== 'recommended' && g.kinds.includes(k),
+        ),
+      );
+      expect(homes, k).toEqual([templatePageKind(k)]);
+    }
+  });
+
+  it('searches only within the page type', () => {
+    const kinds = templateStartFor('pages', 'wireframe')
+      .search('logo')
+      .flatMap((g) => g.kinds);
+    expect(kinds).not.toContain('logo-design');
+    for (const k of kinds) expect(templatePageKind(k), k).toBe('wireframe');
   });
 });

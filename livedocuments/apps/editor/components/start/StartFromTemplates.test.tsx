@@ -5,6 +5,7 @@ import type { CommunityStartPost } from '@livedocuments/api-schema';
 import { resetCommunityEnabledForTests } from '@liveworkspace/community-ui';
 import { resetCommunityStartForTests } from '@liveworkspace/community-ui/start';
 import { track } from '@/lib/telemetry';
+import { templatePageKind, type TemplateKind } from '@livedocuments/templates';
 import { StartFromTemplates } from './StartFromTemplates';
 import { closeStartForBlank } from './close-start-for-blank';
 
@@ -200,5 +201,48 @@ describe('StartFromTemplates, from the Community', () => {
     mount(vi.fn(), 't-closed');
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(fetch).not.toHaveBeenCalled();
+  });
+});
+
+// docs/specs/007-editor/start-diagramming.md "Page type"
+describe('StartFromTemplates, by page type', () => {
+  const chip = () => screen.getByRole('button', { name: /^Page type: / });
+  const choose = (name: string) => {
+    fireEvent.click(chip());
+    fireEvent.click(screen.getByRole('menuitemradio', { name: new RegExp(`^${name}`) }));
+  };
+  const shownKinds = () =>
+    [...document.querySelectorAll('[data-start-card]')].map(
+      (c) => c.getAttribute('data-start-card') as TemplateKind,
+    );
+
+  it('leads the rail with the page type, All Pages each time it opens', () => {
+    mount();
+    expect(chip().getAttribute('aria-label')).toBe('Page type: All Pages');
+    choose('Slide Deck');
+    expect(chip().getAttribute('aria-label')).toBe('Page type: Slide Deck');
+    cleanup();
+    mount();
+    expect(chip().getAttribute('aria-label')).toBe('Page type: All Pages');
+  });
+
+  it('narrows every group and the search to that kind of page', () => {
+    mount();
+    choose('Slide Deck');
+    const rail = [...document.querySelectorAll<HTMLElement>('[data-rail]')]
+      .map((r) => r.getAttribute('data-rail')!)
+      .filter((id) => id !== 'connect');
+    expect(rail.length).toBeGreaterThan(0);
+    for (const id of rail) {
+      fireEvent.click(document.querySelector(`[data-rail="${id}"]`)!);
+      const kinds = shownKinds();
+      expect(kinds.length, id).toBeGreaterThan(0);
+      for (const k of kinds) expect(templatePageKind(k), k).toBe('slide');
+    }
+    fireEvent.change(screen.getByRole('textbox', { name: 'Find a template' }), {
+      target: { value: 'article' },
+    });
+    expect(shownKinds()).not.toContain('article');
+    for (const k of shownKinds()) expect(templatePageKind(k), k).toBe('slide');
   });
 });
