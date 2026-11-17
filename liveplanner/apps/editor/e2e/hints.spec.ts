@@ -1,4 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
+import { presetSetup } from '@liveplanner/items';
 import { auditContrast } from '@liveworkspace/e2e-kit/contrast';
 import { expect, expectNoPageErrors, seedTab, startBlankProject, test } from './fixtures';
 
@@ -13,14 +14,15 @@ const HOVER_CARD = '[role="tooltip"][data-hint="hover-card"]';
 // Well under the 1 s delay, and well over a frame: "instant" means this.
 const INSTANT_MS = 300;
 
-// A control with a tooltip: the element menu's Clear Styles, whose tooltip names what its glyph only draws
-// (docs/specs/008-canvas/element-menu-quick-bar.md). (These tests used the title bar's role pill, gone with the header
-// bar, and before that the diagram palette's tiles, which Plan does not have.)
-const TOOLTIP_TEXT = 'Clear Styles';
-const clearStyles = (page: Page) =>
+// A control with a tooltip: a board's Edit Widgets, whose tooltip names what its glyph only draws. (These tests used
+// the title bar's role pill, gone with the header bar, and before that the diagram palette's tiles, which Plan does not
+// have; the element menu's Clear Styles shows only where a Quick Style panel publishes it, which Plan has none of.)
+const TOOLTIP_TEXT = 'Edit Widgets';
+const editWidgets = (page: Page) =>
   page
-    .getByRole('dialog', { name: 'Element menu' })
-    .getByRole('button', { name: 'Clear Styles', exact: true });
+    .locator('[data-plan-board]')
+    .first()
+    .getByRole('button', { name: 'Edit Widgets', exact: true });
 
 // A plan with a square on its tab, so the canvas and its zoom controls show (Start Planning covers an empty tab).
 async function openEditor(page: Page) {
@@ -31,12 +33,22 @@ async function openEditor(page: Page) {
   await expect(page.getByRole('button', { name: 'Theme and canvas', exact: true })).toBeVisible();
 }
 
-// The editor with the square's element menu open, where Clear Styles is (its quick bar).
+// The editor with a kanban board on its tab, whose header holds Edit Widgets.
 async function openTile(page: Page) {
-  await openEditor(page);
-  await page.getByRole('img', { name: 'Square', exact: true }).click();
-  await page.getByRole('button', { name: 'More actions' }).click();
-  await expect(clearStyles(page)).toBeVisible();
+  await startBlankProject(page);
+  await seedTab(page, [
+    {
+      id: 'board',
+      type: 'shape',
+      shape: 'plan-board',
+      x: 100,
+      y: 100,
+      width: 900,
+      height: 460,
+      planBoard: presetSetup('kanban'),
+    },
+  ]);
+  await expect(editWidgets(page)).toBeVisible();
 }
 
 // Park the pointer on empty canvas, away from every trigger.
@@ -56,7 +68,7 @@ test.describe('Tooltip on a control', () => {
   test('names it only after a 500 ms hover', async ({ page, pageErrors }) => {
     await openTile(page);
     await parkPointer(page);
-    await clearStyles(page).hover();
+    await editWidgets(page).hover();
 
     await page.waitForTimeout(500);
     await expect(page.locator(TOOLTIP)).toHaveCount(0);
@@ -70,7 +82,7 @@ test.describe('Tooltip on a control', () => {
   test('opens at once on keyboard focus, and Escape dismisses it', async ({ page, pageErrors }) => {
     await openTile(page);
     await parkPointer(page);
-    const tile = clearStyles(page);
+    const tile = editWidgets(page);
     await keyboardFocus(page, tile);
 
     const tooltip = page.locator(TOOLTIP);
@@ -88,7 +100,7 @@ test.describe('Tooltip on a control', () => {
   }) => {
     await openTile(page);
     await parkPointer(page);
-    await clearStyles(page).hover();
+    await editWidgets(page).hover();
     const tooltip = page.locator(TOOLTIP);
     await expect(tooltip).toBeVisible({ timeout: 1_500 });
 
@@ -159,7 +171,7 @@ test.describe('Hints in dark mode', () => {
       true,
     );
     await parkPointer(page);
-    await clearStyles(page).hover();
+    await editWidgets(page).hover();
     await expect(page.locator(TOOLTIP)).toBeVisible({ timeout: 1_500 });
 
     const dark = await hintColours(page, TOOLTIP);
