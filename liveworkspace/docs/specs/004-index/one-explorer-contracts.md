@@ -201,8 +201,10 @@ as malformed. The parts of an item an app names (a tab, the cards' `~cards`, an 
 | `POST /items/:id/open`         | person or link      | Records an open for Recent, and counts it on the day's row for Most Used               |
 |                                |                     | (`use_days.opens`, kept 14 days). Debounced: at most one write a minute                |
 |                                |                     | per person and item.                                                                   |
-| `POST /items/:id/grant`        | person or link      | `→ {grant, level, tabId, expiresAt}`. A link visitor sends                             |
-|                                |                     | `X-Share-Code` (and `X-Share-Password` when set).                                      |
+| `POST /items/:id/grant`        | person or link      | `→ {grant, level, tabId, expiresAt, link?}`. A link visitor sends                      |
+|                                |                     | `X-Share-Code` (and `X-Share-Password` when set). `link` is the grant's `link` claim:  |
+|                                |                     | the code a link's access came through, sent or not, so an editor reopening the item by |
+|                                |                     | its own address opens it as that link's visitor ("Grants").                            |
 | `POST /items/:id/archive`      | owner               | To its owner's Archived (below) → `{item}`.                                            |
 | `GET /trash` / `DELETE /trash` | person              | List, empty (`?team=`; `?app=` empties that app's items only).                         |
 
@@ -486,7 +488,9 @@ An app never keeps such a grant in its cache, so a restore is seen on the next r
 access came through, on every grant a link gave, a signed-in person's included (one who opened the link before reaches
 the item again through Shared with no code sent). An app reads link access from it, never from whether the request
 carried `X-Share-Code`: the caller can leave a header off, so a link's limits (a Community post's content-only pass,
-the owner-only "Add to <Item>") would fall away with it. The header only adds to a grant signed without the claim. The item's Durable Object
+the owner-only "Add to <Item>") would fall away with it. The header only adds to a grant signed without the claim. The answer names the same code beside the grant (`link`), for the editor's chrome only: an editor that opens an
+item by its own address, with no code, takes the visitor's role, tab and code from it, never the owner's
+(`openOwnAddress` in `@liveworkspace/workbench/lib/editor-arrival`); the api and the room still read the claim. The item's Durable Object
 keeps its own copy of both (for its emails, its pushes and its alarm), and takes it from every grant it is handed
 (`@liveworkspace/index-app` `createItemHeadSync`), so a guest's merge into an account or a move to another team
 reaches the item the next time anyone opens it.
