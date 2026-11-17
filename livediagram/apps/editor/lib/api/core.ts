@@ -100,13 +100,18 @@ const core = createApiCore({
 
 // Every api request goes through here rather than bare `fetch` (the shared core's funnel).
 // `documentGrant: false` sends the request as it is, at once: the unload flush, which adds the grant it holds itself
-// and cannot wait for one (a beforeunload handler runs to its end before anything it awaits).
+// and cannot wait for one (a beforeunload handler runs to its end before anything it awaits). `uploadProgress` is
+// told the bytes sent as they go (a walkthrough's save): the request then goes by XMLHttpRequest, with the same
+// headers, grant, failure report and release signal.
 export function apiFetch(
   input: string,
   init?: RequestInit,
-  opts: { documentGrant?: boolean } = {},
+  opts: { documentGrant?: boolean; uploadProgress?: (sent: number, total: number) => void } = {},
 ): Promise<Response> {
-  return core.apiFetch(input, init, { grant: opts.documentGrant });
+  return core.apiFetch(input, init, {
+    grant: opts.documentGrant,
+    uploadProgress: opts.uploadProgress,
+  });
 }
 
 // Declared as functions, as they were before the core was shared, so a module that reaches one while an import cycle

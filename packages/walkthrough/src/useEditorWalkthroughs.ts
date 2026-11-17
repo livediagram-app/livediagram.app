@@ -7,6 +7,7 @@
 
 import { selectionIds, type SelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 import { useMemo } from 'react';
+import type { WalkthroughApiDeps } from './api';
 import type { WalkthroughHideable, WalkthroughViewport } from './host';
 import { useWalkthroughs, type Walkthroughs } from './useWalkthroughs';
 import {
@@ -25,7 +26,8 @@ export type EditorWalkthroughsInput = {
   phone: boolean;
   tabScope: unknown;
   apiBase: string;
-  apiFetch: (url: string, init?: RequestInit) => Promise<Response>;
+  // The app's api funnel; `uploadProgress` reports a save's bytes sent (the app's apiFetch option of that name).
+  apiFetch: WalkthroughApiDeps['fetch'];
   apiHeaders: (ownerId: string, opts: { share: string | null }) => Promise<HeadersInit>;
   self: { id: string; name: string };
   shareCode: string | null;
@@ -63,7 +65,7 @@ export function useEditorWalkthroughs(input: EditorWalkthroughsInput): Walkthrou
   const host = useWalkthroughHost({
     itemId: walkthroughsFit(input) ? input.itemId : null,
     apiBase: input.apiBase,
-    apiFetch: (url, init) => apiFetch(url, init),
+    apiFetch: (url, init, opts) => apiFetch(url, init, opts),
     apiHeaders: () => apiHeaders(self.id, { share: shareCode }),
     viewport: input.viewport,
     tabs: input.tabs,

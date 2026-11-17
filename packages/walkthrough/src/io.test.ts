@@ -341,6 +341,29 @@ describe('the api', () => {
     expect(await api.save(input)).toMatchObject({ ok: true });
   });
 
+  it("asks the app's funnel for the media part's bytes sent, and only for that part", async () => {
+    const opts: unknown[] = [];
+    const api = walkthroughApi(
+      {
+        base: '/api',
+        fetch: async (url, _init, options) => {
+          opts.push(options);
+          options?.uploadProgress?.(5, 5);
+          return url.endsWith('/media?d=d')
+            ? respond(200, { walkthrough: { ...summary, mine: true } })
+            : respond(201, { walkthrough: summary });
+        },
+      },
+      'd',
+    );
+    const progress: [number, number][] = [];
+    expect(
+      await api.save(input, undefined, (sent, total) => progress.push([sent, total])),
+    ).toMatchObject({ ok: true });
+    expect(opts).toEqual([undefined, { uploadProgress: expect.any(Function) }]);
+    expect(progress).toEqual([[5, 5]]);
+  });
+
   it('says why a save was refused, and lets go of a start whose media was refused', async () => {
     const refused = walkthroughApi(
       { base: '/api', fetch: async () => respond(403, { error: 'item_full' }) },
