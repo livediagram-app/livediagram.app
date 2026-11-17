@@ -1,7 +1,8 @@
 // History with Snapshots in it (owner, 2026-11-17; liveworkspace/docs/specs/014-snapshots/snapshots.md "In History"):
 // another tool's entries laid on the rail by time among the item's own events, and a block over the timeline.
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { createFakeIndex, makeEvent, makeItem } from '../test/fakeClient';
 import { buildHistory, pinHistory } from './history';
 import type { HistoryPin } from './HistoryDialog';
@@ -44,6 +45,20 @@ describe('pinHistory', () => {
     expect(out[1]!.label).toBeTruthy();
   });
 
+  it('lays five pins on 10,000 loaded events well inside a frame budget', () => {
+    const events = Array.from({ length: 10_000 }, (_, i) =>
+      makeEvent(1, { id: `e${i}`, actorId: `u${i % 4}`, occurredAt: NOW - i * 600_000 }),
+    );
+    const days = buildHistory(events, NOW);
+    const pins = [1, 2, 3, 4, 5].map((i) => pin(`s${i}`, NOW - i * 3 * 24 * HOUR));
+    let out: ReturnType<typeof pinHistory> = [];
+    const ms = cpuMsOf(() => {
+      out = pinHistory(days, pins, NOW);
+    });
+    expect(out.reduce((n, d) => n + d.pinned, 0)).toBe(5);
+    expect(ms).toBeLessThan(cpuBudgetMs(20));
+  });
+
   it('leaves days without pins as they were', () => {
     const days = buildHistory([makeEvent(1, { occurredAt: NOW - HOUR })], NOW);
     const out = pinHistory(days, [], NOW);
@@ -53,6 +68,13 @@ describe('pinHistory', () => {
 });
 
 describe('History with pins', () => {
+  // Pinned at noon, so nothing a few minutes old falls on yesterday.
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(NOW);
+  });
+  afterEach(() => vi.useRealTimers());
+
   function open(events: ReturnType<typeof makeEvent>[], pins: HistoryPin[]) {
     const index = createFakeIndex({ items: [makeItem(1)], events });
     render(
