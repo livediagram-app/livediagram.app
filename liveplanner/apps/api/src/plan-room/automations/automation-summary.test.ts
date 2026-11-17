@@ -110,6 +110,8 @@ describe('who may read a rule’s summary', () => {
       trigger: { kind: 'card_moved', to: ['done'] },
       steps: [{ kind: 'comment', text: 'Shipped' }],
     });
+    // A tab that shows no card yet reads no rule.
+    expect((await summary(`rule=${acted.id}&tabId=t1`, 'tab_editor_link')).status).toBe(404);
     const card = await w.make('A', { title: 'On the board' });
     await w.send('POST', `/api/projects/A/items/${card.id}/move`, { status: 'done' });
     await w.plans.get('A')!.room.alarm();
@@ -124,6 +126,22 @@ describe('who may read a rule’s summary', () => {
 });
 
 describe('what a rule’s summary holds', () => {
+  it('names the plan’s saved filters, columns and tabs as the board does', async () => {
+    const board = w.plans.get('A')!.db;
+    const data = JSON.parse(
+      (board.prepare("SELECT data FROM tabs WHERE id = 't1'").get() as { data: string }).data,
+    ) as { elements: { planBoard: Record<string, unknown> }[] };
+    data.elements[0]!.planBoard['savedFilters'] = [{ id: 'f1', name: 'Urgent Bugs', text: 'bug' }];
+    board
+      .prepare("UPDATE tabs SET data = ?, rev = rev + 1 WHERE id = 't1'")
+      .run(JSON.stringify(data));
+    const rule = stored({
+      name: 'Filtered',
+      conditions: [{ kind: 'saved_filter', tab: 't1', filter: 'f1' }],
+    });
+    expect((await read(`rule=${rule.id}`, 'viewer')).conditions).toEqual(['Matches Urgent Bugs']);
+  });
+
   it('never holds a typed-in address, a webhook, a sender, a repository or an AI step’s ask', async () => {
     const secrets = [
       'hidden.person@example.com',
