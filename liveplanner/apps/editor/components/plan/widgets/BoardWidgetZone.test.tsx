@@ -65,7 +65,8 @@ describe('BoardWidgetZone Edit Widgets', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Done Editing Widgets' }));
     expect(removeButton()).toBeNull();
     edit();
-    fireEvent.pointerDown(screen.getByText('filter'), { button: 0 });
+    // The row's Filter (the measuring layer holds its compact copy too).
+    fireEvent.pointerDown(screen.getAllByText('filter')[0]!, { button: 0 });
     expect(removeButton()).toBeTruthy();
     fireEvent.pointerDown(document.body, { button: 0 });
     expect(removeButton()).toBeNull();

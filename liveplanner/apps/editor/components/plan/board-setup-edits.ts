@@ -153,6 +153,20 @@ export function removeColumn(setup: PlanBoardSetup, id: string): PlanBoardSetup 
   return settleDoneColumns(setup, { ...rest, columns: setup.columns.filter((c) => c.id !== id) });
 }
 
+// A removed column put back at place `at` (Undo on Remove Column's notice, plan-board.md "A column's own settings"),
+// into the set-up as it is then: the set-up itself when the board has a column for its id or state again, or is full.
+export function restoreColumn(
+  setup: PlanBoardSetup,
+  column: PlanColumn,
+  at: number,
+): PlanBoardSetup {
+  if (setup.columns.some((c) => c.id === column.id || c.status === column.status)) return setup;
+  if (setup.columns.length >= PLAN_COLUMNS_MAX) return setup;
+  const columns = [...setup.columns];
+  columns.splice(Math.min(Math.max(0, at), columns.length), 0, column);
+  return { ...setup, columns };
+}
+
 // A column one, two or three slots wide; one is stored as absent.
 export function setColumnWidth(
   setup: PlanBoardSetup,

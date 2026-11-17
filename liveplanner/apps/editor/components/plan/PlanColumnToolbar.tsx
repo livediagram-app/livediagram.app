@@ -7,7 +7,7 @@ import type { ReactNode } from 'react';
 import type { PlanBoardSetup, PlanColumn } from '@liveplanner/items';
 import { ChevronLeftIcon, ChevronRightIcon, Tooltip, lucideGlyph } from '@liveplanner/ui';
 import { lucideBetweenVerticalEnd, lucidePanelLeftClose } from '@liveworkspace/icons/lucide';
-import { moveColumn, removeColumn } from './board-setup-edits';
+import { moveColumn } from './board-setup-edits';
 
 // Remove Column's glyph: a column taken out from between its neighbours.
 const ColumnOffIcon = lucideGlyph(lucideBetweenVerticalEnd, 16);
@@ -23,6 +23,7 @@ export function ColumnToolbar({
   onChange,
   onCollapse,
   onClose,
+  onRemove,
 }: {
   setup: PlanBoardSetup;
   column: PlanColumn;
@@ -34,6 +35,8 @@ export function ColumnToolbar({
   onChange: (next: PlanBoardSetup, part: string) => void;
   onCollapse?: (() => void) | undefined;
   onClose: (restoreFocus: boolean) => void;
+  // Remove Column: the popover takes it off the board and tells where its cards went (column-removed-notice.ts).
+  onRemove: () => void;
 }) {
   return (
     <div
@@ -82,10 +85,7 @@ export function ColumnToolbar({
           type="button"
           aria-label="Remove Column"
           className="relative touch-target flex h-8 items-center gap-1.5 rounded-md px-2 text-[12px] font-medium text-slate-600 transition hover:bg-rose-50 hover:text-rose-700 motion-reduce:transition-none dark:text-slate-300 dark:hover:bg-rose-500/10 dark:hover:text-rose-300"
-          onClick={() => {
-            onChange(removeColumn(setup, column.id), 'ColumnRemoved');
-            onClose(false);
-          }}
+          onClick={onRemove}
         >
           <ColumnOffIcon />
           Remove

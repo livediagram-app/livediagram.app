@@ -11,6 +11,7 @@ import {
 } from '@/hooks/plan/status-refusal';
 import { PlanColumnHeader } from './PlanColumnHeader';
 import { trackSetup } from './track-board-setup';
+import { restoreColumn } from './board-setup-edits';
 import { CollapsedColumnHead } from './CollapsedColumn';
 import { COLUMN_REORDERED } from './useColumnReorder';
 import { SlotColumnHeader } from './SlotColumnHeader';
@@ -104,6 +105,11 @@ export function planBoardColumnHeads(v: PlanBoardViewValues) {
           if (stay.size) plan.announce(cardsStayedMessage(stay.size, columnName(to)));
         }}
         onFrame={frameColumn ?? undefined}
+        onRestoreColumn={
+          plan?.editBoard
+            ? (column, at) => plan.editBoard?.(element.id, (now) => restoreColumn(now, column, at))
+            : undefined
+        }
         onDeleteStatus={(status) => plan?.removeStatusColumns(status, element.id)}
         onTrashCards={(status) => {
           if (!plan) return;

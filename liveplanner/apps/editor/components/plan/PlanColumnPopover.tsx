@@ -49,6 +49,7 @@ import {
 } from './column-status-picks';
 import { usePlan } from './PlanContext';
 import { RemoveColumnPopover } from './RemoveColumnPopover';
+import { useColumnRemovedNotice } from './column-removed-notice';
 import { ColumnToolbar } from './PlanColumnToolbar';
 import { ColumnWidthRow, WipLimitRow } from './PlanColumnFields';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
@@ -93,6 +94,8 @@ export function PlanColumnPopover({
   onDeleteStatus,
   onCollapse,
   onClose,
+  cardCount = 0,
+  onRestore,
 }: {
   getAnchor: () => HTMLElement | null;
   // A column just added: its name opens selected, ready to type over.
@@ -109,6 +112,10 @@ export function PlanColumnPopover({
   onDeleteStatus?: ((status: string) => void) | undefined;
   // Collapse Column, for this person alone (docs/specs/026-plan/plan-board.md "Collapse Column"); absent on a phone.
   onCollapse?: (() => void) | undefined;
+  // The cards the column shows on this board: what Remove Column's notice counts (none, it goes silently).
+  cardCount?: number;
+  // Puts a removed column back at its place on the board as it is then (the notice's Undo); absent, no Undo.
+  onRestore?: ((column: PlanColumn, at: number) => void) | undefined;
 }) {
   const mobile = useIsMobileViewport();
   const box = useRef<HTMLDivElement>(null);
@@ -204,6 +211,18 @@ export function PlanColumnPopover({
     if (next.columns[at]?.wipLimit !== column.wipLimit) onChange(next, 'WipLimit');
   };
   const added = addColumnAfter(setup, column.id);
+  const removedNotice = useColumnRemovedNotice();
+  // Remove Column (the toolbar's): off this board at once, then a word on where its cards went, with Undo.
+  const removeHere = () => {
+    onChange(removeColumn(setup, column.id), 'ColumnRemoved');
+    removedNotice({
+      column,
+      boardTitle: setup.title,
+      cards: cardCount,
+      restore: onRestore ? () => onRestore(column, at) : undefined,
+    });
+    onClose(false);
+  };
 
   const body = (
     <div
@@ -223,6 +242,7 @@ export function PlanColumnPopover({
         onChange={onChange}
         onCollapse={onCollapse}
         onClose={onClose}
+        onRemove={removeHere}
       />
       <div className="flex items-center gap-2.5 border-b border-slate-100 px-3 py-2.5 dark:border-slate-800">
         <span

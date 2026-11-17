@@ -192,6 +192,7 @@ export function usePlanSlice(opts: {
 
   const {
     updateBoard,
+    editBoard,
     setBoardFilter,
     removeStatusColumns,
     updateView,
@@ -313,6 +314,7 @@ export function usePlanSlice(opts: {
       ownerId: planItems.ownerId,
       itemsScope: planItems.scope ?? null,
       updateBoard,
+      editBoard,
       setBoardFilter,
       removeStatusColumns,
       updateView,
@@ -366,6 +368,7 @@ export function usePlanSlice(opts: {
       planItems.ownerId,
       planItems.scope,
       updateBoard,
+      editBoard,
       setBoardFilter,
       removeStatusColumns,
       updateView,

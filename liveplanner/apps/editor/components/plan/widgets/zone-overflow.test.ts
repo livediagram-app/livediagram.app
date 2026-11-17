@@ -7,11 +7,13 @@ import {
   MORE_LABEL_MAX_PX,
   FITS_ALL,
   fitWidgets,
+  keptFit,
   moreLabel,
   nudgeInRow,
   pressedIn,
   slotInList,
   zoneLayout,
+  zoneMinWidth,
 } from './zone-overflow';
 import { MORE_PANEL_MAX_PX, MORE_PANEL_MIN_PX, moreName, morePanelWidth } from './ZoneMore';
 
@@ -158,6 +160,75 @@ describe('fitWidgets', () => {
         fitWidgets({ ...base, order, widths: many, room: 1200, pressed: new Set([order[999]!]) });
     });
     expect(ms).toBeLessThan(cpuBudgetMs(200));
+  });
+});
+
+// board-widgets.md "A press never reshuffles the row" (Work Tracker 1087): the verifier's case on PR #1842, a board
+// header at a 990 px window whose zone is 554 px.
+describe('a press at 990 px', () => {
+  const at990 = {
+    order: ['filter', 'progress', 'wip', 'count'] as BoardWidgetId[],
+    widths: widths({ filter: 300, progress: 120, wip: 110, count: 90 }),
+    room: 554,
+    controls: [28, 28],
+    more: 76,
+    compact: 30,
+    pressed: new Set<BoardWidgetId>(),
+  };
+  const pressed = new Set<BoardWidgetId>(['progress']);
+
+  it('would, fitted afresh, turn the Filter compact and bring widgets back from More', () => {
+    expect(fitWidgets(at990)).toMatchObject({ filter: 'whole', shown: 0 });
+    expect(fitWidgets({ ...at990, pressed })).toMatchObject({ filter: 'compact', shown: 2 });
+  });
+
+  it('keeps the row as it was, More marking the press with its dot', () => {
+    const before = fitWidgets(at990);
+    expect(keptFit({ ...at990, pressed }, before)).toEqual({ ...before, named: false });
+    // Released, nothing comes back from More either.
+    expect(keptFit(at990, { ...before, named: false })).toEqual({ ...before, named: false });
+  });
+
+  it('names the press when there is room for it', () => {
+    const before = fitWidgets({ ...at990, room: 700 });
+    expect(keptFit({ ...at990, room: 700, pressed }, before)).toMatchObject({
+      shown: before.shown,
+      named: true,
+    });
+  });
+
+  it('gives the row up only when it would overflow', () => {
+    const before = fitWidgets(at990);
+    // The press widens the Filter past the room: the row is worked out afresh.
+    const wide = widths({ filter: 500, progress: 120, wip: 110, count: 90 });
+    expect(keptFit({ ...at990, widths: wide, pressed }, before)).toBeNull();
+    // A row holding every widget the order no longer has.
+    expect(keptFit({ ...at990, order: ['filter'] }, { ...before, shown: 3 })).toBeNull();
+    // Everything in the row: kept while it all fits, given up once it does not.
+    const all = fitWidgets({ ...at990, room: 900 });
+    expect(keptFit({ ...at990, room: 900, pressed }, all)).toMatchObject({ overflow: false });
+    expect(keptFit(at990, all)).toBeNull();
+  });
+
+  it('keeps a row with no Filter pinned', () => {
+    const order: BoardWidgetId[] = ['progress', 'wip', 'count'];
+    const before = fitWidgets({ ...at990, order, room: 300 });
+    expect(before).toMatchObject({ pinned: false, shown: 1 });
+    expect(keptFit({ ...at990, order, room: 300 }, before)).toEqual(before);
+  });
+});
+
+describe("the zone's narrowest", () => {
+  it('is the compact Filter, More with its dot and the buttons, or every widget when less', () => {
+    // 28 + 70 + 12 + 56 + 3 gaps.
+    expect(zoneMinWidth(base)).toBe(28 + 70 + MORE_DOT_PX + 56 + 18);
+    // No Filter: More with its dot and the buttons.
+    expect(zoneMinWidth({ ...base, order: ['count', 'progress', 'mine'] })).toBe(
+      70 + MORE_DOT_PX + 56 + 12,
+    );
+    // Every widget, when that is less.
+    expect(zoneMinWidth({ ...base, order: ['count'], more: 200 })).toBe(100 + 56 + 12);
+    expect(zoneMinWidth({ ...base, order: [] })).toBe(56 + 6);
   });
 });
 

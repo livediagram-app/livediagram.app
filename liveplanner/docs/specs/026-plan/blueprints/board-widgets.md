@@ -176,6 +176,15 @@ apps/editor/components/plan/FilterEmptyHint.tsx              the hint when the f
   `compact` width (`filter: 'compact'`), More naming its press; compact with More's dot (`named: false`, counted at
   `MORE_DOT_PX` in place of `MORE_LABEL_MAX_PX`); then the Filter in More with the rest (`filter: 'more'`, `pinned:
 false`), More named, then dotted. Each step is one linear pass, at most five, so the fit stays linear.
+- A refit in the same room with the same widgets keeps the row (Work Tracker 1087, spec "A press never reshuffles
+  the row"): `useZoneFit` records `{ room, key }` of each fit and, when both match, tries `keptFit(input, prev)` first:
+  the previous `pinned`, `filter` and `shown` with the widths as they are now, More counted with
+  `MORE_LABEL_MAX_PX` when it names a held press, else `MORE_DOT_PX` (`named: false`); null when even that overflows,
+  and then `fitWidgets` runs afresh. A fit made before the zone first read its presses (`pressed` null) is never
+  recorded, so a board mounting with a press fits afresh. Each fit also writes `data-widget-zone-min` on the zone:
+  `zoneMinWidth` (compact Filter, More, its dot, the controls and their gaps; no Filter, More, dot and controls;
+  never more than every widget), what the header's card type chips may not take from it (plan-board.md
+  blueprint, use-chips-fit.ts). The compact Filter ghost is drawn whenever the board has a Filter, for that width.
 - Room: the zone's `clientWidth`. The zone is `flex-1` (the canvas header, filling the room it has) and carries
   `width: <every widget's need>px`, so in a header band, whose span is sized by its content up to
   `max-w-[min(56vw,46rem)]`, the zone asks for what every widget needs and the cap gives the room, however many are
@@ -295,6 +304,7 @@ false`), More named, then dotted. Each step is one linear pass, at most five, so
 | A too-full zone: More, Filter pinned, keys, slots, roles        | BoardWidgetZone.overflow.test.tsx                              |
 | fitWidgets: fit, order, pressed reserve, 1,000 widgets in CPU   | zone-overflow.test.ts                                          |
 | Narrow rooms (364, 300 px): compact Filter, dot, Filter in More | zone-overflow.test.ts, BoardWidgetZone.overflow.test.tsx       |
+| A press at 990 px keeps the row (keptFit); zoneMinWidth         | zone-overflow.test.ts                                          |
 | The compact Filter: count, name, its panel, a Viewer            | CompactBoardFilter.test.tsx                                    |
 | +n opens and closes without scrolling its row (preventScroll)   | packages/workbench AnchoredPopover.focus.test.tsx              |
 | Field shapes, views, keys, cap, boardFields, state, toggle      | packages/items/src/field-widgets.test.ts                       |

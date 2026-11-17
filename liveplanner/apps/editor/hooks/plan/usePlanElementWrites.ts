@@ -57,6 +57,27 @@ export function usePlanElementWrites(w: {
     [commitOn],
   );
 
+  // A change worked out from the board's set-up as it is when it lands (Undo on Remove Column's notice, which runs
+  // after other edits may have come in): nothing is written when `change` returns the set-up it was given.
+  const editBoard = useCallback(
+    (boardId: string, change: (setup: PlanBoardSetup) => PlanBoardSetup) => {
+      commitOn(boardId, (els) => {
+        let changed = false;
+        const next = els.map((el) => {
+          if (el.id !== boardId || el.type !== 'shape' || el.shape !== 'plan-board') return el;
+          const now = normaliseBoardSetup(el.planBoard);
+          if (!now) return el;
+          const after = change(now);
+          if (after === now) return el;
+          changed = true;
+          return { ...el, planBoard: settleDoneColumns(el.planBoard, after) };
+        });
+        return changed ? next : els;
+      });
+    },
+    [commitOn],
+  );
+
   // The board's filter (docs/specs/026-plan/board-widgets.md "The board's filter"): only `planBoard.filter` changes, on
   // the set-up as stored (never the normalised copy), so a Participant's commit is one the participant rule takes whole.
   const setBoardFilter = useCallback(
@@ -170,6 +191,7 @@ export function usePlanElementWrites(w: {
 
   return {
     updateBoard,
+    editBoard,
     setBoardFilter,
     removeStatusColumns,
     updateView,

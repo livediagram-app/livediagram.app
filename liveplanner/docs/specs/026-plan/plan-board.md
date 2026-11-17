@@ -197,7 +197,13 @@ Where each is set, so a setting lives with what it changes, never in one central
   [done column](#done-columns) found by its name too), then, one to a row, **+ Add Column
   After** and **Delete Status**. The two ways to take it away: **Remove Column** (the toolbar's) takes it off this board only, at once: the
   state and its cards stay, so another board's column for it still shows them (where none does, the cards read
-  as No status, as any card of a state no board names). **Delete Status** (a bin) deletes the state: when it
+  as No status, as any card of a state no board names). When the column held cards, a toast says where they went,
+  with **Undo** (Work Tracker 1048): "To Do is off this board. Its 2 cards are on no board now: find them with
+  Search." (one card: "Its card is on no board now: find it with Search."), or, where another board still shows the
+  state, "To Do is off this board. Its 2 cards are still on Sprint." (several boards: "on Sprint and 1 more board").
+  Undo puts the column back in its place on the board as it is then (its name, colour, WIP limit, width and Counts as
+  Done as they were), unless the board has a column for that state again or is full; ⌘Z undoes it too. An empty
+  column is removed silently. The toast follows the In-Editor Notifications setting, as every info toast does. **Delete Status** (a bin) deletes the state: when it
   holds cards (out of the Trash, on any board) it first opens a popover anchored to it: "Delete {Name}?", "Its N
   cards are in {Name}, on every board that shows it. Where should they go?" (one card: "One card is in {Name}, on
   every board that shows it. Where should it go?"), and two option cards, one picked:
@@ -546,8 +552,12 @@ In Plan mode:
   the type's glyph on the card), then the type's name; while the header holds the top row (maximised or filling its
   tab), the board's name rides in the menu box and the chips lead the header straight after it, so they sit to
   the right of the name and give way to the widgets and controls rather than widening the box. With more than
-  three types the chips drop their names and keep the little cards (the tooltip names each); when they do not fit,
-  the row scrolls sideways. Each chip has a hover card, **Add a Task** (its type's name)
+  three types the chips drop their names and keep the little cards (the tooltip names each). **They come before the
+  widgets for room and never clip** (Work Tracker 1086): the widgets give way first (into More, down to the widget
+  zone at its narrowest: the Filter compact, More and the zone's buttons); when the header still cannot hold the
+  chips named, they drop their names and keep the little cards; when it cannot hold even those, they are left out
+  until there is room again. Which they are is worked out from the room the header has after the title, never from
+  their own width, so they never flip back and forth as they change. Each chip has a hover card, **Add a Task** (its type's name)
   over "Click to add one, or drag it onto the board.", and its accessible name is "Add a Task".
   - **A click** (or Enter or Space on a focused chip) adds a card of the type at the end of the column of the type's
     starting status (its Default State, as New {Type} uses) when the board has one, else the board's first column,

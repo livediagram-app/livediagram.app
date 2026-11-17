@@ -3,14 +3,22 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { presetSetup, statusColumn } from '@liveplanner/items';
 import type { ComponentProps } from 'react';
+import type { ToastActionSpec } from '@/hooks/ui/useToast';
 import { PlanColumnPopover } from './PlanColumnPopover';
 
 type Props = ComponentProps<typeof PlanColumnPopover>;
 
 // docs/specs/026-plan/plan-board.md "Column settings": Remove Column takes the column off this board and keeps
 // the state; Delete Status deletes the state, its columns coming off every board.
-const plan = { items: new Map(), statusNames: new Map() };
+const plan = {
+  items: new Map(),
+  statusNames: new Map(),
+  statusBoards: [{ title: 'Kanban', statuses: ['todo', 'done'] }],
+};
 vi.mock('./PlanContext', () => ({ usePlan: () => plan }));
+// Remove Column's notice (column-removed-notice.ts) goes through the shared toast.
+const toast = { action: vi.fn<(spec: ToastActionSpec) => void>(), dismissAction: vi.fn() };
+vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => toast }));
 vi.mock('@liveworkspace/workbench/hooks/ui/useIsMobileViewport', () => ({
   useIsMobileViewport: () => false,
 }));
@@ -21,7 +29,7 @@ const setup = {
   columns: [statusColumn('todo', 'To Do'), statusColumn('done', 'Done')],
 };
 
-function open() {
+function open(more: Partial<Props> = {}) {
   const fns = {
     onChange: vi.fn<Props['onChange']>(),
     onDeleteStatus: vi.fn<NonNullable<Props['onDeleteStatus']>>(),
@@ -35,6 +43,7 @@ function open() {
       onMoveCards={() => {}}
       onTrashCards={() => {}}
       {...fns}
+      {...more}
     />,
   );
   return fns;
@@ -48,6 +57,33 @@ describe('removing a column', () => {
       ['done'],
     );
     expect(fns.onDeleteStatus).not.toHaveBeenCalled();
+  });
+
+  it('Remove Column says where its cards went, with an Undo that puts the column back (Work Tracker 1048)', () => {
+    toast.action.mockClear();
+    const onRestore = vi.fn<NonNullable<Props['onRestore']>>();
+    const fns = open({ cardCount: 2, onRestore });
+    fireEvent.click(screen.getByRole('button', { name: 'Remove Column' }));
+    expect(fns.onClose).toHaveBeenCalledWith(false);
+    const spec = toast.action.mock.lastCall![0];
+    expect(spec.message).toBe(
+      'To Do is off this board. Its 2 cards are on no board now: find them with Search.',
+    );
+    expect(spec.actions[0]!.label).toBe('Undo');
+    spec.actions[0]!.onSelect();
+    expect(onRestore).toHaveBeenCalledWith(setup.columns[0], 0);
+    expect(toast.dismissAction).toHaveBeenCalledWith(spec.key);
+  });
+
+  it('an empty column goes silently, and with no way back there is no Undo', () => {
+    toast.action.mockClear();
+    open();
+    fireEvent.click(screen.getByRole('button', { name: 'Remove Column' }));
+    expect(toast.action).not.toHaveBeenCalled();
+    cleanup();
+    open({ cardCount: 1 });
+    fireEvent.click(screen.getByRole('button', { name: 'Remove Column' }));
+    expect(toast.action.mock.lastCall![0].actions).toEqual([]);
   });
 
   it('Delete Status, with no cards in it, deletes the state from every board at once', () => {

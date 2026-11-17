@@ -171,7 +171,9 @@ PlanColumnPopover.tsx    a column's settings popover. On top a role=toolbar "Col
                          under): Move Left / Move Right as one bordered h-8 segmented control of w-9 icon buttons
                          (`ToolbarButton`, each in the shared Tooltip, disabled at the ends), and at the end (justify-
                          between) Remove: ColumnOffIcon + "Remove", aria-label "Remove Column" (no tooltip), rose hover;
-                         only while another column remains. Below it: + Add Column After and Delete Status rows. While the picker is open it works out `missingBoardStatuses`
+                         only while another column remains; pressed, `removeHere` writes `removeColumn` (part
+                         `ColumnRemoved`), then `useColumnRemovedNotice` (column-removed-notice.ts) and closes.
+                         Below it: + Add Column After and Delete Status rows. While the picker is open it works out `missingBoardStatuses`
                          (setup, pickableStatuses(names, items, types), { items, types, boards: statusBoards }),
                          memoised on those, nothing while closed. A row or a matched name adds with part
                          `ColumnAddedExisting` (Add All too), a new name with `ColumnAdded`; + Add Column After asks the new column's head to open its own
@@ -266,13 +268,39 @@ BoardCardTypeChips.tsx   the header's card type chips (spec "Card type chips"): 
                          type, `PlanCardTileArt` (22 px: card outline, a stripe in the type's colour, its glyph) then
                          its label (labels drop above `CHIP_NAMES_MAX` types), each in a `HoverCard` "Add a {Type}"
                          / "Click to add one, or drag it onto the board.", aria-label "Add a {Type}"; a `role="group"`
-                         aria-label "Add Cards" row, `overflow-x-auto` without a scrollbar. Pointer down stops
+                         aria-label "Add Cards" row, `shrink-0`, never scrolled or clipped: `useChipsFit`
+                         (use-chips-fit.ts) gives it a mode, `data-chips-mode` named / compact (the tiles alone) /
+                         none (no buttons), from an unseen measuring layer (`data-chips-named-ghost`,
+                         `data-chips-compact-ghost`). Pointer down stops
                          propagation (the header would move the board) and hands the press to useCardTypeDrag;
                          a click (or Enter / Space) adds through `chipClickCell` + `plan.addItem` + `openNewItem`.
                          PlanBoardView renders it only when `chipsShown` (card-type-chips.ts) holds, and passes it
                          to PlanBoardHeader as `chips`, which draws it after the title on a canvas, and in a header
-                         band (the title portalled into the menu box) first in the header's middle, so it shrinks
-                         and scrolls before the widgets and controls do
+                         band (the title portalled into the menu box) first in the header's middle, whose container
+                         then has no `min-w-0` and no `--plan-band-mid` cap, so it is never narrower than the chips
+use-chips-fit.ts         Work Tracker 1086: pure `chipsMode(room, named, compact, canName)` (named when allowed and
+                         `named <= room`, else compact when `compact <= room`, else none; 0.5 px slack) and
+                         `chipsRoom({ rowLeft, targetLeft, surplus, cap })` = min(targetLeft - rowLeft -
+                         `CHIPS_GAP_PX` (12) + surplus, cap). `useChipsFit(row, canName, key)` reads, in a layout
+                         effect and one ResizeObserver (the header, the chips' container, the zone, its target, the
+                         menu box `[data-toolbar-menu]`): the target is the zone's `[data-band-controls]` card in a
+                         band, else the zone's parent, else (no zone) the header's controls card; surplus is the
+                         zone's `clientWidth` less its `data-widget-zone-min` (negative when the chips squeeze it);
+                         cap is the palette strip's first part (`[data-toolbar-palette]:not(.hidden) > *` in the
+                         header's row) less the gap. The room does not depend on the mode, so it never flips. State
+                         only on a change; a compact ghost of 0 (jsdom) changes nothing
+column-removed-notice.ts Work Tracker 1048: `columnRemovedCopy(name, cards, elsewhere)` (null for 0 cards; "{Name} is
+                         off this board. Its N cards are on no board now: find them with Search." / "Its card is ...
+                         find it with Search." / "... are still on {Board}" / "{Board} and N more board(s)"),
+                         `boardsStillShowing(statusBoards, status, title)` (every board naming the state, less one
+                         entry titled as this board), and `useColumnRemovedNotice()`: `toast.action` keyed
+                         `column-removed:{column id}` with Undo ("Undo removing {Name}") calling `restore` then
+                         `dismissAction`. PlanColumnPopover passes `cardCount` (the head's `col.count`) and
+                         `onRestore`, which PlanBoardColumnHeads wires to `plan.editBoard(element.id, now =>
+                         restoreColumn(now, column, at))` (board-setup-edits.ts: back at `at` clamped, the set-up
+                         itself when the board has the column's id or state again or holds PLAN_COLUMNS_MAX);
+                         `editBoard` (usePlanElementWrites) maps the board's stored set-up through
+                         `normaliseBoardSetup` and writes nothing when the change returns it unchanged
 card-type-chips.ts       pure: `chipsShown({ interactive, canEditCards, phone, simplified, setup, types })` (the
                          role and place gate) and `chipClickCell(setup, projection, type, statusNames)` (the column
                          of the type's `newCardStatus` when the board has it, else the first; the first row; the
@@ -1002,6 +1030,8 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 | Maximise, restore, Escape, unmount ends it                     | `apps/editor/hooks/plan/maximised-plan.test.ts`                                                                                                                |
 | No remount, maximised size, one Escape                         | `apps/editor/components/plan/MaximisedPlanLayer.test.tsx`                                                                                                      |
 | Card type chips: roles, phone, Archive, slot, labels, click    | `apps/editor/components/plan/card-type-chips.test.ts`, `BoardCardTypeChips.test.tsx`                                                                           |
+| Card type chips never clip: named, compact, none (1086)        | `apps/editor/components/plan/use-chips-fit.test.tsx`                                                                                                           |
+| Remove Column's notice and Undo (1048)                         | `column-removed-notice.test.ts`, `PlanColumnPopover.remove.test.tsx`, `board-setup-edits.test.ts`                                                              |
 | Card type chip drag: placeholder, refusal, drop, Escape        | `apps/editor/hooks/plan/useCardTypeDrag.test.tsx`                                                                                                              |
 | Card address: hash, link, mark, deep link reads it             | `apps/editor/lib/card-address.test.ts`                                                                                                                         |
 | Card address: push, back, replace, arrive, Back/Forward        | `apps/editor/app/project/[id]/useCardAddress.test.tsx`                                                                                                         |
