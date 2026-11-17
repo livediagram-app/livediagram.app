@@ -75,6 +75,12 @@ once a document is open.
   in real time."). Each link shows its level on a chip and can be changed in place.
 - A link visitor's level comes from the grant the index issues for the link (`level`, and `tab` when the link opens
   one tab). The api and the room check it on every request and socket ([API](../015-api/api.md) "Access").
+- **Reopening without the code keeps the link's level.** A visitor who opened a link once reaches the document again
+  by its own address (`/document/<id>`, a reload, Shared With Me, a bookmark) with no code. The index's grant still
+  names the link (`link`, beside its `level` and `tab`), so the editor opens them as that link's visitor: its role,
+  its tab, and its code on every write. Edit with no link is the owner's or a team member's. The role never comes
+  from the address, so a Viewer or Participant is never shown Editing for saves the api would refuse
+  (`openOwnAddress`, `@liveworkspace/workbench/lib/editor-arrival`, shared by every editor).
 - The editor's role pill reads Editing, Participating or Viewing.
 - **Losing access is explained, never silent.** A session ended by an access change (a link turned off, a password
   set, a grant whose level or tab changed on renewal) reloads into the access check, and a refusal then reads **No
