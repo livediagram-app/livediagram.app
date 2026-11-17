@@ -142,9 +142,8 @@ export function cornerCardCompact(wideWidth: number): boolean {
 }
 
 /** How far in from the editor's right edge the strip must stop to keep its gap from the top-right corner card, in
- *  screen px; 0 with no card over this editor. */
+ *  screen px; 0 with no card over this editor. Measured in the browser only (the strip's layout effects). */
 export function cornerCardClear(viewWidth: number, viewLeft: number): number {
-  if (typeof document === 'undefined') return 0;
   const card = document.querySelector<HTMLElement>('[data-corner-actions]');
   if (!card) return 0;
   const box = card.getBoundingClientRect();
