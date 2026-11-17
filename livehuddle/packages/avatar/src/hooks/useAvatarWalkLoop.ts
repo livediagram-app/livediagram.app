@@ -24,6 +24,7 @@ import {
 import type { RefObject } from 'react';
 import {
   STEP_LENGTH,
+  WALK_FRAMES,
   type AvatarSnapshot,
   type PlayingReaction,
   type WalkRects,
@@ -193,7 +194,7 @@ export function useAvatarWalkLoop({
         posRef.current = next;
         travelledRef.current += moved;
         patch.pos = next;
-        patch.stepFrame = Math.floor(travelledRef.current / STEP_LENGTH) % 2;
+        patch.stepFrame = Math.floor(travelledRef.current / STEP_LENGTH) % WALK_FRAMES;
         patch.walking = true;
         const nextFacing = facingFromDelta(dx, dy);
         if (nextFacing) patch.facing = nextFacing;
@@ -223,7 +224,7 @@ export function useAvatarWalkLoop({
           facing: facingRef.current,
           config,
           walking: moved > 0,
-          stepFrame: Math.floor(travelledRef.current / STEP_LENGTH) % 2,
+          stepFrame: Math.floor(travelledRef.current / STEP_LENGTH) % WALK_FRAMES,
           lift: liftRef.current,
           wave: waveStartRef.current === null ? null : 0,
           ...seatFields(),

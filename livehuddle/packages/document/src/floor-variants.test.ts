@@ -371,7 +371,7 @@ describe('the export of doors and corridors', () => {
     const corridor = { ...createShape('corridor', 10, 20), variant: 'tee' } as Parameters<
       typeof corridorSvg
     >[0];
-    const svg = corridorSvg(corridor, '#fff', '#000');
+    const svg = corridorSvg(corridor, '#fff');
     expect(svg).toContain('translate(10 20)');
     expect(svg).toContain(' Z');
     expect(face(corridor)).toContain(corridorPaths(480, 120, 'tee').walls);

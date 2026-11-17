@@ -33,6 +33,43 @@ describe('a character in the 3D view', () => {
     expect(stand.style.transformOrigin).toBe(`${100 - tx!}px ${200 - ty!}px`);
   });
 
+  // 3d-view.md "Pieces stand up": a sitter near a piece's front is nudged towards the camera, on its figure and chip.
+  it("carries a sitter's seat lift on its box and chip, and none while standing", () => {
+    const walker = (seated: boolean) =>
+      render(
+        <AvatarWalker
+          pos={{ x: 100, y: 200 }}
+          facing="down"
+          config={DEFAULT_AVATAR_CONFIG}
+          walking={false}
+          stepFrame={0}
+          standingOn={null}
+          name="Sam"
+          seated={seated}
+          seatLift={30}
+          chipShift={0}
+        />,
+      ).container;
+    const sitting = walker(true);
+    expect(
+      sitting
+        .querySelector<HTMLElement>('[data-avatar]')!
+        .style.getPropertyValue('--space-seat-lift'),
+    ).toBe('30px');
+    expect(
+      sitting
+        .querySelector<HTMLElement>('[data-avatar-chip]')!
+        .style.getPropertyValue('--space-seat-lift'),
+    ).toBe('30px');
+    cleanup();
+    const standing = walker(false);
+    expect(
+      standing
+        .querySelector<HTMLElement>('[data-avatar]')!
+        .style.getPropertyValue('--space-seat-lift'),
+    ).toBe('');
+  });
+
   it('turns what floats over a head about the feet below it', () => {
     expect(SPACE_BILLBOARD_ATTR).toEqual({ 'data-space-billboard': '' });
     expect(billboardOrigin(0, 64)).toEqual({

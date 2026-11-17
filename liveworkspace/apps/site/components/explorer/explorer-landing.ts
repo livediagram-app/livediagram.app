@@ -1,6 +1,6 @@
 // Where the Explorer's address lands the person (ExplorerShell): a retired address gives way to its successor, and
 // otherwise where they came from, the last app this browser used and what the address hands over (a notice, an item
-// just sent to the Trash). Read once per visit, as a stable snapshot, and forgotten when the Explorer unmounts.
+// just sent to the Trash or to Archived). Read once per visit, as a stable snapshot, and forgotten when the Explorer unmounts.
 import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 import { ITEM_PARAM } from '@liveworkspace/explorer';
 import type { AppName } from '@liveworkspace/sites';
@@ -22,6 +22,8 @@ import {
 export const FALLBACK_APP: AppName = 'liveplanner';
 // The handoffs an address may carry, taken once and then dropped from it.
 export const TRASHED_PARAM = 'trashed';
+// The open item an editor archived on its way here (one-explorer.md "Archiving the open item").
+export const ARCHIVED_PARAM = 'archived';
 export const TITLE_PARAM = 'title';
 
 /** The retired view an address names (`/explorer/profile`, …), if any. */
@@ -31,7 +33,7 @@ function retiredView(pathname: string): keyof typeof RETIRED_TARGETS | 'offline'
   return section in RETIRED_TARGETS ? (section as keyof typeof RETIRED_TARGETS) : null;
 }
 
-type Trashed = { id: string; title: string | null };
+type Handed = { id: string; title: string | null };
 
 /** What the address says on arrival: somewhere else to go, or where the person came from and what it hands over. */
 export type Landing =
@@ -42,7 +44,8 @@ export type Landing =
       // The last app this browser came from: what New makes in no app (it never filters the lists).
       lastApp: AppName | null;
       notice: string | null;
-      trashed: Trashed | null;
+      trashed: Handed | null;
+      archived: Handed | null;
       // The open item an editor's door came from (`?item=`): the page opens the place that holds it (useItemArrival).
       item: string | null;
       strip: boolean;
@@ -70,14 +73,16 @@ function readLanding(): Landing {
   if (settingsOpening(params.get(SETTINGS_PARAM), found.app) === 'teams')
     return { leave: '/explorer/invites' };
   const trashedId = params.get(TRASHED_PARAM);
+  const archivedId = params.get(ARCHIVED_PARAM);
   return {
     leave: null,
     arrived: found,
     lastApp,
     notice: arrivalNotice(search, found.app),
     trashed: trashedId ? { id: trashedId, title: params.get(TITLE_PARAM) } : null,
+    archived: archivedId ? { id: archivedId, title: params.get(TITLE_PARAM) } : null,
     item: params.get(ITEM_PARAM) || null,
-    strip: params.has(ENDED_PARAM) || trashedId !== null,
+    strip: params.has(ENDED_PARAM) || trashedId !== null || archivedId !== null,
   };
 }
 

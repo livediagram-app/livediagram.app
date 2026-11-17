@@ -3,7 +3,7 @@
 Status: **implemented** (Work Tracker 1043).
 
 While you walk a Space, the **3D View** tilts it back like Apple Maps' 3D: a perspective camera looks down at the
-floor at an angle, the walls of Rooms, Corridors, Office Pods and Fences stand up with their doorways cut in them, and
+floor at an angle, the walls of Rooms, Corridors and Fences stand up with their doorways cut in them, and
 every character stands upright on the floor. It is a way to see the Space as a place rather than a plan; it changes
 nothing on the board and nothing anyone else sees.
 
@@ -14,16 +14,31 @@ not laggy.
 
 - **The floor** is the board as it is drawn flat (rooms' floors, rugs, furniture, stickies, text, everything), tilted
   back about the middle of the screen with perspective: what is nearer the top of the screen is further away and
-  smaller. Furniture stays on the ground; it is drawn from above as always, so it reads as seen from the camera.
-- **The walls stand up**: every line a character cannot cross because it is a wall (a Room's walls, a Corridor's walls,
-  an Office Pod's walls, a Fence's and a Garden Fence's run) rises from the floor as a wall face. They are the same
+  smaller. What covers the floor stays on it: rugs, grass, garden paths, the Stage, ponds and pools, the Car Park,
+  stairs, Avatar Pads, stickies, text and everything that is not a piece of the Space.
+- **The walls stand up**: every line a character cannot cross because it is a wall (a Room's walls, a Corridor's walls, a
+  Fence's and a Garden Fence's run) rises from the floor as a wall face. They are the same
   lines the walk is stopped by ([Avatar mode](avatar-mode.md) "Finding the way"), so what you see standing is exactly
   what blocks you.
-  - **Doorways are gaps.** A Door standing on a wall ([Room builder](../009-elements/room-builder.md#door)) cuts it,
-    and a room's own doorway is already a gap in its walls. A **shut** Door stands in its gap as a door panel, a
-    little lower than the wall, in the door's wood; an open one leaves the gap clear.
-  - **Heights**: a Room, Corridor or Office Pod wall is as tall as a character (56 canvas px); a Fence is a low run
-    (22 canvas px); a shut Door's panel is 50.
+  - **Doorways are framed.** A Door standing on a wall ([Room builder](../009-elements/room-builder.md#door)) cuts it,
+    and stands in its gap as a doorway: a dark wooden frame with a lintel of plaster over it, so the way through reads
+    from across the room (the owner, 2026-11-17: "the doors should be more visible"). A **shut** Door's leaf stands in
+    the frame, two raised panels and a brass handle; an open one leaves the opening clear.
+  - **Windows are windows.** A Window on a plaster wall ([Room builder](../009-elements/room-builder.md#window)) is
+    cut out of it and stands in it as a window: plaster below its sill and over its head, a painted frame with a
+    transom and a mullion, and glass catching the light (night on a dark canvas). A glass room's walls are glass
+    throughout, so a window on one adds nothing. (The owner, 2026-11-17: "the windows don't look like windows".)
+  - **Wall pieces hang on the wall.** A Notice Board, World Clock, Dartboard, Calendar Wall, Photo Wall, Hand Dryer,
+    Screen and Room Sign placed against a room's back wall (its top within 64 px below the wall's line, its middle
+    along it) hangs on that wall: upright in the wall's plane, its foot 10 px up it, drawn no taller than 40 px over
+    the wall's top. One with no back wall near stands where it is, as any piece. (The owner, 2026-11-17: "not just
+    floating in the air".)
+  - **Fences stand as fences**: a Fence's run stands as wooden rails and posts, a Garden Fence's as white pickets on
+    two rails, the picket fence its flat drawing shows. A fence's flat drawing on the floor is hidden while the view
+    shows (as a room's flat name is), so the fence is never drawn twice, once standing and once lying under it (the
+    owner, 2026-11-17: "what is the white stuff under the garden fences").
+  - **Heights**: a Room or Corridor wall is as tall as a character (56 canvas px); a Fence is a low run
+    (22 canvas px); a doorway's opening is 44, under a 12 px lintel.
   - **Glass rooms** ([Office](../009-elements/office.md#glass-walls)) stand up as glass: a pale, see-through face.
   - **Lit from the front**: a wall facing the camera is lightest, one running away from it darker, so the corners
     read without outlines. Each wall has a lighter top edge, its thickness seen from above.
@@ -31,16 +46,63 @@ not laggy.
     flat plan) is written on the back wall as a sign, facing the camera, so it stays readable however far away the
     room is. A room drawn with the Room Builder writes it on its furthest wall that faces the camera. Its flat name on the floor is
     hidden while the view shows, so the name is never written twice.
+- **The pieces stand up** (the owner, 2026-11-17: "none of the furniture and items are 3d, they remain 2d
+  in 3d mode"): every piece of the Space drawn upright in the flat plan (furniture, seats, desks, tables, plants and
+  trees, machines, shelves, signs, screens, boards, portals, everything with legs or a pot on the ground) rises from
+  the floor about its front edge and faces the camera, as the characters do, so a bookshelf stands as a bookshelf
+  and a plant as a plant rather than lying squashed on the floor. Its drawing is the flat plan's, unchanged: the
+  pieces are already drawn from the characters' camera, so standing them up is all the 3D they need. See
+  [Pieces stand up](#pieces-stand-up).
+- **Grass pokes up** (the owner, 2026-11-17: "shouldn't the grass be poking up slightly in 3d"): a lawn stays on
+  the floor, and rows of thin green blades 7 canvas px tall stand across it every 22 canvas px, inside its rounded
+  edge, so a lawn reads as grass from the side. Too low to hide anyone, the blades are never cut away. No blade pokes
+  up through what lies over the lawn: a row stops at a Room's, Corridor's or Office Pod's floor, a Garden Path, a Rug,
+  the Stage, a Pond, a Swimming Pool, the Car Park, Stairs or an Avatar Pad, and carries on past it (the owner,
+  2026-11-17: "the grass now comes through the room floors").
 - **The characters stand upright**: yours, every peer's and the Receptionist, each turned to face the camera
   (billboarded) about their feet, so they stand on the spot they walk on, in their four facings, walking, sitting and
   hopping as in the flat view. Their name chips and status chips ride with them, upright and readable.
+- **Sitters are drawn over their piece**, as the flat plan draws them: a sitter on a chair, a sofa, a bench or
+  either side of a table stands just in front of the standing piece. One sitting behind it (further back than 60 % of
+  its depth: a table's far side, behind a desk turned to face you) has their legs hidden under its front, so they read
+  as sitting behind it, never hidden by it or sitting on the floor (the owner, 2026-11-17).
 - **What floats above heads stands up with them**: speech bubbles, the talking bars, raised hands and camera and
   screen bubbles turn to face the camera about the same feet, so they stay over the head they belong to. They are
   drawn over the whole scene, so no wall ever hides one, however near the wall the speaker stands; the Receptionist's
-  card too, which in 3D always stands over his head, never under his feet.
+  card too, which in 3D always stands over his head, never under his feet. Their words are **as sharp as in the flat
+  view**: each is drawn flat on the screen, moved and scaled to where the camera would stand it, following the tilt
+  as the view turns, rather than drawn through the camera's perspective, which softened every letter (the owner,
+  2026-11-17: "text like the receptionist chat looks blurry in 3d"). So turning the view in and out, they stay over
+  their speaker on every frame.
 - **What lies on the floor stays on it**: the hearing ring, the "you are here" ring, an Avatar Pad's arrival beam.
 - **The floor pattern goes**: the tab's dots or grid are drawn on the screen, not on the floor, so the 3D view
   shows the tab's background colour alone, fading into a soft horizon at the top of the screen.
+
+## Pieces stand up
+
+- **Which pieces**: every shape kind of the Space that is drawn standing (`standsIn3D` in the blueprint). Floor
+  coverings lie flat: the Room and Corridor (their walls stand instead), Fences (theirs too), Doors and
+  Windows (part of a wall), the Rug, Grass, Garden Path, Stage, Pond, Swimming Pool, Car Park, Stairs and Avatar Pad,
+  and the board's controls (Mode Button, Focus Button, Timer, Stopwatch), icons and stickers. Every other element
+  (stickies, text, cards, pictures, charts) is the floor's. An **Office Pod's furniture stands up inside
+  its walls**: its walls stand as a room's do, and its benches, table and mug stand up together about the table's
+  front edge, as a piece does, so the booth's inside reads as furniture rather than a floor plan (the owner,
+  2026-11-17: "I meant the furniture inside"). Its sitters are drawn over its benches.
+- **About its front edge**: a piece turns up about the bottom edge of its box, the line its legs, base or pot stand
+  on, and faces the camera. Being no taller than its box is deep, it never leans back past its own footprint, so a
+  piece against a wall never pokes through it. A turned piece (one with a rotation) stands about its middle instead.
+- **In the scene**: pieces, walls and characters are sorted by depth together, so a character behind a desk is
+  hidden by it, one in front of a bookshelf stands over it, and a piece behind a wall is hidden by the wall (unless
+  the wall is cut away in front of you).
+- **Sitting**: a character sitting near a piece's front (a chair, a sofa, a bench, a table's near side: feet within
+  60% of the piece's depth of its front edge) is drawn in front of the piece, as in the flat plan; one sitting further
+  in (behind a desk, on the far side of a table, with a chair's back towards you) sits behind the piece's front, so
+  the desk, the table or the chair's back hides their legs as it would.
+- **Clicking a standing piece** clicks that piece, wherever on its drawing the press lands, as in the flat plan: a
+  press over a standing piece finds the nearest piece drawn under it before the floor.
+- **It animates** with the tilt: the pieces rise as the walls fold up, and lie back down as the view flattens.
+- **Only near pieces stand**: the pieces in the view area (the walls' area, "Performance") stand; the rest lie flat
+  in the distance, under the horizon's fog, and rise as the view comes near.
 
 ## Walls in front of you are cut away
 
@@ -73,6 +135,14 @@ walls; peers behind a wall are hidden by it, as people are.
   it) and the characters rise upright, all together. Under reduced motion (the system setting or the Reduce Motion
   preference) it switches at once.
 - **Your character stays centred** throughout: the tilt turns about the middle of the screen.
+- **It brings the camera closer** (the owner, 2026-11-17: "3d should be closer than 2d", "toggling between them
+  should alter my zoom both ways"): turning the view on zooms in by 1.4 times (within the zoom's limits) about your
+  character, and turning it off zooms back out: to the zoom you had, when you did not zoom while in 3D, else by the
+  same 1.4. The zoom eases there on the tilt's own curve and length (520 ms), so the camera closes in as it tilts
+  rather than jumping a frame ahead of it (the owner, 2026-11-17: "the transition between 2d and 3d is janky"); a zoom of your own
+  mid-ease takes over. The zoom is the canvas's own, so the zoom controls show it and every zoom works on it. Only the switch
+  zooms: a walk that starts in 3D lands at the walking camera's 3D zoom, 140% with you in the middle (where the flat
+  walk lands at 100%, [Avatar mode](avatar-mode.md) "The camera"), and a walk that ends is framed by Edit as always.
 - **It is remembered per person, in this browser** (Browser Storage, `livehuddle:v2:space-3d`): turn it on and every
   walk on every board opens in 3D until you turn it off. Nothing is sent to the server or to anyone else.
 
@@ -104,9 +174,10 @@ It only changes the viewer's own view, so every role has it ([Share roles](../01
 
 ## Themes
 
-The walls take their colours from the canvas: pale stone walls with a white top edge on a light canvas, slate walls
-with a lighter top edge on a dark one (`data-dark-canvas`), whatever the app's light or dark mode. The top edge keeps
-at least 3:1 against the face, so a wall's outline reads in every theme without a stroke.
+The walls are the plaster the flat plan draws (../009-elements/furniture-art-style.md "Rooms"): a plaster face with a
+lighter top edge, a soft shadow at its foot and a wooden skirting. On a dark canvas (`data-dark-canvas`) they are the
+same walls in evening light, deeper, whatever the app's light or dark mode. A wall reads against the floor by its
+shading, its foot shadow and its skirting rather than by a stroke.
 
 ## Performance
 
@@ -123,6 +194,11 @@ Office, and 30 fps or better on a phone.
   and each wall is one element with one transform. Only the walls near the view are drawn (within one and a half
   screens to either side, three ahead and one and a half behind, at the current zoom), re-chosen when the view has
   moved three quarters of a screen.
+- **Pieces stand in the element plane**: each near standing piece is turned by one CSS rotation on its own box, so
+  it is a layer of its own while the view shows; a piece's drawing is rasterised once, never per step. Only the
+  near ones are turned, chosen with the walls, so the layers grow with what is in view, not with the board. The
+  floor's other elements stay in the plane, unturned. Measured on Virtual Office (2026-11-17, 43 standing pieces,
+  a 144 Hz laptop): walking in 3D drew 769 frames at a median of 6.9 ms and a 95th percentile of 8.6 ms.
 - **The cut-away is the only per-step work**: a check of each drawn wall against your feet, which writes to a wall
   only when its state changes.
 - **The 3D code loads on first use**: nothing of it is in the editor's first load; it is fetched the first time the
@@ -131,6 +207,7 @@ Office, and 30 fps or better on a phone.
 ## Out of scope
 
 - Turning the camera (orbiting or rotating the view); the camera always looks up the screen.
-- Heights for furniture or other pieces; a 3D look for the drawing of any element.
+- A 3D model of any piece (sides, a top, turning to show its back as the camera moves): pieces stand as their flat
+  drawing, facing the camera.
 - People arrows ([People arrows](people-arrows.md)) aimed through the 3D camera: they still point from the flat view.
 - A 3D view while editing, and 3D in exports.

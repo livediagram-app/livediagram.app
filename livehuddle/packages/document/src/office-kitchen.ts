@@ -12,27 +12,27 @@ import { ellipse, path, rect } from './furniture-parts';
 export const KITCHEN_TONES = {
   sage: '#9cbf9a',
   sageDeep: '#6f9a6c',
-  brass: '#d4a73a',
+  brass: '#d2a63c',
   oak: '#d9a066',
   oakDeep: '#b7793d',
   tile: '#f1f5f9',
   steel: '#cbd5e1',
   steelDeep: '#94a3b8',
   towel: '#f8fafc',
-  towelStripe: '#ef4444',
+  towelStripe: '#de5555',
   paper: '#fefce8',
-  note: '#fde68a',
-  sun: '#facc15',
-  roof: '#ef4444',
-  grass: '#22c55e',
-  magnetBlue: '#3b82f6',
-  magnetOrange: '#f97316',
+  note: '#eedd99',
+  sun: '#dcba33',
+  roof: '#de5555',
+  grass: '#29be60',
+  magnetBlue: '#5187e0',
+  magnetOrange: '#db7834',
   glass: '#1e293b',
   clockFace: '#0f172a',
-  clock: '#4ade80',
+  clock: '#50d882',
   keypad: '#94a3b8',
-  kettle: '#ef4444',
-  kettleDeep: '#b91c1c',
+  kettle: '#de5555',
+  kettleDeep: '#b02525',
   kettleBase: '#334155',
   water: '#bae6fd',
 } as const;
@@ -155,7 +155,6 @@ const KITCHEN_COUNTER_VIEW: FurnitureDrawing = {
     ...door(57, 43, 34, 60.5),
   ],
   seats: [],
-  ring: { cx: 56, cy: 62, rx: 54, ry: 20 },
 };
 
 // A unit's back to you: the worktop from above at the same line as its front's, its back edge, and the carcass's plain
@@ -172,7 +171,6 @@ const KITCHEN_COUNTER_BACK: FurnitureDrawing = {
   ...KITCHEN_UNIT,
   parts: [...backTop],
   seats: [],
-  ring: { cx: 56, cy: 62, rx: 54, ry: 20 },
 };
 
 // Facing left: the two drawers along the worktop's edge and the two doors beyond them, one above the other.
@@ -187,7 +185,6 @@ const KITCHEN_COUNTER_SIDE: FurnitureDrawing = {
     ...sideDoor(5, 58, 11, 61.5),
   ],
   seats: [],
-  ring: { cx: 32, cy: 56, rx: 30, ry: 54 },
 };
 
 // The same unit with a steel sink in the worktop, a swan-neck tap and a tea towel over the cupboard door.
@@ -207,7 +204,6 @@ const KITCHEN_SINK_VIEW: FurnitureDrawing = {
     path('mark', 'M70 44h16v2.5H70zM70 49h16v1.5H70z', T.towelStripe),
   ],
   seats: [],
-  ring: { cx: 56, cy: 62, rx: 54, ry: 20 },
 };
 
 // The sink unit's back to you: the sink in the worktop beyond, the tap's back toward you, and the plain carcass back.
@@ -222,7 +218,6 @@ const KITCHEN_SINK_BACK: FurnitureDrawing = {
     ellipse('mark', 63, 23, 2.4, 1.6, T.steelDeep),
   ],
   seats: [],
-  ring: { cx: 56, cy: 62, rx: 54, ry: 20 },
 };
 
 // Facing left: the sink in the worktop from above, the tap reaching over it from the splashback, and the tea towel
@@ -242,7 +237,6 @@ const KITCHEN_SINK_SIDE: FurnitureDrawing = {
     path('mark', 'M13 70h2.5v16H13zM18 70h1.5v16H18z', T.towelStripe),
   ],
   seats: [],
-  ring: { cx: 32, cy: 56, rx: 30, ry: 54 },
 };
 
 // A tall fridge-freezer: the freezer door over the fridge door, long handles, a child's drawing and a note held up by
@@ -269,7 +263,6 @@ const FRIDGE_VIEW: FurnitureDrawing = {
     path('glint', 'M13 40V14M13 118V92'),
   ],
   seats: [],
-  ring: { cx: 36, cy: 124, rx: 32, ry: 7 },
 };
 
 // Its back to you: the plain back panel, the condenser's coil, the compressor at its foot and its feet.
@@ -286,7 +279,6 @@ const FRIDGE_BACK: FurnitureDrawing = {
     path('glint', 'M60 18V30'),
   ],
   seats: [],
-  ring: { cx: 36, cy: 124, rx: 32, ry: 7 },
 };
 
 // Facing left: tall and deep. Its top from above, its plain side panel nearest you, and its doors cheated toward you
@@ -311,7 +303,6 @@ const FRIDGE_SIDE: FurnitureDrawing = {
     ellipse('mark', 16, 124, 2.2, 2.2, T.magnetOrange),
   ],
   seats: [],
-  ring: { cx: 34, cy: 144, rx: 28, ry: 8 },
 };
 
 // A microwave: a dark glass door with its glint, a control panel with a green clock and a keypad.
@@ -333,7 +324,6 @@ const MICROWAVE_VIEW: FurnitureDrawing = {
     ),
   ],
   seats: [],
-  ring: { cx: 30, cy: 36, rx: 28, ry: 4 },
 };
 
 // Its back to you: the plain back panel and its vent slits, its base at the same line as its front's.
@@ -348,7 +338,6 @@ const MICROWAVE_BACK: FurnitureDrawing = {
     rect('mark', 8, 26, 10, 5, 1, T.steelDeep),
   ],
   seats: [],
-  ring: { cx: 30, cy: 36, rx: 28, ry: 4 },
 };
 
 // Facing left: its top from above, its plain end nearest you, and its door and controls cheated toward you down the
@@ -368,7 +357,6 @@ const MICROWAVE_SIDE: FurnitureDrawing = {
     path('mark', [53, 56.5, 60].map((y) => `M4.5 ${y}h5v2h-5z`).join(''), T.keypad),
   ],
   seats: [],
-  ring: { cx: 17, cy: 62, rx: 15, ry: 4 },
 };
 
 // A red electric kettle on its dark base: spout, handle, lid knob and a water window.
@@ -386,7 +374,6 @@ const KETTLE_VIEW: FurnitureDrawing = {
     path('glint', 'M12.5 13V26'),
   ],
   seats: [],
-  ring: { cx: 16, cy: 32, rx: 13, ry: 3 },
 };
 
 // Its back to you: the handle on the left now, the spout on the right, and no water window (it is on the front).
@@ -403,7 +390,6 @@ const KETTLE_BACK: FurnitureDrawing = {
     path('glint', 'M12.5 13V26'),
   ],
   seats: [],
-  ring: { cx: 16, cy: 32, rx: 13, ry: 3 },
 };
 
 // Facing left: its spout turned away from you, its handle toward you standing proud of the body, and the water window
@@ -422,7 +408,6 @@ const KETTLE_SIDE: FurnitureDrawing = {
     path('glint', 'M19 13V24'),
   ],
   seats: [],
-  ring: { cx: 14, cy: 32, rx: 12, ry: 3 },
 };
 
 /** The grid pieces this module draws, for OFFICE_ART. */

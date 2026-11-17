@@ -98,6 +98,7 @@ import { loadPlatformWelcome, loadWelcome } from '@/lib/explorer/welcome';
 import { ExplorerBottomBar, EXPLORER_FLOOR } from './ExplorerBottomBar';
 import { ExplorerHeader } from './ExplorerHeader';
 import {
+  ARCHIVED_PARAM,
   FALLBACK_APP,
   forgetLanding,
   landingNow,
@@ -174,6 +175,7 @@ export function ExplorerShell() {
   const arrived = stay?.arrived ?? NO_ARRIVAL;
   const notice = stay?.notice ?? null;
   const trashed = stay?.trashed ?? null;
+  const archived = stay?.archived ?? null;
 
   // Arrival's effects: going on elsewhere, remembering the app, and dropping what the address handed over.
   useEffect(() => {
@@ -186,7 +188,8 @@ export function ExplorerShell() {
     // Taken once: a reload doesn't say it again.
     if (landed.strip) {
       const url = new URL(window.location.href);
-      for (const key of [ENDED_PARAM, TRASHED_PARAM, TITLE_PARAM]) url.searchParams.delete(key);
+      for (const key of [ENDED_PARAM, TRASHED_PARAM, ARCHIVED_PARAM, TITLE_PARAM])
+        url.searchParams.delete(key);
       window.history.replaceState(null, '', url);
     }
   }, [landed]);
@@ -421,6 +424,7 @@ export function ExplorerShell() {
           header={header}
           helpHref={helpHref}
           trashedOnArrival={trashed}
+          archivedOnArrival={archived}
           arrivedItem={itemArrival.arrivedItem}
           welcome={welcome}
           templateHref={templateHref}

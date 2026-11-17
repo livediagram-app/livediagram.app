@@ -44,6 +44,10 @@ import {
 import { LowerFront, LowerProfile, Torso, TorsoProfile } from './avatar-sprite-body';
 import { Flag, Headphones, HeldCup } from './avatar-sprite-props';
 
+// The figure's outline: one CSS px of a deep ink on each side, four zero-blur shadows (no SVG filter, no blur).
+const INK = 'rgb(24 20 37 / 0.7)';
+const OUTLINE = `drop-shadow(1px 0 0 ${INK}) drop-shadow(-1px 0 0 ${INK}) drop-shadow(0 1px 0 ${INK}) drop-shadow(0 -1px 0 ${INK})`;
+
 function AvatarSpriteView({
   facing,
   config,
@@ -89,17 +93,22 @@ function AvatarSpriteView({
 }) {
   // Seated characters never walk (walkTo refuses while seated), so the stride
   // is forced off rather than merely unlikely.
-  const mid = !seated && walking && stepFrame === 1;
-  // A one-pixel body bob on the mid-stride frame; mid-air the legs tuck
-  // together instead of striding.
+  // The walk cycle (avatar-mode.md "Walk animation"): 0 a step, 1 the legs passing, 2 the other step, 3 passing.
+  const phase = !seated && walking ? stepFrame % 4 : 0;
+  const passing = phase === 1 || phase === 3;
+  const mid = phase === 2;
+  // Mid-air the legs tuck together instead of striding. The body's rise as the legs pass is the walker's, eased
+  // (AvatarWalker), not a pixel jump here.
   const airborne = lift > 0;
   // How far the body drops onto the seat, in sprite pixels. The legs also
   // fold (see Leg), so the whole figure loses about five rows of height ,
   // three of drop and two of folded leg: which is what reads as sitting. At
   // the old 3 with straight legs it just looked like standing on the chair.
   const sitDrop = seated ? 5 : 0;
-  const bob = airborne ? 0 : mid ? -1 : 0;
-  const swing = airborne ? -1 : walking ? (mid ? 1 : -1) : 0;
+  // The arms swing through the middle as the legs pass.
+  const swing = airborne ? -1 : walking ? (mid ? 1 : passing ? 0 : -1) : 0;
+  // The legs stride on a step frame and come together, both down, as they pass.
+  const striding = walking && !passing;
   // Seated (docs/specs/009-elements/chair.md), `facing` is the CHAIR's: sitting down turns the figure
   // the way the seat points, so a sitter in profile is in a sideways chair.
   const profile = facing === 'left' || facing === 'right';
@@ -117,8 +126,13 @@ function AvatarSpriteView({
       viewBox={portrait ? AVATAR_PORTRAIT_VIEW_BOX : AVATAR_VIEW_BOX}
       shapeRendering="crispEdges"
       aria-hidden
-      // A status's signature can reach past a cropped portrait's top or side (avatar-status-effects).
-      style={avatarStatusOverflows(status) ? { overflow: 'visible' } : undefined}
+      // A soft dark outline round the whole figure, so it reads crisply on any floor (avatar-mode.md "The figure"). A
+      // status's signature can reach past a cropped portrait's top or side (avatar-status-effects).
+      style={
+        avatarStatusOverflows(status)
+          ? { overflow: 'visible', filter: OUTLINE }
+          : { filter: OUTLINE }
+      }
     >
       {/* Contact shadow on the ground row. It shrinks as the character rises,
           which is what sells the jump. */}
@@ -136,8 +150,8 @@ function AvatarSpriteView({
       <g
         transform={
           facing === 'right'
-            ? `translate(${16 - (pose?.leanX ?? 0)} ${bob - liftPx + sitDrop}) scale(-1 1)`
-            : `translate(${pose?.leanX ?? 0} ${bob - liftPx + sitDrop})`
+            ? `translate(${16 - (pose?.leanX ?? 0)} ${sitDrop - liftPx}) scale(-1 1)`
+            : `translate(${pose?.leanX ?? 0} ${sitDrop - liftPx})`
         }
       >
         {profile ? (
@@ -147,7 +161,7 @@ function AvatarSpriteView({
               tones={tones}
               legs={look.legs}
               mid={mid}
-              walking={walking}
+              walking={striding}
               airborne={airborne}
               seated={seated}
             />
@@ -166,7 +180,7 @@ function AvatarSpriteView({
               inset={inset}
               back={facing === 'up'}
               mid={mid}
-              walking={walking}
+              walking={striding}
               airborne={airborne}
               legsApart={pose?.legsApart ?? false}
               seated={seated}

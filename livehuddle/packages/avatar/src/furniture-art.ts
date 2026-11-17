@@ -59,12 +59,6 @@ export type FurniturePart = (
 // a sitter's feet go on it, as fractions of the grid (the package's SeatGrid), and what is painted.
 export type FurnitureDrawing = SeatGrid & {
   parts: readonly FurniturePart[];
-  // The occupied ring, in grid units: under the seats.
-  ring: { cx: number; cy: number; rx: number; ry: number };
-  // Where the ring is painted among the parts: before `parts[ringUnder]`, so it lies on the seat and under
-  // whatever stands nearer the camera (a backrest's back, the desk and its monitor, a sofa's arms). Left out,
-  // over every part (a piece that never shows a ring: the meeting table and the office pieces).
-  ringUnder?: number;
 };
 
 // A piece's three drawings: `front` with the sitter facing down the canvas ('n'), `back` facing up
@@ -111,187 +105,225 @@ export const allSides = (view: FurnitureDrawing): FurnitureArt => ({
   side: view,
 });
 
-// A chair. Square enough to turn in place, so all three drawings share one grid.
+// The seating's materials (docs/specs/009-elements/furniture-art-style.md "Materials"): what stays its own colour
+// whatever the theme. The upholstery is the seat colour (the element's fill, or the kind's fabric when it has none:
+// SEAT_FABRIC), so recolouring a chair recolours its cushions and never its wood.
+export const SEATING_TONES = {
+  wood: '#b98352',
+  woodLight: '#cf9d6b',
+  woodDeep: '#7c4f2c',
+  metal: '#59616d',
+  metalDeep: '#3a4049',
+  monitor: '#363c46',
+  screen: '#1d3557',
+  screenLit: '#5b9bd5',
+  paper: '#f4efe4',
+  mug: '#ece6da',
+  coffee: '#6b4423',
+  keys: '#d6dae0',
+  pillow: '#e0a943',
+} as const;
+
+/** Each seating kind's upholstery when the element has no fill of its own. */
+export const SEAT_FABRIC = {
+  chair: '#6a87ad',
+  desk: '#4d5664',
+  sofa: '#61809f',
+  'meeting-table': '#4d5664',
+} as const;
+
+const S = SEATING_TONES;
+
+/** A seating piece's upholstery: the element's own fill, or its kind's fabric when it has none (or `transparent`). */
+export function seatFabric(kind: keyof typeof SEAT_FABRIC, fillColor: string | undefined): string {
+  return fillColor && fillColor !== 'transparent' ? fillColor : SEAT_FABRIC[kind];
+}
+
+// A chair: a wooden frame with an upholstered seat and backrest. Square enough to turn in place, so all three
+// drawings share one grid.
 export const CHAIR_ART: FurnitureArt = {
-  // Facing you: the seat, its front edge, and the backrest standing behind it.
+  // Facing you: the back legs, the backrest's frame and cushion, the seat, its wooden apron and the front legs.
   front: {
     ...SEAT_GRIDS.chair.front,
     parts: [
-      ellipse('shadow', 32, 66, 20, 4),
-      path('line', 'M15 47v16M49 47v16'),
-      path('rail', 'M15 57h34'),
-      rect('panel', 17, 3, 30, 31, 4),
-      path('rail', 'M32 8v21'),
-      rect('panel', 10, 33, 44, 12, 3),
-      rect('face', 10, 43, 44, 5, 2.5),
+      ellipse('shadow', 32, 66, 22, 4.5),
+      path('line', 'M17 46v16M47 46v16', S.woodDeep),
+      rect('panel', 15, 2, 34, 33, 6, S.wood),
+      rect('panel', 19, 6, 26, 25, 4.5),
+      path('rail', 'M32 10v17'),
+      rect('panel', 9, 32, 46, 13, 4.5),
+      rect('face', 9, 43, 46, 6, 3, S.wood),
+      path('glint', 'M15 34.5h34M23 8h18'),
+      path('line', 'M13 48v16M51 48v16', S.wood),
     ],
-    ring: { cx: 32, cy: 40, rx: 24, ry: 10 },
-    ringUnder: 6,
   },
-  // Its back to you: the seat beyond, and the backrest's back nearest you, over it.
+  // Its back to you: the seat beyond, and the backrest's wooden back nearest you, over it.
   back: {
     ...SEAT_GRIDS.chair.back,
     parts: [
-      ellipse('shadow', 32, 66, 20, 4),
-      path('line', 'M15 44v19M49 44v19'),
-      path('rail', 'M15 57h34'),
-      rect('panel', 10, 20, 44, 13, 3),
-      rect('face', 17, 12, 30, 34, 4),
-      path('rail', 'M32 17v24'),
+      ellipse('shadow', 32, 66, 22, 4.5),
+      path('line', 'M14 44v18M50 44v18', S.woodDeep),
+      rect('panel', 10, 20, 44, 13, 4.5),
+      rect('face', 10, 31, 44, 5, 2.5, S.wood),
+      rect('face', 15, 10, 34, 36, 6, S.wood),
+      path('rail', 'M22 17v22M32 17v22M42 17v22', S.woodDeep),
+      path('glint', 'M19 12.5h26'),
+      path('line', 'M18 46v17M46 46v17', S.wood),
     ],
-    ring: { cx: 32, cy: 27, rx: 24, ry: 9 },
-    ringUnder: 4,
   },
-  // Facing left: the seat from above with its front edge, the backrest a bar along its right.
+  // Facing left: the seat from above with its apron, the backrest a bar of wood and cushion along its right.
   side: {
     ...SEAT_GRIDS.chair.side,
     parts: [
-      ellipse('shadow', 30, 66, 20, 4),
-      path('line', 'M13 47v16M45 47v16'),
-      path('rail', 'M13 57h32'),
-      rect('panel', 8, 32, 38, 12, 3),
-      rect('face', 8, 42, 38, 5, 2.5),
-      rect('panel', 42, 4, 9, 43, 3),
-      rect('face', 42, 41, 9, 6, 2),
+      ellipse('shadow', 30, 66, 22, 4.5),
+      path('line', 'M15 47v15M43 47v15', S.woodDeep),
+      rect('panel', 8, 32, 38, 12, 4),
+      rect('face', 8, 42, 38, 5, 2.5, S.wood),
+      rect('panel', 42, 4, 10, 43, 4, S.wood),
+      rect('panel', 43.5, 8, 6, 30, 3),
+      rect('face', 42, 41, 10, 6, 2.5, S.wood),
+      path('glint', 'M12 34h30'),
+      path('line', 'M11 47v17M47 47v17', S.wood),
     ],
-    ring: { cx: 26, cy: 38, rx: 20, ry: 9 },
-    ringUnder: 4,
   },
 };
 
-// A desk with a computer on it and a chair pulled up to it. Whoever sits faces the computer.
+// A desk with a computer on it and an office chair pulled up to it. Whoever sits faces the computer. The desk is
+// wood on steel legs; the chair is upholstered in the seat colour.
 export const DESK_ART: FurnitureArt = {
-  // The sitter faces you: the chair beyond the desk, the desk nearest you, and the monitor's back on it
-  // (low and narrow, so the sitter is seen over it).
+  // The sitter faces you: the chair beyond the desk, the desk nearest you, and the monitor's back on it (low and
+  // narrow, so the sitter is seen over it), a notebook and a mug.
   front: {
     ...SEAT_GRIDS.desk.front,
     parts: [
-      ellipse('shadow', 60, 102, 54, 5),
-      // The chair beyond the desk: its backrest, then its seat.
-      rect('panel', 41, 2, 38, 24, 5),
-      path('rail', 'M60 7v14'),
-      rect('panel', 32, 22, 56, 12, 3),
-      // The desk: legs, its top, and the front edge toward you.
-      path('line', 'M12 74v24M108 74v24'),
-      rect('panel', 4, 50, 112, 16, 3),
-      rect('face', 4, 64, 112, 10, 2),
-      // The monitor's back on the desk, on its stand.
-      rect('panel', 52, 54, 16, 4, 1.5),
-      path('rail', 'M60 50v5'),
-      rect('face', 40, 32, 40, 19, 4),
-      path('rail', 'M48 38h24M48 44h24'),
-      // A mug at the corner.
-      rect('panel', 98, 46, 8, 9, 2),
+      ellipse('shadow', 60, 102, 56, 5.5),
+      rect('panel', 41, 2, 38, 25, 7),
+      path('rail', 'M60 7v15'),
+      rect('panel', 32, 22, 56, 12, 4.5),
+      path('line', 'M12 72v26M108 72v26', S.metal),
+      rect('panel', 4, 50, 112, 16, 3, S.woodLight),
+      rect('face', 4, 64, 112, 10, 2, S.wood),
+      path('glint', 'M8 52h104'),
+      rect('panel', 14, 52, 20, 11, 1.5, S.paper),
+      path('rail', 'M18 56h12M18 59h9'),
+      rect('panel', 52, 55, 16, 4, 1.5, S.monitor),
+      rect('panel', 58, 46, 4, 10, 1, S.monitor),
+      rect('face', 38, 29, 44, 21, 4, S.monitor),
+      path('rail', 'M48 36h24M48 41h24', S.metalDeep),
+      rect('panel', 97, 45, 9, 10, 2.5, S.mug),
+      ellipse('mark', 101.5, 46.2, 3.3, 1.1, S.coffee),
     ],
-    ring: { cx: 60, cy: 28, rx: 28, ry: 8 },
-    ringUnder: 4,
   },
-  // Its back to you: the desk at the back, the monitor's screen toward you, the chair's back nearest.
+  // Its back to you: the desk at the back with the monitor's lit screen toward you, the keyboard and mouse, and the
+  // chair's back nearest.
   back: {
     ...SEAT_GRIDS.desk.back,
     parts: [
-      ellipse('shadow', 60, 78, 54, 5),
-      path('line', 'M12 52v26M108 52v26'),
-      rect('panel', 4, 38, 112, 15, 3),
-      path('rail', 'M60 33v6'),
-      rect('panel', 50, 37, 20, 3, 1.5),
-      rect('panel', 32, 4, 56, 32, 3),
-      rect('screen', 36, 8, 48, 24, 1.5),
-      path('glint', 'M41 27l10-14M47 27l7-10'),
-      rect('rail', 38, 42, 34, 7, 1.5),
-      ellipse('rail', 82, 45.5, 3.2, 4),
+      ellipse('shadow', 60, 78, 56, 5),
+      path('line', 'M12 52v26M108 52v26', S.metal),
+      rect('panel', 4, 38, 112, 15, 3, S.woodLight),
+      rect('face', 4, 51, 112, 6, 2, S.wood),
+      rect('panel', 58, 31, 4, 8, 1, S.monitor),
+      rect('panel', 50, 37, 20, 3, 1.5, S.monitor),
+      rect('panel', 32, 4, 56, 32, 3.5, S.monitor),
+      rect('screen', 35.5, 7.5, 49, 25, 1.5, S.screen),
+      rect('mark', 39, 11, 20, 2.5, 1, S.screenLit),
+      rect('mark', 39, 16, 30, 1.6, 0.8, '#9cc3e6'),
+      rect('mark', 39, 20, 24, 1.6, 0.8, '#9cc3e6'),
+      path('glint', 'M44 30l12-20M52 30l8-13'),
+      rect('panel', 38, 42, 34, 7, 1.5, S.keys),
+      path('rail', 'M41 44.5h28M41 46.8h28', S.metalDeep),
+      ellipse('panel', 82, 45.5, 3.2, 4, S.keys),
       ellipse('shadow', 60, 107, 24, 3.5),
-      rect('panel', 32, 66, 56, 12, 3),
-      path('line', 'M42 96v10M78 96v10'),
-      rect('face', 41, 74, 38, 26, 5),
+      path('line', 'M60 92v10M46 105h28', S.metalDeep),
+      rect('panel', 32, 66, 56, 12, 4.5),
+      rect('face', 41, 74, 38, 26, 7),
       path('rail', 'M60 79v16'),
+      path('glint', 'M46 76.5h28'),
     ],
-    ring: { cx: 60, cy: 72, rx: 28, ry: 9 },
-    ringUnder: 13,
   },
-  // Facing left: the desk a long top down the left with its near end toward you, the monitor side-on
-  // and its screen toward the chair, the chair on the right with its backrest along its right.
+  // Facing left: the desk a long top down the left with its near end toward you, the monitor side-on and its screen
+  // toward the chair (cheated a little toward you so it reads), the keyboard, a mug, and the chair on the right.
   side: {
     ...SEAT_GRIDS.desk.side,
     parts: [
-      ellipse('shadow', 56, 113, 50, 5),
-      path('line', 'M12 102v14M40 102v14'),
-      rect('panel', 6, 18, 40, 76, 3),
-      rect('face', 6, 92, 40, 10, 2),
-      // The monitor, turned toward the chair but cheated a little toward you so its screen reads: its
-      // foot behind it, its body, and the glass.
-      rect('panel', 9, 50, 8, 16, 2),
-      path('rail', 'M13 58h4'),
-      rect('panel', 15, 32, 16, 48, 3),
-      rect('screen', 19, 35, 9, 42, 1.5),
-      path('glint', 'M21 50l5-8M21 57l5-8'),
-      // The keyboard and mouse by the chair, and a mug.
-      rect('rail', 34, 44, 8, 30, 2),
-      ellipse('rail', 38, 82, 3, 3.5),
-      rect('panel', 33, 22, 9, 9, 2),
-      // The chair.
-      path('line', 'M56 82v24M88 82v24'),
-      rect('panel', 52, 48, 36, 28, 4),
+      ellipse('shadow', 56, 113, 52, 5),
+      path('line', 'M12 102v14M40 102v14', S.metal),
+      rect('panel', 6, 18, 40, 76, 3, S.woodLight),
+      rect('face', 6, 92, 40, 10, 2, S.wood),
+      path('glint', 'M8.5 22v66'),
+      rect('panel', 9, 50, 8, 16, 2, S.monitor),
+      rect('panel', 15, 32, 16, 48, 3, S.monitor),
+      rect('screen', 19, 35, 9, 42, 1.5, S.screen),
+      rect('mark', 20.5, 38, 6, 8, 0.8, S.screenLit),
+      path('glint', 'M21 54l5-8M21 61l5-8'),
+      rect('panel', 34, 44, 8, 30, 2, S.keys),
+      ellipse('panel', 38, 82, 3, 3.5, S.keys),
+      rect('panel', 33, 22, 9, 10, 2.5, S.mug),
+      ellipse('mark', 37.5, 23.2, 3.3, 1.1, S.coffee),
+      path('line', 'M70 80v24M58 106h26', S.metalDeep),
+      rect('panel', 52, 48, 36, 28, 4.5),
       rect('face', 52, 74, 36, 7, 3),
-      rect('panel', 85, 34, 10, 44, 3),
-      rect('face', 85, 74, 10, 7, 2),
+      rect('panel', 85, 30, 11, 48, 4),
+      rect('face', 85, 74, 11, 7, 2.5),
+      path('glint', 'M56 50.5h28'),
     ],
-    ring: { cx: 70, cy: 62, rx: 24, ry: 14 },
-    ringUnder: 14,
   },
 };
 
-// A two-seater sofa: a long back, two arms and two cushions, so two characters sit side by side.
+// A two-seater sofa: a padded back with its own cushions, two rolled arms, two seat cushions on wooden feet, and a
+// throw pillow, so two characters sit side by side.
 export const SOFA_ART: FurnitureArt = {
-  // Facing you: the back behind, the arms either end, the cushions and their front edge.
+  // Facing you: the back and its cushions behind, the arms either end, the seat cushions and their front.
   front: {
     ...SEAT_GRIDS.sofa.front,
     parts: [
-      ellipse('shadow', 68, 70, 64, 4),
-      path('line', 'M12 58v10M124 58v10'),
-      rect('panel', 10, 4, 116, 32, 9),
-      path('rail', 'M68 9v22'),
-      rect('panel', 2, 24, 18, 36, 7),
-      rect('panel', 116, 24, 18, 36, 7),
-      rect('panel', 20, 33, 48, 16, 5),
-      rect('panel', 68, 33, 48, 16, 5),
-      rect('face', 20, 47, 96, 10, 4),
+      ellipse('shadow', 68, 70, 66, 4.5),
+      path('line', 'M14 62v7M122 62v7', S.woodDeep),
+      rect('panel', 10, 3, 116, 33, 11),
+      rect('panel', 20, 8, 47, 27, 8),
+      rect('panel', 69, 8, 47, 27, 8),
+      rect('panel', 24, 21, 17, 15, 5, S.pillow),
+      rect('panel', 2, 23, 19, 38, 9),
+      rect('panel', 115, 23, 19, 38, 9),
+      rect('panel', 20, 33, 48, 16, 5.5),
+      rect('panel', 68, 33, 48, 16, 5.5),
+      rect('face', 20, 47, 96, 11, 4.5),
+      rect('face', 2, 55, 19, 7, 3.5),
+      rect('face', 115, 55, 19, 7, 3.5),
+      path('glint', 'M26 35.5h36M74 35.5h36M26 10.5h35M75 10.5h35M6 26h11M119 26h11'),
     ],
-    ring: { cx: 68, cy: 44, rx: 56, ry: 12 },
-    ringUnder: 8,
   },
-  // Its back to you: the cushions beyond, the arms, and the back's broad back nearest you.
+  // Its back to you: the cushions beyond, the arms, and the back's broad padded back nearest you.
   back: {
     ...SEAT_GRIDS.sofa.back,
     parts: [
-      ellipse('shadow', 68, 70, 64, 4),
-      path('line', 'M12 58v10M124 58v10'),
-      rect('panel', 20, 12, 48, 16, 5),
-      rect('panel', 68, 12, 48, 16, 5),
-      rect('panel', 2, 10, 18, 46, 7),
-      rect('panel', 116, 10, 18, 46, 7),
-      rect('face', 10, 22, 116, 38, 9),
-      path('rail', 'M68 27v28'),
+      ellipse('shadow', 68, 70, 66, 4.5),
+      path('line', 'M14 60v8M122 60v8', S.woodDeep),
+      rect('panel', 20, 12, 48, 16, 5.5),
+      rect('panel', 68, 12, 48, 16, 5.5),
+      rect('panel', 2, 10, 19, 47, 9),
+      rect('panel', 115, 10, 19, 47, 9),
+      rect('face', 10, 22, 116, 38, 11),
+      path('rail', 'M68 27v28M18 28h100'),
+      path('glint', 'M22 24.5h92M6 13h11M119 13h11'),
     ],
-    ring: { cx: 68, cy: 20, rx: 56, ry: 10 },
-    ringUnder: 4,
   },
-  // Facing left: tall, its two cushions one above the other, the back a long bar on the right, the
-  // arms at either end, and its legs only under its lower end.
+  // Facing left: tall, its two cushions one above the other, the back a long bar on the right, the arms at either
+  // end, and its feet only under its lower end.
   side: {
     ...SEAT_GRIDS.sofa.side,
     parts: [
-      ellipse('shadow', 38, 131, 34, 4),
-      path('line', 'M12 124v8M64 124v8'),
-      rect('panel', 50, 6, 20, 114, 8),
-      rect('panel', 14, 22, 38, 44, 5),
-      rect('panel', 14, 66, 38, 44, 5),
-      rect('panel', 6, 4, 64, 20, 7),
-      rect('panel', 6, 106, 64, 16, 7),
-      rect('face', 6, 118, 64, 7, 3),
+      ellipse('shadow', 38, 131, 36, 4.5),
+      path('line', 'M12 124v8M64 124v8', S.woodDeep),
+      rect('panel', 50, 6, 21, 114, 9),
+      rect('panel', 14, 22, 38, 44, 5.5),
+      rect('panel', 14, 66, 38, 44, 5.5),
+      rect('panel', 6, 3, 65, 21, 8),
+      rect('panel', 6, 105, 65, 17, 8),
+      rect('face', 6, 118, 65, 7, 3.5),
+      path('glint', 'M18 25h30M18 69h30M10 6h57'),
     ],
-    ring: { cx: 33, cy: 66, rx: 24, ry: 48 },
-    ringUnder: 5,
   },
 };
 
@@ -324,17 +356,17 @@ export function furnitureFrame(
 // Fixed colours for what keeps its colour whatever the theme: leaves, water, coffee, terracotta, book spines.
 // The outlines are still the theme's stroke, so every piece sits in the same drawing style.
 export const OFFICE_TONES = {
-  leaf: '#4ade80',
-  leafDeep: '#22c55e',
-  pot: '#ea580c',
-  potDeep: '#c2410c',
-  water: '#bae6fd',
-  waterDeep: '#7dd3fc',
-  coffee: '#78350f',
-  glass: '#e2e8f0',
-  cold: '#60a5fa',
-  hot: '#f87171',
-  books: ['#f87171', '#60a5fa', '#fbbf24', '#34d399', '#a78bfa'],
+  leaf: '#63ad5c',
+  leafDeep: '#428c46',
+  pot: '#c96a3f',
+  potDeep: '#a3522e',
+  water: '#cfe8f6',
+  waterDeep: '#9fd0ee',
+  coffee: '#5e3a1e',
+  glass: '#dde5ec',
+  cold: '#5a95d6',
+  hot: '#d9645c',
+  books: ['#b5524a', '#3f74a8', '#d4a23f', '#4d9a78', '#7b65a8'],
 } as const;
 
 type Part = FurniturePart;
@@ -357,7 +389,6 @@ const PLANT_VIEW: FurnitureDrawing = {
     path('panel', 'M15 63H41L38 84H18Z', T.potDeep),
   ],
   seats: [],
-  ring: { cx: 28, cy: 70, rx: 18, ry: 8 },
 };
 
 // Shelves of books: a frame, a dark interior, three shelves of coloured spines.
@@ -395,7 +426,6 @@ const BOOKSHELF_VIEW: FurnitureDrawing = {
     rect('panel', 10, 114, 100, 6, 1.5),
   ],
   seats: [],
-  ring: { cx: 60, cy: 120, rx: 56, ry: 8 },
 };
 
 // Its back to you: the top seen from above, then the back's boards from the top to the floor.
@@ -410,7 +440,6 @@ const BOOKSHELF_BACK: FurnitureDrawing = {
     path('rail', 'M8 118H112'),
   ],
   seats: [],
-  ring: { cx: 60, cy: 120, rx: 56, ry: 8 },
 };
 
 // Books end on in a strip, as the front's cheated toward you: a column of spines in three shelves.
@@ -449,7 +478,6 @@ const BOOKSHELF_SIDE: FurnitureDrawing = {
     ...bookColumn(131, 182, 2),
   ],
   seats: [],
-  ring: { cx: 28, cy: 182, rx: 24, ry: 8 },
 };
 
 // A water cooler: a blue bottle upside down on a cooler with hot and cold taps.
@@ -469,7 +497,6 @@ const WATER_COOLER_VIEW: FurnitureDrawing = {
     path('glint', 'M18 30V14'),
   ],
   seats: [],
-  ring: { cx: 28, cy: 100, rx: 22, ry: 7 },
 };
 
 // Its back to you: the same bottle on top, the cooler's back with a vent and no taps.
@@ -488,7 +515,6 @@ const WATER_COOLER_BACK: FurnitureDrawing = {
     path('glint', 'M18 30V14'),
   ],
   seats: [],
-  ring: { cx: 28, cy: 100, rx: 22, ry: 7 },
 };
 
 // Facing left: the cooler's side toward you, its front cheated down its left with the two taps and the drip tray.
@@ -509,7 +535,6 @@ const WATER_COOLER_SIDE: FurnitureDrawing = {
     path('glint', 'M20 30V14'),
   ],
   seats: [],
-  ring: { cx: 29, cy: 100, rx: 22, ry: 7 },
 };
 
 // A coffee machine with a carafe, on a little counter, a mug beside it.
@@ -530,7 +555,6 @@ const COFFEE_MACHINE_VIEW: FurnitureDrawing = {
     rect('panel', 58, 49, 10, 10, 2),
   ],
   seats: [],
-  ring: { cx: 36, cy: 86, rx: 32, ry: 7 },
 };
 
 // Its back to you: the counter's plain back, the machine's back with its vents, the mug now at its left.
@@ -547,7 +571,6 @@ const COFFEE_MACHINE_BACK: FurnitureDrawing = {
     path('rail', 'M24 26h24M24 32h24M24 38h24'),
   ],
   seats: [],
-  ring: { cx: 36, cy: 86, rx: 32, ry: 7 },
 };
 
 // Facing left: the counter running away from you, the machine's side on it, its front cheated down its left with
@@ -570,7 +593,6 @@ const COFFEE_MACHINE_SIDE: FurnitureDrawing = {
     rect('panel', 26, 64, 9, 10, 2),
   ],
   seats: [],
-  ring: { cx: 29, cy: 92, rx: 26, ry: 7 },
 };
 
 // A rug: an oval in the element's fill with a border, lying on the floor (no shadow: it is the floor).
@@ -584,7 +606,6 @@ const RUG_VIEW: FurnitureDrawing = {
     ellipse('rail', 100, 60, 34, 14),
   ],
   seats: [],
-  ring: { cx: 100, cy: 60, rx: 96, ry: 56 },
 };
 
 // Turned on its side: the same oval on a grid with its sides swapped, its pattern running down it.
@@ -598,28 +619,43 @@ const RUG_SIDE: FurnitureDrawing = {
     ellipse('rail', 60, 100, 14, 34),
   ],
   seats: [],
-  ring: { cx: 60, cy: 100, rx: 56, ry: 96 },
 };
 
+// A notebook in front of each place, at the far edge and the near edge of the top.
+const tablePapers = (xs: readonly number[], farY: number, nearY: number): Part[] =>
+  xs.flatMap((x) => [
+    rect('panel', x - 9, farY, 18, 11, 1.5, S.paper),
+    rect('panel', x - 9, nearY, 18, 11, 1.5, S.paper),
+    path('rail', `M${x - 6} ${farY + 4}h12M${x - 6} ${nearY + 4}h12`),
+  ]);
+// A glass jug of water in the middle of the table.
+const jug = (cx: number, cy: number): Part[] => [
+  ellipse('shadow', cx, cy + 9, 7, 2),
+  rect('panel', cx - 5, cy - 6, 10, 15, 3.5, '#d5ecf7'),
+  rect('mark', cx - 3.6, cy, 7.2, 7.5, 2.4, '#8fc9ea'),
+  path('glint', `M${cx - 2.6} ${cy - 3}v9`),
+];
+
 const far = (cx: number): Part[] => [
-  rect('panel', cx - 17, 8, 34, 30, 4),
+  rect('panel', cx - 17, 8, 34, 30, 6),
   path('rail', `M${cx} 13v20`),
-  rect('panel', cx - 22, 34, 44, 12, 3),
+  rect('panel', cx - 22, 34, 44, 12, 4),
 ];
 const near = (cx: number, dy = 0): Part[] => [
-  path('line', `M${cx - 17} ${136 + dy}v22M${cx + 17} ${136 + dy}v22`),
+  path('line', `M${cx - 17} ${136 + dy}v22M${cx + 17} ${136 + dy}v22`, S.metal),
   rect('panel', cx - 22, 110 + dy, 44, 12, 3),
-  rect('face', cx - 17, 102 + dy, 34, 36, 4),
+  rect('face', cx - 17, 102 + dy, 34, 36, 6),
   path('rail', `M${cx} ${107 + dy}v26`),
+  path('glint', `M${cx - 12} ${104.5 + dy}h24`),
 ];
 // A chair in profile at a side of the table, its seat's middle at `cy`: its backrest on the outside, at the left for
 // a sitter facing right, at the right for one facing left.
 const profile = (cy: number, facingRight: boolean): Part[] => {
   const x = (gx: number, w = 0) => (facingRight ? gx : MEETING_TABLE_SEATS.height - gx - w);
   return [
-    path('line', `M${x(10)} ${cy + 8}v18M${x(32)} ${cy + 8}v18`),
-    rect('panel', x(6, 30), cy - 6, 30, 12, 3),
-    rect('panel', x(2, 8), cy - 28, 8, 36, 3),
+    path('line', `M${x(10)} ${cy + 8}v18M${x(32)} ${cy + 8}v18`, S.metal),
+    rect('panel', x(6, 30), cy - 6, 30, 12, 4),
+    rect('panel', x(2, 8), cy - 28, 8, 36, 3.5),
   ];
 };
 
@@ -634,22 +670,24 @@ export const MEETING_TABLE_VIEW: FurnitureDrawing & { tableSeats: readonly Table
     ...far(86),
     ...far(146),
     // The ends: seat, then the backrest on the outside.
-    path('line', 'M10 80v18M32 80v18'),
-    rect('panel', 6, 66, 30, 12, 3),
-    rect('panel', 2, 44, 8, 36, 3),
-    path('line', 'M200 80v18M222 80v18'),
-    rect('panel', 196, 66, 30, 12, 3),
-    rect('panel', 222, 44, 8, 36, 3),
-    // The table: legs, its top, its front edge.
-    path('line', 'M50 110v20M182 110v20'),
-    rect('panel', 40, 56, 152, 44, 6),
-    rect('face', 40, 96, 152, 12, 4),
+    path('line', 'M10 80v18M32 80v18', S.metal),
+    rect('panel', 6, 66, 30, 12, 4),
+    rect('panel', 2, 44, 8, 36, 3.5),
+    path('line', 'M200 80v18M222 80v18', S.metal),
+    rect('panel', 196, 66, 30, 12, 4),
+    rect('panel', 222, 44, 8, 36, 3.5),
+    // The table: legs, its wooden top and front edge, a notebook at each place and a jug of water.
+    path('line', 'M50 110v20M182 110v20', S.metal),
+    rect('panel', 40, 56, 152, 44, 6, S.woodLight),
+    rect('face', 40, 96, 152, 12, 4, S.wood),
+    path('glint', 'M48 59h136'),
+    ...tablePapers([86, 146], 60, 84),
+    ...jug(116, 72),
     ...near(86),
     ...near(146),
   ],
   seats: [],
   tableSeats: MEETING_TABLE_SEATS.seats,
-  ring: { cx: 116, cy: 82, rx: 112, ry: 70 },
 };
 
 // Turned on its side: a tall table, the left end's chair beyond it, two chairs in profile down each side and the right
@@ -663,12 +701,13 @@ const MEETING_TABLE_SIDE: FurnitureDrawing = {
     ...profile(134, true),
     ...profile(86, false),
     ...profile(134, false),
-    path('line', 'M56 178v20M112 178v20'),
-    rect('panel', 46, 50, 76, 120, 6),
-    rect('face', 46, 166, 76, 12, 4),
+    path('line', 'M56 178v20M112 178v20', S.metal),
+    rect('panel', 46, 50, 76, 120, 6, S.woodLight),
+    rect('face', 46, 166, 76, 12, 4, S.wood),
+    path('glint', 'M50 53.5h68'),
+    ...jug(84, 104),
     ...near(84, 70),
   ],
-  ring: { cx: 84, cy: 116, rx: 80, ry: 112 },
 };
 
 // From behind, a table with six chairs reads the same, so its back is its front's drawing; only its seats have turned.
@@ -709,18 +748,19 @@ export function longTableArt(
     parts: [
       ellipse('shadow', L / 2, 160, L / 2 - 6, 6),
       ...sides.flatMap((x) => far(x)),
-      path('line', 'M10 80v18M32 80v18'),
-      rect('panel', 6, 66, 30, 12, 3),
-      rect('panel', 2, 44, 8, 36, 3),
-      path('line', `M${200 + end} 80v18M${222 + end} 80v18`),
-      rect('panel', 196 + end, 66, 30, 12, 3),
-      rect('panel', 222 + end, 44, 8, 36, 3),
-      path('line', `M50 110v20M${L / 2} 110v20M${L - 50} 110v20`),
-      rect('panel', 40, 56, L - 80, 44, 6),
-      rect('face', 40, 96, L - 80, 12, 4),
+      path('line', 'M10 80v18M32 80v18', S.metal),
+      rect('panel', 6, 66, 30, 12, 4),
+      rect('panel', 2, 44, 8, 36, 3.5),
+      path('line', `M${200 + end} 80v18M${222 + end} 80v18`, S.metal),
+      rect('panel', 196 + end, 66, 30, 12, 4),
+      rect('panel', 222 + end, 44, 8, 36, 3.5),
+      path('line', `M50 110v20M${L / 2} 110v20M${L - 50} 110v20`, S.metal),
+      rect('panel', 40, 56, L - 80, 44, 6, S.woodLight),
+      rect('face', 40, 96, L - 80, 12, 4, S.wood),
+      path('glint', `M48 59h${L - 96}`),
+      ...tablePapers(sides, 60, 84),
       ...sides.flatMap((x) => near(x)),
     ],
-    ring: { cx: L / 2, cy: 82, rx: L / 2 - 4, ry: 70 },
   };
   const ys = longTableSideYs(L).map(r1);
   const side: FurnitureDrawing = {
@@ -730,12 +770,12 @@ export function longTableArt(
       ...far(84),
       ...ys.flatMap((y) => profile(y, true)),
       ...ys.flatMap((y) => profile(y, false)),
-      path('line', `M56 ${L - 54}v20M112 ${L - 54}v20`),
-      rect('panel', 46, 50, 76, L - 112, 6),
-      rect('face', 46, L - 66, 76, 12, 4),
+      path('line', `M56 ${L - 54}v20M112 ${L - 54}v20`, S.metal),
+      rect('panel', 46, 50, 76, L - 112, 6, S.woodLight),
+      rect('face', 46, L - 66, 76, 12, 4, S.wood),
+      path('glint', 'M50 53.5h68'),
       ...near(84, L - 162),
     ],
-    ring: { cx: 84, cy: L / 2, rx: 80, ry: L / 2 - 4 },
   };
   const art: FurnitureArt = { front, back: { ...front, ...seats.back }, side };
   if (longTables.size >= 16) longTables.clear();

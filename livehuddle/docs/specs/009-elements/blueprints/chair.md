@@ -37,7 +37,7 @@ Desk and sofa (spec "Desk and sofa") add:
 | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `packages/document/src/seating.ts`                        | `CHAIR_ART`, `DESK_ART`, `SOFA_ART`, `FURNITURE_ART`, `furnitureFrame` (a turn is `turnPiece`, [Turning furniture](furniture-facing.md)); re-exports the package's seat geometry (`isSeatingShape`, `DEFAULT_SEATING_FACING`, `facingView`, `seatPoints`, `nearestSeat`) |
 | `packages/document/src/shape-factory.ts`                  | desk 120x112, sofa 152x85, facing, `aspectLocked`, label bottom                                                                                                                                                                                                          |
-| `apps/editor/components/canvas/collab/FurnitureView.tsx`  | The canvas desk and sofa, occupied ring, sitter names                                                                                                                                                                                                                    |
+| `apps/editor/components/canvas/collab/FurnitureView.tsx`  | The canvas desk and sofa, sitter names                                                                                                                                                                                                                                   |
 | `apps/editor/hooks/canvas/useDataShapeSetters.ts`         | `setChairFacingSelected` for all three; quarter turns swap the box                                                                                                                                                                                                       |
 | `apps/editor/components/palette/tile-defs/room-tiles.tsx` | `tools:desk`, `tools:sofa` after `tools:chair`                                                                                                                                                                                                                           |
 
@@ -159,8 +159,7 @@ export function nearestSeat(el: SeatedBox, from: Point): Seat;
 export function seatFor(el: SeatedBox, from: Point): Seat & { facing: AvatarFacing };
 // seating.ts
 export type FurnitureDrawing = { width: number; height: number; parts: readonly FurniturePart[];
-  seats: readonly { u: number; v: number }[]; ring: { cx: number; cy: number; rx: number; ry: number };
-  ringUnder?: number };
+  seats: readonly { u: number; v: number }[] };
 export type FurnitureArt = { front: FurnitureDrawing; back: FurnitureDrawing; side: FurnitureDrawing };
 export function facingView(facing: ChairFacing): { view: 'front' | 'back' | 'side'; mirrored: boolean };
 export function furnitureFrame(art: FurnitureArt, facing: ChairFacing):
@@ -228,12 +227,7 @@ export function FurnitureView(props: { element: ShapeElement; stroke: string; si
   this, and so does the canvas: `FurnitureView` takes `defaultStrokeColor(element, surface)`.
 - **Label:** under the chair (`textAlignY: 'bottom'`), on the canvas and in the export.
 - **Palette:** tile `tools:chair` ("Add Chair") in the **Seats** category (the Meet band).
-- **Occupied:** a 3 px ring (opacity 0.85) painted inside the drawing's frame (so a mirrored side
-  mirrors it) before `parts[ringUnder]`: on the seat, under whatever stands nearer the camera (a
-  backrest's back, the desk and its monitor, a sofa's arms). A one-seat drawing uses its own `ring`
-  in the first sitter's colour; a drawing with several `seats` draws `seatRing(view, sitter.seat)` per
-  sitter in their colour: centred on the seat point, `ry` 8, `rx` 20 narrowed to 0.45 of the gap to a
-  seat on the same row. A sitter with no `seat` gets no ring there. Names in a pill ABOVE the piece
+- **Occupied:** no ring (chair.md "Occupied"). Names in a pill ABOVE the piece
   [QF16], its bottom edge at `seatPillBottom(element, view, sitters)`: the highest
   `feet - (AVATAR_HEIGHT x scale + AVATAR_HEAD_CHROME)` among the sitters, less `SEAT_PILL_GAP` (3 px),
   never below the box's top. `AVATAR_HEAD_CHROME` (walk.ts, 24 px) is the highest of what `AvatarWalker`

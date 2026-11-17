@@ -65,6 +65,12 @@ A flat wall screen: a dark panel in a thin bezel, a small status light on its lo
 
 A small plaque by a room's door: the room's name over a status line with a coloured dot, and a **Knock** button.
 
+- **A real sign** (furniture-art-style.md): a walnut frame with brass screws at its corners round a cream nameplate,
+  lit from above like every piece and with a soft shadow under it; the room's name in dark ink, a **status lamp** that
+  glows in its colour (a calm green, amber, a brick red), an enamel strip of the same colour down the nameplate's left
+  edge so the state reads from across the room, and Knock a small brass button. The same sign on light and dark paper,
+  as real objects are (the owner, 2026-11-17: "it isn't in keeping with the aesthetic").
+
 - **Default 120 × 64**, aspect locked. Placed freely beside a door (snapping onto the nearest Door or doorway is a
   follow-up, Not in scope). Not a destination, never blocks walking, takes no label of its own: its name is its room's.
 - **The name** is the room's label (a Room's name plate, "Kitchen"), an Office Pod's label or **Office Pod**, or

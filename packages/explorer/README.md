@@ -102,6 +102,7 @@ box of its own.
 | `sidebarLinks?`            | `SidebarLink[]`                        | The host's own rows in the sidebar's More group, after the Library (liveworkspace.app's This Browser, linking to an app's view; elsewhere This Browser is a Space).                                                                         |
 | `allLabel?`                | `string`                               | The filter's every-app choice. "All" by default; "All Apps" on liveworkspace.app.                                                                                                                                                           |
 | `renderAppLogo?`           | `(app: App \| 'all') => ReactNode`     | The filter's logos: the app's on its choice, the platform's on the every-app one (the Explorer page and the panel). The host draws them, since the brands are its.                                                                          |
+| `archivedOnArrival?`       | `{ id, title } \| null`                | An item the host archived just before landing here (the item open in its editor): said once, as a success toast, with no Undo.                                                                                                              |
 | `arrivalNotice?`           | `string \| null`                       | A sentence said once on arrival, as a warning toast (a revoked link, say).                                                                                                                                                                  |
 | `lensTemplates?`           | `{ value, label }[]`                   | The template families the lens's Template chip offers, matched to the last word of an item's intent. Without them there is no Template chip.                                                                                                |
 | `lensModes?`               | `{ value, label }[]`                   | The editor modes the lens's Mode chip offers, matched to the mode an item's summary reports (`summary.mode`). Without them there is no Mode chip. No host names any today.                                                                  |
@@ -218,6 +219,8 @@ Props: `app`, `client`, `itemHref`, `onCreate`, `current?`, `onOpenExplorer?(vie
 `ThisBrowserHost`: `items` from `useThisBrowserList(app)`, `itemHref`, and the panel's `open`, `sync` and `remove`),
 `onTrashCurrent?(item)` (the
 host trashes the item open in its editor itself, from any of the panel's menus or a drop on its Trash),
+`onArchivedCurrent?(item)` (the item open in its editor went to Archived, from any of the panel's menus or Change
+Folder's Archived: the panel says nothing and the host leaves for the Explorer, which says it with `archivedOnArrival`),
 `onRenameCurrent?(title)` (the open item was renamed, from its pencil or any menu's Rename, so the editor's title
 follows), and the same optional props as `<Explorer>`.
 

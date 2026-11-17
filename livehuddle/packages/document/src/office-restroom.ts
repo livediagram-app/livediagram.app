@@ -18,11 +18,11 @@ export const RESTROOM_TONES = {
   steel: '#cbd5e1',
   steelDeep: '#94a3b8',
   paper: '#ffffff',
-  vacant: '#22c55e',
+  vacant: '#29be60',
   mirror: '#dbeafe',
   sheen: '#eff6ff',
   soap: '#a7f3d0',
-  ready: '#22c55e',
+  ready: '#29be60',
 } as const;
 
 const T = RESTROOM_TONES;
@@ -56,7 +56,6 @@ const TOILET_CUBICLE_VIEW: FurnitureDrawing = {
     path('line', 'M3.5 146v3M92.5 146v3'),
   ],
   seats: [],
-  ring: { cx: 48, cy: 136, rx: 46, ry: 10 },
 };
 
 // Its back to you: the cubicle's laminate back between its two side panels, under the head rail, on its feet.
@@ -73,7 +72,6 @@ const TOILET_CUBICLE_BACK: FurnitureDrawing = {
     path('line', 'M3.5 146v3M92.5 146v3'),
   ],
   seats: [],
-  ring: { cx: 48, cy: 136, rx: 46, ry: 10 },
 };
 
 // Facing left, as one of a row down a side wall: seen from above, its tiled floor between the far and near partitions,
@@ -106,7 +104,6 @@ const TOILET_CUBICLE_SIDE: FurnitureDrawing = {
     path('line', 'M10 114v3M92 114v3'),
   ],
   seats: [],
-  ring: { cx: 50, cy: 108, rx: 46, ry: 8 },
 };
 
 // A white wall-hung basin on its pedestal, a tap and a soap pump on its rim, under a framed mirror with a sheen.
@@ -129,7 +126,6 @@ const WASHBASIN_VIEW: FurnitureDrawing = {
     path('line', 'M54.5 51V48H51.5'),
   ],
   seats: [],
-  ring: { cx: 36, cy: 102, rx: 22, ry: 6 },
 };
 
 // Its back to you: the mirror's plain back on its hanging wire, and the basin from behind on its pedestal, the tap
@@ -150,7 +146,6 @@ const WASHBASIN_BACK: FurnitureDrawing = {
     ellipse('mark', 41, 61, 2.4, 1.4, T.steelDeep),
   ],
   seats: [],
-  ring: { cx: 36, cy: 102, rx: 22, ry: 6 },
 };
 
 // Facing left: the mirror on the side wall to the right, seen edge on and cheated toward you so its glass still
@@ -175,7 +170,6 @@ const WASHBASIN_SIDE: FurnitureDrawing = {
     path('line', 'M50 76V73H46.5'),
   ],
   seats: [],
-  ring: { cx: 34, cy: 106, rx: 18, ry: 6 },
 };
 
 // A wall-mounted hand dryer: its grille, the shaded lip, a nozzle and a green ready light.
@@ -191,7 +185,6 @@ const HAND_DRYER_VIEW: FurnitureDrawing = {
     path('glint', 'M8 9V20'),
   ],
   seats: [],
-  ring: { cx: 18, cy: 38, rx: 14, ry: 4 },
 };
 
 /** The grid pieces this module draws, for OFFICE_ART. */

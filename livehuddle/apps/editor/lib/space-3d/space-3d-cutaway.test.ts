@@ -28,6 +28,12 @@ describe('the cut-away rule (docs/specs/008-canvas/3d-view.md "Walls in front of
     expect(cutAwayIds([wall('front', 400, 340, 600, 340)], feet)).toEqual(new Set(['front']));
   });
 
+  it('never cuts a row of grass, too low to hide anyone', () => {
+    expect(cutAwayIds([{ ...wall('blades', 400, 340, 600, 340), kind: 'grass' }], feet)).toEqual(
+      new Set(),
+    );
+  });
+
   it('keeps walls behind you, beside you and far in front of you standing', () => {
     const walls = [
       wall('behind', 400, 260, 600, 260),

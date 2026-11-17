@@ -27,8 +27,8 @@ const BESIDE_PAD = 28;
 const BEHIND_DESK = 40;
 /** A flourish or a pat comes round again this often while he stands at its stop. */
 const ENCORE_MS = 5_000;
-/** The canvas px of walking per stride frame, as a person's walk. */
-const STRIDE_PX = 20;
+/** The canvas px of walking per walk frame, four frames a cycle, as everyone walks (avatar-mode.md "Walk animation"). */
+const STRIDE_PX = 14;
 
 export type ReceptionistDetour = {
   // Greeting an arrival by his pad, talking to you, or answering a reception bell at its desk.
@@ -76,7 +76,7 @@ export function receptionistDayPose(
   const setOff = resumes ? resume.from : n * RECEPTIONIST_LEG_MS;
   const route = receptionistRoute(world.grid, from, stop.at) ?? [stop.at];
   const walk = alongRoute(from, route, now - setOff);
-  const stepFrame = Math.floor(walk.travelled / STRIDE_PX) % 2;
+  const stepFrame = Math.floor(walk.travelled / STRIDE_PX) % 4;
   if (walk.walking)
     return {
       at: walk.at,
@@ -122,7 +122,7 @@ export function receptionistPose(
         at: walk.at,
         facing: walk.facing ?? detour.face,
         walking: true,
-        stepFrame: Math.floor(walk.travelled / STRIDE_PX) % 2,
+        stepFrame: Math.floor(walk.travelled / STRIDE_PX) % 4,
         holding: null,
         reaction: null,
         activity: detourActivity(detour.kind),

@@ -65,7 +65,7 @@ describe('the second set of social pieces', () => {
       expect(hasSocialArt(kind), kind).toBe(false);
   });
 
-  it('rings and names whoever sits in a bean bag or the reading nook', () => {
+  it('names whoever sits in a bean bag or the reading nook, with no ring', () => {
     for (const [kind, noun] of [
       ['bean-bag', 'Bean bag'],
       ['reading-nook', 'Reading nook'],
@@ -74,7 +74,7 @@ describe('the second set of social pieces', () => {
       expect(container.querySelector('svg')?.getAttribute('aria-label')).toBe(
         `${noun}, Ada sitting`,
       );
-      expect(container.querySelector('ellipse[stroke="#0ea5e9"]'), kind).not.toBeNull();
+      expect(container.querySelector('ellipse[stroke="#0ea5e9"]'), kind).toBeNull();
       expect(container.textContent).toContain('Ada');
       // Work Tracker #582: the pill sits above the sitter's head, not over it at the piece's top edge.
       const pill = [...container.querySelectorAll('span')].find((s) => s.textContent === 'Ada')!;

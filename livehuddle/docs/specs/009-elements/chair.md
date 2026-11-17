@@ -71,7 +71,7 @@ drawing of its own.
 - A side view keeps the piece's footprint: a sofa turned to face left is **tall**, its two cushions
   one above the other, its arms at the top and bottom ends and its legs only under its lower end.
   This is why a quarter turn changes a desk's or sofa's box (below).
-- The seat points and the occupied ring move with the drawing: a sitter lands on the seat in every
+- The seat points move with the drawing: a sitter lands on the seat in every
   view, never on a backrest.
 - A desk's monitor turns with it: from the front you see its back, from the back its screen, from the
   side its edge on its stand.
@@ -135,13 +135,9 @@ chair cannot be left permanently occupied by someone who closed their laptop, a
 chair's occupancy cannot conflict between two clients, and no seating state
 reaches the stored document or undo.
 
-- The chair renders **occupied**: a soft ring in the sitter's presence colour
-  and their name in a pill above it, derived from the peer presence the canvas already
-  receives.
-- **The exact seat is ringed.** A piece with more than one seat (a sofa, a meeting table) rings **each taken
-  seat on its own**, in that sitter's colour, at the seat they hold (their presence's `seat.index`; a packet
-  without one, the seat nearest their feet). Two people on a sofa show two rings, one per cushion. A one-seat
-  piece rings its seat as before.
+- The chair renders **occupied** by its sitter and their name in a pill above it, derived from the peer presence
+  the canvas already receives. A taken seat draws **no ring**: the sitter in it and the pill say it is taken, and a
+  ring round every seated person, yourself included, was noise the owner asked to remove (2026-11-17).
 - **The name pill clears the sitter's head.** The pill names the sitters in seat order and sits above the
   highest head among them, measured from each sitter's seat and drawn size (Small, Regular or Tall), with room
   for the name chip and status over that head, so a sprite never covers it, on a tall chair or a short bean bag
@@ -199,8 +195,8 @@ Two more pieces of furniture seat a character exactly as a chair does, beside it
 
 Both share the chair's rules unchanged: the same `chairFacing` field and **Desk** / **Sofa**
 menu section (the Chair section, titled for the furniture it is on), arrival seating through the
-same walk hook, the same seated guards and ways of standing, and occupancy as presence (a ring on each
-taken cushion in its sitter's colour, names above). A cushion takes one sitter, as a chair does; a sofa takes two.
+same walk hook, the same seated guards and ways of standing, and occupancy as presence (the sitters'
+names above). A cushion takes one sitter, as a chair does; a sofa takes two.
 
 Where they differ from the chair:
 

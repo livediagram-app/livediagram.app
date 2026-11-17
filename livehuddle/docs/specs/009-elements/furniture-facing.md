@@ -72,7 +72,7 @@ Left**), or a facing picked outright from the element menu.
   a sofa or a bank of lockers changes its width and height and a chair turns in place.
 - **Its seats turn with it.** Each seat sits on the same cushion in every drawing, and its sitter faces the way that
   seat faces once turned: a bench turned to face right seats its two sitters one above the other, facing right. The
-  occupied rings and the name pill follow the seats.
+  name pill follows the seats.
 - **Somebody sitting in it is carried round.** A piece turned (or moved) while somebody sits in it keeps them in
   their seat: their character moves to the seat's new place and faces its new way, and stays seated. A table that
   loses seats as it changes (a Long Table made shorter, or retyped to a Meeting Table) stands up only the people on

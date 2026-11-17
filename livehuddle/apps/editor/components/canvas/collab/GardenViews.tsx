@@ -4,6 +4,7 @@ import { useId } from 'react';
 import {
   GARDEN_TONES,
   GRASS_BLADES,
+  GRASS_MOTTLE,
   GRASS_TILES,
   gardenFenceParts,
   gardenPathParts,
@@ -11,7 +12,7 @@ import {
   type FurniturePart,
   type ShapeElement,
 } from '@livehuddle/document';
-import { FurniturePartView } from './FurnitureView';
+import { LitParts } from './furniture-paint';
 
 // A Garden Path, Grass and a Garden Fence (docs/specs/009-elements/office.md "Garden Path", "Grass", "Garden Fence"):
 // drawn at their own size like a room, so a long path keeps round stones, a large lawn its tuft size and a long fence
@@ -42,9 +43,7 @@ function GardenSizedView({
         role="img"
         aria-label={label}
       >
-        {parts.map((p, i) => (
-          <FurniturePartView key={i} part={p} seat={seat} stroke={stroke} />
-        ))}
+        <LitParts parts={parts} seat={seat} stroke={stroke} />
       </svg>
     </div>
   );
@@ -74,8 +73,10 @@ export function GardenPathView({
 }
 
 /**
- * Grass (docs/specs/009-elements/office.md "Grass"): a lawn in the element's fill with tufts painted over it through
- * two SVG pattern tiles, so a lawn of any size draws the same few strokes. No filters, nothing per frame.
+ * Grass (docs/specs/009-elements/office.md "Grass"; furniture-art-style.md): a lawn in the element's fill, soft
+ * mottling and fine turf painted over it through SVG pattern tiles, the light falling across it from its far edge, and
+ * a darker rim. A lawn of any size draws the same few strokes. No filters, nothing per frame. The export (grassSvg)
+ * paints the same.
  */
 export function GrassView({
   element,
@@ -90,6 +91,8 @@ export function GrassView({
   const id = `grass-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
   const d = grassEdgePath(element.width, element.height);
   const B = GRASS_BLADES;
+  const M = GRASS_MOTTLE;
+  const layers = [`${id}-m`, ...GRASS_TILES.map((_, i) => `${id}-${i}`), `${id}-l`];
   return (
     <div className={`pointer-events-none absolute inset-0 ${animClass ?? ''}`}>
       <svg
@@ -100,6 +103,15 @@ export function GrassView({
         aria-label="Grass"
       >
         <defs>
+          <linearGradient id={`${id}-l`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#fff" stopOpacity={B.topLight} />
+            <stop offset="0.45" stopColor="#fff" stopOpacity={0} />
+            <stop offset="1" stopColor="#000" stopOpacity={B.bottomShade} />
+          </linearGradient>
+          <pattern id={`${id}-m`} width={M.size} height={M.size} patternUnits="userSpaceOnUse">
+            <path d={M.lush} fill="#fff" fillOpacity={B.lushOpacity} />
+            <path d={M.thick} fill={B.shade} fillOpacity={B.thickOpacity} />
+          </pattern>
           {GRASS_TILES.map((t, i) => (
             <pattern
               key={i}
@@ -127,16 +139,17 @@ export function GrassView({
             </pattern>
           ))}
         </defs>
+        <path d={d} fill={floor} />
+        {layers.map((ref) => (
+          <path key={ref} d={d} fill={`url(#${ref})`} />
+        ))}
         <path
           d={d}
-          fill={floor}
+          fill="none"
           stroke={B.shade}
           strokeOpacity={B.rimOpacity}
           strokeWidth={B.rimWidth}
         />
-        {GRASS_TILES.map((_, i) => (
-          <path key={i} d={d} fill={`url(#${id}-${i})`} />
-        ))}
       </svg>
     </div>
   );

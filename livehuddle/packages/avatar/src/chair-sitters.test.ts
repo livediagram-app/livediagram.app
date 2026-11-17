@@ -4,7 +4,6 @@ import {
   sameSitters,
   seatedPeer,
   seatPillBottom,
-  seatRing,
   seatsOnBoard,
   sittersByChair,
   type SitterSource,
@@ -169,41 +168,6 @@ describe('sameSitters', () => {
     expect(
       sameSitters(one, sittersByChair(you('c1'), [{ name: 'Ann', color: '#0f0', seatedOn: 'c1' }])),
     ).toBe(false);
-  });
-});
-
-describe('seatRing', () => {
-  it('rings one cushion at its sitter feet, narrower than half the gap to the next', () => {
-    const grid = SEAT_GRIDS.sofa.front;
-    const ring = seatRing(grid, 1)!;
-    expect(ring.cx).toBeCloseTo(92);
-    expect(ring.cy).toBeCloseTo(0.58 * 76);
-    expect(ring.rx).toBeLessThanOrEqual(48 / 2);
-    expect(ring.ry).toBeGreaterThan(0);
-  });
-
-  it('narrows the ring between seats close on one row, and not for a seat above or below', () => {
-    const tight = {
-      width: 100,
-      height: 50,
-      seats: [
-        { u: 0.4, v: 0.5 },
-        { u: 0.6, v: 0.5 },
-      ],
-    };
-    expect(seatRing(tight, 0)!.rx).toBeCloseTo(20 * 0.45);
-    const stacked = SEAT_GRIDS.sofa.side;
-    expect(seatRing(stacked, 0)!.rx).toBe(20);
-  });
-
-  it('rings each meeting-table chair on its own', () => {
-    const rings = MEETING_TABLE_SEATS.seats.map((_, i) => seatRing(MEETING_TABLE_SEATS, i)!);
-    expect(new Set(rings.map((r) => `${r.cx},${r.cy}`)).size).toBe(6);
-  });
-
-  it('draws nothing for a seat the drawing lacks', () => {
-    expect(seatRing(SEAT_GRIDS.chair.front, 3)).toBeNull();
-    expect(seatRing(SEAT_GRIDS.chair.front, undefined)).toBeNull();
   });
 });
 

@@ -1,7 +1,14 @@
 // @vitest-environment jsdom
 import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { applyShapeVariant, createShape, type ShapeElement } from '@livehuddle/document';
+import {
+  applyShapeVariant,
+  createShape,
+  ROOM_TONES,
+  ROOM_WALL,
+  WALL_EDGE,
+  type ShapeElement,
+} from '@livehuddle/document';
 import { PieceArt } from '@/components/canvas/PieceArt';
 import { CorridorView, DoorView } from './RoomBuilderViews';
 
@@ -55,7 +62,7 @@ describe('DoorView', () => {
 });
 
 describe('CorridorView', () => {
-  it('draws its floor and its wall runs, the outline under the floor-coloured core', () => {
+  it('draws its floor and its plaster wall runs, the edge under the plaster', () => {
     const corridor = applyShapeVariant(createShape('corridor', 0, 0), 'tee');
     const c = render(
       <CorridorView element={corridor} stroke="#334155" floor="#f5f0e6" />,
@@ -63,8 +70,10 @@ describe('CorridorView', () => {
     expect(c.querySelector('[aria-label="Corridor"]')).not.toBeNull();
     const paths = c.querySelectorAll('path');
     expect(paths).toHaveLength(3);
-    expect(paths[1]!.getAttribute('stroke-width')).toBe('14');
-    expect(paths[2]!.getAttribute('stroke')).toBe('#f5f0e6');
+    expect(paths[0]!.getAttribute('fill')).toBe('#f5f0e6');
+    expect(paths[1]!.getAttribute('stroke-width')).toBe(String(ROOM_WALL + WALL_EDGE));
+    expect(paths[1]!.getAttribute('stroke')).toBe(ROOM_TONES.wallEdge);
+    expect(paths[2]!.getAttribute('stroke')).toBe(ROOM_TONES.wallTop);
   });
 
   it('is the art PieceArt draws for a corridor', () => {

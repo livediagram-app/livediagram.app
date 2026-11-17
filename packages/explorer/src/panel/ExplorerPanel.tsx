@@ -106,6 +106,10 @@ export type ExplorerPanelProps = {
   // Trashes the item open in the editor, from any of the panel's menus: the host stops saving it first, then leaves
   // it (the Explorer offers the Undo). Settles true once it is in the Trash.
   onTrashCurrent?: (item: Item) => Promise<boolean>;
+  // The item open in the editor went to Archived, from any of the panel's menus or Change Folder's Archived: it is
+  // closed now, so the host leaves for the Explorer, which says so (one-explorer.md "Archiving the open item"). The
+  // panel then says nothing itself.
+  onArchivedCurrent?: (item: { id: string; title: string | null }) => void;
   // The item open in the editor took a new title, from its card or any menu: the editor's title follows.
   onRenameCurrent?: (title: string) => void;
   // Opens the full Explorer at a view (See all, a view only the page shows).
@@ -204,6 +208,7 @@ function PanelInner({
   currentTitle = null,
   currentOffline = false,
   onTrashCurrent,
+  onArchivedCurrent,
   onRenameCurrent,
   onOpenExplorer,
   renderThumbnail,
@@ -305,6 +310,14 @@ function PanelInner({
     (item: Item) => (onTrashCurrent && item.id === openId ? onTrashCurrent(item) : null),
     [onTrashCurrent, openId],
   );
+  const hostArchived = useCallback(
+    (item: { id: string; title: string | null }) => {
+      if (!onArchivedCurrent || item.id !== openId) return false;
+      onArchivedCurrent(item);
+      return true;
+    },
+    [onArchivedCurrent, openId],
+  );
 
   const renamed = useLatest(onRenameCurrent);
   const onItemRenamed = useCallback(
@@ -317,6 +330,7 @@ function PanelInner({
   return (
     <ExplorerProvider
       hostTrash={hostTrash}
+      hostArchived={hostArchived}
       onItemRenamed={onItemRenamed}
       app={app}
       client={client}

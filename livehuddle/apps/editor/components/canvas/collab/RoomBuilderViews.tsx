@@ -8,20 +8,21 @@ import {
   FURNITURE_RAIL_OPACITY,
   FURNITURE_RAIL_STROKE,
   outlinedRoomPaths,
+  ROOM_TONES,
   ROOM_WALL,
+  WALL_EDGE,
   type DoorArtPart,
   type ShapeElement,
 } from '@livehuddle/document';
 import { useDoorOnBackWall } from './back-wall-doors-store';
 
 // A room drawn with the Room Builder (docs/specs/009-elements/room-builder.md "The custom room"): the floor polygon
-// in the element's fill and the walls a fixed ROOM_WALL thick along the outline, outlined in the stroke and mitred at
-// the corners. Drawn at the element's own size so the walls keep their thickness. The walls also block walking
+// in the element's fill and the walls a fixed ROOM_WALL thick along the outline, edged in plaster's deeper shade and mitred
+// at the corners. Drawn at the element's own size so the walls keep their thickness. The walls also block walking
 // (@livehuddle/avatar collision, broken where a Door stands).
 export function OutlinedRoomView({
   element,
   outline,
-  stroke,
   floor,
   animClass,
 }: {
@@ -43,14 +44,7 @@ export function OutlinedRoomView({
         aria-label={`Room${element.label ? `, ${element.label}` : ''}`}
       >
         <path d={area} fill={floor} />
-        <path
-          d={walls}
-          fill="none"
-          stroke={stroke}
-          strokeWidth={ROOM_WALL + 2 * FURNITURE_PANEL_STROKE}
-          strokeLinejoin="miter"
-        />
-        <path d={walls} fill="none" stroke={floor} strokeWidth={ROOM_WALL} strokeLinejoin="miter" />
+        <PlasterWalls d={walls} />
       </svg>
     </div>
   );
@@ -182,11 +176,10 @@ export function DoorView({
 }
 
 // A Corridor (docs/specs/009-elements/corridor.md): its floor in the element's fill and the walls down its sides
-// ROOM_WALL thick, outlined in the stroke as a room's are, open at its ends. Drawn at its own size so the walls keep
+// ROOM_WALL thick, plaster as a room's are, open at its ends. Drawn at its own size so the walls keep
 // their thickness; the walls also block walking (@livehuddle/avatar collision, cut where a Door stands).
 export function CorridorView({
   element,
-  stroke,
   floor,
   animClass,
 }: {
@@ -207,15 +200,30 @@ export function CorridorView({
         aria-label="Corridor"
       >
         <path d={area} fill={floor} />
-        <path
-          d={runs}
-          fill="none"
-          stroke={stroke}
-          strokeWidth={ROOM_WALL + 2 * FURNITURE_PANEL_STROKE}
-          strokeLinejoin="miter"
-        />
-        <path d={runs} fill="none" stroke={floor} strokeWidth={ROOM_WALL} strokeLinejoin="miter" />
+        <PlasterWalls d={runs} />
       </svg>
     </div>
+  );
+}
+
+// A run of plaster wall (furniture-art-style.md "Rooms"): the plaster, edged in its deeper shade, as a room's walls.
+function PlasterWalls({ d }: { d: string }) {
+  return (
+    <>
+      <path
+        d={d}
+        fill="none"
+        stroke={ROOM_TONES.wallEdge}
+        strokeWidth={ROOM_WALL + WALL_EDGE}
+        strokeLinejoin="miter"
+      />
+      <path
+        d={d}
+        fill="none"
+        stroke={ROOM_TONES.wallTop}
+        strokeWidth={ROOM_WALL}
+        strokeLinejoin="miter"
+      />
+    </>
   );
 }

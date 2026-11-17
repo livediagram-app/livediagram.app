@@ -25,6 +25,7 @@ import { loadWelcome } from '@/lib/explorer-welcome';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useEditorPreferences } from '@/hooks/persistence/useEditorPreferences';
 import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
+import { arrivedArchived } from '@liveworkspace/workbench/lib/archived';
 import { useAppNavigation } from '@liveworkspace/workbench/hooks/navigation/useAppNavigation';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { explorerShareHost } from '@/lib/explorer-share-host';
@@ -134,6 +135,8 @@ export function ExplorerHost({
   const inboxHost = useMemo(() => explorerInboxHost(viewerId ?? null), [viewerId]);
   // The open design deleted from the editor lands here with its Undo (lib/design-delete-undo.ts), taken once.
   const [trashedOnArrival] = useState(arrivedTrashed);
+  // The open item archived from the editor lands here too, said once (lib/archived).
+  const [archivedOnArrival] = useState(() => arrivedArchived('livedesign'));
   // The hero's close (docs/specs/013-workspace/explorer-home.md "Hiding the banner"): reported, then written, so
   // every device the person signs in on opens Home without it. Settings > Explorer turns it back on.
   const hideHero = useCallback(() => {
@@ -176,6 +179,7 @@ export function ExplorerHost({
         helpHref={explorerHelpHref}
         renderThumbnail={renderDesignThumbnail}
         trashedOnArrival={trashedOnArrival}
+        archivedOnArrival={archivedOnArrival}
         heroHidden={prefs.homeBanner === false}
         onHideHero={hideHero}
         onHome={trackHome}

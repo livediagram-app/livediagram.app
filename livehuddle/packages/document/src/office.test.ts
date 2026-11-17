@@ -14,6 +14,10 @@ import {
   OFFICE_KINDS,
   ROOM_WALL,
   roomParts,
+  ROOM_TONES,
+  floorBoards,
+  FLOOR_BOARD,
+  BOARD_LENGTH,
   STAGE_FRONT,
   STAGE_SPEAKER_LABELS,
   STAGE_SPEAKERS,
@@ -287,6 +291,33 @@ describe('the meeting table', () => {
     expect(MEETING_TABLE_VIEW.tableSeats).toHaveLength(6);
     expect(MEETING_TABLE_VIEW.tableSeats).toBe(MEETING_TABLE_SEATS.seats);
     expect([MEETING_TABLE_VIEW.width, MEETING_TABLE_VIEW.height]).toEqual([232, 168]);
+  });
+});
+
+// docs/specs/009-elements/furniture-art-style.md "Rooms".
+describe("a room's build", () => {
+  it('lays its floor boards as one path, the joints staggered by half a board', () => {
+    const boards = floorBoards(0, 0, 400, 100);
+    expect(boards).toHaveLength(1);
+    expect(boards[0]).toMatchObject({ tag: 'path', role: 'tint' });
+    const d = boards[0]!.tag === 'path' ? boards[0]!.d : '';
+    // Rows between boards at 24, 48 and 72; ends at 120 and 240 on even rows, 60, 180 and 300 on odd ones.
+    expect(d).toContain(`M0 ${FLOOR_BOARD}h400`);
+    expect(d).toContain(`M${BOARD_LENGTH} 0h1`);
+    expect(d).toContain(`M${BOARD_LENGTH / 2} ${FLOOR_BOARD}h1`);
+    expect(floorBoards(0, 0, 0, 100)).toEqual([]);
+    expect(floorBoards(0, 0, 100, -1)).toEqual([]);
+    // One short board's row has no seam to draw.
+    expect(floorBoards(0, 0, 40, 10)).toEqual([]);
+  });
+
+  it('builds plaster walls with a skirting, and keeps a big floor to one boards path', () => {
+    const parts = roomParts(2000, 1500, 's');
+    const walls = parts.filter((p) => p.role === 'panel');
+    expect(walls.every((p) => p.fill === ROOM_TONES.wallTop)).toBe(true);
+    expect(parts.find((p) => p.role === 'face')!.fill).toBe(ROOM_TONES.wallFace);
+    expect(parts.some((p) => p.role === 'mark' && p.fill === ROOM_TONES.skirting)).toBe(true);
+    expect(parts.filter((p) => p.tag === 'path' && p.role === 'tint')).toHaveLength(1);
   });
 });
 

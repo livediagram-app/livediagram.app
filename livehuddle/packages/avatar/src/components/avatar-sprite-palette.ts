@@ -32,6 +32,12 @@ export const BRASS = AVATAR_PALETTE.brass;
 export const LEAF = AVATAR_PALETTE.leaf;
 export const BLOOM = AVATAR_PALETTE.bloom;
 export const PETAL = AVATAR_PALETTE.petal;
+// The face's finer marks and the hair's sheen (avatar-mode.md "The figure"): tints, so they suit every skin and hair
+// colour the sprite is drawn in.
+export const CATCHLIGHT = '#ffffffd9';
+export const BLUSH = '#e0607040';
+export const LIP = '#b0505a59';
+export const SHEEN = '#ffffff33';
 
 // A darker companion to an arbitrary shirt colour, for the shaded side. Mixes
 // the hex 22% toward black (the product's bound `shade`); falls back to the
