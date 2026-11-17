@@ -346,6 +346,14 @@ touching cards people add by hand.
   deleted reads "A board no longer here" and the rule **Needs Attention** ("A board is gone"); until it is changed,
   the rule hears nothing, never every board. Only boards whose address is turned on ever make an email card; the
   panel says so ("Only boards with Email to Board turned on get email.").
+- **Boards without an address are marked.** When the Email Received panel first opens in a builder, it reads the
+  plan's addresses once ([Managing an address](email-to-board.md#managing-an-address-signed-in-routes)), and the Board picker then
+  marks each board with none ("Leads · No Address"). Picking one, the note says so ("Leads has no email address yet,
+  so no email reaches this rule.") with **Turn On Email to Board**, which opens [Email to Board](email-to-board.md)
+  over the builder on that board; with **Any Board** and no address anywhere, the note reads "No board has an email
+  address yet." and the button opens on every board. Closing it reads the addresses again. Only an Editor of the
+  whole plan may read them: for anyone else, a server that takes no mail, or a read that fails, the picker marks
+  nothing and the note stays as above. The marks are presentation only; the rule saves the same either way.
 - **From** (optional): one value, an exact address (`ana@example.com`) or a whole domain (`@example.com`, or
   `example.com`), compared with the sender after trimming, any case. A domain matches only that domain
   (`ana@example.com`, not `ana@mail.example.com`). The rule keeps it trimmed and lower case, a domain as
@@ -360,7 +368,9 @@ touching cards people add by hand.
 - **Nobody of the plan behind it.** An email card is made by its sender, who is no Editor, Participant or agent of
   the plan: **Who Did It** conditions, **Assign whoever triggered**, **Send Email to whoever triggered** and **Mention
   whoever triggered** are refused on an Email Received rule (`automation_condition_unsupported`), as for an Incoming
-  Webhook, and the builder leaves them out. `{{person}}` reads the sender's address, as the card's Created by does.
+  Webhook, and the builder leaves them out. `{{person}}` reads the sender's address, as the card's Created by does,
+  but **Insert a Value** does not offer it (**Who Did It**) here: **From Email** is the sender, and a rule that
+  already holds `{{person}}` keeps working.
 - **Once per email card.** One email makes one card and one event on the plan's queue (the same one Card Created
   hears), so each rule runs at most once for it: an Email Received rule once and a Card Created rule once. A rule has
   one trigger, so no rule runs twice.
@@ -909,6 +919,9 @@ hands focus back to the field, the caret after the value:
 - Text whose values fill it past its limit (a comment's or a message's 2,000 characters, an email subject's 200, a
   card title's 500, a checklist item's 200) is cut to that limit, never through an emoji: a cut that would split one
   stops a character short.
+- **Who Did It** (`{{person}}`) is left out of **Insert a Value** in an Email Received or Incoming Webhook rule, which
+  have nobody of the plan behind them (From Email and Webhook Field… say who sent it). Typed in, or already in a
+  rule, it is still known and reads as above.
 - `{{webhook.<path>}}` is known only in an Incoming Webhook rule's text (elsewhere `automation_value_unknown`), and
   **Insert a Value** offers **Webhook Field…** (a path typed in, as `order.id`) only there. A path is 1 to 5 names
   joined by dots, each 1 to 64 letters, digits, `_` or `-` (a list's place is its number: `items.0.name`). It reads the

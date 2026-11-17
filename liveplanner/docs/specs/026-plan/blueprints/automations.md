@@ -1577,6 +1577,15 @@ email: { from: sender, board: board.id } }`: one created event per email card, o
   and the save refuses it), and the note on boards with Email to Board turned on.
 - automation-outline.ts: `OutlineBoard.id`; the sentence outline's `boards`.
 - value-insert-options.ts: an **Email** group (From Email) when the rule is an email one (incoming-rule.tsx `email`).
+  This Card leaves out `person` (Who Did It) when the rule is an email or an incoming one (Work Tracker 1173).
+- email-addresses.tsx (Work Tracker 1173): `useEmailAddressesState({ scope })`, held by RuleBuilder like
+  plan-webhooks.tsx and given through `EmailAddressesProvider`: `status` (`idle`, `loading`, `ready`, `error`,
+  `none` without an owner id), `available`, `known` (the board ids the api lists) and `addressed` (those with an
+  address). `load()` reads `readEmailIntakes` the first time EmailTriggerFields mounts, once per builder;
+  `turnOn(boardIds)` opens `EmailIntakeDialog` (next/dynamic, so its code loads on first use) over the builder, and its
+  close reads again. EmailTriggerFields: `boardChoices(boards, missing)` suffixes " · No Address" for a known board
+  without one; `emailBoardNote(...)` picks the note: the picked board's, Any Board's when none has one, else the
+  default. Nothing changes without the provider, or when not `ready` and `available`.
 - needs-words.ts: `board: ['A board', 'boards']`; refusal-words.ts: `sender: 'an address or a domain'`, `board: 'a
 board'`.
 
