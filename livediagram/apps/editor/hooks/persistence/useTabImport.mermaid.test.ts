@@ -6,6 +6,7 @@
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { MERMAID_UNSUPPORTED_ERROR, type Tab } from '@livediagram/document';
+import { MERMAID_REPORT_SUBTITLE } from '@/lib/text-import-report';
 import { useTabImport } from './useTabImport';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
@@ -52,6 +53,46 @@ describe('importing Mermaid into a tab', () => {
     );
     expect(back).toMatchObject({ arrowStyle: 'angled' });
     expect(back && back.type === 'arrow' ? back.curvePoints?.length : 0).toBeGreaterThan(0);
+  });
+
+  // mermaid.md "Unreadable lines are said, not lost" (Work Tracker 1039).
+  it('refuses a flowchart with nothing readable, leaving the tab as it was', async () => {
+    const { api, deps } = setup();
+    const outcome = await api.importTextIntoActiveTab(
+      'mermaid',
+      'flowchart TD\nA[Start -->\n((( broken',
+    );
+    expect(outcome).toEqual({
+      status: 'error',
+      error: 'None of this flowchart could be read. Check the brackets and arrows on “A[Start -->”.',
+    });
+    expect(deps.commitTabs).not.toHaveBeenCalled();
+  });
+
+  it('lands what it read and reports the lines it skipped and the subgraphs it folded', async () => {
+    const { api, landed } = setup();
+    const text = 'flowchart TD\nsubgraph S\nsubgraph T\nA --> B\nend\nend\nB --> C[unclosed\n((( x';
+    const outcome = await api.importTextIntoActiveTab('mermaid', text);
+    expect(outcome).toEqual({
+      status: 'done',
+      subtitle: MERMAID_REPORT_SUBTITLE,
+      scene: {
+        landed: { shape: 3, connector: 2, frame: 1 },
+        degraded: [
+          {
+            rule: 'Nested subgraphs folded into their outer group: groups draw one level deep',
+            count: 1,
+          },
+        ],
+        skipped: [
+          {
+            rule: 'Lines Mermaid could not read, skipped: “B --> C[unclosed”, “((( x”',
+            count: 2,
+          },
+        ],
+      },
+    });
+    expect(landed().elements.length).toBeGreaterThan(0);
   });
 
   it('refuses a sequence diagram as before, leaving the tab as it was', async () => {

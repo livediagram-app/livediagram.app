@@ -137,6 +137,8 @@ first <max>` when they apply.
   `{ shape, connector, frame }`, `skipped` rules `Keys not drawn: <line>` (count: distinct keys) and `Boxes left out
 past the first 149, listed in the last box` (count: left out) and `Lines left out past the first 1,000` (count: lines dropped), with the subtitle "Here's how your infrastructure
   came across."
+  The counting and the shape are the shared `textImportOutcome` (`apps/editor/lib/text-import-report.ts`), which the
+  Mermaid import's report uses too.
 
 ## Errors and copy
 

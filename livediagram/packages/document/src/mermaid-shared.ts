@@ -9,8 +9,15 @@ import type { DiagramGraph, GraphCluster } from './graph-authoring';
 export type MermaidDirection = 'TB' | 'LR';
 
 export type ParseMermaidResult =
-  // `folded`: subgraphs nested in another, folded into their outer one.
-  | { ok: true; graph: DiagramGraph; direction: MermaidDirection; folded?: number }
+  // `folded`: subgraphs nested in another, folded into their outer one. `unread`: the flowchart statements the
+  // parser could not read to their end, skipped.
+  | {
+      ok: true;
+      graph: DiagramGraph;
+      direction: MermaidDirection;
+      folded?: number;
+      unread?: string[];
+    }
   | { ok: false; error: string };
 
 // TD/TB (and BT, folded) → TB; LR/RL → LR. Anything else → TB.

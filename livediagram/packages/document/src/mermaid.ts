@@ -117,6 +117,10 @@ function parseFlowchart(lines: string[]): ParseMermaidResult {
   let folded = 0;
   // Each folded subgraph's id, by the top-level subgraph it folded into: an edge naming it points at that frame.
   const foldedInto = new Map<string, string>();
+  // Statements the parser could not read to their end (an unclosed bracket, text with no node id): skipped, never
+  // fatal, but said back (mermaid.md "Unreadable lines are said, not lost"). Known decoration never lands here.
+  const unread: string[] = [];
+  let readInFull = 0;
 
   // Nodes some subgraph has already claimed.
   const claimed = new Set<string>();
@@ -254,7 +258,10 @@ function parseFlowchart(lines: string[]): ParseMermaidResult {
 
     // Parse a chain of fanned groups: group ( edgeOp group )*
     let group = readNodeGroup(line);
-    if (!group) continue;
+    if (!group) {
+      unread.push(line);
+      continue;
+    }
     let s = group.rest;
     for (;;) {
       const edgeId = EDGE_ID_RE.exec(s);
@@ -294,6 +301,9 @@ function parseFlowchart(lines: string[]): ParseMermaidResult {
       }
       group = next;
     }
+    // Whatever is left past the last node or edge the line held is text the parser could not read.
+    if (s.trim() === '') readInFull += 1;
+    else unread.push(line);
   }
 
   if (sawOtherDialect) {
@@ -327,6 +337,13 @@ function parseFlowchart(lines: string[]): ParseMermaidResult {
         : 'This doesn’t look like a Mermaid flowchart (expected a `graph` or `flowchart` header).',
     };
   }
+  // Nothing read in full: what a half-read line left (the `A` of `A[Start -->`) is not the diagram that was meant.
+  if (readInFull === 0 && unread.length > 0) {
+    return {
+      ok: false,
+      error: `None of this flowchart could be read. Check the brackets and arrows on ${quoteLine(unread[0]!)}.`,
+    };
+  }
   return {
     ok: true,
     graph: {
@@ -336,7 +353,26 @@ function parseFlowchart(lines: string[]): ParseMermaidResult {
     },
     direction,
     ...(folded ? { folded } : {}),
+    ...(unread.length ? { unread } : {}),
   };
+}
+
+const UNREAD_SHOWN = 5;
+const UNREAD_LINE_CHARS = 40;
+
+// One statement quoted for a message, cut to a readable length.
+function quoteLine(line: string): string {
+  const cut = line.length > UNREAD_LINE_CHARS ? `${line.slice(0, UNREAD_LINE_CHARS - 1)}…` : line;
+  return `“${cut}”`;
+}
+
+// The skipped statements as one line, for the editor's import report and the MCP's `notes`: the first few quoted,
+// then how many more.
+export function unreadMermaidLines(unread: readonly string[]): string {
+  const shown = unread.slice(0, UNREAD_SHOWN).map(quoteLine).join(', ');
+  const more = unread.length - UNREAD_SHOWN;
+  const noun = unread.length === 1 ? 'Line' : 'Lines';
+  return `${noun} Mermaid could not read, skipped: ${shown}${more > 0 ? ` and ${more} more` : ''}`;
 }
 
 // The export direction (mermaidFromTab and its shape-bracket table) lives in
