@@ -874,7 +874,22 @@ FROM items i WHERE plan_id = ? AND id IN (SELECT value FROM json_each(?))` (the 
 `{ kind: 'items'; upserts: Item[]; removed: string[]; rev: number }`, a system kind (dropped from client sockets).
 Sent by `relayItems(env, docId, op)` in `room-client.ts` through `/broadcast` with `ordered: true` after each
 successful write. `room-scope.ts` hands a tab-scoped session the op with empty `upserts` and `removed`; its client
-refetches. Presence on cards is a separate ephemeral op, `plan-presence` (`{ tabId, itemId | null, state }`), in
+refetches.
+
+Frame size (Work Tracker 986): a card holds up to `ITEM_FIELDS_BYTES` (64 KiB), so one write's op can run to many
+MiB (200 full cards, about 12.5 MiB). Cloudflare's Durable Object limits page (read 2026-11-17,
+developers.cloudflare.com/durable-objects/platform/limits) gives 32 MiB for a WebSocket message the object
+**receives** and states no limit for one it sends, so the room keeps every frame it sends under
+`ROOM_FRAME_MAX_BYTES` (1 MiB, `@liveplanner/api-schema` room-messages.ts), the safe size. The room's
+`broadcastOrderedSystemOp` (`plan-room/plan-room-sockets.ts`) splits an `items` op with `splitItemsOp`
+(`plan-room/items-op-split.ts`): its `upserts` in order, then its `removed`, packed greedily by UTF-8 JSON bytes
+into parts whose op stays under `ROOM_FRAME_MAX_BYTES` less `ROOM_FRAME_ENVELOPE_BYTES` (1 KiB for the frame's
+`kind`, `from`, `seq` and `epoch`). Each part carries the write's `rev`, is never empty, and takes its own `seq`
+one after another, so the catch-up log replays the parts in order and a client applies them in order:
+`mergeItemChanges` keeps the higher per-card `rev`, a part at the `rev` it already holds is no gap, and the removals
+come last as in the whole op. An op that fits goes out whole, as before; a card larger than a part alone goes in a
+part of its own. A reconnect's catch-up frame bundles the ops it missed: one that would pass `ROOM_FRAME_MAX_BYTES`
+answers `resync: true` with no ops instead (`sendCatchup`, `plan-room-frames.ts`), and the client re-fetches. Presence on cards is a separate ephemeral op, `plan-presence` (`{ tabId, itemId | null, state }`), in
 `PRESENCE_OP_KINDS`.
 
 ## Editor slice

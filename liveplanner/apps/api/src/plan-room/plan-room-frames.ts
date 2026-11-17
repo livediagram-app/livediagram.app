@@ -1,6 +1,11 @@
 // One inbound frame on a room socket (plan-room.ts webSocketMessage) and what it asks of the room: hello, identity,
 // grant, sync (catch-up), and a relayed op (its tab scope's structure kept). Each takes the room.
-import { PROJECT_FORMAT, isRoomOpRef, parseBuildId } from '@liveplanner/api-schema';
+import {
+  PROJECT_FORMAT,
+  ROOM_FRAME_MAX_BYTES,
+  isRoomOpRef,
+  parseBuildId,
+} from '@liveplanner/api-schema';
 import { opForTheWire, stampCommentAuthor } from '@liveplanner/project';
 import { selectionFromOp } from '../room-selections';
 import type { ClientMessage, ServerMessage } from '../types';
@@ -9,6 +14,7 @@ import { opForScope } from '../room-scope';
 import { gateClientOp } from '../room-op-gate';
 import { helloChangesRoster } from '@liveworkspace/api-kit/room-roster';
 import { type SessionAttachment } from '../room-session';
+import { jsonBytes } from './items-op-split';
 import type { PlanRoom } from './plan-room';
 import { scopeOf, sequenceMutation, sendTo } from './plan-room-sockets';
 import { noteMultiplayer } from './plan-room-presence';
@@ -187,8 +193,15 @@ export function sendCatchup(
     ops: visible,
     resync,
   };
+  let frame = JSON.stringify(payload);
+  // Past the frame size, the client re-fetches instead (docs/specs/015-api/api.md "Ordering and catch-up"; Work
+  // Tracker 986). The text's length is a floor on its bytes, so a small one is never encoded.
+  if (frame.length * 3 > ROOM_FRAME_MAX_BYTES && jsonBytes(frame) > ROOM_FRAME_MAX_BYTES) {
+    console.info('[room] catch-up too big, resync', { ops: visible.length });
+    frame = JSON.stringify({ ...payload, ops: [], resync: true });
+  }
   try {
-    ws.send(JSON.stringify(payload));
+    ws.send(frame);
   } catch {
     room.opRates.delete(ws);
   }
