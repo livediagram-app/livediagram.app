@@ -182,6 +182,13 @@ now add 2,110 bytes to every page: the lazy card's wrapper, the plain card and t
 boundaries were measured the same day and add 327 to 414 bytes each (what they import is already in their layouts'
 chunks; each product's `docs/specs/016-platform/web-performance.md`).
 
+**The team Audit Log loads on demand (2026-11-17, Work Tracker 1240).** `/explorer` had crept back to 389,113 bytes
+gzipped on main, 7 under its 380 KiB budget, so the archived-arrival toast (+128 bytes) put it over. The team view
+(`packages/explorer/src/explorer/TeamPane.tsx`) imported the Audit Log statically, so every first load carried its
+rows, filters and CSV export, which only a team's admins ever draw. It is now a `lazy` import inside `Suspense`, as
+History and Webhooks are (`Dialogs.tsx`). Measured the same way: 389,241 to 379,814 bytes (380.1 to 370.9 KiB), the
+same 19 scripts. The budget stays at 380 KiB.
+
 ## Presentation and UX
 
 The pages, their layout and their states are in [site.md](../site.md); the shared components come from
