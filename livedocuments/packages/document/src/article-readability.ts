@@ -4,7 +4,6 @@
 // never a regex over the writing (a pasted run of dots or spaces can't make it slow). English first: the formula is
 // English's, so another language gets the reading time and sentence figures without a level. Pure.
 import type { ArticleBlock, ArticleFlow } from './article-flow';
-import { rejectedArticleFlow } from './article-suggestions';
 
 // An adult's silent reading pace for non-fiction, words a minute (Brysbaert 2019, a meta-analysis of 190 studies).
 export const READING_WORDS_PER_MINUTE = 238;
@@ -378,9 +377,8 @@ export function readabilityOfTexts(texts: Iterable<string>, words: number): Read
   };
 }
 
-/** How easily an article's writing reads, as answered (its rejected view): `words` its Word Count. */
-export function articleReadability(written: ArticleFlow, words: number): Readability {
-  const flow = rejectedArticleFlow(written);
+/** How easily an article's writing reads, as answered: `words` its Word Count. */
+export function articleReadability(flow: ArticleFlow, words: number): Readability {
   const texts: string[] = [];
   for (const b of flow.blocks) {
     const t = proseOf(b);

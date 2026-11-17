@@ -1,14 +1,8 @@
 'use client';
 
-import { useId, useSyncExternalStore } from 'react';
-import {
-  onRoomSuggestOnly,
-  roomSuggestOnly,
-  suggestingNow,
-} from '@liveworkspace/suggestions/room-signal';
+import { useId } from 'react';
 import { Tooltip } from '@livedocuments/ui';
 import type { AccessLevel } from '@livedocuments/api-schema';
-import { useSuggestOnly } from '@/lib/article/article-suggest-store';
 
 // Whether you are editing, participating in or viewing this document
 // (docs/specs/013-workspace/share-roles.md): the title bar's pill (docs/specs/007-editor/editor-app.md#role-pill). It
@@ -45,11 +39,6 @@ const PILL_TOGGLE_TONE: Record<Role, string> = {
   view: 'cursor-pointer transition hover:ring-amber-400 dark:hover:ring-amber-400/60',
 };
 
-// A Participant on Suggest Only (docs/specs/007-editor/suggestions.md "Suggesting").
-export const SUGGESTING_HINT = 'You suggest changes; an Editor accepts or rejects them';
-// An Editor who switched the canvas to Suggesting (canvas-suggestions.md "Suggesting").
-export const SELF_SUGGESTING_HINT = 'Your changes become suggestions to accept or reject';
-
 export function roleOwnerLabel(ownerName: string | null, isSelf: boolean): string {
   if (isSelf) return 'Owned by you';
   return ownerName ? `Owned by ${ownerName}` : '';
@@ -68,15 +57,7 @@ export function RolePill({
 }) {
   const hintId = useId();
   const owner = roleOwnerLabel(ownerName, isSelf);
-  // Suggesting: a Participant on Suggest Only (the article's word, docs/specs/007-editor/suggestions.md), or an Editor
-  // who switched a canvas to Suggesting (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md).
-  const roomSays = useSyncExternalStore(onRoomSuggestOnly, roomSuggestOnly, () => false);
-  const suggestOnly = (useSuggestOnly() && role === 'participate') || roomSays;
-  const suggesting =
-    useSyncExternalStore(onRoomSuggestOnly, suggestingNow, () => false) || suggestOnly;
-  const tone: Role = suggesting ? 'participate' : role;
-  const hint = suggestOnly ? SUGGESTING_HINT : suggesting ? SELF_SUGGESTING_HINT : '';
-  const word = suggesting ? 'Suggesting' : ROLE_WORD[role];
+  const word = ROLE_WORD[role];
   const pill = onToggle ? (
     <button
       type="button"
@@ -84,8 +65,7 @@ export function RolePill({
       aria-label={owner ? `${word}. ${owner}` : word}
       aria-describedby={hintId}
       data-role-pill={role}
-      data-suggesting={suggesting ? '' : undefined}
-      className={`${PILL} ${PILL_TONE[tone]} ${PILL_TOGGLE_TONE[tone]} relative touch-target-y`}
+      className={`${PILL} ${PILL_TONE[role]} ${PILL_TOGGLE_TONE[role]} relative touch-target-y`}
     >
       <span className="text-optical-line text-optical-caps">{word}</span>
       <span id={hintId} className="sr-only">
@@ -95,17 +75,10 @@ export function RolePill({
   ) : (
     // Static for a view-link visitor, and focusable so the Tooltip naming the
     // owner can be reached by keyboard too.
-    <span
-      tabIndex={0}
-      data-role-pill={role}
-      data-suggesting={suggesting ? '' : undefined}
-      className={`${PILL} ${PILL_TONE[tone]}`}
-    >
+    <span tabIndex={0} data-role-pill={role} className={`${PILL} ${PILL_TONE[role]}`}>
       <span className="text-optical-line text-optical-caps">{word}</span>
-      {hint ? <span className="sr-only">{`. ${hint}`}</span> : null}
       {owner ? <span className="sr-only">{`. ${owner}`}</span> : null}
     </span>
   );
-  const tip = [hint, owner].filter(Boolean).join('. ');
-  return tip ? <Tooltip label={tip}>{pill}</Tooltip> : pill;
+  return owner ? <Tooltip label={owner}>{pill}</Tooltip> : pill;
 }

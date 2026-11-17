@@ -6,7 +6,6 @@ precision. Paths are relative to the repository root.
 | File                                                                                     | Role                                                                                       |
 | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
 | `packages/workbench/src/components/chrome/ChromeToolsMenu.tsx`                           | `ChromeToolsMenu` (the button and its menu), `ChromeToolsItem`, `toolsDescription`         |
-| `packages/suggestions/src/react/SuggestionsBar.tsx`                                      | `useSuggestionsToolsItem(suggestions)`: the Suggest row and its view                       |
 | `packages/snapshots/src/ui/history-snapshots.tsx`                                        | `useHistorySnapshotsHost()`: Snapshots for History (FM9), null without a door              |
 | `packages/workbench/src/components/chrome/useItemToolsRows.tsx`                          | the History and Webhooks rows, History's modes (FM9)                                       |
 | `liveplanner/apps/editor/components/automations/automations-tools-item.tsx`              | `useAutomationsToolsItem()`: the Automations row, null without a door                      |

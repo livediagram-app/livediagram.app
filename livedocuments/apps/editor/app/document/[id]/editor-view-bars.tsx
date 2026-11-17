@@ -177,7 +177,6 @@ function EditorViewFooterBar(view: {
   // Version History (docs/specs/006-document/version-history.md "In the editor"): the gate's own slices.
   const hydrated = useEditorChrome((s) => s.hydrated);
   const communityVisitor = useEditorChrome((s) => s.sessionCommunity !== null);
-  const canvasSuggestions = useEditorChrome((s) => s.canvasSuggestions);
   const { isOffline, onSelectTab } = view;
   if (hidden) return null;
   // The bar is already hidden in an embed and behind a welcome, so those two answer false here.
@@ -252,7 +251,6 @@ function EditorViewFooterBar(view: {
             chrome.get().setSettingsOpen(true);
             track('UI', 'Opened', 'Settings');
           }}
-          suggestions={canvasSuggestions}
           onOpenSearch={() =>
             openSearchWithPrefetch(chrome.get().setSearchOpen, chrome.get().loadAllTabs)
           }

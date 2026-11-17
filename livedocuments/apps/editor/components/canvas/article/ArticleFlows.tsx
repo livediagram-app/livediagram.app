@@ -5,7 +5,6 @@
 // writing leaves for them. Each article's editor is its own (ArticleEditor), loaded only
 // once the tab has an article: the editor's code (ProseMirror) is not part of the canvas until an
 // article asks for it.
-import { SuggestCommentButton } from './SuggestCommentButton';
 import { lazy, Suspense, useEffect, useLayoutEffect, useMemo } from 'react';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import {
@@ -267,10 +266,6 @@ export function ArticleFlows({
             );
           })}
         </Suspense>
-        {articles.editable && !articles.reshape ? (
-          // A Participant on Suggest Only comments on selected text from the margin (suggestions.md).
-          <SuggestCommentButton articlePages={articlePages} onNote={articles.addNote} />
-        ) : null}
         {articles.reshape ? (
           <Suspense fallback={null}>
             <PageToolbar

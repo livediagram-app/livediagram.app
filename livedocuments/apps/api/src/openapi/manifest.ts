@@ -18,7 +18,6 @@ import { NAME_MAX_LENGTH } from '@livedocuments/document';
 import { FIND_QUERY_MAX_LENGTH, VIEW_BUDGET_MAX } from '@livedocuments/document-views';
 import type { BodySchema } from '@liveworkspace/api-kit/openapi-types';
 import { TAB_DELTA_OPENAPI } from '@liveworkspace/api-kit/tab-delta-door';
-import { SUGGESTIONS_OPENAPI } from '@liveworkspace/suggestions/openapi';
 
 /** How a caller authenticates (docs/specs/014-identity/auth-and-guest-access.md):
  *  - `public`: no identity required.
@@ -575,53 +574,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
-    path: '/documents/{id}/tabs/{tabId}/suggestions',
-    segment: 'documents',
-    tag: 'Suggestions',
-    summary: SUGGESTIONS_OPENAPI.list.summary,
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    responseSchema: SUGGESTIONS_OPENAPI.list.responseSchema,
-    statuses: SUGGESTIONS_OPENAPI.list.statuses,
-  },
-  {
-    method: 'POST',
-    path: '/documents/{id}/tabs/{tabId}/suggestions',
-    segment: 'documents',
-    tag: 'Suggestions',
-    summary: SUGGESTIONS_OPENAPI.submit.summary,
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    requestSchema: SUGGESTIONS_OPENAPI.submit.requestSchema,
-    responseSchema: SUGGESTIONS_OPENAPI.submit.responseSchema,
-    statuses: SUGGESTIONS_OPENAPI.submit.statuses,
-  },
-  {
-    method: 'POST',
-    path: '/documents/{id}/tabs/{tabId}/suggestions/accept',
-    segment: 'documents',
-    tag: 'Suggestions',
-    summary: SUGGESTIONS_OPENAPI.accept.summary,
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    requestSchema: SUGGESTIONS_OPENAPI.accept.requestSchema,
-    responseSchema: SUGGESTIONS_OPENAPI.accept.responseSchema,
-    statuses: SUGGESTIONS_OPENAPI.accept.statuses,
-  },
-  {
-    method: 'POST',
-    path: '/documents/{id}/tabs/{tabId}/suggestions/reject',
-    segment: 'documents',
-    tag: 'Suggestions',
-    summary: SUGGESTIONS_OPENAPI.reject.summary,
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    requestSchema: SUGGESTIONS_OPENAPI.reject.requestSchema,
-    responseSchema: SUGGESTIONS_OPENAPI.reject.responseSchema,
-    statuses: SUGGESTIONS_OPENAPI.reject.statuses,
-  },
-  {
-    method: 'GET',
     path: '/documents/{id}/tabs/{tabId}/versions',
     segment: 'documents',
     tag: 'Versions',
@@ -706,31 +658,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     tokenUsable: true,
     requestSchema: { type: 'object', properties: { name: nameField }, required: ['name'] },
     responseSchema: wrap('tab', 'TabSummary'),
-    statuses: [200, 400, 401, 403, 404, 410],
-  },
-  {
-    method: 'GET',
-    path: '/documents/{id}/review',
-    segment: 'documents',
-    tag: 'Documents',
-    summary:
-      "The document's review settings: the Participant share links and people whose article writing is always suggestions, whether an assistant's article writes are, and the people seen joining as Participants. An Editor's only.",
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    responseSchema: 'ReviewResponse',
-    statuses: [200, 401, 403, 404, 410],
-  },
-  {
-    method: 'PUT',
-    path: '/documents/{id}/review',
-    segment: 'documents',
-    tag: 'Documents',
-    summary:
-      "Set the review settings: Suggest Only links (share codes) and people (collab keys), and Assistants Suggest. Reaches every Participant with the document open. An Editor's only.",
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    requestSchema: ref('ReviewSettings'),
-    responseSchema: 'ReviewResponse',
     statuses: [200, 400, 401, 403, 404, 410],
   },
   {

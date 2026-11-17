@@ -2,8 +2,7 @@
 
 Every editor's footer cluster (`ChromeControls`, each product's [Editor app](../../../../livediagram/docs/specs/007-editor/editor-app.md)
 "Tab bar") used to carry a button for each tool that works on the whole item: **Automations** (liveplanner),
-**Snapshots** (every app), **History** (livedocuments) and **Search** (every app), and the title bar carried
-**Suggest** (every app with suggestions). Each was a word and an icon in a bar that is mostly
+**Snapshots** (every app), **History** (livedocuments) and **Search** (every app). Each was a word and an icon in a bar that is mostly
 about the tabs, so the cluster grew noisy as tools arrived. They now sit behind one **Tools** button, so the bar holds
 Settings, the appearance and one way into the rest.
 
@@ -28,7 +27,7 @@ its name, one line on what it does (never wrapping: kept short enough for one li
 the band's paper under the pointer, so the list reads as the header's.
 
 The rows are grouped under small headings, in this order, a heading drawn only when its group holds a row: **Find**
-(Search), **Automate** (Automations, liveplanner's Email to Board, then Webhooks), **Collaborate** (Suggest Changes, Walkthroughs, and
+(Search), **Automate** (Automations, liveplanner's Email to Board, then Webhooks), **Collaborate** (Walkthroughs, and
 liveplanner's Subscribe to Calendar), **Versioning** (History alone: Snapshots and livedocuments' Version History live
 inside it), **Content** (Clear Example Content). Each
 group is a labelled group for screen readers; the arrow keys walk the rows straight through the groups.
@@ -39,7 +38,6 @@ group is a labelled group for screen readers; the arrow keys walk the rows strai
 | **Webhooks**              | every app                                           | as its row on the item's ⋯ menu was (gone from the Explorer header's and every item's menu inside an editor)                                                                                | the item's Webhooks                          |
 | **Search**                | every app                                           | the host offers search (the editor and the Explorer's bar)                                                                                                                                  | the Search dialog (closes Tools)             |
 | **Automations**           | liveplanner                                         | as its button was ([Automations](../../../../liveplanner/docs/specs/026-plan/automations.md) "The footer button")                                                                           | the Automations screen, widened              |
-| **Suggest Changes**       | livediagram, livedocuments, liveplanner, livedesign | as its header action was ([Canvas suggestions](../015-suggestions/canvas-suggestions.md) "Suggesting")                                                                                      | the mode switch and the review list          |
 | **Walkthroughs**          | livediagram, livedocuments, liveplanner, livedesign | walkthroughs fit and there is one to play or the person may record ([Walkthroughs](../../../../livediagram/docs/specs/012-collaboration/walkthroughs.md) "In Tools")                        | the list to play, and Record Walkthrough     |
 | **Clear Example Content** | livediagram, livedocuments, livedesign              | the open tab still holds untouched example content, for whoever sees the palette's example tray ([Template examples](../../../../livediagram/docs/specs/006-document/template-examples.md)) | its confirm, then the same clear as the tray |
 
@@ -48,9 +46,6 @@ group is a labelled group for screen readers; the arrow keys walk the rows strai
   is still seen with the menu shut, and the button's name says so ("Tools, a rule is paused").
 - **Walkthroughs** keeps the count of recorded walkthroughs at the row's end (none at 0). It never puts a dot on Tools:
   a walkthrough is there to play when wanted, not news.
-- **Suggest** reads **Suggesting** while this person suggests and keeps its count at the row's end.
-  Suggestions waiting for an Editor put a brand dot on Tools ("Tools, 3 suggestions"); a paused rule's amber outranks
-  it.
 - **Clear Example Content** is there only while the tab holds a template's untouched examples, so it never sits in
   Tools for nothing.
 - Choosing a row opens its tool **inside Tools** (below), sending the same telemetry the button did. **Search** and

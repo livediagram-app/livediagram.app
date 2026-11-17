@@ -27,9 +27,6 @@ import { articlePeersPlugin, onlyPeers } from '@/lib/article/article-peers';
 import { articleHoldsPlugin, holdSpotOf, onlyHolds } from '@/lib/article/article-holds';
 import { noteArticleTyping, releaseArticleHold } from '@/lib/article/article-holds-store';
 import { announceArticleHeld } from '@/lib/article/article-hold-notice';
-import { suggestTransaction } from '@/lib/article/article-suggest';
-import { suggestBreaksPlugin } from '@/lib/article/article-suggest-plugin';
-import { announceSuggestRefused, suggestAuthorNow } from '@/lib/article/article-suggest-store';
 import { SLASH_MENU_ID, slashOptionId } from './SlashMenu';
 import { createArticleHandle, writingScale } from './article-editor-handle';
 import { articlePasteIsCanvas } from '@/lib/clipboard-payload';
@@ -182,8 +179,6 @@ export function mountArticleView({
       decorationsPlugin(isEditable),
       todoTogglePlugin(isEditable),
       articlePeersPlugin,
-      // A suggested paragraph break's ¶ (docs/specs/007-editor/suggestions.md).
-      suggestBreaksPlugin,
       // Collaborators' holds: outlined, and our typing in them refused with a notice naming the writer
       // (docs/specs/007-editor/article-pages.md "Holding a paragraph").
       articleHoldsPlugin((hold) => announceArticleHeld(hold.name)),
@@ -274,18 +269,9 @@ export function mountArticleView({
         }),
       ),
     },
-    dispatchTransaction(given: Transaction) {
+    dispatchTransaction(tr: Transaction) {
       const v = viewRef.current;
       if (!v) return;
-      // Suggesting (docs/specs/007-editor/suggestions.md "Suggesting"): this person's change is remade as
-      // suggestions in their name, or refused when it has no suggestion form.
-      const author = latest.current.editable && given.docChanged ? suggestAuthorNow() : null;
-      const remade = author ? suggestTransaction(v.state, given, author) : given;
-      if ('refused' in remade) {
-        announceSuggestRefused();
-        return;
-      }
-      const tr = remade;
       v.updateState(v.state.apply(tr));
       // Collaborators' carets and holds arriving change nothing of ours: no commit, no toolbar update.
       if (onlyPeers(tr) || onlyHolds(tr)) return;

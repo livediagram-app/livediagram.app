@@ -5,8 +5,7 @@
 // leaves it, after ARTICLE_HOLD_IDLE_MS without typing, or when the writing loses the caret. Collaborators': each
 // one's hold from their `article-hold` ops, named and coloured from the room's presence list, dropped when they let
 // go, leave, or say nothing for ARTICLE_HOLD_EXPIRE_MS. Read per article by the writing, which outlines what others
-// hold and refuses typing in it, so the canvas never re-renders for a hold. Kept apart from the writing so a later
-// feature that holds a paragraph (suggestions) takes the same holds.
+// hold and refuses typing in it, so the canvas never re-renders for a hold.
 import { useSyncExternalStore } from 'react';
 import {
   ARTICLE_HOLD_EXPIRE_MS,

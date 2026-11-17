@@ -17,9 +17,6 @@ export type InternalRoom = {
   sequenceMutation: (from: string, op: unknown) => number;
   readSelections: (tabId: string, person: string) => Promise<unknown>;
   readHolds: (tabId: string) => unknown;
-  reviewChanged: () => void;
-  // A tab's canvas suggestions changed (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Live").
-  suggestionsChanged: (tabId: string) => void;
   readLedger: (tabId: string, since?: number) => Promise<unknown>;
   epoch: () => string;
 };
@@ -113,20 +110,6 @@ export async function answerInternal(
     const tabId = url.searchParams.get('tab');
     if (!tabId) return new Response('missing tab', { status: 400 });
     return Response.json({ holds: room.readHolds(tabId) });
-  }
-  // Internal: the review route wrote the document's review settings (docs/specs/007-editor/suggestions.md "Suggest
-  // Only"); the room reads them again and tells each Participant session where it stands. Same trust argument.
-  // Internal: a tab's canvas suggestions changed (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md
-  // "Live"); every Participant and Editor socket is told, carrying no content. Same trust argument as /broadcast.
-  if (request.method === 'POST' && url.pathname === '/suggestions') {
-    const tabId = ((await readBody(request)) as { tabId?: unknown } | null)?.tabId;
-    if (typeof tabId !== 'string' || !tabId) return new Response('missing tab', { status: 400 });
-    room.suggestionsChanged(tabId);
-    return new Response(null, { status: 204 });
-  }
-  if (request.method === 'POST' && url.pathname === '/review') {
-    room.reviewChanged();
-    return new Response(null, { status: 204 });
   }
   if (request.method === 'GET' && url.pathname === '/ledger') {
     const tabId = url.searchParams.get('tab');

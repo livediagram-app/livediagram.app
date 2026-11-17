@@ -12,9 +12,6 @@ import {
   ChromeToolsMenu,
   type ChromeToolsItem,
 } from '@liveworkspace/workbench/components/chrome/ChromeToolsMenu';
-import { useSuggestionsToolsItem } from '@liveworkspace/suggestions/react/SuggestionsBar';
-import type { CanvasSuggestions } from '@liveworkspace/suggestions/react/useCanvasSuggestions';
-import type { Element as SuggestionCanvasElement } from '@livedocuments/document';
 
 // The right-hand control cluster shared by the editor's bottom tab bar and
 // the Explorer's bottom bar (docs/specs/007-editor/editor-app.md): search, History (the editor's, on a stored
@@ -24,7 +21,6 @@ import type { Element as SuggestionCanvasElement } from '@livedocuments/document
 // so each host drops it straight into its own bar flex row.
 export function ChromeControls({
   onOpenSearch,
-  suggestions,
   onOpenHistory,
   onOpenSettings,
   settingsLabel = 'Settings',
@@ -33,8 +29,6 @@ export function ChromeControls({
   appearance = true,
 }: {
   onOpenSearch?: () => void;
-  // The canvas's suggestions (the editor's; the Explorer's bar has none): Suggest's row and the panel it opens.
-  suggestions?: CanvasSuggestions<SuggestionCanvasElement>;
   // Version History (docs/specs/006-document/version-history.md "In the editor"): the editor passes it on a
   // document stored on the server; the Explorer's bar never does.
   onOpenHistory?: () => void;
@@ -52,7 +46,6 @@ export function ChromeControls({
   appearance?: boolean;
 }) {
   const BTN = labelled ? `${CHROME_BTN} ${CHROME_BTN_LABELLED}` : CHROME_BTN;
-  const suggest = useSuggestionsToolsItem(suggestions);
   // Version History lives inside History (owner, 2026-11-17), which the editor's ItemToolsHost publishes.
   useVersionHistoryInTools(onOpenHistory);
   // Search, first in Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md).
@@ -75,7 +68,7 @@ export function ChromeControls({
       <TourOfferButton labelled={labelled} />
       {/* Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md): the tools that work on the
           whole item, in one menu, drawn only while it holds one. */}
-      <ChromeToolsMenu labelled={labelled} items={[search, suggest]} />
+      <ChromeToolsMenu labelled={labelled} items={[search]} />
       {github ? (
         <>
           {/* Open-source repo link (the codebase is public + MIT, docs/specs/002-project-scope/open-source-and-business-model.md). An

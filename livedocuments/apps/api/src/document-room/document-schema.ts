@@ -11,7 +11,6 @@
 // Made on first use, never on construction (document-db.ts `ensureSchema`): a Durable Object a stray id wakes
 // stores nothing. Versioned by `_document_schema`; a later change adds a step to STEPS, never edits one.
 
-import { CANVAS_SUGGESTIONS_SCHEMA } from '@liveworkspace/suggestions/store';
 import { COMMUNITY_POST_TABLE } from '@liveworkspace/community/app';
 import {
   TAB_CONNECTION_SCHEMA,
@@ -296,8 +295,8 @@ const V7 = (exec: Exec) => {
 // (versions/version-schema.ts). Its own step, appended: every statement is IF NOT EXISTS.
 const V8 = VERSION_SCHEMA;
 
-// The document's review settings (docs/specs/007-editor/suggestions.md "Suggest Only"): JSON, or NULL for none
-// (document-room-review.ts). Asks before the ALTER, so it is safe however far a room got.
+// The document's review settings, for suggestions since retired (owner, 2026-11-17), kept as written: a migration is
+// history. Asks before the ALTER, so it is safe however far a room got.
 const V9 = (exec: Exec) => {
   const have = new Set(
     exec('PRAGMA table_info(document)')
@@ -307,8 +306,18 @@ const V9 = (exec: Exec) => {
   if (!have.has('review')) exec('ALTER TABLE document ADD COLUMN review TEXT NULL');
 };
 
-// Canvas suggestions on slides and infographics (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md
-// "Stored on the item"): their table, beside the tabs.
+// The canvas_suggestions table this step made, frozen here so the migration no longer needs the retired package.
+const CANVAS_SUGGESTIONS_SCHEMA = `
+CREATE TABLE IF NOT EXISTS canvas_suggestions (
+  id         TEXT PRIMARY KEY,
+  tab_id     TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  body       TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS canvas_suggestions_tab ON canvas_suggestions (tab_id, created_at);
+`;
+
+// Canvas suggestions on slides and infographics, since retired, kept as written: their table, beside the tabs.
 const V10 = CANVAS_SUGGESTIONS_SCHEMA;
 
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [

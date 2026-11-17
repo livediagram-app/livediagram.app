@@ -187,7 +187,7 @@ describe('add', () => {
   });
 });
 
-// A Participant with no profile name (a guest, or a Suggest Only Participant's margin comment) signs with the name on
+// A Participant with no profile name (a guest) signs with the name on
 // their cursor, never "Anonymous"; a profile name wins, and an agent's sent name is never read.
 describe('the name a comment is signed with', () => {
   it("takes the caller's cursor name when it has no profile name, and only then", async () => {

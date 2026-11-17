@@ -234,7 +234,6 @@ export function editorViewFooter(
             setSettingsOpen(true);
             track('UI', 'Opened', 'Settings');
           }}
-          suggestions={ctx.canvasSuggestions}
           onOpenSearch={() => openSearchWithPrefetch(setSearchOpen, loadAllTabs)}
           // Canvas right-click (desktop) + long-press (touch) open the active
           // tab's menu with the canvas sections folded in, rendered by the

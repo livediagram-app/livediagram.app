@@ -99,23 +99,15 @@ describe('decorationsPlugin', () => {
     }
   });
 
-  // A peer's write across several list items (an assistant's write_article landing as suggestions) replaces those
+  // A peer's write across several list items (an assistant's write_article) replaces those
   // items whole: their markers were mapped away with them and the list showed none until a reload.
   it('keeps list markers through a peer write that replaces several list items whole', () => {
     const started = start(article(40));
     const { plugin } = started;
     let { state } = started;
-    const mark = {
-      id: 's1',
-      k: 'ins' as const,
-      by: 'agent:t',
-      n: 'Claude',
-      at: 1,
-      ai: true as const,
-    };
     const blocks = docToBlocks(state.doc).map((b): ArticleBlock =>
       b.type === 'list' && (b.id === 'b5' || b.id === 'b10' || b.id === 'b15')
-        ? { ...b, runs: [...b.runs, { text: ' more', sg: mark }] }
+        ? { ...b, runs: [...b.runs, { text: ' more', b: true }] }
         : b,
     );
     const tr = replaceContentTr(state, blocks, false);

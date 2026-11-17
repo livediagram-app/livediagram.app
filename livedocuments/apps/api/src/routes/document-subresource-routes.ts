@@ -7,7 +7,6 @@ import { redactCommentAuthorIds } from '../comments';
 import { deleteTabRow, getDocument, getDocumentForSave, getTab } from '../db';
 import { conflict, forbidden, json, missingAuth, noContent, notFound } from '../responses';
 import { tabEtag } from '@livedocuments/api-schema';
-import { withArticlesRejected } from '@livedocuments/document';
 import { handleTabPut, refuseTokenTabPut } from './tab-put-route';
 import { handleTabDelta } from './tab-delta-route';
 import { TAB_DELTA_SEGMENT } from '@liveworkspace/api-schema/tab-delta';
@@ -15,8 +14,6 @@ import { handleTabRename } from './tab-name-route';
 import { handleTabPages } from './tab-pages-route';
 import { handleChangesetRoutes, refreshAfterRead } from './changesets';
 import { handleVersionRoutes } from './versions';
-import { handleReviewRoute } from './review-route';
-import { handleSuggestionRoutes } from './suggestion-routes';
 import { handleCommentRoutes } from './comment-routes';
 import { handleNotifyAction } from './notify-action-route';
 import { handleAgentPresenceRoute } from './agent-presence-routes';
@@ -41,17 +38,9 @@ export async function handleDocumentSubresources(
   // Agent changesets (docs/specs/024-agents/agent-changesets.md).
   const changesets = await handleChangesetRoutes(ctx);
   if (changesets) return changesets;
-  // Canvas suggestions on slides and infographics (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md).
-  const suggestions = await handleSuggestionRoutes(ctx);
-  if (suggestions) return suggestions;
   // Version history (docs/specs/006-document/version-history.md).
   const versions = await handleVersionRoutes(ctx);
   if (versions) return versions;
-  // Review settings (docs/specs/007-editor/suggestions.md "Suggest Only").
-  if (segments.length === 4 && segments[3] === 'review') {
-    const review = await handleReviewRoute(ctx, segments[2]!);
-    if (review) return review;
-  }
   // /api/documents/<id>/tabs/<tabId>
   //   GET    — full tab payload. READ access: owner or ANY valid
   //            share code (view OR edit) for this document, so
@@ -155,17 +144,15 @@ export async function handleDocumentSubresources(
             ? // Nor which other item a connected tab stands for (connected-tabs.md).
               { ...redactTabForCommunity(tab), connection: undefined }
             : { ...tab, elements: redactCommentAuthorIds(tab.elements, caller) };
-      // An agent, and a Community visitor who never joins the room, read the writing as if every suggestion were
-      // rejected (docs/specs/007-editor/suggestions.md "The server is the rule"): unaccepted text never leaves
-      // the editor.
-      const safe = ctx.token || grant.community ? withArticlesRejected(redacted) : redacted;
       // A view may read the caller's own selection, so it needs a caller.
       if (view) {
-        return caller === null ? missingAuth() : answerTabView(ctx, view, existing, safe, caller);
+        return caller === null
+          ? missingAuth()
+          : answerTabView(ctx, view, existing, redacted, caller);
       }
       // The revision as a weak ETag too (docs/specs/024-agents/agent-changesets.md "The tab
       // revision", CS5): what an agent read, for its changeset base.
-      return json({ tab: safe }, { headers: { ETag: tabEtag(tab.rev) } });
+      return json({ tab: redacted }, { headers: { ETag: tabEtag(tab.rev) } });
     }
 
     // Writes below: owner or edit-role share visitor only, and a tab-scoped

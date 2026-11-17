@@ -4,7 +4,6 @@
 // removed as the writing grows or shrinks, zones' elements moved with their zones) are settled by
 // whoever made the change, folded into the step that caused them (tick), so the change and its
 // consequences undo as one.
-import { suggestOnlyNow } from '@/lib/article/article-suggest-store';
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 import {
   articleMarginPx,
@@ -416,10 +415,7 @@ export function useArticles(deps: {
     (flow: string, kind: ArticleNoteKind) => {
       const d = latest.current;
       const handle = articleHandleOf(flow);
-      // A Participant on Suggest Only may put a comment on selected text (docs/specs/007-editor/suggestions.md
-      // "Comments on selected text"); the room lets that one element through.
-      const may = d.canEdit || (kind === 'comment' && d.canWrite === true && suggestOnlyNow());
-      if (!handle || articleEditRefused(may, d.activeTab, flow)) return;
+      if (!handle || articleEditRefused(d.canEdit, d.activeTab, flow)) return;
       const id = crypto.randomUUID();
       const res = handle.markNote(id, kind);
       if (!res) return;

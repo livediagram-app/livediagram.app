@@ -31,16 +31,6 @@ vi.mock('./db', async (orig) => ({
   },
 }));
 
-// Who is on Suggest Only (docs/specs/007-editor/suggestions.md "Suggest Only"): the review module's answer, set per
-// test (its own reading of the settings is document-room/document-room-review.test.ts's).
-const { suggesting } = vi.hoisted(() => ({ suggesting: new Set<string>() }));
-vi.mock('./document-room/document-room-review', () => ({
-  participantJoined: () => {},
-  reviewChanged: () => {},
-  suggestByOf: (_room: unknown, session: { presence?: { id: string; key?: string } }) =>
-    session.presence && suggesting.has(session.presence.id) ? (session.presence.key ?? null) : null,
-}));
-
 import { DocumentRoom } from './document-room/document-room';
 
 const box = { x: 0, y: 0, width: 100, height: 80 };
@@ -131,7 +121,6 @@ async function send(room: DocumentRoom, from: Socket, op: unknown, ref?: number)
 }
 
 beforeEach(() => {
-  suggesting.clear();
   store.data = JSON.stringify({ elements: [shape('col'), sticky('ed')] });
   store.writes = 0;
 });
@@ -373,99 +362,5 @@ describe('DocumentRoom: a Participant edits text only', () => {
     });
     expect(ops(editor)).toEqual([]);
     expect(store.writes).toBe(0);
-  });
-});
-
-describe('DocumentRoom: a Participant on Suggest Only', () => {
-  const mark = { id: 's1', k: 'ins', by: 'key-P', n: 'P', at: 1 };
-  it('writes a suggestion of its own, relayed as any writing', async () => {
-    const { room, join } = newRoom();
-    store.data = articleTab('Hello');
-    suggesting.add('P');
-    const editor = join('E', 'edit');
-    const part = join('P', 'participate');
-    const block = {
-      id: 'b1',
-      type: 'paragraph',
-      runs: [{ text: 'Hello' }, { text: '!', sg: mark }],
-    };
-    const frame = { kind: 'article', tabId: 't1', flow: 'f1', ops: [{ kind: 'put', block }] };
-    await send(room, part, frame, 4);
-    expect(storedTab().articles).toEqual({ f1: { blocks: [block] } });
-    expect(ops(editor)).toEqual([
-      expect.objectContaining({ from: 'P', op: { ...frame, grow: true } }),
-    ]);
-  });
-
-  it('is refused writing straight in or in another’s name: nothing written, the sender re-hydrates', async () => {
-    const { room, join } = newRoom();
-    store.data = articleTab('Hello');
-    suggesting.add('P');
-    const editor = join('E', 'edit');
-    const part = join('P', 'participate');
-    for (const block of [
-      paragraph('Hello there'),
-      {
-        id: 'b1',
-        type: 'paragraph',
-        runs: [{ text: 'Hello' }, { text: '!', sg: { ...mark, by: 'key-E' } }],
-      },
-    ]) {
-      await send(room, part, {
-        kind: 'article',
-        tabId: 't1',
-        flow: 'f1',
-        ops: [{ kind: 'put', block }],
-      });
-    }
-    expect(store.writes).toBe(0);
-    expect(ops(editor)).toEqual([]);
-    expect(frames(part).filter((f) => f.kind === 'catchup')).toHaveLength(2);
-  });
-
-  it('adds a margin comment marker, and nothing else', async () => {
-    const { room, join } = newRoom();
-    store.data = articleTab('Hello');
-    suggesting.add('P');
-    const editor = join('E', 'edit');
-    const part = join('P', 'participate');
-    const note = {
-      id: 'n1',
-      type: 'article-note',
-      x: 0,
-      y: 0,
-      width: 32,
-      height: 32,
-      aspectLocked: true,
-      articleNote: 'comment',
-    };
-    await send(room, part, { kind: 'el', tabId: 't1', op: { kind: 'add', element: note, at: 1 } });
-    expect(storedElements()).toContainEqual(note);
-    expect(ops(editor)).toHaveLength(1);
-    await send(room, part, {
-      kind: 'el',
-      tabId: 't1',
-      op: { kind: 'add', element: sticky('s9'), at: 2 },
-    });
-    expect(storedElements()).toHaveLength(2);
-  });
-
-  it('a Participant not on Suggest Only adds no margin comment', async () => {
-    const { room, join } = newRoom();
-    store.data = articleTab('Hello');
-    join('E', 'edit');
-    const part = join('P', 'participate');
-    const note = {
-      id: 'n1',
-      type: 'article-note',
-      x: 0,
-      y: 0,
-      width: 32,
-      height: 32,
-      aspectLocked: true,
-      articleNote: 'comment',
-    };
-    await send(room, part, { kind: 'el', tabId: 't1', op: { kind: 'add', element: note, at: 1 } });
-    expect(storedElements()).toHaveLength(1);
   });
 });

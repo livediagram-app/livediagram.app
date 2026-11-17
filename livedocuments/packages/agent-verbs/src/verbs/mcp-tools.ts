@@ -235,9 +235,7 @@ export const mcpWriteArticle = mcpTool('write_article', {
     'Write an article (a document of text on pages) from Markdown: a new one, or replace ' +
     'or append to one named by id or title, with its look. The editor flows the text onto as many pages as ' +
     'it needs. read_document with view "pages" shows each article as Markdown to edit and write back. Not for ' +
-    'slides: an article flows as running text, where a slide deck is slide pages, made with change_pages. ' +
-    'With as "suggestions", changes to an existing article arrive as suggestions for a person to accept or ' +
-    'reject; every read shows the text without them.',
+    'slides: an article flows as running text, where a slide deck is slide pages, made with change_pages.',
   inputSchema: writeArticleShape,
   outputSchema: writeArticleOutput,
 });

@@ -96,8 +96,7 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     const person = linkCodeOf(claims.sub) ? null : claims.sub;
     // The share code a session came in by, from the grant the index signed (its `link` claim, set for a person who
     // opened a link as for a link visitor; one-explorer-contracts.md "Grants"), never from the upgrade URL, which is
-    // logged and the client's to change. Revoking the link closes exactly its sockets, and the room holds a Suggest
-    // Only link's people to it (docs/specs/007-editor/suggestions.md "Suggest Only").
+    // logged and the client's to change. Revoking the link closes exactly its sockets.
     const linkCode = linkCodeOf(claims.sub);
     const shareCode = claims.link?.slice(0, 64) || linkCode;
     if (linkCode && (await isCommunityCode(env, id, linkCode))) return forbidden('community_link');
