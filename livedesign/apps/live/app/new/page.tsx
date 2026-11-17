@@ -24,6 +24,7 @@ import { titleCaseType, track } from '@/lib/telemetry';
 import { trackDailyReturn } from '@/lib/daily-return';
 import { markNameConfirmed } from '@/lib/local-identity';
 import { ensureGuestIdentity } from '@/lib/guest-identity';
+import { ensureGuestToken } from '@/lib/guest-token';
 import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
 import { handTemplatePick } from '@liveworkspace/explorer';
 import { isBlankTemplate, untitledNameForTemplate, type TemplateKind } from '@livedesign/templates';
@@ -207,6 +208,11 @@ export default function NewDesignPage() {
     // "Instant open"): identity settles in the background while it opens. A cloud create needs the owner.
     const cloudOwner = offline ? null : await settleIdentity();
     if (offline) {
+      // Except a first visit's guest token (offline-mode.md "Instant open"): fetching one leaves the page for the
+      // accounts site and comes back to this /new address, so a create begun first would run again on the way back and
+      // leave the first design behind in Browser Storage. Taken first, the design is made once; a returning guest's token
+      // is already here and this answers at once.
+      await ensureGuestToken();
       void settleIdentity().catch((err: unknown) =>
         debugLog(`[new] background identity failed: ${String(err)}`),
       );
