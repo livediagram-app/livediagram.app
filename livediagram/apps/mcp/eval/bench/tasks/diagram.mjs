@@ -48,7 +48,7 @@ const D12 = {
 
 // The C4 model's look (docs/specs/015-api/mcp-server.md §4.7 `c4`): a C4 element is a card or a cylinder in C4's
 // fills, a level's system or container a C4-style boundary.
-const C4_FILLS = { person: '#08427b', container: '#438dd5', component: '#85bbf0' };
+const C4_FILLS = { person: '#08427b', container: '#2f78c4', component: '#85bbf0' };
 const tabsWith = (snap, test) => tabsOf(snap).filter((t) => t.elements.some(test));
 const c4Fill = (fill) => (e) => e.type === 'shape' && lc(e.fillColor) === fill;
 const c4Boundary = (e) => e.type === 'shape' && e.shape === 'boundary' && e.boundaryStyle === 'c4';
