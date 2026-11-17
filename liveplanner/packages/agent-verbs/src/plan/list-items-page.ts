@@ -95,10 +95,16 @@ export interface ListItemsOmitted {
   note: string;
 }
 
-// A type, not an interface, so it passes as the MCP's structured content.
+// A board as a later page lists it: its columns without their card refs (Work Tracker 981).
+export type PagedBoard = Omit<ListedBoard, 'columns'> & {
+  columns: (Omit<ListedBoard['columns'][number], 'cards'> & { cards?: string[] })[];
+};
+
+// A type, not an interface, so it passes as the MCP's structured content. `notOnBoard` and each column's `cards` come on
+// the first page only (plan-agents.md "Paging").
 export type ListItemsAnswer = {
-  boards: ListedBoard[];
-  notOnBoard: string[];
+  boards: PagedBoard[];
+  notOnBoard?: string[];
   count: number;
   total: number;
   items: ListedItem[];
@@ -179,6 +185,11 @@ export function keptListItems(
   return { kept, closed, closedOut };
 }
 
+// A board without its columns' card refs, the rest (a done column's closed count included) as listed.
+function withoutCardRefs(board: ListedBoard): PagedBoard {
+  return { ...board, columns: board.columns.map(({ cards: _cards, ...column }) => column) };
+}
+
 // One page of list_items: the cards a resolved filter and page keep, by number after the cursor, until the limit or
 // the budget. Only the cards listed (and the one that stops the page) have their fields worked out.
 export function listItemsPage(
@@ -197,10 +208,13 @@ export function listItemsPage(
     pictureLink,
     page.includeRich ? true : { onLeftOut: () => (cardRich = true) },
   );
-  const { boards, notOnBoard } = listedBoards(state, { closedOut });
+  const listed = listedBoards(state, { closedOut });
+  // Later pages keep the board, column and type names a write takes, and leave the column card refs and notOnBoard to
+  // the first page: at 5,000 cards they were about 110k of a page's 200k characters (Work Tracker 981).
+  const first = page.after === 0;
   const frame: ListItemsAnswer = {
-    boards,
-    notOnBoard,
+    boards: first ? listed.boards : listed.boards.map(withoutCardRefs),
+    ...(first ? { notOnBoard: listed.notOnBoard } : {}),
     count: kept.length,
     total: kept.length,
     items: [],
