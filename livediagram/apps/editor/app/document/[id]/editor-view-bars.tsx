@@ -9,8 +9,9 @@ import type { ReactNode } from 'react';
 import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
 import { track } from '@/lib/telemetry';
 import { addToDocumentTargets } from '@/lib/add-to-document-targets';
-import { EditorCornerActions } from '@/components/chrome/EditorCornerActions';
-import { roleToolsItem } from '@/components/chrome/RoleTool';
+import { EditorCornerActions } from '@liveworkspace/workbench/components/chrome/EditorCornerActions';
+import { roleToolsItem } from '@liveworkspace/workbench/components/chrome/RoleTool';
+import { roleOwnerLabel } from '@/components/chrome/RoleIndicator';
 import { WorkbenchOpenLink } from '@/components/chrome/WorkbenchChrome';
 import { appHrefOfPlace } from '@/lib/workbench/workspace-place';
 import { TabBar } from '@/components/chrome/TabBar';
@@ -71,6 +72,7 @@ export function editorViewHeader(
             : undefined
         }
         copying={copying}
+        copyDescription="Duplicate this canvas into your own files."
         // docs/specs/012-collaboration/presentation-mode.md "The header's Present button".
         present={
           hydrated && !anyWelcomeOpen && !isMobileViewport && slideDeck.runnable.length > 0
@@ -211,7 +213,9 @@ export function editorViewFooter(
           suggestions={ctx.canvasSuggestions}
           extraTools={[
             roleToolsItem({
-              ...view.role,
+              role: view.role.role,
+              owner: roleOwnerLabel(view.role.ownerName, view.role.isSelf, view.role.team),
+              noun: 'canvas',
               canSwitch: !!view.role.onToggle,
               onPick: ctx.setViewPreview,
             }),

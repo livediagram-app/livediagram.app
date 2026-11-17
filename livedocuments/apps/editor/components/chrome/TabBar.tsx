@@ -20,6 +20,7 @@ import { TabPresenceStack } from '@/components/chrome/TabPresenceStack';
 import { NameEditor } from '@liveworkspace/workbench/components/primitives/NameEditor';
 import { useTabReorderDrag } from '@liveworkspace/workbench/components/chrome/useTabReorderDrag';
 import { ChromeControls } from '@/components/chrome/ChromeControls';
+import type { ChromeToolsItem } from '@liveworkspace/workbench/components/chrome/ChromeToolsMenu';
 import type { CanvasSuggestions } from '@liveworkspace/suggestions/react/useCanvasSuggestions';
 import type { Element as SuggestionCanvasElement } from '@livedocuments/document';
 // Lazy: the tab context menu (and the 18 kB icon module it drags in)
@@ -59,6 +60,8 @@ type TabBarProps = {
   // The canvas's suggestions, for Suggest's row in the footer's Tools menu
   // (liveworkspace/docs/specs/004-index/footer-tools-menu.md).
   suggestions?: CanvasSuggestions<SuggestionCanvasElement>;
+  // More rows for the footer's Tools menu (the Editing Mode tool).
+  extraTools?: readonly (ChromeToolsItem | null)[];
   // Opens Version History (docs/specs/006-document/version-history.md "In the editor"): History sits between
   // Search and Settings while it is set, on a document stored on the server.
   onOpenHistory?: () => void;
@@ -185,6 +188,7 @@ export function TabBar({
   onOpenSettings,
   onOpenSearch,
   suggestions,
+  extraTools,
   onOpenHistory,
   canvasMenu,
   onCloseCanvasMenu,
@@ -374,6 +378,7 @@ export function TabBar({
         <ChromeControls
           onOpenSearch={onOpenSearch}
           suggestions={suggestions}
+          extraTools={extraTools}
           onOpenHistory={onOpenHistory}
           onOpenSettings={onOpenSettings}
           settingsLabel="Application settings"

@@ -1,12 +1,12 @@
 'use client';
 
-import { Glyph, HoverCard } from '@livediagram/ui';
-import { AuthControls } from '@liveworkspace/workbench/components/chrome/AuthControls';
-import { HeaderShareIcon } from '@liveworkspace/workbench/components/chrome/EditorHeader';
+import { Glyph, HoverCard } from '@liveworkspace/ui';
+import { AuthControls } from './AuthControls';
+import { HeaderShareIcon } from './EditorHeader';
 
-// Experiment: no header bar. The header's right-edge actions (Copy, Present, Share and the account) float in a card of
+// Experiment (livediagram, livedocuments): no header bar. The header's right-edge actions (Copy, Present, Share and the account) float in a card of
 // their own at the canvas's top right, the same card as the menu card at its top left. The account control is the
-// shared AuthControls, drawn as a header action; `[data-corner-actions]` in globals.css redraws it as a button in
+// shared AuthControls, drawn as a header action; styles/corner-actions.css redraws it as a button in
 // this card.
 
 // One button in the card: 36px tall like the menu card's, its glyph beside its name.
@@ -25,6 +25,8 @@ export type EditorCornerActionsProps = {
   copying?: boolean;
   present?: { slideCount: number; starting: boolean; onPresent: () => void };
   onOpenAccount?: () => void;
+  // Make a Copy's hover card, in the app's own noun: "Duplicate this canvas into your own files."
+  copyDescription: string;
 };
 
 export function EditorCornerActions({
@@ -35,6 +37,7 @@ export function EditorCornerActions({
   copying = false,
   present,
   onOpenAccount,
+  copyDescription,
 }: EditorCornerActionsProps) {
   return (
     // A zero-height layer over the canvas, so the canvas keeps the whole height a header bar took.
@@ -46,7 +49,7 @@ export function EditorCornerActions({
         className="pointer-events-auto absolute right-3 top-3 flex h-[46px] items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40"
       >
         {onMakeCopy ? (
-          <HoverCard title="Make a Copy" description="Duplicate this canvas into your own files.">
+          <HoverCard title="Make a Copy" description={copyDescription}>
             <button
               type="button"
               onClick={onMakeCopy}

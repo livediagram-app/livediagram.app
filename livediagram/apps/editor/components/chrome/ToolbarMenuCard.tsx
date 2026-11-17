@@ -6,6 +6,10 @@ import { useMenuCardFit } from '@liveworkspace/workbench/components/chrome/useMe
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import { PHONE_TOOLBAR_ITEMS } from './phone-toolbar-items';
+import {
+  MENU_CARD_IN_ROW,
+  MenuCardLogo,
+} from '@liveworkspace/workbench/components/chrome/MenuCardLogo';
 
 // The card at the canvas's top left, before the palette strip (docs/specs/007-editor/toolbar-layout.md): the
 // Explorer's menu button in the app, a workspace frame's Back in a workbench. `data-toolbar-menu` is what the strip
@@ -63,7 +67,7 @@ export function ToolbarMenuCard({
       className={
         inline
           ? 'flex items-center gap-1'
-          : `pointer-events-auto ${withLogo ? 'relative min-w-0' : 'absolute left-3 top-3 z-[var(--z-toolbar)]'} flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40 ${PHONE_TOOLBAR_ITEMS} [&>:not([data-tab-name-in-box])]:shrink-0`
+          : `pointer-events-auto ${withLogo ? MENU_CARD_IN_ROW : 'absolute left-3 top-3 z-[var(--z-toolbar)]'} flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40 ${PHONE_TOOLBAR_ITEMS} [&>:not([data-tab-name-in-box])]:shrink-0`
       }
       onPointerDown={(e) => e.stopPropagation()}
       onContextMenu={(e) => {
@@ -74,26 +78,5 @@ export function ToolbarMenuCard({
       <MenuCardFormContext.Provider value={form}>{children}</MenuCardFormContext.Provider>
     </div>
   );
-  if (!withLogo) return card;
-  // The logo's card and the menu card side by side at the corner, the pair drawn at the UI scale.
-  return (
-    <div
-      style={
-        scaled
-          ? { ...uiScaleStyle(scale), top: toSurfacePx(12, scale), left: toSurfacePx(12, scale) }
-          : undefined
-      }
-      className="pointer-events-none absolute left-3 top-3 z-[var(--z-toolbar)] flex items-start gap-2"
-    >
-      <div
-        data-floating-panel=""
-        data-logo-card=""
-        onPointerDown={(e) => e.stopPropagation()}
-        className="pointer-events-auto flex h-[46px] shrink-0 items-center rounded-xl border border-slate-200 bg-white px-2.5 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
-      >
-        {logo}
-      </div>
-      {card}
-    </div>
-  );
+  return withLogo ? <MenuCardLogo logo={logo} scale={scale} card={card} /> : card;
 }

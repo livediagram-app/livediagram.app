@@ -7,6 +7,10 @@
   "sideEffects": false,
   "exports": {
     "./styles/image-backing.css": "./src/styles/image-backing.css",
+    "./styles/corner-actions.css": "./src/styles/corner-actions.css",
+    "./components/chrome/EditorCornerActions": "./src/components/chrome/EditorCornerActions.tsx",
+    "./components/chrome/RoleTool": "./src/components/chrome/RoleTool.tsx",
+    "./components/chrome/MenuCardLogo": "./src/components/chrome/MenuCardLogo.tsx",
     "./bindings": "./src/bindings.ts",
     "./components/canvas/ImageCropBar": "./src/components/canvas/ImageCropBar.tsx",
     "./components/canvas/ImageCropOverlay": "./src/components/canvas/ImageCropOverlay.tsx",

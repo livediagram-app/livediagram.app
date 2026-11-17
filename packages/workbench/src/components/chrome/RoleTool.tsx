@@ -1,17 +1,19 @@
 'use client';
 
-import { Glyph } from '@livediagram/ui';
-import type { ChromeToolsItem } from '@liveworkspace/workbench/components/chrome/ChromeToolsMenu';
-import { roleOwnerLabel, type OwnerTeam, type Role } from './RoleIndicator';
+import { Glyph } from '@liveworkspace/ui';
+import type { ChromeToolsItem } from './ChromeToolsMenu';
 
-// Experiment: the header's role pill as a Tool. Someone whose role allows editing picks how they see the canvas
+/** A session's access level, as each app's api-schema names it. */
+export type Role = 'edit' | 'participate' | 'view';
+
+// Experiment (livediagram, livedocuments): the header's role pill as a Tool. Someone whose role allows editing picks how they see the item
 // (Editing, Participating, Viewing) straight from Tools; the pill's tones carry over to each option's plate.
 
 const OPTIONS: { role: Role; label: string; description: string; plate: string }[] = [
   {
     role: 'edit',
     label: 'Editing',
-    description: 'Change anything on the canvas.',
+    description: 'Change anything.',
     plate:
       'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30',
   },
@@ -70,19 +72,20 @@ function RoleGlyph({ role }: { role: Role }) {
 /** The Tools row: only for someone whose role allows editing (a Participant's and a Viewer's role is fixed). */
 export function roleToolsItem(role: {
   role: Role;
-  ownerName: string | null;
-  isSelf: boolean;
-  team: OwnerTeam | null;
+  // "Owned by you", "Owned by Sam" (each app's roleOwnerLabel), or empty.
+  owner: string;
+  // The thing's noun: "canvas", "document".
+  noun: string;
   canSwitch: boolean;
   onPick: (role: Role) => void;
 }): ChromeToolsItem | null {
   if (!role.canSwitch) return null;
-  const owner = roleOwnerLabel(role.ownerName, role.isSelf, role.team);
+  const { owner } = role;
   return {
     id: 'role',
     group: 'collaborate',
     label: 'Editing Mode',
-    description: 'Edit, or see the canvas as a Participant or a Viewer.',
+    description: `Edit, or see the ${role.noun} as a Participant or a Viewer.`,
     icon: <SwitchGlyph />,
     aside: (
       <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
