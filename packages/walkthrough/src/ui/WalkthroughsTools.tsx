@@ -8,23 +8,34 @@
 // walkthroughs don't fit (a phone, an embed, This Browser, a tab-scoped link) or where there is nothing to play or
 // record.
 
-import type { WalkthroughSummary } from '@liveworkspace/media/walkthrough';
 import {
   ConfirmPopover,
   CountBadge,
-  HoverCard,
-  Spinner,
-  TrashIcon,
-  formatRelativeTime,
+  ResponsivePopover,
+  ToolFooter,
+  ToolFooterButton,
 } from '@liveworkspace/ui';
+import { primeAudio } from '@liveworkspace/capture/level';
 import { ToolExplainer } from '@liveworkspace/ui/tool-explainer';
 import { walkthroughsArt } from '@liveworkspace/ui/tool-explainer-art';
 import type { ChromeToolsItem } from '@liveworkspace/workbench/components/chrome/ChromeToolsMenu';
-import { usePublishToolsItems } from '@liveworkspace/workbench/components/chrome/tools-door';
-import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
-import { formatClock } from '../timeline';
-import type { WalkthroughsMenu } from '../useWalkthroughs';
-import { PlayIcon, RecordIcon, WalkthroughIcon } from './icons';
+import {
+  usePublishToolsItems,
+  useToolGate,
+} from '@liveworkspace/workbench/components/chrome/tools-door';
+import {
+  lazy,
+  Suspense,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react';
+import { WalkthroughRow } from './WalkthroughRow';
+import type { Walkthroughs, WalkthroughsMenu } from '../useWalkthroughs';
+import { RecordIcon, WalkthroughIcon } from './icons';
 
 // The latest menu, for the view inside Tools: the row is memoised on its count (so a recording's ticks never republish
 // it), and the view reads the rest from here as it changes.
@@ -53,21 +64,78 @@ function useLatest<T>(value: T): Latest<T> {
   return store;
 }
 
+// Record a Walkthrough's set-up, loaded when it first shows.
+const RecordSetup = lazy(() => import('./RecordSetup'));
+
 function WalkthroughsView({
-  menu,
+  latest,
   onClose,
 }: {
-  menu: Latest<WalkthroughsMenu>;
+  latest: Latest<Walkthroughs>;
   onClose: () => void;
 }) {
-  const walkthroughs = useSyncExternalStore(menu.subscribe, menu.get, menu.get);
-  return <WalkthroughsPanel walkthroughs={walkthroughs} bare onClose={onClose} />;
+  const walkthroughs = useSyncExternalStore(latest.subscribe, latest.get, latest.get);
+  const setup = walkthroughs.recorder.phase.kind === 'setup';
+  // Leaving Tools mid set-up lets the microphone and camera go; Start Recording does not.
+  const started = useRef(false);
+  useEffect(
+    () => () => {
+      const now = latest.get();
+      if (!started.current && now.recorder.phase.kind === 'setup') now.discard();
+    },
+    [latest],
+  );
+  const [anchor, setAnchor] = useState<HTMLElement | null>(null);
+  const titleId = useId();
+  // Tools closes once the tab is shared and the count begins: a refused share keeps the set-up open to say so.
+  const counting = walkthroughs.recorder.phase.kind === 'countdown';
+  useEffect(() => {
+    if (!counting || anchor === null) return;
+    started.current = true;
+    onClose();
+  }, [counting, anchor, onClose]);
+  return (
+    <>
+      <WalkthroughsPanel
+        walkthroughs={walkthroughs.menu}
+        bare
+        onClose={onClose}
+        onRecord={(at) => {
+          // Inside the press: Brave starts the level meter's audio only from one.
+          primeAudio();
+          setAnchor(at);
+          walkthroughs.menu.record();
+        }}
+      />
+      {/* The set-up opens beside Tools (a drawer on a phone), as Add Webhook does (owner, 2026-11-17). A press outside
+          closes it, except while picking what to hide, whose presses land on the canvas. */}
+      <ResponsivePopover
+        open={setup && anchor !== null}
+        onClose={walkthroughs.discard}
+        beforeClose={() => !latest.get().hiding.picking}
+        anchor={anchor}
+        titleId={titleId}
+        width={400}
+        placement="side"
+        bare
+      >
+        <Suspense fallback={<div aria-busy className="min-h-64" />}>
+          <RecordSetup walkthroughs={walkthroughs} titleId={titleId} onStarted={() => undefined} />
+        </Suspense>
+      </ResponsivePopover>
+    </>
+  );
 }
 
-export function WalkthroughsTools({ menu }: { menu: WalkthroughsMenu }) {
-  const latest = useLatest(menu);
+export function WalkthroughsTools({ walkthroughs }: { walkthroughs: Walkthroughs }) {
+  const latest = useLatest(walkthroughs);
+  const menu = walkthroughs.menu;
   const { available, canRecord } = menu;
   const count = menu.list.length;
+  const picking = walkthroughs.hiding.picking;
+  // Signed out, or the item kept in This Browser (owner, 2026-11-17): still there, badged as Webhooks is ("Sign In",
+  // "Sync Canvas"), and a press opens the same gate.
+  const gate = useToolGate();
   const rows = useMemo<ChromeToolsItem[]>(
     () =>
       available
@@ -82,14 +150,34 @@ export function WalkthroughsTools({ menu }: { menu: WalkthroughsMenu }) {
               icon: <WalkthroughIcon size={16} />,
               aside:
                 count > 0 ? (
-                  <CountBadge tone="brand" count={count} label={`${count} walkthroughs`} />
+                  <CountBadge
+                    tone="brand"
+                    count={count}
+                    label={count === 1 ? '1 walkthrough' : `${count} walkthroughs`}
+                  />
                 ) : undefined,
               onSelect: () => {},
-              view: ({ close }) => <WalkthroughsView menu={latest} onClose={close} />,
+              // Closes on a press outside like any tool (owner, 2026-11-17: only Slide Deck stays open), except while
+              // Hide From Recording picks things on the canvas.
+              keepOpen: picking,
+              view: ({ close }) => <WalkthroughsView latest={latest} onClose={close} />,
             },
           ]
-        : [],
-    [available, canRecord, count, latest],
+        : gate
+          ? [
+              {
+                id: 'walkthroughs',
+                group: 'collaborate',
+                label: 'Walkthroughs',
+                description: 'Record yourself talking through it.',
+                icon: <WalkthroughIcon size={16} />,
+                inPlace: true,
+                badges: gate.badges,
+                onSelect: () => gate.open('walkthroughs'),
+              },
+            ]
+          : [],
+    [available, canRecord, count, latest, gate, picking],
   );
   usePublishToolsItems('walkthroughs', rows);
   return null;
@@ -103,11 +191,14 @@ export function WalkthroughsPanel({
   sheet = false,
   bare = false,
   onClose,
+  onRecord,
 }: {
   walkthroughs: WalkthroughsMenu;
   sheet?: boolean;
   bare?: boolean;
   onClose: () => void;
+  // Inside Tools: Record Walkthrough opens its set-up beside it, from this button.
+  onRecord?: (anchor: HTMLElement) => void;
 }) {
   // Read once when the panel opens, so every row's "2 days ago" agrees and render stays pure.
   const [now] = useState(() => Date.now());
@@ -136,15 +227,15 @@ export function WalkthroughsPanel({
       )}
       {list.length === 0 ? (
         // The tool's explainer (footer-tools-menu.md "Explainers"): nothing recorded yet.
-        <div className="px-4 py-3">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-5 pt-4">
           <ToolExplainer
             art={walkthroughsArt}
             title="No Walkthroughs Yet"
-            description="Talk people through this canvas while you point and click. Anyone who can open it can play it back."
+            description="Record a video of this canvas while you talk it through. Anyone who can open it can watch, or share it by a link."
             steps={[
-              'Press Record Walkthrough, with your camera or without.',
+              'Press Record Walkthrough, then share this tab when your browser asks.',
               'Talk it through as you move around the canvas.',
-              'Finish, and it is saved here for everyone to watch.',
+              'Finish, and the video is saved here, ready to share.',
             ]}
             data="walkthroughs"
           />
@@ -163,24 +254,29 @@ export function WalkthroughsPanel({
                 onClose();
               }}
               onDelete={(at) => setConfirming({ id: w.id, anchor: at })}
+              onRename={(title) => walkthroughs.rename(w.id, title)}
+              onShare={(on) => walkthroughs.share(w.id, on)}
             />
           ))}
         </ul>
       )}
       {canRecord ? (
-        <div className="border-t border-slate-100 p-2 dark:border-slate-800">
-          <button
-            type="button"
-            onClick={() => {
-              walkthroughs.record();
-              onClose();
+        // Pinned at the bottom: the list scrolls above it (owner, 2026-11-17).
+        <ToolFooter>
+          <ToolFooterButton
+            onClick={(e) => {
+              if (onRecord) onRecord(e.currentTarget);
+              else {
+                primeAudio();
+                walkthroughs.record();
+                onClose();
+              }
             }}
-            className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-brand-700 px-3 py-2 text-[13px] font-medium text-white transition hover:bg-brand-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
           >
             <RecordIcon size={12} className="text-rose-300" />
             Record Walkthrough
-          </button>
-        </div>
+          </ToolFooterButton>
+        </ToolFooter>
       ) : null}
       {confirming ? (
         <ConfirmPopover
@@ -197,62 +293,5 @@ export function WalkthroughsPanel({
         />
       ) : null}
     </div>
-  );
-}
-
-function WalkthroughRow({
-  walkthrough: w,
-  now,
-  loading,
-  deleting,
-  onPlay,
-  onDelete,
-}: {
-  walkthrough: WalkthroughSummary;
-  now: number;
-  loading: boolean;
-  deleting: boolean;
-  onPlay: () => void;
-  onDelete: (anchor: HTMLElement) => void;
-}) {
-  const by = w.mine ? 'You' : (w.author ?? 'Someone');
-  return (
-    <li className={`group flex items-center gap-1 px-1.5 ${deleting ? 'opacity-50' : ''}`}>
-      <button
-        type="button"
-        onClick={onPlay}
-        disabled={deleting}
-        className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-lg px-2.5 py-2 text-left transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-600 dark:hover:bg-slate-800"
-      >
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-700 transition group-hover:bg-brand-700 group-hover:text-white dark:bg-brand-500/15 dark:text-brand-200">
-          {loading ? <Spinner size={14} /> : <PlayIcon size={12} className="translate-x-px" />}
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block truncate text-[13px] font-medium text-slate-900 dark:text-slate-100">
-            {w.title}
-          </span>
-          <span className="block truncate text-[11px] text-slate-500 dark:text-slate-400">
-            <span className="tabular-nums">{formatClock(w.durationMs)}</span>
-            {' · '}
-            {by}
-            {' · '}
-            {formatRelativeTime(now - w.createdAt)}
-          </span>
-        </span>
-      </button>
-      {w.canDelete ? (
-        <HoverCard title="Delete Walkthrough">
-          <button
-            type="button"
-            aria-label={`Delete ${w.title}`}
-            disabled={deleting}
-            onClick={(e) => onDelete(e.currentTarget)}
-            className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg text-slate-400 opacity-0 transition hover:bg-rose-50 hover:text-rose-600 focus-visible:opacity-100 group-hover:opacity-100 dark:hover:bg-rose-500/10 dark:hover:text-rose-300 [@media(hover:none)]:opacity-100"
-          >
-            <TrashIcon size={13} />
-          </button>
-        </HoverCard>
-      ) : null}
-    </li>
   );
 }

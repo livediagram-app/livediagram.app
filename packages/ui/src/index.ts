@@ -49,6 +49,9 @@ export { Portal } from './Portal';
 export { SheetHandle, SHEET_HANDLE_PX } from './SheetHandle';
 export { Tooltip, type TooltipProps } from './Tooltip';
 export { HoverCard, type HoverCardProps } from './HoverCard';
+export { PublicLinkPopover } from './PublicLinkPopover';
+export { VideoDialog } from './VideoDialog';
+export { ToolFooter, ToolFooterButton } from './ToolFooter';
 // The "this app or All Apps" switch the Explorer and the Community page share (AppScopeToggle.tsx).
 export { AppScopeToggle, type AppScope, type AppScopeOption } from './AppScopeToggle';
 // A pane header's small pressed-state switch, which AppScopeToggle and the Image Gallery's All / Unused draw.

@@ -70,6 +70,11 @@ const nextConfig: NextConfig = {
             { source: '/api/index/:path*', destination: `${INDEX_DEV}/api/index/:path*` },
             // Every app's item previews (liveworkspace/docs/specs/006-media/previews.md), from the media Worker.
             { source: '/api/previews/:path*', destination: `${MEDIA_DEV}/api/previews/:path*` },
+            // A walkthrough's public link (/walkthrough?c=): the media Worker's shared door.
+            {
+              source: '/api/media/walkthroughs/shared/:path*',
+              destination: `${MEDIA_DEV}/api/media/walkthroughs/shared/:path*`,
+            },
             {
               source: '/api/community/:path*',
               destination: `${COMMUNITY_DEV}/api/community/:path*`,

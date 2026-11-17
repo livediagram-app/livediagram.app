@@ -15,6 +15,7 @@ import {
 } from './useItemToolsRows';
 
 vi.mock('@liveworkspace/explorer', () => ({
+  createExplorerAccounts: () => ({}),
   ItemHistoryDialog: ({ extras, onClose }: { extras?: HistoryExtras; onClose: () => void }) => (
     <div role="dialog" aria-label="Item History">
       {extras?.top}

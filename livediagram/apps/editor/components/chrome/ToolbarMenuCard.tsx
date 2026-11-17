@@ -6,6 +6,10 @@ import { useMenuCardFit } from '@liveworkspace/workbench/components/chrome/useMe
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import { PHONE_TOOLBAR_ITEMS } from './phone-toolbar-items';
+import {
+  MENU_CARD_IN_ROW,
+  MenuCardLogo,
+} from '@liveworkspace/workbench/components/chrome/MenuCardLogo';
 
 // The card at the canvas's top left, before the palette strip (docs/specs/007-editor/toolbar-layout.md): the
 // Explorer's menu button in the app, a workspace frame's Back in a workbench. `data-toolbar-menu` is what the strip
@@ -20,6 +24,7 @@ export function ToolbarMenuCard({
   dockButton = false,
   tourId,
   region,
+  logo,
 }: {
   inline: boolean;
   children: ReactNode;
@@ -28,6 +33,8 @@ export function ToolbarMenuCard({
   tourId?: string;
   // The editor's F6 region the card stands for (@liveworkspace/workbench/hooks/ui/useRegionCycle.ts).
   region?: 'header';
+  // Experiment (no header bar): the app's logo in a card of its own, left of this one. Not inline (a phone's strip).
+  logo?: ReactNode;
 }) {
   // Drawn at the UI scale (docs/specs/007-editor/ui-scale.md), still 12px from the corner. Inline it sits in the
   // strip, which is scaled already.
@@ -39,7 +46,8 @@ export function ToolbarMenuCard({
   // where the strip's row holds the card, nor joined, where it spans the sidebar.
   const cardRef = useRef<HTMLDivElement>(null);
   const { maxWidth: room, form } = useMenuCardFit(cardRef, !inline);
-  return (
+  const withLogo = !inline && !!logo;
+  const card = (
     <div
       ref={cardRef}
       data-dock-button={dockButton ? '' : undefined}
@@ -51,7 +59,7 @@ export function ToolbarMenuCard({
       data-menu-form={form}
       data-region={region}
       style={{
-        ...(scaled
+        ...(scaled && !withLogo
           ? { ...uiScaleStyle(scale), top: toSurfacePx(12, scale), left: toSurfacePx(12, scale) }
           : undefined),
         ...(room !== null ? { maxWidth: toSurfacePx(room, scale) } : undefined),
@@ -59,7 +67,7 @@ export function ToolbarMenuCard({
       className={
         inline
           ? 'flex items-center gap-1'
-          : `pointer-events-auto absolute left-3 top-3 z-[var(--z-toolbar)] flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40 ${PHONE_TOOLBAR_ITEMS} [&>:not([data-tab-name-in-box])]:shrink-0`
+          : `pointer-events-auto ${withLogo ? MENU_CARD_IN_ROW : 'absolute left-3 top-3 z-[var(--z-toolbar)]'} flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40 ${PHONE_TOOLBAR_ITEMS} [&>:not([data-tab-name-in-box])]:shrink-0`
       }
       onPointerDown={(e) => e.stopPropagation()}
       onContextMenu={(e) => {
@@ -70,4 +78,5 @@ export function ToolbarMenuCard({
       <MenuCardFormContext.Provider value={form}>{children}</MenuCardFormContext.Provider>
     </div>
   );
+  return withLogo ? <MenuCardLogo logo={logo} scale={scale} card={card} /> : card;
 }

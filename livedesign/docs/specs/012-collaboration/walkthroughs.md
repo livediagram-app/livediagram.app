@@ -34,7 +34,8 @@ the events carry ids and coordinates, never an element's text, colours or notes.
 **Record Walkthrough** is in the **Walkthroughs** panel, opened from the footer's **Tools** (below). Pressing it opens the **recording dock**
 at the bottom centre of the canvas, in place: the canvas stays where it is and stays yours to move around.
 
-1. **Set up.** The dock shows a **Microphone** picker, a **Camera** switch, a live level meter so you can see the
+1. **Set up.** The dock shows a **Microphone** picker, a **Camera** switch, a live level meter, **Mic Level** (its hover card: "Moves as you speak, so you know you are heard before you record"; its
+   audio context resumed as it opens, since one made outside a press starts suspended and heard only silence), so you can see the
    microphone hears you, and **Hide From Recording** (below). **The camera starts off**: the browser is asked for the
    microphone alone, and the walkthrough records your voice with no bubble. Turning the switch on asks for the camera,
    shows its picker beside the switch and your camera live in its bubble (in the corner you pick, bottom left to start, moved up or down to stay clear of the Map and across past a docked Contents sidebar); turning it off again stops it.

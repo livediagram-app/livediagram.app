@@ -37,10 +37,14 @@ export function AnimatedHeightBox({
   className,
   enter = 'fade',
   settle = false,
+  fill = false,
   children,
 }: {
   maxPx?: number;
   settle?: boolean;
+  // Fill the box it sits in instead of easing to its content (a phone's drawer, which can be dragged taller): no
+  // height of its own, the views stretching to the room.
+  fill?: boolean;
   // How the swapped-in view arrives: a soft fade, or a short slide for a drill-in, `forward` (from the right, going
   // in a level) or `back` (from the left, coming out). Reduced motion turns both slides into the fade.
   enter?: 'fade' | 'forward' | 'back';
@@ -109,7 +113,11 @@ export function AnimatedHeightBox({
       }${className ? ` ${className}` : ''}`}
       style={{
         height:
-          height === null ? undefined : maxPx === undefined ? height : Math.min(height, maxPx),
+          fill || height === null
+            ? undefined
+            : maxPx === undefined
+              ? height
+              : Math.min(height, maxPx),
       }}
     >
       {/* Stable (non-keyed) wrapper so the ResizeObserver keeps measuring
@@ -118,8 +126,11 @@ export function AnimatedHeightBox({
           bottom row's 2px card border off the clip edge: the box height is
           the integer-rounded scrollHeight, and without the pad sub-pixel
           rounding shaved the last row's border (both pickers hit this). */}
-      <div ref={ref} className="pb-1">
-        <div key={viewKey} className={ENTER_CLASS[enter]}>
+      <div ref={ref} className={fill ? 'flex min-h-0 flex-1 flex-col pb-1' : 'pb-1'}>
+        <div
+          key={viewKey}
+          className={`${ENTER_CLASS[enter]}${fill ? ' flex min-h-0 flex-1 flex-col' : ''}`}
+        >
           {children}
         </div>
       </div>

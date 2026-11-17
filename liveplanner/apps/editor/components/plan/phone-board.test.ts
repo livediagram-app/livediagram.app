@@ -69,11 +69,11 @@ describe('boardLook', () => {
     );
   });
 
-  it('draws Minimal cards and no widgets on a phone, even on the canvas', () => {
+  it('draws Minimal cards on a phone, even on the canvas, its widgets shown (experiment: no header bar)', () => {
     expect(boardLook(place({ phone: true }), 'detailed')).toMatchObject({
       columns: 'canvas',
       cardSize: 'minimal',
-      widgets: false,
+      widgets: true,
       touch: 'touch-none',
     });
   });

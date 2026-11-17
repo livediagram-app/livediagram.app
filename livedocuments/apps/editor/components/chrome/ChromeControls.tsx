@@ -25,6 +25,7 @@ import type { Element as SuggestionCanvasElement } from '@livedocuments/document
 export function ChromeControls({
   onOpenSearch,
   suggestions,
+  extraTools = [],
   onOpenHistory,
   onOpenSettings,
   settingsLabel = 'Settings',
@@ -35,6 +36,8 @@ export function ChromeControls({
   onOpenSearch?: () => void;
   // The canvas's suggestions (the editor's; the Explorer's bar has none): Suggest's row and the panel it opens.
   suggestions?: CanvasSuggestions<SuggestionCanvasElement>;
+  // More rows for Tools (the editor's Editing Mode tool).
+  extraTools?: readonly (ChromeToolsItem | null)[];
   // Version History (docs/specs/006-document/version-history.md "In the editor"): the editor passes it on a
   // document stored on the server; the Explorer's bar never does.
   onOpenHistory?: () => void;
@@ -75,7 +78,7 @@ export function ChromeControls({
       <TourOfferButton labelled={labelled} />
       {/* Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md): the tools that work on the
           whole item, in one menu, drawn only while it holds one. */}
-      <ChromeToolsMenu labelled={labelled} items={[search, suggest]} />
+      <ChromeToolsMenu labelled={labelled} items={[search, suggest, ...extraTools]} />
       {github ? (
         <>
           {/* Open-source repo link (the codebase is public + MIT, docs/specs/002-project-scope/open-source-and-business-model.md). An

@@ -17,7 +17,7 @@ Excalidraw's tool bar works. In Diagram and Workshop the strip is the **category
 ```
 
 - **Top left, before the strip: the menu button and the editor mode switch**
-  ([The mode switch](editor-modes.md#the-mode-switch)), then the tab's name, in one card. The switch shows the
+  ([The mode switch](editor-modes.md#the-mode-switch)), in one card (no tab name since 2026-11-17). The switch shows the
   mode's icon and name; on a phone, its icon alone. On a phone that card sits at the far left of the strip's row, the strip beside it (below). In a workspace
   workbench frame, which has no Explorer button, the card holds **Back** instead
   ([Workbench embeds](../013-workspace/workbench-embeds.md#what-renders)).
@@ -321,6 +321,10 @@ unmounted while zen or the welcome flow hides the chrome. Nothing is stored,
 so a new page load starts on the mode's landing.
 
 ## The tab's name
+
+- **Not in the menu box** (owner, 2026-11-17): the menu box holds the Explorer button and the mode switch alone; the
+  tab strip and the window title name the tab. What follows is how the name sat there before, kept for the other
+  canvas apps, which still show it (livedocuments, livedesign).
 
 - On a desktop, the menu box (the Explorer button and the mode switch, top left) ends with the open tab's name, after a
   hairline, in every mode: Diagram, Draw and Workshop alike

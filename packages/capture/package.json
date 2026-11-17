@@ -9,6 +9,7 @@
     ".": "./src/index.ts",
     "./constraints": "./src/constraints.ts",
     "./level": "./src/level.ts",
+    "./steady-audio": "./src/steady-audio.ts",
     "./device-picker": "./src/DevicePicker.tsx"
   },
   "scripts": {

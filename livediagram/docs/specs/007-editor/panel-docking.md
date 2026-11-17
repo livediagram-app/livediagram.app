@@ -56,6 +56,10 @@ When the user has never arranged panels, the corners match today's defaults:
 | `bottom-left`  | Minimap                                                   |
 | `bottom-right` | Tool panels, above the bottom cluster (zoom controls pin) |
 
+With no header bar (experiment) the top row's cards stand in both top corners (the logo and the menu card at the
+left, Share and the account at the right), so a panel docked in either top corner starts below that row, whether or
+not the palette strip or the Draw dock reaches it.
+
 The tool panels (Laser, Spotlight, Eraser, Format, Slide Deck) open bottom-right, stacked
 upwards from just above the bottom cluster, where the controls they set sit within reach of the canvas they
 act on, not top-right under the palette strip, where they hid its end and opened over a template's title. A panel

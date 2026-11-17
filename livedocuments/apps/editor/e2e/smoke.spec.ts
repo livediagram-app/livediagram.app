@@ -18,7 +18,7 @@ import {
 // `/new` asks nothing: it makes a document as it mounts and opens it on its start, where the templates are
 // (docs/specs/007-editor/new-document-route.md, start-diagramming.md). A guest's lives in This Browser
 // (docs/specs/006-document/save-locations.md "The default depends on who is creating"): listed in this browser's
-// list for the Explorer, and badged so in the header.
+// list for the Explorer. (Its header badge went with the header bar, experiment.)
 test('/new makes a guest’s document in This Browser and opens it on its start', async ({
   page,
   pageErrors,
@@ -38,7 +38,8 @@ test('/new makes a guest’s document in This Browser and opens it on its start'
       ),
     )
     .toContain(id);
-  await expect(page.getByLabel('This Browser', { exact: true }).first()).toBeVisible();
+  // No header bar, so no badge in one.
+  await expect(page.locator('header[data-region="header"]')).toHaveCount(0);
   expectNoPageErrors(pageErrors);
 });
 
@@ -79,8 +80,9 @@ test('the editor header has a plain logo, with no site switcher or apps menu', a
   pageErrors,
 }) => {
   await openStartBlank(page);
-  const header = page.locator('header[data-region="header"]');
-  await expect(header).toBeVisible();
+  // No header bar (experiment): the logo has a card of its own beside the menu card (MenuCardLogo).
+  await expect(page.locator('header[data-region="header"]')).toHaveCount(0);
+  const header = page.locator('[data-toolbar-menu]').locator('..');
   await expect(header.getByRole('link', { name: 'livedocuments' })).toBeVisible();
   await expect(header.getByRole('button', { name: 'Switch site' })).toHaveCount(0);
   // The product's links (ProductNavLinks, a "Go to" navigation) are the Explorer panel's, not the header's.

@@ -5,24 +5,22 @@
 // (docs/specs/007-editor/split-view.md). Plain functions over the editor context, not components, so the
 // view's tree is what it always was; each is null where its bar is hidden.
 
-import { ApprovalBadge } from '@liveworkspace/explorer/approvals';
 import type { ReactNode } from 'react';
-import { truncateName } from '@livedesign/design';
 import { offersPrototype, PrototypeHeaderButton } from '@/components/chrome/PrototypeHeaderButton';
 import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
 import { track } from '@/lib/telemetry';
 import { addToDesignTargets } from '@/lib/add-to-design-targets';
-import { EditorHeader } from '@/components/chrome/EditorHeader';
+import { EditorCornerActions } from '@liveworkspace/workbench/components/chrome/EditorCornerActions';
+import { roleToolsItem } from '@liveworkspace/workbench/components/chrome/RoleTool';
 import { WorkbenchOpenLink } from '@/components/chrome/WorkbenchChrome';
 import { appHrefOfPlace } from '@/lib/workbench/workspace-place';
 import { TabBar } from '@/components/chrome/TabBar';
 import { LandscapeBarFold } from '@/components/chrome/LandscapeBars';
-import { RolePill } from '@/components/chrome/RoleIndicator';
+import { roleOwnerLabel } from '@/components/chrome/RoleIndicator';
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import type { useEditorContext } from './EditorContext';
 import type { useRoleIndicator } from './useRoleIndicator';
 import type { useSelectTab } from './useSelectTab';
-import type { designIsPublic } from '@/lib/community-public';
 
 type EditorContextValue = ReturnType<typeof useEditorContext>;
 
@@ -33,90 +31,51 @@ const workbenchDesignHref = (designId: string, shareCode: string | null) =>
 // The site header. Zen / focus mode (docs/specs/007-editor/zen-mode.md) hides it entirely so the
 // canvas gets the full height; embeds (docs/specs/013-workspace/embeds.md) never show it. Side by
 // side (docs/specs/007-editor/split-view.md) lays it across both panes.
-export function editorViewHeader(
-  ctx: EditorContextValue,
-  view: {
-    isOffline: boolean;
-    headerCommunity: ReturnType<typeof designIsPublic>;
-    role: ReturnType<typeof useRoleIndicator>;
-    landscapeShown: boolean;
-  },
-): ReactNode {
+export function editorViewHeader(ctx: EditorContextValue): ReactNode {
   const {
     anyWelcomeOpen,
     appChrome,
     copying,
     designId,
-    nameDesign,
-    designName,
     designShareable,
-    designTeamId,
     hydrated,
     canShareDesign,
-    isStructureReadOnly,
     makeCopy,
     openSettingsOn,
     setShareDialogOpen,
-    renameDesignNonce,
     zenMode,
     sessionCommunity,
     activeTab,
     can,
   } = ctx;
-  const { isOffline, headerCommunity, role } = view;
   // Prototype (docs/specs/007-editor/wireframe-pages.md "Prototype mode"): on a wireframe tab, for every role.
   const prototype = offersPrototype(can, activeTab, anyWelcomeOpen) ? (
     <PrototypeHeaderButton />
   ) : undefined;
+  // Experiment: no header bar. The name, its visibility badge and the role pill are gone (the role's switch is the
+  // Editing Mode tool in Tools); Prototype, Copy, Share and the account float in a card at the top right.
   return zenMode || !appChrome ? null : (
-    <LandscapeBarFold shown={view.landscapeShown}>
-      <AreaErrorBoundary area="Header" fallback="panel">
-        <EditorHeader
-          itemId={designId}
-          designName={designName}
-          hideTitle={anyWelcomeOpen}
-          showShare={canShareDesign && hydrated && !anyWelcomeOpen}
-          shareable={designShareable}
-          community={headerCommunity}
-          teamDesign={!!designTeamId}
-          offline={isOffline}
-          // Visitors see "Make a copy" instead of "Share": same slot (a joined
-          // team member is no visitor: the team's designs are theirs to share),
-          // different action. Hidden during the welcome flow so the
-          // first-paint chrome stays minimal, and during hydration so
-          // we don't render the button before we know whether the user
-          // is the owner. A Community visitor gets it from the Community bar instead.
-          onMakeCopy={
-            !canShareDesign && hydrated && !anyWelcomeOpen && designId && !sessionCommunity
-              ? () => void makeCopy()
-              : undefined
-          }
-          copying={copying}
-          readOnly={isStructureReadOnly}
-          renameNonce={renameDesignNonce}
-          rolePill={
-            <>
-              <RolePill {...role} />
-              <ApprovalBadge />
-            </>
-          }
-          leadAction={prototype}
-          onOpenAccount={() => openSettingsOn('account')}
-          onOpenShare={() => {
-            setShareDialogOpen(true);
-            track('UI', 'Opened', 'Share');
-          }}
-          onRename={(next) => {
-            const prev = designName.trim();
-            // docs/specs/006-design/name-length.md: capped here so the header rename can't outrun the
-            // limit the auto-namer and the Explorer renames both respect.
-            const nextTrim = truncateName(next);
-            nameDesign(nextTrim);
-            if (nextTrim && nextTrim !== prev) track('Document', 'Renamed');
-          }}
-        />
-      </AreaErrorBoundary>
-    </LandscapeBarFold>
+    <AreaErrorBoundary area="Header" fallback="panel">
+      <EditorCornerActions
+        leadAction={prototype}
+        showShare={canShareDesign && hydrated && !anyWelcomeOpen}
+        shareable={designShareable}
+        // Visitors see "Make a copy" instead of "Share" (a joined team member is no visitor). Hidden during the
+        // welcome flow and hydration; a Community visitor gets it from the Community bar instead.
+        onMakeCopy={
+          !canShareDesign && hydrated && !anyWelcomeOpen && designId && !sessionCommunity
+            ? () => void makeCopy()
+            : undefined
+        }
+        copying={copying}
+        copyDescription="Duplicate this design into your own files."
+        onOpenAccount={() => openSettingsOn('account')}
+        onOpenShare={() => {
+          setShareDialogOpen(true);
+          track('UI', 'Opened', 'Share');
+        }}
+      />
+    </AreaErrorBoundary>
   );
 }
 
@@ -128,6 +87,7 @@ export function editorViewFooter(
     isOffline: boolean;
     selectTab: ReturnType<typeof useSelectTab>;
     landscapeShown: boolean;
+    role: ReturnType<typeof useRoleIndicator>;
   },
 ): ReactNode {
   const {
@@ -235,6 +195,15 @@ export function editorViewFooter(
             track('UI', 'Opened', 'Settings');
           }}
           suggestions={ctx.canvasSuggestions}
+          extraTools={[
+            roleToolsItem({
+              role: view.role.role,
+              owner: roleOwnerLabel(view.role.ownerName, view.role.isSelf),
+              noun: 'design',
+              canSwitch: !!view.role.onToggle,
+              onPick: ctx.setViewPreview,
+            }),
+          ]}
           onOpenSearch={() => openSearchWithPrefetch(setSearchOpen, loadAllTabs)}
           // Canvas right-click (desktop) + long-press (touch) open the active
           // tab's menu with the canvas sections folded in, rendered by the

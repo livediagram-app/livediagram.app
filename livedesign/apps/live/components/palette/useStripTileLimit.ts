@@ -16,7 +16,11 @@
 import { useLayoutEffect, useState, type RefObject } from 'react';
 import { fitStripTiles } from './toolbar-strip-tiles';
 import { editorViewportOf } from '@liveworkspace/workbench/lib/editor-viewport';
-import { stripRoomBesideMenu } from '@liveworkspace/workbench/components/canvas/menu-join';
+import {
+  CORNER_CARD_EVENT,
+  stripRoomBesideMenu,
+  stripTakesGap,
+} from '@liveworkspace/workbench/components/canvas/menu-join';
 
 const PHONE_GUTTERS_PX = 24;
 
@@ -78,7 +82,8 @@ export function useStripTileLimit(
           available = vw - PHONE_GUTTERS_PX / 2 - (card.getBoundingClientRect().left - view.left);
       } else {
         const menu = document.querySelector<HTMLElement>('[data-toolbar-menu]');
-        available = stripRoomBesideMenu(vw, view.left, menu);
+        // Experiment (no header bar): a strip between the menu box and the corner card has that whole gap.
+        available = stripRoomBesideMenu(vw, view.left, menu, stripTakesGap(card));
       }
       setMeasured(fitStripTiles({ available, chrome, pitch }));
     };
@@ -89,9 +94,11 @@ export function useStripTileLimit(
     const pane = editorViewportOf(card).element;
     if (pane) observer.observe(pane);
     window.addEventListener('resize', measure);
+    window.addEventListener(CORNER_CARD_EVENT, measure);
     return () => {
       observer.disconnect();
       window.removeEventListener('resize', measure);
+      window.removeEventListener(CORNER_CARD_EVENT, measure);
     };
   }, [cardRef, leadingRef, isMobile, scale]);
 

@@ -115,6 +115,9 @@ export type WalkthroughEntry = {
   mediaType: string;
   mediaBytes: number;
   camera: boolean;
+  // A video of the screen (shareable by a public link), and its link's code while it is on.
+  screen?: boolean;
+  shareCode?: string | null;
   createdAt: number;
 };
 
@@ -124,6 +127,8 @@ export type WalkthroughsHost = {
   list: (signal?: AbortSignal) => Promise<WalkthroughEntry[]>;
   media: (entry: WalkthroughEntry, signal?: AbortSignal) => Promise<Blob>;
   remove: (entry: WalkthroughEntry) => Promise<void>;
+  /** A screen recording's public link on or off: the entry as it now is, or null when it couldn't be. */
+  share?: (entry: WalkthroughEntry, on: boolean) => Promise<WalkthroughEntry | null>;
   helpHref?: string;
 };
 

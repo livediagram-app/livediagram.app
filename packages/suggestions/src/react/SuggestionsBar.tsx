@@ -21,6 +21,8 @@ import {
   Tooltip,
   relativeSince,
 } from '@liveworkspace/ui';
+import { ToolExplainer } from '@liveworkspace/ui/tool-explainer';
+import { suggestionsArt } from '@liveworkspace/ui/tool-explainer-art';
 import type { ChromeToolsItem } from '@liveworkspace/workbench/components/chrome/ChromeToolsMenu';
 import { describeSuggestion } from '../plan';
 import type { CanvasSuggestion, SuggestionElement } from '../suggestion';
@@ -109,6 +111,8 @@ function ReviewList<E extends SuggestionElement>({
 }) {
   const editor = s.level === 'edit';
   const n = s.suggestions.length;
+  // Nothing waiting: the tool's explainer (footer-tools-menu.md "Explainers"), the mode switch its action.
+  if (n === 0) return <SuggestionsExplainer id={id} s={s} />;
   return (
     <section
       id={id}
@@ -116,22 +120,7 @@ function ReviewList<E extends SuggestionElement>({
       data-suggestions-panel=""
       className="flex min-h-0 flex-col border-t border-slate-100 dark:border-slate-800"
     >
-      {editor ? (
-        <div className="flex items-center justify-between gap-2 border-b border-slate-100 px-3 py-2 dark:border-slate-800">
-          <span className="text-xs font-medium text-slate-600 dark:text-slate-300">Mode</span>
-          <SegmentedToggle<SuggestMode>
-            label="Mode"
-            value={s.mode}
-            onChange={s.setMode}
-            options={MODE_OPTIONS}
-          />
-        </div>
-      ) : s.suggestOnly ? (
-        <p className="flex items-center gap-1.5 border-b border-slate-100 bg-brand-50 px-3 py-2 text-xs font-medium text-brand-800 dark:border-slate-800 dark:bg-brand-500/10 dark:text-brand-200">
-          <PencilIcon size={14} aria-hidden />
-          {SUGGEST_ONLY_HINT}
-        </p>
-      ) : null}
+      {editor ? <ModeRow s={s} /> : s.suggestOnly ? <SuggestOnlyHint /> : null}
       <header className="flex items-center gap-2 border-b border-slate-100 px-3 py-2 dark:border-slate-800">
         <h2 className="flex-1 text-sm font-semibold text-slate-800 dark:text-slate-100">
           {countWords(n)}
@@ -157,20 +146,104 @@ function ReviewList<E extends SuggestionElement>({
           </>
         ) : null}
       </header>
-      {n === 0 ? (
-        <p className="px-3 py-4 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-          {editor
-            ? 'Nothing waiting on this tab. Switch to Suggesting to propose changes for an Editor to accept.'
-            : 'Nothing waiting on this tab.'}
-        </p>
-      ) : (
-        <ul className="min-h-0 flex-1 divide-y divide-slate-100 overflow-y-auto overscroll-contain dark:divide-slate-800">
-          {s.suggestions.map((sg) => (
-            <Row key={sg.id} sg={sg} s={s} now={now} />
-          ))}
-        </ul>
-      )}
+      <ul className="min-h-0 flex-1 divide-y divide-slate-100 overflow-y-auto overscroll-contain dark:divide-slate-800">
+        {s.suggestions.map((sg) => (
+          <Row key={sg.id} sg={sg} s={s} now={now} />
+        ))}
+      </ul>
     </section>
+  );
+}
+
+// What Suggest Changes is, while the tab has none: what a suggestion is, how one is made and answered, and (for an
+// Editor) the switch that starts suggesting.
+function SuggestionsExplainer<E extends SuggestionElement>({
+  id,
+  s,
+}: {
+  id: string;
+  s: CanvasSuggestions<E>;
+}) {
+  const editor = s.level === 'edit';
+  const copy = editor
+    ? {
+        title: 'Propose, Then Decide',
+        description:
+          'Suggest changes instead of making them. Each shows on the canvas as a ghost until an Editor accepts or rejects it.',
+        steps: [
+          'Switch to Suggesting below.',
+          'Change the canvas: each edit waits as a suggestion.',
+          'You or another Editor accept or reject it here.',
+        ],
+      }
+    : s.suggestOnly
+      ? {
+          title: 'Your Edits Are Suggestions',
+          description:
+            'On this link your changes are proposals. They show on the canvas as ghosts until an Editor decides.',
+          steps: [
+            'Change the canvas as you would.',
+            'Each change waits here as a suggestion.',
+            'An Editor accepts or rejects it, and you can take one back.',
+          ],
+        }
+      : {
+          title: 'No Suggestions Yet',
+          description:
+            'Changes people propose on this tab show here, and on the canvas as ghosts, until an Editor decides.',
+          steps: undefined,
+        };
+  return (
+    <section
+      id={id}
+      aria-label="Suggestions"
+      data-suggestions-panel=""
+      className="flex min-h-0 flex-col overflow-y-auto overscroll-contain border-t border-slate-100 px-4 pb-5 pt-4 dark:border-slate-800"
+    >
+      <ToolExplainer
+        art={suggestionsArt}
+        title={copy.title}
+        description={copy.description}
+        steps={copy.steps}
+        data="suggestions"
+      >
+        {editor ? (
+          <div className="rounded-xl border border-slate-200 dark:border-slate-700">
+            <ModeRow s={s} />
+          </div>
+        ) : null}
+      </ToolExplainer>
+    </section>
+  );
+}
+
+// An Editor's switch: their edits change the canvas, or become suggestions.
+function ModeRow<E extends SuggestionElement>({ s }: { s: CanvasSuggestions<E> }) {
+  return (
+    <div className="flex items-center justify-between gap-3 px-3 py-2.5 [&:not(:last-child)]:border-b [&:not(:last-child)]:border-slate-100 dark:[&:not(:last-child)]:border-slate-800">
+      <div className="min-w-0">
+        <div className="text-xs font-semibold text-slate-800 dark:text-slate-100">Your Edits</div>
+        <div className="text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+          {s.mode === 'suggesting' ? SUGGESTING_DESCRIPTION : EDITING_DESCRIPTION}
+        </div>
+      </div>
+      <SegmentedToggle<SuggestMode>
+        label="Mode"
+        value={s.mode}
+        onChange={s.setMode}
+        options={MODE_OPTIONS}
+      />
+    </div>
+  );
+}
+
+// A Participant on Suggest Only: they always suggest, so a line says so in place of the switch.
+function SuggestOnlyHint() {
+  return (
+    <p className="flex items-center gap-1.5 border-b border-slate-100 bg-brand-50 px-3 py-2 text-xs font-medium text-brand-800 dark:border-slate-800 dark:bg-brand-500/10 dark:text-brand-200">
+      <PencilIcon size={14} aria-hidden />
+      {SUGGEST_ONLY_HINT}
+    </p>
   );
 }
 

@@ -226,8 +226,10 @@ on its personal items and on the items of the teams closed with it are deleted, 
   "Webhooks for “<name>”" (isolated, the whole of it in a hover title), and the app's mark with "<Kind> · These apply
   to this <kind> only". The header's mark is the art's, so the dialog takes no thumbnail. Its body is
   `DocumentWebhooks`.
-- `DocumentWebhooks`: a heading, a line saying what a webhook does for this <kind>, and a chip "Only for this <kind>.
-  Your other <kinds> have their own." Then the list (each `WebhookRow`: its destination's tile, name, state, "Added
+- `DocumentWebhooks`: no title band (owner, 2026-11-17: Tools' back bar names it), only a heading for assistive
+  technology and focus (`sr-only`, "Webhooks"); with webhooks, a row of their count ("2 webhooks") and Add Webhook.
+  The empty state's explainer says the rest, "Only this <kind>: your other <kinds> have their own." among it, set out
+  as roomily as Walkthroughs'. Then the list (each `WebhookRow`: its destination's tile, name, state, "Added
   by you" or "Added by another editor", the host, the last delivery, Send Test, Pause or Resume, Delete, Sends with
   Edit Events, Recent Deliveries), Add Webhook (hidden at 10, with a line saying so), the empty state, and a
   refusal's words (`webhooks_need_editor` with no Try Again).

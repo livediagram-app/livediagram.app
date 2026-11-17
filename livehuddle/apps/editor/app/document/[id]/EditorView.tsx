@@ -1,7 +1,6 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { truncateName } from '@livehuddle/document';
 import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
 import { track } from '@/lib/telemetry';
 import { NewVersionPrompt } from '@/components/chrome/NewVersionPrompt';
@@ -20,13 +19,10 @@ import { SelectionStoreProvider } from '@liveworkspace/workbench/hooks/canvas/us
 import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { EditorCanvasHost } from '@/components/canvas/EditorCanvasHost';
 import { ConnectedTabHost } from '@/components/connect/ConnectedTabHost';
-import { EditorHeader } from '@/components/chrome/EditorHeader';
+import { EditorCornerActions } from '@liveworkspace/workbench/components/chrome/EditorCornerActions';
+import { roleToolsItem } from '@liveworkspace/workbench/components/chrome/RoleTool';
 import { CommunityBar } from '@/components/chrome/CommunityBar';
 import { useAutoCopyParam } from '@liveworkspace/workbench/hooks/canvas/useAutoCopyParam';
-import { documentIsPublic } from '@/lib/community-public';
-import { useCommunityState } from '@/lib/community-state-store';
-import { useCommunityEnabled } from '@livehuddle/ui';
-import { API_BASE } from '@/lib/api-client';
 import { EmbedChrome } from '@/components/chrome/EmbedChrome';
 import { TabBar } from '@/components/chrome/TabBar';
 import { LandscapeBarFold, LandscapeBarsHandle } from '@/components/chrome/LandscapeBars';
@@ -50,7 +46,7 @@ import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useEditorContext } from './EditorContext';
 import { useSelectTab } from './useSelectTab';
 import { useRoleIndicator } from './useRoleIndicator';
-import { RolePill } from '@/components/chrome/RoleIndicator';
+import { roleOwnerLabel } from '@/components/chrome/RoleIndicator';
 import { UiScaleProvider } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { DockNamesProvider } from '@liveworkspace/workbench/hooks/ui/useDockNames';
 import { useEditorUiScales } from '@liveworkspace/workbench/hooks/ui/useEditorUiScales';
@@ -126,10 +122,7 @@ export function EditorView() {
     deleteTab,
     documentId,
     documentList,
-    nameDocument,
-    documentName,
     documentShareable,
-    documentTeamId,
     duplicateTab,
     formatSourceId,
     hydrated,
@@ -164,11 +157,6 @@ export function EditorView() {
     userPreferences,
     sessionCommunity,
   } = ctx;
-  // The header badge follows the document's Community post (docs/specs/025-community/community.md).
-  const communityState = useCommunityState(documentId);
-  // The badge goes too while the Community is switched off (docs/specs/025-community/community.md).
-  // Asked only while there is a listed post to badge, and never in an embed, so other opens make no request.
-  const communityOn = useCommunityEnabled(API_BASE, communityState === 'listed' && appChrome);
   // `?copy=1` from the Community's Make a Copy (docs/specs/025-community/community.md).
   useAutoCopyParam({
     hydrated,
@@ -211,62 +199,35 @@ export function EditorView() {
   });
   const backdrop = resolveTabBackdrop(activeTab, appearance);
 
-  // Whether the document shows as public on Community, for the header's share state.
-  const headerCommunity = documentIsPublic({
-    communityOn,
-    ownPostState: communityState,
-    communitySession: sessionCommunity !== null,
-  });
-
   // A phone held sideways folds the header and the tab bar (docs/specs/007-editor/editor-app.md "A phone
   // held sideways"); a rename asked for elsewhere shows them first, so its field can take the focus.
   const landscapeBars = useLandscapeBars([renameDocumentNonce, renameTabNonce]);
 
   // The site header. Embeds (docs/specs/013-workspace/embeds.md) never show it. Side by
   // side (docs/specs/007-editor/split-view.md) lays it across both panes.
+  // Experiment: no header bar. The name, its visibility badge and the role pill are gone (the role's switch is the
+  // Editing Mode tool in Tools); Copy, Share and the account float in a card at the top right.
   const header = !appChrome ? null : (
-    <LandscapeBarFold shown={landscapeBars.shown}>
-      <AreaErrorBoundary area="Header" fallback="panel">
-        <EditorHeader
-          itemId={documentId}
-          documentName={documentName}
-          hideTitle={anyWelcomeOpen}
-          showShare={canShareDocument && hydrated && !anyWelcomeOpen}
-          shareable={documentShareable}
-          community={headerCommunity}
-          teamDocument={!!documentTeamId}
-          offline={isOffline}
-          // Visitors see "Make a copy" instead of "Share": same slot (a joined
-          // team member is no visitor: the team's documents are theirs to share),
-          // different action. Hidden during the welcome flow so the
-          // first-paint chrome stays minimal, and during hydration so
-          // we don't render the button before we know whether the user
-          // is the owner. A Community visitor gets it from the Community bar instead.
-          onMakeCopy={
-            !canShareDocument && hydrated && !anyWelcomeOpen && documentId && !sessionCommunity
-              ? () => void makeCopy()
-              : undefined
-          }
-          copying={copying}
-          readOnly={isStructureReadOnly}
-          renameNonce={renameDocumentNonce}
-          rolePill={<RolePill {...role} />}
-          onOpenAccount={() => openSettingsOn('account')}
-          onOpenShare={() => {
-            setShareDialogOpen(true);
-            track('UI', 'Opened', 'Share');
-          }}
-          onRename={(next) => {
-            const prev = documentName.trim();
-            // docs/specs/006-document/name-length.md: capped here so the header rename can't outrun the
-            // limit the auto-namer and the Explorer renames both respect.
-            const nextTrim = truncateName(next);
-            nameDocument(nextTrim);
-            if (nextTrim && nextTrim !== prev) track('Document', 'Renamed');
-          }}
-        />
-      </AreaErrorBoundary>
-    </LandscapeBarFold>
+    <AreaErrorBoundary area="Header" fallback="panel">
+      <EditorCornerActions
+        showShare={canShareDocument && hydrated && !anyWelcomeOpen}
+        shareable={documentShareable}
+        // Visitors see "Make a copy" instead of "Share" (a joined team member is no visitor). Hidden during the
+        // welcome flow and hydration; a Community visitor gets it from the Community bar instead.
+        onMakeCopy={
+          !canShareDocument && hydrated && !anyWelcomeOpen && documentId && !sessionCommunity
+            ? () => void makeCopy()
+            : undefined
+        }
+        copying={copying}
+        copyDescription="Duplicate this space into your own files."
+        onOpenAccount={() => openSettingsOn('account')}
+        onOpenShare={() => {
+          setShareDialogOpen(true);
+          track('UI', 'Opened', 'Share');
+        }}
+      />
+    </AreaErrorBoundary>
   );
 
   // The tab bar, the editor's footer. Hidden through the welcome flow and in embeds.
@@ -323,6 +284,15 @@ export function EditorView() {
               setSettingsOpen(true);
               track('UI', 'Opened', 'Settings');
             }}
+            extraTools={[
+              roleToolsItem({
+                role: role.role,
+                owner: roleOwnerLabel(role.ownerName, role.isSelf),
+                noun: 'space',
+                canSwitch: !!role.onToggle,
+                onPick: ctx.setViewPreview,
+              }),
+            ]}
             onOpenSearch={() => openSearchWithPrefetch(setSearchOpen, loadAllTabs)}
             // Canvas right-click (desktop) + long-press (touch) open the active
             // tab's menu with the canvas sections folded in, rendered by the

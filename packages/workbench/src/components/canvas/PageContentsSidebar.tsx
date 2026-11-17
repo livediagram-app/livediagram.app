@@ -18,6 +18,9 @@ import { CONTENTS_SIDEBAR_WIDTH, restingRect, sideInsetsOf } from '../../lib/con
 import { ContentsList, type ContentsBadges, type ContentsListState } from './PageContentsList';
 import { ContentsSummary } from './ContentsSummary';
 
+// How long after the sidebar opens a window resize still reframes the page (a fullscreen exit animates for up to a second).
+const REFRAME_SETTLE_MS = 1500;
+
 // The pictures redraw once the tab rests this long (the editor's usePageThumbnails): never on every
 // frame of a drag or every key typed, while the sidebar stays on screen beside the work.
 export const CONTENTS_SIDEBAR_SETTLE_MS = 250;
@@ -98,9 +101,21 @@ export function ContentsSidebar<R extends ContentsRowBase>({
     const id = readHere();
     if (id) focusPage(id);
   });
+  // Again for a moment after, as the window settles: back from a presentation the sidebar comes back while the browser
+  // is still leaving fullscreen, so the first frame fits the page to a canvas about to shrink.
   useEffect(() => {
-    const frame = requestAnimationFrame(reframe);
-    return () => cancelAnimationFrame(frame);
+    let frame = requestAnimationFrame(reframe);
+    const again = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(reframe);
+    };
+    window.addEventListener('resize', again);
+    const stop = setTimeout(() => window.removeEventListener('resize', again), REFRAME_SETTLE_MS);
+    return () => {
+      cancelAnimationFrame(frame);
+      clearTimeout(stop);
+      window.removeEventListener('resize', again);
+    };
   }, []);
 
   // Contents Options (ContentsOptions): Collapse Contents, and the tab's Stack Pages where the editor offers it.

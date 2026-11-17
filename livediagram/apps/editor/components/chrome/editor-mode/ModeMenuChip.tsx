@@ -88,7 +88,10 @@ export function ModeMenuChip({
       // tinted band above it (start-diagramming.md "Changing mode").
       className={`flex w-full items-center transition-colors ${
         compact
-          ? `h-9 justify-start gap-1.5 rounded-md px-2 text-[13px] font-medium ${MODE_SWITCH_FOCUS} ${TOOLBAR_TRIGGER_TONE}`
+          ? // Icon alone on a phone (no caret there, experiment: no header bar): a square like the tiles beside it.
+            // Start-aligned (text-left): the label grows to fill the chip, so its content leads rather than centring, and
+            // the optical audit holds it to that, not to a button's default centred text.
+            `h-9 justify-start text-left gap-1.5 rounded-md px-2 text-[13px] font-medium ${iconOnly ? 'phone:w-9 phone:justify-center phone:px-0' : ''} ${MODE_SWITCH_FOCUS} ${TOOLBAR_TRIGGER_TONE}`
           : `h-10 cursor-pointer justify-start gap-2.5 rounded-xl border border-brand-200 bg-white px-3 text-[13px] font-semibold text-brand-700 shadow-sm hover:border-brand-300 hover:bg-brand-50 dark:border-brand-400/30 dark:bg-white/5 dark:text-brand-200 dark:hover:bg-brand-500/15 ${MODE_SWITCH_FOCUS}`
       }`}
     >
@@ -96,7 +99,8 @@ export function ModeMenuChip({
       {iconOnly ? null : <span className="text-optical-line flex-1 text-left">{label}</span>}
       <ChevronDownIcon
         aria-hidden
-        className={`transition-transform duration-micro motion-reduce:transition-none ${
+        // Experiment (no header bar): no caret on a phone, where the row has no room to spare.
+        className={`phone:hidden transition-transform duration-micro motion-reduce:transition-none ${
           open ? 'rotate-180' : ''
         }`}
       />

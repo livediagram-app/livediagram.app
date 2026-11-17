@@ -1,12 +1,9 @@
 import { expect, expectNoPageErrors, startBlankDocument, test } from './fixtures';
 
 // docs/specs/007-editor/toolbar-layout.md "The tab's name" (Work Tracker 1038): from 640 to 1440px wide the palette
-// strip never covers the top-left menu box (menu button, mode switch, tab name). Short of room the mode switch drops
-// to its icon, then the name hides; the button and the switch are never cut, and a shown name truncates with an
-// ellipsis inside the box.
-const LONG_NAME = 'Quarterly planning for the platform team';
-// NAME_SLOT_MIN_PX less the name's own padding and hairline: a shown name is never a sliver.
-const NAME_MIN = 40;
+// strip never covers the top-left menu box (menu button and mode switch). Short of room the mode switch drops to its
+// icon; the button and the switch are never cut. The box holds no tab name (owner, 2026-11-17): the tab strip names
+// the tab.
 
 for (const width of [640, 700, 768, 900, 1024, 1440]) {
   test(`at ${width}px the strip and the menu box keep apart`, async ({ page, pageErrors }) => {
@@ -16,20 +13,17 @@ for (const width of [640, 700, 768, 900, 1024, 1440]) {
       width < 695,
       'the category bar is wider than the room beside the menu button and mode switch',
     );
-    // Named at a wide window, where the box shows the name to click, then narrowed: a bare box hides it, and the
-    // box follows the window down (watchMove re-cuts on a resize, Work Tracker 1027).
+    // Opened at a wide window, then narrowed: the box follows the window down (watchMove re-cuts on a resize, Work
+    // Tracker 1027).
     await page.setViewportSize({ width: 1440, height: 900 });
     await startBlankDocument(page);
-    const name = page.locator('[data-toolbar-menu] [data-tab-name-in-box]');
-    await name.click();
-    const field = page.getByRole('textbox', { name: 'Tab name' });
-    await field.fill(LONG_NAME);
-    await field.press('Enter');
-    await expect(name).toHaveText(LONG_NAME);
+    const menu = page.locator('[data-toolbar-menu]').first();
+    await expect(menu).toBeVisible();
+    // No tab name in the box, at any width.
+    await expect(menu.locator('[data-tab-name-in-box]')).toHaveCount(0);
     await page.setViewportSize({ width, height: 900 });
     const strip = page.locator('[data-toolbar-palette] [data-tour-id="palette"]');
-    const menu = page.locator('[data-toolbar-menu]').first();
-    // The strip settles (crowded to the right, or centred) and the box takes the room left of it.
+    // The strip settles (crowded to the right, or centred) clear of the box.
     await expect
       .poll(async () => {
         const [s, m] = [await strip.boundingBox(), await menu.boundingBox()];
@@ -50,15 +44,6 @@ for (const width of [640, 700, 768, 900, 1024, 1440]) {
     const chipText = await menu.getByRole('button', { name: /^Editor mode:/ }).textContent();
     if (form === 'full') expect(chipText).toBe('Diagram');
     else expect(chipText).toBe('');
-    if (form === 'bare') {
-      // No room for a readable name: hidden with its hairline, never a sliver.
-      await expect(name).toBeHidden();
-    } else {
-      await expect(name).toHaveText(LONG_NAME);
-      const n = (await name.boundingBox())!;
-      expect(n.width).toBeGreaterThanOrEqual(NAME_MIN);
-      expect(n.x + n.width).toBeLessThanOrEqual(box.x + box.width + 0.5);
-    }
     // A wide window keeps everything whole, with the strip moved right if it needs to.
     if (width >= 1024) expect(form).toBe('full');
     expectNoPageErrors(pageErrors);

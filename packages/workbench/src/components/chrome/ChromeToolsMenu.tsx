@@ -46,7 +46,6 @@ export const TOOL_GROUPS = [
   { id: 'automate', title: 'Automate' },
   { id: 'collaborate', title: 'Collaborate' },
   { id: 'versions', title: 'Versioning' },
-  { id: 'content', title: 'Content' },
 ] as const;
 export type ChromeToolsGroup = (typeof TOOL_GROUPS)[number]['id'];
 
@@ -158,6 +157,9 @@ export function ChromeToolsMenu({
   // The close was pressed while a tool's dialog was open: once it lets go, Tools closes too.
   const closing = useRef(false);
   const grid = useRef<HTMLDivElement>(null);
+  // The list's height as it last showed, so a tool opened from it starts at least that tall: going into a tool only
+  // ever grows Tools, never shrinks it (owner, 2026-11-17); the tools' footers keep their buttons at the bottom.
+  const [listPx, setListPx] = useState<number | null>(null);
   const titleId = useId();
   const door = useToolsDoorItems();
   const shown = [...items, ...door].filter((i): i is ChromeToolsItem => i !== null);
@@ -229,6 +231,19 @@ export function ChromeToolsMenu({
   // The tool's dialog closed itself (its Cancel, Done or Escape): back to the list, or out, after the close.
   const released = !!ours?.released && !ours.held;
   const leaving = !!ours?.leaving;
+  // Measured while the list shows (it changes as rows come and go), kept while a tool is open.
+  const listShowing = !view;
+  useEffect(() => {
+    const node = grid.current;
+    if (!listShowing || !node || typeof ResizeObserver === 'undefined') return;
+    const measure = () => {
+      if (node.offsetHeight > 0) setListPx(node.offsetHeight);
+    };
+    const observer = new ResizeObserver(measure);
+    observer.observe(node);
+    measure();
+    return () => observer.disconnect();
+  }, [listShowing, open]);
   useEffect(() => {
     if (!released) return;
     if (closing.current || leaving) {
@@ -374,7 +389,7 @@ export function ChromeToolsMenu({
               ref={view ? undefined : measureList}
               data-tools-popover=""
               // Never under 300 px, list or tool (owner, 2026-11-17), unless the screen is shorter.
-              className="relative flex max-h-[inherit] min-h-[min(300px,calc(100dvh-2rem))] flex-1 flex-col [border-radius:inherit] [color-scheme:light] dark:[color-scheme:dark]"
+              className="relative flex max-h-[inherit] min-h-[min(500px,calc(100dvh-2rem))] flex-1 flex-col [border-radius:inherit] [color-scheme:light] dark:[color-scheme:dark]"
               style={HERO_TOKEN_STYLE}
             >
               <p aria-live="polite" data-tools-live="" className="sr-only">
@@ -400,7 +415,9 @@ export function ChromeToolsMenu({
                 maxPx={bodyMax ?? undefined}
                 // A tool loading in steps never shrinks and grows back (owner, 2026-11-17, asked three times).
                 settle
-                className="flex min-h-0 flex-col"
+                // A phone's drawer fills what it is dragged to (owner, 2026-11-17), the tool growing with it.
+                fill={sheet}
+                className={`flex min-h-0 flex-col ${sheet ? 'flex-1' : ''}`}
               >
                 {view && active ? (
                   <ToolsView
@@ -410,6 +427,7 @@ export function ChromeToolsMenu({
                     onBack={back}
                     sheet={sheet}
                     tall={claimed?.size === '3xl'}
+                    floorPx={listPx}
                     waiting={waiting}
                     slotRef={view.slot != null ? slotRef : undefined}
                   >
