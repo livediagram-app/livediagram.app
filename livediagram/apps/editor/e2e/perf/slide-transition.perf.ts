@@ -127,8 +127,9 @@ async function openDeck(
   await page.goto(`/document/${id}`);
   await page.locator(CANVAS).waitFor({ timeout: 60_000 });
   await page.keyboard.press('Escape');
-  await page.getByRole('button', { name: 'Selection mode' }).click();
-  await page.getByText('Slide Deck', { exact: true }).first().click();
+  // Slide Deck is a page in the footer's Tools (presentation-mode.md "Where it lives").
+  await page.locator('[data-tools-button]').click();
+  await page.locator('[data-tools-item="slide-deck"]').click();
   await page.getByRole('button', { name: /^Present \d+$/ }).click();
   await page.waitForTimeout(1500);
   await cdp?.send('Emulation.setCPUThrottlingRate', { rate: throttle });
