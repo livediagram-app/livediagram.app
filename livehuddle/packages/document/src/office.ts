@@ -7,7 +7,8 @@
 
 import type { Rect } from '@liveworkspace/model-core/geometry-primitives';
 import type { FurnitureArt, FurniturePart } from './seating';
-import { path, rect } from './furniture-parts';
+import { ellipse, path, rect } from './furniture-parts';
+import { backWallDoorLeaf, backWallRuns, type BackWallDoor } from './back-wall-doors';
 import { SHARED_OFFICE_ART } from '@livehuddle/avatar/furniture-art';
 import {
   brokenRun,
@@ -284,15 +285,37 @@ export const ROOM_DOOR_LABELS: Record<RoomDoor, string> = {
 export const ROOM_FLOOR = '#f5f0e6';
 export const RUG_FILL = '#fde68a';
 
-/** A room's drawing, in its own px (0..width, 0..height): floor, walls and doorway mat. */
-export function roomParts(width: number, height: number, door: RoomDoor): FurniturePart[] {
+/**
+ * A room's drawing, in its own px (0..width, 0..height): floor, walls and doorway mat. `backDoors` are the Doors
+ * standing on its back wall (back-wall-doors.ts): the band breaks, top to floor, where an open one stands, and a shut
+ * one is drawn in the face.
+ */
+export function roomParts(
+  width: number,
+  height: number,
+  door: RoomDoor,
+  backDoors: readonly BackWallDoor[] = [],
+): FurniturePart[] {
   const W = ROOM_WALL;
   const F = ROOM_BACK_FACE;
   const parts: FurniturePart[] = [rect('floor', 0, F - W, width, height - F + W, 3)];
-  // The back wall: its top, then its face standing up from the floor.
-  for (const [a, b] of brokenRun(width, door === 'n' ? roomDoorSpan(width, 'n') : null)) {
+  // The back wall: its top, then its face standing up from the floor, broken at an open doorway.
+  for (const [a, b] of backWallRuns(
+    width,
+    backDoors,
+    door === 'n' ? roomDoorSpan(width, 'n') : null,
+  )) {
     parts.push(rect('panel', a, 0, b - a, W, 2));
     parts.push(rect('face', a, W - 1, b - a, F - W + 1, 1));
+  }
+  // A shut Door on the back wall: its leaf in the face, dyed in the stroke so it reads shut at a glance however far out
+  // the view is, with a knob in the floor's colour.
+  for (const d of backDoors) {
+    if (!d.closed) continue;
+    const { leaf, knob } = backWallDoorLeaf(d);
+    parts.push(rect('panel', leaf.x, leaf.y, leaf.w, leaf.h, 1.5));
+    parts.push(rect('dye', leaf.x, leaf.y, leaf.w, leaf.h, 1.5));
+    parts.push(ellipse('panel', knob.cx, knob.cy, knob.r, knob.r));
   }
   // The side walls and the front wall, which you see the top of.
   for (const [a, b] of brokenRun(height, door === 'w' ? roomDoorSpan(height, 'w') : null))

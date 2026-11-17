@@ -27,6 +27,7 @@ import type { ExportLabel, ExportRun } from './svg-render-labels';
 import { PADDING_PX } from './index';
 import { isRetiredElementType } from './retired-kinds';
 import type { BoxedElement, TextRun } from './index';
+import type { BackWallDoors } from './back-wall-doors';
 import { runFontPx } from '@liveworkspace/model-core/label-font';
 import { resolveStockColours } from './stock-colours';
 import { DEFAULT_BACKGROUND_COLOR } from '@liveworkspace/model-core/canvas-colors';
@@ -114,6 +115,9 @@ export type BoxedExportOptions = {
   // A retired element draws its placeholder's dashed outline alone, without its words: a Shape Library preview's
   // tiles (docs/specs/013-workspace/shape-libraries.md "API", Work Tracker 695).
   retiredOutlines?: boolean;
+  // The board's back-wall Doors (back-wall-doors.ts): a room breaks its back band at an open one and draws a shut one
+  // in its face, and the Door draws only what moves there. Absent, no room has any (a lone element's export).
+  backWall?: BackWallDoors;
 };
 
 // The face a label paints in: the author's own choice, else the tab default. The

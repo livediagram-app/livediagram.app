@@ -15,6 +15,7 @@ import { ROOM_FLOOR, RUG_FILL, STAGE_FLOOR, stageParts } from './office';
 import { chairSeatFill } from './shape-geometry';
 import { corridorSvg, doorSvg, glassRoomSvg, windowSvg } from './svg-render-doors';
 import { isGlassRoom } from './glass-walls';
+import { NO_BACK_WALL_DOORS, type BackWallDoors } from './back-wall-doors';
 import { rugDrawnToSize, rugParts } from './rug-art';
 import {
   GARDEN_PATH_FILL,
@@ -175,6 +176,8 @@ export function svgBehaviourFace(
   fill?: string,
   // The paper it lands on, for the pieces with a dark look of their own (the Room Sign's plaque).
   surface?: CanvasSurface,
+  // The board's back-wall Doors (back-wall-doors.ts), for a room and a Door on its back wall.
+  backWall: BackWallDoors = NO_BACK_WALL_DOORS,
 ): string | null {
   const cx = el.x + el.width / 2;
   const cy = el.y + el.height / 2;
@@ -342,10 +345,16 @@ export function svgBehaviourFace(
     case 'room':
       // A glass-walled room (office.md "Glass walls") draws its walls as panes.
       return isGlassRoom(el)
-        ? glassRoomSvg(el, fill ?? el.fillColor ?? ROOM_FLOOR, stroke, surface)
-        : roomSvg(el, fill ?? el.fillColor ?? ROOM_FLOOR, stroke);
+        ? glassRoomSvg(
+            el,
+            fill ?? el.fillColor ?? ROOM_FLOOR,
+            stroke,
+            surface,
+            backWall.rooms.get(el.id),
+          )
+        : roomSvg(el, fill ?? el.fillColor ?? ROOM_FLOOR, stroke, backWall.rooms.get(el.id));
     case 'door':
-      return doorSvg(el, fill ?? el.fillColor ?? ROOM_FLOOR, stroke);
+      return doorSvg(el, fill ?? el.fillColor ?? ROOM_FLOOR, stroke, backWall.doors.has(el.id));
     // A Window (room-builder.md "Window"): its frame and pane in the wall, its light inside.
     case 'window':
       return windowSvg(el, fill ?? el.fillColor ?? ROOM_FLOOR, stroke, surface);
