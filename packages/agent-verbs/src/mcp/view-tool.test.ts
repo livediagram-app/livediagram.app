@@ -36,7 +36,41 @@ describe('the view tools', () => {
       'url',
       'ticket',
       'expiresAt',
+      'canEdit',
     ]);
+  });
+
+  // livediagram's mcp-server.md "Edits in the view": a rename or a move, answered with the tab drawn again.
+  it('saves a canvas product’s edits from the view, each element marked with what an edit may do', () => {
+    const { viewTab, viewEdit } = createViewTools(diagram, 'documentId');
+    expect([viewEdit.mcp.tool, viewEdit.behaviour]).toEqual(['view_edit', 'write']);
+    expect(viewEdit.description).toContain('use update_document');
+    expect(Object.keys(viewEdit.mcpShapes.input)).toEqual(['documentId', 'tabId', 'edits']);
+    expect(Object.keys(viewEdit.mcpShapes.output)).toEqual([
+      ...Object.keys(viewTab.mcpShapes.output),
+      'changesetId',
+    ]);
+    const edits = (list: unknown[]) =>
+      viewEdit.input.safeParse({ documentId: 'd', tabId: 't', edits: list }).success;
+    expect(edits([{ elementId: 'a', label: 'Pay', dx: -12.5, dy: 4 }])).toBe(true);
+    expect(edits([])).toBe(false);
+    expect(edits(Array.from({ length: 21 }, () => ({ elementId: 'a', dx: 1 })))).toBe(false);
+    expect(edits([{ elementId: 'a', label: 'x'.repeat(501) }])).toBe(false);
+    expect(edits([{ elementId: 'a', dx: 100_001 }])).toBe(false);
+    const element = { id: 'a', ref: 'a', label: null, x: 0, y: 0, width: 1, height: 1 };
+    const drawn = (el: object) =>
+      viewTab.output.safeParse({
+        documentId: 'd',
+        tabId: 't',
+        name: 'Main',
+        tabs: [],
+        svg: '<svg/>',
+        viewBox: { x: 0, y: 0, width: 1, height: 1 },
+        elements: [el],
+        url: 'https://www.livediagram.app/document/d',
+      }).success;
+    expect(drawn({ ...element, canRename: true, canMove: false })).toBe(true);
+    expect(drawn(element)).toBe(false);
   });
 
   it('draws one page at a time for a product of pages, by its own id key', () => {

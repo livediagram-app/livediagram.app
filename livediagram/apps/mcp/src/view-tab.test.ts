@@ -12,7 +12,16 @@ import type { Env } from '@liveworkspace/mcp-kit/env';
 vi.mock('@liveworkspace/mcp-kit/render', () => ({ svgToPngBase64: async () => '' }));
 
 import { registerTools } from './tools';
-import { clickableElements, registerViewPage, roomSocketUrl, VIEW_URI, viewLive } from './view-tab';
+import {
+  clickableElements,
+  registerViewPage,
+  roomSocketUrl,
+  VIEW_URI,
+  viewEdit,
+  viewEditChangeset,
+  viewLive,
+  viewTab,
+} from './view-tab';
 
 // docs/specs/015-api/mcp-server.md "Interactive view (MCP Apps)": the page, the tools that link it, and view_tab.
 
@@ -37,8 +46,8 @@ describe('the interactive view', () => {
     expect(linked).toEqual(['add_tab', 'create_document', 'read_document', 'update_document']);
   });
 
-  it('keeps view_tab and view_live from the model in a host with MCP Apps', () => {
-    for (const name of ['view_tab', 'view_live']) {
+  it('keeps view_tab, view_live and view_edit from the model in a host with MCP Apps', () => {
+    for (const name of ['view_tab', 'view_live', 'view_edit']) {
       const view = registrations().find((r) => r.name === name)!;
       expect(view.config._meta, name).toEqual({ ui: { visibility: ['app'] } });
     }
@@ -75,10 +84,47 @@ describe('the interactive view', () => {
         { id: 'odd', type: 'shape', x: 0, y: 0, width: Number.NaN, height: 1 },
       ] as unknown as Element[],
     } as unknown as Tab;
+    const may = { canRename: true, canMove: true };
     expect(clickableElements(tab)).toEqual([
-      { id: 'pay', ref: 'pay', label: 'Pay', x: 0, y: 0, width: 10, height: 10 },
-      { id: 'ship', ref: 'ship', label: null, x: 20, y: 0, width: 10, height: 10 },
+      { id: 'pay', ref: 'pay', label: 'Pay', x: 0, y: 0, width: 10, height: 10, ...may },
+      { id: 'ship', ref: 'ship', label: null, x: 20, y: 0, width: 10, height: 10, ...may },
     ]);
+  });
+
+  // "Edits in the view": what an edit may do, as the engine would allow it and the editor carries attachments.
+  it('marks what an edit in the view may do to each element', () => {
+    const box = { x: 0, y: 0, width: 10, height: 10 };
+    const tab = {
+      id: 't1',
+      name: 'Main',
+      layers: [
+        { id: 'l1', name: 'Open', visible: true },
+        { id: 'l2', name: 'Fixed', visible: true, locked: true },
+      ],
+      elements: [
+        { id: 'shape', type: 'shape', ...box },
+        { id: 'note', type: 'sticky', ...box },
+        { id: 'pic', type: 'image', ...box },
+        { id: 'pinned', type: 'shape', locked: true, ...box },
+        { id: 'fixed', type: 'text', layerId: 'l2', ...box },
+        { id: 'host', type: 'shape', ...box },
+        { id: 'badge', type: 'shape', attachedTo: 'host', ...box },
+      ] as unknown as Element[],
+    } as unknown as Tab;
+    const edits = Object.fromEntries(
+      clickableElements(tab).map((e) => [e.id, [e.canRename, e.canMove]]),
+    );
+    expect(edits).toEqual({
+      shape: [true, true],
+      note: [true, true],
+      pic: [false, true],
+      pinned: [false, false],
+      fixed: [false, false],
+      host: [true, false],
+      badge: [true, false],
+    });
+    const locked = clickableElements({ ...tab, locked: true } as Tab);
+    expect(locked.every((e) => !e.canRename && !e.canMove)).toBe(true);
   });
 });
 
@@ -111,6 +157,22 @@ describe('view_live', () => {
     });
     expect(JSON.stringify(result.content)).not.toContain('sealed-ticket');
     expect(JSON.stringify(info.mock.calls)).not.toContain('sealed-ticket');
+    info.mockRestore();
+  });
+
+  // "Edits in the view": offered at edit only, by the level the mint answers; a read-only token's is view.
+  it('says the view may edit only at the edit level', async () => {
+    const at = (level?: string) =>
+      viewLive(
+        envAnswering(() =>
+          Response.json({ ticket: 'rt2~t', expiresAt: Date.now() + 600_000, level }),
+        ),
+        'lwt_token',
+        { documentId: 'd1' },
+      ).then((r) => (r.structuredContent as { canEdit: boolean }).canEdit);
+    const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+    expect(await at('edit')).toBe(true);
+    for (const level of ['participate', 'view', undefined]) expect(await at(level)).toBe(false);
     info.mockRestore();
   });
 
@@ -160,5 +222,158 @@ describe('the view’s cost', () => {
     });
     expect(svgMs).toBeLessThan(cpuBudgetMs(250));
     expect(svg.length).toBeLessThan(1024 * 1024);
+  });
+});
+
+// docs/specs/015-api/mcp-server.md "Edits in the view": view_edit writes one changeset through the api on the user's
+// token, the path update_document takes, so the api decides; what the view may not do is refused before any write.
+describe('view_edit', () => {
+  const box = { x: 0, y: 0, width: 40, height: 20 };
+  const TAB = {
+    id: 't1',
+    name: 'Main',
+    rev: 7,
+    elements: [
+      { id: 'a', type: 'shape', shape: 'rectangle', label: 'Pay', ...box },
+      { id: 'b', type: 'shape', shape: 'rectangle', locked: true, ...box, x: 100 },
+      { id: 'c', type: 'image', ...box, x: 200 },
+    ],
+  };
+  // The api as the MCP reaches it: the document, the tab, and a changeset route answering `changeset`.
+  function api(changeset: (request: Request) => Response) {
+    const seen: Request[] = [];
+    const env = {
+      API: {
+        fetch: async (request: Request) => {
+          seen.push(request);
+          const path = new URL(request.url).pathname;
+          if (path.endsWith('/changesets')) return changeset(request);
+          if (path.endsWith('/tabs/t1')) return Response.json({ tab: TAB });
+          return Response.json({ document: { id: 'd1', tabs: [{ id: 't1', name: 'Main' }] } });
+        },
+      },
+      CONSENT_BASE_URL: 'https://www.livediagram.app',
+    } as unknown as Env;
+    return { env, seen };
+  }
+  const written = () => Response.json({ changeset: { id: 'cs1' }, text: '', results: [] });
+  const quiet = () => vi.spyOn(console, 'info').mockImplementation(() => {});
+
+  it('renames with set label and moves with move by, based on each element as stored', () => {
+    const body = viewEditChangeset(TAB as unknown as Tab & { rev: number }, [
+      { elementId: 'a', label: 'Charge', dx: 10.4, dy: -3.6 },
+    ]);
+    expect(body).toMatchObject({
+      operations: [
+        { op: 'set', target: 'id:"a"', fields: { label: 'Charge' } },
+        { op: 'move', target: 'id:"a"', by: [10, -4] },
+      ],
+      base: { rev: 7 },
+      summary: 'Edited in the interactive view',
+    });
+    expect(Object.keys((body as { base: { elements: object } }).base.elements)).toEqual(['a']);
+  });
+
+  it('refuses, before anything is sent, what the view may not do', () => {
+    const tab = TAB as unknown as Tab & { rev: number };
+    expect(viewEditChangeset(tab, [{ elementId: 'gone', label: 'x' }])).toMatch(/not on this tab/);
+    expect(viewEditChangeset(tab, [{ elementId: 'a', dx: 0.2 }])).toMatch(/a new label, a move/);
+    expect(viewEditChangeset(tab, [{ elementId: 'b', dx: 5 }])).toMatch(/can't be moved/);
+    expect(viewEditChangeset(tab, [{ elementId: 'c', label: 'x' }])).toMatch(/can't be renamed/);
+    expect(viewEditChangeset(tab, [{ elementId: 'c', dy: 5 }])).toMatchObject({
+      operations: [{ op: 'move', by: [0, 5] }],
+    });
+  });
+
+  it('posts one changeset as the MCP and answers the tab drawn again', async () => {
+    const info = quiet();
+    const { env, seen } = api(written);
+    const result = await viewEdit(env, 'lwt_token', {
+      documentId: 'd1',
+      tabId: 't1',
+      edits: [{ elementId: 'a', label: 'Charge' }],
+    });
+    const posts = seen.filter((r) => r.method === 'POST');
+    expect(posts).toHaveLength(1);
+    expect(new URL(posts[0]!.url).pathname).toBe('/api/documents/d1/tabs/t1/changesets');
+    expect(posts[0]!.headers.get('Authorization')).toBe('Bearer lwt_token');
+    expect(posts[0]!.headers.get('X-Livediagram-Client')).toBe('mcp');
+    expect(result.isError).toBeUndefined();
+    expect(result.content).toEqual([
+      { type: 'text', text: 'Saved 1 edit from the interactive view.' },
+    ]);
+    expect(result.structuredContent).toMatchObject({
+      documentId: 'd1',
+      tabId: 't1',
+      changesetId: 'cs1',
+      elements: [{ id: 'a', canRename: true, canMove: true }, { id: 'b' }, { id: 'c' }],
+    });
+    expect(typeof (result.structuredContent as { svg: string }).svg).toBe('string');
+    info.mockRestore();
+  });
+
+  it('counts its edits, and says no changeset when nothing changed', async () => {
+    const info = quiet();
+    const { env } = api(() => Response.json({ changeset: null, text: '', results: [] }));
+    const result = await viewEdit(env, 'lwt_token', {
+      documentId: 'd1',
+      tabId: 't1',
+      edits: [
+        { elementId: 'a', label: 'Pay' },
+        { elementId: 'c', dx: 1 },
+      ],
+    });
+    expect(result.content).toEqual([
+      { type: 'text', text: 'Saved 2 edits from the interactive view.' },
+    ]);
+    expect(result.structuredContent).toMatchObject({ changesetId: null });
+    info.mockRestore();
+  });
+
+  // The role test: a view-only (read-only) token's edit, however the frame was made to send it, is refused by the
+  // api's choke point, and the view gets the refusal, never a write.
+  it('passes on the api refusing a read-only token, writing nothing', async () => {
+    const { env, seen } = api(() => Response.json({ error: 'read_only_token' }, { status: 403 }));
+    const result = await viewEdit(env, 'lwt_readonly', {
+      documentId: 'd1',
+      tabId: 't1',
+      edits: [{ elementId: 'a', label: 'Forged', dx: 40 }],
+    });
+    expect(result.isError).toBe(true);
+    expect(JSON.stringify(result.content)).toContain('read_only_token');
+    // No redraw after the refusal: the view draws the tab again itself.
+    expect(seen.filter((r) => r.method === 'GET')).toHaveLength(2);
+  });
+
+  it('refuses before writing anything the view may not do, and a document with no tabs', async () => {
+    const { env, seen } = api(written);
+    const locked = await viewEdit(env, 'lwt_token', {
+      documentId: 'd1',
+      tabId: 't1',
+      edits: [{ elementId: 'b', dx: 10 }],
+    });
+    expect(locked.isError).toBe(true);
+    expect(seen.some((r) => r.method === 'POST')).toBe(false);
+    const empty = {
+      API: { fetch: async () => Response.json({ document: { id: 'd1', tabs: [] } }) },
+    } as unknown as Env;
+    const none = await viewEdit(empty, 'lwt_token', {
+      documentId: 'd1',
+      tabId: undefined as unknown as string,
+      edits: [{ elementId: 'a', label: 'x' }],
+    });
+    expect(none.isError).toBe(true);
+    expect((await viewTab(empty, 'lwt_token', { documentId: 'd1' })).isError).toBe(true);
+  });
+
+  it('throws an api fault, as the other tools do', async () => {
+    const { env } = api(() => new Response('down', { status: 503 }));
+    await expect(
+      viewEdit(env, 'lwt_token', {
+        documentId: 'd1',
+        tabId: 't1',
+        edits: [{ elementId: 'a', label: 'x' }],
+      }),
+    ).rejects.toThrow();
   });
 });

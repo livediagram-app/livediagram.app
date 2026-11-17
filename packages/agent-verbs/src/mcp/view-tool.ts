@@ -32,8 +32,15 @@ const tabOutput = () => ({
 const urlOutput = (product: AgentProduct) =>
   z.string().describe(`Link that opens the ${wordOf(product)} in the ${product.cli} editor.`);
 
-// What a canvas view_tab answers after the tabs: the SVG, its view box, the boxes a click can open and the link.
-const drawingOutput = (product: AgentProduct) => ({
+// What an edit in the view may do to an element (livediagram's mcp-server.md "Edits in the view").
+const editableOutput = {
+  canRename: z.boolean().describe('Whether an edit in the view may change its label.'),
+  canMove: z.boolean().describe('Whether an edit in the view may move it.'),
+};
+
+// What a canvas view_tab answers after the tabs: the SVG, its view box, the boxes a click can open and the link. A
+// view that edits marks each box with what an edit may do to it.
+const drawingOutput = (product: AgentProduct, editable = false) => ({
   svg: z.string().describe('The tab drawn as SVG, as the PNG preview draws it.'),
   viewBox: z.object(box).describe('The part of the tab the SVG shows.'),
   elements: z
@@ -43,20 +50,37 @@ const drawingOutput = (product: AgentProduct) => ({
         ref: z.string().describe('Its ref, as the views name it.'),
         label: z.string().nullable().describe('Its label, or null.'),
         ...box,
+        ...(editable ? editableOutput : {}),
       }),
     )
     .describe('Every boxed element drawn, bottom to top, so a click finds the one under it.'),
   url: urlOutput(product),
 });
 
+// The most edits one view_edit carries, and the longest label it sets (livediagram's mcp-server.md "view_edit").
+export const VIEW_EDIT_MAX = 20;
+export const VIEW_EDIT_LABEL_MAX = 500;
+const MOVE_LIMIT = 100_000;
+const offset = (axis: string) =>
+  z
+    .number()
+    .min(-MOVE_LIMIT)
+    .max(MOVE_LIMIT)
+    .optional()
+    .describe(`How far to move it ${axis}, in the tab's pixels; rounded to a whole pixel.`);
+
 const tabInput = () => ({
   tabId: z.string().optional().describe('Which tab to draw; defaults to the first.'),
 });
 
-/** view_tab and view_live for a canvas product (livediagram): a whole tab drawn as SVG, followed live. */
+/**
+ * view_tab, view_live and view_edit for a canvas product (livediagram): a whole tab drawn as SVG, followed live, and
+ * renamed or moved in the view when the token is edit-level.
+ */
 export function createViewTools<K extends string>(product: AgentProduct, idKey: K) {
   const word = wordOf(product);
   const id = idShape(idKey, word);
+  const drawn = { ...id, ...tabOutput(), ...drawingOutput(product, true) };
   const viewTab = mcpTool('view_tab', {
     behaviour: 'read',
     title: 'Draw a tab for the interactive view',
@@ -64,7 +88,7 @@ export function createViewTools<K extends string>(product: AgentProduct, idKey: 
       `The interactive view’s own call: a tab drawn as SVG with its elements’ boxes and the ${word}’s tabs, for ` +
       `hosts that show the view. To read a tab, use read_${product.noun}.`,
     inputSchema: { ...id, ...tabInput() },
-    outputSchema: { ...id, ...tabOutput(), ...drawingOutput(product) },
+    outputSchema: drawn,
   });
 
   const viewLive = mcpTool('view_live', {
@@ -81,10 +105,46 @@ export function createViewTools<K extends string>(product: AgentProduct, idKey: 
         .string()
         .describe('The view-only room ticket: it admits at view and lapses at expiresAt.'),
       expiresAt: z.number().describe('When the ticket lapses, epoch milliseconds.'),
+      canEdit: z
+        .boolean()
+        .describe(
+          'Whether the token may rename and move elements through the view: edit-level, never a read-only token.',
+        ),
     },
   });
 
-  return { viewTab, viewLive };
+  const viewEdit = mcpTool('view_edit', {
+    behaviour: 'write',
+    title: `Save an edit made in the interactive view`,
+    description:
+      `The interactive view’s own call: elements renamed or moved by the person in the view, saved as one ` +
+      `changeset, answered with the tab drawn again. To change a ${word}, use update_${product.noun}.`,
+    inputSchema: {
+      ...id,
+      tabId: z.string().describe('The tab the elements are on.'),
+      edits: z
+        .array(
+          z.object({
+            elementId: z.string().describe('The element’s id.'),
+            label: z.string().max(VIEW_EDIT_LABEL_MAX).optional().describe('Its new label.'),
+            dx: offset('across'),
+            dy: offset('down'),
+          }),
+        )
+        .min(1)
+        .max(VIEW_EDIT_MAX)
+        .describe('The edits, in order: each a new label, a move, or both.'),
+    },
+    outputSchema: {
+      ...drawn,
+      changesetId: z
+        .string()
+        .nullable()
+        .describe('The changeset saved, or null when nothing changed.'),
+    },
+  });
+
+  return { viewTab, viewLive, viewEdit };
 }
 
 /** view_tab for a product of pages (livedocuments, livedesign): one page of a tab at a time, with the tab's pages. */
