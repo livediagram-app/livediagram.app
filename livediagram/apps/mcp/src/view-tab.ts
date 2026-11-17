@@ -12,7 +12,13 @@ import {
   toolUiMeta,
 } from '@liveworkspace/mcp-kit/app-view';
 import { canvasViewResult, clickableBoxes, viewBoxOf } from '@liveworkspace/mcp-kit/app-view-tab';
-import type { ChangesetResponse, RoomTicketResponse } from '@livediagram/api-schema';
+import type {
+  ChangesetResponse,
+  LiveDoc,
+  RoomTicketResponse,
+  TabRecord,
+  TabResponse,
+} from '@livediagram/api-schema';
 import {
   computeRefs,
   elementFingerprint,
@@ -84,18 +90,27 @@ export async function viewTab(
 ): Promise<ToolResult> {
   const loaded = await loadTab(env, token, args.documentId, args.tabId);
   if (!loaded) return errorResult('That document has no tabs.');
-  const { document, tab } = loaded;
+  return drawTab(env, token, args.documentId, loaded);
+}
+
+// view_tab's answer for a tab already read: the SVG, its boxes and the document's tabs.
+async function drawTab(
+  env: Env,
+  token: string,
+  documentId: string,
+  { document, tab }: { document: LiveDoc; tab: TabRecord },
+) {
   const { svg } = await tabSvg(tab, { env, token });
   // The text block is one line, not the SVG (the spec's "view_tab").
   return canvasViewResult({
-    documentId: args.documentId,
+    documentId,
     tabId: tab.id,
     name: tab.name,
     tabs: document.tabs.map((t) => ({ id: t.id, name: t.name })),
     svg,
     viewBox: viewBoxOf(svg),
     elements: clickableElements(tab),
-    url: deepLink(env, args.documentId),
+    url: deepLink(env, documentId),
   });
 }
 
@@ -189,7 +204,13 @@ export async function viewEdit(env: Env, token: string, args: ViewEditArgs): Pro
     if (isChangesetRefusal(err)) return errorResult(changesetErrorText(err));
     throw err;
   }
-  const drawn = await viewTab(env, token, { documentId: args.documentId, tabId: loaded.tab.id });
+  // The tab as stored after the edit, read once more; the document's tabs are as loaded.
+  const { tab } = await apiJson<TabResponse>(
+    env,
+    token,
+    `/documents/${encodeURIComponent(args.documentId)}/tabs/${encodeURIComponent(loaded.tab.id)}`,
+  );
+  const drawn = await drawTab(env, token, args.documentId, { document: loaded.document, tab });
   const count = args.edits.length;
   return {
     content: [

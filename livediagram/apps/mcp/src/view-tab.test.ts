@@ -298,6 +298,8 @@ describe('view_edit', () => {
     expect(new URL(posts[0]!.url).pathname).toBe('/api/documents/d1/tabs/t1/changesets');
     expect(posts[0]!.headers.get('Authorization')).toBe('Bearer lwt_token');
     expect(posts[0]!.headers.get('X-Livediagram-Client')).toBe('mcp');
+    // The document and the tab before, and the tab once more after: no second read of the document.
+    expect(seen.filter((r) => r.method === 'GET')).toHaveLength(3);
     expect(result.isError).toBeUndefined();
     expect(result.content).toEqual([
       { type: 'text', text: 'Saved 1 edit from the interactive view.' },
