@@ -176,7 +176,7 @@ A topic whose control is not on screen (a phone's narrower palette, a closed min
 
 ## Phone
 
-The same the Receptionist, day and topics. His bubble is never wider than the screen less 32 px and stays on it, its rows are as
+The same the Receptionist, day and topics. His bubble is never wider than the screen less 32 px and stays on it, near either edge, however the view pans or fits, the window resizes or the phone turns (Work Tracker 912), its rows are as
 wide as the bubble, and on a screen too short even for seven rows the whole bubble scrolls, clear of the call dock. Ask Receptionist is the footer's glyph, as every tour's is on a phone.
 
 ## Reduced motion

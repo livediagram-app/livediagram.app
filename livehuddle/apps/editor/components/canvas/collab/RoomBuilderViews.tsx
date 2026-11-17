@@ -12,6 +12,7 @@ import {
   type DoorArtPart,
   type ShapeElement,
 } from '@livehuddle/document';
+import { useDoorOnBackWall } from './back-wall-doors-store';
 
 // A room drawn with the Room Builder (docs/specs/009-elements/room-builder.md "The custom room"): the floor polygon
 // in the element's fill and the walls a fixed ROOM_WALL thick along the outline, outlined in the stroke and mitred at
@@ -122,7 +123,9 @@ function DoorPartView({ part, props }: { part: DoorArtPart; props: SVGProps<SVGE
 // A Door (docs/specs/009-elements/room-builder.md "Door", "Door types"): the gap it paints over its wall in the floor's
 // colour, its jambs, and its type's leaves, panes or wings, open or shut. Turned onto its wall by the element's
 // rotation. A moving part eases between its open and shut poses (the 180 ms door transition in canvas-motion.css),
-// and a swing arc fades.
+// and a swing arc fades. On a rectangular room's back wall (room-builder.md "On a back wall") the room draws the
+// doorway, broken through its tall band while open and the shut leaf in its face, so the Door draws only its open
+// leaf and swing there, no gap or jambs of its own, and nothing while shut.
 export function DoorView({
   element,
   stroke,
@@ -136,7 +139,10 @@ export function DoorView({
 }) {
   const { width, height } = element;
   const closed = element.doorClosed === true;
-  const parts = doorArt(width, height, element.variant);
+  const onBackWall = useDoorOnBackWall(element.id);
+  const parts = doorArt(width, height, element.variant).filter(
+    (p) => !onBackWall || (!closed && p.paint !== 'floor' && p.paint !== 'jamb'),
+  );
   return (
     <div className={`pointer-events-none absolute inset-0 ${animClass ?? ''}`}>
       <svg

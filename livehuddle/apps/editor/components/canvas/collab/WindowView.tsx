@@ -9,6 +9,7 @@ import {
   ROOM_WALL,
   WINDOW_LIGHT,
   windowArt,
+  type BackWallDoor,
   type ShapeElement,
 } from '@livehuddle/document';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
@@ -109,14 +110,17 @@ export function GlassRoomView({
   stroke,
   floor,
   animClass,
+  backDoors,
 }: {
   element: ShapeElement;
   stroke: string;
   floor: string;
   animClass?: string;
+  // The Doors on its back wall (back-wall-doors.ts): its face breaks at an open one and holds a shut one's leaf.
+  backDoors?: readonly BackWallDoor[];
 }) {
   const { width, height } = element;
-  const art = glassRoomArt(element);
+  const art = glassRoomArt(element, backDoors);
   const surface = useCanvasSurface();
   return (
     <div className={`pointer-events-none absolute inset-0 ${animClass ?? ''}`}>
@@ -141,6 +145,22 @@ export function GlassRoomView({
             stroke={stroke}
             strokeOpacity={GLASS_WALL.pane}
             strokeWidth={1}
+          />
+        ))}
+        {art.doors.map((d, i) => (
+          <rect
+            key={`door-${i}`}
+            data-back-wall-door=""
+            x={d.x}
+            y={d.y}
+            width={d.w}
+            height={d.h}
+            rx={1.5}
+            fill={stroke}
+            fillOpacity={GLASS_WALL.face * 2}
+            stroke={stroke}
+            strokeOpacity={GLASS_WALL.pane}
+            strokeWidth={FURNITURE_PANEL_STROKE}
           />
         ))}
         {art.glints ? (

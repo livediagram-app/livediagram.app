@@ -3,7 +3,7 @@
 // The Receptionist's bubble (docs/specs/008-canvas/receptionist.md "The welcome", "Asking the Receptionist", "The topics").
 
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 import {
   askReceptionist,
   getReceptionistState,
@@ -14,6 +14,8 @@ import {
   showReceptionistTopic,
 } from '@/lib/receptionist/receptionist-store';
 import { Space3DOverlayProvider } from '@/components/canvas/space-3d/Space3DOverlay';
+import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
+import { createViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
 import { ReceptionistBubble } from './ReceptionistBubble';
 
 const track = vi.hoisted(() => vi.fn());
@@ -210,5 +212,98 @@ describe('ReceptionistBubble', () => {
     expect(overlay.contains(dialog())).toBe(true);
     expect(dialog().style.top).toBe('100px');
     spy.mockRestore();
+  });
+
+  // Work Tracker 912: on a 390 px phone the welcome ran off the screen's right edge. His head's canvas point and the
+  // zoom stay the same through a pan, a camera fit or a resize, so the card is placed again on each, near either edge.
+  describe('kept on screen as the view or the window changes', () => {
+    // The canvas, a phone's width; the card 300 px wide, standing where the view puts it (`pan`), moved by its nudge.
+    let pan = 0;
+    let spy: MockInstance<(this: HTMLElement) => DOMRect>;
+    let root: HTMLElement;
+    const nudge = () =>
+      (screen.getByRole('dialog', { name: 'Receptionist' }).firstElementChild as HTMLElement).style
+        .transform;
+    const frame = () => act(() => new Promise((done) => setTimeout(done, 40)));
+    beforeEach(() => {
+      pan = 0;
+      root = document.body.appendChild(document.createElement('div'));
+      root.setAttribute('data-canvas-root', '');
+      spy = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+        this: HTMLElement,
+      ) {
+        if (this === root) return { left: 0, right: 390, top: 0, bottom: 844 } as DOMRect;
+        const shift = Number(/translateX\((-?[\d.]+)px\)/.exec(this.style.transform)?.[1] ?? 0);
+        const left = 40 + pan + shift;
+        return {
+          left,
+          right: left + 300,
+          top: 300,
+          bottom: 500,
+          width: 300,
+          height: 200,
+        } as DOMRect;
+      });
+      openReceptionist('welcome');
+    });
+    afterEach(() => spy.mockRestore());
+
+    it('nudges back inside the right edge after the view pans him there', async () => {
+      const store = createViewportStore(1);
+      render(
+        <ViewportStoreProvider store={store}>
+          <ReceptionistBubble head={{ x: 100, y: 100 }} feet={{ x: 100, y: 180 }} zoom={1} />
+        </ViewportStoreProvider>,
+        { container: root },
+      );
+      // 40..340 fits inside 16..374.
+      expect(nudge()).toBe('');
+      // The camera moves him 120 px right: 160..460, past the right edge.
+      pan = 120;
+      act(() => store.setOffset({ x: 120, y: 0 }));
+      await frame();
+      expect(nudge()).toBe('translateX(-86px)');
+      // And back near the left edge: 16 px in from it.
+      pan = -60;
+      act(() => store.setOffset({ x: -60, y: 0 }));
+      await frame();
+      expect(nudge()).toBe('translateX(36px)');
+    });
+
+    it('nudges back inside after the window resizes, with no view to watch', async () => {
+      render(<ReceptionistBubble head={{ x: 100, y: 100 }} feet={{ x: 100, y: 180 }} zoom={1} />, {
+        container: root,
+      });
+      expect(nudge()).toBe('');
+      pan = 100;
+      act(() => {
+        window.dispatchEvent(new Event('resize'));
+      });
+      await frame();
+      expect(nudge()).toBe('translateX(-66px)');
+    });
+
+    it('stops watching once it closes', async () => {
+      const store = createViewportStore(1);
+      const { rerender } = render(
+        <ViewportStoreProvider store={store}>
+          <ReceptionistBubble head={{ x: 100, y: 100 }} feet={{ x: 100, y: 180 }} zoom={1} />
+        </ViewportStoreProvider>,
+        { container: root },
+      );
+      act(() => resetReceptionistState());
+      rerender(
+        <ViewportStoreProvider store={store}>
+          <ReceptionistBubble head={{ x: 100, y: 100 }} feet={{ x: 100, y: 180 }} zoom={1} />
+        </ViewportStoreProvider>,
+      );
+      const calls = spy.mock.calls.length;
+      act(() => store.setOffset({ x: 50, y: 0 }));
+      act(() => {
+        window.dispatchEvent(new Event('resize'));
+      });
+      await frame();
+      expect(spy.mock.calls.length).toBe(calls);
+    });
   });
 });

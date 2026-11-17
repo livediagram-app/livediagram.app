@@ -57,7 +57,7 @@ export function PhotoDraftBar({
       data-testid="photo-draft-bar"
       // Fixed and out of flow, so nothing on the canvas shifts when it appears
       // or goes (zero CLS).
-      className="pointer-events-none fixed bottom-20 left-1/2 z-[var(--z-chrome)] -translate-x-1/2"
+      className="pointer-events-none fixed bottom-20 left-1/2 z-[var(--z-chrome)] w-max max-w-[calc(100vw-2rem)] -translate-x-1/2"
     >
       <div className="pointer-events-auto flex items-center gap-3 rounded-full border border-slate-200 bg-white/95 px-3 py-1.5 shadow-lg backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
         <p aria-live="polite" className="text-[11px] text-slate-600 dark:text-slate-300">

@@ -21,6 +21,7 @@ import { exportScale, MAX_EXPORT_CANVAS_SIDE } from '@liveworkspace/model-core/e
 // tab render reuses the same element drawing. The canvas / backdrop
 // orchestration below stays here and imports the per-element drawers + helpers.
 import {
+  backWallDoors,
   canvasSurface,
   boxedNeedsSvgRaster,
   contentBounds,
@@ -138,6 +139,8 @@ export async function renderTabToCanvas(
   const ordered = paintOrder(tab.elements);
   // Shapes something sits on keep a solid fill under Sketch, as on the canvas (sketch-backdrop.ts).
   const backdrops = sketchBackdropIds(els, tab.finish);
+  // A room's back-wall Doors, as the canvas draws them (back-wall-doors.ts).
+  const backWall = backWallDoors(els);
   const bounds = contentBounds(els);
   const pad = EXPORT_PADDING;
   const draw = bounds;
@@ -233,6 +236,8 @@ export async function renderTabToCanvas(
         tabFinish: tab.finish,
         sketchBackdrop: backdrops.has(el.id),
         surface,
+        // A room's back-wall Doors, as the canvas draws them (back-wall-doors.ts).
+        backWall,
       })}</svg>`;
     try {
       rasterImages.set(el.id, { image: await svgToImage(svg), pad });
@@ -311,6 +316,8 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   const ordered = paintOrder(tab.elements);
   // Shapes something sits on keep a solid fill under Sketch, as on the canvas (sketch-backdrop.ts).
   const backdrops = sketchBackdropIds(els, tab.finish);
+  // A room's back-wall Doors, as the canvas draws them (back-wall-doors.ts).
+  const backWall = backWallDoors(els);
   const bounds = contentBounds(els);
   const pad = EXPORT_PADDING;
   const draw = bounds;
@@ -371,6 +378,7 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
           tabFinish: tab.finish,
           sketchBackdrop: backdrops.has(el.id),
           surface,
+          backWall,
         }),
       );
     }

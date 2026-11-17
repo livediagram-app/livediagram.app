@@ -214,6 +214,7 @@ export * from './shape-variants';
 export * from './piece-variants';
 export * from './piece-type';
 export * from './door-art';
+export * from './back-wall-doors';
 export * from './window-art';
 export * from './glass-walls';
 export * from './rug-art';

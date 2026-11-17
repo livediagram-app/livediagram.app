@@ -67,6 +67,10 @@ Derived from [the Receptionist](../receptionist.md). The spec decides; this file
   below the chrome along the top (`SPEECH_TOP_CLEAR`, as every speech bubble); otherwise it goes on whichever side of
   him has more room (under his feet without a tail), and the whole bubble scrolls when even that side is too short,
   keeping `SPEECH_TOP_CLEAR` off the bottom edge too, clear of the call dock.
+- It is placed after every render, and again (at most once a frame, while it is open) whenever the viewport store
+  changes or the window resizes: a pan, a camera fit or a phone turning leaves his head's canvas point and the zoom as
+  they were, so without that the card stayed where it was, off the screen's side (Work Tracker 912). Placing measures
+  the card and sets state only when its place changed.
 - Topics are full-width rows (`ROW_H` 32 px, `ROW_GAP` 4 px) in a list capped at `VISIBLE_ROWS` (7) rows tall that
   scrolls past it, group headings sticky; a fade at its foot shows there is more until it is scrolled to the end. The
   bubble is a fixed `BUBBLE_W` (300 px) wide so every row is the same width. The action pills sit under the list.

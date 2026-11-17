@@ -8,13 +8,15 @@ import {
   type ShapeElement,
 } from '@livehuddle/document';
 import { FurniturePartView } from './FurnitureView';
+import { useRoomBackDoors } from './back-wall-doors-store';
 import { OutlinedRoomView } from './RoomBuilderViews';
 import { GlassRoomView } from './WindowView';
 
 // A room (docs/specs/009-elements/office.md "Room"): a floor in the element's fill, the back wall standing up
 // with the room's name on it (the element's own label, which sits in the wall's face), the side and front walls
 // as bars, and a doorway with a mat. Drawn at the element's own size, never scaled, so the walls keep their
-// thickness however big the room is. The walls also block Avatar-mode walking (lib/avatar-fence.ts).
+// thickness however big the room is. The walls also block Avatar-mode walking (lib/avatar-fence.ts). A Door on the back
+// wall breaks its band at the doorway while open and stands in its face while shut (room-builder.md "On a back wall").
 export function RoomView({
   element,
   stroke,
@@ -27,9 +29,18 @@ export function RoomView({
   animClass?: string;
 }) {
   const { width, height } = element;
+  const backDoors = useRoomBackDoors(element.id);
   // A room with glass walls (docs/specs/009-elements/office.md "Glass walls"), whatever its shape.
   if (isGlassRoom(element))
-    return <GlassRoomView element={element} stroke={stroke} floor={floor} animClass={animClass} />;
+    return (
+      <GlassRoomView
+        element={element}
+        stroke={stroke}
+        floor={floor}
+        animClass={animClass}
+        backDoors={backDoors}
+      />
+    );
   // A room drawn with the Room Builder (docs/specs/009-elements/room-builder.md) is its outline.
   if (element.roomOutline && element.roomOutline.length >= 3)
     return (
@@ -43,7 +54,7 @@ export function RoomView({
     );
   return (
     <SizedPieceView
-      parts={roomParts(width, height, element.roomDoor ?? DEFAULT_ROOM_DOOR)}
+      parts={roomParts(width, height, element.roomDoor ?? DEFAULT_ROOM_DOOR, backDoors)}
       width={width}
       height={height}
       stroke={stroke}

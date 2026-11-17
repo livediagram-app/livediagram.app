@@ -20,6 +20,7 @@ import { AgentFocusOverlay } from '@/components/canvas/AgentFocusOverlay';
 import { LayerSelectionChrome } from '@/components/canvas/LayerSelectionChrome';
 import type { CanvasSelectionInput } from '@/hooks/canvas/useCanvasSelectionView';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
+import { BackWallDoorsProvider } from '@/components/canvas/collab/back-wall-doors-store';
 
 // Canvas-computed values threaded into the element layer alongside the
 // raw props.
@@ -187,24 +188,27 @@ function CanvasElementsLayerView(props: CanvasElementsLayerProps) {
         {/* Render elements in their natural array order so
             `bringToFront` / `sendToBack` reorder a retired arrow
             relative to boxed elements. */}
-        <CanvasElementList
-          shownOrder={shownOrder}
-          previewStore={previewStore}
-          attachPlane={previewStore.attachPlane}
-          h={h}
-          boxedShared={boxedShared}
-          elementIndex={elementIndex}
-          editingId={editingId}
-          editCursorAtEnd={editCursorAtEnd}
-          readOnly={readOnly}
-          shiftDupGhostIds={shiftDupGhostIds}
-          remoteSelectionsByElement={remoteSelectionsByElement}
-          canMove={canMove}
-          canResize={canResize}
-          tabFont={tabFont}
-          tabFinish={tabFinish}
-          fontEpoch={fontEpoch}
-        />
+        {/* A room's back-wall Doors (room-builder.md "On a back wall"), each room and door reading its own. */}
+        <BackWallDoorsProvider elements={elements}>
+          <CanvasElementList
+            shownOrder={shownOrder}
+            previewStore={previewStore}
+            attachPlane={previewStore.attachPlane}
+            h={h}
+            boxedShared={boxedShared}
+            elementIndex={elementIndex}
+            editingId={editingId}
+            editCursorAtEnd={editCursorAtEnd}
+            readOnly={readOnly}
+            shiftDupGhostIds={shiftDupGhostIds}
+            remoteSelectionsByElement={remoteSelectionsByElement}
+            canMove={canMove}
+            canResize={canResize}
+            tabFont={tabFont}
+            tabFinish={tabFinish}
+            fontEpoch={fontEpoch}
+          />
+        </BackWallDoorsProvider>
 
         {/* What the agents present name in focus (docs/specs/024-agents/agent-presence.md "In the editor"):
           above the elements, beneath the remote cursors. */}

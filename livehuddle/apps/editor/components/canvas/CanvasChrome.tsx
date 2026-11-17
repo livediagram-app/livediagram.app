@@ -27,7 +27,14 @@ import { ThemeStrip } from '@/components/canvas/ThemeStrip';
 import { Space3DButton } from '@/components/canvas/space-3d/Space3DButton';
 import { UndoRedoClusterStrip } from '@liveworkspace/workbench/components/canvas/UndoRedoClusterStrip';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
-import { Fragment, useCallback, type Dispatch, type RefObject, type SetStateAction } from 'react';
+import {
+  Fragment,
+  useCallback,
+  useRef,
+  type Dispatch,
+  type RefObject,
+  type SetStateAction,
+} from 'react';
 import type { DockAnchor, DockPanel } from '@/hooks/canvas/useDockPopovers';
 import { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import { PanelSnapSlot } from '@liveworkspace/workbench/components/canvas/PanelSnapSlot';
@@ -43,6 +50,7 @@ import {
 import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
 import { CallDock } from '@/components/calls/CallDock';
 import { clusterRowLayout } from '@/components/calls/call-dock-row';
+import { useCallDockFit } from '@/components/calls/useCallDockFit';
 import { PHONE_CLUSTER_BUTTON_WIDTH } from '@/components/chrome/phone-toolbar-items';
 import { useSnapHaptic } from '@liveworkspace/workbench/hooks/canvas/useSnapHaptic';
 import { useStartPanelOpen } from '@liveworkspace/workbench/components/start/start-panel-open';
@@ -326,16 +334,30 @@ export function CanvasChrome(props: CanvasChromeProps) {
     </div>
   ) : null;
 
-  // The Call dock (docs/specs/008-canvas/avatar-mode.md "The Call dock"): with the avatar palette, bottom centre; on a
-  // phone in the bottom-right cluster's row, on the zoom buttons' bottom line (owner, 2026-11-07, Work Tracker #642).
+  // The Call dock (docs/specs/008-canvas/avatar-mode.md "The Call dock"): with the avatar palette, in the bottom-right
+  // cluster's row, on the zoom buttons' bottom line (owner, 2026-11-07, Work Tracker #642), at every width (Work
+  // Tracker 1041): centred while there is room, moving left rather than covering the buttons.
   const callDockShown = strip === 'avatar' && stripShown;
-  const callDockInRow = callDockShown && isMobile;
-  const clusterRow = clusterRowLayout(callDockInRow);
+  // Clear of the bottom-left panels (the Map): the row's left column takes their width, or, with no room for the
+  // panels, the dock and the buttons on one line, the dock stands above the buttons (useCallDockFit).
+  const clusterRef = useRef<HTMLDivElement>(null);
+  const bottomLeftStack = useCallback(
+    () => cornerRefs.current['bottom-left'] ?? null,
+    [cornerRefs],
+  );
+  const dockFit = useCallDockFit({
+    active: callDockShown,
+    rowRef: clusterRef,
+    stack: bottomLeftStack,
+    stackKey: dock.cornerStacks['bottom-left'].filter((id) => panelEls[id] != null).join('+'),
+    scale: cornerScale,
+  });
+  const clusterRow = clusterRowLayout(callDockShown, dockFit.lifted);
   const callDock = callDockShown ? (
     <CallDock
       doNotDisturb={props.avatarStatus === 'dnd'}
       onClearDoNotDisturb={() => props.onSetAvatarStatus?.(null)}
-      inRow={callDockInRow}
+      lifted={dockFit.lifted}
     />
   ) : null;
 
@@ -442,10 +464,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
         </>
       )}
 
-      {/* The Call dock (docs/specs/008-canvas/avatar-mode.md "The Call dock"): the call's buttons, bottom centre,
-          while the avatar palette shows. On a phone it is in the cluster's row instead, below. */}
-      {callDockInRow ? null : callDock}
-
       {/* Bottom-right cluster. Order, left to right: the Undo / Redo
           strip, the Theme & Canvas strip, then the Zoom controls. The buttons open their panels as popovers
           above them (docs/specs/007-editor/editor-app.md). */}
@@ -453,25 +471,29 @@ export function CanvasChrome(props: CanvasChromeProps) {
         data-zoom-cluster=""
         data-region="controls"
         // Drawn at the UI scale, still 16px from the corner, or clear of a landscape notch.
-        style={
-          cornerScale === 1
+        ref={clusterRef}
+        style={{
+          ...(cornerScale === 1
             ? { right: atLeastInset('16px', 'right') }
             : {
                 ...uiScaleStyle(cornerScale),
                 right: atLeastInset(`${toSurfacePx(16, cornerScale)}px`, 'right'),
                 bottom: toSurfacePx(16, cornerScale),
-              }
-        }
+              }),
+          ...(dockFit.clear && !dockFit.lifted
+            ? { ['--call-dock-clear' as string]: `${dockFit.clear}px` }
+            : {}),
+        }}
         // On a phone the cluster stays one row (docs/specs/007-editor/editor-app.md): its buttons share the
         // width there is, PHONE_CLUSTER_BUTTON_WIDTH, from 36px up to their
         // usual 44px (always 44px tall to tap), so Undo, Layers and Theme and Fit fill the
         // row on a 360px screen and up. It may still wrap, from the right, on a narrower one, so Undo is never
-        // pushed off the screen. While the Call dock is in the row (a phone, walking) the row is three columns: the
+        // pushed off the screen. While the Call dock is in the row (walking, at any width) the row is three columns: the
         // dock in the middle one, centred on the screen while there is room, and the buttons, unwrapped, in the right
         // one, which takes what they need first, so the dock gives way to the left rather than ever covering them.
         className={`pointer-events-none absolute bottom-4 right-4 z-[var(--z-panel)] ${clusterRow.row} ${PHONE_CLUSTER_BUTTON_WIDTH} ${PHONE_TOOLBAR_ITEMS}`}
       >
-        {callDockInRow ? callDock : null}
+        {callDock}
         {/* The buttons: the row's right column beside the dock, or, with no dock in the row, laid out by the row
             itself (`contents`). */}
         <div data-cluster-buttons="" className={clusterRow.buttons}>
