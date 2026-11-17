@@ -8,11 +8,8 @@ import type { CSSProperties } from 'react';
 
 export const SPACE_BILLBOARD_ATTR = { 'data-space-billboard': '' } as const;
 
-export function billboardOrigin(
-  dx: number,
-  dy: number,
-  x = '50%',
-  y = '100%',
-): CSSProperties {
-  return { '--space-billboard-origin': `calc(${x} + ${dx}px) calc(${y} + ${dy}px)` } as CSSProperties;
+export function billboardOrigin(dx: number, dy: number, x = '50%', y = '100%'): CSSProperties {
+  return {
+    '--space-billboard-origin': `calc(${x} + ${dx}px) calc(${y} + ${dy}px)`,
+  } as CSSProperties;
 }

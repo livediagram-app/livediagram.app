@@ -119,7 +119,7 @@ Office, and 30 fps or better on a phone.
 - **Walls are built once per change**: the wall list is worked out from the board when it changes, never per frame,
   and each wall is one element with one transform. Only the walls near the view are drawn (within one and a half
   screens to either side, three ahead and one and a half behind, at the current zoom), re-chosen when the view has
-  moved a quarter of that far.
+  moved three quarters of a screen.
 - **The cut-away is the only per-step work**: a check of each drawn wall against your feet, which writes to a wall
   only when its state changes.
 - **The 3D code loads on first use**: nothing of it is in the editor's first load; it is fetched the first time the

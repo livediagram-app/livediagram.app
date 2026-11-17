@@ -4,25 +4,28 @@ Derived from [3D view](../3d-view.md). Defaults applied: D136 to D141 ([DEFAULTS
 
 ## Files
 
-| File                                                                     | Role                                                                                                |
-| ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
-| `apps/editor/lib/space-3d/space-3d-camera.ts`                            | Pure: the camera's constants, `stageTransform`, `floorPointAt` (screen to canvas), `screenPointOf`  |
-| `apps/editor/lib/space-3d/space-3d-walls.ts`                             | Pure: `spaceWalls(elements)`, the standing walls with their doorways, labels and shade              |
-| `apps/editor/lib/space-3d/space-3d-cutaway.ts`                           | Pure: `cutAwayIds(walls, feet)`, `viewArea`, `wallsInArea`, `areaMovedFar`                          |
-| `apps/editor/lib/space-3d/space-3d-preference.ts`                        | The remembered choice: `space3DPreference` (a state store over Browser Storage), `toggleSpace3D`    |
-| `apps/editor/lib/space-3d/space-3d-phase.ts`                             | Pure: the view's phases and `nextSpace3DPhase`                                                      |
-| `apps/editor/lib/space-3d/space-3d-key.ts`                               | Pure: `isSpace3DKey(e)`, Shift+3 by its code                                                        |
-| `apps/editor/components/canvas/space-3d/useSpace3DView.ts`               | The phase machine, the stage's style, the main's attribute, Shift+3, the telemetry, the lazy import |
-| `apps/editor/components/canvas/space-3d/Space3DWalls.tsx`                | Loaded on first use: draws the walls near the view and cuts away the ones in front of your feet     |
-| `apps/editor/components/canvas/space-3d/Space3DButton.tsx`               | The cluster's 3D View switch                                                                        |
-| `apps/editor/app/space-3d.css`                                           | The 3D rules: preserve-3d, the billboards, the walls' faces, the fold, the fog, the hidden pattern  |
-| `apps/editor/components/canvas/Canvas.tsx`                               | The stage round the world layer; `scale: 1 1 zoom`; mounts the walls layer and the fog              |
-| `apps/editor/hooks/canvas/useCanvasSurfaceGestures.ts`                   | A walking press in 3D goes through `floorPointAt` instead of `pointerToCanvas`                      |
-| `apps/editor/components/canvas/CanvasChrome.tsx`                         | The switch in the cluster, while walking, before the zoom controls                                  |
-| `packages/avatar/src/components/AvatarWalker.tsx`                        | `data-avatar-stand` round the figure and the spread chip, turned about the feet                     |
-| `packages/avatar/src/components/AvatarSpeechLayer.tsx`                   | A bubble's anchor is a billboard about the speaker's feet                                           |
-| `apps/editor/components/calls/{CallBubbles,TalkingBars,RaisedHands}.tsx` | Each root is a billboard about its character's feet                                                 |
-| `apps/editor/components/dialogs/shortcut-sections.ts`                    | Shift+3 under "While walking"                                                                       |
+| File                                                                     | Role                                                                                               |
+| ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| `apps/editor/lib/space-3d/space-3d-camera.ts`                            | Pure: the camera's constants, `stageTransform`, `floorPointAt` (screen to canvas), `screenPointOf` |
+| `apps/editor/lib/space-3d/space-3d-walls.ts`                             | Pure: `spaceWalls(elements)`, the standing walls with their doorways, labels and shade             |
+| `apps/editor/lib/space-3d/space-3d-cutaway.ts`                           | Pure: `cutAwayIds(walls, feet)`, `viewArea`, `wallsInArea`, `areaMovedFar`                         |
+| `apps/editor/lib/space-3d/space-3d-preference.ts`                        | The remembered choice: `space3DPreference` (a state store over Browser Storage), `toggleSpace3D`   |
+| `apps/editor/lib/space-3d/space-3d-phase.ts`                             | Pure: the view's phases and `nextSpace3DPhase`                                                     |
+| `apps/editor/lib/space-3d/space-3d-key.ts`                               | Pure: `isSpace3DKey(e)`, Shift+3 by its code                                                       |
+| `apps/editor/components/canvas/space-3d/useSpace3DView.ts`               | The phase machine, the stage's style, the main's attribute, Shift+3, the lazy import               |
+| `apps/editor/components/canvas/space-3d/Space3DWalls.tsx`                | Loaded on first use: draws the walls near the view and cuts away the ones in front of your feet    |
+| `apps/editor/components/canvas/space-3d/Space3DButton.tsx`               | The cluster's 3D View switch                                                                       |
+| `apps/editor/app/space-3d.css`                                           | The 3D rules: preserve-3d, the billboards, the walls' faces, the fold, the fog, the hidden pattern |
+| `apps/editor/components/canvas/Canvas.tsx`                               | The stage round the world layer; `scale: 1 1 zoom`; mounts the walls layer and the fog             |
+| `apps/editor/hooks/canvas/useCanvasSurfaceGestures.ts`                   | A walking press in 3D goes through `floorPointAt` instead of `pointerToCanvas`                     |
+| `apps/editor/components/canvas/CanvasChrome.tsx`                         | The switch in the cluster, while walking, before the zoom controls                                 |
+| `packages/avatar/src/components/AvatarWalker.tsx`                        | `data-avatar-stand` round the figure and the spread chip, turned about the feet                    |
+| `packages/avatar/src/components/AvatarSpeechLayer.tsx`                   | A bubble's anchor is a billboard about the speaker's feet                                          |
+| `apps/editor/components/calls/{CallBubbles,TalkingBars,RaisedHands}.tsx` | Each root is a billboard about its character's feet                                                |
+| `packages/avatar/src/billboard.ts`                                       | `SPACE_BILLBOARD_ATTR` and `billboardOrigin(dx, dy, x, y)`, the feet as a billboard's origin       |
+| `apps/editor/components/canvas/receptionist/ReceptionistBubble.tsx`      | A billboard about his feet; never flips under his feet in 3D                                       |
+| `apps/editor/lib/editor-deferred-code.ts`                                | `loadSpace3DWalls`, the walls layer's lazy chunk                                                   |
+| `apps/editor/components/dialogs/shortcut-sections.ts`                    | Shift+3 under "While walking"                                                                      |
 
 ## Domain and naming
 
@@ -42,9 +45,9 @@ Synonyms banned: "isometric", "orbit", "perspective mode", "3D mode" (it is a vi
 ## Behaviour and state
 
 1. `space3DPreference` holds a boolean, read once from `livehuddle:v2:space-3d` (`'1'` on, anything else off) when
-   the module first loads in a browser. `toggleSpace3D(source)` tracks `Canvas · Used · Space3DView` when it turns the
+   the module first loads in a browser. `toggleSpace3D()` tracks `Canvas · Used · Space3DView` when it turns the
    view on (before writing), writes `'1'` or `'0'`, and sets the store.
-2. `useSpace3DView({ walking })` wants the view when `walking && preference`. The phase moves by `nextSpace3DPhase`:
+2. `useSpace3DView(walking)` wants the view when `walking && preference`. The phase moves by `nextSpace3DPhase`:
    - `flat` + want: `rising` (`tilted` at once under reduced motion).
    - `rising`: after two animation frames, `tilted`; not wanted any more: `flat`.
    - `tilted` + not wanted: `falling` (`flat` at once under reduced motion).
@@ -59,8 +62,8 @@ Synonyms banned: "isometric", "orbit", "perspective mode", "3D mode" (it is a vi
      unprojects with.
    - `Space3DWalls` is mounted in every phase but `flat`.
 4. `Space3DWalls` builds `spaceWalls(elements)` once per board change (`useMemo`). It reads the view area from the
-   viewport store and the canvas size: on mount and whenever `areaMovedFar` says the centre has moved a quarter of the
-   area or the zoom or size changed, it sets the area, and draws `wallsInArea(walls, area)`. It subscribes to your
+   viewport store and the canvas size: on mount and whenever `areaMovedFar` says the centre has moved three quarters of a
+   screen or the zoom or size changed, it sets the area, and draws `wallsInArea(walls, area)`. It subscribes to your
    pose store: on each pose it works out `cutAwayIds(drawn, feet)` and toggles `data-cut` on the walls whose state
    changed, outside React.
 5. Shift+3 (`isSpace3DKey`) toggles the preference while walking, unless typing, a menu or a dialog holds the
@@ -144,16 +147,14 @@ Synonyms banned: "isometric", "orbit", "perspective mode", "3D mode" (it is a vi
 
 ## Testing
 
-| Rule                                                   | Test                                                                           |
-| ------------------------------------------------------ | ------------------------------------------------------------------------------ |
-| The projection and its inverse; tilt 0 is the flat map | `lib/space-3d/space-3d-camera.test.ts`                                         |
-| Walls of rooms, corridors, pods, fences; doors cut     | `lib/space-3d/space-3d-walls.test.ts`                                          |
-| The cut-away rule, the view area and culling           | `lib/space-3d/space-3d-cutaway.test.ts`                                        |
-| The phases and reduced motion                          | `lib/space-3d/space-3d-phase.test.ts`                                          |
-| Shift+3, the preference and its storage                | `lib/space-3d/space-3d-key.test.ts`, `space-3d-preference.test.ts`             |
-| The switch and the stage                               | `components/canvas/space-3d/Space3DButton.test.tsx`, `useSpace3DView.test.tsx` |
-| The walls layer draws and cuts                         | `components/canvas/space-3d/Space3DWalls.test.tsx`                             |
-| The stand wraps the figure                             | `packages/avatar/src/components/AvatarWalker.stand.test.tsx`                   |
+| Rule                                                   | Test                                                         |
+| ------------------------------------------------------ | ------------------------------------------------------------ |
+| The projection and its inverse; tilt 0 is the flat map | `lib/space-3d/space-3d-camera.test.ts`                       |
+| Walls of rooms, corridors, pods, fences; doors cut     | `lib/space-3d/space-3d-walls.test.ts`                        |
+| The cut-away rule, the view area and culling           | `lib/space-3d/space-3d-cutaway.test.ts`                      |
+| Phases, reduced motion, Shift+3, the stored choice     | `lib/space-3d/space-3d-state.test.ts`                        |
+| The switch, the stage, the walls layer draws and cuts  | `components/canvas/space-3d/space-3d.test.tsx`               |
+| The stand wraps the figure                             | `packages/avatar/src/components/AvatarWalker.stand.test.tsx` |
 
 ## Constants and configuration
 
