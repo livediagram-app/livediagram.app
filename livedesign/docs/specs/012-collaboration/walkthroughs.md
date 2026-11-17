@@ -112,7 +112,7 @@ button):
   For anyone else there is nothing to show, so there is no row.
 
 Escape or a press outside closes the panel. The row is not in Tools on a phone (below `sm`, where recording has no
-dock), in an embed or the workbench frame, before the document has hydrated, for a document kept in This Browser, or
+dock), in an embed or the workbench frame, before the design has hydrated, for a design kept in This Browser, or
 for a tab-scoped link. Opening Tools fetches nothing: the row is drawn from the list the editor already asked for once
 it was idle after opening the item.
 
