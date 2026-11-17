@@ -29,6 +29,9 @@ library): it only moves the design to the Trash, so a question would guard nothi
 - Deleting the design open in the editor takes the editor to the Explorer, which offers the same toast on arrival:
   the delete, with the design's name, is handed over in `sessionStorage` for 30 seconds (`handOffDeleteUndo`, `takeDeleteUndo`,
   `useDeleteUndoHandoff`).
+- Moving the design open in the editor to Archived (from the Explorer panel's menus or Change Folder's Archived)
+  takes the editor to the Explorer too, since an archived design is closed: the Explorer says "Moved “<name>” to
+  Archived." once on arrival, with no Undo (`leaveArchivedItem`, [one-explorer.md "Archiving the open item"](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#archived)). Archiving any other design keeps the editor open.
 - A team design deleted from the team library goes to the team's Trash, and its Undo restores it there.
 
 Every delete of a whole design goes to the Trash: the Explorer, the editor,

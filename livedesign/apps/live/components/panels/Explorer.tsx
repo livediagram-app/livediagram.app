@@ -1,5 +1,6 @@
 'use client';
 
+import { leaveArchivedItem } from '@liveworkspace/workbench/lib/archived';
 import { explorerHref } from '@liveworkspace/workbench/lib/explorer-href';
 import { memo, useCallback, useEffect, useMemo } from 'react';
 import {
@@ -129,6 +130,11 @@ function ExplorerImpl({
   }, [shown]);
 
   const trashCurrent = useCallback((item: Item) => trashOpenDesign(item.id, item.title), []);
+  // Archived is closed: the item open here, once archived from the panel, leaves for the Explorer, which says so.
+  const archivedCurrent = useCallback(
+    (item: { id: string; title: string | null }) => leaveArchivedItem('livedesign', item),
+    [],
+  );
 
   const go = (href: string) =>
     href.startsWith('/') ? router.push(href) : window.location.assign(href);
@@ -183,6 +189,7 @@ function ExplorerImpl({
           currentOffline={offline}
           // The open design stops saving before it goes, then the editor leaves for the Explorer and its Undo.
           onTrashCurrent={trashCurrent}
+          onArchivedCurrent={archivedCurrent}
           // Renamed from the Explorer's current item, the editor's one rename since the header bar went (experiment).
           onRenameCurrent={
             onRenameCurrent

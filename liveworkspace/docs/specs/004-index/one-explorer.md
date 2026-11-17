@@ -497,6 +497,14 @@ liveworkspace.app.
   through a link. It moves at once, the card leaves where it was, and a toast says "Moved “<title>” to Archived."
   with no Undo: what archiving deleted (its links, everyone's Recent rows) can't come back, and Change Folder is the way
   out. Change Folder offers the same as a space of its own.
+- **Archiving the open item.** Archived is closed, so archiving the item open in an editor (from the Explorer panel's
+  menus, its Current card, or Change Folder's Archived; an account's or one kept in This Browser) leaves the editor
+  for the Explorer, as deleting it does (owner, 2026-11-17, Work Tracker 1240). The panel hands the item to its host
+  (`onArchivedCurrent`) once the archive is taken, and says nothing itself; the editor leaves for
+  `/explorer?archived=<id>&title=<name>` (`leaveArchivedItem`, `@liveworkspace/workbench/lib/archived`), and the
+  Explorer says "Moved “<title>” to Archived." once on arrival (`archivedOnArrival`), with no Undo, then drops both
+  from the address. A workbench frame's Explorer takes the same item from sessionStorage, kept for one page load and
+  30 seconds (`arrivedArchived`). Archiving any other item keeps the person where they are, with the usual toast.
 - **Gone from everywhere else.** Home (Most Used, Recent, the hero's count), Recent, Shared With
   Me, the Inbox, every folder and team, and the panel's lists leave it out. Archiving deletes its
   Recent, Most Used and Inbox rows for everyone, so moving it out starts fresh: not in Recent until it is opened

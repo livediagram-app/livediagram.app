@@ -4,15 +4,19 @@
 // place, over the team's library, then for an admin the team's Audit Log (audit/AuditLog.tsx), closed until opened. A team the person is not in (gone, left, never joined) is a
 // not-found card instead.
 
-import { useEffect, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect, type ReactNode } from 'react';
 import { LIST_CARD } from '../ui/classes';
 import { TeamCard, useTeamDetails } from '../teams/TeamCard';
 import { useTeams } from '../teams/context';
 import { SIDEBAR_LABELS } from '../views';
 import { useExplorer } from './context';
-import { AuditLog } from './audit/AuditLog';
 import { NotFoundCard } from './NotFoundCard';
 import { SECTIONS_BAR_ATTR } from './PhoneSections';
+
+// The Audit Log loads when an admin's team view first draws it: its rows, filters and CSV export are for the few who
+// run a team, so the Explorer's first load never carries them (liveworkspace/docs/specs/010-site/blueprints/site.md
+// "Performance and limits").
+const AuditLog = lazy(() => import('./audit/AuditLog').then((m) => ({ default: m.AuditLog })));
 
 export { initialsOf, teamHeadline } from '../teams/TeamCard';
 export { memberName } from '../teams/rules';
@@ -48,13 +52,15 @@ export function TeamPage({ teamId, children }: { teamId: string; children: React
       {children}
       {/* The team's admins alone: drawn only when accounts says the reader runs the team, as the read checks too. */}
       {load.state === 'found' && load.details.team.myRole === 'admin' ? (
-        <AuditLog
-          key={`audit-${teamId}`}
-          teamId={teamId}
-          teamName={load.details.team.name}
-          members={load.details.members}
-          helpHref={auditHelpOf(helpHref?.({ kind: 'team', id: teamId }))}
-        />
+        <Suspense fallback={null}>
+          <AuditLog
+            key={`audit-${teamId}`}
+            teamId={teamId}
+            teamName={load.details.team.name}
+            members={load.details.members}
+            helpHref={auditHelpOf(helpHref?.({ kind: 'team', id: teamId }))}
+          />
+        </Suspense>
       ) : null}
     </div>
   );

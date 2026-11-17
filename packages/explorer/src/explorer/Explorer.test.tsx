@@ -372,6 +372,35 @@ describe('<Explorer>', () => {
     );
     expect(screen.queryAllByText('Moved “\u2068Roadmap\u2069” to the Trash.')).toHaveLength(0);
   });
+
+  it('says once that the item the host archived on the way in went to Archived, with no Undo', async () => {
+    const index = createFakeIndex({ items: [] });
+    const archived = { id: 'item-1', title: 'Roadmap' };
+    const { rerender } = renderExplorer(index, { kind: 'all' }, { archivedOnArrival: archived });
+    expect(await screen.findByText('Moved “⁨Roadmap⁩” to Archived.')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Undo' })).toBeNull();
+    rerender(
+      <Explorer
+        app="liveplanner"
+        client={index.client}
+        view={{ kind: 'all' }}
+        onNavigate={vi.fn()}
+        itemHref={itemHref}
+        onCreate={vi.fn()}
+        archivedOnArrival={archived}
+      />,
+    );
+    expect(screen.getAllByText('Moved “⁨Roadmap⁩” to Archived.')).toHaveLength(1);
+  });
+
+  it('names an untitled one Untitled', async () => {
+    renderExplorer(
+      createFakeIndex({ items: [] }),
+      { kind: 'all' },
+      { archivedOnArrival: { id: 'item-1', title: null } },
+    );
+    expect(await screen.findByText('Moved “⁨Untitled⁩” to Archived.')).toBeTruthy();
+  });
 });
 
 export type { Item };

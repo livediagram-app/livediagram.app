@@ -333,6 +333,65 @@ describe('<ExplorerPanel>', () => {
     expect(index.count('deleteItem')).toBe(0);
   });
 
+  // Archived is closed (one-explorer.md "Archiving the open item"): the open item, once archived, is the host's to
+  // leave, and the panel says nothing; any other item stays here with the usual toast.
+  describe('archiving the open item', () => {
+    const setup = () => {
+      const items = [1, 2].map((i) => makeItem(i, { lastOpenedAt: 5_000_000 - i }));
+      const index = createFakeIndex({ items });
+      const onArchivedCurrent = vi.fn();
+      renderPanel(index, {
+        current: items[0],
+        currentId: items[0]!.id,
+        viewerId: 'user_me',
+        onArchivedCurrent,
+      });
+      return { index, onArchivedCurrent };
+    };
+
+    it('hands the open item to the host once archived from its menu, saying nothing here', async () => {
+      const { index, onArchivedCurrent } = setup();
+      fireEvent.click(screen.getByRole('button', { name: 'Plan menu' }));
+      fireEvent.click(await screen.findByRole('menuitem', { name: 'Move to Archived' }));
+      await waitFor(() =>
+        expect(onArchivedCurrent).toHaveBeenCalledWith(expect.objectContaining({ id: 'item-1' })),
+      );
+      expect(index.count('archiveItem')).toBe(1);
+      expect(screen.queryByText('Moved “\u2068Item 1\u2069” to Archived.')).toBeNull();
+    });
+
+    it("hands it over from Change Folder's Archived too", async () => {
+      const { index, onArchivedCurrent } = setup();
+      fireEvent.click(screen.getByRole('button', { name: 'Plan menu' }));
+      fireEvent.click(await screen.findByRole('menuitem', { name: 'Change Folder' }));
+      const move = await screen.findByRole('dialog', { name: 'Move to folder' });
+      fireEvent.click(within(move).getByRole('button', { name: /Choose a Space/ }));
+      fireEvent.click(within(move).getByRole('button', { name: /Archived/ }));
+      fireEvent.click(within(move).getByRole('button', { name: 'Move Here' }));
+      await waitFor(() => expect(index.count('archiveItem')).toBe(1));
+      await waitFor(() => expect(onArchivedCurrent).toHaveBeenCalledTimes(1));
+    });
+
+    it('keeps any other item here, with the toast', async () => {
+      const { index, onArchivedCurrent } = setup();
+      fireEvent.click(within(rail()).getByRole('button', { name: 'My Work' }));
+      fireEvent.click((await screen.findAllByRole('button', { name: 'Menu for Item 2' }))[0]!);
+      fireEvent.click(await screen.findByRole('menuitem', { name: 'Move to Archived' }));
+      await waitFor(() => expect(index.count('archiveItem')).toBe(1));
+      expect(await screen.findByText('Moved “\u2068Item 2\u2069” to Archived.')).toBeTruthy();
+      expect(onArchivedCurrent).not.toHaveBeenCalled();
+    });
+
+    it('says it here when the host takes none', async () => {
+      const items = [makeItem(1, { lastOpenedAt: 5_000_000 })];
+      const index = createFakeIndex({ items });
+      renderPanel(index, { current: items[0], currentId: items[0]!.id, viewerId: 'user_me' });
+      fireEvent.click(screen.getByRole('button', { name: 'Plan menu' }));
+      fireEvent.click(await screen.findByRole('menuitem', { name: 'Move to Archived' }));
+      expect(await screen.findByText('Moved “\u2068Item 1\u2069” to Archived.')).toBeTruthy();
+    });
+  });
+
   // AA for its small text: the unpressed option sits on the group's slate-100, where slate-500 read 4.3:1.
   it("reads the app filter's unpressed option at AA on its slate-100 group", () => {
     renderPanel(createFakeIndex({ items: [] }));
@@ -487,6 +546,21 @@ describe("the panel's This Browser", () => {
     fireEvent.click(within(rail()).getByRole('button', { name: 'Browser Storage (2)' }));
     expect(screen.queryByRole('button', { name: /^Sync/ })).toBeNull();
     expect(screen.queryByRole('button', { name: /^Delete/ })).toBeNull();
+  });
+
+  it('hands the open one to the host once archived from its Current card, saying nothing here', async () => {
+    const onArchivedCurrent = vi.fn();
+    renderPanel(createFakeIndex({ items: [] }), {
+      thisBrowser: host(),
+      current: null,
+      currentId: 'l1',
+      onArchivedCurrent,
+    });
+    const card = screen.getByRole('region', { name: 'Current plan' });
+    fireEvent.click(within(card).getByRole('button', { name: /menu/i }));
+    fireEvent.click(await screen.findByRole('menuitem', { name: 'Move to Archived' }));
+    expect(onArchivedCurrent).toHaveBeenCalledWith(expect.objectContaining({ id: 'l1' }));
+    expect(screen.queryByText('Moved “\u2068Kept here\u2069” to Archived.')).toBeNull();
   });
 
   it('draws the Current card from This Browser when the index has none for the open item', () => {
