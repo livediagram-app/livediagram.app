@@ -154,6 +154,26 @@ describe('saveOfflineToCloud (offline -> cloud)', () => {
     });
   });
 
+  it('carries the template’s starter rules a plan in This Browser kept, for the cloud create to make', async () => {
+    // docs/specs/026-plan/plan-templates.md "Starter rules": made when it is saved to the cloud.
+    const starterRules = { template: 'kanban', timeZone: 'Europe/London' };
+    vi.mocked(store.offlineGetRecord).mockResolvedValueOnce({
+      id: 'd1',
+      name: 'Roadmap',
+      tabs: [],
+      starterRules,
+    } as never);
+    await saveOfflineToCloud('d1', 'owner');
+    expect(vi.mocked(apiClient.apiCreateProject).mock.calls[0]![1]).toMatchObject({ starterRules });
+  });
+
+  it('asks for no starter rules for a plan that kept none', async () => {
+    await saveOfflineToCloud('d1', 'owner');
+    expect(vi.mocked(apiClient.apiCreateProject).mock.calls[0]![1]).not.toHaveProperty(
+      'starterRules',
+    );
+  });
+
   it.each(['folder_not_found', 'folder_scope_mismatch'])(
     'files the project at the root, saying so, when the server refuses its folder: %s',
     async (code) => {

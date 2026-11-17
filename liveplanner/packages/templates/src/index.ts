@@ -16,7 +16,10 @@ export { templateFamilyOf } from './template-families';
 export {
   PLAN_TEMPLATE_KINDS,
   isPlanTemplateKind,
+  hasStarterRules,
+  STARTER_RULE_KINDS,
   type PlanTemplateKind,
+  type StarterRuleKind,
 } from './plan-template-kinds';
 export { isSpreadsheetPlanTemplate, planTemplateTabCount } from './plan-template-catalogue';
 export * from './template-tab';

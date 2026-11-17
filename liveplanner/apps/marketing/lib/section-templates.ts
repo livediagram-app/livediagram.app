@@ -24,6 +24,7 @@ export const SECTION_TEMPLATE_KINDS: Readonly<Record<string, readonly TemplateKi
   ],
   // Each of these opens with a Dashboard tab of its own (template-builders-plan.ts).
   dashboards: [
+    'sprint-board',
     'product-launch',
     'project-planner',
     'sales-crm',
@@ -31,8 +32,7 @@ export const SECTION_TEMPLATE_KINDS: Readonly<Record<string, readonly TemplateKi
     'bug-triage',
     'kanban',
     'hiring-pipeline',
-    'weekly-planner',
-    'content-calendar',
+    'editorial-pipeline',
   ],
   sheets: [
     'budget-planner',
@@ -63,6 +63,7 @@ export const SECTION_TEMPLATE_KINDS: Readonly<Record<string, readonly TemplateKi
     'project-planner',
     'weekly-planner',
     'okrs',
+    'trip-planner',
   ],
 };
 

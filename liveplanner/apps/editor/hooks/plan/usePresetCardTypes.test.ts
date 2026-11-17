@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
-import { renderHook } from '@testing-library/react';
+import { renderHook, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { Tab } from '@liveplanner/project';
 import {
   ITEM_TYPES,
+  ITEM_TYPE_CATALOGUE_VERSION,
   defaultCatalogue,
   presetSetup,
   type ItemTypeCatalogue,
@@ -21,6 +22,11 @@ const board = (id: string, preset: 'bug-triage' | 'kanban' | 'sprint' | 'blank')
   width: 800,
   height: 600,
   planBoard: presetSetup(preset),
+});
+// A board taking a Plan template's own types (docs/specs/026-plan/plan-templates.md "Card types a template makes").
+const ownBoard = (id: string, addTypes: string[]) => ({
+  ...board(id, 'blank'),
+  planBoard: { ...presetSetup('blank'), addTypes },
 });
 const tab = (elements: unknown[]) => ({ id: 't1', name: 'Board', elements }) as unknown as Tab;
 const els = (...b: unknown[]) => b as unknown as Tab['elements'];
@@ -85,5 +91,33 @@ describe('usePresetCardTypes', () => {
     rerender({ ...base, enabled: false, itemsReady: true });
     expect(saveCatalogue).toHaveBeenCalledTimes(1);
     expect(ids(saveCatalogue.mock.lastCall![0])).toEqual(['task', 'action', 'bug']);
+  });
+
+  it('loads the templates’ own types only for a board naming one the plan lacks, then brings it', async () => {
+    const { templateCardTypesProvided } = await import('@liveplanner/items');
+    expect(templateCardTypesProvided()).toBe(false);
+    // A plan that already has the type never loads them.
+    const has: ItemTypeCatalogue = {
+      version: ITEM_TYPE_CATALOGUE_VERSION,
+      types: [{ ...ITEM_TYPES[1], id: 'bt-bug', label: 'Bug' }],
+    };
+    const quiet = setup({ catalogue: has, enabled: false });
+    quiet.result.current.bring(els(ownBoard('a', ['bt-bug'])));
+    expect(quiet.saveCatalogue).not.toHaveBeenCalled();
+    expect(templateCardTypesProvided()).toBe(false);
+    // One that lacks it loads them, then brings the type.
+    const { result, saveCatalogue } = setup({ enabled: false });
+    result.current.bring(els(ownBoard('b', ['bt-bug'])));
+    expect(saveCatalogue).not.toHaveBeenCalled();
+    await waitFor(() => expect(ids(saveCatalogue.mock.lastCall?.[0])).toEqual(['bt-bug']));
+    expect(templateCardTypesProvided()).toBe(true);
+  });
+
+  it('builds a second bring in the same tick on the first, so neither saves over the other', () => {
+    const { result, saveCatalogue } = setup({ enabled: false });
+    result.current.bring(els(board('a', 'bug-triage')));
+    result.current.bring(els(board('b', 'kanban')));
+    expect(saveCatalogue).toHaveBeenCalledTimes(2);
+    expect(ids(saveCatalogue.mock.lastCall![0])).toEqual(['bug', 'task', 'action']);
   });
 });

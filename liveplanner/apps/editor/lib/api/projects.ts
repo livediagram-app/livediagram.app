@@ -14,6 +14,7 @@ import {
 } from '@liveplanner/api-schema';
 import type { Project, ProjectResponse, ProjectSummary } from '@liveplanner/api-schema';
 import type { Tab } from '@liveplanner/project';
+import type { StarterRulesAsk } from './starter-rules-ask';
 import { dedupeInFlight } from '@liveworkspace/workbench/lib/dedupe';
 import { isOfflineId, offlineLoadProject, offlineSaveProjectMeta } from '../offline/offline-store';
 import { createOrResumeItem, type CreatedOrResumed, IndexError } from '@liveworkspace/index-client';
@@ -31,6 +32,7 @@ import {
   apiFetch,
   saveTimeoutSignal,
 } from './core';
+export { starterRulesAskOf, type StarterRulesAsk } from './starter-rules-ask';
 import type { RoomTicketResponse } from '@liveplanner/api-schema';
 
 // The project-list row every list surface renders: the Explorer
@@ -174,6 +176,9 @@ export async function apiCreateProject(
     sheets?: SheetCreateRequest[];
     // The type catalogue (docs/specs/026-plan/item-types.md): a copy's, a sync's or a Drive file's.
     itemTypes?: ItemTypeCatalogue | null;
+    // The Plan template whose starter rules the create makes (docs/specs/026-plan/plan-templates.md "Starter rules"):
+    // the wizard's, or an Offline Mode sync's kept from when the plan was made.
+    starterRules?: StarterRulesAsk;
   },
   // Set by the Offline Mode sync path (docs/specs/006-project/offline-mode.md). A sync is a plain POST, so
   // without this the worker records it as a brand-new project being created.
@@ -233,6 +238,7 @@ export async function apiCreateProject(
       ...(d.sheets && d.sheets.length ? { sheets: d.sheets } : {}),
       // The type catalogue rides the create (a copy's, a Plan template's card types); absent is the default types.
       ...(d.itemTypes ? { itemTypes: d.itemTypes } : {}),
+      ...(d.starterRules ? { starterRules: d.starterRules } : {}),
     }),
   });
   const { project: liveDoc } = await expectOk<ProjectResponse>(res, 'create project');

@@ -1425,6 +1425,31 @@ item stands"); the plan never asks, so a time wake costs no index call.
 - **Tests**: `plan-room/plan-standing.test.ts` (archive, trash, restore, an older `at`, a grant that mends, a plan that
   never heard: the unreachable index), `routes/internal-items.test.ts` (the door).
 
+## Starter rules (Work Tracker 1073)
+
+From [Plan templates](../plan-templates.md#starter-rules). The engine is untouched: the rules are the Templates
+gallery's builders run over the plan a template makes.
+
+- `packages/templates/src/plan-template-kinds.ts`: `STARTER_RULE_KINDS`, `hasStarterRules` (import-free, asked on a
+  create).
+- `packages/templates/src/template-starter-rules.ts` (entry `@liveplanner/templates/template-starter-rules`):
+  `TEMPLATE_STARTER_RULES` (kind to gallery ids, each on or off), `templatePlanOf` (the template's tabs built, their
+  outline, phases and brought types), `starterOf` (a fill whose only picks left are top-level people steps: those steps
+  dropped and the rule off; anything else left out), `STARTER_STEP_KINDS`/`starterSafe`, `templateStarterRules`.
+- api: `routes/starter-rules.ts` `starterRulesAsked` (the body's `{ template, timeZone? }`, never a refusal) and
+  `makeStarterRules` (the room's `AutomationStore.insert`, stamped by `writer`, `ai` for a token, names free), called
+  by `project-create.ts` on a genuine create for the body's template, else the first seeded tab's
+  (`compileSeededTabs().template`); `signedInCaller` is the Automations routes' own.
+- editor: `lib/api/starter-rules-ask.ts` `starterRulesAskOf` (template plus the browser's time zone) rides the wizard's
+  create (`app/new`, `create-in-place.ts`), the offline record (`OfflineProjectRecord.starterRules`, set by
+  `offlineCreateProject` and `offlineSaveStarterRules`) and Sync Plan's create (`offline-sync.ts`). Start Planning on a
+  first tab leaves the kind in `lib/pending-starter-rules.ts`; `components/automations/PendingStarterRules.tsx`, under
+  `AutomationsHost`, makes them through the routes (`makeStarterRules` of Describe a Plan), keeps them on a This
+  Browser record, or drops them for a guest.
+- Tests: templates (every boarded template ships one rule on, every rule reads as a save reads it, no outgoing step),
+  api `starter-rules.test.ts` (owner, token, guest, workbench, a named template, a re-commit), editor
+  (`PendingStarterRules`, `pending-starter-rules`, `starter-rules-ask`, offline store and sync).
+
 ## Small rule gaps, steps after an AI step, Manage Repositories, unused Card Moved columns (Work Tracker 788, 846, 847, 855)
 
 Each gap the overnight bug hunt (PR #1671) left is decided in the spec ([automations.md](../automations.md)):

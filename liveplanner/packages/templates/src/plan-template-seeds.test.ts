@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { itemTitle, readItemCreate, type PlanBoardSetup } from '@liveplanner/items';
-import { planTemplateSeedItems, seedDate, seedToday } from './plan-template-seeds';
+import { TEMPLATE_CARD_TYPES } from '@liveplanner/items/template-card-types';
+import { itemTitle, readRepeatRule, readItemCreate, type PlanBoardSetup } from '@liveplanner/items';
+import { planTemplateSeedItems, seedDate, seedTimeZone, seedToday } from './plan-template-seeds';
 import { PLAN_TEMPLATE_SEEDS } from './plan-template-seed-data';
 import {
   PLAN_TEMPLATE_KINDS,
@@ -91,6 +92,51 @@ describe('Plan template example cards', () => {
         }
       }
     }
+  });
+
+  // plan-templates.md "Card types a template makes": every example fills only its own type's fields, a choice with
+  // one of its options, and a card field links a card of the type it names.
+  it('fill only the fields their template’s own type offers', () => {
+    for (const kind of PLAN_TEMPLATE_KINDS) {
+      const made = planTemplateSeedItems(kind, TODAY, ids);
+      const typeOf = new Map(made.map((c) => [c.id, c.type]));
+      for (const create of made) {
+        const type = TEMPLATE_CARD_TYPES.find((t) => t.id === create.type);
+        expect(type, `${kind} ${create.type}`).toBeDefined();
+        for (const [field, value] of Object.entries(create.fields)) {
+          // An example's own marks, not a field.
+          if (field === 'example' || field === 'archived' || field === 'repeat') continue;
+          const label = `${kind} ${create.type} ${field}`;
+          expect(type!.fields, label).toContain(field);
+          const custom = type!.custom?.find((f) => f.id === field);
+          if (custom?.kind === 'choice') expect(custom.options, label).toContain(value);
+          if (custom?.kind === 'card')
+            expect(typeOf.get(value as string), label).toBe(custom.linkType);
+        }
+      }
+    }
+  });
+
+  // plan-templates.md "Example cards": Repeating examples.
+  it('repeat where their work comes round, from the day they are made in their maker’s time zone', () => {
+    const made = planTemplateSeedItems('weekly-planner', TODAY, ids, 'Europe/London');
+    const review = made.find((c) => c.fields['title'] === 'Weekly review')!;
+    const rule = readRepeatRule(review.fields['repeat']);
+    expect(rule).toEqual({
+      every: 'week',
+      days: [5],
+      status: 'fri',
+      from: TODAY,
+      timeZone: 'Europe/London',
+    });
+    expect(review.place?.status).toBe('fri');
+    // Every seeded rule is one the item store keeps, and only Weekly Planner's review repeats.
+    const repeating = PLAN_TEMPLATE_KINDS.flatMap((kind) =>
+      planTemplateSeedItems(kind, TODAY, ids).filter((c) => c.fields['repeat'] !== undefined),
+    );
+    expect(repeating.map((c) => c.fields['title'])).toEqual(['Weekly review']);
+    for (const c of repeating) expect(readRepeatRule(c.fields['repeat'])?.timeZone).toBe('UTC');
+    expect(typeof seedTimeZone()).toBe('string');
   });
 
   it('date from the day they are made', () => {

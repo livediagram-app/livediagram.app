@@ -31,6 +31,12 @@ import {
 import { registerTool } from './tool-annotations';
 import { DASHBOARD_ALONE, addOperationsFor, addToTemplateTab, getTab } from './template-elements';
 import { mcpAddTab, mcpUpdateProject } from '@liveplanner/agent-verbs/mcp';
+import { TEMPLATE_CARD_TYPES } from '@liveplanner/items/template-card-types';
+import { provideTemplateCardTypes } from '@liveplanner/items';
+
+// The Plan templates' own card types, so add_tab's template can bring them (docs/specs/026-plan/plan-templates.md "Card
+// types a template makes"). A subpath, kept out of the editor's first load.
+provideTemplateCardTypes(TEMPLATE_CARD_TYPES);
 
 // add_tab takes a template's first tab only (docs/specs/015-api/mcp-server.md §4.5): said in the answer when the
 // template has more, so the caller knows where the rest are.

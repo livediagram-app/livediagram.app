@@ -291,7 +291,7 @@ export function templatePreviewGroup15(kind: TemplateKind): ReactElement | null 
     case 'bug-triage':
       // Triage, a row per priority; the story confirms a new bug.
       return board({
-        tabs: 3,
+        tabs: 4,
         columns: [
           {
             cards: [
@@ -361,7 +361,7 @@ export function templatePreviewGroup15(kind: TemplateKind): ReactElement | null 
     case 'hiring-pipeline':
       // Roles: projects on a Gantt; the story fills a role.
       return board({
-        tabs: 3,
+        tabs: 5,
         columns: [
           { cards: [{ stripe: EPIC }] },
           { cards: [{ stripe: EPIC, moveTo: { dx: w4 * 2, dy: 0, at: 900 } }, { stripe: EPIC }] },
@@ -406,7 +406,7 @@ export function templatePreviewGroup15(kind: TemplateKind): ReactElement | null 
     case 'feedback-board':
       // Requests voted on; the story plans the top one.
       return board({
-        tabs: 2,
+        tabs: 4,
         columns: [
           { cards: [{ stripe: IDEA }, { stripe: IDEA }, { stripe: IDEA }] },
           { cards: [{ stripe: IDEA, moveTo: { dx: w4, dy: 0, at: 900 } }, { stripe: IDEA }] },
@@ -510,6 +510,80 @@ export function templatePreviewGroup15(kind: TemplateKind): ReactElement | null 
           { head: IDEA, cards: [{ stripe: STORY }] },
           { head: STORY, cards: [{ stripe: TASK }] },
         ],
+      });
+    case 'sprint-board':
+      // The sprint, a row per person, In Progress and In Review held to their limits, Blocked in red; the story
+      // takes a reviewed story to Done.
+      return board({
+        tabs: 3,
+        rows: 2,
+        columns: [
+          { cards: [{ stripe: STORY }, { stripe: TASK }] },
+          { cards: [{ stripe: STORY }, { stripe: TASK }] },
+          { cards: [{ stripe: STORY, moveTo: { dx: w5 * 2, dy: 0, at: 900 } }] },
+          { head: BUG, cards: [{ stripe: BUG }] },
+          { head: STORY, cards: [{ stripe: STORY }, { stripe: TASK }] },
+        ],
+      });
+    case 'client-onboarding':
+      // Clients from Signed to Live over their Gantt; the story takes a client in Training live.
+      return board({
+        tabs: 3,
+        columns: [
+          { cards: [{ stripe: EPIC }] },
+          { cards: [{ stripe: EPIC }] },
+          { cards: [{ stripe: EPIC }] },
+          { cards: [{ stripe: EPIC, moveTo: { dx: w5, dy: 0, at: 900 } }] },
+          { head: STORY, cards: [{ stripe: EPIC }] },
+        ],
+        gantt: [
+          { x: 14, w: 30 },
+          { x: 30, w: 26 },
+          { x: 42, w: 32 },
+        ],
+      });
+    case 'editorial-pipeline':
+      // Production, Commissioned to Published; the story moves an edited piece on to Fact Check.
+      return board({
+        tabs: 3,
+        columns: [
+          { head: STORY, cards: [{ stripe: ACTION }] },
+          { cards: [{ stripe: ACTION }, { stripe: ACTION }] },
+          { cards: [{ stripe: ACTION, moveTo: { dx: w6, dy: 0, at: 900 } }] },
+          { cards: [{ stripe: TASK }] },
+          { cards: [{ stripe: ACTION }] },
+          { head: STORY, cards: [{ stripe: ACTION }] },
+        ],
+      });
+    case 'trip-planner':
+      // Ideas voted onto the days: the story drops two dots on an idea, then moves it onto Day 2.
+      return board({
+        tabs: 4,
+        columns: [
+          {
+            cards: [
+              { stripe: IDEA, moveTo: { dx: w5 * 2, dy: 0, at: 900 } },
+              { stripe: IDEA },
+              { stripe: IDEA },
+            ],
+          },
+          { cards: [{ stripe: NOTE }, { stripe: NOTE }] },
+          { cards: [{ stripe: NOTE }] },
+          { cards: [{ stripe: NOTE }] },
+          { cards: [{ stripe: NOTE }] },
+        ],
+        overlay: [0, 1].map((i) => (
+          <circle
+            key={i}
+            className="pv-new"
+            opacity="0"
+            cx={w5 - 2.8 - i * 1.8}
+            cy="20.8"
+            r="0.7"
+            fill={ACTION}
+            style={pv({ '--pv-at': `${300 + i * 160}ms` })}
+          />
+        )),
       });
     default:
       return null;

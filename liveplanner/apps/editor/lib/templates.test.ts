@@ -56,6 +56,10 @@ describe('TEMPLATES catalogue', () => {
     'meeting-agenda',
     'personal-goals',
     'study-planner',
+    'sprint-board',
+    'client-onboarding',
+    'editorial-pipeline',
+    'trip-planner',
     // Form templates (docs/specs/030-forms/forms.md "Starting a form").
     'blank-form',
     'bug-report-form',
@@ -70,8 +74,8 @@ describe('TEMPLATES catalogue', () => {
   // catalogue) is over the listed subset. The mechanism is generic; nothing ships hidden today.
   const listed = TEMPLATES.filter((t) => !t.hidden);
 
-  it('lists exactly 38 templates', () => {
-    expect(listed).toHaveLength(38);
+  it('lists exactly 42 templates', () => {
+    expect(listed).toHaveLength(42);
   });
 
   it('ships no hidden templates', () => {

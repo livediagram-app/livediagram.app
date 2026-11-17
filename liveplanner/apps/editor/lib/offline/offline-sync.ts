@@ -89,6 +89,8 @@ async function upload(rec: OfflineProjectRecord, ownerId: string): Promise<void>
         itemTypes: rec.itemTypes ?? null,
         // The sheet store, whole (docs/specs/029-sheets/sheet-store.md "Offline projects").
         ...(rec.sheets?.length ? { sheets: rec.sheets.map(sheetAsCreate) } : {}),
+        // Its template's starter rules, kept since it was made (docs/specs/026-plan/plan-templates.md "Starter rules").
+        ...(rec.starterRules ? { starterRules: rec.starterRules } : {}),
       },
       { conversion: 'sync' },
     );

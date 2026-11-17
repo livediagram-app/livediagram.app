@@ -11,20 +11,20 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 
 ## Domain language
 
-| Term                | Means                                                                                                                                            | Never called                |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------- |
-| **item type**       | What an item is: an id, a name, a colour, a glyph and its fields                                                                                 | kind, category, template    |
-| **type catalogue**  | A project's item types, in the order the interface lists them                                                                                    | schema, config, type list   |
-| **custom field**    | A field a person adds to a type: an id, a name and a field kind                                                                                  | property, attribute, column |
-| **field kind**      | What a field holds (Text, Date, Person, Image...): the one list Add Field offers, built-in and custom fields alike                               | field type, data type       |
-| **built-in field**  | A field liveplanner knows by its own id (`assignee`, `due`, `labels`...), which the features using that role read; one per type                  | ready-made field, preset    |
-| **card type**       | The interface's name for an item type, on the Card Types panel and its button, because the interface shows items as cards                        | (no other name)             |
-| **default types**   | Project, Task, Note, Idea and Action: what a project made before card types started empty reads as, and what an agent's `add_default_types` adds | built-in types              |
-| **ready-made type** | A card type liveplanner defines in code that a board can bring: the default types and the thirteen more a template uses                          | preset type, built-in type  |
-| **base type**       | A card type another type inherits from: an ordinary type that holds cards of its own                                                             | parent type, super type     |
-| **inherited type**  | A card type that takes its fields, tabs, statuses, Default State and display from a base type, adding fields of its own                          | subtype, child type         |
-| **newer field**     | A custom field whose kind (or calculation) this editor does not know: a newer liveplanner made it. Kept, read-only                               | unknown field, broken field |
-| **card template**   | A named set of starting values a card type holds, so a new card of that type starts filled in                                                    | preset, blueprint, default  |
+| Term                | Means                                                                                                                                             | Never called                |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
+| **item type**       | What an item is: an id, a name, a colour, a glyph and its fields                                                                                  | kind, category, template    |
+| **type catalogue**  | A project's item types, in the order the interface lists them                                                                                     | schema, config, type list   |
+| **custom field**    | A field a person adds to a type: an id, a name and a field kind                                                                                   | property, attribute, column |
+| **field kind**      | What a field holds (Text, Date, Person, Image...): the one list Add Field offers, built-in and custom fields alike                                | field type, data type       |
+| **built-in field**  | A field liveplanner knows by its own id (`assignee`, `due`, `labels`...), which the features using that role read; one per type                   | ready-made field, preset    |
+| **card type**       | The interface's name for an item type, on the Card Types panel and its button, because the interface shows items as cards                         | (no other name)             |
+| **default types**   | Project, Task, Note, Idea and Action: what a project made before card types started empty reads as, and what an agent's `add_default_types` adds  | built-in types              |
+| **ready-made type** | A card type liveplanner defines in code that a board preset can bring: the default types and the thirteen more (a template makes its own instead) | preset type, built-in type  |
+| **base type**       | A card type another type inherits from: an ordinary type that holds cards of its own                                                              | parent type, super type     |
+| **inherited type**  | A card type that takes its fields, tabs, statuses, Default State and display from a base type, adding fields of its own                           | subtype, child type         |
+| **newer field**     | A custom field whose kind (or calculation) this editor does not know: a newer liveplanner made it. Kept, read-only                                | unknown field, broken field |
+| **card template**   | A named set of starting values a card type holds, so a new card of that type starts filled in                                                     | preset, blueprint, default  |
 
 ## The type catalogue
 

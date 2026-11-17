@@ -17,6 +17,7 @@ import {
   offlineLoadProject,
   offlineLoadTab,
   offlineSaveProjectMeta,
+  offlineSaveStarterRules,
   offlineSaveTab,
   OFFLINE_OWNER_ID,
   recordToProject,
@@ -102,6 +103,18 @@ describe('offline store ops (in-memory backend)', () => {
     await offlineCreateProject({ id: 'd1', name: 'Doc' }, now);
     expect((await backend.get('d1'))?.opens).toEqual(nextLocalOpens(undefined, now));
     expect((await backend.get('d1'))?.opens).toEqual({ days: ['2026-10-03'], lastOpenedAt: now });
+  });
+
+  it('keeps a template’s starter rules with the plan, from its making or Start Planning (plan-templates.md)', async () => {
+    const backend = memBackend();
+    __setOfflineBackend(backend);
+    const ask = { template: 'kanban', timeZone: 'Europe/London' };
+    await offlineCreateProject({ id: 'd1', name: 'Doc', starterRules: ask }, 100);
+    expect((await backend.get('d1'))?.starterRules).toEqual(ask);
+    await offlineCreateProject({ id: 'd2', name: 'Doc' }, 100);
+    expect(await backend.get('d2')).not.toHaveProperty('starterRules');
+    await offlineSaveStarterRules('d2', ask);
+    expect((await backend.get('d2'))?.starterRules).toEqual(ask);
   });
 
   it('saves + loads + deletes individual tabs', async () => {

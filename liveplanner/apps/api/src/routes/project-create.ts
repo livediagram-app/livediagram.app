@@ -8,6 +8,7 @@ import {
   legacyCatalogue,
   validateItemTypeCatalogue,
   type ItemTypeCatalogue,
+  provideTemplateCardTypes,
 } from '@liveplanner/items';
 import type { Tab } from '@liveplanner/project';
 import { isValidTab, migrateIncomingTab } from '@liveplanner/project';
@@ -31,6 +32,12 @@ import type { ProjectDTO } from '../types';
 import { notifyMilestone } from '../email/notifications';
 import { initPlan } from '../plan-room/plan-content';
 import { gateEdit, requireOwner, type PlanRouteContext, readBody } from './context';
+import { makeStarterRules, starterRulesAsked } from './starter-rules';
+import { TEMPLATE_CARD_TYPES } from '@liveplanner/items/template-card-types';
+
+// The Plan templates' own card types, so a create's template tabs can bring them (docs/specs/026-plan/plan-templates.md "Card
+// types a template makes"). A subpath, kept out of the editor's first load.
+provideTemplateCardTypes(TEMPLATE_CARD_TYPES);
 
 export function intentRejected(): Response {
   return json({ error: INTENT_INVALID }, { status: 400 });
@@ -48,6 +55,7 @@ export async function createProject(ctx: PlanRouteContext): Promise<Response> {
     markUsed?: unknown;
     items?: unknown;
     sheets?: unknown;
+    starterRules?: unknown;
   };
   const owner = requireOwner(ctx);
   if (owner instanceof Response) return owner;
@@ -62,6 +70,7 @@ export async function createProject(ctx: PlanRouteContext): Promise<Response> {
   // with no intent given, the first compiled tab supplies it, as the MCP derives it.
   let derivedIntent: CreationIntent | null = null;
   let templateElements: Tab['elements'] = [];
+  let template: string | null = null;
   if (Array.isArray(body.tabs)) {
     // An API token seeds Plan elements only, refused as the MCP refuses them (token-tab-elements.ts).
     const notPlan = ctx.token ? tokenTabsElementIssue(body.tabs) : null;
@@ -74,6 +83,7 @@ export async function createProject(ctx: PlanRouteContext): Promise<Response> {
     body.tabs = seed.tabs as Tab[];
     derivedIntent = seed.intent;
     templateElements = seed.templateElements;
+    template = seed.template;
   }
   // The creation intent (docs/specs/013-workspace/default-folders.md): which default folder a
   // create at the root of My Work lands in. Malformed, it refuses the create.
@@ -229,6 +239,13 @@ export async function createProject(ctx: PlanRouteContext): Promise<Response> {
   if (!clash && seedSheetCreates.length > 0) {
     const refused = await seedSheets(ctx, body.id, owner, seedSheetCreates);
     if (refused) return refused;
+  }
+  // A template's starter rules, on a signed-in Editor's genuine create (docs/specs/026-plan/plan-templates.md
+  // "Starter rules").
+  if (!clash) {
+    const asked = starterRulesAsked(body.starterRules);
+    const kind = asked?.template ?? template;
+    if (kind) await makeStarterRules(ctx, kind, owner, asked?.timeZone ?? 'UTC');
   }
   const liveDoc = await getProject(env, body.id);
   if (!clash) console.info('[projects] created', { projectId: body.id, marked: making.markUsed });

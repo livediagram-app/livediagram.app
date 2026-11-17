@@ -7,7 +7,7 @@ import {
   readForm,
   type FormDefinition,
 } from '@liveplanner/forms';
-import { READY_MADE_CARD_TYPES } from '@liveplanner/items';
+import { TEMPLATE_CARD_TYPES } from '@liveplanner/items/template-card-types';
 import type { Tab } from '@liveplanner/project';
 import { describe, expect, it } from 'vitest';
 import { PLAN_TEMPLATE_KINDS, PLAN_TEMPLATE_TABS, type BoardSpec } from './plan-template-catalogue';
@@ -15,6 +15,7 @@ import { boardSetup, planTemplateTabs } from './template-builders-plan';
 import {
   boardResponseType,
   starterWithFields,
+  starterWithout,
   templateForm,
   templateFormTarget,
 } from './template-forms';
@@ -47,14 +48,14 @@ const boardsOn = (tab: { elements: Tab['elements'] } | undefined) =>
     el.type === 'shape' && el.shape === 'plan-board' && el.planBoard ? [el.planBoard] : [],
   );
 
-const ticket = READY_MADE_CARD_TYPES.find((t) => t.id === 'ticket')!;
+const ticket = TEMPLATE_CARD_TYPES.find((t) => t.id === 'hd-ticket')!;
 
 describe('Help Desk’s Contact Form', () => {
   it('sends each message to Tickets as a Ticket, in New', () => {
     const tabs = made('help-desk');
     const form = formOf('help-desk', 'Contact Form');
     const tickets = tabs.find((t) => t.name === 'Tickets')!;
-    expect(form.destination).toEqual({ tabId: tickets.id, typeId: 'ticket', status: 'hd-new' });
+    expect(form.destination).toEqual({ tabId: tickets.id, typeId: 'hd-ticket', status: 'hd-new' });
     expect(form.sheet).toBeUndefined();
     expect(destinationProblem(form.destination, boardsOn(tickets), [ticket])).toBeNull();
   });
@@ -117,8 +118,13 @@ describe('every template form', () => {
     PLAN_TEMPLATE_TABS[kind].flatMap((spec) => (spec.form ? [{ kind, spec }] : [])),
   );
 
-  it('is Help Desk’s and Event Planner’s', () => {
+  // docs/specs/026-plan/plan-templates.md "Forms a template holds".
+  it('is every template’s whose work people outside the team send in', () => {
     expect(forms.map((f) => `${f.kind} › ${f.spec.name}`)).toEqual([
+      'kanban › Request Form',
+      'bug-triage › Bug Report',
+      'hiring-pipeline › Application',
+      'feedback-board › Request Form',
       'event-planner › RSVP',
       'help-desk › Contact Form',
     ]);
@@ -136,7 +142,10 @@ describe('every template form', () => {
       const to = PLAN_TEMPLATE_TABS[kind].find((t) => t.name === spec.form!.to)!;
       if (!to.board) continue;
       const type = boardResponseType(to.board)!;
-      const starter = starterWithFields(formStarter(spec.form!.starter), spec.form!.fields);
+      const starter = starterWithFields(
+        starterWithout(formStarter(spec.form!.starter), spec.form!.leaveOut),
+        spec.form!.fields,
+      );
       expect(buildStarter(starter, type, () => 'q-aaaaaa').type, spec.name).toBe(type);
       const form = formOf(kind, spec.name);
       expect(publishProblems(form, type), spec.name).toEqual([]);
@@ -213,6 +222,32 @@ describe('templateFormTarget', () => {
     expect(templateFormTarget(specs, sheetIds, 'Gone', ids)).toBeNull();
     expect(templateFormTarget(specs, sheetIds, 'Form', ids)).toBeNull();
     expect(templateFormTarget(specs, sheetIds, 'Rows', ['t0'])).toBeNull();
+  });
+});
+
+describe('starterWithout', () => {
+  it('leaves a starter as it is with nothing to leave out', () => {
+    const bug = formStarter('bug-report');
+    expect(starterWithout(bug, undefined)).toBe(bug);
+    expect(starterWithout(bug, [])).toBe(bug);
+  });
+
+  it('drops only the questions whose field is named, keeping the title, description and the rest', () => {
+    const left = starterWithout(formStarter('bug-report'), ['Severity']);
+    expect(left.sections[0]!.questions.map((q) => q.prompt)).toEqual([
+      'Summary',
+      'What happened?',
+      'Email',
+    ]);
+    expect(left.id).toBe('bug-report');
+  });
+
+  it('makes Bug Tracker’s and Hiring Pipeline’s forms whole, their own types holding every answer', () => {
+    const prompts = (kind: 'bug-triage' | 'hiring-pipeline', name: string) =>
+      formOf(kind, name).sections.flatMap((s) => s.questions.map((q) => q.prompt));
+    expect(prompts('bug-triage', 'Bug Report')).toContain('Severity');
+    expect(prompts('hiring-pipeline', 'Application')).toContain('Years of experience');
+    expect(prompts('hiring-pipeline', 'Application')).toContain('Portfolio or LinkedIn');
   });
 });
 

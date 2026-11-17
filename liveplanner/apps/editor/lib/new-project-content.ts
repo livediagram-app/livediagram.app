@@ -77,7 +77,7 @@ export async function newProjectContent(input: {
   const seedItems =
     templateKind && isPlanTemplateKind(templateKind)
       ? await import('@liveplanner/templates/plan-template-seeds').then((m) =>
-          m.planTemplateSeedItems(templateKind, m.seedToday()),
+          m.planTemplateSeedItems(templateKind, m.seedToday(), undefined, m.seedTimeZone()),
         )
       : [];
   if (seedItems.length) debugLog('[plan] seed cards', { cards: seedItems.length, via });

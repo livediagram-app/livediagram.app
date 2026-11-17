@@ -6,6 +6,7 @@ import { getTheme, recolourElementsForTheme } from '@/lib/themes';
 import { isFormTemplateKind, isPlanTemplateKind, type TemplateKind } from '@liveplanner/templates';
 import type { StarterId } from '@liveplanner/forms';
 import { templateTabName } from '@/lib/template-tab-name';
+import { markPendingStarterRules } from '@/lib/pending-starter-rules';
 import type { Participant } from '@/lib/identity';
 import { landTemplateOnTab, templateFollowerTabs } from './template-tab-set';
 
@@ -160,11 +161,14 @@ export function useTemplateFlow(opts: {
       }),
     );
     for (const f of followers) markTabLoaded(f.id);
+    // A template on the plan's first tab makes the plan it is: its starter rules, once the editor knows the person may
+    // (docs/specs/026-plan/plan-templates.md "Starter rules"; lib/pending-starter-rules.ts).
+    if (tabs[0]?.id === activeId) markPendingStarterRules(activeId, kind);
     // A Plan template's boards open on its worked example (docs/specs/026-plan/plan-templates.md "Example cards").
     if (isPlanTemplateKind(kind)) {
-      const { planTemplateSeedItems, seedToday } =
+      const { planTemplateSeedItems, seedToday, seedTimeZone } =
         await import('@liveplanner/templates/plan-template-seeds');
-      const seeds = planTemplateSeedItems(kind, seedToday());
+      const seeds = planTemplateSeedItems(kind, seedToday(), undefined, seedTimeZone());
       if (seeds.length) seedCards(seeds);
     }
     // The scaffold replaced the tab's content, so frame it and return to the Hand tool Plan starts on

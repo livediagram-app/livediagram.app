@@ -92,9 +92,9 @@ describe('seeded tabs compiled on create', () => {
       201,
     );
     expect((await getProject(db.env, 'd1'))?.itemTypes?.types.map((t) => t.id)).toEqual([
-      'role',
-      'candidate',
-      'onboarding-task',
+      'hp-role',
+      'hp-candidate',
+      'hp-onboarding',
     ]);
   });
 
@@ -115,7 +115,7 @@ describe('seeded tabs compiled on create', () => {
     await create([{ id: 't1', name: 'Bugs', template: 'bug-triage' }], { itemTypes: own });
     expect((await getProject(db.env, 'd1'))?.itemTypes?.types.map((t) => t.id)).toEqual([
       'task',
-      'bug',
+      'bt-bug',
     ]);
     await handleProjects(
       makeTestRouteContext('POST', '/api/projects', {
@@ -189,7 +189,12 @@ describe('compileSeededTabs', () => {
       { name: 'C', template: 'kanban' },
       'not a tab',
     ];
-    expect(compileSeededTabs(tabs, 'd1')).toEqual({ tabs, intent: null, templateElements: [] });
+    expect(compileSeededTabs(tabs, 'd1')).toEqual({
+      tabs,
+      intent: null,
+      templateElements: [],
+      template: null,
+    });
   });
 
   it("keeps a compiled tab's other fields, and themes it", () => {

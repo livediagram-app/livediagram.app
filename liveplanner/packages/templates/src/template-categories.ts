@@ -119,6 +119,7 @@ type BlankKind = 'blank' | 'blank-plan' | 'blank-spreadsheet' | 'blank-form';
 const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCategory> = {
   // Customer Support.
   'help-desk': 'support',
+  'client-onboarding': 'support',
   'contact-form': 'support',
   'feedback-form': 'support',
   // Education.
@@ -140,6 +141,7 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'job-application-form': 'hiring',
   // Marketing.
   'content-calendar': 'marketing',
+  'editorial-pipeline': 'marketing',
   'product-launch': 'marketing',
   // Meetings: the sessions a team runs together.
   'team-retro': 'meetings',
@@ -148,8 +150,10 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'weekly-planner': 'personal',
   'habit-tracker': 'personal',
   'personal-goals': 'personal',
+  'trip-planner': 'personal',
   // Product and Engineering.
   'project-planner': 'product',
+  'sprint-board': 'product',
   'bug-triage': 'product',
   'feedback-board': 'product',
   'bug-report-form': 'product',
@@ -171,6 +175,7 @@ export const TEMPLATE_ALSO_IN: Readonly<
 > = {
   // Any team plans its projects and runs retros and meetings, not only product teams.
   'project-planner': ['planning'],
+  'sprint-board': ['planning'],
   'team-retro': ['planning'],
   'meeting-agenda': ['planning'],
   'weekly-planner': ['planning'],
@@ -179,6 +184,10 @@ export const TEMPLATE_ALSO_IN: Readonly<
   'product-launch': ['product'],
   // What customers ask for and report reaches support first.
   'feedback-board': ['support'],
+  // Getting a new client live is sales' handover as much as support's.
+  'client-onboarding': ['sales'],
+  // A trip is an occasion to plan, as an event is.
+  'trip-planner': ['events'],
   'bug-report-form': ['support'],
   'feature-request-form': ['support'],
   // A forecast is money too.
