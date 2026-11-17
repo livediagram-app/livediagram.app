@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { clusterRowLayout } from './call-dock-row';
 
 describe('clusterRowLayout', () => {
-  it('lays a phone row out in three columns, the dock in the middle and the buttons unwrapped on the right', () => {
+  it('lays the walking row out in three columns, the dock in the middle and the buttons unwrapped on the right', () => {
     const { row, buttons } = clusterRowLayout(true);
     for (const cls of ['left-4', 'grid', 'grid-cols-[1fr_auto_1fr]', 'items-end'])
       expect(row.split(' ')).toContain(cls);

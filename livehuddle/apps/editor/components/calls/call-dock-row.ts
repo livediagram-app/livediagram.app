@@ -1,6 +1,6 @@
 // The bottom-right cluster's row with the Call dock in it (docs/specs/008-canvas/avatar-mode.md "The Call dock",
-// "Where"; owner, 2026-11-07, Work Tracker #642): on a phone the dock sits on the zoom buttons' bottom line rather than
-// a row above them. The row is three columns: the dock in the middle one, centred on the screen while there is room,
+// "Where"; owner, 2026-11-07, Work Tracker #642, for a phone; Work Tracker 1041, at every width): the dock sits on the
+// zoom buttons' bottom line rather than a row above them or floating over the canvas on its own. The row is three columns: the dock in the middle one, centred on the screen while there is room,
 // and the cluster's buttons, unwrapped, in the right one. A `1fr` column never gets less than its content needs, so
 // when the buttons need more than half of what the dock leaves, the left column gives up the difference and the dock
 // moves left: it never covers a button.

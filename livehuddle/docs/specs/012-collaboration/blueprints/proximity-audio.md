@@ -216,7 +216,7 @@ held frames for one step. The editor's store is memory only and empties on leavi
 
 ## Presentation and UX
 
-- The call group, on the Call dock at the bottom centre (`components/calls/CallStripGroup.tsx`, placed by `CallDock.tsx`; no longer on `AvatarPalette.tsx`):
+- The call group, on the Call dock along the bottom, in the cluster's row (`components/calls/CallStripGroup.tsx`, placed by `CallDock.tsx`; no longer on `AvatarPalette.tsx`):
   while connecting a greyed **Connecting…**, on failure a warn **Retry** (title Audio Unavailable), otherwise
   **Mute**/**Unmute** (mic, struck mic when muted, amber struck mic when blocked) with the indicator; no Join or Leave.
   With no call, `PreviewMicSegment` (Muted, then Mic: Only You; the dock gives no reason why there is no call); the mic button's level fill (0 to 4, gliding) replaced the live ring. Say's tinted strip buttons

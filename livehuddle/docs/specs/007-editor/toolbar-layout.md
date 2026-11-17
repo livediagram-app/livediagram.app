@@ -30,13 +30,13 @@ flyout of its tiles:
 
 **While walking** the strip is the [avatar palette](../008-canvas/avatar-mode.md#the-avatar-palette) instead, in the
 same place and built from the same parts: the character's look, Actions and React on the right, and Say where Search
-sits. The **call controls are not on it**: they sit on the **Call dock**, a card at the bottom centre of the canvas
+sits. The **call controls are not on it**: they sit on the **Call dock**, a card along the bottom of the canvas, in the bottom-right cluster's row and centred while there is room
 (the microphone, the camera, Share Screen; the call joins by walking, no Join or Leave; owner 2026-11-07: "Audio, Camera and Share buttons
 should be moved from the palette and put as buttons in the bottom, but for livehuddle, center them"). An Editor's
 avatar palette starts with the same Edit | Walk toggle, Walk on, ahead of the look, so the way back to building is where it was; a
 Participant's and a Viewer's has none ([Always walking](../013-workspace/share-roles.md#always-walking)). The building
 strip comes back, as it was, when the walk ends. The dock's buttons are named beside
-their glyph on a desktop (Mic, Camera, Share) and glyphs alone on a phone, their full name and state in
+their glyph in a desktop window 1024 px wide and up (Mic, Camera, Share) and glyphs alone on a phone or a narrower window, their full name and state in
 the hover card ("Mic: Live", "Camera: Off"); with no call to offer (a space kept in This Browser) the microphone stays as a local preview, titled Only You ([The Call dock](../008-canvas/avatar-mode.md#the-call-dock)). The building strip carries no call controls: a call rides Avatar
 mode, so there is none to control while building
 ([Who is in a call](../012-collaboration/proximity-audio.md#who-is-in-a-call)).
