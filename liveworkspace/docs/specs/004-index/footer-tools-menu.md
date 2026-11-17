@@ -97,7 +97,7 @@ between tools, never in a modal of its own on top of the editor.
   (Automations' rule builder) asks first, as its own close did. Escape steps back one level (a confirm or a menu open
   in the tool first, a snapshot's in-place confirm among them), then closes Tools from the list. The close shuts Tools from any level.
 - **Sizes.** Every tool takes Tools' own width, 480px (owner, 2026-11-17), so the popover's sides never move. Each view takes
-  its own height, never under **300 px** (owner, 2026-11-17; a shorter screen caps it) (Email to Board is short, History tall), the popover easing smoothly to it whenever it grows or shrinks. A press outside closes Tools, except for a tool marked to stay open (livediagram's Slide Deck, used alongside the canvas), which only its close button or Escape shuts
+  its own height, never under **325 px** (owner, 2026-11-17; a shorter screen caps it) (Email to Board is short, History tall), the popover easing smoothly to it whenever it grows or shrinks. A press outside closes Tools, except for a tool marked to stay open (livediagram's Slide Deck, used alongside the canvas), which only its close button or Escape shuts
   (owner, 2026-11-17), up to the room above the button; past that it scrolls inside under the band.
 - **Motion** (owner, 2026-11-17). Going into a tool slides its view in from the right, as a phone opens a menu; going
   back slides the list in from the left (`animate-view-forward` / `-back`, short motion), while the popover's height
