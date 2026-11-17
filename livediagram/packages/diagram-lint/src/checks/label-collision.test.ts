@@ -143,6 +143,22 @@ describe('label-collision', () => {
     expect(f!.fix).toMatch(/^set a->b labelOffset=\{"t":0\.\d+,"offset":0\}$/);
   });
 
+  it('lets a label sit on a backdrop panel, never on a labelled box in it', () => {
+    // A quadrant panel (unlabelled, wholly holding the boxes) is behind the arrow and its label, as on a matrix.
+    const panel = box('p', -40, -40, { width: 600, height: 200, label: '' });
+    const go = arrow('x', 'a', 'b', ['e', 'w'], { label: 'go' });
+    expect(of(lint(tabOf(panel, box('a', 0, 0), box('b', 360, 0), go)), 'label-collision')).toEqual(
+      [],
+    );
+    // A labelled panel is a box like any other: its label is content, and a plate over it covers it.
+    const named = box('p', -40, -40, { width: 600, height: 200, label: 'Quadrant' });
+    expect(
+      of(lint(tabOf(named, box('a', 0, 0), box('b', 360, 0), go)), 'label-collision').map(
+        (f) => f.refs,
+      ),
+    ).toEqual([['x', 'p']]);
+  });
+
   it('stays quiet for a label clear of every box, and an arrow without one', () => {
     const labelled = arrow('x', 'a', 'b', ['e', 'w'], { label: 'ok' });
     expect(of(lint(tabOf(box('a', 0, 0), box('b', 500, 0), labelled)), 'label-collision')).toEqual(

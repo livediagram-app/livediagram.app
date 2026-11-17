@@ -74,6 +74,15 @@ with no gesture of its own (the Map arriving with the canvas's first content, Co
 a timer, and never while the chrome is still. A paste into a blank canvas showed the panel and the Map in the same
 moment; placed before the Map existed, the panel sat over its header.
 
+**The selection's toolbar yields to it.** An element at the canvas's left edge sits beside the panel, and its
+toolbar (z above the panels) was drawn over the panel's swatches. The toolbar treats the panel as chrome
+(`data-toolbar-obstacle`): it flips to the element's other side when that side is clear, and when both sides cover
+the panel it slides sideways, the shorter way past it that stays inside the canvas
+([Selection popover](canvas-and-palette.md#selection-popover)). The panel keeps its spot, so it never jumps as a
+selection moves; only the toolbar, which already re-places as the selection or the view changes, gives way. The
+panel mounts and takes its spot a beat after a fresh selection's toolbar has placed, so it tells the toolbar when it
+arrives, moves, resizes or goes (`useToolbarObstacle`, once a frame at most), and the toolbar places itself again.
+
 - **Not on phones.** A phone's canvas has no spare edge, and the context menu covers the same
   choices. The panel shows from the `sm` breakpoint up.
 - **It stands down** while an element or multi-selection context menu is open (two style surfaces at
@@ -82,7 +91,7 @@ moment; placed before the Map existed, the panel sat over its header.
 
 ### Turning it off
 
-**Settings › Panels › Quick Style › Enable Quick Style Panel** (`quickStylePanelEnabled`,
+**Settings › Panels › Quick Appearance › Enable Quick Style Panel** (`quickStylePanelEnabled`,
 [User preferences](../007-editor/user-preferences.md)) stops the panel appearing. Style memory keeps
 working from the context menu.
 
@@ -409,3 +418,23 @@ counted as Custom Swatches in the dashboard's Look & Feel stack.
 ## Help
 
 [Quick Style Panel](/help/canvas/quick-style-panel/) (Canvas).
+
+## Condensed layout (owner, 2026-11-16)
+
+The panel keeps every control but takes less room: 24px targets, tighter gaps, and the button rows paired two to a
+line (Stroke style then Stroke width, Text alignment beside Icon alignment; a lone row takes the whole line). Each
+button row sits on its own grey segmented track with the chosen option raised in white, so two rows side by side read
+as two controls. Clear Styles closes the panel under a rule, without an Actions title.
+
+## Clear of the selection (owner, 2026-11-16)
+
+The panel never covers what it styles: when its spot at the left edge would overlap the selected element, it sits at
+the right edge instead (placed the same way, clear of the chrome). It moves back once the selection is clear of the
+left spot again.
+
+## Kind tools (owner, 2026-11-16)
+
+With one element selected that has verbs of its own kind (a mind node's Add Child and Add Sibling, a flowchart step's
+Add Step, Add Branch, Step Type and Lane, a relationship's cardinality), the panel shows them under its style rows in a
+**Tools** row, the same buttons as the element menu's top bar (element-menu-quick-bar.md "Kind tools"), above Clear
+Styles. Save to Library stays in the menu only.

@@ -10,5 +10,6 @@ export function namedRuleBody<T>(body: T, state: RulesState): T {
     types: state.plan.types,
     people: state.list.people ?? [],
     tabs: state.plan.tabs ?? [],
+    boards: state.list.boards ?? [],
   });
 }

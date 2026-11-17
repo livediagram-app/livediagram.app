@@ -19,6 +19,7 @@ import {
   statusRedirect,
   wwwRedirect,
 } from '@liveworkspace/sites/workspace-proxy';
+import { httpsRedirect } from '@liveworkspace/sites/https-redirect';
 import { siteOfApp } from '@liveworkspace/sites';
 import { routeCommunity, type CommunityRouteSite } from '@liveworkspace/community-site/router';
 import { createOEmbed } from '@liveworkspace/media/oembed';
@@ -251,6 +252,10 @@ async function route(request: Request, env: Env): Promise<Response> {
   // only (no DEPLOY_ENV): `wrangler dev` hands the router its production host in request.url.
   const www = env.DEPLOY_ENV ? null : wwwRedirect(request, url, redirectedPath);
   if (www) return www;
+  // Plain HTTP goes to HTTPS (docs/specs/016-platform/router-app.md "Only over HTTPS"): every other request on one of
+  // the public hosts, the same host, path and query, 301 (308 for a method with a body). Staging too; never locally.
+  const https = env.DEPLOY_ENV === 'local' ? null : httpsRedirect(request, url);
+  if (https) return https;
   // Automatically Open Explorer (liveworkspace/docs/specs/004-index/one-explorer.md "Opening on the Explorer"): the
   // homepage, arrived at from outside the site by a signed-in person whose switch is on, opens their Explorer. A
   // header test on the request's cookies, no fetch; `/?home` always shows the homepage.

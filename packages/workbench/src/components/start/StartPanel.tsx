@@ -38,6 +38,7 @@ import { RailFoot, RailFootButton, type RailFootColours } from './RailFoot';
 import { isStartCardKey, nextCardIndex } from './start-card-keys';
 import { noteStartPanelLeft, startPanelJustLeft } from './start-panel-open';
 import { takeStartQuery } from './start-query';
+import { useStartEscape } from './useStartEscape';
 import { StartHeaderBand } from './StartHeaderBand';
 import { StartTitleMark } from './StartTitleMark';
 import { useStartHeaderTheme } from './useStartHeaderTheme';
@@ -147,6 +148,10 @@ export function createStartPanel<
       if (window.matchMedia?.('(pointer: fine)').matches && focusIsFree())
         searchInput.current?.focus({ preventScroll: true });
     }, []);
+    // Escape with the focus on the page or the canvas closes a start that can close too, ahead of the canvas's own
+    // Escape while it shows (start-diagramming.md "Search"); not while it has stepped aside for a palette popover.
+    const panel = useRef<HTMLElement>(null);
+    useStartEscape(panel, paletteOpen ? undefined : onClose);
     // On a phone the panel is a sheet risen from the bottom edge; one that can close drags down to close (Dialog's
     // phoneSheet, BottomSheet), one that cannot settles back.
     const sheet = useSheet(onClose ?? STAYS_OPEN, true, onClose ? undefined : STAYS_OPEN);
@@ -322,9 +327,11 @@ export function createStartPanel<
         style={{ '--start-floor': `${tabBarFloor}px` } as CSSProperties}
       >
         <section
+          ref={panel}
           aria-labelledby={titleId}
           // Escape closes a start that can close, as its × does, once the search has nothing to clear (the search
-          // box takes the first Escape) and outside an open menu (the mode menu's Escape closes only the menu).
+          // box takes the first Escape) and outside an open menu (the mode menu's Escape closes only the menu). With
+          // the focus outside it (the page, after a press on the panel's background, or the canvas), useStartEscape.
           onKeyDown={(e) => {
             if (e.key !== 'Escape' || !onClose || e.defaultPrevented) return;
             if ((e.target as HTMLElement).closest?.('[role="menu"]')) return;
@@ -606,11 +613,8 @@ export function createStartPanel<
             <footer
               // The new version prompt stands above it on a phone (start-panel-open.ts START_FOOTER_SELECTOR).
               data-start-footer=""
-              className={
-                config.hideEmptyFooter
-                  ? 'shrink-0 border-t px-4 py-1.5 empty:hidden sm:px-6'
-                  : 'shrink-0 border-t px-4 py-1.5 sm:px-6'
-              }
+              // Gone while what it holds draws nothing (no Sync to Server switch), so no rule sits over nothing.
+              className="shrink-0 border-t px-4 py-1.5 empty:hidden sm:px-6"
               style={{ borderColor: palette.border }}
             >
               {footer(palette)}

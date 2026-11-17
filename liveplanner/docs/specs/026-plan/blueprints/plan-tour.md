@@ -1,6 +1,6 @@
 # Plan tour blueprint
 
-Derived from [Plan tour](../plan-tour.md). The footer's Start Tour button, the offer ranks and the one-tour-at-a-time
+Derived from [Plan tour](../plan-tour.md). The footer's Get Started button, the offer ranks and the one-tour-at-a-time
 store live once in `@liveworkspace/workbench/components/tour` and `apps/editor/lib/tour-active.ts`
 ([Editor tours](../../007-editor/editor-tour.md)). The three tracks here do not use the step engine: they run
 missions, checked from live state, in a mission strip of their own.

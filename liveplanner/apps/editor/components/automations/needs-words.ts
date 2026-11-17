@@ -17,6 +17,7 @@ const GONE: Readonly<Record<GoneKind, readonly [one: string, many: string]>> = {
   person: ['Someone', 'people'],
   filter: ['A saved filter', 'saved filters'],
   form: ['A Form tab', 'Form tabs'],
+  board: ['A board', 'boards'],
   webhook: ['A webhook', 'webhooks'],
   card: ['A card', 'cards'],
 };

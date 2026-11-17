@@ -162,9 +162,11 @@ export function afterCommentPosted(
     ctx.waitUntil?.(
       notifyNewComment(
         ctx.env,
-        { id: doc.id, ownerId: doc.ownerId, name: doc.name },
+        { id: doc.id, ownerId: doc.ownerId, name: doc.name, teamId: doc.teamId },
         comment.authorName,
         comment.ai === true,
+        // A comment that @-mentions the owner leaves them the mention email alone (email/comment-owner-email.ts).
+        [comment],
       ),
     );
 }

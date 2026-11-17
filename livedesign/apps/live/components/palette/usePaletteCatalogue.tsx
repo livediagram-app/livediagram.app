@@ -1,4 +1,5 @@
 import type { PaletteTileDef } from './palette-tile-defs';
+import { libraryLast } from '@liveworkspace/workbench/components/palette/library-last';
 import { useLibrary } from '@liveworkspace/workbench/components/library/LibraryProvider';
 import type { LibraryInsertItem } from '@liveworkspace/workbench/hooks/canvas/useLibraryItemInsert';
 import type { PaletteKind } from '@/lib/palette-kind';
@@ -219,21 +220,25 @@ export function usePaletteCatalogue({
   const markers = useLogoMarkerTiles(pages && paletteKind === 'logo');
   // The Library (liveworkspace/docs/specs/006-media/libraries.md) only where the editor has one.
   const hasLibrary = useLibrary() !== null;
-  const categories = participant
-    ? participantPaletteCategories()
-    : paletteCategoriesFor(editorMode, pages ? { pagesKind: paletteKind } : {})
-        .filter((c) => hasLibrary || c.id !== 'library')
-        .map((c) =>
-          c.id === 'draw' && markers.length
-            ? {
-                ...c,
-                tiles: [
-                  ...withGroupEnd(c.tiles ?? []),
-                  ...(fillTile ? [...withGroupEnd(markers), fillTile] : markers),
-                ],
-              }
-            : c,
-        );
+  // The Library always last (library-last.ts).
+  const categories = libraryLast(
+    participant
+      ? participantPaletteCategories()
+      : paletteCategoriesFor(editorMode, pages ? { pagesKind: paletteKind } : {})
+          .filter((c) => hasLibrary || c.id !== 'library')
+          .map((c) =>
+            c.id === 'draw' && markers.length
+              ? {
+                  ...c,
+                  tiles: [
+                    ...withGroupEnd(c.tiles ?? []),
+                    ...(fillTile ? [...withGroupEnd(markers), fillTile] : markers),
+                  ],
+                }
+              : c,
+          ),
+    'library',
+  );
   const tabs = paletteCategoryTabs({
     insertLibraryItem,
     categories,

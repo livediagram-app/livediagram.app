@@ -70,6 +70,8 @@ work. A rule does it every time, at once, and says that it did.
   `?automations=1` opening the screen) and **Cancel**. After signing in the screen opens on the
   rules. **Only an Editor Can See Rules** is for a signed-in reader the api refuses, never a guest. Run Rule waits for
   sign-in too.
+- A guest on a plan in Browser Storage needs both: Tools badges the row **Sign In** then **Sync Plan**, and the gate
+  asks for the sign-in first (owner, 2026-11-16), coming back to Sync Plan's gate.
 - **Typed-in email addresses** (Send Email to addresses, [Typed-in addresses](#typed-in-addresses)) are an Editor's
   like any action: only a signed-in Editor of the whole plan, in person or through their API token, saves a rule that
   holds them. Participants, Viewers, guests and share-link visitors never see or set them.
@@ -108,6 +110,8 @@ work. A rule does it every time, at once, and says that it did.
 | ------------------------ | ---------------------------------------------------------------------------------------------- | --------------------------------- |
 | **Card Created**         | a card is added, by anyone or anything (a person, Duplicate, an import, a Repeat, an agent)    | the column it lands in (optional) |
 | **Form Response**        | a [Form](../030-forms/forms.md) response makes a card                                          | which Form tab (optional)         |
+| **Email Received**       | an email to a board's address ([Email to Board](email-to-board.md)) makes a card               | the board, and From: an address   |
+|                          | ([Email Received](#email-received))                                                            | or a domain (both optional)       |
 | **Card Moved**           | a card's status changes (a card of one of the picked card types, when some are picked)         | Card Types (optional: none picked |
 |                          |                                                                                                | is any type), From columns, To    |
 |                          |                                                                                                | columns                           |
@@ -321,6 +325,41 @@ Finished**). Their engineering and their guarantees (once per delivery, never ba
   Pull Request Merged rule, open in the builder as any draft is (with Connect GitHub in its panel while the plan is
   not connected).
 
+### Email Received
+
+A board with an [Email to Board](email-to-board.md) address turns each email into a card. **Email Received** hears
+those cards alone, so a rule can triage what comes in by mail (a label, an assignee, a reply in a comment) without
+touching cards people add by hand.
+
+- **Which board.** **Board** (optional): one of the plan's Plan boards, by the board itself (its element id), so two
+  boards on one tab are told apart. **Any Board** (the default) hears every address. A board the plan has since
+  deleted reads "A board no longer here" and the rule **Needs Attention** ("A board is gone"); until it is changed,
+  the rule hears nothing, never every board. Only boards whose address is turned on ever make an email card; the
+  panel says so ("Only boards with Email to Board turned on get email.").
+- **From** (optional): one value, an exact address (`ana@example.com`) or a whole domain (`@example.com`, or
+  `example.com`), compared with the sender after trimming, any case. A domain matches only that domain
+  (`ana@example.com`, not `ana@mail.example.com`). The rule keeps it trimmed and lower case, a domain as
+  `@example.com`; anything that is neither (`ana@`, `example`, a space inside) is refused on save (400 `invalid_rule`
+  at `trigger.sender`, "trigger.sender must be an email address or a domain"). Empty hears every sender the board takes.
+- **`{{from}}`** reads the sender's bare address (`ana@example.com`, never a display name), offered under **Insert a
+  Value**'s **Email** group as **From Email**, only in an Email Received rule (elsewhere `automation_value_unknown`).
+  It fills any text a rule writes: a comment, a card title, a field, a checklist item, Send Email's subject and body,
+  an outgoing message. It is never a recipient: Send Email's **To** takes typed-in addresses only as written
+  ([Typed-in addresses](#typed-in-addresses)), so a rule can't mail whoever wrote in, and its rules (who may add an
+  address, the 50 a day, Unsubscribe) stay as they are. A run a Wait holds keeps the sender for the rest of the rule.
+- **Nobody of the plan behind it.** An email card is made by its sender, who is no Editor, Participant or agent of
+  the plan: **Who Did It** conditions, **Assign whoever triggered**, **Send Email to whoever triggered** and **Mention
+  whoever triggered** are refused on an Email Received rule (`automation_condition_unsupported`), as for an Incoming
+  Webhook, and the builder leaves them out. `{{person}}` reads the sender's address, as the card's Created by does.
+- **Once per email card.** One email makes one card and one event on the plan's queue (the same one Card Created
+  hears), so each rule runs at most once for it: an Email Received rule once and a Card Created rule once. A rule has
+  one trigger, so no rule runs twice.
+- The Audit Trail's first line reads "An email from ana@example.com made the card".
+- **Test on a Card** runs the rule on the chosen card as if an email had made it, from nobody: `{{from}}` reads
+  nothing and `{{person}}` reads "Email".
+- **Agents** write it as `{"kind":"email_received","board"?:board,"sender"?:"ana@example.com" or "@example.com"}`,
+  the board by its title or id ([The MCP tools](#the-mcp-tools)); `list_rules` lists the plan's boards.
+
 #### The GitHub view
 
 The Automations screen's way to the plan's GitHub connection, inside the dialog (never the plan's settings):
@@ -370,7 +409,8 @@ The Automations screen's way to the plan's GitHub connection, inside the dialog 
 - On a phone the view fills the sheet and its buttons stack.
 
 - A Form Response also counts as Card Created: a rule on Card Created hears form cards too, a Form Response rule
-  hears only them.
+  hears only them. An Email Received does too: Card Created hears email cards, Email Received hears only them, and a
+  form's card is never an email's.
 - Card Moved's **Card Types** narrow it to cards of those types (the card's type once the write lands); none picked
   hears every type, and a rule saved before Card Types existed reads as none picked. A picked type the plan deletes
   reads as gone ("A card type no longer here") and the rule **Needs Attention**, as a gone column does; until it is
@@ -846,6 +886,8 @@ hands focus back to the field, the caret after the value:
 |                                | messages; [GitHub triggers](#github-triggers))         |
 | `{{pull_request.number}}`      | its number, `#42`                                      |
 | `{{pull_request.url}}`         | its address on GitHub                                  |
+| `{{from}}`                     | an Email Received rule's sender, the bare address      |
+|                                | ([Email Received](#email-received))                    |
 
 - A value the rule cannot fill (no assignee) reads as nothing. A value the builder does not know is refused on save
   with its name (`automation_value_unknown`).
@@ -912,12 +954,11 @@ time it is put away or comes back ([one-explorer-contracts.md](../../../../livew
 
 ### The footer button
 
-**Automations** sits in the editor's footer cluster between **Search** and **Settings**
-([Editor app](../007-editor/editor-app.md)), with a lightning-bolt icon, labelled from `sm` up like its neighbours,
-icon-only on a phone (a 40 px target). Its hover card reads **Automations**: "Rules that move, assign and tell people
-about cards for you." It is drawn only for an Editor on a plan saved to an account. A badge beside it counts the
-rules that are on (none on, no badge), and its name says so ("Automations, 3 on"). A rule that paused itself turns
-the badge amber, or with no badge puts a small amber dot on the icon, until it is resumed or turned off. It opens the Automations screen and sends
+**Automations** is the first row of the editor footer's **Tools** menu ([The footer's Tools
+menu](../../../../liveworkspace/docs/specs/004-index/footer-tools-menu.md), left of **Search**), with a lightning-bolt
+icon. It is there only for an Editor on a plan saved to an account. A badge at the row's right edge counts the rules
+that are on (none on, no badge). A rule that paused itself turns the badge amber and puts a small amber dot on the
+Tools button, whose name then says so ("Tools, a rule is paused"), until it is resumed or turned off. It opens the Automations screen and sends
 `UI · Opened · Automations`.
 
 ### The Automations screen
@@ -1102,7 +1143,7 @@ place and the focus with it).
 - The **When** panel opens on its **Trigger** field: the trigger's icon, name and what it hears, and **Change**,
   which opens the **Pick a Trigger** picker, drawn as the Add an Action picker is (the dialog hero header with the
   Automations screen's art and bolt, search "Find a trigger", the rail or chips, tiles with a picture that plays on hover), in three
-  groups, each one thing: **Cards** (Card Created, Form Response, Card Moved, Field Changed, Card Archived, Card
+  groups, each one thing: **Cards** (Card Created, Form Response, Email Received, Card Moved, Field Changed, Card Archived, Card
   Restored, Checklist Completed, Column Over Limit, Run from a Card), **Comments** (Comment Added, All Threads
   Resolved, Someone Mentioned), **Links** (Card Unblocked, Related Cards Done), **Times** (Scheduled, Due In,
   Overdue, Card Stuck), **GitHub** (Pull Request Opened, Pull Request Merged, Pull Request Closed, Checks Finished;
@@ -1255,7 +1296,9 @@ same words.
   ("Done") for a status, a **card type** by name ("Bug"; Card Moved's `types` too), a **field** by its name ("Completed On", "Due"), a
   **person** by name ("Ana Costa", exactly as `list_rules` lists the plan's people, case and spacing aside) wherever a
   rule takes one (Mention, Send Email, Assign and its people in turn, a Set Field of the Assignee or a Person field,
-  the Who Did It condition and the Mentioned trigger), and a **Form tab** by its name. An id is kept as it is, and a
+  the Who Did It condition and the Mentioned trigger), and a **Form tab** by its name. Email Received's **board**
+  by its title (or id), as `list_rules` lists the plan's boards (a title two boards share is kept as written and
+  needs attention, as a shared person's name does). An id is kept as it is, and a
   name the plan lacks is kept as written, so the rule saves and its list line says it needs attention, as a rule
   naming something gone does. A name two of the plan's people share is kept as written too, never guessed at: the
   rule needs attention until the agent names the one it means by id.
@@ -1301,8 +1344,12 @@ part at fault, the words, and the command to run next).
 
 ## Copies, exports and deletes
 
-- A **duplicated** plan keeps its rules, each as it was (on or off), its Audit Trail and counts empty. A plan made from
-  a template has none.
+- A **duplicated** plan keeps its rules, each as it was (on or off), its Audit Trail and counts empty.
+- A plan made from a template with a board starts with that template's **starter rules**
+  ([Plan templates](plan-templates.md#starter-rules)): Templates gallery rules filled from its columns and types, on
+  when they need nothing picked, off until people are picked. None sends an email or calls a webhook. They are made
+  for a signed-in person's cloud plan, and for a plan in This Browser the moment it is saved to the cloud; a guest's
+  plan starts with none.
 - An **export** of a plan (its file) carries its rules (who made and last changed each by name and colour, without account ids); an import of that file brings them back off, each checked as
   a save checks it against the file's card types: a rule a save would refuse (one that does not read, a name an
   earlier one holds, a Field Changed on a field it never hears, a Checkbox set to anything but Yes or No) is left

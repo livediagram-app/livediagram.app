@@ -1,9 +1,11 @@
 // `node-isolated` (warning): a shape no arrow touches, on a tab that is otherwise a graph: at least two
 // connected boxes, at least half of all boxes (LN11). An unlabelled shape is decoration (a key's sample, the card
-// behind a block of text), never a node left out.
+// behind a block of text), and a marker (a badge, a step number, a sticker or an icon marking a spot on a card) is
+// part of what it marks, never a node left out.
 
 import type { BoxedElement, ElementId } from '@livediagram/document';
 import { createRingTest } from '@liveworkspace/diagram-lint/ring';
+import { isMarker } from '../boxes';
 import { LINT_GRAPH_MIN_CONNECTED, LINT_GRAPH_MIN_SHARE } from '../constants';
 import { refOf } from '../context';
 import { fixes } from '../fixes';
@@ -35,6 +37,7 @@ export const nodeIsolated: Check = (ctx) => {
         box.type === 'shape' &&
         !touched.has(box.id) &&
         (box.label ?? '').trim() !== '' &&
+        !isMarker(box) &&
         !isFurniture(box),
     )
     .filter((box) => !ringed(box))

@@ -1,5 +1,5 @@
 import type { Tab } from '@livediagram/document';
-import { hasNewComments } from '../comments';
+import { newCommentsBy } from '../comments';
 import { emailEnabled } from '../email/client';
 import { notifyNewComment } from '../email/notifications';
 import { pushItemOf, pushNewComments } from '../liveworkspace/push';
@@ -44,16 +44,23 @@ async function run(
   // The edit itself reaches History from the canvas (document-room.ts records whoever wrote).
   const previous = w.stored?.elements ?? [];
   const work: Promise<unknown>[] = [];
-  if (
-    emailEnabled(env) &&
-    w.author.id !== w.document.ownerId &&
-    hasNewComments(w.next.elements, previous, w.author.id)
-  ) {
+  const added =
+    emailEnabled(env) && w.author.id !== w.document.ownerId
+      ? newCommentsBy(w.next.elements, previous, w.author.id)
+      : [];
+  if (added.length > 0) {
     work.push(
       notifyNewComment(
         env,
-        { id: w.document.id, ownerId: w.document.ownerId, name: w.document.name },
+        {
+          id: w.document.id,
+          ownerId: w.document.ownerId,
+          name: w.document.name,
+          teamId: w.document.teamId,
+        },
         w.author.name,
+        false,
+        added,
       ),
     );
   }

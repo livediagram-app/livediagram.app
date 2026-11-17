@@ -29,6 +29,7 @@ async function pick(kind: TemplateKind): Promise<ReturnType<typeof vi.fn>> {
       setIdentityPromptOpen: vi.fn(),
       requestFit: vi.fn(),
       putToolDown,
+      appendSlides: vi.fn(),
     }),
   );
   await act(async () => {

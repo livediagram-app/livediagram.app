@@ -10,6 +10,7 @@ import {
   defaultTypesToAdd,
 } from './brought-types';
 import { typeCardDisplay } from './card-display';
+import { CARD_TEMPLATES_BYTES, cardTemplatesBytes, readCardTemplates } from './card-templates';
 import {
   ITEM_TYPES_MAX,
   READY_MADE_DEFAULT_STATE_NAMES,
@@ -47,6 +48,39 @@ describe('ready-made card types', () => {
         expect(t.fields).toContain(c.id);
         if (c.kind === 'card') expect(known.has(c.linkType!)).toBe(true);
       }
+    }
+  });
+
+  // docs/specs/026-plan/plan-templates.md "Card templates the ready-made types hold".
+  it('hold card templates a type accepts, on the eight that file the same cards again and again', () => {
+    const holding = READY_MADE_CARD_TYPES.filter((t) => t.templates?.length).map((t) => t.id);
+    expect(holding).toEqual([
+      'bug',
+      'story',
+      'request',
+      'content',
+      'candidate',
+      'onboarding-task',
+      'deal',
+      'ticket',
+    ]);
+    for (const t of READY_MADE_CARD_TYPES) {
+      if (!t.templates) continue;
+      const read = readCardTemplates(t.templates, t, t.id, 'refuse');
+      expect(read, t.id).toEqual(t.templates);
+      for (const tp of t.templates) {
+        expect(tp.fields['title'], `${t.id} ${tp.name}`).toBeUndefined();
+        expect(Object.keys(tp.fields).length, `${t.id} ${tp.name}`).toBeGreaterThan(0);
+      }
+    }
+    expect(cardTemplatesBytes(READY_MADE_CARD_TYPES)).toBeLessThan(CARD_TEMPLATES_BYTES);
+  });
+
+  it('give the types a template’s form feeds an Email, as a Ticket has', () => {
+    for (const id of ['request', 'bug', 'candidate', 'ticket']) {
+      const t = READY_MADE_CARD_TYPES.find((b) => b.id === id)!;
+      expect(t.fields, id).toContain('f-email');
+      expect(t.custom, id).toContainEqual({ id: 'f-email', label: 'Email', kind: 'email' });
     }
   });
 

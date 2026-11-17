@@ -48,7 +48,6 @@ describe('palette layouts', () => {
       'layout',
       'icons',
       'technology',
-      'media',
     ]);
   });
 
@@ -90,7 +89,6 @@ describe('palette layouts', () => {
       'collab-mode',
       'collab-navigate',
       'icons',
-      'media',
       'data',
     ]);
     expect(paletteLandingCategory('workshop', false)).toBe('popular');
@@ -118,16 +116,21 @@ describe('palette layouts', () => {
       if (t.action.type === 'open') expect(offered.has(t.action.category), t.id).toBe(true);
   });
 
-  // A layout that drops a group's last tile keeps the group's end: Diagram and Workshop leave out the embeds,
-  // whose Live Embed ends Media's first group after Image, and Image ends it there instead.
-  it("keeps Media's divider after Image where the embeds are left out", () => {
+  // Media merged into Layout (owner, 2026-11-16): Diagram and Workshop end Layout with the image and the avatar, apart
+  // from its parts, leaving the embeds out; no divider at the very end.
+  it('ends Layout with Image and Avatar, apart, and no embeds, where Media merged in', () => {
     for (const mode of ['diagram', 'workshop'] as const) {
-      const media = paletteCategoriesFor(mode).find((c) => c.id === 'media')!;
-      const ids = media.tiles!.map((t) => t.id);
+      const cats = paletteCategoriesFor(mode);
+      expect(
+        cats.some((c) => c.id === 'media'),
+        mode,
+      ).toBe(false);
+      const layout = cats.find((c) => c.id === 'layout')!;
+      const ids = layout.tiles!.map((t) => t.id);
+      expect(ids.slice(-2), mode).toEqual(['tools:image', 'tools:avatar']);
       expect(ids, mode).not.toContain('media:embed-website');
-      expect(media.tiles!.find((t) => t.id === 'tools:image')?.dividerAfter, mode).toBe(true);
-      // Never one at the very end.
-      expect(media.tiles!.at(-1)?.dividerAfter, mode).toBeFalsy();
+      expect(layout.tiles!.at(-3)?.dividerAfter, mode).toBe(true);
+      expect(layout.tiles!.at(-1)?.dividerAfter, mode).toBeFalsy();
     }
   });
 
@@ -212,10 +215,6 @@ describe('palette layouts', () => {
   it('files the Sankey under Concepts, not Build, in Diagram', () => {
     expect(tileIds('diagram', 'concepts').at(-1)).toBe('tools:sankey');
     expect(tileIds('diagram', 'diagrams')).not.toContain('tools:sankey');
-  });
-
-  it("leaves Media's embeds out of Diagram, keeping its own two", () => {
-    expect(tileIds('diagram', 'media')).toEqual(['tools:image', 'tools:avatar']);
   });
 
   it('defaults a category to its own tiles', () => {

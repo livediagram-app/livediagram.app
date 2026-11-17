@@ -207,7 +207,11 @@ export function MultiSelectionContextMenu({
             {/* ── Style band (docs/specs/008-canvas/canvas-and-palette.md): Presets + Colours + Border behind one
                   "Style" flyout row, matching the single-element menu. ── */}
             {showStyleFlyout ? (
-              <MenuFlyoutSection title="Style" icon={<StyleMenuGlyph />} {...flyoutProps('style')}>
+              <MenuFlyoutSection
+                title="Appearance"
+                icon={<StyleMenuGlyph />}
+                {...flyoutProps('style')}
+              >
                 {presetShapeSrc ? (
                   <ShapePresetsSection
                     shape={presetShapeSrc.shape}

@@ -34,6 +34,7 @@ async function pick(kind: TemplateKind, documentName: string, onTab = 't1') {
       setIdentityPromptOpen: vi.fn(),
       requestFit: vi.fn(),
       putToolDown: vi.fn(),
+      appendSlides: vi.fn(),
     }),
   );
   await act(async () => {

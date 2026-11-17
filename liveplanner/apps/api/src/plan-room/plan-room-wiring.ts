@@ -3,8 +3,6 @@
 // on. Each takes the room.
 import { createItemHeadSync, type ItemHeadSync } from '@liveworkspace/index-app';
 import { RoomParticipantWrites } from '../room-participant';
-import { suggestionsRoomOp } from '@liveworkspace/suggestions/room-signal';
-import { roomReview, suggestionsChanged } from './room-review';
 import { type InternalRoom } from '../room-internal';
 import type { PlanRoom } from './plan-room';
 import { ensureSchema, noteWrite } from './plan-room-content';
@@ -99,7 +97,5 @@ export function roomInternal(room: PlanRoom): InternalRoom {
       if (o?.kind === 'sheets' && typeof o.sheetId === 'string')
         room.sheetWatches.changed(o.sheetId);
     },
-    suggestionsChanged: (tabId) => suggestionsChanged(room, suggestionsRoomOp(tabId)),
-    reviewChanged: () => roomReview(room).changed(),
   };
 }

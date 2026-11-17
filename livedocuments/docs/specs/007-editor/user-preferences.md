@@ -263,7 +263,7 @@ type UserPreferences = {
   pagesTourKinds?: PageKind[];
   // Element tours (docs/specs/007-editor/element-tours.md): the toured element kinds whose tour has been taken.
   // Surfaced in Settings as Tours › Show Me, one switch
-  // per kind (inverted); a kind in it is off the Start Tour button.
+  // per kind (inverted); a kind in it is off the Get Started button.
   elementTourKinds?: ElementTourKind[];
   // Counts every element tour as taken: Settings' Show Me on Every Element, switched off, writes it (as did the
   // retired Power user mode's preset).
@@ -711,9 +711,9 @@ and the dialog stays as the one complete, browsable index of them.
   **Getting Started** is a category of its own: **Pages Tours** (over **Slides Tour**, **Infographic Tour**, **Article
   Tour** and **Flashcards Tour**), with a line saying where it runs and a **Learn more** to its article, under
   one **Offer Again** section note. No tour offers itself: every tour is started from the footer's
-  **Start Tour** button, immediately left of Search, and leaves it once taken until its switch here is turned back on ([Pages tour](pages-tour.md)).
+  **Get Started** button, left of Tools, and leaves it once taken until its switch here is turned back on ([Pages tour](pages-tour.md)).
   These rows record which tours have been taken; switching a Pages track back on and closing Settings starts the Pages
-  tour when it is on offer right now. The section note says so: "Start a tour from the Start Tour button in the bottom bar, left of Settings: it
+  tour when it is on offer right now. The section note says so: "Start a tour from the Get Started button in the bottom bar, left of Settings: it
   offers the tour for what you are working on." Tours are not an accessibility setting, so they are not under
   Accessibility. Every switch is inverted: on means "not taken yet", the
   preference records "already seen", and its telemetry tokens describe the PREFERENCE (switching on is
@@ -730,7 +730,7 @@ and the dialog stays as the one complete, browsable index of them.
   accordion naming how many are on ([Element tours](element-tours.md#settings)): **Show Me on Every Element**, built
   as Pages Tours is (`tourTracksSwitch`) against `elementToursSeen` and `elementTourKinds`, with one switch per toured
   kind nested under it, named for the element (**Sankey Diagram**). Element tours
-  need no relaunch: switched back on, the Start Tour button offers one whenever its element is selected. A category may mark any section
+  need no relaunch: switched back on, the Get Started button offers one whenever its element is selected. A category may mark any section
   closed this way (`collapsedSections`); Settings opened on one of its rows opens it.
 
   **Toggle groups.** Several related switches that share one description can be
@@ -740,8 +740,8 @@ and the dialog stays as the one complete, browsable index of them.
   truncating, and near-identical rows do not read as clutter.
 
   **Button Labels** (Appearance › Interface, `dockButtonNames`, on by default)
-  names the editor's bottom buttons beside their icons: the footer bar's Search,
-  Settings and theme, and the bottom-right cluster's (Slides, Contents, Style and
+  names the editor's bottom buttons beside their icons: the footer bar's Tools and
+  Settings (the theme toggle is always icon only), and the bottom-right cluster's (Slides, Contents, Style and
   the rest) on a desktop wide enough for them ([Editor app](editor-app.md)). Off,
   they are icons alone, each still named in its hover card. A phone always shows
   icons alone, so the row is desktop only there.

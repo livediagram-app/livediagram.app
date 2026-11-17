@@ -26,7 +26,7 @@ import { getTheme } from './themes';
 
 // The catalogue's shape (count + default/extra split + no kind
 // drift) is load-bearing across both the picker and the marketing
-// site. docs/specs/019-marketing/marketing-site.md pins "84 templates (10 default + 74 extra)" and
+// site. docs/specs/019-marketing/marketing-site.md pins "89 templates (10 default + 79 extra)" and
 // docs/specs/008-canvas/canvas-and-palette.md catalogues the picker UX. These tests pin the array so
 // either the spec or the catalogue can't silently drift away from
 // the other.
@@ -119,25 +119,30 @@ describe('TEMPLATES catalogue', () => {
     'onboarding-plan',
     'concept-map',
     'network-diagram',
+    'c4-context',
+    'c4-container',
+    'architecture-decision-record',
+    'sprint-planning',
+    'interview-synthesis',
     'blank-session',
   ];
 
   // Hidden templates are buildable but never listed, so every user-facing
-  // count (docs/specs/019-marketing/marketing-site.md's "84 templates", the picker grids, the MCP catalogue)
+  // count (docs/specs/019-marketing/marketing-site.md's "89 templates", the picker grids, the MCP catalogue)
   // is over the listed subset. The mechanism is generic; nothing ships
   // hidden today (the guided-tour sample used it until the
   // interactive tour, docs/specs/007-editor/editor-tour.md, superseded it).
   const listed = TEMPLATES.filter((t) => !t.hidden);
 
-  it('lists exactly 84 templates (10 default + 74 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
-    expect(listed).toHaveLength(84);
+  it('lists exactly 89 templates (10 default + 79 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
+    expect(listed).toHaveLength(89);
   });
 
-  it('splits cleanly into 10 default + 74 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
+  it('splits cleanly into 10 default + 79 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
     const defaults = listed.filter((t) => !t.extra);
     const extras = listed.filter((t) => t.extra);
     expect(defaults).toHaveLength(10);
-    expect(extras).toHaveLength(74);
+    expect(extras).toHaveLength(79);
   });
 
   it('ships no hidden templates (the flag is generic; docs/specs/007-editor/editor-tour.md has no sample)', () => {
@@ -299,6 +304,8 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
   const LAYERED_BANDS: Partial<
     Record<TemplateKind, { names: [string, string]; scaffold: number; content: number }>
   > = {
+    // A Workshop template's content includes its session kit (template-session-kit.ts): the "Run the session"
+    // heading and, per tool its board lacks, the button and the line saying when to press it.
     // Board: 4 column containers, 4 headers, 4 hints, 4 glyphs, the
     // subtitle, the rail hint, and the numbers, From Sprint 13 and Shout-outs
     // headings. Stickies: the title, 24 notes, the mood check, 2 session
@@ -309,17 +316,17 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
     // arrows and their six labels, three rail steps and the vote hint.
     // Items: title, eight ideas with their tally discs, and the vote button,
     // estimate card and commit checklist.
-    'prioritization-matrix': { names: ['Axes', 'Items'], scaffold: 29, content: 20 },
+    'prioritization-matrix': { names: ['Axes', 'Items'], scaffold: 29, content: 23 },
     // Board: how-to, vote hint, two theme frames and the Unsorted label.
     // Stickies: title, vote button, 2 themes, 4 insights + tally discs, 12 notes.
-    'affinity-map': { names: ['Board', 'Stickies'], scaffold: 5, content: 24 },
+    'affinity-map': { names: ['Board', 'Stickies'], scaffold: 5, content: 27 },
     // Backbone: how-to, journey arrow, three release lanes, three activities
     // and six tasks. Stories: title, the persona and its sticker, 20 stories.
-    'user-story-map': { names: ['Backbone', 'Stories'], scaffold: 14, content: 23 },
+    'user-story-map': { names: ['Backbone', 'Stories'], scaffold: 14, content: 28 },
     // Lanes: title, caption, goal pill, three horizon headers (name, timeframe,
     // three confidence dots) and the three theme lanes. Cards: nine cards of
     // body, title and outcome, plus the three Now status stickers.
-    roadmap: { names: ['Lanes', 'Cards'], scaffold: 21, content: 30 },
+    roadmap: { names: ['Lanes', 'Cards'], scaffold: 21, content: 35 },
     // Grid: title, caption, sheet, header band, Task / Owner, 3 months, 12
     // week dates, 3 group rows (band, glyph, name), 7 table rows (label or
     // glyph + label, avatar, name) and 13 rules. Bars: 3 summaries, 6
@@ -329,15 +336,15 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
     // Quadrants: how-to, four axis labels, four quadrants of container,
     // header, glyph and prompt, and the So what? frame, glyph, heading and
     // hint. Notes: title, 12 stickies and four moves of card, chip and text.
-    swot: { names: ['Quadrants', 'Notes'], scaffold: 25, content: 25 },
+    swot: { names: ['Quadrants', 'Notes'], scaffold: 25, content: 30 },
     // Canvas: nine blocks of container, header, glyph and fill-order chip,
     // plus the how-to and the four area-key chips. Notes: the title, 23
     // stickies and the value-proposition sticker.
-    'business-model-canvas': { names: ['Canvas', 'Notes'], scaffold: 41, content: 25 },
+    'business-model-canvas': { names: ['Canvas', 'Notes'], scaffold: 41, content: 30 },
     // Six blocks (4 quadrants + Pains / Gains) of container, header and
     // glyph, plus the persona card; notes are the 12 stickies plus the
     // persona's sticker, name and goal.
-    'empathy-map': { names: ['Quadrants', 'Notes'], scaffold: 19, content: 15 },
+    'empathy-map': { names: ['Quadrants', 'Notes'], scaffold: 19, content: 20 },
     // Lifelines: the caption, the actor + its name, four headed boxes and
     // five lifelines. Messages: the title, five activation bars, ten
     // messages (one of them the self-call), the alt frame, its two guards
@@ -354,7 +361,7 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
     // Title, caption, four phase segments and the arrowhead stay put; each
     // of the six milestones brings a ring, a pinned stem, a date chip and a
     // callout card, and launch day its two stickers.
-    'milestone-timeline': { names: ['Spine', 'Milestones'], scaffold: 7, content: 26 },
+    'milestone-timeline': { names: ['Spine', 'Milestones'], scaffold: 13, content: 20 },
     // Title, caption and spine stay put; each of the seven chapters brings a
     // stem, a disc, its glyph, a callout card, the year and its month, plus
     // the trophy and cake stickers.
@@ -362,7 +369,7 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
     // Title, five stage chips + their four arrows, five row bands + five
     // gutter labels, and the Feeling row's +/- cues. Content is the twenty
     // stickies, five mood faces and the four curve segments between them.
-    journey: { names: ['Stages', 'Notes'], scaffold: 22, content: 29 },
+    journey: { names: ['Stages', 'Notes'], scaffold: 22, content: 34 },
     // The plan 0002 batch. Retro formats share the Retrospective's kit.
     // Start / Stop / Continue: how-to, rail note, 3 columns + actions panel,
     // 3 lamp discs + their glyphs, actions glyph, verbs, prompts, actions
@@ -397,22 +404,22 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
     // the Blameless callout and 3 findings columns. Findings: title, 3 chips,
     // summary, stat row, 10 timeline cards, the impact spans, 5 whys, the
     // root cause, chain arrows, 9 stickies, the clover and the actions table.
-    'incident-postmortem': { names: ['Report', 'Findings'], scaffold: 44, content: 84 },
+    'incident-postmortem': { names: ['Report', 'Findings'], scaffold: 44, content: 89 },
     // Matrix: caption, 2 section headings, 25 score cells, 20 axis step
     // lines, 2 axis titles, 4 band chips, checklist + vote labels. Risks:
     // title, 2 chips, 7 markers (R1 to R6 + R1's residual), the residual
     // arrow, the register, the review sticky + sticker, checklist and vote.
-    'risk-matrix': { names: ['Matrix', 'Risks'], scaffold: 60, content: 16 },
+    'risk-matrix': { names: ['Matrix', 'Risks'], scaffold: 60, content: 19 },
     // Levels: how-to, four level bands with rail tile, glyph, name and rule,
     // and the sub-opportunity rail note. Tree: title, outcome card + ring,
     // six opportunities with evidence chips, the target ribbon, three
     // solutions, six tests with verdict chips, and 15 rake lines.
-    'opportunity-solution-tree': { names: ['Levels', 'Tree'], scaffold: 22, content: 47 },
+    'opportunity-solution-tree': { names: ['Levels', 'Tree'], scaffold: 22, content: 52 },
     // Grid: how-to, four quadrants of tile, glyph, name and rule, two axis
     // arrows and six labels, the plan heading + note, the stance key. People:
     // title, nine people and the ghost, the move arrow, the plan table, the
     // next-step sticky and its pushpin.
-    'stakeholder-map': { names: ['Grid', 'Stakeholders'], scaffold: 36, content: 15 },
+    'stakeholder-map': { names: ['Grid', 'Stakeholders'], scaffold: 36, content: 18 },
     // Sheet: how-to, prompt card, the four steps, the sheet frame, 8 panel
     // frames + number chips, the invite line. Sketches: title + meta, prompt,
     // 2 stickers, timer + vote, done check, sheet name + status, the three
@@ -422,18 +429,18 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
     // glyph and prompt, spectrum poles, channel glyphs, How we help band.
     // Details: title, profile facts, monogram, stat row, tags, quote, 9 notes,
     // 4 bars, 3 channels + rating, 3 needs + answers.
-    'user-persona': { names: ['Card', 'Details'], scaffold: 49, content: 40 },
+    'user-persona': { names: ['Card', 'Details'], scaffold: 49, content: 43 },
     // Board: how-to, 3 phase bands, 5 column heads, section labels, 4 house
     // rules, the parking bay and hints. Notes: title + sticker, purpose,
     // outcomes checklist, 5 attendees, the agenda, 4 parked stickies, 2
     // decision records, actions checklist, rating gauge, next-sync callout.
-    'meeting-agenda': { names: ['Board', 'Notes'], scaffold: 37, content: 34 },
+    'meeting-agenda': { names: ['Board', 'Notes'], scaffold: 37, content: 37 },
     // Planner: how-to, 3 phase bands, 3 column heads, why labels, the formula
     // guide + rewrite + SMART check, 3 card frames with section labels, the
     // check-in strip. Objectives: title + sticker, focus, 6 stickies, 2 corner
     // people, 3 objectives (chip, sticker, sentence, KRs + bars, steps,
     // support, rating) and the Today chip.
-    'objectives-planner': { names: ['Planner', 'Objectives'], scaffold: 65, content: 44 },
+    'objectives-planner': { names: ['Planner', 'Objectives'], scaffold: 65, content: 47 },
     // The strategy and systems batch (canvas-and-palette.md "Templates").
     // Map: caption, 4 stage bands with name, trait and 3 rules, 2 axes and 4 axis words, 3 panel headings (3 each),
     // the legend's 5 labels and 5 samples. Components: title, the user, their line and name, 12 chips, 11 needs,
@@ -456,7 +463,7 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
     // Generations: caption, 3 bands with name, the key heading, 4 line rows (2 each), the has-died sample and label,
     // Family stories heading. People: title, 14 cards, 5 unions (dot, 2 lines, caption), 7 child lines, the how-to,
     // 3 stories and their pins.
-    'family-tree': { names: ['Generations', 'People'], scaffold: 19, content: 50 },
+    'family-tree': { names: ['Generations', 'People'], scaffold: 19, content: 51 },
     // Map: caption, 6 process headers, 5 push arrows, 2 information cards and 3 flows, 23 ladder rungs, the key's 4
     // samples and labels. Stream: title, 2 chips, 6 data boxes, 6 triangles and waits, 2 bursts and fixes, 12 rung
     // figures, the totals and the future state.
@@ -477,6 +484,20 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
     // Tiers: title and caption, 4 lanes with blurb and glyph, the key, the IP plan. Network: 3 VLAN boundaries,
     // 14 devices and 13 links.
     'network-diagram': { names: ['Tiers', 'Network'], scaffold: 16, content: 30 },
+    // Context: header, the key and its swatches. Systems: four people, the platform, four externals, the links.
+    'c4-context': { names: ['Context', 'Systems'], scaffold: 9, content: 17 },
+    // Boundary: header, the boundary and its name, the key. Containers: the person, the containers, stores and
+    // externals, and the links.
+    'c4-container': { names: ['Boundary', 'Containers'], scaffold: 10, content: 25 },
+    // Record: header, the panels and their headings. Decision: status chip, the copy, the options table, the
+    // decision card, the before and after sketch, the consequences and the follow-ups.
+    'architecture-decision-record': { names: ['Record', 'Decision'], scaffold: 17, content: 23 },
+    // Board: the column containers and headers, the rail's panels. Stories: the goal, the capacity row, the mood
+    // check, the timer and vote, and the stories, risks and done list.
+    'sprint-planning': { names: ['Board', 'Stories'], scaffold: 21, content: 21 },
+    // Board: the theme columns and headers, the rail's panels. Notes: the question, five participants, nine
+    // quotes, three insights and three questions, and the timer and vote.
+    'interview-synthesis': { names: ['Board', 'Notes'], scaffold: 16, content: 31 },
   };
 
   it('pins each layered template’s names and scaffold / content split', () => {

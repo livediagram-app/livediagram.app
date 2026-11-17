@@ -83,12 +83,45 @@ store](photo-store.md).
   tab alone: a new photo page joins only a tab of photos ("One kind a tab"), so on a logo or wireframe tab the
   item is not offered.
 - **Templates**: the **Photo Edit** template (its own kind id `photo-edit`, in the **Photos** category) starts a
-  tab whose one page is an unstarted photo page.
+  tab on a sample photo, already edited and made into two sizes ([The Photo Edit template](#the-photo-edit-template)).
+
+### The Photo Edit template
+
+Picked in the editor (a start, `/new?template=photo-edit`, the workspace's New design), Photo Edit opens on a
+sample photo that shows what a photo page does, ready to change or replace:
+
+- **Instagram Story** (1080 x 1920), the tab's first page: the sample picture (a lakeside at dawn, drawn for
+  livedesign and free to use) as its **Background** layer, kept whole as its source; a **Warm Up** Photo Filter
+  layer (Warming 85, 20%); and a **Vignette** Exposure layer (-1.5 stops) shown through its **layer mask**, black at
+  the centre and white towards the edges, so only the edges darken.
+- **Instagram Post** (1080 x 1350) after it: the Story as **Make Sizes** makes it ([Making sizes](#making-sizes)),
+  **cropped** about the centre with the picture past its top and bottom kept (the Move tool slides it to choose
+  another crop), its Vignette's mask drawn for its own shape.
+- **Each page has its preview**, so both show their pictures at once.
+- **The files** (the picture, the two masks, the two previews; about 130 KB in all) ship with the editor as static
+  files and are fetched only when the template is picked, never on a page's first load. Each is checked against its
+  blob id as it arrives.
+- **Stored first, then set**: the files are queued for the tab as any picture is ([Photo store](photo-store.md)
+  "Committing an edit"): uploaded for a cloud design, kept in this browser for an Offline Mode design. The photos
+  are set once every file is stored, so the pages never name a file the store lacks. Setting them is part of making
+  the tab, as the template's landing is, not an edit: it is outside the undo history, so an Undo straight after
+  opening never takes the sample away and leaves the Start a Photo card. A failed upload
+  shows the save indicator's **Couldn't save the photo** with **Retry**, and the sample lands once it goes through.
+- **Only the template's own tab**: picking the template asks for the sample for the tab it just made (kept in this
+  browser tab's session, so `/new`'s ask reaches the editor it opens), and the editor sets it only while that tab's
+  one photo page is still unstarted. An existing tab, a started photo, a page added meanwhile, a collaborator's tab
+  and anyone without edit rights are never touched.
+- **When the sample cannot be had** (offline with no cache, a failed request, bytes that are not the file's), the
+  template lands as before: one unstarted photo page and its **Start a Photo** card.
+- **An agent's or the api's Photo Edit** (`add_tab`, the api's template tabs) is the one unstarted photo page: the
+  sample is the editor's.
 
 ## Working on a photo page
 
 A photo page is **in focus** for a person when it is the page they are on ([Pages](../007-editor/pages-mode.md)
-"Getting around the pages": they went to it, pressed on it, or it is in view on opening). While a photo page is in
+"Getting around the pages": they went to it, pressed on it, or it is in view on opening). A press on the chrome
+floating over a page (the photo tools, the Photo panel and its layers' eyes, a menu) is the control's, never a press
+on the page under it, so taking the Move tool over the Story leaves the Post in focus. While a photo page is in
 focus and the person may edit it:
 
 ### The photo tools

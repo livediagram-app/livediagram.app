@@ -1,4 +1,4 @@
-// The party games of the Quizzes & Games category (docs/specs/012-collaboration/quiz-and-game-templates.md): Two
+// The party games of the Games category (docs/specs/012-collaboration/quiz-and-game-templates.md): Two
 // Truths and a Lie, Would You Rather and Find Someone Who Bingo. Built from the session boards' parts
 // (template-session-parts.ts), the quiz boards' siblings in template-builders-quiz-games.ts.
 //

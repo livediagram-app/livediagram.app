@@ -65,6 +65,10 @@ describe('TEMPLATES catalogue', () => {
     'wireframe-video-app',
     'wireframe-fitness-watch',
     'wireframe-watch-music',
+    'wireframe-launch-site',
+    'wireframe-account-settings',
+    'wireframe-class-booking',
+    'logo-brand-board',
   ];
 
   // Hidden templates are buildable but never listed, so every user-facing
@@ -72,15 +76,15 @@ describe('TEMPLATES catalogue', () => {
   // The mechanism is generic; nothing ships hidden today.
   const listed = TEMPLATES.filter((t) => !t.hidden);
 
-  it('lists exactly 32 templates (1 default + 31 extra)', () => {
-    expect(listed).toHaveLength(32);
+  it('lists exactly 36 templates (1 default + 35 extra)', () => {
+    expect(listed).toHaveLength(36);
   });
 
-  it('splits cleanly into 1 default + 31 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
+  it('splits cleanly into 1 default + 35 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
     const defaults = listed.filter((t) => !t.extra);
     const extras = listed.filter((t) => t.extra);
     expect(defaults).toHaveLength(1);
-    expect(extras).toHaveLength(31);
+    expect(extras).toHaveLength(35);
   });
 
   it('ships no hidden templates', () => {

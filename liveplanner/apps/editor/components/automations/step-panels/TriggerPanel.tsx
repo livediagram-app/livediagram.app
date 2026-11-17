@@ -1,8 +1,8 @@
 'use client';
 
 // The When panel (docs/specs/026-plan/automations.md "Triggers"): which trigger starts the rule, a card's or a
-// time's (picked in the Pick a Trigger picker, ChangeTriggerField), then what narrows it: Card Created's column, Form Response's Form tab, Card Moved's Card Types and its From and To
-// columns (only those the picked types use, card-moved-columns.ts),
+// time's (picked in the Pick a Trigger picker, ChangeTriggerField), then what narrows it: Card Created's column, Form Response's Form tab, Email Received's
+// board and From (EmailTriggerFields), Card Moved's Card Types and its From and To columns (only those the picked types use, card-moved-columns.ts),
 // Field Changed's fields (at least one), nothing for Comment Added and Run from a Card, and a time trigger's
 // schedule (TimeTriggerPanel), an Incoming Webhook's address and secret (IncomingWebhookPanel), and a GitHub trigger's
 // result and connection (GithubTriggerFields).
@@ -22,6 +22,7 @@ import {
 } from '../automation-outline';
 import { ChipToggles, PanelField, PanelNote, PanelSelect } from './panel-parts';
 import { IncomingWebhookPanel } from './IncomingWebhookPanel';
+import { EmailTriggerFields } from './EmailTriggerFields';
 import { TimeTriggerPanel } from './TimeTriggerPanel';
 import { ChangeTriggerField } from './ChangeTriggerField';
 import { freshTrigger } from '../trigger-groups';
@@ -170,6 +171,9 @@ export function TriggerPanel({
             </PanelSelect>
           )}
         </PanelField>
+      ) : null}
+      {trigger.kind === 'email_received' ? (
+        <EmailTriggerFields trigger={trigger} onChange={onChange} boards={outline.boards} />
       ) : null}
       {trigger.kind === 'card_moved' ? (
         <>

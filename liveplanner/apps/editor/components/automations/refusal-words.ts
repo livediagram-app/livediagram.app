@@ -13,7 +13,7 @@ const REFUSAL_WORDS: Readonly<Record<string, string>> = {
     'This names a value rules don’t know. Pick one from Insert a Value in the field.',
   automation_not_found: 'This rule was deleted elsewhere.',
   automation_condition_unsupported:
-    'This trigger has nobody behind it: nothing here can name whoever triggered it.',
+    'This trigger has nobody of the plan behind it: nothing here can name whoever triggered it.',
   automation_step_unsupported:
     'This step can’t go here: a branch or an If / Else holds no outgoing action, AI action, Wait, branch or If.',
 };
@@ -26,6 +26,7 @@ const PICK_WORDS: Readonly<Record<string, string>> = {
   status: 'a column',
   type: 'a card type',
   formTab: 'a form',
+  board: 'a board',
   tab: 'a board',
   filter: 'a saved filter',
   webhook: 'a webhook',

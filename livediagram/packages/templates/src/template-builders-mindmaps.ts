@@ -52,8 +52,8 @@ export function buildMindMap(cx: number, cy: number): Element[] {
       // The one round node: a nucleus with ideas radiating from it, rather
       // than a sea of equivalent boxes.
       look: {
-        width: 210,
-        height: 210,
+        width: 240,
+        height: 240,
         textSize: 'lg',
         colorPreset: 'bold',
         borderRadius: 'full',
@@ -150,7 +150,7 @@ export function buildMindMapTree(cx: number, cy: number): Element[] {
       label: runsPlainText(rootRuns),
       // Root of the tree: the strongest preset and the largest text, so the
       // topic anchors the outline.
-      look: { width: 300, height: 112, textSize: 'lg', colorPreset: 'bold', richText: rootRuns },
+      look: { width: 300, height: 136, textSize: 'lg', colorPreset: 'bold', richText: rootRuns },
       children: CONTENT_BRANCHES.map((b, i) => {
         const hue = MIND_HUES[(i + 1) % MIND_HUES.length]!;
         return {

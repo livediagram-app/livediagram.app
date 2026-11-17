@@ -88,8 +88,9 @@ export function useEditorTools({
       toast.info('Slide Deck is only available on a larger screen');
       return;
     }
-    // Spotlight is a non-editing presenter mode, so it clears the selection on entry.
-    if (tool === 'spotlight') {
+    // Spotlight and Laser are non-editing presenter modes, so they clear the selection on entry: no
+    // selection toolbar or Quick Style panel shows while presenting (Work Tracker 1040).
+    if (tool === 'spotlight' || tool === 'laser') {
       setSelectedId(null);
       setMultiSelectedIds(new Set());
     }

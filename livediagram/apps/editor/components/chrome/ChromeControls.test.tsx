@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 
-// The bottom bar's right-hand cluster (docs/specs/007-editor/editor-tour.md "Where it appears"): the Start Tour button leads it,
-// immediately left of Search, then Settings; with no tour on offer, Search leads.
+// The bottom bar's right-hand cluster (docs/specs/007-editor/editor-tour.md "Where it appears"): Get Started leads it,
+// immediately left of Tools (which holds Search, liveworkspace/docs/specs/004-index/footer-tools-menu.md), then
+// Settings; with no tour on offer, Tools leads.
 
 import { act, cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -37,18 +38,19 @@ function Bar() {
 }
 
 describe('ChromeControls order', () => {
-  it('puts the Start Tour button first, immediately left of Search, then Settings', () => {
+  it('puts Get Started first, immediately left of Tools, then Settings', () => {
     render(<Bar />);
     act(() => publishTourOffer('draw', { id: 'draw', name: 'Draw', rank: 1, start: () => {} }));
     const order = controls();
-    expect(order[0]).toBe('Start Draw Tour');
-    expect(order[1]).toBe('Search');
+    expect(order[0]).toBe('Get Started, Start Draw Tour');
+    expect(order[1]).toBe('Tools');
     expect(order.indexOf('Settings')).toBeGreaterThan(1);
+    expect(order).not.toContain('Search');
   });
 
-  it('leads with Search while no tour is on offer', () => {
+  it('leads with Tools while no tour is on offer', () => {
     render(<Bar />);
-    expect(controls()[0]).toBe('Search');
-    expect(controls()).not.toContain('Start Draw Tour');
+    expect(controls()[0]).toBe('Tools');
+    expect(controls().some((c) => c?.startsWith('Get Started'))).toBe(false);
   });
 });

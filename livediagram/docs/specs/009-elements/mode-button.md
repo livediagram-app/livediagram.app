@@ -23,9 +23,9 @@ It also gives a presenter somewhere to put a control bar: a row of buttons that 
 
 - A **left-click presses it**, switching the clicker's own canvas tool. Nobody else's mode changes: it is a control for the person who clicked, not a broadcast. The hover card says so.
 - **It hands out its mode in any editor mode.**
-- It routes through the **same tool setter the palette picker uses**, so the mode's own rules all still apply: telemetry, the selection clear on entering Spotlight, and the empty-canvas guard.
+- It routes through the **same tool setter the palette picker uses**, so the mode's own rules all still apply: telemetry, the selection clear on entering Spotlight or Laser, and the empty-canvas guard.
 - **Dragging it moves it, and does NOT press it.** The face fires on `click`, never on pointer-down, and swallows that click when the pointer travelled more than a wobble between press and release (`usePressWithoutDrag`), because a drag on an element still ends in a browser `click` event.
-- **It stays pressable inside a pointer-inert mode.** Spotlight and Isometric make the canvas layer ignore pointers; a mode button keeps `pointer-events: auto` so it still works. Without that, a button offering "Select" would be unreachable from the very mode a user most wants out of, and a presenter's control bar would be a one-way door. Right-clicking a button in those modes likewise still opens its element menu (the canvas / tab menu stays suppressed), so it can be reconfigured mid-presentation.
+- **It stays pressable inside a pointer-inert mode.** Spotlight, Laser and Isometric make the canvas layer ignore pointers; a mode button keeps `pointer-events: auto` so it still works. Without that, a button offering "Select" would be unreachable from the very mode a user most wants out of, and a presenter's control bar would be a one-way door. Right-clicking a button in those modes likewise still opens its element menu (the canvas / tab menu stays suppressed in Spotlight and Isometric), so it can be reconfigured mid-presentation. Under Laser a drag that starts on the button pans the canvas like any other drag, and a click still presses it.
 - **Read-only surfaces**: the embed ([Read-only embeds (`/embed`)](../013-workspace/embeds.md)) has no tool picker to drive, so it renders the face inert rather than pretending.
 
 ## Configuring it

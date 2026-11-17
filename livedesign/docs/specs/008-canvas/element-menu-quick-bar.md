@@ -6,17 +6,12 @@ inside a category that has to be opened first.
 
 ## What it holds
 
-- At the left, what attaches to the element, in this order:
-  - **Assign Action**, reading **View Action** once the element has one ([Assigned actions](../012-collaboration/assigned-actions.md)).
-  - **Add Comment**, reading **View Comments** once it has a thread ([Comments](canvas-and-palette.md#comments)).
-  - **Add Link**, reading **Edit Link** once it has one. Not on a link card or a video, whose link is their own
-    **Link** category's.
-  - **Add Note**, reading **Edit Note** once it has one.
-- At the right, apart from them, **Clear Styles**: the one Clear Styles, which the Quick Style bar leaves to the menu
+The attachments it used to hold at its left (Action, Comment, Link, Note) are the **Resources** category now
+([Resources](#resources)).
+
+- At its right, **Clear Styles**: the one Clear Styles, which the Quick Style bar leaves to the menu
   ([Quick Style bar](quick-style-panel.md) "Clear Styles"), the element's quick-style colours, width and line style
   back to the theme's. It shows while the element takes a quick style, whether or not the bar is on screen.
-- A button the element already uses (it has an action, a thread, a link or a note) is tinted in the brand colour and
-  pressed (`aria-pressed`), so the bar also says what the element carries.
 - Each button has a Tooltip naming it, runs its action and closes the menu, as the tiles it replaced did.
 
 The four attachments are offered on boxed elements; arrows take none. With nothing to offer (an
@@ -24,6 +19,23 @@ arrow that takes no quick style) the bar is not drawn.
 
 They had their own categories, **Collaborate** (Assign Action, Add Comment) and **Resources** (Add Link, Add Note), at
 the foot of the menu. Those categories are gone: the quick bar is their one place in the menu.
+
+## Resources
+
+What attaches to the element sits in one **Resources** category, always the menu's last, opening in a side flyout as
+**Appearance** does. Its rows are laid out as Appearance's **Finish** list is: a bordered list, one row each, its glyph, its
+name and a quiet line under it. In this order, whichever this app offers:
+
+- **Assign Action** ("What a click on it does"), reading **View Action** once the element has one.
+- **Add Comment** ("A thread to talk it over"), reading **View Comments** once it has a thread.
+- **Add Link** ("A page or tab it opens"), reading **Edit Link** once it has one. Not on a link card or a video, whose
+  link is their own **Link** category's.
+- **Add Note** ("Words kept behind it"), reading **Edit Note** once it has one.
+
+A row the element already has carries a brand dot at its right. Each row runs its action and closes the menu. They are
+offered only on boxed elements; arrows take none, and with none to offer the category is not drawn. Why: four glyph
+buttons in a row read as noise above every menu, and their meaning hid in tooltips; named rows with a line each say
+what they are at a glance, in the layout the menu already uses for a list of choices.
 
 ## Share roles
 

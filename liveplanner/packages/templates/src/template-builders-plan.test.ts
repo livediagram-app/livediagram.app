@@ -1,5 +1,6 @@
 import {
   READY_MADE_CARD_TYPES,
+  catalogueWithBoardTypes,
   PLAN_BOARD_PRESET_IDS,
   isPlanViewId,
   doneColumnsOf,
@@ -8,6 +9,7 @@ import {
 } from '@liveplanner/items';
 import { isValidElement, type Element } from '@liveplanner/project';
 import { describe, expect, it } from 'vitest';
+import { TEMPLATE_CARD_TYPES } from '@liveplanner/items/template-card-types';
 import {
   PLAN_TEMPLATE_KINDS,
   PLAN_TEMPLATE_TABS,
@@ -17,6 +19,7 @@ import {
   planTemplateTabs,
 } from './template-builders-plan';
 import { templateTabs } from './build-template';
+import { buildTemplateTabs } from './template-tab';
 import { planTemplateTabCount } from './plan-template-catalogue';
 
 // The Plan templates (docs/specs/026-plan/plan-templates.md): ways of working across tabs, no cards.
@@ -50,15 +53,15 @@ describe('plan templates', () => {
       'blank-plan': ['Board'],
       'blank-spreadsheet': ['Sheet'],
       'project-planner': ['Roadmap', 'Backlog', 'Sprint', 'Daily Standup'],
-      kanban: ['Board', 'Requests', 'Flow'],
-      'bug-triage': ['Triage', 'Fixing', 'Health'],
+      kanban: ['Board', 'Requests', 'Request Form', 'Flow'],
+      'bug-triage': ['Triage', 'Bug Report', 'Fixing', 'Health'],
       'team-retro': ['Retro', 'Actions', 'Archive'],
       'weekly-planner': ['This Week', 'Inbox', 'Calendar'],
       'content-calendar': ['Ideas', 'Production', 'Calendar'],
-      'hiring-pipeline': ['Roles', 'Pipeline', 'Onboarding'],
+      'hiring-pipeline': ['Roles', 'Pipeline', 'Application', 'Onboarding'],
       okrs: ['Objectives', 'Key Results'],
       'product-launch': ['Timeline', 'Checklist', 'Launch Day'],
-      'feedback-board': ['Feedback', 'Delivery'],
+      'feedback-board': ['Feedback', 'Request Form', 'Delivery'],
       'budget-planner': ['Budget'],
       timesheet: ['Timesheet'],
       'contact-list': ['Contacts'],
@@ -77,6 +80,10 @@ describe('plan templates', () => {
       'meeting-agenda': ['Agenda', 'Actions', 'Archive'],
       'personal-goals': ['Goals', 'Milestones', 'Habits'],
       'study-planner': ['Assignments', 'Revision', 'Calendar'],
+      'sprint-board': ['Sprint', 'Backlog', 'Flow'],
+      'client-onboarding': ['Clients', 'Tasks'],
+      'editorial-pipeline': ['Pitches', 'Production'],
+      'trip-planner': ['Itinerary', 'Bookings', 'Packing'],
     });
   });
 
@@ -207,14 +214,22 @@ describe('plan templates', () => {
     const [retro, actions, archive] = PLAN_TEMPLATE_TABS['team-retro'];
     const setup = boardSetup(retro!.board!);
     expect(setup.columns.map((c) => c.name)).toEqual(['Went Well', 'To Improve', 'Ideas']);
-    expect(setup.addTypes).toEqual(['note', 'idea']);
+    expect(setup.addTypes).toEqual(['rt-note', 'rt-idea']);
     expect(setup.hideWriting).toBe(true);
-    expect(boardSetup(actions!.board!).addTypes).toEqual(['action']);
+    expect(boardSetup(actions!.board!).addTypes).toEqual(['rt-action']);
     expect(boardSetup(archive!.board!).archive).toBe(true);
   });
 
   it('puts a Gantt of the board’s cards under every board of dated cards', () => {
-    const dated = new Set(['project', 'role', 'objective']);
+    const dated = new Set([
+      'pp-initiative',
+      'hp-role',
+      'okr-objective',
+      'pl-workstream',
+      'ev-workstream',
+      'pg-goal',
+      'co-client',
+    ]);
     for (const { kind, spec, label } of everyTab()) {
       if (!spec.board) continue;
       const types = boardSetup(spec.board).addTypes ?? [];
@@ -224,14 +239,13 @@ describe('plan templates', () => {
       const gantt = viewsOf(kind).find(
         (el) => el.type === 'shape' && el.shape === 'plan-view' && el.planView?.view === 'gantt',
       );
-      const shown = gantt?.type === 'shape' ? gantt.planView?.types : undefined;
-      // A Gantt with no types draws Projects, its own default.
-      expect(shown ?? ['project'], label).toEqual(types);
+      // Named, never the chart's own default of Projects.
+      expect(gantt?.type === 'shape' ? gantt.planView?.types : undefined, label).toEqual(types);
     }
   });
 
-  it('names the card types of every board, each built in or brought', () => {
-    const known = new Set(READY_MADE_CARD_TYPES.map((t) => t.id));
+  it('names the card types of every board, each the template’s own', () => {
+    const known = new Set(TEMPLATE_CARD_TYPES.map((t) => t.id));
     for (const { spec, label } of everyTab()) {
       if (!spec.board) continue;
       const setup = boardSetup(spec.board);
@@ -242,7 +256,7 @@ describe('plan templates', () => {
   });
 
   it('lays rows by a field only every type the board takes has', () => {
-    const types = READY_MADE_CARD_TYPES;
+    const types = TEMPLATE_CARD_TYPES;
     for (const { spec, label } of everyTab()) {
       if (!spec.board) continue;
       const setup = boardSetup(spec.board);
@@ -274,19 +288,56 @@ describe('plan templates', () => {
   it('gives each template the card types its work is made of', () => {
     const takes = (kind: (typeof PLAN_TEMPLATE_KINDS)[number]) =>
       PLAN_TEMPLATE_TABS[kind].flatMap((t) => (t.board ? [boardSetup(t.board).addTypes] : []));
-    expect(takes('hiring-pipeline')).toEqual([['role'], ['candidate'], ['onboarding-task']]);
-    expect(takes('okrs')).toEqual([['objective'], ['key-result']]);
-    expect(takes('bug-triage')).toEqual([['bug'], ['bug']]);
-    expect(takes('kanban')).toEqual([['task', 'request'], ['request']]);
-    expect(takes('feedback-board')).toEqual([['request'], ['request', 'task']]);
-    expect(takes('content-calendar')).toEqual([['content'], ['content', 'task']]);
-    expect(takes('product-launch')).toEqual([['project'], ['task'], ['launch-check']]);
-    expect(takes('event-planner')).toEqual([['project'], ['task']]);
-    expect(takes('sales-crm')).toEqual([['deal']]);
-    expect(takes('help-desk')).toEqual([['ticket'], ['note']]);
-    expect(takes('meeting-agenda')).toEqual([['note'], ['action'], undefined]);
-    expect(takes('personal-goals')).toEqual([['objective'], ['milestone']]);
-    expect(takes('study-planner')).toEqual([['task'], ['note']]);
+    expect(takes('project-planner')).toEqual([
+      ['pp-initiative'],
+      ['pp-story', 'pp-task', 'pp-bug'],
+      ['pp-story', 'pp-task', 'pp-bug'],
+      ['pp-story', 'pp-task', 'pp-bug'],
+    ]);
+    expect(takes('hiring-pipeline')).toEqual([['hp-role'], ['hp-candidate'], ['hp-onboarding']]);
+    expect(takes('okrs')).toEqual([['okr-objective'], ['okr-key-result']]);
+    expect(takes('bug-triage')).toEqual([['bt-bug'], ['bt-bug']]);
+    expect(takes('kanban')).toEqual([['kb-work-item', 'kb-request'], ['kb-request']]);
+    expect(takes('team-retro')).toEqual([['rt-note', 'rt-idea'], ['rt-action'], undefined]);
+    expect(takes('weekly-planner')).toEqual([
+      ['wk-todo', 'wk-errand', 'wk-note'],
+      ['wk-todo', 'wk-errand', 'wk-note'],
+    ]);
+    expect(takes('feedback-board')).toEqual([['fb-feedback'], ['fb-feedback', 'fb-task']]);
+    expect(takes('content-calendar')).toEqual([['cc-post'], ['cc-post', 'cc-task']]);
+    expect(takes('product-launch')).toEqual([['pl-workstream'], ['pl-task'], ['pl-check']]);
+    expect(takes('event-planner')).toEqual([['ev-workstream'], ['ev-task']]);
+    expect(takes('sales-crm')).toEqual([['crm-deal']]);
+    expect(takes('help-desk')).toEqual([['hd-ticket'], ['hd-article']]);
+    expect(takes('meeting-agenda')).toEqual([['ma-topic'], ['ma-action'], undefined]);
+    expect(takes('personal-goals')).toEqual([['pg-goal'], ['pg-milestone']]);
+    expect(takes('study-planner')).toEqual([['sp-assignment'], ['sp-topic']]);
+    expect(takes('sprint-board')).toEqual([
+      ['sb-story', 'sb-task', 'sb-bug'],
+      ['sb-story', 'sb-task', 'sb-bug'],
+    ]);
+    expect(takes('client-onboarding')).toEqual([['co-client'], ['co-task']]);
+    expect(takes('editorial-pipeline')).toEqual([['ed-article'], ['ed-article', 'ed-task']]);
+    expect(takes('trip-planner')).toEqual([['tr-idea', 'tr-note'], ['tr-booking'], ['tr-item']]);
+  });
+
+  // docs/specs/026-plan/plan-templates.md "Card types a template makes": no default type, no ready-made type.
+  it('brings only its own card types, never a default or a ready-made one', () => {
+    const shared = new Set(READY_MADE_CARD_TYPES.map((t) => t.id));
+    for (const kind of PLAN_TEMPLATE_KINDS) {
+      const tabs = buildTemplateTabs({ id: 't', name: 'T' }, kind, () => 'x');
+      const brought = catalogueWithBoardTypes(
+        null,
+        tabs.flatMap((t) => t.elements),
+      );
+      for (const t of brought?.types ?? []) {
+        expect(shared.has(t.id), `${kind} ${t.id}`).toBe(false);
+        expect(
+          TEMPLATE_CARD_TYPES.some((own) => own.id === t.id),
+          `${kind} ${t.id}`,
+        ).toBe(true);
+      }
+    }
   });
 
   // docs/specs/026-plan/plan-tabs.md "Templates": a Board tab per board, a Sheet tab per Sheet, and a Dashboard.
@@ -321,10 +372,14 @@ describe('plan templates', () => {
   });
 
   // plan-tabs.md "Form Metrics": a template's form brings its Responses figure to the Overview.
-  it('puts Help Desk’s and Event Planner’s form Responses figure on their Overview, naming the form tab', () => {
+  it('puts every template form’s Responses figure on its Dashboard, naming the form tab', () => {
     for (const [kind, form] of [
       ['help-desk', 'Contact Form'],
       ['event-planner', 'RSVP'],
+      ['kanban', 'Request Form'],
+      ['bug-triage', 'Bug Report'],
+      ['hiring-pipeline', 'Application'],
+      ['feedback-board', 'Request Form'],
     ] as const) {
       const defs = planTemplateTabs(kind);
       const ids = defs.map((_, i) => `id${i}`);
@@ -339,6 +394,41 @@ describe('plan templates', () => {
         },
       ]);
     }
+  });
+
+  // docs/specs/026-plan/plan-templates.md "What a template shows off".
+  it('shows flow charts on every delivery template’s Dashboard', () => {
+    const delivery = PLAN_TEMPLATE_KINDS.filter((kind) =>
+      ['cumulative-flow', 'cycle-time', 'throughput'].every((v) =>
+        viewsOf(kind).some((el) => el.type === 'shape' && el.planView?.view === v),
+      ),
+    );
+    expect(delivery).toEqual(['project-planner', 'kanban', 'sprint-board', 'editorial-pipeline']);
+    // Bug Tracker, Feedback Board and Help Desk read how fast work finishes, without the cumulative flow.
+    for (const kind of ['bug-triage', 'feedback-board', 'help-desk'] as const)
+      for (const v of ['cycle-time', 'throughput'])
+        expect(
+          viewsOf(kind).some((el) => el.type === 'shape' && el.planView?.view === v),
+          `${kind} ${v}`,
+        ).toBe(true);
+  });
+
+  it('tells every date-heavy template’s reader about the calendar feed', () => {
+    const says = PLAN_TEMPLATE_KINDS.filter((kind) =>
+      PLAN_TEMPLATE_TABS[kind].some((t) =>
+        (t.rail ?? []).some((r) => r.kind === 'sticky' && /Subscribe to Calendar/.test(r.text)),
+      ),
+    );
+    expect(says).toEqual([
+      'project-planner',
+      'weekly-planner',
+      'content-calendar',
+      'event-planner',
+      'study-planner',
+      'client-onboarding',
+      'editorial-pipeline',
+      'trip-planner',
+    ]);
   });
 
   it('gathers every view and note on the Dashboard, which shows each Board and Sheet tab', () => {

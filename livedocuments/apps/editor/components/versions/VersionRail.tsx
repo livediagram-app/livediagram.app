@@ -7,7 +7,7 @@ import { useState, type FormEvent } from 'react';
 import type { VersionSummary } from '@livedocuments/api-schema';
 import { NAME_MAX_LENGTH } from '@livedocuments/document';
 import { Button, CompactEmptyState, SwitchRow, TextInput } from '@livedocuments/ui';
-import { HistoryIcon } from './HistoryButton';
+import { HistoryIcon } from './history-tools-item';
 import type { VersionList } from './useVersionHistory';
 import { timeOfDay, versionsByDay, versionTitle } from './version-words';
 

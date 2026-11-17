@@ -47,7 +47,8 @@ describe('business model canvas template', () => {
   it('puts the chrome on the Canvas layer and the title, notes and sticker on Notes', () => {
     const on = (id: string) => els.filter((el) => el.layerId === id).length;
     expect(on('layer:template:scaffold')).toBe(41);
-    expect(on('layer:template:content')).toBe(25);
+    // 25 of its own, and the session kit's five (heading, Timer, Vote and their lines) on the content layer.
+    expect(on('layer:template:content')).toBe(30);
     expect(els.every((el) => el.layerId)).toBe(true);
   });
 

@@ -48,20 +48,20 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
   },
   {
     id: 'goals',
-    label: 'Goals & Metrics',
-    searchWords: 'okrs kpis growth',
+    label: 'Goals',
+    searchWords: 'okrs kpis growth metrics',
     description: 'OKRs, metric trees, funnels and growth loops.',
   },
   {
     id: 'meetings',
-    label: 'Meetings & Workshops',
-    searchWords: 'meeting workshop session facilitation',
+    label: 'Meetings',
+    searchWords: 'meeting workshop session facilitation workshops',
     description: 'Agendas, Q&A and formats for running a session.',
   },
   {
     id: 'people',
-    label: 'People & Teams',
-    searchWords: 'org chart hr hiring onboarding structure hierarchies',
+    label: 'Teams',
+    searchWords: 'org chart hr hiring onboarding structure hierarchies people',
     description: 'Org charts, roles, onboarding and family trees.',
   },
   {
@@ -72,20 +72,20 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
   },
   {
     id: 'processes',
-    label: 'Processes & Workflows',
-    searchWords: 'flowcharts flowchart process',
+    label: 'Processes',
+    searchWords: 'flowcharts flowchart process workflows',
     description: 'Flowcharts and workflows for how work gets done.',
   },
   {
     id: 'product',
-    label: 'Product & UX',
+    label: 'Product',
     searchWords: 'design ux research discovery',
     description: 'Prototypes, personas, journeys and discovery.',
   },
   {
     id: 'games',
-    label: 'Quizzes & Games',
-    searchWords: 'quiz trivia icebreaker icebreakers warm up energiser fun team building',
+    label: 'Games',
+    searchWords: 'quiz trivia icebreaker icebreakers warm up energiser fun team building quizzes',
     description: 'Quizzes, icebreakers and games for the room.',
   },
   {
@@ -96,7 +96,7 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
   },
   {
     id: 'software',
-    label: 'Software & IT',
+    label: 'Software',
     searchWords: 'technical engineering developer devops infrastructure',
     description: 'Architecture, data, networks and incidents.',
   },
@@ -108,8 +108,8 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
   },
   {
     id: 'learning',
-    label: 'Teaching & Learning',
-    searchWords: 'school classroom students teachers lesson education study',
+    label: 'Learning',
+    searchWords: 'school classroom students teachers lesson education study teaching',
     description: 'Concept maps, KWL charts and visual notes.',
   },
 ];
@@ -168,6 +168,7 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   timeline: 'planning',
   'milestone-timeline': 'planning',
   'milestone-timeline-vertical': 'planning',
+  'sprint-planning': 'planning',
   // Processes and Workflows: how work gets done, step by step.
   flowchart: 'processes',
   swimlane: 'processes',
@@ -182,6 +183,7 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'user-story-map': 'product',
   'service-blueprint': 'product',
   sitemap: 'product',
+  'interview-synthesis': 'product',
   'opportunity-solution-tree': 'product',
   // A comic strip tells a user's story in panels, as a storyboard does.
   'comic-strip': 'product',
@@ -212,6 +214,9 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'event-storming': 'software',
   'threat-model': 'software',
   'incident-postmortem': 'software',
+  'c4-context': 'software',
+  'c4-container': 'software',
+  'architecture-decision-record': 'software',
   // Strategy: where the business stands and where it goes.
   swot: 'strategy',
   'pestle-analysis': 'strategy',
@@ -237,6 +242,9 @@ export const TEMPLATE_ALSO_IN: Readonly<
   'crazy-eights': ['meetings', 'product'],
   // Research synthesis is product work too.
   'affinity-map': ['product'],
+  // A decision record is a decision first; sprint planning is a meeting the team runs.
+  'architecture-decision-record': ['decisions'],
+  'sprint-planning': ['meetings'],
   // A concept map is a map of ideas, as a mind map is.
   'concept-map': ['ideas'],
   // Visual notes are taken in meetings and talks.

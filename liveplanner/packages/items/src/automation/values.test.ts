@@ -173,3 +173,25 @@ describe('hostile templates', () => {
     expect(cpuMsOf(() => hostile.forEach((t) => fillValues(t, c)))).toBeLessThan(cpuBudgetMs(300));
   });
 });
+
+// Work Tracker 1163: {{from}}, an Email Received rule's sender.
+describe('{{from}}', () => {
+  it('is known only in an Email Received rule', () => {
+    expect(isKnownValue('from')).toBe(false);
+    expect(isKnownValue('from', { email: true })).toBe(true);
+    expect(unknownValueIn('By {{from}}', { email: true })).toBeNull();
+  });
+
+  it('reads the sender, or nothing without one', () => {
+    expect(fillValues('By {{from}}', ctx({}, { email: 'ana@example.com' }))).toBe(
+      'By ana@example.com',
+    );
+    expect(fillValues('By {{from}}', ctx())).toBe('By ');
+  });
+
+  it('fills a sender holding braces once, as plain text', () => {
+    expect(fillValues('{{from}}', ctx({}, { email: '{{rule}}@example.com' }))).toBe(
+      '{{rule}}@example.com',
+    );
+  });
+});

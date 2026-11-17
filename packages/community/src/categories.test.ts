@@ -51,8 +51,8 @@ describe("each app's categories", () => {
   });
 
   it("gives each app's ids their own label and type, and an app's types are distinct", () => {
-    // The same id can mean different things in two apps: livediagram's Meetings & Workshops, liveplanner's Meetings.
-    expect(communityCategoryLabel('livediagram.app', 'meetings')).toBe('Meetings & Workshops');
+    // The same id can mean different things in two apps: livediagram's Meetings, liveplanner's Meetings.
+    expect(communityCategoryLabel('livediagram.app', 'meetings')).toBe('Meetings');
     expect(communityCategoryLabel('liveplanner.app', 'meetings')).toBe('Meetings');
     expect(communityCategoryLabel('liveplanner.app', 'planning')).toBe('Projects and Teams');
     for (const app of COMMUNITY_APPS) {

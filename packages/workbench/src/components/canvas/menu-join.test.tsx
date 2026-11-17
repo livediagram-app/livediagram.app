@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   joinedMenuCardWidth,
   MenuJoinBand,
+  menuNaturalRight,
   STRIP_MENU_GAP_PX,
   stripRoomBesideMenu,
 } from './menu-join';
@@ -63,6 +64,75 @@ describe('stripRoomBesideMenu', () => {
 
   it('measures from the editor’s own left edge (a split view’s pane)', () => {
     expect(stripRoomBesideMenu(600, 400, menu(572, false))).toBe(600 - 2 * 180);
+  });
+});
+
+// Work Tracker 1038: the strip decides where it goes from the box as it would stand uncapped, so capping the box at
+// the room left of a crowded strip never un-crowds it and pulls it back over the box.
+describe('menuNaturalRight', () => {
+  // A box 300px wide whose tab name is drawn `shown` wide but holds `whole` (scrollWidth), its own max-width 256px.
+  const capped = (
+    shown: number,
+    whole: number,
+    opts: { joined?: boolean; scale?: number } = {},
+  ) => {
+    const box = document.createElement('div');
+    if (opts.joined) box.setAttribute('data-menu-joined', '');
+    vi.spyOn(box, 'getBoundingClientRect').mockReturnValue(new DOMRect(12, 12, 300, 46));
+    const name = document.createElement('span');
+    name.setAttribute('data-tab-name-in-box', '');
+    name.style.maxWidth = '256px';
+    Object.defineProperty(name, 'offsetWidth', { value: shown });
+    Object.defineProperty(name, 'clientWidth', { value: shown - 1 });
+    Object.defineProperty(name, 'scrollWidth', { value: whole });
+    vi.spyOn(name, 'getBoundingClientRect').mockReturnValue(
+      new DOMRect(0, 0, shown * (opts.scale ?? 1), 20),
+    );
+    box.append(name);
+    document.body.append(box);
+    return box;
+  };
+
+  it('adds back what the cap hides of the name, up to the name’s own widest', () => {
+    // 120 drawn of 199 + 1 border: 80 hidden.
+    expect(menuNaturalRight(capped(120, 199))).toBe(312 + 80);
+    // A name longer than 16rem would stop at 256 anyway.
+    expect(menuNaturalRight(capped(120, 900))).toBe(312 + 136);
+    // At a UI scale, in screen px.
+    expect(menuNaturalRight(capped(120, 199, { scale: 1.5 }))).toBe(312 + 120);
+    // With no max-width of its own, all of it.
+    const free = capped(120, 900);
+    free.querySelector<HTMLElement>('[data-tab-name-in-box]')!.style.maxWidth = '';
+    expect(menuNaturalRight(free)).toBe(312 + 781);
+  });
+
+  it('is the drawn edge when nothing is hidden, joined, or with no name', () => {
+    expect(menuNaturalRight(capped(120, 119))).toBe(312);
+    expect(menuNaturalRight(capped(120, 199, { joined: true }))).toBe(312);
+    const bare = document.createElement('div');
+    vi.spyOn(bare, 'getBoundingClientRect').mockReturnValue(new DOMRect(12, 12, 300, 46));
+    expect(menuNaturalRight(bare)).toBe(312);
+    expect(menuNaturalRight(capped(0, 0))).toBe(312);
+  });
+
+  it('compact, goes by the whole width the box kept from its last whole form', () => {
+    const box = capped(120, 119);
+    box.dataset.menuNaturalWidth = '500';
+    box.dataset.menuForm = 'icon';
+    expect(menuNaturalRight(box)).toBe(12 + 500);
+    // Whole, the box measures itself as it stands.
+    box.dataset.menuForm = 'full';
+    expect(menuNaturalRight(box)).toBe(312);
+    // Nothing kept: its drawn edge.
+    box.dataset.menuForm = 'bare';
+    delete box.dataset.menuNaturalWidth;
+    expect(menuNaturalRight(box)).toBe(312);
+  });
+
+  it('measures the strip’s room from the uncapped edge', () => {
+    expect(stripRoomBesideMenu(1000, 0, capped(120, 199))).toBe(
+      1000 - 2 * (392 + STRIP_MENU_GAP_PX),
+    );
   });
 });
 

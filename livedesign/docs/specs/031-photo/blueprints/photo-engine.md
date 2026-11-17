@@ -78,6 +78,14 @@ not design: where a spec is silent the default is in [DEFAULTS.md](DEFAULTS.md).
       refine, content-aware fill) and `photo-worker-client.ts`.
       A worker gets copies of a task's buffers until it has answered once, and has them moved after; a
       worker that never loads (offline, a chunk gone after a deploy) leaves the page the buffers to run the task.
+  - `lib/photo-template/` (photo-pages.md "The Photo Edit template"): `photo-edit-sample.ts` (pure: the Story and
+    Post photos given the sample's blob ids, `withPhotoEditSample`, which takes only a tab whose one photo page is
+    unstarted), `photo-edit-sample-apply.ts` (the ask, kept in session storage by tab id, and
+    `applyAskedPhotoEditSample`: load, queue the files, wait for them to be stored, then one tab edit), and
+    `photo-edit-sample-load.ts`, imported lazily, which names the files in `photo-edit-sample/` by
+    `new URL(…, import.meta.url)` (the bundler emits them as hashed static files) and checks each against its blob
+    id. `hooks/editor/usePhotoEditSample.ts` runs it from `usePhotoEditor` once the store's transport is set; the
+    start (`useTemplateFlow`) and `/new` (`new-design-content.ts`) ask.
     - Drawing: `apps/live/lib/photo-editor/gl/gl-compositor.ts` (with its `gl-programs.ts` and `gl-textures.ts`) and `apps/live/lib/photo-editor/gl/shaders.ts` (WebGL 2), `cpu-view.ts` (the fallback),
       `surface-painter.ts` (which one draws, and when), `sliced-composite.ts` (a main-thread composite in
       bands, for merges), `view-options.ts` (the pixel grid).
@@ -99,7 +107,9 @@ not design: where a spec is silent the default is in [DEFAULTS.md](DEFAULTS.md).
     `PhotoToolsRail.tsx` (the photo tools: `placement="strip"` in the palette strip, `"row"` on a phone), `PhotoColours.tsx`, `PhotoToolOptionsBody.tsx` (with `PhotoPhoneOptions.tsx` and `PhotoTransformOptions.tsx`), `PhotoBrushPresets.tsx`,
     `PhotoGradientField.tsx`, `PhotoTitleBar.tsx`, `PhotoPanel.tsx` with `PhotoPanelParts.tsx`,
     `PhotoLayersTab.tsx`, `PhotoLayerRow.tsx` (rows restack by the shared `useRowPointerDrag`), `PhotoBlendPicker.tsx`, `PhotoAdjustTab.tsx`,
-    `AdjustmentEditor.tsx`, `CurvesEditor.tsx`, `PhotoEffectsEditor.tsx`, `PhotoTextEditor.tsx`, the dialogs
+    `AdjustmentEditor.tsx`, `CurvesEditor.tsx`, `PhotoEffectsEditor.tsx`, `PhotoTextEditor.tsx` (its edit begun once per field and ended a
+    microtask after the field unmounts, unless the same field mounts again, so React's development double mount never
+    ends and removes a new empty layer), the dialogs
     (`PhotoDialogs.tsx`, `PhotoSizeDialogs.tsx`, `PhotoEditDialogs.tsx`, `PhotoApplyDialogs.tsx`,
     `SelectAndMaskDialog.tsx`, `PlacePictureDialog.tsx`, `FilterPreview.tsx`, `MakeSizesDialog.tsx`), `PhotoExportPanel.tsx`,
     `StartPhotoCard.tsx`, `RasterThumb.tsx`, and the hooks `usePhotoShortcuts.ts`, `usePhotoHistogram.ts`,
@@ -418,7 +428,10 @@ Every spec rule maps to a test file:
 - Design: `page.test.ts` photo kind parsing and label; `withPages` dropping a removed page's photo.
 - Api: `photo-blob-routes.test.ts` (each refusal, dedupe, cap, adopt, read gate, tab-scoped visitor),
   `db/photo-blobs.test.ts` (refs, markers, release and the sweep against real SQLite), copy carries refs, `room` refuses a Participant's `photo` op.
-- Live: `upload-queue.test.ts`, `session-active.test.ts` (the active layer), `session-remote.test.ts` (a peer's
+- Live: `photo-edit-sample.test.ts` (the stacks, the crop, the masks, only an unstarted template tab taken, an
+  existing tab untouched), `photo-edit-sample-load.test.ts` (the files' ids against their bytes, a failed or wrong
+  fetch), `photo-edit-sample-apply.test.ts` (asked only, stored before set, both storage modes through
+  `uploadBlobs`), `upload-queue.test.ts`, `session-active.test.ts` (the active layer), `session-remote.test.ts` (a peer's
   tiles held on unfinished work, taken up on cancel), `photo-ops.test.ts`, `photo-tools.test.ts`,
   `photo-actions.test.ts`, `tools/*.test.ts`, `selection-ops.test.ts`, `select-and-mask.test.ts`,
   `sliced-composite.test.ts`, `pixels-store.test.ts`, `blob-client.test.ts`, `apps/live/lib/photo-editor/gl/shaders.test.ts`,

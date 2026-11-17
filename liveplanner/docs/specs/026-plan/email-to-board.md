@@ -24,8 +24,10 @@ this subdomain on the card (2026-11-15, option (a)).
 
 ## Who may manage an address
 
-- **An Editor of the whole plan**: its owner, the members of its team, and anyone holding it through an Editor share
-  link, in person (signed in or a guest). Turning an address on lets mail add cards, which is an Editor's change to
+- **An Editor of the whole plan, signed in** (owner, 2026-11-16): its owner, the members of its team, and anyone
+  holding it through an Editor share link, in person with an account. A guest is refused (403
+  `email_intake_needs_editor`) and sees the row badged **Sign In**, whose gate signs in and comes back with it open
+  (`?email=1`). Turning an address on lets mail add cards, which is an Editor's change to
   the board, so it is never a Participant's or a Viewer's: they see no row and the routes refuse them.
 - **Not** through an API token or a workbench session (a delegated caller never mints a lasting secret), nor a
   link confined to one tab, nor a Community link. Refused with 403 `email_intake_needs_editor`.
@@ -42,8 +44,11 @@ this subdomain on the card (2026-11-15, option (a)).
 
 ### Where it lives
 
-**Email to Board…** in the **tab menu** (the tab's ⋯ and the canvas's right-click menu, one menu), beside Publish as
-Roadmap, on a tab holding at least one Plan board, for someone who may manage an address. It opens the Email to
+**Email to Board** in the footer's **Tools** menu, in its Automate group under Automations
+([Footer Tools menu](../../../../liveworkspace/docs/specs/004-index/footer-tools-menu.md); moved out of the tab menu, owner
+2026-11-16), on a tab holding at least one Plan board, for someone who may manage an address. Signed out, it is still
+there, badged **Sign In**; on a plan in This Browser, badged **Sync Plan**; a press opens that gate first, then the
+dialog. It opens the Email to
 Board dialog on the tab's first board (a board picker at the top when the tab holds several).
 
 ### The dialog
@@ -93,6 +98,9 @@ made by no person:
 - **From email**: the card keeps the sender's address in its `fromEmail` field, and its panel's footer says
   **From email alice@example.com** with a mail glyph, beside Created by (which names the same address). Its history
   starts "Created this card from an email in <column>".
+- **Rules**: the card starts the plan's [Automations](automations.md) once, as any new card does: **Card Created**
+  rules hear it, and so do **[Email Received](automations.md#email-received)** rules, which hear only email cards,
+  narrowed by the board and by the sender (an address or a domain), and can write the sender as `{{from}}`.
 - Nothing else of the message is kept: no other header, no recipients, no message id, no HTML.
 
 ## Which mail is taken

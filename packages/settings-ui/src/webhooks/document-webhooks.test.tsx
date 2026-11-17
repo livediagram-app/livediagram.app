@@ -398,9 +398,47 @@ describe('A document’s webhooks', () => {
     type(field('Name'), 'x');
     act(() => choice('Canvas Renamed', form).click());
     await press('Add Webhook', form);
-    expect(container.querySelector('[role=alert]')?.textContent).toContain(
-      'hooks.slack.com/services',
-    );
+    const url = field('Slack Webhook URL');
+    const alert = container.querySelector('[role=alert]')!;
+    expect(alert.textContent).toContain('hooks.slack.com/services');
+    // Said by the address, which is marked invalid and takes the keyboard (Work Tracker 1025).
+    expect(url.getAttribute('aria-invalid')).toBe('true');
+    expect(url.getAttribute('aria-describedby')).toContain(alert.id);
+    expect(document.activeElement).toBe(url);
+    // Typing a new address clears it.
+    type(url, 'https://hooks.slack.com/services/x');
+    expect(url.hasAttribute('aria-invalid')).toBe(false);
+    expect(container.querySelector('[role=alert]')).toBeNull();
+  });
+
+  it('says a host that does not resolve could not be found, by the address', async () => {
+    refuse = (m) => (m === 'createWebhook' ? 'webhook_url_unresolved' : null);
+    await render();
+    await press('Add Webhook');
+    const form = container.querySelector('form')!;
+    type(field('Slack Webhook URL'), 'https://hooks.slak.com/services/x');
+    type(field('Name'), 'x');
+    act(() => choice('Canvas Renamed', form).click());
+    await press('Add Webhook', form);
+    const alert = container.querySelector('[role=alert]')!;
+    expect(alert.textContent).toBe('We couldn’t find that address. Check the domain.');
+    expect(document.activeElement).toBe(field('Slack Webhook URL'));
+    // Cancel and Add Webhook stay in the form's sticky foot.
+    expect(button('Cancel', form)).toBeTruthy();
+    expect(button('Add Webhook', form).closest('.sticky')).not.toBeNull();
+  });
+
+  it('keeps a refusal that is not the address above the buttons, the keyboard on Add Webhook', async () => {
+    refuse = (m) => (m === 'createWebhook' ? 'webhook_limit' : null);
+    await render();
+    await press('Add Webhook');
+    const form = container.querySelector('form')!;
+    type(field('Slack Webhook URL'), 'https://hooks.slack.com/services/x');
+    type(field('Name'), 'x');
+    act(() => choice('Canvas Renamed', form).click());
+    await press('Add Webhook', form);
+    expect(container.querySelector('[role=alert]')?.textContent).toContain('up to 10 webhooks');
+    expect(field('Slack Webhook URL').hasAttribute('aria-invalid')).toBe(false);
     expect(document.activeElement).toBe(button('Add Webhook', form));
   });
 

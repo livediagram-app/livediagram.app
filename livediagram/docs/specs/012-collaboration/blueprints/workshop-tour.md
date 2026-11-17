@@ -22,7 +22,7 @@ Derived from [Workshop tour](../workshop-tour.md). Where this is silent, the
 - **Mount:** `EditorView` mounts the host the first time the tab's mode is `workshop`
   (`useEverTrue`), and keeps it mounted.
 - **Offer:** `useOfferTour('workshop', …)` publishes `{ name: 'Workshop', rank: TOUR_OFFER_RANK.mode, start }` to
-  the footer's Start Tour button while in Workshop and `canWork` (hydrated, no start panel open, no welcome
+  the footer's Get Started button while in Workshop and `canWork` (hydrated, no start panel open, no welcome
   overlay, not read-only, not embedded, tab not locked), seen or not. `start` does nothing while this tour or
   another (`useActiveTour()`) is active. The tour never starts on its own.
 - **Rerun:** `WORKSHOP_TOUR_RELAUNCH_EVENT` starts it when it is on offer; elsewhere it is ignored.

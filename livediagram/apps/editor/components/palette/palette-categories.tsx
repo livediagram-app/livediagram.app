@@ -138,7 +138,7 @@ export const PALETTE_CATEGORIES: {
     label: 'Layout',
     group: 1,
     description:
-      'What a diagram is arranged and labelled with: lanes, frames, stacks, boundaries, a diagram key, cards, badges and step numbers.',
+      'What a diagram is arranged and labelled with: lanes, frames, stacks, boundaries, a diagram key, cards, badges and step numbers, and its pictures: an image or an avatar.',
     icon: <BuildTabIcon />,
   },
   {

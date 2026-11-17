@@ -8,6 +8,7 @@ import {
   startEventStormingRow,
   startTemplateDocument,
   paletteTile,
+  STICKY_NOTE,
 } from './fixtures';
 
 // End-to-end smoke suite (docs/specs/003-system-architecture/e2e-smoke.md). Small by design: it answers "does
@@ -15,14 +16,13 @@ import {
 // tests can't reach. Every test also fails on any uncaught page error
 // (the `pageErrors` fixture).
 
-test('the new-document wizard renders', async ({ page, pageErrors }) => {
+// /new asks nothing (docs/specs/007-editor/new-document-route.md "No welcome step"): it makes a canvas on arrival and
+// opens it on Start Diagramming, under the document's own address.
+test('/new makes a canvas and opens it on its start', async ({ page, pageErrors }) => {
   await page.goto('/new');
-  await expect(page.getByText('New Canvas', { exact: false })).toBeVisible();
-  // The Mode step is the client-rendered heart of the wizard (docs/specs/007-editor/new-document-route.md
-  // "Choosing a mode"); its three mode cards (Diagram, Draw, Workshop) prove the picker mounted, not just the shell.
-  const modes = page.getByRole('group', { name: 'What are you making?' });
-  await expect(modes).toBeVisible();
-  await expect(modes.locator('[data-new-mode]')).toHaveCount(3);
+  await expect(page.locator('[data-canvas-a11y-root]')).toBeAttached({ timeout: 30_000 });
+  await expect(page.getByRole('region', { name: /^Start Diagramming$/ })).toBeVisible();
+  expect(new URL(page.url()).pathname).toMatch(/^\/document\/[^/]+$/);
   expectNoPageErrors(pageErrors);
 });
 
@@ -32,7 +32,7 @@ test('the new-document wizard renders', async ({ page, pageErrors }) => {
 test.describe('a first visit', () => {
   test.use({ freshVisitor: true });
 
-  test('goes through the guest handoff and comes back to the wizard with a guest token', async ({
+  test('goes through the guest handoff and comes back to make the canvas with a guest token', async ({
     page,
     pageErrors,
   }) => {
@@ -46,8 +46,14 @@ test.describe('a first visit', () => {
       return at >= 0 && at < visited.length - 1;
     };
     await expect.poll(cameBack, { timeout: 15_000 }).toBe(true);
-    await expect(page.getByRole('group', { name: 'What are you making?' })).toBeVisible();
-    expect(visited.at(-1)).toMatch(/^\/new\/?$/);
+    await expect(page.locator('[data-canvas-a11y-root]')).toBeAttached({ timeout: 30_000 });
+    // Back to /new, or to the canvas /new already made: a guest's canvas is This Browser, so /new can create it and
+    // take its /document/<id> address before the handoff leaves (docs/specs/003-system-architecture/e2e-smoke.md).
+    const back = visited.findIndex((path) => path.startsWith('/auth/guest'));
+    expect(visited.slice(back + 1)).toContainEqual(
+      expect.stringMatching(/^\/(new\/?|document\/[0-9a-f-]{36})$/),
+    );
+    expect(new URL(page.url()).pathname).toMatch(/^\/document\/[0-9a-f-]{36}$/);
     expect(
       await page.evaluate(() => localStorage.getItem('livediagram:v2:guest-token')),
     ).toBeTruthy();
@@ -55,14 +61,13 @@ test.describe('a first visit', () => {
   });
 });
 
-// The editor header carries no apps menu over the new-document wizard: the product's links live in the Explorer
+// The editor header carries no apps menu over a new canvas: the product's links live in the Explorer
 // panel's footer (docs/specs/013-workspace/explorer-structure.md "Layout").
-test('the new-document wizard shows with no apps menu in the header', async ({
-  page,
-  pageErrors,
-}) => {
+test('a new canvas opens with no apps menu in the header', async ({ page, pageErrors }) => {
   await page.goto('/new');
-  await expect(page.locator('[data-new-mode="diagram"]')).toBeVisible();
+  await expect(page.getByRole('region', { name: /^Start Diagramming$/ })).toBeVisible({
+    timeout: 30_000,
+  });
   await expect(page.getByRole('button', { name: /^switch section/i })).toHaveCount(0);
   expectNoPageErrors(pageErrors);
 });
@@ -114,7 +119,7 @@ test('create a blank document, add a shape, and it survives a reload', async ({
 // walks that whole path in a browser, then reloads to prove the board is
 // still a board after a round trip through the api.
 test('an event-storming board stays a board across a reload', async ({ page, pageErrors }) => {
-  await startTemplateDocument(page, 'Software & IT', /^Event storming/i);
+  await startTemplateDocument(page, 'Software', /^Event storming/i);
   await expect(page).toHaveURL(/\/document\/[0-9a-f-]{36}/);
 
   // The notation palette is the board presenting itself: on any other tab
@@ -123,12 +128,13 @@ test('an event-storming board stays a board across a reload', async ({ page, pag
   await expect(notation.first()).toBeVisible();
   // The seeded timeline of orange events (docs/specs/021-event-storming/event-storming.md).
   const canvas = page.locator('[data-canvas-a11y-root]');
-  const note = canvas.getByRole('img', { name: /sticky/i }).first();
+  // The seed carries the run sheet as its note, so its indicator makes it a `group`, not an `img`.
+  const note = canvas.locator(STICKY_NOTE).first();
   await expect(note).toBeVisible();
   // The starter is one domain event and nothing else: no text element
   // (docs/specs/021-event-storming/event-storming.md Phase 1).
-  await expect(canvas.getByRole('img')).toHaveCount(1);
-  await expect(canvas.getByRole('img', { name: /Board Created/i })).toHaveCount(1);
+  await expect(canvas.locator('[data-element-id]')).toHaveCount(1);
+  await expect(canvas.getByRole('group', { name: /Board Created/i })).toHaveCount(1);
   // Workshop notes are written in capitals (docs/specs/021-event-storming/event-storming.md). Only a browser can
   // answer this one: the stored label keeps its typed casing, so the caps
   // exist purely as the rendered treatment.

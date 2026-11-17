@@ -16,9 +16,15 @@ import {
   typesOf,
   withTypeStatuses,
   type ItemTypeCatalogue,
+  provideTemplateCardTypes,
 } from '@liveplanner/items';
 import { apiRefusalOf } from './api-refusal';
 import { CARD_TYPES_SAVE_ATTEMPTS, isCardTypesStale, itemTypesPath } from './plan-state';
+import { TEMPLATE_CARD_TYPES } from '@liveplanner/items/template-card-types';
+
+// The Plan templates' own card types, so the boards an agent makes can bring them (docs/specs/026-plan/plan-templates.md "Card
+// types a template makes"). A subpath, kept out of the editor's first load.
+provideTemplateCardTypes(TEMPLATE_CARD_TYPES);
 
 type BoardLike = Parameters<typeof catalogueWithBoardTypes>[1][number];
 

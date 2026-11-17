@@ -172,15 +172,33 @@ layout says so.
 
 Twenty-five in all, in four categories: **Lockups**, **Wordmarks**, **Emblems** and **Marks**.
 Text sits on the paper or inside an outline, never on a theme fill, so it reads in every theme.
-The placeholder name is **Brand**, its initials **BR**, the tagline **Your tagline here**.
+The placeholder name is **Brand**, its initials **BR**, the tagline **Your tagline here**; a template built from
+the layouts may show a name of its own (below).
 
 Each category is also a template, a **logo exploration** (`LOGO_EXPLORATIONS` in
 `packages/templates/src/logo-exploration-data.ts`, in the **Branding** category): one logo page per
 layout of the family, named for its layout, so a designer compares the whole family side by side, keeps the one
 that fits and deletes the rest. **Lockup Explorations** (the seven lockups), **Wordmark Explorations** (the six
-wordmarks), **Emblems and Badges** (the six emblems) and **Marks and App Icons** (the six marks). Unlike Logo
-Design, which shows one made-up brand worked up in full, they use the layouts' placeholder name, so they read as a
-family of starts rather than a finished brand.
+wordmarks), **Emblems and Badges** (the six emblems) and **Marks and App Icons** (the six marks). They show one
+made-up studio, **Lumen** (initials **LM**, second word **Studio**, tagline **Light for small spaces**), in place of
+the layouts' placeholder, and each page sets its name in a different [display face](#display-faces)
+(`LOGO_EXPLORATION_FACES`), so the family reads as real starts in real type: a geometric sans on one, a high-contrast
+serif or a stencil on another. The tagline keeps the label face, as it would in print.
+
+### Branding templates
+
+Beside the explorations, two templates show a brand worked up in full, each on logo pages:
+
+- **Logo Design**: one made-up coffee roaster, **Sunny Side**, its six lockups (horizontal, stacked, app icon,
+  horizontal and stacked with the tagline, one colour), each on its own artboard and captioned with where it gets
+  used, then its palette. The wordmark is set in **DM Serif Display**, a display face, the tagline in the label face.
+- **Brand Board**: one made-up cycle shop, **Tandem**, as the sheet a brand hands to whoever uses it: **Logo** (the
+  primary lockup), **Mark and Icons** (the mark alone, on its app icon tile, and at favicon size), **Colours** (four
+  swatches, each with its name, hex code and use), **Type** (the display face for headings, **Syne**, and the label
+  face for text, each with a specimen) and **On Dark** (the lockup reversed on the brand's dark colour, the page's
+  background). Its words about each page are the template's notes, left out of the Logo Kit as Logo Design's are.
+
+Both lock the fills that carry the identity (`themeLockFill`), so a theme never flattens them.
 
 ## Construction guides
 

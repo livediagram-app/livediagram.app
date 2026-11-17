@@ -4,7 +4,6 @@
 // SplitViewFrame by EditorView, which lays them across both panes side by side
 // (docs/specs/007-editor/split-view.md); each renders nothing where its bar is hidden.
 
-import { WalkthroughsButton, type WalkthroughsMenu } from '@liveworkspace/walkthrough';
 import { ApprovalBadge } from '@liveworkspace/explorer/approvals';
 import { memo } from 'react';
 import { truncateName, type Tab } from '@livedocuments/document';
@@ -18,8 +17,7 @@ import { appHrefOfPlace } from '@/lib/workbench/workspace-place';
 import { TabBar } from '@/components/chrome/TabBar';
 import { LandscapeBarFold } from '@/components/chrome/LandscapeBars';
 import { RolePill } from '@/components/chrome/RoleIndicator';
-import { SuggestionsHeaderAction } from '@liveworkspace/suggestions/react/SuggestionsBar';
-import { offersHistory, openHistoryFromFooter } from '@/components/versions/HistoryButton';
+import { offersHistory, openHistoryFromFooter } from '@/components/versions/history-tools-item';
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { resolveOwnerBadge } from '@/lib/presence-rows';
 import { useEditorChrome, useEditorChromeStore } from './EditorContext';
@@ -42,9 +40,6 @@ export const EditorViewHeader = memo(function EditorViewHeader(view: {
   headerCommunity: ReturnType<typeof documentIsPublic>;
   isMobileViewport: boolean;
   landscapeShown: boolean;
-  // The header's Walkthroughs menu (docs/specs/012-collaboration/walkthroughs.md): one value that changes only with
-  // its list, so this header still renders only when its own slices do.
-  walkthroughs?: WalkthroughsMenu;
 }) {
   const chrome = useEditorChromeStore();
   const hidden = useEditorChrome((s) => s.zenMode || !s.appChrome);
@@ -66,7 +61,6 @@ export const EditorViewHeader = memo(function EditorViewHeader(view: {
   const ownerName = useEditorChrome((s) => resolveOwnerBadge(s)?.name ?? null);
   const isSelf = useEditorChrome((s) => s.isOwner);
   const canToggleRole = useEditorChrome((s) => s.canToggleRole);
-  const canvasSuggestions = useEditorChrome((s) => s.canvasSuggestions);
   const { isOffline, headerCommunity, isMobileViewport } = view;
   if (hidden) return null;
   return (
@@ -106,9 +100,6 @@ export const EditorViewHeader = memo(function EditorViewHeader(view: {
               <ApprovalBadge />
             </>
           }
-          // Editing or Suggesting, and the review (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md):
-          // in the title bar at every width, so the canvas's toolbars never cover it.
-          leadAction={<SuggestionsHeaderAction suggestions={canvasSuggestions} />}
           // docs/specs/012-collaboration/presentation-mode.md "The header's Present button": only
           // while the deck has a slide to show, on a desktop, once the document is up. Every role.
           present={
@@ -122,11 +113,6 @@ export const EditorViewHeader = memo(function EditorViewHeader(view: {
                   },
                 }
               : undefined
-          }
-          walkthroughs={
-            view.walkthroughs && !anyWelcomeOpen ? (
-              <WalkthroughsButton menu={view.walkthroughs} />
-            ) : null
           }
           onOpenAccount={() => chrome.get().openSettingsOn('account')}
           onOpenShare={() => {
@@ -191,6 +177,7 @@ function EditorViewFooterBar(view: {
   // Version History (docs/specs/006-document/version-history.md "In the editor"): the gate's own slices.
   const hydrated = useEditorChrome((s) => s.hydrated);
   const communityVisitor = useEditorChrome((s) => s.sessionCommunity !== null);
+  const canvasSuggestions = useEditorChrome((s) => s.canvasSuggestions);
   const { isOffline, onSelectTab } = view;
   if (hidden) return null;
   // The bar is already hidden in an embed and behind a welcome, so those two answer false here.
@@ -265,6 +252,7 @@ function EditorViewFooterBar(view: {
             chrome.get().setSettingsOpen(true);
             track('UI', 'Opened', 'Settings');
           }}
+          suggestions={canvasSuggestions}
           onOpenSearch={() =>
             openSearchWithPrefetch(chrome.get().setSearchOpen, chrome.get().loadAllTabs)
           }

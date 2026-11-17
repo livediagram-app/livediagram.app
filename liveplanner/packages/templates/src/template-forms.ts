@@ -10,7 +10,7 @@ import {
   type FormDefinition,
   type FormStarter,
 } from '@liveplanner/forms';
-import { READY_MADE_CARD_TYPES } from '@liveplanner/items';
+import { boardCardType } from '@liveplanner/items';
 import type { BoardSpec, FormSpec, PlanTabSpec } from './plan-template-catalogue';
 
 // The tab a template form's responses go to: a board's tab (its spec) or a Sheet's (its sheet's id).
@@ -54,10 +54,28 @@ export function starterWithFields(
   };
 }
 
+// `starter` without the questions whose field `leaveOut` names (by the starter field's label): a question the target's
+// type has no field for, which the work does not need (Bug Report's Severity). Nothing else changes.
+export function starterWithout(
+  starter: FormStarter,
+  leaveOut: readonly string[] | undefined,
+): FormStarter {
+  if (!leaveOut?.length) return starter;
+  return {
+    ...starter,
+    sections: starter.sections.map((s) => ({
+      ...s,
+      questions: s.questions.filter(
+        (q) => typeof q.to !== 'object' || !leaveOut.includes(q.to.label),
+      ),
+    })),
+  };
+}
+
 // The ready-made card type a template board's responses are made as: the first it takes.
 export function boardResponseType(board: BoardSpec) {
   const id = board.setup?.addTypes?.[0];
-  return id ? READY_MADE_CARD_TYPES.find((t) => t.id === id) : undefined;
+  return id ? boardCardType(id) : undefined;
 }
 
 export function templateForm(
@@ -66,7 +84,10 @@ export function templateForm(
   target: TemplateFormTarget,
   random: () => number = Math.random,
 ): FormDefinition {
-  const starter = starterWithFields(formStarter(spec.starter), spec.fields);
+  const starter = starterWithFields(
+    starterWithout(formStarter(spec.starter), spec.leaveOut),
+    spec.fields,
+  );
   const newId = (prefix: 'q' | 's') => newFormPartId(prefix, random);
   const type = target && 'board' in target ? boardResponseType(target.board) : undefined;
   const status = target && 'board' in target ? target.board.setup?.columns?.[0]?.status : undefined;

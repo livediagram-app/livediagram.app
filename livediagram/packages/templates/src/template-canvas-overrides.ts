@@ -130,6 +130,13 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'onboarding-plan': 'grid',
   'concept-map': 'graph',
   'network-diagram': 'graph',
+  // The templates review batch: the C4 levels and the decision record are drawn diagrams on graph paper; sprint
+  // planning and the interview synthesis are sticky-note boards on the dot grid.
+  'c4-context': 'graph',
+  'c4-container': 'graph',
+  'architecture-decision-record': 'graph',
+  'sprint-planning': 'grid',
+  'interview-synthesis': 'grid',
 };
 
 // How far each loud backdrop pattern steps back behind a template's content

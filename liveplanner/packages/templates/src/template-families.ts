@@ -40,6 +40,11 @@ const TEMPLATE_FAMILY: Record<TemplateKind, TemplateFamily | null> = {
   'meeting-agenda': null,
   'personal-goals': null,
   'study-planner': null,
+  // A sprint runs on a Kanban board by another name, as Project Planner's does.
+  'sprint-board': 'kanban',
+  'client-onboarding': null,
+  'editorial-pipeline': null,
+  'trip-planner': null,
   'blank-form': null,
   'bug-report-form': null,
   'feedback-form': null,

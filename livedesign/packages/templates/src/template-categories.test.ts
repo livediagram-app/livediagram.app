@@ -56,15 +56,15 @@ describe('template categories', () => {
   it('pins the primary counts', () => {
     const counts = ids.map((id) => TEMPLATES.filter((t) => templateCategory(t.kind) === id).length);
     expect(Object.fromEntries(ids.map((id, i) => [id, counts[i]]))).toEqual({
-      branding: 5,
-      health: 2,
+      branding: 6,
+      health: 3,
       media: 3,
       photos: 1,
       shopping: 2,
       onboarding: 1,
-      social: 2,
+      social: 3,
       travel: 2,
-      websites: 4,
+      websites: 5,
       work: 3,
     });
   });

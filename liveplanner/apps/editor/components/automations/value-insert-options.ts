@@ -1,11 +1,14 @@
 // What Insert a Value offers (docs/specs/026-plan/automations.md "Values"), grouped: This Card's fixed values, The
 // Triggering Card's inside a For Related Cards branch, each of the card's fields by name, and in an Incoming Webhook
-// rule Webhook Field…, which asks for a path rather than inserting at once, and in a GitHub rule the pull request's.
+// rule Webhook Field…, which asks for a path rather than inserting at once, in a GitHub rule the pull request's, and
+// in an Email Received rule the sender's (From Email).
 // Pure.
 
 import {
   AUTOMATION_BRANCH_VALUE_LABELS,
   AUTOMATION_BRANCH_VALUE_NAMES,
+  AUTOMATION_EMAIL_VALUE_LABELS,
+  AUTOMATION_EMAIL_VALUE_NAMES,
   AUTOMATION_PULL_REQUEST_VALUE_LABELS,
   AUTOMATION_PULL_REQUEST_VALUE_NAMES,
   AUTOMATION_VALUE_LABELS,
@@ -50,22 +53,35 @@ const PULL_REQUEST: ValueGroup = {
     name,
   })),
 };
+const EMAIL: ValueGroup = {
+  id: 'email',
+  label: 'Email',
+  options: AUTOMATION_EMAIL_VALUE_NAMES.map((name) => ({
+    kind: 'value',
+    id: `value:${name}`,
+    label: AUTOMATION_EMAIL_VALUE_LABELS[name],
+    name,
+  })),
+};
 const WEBHOOK: ValueGroup = {
   id: 'webhook',
   label: 'Webhook',
   options: [{ kind: 'webhook', id: 'webhook', label: 'Webhook Field…' }],
 };
 
-/** The groups for a field: inside a branch or not, the card's fields, whether the rule is an Incoming Webhook's, and
- *  whether a GitHub trigger's (the Pull Request group, after This Card). */
+/** The groups for a field: inside a branch or not, the card's fields, whether the rule is an Incoming Webhook's,
+ *  whether a GitHub trigger's (the Pull Request group, after This Card) and whether an Email Received's (the Email
+ *  group, after This Card). */
 export function valueInsertGroups(
   branch: boolean,
   fields: readonly { id: string; name: string }[],
   incoming: boolean,
   github = false,
+  email = false,
 ): ValueGroup[] {
   const groups: ValueGroup[] = [THIS_CARD];
   if (github) groups.push(PULL_REQUEST);
+  if (email) groups.push(EMAIL);
   if (branch) groups.push(TRIGGERING_CARD);
   if (fields.length > 0)
     groups.push({

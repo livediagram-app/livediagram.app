@@ -215,7 +215,7 @@ It opens the real menu rather than a second copy of each form. A per-kind popove
 
 Three kinds draw a **richer `…` of their own** instead (`drawsOwnElementMenu`): the Timer's length presets, the Session button's dots / question, the Done check's round controls. Those are the settings worth one press mid-session, and they are never a dead end: each ends with an **All Settings…** row into the full menu. The shared button is suppressed for exactly those kinds, because two ellipses in the same corner of the same card is a bug you can see from across the room.
 
-**An open element menu follows the selection.** Clicking another element while the single-element menu is open retargets the menu to the newly-selected element in place (same screen position) instead of dismissing it, so the same tweak can be applied to several elements one after another with one click each. The retarget preserves the menu's expanded state: the open accordion (scaffold `sectionProps`) and the open flyout (`flyoutProps`) both stay open, showing the new element's values, so styling five shapes via the Style flyout never re-drills the category path.
+**An open element menu follows the selection.** Clicking another element while the single-element menu is open retargets the menu to the newly-selected element in place (same screen position) instead of dismissing it, so the same tweak can be applied to several elements one after another with one click each. The retarget preserves the menu's expanded state: the open accordion (scaffold `sectionProps`) and the open flyout (`flyoutProps`) both stay open, showing the new element's values, so styling five shapes via the Appearance flyout never re-drills the category path.
 
 Control groups (rendered as context-menu categories, hidden when their gate doesn't apply):
 
@@ -633,16 +633,16 @@ The catalogue is browsed by **what a person is using it for**: the kind of place
 categories, declared in `packages/templates/src/template-categories.ts` and read by every template start, the
 marketing gallery and the agents' template catalogue, each holding two to seven Spaces:
 
-| Category    | Id           | Description                                        | Templates                                                                      |
-| ----------- | ------------ | -------------------------------------------------- | ------------------------------------------------------------------------------ |
-| Campus      | `campus`     | Whole sites: offices, halls and bars in a garden.  | Company Campus, Startup HQ, School Quad, Co-working Tower (and Beach Offsite)  |
-| Events      | `events`     | Halls and rooms for talks, demos and training.     | All-Hands Hall, Training Room, Expo Hall                                       |
-| Games Rooms | `games`      | Arcades, dens and bars for playing games together. | Arcade Lounge, Games Night Den, Sports Bar                                     |
-| Homes       | `homes`      | Houses to meet in, with Stairs between the floors. | Family House, City Townhouse, Country Cottage                                  |
-| Office      | `office`     | Desks, pods and meeting rooms for the workday.     | Virtual Office, Coworking Space, Team Pod, Focus Library                       |
-| Outdoor     | `outdoor`    | Gardens and parks to meet in under an open sky.    | Garden Retreat, City Park, Beach Offsite (and Festival Field)                  |
-| Recreation  | `recreation` | Bars and cafes to unwind in together after work.   | Rooftop Bar, Cafe (and Sports Bar)                                             |
-| Venues      | `venues`     | Halls, hotels and stages to host a big day at.     | Conference Venue, Hotel and Suites, Music Hall, Festival Field (and Expo Hall) |
+| Category    | Id           | Description                                        | Templates                                                                                |
+| ----------- | ------------ | -------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Campus      | `campus`     | Whole sites: offices, halls and bars in a garden.  | Company Campus, Startup HQ, School Quad, Co-working Tower (and Beach Offsite)            |
+| Events      | `events`     | Halls and rooms for talks, demos and training.     | All-Hands Hall, Training Room, Expo Hall, Classroom, Hackathon Hall                      |
+| Games Rooms | `games`      | Arcades, dens and bars for playing games together. | Arcade Lounge, Games Night Den, Sports Bar                                               |
+| Homes       | `homes`      | Houses to meet in, with Stairs between the floors. | Family House, City Townhouse, Country Cottage                                            |
+| Office      | `office`     | Desks, pods and meeting rooms for the workday.     | Virtual Office, Coworking Space, Team Pod, Focus Library, Interview Suite, Client Lounge |
+| Outdoor     | `outdoor`    | Gardens and parks to meet in under an open sky.    | Garden Retreat, City Park, Beach Offsite (and Festival Field)                            |
+| Recreation  | `recreation` | Bars and cafes to unwind in together after work.   | Rooftop Bar, Cafe (and Sports Bar)                                                       |
+| Venues      | `venues`     | Halls, hotels and stages to host a big day at.     | Conference Venue, Hotel and Suites, Music Hall, Festival Field (and Expo Hall)           |
 
 - Blank Space is in no category: it is the start's own first card.
 - Four cross-listings (`TEMPLATE_ALSO_IN`): the Beach Offsite, an Outdoor Space, is also shown in Campus, as a whole
@@ -1478,3 +1478,10 @@ alike; a text field still takes its primary-selection paste from the browser.
 Pasting foreign text as a text element is the obvious next step and is
 deliberately not built: it needs the viewport centre in canvas coordinates,
 which lives in `Canvas` rather than in the clipboard hook.
+
+## Icon and Text live in Appearance (owner, 2026-11-16)
+
+The element menu's Appearance flyout holds everything about how the element looks: Presets, Colours, Border, Shadow,
+Finish, then Icon (a tech icon's size, a line icon's weight, a shape's inline icon) and Text. Neither is a row of its
+own in the menu any more. A flyout with one section inside, Tools holding only Mind Map for example, is never a row of
+its own: the section stands in the menu in its place, counting through any group of sections a host builds inline.

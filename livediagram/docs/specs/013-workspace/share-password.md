@@ -25,6 +25,12 @@ through, and the gate says which. A room join carries no password: the grant the
   `livediagram:share-password:<code>` (`readCachedSharePassword` / `writeCachedSharePassword`), read at the start of
   a share-link load so the first request already carries it, written after each accepted load, and cleared when the
   index refuses it (the password was changed or removed), so the gate shows afresh and a stale value never loops.
+  **A refused remembered password is not a mistake the visitor made.** The gate then opens with no "That password
+  didn't match" line, says "The password for this canvas was changed. Enter the new one to open it." and asks for
+  the new one (`changed` on the gate, set by `openShareLink` in `@liveworkspace/workbench/lib/editor-arrival` when the
+  refused password came from the cache). Only a password the visitor typed and the index refused shows the mismatch
+  line. The same holds in every editor, through the shared gate (`@liveworkspace/workbench`'s
+  `components/dialogs/SharePasswordGate`, which livediagram binds with its noun like the others).
   Plain text in the visitor's own browser matches the threat model: anyone able to read it can already open the
   canvas there. In an embed, browsers partition the iframe's storage, so the cache is per embedding site
   ([Read-only embeds](embeds.md)).

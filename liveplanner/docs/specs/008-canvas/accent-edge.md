@@ -3,7 +3,7 @@
 ## What
 
 A coloured bar along one edge of a box: **Left**, **Top** or **Bottom**. It is a style option on existing elements,
-not an element of its own, set from the **Border** category of the Style flyout beside Strength and Pattern.
+not an element of its own, set from the **Border** category of the Appearance flyout beside Strength and Pattern.
 
 ```ts
 accentEdge?: 'left' | 'top' | 'bottom';

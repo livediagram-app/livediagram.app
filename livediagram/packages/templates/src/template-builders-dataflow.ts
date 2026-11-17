@@ -68,7 +68,12 @@ export function buildDataFlow(cx: number, cy: number): Element[] {
     to: { id: string },
     toAnchor: Parameters<typeof createPinnedArrow>[3],
     label: string,
-  ) => ({ ...createPinnedArrow(from.id, fromAnchor, to.id, toAnchor), label });
+  ) => ({
+    ...createPinnedArrow(from.id, fromAnchor, to.id, toAnchor),
+    label,
+    // Data on the move: dots run the way it flows.
+    flow: 'dots' as const,
+  });
   const arrows = [
     flow(customer, 'e', takeOrder, 'w', 'Order details'),
     flow(takeOrder, 'n', customers, 's', 'Contact details'),

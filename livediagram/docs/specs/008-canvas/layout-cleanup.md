@@ -1,7 +1,7 @@
 # Layout cleanup
 
 The two layout tidiers, **Auto Layout** (in each style) and **Auto-align**, are one press
-away in Diagram mode on the **Tidy Up** button ([The Tidy Up button](#the-tidy-up-button)), and
+away in Diagram mode on the **Tidy** button ([The Tidy Up button](#the-tidy-up-button)), and
 anywhere through the [command palette](../007-editor/command-palette.md)'s actions. They are
 complementary, not duplicates: one snaps current positions, the other recomputes them from the
 graph. Both are editor-only (they mutate) and run a single undoable operation.
@@ -294,7 +294,7 @@ a component's nodes are positioned:
 
 ## The Tidy Up button
 
-Diagram mode has a **Tidy Up** button in the bottom-right cluster, the segment immediately
+Diagram mode has a **Tidy** button in the bottom-right cluster, the segment immediately
 **left of Layers** in the Layers and Theme strip ([Editor app](../007-editor/editor-app.md)): Tidy Up,
 Layers, the Theme & Canvas brush, all three about how the tab is arranged and how it looks rather
 than what is on it. Its glyph is a broom. It opens the **Tidy Up popover** above it, like the
@@ -325,7 +325,7 @@ The gate is the structural one Layers uses (a Participant is read-only for struc
 
 ### The popover
 
-A titled popover, **Tidy Up**, with a help link to the Layout Cleanup article. Two groups:
+A titled popover, **Tidy**, with a help link to the Layout Cleanup article. Two groups:
 
 1. **Auto Layout**, captioned "Rearrange shapes from the arrows between them.": a two-column grid
    of five **tiles**, one per style, in this order: Smart, Flowchart Down, Flowchart Right, Tree,
@@ -390,3 +390,5 @@ Force-directed ("organic") layouts, laying shapes out inside their lanes (a lane
 rigid block, so lane diagrams are offered Auto-align), routing graph input's arrows around
 obstacles (the editor's Tidy Up does), and any LLM
 involvement (Auto Layout is deterministic and offline-safe, and every deployment gets it). See issue #12 for the fuller rationale and open questions.
+
+The button and its popover read **Tidy** (owner, 2026-11-16; was Tidy Up).

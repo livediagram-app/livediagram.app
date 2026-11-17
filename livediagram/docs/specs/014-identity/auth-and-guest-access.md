@@ -194,7 +194,7 @@ copied under `guest_<old uuid>`, which nobody holds until it is claimed (repo `d
   and the next page load tries again.
 - **After a merge** the editor raises the `claimed` api-write signal (`packages/workbench/src/lib/api/write-signal.ts`), and the views
   that list the person's documents read their list again a second later (the editor's pickers,
-  `useDocumentList`, and /new's Jump Back In card), so the claimed work appears without a reload.
+  and `useDocumentList`), so the claimed work appears without a reload.
 - **Into whom.** The caller, guest or account. A guest who signs in later carries the claimed work with them
   through the ordinary [Guest → account merge](#guest--account-merge).
 - **Counted** (no ids): `Participant`/`Moved`/`LegacyGuest` on a merge, `Participant`/`Moved`/`LegacyGuestUnknown`

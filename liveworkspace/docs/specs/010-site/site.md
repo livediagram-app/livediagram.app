@@ -492,7 +492,7 @@ built once here. It is shown here and, through each switched-on app's router, at
   side of the app the person came from. It works on a move inside the Explorer too, not only on arrival. Signed
   out, an Account category asks them to sign in and come back to the same address; on an app's address a guest's
   app side opens as the guest's panel. `?settings=` is dropped from the address as the panel closes.
-  `?ended=revoked` says, once, that the link a plan was open through was revoked. `?trashed=<id>&title=` offers Undo
+  `?ended=revoked` says, once, in a warning toast, that the link a plan was open through was revoked. `?trashed=<id>&title=` offers Undo
   for an item just moved to the Trash. Each is dropped from the address once read. `?item=<id>` (an editor's door
   from an open item) opens the place that holds the item, with it marked, and the address becomes that place's
   ([one-explorer.md](../004-index/one-explorer.md#opening-from-an-open-item) "Opening from an open item").
@@ -1116,11 +1116,35 @@ route `liveworkspace.app/*`. The APIs' more specific routes still win, so it onl
   Nothing is cleared: where a browser keeps both copies, they hold the same value, and accounts reads the one it
   signed (own-cookies.ts). That answer is `Cache-Control: no-store`, so a browser asks again until it has moved.
   Nobody is signed out and no guest loses their things ([accounts.md](../003-accounts/accounts.md) "The move to www.").
-- Staging and local development have one host each, so nothing there redirects; the Worker answers only
-  `liveworkspace.app` itself.
+- Staging and local development have one host each, so nothing there redirects to `www.`; the Worker answers only
+  `liveworkspace.app` itself and plain HTTP on `www.liveworkspace.app` ("Only over HTTPS" below).
 
 It deploys after accounts and the site (`.github/scripts/ci-plan.mjs` puts it with the routers), so `www.` already
 answers every API when the first page load is sent there.
+
+### Only over HTTPS
+
+Every product and the platform answer only over HTTPS (Work Tracker 1057). A request over plain HTTP to a public
+host (each app's and liveworkspace.app's bare, `www.` and `staging.` host) answers one redirect to the same host, path
+and query over `https://`: `301` for a `GET` or `HEAD`, `308` for any other method so a `POST` keeps its body, cached
+for a day. One helper decides it, `httpsRedirect` in `@liveworkspace/sites/https-redirect`, so the rule cannot drift:
+
+- Each app's router asks it first thing after its bare domain's redirect, for every path, APIs and WebSockets
+  included (each app's `docs/specs/016-platform/router-app.md` "Only over HTTPS").
+- On `liveworkspace.app`, `liveworkspace-redirect` asks it after the bare domain's page redirect (a page load on
+  `http://liveworkspace.app` still lands on `https://www.liveworkspace.app` in one hop). `www.liveworkspace.app` is the
+  site's static custom domain with no code of its own, so the redirect Worker also takes the route
+  `http://www.liveworkspace.app/*`: a route that names a scheme matches only that scheme, so plain-HTTP visits to
+  `www.` run it and every HTTPS visit still goes straight to the site's assets, running no Worker.
+- The scheme comes from `request.url`, where Cloudflare passes the visitor's. A request whose `CF-Visitor` header says
+  `https` is never redirected, so a rewritten URL cannot loop, and following the redirect lands on HTTPS, which
+  passes through.
+- Never redirected: a local Worker (`DEPLOY_ENV=local`; `wrangler dev` hands it the production host), and local,
+  `*.test`, `workers.dev` or any other host.
+- Not covered by code: the platform services' own path routes on liveworkspace.app (`/api/auth/*`, `/api/index*` and
+  the rest) are more specific than the redirect Worker's routes, so a plain-HTTP call to one still reaches that
+  service; and `staging.liveworkspace.app`'s pages, which no Worker fronts. The zone's **Always Use HTTPS** setting
+  closes both, as an optional belt-and-braces step ([docs/ci.md](../../../../docs/ci.md) "Zone settings").
 
 ## Running it locally
 

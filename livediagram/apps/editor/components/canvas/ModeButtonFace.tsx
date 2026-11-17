@@ -152,6 +152,8 @@ export function ModeButtonFace({
       </span>
       <button
         type="button"
+        // Under Laser a right-click on the chip still opens the button's menu (useCanvasSurfaceGestures).
+        data-mode-button-chip=""
         // The label is already the accessible name; naming the action as well
         // keeps it unambiguous for a screen reader.
         aria-label={

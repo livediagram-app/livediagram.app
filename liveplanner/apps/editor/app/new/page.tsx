@@ -10,6 +10,7 @@ import { OpeningScreen } from '@/components/chrome/OpeningScreen';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useCtaAttribution } from './useCtaAttribution';
 import { apiCreateProject, apiLoadSelf, apiSaveSelf } from '@/lib/api-client';
+import { starterRulesAskOf } from '@/lib/api/starter-rules-ask';
 import {
   createFailureCopy,
   createIdsFor,
@@ -243,6 +244,8 @@ export default function NewProjectPage() {
             tabs: made?.tabs ?? tabs ?? [tab],
             itemTypes,
             ...(made?.sheets.length ? { sheets: made.sheets } : {}),
+            // Kept with the plan, and made when it is saved to the cloud (plan-templates.md "Starter rules").
+            starterRules: starterRulesAskOf(templateKind),
           },
           Date.now(),
         );
@@ -272,6 +275,8 @@ export default function NewProjectPage() {
           // (docs/specs/013-workspace/default-folders.md): with no place chosen, the server files it
           // in the person's default folder for it.
           intent: creationIntentOf(tab, templateFamilyOf(templateKind)),
+          // Its template's starter rules, made by the create for a signed-in person (plan-templates.md "Starter rules").
+          starterRules: starterRulesAskOf(templateKind),
         });
       }
     } catch (err) {

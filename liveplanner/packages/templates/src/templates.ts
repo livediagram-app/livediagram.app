@@ -34,6 +34,10 @@ export type TemplateKind =
   | 'meeting-agenda'
   | 'personal-goals'
   | 'study-planner'
+  | 'sprint-board'
+  | 'client-onboarding'
+  | 'editorial-pipeline'
+  | 'trip-planner'
   | FormTemplateKind;
 
 export type TemplateDescriptor = {
@@ -82,7 +86,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'kanban',
     title: 'Kanban Board',
     description:
-      'Continuous flow in three tabs: Board, with WIP limits from Backlog to Done; Requests, where new asks are accepted onto it; and Flow, a dashboard of where the work stands.',
+      'Continuous flow in four tabs: Board, with WIP limits from Backlog to Done; Requests, where new asks are accepted onto it; a Request Form that sends them in; and Flow, a dashboard of cumulative flow, cycle time and throughput.',
   },
   {
     kind: 'project-planner',
@@ -95,7 +99,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'bug-triage',
     title: 'Bug Tracker',
     description:
-      'Three tabs: Triage new bugs by priority, follow them through Fixing to released, and watch Health on a dashboard.',
+      'Four tabs: Triage new bugs by priority, a Bug Report form that sends them in, follow them through Fixing to released, and watch Health and cycle time on a dashboard.',
     extra: true,
   },
   {
@@ -123,7 +127,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'hiring-pipeline',
     title: 'Hiring Pipeline',
     description:
-      'Four tabs: open Roles on a timeline, the candidate Pipeline a row per role, Onboarding for each new starter and an Overview dashboard.',
+      'Five tabs: open Roles on a timeline, the candidate Pipeline a row per role, an Application form that sends candidates in, Onboarding for each new starter and an Overview dashboard.',
     extra: true,
   },
   {
@@ -144,7 +148,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'feedback-board',
     title: 'Feedback Board',
     description:
-      'Three tabs: Feedback from users, voted on and reviewed, Delivery for what you plan through to shipped, and an Overview dashboard.',
+      'Four tabs: Feedback from users, voted on and reviewed, a Request Form that sends it in, Delivery for what you plan through to shipped, and an Overview dashboard.',
     extra: true,
   },
   // Added with the catalogue's use-case categories (docs/specs/026-plan/plan-templates.md "The templates").
@@ -188,6 +192,35 @@ export const TEMPLATES: TemplateDescriptor[] = [
     title: 'Study Planner',
     description:
       'Three tabs: Assignments by subject from to do to graded, exam Revision topics and a Calendar of every deadline.',
+    extra: true,
+  },
+  // Added with Work Tracker 1073 (docs/specs/026-plan/plan-templates.md "The templates").
+  {
+    kind: 'sprint-board',
+    title: 'Sprint Board',
+    description:
+      'Three tabs: a Sprint board with WIP limits and a row per person, a Backlog you make ready, and Flow, a dashboard of cumulative flow, cycle time and throughput.',
+    extra: true,
+  },
+  {
+    kind: 'client-onboarding',
+    title: 'Client Onboarding',
+    description:
+      'Three tabs: Clients from signed to live on a timeline, the Tasks for each client with what you wait on them for, and an Overview dashboard.',
+    extra: true,
+  },
+  {
+    kind: 'editorial-pipeline',
+    title: 'Editorial Pipeline',
+    description:
+      'Three tabs: Pitches voted on and commissioned, Production from drafting through editing and fact check to published, and an Overview dashboard.',
+    extra: true,
+  },
+  {
+    kind: 'trip-planner',
+    title: 'Trip Planner',
+    description:
+      'Four tabs: an Itinerary of ideas voted onto the days, Bookings with the date to book each by, who packs what, and an Overview dashboard.',
     extra: true,
   },
   // Spreadsheet templates (docs/specs/026-plan/plan-templates.md "Spreadsheet templates").

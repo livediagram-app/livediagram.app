@@ -180,7 +180,7 @@ The reasoning is the row's own: Tools exists to stop a band of bespoke rows leng
 
 Inline, it is an ordinary collapsible row participating in the menu's one-open-at-a-time state, because a permanently-expanded row in the main menu would be worse than a flyout. Only a **controlled accordion** is promoted; a lone child of any other shape has no row to become, so it stays behind the flyout.
 
-**An open element menu follows the selection.** Clicking another element while the single-element menu is open retargets the menu to the newly-selected element in place (same screen position) instead of dismissing it, so the same tweak can be applied to several elements one after another with one click each. The retarget preserves the menu's expanded state: the open accordion (scaffold `sectionProps`) and the open flyout (`flyoutProps`) both stay open, showing the new element's values, so styling five shapes via the Style flyout never re-drills the category path.
+**An open element menu follows the selection.** Clicking another element while the single-element menu is open retargets the menu to the newly-selected element in place (same screen position) instead of dismissing it, so the same tweak can be applied to several elements one after another with one click each. The retarget preserves the menu's expanded state: the open accordion (scaffold `sectionProps`) and the open flyout (`flyoutProps`) both stay open, showing the new element's values, so styling five shapes via the Appearance flyout never re-drills the category path.
 
 Control groups (rendered as context-menu categories, hidden when their gate doesn't apply):
 
@@ -592,12 +592,13 @@ The catalogue (`packages/templates/src/templates.ts`, pinned by `template-catalo
 
 Every template opens on pages of its own. `templateCanvasOverrides(kind)` ships the tab's `pages` (ids `page-1`, `page-2`, ..., each already of its kind so the first-page kind choice is not offered, each named); `buildTemplate(kind)` builds the elements in page coordinates on exactly those pages, ignoring the centre it is given, with the page layouts' kit at page scale. The pages are declared once per template (`packages/templates/src/template-pages.ts`), so every application path lands the pages and the elements together:
 
-| Template          | Pages                                                                                                                                                         |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Logo design       | Logo pages, one per lockup (the App Icon on Crema), then the Palette.                                                                                         |
-| Logo explorations | Logo pages, one per logo layout of a family (wordmarks, emblems, marks, lockups), each named for its layout ([Logo pages](../007-editor/logo-pages.md)).      |
-| Wireframe flows   | One wireframe page per screen of the flow, at its device's size, each laid out from a wireframe layout ([Wireframe pages](../007-editor/wireframe-pages.md)). |
-| Photo edit        | One unstarted photo page, showing its Start a Photo card ([Photo pages](../031-photo/photo-pages.md)).                                                        |
+| Template          | Pages                                                                                                                                                                 |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Logo design       | Logo pages, one per lockup (the App Icon on Crema), then the Palette.                                                                                                 |
+| Brand board       | Logo pages: Logo, Mark and Icons, Colours, Type, and On Dark (on the brand's dark colour) ([Logo pages](../007-editor/logo-pages.md)).                                |
+| Logo explorations | Logo pages, one per logo layout of a family (wordmarks, emblems, marks, lockups), each named for its layout ([Logo pages](../007-editor/logo-pages.md)).              |
+| Wireframe flows   | One wireframe page per screen of the flow, at its device's size, each laid out from a wireframe layout, linked ([Wireframe pages](../007-editor/wireframe-pages.md)). |
+| Photo edit        | One unstarted photo page, showing its Start a Photo card ([Photo pages](../031-photo/photo-pages.md)).                                                                |
 
 ### Template categories
 
@@ -607,18 +608,18 @@ job sit together. Every template but the blanks has one primary category and may
 would genuinely look for it too (`packages/templates/src/template-categories.ts` holds both; a template does not compile until it
 has a home). Every picker shows them alphabetically by label.
 
-| Category               | Holds                                                                                            | Also lists             |
-| ---------------------- | ------------------------------------------------------------------------------------------------ | ---------------------- |
-| Branding               | Logo Design, Wordmark Explorations, Emblems and Badges, Marks and App Icons, Lockup Explorations |                        |
-| Health and Fitness     | Watch App Wireframe, Fitness Watch Wireframe                                                     |                        |
-| Music and Video        | Music App Wireframe, Video App Wireframe, Watch Music Wireframe                                  |                        |
-| Photos                 | Photo Edit                                                                                       |                        |
-| Shopping               | Mobile App Wireframe (a shopping app), Delivery App Wireframe                                    | Online Store Wireframe |
-| Sign Up and Onboarding | App Sign Up Wireframe                                                                            | Mobile App Wireframe   |
-| Social and Messaging   | Social App Wireframe, Tablet App Wireframe                                                       | Team Inbox Wireframe   |
-| Travel and Transport   | Travel App Wireframe, Ride App Wireframe                                                         |                        |
-| Websites               | Website Wireframe, Online Store Wireframe, Blog Wireframe, Company Site Wireframe                |                        |
-| Work and Productivity  | Web App Wireframe, Project Tool Wireframe, Team Inbox Wireframe                                  |                        |
+| Category               | Holds                                                                                                         | Also lists                                  |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| Branding               | Logo Design, Brand Board, Wordmark Explorations, Emblems and Badges, Marks and App Icons, Lockup Explorations |                                             |
+| Health and Fitness     | Watch App Wireframe, Fitness Watch Wireframe, Class Booking Wireframe                                         |                                             |
+| Music and Video        | Music App Wireframe, Video App Wireframe, Watch Music Wireframe                                               |                                             |
+| Photos                 | Photo Edit                                                                                                    |                                             |
+| Shopping               | Mobile App Wireframe (a shopping app), Delivery App Wireframe                                                 | Online Store Wireframe                      |
+| Sign Up and Onboarding | App Sign Up Wireframe                                                                                         | Mobile App Wireframe, Launch Site Wireframe |
+| Social and Messaging   | Social App Wireframe, Tablet App Wireframe, Account Settings Wireframe                                        | Team Inbox Wireframe                        |
+| Travel and Transport   | Travel App Wireframe, Ride App Wireframe                                                                      |                                             |
+| Websites               | Website Wireframe, Launch Site Wireframe, Online Store Wireframe, Blog Wireframe, Company Site Wireframe      |                                             |
+| Work and Productivity  | Web App Wireframe, Project Tool Wireframe, Team Inbox Wireframe                                               |                                             |
 
 The blanks (Blank Logo and the five blank wireframes) are in no category: they lead Popular, the
 landing gallery's Blank Slate and the template start's Blank Pages group. A new template joins the category of the
@@ -1178,7 +1179,7 @@ An unset run attribute **inherits** the element field (`run.bold ?? el.textBold`
 - **The new zoom** is twice the current one, and never less than **100%**, so one double-tap on a phone's zoomed-out view lands at a readable size; capped at `ZOOM_MAX` (500%). At the cap, the double-tap only centres the spot.
 - **In, then out to the whole tab**: a double-tap never zooms in twice running. After a double-tap has zoomed in (on the canvas or on a small element, below), the next double-tap on the empty canvas **fits the whole tab** into view instead, the same view as Fit to Screen, gliding there; the one after zooms in again on its spot. So a person can double-tap out to the overview, then double-tap where they want to go. If they have pinched back out to the whole-tab view or wider since, there is nothing to fit, and the double-tap zooms in. A new tab starts afresh.
 - **A small element is shown first, then edited**: a double-tap on an element that is too small on the screen to work on **frames it** instead of opening its editor (or its picker or dialog), gliding so the element sits in the middle of the canvas at a zoom that shows it whole. A second double-tap on it then edits it as usual. An element is too small when the canvas is below **100%** and the element's on-screen box is under **44 px** (a fingertip, [Touch targets](../004-interface-design/touch-targets.md)) on its shorter side. The framing zoom fits the element with the Fit to Screen padding, no less than **100%** (so the next double-tap always edits) and no more than **200%** (a tiny sticker does not fill the screen); never below the zoom already on screen. It counts as a double-tap zoom-in for the rule above. A mouse, a trackpad and a pen edit at once, as before. The canvas catches the double-tap's second press ahead of the element's own handling, so it holds for every element and every part of one (its selection handles, an arrow's line), and a double-tap inside an editor that is already open stays the editor's, to select a word (`../packages/workbench/src/lib/double-tap-zoom.ts`, `../packages/workbench/src/hooks/canvas/useSmallElementDoubleTap.ts`).
-- **Everything else that already owns a double-tap keeps it**: a double-tap on an element big enough to work on edits it, a polygon being drawn finishes. Only a double-tap that would have dropped text zooms.
+- **Everything else that already owns a double-tap keeps it**: a double-tap on an element big enough to work on edits it, a polygon being drawn finishes, wherever the double-tap lands (over an element too, which then neither edits nor frames: [Polygon tool](polygon-tool.md)). Only a double-tap that would have dropped text zooms.
 - **Every share role zooms**: it only moves this person's view, so a Viewer and a Participant (who could never drop text) zoom as an Editor does.
 - Counted as `Canvas` `Zoomed` in telemetry, beside the zoom buttons' `In` and `Out`: `DoubleTap` for a zoom in on the canvas, `DoubleTapElement` for framing a small element, `DoubleTapFit` for the whole-tab fit.
 
@@ -1511,3 +1512,10 @@ in `Canvas` rather than in the clipboard hook.
     `migrateRetiredPattern` (run by `migrateStoredTab`, so by every stored and incoming tab) moves the tab onto
     Crosshatch on read, its pattern colour, opacity and size kept, with a `[tab-migrate] retired-pattern` log.
     Crosshatch is the nearest pattern: a lattice of diagonal lines in the same colour. The next save writes it.
+
+## Icon and Text live in Appearance (owner, 2026-11-16)
+
+The element menu's Appearance flyout holds everything about how the element looks: Presets, Colours, Border, Shadow,
+Finish, then Icon (a tech icon's size, a line icon's weight, a shape's inline icon) and Text. Neither is a row of its
+own in the menu any more. A flyout with one section inside, Tools holding only Mind Map for example, is never a row of
+its own: the section stands in the menu in its place, counting through any group of sections a host builds inline.

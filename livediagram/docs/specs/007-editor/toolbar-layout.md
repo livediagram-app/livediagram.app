@@ -58,13 +58,14 @@ under the pointer as a category is switched.
   its own button beside it: putting a question to the room is the session's main act, not one of its tools.
 - **The bars:**
 
-  | Mode     | Bar                                                                   |
-  | -------- | --------------------------------------------------------------------- |
-  | Diagram  | Shapes, Write, Draw · Diagrams, Concepts, Layout · Icons, Tech, Media |
-  | Workshop | Shapes, Write, Draw · Layout · Ask, Session · Icons, Media · Data     |
+  | Mode     | Bar                                                            |
+  | -------- | -------------------------------------------------------------- |
+  | Diagram  | Shapes, Write, Draw · Diagrams, Concepts, Layout · Icons, Tech |
+  | Workshop | Shapes, Write, Draw · Layout · Ask, Session · Icons · Data     |
 
-  Library joins after Shapes while the person has a [shape library](../013-workspace/shape-libraries.md) to place
-  from, as My shapes does in the picker.
+  Media is not a category of its own in either mode: its Image and Avatar close Layout, as a **Pictures** group
+  after its Containers and Parts (owner, 2026-11-16). The Library is not on the bar either: it is the icon button
+  beside Search ([Libraries](../../../../liveworkspace/docs/specs/006-media/libraries.md)).
 
 - **Names fit or go.** The bar shows its names while the strip, named, fits the room the centred strip may take
   (the editor's width less the top-left menu card, measured, on both sides); otherwise the glyphs alone
@@ -75,16 +76,8 @@ under the pointer as a category is switched.
   sideways while the selection mode and Search stay put (the tile rail's rule, "On a phone"). A swiping rail (the bar,
   the tile rail) fades the edge with more beyond it over 20px (`scroll-edge-fade`, a scroll-driven
   mask where the browser has them), so a glyph cut by the edge reads as more to swipe to, not a stray sliver of an
-  icon; an edge with nothing beyond it stays sharp. The category bar's row (`StripScroller`,
-  `@liveworkspace/workbench/components/palette/StripScroller`) also lays a fade in the card's own colour over each
-  edge with more beyond it, sized to the item that edge cuts (at least 44px): solid over the whole item and soft
-  for 6px short of it, so no label ever shows cut mid-word, with a small round chevron button in it
-  (**Scroll Left**, **Scroll Right**, a Tooltip each). A press scrolls past everything shown, so the item
-  the fade hid lands first, whole, past the other edge's button: as far as a press can go without skipping
-  an item (smoothly, or at once under reduced motion). The buttons serve a mouse,
-  which has no swipe; they keep the focus where it was and stay out of the Tab order, since the arrow keys walk the
-  bar and the browser scrolls a focused button into view. They show at every width the bar swipes (a phone, or a
-  narrow window).
+  icon; an edge with nothing beyond it stays sharp. The row scrolls natively, by a swipe (or a trackpad), with no scroll
+  buttons over its edges (owner, 2026-11-16: "go back to how it used to let the user scroll as normal").
 - **The open category** is pressed (the brand tint) with a short brand bar under it.
 
 ### Opening a flyout
@@ -303,7 +296,7 @@ every add.
 - **Layout** (Diagram): Lane, Frame, Stack, Boundary, Timeline | Diagram key, Card, Badge, Step number, headed
   **Containers** and **Parts** in the flyout.
 - **Components**: the cards (Code, Checklist, Entity) | the website blocks.
-- **Media**: Image | the embeds | Avatar.
+- **Media** (search only now: its Image and Avatar sit in Layout's Pictures group): Image | the embeds | Avatar.
 - **Data**: the charts (Pie, Bar, Line, Legend) | the meters (Progress, Donut, Rating).
 - **Behaviour**: the Selection Mode buttons | everything else.
 - **Event Storming**: the notation | Hotspot.
@@ -329,6 +322,23 @@ so a new page load starts on the mode's landing.
   hairline, in every mode: Diagram, Draw and Workshop alike
   (The name rides in the menu box). It is the chrome's ink, 14 px at regular weight (never bold), cut short
   with an ellipsis past 16rem, and follows a rename at once. The box shows a name alone, never an icon beside it.
+- **Never under the strip.** Where the strip in the same row leaves the box less room than it wants (a tablet or a
+  narrow window, 640 to 1024px, where even the crowded strip at the right reached back over a long name), the box
+  ends a strip's gap (8px) short of the strip and the name gives way first, cut short with its ellipsis sooner
+  (`useMenuCardRoom`, `@liveworkspace/workbench`, measured from the strip's real place as it moves). The menu
+  button and the mode switch keep their size at every width, never capped or cut; only the name truncates. Shorter
+  still, the box steps down (`useMenuCardFit`, `menu-card-form.ts`):
+  - **Whole** while the button, the named mode switch and a readable name slot (4rem) fit, or the whole box does (a
+    short name needs no more than its own width), so the box is whole wherever the strip stays centred beside it.
+  - **Icon** below that: the mode switch drops to its icon alone, as a phone draws it, its name in its tooltip and
+    accessible name, so the tab's name keeps its slot.
+  - **Bare** where even then no readable slot is left: the name and its hairline hide (the name stays in the tab
+    strip and the window title), never a sliver, and nothing is capped.
+
+  The strip still decides where it goes from the box as it would stand whole (`menuNaturalRight`, kept while the box
+  is compact), so neither the cap nor a compact form un-crowds the strip and pulls it back over the box; a wide
+  window still moves a crowded strip right and shows a long name. With room to spare, as usual, nothing changes.
+
 - A click (a tap) on it renames the tab in place, for someone who may change the
   document's tabs: Enter or leaving saves, Escape puts it back; up to 60 characters.
 - Not on a phone: the top row is the strip's there.
@@ -439,7 +449,9 @@ their bottom-row buttons. What changes to fit the width:
   - Centred under the strip's card and never wider than it, on a phone too (where the card sits beside the
     menu button). Off a phone, a strip narrower than **360 px** (`PALETTE_TRAY_MIN_WIDTH_PX`, shared) gives the tray 360 px centred under it, kept
     8 px inside the window, so a message is never cut to its first letter. It follows the card as it moves, including when the card's whole-pixel box re-centres it a beat
-    after a resize (the category bar dropping its names left the tray off-centre until it watched that box).
+    after a resize (the category bar dropping its names left the tray off-centre until it watched that box). It also follows a move with no resize at all (the strip re-centring as the tab-name pill beside it changes
+    width on a tab switch, a delete or a reload, or going crowded and back): one IntersectionObserver whose margin is
+    the card's own box (`watchMove`, shared) hears a move of a pixel or more and costs nothing while the strip is still.
   - One row at the strip's type size (13 px): a leading icon (or the modifier's key chip), the message, then
     its actions as small text buttons at the end (**Cancel**, **Done**) and any toggles the message carries. On a
     phone (below `sm`) a message too long for the row wraps to a second line instead of cutting off, so "Tap to
@@ -543,3 +555,5 @@ their bottom-row buttons. What changes to fit the width:
 The [Toolbar Layout](/help/palette/toolbar-layout/) article (Palette →
 Palette Settings) explains the strip, More, the menu button and how it
 fits a phone, with three figures.
+
+Zoom out, Zoom in, Undo and Redo carry no hover card (owner, 2026-11-16): their glyphs say what they do, and each keeps its accessible name.

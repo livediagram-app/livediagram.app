@@ -171,6 +171,15 @@ const MAIL: readonly [string, string, string, string, boolean][] = [
     'Sun',
     false,
   ],
+  ['Ella Park', 'Design review notes', 'Three small changes to the sign up screens…', 'Sat', false],
+  [
+    'Omar Haddad',
+    'Q4 budget',
+    'Here is the draft for next quarter, comments welcome…',
+    'Fri',
+    false,
+  ],
+  ['Grace Liu', 'Interview recap', 'Five people tried the new checkout this week…', 'Fri', false],
 ];
 
 function mailRow(u: Ui, x: number, y: number, w: number, i: number, chosen = false) {

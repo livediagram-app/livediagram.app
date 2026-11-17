@@ -14,7 +14,6 @@ import { EditorHeader } from '@/components/chrome/EditorHeader';
 import { TabBar } from '@/components/chrome/TabBar';
 import { LandscapeBarFold } from '@/components/chrome/LandscapeBars';
 import { RolePill } from '@/components/chrome/RoleIndicator';
-import { SuggestionsHeaderAction } from '@liveworkspace/suggestions/react/SuggestionsBar';
 import { WorkbenchBackButton, WorkbenchOpenLink } from '@/components/chrome/WorkbenchChrome';
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import type { useEditorContext } from './EditorContext';
@@ -36,14 +35,11 @@ export function renderEditorHeader(
     headerCommunity,
     role,
     barsShown,
-    walkthroughs,
   }: {
     isOffline: boolean;
     headerCommunity: boolean;
     role: ReturnType<typeof useRoleIndicator>;
     barsShown: boolean;
-    // The header's Walkthroughs button (docs/specs/012-collaboration/walkthroughs.md).
-    walkthroughs: ReactNode;
   },
 ): ReactNode {
   const {
@@ -92,10 +88,6 @@ export function renderEditorHeader(
           readOnly={isStructureReadOnly}
           renameNonce={renameProjectNonce}
           rolePill={<RolePill {...role} />}
-          // Editing or Suggesting, and the review (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md):
-          // in the title bar at every width, so the canvas's toolbars never cover it.
-          leadAction={<SuggestionsHeaderAction suggestions={ctx.canvasSuggestions} />}
-          walkthroughs={anyWelcomeOpen ? null : walkthroughs}
           onOpenAccount={() => openSettingsOn('account')}
           onOpenShare={() => {
             setShareDialogOpen(true);

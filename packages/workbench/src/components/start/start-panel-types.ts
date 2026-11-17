@@ -77,8 +77,6 @@ export type StartPanelConfig<
   // False where the panel is never a sheet to drag: no grab handle, no × and the header's corner holds the help link
   // alone.
   sheet: boolean;
-  // Hide the footer strip while what it holds draws nothing.
-  hideEmptyFooter?: boolean;
 };
 
 export type StartPanelProps<C extends string, P, K, H, G, M> = {

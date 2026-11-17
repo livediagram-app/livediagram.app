@@ -128,16 +128,8 @@ under the pointer as a category is switched.
   sideways while the Edit | Walk toggle and Search (both glyphs alone) stay put (the tile rail's rule, "On a phone"). A swiping rail (the bar,
   the tile rail) fades the edge with more beyond it over 20px (`scroll-edge-fade`, a scroll-driven
   mask where the browser has them), so a glyph cut by the edge reads as more to swipe to, not a stray sliver of an
-  icon; an edge with nothing beyond it stays sharp. The category bar's row (`StripScroller`,
-  `@liveworkspace/workbench/components/palette/StripScroller`) also lays a fade in the card's own colour over each
-  edge with more beyond it, sized to the item that edge cuts (at least 44px): solid over the whole item and soft
-  for 6px short of it, so no label ever shows cut mid-word, with a small round chevron button in it
-  (**Scroll Left**, **Scroll Right**, a Tooltip each). A press scrolls past everything shown, so the item
-  the fade hid lands first, whole, past the other edge's button: as far as a press can go without skipping
-  an item (smoothly, or at once under reduced motion). The buttons serve a mouse,
-  which has no swipe; they keep the focus where it was and stay out of the Tab order, since the arrow keys walk the
-  bar and the browser scrolls a focused button into view. They show at every width the bar swipes (a phone, or a
-  narrow window).
+  icon; an edge with nothing beyond it stays sharp. The row scrolls natively, by a swipe (or a trackpad), with no scroll
+  buttons over its edges (owner, 2026-11-16: "go back to how it used to let the user scroll as normal").
 - **The open category** is pressed (the brand tint) with a short brand bar under it.
 
 ### Opening a flyout
@@ -485,7 +477,9 @@ its bottom-row button. What changes to fit the width:
   - Centred under the strip's card and never wider than it, on a phone too (where the card sits beside the
     menu button). Off a phone, a strip narrower than **360 px** (`PALETTE_TRAY_MIN_WIDTH_PX`, shared) gives the tray 360 px centred under it, kept
     8 px inside the window, so a message is never cut to its first letter. It follows the card as it moves, including when the card's whole-pixel box re-centres it a beat
-    after a resize (the category bar dropping its names left the tray off-centre until it watched that box).
+    after a resize (the category bar dropping its names left the tray off-centre until it watched that box). It also follows a move with no resize at all (the strip re-centring as the tab-name pill beside it changes
+    width on a tab switch, a delete or a reload, or going crowded and back): one IntersectionObserver whose margin is
+    the card's own box (`watchMove`, shared) hears a move of a pixel or more and costs nothing while the strip is still.
   - One row at the strip's type size (13 px): a leading icon (or the modifier's key chip), the message, then
     its actions as small text buttons at the end (**Cancel**, **Done**) and any toggles the message carries. On a
     phone (below `sm`) a message too long for the row wraps to a second line instead of cutting off, so "Tap to

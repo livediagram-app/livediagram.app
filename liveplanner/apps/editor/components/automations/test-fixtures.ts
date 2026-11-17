@@ -51,8 +51,10 @@ export function outline(over: Partial<AutomationOutline> = {}): AutomationOutlin
     tabs: new Map([['t-form', 'Intake Form']]),
     filters: new Map([[savedFilterKey('t-board', 'f1'), 'Mine']]),
     forms: [{ id: 't-form', name: 'Intake Form' }],
+    boardNames: new Map([['b-roadmap', 'Roadmap']]),
     boards: [
       {
+        id: 'b-roadmap',
         tabId: 't-board',
         tabName: 'Board',
         title: 'Roadmap',

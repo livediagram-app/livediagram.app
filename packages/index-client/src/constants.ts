@@ -361,6 +361,7 @@ export const INDEX_ERRORS = [
   'invalid_webhook',
   'webhook_url_invalid',
   'webhook_url_private',
+  'webhook_url_unresolved',
   'webhook_limit',
   'webhook_not_found',
   'webhook_paused',

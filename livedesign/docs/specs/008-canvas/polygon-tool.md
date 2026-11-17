@@ -20,6 +20,7 @@ Set by this tool at commit; absent on other freehand elements (an imported or ol
 - **Click** places a vertex. After the first vertex, a preview polyline follows the cursor (rubber-band segment from the last vertex, plus the placed segments).
 - **Click near the first vertex** (≤ 12px screen-space, with a visual snap ring on the start vertex when in range) closes the loop: commits a `closed: true` freehand, which takes the theme fill like any closed freehand.
 - **Double-click / Enter** commits the open polyline (`closed: false`, stroke only) ending at the last placed vertex.
+- **The double-click is the tool's wherever it lands**, over an element as much as over the empty canvas: the canvas takes it in its capture phase, ahead of the element under the pointer, so a text element never enters editing, no element opens its picker, dialog or menu, and a finger's double-tap on a small element finishes rather than framing it. The path tool's double-click while a path is being drawn is taken the same way. With no polygon or path under way, a double-click on an element edits it as before.
 - **Escape** cancels the in-progress polygon if any vertices are placed; a second Escape (or Escape with none placed) disarms the tool, matching the draw-mode conventions.
 - **Backspace** removes the last placed vertex (stays armed).
 - Banner copy: "Click to place points, click the start to close, double-click to finish". Mobile taps behave as clicks; the banner keeps the shorter mobile copy convention.

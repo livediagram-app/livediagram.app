@@ -42,9 +42,9 @@ export function LayersThemeStrip({
     <ClusterStrip>
       {tidyUp ? (
         <ClusterPopoverSegment
-          label="Tidy Up"
-          name="Tidy Up"
-          hoverTitle="Tidy Up"
+          label="Tidy"
+          name="Tidy"
+          hoverTitle="Tidy"
           hoverDescription="Lay this tab out again in one press."
           icon={<TidyUpIcon />}
           dataTourId="tidy-up"

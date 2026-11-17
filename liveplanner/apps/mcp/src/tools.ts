@@ -35,7 +35,7 @@ import {
   resolveDashboardInput,
   type DashboardInput,
 } from '@liveplanner/agent-verbs';
-import { catalogueWithBoardTypes, typesOf } from '@liveplanner/items';
+import { catalogueWithBoardTypes, typesOf, provideTemplateCardTypes } from '@liveplanner/items';
 import { dashboardLeftOffNote, dashboardTabKind } from './dashboard-tabs';
 import {
   deepLink,
@@ -69,6 +69,11 @@ import { registerTabTools } from './tab-tools';
 import { registerViewTool, VIEW_TOOL_META } from './view-tab';
 import { changesetErrorText, isChangesetRefusal } from './changeset-client';
 import { DASHBOARD_ALONE, addOperationsFor, addToTemplateTab, getTab } from './template-elements';
+import { TEMPLATE_CARD_TYPES } from '@liveplanner/items/template-card-types';
+
+// The Plan templates' own card types, so create_project's template can bring them (docs/specs/026-plan/plan-templates.md "Card
+// types a template makes"). A subpath, kept out of the editor's first load.
+provideTemplateCardTypes(TEMPLATE_CARD_TYPES);
 export { templateNote } from './tab-tools';
 
 export function registerTools(server: McpServer, env: Env): void {

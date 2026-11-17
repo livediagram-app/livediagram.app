@@ -891,3 +891,67 @@ describe('a pasted share link\'s oEmbed (liveworkspace/docs/specs/006-media/prev
     }
   });
 });
+
+// Plain HTTP goes to HTTPS (docs/specs/016-platform/router-app.md "Only over HTTPS").
+describe('only over HTTPS', () => {
+  const REDIRECTS = new Set([301, 302, 303, 307, 308]);
+
+  it('sends http://www. to the same path and query over https in one 301, before anything is fetched', async () => {
+    const { env, marketing, live, api, help } = makeEnv();
+    for (const path of ['/', '/x?y=1', '/new?template=a&b=%2F', '/api/things?id=1']) {
+      for (const method of ['GET', 'HEAD']) {
+        const res = await router.fetch(
+          new Request(`http://www.livedocuments.app${path}`, { method }),
+          env,
+        );
+        expect(res.status, path).toBe(301);
+        expect(res.headers.get('Location'), path).toBe(`https://www.livedocuments.app${path}`);
+      }
+    }
+    for (const fetcher of [marketing, live, api, help]) expect(fetcher.urls).toEqual([]);
+  });
+
+  it('keeps a POST a POST (308), and sends a ws:// upgrade to https too', async () => {
+    const { env } = makeEnv();
+    const post = await router.fetch(
+      new Request('http://www.livedocuments.app/api/things', { method: 'POST', body: '{}' }),
+      env,
+    );
+    expect(post.status).toBe(308);
+    expect(post.headers.get('Location')).toBe('https://www.livedocuments.app/api/things');
+    const ws = await router.fetch(
+      new Request('http://www.livedocuments.app/api/rooms/x', {
+        headers: { Upgrade: 'websocket' },
+      }),
+      env,
+    );
+    expect(ws.status).toBe(301);
+  });
+
+  it('passes https through untouched, and an http:// URL Cloudflare marks as an HTTPS visit, so it cannot loop', async () => {
+    const { env } = makeEnv();
+    const https = await router.fetch(new Request('https://www.livedocuments.app/x?y=1'), env);
+    expect(REDIRECTS.has(https.status)).toBe(false);
+    const marked = await router.fetch(
+      new Request('http://www.livedocuments.app/x?y=1', {
+        headers: { 'CF-Visitor': '{"scheme":"https"}' },
+      }),
+      env,
+    );
+    expect(REDIRECTS.has(marked.status)).toBe(false);
+  });
+
+  it('redirects staging too, and never a local router (wrangler dev hands it the production host)', async () => {
+    const { env } = makeEnv();
+    const staging = await router.fetch(new Request('http://staging.livedocuments.app/x'), {
+      ...env,
+      DEPLOY_ENV: 'staging',
+    });
+    expect(staging.headers.get('Location')).toBe('https://staging.livedocuments.app/x');
+    const local = await router.fetch(new Request('http://www.livedocuments.app/x'), {
+      ...env,
+      DEPLOY_ENV: 'local',
+    });
+    expect(REDIRECTS.has(local.status)).toBe(false);
+  });
+});

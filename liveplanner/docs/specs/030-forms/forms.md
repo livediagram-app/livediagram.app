@@ -113,12 +113,17 @@ instead: "`contact-form` starts a form, which only the editor makes from a templ
 a Form tab. Its catalogue entry names a **starter** and the template tab its responses go **to**, by that tab's name:
 a Board tab, whose board's first card type the responses are made as, in its first column; or a Sheet tab, a row each
 on its sheet. Help Desk's **Contact Form** sends Contact to its **Tickets** board as Tickets, in New; Event Planner's
-**RSVP** sends Event RSVP to its **RSVP Responses** sheet.
+**RSVP** sends Event RSVP to its **RSVP Responses** sheet; Kanban Board's and Feedback Board's **Request Form**, Bug
+Tracker's **Bug Report** and Hiring Pipeline's **Application** send theirs to their boards
+([Forms a template holds](../026-plan/plan-templates.md#forms-a-template-holds)).
 
 - The form is the starter's, built as Start Planning builds it (`buildStarter`), its heading the tab's name. Every
   question maps to a field the target's card type already has, so the template brings no card type or field of its
   own beyond its boards' ready-made ones: a starter field whose name the type lacks is named, in the entry, after the
-  type's field that takes it instead (Contact's Requested By is a Ticket's **Customer**).
+  type's field that takes it instead (Contact's Requested By is a Ticket's **Customer**), and a question whose field
+  the type lacks and the work does not need can be left out (`leaveOut`, by the field's name). None is: each
+  template's own type holds every field its form maps (a Bug's Severity, a Candidate's Years of Experience;
+  [Plan templates](../026-plan/plan-templates.md#forms-a-template-holds)).
 - It is made on every path that makes the template's tabs (the New Project wizard, a start screen, the MCP's
   `create_project` and the api's seeded create), as a pure part of the tab, so it exists the moment its project does,
   with nothing for the editor to finish. A replace (`add_tab`) makes only a template's first tab, never a Form tab.

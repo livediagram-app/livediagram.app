@@ -44,10 +44,13 @@ describe('automationsScopeFor', () => {
 });
 
 describe('automationsGateFor', () => {
-  it('asks a plan in This Browser to sync, a guest to sign in, and a signed-in Editor nothing', () => {
+  it('asks a guest to sign in first, then a plan in This Browser to sync, and a signed-in Editor nothing', () => {
     expect(automationsGateFor({ ...EDITOR, offline: true })).toBe('sync');
     expect(automationsGateFor({ ...EDITOR, offline: true, scope: null })).toBe('sync');
-    expect(automationsGateFor({ ...EDITOR, offline: true, signedIn: false })).toBe('sync');
+    expect(automationsGateFor({ ...EDITOR, offline: true, signedIn: false })).toBe('sign_in');
+    expect(
+      automationsGateFor({ ...EDITOR, offline: true, signedIn: false, authLoaded: false }),
+    ).toBe('sync');
     expect(automationsGateFor({ ...EDITOR, signedIn: false })).toBe('sign_in');
     expect(automationsGateFor(EDITOR)).toBeNull();
   });

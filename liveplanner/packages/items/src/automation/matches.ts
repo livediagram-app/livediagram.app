@@ -13,6 +13,7 @@ import {
   type PullRequestValues,
 } from './github-triggers';
 import type { WebhookValues } from './webhook-paths';
+import { senderHeard } from './email-trigger';
 import type { AutomationRole } from './conditions';
 
 export type AutomationEventKind =
@@ -49,6 +50,8 @@ export interface AutomationEvent {
   fields?: string[];
   // The Form tab whose response made the card.
   form?: string;
+  // An email that made the card (Email to Board): its sender's bare address and the board whose address took it.
+  email?: { from: string; board: string };
   by: ItemPerson;
   role: AutomationRole;
   // Set when a rule made the change: that rule, and how many rules the chain has run so far.
@@ -83,6 +86,7 @@ export const TRIGGER_EVENT_KINDS: Readonly<
 > = {
   card_created: ['created'],
   form_response: ['created'],
+  email_received: ['created'],
   card_moved: ['moved'],
   field_changed: ['changed', 'moved'],
   comment_added: ['comment'],
@@ -110,7 +114,7 @@ export const TRIGGER_EVENT_KINDS: Readonly<
 };
 
 // Who and why a write was made, as the event carries it.
-export type EventSource = Pick<AutomationEvent, 'role' | 'rule' | 'chain' | 'form'>;
+export type EventSource = Pick<AutomationEvent, 'role' | 'rule' | 'chain' | 'form' | 'email'>;
 
 // Changes that start nothing: the Trash both ways. The Archive both ways starts Card Archived and Card Restored alone.
 const QUIET = new Set(['trashed', 'untrashed']);
@@ -155,6 +159,7 @@ export function eventOfWrite(
       kind: 'created',
       ...(status ? { to: status } : {}),
       ...(source.form ? { form: source.form } : {}),
+      ...(source.email ? { email: source.email } : {}),
     };
   }
   const fields: string[] = [];
@@ -194,6 +199,13 @@ export function triggerMatches(
         event.kind === 'created' &&
         event.form !== undefined &&
         (!trigger.formTab || trigger.formTab === event.form)
+      );
+    case 'email_received':
+      return (
+        event.kind === 'created' &&
+        event.email !== undefined &&
+        (!trigger.board || trigger.board === event.email.board) &&
+        senderHeard(trigger.sender, event.email.from)
       );
     case 'card_moved':
       return (

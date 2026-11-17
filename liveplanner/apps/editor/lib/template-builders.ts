@@ -16,6 +16,13 @@ import {
   type TemplateTabDef,
 } from '@liveplanner/templates';
 import { getTheme, recolourElementsForTheme } from './themes';
+import { provideTemplateCardTypes } from '@liveplanner/items';
+import { TEMPLATE_CARD_TYPES } from '@liveplanner/items/template-card-types';
+
+// The Plan templates' own card types, so a template's boards bring them and its forms find their type
+// (docs/specs/026-plan/plan-templates.md "Card types a template makes"): loaded with the builders, never on a plan's
+// first load.
+provideTemplateCardTypes(TEMPLATE_CARD_TYPES);
 
 export {
   buildTemplate,

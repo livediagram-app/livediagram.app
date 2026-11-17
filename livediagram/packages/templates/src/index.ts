@@ -19,4 +19,6 @@ export * from './template-layers';
 export { buildTemplate } from './build-template';
 export { templateFamilyOf } from './template-families';
 export * from './template-tab';
+export * from './template-slides';
+export * from './template-slides-data';
 export { templateCatalogue } from './template-catalogue';

@@ -5,9 +5,10 @@
 // the example team below; `ref` names a card another card links to (a Story's project, a Candidate's role).
 // plan-template-seeds.ts resolves this into the creates the item store takes.
 
-import type { Priority } from '@liveplanner/items';
+import type { Priority, RepeatRule } from '@liveplanner/items';
 import type { PlanTemplateKind } from './plan-template-catalogue';
 import { USE_CASE_SEEDS } from './plan-template-seed-data-use-cases';
+import { WORKFLOW_SEEDS } from './plan-template-seed-data-workflows';
 
 // The example team every template's cards are shared out among (assignees, swimlane rows, voters).
 export const SEED_PEOPLE = {
@@ -43,6 +44,9 @@ export type SeedCard = {
   custom?: Readonly<Record<string, string | number>>;
   // Dots on the card, one each from as many example voters.
   votes?: number;
+  // A repeat rule (docs/specs/026-plan/items.md "Repeating cards"), less the stamps the made card takes: `from` is the
+  // day the project is made and `timeZone` its maker's (plan-template-seeds.ts).
+  repeat?: Omit<RepeatRule, 'from' | 'timeZone' | 'until'>;
   archived?: true;
 };
 
@@ -52,7 +56,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
     'project-planner': [
       {
         ref: 'sync',
-        type: 'project',
+        type: 'pp-initiative',
         status: 'now',
         title: 'Offline sync',
         description: 'Edit a list on the train and have it all there when you are back online.',
@@ -64,7 +68,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
       },
       {
         ref: 'budgets',
-        type: 'project',
+        type: 'pp-initiative',
         status: 'now',
         title: 'Shared budgets',
         assignee: 'priya',
@@ -75,7 +79,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
       },
       {
         ref: 'first-list',
-        type: 'project',
+        type: 'pp-initiative',
         status: 'next',
         title: 'Guided first list',
         assignee: 'maya',
@@ -84,7 +88,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         due: 56,
       },
       {
-        type: 'project',
+        type: 'pp-initiative',
         status: 'later',
         title: 'Android home-screen widget',
         assignee: 'leo',
@@ -93,7 +97,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         due: 98,
       },
       {
-        type: 'project',
+        type: 'pp-initiative',
         status: 'shipped',
         title: 'Live cursors',
         assignee: 'ana',
@@ -102,7 +106,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         due: -10,
       },
       {
-        type: 'story',
+        type: 'pp-story',
         status: 'backlog',
         title: 'Show a banner when two edits clash',
         parent: 'sync',
@@ -110,7 +114,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         priority: 'medium',
       },
       {
-        type: 'story',
+        type: 'pp-story',
         status: 'backlog',
         title: 'Totals per person on a budget',
         parent: 'budgets',
@@ -118,7 +122,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         priority: 'low',
       },
       {
-        type: 'task',
+        type: 'pp-task',
         status: 'ready',
         title: 'Keep the retry queue across app restarts',
         parent: 'sync',
@@ -126,7 +130,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         priority: 'high',
       },
       {
-        type: 'story',
+        type: 'pp-story',
         status: 'ready',
         title: 'Invite a partner to a budget',
         parent: 'budgets',
@@ -134,7 +138,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         priority: 'medium',
       },
       {
-        type: 'story',
+        type: 'pp-story',
         status: 'sprint',
         title: 'Sync status icon in the header',
         parent: 'sync',
@@ -144,7 +148,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         due: 6,
       },
       {
-        type: 'task',
+        type: 'pp-task',
         status: 'sprint',
         title: 'Currency picker on budgets',
         parent: 'budgets',
@@ -154,7 +158,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         due: 8,
       },
       {
-        type: 'story',
+        type: 'pp-story',
         status: 'doing',
         title: 'Queue edits while offline',
         parent: 'sync',
@@ -169,7 +173,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         ],
       },
       {
-        type: 'task',
+        type: 'pp-task',
         status: 'doing',
         title: 'Empty state for the budget list',
         parent: 'budgets',
@@ -179,7 +183,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         due: 2,
       },
       {
-        type: 'task',
+        type: 'pp-task',
         status: 'blocked',
         title: 'iOS background refresh permission',
         description: 'Waiting on Apple to approve the entitlement.',
@@ -190,7 +194,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         due: 1,
       },
       {
-        type: 'story',
+        type: 'pp-story',
         status: 'review',
         title: 'Split a bill three ways',
         parent: 'budgets',
@@ -200,7 +204,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         due: 2,
       },
       {
-        type: 'task',
+        type: 'pp-task',
         status: 'done',
         title: 'Batch endpoint for the sync API',
         parent: 'sync',
@@ -208,7 +212,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         estimate: 5,
       },
       {
-        type: 'bug',
+        type: 'pp-bug',
         status: 'done',
         title: 'Budget totals round the wrong way',
         parent: 'budgets',
@@ -220,21 +224,21 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
     // The Northwind website team: its own work on the Board, outside asks on Requests.
     kanban: [
       {
-        type: 'task',
+        type: 'kb-work-item',
         status: 'backlog',
         title: 'Compress the hero images',
         priority: 'low',
         labels: ['Performance'],
       },
       {
-        type: 'request',
+        type: 'kb-request',
         status: 'backlog',
         title: 'Status page link in the footer',
         custom: { 'f-requested-by': 'Support team' },
         priority: 'medium',
       },
       {
-        type: 'task',
+        type: 'kb-work-item',
         status: 'todo',
         title: 'Write the autumn launch post',
         assignee: 'maya',
@@ -243,7 +247,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         due: 5,
       },
       {
-        type: 'task',
+        type: 'kb-work-item',
         status: 'todo',
         title: 'Update the cookie banner copy',
         assignee: 'ana',
@@ -251,7 +255,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         labels: ['Legal'],
       },
       {
-        type: 'task',
+        type: 'kb-work-item',
         status: 'doing',
         title: 'New pricing page',
         assignee: 'priya',
@@ -265,7 +269,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         ],
       },
       {
-        type: 'task',
+        type: 'kb-work-item',
         status: 'doing',
         title: 'Fix the broken links from the old blog',
         assignee: 'leo',
@@ -273,7 +277,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         labels: ['SEO'],
       },
       {
-        type: 'task',
+        type: 'kb-work-item',
         status: 'review',
         title: 'Accessibility pass on every form',
         assignee: 'sam',
@@ -286,35 +290,35 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         ],
       },
       {
-        type: 'task',
+        type: 'kb-work-item',
         status: 'done',
         title: 'Launch the careers page',
         assignee: 'maya',
         labels: ['Web'],
       },
       {
-        type: 'request',
+        type: 'kb-request',
         status: 'done',
         title: 'Contact Sales button on pricing',
         assignee: 'priya',
         custom: { 'f-requested-by': 'Sales · Grace' },
       },
       {
-        type: 'request',
+        type: 'kb-request',
         status: 'requested',
         title: 'Dark mode for the docs site',
         custom: { 'f-requested-by': 'Support team' },
         priority: 'medium',
       },
       {
-        type: 'request',
+        type: 'kb-request',
         status: 'requested',
         title: 'Download the pricing table as a PDF',
         custom: { 'f-requested-by': 'Sales · Grace' },
         priority: 'low',
       },
       {
-        type: 'request',
+        type: 'kb-request',
         status: 'needs-info',
         title: 'Faster search on the help centre',
         description: 'Which searches feel slow, and on what device?',
@@ -323,7 +327,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         priority: 'medium',
       },
       {
-        type: 'request',
+        type: 'kb-request',
         status: 'declined',
         title: 'Rebuild the site in a new framework',
         custom: { 'f-requested-by': 'Omar' },
@@ -335,7 +339,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
     'bug-triage': [
       {
         ref: 'basket',
-        type: 'bug',
+        type: 'bt-bug',
         status: 'new',
         title: 'Basket empties after switching restaurants',
         priority: 'urgent',
@@ -347,21 +351,21 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         },
       },
       {
-        type: 'bug',
+        type: 'bt-bug',
         status: 'new',
         title: 'Promo code accepted twice on one order',
         priority: 'high',
         labels: ['Payments'],
       },
       {
-        type: 'bug',
+        type: 'bt-bug',
         status: 'new',
         title: 'Map pin jumps on Android tablets',
         priority: 'low',
         labels: ['Android'],
       },
       {
-        type: 'bug',
+        type: 'bt-bug',
         status: 'needs-info',
         title: 'Order total shows £0.00 for some people',
         description: 'Two reports so far. Which payment method were they using?',
@@ -369,7 +373,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         labels: ['Payments'],
       },
       {
-        type: 'bug',
+        type: 'bt-bug',
         status: 'confirmed',
         title: 'Reorder button greyed out on old orders',
         assignee: 'sam',
@@ -378,14 +382,14 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         due: 7,
       },
       {
-        type: 'bug',
+        type: 'bt-bug',
         status: 'confirmed',
         title: 'Push notification arrives after the delivery',
         priority: 'medium',
         labels: ['Notifications'],
       },
       {
-        type: 'bug',
+        type: 'bt-bug',
         status: 'fixing',
         title: 'Card declined error has no retry',
         assignee: 'priya',
@@ -394,7 +398,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         due: 2,
       },
       {
-        type: 'bug',
+        type: 'bt-bug',
         status: 'fixing',
         title: 'Courier ETA an hour out after the clocks change',
         assignee: 'leo',
@@ -403,7 +407,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         due: 1,
       },
       {
-        type: 'bug',
+        type: 'bt-bug',
         status: 'review',
         title: 'Tip slider resets when the phone rotates',
         assignee: 'maya',
@@ -412,7 +416,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         due: 3,
       },
       {
-        type: 'bug',
+        type: 'bt-bug',
         status: 'fixed',
         title: 'Search ignores accents ("café")',
         assignee: 'ana',
@@ -420,7 +424,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         labels: ['Search'],
       },
       {
-        type: 'bug',
+        type: 'bt-bug',
         status: 'released',
         title: 'Receipts unreadable in dark mode',
         assignee: 'sam',
@@ -428,13 +432,13 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         labels: ['Android'],
       },
       {
-        type: 'bug',
+        type: 'bt-bug',
         status: 'wont-fix',
         title: 'App does not run on Windows Phone',
         priority: 'low',
       },
       {
-        type: 'bug',
+        type: 'bt-bug',
         status: 'duplicate',
         title: 'Basket cleared when I change restaurant',
         description: 'Same as "Basket empties after switching restaurants".',
@@ -446,77 +450,77 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
     // Sprint 14's retro, voted; its actions under way; last sprint's notes archived.
     'team-retro': [
       {
-        type: 'note',
+        type: 'rt-note',
         status: 'went-well',
         title: 'Release went out with zero rollbacks',
         assignee: 'sam',
         votes: 4,
       },
       {
-        type: 'note',
+        type: 'rt-note',
         status: 'went-well',
         title: 'Pairing cleared the payments bug in a day',
         assignee: 'priya',
         votes: 2,
       },
       {
-        type: 'note',
+        type: 'rt-note',
         status: 'went-well',
         title: 'Design reviews are faster with the new checklist',
         assignee: 'maya',
         votes: 1,
       },
       {
-        type: 'note',
+        type: 'rt-note',
         status: 'to-improve',
         title: 'Standups keep running past 20 minutes',
         assignee: 'leo',
         votes: 5,
       },
       {
-        type: 'note',
+        type: 'rt-note',
         status: 'to-improve',
         title: 'Flaky tests blocked two merges',
         assignee: 'ana',
         votes: 3,
       },
       {
-        type: 'idea',
+        type: 'rt-idea',
         status: 'ideas',
         title: 'No-meeting Wednesday afternoons',
         assignee: 'maya',
         votes: 4,
       },
       {
-        type: 'idea',
+        type: 'rt-idea',
         status: 'ideas',
         title: 'Rotate who runs the sprint demo',
         assignee: 'sam',
         votes: 1,
       },
       {
-        type: 'action',
+        type: 'rt-action',
         status: 'todo',
         title: 'Timebox standup to 15 minutes',
         assignee: 'leo',
         due: 2,
       },
       {
-        type: 'action',
+        type: 'rt-action',
         status: 'doing',
         title: 'Quarantine the flaky tests',
         assignee: 'ana',
         due: 4,
       },
       {
-        type: 'action',
+        type: 'rt-action',
         status: 'done',
         title: 'Book the team offsite',
         assignee: 'maya',
         due: -2,
       },
       {
-        type: 'note',
+        type: 'rt-note',
         status: 'to-improve',
         title: 'Too many tickets added mid-sprint',
         assignee: 'priya',
@@ -524,7 +528,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         archived: true,
       },
       {
-        type: 'note',
+        type: 'rt-note',
         status: 'went-well',
         title: 'Great customer demo on Friday',
         assignee: 'leo',
@@ -536,21 +540,21 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
     // Maya's week: a day for each card, the rest captured in Inbox.
     'weekly-planner': [
       {
-        type: 'action',
+        type: 'wk-errand',
         status: 'mon',
         title: '1:1 with Sam',
         assignee: 'maya',
         labels: ['Team'],
       },
       {
-        type: 'task',
+        type: 'wk-todo',
         status: 'mon',
         title: 'Reply to the agency brief',
         assignee: 'maya',
         priority: 'high',
       },
       {
-        type: 'task',
+        type: 'wk-todo',
         status: 'tue',
         title: 'Draft the Q4 roadmap',
         assignee: 'maya',
@@ -561,64 +565,77 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
           ['Dates', false],
         ],
       },
-      { type: 'note', status: 'tue', title: 'Dentist at 4pm', labels: ['Personal'] },
+      { type: 'wk-note', status: 'tue', title: 'Dentist at 4pm', labels: ['Personal'] },
       {
-        type: 'action',
+        type: 'wk-errand',
         status: 'wed',
         title: 'Review the new pricing page with Priya',
         assignee: 'maya',
         labels: ['Team'],
       },
       {
-        type: 'task',
+        type: 'wk-todo',
         status: 'thu',
         title: 'Send the September invoices',
         assignee: 'maya',
         priority: 'medium',
         due: 3,
       },
-      { type: 'note', status: 'thu', title: 'Team lunch, 12:30', labels: ['Team'] },
+      { type: 'wk-note', status: 'thu', title: 'Team lunch, 12:30', labels: ['Team'] },
       {
-        type: 'task',
+        type: 'wk-todo',
         status: 'fri',
         title: 'Prepare the demo',
         assignee: 'maya',
         priority: 'medium',
       },
+      // The routine that closes each week, made again every Friday (plan-templates.md "Example cards").
       {
-        type: 'task',
+        type: 'wk-note',
+        status: 'fri',
+        title: 'Weekly review',
+        labels: ['Routine'],
+        checklist: [
+          ['Inbox cleared', false],
+          ['This week looked back on', false],
+          ['Next week’s three things picked', false],
+        ],
+        repeat: { every: 'week', days: [5], status: 'fri' },
+      },
+      {
+        type: 'wk-todo',
         status: 'done',
         title: 'Plan the week',
         assignee: 'maya',
       },
       {
-        type: 'task',
+        type: 'wk-todo',
         status: 'done',
         title: 'Submit expenses',
         assignee: 'maya',
       },
-      { type: 'task', status: 'inbox', title: 'Book flights for the offsite' },
-      { type: 'note', status: 'inbox', title: 'Read the accessibility audit' },
+      { type: 'wk-todo', status: 'inbox', title: 'Book flights for the offsite' },
+      { type: 'wk-note', status: 'inbox', title: 'Read the accessibility audit' },
       {
-        type: 'task',
+        type: 'wk-todo',
         status: 'next-up',
         title: 'Refresh the onboarding doc',
         labels: ['Team'],
       },
       {
-        type: 'action',
+        type: 'wk-errand',
         status: 'waiting',
         title: 'Signed contract back from legal',
         assignee: 'ana',
         due: 5,
       },
-      { type: 'note', status: 'someday', title: 'Learn the new charting library' },
+      { type: 'wk-note', status: 'someday', title: 'Learn the new charting library' },
     ],
 
     // FreshBox's blog, newsletter and socials: ideas voted up, then made.
     'content-calendar': [
       {
-        type: 'content',
+        type: 'cc-post',
         status: 'ideas',
         title: 'Customer story: a week of FreshBox dinners',
         custom: { 'f-channel': 'Video' },
@@ -626,21 +643,21 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         votes: 5,
       },
       {
-        type: 'content',
+        type: 'cc-post',
         status: 'ideas',
         title: 'How we cut packaging by a third',
         custom: { 'f-channel': 'Blog' },
         votes: 3,
       },
       {
-        type: 'content',
+        type: 'cc-post',
         status: 'ideas',
         title: 'Ten 20-minute dinners',
         custom: { 'f-channel': 'Social' },
         votes: 2,
       },
       {
-        type: 'content',
+        type: 'cc-post',
         status: 'shortlisted',
         title: 'Behind the scenes at the farm',
         custom: { 'f-channel': 'Podcast' },
@@ -648,7 +665,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         votes: 4,
       },
       {
-        type: 'content',
+        type: 'cc-post',
         status: 'parked',
         title: 'Our year in review',
         description: 'Park until December.',
@@ -656,7 +673,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         votes: 1,
       },
       {
-        type: 'content',
+        type: 'cc-post',
         status: 'approved',
         title: 'October newsletter',
         custom: { 'f-channel': 'Newsletter' },
@@ -664,7 +681,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         due: 6,
       },
       {
-        type: 'content',
+        type: 'cc-post',
         status: 'drafting',
         title: 'Launch post: gift boxes',
         custom: { 'f-channel': 'Blog' },
@@ -677,14 +694,14 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         ],
       },
       {
-        type: 'task',
+        type: 'cc-task',
         status: 'drafting',
         title: 'Brief the illustrator',
         assignee: 'maya',
         due: 2,
       },
       {
-        type: 'content',
+        type: 'cc-post',
         status: 'in-review',
         title: 'Product tour video',
         custom: { 'f-channel': 'Video' },
@@ -692,7 +709,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         due: 3,
       },
       {
-        type: 'content',
+        type: 'cc-post',
         status: 'scheduled',
         title: 'Five tips for batch cooking',
         custom: { 'f-channel': 'Social' },
@@ -700,7 +717,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         due: 1,
       },
       {
-        type: 'content',
+        type: 'cc-post',
         status: 'published',
         title: 'September recipe round-up',
         custom: { 'f-channel': 'Blog' },
@@ -713,7 +730,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
     'hiring-pipeline': [
       {
         ref: 'ios',
-        type: 'role',
+        type: 'hp-role',
         status: 'role-open',
         title: 'Senior iOS Engineer',
         assignee: 'sam',
@@ -728,7 +745,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
       },
       {
         ref: 'designer',
-        type: 'role',
+        type: 'hp-role',
         status: 'role-offer',
         title: 'Product Designer',
         assignee: 'maya',
@@ -738,7 +755,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         due: 10,
       },
       {
-        type: 'role',
+        type: 'hp-role',
         status: 'role-planned',
         title: 'Data Analyst',
         assignee: 'priya',
@@ -749,7 +766,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
       },
       {
         ref: 'success',
-        type: 'role',
+        type: 'hp-role',
         status: 'role-filled',
         title: 'Customer Success Lead',
         assignee: 'ana',
@@ -758,7 +775,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         due: -14,
       },
       {
-        type: 'candidate',
+        type: 'hp-candidate',
         status: 'applied',
         title: 'Amara Okafor',
         links: { 'f-role': 'ios' },
@@ -766,7 +783,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         assignee: 'sam',
       },
       {
-        type: 'candidate',
+        type: 'hp-candidate',
         status: 'screen',
         title: 'Jonas Weber',
         links: { 'f-role': 'ios' },
@@ -775,7 +792,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         due: 2,
       },
       {
-        type: 'candidate',
+        type: 'hp-candidate',
         status: 'interview',
         title: 'Mei Tan',
         links: { 'f-role': 'ios' },
@@ -788,14 +805,14 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         ],
       },
       {
-        type: 'candidate',
+        type: 'hp-candidate',
         status: 'not-progressing',
         title: 'Chris Hale',
         links: { 'f-role': 'ios' },
         custom: { 'f-source': 'Agency' },
       },
       {
-        type: 'candidate',
+        type: 'hp-candidate',
         status: 'interview',
         title: 'Lucía Romero',
         links: { 'f-role': 'designer' },
@@ -804,7 +821,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         due: 1,
       },
       {
-        type: 'candidate',
+        type: 'hp-candidate',
         status: 'offer',
         title: 'Dev Shah',
         links: { 'f-role': 'designer' },
@@ -814,7 +831,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
       },
       {
         ref: 'hannah',
-        type: 'candidate',
+        type: 'hp-candidate',
         status: 'hired',
         title: 'Hannah Kim',
         links: { 'f-role': 'success' },
@@ -822,7 +839,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         assignee: 'ana',
       },
       {
-        type: 'onboarding-task',
+        type: 'hp-onboarding',
         status: 'onboarded',
         title: 'Laptop and accounts ready',
         links: { 'f-new-starter': 'hannah' },
@@ -830,7 +847,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         due: -3,
       },
       {
-        type: 'onboarding-task',
+        type: 'hp-onboarding',
         status: 'first-week',
         title: 'Meet the support team',
         links: { 'f-new-starter': 'hannah' },
@@ -842,7 +859,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         ],
       },
       {
-        type: 'onboarding-task',
+        type: 'hp-onboarding',
         status: 'first-week',
         title: 'Shadow five customer calls',
         links: { 'f-new-starter': 'hannah' },
@@ -850,7 +867,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         due: 4,
       },
       {
-        type: 'onboarding-task',
+        type: 'hp-onboarding',
         status: 'first-month',
         title: 'Own the Q4 renewals list',
         links: { 'f-new-starter': 'hannah' },
@@ -863,7 +880,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
     okrs: [
       {
         ref: 'self-serve',
-        type: 'objective',
+        type: 'okr-objective',
         status: 'okr-committed',
         title: 'Make self-serve customers successful',
         assignee: 'maya',
@@ -873,7 +890,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
       },
       {
         ref: 'fast',
-        type: 'objective',
+        type: 'okr-objective',
         status: 'okr-committed',
         title: 'The fastest app in our category',
         assignee: 'leo',
@@ -883,7 +900,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
       },
       {
         ref: 'hiring',
-        type: 'objective',
+        type: 'okr-objective',
         status: 'okr-draft',
         title: 'A team people want to join',
         assignee: 'priya',
@@ -893,7 +910,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
       },
       {
         ref: 'android',
-        type: 'objective',
+        type: 'okr-objective',
         status: 'okr-achieved',
         title: 'Launch on Android',
         assignee: 'sam',
@@ -901,7 +918,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         due: -30,
       },
       {
-        type: 'key-result',
+        type: 'okr-key-result',
         status: 'kr-on-track',
         title: 'NPS from 40 to 55',
         links: { 'f-objective': 'self-serve' },
@@ -910,7 +927,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         due: 60,
       },
       {
-        type: 'key-result',
+        type: 'okr-key-result',
         status: 'kr-at-risk',
         title: 'Activation from 25% to 40%',
         links: { 'f-objective': 'self-serve' },
@@ -923,7 +940,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         ],
       },
       {
-        type: 'key-result',
+        type: 'okr-key-result',
         status: 'kr-on-track',
         title: 'Monthly churn from 3.1% to 2%',
         links: { 'f-objective': 'self-serve' },
@@ -932,7 +949,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         due: 60,
       },
       {
-        type: 'key-result',
+        type: 'okr-key-result',
         status: 'kr-off-track',
         title: 'Cold start under 1 second',
         links: { 'f-objective': 'fast' },
@@ -945,7 +962,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         ],
       },
       {
-        type: 'key-result',
+        type: 'okr-key-result',
         status: 'kr-on-track',
         title: 'Crash-free sessions at 99.9%',
         links: { 'f-objective': 'fast' },
@@ -954,7 +971,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         due: 60,
       },
       {
-        type: 'key-result',
+        type: 'okr-key-result',
         status: 'kr-not-started',
         title: 'Hire four engineers',
         links: { 'f-objective': 'hiring' },
@@ -963,7 +980,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         due: 90,
       },
       {
-        type: 'key-result',
+        type: 'okr-key-result',
         status: 'kr-done',
         title: '1,000 Android installs in week one',
         links: { 'f-objective': 'android' },
@@ -977,7 +994,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
     'product-launch': [
       {
         ref: 'site',
-        type: 'project',
+        type: 'pl-workstream',
         status: 'ws-doing',
         title: 'Website and pricing',
         assignee: 'priya',
@@ -987,7 +1004,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
       },
       {
         ref: 'store',
-        type: 'project',
+        type: 'pl-workstream',
         status: 'ws-doing',
         title: 'App Store release',
         assignee: 'sam',
@@ -997,7 +1014,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
       },
       {
         ref: 'press',
-        type: 'project',
+        type: 'pl-workstream',
         status: 'ws-planned',
         title: 'Press and launch post',
         assignee: 'maya',
@@ -1007,7 +1024,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
       },
       {
         ref: 'support',
-        type: 'project',
+        type: 'pl-workstream',
         status: 'ws-ready',
         title: 'Support readiness',
         assignee: 'ana',
@@ -1016,7 +1033,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         due: 7,
       },
       {
-        type: 'project',
+        type: 'pl-workstream',
         status: 'ws-launched',
         title: 'Beta programme',
         assignee: 'leo',
@@ -1024,7 +1041,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         due: -10,
       },
       {
-        type: 'task',
+        type: 'pl-task',
         status: 'doing',
         title: 'New pricing page behind a flag',
         parent: 'site',
@@ -1033,7 +1050,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         due: 5,
       },
       {
-        type: 'task',
+        type: 'pl-task',
         status: 'todo',
         title: 'Fresh screenshots for the site',
         parent: 'site',
@@ -1042,7 +1059,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         due: 9,
       },
       {
-        type: 'task',
+        type: 'pl-task',
         status: 'blocked',
         title: 'App Store review',
         description: 'Resubmitted with the new privacy labels.',
@@ -1053,7 +1070,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         due: 3,
       },
       {
-        type: 'task',
+        type: 'pl-task',
         status: 'done',
         title: 'Release build signed',
         parent: 'store',
@@ -1061,7 +1078,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         priority: 'high',
       },
       {
-        type: 'task',
+        type: 'pl-task',
         status: 'doing',
         title: 'Draft the launch post',
         parent: 'press',
@@ -1074,7 +1091,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         ],
       },
       {
-        type: 'task',
+        type: 'pl-task',
         status: 'todo',
         title: 'Brief three journalists',
         parent: 'press',
@@ -1083,7 +1100,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         due: 10,
       },
       {
-        type: 'task',
+        type: 'pl-task',
         status: 'done',
         title: 'Help articles for every new screen',
         parent: 'support',
@@ -1091,7 +1108,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         priority: 'medium',
       },
       {
-        type: 'task',
+        type: 'pl-task',
         status: 'todo',
         title: 'Saved replies for the top ten questions',
         parent: 'support',
@@ -1100,7 +1117,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         due: 4,
       },
       {
-        type: 'launch-check',
+        type: 'pl-check',
         status: 'check-go',
         title: 'Pricing page signed off',
         links: { 'f-workstream': 'site' },
@@ -1108,7 +1125,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         priority: 'high',
       },
       {
-        type: 'launch-check',
+        type: 'pl-check',
         status: 'check-pending',
         title: 'App approved in both stores',
         links: { 'f-workstream': 'store' },
@@ -1116,7 +1133,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         priority: 'urgent',
       },
       {
-        type: 'launch-check',
+        type: 'pl-check',
         status: 'check-go',
         title: 'Support rota covers launch week',
         links: { 'f-workstream': 'support' },
@@ -1124,7 +1141,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         priority: 'medium',
       },
       {
-        type: 'launch-check',
+        type: 'pl-check',
         status: 'check-no-go',
         title: 'Status page ready',
         links: { 'f-workstream': 'site' },
@@ -1132,7 +1149,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         priority: 'medium',
       },
       {
-        type: 'launch-check',
+        type: 'pl-check',
         status: 'check-pending',
         title: 'Launch post approved',
         links: { 'f-workstream': 'press' },
@@ -1144,7 +1161,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
     // Tandem's feedback: what customers ask for, voted, and what is being built.
     'feedback-board': [
       {
-        type: 'request',
+        type: 'fb-feedback',
         status: 'fb-new',
         title: 'Calendar sync with Outlook',
         custom: { 'f-requested-by': '31 customers' },
@@ -1152,7 +1169,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         votes: 31,
       },
       {
-        type: 'request',
+        type: 'fb-feedback',
         status: 'fb-new',
         title: 'Recurring tasks',
         custom: { 'f-requested-by': '23 customers' },
@@ -1160,7 +1177,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         votes: 23,
       },
       {
-        type: 'request',
+        type: 'fb-feedback',
         status: 'fb-new',
         title: 'Edit many cards at once',
         custom: { 'f-requested-by': '9 customers' },
@@ -1168,7 +1185,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         votes: 9,
       },
       {
-        type: 'request',
+        type: 'fb-feedback',
         status: 'fb-review',
         title: 'Two-factor sign-in',
         custom: { 'f-requested-by': 'Northwind IT' },
@@ -1176,7 +1193,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         votes: 18,
       },
       {
-        type: 'request',
+        type: 'fb-feedback',
         status: 'fb-review',
         title: 'Offline mode on Android',
         custom: { 'f-requested-by': '12 customers' },
@@ -1184,7 +1201,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         votes: 12,
       },
       {
-        type: 'request',
+        type: 'fb-feedback',
         status: 'fb-planned',
         title: 'Dark mode',
         custom: { 'f-requested-by': '42 customers' },
@@ -1194,7 +1211,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         due: 20,
       },
       {
-        type: 'request',
+        type: 'fb-feedback',
         status: 'fb-building',
         title: 'Export a board to CSV',
         custom: { 'f-requested-by': '27 customers' },
@@ -1204,7 +1221,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         due: 6,
       },
       {
-        type: 'task',
+        type: 'fb-task',
         status: 'fb-building',
         title: 'Design the export dialog',
         assignee: 'maya',
@@ -1212,7 +1229,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         due: 3,
       },
       {
-        type: 'request',
+        type: 'fb-feedback',
         status: 'fb-shipped',
         title: 'Keyboard shortcuts',
         custom: { 'f-requested-by': '15 customers' },
@@ -1221,7 +1238,7 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
         votes: 15,
       },
       {
-        type: 'request',
+        type: 'fb-feedback',
         status: 'fb-not-planned',
         title: 'Built-in video calls',
         description: 'We will link to the call tools teams already use instead.',
@@ -1232,4 +1249,5 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
     ],
     // The templates added with the use-case categories, in a file of their own.
     ...USE_CASE_SEEDS,
+    ...WORKFLOW_SEEDS,
   };

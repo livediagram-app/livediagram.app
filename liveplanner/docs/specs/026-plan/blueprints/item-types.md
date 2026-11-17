@@ -1538,10 +1538,24 @@ cards, children)` adds "{names} will keep a copy of its settings."
 `action` (#dc2626). `READY_MADE_CARD_TYPES` (`packages/items/src/brought-types.ts`, pure data, the table in
 [Plan templates](../plan-templates.md#ready-made-card-types)) is those five then the thirteen more. Presets set the types
 a board takes (Kanban: Tasks and Actions, Sprint: Stories, Tasks and Bugs, Bug Triage: Bugs, Roadmap: Projects).
+`TEMPLATE_CARD_TYPES` (`packages/items/src/template-card-types/`: `kit.ts` field makers, then `delivery.ts`,
+`personal.ts` and `business.ts`, pure data, run through `withComments`) are the Plan templates' own types, each id
+prefixed by its template ([Plan templates](../plan-templates.md#card-types-a-template-makes)); no template names a
+ready-made id. They are the subpath `@liveplanner/items/template-card-types`, never the barrel, so the editor's first
+load holds none of them. The subpath also exports `BOARD_CARD_TYPES` (both catalogues). `boardCardType(id)`
+(`brought-types.ts`) finds a ready-made type, else one handed to it by `provideTemplateCardTypes`, which
+`broughtTypesToAdd` and a template form's target use; `templateCardTypesProvided()` says whether that has happened.
+Each path that makes a template's tabs imports the subpath and calls `provideTemplateCardTypes(TEMPLATE_CARD_TYPES)`
+at module level: the editor's `lib/template-builders.ts`, the api's `project-create.ts`, `project-seed.ts` and
+`internal-template.ts`, the MCP's `tools.ts` and `tab-tools.ts`, agent-verbs' `liveplanner/packages/agent-verbs/src/plan/brought-types.ts` and
+`template-starter-rules.ts` (the templates package's tests, through a setup file). The editor's `usePresetCardTypes`
+imports it before bringing a board that names an id neither the plan nor the lookup knows, and builds on the
+catalogue it last saved until a render hands it back (`saved`), so two brings in one tick never save over each
+other.
 
 - `boardTypeIdsOf(elements)`: each `plan-board`'s `addTypes`; nothing for one that names none (Blank), Archive or
   All Cards.
-- `broughtTypesToAdd(named, types)`: the ready-made types named that `types` lacks, each once, in order;
+- `broughtTypesToAdd(named, types)`: the types named (`boardCardType`) that `types` lacks, each once, in order;
   `boardTypesToAdd(elements, types)` the same off the elements; `defaultTypesToAdd(types)` the missing defaults.
 - `catalogueWithBoardTypes(stored, elements)`: `typesOf(stored)` (empty for null) with the missing ones after,
   each with `statuses` from the boards among `elements` that take it, capped at `ITEM_TYPES_MAX`; null when

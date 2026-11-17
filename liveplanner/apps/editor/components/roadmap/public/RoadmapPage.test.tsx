@@ -94,7 +94,8 @@ describe('the read', () => {
     const suggest = screen.getByRole('link', { name: 'Suggest an Idea' });
     expect(suggest.getAttribute('href')).toBe('/form/AbCdEfGhIjKlMnOpQrStU1');
     expect(suggest.getAttribute('target')).toBe('_blank');
-    expect(document.title).toBe('Acme Roadmap | liveplanner');
+    // The tab title is set in an effect (useBrowserTabTitle), which a slow runner commits after the heading shows.
+    await waitFor(() => expect(document.title).toBe('Acme Roadmap | liveplanner'));
   });
 
   it('folds a long description to three lines with Show More', async () => {

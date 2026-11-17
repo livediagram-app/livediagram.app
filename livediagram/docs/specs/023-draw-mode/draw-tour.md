@@ -3,7 +3,7 @@
 > **Retired** (owner, 2026-11-08, Work Tracker #58): Draw mode's tour is now [Watch It Built](../007-editor/watch-it-built.md), short replays picked from a start panel. This spec is kept as the record of the stepped tour; its code is gone. The `drawTourSeen` key stays as Settings' row key and telemetry token for the mode's Watch It Built switch.
 
 A short, optional guided tour of [Draw mode](draw-mode.md), started from the footer's **Start Draw Tour** button. It
-is the [Workshop tour](../012-collaboration/workshop-tour.md)'s sibling: the same Start Tour button, anchored step
+is the [Workshop tour](../012-collaboration/workshop-tour.md)'s sibling: the same Get Started button, anchored step
 cards, glide, dimming ring, Skip, Back and closing card, driven by the same engine. Where this spec is silent, the
 Workshop tour's rules hold.
 
@@ -11,13 +11,13 @@ Workshop tour's rules hold.
 
 | Term             | Means                                                               |
 | ---------------- | ------------------------------------------------------------------- |
-| **Draw tour**    | This tour. On the Start Tour button: **Start Draw Tour**            |
+| **Draw tour**    | This tour. On the Get Started button: **Start Draw Tour**           |
 | **Diagram tour** | The Diagram mode tour, [Diagram tour](../007-editor/editor-tour.md) |
 | **Dock**         | Draw mode's floating bar of tool groups ([Draw mode](draw-mode.md)) |
 
 ## Where it appears
 
-- **On the Start Tour button, in Draw mode.** The footer's button, left of Search
+- **On the Get Started button, in Draw mode.** The footer's button, left of Search
   ([Diagram tour](../007-editor/editor-tour.md) "Where it appears"), reads **Start Draw Tour** while the open tab is in
   Draw on a tab the person may edit, unless something more specific is on offer. The editor has to be usable
   (hydrated, no welcome overlay, not read-only, not an embed), and the tab not locked. It is not on offer while a
@@ -75,7 +75,7 @@ never does, since the dock's drawing tools are not theirs to use.
 
 The Workshop tour's funnel, with its own tokens:
 
-- **Offer**: `UI` · `Opened` · `DrawTourOffer` the first time the Start Tour button shows this tour in a page load.
+- **Offer**: `UI` · `Opened` · `DrawTourOffer` the first time the Get Started button shows this tour in a page load.
   Until 25 October 2026 it counted the welcome card showing, and `UI` · `Closed` · `DrawTourOffer` counted **No**;
   nothing sends Closed now.
 - **Start**: `UI` · `Started` · `DrawTour` on a press of the button (or the Settings rerun).

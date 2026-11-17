@@ -167,7 +167,8 @@ test("a Participant's score lands on the owner's machine and a Viewer's table, a
 
   // The owner clears it from the element menu: Edit, a right-click on the machine, Tools, High Scores.
   await machine(ownerPage).click({ button: 'right' });
-  await ownerPage.getByRole('button', { name: 'Tools', exact: true }).click();
+  // The element menu's Tools flyout, not the footer's Tools menu.
+  await ownerPage.locator('[data-menu-section="Tools"]').click();
   await ownerPage.getByRole('button', { name: 'High Scores', exact: true }).click();
   await ownerPage.getByText('1 Score on the table').waitFor();
   await ownerPage.getByRole('button', { name: 'Clear High Scores' }).click();

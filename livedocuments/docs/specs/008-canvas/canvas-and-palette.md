@@ -180,7 +180,7 @@ The reasoning is the row's own: Tools exists to stop a band of bespoke rows leng
 
 Promoting it removes both taps and the panel, and inline it is an ordinary collapsible row participating in the menu's one-open-at-a-time state, because a permanently-expanded row in the main menu would be worse than the flyout it replaced. Only a **controlled accordion** is promoted; a lone child of any other shape has no row to become, so it stays behind the flyout.
 
-**An open element menu follows the selection.** Clicking another element while the single-element menu is open retargets the menu to the newly-selected element in place (same screen position) instead of dismissing it, so the same tweak can be applied to several elements one after another with one click each. The retarget preserves the menu's expanded state: the open accordion (scaffold `sectionProps`) and the open flyout (`flyoutProps`) both stay open, showing the new element's values, so styling five shapes via the Style flyout never re-drills the category path.
+**An open element menu follows the selection.** Clicking another element while the single-element menu is open retargets the menu to the newly-selected element in place (same screen position) instead of dismissing it, so the same tweak can be applied to several elements one after another with one click each. The retarget preserves the menu's expanded state: the open accordion (scaffold `sectionProps`) and the open flyout (`flyoutProps`) both stay open, showing the new element's values, so styling five shapes via the Appearance flyout never re-drills the category path.
 
 Control groups (rendered as context-menu categories, hidden when their gate doesn't apply):
 
@@ -587,50 +587,84 @@ Every template opens on pages of its own. `templateCanvasOverrides(kind)` ships 
 
 **A template's backgrounds are the theme's own.** Every page background a template ships (solid, gradient or animated) is one the theme owns: a Theme gradient (Dawn, Haze, Glow, Dusk, Twilight, Aurora and the rest), an animated background in a theme colouring (Night, Deep and the rest), or the plain paper. Never a colour of the template's own, which would stay put when the theme changes. They are written against the Default theme's light half (`TEMPLATE_THEME`, `packages/templates/src/template-backgrounds.ts`) and land through the same follow a theme change runs (`withPageBackgroundsFollowingTheme`, from the Default theme to the theme the template is applied in, its content re-inked), so a template applied in Ocean opens on Ocean's backgrounds, and changing the theme later moves them on as it moves any page on a theme fill ([Pages mode](../007-editor/pages-mode.md) "It follows the theme"). Every application path (the picker, `/new`, the api and the MCP worker) runs it, through `withBlankPageThemed`. A guard test fails on any template page whose fill is not the Default theme's own (`template-backgrounds.test.ts`). Some of them:
 
-| Template            | Pages                                                                                                                            |
-| ------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| Article             | One A4 portrait article page of writing ([Article pages](../007-editor/article-pages.md)).                                       |
-| Working Backwards   | A4 portrait article pages of writing (the PR/FAQ flows onto as many as it fills, a page break before the Internal FAQ).          |
-| Written documents   | A4 portrait article pages of writing: Meeting Notes, Lesson Plan, Business Proposal, Design Doc, Status Report and Cover Letter. |
-| Class Lesson        | Six 16:9 slide pages built from the slide layouts, like the other layout decks.                                                  |
-| School Presentation | Five flashcards, like the other stacks ([Flashcards](../007-editor/flashcards.md)).                                              |
-| Slide deck          | Six 16:9 slide pages, one per slide; the title on the theme's Dusk, the ask on its Haze.                                         |
-| Group card          | Two Portrait post (4:5) pages: the Cover (the theme's Glow) and the Inside (the plain paper).                                    |
-| Event Poster        | One A3 portrait page.                                                                                                            |
-| Year in Review      | Four A4 portrait pages: Cover, Numbers, Timeline, Thanks.                                                                        |
-| Résumé              | One A4 portrait page.                                                                                                            |
-| Recipe Card         | A Square page (the dish) and a Portrait post (4:5) page (the method).                                                            |
-| Design              | One page each: the Storyboard and Floor plan, A3 landscape.                                                                      |
+| Template            | Pages                                                                                                                                                                                                             |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Article             | One A4 portrait article page of writing ([Article pages](../007-editor/article-pages.md)).                                                                                                                        |
+| Working Backwards   | A4 portrait article pages of writing (the PR/FAQ flows onto as many as it fills, a page break before the Internal FAQ).                                                                                           |
+| Written documents   | A4 portrait article pages of writing: Meeting Notes, Lesson Plan, Business Proposal, Design Doc, Status Report, Cover Letter, Product One-Pager, Research Report, Newsletter, Case Study and Onboarding Handbook. |
+| Class Lesson        | Six 16:9 slide pages built from the slide layouts, like the other layout decks.                                                                                                                                   |
+| Board Update        | Seven 16:9 slide pages built from the slide layouts, like the other layout decks; its charts carry the update's own figures.                                                                                      |
+| School Presentation | Five flashcards, like the other stacks ([Flashcards](../007-editor/flashcards.md)).                                                                                                                               |
+| Slide deck          | Six 16:9 slide pages, one per slide; the title on the theme's Dusk, the ask on its Haze.                                                                                                                          |
+| Group card          | Two Portrait post (4:5) pages: the Cover (the theme's Glow) and the Inside (the plain paper), standing as a stack.                                                                                                |
+| Event Poster        | One A3 portrait page.                                                                                                                                                                                             |
+| Year in Review      | Four A4 portrait pages: Cover, Numbers, Timeline, Thanks.                                                                                                                                                         |
+| Résumé              | One A4 portrait page.                                                                                                                                                                                             |
+| Recipe Card         | A Square page (the dish) and a Portrait post (4:5) page (the method).                                                                                                                                             |
+| Design              | One page each: the Storyboard and Floor plan, A3 landscape.                                                                                                                                                       |
+
+### What a template shows off
+
+Every template is held to what livedocuments can do today, and uses a feature where a real document of its kind would, never
+to show it off where it reads wrong. The choices are content only: a template's `kind` is stored on documents and in
+telemetry, so it never changes.
+
+- **Stack Pages** (`Tab.pageArrangement: 'stack'`, [Pages](../007-editor/pages-mode.md) "Stacked or side by side")
+  where a sequence is the point and one page is looked at at a time: **Social Carousel** (five slides swiped one by
+  one) and **Group Card** (the cover, then the inside, as a card is opened). The flashcard stacks stack by their kind.
+  Everything else stands side by side: a deck reads along its filmstrip, a report or a recipe is read across its pages,
+  an article never stacks, and a one-page template (a poster, a storyboard, a résumé) has nothing to flip.
+- **Builds** ([Presentation mode](../012-collaboration/presentation-mode.md) "Builds") on the layout decks' slides
+  where points are made one at a time (three points, a process, objectives, goals): each column of the slide below its
+  heading comes in as one step, left to right, with **Rise**. The heading, the source line and anything outside the
+  columns are on the slide from the start; arrows follow their ends.
+- **A deck's chart carries the deck's figures**: a layout deck may give a slide's chart its own data, so the bars and
+  lines say what the slide's words say (Quarterly Review, Board Update).
+- **Footnotes** where a figure needs its source (Business Proposal, Design Doc, Status Report, Research Report, Case
+  Study, Onboarding Handbook), **contents** where a reader jumps between sections (Business Proposal, Design Doc,
+  Research Report, Newsletter, Onboarding Handbook), **headers and footers** on anything printed or passed round.
+- **Speaking time** ([Flashcards](../007-editor/flashcards.md) "Card number and speaking time") on every card of the
+  talk stacks; their descriptions never promise a length the cards do not hold.
+- **Not in a template**, because each needs new editor code rather than template content: a chart in a written
+  template's writing (where the writing puts a zone is known only once the editor lays it out, and the editor settles a
+  zone's place only for the person who wrote it, so a template's chart would wait off the page); a connected tab (a
+  live diagram or plan inside a document), which needs a target the new person owns; and a sheet-linked chart, which
+  needs a sheet. A deck's or an infographic's chart is an element on its page and needs none of this.
 
 ### Written documents
 
-The written templates (`packages/templates/src/article-templates.ts`) are articles ([Article pages](../007-editor/article-pages.md)), each written as Markdown and read by the article's own Markdown reader, so the words stay easy to edit. Each shows off what an article can hold, as a real document of its kind would use it:
+The **Project Brief** is written the same way (`packages/templates/src/article-template.ts`): a header with the document's name and page numbers, goals and milestones in tables, open questions as a to-do list. **Working Backwards** carries a "Confidential draft" footer with "Page n of m". The written templates (`packages/templates/src/article-templates.ts`) are articles ([Article pages](../007-editor/article-pages.md)), each written as Markdown and read by the article's own Markdown reader, so the words stay easy to edit. Each shows off what an article can hold, as a real document of its kind would use it:
 
-| Template          | What it shows                                                                                                                                          |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Meeting Notes     | A header with the document's name and the date; attendees and decisions in tables; actions as a to-do list.                                            |
-| Lesson Plan       | The lesson's timings in a table, objectives as a numbered list, a footer with the page number.                                                         |
-| Business Proposal | A title page with no header or footer, a table of contents, a timeline and a pricing table, "Page n of m" footers.                                     |
-| Design Doc        | A table of contents, a code block, a table of the options weighed, a header with the doc's status.                                                     |
-| Status Report     | A header and page numbers, the workstreams' status in a table, risks and next steps.                                                                   |
-| Cover Letter      | A one-page letter in the Classic look: the sender's details, the date, the recipient's address block (one line each), three paragraphs and a sign-off. |
+| Template            | What it shows                                                                                                                                                  |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Meeting Notes       | A header with the document's name and the date; attendees and decisions in tables; actions as a to-do list.                                                    |
+| Lesson Plan         | The lesson's timings in a table, objectives as a numbered list, a footer with the page number.                                                                 |
+| Business Proposal   | A title page with no header or footer, a table of contents, a timeline and a pricing table, a footnote on the case it cites, "Page n of m" footers.            |
+| Design Doc          | A table of contents, a code block, a table of the options weighed, a header with the doc's status, footnotes on the evidence.                                  |
+| Status Report       | A header and page numbers, the workstreams' status in a table, a footnote on the budget, risks and next steps.                                                 |
+| Cover Letter        | A one-page letter in the Classic look: the sender's details, the date, the recipient's address block (one line each), three paragraphs and a sign-off.         |
+| Product One-Pager   | One page in the Clean look, narrow margins: the problem, who it is for, what we build in a table, the measures of success in a table, and what we will not do. |
+| Research Report     | A title page with no header or footer, contents, the method in a table, findings, footnotes for every source, "Page n of m" footers.                           |
+| Newsletter          | The Bold look, a header with the issue and date, an "In this issue" contents, a lead story, a table of new arrivals, a quote and what is on.                   |
+| Case Study          | The Report look: the project at a glance in a table, the challenge, what was done, the results in a table with a footnote on their source, the client's words. |
+| Onboarding Handbook | Contents, the first week as a to-do list, who to ask and the tools in tables, footnotes on the details, "Page n of m" footers.                                 |
 
 ### Template categories
 
 livedocuments' categories are its own: they need not match the other products'. They are grouped by **what the document is for** (the use case), never by page kind, so a deck, an article and a stack of flashcards for the same job sit together. Every template but the blanks has one primary category and may be cross-listed where people would genuinely look for it too (`packages/templates/src/template-categories.ts` holds both; a template does not compile until it has a home). Every picker shows them alphabetically by label.
 
-| Category  | Holds                                                           | Also lists                         |
-| --------- | --------------------------------------------------------------- | ---------------------------------- |
-| Careers   | Résumé, Cover Letter                                            |                                    |
-| Events    | Event Poster, Group Card                                        | Wedding Toast                      |
-| Home      | Recipe Card, Floor Plan                                         |                                    |
-| Learning  | Lesson Plan, Class Lesson, School Presentation                  | How It Works                       |
-| Marketing | Social Carousel, Versus, How It Works, Storyboard (an ad)       | Event Poster                       |
-| Pitches   | Slide Deck (a pitch), Launch Keynote, Product Pitch             |                                    |
-| Plans     | Project Brief, Working Backwards, Business Proposal, Design Doc |                                    |
-| Reports   | Year in Review, Quarterly Review, Data Story, Status Report     |                                    |
-| Talks     | Conference Talk, Wedding Toast                                  | Product Pitch, School Presentation |
-| Teams     | Meeting Notes, Workshop Kickoff, Team Welcome                   |                                    |
+| Category  | Holds                                                                                      | Also lists                         |
+| --------- | ------------------------------------------------------------------------------------------ | ---------------------------------- |
+| Careers   | Résumé, Cover Letter                                                                       |                                    |
+| Events    | Event Poster, Group Card                                                                   | Wedding Toast                      |
+| Home      | Recipe Card, Floor Plan                                                                    |                                    |
+| Learning  | Lesson Plan, Class Lesson, School Presentation                                             | How It Works                       |
+| Marketing | Social Carousel, Versus, How It Works, Storyboard (an ad), Newsletter, Case Study          | Event Poster                       |
+| Pitches   | Slide Deck (a pitch), Launch Keynote, Product Pitch                                        | Product One-Pager, Board Update    |
+| Plans     | Project Brief, Working Backwards, Business Proposal, Design Doc, Product One-Pager         | Case Study                         |
+| Reports   | Year in Review, Quarterly Review, Data Story, Status Report, Research Report, Board Update |                                    |
+| Talks     | Conference Talk, Wedding Toast                                                             | Product Pitch, School Presentation |
+| Teams     | Meeting Notes, Workshop Kickoff, Team Welcome, Onboarding Handbook                         | Newsletter                         |
 
 Each label is **one word**, so it sits on one line in every picker's rail. The longer names they had until 2026-11-04
 (Events and Celebrations, Home and Hobbies, Lessons and Learning, Marketing and Social, Pitches and Launches, Plans and
@@ -1438,3 +1472,10 @@ retired-pattern` log. Crosshatch is its nearest pattern: a lattice of diagonal l
   save writes Crosshatch. An unknown pattern that reached the canvas without that read would draw as the default dot
   grid.
 - The **Studio** look wears Crosshatch.
+
+## Icon and Text live in Appearance (owner, 2026-11-16)
+
+The element menu's Appearance flyout holds everything about how the element looks: Presets, Colours, Border, Shadow,
+Finish, then Icon (a tech icon's size, a line icon's weight, a shape's inline icon) and Text. Neither is a row of its
+own in the menu any more. A flyout with one section inside, Tools holding only Mind Map for example, is never a row of
+its own: the section stands in the menu in its place, counting through any group of sections a host builds inline.

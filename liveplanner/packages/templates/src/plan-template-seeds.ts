@@ -6,8 +6,10 @@
 
 import {
   EXAMPLE_FIELD,
+  REPEAT_FIELD,
   newItemId,
   type ItemCreate,
+  type RepeatRule,
   type ItemFields,
   type ItemPerson,
 } from '@liveplanner/items';
@@ -36,7 +38,12 @@ export function seedDate(today: string, days: number): string {
   return at.toISOString().slice(0, 10);
 }
 
-function fieldsOf(card: SeedCard, today: string, ids: ReadonlyMap<string, string>): ItemFields {
+function fieldsOf(
+  card: SeedCard,
+  today: string,
+  ids: ReadonlyMap<string, string>,
+  timeZone: string,
+): ItemFields {
   const fields: ItemFields = { title: card.title, status: card.status };
   if (card.description) fields['description'] = card.description;
   if (card.assignee) fields['assignee'] = seedPerson(card.assignee);
@@ -51,6 +58,11 @@ function fieldsOf(card: SeedCard, today: string, ids: ReadonlyMap<string, string
   for (const [field, ref] of Object.entries(card.links ?? {})) fields[field] = ids.get(ref)!;
   for (const [field, value] of Object.entries(card.custom ?? {})) fields[field] = value;
   if (card.archived) fields['archived'] = true;
+  // A repeating example (plan-templates.md "Example cards"): set today, in its maker's time zone.
+  if (card.repeat) {
+    const rule: RepeatRule = { ...card.repeat, from: today, timeZone };
+    fields[REPEAT_FIELD] = rule as unknown as ItemFields[string];
+  }
   // What Clear Example Cards finds them by (docs/specs/026-plan/items.md "Example cards").
   fields[EXAMPLE_FIELD] = true;
   return fields;
@@ -63,11 +75,12 @@ function votesOf(n: number): Record<string, number> {
 }
 
 // The cards a template opens with, in column order; none for a template that has none (every template not of Plan,
-// Blank Plan and the spreadsheet templates).
+// Blank Plan and the spreadsheet templates). `timeZone` is the maker's, for a repeating card's rule.
 export function planTemplateSeedItems(
   kind: TemplateKind,
   today: string,
   newId: () => string = () => newItemId(),
+  timeZone = 'UTC',
 ): ItemCreate[] {
   if (!isPlanTemplateKind(kind)) return [];
   const cards = PLAN_TEMPLATE_SEEDS[kind] ?? [];
@@ -80,7 +93,7 @@ export function planTemplateSeedItems(
   return cards.map((card, i) => ({
     id: made[i]!,
     type: card.type,
-    fields: fieldsOf(card, today, ids),
+    fields: fieldsOf(card, today, ids, timeZone),
     place: { status: card.status },
     ...(card.votes ? { votes: votesOf(card.votes) } : {}),
   }));
@@ -92,4 +105,13 @@ export function seedToday(now: Date = new Date()): string {
   const m = String(now.getMonth() + 1).padStart(2, '0');
   const d = String(now.getDate()).padStart(2, '0');
   return `${y}-${m}-${d}`;
+}
+
+// The maker's IANA time zone, for a repeating example's rule: the runtime's, else UTC.
+export function seedTimeZone(): string {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+  } catch {
+    return 'UTC';
+  }
 }

@@ -1,13 +1,13 @@
 // The template catalogue's categories (docs/specs/008-canvas/canvas-and-palette.md "Template categories"): the kind of
 // place a Space is, Campus, Events, Games Rooms, Homes, Office, Outdoor, Recreation and Venues, each holding two to seven
-// of the twenty-six Spaces
+// of the thirty Spaces
 // (docs/specs/007-editor/templates-by-mode.md "The catalogue"). Every template but the blank has exactly one primary category and may be cross-listed in others where
 // people would genuinely look for it. Read by Start a Space, the marketing gallery and the agents' catalogue. Pure
 // data plus three lookups; a Record over every non-blank kind, so a new template does not compile until it has a home.
 import type { TemplateKind } from './templates';
 
-// The Meetings & Workshops, Retrospectives, Brainstorming, Decisions, Goals & Metrics, People & Teams, Planning,
-// Product & UX, Quizzes & Games, Strategy and Teaching & Learning categories left with their templates
+// The Meetings, Retrospectives, Brainstorming, Decisions, Goals, Teams, Planning,
+// Product, Games, Strategy and Learning categories left with their templates
 // (docs/specs/002-project-scope/not-in-livehuddle.md). The one Virtual Spaces category the first four Spaces shared
 // split into four, Campus (whole sites joined by gardens) came after, and Games Rooms, Homes and Venues (Work Tracker
 // #641) after that, Venues taking the Conference Venue and the Hotel and Suites from Campus.
@@ -115,6 +115,10 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, 'blank-session'>, Template
   'country-cottage': 'homes',
   'music-hall': 'venues',
   'festival-field': 'venues',
+  'interview-suite': 'office',
+  'client-lounge': 'office',
+  classroom: 'events',
+  'hackathon-hall': 'events',
 };
 
 // Cross-listing: the other categories a template is also shown in, where someone would genuinely look for it there.

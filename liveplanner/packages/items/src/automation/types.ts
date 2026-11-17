@@ -76,6 +76,12 @@ export const INCOMING_WEBHOOK_PERSON: ItemPerson = {
   name: 'Incoming webhook',
   color: AUTOMATION_COLOR,
 };
+// Who Test on a Card runs an Email Received rule as: an email from nobody, so `{{person}}` reads "Email".
+export const EMAIL_TEST_PERSON: ItemPerson = {
+  id: 'email',
+  name: 'Email',
+  color: AUTOMATION_COLOR,
+};
 
 // ---- Triggers ----------------------------------------------------------------------------------------------------
 
@@ -85,6 +91,9 @@ export type AutomationClock = string;
 export type AutomationTrigger =
   | { kind: 'card_created'; status?: string }
   | { kind: 'form_response'; formTab?: string }
+  // An email to a board's address made the card (email-to-board.md). `board`: only that Plan board (its element id);
+  // `sender`: only that address, or that domain as `@example.com` (email-trigger.ts); absent, any.
+  | { kind: 'email_received'; board?: string; sender?: string }
   // `types`: only a card of one of these card types (by id); absent or empty, any type (docs/specs/026-plan/automations.md
   // "Triggers").
   | { kind: 'card_moved'; types?: string[]; from?: string[]; to?: string[] }
@@ -127,6 +136,7 @@ export type AutomationTriggerKind = AutomationTrigger['kind'];
 export const AUTOMATION_TRIGGER_KINDS: readonly AutomationTriggerKind[] = [
   'card_created',
   'form_response',
+  'email_received',
   'card_moved',
   'field_changed',
   'comment_added',
@@ -168,10 +178,13 @@ export const isTimeTrigger = (
   t: AutomationTrigger,
 ): t is Extract<AutomationTrigger, { kind: AutomationTimeTriggerKind }> =>
   t.kind === 'scheduled' || t.kind === 'due_in' || t.kind === 'overdue' || t.kind === 'stuck';
-// A trigger with no person behind it (a time, another tool's call, GitHub): no Who Did It, nobody to assign or email
-// as whoever triggered it.
+// A trigger with no person of the plan behind it (a time, another tool's call, GitHub, an email's sender): no Who Did
+// It, nobody to assign or email as whoever triggered it.
 export const isPersonless = (t: AutomationTrigger): boolean =>
-  isTimeTrigger(t) || t.kind === 'incoming_webhook' || isGithubTrigger(t);
+  isTimeTrigger(t) ||
+  t.kind === 'incoming_webhook' ||
+  t.kind === 'email_received' ||
+  isGithubTrigger(t);
 
 // ---- Conditions --------------------------------------------------------------------------------------------------
 
@@ -455,6 +468,12 @@ export const AUTOMATION_PULL_REQUEST_VALUE_LABELS: Record<AutomationPullRequestV
     'pull_request.number': 'Pull Request Number',
     'pull_request.url': 'Pull Request Link',
   };
+// The values only an Email Received rule's text may hold: the sender's bare address (email-trigger.ts).
+export const AUTOMATION_EMAIL_VALUE_NAMES = ['from'] as const;
+export type AutomationEmailValueName = (typeof AUTOMATION_EMAIL_VALUE_NAMES)[number];
+export const AUTOMATION_EMAIL_VALUE_LABELS: Record<AutomationEmailValueName, string> = {
+  from: 'From Email',
+};
 // Insert a Value's chip labels, by name.
 export const AUTOMATION_VALUE_LABELS: Record<AutomationValueName, string> = {
   'card.title': 'Card Title',

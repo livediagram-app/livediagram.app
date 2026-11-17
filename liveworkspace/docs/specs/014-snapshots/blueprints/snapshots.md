@@ -27,7 +27,7 @@ Derived from [snapshots.md](../snapshots.md). Codes SN1 to SN30 are cited from t
 - `src/routes.ts` (SN10 to SN15): `answerSnapshotRoute(request, rest, caller, door)`.
 - `src/fence.ts` (SN16 to SN18): `fenceStaleWrite`, `stampGeneration`.
 - `src/client.ts` (SN19 to SN21): the editor's calls and the fence's browser half.
-- `src/ui/` (SN22 to SN27): `SnapshotsDoorProvider`, `useSnapshotsDoor`, `SnapshotsButton`, `SnapshotsDialog`,
+- `src/ui/` (SN22 to SN27): `SnapshotsDoorProvider`, `useSnapshotsDoor`, `useSnapshotsToolsItem`, `SnapshotsDialog`,
   `useSnapshots`, `snapshot-words.ts`.
 
 ## Data and persistence
@@ -145,12 +145,11 @@ editor (`@liveworkspace/workbench/lib/room-client` and the copies in livediagram
 
 ## Presentation and UX
 
-SN22. `SnapshotsDoorProvider value={door | null}`; `SnapshotsButton` renders nothing without a door. The door:
+SN22. `SnapshotsDoorProvider value={door | null}`; `useSnapshotsToolsItem()` returns null without a door. The door:
 `{ api, noun, open, setOpen }` built by the app's host from its gate.
 
-SN23. The button: the footer's `CHROME_BTN` classes (and `CHROME_BTN_LABELLED` when labelled), a camera-shutter glyph
-(14 px, `aria-hidden`), label "Snapshots", `aria-label="Snapshots"` and a hover card "Snapshots" / "Save points for
-the whole <noun>. Revert to one to undo a big change."
+SN23. The row (footer Tools menu, blueprint FM1 to FM3): id `snapshots`, label "Snapshots", the camera-shutter glyph
+(14 px, `aria-hidden`), `onSelect` the door's `open`.
 
 SN24. The dialog: `Dialog size="md" phoneSheet`, `DialogHeader title="Snapshots" subtitle="Save points for the whole
 <noun>. The latest 5 are kept."`, a close button. Body: the take row, then the list, as the spec says. Rows are

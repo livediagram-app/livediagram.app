@@ -278,8 +278,11 @@ export function MenuActionRow({
   disabled = false,
   plain = false,
   labelStyle,
+  aside,
 }: {
   label: string;
+  // A plain row's trailing mark at its right edge (a count badge), hidden from the row's name.
+  aside?: ReactNode;
   icon: ReactNode;
   // Handed the click, so a verb that anchors something (a confirm) can anchor it to the row itself.
   onClick: (event: MouseEvent<HTMLButtonElement>) => void;
@@ -342,6 +345,7 @@ export function MenuActionRow({
         <span className="min-w-0 flex-1" style={labelStyle}>
           {label}
         </span>
+        {aside ? <span className="flex h-lh shrink-0 items-center">{aside}</span> : null}
       </button>
     );
   }

@@ -239,8 +239,9 @@ export function buildApprovalWorkflow(cx: number, cy: number): Element[] {
     const at = laid(of);
     const d = DESKS[desk]!;
     return {
-      ...createShape('stadium', at.x + at.width - 52, at.y - 13),
-      width: 112,
+      // Its right edge stays where it was; it is wide enough for "Usually 3 days" on one line.
+      ...createShape('stadium', at.x + at.width - 76, at.y - 13),
+      width: 136,
       height: 26,
       label,
       textSize: 'sm' as const,

@@ -1,8 +1,8 @@
 # Templates by mode
 
 Every template opens in one [editor mode](editor-modes.md): **Diagram**, **Draw** or
-**Workshop**. The New Canvas wizard asks for the mode itself
-([New document route](new-document-route.md) "Choosing a mode"), and each mode's templates wait on an empty tab in
+**Workshop**. New Canvas opens a document on a start
+([New document route](new-document-route.md) "No welcome step"), where the mode is chosen, and each mode's templates wait on an empty tab in
 its own start ([Template starts](start-diagramming.md)), so someone who came to sketch or to run a session sees only
 what starts there. A search on a start also finds the other modes' templates, each saying which mode it opens in
 ([Found in other modes](start-diagramming.md#found-in-other-modes)).
@@ -99,7 +99,8 @@ unchanged; only the mode they open in moved from Diagram.
   (`raci-matrix`), **User Story Map** (`user-story-map`), **SWOT** (`swot`), **PESTLE Analysis**
   (`pestle-analysis`), **Business Model Canvas** (`business-model-canvas`), **Value Proposition Canvas**
   (`value-proposition-canvas`), **Stakeholder map** (`stakeholder-map`), **Opportunity Solution Tree**
-  (`opportunity-solution-tree`) and **KWL Chart** (`kwl-chart`, a class's board). **A board built from sticky notes
+  (`opportunity-solution-tree`), **KWL Chart** (`kwl-chart`, a class's board), **Sprint Planning** (`sprint-planning`) and
+  **Interview Synthesis** (`interview-synthesis`). **A board built from sticky notes
   for a group to add theirs to is a Workshop template**: a note per voice is the room's work. SWOT, Empathy Map and
   User Journey moved from Diagram for it; a Diagram template may still carry a sticky or two as an annotation (Family
   Tree, Flywheel, Sequence Diagram) and stays a diagram, and a sticky board one person keeps for themselves stays a
@@ -107,7 +108,7 @@ unchanged; only the mode they open in moved from Diagram.
   Event Storming is its own kind of tab and keeps its own mode.
 - The games: **Pub Quiz** (`pub-quiz`), **Icebreaker Questions** (`icebreaker-questions`), **Two Truths and a Lie**
   (`two-truths-and-a-lie`), **Would You Rather** (`would-you-rather`) and **Find Someone Who Bingo**
-  (`people-bingo`), in **Quizzes & Games** ([Quiz and game templates](../012-collaboration/quiz-and-game-templates.md)).
+  (`people-bingo`), in **Games** ([Quiz and game templates](../012-collaboration/quiz-and-game-templates.md)).
 - Start a Workshop groups them by the catalogue's categories, as every start does ([Start
   diagramming](start-diagramming.md) "Recommended and groups").
 

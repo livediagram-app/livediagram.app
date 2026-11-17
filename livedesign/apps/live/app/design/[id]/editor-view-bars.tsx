@@ -18,7 +18,6 @@ import { appHrefOfPlace } from '@/lib/workbench/workspace-place';
 import { TabBar } from '@/components/chrome/TabBar';
 import { LandscapeBarFold } from '@/components/chrome/LandscapeBars';
 import { RolePill } from '@/components/chrome/RoleIndicator';
-import { SuggestionsHeaderAction } from '@liveworkspace/suggestions/react/SuggestionsBar';
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import type { useEditorContext } from './EditorContext';
 import type { useRoleIndicator } from './useRoleIndicator';
@@ -41,8 +40,6 @@ export function editorViewHeader(
     headerCommunity: ReturnType<typeof designIsPublic>;
     role: ReturnType<typeof useRoleIndicator>;
     landscapeShown: boolean;
-    // The header's Walkthroughs button (docs/specs/012-collaboration/walkthroughs.md).
-    walkthroughs: ReactNode;
   },
 ): ReactNode {
   const {
@@ -103,15 +100,7 @@ export function editorViewHeader(
               <ApprovalBadge />
             </>
           }
-          // Editing or Suggesting, and the review (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md):
-          // in the title bar at every width, so the canvas's toolbars never cover it.
-          leadAction={
-            <>
-              <SuggestionsHeaderAction suggestions={ctx.canvasSuggestions} />
-              {prototype}
-            </>
-          }
-          walkthroughs={anyWelcomeOpen ? null : view.walkthroughs}
+          leadAction={prototype}
           onOpenAccount={() => openSettingsOn('account')}
           onOpenShare={() => {
             setShareDialogOpen(true);
@@ -245,6 +234,7 @@ export function editorViewFooter(
             setSettingsOpen(true);
             track('UI', 'Opened', 'Settings');
           }}
+          suggestions={ctx.canvasSuggestions}
           onOpenSearch={() => openSearchWithPrefetch(setSearchOpen, loadAllTabs)}
           // Canvas right-click (desktop) + long-press (touch) open the active
           // tab's menu with the canvas sections folded in, rendered by the

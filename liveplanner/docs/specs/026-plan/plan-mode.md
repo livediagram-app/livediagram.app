@@ -47,7 +47,7 @@ Every Project is a Plan project, so what Plan reads is read from the first load:
   list strays before it has a board. A room join or resync refetches only items already loaded.
 - **Plan's UI loads when drawn**: boards, cards, the item panel, the type editor, the Card Types panel, the board
   menu, the Cards category and card slides are separate chunks, fetched the first time one appears. The
-  [Plan tour](plan-tour.md) is its own chunk, mounted with the editor and on the footer's Start Tour button only
+  [Plan tour](plan-tour.md) is its own chunk, mounted with the editor and on the footer's Get Started button only
   once a board or Sheet is on the tab.
 - **Dashboards, Start Planning and the Sheet templates load when drawn too**: a Dashboard tab's page loads only for a
   Dashboard tab, Start Planning with the board picker, the Sheet templates' designs only when one is set up or drawn
@@ -137,9 +137,10 @@ Every Project is a Plan project, so what Plan reads is read from the first load:
         The first takes the Overview layout's place in Recommended. A tab still on its default name takes the
         Dashboard's name. Archive and All Cards boards suggest nothing.
     - **Inspiration** ("Ready-made ways to run real work, from hiring to launches, set up across tabs for you."): the
-      Plan templates that set up boards, the most eye-opening first: Hiring Pipeline, Content Calendar, Event Planner,
-      Sales CRM, Product Launch, OKRs, Help Desk, Feedback Board, Project Planner, Bug Tracker, Team Retro, Meeting
-      Agenda, Personal Goals, Weekly Planner, Study Planner and Kanban, then Task Tracker
+      Plan templates that set up boards, the most eye-opening first: Hiring Pipeline, Content Calendar, Editorial
+      Pipeline, Event Planner, Sales CRM, Product Launch, OKRs, Help Desk, Client Onboarding, Feedback Board, Project
+      Planner, Sprint Board, Bug Tracker, Team Retro, Meeting Agenda, Personal Goals, Trip Planner, Weekly Planner, Study
+      Planner and Kanban, then Task Tracker
       (Blank Plan left out, and a [spreadsheet template](plan-templates.md#spreadsheet-templates) that makes one tab
       too: it is one Sheet that **Spreadsheets** above already offers, so no choice shows twice; one that sets up more
       tabs, as Task Tracker's Sheet and Overview, stays; `INSPIRATION_TEMPLATES`), each its template preview and a badge of how many tabs it

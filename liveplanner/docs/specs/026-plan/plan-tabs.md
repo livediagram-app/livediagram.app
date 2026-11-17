@@ -318,7 +318,7 @@ it holds, `add_board` and `add_sheet` take any tab, and a changeset may add one 
   outline on hover or while typing says it can be written in. Like a note it fits any slot. A note's or Title's text
   follows a change made elsewhere (a collaborator, an undo) unless it holds unsaved typing.
 - **Card style**: an Editor styles a Utility (Note, Title, Status, Checklist, Key Date, Links) from its Slot Settings
-  cog. The popover opens with a **Style** row, the element context menu's own (a side flyout of closed
+  cog. The popover opens with a **Appearance** row, the element context menu's own (a side flyout of closed
   MenuAccordionSection rows, the same tiles, hover previews and Reset buttons), over the Slot section.
   The flyout holds only what a card in a slot can take:
   - **Presets**: the shapes' style presets (Theme, Soft, Tinted, Solid, Bold, the neutrals, the border looks and the

@@ -194,7 +194,7 @@ A Sankey has no Plan canvas path (the element routers carry only Plan's kinds), 
 
 ### Text size on boards and cards
 
-The tab's **Text Size** (Tab Style > Text) scales a board's and a Plan card element's text up and down, all of it
+The tab's **Text Size** (Tab Appearance > Text) scales a board's and a Plan card element's text up and down, all of it
 together, so the proportions between a title, a chip and a count hold. It scales the card titles, everything on a
 card (chips, pills, field values, the description, the key and type tags), the column and swimlane names, a column's
 WIP warning, the Add Card row and a drop gap's message. Icons, paddings, the board's title and its controls keep their

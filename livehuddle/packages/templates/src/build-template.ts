@@ -27,6 +27,8 @@ import {
 } from './template-builders-homes';
 import { buildMusicHall } from './template-builders-venues';
 import { buildFestivalField } from './template-builders-festival';
+import { buildClientLounge, buildInterviewSuite } from './template-builders-office-suites';
+import { buildClassroom, buildHackathonHall } from './template-builders-events-more';
 import {
   AVATAR_PAD_DEFAULT_SIZE,
   createShape,
@@ -114,6 +116,14 @@ function buildElements(kind: TemplateKind, cx: number, cy: number): Element[] {
       return buildMusicHall(cx, cy);
     case 'festival-field':
       return buildFestivalField(cx, cy);
+    case 'interview-suite':
+      return buildInterviewSuite(cx, cy);
+    case 'client-lounge':
+      return buildClientLounge(cx, cy);
+    case 'classroom':
+      return buildClassroom(cx, cy);
+    case 'hackathon-hall':
+      return buildHackathonHall(cx, cy);
     // The blank holds only its entrance (docs/specs/009-elements/avatar-pad.md "Every Space and blank tab has one"): an
     // Avatar Pad a little below the middle, where people arrive; the user adds the rest from the palette.
     case 'blank-session':

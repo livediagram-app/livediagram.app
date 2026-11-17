@@ -13,8 +13,12 @@
 import { useCallback, useEffect, useRef, type RefObject } from 'react';
 import type { Tab } from '@liveplanner/project';
 import {
+  boardCardType,
+  boardTypeIdsOf,
   catalogueWithBoardTypes,
   localeCurrency,
+  templateCardTypesProvided,
+  typesOf,
   type ItemTypeCatalogue,
 } from '@liveplanner/items';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
@@ -30,17 +34,26 @@ function boardsOf(tab: Tab | undefined): Elements {
   return (tab?.elements ?? []).filter(brings);
 }
 
+// What applyBoards last saved, over which catalogue: until a render hands the saved one back, a second bring in the
+// same tick builds on it, so two brings never save over each other.
+type Saved = { over: ItemTypeCatalogue | null; next: ItemTypeCatalogue } | null;
+
+type Latest = RefObject<{
+  catalogue: ItemTypeCatalogue | null;
+  saveCatalogue: (next: ItemTypeCatalogue) => void;
+}>;
+
 // Saves the catalogue `boards` leave, when it changes; `via` names the path in the log.
 function applyBoards(
-  latest: RefObject<{
-    catalogue: ItemTypeCatalogue | null;
-    saveCatalogue: (next: ItemTypeCatalogue) => void;
-  }>,
+  latest: Latest,
+  saved: { current: Saved },
   boards: Elements,
   via: string,
 ): void {
   const now = latest.current;
-  const next = catalogueWithBoardTypes(now.catalogue, boards, {
+  const base =
+    saved.current && saved.current.over === now.catalogue ? saved.current.next : now.catalogue;
+  const next = catalogueWithBoardTypes(base, boards, {
     currency: localeCurrency(typeof navigator === 'undefined' ? undefined : navigator.language),
   });
   if (!next) return;
@@ -49,7 +62,16 @@ function applyBoards(
     chosen: now.catalogue === null,
     types: next.types.map((t) => t.id),
   });
+  saved.current = { over: now.catalogue, next };
   now.saveCatalogue(next);
+}
+
+// Whether `boards` name a type neither the plan nor the board lookup knows yet: a Plan template's own type
+// (docs/specs/026-plan/plan-templates.md "Card types a template makes"), whose catalogue loads only then.
+function needsTemplateTypes(boards: Elements, catalogue: ItemTypeCatalogue | null): boolean {
+  if (templateCardTypesProvided()) return false;
+  const have = new Set(typesOf(catalogue).map((t) => t.id));
+  return boardTypeIdsOf(boards).some((id) => !have.has(id) && !boardCardType(id));
 }
 
 export function usePresetCardTypes({
@@ -74,8 +96,18 @@ export function usePresetCardTypes({
   saveCatalogue: (next: ItemTypeCatalogue) => void;
 }): { bring: (elements: Elements) => void } {
   const latest = useLatest({ catalogue, saveCatalogue });
+  const saved = useRef<Saved>(null);
   const apply = useCallback(
-    (boards: Elements, via: string) => applyBoards(latest, boards, via),
+    (boards: Elements, via: string) => {
+      if (!needsTemplateTypes(boards, latest.current.catalogue)) {
+        applyBoards(latest, saved, boards, via);
+        return;
+      }
+      void import('@liveplanner/items/template-card-types').then((m) => {
+        m.provideTemplateCardTypes(m.TEMPLATE_CARD_TYPES);
+        applyBoards(latest, saved, boards, via);
+      });
+    },
     [latest],
   );
 

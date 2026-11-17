@@ -21,6 +21,7 @@ import {
   type AutomationsTarget,
 } from './AutomationsContext';
 import { AUTOMATIONS_PARAM } from './automations-gate';
+import { toolGateBadges } from '@/components/dialogs/tool-gate';
 import { readAutomations } from './use-automations';
 import {
   dropGithubHash,
@@ -42,8 +43,9 @@ const AutomationsSyncGate = dynamic(
 
 // What stands before the screen (automationsGateFor): a plan in This Browser syncs (the Sync Plan move, once the
 // reader is known); a guest on a server plan signs in.
-export type AutomationsGate =
-  { kind: 'sync'; ready: boolean; sync: () => Promise<void> } | { kind: 'sign_in' };
+export type AutomationsGate = { badges?: readonly string[] } & (
+  { kind: 'sync'; ready: boolean; sync: () => Promise<void> } | { kind: 'sign_in' }
+);
 
 /** Whether this page was opened asking for the screen (`?automations=1`), as `?share=1` opens Share. */
 const askedOpen = () => new URL(window.location.href).searchParams.get(AUTOMATIONS_PARAM) === '1';
@@ -136,8 +138,9 @@ export function AutomationsHost({
         track('UI', 'Opened', gateKind === 'sync' ? 'AutomationsOffline' : 'AutomationsSignIn');
       },
       offline: true,
+      badges: toolGateBadges(gate),
     };
-  }, [stable, open, gateKind]);
+  }, [stable, open, gateKind, gate]);
   return (
     <AutomationsDoorContext.Provider value={door}>
       <AutomationsContext.Provider value={value}>

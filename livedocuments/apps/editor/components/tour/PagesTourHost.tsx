@@ -1,5 +1,8 @@
 'use client';
 
+import { lucideGlyph } from '@liveworkspace/ui';
+import { lucidePanelsTopLeft } from '@liveworkspace/icons/lucide';
+
 import { useEffect, useRef, useState } from 'react';
 import { pagesOf, type PageKind } from '@livedocuments/document';
 import {
@@ -26,7 +29,11 @@ import {
   useTourEngine,
   type TourOutcome,
 } from '@liveworkspace/workbench/components/tour/useTourEngine';
-import { TOUR_OFFER_RANK, useOfferTour } from '@liveworkspace/workbench/components/tour/tour-offer';
+import {
+  TOUR_OFFER_RANK,
+  stepsLength,
+  useOfferTour,
+} from '@liveworkspace/workbench/components/tour/tour-offer';
 import { useStartPanelOpen } from '@liveworkspace/workbench/components/start/start-panel-open';
 import { helpArticleHref } from '@/lib/help-articles';
 
@@ -169,6 +176,19 @@ export function PagesTourHost() {
           start,
           onShown: () => track('UI', 'Opened', 'PagesTourOffer'),
           seen,
+          icon: <PagesTourGlyph />,
+          // Its length in steps, for the page it would tour, loaded and counted only as Get Started opens.
+          length: async () => {
+            const page =
+              pickTourPage((kind) => !pagesKindSeen(prefsRef.current, kind)) ??
+              pickTourPage(() => true);
+            if (!page) return undefined;
+            const { shownPageTourSteps } = await import('./page-tour-steps');
+            return stepsLength(
+              shownPageTourSteps(page.kind, { pageId: page.pageId, ...PAGE_PANEL }, isOnScreen)
+                .length,
+            );
+          },
         }
       : null,
   );
@@ -217,3 +237,5 @@ export function PagesTourHost() {
     />
   );
 }
+
+const PagesTourGlyph = lucideGlyph(lucidePanelsTopLeft, 18);

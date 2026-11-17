@@ -76,9 +76,6 @@ export type EditorHeaderProps = {
   // The Present button (docs/specs/012-collaboration/presentation-mode.md "The header's Present button"): passed
   // only while there is something to present, so absent means no button.
   present?: { slideCount: number; starting: boolean; onPresent: () => void };
-  // The Walkthroughs button (liveworkspace/docs/specs/006-media/walkthroughs.md "The Walkthroughs menu"), left of
-  // Present: @liveworkspace/walkthrough's, bound by each canvas editor.
-  walkthroughs?: ReactNode;
   // An editor's own action first among the right edge's (livedesign's Prototype on a wireframe tab), for every role.
   leadAction?: ReactNode;
   // An editor's own action in Share's place, shown whether or not Share would be (liveplanner's Share Form while a
@@ -110,7 +107,6 @@ export function EditorHeader({
   renameNonce = 0,
   rolePill,
   present,
-  walkthroughs,
   leadAction,
   shareAction,
   account,
@@ -225,7 +221,6 @@ export function EditorHeader({
             </button>
           </HoverCard>
         ) : null}
-        {walkthroughs}
         {present ? <PresentButton {...present} lead={words.presentLead ?? 'Present'} /> : null}
         {shareAction ??
           (showShare ? (

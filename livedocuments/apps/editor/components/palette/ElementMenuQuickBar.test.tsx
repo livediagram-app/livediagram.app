@@ -2,7 +2,6 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createShape, type BoxedElement, type Element } from '@livedocuments/document';
-import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import { LibraryProvider } from '@liveworkspace/workbench/components/library/LibraryProvider';
 import type { LibraryApi } from '@liveworkspace/workbench/lib/library/library-api';
 import { ElementMenuQuickBar, quickBarItems } from './ElementMenuQuickBar';
@@ -51,23 +50,19 @@ describe('quickBarItems', () => {
 });
 
 describe('ElementMenuQuickBar', () => {
-  const open = (
-    target: Element = square(),
-    { attachments = true, withDelete = true }: { attachments?: boolean; withDelete?: boolean } = {},
-  ) => {
-    const h = handlers();
+  // Assign Action and Add Comment moved to the Resources category (quickBarItems above); the bar keeps Save to
+  // Library and Delete.
+  const open = (target: Element = square(), withDelete = true) => {
     const onDelete = vi.fn();
     const onClose = vi.fn();
     render(
       <ElementMenuQuickBar
         target={target}
-        props={h as unknown as EditorContextMenuProps}
-        attachments={attachments}
         onDelete={withDelete ? onDelete : undefined}
         onClose={onClose}
       />,
     );
-    return { h, onDelete, onClose };
+    return { onDelete, onClose };
   };
   const labels = () =>
     Array.from(
@@ -75,22 +70,18 @@ describe('ElementMenuQuickBar', () => {
       (b) => b.getAttribute('aria-label'),
     );
 
-  it('is one row: Assign Action, Add Comment, and Delete at the right', () => {
+  it('is one row with Delete at the right', () => {
     open();
     expect(screen.getAllByRole('toolbar')).toHaveLength(1);
-    expect(labels()).toEqual(['Assign Action', 'Add Comment', 'Delete']);
+    expect(labels()).toEqual(['Delete']);
     expect(screen.getByRole('button', { name: 'Delete' }).className).toContain('ml-auto');
   });
 
-  it('runs each button and closes the menu', () => {
-    const { h, onDelete, onClose } = open();
-    fireEvent.click(screen.getByRole('button', { name: 'Assign Action' }));
-    expect(h.onAssignAction).toHaveBeenCalledWith('sq');
-    fireEvent.click(screen.getByRole('button', { name: 'Add Comment' }));
-    expect(h.onOpenComments).toHaveBeenCalledWith('sq');
+  it('runs Delete and closes the menu', () => {
+    const { onDelete, onClose } = open();
     fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
     expect(onDelete).toHaveBeenCalledTimes(1);
-    expect(onClose).toHaveBeenCalledTimes(3);
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 
   it('disables Delete on a locked element', () => {
@@ -101,26 +92,13 @@ describe('ElementMenuQuickBar', () => {
     expect(onDelete).not.toHaveBeenCalled();
   });
 
-  it('gives an arrow, which takes no attachments, Delete alone', () => {
-    const arrow = { id: 'a', type: 'arrow' } as unknown as Element;
-    open(arrow, { attachments: false });
-    expect(labels()).toEqual(['Delete']);
-  });
-
   it('draws nothing with nothing to offer', () => {
-    const { container } = render(
-      <ElementMenuQuickBar
-        target={square()}
-        props={handlers() as unknown as EditorContextMenuProps}
-        attachments={false}
-        onClose={vi.fn()}
-      />,
-    );
+    const { container } = render(<ElementMenuQuickBar target={square()} onClose={vi.fn()} />);
     expect(container.firstChild).toBeNull();
   });
 
   // Save to Library (liveworkspace/docs/specs/006-media/libraries.md): livedocuments has no toolbar for one element,
-  // so it saves from here, beside the others, where the editor has the Library; not on a locked element.
+  // so it saves from here, beside Delete, where the editor has the Library; not on a locked element.
   it('offers Save to Library where the editor has the Library, and opens its dialog', async () => {
     const api = {
       list: vi.fn(async () => ({
@@ -133,19 +111,13 @@ describe('ElementMenuQuickBar', () => {
     const onClose = vi.fn();
     const bar = (target: Element) => (
       <LibraryProvider api={api}>
-        <ElementMenuQuickBar
-          target={target}
-          props={handlers() as unknown as EditorContextMenuProps}
-          attachments
-          onDelete={vi.fn()}
-          onClose={onClose}
-        />
+        <ElementMenuQuickBar target={target} onDelete={vi.fn()} onClose={onClose} />
       </LibraryProvider>
     );
     const { rerender } = render(bar(square({ locked: true })));
     expect(labels()).not.toContain('Save to Library');
     rerender(bar(square()));
-    expect(labels()).toEqual(['Assign Action', 'Add Comment', 'Save to Library', 'Delete']);
+    expect(labels()).toEqual(['Save to Library', 'Delete']);
     fireEvent.click(screen.getByRole('button', { name: 'Save to Library' }));
     expect(onClose).toHaveBeenCalledTimes(1);
     expect(await screen.findByRole('dialog')).toBeTruthy();

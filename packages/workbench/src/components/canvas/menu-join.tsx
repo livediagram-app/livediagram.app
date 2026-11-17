@@ -25,6 +25,34 @@ export function joinedMenuCardWidth(sidebarPx: number, toolbarScale: number): nu
   return toSurfacePx(Math.max(0, sidebarPx - MENU_CARD_INSET_PX - STRIP_MENU_GAP_PX), toolbarScale);
 }
 
+/** The menu box's right edge as it would stand uncapped, in screen px: its drawn right plus whatever of the tab's
+ *  name (`[data-tab-name-in-box]`) the box's cap hides, up to the name's own widest (16rem). The strip decides where
+ *  it goes from this, never from the capped box (useMenuCardRoom caps the box at the room left of the strip): measured
+ *  from the capped box, a crowded strip un-crowded itself, re-centred further left and capped the box tighter still,
+ *  cutting the mode switch and hiding the name (Work Tracker 1038). Joined, the box's width is the sidebar's, never
+ *  capped. */
+export function menuNaturalRight(menu: HTMLElement): number {
+  const box = menu.getBoundingClientRect();
+  const right = box.right;
+  if (menu.hasAttribute('data-menu-joined')) return right;
+  // Compact (`data-menu-form` icon or bare: the mode switch down to its icon, the name hidden, useMenuCardFit), the
+  // box is narrower than it stands whole, and the strip goes by the width it kept from its last whole form
+  // (`data-menu-natural-width`, screen px): measured from the compact box, the strip un-crowded and came back.
+  const kept = Number(menu.dataset.menuNaturalWidth);
+  if (menu.dataset.menuForm && menu.dataset.menuForm !== 'full' && kept > 0) {
+    return Math.max(right, box.left + kept);
+  }
+  const name = menu.querySelector<HTMLElement>(':scope > [data-tab-name-in-box]');
+  if (!name || name.offsetWidth === 0) return right;
+  // Its border-box width with nothing hidden, no wider than its own max-width (border-box, as Tailwind's base sets).
+  const whole = name.scrollWidth + (name.offsetWidth - name.clientWidth);
+  const own = parseFloat(getComputedStyle(name).maxWidth);
+  const hidden = (Number.isFinite(own) ? Math.min(whole, own) : whole) - name.offsetWidth;
+  if (hidden <= 0) return right;
+  // Layout px to screen px (the box is drawn at the toolbar's UI scale).
+  return right + hidden * (name.getBoundingClientRect().width / name.offsetWidth);
+}
+
 /** The width the palette strip may take beside the menu box (`menu`, the `[data-toolbar-menu]` card), in an editor
  *  `viewWidth` wide whose left edge is at `viewLeft`. Centred across the editor, it keeps the strip's gap from the box
  *  on both sides; joined (`data-menu-joined`), the strip centres in what shows beside the sidebar instead, as a page
@@ -35,7 +63,7 @@ export function stripRoomBesideMenu(
   menu: HTMLElement | null,
 ): number {
   if (!menu) return viewWidth;
-  const clear = menu.getBoundingClientRect().right - viewLeft + STRIP_MENU_GAP_PX;
+  const clear = menuNaturalRight(menu) - viewLeft + STRIP_MENU_GAP_PX;
   // Joined, `clear` reaches the sidebar's inner edge (the box stops a gap short of it), and the strip, centred beside
   // the sidebar, keeps the gap from it and from the editor's right edge.
   return menu.hasAttribute('data-menu-joined')

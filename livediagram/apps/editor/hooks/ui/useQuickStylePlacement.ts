@@ -2,14 +2,18 @@
 
 // Measures the canvas, the chrome and the quick style panel, and places the
 // panel (docs/specs/008-canvas/quick-style-panel.md "Where it sits"): the left edge (or the right, where an
-// editor asks for it), vertically centred, clear of the chrome.
+// editor asks for it), vertically centred, clear of the chrome. When that spot would cover the selection, the other
+// edge instead, so the panel never hides what it styles.
 // Re-runs when the chrome moves or resizes, or a panel arrives or leaves, coalesced to one run per frame;
 // never on a timer, and never while the chrome is still.
 
 import { useLayoutEffect, useState, type RefObject } from 'react';
 import { placeQuickStylePanel, type QuickStyleSide, type Rect } from '@/lib/quick-style-placement';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
-import { CANVAS_ROOT_SELECTOR } from '@liveworkspace/workbench/lib/canvas-selectors';
+import {
+  CANVAS_ROOT_SELECTOR,
+  elementSelector,
+} from '@liveworkspace/workbench/lib/canvas-selectors';
 import { workbench } from '@liveworkspace/workbench/bindings';
 
 const AREA_SELECTOR = `main${CANVAS_ROOT_SELECTOR}`;
@@ -40,7 +44,10 @@ export function useQuickStylePlacement(
   panelRef: RefObject<HTMLElement | null>,
   active: boolean,
   side: QuickStyleSide = 'left',
+  // The elements it styles, whose boxes it keeps clear of.
+  targetIds: readonly string[] = [],
 ): QuickStyleSpot | null {
+  const targetsKey = targetIds.join(',');
   const [spot, setSpot] = useState<QuickStyleSpot | null>(null);
 
   useLayoutEffect(() => {
@@ -60,12 +67,37 @@ export function useQuickStylePlacement(
         .filter((r) => r.width > 0 && r.height > 0);
       const box = panel.getBoundingClientRect();
       // The panel never scrolls (one compact form), so its box is its natural size.
-      const placed = placeQuickStylePanel({
-        area: toRect(area.getBoundingClientRect()),
-        panel: { width: box.width, height: box.height },
-        obstacles,
-        side,
-      });
+      const place = (at: QuickStyleSide) =>
+        placeQuickStylePanel({
+          area: toRect(area.getBoundingClientRect()),
+          panel: { width: box.width, height: box.height },
+          obstacles,
+          side: at,
+        });
+      const selection = targetsKey
+        ? targetsKey
+            .split(',')
+            .map((id) => document.querySelector(elementSelector(id))?.getBoundingClientRect())
+            .filter((r): r is DOMRect => !!r && r.width > 0)
+        : [];
+      // And the selection's own toolbar, over it.
+      const bar = targetsKey
+        ? document.querySelector('[data-testid="selection-popover"]')?.getBoundingClientRect()
+        : undefined;
+      if (bar && bar.width > 0) selection.push(bar);
+      const covers = (p: { left: number; top: number }) =>
+        selection.some(
+          (r) =>
+            r.left < p.left + box.width &&
+            r.right > p.left &&
+            r.top < p.top + box.height &&
+            r.bottom > p.top,
+        );
+      let placed = place(side);
+      if (covers(placed)) {
+        const other = place(side === 'left' ? 'right' : 'left');
+        if (!other.fallback && !covers(other)) placed = other;
+      }
       if (placed.fallback) {
         debugLog('[quick-style] placement fallback', { obstacles: obstacles.length });
       }
@@ -118,7 +150,7 @@ export function useQuickStylePlacement(
       for (const ev of captured) window.removeEventListener(ev, schedule, true);
       window.removeEventListener('transitionend', onTransitionEnd, true);
     };
-  }, [active, panelRef, side]);
+  }, [active, panelRef, side, targetsKey]);
 
   return spot;
 }

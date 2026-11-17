@@ -21,7 +21,7 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
     'event-planner': [
       {
         ref: 'venue',
-        type: 'project',
+        type: 'ev-workstream',
         status: 'ev-confirmed',
         title: 'Venue',
         description: 'The Old Market Hall, 180 seated, step-free, ten minutes from the station.',
@@ -33,7 +33,7 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
       },
       {
         ref: 'catering',
-        type: 'project',
+        type: 'ev-workstream',
         status: 'ev-doing',
         title: 'Catering',
         assignee: 'priya',
@@ -44,7 +44,7 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
       },
       {
         ref: 'speakers',
-        type: 'project',
+        type: 'ev-workstream',
         status: 'ev-at-risk',
         title: 'Speakers',
         description: 'Two of six talks still unconfirmed.',
@@ -56,7 +56,7 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
       },
       {
         ref: 'promotion',
-        type: 'project',
+        type: 'ev-workstream',
         status: 'ev-planned',
         title: 'Promotion',
         assignee: 'leo',
@@ -66,7 +66,7 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
         due: 28,
       },
       {
-        type: 'task',
+        type: 'ev-task',
         status: 'done',
         title: 'Sign the venue contract',
         parent: 'venue',
@@ -75,7 +75,7 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
         due: -8,
       },
       {
-        type: 'task',
+        type: 'ev-task',
         status: 'doing',
         title: 'Plan the room layout and signage',
         parent: 'venue',
@@ -89,7 +89,7 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
         ],
       },
       {
-        type: 'task',
+        type: 'ev-task',
         status: 'waiting',
         title: 'Final menu and dietary numbers',
         description: 'Waiting on the caterer’s second quote.',
@@ -99,7 +99,7 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
         due: 6,
       },
       {
-        type: 'task',
+        type: 'ev-task',
         status: 'todo',
         title: 'Book coffee for the morning break',
         parent: 'catering',
@@ -108,7 +108,7 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
         due: 14,
       },
       {
-        type: 'task',
+        type: 'ev-task',
         status: 'doing',
         title: 'Confirm the two remaining speakers',
         parent: 'speakers',
@@ -117,7 +117,7 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
         due: 3,
       },
       {
-        type: 'task',
+        type: 'ev-task',
         status: 'todo',
         title: 'Collect slides a week before',
         parent: 'speakers',
@@ -126,7 +126,7 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
         due: 21,
       },
       {
-        type: 'task',
+        type: 'ev-task',
         status: 'todo',
         title: 'Announce the agenda by email',
         parent: 'promotion',
@@ -136,7 +136,7 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
         due: 12,
       },
       {
-        type: 'task',
+        type: 'ev-task',
         status: 'todo',
         title: 'Social posts, one a speaker',
         parent: 'promotion',
@@ -149,7 +149,7 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
     // Tandem's team plan sales: deals at every stage, each owned by one of the team.
     'sales-crm': [
       {
-        type: 'deal',
+        type: 'crm-deal',
         status: 'crm-lead',
         title: 'Northwind team plan',
         assignee: 'leo',
@@ -163,7 +163,7 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
         due: 45,
       },
       {
-        type: 'deal',
+        type: 'crm-deal',
         status: 'crm-lead',
         title: 'Brightside schools pilot',
         assignee: 'ana',
@@ -177,7 +177,7 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
         due: 60,
       },
       {
-        type: 'deal',
+        type: 'crm-deal',
         status: 'crm-qualified',
         title: 'Harbour Logistics rollout',
         assignee: 'leo',
@@ -195,7 +195,7 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
         ],
       },
       {
-        type: 'deal',
+        type: 'crm-deal',
         status: 'crm-proposal',
         title: 'Fernwood Studio annual',
         assignee: 'maya',
@@ -209,7 +209,7 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
         due: 14,
       },
       {
-        type: 'deal',
+        type: 'crm-deal',
         status: 'crm-negotiation',
         title: 'Atlas Health enterprise',
         description: 'Security review passed; legal asking for a 24-month term.',
@@ -229,7 +229,7 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
         ],
       },
       {
-        type: 'deal',
+        type: 'crm-deal',
         status: 'crm-won',
         title: 'Kestrel Bikes team plan',
         assignee: 'ana',
@@ -243,7 +243,7 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
         due: -5,
       },
       {
-        type: 'deal',
+        type: 'crm-deal',
         status: 'crm-lost',
         title: 'Orbit Media',
         description: 'Chose to stay on spreadsheets this year; check back in the spring.',
@@ -262,7 +262,7 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
     // Tandem's support queue on a busy Monday, and the articles it is turning into.
     'help-desk': [
       {
-        type: 'ticket',
+        type: 'hd-ticket',
         status: 'hd-new',
         title: 'Can’t sign in after changing my email',
         priority: 'urgent',
@@ -274,7 +274,7 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
         due: 0,
       },
       {
-        type: 'ticket',
+        type: 'hd-ticket',
         status: 'hd-new',
         title: 'How do I export a list to CSV?',
         priority: 'low',
@@ -287,7 +287,7 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
         due: 2,
       },
       {
-        type: 'ticket',
+        type: 'hd-ticket',
         status: 'hd-open',
         title: 'Charged twice this month',
         assignee: 'ana',
@@ -305,7 +305,7 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
         ],
       },
       {
-        type: 'ticket',
+        type: 'hd-ticket',
         status: 'hd-open',
         title: 'Shared list not updating on Android',
         assignee: 'leo',
@@ -319,7 +319,7 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
         due: 3,
       },
       {
-        type: 'ticket',
+        type: 'hd-ticket',
         status: 'hd-waiting',
         title: 'Add five seats to our plan',
         assignee: 'ana',
@@ -330,7 +330,7 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
         due: 4,
       },
       {
-        type: 'ticket',
+        type: 'hd-ticket',
         status: 'hd-resolved',
         title: 'Reminder emails going to spam',
         assignee: 'sam',
@@ -339,7 +339,7 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
         due: -1,
       },
       {
-        type: 'ticket',
+        type: 'hd-ticket',
         status: 'hd-closed',
         title: 'Change the plan owner',
         assignee: 'priya',
@@ -349,27 +349,27 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
         due: -9,
       },
       {
-        type: 'note',
+        type: 'hd-article',
         status: 'kb-to-write',
         title: 'Exporting lists to CSV',
         labels: ['How to'],
       },
       {
-        type: 'note',
+        type: 'hd-article',
         status: 'kb-drafting',
         title: 'Changing the email you sign in with',
         assignee: 'priya',
         labels: ['Account'],
       },
       {
-        type: 'note',
+        type: 'hd-article',
         status: 'kb-review',
         title: 'Adding seats and how billing works',
         assignee: 'ana',
         labels: ['Billing'],
       },
       {
-        type: 'note',
+        type: 'hd-article',
         status: 'kb-published',
         title: 'Why reminders can land in spam',
         assignee: 'sam',
@@ -380,7 +380,7 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
     // The weekly product sync: this week's topics voted on, last week's actions under way, last week's topics archived.
     'meeting-agenda': [
       {
-        type: 'note',
+        type: 'ma-topic',
         status: 'mt-to-discuss',
         title: 'Do we move the release to Thursday?',
         assignee: 'sam',
@@ -388,7 +388,7 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
         votes: 4,
       },
       {
-        type: 'note',
+        type: 'ma-topic',
         status: 'mt-to-discuss',
         title: 'Hiring plan for next quarter',
         assignee: 'maya',
@@ -396,7 +396,7 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
         votes: 3,
       },
       {
-        type: 'note',
+        type: 'ma-topic',
         status: 'mt-to-discuss',
         title: 'Customer summit: who is presenting',
         assignee: 'leo',
@@ -404,7 +404,7 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
         votes: 1,
       },
       {
-        type: 'note',
+        type: 'ma-topic',
         status: 'mt-discussing',
         title: 'Support queue is up 30% since launch',
         description: 'Most tickets are about signing in after an email change.',
@@ -413,7 +413,7 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
         votes: 5,
       },
       {
-        type: 'note',
+        type: 'ma-topic',
         status: 'mt-discussed',
         title: 'Last week’s numbers',
         description: 'Decided: keep the weekly signups chart on the Overview.',
@@ -422,28 +422,28 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
         votes: 2,
       },
       {
-        type: 'action',
+        type: 'ma-action',
         status: 'todo',
         title: 'Write the sign-in help article',
         assignee: 'priya',
         due: 3,
       },
       {
-        type: 'action',
+        type: 'ma-action',
         status: 'doing',
         title: 'Draft the hiring plan',
         assignee: 'maya',
         due: 5,
       },
       {
-        type: 'action',
+        type: 'ma-action',
         status: 'done',
         title: 'Share the release checklist',
         assignee: 'sam',
         due: -2,
       },
       {
-        type: 'note',
+        type: 'ma-topic',
         status: 'mt-discussed',
         title: 'Office move dates',
         assignee: 'maya',
@@ -451,7 +451,7 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
         archived: true,
       },
       {
-        type: 'note',
+        type: 'ma-topic',
         status: 'mt-discussed',
         title: 'New design review slot',
         assignee: 'priya',
@@ -464,7 +464,7 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
     'personal-goals': [
       {
         ref: 'run',
-        type: 'objective',
+        type: 'pg-goal',
         status: 'pg-working',
         title: 'Run a half marathon',
         description: 'The city half in the spring, under two hours.',
@@ -476,7 +476,7 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
       },
       {
         ref: 'spanish',
-        type: 'objective',
+        type: 'pg-goal',
         status: 'pg-working',
         title: 'Hold a conversation in Spanish',
         assignee: 'ana',
@@ -487,7 +487,7 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
       },
       {
         ref: 'save',
-        type: 'objective',
+        type: 'pg-goal',
         status: 'pg-this-year',
         title: 'Save for a trip to Japan',
         assignee: 'ana',
@@ -497,7 +497,7 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
         due: 300,
       },
       {
-        type: 'objective',
+        type: 'pg-goal',
         status: 'pg-someday',
         title: 'Learn to sail',
         assignee: 'ana',
@@ -506,7 +506,7 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
         due: 520,
       },
       {
-        type: 'objective',
+        type: 'pg-goal',
         status: 'pg-achieved',
         title: 'Read twelve books',
         assignee: 'ana',
@@ -515,14 +515,14 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
         due: -20,
       },
       {
-        type: 'milestone',
+        type: 'pg-milestone',
         status: 'pg-ms-done',
         title: 'Run 10 km without stopping',
         links: { 'f-goal': 'run' },
         due: -14,
       },
       {
-        type: 'milestone',
+        type: 'pg-milestone',
         status: 'pg-ms-in-progress',
         title: 'Run 15 km',
         links: { 'f-goal': 'run' },
@@ -533,28 +533,28 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
         ],
       },
       {
-        type: 'milestone',
+        type: 'pg-milestone',
         status: 'pg-ms-not-started',
         title: 'Run 18 km a month before the race',
         links: { 'f-goal': 'run' },
         due: 90,
       },
       {
-        type: 'milestone',
+        type: 'pg-milestone',
         status: 'pg-ms-done',
         title: 'Find a conversation partner',
         links: { 'f-goal': 'spanish' },
         due: -7,
       },
       {
-        type: 'milestone',
+        type: 'pg-milestone',
         status: 'pg-ms-in-progress',
         title: 'Finish the beginner course',
         links: { 'f-goal': 'spanish' },
         due: 90,
       },
       {
-        type: 'milestone',
+        type: 'pg-milestone',
         status: 'pg-ms-not-started',
         title: 'Put the first £1,000 aside',
         links: { 'f-goal': 'save' },
@@ -565,7 +565,7 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
     // Leo's term: coursework by subject, and the topics to revise for the exams.
     'study-planner': [
       {
-        type: 'task',
+        type: 'sp-assignment',
         status: 'st-todo',
         title: 'History essay: causes of the First World War',
         assignee: 'leo',
@@ -578,7 +578,7 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
         ],
       },
       {
-        type: 'task',
+        type: 'sp-assignment',
         status: 'st-todo',
         title: 'Chemistry problem sheet 4',
         assignee: 'leo',
@@ -586,7 +586,7 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
         due: 6,
       },
       {
-        type: 'task',
+        type: 'sp-assignment',
         status: 'st-doing',
         title: 'Biology lab report: enzyme rates',
         assignee: 'leo',
@@ -599,7 +599,7 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
         ],
       },
       {
-        type: 'task',
+        type: 'sp-assignment',
         status: 'st-submitted',
         title: 'English poetry comparison',
         assignee: 'leo',
@@ -607,7 +607,7 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
         due: -2,
       },
       {
-        type: 'task',
+        type: 'sp-assignment',
         status: 'st-graded',
         title: 'Maths coursework: statistics',
         description: 'A, with a note to show more working.',
@@ -616,21 +616,21 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
         due: -14,
       },
       {
-        type: 'note',
+        type: 'sp-topic',
         status: 'rv-not-started',
         title: 'Organic reactions',
         labels: ['Chemistry'],
         due: 40,
       },
       {
-        type: 'note',
+        type: 'sp-topic',
         status: 'rv-not-started',
         title: 'The Cold War',
         labels: ['History'],
         due: 45,
       },
       {
-        type: 'note',
+        type: 'sp-topic',
         status: 'rv-revising',
         title: 'Cell structure and transport',
         labels: ['Biology'],
@@ -641,7 +641,7 @@ export const USE_CASE_SEEDS: Readonly<Record<UseCaseKind & PlanTemplateKind, rea
         ],
       },
       {
-        type: 'note',
+        type: 'sp-topic',
         status: 'rv-confident',
         title: 'Probability',
         labels: ['Maths'],

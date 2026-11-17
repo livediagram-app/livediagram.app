@@ -195,7 +195,9 @@ export function EmptyPane({
 
 export function SkeletonRows({ count = 6 }: { count?: number }) {
   return (
+    // A status, so its "Loading" name is allowed (axe's aria-prohibited-attr refuses a label on a plain div).
     <div
+      role="status"
       aria-busy="true"
       aria-label="Loading"
       className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800"

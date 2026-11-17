@@ -104,12 +104,12 @@ test.describe('Hover card', () => {
   test('opens at once on hover, with its title and description', async ({ page, pageErrors }) => {
     await openEditor(page);
     await parkPointer(page);
-    await page.getByRole('button', { name: 'Zoom in', exact: true }).hover();
+    await page.getByRole('button', { name: /^Appearance: / }).hover();
 
     const card = page.locator(HOVER_CARD);
     await expect(card).toBeVisible({ timeout: INSTANT_MS });
-    await expect(card).toContainText('Zoom in');
-    await expect(card).toContainText('Zoom in by 10%.');
+    await expect(card).toContainText('Appearance: System');
+    await expect(card).toContainText('The editor chrome follows your device setting.');
     expectNoPageErrors(pageErrors);
   });
 });
@@ -178,7 +178,7 @@ test.describe('Hints in dark mode', () => {
   }) => {
     await openEditor(page);
     await parkPointer(page);
-    await page.getByRole('button', { name: 'Zoom in', exact: true }).hover();
+    await page.getByRole('button', { name: /^Appearance: / }).hover();
     await expect(page.locator(HOVER_CARD)).toBeVisible({ timeout: INSTANT_MS });
 
     const dark = await hintColours(page, HOVER_CARD);

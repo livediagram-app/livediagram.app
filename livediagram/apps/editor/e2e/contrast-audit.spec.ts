@@ -7,14 +7,7 @@ import {
   seedDocument,
   shareLink,
 } from './audit-screens';
-import {
-  dismissQuickTour,
-  expect,
-  expectNoPageErrors,
-  test,
-  untilHydrated,
-  mintGuest,
-} from './fixtures';
+import { dismissQuickTour, expect, expectNoPageErrors, test, mintGuest } from './fixtures';
 
 // Contrast audit, dark mode (docs/specs/003-system-architecture/e2e-smoke.md; the palette it guards is
 // docs/specs/004-interface-design/color-scheme.md, Dark palette (Steel)). Every visible text node on each
@@ -37,18 +30,6 @@ function expectAA(report: ContrastReport, screen: string): void {
 }
 
 test.describe('Contrast audit, dark mode', () => {
-  // A visitor with no identity leaves /new for the guest handoff the moment the page hydrates (fixtures.ts
-  // serverNewUrl), which destroyed the page mid-audit: the wizard is audited as a minted guest, who stays.
-  test('the New Canvas wizard', async ({ page, pageErrors }) => {
-    await darkVisitor(page, await mintGuest(page.request));
-    await page.goto('/new');
-    await page.getByText('New Canvas', { exact: false }).first().waitFor();
-    await untilHydrated(page.getByRole('button', { name: /^create$/i }));
-    await expect(page.locator('html')).toHaveClass(/dark/);
-    expectAA(await auditContrast(page), 'wizard');
-    expectNoPageErrors(pageErrors);
-  });
-
   test('the editor, its panels and dialogs', async ({ page, pageErrors, baseURL }) => {
     const owner = await mintGuest(page.request);
     const origin = new URL(baseURL!).origin;

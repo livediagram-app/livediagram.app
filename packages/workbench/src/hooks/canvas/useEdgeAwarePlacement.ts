@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  useEffect,
   useEffectEvent,
   useLayoutEffect,
   useRef,
@@ -10,19 +11,60 @@ import {
 } from 'react';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '../../lib/clamp-to-viewport';
 import type { Rect } from '@liveworkspace/model-core/geometry-primitives';
+import { TOOLBAR_OBSTACLE_EVENT } from './toolbar-obstacle';
 
 type XY = { x: number; y: number };
 
-// Whether a box overlaps any floating chrome over the canvas (`data-floating-panel`: the palette, panels, the
-// top-centre toolbar), other than one it sits in.
-export function overlapsChrome(r: DOMRect, self: Element): boolean {
-  for (const el of document.querySelectorAll('[data-floating-panel]')) {
+// The floating chrome over the canvas a selection's toolbar keeps off: the palette, the panels, the top-centre toolbar
+// (`data-floating-panel`), and a panel that is no floating panel but must not be covered either (`data-toolbar-obstacle`:
+// livediagram's Quick Style panel, which sits at the canvas's left edge beside whatever is selected there).
+const CHROME = '[data-floating-panel], [data-toolbar-obstacle]';
+
+type Box = { left: number; right: number; top: number; bottom: number };
+
+const overlaps = (r: Box, b: Box) =>
+  r.left < b.right && r.right > b.left && r.top < b.bottom && r.bottom > b.top;
+
+// The chrome's boxes on screen, other than one the box sits in.
+function chromeBoxes(self: Element): Box[] {
+  const boxes: Box[] = [];
+  for (const el of document.querySelectorAll(CHROME)) {
     if (el.contains(self)) continue;
+    // Drawn but hidden (the Quick Style panel waits at the corner, hidden, until its spot is measured): no obstacle.
+    if (el.checkVisibility?.({ visibilityProperty: true }) === false) continue;
     const b = el.getBoundingClientRect();
     if (b.width === 0 || b.height === 0) continue;
-    if (r.left < b.right && r.right > b.left && r.top < b.bottom && r.bottom > b.top) return true;
+    boxes.push(b);
   }
-  return false;
+  return boxes;
+}
+
+// Whether a box overlaps any floating chrome over the canvas, other than one it sits in.
+export function overlapsChrome(r: DOMRect, self: Element): boolean {
+  return chromeBoxes(self).some((b) => overlaps(r, b));
+}
+
+/** How far to slide `r` sideways, in screen px, so it covers none of `chrome` and stays `EDGE` inside `area`: the
+ *  shorter way past an obstacle it sits on, or 0 when it sits on none, or no slide clears them all. Used once the
+ *  above/below flip has had its turn and the box still covers chrome (an element under a panel at the canvas's left
+ *  edge, the panel taller than the room above and below it). */
+export function sidewaysClear(
+  r: Box,
+  chrome: readonly Box[],
+  area: { left: number; right: number },
+): number {
+  const hit = chrome.filter((b) => overlaps(r, b));
+  if (hit.length === 0) return 0;
+  const moves = hit
+    .flatMap((b) => [b.right + EDGE - r.left, b.left - EDGE - r.right])
+    .sort((a, b) => Math.abs(a) - Math.abs(b));
+  for (const dx of moves) {
+    const moved = { ...r, left: r.left + dx, right: r.right + dx };
+    if (moved.left < area.left + EDGE || moved.right > area.right - EDGE) continue;
+    if (chrome.some((b) => overlaps(moved, b))) continue;
+    return dx;
+  }
+  return 0;
 }
 
 // Every editor's FloatingToolbar and SelectionPopover place with this one hook (it was five copies).
@@ -150,10 +192,28 @@ export function useEdgeAwarePlacement(
     else if (right > area.right - EDGE) dx = area.right - EDGE - right;
     if (top < area.top + EDGE) dy = area.top + EDGE - top;
     else if (bottom > area.bottom - EDGE) dy = area.bottom - EDGE - bottom;
+    // Still on the chrome after the flip had its turn (both sides cover it): slide sideways off it, where that fits.
+    // Worked from the un-nudged place every time, so a box kept clear stays clear as the view moves.
+    dx += sidewaysClear(
+      { left: left + dx, right: right + dx, top: top + dy, bottom: bottom + dy },
+      chromeBoxes(node),
+      area,
+    );
     const nx = dx / zoom;
     const ny = dy / zoom;
     if (nx !== adjust.x || ny !== adjust.y) setAdjust({ x: nx, y: ny });
   });
+  // An obstacle arriving, resizing, moving or going (toolbar-obstacle.ts) places the box again, with a fresh flip:
+  // the Quick Style panel mounts after a fresh selection's toolbar has placed. Not while suspended for a drag.
+  useEffect(() => {
+    if (suspended) return;
+    const onObstacle = () => {
+      flipSigRef.current = '';
+      place();
+    };
+    window.addEventListener(TOOLBAR_OBSTACLE_EVENT, onObstacle);
+    return () => window.removeEventListener(TOOLBAR_OBSTACLE_EVENT, onObstacle);
+  }, [suspended]);
   useLayoutEffect(() => {
     if (!suspended) place();
   }, [

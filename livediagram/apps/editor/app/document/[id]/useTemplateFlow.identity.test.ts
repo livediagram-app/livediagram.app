@@ -29,6 +29,7 @@ function flow() {
       setIdentityPromptOpen,
       requestFit: vi.fn(),
       putToolDown: vi.fn(),
+      appendSlides: vi.fn(),
     }),
   );
   return { result, confirmName, setSelfParticipant, setIdentityPromptOpen };

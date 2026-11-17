@@ -16,6 +16,12 @@ import {
 import { engineLog } from '../changesets/log';
 import { engineRefusal } from '../changesets/request';
 import { isRecord } from '@liveplanner/project';
+import { TEMPLATE_CARD_TYPES } from '@liveplanner/items/template-card-types';
+import { provideTemplateCardTypes } from '@liveplanner/items';
+
+// The Plan templates' own card types, so its seeded template tabs can bring them (docs/specs/026-plan/plan-templates.md "Card
+// types a template makes"). A subpath, kept out of the editor's first load.
+provideTemplateCardTypes(TEMPLATE_CARD_TYPES);
 
 const SOURCES = ['template'] as const;
 
@@ -23,8 +29,15 @@ type Refusal = { status: number; body: Record<string, unknown> };
 
 // `templateElements`: the elements of every tab a template made, whose Plan boards bring their card types
 // (docs/specs/026-plan/plan-templates.md "Card types a template uses").
+// `template`: the first tab's template kind, whose starter rules the plan may start with
+// (docs/specs/026-plan/plan-templates.md "Starter rules").
 type CompiledSeed =
-  | { tabs: unknown[]; intent: CreationIntent | null; templateElements: Tab['elements'] }
+  | {
+      tabs: unknown[];
+      intent: CreationIntent | null;
+      templateElements: Tab['elements'];
+      template: string | null;
+    }
   | { refusal: Refusal };
 
 // The source a seeded tab names, when it names exactly one and no elements.
@@ -99,6 +112,7 @@ export function compileSeededTabs(tabs: readonly unknown[], projectId: string): 
     tabs: out,
     intent: first ? creationIntentOf(first.tab, family) : null,
     templateElements,
+    template: first?.template ?? null,
   };
 }
 

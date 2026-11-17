@@ -103,7 +103,12 @@ describe('create_project intent', () => {
     const { run, posted } = harness(undefined);
     await run([{ name: 'Plan', template: 'project-planner' }]);
     const itemTypes = posted[0]!.itemTypes as { types: { id: string }[] };
-    expect(itemTypes.types.map((t) => t.id)).toEqual(['project', 'story', 'task', 'bug']);
+    expect(itemTypes.types.map((t) => t.id)).toEqual([
+      'pp-initiative',
+      'pp-story',
+      'pp-task',
+      'pp-bug',
+    ]);
   });
 
   it('sends no catalogue for a project with no Plan board', async () => {

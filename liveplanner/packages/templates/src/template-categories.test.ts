@@ -56,15 +56,15 @@ describe('template categories', () => {
   it('pins the primary counts', () => {
     const counts = ids.map((id) => TEMPLATES.filter((t) => templateCategory(t.kind) === id).length);
     expect(Object.fromEntries(ids.map((id, i) => [id, counts[i]]))).toEqual({
-      support: 3,
+      support: 4,
       education: 2,
       events: 3,
       finance: 6,
       hiring: 2,
-      marketing: 2,
+      marketing: 3,
       meetings: 2,
-      personal: 3,
-      product: 5,
+      personal: 4,
+      product: 6,
       planning: 3,
       sales: 3,
     });
@@ -117,6 +117,10 @@ describe('template search words', () => {
     );
     expect(find('form')).toEqual(expect.arrayContaining(['rsvp-form', 'contact-form']));
     expect(find('wedding')).toEqual(expect.arrayContaining(['event-planner', 'guest-list']));
+    expect(find('wip')).toContain('sprint-board');
+    expect(find('customer success')).toContain('client-onboarding');
+    expect(find('newsroom')).toContain('editorial-pipeline');
+    expect(find('holiday')).toContain('trip-planner');
     expect(find('kanban zebra')).toEqual([]);
     expect(find('')).toHaveLength(TEMPLATES.length);
   });

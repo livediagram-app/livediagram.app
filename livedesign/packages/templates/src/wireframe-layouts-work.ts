@@ -160,23 +160,26 @@ export const chat = responsive(
   (u) => {
     const { W, H } = u;
     const side = Math.min(340, Math.round(W * 0.3));
-    u.heading(0, 0, side, 'Messages', 26);
+    // Back out of the conversations, as the phone's chat goes back.
+    u.icon(0, 6, 24, 'arrow-left', WF.ink);
+    u.heading(36, 0, side - 36, 'Messages', 26);
     u.field(0, 52, side, 44, 'Search', 'search');
-    const people = [
-      'Alex Morgan',
-      'Sam Rivera',
-      'Priya Patel',
-      'Chris Wong',
-      'Mia Novak',
-      'Leo Grant',
+    // Each thread's last message, so the list reads as real conversations.
+    const people: readonly [string, string][] = [
+      ['Alex Morgan', 'Bring the photos?'],
+      ['Sam Rivera', 'Sounds good, thanks!'],
+      ['Priya Patel', 'Slides are shared.'],
+      ['Chris Wong', 'Ten minutes late!'],
+      ['Mia Novak', 'Thursday instead?'],
+      ['Leo Grant', 'Love it, ship it.'],
     ];
-    people.forEach((p, i) => {
+    people.forEach(([p, last], i) => {
       const y = 116 + i * 72;
       if (y + 56 > H) return;
       if (i === 0) u.block(0, y - 6, side, 68, { fillColor: WF.soft, borderRadius: 'lg' });
       u.avatar(12, y, 48);
       u.text(72, y + 2, side - 84, 22, p, { size: 15, bold: true, color: WF.ink });
-      u.text(72, y + 26, side - 84, 20, 'Sounds good, thanks!', { size: 13, color: WF.muted });
+      u.text(72, y + 26, side - 84, 20, last, { size: 13, color: WF.muted });
     });
     const x = side + 32;
     u.block(side + 15, 0, 1, H, { fillColor: WF.line, borderRadius: 'none' });
@@ -197,6 +200,10 @@ const ORDERS: readonly [string, string, string, string][] = [
   ['#1037', 'Leo Grant', 'Pending', '$44.00'],
   ['#1036', 'Ava Brooks', 'Paid', '$91.10'],
   ['#1035', 'Noah Kim', 'Paid', '$27.00'],
+  ['#1034', 'Ella Park', 'Pending', '$63.40'],
+  ['#1033', 'Omar Haddad', 'Paid', '$112.00'],
+  ['#1032', 'Grace Liu', 'Paid', '$38.90'],
+  ['#1031', 'Ben Carter', 'Refunded', '$22.00'],
 ];
 
 function status(u: Ui, x: number, y: number, label: string) {

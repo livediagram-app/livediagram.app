@@ -134,7 +134,7 @@ Cost controls, all in `e2e-product.yml` and `playwright.config.ts`:
   retry only.
 - **No waiting on what is not coming.** A helper waits for a thing only when the app owes it:
   `dismissQuickTour` returns at once: no tour offers itself (tours start
-  from the footer's Start Tour button), so there is nothing to dismiss. `seedTab` returns once the seeded elements have
+  from the footer's Get Started button), so there is nothing to dismiss. `seedTab` returns once the seeded elements have
   finished popping in (`settledBox`), so a test never measures or drags a box that is still changing.
 
 ## The stack under test
