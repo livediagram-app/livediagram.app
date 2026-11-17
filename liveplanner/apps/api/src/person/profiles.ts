@@ -17,15 +17,11 @@ import {
   type ClientCredentials,
   type Profile,
 } from '@liveworkspace/auth-client';
-import { PRESENCE_COLOUR_VALUES } from '@liveworkspace/settings';
+import { automaticPresenceColour } from '@liveworkspace/settings/presence';
 import { accountCredentials } from '../auth/accounts';
 import type { Env, ParticipantDTO } from '../types';
 import { accountsOwnerOf } from './owner';
 import { profilePictureOf } from '@liveworkspace/sites/picture';
-
-// The colour shown for someone whose profile has a name but no colour of its own: the shared
-// presence palette's first (sky).
-export const DEFAULT_PARTICIPANT_COLOR = PRESENCE_COLOUR_VALUES[0]!;
 
 // How long a profile read is trusted in one isolate. Safe range 0..300_000.
 export const PROFILE_CACHE_MS = 60_000;
@@ -49,7 +45,9 @@ export function __forgetProfiles(): void {
 }
 
 // A profile as the participant the api has always answered: a person with no name has no participant
-// yet, and one with no colour of their own takes the default. With `pictures`, the person's published Google
+// yet, and one with no colour of their own (Automatic) takes the colour picked from the name, the one rule every
+// app and liveworkspace.app use (liveworkspace/docs/specs/003-accounts/accounts.md "Profiles"), so a cursor or author
+// dot matches the person's avatar in every header. With `pictures`, the person's published Google
 // picture too (docs/specs/014-identity/profile-and-email-notifications.md "Profile pictures"): only for a reader
 // who is a signed-in account, and never written into a plan, so it is off unless a route asks.
 function toParticipant(
@@ -62,7 +60,7 @@ function toParticipant(
   return {
     id: ownerId,
     name: profile.name,
-    color: profile.color ?? DEFAULT_PARTICIPANT_COLOR,
+    color: profile.color ?? automaticPresenceColour(profile.name).value,
     createdAt: profile.createdAt ?? profile.updatedAt ?? 0,
     ...(picture ? { picture } : {}),
   };

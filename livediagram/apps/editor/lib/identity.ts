@@ -3,7 +3,6 @@
 // random colour from a curated palette. This module is the single source
 // for that name/colour generation plus presence-status semantics.
 
-import { colorForKey } from '@livediagram/api-schema';
 import { PRESENCE_COLOUR_VALUES } from '@liveworkspace/settings';
 import { randomPick } from '@liveworkspace/workbench/lib/random';
 import type { AccessLevel } from '@livediagram/api-schema';
@@ -155,11 +154,6 @@ const ANIMALS = [
   'Whale',
   'Wolf',
 ];
-
-// The palette is liveworkspace's one presence palette (@liveworkspace/settings), the same in every
-// app. The deterministic pick lives in @livediagram/api-schema, which the api worker shares: it fills
-// in the colour of a profile that never set one.
-export { colorForKey };
 
 function pick<T>(arr: readonly T[]): T {
   // Non-empty by construction (the catalogues above), so the bang is safe.

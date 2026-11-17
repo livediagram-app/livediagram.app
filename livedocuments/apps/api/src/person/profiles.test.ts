@@ -1,10 +1,10 @@
 import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { automaticPresenceColour } from '@liveworkspace/settings/presence';
 import { ACCOUNTS_ON, profileOf, stubAccounts, type FakeAccounts } from '../test-accounts';
 import type { Env } from '../types';
 import {
   __forgetProfiles,
-  DEFAULT_PARTICIPANT_COLOR,
   getParticipant,
   getParticipants,
   PROFILE_CACHE_MS,
@@ -37,8 +37,11 @@ describe('getParticipants', () => {
     expect(accounts.calls).toHaveLength(1);
     expect(accounts.calls[0]!.body.ids).toEqual(['user_a', `guest_${GUEST}`, 'user_gone']);
     expect(people.get('user_a')).toMatchObject({ name: 'Ada', color: '#123456' });
-    // No colour of their own: the default.
-    expect(people.get(GUEST)).toMatchObject({ name: 'Otter', color: DEFAULT_PARTICIPANT_COLOR });
+    // No colour of their own (Automatic): the colour picked from the name, the one rule the avatars use too.
+    expect(people.get(GUEST)).toMatchObject({
+      name: 'Otter',
+      color: automaticPresenceColour('Otter').value,
+    });
     expect(people.has('user_gone')).toBe(false);
   });
 

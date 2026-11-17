@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  automaticPresenceColour,
   cleanProfileName,
   PRESENCE_COLOUR_VALUES,
   PRESENCE_COLOURS,
@@ -44,6 +45,28 @@ describe('presence colours', () => {
     expect(presenceColour('#123456')).toBeUndefined();
     expect(presenceColour(null)).toBeUndefined();
     expect(presenceColour('')).toBeUndefined();
+  });
+});
+
+describe('the Automatic colour', () => {
+  it('is a palette colour picked from the name, whatever its case or spacing', () => {
+    expect(PRESENCE_COLOURS).toContain(automaticPresenceColour('Ada Quinn'));
+    expect(automaticPresenceColour('Ada Quinn')).toBe(automaticPresenceColour('  ada QUINN '));
+    expect(PRESENCE_COLOURS).toContain(automaticPresenceColour(''));
+    expect(PRESENCE_COLOURS).toContain(automaticPresenceColour('\u{1F680} Zoë'));
+  });
+
+  it('keeps the colour every surface showed before it was shared', () => {
+    // The hash the avatars always used (31 per code point, unsigned), so no avatar changes colour.
+    expect(automaticPresenceColour('Ada').name).toBe('Violet');
+    expect(automaticPresenceColour('Wendy Tran').value).toMatch(/^#[0-9a-f]{6}$/);
+  });
+
+  it('spreads names across the palette', () => {
+    const picked = new Set(
+      Array.from({ length: 60 }, (_, i) => automaticPresenceColour(`Person ${i}`)),
+    );
+    expect(picked.size).toBeGreaterThan(6);
   });
 });
 

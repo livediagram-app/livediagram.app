@@ -3,6 +3,8 @@
 // Explorer's header avatar on an app's address. Its own module, with no React, so a page that only listens carries
 // nothing of the panel.
 
+import { automaticPresenceColour } from '@liveworkspace/settings/presence';
+
 /** What was saved (the fields the patch named) and the profile as the accounts API now answers it. */
 export type SavedProfile = {
   patch: { name?: string | null; color?: string | null; showPicture?: boolean };
@@ -27,14 +29,18 @@ export function announceProfileSaved(saved: SavedProfile): void {
 }
 
 /** A participant (an editor's own presence) with a saved profile's name and colour, or null when nothing it shows
- *  changed. A field the patch didn't name is kept; so is the colour when Automatic was picked (the app's own pick
- *  stands until the next open) and the name when the profile answered none. */
+ *  changed. A field the patch didn't name is kept, and so is the name when the profile answered none. Automatic takes
+ *  the colour picked from the name (@liveworkspace/settings/presence automaticPresenceColour), the one rule the
+ *  avatars and every app's api use, so the cursor matches the header's disc at once. */
 export function participantWithProfile<P extends { name: string; color: string }>(
   participant: P,
   saved: SavedProfile,
 ): P | null {
   const name = saved.patch.name !== undefined && saved.name ? saved.name : participant.name;
-  const color = saved.patch.color !== undefined && saved.color ? saved.color : participant.color;
+  const color =
+    saved.patch.color === undefined
+      ? participant.color
+      : (saved.color ?? automaticPresenceColour(name).value);
   if (name === participant.name && color === participant.color) return null;
   return { ...participant, name, color };
 }

@@ -16,15 +16,11 @@ import {
   type ClientCredentials,
   type Profile,
 } from '@liveworkspace/auth-client';
-import { PRESENCE_COLOUR_VALUES } from '@liveworkspace/settings';
+import { automaticPresenceColour } from '@liveworkspace/settings/presence';
 import { profilePictureOf } from '@liveworkspace/sites/picture';
 import { accountCredentials } from '../auth/accounts';
 import type { Env, ParticipantDTO } from '../types';
 import { accountsOwnerOf, ownerFromAccounts } from './owner';
-
-// The colour shown for someone whose profile has a name but no colour of its own: the shared
-// presence palette's first (sky), the accent every fallback author already used.
-export const DEFAULT_PARTICIPANT_COLOR = PRESENCE_COLOUR_VALUES[0]!;
 
 // How long a profile read is trusted in one isolate. Safe range 0..300_000.
 export const PROFILE_CACHE_MS = 60_000;
@@ -48,13 +44,15 @@ export function __forgetProfiles(): void {
 }
 
 // A profile as the participant the api has always answered: a person with no name has no participant
-// yet, and one with no colour of their own takes the default.
+// yet, and one with no colour of their own (Automatic) takes the colour picked from the name, the one rule every
+// app and liveworkspace.app use (liveworkspace/docs/specs/003-accounts/accounts.md "Profiles"), so a cursor or author
+// dot matches the person's avatar in every header.
 function toParticipant(ownerId: string, profile: Profile | null): ParticipantDTO | null {
   if (!profile?.name) return null;
   return {
     id: ownerId,
     name: profile.name,
-    color: profile.color ?? DEFAULT_PARTICIPANT_COLOR,
+    color: profile.color ?? automaticPresenceColour(profile.name).value,
     createdAt: profile.createdAt ?? profile.updatedAt ?? 0,
   };
 }

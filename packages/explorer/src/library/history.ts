@@ -3,7 +3,7 @@
 // person's avatar colour. No React here, so each is tested on its own.
 
 import type { ItemEvent } from '@liveworkspace/index-client';
-import { PRESENCE_COLOURS } from '@liveworkspace/settings/presence';
+import { automaticPresenceColour } from '@liveworkspace/settings/presence';
 import { WEEKDAY } from '@liveworkspace/ui/date-format';
 import {
   dateKey,
@@ -105,10 +105,9 @@ export function eventCountLabel(count: number, more: boolean): string {
   return `${count}${more ? '+' : ''} ${count === 1 && !more ? 'event' : 'events'}`;
 }
 
-/** A person's avatar colour: one of the presence palette's, the same for them every time. The index holds no
- *  profile colours, so this is picked from their id rather than asked for. */
-export function personColour(id: string): string {
-  let hash = 0;
-  for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) | 0;
-  return PRESENCE_COLOURS[Math.abs(hash) % PRESENCE_COLOURS.length]!.value;
+/** A person's avatar colour: the one Automatic rule (@liveworkspace/settings/presence automaticPresenceColour), picked
+ *  from the name the entry shows, so their disc here matches their avatar and cursor in every app. The index holds no
+ *  profile colours, so this is picked rather than asked for. */
+export function personColour(name: string): string {
+  return automaticPresenceColour(name).value;
 }
