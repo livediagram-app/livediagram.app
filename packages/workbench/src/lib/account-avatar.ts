@@ -1,5 +1,6 @@
-// The account avatar's initials. Pure, so every avatar surface and the tests share one answer.
+// The account avatar's initials and fill. Pure, so every avatar surface and the tests share one answer.
 
+import { avatarFill } from '@liveworkspace/account-menu/initials';
 import { initialsOf } from '@liveworkspace/model-core/names';
 
 type AccountNames = {
@@ -22,4 +23,22 @@ export function accountInitials(user: AccountNames | null): string {
     user.username ||
     '';
   return initialsOf(name, user.email);
+}
+
+/** A profile just saved in Settings › Profile on this page: the name collaborators see and the colour, null for
+ *  Automatic (@liveworkspace/settings-ui/profile-events). */
+export type SavedLook = { name: string | null; colour: string | null };
+
+/** The disc's fill under the white initials (liveworkspace/docs/specs/003-accounts/accounts.md "Profiles"), as
+ *  liveworkspace.app's account menu paints it (@liveworkspace/account-menu avatarFill): the account's presence colour
+ *  (the session's `colour`, from the ID token's `presence_color`) in its deep shade, or for Automatic the colour
+ *  picked from the full name by the one rule the cursors and author dots use too. A profile saved on this page since
+ *  wins, so a new pick shows at once rather than at the next token refresh. */
+export function accountAvatarFill(
+  user: (AccountNames & { colour?: string | null }) | null,
+  saved: SavedLook | null = null,
+): string {
+  const name =
+    saved?.name || user?.fullName || user?.firstName || user?.username || user?.email || '';
+  return avatarFill(name, saved ? saved.colour : (user?.colour ?? null));
 }

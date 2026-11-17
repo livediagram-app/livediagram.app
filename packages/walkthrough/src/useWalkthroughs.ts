@@ -8,6 +8,7 @@ import type { WalkthroughSummary } from '@liveworkspace/media/walkthrough';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { walkthroughApi } from './api';
 import type { WalkthroughHost } from './host';
+import { walkthroughTelemetry } from './telemetry';
 import { useHidden } from './useHidden';
 import { usePlayer } from './usePlayer';
 import { useRecorder } from './useRecorder';
@@ -91,7 +92,10 @@ export function useWalkthroughs(host: WalkthroughHost) {
     async (id: string) => {
       if (!api) return false;
       const done = await api.remove(id);
-      if (done) setList((prev) => prev?.filter((w) => w.id !== id) ?? null);
+      if (done) {
+        walkthroughTelemetry.deleted();
+        setList((prev) => prev?.filter((w) => w.id !== id) ?? null);
+      }
       return done;
     },
     [api],

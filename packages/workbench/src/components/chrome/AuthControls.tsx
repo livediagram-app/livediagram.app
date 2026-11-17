@@ -14,18 +14,12 @@
 // the picture from their own-picture store (`picture`). Sign Out is tracked through the workbench's `track` binding.
 
 import Link from 'next/link';
-import { useId, useRef, type ReactNode } from 'react';
-import {
-  Glyph,
-  PictureDisc,
-  SOLID_BRAND_DARK,
-  useClickOutside,
-  useMenu,
-  useMenuButton,
-} from '@liveworkspace/ui';
+import { useEffect, useId, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { Glyph, PictureDisc, useClickOutside, useMenu, useMenuButton } from '@liveworkspace/ui';
 import { cutText } from '@liveworkspace/model-core/text-cut';
+import { onProfileSaved } from '@liveworkspace/settings-ui/profile-events';
 import { workbench } from '../../bindings';
-import { accountInitials } from '../../lib/account-avatar';
+import { accountAvatarFill, accountInitials, type SavedLook } from '../../lib/account-avatar';
 import { useDeferredAuth } from '../providers/deferred-auth';
 import { useAuthHrefs } from './auth-routes';
 import {
@@ -65,6 +59,7 @@ export function AuthControls({ onOpenAccount, picture }: AuthControlsProps) {
   const nameId = useId();
   // Return here after sign-in (must run before the early returns below).
   const { signInHref } = useAuthHrefs();
+  const savedLook = useSavedLook();
 
   // Click-outside closes the menu; the listener installs only while it is open.
   useClickOutside(menuRef, closeMenu, menuOpen);
@@ -112,7 +107,12 @@ export function AuthControls({ onOpenAccount, picture }: AuthControlsProps) {
             name={displayName}
             size={HEADER_ICON_SLOT_PX}
             aria-hidden
-            className={`bg-brand-700 text-[10px] font-semibold text-white ${SOLID_BRAND_DARK}`}
+            // The account's own colour, or for Automatic the one picked from its name, in the deep shade the white
+            // initials read on in both themes (liveworkspace/docs/specs/003-accounts/accounts.md "Profiles"): the
+            // same disc as liveworkspace.app's account menu, through the same custom property, and the colour of this
+            // person's cursor and author dots.
+            style={{ '--avatar': accountAvatarFill(user, savedLook) } as CSSProperties}
+            className="bg-(--avatar) text-[10px] font-semibold text-white"
           >
             {accountInitials(user)}
           </PictureDisc>
@@ -181,6 +181,14 @@ export function AuthControls({ onOpenAccount, picture }: AuthControlsProps) {
       ) : null}
     </div>
   );
+}
+
+// A profile saved in Settings › Profile on this page (an editor's or the Explorer's), so the disc takes a new colour
+// or name at once; until then, null, and the session's colour stands (it catches up at the next token refresh).
+function useSavedLook(): SavedLook | null {
+  const [saved, setSaved] = useState<SavedLook | null>(null);
+  useEffect(() => onProfileSaved((p) => setSaved({ name: p.name, colour: p.color })), []);
+  return saved;
 }
 
 function AccountMenu({

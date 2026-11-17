@@ -14,6 +14,7 @@ import {
 import { initials } from '@liveworkspace/account-menu/initials';
 import { contrastRatio, shade } from '@liveworkspace/brand/colour';
 import {
+  automaticPresenceColour,
   cleanProfileName,
   PRESENCE_COLOURS,
   PROFILE_NAME_MAX,
@@ -43,9 +44,6 @@ export const SETTINGS_INPUT =
 // reads and the dark ink where it does not, as every app paints one (@liveworkspace/ui's identity fill), on the shared
 // colour maths.
 const { identityVars: presenceVars } = /* @__PURE__ */ createIdentityFill({ shade, contrastRatio });
-// The fill for no colour of their own: slate, as the header's avatar is.
-const AUTOMATIC_FILL =
-  'bg-gradient-to-br from-slate-600 to-slate-900 dark:from-slate-300 dark:to-slate-500';
 // "Automatic" as a swatch: every colour an app might pick, round the wheel.
 const AUTOMATIC_SWATCH: CSSProperties = {
   background: `conic-gradient(${PRESENCE_COLOURS.map((c) => c.value).join(', ')}, ${PRESENCE_COLOURS[0]!.value})`,
@@ -398,7 +396,7 @@ function ColourPicker({
       >
         {options.map((value, index) => {
           const checked = value === current;
-          const label = value === null ? 'Automatic: each app picks one' : colourLabel(value);
+          const label = value === null ? 'Automatic: picked from your name' : colourLabel(value);
           return (
             <button
               key={value ?? 'automatic'}
@@ -472,8 +470,10 @@ function Preview({
   color: string | null;
   picture: string | null;
 }) {
-  const fill = color ? IDENTITY_FILL : AUTOMATIC_FILL;
-  const style = color ? presenceVars(color) : undefined;
+  // Automatic shows the colour picked from the name: the one rule every app's cursors, author dots and avatars use
+  // (liveworkspace/docs/specs/003-accounts/accounts.md "Profiles"), so the preview is what collaborators really see.
+  const fill = IDENTITY_FILL;
+  const style = presenceVars(color ?? automaticPresenceColour(name).value);
   return (
     <figure className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950/60">
       <figcaption className="text-xs font-semibold tracking-[.14em] text-slate-500 uppercase dark:text-slate-400">
@@ -487,17 +487,13 @@ function Preview({
           <svg viewBox="0 0 16 16" className="size-5 drop-shadow-sm" style={style}>
             <path
               d="M2 1.5 14 7.2l-5.4 1.4L6 14z"
-              className={
-                color
-                  ? 'fill-(--identity) stroke-white dark:fill-(--identity-deep) dark:stroke-slate-900'
-                  : 'fill-slate-700 stroke-white dark:fill-slate-300 dark:stroke-slate-900'
-              }
+              className="fill-(--identity) stroke-white dark:fill-(--identity-deep) dark:stroke-slate-900"
               strokeWidth={1.25}
               strokeLinejoin="round"
             />
           </svg>
           <span
-            className={`mt-4 -ml-1 inline-flex h-6 max-w-36 items-center rounded-full px-2.5 text-xs font-semibold shadow-sm ${fill} ${color ? 'text-white' : 'text-white dark:text-slate-950'}`}
+            className={`mt-4 -ml-1 inline-flex h-6 max-w-36 items-center rounded-full px-2.5 text-xs font-semibold shadow-sm ${fill} text-white`}
             style={style}
           >
             <span className="text-optical-line min-w-0 truncate">{name}</span>
@@ -510,7 +506,7 @@ function Preview({
           pictureUrl={picture}
           name={name}
           size={36}
-          className={`flex text-xs font-semibold text-white ring-2 ring-white dark:ring-slate-900 ${fill} ${color ? '' : 'dark:text-slate-950'}`}
+          className={`flex text-xs font-semibold text-white ring-2 ring-white dark:ring-slate-900 ${fill}`}
           style={style}
         >
           {initials(name)}
@@ -520,7 +516,7 @@ function Preview({
             {name}
           </span>
           <span className="block text-xs text-slate-500 dark:text-slate-400">
-            {color ? 'Your colour in every app' : 'Each app picks your colour'}
+            {color ? 'Your colour in every app' : 'Picked from your name, in every app'}
           </span>
         </span>
       </div>

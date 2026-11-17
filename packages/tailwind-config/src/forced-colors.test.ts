@@ -56,6 +56,18 @@ describe('forced colours', () => {
     expect(forcedBlock()).toMatch(/\[role='switch'\]\s*\{\s*forced-color-adjust:\s*none;/);
   });
 
+  // A fill-only button (the sign-in page's Continue with email) read as bare text once its fill went to Canvas.
+  it('gives a fill-only button the system button edge, under forced colours only', () => {
+    const at = css.indexOf('@utility forced-edge');
+    expect(at).toBeGreaterThan(-1);
+    const body = css.slice(at, css.indexOf('\n}\n', at));
+    expect(body).toMatch(
+      /@media \(forced-colors: active\)\s*\{\s*border:\s*1px solid ButtonBorder;\s*\}/,
+    );
+    // Nothing outside the media query: a normal theme is unchanged.
+    expect(body.replace(/@media[\s\S]*$/, '')).not.toMatch(/border/);
+  });
+
   // Inside a layer it would lose to the utility painting the state (`bg-brand-50`), which the browser repaints as
   // Canvas: the very state it exists to show.
   it('sits outside every layer, so the utilities that paint the state do not outrank it', () => {

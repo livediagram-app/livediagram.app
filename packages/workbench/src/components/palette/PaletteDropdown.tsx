@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { ChevronDownIcon, HoverCard, Portal } from '@liveworkspace/ui';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '../../lib/clamp-to-viewport';
 
@@ -94,6 +94,8 @@ export function PaletteDropdown({
   dataTourId,
   iconOnly = false,
   openOnHover = false,
+  open: openProp,
+  onOpenChange,
 }: {
   value: string;
   options: PaletteDropdownOption[];
@@ -152,8 +154,21 @@ export function PaletteDropdown({
   // A mouse hovering the trigger opens the menu (the Sheet toolbar's category switcher, on a desktop); touch and
   // the keyboard keep click-to-open. A click then opens rather than toggles.
   openOnHover?: boolean;
+  // Controlled open state, for a host that closes the menu itself: the strip closes the selection mode when a palette
+  // category opens (docs/specs/007-editor/toolbar-layout.md "One popover at a time"). Its own state otherwise.
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }) {
-  const [open, setOpen] = useState(false);
+  const [localOpen, setLocalOpen] = useState(false);
+  const controlled = openProp !== undefined;
+  const open = controlled ? openProp : localOpen;
+  const setOpen = useCallback(
+    (next: boolean) => {
+      if (!controlled) setLocalOpen(next);
+      onOpenChange?.(next);
+    },
+    [controlled, onOpenChange],
+  );
   const hoverTimer = useRef<number | null>(null);
   const clearHover = () => {
     if (hoverTimer.current !== null) window.clearTimeout(hoverTimer.current);
@@ -212,7 +227,7 @@ export function PaletteDropdown({
     };
     document.addEventListener('pointerdown', onDown, true);
     return () => document.removeEventListener('pointerdown', onDown, true);
-  }, [open]);
+  }, [open, setOpen]);
 
   // Position the menu while open, re-running on scroll / resize so it tracks
   // the trigger (the palette is a draggable panel). Measures the menu's own
@@ -268,7 +283,7 @@ export function PaletteDropdown({
       type="button"
       onClick={() => {
         clearHover();
-        setOpen((o) => (openOnHover ? true : !o));
+        setOpen(openOnHover ? true : !open);
       }}
       aria-haspopup="listbox"
       aria-expanded={open}

@@ -8,6 +8,7 @@
 // Kept dependency-free and Worker-safe (fetch, URL, Headers only): it runs inside each app's router.
 
 import type { AppName } from './index';
+import { isPageLoad, unreachablePage } from './unreachable-page';
 import { sameSiteOrigin } from './www';
 
 /** Where liveworkspace.app lives when the router names no other (`WORKSPACE_ORIGIN`). */
@@ -363,21 +364,23 @@ const plainNoStore = (status: number, text: string) =>
  * origin, `no-store`, never a throw out of the router as a bare 500 ("Network connection lost"). When its headers
  * haven't come back by `deadlineMs` (forwardDeadlineFor), the fetch is aborted and the answer is `504`, `no-store`.
  * Only the headers are timed: once they arrive the timer is cleared, so a streaming body runs as long as it runs.
+ * `failed`, when given, answers those two in place of the plain line (a page load's styled page, forwardToWorkspace).
  */
 export function forwardOr502(
   request: Request,
   what = 'the downstream',
   doFetch: typeof fetch = fetch,
   deadlineMs: number | null = forwardDeadlineFor(request),
+  failed: (status: 502 | 504, text: string) => Response = plainNoStore,
 ): Promise<Response> {
   const at = new URL(request.url).origin;
-  const unreachable = () => plainNoStore(502, `router: ${what} at ${at} could not be reached`);
+  const unreachable = () => failed(502, `router: ${what} at ${at} could not be reached`);
   if (deadlineMs === null) return doFetch(request).catch(unreachable);
   return new Promise((resolve) => {
     const controller = new AbortController();
     const timer = setTimeout(() => {
       controller.abort();
-      resolve(plainNoStore(504, `router: ${what} at ${at} did not answer in time`));
+      resolve(failed(504, `router: ${what} at ${at} did not answer in time`));
     }, deadlineMs);
     doFetch(request, { signal: controller.signal }).then(
       (response) => {
@@ -458,7 +461,17 @@ async function forwardToWorkspace(
     headers,
     redirect: 'manual',
   });
-  const response = await forwardOr502(forwarded, 'liveworkspace', options.fetch);
+  // A page load that can't reach liveworkspace gets a page, not a line of text (Work Tracker 1082); the site's
+  // payloads, assets and API calls keep the line, which their callers read as a failure.
+  const response = await forwardOr502(
+    forwarded,
+    'liveworkspace',
+    options.fetch,
+    forwardDeadlineFor(forwarded),
+    isPageLoad(request)
+      ? (status) => unreachablePage(status, statusPageUrl(options.app, options.origin))
+      : plainNoStore,
+  );
 
   const location = response.headers.get('Location');
   const rewriteCookies = route.cookies !== 'pass' && response.headers.has('Set-Cookie');

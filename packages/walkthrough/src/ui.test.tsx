@@ -3,7 +3,13 @@
 // Tools and its panel, recording from set-up to save with what is hidden kept out, and playing with the viewer's tab
 // and view put back on close. Over a fake api, devices and recorder.
 import type { WalkthroughEvents, WalkthroughSummary } from '@liveworkspace/media/walkthrough';
+import {
+  configureWorkbench,
+  resetWorkbenchForTests,
+  type WorkbenchTrack,
+} from '@liveworkspace/workbench/bindings';
 import { ChromeToolsMenu } from '@liveworkspace/workbench/components/chrome/ChromeToolsMenu';
+import { testBindings } from '@liveworkspace/workbench/lib/testing/bindings';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -43,7 +49,13 @@ type Server = {
   list: WalkthroughSummary[];
   canRecord: boolean;
   requests: { url: string; init?: RequestInit }[];
+  // The api's refusal of a save's first step, as its body says.
+  refuse?: { status: number; error: string };
 };
+
+// What the editor's `track` was handed (the workbench binding), for the telemetry the walkthroughs count.
+const track = vi.fn<WorkbenchTrack>();
+const counted = () => track.mock.calls.map(([category, action, type]) => [category, action, type]);
 
 function fakeFetch(server: Server) {
   return vi.fn(async (url: string, init?: RequestInit) => {
@@ -52,6 +64,9 @@ function fakeFetch(server: Server) {
     if (method === 'DELETE') {
       server.list = server.list.filter((w) => !url.includes(`/${w.id}?`));
       return Response.json({ ok: true });
+    }
+    if (method === 'POST' && server.refuse) {
+      return Response.json({ error: server.refuse.error }, { status: server.refuse.status });
     }
     if (method === 'POST')
       return Response.json({ walkthrough: { ...W, id: 'new' } }, { status: 201 });
@@ -124,6 +139,8 @@ function Harness({
 }
 
 beforeEach(() => {
+  track.mockClear();
+  configureWorkbench(testBindings({ track }));
   view = { zoom: 1, offset: { x: 0, y: 0 } };
   setView.mockClear();
   vi.spyOn(console, 'warn').mockImplementation(() => undefined);
@@ -137,6 +154,7 @@ beforeEach(() => {
   HTMLMediaElement.prototype.pause = vi.fn();
 });
 afterEach(() => {
+  resetWorkbenchForTests();
   vi.unstubAllGlobals();
   vi.useRealTimers();
 });
@@ -210,6 +228,7 @@ describe('the Walkthroughs row in Tools', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
     await waitFor(() => expect(screen.queryByText('Tour')).toBeNull());
     expect(server.requests.at(-1)).toMatchObject({ url: '/api/walkthroughs/w1?d=doc' });
+    expect(counted()).toEqual([['Walkthrough', 'Deleted', undefined]]);
   });
 });
 
@@ -219,6 +238,7 @@ describe('playing', () => {
     await openWalkthroughs();
     fireEvent.click(screen.getByText('Tour'));
     await screen.findByRole('region', { name: 'Walkthrough: Tour' });
+    expect(counted()).toEqual([['Walkthrough', 'Played', undefined]]);
     // The recording's tab, its hidden element hidden.
     await waitFor(() => expect(screen.getByTestId('tab').textContent).toBe('t2'));
     expect(
@@ -353,6 +373,11 @@ describe('recording', () => {
     expect(body.events.events.some((e) => e.k === 'point')).toBe(false);
     expect(body.events.fingerprints).toEqual({ t1: 'same' });
     expect(document.head.querySelector('[data-walkthrough-hidden]')).toBeNull();
+    // Started once recording began, Created once saved: no title, id or length with either.
+    expect(counted()).toEqual([
+      ['Walkthrough', 'Started', undefined],
+      ['Walkthrough', 'Created', undefined],
+    ]);
   });
 
   it('says so when the microphone is refused', async () => {
@@ -667,6 +692,136 @@ describe('recording, beyond the canvas', () => {
     // Let the devices it asked for again arrive while the stubs stand.
     await act(async () => {
       await new Promise((r) => setTimeout(r, 0));
+    });
+  });
+
+  // Telemetry (walkthroughs.md "Telemetry"): which of these happened, never what was said or shown.
+  describe('telemetry', () => {
+    async function countDown() {
+      fireEvent.click(screen.getByRole('button', { name: /Start Recording/ }));
+      for (let i = 0; i < 3; i++) {
+        await act(async () => {
+          vi.advanceTimersByTime(1000);
+        });
+      }
+      expect(screen.getByRole('region', { name: 'Recording' })).toBeTruthy();
+    }
+    const fakeTimers = (more: ('performance' | 'Date')[] = []) =>
+      vi.useFakeTimers({
+        toFake: ['setTimeout', 'setInterval', 'clearTimeout', 'clearInterval', ...more],
+      });
+    // Discard asks first: the button, then the confirmation's own Discard, the last one in the page.
+    const discardRecording = async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Discard' }));
+      fireEvent.click((await screen.findAllByRole('button', { name: 'Discard' })).at(-1)!);
+    };
+
+    it('counts nothing for set-up closed before recording began', async () => {
+      stubDevices();
+      await openDock();
+      fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+      await waitFor(() =>
+        expect(screen.queryByRole('region', { name: 'Record a Walkthrough' })).toBeNull(),
+      );
+      expect(counted()).toEqual([]);
+    });
+
+    it('counts a recording thrown away mid-recording as abandoned, once', async () => {
+      stubDevices();
+      await openDock();
+      fakeTimers();
+      await countDown();
+      vi.useRealTimers();
+      await discardRecording();
+      await waitFor(() => expect(screen.queryByRole('region', { name: 'Recording' })).toBeNull());
+      expect(counted()).toEqual([
+        ['Walkthrough', 'Started', undefined],
+        ['Walkthrough', 'Abandoned', undefined],
+      ]);
+    });
+
+    it('counts a finished recording thrown away on the save card as abandoned', async () => {
+      stubDevices();
+      await openDock();
+      fakeTimers();
+      await countDown();
+      vi.useRealTimers();
+      fireEvent.click(screen.getByRole('button', { name: /Finish/ }));
+      await screen.findByRole('region', { name: 'Save Walkthrough' });
+      await discardRecording();
+      await waitFor(() =>
+        expect(screen.queryByRole('region', { name: 'Save Walkthrough' })).toBeNull(),
+      );
+      expect(counted()).toEqual([
+        ['Walkthrough', 'Started', undefined],
+        ['Walkthrough', 'Abandoned', undefined],
+      ]);
+    });
+
+    it('counts the ten minute limit once, as too long', async () => {
+      stubDevices();
+      await openDock();
+      fakeTimers(['performance']);
+      await countDown();
+      await act(async () => {
+        vi.advanceTimersByTime(10 * 60 * 1000 + 1000);
+      });
+      vi.useRealTimers();
+      await screen.findByRole('region', { name: 'Save Walkthrough' });
+      expect(counted()).toEqual([
+        ['Walkthrough', 'Started', undefined],
+        ['Walkthrough', 'Refused', 'TooLong'],
+      ]);
+      // Ten minutes of the dock's 200ms clock is three thousand ticks, each a render: well past the default budget.
+    }, 60_000);
+
+    it('counts the size limit once, as too large', async () => {
+      stubDevices();
+      class FullRecorder extends FakeRecorder {
+        override start() {
+          super.start();
+          // Two pieces past the limit: the second must not count again.
+          queueMicrotask(() => {
+            this.ondataavailable?.({ data: { size: 50 * 1024 * 1024 } as Blob });
+            this.ondataavailable?.({ data: { size: 50 * 1024 * 1024 } as Blob });
+          });
+        }
+      }
+      vi.stubGlobal('MediaRecorder', FullRecorder);
+      await openDock();
+      fakeTimers();
+      fireEvent.click(screen.getByRole('button', { name: /Start Recording/ }));
+      for (let i = 0; i < 3; i++) {
+        await act(async () => {
+          vi.advanceTimersByTime(1000);
+        });
+      }
+      vi.useRealTimers();
+      await screen.findByRole('region', { name: 'Save Walkthrough' });
+      expect(counted()).toEqual([
+        ['Walkthrough', 'Started', undefined],
+        ['Walkthrough', 'Refused', 'TooLarge'],
+      ]);
+    });
+
+    it('counts a save an api limit refused, and not one it refused for another reason', async () => {
+      stubDevices();
+      const server = await openDock();
+      fakeTimers();
+      await countDown();
+      vi.useRealTimers();
+      fireEvent.click(screen.getByRole('button', { name: /Finish/ }));
+      await screen.findByRole('region', { name: 'Save Walkthrough' });
+      server.refuse = { status: 403, error: 'item_full' };
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+      await screen.findByText(/already has 50 walkthroughs/);
+      server.refuse = { status: 403, error: 'forbidden' };
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+      await screen.findByText('Only an Editor can save a walkthrough here.');
+      expect(counted()).toEqual([
+        ['Walkthrough', 'Started', undefined],
+        ['Walkthrough', 'Refused', 'ItemFull'],
+      ]);
     });
   });
 });

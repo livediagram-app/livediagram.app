@@ -37,6 +37,16 @@ export function presenceColour(color: string | null | undefined): PresenceColour
   return color ? BY_VALUE.get(color.toLowerCase()) : undefined;
 }
 
+// The colour a person on Automatic (a profile with no colour of its own) wears, picked from the name collaborators see
+// (liveworkspace/docs/specs/003-accounts/accounts.md "Profiles", "Automatic"). The one rule for it: every avatar,
+// cursor and author dot in every app and on liveworkspace.app, so one person is one colour everywhere. A hash of the
+// trimmed, lower-cased name, so " Ada " and "ada" match; the same name always lands on the same colour.
+export function automaticPresenceColour(name: string): PresenceColour {
+  let hash = 0;
+  for (const ch of name.trim().toLowerCase()) hash = (hash * 31 + ch.codePointAt(0)!) >>> 0;
+  return PRESENCE_COLOURS[hash % PRESENCE_COLOURS.length]!;
+}
+
 // The display name's limit, as the accounts Worker keeps it (liveworkspace/apps/accounts src/profiles.ts
 // PROFILE_NAME_MAX), for the Settings panel's Profile field.
 export const PROFILE_NAME_MAX = 120;

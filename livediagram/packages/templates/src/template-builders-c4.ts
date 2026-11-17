@@ -146,6 +146,10 @@ export const c4Layered = (scaffold: Element[], content: Element[]): Element[] =>
   ...content.map((el) => ({ ...el, layerId: TEMPLATE_CONTENT_LAYER_ID })),
 ];
 
+// A short relationship label's own wrap width: wide enough for "Gets routes, ETAs · REST" at 12px (141px measured)
+// on one line, narrow enough to sit clear of the next arrow.
+export const C4_ONE_LINE_LABEL = 160;
+
 // Level 1: who uses the platform and what it depends on. Three people above the platform's top anchors and three
 // systems below its bottom ones, so every arrow drops straight; the fourth person and the fourth system sit level
 // with it on either side.
@@ -154,7 +158,8 @@ export function buildC4Context(cx: number, cy: number): Element[] {
   const cardH = 132;
   const sysW = 1220;
   const sysH = 156;
-  const sideGap = 150;
+  // Room for a one-line label on the sideways arrows ("Prints tickets · webhook", 135px measured).
+  const sideGap = 200;
   const rowGap = 150;
   const headGap = 36;
   const keyGap = 56;
@@ -265,14 +270,17 @@ export function buildC4Context(cx: number, cy: number): Element[] {
     'receipt',
   );
 
+  // A short label stays on one line: an up-and-down arrow's label wraps at 120px by default, which left "REST" or
+  // "HTTPS" alone on a second line.
+  const oneLine = { labelMaxWidth: C4_ONE_LINE_LABEL };
   const links: Element[] = [
     c4Link(customer, 's', platform, 'nnw', 'Places orders, tracks them · HTTPS'),
     c4Link(courier, 's', platform, 'n', 'Takes jobs, shares location · HTTPS'),
-    c4Link(staff, 's', platform, 'nne', 'Accepts orders · HTTPS'),
+    c4Link(staff, 's', platform, 'nne', 'Accepts orders · HTTPS', oneLine),
     c4Link(support, 'e', platform, 'w', 'Refunds orders · HTTPS'),
-    c4Link(platform, 'ssw', payments, 'n', 'Charges cards · REST'),
-    c4Link(platform, 's', maps, 'n', 'Gets routes, ETAs · REST'),
-    c4Link(platform, 'sse', messages, 'n', 'Sends updates · REST'),
+    c4Link(platform, 'ssw', payments, 'n', 'Charges cards · REST', oneLine),
+    c4Link(platform, 's', maps, 'n', 'Gets routes, ETAs · REST', oneLine),
+    c4Link(platform, 'sse', messages, 'n', 'Sends updates · REST', oneLine),
     c4Link(platform, 'e', pos, 'w', 'Prints tickets · webhook'),
   ];
 

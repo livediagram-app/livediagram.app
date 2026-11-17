@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { avatarColour } from '@liveworkspace/account-menu/initials';
+import { announceProfileSaved } from '@liveworkspace/settings-ui/profile-events';
 import { configureWorkbench, resetWorkbenchForTests, WORKBENCH_DEFAULTS } from '../../bindings';
 import {
   DEFERRED_AUTH_DEFAULT,
@@ -149,6 +151,36 @@ describe('AuthControls', () => {
     unmount();
     renderControls(signedIn({ firstName: 'Webber', picture: PICTURE }), { picture: null });
     expect(screen.getByRole('button', { name: 'Account menu' }).querySelector('img')).toBeNull();
+  });
+
+  it("paints the disc in the account's colour, or Automatic's from the name (Work Tracker 1031)", () => {
+    const disc = () =>
+      screen
+        .getByRole('button', { name: 'Account menu' })
+        .querySelector<HTMLElement>('[aria-hidden]');
+    const { unmount } = renderControls(
+      signedIn({ firstName: 'Ada', fullName: 'Ada Quinn', colour: '#8b5cf6' }),
+    );
+    // Violet's deep shade, never the brand blue it used to be.
+    expect(disc()?.style.getPropertyValue('--avatar')).toBe('#6d28d9');
+    expect(disc()?.className).toContain('bg-(--avatar)');
+    expect(disc()?.className).not.toContain('bg-brand-700');
+    expect(disc()?.className).toContain('text-white');
+    unmount();
+    renderControls(signedIn({ firstName: 'Ada', fullName: 'Ada Quinn', colour: null }));
+    expect(disc()?.style.getPropertyValue('--avatar')).toBe(avatarColour('Ada Quinn').deep);
+  });
+
+  it('repaints the disc at once when Settings › Profile saves a colour on this page', () => {
+    renderControls(signedIn({ firstName: 'Ada', fullName: 'Ada Quinn', colour: '#8b5cf6' }));
+    const disc = () =>
+      screen
+        .getByRole('button', { name: 'Account menu' })
+        .querySelector<HTMLElement>('[aria-hidden]');
+    act(() =>
+      announceProfileSaved({ patch: { color: '#ef4444' }, name: 'Ada Quinn', color: '#ef4444' }),
+    );
+    expect(disc()?.style.getPropertyValue('--avatar')).toBe('#b91c1c');
   });
 
   it('closes the menu on a click outside', () => {

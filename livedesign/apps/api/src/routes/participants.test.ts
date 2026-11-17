@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { automaticPresenceColour } from '@liveworkspace/settings/presence';
 import { __forgetProfiles } from '../accounts/profiles';
 import { fakeAccounts, type FakeAccounts } from '../test-accounts';
 import type { Env } from '../types';
@@ -53,11 +54,15 @@ describe('GET /api/participants/:id', () => {
     expect(accounts.callsTo('profiles/read')[0]!.body).toEqual({ ids: [`guest_${OTHER}`] });
   });
 
-  it('answers an account that set nothing with its account name and the default colour', async () => {
+  it('answers an account that set nothing with its account name and the colour picked from it', async () => {
     accounts.accounts.set('user_ann', { name: 'Ann Smith', email: 'ann@example.com' });
     const res = await handleParticipants(makeCtx('GET', '/api/participants/user_ann'));
     expect(await res.json()).toMatchObject({
-      participant: { id: 'user_ann', name: 'Ann Smith', color: '#0ea5e9' },
+      participant: {
+        id: 'user_ann',
+        name: 'Ann Smith',
+        color: automaticPresenceColour('Ann Smith').value,
+      },
     });
   });
 

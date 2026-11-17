@@ -9,6 +9,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { WalkthroughApi } from './api';
 import { applyHidden } from './bridge';
 import type { WalkthroughHost } from './host';
+import { walkthroughTelemetry } from './telemetry';
 import { buildTimeline, editedSince, type CanvasView, type Timeline } from './timeline';
 
 export type Loaded = {
@@ -63,6 +64,7 @@ export function usePlayer(host: WalkthroughHost, api: WalkthroughApi | null) {
         url: URL.createObjectURL(media),
         edited: editedSince(read.events.fingerprints, h.fingerprint).length > 0,
       });
+      walkthroughTelemetry.played();
     },
     [api],
   );

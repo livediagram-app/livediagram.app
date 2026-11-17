@@ -8,8 +8,8 @@
 // person per minute per isolate, not one per request. A write updates the remembered copy at once,
 // so the writer sees their own change; another isolate sees it within the minute.
 
-import { colorForKey } from '@livediagram/api-schema';
 import { readProfiles, writeProfile, type Profile } from '@liveworkspace/auth-client';
+import { automaticPresenceColour } from '@liveworkspace/settings/presence';
 import { accountCredentials } from '../auth/accounts';
 import type { Env, ParticipantDTO } from '../types';
 import { liveworkspaceOwnerOf, liveworkspaceTarget } from './owner';
@@ -38,14 +38,15 @@ export function __resetProfileCache(): void {
 }
 
 // A profile as this app shows it. No name (a guest that never set one, which this app always does
-// on first visit) is no participant; no colour takes the palette's pick for the id, so the same
-// person is the same colour everywhere.
+// on first visit) is no participant; no colour (Automatic) takes the colour picked from the name, the one rule
+// every app and liveworkspace.app use (@liveworkspace/settings/presence), so a cursor or author dot matches the
+// person's avatar in every header.
 function toParticipant(id: string, profile: Profile): ParticipantDTO | null {
   if (!profile.name) return null;
   return {
     id,
     name: profile.name,
-    color: profile.color ?? colorForKey(id),
+    color: profile.color ?? automaticPresenceColour(profile.name).value,
     createdAt: profile.createdAt ?? 0,
     // The published Google picture (null when Show My Google Picture is off); readers strip it for a caller that
     // is not signed in (withoutPicture).

@@ -145,7 +145,13 @@ export function ToolbarPalette(props: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
   const search = useStripPopover(rootRef, TOOLBAR_SEARCH_SELECTOR);
   // The category bar and its flyout (CategoryBar).
-  const bar = useCategoryBar(rootRef);
+  // A category opening closes the strip's other popovers (docs/specs/007-editor/toolbar-layout.md "One popover at a
+  // time"), as moving between categories swaps one flyout for the next.
+  const bar = useCategoryBar(rootRef, {
+    onOpen: () => {
+      search.setOpen(false);
+    },
+  });
   // Stickers reopens on the group it was left on, for the page load (BrowseMemory).
   const browseMemory = useBrowseMemory();
   // The template start steps aside while a popover hangs from the strip (palette-popover-open).

@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { automaticPresenceColour } from '@liveworkspace/settings/presence';
 import { resetPictureFailures } from '@liveworkspace/ui';
 import { accountCategories } from '../account-model';
 import type { SettingsRow } from '../model';
@@ -397,8 +398,25 @@ describe('Name and Colour, in place', () => {
     expect(profile.onColour).toHaveBeenCalledWith('#0ea5e9');
     await waitFor(() => expect(profile.save).toHaveBeenCalledWith({ color: '#0ea5e9' }));
     expect(screen.getByRole('radio', { name: 'Sky' }).getAttribute('aria-checked')).toBe('true');
-    fireEvent.click(screen.getByRole('radio', { name: 'Automatic: each app picks one' }));
+    fireEvent.click(screen.getByRole('radio', { name: 'Automatic: picked from your name' }));
     await waitFor(() => expect(profile.save).toHaveBeenLastCalledWith({ color: null }));
+  });
+
+  it('previews Automatic in the colour picked from the name, as collaborators see it', async () => {
+    const profile = fakeProfile();
+    await editor(profile);
+    const preview = screen.getByText('How others see you').closest('figure')!;
+    expect(within(preview as HTMLElement).getByText('Your colour in every app')).toBeTruthy();
+    fireEvent.click(screen.getByRole('radio', { name: 'Automatic: picked from your name' }));
+    await waitFor(() => expect(profile.save).toHaveBeenLastCalledWith({ color: null }));
+    expect(
+      within(preview as HTMLElement).getByText('Picked from your name, in every app'),
+    ).toBeTruthy();
+    const painted = [...preview.querySelectorAll<HTMLElement | SVGElement>('[style]')].map((e) =>
+      e.style.getPropertyValue('--identity'),
+    );
+    expect(painted.length).toBeGreaterThan(0);
+    expect(new Set(painted)).toEqual(new Set([automaticPresenceColour('Ada Lovelace').value]));
   });
 
   it('puts a colour back when its write fails, and says why', async () => {

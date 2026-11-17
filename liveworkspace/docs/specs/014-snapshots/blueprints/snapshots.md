@@ -212,6 +212,13 @@ writes every tab once in one batch, then deletes the extra tabs one by one.
 
 `[snapshots] taken|reverted|deleted|refused` with `{ itemId, snapshotId, kind, bytes, reason }`; never a name or body.
 
+Telemetry: `useSnapshots` (`packages/snapshots/src/ui/useSnapshots.ts`) sends `Snapshot·Created`, `Snapshot·Reverted`
+and `Snapshot·Deleted` through the workbench's bound `track` (`workbench.track`, so each editor's own emitter, its
+opt-out and its vocabulary), after the call the api accepted and before the list or the page reloads. Every product's
+`api-schema` names the `Snapshot` category; each editor's `telemetry-manifest.ts` pins the pairs and its coverage test
+scans `packages/snapshots/src`; the site's emitter scan reads the package (`SHARED_CLIENT_ROOTS`) and the dashboard
+charts them (`apps/site/app/telemetry/_shared/snapshot-walkthrough-metrics.ts`).
+
 ## Testing
 
 - `packages/snapshots`: store (chunking at the limit and a surrogate pair at a cut, the cap at six, unreadable bodies,

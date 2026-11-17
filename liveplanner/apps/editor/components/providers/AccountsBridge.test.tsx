@@ -113,14 +113,37 @@ describe('AccountsBridge', () => {
       .mockResolvedValueOnce(signedIn('access-1'));
     const onState = vi.fn<(s: DeferredAuthState) => void>();
     render(<AccountsBridge onState={onState} />);
-    await waitFor(() => expect(onState).toHaveBeenCalled(), { timeout: 3_000 });
-    expect(onState.mock.lastCall![0]).toMatchObject({ authLoaded: true, isSignedIn: true });
+    await waitFor(
+      () =>
+        expect(onState.mock.lastCall?.[0]).toMatchObject({ authLoaded: true, isSignedIn: true }),
+      { timeout: 3_000 },
+    );
+    // Meanwhile it said it couldn't reach the account, and settled nothing (Work Tracker 1082).
+    expect(onState.mock.calls[0]![0]).toMatchObject({
+      authLoaded: false,
+      accountUnreachable: true,
+    });
     expect(onState.mock.calls.every(([s]) => s.isSignedIn || !s.authLoaded)).toBe(true);
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(warn).toHaveBeenCalledWith(
       expect.stringContaining('[auth] token answer unknown (TypeError)'),
     );
     warn.mockRestore();
+  });
+
+  it("carries the profile's presence colour onto the session, for the header avatar (Work Tracker 1031)", async () => {
+    fetchMock.mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          signedIn: true,
+          accessToken: 'access-1',
+          expiresAt: Date.now() + 3_600_000,
+          user: { ...USER, color: '#8b5cf6' },
+        }),
+        { status: 200 },
+      ),
+    );
+    expect((await mount()).user?.colour).toBe('#8b5cf6');
   });
 
   it('publishes the signed-in account', async () => {
@@ -136,6 +159,8 @@ describe('AccountsBridge', () => {
         firstName: 'Ada',
         lastName: 'Lovelace',
         fullName: 'Ada Lovelace',
+        // No colour on the token answer: Automatic.
+        colour: null,
       },
     });
   });

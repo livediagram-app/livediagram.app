@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { automaticPresenceColour } from '@liveworkspace/settings/presence';
 import { itemPersonId } from '@liveplanner/items';
 import type { TeamMember } from '@liveplanner/api-schema';
 import { teamMemberPerson } from './useTeamPeople';
@@ -21,7 +22,8 @@ describe('teamMemberPerson', () => {
   it('names a joined member as items do', async () => {
     const p = await teamMemberPerson(member({}));
     expect(p).toMatchObject({ id: await itemPersonId('user_1'), name: 'Sam Lee' });
-    expect(p?.color).toMatch(/^#[0-9a-f]{6}$/i);
+    // Coloured by the one Automatic rule, as their avatar is.
+    expect(p?.color).toBe(automaticPresenceColour('Sam Lee').value);
   });
 
   it('falls back to the invite address, and leaves out pending invites', async () => {

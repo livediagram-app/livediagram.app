@@ -1,7 +1,7 @@
 import { isSafeColourValue } from '@liveworkspace/auth-client/account-name';
 import { initialsOf } from '@liveworkspace/model-core/names';
 import {
-  PRESENCE_COLOURS,
+  automaticPresenceColour,
   presenceColour,
   type PresenceColour,
 } from '@liveworkspace/settings/presence';
@@ -13,12 +13,10 @@ export function initials(name: string, fallback?: string | null): string {
   return initialsOf(name, fallback);
 }
 
-// The avatar's colour: one of the presence colours, picked from the name, so the same person has the same disc
-// in every app and on every visit.
+// The avatar's colour for Automatic: the one shared rule (@liveworkspace/settings/presence automaticPresenceColour),
+// picked from the name, so the same person has the same disc, cursor and author dot in every app.
 export function avatarColour(name: string): PresenceColour {
-  let hash = 0;
-  for (const ch of name.trim().toLowerCase()) hash = (hash * 31 + ch.codePointAt(0)!) >>> 0;
-  return PRESENCE_COLOURS[hash % PRESENCE_COLOURS.length]!;
+  return automaticPresenceColour(name);
 }
 
 // White on a colour reads at AA from this contrast up.

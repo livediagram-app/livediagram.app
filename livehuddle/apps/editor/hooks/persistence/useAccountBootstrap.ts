@@ -59,18 +59,22 @@ export function useAccountBootstrap(): BootstrapResult {
   // null and the guest token is used. If the session eventually loads
   // after the timeout, isSignedIn updates and the token provider effect
   // below re-runs, switching subsequent API calls to the JWT path.
+  // Not for a browser whose sign-in hint says signed in (`sessionExpected`): settling it as a guest started the guest
+  // hand-off to an accounts site that wasn't answering (Work Tracker 1082). It waits for the session's own answer, with
+  // the AuthProvider's notice up meanwhile.
+  const expected = auth.sessionExpected === true;
   const [timedOut, setTimedOut] = useState(false);
   useEffect(() => {
-    if (sessionLoaded || held) return;
+    if (sessionLoaded || held || expected) return;
     const id = window.setTimeout(() => setTimedOut(true), 5000);
     return () => window.clearTimeout(id);
-  }, [sessionLoaded, held]);
+  }, [sessionLoaded, held, expected]);
   // The guest token is spent once signed in (see above).
   useEffect(() => {
     if (held || !isSignedIn || !accountUserId) return;
     clearGuestToken();
   }, [held, isSignedIn, accountUserId]);
-  const authLoaded = sessionLoaded || timedOut;
+  const authLoaded = sessionLoaded || (timedOut && !expected);
 
   // First+Last takes precedence so we always present the form the
   // user picked at sign-up. Falls back to fullName and finally the

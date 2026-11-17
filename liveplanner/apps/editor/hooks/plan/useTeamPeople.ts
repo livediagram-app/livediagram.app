@@ -8,17 +8,22 @@
 // is the one the api signs their writes as. Fetched once a plan has Plan content (docs/specs/026-plan/plan-mode.md
 // "Cost"), and only when signed in: a guest has no teams. The mention list (useCommentMentions) reads the same team.
 import { useEffect, useState } from 'react';
+import { automaticPresenceColour } from '@liveworkspace/settings/presence';
 import { itemPersonId, type ItemPerson } from '@liveplanner/items';
 import type { TeamMember } from '@liveplanner/api-schema';
 import { apiTeamMembers } from '@/lib/api-client';
-import { colorForKey } from '@/lib/identity';
 
 // A member as an assignee: their name, else their address's local part.
 export async function teamMemberPerson(member: TeamMember): Promise<ItemPerson | null> {
   if (member.status !== 'joined' || !member.userId) return null;
   const name = member.name ?? member.email?.split('@')[0] ?? null;
   if (!name) return null;
-  return { id: await itemPersonId(member.userId), name, color: colorForKey(member.userId) };
+  // Coloured by the one Automatic rule (@liveworkspace/settings/presence), as their avatar is.
+  return {
+    id: await itemPersonId(member.userId),
+    name,
+    color: automaticPresenceColour(name).value,
+  };
 }
 
 const NO_PEOPLE: readonly ItemPerson[] = [];

@@ -81,7 +81,17 @@ export function ToolbarPalette(props: ToolbarPaletteProps) {
   // The Library, icon only beside Search, not a category (liveworkspace/docs/specs/006-media/libraries.md).
   const library = useStripPopover(rootRef, TOOLBAR_LIBRARY_SELECTOR);
   // The category bar and its flyout (CategoryBar).
-  const bar = useCategoryBar(rootRef);
+  // The selection mode's menu, held here so a category opening closes it (useCategoryBar's onOpen).
+  const [selectionModeOpen, setSelectionModeOpen] = useState(false);
+  // A category opening closes the strip's other popovers (docs/specs/007-editor/toolbar-layout.md "One popover at a
+  // time"), as moving between categories swaps one flyout for the next.
+  const bar = useCategoryBar(rootRef, {
+    onOpen: () => {
+      search.setOpen(false);
+      library.setOpen(false);
+      setSelectionModeOpen(false);
+    },
+  });
   // Icons, Stickers and Tech reopen on the group they were left on, for the page load (BrowseMemory).
   const browseMemory = useBrowseMemory();
   const moreOpen = more.open;
@@ -378,6 +388,8 @@ export function ToolbarPalette(props: ToolbarPaletteProps) {
                       <>
                         <PaletteDropdown
                           ariaLabel="Selection mode"
+                          open={selectionModeOpen}
+                          onOpenChange={setSelectionModeOpen}
                           dataTourId="canvas-tool"
                           hoverCardTitle="Selection Mode"
                           hoverCardDescription="Choose how the pointer acts on the canvas."

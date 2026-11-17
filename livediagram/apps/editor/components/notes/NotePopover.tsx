@@ -24,11 +24,32 @@ import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 // target.y)` happened to be in viewport pixels — almost never where the user
 // could see it once the canvas was panned or zoomed.
 
-const WIDTH = 416; // matches w-[26rem]. Used for the right-edge flip.
+// 26rem, the popover's width wherever it fits. On a phone it is capped at the viewport less both edge margins (374px
+// at 390px wide), so it stays wholly on screen (docs/specs/009-elements/rich-text-notes.md "The popover").
+const WIDTH = 416;
 // Rough popover height, used only to decide whether to flip above the
 // element. Generous: toolbar + an 11rem editor + the footer row.
 const APPROX_HEIGHT = 320;
 const GAP = 12;
+
+// Where the popover sits and how wide it draws: anchored at the element's bottom-centre (the rendered div shifts
+// itself left by half its width), flipped above the element when there is no room below, and clamped so the whole
+// width stays inside the viewport's edge margins.
+export function notePopoverBox(
+  rect: Pick<DOMRect, 'left' | 'top' | 'bottom' | 'width'>,
+  viewport: { width: number; height: number },
+): { left: number; top: number; width: number } {
+  const width = Math.max(0, Math.min(WIDTH, viewport.width - EDGE_MARGIN * 2));
+  const halfW = width / 2;
+  const left = clampIntoRange(
+    rect.left + rect.width / 2,
+    halfW + EDGE_MARGIN,
+    viewport.width - halfW - EDGE_MARGIN,
+  );
+  let top = rect.bottom + GAP;
+  if (top + APPROX_HEIGHT > viewport.height - EDGE_MARGIN) top = rect.top - GAP - APPROX_HEIGHT;
+  return { left, top: Math.max(EDGE_MARGIN, top), width };
+}
 
 type NotePopoverProps = {
   // Stable element id. The popover queries the DOM for the matching
@@ -67,7 +88,7 @@ export function NotePopover({
   // is uncontrolled (it paints its own DOM), so this never fights it.
   const [hasText, setHasText] = useState(initial.trim().length > 0);
   const ref = useRef<HTMLDivElement>(null);
-  const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
+  const [pos, setPos] = useState<{ left: number; top: number; width: number } | null>(null);
 
   // Anchor to the element's live bounding rect. Re-runs on resize /
   // scroll so a pan or zoom keeps the popover attached. Same
@@ -76,22 +97,12 @@ export function NotePopover({
     const update = () => {
       const node = document.querySelector(elementSelector(elementId));
       if (!node) return;
-      const rect = node.getBoundingClientRect();
-      // Anchor at the bottom-centre of the element, then the popover
-      // shifts itself up/down via the existing `transform:
-      // translate(-50%, GAP)` on the rendered div.
-      let left = rect.left + rect.width / 2;
-      let top = rect.bottom + GAP;
-      // Clamp horizontally so a popover anchored on a near-edge
-      // element doesn't run off the viewport.
-      const halfW = WIDTH / 2;
-      left = clampIntoRange(left, halfW + EDGE_MARGIN, window.innerWidth - halfW - EDGE_MARGIN);
-      // Flip above the element if there's no room below.
-      if (top + APPROX_HEIGHT > window.innerHeight - EDGE_MARGIN) {
-        top = rect.top - GAP - APPROX_HEIGHT;
-      }
-      top = Math.max(EDGE_MARGIN, top);
-      setPos({ left, top });
+      setPos(
+        notePopoverBox(node.getBoundingClientRect(), {
+          width: window.innerWidth,
+          height: window.innerHeight,
+        }),
+      );
     };
     update();
     window.addEventListener('resize', update);
@@ -126,10 +137,11 @@ export function NotePopover({
       <div
         ref={ref}
         onPointerDown={(e) => e.stopPropagation()}
-        className="fixed z-[var(--z-modal)] flex w-[26rem] flex-col gap-2 rounded-lg border border-slate-200 bg-white p-2.5 shadow-xl shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-950/40"
+        className="fixed z-[var(--z-modal)] flex flex-col gap-2 rounded-lg border border-slate-200 bg-white p-2.5 shadow-xl shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-950/40"
         style={{
           left: pos.left,
           top: pos.top,
+          width: pos.width,
           transform: 'translate(-50%, 0)',
         }}
       >

@@ -13,7 +13,8 @@ import {
   type TextAlignY,
   type TextSize,
 } from '@livedocuments/document';
-import { colorForKey, initialsOf } from '@/lib/identity';
+import { initialsOf } from '@/lib/identity';
+import { automaticPresenceColour } from '@liveworkspace/settings/presence';
 import { useCommentBadges } from '@liveworkspace/workbench/components/canvas/CommentBadgesContext';
 import { inlineIconGap, inlineIconMetrics } from '@/components/canvas/shape-inline-icon-layout';
 import {
@@ -45,7 +46,8 @@ export function elementIndicatorItems(
           onOpen: () => onOpenAction(element.id),
           assigneeName,
           initials: initialsOf(assigneeName),
-          color: colorForKey(assignee.userId ?? assignee.memberId ?? assigneeName),
+          // The one Automatic rule (@liveworkspace/settings/presence), so the dot matches the person's avatar.
+          color: automaticPresenceColour(assigneeName).value,
         }
       : undefined,
     comments: {

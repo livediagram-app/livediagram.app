@@ -93,6 +93,19 @@ client (`401 invalid_token` otherwise; `400 access_token_required` without one).
   up after `TOKEN_REQUEST_TIMEOUT_MS` (8 s) and fails with `TokenRequestError` (`status` null for no answer).
   `createAppAuth`'s `POST /api/auth/token` signs out only on a 4xx (`accountsRefused`); no answer or a 5xx is 503
   `accounts_unreachable` with the cookies kept ([accounts.md](../accounts.md#when-the-accounts-site-doesnt-answer)).
+- The editors' side of that answer: `createAuthProvider` (`@liveworkspace/workbench`) reads the app's sign-in hint
+  once (`readSignedInHint`, each editor's `lib/signed-in-hint.ts`). With it, until the bridge publishes a settled
+  state, the context carries `sessionExpected: true`, and `createUseAccountBootstrap` (and livehuddle's own
+  `useAccountBootstrap`) skip the 5 s guest give-up, so no guest hand-off starts. The context's
+  `accountUnreachable` turns true at the bridge's first unknown answer (each `AccountsBridge` publishes
+  `{ ...DEFERRED_AUTH_DEFAULT, accountUnreachable: true }` from `askTokenUntilKnown`'s `onUnknown`) or after
+  `ACCOUNT_STALL_MS` (5 s) with no settled state, and the provider draws `AccountUnreachableNotice` (`role="status"`,
+  Try Again reloads the page) until the bridge settles. No hint: unchanged.
+- The routers' failed page loads to liveworkspace: `forwardToWorkspace` passes `forwardOr502` a `failed` answer
+  for a `GET` or `HEAD` that accepts `text/html` (`isPageLoad`), `unreachablePage(status, app, workspaceOrigin)`
+  (`packages/sites/src/unreachable-page.ts`): inline-styled HTML, light and dark, no script, its own
+  `Content-Security-Policy` (`default-src 'none'; style-src 'unsafe-inline'`), the forward's 502 or 504 and
+  `no-store`. Other requests keep `plainNoStore`'s line.
 - The account API's internal calls (`account-call.ts` `call`) go through `credentials.accounts` (the API's
   `ACCOUNTS` binding, set by `configured`, `accountCredentials` and livedesign's `accountsClient` when bound) with
   `accountsFetch`, and stop at `ACCOUNT_CALL_TIMEOUT_MS` (10 s) for the headers; `mintAccountToken` and

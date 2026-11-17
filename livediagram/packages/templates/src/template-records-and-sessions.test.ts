@@ -2,7 +2,13 @@
 // Container diagrams, the Architecture Decision Record, Sprint Planning and Interview Synthesis, each drawing what
 // its catalogue entry promises.
 import { describe, expect, it } from 'vitest';
-import type { ArrowElement, Element, ShapeElement, StickyElement } from '@livediagram/document';
+import {
+  layoutArrowLabels,
+  type ArrowElement,
+  type Element,
+  type ShapeElement,
+  type StickyElement,
+} from '@livediagram/document';
 import { buildTemplate } from './build-template';
 import { C4 } from './template-builders-c4';
 import { templateCategory } from './template-categories';
@@ -53,6 +59,31 @@ describe('the C4 diagrams', () => {
     expect(fills.filter((f) => f === C4.external.fill).length).toBeGreaterThanOrEqual(3);
     // Every relationship says what flows.
     for (const a of arrows(els)) expect(a.label, a.id).toBeTruthy();
+  });
+
+  // Work Tracker 1178: "Sends updates · REST" and "Prints tickets · webhook" wrapped with the protocol alone on the
+  // second line. Measured at 12px system-ui (6.25px a character, as Chrome on macOS measures these labels).
+  it('never leaves a context label protocol alone on a second line', () => {
+    const els = buildTemplate('c4-context', 0, 0);
+    const measureFor = (px: number) => (s: string) => (s.length * px * 6.25) / 12;
+    const layouts = layoutArrowLabels(els, { measureFor });
+    const lines = (label: string) => {
+      const a = arrows(els).find((e) => e.label === label)!;
+      return layouts.get(a.id)?.lines;
+    };
+    for (const label of [
+      'Accepts orders · HTTPS',
+      'Refunds orders · HTTPS',
+      'Charges cards · REST',
+      'Gets routes, ETAs · REST',
+      'Sends updates · REST',
+      'Prints tickets · webhook',
+    ])
+      expect(lines(label), label).toEqual([label]);
+    for (const a of arrows(els)) {
+      const last = layouts.get(a.id)?.lines.at(-1) ?? '';
+      expect(last, a.label).not.toMatch(/^·?\s*(HTTPS|REST|webhook)$/);
+    }
   });
 
   it('opens the system into containers inside its boundary, the order path moving', () => {
