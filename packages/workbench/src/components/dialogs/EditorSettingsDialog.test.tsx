@@ -133,6 +133,7 @@ describe('EditorSettingsDialog This app or All', () => {
       name: 'Ada Lovelace',
       email: 'ada@example.com',
       joined: '2026-01-01',
+      picture: null,
     });
     expect(account().profile).toBeDefined();
     expect(account().renderTokens).toBeDefined();
@@ -144,6 +145,15 @@ describe('EditorSettingsDialog This app or All', () => {
     expect(
       screen.getByText(/Settings sync to your account and apply to every document/),
     ).toBeTruthy();
+  });
+
+  it("gives the Profile's avatar the session's Google picture, as the header draws it", () => {
+    auth.user = {
+      fullName: 'Ada Lovelace',
+      picture: 'https://lh3.googleusercontent.com/a/ada',
+    };
+    open({ accountId: 'user_1' });
+    expect(account().identity?.picture).toBe('https://lh3.googleusercontent.com/a/ada');
   });
 
   it('names the account by whatever it has', () => {
