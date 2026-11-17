@@ -90,6 +90,89 @@ describe('Inbox threads', () => {
     expect(owned).toMatchObject({ onYourItem: true, youCommented: false, mentionsYou: false });
   });
 
+  // Work Tracker 1036: a reply after a mention, the mentioned person's own or a third person's, never changes who
+  // mentioned them, and the latest author's id comes back so the reader's own reply reads as theirs.
+  it('name who mentioned the reader whoever replies after', async () => {
+    const ada = await person('user_a', { teams: [{ id: 'team1' }] });
+    const bea = await person('user_b', { teams: [{ id: 'team1' }] });
+    const item = await makeItem(ada.auth, { title: 'Plan', teamId: 'team1' });
+    const ADA = { id: 'user_a', name: 'Ada Qa', color: '#123456' };
+    const push = (latest: { id: string; name: string }) =>
+      asApp(`/app/items/${item.id}/collab/t1`, {
+        threads: [
+          thread({
+            elementId: 'mention',
+            participantIds: ['user_a', latest.id],
+            mentionedIds: ['user_b'],
+            mentionedBy: { user_b: ADA },
+            latestAuthorName: latest.name,
+            latestAuthorId: latest.id,
+          }),
+        ],
+        actions: [],
+      });
+    // Bea replies herself.
+    expect((await push({ id: 'user_b', name: 'Bea Qa' })).status).toBe(204);
+    let row = (await inbox(bea.auth)).threads[0]!;
+    expect(row).toMatchObject({
+      mentionsYou: true,
+      youCommented: true,
+      latestAuthorId: 'user_b',
+      latestAuthorName: 'Bea Qa',
+      mentionedBy: ADA,
+    });
+    // Cy, a third person, replies after.
+    await push({ id: 'user_c', name: 'Cy Qa' });
+    row = (await inbox(bea.auth)).threads[0]!;
+    expect(row).toMatchObject({ latestAuthorId: 'user_c', mentionedBy: ADA });
+    // Ada is not mentioned: nobody named for her.
+    expect((await inbox(ada.auth)).threads[0]).toMatchObject({
+      mentionsYou: false,
+      mentionedBy: null,
+    });
+  });
+
+  it('name no one for a thread pushed without who mentioned whom, dropping a malformed or unmentioned entry', async () => {
+    const ada = await person('user_a', { teams: [{ id: 'team1' }] });
+    const bea = await person('user_b', { teams: [{ id: 'team1' }] });
+    const item = await makeItem(ada.auth, { title: 'Plan', teamId: 'team1' });
+    const res = await asApp(`/app/items/${item.id}/collab/t1`, {
+      threads: [
+        thread({ elementId: 'old', participantIds: ['user_a'], mentionedIds: ['user_b'] }),
+        {
+          ...thread({ elementId: 'odd', participantIds: ['user_a'], mentionedIds: ['user_b'] }),
+          mentionedBy: { user_b: { id: 'bad id!', name: 'X' }, user_c: { id: null, name: 'Y' } },
+        },
+        {
+          ...thread({ elementId: 'list', participantIds: ['user_a'], mentionedIds: ['user_b'] }),
+          mentionedBy: ['user_a'],
+        },
+        {
+          ...thread({ elementId: 'clipped', participantIds: ['user_a'], mentionedIds: ['user_b'] }),
+          mentionedBy: { user_b: { name: 'N'.repeat(300), color: 7 } },
+        },
+        {
+          ...thread({ elementId: 'nulls', participantIds: ['user_a'], mentionedIds: ['user_b'] }),
+          mentionedBy: { user_b: null },
+        },
+        {
+          ...thread({ elementId: 'long', participantIds: ['user_a'], mentionedIds: ['user_b'] }),
+          mentionedBy: { user_b: { name: 'N'.repeat(300) } },
+        },
+      ],
+      actions: [],
+    });
+    expect(res.status).toBe(204);
+    const rows = Object.fromEntries((await inbox(bea.auth)).threads.map((t) => [t.elementId, t]));
+    expect(rows.old!.mentionedBy).toBeNull();
+    expect(rows.old!.latestAuthorId).toBeNull();
+    expect(rows.odd!.mentionedBy).toBeNull();
+    expect(rows.list!.mentionedBy).toBeNull();
+    expect(rows.clipped!.mentionedBy).toBeNull();
+    expect(rows.nulls!.mentionedBy).toBeNull();
+    expect(rows.long!.mentionedBy).toEqual({ id: null, name: 'N'.repeat(200) });
+  });
+
   // An agent's comment with my token reaches me, but is not mine: a question it asked waits on me (agentIds).
   it('reach the people an agent wrote for, without reading as their comment', async () => {
     const ada = await person('user_a', { teams: [{ id: 'team1' }] });

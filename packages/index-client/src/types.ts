@@ -133,6 +133,9 @@ export type CollabThreadInput = {
   // `commented` and `comment_resolved` say who. Unknown, the card names `latestAuthorName` or no one.
   latestAuthorId?: string | null;
   resolvedById?: string | null;
+  // Who mentioned each person in `mentionedIds`: the author of the latest comment that mentioned them (a comment
+  // mentioning its own author names no one), so a later reply never changes it. Absent: unknown.
+  mentionedBy?: Record<string, CollabMentioner>;
   firstAt: number;
   latestAt: number;
   // A card's thread rather than an element's (pushed under COLLAB_CARDS_TAB, `elementId` the card's id).
@@ -162,6 +165,9 @@ export type CollabCard = {
 };
 
 export type CardColumn = { name: string; color?: string; done: boolean };
+
+/** Who mentioned someone in a thread: their id (null when the comment had none), name and avatar colour. */
+export type CollabMentioner = { id: string | null; name: string; color?: string };
 
 export type ActionStatus = 'open' | 'done' | 'wont-do';
 
@@ -226,10 +232,12 @@ type InboxPlace = {
 export type InboxThread = InboxPlace &
   Omit<
     CollabThreadInput,
-    'participantIds' | 'mentionedIds' | 'agentIds' | 'latestAuthorColor' | 'card'
+    'participantIds' | 'mentionedIds' | 'agentIds' | 'latestAuthorColor' | 'card' | 'mentionedBy'
   > & {
     latestAuthorColor: string;
     card: CollabCard | null;
+    // Who mentioned the reader, when they are mentioned and the app said who; absent or null otherwise.
+    mentionedBy?: CollabMentioner | null;
     // Why the person sees it: they are @-mentioned in it, they commented in it, the item is theirs.
     mentionsYou: boolean;
     youCommented: boolean;

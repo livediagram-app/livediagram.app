@@ -323,6 +323,13 @@ function cutThread(thread: CollabThreadInput): CollabThreadInput {
     mentionedIds: cutIds(thread.mentionedIds),
   };
   if (thread.agentIds !== undefined) out.agentIds = cutIds(thread.agentIds);
+  // Who mentioned whom, for the ids the cut kept.
+  if (thread.mentionedBy !== undefined && out.mentionedIds !== thread.mentionedIds) {
+    const kept = new Set(out.mentionedIds);
+    out.mentionedBy = Object.fromEntries(
+      Object.entries(thread.mentionedBy).filter(([id]) => kept.has(id)),
+    );
+  }
   return out;
 }
 

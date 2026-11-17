@@ -6,6 +6,7 @@ import {
   type CardColumn,
   type CollabActionInput,
   type CollabCard,
+  type CollabMentioner,
   type CollabThreadInput,
 } from '@liveworkspace/index-client';
 import { isId, isPartId } from './codec';
@@ -92,6 +93,30 @@ export function parseColumn(value: unknown): CardColumn | null {
   };
 }
 
+/** Who mentioned each person, for the ids in `mentionedIds` alone (so it is bounded as they are): a malformed entry,
+ *  or one for an id not mentioned, is dropped, never the push refused. Undefined when none is left. */
+export function parseMentionedBy(
+  value: unknown,
+  mentionedIds: readonly string[],
+): Record<string, CollabMentioner> | undefined {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined;
+  const by = value as Record<string, unknown>;
+  const out: [string, CollabMentioner][] = [];
+  for (const id of mentionedIds) {
+    if (!Object.hasOwn(by, id)) continue;
+    const m = by[id] as Record<string, unknown> | null;
+    if (!m || typeof m !== 'object') continue;
+    const name = clip(m.name, LABEL_MAX);
+    const color = m.color === undefined ? '' : clip(m.color, COLOR_MAX);
+    if (name === null || color === null || !nullableId(m.id ?? null)) continue;
+    out.push([
+      id,
+      { id: (m.id as string | null | undefined) ?? null, name, ...(color ? { color } : {}) },
+    ]);
+  }
+  return out.length > 0 ? Object.fromEntries(out) : undefined;
+}
+
 export function parseThread(value: unknown): CollabThreadInput | null {
   const t = value as Record<string, unknown> | null;
   if (!t || typeof t !== 'object') return null;
@@ -121,6 +146,7 @@ export function parseThread(value: unknown): CollabThreadInput | null {
   ) {
     return null;
   }
+  const mentionedBy = parseMentionedBy(t.mentionedBy, mentionedIds);
   return {
     elementId: t.elementId,
     elementLabel,
@@ -129,6 +155,7 @@ export function parseThread(value: unknown): CollabThreadInput | null {
     participantIds,
     mentionedIds,
     ...(agentIds.length > 0 ? { agentIds } : {}),
+    ...(mentionedBy ? { mentionedBy } : {}),
     latestText,
     latestAuthorName,
     latestAuthorColor,

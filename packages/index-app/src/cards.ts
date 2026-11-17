@@ -15,6 +15,7 @@ import {
   COLLAB_MAX_THREADS,
   type CollabActionInput,
   type CollabCard,
+  type CollabMentioner,
   type CollabPush,
   type CollabThreadInput,
 } from '@liveworkspace/index-client';
@@ -94,12 +95,26 @@ export async function cardsCollabPush(
       const participants: string[] = [];
       const agents: string[] = [];
       const mentioned: string[] = [];
+      // Who mentioned each person: the author of the latest comment naming them, never themselves
+      // (one-explorer-contracts.md "What an item pushes", `mentionedBy`).
+      const mentionedBy = new Map<string, { at: number; who: CollabMentioner }>();
       for (const m of comments) {
         if (m.createdAt < first.createdAt) first = m;
         if (m.createdAt >= latest.createdAt) latest = m;
         const by = m.ai ? agents : participants;
         if (m.authorId && !by.includes(m.authorId)) by.push(m.authorId);
-        for (const id of m.mentionIds ?? []) if (!mentioned.includes(id)) mentioned.push(id);
+        for (const id of m.mentionIds ?? []) {
+          if (!mentioned.includes(id)) mentioned.push(id);
+          if (id === m.authorId || (mentionedBy.get(id)?.at ?? -Infinity) > m.createdAt) continue;
+          mentionedBy.set(id, {
+            at: m.createdAt,
+            who: {
+              id: m.authorId || null,
+              name: m.authorName,
+              ...(m.authorColor ? { color: m.authorColor } : {}),
+            },
+          });
+        }
       }
       // Someone who also wrote themselves is a participant alone.
       const agentOnly = agents.filter((id) => !participants.includes(id));
@@ -112,9 +127,13 @@ export async function cardsCollabPush(
         participantIds: participants,
         mentionedIds: mentioned,
         ...(agentOnly.length > 0 ? { agentIds: agentOnly } : {}),
+        ...(mentionedBy.size > 0
+          ? { mentionedBy: Object.fromEntries([...mentionedBy].map(([id, m]) => [id, m.who])) }
+          : {}),
         latestText: latest.text,
         latestAuthorName: latest.authorName,
         latestAuthorColor: latest.authorColor,
+        latestAuthorId: latest.authorId || null,
         firstAt: first.createdAt,
         latestAt: latest.createdAt,
         // A thread's card carries no days: those ride the card's own actions, for the calendar feed.
