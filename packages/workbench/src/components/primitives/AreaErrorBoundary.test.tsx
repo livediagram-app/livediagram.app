@@ -11,6 +11,8 @@ vi.mock('../../lib/stale-build-navigation', () => ({
   recoverInBrowser: (...a: unknown[]) => recover(...a),
 }));
 
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { act, useLayoutEffect } from 'react';
 import { createAreaErrorBoundary } from './AreaErrorBoundary';
 
@@ -45,6 +47,29 @@ describe('AreaErrorBoundary', () => {
       </AreaErrorBoundary>,
     );
     expect(track).toHaveBeenCalledWith('Error', 'Client', 'Render.Canvas.TypeError');
+  });
+
+  it('shows its fallback for any throw and passes the original error to the console', () => {
+    const thrown = new RangeError('Maximum update depth exceeded');
+    function Loop(): never {
+      throw thrown;
+    }
+    render(
+      <AreaErrorBoundary area="Canvas" fallback="panel">
+        <Loop />
+      </AreaErrorBoundary>,
+    );
+    expect(screen.getByRole('alert').textContent).toContain('Something went wrong in the canvas.');
+    expect(quiet).toHaveBeenCalledWith('Canvas failed to render.', thrown, expect.any(String));
+    expect(track).toHaveBeenCalledWith('Error', 'Client', 'Render.Canvas.RangeError');
+  });
+
+  // The editor build renamed the factory's parameters but not a nested class body's uses of them, so the fallback
+  // threw "labels is not defined" (Work Tracker 1169). The class must take them as props, at module scope.
+  it('keeps the boundary class out of the factory', () => {
+    const source = readFileSync(join(import.meta.dirname, 'AreaErrorBoundary.tsx'), 'utf8');
+    expect(source).not.toMatch(/^\s+class /m);
+    expect(source).toMatch(/^class Boundary extends Component/m);
   });
 
   it('keeps the rest of the page and offers a retry that remounts the area', () => {
