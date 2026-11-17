@@ -11,7 +11,7 @@ import {
 } from '@livedocuments/document';
 import { blocksToDoc } from './article-convert';
 import { articleSchema as S } from './article-schema';
-import { articleCountsOf, wordCountLabel } from './article-word-count';
+import { articleCountsOf, wordCountLabel, wordCountLine } from './article-word-count';
 
 // docs/specs/007-editor/article-pages.md "Word Count": the caret's article, and the selection beside it, counted as
 // agents' page summaries count them.
@@ -46,7 +46,7 @@ describe('articleCountsOf', () => {
       '# A title\n\nOne two three[^1] four.\n\n| cell one | two |\n|---|---|\n| three | |\n\n```\ncode words\n```\n\n[^1]: the note text',
     );
     const counts = articleCountsOf(stateOf(flow.blocks));
-    expect(counts).toEqual({ total: articleWordCount(flow), selected: null });
+    expect(counts).toMatchObject({ total: articleWordCount(flow), selected: null });
     // Title 2, paragraph 4 plus the note's 3, the table's 4, the code's 2: the marker is no word.
     expect(counts.total).toBe(15);
   });
@@ -55,7 +55,7 @@ describe('articleCountsOf', () => {
     const state = stateOf(md('Alpha beta gamma delta.\n\nEpsilon zeta.').blocks);
     const from = posOf(state, 'beta');
     const counts = articleCountsOf(select(state, from, from + 'beta gamma'.length));
-    expect(counts).toEqual({ total: 6, selected: 2 });
+    expect(counts).toMatchObject({ total: 6, selected: 2 });
     // Across two blocks: the words in each part.
     const across = articleCountsOf(select(state, posOf(state, 'delta'), posOf(state, 'zeta') + 2));
     expect(across.selected).toBe(3);
@@ -65,7 +65,7 @@ describe('articleCountsOf', () => {
     const state = stateOf(md('Alpha[^1] beta.\n\n[^1]: gamma delta').blocks);
     const from = posOf(state, 'Alpha');
     const to = posOf(state, 'beta') + 'beta.'.length;
-    expect(articleCountsOf(select(state, from, to))).toEqual({ total: 4, selected: 4 });
+    expect(articleCountsOf(select(state, from, to))).toMatchObject({ total: 4, selected: 4 });
   });
 
   it('counts only the cells a cell selection holds', () => {
@@ -88,7 +88,7 @@ describe('articleCountsOf', () => {
     const sel = state.apply(
       state.tr.setSelection(CellSelection.create(state.doc, cells[0]!, cells[2])),
     );
-    expect(articleCountsOf(sel)).toEqual({ total: 9, selected: 5 });
+    expect(articleCountsOf(sel)).toMatchObject({ total: 9, selected: 5 });
   });
 
   it('counts a long article well inside a frame', () => {
@@ -104,7 +104,10 @@ describe('articleCountsOf', () => {
       total = articleCountsOf(state).total;
     });
     expect(total).toBe(100_000);
-    expect(spent).toBeLessThan(cpuBudgetMs(60));
+    // The count and readability together, over the same blocks: about 60 ms cold, a third of it readability
+    // (its first run, before the JIT warms; under 10 ms once warm).
+    expect(articleCountsOf(state).readability?.sentences).toBe(2000);
+    expect(spent).toBeLessThan(cpuBudgetMs(90));
     // The selection moving over the same writing counts only the selection.
     const moved = select(state, 1, 20);
     let selected: number | null = null;
@@ -123,5 +126,37 @@ describe('wordCountLabel', () => {
     expect(wordCountLabel({ total: 840, selected: null })).toBe('840 words');
     expect(wordCountLabel({ total: 840, selected: 12 })).toBe('12 of 840 words');
     expect(wordCountLabel({ total: 12345, selected: 1234 })).toBe('1,234 of 12,345 words');
+  });
+});
+
+// docs/specs/007-editor/article-pages.md "Word Count": the line says more, the reading time and how easily it reads.
+describe('readability on the Word Count line', () => {
+  it("reads the article's time and level, then the selection's", () => {
+    const state = stateOf(
+      md('The cat sat on the mat.\n\nThe dog ran to the park and back.').blocks,
+    );
+    const counts = articleCountsOf(state);
+    expect(counts.readability).toMatchObject({ sentences: 2, readingMinutes: 1, level: 'easy' });
+    expect(counts.selectedReadability).toBeNull();
+    expect(wordCountLine(counts)).toBe('14 words · 1 min read · Easy to read');
+    const from = posOf(state, 'dog');
+    const sel = articleCountsOf(select(state, from, from + 'dog ran'.length));
+    expect(sel.selectedReadability).toMatchObject({ sentences: 1, readingMinutes: 1 });
+    expect(wordCountLine(sel)).toMatch(/^2 of 14 words · 1 min read/);
+  });
+
+  it('leaves out what it has nothing to say of', () => {
+    expect(wordCountLine({ total: 0, selected: null })).toBe('0 words');
+    const state = stateOf(md('Le chat dort.').blocks);
+    expect(wordCountLine(articleCountsOf(state))).toBe('3 words · 1 min read');
+    // A selection of only spaces: no time.
+    expect(
+      wordCountLine({
+        total: 3,
+        selected: 0,
+        readability: articleCountsOf(state).readability!,
+        selectedReadability: null,
+      }),
+    ).toBe('0 of 3 words');
   });
 });

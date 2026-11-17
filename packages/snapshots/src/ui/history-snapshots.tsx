@@ -11,7 +11,7 @@
 import { lazy, Suspense, useMemo, useState, type ComponentType, type ReactNode } from 'react';
 import { useSnapshotsDoor, type SnapshotsDoor } from './door';
 import { SnapshotGlyph } from './glyphs';
-import { SnapshotNotices, TakeSnapshotForm } from './snapshot-parts';
+import { SnapshotButton, SnapshotNotices } from './snapshot-parts';
 import { SnapshotRow, type RowConfirm } from './SnapshotRow';
 import { useSnapshots } from './useSnapshots';
 
@@ -22,7 +22,7 @@ const SnapshotsDialog = lazy(() =>
 /** One entry History lays on its rail among its own, newest first by `at`. */
 export type HistoryPin = { key: string; at: number; render: (last: boolean) => ReactNode };
 /** What a tool adds to History: a block over the timeline, and entries on it. */
-export type HistoryExtras = { top?: ReactNode; pins: readonly HistoryPin[] };
+export type HistoryExtras = { action?: ReactNode; top?: ReactNode; pins: readonly HistoryPin[] };
 
 /** The History host's view of Snapshots: the hook its timeline calls, and Snapshots on their own. */
 export type HistorySnapshotsHost = {
@@ -36,12 +36,15 @@ export function useSnapshotsExtras(door: SnapshotsDoor, now = Date.now): History
   const [confirm, setConfirm] = useState<RowConfirm>(null);
   const [at] = useState(now);
   const working = state.busy !== null || state.reverted;
-  const top = (
-    <div data-history-snapshots="" className="flex flex-col gap-2">
-      <TakeSnapshotForm state={state} className="" />
-      <SnapshotNotices state={state} className="" />
-    </div>
-  );
+  // The Snapshot button sits full width at History's foot; the notices under the filter.
+  const action = <SnapshotButton state={state} />;
+  // Only while there is a notice: an empty block drew a second rule under the filter.
+  const top =
+    state.error || state.reverted ? (
+      <div data-history-snapshots="" className="flex flex-col gap-2">
+        <SnapshotNotices state={state} className="" />
+      </div>
+    ) : null;
   const pins: HistoryPin[] = (state.snapshots ?? []).map((snapshot) => ({
     key: `snapshot:${snapshot.id}`,
     at: snapshot.createdAt,
@@ -87,7 +90,7 @@ export function useSnapshotsExtras(door: SnapshotsDoor, now = Date.now): History
       </li>
     ),
   }));
-  return { top, pins };
+  return { action, top, pins };
 }
 
 function useDoorExtras(): HistoryExtras {

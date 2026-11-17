@@ -14,6 +14,7 @@ import { BottomSheet } from '../primitives/BottomSheet';
 import { useViewportStoreIfAny } from '../../hooks/canvas/useViewportStore';
 import { pageInView, type ContentsPageRect, type ContentsRowBase } from '../../lib/page-contents';
 import { ContentsList, type ContentsBadges, type ContentsListState } from './PageContentsList';
+import { ContentsSummary } from './ContentsSummary';
 
 const DockIcon = lucideGlyph(lucidePanelLeftOpen, 14);
 
@@ -39,6 +40,7 @@ export function ContentsPanel<R extends ContentsRowBase>({
   onDock,
   footer,
   badges,
+  summary = null,
   frame,
 }: {
   contents: ContentsListState<R>;
@@ -50,9 +52,11 @@ export function ContentsPanel<R extends ContentsRowBase>({
   // The list's foot: the editor's Add Page.
   footer: ReactNode;
   badges?: ContentsBadges<R> | undefined;
+  // What the header says of the whole tab beside its name (a stack's talk), or null.
+  summary?: string | null | undefined;
   // The desktop popover round the list (the editor's MovablePanel, titled Contents, over its
-  // cluster button), its header carrying `headerActions`.
-  frame: (body: ReactNode, headerActions: ReactNode) => ReactNode;
+  // cluster button), its header carrying `headerActions`, and `titleAdornment` beside its name.
+  frame: (body: ReactNode, headerActions: ReactNode, titleAdornment: ReactNode) => ReactNode;
 }) {
   // Escape closes the popover.
   useEffect(() => {
@@ -84,7 +88,13 @@ export function ContentsPanel<R extends ContentsRowBase>({
     </div>
   );
 
-  if (mobile) return <ContentsSheet onClose={onClose}>{body}</ContentsSheet>;
+  const adornment = summary ? <ContentsSummary summary={summary} /> : null;
+  if (mobile)
+    return (
+      <ContentsSheet onClose={onClose} adornment={adornment}>
+        {body}
+      </ContentsSheet>
+    );
   return frame(
     body,
     onDock ? (
@@ -100,11 +110,21 @@ export function ContentsPanel<R extends ContentsRowBase>({
         </button>
       </HoverCard>
     ) : null,
+    adornment,
   );
 }
 
 // On a phone: the list in a bottom sheet, named, closed by a swipe down, an outside press or Escape.
-function ContentsSheet({ onClose, children }: { onClose: () => void; children: ReactNode }) {
+function ContentsSheet({
+  onClose,
+  adornment,
+  children,
+}: {
+  onClose: () => void;
+  // Beside its name: what it says of the whole tab.
+  adornment: ReactNode;
+  children: ReactNode;
+}) {
   useEscape(onClose, { capture: true, stopPropagation: true });
   return (
     <BottomSheet
@@ -113,8 +133,11 @@ function ContentsSheet({ onClose, children }: { onClose: () => void; children: R
       onClose={onClose}
       zClassName="z-[var(--z-overlay)]"
     >
-      <div className="flex items-center justify-between px-4 pb-2 pt-0.5">
-        <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Contents</p>
+      <div className="flex min-w-0 items-baseline gap-2 px-4 pb-2 pt-0.5">
+        <p className="shrink-0 text-sm font-semibold text-slate-900 dark:text-slate-100">
+          Contents
+        </p>
+        {adornment}
       </div>
       {children}
     </BottomSheet>

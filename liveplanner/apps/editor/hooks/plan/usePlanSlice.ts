@@ -32,6 +32,7 @@ const NO_STATUS_BOARDS: readonly StatusBoard[] = [];
 import { moveStatusRefusal } from './status-refusal';
 import { usePlanItemWrites } from './usePlanItemWrites';
 import { usePlanElementWrites } from './usePlanElementWrites';
+import type { WarmRights } from '@/lib/last-seen-plan';
 
 // The editor's Plan slice (docs/specs/026-plan/blueprints/plan-board.md "Editor components"): the
 // open item panel and board set-up, and the actions boards and cards take, composed into the value
@@ -77,6 +78,8 @@ export function usePlanSlice(opts: {
   linkedActions?: PlanContextValue['linkedActions'];
   // A card's address for Copy Card Link; read when pressed, so it may change every render.
   cardLink?: (itemId: string) => string;
+  // During a warm paint, the room the board keeps for the kept role's strips (PlanContextValue.warmRights).
+  warmRights?: WarmRights;
 }) {
   const { planItems, itemTypes, canEdit, canVote, presence } = opts;
   const canEditCards = opts.canEditCards ?? canEdit;
@@ -291,6 +294,7 @@ export function usePlanSlice(opts: {
       createTypeForBoard,
       ...(opts.newFormFor && canEdit ? { newFormFor: opts.newFormFor } : {}),
       ...(opts.linkedActions ? { linkedActions: opts.linkedActions } : {}),
+      ...(opts.warmRights ? { warmRights: opts.warmRights } : {}),
       status: planItems.status,
       self: planItems.self,
       people,
@@ -344,6 +348,7 @@ export function usePlanSlice(opts: {
       itemTypes,
       editType,
       createTypeForBoard,
+      opts.warmRights,
       planItems.status,
       planItems.self,
       planItems.refetch,

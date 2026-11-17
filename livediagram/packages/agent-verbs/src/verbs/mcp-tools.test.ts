@@ -29,6 +29,7 @@ describe('the MCP tool verbs', () => {
       'change_threads',
       'view_tab',
       'view_live',
+      'view_edit',
     ]);
     for (const v of MCP_TOOL_VERBS) {
       expect(v.id).toBe(`mcp.${v.mcp.tool}`);

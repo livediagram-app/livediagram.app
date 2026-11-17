@@ -61,7 +61,6 @@ import {
   helpHrefFor,
   itemHref,
   defaultFolderOptionsFor,
-  lensModesFor,
   lensTemplatesFor,
   newItemHref,
   templateHref,
@@ -441,6 +440,7 @@ export function ExplorerShell() {
           inbox={inbox}
           gallery={library.gallery}
           shapeLibraries={library.shapeLibraries}
+          walkthroughs={library.walkthroughs}
           imports={imports}
           itemMenu={itemMenu}
           heroHidden={settings.heroHidden}
@@ -448,7 +448,6 @@ export function ExplorerShell() {
           onHome={trackHome}
           onOrganise={trackOrganise}
           lensTemplates={lensTemplatesFor(app)}
-          lensModes={lensModesFor(app)}
           defaultFolderOptions={defaultFolderOptionsFor(app)}
           onLensSelected={trackLens}
           onViewToggled={trackViewToggled}

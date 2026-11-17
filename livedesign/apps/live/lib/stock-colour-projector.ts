@@ -19,14 +19,14 @@ import {
   elementPageTones,
   resolveStockColours,
   viewElementInTheme,
-  withPaperLabelInks,
-  withPaperMarkInks,
-  withReadableLabelInks,
   type CanvasSurface,
   type Element,
   type LaidOutPage,
 } from '@livedesign/design';
 import { CANVAS_PAPER } from '@/lib/page-paint';
+import { reinkOnPaper, type InkedBoard } from './paper-reink';
+
+export { inkedOnPaper } from './paper-reink';
 
 const NO_THEME_MAP: ReadonlyMap<string, string> = new Map();
 
@@ -34,25 +34,6 @@ const NO_THEME_MAP: ReadonlyMap<string, string> = new Map();
  *  mode): what a label on a page with no fill of its own is read against. */
 export function plainPaper(surface: CanvasSurface): { stored: string; drawn: string } {
   return { stored: CANVAS_PAPER.light, drawn: CANVAS_PAPER[surface] };
-}
-
-/** `drawn` (the elements `stored` drawn on `canvases.drawn`) with what the redraw sank lifted off the paper, in
- *  order: ink marks straight on the plain paper ("Ink marks on the plain paper stay seen"), then labels under 3:1
- *  against what is behind them, then words straight on the plain paper at the contrast they were made with. The canvas
- *  (createStockColourProjector) and the layout picker's tiles (layout-render-thumb.tsx) draw through it, so a tile
- *  matches the page. The same array when nothing changes. */
-export function inkedOnPaper(
-  stored: readonly Element[],
-  drawn: readonly Element[],
-  canvases: { stored: string; drawn: string },
-): readonly Element[] {
-  const marked = withPaperMarkInks(stored, canvases.stored, drawn, canvases.drawn);
-  return withPaperLabelInks(
-    stored,
-    canvases.stored,
-    withReadableLabelInks(stored, canvases.stored, marked, canvases.drawn),
-    canvases.drawn,
-  );
 }
 
 /** The surface of each element on a page with its own fill (elementPageSurfaces), the theme map
@@ -131,6 +112,8 @@ export function createStockColourProjector(): StockColourProjector {
   let lastOut: Element[] = [];
   let lastSurfaces: PageView['surfaces'] | null = null;
   let lastPageView: PageView | undefined;
+  // The last walk off the paper, so an edit re-inks only what it changed (paper-reink.ts, Work Tracker 963).
+  let lastInk: InkedBoard | null = null;
   const project: StockColourProjector = (
     elements,
     surface,
@@ -154,6 +137,7 @@ export function createStockColourProjector(): StockColourProjector {
       cache = new WeakMap();
       inkCache = new WeakMap();
       lastIn = null;
+      lastInk = null;
     }
     const surfaces = pageView?.surfaces ?? null;
     if (elements === lastIn && surfaces === lastSurfaces) return lastOut;
@@ -174,9 +158,12 @@ export function createStockColourProjector(): StockColourProjector {
     lastIn = elements;
     lastOut = changed ? out : elements;
     // Labels against what is behind them: only when the redraw changed an element or the canvas, so a tab drawn as
-    // stored is free. A label given the same ink as last time keeps last time's object, so its view stays quiet.
-    if (canvases && (changed || canvases.stored !== canvases.drawn)) {
-      const inked = inkedOnPaper(elements, lastOut, canvases);
+    // stored is free. A label given the same ink as last time keeps last time's object, so its view stays quiet. An
+    // edit re-inks only what it changed and what that could sink or lift (reinkOnPaper).
+    if (!canvases || !(changed || canvases.stored !== canvases.drawn)) lastInk = null;
+    else {
+      lastInk = reinkOnPaper(lastInk, elements, lastOut, canvases);
+      const inked = lastInk.inked;
       if (inked !== lastOut)
         lastOut = inked.map((el, i) => {
           if (el === lastOut[i]) return el;

@@ -52,8 +52,11 @@ at the bottom centre of the canvas, in place: the canvas stays where it is and s
 3. **While recording** the dock is a compact bar: a pulsing red dot, the time so far against ten minutes
    (`1:24 / 10:00`, amber in the last minute with "1 minute left"), the level meter, Hide From Recording, **Finish**
    and **Discard**. At ten minutes it finishes on its own and says so.
+   The count and the bar sit **under the palette strip**, where its tray's hints go ("Click to drop…"; owner,
+   2026-11-17), shaped like that tray (a 12 px card whose controls nest 4 px in); without a strip, at the bottom
+   centre of the canvas.
 4. **Save.** The dock shows the length and a **Title** field (it starts as "Walkthrough of <tab name>"), with
-   **Save** and **Discard**. Save uploads it, showing that it is uploading; when it is stored the Walkthroughs panel lists it.
+   **Save** and **Discard**. Save uploads it, showing that it is uploading; when it is stored, Tools opens again at the Walkthroughs list with it at the top.
    A refusal says why in the dock ("This walkthrough is over 40 MB", "You have 50 walkthroughs already. Delete one to
    save another.") and keeps the recording so you can **Download a Copy** rather than lose it.
 
@@ -66,7 +69,8 @@ A selection mode that picks elements viewers of the walkthrough won't see: a pri
 name you shouldn't show.
 
 - **Hide From Recording** in the dock turns the mode on: the pointer becomes a crosshair, and each element you
-  press is hidden from the recording (press it again to show it). Presses do nothing else while the mode is on.
+  press is hidden from the recording (press it again to show it), and every arrow attached to it goes with it (an
+  arrow pinned to it, or to an arrow that goes). Presses do nothing else while the mode is on.
   **Hide Selection** hides what is already selected. The button's badge counts what is hidden, and **Done** (or
   `Esc`) leaves the mode.
 - **You still see them**, faded inside a dashed outline, so you know what the recording leaves out. Viewers of the

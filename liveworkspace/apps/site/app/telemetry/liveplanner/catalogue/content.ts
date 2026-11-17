@@ -1472,8 +1472,8 @@ export const FORMS_CREATED = chart(
   'Form',
   'Created',
   'Forms Started',
-  "A Form tab started from Start Planning, by its starter, or made from a board's cog.",
-  { types: [...FORM_STARTERS.map((s) => s.telemetry), 'FromBoard'] },
+  "A Form tab started from Start Planning, by its starter, made from a board's cog, or made by Publish as Roadmap's Create a Suggestion Form.",
+  { types: [...FORM_STARTERS.map((s) => s.telemetry), 'FromBoard', 'Roadmap'] },
 );
 
 export const FORM_QUESTIONS_ADDED = chart(

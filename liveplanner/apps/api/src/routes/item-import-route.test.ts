@@ -14,6 +14,7 @@ import {
   type TrackerCreate,
 } from '@liveplanner/items';
 import { withImportedThreads, type ImportedCreate } from '@liveplanner/project';
+import type { ItemDb } from '@liveworkspace/index-app';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import {
   ITEM_IMPORT_HOLD_MS,
@@ -375,13 +376,15 @@ describe('an import at the caps', { timeout: 30_000 }, () => {
 });
 
 // docs/specs/026-plan/blueprints/tracker-import.md "Performance and limits": the landing reads every held card into the
-// plan's Durable Object (128 MB), so an import's JSON is capped (ITEM_IMPORT_JSON_MAX) and an import at that cap lands
-// under the 64 MB budget. The peak is the live heap (a forced collection before each sample) at every write batch and
-// room relay of the last part, over the heap before it; measured about 57 MB. The budget is memory, not time: a forced
-// collection at every batch and relay makes the landing take about 2.5 s on CI and over 5 s (the default timeout) on a
-// loaded coverage run, so the timeout is wide on purpose.
-describe('the landing’s memory', { timeout: 30_000 }, () => {
-  const LANDING_HEAP_BUDGET = 64 * 1024 * 1024;
+// plan's Durable Object (128 MB), so an import's JSON is capped (ITEM_IMPORT_JSON_MAX), read back a part at a time and
+// written a statement at a time, and an import at that cap lands under 48 MB. The peak is the live heap (a forced
+// collection before each sample) at every read and batch, every 100th statement the landing's transaction runs, and
+// every room relay of the last part, over the heap before it: measured 45 MB, its peak now the relays and the 201
+// answer after the write (62 MB when the batch held every statement at once). The budget is memory, not time: a forced
+// collection at each sample makes the landing take seconds on a loaded coverage run, so the timeout is wide on purpose.
+describe('the landing’s memory', { timeout: 60_000 }, () => {
+  const LANDING_HEAP_BUDGET = 48 * 1024 * 1024;
+  const SAMPLE_EVERY = 100;
 
   it('lands an import at the JSON cap under the memory budget', async () => {
     // A full plan (ITEMS_MAX cards) and 20,000 comments, each card's description sized so the import sits just under
@@ -403,16 +406,29 @@ describe('the landing’s memory', { timeout: 30_000 }, () => {
     const heap = () => getHeapStatistics().used_heap_size;
     let sampling = false;
     let peak = 0;
+    let streamed = 0;
     const sample = () => {
       if (!sampling) return;
       gc();
       peak = Math.max(peak, heap());
     };
-    const db = sql.env.PLAN_DB;
-    const batch = db.batch.bind(db);
-    db.batch = (stmts) => {
+    const db = sql.env.PLAN_DB as unknown as ItemDb;
+    const batchEach = db.batchEach.bind(db);
+    db.batchEach = (stmts) =>
+      batchEach(
+        (function* () {
+          sample();
+          for (const s of stmts) {
+            streamed += 1;
+            if (streamed % SAMPLE_EVERY === 0) sample();
+            yield s;
+          }
+        })(),
+      );
+    const execute = db.execute.bind(db);
+    db.execute = (stmt) => {
       sample();
-      return batch(stmts);
+      return execute(stmt);
     };
     // The test's own record of the relays would grow with them: the room takes each op and keeps none.
     onRelay = () => {
@@ -428,6 +444,9 @@ describe('the landing’s memory', { timeout: 30_000 }, () => {
     expect(landed.body.items).toHaveLength(ITEMS_MAX);
     expect(count('items')).toBe(ITEMS_MAX);
     expect(count('item_import_parts')).toBe(0);
+    console.info('[test] landing peak MB', ((peak - before) / 1048576).toFixed(1));
+    // The landing's statements ran through the stream: rows, rev raises and a thread and its link per card.
+    expect(streamed).toBeGreaterThan(2 * ITEMS_MAX);
     expect(peak - before).toBeGreaterThan(0);
     expect(peak - before).toBeLessThan(LANDING_HEAP_BUDGET);
   });

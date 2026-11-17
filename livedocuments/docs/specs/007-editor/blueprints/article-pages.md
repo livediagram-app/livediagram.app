@@ -367,7 +367,31 @@ caretOf(state))` (editable only), and `setActiveArticle({ handle, pageId, select
   `articleWordCount({ blocks: docToBlocks(doc) })`, and `selected`, with a non-empty selection, the sum over
   `selection.ranges` of `articleWordCount({ blocks: docToBlocks(doc.cut(from, to)) })` (a cell selection counts
   its cells only), else null. `wordCountLabel` writes "1 word", "840 words" or "12 of 840 words" (`en` digit
-  grouping). A `role="group"` line under a rule, `aria-label` "Word Count: <label>", no menu item.
+  grouping). The same blocks give `readability` (the article's) and `selectedReadability` (the selection's, else
+  null): `articleReadability(flow, words)` (`packages/document/src/article-readability.ts`), one left-to-right pass
+  per prose block (`paragraph` and `list` blocks; never code, tables or a footnote's note, a run with `fn` read as a
+  space) through `sentencesOf(text)`: no regex over the text, each character looked at once. It returns
+  `{ readingMinutes, sentences, wordsPerSentence, longSentences, ease, level }`: `readingMinutes` is
+  `max(1, round(words / READING_WORDS_PER_MINUTE))` (0 for no words); `ease` is
+  `fleschReadingEase(words, sentences, syllables)` (206.835 − 1.015 × words a sentence − 84.6 × syllables a word,
+  one decimal) or null when the prose is not English (at least `ENGLISH_SHARE` (0.15) of its first `ENGLISH_SAMPLE` (2,000) words
+  in `ENGLISH_MARKERS`) or has no sentence; `level` is `readingLevelOf(ease)`: `easy` (≥ 80), `fairlyEasy` (≥ 70),
+  `plain` (≥ 60), `fairlyHard` (≥ 50), `hard`. `wordCountLine(counts)` writes the line ("840 words · 4 min read ·
+  Easy to read") and `readabilityDetail(r)` the hover's numbers. A sentence (`sentencesOf`): its words are the
+  whitespace-separated tokens holding a letter or digit; a token ends one when, past its closing quotes and brackets,
+  it ends in `!`, `?`, `…` or `.`, except a `.` token that is in `ABBREVIATIONS`, a single letter, or has a `.`
+  inside (`e.g.`), and a `.` token followed by a token whose first letter is lower case (the decision waits for the
+  next token, so the pass never looks back). Syllables (`syllablesOf`): the groups of vowels (`aeiouy`), one fewer
+  for a silent final `e` (not `-le` after a consonant), at least one; a token with no letter is one.
+  The line (`WordCountLine`): with `readability.longSentences > 0` and an `onNextLong`, a `role="menuitem"` button,
+  `aria-label` "Word Count: <line>. Select the Next Long Sentence", that runs `selectNextLongSentence`
+  (`lib/article/article-long-sentences.ts`): it walks the doc's textblocks outside tables and code blocks, each one's
+  text with every inline leaf as one space (so offset i is position start + i), through `sentencesOf`, keeps those
+  over `LONG_SENTENCE_WORDS`, and sets a `TextSelection` over the first starting after the selection's `from` (an
+  empty selection: at or after it), else the first, with `scrollIntoView`; then the menu closes and the writing
+  takes focus (`close`), and `UI · Used · LongSentenceSelected` is sent. Otherwise a `role="group"` line under a
+  rule, `aria-label` "Word Count: <line>", no menu item. Either way a `HoverCard` titled "Readability" holds
+  `readabilityDetail`.
 - **Insert**: blocks through `handle.insert` (divider; page break + paragraph; quote paragraph;
   code block); objects through `articles.insertObject(handle.flow, what)`, and Comment / Assign
   Action through `articles.addNote(handle.flow, kind)`: the article the toolbar shows for, worked
@@ -608,6 +632,12 @@ caret)`; `syncArticlePeople(participants)` names and colours carets and drops th
     (`committed`'s copy) and the commit is tried again once the claim is answered; on `refused`, the writing puts the
     block back as `committed` has it (an `article-remote` transaction, nothing committed) and says
     `announceArticleHeld(name)`.
+  - Undo and redo (`apps/editor/lib/article/article-hold-undo.ts`, `keepHeldWriting(from, onto, heldIn)`, wired in
+    `useDocumentHistory`'s `undo` and `redo` as `historyKeepingHeld(prev, next)` with `peerHeldBlocks(tabId, flow)`
+    from the store): for each tab and article in both the present (`from`) and the restored snapshot (`onto`), each
+    block a peer holds (a held cell's table) is put back as the present has it: replaced where the snapshot has another
+    copy, put in after the nearest block before it that the snapshot keeps (else first) where the snapshot has none.
+    Nothing held, or nothing different, returns `onto` itself. An article absent from the snapshot is left absent.
   - Peers' holds (same store): `receiveArticleHold(from, hold)`, `syncArticleHolders(participants)` (names, colours,
     the holds of anyone who left), `resetArticleHolds()` when the room closes; a hold not said again within
     `ARTICLE_HOLD_EXPIRE_MS` is dropped by a sweep. `useArticleHolds(flow)` answers this tab's holds in that article
@@ -755,7 +785,13 @@ ops): ArticleFlow` (never empty). For any `a`, `b`: `applyArticleOps(a, diffArti
   toolbar while open): `docToBlocks` and `articleWordCount`, O(characters), about 25 ms of CPU for a 2,000-paragraph,
   100,000-word article (budget 60 ms, `article-word-count.test.ts`). The total is kept per doc node (a `WeakMap`), so
   a selection moving over unchanged writing counts only the selection (budget 5 ms). With the menu shut, typing never
-  reaches it.
+  reaches it. Readability reads the same blocks and is kept with the total per doc node: one more look at each
+  character (`sentencesOf`, linear, no backtracking, nothing allocated per token but a short marker's slice), the
+  language judged on the first `ENGLISH_SAMPLE` (2,000) words. Measured on the 100,000-word article: about 60 ms cold
+  for the count and readability together, readability about 20 ms of it on its first run and under 10 ms warm
+  (budget 90 ms, `article-word-count.test.ts`); `sentencesOf` takes 50,000 spaces, dots or digits in under 20 ms
+  (`article-readability.test.ts`). Selecting the next long sentence walks the doc once, on the pick only (budget
+  80 ms for 2,000 paragraphs, `article-long-sentences.test.ts`).
 
 ## Presentation and UX
 
@@ -844,6 +880,7 @@ ended`, `articles turned into pages`. Page-level edits log `[page] …` (Pages
 | A claim through `sequence`, refreshed by `send`, released once                                                                                                                                                     | `apps/editor/hooks/collab/useArticleHoldBroadcast.test.tsx`                                                                   |
 | Held blocks outlined with a name chip; typing, cell edits and a table's shape refused; two writers in one paragraph never lose words; a keystroke's cost with holds (5,000 paragraphs, budget 8 ms)                | `apps/editor/lib/article/article-holds.test.ts`                                                                               |
 | A pending claim commits its block as it was; a refused one is put back with the notice                                                                                                                             | `article-hold-commit.test.ts`, `apps/editor/components/canvas/article/useWritingHolds.test.tsx`                               |
+| An undo or redo keeps a peer-held block as its writer has it (replaced or put back in place), and a restore during a hold keeps their words                                                                        | `article-hold-undo.test.ts`, `apps/editor/hooks/canvas/useDocumentHistory.test.ts`                                            |
 | A peer's hold arriving from the room                                                                                                                                                                               | `apps/editor/app/document/[id]/room-op-article-hold.test.ts`                                                                  |
 | Zones settle with their elements, never swap, drawing clip, objects whole                                                                                                                                          | `packages/document/src/article-zones.test.ts`                                                                                 |
 | Margin notes: place, follow, stack, untint, go with their text                                                                                                                                                     | `packages/document/src/article-notes.test.ts`                                                                                 |
@@ -860,6 +897,7 @@ ended`, `articles turned into pages`. Page-level edits log `[page] …` (Pages
 | Into pages never takes an article's pages                                                                                                                                                                          | `packages/document/src/paginate.test.ts` "never replaces a locked page or an article page"                                    |
 | Export cuts a drawing at its zone                                                                                                                                                                                  | `apps/editor/lib/export-tab.test.ts` "an article page export cuts a drawing off at its zone"                                  |
 | A finger on a page: pans past the slop, a tap short of it, a second finger or a cancel no tap                                                                                                                      | `apps/editor/components/canvas/article/useTouchPagePan.test.tsx`                                                              |
+| A tap on a phone puts the caret in the paragraph tapped and typing lands there, also after Add Article took the caret to a new Title (Work Tracker 978)                                                            | `apps/editor/e2e/article-phone-tap.spec.ts`                                                                                   |
 | Reading frame                                                                                                                                                                                                      | `apps/editor/lib/reading-frame.test.ts` "computeReadingFrame"                                                                 |
 | Article edits through the page panel (add, turn, paint, move, delete)                                                                                                                                              | `apps/editor/hooks/editor/page-edits.test.ts` "documents"                                                                     |
 | A locked page holds its article: every entry point refused, a lock landing mid-commit holds, inserts counted once in                                                                                               | `apps/editor/hooks/editor/useArticles.locks.test.ts`                                                                          |

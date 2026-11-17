@@ -8,6 +8,8 @@
 import { AUTOMATION_LATE_MAX_MS } from '@liveplanner/items';
 import { isPutAway, type ItemStanding } from '@liveworkspace/index-client';
 import { settleWaiting } from './automations/automation-log';
+import { clearAgentsFor } from './plan-room-presence';
+import { closeAllIfTrashed } from './plan-room-sockets';
 import type { PlanRoom } from './plan-room';
 
 export const STANDING_KEY = 'planStanding';
@@ -69,9 +71,20 @@ export async function applyStanding(room: PlanRoom, next: StoredStanding): Promi
   room.armAlarm();
 }
 
-// The index's push.
-export function takeStanding(room: PlanRoom, standing: ItemStanding): Promise<void> {
-  return applyStanding(room, { putAway: isPutAway(standing), at: standing.at });
+// The index's push. A newer word that the plan went to the Trash (from the editor, the Explorer, the REST API or MCP
+// alike) ends every session there (docs/specs/013-workspace/trash.md "Open editors"; Work Tracker 1141): each hears
+// project-trashed, its socket closes with 4004 and the agents' presence clears. Nothing more is kept, so a restore's
+// next join is admitted as before.
+export async function takeStanding(room: PlanRoom, standing: ItemStanding): Promise<void> {
+  const next = { putAway: isPutAway(standing), at: standing.at };
+  const fresh = room.standing.newer(next);
+  await applyStanding(room, next);
+  if (!fresh || !standing.trashed) return;
+  const op = { kind: 'project-trashed' };
+  room.broadcastSystemOp(op);
+  const closed = closeAllIfTrashed(room, op);
+  await clearAgentsFor(room, op);
+  console.info('[standing] trashed', { closed });
 }
 
 // A grant handed to the room (an API request's, a session's renewal). A failure is logged, never the caller's.

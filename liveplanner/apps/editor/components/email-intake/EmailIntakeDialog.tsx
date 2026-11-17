@@ -13,13 +13,14 @@ import type {
 import {
   Button,
   ConfirmPopover,
-  LoadingSweep,
   Select,
   lucideGlyph,
   relativeSince,
   useCopiedFlash,
 } from '@liveplanner/ui';
 import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { ToolExplainer } from '@liveworkspace/ui/tool-explainer';
+import { emailToBoardArt } from '@liveworkspace/ui/tool-explainer-art';
 import { lucideMail } from '@liveworkspace/icons/lucide';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
@@ -202,12 +203,7 @@ export function EmailIntakeDialog({
         className="scrollbar-slim flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-contain px-4 py-4 sm:px-6"
         data-email-intake-state={state}
       >
-        {state === 'loading' ? (
-          <div className="flex h-24 items-center justify-center" aria-busy="true">
-            <span className="sr-only">Loading this board’s address</span>
-            <LoadingSweep />
-          </div>
-        ) : null}
+        {state === 'loading' ? <EmailIntakeSkeleton /> : null}
         {state === 'error' ? (
           <div className="flex items-center justify-between gap-3">
             <p role="alert" className="text-sm text-slate-700 dark:text-slate-200">
@@ -269,13 +265,18 @@ export function EmailIntakeDialog({
           </p>
         ) : null}
         {state === 'off' && board ? (
-          <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-200">
-            Forward an email to this board’s own address and it becomes a card in{' '}
-            <strong className="font-semibold text-slate-900 dark:text-slate-50">
-              {board.column}
-            </strong>
-            : the subject as its title, the message as its description, pictures attached.
-          </p>
+          // The tool's explainer (footer-tools-menu.md "Explainers"): not on yet.
+          <ToolExplainer
+            art={emailToBoardArt}
+            title="Mail In, Cards Out"
+            description={`Forward an email to this board’s own address and it becomes a card in ${board.column}.`}
+            steps={[
+              'Turn it on to get the board’s own address.',
+              'Forward or send an email to it.',
+              'The subject becomes the title, the message the description, pictures attached.',
+            ]}
+            data="email-intake"
+          />
         ) : null}
         {state === 'on' && intake ? (
           <div className="flex flex-col gap-2" data-email-intake-address="">
@@ -364,5 +365,29 @@ export function EmailIntakeDialog({
         />
       ) : null}
     </Dialog>
+  );
+}
+
+const BAR = 'animate-pulse rounded bg-slate-200/80 motion-reduce:animate-none dark:bg-slate-700/60';
+const BOX = 'animate-pulse rounded-lg bg-slate-100 motion-reduce:animate-none dark:bg-slate-800/70';
+
+/** Loading, in the Off state's shape (its line, Who Can Send's two rows and the warning, the footer's room), so the
+ *  dialog does not shrink while it loads and grow when the address arrives (owner, 2026-11-17). */
+function EmailIntakeSkeleton() {
+  return (
+    <div aria-busy="true" data-email-intake-skeleton="" className="flex flex-col gap-4">
+      <span className="sr-only">Loading this board’s address</span>
+      <div className="flex flex-col gap-2 py-0.5">
+        <div className={`h-3.5 w-full ${BAR}`} />
+        <div className={`h-3.5 w-4/5 ${BAR}`} />
+      </div>
+      <div className="flex flex-col gap-2">
+        <div className={`mb-2 h-3 w-24 ${BAR}`} />
+        <div className={`h-[58px] ${BOX}`} />
+        <div className={`h-[58px] ${BOX}`} />
+        <div className={`mt-1 h-14 ${BOX}`} />
+      </div>
+      <div className="h-12" />
+    </div>
   );
 }

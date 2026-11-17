@@ -714,6 +714,44 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "ArticleReadabilitySummary": {
+    "additionalProperties": false,
+    "properties": {
+      "ease": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "level": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "longSentences": {
+        "type": "number"
+      },
+      "readingMinutes": {
+        "type": "number"
+      },
+      "sentences": {
+        "type": "number"
+      },
+      "wordsPerSentence": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "readingMinutes",
+      "sentences",
+      "wordsPerSentence",
+      "longSentences",
+      "ease",
+      "level"
+    ],
+    "type": "object"
+  },
   "ArticleRules": {
     "enum": [
       "none",
@@ -962,6 +1000,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "readability": {
+        "$ref": "#/components/schemas/ArticleReadabilitySummary"
+      },
       "title": {
         "type": "string"
       },
@@ -976,6 +1017,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "blocks",
       "words",
       "estimatedPages",
+      "readability",
       "look"
     ],
     "type": "object"
@@ -5499,6 +5541,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "array"
           },
+          "readability": {
+            "$ref": "#/components/schemas/ArticleReadabilitySummary"
+          },
           "title": {
             "type": "string"
           },
@@ -5513,6 +5558,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "flow",
           "look",
           "pages",
+          "readability",
           "title",
           "words"
         ],
@@ -5634,6 +5680,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
               },
               "type": "array"
             },
+            "readability": {
+              "$ref": "#/components/schemas/ArticleReadabilitySummary"
+            },
             "title": {
               "type": "string"
             },
@@ -5648,6 +5697,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "look",
             "markdown",
             "pages",
+            "readability",
             "title",
             "words"
           ],

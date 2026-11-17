@@ -103,6 +103,16 @@ describe('a plan view’s picture', () => {
     const svg = planViewArt(view('gantt'), linked, 'light');
     expect(svg.match(/<g opacity="1" color=/g)).toHaveLength(1);
     expect(svg.match(/<g opacity="0.4" color=/g)).toHaveLength(1);
+    expect(svg).not.toContain('data-clash');
+    // Go starting before Site is due clashes: its arrow is amber (plan-views.md "Dependency clashes").
+    const early = { ...launch, fields: { ...launch.fields, start: '2026-10-06' } };
+    const clashing = planViewArt(
+      view('gantt'),
+      { ...artData([site, done, early]), types },
+      'light',
+    );
+    expect(clashing.match(/data-clash=""/g)).toHaveLength(1);
+    expect(clashing).toContain('#d97706');
     // Without the field, no arrows.
     expect(planViewArt(view('gantt'), artData([site, done, launch]), 'light')).not.toContain(
       '<g opacity=',

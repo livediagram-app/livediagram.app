@@ -9,8 +9,9 @@
 //   the thread. A part of an element with its own thread (a liveplanner Sheet cell) is the row `<elementId>:<cell>`
 //   (one-explorer-contracts.md "What an item pushes"): found in the listing by `listedThreadKey`, and replied to with
 //   the listed thread's own element and cell.
-// - `openAction`: the item and tab the editor has open, and its own Mark Done. An element's action has no route of
-//   its own (an action's status is the people's to change, in the editor), so it is offered only there.
+// - `openAction`: the item and tab the editor has open, and its own Mark Done, used there so the canvas changes in
+//   place. Anywhere else an element's action is marked done through the app's action route
+//   (`POST /<items>/:id/tabs/:tabId/actions/:actionId/status`, livediagram's), which the open editors hear live.
 //
 // Rows from items only this browser holds are never acted on here: nothing on these pages reaches that store. A
 // Plan card is never marked done here either: done is a board's column, which the Inbox doesn't know.
@@ -60,6 +61,10 @@ const LIST_MAX = 16;
 
 const enc = encodeURIComponent;
 
+// The apps whose api marks an element's action done (livediagram's canvases). A Plan card's done is a board column.
+const ACTION_ROUTE_APPS: ReadonlySet<App> = new Set<App>(['livediagram']);
+const actionRoutes = (app: App) => ACTION_ROUTE_APPS.has(app);
+
 function itemsPath(app: App): string | null {
   return isAppName(app) ? `/${APP_ITEMS[app].apiNoun}s` : null;
 }
@@ -106,6 +111,9 @@ export function createInboxActions({ api, openAction }: InboxActionsOptions): In
       (x) => x.tabId === t.tabId && listedThreadKey(x) === t.elementId,
     ) ?? null;
 
+  const isOpenHere = (t: InboxTarget) =>
+    !!openAction && t.itemId === openAction.itemId && t.tabId === openAction.tabId;
+
   const forget = (t: InboxTarget) => lists.delete(`${t.app}:${t.itemId}`);
 
   return {
@@ -116,9 +124,7 @@ export function createInboxActions({ api, openAction }: InboxActionsOptions): In
         case 'CardThread':
           return caller(t) ? THREAD_VERBS : NONE;
         case 'Action':
-          return openAction && t.itemId === openAction.itemId && t.tabId === openAction.tabId
-            ? DONE
-            : NONE;
+          return isOpenHere(t) || (caller(t) && actionRoutes(t.app)) ? DONE : NONE;
         case 'Card':
           return NONE;
       }
@@ -167,10 +173,18 @@ export function createInboxActions({ api, openAction }: InboxActionsOptions): In
       forget(t);
     },
     done: async (t) => {
-      if (!openAction || t.itemId !== openAction.itemId || t.tabId !== openAction.tabId) {
-        throw new Error('inbox action: not open here');
+      if (isOpenHere(t)) {
+        openAction!.markDone(t.elementId, t.actionId ?? t.elementId);
+        return;
       }
-      openAction.markDone(t.elementId, t.actionId ?? t.elementId);
+      const c = caller(t);
+      if (!c || !actionRoutes(t.app)) throw new Error('inbox action: not here');
+      await c
+        .call(`${c.base}/tabs/${enc(t.tabId)}/actions/${enc(t.actionId ?? t.elementId)}/status`, {
+          method: 'POST',
+          body: { elementId: t.elementId, status: 'done' },
+        })
+        .then(ok);
     },
     loadThread: async (t, signal) => {
       // A card's comments come with the plan's whole card list: too much to read for one pane.

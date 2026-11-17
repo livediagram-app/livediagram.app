@@ -834,6 +834,16 @@ export const TEMPLATES_FROM_OTHER_MODES = chart(
   { types: ['StartOtherMode'] },
 );
 
+// The start screen's Import (docs/specs/007-editor/start-diagramming.md "Import"): its chooser opened, before a tool is
+// picked; what is then imported counts under Import.
+export const START_IMPORT_OPENED = chart(
+  'UI',
+  'Used',
+  'Start Imports Opened',
+  'Import pressed on a start screen, opening the chooser of tools to import a board from into the tab.',
+  { types: ['StartImport'] },
+);
+
 export const THEMES_CHOSEN = chart(
   'Theme',
   'Changed',
@@ -907,6 +917,7 @@ export const LOOK_AND_FEEL: MetricStack = {
     TEMPLATES_USED,
     TEMPLATE_EXAMPLES,
     TEMPLATES_FROM_OTHER_MODES,
+    START_IMPORT_OPENED,
     THEMES_CHOSEN,
     CANVAS_STYLES_PICKED,
     CANVAS_CONTROLS_TWEAKED,

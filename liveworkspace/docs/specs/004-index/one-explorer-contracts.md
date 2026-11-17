@@ -916,9 +916,11 @@ livehuddle-inbox-cleanup.sql`, Work Tracker 736): it deletes the `collab_threads
     app's threads (the workspace token's audience is every app's api); on an app's own address and in its editor's
     panel that app's threads only (their token is their own api's). `Activity·Added` (`Reply`) and
     `Activity·Resolved` (`Thread`).
-  - **Mark Done** (e) on an action, only in an editor's panel and only for an action on the tab it has open: the
-    canvas's own Mark Done (an action's status has no route; it is the people's to change, in the editor).
-    `Activity·Resolved` (`Action`).
+  - **Mark Done** (e) on a livediagram action, wherever the Inbox shows it: in an editor's panel for an action on
+    the tab it has open, the canvas's own Mark Done; anywhere else through livediagram's action route,
+    `POST /api/documents/:id/tabs/:tabId/actions/:actionId/status` with `{ elementId, status: 'done' }`, an Editor's
+    (403 for anyone less), which the canvas's open editors hear live. On liveworkspace.app and on livediagram's
+    address alike (the same token rules as Reply). `Activity·Resolved` (`Action`).
   - Nothing on a This Browser row (no page here reaches the offline store but the editor, which has no verbs for it
     yet), on another app's row where the token can't write, or on a Plan card (done is its board's column).
     A row whose work is done here leaves the list at once, and the sidebar's badge and the rail's count drop with

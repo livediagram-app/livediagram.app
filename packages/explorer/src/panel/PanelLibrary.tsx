@@ -7,17 +7,34 @@ import { useExplorer } from '../explorer/context';
 import { useLibraryHost } from '../library/context';
 import { GalleryPane } from '../library/GalleryPane';
 import { ShapeLibrariesPane } from '../library/ShapeLibrariesPane';
-import { ImageIcon, ShapesIcon } from '../ui/library-icons';
+import { ImageIcon, ShapesIcon, WalkthroughIcon } from '../ui/library-icons';
+import { WalkthroughsContent } from '../library/WalkthroughsPane';
 import { SIDEBAR_LABELS } from '../views';
 import type { LibraryTab } from './sections';
 
 /** The Library's tabs the host keeps, Image Gallery first. */
-export function libraryTabs(host: { gallery?: unknown; shapeLibraries?: unknown }): LibraryTab[] {
+export function libraryTabs(host: {
+  gallery?: unknown;
+  shapeLibraries?: unknown;
+  walkthroughs?: unknown;
+}): LibraryTab[] {
   return [
     ...(host.gallery ? (['gallery'] as const) : []),
     ...(host.shapeLibraries ? (['shape-libraries'] as const) : []),
+    ...(host.walkthroughs ? (['walkthroughs'] as const) : []),
   ];
 }
+
+const TAB_ICON = {
+  gallery: ImageIcon,
+  'shape-libraries': ShapesIcon,
+  walkthroughs: WalkthroughIcon,
+} as const;
+const TAB_LABEL = {
+  gallery: SIDEBAR_LABELS.gallery,
+  'shape-libraries': SIDEBAR_LABELS.shapeLibraries,
+  walkthroughs: SIDEBAR_LABELS.walkthroughs,
+} as const;
 
 export function PanelLibrary({
   tab,
@@ -51,8 +68,11 @@ export function PanelLibrary({
                   : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
               }`}
             >
-              {t === 'gallery' ? <ImageIcon /> : <ShapesIcon />}
-              {t === 'gallery' ? SIDEBAR_LABELS.gallery : SIDEBAR_LABELS.shapeLibraries}
+              {(() => {
+                const Icon = TAB_ICON[t];
+                return <Icon />;
+              })()}
+              {TAB_LABEL[t]}
             </button>
           ))}
         </div>
@@ -66,6 +86,8 @@ export function PanelLibrary({
           />
         ) : shown === 'shape-libraries' && host.shapeLibraries ? (
           <ShapeLibrariesPane compact host={host.shapeLibraries} />
+        ) : shown === 'walkthroughs' && host.walkthroughs ? (
+          <WalkthroughsContent compact host={host.walkthroughs} />
         ) : null}
       </div>
     </div>

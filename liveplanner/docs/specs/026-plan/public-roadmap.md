@@ -36,9 +36,12 @@ the fields listed under [What a visitor sees](#what-a-visitor-sees) and nothing 
 
 ### Where it lives
 
-**Publish as Roadmap…** in the **tab menu** (the tab's ⋯ and the canvas's right-click menu, one menu), beside
-Subscribe to Calendar, on a tab holding at least one Plan board, for someone who may publish. It opens the Publish as
-Roadmap dialog on the tab's first board (a board picker at the top when the tab holds several).
+**Publish as Roadmap** in the footer's **Tools** menu, in Collaborate beside Subscribe to Calendar (owner, 2026-11-17;
+no longer in the tab menu), for someone who may publish, on a plan with at least one Plan board on any tab. It opens
+inside Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md). At the top, **Tab** lists the plan's tabs holding
+a Plan board as pills (a board glyph, the tab's name, a green dot where a board on it is published), starting on the
+tab in view when it holds one (else the first); **Board** pills under it show when the chosen tab holds several.
+Changing the tab starts on its first board. The Card Types offered are the chosen board's own (the types it shows).
 
 ### The dialog
 
@@ -59,12 +62,19 @@ write fails, the dialog stays as it was and says "Couldn't save. Try again."
 ### The settings
 
 - **Title**: the page's heading, the board's title to begin with (1 to 80 characters).
-- **Columns**: the board's columns, each a checkbox. To begin with every column is ticked except those whose name
+  Columns, Card Types and Fields are each a collapsed section (owner, 2026-11-17), and only one opens at a time, so
+  the page stays short. Closed, a section's head shows its name, what is on as a line of names ("Needs Info, Confirmed,
+  Won't Fix +1") and a count ("4/5"); open, a hint, **All** and **None**, and a card of rows, each a glyph, its name and
+  a switch. Past eight rows the card gains a filter field and scrolls inside itself. The last one on cannot be switched
+  off (its tooltip says why).
+
+- **Columns**: the board's columns, each with its colour dot. To begin with every column is on except those whose name
   reads like triage (Under Review, Inbox, Backlog, Triage, Ideas, To Review, New, Suggestions), so suggestions stay
   hidden until the team moves them. At least one.
-- **Card Types**: the types the board shows, each a checkbox, all ticked to begin with. At least one.
-- **Fields**: the allowlist below, each a checkbox; **Title** always shows (no checkbox). To begin with only
-  **Description** is ticked.
+- **Card Types**: the types the board shows, each with its glyph, all on to begin with. At least one. Hidden when the
+  board shows one type.
+- **Fields**: the allowlist below, each with its glyph and a line saying what it shows; **Title** always shows (no
+  row). To begin with only **Description** is on.
 - **Voting**: on to begin with: visitors may upvote. While it is on and a chosen card type has no **Votes** field,
   or has it but not on its card face, the dialog says so under the toggle ("Project cards don't show votes yet.",
   naming the types) with **Add Votes**, which gives each of them the built-in Votes field and puts it in its
@@ -74,6 +84,10 @@ write fails, the dialog stays as it was and says "Couldn't save. Try again."
 - **Suggest an Idea**: **None**, or one of the plan's published forms whose responses become cards in a column the
   roadmap does not show. A form whose responses would land in a shown column is listed but cannot be picked, with
   "Its cards would show on the roadmap at once."; a form with no live link or one sending to a Sheet is not listed.
+  Its last option, **＋ Create a Suggestion Form**, shown while a column is hidden, makes a "Suggest an Idea" Form
+  tab after the board's tab (its cards land in the first hidden column as the first type shown), publishes its link
+  and picks it, without leaving the page. On a roadmap not yet out it is made when **Publish Roadmap** is pressed (the
+  line under it says so); on one already out, at once.
 
 An **All Cards** board or an archive board has no columns to choose, so it cannot be published (the dialog says "This
 board has no columns to publish.").
@@ -82,7 +96,7 @@ board has no columns to publish.").
 
 Counts only, never a plan, a board, a column or a link: the dialog opened (UI·Opened·Roadmap), a roadmap published
 (Plan·Created·Roadmap), its settings changed (Plan·Changed·Roadmap), its link copied (Plan·Copied·Roadmap) and
-unpublished (Plan·Ended·Roadmap).
+unpublished (Plan·Ended·Roadmap), and a suggestion form made by Create a Suggestion Form (Form·Created·Roadmap).
 
 ## What a visitor sees
 

@@ -219,6 +219,34 @@ describe('the item panel', () => {
     expect(screen.getByText('All done')).toBeTruthy();
   });
 
+  // plan-views.md "Dependency clashes": the panel says when the card starts before an open blocker is due.
+  it('says under an open blocker the card starts before it is due', () => {
+    const design = card('Design', 'doing', [], { start: '2026-10-01', due: '2026-10-09' });
+    const old = card('Old', 'done', [], { due: '2026-10-30' });
+    const build = card('Build', 'todo', [design.id, old.id], {
+      start: '2026-10-09',
+      due: '2026-10-12',
+    });
+    render(
+      <PlanProvider value={planOf([design, old, build], VIEWER)}>
+        <BlockedBySections
+          item={build}
+          type={TYPES.find((t) => t.id === 'task')!}
+          onOpen={vi.fn()}
+        />
+      </PlanProvider>,
+    );
+    const lines = [...document.querySelectorAll('[data-blocker-clash]')];
+    expect(lines.map((l) => l.textContent)).toEqual([
+      `!Starts the day #${design.key} Design is due`,
+    ]);
+    expect(
+      screen.getByRole('button', {
+        name: `Open #${design.key} Design, Doing. Starts the day #${design.key} Design is due`,
+      }),
+    ).toBeTruthy();
+  });
+
   it('shows the Blocks mirror read-only, and not at all when empty', () => {
     const a = card('Website', 'doing');
     const launch = card('Launch', 'todo', [a.id]);

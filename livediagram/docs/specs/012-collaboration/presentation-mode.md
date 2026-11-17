@@ -97,7 +97,11 @@ hand with the template (`template-slides-data.ts` in `@livediagram/templates`), 
 
 ## Entry and the Slide Deck panel
 
-**Slide Deck is a canvas tool**, alongside Select, Hand, Eraser, Format, Laser, Spotlight, Avatar and Isometric. Picking it from the tool dropdown does **not** start presenting: it opens the **Slide Deck panel**, where you build and administer the deck. Starting is a deliberate second act.
+### Where it lives
+
+**Slide Deck is a page in the footer's Tools** (owner, 2026-11-17), under Collaborate: its glyph, **Slide Deck**, "Build slides from the canvas and present them.", opening inside Tools under the back bar ([footer-tools-menu.md](../../../../liveworkspace/docs/specs/004-index/footer-tools-menu.md) "Opening a tool inside Tools"). It is no longer in the selection-mode dropdown, and it is not a canvas tool: the command palette's Slide Deck, and any other path that asks for the tool, opens Tools at that page instead. The page is the panel's content without its frame: the slide count and the settings gear in a slim row at the top (no Reset Position, as it has none), then the list and its buttons. Building a slide still works as it did, select on the canvas, open the page, press New Slide from Selection. Opening it does **not** start presenting: Start is a deliberate second act. Unlike other tools it **stays open** while you work on the canvas (owner, 2026-11-17): a press outside Tools, such as selecting elements for a slide, leaves it open; its close button or Escape shuts it.
+
+The paragraphs below on the panel describe that page's content; where they say "tool" or "panel", read the Tools page.
 
 The tool and the panel are both called **Slide Deck**, the thing you are making, rather than "Presentation", which names the act of showing it. You spend far more time building a deck than running one, and the tool you pick is the workbench, not the performance. "Presentation mode" stays the name of what Start puts you into, and of this spec.
 

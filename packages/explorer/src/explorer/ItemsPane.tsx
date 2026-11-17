@@ -39,7 +39,6 @@ import { TeamNotFound, TeamPage } from './TeamPane';
 import { NotFoundCard } from './NotFoundCard';
 import { PaneHeader, type Crumb } from './PaneHeader';
 import { viewTitle } from './view-title';
-import { ImportToolbar } from '../library/ImportToolbar';
 import { useViewMode } from './useViewMode';
 import type { RowOptions } from './rows';
 
@@ -224,8 +223,6 @@ export function ItemsPane({ view }: { view: ItemsView }) {
         crumbs={crumbs}
         onCreateItem={createItem}
         onCreateFolder={createFolder}
-        // Imports land where New files an item, so they sit beside it: in the person's own space, as livediagram's.
-        actions={place && place.teamId === null ? <ImportToolbar placement={place} /> : undefined}
         folderLabel={folderLabel}
         viewMode={layouts && !teamGone ? mode : undefined}
         onSetViewMode={layouts && !teamGone ? setMode : undefined}

@@ -7,6 +7,7 @@ import type {
   ItemHistoryEntry,
   ItemMove,
   ItemPatch,
+  ItemPerson,
   ItemTypeCatalogue,
   ItemTypeDef,
   PlanBoardOutline,
@@ -98,6 +99,17 @@ export type ItemsImportRequest = {
 
 // A part held aside: how many of the import's cards the plan holds so far.
 export type ItemsImportStaged = { staged: number };
+
+// POST /api/projects/:id/items/import/people: an agent's import matching the file's people to the plan's team by email
+// (docs/specs/026-plan/tracker-import.md "Agents"). Answered only for a joined member of the plan's team; anyone else
+// is answered no match for every email.
+export type ItemsImportPeopleRequest = {
+  /** 1 to 1,000 emails, each at most 320 characters. */
+  emails: string[];
+};
+
+// One entry per email asked, in its order: the team member it belongs to, or null. Never an email.
+export type ItemsImportPeople = { people: (ItemPerson | null)[] };
 
 // POST /api/projects/:id/items/patches: up to 200 items changed in one write (a card type's or a removed column's
 // cards to the Trash), optionally marked as an undo or redo.

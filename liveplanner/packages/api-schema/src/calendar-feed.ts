@@ -2,20 +2,28 @@
 // "Managing a feed"; blueprint calendar-feed.md "Part 2"). Never the token, except the one time POST answers the
 // feed's path.
 
-/** What a feed shows: one board's cards (a plan-board element id) or every board's (null), only the cards that name
- *  the person, and done cards or not. */
-export type CalendarFeedOptions = { boardId: string | null; mine: boolean; includeDone: boolean };
+/** What a feed shows: the cards of some card types (null: every type), only the cards that name the person, and done
+ *  cards or not. `boardId`, read-only, is a feed made before card types (one board's cards); saving options clears it. */
+export type CalendarFeedOptions = {
+  typeIds: string[] | null;
+  boardId?: string | null;
+  mine: boolean;
+  includeDone: boolean;
+};
+
+/** The most card types a feed may name. */
+export const CALENDAR_FEED_TYPES_MAX = 50;
+
+/** A card type the Card Types option may name: its id, name, and the glyph and colour its cards wear. */
+export type CalendarFeedType = { id: string; name: string; glyph: string; color: string };
 
 /** The person's own feed: its options, and when its link was made (a reset renews it), epoch ms. */
 export type CalendarFeedSettings = CalendarFeedOptions & { createdAt: number };
 
-/** A board the Board option may name: its element id, its title and its tab's name. */
-export type CalendarFeedBoard = { id: string; title: string; tabName: string };
-
-/** GET /api/projects/:id/calendar-feed: the person's feed, or null for none, and the plan's boards. */
+/** GET /api/projects/:id/calendar-feed: the person's feed, or null for none, and the plan's card types. */
 export type CalendarFeedResponse = {
   feed: CalendarFeedSettings | null;
-  boards: CalendarFeedBoard[];
+  types: CalendarFeedType[];
 };
 
 /** POST /api/projects/:id/calendar-feed: the feed made (or its link reset), and its link's path

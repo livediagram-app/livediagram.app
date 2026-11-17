@@ -45,6 +45,8 @@ import {
   holdsSeveralImages,
   isBlocksField,
   blockingIndexOf,
+  clashText,
+  clashesOf,
   hasBlocksFields,
   formulaProblem,
   formulaResultOf,
@@ -126,6 +128,9 @@ export interface ListedItem {
   // blocks ("#7 Copy"); each only when there are any.
   blocked?: number;
   blocks?: string[];
+  // Its clashes with open blockers (docs/specs/026-plan/plan-views.md "Dependency clashes"), worst first: "Starts 3
+  // days before #4 Design is due"; only on a card with any.
+  clashes?: string[];
   // A repeating card's rule (docs/specs/026-plan/items.md "Repeating cards"), in words; only on one.
   repeat?: ListedRepeat;
   // Its linked pull requests with a state (docs/specs/026-plan/github-pull-requests.md "Agents"); only on a card with
@@ -154,12 +159,20 @@ interface ListedTime {
 }
 
 // A card's Blocked By facts from the plan's one blocking lookup: none when it neither waits nor blocks.
-function listedBlocking(index: BlockingIndex, id: string): Pick<ListedItem, 'blocked' | 'blocks'> {
-  const open = index.open.get(id);
-  const blocks = index.blocks.get(id);
+function listedBlocking(
+  index: BlockingIndex,
+  item: Item,
+  isDone: (status: string | undefined) => boolean,
+): Pick<ListedItem, 'blocked' | 'blocks' | 'clashes'> {
+  const open = index.open.get(item.id);
+  const blocks = index.blocks.get(item.id);
+  const clashes = open
+    ? clashesOf(item, index, (c) => isDone(itemStatus(c))).map((c) => clashText(c.days, c.blocker))
+    : [];
   return {
     ...(open ? { blocked: open } : {}),
     ...(blocks?.length ? { blocks: blocks.map((c) => `${ref(c)} ${itemTitle(c)}`) } : {}),
+    ...(clashes.length ? { clashes } : {}),
   };
 }
 
@@ -656,7 +669,7 @@ export function itemLister(
       ),
     ),
     ...withRepeat(listedRepeat(i, now)),
-    ...(blocking ? listedBlocking(blocking, i.id) : {}),
+    ...(blocking ? listedBlocking(blocking, i, isDone) : {}),
     ...withPullRequests(prsOf(i)),
   });
 }

@@ -188,6 +188,9 @@ export function usePageRowMenu() {
 
 export type PageRowMenuState = ReturnType<typeof usePageRowMenu>;
 
+/** The menu as a row's ⋯ and tools read it: which page's is open, and the ⋯ that anchors and toggles it. */
+export type PageRowMenuHandle = Pick<PageRowMenuState, 'openId' | 'registerTrigger' | 'toggle'>;
+
 // The menu itself: a header naming the page, its groups, Delete last under its own separator (in
 // the menu's own tones: docs/specs/004-interface-design/destructive-actions.md).
 export function PageRowMenu({
@@ -259,7 +262,7 @@ export function PageRowMenuButton({
 }: {
   id: string;
   name: string;
-  menu: PageRowMenuState;
+  menu: PageRowMenuHandle;
 }) {
   return (
     <EllipsisTriggerButton
@@ -297,7 +300,7 @@ export function PageRowStack({
 }: {
   id: string;
   name: string;
-  menu: PageRowMenuState;
+  menu: PageRowMenuHandle;
   remove?: () => void;
   grip: ReactNode;
   shown: boolean;

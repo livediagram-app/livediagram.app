@@ -21,11 +21,12 @@ export function useAutomationsToolsItem(): ChromeToolsItem | null {
   return {
     id: 'automations',
     group: 'automate',
-    label: 'Automations',
+    // The ellipsis: it opens its own modal, outside Tools.
+    label: 'Automations…',
     description: 'Rules that act on cards for you.',
     icon: <BoltIcon size={16} />,
-    // Its dialog opens inside Tools (footer-tools-menu.md "Opening a tool inside Tools").
-    inPlace: true,
+    // Like Search, it opens its own full-size modal rather than inside Tools: a whole screen of rules
+    // (footer-tools-menu.md "Opening a tool inside Tools", the exceptions).
     ...(door.badges ? { badges: door.badges } : {}),
     onSelect: door.open,
     aside: on ? (

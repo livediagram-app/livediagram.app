@@ -495,7 +495,9 @@ On `hello` the room builds the session's presence itself (`helloPresence`): the 
 
 ### Ordering and catch-up
 
-Mutations are totally ordered by the single-threaded DO: a monotonic `seq` within an `epoch`. `epoch` and `seq` are persisted in DO storage (`order-state`) and restored on every wake, so hibernation does not strand reconnecting clients ([Resync without reloading the page](../012-collaboration/resync-without-reload.md)). The catch-up log (the last 256 mutations, `OP_LOG_LIMIT`) lives in memory only. On reconnect a client sends `{ kind: 'sync', epoch, lastSeq }`; `resolveCatchup` answers with the ops it missed, or `resync: true` when the gap is behind the log's floor or the epoch is foreign, and the client re-fetches its loaded tabs in place.
+Mutations are totally ordered by the single-threaded DO: a monotonic `seq` within an `epoch`. `epoch` and `seq` are persisted in DO storage (`order-state`) and restored on every wake, so hibernation does not strand reconnecting clients ([Resync without reloading the page](../012-collaboration/resync-without-reload.md)). The catch-up log (the last 256 mutations, `OP_LOG_LIMIT`) lives in memory only. On reconnect a client sends `{ kind: 'sync', epoch, lastSeq }`; `resolveCatchup` answers with the ops it missed, or `resync: true` when the gap is behind the log's floor or the epoch is foreign, and the client re-fetches its loaded tabs in place. A catch-up whose frame would pass 1 MiB answers `resync: true` too.
+
+No frame the room sends passes 1 MiB (`ROOM_FRAME_MAX_BYTES`; Cloudflare states 32 MiB for a message a Durable Object receives and no limit for one it sends, so the room keeps to the safe size). An `items` op bigger than that (up to 64 KiB a card) goes out as several ordered ops at the same store revision ([Item store blueprint](../026-plan/blueprints/item-store.md) "Live: room op").
 
 ### What the room stores
 

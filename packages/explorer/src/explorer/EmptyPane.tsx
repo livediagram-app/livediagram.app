@@ -18,7 +18,7 @@ import {
   TrashIcon,
   ArchiveIcon,
 } from '../ui/icons';
-import { ImageIcon, MailIcon, ShapesIcon } from '../ui/library-icons';
+import { ImageIcon, MailIcon, ShapesIcon, WalkthroughIcon } from '../ui/library-icons';
 import { homeEmptyLine } from '../data/viewLists';
 import type { ExplorerView } from '../views';
 import type { Words } from '../words';
@@ -113,6 +113,13 @@ export function emptyCopy(
         icon: <ImageIcon />,
         title: 'No images yet',
         description: `Every image you add to a ${w.lowerOne} collects here, ready to reuse in any of them.`,
+        cta: false,
+      };
+    case 'walkthroughs':
+      return {
+        icon: <WalkthroughIcon />,
+        title: 'No walkthroughs yet',
+        description: `Record one from Tools on any ${w.lowerOne}: it collects here to watch again or tidy away.`,
         cta: false,
       };
     case 'shape-libraries':

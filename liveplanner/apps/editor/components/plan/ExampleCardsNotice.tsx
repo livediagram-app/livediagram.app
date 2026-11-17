@@ -4,7 +4,9 @@
 // header while the project holds example cards the board shows. Clear Example Cards sends every example card of the
 // project to the Trash; Keep Them takes the flag off every one. Either is one write and one undo step, and either
 // leaves no example card, so the strip goes for everyone. An Editor's alone: a Participant may not trash or reshape
-// others' cards (docs/specs/013-workspace/share-roles.md), and a Viewer only looks.
+// others' cards (docs/specs/013-workspace/share-roles.md), and a Viewer only looks. During a warm paint whose kept role
+// is an Editor's (`held`), it is drawn inert, so it stands where the catch-up leaves it and the board does not move
+// (docs/specs/006-project/offline-mode.md "The board holds its place").
 import { lucideInfo } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@liveplanner/ui';
 import {
@@ -31,13 +33,17 @@ export function ExampleCardsNotice({
   shown,
   plan,
   palette,
+  held = false,
 }: {
   // The cards this board shows: the strip is on a board that shows an example card.
   shown: readonly Item[];
   plan: Pick<PlanContextValue, 'items' | 'canEdit' | 'trashItems' | 'patchItems' | 'announce'>;
   palette: PlanPalette;
+  // Room kept for an Editor's notice during a warm paint: drawn, but nothing in it works until the catch-up.
+  held?: boolean;
 }) {
-  if (!plan.canEdit || !shown.some(isExampleItem)) return null;
+  if (!(plan.canEdit || held) || !shown.some(isExampleItem)) return null;
+  const inert = !plan.canEdit;
   const clear = () => {
     // Sent first, so the event reaches the wire whatever the write does.
     track('Plan', 'Deleted', 'ExampleCards');
@@ -57,8 +63,10 @@ export function ExampleCardsNotice({
     'h-7 shrink-0 cursor-pointer rounded-md border px-2 text-[12px] font-medium transition hover:opacity-80';
   return (
     <div
-      role="status"
+      role={inert ? undefined : 'status'}
       data-example-cards-notice
+      inert={inert}
+      aria-hidden={inert || undefined}
       className="mx-3 mb-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-md border px-3 py-1.5 text-[12px]"
       style={{ borderColor: palette.border, backgroundColor: palette.column, color: palette.muted }}
     >

@@ -124,6 +124,19 @@ describe('starting and storing one', () => {
     expect(await client().media(id, 'doc-2')).toBeNull();
   });
 
+  it("lists a person's own ready ones across the app, newest first, for the Explorer's library", async () => {
+    const first = await ready({ item: 'doc-1' });
+    const second = await ready({ item: 'doc-2' });
+    await ready({ item: 'doc-1', owner: 'user_2' });
+    await startOne({ item: 'doc-3' }); // never uploaded: not ready, so not listed
+    const listed = await client().listOwned('user_1');
+    const ids = listed.ok ? listed.value.walkthroughs.map((w) => w.walkthrough.id) : [];
+    expect(new Set(ids)).toEqual(new Set([first, second]));
+    expect(listed.ok && listed.value.walkthroughs.every((w) => w.owner === 'user_1')).toBe(true);
+    const other = await client('livedesign.app').listOwned('user_1');
+    expect(other.ok && other.value.walkthroughs).toEqual([]);
+  });
+
   it('takes Safari MP4 too', async () => {
     const id = await ready({ mediaType: 'audio/mp4' }, MP4);
     expect((await client().read(id))?.ok).toBe(true);

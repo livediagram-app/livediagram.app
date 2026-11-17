@@ -33,6 +33,8 @@ export type ExplorerView =
   | { kind: 'gallery' }
   // The person's shape libraries, from the host's store (only where the host has one).
   | { kind: 'shape-libraries' }
+  // The person's walkthroughs in the app (only where the host records them).
+  | { kind: 'walkthroughs' }
   // What the host app keeps only in this browser (only where the host can read it: the app's own address), narrowed
   // by the lens in this browser, since the index never sees them. At its root, or in one of its own folders.
   | ({ kind: 'offline'; folder?: string } & Lensed);
@@ -75,7 +77,9 @@ export type ExplorerViewKind = ExplorerView['kind'];
 /** The views that list items (and folders): every view but those drawn by panes of their own. */
 export type ItemsView = Exclude<
   ExplorerView,
-  { kind: 'home' | 'inbox' | 'invites' | 'gallery' | 'shape-libraries' | 'offline' }
+  {
+    kind: 'home' | 'inbox' | 'invites' | 'gallery' | 'shape-libraries' | 'walkthroughs' | 'offline';
+  }
 >;
 
 export const DEFAULT_BASE_PATH = '/explorer';
@@ -133,6 +137,7 @@ export function viewFromLocation(
     case 'home':
     case 'invites':
     case 'shape-libraries':
+    case 'walkthroughs':
       return { kind: section };
     case 'offline': {
       const folder = params.get('folder');
@@ -180,6 +185,7 @@ export const SIDEBAR_LABELS = {
   invites: 'Invites',
   gallery: 'Image Gallery',
   shapeLibraries: 'Shape Libraries',
+  walkthroughs: 'Walkthroughs',
   // The owner's rename (2026-11-10): the Explorer's place for items kept only in this browser.
   thisBrowser: 'Browser Storage',
 } as const;
@@ -196,5 +202,6 @@ export const VIEW_TITLES: Record<Exclude<ExplorerViewKind, 'folder' | 'team'>, s
   invites: SIDEBAR_LABELS.invites,
   gallery: SIDEBAR_LABELS.gallery,
   'shape-libraries': SIDEBAR_LABELS.shapeLibraries,
+  walkthroughs: SIDEBAR_LABELS.walkthroughs,
   offline: SIDEBAR_LABELS.thisBrowser,
 };

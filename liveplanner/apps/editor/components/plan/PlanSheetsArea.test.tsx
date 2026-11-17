@@ -7,12 +7,11 @@ import type { PlanSlice } from '@/hooks/plan/usePlanSlice';
 // the card stayed open, so every later click changed the address and opened nothing until a reload.
 
 let thrown: Error | null = null;
-vi.mock('next/dynamic', () => ({
-  default: () =>
-    function FakeHost() {
-      if (thrown) throw thrown;
-      return <p>Card panel</p>;
-    },
+vi.mock('@/lib/editor-deferred-code', () => ({
+  PlanSheetsHost: function FakeHost() {
+    if (thrown) throw thrown;
+    return <p>Card panel</p>;
+  },
 }));
 vi.mock('@/lib/telemetry', () => ({ track: () => {} }));
 vi.mock('@liveworkspace/workbench/lib/stale-build-navigation', () => ({

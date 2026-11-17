@@ -16,7 +16,7 @@ import type {
 } from '@liveplanner/api-schema';
 import { RoadmapDialog, namesOf } from './RoadmapDialog';
 import { RoadmapHost } from './RoadmapHost';
-import { RoadmapMenuRow } from './RoadmapMenuRow';
+import { useRoadmapToolsItem } from './roadmap-tools-item';
 
 const client = vi.hoisted(() => ({
   readRoadmaps: vi.fn(),
@@ -34,14 +34,14 @@ const BOARD: RoadmapBoard = {
   tabName: 'Board',
   tabId: 't1',
   columns: [
-    { status: 'inbox', name: 'Under Review' },
-    { status: 'todo', name: 'Planned' },
-    { status: 'doing', name: 'In Progress' },
-    { status: 'done', name: 'Shipped' },
+    { status: 'inbox', name: 'Under Review', color: null },
+    { status: 'todo', name: 'Planned', color: null },
+    { status: 'doing', name: 'In Progress', color: null },
+    { status: 'done', name: 'Shipped', color: null },
   ],
   types: [
-    { id: 'feature', name: 'Feature' },
-    { id: 'bug', name: 'Bug' },
+    { id: 'feature', name: 'Feature', glyph: 'sparkles', color: 'violet' },
+    { id: 'bug', name: 'Bug', glyph: 'sparkles', color: 'violet' },
   ],
   publishable: true,
 };
@@ -69,16 +69,30 @@ const live = (s: Partial<RoadmapSettings> = {}): PublishedRoadmap => ({
 });
 const writeText = vi.fn();
 
-const open = async (r: Partial<RoadmapsResponse>, boardIds: string[] = ['b1']) => {
+const open = async (r: Partial<RoadmapsResponse>) => {
   client.readRoadmaps.mockResolvedValue({ roadmaps: [], boards: [BOARD], forms: FORMS, ...r });
   const onClose = vi.fn();
-  render(<RoadmapDialog scope={SCOPE} boardIds={boardIds} onClose={onClose} />);
+  render(<RoadmapDialog scope={SCOPE} startTabId="t1" onClose={onClose} />);
   await waitFor(() => expect(stateOf()).not.toBe('loading'));
   return onClose;
 };
 const stateOf = () =>
   document.querySelector('[data-roadmap-dialog-state]')!.getAttribute('data-roadmap-dialog-state');
-const chip = (name: string) => screen.getByRole('switch', { name });
+// A column, type or field's switch. Columns, Card Types and Fields start closed, one open at a time, so this opens
+// whichever holds it.
+const chip = (label: string): HTMLElement => {
+  // A row's name is its label, then its line of detail.
+  const name = (n: string) => n.startsWith(label);
+  const found = screen.queryByRole('switch', { name });
+  if (found) return found;
+  for (const head of document.querySelectorAll<HTMLElement>('[data-toggle-list] > button')) {
+    if (head.getAttribute('aria-expanded') === 'true') continue;
+    fireEvent.click(head);
+    const shown = screen.queryByRole('switch', { name });
+    if (shown) return shown;
+  }
+  return screen.getByRole('switch', { name });
+};
 
 beforeEach(() => {
   writeText.mockResolvedValue(undefined);
@@ -160,7 +174,10 @@ describe('Not published', () => {
   it('says so when the plan has no form to take suggestions', async () => {
     await open({ forms: [] });
     expect(
-      screen.getByText('Publish a form whose cards land in a hidden column to take suggestions.'),
+      // Outside an editor no form can be made here, so it says how to take suggestions.
+      screen.getByText(
+        'Hide a column above to take suggestions: they wait there until you move them.',
+      ),
     ).toBeTruthy();
   });
 
@@ -237,11 +254,15 @@ describe('Published', () => {
 
 describe('boards', () => {
   it('picks among several boards on the tab, marking a published one', async () => {
-    await open({ boards: [BOARD, OTHER], roadmaps: [live()] }, ['b2', 'b1']);
-    const picker = screen.getByLabelText<HTMLSelectElement>('Board');
-    expect([...picker.options].map((o) => o.textContent)).toEqual(['Bugs', 'Product (published)']);
+    await open({ boards: [BOARD, OTHER], roadmaps: [live()] });
+    const picker = screen.getByRole('group', { name: 'Board' });
+    const pills = within(picker).getAllByRole('button');
+    expect(pills.map((p) => p.textContent)).toEqual(['Product', 'Bugs']);
+    expect(within(pills[0]!).getByLabelText('published')).toBeTruthy();
+    fireEvent.click(pills[1]!);
     expect(stateOf()).toBe('draft');
-    fireEvent.change(picker, { target: { value: 'b1' } });
+    expect(pills[1]!.getAttribute('aria-pressed')).toBe('true');
+    fireEvent.click(pills[0]!);
     expect(stateOf()).toBe('published');
   });
 
@@ -257,7 +278,7 @@ describe('boards', () => {
 
   it('offers Try Again when the read fails', async () => {
     client.readRoadmaps.mockRejectedValueOnce(new Error('no'));
-    render(<RoadmapDialog scope={SCOPE} boardIds={['b1']} onClose={vi.fn()} />);
+    render(<RoadmapDialog scope={SCOPE} startTabId="t1" onClose={vi.fn()} />);
     expect(await screen.findByText('Couldn’t load your roadmap.')).toBeTruthy();
     client.readRoadmaps.mockResolvedValue({ roadmaps: [], boards: [BOARD], forms: [] });
     fireEvent.click(screen.getByRole('button', { name: 'Try Again' }));
@@ -265,31 +286,38 @@ describe('boards', () => {
   });
 });
 
-describe('the tab menu row', () => {
-  it('draws only with a scope and a board on the tab, and opens the dialog', async () => {
-    const onClose = vi.fn();
+// The Tools row that opens it (roadmap-tools-item), in place of the old tab menu row.
+function ToolsRow() {
+  const item = useRoadmapToolsItem();
+  return item ? (
+    <button type="button" onClick={(e) => item.onSelect(e.currentTarget)}>
+      {item.label}
+    </button>
+  ) : null;
+}
+
+describe('the Tools row', () => {
+  it('shows only with a scope and a board on the plan, and opens the dialog', async () => {
     const { rerender } = render(
-      <RoadmapHost scope={null} boardIds={['b1']}>
-        <RoadmapMenuRow onClose={onClose} />
+      <RoadmapHost scope={null} hasBoards activeTabId="t1">
+        <ToolsRow />
       </RoadmapHost>,
     );
-    expect(screen.queryByText('Publish as Roadmap…')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Publish as Roadmap' })).toBeNull();
     rerender(
-      <RoadmapHost scope={SCOPE} boardIds={[]}>
-        <RoadmapMenuRow onClose={onClose} />
+      <RoadmapHost scope={SCOPE} hasBoards={false} activeTabId="t1">
+        <ToolsRow />
       </RoadmapHost>,
     );
-    expect(screen.queryByText('Publish as Roadmap…')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Publish as Roadmap' })).toBeNull();
     client.readRoadmaps.mockResolvedValue({ roadmaps: [], boards: [BOARD], forms: [] });
     rerender(
-      <RoadmapHost scope={SCOPE} boardIds={['b1']}>
-        <RoadmapMenuRow onClose={onClose} />
+      <RoadmapHost scope={SCOPE} hasBoards activeTabId="t1">
+        <ToolsRow />
       </RoadmapHost>,
     );
-    fireEvent.click(screen.getByText('Publish as Roadmap…'));
-    expect(onClose).toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Publish as Roadmap' }));
     expect(track).toHaveBeenCalledWith('UI', 'Opened', 'Roadmap');
-    expect(await screen.findByText('Publish as Roadmap')).toBeTruthy();
     await waitFor(() => expect(client.readRoadmaps).toHaveBeenCalledWith(SCOPE));
   });
 });
@@ -315,7 +343,7 @@ describe('Add Votes', () => {
     return (
       <RoadmapDialog
         scope={SCOPE}
-        boardIds={['b1']}
+        startTabId="t1"
         onClose={vi.fn()}
         cardTypes={{
           catalogue,
@@ -384,7 +412,8 @@ describe('Add Votes', () => {
     render(
       <RoadmapHost
         scope={SCOPE}
-        boardIds={['b1']}
+        hasBoards
+        activeTabId="t1"
         itemTypes={{
           catalogue,
           types: catalogue.types,
@@ -396,10 +425,10 @@ describe('Add Votes', () => {
           receive: vi.fn(),
         }}
       >
-        <RoadmapMenuRow onClose={vi.fn()} />
+        <ToolsRow />
       </RoadmapHost>,
     );
-    fireEvent.click(screen.getByText('Publish as Roadmap…'));
+    fireEvent.click(screen.getByRole('button', { name: 'Publish as Roadmap' }));
     await waitFor(() => expect(offer()).not.toBeNull());
   });
 

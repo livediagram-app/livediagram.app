@@ -15,6 +15,7 @@ import {
   ITEM_TYPES,
   blockingIndexOf,
   donePhase,
+  ganttArrows,
   ganttAt,
   ganttLanes,
   ganttLayout,
@@ -42,6 +43,7 @@ import { GANTT_PILL_MIN_COLUMN_PX, GanttLaneHead, GanttNameRow, rowStatus } from
 import { GanttNamesResizer } from './gantt-names-resize';
 import { useGanttRowReorder } from './useGanttRowReorder';
 import { GanttArrows } from './gantt-arrows';
+import { GanttClashMark, ganttClashTexts, useGanttMoveFollowing } from './gantt-clash';
 import { planBlocking } from '../blocking';
 
 // A card's row: room for a 20 px bar and a two-line name pill.
@@ -146,6 +148,8 @@ export function GanttView({
   const view = timeline.view;
   const labelEvery = Math.max(1, Math.ceil((view.ticks.length * TICK_LABEL_PX) / axisPx));
   const today = (ganttAt(view, model.today) + ganttAt(view, model.today + 1)) * 50;
+  // After a drag or draw, the offer to move the cards that follow it (plan-views.md "Moving the cards that follow").
+  const moveFollowing = useGanttMoveFollowing(plan, dates);
   const drag = useGanttDrag({
     model: view,
     dates,
@@ -153,6 +157,7 @@ export function GanttView({
     onCommit: (itemId, patch) => {
       void plan?.patchItem(itemId, patch);
       track('Plan', 'Changed', 'GanttDates');
+      moveFollowing(itemId, patch);
     },
     onBegin: timeline.pin,
   });
@@ -204,6 +209,9 @@ export function GanttView({
   );
   const shownOf = (row: GanttRow): GanttRow =>
     preview?.itemId === row.item.id ? { ...row, from: preview.from, to: preview.to } : row;
+  const arrows = ganttArrows(layout.entries, blocking ?? planBlocking(plan!), phases);
+  // Each blocked row's clashes, as drawn (plan-views.md "Dependency clashes").
+  const clashes = ganttClashTexts(arrows, shownOf);
   return (
     <ViewFrame
       title="Gantt Chart"
@@ -330,6 +338,7 @@ export function GanttView({
                     onCommit={(itemId, patch) => {
                       void plan?.patchItem(itemId, patch);
                       track('Plan', 'Changed', 'GanttDrawn');
+                      moveFollowing(itemId, patch);
                     }}
                     onBegin={timeline.pin}
                   />
@@ -341,6 +350,16 @@ export function GanttView({
                   palette={palette}
                   {...(editable ? { drag } : {})}
                 />
+                {clashes.has(row.item.id) && shown.from !== undefined ? (
+                  <GanttClashMark
+                    texts={clashes.get(row.item.id)!}
+                    at={
+                      shown.mark === 'bar'
+                        ? ganttAt(view, shown.from) * 100
+                        : (ganttAt(view, shown.from) + ganttAt(view, shown.from + 1)) * 50
+                    }
+                  />
+                ) : null}
                 {dragged ? (
                   // The day the dragged end lands on above it, or a moved bar's two days above its middle.
                   <span
@@ -362,9 +381,7 @@ export function GanttView({
             );
           })}
           <GanttArrows
-            entries={layout.entries}
-            index={blocking ?? planBlocking(plan!)}
-            phases={phases}
+            arrows={arrows}
             view={view}
             axisPx={axisPx}
             top={AXIS_H}

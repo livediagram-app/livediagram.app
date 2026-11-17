@@ -47,8 +47,9 @@ the public read and vote, the vote field and its sort, the editor's Publish as R
 - Editor `components/roadmap/`: `roadmap-client.ts` (the three managing calls), `roadmap-gate.ts`
   (`roadmapScopeFor`), `roadmap-defaults.ts` (`defaultRoadmapSettings`, `TRIAGE_NAMES`), `RoadmapContext.tsx`,
   `RoadmapHost.tsx` (the door; the dialog loads on first open), `RoadmapDialog.tsx`, `RoadmapSettingsForm.tsx`,
-  `RoadmapMenuRow.tsx`. `RoadmapHost` takes the plan's `itemTypes` (`ItemTypesSlice`, from `ctx.plan.context`) and
-  hands it to the dialog as `cardTypes` for Add Votes; `namesOf` joins type names.
+  `roadmap-tools-item.tsx` (the Tools row, `useRoadmapToolsItem`). `RoadmapHost` takes the plan's `itemTypes`
+  (`ItemTypesSlice`, from `ctx.plan.context`) and hands it to the dialog as `cardTypes` for Add Votes; `namesOf` joins
+  type names.
 - `packages/items/src/card-display.ts`: `typeShowsVotes(type)` (the built-in Votes in its fields and its Detailed
   layout), `withVotesShown(type)` (the field added, then placed last in the Detailed Footer when the layout leaves it
   out). The built-in Project type carries `votes` (`item-types.ts`) and its Detailed default places it after
@@ -248,4 +249,4 @@ CREATE UNIQUE INDEX IF NOT EXISTS roadmaps_code ON roadmaps (code);
 
 ## Defaults ledger
 
-D127 to D130 and D136 to D138 in [DEFAULTS.md](DEFAULTS.md).
+D127 to D130 and D137 to D139 in [DEFAULTS.md](DEFAULTS.md).

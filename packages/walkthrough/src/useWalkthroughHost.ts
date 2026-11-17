@@ -97,6 +97,10 @@ export function useWalkthroughHost(input: WalkthroughHostInput): WalkthroughHost
     return found.elements && found.elements.length > 0 ? fingerprintOf(found.elements) : undefined;
   }, []);
   const selection = useCallback(() => [...latest.current.selection()], []);
+  const elements = useCallback(
+    () => latest.current.tabs.find((t) => t.id === latest.current.activeTab)?.elements ?? [],
+    [],
+  );
   return {
     itemId: input.itemId,
     api,
@@ -110,5 +114,6 @@ export function useWalkthroughHost(input: WalkthroughHostInput): WalkthroughHost
     selection,
     author: input.author,
     hideable: input.hideable,
+    elements,
   };
 }

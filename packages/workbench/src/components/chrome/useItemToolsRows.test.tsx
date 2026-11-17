@@ -98,7 +98,7 @@ describe('History and Webhooks in Tools', () => {
     expect(row('History').getAttribute('data-badges')).toBe('Sign In, Sync Canvas');
     expect(row('Webhooks').getAttribute('data-badges')).toBe('Sign In, Sync Canvas');
     fireEvent.click(row('Webhooks'));
-    expect(screen.getByText('You are not signed in.')).toBeTruthy();
+    expect(screen.getByText('Sign In Needed')).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Sign In' })).toBeTruthy();
   });
 
@@ -108,12 +108,12 @@ describe('History and Webhooks in Tools', () => {
     const { rerender } = render(<Rows signedIn offline={{ sync, ready: true }} />);
     expect(row('Webhooks').getAttribute('data-badges')).toBe('Sync Canvas');
     fireEvent.click(row('Webhooks'));
-    expect(screen.getByText('Saved only in this browser.')).toBeTruthy();
+    expect(screen.getByText(/You need to sync this canvas/)).toBeTruthy();
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: 'Sync Canvas' }));
     });
     expect(sync).toHaveBeenCalledOnce();
-    expect(screen.queryByText('Saved only in this browser.')).toBeNull();
+    expect(screen.queryByText(/You need to sync this canvas/)).toBeNull();
     rerender(<Rows signedIn offline={null} onWebhooks={onWebhooks} />);
     expect(onWebhooks).toHaveBeenCalledOnce();
     expect(row('Webhooks').getAttribute('data-badges')).toBe('');
@@ -244,9 +244,9 @@ describe('History with Snapshots in it (owner, 2026-11-17)', () => {
       </>,
     );
     fireEvent.click(row('History'));
-    expect(screen.getByText('You are not signed in.')).toBeTruthy();
+    expect(screen.getByText('Sign In Needed')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Open Version History' }));
     expect(open).toHaveBeenCalledTimes(3);
-    expect(screen.queryByText('You are not signed in.')).toBeNull();
+    expect(screen.queryByText('Sign In Needed')).toBeNull();
   });
 });

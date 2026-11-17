@@ -41,6 +41,7 @@ export * from './plan-views';
 export * from './plan-view-dates';
 export * from './plan-view-gantt';
 export * from './plan-view-gantt-arrows';
+export * from './dependency-clash';
 export * from './gantt-row-order';
 export * from './plan-view-charts';
 export * from './plan-view-statuses';
