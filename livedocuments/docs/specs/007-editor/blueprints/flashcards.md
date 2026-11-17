@@ -120,6 +120,15 @@ card)`, tracks `Tab · Changed · FlashcardSplit`. The page panel's action row s
   slate-600 at 80%, `aria-hidden`, `data-gif-omit`. Its time reads `flashcardSpeakingSeconds(flow)`, cached per writing
   object.
 - `contentsRows`: kind name "Flashcard", the line adds the card's title and its speaking time.
+- The stack's total: `flashcardStackSummary(pages, articles)` (`apps/editor/lib/page-contents.ts`), only when
+  `isFlashcardStack(pages)`: the cards (every page), the sum of `flashcardWords(flow)` (cached per writing object),
+  then `speakingSecondsFor(sum)` once, written by `cardsSummary(count, seconds, { about: true })`
+  (`packages/document/src/flashcards.ts`, also behind the speaker note cards' `noteCardsSummary`): "10 cards · about
+  6 min", "1 card · about 45 sec"; null with no words. `usePageContents` keeps it in a `useMemo` on the pages and the
+  writing (a commit makes new writing objects), and hands it as `summary` to the shared `ContentsPanel` (its
+  `titleAdornment` beside "Contents", and the phone sheet's header) and `ContentsSidebar` (a line heading the list),
+  each drawing it with `ContentsSummary` (`data-contents-summary`, 12 px, slate-500 / slate-400 dark, tabular
+  figures, truncated).
 
 ## Interfaces and contracts
 
@@ -152,7 +161,8 @@ does (no zones, no page breaks are new to it); adding or splitting a card is a p
 
 - The footer's speaking time is computed once per writing object (a commit, at most every 600 ms while typing), cached
   in a `WeakMap`; only the card in front draws a footer, so a 100-card stack counts one card per commit.
-- Contents counts each card's words while its rows rebuild (on the tab resting), O(text).
+- Contents counts each card's words while its rows rebuild (on the tab resting), O(text). The stack's total adds the
+  same cached counts (`flashcardWords`), so it costs O(cards) per commit and nothing per keystroke.
 - Only the card in front and at most 6 stack sheets are drawn. Only the writing of the cards within
   `FLASHCARD_MOUNT_SPAN` of the card in front is mounted (`cardFlowsToMount`, `flashcard-stack.ts`, read by
   `ArticleFlows`), plus the active article and a pending focus request's, so a flip forward pictures the card
@@ -300,25 +310,26 @@ SVG in the existing preview groups.
 
 ## Testing
 
-| Rule                                          | Test                                                        |
-| --------------------------------------------- | ----------------------------------------------------------- |
-| Parse, size, label, kind, own flows           | `packages/document/src/flashcards.test.ts`                  |
-| Speaking time and its label                   | `flashcards.test.ts`                                        |
-| Split and its refusals                        | `flashcards.test.ts`                                        |
-| Text-only guard                               | `packages/document/src/flashcard-guard.test.ts`             |
-| First page choice, add, no growth             | `flashcards.test.ts`                                        |
-| The stage and the stack sheets                | `apps/editor/lib/flashcard-stack.test.ts`                   |
-| Flip respects reduced motion, overlay clears  | `apps/editor/lib/flashcard-flip.test.ts`                    |
-| Footer, marker, roles                         | `apps/editor/components/canvas/FlashcardStack.test.tsx`     |
-| Palette kind and toolbar cut                  | `apps/editor/lib/palette-kind.test.ts`, `PageToolbar` tests |
-| Templates build                               | `packages/templates` template tests                         |
-| Typing on a stack ticks no settle, linear     | `apps/editor/hooks/editor/useArticleIntake.typing.test.ts`  |
-| A save renders nothing                        | `apps/editor/app/document/[id]/editor-persistence.test.tsx` |
-| Chrome skips a typing commit                  | `apps/editor/app/document/[id]/editor-chrome.test.tsx`      |
-| The rest of the chrome skips a typing commit  | `apps/editor/app/document/[id]/editor-chrome.test.tsx`      |
-| Pages and writing read once per stored object | `packages/document/src/read-caches.test.ts`                 |
-| When the intake has work                      | `apps/editor/lib/article/intake-has-work.test.ts`           |
-| Zone-less writing fitted at once, one layout  | `packages/document/src/article-intake.test.ts`              |
+| Rule                                          | Test                                                          |
+| --------------------------------------------- | ------------------------------------------------------------- |
+| Parse, size, label, kind, own flows           | `packages/document/src/flashcards.test.ts`                    |
+| Speaking time and its label                   | `flashcards.test.ts`                                          |
+| The stack's total, rounded once, none empty   | `flashcards.test.ts`, `apps/editor/lib/page-contents.test.ts` |
+| Split and its refusals                        | `flashcards.test.ts`                                          |
+| Text-only guard                               | `packages/document/src/flashcard-guard.test.ts`               |
+| First page choice, add, no growth             | `flashcards.test.ts`                                          |
+| The stage and the stack sheets                | `apps/editor/lib/flashcard-stack.test.ts`                     |
+| Flip respects reduced motion, overlay clears  | `apps/editor/lib/flashcard-flip.test.ts`                      |
+| Footer, marker, roles                         | `apps/editor/components/canvas/FlashcardStack.test.tsx`       |
+| Palette kind and toolbar cut                  | `apps/editor/lib/palette-kind.test.ts`, `PageToolbar` tests   |
+| Templates build                               | `packages/templates` template tests                           |
+| Typing on a stack ticks no settle, linear     | `apps/editor/hooks/editor/useArticleIntake.typing.test.ts`    |
+| A save renders nothing                        | `apps/editor/app/document/[id]/editor-persistence.test.tsx`   |
+| Chrome skips a typing commit                  | `apps/editor/app/document/[id]/editor-chrome.test.tsx`        |
+| The rest of the chrome skips a typing commit  | `apps/editor/app/document/[id]/editor-chrome.test.tsx`        |
+| Pages and writing read once per stored object | `packages/document/src/read-caches.test.ts`                   |
+| When the intake has work                      | `apps/editor/lib/article/intake-has-work.test.ts`             |
+| Zone-less writing fitted at once, one layout  | `packages/document/src/article-intake.test.ts`                |
 
 ## Assets and external resources
 
