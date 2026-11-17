@@ -78,6 +78,43 @@ export function useItemVersions(): (() => void) | null {
   );
 }
 
+// The open item's gate (footer-tools-menu.md "Always there"; blueprint FM10): while the item needs a sign-in or a sync
+// before its tools work, the item rows publish their badges ("Sign In", "Sync Canvas") and `open`, which shows the
+// same gate for another tool. Walkthroughs shows through it, badged, rather than going missing.
+export type ToolGate = { badges: readonly string[]; open: (tool: GatedTool) => void };
+export type GatedTool = 'walkthroughs';
+let gate: ToolGate | null = null;
+const gateListeners = new Set<() => void>();
+
+/** Offers the item's gate to other tools while the caller is mounted with one set. */
+export function usePublishToolGate(next: ToolGate | null): void {
+  useEffect(() => {
+    if (!next) return;
+    gate = next;
+    for (const l of gateListeners) l();
+    return () => {
+      if (gate !== next) return;
+      gate = null;
+      for (const l of gateListeners) l();
+    };
+  }, [next]);
+}
+
+const subscribeGate = (l: () => void) => {
+  gateListeners.add(l);
+  return () => {
+    gateListeners.delete(l);
+  };
+};
+
+export function useToolGate(): ToolGate | null {
+  return useSyncExternalStore(
+    subscribeGate,
+    () => gate,
+    () => null,
+  );
+}
+
 // Asking Tools to open at a tool from outside the footer (footer-tools-menu.md "From elsewhere"; blueprint FM7): coming
 // back from signing in with a tool asked open. One ask at a time, kept a while so a row that arrives a moment after
 // the page (its door waits on the plan) still finds it; Tools takes it once it lists that row.

@@ -50,8 +50,13 @@ at a time with `itemHistory(itemId, { limit, cursor })`.
   rising in the bottom left with an arrow turning back over it, and in the bottom right a timeline of versions, a
   dashed arrow arching back from the newest to the one restored, in the accent, its ring spreading twice; a clock
   turning back is its mark, in place of the item's thumbnail (the row it opened from shows that).
-- **At a glance.** A strip under the header: how many events are loaded ("30+" while older ones remain), how many
-  people took part (their avatars, up to three), when it was made and when it last changed.
+- **At a glance** (owner, 2026-11-17: the four tiles read poorly, one of them a lone face). One card under the header:
+  **Changed 12 mins ago** as its heading, the faces of the people who took part beside it (up to five, then +N, names on
+  hover), and under it "Created 17 Nov 2026 · 2 events" ("30+ events" while older ones remain). Under that, the item's
+  **activity over the last 14 days**: a bar a day, its height the day's events among those loaded, today's in the
+  accent, each bar naming its day and count on hover and to a screen reader, so the shape of the work shows at once.
+  While the first page loads, the card and the rail draw as skeletons in their own shapes, so nothing moves when they
+  fill in.
 - **Filter.** One chip per kind of event present in what is loaded (Edits, Renames, Sharing, Organisation,
   Comments, ...), with **All** first; shown only when two or more kinds are present. One chip at a time, each a
   toggle button (`aria-pressed`). With nothing matching, the list says so and offers Show older events and Show all.
@@ -68,7 +73,7 @@ at a time with `itemHistory(itemId, { limit, cursor })`.
 - **Paging.** Pages of 30 (`HISTORY_PAGE`). **Show older events** under the rail reads the next page and says how
   many are shown; the button is gone at the end of the history. No other request is made: people's names come from
   the Explorer's shared people store, the one that names the Owner column, gathered into one batch and cached.
-- **States.** Loading: a rail-shaped skeleton (`aria-busy`). Nothing yet: the shared empty state. A failed first
+- **States.** Loading: the overview card and a rail in their own shapes (`aria-busy`). Nothing yet: the shared empty state. A failed first
   read says so with **Try again**, never "nothing has happened"; a failed later page keeps what is shown and
   offers Try again beside the button.
 - **Fit.** A centred panel up to 36 rem wide on a desktop, its body scrolling under the fixed header; edge to edge

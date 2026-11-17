@@ -272,6 +272,13 @@ function walkthroughsHost(path: string, token: Token, origin: string): Walkthrou
     remove: async (entry) => {
       await call(token, at(entry), { method: 'DELETE' });
     },
+    share: async (entry, on) => {
+      const res = await call(token, at(entry, '/share'), { method: on ? 'PUT' : 'DELETE' });
+      if (!res.ok) return null;
+      const { walkthrough } = (await res.json()) as { walkthrough: WalkthroughEntry };
+      // The door's answer has no item; the entry keeps its own.
+      return { ...entry, ...walkthrough, item: entry.item };
+    },
   };
 }
 

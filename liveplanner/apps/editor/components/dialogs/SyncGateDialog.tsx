@@ -38,7 +38,7 @@ export function SyncGateDialog({
 }) {
   const [busy, setBusy] = useState(false);
   return (
-    <Dialog open onClose={onClose} ariaLabel={title} size="md">
+    <Dialog open onClose={onClose} ariaLabel={title} size="md" phoneSheet>
       <DialogHeader title={title} subtitle={subtitle}>
         {help}
         <DialogCloseButton onClick={onClose} />

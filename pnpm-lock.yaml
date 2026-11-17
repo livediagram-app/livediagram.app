@@ -8350,6 +8350,9 @@ importers:
       '@liveworkspace/media':
         specifier: workspace:*
         version: link:../media
+      '@liveworkspace/sites':
+        specifier: workspace:*
+        version: link:../sites
       '@liveworkspace/ui':
         specifier: workspace:*
         version: link:../ui

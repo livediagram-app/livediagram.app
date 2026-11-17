@@ -115,6 +115,37 @@ describe('ContentsSidebar', () => {
     expect(focusPage).toHaveBeenCalledWith('p3');
   });
 
+  it('frames the page again as the window settles after docking, then stops listening', () => {
+    inCanvas();
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    const frames: FrameRequestCallback[] = [];
+    vi.spyOn(window, 'requestAnimationFrame').mockImplementation((cb) => {
+      frames.push(cb);
+      return frames.length;
+    });
+    const cancel = vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => undefined);
+    const store = createViewportStore(1);
+    store.setView({ zoom: 1, offset: { x: 418 - 350, y: 200 - 50 } });
+    const focusPage = vi.fn();
+    const { unmount } = render(
+      <ViewportStoreProvider store={store}>
+        <Sidebar focusPage={focusPage} />
+      </ViewportStoreProvider>,
+    );
+    // Back from fullscreen: a resize while it settles drops the pending frame for a fresh one.
+    window.dispatchEvent(new Event('resize'));
+    expect(cancel).toHaveBeenCalled();
+    frames.at(-1)!(0);
+    expect(focusPage).toHaveBeenCalledWith('p3');
+    // Once settled, a resize no longer reframes.
+    vi.advanceTimersByTime(1500);
+    const count = frames.length;
+    window.dispatchEvent(new Event('resize'));
+    expect(frames.length).toBe(count);
+    unmount();
+    vi.useRealTimers();
+  });
+
   it('stops following the view once it is gone', () => {
     vi.useFakeTimers();
     const store = createViewportStore(1);

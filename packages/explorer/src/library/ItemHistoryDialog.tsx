@@ -7,6 +7,9 @@
 import type { IndexClient, Item } from '@liveworkspace/index-client';
 import { ExplorerProvider, type ExplorerProviderProps } from '../explorer/context';
 import { HistoryDialog, type HistoryExtras } from './HistoryDialog';
+import { PeopleProvider } from '../explorer/extras';
+import { ViewerLookContext, type ViewerLook } from './HistoryParts';
+import type { ExplorerAccounts } from '../data/accounts';
 
 const NOOP = () => {};
 
@@ -19,6 +22,8 @@ export function ItemHistoryDialog({
   item,
   onClose,
   extras,
+  accounts = null,
+  viewerLook = null,
 }: {
   app: ExplorerProviderProps['app'];
   client: IndexClient;
@@ -29,6 +34,10 @@ export function ItemHistoryDialog({
   onClose: () => void;
   // What other tools add to it (Snapshots).
   extras?: HistoryExtras;
+  // People's names and pictures (who did what, and their faces); without it they go unnamed.
+  accounts?: ExplorerAccounts | null;
+  // The reader's own avatar as their account menu draws it.
+  viewerLook?: ViewerLook | null;
 }) {
   return (
     <ExplorerProvider
@@ -43,7 +52,11 @@ export function ItemHistoryDialog({
       viewerId={viewerId}
       teams={teams}
     >
-      <HistoryDialog item={item} onClose={onClose} extras={extras} />
+      <PeopleProvider accounts={accounts}>
+        <ViewerLookContext value={viewerLook}>
+          <HistoryDialog item={item} onClose={onClose} extras={extras} />
+        </ViewerLookContext>
+      </PeopleProvider>
     </ExplorerProvider>
   );
 }

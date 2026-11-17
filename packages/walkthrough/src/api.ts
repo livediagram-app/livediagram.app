@@ -50,6 +50,10 @@ export type WalkthroughApi = {
   ) => Promise<{ walkthrough: WalkthroughSummary; events: WalkthroughEvents } | null>;
   media: (id: string) => Promise<Blob | null>;
   remove: (id: string) => Promise<boolean>;
+  /** Rename one: the walkthrough as it now is, or null when it couldn't be. */
+  rename: (id: string, title: string) => Promise<WalkthroughSummary | null>;
+  /** Its public link on or off: the walkthrough as it now is (`shareCode`), or null when it couldn't be. */
+  share: (id: string, on: boolean) => Promise<WalkthroughSummary | null>;
 };
 
 const bodyOf = async (res: Response): Promise<Record<string, unknown>> => {
@@ -144,5 +148,25 @@ export function walkthroughApi(
       }, null),
 
     remove: (id) => safely(async () => (await fetch(of(id), { method: 'DELETE' })).ok, false),
+
+    rename: (id, title) =>
+      safely(async () => {
+        const res = await fetch(of(id), {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title }),
+        });
+        return res.ok
+          ? ((await res.json()) as { walkthrough: WalkthroughSummary }).walkthrough
+          : null;
+      }, null),
+
+    share: (id, on) =>
+      safely(async () => {
+        const res = await fetch(of(id, '/share'), { method: on ? 'PUT' : 'DELETE' });
+        return res.ok
+          ? ((await res.json()) as { walkthrough: WalkthroughSummary }).walkthrough
+          : null;
+      }, null),
   };
 }

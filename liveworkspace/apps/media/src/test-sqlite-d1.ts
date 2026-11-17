@@ -73,9 +73,23 @@ function memoryBucket() {
         customMetadata: options?.customMetadata,
       });
     },
-    get: async (key: string) => {
+    get: async (key: string, options?: { range?: { offset: number; length?: number } }) => {
       const found = objects.get(key);
       if (!found) return null;
+      // A ranged read, as R2 answers one: the slice as the body, the range it covers, the whole size.
+      const range = options?.range;
+      if (range) {
+        const length = range.length ?? found.bytes.byteLength - range.offset;
+        const part = found.bytes.slice(range.offset, range.offset + length);
+        return {
+          body: new Blob([part]).stream(),
+          size: found.bytes.byteLength,
+          range: { offset: range.offset, length },
+          customMetadata: found.customMetadata ?? {},
+          text: async () => new TextDecoder().decode(part),
+          arrayBuffer: async () => part.slice().buffer,
+        };
+      }
       return {
         body: new Blob([found.bytes]).stream(),
         size: found.bytes.byteLength,

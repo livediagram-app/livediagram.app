@@ -16,7 +16,6 @@ import { Dialog } from '../dialogs/Dialog';
 
 import { ChromeToolsMenu, TOOLS_WIDTH_PX, type ChromeToolsItem } from './ChromeToolsMenu';
 import { requestToolsView } from './tools-door';
-import { useExampleContentToolsItem } from './useExampleContentToolsItem';
 
 afterEach(() => {
   cleanup();
@@ -279,42 +278,5 @@ describe('a tool inside Tools', () => {
     } finally {
       vi.useRealTimers();
     }
-  });
-});
-
-describe('Clear Example Content', () => {
-  function Tray({ shown, onClear }: { shown: boolean; onClear: () => void }) {
-    const confirm = useExampleContentToolsItem({ shown, onClear });
-    return (
-      <>
-        <ChromeToolsMenu items={[]} />
-        {confirm}
-      </>
-    );
-  }
-
-  it('shows only while examples are there, and asks inside Tools before clearing', async () => {
-    const onClear = vi.fn();
-    const { rerender } = render(<Tray shown={false} onClear={onClear} />);
-    expect(screen.queryByRole('button', { name: /^Tools/ })).toBeNull();
-    rerender(<Tray shown onClear={onClear} />);
-    fireEvent.click(tools());
-    expect(document.querySelector('[data-tools-group="content"]')).toBeTruthy();
-    fireEvent.click(document.querySelector<HTMLElement>('[data-tools-item="example-content"]')!);
-    expect(await screen.findByText('Clear the Examples?')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Keep Them' }));
-    await waitFor(() => expect(popover()!.getAttribute('aria-label')).toBe('Tools'));
-    fireEvent.click(document.querySelector<HTMLElement>('[data-tools-item="example-content"]')!);
-    fireEvent.click(await screen.findByRole('button', { name: 'Clear Example Content' }));
-    expect(onClear).toHaveBeenCalledOnce();
-  });
-
-  it('drops the question when the examples go another way', async () => {
-    const { rerender } = render(<Tray shown onClear={vi.fn()} />);
-    fireEvent.click(tools());
-    fireEvent.click(document.querySelector<HTMLElement>('[data-tools-item="example-content"]')!);
-    await screen.findByText('Clear the Examples?');
-    rerender(<Tray shown={false} onClear={vi.fn()} />);
-    await waitFor(() => expect(screen.queryByText('Clear the Examples?')).toBeNull());
   });
 });

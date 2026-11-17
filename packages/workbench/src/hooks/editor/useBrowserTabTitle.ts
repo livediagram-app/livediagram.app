@@ -17,6 +17,13 @@ import { useEffect } from 'react';
 
 type Holder = { title: string; status: boolean };
 
+/** An open item's browser tab title (owner, 2026-11-17): "<item> | <tab> | <app>", the tab left out while it has no
+ *  name (the item still loading). */
+export function editorTabTitle(item: string, tab: string | null | undefined, app: string): string {
+  const named = tab?.trim();
+  return named ? `${item} | ${named} | ${app}` : `${item} | ${app}`;
+}
+
 const holders = new Set<Holder>();
 let observer: MutationObserver | null = null;
 

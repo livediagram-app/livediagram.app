@@ -19,6 +19,7 @@
   "dependencies": {
     "@liveworkspace/capture": "workspace:*",
     "@liveworkspace/media": "workspace:*",
+    "@liveworkspace/sites": "workspace:*",
     "@liveworkspace/ui": "workspace:*",
     "@liveworkspace/workbench": "workspace:*"
   },

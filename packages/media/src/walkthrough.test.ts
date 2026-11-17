@@ -186,7 +186,7 @@ describe('titles, authors and types', () => {
 
   it('says every refusal in words', () => {
     const words = (body: Record<string, unknown>) => walkthroughRefusalMessage(body as never);
-    expect(words({ error: 'file_too_large' })).toContain('40 MB');
+    expect(words({ error: 'file_too_large' })).toContain('90 MB');
     expect(words({ error: 'too_long' })).toContain('10 minutes');
     expect(words({ error: 'item_full' })).toContain('50');
     expect(words({ error: 'walkthroughs_full', reason: 'bytes' })).toContain('space');

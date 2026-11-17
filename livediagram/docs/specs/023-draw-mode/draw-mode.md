@@ -222,6 +222,11 @@ pointing at the button that opened it, on the edge facing the dock, over its but
     [When the bar is too wide](#when-the-bar-is-too-wide)) than beside the card: centring costs the
     card's clearance on the right, so at a large toolbar UI scale the dock stays beside the card
     rather than fold tools to sit in the middle;
+  - with no header bar (experiment), it keeps clear of the corner card at the top right (Share and the account,
+    `EditorCornerActions`) as well: its right edge stops 16 px short of the card, and centred, it keeps the wider of
+    the two clearances on both sides, so a narrow window folds tools into More Tools rather than run the bar under
+    the card; the card drops its names (Share, Sign in) first, once the whole bar no longer fits beside it, as it
+    does for the palette strip;
   - its flyouts and the "Seven shapes are pinned" hint open **below** it;
   - the top-centre banners (follow-me, mode banners, timer, vote) sit
     **beneath** it, as they sit beneath the Toolbar strip;

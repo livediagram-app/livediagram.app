@@ -158,6 +158,10 @@ function planBoardLaneCell(
   // Every type the board takes may be added in any cell: a type's left-out statuses only
   // stop a card moving there (docs/specs/026-plan/item-types.md "An item type").
   const cellTypes = addTypes;
+  // A phone's covering board: the bottom controls' clearance inside its last cells, so the columns run to the foot and
+  // their last cards still scroll up clear of the controls (phone-board.ts endClearance).
+  const clearance =
+    v.look.endClearance && laneIndex === v.lanes.length - 1 ? v.look.endClearance : '';
   return (
     <div
       key={col.column.id}
@@ -166,7 +170,7 @@ function planBoardLaneCell(
       data-plan-lane={lane.key}
       className={`plan-col flex flex-col rounded-[var(--plan-col-r,8px)] ${
         simplified ? 'min-h-12 gap-1.5 px-1.5 pb-1.5' : 'min-h-16 gap-2 px-2 pb-2 pt-1'
-      }`}
+      } ${clearance}`}
       style={columnPartStyle(toneOf(col.column.id).palette)}
       // An Editor's right-click on the column's background opens its settings (plan-board.md
       // "A column's own settings"); anyone else's does what it always did.

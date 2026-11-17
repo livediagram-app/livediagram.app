@@ -3,17 +3,22 @@
 import dynamic from 'next/dynamic';
 import { DEFAULT_BACKGROUND_COLOR, DEFAULT_PATTERN_COLOR } from '@livediagram/document';
 
+import { createElement, type ComponentProps } from 'react';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { commitUserPreferences } from '@/lib/user-preferences';
+import { loadCanvasThemeDialog, loadedCanvasThemeDialog } from './canvas-theme-dialog-loader';
 
 const SettingsDialog = dynamic(
   () => import('@/components/dialogs/SettingsDialog').then((m) => m.SettingsDialog),
   { ssr: false },
 );
-const CanvasThemeDialog = dynamic(
-  () => import('@/components/dialogs/CanvasThemeDialog').then((m) => m.CanvasThemeDialog),
-  { ssr: false },
-);
+const LazyCanvasThemeDialog = dynamic(() => loadCanvasThemeDialog(), { ssr: false });
+
+// Drawn directly once its code is here (canvas-theme-dialog-loader.ts), through the lazy wrapper until then. Both are
+// module-level components: only which one draws changes, once, when the code arrives.
+function CanvasThemeDialog(props: ComponentProps<typeof LazyCanvasThemeDialog>) {
+  return createElement(loadedCanvasThemeDialog() ?? LazyCanvasThemeDialog, props);
+}
 
 // The editor's global modal dialogs (settings, canvas theme). Each is gated on its own open flag and reads everything it needs
 // straight from EditorContext, so EditorView just drops <EditorModals /> in

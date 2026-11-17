@@ -7,7 +7,10 @@ import {
   parseWalkthroughStart,
   sealWalkthroughEvents,
   sniffWalkthroughContainer,
+  isWalkthroughShareCode,
+  normaliseWalkthroughTitle,
   WALKTHROUGH_PENDING_MS,
+  WALKTHROUGH_SHARE_CODE_LENGTH,
   WALKTHROUGH_START_MAX_BYTES,
   WALKTHROUGHS_PER_ITEM_MAX,
   WALKTHROUGHS_PER_OWNER_LIST_MAX,
@@ -16,6 +19,7 @@ import {
   type Walkthrough,
   type WalkthroughEvents,
   type WalkthroughMediaType,
+  type WalkthroughShared,
 } from '@liveworkspace/media';
 import { readCappedBody } from '@liveworkspace/api-kit/request-body';
 import { parsePositiveCap, type Env } from './env';
@@ -35,6 +39,8 @@ type Row = {
   camera: number;
   ready: number;
   created_at: number;
+  screen: number;
+  share_code: string | null;
 };
 
 type Caps = { max: number | null; maxBytes: number | null };
@@ -54,6 +60,8 @@ function rowToWalkthrough(row: Row): Walkthrough {
     mediaType: row.media_type,
     mediaBytes: row.media_bytes,
     camera: row.camera === 1,
+    screen: row.screen === 1,
+    shareCode: row.share_code,
     createdAt: row.created_at,
     ready: row.ready === 1,
   };
@@ -67,6 +75,20 @@ const refused = (
   console.warn('[media] walkthrough refused', { app, error: body.error });
   return json(body, { status });
 };
+
+// Its owner, or the app for an Editor of its item (the app has checked the grant).
+const mayManage = (row: Row, owner: string | null, item: string | null) =>
+  (isId(owner) && row.owner === owner) || (isId(item) && row.item === item);
+
+// 22 URL-safe characters from 16 random bytes and a little more: 132 bits, unguessable.
+function newShareCode(): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(17));
+  const text = btoa(String.fromCharCode(...bytes))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
+  return text.slice(0, WALKTHROUGH_SHARE_CODE_LENGTH);
+}
 
 function getRow(env: Env, app: MediaApp, id: string): Promise<Row | null> {
   return env.MEDIA_DB.prepare('SELECT * FROM walkthroughs WHERE id = ? AND app = ?')
@@ -161,6 +183,25 @@ export async function handleWalkthroughs(
     return putMedia(request, env, bucket, app, owner, id);
   }
 
+  // PUT | DELETE /app/walkthroughs/<id>/share?owner= | ?item=: its public link on (a fresh code) or off.
+  if (
+    segments.length === 3 &&
+    segments[2] === 'share' &&
+    (method === 'PUT' || method === 'DELETE')
+  ) {
+    const row = await getRow(env, app, id);
+    if (!row || row.ready !== 1) return notFound();
+    if (!mayManage(row, owner, item)) return forbidden();
+    if (method === 'PUT' && row.screen !== 1) return refused(app, 409, { error: 'not_screen' });
+    // On keeps a code already set, so pressing it twice never breaks a link already sent.
+    const code = method === 'PUT' ? (row.share_code ?? newShareCode()) : null;
+    await env.MEDIA_DB.prepare('UPDATE walkthroughs SET share_code = ? WHERE id = ?')
+      .bind(code, id)
+      .run();
+    console.info('[media] walkthrough link', { app, on: code !== null });
+    return json({ walkthrough: rowToWalkthrough({ ...row, share_code: code }) });
+  }
+
   // GET /app/walkthroughs/<id>/media?item=: its media's bytes.
   if (segments.length === 3 && segments[2] === 'media' && method === 'GET') {
     const row = await getRow(env, app, id);
@@ -187,6 +228,20 @@ export async function handleWalkthroughs(
     if (!object) return notFound();
     const events = JSON.parse(await object.text()) as WalkthroughEvents;
     return json({ walkthrough: rowToWalkthrough(row), owner: row.owner, events });
+  }
+
+  // PATCH /app/walkthroughs/<id>?owner= | ?item=: rename it, as its owner or for an Editor of its item.
+  if (method === 'PATCH') {
+    const row = await getRow(env, app, id);
+    if (!row || row.ready !== 1) return notFound();
+    if (!mayManage(row, owner, item)) return forbidden();
+    const body = (await request.json().catch(() => null)) as { title?: unknown } | null;
+    if (typeof body?.title !== 'string' || !body.title.trim()) return badRequest('invalid_title');
+    const title = normaliseWalkthroughTitle(body.title);
+    await env.MEDIA_DB.prepare('UPDATE walkthroughs SET title = ? WHERE id = ?')
+      .bind(title, id)
+      .run();
+    return json({ walkthrough: rowToWalkthrough({ ...row, title }) });
   }
 
   // DELETE /app/walkthroughs/<id>?owner= | ?item=: its owner, or the app for an Editor of its item.
@@ -297,11 +352,13 @@ async function start(
     camera: start.events.camera ? 1 : 0,
     ready: 0,
     created_at: createdAt,
+    screen: start.events.screen ? 1 : 0,
+    share_code: null,
   };
   // Both caps again inside the statement, so starts racing each other can't together pass one.
   const inserted = await env.MEDIA_DB.prepare(
-    `INSERT INTO walkthroughs (id, owner, app, item, title, author, duration_ms, media_type, media_bytes, events_bytes, camera, ready, created_at)
-     SELECT ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, 0, ?12
+    `INSERT INTO walkthroughs (id, owner, app, item, title, author, duration_ms, media_type, media_bytes, events_bytes, camera, ready, created_at, screen)
+     SELECT ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, 0, ?12, ?15
      WHERE (?13 IS NULL OR (SELECT COUNT(*) FROM walkthroughs WHERE owner = ?2) < ?13)
        AND (?14 IS NULL OR (SELECT COALESCE(SUM(media_bytes + events_bytes), 0) FROM walkthroughs WHERE owner = ?2) + ?9 + ?10 <= ?14)`,
   )
@@ -320,6 +377,7 @@ async function start(
       createdAt,
       caps.max,
       caps.maxBytes,
+      row.screen,
     )
     .run();
   if (!inserted.meta.changes) {
@@ -402,4 +460,67 @@ export async function sweepPendingWalkthroughs(env: Env, now = Date.now()): Prom
   await deleteObjects(env.MEDIA, ids);
   if (ids.length) console.info(`[media] sweep: deleted ${ids.length} pending walkthroughs`);
   return ids.length;
+}
+
+/**
+ * The public door (no app key): a screen recording whose link is on, by its code. `GET /walkthroughs/shared/<code>` its
+ * name and maker, `GET /walkthroughs/shared/<code>/media` its bytes, a byte range when asked so the video seeks. Never
+ * cached: a link turned off stops at once.
+ */
+export async function handleSharedWalkthrough(
+  request: Request,
+  env: Env,
+  bucket: R2Bucket,
+  segments: readonly string[],
+): Promise<Response> {
+  const code = segments[0];
+  if (request.method !== 'GET' || !isWalkthroughShareCode(code) || segments.length > 2)
+    return notFound();
+  if (segments.length === 2 && segments[1] !== 'media') return notFound();
+  const row = await env.MEDIA_DB.prepare(
+    'SELECT * FROM walkthroughs WHERE share_code = ? AND ready = 1 AND screen = 1',
+  )
+    .bind(code)
+    .first<Row>();
+  if (!row) return notFound();
+  if (segments.length === 1) {
+    const shared: WalkthroughShared = {
+      title: row.title,
+      author: row.author,
+      app: row.app,
+      durationMs: row.duration_ms,
+      mediaType: row.media_type,
+      createdAt: row.created_at,
+    };
+    return json(shared, { headers: { 'Cache-Control': 'private, no-store' } });
+  }
+  const range = parseRange(request.headers.get('Range'));
+  const object = await bucket.get(mediaKey(row.id), range ? { range } : {});
+  if (!object) return notFound();
+  const headers = new Headers({
+    'Content-Type': row.media_type,
+    'Accept-Ranges': 'bytes',
+    'X-Content-Type-Options': 'nosniff',
+    'Cache-Control': 'private, no-store',
+  });
+  if (range && 'range' in object && object.range) {
+    const r = object.range as { offset?: number; length?: number };
+    const offset = r.offset ?? 0;
+    const length = r.length ?? object.size - offset;
+    headers.set('Content-Range', `bytes ${offset}-${offset + length - 1}/${object.size}`);
+    headers.set('Content-Length', String(length));
+    return new Response(object.body, { status: 206, headers });
+  }
+  headers.set('Content-Length', String(object.size));
+  return new Response(object.body, { headers });
+}
+
+// A single `bytes=a-b` or `bytes=a-` range, as a video element asks; anything else is the whole file.
+export function parseRange(value: string | null): { offset: number; length?: number } | null {
+  const m = /^bytes=(\d+)-(\d*)$/.exec(value ?? '');
+  if (!m) return null;
+  const offset = Number(m[1]);
+  if (!m[2]) return { offset };
+  const end = Number(m[2]);
+  return end >= offset ? { offset, length: end - offset + 1 } : null;
 }

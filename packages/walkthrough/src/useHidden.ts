@@ -24,6 +24,8 @@ export function useHidden(
   marks: readonly string[] = NO_MARKS,
   canHide = true,
   elements?: () => readonly unknown[],
+  // While the tab is filmed: hidden for real (the viewer's look), not faded, so the video never holds them.
+  filming = false,
 ) {
   // What was picked; `hidden` adds the arrows attached to it, which go with it (withAttachedArrows).
   const [picks, setHidden] = useState<ReadonlySet<string>>(() => new Set());
@@ -60,11 +62,11 @@ export function useHidden(
     setPicking(false);
   }, []);
 
-  // The presenter's look, while the recorder is open.
+  // The presenter's look, while the recorder is open; gone outright while the tab is filmed.
   useEffect(() => {
     if (!showing) return;
-    return applyHidden(document, hidden, 'presenter', marks);
-  }, [showing, hidden, marks]);
+    return applyHidden(document, hidden, filming ? 'viewer' : 'presenter', marks);
+  }, [showing, hidden, marks, filming]);
 
   // Picking: a press on an element hides or shows it, and goes no further (the editor neither selects nor drags).
   const active = showing && picking;
@@ -101,13 +103,14 @@ export function useHidden(
     };
   }, [active, canvasRoot, toggle, marks]);
 
-  // Esc leaves the mode, as Done does, and goes no further (the editor doesn't also clear its selection).
+  // Esc leaves the mode, as Done does, and goes no further: the editor doesn't also clear its selection, and Tools, where
+  // the set-up now sits, doesn't also step back out of it.
   useEffect(() => {
     if (!active) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return;
       e.preventDefault();
-      e.stopPropagation();
+      e.stopImmediatePropagation();
       setPicking(false);
     };
     window.addEventListener('keydown', onKey, { capture: true });

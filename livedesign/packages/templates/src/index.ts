@@ -34,3 +34,4 @@ export { buildPageLayout, buildPageLayoutOver } from './page-layout-build';
 export { carryPageContent, warmLayoutPlaceholders } from './page-layout-carry';
 export * from './template-tab';
 export { templateCatalogue } from './template-catalogue';
+export { templatePageKind } from './template-page-kinds';

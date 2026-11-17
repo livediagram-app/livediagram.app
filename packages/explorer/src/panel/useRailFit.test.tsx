@@ -1,31 +1,33 @@
 import { act, render } from '@testing-library/react';
 import { useRef } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { railContent, railTight, useRailFit } from './useRailFit';
+import { railContent, railPicture, useRailFit } from './useRailFit';
 
 // The signed-in rail's default content, measured in the livediagram editor's popover (Work Tracker 1205): 604 px
 // with the card's picture, 102 px of it the picture and its gap.
 const FULL = 604;
 const PICTURE = 102;
 
-describe('railTight', () => {
-  it('keeps the picture while the whole rail fits', () => {
-    expect(railTight({ tight: false, content: FULL, room: 636, picture: 0 })).toBe(false);
-    expect(railTight({ tight: false, content: FULL, room: FULL, picture: 0 })).toBe(false);
+describe('railPicture', () => {
+  // The content without the picture, and the picture with its 6 px gap as drawn.
+  const BASE = FULL - PICTURE;
+  it('keeps the full picture while the whole rail fits', () => {
+    expect(railPicture({ content: FULL, room: 636, shown: PICTURE, gap: 6 })).toBeNull();
+    expect(railPicture({ content: BASE, room: BASE + 6 + 96, shown: 0, gap: 6 })).toBeNull();
   });
 
-  it('drops the picture once the rail would scroll, even by a pixel', () => {
-    expect(railTight({ tight: false, content: FULL, room: 603, picture: PICTURE })).toBe(true);
+  it('shrinks the picture to the room left before the rail would scroll', () => {
+    expect(railPicture({ content: FULL, room: 597, shown: PICTURE, gap: 6 })).toBe(88);
+    expect(railPicture({ content: FULL, room: BASE + 6 + 49, shown: PICTURE, gap: 6 })).toBe(48);
   });
 
-  it('takes the picture back only when the card fits whole', () => {
-    const tight = FULL - PICTURE;
-    expect(railTight({ tight: true, content: tight, room: 529, picture: PICTURE })).toBe(true);
-    expect(railTight({ tight: true, content: tight, room: FULL, picture: PICTURE })).toBe(false);
+  it('drops the picture with under 48 px to spare, and takes it back once 48 fit', () => {
+    expect(railPicture({ content: FULL, room: BASE + 6 + 48, shown: PICTURE, gap: 6 })).toBe(0);
+    expect(railPicture({ content: BASE, room: BASE + 6 + 49, shown: 0, gap: 6 })).toBe(48);
   });
 
   it('allows half a pixel of subpixel layout', () => {
-    expect(railTight({ tight: false, content: 529.4, room: 529, picture: PICTURE })).toBe(false);
+    expect(railPicture({ content: BASE, room: BASE + 6 + 95.6, shown: 0, gap: 6 })).toBeNull();
   });
 });
 
@@ -71,9 +73,13 @@ const resize = () =>
 
 function Probe({ enabled = true, layoutKey = 'a' }: { enabled?: boolean; layoutKey?: string }) {
   const ref = useRef<HTMLElement>(null);
-  const tight = useRailFit(ref, enabled, layoutKey);
+  const picture = useRailFit(ref, enabled, layoutKey);
   return (
-    <nav ref={ref} data-rail-tight={tight ? '' : undefined}>
+    <nav
+      ref={ref}
+      data-rail-tight={picture === 0 ? '' : undefined}
+      data-rail-picture={picture ?? 'full'}
+    >
       <section style={{ display: 'flex', flexDirection: 'column' }}>
         <span data-current-picture="" />
         <span>Untitled canvas</span>
@@ -123,13 +129,17 @@ describe('useRailFit', () => {
     expect(scrollHeight()).toBeGreaterThan(nav.clientHeight);
   });
 
-  it('takes the picture back when the window grows, and drops it again when it shrinks', () => {
+  it('takes the picture back when the window grows, shrinks it, then drops it as the window shrinks', () => {
     const { nav, room } = mount(529);
     expect(nav.hasAttribute('data-rail-tight')).toBe(true);
     room.h = 612;
     resize();
-    expect(nav.hasAttribute('data-rail-tight')).toBe(false);
-    room.h = 611;
+    expect(nav.getAttribute('data-rail-picture')).toBe('full');
+    // A little short: the picture shrinks to what is left (560 less the 504 px rest, its 6 px gap and a spare pixel).
+    room.h = 560;
+    resize();
+    expect(nav.getAttribute('data-rail-picture')).toBe('49');
+    room.h = 550;
     resize();
     expect(nav.hasAttribute('data-rail-tight')).toBe(true);
   });

@@ -3,4 +3,5 @@
 export * from './constraints';
 export * from './devices';
 export * from './level';
+export * from './steady-audio';
 export { DevicePicker, NO_CAMERA, type CaptureKind, type DevicePickerProps } from './DevicePicker';

@@ -2,7 +2,12 @@
 
 import { useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { editorViewportOf } from '../../lib/editor-viewport';
-import { stripRoomBesideMenu } from '../canvas/menu-join';
+import {
+  stripRoomBesideMenu,
+  stripTakesGap,
+  CORNER_CARD_EVENT,
+  STRIP_NAMED_EVENT,
+} from '../canvas/menu-join';
 
 // Whether the category bar names its categories (docs/specs/007-editor/toolbar-layout.md "The category bar"), from
 // the strip's REAL sizes, as useStripTileLimit fits tiles: the centred strip may take the editor's width less the
@@ -34,8 +39,21 @@ export function useBarLabels(
     const measure = () => {
       const width = card.getBoundingClientRect().width;
       if (width <= 0) return;
-      if (labels) named.current = { key: categoriesKey, width };
+      if (labels) {
+        named.current = { key: categoriesKey, width };
+        // The strip's width with its names, kept on the card: where it stands (useStripCrowding) goes by this, so
+        // dropping the names to fit never brings a strip that moved aside back to the centre.
+        if (card.dataset.stripNaturalWidth !== String(width)) {
+          card.dataset.stripNaturalWidth = String(width);
+          window.dispatchEvent(new Event(STRIP_NAMED_EVENT));
+        }
+      }
       // Another set of categories: show the names once to measure them.
+      // A strip mounted again (back from a phone's row) keeps the named width it measured before.
+      else if (named.current?.key === categoriesKey && !card.dataset.stripNaturalWidth) {
+        card.dataset.stripNaturalWidth = String(named.current.width);
+        window.dispatchEvent(new Event(STRIP_NAMED_EVENT));
+      }
       if (named.current?.key !== categoriesKey) {
         named.current = null;
         if (!labels) setLabels(true);
@@ -43,7 +61,9 @@ export function useBarLabels(
       }
       const view = editorViewportOf(card);
       const menu = document.querySelector<HTMLElement>('[data-toolbar-menu]');
-      const fits = named.current.width <= stripRoomBesideMenu(view.width, view.left, menu);
+      const fits =
+        named.current.width <=
+        stripRoomBesideMenu(view.width, view.left, menu, stripTakesGap(card));
       if (fits !== labels) setLabels(fits);
     };
     measure();
@@ -51,10 +71,13 @@ export function useBarLabels(
     observer.observe(card);
     const menu = document.querySelector<HTMLElement>('[data-toolbar-menu]');
     if (menu) observer.observe(menu);
+    // The top-right corner card (EditorCornerActions) bounds the strip too; it says when it mounts or resizes.
+    window.addEventListener(CORNER_CARD_EVENT, measure);
     window.addEventListener('resize', measure);
     return () => {
       observer.disconnect();
       window.removeEventListener('resize', measure);
+      window.removeEventListener(CORNER_CARD_EVENT, measure);
     };
   }, [cardRef, enabled, categoriesKey, labels, scale]);
 

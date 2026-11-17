@@ -110,6 +110,9 @@ export type Topic<L = unknown> = {
   // Live measures a topic needs from the screen as it plays (where the palette's first tile is), returning a new layout
   // when it learned something, else null.
   measure?(layout: L, index: number, ms: number, screen: ScreenProbe): L | null;
+  // Loads, as the topic starts, the code of the chrome it will open (a lazily loaded dialog), so a press opens it at
+  // once rather than the pointer waiting on the button while it arrives.
+  warm?(): void;
 };
 
 /** A topic's whole length, in ms. */

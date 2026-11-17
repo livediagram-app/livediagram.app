@@ -25,6 +25,13 @@ export function useViewPreview(sessionRole: ShareRole, onEnterPreview: () => voi
     if (next !== 'edit') onEnterPreview();
     setPreview(next);
   };
+  // Straight to a level (the Editing Mode tool, RoleTool), as the pill's steps get there.
+  const setViewPreview = (next: AccessLevel) => {
+    if (!canToggleRole || next === preview) return;
+    debugLog('[role] preview', next);
+    if (next !== 'edit') onEnterPreview();
+    setPreview(next);
+  };
   // The level in force: the session's, narrowed by the preview.
   const previewLevel: AccessLevel = canToggleRole ? preview : sessionRole;
   return {
@@ -33,6 +40,7 @@ export function useViewPreview(sessionRole: ShareRole, onEnterPreview: () => voi
     previewLevel,
     canToggleRole,
     toggleViewPreview,
+    setViewPreview,
     canEdit: previewLevel === 'edit',
   };
 }

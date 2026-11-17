@@ -7,6 +7,10 @@
 // "Opening a tool inside Tools"). Both rows always show where signing in or syncing would make them work
 // (footer-tools-menu.md "Always there"), badged Sign In and Sync <Item>, and a press opens that gate first: Sign In
 // leaves for the sign-in page; Sync <Item> saves the item to the server and goes on to the tool.
+import { useDeferredAuth } from '../providers/deferred-auth';
+import { useSavedLook } from './AuthControls';
+import { accountAvatarFill, accountInitials } from '../../lib/account-avatar';
+import { explorerAccounts } from '../../lib/explorer-accounts';
 import { useEffect, useMemo, useRef, useState, type ComponentType, type ReactNode } from 'react';
 import {
   ButtonContent,
@@ -28,7 +32,13 @@ import type { IndexClient } from '@liveworkspace/index-client';
 import { lucideGlyph } from '@liveworkspace/ui';
 import { lucideHistory, lucideWebhook } from '@liveworkspace/icons/lucide';
 import type { ChromeToolsItem } from './ChromeToolsMenu';
-import { useItemVersions, usePublishToolsItems } from './tools-door';
+import {
+  requestToolsView,
+  useItemVersions,
+  usePublishToolGate,
+  usePublishToolsItems,
+  type ToolGate,
+} from './tools-door';
 
 const WebhookIcon = lucideGlyph(lucideWebhook, 16);
 const HistoryIcon = lucideGlyph(lucideHistory, 16);
@@ -49,7 +59,11 @@ export type ItemHistoryHost = {
 };
 
 // Each gated tool's name; what its gate says is the shared plain copy (toolGateCopy).
-const SIGN_IN = { history: { title: 'History' }, webhooks: { title: 'Webhooks' } } as const;
+const SIGN_IN = {
+  history: { title: 'History' },
+  webhooks: { title: 'Webhooks' },
+  walkthroughs: { title: 'Walkthroughs' },
+} as const;
 type SignInFor = keyof typeof SIGN_IN;
 
 // An item in This Browser: how to save it to the server (the editor's Sync move), and whether the reader is known yet.
@@ -113,6 +127,12 @@ export function useItemToolsRows({
     [guest, offline, noun],
   );
   const gated = guest || !!offline;
+  // The gate, for tools published elsewhere (Walkthroughs): badged the same, and a press opens this gate for them.
+  const toolGate = useMemo<ToolGate | null>(
+    () => (gated ? { badges, open: (tool) => setGate(tool) } : null),
+    [gated, badges],
+  );
+  usePublishToolGate(toolGate);
   const mode = historyMode({
     timeline: !!history && !gated,
     snapshots: !!snapshots,
@@ -182,7 +202,7 @@ export function useItemToolsRows({
   usePublishToolsItems('item', rows);
   const versionsLink = (close: () => void) =>
     versions ? <VersionsLink open={versions} onLeave={close} /> : null;
-  if (gate && gated && (gate === 'webhooks' || mode === 'gate'))
+  if (gate && gated && (gate !== 'history' || mode === 'gate'))
     return (
       <SignInDialog
         for={gate}
@@ -190,7 +210,9 @@ export function useItemToolsRows({
         sync={guest ? null : offline}
         after={gate === 'history' ? versionsLink(() => setGate(null)) : null}
         onSynced={() => {
-          setPending(gate);
+          // Walkthroughs' own row arrives once the synced item lets it record: Tools opens at it then (FM7).
+          if (gate === 'walkthroughs') requestToolsView('walkthroughs');
+          else setPending(gate);
           setGate(null);
         }}
         onClose={() => setGate(null)}
@@ -270,6 +292,20 @@ function OpenItemHistory({
 }) {
   const item = useOpenItem(host.client, host.itemId, host.shareCode, host.sharePassword);
   const teams = host.useTeams(true);
+  // Your own face as your account menu draws it (owner, 2026-11-17: History showed a blank person for you).
+  const { user } = useDeferredAuth();
+  const saved = useSavedLook();
+  const viewerLook = useMemo(
+    () =>
+      user
+        ? {
+            fill: accountAvatarFill(user, saved),
+            initials: accountInitials(user),
+            picture: user.picture ?? null,
+          }
+        : null,
+    [user, saved],
+  );
   const extras = useMemo<HistoryExtras>(
     () => ({ top, action, pins: pins ?? [] }),
     [top, action, pins],
@@ -284,6 +320,8 @@ function OpenItemHistory({
       teams={teams}
       item={item}
       extras={extras}
+      accounts={explorerAccounts}
+      viewerLook={viewerLook}
       onClose={onClose}
     />
   );

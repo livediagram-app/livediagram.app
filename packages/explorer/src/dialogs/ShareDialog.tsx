@@ -252,6 +252,8 @@ export function ShareDialog({
       // While Show Me runs, Escape is the tour's.
       closeOnEscape={!tour.active}
       size="lg"
+      // A drawer on a phone, risen from the bottom edge with a grab handle, as working dialogs are there.
+      phoneSheet
       // Centred at a steady height from sm up (dialogs never pin to the top), so the role picker unfolding or a pass
       // coming or going scrolls the body between the fixed header and footer and never moves the panel.
       className="max-h-[calc(100%-2rem)] sm:h-[min(48rem,calc(100%-2rem))]"

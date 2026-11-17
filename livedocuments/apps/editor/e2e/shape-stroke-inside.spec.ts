@@ -93,8 +93,7 @@ test('a shape drawn to its box edge paints no stroke outside it', async ({ page,
   await openBlankPage(page);
   // Three to a row, 60px apart: wider than both margins, so no neighbour is in the ring. All on the A4 page,
   // which is centred on the canvas origin (794 x 1123): a shape past its edge is clipped by it.
-  await seedTab(
-    page,
+  const shapes = () =>
     EDGE_KINDS.map((shape, i) => ({
       id: `s-${shape}`,
       type: 'shape',
@@ -103,22 +102,41 @@ test('a shape drawn to its box edge paints no stroke outside it', async ({ page,
       y: -200 + Math.floor(i / 3) * 160,
       width: 160,
       height: 100,
-    })),
-  );
+    }));
+  await seedTab(page, shapes());
 
   // At 100%, as drawn: a page fitted to the screen is scaled down, and a box edge between device pixels
   // blurs both sides of it.
-  await page.getByRole('button', { name: 'Fit to screen' }).first().focus();
-  await page.keyboard.press('ArrowDown');
-  await page
-    .getByRole('menu', { name: 'Zoom level' })
-    .getByRole('menuitemradio', { name: '100%' })
-    .click();
-  await expect(page.getByRole('button', { name: 'Fit to screen' }).first()).toHaveText('100%');
-  // A zoom that has rested glides the view onto the page (docs/specs/007-editor/pages-mode.md "Getting around the
-  // pages"), now beside the Contents sidebar docked from the first page. Measure once the view is at rest, or a ring
-  // is read across the glide.
-  await viewAtRest(page);
+  const at100 = async () => {
+    await page.getByRole('button', { name: 'Fit to screen' }).first().focus();
+    await page.keyboard.press('ArrowDown');
+    await page
+      .getByRole('menu', { name: 'Zoom level' })
+      .getByRole('menuitemradio', { name: '100%' })
+      .click();
+    await expect(page.getByRole('button', { name: 'Fit to screen' }).first()).toHaveText('100%');
+    // A zoom that has rested glides the view onto the page (docs/specs/007-editor/pages-mode.md "Getting around the
+    // pages"), now beside the Contents sidebar docked from the first page. Measure once the view is at rest, or a
+    // ring is read across the glide.
+    await viewAtRest(page);
+  };
+  await at100();
+  // The view may rest between screen pixels (zoomed about the canvas's middle, which with no header bar can fall
+  // between them), and the canvas layer drawn there blurs every edge on it: pan it by the fraction, so the shapes'
+  // box edges sit on whole pixels, as drawn.
+  const first = page.locator(`[data-element-id="s-${EDGE_KINDS[0]}"] svg`).first().locator('..');
+  const fraction = async () => {
+    const b = (await first.boundingBox())!;
+    return { dx: b.x - Math.round(b.x), dy: b.y - Math.round(b.y) };
+  };
+  const { dx, dy } = await fraction();
+  if (Math.abs(dx) + Math.abs(dy) >= 0.01) {
+    await page.mouse.move(640, 600);
+    await page.mouse.wheel(dx, dy);
+    await viewAtRest(page);
+    const after = await fraction();
+    expect(Math.abs(after.dx) + Math.abs(after.dy)).toBeLessThan(0.01);
+  }
 
   const outside: Record<string, number> = {};
   for (const shape of EDGE_KINDS) {

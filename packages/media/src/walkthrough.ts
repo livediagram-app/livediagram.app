@@ -6,12 +6,13 @@ import { MEDIA_ID_MAX } from './limits';
 
 // Ten minutes: a walkthrough explains a canvas; past ten minutes it is a meeting.
 export const WALKTHROUGH_MAX_MS = 10 * 60 * 1000;
-// The recorder's bit rates: the bubble shows the camera at most 240 px across, and Opus speech is clear from 32 kbit/s.
-export const WALKTHROUGH_VIDEO_BPS = 400_000;
+// The recorder's bit rates: a screen recording keeps a canvas's lines and text sharp at 1080p (mostly still frames), and
+// Opus speech is clear from 32 kbit/s.
+export const WALKTHROUGH_VIDEO_BPS = 1_000_000;
 export const WALKTHROUGH_AUDIO_BPS = 48_000;
-// Ten minutes at both rates is 33.6 MB; 40 MiB leaves a quarter for an encoder that overshoots, far under the 100 MB a
-// Worker request may carry. Audio alone is about 3.6 MB.
-export const WALKTHROUGH_MEDIA_MAX_BYTES = 40 * 1024 * 1024;
+// Ten minutes at both rates is 78.6 MB; 90 MiB (94.4 MB) leaves a fifth for an encoder that overshoots and stays under the
+// 100 MB a Worker request may carry.
+export const WALKTHROUGH_MEDIA_MAX_BYTES = 90 * 1024 * 1024;
 export const WALKTHROUGH_MEDIA_MAX_MB = WALKTHROUGH_MEDIA_MAX_BYTES / (1024 * 1024);
 // The view and the pointer are sampled at most ten times a second each: ten minutes is about 12,000 events (0.7 MB).
 export const WALKTHROUGH_EVENTS_MAX_BYTES = 2 * 1024 * 1024;
@@ -29,6 +30,17 @@ export const WALKTHROUGHS_PER_OWNER_LIST_MAX = 200;
 // A start whose media never arrives is swept after an hour.
 export const WALKTHROUGH_PENDING_MS = 60 * 60 * 1000;
 export const WALKTHROUGH_DEFAULT_TITLE = 'Walkthrough';
+// A public link's code: 22 URL-safe characters, 132 bits from the CSPRNG.
+export const WALKTHROUGH_SHARE_CODE_LENGTH = 22;
+
+/** Whether a value is a public link's code in shape (not whether one is on). */
+export function isWalkthroughShareCode(value: unknown): value is string {
+  return (
+    typeof value === 'string' &&
+    value.length === WALKTHROUGH_SHARE_CODE_LENGTH &&
+    /^[A-Za-z0-9_-]+$/.test(value)
+  );
+}
 
 // Chrome, Edge and Firefox record WebM; Safari records MP4. Video when the camera was on, audio when it was off.
 export const ACCEPTED_WALKTHROUGH_TYPES = [
@@ -62,6 +74,8 @@ export type WalkthroughEvent =
 
 export type WalkthroughEvents = {
   v: 1;
+  // A screen recording (owner, 2026-11-17): the media is a video of the tab, and there is nothing to replay.
+  screen?: true;
   durationMs: number;
   camera: boolean;
   corner: WalkthroughCorner;
@@ -81,11 +95,25 @@ export type Walkthrough = {
   mediaType: WalkthroughMediaType;
   mediaBytes: number;
   camera: boolean;
+  // A video of the screen; false for a replay recorded before.
+  screen: boolean;
+  // Its public link's code while the link is on, else null.
+  shareCode: string | null;
   createdAt: number;
   ready: boolean;
 };
 
-/** One walkthrough as an app's door tells its editor. */
+/** What a public link shows: the video's name and maker, and nothing of the document. */
+export type WalkthroughShared = {
+  title: string;
+  author: string | null;
+  app: string;
+  durationMs: number;
+  mediaType: WalkthroughMediaType;
+  createdAt: number;
+};
+
+/** One walkthrough as an app's door tells its editor. `canDelete` also says who may rename and share it. */
 export type WalkthroughSummary = Omit<Walkthrough, 'item' | 'ready'> & {
   mine: boolean;
   canDelete: boolean;
@@ -231,6 +259,7 @@ export function parseWalkthroughEvents(value: unknown): WalkthroughEvents | null
   }
   return sealWalkthroughEvents({
     v: 1,
+    ...(v.screen === true ? { screen: true as const } : {}),
     durationMs: v.durationMs,
     camera: v.camera,
     corner: v.corner as WalkthroughCorner,

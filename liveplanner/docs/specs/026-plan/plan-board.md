@@ -970,10 +970,10 @@ A board can be maximised to work on it without the rest of the canvas around it.
   controls and inset scaling with it, its hairline not; `--plan-band-card-h`). The header's own content keeps clear of them: its title, count and widgets
   start after the mode menu and stop short of the palette (truncating, or the widgets scrolling, as they do when
   narrow). It is laid out this way only when there is room: at least 140 px between the mode menu and the palette
-  with the palette at the right (a desktop or a wide tablet). On a phone (under 640 px of canvas) it still holds the
-  top row, more simply: its header grows to the menu box's height and its content starts 12 px after the box, the
-  name staying in the header and the controls as they are, with at least 160 px left after the menu (else, as in a
-  narrow window, the element starts below the top row as before). The menu box takes the element's surface there too. The header follows the row
+  with the palette at the right (a desktop or a wide tablet). On a phone (a window under 640 px) it still holds the
+  top row, more simply: its header is centred on the menu box (inside the element's border, down to a hairline under
+  it, so its title, widgets and buttons stand level with the menu box and the corner card), its content starting
+  4 px after the box, the name staying in the header and the controls as they are. The menu box takes the element's surface there too. The header follows the row
   as it changes (the palette's category switching its width, the window resizing). With no palette in the row (it is
   hidden, below, or the person may not edit) the header holds the menu alone, its content running on to its controls.
   The menu box and the palette in the band wear the element's hue: a 10% mix of it into the chrome's own light or

@@ -244,6 +244,8 @@ A template chosen fires `Template · Used · <kind>` through `chooseTemplate`. A
   Typesetter in serif.
 - `components/start/start-template-items.test.ts`: Blank Pages first, groups and search, and every listed template
   reachable from the start.
+- `../packages/templates/src/template-page-kinds.test.ts`: every listed template's page type is the kind of the pages it makes
+  (`templatePageKind`, for the page type filter still to be built).
 - `components/start/StartPanel.test.tsx`: Down from the search, Best Match leading, the arrow keys among the cards.
 - `../packages/workbench/src/components/start/best-match.test.ts`: which names lead, exact first, lifted out of their groups once.
 - `../packages/workbench/src/components/start/start-card-keys.test.ts`: where each arrow, Home and End go in a grid of cards.

@@ -2,6 +2,7 @@
 @import '@liveplanner/tailwind-config';
 /* The shared Explorer's classes (@liveworkspace/explorer, liveworkspace/docs/specs/004-index/one-explorer.md). */
 @import '@liveworkspace/explorer/explorer.css';
+@import '@liveworkspace/workbench/styles/corner-actions.css';
 @import '@liveplanner/template-previews/preview-art-tile.css';
 @import '@liveplanner/template-previews/preview-motion.css';
 @import './collab-cards.css';
@@ -1106,4 +1107,31 @@ main:has(> [data-canvas-cover]) > [data-canvas-content] [data-selection-grips] {
    dropdowns portal to the page at the overlay layer, which is under a dialog; while it is open they sit above it. */
 :root[data-practice-sheet-open] body > [data-palette-dropdown-menu] {
   z-index: var(--z-popover);
+}
+
+/* Experiment (no header bar): on a maximised board's header band (CanvasCover's data-band-blend) the top-right corner
+ * card stands flush on the header, as the menu box does at its left (toolbar-surface BAND_FLUSH). The card sits outside
+ * the canvas, so it reads the band off the page. */
+:root:has([data-band-blend]) [data-corner-actions] {
+  background-color: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Experiment (no header bar): on a phone the top row's outer cards meet the screen's edges (PHONE_EDGE_LEFT, the corner
+ * card's phone:right-0), but not while a board or sheet shares that row with them (CanvasCover's data-shared-row):
+ * there they keep the 6 px gutter and their rounded outer corners, the header running between them. Dashboards only. */
+@media (max-width: 639px), (pointer: coarse) and (max-height: 499px) {
+  :root:has([data-shared-row]) [data-toolbar-menu] {
+    left: 0.375rem;
+    border-left-width: 1px;
+    border-top-left-radius: 0.75rem;
+    border-bottom-left-radius: 0.75rem;
+  }
+  :root:has([data-shared-row]) [data-corner-actions] {
+    right: 0.375rem;
+    border-right-width: 1px;
+    border-top-right-radius: 0.75rem;
+    border-bottom-right-radius: 0.75rem;
+  }
 }

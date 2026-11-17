@@ -7,6 +7,12 @@ its editor records and plays one ([livediagram's](../../../../livediagram/docs/s
 is the full account; livedocuments, livedesign and liveplanner each have their own). This spec is the platform's
 half: where a walkthrough is kept, what it may be, and when it goes.
 
+**A video of the screen** (owner, 2026-11-17: "I expected it to be an actual video that recorded my screen while
+talking"). A new walkthrough is a **screen recording**: the browser tab as a video, with the presenter's voice, and their
+camera bubble filmed into it when the camera is on. It plays anywhere as a video, and can be shared by a public link
+(below). Walkthroughs recorded before keep their **replay** (the events over the live canvas, as this spec describes
+under "The events"), so nothing already recorded stops playing. "Screen recordings" below says what changed.
+
 The media service keeps walkthroughs beside the images, in the same D1 database and R2 bucket, and each app's api
 is their only door, as it is for images ([media.md](media.md) "What lives where").
 
@@ -110,33 +116,89 @@ further attributes whose value is the id of a thing that can be hidden (liveplan
 `data-dashboard-slot`), wherever under the canvas root they are drawn. Picking, the presenter's and the viewer's
 hiding, the pointer's `cursor-out` and the player's press rings all read them like `data-element-id`, and a `point`
 may name one. The app also says whether the tab showing has **anything to hide** at all: where it has nothing (a
-liveplanner Sheet or Form tab, an empty canvas), the dock leaves Hide From Recording out rather than offering a mode
+liveplanner Sheet or Form tab, an empty canvas), the set-up leaves Hide From Recording out rather than offering a mode
 in which no press can do anything. An app that says neither (livediagram, livedocuments, livedesign) hides canvas
 elements alone and always offers the control, as before.
+
+**True to time** (owner, 2026-11-17). The recorder never reads the microphone straight: its sound goes through Web
+Audio first (`steadyAudio`, `@liveworkspace/capture`, on the context the Record press started), then to MediaRecorder
+with the camera's video as it is. Read straight, some USB microphones record about a quarter too long, slowed and
+garbled (an NZXT USB mic in Brave: 5 s came out 6.36 s, whatever the processing); through Web Audio the same mic
+records 4.98 s.
+
+**Chosen before, never during** (owner, 2026-11-17). Hide From Recording is in the set-up alone: the recording bar
+has only the clock, the level, Discard and Finish, so what a walkthrough hides is settled before it starts.
+
+**The set-up** (owner, 2026-11-17) opens from Record Walkthrough in Tools as a popover beside it (a drawer on a phone,
+as Add Webhook does): the microphone and camera, the **Mic Level** meter (filled from -65 dBFS, just above a silent room
+after the browser's noise suppression, to -15 dBFS, a shout: talking fills half to four fifths), the bubble's corner,
+Hide From Recording and Start Recording. A press outside it, Escape, or Tools closing lets the devices go; one
+outside while picking what to hide does not. Start Recording closes Tools for the count. Walkthroughs in Tools closes on
+a press outside like any tool (owner, 2026-11-17: only Slide Deck stays open while you work), except while picking
+what to hide, whose presses land on the canvas.
 
 **Edited since recording.** `fingerprints` holds each visited tab's content fingerprint when the recording began
 (the app's own; any string up to 128 characters). A player that finds a tab's fingerprint changed says the
 walkthrough was **edited since recording** and still plays it over the canvas as it is now.
+
+## Screen recordings
+
+- **Recording.** Start Recording asks the browser to share **this tab** (`getDisplayMedia` with `preferCurrentTab`,
+  `selfBrowserSurface: 'include'`, `displaySurface: 'browser'`, no system audio), the browser's own prompt, once per
+  recording, inside the press. Refused, or a browser without it (Safari, phones), the set-up says "Your browser
+  didn't share this tab, so nothing was recorded." and stays open; nothing is recorded. Shared, the count runs and
+  `MediaRecorder` records the tab's video track with the microphone's sound (through `steadyAudio`) as one WebM.
+  The camera, when on, is the round bubble on screen, filmed with the rest. Without the camera there is no bubble
+  (the sound-only initial is a replay's). The browser's own "sharing this tab" bar shows while it records. Stopping
+  the share from the browser's bar is Finish.
+- **What it films.** The whole tab as the presenter sees it. **Hide From Recording** hides the chosen elements on the
+  presenter's own screen for the length of the recording (fully, not the faded presenter view a replay used), so the
+  video never holds them. The recording bar, the count and the set-up stay out of the canvas's way but are in the
+  tab, so they are filmed; the bar is small.
+- **Saving.** Finish saves at once, named "Walkthrough of <tab>" (no naming step: owner, 2026-11-17); the save card
+  shows only while it uploads, or to say why it couldn't (with Download a Copy). Renaming is in the list.
+- **Events.** A screen recording stores `{ v: 1, screen: true, durationMs, camera, corner, startTab, hidden: [],
+fingerprints: {}, events: [] }`: the length and nothing to replay. `screen` marks it; the player plays the video.
+- **Playing.** Pressing one in the list opens the **video player**: a popover over the editor (a sheet on a phone)
+  with the video, its title, who and when, **Share** (its owner or an Editor; it opens the Public Link popover, and
+  reads **Shared** while the link is on), **Full Screen**, and the browser's own controls (play, seek, speed). Tools
+  closes first. The same `VideoDialog` plays one from the Explorer's library. A replay (no `screen`) plays as before.
+
+### Each walkthrough's menu
+
+Each row in the Walkthroughs list ends in a **⋯** (shown on hover and on a phone always) with:
+
+- **Rename**: the title edits in place in the row (Enter or a press away saves, Escape cancels; at most 120
+  characters; blank keeps the old). Its owner, or an Editor of the document.
+- **Share** (screen recordings only): a popover beside the row with **Public Link** on or off. On, it shows the link
+  (`https://www.liveworkspace.app/walkthrough?c=<code>`, the code 22 random URL-safe characters; the site is a static export, so one page reads the code from the address) and **Copy Link**; off,
+  the link stops working at once and a new one is made next time. Anyone with the link watches the video, its title
+  and who made it, and nothing else: not the canvas, not the document's name. Its owner, or an Editor.
+- **Delete**: asks first, as before.
+
+The public page lives on liveworkspace.app (platform first): `/walkthrough?c=<code>` shows the video full width on the
+site's plain page, its title and "by <author>", with "Made with <app>" linking to the app. It is `noindex` and sends no Referer. A code
+that is off or unknown says **Walkthrough Not Found**.
 
 ## Limits
 
 Every number is in `packages/media/src/walkthrough.ts`; the service enforces them, and the recorder stops itself
 at the same ones, so a refusal is rare and always says why.
 
-| Constant                          | Value          | Why                                                                                                                                                                                 |
-| --------------------------------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `WALKTHROUGH_MAX_MS`              | 10 minutes     | A walkthrough explains a canvas; past ten minutes it is a meeting. Loom's free tier stops at five.                                                                                  |
-| `WALKTHROUGH_VIDEO_BPS`           | 400,000 bits/s | The bubble shows the camera at most 240 px across; 480 x 480 at 400 kbit/s is sharp there.                                                                                          |
-| `WALKTHROUGH_AUDIO_BPS`           | 48,000 bits/s  | Opus speech is clear from 32 kbit/s.                                                                                                                                                |
-| `WALKTHROUGH_MEDIA_MAX_BYTES`     | 40 MiB         | Ten minutes at both bit rates is 33.6 MB; 40 MiB leaves 25% for an encoder that overshoots, and stays far under the 100 MB a Worker request may carry. Audio alone is about 3.6 MB. |
-| `WALKTHROUGH_EVENTS_MAX_BYTES`    | 2 MiB          | The recorder samples the view and the pointer at most 10 times a second each: ten minutes is about 12,000 events, under 700 KB.                                                     |
-| `WALKTHROUGH_EVENTS_MAX`          | 20,000         | The same bound counted in events.                                                                                                                                                   |
-| `WALKTHROUGH_HIDDEN_MAX`          | 2,000          | Ids in `hidden`.                                                                                                                                                                    |
-| `WALKTHROUGH_TITLE_MAX`           | 120 characters | A title.                                                                                                                                                                            |
-| `WALKTHROUGHS_PER_DOCUMENT_MAX`   | 50             | A document's list stays one short list.                                                                                                                                             |
-| `WALKTHROUGH_MAX_PER_OWNER`       | 50 (a var)     | Per person, across every app.                                                                                                                                                       |
-| `WALKTHROUGH_MAX_BYTES_PER_OWNER` | 1 GiB (a var)  | Per person: 25 ten-minute videos, or hundreds with the camera off. At R2's storage price that is about $0.015 a person a month at the very most.                                    |
-| `WALKTHROUGH_PENDING_MS`          | 1 hour         | A row whose media never arrived is swept after this.                                                                                                                                |
+| Constant                          | Value            | Why                                                                                                                                                         |
+| --------------------------------- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `WALKTHROUGH_MAX_MS`              | 10 minutes       | A walkthrough explains a canvas; past ten minutes it is a meeting. Loom's free tier stops at five.                                                          |
+| `WALKTHROUGH_VIDEO_BPS`           | 1,000,000 bits/s | A screen recording: a canvas's lines and text stay sharp at 1080p, mostly still frames. (A replay's camera bubble was 400 kbit/s.)                          |
+| `WALKTHROUGH_AUDIO_BPS`           | 48,000 bits/s    | Opus speech is clear from 32 kbit/s.                                                                                                                        |
+| `WALKTHROUGH_MEDIA_MAX_BYTES`     | 90 MiB           | Ten minutes at both bit rates is 78.6 MB; 90 MiB (94.4 MB) leaves 20% for an encoder that overshoots and stays under the 100 MB a Worker request may carry. |
+| `WALKTHROUGH_EVENTS_MAX_BYTES`    | 2 MiB            | The recorder samples the view and the pointer at most 10 times a second each: ten minutes is about 12,000 events, under 700 KB.                             |
+| `WALKTHROUGH_EVENTS_MAX`          | 20,000           | The same bound counted in events.                                                                                                                           |
+| `WALKTHROUGH_HIDDEN_MAX`          | 2,000            | Ids in `hidden`.                                                                                                                                            |
+| `WALKTHROUGH_TITLE_MAX`           | 120 characters   | A title.                                                                                                                                                    |
+| `WALKTHROUGHS_PER_DOCUMENT_MAX`   | 50               | A document's list stays one short list.                                                                                                                     |
+| `WALKTHROUGH_MAX_PER_OWNER`       | 50 (a var)       | Per person, across every app.                                                                                                                               |
+| `WALKTHROUGH_MAX_BYTES_PER_OWNER` | 1 GiB (a var)    | Per person: 25 ten-minute videos, or hundreds with the camera off. At R2's storage price that is about $0.015 a person a month at the very most.            |
+| `WALKTHROUGH_PENDING_MS`          | 1 hour           | A row whose media never arrived is swept after this.                                                                                                        |
 
 The two per-person caps are `[vars]` in the service's `wrangler.toml`, as the image caps are, so the owner can
 change them without a deploy of code; unset, blank, 0 or garbage is no cap.
@@ -150,19 +212,28 @@ service checks the file's first bytes (WebM's EBML header, MP4's `ftyp` box) aga
 Under `/api/media/app`, with the app's key ([media.md](media.md) "The API"). A walkthrough is only ever its own
 app's: every route answers another app's walkthrough as missing.
 
-| Route                                 | What it does                                                                                                                         |
-| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `GET /walkthroughs?item=`             | The document's ready walkthroughs, newest first: `{ walkthroughs: [{ walkthrough, owner }] }`                                        |
-| `GET /walkthroughs?owner=`            | A person's own ready walkthroughs in the app, newest first (at most 200), for the Explorer's library: the same shape                 |
-| `POST /walkthroughs?owner=`           | Start one: `{ item, title, author, mediaType, mediaBytes, events }`, the events stored at once; `201 { walkthrough }`, not yet ready |
-| `PUT /walkthroughs/<id>/media?owner=` | Its media, the raw body, exactly `mediaBytes` long and of `mediaType`; then it is ready: `{ walkthrough }`                           |
-| `GET /walkthroughs/<id>`              | A ready one, whose it is, and its events: `{ walkthrough, owner, events }`                                                           |
-| `GET /walkthroughs/<id>/media`        | Its media's bytes, with their `Content-Type` and `Content-Length`                                                                    |
-| `DELETE /walkthroughs/<id>?owner=`    | Its owner deletes it: the row, then both objects                                                                                     |
-| `DELETE /walkthroughs/<id>?item=`     | The app deletes it for an Editor of its document (the app has checked); the item must match                                          |
-| `DELETE /walkthroughs?item=`          | The document was purged: every walkthrough on it goes. `{ deleted }`                                                                 |
+| Route                                                | What it does                                                                                                                         |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `GET /walkthroughs?item=`                            | The document's ready walkthroughs, newest first: `{ walkthroughs: [{ walkthrough, owner }] }`                                        |
+| `GET /walkthroughs?owner=`                           | A person's own ready walkthroughs in the app, newest first (at most 200), for the Explorer's library: the same shape                 |
+| `POST /walkthroughs?owner=`                          | Start one: `{ item, title, author, mediaType, mediaBytes, events }`, the events stored at once; `201 { walkthrough }`, not yet ready |
+| `PUT /walkthroughs/<id>/media?owner=`                | Its media, the raw body, exactly `mediaBytes` long and of `mediaType`; then it is ready: `{ walkthrough }`                           |
+| `GET /walkthroughs/<id>`                             | A ready one, whose it is, and its events: `{ walkthrough, owner, events }`                                                           |
+| `GET /walkthroughs/<id>/media`                       | Its media's bytes, with their `Content-Type` and `Content-Length`                                                                    |
+| `DELETE /walkthroughs/<id>?owner=`                   | Its owner deletes it: the row, then both objects                                                                                     |
+| `DELETE /walkthroughs/<id>?item=`                    | The app deletes it for an Editor of its document (the app has checked); the item must match                                          |
+| `PATCH /walkthroughs/<id>?owner=` or `?item=`        | Rename it: `{ title }` (1 to 120 characters after trimming): `{ walkthrough }`. Owner, or the app for an Editor of the item          |
+| `PUT /walkthroughs/<id>/share?owner=` or `?item=`    | Turn its public link on (a screen recording only, else `409 not_screen`): `{ walkthrough }` with `shareCode`                         |
+| `DELETE /walkthroughs/<id>/share?owner=` or `?item=` | Turn it off: the code is forgotten. `{ walkthrough }`                                                                                |
+| `DELETE /walkthroughs?item=`                         | The document was purged: every walkthrough on it goes. `{ deleted }`                                                                 |
 
-`Walkthrough` on the wire is `{ id, item, title, author, durationMs, mediaType, mediaBytes, camera, createdAt, ready }`.
+`Walkthrough` on the wire is `{ id, item, title, author, durationMs, mediaType, mediaBytes, camera, screen, shareCode,
+createdAt, ready }` (`shareCode` null while its link is off).
+
+**The public door** (no app key; the liveworkspace site calls it): `GET /api/media/walkthroughs/shared/<code>` answers
+`{ title, author, app, durationMs, mediaType, createdAt }` for a ready screen recording whose link is on, else 404;
+`GET /api/media/walkthroughs/shared/<code>/media` its bytes, with `Range` support so a video seeks, `Cache-Control:
+private, no-store` (a link turned off stops at once).
 The owner travels beside it, never in it, so an app decides what its browser is told (only "yours" or not).
 
 ### Refusals
@@ -244,8 +315,9 @@ first (`GET /api/walkthroughs?mine=1`), as cards in a grid:
 
 - **The preview box** (16:9): a soft brand gradient with the recorder's initial (a camera icon for one with video), its
   length as a chip, and a large Play button. Pressing it loads the media (with the person's token, as a blob, so the
-  bytes never sit behind a public address) and plays it in the box with the browser's controls; **Maximise** at its
-  corner shows it full screen, and **Close** goes back to the preview. One plays at a time.
+  bytes never sit behind a public address) and plays it in the same centred modal as the editor's Tools (owner,
+  2026-11-17): the shared `VideoDialog` (`@liveworkspace/ui`), with its title, length and date, **Share** for a screen
+  recording (the same Public Link popover), **Full Screen** and **Close**. The card stays as it is. One plays at a time.
 - **Under it**: the title, the item it was recorded on (its name from the index, a link that opens the item; "An item
   you can no longer open" when the index has none), and when it was recorded with its size.
 - **Delete** (a bin on the card) asks in a confirm popover ("Delete this walkthrough? It can't be undone."), then
