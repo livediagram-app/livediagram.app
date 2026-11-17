@@ -60,7 +60,6 @@ export const HELP_ARTICLES = {
   myWork: 'explorer/my-work',
   recent: 'explorer/recent',
   teamSpaces: 'explorer/team-spaces',
-  explorerPage: 'explorer/explorer-page',
   // The Portal tour's closing card (docs/specs/007-editor/element-tours.md).
   portals: 'palette/tools/portals',
   palette: 'palette',
@@ -193,10 +192,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   teamSpaces: {
     title: 'Learn about team spaces',
     description: 'A team’s shared library of spaces and folders.',
-  },
-  explorerPage: {
-    title: 'Learn about the Explorer',
-    description: 'The library every liveworkspace app shares: sections, views and search.',
   },
   portals: {
     title: 'Learn about portals',
