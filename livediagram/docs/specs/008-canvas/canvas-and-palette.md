@@ -772,7 +772,12 @@ the title, notes, tools and checklists are the content.
   the tab the template landed on are made, so a link removed earlier is never put back by another tab's template.
   The link is the element's ordinary tab link ([Links](#links)): its badge follows it, and the Link dialog changes or
   removes it. A level added on its own (no other C4 tab) links nothing until its neighbour is added. Each template's
-  note says which level comes next.
+  note says which level comes next. The links are made wherever a C4 template lands on a tab: the template picker,
+  and the MCP's `add_tab` with a C4 `template` ([MCP server](../015-api/mcp-server.md)).
+- **The C4 levels read under every theme.** Every C4 card and store keeps its C4 fill (`themeLockFill`) and its own
+  ink (`themeLockText`): white on the person, system, container and external colours, a dark navy on the light
+  component blue, each at least 4.5:1 on its fill (the container blue `#2f78c4` and the grey `#737373` are a shade
+  deeper than Structurizr's for that). No theme, light or dark, repaints the text into its fill.
 - **Architecture Decision Record** (Diagram): one decision on one page ("ADR 012: Publish order events to a queue",
   its status chip **Accepted**, the date and who decided). **Context** says what forced the decision; **Decision
   drivers** lists what mattered; **Options considered** is a table scoring three options against those drivers,

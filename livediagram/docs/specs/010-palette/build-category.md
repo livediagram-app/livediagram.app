@@ -44,8 +44,8 @@ System** (mid blue, "Software system"), **Container** (the container blue, its m
 **Component** (light blue, dark ink, "Go package"), **External System** (grey, "External system") and **Database**
 (a cylinder in the container blue, its name over its technology). The cards are Card variants (`c4-person`,
 `c4-system`, `c4-container`, `c4-component`, `c4-external`) and the Database a Cylinder variant (`c4-database`), placed
-by the one variant path every placement takes (tap, drag, drop); each keeps its C4 fill under every theme
-(`themeLockFill`) and its own colours after the tab's theme and remembered style dress it, as the Warning badge keeps
+by the one variant path every placement takes (tap, drag, drop); each keeps its C4 fill and its ink under every
+theme (`themeLockFill`, `themeLockText`; each ink at least 4.5:1 on its fill) and its own colours after the tab's theme and remembered style dress it, as the Warning badge keeps
 its rose. Search finds them by "c4", "container", "component", "structurizr", "software system" and "person". The
 C4 boundary is the Boundary tile's C4 style (Layout). Tile ids `diagrams:c4-person` and on; the group is titled
 by its first tile.

@@ -317,7 +317,11 @@ exactly like a `create_document` tab, then submits a [changeset](../024-agents/a
 that creates the tab, so anyone with the document open sees it arrive. A presented template's slides are then
 appended after the document's deck (read with `GET /documents/:id`, written back whole with `PUT`,
 [Decks a template seeds](../012-collaboration/presentation-mode.md#decks-a-template-seeds)); a note says so, or that
-the tab was made without them when the deck could not be written. Returns the new `tabId`, `url`,
+the tab was made without them when the deck could not be written. A C4 `template` (`c4-context`, `c4-container`,
+`c4-component`) links its level to the levels already in the document, as the editor's template flow does
+([Templates](../008-canvas/canvas-and-palette.md), the C4 levels link to each other): the new links are written as one
+`set` changeset per tab they land on, before the tab is read back, and a note says how many were made (or that they
+could not be, the tab kept). Returns the new `tabId`, `url`,
 and the rendered PNG. (Pair with `read_document`, which lists the document's
 existing tabs, to decide where a new one fits.)
 
@@ -711,7 +715,7 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   ("Person", "Software system", "Container", "Component", "External system"), and its body the `description` (what
   it does, up to 120 characters; a longer one is cut at a word with its whole text kept in the note); a database
   draws its name over its technology. Cards are 280 wide, wider for a long name (up to 420, so a name is never cut), as tall as their description needs (up to four lines),
-  every card keeping its C4 fill under any theme (`themeLockFill`). Each **group** is a **boundary** in the C4 style:
+  every card keeping its C4 fill and its ink under any theme (`themeLockFill`, `themeLockText`). Each **group** is a **boundary** in the C4 style:
   its label bold in the bottom-left corner, its meta line in brackets under it, "Container" when it holds a
   component and "Software system" otherwise; its members sit at its top, the heading's band at its foot. A **key**
   (a frame titled "Key", right of the drawing) names each kind the drawing uses with a swatch of its fill; `key:
