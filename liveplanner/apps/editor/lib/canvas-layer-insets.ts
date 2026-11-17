@@ -106,6 +106,11 @@ export const BAND_RIGHT_MIN_PX = 280;
 export const BAND_HYSTERESIS_PX = 16;
 // Below this canvas width the cover's padding is a phone's (p-2) and the strip holds the menu: no band.
 const BAND_CANVAS_MIN_PX = 640;
+// Experiment (no header bar): on a desktop window the band holds down to this canvas width (a Contents panel or a
+// narrow window can take the canvas under 640 px), its card type chips gone first, so the logo, menu and top-right
+// corner card stay on the element's header. A phone's window (under PHONE_VIEW_MAX_PX) keeps its phone row.
+const BAND_DESKTOP_CANVAS_MIN_PX = 400;
+const PHONE_VIEW_MAX_PX = 639;
 
 // The band for `canvas` with the menu and strip where they are, given the element's side insets; null when the menu
 // is missing, the menu or strip is not in the top row, or they leave too little room (the element then starts below
@@ -124,7 +129,7 @@ export function headerBand(
   endWidth = BAND_RIGHT_MIN_PX,
   banded = false,
 ): HeaderBand | null {
-  if (!menu || canvas.right - canvas.left < BAND_CANVAS_MIN_PX) return null;
+  if (!menu || canvas.right - canvas.left < BAND_DESKTOP_CANVAS_MIN_PX) return null;
   const half = canvas.top + (canvas.bottom - canvas.top) / 2;
   const baseRight = menu.right - Math.max(0, nameWidth);
   // A strip starting before the menu ends holds the menu (a phone).
@@ -136,7 +141,9 @@ export function headerBand(
   // Where the strip's right edge goes, and its left edge then.
   const stripRight = right - Math.max(0, endWidth) - BAND_GAP_PX;
   const end = strip ? stripRight - (strip.right - strip.left) : stripRight;
-  const needed = banded ? BAND_MID_MIN_PX : BAND_MID_MIN_PX + BAND_HYSTERESIS_PX;
+  // Experiment (no header bar): the logo, menu and top-right corner card stay on the element's header for as long as its
+  // name fits; what the mid holds past it (a board's card type chips) gives way first (use-chips-fit 'none').
+  const needed = Math.max(0, nameWidth) + (banded ? 0 : BAND_HYSTERESIS_PX);
   if (end - baseRight - 2 * BAND_GAP_PX < needed) return null;
   return {
     height: Math.round(Math.max(menu.bottom, strip?.bottom ?? menu.bottom) - top),
@@ -250,8 +257,15 @@ export function measureCanvasChrome(
     [...canvas.querySelectorAll<HTMLElement>(BAND_CONTROLS_SELECTOR)].find(
       (el) => !el.closest('[data-dashboard]'),
     ) ?? null;
+  // Experiment (no header bar): a board's widgets in the card count at their narrowest (data-widget-zone-min): they fold
+  // behind their More as the room goes, so the band keeps the top row rather than giving it up to them.
+  const zone = controls?.querySelector<HTMLElement>('[data-widget-zone-min]') ?? null;
+  const zoneSurplus = zone
+    ? Math.max(0, zone.offsetWidth - Number(zone.dataset['widgetZoneMin'] ?? zone.offsetWidth))
+    : 0;
   const measuredEnd = controls
-    ? controls.offsetWidth +
+    ? controls.offsetWidth -
+      zoneSurplus +
       (controls.parentElement
         ? parseFloat(getComputedStyle(controls.parentElement).paddingRight) || 0
         : 0)
@@ -269,15 +283,18 @@ export function measureCanvasChrome(
     return { insets: { ...insets, top }, band: null };
   }
   if (!withBand) return { insets, band: null };
-  const band = headerBand(
-    area,
-    insets,
-    menu,
-    strip ? unionOfChildren(strip) : null,
-    nameWidth,
-    endWidth,
-    wasBanded,
-  );
+  const phoneView = typeof window !== 'undefined' && window.innerWidth <= PHONE_VIEW_MAX_PX;
+  const band = phoneView
+    ? null
+    : headerBand(
+        area,
+        insets,
+        menu,
+        strip ? unionOfChildren(strip) : null,
+        nameWidth,
+        endWidth,
+        wasBanded,
+      );
   memo.banded = band !== null;
   if (band) return { insets: { ...insets, top: 0 }, band };
   const row = phoneRow(area, insets, menu);
