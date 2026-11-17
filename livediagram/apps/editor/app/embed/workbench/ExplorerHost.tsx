@@ -23,6 +23,7 @@ import { DEFAULT_FOLDER_OPTIONS } from '@livediagram/api-schema';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useEditorPreferences } from '@/hooks/persistence/useEditorPreferences';
 import { useGuestId } from '@/hooks/persistence/useGuestId';
+import { arrivedArchived } from '@liveworkspace/workbench/lib/archived';
 import { useAppNavigation } from '@liveworkspace/workbench/hooks/navigation/useAppNavigation';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { useCommunityEnabled } from '@livediagram/ui';
@@ -102,6 +103,8 @@ export function ExplorerHost({
   const chrome: ExplorerChrome = { prefs, ownerId: viewerId ?? null, signedIn: !!accountUserId };
   // The open canvas deleted from the editor lands here with its Undo (lib/document-delete-undo.ts), taken once.
   const [trashedOnArrival] = useState(arrivedTrashed);
+  // The open item archived from the editor lands here too, said once (lib/archived).
+  const [archivedOnArrival] = useState(() => arrivedArchived('livediagram'));
   // The hero's close (docs/specs/013-workspace/explorer-home.md "Hiding the banner"): reported, then written, so
   // every device the person signs in on opens Home without it. Settings > Explorer turns it back on.
   const hideHero = useCallback(() => {
@@ -144,6 +147,7 @@ export function ExplorerHost({
         helpHref={explorerHelpHref}
         renderThumbnail={renderDocumentThumbnail}
         trashedOnArrival={trashedOnArrival}
+        archivedOnArrival={archivedOnArrival}
         heroHidden={prefs.homeBanner === false}
         onHideHero={hideHero}
         onHome={trackHome}

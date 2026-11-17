@@ -13,6 +13,7 @@ import type { Item } from '@liveworkspace/index-client';
 import Link from 'next/link';
 import { BrandMark, ProductNavLinks } from '@livedocuments/ui';
 import { PLATFORM_SITE } from '@liveworkspace/sites';
+import { leaveArchivedItem } from '@liveworkspace/workbench/lib/archived';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { SignInPrompt } from '@/components/chrome/SignInPrompt';
@@ -130,6 +131,11 @@ function ExplorerImpl({
   }, [shown]);
 
   const trashCurrent = useCallback((item: Item) => trashOpenDocument(item.id, item.title), []);
+  // Archived is closed: the item open here, once archived from the panel, leaves for the Explorer, which says so.
+  const archivedCurrent = useCallback(
+    (item: { id: string; title: string | null }) => leaveArchivedItem('livedocuments', item),
+    [],
+  );
 
   const go = (href: string) =>
     href.startsWith('/') ? router.push(href) : window.location.assign(href);
@@ -185,6 +191,7 @@ function ExplorerImpl({
           currentOffline={offline}
           // The open document stops saving before it goes, then the editor leaves for the Explorer and its Undo.
           onTrashCurrent={trashCurrent}
+          onArchivedCurrent={archivedCurrent}
           // Renamed from the Explorer's current item, the editor's one rename since the header bar went (experiment).
           onRenameCurrent={
             onRenameCurrent
