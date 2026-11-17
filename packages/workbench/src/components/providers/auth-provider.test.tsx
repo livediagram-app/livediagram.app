@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, render, screen } from '@testing-library/react';
 import { Component, useEffect, type ComponentType, type ReactNode } from 'react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ACCOUNT_STALL_MS, createAuthProvider } from './auth-provider';
 import {
   DEFERRED_AUTH_DEFAULT,
@@ -221,6 +221,12 @@ describe('createAuthProvider with a signed-in hint', () => {
       e2eSessionKey: 'k',
       readSignedInHint: () => hinted,
     });
+
+  // The notice is a lazy component: load its module once up front, so the first draw waits on a cached import rather
+  // than a cold transform, which on a loaded CI runner can outlast findByRole's one-second wait.
+  beforeAll(async () => {
+    await import('../chrome/AccountUnreachableNotice');
+  });
 
   afterEach(() => vi.useRealTimers());
 

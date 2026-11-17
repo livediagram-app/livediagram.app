@@ -176,6 +176,26 @@ describe('useEditorViewport and the Map showing mid-glide', () => {
     expect(now.offset.y).toBeCloseTo(clear.offset.y);
   });
 
+  // A busy machine's glide frames trail its clock, so the Map's refit can land at once while a frame of the older
+  // glide is still to come: that frame must not put back the fit made before the Map showed.
+  it('keeps a fit made while a glide to the older fit is still on its way', () => {
+    const { view, main, tab } = desktop();
+    act(() => view.result.current.glideToFit(300));
+    act(() => {
+      vi.advanceTimersByTime(100);
+    });
+    showMap();
+    const clear = tabFitView(main, tab.elements)!;
+    act(() => view.result.current.fitToScreen());
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    const now = view.result.current.viewport.get();
+    expect(now.zoom).toBeCloseTo(clear.zoom);
+    expect(now.offset.x).toBeCloseTo(clear.offset.x);
+    expect(now.offset.y).toBeCloseTo(clear.offset.y);
+  });
+
   it('leaves a view the person moved off a landed fit', () => {
     const { view } = desktop();
     act(() => view.result.current.glideToFit());

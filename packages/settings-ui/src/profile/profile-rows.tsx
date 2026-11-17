@@ -77,7 +77,7 @@ function SignOutRow({ onSignOut }: { onSignOut: NonNullable<AccountSection['onSi
 
 /** The signed-in Profile's rows; none when the host has nothing to show. */
 export function profileRows(section: AccountSection): SettingsRow[] {
-  const { identity, profile, security, onSignOut } = section;
+  const { identity, profile, security, onSignOut, closeAccountHelp } = section;
   const rows: SettingsRow[] = [];
   if (identity) {
     rows.push({
@@ -156,7 +156,30 @@ export function profileRows(section: AccountSection): SettingsRow[] {
       render: () => <SignOutRow onSignOut={onSignOut} />,
     });
   }
+  if (closeAccountHelp && rows.length > 0) rows.push(closeAccountRow(closeAccountHelp));
   return rows;
+}
+
+// Delete Account where the host can't close the account itself (liveworkspace/docs/specs/010-site/site.md "Settings",
+// "Your Account"): closing is asked for by an app's server, which deletes its own data first, so this row says where it
+// lives, in any app, and links to the app's help article on it. No second dialog: one way to close an account.
+const CLOSE_ACCOUNT_DESCRIPTION =
+  'Permanently deletes your liveworkspace account and everything you own in every app. You close it from inside any app: open Settings there, then Profile, and choose Delete Account under Danger Zone. We email you a code to confirm it.';
+
+function closeAccountRow(helpHref: string): SettingsRow {
+  const row = {
+    key: 'closeAccount',
+    label: 'Delete Account',
+    description: CLOSE_ACCOUNT_DESCRIPTION,
+    link: { href: helpHref, label: 'How to Delete Your Account' },
+  };
+  return {
+    kind: 'custom',
+    ...row,
+    keywords: 'delete close remove erase account data leave danger',
+    section: PROFILE_SECTIONS.account,
+    render: () => <SettingsRowShell row={row} />,
+  };
 }
 
 /** A guest's Profile: their header card and the way in, in place of the account's rows. */
