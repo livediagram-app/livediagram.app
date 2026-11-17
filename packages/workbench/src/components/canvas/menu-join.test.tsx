@@ -6,6 +6,7 @@ import {
   MenuJoinBand,
   menuNaturalRight,
   STRIP_MENU_GAP_PX,
+  STRIP_SIDE_SPACE_PX,
   stripRoomBesideMenu,
 } from './menu-join';
 
@@ -42,11 +43,15 @@ describe('stripRoomBesideMenu', () => {
   });
 
   it('gives way on both sides of a centred strip to the box and its gap', () => {
-    expect(stripRoomBesideMenu(1000, 0, menu(172, false))).toBe(1000 - 2 * 180);
+    expect(stripRoomBesideMenu(1000, 0, menu(172, false))).toBe(
+      1000 - 2 * (172 + STRIP_SIDE_SPACE_PX),
+    );
   });
 
   it('joined, gives way on the left alone: the strip centres beside the sidebar, a gap from it and the edge', () => {
-    expect(stripRoomBesideMenu(1000, 0, menu(228, true))).toBe(1000 - 236 - 2 * STRIP_MENU_GAP_PX);
+    expect(stripRoomBesideMenu(1000, 0, menu(228, true))).toBe(
+      1000 - 236 - 2 * STRIP_SIDE_SPACE_PX,
+    );
   });
 
   // Work Tracker #289: at 640 to 760px with Contents docked left, a strip that fits this room clears the sidebar
@@ -63,7 +68,9 @@ describe('stripRoomBesideMenu', () => {
   );
 
   it('measures from the editor’s own left edge (a split view’s pane)', () => {
-    expect(stripRoomBesideMenu(600, 400, menu(572, false))).toBe(600 - 2 * 180);
+    expect(stripRoomBesideMenu(600, 400, menu(572, false))).toBe(
+      600 - 2 * (172 + STRIP_SIDE_SPACE_PX),
+    );
   });
 });
 
@@ -131,7 +138,7 @@ describe('menuNaturalRight', () => {
 
   it('measures the strip’s room from the uncapped edge', () => {
     expect(stripRoomBesideMenu(1000, 0, capped(120, 199))).toBe(
-      1000 - 2 * (392 + STRIP_MENU_GAP_PX),
+      1000 - 2 * (392 + STRIP_SIDE_SPACE_PX),
     );
   });
 });

@@ -34,7 +34,12 @@ export function useBarLabels(
     const measure = () => {
       const width = card.getBoundingClientRect().width;
       if (width <= 0) return;
-      if (labels) named.current = { key: categoriesKey, width };
+      if (labels) {
+        named.current = { key: categoriesKey, width };
+        // The strip's width with its names, kept on the card: where it stands (useStripCrowding) goes by this, so
+        // dropping the names to fit never brings a strip that moved aside back to the centre.
+        card.dataset.stripNaturalWidth = String(width);
+      }
       // Another set of categories: show the names once to measure them.
       if (named.current?.key !== categoriesKey) {
         named.current = null;

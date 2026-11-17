@@ -4,10 +4,10 @@ import { useLayoutEffect, useState, type RefObject } from 'react';
 import { editorViewportOf } from '../../lib/editor-viewport';
 import {
   cornerCardClear,
-  STRIP_MENU_GAP_PX,
   stripRoomBesideMenu,
   CORNER_CARD_EVENT,
   stripShiftsLeft,
+  stripLeftClear,
 } from '../canvas/menu-join';
 
 // Whether the centred strip would run under the top-left menu card (docs/specs/007-editor/toolbar-layout.md "The
@@ -42,17 +42,18 @@ export function useStripCrowding(
       if (width <= 0) return;
       const view = editorViewportOf(card);
       const menu = document.querySelector<HTMLElement>('[data-toolbar-menu]');
-      const centred = width <= stripRoomBesideMenu(view.width, view.left, menu);
       // A strip that may shift left is crowded only when even the room beside the menu box is too small; short of
-      // that it is `shifted`, standing at the left beside the box.
+      // that it is `shifted`, standing at the left beside the box. Whether it centres goes by its width with its
+      // names (useBarLabels keeps it on the card), so a window narrowing past the point it moved aside never brings
+      // it back to the centre once its names drop.
       const shifts = stripShiftsLeft(card);
+      const natural = shifts ? Number(card.dataset.stripNaturalWidth) || 0 : 0;
+      const centred = Math.max(width, natural) <= stripRoomBesideMenu(view.width, view.left, menu);
       const crowded = shifts
         ? width > stripRoomBesideMenu(view.width, view.left, menu, true)
         : !centred;
       const shifted = shifts && !centred && !crowded;
-      const clear = menu
-        ? Math.max(0, Math.ceil(menu.getBoundingClientRect().right - view.left + STRIP_MENU_GAP_PX))
-        : 0;
+      const clear = stripLeftClear(menu, view.left);
       // Where a crowded strip, set at the right, must end: short of the top-right corner card (EditorCornerActions).
       const clearRight = Math.ceil(cornerCardClear(view.width, view.left));
       setState((s) =>

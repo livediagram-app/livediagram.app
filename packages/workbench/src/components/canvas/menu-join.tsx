@@ -69,14 +69,33 @@ export function stripRoomBesideMenu(
   // menu box is, so the strip stands between the two, never under either.
   const right = cornerCardClear(viewWidth, viewLeft);
   if (!menu) return viewWidth - 2 * right;
-  const clear = menuNaturalRight(menu) - viewLeft + STRIP_MENU_GAP_PX;
-  if (shiftsLeft) return viewWidth - clear - Math.max(right, MENU_CARD_INSET_PX);
+  // Joined, the box ends a gap short of the sidebar's inner edge: `clear` reaches that edge. Unjoined, the strip keeps
+  // its side space from the box.
+  const clear =
+    menuNaturalRight(menu) -
+    viewLeft +
+    (menu.hasAttribute('data-menu-joined') ? STRIP_MENU_GAP_PX : STRIP_SIDE_SPACE_PX);
+  if (shiftsLeft)
+    return viewWidth - stripLeftClear(menu, viewLeft) - Math.max(right, MENU_CARD_INSET_PX);
   // Joined, `clear` reaches the sidebar's inner edge (the box stops a gap short of it), and the strip, centred beside
   // the sidebar, keeps the gap from it and from the editor's right edge, or the corner card's clearance where that is
   // wider (on both sides, since the strip stays centred).
   return menu.hasAttribute('data-menu-joined')
-    ? viewWidth - clear - 2 * Math.max(STRIP_MENU_GAP_PX, right)
+    ? viewWidth - clear - 2 * Math.max(STRIP_SIDE_SPACE_PX, right)
     : viewWidth - 2 * Math.max(clear, right);
+}
+
+/** The room a strip keeps from what it stands beside when it leaves the centre (the menu box, the Contents sidebar,
+ *  the corner card): wider than the box's own gap, so it never reads as touching them. */
+export const STRIP_SIDE_SPACE_PX = 16;
+
+/** Where a strip standing at the left (shifted, or giving way) starts, in screen px from the editor's left: the space
+ *  past the menu box, or joined, past the sidebar the box heads (which ends a gap beyond the box). */
+export function stripLeftClear(menu: HTMLElement | null, viewLeft: number): number {
+  if (!menu) return 0;
+  const right = menu.getBoundingClientRect().right - viewLeft;
+  const edge = menu.hasAttribute('data-menu-joined') ? right + STRIP_MENU_GAP_PX : right;
+  return Math.max(0, Math.ceil(edge + STRIP_SIDE_SPACE_PX));
 }
 
 /** Sent on `window` when the top-right corner card mounts, resizes or goes, so the strip measures its room again. */
@@ -100,8 +119,8 @@ export function cornerCardClear(viewWidth: number, viewLeft: number): number {
   // The card stands over the editor at the window's right edge (in a split, the right pane): elsewhere, nothing to
   // clear. Judged from the editor's box, not the card's, since a resize can measure before the card has moved.
   if (box.width === 0 || viewLeft + viewWidth < window.innerWidth - 1) return 0;
-  // Its width, its 12px inset from the corner and the strip's gap.
-  return Math.ceil(box.width) + CORNER_CARD_INSET_PX + STRIP_MENU_GAP_PX;
+  // Its width, its 12px inset from the corner and the strip's space.
+  return Math.ceil(box.width) + CORNER_CARD_INSET_PX + STRIP_SIDE_SPACE_PX;
 }
 
 /** The sidebar's top row while joined: room for the menu box (drawn over it, above the sidebar), a hairline at its

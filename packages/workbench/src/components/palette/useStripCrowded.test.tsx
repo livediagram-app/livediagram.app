@@ -106,12 +106,12 @@ function Crowding({
 }
 
 describe('useStripCrowding', () => {
-  it('says where a crowded strip starts clear of the menu card: its right edge and the gap', () => {
+  it('says where a crowded strip starts clear of the menu card: its right edge and the side space', () => {
     vi.stubGlobal('innerWidth', 790);
     const seen: { crowded: boolean; shifted: boolean; clear: number; clearRight: number }[] = [];
-    // An article's docked formatting, 660 wide, in a 790px window: crowded, and it starts 185 + 8 in.
+    // An article's docked formatting, 660 wide, in a 790px window: crowded, and it starts 185 + 16 in.
     render(<Crowding width={660} onSeen={(s) => seen.push(s)} />);
-    expect(seen.at(-1)).toEqual({ crowded: true, shifted: false, clear: 193, clearRight: 0 });
+    expect(seen.at(-1)).toEqual({ crowded: true, shifted: false, clear: 201, clearRight: 0 });
   });
 
   it('keeps the same answer when nothing changed, and is off where disabled', () => {
@@ -121,7 +121,7 @@ describe('useStripCrowding', () => {
     const before = seen.at(-1);
     at(1580);
     expect(seen.at(-1)).toBe(before);
-    expect(before).toEqual({ crowded: false, shifted: false, clear: 193, clearRight: 0 });
+    expect(before).toEqual({ crowded: false, shifted: false, clear: 201, clearRight: 0 });
     const off: { crowded: boolean; shifted: boolean; clear: number; clearRight: number }[] = [];
     render(<Crowding width={660} enabled={false} onSeen={(s) => off.push(s)} />);
     expect(off.every((s) => !s.crowded && s.clear === 0)).toBe(true);
