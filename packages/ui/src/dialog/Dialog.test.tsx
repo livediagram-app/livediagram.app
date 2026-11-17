@@ -50,24 +50,12 @@ describe('Dialog resizeTransition', () => {
   });
 });
 
-// A panel whose content grows (the Share dialog's role list, its passes) pins near the top from sm up, so it grows
-// downward and nothing above moves; centred is the default.
+// A dialog always opens centred, never pinned near the top (owner, 2026-11-17); a phone keeps its own placement.
 describe('Dialog placement', () => {
-  it('centres by default', () => {
+  it('centres the panel', () => {
     const { backdrop } = open();
     expect(backdrop.className).toContain('items-center');
-    expect(backdrop.className).not.toContain('sm:items-start');
-  });
-
-  it('pins the panel near the top from sm up when asked', () => {
-    render(
-      <Dialog open onClose={vi.fn()} ariaLabel="Share" placement="top">
-        <p>Body</p>
-      </Dialog>,
-    );
-    const backdrop = screen.getByRole('dialog', { name: 'Share' }).parentElement!;
-    expect(backdrop.className).toContain('sm:items-start');
-    expect(backdrop.className).toContain('sm:pt-[clamp(1rem,10vh,5rem)]');
+    expect(backdrop.className).not.toContain('items-start');
   });
 });
 

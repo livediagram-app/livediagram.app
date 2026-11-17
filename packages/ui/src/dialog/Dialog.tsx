@@ -106,10 +106,6 @@ export type DialogProps = {
   // Asked before the dialog closes by its backdrop, Escape, a phone sheet's swipe or a close inside it: false keeps it
   // open (the host asks about unsaved changes instead), and a phone sheet springs back rather than sliding away.
   beforeClose?: () => boolean;
-  // Where the panel sits from sm up: centred (default), or 'top', pinned a little below the window's top edge so a
-  // panel whose content grows (a list unfolding, a row added) grows downward and nothing above it moves under the
-  // pointer. A top panel's own `max-h-full` fills the room left below that gap. A phone keeps its own placement.
-  placement?: 'center' | 'top';
   // A phone sheet that holds work: the browser's Back closes it as a swipe would (asking `beforeClose` first) rather
   // than leaving the page (docs/specs/007-editor/editor-app.md "Back closes a sheet that holds work").
   closeOnBack?: boolean;
@@ -122,9 +118,6 @@ const SHEET_SHAPE =
 const PHONE_SHEET = ` max-sm:max-h-[85dvh]${SHEET_SHAPE}`;
 // A tall sheet: SHEET_FULL_HEIGHT, the height a sheet dragged up fills, so dragging it up changes nothing.
 const PHONE_SHEET_TALL = ` max-sm:h-[calc(100dvh-3.5rem-env(safe-area-inset-top,0px))] max-sm:max-h-[calc(100dvh-3.5rem-env(safe-area-inset-top,0px))]${SHEET_SHAPE}`;
-
-// The gap above a top-placed panel: a tenth of the window, between 1rem and 5rem, with 1rem kept below.
-const TOP_PLACEMENT = ' sm:items-start sm:pb-4 sm:pt-[clamp(1rem,10vh,5rem)]';
 
 const BACKDROPS: Record<NonNullable<DialogProps['backdrop']>, string> = {
   dim: 'bg-slate-900/40 backdrop-blur-sm dark:bg-slate-950/60',
@@ -197,7 +190,6 @@ export function Dialog({
   resizeTransition,
   beforeClose,
   closeOnBack = false,
-  placement = 'center',
   children,
 }: DialogProps) {
   const panelRef = useRef<HTMLDivElement>(null);
@@ -399,7 +391,7 @@ export function Dialog({
         }
         className={`fixed inset-0 z-[var(--z-modal)] flex animate-fade-in items-center justify-center ${
           phoneSheet ? 'max-sm:items-end ' : ''
-        }${BACKDROPS[backdrop]}${placement === 'top' ? TOP_PLACEMENT : ''}`}
+        }${BACKDROPS[backdrop]}`}
         onClick={(e) => {
           // Only a press that began on the backdrop closes: a text selection dragged out of the
           // panel and released over the backdrop clicks there too, and must not lose the edit.

@@ -29,6 +29,10 @@ Tools ([footer-tools-menu.md "The popover"](./footer-tools-menu.md)).
 
 ## The frame
 
+- **Centred, never at the top.** From `sm` a dialog opens centred in the window, never pinned near its top edge
+  (owner, 2026-11-17). One whose content grows while it is open (Share's role picker, its passes) keeps a steady
+  height instead, its body scrolling between the header and footer, so nothing moves under the pointer. A phone keeps
+  its own sheet or full-screen placement.
 - **Not a landmark.** Its root is a plain block, not `<header>`: outside sectioning content a `<header>` is a banner
   landmark, so every dialog wearing the hero would give the page it opens over a second banner. The `<h2>` is what
   names it.

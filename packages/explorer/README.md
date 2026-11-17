@@ -174,9 +174,8 @@ An item's share links, each drawn as a pass: `client`, `item` (with `teamId?`), 
   section below Password Protection (`appSection`).
 
 Its look is livediagram's Share dialog from before the Explorer split (`dca5eae12^`), the same in every app:
-the `lg` panel with a scrolling body between a fixed header and footer, pinned near the top of the window rather than
-centred (`placement="top"`), so unfolding the role picker or adding a pass grows it downward and never moves what sits
-above, `DialogHeader` from `@liveworkspace/ui`,
+the `lg` panel with a scrolling body between a fixed header and footer, centred at a steady height (`sm:h-[min(48rem,calc(100%-2rem))]`), so unfolding the role picker or adding a pass
+scrolls the body and never moves the panel, `DialogHeader` from `@liveworkspace/ui`,
 the one-card role picker that unfolds the three levels, the sliding Valid pill, hover cards on the pass controls,
 the revoke confirmation beside the bin, Password Protection as a settings card, and a status line that leads with a
 glyph (never a coloured dot). The words are each app's own (Share This Plan, only you can open this design).
