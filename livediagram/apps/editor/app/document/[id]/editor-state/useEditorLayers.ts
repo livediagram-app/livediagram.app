@@ -178,6 +178,8 @@ export function useEditorLayers({
     undo,
     view: {
       tourSquare,
+      // A linked chart's live values saved quietly, no undo step (@liveworkspace/workbench components/sheet-links/).
+      tickElements: tick,
       // Layers (docs/specs/006-document/layers.md): the normalised stack, the session-scoped active
       // layer, per-layer element counts, the interaction-gate id sets, and
       // the panel / context-menu ops.

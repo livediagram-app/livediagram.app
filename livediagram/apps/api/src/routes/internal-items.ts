@@ -94,6 +94,9 @@ export function handleInternalItems(
           waitUntil(countCommunityCopy(env, from, copier.by, copier.ip ?? `copier:${copier.by}`));
         return { tabs: source.copy.tabs.length, items: 0 };
       },
+      // A Sheet a chart in the document reads changed (liveworkspace/docs/specs/004-index/sheet-sources.md): the
+      // room tells every open session, which reads it again with its own access.
+      sourceChanged: (id, change) => documentRoom(env, id).sourceChanged(change),
       // A closed account, wherever it was closed: what livediagram keeps for them beside their canvases.
       personClosed: async (personId) => void (await deleteAccount(env, personId)),
       // A guest who became an account: what livediagram keeps for the guest becomes the account's. A returning guest

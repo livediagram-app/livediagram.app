@@ -1,4 +1,5 @@
 import { useEffect, useEffectEvent, useRef } from 'react';
+import { emitSourceChanged } from '@liveworkspace/workbench/components/sheet-links/sheet-link-signal';
 import { noteAccessEnded } from '@/lib/access-notice';
 import { type AgentPresence } from '@livediagram/api-schema';
 import { nextFreeColor } from '@/lib/identity';
@@ -248,6 +249,9 @@ export function useRoomConnection(opts: RoomConnectionOptions) {
       onSelectionReleased: (msg) => roomSelectionReleased(msg),
       // Called for this socket alone: being called is the addressing (we never learn our own presence id).
       onFollowers: (ids) => roomFollowers(ids),
+      // A Sheet a linked chart reads changed (docs/specs/009-elements/pie-chart.md "Charts linked to a liveplanner
+      // sheet"): the charts read it again, each with this person's own access.
+      onSourceChanged: (msg) => emitSourceChanged(msg),
       onDocumentTrashed: () => roomDocumentTrashed(),
       // Reload so the access gates run again (a password prompt, a refusal page, or the editor).
       onAccessChanged: () => roomAccessChanged(),

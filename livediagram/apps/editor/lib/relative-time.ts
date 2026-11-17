@@ -12,8 +12,6 @@
 //                                for expiring share links (docs/specs/013-workspace/share-link-expiry.md).
 // The first two share their ladder, in @livediagram/ui (relative-time.ts).
 
-import { useSyncExternalStore } from 'react';
-
 // The verbose and short ladders (and relativeSince) live in @livediagram/ui.
 export { formatRelativeTime, formatRelativeTimeShort, relativeSince } from '@livediagram/ui';
 
@@ -46,56 +44,6 @@ export function formatRelativeTimeCompact(deltaMs: number): string {
   return `${days}d ago`;
 }
 
-// The clock relative-time strings read: the instant of the latest shared tick, every 30 seconds
-// (docs/specs/003-system-architecture/react-state-and-effects.md). Render never reads Date.now(); it
-// reads this, so every row on a page agrees and refreshes on the same tick.
-//
-// All subscribers share ONE module-level interval: the editor mounts
-// up to ~8 surfaces calling this hook (Explorer panel,
-// every ParticipantAvatar, the explorer route's three views), and the
-// prior per-hook setInterval spun up 8 timers that fired at slightly
-// different offsets, so rows refreshed in a stagger over a 30s window
-// instead of together. Centralising means one timer + all subscribers
-// re-render on the same tick, which is the natural visual behaviour
-// and uses one timer instead of N.
-//
-// `useSyncExternalStore` is the matching React primitive: it handles
-// SSR (`getServerSnapshot` returns 0 deterministically so the SSR
-// HTML and the first client render agree) and lets every consumer
-// subscribe + unsubscribe without each hook owning its own state.
-export const RELATIVE_TICK_MS = 30_000;
-
-const tickListeners = new Set<() => void>();
-// `window.setInterval` returns a number in the DOM lib; pinned because the build's @types/node would
-// otherwise resolve `setInterval` to NodeJS's `Timeout`.
-let tickIntervalId: number | null = null;
-let tickNow = Date.now();
-
-function subscribeTick(listener: () => void): () => void {
-  tickListeners.add(listener);
-  if (tickIntervalId === null && typeof window !== 'undefined') {
-    // Idle since the last subscriber left (or never started): catch the clock up before ticking again.
-    // The new subscriber is the only listener, and useSyncExternalStore re-reads after subscribing.
-    tickNow = Date.now();
-    tickIntervalId = window.setInterval(() => {
-      tickNow = Date.now();
-      for (const fn of tickListeners) fn();
-    }, RELATIVE_TICK_MS);
-  }
-  return () => {
-    tickListeners.delete(listener);
-    if (tickListeners.size === 0 && tickIntervalId !== null) {
-      window.clearInterval(tickIntervalId);
-      tickIntervalId = null;
-    }
-  };
-}
-
-const getTickSnapshot = () => tickNow;
-// Prerendered HTML carries no relative times (they render from data loaded on the client), so the
-// server snapshot only has to be stable.
-const getTickServerSnapshot = () => 0;
-
-export function useRelativeNow(): number {
-  return useSyncExternalStore(subscribeTick, getTickSnapshot, getTickServerSnapshot);
-}
+// The clock relative-time strings read (one shared 30 s tick, so every row on a page agrees): one copy for every
+// editor, in @liveworkspace/workbench, which the shared surfaces read too.
+export { RELATIVE_TICK_MS, useRelativeNow } from '@liveworkspace/workbench/lib/relative-now';

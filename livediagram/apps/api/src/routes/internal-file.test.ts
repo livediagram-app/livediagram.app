@@ -108,6 +108,35 @@ describe('GET /api/internal/items/:id/export?format=file', () => {
     expect(await (await send('GET', 'A/export?format=file')).text()).toBe(text);
   });
 
+  it('freezes a chart linked to a liveplanner sheet: its last values, and no link (pie-chart.md)', async () => {
+    const { db, send } = await arrange();
+    const chart: ShapeElement = {
+      ...box('c1'),
+      shape: 'bar-chart',
+      pieSlices: [{ label: 'Q1', value: 7 }],
+      chartSheetSource: {
+        app: 'liveplanner',
+        itemId: 'plan_1',
+        sheetId: 'sheet0001',
+        range: { r1: 'r001', c1: 'c001', r2: 'r002', c2: 'c002' },
+        itemName: 'Payroll',
+        sheetName: 'Costs',
+        a1: 'A1:B2',
+        readAt: 5,
+      },
+    };
+    await upsertTab(db.env, 'A', { id: 't2', name: 'Two', elements: [chart] }, 1);
+    const text = await (await send('GET', 'A/export?format=file')).text();
+    expect(text).not.toContain('Payroll');
+    const parsed = parseDocumentEnvelope(text);
+    if (!parsed.ok) throw new Error(parsed.failure);
+    const frozen = parsed.envelope.document.tabs
+      .flatMap((t) => t.elements ?? [])
+      .find((e): e is ShapeElement => e.id === 'c1');
+    expect(frozen?.pieSlices).toEqual([{ label: 'Q1', value: 7 }]);
+    expect(frozen).not.toHaveProperty('chartSheetSource');
+  });
+
   it('answers 304 for the save the caller holds, and 404 for no canvas', async () => {
     const { send } = await arrange();
     const unchanged = await send('GET', 'A/export?format=file', { etag: '"1234"' });

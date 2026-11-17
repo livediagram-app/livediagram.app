@@ -1,6 +1,6 @@
 import { resetSuggestState, setSuggestAuthor } from '@/lib/article/article-suggest-store';
 import { useEffect, useEffectEvent, useRef } from 'react';
-import { emitSourceChanged } from '@/lib/sheet-link-signal';
+import { emitSourceChanged } from '@liveworkspace/workbench/components/sheet-links/sheet-link-signal';
 import { noteAccessEnded } from '@/lib/access-notice';
 import type { AgentPresence } from '@livedocuments/api-schema';
 import { nextFreeColor } from '@/lib/identity';

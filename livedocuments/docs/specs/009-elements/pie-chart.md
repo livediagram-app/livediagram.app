@@ -179,7 +179,8 @@ context-menu category. New chart kinds reuse it under the same Data palette cate
 Weekly reports and decks get their numbers copied by hand from spreadsheets, and the charts go stale. A chart can
 instead take its data from a range of a liveplanner Sheet and keep in step with it (Work Tracker 940). It stays a
 native chart: drawn in the document's theme, styled and exported like any other; only its numbers come from the
-sheet. The platform's side (the range read, the door, the change signal) is
+sheet. The editor's side is one copy, shared with livediagram and livedesign, in `@liveworkspace/workbench`
+(`components/sheet-links/`). The platform's side (the range read, the door, the change signal) is
 [liveworkspace sheet-sources.md](../../../../liveworkspace/docs/specs/004-index/sheet-sources.md).
 
 - **Link to Sheet.** The chart's Data section starts with a **Sheet** row: **Link to Sheet** opens a dialog to pick a
@@ -192,7 +193,7 @@ sheet. The platform's side (the range read, the door, the change signal) is
 - **The source** (`chartSheetSource`) names the plan, the sheet and the range by stable row and column ids (so rows
   inserted inside it are read, and moves are followed), with the plan's and sheet's names, the range as A1 text and
   when it was last read (`readAt`), as last read.
-- **Linked to.** A linked chart shows a quiet line just above its top edge, while it is hovered or selected, at one
+- **Linked to.** A linked chart shows a quiet line below its bottom edge, left-aligned and clear of the selection handles, while it is hovered or selected, at one
   size on screen whatever the zoom (counter-scaled like the canvas's other chrome), a long plan name cut short: a
   sheet glyph, then "Linked to <plan> · updated 2 min ago" (the time ticks on its own, "just now" under a minute).
   The Sheet row in its Data section says the same, with the sheet and range under it ("Budget · B2:E9"), and
@@ -205,6 +206,8 @@ sheet. The platform's side (the range read, the door, the change signal) is
   - who cannot open the plan sees the values last saved on the chart only, and the line says "Linked to <plan> ·
     saved 2 h ago" with no Update;
   - when the read fails (the network, the plan's app down) the line offers **Update**, which tries again.
+- **A document saved in This Browser** has no room, so no change signal reaches it: its linked charts are read on
+  open, on a tab change and on Update, each with the person's own access, and draw the saved values when offline.
 - **While linked**, the slice and series rows of the Data section are read only ("These numbers come from the
   sheet.") and Edit Data is not offered: the next read would overwrite a hand edit. Chart type, palette, legend,
   values, axis and animation stay the Editor's.

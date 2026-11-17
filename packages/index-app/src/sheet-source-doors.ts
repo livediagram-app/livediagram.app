@@ -76,3 +76,23 @@ export async function answerSheetSourceDoor(
   }
   return notFound();
 }
+
+// The frame a reader item's room sends every open session when a Sheet its charts read changed: ids only, never
+// values. Each session reads the range again with its own access, so nobody learns a value they could not read.
+export type SourceChangedFrame = { kind: 'source-changed' } & SourceChange;
+
+// The reader app's room side of the `source-changed` door, one copy for every reader app (livedocuments, livediagram,
+// livedesign): bind the room to its item, then tell every session. Nothing is stored.
+export function tellSourceChanged(
+  room: { bind: (itemId: string) => void; broadcast: (frame: SourceChangedFrame) => void },
+  itemId: string,
+  change: SourceChange,
+): void {
+  room.bind(itemId);
+  room.broadcast({
+    kind: 'source-changed',
+    app: change.app,
+    itemId: change.itemId,
+    sheetIds: change.sheetIds,
+  });
+}

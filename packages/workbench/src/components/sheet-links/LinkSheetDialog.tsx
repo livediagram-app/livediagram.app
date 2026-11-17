@@ -1,9 +1,10 @@
 'use client';
 
-// Link to Sheet (docs/specs/009-elements/pie-chart.md "Charts linked to a liveplanner sheet"): a chart kept in step
-// with a sheet in one of the person's plans. Pick the plan, then its sheet, then the range (typed as A1, filled in with
-// the sheet's filled cells), with a preview of what the chart will draw. Linking reads the range with this person's
-// own access and saves its values in the document, so anyone who cannot open the plan still sees them.
+// Link to Sheet (each reader app's docs/specs/009-elements/pie-chart.md "Charts linked to a liveplanner sheet"): a
+// chart kept in step with a sheet in one of the person's plans. Pick the plan, then its sheet, then the range (typed
+// as A1, filled in with the sheet's filled cells), with a preview of what the chart will draw. Linking reads the range
+// with this person's own access and saves its values in the item, so anyone who cannot open the plan still sees them.
+// One copy for livedocuments, livediagram and livedesign; SheetLinksHost loads it on demand.
 import { useEffect, useId, useState } from 'react';
 import {
   Button,
@@ -14,8 +15,8 @@ import {
   NoMatches,
   PlanIcon,
   SheetLinkIcon,
-} from '@livedocuments/ui';
-import type { ChartSheetSource, ShapeElement } from '@livedocuments/document';
+} from '@liveworkspace/ui';
+import type { ChartSheetSource } from '@liveworkspace/element-model/chart-sheet-source';
 import {
   IndexError,
   SHEET_A1_MAX,
@@ -23,12 +24,14 @@ import {
   type SheetListing,
   type SheetRangeRead,
 } from '@liveworkspace/index-client';
-import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
-import { SearchInput } from '@liveworkspace/workbench/components/primitives/SearchInput';
-import { indexClient } from '@liveworkspace/workbench/lib/index-client';
-import { readSheetLink } from '@/hooks/canvas/useSheetLinkedCharts';
+import { Dialog } from '../dialogs/Dialog';
+import { SearchInput } from '../primitives/SearchInput';
+import { indexClient } from '../../lib/index-client';
+import type { SheetLinkNoun } from './SheetLinkedCharts';
+import type { SheetChart } from './sheet-links';
+import { readSheetLink, type SheetLinkGrantOf } from './useSheetLinkedCharts';
 
-// Spec constants (blueprints/data-charts.md): how long typing settles before the preview reads, and how many plans
+// Spec constants (each reader app's blueprints/data-charts.md): how long typing settles before the preview reads, and how many plans
 // the picker lists.
 export const LINK_PREVIEW_DEBOUNCE_MS = 300;
 const PLAN_LIST_LIMIT = 30;
@@ -72,12 +75,16 @@ const LABEL = 'text-xs font-semibold tracking-wide text-slate-500 uppercase dark
 
 export function LinkSheetDialog({
   chart,
-  documentId,
+  itemId,
+  grantOf,
+  noun,
   onLink,
   onClose,
 }: {
-  chart: ShapeElement;
-  documentId: string | null;
+  chart: SheetChart;
+  itemId: string | null;
+  grantOf: SheetLinkGrantOf;
+  noun: SheetLinkNoun;
   onLink: (source: ChartSheetSource, read: SheetRangeRead) => void;
   onClose: () => void;
 }) {
@@ -177,9 +184,10 @@ export function LinkSheetDialog({
   const ready = preview.state === 'ready' && settledA1 === a1.trim() ? preview.read : null;
   const empty = ready !== null && ready.table.categories.length === 0;
 
-  // Link: the range read once more, asking the plan to say when the sheet changes, then kept with its values.
-  const link = async () => {
-    if (!ready || empty) return;
+  // Link: the range read once more, asking the plan to say when the sheet changes, then kept with its values. Offered
+  // only with a preview that has something to draw (`linkable`).
+  const linkable = ready && !empty ? ready : null;
+  const link = async (ready: SheetRangeRead) => {
     setLinking(true);
     const source: ChartSheetSource = {
       app: 'liveplanner',
@@ -191,7 +199,7 @@ export function LinkSheetDialog({
       a1: ready.a1,
       readAt: ready.readAt,
     };
-    const status = await readSheetLink(source, documentId);
+    const status = await readSheetLink(source, itemId, grantOf);
     const read = status.kind === 'live' ? status.read : ready;
     onLink({ ...source, range: read.range, a1: read.a1, readAt: read.readAt }, read);
   };
@@ -299,15 +307,18 @@ export function LinkSheetDialog({
       <div className="grid min-h-0 flex-1 grid-cols-1 gap-x-5 gap-y-4 overflow-y-auto px-6 py-4 sm:grid-cols-2">
         <section className="flex min-w-0 flex-col gap-2">
           <h3 className={LABEL}>Plan</h3>
-          <SearchInput
-            value={query}
-            onChange={setQuery}
-            placeholder="Search your plans"
-            ariaLabel="Search your plans"
-            clearAriaLabel="Clear the search"
-            clearDescription="Clear the plan search."
-            size="row"
-          />
+          {/* A row of its own: the search box grows across, never down, when the column beside is the taller one. */}
+          <div className="flex">
+            <SearchInput
+              value={query}
+              onChange={setQuery}
+              placeholder="Search your plans"
+              ariaLabel="Search your plans"
+              clearAriaLabel="Clear the search"
+              clearDescription="Clear the plan search."
+              size="row"
+            />
+          </div>
           <div className="max-h-56 min-h-24 overflow-y-auto">{planList}</div>
         </section>
         <section className="flex min-w-0 flex-col gap-2">
@@ -341,14 +352,14 @@ export function LinkSheetDialog({
       </div>
       <DialogFooter>
         <p className="mr-auto hidden text-xs text-slate-500 sm:block dark:text-slate-400">
-          The values are saved in the document, so people who can't open the plan still see them.
+          The values are saved in the {noun}, so people who can't open the plan still see them.
         </p>
         <Button variant="secondary" onClick={onClose} className="shrink-0">
           Cancel
         </Button>
         <Button
-          onClick={() => void link()}
-          disabled={!ready || empty || linking}
+          onClick={linkable ? () => void link(linkable) : undefined}
+          disabled={!linkable || linking}
           className="shrink-0 whitespace-nowrap"
         >
           {linking ? 'Linking…' : current ? 'Update Link' : 'Link'}

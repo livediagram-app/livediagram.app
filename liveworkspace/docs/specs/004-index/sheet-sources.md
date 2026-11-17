@@ -1,19 +1,23 @@
 # Sheet sources
 
 A **sheet source** lets an item in one app draw from a range of a sheet in another: a chart in a livedocuments
-document keeps its slices or series in step with a range of a liveplanner Sheet (Work Tracker 940). The chart stays
-the document's own element, drawn in the document's theme and exported with it; only its numbers come from the sheet.
+document keeps its slices or series in step with a range of a liveplanner Sheet (Work Tracker 940), and so does a chart
+in a livediagram document or a livedesign design (Work Tracker 1133). The chart stays the item's own element, drawn in
+the item's theme and exported with it; only its numbers come from the sheet.
 
 The platform holds the part every app would otherwise build again: a door into the sheet app that reads one range and
 nothing else, a read on the index that checks the reader's own access first, and the signal that tells an open item
-the sheet changed. What the reading item shows (livedocuments' chart) is its own spec
-([livedocuments 009-elements, "Charts linked to a liveplanner sheet"](../../../../livedocuments/docs/specs/009-elements/pie-chart.md#charts-linked-to-a-liveplanner-sheet)).
+the sheet changed. What the reading item shows (the chart) is each reader app's own spec
+([livedocuments](../../../../livedocuments/docs/specs/009-elements/pie-chart.md#charts-linked-to-a-liveplanner-sheet),
+[livediagram](../../../../livediagram/docs/specs/009-elements/pie-chart.md#charts-linked-to-a-liveplanner-sheet) and
+[livedesign](../../../../livedesign/docs/specs/009-elements/pie-chart.md#charts-linked-to-a-liveplanner-sheet) 009-elements,
+"Charts linked to a liveplanner sheet"), and the editor's side of it is one copy in `@liveworkspace/workbench`.
 
 ## Names
 
 - The **source** is the item holding the sheet (a liveplanner plan); the **reader item** is the item whose element
-  draws from it (a livedocuments document). Source apps: liveplanner (`SHEET_SOURCE_APPS`). Reader apps:
-  livedocuments (`SOURCE_WATCH_APPS`).
+  draws from it (a livedocuments or livediagram document, a livedesign design). Source apps: liveplanner
+  (`SHEET_SOURCE_APPS`). Reader apps: livedocuments, livediagram and livedesign (`SOURCE_WATCH_APPS`).
 - A **range** is a rectangle of a sheet named by its corners' stable row and column ids (`{r1, c1, r2, c2}`), so it
   grows with rows inserted inside it and follows moves, as liveplanner's own charts name theirs. `cols` may pick some
   of its columns. Typed by a person, a range is A1 text (`B2:E9`), turned into ids by the sheet app when it is read.

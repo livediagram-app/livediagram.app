@@ -52,6 +52,9 @@ export type RoomHandlers = {
   // Who follows us (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"), by presence id. Sent to
   // this socket alone, on every change; emptied when a new socket opens, since nobody follows its new id yet.
   onFollowers?: (ids: string[]) => void;
+  // A Sheet a linked chart in the document reads changed (liveworkspace/docs/specs/004-index/sheet-sources.md "Keeping
+  // in step"): ids only; the editor reads the range again with this person's own access.
+  onSourceChanged?: (msg: { app: string; itemId: string; sheetIds: string[] }) => void;
   // The collab key the room pinned on this session (docs/specs/013-workspace/share-roles.md "The collab key"),
   // sent to this socket alone after each hello: our answers and reactions are recorded under it.
   onCollabKey?: (key: string) => void;
@@ -342,6 +345,9 @@ export function connectRoom(
         } else if (msg.kind === 'facilitator') handlers.onFacilitator?.(msg);
         else if (msg.kind === 'selection-released') handlers.onSelectionReleased?.(msg);
         else if (msg.kind === 'followers') handlers.onFollowers?.(msg.ids);
+        else if (msg.kind === 'source-changed') {
+          handlers.onSourceChanged?.({ app: msg.app, itemId: msg.itemId, sheetIds: msg.sheetIds });
+        }
         // The server release signal (docs/specs/016-platform/new-version-prompt.md, stale-builds.md).
         else if (msg.kind === 'format') {
           noteServerDocumentFormat(msg.format);

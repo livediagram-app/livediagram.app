@@ -41,13 +41,13 @@ Scope, by file:
 | `apps/editor/hooks/canvas/useDataShapeSetters.ts`                                                                                      | `setLegendItemsSelected`                                                                                                                                                |
 | `../packages/element-model/src/chart-sheet-source.ts`                                                                                  | `ChartSheetSource`, `isChartSheetSource`, `withoutSheetSources`: the linked source on a chart                                                                           |
 | `../packages/element-model/src/chart-table.ts`                                                                                         | `ChartTable`, `chartFieldsFromTable`: a read's data fields for a chart, colours kept by position (shared with liveplanner)                                              |
-| `apps/editor/lib/sheet-links.ts`                                                                                                       | `sheetLinkKey`, `linkedChartsOn`, `sourceAfterRead`, `sameChartData`, `linkedAgo`: pure helpers for linked charts                                                       |
-| `apps/editor/hooks/canvas/useSheetLinkedCharts.ts`                                                                                     | Reads each linked chart on the open tab on open and on `source-changed`; the live overlay, the statuses, the quiet save                                                 |
-| `apps/editor/lib/sheet-link-signal.ts`                                                                                                 | The room's `source-changed` frame relayed from the room connection to `useSheetLinkedCharts`                                                                            |
-| `apps/editor/components/canvas/SheetLinkedCharts.tsx`                                                                                  | `SheetLinksHost` (the reads, Link, Unlink, the dialog), `SheetLinksContext`, `useChartAsSeen`, `SheetLinkLine`                                                          |
-| `apps/editor/components/palette/SheetLinkSection.tsx`                                                                                  | The Data section's Sheet row: Link to Sheet, Linked to, Update, Unlink                                                                                                  |
-| `apps/editor/components/dialogs/LinkSheetDialog.tsx`                                                                                   | The Link to Sheet dialog: plan, sheet, range, preview                                                                                                                   |
-| `apps/api/src/document-room/source-changed.ts`                                                                                         | The `source-changed` door: the room's frame to every session                                                                                                            |
+| `../packages/workbench/src/components/sheet-links/sheet-links.ts`                                                                      | `sheetLinkKey`, `linkedChartsOn`, `sourceAfterRead`, `sameChartData`, `linkedAgo`: pure helpers for linked charts                                                       |
+| `../packages/workbench/src/components/sheet-links/useSheetLinkedCharts.ts`                                                             | Reads each linked chart on the open tab on open and on `source-changed`; the live overlay, the statuses, the quiet save                                                 |
+| `../packages/workbench/src/components/sheet-links/sheet-link-signal.ts`                                                                | The room's `source-changed` frame relayed from the room connection to `useSheetLinkedCharts`                                                                            |
+| `../packages/workbench/src/components/sheet-links/SheetLinkedCharts.tsx`                                                               | `SheetLinksHost` (the reads, Link, Unlink, the dialog), `SheetLinksContext`, `useChartAsSeen`, `SheetLinkLine`                                                          |
+| `../packages/workbench/src/components/sheet-links/SheetLinkSection.tsx`                                                                | The Data section's Sheet row: Link to Sheet, Linked to, Update, Unlink                                                                                                  |
+| `../packages/workbench/src/components/sheet-links/LinkSheetDialog.tsx`                                                                 | The Link to Sheet dialog: plan, sheet, range, preview                                                                                                                   |
+| `apps/api/src/document-room/document-room.ts`                                                                                          | The `source-changed` door: `sourceChanged` hands `tellSourceChanged` (`@liveworkspace/index-app`) the room                                                              |
 | `apps/editor/components/canvas/EditorCanvasHost.tsx`                                                                                   | Passes `themeChartPalette(getTheme(activeTab.theme))` to the canvas                                                                                                     |
 
 ## Domain and naming
@@ -190,6 +190,10 @@ The data setters match every chart kind, so a mixed pie and line selection write
 onto both [GE2].
 
 ### Linked to a sheet (spec "Charts linked to a liveplanner sheet")
+
+The editor's side is one copy in `@liveworkspace/workbench` `components/sheet-links/`, shared with livediagram and
+livedesign. livedocuments hands `SheetLinksHost` its document id (`itemId`), `documentGrant` (`grantOf`), its `track`
+(`onTrack`) and `noun: 'document'`.
 
 1. **Link**: `LinkSheetDialog` lists `indexClient.listItems({ apps: ['liveplanner'], view: 'recent' })`, then
    `indexClient.listSheets(planId)`, then reads the typed range with `indexClient.readSheetRange` (debounced
@@ -366,30 +370,30 @@ fallbacks are silent [GE12].
 | Grow / pop once, spin / pulse loop               | none [GE11]                                                                                                                                |                                                                     |
 | Readout on hover regardless of the key           | none [GE11]                                                                                                                                |                                                                     |
 
-| Linked chart reads, statuses, quiet save and frame | useSheetLinkedCharts cases | `apps/editor/hooks/canvas/useSheetLinkedCharts.test.tsx` |
-| Link dialog: plan, sheet, range, preview, refusals | LinkSheetDialog cases | `apps/editor/components/dialogs/LinkSheetDialog.test.tsx` |
-| Sheet row: Editor only, Linked to, Update, Unlink | SheetLinkSection cases | `apps/editor/components/dialogs/LinkSheetDialog.test.tsx` |
+| Linked chart reads, statuses, quiet save and frame | useSheetLinkedCharts cases | `../packages/workbench/src/components/sheet-links/useSheetLinkedCharts.test.tsx` |
+| Link dialog: plan, sheet, range, preview, refusals | LinkSheetDialog cases | `../packages/workbench/src/components/sheet-links/LinkSheetDialog.test.tsx` |
+| Sheet row: Editor only, Linked to, Update, Unlink | SheetLinkSection cases | `../packages/workbench/src/components/sheet-links/LinkSheetDialog.test.tsx` |
 | Source validated, frozen in exports and copies | chart sheet source cases | `../packages/element-model/src/chart-sheet-source.test.ts` |
 
 ## Constants and configuration
 
-| Name                                   | Value                                                 | Provenance / safe range              |
-| -------------------------------------- | ----------------------------------------------------- | ------------------------------------ |
-| `PIE_PALETTE`                          | 8 colours, `#0ea5e9` first                            | Built-in ramp; equals `vivid`        |
-| `CHART_PALETTES`                       | 8 palettes × 8 colours                                | Spec                                 |
-| `PIE_DEFAULT_SLICES`                   | A 40, B 30, C 20                                      | Sample data                          |
-| `LINE_DEFAULT_CATEGORIES`              | Jan, Feb, Mar, Apr                                    | Sample data                          |
-| `LEGEND_FONT_PX`                       | sm 11, md 14, lg 18, scale 14                         | Spec                                 |
-| `LEGEND_MAX_ITEMS` / `LEGEND_MAX_TEXT` | 40 / 120                                              | Bounds; `validate.ts` and the setter |
-| `MAX_DATA_ARRAY`                       | 5 000                                                 | `validate.ts` bound                  |
-| Side key strip                         | `min(w * 0.4, 130)` px                                | Spec "up to 130 px"                  |
-| Key band                               | `min(h * 0.32, 72)` px                                | `chartFrame`                         |
-| Key render floor                       | 48 px wide / 18 px tall                               | `ChartLegend`                        |
-| CSV caps                               | `MAX_SERIES` 12, `MAX_CATEGORIES` 200                 | `csv.ts` soft caps                   |
-| Sizes                                  | pie / bar 260 × 220, line 300 × 240, legend 180 × 132 | `SHAPE_DEFAULT_SIZE`                 |
-| Keyframe base durations                | grow 0.6 s, pop 0.5 s, spin 6 s, pulse 1.6 s          | `canvas-motion.css`                  |
-| `DOUGHNUT_HOLE`                        | 0.55 of the radius                                    | Spec "Chart types"; 0.3 to 0.75      |
-| `AREA_FILL_OPACITY`                    | 0.25                                                  | Spec "Chart types"; 0.15 to 0.4      |
-| `SCATTER_TICKS`                        | 5                                                     | Spec "Chart types"; 3 to 7           |
-| `LINK_PREVIEW_DEBOUNCE_MS`             | 300                                                   | Typing pause before a preview read   |
-| `LINKED_AGO_TICK_MS`                   | 30 000                                                | The Linked to line's clock           |
+| Name                                   | Value                                                 | Provenance / safe range                                                      |
+| -------------------------------------- | ----------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `PIE_PALETTE`                          | 8 colours, `#0ea5e9` first                            | Built-in ramp; equals `vivid`                                                |
+| `CHART_PALETTES`                       | 8 palettes × 8 colours                                | Spec                                                                         |
+| `PIE_DEFAULT_SLICES`                   | A 40, B 30, C 20                                      | Sample data                                                                  |
+| `LINE_DEFAULT_CATEGORIES`              | Jan, Feb, Mar, Apr                                    | Sample data                                                                  |
+| `LEGEND_FONT_PX`                       | sm 11, md 14, lg 18, scale 14                         | Spec                                                                         |
+| `LEGEND_MAX_ITEMS` / `LEGEND_MAX_TEXT` | 40 / 120                                              | Bounds; `validate.ts` and the setter                                         |
+| `MAX_DATA_ARRAY`                       | 5 000                                                 | `validate.ts` bound                                                          |
+| Side key strip                         | `min(w * 0.4, 130)` px                                | Spec "up to 130 px"                                                          |
+| Key band                               | `min(h * 0.32, 72)` px                                | `chartFrame`                                                                 |
+| Key render floor                       | 48 px wide / 18 px tall                               | `ChartLegend`                                                                |
+| CSV caps                               | `MAX_SERIES` 12, `MAX_CATEGORIES` 200                 | `csv.ts` soft caps                                                           |
+| Sizes                                  | pie / bar 260 × 220, line 300 × 240, legend 180 × 132 | `SHAPE_DEFAULT_SIZE`                                                         |
+| Keyframe base durations                | grow 0.6 s, pop 0.5 s, spin 6 s, pulse 1.6 s          | `canvas-motion.css`                                                          |
+| `DOUGHNUT_HOLE`                        | 0.55 of the radius                                    | Spec "Chart types"; 0.3 to 0.75                                              |
+| `AREA_FILL_OPACITY`                    | 0.25                                                  | Spec "Chart types"; 0.15 to 0.4                                              |
+| `SCATTER_TICKS`                        | 5                                                     | Spec "Chart types"; 3 to 7                                                   |
+| `LINK_PREVIEW_DEBOUNCE_MS`             | 300                                                   | Typing pause before a preview read                                           |
+| `RELATIVE_TICK_MS`                     | 30 000                                                | The Linked to line's clock (`../packages/workbench/src/lib/relative-now.ts`) |
