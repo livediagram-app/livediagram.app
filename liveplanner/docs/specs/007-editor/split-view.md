@@ -86,7 +86,11 @@ reads **Close Side by Side**.
 - **Body:** the tab drawn with the export renderer, in the viewer's appearance, with the project's
   Plan items and the tab's photos, on the tab's own paper and pattern (in the mode it opens in
   here), laid out in canvas space exactly as the editor lays it out. A Form tab is
-  its form as respondents see it. A stored [tab window](../009-elements/tab-window.md) on it is its frame named for its tab. On
+  its form as respondents see it. Every Sheet on it draws its cells, read from the plan's sheet store: the window
+  of cells its frame has room for, as an image of it does. A Sheet tab is laid out as its image is: its Sheet grown
+  to take in every filled cell and the charts it holds. So two Sheet tabs side by side both show their cells, and so
+  does a Sheet beside a Board, Dashboard or Form tab. Until the sheets are read the Sheet draws its frame and
+  headers. A stored [tab window](../009-elements/tab-window.md) on it is its frame named for its tab. On
   opening it is fitted to the pane (never enlarged past 125%) and stays fitted as the tab grows until
   the person moves it.
 - **Moving around:** scroll pans; Ctrl or Cmd + scroll (and a trackpad pinch) zooms about the
@@ -95,7 +99,9 @@ reads **Close Side by Side**.
   hint covers the drawing: the editor follows the pointer here, so the pane needs no instructions.
   Its buttons live on the seam (below).
 - **Live:** an edit to the tab, by anyone, redraws it at a deferred priority, so it never competes
-  with the editor. A drawing that grows up or left keeps every element where it was.
+  with the editor. A change to a Sheet's cells does too (this person's, made in the editor beside, or a
+  collaborator's): while a Sheet shows here the pane holds the room's link to the sheet store, as a Sheet in the
+  editor does, so a collaborator's change lands even when the editor is on a Board. A drawing that grows up or left keeps every element where it was.
 - **States:** _Loading name…_ while a never-opened tab's content is fetched (it is fetched as soon
   as it is placed, or when its drag starts); _Couldn't load name. Click to try again._ when that fetch
   fails (clicking in loads it as the editor does, with its Retry); _Nothing on this tab yet. Click to
@@ -169,6 +175,9 @@ motion.
 
 - The other pane, the SVG renderer and the icon catalogues load with the first split; a project
   never split pays nothing for them.
+- The sheet store and the sheets engine load with the first Sheet shown here; a split without one pays nothing
+  for them. The cells are read again when the store moves on (any sheet's change), at the same deferred priority
+  as the drawing, off the path of typing in the editor beside.
 - Rendering a tab's SVG takes ~0.5 ms for 50 elements, ~4 ms for 500 and ~9 ms for 2,000 (measured
   in jsdom). It reruns only when that tab, the appearance or the Plan items change.
 - Moving the editor between panes re-renders the editor on the other tab (the same work as a tab

@@ -12,7 +12,7 @@ import {
 import { renderFrameWindow, sheetContentSize, sheetFramesOf } from '@liveplanner/sheets';
 import type { SheetStore } from '@/components/sheets/sheet-store-client';
 import { sheetMetricShown } from '@/components/plan/dashboard/sheet-metric-shown';
-import type { SheetMetricArt } from '@liveplanner/plan-art';
+import { planImageOf, planTabKindOf, type SheetMetricArt } from '@liveplanner/plan-art';
 
 // The cells each Sheet element shows, by sheet id: the window its frame has room for. A sheet the store has not
 // loaded is left out (it draws its frame and headers).
@@ -45,6 +45,27 @@ export function sheetContentsFor(
     if (size) out.set(frame.sheetId, size);
   }
   return out;
+}
+
+// A tab drawn away from its own canvas (docs/specs/007-editor/split-view.md "The other pane"): a Sheet tab laid out as
+// its image is (its Sheet grown to take in its filled cells, with the charts it holds), any other tab as it is, and
+// every Sheet on it with the window of cells its frame has room for, read from the store as the Sheets show them now.
+export function sheetDrawingFor(
+  tab: Tab,
+  store: Pick<SheetStore, 'sheet' | 'workbook'>,
+): { tab: Tab; sheets: Map<string, SheetRenderModel> } {
+  let drawn = tab;
+  if (planTabKindOf(tab) === 'sheet') {
+    const contents = sheetContentsFor(tab.elements, store);
+    drawn =
+      planImageOf(tab, {
+        tabs: [tab],
+        now: new Date(),
+        sheetHeads: (id) => store.sheet(id)?.layout.showHeaders !== false,
+        sheetContent: (id) => contents.get(id) ?? null,
+      })?.tab ?? tab;
+  }
+  return { tab: drawn, sheets: sheetModelsFor(drawn.elements, store) };
 }
 
 // Each figure from a Sheet on the dashboard, by slot id: what it shows now, still loading, or gone.
