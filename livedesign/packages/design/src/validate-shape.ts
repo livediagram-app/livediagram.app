@@ -27,6 +27,7 @@ import {
   SANKEY_CHECKS,
   shapeIssue,
 } from '@liveworkspace/element-model/shape-field-checks';
+import { isChartSheetSource } from '@liveworkspace/element-model/chart-sheet-source';
 
 // The refusal lists this product's tests compare with their sources.
 export {
@@ -45,6 +46,7 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
   ...INSTANCE_FIELD_CHECKS,
   ...CODE_CHECKS,
   ...CHART_LOOK_CHECKS,
+  { field: 'chartSheetSource', valid: isChartSheetSource, rule: 'a sheet link' },
   ...CARD_CHECKS,
   flag('stepSequence'),
   POINTER_TIP_CHECK,

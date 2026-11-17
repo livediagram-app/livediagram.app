@@ -216,6 +216,7 @@ export * from '@liveworkspace/model-core/code-themes';
 export * from './chart-palettes';
 export * from './chart-frame';
 export * from './chart-types';
+export * from './chart-sheet-source';
 export * from './chart-text';
 export * from './chart-marks';
 export * from './chart-axis';

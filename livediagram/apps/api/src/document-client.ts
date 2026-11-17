@@ -5,6 +5,7 @@
 // `localNamespace`), so code shared by the worker and the room (getDocument's outline, the room relays) costs no
 // hop there.
 
+import type { SourceChange } from '@liveworkspace/index-client';
 import type { CommunityAuthor } from '@livediagram/api-schema';
 import type {
   Copier,
@@ -78,6 +79,8 @@ export type DocumentRoomClient = {
   communityListing(code: string): Promise<{ postId: string; author: CommunityAuthor } | null>;
   // Someone opened the canvas through a share link for the first time (the index's notice): the owner's email.
   joined(personId: string): Promise<void>;
+  // A Sheet a linked chart reads changed (the index's source-changed door): the room tells every open session.
+  sourceChanged(change: SourceChange): Promise<void>;
   // A closed account's name off the canvas (document-anonymise.ts): answers the rows changed.
   anonymise(personId: string): Promise<number>;
   // The emails of an action assigned and of a comment's mentions (routes/team-notify-routes.ts, which checked the
@@ -123,6 +126,7 @@ export function documentRoom(
     communityPostTitle: (code) => room.communityPostTitle(documentId, code),
     communityListing: (code) => room.communityListing(documentId, code),
     joined: (personId) => room.joined(documentId, personId),
+    sourceChanged: (change) => room.sourceChanged(documentId, change),
     anonymise: (personId) => room.anonymise(documentId, personId),
     notifyAction: (input) => room.notifyAction(documentId, input),
     notifyMention: (input) => room.notifyMention(documentId, input),
@@ -165,6 +169,7 @@ export type DocumentRoomRpc = {
     code: string,
   ): Promise<{ postId: string; author: CommunityAuthor } | null>;
   joined(documentId: string, personId: string): Promise<void>;
+  sourceChanged(documentId: string, change: SourceChange): Promise<void>;
   anonymise(documentId: string, personId: string): Promise<number>;
   notifyAction(documentId: string, input: ActionNotice): Promise<boolean>;
   notifyMention(documentId: string, input: MentionNotice): Promise<boolean>;

@@ -24,6 +24,10 @@ import {
   isRatingShape,
   type ShapeKind,
 } from '@livediagram/document';
+import {
+  SheetLinkLine,
+  useChartAsSeen,
+} from '@liveworkspace/workbench/components/sheet-links/SheetLinkedCharts';
 import dynamic from 'next/dynamic';
 import type { ReactNode } from 'react';
 import { isSvgRenderedShape, ShapeSvgOverlay } from '@/components/canvas/shape-svg-overlay';
@@ -100,7 +104,8 @@ export function drawsShapeSvgOverlay(kind: ShapeKind): boolean {
 // SVG-rendered geometric shapes. Returns null for a plain box (whose text +
 // border render in BoxedElementView itself). Extracted from BoxedElementView.
 export function ShapeContentRouter({
-  element,
+  element: stored,
+  isSelected,
   accent,
   textColor,
   remoteBorderColor,
@@ -113,6 +118,9 @@ export function ShapeContentRouter({
   artAnimClass,
   isEditing,
 }: ShapeContentRouterProps) {
+  // A chart linked to a liveplanner sheet draws what this person can read of it (docs/specs/009-elements/
+  // pie-chart.md "Charts linked to a liveplanner sheet"); every other element is drawn as stored.
+  const element = useChartAsSeen(stored);
   // An icon's glyph moves aside for its caption from the moment the label is typed.
   const iconCaptioned = iconMakesRoomForLabel(element.label, !!isEditing);
   // The paper under this shape, for colours it doesn't carry (docs/specs/007-editor/editor-app.md).
@@ -197,20 +205,26 @@ export function ShapeContentRouter({
     <RatingView element={element} accent={accent} />
   ) : element.type === 'shape' && isPieShape(element.shape) ? (
     // Pie chart (docs/specs/009-elements/pie-chart.md): slices sized by value + a legend.
-    <PieChartView
-      element={element}
-      fontFamily={fontFamily}
-      textColor={textColor}
-      palette={chartPalette}
-    />
+    <>
+      <PieChartView
+        element={element}
+        fontFamily={fontFamily}
+        textColor={textColor}
+        palette={chartPalette}
+      />
+      <SheetLinkLine element={element} selected={!!isSelected} />
+    </>
   ) : element.type === 'shape' && isBarShape(element.shape) ? (
     // Bar chart (docs/specs/009-elements/pie-chart.md): bars sized by value + a legend.
-    <BarChartView
-      element={element}
-      fontFamily={fontFamily}
-      textColor={textColor}
-      palette={chartPalette}
-    />
+    <>
+      <BarChartView
+        element={element}
+        fontFamily={fontFamily}
+        textColor={textColor}
+        palette={chartPalette}
+      />
+      <SheetLinkLine element={element} selected={!!isSelected} />
+    </>
   ) : element.type === 'shape' && isCodeBlockShape(element.shape) ? (
     // Code block (docs/specs/009-elements/code-block.md): the fixed dark editor card. Deliberately takes
     // no theme colours — the dark card is its identity.
@@ -250,12 +264,15 @@ export function ShapeContentRouter({
     />
   ) : element.type === 'shape' && isLineShape(element.shape) ? (
     // Line chart (docs/specs/009-elements/pie-chart.md): multi-series lines + a legend.
-    <LineChartView
-      element={element}
-      fontFamily={fontFamily}
-      textColor={textColor}
-      palette={chartPalette}
-    />
+    <>
+      <LineChartView
+        element={element}
+        fontFamily={fontFamily}
+        textColor={textColor}
+        palette={chartPalette}
+      />
+      <SheetLinkLine element={element} selected={!!isSelected} />
+    </>
   ) : element.type === 'shape' && isSvgRenderedShape(element.shape) && !isHandDrawn(finish) ? (
     <ShapeSvgOverlay
       shape={element.shape}

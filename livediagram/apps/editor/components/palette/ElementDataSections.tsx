@@ -13,6 +13,7 @@
 // inline version used). The page owns the open/closed state + the
 // handlers; this component only decides which items to show.
 
+import { SheetLinkSection } from '@liveworkspace/workbench/components/sheet-links/SheetLinkSection';
 import dynamic from 'next/dynamic';
 import {
   isChipShape,
@@ -228,23 +229,33 @@ export function ElementDataSections({
               icon={<DataMenuGlyph />}
               {...sectionProps('pie-data')}
             >
-              {isLine ? (
-                <LineDataSummary
-                  palette={chartFallbackPalette}
-                  series={
-                    shapeTarget?.lineSeries ??
-                    LINE_DEFAULT_SERIES.map((s) => ({ ...s, values: [...s.values] }))
+              {/* Linked to a liveplanner sheet (pie-chart.md "Charts linked to a liveplanner sheet"): the Sheet
+                  row in place of the rows, which the sheet now fills; else the rows and an Editor's Link to Sheet. */}
+              {shapeTarget ? (
+                <SheetLinkSection
+                  chart={shapeTarget}
+                  onClose={props.onClose}
+                  rows={
+                    isLine ? (
+                      <LineDataSummary
+                        palette={chartFallbackPalette}
+                        series={
+                          shapeTarget.lineSeries ??
+                          LINE_DEFAULT_SERIES.map((s) => ({ ...s, values: [...s.values] }))
+                        }
+                        onEdit={() => props.onEditLineData(shapeTarget.id)}
+                      />
+                    ) : (
+                      <PieDataEditor
+                        palette={chartFallbackPalette}
+                        allowNegative={shapeTarget.shape !== 'pie-chart'}
+                        slices={shapeTarget.pieSlices ?? DEFAULT_PIE_ROWS}
+                        onChange={props.onSetPieData}
+                      />
+                    )
                   }
-                  onEdit={() => target.type === 'shape' && props.onEditLineData(target.id)}
                 />
-              ) : (
-                <PieDataEditor
-                  palette={chartFallbackPalette}
-                  allowNegative={shapeTarget?.shape !== 'pie-chart'}
-                  slices={shapeTarget?.pieSlices ?? DEFAULT_PIE_ROWS}
-                  onChange={props.onSetPieData}
-                />
-              )}
+              ) : null}
             </MenuAccordionSection>
           ) : null}
           {/* Code (docs/specs/009-elements/code-block.md) — the snippet summary + the modal opener (the
