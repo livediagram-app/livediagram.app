@@ -50,7 +50,10 @@ import { BrowseMemoryContext, useBrowseMemory } from './PaletteCategoryBrowser';
 import { CATEGORY_BAR_MODES } from './category-flyout-groups';
 import { setPalettePopoverOpen } from '@liveworkspace/workbench/lib/palette-popover-open';
 import { useBarLabels } from '@liveworkspace/workbench/components/palette/useBarLabels';
-import { useStripCrowded } from '@liveworkspace/workbench/components/palette/useStripCrowded';
+import {
+  crowdedPaddingRight,
+  useStripCrowding,
+} from '@liveworkspace/workbench/components/palette/useStripCrowded';
 import { SessionBrowse } from './session-category';
 import { barCategoriesFor } from './bar-categories';
 import { CategoryBarButtons, CategoryBarFlyout, useCategoryBar } from './CategoryBar';
@@ -208,7 +211,7 @@ export function ToolbarPalette(props: Props) {
   });
   const leadingRef = useRef<HTMLDivElement>(null);
   // Too wide to centre between the menu card's sides (a tablet): the strip sits at the right instead.
-  const crowded = useStripCrowded(cardRef, leading == null);
+  const { crowded, clearRight } = useStripCrowding(cardRef, leading == null);
   const stripLimit = useStripTileLimit(cardRef, {
     leadingRef,
     isMobile,
@@ -327,7 +330,7 @@ export function ToolbarPalette(props: Props) {
       style={{
         ...(scale === 1 ? {} : { ...uiScaleStyle(scale), top: toSurfacePx(12, scale) }),
         alignItems: crowded ? 'flex-end' : 'center',
-        paddingRight: crowded ? '0.75rem' : 0,
+        paddingRight: crowded ? crowdedPaddingRight(clearRight, scale) : 0,
       }}
       // While one of its popovers is open (a category's flyout, More, Search) the strip rises to the popover layer,
       // so what hangs from it sits over everything on the canvas, an element's toolbar and menus included.

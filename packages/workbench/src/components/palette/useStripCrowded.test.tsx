@@ -91,7 +91,7 @@ function Crowding({
 }: {
   width: number;
   enabled?: boolean;
-  onSeen: (s: { crowded: boolean; clear: number }) => void;
+  onSeen: (s: { crowded: boolean; clear: number; clearRight: number }) => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   onSeen(useStripCrowding(ref, enabled));
@@ -108,21 +108,21 @@ function Crowding({
 describe('useStripCrowding', () => {
   it('says where a crowded strip starts clear of the menu card: its right edge and the gap', () => {
     vi.stubGlobal('innerWidth', 790);
-    const seen: { crowded: boolean; clear: number }[] = [];
+    const seen: { crowded: boolean; clear: number; clearRight: number }[] = [];
     // An article's docked formatting, 660 wide, in a 790px window: crowded, and it starts 185 + 8 in.
     render(<Crowding width={660} onSeen={(s) => seen.push(s)} />);
-    expect(seen.at(-1)).toEqual({ crowded: true, clear: 193 });
+    expect(seen.at(-1)).toEqual({ crowded: true, clear: 193, clearRight: 0 });
   });
 
   it('keeps the same answer when nothing changed, and is off where disabled', () => {
     vi.stubGlobal('innerWidth', 1580);
-    const seen: { crowded: boolean; clear: number }[] = [];
+    const seen: { crowded: boolean; clear: number; clearRight: number }[] = [];
     render(<Crowding width={660} onSeen={(s) => seen.push(s)} />);
     const before = seen.at(-1);
     at(1580);
     expect(seen.at(-1)).toBe(before);
-    expect(before).toEqual({ crowded: false, clear: 193 });
-    const off: { crowded: boolean; clear: number }[] = [];
+    expect(before).toEqual({ crowded: false, clear: 193, clearRight: 0 });
+    const off: { crowded: boolean; clear: number; clearRight: number }[] = [];
     render(<Crowding width={660} enabled={false} onSeen={(s) => off.push(s)} />);
     expect(off.every((s) => !s.crowded && s.clear === 0)).toBe(true);
   });
@@ -130,8 +130,8 @@ describe('useStripCrowding', () => {
   it('clears nothing with no menu card', () => {
     document.querySelector('[data-toolbar-menu]')?.remove();
     vi.stubGlobal('innerWidth', 790);
-    const seen: { crowded: boolean; clear: number }[] = [];
+    const seen: { crowded: boolean; clear: number; clearRight: number }[] = [];
     render(<Crowding width={900} onSeen={(s) => seen.push(s)} />);
-    expect(seen.at(-1)).toEqual({ crowded: true, clear: 0 });
+    expect(seen.at(-1)).toEqual({ crowded: true, clear: 0, clearRight: 0 });
   });
 });

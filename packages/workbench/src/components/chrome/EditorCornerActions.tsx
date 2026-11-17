@@ -1,6 +1,8 @@
 'use client';
 
+import { useLayoutEffect, useRef } from 'react';
 import { Glyph, HoverCard } from '@liveworkspace/ui';
+import { CORNER_CARD_EVENT, STRIP_MENU_GAP_PX } from '../canvas/menu-join';
 import { AuthControls } from './AuthControls';
 import { useUiScale } from '../providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '../../lib/ui-scale';
@@ -11,9 +13,9 @@ import { HeaderShareIcon } from './EditorHeader';
 // shared AuthControls, drawn as a header action; styles/corner-actions.css redraws it as a button in
 // this card.
 
-// One button in the card: 36px tall like the menu card's, its glyph beside its name.
+// One button in the card: 36px tall like the menu card's, its glyph beside its name (the glyph alone on a phone).
 export const CORNER_BTN =
-  'flex h-9 cursor-pointer items-center gap-1.5 rounded-lg px-2.5 text-xs font-medium transition disabled:cursor-not-allowed disabled:opacity-50';
+  'flex h-9 min-w-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg px-2.5 phone:px-0 text-xs font-medium transition disabled:cursor-not-allowed disabled:opacity-50';
 const CORNER_TONE =
   'text-slate-600 enabled:hover:bg-slate-100 enabled:hover:text-slate-900 dark:text-slate-200 dark:enabled:hover:bg-slate-800 dark:enabled:hover:text-white';
 const CORNER_ON =
@@ -44,10 +46,38 @@ export function EditorCornerActions({
   // Drawn at the toolbar's UI scale (docs/specs/007-editor/ui-scale.md), as the palette strip and the menu card are,
   // so the three stand the same height in one row, still 12px from the corner.
   const scale = useUiScale('toolbar');
+  // The palette strip keeps clear of this card (stripRoomBesideMenu): tell it when the card mounts, resizes (Share
+  // arriving after hydration, Sign in becoming the account) or goes.
+  const cardRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const el = cardRef.current;
+    if (!el) return;
+    const root = document.documentElement;
+    const say = () => {
+      // A phone's strip row spans the top and keeps this much room at its right for the card: its width (layout px,
+      // the strip's own scale) and the strip's gap.
+      if (cardRef.current) {
+        root.style.setProperty(
+          '--corner-card-room',
+          `${cardRef.current.offsetWidth + STRIP_MENU_GAP_PX}px`,
+        );
+      } else root.style.removeProperty('--corner-card-room');
+      window.dispatchEvent(new Event(CORNER_CARD_EVENT));
+    };
+    say();
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(say);
+    observer?.observe(el);
+    return () => {
+      observer?.disconnect();
+      // After this commit, so the card is gone when the strip measures.
+      requestAnimationFrame(say);
+    };
+  }, []);
   return (
     // A zero-height layer over the canvas, so the canvas keeps the whole height a header bar took.
     <div data-app-chrome className="relative z-[var(--z-modal)] h-0">
       <div
+        ref={cardRef}
         data-corner-actions=""
         data-floating-panel=""
         data-region="header"
@@ -70,7 +100,7 @@ export function EditorCornerActions({
                 <rect x="5" y="5" width="8" height="8.5" rx="1.5" />
                 <path d="M3 11V3.5A1.5 1.5 0 0 1 4.5 2H10" />
               </Glyph>
-              {copying ? 'Copying' : 'Copy'}
+              <span className="phone:sr-only">{copying ? 'Copying' : 'Copy'}</span>
             </button>
           </HoverCard>
         ) : null}
@@ -89,7 +119,7 @@ export function EditorCornerActions({
               <Glyph size={14} units={16}>
                 <path d="M5 3.2v9.6a.6.6 0 0 0 .9.5l7.4-4.8a.6.6 0 0 0 0-1L5.9 2.7a.6.6 0 0 0-.9.5Z" />
               </Glyph>
-              {present.starting ? 'Starting' : 'Present'}
+              <span className="phone:sr-only">{present.starting ? 'Starting' : 'Present'}</span>
             </button>
           </HoverCard>
         ) : null}
@@ -106,7 +136,7 @@ export function EditorCornerActions({
               className={`${CORNER_BTN} ${shareable ? CORNER_ON : CORNER_TONE}`}
             >
               <HeaderShareIcon />
-              Share
+              <span className="phone:sr-only">Share</span>
             </button>
           </HoverCard>
         ) : null}

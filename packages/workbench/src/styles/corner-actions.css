@@ -24,3 +24,22 @@
 .dark [data-corner-actions] > div > button[aria-haspopup]:hover {
   background-color: var(--color-slate-800);
 }
+
+/* On a phone the card's buttons are their glyphs alone (EditorCornerActions' own labels go `phone:sr-only`): Sign in's
+ * words shrink to nothing (still its accessible name), the account's first name hides (its aria-label names it). The
+ * query is the `phone:` variant's (each app's globals.css). */
+@media (max-width: 639px), (pointer: coarse) and (max-height: 499px) {
+  [data-corner-actions] > a,
+  [data-corner-actions] > div > button[aria-haspopup] {
+    width: 2.25rem;
+    justify-content: center;
+    padding-inline: 0;
+    gap: 0;
+  }
+  [data-corner-actions] > a {
+    font-size: 0;
+  }
+  [data-corner-actions] > div > button[aria-haspopup] > :not(:first-child) {
+    display: none;
+  }
+}

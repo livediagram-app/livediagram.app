@@ -2,7 +2,7 @@
 
 import { useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { editorViewportOf } from '../../lib/editor-viewport';
-import { stripRoomBesideMenu } from '../canvas/menu-join';
+import { stripRoomBesideMenu, CORNER_CARD_EVENT } from '../canvas/menu-join';
 
 // How many of the category bar's categories the strip shows, the rest behind its More button
 // (docs/specs/007-editor/toolbar-layout.md "The strip's room"). The bar drops its names first (useBarLabels); a
@@ -88,10 +88,13 @@ export function useBarFold(
     observer.observe(card);
     const menu = document.querySelector<HTMLElement>('[data-toolbar-menu]');
     if (menu) observer.observe(menu);
+    // The top-right corner card (EditorCornerActions) bounds the strip too; it says when it mounts or resizes.
+    window.addEventListener(CORNER_CARD_EVENT, measure);
     window.addEventListener('resize', measure);
     return () => {
       observer.disconnect();
       window.removeEventListener('resize', measure);
+      window.removeEventListener(CORNER_CARD_EVENT, measure);
     };
   }, [cardRef, enabled, categoriesKey, scale, shown]);
 

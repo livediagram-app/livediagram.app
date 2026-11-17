@@ -2,7 +2,12 @@
 
 import { useLayoutEffect, useState, type RefObject } from 'react';
 import { editorViewportOf } from '../../lib/editor-viewport';
-import { STRIP_MENU_GAP_PX, stripRoomBesideMenu } from '../canvas/menu-join';
+import {
+  cornerCardClear,
+  STRIP_MENU_GAP_PX,
+  stripRoomBesideMenu,
+  CORNER_CARD_EVENT,
+} from '../canvas/menu-join';
 
 // Whether the centred strip would run under the top-left menu card (docs/specs/007-editor/toolbar-layout.md "The
 // category bar"): the strip as drawn is wider than the room centring leaves it, the editor's width less the menu
@@ -14,14 +19,20 @@ export function useStripCrowded(cardRef: RefObject<HTMLElement | null>, enabled:
   return useStripCrowding(cardRef, enabled).crowded;
 }
 
+/** A crowded strip's right padding, in its surface px: 12px from the editor's edge, or clear of the top-right corner
+ *  card where there is one. */
+export function crowdedPaddingRight(clearRight: number, scale: number): string | number {
+  return clearRight > 0 ? clearRight / scale : '0.75rem';
+}
+
 /** The crowding, and where a crowded strip must start to clear the menu card: `clear` is the card's right edge
  *  plus the strip's gap, in screen px from the editor's left (0 with no card). A strip that can give way (an
  *  article's docked formatting, whose controls scroll) starts there rather than running under the card. */
 export function useStripCrowding(
   cardRef: RefObject<HTMLElement | null>,
   enabled: boolean,
-): { crowded: boolean; clear: number } {
-  const [state, setState] = useState({ crowded: false, clear: 0 });
+): { crowded: boolean; clear: number; clearRight: number } {
+  const [state, setState] = useState({ crowded: false, clear: 0, clearRight: 0 });
   useLayoutEffect(() => {
     const card = cardRef.current;
     if (!enabled || !card || typeof ResizeObserver === 'undefined') return;
@@ -34,18 +45,27 @@ export function useStripCrowding(
       const clear = menu
         ? Math.max(0, Math.ceil(menu.getBoundingClientRect().right - view.left + STRIP_MENU_GAP_PX))
         : 0;
-      setState((s) => (s.crowded === crowded && s.clear === clear ? s : { crowded, clear }));
+      // Where a crowded strip, set at the right, must end: short of the top-right corner card (EditorCornerActions).
+      const clearRight = Math.ceil(cornerCardClear(view.width, view.left));
+      setState((s) =>
+        s.crowded === crowded && s.clear === clear && s.clearRight === clearRight
+          ? s
+          : { crowded, clear, clearRight },
+      );
     };
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(card);
     const menu = document.querySelector<HTMLElement>('[data-toolbar-menu]');
     if (menu) observer.observe(menu);
+    // The top-right corner card (EditorCornerActions) bounds the strip too; it says when it mounts or resizes.
+    window.addEventListener(CORNER_CARD_EVENT, measure);
     window.addEventListener('resize', measure);
     return () => {
       observer.disconnect();
       window.removeEventListener('resize', measure);
+      window.removeEventListener(CORNER_CARD_EVENT, measure);
     };
   }, [cardRef, enabled]);
-  return enabled ? state : { crowded: false, clear: 0 };
+  return enabled ? state : { crowded: false, clear: 0, clearRight: 0 };
 }

@@ -32,7 +32,10 @@ import { BrowseMemoryContext, useBrowseMemory } from './PaletteCategoryBrowser';
 import { setPalettePopoverOpen } from '@liveworkspace/workbench/lib/palette-popover-open';
 import { useBarFold } from '@liveworkspace/workbench/components/palette/useBarFold';
 import { useBarLabels } from '@liveworkspace/workbench/components/palette/useBarLabels';
-import { useStripCrowding } from '@liveworkspace/workbench/components/palette/useStripCrowded';
+import {
+  crowdedPaddingRight,
+  useStripCrowding,
+} from '@liveworkspace/workbench/components/palette/useStripCrowded';
 import { barCategoriesFor } from './bar-categories';
 import { CategoryBarButtons, CategoryBarFlyout, useCategoryBar } from './CategoryBar';
 import { usePaletteKindMotion } from './usePaletteKindMotion';
@@ -84,7 +87,8 @@ function StripRow({ leading, children }: { leading?: ReactNode; children: ReactN
       // (LandscapeBarsHandle), so a long strip's bar scrolls short of it rather than under it.
       style={{
         ...safeInlinePadding('0.75rem'),
-        paddingRight: `calc(${atLeastInset('0.75rem', 'right')} + var(--landscape-handle-room, 0px))`,
+        // Clear of the top-right corner card too (EditorCornerActions sets --corner-card-room).
+        paddingRight: `calc(${atLeastInset('0.75rem', 'right')} + var(--landscape-handle-room, 0px) + var(--corner-card-room, 0px))`,
       }}
       className={`pointer-events-none flex w-full items-start gap-2 [&>*]:pointer-events-auto ${LANDSCAPE_HANDLE_ROOM}`}
     >
@@ -198,7 +202,7 @@ export function ToolbarPalette(props: Props) {
   // Too wide to centre between the menu card's sides (a tablet): the strip sits at the right instead. An article's
   // docked formatting, wider still than the room beside the card (a narrow window, a side by side pane), starts
   // clear of the card and its controls scroll, as on a phone's row, rather than running under the card.
-  const { crowded, clear } = useStripCrowding(cardRef, leading == null);
+  const { crowded, clear, clearRight } = useStripCrowding(cardRef, leading == null);
   const dockGivesWay = crowded && articleDock;
   const giveWay = swipe || dockGivesWay;
 
@@ -250,7 +254,7 @@ export function ToolbarPalette(props: Props) {
       style={{
         ...(scale === 1 ? {} : { ...uiScaleStyle(scale), top: toSurfacePx(12, scale) }),
         alignItems: crowded ? 'flex-end' : 'center',
-        paddingRight: crowded ? '0.75rem' : 0,
+        paddingRight: crowded ? crowdedPaddingRight(clearRight, scale) : 0,
         ...(dockGivesWay
           ? { paddingLeft: toSurfacePx(Math.max(clear, besideWidth ?? 0), scale) }
           : besideWidth

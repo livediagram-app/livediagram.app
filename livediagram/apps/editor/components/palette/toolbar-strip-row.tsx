@@ -34,7 +34,8 @@ export function StripRow({
       // (LandscapeBarsHandle), so a long strip's rail scrolls short of it rather than under it.
       style={{
         ...safeInlinePadding('0.75rem'),
-        paddingRight: `calc(${atLeastInset('0.75rem', 'right')} + var(--landscape-handle-room, 0px))`,
+        // Clear of the top-right corner card too (EditorCornerActions sets --corner-card-room).
+        paddingRight: `calc(${atLeastInset('0.75rem', 'right')} + var(--landscape-handle-room, 0px) + var(--corner-card-room, 0px))`,
       }}
       className={`pointer-events-none flex w-full items-start gap-2 [&>*]:pointer-events-auto ${LANDSCAPE_HANDLE_ROOM}`}
     >

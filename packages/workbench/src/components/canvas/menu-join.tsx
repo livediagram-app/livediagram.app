@@ -62,13 +62,37 @@ export function stripRoomBesideMenu(
   viewLeft: number,
   menu: HTMLElement | null,
 ): number {
-  if (!menu) return viewWidth;
+  // Experiment (no header bar): the Share and account card at the top right (EditorCornerActions) is cleared as the
+  // menu box is, so the strip stands between the two, never under either.
+  const right = cornerCardClear(viewWidth, viewLeft);
+  if (!menu) return viewWidth - 2 * right;
   const clear = menuNaturalRight(menu) - viewLeft + STRIP_MENU_GAP_PX;
   // Joined, `clear` reaches the sidebar's inner edge (the box stops a gap short of it), and the strip, centred beside
-  // the sidebar, keeps the gap from it and from the editor's right edge.
+  // the sidebar, keeps the gap from it and from the editor's right edge, or the corner card's clearance where that is
+  // wider (on both sides, since the strip stays centred).
   return menu.hasAttribute('data-menu-joined')
-    ? viewWidth - clear - 2 * STRIP_MENU_GAP_PX
-    : viewWidth - 2 * clear;
+    ? viewWidth - clear - 2 * Math.max(STRIP_MENU_GAP_PX, right)
+    : viewWidth - 2 * Math.max(clear, right);
+}
+
+/** Sent on `window` when the top-right corner card mounts, resizes or goes, so the strip measures its room again. */
+// The corner card's inset from the editor's top-right corner, in screen px (EditorCornerActions' right-3).
+const CORNER_CARD_INSET_PX = 12;
+
+export const CORNER_CARD_EVENT = 'corner-card-change';
+
+/** How far in from the editor's right edge the strip must stop to keep its gap from the top-right corner card, in
+ *  screen px; 0 with no card over this editor. */
+export function cornerCardClear(viewWidth: number, viewLeft: number): number {
+  if (typeof document === 'undefined') return 0;
+  const card = document.querySelector<HTMLElement>('[data-corner-actions]');
+  if (!card) return 0;
+  const box = card.getBoundingClientRect();
+  // The card stands over the editor at the window's right edge (in a split, the right pane): elsewhere, nothing to
+  // clear. Judged from the editor's box, not the card's, since a resize can measure before the card has moved.
+  if (box.width === 0 || viewLeft + viewWidth < window.innerWidth - 1) return 0;
+  // Its width, its 12px inset from the corner and the strip's gap.
+  return Math.ceil(box.width) + CORNER_CARD_INSET_PX + STRIP_MENU_GAP_PX;
 }
 
 /** The sidebar's top row while joined: room for the menu box (drawn over it, above the sidebar), a hairline at its
