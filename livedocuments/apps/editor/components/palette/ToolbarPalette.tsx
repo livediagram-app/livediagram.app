@@ -1,7 +1,7 @@
 'use client';
 
 import type { Element, Page } from '@livedocuments/document';
-import { useEffect, useEffectEvent, useMemo, useRef, type ReactNode } from 'react';
+import { useEffect, useEffectEvent, useMemo, useRef, useState, type ReactNode } from 'react';
 import { onToolbarSearchRequest } from '@liveworkspace/workbench/lib/toolbar-search-request';
 import { atLeastInset, safeInlinePadding } from '@livedocuments/ui';
 import { LANDSCAPE_HANDLE_ROOM } from '@/components/chrome/LandscapeBars';
@@ -11,7 +11,7 @@ import { PHONE_TOOLBAR_ITEMS } from '@liveworkspace/workbench/components/chrome/
 import { TOOLBAR_CARD } from '@liveworkspace/workbench/components/chrome/toolbar-surface';
 import { PaletteTintProvider } from './palette-controls';
 import { PaletteGroupProvider } from '@liveworkspace/workbench/components/palette/palette-group-state';
-import { PaletteDropdown } from './PaletteDropdown';
+import { PaletteDropdown } from '@liveworkspace/workbench/components/palette/PaletteDropdown';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
@@ -120,7 +120,17 @@ export function ToolbarPalette(props: Props) {
   // The Library, icon only beside Search, not a category (liveworkspace/docs/specs/006-media/libraries.md).
   const library = useStripPopover(rootRef, TOOLBAR_LIBRARY_SELECTOR);
   // The category bar and its flyout (CategoryBar).
-  const bar = useCategoryBar(rootRef);
+  // The selection mode's menu, held here so a category opening closes it (useCategoryBar's onOpen).
+  const [selectionModeOpen, setSelectionModeOpen] = useState(false);
+  // A category opening closes the strip's other popovers (docs/specs/007-editor/toolbar-layout.md "One popover at a
+  // time"), as moving between categories swaps one flyout for the next.
+  const bar = useCategoryBar(rootRef, {
+    onOpen: () => {
+      search.setOpen(false);
+      library.setOpen(false);
+      setSelectionModeOpen(false);
+    },
+  });
   // Icons, Stickers and Tech reopen on the group they were left on, for the page load (BrowseMemory).
   const browseMemory = useBrowseMemory();
   // The template start steps aside while a popover hangs from the strip (palette-popover-open).
@@ -285,6 +295,8 @@ export function ToolbarPalette(props: Props) {
                 >
                   <PaletteDropdown
                     ariaLabel="Selection mode"
+                    open={selectionModeOpen}
+                    onOpenChange={setSelectionModeOpen}
                     dataTourId="canvas-tool"
                     hoverCardTitle="Selection Mode"
                     hoverCardDescription="Choose how the pointer acts on the canvas."
