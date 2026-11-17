@@ -5,6 +5,7 @@
 
 import { continuePurges, FREQUENT_CRON, handlePersonPurge } from './account-purge';
 import { handleApp } from './app-routes';
+import { handleAccessRequests } from './access-requests';
 import { handleApproval } from './approvals';
 import { callerOf } from './auth';
 import { sendDriveSignals, type DriveTouched } from './drive';
@@ -108,6 +109,8 @@ async function route(ctx: RouteContext): Promise<Response> {
     if (segments[2] === 'sheet-range' && segments.length === 3) return handleSheetRange(ctx, id);
     // Approvals (approvals.ts): asked, decided, cancelled and read, a person in person only.
     if (segments[2] === 'approval') return handleApproval(ctx, id, segments.slice(3));
+    // Request Access (access-requests.ts): asked, granted and declined, an account in person only.
+    if (segments[2] === 'access-requests') return handleAccessRequests(ctx, id, segments.slice(3));
     // The document's own webhooks (webhooks/routes.ts): an account's session only.
     if (segments[2] === 'webhooks') {
       const person = ctx.caller.person;
@@ -186,6 +189,8 @@ const routeLabel = createApiRouteLabel(
     'sheet-changed',
     'approval',
     'decision',
+    'access-requests',
+    'decline',
   ]),
 );
 

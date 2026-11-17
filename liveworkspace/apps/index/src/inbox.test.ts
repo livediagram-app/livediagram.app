@@ -514,7 +514,7 @@ describe('Inbox forms', () => {
 });
 
 describe('the Inbox at scale', () => {
-  it('reads within budget with 2,000 of my items among 22,000, each with a form, a thread and an action', async () => {
+  it('reads within budget with 2,000 of my items among 22,000, each with a form, a thread, an action and an access request', async () => {
     const ada = await person('user_a', { teams: [{ id: 'team1' }] });
     const db = h.db.sql;
     const items = db.prepare(
@@ -535,6 +535,10 @@ describe('the Inbox at scale', () => {
          assignee_id, assigner_id, team_id, created_at, updated_at)
        VALUES ('liveplanner', ?, 't', 'e', 'a', 'E', 'Do', 'open', ?, 'user_x', NULL, 1, ?)`,
     );
+    const requests = db.prepare(
+      `INSERT INTO access_requests (id, item_id, requester_id, requester_name, note, state, asked_at)
+       VALUES (?, ?, ?, 'Cy', 'Please', 'open', ?)`,
+    );
     db.exec('BEGIN');
     for (let i = 0; i < 22_000; i++) {
       const mine = i % 11 === 0;
@@ -544,6 +548,7 @@ describe('the Inbox at scale', () => {
       forms.run(id, i);
       threads.run(id, JSON.stringify([owner]), i);
       actions.run(id, owner, i);
+      requests.run(`ar_${i}`, id, `user_r${i % 50}`, i);
     }
     db.exec('COMMIT');
     const runs = 10;
@@ -555,7 +560,10 @@ describe('the Inbox at scale', () => {
     expect(res!.forms.length).toBe(100);
     expect(res!.threads.length).toBe(100);
     expect(res!.actions.length).toBe(100);
-    // Measured about 18 ms a read here (three queries); the budget leaves room for a slow machine.
+    expect(res!.accessRequests!.length).toBe(100);
+    // Measured about 18 ms a read here (three queries); with the access requests' fourth, 16.4 ms with none open and
+    // 18 to 19.5 ms with one on each of my 2,000 items (2026-11-17, a loaded machine). The budget leaves room for a slow
+    // machine.
     expect(ms).toBeLessThan(cpuBudgetMs(150));
     // wall-clock: seeding 22,000 items with their forms, threads and actions can outlast the default 5 s on a loaded machine.
   }, 30_000);

@@ -231,6 +231,15 @@ function personalStatements(db: Db, person: string): (() => D1PreparedStatement)
         )
         .bind(ANONYMISED_PERSON, person, CHUNK),
     byPerson('approval_people'),
+    // Their access requests and counted tries (request-access.md, IDX53): a request from no one asks nothing.
+    () =>
+      db
+        .prepare(
+          `DELETE FROM access_requests WHERE rowid IN (
+             SELECT rowid FROM access_requests WHERE requester_id = ? LIMIT ?)`,
+        )
+        .bind(person, CHUNK),
+    byPerson('access_request_tries'),
     byPerson('placement_defaults'),
     byPerson('collab_form_reads'),
     // Their Drive mirror's flag (liveworkspace/docs/specs/005-drive/drive.md): accounts tells the service itself.
