@@ -1,6 +1,8 @@
 // The contract of the index's internal doors into an app's items (./internal): the handlers an app supplies, what
 // they are given and answer, and the export door's formats and ETags. Re-exported from ./internal.
 import type {
+  AccessGrantedNotice,
+  AccessRequestedNotice,
   ApprovalNotice,
   CommunityStateAnswer,
   CommunityStateAsk,
@@ -105,6 +107,10 @@ export type InternalItemHandlers = {
   notice?: (itemId: string, notice: ItemNotice) => Promise<unknown>;
   // An approval request (approvals.md "The email"): the app emails the approvers, off the index's path.
   approvalRequested?: (itemId: string, notice: ApprovalNotice) => Promise<unknown>;
+  // Request Access (request-access.md "The emails"): someone asked for access, the app emails the recipients; a
+  // manager granted it, the app emails the requester. Off the index's path.
+  accessRequested?: (itemId: string, notice: AccessRequestedNotice) => Promise<unknown>;
+  accessGranted?: (itemId: string, notice: AccessGrantedNotice) => Promise<unknown>;
   // A closed account (the index's person purge): what the app keeps for the person beside their items (images,
   // claims), dropped. Idempotent.
   personClosed?: (personId: string) => Promise<unknown>;

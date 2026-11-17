@@ -58,6 +58,7 @@ import type {
   ApprovalDecisionInput,
   ApprovalRequestInput,
 } from './approvals';
+import type { AccessGrantInput, AccessRequestInput } from './access-requests';
 import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 import { enc, queryString, refusal, type Query } from './index-error';
 
@@ -334,6 +335,23 @@ export function createIndexClient({
     // by default, at most HISTORY_LIMIT_MAX). Its owner's and its team's only; anyone else is 404.
     itemHistory: (itemId: string, query: HistoryQuery = {}, options: RequestOptions = {}) =>
       call<HistoryPage>(`/items/${enc(itemId)}/history`, { query, signal: options.signal }),
+
+    // Request Access (request-access.md): ask for an item you can't open (the answer is the same for every id), and,
+    // for a manager of the item, share it with the requester or decline.
+    requestAccess: (itemId: string, input: AccessRequestInput = {}) =>
+      call<{ requested: true }>(`/items/${enc(itemId)}/access-requests`, {
+        method: 'POST',
+        body: input,
+      }),
+    grantAccessRequest: (itemId: string, requestId: string, input: AccessGrantInput = {}) =>
+      call<{ link: ShareLink }>(`/items/${enc(itemId)}/access-requests/${enc(requestId)}/grant`, {
+        method: 'POST',
+        body: input,
+      }),
+    declineAccessRequest: (itemId: string, requestId: string) =>
+      call<void>(`/items/${enc(itemId)}/access-requests/${enc(requestId)}/decline`, {
+        method: 'POST',
+      }),
 
     // Approvals (approvals.md): the item's approval for anyone who reaches it; asking, cancelling and the candidates
     // for an Editor of the whole item; deciding for a named approver. `share`: the link the person reaches it through,
