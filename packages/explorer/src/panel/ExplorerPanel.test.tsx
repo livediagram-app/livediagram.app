@@ -588,6 +588,36 @@ describe("the panel's This Browser", () => {
     expect(screen.queryByRole('region', { name: 'Current plan' })).toBeNull();
   });
 
+  it('drops the card picture when the rail would scroll, its pill moving beside "Updated" (Work Tracker 1205)', () => {
+    // A rail taller in content (100 px) than its room (jsdom's clientHeight, 0): it goes tight.
+    class Observer {
+      observe() {}
+      disconnect() {}
+      unobserve() {}
+    }
+    vi.stubGlobal('ResizeObserver', Observer);
+    const rects = vi
+      .spyOn(Element.prototype, 'getBoundingClientRect')
+      .mockReturnValue({ top: 0, bottom: 100, height: 100 } as DOMRect);
+    try {
+      renderPanel(createFakeIndex({ items: [] }), {
+        thisBrowser: host(),
+        currentId: 'fresh',
+        currentOffline: true,
+        currentTitle: 'Untitled Plan',
+      });
+      const rail = screen.getByRole('navigation', { name: 'Explorer sections' });
+      expect(rail.hasAttribute('data-rail-tight')).toBe(true);
+      const card = screen.getByRole('region', { name: 'Current plan' });
+      expect(card.querySelector('[data-current-picture]')).toBeNull();
+      expect(within(card).getByText('Browser Storage')).toBeTruthy();
+      expect(within(card).getByText('Updated just now')).toBeTruthy();
+    } finally {
+      rects.mockRestore();
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('says when each changed in words, its full date on hover, and the page’s sentence with none', () => {
     const now = Date.now();
     renderPanel(createFakeIndex({ items: [] }), {
