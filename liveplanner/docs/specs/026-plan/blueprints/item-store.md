@@ -325,18 +325,19 @@ WHERE id = ? RETURNING items_rev, items_next_key`, then the row write guarded by
 All under `/projects/:id/items`, auth `guest-or-clerk`, token-usable, registered in `openapi/manifest.ts`
 (tag `Items`), DTOs in `packages/api-schema/src/items.ts` (`ItemsResponse { items, rev }`, `ItemResponse { item, rev }`).
 
-| Method | Path                  | Gate | Body                                                         | Answers             |
-| ------ | --------------------- | ---- | ------------------------------------------------------------ | ------------------- |
-| GET    | `/items[?tabId=]`     | read |                                                              | `ItemsResponse`     |
-| POST   | `/items`              | edit | `ItemCreate`                                                 | 201 `ItemResponse`  |
-| POST   | `/items/bulk`         | edit | `{ items: ItemCreate[] }` ≤ `ITEM_BULK_MAX`                  | 201 `ItemsResponse` |
-| POST   | `/items/import`       | edit | `{ importId, part, parts, items }` ≤ `ITEM_BULK_MAX` a part  | 202 / 201           |
-| POST   | `/items/patches`      | edit | `{ items: ({ id } & ItemPatch)[], undo? }` ≤ `ITEM_BULK_MAX` | `ItemsResponse`     |
-| POST   | `/items/moves`        | edit | `{ items: ({ id } & ItemMove)[], undo? }` ≤ `ITEM_BULK_MAX`  | `ItemsResponse`     |
-| POST   | `/items/:itemId`      | edit | `ItemPatch`                                                  | `ItemResponse`      |
-| POST   | `/items/:itemId/move` | edit | `ItemMove`                                                   | `ItemResponse`      |
-| POST   | `/items/tally`        | edit | `{ items: { id, votes }[], field? }` ≤ `ITEM_BULK_MAX`       | `ItemsResponse`     |
-| DELETE | `/items/:itemId`      | edit |                                                              | 204                 |
+| Method | Path                   | Gate | Body                                                         | Answers             |
+| ------ | ---------------------- | ---- | ------------------------------------------------------------ | ------------------- |
+| GET    | `/items[?tabId=]`      | read |                                                              | `ItemsResponse`     |
+| POST   | `/items`               | edit | `ItemCreate`                                                 | 201 `ItemResponse`  |
+| POST   | `/items/bulk`          | edit | `{ items: ItemCreate[] }` ≤ `ITEM_BULK_MAX`                  | 201 `ItemsResponse` |
+| POST   | `/items/import`        | edit | `{ importId, part, parts, items }` ≤ `ITEM_BULK_MAX` a part  | 202 / 201           |
+| POST   | `/items/import/people` | edit | `{ emails: string[] }` ≤ `TRACKER_MATCH_EMAILS_MAX`          | `ItemsImportPeople` |
+| POST   | `/items/patches`       | edit | `{ items: ({ id } & ItemPatch)[], undo? }` ≤ `ITEM_BULK_MAX` | `ItemsResponse`     |
+| POST   | `/items/moves`         | edit | `{ items: ({ id } & ItemMove)[], undo? }` ≤ `ITEM_BULK_MAX`  | `ItemsResponse`     |
+| POST   | `/items/:itemId`       | edit | `ItemPatch`                                                  | `ItemResponse`      |
+| POST   | `/items/:itemId/move`  | edit | `ItemMove`                                                   | `ItemResponse`      |
+| POST   | `/items/tally`         | edit | `{ items: { id, votes }[], field? }` ≤ `ITEM_BULK_MAX`       | `ItemsResponse`     |
+| DELETE | `/items/:itemId`       | edit |                                                              | 204                 |
 
 Comment writes (below, "Comments") add four more under `/items/:itemId/comments`.
 
@@ -345,7 +346,9 @@ Comment writes (below, "Comments") add four more under `/items/:itemId/comments`
 none (blueprint [tracker-import.md](tracker-import.md) "A whole import"). Its other answers: `409 import_incomplete`
 (a part missing at the last), `413 items_full` (past the plan's room, held parts counted), `413 plan_full` (past
 the plan fields budget, "Performance and limits"), `413 import_too_large`
-(the import's JSON past `ITEM_IMPORT_JSON_MAX`, 26 MiB), and those of `/items/bulk`.
+(the import's JSON past `ITEM_IMPORT_JSON_MAX`, 26 MiB), and those of `/items/bulk`. `/items/import/people` matches an
+agent's import's emails to the plan's team, answering only a joined member of it (blueprint
+[tracker-import.md](tracker-import.md) "Matching people by email").
 
 - Tab-scoped grants: GET requires `tabId` matching the grant and filters to `itemIdsShownOnTab` of that tab's
   stored elements; writes require `tabId` (query) and the target id in that set (create: always allowed into the

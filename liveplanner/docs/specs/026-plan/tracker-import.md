@@ -193,8 +193,9 @@ Choosing a file shows what the import will make, before anything is written:
   last arrives, writes every card with its comments in one transaction. A failure part way (a request that never
   answers, a refusal, the plan filling up) leaves **no imported card**; the parts held aside are cleared with it, or
   within the hour when the import simply stops. Into a tab the cards are one undo step, as before.
-  The plan holds at most **26 MB** of one import's cards aside (more than a 20 MB file's cards ever come to), so
-  landing it stays well inside the plan's memory; an import sent past that, which only a hand-made API request can
+  The plan holds at most **26 MB** of one import's cards aside (more than a 20 MB file's cards ever come to), and
+  lands them a part and a statement at a time inside that one transaction, so landing it stays well inside the
+  plan's memory; an import sent past that, which only a hand-made API request can
   do, is refused (`import_too_large`) and nothing lands.
 - **Done**: the dialog closes and the plan says "Imported 120 cards from Trello" (and ", 3 left out" when some were).
 - **Failed**: no card is written, and the dialog stays open with the reason ("Couldn't import those cards. Try
@@ -211,8 +212,13 @@ Choosing a file shows what the import will make, before anything is written:
   `--preview`, printing `+ board "<title>" from <Source>: <n> cards, <n> columns` and the link.
 - An agent's import **lands whole** as the editor's does: its cards in one write, and on a failure no card, the empty
   tab it made removed, or the new plan it made deleted. The tool answers the failure's code as for any refusal.
-- An agent's import matches people **by name only**: an API token cannot read a team's members, so emails are not
-  matched. It is refused as the editor's is: a file past the caps (`file_too_large`, `too_many_cards`), a plan without
+- An agent's import matches people **by email on the server**, the way the editor does, when the token's owner is a
+  joined member of the plan's team: the agent sends the file's emails and the api answers, for each, the team member
+  it belongs to or nothing. The api **never answers an email**, and a member learns nothing a member can't already
+  see (the team's people are theirs to see in the editor). Every other token (a share link's Editor, someone outside
+  the team, a plan in no team, or a new plan) is answered no match for every email, so it can't learn who is in a
+  team, and its people are matched by name, as above. A failed match falls back to names; the import goes on.
+- It is refused as the editor's is: a file past the caps (`file_too_large`, `too_many_cards`), a plan without
   room (`items_full`, naming the room left), a `source` that is not the file's (`source_mismatch`), or a Participant's
   or Viewer's token (`forbidden`).
 
