@@ -17,6 +17,7 @@ const {
   seedPlanGrant,
   withPlanGrant,
 } = await import('./plan-grants');
+const { setWorkbenchConfinement } = await import('./workbench-confinement');
 
 // The index's grant on a plan (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants"), as the editor holds it: one
 // request per plan per ten minutes however many ask, renewed a minute before it lapses, and sent as X-Index-Grant.
@@ -33,6 +34,7 @@ beforeEach(() => resetPlanGrantsForTests());
 afterEach(() => {
   vi.useRealTimers();
   vi.clearAllMocks();
+  setWorkbenchConfinement(null);
 });
 
 describe('planGrant', () => {
@@ -135,6 +137,22 @@ describe('withPlanGrant', () => {
     expect(await withPlanGrant('/api', '/api/projects/p1', carried)).toBe(carried);
     const other = { method: 'POST' };
     expect(await withPlanGrant('/api', '/api/projects', other)).toBe(other);
+    expect(index.grant).not.toHaveBeenCalled();
+  });
+});
+
+// Work Tracker 1138: a workbench frame (a live embed's read-only one among them) presents its session, which the index
+// refuses with a 401; the api resolves the session's access itself, so the frame asks the index for no grant.
+describe('a workbench frame', () => {
+  it('asks the index for no grant, keeps none fresh, and sends its requests as they are', async () => {
+    vi.useFakeTimers();
+    setWorkbenchConfinement({ scope: 'project', projectId: 'p1', ownerId: 'o1' });
+    expect(await planGrant('p1')).toBeNull();
+    const stop = keepPlanGrantFresh('p1');
+    const init = { headers: { Authorization: 'Bearer lvw_x' } };
+    expect(await withPlanGrant('/api', '/api/projects/p1/tabs/t1', init)).toBe(init);
+    vi.advanceTimersByTime(TEN_MIN);
+    stop();
     expect(index.grant).not.toHaveBeenCalled();
   });
 });
