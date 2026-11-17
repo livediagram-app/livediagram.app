@@ -23,7 +23,7 @@ import { createItem, handleItem, handleItemList, handleTrash } from './items';
 import { handleItemLookup } from './lookup';
 import { handleMerge } from './merge';
 import { drainPersonMerges } from './person-merges';
-import { handleFavourites, handlePlacementDefaults, handleRecentHidden } from './personal';
+import { handlePlacementDefaults, handleRecentHidden } from './personal';
 import { sweep } from './purge';
 import { handleWorkbenchClose } from './workbench-close';
 import { handleAccountEvents } from './event-push';
@@ -58,7 +58,6 @@ const DRIVE_ROUTES = new Set(['items', 'trash', 'folders']);
 const PERSON_ROUTES: Record<string, (ctx: PersonContext) => Promise<Response>> = {
   folders: handleFolders,
   spaces: handleSpacePreviews,
-  favourites: handleFavourites,
   'recent-hidden': handleRecentHidden,
   'placement-defaults': handlePlacementDefaults,
   shared: handleShared,
@@ -142,7 +141,6 @@ const routeLabel = createApiRouteLabel(
     'share-password',
     'folders',
     'spaces',
-    'favourites',
     'recent-hidden',
     'placement-defaults',
     'shared',

@@ -52,8 +52,9 @@ Each app offers the same Community, in its own words and look, built from the sa
 - **The link's doors**: the read-only view, the card image and copying, through a community link the post owns.
 - **Moderation**: reports alone, as below, the same for every app. The Forum adds a check on the server of every post
   and edit before anyone else sees it ("The Forum" below).
-- **The Forum**: a **Forum** tab beside the gallery, where people ask questions and discuss the apps: one forum for
-  every app, with a category per app and General ("The Forum" below).
+- **The Forum**: a **Forum** tab beside the gallery, where people share tips, show what they've made,
+  suggest ideas, report bugs, ask questions and talk about the apps: one forum for every app, each post with a
+  category and the app it is about ("The Forum" below).
 - **Categories**: each app's are its Start With template categories (below), so a gallery's filters speak its
   product's language and the publish dialog offers only that app's.
 - **Start With**: the app's new-document template picker shows each category's most liked Community posts of the
@@ -79,7 +80,7 @@ shared gallery link opens on the app's own posts. All Apps lists every app's pos
 there (it is one app's, on its own address); switching to All Apps takes `is:mine` out of the search.
 
 **The category menu on All Apps.** Ids repeat across apps with different meanings (`meetings` is livediagram's
-Meetings & Workshops and liveplanner's Meetings; `planning` is livediagram's Planning and liveplanner's Projects and
+Meetings and liveplanner's Meetings; `planning` is livediagram's Planning and liveplanner's Projects and
 Teams), so All Apps never offers a bare id. Its Category menu lists each app's categories under the app's name (a
 heading per app, in `COMMUNITY_APPS` order), each with that app's count (the facets' `apps`), and a screen reader
 hears the app with each row ("Meetings, liveplanner"). Choosing one writes the category with its app,
@@ -150,13 +151,13 @@ Else) wherever it is shown, even when another app still has that id, counts towa
 naming the id reads as no category. When an app's categories change, a migration of the service moves its stored
 posts to the closest new id (below), so a retired id is only a row the migration has not reached yet.
 
-| App                 | Categories (id: label), then `other`: Something Else                                                                                                                                                                                                                                                                                                          |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `livediagram.app`   | `ideas`: Brainstorming, `decisions`: Decisions, `goals`: Goals & Metrics, `meetings`: Meetings & Workshops, `people`: People & Teams, `planning`: Planning, `processes`: Processes & Workflows, `product`: Product & UX, `games`: Quizzes & Games, `retros`: Retrospectives, `software`: Software & IT, `strategy`: Strategy, `learning`: Teaching & Learning |
-| `liveplanner.app`   | `support`: Customer Support, `education`: Education, `events`: Events, `finance`: Finance, `hiring`: Hiring and People, `marketing`: Marketing, `meetings`: Meetings, `personal`: Personal, `product`: Product and Engineering, `planning`: Projects and Teams, `sales`: Sales                                                                                |
-| `livedocuments.app` | `careers`: Careers, `events`: Events, `home`: Home, `learning`: Learning, `marketing`: Marketing, `pitches`: Pitches, `plans`: Plans, `reports`: Reports, `speeches`: Talks, `team`: Teams                                                                                                                                                                    |
-| `livedesign.app`    | `branding`: Branding, `health`: Health and Fitness, `media`: Music and Video, `photos`: Photos, `shopping`: Shopping, `onboarding`: Sign Up and Onboarding, `social`: Social and Messaging, `travel`: Travel and Transport, `websites`: Websites, `work`: Work and Productivity                                                                               |
-| `livehuddle.app`    | `campus`: Campus, `events`: Events, `games`: Games Rooms, `homes`: Homes, `office`: Office, `outdoor`: Outdoor, `recreation`: Recreation, `venues`: Venues                                                                                                                                                                                                    |
+| App                 | Categories (id: label), then `other`: Something Else                                                                                                                                                                                                                                |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `livediagram.app`   | `ideas`: Brainstorming, `decisions`: Decisions, `goals`: Goals, `meetings`: Meetings, `people`: Teams, `planning`: Planning, `processes`: Processes, `product`: Product, `games`: Games, `retros`: Retrospectives, `software`: Software, `strategy`: Strategy, `learning`: Learning |
+| `liveplanner.app`   | `support`: Customer Support, `education`: Education, `events`: Events, `finance`: Finance, `hiring`: Hiring and People, `marketing`: Marketing, `meetings`: Meetings, `personal`: Personal, `product`: Product and Engineering, `planning`: Projects and Teams, `sales`: Sales      |
+| `livedocuments.app` | `careers`: Careers, `events`: Events, `home`: Home, `learning`: Learning, `marketing`: Marketing, `pitches`: Pitches, `plans`: Plans, `reports`: Reports, `speeches`: Talks, `team`: Teams                                                                                          |
+| `livedesign.app`    | `branding`: Branding, `health`: Health and Fitness, `media`: Music and Video, `photos`: Photos, `shopping`: Shopping, `onboarding`: Sign Up and Onboarding, `social`: Social and Messaging, `travel`: Travel and Transport, `websites`: Websites, `work`: Work and Productivity     |
+| `livehuddle.app`    | `campus`: Campus, `events`: Events, `games`: Games Rooms, `homes`: Homes, `office`: Office, `outdoor`: Outdoor, `recreation`: Recreation, `venues`: Venues                                                                                                                          |
 
 ### Moving to the template categories
 
@@ -232,34 +233,48 @@ options)`: each group's matching tiles after its matching templates, a group onl
 
 ## The Forum
 
-People ask questions and talk about the apps in the **Forum** (Work Tracker 942): one forum for every app, on the
+People share tips and work, suggest ideas, report bugs, ask questions and talk about the apps in the **Forum** (Work Tracker 942): one forum for every app, on the
 Community page beside the gallery, served at each app's `/community/forum` and on liveworkspace.app's, the same posts
 wherever it is read.
 
 **Its pages.** The Community page has two tabs under its hero, **Gallery** (`/community`) and **Forum**
-(`/community/forum`), links that keep the page's address (the app's, or liveworkspace.app's). The Forum lists its
-topics; a topic opens at `/community/forum/topic?id=`, its question and its replies.
+(`/community/forum`), links that keep the page's address (the app's, or liveworkspace.app's). The hero's heading names
+the tab: **Community Gallery** on the gallery, **Community Forum** on the Forum. The Forum lists its
+topics; a topic opens at `/community/forum/topic?id=`, its opening post and its replies. A topic's page has the same hero
+(Community Forum, with New Post) and tabs as the list, the topic under them; its title is the page's heading (owner,
+2026-11-16). The Forum is a community forum, not a support desk: its words speak of posts and conversations, and
+only the Question category speaks of questions and answers (owner, 2026-11-16).
 
-**Categories.** **General**, then one per app in `COMMUNITY_APPS` order (`livediagram`, `liveplanner`,
-`livedocuments`, `livedesign`, `livehuddle`), each named as the app is (`FORUM_CATEGORIES`). The list starts on
-every category; a category menu narrows it. On an app's address, a new question starts in that app's category.
+**Categories and apps.** A topic has two separate fields (owner, 2026-11-16: apps are not categories):
 
-**Topics and replies.** A topic is a question: a title (5 to 120 characters) and a body (10 to 5,000), in one
-category. Replies are one level deep: each answers the topic, never another reply (2 to 5,000 characters each, at most
+- **Category**, what kind of post it is (`FORUM_CATEGORIES`): **Question**, **Tips & Tricks**, **Feature Request**,
+  **Bug Report**, **Show & Tell** and **General**. A new post starts as a Question.
+- **App**, which app it is about: one of `COMMUNITY_APPS` (`livediagram.app` … `livehuddle.app`), or none (**Any
+  App**, a post about liveworkspace or every app). On an app's address a new post starts on that app; on
+  liveworkspace.app, on Any App. Wherever an app is shown (the list's rows, the topic, the composer's picker, the
+  list's App filter) it is shown by its logo and wordmark, as the site's header draws it; Any App by the words alone.
+
+The list starts on every category and every app; chips narrow the category and an **App** menu (with the logos)
+narrows the app, both kept in the address (`?category=`, `?app=`) so a filtered list can be shared. On an app's
+address the list still starts on every app. Migration `0008_forum_app.sql` moves posts made before the split: a
+post in an app's category becomes a Question about that app, and General stays General about Any App.
+
+**Topics and replies.** A topic is a post: a title (5 to 120 characters) and a body (10 to 5,000), in one
+category and about one app or none. Replies are one level deep: each answers the topic, never another reply (2 to 5,000 characters each, at most
 200 a topic). Text is plain: paragraphs and line breaks are kept, nothing else is formatted, and links are not made
 clickable. The list sorts by **Latest Activity** (a topic moves up when a reply is listed), **Newest** or
-**Unanswered** (no marked answer, newest first), 20 a page with Load More.
+**Popular** (replies and reactions, among the topics active in the last 30 days, `FORUM_POPULAR_WINDOW_MS`), **Unanswered** (Questions with no marked answer, newest first), 20 a page with Load More.
 
 **Reactions.** Three, on a topic or a reply: **Helpful**, **Thanks** and **Celebrate**, each one per person, pressed
 again to take it back. Each shows its count; the ones the reader gave are marked.
 
-**The answer.** The topic's author marks one listed reply **Answer** (and can unmark it, or mark another). The answer
+**The answer.** Only a Question has one. Its author marks one listed reply **Answer** (and can unmark it, or mark another). The answer
 shows first among the replies, marked, and the topic shows **Answered** in the list. When the answer is deleted, the
 topic is unanswered again.
 
 **Who can do what.** Anyone reads, signed in or not. Posting a topic, replying, reacting and marking the answer need a
 signed-in account, checked by the service on every write (an account access token, "The API" below); a guest or a
-signed-out visitor sees **Sign In to Ask** and **Sign In to Reply** in their place, which come back to the same page.
+signed-out visitor sees **Sign In to Post** and **Sign In to Reply** in their place, which come back to the same page.
 Authors edit and delete their own topics and replies; nobody else can. Deleting a topic deletes its replies. Anyone
 reports a topic or a reply, as they report a gallery post.
 
@@ -296,15 +311,34 @@ their replies and their reactions, the moment the app the account closed in tell
 
 **On the page.**
 
-- The list: a row per topic, its title, the category, who asked and when, how many replies, and **Answered** when it
+- The list: a row per topic, its title, the category, the app's logo, who posted it and when, how many replies, and **Answered** when it
   has one. The author's own Pending, refused and Hidden topics show in the list for them alone, marked.
-- **Ask a Question** opens a composer in place above the list (title, category, the question), **Post Question** and
-  **Cancel**; posted, the page opens the new topic. Signed out it reads **Sign In to Ask**.
-- The topic: the question, its reactions, Edit, Delete (each its author's) and Report (everyone else's); then the
-  replies, the answer first, each with its reactions, **Mark as Answer** for the topic's author, Edit, Delete and
+- The filters: from `sm` up, the category chips, the **App** menu and **Sort** in one row. On a phone the three are
+  one **Filters** control saying what the list shows (the category and app, or All Posts, and the sort), which opens a
+  drawer with each as a set of chips, **Clear Filters** and **Show Posts**; a choice applies at once (owner,
+  2026-11-16).
+- **New Post** opens the composer in a popover under the button from `sm` up, and in a drawer rising from the bottom
+  on a phone (the shared `ResponsivePopover`); never in place in the page, which stays where it was (owner,
+  2026-11-16). It holds the title, the category, the app (a picker showing each app's logo) and the post, then
+  **Post** and **Cancel**; posted, the page opens the new topic. Escape, a press outside, or a phone drawer's swipe
+  closes it, keeping what was typed until the page is left. Signed out it reads **Sign In to Post**.
+- **Post is never disabled without a reason.** It is always pressable (except while posting); a press with a field
+  too short marks that field and says what it needs under it ("Add a title of at least 5 characters", "Write at least
+  10 characters"), and moves focus to the first one. Each field's hint shows its minimum before anything is typed.
+- The way back from a topic, and from a gallery post, is the shared back bar (`BackBar`, the Import and Export
+  screens' shape): **All Posts** with the topic's category as its chip, and **Community Gallery** with the post's
+  kind (owner, 2026-11-16). Neither hand-rolls a back link.
+- **Reply** is never disabled for a reason it doesn't say either: pressed too short, it says "Write at least 2
+  characters."
+- Beside a topic, from `lg` up a sticky sidebar (under it on narrower screens; owner, 2026-11-16): **Popular Posts**
+  (the Popular sort's first five, this topic left out, ranked, each with its category, app and replies, and **See
+  All**) and **Browse Categories** (each category with its glyph, tone and a line on what belongs in it, the topic's
+  own marked). A sidebar that can't load leaves itself out.
+- The topic: the opening post, its reactions, Edit, Delete (each its author's) and Report (everyone else's); then the
+  replies, the answer first, each with its reactions, **Mark as Answer** for the author of a Question, Edit, Delete and
   Report; then **Reply** in place at the foot. Edit turns the post's words into a field in place, **Save** and
   **Cancel**; Delete asks in place, **Delete** and **Keep**.
-- Empty, loading and failed: "No questions yet. Be the first to ask." (with Ask a Question), placeholder rows, and
+- Empty, loading and failed: "No posts yet. Be the first to post." (with New Post), placeholder rows, and
   "We couldn't load the Forum." with Try Again. A topic that is gone or hidden says "This topic isn't here.", with a
   way back to the Forum.
 
@@ -396,17 +430,17 @@ accounts Worker's published keys as the index and the Drive service check it (is
 app API's audience, `INDEX_AUDIENCES`). A guest token, an API token, an expired or forged one answers
 `401 sign_in_required`. A report carries the browser's community key, as a gallery report does.
 
-| Route                                          | What it does                                                                 |
-| ---------------------------------------------- | ---------------------------------------------------------------------------- |
-| `GET /forum/topics`                            | 20 topics (`category`, `sort` `active`/`new`/`unanswered`, `offset`)         |
-| `POST /forum/topics`                           | `{ category, title, body, author }`: a new topic, checked; `201 { topic }`   |
-| `GET /forum/topics/<id>`                       | The topic and its replies (the answer first); `404` when not to be seen      |
-| `POST /forum/topics/<id>/replies`              | `{ body, author }`: a reply, checked; `201 { reply }`                        |
-| `PUT`/`DELETE /forum/topics/<id>/answer`       | `{ reply }`: mark or unmark the answer, the topic's author only              |
-| `PATCH /forum/posts/<id>`                      | `{ title?, body }`: an edit by its author, checked again                     |
-| `DELETE /forum/posts/<id>`                     | Delete by its author (a topic takes its replies)                             |
-| `PUT`/`DELETE /forum/posts/<id>/reactions/<r>` | React or take it back (`helpful`, `thanks`, `celebrate`); `{ reactions }`    |
-| `POST /forum/posts/<id>/report`                | `{ reason, note? }`, with `X-Community-Key`; `204` always, as a gallery post |
+| Route                                          | What it does                                                                    |
+| ---------------------------------------------- | ------------------------------------------------------------------------------- |
+| `GET /forum/topics`                            | 20 topics (`category`, `app`, `sort` `active`/`new`/`unanswered`, `offset`)     |
+| `POST /forum/topics`                           | `{ category, app, title, body, author }` (`app` null: Any App); `201 { topic }` |
+| `GET /forum/topics/<id>`                       | The topic and its replies (the answer first); `404` when not to be seen         |
+| `POST /forum/topics/<id>/replies`              | `{ body, author }`: a reply, checked; `201 { reply }`                           |
+| `PUT`/`DELETE /forum/topics/<id>/answer`       | `{ reply }`: mark or unmark the answer, a Question's author only                |
+| `PATCH /forum/posts/<id>`                      | `{ title?, body }`: an edit by its author, checked again                        |
+| `DELETE /forum/posts/<id>`                     | Delete by its author (a topic takes its replies)                                |
+| `PUT`/`DELETE /forum/posts/<id>/reactions/<r>` | React or take it back (`helpful`, `thanks`, `celebrate`); `{ reactions }`       |
+| `POST /forum/posts/<id>/report`                | `{ reason, note? }`, with `X-Community-Key`; `204` always, as a gallery post    |
 
 `author` is how the page shows the person, `{ name, color }` (the name 1 to 60 characters, checked with the post;
 a colour that isn't `#rrggbb` is replaced by one picked from the account id). A write answers its post's `state`

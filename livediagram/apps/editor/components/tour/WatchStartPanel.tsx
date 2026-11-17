@@ -1,12 +1,18 @@
 'use client';
 
-import { useEffect, useRef, type RefObject } from 'react';
+import { useEffect, useState, type ReactNode, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
-import { TourTopics, type TourTopic } from '@liveworkspace/workbench/components/tour/TourTopics';
+import {
+  GetStartedBody,
+  GetStartedPopover,
+  getStartedAnchor,
+} from '@liveworkspace/workbench/components/tour/GetStartedPopover';
+import type { TourTopic } from '@liveworkspace/workbench/components/tour/TourTopics';
 import { playerPlace, useCanvasBox } from './use-canvas-box';
 
-// Watch It Built's start panel (docs/specs/007-editor/watch-it-built.md "The start panel"): in the player's place and
-// look, the mode's topics to pick from, and Not Now. It takes focus as it opens; Escape is Not Now.
+// Get Started (docs/specs/007-editor/watch-it-built.md "The start panel"): the workbench's Get Started popover from the
+// footer's Get Started button, every app's alike, holding the mode's lessons. Opened with no Get Started button on show
+// (from Settings), it stands in the player's place instead.
 export function WatchStartPanel({
   topics,
   canvasRef,
@@ -18,12 +24,33 @@ export function WatchStartPanel({
   onPick: (id: string) => void;
   onClose: () => void;
 }) {
+  // The footer button it hangs from, found once as it opens.
+  const [anchor] = useState(getStartedAnchor);
+  if (anchor) {
+    return <GetStartedPopover anchor={anchor} topics={topics} onPick={onPick} onClose={onClose} />;
+  }
+  return (
+    <StandingPanel canvasRef={canvasRef} onClose={onClose}>
+      <GetStartedBody topics={topics} onPick={onPick} onClose={onClose} />
+    </StandingPanel>
+  );
+}
+
+// With no footer button to hang from: in the player's place, focused as it opens, Escape closing it.
+function StandingPanel({
+  canvasRef,
+  onClose,
+  children,
+}: {
+  canvasRef: RefObject<HTMLElement | null>;
+  onClose: () => void;
+  children: ReactNode;
+}) {
   const box = useCanvasBox(canvasRef);
-  const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    ref.current?.querySelector<HTMLElement>('[data-tour-topic]')?.focus({ preventScroll: true });
-  }, []);
-  useEffect(() => {
+    document
+      .querySelector<HTMLElement>('[data-watch-start] [data-tour-topic]')
+      ?.focus({ preventScroll: true });
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return;
       e.preventDefault();
@@ -33,32 +60,15 @@ export function WatchStartPanel({
     window.addEventListener('keydown', onKey, { capture: true });
     return () => window.removeEventListener('keydown', onKey, { capture: true });
   }, [onClose]);
-
   if (typeof document === 'undefined') return null;
   return createPortal(
     <div
-      ref={ref}
       role="dialog"
-      aria-label="Watch It Built"
-      data-watch-start=""
-      className="fixed z-[var(--z-toast)] flex w-[22rem] max-w-[calc(100vw-32px)] -translate-x-1/2 flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-3.5 pb-2.5 shadow-xl motion-safe:animate-dialog-in dark:border-slate-700 dark:bg-slate-900"
+      aria-label="Get Started"
+      className="fixed z-[var(--z-toast)] w-[26.25rem] max-w-[calc(100vw-32px)] -translate-x-1/2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl motion-safe:animate-dialog-in dark:border-slate-700 dark:bg-slate-900"
       style={playerPlace(box)}
     >
-      <TourTopics
-        heading="What would you like to learn?"
-        line="Short replays on your own canvas. Nothing is saved."
-        topics={topics}
-        onPick={onPick}
-      />
-      <div className="flex justify-end border-t border-slate-100 pt-2 dark:border-slate-800">
-        <button
-          type="button"
-          onClick={onClose}
-          className="cursor-pointer rounded-lg px-2.5 py-1.5 text-sm font-semibold text-slate-700 transition-colors duration-micro hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:text-slate-200 dark:hover:bg-slate-800"
-        >
-          Not Now
-        </button>
-      </div>
+      {children}
     </div>,
     document.body,
   );

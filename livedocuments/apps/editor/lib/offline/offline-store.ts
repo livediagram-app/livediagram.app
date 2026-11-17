@@ -56,10 +56,6 @@ export type OfflineDocumentRecord = {
   // whole product minus the server, not a reduced one. Optional so records
   // written before the field existed stay valid.
   presentation?: string | null;
-  // Starred in the Explorer (docs/specs/013-workspace/favourites.md). A document's star is the index's, on its item,
-  // which an offline document has none of, so its star has to live here instead. Optional so records
-  // written before the field existed stay valid.
-  favourite?: boolean;
   // When the document was moved to this browser's local Trash
   // (docs/specs/013-workspace/trash.md). Absent = live.
   // A trashed record keeps everything else so a restore is exact.

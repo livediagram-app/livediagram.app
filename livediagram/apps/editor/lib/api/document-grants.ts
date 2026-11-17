@@ -21,7 +21,11 @@ const grants = createItemGrants({
   client: () => indexClient,
   bootGlobal: DOCUMENT_GRANT_BOOT_GLOBAL,
   itemsSegment: 'documents',
-  queryItems: [{ segment: 'images', param: 'd' }],
+  queryItems: [
+    { segment: 'images', param: 'd' },
+    // A walkthrough names its item in the query (liveworkspace/docs/specs/006-media/walkthroughs.md "The routes").
+    { segment: 'walkthroughs', param: 'd' },
+  ],
 });
 
 /** A grant the editor already has (the create answers one), kept as if it had been fetched. */

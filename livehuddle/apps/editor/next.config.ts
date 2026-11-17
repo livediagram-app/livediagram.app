@@ -21,6 +21,7 @@ const nextConfig: NextConfig = {
   transpilePackages: [
     '@livehuddle/ui',
     '@liveworkspace/ui',
+    '@liveworkspace/capture',
     '@liveworkspace/workbench',
     '@livehuddle/avatar',
     '@livehuddle/document',

@@ -180,7 +180,7 @@ The reasoning is the row's own: Tools exists to stop a band of bespoke rows leng
 
 Promoting it removes both taps and the panel, and inline it is an ordinary collapsible row participating in the menu's one-open-at-a-time state, because a permanently-expanded row in the main menu would be worse than the flyout it replaced. Only a **controlled accordion** is promoted; a lone child of any other shape has no row to become, so it stays behind the flyout.
 
-**An open element menu follows the selection.** Clicking another element while the single-element menu is open retargets the menu to the newly-selected element in place (same screen position) instead of dismissing it, so the same tweak can be applied to several elements one after another with one click each. The retarget preserves the menu's expanded state: the open accordion (scaffold `sectionProps`) and the open flyout (`flyoutProps`) both stay open, showing the new element's values, so styling five shapes via the Style flyout never re-drills the category path.
+**An open element menu follows the selection.** Clicking another element while the single-element menu is open retargets the menu to the newly-selected element in place (same screen position) instead of dismissing it, so the same tweak can be applied to several elements one after another with one click each. The retarget preserves the menu's expanded state: the open accordion (scaffold `sectionProps`) and the open flyout (`flyoutProps`) both stay open, showing the new element's values, so styling five shapes via the Appearance flyout never re-drills the category path.
 
 Control groups (rendered as context-menu categories, hidden when their gate doesn't apply):
 
@@ -1295,7 +1295,10 @@ A shape can carry an inline **text label**.
   closing punctuation at the end it belongs: "مرحبا بالعالم!" ends with "!" at its left, not stranded on the right as
   under the page's left-to-right default. A line in English beside it stays left to right. Alignment is unchanged
   (a label's Left, Centre and Right are where the user put them). This holds in shapes, text, sticky notes, tables,
-  arrow labels and the inline line editors, and while editing. Exports do the same: an SVG `<text>` has one
+  arrow labels and the inline line editors, and while editing. An editor whose text cannot read
+  differently line by line (no right-to-left letters, or one line) is laid out as one isolated run in the direction
+  of its first letter instead, which draws the same and keeps a keystroke in a long text light
+  ([Canvas performance](canvas-performance.md), "Typing in a long label stays light"). Exports do the same: an SVG `<text>` has one
   direction, so an exported line holding right-to-left letters is wrapped in a First Strong Isolate (U+2068 … U+2069,
   `svg-bidi.ts` in `@livedocuments/document`), and any other line is written exactly as before.
 
@@ -1472,3 +1475,10 @@ retired-pattern` log. Crosshatch is its nearest pattern: a lattice of diagonal l
   save writes Crosshatch. An unknown pattern that reached the canvas without that read would draw as the default dot
   grid.
 - The **Studio** look wears Crosshatch.
+
+## Icon and Text live in Appearance (owner, 2026-11-16)
+
+The element menu's Appearance flyout holds everything about how the element looks: Presets, Colours, Border, Shadow,
+Finish, then Icon (a tech icon's size, a line icon's weight, a shape's inline icon) and Text. Neither is a row of its
+own in the menu any more. A flyout with one section inside, Tools holding only Mind Map for example, is never a row of
+its own: the section stands in the menu in its place, counting through any group of sections a host builds inline.

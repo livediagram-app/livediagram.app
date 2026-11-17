@@ -5,7 +5,7 @@ import {
   type ForumPostState,
 } from '@liveworkspace/community';
 import { CommunityAuthorBadge, communitySharedAgo } from '@liveworkspace/community-ui';
-import { Chip } from '@liveworkspace/ui';
+import { Chip, SOLID_BRAND_DARK_CONTROL } from '@liveworkspace/ui';
 import { AnswerIcon, HiddenIcon, PendingIcon, RefusedIcon } from '../shared/icons';
 
 // The Forum's small shared pieces (liveworkspace/docs/specs/007-community/community.md "The Forum", "On the page"):
@@ -120,4 +120,23 @@ export function StateNote({ state }: { state: ForumPostState }) {
       {note}
     </p>
   );
+}
+
+const CHIP =
+  'h-8 shrink-0 cursor-pointer rounded-full px-3 text-sm font-medium transition-colors duration-micro focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600';
+const CHIP_OFF =
+  'bg-white text-slate-600 ring-1 ring-inset ring-slate-200 hover:bg-slate-50 hover:text-slate-900 dark:bg-slate-900 dark:text-slate-300 dark:ring-slate-700 dark:hover:bg-slate-800 dark:hover:text-white';
+
+/** A filter chip on the Forum list: solid brand when chosen. `soft` keeps a chosen chip light, for one holding an
+ *  app's logo, whose colours a solid fill would drown. */
+export function filterChipClass(
+  active: boolean,
+  extra = '',
+  tone: 'solid' | 'soft' = 'solid',
+): string {
+  const on =
+    tone === 'soft'
+      ? 'bg-brand-50 ring-2 ring-inset ring-brand-600 dark:bg-brand-500/15 dark:ring-brand-400'
+      : `bg-brand-700 text-white hover:bg-brand-800 ${SOLID_BRAND_DARK_CONTROL} dark:text-white`;
+  return `${CHIP} ${active ? on : CHIP_OFF} ${extra}`.trim();
 }

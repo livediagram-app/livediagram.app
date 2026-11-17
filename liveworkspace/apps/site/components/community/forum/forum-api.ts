@@ -5,6 +5,7 @@ import {
   forumQueryParams,
   type CommunityReportInput,
   type ForumAuthor,
+  type ForumApp,
   type ForumCategory,
   type ForumListQuery,
   type ForumPost,
@@ -42,7 +43,13 @@ export type ForumApi = {
     signal?: AbortSignal,
   ) => Promise<ForumTopicResponse | null>;
   createTopic: (
-    input: { category: ForumCategory; title: string; body: string; author: ForumAuthor },
+    input: {
+      category: ForumCategory;
+      app: ForumApp;
+      title: string;
+      body: string;
+      author: ForumAuthor;
+    },
     token: string,
   ) => Promise<ForumTopic>;
   createReply: (
@@ -162,7 +169,10 @@ export function forumErrorText(err: unknown): string {
     case 'post_hidden':
       return 'This post was hidden after reports, so it can no longer be changed.';
     case 'invalid_title':
-      return 'Give your question a title of 5 to 120 characters.';
+      return 'Give your post a title of 5 to 120 characters.';
+    case 'invalid_category':
+    case 'invalid_app':
+      return 'Pick a category and an app from the lists, then try again.';
     case 'invalid_body':
       return 'That is too short or too long to post.';
     case 'not_found':

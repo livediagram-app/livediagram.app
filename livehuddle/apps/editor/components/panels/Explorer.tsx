@@ -20,6 +20,7 @@ import { SignInPrompt } from '@/components/chrome/SignInPrompt';
 import { ExplorerHeaderMenu } from '@/components/panels/ExplorerHeaderMenu';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useThisBrowserHost } from '@/hooks/persistence/useThisBrowserHost';
+import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
 import { useOfflineItemMenu } from '@/hooks/persistence/useOfflineItemMenu';
 import { useGuestId } from '@/hooks/persistence/useGuestId';
 import { useAppNavigation } from '@liveworkspace/workbench/hooks/navigation/useAppNavigation';
@@ -44,15 +45,16 @@ const renderAppLogo: RenderAppLogo = (app) =>
 const NO_MOVE = () => {};
 
 // The editor's floating Explorer panel: the shared Explorer's panel (@liveworkspace/explorer, with the same lists,
-// menus and dialogs as the Explorer at /explorer, from the index) inside the editor's movable panel, opened only
-// as the canvas menu button's popover. The open canvas shows on top, read once from the index when the panel
-// opens; every list is one request a page, loaded only once its section is chosen. The person's Image Gallery
-// comes through this site's API, and Import from opens this site's /import page.
+// menus and dialogs as the Explorer at /explorer, from the index) inside the editor's movable panel, opened only as the
+// canvas menu button's popover. The open canvas shows on top, from the index and the editor's own title; every list is
+// one request a page, loaded only once its section is chosen. The person's Image Gallery comes through this site's API,
+// and Import from opens this site's /import page.
 //
 // Wrapped in React.memo so it skips re-rendering on the editor's per-drag-frame churn: its props are ids and stable
 // handlers.
 function ExplorerImpl({
   currentDocumentId,
+  currentTitle = null,
   currentShareCode = null,
   onRenameCurrent,
   onNewDocument,
@@ -95,18 +97,19 @@ function ExplorerImpl({
   // one client. The panel mounts only while open, so nothing is asked before it opens.
   const drive = useMemo(() => (isSignedIn ? cloudSyncHost() : null), [isSignedIn]);
 
-  // The open canvas as the index has it (its title, place and star), for the card on top.
-  // Null when the index has none for it (kept only in this browser): the panel then draws its card from This
-  // Browser's list (@liveworkspace/explorer ExplorerPanel).
+  // Open, the panel reaches under the palette strip: the trays just under it step aside (PaletteTray).
+  const shown = popoverOpen === true;
+  // Kept only in this browser? Then the index is not asked and the card is This Browser's, with its Browser Storage
+  // pill, before the list has heard of it too (one-explorer.md "The Current card"). An opening asks the index again
+  // while it had nothing for the canvas (a new one registered since).
+  const offline = useIsOfflineDocument(currentDocumentId ?? null);
   const current = useOpenItem(
     indexClient,
     currentDocumentId,
     currentShareCode,
     getSessionSharePassword,
+    { offline, open: shown },
   );
-
-  // Open, the panel reaches under the palette strip: the trays just under it step aside (PaletteTray).
-  const shown = popoverOpen === true;
   useEffect(() => {
     if (!shown) return;
     document.body.setAttribute('data-explorer-open', '');
@@ -119,87 +122,94 @@ function ExplorerImpl({
     href.startsWith('/') ? router.push(href) : window.location.assign(href);
 
   return (
-    <MovablePanel
-      helpArticle="explorerPanel"
-      title="Explorer"
-      dataTourId="explorer"
-      // Never faded by Panel opacity: its menus open outside it (docs/specs/007-editor/user-preferences.md).
-      opaque
-      // Only ever the menu button's popover: never placed in a corner or dragged.
-      position={null}
-      defaultCorner="top-left"
-      // Roomy on a desktop or tablet: up to 54rem wide (kept 1rem inside the window) and 45rem tall (kept on the
-      // canvas below its button, 24px short of its edge), over a dimmed scrim on every screen size. Every editor's
-      // panel takes the one size from the package.
-      popoverWidth={EXPLORER_POPOVER_WIDTH}
-      popoverHeight={EXPLORER_POPOVER_HEIGHT}
-      popoverScrim
-      // On a phone it opens as a sheet: edge to edge, down to the tab bar.
-      popoverSheet={sheet}
-      onMoveTo={NO_MOVE}
-      // A phone's sheet drops the ⋯ menu: every entry is a tap away there already.
-      headerActions={
-        sheet ? undefined : (
-          <ExplorerHeaderMenu
-            onNewDocument={onNewDocument}
-            actions={menuActions}
-            itemId={currentDocumentId}
-          />
-        )
-      }
-      popoverOpen={popoverOpen}
-      onPopoverClose={onPopoverClose}
-      popoverAnchor={popoverAnchor}
-      asPopover
-      dismissOnOutside
-    >
-      <ExplorerPanel
-        renderAppLogo={renderAppLogo}
-        app="livehuddle"
-        client={indexClient}
-        itemHref={itemHref}
-        current={currentDocumentId ? current : null}
-        currentId={currentDocumentId ?? null}
-        // The open canvas stops saving before it goes, then the editor leaves for the Explorer and its Undo.
-        onTrashCurrent={trashCurrent}
-        onRenameCurrent={onRenameCurrent}
-        onCreate={(placement) =>
-          onNewDocument && !placement.folderId && !placement.teamId
-            ? onNewDocument()
-            : go(newDocumentHref(placement))
+    <>
+      <MovablePanel
+        helpArticle="explorerPanel"
+        title="Explorer"
+        dataTourId="explorer"
+        // Never faded by Panel opacity: its menus open outside it (docs/specs/007-editor/user-preferences.md).
+        opaque
+        // Only ever the menu button's popover: never placed in a corner or dragged.
+        position={null}
+        defaultCorner="top-left"
+        // Roomy on a desktop or tablet: up to 54rem wide (kept 1rem inside the window) and 45rem tall (kept on the
+        // canvas below its button, 24px short of its edge), over a dimmed scrim on every screen size. Every editor's
+        // panel takes the one size from the package.
+        popoverWidth={EXPLORER_POPOVER_WIDTH}
+        popoverHeight={EXPLORER_POPOVER_HEIGHT}
+        popoverScrim
+        // On a phone it opens as a sheet: edge to edge, down to the tab bar.
+        popoverSheet={sheet}
+        onMoveTo={NO_MOVE}
+        // A phone's sheet drops the ⋯ menu: every entry is a tap away there already.
+        headerActions={
+          sheet ? undefined : (
+            <ExplorerHeaderMenu
+              onNewDocument={onNewDocument}
+              actions={menuActions}
+              itemId={currentDocumentId}
+            />
+          )
         }
-        // The whole Explorer, on this address (@liveworkspace/workbench/lib/explorer-href.ts), on the same view. A full load: the editor
-        // serves no /explorer page; the router answers it with liveworkspace's.
-        onOpenExplorer={(view) => window.location.assign(explorerPath(view))}
-        onOpenItem={(href) => go(href)}
-        renderThumbnail={renderDocumentThumbnail}
-        drive={drive}
-        Link={Link}
-        teams={teams}
-        teamsHost={isSignedIn ? explorerTeamsHost : null}
-        viewerId={accountUserId ?? null}
-        shareUrl={shareUrl}
-        share={shareHost}
-        // The canvases kept only in this browser, which no index list holds: This Browser on the rail, in place.
-        thisBrowser={thisBrowser}
-        onOrganise={trackOrganise}
-        itemMenu={itemMenu}
-        gallery={library.gallery}
-        imports={explorerImports}
-        // Side by side in a desktop popover; a phone's sheet stacks the chips over the pane.
-        layout={sheet ? 'sheet' : 'side'}
-        open={shown}
-        // The sign-in note under the card.
-        notice={<SignInPrompt bar />}
-        // The product's surfaces, which the editor header no longer carries as a menu.
-        footer={
-          <ProductNavLinks
-            current="editor"
-            className={`overflow-x-auto border-t border-slate-200 px-1.5 py-1 [scrollbar-width:none] dark:border-slate-700/70 ${sheet ? 'justify-between' : ''}`}
-          />
-        }
-      />
-    </MovablePanel>
+        popoverOpen={popoverOpen}
+        onPopoverClose={onPopoverClose}
+        popoverAnchor={popoverAnchor}
+        asPopover
+        dismissOnOutside
+      >
+        <ExplorerPanel
+          // History and Webhooks live in the footer's Tools, for the open item (footer-tools-menu.md).
+          history={false}
+          webhooks={false}
+          renderAppLogo={renderAppLogo}
+          app="livehuddle"
+          client={indexClient}
+          itemHref={itemHref}
+          current={currentDocumentId ? current : null}
+          currentId={currentDocumentId ?? null}
+          currentTitle={currentTitle}
+          currentOffline={offline}
+          // The open canvas stops saving before it goes, then the editor leaves for the Explorer and its Undo.
+          onTrashCurrent={trashCurrent}
+          onRenameCurrent={onRenameCurrent}
+          onCreate={(placement) =>
+            onNewDocument && !placement.folderId && !placement.teamId
+              ? onNewDocument()
+              : go(newDocumentHref(placement))
+          }
+          // The whole Explorer, on this address (@liveworkspace/workbench/lib/explorer-href.ts), on the same view. A full load: the editor
+          // serves no /explorer page; the router answers it with liveworkspace's.
+          onOpenExplorer={(view) => window.location.assign(explorerPath(view))}
+          onOpenItem={(href) => go(href)}
+          renderThumbnail={renderDocumentThumbnail}
+          drive={drive}
+          Link={Link}
+          teams={teams}
+          teamsHost={isSignedIn ? explorerTeamsHost : null}
+          viewerId={accountUserId ?? null}
+          shareUrl={shareUrl}
+          share={shareHost}
+          // The canvases kept only in this browser, which no index list holds: This Browser on the rail, in place.
+          thisBrowser={thisBrowser}
+          onOrganise={trackOrganise}
+          itemMenu={itemMenu}
+          gallery={library.gallery}
+          imports={explorerImports}
+          // Side by side in a desktop popover; a phone's sheet stacks the chips over the pane.
+          layout={sheet ? 'sheet' : 'side'}
+          open={shown}
+          // The sign-in note under the card.
+          notice={<SignInPrompt bar />}
+          // The product's surfaces, which the editor header no longer carries as a menu.
+          footer={
+            <ProductNavLinks
+              current="editor"
+              className={`overflow-x-auto border-t border-slate-200 px-1.5 py-1 [scrollbar-width:none] dark:border-slate-700/70 ${sheet ? 'justify-between' : ''}`}
+            />
+          }
+        />
+      </MovablePanel>
+    </>
   );
 }
 

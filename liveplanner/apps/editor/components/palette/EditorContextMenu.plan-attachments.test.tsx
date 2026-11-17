@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { createShape, type Element } from '@liveplanner/project';
 import { EditorContextMenu } from './EditorContextMenu';
@@ -33,11 +33,17 @@ function open(target: Element) {
   render(<Host />);
 }
 
-const collaborate = () =>
-  screen
-    .queryAllByRole('button')
-    .map((b) => b.getAttribute('aria-label') ?? '')
-    .filter((name) => /^(Assign Action|Add Comment|Add Link|Add Note)$/.test(name));
+// They live in the menu's Resources category (docs/specs/008-canvas/element-menu-quick-bar.md "Resources").
+const resources = () =>
+  screen.queryAllByRole('button').filter((b) => b.textContent?.trim() === 'Resources');
+const collaborate = () => {
+  const row = resources()[0];
+  if (!row) return [];
+  fireEvent.click(row);
+  return [...document.querySelectorAll('[data-element-resources] [data-option]')].map(
+    (b) => b.querySelector('.truncate')?.textContent ?? '',
+  );
+};
 
 describe('a Plan item’s element menu', () => {
   it('has none of them on a board, view, card or Sheet', () => {
@@ -50,12 +56,7 @@ describe('a Plan item’s element menu', () => {
 
   it('keeps them on any other element', () => {
     open({ ...createShape('square', 0, 0), id: 'sq' });
+    expect(resources()).toHaveLength(1);
     expect(collaborate()).toEqual(['Assign Action', 'Add Link', 'Add Note']);
-    // And no categories of their own any more: the quick bar is their one place.
-    expect(
-      screen
-        .queryAllByRole('button')
-        .filter((b) => /^(Collaborate|Resources)$/.test(b.textContent?.trim() ?? '')),
-    ).toHaveLength(0);
   });
 });

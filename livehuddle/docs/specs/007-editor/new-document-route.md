@@ -307,7 +307,7 @@ Every `/new` creates; the query only says what and where. All params are read by
 **A restore from the back/forward cache** that finds `/new` before its handoff (the person left mid-create) does not
 create again, which would trap Back behind a page that always moves forward: it backs out to the page that opened
 `/new` (`history.back()`), or home when there is none (`backOutTarget`). No tour is queued on any path: tours start
-only from the footer's Start Tour button ([Tours](editor-tour.md)).
+only from the footer's Get Started button ([Tours](editor-tour.md)).
 
 ### In-place handoff to the editor
 

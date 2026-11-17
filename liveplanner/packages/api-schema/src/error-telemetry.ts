@@ -47,6 +47,8 @@ export const API_ROUTE_RESOURCES: ReadonlySet<string> = new Set([
   'trash',
   'preferences',
   'participants',
+  // The item's recorded walkthroughs (liveworkspace/docs/specs/006-media/walkthroughs.md "Each app's door").
+  'walkthroughs',
   // Image fields' pictures (docs/specs/026-plan/item-types.md "Image fields").
   'images',
   // Describe a Plan (docs/specs/026-plan/describe-a-plan.md): `/plan-drafts`.

@@ -12,7 +12,7 @@ import { getTheme } from '@/lib/themes';
 import { DashboardContext, type DashboardContextValue } from './dashboard-context';
 import { DashboardSlotView } from './DashboardSlotView';
 
-// docs/specs/026-plan/plan-tabs.md "Card style": a Utility's Slot Settings cog carries the element menu's Style flyout,
+// docs/specs/026-plan/plan-tabs.md "Card style": a Utility's Slot Settings cog carries the element menu's Appearance flyout,
 // with only what a card in a slot can take, for an Editor only.
 vi.mock('./DashboardSlotContent', () => ({ DashboardSlotContent: () => <div>card</div> }));
 
@@ -65,11 +65,11 @@ const frame = (view: ReturnType<typeof render>) =>
   view.container.querySelector<HTMLElement>('[data-dashboard-slot] > div:last-of-type');
 const status: DashboardContent = { type: 'status', state: 'on-track', text: '', at: 0 };
 
-describe('a Utility’s Style row', () => {
+describe('a Utility’s Appearance row', () => {
   it('offers Presets, Colours, Border and Shadow, and nothing a card in a slot cannot use', () => {
     show(status);
     openMenu();
-    fireEvent.click(screen.getByRole('button', { name: /Style/ }));
+    fireEvent.click(screen.getByRole('button', { name: /Appearance/ }));
     const titles = sectionTitles();
     for (const t of ['Presets', 'Colours', 'Border', 'Shadow']) expect(titles).toContain(t);
     for (const t of ['Layer', 'Size', 'Rotation', 'Animation', 'Tools', 'Collaborate', 'Resources'])
@@ -79,7 +79,7 @@ describe('a Utility’s Style row', () => {
   it('applies a preset as one change, previewing it on hover first', () => {
     const { changeDashboard, view } = show(status);
     openMenu();
-    fireEvent.click(screen.getByRole('button', { name: /Style/ }));
+    fireEvent.click(screen.getByRole('button', { name: /Appearance/ }));
     fireEvent.click(screen.getByRole('button', { name: /Presets/ }));
     const solid = shapeColorPresets(getTheme(undefined)).find((p) => p.id === 'solid')!;
     const tile = screen.getByRole('button', { name: /Solid/ });
@@ -117,6 +117,6 @@ describe('a Utility’s Style row', () => {
     cleanup();
     show({ type: 'element', elementId: 'gone' });
     openMenu();
-    expect(screen.queryByRole('button', { name: /Style/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /Appearance/ })).toBeNull();
   });
 });

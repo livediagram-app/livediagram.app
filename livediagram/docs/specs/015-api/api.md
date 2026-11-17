@@ -14,7 +14,7 @@ The first prototype phase ([spec 02](../005-project-roadmap/prototype-scope.md))
 
 - **Runtime:** Cloudflare Workers.
 - **No database of its own:** the api has no D1 binding and no SQL migrations. Content is each document's Durable Object; what a person keeps here is in their own Durable Objects; API tokens are checked with liveworkspace and never stored (see **Storage**).
-- **Index:** where every document is, who may open it, its sharing, folders, favourites, Trash, Timeline, Home and Inbox are liveworkspace's index ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md), [one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md)). The api reaches it at `INDEX_ORIGIN` (`apps/api/src/index-service.ts`).
+- **Index:** where every document is, who may open it, its sharing, folders, Trash, Timeline, Home and Inbox are liveworkspace's index ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md), [one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md)). The api reaches it at `INDEX_ORIGIN` (`apps/api/src/index-service.ts`).
 - **Images:** the bytes are in liveworkspace's media service (`MEDIA_URL`, `MEDIA_KEY`, `apps/api/src/media.ts`); the api has no bucket of its own. Image bytes from the old livediagram.app's `livediagram-images` bucket are served only once copied into the media service under the same ids ([docs/migration.md](../../../../docs/migration.md)). A document's previews (Explorer thumbnail, live image, share card) are liveworkspace's (`liveworkspace/docs/specs/006-media/previews.md`): the api only draws, through the internal export door.
 - **Documents:** one SQLite-backed Durable Object per document (`DocumentRoom`, binding `DOCUMENT_ROOM`, `new_sqlite_classes`), named by the document's id via `idFromName`. It holds the document's content and is its realtime room (see **Storage** and **Realtime model**).
 
@@ -367,7 +367,7 @@ theirs adopted by the account's.
 workspace session joined) is liveworkspace's (liveworkspace/docs/specs/011-workbench/workbench.md); `/api/workbench/*` is forwarded to the
 accounts Worker unchanged ([Workbench embeds](../013-workspace/blueprints/workbench-embeds.md)). API tokens are
 liveworkspace's (liveworkspace/docs/specs/003-accounts/accounts.md "API tokens"); this api keeps no copy. Nothing about folders,
-favourites, sharing, teams, the Trash, the Timeline, Home or the Inbox is kept here.
+sharing, teams, the Trash, the Timeline, Home or the Inbox is kept here.
 
 **Routing.** The worker authenticates the caller, applies its cross-cutting gates (rate limits, read-only tokens,
 workbench confinement, body caps), resolves the caller's grant from the index and hands every request under
@@ -594,7 +594,7 @@ creating its schema on first use:
 
 Document-store hybrid: the document's meta lives in real columns; element content lives in tab `data` JSON. Element-level SQL filtering isn't a use case, so normalising element rows would buy nothing, and the editor already round-trips JSON for every save.
 
-API tokens are liveworkspace's alone ([Public API and API tokens](public-api-and-tokens.md)). Where a document is filed (folders, favourites), who it is shared with (share links, their passwords, Shared With You), whether it is in the Trash, the Timeline and Home are the index's ([one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md)).
+API tokens are liveworkspace's alone ([Public API and API tokens](public-api-and-tokens.md)). Where a document is filed (folders), who it is shared with (share links, their passwords, Shared With You), whether it is in the Trash, the Timeline and Home are the index's ([one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md)).
 
 ### Owner-keyed data
 

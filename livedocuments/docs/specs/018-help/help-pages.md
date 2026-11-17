@@ -88,7 +88,7 @@ Top to bottom:
    four numbered steps (Your First Document, Working with Pages, Writing Articles, Sharing Your Document), named in `startHere.steps` in `lib/home-sections.ts`, and a
    link to every Getting Started guide; then About livedocuments and Tips and Tricks as two wide cards.
 3. **Editor guides.** The feature categories as art cards, three across on a computer: Pages, Canvas, Palette,
-   Selection Modes, Tabs, Collaboration, Explorer, User Interface, Tools and Search Panel.
+   Selection Modes, Tabs, Collaboration, Explorer, User Interface, Tools Panel.
 4. **Your account and data.** Account and Data, Privacy and Security, Supported Devices and Policies.
 5. **Developers.** Developers, as a wide card.
 6. **Still stuck?** A dark closing band: the contact form and GitHub issues as buttons, beside the

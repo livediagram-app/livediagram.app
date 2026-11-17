@@ -10,7 +10,6 @@
 // Made on first use, never on construction (plan-db.ts `ensureSchema`): a Durable Object a stray id wakes
 // stores nothing. Versioned by `_plan_schema`; a later change adds a step to STEPS, never edits one.
 
-import { CANVAS_SUGGESTIONS_SCHEMA } from '@liveworkspace/suggestions/store';
 import {
   TAB_CONNECTION_SCHEMA,
   migrationSchema,
@@ -22,6 +21,7 @@ import { COMMUNITY_POST_TABLE } from '@liveworkspace/community/app';
 import { CARD_REPEATS_SCHEMA } from './card-repeats-schema';
 import { CARD_THREADS_SCHEMA } from './card-thread-schema';
 import { IMAGE_REFS_SCHEMA } from './image-refs';
+import { IMAGE_RELEASES_SCHEMA } from './image-release';
 import { FLOW_COUNTS_SCHEMA } from './flow-counts-schema';
 import { itemsBytesStep } from './items-bytes-schema';
 import { ITEM_HISTORY_SCHEMA } from './item-history-schema';
@@ -540,7 +540,18 @@ const V31 = itemsBytesStep;
 // settings and vote cap.
 const V32 = ROADMAPS_SCHEMA;
 
-// Canvas suggestions (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Stored on the item"): their
+// The canvas_suggestions table V33 made, frozen here so the migration no longer needs the retired package.
+const CANVAS_SUGGESTIONS_SCHEMA = `
+CREATE TABLE IF NOT EXISTS canvas_suggestions (
+  id         TEXT PRIMARY KEY,
+  tab_id     TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  body       TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS canvas_suggestions_tab ON canvas_suggestions (tab_id, created_at);
+`;
+
+// Canvas suggestions, since retired from liveplanner (owner, 2026-11-16), kept as written: a migration is history. Their
 // table, beside the tabs; and the plan's review settings ("Suggest Only"), JSON or NULL, on its row. Asks before
 // the ALTER, so it is safe however far a room got.
 const V33 = (exec: Exec) => {
@@ -556,6 +567,10 @@ const V33 = (exec: Exec) => {
 // Email to Board (../email-intake/intake-store.ts; docs/specs/026-plan/email-to-board.md): each board address's code,
 // Who Can Send and counts, and each sender's hour by a hash.
 const V34 = EMAIL_INTAKES_SCHEMA;
+
+// Pictures a card no longer holds, waiting their grace before the media service is asked to release them
+// (image-release.ts; docs/specs/026-plan/items.md "Removed pictures"): the list and the triggers on `items` that fill it.
+const V35 = IMAGE_RELEASES_SCHEMA;
 
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
@@ -592,6 +607,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V32,
   V33,
   V34,
+  V35,
 ];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;

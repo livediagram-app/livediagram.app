@@ -73,7 +73,8 @@ export const mcpListTemplates = mcpTool('list_templates', {
     'Start offers (flowchart, SWOT, gantt, retrospective, ...). Returns categories ' +
     'plus { kind, title, description, category } per template. Pass a kind as "template" ' +
     'on create_document / add_tab to start from it, then personalise the labels with ' +
-    'update_document.',
+    'update_document. The C4 model’s levels are templates (c4-context, c4-container, c4-component); a ' +
+    'graph’s "c4" style draws any level of another system without coordinates.',
   inputSchema: {},
   outputSchema: listTemplatesOutput,
 });

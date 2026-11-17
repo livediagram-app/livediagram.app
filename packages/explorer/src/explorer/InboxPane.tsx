@@ -68,6 +68,7 @@ export function InboxPane({
   filterSlot?: HTMLElement | null;
 }) {
   const { inbox, inboxHost, viewerId, words, filter: appFilter } = useExplorer();
+  const settle = inbox.settle;
   const onTelemetry = inboxHost?.onTelemetry;
   // `Activity / Opened` once per visit, through the host's hook as it is when the Inbox opens: not per read
   // (returning to the tab re-reads, which is not a visit), nor when the filter or the host's props change.
@@ -88,13 +89,12 @@ export function InboxPane({
   const [chosen, setChosen] = useState<{ viewer: string | null; filter: InboxFilter } | null>(null);
   const filter = chosen && chosen.viewer === viewerId ? chosen.filter : readFilter(viewerId);
 
-  // Rows whose work was done from the pane this visit: gone from the list at once, though the index may list them
-  // until the app's next push.
-  const [gone, setGone] = useState<ReadonlySet<string>>(() => new Set());
-  const entries = useMemo(() => {
-    const all = inboxEntries(inboxSections(inbox.data, viewerId));
-    return gone.size ? all.filter((e) => !gone.has(e.key)) : all;
-  }, [inbox.data, viewerId, gone]);
+  // Rows whose work was done from the pane leave the Inbox's data itself (`inbox.settle`), so the sidebar's badge
+  // drops with the list, though the index may list them until the app's next push.
+  const entries = useMemo(
+    () => inboxEntries(inboxSections(inbox.data, viewerId)),
+    [inbox.data, viewerId],
+  );
   const counts = useMemo(() => inboxFilterCounts(entries), [entries]);
   const visible = useMemo(() => filterEntries(entries, filter), [entries, filter]);
 
@@ -249,8 +249,8 @@ export function InboxPane({
   // never back to the first (one-explorer-contracts.md "Inbox"), so a run of resolves works down the list.
   const onGone = useCallback(
     (key: string) => {
-      setGone((prev) => new Set(prev).add(key));
       const at = visible.findIndex((e) => e.key === key);
+      if (at >= 0) settle(visible[at]!);
       const next = at < 0 ? undefined : (visible[at + 1] ?? visible[at - 1]);
       if (next) {
         setSelectedKey(next.key);
@@ -262,7 +262,7 @@ export function InboxPane({
         else listRef.current?.focus();
       }
     },
-    [visible, stacked, closePane],
+    [visible, stacked, closePane, settle],
   );
 
   const retry = () => {

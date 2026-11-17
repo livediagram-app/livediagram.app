@@ -1,4 +1,4 @@
-// What the person has just changed, laid over every list the Explorer has loaded. A rename, a favourite, a
+// What the person has just changed, laid over every list the Explorer has loaded. A rename, a hide, a
 // move or a delete patches the item here at once (optimistic), and every mounted list shows it on the next
 // render without refetching; when the index refuses, the patch is taken back and the lists show the item as
 // it was. Items a list loaded keep their identity unless patched, so memoised rows re-render only for the

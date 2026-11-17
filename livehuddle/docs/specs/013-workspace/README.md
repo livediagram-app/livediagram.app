@@ -19,7 +19,7 @@ The Explorer, and everything it lists, is liveworkspace's index and its shared E
 - ./hide-from-recent.md - when working on Hide from Recent / Show in Recent: per person, on the index's opens, left out of Recent, Home's Most Used and `/new`'s card (index)
 - ./recent-folder-chip.md - when working on the location chip on rows of lists that span places (index)
 - ./folder-content-previews.md - when working on a folder card's mosaic: the index's `GET /folders/previews` and livehuddle's canvas preview (index)
-- ./favourites.md - when working on favourites (index)
+- ./favourites.md - Favourites, removed (2026-11-16): what an old address or a local star does now
 - ./explorer-details-view.md - when working on the per-tab stats a canvas pushes to the index for the Details view (index)
 - ./history.md - when working on an item's History: what the index records, the `edited` events livehuddle reports, the History dialog, and the retired Timeline, What Happened and Team Activity
 - ./explorer-home.md - when working on Explorer Home: the words, first-run welcome manifest and Help livehuddle gives it, and recording a canvas's opens (index)

@@ -152,3 +152,4 @@ export type {
   ShapeLibrary,
 } from './library/types';
 export { appLibraryHosts, uploadRefusal, type AppLibraryHosts } from './library/http';
+export { ItemHistoryDialog } from './library/ItemHistoryDialog';

@@ -159,7 +159,7 @@ export const categories: Category[] = [
     title: 'Collaboration',
     description:
       'Work together in real time: comments, assigned actions, live presence, teams, sharing, and session tools.',
-    articleCount: 8,
+    articleCount: 9,
     kind: 'feature',
   },
   {
@@ -1656,7 +1656,7 @@ export const articles: Article[] = [
     title: 'My Work and Folders',
     description: 'Your own library: the folders you create, and your unfiled canvases at its root.',
     keywords:
-      'my documents personal space library my work your documents your diagrams own files root folder organise organize unsorted unfiled made by ai generated favourite favorite star starred bookmark pin quick access canvas',
+      'my documents personal space library my work your documents your diagrams own files root folder organise organize unsorted unfiled made by ai generated bookmark pin quick access canvas',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
@@ -1748,6 +1748,15 @@ export const articles: Article[] = [
     description: 'Save points for the whole document: take one, keep five, revert to one.',
     keywords:
       'snapshot save point restore revert undo backup checkpoint version rollback go back earlier copy',
+    category: 'Collaboration',
+    categorySlug: 'collaboration',
+  },
+  {
+    slug: 'walkthroughs',
+    title: 'Walkthroughs',
+    description: 'Record a narrated tour of the canvas and let others play it back over it.',
+    keywords:
+      'walkthrough record recording narrate narration voice video camera webcam loom talktrack async tour explain play playback',
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },

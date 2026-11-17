@@ -3,7 +3,7 @@
 // the Trash's group and Home's Recent. Without a host (liveworkspace.app) none of it shows.
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createFakeIndex, makeItem } from '../test/fakeClient';
+import { createFakeIndex, madeLater, makeItem } from '../test/fakeClient';
 import {
   dropThisBrowserConversion,
   dropThisBrowserItem,
@@ -33,7 +33,6 @@ const local = (n: number, extra: Partial<ThisBrowserItem> = {}): ThisBrowserItem
   updatedAt: 2_000 + n,
   lastOpenedAt: null,
   trashedAt: null,
-  favourite: false,
   ...extra,
 });
 
@@ -113,12 +112,11 @@ describe('the list an app keeps', () => {
       typeof opens === 'number' ? opens : null,
     );
     const rec = (id: string, extra = {}) => ({ id, name: id, createdAt: 1, savedAt: 2, ...extra });
+    // An old record's favourite mark is no longer read (Favourites were removed).
     list.publish([rec('a', { opens: 9 }), rec('b', { trashedAt: 3, favourite: true })]);
-    expect(
-      readThisBrowser('liveplanner').map((i) => [i.id, i.lastOpenedAt, i.trashedAt, i.favourite]),
-    ).toEqual([
-      ['a', 9, null, false],
-      ['b', null, 3, true],
+    expect(readThisBrowser('liveplanner').map((i) => [i.id, i.lastOpenedAt, i.trashedAt])).toEqual([
+      ['a', 9, null],
+      ['b', null, 3],
     ]);
     list.note('a', rec('a', { name: 'Renamed', savedAt: 5 }));
     list.note('b', 'delete');
@@ -320,7 +318,8 @@ describe('This Browser in the Explorer', () => {
   });
 
   it("merges the opened ones into Home's Recent by last open", async () => {
-    const index = createFakeIndex({ items: [makeItem(1, { lastOpenedAt: 500 })] });
+    // New's four made later, so these are in Recent (each item shows once).
+    const index = createFakeIndex({ items: [makeItem(1, { lastOpenedAt: 500 }), ...madeLater()] });
     page(
       { kind: 'home' },
       host([local(1, { lastOpenedAt: 900 }), local(2), local(3, { lastOpenedAt: 100 })]),

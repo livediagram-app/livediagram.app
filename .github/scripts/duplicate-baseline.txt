@@ -64,7 +64,6 @@ livediagram/apps/editor/app/embed/workbench/useWorkspaceNavigation.ts	livedocume
 livediagram/apps/editor/app/get-started/page.tsx	livedocuments/apps/editor/app/get-started/page.tsx	livehuddle/apps/editor/app/get-started/page.tsx
 livediagram/apps/editor/app/join/decline/page.tsx	livehuddle/apps/editor/app/join/decline/page.tsx
 livediagram/apps/editor/app/join/page.tsx	livehuddle/apps/editor/app/join/page.tsx
-livediagram/apps/editor/app/new/new-document-settings.ts	livedocuments/apps/editor/app/new/new-document-settings.ts
 livediagram/apps/editor/app/not-found.tsx	livedocuments/apps/editor/app/not-found.tsx	livehuddle/apps/editor/app/not-found.tsx
 livediagram/apps/editor/app/page.tsx	livehuddle/apps/editor/app/page.tsx
 livediagram/apps/editor/app/sign-in/page.tsx	livedocuments/apps/editor/app/sign-in/page.tsx	livehuddle/apps/editor/app/sign-in/page.tsx
@@ -82,7 +81,6 @@ livediagram/apps/editor/hooks/ui/useColourPalette.ts	livedocuments/apps/editor/h
 livediagram/apps/editor/hooks/ui/useDocumentColours.ts	livedocuments/apps/editor/hooks/ui/useDocumentColours.ts	livehuddle/apps/editor/hooks/ui/useDocumentColours.ts
 livediagram/apps/editor/hooks/ui/useImageSearch.ts	livehuddle/apps/editor/hooks/ui/useImageSearch.ts
 livediagram/apps/editor/lib/add-to-document-targets.ts	livedocuments/apps/editor/lib/add-to-document-targets.ts
-livediagram/apps/editor/lib/api/document-grants.ts	livehuddle/apps/editor/lib/api/document-grants.ts
 livediagram/apps/editor/lib/api/preferences.ts	livehuddle/apps/editor/lib/api/preferences.ts
 livediagram/apps/editor/lib/explorer-organise.ts	livedocuments/apps/editor/lib/explorer-organise.ts
 livediagram/apps/editor/lib/explorer-thumbnail.tsx	livehuddle/apps/editor/lib/explorer-thumbnail.tsx
@@ -104,6 +102,5 @@ livediagram/packages/document/src/svg-render-temperature.ts	liveplanner/packages
 livediagram/packages/licences/src/apps.ts	livedocuments/packages/licences/src/apps.ts	liveplanner/packages/licences/src/apps.ts
 livediagram/packages/template-previews/src/index.ts	livehuddle/packages/template-previews/src/index.ts
 livediagram/scripts/stroke-points-bench.ts	livehuddle/scripts/stroke-points-bench.ts
-livedocuments/apps/editor/app/new/layout.tsx	livehuddle/apps/editor/app/new/layout.tsx
 livedocuments/apps/editor/components/dialogs/settings/settings-all-apps.ts	liveplanner/apps/editor/components/dialogs/settings/settings-all-apps.ts
 livedocuments/packages/licences/src/overrides.ts	livehuddle/packages/licences/src/overrides.ts	liveplanner/packages/licences/src/overrides.ts

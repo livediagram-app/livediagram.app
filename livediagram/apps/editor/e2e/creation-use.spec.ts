@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { adoptGuest, expect, expectNoPageErrors, mintGuest, test } from './fixtures';
+import { adoptGuest, expect, expectNoPageErrors, mintGuest, ownerHeaders, test } from './fixtures';
 import { syntheticExportZip } from './ms-whiteboard-board';
 
 // Making a document is a use, a bulk import is not (docs/specs/013-workspace/explorer-home.md
@@ -35,21 +35,43 @@ async function importBoards(page: Page, boards: 1 | 2): Promise<void> {
 const homeOpened = (page: Page) =>
   page.getByRole('region', { name: /^(Most Used|Recent)$/ }).getByRole('listitem');
 
-async function freshGuest(page: Page): Promise<void> {
-  await adoptGuest(page, await mintGuest(page.request));
+// Home shows each item once, in the first of New, Most Used and Recent it qualifies for
+// (liveworkspace/docs/specs/004-index/one-explorer.md "Each item shows once"), so a just-imported board is in New. Four
+// newer boards, made with markUsed: false (never a use), take New's four places, so where the imported ones land shows
+// whether importing them was a use.
+async function fillNew(page: Page, owner: string): Promise<void> {
+  for (let i = 1; i <= 4; i++) {
+    const res = await page.request.post('/api/documents', {
+      headers: ownerHeaders(owner),
+      data: {
+        id: crypto.randomUUID(),
+        name: `Newer ${i}`,
+        tabs: [{ id: crypto.randomUUID(), name: 'Tab 1', elements: [] }],
+        markUsed: false,
+      },
+    });
+    expect(res.status(), `create Newer ${i}`).toBe(201);
+  }
+}
+
+async function freshGuest(page: Page): Promise<string> {
+  const owner = await mintGuest(page.request);
+  await adoptGuest(page, owner);
   await page.addInitScript(() => {
     localStorage.setItem('livediagram:v2:name-confirmed', '1');
     localStorage.setItem('livediagram:v2:ui-mode', 'dark');
   });
+  return owner;
 }
 
 test('a board imported on its own is in Home’s Most Used or Recent without being opened', async ({
   page,
   pageErrors,
 }) => {
-  await freshGuest(page);
+  const owner = await freshGuest(page);
   await page.setViewportSize({ width: 1280, height: 800 });
   await importBoards(page, 1);
+  await fillNew(page, owner);
 
   await page.goto('/explorer/home');
   const tile = homeOpened(page).getByRole('link', { name: SINGLE_BOARD });
@@ -68,7 +90,7 @@ test('a two-board import marks neither used: Most Used and Recent stay empty, Al
   page,
   pageErrors,
 }) => {
-  await freshGuest(page);
+  const owner = await freshGuest(page);
   await page.setViewportSize({ width: 1280, height: 800 });
   await importBoards(page, 2);
 
@@ -83,7 +105,8 @@ test('a two-board import marks neither used: Most Used and Recent stay empty, Al
   await expect(page.getByRole('link', { name: SINGLE_BOARD }).first()).toBeVisible();
   await expect(page.getByRole('link', { name: UNTITLED_BOARD }).first()).toBeVisible();
 
-  // Opened, one of them joins.
+  // Opened, one of them joins: four newer boards first push both out of New, where each shows once.
+  await fillNew(page, owner);
   await page.getByRole('link', { name: SINGLE_BOARD }).first().click();
   await expect(page).toHaveURL(/\/document\//);
   await expect(page.getByText(SINGLE_BOARD).first()).toBeVisible();

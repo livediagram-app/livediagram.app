@@ -1,0 +1,151 @@
+/*
+ * The 3D view (docs/specs/008-canvas/3d-view.md; blueprint: 3d-view.md). <main> carries `data-space-view` (rising,
+ * tilted, falling) while it shows; the stage round the world layer carries the camera; the world layer, the walls
+ * layer, each character's box and the speech layer keep their children in the scene's 3D space; everything else on
+ * the floor stays flat in the element plane. The tilt is `--space-tilt` and the walls' fold `--space-stand`, set on
+ * the stage, so every part turns together on one transition. Reduced motion collapses the transitions (globals.css).
+ */
+
+[data-space-view] {
+  --space-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --space-wall: #e7e5e4;
+  --space-wall-shade: #a8a29e;
+  --space-wall-top: #ffffff;
+  --space-wall-foot: rgb(68 64 60 / 0.28);
+  --space-wall-ink: #44403c;
+  --space-door: #a16207;
+  --space-door-top: #ca8a04;
+  --space-fence: #8a5a33;
+  /* The floor's pattern is drawn on the screen, not on the floor: the 3D view shows the background colour alone. */
+  background-image: none !important;
+}
+/* On a dark canvas the walls are slate, their top edge lighter (docs/specs/008-canvas/3d-view.md "Themes"). */
+[data-space-view][data-dark-canvas] {
+  --space-wall: #475569;
+  --space-wall-shade: #1e293b;
+  --space-wall-top: #94a3b8;
+  --space-wall-foot: rgb(2 6 23 / 0.45);
+  --space-wall-ink: #f1f5f9;
+  --space-door: #ca8a04;
+  --space-door-top: #fde047;
+  --space-fence: #c08a5b;
+}
+
+/* The camera: a perspective tilt about the middle of the canvas (space-3d-camera.ts `stageTransform`). */
+[data-space-view] > [data-space-stage] {
+  transform: perspective(1100px) rotateX(var(--space-tilt));
+  transform-origin: 50% 50%;
+  transform-style: preserve-3d;
+  transition: transform 520ms var(--space-ease);
+}
+[data-space-view] [data-canvas-content],
+[data-space-view] [data-space-overlay-world],
+[data-space-view] [data-space-walls],
+[data-space-view] [data-avatar],
+[data-space-view] [data-avatar-chip],
+[data-space-view] [data-space-3d-group] {
+  transform-style: preserve-3d;
+}
+/* The floor sits a pixel under the ground line, so what lies on it (rings, beams) is never coplanar with it. */
+[data-space-view] [data-element-plane] {
+  translate: 0 0 -1px;
+}
+
+/* A character stands up about its feet, facing the camera (AvatarWalker's `data-avatar-stand`). */
+[data-space-view] [data-avatar-stand] {
+  transform: rotateX(calc(var(--space-tilt) * -1));
+  transition: transform 520ms var(--space-ease);
+}
+/* What floats above a head turns about that character's feet: `--space-billboard-origin` is the feet, from the
+   element's own box. */
+[data-space-view] [data-space-billboard] {
+  transform-origin: var(--space-billboard-origin, 50% 100%);
+  rotate: x calc(var(--space-tilt) * -1);
+  transition: rotate 520ms var(--space-ease);
+}
+
+/* A wall: its line on the floor (left 0, the line at its top edge) and a face folding up from it. */
+[data-space-wall] {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 0;
+  transform-origin: 0 0;
+  transform-style: preserve-3d;
+}
+[data-space-wall-face] {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: var(--wall-h);
+  box-sizing: border-box;
+  transform-origin: 50% 100%;
+  transform: rotateX(var(--space-stand));
+  transition:
+    transform 520ms var(--space-ease),
+    opacity 180ms ease-out;
+  animation: space-wall-rise 520ms var(--space-ease);
+  /* Lit from the front: a wall running away from the camera is shaded (space-3d-walls.ts `shade`). */
+  background:
+    linear-gradient(to top, var(--space-wall-foot), transparent 35%),
+    color-mix(in srgb, var(--space-wall-shade) var(--wall-shade), var(--space-wall));
+  border-top: 3px solid var(--space-wall-top);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+/* A wall that arrives while the view stands folds up rather than appearing. */
+@keyframes space-wall-rise {
+  from {
+    transform: rotateX(0deg);
+  }
+}
+[data-space-wall='glass'] > [data-space-wall-face] {
+  background: rgb(186 230 253 / 0.28);
+  border-top-color: rgb(224 242 254 / 0.9);
+}
+[data-space-wall='door'] > [data-space-wall-face] {
+  background: var(--space-door);
+  border-top-color: var(--space-door-top);
+}
+[data-space-wall='fence'] > [data-space-wall-face] {
+  background:
+    linear-gradient(
+      var(--space-fence) 0 4px,
+      transparent 4px 11px,
+      var(--space-fence) 11px 15px,
+      transparent 15px
+    ),
+    repeating-linear-gradient(to right, var(--space-fence) 0 5px, transparent 5px 40px);
+  border-top: 0;
+}
+/* In front of your feet: a ghost, so the wall never hides you (opacity on the face: on the wall it would flatten it). */
+[data-space-wall][data-cut] > [data-space-wall-face] {
+  opacity: 0.18;
+}
+/* A room's name is on its back wall here, so its flat name on the floor goes (BoxedElementView). */
+[data-space-view] [data-room-floor-label] {
+  display: none;
+}
+[data-space-wall-label] {
+  max-width: calc(100% - 16px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--space-wall-ink);
+}
+
+/* The horizon: the top of the canvas fades into its own background colour (Space3DFog). */
+[data-space-fog] {
+  background-color: inherit;
+  mask-image: linear-gradient(to bottom, black, transparent);
+  opacity: 0;
+  transition: opacity 520ms var(--space-ease);
+}
+[data-space-view='tilted'] > [data-space-fog] {
+  opacity: 1;
+}

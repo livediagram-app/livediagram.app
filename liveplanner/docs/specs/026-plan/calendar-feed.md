@@ -69,13 +69,16 @@ Where a person makes, copies, resets and turns off their feed of one plan.
 
 ### Where it lives
 
-- **Subscribe to Calendar…** in the **tab menu** (the tab's ⋯ and the canvas's right-click menu, which are one menu),
-  under Export: getting the plan's dates out sits beside getting its tab out. It names the whole plan, whichever tab
-  the menu opened on.
-- Shown only to someone who may have a feed: **signed in**, on a plan **saved to an account**, holding the plan as its
-  **owner or a team member** (a grant with no share link and no tab), and not in an embed or a workbench frame.
-  Everyone else sees no row: a share-link holder at any level (Editor, Participant, Viewer), a guest, a plan in This
-  Browser. The api refuses them all the same, so the row is presentation, never the rule.
+- **Subscribe to Calendar** in the footer's **Tools** menu, in its Collaborate group
+  ([Footer Tools menu](../../../../liveworkspace/docs/specs/004-index/footer-tools-menu.md); moved out of the tab menu,
+  owner 2026-11-16): a tool that works on the whole plan, with the others. It names the whole plan, whichever tab is
+  open.
+- It works for someone who may have a feed: **signed in**, on a plan **saved to an account**, holding the plan as its
+  **owner or a team member** (a grant with no share link and no tab), and not in an embed or a workbench frame. A
+  guest, or the owner of a plan in This Browser, still sees the row, badged **Sign In** or **Sync Plan**, and a press
+  opens that gate first ([Footer Tools menu](../../../../liveworkspace/docs/specs/004-index/footer-tools-menu.md) "Always
+  there"); signing in comes back with it open (`?calendar=1`). A share-link holder at any level sees no row. The api
+  refuses all but the first the same, so the row is presentation, never the rule.
 
 ### The dialog
 

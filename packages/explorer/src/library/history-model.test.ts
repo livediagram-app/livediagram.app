@@ -130,7 +130,7 @@ describe('what an event in History says', () => {
     expect(words({ type: 'action_assigned', detail: {} }).detail).toBe('To a teammate');
     expect(words({ type: 'action_done', detail: { action: 'Ship' } }).quote).toBe('Ship');
     expect(words({ type: 'action_done', detail: null }).quote).toBeNull();
-    expect(words({ type: 'favourited' })).toEqual({ detail: null, quote: null });
+    expect(words({ type: 'synced' })).toEqual({ detail: null, quote: null });
   });
 
   it('names people and their initials', () => {

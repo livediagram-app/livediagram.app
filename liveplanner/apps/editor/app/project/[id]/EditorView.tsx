@@ -15,7 +15,6 @@ import { CanvasSurfaceProvider } from '@/components/canvas/CanvasSurfaceContext'
 import { CanvasFinishProvider } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 import { SketchFilterDefs } from '@/components/canvas/SketchFilterDefs';
 import { ChangesetRevealContext } from '@/components/canvas/ChangesetRevealOverlay';
-import { SuggestionsContext } from '@liveworkspace/suggestions/react/suggestions-store';
 import { AgentFocusContext } from '@/components/canvas/AgentFocusOverlay';
 import { SelectionStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
@@ -58,6 +57,16 @@ import { boardIdsOnTab } from '@/components/roadmap/roadmap-gate';
 import { RoadmapHost } from '@/components/roadmap/RoadmapHost';
 import { EmailIntakeHost } from '@/components/email-intake/EmailIntakeHost';
 import { renderEditorHeader, renderEditorTabBar } from './EditorViewBars';
+import {
+  useEditorWalkthroughs,
+  WalkthroughsLayer,
+  WalkthroughsTools,
+} from '@liveworkspace/walkthrough';
+import {
+  API_BASE as WALKTHROUGHS_API_BASE,
+  apiFetch as walkthroughsFetch,
+  apiHeaders as walkthroughsHeaders,
+} from '@/lib/api/core';
 import {
   useCanvasPattern,
   useEditorAutomations,
@@ -145,7 +154,7 @@ export function EditorView() {
   // The header's Community state, and a Community link's `?copy=1` (editor-view-hooks).
   const headerCommunity = useHeaderCommunity(ctx);
   // UI scale (docs/specs/007-editor/ui-scale.md): desktop only, and a dragged Settings slider's patch wins.
-  const { uiScales } = useEditorUiScales(userPreferences);
+  const { uiScales, isMobileViewport } = useEditorUiScales(userPreferences);
   const role = useRoleIndicator();
 
   const selectTab = useSelectTab();
@@ -183,6 +192,26 @@ export function EditorView() {
   const landscapeBars = useLandscapeBars([renameProjectNonce, renameTabNonce]);
 
   // The site header and the tab bar, its footer (EditorViewBars), or null where they are hidden.
+  // Walkthroughs (docs/specs/012-collaboration/walkthroughs.md): their row in the footer's Tools and the layer over the canvas.
+  const walkthroughs = useEditorWalkthroughs({
+    itemId: ctx.projectId,
+    hydrated: ctx.hydrated,
+    embedMode: ctx.embedMode,
+    workbench: ctx.workbench,
+    offline: isOffline,
+    phone: isMobileViewport,
+    tabScope: ctx.sessionTabScope,
+    apiBase: WALKTHROUGHS_API_BASE,
+    apiFetch: walkthroughsFetch,
+    apiHeaders: walkthroughsHeaders,
+    self: ctx.selfParticipant,
+    shareCode: ctx.sessionShareCode,
+    viewport: ctx.viewport,
+    tabs: ctx.tabs,
+    activeTab: ctx.activeId,
+    selectTab,
+    selectionStore: ctx.selectionStore,
+  });
   const header = renderEditorHeader(ctx, {
     isOffline,
     headerCommunity,
@@ -201,12 +230,12 @@ export function EditorView() {
   const { automationsScope, automationsGate } = useEditorAutomations(ctx, isOffline);
   const snapshotsDoor = useEditorSnapshots(ctx, isOffline);
   // Subscribe to Calendar's scope: the tab menu's row (editor-view-hooks).
-  const calendarFeedScope = useEditorCalendarFeed(ctx, isOffline);
+  const { calendarFeedScope, calendarFeedGate } = useEditorCalendarFeed(ctx, isOffline);
   // Publish as Roadmap's scope and the active tab's boards: the tab menu's row (editor-view-hooks).
   const roadmapScope = useEditorRoadmap(ctx, isOffline);
   const roadmapBoards = useMemo(() => boardIdsOnTab(activeTab.elements), [activeTab.elements]);
   // Email to Board's scope: the tab menu's row, on the same boards (editor-view-hooks).
-  const emailIntakeScope = useEditorEmailIntake(ctx, isOffline);
+  const { emailIntakeScope, emailIntakeGate } = useEditorEmailIntake(ctx, isOffline);
 
   return (
     // Which paper the canvas is, for every element that carries no colour of
@@ -226,9 +255,13 @@ export function EditorView() {
       {/* A template's starter rules, once the plan it made can hold them (plan-templates.md "Starter rules"). */}
       <PendingStarterRules tabId={tabs[0]?.id} projectId={ctx.projectId} offline={isOffline} />
       <SnapshotsDoorProvider door={snapshotsDoor}>
-        <CalendarFeedHost scope={calendarFeedScope}>
+        <CalendarFeedHost scope={calendarFeedScope} gate={calendarFeedGate}>
           <RoadmapHost scope={roadmapScope} boardIds={roadmapBoards}>
-            <EmailIntakeHost scope={emailIntakeScope} boardIds={roadmapBoards}>
+            <EmailIntakeHost
+              scope={emailIntakeScope}
+              gate={emailIntakeGate}
+              boardIds={roadmapBoards}
+            >
               <CursorsDrawnContext.Provider value={cursorsDrawn}>
                 <SelectionStoreProvider store={ctx.selectionStore}>
                   <ViewportStoreProvider store={ctx.viewport}>
@@ -295,40 +328,36 @@ export function EditorView() {
                                                   fallbackClassName="flex-1"
                                                 >
                                                   {/* The outlines relayed changesets draw (docs/specs/024-agents/agent-changesets.md). */}
-                                                  <SuggestionsContext.Provider
-                                                    value={ctx.canvasSuggestions.store}
+                                                  <ChangesetRevealContext.Provider
+                                                    value={ctx.changesetReveals}
                                                   >
-                                                    <ChangesetRevealContext.Provider
-                                                      value={ctx.changesetReveals}
+                                                    {/* The focus rings of the agents present (docs/specs/024-agents/agent-presence.md). */}
+                                                    <AgentFocusContext.Provider
+                                                      value={ctx.agentFocusByElement}
                                                     >
-                                                      {/* The focus rings of the agents present (docs/specs/024-agents/agent-presence.md). */}
-                                                      <AgentFocusContext.Provider
-                                                        value={ctx.agentFocusByElement}
-                                                      >
-                                                        {/* No comment badges for a viewer in an embed (docs/specs/013-workspace/embeds.md),
+                                                      {/* No comment badges for a viewer in an embed (docs/specs/013-workspace/embeds.md),
                                                 nor for a Community visitor (docs/specs/025-community/community.md). */}
-                                                        <CommentBadgesContext.Provider
-                                                          value={
-                                                            !(embedMode && isReadOnly) &&
-                                                            !sessionCommunity
-                                                          }
-                                                        >
-                                                          {/* Indicators are editor chrome: an embed never draws them (docs/specs/008-canvas/element-indicators.md). */}
-                                                          {/* A connected tab's page stands in the board's place (connected-tabs.md), once a visitor's name prompt (drawn by the canvas host) is answered. */}
-                                                          {ctx.activeTabConnected &&
-                                                          !anyWelcomeOpen ? (
-                                                            <ConnectedTabHost />
-                                                          ) : (
-                                                            <SuppressElementIndicators
-                                                              when={embedMode}
-                                                            >
-                                                              <EditorCanvasHost />
-                                                            </SuppressElementIndicators>
-                                                          )}
-                                                        </CommentBadgesContext.Provider>
-                                                      </AgentFocusContext.Provider>
-                                                    </ChangesetRevealContext.Provider>
-                                                  </SuggestionsContext.Provider>
+                                                      <CommentBadgesContext.Provider
+                                                        value={
+                                                          !(embedMode && isReadOnly) &&
+                                                          !sessionCommunity
+                                                        }
+                                                      >
+                                                        {/* Indicators are editor chrome: an embed never draws them (docs/specs/008-canvas/element-indicators.md). */}
+                                                        {/* A connected tab's page stands in the board's place (connected-tabs.md), once a visitor's name prompt (drawn by the canvas host) is answered. */}
+                                                        {ctx.activeTabConnected &&
+                                                        !anyWelcomeOpen ? (
+                                                          <ConnectedTabHost />
+                                                        ) : (
+                                                          <SuppressElementIndicators
+                                                            when={embedMode}
+                                                          >
+                                                            <EditorCanvasHost />
+                                                          </SuppressElementIndicators>
+                                                        )}
+                                                      </CommentBadgesContext.Provider>
+                                                    </AgentFocusContext.Provider>
+                                                  </ChangesetRevealContext.Provider>
                                                   {ctx.plan.openItemId ||
                                                   ctx.plan.editingType ||
                                                   ctx.plan.requiredFields ? (
@@ -421,6 +450,8 @@ export function EditorView() {
                         </CanvasFinishProvider>
                       </CanvasPatternContext.Provider>
                     </CanvasSurfaceProvider>
+                    <WalkthroughsLayer walkthroughs={walkthroughs} />
+                    <WalkthroughsTools menu={walkthroughs.menu} />
                   </ViewportStoreProvider>
                 </SelectionStoreProvider>
               </CursorsDrawnContext.Provider>

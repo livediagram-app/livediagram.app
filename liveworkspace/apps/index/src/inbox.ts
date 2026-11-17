@@ -10,6 +10,7 @@ import {
   type ActionStatus,
   type App,
   type CollabCard,
+  type CollabMentioner,
   type InboxAction,
   type InboxForm,
   type InboxThread,
@@ -46,8 +47,10 @@ type ThreadRow = {
   latest_text: string;
   latest_author_name: string;
   latest_author_color: string;
+  latest_author_id: string | null;
   card: string | null;
   mentions_you: number;
+  mentioned_by_you: string | null;
   you_commented: number;
   on_your_item: number;
   first_at: number;
@@ -102,8 +105,10 @@ export function inboxQueries(personId: string, scopes: string[], app: App | null
         SELECT p.app, p.item_id, p.tab_id, p.element_id FROM collab_thread_people p WHERE p.person_id = ?
       )
       SELECT t.app, t.item_id, i.title AS item_title, i.team_id AS item_team_id, t.tab_id, t.tab_name, t.element_id, t.element_label,
-        t.resolved, t.comment_count, t.latest_text, t.latest_author_name, t.latest_author_color, t.card,
+        t.resolved, t.comment_count, t.latest_text, t.latest_author_name, t.latest_author_color, t.latest_author_id,
+        t.card,
         EXISTS (SELECT 1 FROM json_each(t.mentioned_ids) WHERE value = ?) AS mentions_you,
+        (SELECT value FROM json_each(t.mentioned_by) WHERE key = ?) AS mentioned_by_you,
         EXISTS (SELECT 1 FROM json_each(t.participant_ids) WHERE value = ?) AS you_commented,
         i.owner_id = ? AS on_your_item, t.first_at, t.latest_at
       FROM candidates c
@@ -113,6 +118,7 @@ export function inboxQueries(personId: string, scopes: string[], app: App | null
       WHERE t.resolved = 0 AND i.trashed_at IS NULL ${appClause} AND ${reachable('t')}
       ORDER BY t.latest_at DESC LIMIT ?`,
     args: [
+      personId,
       personId,
       personId,
       personId,
@@ -150,6 +156,16 @@ export function inboxQueries(personId: string, scopes: string[], app: App | null
     args: [personId, JSON.stringify(scopes), personId, ...(app ? [app] : []), limit],
   };
   return { threads, actions, forms };
+}
+
+/** Who mentioned the reader, as the push said (checked when it was pushed); null when it said nothing. */
+function mentionerOf(text: string | null): CollabMentioner | null {
+  if (!text) return null;
+  try {
+    return JSON.parse(text) as CollabMentioner;
+  } catch {
+    return null;
+  }
 }
 
 function cardOf(text: string | null): CollabCard | null {
@@ -191,8 +207,10 @@ export async function handleInbox(ctx: PersonContext): Promise<Response> {
     latestText: r.latest_text,
     latestAuthorName: r.latest_author_name,
     latestAuthorColor: r.latest_author_color,
+    latestAuthorId: r.latest_author_id,
     card: cardOf(r.card),
     mentionsYou: r.mentions_you === 1,
+    mentionedBy: r.mentions_you === 1 ? mentionerOf(r.mentioned_by_you) : null,
     youCommented: r.you_commented === 1,
     onYourItem: r.on_your_item === 1,
     firstAt: r.first_at,

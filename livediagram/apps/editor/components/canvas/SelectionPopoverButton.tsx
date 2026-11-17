@@ -1,6 +1,11 @@
 // The selection toolbar's button and divider, shared by SelectionPopover and the per-element button
 // groups it hosts (FlowchartStepButtons).
+import { createContext, useContext } from 'react';
 import { HoverCard } from '@livediagram/ui';
+
+// Inside a surface with room for words (the Quick Style panel's Tools row), each button shows its name beside its glyph.
+export const ButtonLabelsContext = createContext(false);
+export const useButtonLabels = () => useContext(ButtonLabelsContext);
 import { TOOLBAR_DIVIDER } from '@/components/chrome/toolbar-surface';
 
 export function Divider() {
@@ -20,6 +25,24 @@ export function PopoverButton({
   children: React.ReactNode;
   active?: boolean;
 }) {
+  const labelled = useButtonLabels();
+  if (labelled) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        aria-pressed={active ? true : undefined}
+        className={`flex h-8 items-center gap-1.5 rounded-md px-2 text-xs font-medium transition ${
+          active
+            ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
+            : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-white'
+        }`}
+      >
+        {children}
+        {label}
+      </button>
+    );
+  }
   return (
     <HoverCard title={label} description={description}>
       <button

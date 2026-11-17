@@ -23,6 +23,10 @@ import {
   useStripPopover,
 } from '@liveworkspace/workbench/components/palette/ToolbarStripPopover';
 import { Divider } from './strip-rail-items';
+import {
+  TOOLBAR_LIBRARY_SELECTOR,
+  ToolbarLibraryButton,
+} from '@liveworkspace/workbench/components/palette/ToolbarLibraryButton';
 import { TOOLBAR_SEARCH_SELECTOR, ToolbarSearchButton, ToolbarSearchPanel } from './ToolbarSearch';
 import { BrowseMemoryContext, useBrowseMemory } from './PaletteCategoryBrowser';
 import { setPalettePopoverOpen } from '@liveworkspace/workbench/lib/palette-popover-open';
@@ -113,27 +117,44 @@ export function ToolbarPalette(props: Props) {
   // anything else on the strip closes it.
   const rootRef = useRef<HTMLDivElement>(null);
   const search = useStripPopover(rootRef, TOOLBAR_SEARCH_SELECTOR);
+  // The Library, icon only beside Search, not a category (liveworkspace/docs/specs/006-media/libraries.md).
+  const library = useStripPopover(rootRef, TOOLBAR_LIBRARY_SELECTOR);
   // The category bar and its flyout (CategoryBar).
   const bar = useCategoryBar(rootRef);
   // Icons, Stickers and Tech reopen on the group they were left on, for the page load (BrowseMemory).
   const browseMemory = useBrowseMemory();
   // The template start steps aside while a popover hangs from the strip (palette-popover-open).
-  const popoverOpen = bar.popover.open || search.open;
+  const popoverOpen = bar.popover.open || search.open || library.open;
   useEffect(() => {
     setPalettePopoverOpen(popoverOpen);
     return () => setPalettePopoverOpen(false);
   }, [popoverOpen]);
   // The palette's kind: the tab's (lib/palette-kind.ts), right on the first paint.
   const paletteKind = usePaletteKind(props.tabPages);
-  const { tabs, tileActions, canvasToolOptions, onCanvasToolChange } = usePaletteCatalogue({
+  const {
+    tabs: catalogueTabs,
+    tileActions,
+    canvasToolOptions,
+    onCanvasToolChange,
+  } = usePaletteCatalogue({
     ...props,
     paletteKind,
     // A tile used from a flyout or Search closes it, so the canvas is clear to draw on.
     onTileUsed: () => {
       search.setOpen(false);
+      library.setOpen(false);
       bar.popover.setOpen(false);
     },
   });
+  // The Library leaves the categories for its own button beside Search.
+  const libraryTab = catalogueTabs.find((t) => t.id === 'library');
+  const tabs = useMemo(() => catalogueTabs.filter((t) => t.id !== 'library'), [catalogueTabs]);
+  const toggleLibrary = (button: HTMLElement) => {
+    if (library.open) return library.setOpen(false);
+    search.setOpen(false);
+    bar.popover.setOpen(false);
+    library.openFrom(button);
+  };
   // With the palette's kind Article or Flashcard, the strip holds the page's formatting in place of
   // the bar; a card's strip has no Search either, whose tiles would place elements on a card
   // (docs/specs/007-editor/flashcards.md "Text only").
@@ -297,6 +318,14 @@ export function ToolbarPalette(props: Props) {
                   {textOnly ? null : (
                     <>
                       <Divider />
+                      {libraryTab ? (
+                        <ToolbarLibraryButton
+                          open={library.open}
+                          onToggle={toggleLibrary}
+                          icon={libraryTab.icon}
+                          description={libraryTab.description}
+                        />
+                      ) : null}
                       <div ref={searchButtonRef} className="flex">
                         <ToolbarSearchButton open={search.open} onToggle={toggleSearch} />
                       </div>
@@ -326,6 +355,17 @@ export function ToolbarPalette(props: Props) {
                   pendingDraw={pendingDraw}
                   tabElements={props.tabElements ?? []}
                 />
+              </StripPopover>
+            ) : null}
+            {library.open && libraryTab ? (
+              <StripPopover
+                right={library.right}
+                isMobile={isMobile}
+                scale={scale}
+                label="Library"
+                dataAttr="data-toolbar-library"
+              >
+                <div className="px-2 py-2.5">{libraryTab.content}</div>
               </StripPopover>
             ) : null}
           </PaletteTintProvider>

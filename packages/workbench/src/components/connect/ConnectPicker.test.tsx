@@ -28,7 +28,6 @@ const item = (id: string, title: string, over: Partial<Item> = {}): Item => ({
   trashReason: null,
   summary: {},
   access: 'edit',
-  favourite: false,
   lastOpenedAt: NOW - 2 * 3_600_000,
   sharedVia: null,
   ...over,

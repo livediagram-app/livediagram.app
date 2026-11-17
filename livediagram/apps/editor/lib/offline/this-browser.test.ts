@@ -7,7 +7,7 @@ import {
   __setOfflineBackend,
   offlineCreateDocument,
   offlineDeleteDocument,
-  offlineSetFavourite,
+  offlineUpdateRecord,
   isOfflineId,
 } from './offline-store';
 import { memBackend, testRecord } from './offline-test-utils';
@@ -18,14 +18,14 @@ afterEach(() => {
 });
 
 describe("This Browser's list", () => {
-  it('follows a create, a star and a delete', async () => {
+  it('follows a create, a rename and a delete', async () => {
     __setOfflineBackend(memBackend());
     await offlineCreateDocument({ id: 'a', name: 'Alpha' }, 1_000);
     expect(readThisBrowser('livediagram')).toEqual([
       expect.objectContaining({ id: 'a', title: 'Alpha', lastOpenedAt: 1_000, trashedAt: null }),
     ]);
-    await offlineSetFavourite('a', true);
-    expect(readThisBrowser('livediagram')[0]!.favourite).toBe(true);
+    await offlineUpdateRecord('a', (rec) => (rec ? { ...rec, name: 'Alpha 2' } : undefined));
+    expect(readThisBrowser('livediagram')[0]!.title).toBe('Alpha 2');
     await offlineDeleteDocument('a');
     expect(readThisBrowser('livediagram')).toEqual([]);
   });

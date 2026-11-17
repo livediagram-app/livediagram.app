@@ -28,7 +28,7 @@ function handlerFor(run: () => unknown) {
 }
 
 describe('registerTool answers fixable errors', () => {
-  it('turns an api 4xx and a ToolInputError into tool errors, and lets a 5xx throw', async () => {
+  it('turns an api 4xx and a ToolInputError into tool errors, and lets a 5xx throw in words', async () => {
     const gone = await handlerFor(() => {
       throw new ApiError(410, '{"error":"gone"}');
     })({}, {});
@@ -44,7 +44,9 @@ describe('registerTool answers fixable errors', () => {
       handlerFor(() => {
         throw new ApiError(503, '');
       })({}, {}),
-    ).rejects.toBeInstanceOf(ApiError);
+    ).rejects.toThrow(
+      'The service behind this tool did not finish the call (HTTP 503). Try again in a moment.',
+    );
   });
 });
 

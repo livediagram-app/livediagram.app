@@ -119,7 +119,11 @@ async function tourTheChrome(page: Page): Promise<void> {
   // The Search panel is the tour's one fly-up-in, which the budget test asserts it saw.
   await openAndClose(
     page,
-    () => page.getByRole('button', { name: 'Search', exact: true }).click(),
+    async () => {
+      // Search, first in the footer's Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md).
+      await page.locator('[data-tools-button]').click();
+      await page.locator('[data-tools-item="search"]').click();
+    },
     undefined,
     page.locator('.animate-fly-up-in').first(),
   );

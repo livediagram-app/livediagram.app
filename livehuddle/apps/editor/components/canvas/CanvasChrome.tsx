@@ -24,6 +24,7 @@ import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handler
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
 import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
 import { ThemeStrip } from '@/components/canvas/ThemeStrip';
+import { Space3DButton } from '@/components/canvas/space-3d/Space3DButton';
 import { UndoRedoClusterStrip } from '@liveworkspace/workbench/components/canvas/UndoRedoClusterStrip';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { Fragment, useCallback, type Dispatch, type RefObject, type SetStateAction } from 'react';
@@ -489,6 +490,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
               {/* The Theme & Canvas brush (docs/specs/011-theme/canvas-and-theme-dialog.md, its one entry point;
                 read-only sessions pass no handler): see ThemeStrip. Away while walking. */}
               {!chromeAway && !walking ? <ThemeStrip onOpenTheme={onOpenCanvasTheme} /> : null}
+              {/* The 3D View switch (docs/specs/008-canvas/3d-view.md "Turning it on and off"): while walking. */}
+              {walking ? <Space3DButton /> : null}
               <ViewZoomControls
                 onZoomIn={handleZoomIn}
                 onZoomOut={handleZoomOut}

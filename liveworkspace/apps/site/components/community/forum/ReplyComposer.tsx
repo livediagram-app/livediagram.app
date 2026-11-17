@@ -4,7 +4,7 @@ import { type FormEvent, useId, useState } from 'react';
 import { FORUM_BODY_MAX, FORUM_REPLY_MIN, type ForumReply } from '@liveworkspace/community';
 import { Button, TextArea } from '@liveworkspace/ui';
 import { useCommunitySite } from '../client';
-import { SignedInAction } from './AskButton';
+import { SignedInAction } from './SignedInAction';
 import { forumErrorText, type ForumApi } from './forum-api';
 import { authorOf, type ForumAccount } from './useForumAccount';
 
@@ -27,12 +27,13 @@ export function ReplyComposer({
   const [body, setBody] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [tried, setTried] = useState(false);
 
   if (account.status !== 'in') {
     return (
       <div className="flex flex-col items-start gap-3 rounded-2xl border border-dashed border-slate-300 p-5 sm:flex-row sm:items-center sm:justify-between dark:border-slate-700">
         <p className="text-sm text-slate-600 dark:text-slate-300">
-          Know the answer, or have the same question?
+          Have something to add? Join the conversation.
         </p>
         <SignedInAction
           account={account}
@@ -45,10 +46,15 @@ export function ReplyComposer({
     );
   }
 
-  const ready = body.trim().length >= FORUM_REPLY_MIN && !sending;
+  // Reply is never disabled for a reason it doesn't say: pressed too short, it says what it needs.
+  const short = body.trim().length < FORUM_REPLY_MIN;
   const submit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!ready) return;
+    if (sending) return;
+    if (short) {
+      setTried(true);
+      return;
+    }
     setSending(true);
     setError(null);
     try {
@@ -80,7 +86,9 @@ export function ReplyComposer({
         maxLength={FORUM_BODY_MAX}
         onChange={(e) => setBody(e.target.value)}
         rows={4}
-        placeholder="Share what worked for you. Plain text: paragraphs and line breaks are kept."
+        aria-invalid={tried && short ? true : undefined}
+        aria-describedby={tried && short ? `${id}-needs` : undefined}
+        placeholder="Add to the conversation. Plain text: paragraphs and line breaks are kept."
       />
       {error ? (
         <p role="alert" className="text-sm text-rose-600 dark:text-rose-400">
@@ -88,10 +96,10 @@ export function ReplyComposer({
         </p>
       ) : null}
       <div className="flex items-center justify-between gap-3">
-        <p className="text-xs text-slate-500 dark:text-slate-400">
-          Checked before anyone else sees it.
+        <p id={`${id}-needs`} className="text-xs font-medium text-rose-600 dark:text-rose-400">
+          {tried && short ? `Write at least ${FORUM_REPLY_MIN} characters.` : null}
         </p>
-        <Button type="submit" size="md" disabled={!ready} busy={sending}>
+        <Button type="submit" size="md" busy={sending}>
           {sending ? 'Posting...' : 'Reply'}
         </Button>
       </div>

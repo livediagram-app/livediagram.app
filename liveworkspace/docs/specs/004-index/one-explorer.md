@@ -4,7 +4,7 @@ The calls, types and tokens are in [one-explorer-contracts.md](one-explorer-cont
 [index-service.md](index-service.md).
 
 The four apps (livediagram, liveplanner, livedocuments, livedesign) share one Explorer over one index on
-liveworkspace.app: one set of folders, favourites, Trash, sharing, Recent, History and Inbox, so a folder can
+liveworkspace.app: one set of folders, Trash, sharing, Recent, History and Inbox, so a folder can
 hold a Canvas, a Plan, a Document and a Design, and an Explorer fix is made once. Each item's content lives
 in its own Durable Object in its app, not in D1. This replaced a copy of the Explorer per app, each over its
 own D1 database. It builds on the RFC "Move document content from D1 to
@@ -30,8 +30,8 @@ historical class name, `DocumentRoom`, which the migration from the historical l
                  liveworkspace.app
    ┌─────────────────────────────────────────────┐
    │ accounts   people, guests, teams, tokens    │
-   │ index      items, folders, favourites,      │
-   │            sharing, opens, Trash,           │
+   │ index      items, folders, sharing,         │
+   │            opens, Trash,                    │
    │            comments, actions, Inbox         │
    │ grants     short-lived "may open item X"    │
    │ explorer   the UI, as a package, and the    │
@@ -46,7 +46,7 @@ historical class name, `DocumentRoom`, which the migration from the historical l
 
 ### 1. The index is the only record of where an item is and who can reach it
 
-liveworkspace keeps one row per item: id, app, title, owner, team, folder, favourite, Trash
+liveworkspace keeps one row per item: id, app, title, owner, team, folder, Trash
 state, created, updated, last opened, and its share links and the people it is
 shared with. Folders are not per app: a folder can hold a Canvas, a Plan, a Document and a Design.
 
@@ -217,6 +217,13 @@ purpose) would otherwise be found again only by searching. The same in every app
 liveworkspace.app; the editors' panel keeps its own Home without it, and a first run shows its starting points in its
 place, as it does for the rest.
 
+**Each item shows once.** New, Most Used and Recent never show the same item twice: an item is in the first of the
+three it qualifies for, New first, then Most Used, then Recent. Something made yesterday and opened a dozen times
+since is in New only; once newer items push it out of New, it is in Most Used. Leaving an item out never shrinks a
+section that has more to show: each fills to its size from the next items in its own order. The same holds for This
+Browser's items merged in, under All Apps and on each app's Explorer, and on a phone's strips, which draw the same
+lists. Shared With You Recently is a different list (other people's items) and keeps its own.
+
 - **Which.** The live items in the person's own space (My Work) and in each team they are in, by when each was made
   (`createdAt`, then id), at most four. Filtered to one app, that app's: documents in livedocuments, canvases in
   livediagram, plans in liveplanner, designs in livedesign, Spaces in livehuddle. Under All Apps, and on
@@ -248,10 +255,13 @@ Directly under New, Home shows what the person **opened** lately as two sections
 and Spaces are (the same heading, size and spacing), with no title over the pair: **Most Used**, then **Recent**
 directly after it (`HomePane` in `@liveworkspace/explorer`).
 
-- **Most Used** is up to eight items the person opened in the last 14 days, the most opened first, each card's line
-  saying how often ("Opened 12 times"; "Used on 5 days" from an index that counts only days).
-- **Recent** is up to eight of the person's most recently opened items not among Most Used, newest first, each line
-  saying when ("Opened 2 hours ago"). This browser's opened items are merged in by last open
+- **Most Used** is up to eight items the person opened in the last 14 days and not in New, the most opened first,
+  each card's line saying how often ("Opened 12 times"; "Used on 5 days" from an index that counts only days). An item
+  New shows leaves it, and the next most used takes its place.
+- **Recent** is up to eight of the person's most recently opened items in neither New nor Most Used, newest first,
+  each line saying when ("Opened 2 hours ago"); the next most recent fill the places they leave. A most used item
+  past Most Used's eight (one New's items pushed out) is in Recent by its last open, like any other. This browser's
+  opened items are merged in by last open, those New shows left out
   ("This Browser on Home" below). **See More** sits at the right of Recent's heading, as See All does
   on Shared With You Recently, and opens the Recent view; Most Used has no link.
 - **A card** is Home's large card, the one New and Shared With You Recently draw: the item's thumbnail, its name and
@@ -267,8 +277,10 @@ directly after it (`HomePane` in `@liveworkspace/explorer`).
   heading, at most eight; Recent's strip ends with a **See More** tile into the Recent view, in place of the heading's
   link.
 - **The read.** Both sections come from one request: Recent's first page carrying the Most Used items beside it
-  (`used=8`, `limit=16`, [contracts](one-explorer-contracts.md#items)), folded with Home's other reads
-  (`jumpBackInLoader`, `data/homeReads.ts`), so two sections cost no more than one. What the person hid from Recent
+  (`used=12`, `limit=20`, [contracts](one-explorer-contracts.md#items)), folded with Home's other reads
+  (`homeOpenedLoader`, `data/homeReads.ts`), so two sections cost no more than one. It asks for New's four more of
+  each than it shows, so both still fill once New's items (at most four) and Most Used's (at most eight) leave them:
+  twelve most used for eight, and twenty recent for eight once up to twelve leave. What the person hid from Recent
   is left out of both.
 - **The editors' panel** keeps the pair too ("The editors' panel's Home" below).
 
@@ -310,7 +322,7 @@ panel keeps its own Home without it, and a first run shows its starting points i
 - **On livehuddle**, whose items are themselves Spaces, the section is titled **Workspaces** (and its button **Show
   All N Workspaces**), so "Spaces" never heads tiles that each count "3 spaces". The tiles, their links and their
   order are the same as everywhere else.
-- **The read.** One `GET /spaces/previews` ([contracts](one-explorer-contracts.md#folders-favourites-defaults)) per
+- **The read.** One `GET /spaces/previews` ([contracts](one-explorer-contracts.md#folders-and-defaults)) per
   filter, asked with Home's other reads and again whenever they are (an epoch), never per space.
 - **This Browser.** Where the Explorer reads this browser's store (an app's own address), This Browser's tile
   follows the teams while it holds anything ([This Browser, a Space](#this-browser-a-space)): the browser glyph on
@@ -353,7 +365,7 @@ Three groups, the same in every app's Explorer and on liveworkspace.app (`explor
   says so to a mouse or keyboard (never on touch); it shows where New Team's row did (signed in, with a
   `teamsHost`).
 - **More**: the **Library**, an accordion folded by default, whose rows are, in order, Recent,
-  Favourites, the host's Image Gallery and Shape Libraries (where it has them), **Archived** and the **Trash**; then
+  the host's Image Gallery and Shape Libraries (where it has them), **Archived** and the **Trash**; then
   the host's own rows (liveworkspace.app's This Browser link, below). The Trash keeps everything it does: its drop target (an item, a folder or a
   This Browser item dragged there), its waiting and over states, and the Trash view's This Browser group. The
   Library row carries no count. (Its Timeline row and New count were retired in November 2026; an old
@@ -362,7 +374,7 @@ Three groups, the same in every app's Explorer and on liveworkspace.app (`explor
 **The current view's rows are open.** Opening a view unfolds the rows that hold its own row, however it is reached
 (a sidebar click, a breadcrumb, an address, Back): My Work for My Work, a team's row for its page, a space and every
 folder down to it for a folder (that folder too, so its subfolders show), This Browser and its folders down to a local one, and the Library for any of its pages
-(Recent, Favourites, the Gallery, Shape Libraries, Archived, the Trash). It only ever adds to what is open,
+(Recent, the Gallery, Shape Libraries, Archived, the Trash). It only ever adds to what is open,
 and once per change of the rows a view needs, so a row the person folds stays folded until the view (or its place)
 changes (`rowsForView`, `useOpenCurrentRows`).
 
@@ -392,7 +404,7 @@ is its way round.
 
 **The editor's panel** has no accordion: its rail lists Home, Inbox and Shared With Me under Overview, the spaces
 (This Browser last among them, by the same rule as the sidebar's), then under More the Library's order
-(Favourites, the Library's pages, Archived, the Trash). Picking a view from a shared menu shows its section.
+(the Library's pages, Archived, the Trash). Picking a view from a shared menu shows its section.
 
 #### This Browser, a Space
 
@@ -471,7 +483,7 @@ closed until it is moved back (the index's side is
 [one-explorer-contracts.md "Archived"](one-explorer-contracts.md#items)). The same in every app's Explorer and on
 liveworkspace.app.
 
-- **The sidebar.** A row of the Library, after Recent, Favourites and the host's Library pages and before
+- **The sidebar.** A row of the Library, after Recent and the host's Library pages and before
   the Trash, with the archive-box icon (`ArchiveIcon`), for anyone the index knows (an account or a guest). It has no menu, can't be renamed or deleted, has no
   subfolders and takes no drops: a drag over it shows no target. Its address is `/explorer/archived`.
 - **The view.** The person's archived documents, every app's or the app's alone as the switch says, newest change
@@ -483,12 +495,12 @@ liveworkspace.app.
   Change Folder, for a document the person owns: their own, or a team document they made (the index's owner rule;
   other teammates don't see it), or one kept only in This Browser (below). Not for a folder or an item reached
   through a link. It moves at once, the card leaves where it was, and a toast says "Moved “<title>” to Archived."
-  with no Undo: what archiving deleted (its links, everyone's favourites) can't come back, and Change Folder is the way
+  with no Undo: what archiving deleted (its links, everyone's Recent rows) can't come back, and Change Folder is the way
   out. Change Folder offers the same as a space of its own.
-- **Gone from everywhere else.** Home (Most Used, Recent, the hero's count), Recent, Favourites, Shared With
+- **Gone from everywhere else.** Home (Most Used, Recent, the hero's count), Recent, Shared With
   Me, the Inbox, every folder and team, and the panel's lists leave it out. Archiving deletes its
-  favourites, Recent, Most Used and Inbox rows for everyone, so moving it out starts fresh: not a favourite, not in
-  Recent until it is opened again. Its share links (and password) are deleted for good; a team document leaves the
+  Recent, Most Used and Inbox rows for everyone, so moving it out starts fresh: not in Recent until it is opened
+  again. Its share links (and password) are deleted for good; a team document leaves the
   team for its owner's Archived, and its teammates no longer see it.
 - **Search.** Search results and the Search panel find archived documents (the person's own), each with an
   **Archived** badge (`ArchivedBadge`, slate, the archive-box icon) beside the title, so it reads as archived. A
@@ -497,7 +509,7 @@ liveworkspace.app.
   dialog, "“<title>” is archived", saying archived documents can't be opened or edited until they are moved out of
   Archived, with **Cancel** and **Change Folder** (which opens Change Folder on it). Its menu offers **Open** (the
   same dialog), **Rename**, **Change Folder**, and **Delete <Kind>** (to the Trash, from where a restore puts it back
-  in Archived); never Duplicate, Share, Favourites, Hide from Recent, History, Webhooks, an app's own verbs or Move
+  in Archived); never Duplicate, Share, Hide from Recent, History, Webhooks, an app's own verbs or Move
   to Archived. An editor address reached directly shows the editor's archived card (the contract's "Grants") with
   Change Folder, which comes back here as `/explorer/archived?move=<id>` and opens Change Folder on it.
 - **Moving one out.** Change Folder, or a drag onto My Work, a folder or a team in the sidebar: it lands there,
@@ -524,6 +536,24 @@ liveworkspace.app.
   list, and closed") as a space of its own that holds no folders: choosing it and Move Here archives the document.
   It is offered only where Move to Archived would be. For an archived document Archived is where it is now, so the
   dialog opens on the spaces with Archived chosen, and any other place moves it out.
+
+#### Favourites removed
+
+Favourites are gone (owner, 2026-11-16, Work Tracker 1155). There is no star anywhere: no **Add to Favourites** or
+**Remove from Favourites** in an item's menu, no star marker on a row, card or the panel's rows, no Favourites row
+in the sidebar's Library or the panel's rail, no Favourites view, filter or sort, and no `favourited` kind in
+History. What replaced them is what was always beside them: Home's Most Used and Recent, Search, and folders.
+
+- **Old addresses.** `/explorer/favourites` (with or without a lens) opens My Work, as the retired Unsorted address
+  does; on liveworkspace.app it is a retired address that replaces itself with `/explorer/all`
+  (`RETIRED_TARGETS`). A panel left on Favourites opens on My Work.
+- **The index.** `GET /favourites` and `PUT/DELETE /favourites/:itemId` are gone (404), `view=favourites` is refused
+  (400), and an item no longer carries `favourite`. The `favourites` table is left in place, read and written by
+  nothing but an account's close, which still deletes the person's rows; a later migration can drop it. Old
+  `favourited` events stay out of every History until they age out.
+- **This Browser.** A local record's `favourite` mark is no longer read or written; an older record keeping one is
+  harmless. Take Offline and Sync carry no star either way.
+- **Agents.** The MCP and CLI never had a favourite verb; the archive verbs no longer mention favourites.
 
 #### The Explorer on each app's address
 
@@ -688,10 +718,10 @@ first, among the index's), each a card with This Browser's picture (`LocalPrevie
 picture's top-left corner (so the line below has the card's width for when it was opened), when it was opened and This Browser's menu, so it never says "No <kind> yet" while this browser keeps opened ones. The
 open item is left out there, as the index's is.
 
-**The editors' panel: its size and the scrim.** On a desktop or tablet the popover is roomy: up to **54rem** (864 px) wide, kept 1rem
+**The editors' panel: its size and the scrim.** On a desktop or tablet the popover is roomy: up to **56rem** (896 px) wide, kept 1rem
 inside the window, and up to **45rem** (720 px) tall, kept on the canvas below its button and 24 px short of the
 canvas's bottom edge; the rail and pane fill what the card and footer leave, never shorter than 18rem. The rail is
-**13rem** (208 px) wide, so its names sit with room either side, and the pane keeps a 1rem margin. The pane's preview
+**15rem** (240 px) wide, so the current item's card fits at its top (owner, 2026-11-16: the picture across the card, the name with its ⋯ menu, "Updated …" and where it lives; no "Current" label) and its names sit with room either side, and the pane keeps a 1rem margin. The pane's preview
 cards (Most Used, Recent, folders) are compact, so more fit in a row: two across in a narrow pane, three once it is 24rem
 wide (a tablet, a wide phone's sheet and the desktop popover, whose pane is about 40rem), four once it is 44rem (the
 full-page Explorer): a card narrower than about 12rem cuts its "This Browser" chip's time short, so the popover keeps
@@ -720,6 +750,20 @@ and "Updated <relative time>". Its name renames it through the editor's own rena
 writes This Browser's list), and its ⋯ menu and right-click are This Browser's (**Open**, **Sync <Kind>** signed in,
 **Delete <Kind>** asked first, for good). Nothing about it is sent to the index. The editors read the index's copy
 through the package's `useOpenItem`.
+
+- **Which card.** The editor says whether the open item is kept only in this browser (its own offline check, the
+  same that draws its header's This Browser badge). While it is, the card is This Browser's, whatever the index
+  answered before (a Take Offline while the panel stays mounted), and the index is not asked for it. When This
+  Browser's list does not hold it yet (a fresh **/new** item before the list has heard of it), the card is drawn from
+  the editor's own title, with the **Browser Storage** pill and This Browser's menu all the same (Work Tracker 1165).
+  Signed in or out makes no difference: only Sync needs an account, and its row is there only then.
+- **Asking again.** The index is asked once per item, again when the item stops being local (a Sync in place), and
+  again on an opening of the panel while the index had nothing for it (a cloud item created since the last read).
+  An item the index answered is never read again for opening the panel.
+- **Its name follows the editor.** The card shows the editor's own title for the open item, so a rename from the
+  editor's header, a collaborator's or an agent's (which reach the editor through its live room) shows on the card at
+  once, while the panel is open or the next time it opens, with no read of the index (Work Tracker 1028). A rename
+  from the card or a menu lays the Explorer's overlay over it while the index takes it, as on every row.
 
 #### Opening on the Explorer
 
@@ -914,7 +958,7 @@ own routes or editor (Reply and Resolve on a thread, Mark Done on an action in t
 the app is always there.
 
 The event log moves too, and spans apps the same way: the index records what it changes itself (made,
-renamed, moved, trashed, restored, shared, favourited) and each app reports who edited what, kept 30 days
+renamed, moved, trashed, restored, shared) and each app reports who edited what, kept 30 days
 (`EVENT_RETENTION_MS`). It shows in one place: **History** on the menu of an item the person reaches directly
 (`library/HistoryDialog.tsx`, read a page at a time with `itemHistory`); an item reached through a share link has
 none, and a visitor's opens and copies show to the item's owner alone. The Timeline view, Home's What Happened and a
@@ -943,7 +987,7 @@ walks the index, asks each item's app for an export of its content, and keeps Dr
    code, in this folder.
 2. **Guests in accounts.** The guest identity and hand-off on liveworkspace.app, with the
    guest-to-account merge.
-3. **The index service** on liveworkspace.app: items, folders, favourites, sharing, opens,
+3. **The index service** on liveworkspace.app: items, folders, sharing, opens,
    Trash, comments, actions, the Inbox query, and grants. Starts empty.
 4. **`@liveworkspace/explorer`**, built against the index service and tried on liveworkspace.app.
 5. **liveplanner first** (it holds no data): `PlanRoom` holds content, creation registers in the

@@ -77,13 +77,11 @@ export function ZoomControls({
       {zoomHidden ? null : (
         <>
           {pinchOnly ? null : (
-            <HoverCard title="Zoom out" description={copy.out}>
-              <IconButton onClick={onZoomOut} label="Zoom out">
-                <Glyph size={14} units={14}>
-                  <line x1="3" y1="7" x2="11" y2="7" />
-                </Glyph>
-              </IconButton>
-            </HoverCard>
+            <IconButton onClick={onZoomOut} label="Zoom out">
+              <Glyph size={14} units={14}>
+                <line x1="3" y1="7" x2="11" y2="7" />
+              </Glyph>
+            </IconButton>
           )}
           <ZoomMenu
             zoom={zoom}
@@ -92,14 +90,12 @@ export function ZoomControls({
             range={zoomRange}
           />
           {pinchOnly ? null : (
-            <HoverCard title="Zoom in" description={copy.in}>
-              <IconButton onClick={onZoomIn} label="Zoom in">
-                <Glyph size={14} units={14}>
-                  <line x1="3" y1="7" x2="11" y2="7" />
-                  <line x1="7" y1="3" x2="7" y2="11" />
-                </Glyph>
-              </IconButton>
-            </HoverCard>
+            <IconButton onClick={onZoomIn} label="Zoom in">
+              <Glyph size={14} units={14}>
+                <line x1="3" y1="7" x2="11" y2="7" />
+                <line x1="7" y1="3" x2="7" y2="11" />
+              </Glyph>
+            </IconButton>
           )}
           {/* Mobile-only Fit: below `sm` the percentage button (whose click
           is Fit on desktop) is hidden, and hover popovers don't exist on

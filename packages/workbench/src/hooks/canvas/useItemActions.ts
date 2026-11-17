@@ -1,6 +1,6 @@
 // The editor's verbs on whole documents: open one, start a new one, copy the open one, delete the open one. Documents are
 // items of the central index (liveworkspace/docs/specs/004-index/one-explorer-contracts.md), so copy and delete go there; the index
-// asks this app's api to copy the content. Everything else a document's row offers (move, rename, favourite, the
+// asks this app's api to copy the content. Everything else a document's row offers (move, rename, the
 // Trash) is the shared Explorer's.
 //
 // Navigation is deliberately a hard `window.location.assign` rather

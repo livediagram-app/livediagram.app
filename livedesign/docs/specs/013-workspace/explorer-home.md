@@ -144,19 +144,21 @@ them. It follows the share-role rule trivially: it is the person's own Home, wit
 
 Most Used and Recent are a **[Within reach](../004-interface-design/within-reach.md)** set of the person's designs,
 drawn as two sections of Home, each under its own heading as New is, with no title over the pair: the **8 most used**
-and the **8 most recent**, no design twice ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md)
-"Most Used and Recent, on Home").
+and the **8 most recent**, no design twice, and none New above them already shows
+([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) "Each item shows once" and "Most
+Used and Recent, on Home"): a design is in the first of New, Most Used and Recent it qualifies for.
 
-- **Most Used**: the designs the person opened in the **last 14 days**, the most opened first. Every open counts
+- **Most Used**: the designs the person opened in the **last 14 days** and not in New, the most opened first. Every open counts
   ([Opens](#opens); at most one a minute), so a design used a lot over a few days ranks by how much it was used,
   not by how many days. A day on which they only edited the design or made it
   ([Making a design](#making-a-design)) counts as one open. A design not opened in 14 days drops off the list.
   Equal counts go to the one opened most recently.
-- **Recent**: the designs the person opened most recently that are not among Most Used, newest first by their last
+- **Recent**: the designs the person opened most recently that are in neither New nor Most Used, newest first by their last
   open (a design made and never opened by when it last changed). A design that is both shows under **Most Used**,
   and Recent takes the next most recent instead. This browser's designs are merged in by their last open.
-- **Making a design is a use** ([Making a design](#making-a-design)): what the person just made is in Most
-  Used and Recent at once, opened or not.
+- **Making a design is a use** ([Making a design](#making-a-design)): what the person just made counts towards
+  Most Used and Recent, opened or not, and shows in New while it is among the four made most recently; once newer
+  designs push it out of New, it is in Most Used (or Recent).
 - Only designs the person can open now: never one in the Trash, nor one whose share link has lapsed or whose
   team they have left.
 - A design stored only in this browser ([Offline Mode](../006-design/offline-mode.md)) takes part with this
@@ -173,7 +175,7 @@ and the **8 most recent**, no design twice ([one-explorer.md](../../../../livewo
     Explorer's relative time), or "Changed 2 hours ago" for one made and never opened
     (`jumpBackInLine` in `@liveworkspace/explorer`).
 - **Each card has the design's ⋯ menu**, the same menu its row and card carry everywhere else in the Explorer
-  (Rename, Duplicate, Move, Favourite, History, Delete and the rest; a design shared with you gets the
+  (Rename, Duplicate, Move, History, Delete and the rest; a design shared with you gets the
   shared-with-you menu; a This Browser design gets This Browser's), so it can be changed from Home without opening
   it. A ⋯ button on the card opens it, and a right-click anywhere on the card opens it too. Under a mouse the button
   shows while the card is hovered or has keyboard focus; on touch it always shows. It is a button beside the card's

@@ -118,13 +118,65 @@ describe('cardsCollabPush', () => {
         commentCount: 2,
         participantIds: ['user_a', 'user_b'],
         mentionedIds: ['user_c'],
+        mentionedBy: { user_c: { id: 'user_b', name: 'Bob', color: '#0f0' } },
         latestText: 'ping @Cat',
+        latestAuthorId: 'user_b',
         firstAt: 5,
         latestAt: 9,
       }),
     ]);
     // Mentioned, so known: the card's assignee is matched, the owner named as assigner.
     expect(push.actions.map((a) => [a.assigneeId, a.assignerId])).toEqual([['user_c', 'o']]);
+  });
+
+  // Work Tracker 1036: who mentioned someone stays theirs whoever replies after, the mentioned person included; a
+  // self-mention names no one.
+  it('keeps who mentioned each person through later replies', async () => {
+    const at = (authorId: string, createdAt: number, mentionIds?: string[]) => ({
+      authorId,
+      authorName: authorId.slice(5),
+      authorColor: '',
+      text: 'x',
+      createdAt,
+      ...(mentionIds ? { mentionIds } : {}),
+    });
+    const cards = [
+      await card('c1', {
+        threads: [
+          {
+            id: 'th-1',
+            title: 'T',
+            resolved: false,
+            comments: [
+              at('user_ada', 1, ['user_bea', 'user_ada']),
+              at('user_bea', 2),
+              at('user_cy', 3),
+              at('user_cy', 0, ['user_dee']),
+              at('user_ada', 4, ['user_dee']),
+              at('user_eve', 2, ['user_dee']),
+              // A comment from before authors were stamped.
+              {
+                authorName: 'Old',
+                authorColor: '',
+                text: 'x',
+                createdAt: 0,
+                mentionIds: ['user_fay'],
+              },
+            ],
+          },
+        ],
+      }),
+    ];
+    const { push } = await cardsCollabPush(cards, { people: [], hashOf, fallbackAssignerId: 'o' });
+    expect(push.threads[0]).toMatchObject({
+      latestAuthorId: 'user_ada',
+      mentionedBy: {
+        user_bea: { id: 'user_ada', name: 'ada' },
+        user_dee: { id: 'user_ada', name: 'ada' },
+        user_fay: { id: null, name: 'Old' },
+      },
+    });
+    expect(push.threads[0]!.mentionedBy).not.toHaveProperty('user_ada');
   });
 
   // The calendar feed (one-explorer-contracts.md "Calendar feeds"): a card's days ride its actions, never its threads.

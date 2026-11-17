@@ -35,8 +35,8 @@ pen widths, dock spacing) are named constants, tuned in place.
 
 ## Creating one
 
-- **New Canvas wizard:** choosing **Draw** on the wizard's Mode step ([New document
-  route](../007-editor/new-document-route.md) "Choosing a mode") makes a document with one tab in Draw mode, from the
+- **New Canvas:** `/new?mode=draw` ([New document
+  route](../007-editor/new-document-route.md) "No welcome step"), or choosing **Draw** on a new document's start, makes a document with one tab in Draw mode, from the
   **Blank Whiteboard** template (kind id `whiteboard`, a blank builder and a preview tile, `packages/templates`).
 - **Start Drawing:** an empty Draw tab offers its templates in **Start Drawing** ([Template
   starts](../007-editor/start-diagramming.md)): Blank Whiteboard first under Recommended, then **Visual Notes**,
@@ -145,7 +145,8 @@ pointing at the button that opened it, on the edge facing the dock, over its but
      - a **search field**, **focused as soon as the flyout opens**, hover
        included, so typing at once finds any shape of the palette's shape
        catalogue by name or keyword (flowchart, basic, block and every other
-       shape kind the palette offers; not icons, templates or components).
+       shape kind the palette offers; not icons, templates, components or
+       the C4 model's elements, whose colours plain ink would erase).
        Opening it on hover is the one place hover takes the keyboard focus:
        while the field holds it, letters type there rather than picking dock
        tools, and Escape or the flyout closing gives the focus back to the

@@ -67,7 +67,8 @@ const T0 = Date.UTC(2026, 10, 10, 12);
 
 const summary = (over: Partial<ForumTopicSummary> = {}): ForumTopicSummary => ({
   id: 'top1',
-  category: 'livediagram',
+  category: 'question',
+  app: 'livediagram.app',
   title: 'How do I curve a line?',
   excerpt: 'I tried dragging the middle.',
   author: ADA,
@@ -83,7 +84,8 @@ const summary = (over: Partial<ForumTopicSummary> = {}): ForumTopicSummary => ({
 const topic = (over: Partial<ForumTopic> = {}): ForumTopic => ({
   id: 'top1',
   topicId: null,
-  category: 'livediagram',
+  category: 'question',
+  app: 'livediagram.app',
   title: 'How do I curve a line?',
   body: 'I tried dragging the middle.\n\nNothing happened.',
   author: ADA,
@@ -158,9 +160,9 @@ describe('the Forum list', () => {
     const link = await screen.findByRole('link', { name: 'How do I curve a line?' });
     expect(link.getAttribute('href')).toBe('/community/forum/topic?id=top1');
     expect(calls[0]).toMatchObject({ url: `${API}/forum/topics`, method: 'GET', auth: null });
-    const ask = screen.getAllByRole('link', { name: 'Sign In to Ask' })[0]!;
+    const ask = screen.getAllByRole('link', { name: 'Sign In to Post' })[0]!;
     expect(ask.getAttribute('href')).toContain('community%2Fforum');
-    expect(screen.queryByRole('button', { name: /Ask a Question/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'New Post' })).toBeNull();
     expect(screen.getByRole('link', { name: 'Forum' }).getAttribute('aria-current')).toBe('page');
     expect(h.telemetry.opened).toHaveBeenCalledTimes(1);
   });
@@ -185,11 +187,11 @@ describe('the Forum list', () => {
     );
   });
 
-  it('says when there are no questions yet', async () => {
+  it('says when there are no posts yet', async () => {
     answer = () => Response.json({ topics: [], nextOffset: null });
     render(<ForumListPage />, { wrapper });
-    await screen.findByText('No questions yet.');
-    expect(screen.getByText('Be the first to ask.')).toBeTruthy();
+    await screen.findByText('No posts yet.');
+    expect(screen.getByText('Be the first to post.')).toBeTruthy();
   });
 
   it('says when the list fails, and Try Again reads it again', async () => {
@@ -224,15 +226,27 @@ describe('the Forum list', () => {
     expect(calls[0]!.auth).toBe('Bearer tok-1');
   });
 
-  it('asks a question in place, with the token and the author, then opens it', async () => {
+  it('writes a New Post in a popover, never disabled without a reason, then opens it', async () => {
     h.account = signedIn();
     render(<ForumListPage />, { wrapper });
-    fireEvent.click(await screen.findByRole('button', { name: 'Ask a Question' }));
-    const post = screen.getByRole('button', { name: 'Post Question' });
-    expect((post as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(await screen.findByRole('button', { name: 'New Post' }));
+    const dialog = screen.getByRole('dialog', { name: 'New Post' });
+    const post = within(dialog).getByRole('button', { name: 'Post' });
+    expect((post as HTMLButtonElement).disabled).toBe(false);
+    // Pressed empty: each field says what it needs, and the first takes focus. Nothing is sent.
+    fireEvent.click(post);
+    expect(screen.getByText('Add a title of at least 5 characters.')).toBeTruthy();
+    expect(screen.getByText('Write at least 10 characters.')).toBeTruthy();
+    expect(document.activeElement).toBe(screen.getByLabelText('Title'));
+    expect(calls.some((c) => c.method === 'POST')).toBe(false);
+    // A new post starts on the page's app; the picker shows every app and Any App.
+    expect(
+      within(dialog).getByRole('radio', { name: 'livediagram' }).getAttribute('aria-checked'),
+    ).toBe('true');
+    fireEvent.click(within(dialog).getByRole('radio', { name: 'liveplanner' }));
     fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Where is the grid?' } });
-    fireEvent.change(screen.getByLabelText('Category'), { target: { value: 'general' } });
-    fireEvent.change(screen.getByLabelText('Your Question'), {
+    fireEvent.change(screen.getByLabelText('Category'), { target: { value: 'tips' } });
+    fireEvent.change(screen.getByLabelText('Your Post'), {
       target: { value: 'I cannot find it anywhere.' },
     });
     answer = (call) =>
@@ -249,7 +263,8 @@ describe('the Forum list', () => {
       url: `${API}/forum/topics`,
       auth: 'Bearer tok-1',
       body: {
-        category: 'general',
+        category: 'tips',
+        app: 'liveplanner.app',
         title: 'Where is the grid?',
         body: 'I cannot find it anywhere.',
         author: { name: 'Ada', color: '#2563eb' },
@@ -258,30 +273,101 @@ describe('the Forum list', () => {
     expect(h.telemetry.postedTopic).toHaveBeenCalledTimes(1);
   });
 
-  it('says why a question was refused, and keeps it to try again', async () => {
+  it('says why a post was refused, and keeps it to try again', async () => {
     h.account = signedIn();
     render(<ForumListPage />, { wrapper });
-    fireEvent.click(await screen.findByRole('button', { name: 'Ask a Question' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'New Post' }));
     fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Where is the grid?' } });
-    fireEvent.change(screen.getByLabelText('Your Question'), {
+    fireEvent.change(screen.getByLabelText('Your Post'), {
       target: { value: 'I cannot find it anywhere.' },
     });
     answer = () => Response.json({ error: 'rate_limited' }, { status: 429 });
-    fireEvent.click(screen.getByRole('button', { name: 'Post Question' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Post' }));
     await screen.findByText(/posted a lot in the last hour/);
     expect(screen.getByLabelText<HTMLInputElement>('Title').value).toBe('Where is the grid?');
     expect(h.push).not.toHaveBeenCalled();
   });
+
+  it('filters by app in the address, each app by its logo', async () => {
+    render(<ForumListPage />, { wrapper });
+    await screen.findByRole('link', { name: 'How do I curve a line?' });
+    fireEvent.click(screen.getByRole('button', { name: 'Filter by App' }));
+    fireEvent.click(screen.getByRole('menuitemradio', { name: 'livedesign' }));
+    await waitFor(() => expect(calls.length).toBe(2));
+    expect(window.location.search).toBe('?app=livedesign');
+    expect(calls[1]!.url).toBe(`${API}/forum/topics?app=livedesign`);
+    expect(screen.getByRole('button', { name: 'App: livedesign' })).toBeTruthy();
+  });
 });
 
 describe('a Forum topic', () => {
-  const read = (t: ForumTopic, replies: ForumReply[]) => () => Response.json({ topic: t, replies });
+  // The topic, and an empty list for its sidebar's Popular Posts.
+  const read = (t: ForumTopic, replies: ForumReply[]) => (call: Call) =>
+    call.url.includes('/forum/topics?')
+      ? Response.json({ topics: [], nextOffset: null })
+      : Response.json({ topic: t, replies });
+  // The replies' cards, apart from the sidebar's rows.
+  const replyCards = () =>
+    within(screen.getByRole('region', { name: /Repl/ })).getAllByRole('listitem');
 
+  it("sits in the Forum's hero, with a back bar, Popular Posts and the categories beside it", async () => {
+    answer = (call) =>
+      call.url.includes('/forum/topics?')
+        ? Response.json({
+            topics: [
+              summary(),
+              summary({ id: 'pop1', title: 'Snap to the grid', category: 'tips', replyCount: 6 }),
+            ],
+            nextOffset: null,
+          })
+        : Response.json({ topic: topic({ category: 'showcase' }), replies: [] });
+    render(<ForumTopicPage />, { wrapper });
+    await screen.findByRole('heading', { level: 1, name: 'How do I curve a line?' });
+    // The same hero as the list, its heading a plain line: the topic's title is the page's h1.
+    expect(screen.getByText('Community Forum').tagName).toBe('P');
+    expect(screen.getByRole('link', { name: 'Forum' }).getAttribute('aria-current')).toBe('page');
+    // The shared back bar, the topic's category as its chip.
+    const back = screen.getByRole('button', { name: /All Posts/ });
+    expect(within(back).getByText('Show & Tell')).toBeTruthy();
+    fireEvent.click(back);
+    expect(h.push).toHaveBeenCalledWith('/community/forum');
+    // Popular Posts, read anonymously and leaving this topic out.
+    const popular = await screen.findByRole('region', { name: 'Popular Posts' });
+    expect(calls.find((c) => c.url.includes('sort=popular'))).toMatchObject({ auth: null });
+    expect(
+      within(popular)
+        .getAllByRole('link')
+        .map((a) => a.textContent),
+    ).toEqual(['See All', expect.stringContaining('Snap to the grid')]);
+    const categories = screen.getByRole('navigation', { name: 'Browse Categories' });
+    const showcase = within(categories).getByRole('link', { name: /Show & Tell/ });
+    expect(showcase.getAttribute('href')).toBe('/community/forum?category=showcase');
+    expect(showcase.getAttribute('aria-current')).toBe('true');
+  });
+
+  it('marks no answer on a post that is not a Question', async () => {
+    h.account = signedIn();
+    answer = read(topic({ own: true, category: 'tips' }), [reply('r1')]);
+    render(<ForumTopicPage />, { wrapper });
+    await screen.findByText('Reply r1');
+    expect(screen.queryByRole('button', { name: /Mark as Answer/ })).toBeNull();
+  });
+
+  it('says what a reply needs rather than disabling Reply', async () => {
+    h.account = signedIn('Cy');
+    answer = read(topic(), []);
+    render(<ForumTopicPage />, { wrapper });
+    const send = await screen.findByRole('button', { name: 'Reply' });
+    expect((send as HTMLButtonElement).disabled).toBe(false);
+    fireEvent.click(send);
+    expect(screen.getByText('Write at least 2 characters.')).toBeTruthy();
+    expect(calls.some((c) => c.method === 'POST')).toBe(false);
+  });
   it('reads signed out: the answer first, counts without toggles, Report, and Sign In to Reply', async () => {
     answer = read(topic({ answerId: 'r2' }), [reply('r1'), reply('r2')]);
     render(<ForumTopicPage />, { wrapper });
     await screen.findByRole('heading', { level: 1, name: 'How do I curve a line?' });
-    const cards = screen.getAllByRole('listitem');
+    const cards = replyCards();
     expect(within(cards[0]!).getByText('Reply r2')).toBeTruthy();
     expect(within(cards[0]!).getByText('Answer')).toBeTruthy();
     expect(screen.getByRole('heading', { name: '2 Replies' })).toBeTruthy();
@@ -316,9 +402,7 @@ describe('a Forum topic', () => {
     await screen.findByText('Reply r2');
     answer = () => Response.json({ answerId: 'r2' });
     fireEvent.click(screen.getAllByRole('button', { name: /Mark as Answer/ })[1]!);
-    await waitFor(() =>
-      expect(within(screen.getAllByRole('listitem')[0]!).getByText('Reply r2')).toBeTruthy(),
-    );
+    await waitFor(() => expect(within(replyCards()[0]!).getByText('Reply r2')).toBeTruthy());
     const sent = calls.at(-1);
     expect(sent).toMatchObject({
       url: `${API}/forum/topics/top1/answer`,
@@ -416,7 +500,7 @@ describe('a Forum topic', () => {
     render(<ForumTopicPage />, { wrapper });
     await screen.findByText('Reply r2');
     fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
-    fireEvent.change(screen.getByLabelText('Your Question', { selector: 'textarea[aria-label]' }), {
+    fireEvent.change(screen.getByLabelText('Your Post', { selector: 'textarea[aria-label]' }), {
       target: { value: 'Clearer words.' },
     });
     // The service's edit answers the topic without its answer.
@@ -426,7 +510,7 @@ describe('a Forum topic', () => {
       });
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     await screen.findByText('Clearer words.');
-    expect(within(screen.getAllByRole('listitem')[0]!).getByText('Answer')).toBeTruthy();
+    expect(within(replyCards()[0]!).getByText('Answer')).toBeTruthy();
     expect(screen.getByRole('button', { name: /Unmark Answer/ })).toBeTruthy();
   });
 
@@ -461,7 +545,7 @@ describe('a Forum topic', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
     answer = () => new Response(null, { status: 204 });
     fireEvent.click(
-      within(screen.getByRole('group', { name: 'Delete this question?' })).getByRole('button', {
+      within(screen.getByRole('group', { name: 'Delete this post?' })).getByRole('button', {
         name: 'Delete',
       }),
     );

@@ -36,6 +36,7 @@ import { handleDocuments } from './routes/documents';
 import { handleEvents } from './routes/events';
 import { handleFolders } from './routes/folders';
 import { handleImages } from './routes/images';
+import { handleWalkthroughs } from './routes/walkthroughs';
 import { handleParticipants } from './routes/participants';
 import { handlePreferences } from './routes/preferences';
 import { handleShare } from './routes/share';
@@ -282,6 +283,8 @@ async function routeApiRequest(
       return await handleCommunity(ctx);
     case 'images':
       return await handleImages(ctx);
+    case 'walkthroughs':
+      return await handleWalkthroughs(ctx);
     case 'documents':
       return await handleDocuments(ctx);
     case 'library':

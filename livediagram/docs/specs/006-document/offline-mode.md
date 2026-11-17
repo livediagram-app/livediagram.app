@@ -20,13 +20,13 @@ Offline Mode is **on by default for a guest and off by default for a signed-in p
 ([Save Locations → The default depends on who is creating](save-locations.md#the-default-depends-on-who-is-creating)).
 Nobody is asked when creating a document; the default decides:
 
-- The **New Canvas** wizard ([Dedicated route for new-document creation](../007-editor/new-document-route.md#one-step-wizard))
-  asks only for a mode and creates the document in the default location for who is creating
+- **New Canvas** (`/new`, [Dedicated route for new-document creation](../007-editor/new-document-route.md#no-welcome-step))
+  asks nothing and creates the document in the default location for who is creating
   ([Save Locations](save-locations.md)): **This Browser** for a guest, **livediagram** for a signed-in person.
   Either moves later: **Take Offline** moves a cloud document into This Browser, **Sync Canvas** puts one in This Browser on
   livediagram.
-- The links that create without the wizard (`/new?template=`, `/new?blank=1`,
-  [Dedicated route for new-document creation → Start Blank](../007-editor/new-document-route.md#start-blank-skip-the-wizard))
+- The links that name what to create (`/new?template=`, `/new?blank=1`,
+  [Dedicated route for new-document creation → Start Blank](../007-editor/new-document-route.md#start-blank-and-template-links))
   take the same default, so a guest following a template from the landing page
   gets a document in This Browser.
 - The location only changes _where the document is stored_; the mode, templates and theme work identically.
@@ -473,7 +473,7 @@ dialog's gate and in the move prompt after signing in.
   anywhere); the per-tab byte cap surfaces a hard failure to the caller.
 - **Everything on the record travels**, not just tabs: the slide deck
   ([Presentation mode](../012-collaboration/presentation-mode.md)), the created date, the folder (kept only when it is one of the
-  caller's own personal folders, else the root of My Work) and the star ([Favourite documents](../013-workspace/favourites.md)). The
+  caller's own personal folders, else the root of My Work). (No star: Favourites were removed, [favourites.md](../013-workspace/favourites.md).) The
   local copy is deleted next, so anything the create leaves behind is gone.
 - **A refused folder lands at the root, on the sync's say-so.** The create carries the folder as
   its placement ([Folders → Placement on create](../013-workspace/folders.md)),
@@ -519,10 +519,8 @@ confirmation:
   as `data:` URIs BEFORE the server copy is deleted (the deletion would make
   them "unused" and the retention reaper would eventually take the bytes); an
   incomplete embed aborts the conversion and the document stays on the server.
-- **The deck, star and personal folder come along** for the same reason: the
-  server row they live on is about to be deleted. The star is read from the account's
-  favourites; if that read fails the conversion aborts before anything is written,
-  rather than taking the document as unstarred and losing the star with the row. A team document's folder is a
+- **The deck and personal folder come along** for the same reason: the
+  server row they live on is about to be deleted. A team document's folder is a
   team folder, which has no place in the personal tree, so it lands at the root of My Work.
 - **Shared tabs fork.** A tab also linked into other documents
   ([Tab ↔ document many-to-many](tab-document-many-to-many.md)) is not taken
@@ -602,7 +600,7 @@ workbench, and never both at once: this offer goes first).
     A `keep` tab the set-aside copy never had is added at the end. A record left with no tabs is deleted from This
     Browser (everything in it moved), and a record that is gone (synced to the cloud, purged) is left gone: its
     parts still move. The record's Plan fields (`items`, `itemsRev`, `itemsNextKey`, `itemTypes`, `sheets`) leave
-    it, since they moved with the liveplanner part; the name, folder, star, Trash state and dates stay as they are.
+    it, since they moved with the liveplanner part; the name, folder, Trash state and dates stay as they are.
 - **Not Now** is remembered for this browser (`livediagram:v2:retired-parts-dismissed`), and the dialog is not
   shown on load again. The set-aside copy stays. The same dialog is always one click away in Settings › Account ›
   Your Data, **Pages and Boards in This Browser** ("Pages, boards and designs from this browser that now belong
@@ -628,7 +626,7 @@ Mode is implemented **behind that boundary** so the editor is unaware of the
 target:
 
 - **One store, bound per editor.** The store's operations (the write chain, the one-transaction updates, the
-  reads, the Trash and favourite rules, Sync Canvas's delete-if-unchanged) are one copy every editor shares
+  reads, the Trash rules, Sync Canvas's delete-if-unchanged) are one copy every editor shares
   (`@liveworkspace/workbench/lib/offline/offline-store-core`). `lib/offline/offline-store.ts` binds it with its
   IndexedDB backend, whose database and store names and versions stay this editor's own, and keeps its own
   extra writes.

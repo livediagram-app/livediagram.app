@@ -4,7 +4,8 @@ import { pv } from '@liveworkspace/template-previews/motion';
 import { Pop, PopDot } from '@liveworkspace/template-previews/story-parts';
 
 // Group 27: the Work Tracker 1075 batch (docs/specs/008-canvas/canvas-and-palette.md "Templates"): C4 System
-// Context, C4 Container Diagram, Architecture Decision Record, Sprint Planning and Interview Synthesis, each drawn
+// Context, C4 Container Diagram (and the C4 Component Diagram after them), Architecture Decision Record, Sprint
+// Planning and Interview Synthesis, each drawn
 // small as it opens, with a hover story of what the template is for. Static SVG preview tiles, one branch per
 // TemplateKind; TemplatePreview chains the groups with ??. Pure drawing: no builder or data import.
 
@@ -19,6 +20,7 @@ const C4 = {
   system: ['rgb(17 104 189)', 'rgb(11 77 145)'],
   external: ['rgb(139 148 158)', 'rgb(107 114 128)'],
   store: ['rgb(56 140 220)', 'rgb(17 104 189)'],
+  component: ['rgb(133 187 240)', 'rgb(93 130 168)'],
 } as const;
 
 // The retro kit's hues: a pale panel, its border, its deep header and its sticky.
@@ -236,6 +238,48 @@ export function templatePreviewGroup27(kind: TemplateKind): ReactElement | null 
           <Travel x={25.5} y={21} dx={5.5} dy={4} at={900} fill="rgb(37 99 235)" />
           <Travel x={34} y={32} dx={-8.5} dy={5} at={1600} fill="rgb(37 99 235)" />
           <Travel x={41} y={28.5} dx={28} dy={0} at={2300} fill="rgb(37 99 235)" />
+        </svg>
+      );
+    }
+    case 'c4-component': {
+      // The calling container above the dashed container boundary; inside it the API over Pricing, Checkout and the
+      // Payment client, the repository and the publisher under Checkout; a grey payments provider outside to the
+      // right and the two stores below. Hover story: the order runs down the middle, gateway to the events topic.
+      return (
+        <svg width="80" height="50" viewBox="0 0 80 50" aria-hidden>
+          <Header />
+          <C4Card x={27} y={9} w={14} h={5} tone="store" />
+          <rect
+            x="8"
+            y="17"
+            width="52"
+            height="25"
+            rx="1.4"
+            fill="none"
+            stroke={LINE}
+            strokeWidth="0.5"
+            strokeDasharray="1.4 0.8"
+          />
+          <rect x="10" y="40" width="6" height="0.9" rx="0.45" fill={LINE} />
+          <C4Card x={27} y={19.5} w={14} h={5} tone="component" />
+          <C4Card x={11} y={27} w={14} h={5} tone="component" />
+          <C4Card x={27} y={27} w={14} h={5} tone="component" />
+          <C4Card x={43} y={27} w={14} h={5} tone="component" />
+          <C4Card x={11} y={34.5} w={14} h={5} tone="component" />
+          <C4Card x={27} y={34.5} w={14} h={5} tone="component" />
+          <C4Card x={64} y={27} w={13} h={5} tone="external" />
+          <C4Card x={11} y={44.5} w={14} h={4.5} tone="store" />
+          <C4Card x={27} y={44.5} w={14} h={4.5} tone="store" />
+          <path
+            d="M34 14 L34 19.5 M34 24.5 L34 27 M27 29.5 L25 29.5 M41 29.5 L43 29.5 M57 29.5 L64 29.5 M34 32 L34 34.5 M29 32 L22 34.5 M18 39.5 L18 44.5 M34 39.5 L34 44.5"
+            stroke={LINE}
+            strokeWidth="0.45"
+            fill="none"
+          />
+          <Travel x={34} y={14} dx={0} dy={5.5} at={200} fill="rgb(37 99 235)" />
+          <Travel x={34} y={24.5} dx={0} dy={2.5} at={900} fill="rgb(37 99 235)" />
+          <Travel x={34} y={32} dx={0} dy={2.5} at={1600} fill="rgb(37 99 235)" />
+          <Travel x={34} y={39.5} dx={0} dy={5} at={2300} fill="rgb(37 99 235)" />
         </svg>
       );
     }

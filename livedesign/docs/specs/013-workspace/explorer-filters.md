@@ -22,19 +22,19 @@ Two different things narrow a list, and they never mix:
   token. A scoped view lists what lives in its scope.
 - The **lens** narrows whatever the current view lists.
 
-An **aggregate view** lists designs from every place at once: **Recent**, **Favourites**, **Search results** and
+An **aggregate view** lists designs from every place at once: **Recent**, **Search results** and
 **Shared With Me**. Only aggregate views have no scope to narrow by, so only they show the **Space** chip and apply the
 `space:` token. Every other design view is a **scoped view**.
 
 ## Views
 
-| View                                                     | Route                                                                              | Lens                              |
-| -------------------------------------------------------- | ---------------------------------------------------------------------------------- | --------------------------------- |
-| My Work, and each of its folders                         | `/explorer/all`, `/explorer/folder?id=<id>`                                        | Scoped                            |
-| A team, at its root or in one of its folders             | `/explorer/team?id=<id>`                                                           | Scoped                            |
-| This Browser                                             | `/explorer/offline`                                                                | Scoped                            |
-| Recent, Favourites, Search results, Shared With Me       | `/explorer/recent`, `/explorer/favourites`, `/explorer/search`, `/explorer/shared` | Aggregate                         |
-| Home, Inbox, Timeline, the Library pages, Trash, Invites | Their own                                                                          | None: typing opens Search results |
+| View                                                     | Route                                                      | Lens                              |
+| -------------------------------------------------------- | ---------------------------------------------------------- | --------------------------------- |
+| My Work, and each of its folders                         | `/explorer/all`, `/explorer/folder?id=<id>`                | Scoped                            |
+| A team, at its root or in one of its folders             | `/explorer/team?id=<id>`                                   | Scoped                            |
+| This Browser                                             | `/explorer/offline`                                        | Scoped                            |
+| Recent, Search results, Shared With Me                   | `/explorer/recent`, `/explorer/search`, `/explorer/shared` | Aggregate                         |
+| Home, Inbox, Timeline, the Library pages, Trash, Invites | Their own                                                  | None: typing opens Search results |
 
 - **Search results** (`/explorer/search`) lists every design the reader can open: their own (My Work and this
   browser), every team's they have joined, and Shared With Me, newest first, with no cap. It has no sidebar row; its
@@ -90,7 +90,7 @@ Each dimension is a closed list of values. The interface says what a value means
   token names a team by id; every label shows the team's **name**, never the id.
 - A row that cannot answer a dimension (a Shared With Me row carries no provenance or mode) matches no
   value of it.
-- **More filters** (favourited, sharing) join later behind a "More filters" disclosure.
+- **More filters** (sharing) join later behind a "More filters" disclosure.
 
 ## Matching
 
@@ -214,7 +214,7 @@ Keyboard:
 | Failed         | "Couldn’t load designs" and **Try again**; the lens stays as it was                                  |
 
 - **Failed** replaces the list when the view's last read failed: the reader's own designs for their own views,
-  Recent, Favourites and Search results; the shared list for Shared With Me. A failed read never reads as Empty.
+  Recent and Search results; the shared list for Shared With Me. A failed read never reads as Empty.
   When only the shared list failed, the other views still list what loaded, and a notice says the designs shared
   with the reader could not load.
 - The live region speaks only on design views, and only after the lens changes.

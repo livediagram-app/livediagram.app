@@ -34,7 +34,7 @@ The footer button, the synced taken record, Settings › Getting Started and one
 
 ## Where it appears
 
-- **The footer's Start Tour button.** The one way in is the button in the editor's bottom bar, immediately left of
+- **The footer's Get Started button.** The one way in is the button in the editor's bottom bar, immediately left of
   Settings ([Editor tours](../007-editor/editor-tour.md) "Where it appears"). It never starts, prompts or offers
   itself on its own: there is no banner. A press opens the [start panel](#starting-a-tour); nothing runs until a
   track is picked there.
@@ -325,7 +325,7 @@ settings) is an Editor's to use.
 
 The editor tours' funnel, with its own tokens, so the tours chart apart:
 
-- **Offer**: `UI` · `Opened` · `PlanTourOffer` the first time the Start Tour button shows the Boards or Sheets track
+- **Offer**: `UI` · `Opened` · `PlanTourOffer` the first time the Get Started button shows the Boards or Sheets track
   in a page load; `UI` · `Opened` · `DashboardTourOffer` for the Dashboards track.
 - **Start panel**: `UI` · `Opened` · `PlanTourStart` on a press of the button (or a Settings rerun) on a board or
   Sheet; `UI` · `Opened` · `DashboardTourStart` on a dashboard.

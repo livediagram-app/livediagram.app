@@ -6,7 +6,7 @@
 // the same size, the latest opened of the rest, See More at its heading's right), each a section headed as New is,
 // then Spaces (HomeSpaces: My Work and each team, each a tile into its list), and Shared With You Recently. On a phone
 // each of Most Used and Recent is its own strip of up to eight under its own heading. A section with nothing in it is
-// left out. An item kept only in this browser is one card among Recent's (LocalCard): the same frame, size, menu and
+// left out. Each item shows once, in the first of New, Most Used and Recent it qualifies for (home-sections.ts). An item kept only in this browser is one card among Recent's (LocalCard): the same frame, size, menu and
 // drag, with the This Browser badge on its line and This Browser's own verbs. With the hero hidden, Home takes the
 // ordinary page header. Three requests, each one small page: Recent carries Most Used and New beside it (the index's
 // `used` and `newest`), so its two sections cost one; the spaces' previews; and Shared. The cards are HomeCards.tsx's.
@@ -15,10 +15,9 @@ import { useEffect, useMemo, useState } from 'react';
 import type { ShownItem } from '../data/overlay';
 import { useItemList } from '../data/useItemList';
 import {
-  isMostUsed,
   JUMP_BACK_IN_PER_GROUP,
   homeEmptyLine,
-  jumpBackInLoader,
+  homeOpenedLoader,
   sharedRecentlyLoader,
 } from '../data/viewLists';
 import { EmptyState } from '@liveworkspace/ui';
@@ -27,12 +26,13 @@ import { useExplorer } from './context';
 import { PaneHeader } from './PaneHeader';
 import { HomeFailed, HomeSection } from './HomeSection';
 import { CardGroup, GridSkeleton, HomeCardsProvider, Strip, StripSkeleton } from './HomeCards';
-import { HomeNew } from './HomeNew';
+import { HomeNew, useHomeNew } from './HomeNew';
+import { homeSections } from './home-sections';
 import { HomeSpaces } from './HomeSpaces';
 import type { ThisBrowserItem } from '../this-browser';
 import { useFirstRun } from '../welcome/context';
 import { HomeWelcome } from '../welcome/HomeWelcome';
-import { mergeOpened, useThisBrowserItems } from './ThisBrowser';
+import { useThisBrowserItems } from './ThisBrowser';
 
 export const HOME_SHARED = 4;
 // Recent with this browser's own items merged in.
@@ -66,7 +66,7 @@ function useWide(): boolean {
 
 export function HomePane({ hero }: { hero: boolean }) {
   const { client, app, filter, overlay, epoch, onCreate, onHome } = useExplorer();
-  const recentLoad = useMemo(() => jumpBackInLoader(client, app, filter), [client, app, filter]);
+  const recentLoad = useMemo(() => homeOpenedLoader(client, app, filter), [client, app, filter]);
   const sharedLoad = useMemo(
     () => sharedRecentlyLoader(client, app, filter, HOME_SHARED),
     [client, app, filter],
@@ -91,16 +91,12 @@ export function HomePane({ hero }: { hero: boolean }) {
   // can read it (the Explorer on the app's own address).
   const { live: local } = useThisBrowserItems();
   const localOpened = useMemo(() => local.filter((i) => i.lastOpenedAt !== null), [local]);
-  const recentRest = useMemo(
-    () =>
-      mergeOpened(
-        recent.items.filter((i) => !isMostUsed(i)),
-        localOpened,
-        HOME_RECENT_MAX,
-      ),
-    [recent.items, localOpened],
+  // New first, then Most Used, then Recent: each item in the first it qualifies for, each section still full.
+  const made = useHomeNew();
+  const { mostUsed, recent: recentRest } = useMemo(
+    () => homeSections(recent.items, made.shown, localOpened, HOME_RECENT_MAX),
+    [recent.items, made.shown, localOpened],
   );
-  const mostUsed = useMemo(() => recent.items.filter(isMostUsed), [recent.items]);
   const empty = !recent.loading && mostUsed.length === 0 && recentRest.length === 0;
   const { firstRun } = useFirstRun();
   // A failed read says so once, under Recent's heading, with Try again, never "nothing yet".
@@ -137,7 +133,7 @@ export function HomePane({ hero }: { hero: boolean }) {
       )}
       <HomeCardsProvider>
         <div className="flex flex-col gap-10">
-          <HomeNew wide={wide} showApp={showApp} />
+          <HomeNew wide={wide} showApp={showApp} made={made} />
           {/* Most Used: left out once the read finds none, and while Home could not load (Recent says so). */}
           {loading || (!failed && mostUsed.length > 0) ? (
             <HomeSection

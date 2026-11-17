@@ -385,6 +385,9 @@ importers:
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
+      '@liveworkspace/capture':
+        specifier: workspace:*
+        version: link:../../../packages/capture
       '@liveworkspace/community-ui':
         specifier: workspace:*
         version: link:../../../packages/community-ui
@@ -436,6 +439,9 @@ importers:
       '@liveworkspace/vector-export':
         specifier: workspace:*
         version: link:../../../packages/vector-export
+      '@liveworkspace/walkthrough':
+        specifier: workspace:*
+        version: link:../../../packages/walkthrough
       '@liveworkspace/workbench':
         specifier: workspace:*
         version: link:../../../packages/workbench
@@ -1498,6 +1504,9 @@ importers:
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
+      '@liveworkspace/capture':
+        specifier: workspace:*
+        version: link:../../../packages/capture
       '@liveworkspace/community-ui':
         specifier: workspace:*
         version: link:../../../packages/community-ui
@@ -1549,6 +1558,9 @@ importers:
       '@liveworkspace/vector-export':
         specifier: workspace:*
         version: link:../../../packages/vector-export
+      '@liveworkspace/walkthrough':
+        specifier: workspace:*
+        version: link:../../../packages/walkthrough
       '@liveworkspace/workbench':
         specifier: workspace:*
         version: link:../../../packages/workbench
@@ -2704,6 +2716,9 @@ importers:
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
+      '@liveworkspace/capture':
+        specifier: workspace:*
+        version: link:../../../packages/capture
       '@liveworkspace/community-ui':
         specifier: workspace:^
         version: link:../../../packages/community-ui
@@ -2755,6 +2770,9 @@ importers:
       '@liveworkspace/vector-export':
         specifier: workspace:*
         version: link:../../../packages/vector-export
+      '@liveworkspace/walkthrough':
+        specifier: workspace:*
+        version: link:../../../packages/walkthrough
       '@liveworkspace/workbench':
         specifier: workspace:*
         version: link:../../../packages/workbench
@@ -3817,6 +3835,9 @@ importers:
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
+      '@liveworkspace/capture':
+        specifier: workspace:*
+        version: link:../../../packages/capture
       '@liveworkspace/community-ui':
         specifier: workspace:*
         version: link:../../../packages/community-ui
@@ -4729,9 +4750,6 @@ importers:
       '@liveworkspace/snapshots':
         specifier: workspace:*
         version: link:../../../packages/snapshots
-      '@liveworkspace/suggestions':
-        specifier: workspace:*
-        version: link:../../../packages/suggestions
       '@liveworkspace/telemetry':
         specifier: workspace:*
         version: link:../../../packages/telemetry
@@ -4875,6 +4893,9 @@ importers:
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
+      '@liveworkspace/capture':
+        specifier: workspace:*
+        version: link:../../../packages/capture
       '@liveworkspace/community-ui':
         specifier: workspace:^
         version: link:../../../packages/community-ui
@@ -4911,9 +4932,6 @@ importers:
       '@liveworkspace/style-guards':
         specifier: workspace:*
         version: link:../../../packages/style-guards
-      '@liveworkspace/suggestions':
-        specifier: workspace:*
-        version: link:../../../packages/suggestions
       '@liveworkspace/telemetry-client':
         specifier: workspace:*
         version: link:../../../packages/telemetry-client
@@ -4926,6 +4944,9 @@ importers:
       '@liveworkspace/vector-export':
         specifier: workspace:*
         version: link:../../../packages/vector-export
+      '@liveworkspace/walkthrough':
+        specifier: workspace:*
+        version: link:../../../packages/walkthrough
       '@liveworkspace/workbench':
         specifier: workspace:*
         version: link:../../../packages/workbench
@@ -5403,9 +5424,6 @@ importers:
       '@liveworkspace/community':
         specifier: workspace:^
         version: link:../../../packages/community
-      '@liveworkspace/suggestions':
-        specifier: workspace:*
-        version: link:../../../packages/suggestions
       '@liveworkspace/telemetry':
         specifier: workspace:*
         version: link:../../../packages/telemetry
@@ -6922,6 +6940,52 @@ importers:
         specifier: ^5.0.1
         version: 5.1.0(@types/node@26.6.6)(@vitest/coverage-v8@5.1.0)(jsdom@31.0.0(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
 
+  packages/capture:
+    dependencies:
+      '@liveworkspace/ui':
+        specifier: workspace:*
+        version: link:../ui
+    devDependencies:
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../oxlint-config
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../vitest-config
+      '@testing-library/react':
+        specifier: ^16.3.3
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@types/node':
+        specifier: ^26.6.6
+        version: 26.6.6
+      '@types/react':
+        specifier: ^19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: ^19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      '@vitest/coverage-v8':
+        specifier: ^5.1.0
+        version: 5.1.0(vitest@5.1.0)
+      jsdom:
+        specifier: ^31.0.0
+        version: 31.0.0(@noble/hashes@2.4.0)
+      oxlint:
+        specifier: ^1.93.0
+        version: 1.93.0(oxlint-tsgolint@7.0.2007)
+      react:
+        specifier: ^19.3.1
+        version: 19.3.1
+      react-dom:
+        specifier: ^19.3.1
+        version: 19.3.1(react@19.3.1)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.1.0(@types/node@26.6.6)(@vitest/coverage-v8@5.1.0)(jsdom@31.0.0(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
   packages/cli-kit:
     dependencies:
       '@liveworkspace/api-client':
@@ -8356,6 +8420,61 @@ importers:
         specifier: 4.14.0
         version: 4.14.0
     devDependencies:
+      vitest:
+        specifier: ^5.0.1
+        version: 5.1.0(@types/node@26.6.6)(@vitest/coverage-v8@5.1.0)(jsdom@31.0.0(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
+  packages/walkthrough:
+    dependencies:
+      '@liveworkspace/capture':
+        specifier: workspace:*
+        version: link:../capture
+      '@liveworkspace/media':
+        specifier: workspace:*
+        version: link:../media
+      '@liveworkspace/ui':
+        specifier: workspace:*
+        version: link:../ui
+      '@liveworkspace/workbench':
+        specifier: workspace:*
+        version: link:../workbench
+    devDependencies:
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../oxlint-config
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../vitest-config
+      '@testing-library/react':
+        specifier: ^16.3.3
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@types/node':
+        specifier: ^26.6.6
+        version: 26.6.6
+      '@types/react':
+        specifier: ^19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: ^19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      '@vitest/coverage-v8':
+        specifier: ^5.1.0
+        version: 5.1.0(vitest@5.1.0)
+      jsdom:
+        specifier: ^31.0.0
+        version: 31.0.0(@noble/hashes@2.4.0)
+      oxlint:
+        specifier: ^1.93.0
+        version: 1.93.0(oxlint-tsgolint@7.0.2007)
+      react:
+        specifier: ^19.3.1
+        version: 19.3.1
+      react-dom:
+        specifier: ^19.3.1
+        version: 19.3.1(react@19.3.1)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
       vitest:
         specifier: ^5.0.1
         version: 5.1.0(@types/node@26.6.6)(@vitest/coverage-v8@5.1.0)(jsdom@31.0.0(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))

@@ -15,8 +15,8 @@ Follow the references below only as needed; never upfront.
 - ./live-image-share.md - when working on Live image share link: Share-link-scoped `<img>`-able SVG at `/api/share/<code>/image.svg`, liveworkspace's preview of the design ([Design SVG snapshots](../006-design/design-snapshots.md))
 - ./share-link-previews.md - when working on what a pasted share link previews as in Slack, Teams, iMessage and the like: the design's name and a 1200 x 630 PNG share card (liveworkspace's previews, `/api/previews/share/<code>/card` and `/image.png`), the live worker's head rewrite, and the brand card everywhere else
 - ./hide-from-recent.md - when working on Hide a design from Recent: a per-person choice on liveworkspace's index, shown by the shared Explorer's menus
-- ./recent-folder-chip.md - when working on the location chip on Recent, Favourites, Search and Shared With Me rows (the shared Explorer's `FolderChip`)
-- ./favourites.md - when working on Favourite designs: per-person stars on liveworkspace's index, the Favourites view, and an Offline Mode design's star on its offline record
+- ./recent-folder-chip.md - when working on the location chip on Recent, Search and Shared With Me rows (the shared Explorer's `FolderChip`)
+- ./favourites.md - Favourites, removed (2026-11-16): what an old address or a local star does now
 - ./explorer-details-view.md - when working on the Explorer's Details view: the shared Explorer's sortable table (type, comments, access, size, dates), its resting-hover preview, and where livedesign's numbers come from (the summary each design pushes to the index)
 - ./folder-content-previews.md - when working on Folder content previews: the shared Explorer's folder mosaic, drawn from the designs' previews
 - ./history.md - when working on an item's History: what the index records, the `edited` events livedesign reports, the History dialog, and the retired Timeline, What Happened and Team Activity

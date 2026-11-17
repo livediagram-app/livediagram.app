@@ -6,24 +6,30 @@ inside a category that has to be opened first.
 
 ## What it holds
 
-- At the left, what attaches to the element, in this order:
-  - **Assign Action**, reading **View Action** once the element has one ([Assigned actions](../012-collaboration/assigned-actions.md)).
-  - **Add Comment**, reading **View Comments** once it has a thread ([Comment pins](../012-collaboration/comment-pin.md)).
-  - **Add Link**, reading **Edit Link** once it has one. Not on a link card or a video, whose link is their own
-    **Link** category's.
-  - **Add Note**, reading **Edit Note** once it has one.
-- At the right, apart from them, **Clear Styles**: the Quick Style panel's own Clear Styles
+The attachments it used to hold at its left (Action, Comment, Link, Note) are the **Resources** category now
+([Resources](#resources)).
+
+- At its right, **Clear Styles**: the Quick Style panel's own Clear Styles
   ([Quick style panel](quick-style-panel.md)), the element's quick-style colours, width and line style back to the
   theme's. It shows while the element takes a quick style, whether or not the panel is on screen.
-- A button the element already uses (it has an action, a thread, a link or a note) is tinted in the brand colour and
-  pressed (`aria-pressed`), so the bar also says what the element carries.
 - Each button has a Tooltip naming it, runs its action and closes the menu, as the tiles it replaced did.
 
-The four attachments are offered only on boxed elements, as before; arrows take none. With nothing to offer (an
-arrow that takes no quick style) the bar is not drawn.
+## Resources
 
-There are no **Collaborate** (Assign Action, Add Comment) or **Resources** (Add Link, Add Note) categories at the foot
-of the menu: the quick bar is their one place in the menu.
+What attaches to the element sits in one **Resources** category, always the menu's last, opening in a side flyout as
+**Appearance** does. Its rows are laid out as Appearance's **Finish** list is: a bordered list, one row each, its glyph, its
+name and a quiet line under it. In this order, whichever this app offers:
+
+- **Assign Action** ("What a click on it does"), reading **View Action** once the element has one.
+- **Add Comment** ("A thread to talk it over"), reading **View Comments** once it has a thread.
+- **Add Link** ("A page or tab it opens"), reading **Edit Link** once it has one. Not on a link card or a video, whose
+  link is their own **Link** category's.
+- **Add Note** ("Words kept behind it"), reading **Edit Note** once it has one.
+
+A row the element already has carries a brand dot at its right. Each row runs its action and closes the menu. They are
+offered only on boxed elements; arrows take none, and with none to offer the category is not drawn. Why: four glyph
+buttons in a row read as noise above every menu, and their meaning hid in tooltips; named rows with a line each say
+what they are at a glance, in the layout the menu already uses for a list of choices.
 
 ## Share roles
 
@@ -67,3 +73,17 @@ Every editor (livediagram, liveplanner, livedocuments, livedesign) opens the sam
   press running the latest; the bar shows it when the store's targets include the element. Its telemetry is the
   panel's (`Element` / `Changed` / `QuickClearStyles`).
 - Tests: `ElementMenuQuickBar.test.tsx`, `EditorContextMenu.plan-attachments.test.tsx`.
+
+## Kind tools (owner, 2026-11-16)
+
+An element kind's own verbs are not on the floating selection toolbar, which keeps the same buttons on every element.
+They sit in a bar of glyph buttons at the top of the element menu, above its first category: a mind node's Add Child and
+Add Sibling, a flowchart step's Add Step, Add Branch, Step Type and Lane, a relationship's cardinality. Each names
+itself in a hover card; a verb closes the menu as it runs, and a dropdown closes it on its pick. An element with none
+has no bar. Tab and Enter still grow a mind map, and the quick-connect ring still offers Add Child and Add Sibling.
+
+**Save to Library** moved here too, off the selection toolbar: at the bar's right end, its place there setting it apart
+(no rule). Since every element can be saved, the bar shows on every element an Editor opens the menu on.
+
+**Clear Styles** sits last, right of Save to Library, on an element whose look the Quick Style panel can reset. In the
+Quick Style panel's Tools row the kind's buttons carry their names beside their glyphs (there is room for words there).

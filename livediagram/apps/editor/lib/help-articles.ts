@@ -98,7 +98,6 @@ export const HELP_ARTICLES = {
   myWork: 'explorer/my-work',
   recent: 'explorer/recent',
   teamSpaces: 'explorer/team-spaces',
-  explorerPage: 'explorer/explorer-page',
   dataElements: 'palette/tools/data-elements',
   sankeyDiagram: 'palette/build/sankey-diagram',
   // The round-two element tours' closing cards (docs/specs/007-editor/element-tours.md).
@@ -357,10 +356,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   teamSpaces: {
     title: 'Learn about team spaces',
     description: 'A team’s shared library of canvases and folders.',
-  },
-  explorerPage: {
-    title: 'Learn about the Explorer',
-    description: 'The library every liveworkspace app shares: sections, views and search.',
   },
   dataElements: {
     title: 'Learn about data elements',

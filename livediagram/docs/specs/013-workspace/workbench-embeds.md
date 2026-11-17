@@ -132,9 +132,9 @@ The bullets above are the document scope. A **workspace** session is confined di
 
 - **Act as the person, in their workspace.** It reaches what the person reaches in the Explorer: their library and
   folders, the documents shared with them, their teams' shared documents as a member, the Inbox, the Timeline,
-  Favourites, Recent, Search, the Trash, their image gallery and shape libraries; and every document in
+  Recent, Search, the Trash, their image gallery and shape libraries; and every document in
   them, opened in the frame as the document scope opens one.
-- **Everything the Explorer does.** Create, rename, move, copy, favourite, share (links, roles, password, expiry),
+- **Everything the Explorer does.** Create, rename, move, copy, share (links, roles, password, expiry),
   trash, restore, and create, rename, move and delete folders, at the person's own access to each.
 - **Never Community.** Publishing a document to [Community](../025-community/community.md) makes it public, and only
   the owner's own signed-in browser does that: a token cannot publish, so neither can a frame. **Open in livediagram**

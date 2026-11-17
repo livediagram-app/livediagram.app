@@ -17,7 +17,7 @@ browser. This spec, like the code and the `/explorer/offline` address, still say
 
 ## Views
 
-Its views are Home, My Work, Recent, Favourites, Shared With Me, Trash, Inbox, Timeline, Invites, Search,
+Its views are Home, My Work, Recent, Shared With Me, Trash, Inbox, Timeline, Invites, Search,
 a folder, a team's library and the Library's pages, at `/explorer/<view>` ([its README](../../../../packages/explorer/README.md)
 "Views"). There is no Unsorted view: an item in no folder sits at the root of My Work, or of its
 team, which lists it. Older addresses still lead somewhere, so links already out there keep working: `/explorer/profile` opens

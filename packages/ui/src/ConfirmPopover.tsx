@@ -17,9 +17,9 @@ import { isComposingKey } from './composing-key';
 // Portal-rendered (so its `position: fixed` is relative to the viewport,
 // not a transformed ancestor like the tab menu) and tagged with
 // `data-confirm-popover` so a host menu's outside-click handler can
-// exclude it. Esc cancels, Enter confirms (on a focused button, Enter presses that button). Sits at `--z-modal` (above the
-// `--z-overlay` context menus that spawn it) so the "are you sure?" prompt
-// is never hidden behind the menu it was opened from. A press anywhere but
+// exclude it. Esc cancels, Enter confirms (on a focused button, Enter presses that button). Sits just above `--z-popover`
+// (so above the `--z-overlay` context menus, the modals and the anchored popovers, such as a Tools panel, that spawn
+// it) so the "are you sure?" prompt is never hidden behind the menu or panel it was opened from. A press anywhere but
 // the popover, its anchor or a popover opened above it cancels, and Escape
 // hands focus back to the anchor. Every editor's and the Explorer's.
 
@@ -175,7 +175,7 @@ export function ConfirmPopover({
         aria-describedby={splitConfirmMessage(message).detail ? `${id}-detail` : undefined}
         data-confirm-popover
         onPointerDown={(e) => e.stopPropagation()}
-        className="fixed z-[var(--z-modal)] flex animate-fade-in flex-col gap-2 rounded-lg border border-slate-200 bg-white p-3 shadow-xl shadow-slate-900/15 dark:border-slate-700 dark:bg-slate-900"
+        className="fixed z-[calc(var(--z-popover)+2)] flex animate-fade-in flex-col gap-2 rounded-lg border border-slate-200 bg-white p-3 shadow-xl shadow-slate-900/15 dark:border-slate-700 dark:bg-slate-900"
         style={{ left: layout?.left ?? -9999, top: layout?.top ?? -9999, width: WIDTH }}
       >
         {/* Arrow: a rotated square poking out of the side facing the anchor. */}

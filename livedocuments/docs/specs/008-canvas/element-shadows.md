@@ -37,7 +37,7 @@ them visually).
 ## Presets + sliders
 
 The **Shadow** accordion sits after **Border** in the element context menu's
-style group (and in the multi-select Style flyout, applying selection-wide
+style group (and in the multi-select Appearance flyout, applying selection-wide
 like Border does). Contents:
 
 - **Preset tiles**: `None`, `Soft`, `Drop`, `Lifted`, `Hard`

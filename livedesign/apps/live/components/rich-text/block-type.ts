@@ -73,7 +73,9 @@ export function blockTypeApplies(type: BlockType): {
  * the selection starts.
  */
 export function listStyleOfText(text: string): ListStyle {
-  const first = text.split('\n')[0] ?? '';
+  // The first line only: splitting the whole text ran on every keystroke of a long label.
+  const end = text.indexOf('\n');
+  const first = end < 0 ? text : text.slice(0, end);
   if (first.startsWith('• ')) return 'bullet';
   if (/^\d+\. /.test(first)) return 'numbered';
   return 'none';

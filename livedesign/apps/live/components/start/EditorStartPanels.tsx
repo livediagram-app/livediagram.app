@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import { useEditorContext } from '@/app/design/[id]/EditorContext';
 import { closeStartForBlank } from '@/components/start/close-start-for-blank';
 import { StartAgainTray } from '@/components/start/StartAgainTray';
+import { ExampleContentTray } from '@/components/start/ExampleContentTray';
 import { useTemplatePickMove } from '@/components/start/useTemplatePickMove';
 import { useTemplateStartShown } from '@/components/start/useTemplateStartShown';
 
@@ -50,5 +51,8 @@ export function EditorStartPanels() {
         tabName={activeTab.name}
       />
     </>
-  ) : null;
+  ) : (
+    // A template's example content, once it has landed: Clear Example Content or Keep It.
+    <ExampleContentTray />
+  );
 }

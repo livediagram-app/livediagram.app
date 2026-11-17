@@ -13,6 +13,7 @@ import {
   setReceptionistPerson,
   showReceptionistTopic,
 } from '@/lib/receptionist/receptionist-store';
+import { Space3DOverlayProvider } from '@/components/canvas/space-3d/Space3DOverlay';
 import { ReceptionistBubble } from './ReceptionistBubble';
 
 const track = vi.hoisted(() => vi.fn());
@@ -168,6 +169,46 @@ describe('ReceptionistBubble', () => {
     const dialog = screen.getByRole('dialog', { name: 'Receptionist' });
     expect(dialog.style.top).toBe('180px');
     expect((dialog.firstElementChild as HTMLElement).style.transform).toBe('translateX(56px)');
+    spy.mockRestore();
+  });
+
+  // docs/specs/008-canvas/3d-view.md "What it shows": in 3D the card stands over his head, drawn in the overlay.
+  it('goes back over his head when the 3D view turns on, and into the overlay, never under his feet', () => {
+    const root = document.createElement('div');
+    root.setAttribute('data-canvas-root', '');
+    document.body.appendChild(root);
+    const spy = vi
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockImplementation(function (this: HTMLElement) {
+        if (this === root) return { left: 0, right: 400, top: 0, bottom: 800 } as DOMRect;
+        const shift = Number(/translateX\((-?[\d.]+)px\)/.exec(this.style.transform)?.[1] ?? 0);
+        return {
+          left: -40 + shift,
+          right: 300 + shift,
+          top: 10,
+          bottom: 210,
+          width: 340,
+          height: 200,
+        } as DOMRect;
+      });
+    openReceptionist('welcome');
+    const card = (on: boolean, node: HTMLElement | null = null) => (
+      <Space3DOverlayProvider value={{ on, node }}>
+        <ReceptionistBubble head={{ x: 100, y: 100 }} feet={{ x: 100, y: 180 }} zoom={1} />
+      </Space3DOverlayProvider>
+    );
+    const { rerender } = render(card(false), { container: root });
+    const dialog = () => screen.getByRole('dialog', { name: 'Receptionist' });
+    // Flat, with no room above him, it flips under his feet.
+    expect(dialog().style.top).toBe('180px');
+    // The 3D view turns on: placed again, over his head.
+    rerender(card(true));
+    expect(dialog().style.top).toBe('100px');
+    // With the overlay drawn, the card is in it, outside the world.
+    const overlay = root.appendChild(document.createElement('div'));
+    rerender(card(true, overlay));
+    expect(overlay.contains(dialog())).toBe(true);
+    expect(dialog().style.top).toBe('100px');
     spy.mockRestore();
   });
 });

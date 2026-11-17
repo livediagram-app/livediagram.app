@@ -153,8 +153,9 @@ liveworkspace's media service, as [Image fields](item-types.md#image-fields) are
   holds **Open**, **Download** (saves it under its name), **Set as Cover** (or **Remove Cover** on the cover) and
   **Remove**. A Viewer, and a link visitor who only reads, sees the rows and opens and downloads them; the menu
   then holds only Open and Download.
-- **Removing** takes the picture off the card (one undo step, as any field change); its bytes stay in the
-  uploader's gallery, which the Explorer's Image Gallery lists, until the media service's sweep (below).
+- **Removing** takes the picture off the card (one undo step, as any field change). When nothing else uses it, it
+  leaves storage, and the uploader's Image Gallery, 15 minutes later ("Removed pictures", below); an undo within
+  those 15 minutes brings it back whole.
 - **The cover**: **Set as Cover** makes that picture the card's cover (the one before stops being it). On a
   Detailed card whose type's Display holds **Cover Image** ([Card display](item-types.md#card-display)), the cover
   is drawn across the top of the card, edge to edge, 120 px tall and cropped to fill. Removing the cover's picture
@@ -171,9 +172,9 @@ liveworkspace's media service, as [Image fields](item-types.md#image-fields) are
   the plan never held does, so it shows nothing about cards the link can't reach. The same picture on a card the tab
   shows and on one it doesn't is served, since the visitor already sees it.
 - **The Trash and deleting for good**: a trashed card keeps its pictures (Restore brings them back as they were). A
-  card deleted for good, or a plan purged, no longer places them: the plan reports the pictures its cards hold to
-  the media service ("Images in use", below), and the service's daily sweep deletes a picture nothing in any
-  app has placed for 30 days.
+  card deleted for good no longer places them, and they leave storage as a removed picture does ("Removed
+  pictures", below). A plan purged reports that it places none ("Images in use", below), and the service's daily
+  sweep deletes a picture nothing in any app has placed for 30 days.
 - **Copies**: duplicating a card, or a whole plan, carries the attachment ids: no bytes are copied. In the same
   plan the copy shows them to everyone; a copied plan carries the source's grants for them too, so it shows them
   to its readers as the original does, and reports them in use under its own id (as an Image field's,
@@ -212,6 +213,37 @@ The sweep can never take a picture a plan still holds, whether or not that plan 
   Browser plan (an Image field there, which uploads with no `p`), is never swept.
 - **Past the cap.** A plan holding more pictures than one report carries (500) sends nothing and logs it, so no
   reference is dropped; it reports again once back under.
+
+### Removed pictures
+
+A picture taken off a card leaves storage once nothing else uses it, rather than waiting for the media service's
+sweep (owner, 2026-11-15, Work Tracker 1044). It holds for every way a card changes: the editor (Remove, Replace, a
+cleared Image field, one picture taken out of a Several Images field or Attachments), a rule's **Clear Field**
+([automations.md](automations.md#actions)), an agent's write through the MCP or the CLI, an import, a revert and a
+card deleted for good.
+
+- **Noted with the write.** The plan's own triggers on its cards note each picture a write took off (an Attachments
+  entry, or an Image field value the plan holds a grant for), in the write's own transaction, so no path can skip
+  them. A picture taken off, put back and taken off again starts its wait afresh.
+- **A 15-minute grace.** Each waits 15 minutes from the plan's next report of its pictures ("Images in use"), in a
+  list the plan keeps in its own storage and its alarm works through, so the wait survives the plan's object
+  restarting. An undo or a re-add within it puts the id back on a card, and the picture stays. An undo after it
+  brings back a card whose picture is gone (it shows "This image can't be shown", with Replace and Remove).
+- **Never while anything here still names it.** Once the wait is over the plan drops any picture still named by one
+  of its cards (the Trash included, since Restore needs it), a tab, an agent's change it could still revert, or a
+  snapshot it could still revert to. It asks the media service to release the rest
+  (the release route, with the plan's id, [media.md](../../../../liveworkspace/docs/specs/006-media/media.md)
+  "Releases"). The service deletes a picture only when it was uploaded for this plan and no reference in any app names
+  it, its own included, so a copied plan, or another app's file that places it, keeps it.
+- **Nothing lands mid-release.** The plan checks a picture and asks the service with its doors shut: a write that
+  puts the picture back on a card waits until the answer is in (at most 5 seconds; a slower answer counts as a
+  failure, and the plan asks nothing more until its next wake), so the service never deletes a picture a card holds
+  again.
+- **Kept is final, failures retry.** An answer either way ends the wait; a release the service can't answer tries
+  again a minute later, doubling to an hour, and gives up after 12 tries. The daily sweep stays the backstop for
+  anything kept. At most 20 releases are asked a wake.
+- **This Browser plans** release nothing: the server holds no record of them, and their pictures were uploaded for
+  no plan.
 
 ## Item types
 
@@ -855,48 +887,9 @@ card and read one card at a time).
 
 ## Finding a card
 
-- **Cards** is a button in Plan mode's bottom-right cluster, after the Trash in one strip with Card Types
-  (buttons in one frame, as Undo and Redo are, each opening its own panel); it opens a popover of every card
-  in the project that is neither archived nor in the Trash, 44 rem wide on desktop (the screen less a margin on
-  a phone) with a list 32 rem tall (less on a short screen) whatever it holds, so the panel keeps its size as a search
-  narrows it, of every card type the catalogue has (custom types
-  included, each drawn with its own glyph and colour) and of a type it has lost (drawn as the fallback "Item"),
-  newest change first. On a phone, where the strip folds into **More Card Tools**, its **Find a Card** row opens
-  the same popover (a press on a row of that menu reaches only the menu, never the canvas under it, which used
-  to take the focus and shut the menu before the row could act, so none of its three rows opened anything).
-- A search field (focused on open with a mouse, not on a phone) matches a card's number (`12` or `#12`), title,
-  description or card type name ("person" finds every Person card), ignoring case.
-- **All Cards** (the wider: all the room **Not on a Board**, on one line at its own width, leaves) and **Not on a Board** switch between every card and the cards no board in the project shows,
-  on any tab: those with no status, those whose status no column holds (the strays a renamed or removed column
-  left behind), and those whose status is a column only on boards whose Card Types leave the card's type out. A
-  card is on a board when some board (not an All Cards or Archive board) names its status as a column and shows
-  its type. Each carries a count.
-- **Filters**: inside the search box itself ([Search and filters](../004-interface-design/search-and-filters.md)), a
-  chip per field filter before the words ("State: Done", "Assignee: No assignee"), each with a cross, and **Add
-  Filter** at the box's right edge, the picker Card Search uses ([Plan views](plan-views.md#card-search)): a field the
-  listed cards' types offer (Card Type always among them), then one of its values among them with its count, so no
-  filter leaves nothing. Every filter must match; Backspace in an empty box takes the last off, and the box's
-  **Clear Search** clears the words and the filters. They are the person's own while the panel is open, never saved. Filters matching nothing: **No cards match these filters** (below).
-- At most 200 tiles are drawn, with "Showing 200 of N. Search to narrow them down." beneath.
-- The cards sit in a **grid of tiles**, two across on a desktop (one on a phone), 8 px apart, so the panel shows
-  about twice as many as a list of full-width rows did and no row is a long, mostly empty strip. Tiles in a row
-  share its height. Each tile is the card as a board draws it at **Detailed** size, laid out as its type's
-  Display says, so a card looks the same in the panel as on a board (named for assistive technology "Open
-  {Title}, {Type} #{n}"). Its state is not shown: a state filter narrows by it. Choosing a tile (anywhere but
-  its ⋯) closes the popover and opens the card in the item panel.
-- **The tile's ⋯** sits inside the card, at the end of its header row (after the priority), never beside the
-  card: with a mouse it shows while the pointer is over the tile or the ⋯ has focus, and stays while its menu is
-  open; on a touch screen it always shows. It opens the card's menu (the shared anchored menu, icon-left rows):
-  **Open** and, where the plan has an address to give, **Copy Card Link** (as the item panel's ⋯), then, for
-  someone who may retire cards (an Editor, as the panel's Trash), a separator and **Move to Trash**, which puts
-  that card in the Trash (restorable from there, and announced "#{n} moved to the Trash") without leaving the
-  list. A Participant or Viewer gets Open and Copy Card Link only.
-- Empty: the shared empty state (as the Trash's: an icon badge, a title and a line), filling the list's height:
-  **No cards yet** ("Add one from a board, or drag one in from the palette."); a search matching nothing, **No cards
-  match “<words>”** ("Try another word, a number or a card type."); filters matching nothing, **No cards match these
-  filters** ("Remove a filter, or clear the search, to see more."); no strays, **No cards off a board** ("Every card
-  here is on a board."). The copy follows [Empty states](../004-interface-design/empty-states.md).
-- Opening it is tracked as `Plan · Opened · CardFinder`.
+The editor's **Search** (in the footer's Tools, and ⌘K) finds a card by its number, title or description, as it finds
+tabs and elements. The **Cards** button and its Find a Card panel are gone (owner, 2026-11-16), and with them the
+plan strip's Find row on a phone; the strip holds the Trash and Card Types.
 
 ## Handing a card to an AI assistant
 

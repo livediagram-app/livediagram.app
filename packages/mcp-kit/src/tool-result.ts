@@ -97,21 +97,60 @@ export function toolAnnotations({ behaviour, idempotent, openWorld }: ToolHints)
   };
 }
 
+// The most text one tool answer carries: Claude's own cap on a tool result (claude.ai and Claude Desktop take about
+// 150,000 characters; https://claude.com/docs/connectors/building). A larger answer would be cut short by the client
+// anyway, so it becomes a refusal saying how to ask for less. Pictures are not counted: their size has its own budget
+// (preview-budget.ts).
+export const TOOL_RESULT_MAX_CHARS = 150_000;
+
+function resultChars(result: unknown): number {
+  if (typeof result !== 'object' || result === null) return 0;
+  const content = (result as { content?: unknown }).content;
+  if (!Array.isArray(content)) return 0;
+  let chars = 0;
+  for (const block of content) {
+    const text = (block as { text?: unknown } | null)?.text;
+    if (typeof text === 'string') chars += text.length;
+  }
+  return chars;
+}
+
+/** An answer over TOOL_RESULT_MAX_CHARS, as the refusal that replaces it. */
+export function oversizeRefusal(chars: number): ToolResult {
+  return errorResult(
+    `This answer would be ${chars.toLocaleString('en-GB')} characters, over the ${TOOL_RESULT_MAX_CHARS.toLocaleString('en-GB')} ` +
+      'a tool answer can carry. Ask for less: one tab, a shorter view, or a smaller limit.',
+  );
+}
+
+/** A failure the caller cannot fix, in words: an api that answered 5xx, or anything else that went wrong. */
+export function failureWords(err: unknown): string {
+  const status = (err as { status?: unknown } | null)?.status;
+  if (typeof status === 'number' && status >= 500)
+    return `The service behind this tool did not finish the call (HTTP ${status}). Try again in a moment.`;
+  const detail = err instanceof Error && err.message ? ` (${err.message})` : '';
+  return `This tool failed unexpectedly${detail}. Try again in a moment.`;
+}
+
 // A mistake the caller can fix is a tool error that says so, never a thrown protocol error ("Errors that teach"): a
-// named input refusal, or an api 4xx in words (the product's refusalOf). A 5xx or anything else still throws, and is
-// reported as Error·Api underneath.
+// named input refusal, or an api 4xx in words (the product's refusalOf). A 5xx or anything else still throws (and is
+// reported as Error·Api underneath), but in words (failureWords), never a bare "api 500: Internal Server Error". An
+// answer too large for a client becomes a refusal (TOOL_RESULT_MAX_CHARS).
 export async function answerFixable(
   run: () => unknown,
   refusalOf: (err: unknown) => { message: string } | null,
 ): Promise<unknown> {
+  let result: unknown;
   try {
-    return await run();
+    result = await run();
   } catch (err) {
     if (err instanceof ToolInputError) return errorResult(err.message);
     const refusal = refusalOf(err);
     if (refusal) return errorResult(refusal.message);
-    throw err;
+    throw new Error(failureWords(err), { cause: err });
   }
+  const chars = resultChars(result);
+  return chars > TOOL_RESULT_MAX_CHARS ? oversizeRefusal(chars) : result;
 }
 
 export function isErrorResult(result: unknown): boolean {

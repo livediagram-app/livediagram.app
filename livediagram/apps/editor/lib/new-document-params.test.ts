@@ -91,7 +91,7 @@ describe('placementParamsFromSearch', () => {
   });
 });
 
-describe('wizardStartsBlank (docs/specs/007-editor/new-document-route.md "Start Blank after a mode")', () => {
+describe('wizardStartsBlank (docs/specs/007-editor/new-document-route.md "No welcome step")', () => {
   it('reads ?start=blank, beside any other param', () => {
     expect(wizardStartsBlank('?start=blank')).toBe(true);
     expect(wizardStartsBlank('?start=blank&via=Home.HeaderBlank')).toBe(true);

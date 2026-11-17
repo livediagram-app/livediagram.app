@@ -10,6 +10,7 @@ import { lucideSparkles } from '@liveworkspace/icons/lucide';
 import {
   PaletteTray,
   PaletteTrayAction,
+  pillPlace,
   usePaletteStripBox,
   useToolbarBox,
 } from '@liveworkspace/workbench/components/chrome/PaletteTray';
@@ -22,20 +23,8 @@ import type { TemplateStartMode } from './start-template-items';
 
 const SparklesGlyph = lucideGlyph(lucideSparkles, 15);
 
-// The pill's room from the dock it stands clear of, px.
-const DOCK_GAP = 10;
-
-// Where the pill goes without a strip: under a dock in the top half of the screen, over one in the bottom half, and
-// with no dock, below the top chrome.
-export function pillPlace(
-  dock: { top: number; bottom: number } | null,
-  viewportHeight: number,
-): { top: number } | { bottom: number } {
-  if (!dock) return { top: 80 };
-  return dock.top < viewportHeight / 2
-    ? { top: dock.bottom + DOCK_GAP }
-    : { bottom: viewportHeight - dock.top + DOCK_GAP };
-}
+// Where the pill goes without a strip (pillPlace, shared with the template example tray).
+export { pillPlace };
 
 export function StartAgainTray({
   mode,

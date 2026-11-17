@@ -294,7 +294,7 @@ cycle, a mind map) in the template look with no coordinates: template-sized boxe
 exit level beside it, loops and skipped ranks routed round the boxes, flowchart steps toned by their "shape" (a
 stadium starts or ends, a diamond decides; a node's "role" is a person's job title, for an org chart), node tones and
 icons, and a title, subtitle and shape key when given. Its styles: flow (layered), tree (hierarchy),
-mindmap, lanes (each group a swimlane) and cycle (a ring). A node's label is its heading (up to 40 characters,
+mindmap, lanes (each group a swimlane), cycle (a ring) and c4 (a level of the C4 model). A node's label is its heading (up to 40 characters,
 longer ones shortened with the full text kept in the node's note). Raw "elements" are for content a graph cannot
 express (charts, tables, stickies, free placement). Either way:
 use a unique "id" per element, make nodes "shape" elements (a labelled box) NOT
@@ -422,6 +422,28 @@ const graphField = z
               'style "storm" only: the workshop note this node is (default domain-event). Its label is the ' +
                 'note\u2019s text, kept whole.',
             ),
+          c4Kind: z
+            .enum(['person', 'system', 'container', 'component', 'database', 'external'])
+            .optional()
+            .describe(
+              'style "c4" only: the C4 element this node is: person, system (the software system in focus), ' +
+                'container, component, database (a cylinder) or external (an external system). Unset: an actor ' +
+                'shape is a person, a cylinder a database, a node in a group a container, else a system.',
+            ),
+          tech: z
+            .string()
+            .optional()
+            .describe(
+              'style "c4" only: the technology, shown under the name ("Go", "React Native", "PostgreSQL"). ' +
+                'Unset, the meta line names the kind ("Person", "Software system").',
+            ),
+          description: z
+            .string()
+            .optional()
+            .describe(
+              'style "c4" only: what the element does, one sentence on its card, at most 120 characters (a ' +
+                'longer one is cut, its whole text kept in the note).',
+            ),
           tone: z
             .enum(['strong', 'soft', 'muted', 'plain'])
             .optional()
@@ -493,7 +515,7 @@ const graphField = z
           'auto (a tree runs down).',
       ),
     style: z
-      .enum(['flow', 'tree', 'mindmap', 'lanes', 'cycle', 'storm', 'sequence'])
+      .enum(['flow', 'tree', 'mindmap', 'lanes', 'cycle', 'storm', 'sequence', 'c4'])
       .optional()
       .describe(
         'Layout: "flow" (layered, the default; the layout for processes and systems: a decision\u2019s ' +
@@ -505,7 +527,11 @@ const graphField = z
           'order the edges imply, each kind on its own lane, no arrows; a new tab becomes an event-storming ' +
           'board) or "sequence" (a sequence diagram: the nodes the participants, a node shaped actor a stick ' +
           'figure; the edges the messages in order, a dashed edge a reply; Mermaid sequenceDiagram text says ' +
-          'more: activations, notes, alt/loop fragments). With groups the layout is flow unless it is lanes.',
+          'more: activations, notes, alt/loop fragments) or "c4" (a level of the C4 model: System Context, ' +
+          'Container or Component, laid out as flow, top down; each node a C4 card by its c4Kind with its tech ' +
+          'and description, each group a C4 boundary (a system opened into containers, or a container into ' +
+          'components), a key of the kinds used; an edge label reads as what flows and how, "Places orders \u00b7 HTTPS"). ' +
+          'With groups the layout is flow unless it is lanes or c4.',
       ),
     lines: z
       .enum(['straight', 'angled', 'curved'])
@@ -530,7 +556,8 @@ const graphField = z
         'A key beside the diagram: one miniature per shape kind it uses with what that shape means. true ' +
           'names them by default (a flowchart\u2019s Start or end, Step, Decision...; else Component, Data ' +
           'store, Hub or bus, External system...); an object names them yourself by shape ' +
-          '({"hexagon": "Event bus", "cylinder": "Database"}), the rest by default.',
+          '({"hexagon": "Event bus", "cylinder": "Database"}), the rest by default. Style "c4" draws its key ' +
+          'unless key is false, one row per C4 kind used, renamed by kind ({"external": "Third party"}).',
       ),
   })
   .optional()

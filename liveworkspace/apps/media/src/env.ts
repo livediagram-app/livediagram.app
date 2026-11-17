@@ -12,6 +12,9 @@ export interface Env {
   // Per-owner caps across every app, as decimal strings. Unset, blank, 0 or garbage is no cap.
   IMAGE_MAX_PER_OWNER?: string;
   IMAGE_MAX_BYTES_PER_OWNER?: string;
+  // The same for walkthroughs (liveworkspace/docs/specs/006-media/walkthroughs.md "Limits"): media and events together.
+  WALKTHROUGH_MAX_PER_OWNER?: string;
+  WALKTHROUGH_MAX_BYTES_PER_OWNER?: string;
   // Each app's Worker secret (wrangler secret put), proving a caller is that app's own Worker. Unset
   // means that app can't use the service, and the sweep doesn't wait for it.
   MEDIA_KEY_LIVEDIAGRAM?: string;

@@ -48,20 +48,20 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
   },
   {
     id: 'goals',
-    label: 'Goals & Metrics',
-    searchWords: 'okrs kpis growth',
+    label: 'Goals',
+    searchWords: 'okrs kpis growth metrics',
     description: 'OKRs, metric trees, funnels and growth loops.',
   },
   {
     id: 'meetings',
-    label: 'Meetings & Workshops',
-    searchWords: 'meeting workshop session facilitation',
+    label: 'Meetings',
+    searchWords: 'meeting workshop session facilitation workshops',
     description: 'Agendas, Q&A and formats for running a session.',
   },
   {
     id: 'people',
-    label: 'People & Teams',
-    searchWords: 'org chart hr hiring onboarding structure hierarchies',
+    label: 'Teams',
+    searchWords: 'org chart hr hiring onboarding structure hierarchies people',
     description: 'Org charts, roles, onboarding and family trees.',
   },
   {
@@ -72,20 +72,20 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
   },
   {
     id: 'processes',
-    label: 'Processes & Workflows',
-    searchWords: 'flowcharts flowchart process',
+    label: 'Processes',
+    searchWords: 'flowcharts flowchart process workflows',
     description: 'Flowcharts and workflows for how work gets done.',
   },
   {
     id: 'product',
-    label: 'Product & UX',
+    label: 'Product',
     searchWords: 'design ux research discovery',
     description: 'Prototypes, personas, journeys and discovery.',
   },
   {
     id: 'games',
-    label: 'Quizzes & Games',
-    searchWords: 'quiz trivia icebreaker icebreakers warm up energiser fun team building',
+    label: 'Games',
+    searchWords: 'quiz trivia icebreaker icebreakers warm up energiser fun team building quizzes',
     description: 'Quizzes, icebreakers and games for the room.',
   },
   {
@@ -96,7 +96,7 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
   },
   {
     id: 'software',
-    label: 'Software & IT',
+    label: 'Software',
     searchWords: 'technical engineering developer devops infrastructure',
     description: 'Architecture, data, networks and incidents.',
   },
@@ -108,8 +108,8 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
   },
   {
     id: 'learning',
-    label: 'Teaching & Learning',
-    searchWords: 'school classroom students teachers lesson education study',
+    label: 'Learning',
+    searchWords: 'school classroom students teachers lesson education study teaching',
     description: 'Concept maps, KWL charts and visual notes.',
   },
 ];
@@ -216,6 +216,7 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'incident-postmortem': 'software',
   'c4-context': 'software',
   'c4-container': 'software',
+  'c4-component': 'software',
   'architecture-decision-record': 'software',
   // Strategy: where the business stands and where it goes.
   swot: 'strategy',

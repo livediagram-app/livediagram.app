@@ -95,7 +95,7 @@ export function TidyUpPopover({
 
   return (
     <MovablePanel
-      title="Tidy Up"
+      title="Tidy"
       helpArticle="layoutCleanup"
       position={null}
       defaultCorner="bottom-right"

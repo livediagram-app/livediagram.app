@@ -143,8 +143,9 @@ export const OPEN_DEBOUNCE_MS = 60 * 1000;
 // Most Used counts how many times a person opened an item over this window of UTC days; older days are pruned, so an
 // item not opened in it drops off.
 export const USE_WINDOW_DAYS = 14;
-// How many Most Used items one Recent request may ask for alongside its page (`used`).
-export const MOST_USED_MAX = 8;
+// How many Most Used items one Recent request may ask for alongside its page (`used`): Home's eight, and New's four
+// more so Most Used still fills once New's items leave it (one-explorer.md "Each item shows once").
+export const MOST_USED_MAX = 12;
 // How many of the most recently made items one first page may ask for alongside it (`newest`, Home's New).
 export const NEWEST_MAX = 8;
 
@@ -152,7 +153,7 @@ export const NEWEST_MAX = 8;
 // what happened to items, feeding each item's History, its webhooks and its team's audit log. Where each kind comes
 // from:
 // - the index, in the batch that makes the change: created, renamed, moved, trashed, restored, shared,
-//   unshared, favourited and synced (an offline item created again);
+//   unshared and synced (an offline item created again). (Favourites are gone; old `favourited` rows age out unread.)
 // - the index, from an item's pushed comment threads and actions (`PUT /app/items/:id/collab/:tab`), so every
 //   app that reports its Inbox gets them: commented, comment_resolved, action_assigned, action_done;
 // - the index, from who reaches an item through a share link: opened_by_visitor (once per visitor, item and UTC
@@ -167,7 +168,6 @@ export const ITEM_EVENT_TYPES = [
   'restored',
   'shared',
   'unshared',
-  'favourited',
   'edited',
   'commented',
   'comment_resolved',
@@ -319,7 +319,6 @@ export type ItemSource = (typeof ITEM_SOURCES)[number];
 export const ITEM_VIEWS = [
   'all',
   'recent',
-  'favourites',
   'shared',
   'trash',
   'archived',
@@ -409,8 +408,8 @@ export const INDEX_ERRORS = [
   'wrong_app',
   // Project kits (kits.md): a guest starting one.
   'sign_in_required',
-  // Archived (one-explorer-contracts.md "Archived"): what the owner hears from a grant, an open, a copy, a favourite or
-  // a share while it is archived; a teammate who isn't its owner archiving it; an item in the Trash archived.
+  // Archived (one-explorer-contracts.md "Archived"): what the owner hears from a grant, an open, a copy or a share
+  // while it is archived; a teammate who isn't its owner archiving it; an item in the Trash archived.
   'archived',
   'not_owner',
   'trashed',

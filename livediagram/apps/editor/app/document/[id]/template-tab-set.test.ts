@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Tab } from '@livediagram/document';
+import { buildTemplate } from '@livediagram/templates';
 import { landTemplateOnTab } from './template-tab-set';
 
 const tab = (id: string, extra: Partial<Tab> = {}): Tab => ({
@@ -32,5 +33,16 @@ describe('landTemplateOnTab', () => {
 
   it('leaves the tabs unchanged when the tab is gone', () => {
     expect(landTemplateOnTab([tab('b')], 'a', build)).toEqual([tab('b')]);
+  });
+
+  // docs/specs/008-canvas/canvas-and-palette.md "Templates": the C4 levels link to each other when one lands.
+  it('links a landed C4 level to the level beside it', () => {
+    const containers = tab('con', { elements: buildTemplate('c4-container', 0, 0) });
+    const out = landTemplateOnTab([containers, tab('cmp')], 'cmp', (t) => ({
+      ...t,
+      elements: buildTemplate('c4-component', 0, 0),
+    }));
+    const boundary = out[1]!.elements.find((e) => e.type === 'shape' && e.shape === 'boundary');
+    expect(boundary && 'link' in boundary && boundary.link).toEqual({ kind: 'tab', tabId: 'con' });
   });
 });

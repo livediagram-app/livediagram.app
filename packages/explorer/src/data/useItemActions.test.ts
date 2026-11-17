@@ -44,17 +44,17 @@ describe('item actions: optimistic, with rollback', () => {
     expect(index.count('updateItem')).toBe(0);
   });
 
-  it('stars and unstars, rolling back a refused star', async () => {
+  it('hides from Recent and shows again, rolling back a refused show', async () => {
     const { item, index, overlay, actions } = setup();
-    await actions.setFavourite(item, true);
-    expect(overlay.apply(item).favourite).toBe(true);
-    expect(index.count('favourite')).toBe(1);
+    await actions.setHiddenFromRecent(item, true);
+    expect(overlay.apply(item).hiddenFromRecent).toBe(true);
+    expect(index.count('hideFromRecent')).toBe(1);
 
-    index.fail.set('unfavourite', new IndexError(500, 'unknown'));
-    const done = actions.setFavourite(overlay.apply(item), false);
-    expect(overlay.apply(item).favourite).toBe(false);
+    index.fail.set('showInRecent', new IndexError(500, 'unknown'));
+    const done = actions.setHiddenFromRecent(overlay.apply(item), false);
+    expect(overlay.apply(item).hiddenFromRecent).toBe(false);
     await done;
-    expect(overlay.apply(item).favourite).toBe(true);
+    expect(overlay.apply(item).hiddenFromRecent).toBe(true);
   });
 
   it('moves into a folder at once, sending the team only when it changes', async () => {

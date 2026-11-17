@@ -3,7 +3,7 @@
 // audit log (team-audit.ts). Kept EVENT_RETENTION_MS; the daily run sweeps older ones (sweepEvents).
 //
 // Recording. The index writes its own events (created, renamed, moved, trashed, restored, shared, unshared,
-// favourited, synced) in the same batch as the change, each statement reading the item's app and name from its row.
+// synced) in the same batch as the change, each statement reading the item's app and name from its row.
 // From an item's collab push it writes commented, comment_resolved, action_assigned and action_done (collab-push.ts);
 // from who comes in through a share link, opened_by_visitor and copied_by_visitor (visitors.ts). An app reports
 // `edited` from its server, and liveworkspace accounts its team events (event-push.ts). Every event a webhook can
@@ -32,8 +32,8 @@ export type EventInput = {
   at: number;
   // Set for an event that extends itself (an `edited`): its id, the same for every report of it.
   id?: string;
-  // Only when the item matches this SQL on `items` (with its own binds): a favourite records only on an
-  // item the person reaches.
+  // Only when the item matches this SQL on `items` (with its own binds): a share records only while its
+  // link is still there.
   when?: { sql: string; args: unknown[] };
   // The teams whose audit log it goes in (team-audit.ts), for a kind the log keeps: a move's, the team it left and
   // the one it went to (none: no team involved). Unset, the item's team.

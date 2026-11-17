@@ -2,7 +2,7 @@
 
 Status: shipped, in the shared Explorer ([`@liveworkspace/explorer`](../../../../packages/explorer/README.md))
 
-Lists that span places (Recent, Favourites, Search, Shared With Me) carry a quiet location chip on each row and
+Lists that span places (Recent, Search, Shared With Me) carry a quiet location chip on each row and
 card, which opens that place instead of the design: its folder (the immediate parent only), its team for a team item
 in no folder, **My Work** for one of yours in none, and **This Browser** for an
 [Offline Mode](../006-design/offline-mode.md) design. An item reached through a link lives in someone else's library

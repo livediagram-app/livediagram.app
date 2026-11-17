@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
-import { inboxCount } from '../data/useInbox';
+import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { inboxBadge } from '../explorer/inbox/sections';
 import { useExplorer } from '../explorer/context';
 import { MyWorkMenu } from '../explorer/menus';
 import { BrowserIcon } from '../explorer/host';
@@ -22,7 +22,6 @@ import {
   MyWorkIcon,
   PlusIcon,
   ShareIcon,
-  StarIcon,
   TeamIcon,
   TrashIcon,
 } from '../ui/icons';
@@ -56,8 +55,6 @@ function SectionIcon({ kind }: { kind: PanelSection['kind'] }) {
       return <MyWorkIcon />;
     case 'team':
       return <TeamIcon />;
-    case 'favourites':
-      return <StarIcon />;
     case 'offline':
       return <BrowserIcon />;
     case 'library':
@@ -75,6 +72,7 @@ export function Rail({
   onPick,
   phone,
   offlineCount,
+  top,
 }: {
   groups: PanelSectionGroup[];
   selected: PanelSection;
@@ -82,6 +80,8 @@ export function Rail({
   phone: boolean;
   // How many items this browser keeps only for itself: This Browser's count.
   offlineCount: number;
+  // Above New in the sidebar: the item open in the editor (the panel's current card, compact).
+  top?: ReactNode;
 }) {
   const { onCreate, kind, inbox, hasInbox, viewerId, teamName } = useExplorer();
   const canRunTeams = useTeams().canRun;
@@ -89,7 +89,7 @@ export function Rail({
   const selectedKey = sectionKey(selected);
   const name = (id: string) => teamName(id);
   const badges: Record<string, number | undefined> = {
-    inbox: (hasInbox && inboxCount(inbox.data, viewerId)) || undefined,
+    inbox: hasInbox ? inboxBadge(inbox.data, viewerId) : undefined,
     offline: offlineCount || undefined,
   };
   // On a phone the picked chip may sit past the row's edge: bring it into view.
@@ -151,7 +151,7 @@ export function Rail({
       className={
         phone
           ? 'shrink-0 overflow-x-auto px-2.5 py-1 [scrollbar-width:none]'
-          : 'scrollbar-slim flex w-52 shrink-0 flex-col overflow-y-auto border-r border-slate-200 px-2.5 py-3 dark:border-slate-700/70'
+          : 'scrollbar-slim flex w-60 shrink-0 flex-col overflow-y-auto border-r border-slate-200 px-2.5 py-3 dark:border-slate-700/70'
       }
     >
       {phone ? (
@@ -164,6 +164,7 @@ export function Rail({
         </ul>
       ) : (
         <>
+          {top ? <div className="mb-3">{top}</div> : null}
           {newItem}
           {groups.map((g, i) =>
             g.sections.length ? (

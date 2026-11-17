@@ -43,4 +43,24 @@ describe('tabFitView', () => {
   it('is null without a canvas to measure', () => {
     expect(tabFitView(null, [shape('a', 0, 0)])).toBeNull();
   });
+
+  it('keeps clear of a standing palette tray under the strip, as a framed page does', () => {
+    const boxed = (attrs: Record<string, string>, top: number, bottom: number) => {
+      const node = document.createElement('div');
+      for (const [k, v] of Object.entries(attrs)) node.setAttribute(k, v);
+      node.getBoundingClientRect = () =>
+        ({ left: 0, right: 400, width: 400, top, bottom, height: bottom - top }) as DOMRect;
+      document.body.append(node);
+      return node;
+    };
+    const elements = [shape('a', 0, 0), shape('b', 900, 400)];
+    const c = canvas();
+    boxed({ 'data-toolbar-palette': '' }, 10, 60);
+    const stripOnly = tabFitView(c, elements)!;
+    const tray = boxed({ 'data-palette-tray': '', 'data-yields-to-mode': '' }, 66, 160);
+    const withTray = tabFitView(c, elements)!;
+    expect(withTray.zoom).toBeLessThan(stripOnly.zoom);
+    tray.remove();
+    expect(tabFitView(c, elements)).toEqual(stripOnly);
+  });
 });

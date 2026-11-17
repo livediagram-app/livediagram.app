@@ -6,6 +6,7 @@
 import type { MediaApp } from './apps';
 import { LIBRARY_PATH } from './library';
 import { libraryCalls } from './library-client';
+import { walkthroughCalls } from './walkthrough-client';
 import {
   IMAGE_HEIGHT_HEADER,
   IMAGE_NAME_HEADER,
@@ -21,6 +22,7 @@ import {
   type MediaListResponse,
   type MediaMergeResponse,
   type MediaRefsSync,
+  type MediaReleaseResponse,
   type MediaUploadResponse,
   type MediaUsageResponse,
 } from './wire';
@@ -127,6 +129,13 @@ export function createMediaClient({ app, key, url, fetch: doFetch = fetch }: Med
         await call(`/images/${encodeURIComponent(id)}`, { method: 'DELETE' }, { owner }),
       ),
 
+    /** A document no longer places a picture it was uploaded for: the service deletes it now when nothing else could
+     *  place it, and answers why it kept it otherwise (media.md "Releases"). */
+    release: async (id: string, document: string) =>
+      json<MediaReleaseResponse>(
+        await call(`/images/${encodeURIComponent(id)}/release`, { method: 'POST' }, { document }),
+      ),
+
     /** Which documents, in any app, place each of the owner's images. */
     usage: async (owner: string) => json<MediaUsageResponse>(await call('/usage', {}, { owner })),
 
@@ -155,6 +164,9 @@ export function createMediaClient({ app, key, url, fetch: doFetch = fetch }: Med
     library: libraryCalls(async <T>(path: string, body: unknown) =>
       json<T>(await call(`${LIBRARY_PATH}${path}`, send('POST', body))),
     ),
+
+    /** Walkthroughs (liveworkspace/docs/specs/006-media/walkthroughs.md): the narrated recordings of the canvas apps. */
+    walkthroughs: walkthroughCalls(call),
   };
 }
 

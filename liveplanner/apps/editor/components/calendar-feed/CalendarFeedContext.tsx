@@ -5,7 +5,8 @@
 // without it.
 import { createContext, useContext } from 'react';
 
-export type CalendarFeedDoor = { open: () => void };
+// `badges`: what it needs first (Sign In, Sync Plan) while a press opens its gate.
+export type CalendarFeedDoor = { open: () => void; badges?: readonly string[] | undefined };
 
 export const CalendarFeedDoorContext = createContext<CalendarFeedDoor | null>(null);
 

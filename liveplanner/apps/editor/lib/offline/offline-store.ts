@@ -59,11 +59,6 @@ export type OfflineProjectRecord = {
   createdAt: number;
   savedAt: number;
   tabs: Tab[];
-  // Starred in the Explorer (docs/specs/013-workspace/favourites.md). Cloud stars live in a D1 table whose
-  // project_id is a foreign key into `projects`, which an offline project has
-  // no row in, so its star has to live here instead. Optional so records
-  // written before the field existed stay valid.
-  favourite?: boolean;
   // When the project was moved to this browser's local Trash
   // (docs/specs/013-workspace/trash.md). Absent = live.
   // A trashed record keeps everything else so a restore is exact.

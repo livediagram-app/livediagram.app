@@ -52,7 +52,7 @@ describe('writing kept tabs back', () => {
   });
 
   it('leaves the rest of the record as it is', () => {
-    const current = record([diagram, mixed, deck], { favourite: true, trashedAt: 9, savedAt: 7 });
+    const current = record([diagram, mixed, deck], { trashedAt: 9, savedAt: 7 });
     const merged = mergeKeptTabs(current, setAside, keep);
     expect({ ...merged, tabs: [] }).toEqual({ ...current, tabs: [] });
   });

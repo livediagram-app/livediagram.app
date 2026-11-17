@@ -6,6 +6,7 @@
  *  emerald / amber / rose) so cards stay coherent with the product. */
 export const FEATURE_ENTITY_HEX: Record<string, string> = {
   snapshots: '#0d9488',
+  walkthroughs: '#e11d48',
   'panel-layout': '#6366f1',
   toolbar: '#6366f1',
   'context-menus': '#6366f1',

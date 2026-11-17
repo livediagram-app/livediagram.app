@@ -72,7 +72,7 @@ export type TemplateKind =
   // Town Hall Q&A (docs/specs/012-collaboration/qa-board.md): an audience Q&A board beside the panel, a
   // run-of-show agenda, a facilitator kit and a follow-ups checklist.
   | 'town-hall'
-  // Quizzes & Games (docs/specs/012-collaboration/quiz-and-game-templates.md): a pub quiz on Quiz cards with a
+  // Games (docs/specs/012-collaboration/quiz-and-game-templates.md): a pub quiz on Quiz cards with a
   // scoreboard, icebreakers spun on Pickers, and three party games run on polls, timers and reaction pads.
   | 'pub-quiz'
   | 'icebreaker-questions'
@@ -177,6 +177,8 @@ export type TemplateKind =
   // model's context and container levels, an architecture decision record, sprint planning and an interview synthesis.
   | 'c4-context'
   | 'c4-container'
+  // The C4 model's third level (Work Tracker 1029): one container opened into its components.
+  | 'c4-component'
   | 'architecture-decision-record'
   | 'sprint-planning'
   | 'interview-synthesis'
@@ -775,6 +777,13 @@ export const TEMPLATES: TemplateDescriptor[] = [
     title: 'C4 Container Diagram',
     description:
       'Level 2 of the C4 model: the apps, services and stores inside a system boundary, each with its technology.',
+    extra: true,
+  },
+  {
+    kind: 'c4-component',
+    title: 'C4 Component Diagram',
+    description:
+      'Level 3 of the C4 model: the components inside one container, what each does and what it is built with.',
     extra: true,
   },
   {

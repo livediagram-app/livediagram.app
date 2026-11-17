@@ -46,6 +46,16 @@ work. A rule does it every time, at once, and says that it did.
   since a rule acts on the whole plan.
 - **Participants** and **Viewers** see no button and no Run Rule. Their changes still **trigger** rules: a
   Participant who moves a card to Done gets the Done rule's stamp like anyone.
+- **Reading one rule** is anyone's who can read the plan: a Participant, a Viewer, a guest, a share-link visitor and a
+  read-only or Participant token included. From a rule's name on a card's Activity or a comment they open its
+  **read-only summary** ([On cards](#on-cards)), answered by `GET /automations/summary`, the one Automations route that
+  is not an Editor's. It is built from an allow-list, never the stored rule: the rule's name, whether it is on, its
+  trigger, conditions and steps in words, and who made it and when. What only an Editor sees reads as a plain label:
+  typed-in email addresses ("Email 2 Addresses"), where an outgoing action posts ("Post to Slack", never the
+  webhook's name), an Incoming Webhook's address and secret (never in it), an Email Received rule's sender, a GitHub
+  trigger's repositories, an AI step ("An AI Step", never what it is asked) and a Set Field value that reads as an
+  address. A link to one tab reads only a rule that acted on a card that tab shows (a History entry by it, or a
+  comment it added); any other rule, like one deleted, answers 404 `automation_not_found`.
 - A rule's actions are **Editor writes made by Automation**: a Participant's move can start a rule that sets a field
   only an Editor may set, because an Editor wrote that rule. That is the point of a rule, and only Editors write them.
 - **Run Rule** (a manual trigger) is an Editor's, from the card's ⋯ menu.
@@ -70,6 +80,8 @@ work. A rule does it every time, at once, and says that it did.
   `?automations=1` opening the screen) and **Cancel**. After signing in the screen opens on the
   rules. **Only an Editor Can See Rules** is for a signed-in reader the api refuses, never a guest. Run Rule waits for
   sign-in too.
+- A guest on a plan in Browser Storage needs both: Tools badges the row **Sign In** then **Sync Plan**, and the gate
+  asks for the sign-in first (owner, 2026-11-16), coming back to Sync Plan's gate.
 - **Typed-in email addresses** (Send Email to addresses, [Typed-in addresses](#typed-in-addresses)) are an Editor's
   like any action: only a signed-in Editor of the whole plan, in person or through their API token, saves a rule that
   holds them. Participants, Viewers, guests and share-link visitors never see or set them.
@@ -458,6 +470,8 @@ waits for ("Set a field Today", "to a column"), beside the step's "Pick a field"
 |                                 | Yes or No (a Checkbox given other text, a number, a day or a list is refused on save and by Test  |
 |                                 | on a Card); Flagged and the Checklist are set by Flag, Unflag and Add a Checklist instead         |
 | **Clear Field**                 | empties a field                                                                                   |
+|                                 | (an Image field's or Attachments' pictures leave storage 15 minutes on when nothing else uses     |
+|                                 | them, as a person's clear does: [items.md](items.md#removed-pictures) "Removed pictures")         |
 | **Assign**                      | assigns a chosen person, **whoever triggered the rule**, nobody, or **people in turn**: each run  |
 |                                 | the next of 2 to 10 chosen people, in order, round and round                                      |
 | **Add Label**, **Remove Label** | adds or takes off one label                                                                       |
@@ -952,12 +966,11 @@ time it is put away or comes back ([one-explorer-contracts.md](../../../../livew
 
 ### The footer button
 
-**Automations** sits in the editor's footer cluster between **Search** and **Settings**
-([Editor app](../007-editor/editor-app.md)), with a lightning-bolt icon, labelled from `sm` up like its neighbours,
-icon-only on a phone (a 40 px target). Its hover card reads **Automations**: "Rules that move, assign and tell people
-about cards for you." It is drawn only for an Editor on a plan saved to an account. A badge beside it counts the
-rules that are on (none on, no badge), and its name says so ("Automations, 3 on"). A rule that paused itself turns
-the badge amber, or with no badge puts a small amber dot on the icon, until it is resumed or turned off. It opens the Automations screen and sends
+**Automations** is the first row of the editor footer's **Tools** menu ([The footer's Tools
+menu](../../../../liveworkspace/docs/specs/004-index/footer-tools-menu.md), left of **Search**), with a lightning-bolt
+icon. It is there only for an Editor on a plan saved to an account. A badge at the row's right edge counts the rules
+that are on (none on, no badge). A rule that paused itself turns the badge amber and puts a small amber dot on the
+Tools button, whose name then says so ("Tools, a rule is paused"), until it is resumed or turned off. It opens the Automations screen and sends
 `UI · Opened · Automations`.
 
 ### The Automations screen
@@ -1247,6 +1260,17 @@ above, unchanged.
 - A comment Automation added shows the bolt avatar, **Automation** and the rule's name (a link to the rule for an
   Editor, live: a rule made or renamed since the screen was last open opens from it, and one deleted since says
   **This Rule Was Deleted**), on a violet-tinted card. It is not Generated by AI, unless an AI action wrote it ("AI actions").
+- For a **Participant**, a **Viewer** or anyone else who can read the plan but not edit its rules, the rule's name in
+  a card's Activity and on a comment is a link too, to a **read-only sheet** of that rule (a centred dialog on a
+  desktop, a sheet from the bottom on a phone, fitting 390 px): the bolt, "Automation" and the rule's name with an
+  **On**, **Off** or **Paused** chip, then its **Trigger** ("When Card Moved to Done", "Every Weekday at 9:00"), its
+  conditions (**Only If**, or **For Cards Where** for a time trigger), its steps in order on the builder's tinted tiles
+  (an If / Else's and a For Related Cards' own steps indented under it), and "Made by Ana Costa · 2h". Its words come
+  from the summary ([Who may do what](#who-may-do-what)), so it shows no address, webhook or AI prompt. **Close** is
+  its only control: no edit, test, run, on / off or delete, and no way to the Automations screen or to other rules. A
+  comment's link asks by the rule's id, a History line's by its name. A rule since deleted says **This Rule Was
+  Deleted**, and a read that fails says **Couldn't Load the Rule** with **Try Again**. An Editor's link still opens
+  the rule builder.
 - The card's ⋯ menu offers **Run Rule** (an Editor's, when at least one Run from a Card rule is on), a submenu headed
   "Rules You Can Run Here" listing them, then **Manage Automations**. Running one says "Ran Escalate to Leads" or the
   failure, as a toast; one a Wait holds says "Ran Escalate to Leads up to its Wait. It goes on Tomorrow 09:00."

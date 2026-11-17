@@ -138,6 +138,7 @@ export function paintableBoxedFields(source: BoxedElement): Partial<BoxedElement
     fillSwatch?: QuickSwatchSlot;
     textSwatch?: QuickSwatchSlot;
     themeLockFill?: boolean;
+    themeLockText?: boolean;
     headerFill?: string;
     headerTextColor?: string;
     font?: string;
@@ -192,6 +193,8 @@ export function paintableBoxedFields(source: BoxedElement): Partial<BoxedElement
     // like the source did. applyPaint decides whether the binding holds.
     out.colorPreset = ext.colorPreset;
     out.themeLockFill = ext.themeLockFill;
+    // A C4 element's ink, chosen for its locked fill, travels with it.
+    out.themeLockText = ext.themeLockText;
     // Quick-swatch bindings (docs/specs/008-canvas/quick-style-panel.md), beside the colours they bind.
     out.strokeSwatch = ext.strokeSwatch;
     out.fillSwatch = ext.fillSwatch;

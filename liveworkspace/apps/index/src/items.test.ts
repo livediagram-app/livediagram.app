@@ -80,7 +80,6 @@ describe('making and reading an item', () => {
       intent: 'logo',
       source: 'person',
       access: 'edit',
-      favourite: false,
       lastOpenedAt: null,
       sharedVia: null,
       summary: {},
@@ -324,7 +323,9 @@ describe('the Trash', () => {
   it('purges for good, asking the app to drop the content', async () => {
     const ada = await person('user_a');
     const item = await makeItem(ada.auth);
-    await call(`/favourites/${item.id}`, { method: 'PUT', auth: ada.auth });
+    h.db.sql
+      .prepare('INSERT INTO favourites (person_id, item_id, created_at) VALUES (?, ?, 1)')
+      .run('user_a', item.id);
     const res = await call(`/items/${item.id}?permanent=true`, {
       method: 'DELETE',
       auth: ada.auth,

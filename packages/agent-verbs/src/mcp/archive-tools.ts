@@ -47,7 +47,7 @@ export function createArchiveTools<K extends string>(product: AgentProduct, idKe
     title: `Archive a ${word}`,
     description:
       `Move a ${word} the user owns to their Archived. It leaves every list (theirs and their teams'), its ` +
-      'share links stop working, and its favourites, Recent and Most Used entries and Inbox threads are removed ' +
+      'share links stop working, and its Recent and Most Used entries and Inbox threads are removed ' +
       `for everyone. While archived it can't be read or changed; unarchive_${noun} moves it back. Only its owner ` +
       `can archive it, and a ${word} in the Trash is restored first. Confirm with the user first.`,
     inputSchema: archiveInput,
@@ -63,7 +63,7 @@ export function createArchiveTools<K extends string>(product: AgentProduct, idKe
     title: `Move a ${word} out of Archived`,
     description:
       `Move an archived ${word} back: to the top of the user's personal library, or into the folder or team ` +
-      `named. It opens again, starting fresh: the share links, favourites and Recent entries it had are gone. ` +
+      `named. It opens again, starting fresh: the share links and Recent entries it had are gone. ` +
       `find_${collection} with archived true lists the archived ${words}.`,
     inputSchema: unarchiveInput,
     outputSchema: {

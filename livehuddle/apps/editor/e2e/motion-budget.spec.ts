@@ -118,7 +118,11 @@ async function tourTheChrome(page: Page): Promise<void> {
   // The Search panel is the tour's one fly-up-in, which the budget test asserts it saw.
   await openAndClose(
     page,
-    () => page.getByRole('button', { name: 'Search', exact: true }).click(),
+    async () => {
+      // Search, first in the footer's Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md).
+      await page.locator('[data-tools-button]').click();
+      await page.locator('[data-tools-item="search"]').click();
+    },
     undefined,
     page.locator('.animate-fly-up-in').first(),
   );
@@ -153,6 +157,14 @@ test.describe('Motion budget', () => {
     pageErrors,
   }) => {
     await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'no-preference' });
+    // The flat walk this morph is measured on: the 3D view off (docs/specs/008-canvas/3d-view.md, DEFAULTS D141).
+    await page.addInitScript(() => {
+      try {
+        localStorage.removeItem('livehuddle:v2:space-3d');
+      } catch {
+        // No storage on this document: nothing to clear.
+      }
+    });
     await startBlank(page);
     const start = page.getByRole('region', { name: /^Start a Space$/ });
     if (await start.isVisible()) {

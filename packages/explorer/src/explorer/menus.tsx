@@ -2,7 +2,7 @@
 
 // The ⋯ menus (liveplanner's ProjectEntryMenu and FolderActionsMenu): one row per verb, grouped, the same
 // menu from a row, a card, the sidebar or the panel. What a row offers follows what the person may do:
-// an item reached through a link can be opened, copied, starred and dismissed, and renamed when
+// an item reached through a link can be opened, copied and dismissed, and renamed when
 // the link edits; one in the Trash can be restored or deleted for good.
 
 import { useEffect, type ReactNode } from 'react';
@@ -18,7 +18,6 @@ import {
   PencilIcon,
   RestoreIcon,
   ShareIcon,
-  StarIcon,
   ClockIcon,
   ClockOffIcon,
   DefaultPinIcon,
@@ -161,11 +160,6 @@ export function ItemMenu({
         />
       ) : null}
       <MenuGroupSeparator />
-      <MenuActionRow
-        label={item.favourite ? 'Remove from Favourites' : 'Add to Favourites'}
-        icon={<StarIcon filled={item.favourite} />}
-        onClick={run(() => void actions.setFavourite(item, !item.favourite))}
-      />
       {host.history && !item.sharedVia ? (
         <MenuActionRow
           label="History"
@@ -174,7 +168,7 @@ export function ItemMenu({
         />
       ) : null}
       {/* The document's own webhooks (004-index/webhooks.md): for a signed-in account who can edit it. */}
-      {renames && signedIn ? (
+      {renames && signedIn && host.webhooks ? (
         <MenuActionRow
           label="Webhooks"
           icon={<WebhookIcon />}

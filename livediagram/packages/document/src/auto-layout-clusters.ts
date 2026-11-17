@@ -36,6 +36,9 @@ type ClusteredLayoutOptions = {
   look?: GraphLook;
   // Side steps level with their decision (auto-layout.ts `flatEdges`).
   flatEdges?: ReadonlySet<string>;
+  // Each frame's heading band at its foot rather than its top: the members sit FRAME_PAD from the top and the band
+  // FRAME_TOP reserves runs along the bottom, where a C4 boundary writes its name (graph-c4.ts).
+  footHeadings?: boolean;
 };
 
 // Every caller passes a non-empty block (placed nodes, or a cluster's
@@ -135,7 +138,7 @@ export function layoutClusteredGraph(
   opts: ClusteredLayoutOptions = {},
 ): Element[] {
   const makeEdgeId = opts.makeEdgeId ?? (() => crypto.randomUUID());
-  const { direction, look, flatEdges } = opts;
+  const { direction, look, flatEdges, footHeadings } = opts;
   const clusters = sanitizeClusters(graph);
 
   // Every node arrives sized to its own label (graphToElements), so the
@@ -187,6 +190,18 @@ export function layoutClusteredGraph(
       const entered = new Set(
         graph.edges.filter((e) => inside.has(e.to) && !inside.has(e.from)).map((e) => e.to),
       );
+      // A heading at the frame's foot (footHeadings) sits under the last members: the lines leaving them for outside
+      // land clear of it, reckoned as a top heading's are with the members turned upside down.
+      if (footHeadings) {
+        const left = new Set(
+          graph.edges.filter((e) => inside.has(e.from) && !inside.has(e.to)).map((e) => e.from),
+        );
+        const flipped = memberEls.get(c.id)!.map((m) => ({ ...m, y: -m.y - m.height }));
+        return [
+          c.id,
+          headingLead(c.label ?? c.id, flipped, left, FRAME_PAD, direction ?? 'TB', look?.textSize),
+        ] as const;
+      }
       return [
         c.id,
         headingLead(
@@ -274,7 +289,7 @@ export function layoutClusteredGraph(
         : placed;
     placedFrames.push(frame);
     const dx = frame.x + FRAME_PAD + lead.get(c.id)! - b.x;
-    const dy = frame.y + FRAME_TOP - b.y;
+    const dy = frame.y + (footHeadings ? FRAME_PAD : FRAME_TOP) - b.y;
     for (const m of members) placedNodes.push({ ...m, x: m.x + dx, y: m.y + dy });
   }
 

@@ -1,5 +1,8 @@
 'use client';
 
+import { lucideGlyph } from '@liveworkspace/ui';
+import { lucideMessageCircle } from '@liveworkspace/icons/lucide';
+
 import { useEffect, useRef } from 'react';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
@@ -79,6 +82,7 @@ export function ReceptionistHost() {
           label: 'Ask Receptionist',
           description: 'The Receptionist comes over and shows you how the Space works.',
           rank: TOUR_OFFER_RANK.tool,
+          icon: <ReceptionistGlyph />,
           start: () => {
             track('UI', 'Opened', 'AskReceptionist');
             askReceptionist();
@@ -103,3 +107,5 @@ export function ReceptionistHost() {
 
   return null;
 }
+
+const ReceptionistGlyph = lucideGlyph(lucideMessageCircle, 18);

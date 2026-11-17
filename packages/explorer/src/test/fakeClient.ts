@@ -34,12 +34,21 @@ export function makeItem(i: number, over: Partial<Item> = {}): Item {
     trashReason: null,
     summary: {},
     access: 'edit',
-    favourite: false,
     lastOpenedAt: null,
     sharedVia: null,
     ...over,
   };
 }
+
+/**
+ * Items made after every other seeded one and never opened: what Home's New shows (four, by default). A test of Most
+ * Used and Recent seeds them so its own items are not in New, which each item shows in first (one-explorer.md "Each
+ * item shows once").
+ */
+export const madeLater = (count = 4): Item[] =>
+  Array.from({ length: count }, (_, k) =>
+    makeItem(900 + k, { createdAt: 9_000_000 + k, title: `Made ${k + 1}` }),
+  );
 
 export function makeEvent(
   i: number,
@@ -190,7 +199,6 @@ export function createFakeIndex(
     if (q.view === 'unsorted') out = out.filter((i) => i.folderId === null);
     // My Work and the teams' libraries: what a link reaches lives in another's space.
     if (q.view === 'all' && !q.folder) out = out.filter((i) => !i.sharedVia);
-    if (q.view === 'favourites') out = out.filter((i) => i.favourite);
     if (q.view === 'recent') {
       out = out.filter((i) => i.lastOpenedAt !== null && !i.hiddenFromRecent);
     }
@@ -371,19 +379,10 @@ export function createFakeIndex(
           archivedAt: Date.now(),
           folderId: null,
           teamId: null,
-          favourite: false,
           lastOpenedAt: null,
           hiddenFromRecent: false,
         });
         return { item: { ...item } };
-      }),
-    favourite: (id: string) =>
-      answer('favourite', [id], undefined, () => {
-        find(id).favourite = true;
-      }),
-    unfavourite: (id: string) =>
-      answer('unfavourite', [id], undefined, () => {
-        find(id).favourite = false;
       }),
     hideFromRecent: (id: string) =>
       answer('hideFromRecent', [id], undefined, () => {

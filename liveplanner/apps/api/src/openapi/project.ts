@@ -180,11 +180,6 @@ const TAGS = [
       'How scripts and agents change a tab: atomic, live for everyone with it open, credited and revertable.',
   },
   {
-    name: 'Suggestions',
-    description:
-      'Changes proposed on a canvas for an Editor to accept or reject, and who must suggest (Suggest Only).',
-  },
-  {
     name: 'Items',
     description:
       'The work Plan boards frame: typed items with an open bag of fields, live for everyone with the plan open.',
@@ -230,6 +225,11 @@ const TAGS = [
   {
     name: 'Images',
     description: 'Pictures for Image fields on cards: upload, and read with access.',
+  },
+  {
+    name: 'Walkthroughs',
+    description:
+      'Recorded narrations of a plan: voice, camera path, tab steps and pointer, to play back over it.',
   },
   { name: 'Account', description: 'Account-level data, preferences, and migration.' },
   { name: 'Meta', description: 'Capabilities and this project.' },

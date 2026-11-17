@@ -1,4 +1,4 @@
-// Lists that span places (Recent, Favourites, Search) say where each item lives, and Recent and Search say whose it
+// Lists that span places (Recent, Search) say where each item lives, and Recent and Search say whose it
 // is, as livediagram's list does.
 import { render, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';

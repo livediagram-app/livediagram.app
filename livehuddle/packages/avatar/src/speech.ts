@@ -29,7 +29,7 @@ const SPEECH_MAX_PER_PERSON = 3;
 export const SPEECH_OVERFLOW_FADE_MS = 300;
 const SPEECH_SEEN_IDS_CAP = 200;
 // Canvas px between the top of the head and the bubble's tail, at size scale 1 (D111).
-const SPEECH_HEAD_GAP = 8;
+export const SPEECH_HEAD_GAP = 8;
 // The word count past which the composer shows its counter.
 export const SPEECH_COUNTER_FROM_WORDS = 40;
 

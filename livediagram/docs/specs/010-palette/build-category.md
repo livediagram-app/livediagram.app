@@ -37,6 +37,19 @@ them in. **Diagrams** holds the first (Mind node, Org chart, Flowchart, Sequence
 second (Lane, Frame, Stack, Boundary, then Diagram key, Card, Badge, Step number). Tile ids are
 unchanged. Workshop offers the same **Layout** (no Diagrams), with the Timeline after the Boundary.
 
+**The C4 model** follows in Diagrams as a group of its own, **C4 Model** ([Templates](../008-canvas/canvas-and-palette.md),
+the C4 levels): six tiles, each an ordinary element dressed in C4's palette so a level can be drawn by hand or a
+template's level grown. **Person** (a deep-blue card with the person glyph, "Person" as its meta line), **Software
+System** (mid blue, "Software system"), **Container** (the container blue, its meta line the technology, "Go"),
+**Component** (light blue, dark ink, "Go package"), **External System** (grey, "External system") and **Database**
+(a cylinder in the container blue, its name over its technology). The cards are Card variants (`c4-person`,
+`c4-system`, `c4-container`, `c4-component`, `c4-external`) and the Database a Cylinder variant (`c4-database`), placed
+by the one variant path every placement takes (tap, drag, drop); each keeps its C4 fill and its ink under every
+theme (`themeLockFill`, `themeLockText`; each ink at least 4.5:1 on its fill) and its own colours after the tab's theme and remembered style dress it, as the Warning badge keeps
+its rose. Search finds them by "c4", "container", "component", "structurizr", "software system" and "person". The
+C4 boundary is the Boundary tile's C4 style (Layout). Tile ids `diagrams:c4-person` and on; the group is titled
+by its first tile.
+
 ## No mode offers Build
 
 No mode offers Build itself today; it remains the catalogue home of these tiles.

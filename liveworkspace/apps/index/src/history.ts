@@ -2,8 +2,9 @@
 // last EVENT_RETENTION_MS, newest first, for someone who reaches it directly (its owner, or a member of its team).
 //
 // Reading. One statement: a range of the events' item index (events_item: item, then time, then id), at most
-// limit + 1 rows plus the few the person may not see (someone else's `favourited`; a visitor's open or copy, for
-// anyone but the item's owner). Nothing is read per event; the item itself is the row the route already loaded.
+// limit + 1 rows plus the few the person may not see (a visitor's open or copy, for anyone but the item's owner;
+// a `favourited` left from before Favourites were removed, for anyone). Nothing is read per event; the item
+// itself is the row the route already loaded.
 import {
   EVENT_RETENTION_MS,
   HISTORY_LIMIT_MAX,
@@ -21,8 +22,7 @@ import { directAccess, getItemRow, toItem } from './rows';
 
 export type HistorySpec = {
   itemId: string;
-  // Who reads it: a `favourited` shows only when they did it; a visitor's open or copy only to the item's owner.
-  personId: string;
+  // Who reads it: a visitor's open or copy shows only to the item's owner.
   owner: boolean;
   limit: number;
   cursor?: { at: number; id: string };
@@ -33,23 +33,18 @@ export type BuiltQuery = { sql: string; args: unknown[] };
 
 /** One page of an item's History as one statement (exported for its plan test). */
 export function buildHistoryQuery(spec: HistorySpec): BuiltQuery {
-  const args: unknown[] = [
-    spec.itemId,
-    spec.now - EVENT_RETENTION_MS,
-    spec.personId,
-    spec.owner ? 1 : 0,
-  ];
+  const args: unknown[] = [spec.itemId, spec.now - EVENT_RETENTION_MS, spec.owner ? 1 : 0];
   let cursor = '';
   if (spec.cursor) {
-    cursor = ' AND (occurred_at < ?5 OR (occurred_at = ?5 AND id < ?6))';
+    cursor = ' AND (occurred_at < ?4 OR (occurred_at = ?4 AND id < ?5))';
     args.push(spec.cursor.at, spec.cursor.id);
   }
   args.push(spec.limit + 1);
   const sql = `SELECT id, app, item_id, actor_id, actor_name, type, title, detail, occurred_at
     FROM events
     WHERE item_id = ?1 AND occurred_at >= ?2
-      AND (type <> 'favourited' OR actor_id = ?3)
-      AND (?4 = 1 OR type NOT IN ('opened_by_visitor', 'copied_by_visitor'))${cursor}
+      AND type <> 'favourited'
+      AND (?3 = 1 OR type NOT IN ('opened_by_visitor', 'copied_by_visitor'))${cursor}
     ORDER BY occurred_at DESC, id DESC LIMIT ?${args.length}`;
   return { sql, args };
 }
@@ -78,7 +73,7 @@ function parseDetail(text: string | null): Record<string, string | null> | null 
   }
 }
 
-const NO_EXTRAS = { favourite: false, lastOpenedAt: null, hiddenFromRecent: false };
+const NO_EXTRAS = { lastOpenedAt: null, hiddenFromRecent: false };
 
 /** GET /items/:id/history?limit=&cursor=: `{events, nextCursor}`; 404 to anyone who doesn't reach it directly. */
 export async function itemHistory(ctx: RouteContext, id: string): Promise<Response> {
@@ -96,7 +91,6 @@ export async function itemHistory(ctx: RouteContext, id: string): Promise<Respon
   if (!row || !person || !access) return notFound();
   const { sql, args } = buildHistoryQuery({
     itemId: id,
-    personId: person.id,
     owner: row.owner_id === person.id,
     limit,
     ...(cursor ? { cursor } : {}),

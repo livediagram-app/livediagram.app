@@ -63,6 +63,7 @@ import { searchIcons } from '@liveworkspace/icons/search';
 import { imageResult } from './image-result';
 import { imageIdIssue, registerImageTools } from './image-tools';
 import { addOperationsFor, addToTemplateTab, getTab } from './template-elements';
+import { isC4Template, linkC4LevelsOnAddTab } from './c4-level-links';
 import {
   baseFor,
   changesetErrorText,
@@ -388,6 +389,12 @@ export function registerTools(server: McpServer, env: Env): void {
           throw err;
         }
       }
+      // A C4 level links to the levels already in the document, as the editor's template flow does
+      // (docs/specs/008-canvas/canvas-and-palette.md "Templates"), before the tab is read for the result.
+      const kind = args.template ? resolveTemplate(args.template) : null;
+      const linkedNote = isC4Template(kind)
+        ? await linkC4LevelsOnAddTab(env, token, args.documentId, tabId)
+        : null;
       // The result PNG: the tab as stored, read once more (CS36).
       const { tab } = await apiJson<TabResponse>(
         env,
@@ -395,9 +402,12 @@ export function registerTools(server: McpServer, env: Env): void {
         `/documents/${encodeURIComponent(args.documentId)}/tabs/${encodeURIComponent(tabId)}`,
       );
       // A presented template's slides go on after the deck's own (docs/specs/015-api/mcp-server.md §4.3a).
-      const kind = args.template ? resolveTemplate(args.template) : null;
       const deck = kind ? await appendTemplateDeck(env, token, args.documentId, kind, tab) : null;
-      const notes = [...(input.notes ?? []), ...(deck ? [deck] : [])];
+      const notes = [
+        ...(input.notes ?? []),
+        ...(linkedNote ? [linkedNote] : []),
+        ...(deck ? [deck] : []),
+      ];
       return imageResult(
         {
           documentId: args.documentId,

@@ -39,6 +39,7 @@ import { projectStatsSql } from '../db/tab-stats';
 import { isEmptyCount, type ContentSummary } from '@liveworkspace/index-app';
 import { pushFormInbox } from '../forms/form-inbox';
 import { IMAGES_OUTBOX_KIND, pushImageRefs } from './image-refs';
+import { stampImageReleases } from './image-release';
 import { indexAppClient } from '../index-service';
 import { reportOwnerActivity } from '../person/account-app';
 import { sheetCellNames } from '../sheet-cell-refs';
@@ -70,6 +71,7 @@ export function collabPushOf(
       participantIds: t.participantIds,
       ...(t.agentIds.length > 0 ? { agentIds: t.agentIds } : {}),
       mentionedIds: t.mentionedIds,
+      ...(t.mentionedBy ? { mentionedBy: t.mentionedBy } : {}),
       latestText: t.latestText,
       latestAuthorName: t.latestAuthorName ?? '',
       latestAuthorId: t.latestAuthorId ?? null,
@@ -288,6 +290,9 @@ export async function drainOutbox(
     try {
       if (await pushImageRefs(env, planId)) pushes++;
       done.push(...imageKeys);
+      // The service has the plan's set now, so each picture a card dropped since waits its grace from here
+      // (image-release.ts).
+      await stampImageReleases(env, planId, now);
     } catch (error) {
       failed.push({ ids: imageKeys, error });
     }

@@ -7,7 +7,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./embed-read-only": "./src/embed-read-only.ts",
-    "./oembed": "./src/oembed.ts"
+    "./oembed": "./src/oembed.ts",
+    "./walkthrough": "./src/walkthrough.ts"
   },
   "scripts": {
     "lint": "oxlint",

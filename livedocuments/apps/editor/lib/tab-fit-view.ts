@@ -11,6 +11,7 @@ import {
   type FitInsets,
 } from '@liveworkspace/workbench/lib/fit-clear-of-panel';
 import { sideChromeInsets } from './side-chrome-insets';
+import { topStripInset } from './top-strip-inset';
 import {
   besideSideInsets,
   computeFitToScreen,
@@ -33,11 +34,13 @@ export function tabFitView(canvas: HTMLElement | null, elements: Element[]): Vie
   if (boxedIds.size === 0) return EMPTY_TAB_VIEW;
   const bbox = unionBoxedBounds(elements, boxedIds);
   if (!bbox) return null;
-  // Fit clear of the Palette strip laid over the canvas's top, so nothing lands under it.
-  const strip = document
-    .querySelector<HTMLElement>('[data-toolbar-palette]:not(.hidden) [data-tour-id="palette"]')
-    ?.getBoundingClientRect();
-  const inset = topChromeInset(rect, strip && strip.width > 0 ? strip : null);
+  // Fit clear of the Palette strip laid over the canvas's top, and a standing palette tray under it (the same reach
+  // a framed page keeps clear of, lib/top-strip-inset), so nothing lands under either.
+  const reach = topStripInset(canvas);
+  const inset = topChromeInset(
+    rect,
+    reach > 0 ? { top: rect.top, bottom: rect.top + reach } : null,
+  );
   // Padded by the strip's depth on every side, not centred below it: the content stays centred (as before the
   // strip was considered) and clears both the strip and the bottom chrome of the same depth.
   // Beside Pages mode's Contents sidebar, never under it (docs/specs/007-editor/pages-mode.md

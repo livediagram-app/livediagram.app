@@ -91,7 +91,7 @@ apps/api/src/routes/automation-source.ts   writeSource(ctx) (who made a route's 
 
 apps/api/src/routes/automation-routes.ts   the routes below; gate: whole-plan edit, signed-in person or their token
 apps/editor/components/automations/
-  AutomationsButton.tsx       the footer button (in ChromeControls between Search and Settings), amber dot
+  automations-tools-item.tsx   the footer Tools menu's Automations row (useAutomationsToolsItem), count, amber dot
   AutomationsDialog.tsx       the screen: tabs, meter, Rules and Audit Trail views, phone sheet
   RefreshButton.tsx           Refresh beside the meter: reads the list and the open Audit Trail again
   RulesList.tsx, RuleRow.tsx, RulesEmpty.tsx
@@ -216,8 +216,19 @@ error logged.
 | `POST   /automations/test`              | `{ rule: AutomationRuleBody, item }` → `AutomationRunResponse` | 400, 404 `item_not_found`           |
 | `POST   /automations/:ruleId/run`       | `{ item }` → `AutomationRunResponse` (manual rules only)       | 404, 409 `automation_not_manual`    |
 | `GET    /automations/runs`              | `?rule&result&since&limit≤200` → `AutomationRunsResponse`      | 403                                 |
+| `GET    /automations/summary`           | `?rule` or `?name` (+ `tabId`) → `AutomationSummaryResponse`   | 404 `automation_not_found`          |
 
-Gate on every route: `gateEdit` for the whole plan, a signed-in caller or an API token of one (Phase 3, "Agents and
+**The summary** (`routes/automation-summary-route.ts`, Work Tracker 1049) is answered before the gate below: its gate is
+the card read's (`itemCaller(ctx, id, 'read')`), so anyone who can read the plan reads it. Its body is
+`automationRuleSummary` (`packages/items/src/automation/summary.ts`), a pure allow-list over the rule and the plan's
+names (`readAutomationPlan` and `tabOutlines`), never the stored rule. A tab-scoped caller's rule must have acted on a
+card in its scope (`actedOnCards`: an `item_history` row by Automation under the rule's name, or a
+`card_threads` comment holding its `ruleId` on a linked card), else 404, as for a rule gone. The editor's
+`RuleSummarySheet` (loaded on first open from `AutomationAuthorName`) reads it through `readRuleSummary`. Tests:
+`summary.test.ts` (words, and every redacted part kept out), `automation-summary.test.ts` (each role, a tab link, a
+rule gone, and the redacted parts through the real route), `RuleSummarySheet.test.tsx`.
+
+Gate on every other route: `gateEdit` for the whole plan, a signed-in caller or an API token of one (Phase 3, "Agents and
 the CLI" below, which also sets what a read-only token may do), never a workbench session, not a tab-scoped link
 (403 `automations_need_editor`). A Browser Storage plan never calls them. An unknown path under `/automations` is
 not routed (the OpenAPI drift probe's clean 404), and every route is in the OpenAPI manifest under the tag

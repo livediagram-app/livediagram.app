@@ -25,7 +25,6 @@ Scope, by file:
 | `renamed { from }`, `moved { folderName, teamId, fromTeamId? }` | `PATCH /items/:id`                | a UUID                                           | everyone who reaches it directly |
 | `trashed`, `restored`                                           | delete, restore                   | a UUID                                           | everyone who reaches it directly |
 | `shared { level, public? }`, `unshared`                         | link routes                       | a UUID                                           | everyone who reaches it directly |
-| `favourited`                                                    | `PUT /favourites/:id`             | a UUID                                           | the person who did it            |
 | `edited`                                                        | `PUT /app/items/:id/events`       | `ed:<item>:<key>:<day>`                          | everyone who reaches it directly |
 | `commented { reply? }`                                          | collab push                       | `cm:<item>:<tab>:<element>:<count>`              | everyone who reaches it directly |
 | `comment_resolved`                                              | collab push                       | `cr:<item>:<tab>:<element>:<count>`              | everyone who reaches it directly |
@@ -84,8 +83,8 @@ deletions.
 
 One statement (`buildHistoryQuery`): a range of `events_item` (`item_id = ?1`, then `occurred_at DESC, id DESC`),
 from `now - EVENT_RETENTION_MS` (so a lapsed event the sweep has not reached yet never shows), past the cursor,
-`limit + 1` rows; `favourited` only where `actor_id` is the reader, and `opened_by_visitor` and `copied_by_visitor`
-only for the owner. The index order is the page order, so there is no sort, and the rows it skips are only those
+`limit + 1` rows; never an old `favourited` (Favourites were removed), and `opened_by_visitor` and
+`copied_by_visitor` only for the owner. The index order is the page order, so there is no sort, and the rows it skips are only those
 kinds. Each event carries the item as it is now (`toItem` on the row already read, nothing read per event).
 Answer: `{ events: ItemEvent[], nextCursor }`. Binds are numbered (`?1` to `?6`, and the limit), seven at most.
 
@@ -103,7 +102,7 @@ step logs `more`). Deleting an event deletes nothing else: webhook deliveries an
 | `events` | `id` | `events_item (item_id, occurred_at DESC, id DESC)`; `events_actor (actor_id)`; `events_occurred (occurred_at)` | every recorder; merge; purge; sweep | History; webhooks; audit; notices |
 
 `item_id` cascades from `items` (a purged item takes its events). `actor_id` becomes `deleted` when an account
-closes, and that person's `favourited` events go. Made by `0017_events.sql` from `timeline_events`, after dropping
+closes, and that person's old `favourited` events go. Made by `0017_events.sql` from `timeline_events`, after dropping
 `timeline_event_scopes`, `timeline_scope_state` and `timeline_dismissals` and deleting the kinds above.
 
 ## Testing

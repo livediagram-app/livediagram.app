@@ -18,14 +18,14 @@ afterEach(() => {
 });
 
 describe("This Browser's list", () => {
-  it('follows a create, a star and a delete', async () => {
+  it('follows a create, a rename and a delete', async () => {
     __setOfflineBackend(memBackend());
     await offlineCreateDocument({ id: 'a', name: 'Alpha' }, 1_000);
     expect(readThisBrowser('livedocuments')).toEqual([
       expect.objectContaining({ id: 'a', title: 'Alpha', lastOpenedAt: 1_000, trashedAt: null }),
     ]);
-    await offlineUpdateRecord('a', (rec) => (rec ? { ...rec, favourite: true } : undefined));
-    expect(readThisBrowser('livedocuments')[0]!.favourite).toBe(true);
+    await offlineUpdateRecord('a', (rec) => (rec ? { ...rec, name: 'Alpha 2' } : undefined));
+    expect(readThisBrowser('livedocuments')[0]!.title).toBe('Alpha 2');
     await offlineDeleteDocument('a');
     expect(readThisBrowser('livedocuments')).toEqual([]);
   });

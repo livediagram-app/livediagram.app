@@ -157,10 +157,12 @@ export function usePagesMode(deps: {
   useEffect(() => () => glide.current?.(), []);
   // What shows of the canvas: below the Toolbar strip, beside the Contents panel wherever it sits
   // (docs/specs/007-editor/pages-mode.md "Contents"), so a page centres in what shows beside it.
-  const measure = () => {
+  // `settling`: the snap's measure as the view rests, which keeps the tray's room a page was framed with (the tray
+  // going never moves the page); an explicit frame measures afresh.
+  const measure = (settling = false) => {
     const canvas = deps.canvasMainRef.current;
     if (!canvas) return null;
-    const inset = topStripInset(canvas);
+    const inset = topStripInset(canvas, settling);
     const sides = sideChromeInsets(canvas);
     return { width: canvas.offsetWidth, height: canvas.offsetHeight, inset, sides };
   };
@@ -285,7 +287,7 @@ export function usePagesMode(deps: {
     pages,
     viewport: deps.viewport,
     measure: () => {
-      const m = measure();
+      const m = measure(true);
       if (!m) return null;
       return {
         screen: { width: m.width, height: m.height },
@@ -298,7 +300,7 @@ export function usePagesMode(deps: {
       };
     },
     fitOf: (page) => {
-      const m = measure();
+      const m = measure(true);
       return m ? frameFor(m, page) : deps.getViewport();
     },
     glideTo: (to, pageId) => {

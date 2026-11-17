@@ -1,8 +1,8 @@
-// A person's own things about items (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Folders, favourites,
-// defaults"): favourites, what they hid from Recent, and the folder New files each kind of item into.
+// A person's own things about items (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Folders and
+// defaults"): what they hid from Recent, and the folder New files each kind of item into.
 
-import { scopesOf, type Person } from './auth';
-import { decodeCursor, encodeCursor, isId, parseLimit } from './codec';
+import type { Person } from './auth';
+import { isId } from './codec';
 import { DEFAULT_KEY_MAX } from './config';
 import type { PersonContext } from './context';
 import type { Env } from './env';
@@ -11,16 +11,15 @@ import { reachableFolder } from './folders';
 import { badRequest, json, noContent, notFound, readObject } from './http';
 import { archivedRefusal, isArchived } from './archive';
 import { directAccess, getItemRow, LIVE_LINK } from './rows';
-import { eventStatements } from './events';
 
 const isForeignKeyError = (err: unknown) => String(err).includes('FOREIGN KEY');
 
 // Whether the person reaches the item at all: as a personal item's owner, through a team (a fresh one asked of
-// accounts), or through a live link they opened. Starring or hiding one out of reach answers 404 exactly as a missing
-// one does, so neither tells a stranger an id is real; one primary-key read, and a shared-row read only for an item
+// accounts), or through a live link they opened. Hiding one out of reach answers 404 exactly as a missing
+// one does, so it never tells a stranger an id is real; one primary-key read, and a shared-row read only for an item
 // they don't own or share a team with.
-// An archived item its owner reaches answers `archived`: starred or hidden it would come back with a Recent or
-// Favourites row the archive deleted (blueprints/archive.md).
+// An archived item its owner reaches answers `archived`: hidden it would come back with a Recent row the archive
+// deleted (blueprints/archive.md).
 async function reachesItem(
   env: Env,
   person: Person,
@@ -43,78 +42,9 @@ async function reachesItem(
   return link !== null;
 }
 
-export async function handleFavourites(ctx: PersonContext): Promise<Response> {
-  const { request, env, url, segments, person } = ctx;
-  const db = env.INDEX_DB;
-  if (segments.length === 1 && request.method === 'GET') {
-    const limit = parseLimit(url.searchParams.get('limit'));
-    const cursor = decodeCursor(url.searchParams.get('cursor'));
-    if (limit === null) return badRequest('invalid_query');
-    if (cursor === null) return badRequest('invalid_cursor');
-    const { results } = await db
-      .prepare(
-        `SELECT item_id, created_at FROM favourites WHERE person_id = ?
-         ${cursor ? 'AND (created_at, item_id) < (?, ?)' : ''}
-         ORDER BY created_at DESC, item_id DESC LIMIT ?`,
-      )
-      .bind(person.id, ...(cursor ? [cursor.at, cursor.id] : []), limit + 1)
-      .all<{ item_id: string; created_at: number }>();
-    const more = results.length > limit;
-    const page = more ? results.slice(0, limit) : results;
-    const last = page[page.length - 1];
-    return json({
-      favourites: page.map((r) => ({ itemId: r.item_id, createdAt: r.created_at })),
-      nextCursor: more && last ? encodeCursor({ at: last.created_at, id: last.item_id }) : null,
-    });
-  }
-  if (segments.length === 2 && isId(segments[1])) {
-    const itemId = segments[1];
-    if (request.method === 'PUT') {
-      const reach = await reachesItem(env, person, itemId);
-      if (reach === 'archived') return archivedRefusal();
-      if (!reach) return notFound();
-      const now = Date.now();
-      try {
-        // A new favourite is in the item's History for the person alone, when they reach the item.
-        await db.batch([
-          db
-            .prepare(
-              'INSERT OR IGNORE INTO favourites (person_id, item_id, created_at) VALUES (?, ?, ?)',
-            )
-            .bind(person.id, itemId, now),
-          ...eventStatements(db, {
-            itemId,
-            type: 'favourited',
-            actorId: person.id,
-            at: now,
-            when: {
-              sql: `(SELECT created_at FROM favourites WHERE person_id = ? AND item_id = items.id) = ?
-                    AND (scope IN (SELECT value FROM json_each(?))
-                         OR EXISTS (SELECT 1 FROM shared_with WHERE person_id = ? AND item_id = items.id))`,
-              args: [person.id, now, JSON.stringify(scopesOf(person)), person.id],
-            },
-          }),
-        ]);
-      } catch (err) {
-        if (isForeignKeyError(err)) return notFound();
-        throw err;
-      }
-      return noContent();
-    }
-    if (request.method === 'DELETE') {
-      await db
-        .prepare('DELETE FROM favourites WHERE person_id = ? AND item_id = ?')
-        .bind(person.id, itemId)
-        .run();
-      return noContent();
-    }
-  }
-  return notFound();
-}
-
-// PUT / DELETE /recent-hidden/:itemId: Hide from Recent and Show in Recent. The person's own view of the item, like a
-// star: it leaves Recent and Most Used, and nothing else. Kept on the person's `opens` row; one made by hiding an
-// item never opened (last_opened_at 0) goes again when it is shown.
+// PUT / DELETE /recent-hidden/:itemId: Hide from Recent and Show in Recent. The person's own view of the item:
+// it leaves Recent and Most Used, and nothing else. Kept on the person's `opens` row; one made by hiding an item
+// never opened (last_opened_at 0) goes again when it is shown.
 export async function handleRecentHidden(ctx: PersonContext): Promise<Response> {
   const { request, env, segments, person } = ctx;
   const db = env.INDEX_DB;

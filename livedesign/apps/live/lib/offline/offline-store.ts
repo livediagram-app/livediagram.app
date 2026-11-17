@@ -53,10 +53,6 @@ export type OfflineDesignRecord = {
   tabs: Tab[];
   // A record written before 25 October 2026 may still carry the slide deck it had (`presentation`):
   // nothing reads it (docs/specs/012-collaboration/presentation-mode.md "Saved data").
-  // Starred in the Explorer (docs/specs/013-workspace/favourites.md). Cloud stars are liveworkspace's index's,
-  // on an item an offline design does not have, so its star has to live here instead. Optional so records
-  // written before the field existed stay valid.
-  favourite?: boolean;
   // When the design was moved to this browser's local Trash
   // (docs/specs/013-workspace/trash.md). Absent = live.
   // A trashed record keeps everything else so a restore is exact.
@@ -293,14 +289,6 @@ export async function offlineSetDesignFolder(
 ): Promise<void> {
   await writeLive(id, (rec) => ({ ...rec, folderId, savedAt: now }));
 }
-
-// Star / un-star an offline design (docs/specs/013-workspace/favourites.md). The savedAt stamp is left
-// alone on purpose: a star is a per-user bookmark, not an edit to the
-// design, and bumping it would reorder Recent on a click that changed
-// nothing about the content.
-export const offlineSetFavourite = store.setFavourite;
-
-export const offlineListFavouriteIds = store.listFavouriteIds;
 
 export async function offlineSaveTab(id: string, tab: Tab, now: number): Promise<void> {
   // No create-on-missing: a save must never resurrect a deleted design.

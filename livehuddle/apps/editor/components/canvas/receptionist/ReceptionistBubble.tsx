@@ -4,6 +4,8 @@
 // his head, amber-edged, holding replies. Every topic in one grouped list, or one topic's answer with the real control
 // ringed, or his farewell. Yours alone: it is drawn on your screen and sent nowhere. It takes no focus.
 
+import { billboardOrigin, SPACE_BILLBOARD_ATTR } from '@livehuddle/avatar/billboard';
+import { InSpace3DOverlay, useInSpace3D } from '@/components/canvas/space-3d/Space3DOverlay';
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { SpeechCard } from '@livehuddle/avatar/components/AvatarSpeechBubble';
 import { SPEECH_TOP_CLEAR, tailOffset } from '@livehuddle/avatar/speech';
@@ -169,6 +171,8 @@ export function ReceptionistBubble({
   const [place, setPlace] = useState({ nudge: 0, below: false, width: 0, maxH: 0 });
   const { nudge, below, width, maxH } = place;
   const view = chat.open ? `${chat.topicId}|${chat.reason}` : '';
+  // In the 3D view the card is drawn in the overlay, standing over his head, and placed again whenever the view turns.
+  const in3D = useInSpace3D();
   useLayoutEffect(() => {
     const el = card.current;
     const list = scroller.current;
@@ -195,7 +199,9 @@ export function ReceptionistBubble({
     // Its whole height uncapped: the card round the list, plus all of the list.
     const frame = r.height - list.clientHeight;
     const natural = frame + list.scrollHeight;
-    const nextBelow = natural > roomAbove && roomBelow > roomAbove;
+    // In the 3D view the card stands over his head facing you (docs/specs/008-canvas/3d-view.md): never under his
+    // feet, where it would lie on the floor under the walls.
+    const nextBelow = !in3D && natural > roomAbove && roomBelow > roomAbove;
     const room = nextBelow ? roomBelow : roomAbove;
     const nextMaxH = natural > room ? Math.max(80, Math.floor(room - frame)) : 0;
     if (
@@ -205,7 +211,7 @@ export function ReceptionistBubble({
       nextMaxH !== maxH
     )
       setPlace({ nudge: nextNudge, below: nextBelow, width: r.width, maxH: nextMaxH });
-  }, [head.y, feet.y, head.x, zoom, view, nudge, below, width, maxH]);
+  }, [head.y, feet.y, head.x, zoom, view, nudge, below, width, maxH, in3D]);
   if (!chat.open) return null;
   const topic = chat.topicId ? (topics.find((t) => t.id === chat.topicId) ?? null) : null;
   const choose = (t: ReceptionistTopic) => {
@@ -215,88 +221,96 @@ export function ReceptionistBubble({
   const isHeard = (t: ReceptionistTopic) => heard.includes(t.id);
   const line = topic ? topic.answer : receptionistLine(chat.reason, name);
   return (
-    <>
+    // In the 3D view the card stands up about his feet (billboard.ts), in the overlay where no wall hides it; flat,
+    // this zero box does nothing.
+    <InSpace3DOverlay>
       <div
-        role="dialog"
-        aria-label="Receptionist"
-        data-receptionist-bubble=""
-        className="pointer-events-auto absolute z-10"
-        style={{
-          left: head.x,
-          top: below ? feet.y : head.y,
-          transform: below
-            ? `translate(-50%, ${UNDER_FEET / zoom}px) scale(${1 / zoom})`
-            : `translate(-50%, -100%) scale(${1 / zoom})`,
-          transformOrigin: below ? '50% 0' : '50% 100%',
-          width: `min(${BUBBLE_W}px, calc(100vw - 32px))`,
-        }}
-        onPointerDown={(e) => e.stopPropagation()}
+        {...SPACE_BILLBOARD_ATTR}
+        className="pointer-events-none absolute left-0 top-0"
+        style={billboardOrigin(feet.x, feet.y, '0px', '0px')}
       >
-        <div ref={card} style={nudge ? { transform: `translateX(${nudge}px)` } : undefined}>
-          <SpeechCard
-            colour={RECEPTIONIST_COLOUR}
-            maxWidth={BUBBLE_W}
-            // Under his feet there is nothing to point at; shifted sideways, the tail still points at his head.
-            tail={!below}
-            tailShift={tailOffset(nudge, width)}
-          >
-            <div
-              ref={scroller}
-              className={maxH ? 'overscroll-contain overflow-y-auto' : undefined}
-              style={maxH ? { maxHeight: maxH } : undefined}
+        <div
+          role="dialog"
+          aria-label="Receptionist"
+          data-receptionist-bubble=""
+          className="pointer-events-auto absolute z-10"
+          style={{
+            left: head.x,
+            top: below ? feet.y : head.y,
+            transform: below
+              ? `translate(-50%, ${UNDER_FEET / zoom}px) scale(${1 / zoom})`
+              : `translate(-50%, -100%) scale(${1 / zoom})`,
+            transformOrigin: below ? '50% 0' : '50% 100%',
+            width: `min(${BUBBLE_W}px, calc(100vw - 32px))`,
+          }}
+          onPointerDown={(e) => e.stopPropagation()}
+        >
+          <div ref={card} style={nudge ? { transform: `translateX(${nudge}px)` } : undefined}>
+            <SpeechCard
+              colour={RECEPTIONIST_COLOUR}
+              maxWidth={BUBBLE_W}
+              // Under his feet there is nothing to point at; shifted sideways, the tail still points at his head.
+              tail={!below}
+              tailShift={tailOffset(nudge, width)}
             >
-              <TypedLine className="text-[13px] leading-snug" text={line} />
-              {topic ? (
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  <Reply onClick={() => showReceptionistTopic(null)}>Another Topic</Reply>
-                  <Reply tone="quiet" onClick={closeReceptionist}>
-                    I&apos;ll Explore
-                  </Reply>
-                </div>
-              ) : chat.reason === 'farewell' ? null : (
-                <>
-                  <TopicList label="Topics">
-                    {RECEPTIONIST_TOPIC_GROUPS.map((group) => {
-                      const inGroup = topics.filter((t) => t.group === group);
-                      if (inGroup.length === 0) return null;
-                      return (
-                        <section key={group} aria-label={group} className="mb-1.5 last:mb-0">
-                          <h3 className="sticky top-0 z-[1] bg-white pb-1 pt-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-amber-600 dark:bg-slate-900 dark:text-amber-300">
-                            {group}
-                          </h3>
-                          <ul className="flex flex-col" style={{ gap: ROW_GAP }}>
-                            {inGroup.map((t) => (
-                              <TopicRow
-                                key={t.id}
-                                topic={t}
-                                heard={isHeard(t)}
-                                onChoose={() => choose(t)}
-                              />
-                            ))}
-                          </ul>
-                        </section>
-                      );
-                    })}
-                  </TopicList>
+              <div
+                ref={scroller}
+                className={maxH ? 'overscroll-contain overflow-y-auto' : undefined}
+                style={maxH ? { maxHeight: maxH } : undefined}
+              >
+                <TypedLine className="text-[13px] leading-snug" text={line} />
+                {topic ? (
                   <div className="mt-2 flex flex-wrap gap-1.5">
+                    <Reply onClick={() => showReceptionistTopic(null)}>Another Topic</Reply>
                     <Reply tone="quiet" onClick={closeReceptionist}>
                       I&apos;ll Explore
                     </Reply>
-                    {onLeave ? (
-                      <Reply tone="leave" onClick={onLeave}>
-                        Ask Receptionist to Leave
-                      </Reply>
-                    ) : null}
                   </div>
-                </>
-              )}
-            </div>
-          </SpeechCard>
+                ) : chat.reason === 'farewell' ? null : (
+                  <>
+                    <TopicList label="Topics">
+                      {RECEPTIONIST_TOPIC_GROUPS.map((group) => {
+                        const inGroup = topics.filter((t) => t.group === group);
+                        if (inGroup.length === 0) return null;
+                        return (
+                          <section key={group} aria-label={group} className="mb-1.5 last:mb-0">
+                            <h3 className="sticky top-0 z-[1] bg-white pb-1 pt-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-amber-600 dark:bg-slate-900 dark:text-amber-300">
+                              {group}
+                            </h3>
+                            <ul className="flex flex-col" style={{ gap: ROW_GAP }}>
+                              {inGroup.map((t) => (
+                                <TopicRow
+                                  key={t.id}
+                                  topic={t}
+                                  heard={isHeard(t)}
+                                  onChoose={() => choose(t)}
+                                />
+                              ))}
+                            </ul>
+                          </section>
+                        );
+                      })}
+                    </TopicList>
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      <Reply tone="quiet" onClick={closeReceptionist}>
+                        I&apos;ll Explore
+                      </Reply>
+                      {onLeave ? (
+                        <Reply tone="leave" onClick={onLeave}>
+                          Ask Receptionist to Leave
+                        </Reply>
+                      ) : null}
+                    </div>
+                  </>
+                )}
+              </div>
+            </SpeechCard>
+          </div>
         </div>
+        {topic?.target && topic.target !== 'room' ? (
+          <ReceptionistRing selector={topic.target} />
+        ) : null}
       </div>
-      {topic?.target && topic.target !== 'room' ? (
-        <ReceptionistRing selector={topic.target} />
-      ) : null}
-    </>
+    </InSpace3DOverlay>
   );
 }

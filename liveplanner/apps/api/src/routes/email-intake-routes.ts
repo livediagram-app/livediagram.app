@@ -1,8 +1,9 @@
 // A plan's board addresses, `/api/projects/:id/email-intake[/:boardId[/new-address]]`, inside the plan's room
 // (docs/specs/026-plan/email-to-board.md "Managing an address"; blueprint email-to-board.md "Behaviour and state").
-// An address lets mail add cards, so it is an Editor's of the whole plan, in person: the owner, a team member or an
-// Editor link with no tab scope. A Participant, a Viewer, a link confined to one tab, an API token, a workbench
-// session and a Community visitor are refused (403 `email_intake_needs_editor`), and nothing changes.
+// An address lets mail add cards, so it is an Editor's of the whole plan, in person and signed in: the owner, a team
+// member or an Editor link with no tab scope. A guest, a Participant, a Viewer, a link confined to one tab, an API
+// token, a workbench session and a Community visitor are refused (403 `email_intake_needs_editor`), and nothing
+// changes.
 //
 //   GET                         every address, the boards that may have one, and whether mail is taken at all
 //   PUT    /:boardId            turn the board's address on (201) or change Who Can Send (200)
@@ -44,7 +45,7 @@ function refuse(status: number, error: EmailIntakeError, reason: string): Respon
   return answer({ error }, status);
 }
 
-/** The door every route passes: an Editor of the whole plan, in person; or the refusal. */
+/** The door every route passes: an Editor of the whole plan, in person, signed in; or the refusal. */
 export async function intakeEditor(
   ctx: PlanRouteContext,
   projectId: string,
@@ -53,6 +54,8 @@ export async function intakeEditor(
   if (owner instanceof Response) return owner;
   if (!(await getProject(ctx.env, projectId))) return missingProject(ctx, projectId);
   if (ctx.token || ctx.workbench) return refuse(403, 'email_intake_needs_editor', 'not_in_person');
+  // An address outlives a browser session, so it is an account's (owner, 2026-11-16): never a guest's.
+  if (!ctx.accountUserId) return refuse(403, 'email_intake_needs_editor', 'guest');
   const grant = grantOn(ctx, projectId);
   if (!grant || grant.role !== 'edit' || grant.tabScope !== null || grant.community)
     return refuse(403, 'email_intake_needs_editor', 'not_editor');

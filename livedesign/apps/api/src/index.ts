@@ -17,6 +17,7 @@ import { handleInternalItems } from './routes/internal-items';
 import { CORS_HEADERS, forbidden, json, notFound, payloadTooLarge, rateLimited } from './responses';
 import { handleEvents } from './routes/events';
 import { handleImages } from './routes/images';
+import { handleWalkthroughs } from './routes/walkthroughs';
 import {
   createTokenBearer,
   createWorkbenchBearer,
@@ -291,6 +292,8 @@ async function routeApiRequest(
       return await handleCommunity(ctx);
     case 'images':
       return await handleImages(ctx);
+    case 'walkthroughs':
+      return await handleWalkthroughs(ctx);
     case 'designs':
       return await handleDesigns(ctx);
     case 'library':

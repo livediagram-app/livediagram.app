@@ -158,6 +158,9 @@ same dead token. Now, when any call the request made to the api answered 401, th
 (`../packages/mcp-kit/src/token-refusal.ts`). A request that never reaches the api (`initialize`, `tools/list`) is
 answered as before. It costs nothing extra: the api's own answers are watched, no call is added.
 
+**What Claude's connector directory checks** (registration lifetime, Anthropic's egress range, refresh and
+unknown grants, refusals in words, no token in a URL) is audited in [§4.16a](#416a-claude-connector-directory).
+
 **State storage.** Add a **KV namespace binding (`OAUTH_KV`) to `apps/mcp`** for
 client registrations, authorize sessions, and codes (all short TTLs). `apps/api`
 needs no KV: minting is liveworkspace's accounts service's (`POST /api/oauth/exchange` asks it).
@@ -634,7 +637,7 @@ index as the caller; `@liveworkspace/index-app` `archive-doors.ts`). Both are de
 (`@liveworkspace/agent-verbs/mcp/archive-tools`) in this product's words.
 
 - **`archive_design`**: `{ designId }`. Destructive. Moves a design the user owns to their Archived: it leaves
-  every list, its share links end, and its favourites, Recent and Most Used rows and Inbox threads are deleted for
+  every list, its share links end, and its Recent and Most Used rows and Inbox threads are deleted for
   everyone, so moving it out starts fresh. Returns `{ archived, id, name }`. Only its owner archives it (a
   teammate is refused 403 `not_owner`), a design in the Trash is refused 409 `trashed` (pointing at
   `restore_design`), and one already archived answers as it is. Each refusal is a model-correctable error.
@@ -892,6 +895,83 @@ read its server card, because `/mcp` answers only a signed-in caller.
   republishing means bumping `version` in `listing.ts` and `server.json` (the
   test keeps them equal).
 - Only the hosted origin is listed: the descriptor names it alone.
+
+### 4.16a Claude connector directory
+
+The hosted server is meant for **Claude's connector directory**, so a person finds livedesign under Connectors in
+claude.ai or Claude Desktop and presses Connect instead of pasting `https://mcp.livedesign.app/mcp`. Submitting
+happens at `claude.ai/directory/manage` and is the owner's (a paid Claude account, seven policy acknowledgments, and
+a test account if review is escalated to Verified). This section is the audit against the directory's public pages
+(read 2026-11-16): [submission](https://claude.com/docs/connectors/building/submission),
+[review criteria](https://claude.com/docs/connectors/building/review-criteria) and
+[authentication](https://claude.com/docs/connectors/building/authentication). OAuth, the tool rules and the listing
+helpers are `@liveworkspace/mcp-kit`'s, the same for every product, so each finding is fixed once there.
+
+**Authentication (§3).**
+
+| Directory asks                                                 | Here                                                                                                                                                                                                                                                                                                             |
+| -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `401` with `WWW-Authenticate: Bearer resource_metadata="…"`    | Met: `/mcp` without a Bearer, or with one the api refuses (`error="invalid_token"`), answers `401` with the challenge (`token-refusal.ts`).                                                                                                                                                                      |
+| Protected resource `resource` equals the MCP URL exactly       | Met: `resource` is `<origin>/mcp`, one authorization server (itself), `bearer_methods_supported: ["header"]`, at the root and at the path-inserted `/.well-known/oauth-protected-resource/mcp`.                                                                                                                  |
+| PKCE S256 on every authorize                                   | Met: `code_challenge_methods_supported: ["S256"]`; `plain`, a short challenge or a short verifier is refused.                                                                                                                                                                                                    |
+| DCR or CIMD                                                    | DCR (RFC 7591), `token_endpoint_auth_methods_supported: ["none"]`. CIMD is not advertised, so Claude uses DCR.                                                                                                                                                                                                   |
+| claude.ai's callback `https://claude.ai/api/mcp/auth_callback` | Met: an https redirect registers; a client named Claude may register only redirects on `claude.ai`, `claude.com`, `anthropic.com` or loopback (`oauth-names.ts`).                                                                                                                                                |
+| Claude Code's loopback redirect on any port                    | Met: a registered `http` loopback URI matches on scheme, host and path with any port (RFC 8252 §7.3).                                                                                                                                                                                                            |
+| A registration stays usable                                    | A registered client lives 200 days, longer than the six-month token it mints, and every authorize renews it, so Claude can always sign in again with the `client_id` it kept.                                                                                                                                    |
+| Refresh tokens rotate; a dead one gets `invalid_grant`         | Not applicable: no refresh token is issued (each access token lives six months, §3.5). A `refresh_token` grant answers `400 invalid_grant` "This server issues no refresh tokens. Sign in again.", so a client signs in again. Refresh support is added only if review asks.                                     |
+| `/token` takes `application/x-www-form-urlencoded`             | Met; a body that parses as nothing (JSON) is `400 invalid_request` saying to send it form-encoded, never `415`. An unknown grant is `400 unsupported_grant_type`.                                                                                                                                                |
+| Discovery, registration and token answer within 10 s           | Met: each is at most three KV operations and never calls another service (a test runs the whole claude.ai flow with the network refused).                                                                                                                                                                        |
+| Nothing blocks `160.79.104.0/21`                               | Met: no address is blocked. The one per-address limit Claude meets, 20 registrations an hour, would stop every claude.ai user at once from Anthropic's shared egress, so that range has its own budget of 2,000 an hour (`anthropic-egress.ts`). Tool calls are limited per token by the api, never per address. |
+| No token in a query string                                     | Met: only the `Authorization` header is read, and a `/mcp` request naming `access_token`, `token`, `api_key` or `apikey` in its query is refused `400 invalid_request` in words.                                                                                                                                 |
+
+**Tools (§4).**
+
+- **Titles and hints.** Every tool has a title and a behaviour (§4.14): `readOnlyHint: true`, or `readOnlyHint: false`
+  with a `destructiveHint`. `upload_image` is `openWorldHint: true` and its description says plainly that the server
+  fetches a public https URL it is given: the one call that reaches past livedesign's own api.
+- **The guard.** `apps/mcp/src/directory.test.ts` reads every tool from the server card (exactly what `/mcp` lists) and
+  runs `directoryProblems` (`@liveworkspace/mcp-kit/directory`): a title, the read-only or destructive hint, a name of at
+  most 64 characters in `A-Z a-z 0-9 _ . -`, a description of at least 20 characters, and an open-world tool that says it
+  fetches a URL. A new tool that misses one fails CI.
+- **Reads and writes apart.** No catch-all request tool: each tool is one verb.
+- **Descriptions are facts** (§4.15): no instruction to the model, no hidden text, no promotion.
+- **Refusals in words.** A mistake the caller can fix is a tool error that says what to change ("Errors that teach").
+  A failure it cannot fix is worded too: an api `5xx` reads "The service behind this tool did not finish the call
+  (HTTP 503). Try again in a moment.", anything else "This tool failed unexpectedly (…). Try again in a moment.", never a
+  bare "api 500: Internal Server Error" (`failureWords`). Outside the tools, an unknown path names `/mcp`, a crash is
+  `500 server_error` with a sentence, and every OAuth refusal carries an `error_description`. The device grant's polling
+  answers keep their RFC 8628 codes alone, since only the CLI uses it and words them itself.
+- **Bounded answers.** Searches are capped by their `limit`, pictures have their own byte budget (§5), and any text
+  answer over 150,000 characters, Claude's own cap on a tool result, becomes a refusal saying how to ask for less
+  (`TOOL_RESULT_MAX_CHARS`).
+- **MCP Apps.** The interactive view (§5a) opens links only to `https://www.livedesign.app`, the product's own editor, and
+  its CSP lists only livedesign's own socket host.
+
+**Listing copy** (for the submission form):
+
+- **Server name:** livedesign
+- **One-liner:** Make logos, wireframes and photo edits on livedesign from a chat.
+- **Description:** livedesign is a free design tool for logos, wireframes, mock-ups and photo edits, live for everyone on a design. Connect it and Claude can find your designs, read a page as text or a picture, make a design or a page from a template or a description, change its elements and components, answer comment threads, share a link and tidy your library. Every change appears live for anyone with the design open.
+- **Categories:** Design; Productivity
+- **Server URL:** `https://mcp.livedesign.app/mcp`
+- **Documentation:** `https://www.livedesign.app/help/account-and-data/connect-ai-mcp/`
+- **Privacy policy:** `https://www.liveworkspace.app/privacy` (it covers connected AI tools for every app)
+- **Support:** the liveworkspace contact form, `https://www.liveplanner.app/form/90Bgj5sY9eTpVrjhx9tTZj`
+- **Icon:** `https://www.livedesign.app/livedesign-icon-512.png`
+- **Slug:** `livedesign` (permanent once published)
+- **Allowed link URIs:** `https://www.livedesign.app`
+- **Use cases:**
+  - Sketch a wireframe or a mock-up from a description.
+  - Make a logo or a social image from a template.
+  - Read a design and change it as asked.
+  - Go through a design's comment threads and act on them.
+- **Before connecting:** a free liveworkspace account (sign-in is required; guests can't connect).
+- **Reads and writes:** both. Reads: find, read, and list templates, icons, images, threads and the Trash. Writes:
+  create, add tabs and pages, change pages and components (some destructive), update (destructive), share, rename, delete to the Trash (destructive), archive (destructive), restore, comment threads, upload or delete gallery images. A read-only connection (a switch on the approval page) is refused every write by the api.
+- **Data handling:** the api is livedesign's own, first-party; no personal health data and no sponsored content. The server
+  runs no AI model and keeps no conversation data: it stores only OAuth state (sessions, codes, client registrations),
+  and the token lives in the liveworkspace accounts Worker. What Claude makes is marked Made by AI or Generated by AI.
+- **Authentication:** OAuth, always required, DCR.
 
 ### 4.17 Structured output and described parameters
 

@@ -150,7 +150,7 @@ export function lifecycleEmail(
           'The Explorer in every app shows what you have made in all of them, so you can keep it tidy from wherever you are:',
         points: both([
           '<strong>Folders</strong> hold work from any app; drag to sort, and collapse the ones you’re not using.',
-          '<strong>Search, Recent and Favourites</strong> take you straight back to what you were working on.',
+          '<strong>Search and Recent</strong> take you straight back to what you were working on.',
           '<strong>Share</strong> right from the grid with a view-only or editor link.',
         ]),
         cta: home.explorer,

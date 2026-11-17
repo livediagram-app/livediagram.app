@@ -16,7 +16,7 @@ import type { PanelSection } from './sections';
 import { paneView } from './panel-view';
 import { FolderCard, ItemRow } from './pane-items';
 
-// ---- A place: Shared With Me, My Work, a team, Favourites -------------------------------------------------
+// ---- A place: Shared With Me, My Work, a team -------------------------------------------------------------
 
 export function PlaceSection({
   section,

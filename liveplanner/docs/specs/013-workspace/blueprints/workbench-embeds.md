@@ -334,7 +334,7 @@ Resolved where `lwt_` is, only when no account access token verified:
 
 Everything else is `confined`, among it: `projects/:doc` `DELETE`, `copy`, `folder`, `shared-tabs`, `share*`,
 `thumbnail`, `tabs/:tabId/link`, `tabs/:tabId/presence` (an agent's door), `projects` (the library),
-`folders`, `shared`, `favourites`, `home`, `timeline`, `activity`, `trash`, `placement-defaults`, `tokens`, `teams`,
+`folders`, `shared`, `home`, `timeline`, `activity`, `trash`, `placement-defaults`, `tokens`, `teams`,
 `account`, `migrate`, `guest-id`, `oauth`, every write to `preferences` and `participants`, and every
 `workbench/*` route but the one above. `/ws` carries no bearer and is decided by its ticket. `events` and
 `share/:code` are called without credentials by the editor and never see `lvw_`.
@@ -433,23 +433,23 @@ randomColor() }`; `apiSaveSelf` never runs (I9).
 
 The Surface table, every gate `workbenchMode` touches (`appChrome` is `surface === 'app'`):
 
-| Gate                                                                                                 | File                                                                  | In a workbench                                            |
-| ---------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- | --------------------------------------------------------- |
-| `EditorHeader` (and with it the account menu, Share, Make a copy, role pill)                         | `EditorViewBars.tsx`                                                  | Not rendered                                              |
-| TabBar, palette, toolbars, Quick style, panels, search                                               | `EditorViewBars.tsx`                                                  | Rendered as in the app                                    |
-| `EmbedChrome`                                                                                        | `EditorView.tsx`                                                      | Not rendered; `WorkbenchChrome` instead                   |
-| Explorer (popover)                                                                                   | `useCanvasChromePanels.tsx`                                           | Not rendered; status screens use `EmbedShell`             |
-| Sign-in banner, theme-mode banner                                                                    | `EditorView.tsx`                                                      | Off                                                       |
-| Settings categories `projects`, `account`, `tokens`; the Appearance choice                           | `settings-catalogue.ts`                                               | Hidden                                                    |
-| Share, delete, move, take offline, copy                                                              | `editor-commands.ts`                                                  | Absent                                                    |
-| TabBar "copy to another project"                                                                     | `EditorViewBars.tsx` `otherProjects`                                  | `[]`                                                      |
-| `useFolders`, `useFavourites`, `useTeams`, `useTeamPeople`, `useTeamLibrariesSweep`, `useShareLinks` | `app/project/[id]/editor-state/` slices                               | `enabled: false`                                          |
-| `useCommentMentions`, `useAssigneeOptions`                                                           | `hooks/collab`                                                        | Candidates from presence only; no team read, no notify    |
-| Identity screen                                                                                      | `app/project/[id]/editor-state/useEditorComments.ts` `joinScreenOpen` | Never                                                     |
-| `defaultPan`, `useModeDefaultTool` embed arguments                                                   | `app/project/[id]/editor-state/useEditorDialogs.ts`                   | As the app (`false`)                                      |
-| Element indicators, comment badges                                                                   | `EditorView.tsx`                                                      | As the app                                                |
-| `ProjectTrashedCard`                                                                                 | `editor-page.tsx`                                                     | `restorable={false}`                                      |
-| `LoadErrorCard`, `NotFound`                                                                          | `editor-page.tsx`                                                     | `embed` forms (no recovery card; create-new in a new tab) |
+| Gate                                                                                | File                                                                  | In a workbench                                            |
+| ----------------------------------------------------------------------------------- | --------------------------------------------------------------------- | --------------------------------------------------------- |
+| `EditorHeader` (and with it the account menu, Share, Make a copy, role pill)        | `EditorViewBars.tsx`                                                  | Not rendered                                              |
+| TabBar, palette, toolbars, Quick style, panels, search                              | `EditorViewBars.tsx`                                                  | Rendered as in the app                                    |
+| `EmbedChrome`                                                                       | `EditorView.tsx`                                                      | Not rendered; `WorkbenchChrome` instead                   |
+| Explorer (popover)                                                                  | `useCanvasChromePanels.tsx`                                           | Not rendered; status screens use `EmbedShell`             |
+| Sign-in banner, theme-mode banner                                                   | `EditorView.tsx`                                                      | Off                                                       |
+| Settings categories `projects`, `account`, `tokens`; the Appearance choice          | `settings-catalogue.ts`                                               | Hidden                                                    |
+| Share, delete, move, take offline, copy                                             | `editor-commands.ts`                                                  | Absent                                                    |
+| TabBar "copy to another project"                                                    | `EditorViewBars.tsx` `otherProjects`                                  | `[]`                                                      |
+| `useFolders`, `useTeams`, `useTeamPeople`, `useTeamLibrariesSweep`, `useShareLinks` | `app/project/[id]/editor-state/` slices                               | `enabled: false`                                          |
+| `useCommentMentions`, `useAssigneeOptions`                                          | `hooks/collab`                                                        | Candidates from presence only; no team read, no notify    |
+| Identity screen                                                                     | `app/project/[id]/editor-state/useEditorComments.ts` `joinScreenOpen` | Never                                                     |
+| `defaultPan`, `useModeDefaultTool` embed arguments                                  | `app/project/[id]/editor-state/useEditorDialogs.ts`                   | As the app (`false`)                                      |
+| Element indicators, comment badges                                                  | `EditorView.tsx`                                                      | As the app                                                |
+| `ProjectTrashedCard`                                                                | `editor-page.tsx`                                                     | `restorable={false}`                                      |
+| `LoadErrorCard`, `NotFound`                                                         | `editor-page.tsx`                                                     | `embed` forms (no recovery card; create-new in a new tab) |
 
 Preferences: `fetchUserPreferences` runs; `writeUserPreferences` keeps the local write and the event and skips
 `apiPutPreferences` under confinement. Appearance: `liveplanner:theme` calls `setAppearanceOverride(scheme)`; before
@@ -592,15 +592,15 @@ is a person's editor and every route re-gates it with the owner's identity at th
 
 `WORKSPACE_ROUTES` (`:p` any one segment, `**` any rest, including none):
 
-| Method                 | Path under `/api`                                                                                                                   |
-| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| GET                    | `capabilities`, `openapi.json`, `templates/**`, `icons`, `schema/**`, `preferences`, `participants/:owner` (the owner only)         |
-| GET                    | `share/**` (the person opening a link shared with them)                                                                             |
-| POST, GET              | `images`, `images/:imageId` (a card's Image field)                                                                                  |
-| GET, POST, PUT, DELETE | `projects/**` but `projects/:p/tabs/:p/presence`                                                                                    |
-| GET, POST, PUT, DELETE | `folders/**`, `shared/**`, `favourites/**`, `tags/**`, `home/**`, `timeline/**`, `activity/**`, `trash/**`, `placement-defaults/**` |
-| GET                    | `teams`, `teams/:p`, `teams/:p/library`, `teams/:p/members`                                                                         |
-| DELETE                 | `workbench/sessions/current`                                                                                                        |
+| Method                 | Path under `/api`                                                                                                           |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| GET                    | `capabilities`, `openapi.json`, `templates/**`, `icons`, `schema/**`, `preferences`, `participants/:owner` (the owner only) |
+| GET                    | `share/**` (the person opening a link shared with them)                                                                     |
+| POST, GET              | `images`, `images/:imageId` (a card's Image field)                                                                          |
+| GET, POST, PUT, DELETE | `projects/**` but `projects/:p/tabs/:p/presence`                                                                            |
+| GET, POST, PUT, DELETE | `folders/**`, `shared/**`, `tags/**`, `home/**`, `timeline/**`, `activity/**`, `trash/**`, `placement-defaults/**`          |
+| GET                    | `teams`, `teams/:p`, `teams/:p/library`, `teams/:p/members`                                                                 |
+| DELETE                 | `workbench/sessions/current`                                                                                                |
 
 Everything else is `confined`, among it (Never the account): `account`, `migrate`, `guest-id`, `tokens/**`,
 `workbench/**` but the one above, every write to `participants` and `preferences`, `ai/**`, `oauth/**`,

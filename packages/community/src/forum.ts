@@ -1,4 +1,4 @@
-import { COMMUNITY_APPS, type CommunityApp } from './apps';
+import { isCommunityApp, type CommunityApp } from './apps';
 
 // The Forum (liveworkspace/docs/specs/007-community/community.md "The Forum"): one forum for every app, on the Community
 // page beside the gallery. Its categories, reactions, limits, validation and wire shapes, shared by the Community
@@ -8,21 +8,20 @@ import { COMMUNITY_APPS, type CommunityApp } from './apps';
 // Categories and reactions
 // ---------------------------------------------------------------------
 
-/** General, then one per app in `COMMUNITY_APPS` order, each named as the app is. */
+/** What kind of post a topic is. Apps are not categories: a topic names its app in its own field (`app`). */
 export const FORUM_CATEGORIES = [
+  { id: 'question', label: 'Question' },
+  { id: 'tips', label: 'Tips & Tricks' },
+  { id: 'feature', label: 'Feature Request' },
+  { id: 'bug', label: 'Bug Report' },
+  { id: 'showcase', label: 'Show & Tell' },
   { id: 'general', label: 'General' },
-  ...COMMUNITY_APPS.map((app) => ({
-    id: forumCategoryOfAppId(app),
-    label: forumCategoryOfAppId(app),
-  })),
 ] as const satisfies readonly { id: string; label: string }[];
 
-function forumCategoryOfAppId(app: CommunityApp) {
-  return app.slice(0, -'.app'.length) as ForumAppCategory;
-}
+export type ForumCategory = (typeof FORUM_CATEGORIES)[number]['id'];
 
-type ForumAppCategory = CommunityApp extends `${infer Name}.app` ? Name : never;
-export type ForumCategory = 'general' | ForumAppCategory;
+/** The category a new post starts in. */
+export const FORUM_START_CATEGORY: ForumCategory = 'question';
 
 const CATEGORY_IDS: ReadonlySet<string> = new Set(FORUM_CATEGORIES.map((c) => c.id));
 
@@ -30,13 +29,22 @@ export function isForumCategory(value: unknown): value is ForumCategory {
   return typeof value === 'string' && CATEGORY_IDS.has(value);
 }
 
-/** The category a new question starts in: the page's app's, or General on liveworkspace.app. */
-export function forumCategoryOfApp(app: CommunityApp | null): ForumCategory {
-  return app ? forumCategoryOfAppId(app) : 'general';
-}
-
 export function forumCategoryLabel(id: ForumCategory): string {
   return FORUM_CATEGORIES.find((c) => c.id === id)!.label;
+}
+
+/** The app a topic is about, or null for Any App (liveworkspace, or every app). */
+export type ForumApp = CommunityApp | null;
+
+export const FORUM_ANY_APP_LABEL = 'Any App';
+
+export function isForumApp(value: unknown): value is ForumApp {
+  return value === null || isCommunityApp(value);
+}
+
+/** An app's name in words ("livediagram"), or Any App. */
+export function forumAppLabel(app: ForumApp): string {
+  return app ? app.slice(0, -'.app'.length) : FORUM_ANY_APP_LABEL;
 }
 
 export const FORUM_REACTIONS = [
@@ -88,10 +96,13 @@ export type ForumPostState = 'listed' | 'pending' | 'refused' | 'hidden';
 
 export const FORUM_SORTS = [
   { id: 'active', label: 'Latest Activity' },
+  { id: 'popular', label: 'Popular' },
   { id: 'new', label: 'Newest' },
   { id: 'unanswered', label: 'Unanswered' },
 ] as const;
 export type ForumSort = (typeof FORUM_SORTS)[number]['id'];
+/** Popular reads only the topics active in this window, so its ranking stays a bounded scan however old the Forum. */
+export const FORUM_POPULAR_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
 const SORT_IDS: ReadonlySet<string> = new Set(FORUM_SORTS.map((s) => s.id));
 
 /** How an author is shown: a name and a colour, never an id. */
@@ -106,6 +117,7 @@ export type ForumReactions = {
 export type ForumTopicSummary = {
   id: string;
   category: ForumCategory;
+  app: ForumApp;
   title: string;
   excerpt: string;
   author: ForumAuthor;
@@ -133,6 +145,7 @@ export type ForumPost = {
 export type ForumTopic = ForumPost & {
   topicId: null;
   category: ForumCategory;
+  app: ForumApp;
   title: string;
   /** The reply its author marked, when that reply is listed. */
   answerId: string | null;
@@ -144,7 +157,12 @@ export type ForumTopicsResponse = { topics: ForumTopicSummary[]; nextOffset: num
 export type ForumTopicResponse = { topic: ForumTopic; replies: ForumReply[] };
 export type ForumReactionsResponse = { reactions: ForumReactions };
 
-export type ForumTopicInput = { category: ForumCategory; title: string; body: string };
+export type ForumTopicInput = {
+  category: ForumCategory;
+  app: ForumApp;
+  title: string;
+  body: string;
+};
 export type ForumReplyInput = { body: string };
 export type ForumEditInput = { title?: string; body: string };
 
@@ -152,7 +170,7 @@ export type ForumEditInput = { title?: string; body: string };
 // Validation
 // ---------------------------------------------------------------------
 
-export type ForumInputError = 'invalid_category' | 'invalid_title' | 'invalid_body';
+export type ForumInputError = 'invalid_category' | 'invalid_app' | 'invalid_title' | 'invalid_body';
 type Valid<T> = { ok: true; value: T } | { ok: false; error: ForumInputError | 'invalid_author' };
 
 const singleLine = (value: unknown) =>
@@ -174,12 +192,15 @@ const within = (text: string, min: number, max: number) => text.length >= min &&
 export function validateForumTopic(input: unknown): Valid<ForumTopicInput> {
   const body = (input ?? {}) as Record<string, unknown>;
   if (!isForumCategory(body.category)) return { ok: false, error: 'invalid_category' };
+  // Absent is Any App, as null is.
+  const app = body.app ?? null;
+  if (!isForumApp(app)) return { ok: false, error: 'invalid_app' };
   const title = singleLine(body.title);
   if (!within(title, FORUM_TITLE_MIN, FORUM_TITLE_MAX))
     return { ok: false, error: 'invalid_title' };
   const text = normaliseForumText(body.body);
   if (!within(text, FORUM_BODY_MIN, FORUM_BODY_MAX)) return { ok: false, error: 'invalid_body' };
-  return { ok: true, value: { category: body.category, title, body: text } };
+  return { ok: true, value: { category: body.category, app, title, body: text } };
 }
 
 export function validateForumReply(input: unknown): Valid<ForumReplyInput> {
@@ -246,15 +267,25 @@ export function forumExcerpt(body: string): string {
 // The list's query
 // ---------------------------------------------------------------------
 
-export type ForumListQuery = { category: ForumCategory | null; sort: ForumSort; offset: number };
+/** `app`: null for every app. A list of one app's posts names it; there is no filter for Any App posts alone. */
+export type ForumListQuery = {
+  category: ForumCategory | null;
+  app: CommunityApp | null;
+  sort: ForumSort;
+  offset: number;
+};
 
-/** Lenient, as the gallery's: an unknown category is every category, an unknown sort `active`, the offset clamped. */
+/** Lenient, as the gallery's: an unknown category or app is every one, an unknown sort `active`, the offset clamped.
+ *  An app reads with or without its `.app` (`?app=livediagram`). */
 export function parseForumListQuery(params: URLSearchParams): ForumListQuery {
   const category = params.get('category');
+  const appParam = params.get('app');
+  const app = appParam && !appParam.endsWith('.app') ? `${appParam}.app` : appParam;
   const sort = params.get('sort');
   const offset = Math.floor(Number(params.get('offset') ?? 0));
   return {
     category: isForumCategory(category) ? category : null,
+    app: isCommunityApp(app) ? app : null,
     sort: sort && SORT_IDS.has(sort) ? (sort as ForumSort) : 'active',
     offset: Number.isFinite(offset) ? Math.min(Math.max(offset, 0), FORUM_MAX_OFFSET) : 0,
   };
@@ -263,6 +294,7 @@ export function parseForumListQuery(params: URLSearchParams): ForumListQuery {
 export function forumQueryParams(query: Partial<ForumListQuery>): URLSearchParams {
   const params = new URLSearchParams();
   if (query.category) params.set('category', query.category);
+  if (query.app) params.set('app', forumAppLabel(query.app));
   if (query.sort && query.sort !== 'active') params.set('sort', query.sort);
   if (query.offset) params.set('offset', String(query.offset));
   return params;

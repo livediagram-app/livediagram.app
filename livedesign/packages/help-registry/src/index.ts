@@ -161,7 +161,7 @@ export const categories: Category[] = [
     title: 'Collaboration',
     description:
       'Work together in real time: comments, assigned actions, live presence, teams and sharing.',
-    articleCount: 6,
+    articleCount: 7,
     kind: 'feature',
   },
   {
@@ -1437,9 +1437,9 @@ export const articles: Article[] = [
   {
     slug: 'personal-space',
     title: 'My Work and Folders',
-    description: 'Your own library: the folders you create, your unfiled items and Favourites.',
+    description: 'Your own library: the folders you create and your unfiled items.',
     keywords:
-      'my designs personal space library my work your designs your diagrams own files root folder organise organize unsorted unfiled made by ai generated favourite favorite star starred bookmark pin quick access',
+      'my designs personal space library my work your designs your diagrams own files root folder organise organize unsorted unfiled made by ai generated bookmark pin quick access',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
@@ -1498,6 +1498,15 @@ export const articles: Article[] = [
     description: 'Save points for the whole design: take one, keep five, revert to one.',
     keywords:
       'snapshot save point restore revert undo backup checkpoint version rollback go back earlier copy',
+    category: 'Collaboration',
+    categorySlug: 'collaboration',
+  },
+  {
+    slug: 'walkthroughs',
+    title: 'Walkthroughs',
+    description: 'Record a narrated tour of the design and let others play it back over it.',
+    keywords:
+      'walkthrough record recording narrate narration voice video camera webcam loom talktrack async tour explain play playback',
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },

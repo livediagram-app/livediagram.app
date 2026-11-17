@@ -5,7 +5,9 @@
 // and the Inbox view. Beside it, the host's
 // own rows (items only this browser holds), marked `local`, read again alone when the host says they changed
 // (`subscribeLocal`). Coming back to the browser tab reads it again, keeping
-// what it had if that read fails: a slightly stale list beats an alarm.
+// what it had if that read fails: a slightly stale list beats an alarm. A row done from the pane (`settle`) leaves
+// `data` at once, so the sidebar's badge, the rail and Home drop with the list, and stays out while a read still
+// lists it as it was (the index lists it until the app's next push).
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type {
@@ -17,6 +19,7 @@ import type {
 } from '@liveworkspace/index-client';
 import type { InboxHost, InboxLocalRows, Located } from '../types';
 import type { AppFilter } from '../words';
+import { settledOf, withoutSettled, type InboxEntry } from '../explorer/inbox/sections';
 import { isAbort } from './errors';
 import { useReturnToTab } from './useReturnToTab';
 
@@ -31,6 +34,8 @@ export type InboxState = {
   loading: boolean;
   error: boolean;
   reload: () => void;
+  /** A row's work was done here (resolved, marked done): it leaves the Inbox at once, while reads list it unchanged. */
+  settle: (entry: InboxEntry) => void;
 };
 
 const NO_LOCAL: InboxLocalRows = { actions: [], threads: [] };
@@ -156,13 +161,25 @@ export function useInbox(
     if (stale) rereadLocal();
   }, [stale, localRows, rereadLocal]);
   const reload = useCallback(() => setAttempt((n) => n + 1), []);
+  // The rows done here, by key, with their time then. Bounded by what the person does in one visit.
+  const [settled, setSettled] = useState<ReadonlyMap<string, number>>(() => new Map());
+  const settle = useCallback((entry: InboxEntry) => {
+    const { key: k, at } = settledOf(entry);
+    setSettled((prev) => (prev.get(k) === at ? prev : new Map(prev).set(k, at)));
+  }, []);
   const current = state.key === key ? state : null;
   const raw = current?.raw ?? null;
   const local = current?.local ?? NO_LOCAL;
-  const data = useMemo(() => (raw ? merged(raw, local) : null), [raw, local]);
+  const data = useMemo(
+    () => (raw ? withoutSettled(merged(raw, local), settled) : null),
+    [raw, local, settled],
+  );
   const loading = enabled && !current;
   const error = current?.error ?? false;
-  return useMemo(() => ({ data, loading, error, reload }), [data, loading, error, reload]);
+  return useMemo(
+    () => ({ data, loading, error, reload, settle }),
+    [data, loading, error, reload, settle],
+  );
 }
 
 export { inboxCount } from '../explorer/inbox/sections';

@@ -150,7 +150,7 @@ describe('settings catalogue', () => {
       ['watchTopic-diagram-look', 'toggle', 'Look and Feel', 'diagramTour'],
       ['watchTopic-diagram-shape', 'toggle', 'Style a Shape', 'diagramTour'],
       ['watchTopic-diagram-find', 'toggle', 'Find Anything', 'diagramTour'],
-      ['watchTopic-diagram-tidy', 'toggle', 'Tidy Up', 'diagramTour'],
+      ['watchTopic-diagram-tidy', 'toggle', 'Tidy', 'diagramTour'],
       ['drawTourSeen', 'toggle', 'Watch It Built in Draw', 'drawTour'],
       ['watchTopic-draw-sketch', 'toggle', 'Sketch', 'drawTour'],
       ['watchTopic-draw-recognition', 'toggle', 'Shape Recognition', 'drawTour'],

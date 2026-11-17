@@ -117,6 +117,7 @@ export * from './concept';
 export * from './concept-timeline';
 export * from './concept-ramp';
 export * from './shape-variants';
+export * from './c4-look';
 export * from '@liveworkspace/model-core/title-caption';
 export * from './editor-mode';
 export * from './tab-stats';
@@ -242,6 +243,7 @@ export * from './web-components';
 // draw their own `…` rather than taking the shared settings one.
 export * from './behaviour-shapes';
 export * from './colors';
+export * from './template-example';
 export * from './cell-colours';
 export * from './table-header-colours';
 export * from './progress-colours';

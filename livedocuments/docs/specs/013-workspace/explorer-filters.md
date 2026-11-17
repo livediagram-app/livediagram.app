@@ -25,7 +25,7 @@ Two different things narrow a list, and they never mix:
   token. A scoped view lists what lives in its scope.
 - The **lens** narrows whatever the current view lists.
 
-An **aggregate view** lists items from every place at once: **Recent**, **Favourites**, **Shared With Me**
+An **aggregate view** lists items from every place at once: **Recent**, **Shared With Me**
 and **Search results**. Only aggregate views have no scope to narrow by, so only they show the **Space**
 chip and apply the `space:` token. My Work, a folder and a team are **scoped views**.
 
@@ -33,12 +33,12 @@ Which apps' items a list holds is the **Documents / All** switch in the page hea
 
 ## Views
 
-| View                                               | Route                                                                              | Lens                              |
-| -------------------------------------------------- | ---------------------------------------------------------------------------------- | --------------------------------- |
-| My Work, and each of its folders                   | `/explorer/all`, `/explorer/folder?id=<id>`                                        | Scoped                            |
-| A team, at its root or in one of its folders       | `/explorer/team?id=<id>`                                                           | Scoped                            |
-| Recent, Favourites, Shared With Me, Search results | `/explorer/recent`, `/explorer/favourites`, `/explorer/shared`, `/explorer/search` | Aggregate                         |
-| Home, Inbox, Timeline, Trash                       | Their own                                                                          | None: typing opens Search results |
+| View                                         | Route                                                      | Lens                              |
+| -------------------------------------------- | ---------------------------------------------------------- | --------------------------------- |
+| My Work, and each of its folders             | `/explorer/all`, `/explorer/folder?id=<id>`                | Scoped                            |
+| A team, at its root or in one of its folders | `/explorer/team?id=<id>`                                   | Scoped                            |
+| Recent, Shared With Me, Search results       | `/explorer/recent`, `/explorer/shared`, `/explorer/search` | Aggregate                         |
+| Home, Inbox, Timeline, Trash                 | Their own                                                  | None: typing opens Search results |
 
 - **Search results** (`/explorer/search`) lists every item the reader can open: their own, every team's they have
   joined, and Shared With Me, newest first (the index's `view=search`). It has no sidebar row.

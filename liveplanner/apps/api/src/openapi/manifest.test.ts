@@ -158,6 +158,7 @@ describe('OpenAPI manifest ↔ dispatch parity', () => {
       'teams',
       'tokens',
       'trash',
+      'walkthroughs',
     ]);
     for (const [segment, methods] of handled) {
       expect(methods.size, `${segment}: no HTTP method found in its handler`).toBeGreaterThan(0);

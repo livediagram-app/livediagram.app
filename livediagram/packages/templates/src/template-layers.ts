@@ -108,6 +108,8 @@ export function templateLayers(kind: TemplateKind): Layer[] | undefined {
       return layered('Context', 'Systems');
     case 'c4-container':
       return layered('Boundary', 'Containers');
+    case 'c4-component':
+      return layered('Boundary', 'Components');
     case 'architecture-decision-record':
       return layered('Record', 'Decision');
     case 'sprint-planning':

@@ -74,7 +74,6 @@ export const HELP_ARTICLES = {
   sharedWithYou: 'explorer/shared-with-you',
   inbox: 'explorer/activity',
   teamSpaces: 'explorer/team-spaces',
-  explorerPage: 'explorer/explorer-page',
   explorerFilters: 'explorer/filters',
   dataElements: 'palette/tools/data-elements',
   sankeyDiagram: 'palette/concept-graphics/sankey-diagram',
@@ -264,10 +263,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   teamSpaces: {
     title: 'Learn about team spaces',
     description: 'A team’s shared library of documents and folders.',
-  },
-  explorerPage: {
-    title: 'Learn about the Explorer',
-    description: 'The library every liveworkspace app shares: sections, views and search.',
   },
   dataElements: {
     title: 'Learn about data elements',

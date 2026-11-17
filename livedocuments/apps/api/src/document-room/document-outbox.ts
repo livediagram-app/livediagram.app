@@ -66,6 +66,7 @@ export function collabPushOf(
       commentCount: t.commentCount,
       participantIds: t.participantIds,
       mentionedIds: t.mentionedIds,
+      ...(t.mentionedBy ? { mentionedBy: t.mentionedBy } : {}),
       latestText: t.latestText,
       latestAuthorName: t.latestAuthorName ?? '',
       latestAuthorColor: t.latestAuthorColor ?? '',

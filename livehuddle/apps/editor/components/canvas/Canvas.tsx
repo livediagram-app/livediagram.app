@@ -9,7 +9,7 @@ import {
 } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { useDoubleTapZoom } from '@/hooks/canvas/useDoubleTapZoom';
 import { useSmallElementDoubleTap } from '@liveworkspace/workbench/hooks/canvas/useSmallElementDoubleTap';
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useFocusCanvasOnMount } from '@liveworkspace/workbench/hooks/canvas/useFocusCanvasOnMount';
 import { tabBackgroundStyle, worldPatternOrigin } from '@/lib/canvas-backgrounds';
 import { useObservedSize } from '@liveworkspace/workbench/hooks/canvas/useObservedSize';
@@ -60,6 +60,13 @@ import { SpeakingStageContext } from '@/components/canvas/collab/speaking-stage'
 import { useStickyPeelVars } from '@liveworkspace/workbench/lib/sticky-peel-image';
 import { isPieceControlPress } from '@/lib/piece-control';
 import { useElementReader } from '@/components/canvas/collab/ElementReader';
+import dynamic from 'next/dynamic';
+import { loadSpace3DWalls } from '@/lib/editor-deferred-code';
+import { space3DStageStyle, useSpace3DView } from './space-3d/useSpace3DView';
+import { Space3DOverlayProvider, Space3DOverlayStage } from './space-3d/Space3DOverlay';
+
+// The 3D view's walls (docs/specs/008-canvas/3d-view.md "Performance"): loaded the first time a walk wants them.
+const Space3DWalls = dynamic(loadSpace3DWalls, { ssr: false });
 
 // The canvas boundary (docs/specs/008-canvas/canvas-performance.md "The canvas re-renders only for what it
 // shows"): memoised, its `on…` props stable, so an editor render that changes nothing it shows stops here.
@@ -301,6 +308,17 @@ function CanvasView(props: CanvasProps) {
   const stickyPeel = useStickyPeelVars();
   // A walking click on a reading piece opens it large (docs/specs/008-canvas/avatar-mode.md "The reader").
   const elementReader = useElementReader(elements, canvasTool === 'avatar');
+  // The 3D view (docs/specs/008-canvas/3d-view.md): while you walk with it on, the stage tilts the world back.
+  const space3D = useSpace3DView(canvasTool === 'avatar');
+  // The overlay's world layer, where what floats over a head is drawn while the view is 3D (Space3DOverlay).
+  const [space3DOverlayNode, setSpace3DOverlayNode] = useState<HTMLElement | null>(null);
+  const space3DOverlay = useMemo(
+    () => ({
+      on: space3D !== 'flat',
+      node: space3D === 'flat' ? null : space3DOverlayNode,
+    }),
+    [space3D, space3DOverlayNode],
+  );
   const surface = useCanvasSurfaceGestures({
     canvasTool,
     middleMousePan: props.settings?.middleMousePan !== false,
@@ -363,6 +381,7 @@ function CanvasView(props: CanvasProps) {
         // Space it eases this surface alone, the parts snapping (canvasIsBusy).
         data-canvas-root=""
         data-canvas-busy={canvasIsBusy(elements.length) ? '' : undefined}
+        data-space-view={space3D === 'flat' ? undefined : space3D}
         onContextMenuCapture={surface.onContextMenuCapture}
         onContextMenu={surface.onContextMenu}
         onPointerUp={surface.onContextMenuPointerUp}
@@ -399,92 +418,127 @@ function CanvasView(props: CanvasProps) {
         {/* SR-only polite live region (docs/specs/004-interface-design/canvas-accessibility.md): selection / delete / undo
           announcements land here. */}
         <CanvasLiveRegion />
+        {/* The 3D view's stage (docs/specs/008-canvas/3d-view.md "The camera"): the camera's tilt about the canvas's
+          middle, round the world layer; flat, it is a plain box that takes no press of its own. */}
         <div
-          ref={wrapperRef}
-          data-canvas-content=""
-          onPointerDown={surface.onWrapperPointerDown}
-          onDoubleClick={(e) => {
-            // The Room Builder's closing double-click (docs/specs/009-elements/room-builder.md) wins over
-            // the add-text double-click while the intent is armed.
-            if (handlePolygonDoubleClick()) return;
-            surface.onWrapperDoubleClick(e);
-          }}
-          // Avatar mode (docs/specs/008-canvas/avatar-mode.md): the mode is read-only, so the canvas layer
-          // ignores pointer events (a per-element capture guard can't catch every select path) and every click falls
-          // through to <main>, where the capture handler turns it into a walk.
-          className={`absolute inset-0 origin-center touch-none ${
-            canvasTool === 'avatar' ? 'pointer-events-none' : ''
-          } ${pendingDraw ? '' : cursorClass}`}
-          // The same, said to the element plane's children, which take presses of their own (globals.css).
-          data-elements-inert={canvasTool === 'avatar' ? '' : undefined}
-          // The inset the white under each picture needs at this zoom (docs/specs/009-elements/images.md "The white under
-          // a picture"): an attribute the stylesheet reads for the pictures alone, so no picture re-renders on zoom and
-          // nothing else restyles; it changes only below 50%.
-          {...imageBackingInsetAttribute(viewportZoom)}
-          style={{
-            // Translate is in canvas-coords (applied first); scale is centred
-            // on the wrapper so zooming keeps the viewport centre stable.
-            transform: viewportTransform(view),
-            // Draw-mode cursor: every intent gets a custom inline-SVG
-            // cursor (crosshair at the pointer tip plus a small glyph
-            // hinting at what's about to land). Without this, tool
-            // intents inherited the default arrow cursor because the
-            // wrapper drops its Tailwind cursor- class above when
-            // pendingDraw is set, leaving no cursor specified at all.
-            ...(pendingDraw ? { cursor: drawIntentCursor(pendingDraw) } : null),
-          }}
+          data-space-stage=""
+          className="pointer-events-none absolute inset-0"
+          style={space3DStageStyle(space3D)}
         >
-          <CanvasStillProvider still={false}>
-            <CanvasArrivalProvider
-              tabId={props.activeTabId ?? ''}
-              loaded={props.activeTabLoaded ?? true}
-              count={elements.length}
-            >
-              {/* The zoom reaches only the counter-scaled parts of each element
+          <div
+            ref={wrapperRef}
+            data-canvas-content=""
+            onPointerDown={surface.onWrapperPointerDown}
+            onDoubleClick={(e) => {
+              // The Room Builder's closing double-click (docs/specs/009-elements/room-builder.md) wins over
+              // the add-text double-click while the intent is armed.
+              if (handlePolygonDoubleClick()) return;
+              surface.onWrapperDoubleClick(e);
+            }}
+            // Avatar mode (docs/specs/008-canvas/avatar-mode.md): the mode is read-only, so the canvas layer
+            // ignores pointer events (a per-element capture guard can't catch every select path) and every click falls
+            // through to <main>, where the capture handler turns it into a walk.
+            className={`absolute inset-0 origin-center touch-none ${
+              canvasTool === 'avatar' ? 'pointer-events-none' : 'pointer-events-auto'
+            } ${pendingDraw ? '' : cursorClass}`}
+            // The same, said to the element plane's children, which take presses of their own (globals.css).
+            data-elements-inert={canvasTool === 'avatar' ? '' : undefined}
+            // The inset the white under each picture needs at this zoom (docs/specs/009-elements/images.md "The white under
+            // a picture"): an attribute the stylesheet reads for the pictures alone, so no picture re-renders on zoom and
+            // nothing else restyles; it changes only below 50%.
+            {...imageBackingInsetAttribute(viewportZoom)}
+            style={{
+              // Translate is in canvas-coords (applied first); scale is centred
+              // on the wrapper so zooming keeps the viewport centre stable.
+              transform: viewportTransform(view),
+              // In 3D the zoom scales height too, so walls and characters grow with the floor (3d-view.md "The camera").
+              ...(space3D === 'flat' ? null : { scale: `1 1 ${viewportZoom}` }),
+              // Draw-mode cursor: every intent gets a custom inline-SVG
+              // cursor (crosshair at the pointer tip plus a small glyph
+              // hinting at what's about to land). Without this, tool
+              // intents inherited the default arrow cursor because the
+              // wrapper drops its Tailwind cursor- class above when
+              // pendingDraw is set, leaving no cursor specified at all.
+              ...(pendingDraw ? { cursor: drawIntentCursor(pendingDraw) } : null),
+            }}
+          >
+            <CanvasStillProvider still={false}>
+              <CanvasArrivalProvider
+                tabId={props.activeTabId ?? ''}
+                loaded={props.activeTabLoaded ?? true}
+                count={elements.length}
+              >
+                {/* The zoom reaches only the counter-scaled parts of each element
               (docs/specs/008-canvas/canvas-performance.md). */}
-              <CanvasZoomProvider zoom={viewportZoom}>
-                <SpeakingStageContext value={speakingStage}>
-                  <CanvasElementsLayer
-                    {...props}
-                    // Portal travel is resolved HERE (Canvas owns the viewport + the avatar),
-                    // so the prop from the host is overridden with the local resolver.
-                    onEnterPortal={resolvePortal}
-                    // Chair (docs/specs/009-elements/chair.md): occupancy resolved here, where peer presence
-                    // lives, rather than threaded from the page.
-                    chairSitters={sittersOf}
-                    // Pressing a Selection Mode button that hands out Avatar mode drops
-                    // the character at THAT button (see avatarSpawn), not the viewport
-                    // centre: you pressed a thing on the canvas, so the character should
-                    // appear where you pressed it.
-                    // None for a Participant, who is always walking: its buttons draw inert.
-                    onPressModeButton={props.onPressModeButton ? pressModeButton : undefined}
-                    onPressAvatarPad={pressAvatarPad}
-                    onPressFocusButton={props.onPressFocusButton}
-                    selectionInput={selectionInput}
-                    isPaintMode={isPaintMode}
-                    handleArrowSelect={handleArrowSelect}
-                    handleElementClick={handleElementClick}
-                    handleElementContextSelect={handleElementContextSelect}
-                  />
-                </SpeakingStageContext>
-              </CanvasZoomProvider>
-            </CanvasArrivalProvider>
-          </CanvasStillProvider>
-          {/* Drafts and the avatars: editor-only. */}
-          {/* Where the placed piece being added would land (docs/specs/010-palette/palette-drag-ghost.md
+                <CanvasZoomProvider zoom={viewportZoom}>
+                  <SpeakingStageContext value={speakingStage}>
+                    <CanvasElementsLayer
+                      {...props}
+                      // Portal travel is resolved HERE (Canvas owns the viewport + the avatar),
+                      // so the prop from the host is overridden with the local resolver.
+                      onEnterPortal={resolvePortal}
+                      // Chair (docs/specs/009-elements/chair.md): occupancy resolved here, where peer presence
+                      // lives, rather than threaded from the page.
+                      chairSitters={sittersOf}
+                      // Pressing a Selection Mode button that hands out Avatar mode drops
+                      // the character at THAT button (see avatarSpawn), not the viewport
+                      // centre: you pressed a thing on the canvas, so the character should
+                      // appear where you pressed it.
+                      // None for a Participant, who is always walking: its buttons draw inert.
+                      onPressModeButton={props.onPressModeButton ? pressModeButton : undefined}
+                      onPressAvatarPad={pressAvatarPad}
+                      onPressFocusButton={props.onPressFocusButton}
+                      selectionInput={selectionInput}
+                      isPaintMode={isPaintMode}
+                      handleArrowSelect={handleArrowSelect}
+                      handleElementClick={handleElementClick}
+                      handleElementContextSelect={handleElementContextSelect}
+                    />
+                  </SpeakingStageContext>
+                </CanvasZoomProvider>
+              </CanvasArrivalProvider>
+            </CanvasStillProvider>
+            {/* Drafts and the avatars: editor-only. */}
+            {/* Where the placed piece being added would land (docs/specs/010-palette/palette-drag-ghost.md
             "Placed pieces preview themselves"). */}
-          <PlacementPreview
-            pendingDraw={pendingDraw}
-            elements={elements}
-            wrapperRef={wrapperRef}
-            zoom={viewportZoom}
-            drawing={!!drawDrag}
-          />
-          {/* Avatar mode (docs/specs/008-canvas/avatar-mode.md): the walking characters and what rides on them,
+            <PlacementPreview
+              pendingDraw={pendingDraw}
+              elements={elements}
+              wrapperRef={wrapperRef}
+              zoom={viewportZoom}
+              drawing={!!drawDrag}
+            />
+            {/* Avatar mode (docs/specs/008-canvas/avatar-mode.md): the walking characters and what rides on them,
             INSIDE the transformed wrapper so they pan / zoom with the canvas, and after the element layer so
             they stand in front of the content they walk over. */}
-          <CanvasCharactersLayer props={props} canvasAvatar={canvasAvatar} mainSize={mainSize} />
+            {space3D === 'flat' ? null : (
+              <Space3DWalls elements={elements} poseStore={avatar.poseStore} size={mainSize} />
+            )}
+            <Space3DOverlayProvider value={space3DOverlay}>
+              <CanvasCharactersLayer
+                props={props}
+                canvasAvatar={canvasAvatar}
+                mainSize={mainSize}
+              />
+            </Space3DOverlayProvider>
+          </div>
         </div>
+        {/* The horizon the tilted floor fades into (docs/specs/008-canvas/3d-view.md "What it shows"). */}
+        {space3D === 'flat' ? null : (
+          <div
+            aria-hidden
+            data-space-fog=""
+            className="pointer-events-none absolute inset-x-0 top-0 h-[36%]"
+          />
+        )}
+        {/* Over the world and its horizon: speech, cards, call bubbles and hands, never hidden by a wall. */}
+        {space3D === 'flat' ? null : (
+          <Space3DOverlayStage
+            style={space3DStageStyle(space3D)}
+            zoom={viewportZoom}
+            onNode={setSpace3DOverlayNode}
+          />
+        )}
 
         <CanvasSelectionToolbars props={props} selectionInput={selectionInput} />
 

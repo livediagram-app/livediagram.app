@@ -47,7 +47,7 @@ Every Project is a Plan project, so what Plan reads is read from the first load:
   list strays before it has a board. A room join or resync refetches only items already loaded.
 - **Plan's UI loads when drawn**: boards, cards, the item panel, the type editor, the Card Types panel, the board
   menu, the Cards category and card slides are separate chunks, fetched the first time one appears. The
-  [Plan tour](plan-tour.md) is its own chunk, mounted with the editor and on the footer's Start Tour button only
+  [Plan tour](plan-tour.md) is its own chunk, mounted with the editor and on the footer's Get Started button only
   once a board or Sheet is on the tab.
 - **Dashboards, Start Planning and the Sheet templates load when drawn too**: a Dashboard tab's page loads only for a
   Dashboard tab, Start Planning with the board picker, the Sheet templates' designs only when one is set up or drawn

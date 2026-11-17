@@ -11,6 +11,10 @@ import { lazyPanel } from '@liveworkspace/ui/lazy-panel';
 export const loadAvatarSpeechLayer = () =>
   import('@livehuddle/avatar/components/AvatarSpeechLayer').then((m) => m.AvatarSpeechLayer);
 
+// The 3D view's walls (docs/specs/008-canvas/3d-view.md "Performance"): fetched the first time a walk wants them.
+export const loadSpace3DWalls = () =>
+  import('@/components/canvas/space-3d/Space3DWalls').then((m) => m.Space3DWalls);
+
 export const loadExplorerPanel = () => import('@/components/panels/Explorer');
 export const loadEditorSearchPanel = () =>
   import('@/components/panels/EditorSearchPanel').then((m) => m.EditorSearchPanel);

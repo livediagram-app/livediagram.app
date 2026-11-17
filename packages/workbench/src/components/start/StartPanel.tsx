@@ -613,11 +613,8 @@ export function createStartPanel<
             <footer
               // The new version prompt stands above it on a phone (start-panel-open.ts START_FOOTER_SELECTOR).
               data-start-footer=""
-              className={
-                config.hideEmptyFooter
-                  ? 'shrink-0 border-t px-4 py-1.5 empty:hidden sm:px-6'
-                  : 'shrink-0 border-t px-4 py-1.5 sm:px-6'
-              }
+              // Gone while what it holds draws nothing (no Sync to Server switch), so no rule sits over nothing.
+              className="shrink-0 border-t px-4 py-1.5 empty:hidden sm:px-6"
               style={{ borderColor: palette.border }}
             >
               {footer(palette)}

@@ -140,6 +140,11 @@ with the code, not kept with a banner.
 - **Stored view choices.** A browser that stored Zen as on, or a laser or spotlight pen, keeps the key; nothing reads
   it. The Isometric **background** is not Isometric mode; it went later with the other diagram patterns
   ([The diagram canvas patterns](#the-diagram-canvas-patterns)).
+- **The 3D view is not Isometric coming back** (Work Tracker 1043, [3D view](../008-canvas/3d-view.md)). Isometric
+  was a canvas tool of its own that turned the board 45 degrees with no perspective, raised a block under every
+  element and turned editing off while it showed. The 3D view is a switch on walking: a perspective camera tilts the
+  Space back like a map, only walls stand up (the lines that already block walking) and the characters stand on the
+  floor, and it never locks editing, because switching to Edit flattens it. The `isometric` mode and tool stay gone.
 
 ## The Frame
 
@@ -346,7 +351,7 @@ carry a **Gone from livehuddle** banner and record what livehuddle had.
   this version does not know, so no migration is needed. Stored custom swatches (`quickSwatchOverrides`) are kept the
   same way; nothing in livehuddle shows or edits them any more.
 - **What stays for styling**: the element menu (right-click, long-press or a toolbar's More) stays the complete home
-  of every element setting, as it always was: its **Style** flyout (colours, border, shadow, opacity, corners), the
+  of every element setting, as it always was: its **Appearance** flyout (colours, border, shadow, opacity, corners), the
   Text category, the colour picker with Custom colours, and the **Clear Styles** row under Style
   ([Element menu quick bar](../008-canvas/element-menu-quick-bar.md)), which still puts the element's colours, width
   and line style back to the theme's. The multi-selection menu restyles a whole selection. **Tab Style** themes the

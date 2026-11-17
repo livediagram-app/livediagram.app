@@ -119,7 +119,6 @@ Views (`ExplorerView`) and their addresses under `basePath`. A list view's `q` i
 | `{ kind: 'home' }`                    | `/explorer` or `/explorer/home` | The hero, New, Most Used, Recent, Spaces, Shared With You Recently               |
 | `{ kind: 'all', q? }`                 | `/explorer/all`                 | My Work: your root folders and your items that are in no folder                  |
 | `{ kind: 'recent', q? }`              | `/explorer/recent`              | By last opened                                                                   |
-| `{ kind: 'favourites', q? }`          | `/explorer/favourites`          | Starred                                                                          |
 | `{ kind: 'shared', q? }`              | `/explorer/shared`              | Shared With Me: items reached through a link                                     |
 | `{ kind: 'trash' }`                   | `/explorer/trash`               | The Trash, grouped by owner: Restore, Delete permanently, Empty Trash            |
 | `{ kind: 'archived' }`                | `/explorer/archived`            | Archived: closed documents, out of every other list; Change Folder moves one out |
@@ -200,7 +199,7 @@ uses it for the open document.
 The content of the editor's floating Explorer panel. The host wraps it in its own movable panel. It shows:
 
 - the current item, which can be renamed and has the item menu;
-- a rail with Home, Inbox, Shared With Me, My Work, each team, New Team (with a `teamsHost`), Favourites,
+- a rail with Home, Inbox, Shared With Me, My Work, each team, New Team (with a `teamsHost`),
   This Browser (with a `thisBrowser` host, its count beside it, while this browser keeps any), Library (where the host
   has a `gallery` or `shapeLibraries`) and Trash, plus New and Open Explorer. Every entry opens its pane in place;
   there is no Open Page;
@@ -223,15 +222,15 @@ host trashes the item open in its editor itself, from any of the panel's menus o
 `onRenameCurrent?(title)` (the open item was renamed, from its pencil or any menu's Rename, so the editor's title
 follows), and the same optional props as `<Explorer>`.
 
-Its size: `EXPLORER_POPOVER_WIDTH` (`w-[54rem]`) and `EXPLORER_POPOVER_HEIGHT` (`45rem`) are the editors' popover,
-passed to each editor's movable panel so the size lives once. In it the rail is 13rem and the pane's preview cards
-(Home's Most Used and Recent, four each and each its own section, and folders) are compact: two across, three from a 24rem pane, four from 44rem (so in the 54rem popover, whose pane is about 40rem, three: each card keeps room for its name and its "This Browser" chip with the time beside it)
+Its size: `EXPLORER_POPOVER_WIDTH` (`w-[56rem]`) and `EXPLORER_POPOVER_HEIGHT` (`45rem`) are the editors' popover,
+passed to each editor's movable panel so the size lives once. In it the rail is 15rem, headed by the current item's compact card, and the pane's preview cards
+(Home's Most Used and Recent, four each and each its own section, and folders) are compact: two across, three from a 24rem pane, four from 44rem (so in the 56rem popover, whose pane is about 40rem, three: each card keeps room for its name and its "This Browser" chip with the time beside it)
 (liveworkspace/docs/specs/004-index/one-explorer.md "The editors' panel: its size and the scrim"). Each card's picture
 is the host's `renderThumbnail`, which should load only once it scrolls into view, as every editor's does.
 
 Rename works in place wherever an item shows: list rows, cards, Details rows, Home's Most Used and Recent and the panel.
 
-Lists that span places (Recent, Favourites, Search, Shared With Me) carry a location chip on each row and card: its
+Lists that span places (Recent, Search, Shared With Me) carry a location chip on each row and card: its
 folder, its team for a team item in no folder, or My Work for one of yours in none; an item reached through a link
 lives in someone else's library and has none. Recent and Search add an Owner column (and a line on each card): You,
 the team's name, or Shared with you (the index keeps no names, so a sharer is not named).
@@ -386,7 +385,7 @@ reads that page once. Scrolling never asks again on its own.
 
 Nothing is fetched per row, or per folder.
 
-Changes are optimistic: rename, favourite, move, Trash, restore and dismiss.
+Changes are optimistic: rename, hide from Recent, move, Trash, restore and dismiss.
 
 - A change is laid over every loaded list at once, through a shared overlay.
 - A change lasts only until the index has answered for it: once the index took it, the first list read that

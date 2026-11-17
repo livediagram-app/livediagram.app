@@ -143,6 +143,25 @@ describe('createMediaClient', () => {
     expect(seen[0]!.get(IMAGE_SOURCE_HEADER)).toBe('mcp');
     expect(seen[1]!.has(IMAGE_SOURCE_HEADER)).toBe(false);
   });
+
+  it('asks for a release by the image and the document it was placed by', async () => {
+    const seen: Request[] = [];
+    const client = createMediaClient({
+      app: 'liveplanner.app',
+      key: 'k',
+      url: 'http://localhost:8792/api/media',
+      fetch: async (input, init) => {
+        seen.push(new Request(input, init));
+        return Response.json({ released: false, reason: 'referenced' });
+      },
+    });
+    const out = await client.release('img 1', 'plan-1');
+    expect(out).toEqual({ ok: true, value: { released: false, reason: 'referenced' } });
+    expect(seen[0]!.method).toBe('POST');
+    expect(seen[0]!.url).toBe(
+      'http://localhost:8792/api/media/app/images/img%201/release?document=plan-1',
+    );
+  });
 });
 
 describe('isImageSource', () => {

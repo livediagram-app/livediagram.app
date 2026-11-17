@@ -5,15 +5,17 @@ import { createShape } from '@livediagram/document';
 import { LibraryProvider } from '@liveworkspace/workbench/components/library/LibraryProvider';
 import type { LibraryApi } from '@liveworkspace/workbench/lib/library/library-api';
 import { CanvasSelectionToolbars } from './CanvasSelectionToolbars';
+import { ElementKindToolButtons, useElementKindTools } from './element-kind-tools';
 import type { CanvasProps } from './Canvas.types';
 import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 import { SelectionStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { createViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
 
-// Save to Library (liveworkspace/docs/specs/006-media/libraries.md "Who may do what"), beside Duplicate: an Editor's
-// alone (docs/specs/013-workspace/share-roles.md). A Participant's and a Viewer's toolbars never carry it, and an
-// editor without the Library shows none.
+// Save to Library (liveworkspace/docs/specs/006-media/libraries.md "Who may do what"): the selection toolbar publishes
+// it to the element menu's bar (element-kind-tools), never a button of its own. An Editor's alone
+// (docs/specs/013-workspace/share-roles.md): a Participant's and a Viewer's menus never carry it, and an editor without
+// the Library shows none.
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 afterEach(cleanup);
@@ -67,16 +69,27 @@ function show({
       </ViewportStoreProvider>
     </SelectionStoreProvider>
   );
-  render(library ? <LibraryProvider api={api}>{toolbars}</LibraryProvider> : toolbars);
+  const withBar = (
+    <>
+      {toolbars}
+      <MenuBar />
+    </>
+  );
+  render(library ? <LibraryProvider api={api}>{withBar}</LibraryProvider> : withBar);
+}
+
+// The element menu's bar, as it reads what the toolbar published.
+function MenuBar() {
+  const tools = useElementKindTools(box.id);
+  return tools ? <ElementKindToolButtons tools={tools} /> : null;
 }
 
 const save = () => screen.queryByRole('button', { name: 'Save to Library' });
 
 describe('Save to Library on the selection toolbar', () => {
-  it('is an Editor’s, beside Duplicate', () => {
+  it('is an Editor’s, in the element menu’s bar', () => {
     show({ readOnly: false });
     expect(save()).not.toBeNull();
-    expect(screen.getByRole('button', { name: 'Duplicate' })).toBeTruthy();
   });
 
   it('is never a Participant’s or a Viewer’s', () => {

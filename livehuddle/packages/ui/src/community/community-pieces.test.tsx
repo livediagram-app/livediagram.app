@@ -37,7 +37,7 @@ describe('CommunityPostTile', () => {
     expect(screen.getByRole('img', { name: 'Payments Platform' }).getAttribute('src')).toBe(
       '/img.svg',
     );
-    expect(screen.getByText('Software & IT')).toBeTruthy();
+    expect(screen.getByText('Software')).toBeTruthy();
     expect(screen.getAllByRole('listitem').map((li) => li.textContent)).toEqual([
       '#aws',
       '#event-driven',

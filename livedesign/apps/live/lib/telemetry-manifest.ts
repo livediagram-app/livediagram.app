@@ -140,6 +140,7 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Team·Added',
   'Team·Moved',
   'Team·Removed',
+  'Template·Changed',
   'Template·Used',
   'Theme·Changed',
   'Token·Created',

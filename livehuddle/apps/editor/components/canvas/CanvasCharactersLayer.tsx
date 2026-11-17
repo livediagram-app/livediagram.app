@@ -1,5 +1,6 @@
 'use client';
 
+import { InSpace3DOverlay } from '@/components/canvas/space-3d/Space3DOverlay';
 import { useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useViewportOf } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
@@ -294,9 +295,13 @@ export function CanvasCharactersLayer({
         chipShift={chipShifts.get(SELF_CHIP)}
       />
       {/* Who is talking, near and far (docs/specs/012-collaboration/proximity-audio.md "The talking equaliser"). */}
-      <TalkingBars {...call.bars} />
+      <InSpace3DOverlay>
+        <TalkingBars {...call.bars} />
+      </InSpace3DOverlay>
       {/* Raised hands beside the heads, each a Let Speak for whoever may (meeting-rooms-and-stage.md). */}
-      <RaisedHands {...call.hands} />
+      <InSpace3DOverlay>
+        <RaisedHands {...call.hands} />
+      </InSpace3DOverlay>
       {/* The mini view (docs/specs/008-canvas/avatar-mode.md "The mini view"): drawn into its own window while it is
         open, from the coarse copy, so a step renders nothing there. */}
       <MiniViewHost
@@ -306,7 +311,9 @@ export function CanvasCharactersLayer({
         doNotDisturb={avatarStatus === 'dnd'}
       />
       {/* Camera and screen bubbles above the characters (docs/specs/012-collaboration/video-and-screen-bubbles.md). */}
-      <CallBubbles {...call.bubbles} rectsRef={callBubbleRects} />
+      <InSpace3DOverlay>
+        <CallBubbles {...call.bubbles} rectsRef={callBubbleRects} />
+      </InSpace3DOverlay>
       {/* Arrival beams on an Avatar Pad (docs/specs/009-elements/avatar-pad.md), over the characters. */}
       <AvatarPadArrivals arrivals={padArrivals} />
       {/* The proximity bubbles of the piece you stand at (Insert Coin, Welcome), over every character and its chip
@@ -314,35 +321,37 @@ export function CanvasCharactersLayer({
       <PieceBubbleHost />
       {/* Speech bubbles, in front of every character: yours and everyone's, and the composer above your
           own head while you type. Raised over the chips of a spread row (z-[1]) and the piece bubbles (z-[2]). */}
-      {speechBubbles.length > 0 || speech.composerOpen ? (
-        <div className="pointer-events-none absolute left-0 top-0 z-[3]">
-          <AvatarSpeechLayer
-            bubbles={speechBubbles}
-            activeTabId={props.activeTabId ?? ''}
-            zoom={viewportZoom}
-            view={{
-              offsetX: viewportOffset.x,
-              width: mainSize.width,
-              offsetY: viewportOffset.y,
-              height: mainSize.height,
-            }}
-            peers={remoteAvatars}
-            self={{ name: props.selfParticipant.name, colour: props.selfParticipant.color }}
-            // Speech rises clear of camera and screen bubbles (video-and-screen-bubbles.md "Close together").
-            obstacles={callBubbleRects}
-            composer={
-              speech.composerOpen && feet
-                ? {
-                    head: headPoint(feet, selfScale),
-                    coolingDown: speech.coolingDown,
-                    onSend: (text) => speech.send(text, 'composer'),
-                    onCancel: speech.closeComposer,
-                  }
-                : null
-            }
-          />
-        </div>
-      ) : null}
+      <InSpace3DOverlay>
+        {speechBubbles.length > 0 || speech.composerOpen ? (
+          <div data-space-3d-group="" className="pointer-events-none absolute left-0 top-0 z-[3]">
+            <AvatarSpeechLayer
+              bubbles={speechBubbles}
+              activeTabId={props.activeTabId ?? ''}
+              zoom={viewportZoom}
+              view={{
+                offsetX: viewportOffset.x,
+                width: mainSize.width,
+                offsetY: viewportOffset.y,
+                height: mainSize.height,
+              }}
+              peers={remoteAvatars}
+              self={{ name: props.selfParticipant.name, colour: props.selfParticipant.color }}
+              // Speech rises clear of camera and screen bubbles (video-and-screen-bubbles.md "Close together").
+              obstacles={callBubbleRects}
+              composer={
+                speech.composerOpen && feet
+                  ? {
+                      head: headPoint(feet, selfScale),
+                      coolingDown: speech.coolingDown,
+                      onSend: (text) => speech.send(text, 'composer'),
+                      onCancel: speech.closeComposer,
+                    }
+                  : null
+              }
+            />
+          </div>
+        ) : null}
+      </InSpace3DOverlay>
     </>
   );
 }

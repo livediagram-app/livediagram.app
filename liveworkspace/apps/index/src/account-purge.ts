@@ -178,12 +178,13 @@ function personalStatements(db: Db, person: string): (() => D1PreparedStatement)
           'DELETE FROM folders WHERE rowid IN (SELECT rowid FROM folders WHERE owner_id = ? LIMIT ?)',
         )
         .bind(person, CHUNK),
+    // The favourites table nothing reads since Favourites were removed: its rows are still theirs, so they go.
     byPerson('favourites'),
     // Their calendar feeds (calendar-feeds.ts): the token hash is theirs alone.
     byPerson('calendar_feeds'),
     byPerson('opens'),
     byPerson('use_days'),
-    // The event log: their favourites' events, which only they saw (their own items' events went with the
+    // The event log: their old `favourited` events, which only they saw (their own items' events went with the
     // items), then their name off the rest (team items, other people's items they edited or visited), both
     // through the actor index.
     () =>
@@ -243,8 +244,9 @@ function personalStatements(db: Db, person: string): (() => D1PreparedStatement)
   ];
 }
 
-// The comment threads they are in on other people's items: their id in each thread's participants and
-// mentions becomes ANONYMISED_PERSON, and their own "threads I am in" rows go. The same chunk of rows, in
+// The comment threads they are in on other people's items: their id in each thread's participants, mentions and
+// latest author becomes ANONYMISED_PERSON, who mentioned whom forgets them (both ways), and their own "threads I am
+// in" rows go. The same chunk of rows, in
 // the people table's own order, in one batch.
 async function anonymiseThreads(db: Db, budget: Budget, person: string): Promise<boolean> {
   const chunk = `SELECT app, item_id, tab_id, element_id FROM collab_thread_people WHERE person_id = ?
@@ -258,10 +260,24 @@ async function anonymiseThreads(db: Db, budget: Budget, person: string): Promise
       db
         .prepare(
           `UPDATE collab_threads
-           SET participant_ids = ${swap('participant_ids')}, mentioned_ids = ${swap('mentioned_ids')}
+           SET participant_ids = ${swap('participant_ids')}, mentioned_ids = ${swap('mentioned_ids')},
+             latest_author_id = CASE WHEN latest_author_id = ? THEN ? ELSE latest_author_id END,
+             mentioned_by = (SELECT COALESCE(json_group_object(key, json(value)), '{}') FROM json_each(mentioned_by)
+               WHERE key <> ? AND json_extract(value, '$.id') IS NOT ?)
            WHERE (app, item_id, tab_id, element_id) IN (${chunk})`,
         )
-        .bind(person, ANONYMISED_PERSON, person, ANONYMISED_PERSON, person, CHUNK),
+        .bind(
+          person,
+          ANONYMISED_PERSON,
+          person,
+          ANONYMISED_PERSON,
+          person,
+          ANONYMISED_PERSON,
+          person,
+          person,
+          person,
+          CHUNK,
+        ),
       db
         .prepare(
           `DELETE FROM collab_thread_people WHERE person_id = ?

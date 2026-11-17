@@ -1,13 +1,12 @@
 'use client';
 
 import { useEffect } from 'react';
-import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { BackBar } from '@liveworkspace/ui';
 import { useCommunitySite } from '../client';
 import { isCommunityApp } from '@liveworkspace/community';
 import { appOrigin } from '@/lib/explorer/page-app';
 import { appNameOf, COMMUNITY_HOME_PATH, communityPostPath } from '../lib/links';
-import { BackIcon } from '../shared/icons';
 import { EmbedFrame } from './EmbedFrame';
 import { PostActions } from './PostActions';
 import { PostMeta } from './PostMeta';
@@ -24,6 +23,7 @@ import { usePost } from './usePost';
 export function PostView() {
   const { words, pageApp, ready } = useCommunitySite();
   const params = useSearchParams();
+  const router = useRouter();
   const id = params.get('id');
   const named = params.get('app');
   const { load, retry } = usePost(id);
@@ -59,14 +59,12 @@ export function PostView() {
 
   return (
     <div className="flex flex-col gap-8">
-      {/* A 20px line of text: touch-target gives a finger the 44px it needs without moving anything. */}
-      <Link
-        href={COMMUNITY_HOME_PATH}
-        className="relative touch-target inline-flex w-fit items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors duration-micro hover:text-brand-700 dark:text-slate-400 dark:hover:text-brand-300"
-      >
-        <BackIcon size={15} aria-hidden />
-        Back to Community
-      </Link>
+      <BackBar
+        label="Community Gallery"
+        current={words.noun.charAt(0).toUpperCase() + words.noun.slice(1)}
+        onClick={() => router.push(COMMUNITY_HOME_PATH)}
+        gap="none"
+      />
       {load.status === 'loading' || elsewhere ? (
         <PostSkeleton />
       ) : load.status === 'notFound' ? (

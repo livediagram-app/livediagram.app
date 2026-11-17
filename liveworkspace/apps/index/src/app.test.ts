@@ -240,8 +240,6 @@ describe('the guest merge', () => {
       auth: guest.auth,
       body: { folderId: folder.folder.id },
     });
-    await call(`/favourites/${item.id}`, { method: 'PUT', auth: guest.auth });
-    await call(`/favourites/${item.id}`, { method: 'PUT', auth: user.auth });
     await call(`/items/${item.id}/open`, { method: 'POST', auth: guest.auth });
     await call(`/placement-defaults/mode:plan`, {
       method: 'PUT',
@@ -263,8 +261,8 @@ describe('the guest merge', () => {
     expect(await body(res)).toEqual({ items: 1 });
 
     const mine = await body<{ items: Item[] }>(await call('/items', { auth: user.auth }));
-    expect(mine.items.map((i) => [i.title, i.ownerId, i.folderId, i.favourite])).toEqual([
-      ['Guest plan', 'user_u1', folder.folder.id, true],
+    expect(mine.items.map((i) => [i.title, i.ownerId, i.folderId])).toEqual([
+      ['Guest plan', 'user_u1', folder.folder.id],
     ]);
     expect(mine.items[0]!.lastOpenedAt).not.toBeNull();
     const shared = await body<{ shared: unknown[] }>(await call('/shared', { auth: user.auth }));
@@ -279,7 +277,6 @@ describe('the guest merge', () => {
     );
     expect(history.events.map((e) => [e.type, e.actorId]).sort()).toEqual([
       ['created', 'user_u1'],
-      ['favourited', 'user_u1'],
       ['moved', 'user_u1'],
     ]);
     expect(
@@ -288,7 +285,7 @@ describe('the guest merge', () => {
     expect(
       h.db.sql.prepare("SELECT opens FROM use_days WHERE person_id = 'user_u1' AND day = 5").get(),
     ).toEqual({ opens: 5 });
-    for (const table of ['favourites', 'opens', 'use_days', 'shared_with', 'placement_defaults']) {
+    for (const table of ['opens', 'use_days', 'shared_with', 'placement_defaults']) {
       expect(
         h.db.sql.prepare(`SELECT COUNT(*) AS n FROM ${table} WHERE person_id = 'guest_g1'`).get(),
       ).toEqual({ n: 0 });

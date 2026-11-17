@@ -43,7 +43,6 @@ const local = (n: number, extra: Partial<ThisBrowserItem> = {}): ThisBrowserItem
   updatedAt: 2_000 + n,
   lastOpenedAt: null,
   trashedAt: null,
-  favourite: false,
   ...extra,
 });
 

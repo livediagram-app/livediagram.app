@@ -4,13 +4,17 @@
 //     systems it depends on along the bottom, every relationship a labelled arrow saying what flows and how.
 //   - C4 Container Diagram: the same platform opened up, a system boundary holding its apps, services and stores, each
 //     naming its technology, with the order's path drawn flowing.
-// C4's own palette: people a deep blue, the system in focus a mid blue, everything outside it grey. Every card keeps
-// its fill under a dark theme (themeLockFill), so its white text always has its blue or grey behind it. The key, the
+// The third level, the Component Diagram, is template-builders-c4-component.ts, built from the parts exported here.
+// C4's own palette (c4-look.ts): people a deep blue, the system in focus a mid blue, everything outside it grey. Every
+// card keeps its fill and its ink under every theme (themeLockFill, themeLockText), so its text always reads. The key, the
 // header and the boundary are the scaffold; the cards and arrows the content.
 //
 // Pure: takes a centre (cx, cy), returns a fresh Element[].
 
 import {
+  C4_LOOK,
+  c4CardFields,
+  c4DatabaseFields,
   createPinnedArrow,
   createShape,
   createText,
@@ -22,14 +26,9 @@ import { TECH_HEADER_H, TECH_MUTED, techHeader } from './template-builders-techn
 
 type Node = Extract<Element, { type: 'shape' }>;
 
-// C4's palette: fill, edge and the ink on it.
-export const C4 = {
-  person: { fill: '#08427b', edge: '#052e56', ink: '#ffffff', icon: 'user' },
-  system: { fill: '#1168bd', edge: '#0b4884', ink: '#ffffff', icon: 'box' },
-  container: { fill: '#438dd5', edge: '#2e6295', ink: '#ffffff', icon: 'box' },
-  external: { fill: '#8a8a8a', edge: '#6b6b6b', ink: '#ffffff', icon: 'globe' },
-} as const;
-type C4Kind = keyof typeof C4;
+// C4's palette, one copy for the templates, the palette's C4 tiles and a graph's c4 style (@livediagram/document).
+export const C4 = C4_LOOK;
+type C4Kind = Exclude<keyof typeof C4, 'database'>;
 
 // One C4 element: a card with its glyph in a badge, its name as the title, its type as the meta line ("Person",
 // "Go", a container's technology) and what it does as the body.
@@ -45,22 +44,43 @@ export function c4Card(
   iconId: string = C4[kind].icon,
 ): Node {
   const { tags: _tags, ...base } = createShape('card', x, y);
-  const hue = C4[kind];
+  return { ...base, width: w, height: h, ...c4CardFields(kind, name, type, body, iconId) };
+}
+
+// A store drawn as a cylinder, as C4 draws a database or a queue: its name over its technology.
+export function c4Store(
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  name: string,
+  tech: string,
+): Node {
+  return { ...createShape('cylinder', x, y), width: w, height: h, ...c4DatabaseFields(name, tech) };
+}
+
+// A C4 boundary: a system opened into its containers, or a container into its components. Its name sits bold in the
+// bottom-left corner over its type in brackets, as the C4 model draws one, so the builder leaves C4_BOUNDARY_FOOT
+// clear under its last row.
+export const C4_BOUNDARY_FOOT = 80;
+export function c4Boundary(
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  name: string,
+  type: string,
+): Node {
   return {
-    ...base,
+    ...createShape('boundary', x, y),
     width: w,
     height: h,
-    cardMedia: 'badge',
-    iconId,
-    pageTitle: name,
+    label: name,
     pageSubtitle: type,
-    label: body,
-    textSize: 'sm',
-    textAlignX: 'left',
-    fillColor: hue.fill,
-    strokeColor: hue.edge,
-    textColor: hue.ink,
-    themeLockFill: true,
+    boundaryStyle: 'c4',
+    strokeStyle: 'long-dash',
+    strokeColor: C4.system.fill,
+    textColor: C4.system.fill,
   };
 }
 
@@ -82,7 +102,11 @@ export function c4Link(
 }
 
 // The key: a swatch per kind of element with its name, as scaffold (a sample is no node left out).
-function c4Key(x: number, y: number, kinds: readonly [C4Kind, string][]): Element[] {
+export function c4Key(
+  x: number,
+  y: number,
+  kinds: readonly [keyof typeof C4, string][],
+): Element[] {
   const sw = 40;
   const pitch = 196;
   return [
@@ -117,7 +141,7 @@ function c4Key(x: number, y: number, kinds: readonly [C4Kind, string][]): Elemen
   ];
 }
 
-const layered = (scaffold: Element[], content: Element[]): Element[] => [
+export const c4Layered = (scaffold: Element[], content: Element[]): Element[] => [
   ...scaffold.map((el) => ({ ...el, layerId: TEMPLATE_SCAFFOLD_LAYER_ID })),
   ...content.map((el) => ({ ...el, layerId: TEMPLATE_CONTENT_LAYER_ID })),
 ];
@@ -266,7 +290,7 @@ export function buildC4Context(cx: number, cy: number): Element[] {
       ['external', 'External system'],
     ]),
   ];
-  return layered(scaffold, [
+  return c4Layered(scaffold, [
     platform,
     customer,
     courier,
@@ -296,7 +320,7 @@ export function buildC4Container(cx: number, cy: number): Element[] {
   const innerW = 2 * pitch + cardW;
   const boundW = innerW + 2 * pad;
   const totalW = cardW + sideGap + boundW + sideGap + cardW;
-  const boundH = band + 4 * rowPitch - (rowPitch - cardH) + pad;
+  const boundH = band + 4 * rowPitch - (rowPitch - cardH) + C4_BOUNDARY_FOOT;
   const totalH = TECH_HEADER_H + headGap + cardH + 120 + boundH + keyGap + 60;
   const left = cx - totalW / 2;
   const top = cy - totalH / 2;
@@ -315,17 +339,8 @@ export function buildC4Container(cx: number, cy: number): Element[] {
     icon: string,
   ): Node => c4Card('container', colX(col), rowY(row), cardW, cardH, name, tech, body, icon);
   // A store is drawn as a cylinder, as C4 draws a database or a queue.
-  const store = (col: number, row: number, label: string): Node => ({
-    ...createShape('cylinder', colX(col), rowY(row) - 8),
-    width: cardW,
-    height: cardH + 16,
-    label,
-    textSize: 'sm',
-    fillColor: C4.container.fill,
-    strokeColor: C4.container.edge,
-    textColor: C4.container.ink,
-    themeLockFill: true,
-  });
+  const store = (col: number, row: number, name: string, tech: string): Node =>
+    c4Store(colX(col), rowY(row) - 8, cardW, cardH + 16, name, tech);
 
   const customer = c4Card(
     'person',
@@ -388,8 +403,8 @@ export function buildC4Container(cx: number, cy: number): Element[] {
     'Matches orders to couriers.',
     'truck',
   );
-  const db = store(0, 3, 'Orders database\nPostgreSQL');
-  const events = store(1, 3, 'Order events\nKafka topic');
+  const db = store(0, 3, 'Orders database', 'PostgreSQL');
+  const events = store(1, 3, 'Order events', 'Kafka topic');
   const payments = c4Card(
     'external',
     left,
@@ -435,17 +450,16 @@ export function buildC4Container(cx: number, cy: number): Element[] {
     c4Link(dispatch, 'e', maps, 'w', 'Routes · REST'),
   ];
 
-  const boundary: Node = {
-    ...createShape('boundary', boundX, boundY),
-    width: boundW,
-    height: boundH,
-    label: 'Plateful Ordering Platform',
-    pageSubtitle: 'Software system',
-    iconId: 'shopping-bag',
-    boundaryStyle: 'inset',
-    strokeColor: C4.system.fill,
-    textColor: C4.system.fill,
-  };
+  // The C4 boundary: the platform's name in its bottom-left corner, under the stores. The Order service card links to
+  // the C4 Component Diagram's boundary of the same name when both are in one document (c4-levels.ts).
+  const boundary = c4Boundary(
+    boundX,
+    boundY,
+    boundW,
+    boundH,
+    'Plateful Ordering Platform',
+    'Software system',
+  );
   const scaffold: Element[] = [
     ...techHeader(
       left,
@@ -461,7 +475,7 @@ export function buildC4Container(cx: number, cy: number): Element[] {
       ['external', 'External system'],
     ]),
   ];
-  return layered(scaffold, [
+  return c4Layered(scaffold, [
     customer,
     courier,
     web,

@@ -184,13 +184,13 @@ describe('the filter lens', () => {
   });
 
   it('carries the lens from one list across places to another, and not into a place', async () => {
-    const index = createFakeIndex({ items: [makeItem(1, { lastOpenedAt: 5, favourite: true })] });
+    const index = createFakeIndex({ items: [makeItem(1, { lastOpenedAt: 5 })] });
     const { onNavigate } = renderRouted(index, { kind: 'recent', q: 'made-by:ai' });
     const nav = screen.getByRole('navigation', { name: 'Sections' });
-    fireEvent.click(within(nav).getByText('Favourites'));
+    fireEvent.click(within(nav).getByText('Shared With Me'));
     expect(onNavigate).toHaveBeenLastCalledWith(
-      { kind: 'favourites', q: 'made-by:ai' },
-      '/explorer/favourites?q=made-by%3Aai',
+      { kind: 'shared', q: 'made-by:ai' },
+      '/explorer/shared?q=made-by%3Aai',
       undefined,
     );
     fireEvent.click(within(nav).getByText('My Work'));

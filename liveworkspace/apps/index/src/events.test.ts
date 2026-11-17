@@ -43,7 +43,7 @@ function tick() {
 }
 
 describe('what the index records', () => {
-  it('records create, rename, move, trash, restore, share, unshare and favourite, newest first', async () => {
+  it('records create, rename, move, trash, restore, share and unshare, newest first', async () => {
     const next = tick();
     const ada = await person('user_tl1');
     const item = await makeItem(ada.auth, { title: 'Roadmap' });
@@ -68,11 +68,6 @@ describe('what the index records', () => {
     next();
     await call(`/items/${item.id}/share`, { method: 'DELETE', auth: ada.auth });
     next();
-    await call(`/favourites/${item.id}`, { method: 'PUT', auth: ada.auth });
-    next();
-    // Starring it again is not news.
-    await call(`/favourites/${item.id}`, { method: 'PUT', auth: ada.auth });
-    next();
     await call(`/items/${item.id}`, { method: 'DELETE', auth: ada.auth });
     next();
     await call(`/items/${item.id}/restore`, { method: 'POST', auth: ada.auth });
@@ -86,7 +81,6 @@ describe('what the index records', () => {
     expect(kinds(page.events)).toEqual([
       'restored Roadmap 2',
       'trashed Roadmap 2',
-      'favourited Roadmap 2',
       'unshared Roadmap 2',
       'shared Roadmap 2',
       'moved Roadmap 2',
@@ -120,14 +114,6 @@ describe('what the index records', () => {
       title: 'Drafted (copy)',
       detail: { copiedFrom: 'Drafted' },
     });
-  });
-
-  it("doesn't record a favourite of an item the person can't reach", async () => {
-    const ada = await person('user_tl3');
-    const bea = await person('user_tl3b');
-    const theirs = await makeItem(bea.auth, { title: 'Private' });
-    await call(`/favourites/${theirs.id}`, { method: 'PUT', auth: ada.auth });
-    expect(logged().filter((e) => e.type === 'favourited')).toEqual([]);
   });
 
   it('records an item synced back, and nothing for one taken offline (it and its History go)', async () => {
@@ -463,8 +449,6 @@ describe('one item’s History', () => {
       }),
     );
     next();
-    // A favourite is its person's own: only they see it in the History.
-    await call(`/favourites/${item.id}`, { method: 'PUT', auth: bo.auth });
     const page = await history(ada.auth, item.id);
     expect(kinds(page.events)).toEqual([
       'shared Roadmap 2',
@@ -473,7 +457,6 @@ describe('one item’s History', () => {
     ]);
     expect(page.events.every((e) => e.itemId === item.id)).toBe(true);
     expect(kinds((await history(bo.auth, item.id)).events)).toEqual([
-      'favourited Roadmap 2',
       'shared Roadmap 2',
       'renamed Roadmap 2',
       'created Roadmap',
@@ -507,13 +490,9 @@ describe('one item’s History', () => {
     ]);
     const shelved = await makeItem(ada.auth, { title: 'Shelved' });
     next();
-    await call(`/favourites/${shelved.id}`, { method: 'PUT', auth: ada.auth });
-    next();
     const archived = await call(`/items/${shelved.id}/archive`, { method: 'POST', auth: ada.auth });
     expect(archived.status).toBe(200);
-    // Archiving drops its favourites, their events with them.
     const after = (await history(ada.auth, shelved.id)).events;
-    expect(after.some((e) => e.type === 'favourited')).toBe(false);
     expect(after.at(-1)!.type).toBe('created');
   });
 
@@ -558,10 +537,9 @@ describe('one item’s History', () => {
 
   it('reads through the events’ item index, never scanning or sorting', () => {
     for (const spec of [
-      { itemId: 'it-1', personId: 'user_big', owner: true, limit: 30, now: 1 },
+      { itemId: 'it-1', owner: true, limit: 30, now: 1 },
       {
         itemId: 'it-1',
-        personId: 'user_big',
         owner: false,
         limit: 30,
         cursor: { at: 5, id: 'x' },
@@ -603,13 +581,14 @@ describe('the bound', () => {
     for (let i = 0; i < 100_000; i++) {
       event.run(`o-${i}`, `it-${i % 1000}`, 'user_o', 'edited', 'Other', now - (i % 1000) * 1000);
     }
-    // Its own: mostly edits, with someone else's favourites among them (skipped in the index walk).
+    // Its own: mostly edits, with `favourited` rows left from before Favourites were removed among them, its
+    // reader's own included (skipped in the index walk).
     for (let i = 0; i < 2000; i++) {
       const fav = i % 10 === 0;
       event.run(
         `m-${i}`,
         item.id,
-        fav ? 'user_x' : 'user_big',
+        fav ? (i % 20 === 0 ? 'user_x' : 'user_big') : 'user_big',
         fav ? 'favourited' : 'edited',
         'Busy',
         now - i * 1000,
@@ -625,7 +604,9 @@ describe('the bound', () => {
     });
     expect(first.events).toHaveLength(30);
     expect(second.events).toHaveLength(30);
-    expect([...first.events, ...second.events].some((e) => e.type === 'favourited')).toBe(false);
+    expect(
+      [...first.events, ...second.events].some((e) => (e.type as string) === 'favourited'),
+    ).toBe(false);
     expect(second.events[0]!.occurredAt).toBeLessThan(first.events.at(-1)!.occurredAt);
     console.info(`[events] two History pages beside 102,000 events in ${ms.toFixed(1)} ms of CPU`);
     expect(ms).toBeLessThan(cpuBudgetMs(250));

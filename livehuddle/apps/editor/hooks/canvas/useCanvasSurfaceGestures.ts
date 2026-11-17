@@ -4,6 +4,8 @@ import {
   type MouseEvent as ReactMouseEvent,
 } from 'react';
 import { pointerToCanvas } from '@/lib/canvas';
+import { floorPointAt } from '@/lib/space-3d/space-3d-camera';
+import { space3DTiltNow } from '@/lib/space-3d/space-3d-preference';
 import { isDoubleTapZoomPointer } from '@liveworkspace/workbench/lib/double-tap-zoom';
 import { peerPushTarget } from '@livehuddle/avatar/walk';
 import { walkInputBlocked } from '@livehuddle/avatar/walk-guard';
@@ -146,6 +148,26 @@ export function useCanvasSurfaceGestures({
     node?.focus({ preventScroll: true });
   };
 
+  // The canvas point a walking press is on. In the 3D view (docs/specs/008-canvas/3d-view.md "The camera") the press
+  // is traced back through the tilted camera to the floor under it, from the canvas's own untilted box; null above
+  // the horizon. Flat, the wrapper's rect is the scaled world, as everywhere else.
+  const walkPointAt = (clientX: number, clientY: number) => {
+    const tilt = space3DTiltNow();
+    const main = mainRef && 'current' in mainRef ? mainRef.current : null;
+    if (tilt !== 0 && main)
+      return floorPointAt(
+        { x: clientX, y: clientY },
+        main.getBoundingClientRect(),
+        {
+          zoom: viewportZoom,
+          offset: readViewportOffset(),
+        },
+        tilt,
+      );
+    const rect = wrapperRef.current?.getBoundingClientRect();
+    return rect ? pointerToCanvas(clientX, clientY, rect, viewportZoom) : null;
+  };
+
   // Drop a marquee / pan the press armed. Their release handlers deselect on
   // a sub-4px "drag", and deselecting closes the context menu, so a press
   // that turned out to open the menu must not leave one live.
@@ -235,8 +257,7 @@ export function useCanvasSurfaceGestures({
       focusCanvas();
       e.preventDefault();
       e.stopPropagation();
-      const rect = wrapperRef.current?.getBoundingClientRect();
-      const point = rect ? pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom) : null;
+      const point = walkPointAt(e.clientX, e.clientY);
       if (!point) return;
       // Left-click walks there; right-click ON the character changes who it
       // is (male / female), and a right-click anywhere else is swallowed —

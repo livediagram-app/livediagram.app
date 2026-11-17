@@ -90,7 +90,7 @@ export function CardStyleSections({
   );
   return (
     <MenuFlyoutSection
-      title="Style"
+      title="Appearance"
       icon={<StyleMenuGlyph />}
       open={flyout}
       onToggle={() => setFlyout((f) => !f)}

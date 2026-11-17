@@ -4,8 +4,8 @@
 // (components/panels/Explorer.tsx with its explorer-panel/ and explorer-tree/ parts): the open item's card with the
 // host's notice under it, then a rail of sections beside a pane (a row of chips over the pane when stacked). The
 // pane names its section in full, offers New Folder (an icon) in a space, and shows Home's Most Used and Recent, the Inbox, a
-// space's folders and items, Favourites, This Browser or the Trash. Only where the data comes from changed: it
-// shares the full Explorer's data layer, so a rename or a star shows here at once and every list is one request a
+// space's folders and items, This Browser or the Trash. Only where the data comes from changed: it
+// shares the full Explorer's data layer, so a rename or a move shows here at once and every list is one request a
 // page, read only while its section is shown.
 
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
@@ -54,7 +54,7 @@ import {
 import { withDriveMarks } from '../drive/DriveMarks';
 import { useDriveMarks, type ExplorerDriveHost } from '../drive/useDriveMarks';
 import { paneView, sectionOfView } from './panel-view';
-import { CurrentItem, LocalCurrentItem } from './CurrentItem';
+import { CurrentItem, LocalCurrentItem, useLocalCurrent } from './CurrentItem';
 import { Rail } from './Rail';
 import { Pane } from './Pane';
 
@@ -70,11 +70,11 @@ export type PanelLayout = 'side' | 'stacked' | 'sheet';
 
 /**
  * The editors' popover (liveworkspace/docs/specs/004-index/one-explorer.md "The editors' panel: its size and the
- * scrim"): up to 54rem wide, so the 13rem rail has room and the pane's compact preview cards run four across, yet a
+ * scrim"): up to 56rem wide, so the 15rem rail (with the current card at its top) has room and the pane's compact preview cards run four across, yet a
  * third of a 1280px window's canvas stays in sight; and up to 45rem tall. Each editor's MovablePanel takes these,
  * so the size lives once. The host keeps it 1rem inside the window.
  */
-export const EXPLORER_POPOVER_WIDTH = 'w-[54rem]';
+export const EXPLORER_POPOVER_WIDTH = 'w-[56rem]';
 export const EXPLORER_POPOVER_HEIGHT = '45rem';
 
 /**
@@ -97,6 +97,12 @@ export type ExplorerPanelProps = {
   current?: Item | null;
   // The id of the item open in the editor, known before `current` is read.
   currentId?: string | null;
+  // The editor's own title for it, which follows its header's rename and a collaborator's or an agent's through its
+  // live room: the card shows it over the copy read when the panel opened (one-explorer.md "The Current card").
+  currentTitle?: string | null;
+  // The editor's word that it is kept only in this browser: its card is This Browser's, with the Browser Storage pill,
+  // even before This Browser's list holds it.
+  currentOffline?: boolean;
   // Trashes the item open in the editor, from any of the panel's menus: the host stops saving it first, then leaves
   // it (the Explorer offers the Undo). Settles true once it is in the Trash.
   onTrashCurrent?: (item: Item) => Promise<boolean>;
@@ -149,6 +155,7 @@ export function ExplorerPanel({
   imports,
   itemMenu,
   history,
+  webhooks,
   teamsHost,
   thisBrowser = null,
   accounts = null,
@@ -167,6 +174,7 @@ export function ExplorerPanel({
           imports={imports}
           itemMenu={itemMenu}
           history={history}
+          webhooks={webhooks}
         >
           <TeamsProvider
             host={teamsHost}
@@ -191,6 +199,8 @@ function PanelInner({
   onCreate,
   current = null,
   currentId = null,
+  currentTitle = null,
+  currentOffline = false,
   onTrashCurrent,
   onRenameCurrent,
   onOpenExplorer,
@@ -226,9 +236,25 @@ function PanelInner({
   const offlineCount = thisBrowserLive.length;
   // The rail shows This Browser while it holds a live item or a local folder, as the sidebar does.
   const localFolders = useThisBrowserFolders(localHost ? app : null).length;
-  // The open item when the index has none for it (kept only in this browser): its card comes from This Browser.
-  const localCurrent =
-    !current && currentId ? (thisBrowserLive.find((i) => i.id === currentId) ?? null) : null;
+  // The open item when it is kept only in this browser (the editor says so, or the index has none for it): its card
+  // comes from This Browser, or from the editor's title while the list has not heard of it yet.
+  const localCurrent = useLocalCurrent(
+    current && !currentOffline ? null : currentId,
+    thisBrowserLive,
+    currentOffline,
+    currentTitle,
+  );
+  // The item open in the editor: across the top when stacked, compact at the rail's head beside it.
+  const currentCard = localCurrent ? (
+    <LocalCurrentItem
+      item={localCurrent}
+      title={currentTitle}
+      onRename={onRenameCurrent}
+      compact={!stacked}
+    />
+  ) : current ? (
+    <CurrentItem item={current} title={currentTitle} compact={!stacked} />
+  ) : null;
   const groups = useMemo(
     () =>
       panelSectionGroups(teams, {
@@ -325,17 +351,17 @@ function PanelInner({
               : 'contents'
           }
         >
+          {/* Stacked (a phone, the narrow corner panel) the current card spans the top; beside a rail it heads the
+              rail instead (owner, 2026-11-16), so the pane keeps the panel's height. */}
           <div className="flex flex-col gap-2 px-2.5 pb-2.5 pt-1 empty:hidden">
-            {current ? (
-              <CurrentItem item={current} />
-            ) : localCurrent ? (
-              <LocalCurrentItem item={localCurrent} onRename={onRenameCurrent} />
-            ) : null}
+            {stacked ? currentCard : null}
             {notice}
           </div>
+          {/* A rule under that top block only when it holds something: with nothing above, the popover header's own
+              rule is the one line. */}
           <div
             data-panel-body={layout}
-            className={`flex border-t border-slate-200 dark:border-slate-700/70 ${PANEL_BODY[layout]}`}
+            className={`flex [:not(:empty)+&]:border-t border-slate-200 dark:border-slate-700/70 ${PANEL_BODY[layout]}`}
           >
             <Rail
               groups={groups}
@@ -343,6 +369,7 @@ function PanelInner({
               onPick={pick}
               phone={stacked}
               offlineCount={offlineCount}
+              top={stacked ? undefined : currentCard}
             />
             <Pane
               section={section}

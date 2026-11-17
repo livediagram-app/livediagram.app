@@ -1,54 +1,9 @@
-// The Calendar Feed article's scenes (docs/specs/026-plan/calendar-feed.md "Subscribe to Calendar"): the tab menu with
-// Subscribe to Calendar… under the pointer, the dialog's Just made state (the link shown once, its calendars, What It
-// Shows and the privacy note), and the cards landing in a calendar week as all-day events. Composed from the shared
-// primitives so the house style holds.
+// The Calendar Feed article's scenes (docs/specs/026-plan/calendar-feed.md "Subscribe to Calendar"): the dialog's Just
+// made state (the link shown once, its calendars, What It Shows and the privacy note), and the cards landing in a
+// calendar week as all-day events. Composed from the shared primitives so the house style holds.
 
 import { Scene, Label, Dialog, Button } from '@liveworkspace/help-site/art/primitives';
 import { Switch } from '@liveworkspace/help-site/art/illustrations/settings-dialog';
-import {
-  TabPill,
-  AddTabButton,
-  TabBar,
-  MenuRowList,
-} from '@liveworkspace/help-site/art/illustrations/tabs-parts';
-
-/** The tab menu's rows, with Subscribe to Calendar… under the pointer beside Export and Clear. */
-export function CalendarFeedMenu() {
-  const barY = 158;
-  const mx = 130;
-  const my = 26;
-  return (
-    <Scene w={420} h={210}>
-      <TabBar y={barY} w={420} />
-      <TabPill x={14} y={barY + 8} w={80} label="Roadmap" active />
-      <TabPill x={100} y={barY + 8} w={64} label="Bugs" />
-      <AddTabButton x={170} y={barY + 8} />
-      <rect
-        x={mx}
-        y={my}
-        width={212}
-        height={110}
-        rx={8}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      <MenuRowList
-        x={mx}
-        y={my + 6}
-        w={212}
-        rows={[
-          'Organise in Tab Folder',
-          null,
-          'Import…',
-          'Export',
-          'Subscribe to Calendar…',
-          'Clear',
-        ]}
-        highlight="Subscribe to Calendar…"
-      />
-    </Scene>
-  );
-}
 
 /** Subscribe to Calendar just after Make Calendar Link: the link with Copy Link, Google Calendar and Apple Calendar,
  *  What It Shows (Board, Only My Cards, Include Done Cards) and the amber privacy note. */

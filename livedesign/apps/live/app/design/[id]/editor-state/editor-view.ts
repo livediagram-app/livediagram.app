@@ -201,6 +201,8 @@ export function editorView({
     exitFormatTool: toolsSlice.exitFormatTool,
     beginErase: elementsSlice.beginErase,
     chooseTemplate: tabsSlice.chooseTemplate,
+    clearExampleContent: tabsSlice.clearExampleContent,
+    keepExampleContent: tabsSlice.keepExampleContent,
     clearTabContent: tabsSlice.clearTabContent,
     accountDisplayName: designSlice.accountDisplayName,
     accountUserId: designSlice.accountUserId,

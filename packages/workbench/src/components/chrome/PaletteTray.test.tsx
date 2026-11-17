@@ -4,6 +4,8 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import {
   PALETTE_TRAY_MIN_WIDTH_PX,
   PaletteTray,
+  pillPlace,
+  TemplateExampleTray,
   traySlot,
   usePaletteStripBox,
   useToolbarBox,
@@ -248,5 +250,50 @@ describe('traySlot', () => {
       left: 72,
       width: 200,
     });
+  });
+});
+
+// liveworkspace/docs/specs/002-architecture/blueprints/template-examples.md: the tray a template's example content
+// hangs from the strip, and its top-centre card without one.
+describe('the template example tray', () => {
+  it('hangs from the strip as a standing message, with Clear Example Content first', () => {
+    mountStrip();
+    const onClear = vi.fn();
+    const onKeep = vi.fn();
+    render(<TemplateExampleTray onClear={onClear} onKeep={onKeep} />);
+    const tray = screen.getByRole('status');
+    expect(tray.hasAttribute('data-yields-to-mode')).toBe(true);
+    expect(tray.textContent).toContain('Example content shows how this works.');
+    const [clear, keep] = screen.getAllByRole('button');
+    expect(clear!.textContent).toBe('Clear Example Content');
+    expect(keep!.textContent).toBe('Keep It');
+    fireEvent.click(clear!);
+    expect(onClear).toHaveBeenCalledTimes(1);
+    fireEvent.click(keep!);
+    expect(onKeep).toHaveBeenCalledTimes(1);
+  });
+
+  it('stands at the top centre without a strip', () => {
+    const { container } = render(<TemplateExampleTray onClear={() => {}} onKeep={() => {}} />);
+    expect(container.querySelector('[data-template-example-pill]')).not.toBeNull();
+    expect(screen.getByRole('button', { name: 'Clear Example Content' })).toBeTruthy();
+  });
+
+  it("stands clear of Draw's dock rather than over its tools", () => {
+    const dock = document.createElement('div');
+    dock.setAttribute('data-whiteboard-dock', '');
+    vi.spyOn(dock, 'getBoundingClientRect').mockReturnValue(new DOMRect(300, 50, 600, 60));
+    document.body.append(dock);
+    const { container } = render(<TemplateExampleTray onClear={() => {}} onKeep={() => {}} />);
+    const pill = container.querySelector<HTMLElement>('[data-template-example-pill]')!;
+    expect(pill.style.top).toBe('120px');
+  });
+});
+
+describe('pillPlace', () => {
+  it('goes under a top dock, over a bottom one, and below the top chrome without one', () => {
+    expect(pillPlace({ top: 12, bottom: 60 }, 900)).toEqual({ top: 70 });
+    expect(pillPlace({ top: 830, bottom: 880 }, 900)).toEqual({ bottom: 80 });
+    expect(pillPlace(null, 900)).toEqual({ top: 80 });
   });
 });
