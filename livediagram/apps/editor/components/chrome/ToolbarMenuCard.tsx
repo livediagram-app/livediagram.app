@@ -75,7 +75,15 @@ export function ToolbarMenuCard({
         e.stopPropagation();
       }}
     >
-      <MenuCardFormContext.Provider value={form}>{children}</MenuCardFormContext.Provider>
+      <MenuCardFormContext.Provider value={form}>
+        {/* In a phone's strip the logo leads the menu card, its mark alone, rather than standing in a card of its own. */}
+        {inline && logo ? (
+          <span data-logo-inline="" className="flex items-center px-1.5">
+            {logo}
+          </span>
+        ) : null}
+        {children}
+      </MenuCardFormContext.Provider>
     </div>
   );
   return withLogo ? <MenuCardLogo logo={logo} scale={scale} card={card} /> : card;

@@ -49,6 +49,11 @@ export function useBarLabels(
         }
       }
       // Another set of categories: show the names once to measure them.
+      // A strip mounted again (back from a phone's row) keeps the named width it measured before.
+      else if (named.current?.key === categoriesKey && !card.dataset.stripNaturalWidth) {
+        card.dataset.stripNaturalWidth = String(named.current.width);
+        window.dispatchEvent(new Event(STRIP_NAMED_EVENT));
+      }
       if (named.current?.key !== categoriesKey) {
         named.current = null;
         if (!labels) setLabels(true);
