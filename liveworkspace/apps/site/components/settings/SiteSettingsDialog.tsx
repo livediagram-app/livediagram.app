@@ -53,6 +53,13 @@ const APP_SECURITY = bearerAccountSecurity(accountApi, { settingsParam: 'profile
 // PHONE_MEDIA_QUERY).
 const PHONE_QUERY = '(max-width: 639px), (pointer: coarse) and (max-height: 499px)';
 
+// Delete Account on liveworkspace.app (liveworkspace/docs/specs/010-site/site.md "Settings", "Your Account"): closing
+// the account is asked for by an app's server, so the row says where it lives and links to the help article of the
+// app the panel was opened for, else livediagram's.
+const HELP_FALLBACK = APP_SITES[0]!;
+const closeAccountHelp = (site: { url: string } | undefined) =>
+  `${(site ?? HELP_FALLBACK).url}/help/account-and-data/deleting-your-data/#deleting-your-account`;
+
 // Each app's prism in its accent, and liveworkspace's own for All and the Account section, as the Explorer's filter.
 const renderLogo = (id: SettingsAppId | 'all') => (
   <BrandMark
@@ -135,9 +142,10 @@ export default function SiteSettingsDialog({
                 if (left) window.location.assign('/');
                 return left;
               },
+              closeAccountHelp: closeAccountHelp(site),
               ...ACCOUNT_PANELS,
             },
-    [identity, guestSignIn, profile, cloudSync],
+    [identity, guestSignIn, profile, cloudSync, site],
   );
   // A guest's: the browser copy the app's editor keeps, made once per opening.
   const isGuest = guest !== null;

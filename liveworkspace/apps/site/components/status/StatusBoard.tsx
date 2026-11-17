@@ -40,7 +40,15 @@ import {
 } from '@/lib/status/history';
 import { RecentIncidents } from './RecentIncidents';
 import { ServiceGroupCard } from './ServiceGroupCard';
-import { formatAgo, formatMs, Legend, OVERALL_LOOK, StateBadge, UptimeFigure } from './status-ui';
+import {
+  formatAgo,
+  formatMs,
+  HOLD,
+  Legend,
+  OVERALL_LOOK,
+  StateBadge,
+  UptimeFigure,
+} from './status-ui';
 
 const HistoryIcon = lucideGlyph(lucideHistory, 16);
 
@@ -171,10 +179,15 @@ export function StatusBoard({
             <h1
               className={`mt-6 text-4xl leading-[1.05] font-semibold tracking-[-0.03em] text-balance sm:text-6xl ${look.ink}`}
             >
-              {copy.title}
+              {/* Never smaller than the checking words: a title a line shorter moved every tile under it. */}
+              <span data-hold={OVERALL_COPY.checking.title} className={HOLD}>
+                <span>{copy.title}</span>
+              </span>
             </h1>
             <p className="mt-5 max-w-xl text-lg leading-relaxed text-slate-600 dark:text-slate-300">
-              {copy.line}
+              <span data-hold={OVERALL_COPY.checking.line} className={HOLD}>
+                <span>{copy.line}</span>
+              </span>
             </p>
             <p className="mt-3 max-w-xl text-sm leading-relaxed text-slate-500 dark:text-slate-400">
               Every check runs live from your browser, once when you open this page. Beside them,
@@ -279,7 +292,9 @@ export function StatusBoard({
                   >
                     <GroupMark id={g.site.id} />
                     {g.title}
-                    <StateBadge state={mark} size="sm" word={words} />
+                    {/* As wide as Checking at least: the shorter "All up" let the links fit one row where
+                        Checking took two, and lifted every card under them. */}
+                    <StateBadge state={mark} size="sm" word={words} hold="Checking" />
                   </a>
                 </li>
               );
@@ -306,6 +321,7 @@ export function StatusBoard({
             views={views}
             wide
             history={hourly}
+            historyPending={stored === undefined}
             incidents={incidents}
             now={minute}
           />
@@ -317,6 +333,7 @@ export function StatusBoard({
               group={g}
               views={views}
               history={hourly}
+              historyPending={stored === undefined}
               incidents={incidents}
               now={minute}
             />

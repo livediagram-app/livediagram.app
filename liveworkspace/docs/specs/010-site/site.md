@@ -359,7 +359,22 @@ never a coloured dot, each with its own summary and an anchor (`#livediagram`). 
 group carries the group's state as the rows do, an icon and words ("All up", "1 slow", "2 down"), never a dot. The page follows the site's
 landing design: the tinted radial hero, rounded cards, light and dark, a 16px gutter on a phone. Its motion (the
 live pulse, the cards rising) is in `app/status/status-motion.css`, paced as content, and
-stops for reduced motion.
+stops for reduced motion. The rise moves the cards by `transform` and fades them by `opacity` alone, never by a
+layout property.
+
+**The page holds still while the answers land** (layout shift under 0.05 at any width): the round's answers and the
+history arrive after the first paint, and none of them moves what is already on screen. The overall title and its
+line keep at least the room the checking words took (a title one line shorter on a phone moved every tile under it),
+and each jump link's state keeps at least the width of **Checking** (the shorter "All up" let the links fit one row
+where "Checking" took two, and lifted every card under them), both by an invisible copy of the checking words
+stacked under the live ones (`HOLD` in `components/status/status-ui.tsx`, the copy a CSS `::after` that neither
+assistive tech nor the page's text reads). While the history is read, each service keeps its place: the cloud line
+reads "Checking" (holding the room of the answer it expects and of an Operational badge), the strip lies flat as a
+day without checks, and its footer reads "Reading the history", all the height the real lines take, so the cards do
+not grow under the reader when it arrives; each card's header keeps an invisible Uptime chip's room too (the chip
+arriving later wrapped a phone's header onto a new line). The footer's "Checked by liveworkspace …" keeps the room of "59 min ago"
+whatever it reads, and a browser line keeps the room of the label it showed while checking. Only a history that
+can't be read takes those lines away (its quiet note above the groups says why).
 
 **What it costs**: one round is 6 requests on liveworkspace.app and up to 6 per app (23 for four apps, with
 livediagram's Community pages; 29 in all),
@@ -892,7 +907,15 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
     On an app's address and in an editor, the same two sections in place, over the app's token; Google's
     **Connect** goes to Google and comes back to the app with Settings open.
   - **Your Account**: **Sign Out** where the host can sign out (`AccountHost.onSignOut`), and, in an editor's All, the
-    editor's Trash, Cloud Sync, Reset All Settings and Delete Account, folded in as above.
+    editor's Trash, Cloud Sync, Reset All Settings and Delete Account, folded in as above. On liveworkspace.app, under
+    Sign Out, a **Delete Account** row that says where closing the account lives (`AccountHost.closeAccountHelp`):
+    "Permanently deletes your liveworkspace account and everything you own in every app. You close it from inside
+    any app: open Settings there, then Profile, and choose Delete Account under Danger Zone. We email you a code to
+    confirm it." Its **How to Delete Your Account** link opens the help article "Deleting your account" in a new tab,
+    the one of the app the panel was opened for (livediagram's when it was opened for none). The site draws no Delete
+    Account of its own: closing is asked for by an app's server, with its own client and the person's token for it,
+    and deletes that app's data first ([accounts.md](../003-accounts/accounts.md#closing-an-account)); liveworkspace.app
+    has neither, so a second dialog here would be a second way to close an account, not the same one.
   - **Reset All Settings**, an editor's row directly above Delete Account (`ResetSettingsRow`,
     `packages/settings-ui/src/reset-settings/`): **Reset** asks first in place (**Reset Now** and **Keep**, as Revoke
     does), then, for an account, sends one `DELETE /api/account/settings` over the app's token
