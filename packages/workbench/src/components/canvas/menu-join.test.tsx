@@ -245,6 +245,13 @@ describe('the corner card', () => {
     expect(stripLeftClear(menuBox(100), 400)).toBe(0);
   });
 
+  it('starts past the box as it stands whole while the box is compact, so it never squeezes the box smaller', () => {
+    const el = menuBox(112);
+    el.dataset.menuForm = 'bare';
+    el.dataset.menuNaturalWidth = '179';
+    expect(stripLeftClear(el, 0)).toBe(12 + 179 + STRIP_SIDE_SPACE_PX);
+  });
+
   it('reads whether a strip shifts left, sits between, or takes the gap either way', () => {
     const shifts = document.createElement('div');
     shifts.setAttribute(STRIP_SHIFTS_LEFT, '');

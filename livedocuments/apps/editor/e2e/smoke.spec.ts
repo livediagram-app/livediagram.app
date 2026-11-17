@@ -18,7 +18,7 @@ import {
 // `/new` asks nothing: it makes a document as it mounts and opens it on its start, where the templates are
 // (docs/specs/007-editor/new-document-route.md, start-diagramming.md). A guest's lives in This Browser
 // (docs/specs/006-document/save-locations.md "The default depends on who is creating"): listed in this browser's
-// list for the Explorer, and badged so in the header.
+// list for the Explorer. (Its header badge went with the header bar, experiment.)
 test('/new makes a guest’s document in This Browser and opens it on its start', async ({
   page,
   pageErrors,
@@ -38,7 +38,8 @@ test('/new makes a guest’s document in This Browser and opens it on its start'
       ),
     )
     .toContain(id);
-  await expect(page.getByLabel('This Browser', { exact: true }).first()).toBeVisible();
+  // No header bar, so no badge in one.
+  await expect(page.locator('header[data-region="header"]')).toHaveCount(0);
   expectNoPageErrors(pageErrors);
 });
 

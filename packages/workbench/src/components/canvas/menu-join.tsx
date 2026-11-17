@@ -91,10 +91,12 @@ export function stripRoomBesideMenu(
 export const STRIP_SIDE_SPACE_PX = 16;
 
 /** Where a strip standing at the left (shifted, or giving way) starts, in screen px from the editor's left: the space
- *  past the menu box, or joined, past the sidebar the box heads (which ends a gap beyond the box). */
+ *  past the menu box, or joined, past the sidebar the box heads (which ends a gap beyond the box). Past the box as it
+ *  stands whole (menuNaturalRight): a compact box (its mode switch down to its icon) must not draw the strip left over
+ *  where the whole box goes, or the box finds less room, stays compact and never gets its mode's name back. */
 export function stripLeftClear(menu: HTMLElement | null, viewLeft: number): number {
   if (!menu) return 0;
-  const right = menu.getBoundingClientRect().right - viewLeft;
+  const right = menuNaturalRight(menu) - viewLeft;
   const edge = menu.hasAttribute('data-menu-joined') ? right + STRIP_MENU_GAP_PX : right;
   return Math.max(0, Math.ceil(edge + STRIP_SIDE_SPACE_PX));
 }
