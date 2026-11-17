@@ -172,3 +172,44 @@ describe('Apps Compared', () => {
     expect(selected).toHaveBeenCalledWith('last30');
   });
 });
+
+describe('Project Kits', () => {
+  const kits = buildTelemetrySummary(NOW, 'all', TELEMETRY_SENDERS, [
+    row(0, 'liveworkspace.app', 'Kit', 'Started', 'SoftwareProject', 3),
+    row(0, 'liveworkspace.app', 'Kit', 'Started', 'WebsiteBuild', 1),
+    row(0, 'liveworkspace.app', 'Kit', 'Completed', 'SoftwareProject', 3),
+    row(0, 'liveworkspace.app', 'Kit', 'Retried', 'WebsiteBuild', 2),
+    row(2, 'liveworkspace.app', 'Kit', 'Removed', 'WebsiteBuild', 1),
+  ]);
+  const section = () => host!.querySelector('section[aria-labelledby="project-kits"]')!;
+
+  it("shows each step's total in the window, every kit together, and the share completed", () => {
+    show(kits, 'today');
+    const tiles = [...section().querySelectorAll('dl > div')].map((d) => d.textContent);
+    expect(tiles[0]).toContain('Started4');
+    expect(tiles[1]).toContain('Completed3');
+    expect(tiles[1]).toContain('75% of started');
+    expect(tiles[2]).toContain('Retried2');
+    // Removed two days back is outside today.
+    expect(tiles[3]).toContain('Removed0');
+    const runs = table('Project kits started and completed per day')!;
+    expect(runs.querySelector('tbody tr:last-child')!.textContent).toContain('43');
+  });
+
+  it('leaves the share out with nothing started in the window', () => {
+    show(kits, 'today');
+    show(
+      buildTelemetrySummary(NOW, 'all', TELEMETRY_SENDERS, [
+        row(3, 'liveworkspace.app', 'Kit', 'Removed', 'WebsiteBuild', 1),
+      ]),
+      'today',
+    );
+    expect(section().textContent).not.toContain('of started');
+    expect(section().textContent).toContain('Removed0');
+  });
+
+  it('says so when no kit has been used', () => {
+    show(quiet);
+    expect(section().textContent).toContain('No Project Kits Yet');
+  });
+});

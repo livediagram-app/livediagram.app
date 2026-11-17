@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { IndexError, kitById, type KitRun } from '@liveworkspace/index-client';
+import { IndexError, kitById, KITS, type KitRun } from '@liveworkspace/index-client';
+import { KIT_TELEMETRY_TYPES } from '@liveworkspace/telemetry';
 import {
   connectionsLine,
+  KIT_TELEMETRY,
   createLabels,
   fallbackLines,
   refusalWords,
@@ -93,5 +95,13 @@ describe('the run’s words', () => {
     expect(refusalWords(new IndexError(500, 'internal_error'), 'remove')).toBe(
       'Couldn’t delete those files. Try again in a moment.',
     );
+  });
+});
+
+describe('the kits’ telemetry tokens', () => {
+  it('gives every kit its own token from the service’s closed list', () => {
+    const tokens = KITS.map((kit) => KIT_TELEMETRY[kit.id]);
+    expect(new Set(tokens).size).toBe(KITS.length);
+    expect([...tokens].sort()).toEqual([...KIT_TELEMETRY_TYPES].sort());
   });
 });

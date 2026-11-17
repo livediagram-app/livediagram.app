@@ -6,6 +6,7 @@ import { WindowPanel } from './_shared/WindowPanel';
 import { previousSpanLabel, windowLabel } from './_shared/windows';
 import { compareApps } from './_all/apps-compared';
 import { EventsByApp } from './_all/EventsByApp';
+import { ProjectKits } from './_all/ProjectKits';
 import { VisitorsAndAccounts } from './_all/VisitorsAndAccounts';
 
 // How many of the busiest events the overview lists.
@@ -13,7 +14,8 @@ const TOP_EVENTS = 12;
 
 // "All apps" (liveworkspace/docs/specs/008-telemetry/telemetry.md "The dashboard"): every app's events summed. Each app's
 // own tabs read its own vocabulary, so the overview keeps to what every app shares: how much happens, how the apps
-// compare on it and on their visitors and sign-ups (Apps Compared), and the busiest events. Picking an app opens its
+// compare on it and on their visitors and sign-ups (Apps Compared), liveworkspace.app's own Project Kits, and the
+// busiest events. Picking an app opens its
 // full dashboard. The window is the page's, so it stays when an app is picked.
 export function AllApps({
   summary,
@@ -64,6 +66,8 @@ export function AllApps({
         />
         <VisitorsAndAccounts summary={summary} comparison={comparison} active={active} />
       </section>
+
+      <ProjectKits summary={summary} active={active} />
 
       <h2 className="mt-12 text-lg font-semibold text-slate-900 dark:text-slate-100">
         Busiest Events

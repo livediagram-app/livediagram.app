@@ -143,6 +143,38 @@ describe('ingest', () => {
     ]);
   });
 
+  it('takes the project kits’ events from liveworkspace.app in its own name only, with a known kit', async () => {
+    const env = testEnv({ ENVIRONMENT: 'production' });
+    const started = { category: 'Kit', action: 'Started', type: 'SoftwareProject' };
+    const removed = { category: 'Kit', action: 'Removed', type: 'WebsiteBuild' };
+    await handleIngest(
+      post(
+        {
+          app: 'liveworkspace.app',
+          events: [started, removed, { ...started, type: 'Anything' }, { ...started, type: null }],
+        },
+        fromPage('https://liveworkspace.app'),
+      ),
+      env,
+    );
+    // Never in an app's name, and never from an app's page.
+    await handleIngest(
+      post({ app: 'liveplanner.app', events: [started] }, fromPage('https://liveworkspace.app')),
+      env,
+    );
+    await handleIngest(
+      post(
+        { app: 'liveworkspace.app', events: [started] },
+        fromPage('https://www.liveplanner.app'),
+      ),
+      env,
+    );
+    expect(env.rows.map((r) => [r.app, r.category, r.action, r.type])).toEqual([
+      ['liveworkspace.app', 'Kit', 'Started', 'SoftwareProject'],
+      ['liveworkspace.app', 'Kit', 'Removed', 'WebsiteBuild'],
+    ]);
+  });
+
   it('never lets an app’s page, or a key, speak for liveworkspace.app', async () => {
     const env = testEnv({ ENVIRONMENT: 'production' });
     const view = { category: 'UI', action: 'Toggled', type: 'ExplorerViewCard' };

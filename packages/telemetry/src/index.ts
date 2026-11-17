@@ -8,6 +8,7 @@ export * from './apps';
 export * from './audience';
 export * from './event-check';
 export * from './explorer-events';
+export * from './platform-events';
 export * from './server';
 export * from './summary';
 export * from './wire';

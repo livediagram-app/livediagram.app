@@ -145,6 +145,9 @@ the app's to report, so each change is counted once.
   for `liveworkspace.app` itself (`PLATFORM_TELEMETRY_APP`). A Share dialog's events count for the
   app of the item it shares, and a revoked pass under that app's noun (liveplanner's `Project`, the
   others' `Document`).
+- **Its own events.** Besides the Explorer's, liveworkspace.app sends a few of its own, never in an app's name:
+  the project kits' (`PLATFORM_OWN_TELEMETRY_EVENTS` in `packages/telemetry/src/platform-events.ts`), which the
+  ingest takes only for `liveworkspace.app` and only from its origin.
 - **What it may send.** The Explorer's events, each with its closed set of type tokens:
   `EXPLORER_TELEMETRY_EVENTS` in `packages/telemetry/src/explorer-events.ts`, and in an app's name
   that app's settings events. The site's emitter (`apps/site/lib/explorer/telemetry.ts`) drops any
@@ -174,7 +177,9 @@ the app's to report, so each change is counted once.
 its tabs, catalogues and explanations. Picking an app on the page updates the link.
 
 - **All apps** adds every app's events together. It shows the three windows (today, last 7 days,
-  last 30 days) and the 30-day trend line, then **Apps Compared** (its own section, below), then the busiest events.
+  last 30 days) and the 30-day trend line, then **Apps Compared** (its own section, below), then **Project Kits**
+  (liveworkspace.app's own kit events, [../004-index/kits.md](../004-index/kits.md) "Telemetry": Started, Retried,
+  Completed and Removed a day, every kit together, with each window's totals), then the busiest events.
   The same event from two apps counts as one busiest-events row, added up.
 - **One app** shows the dashboard that app had before. Every app's dashboard is the same views, in
   `_shared/` in the dashboard's folder (a private folder, so it is no route), filled from that app's

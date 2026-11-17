@@ -6,10 +6,12 @@ import {
   linkLevelOffered,
   type App,
   type Kit,
+  type KitId,
   type KitRun,
   type Level,
 } from '@liveworkspace/index-client';
 import { BRAND_APPS } from '@liveworkspace/brand';
+import type { KitTelemetryType } from '@liveworkspace/telemetry';
 
 export const LEVELS: readonly Level[] = ['edit', 'participate', 'view'];
 
@@ -89,8 +91,18 @@ export function refusalWords(error: unknown, doing: 'create' | 'remove'): string
   const code = error instanceof IndexError ? error.code : null;
   if (code === 'sign_in_required') return 'Sign in to create a project.';
   if (code === 'folder_not_found') return 'That project’s folder is gone. Start a new one.';
+  if (code === 'rate_limited')
+    return 'You’ve started a lot of projects in the last minute. Wait a minute, then try again.';
   if (code === null) return 'Couldn’t reach liveworkspace. Check your connection and try again.';
   return doing === 'create'
     ? 'Couldn’t create your project. Try again in a moment.'
     : 'Couldn’t delete those files. Try again in a moment.';
 }
+
+/** Each kit's token in liveworkspace.app's telemetry (@liveworkspace/telemetry KIT_TELEMETRY_TYPES). */
+export const KIT_TELEMETRY: Record<KitId, KitTelemetryType> = {
+  'software-project': 'SoftwareProject',
+  'product-launch': 'ProductLaunch',
+  'team-workshop': 'TeamWorkshop',
+  'website-build': 'WebsiteBuild',
+};

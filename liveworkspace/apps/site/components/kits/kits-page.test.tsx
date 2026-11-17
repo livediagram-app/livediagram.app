@@ -11,10 +11,18 @@ let session: { state: 'checking' | 'out' | 'in' } = { state: 'in' };
 vi.mock('@/lib/session', () => ({ useSession: () => session }));
 vi.mock('@/components/Header', () => ({ Header: () => <header /> }));
 vi.mock('@/components/Footer', () => ({ Footer: () => <footer /> }));
+// Who the page reads the telemetry choice for.
+const consent = vi.hoisted(() => vi.fn());
+vi.mock('@/lib/explorer/settings', () => ({ useTelemetryConsent: consent }));
+// The run's telemetry steps, in order.
+const steps: [string, string][] = [];
+const track = (action: string, kit: string) => void steps.push([action, kit]);
 
 afterEach(() => {
   cleanup();
   session = { state: 'in' };
+  steps.length = 0;
+  consent.mockReset();
 });
 
 const software = KITS[0]!;
@@ -39,7 +47,7 @@ function draw(answers: (KitRun | Error)[] = []) {
       if (a instanceof Error) throw a;
     }),
   };
-  render(<KitsPage client={client} />);
+  render(<KitsPage client={client} track={track} />);
   return client;
 }
 
@@ -207,5 +215,55 @@ describe('a run', () => {
       'Couldn’t create your project. Try again in a moment.',
     );
     expect(screen.getByRole('button', { name: 'Retry' })).toBeTruthy();
+  });
+});
+
+describe('the run’s telemetry and limit', () => {
+  it('reads the telemetry choice for whoever the page is for', () => {
+    draw();
+    expect(consent).toHaveBeenLastCalledWith('livediagram.app', 'account');
+    cleanup();
+    session = { state: 'out' };
+    draw();
+    expect(consent).toHaveBeenLastCalledWith('livediagram.app', 'guest');
+    cleanup();
+    session = { state: 'checking' };
+    draw();
+    expect(consent).toHaveBeenLastCalledWith('livediagram.app', null);
+  });
+
+  it('counts a start, a retry, a completion and a removal, by kit', async () => {
+    draw([runOf(['a', 'b', 'c', null], { made: 6, failed: 0 }), runOf(['a', 'b', 'c', 'd'])]);
+    await create();
+    expect(steps).toEqual([['Started', 'software-project']]);
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+    });
+    expect(steps).toEqual([
+      ['Started', 'software-project'],
+      ['Retried', 'software-project'],
+      ['Completed', 'software-project'],
+    ]);
+    cleanup();
+    steps.length = 0;
+    draw([runOf(['a', null, null, null], { made: 0, failed: 0 }), runOf([])]);
+    await create();
+    fireEvent.click(screen.getByRole('button', { name: 'Remove What Was Made' }));
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Delete Them' }));
+    });
+    expect(steps).toEqual([
+      ['Started', 'software-project'],
+      ['Removed', 'software-project'],
+    ]);
+  });
+
+  it('counts nothing more for a refused run, and says when too many were started', async () => {
+    draw([new IndexError(429, 'rate_limited')]);
+    await create();
+    expect(steps).toEqual([['Started', 'software-project']]);
+    expect(screen.getByRole('alert').textContent).toBe(
+      'You’ve started a lot of projects in the last minute. Wait a minute, then try again.',
+    );
   });
 });

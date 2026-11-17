@@ -34,6 +34,7 @@ import { CATALOGUE as LIVEHUDDLE_SETTINGS } from '@liveworkspace/settings/catalo
 import { CATALOGUE as LIVEPLANNER_SETTINGS } from '@liveworkspace/settings/catalogues/liveplanner';
 import {
   isExplorerTelemetryEvent,
+  isPlatformOwnTelemetryEvent,
   TELEMETRY_TYPE_PATTERN,
   type TelemetrySender,
   type TelemetryWireEvent,
@@ -46,8 +47,9 @@ type Vocabulary = {
   isServerOnly: (event: TelemetryWireEvent) => boolean;
 };
 
-// liveworkspace.app's own: the Explorer's events, sent while it is filtered to All Apps, and a shared switch flipped on
-// its settings page opened for no app (isSiteSettingsEvent).
+// liveworkspace.app's own: the Explorer's events, sent while it is filtered to All Apps, a shared switch flipped on
+// its settings page opened for no app (isSiteSettingsEvent), and its own events, the project kits'
+// (isPlatformOwnTelemetryEvent).
 function isPlatformEvent(value: unknown): value is TelemetryWireEvent {
   if (typeof value !== 'object' || value === null) return false;
   const e = value as Record<string, unknown>;
@@ -57,6 +59,7 @@ function isPlatformEvent(value: unknown): value is TelemetryWireEvent {
   }
   return (
     isExplorerTelemetryEvent(e as TelemetryWireEvent) ||
+    isPlatformOwnTelemetryEvent(e as TelemetryWireEvent) ||
     isSiteSettingsEvent('liveworkspace.app', e as TelemetryWireEvent)
   );
 }

@@ -4,6 +4,7 @@
 
 import {
   isExplorerTelemetryEvent,
+  isPlatformOwnTelemetryEvent,
   isPlatformOrigin,
   isTelemetryApp,
   isTelemetrySender,
@@ -59,7 +60,11 @@ export async function handleIngest(request: Request, env: Env): Promise<Response
     // liveworkspace.app speaks for an app only through its Explorer and the app's settings changed there, so only
     // those events.
     .filter(
-      (e) => sender !== 'platform' || isExplorerTelemetryEvent(e) || isSiteSettingsEvent(app, e),
+      (e) =>
+        sender !== 'platform' ||
+        isExplorerTelemetryEvent(e) ||
+        isSiteSettingsEvent(app, e) ||
+        (app === PLATFORM_TELEMETRY_APP && isPlatformOwnTelemetryEvent(e)),
     )
     .slice(0, TELEMETRY_BATCH_MAX);
   try {

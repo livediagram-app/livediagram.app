@@ -83,6 +83,13 @@ name = "CONNECTION_OPEN_LIMITER"
 namespace_id = "1109"
 simple = { limit = 60, period = 60 }
 
+# Starting a project kit (src/kits.ts, kits.md "Limits"): POST /kits, a Retry included, per person. Each run makes up
+# to four items and twelve connections. Over it: 429 with Retry-After (60, the period).
+[[ratelimits]]
+name = "KIT_RUN_LIMITER"
+namespace_id = "1110"
+simple = { limit = 10, period = 60 }
+
 # The Google Drive mirror's service, which the change signal goes through (src/drive.ts). Without it
 # the index sends no signal and nothing else changes.
 [[services]]
@@ -151,6 +158,11 @@ simple = { limit = 30, period = 60 }
 name = "CONNECTION_OPEN_LIMITER"
 namespace_id = "2109"
 simple = { limit = 60, period = 60 }
+
+[[env.staging.ratelimits]]
+name = "KIT_RUN_LIMITER"
+namespace_id = "2110"
+simple = { limit = 10, period = 60 }
 
 # The Google Drive mirror on staging (liveworkspace/docs/specs/005-drive/drive.md).
 [[env.staging.services]]
