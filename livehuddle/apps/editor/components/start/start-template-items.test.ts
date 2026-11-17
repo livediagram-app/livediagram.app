@@ -90,8 +90,16 @@ describe('Start a Space', () => {
       'coworking-space',
       'team-pod',
       'focus-library',
+      'interview-suite',
+      'client-lounge',
     ]);
-    expect(group('events')).toEqual(['all-hands-hall', 'training-room', 'expo-hall']);
+    expect(group('events')).toEqual([
+      'all-hands-hall',
+      'training-room',
+      'expo-hall',
+      'classroom',
+      'hackathon-hall',
+    ]);
     expect(group('outdoor')).toEqual([
       'garden-retreat',
       'city-park',

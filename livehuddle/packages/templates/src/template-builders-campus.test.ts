@@ -94,6 +94,11 @@ it('files four Spaces under Campus and four under Venues, and cross-lists the Be
 const TABS: [string, TemplateKind, Element[], boolean][] = [
   ...BUILT,
   'beach-offsite' as TemplateKind,
+  // Work Tracker 1076's buildings of closed rooms off an open floor, held to the same rules.
+  'interview-suite' as TemplateKind,
+  'client-lounge' as TemplateKind,
+  'classroom' as TemplateKind,
+  'hackathon-hall' as TemplateKind,
 ].flatMap((kind) => [
   [kind, kind, buildTemplate(kind, 0, 0), true] as [string, TemplateKind, Element[], boolean],
   ...templateFloors(kind).map(

@@ -15,6 +15,7 @@
 
 import { createShape, type Element } from '@livehuddle/document';
 import type { OfficePiece } from './template-office-parts';
+import type { TemplateNote } from './template-notes';
 import {
   campusPlan,
   fencedLawn,
@@ -237,6 +238,30 @@ const HQ_JOIN_Y = HQ_PATH_Y + PATH / 2;
 const HQ_JOIN_IN = plazaReach(JUNCTION);
 const GAMES_Y = HQ_PATH_Y + PATH + 72;
 
+// The Studio's Notice Board, pinned when the HQ is made (template-notes.ts): how the week runs.
+const HQ_NOTES: readonly TemplateNote[] = [
+  {
+    title: 'Friday demo',
+    text: 'Show what you shipped this week in the Town Hall, Friday at 4. Five minutes each, and the Screen is yours.',
+    color: 'pink',
+  },
+  {
+    title: 'Calls go outside',
+    text: 'Take a call in an Office Pod on the lawn. Its door shuts once both seats are taken, so knock first.',
+    color: 'green',
+  },
+  {
+    title: 'Got an idea?',
+    text: 'Drop it in the Suggestion Box in the Kitchen Bar. It is anonymous, and only Editors read it.',
+    color: 'blue',
+  },
+  {
+    title: 'This week',
+    text: 'Pin what you are working on, and unpin it when it ships.',
+    color: 'yellow',
+  },
+];
+
 // An island of four desks, two facing two.
 const island = (x: number, y: number): OfficePiece[] => [
   { kind: 'desk', x, y, facing: 'n' },
@@ -267,7 +292,7 @@ const HQ_ROOMS: CampusRoom[] = [
       { kind: 'pet-bed', x: 306, y: 260 },
       { kind: 'bookshelf', x: 30, y: 330 },
       { kind: 'coffee-machine', x: 180, y: 360 },
-      { kind: 'notice-board', x: 470, y: 330 },
+      { kind: 'notice-board', x: 470, y: 330, notes: HQ_NOTES },
     ],
   },
   {
@@ -307,6 +332,9 @@ const HQ_ROOMS: CampusRoom[] = [
       { kind: 'chair', x: 40, y: 360, facing: 'w' },
       { kind: 'chair', x: 124, y: 360, facing: 'e' },
       { kind: 'water-cooler', x: 320, y: 340 },
+      // The Suggestion Box between the stools and the chairs, for an idea over a coffee
+      // (docs/specs/009-elements/team-pieces.md "Suggestion Box").
+      { kind: 'suggestion-box', x: 230, y: 250 },
       { kind: 'plant', x: 330, y: 460 },
     ],
   },
@@ -371,8 +399,10 @@ const HQ_GARDEN: OfficePiece[] = [
   // Beside the games room: a garden umbrella.
   { kind: 'garden-umbrella', x: 1920, y: 880 },
   { kind: 'outdoor-plant', x: 1940, y: 1060 },
-  // The Directory just inside the gate.
+  // The Directory just inside the gate, and across the main path a Signpost whose arrows walk you to the nearest
+  // rooms (docs/specs/009-elements/team-pieces.md "Signpost").
   { kind: 'directory', x: 1080, y: 1080 },
+  { kind: 'signpost', x: 1260, y: 1080 },
 ];
 
 export function buildStartupHq(cx: number, cy: number): Element[] {

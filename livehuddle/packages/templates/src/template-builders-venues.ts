@@ -9,6 +9,7 @@
 
 import { createShape, type Element } from '@livehuddle/document';
 import type { OfficePiece } from './template-office-parts';
+import type { TemplateNote } from './template-notes';
 import { campusPlan, type IndoorRoom } from './template-campus-parts';
 
 const W = 2200;
@@ -95,6 +96,25 @@ const ROOMS: IndoorRoom[] = [
   },
 ];
 
+// The Merch Stand's board: tonight's line-up and how the hall works (template-notes.ts).
+const LINE_UP: readonly TemplateNote[] = [
+  {
+    title: 'Tonight’s line-up',
+    text: 'Doors at 7. Support act on the Main Stage at 7:30, headliner at 8:30. Grab a drink at the Foyer Bar between sets.',
+    color: 'pink',
+  },
+  {
+    title: 'Front of the stage',
+    text: 'The standing floor is in front of the stage, the seats behind it. Whoever plays from the Stage is heard by the whole hall.',
+    color: 'yellow',
+  },
+  {
+    title: 'Coats and bags',
+    text: 'Leave them in the Cloakroom off the foyer. Performers, the Green Room is backstage: knock on its sign.',
+    color: 'blue',
+  },
+];
+
 const FOYER: OfficePiece[] = [
   // Two pairs of Columns either side of the way in.
   ...[880, 1260].flatMap((x) => [
@@ -102,7 +122,7 @@ const FOYER: OfficePiece[] = [
     { kind: 'column' as const, x: x === 880 ? 760 : 1380, y: 1060 },
   ]),
   // The Merch Stand: a counter and the line-up on a Notice Board.
-  { kind: 'notice-board', x: 1500, y: 1040 },
+  { kind: 'notice-board', x: 1500, y: 1040, notes: LINE_UP },
   { kind: 'reception-desk', x: 1480, y: 1180 },
   { kind: 'directory', x: MID + 80, y: 1300 },
   { kind: 'plant', x: 540, y: 1360 },

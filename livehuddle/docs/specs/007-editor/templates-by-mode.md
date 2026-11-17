@@ -31,13 +31,14 @@ untitled.
 
 ## The catalogue
 
-- Twenty-six Spaces in eight categories ([Template categories](../008-canvas/canvas-and-palette.md#template-categories),
+- Thirty Spaces in eight categories ([Template categories](../008-canvas/canvas-and-palette.md#template-categories),
   [Virtual Office template](../012-collaboration/virtual-office-template.md), its "The catalogue plan" lists the
   element types each one uses):
   - **Office**: **Virtual Office** (`virtual-office`), **Coworking Space** (`coworking-space`), **Team Pod**
-    (`team-pod`) and **Focus Library** (`focus-library`).
-  - **Events**: **All-Hands Hall** (`all-hands-hall`), **Training Room** (`training-room`) and **Expo Hall**
-    (`expo-hall`, also in Venues).
+    (`team-pod`), **Focus Library** (`focus-library`), **Interview Suite** (`interview-suite`) and **Client Lounge**
+    (`client-lounge`).
+  - **Events**: **All-Hands Hall** (`all-hands-hall`), **Training Room** (`training-room`), **Expo Hall**
+    (`expo-hall`, also in Venues), **Classroom** (`classroom`) and **Hackathon Hall** (`hackathon-hall`).
   - **Recreation**: **Rooftop Bar** (`rooftop-bar`) and **Cafe** (`cafe`), and the Sports Bar cross-listed.
   - **Outdoor**: **Garden Retreat** (`garden-retreat`), **City Park** (`city-park`) and **Beach Offsite**
     (`beach-offsite`, also in Campus), and the Festival Field cross-listed.
@@ -71,7 +72,7 @@ untitled.
 - Every template opens on a meeting board (`templates.test.ts`).
 - Popular starts with Blank Space (`popular.test.ts`).
 - Every category holds a template (`template-categories.test.ts`).
-- The catalogue is the twenty-six Spaces and the blank, twenty-seven templates (`templates.test.ts`'s kind list, the `TemplateKind`
+- The catalogue is the thirty Spaces and the blank, thirty-one templates (`templates.test.ts`'s kind list, the `TemplateKind`
   union and `TEMPLATES` move together).
 - Every Space is walkable (`template-builders-spaces-more.test.ts` and `template-builders-office.test.ts`): its floors
   lie first, every tab (a building's every floor) has exactly one [Avatar Pad](../009-elements/avatar-pad.md#every-space-and-blank-tab-has-one)

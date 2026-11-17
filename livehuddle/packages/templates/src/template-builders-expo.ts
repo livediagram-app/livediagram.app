@@ -9,6 +9,7 @@
 
 import { createShape, type Element } from '@livehuddle/document';
 import type { OfficePiece } from './template-office-parts';
+import type { TemplateNote } from './template-notes';
 import { campusPlan, type IndoorRoom } from './template-campus-parts';
 
 const W = 2200;
@@ -29,6 +30,30 @@ const chairsAt = (xs: readonly number[]): OfficePiece[] =>
 
 const booths = (xs: readonly number[]): OfficePiece[] =>
   BOOTH_ROWS.flatMap((y) => xs.map((x) => ({ kind: 'office-pod' as const, x, y })));
+
+// The day's programme and the floor plan, pinned on the board by the Meeting Room (template-notes.ts).
+const PROGRAMME: readonly TemplateNote[] = [
+  {
+    title: 'Today’s talks',
+    text: 'Keynote on the stage at 10. Product demos at 11:30 and 2. Closing panel at 4. Bring Focus calls everyone to the stage.',
+    color: 'yellow',
+  },
+  {
+    title: 'Floor plan',
+    text: 'Sponsor booths line both sides of the hall, the stage in the middle. The Food Court, the Speaker Lounge and the Meeting Room are along the top.',
+    color: 'blue',
+  },
+  {
+    title: 'Meet a sponsor',
+    text: 'Walk into a booth to talk: each one is a call of its own. Book the Meeting Room for longer chats and knock on its sign.',
+    color: 'green',
+  },
+  {
+    title: 'Speakers',
+    text: 'The Speaker Lounge is yours before your slot. Leave your coat in the cloakroom corner by the entrance.',
+    color: 'purple',
+  },
+];
 
 const ROOMS: IndoorRoom[] = [
   {
@@ -104,7 +129,7 @@ const FLOOR: OfficePiece[] = [
   ...booths(LEFT_BOOTHS),
   ...booths(RIGHT_BOOTHS),
   // Along the top right, beside the meeting room: a notice board of the day's talks and plants.
-  { kind: 'notice-board', x: 1860, y: 120 },
+  { kind: 'notice-board', x: 1860, y: 120, notes: PROGRAMME },
   // The free corner by the Meeting Room: a Vending Machine and a Team Photo Wall for the show's photos
   // (docs/specs/009-elements/piece-moments.md).
   { kind: 'vending-machine', x: 2080, y: 120 },

@@ -13,6 +13,7 @@ import {
   type ShapeKind,
 } from '@livehuddle/document';
 import { heading } from './template-session-parts';
+import { pinnedNotes, type TemplateNote } from './template-notes';
 import { doorOnWall, type WallWindow } from './template-wall-pieces';
 
 // `w`/`h` override the piece's default size (keep its proportion: the drawings are aspect locked).
@@ -30,6 +31,8 @@ export type OfficePiece = {
   // A piece's type (a rug's, a Long Table's: docs/specs/009-elements/office.md "Rug types"), its size the type's own
   // unless `w`/`h` say otherwise.
   variant?: string;
+  // A Notice Board's notes, pinned when the Space is made (template-notes.ts).
+  notes?: readonly TemplateNote[];
 };
 export type OfficeRoom = {
   name: string;
@@ -68,6 +71,7 @@ function placePiece(p: OfficePiece, x: number, y: number): Element {
     ...(p.facing ? { chairFacing: p.facing } : {}),
     ...(p.stageCameras ? { stageCameras: true } : {}),
     ...(p.label ? { label: p.label } : {}),
+    ...(p.notes ? { noticeNotes: pinnedNotes(p.notes) } : {}),
     ...sizeOf(p, base),
   };
 }

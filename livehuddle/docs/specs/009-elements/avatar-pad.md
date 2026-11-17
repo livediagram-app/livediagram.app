@@ -49,7 +49,7 @@ Walking is the default way to be in a Space (a Participant and a Viewer always w
 button), so every board starts with an entrance (owner, 2026-11-06: "Make sure all templates and blank tabs gain an
 Avatar Pad - probably replace the old selection mode button").
 
-- **Every Spaces template** (all twenty-six, in every category) places **one** pad, which replaced its **Walk In**
+- **Every Spaces template** (all thirty, in every category) places **one** pad, which replaced its **Walk In**
   [Selection Mode button](mode-button.md), **in the middle of the action** ([Where a Space's pad
   stands](#where-a-spaces-pad-stands)), with the how-to line centred under it (`arrival` in
   `packages/templates/src/template-arrival.ts`). A pad is a floor, so it comes first in the template's elements with
@@ -117,6 +117,10 @@ away when joining, for example in the middle of a key room, or the centre of a c
 | Expo Hall        | The aisle between the stage's two rows of chairs, the booths either side                | 360        |
 | Beach Offsite    | The sand between the huts' walk and the campfire                                        | 360        |
 | Festival Field   | The crowd field in front of the Main Stage, the stage ahead and the stalls to the left  | 360        |
+| Interview Suite  | The waiting area, the interview rooms' doors and signs ahead                            | 360        |
+| Client Lounge    | The lounge, between the sofas and the coffee bar, every room's door ahead               | 360        |
+| Classroom        | The lobby, before the Classroom's door                                                  | 360        |
+| Hackathon Hall   | The hack floor below the Snack Bar, the team tables and the stage's door in view        | 360        |
 | Arcade Lounge    | The arcade floor, between the two banks of machines                                     | 360        |
 | Games Night Den  | The hall, in front of the Den's door                                                    | 360        |
 | Sports Bar       | The games floor, between the ping-pong and the pool, below the Bar's door               | 360        |

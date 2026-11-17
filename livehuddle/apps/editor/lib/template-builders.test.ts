@@ -51,6 +51,10 @@ const ALL_KINDS = [
   'country-cottage',
   'music-hall',
   'festival-field',
+  'interview-suite',
+  'client-lounge',
+  'classroom',
+  'hackathon-hall',
   'blank-session',
 ] as const satisfies readonly TemplateKind[];
 
