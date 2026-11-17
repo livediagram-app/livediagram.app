@@ -11,6 +11,7 @@
 import {
   useCallback,
   useEffect,
+  useEffectEvent,
   useId,
   useRef,
   useState,
@@ -33,6 +34,7 @@ import { PopoverOrSheet } from '../primitives/PopoverOrSheet';
 import {
   TOOLS_REQUEST_TTL_MS,
   takeToolsView,
+  type ToolsViewRequest,
   useToolsDoorItems,
   useToolsViewRequest,
 } from './tools-door';
@@ -206,6 +208,7 @@ export function ChromeToolsMenu({
     if (!claimed) anchor?.focus({ preventScroll: true });
   };
   const openTool = (item: ChromeToolsItem, at: HTMLElement | null) => {
+    setReturnTo(null);
     if (item.view) setView({ id: item.id, slot: null });
     else {
       setView({ id: item.id, slot: openDialogSlot() });
@@ -230,18 +233,18 @@ export function ChromeToolsMenu({
     const timer = setTimeout(toList, TOOL_ARRIVAL_MS);
     return () => clearTimeout(timer);
   }, [waiting, toList]);
-  // The row went while its tool was open (Clear Example Content once cleared): back to the list.
-  const gone = !!view && !active;
-  useEffect(() => {
-    if (gone) toList();
-  }, [gone, toList]);
+  // The row went while its tool was open (Clear Example Content once cleared): back to the list, adjusted as it
+  // renders (its slot closes with the slot effect below).
+  if (view && !active) {
+    setView(null);
+    setSaid('Tools');
+  }
   // Back on the list: focus on the row that was open.
   useEffect(() => {
     if (view || !returnTo) return;
     grid.current
       ?.querySelector<HTMLElement>(`[data-tools-item="${CSS.escape(returnTo)}"]`)
       ?.focus({ preventScroll: true });
-    setReturnTo(null);
   }, [view, returnTo]);
   // Tools going (the editor leaving) lets go of its slot.
   const slotNow = view?.slot ?? null;
@@ -252,6 +255,13 @@ export function ChromeToolsMenu({
   // Asked open at a tool from elsewhere (back from signing in, FM7): opened once Tools lists it.
   const asked = useToolsViewRequest();
   const askedItem = asked ? shown.find((i) => i.id === asked.id && (i.inPlace || i.view)) : null;
+  const openAsked = useEffectEvent(
+    (ask: ToolsViewRequest, item: ChromeToolsItem, at: HTMLElement) => {
+      takeToolsView(ask);
+      setOpen(true);
+      openTool(item, at);
+    },
+  );
   useEffect(() => {
     if (!asked) return;
     if (Date.now() - asked.at > TOOLS_REQUEST_TTL_MS) {
@@ -259,10 +269,14 @@ export function ChromeToolsMenu({
       return;
     }
     if (!askedItem || !anchor) return;
-    takeToolsView(asked);
-    setOpen(true);
-    openTool(askedItem, anchor);
-    // oxlint-disable-next-line react/exhaustive-deps -- once per ask, when its row and the button are there
+    // Opened as the ask's own callback, after this commit, as a press on its row would be.
+    let live = true;
+    queueMicrotask(() => {
+      if (live) openAsked(asked, askedItem, anchor);
+    });
+    return () => {
+      live = false;
+    };
   }, [asked, askedItem, anchor]);
   const slotRef = useCallback(
     (node: HTMLDivElement | null) => {

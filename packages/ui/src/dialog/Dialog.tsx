@@ -208,7 +208,15 @@ export function Dialog({
   if (open && seat === null) setSeat(waiting || 'modal');
   if (!open && seat !== null) setSeat(null);
   const [owner] = useState(() => ({}));
-  const inlineSeq = typeof seat === 'number' ? seat : null;
+  const seatSeq = typeof seat === 'number' ? seat : null;
+  // Another dialog opened in the same moment took the slot first: this one is a modal after all.
+  const taken =
+    seatSeq !== null &&
+    slot?.seq === seatSeq &&
+    slot.owner !== null &&
+    slot.owner !== owner &&
+    !slot.held;
+  const inlineSeq = taken ? null : seatSeq;
   const ours = inlineSeq !== null && slotIsFor(slot, inlineSeq, owner);
   const inline = inlineSeq !== null;
   const sheet = useSheetDrag(onClose, open && !inline, beforeClose);
@@ -256,12 +264,8 @@ export function Dialog({
     escape: () => ways.current.escape(),
   }));
   useLayoutEffect(() => {
-    if (inlineSeq === null) return;
-    // Another dialog opened in the same moment took it: this one is a modal after all.
-    if (!claimDialogSlot(inlineSeq, owner, claimed)) {
-      setSeat('modal');
-      return;
-    }
+    // A refused claim (the slot taken or gone) shows in the store: `taken` above, or `lost` below.
+    if (inlineSeq === null || !claimDialogSlot(inlineSeq, owner, claimed)) return;
     return () => releaseDialogSlot(owner);
   }, [inlineSeq, owner, claimed]);
   // The slot went while this was open in it (Tools closed): the dialog closes too, so its host can open it again.
