@@ -52,7 +52,8 @@ export function ModeBanner({
   return (
     <TopCenterBanner
       tone="brand"
-      className="gap-3 py-1.5 pl-3 pr-1.5 text-sm"
+      shape="card"
+      className="gap-3 py-1.5 pl-3 pr-1.5 text-sm leading-snug"
       onPointerDown={(e) => e.stopPropagation()}
     >
       <span data-mode-message="" className="flex items-center gap-2">
