@@ -249,6 +249,7 @@ describe('a view whose token is edit-level', () => {
     expect(f.el('bar-name').textContent).toBe('B');
     expect(f.el('hint').textContent).toBe('Locked');
     expect(f.el('ren').disabled).toBe(true);
+    expect(f.el('ren').title).toBe('Locked: unlock it in the editor to rename it');
     expect(f.el('sr').textContent).toBe('Selected B. Locked.');
     // Open in the bar opens the editor at it; a click on empty space clears the selection.
     f.el('go').onclick!();

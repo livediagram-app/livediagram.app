@@ -492,7 +492,7 @@ const EDIT = String.raw`
       $('bar-name').textContent = nameOf(el);
       bar.setAttribute('aria-label', nameOf(el));
       $('ren').disabled = !el.canRename;
-      $('ren').title = el.canRename ? 'Rename (Enter)' : 'Only shapes, text and stickies are renamed here';
+      $('ren').title = el.canRename ? 'Rename (Enter)' : el.canMove ? 'Only shapes, text and stickies are renamed here' : 'Locked: unlock it in the editor to rename it';
       $('hint').textContent = status || LDV.hintOf(el);
     }
     function refresh() { var el = current(); if (el) { fill(el); place(); } }
