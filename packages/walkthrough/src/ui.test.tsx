@@ -556,6 +556,36 @@ describe('recording, beyond the canvas', () => {
     expect(localStorage.getItem(CAMERA_ON_KEY)).toBe('on');
   });
 
+  it('keeps the switch on and says No Camera Found when there is no camera at all', async () => {
+    localStorage.setItem(CAMERA_ON_KEY, 'on');
+    const getUserMedia = stubDevices(async (c) => {
+      if (c.video) throw new DOMException('none', 'NotFoundError');
+      return stream(false);
+    });
+    await openDock();
+    const list = await screen.findByRole('combobox', { name: 'Which Camera' });
+    expect(list.textContent).toBe('No Camera Found');
+    expect((list as HTMLSelectElement).disabled).toBe(true);
+    expect(screen.getByRole('switch', { name: 'Camera' }).getAttribute('aria-checked')).toBe(
+      'true',
+    );
+    expect(
+      screen.queryByText("The camera couldn't start, so this walkthrough records sound only."),
+    ).toBeNull();
+    // Sound alone was asked for after.
+    await waitFor(() => expect(getUserMedia.mock.calls.at(-1)?.[0]?.video).toBe(false));
+    // Turning the switch off and on again tries the camera again.
+    const calls = getUserMedia.mock.calls.length;
+    fireEvent.click(screen.getByRole('switch', { name: 'Camera' }));
+    fireEvent.click(screen.getByRole('switch', { name: 'Camera' }));
+    await waitFor(() =>
+      expect(getUserMedia.mock.calls.slice(calls).some(([c]) => !!c?.video)).toBe(true),
+    );
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 0));
+    });
+  });
+
   it('asks the browser again from Allow Microphone', async () => {
     const getUserMedia = stubDevices();
     Object.defineProperty(navigator, 'mediaDevices', {

@@ -97,7 +97,11 @@ export function useRecorder(
   const [camera, setCamera] = useState<string | null>(null);
   // Off by default, so setting up asks for the microphone alone; the switch's choice is remembered.
   const [cameraOn, setCameraOnState] = useState(readCameraOn);
+  // No camera at all (the browser found none): the switch stays as set and the list says No Camera Found, rather than
+  // the switch flipping back off (liveworkspace/docs/specs/006-media/walkthroughs.md "The device pickers").
+  const [noCamera, setNoCamera] = useState(false);
   const setCameraOn = useCallback((on: boolean) => {
+    setNoCamera(false);
     setCameraOnState(on);
     keepCameraOn(on);
   }, []);
@@ -107,6 +111,11 @@ export function useRecorder(
   const [granted, setGranted] = useState(0);
   const active = phase.kind === 'setup' || phase.kind === 'countdown' || phase.kind === 'recording';
   const devices = useMediaDevices(phase.kind === 'setup', granted);
+  // A camera plugged in: try it again.
+  const cameraCount = devices.cameras.length;
+  useEffect(() => {
+    if (cameraCount > 0) setNoCamera(false);
+  }, [cameraCount]);
 
   const hostRef = useRef(host);
   const hiddenRef = useRef(hidden);
@@ -124,12 +133,15 @@ export function useRecorder(
   const lastSlide = useRef<string | null>(null);
 
   // The devices, opened while setting up and held until the recording ends: picking another reopens them.
-  const wantsCamera = cameraOn && camera !== NO_CAMERA;
+  const wantsCamera = cameraOn && camera !== NO_CAMERA && !noCamera;
   const fellBack = useRef(false);
   // An Allow button pressed (a device list the browser hasn't been allowed to show): ask the browser again.
   const [asked, setAsked] = useState(0);
   const allow = useCallback((kind: CaptureKind) => {
-    if (kind === 'camera') setCameraOnState(true);
+    if (kind === 'camera') {
+      setNoCamera(false);
+      setCameraOnState(true);
+    }
     setAsked((n) => n + 1);
   }, []);
   const setupOpen = phase.kind === 'setup';
@@ -155,6 +167,16 @@ export function useRecorder(
         if (!live) return;
         console.warn('[walkthroughs] devices refused', err);
         // A camera that won't start leaves the walkthrough to sound alone, rather than nothing.
+        if (
+          wantsCamera &&
+          camera === null &&
+          err instanceof DOMException &&
+          err.name === 'NotFoundError'
+        ) {
+          // The default camera missing is no camera at all: sound alone, the switch kept, the list saying so.
+          setNoCamera(true);
+          return;
+        }
         if (wantsCamera) {
           // Off for this recording only: the remembered choice stays, for a camera that works next time.
           fellBack.current = true;

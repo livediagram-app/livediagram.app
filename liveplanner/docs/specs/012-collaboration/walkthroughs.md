@@ -83,9 +83,11 @@ says what a press picks:
 - **A Dashboard tab**: its widgets (each filled slot: a metric, a chart, a note, a board, a list). An empty slot
   shows nothing to hide.
 - **A Sheet tab, a Form tab**: nothing. Cells and questions carry no ids of their own, so they can't be picked.
+- **A Visualisation tab** (one view filling the tab) and **a Sheet filling a canvas tab**: nothing, as on a Sheet tab.
+  A board filling a canvas tab offers its cards, as a Board tab does.
 
 - **No dead control.** On a tab with nothing to hide (a Sheet, a Form, an empty canvas, a Board tab while the plan has no
-  cards, a Dashboard with no filled slot) Hide From Recording is not in the dock; it comes back on a tab that has something.
+  cards, a Dashboard with no filled slot, a Visualisation tab) Hide From Recording is not in the dock; it comes back on a tab that has something.
   Changing to such a tab mid-pick leaves the mode; what is already hidden stays hidden.
 - **The same look and the same rules everywhere.** A hidden card or widget is faded inside the dashed outline for
   the presenter and not drawn for viewers (its place stays empty, the board and the dashboard keep their layout), a

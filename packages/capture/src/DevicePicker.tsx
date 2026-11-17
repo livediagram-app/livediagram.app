@@ -77,7 +77,7 @@ function DeviceList({
       value={list.length === 0 ? '' : (value ?? '')}
       disabled={disabled || list.length === 0}
       onChange={(e) => onChange(e.target.value || null)}
-      className="min-w-0"
+      className="w-full min-w-0"
     >
       {list.length === 0 ? (
         <option value="">No {NOUN[kind]} Found</option>

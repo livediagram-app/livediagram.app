@@ -45,6 +45,33 @@ describe('what a walkthrough can hide on each tab', () => {
     expect(tabHasHideable({ kind: 'dashboard', elements: [] }, 0)).toBe(false);
   });
 
+  it('is nothing on a Visualisation tab, whose one view fills it', () => {
+    const view = { id: 'v', type: 'shape', shape: 'plan-view', planView: { view: 'gantt' } };
+    const solo = (elements: unknown[]): HideableTab => ({
+      kind: 'dashboard',
+      elements,
+      dashboard: {
+        rows: [
+          {
+            id: 'r',
+            height: 1,
+            fill: true,
+            slots: [{ id: 's', span: 12, content: { type: 'element', elementId: 'v' } as never }],
+          },
+        ],
+      } as never,
+    });
+    expect(tabHasHideable(solo([view]), 9)).toBe(false);
+  });
+
+  it('is the cards of a board filling a canvas tab, and nothing under a Sheet filling it', () => {
+    const board = { id: 'b', type: 'shape', shape: 'plan-board', planBoard: { fillTab: true } };
+    const sheet = { id: 's', type: 'shape', shape: 'plan-sheet', planSheet: { fillTab: true } };
+    expect(tabHasHideable({ kind: 'diagram', elements: [board, {}] }, 2)).toBe(true);
+    expect(tabHasHideable({ kind: 'diagram', elements: [board, {}] }, 0)).toBe(false);
+    expect(tabHasHideable({ kind: 'diagram', elements: [sheet, {}] }, 2)).toBe(false);
+  });
+
   it('is nothing on a Sheet or a Form tab', () => {
     expect(tabHasHideable({ kind: 'sheet', elements: [{}] }, 9)).toBe(false);
     expect(tabHasHideable({ kind: 'form', elements: [{}] }, 9)).toBe(false);

@@ -81,7 +81,10 @@ off the recorder asks the browser for the microphone alone (`getUserMedia({ audi
 permission is asked; turning it on asks for the camera and shows its device list. A sound-only walkthrough has no
 camera bubble while recording and plays back with no video frame (the player's round mark with the presenter's
 initial, as before). A camera that won't start turns the switch off for that recording only, says "The camera
-couldn't start, so this walkthrough records sound only." and records sound; the remembered choice stays on.
+couldn't start, so this walkthrough records sound only." and records sound; the remembered choice stays on. No
+camera at all (the default camera answers `NotFoundError`) is not a failure: the switch stays on, its list says
+**No Camera Found** (disabled) and the recording is sound alone; turning the switch off and on, or a camera plugged in,
+tries again.
 
 ### The device pickers
 
