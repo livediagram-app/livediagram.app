@@ -29,6 +29,8 @@ export type DialogSlot = {
   released: boolean;
   /** Kept for the dialog that follows this one (a gate's Sync going on to its tool): its letting go is not the end. */
   held: boolean;
+  /** Its dialog left for the whole window: Tools closes rather than going back. */
+  leaving?: boolean;
 };
 
 let slot: DialogSlot | null = null;
@@ -99,6 +101,12 @@ export function holdDialogSlot(): () => void {
   return () => {
     if (slot?.seq === at.seq && slot.held && slot.owner === at.owner) set({ ...slot, held: false });
   };
+}
+
+/** The dialog in Tools is about to close for something that takes the whole window (Version History): Tools closes
+ *  with it rather than going back to its list. Nothing outside Tools. */
+export function leaveToolsWithDialog(): void {
+  if (slot?.owner && !slot.leaving) set({ ...slot, held: false, leaving: true });
 }
 
 export function useDialogSlot(): DialogSlot | null {

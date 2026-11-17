@@ -2,16 +2,17 @@
 
 // The footer's History (docs/specs/006-document/version-history.md "In the editor"; blueprint VH19).
 
-import { cleanup } from '@testing-library/react';
+import { cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const track = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/telemetry', () => ({ track }));
 
+import { useItemVersions } from '@liveworkspace/workbench/components/chrome/tools-door';
 import {
-  historyToolsItem,
   offersHistory,
   openHistoryFromFooter,
+  useVersionHistoryInTools,
   type HistoryGate,
 } from './history-tools-item';
 import { closeVersionHistory, versionHistoryState } from '@/lib/version-history-store';
@@ -49,13 +50,23 @@ describe('offersHistory', () => {
   });
 });
 
-describe('historyToolsItem', () => {
-  it('is the Tools menu’s Version History row, in Versioning, opening it when picked', () => {
-    const onOpen = vi.fn();
-    const item = historyToolsItem(onOpen);
-    expect(item).toMatchObject({ id: 'history', group: 'versions', label: 'Version History' });
-    item.onSelect(null);
-    expect(onOpen).toHaveBeenCalledOnce();
+describe('useVersionHistoryInTools', () => {
+  it('offers Version History to History in Tools while it has a handler, calling the newest one', () => {
+    const first = vi.fn();
+    const second = vi.fn();
+    const offered = renderHook(() => useItemVersions());
+    const { rerender, unmount } = renderHook(({ open }) => useVersionHistoryInTools(open), {
+      initialProps: { open: first as (() => void) | undefined },
+    });
+    const open = offered.result.current!;
+    rerender({ open: second });
+    expect(offered.result.current).toBe(open);
+    open();
+    expect(second).toHaveBeenCalledOnce();
+    expect(first).not.toHaveBeenCalled();
+    rerender({ open: undefined });
+    expect(offered.result.current).toBeNull();
+    unmount();
   });
 });
 

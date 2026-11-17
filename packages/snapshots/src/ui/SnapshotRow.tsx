@@ -25,6 +25,7 @@ export function SnapshotRow({
   onConfirm,
   onRevert,
   onDelete,
+  as: Tag = 'li',
 }: {
   snapshot: SnapshotSummary;
   noun: string;
@@ -36,6 +37,8 @@ export function SnapshotRow({
   onConfirm: (kind: 'revert' | 'delete' | null) => void;
   onRevert: () => void;
   onDelete: () => void;
+  // A plain block on History's rail, which draws the list item itself.
+  as?: 'li' | 'div';
 }) {
   const title = snapshotTitle(snapshot);
   const reverting = busy?.kind === 'revert' && busy.id === snapshot.id;
@@ -46,7 +49,7 @@ export function SnapshotRow({
     onConfirm(null);
   };
   return (
-    <li
+    <Tag
       data-snapshot-row={snapshot.id}
       className={`rounded-lg px-3 py-2.5 transition-colors ${
         confirm
@@ -102,6 +105,8 @@ export function SnapshotRow({
       {confirm ? (
         <div
           role="group"
+          // Its own Escape (cancel), before the Tools popover's (popover-stack): see ChromeToolsMenu's passEscape.
+          data-keeps-escape=""
           aria-label={confirm === 'revert' ? 'Confirm revert' : 'Confirm delete'}
           onKeyDown={cancelOnEscape}
           className="mt-2.5 flex flex-col gap-2.5 border-t border-slate-200 pt-2.5 sm:flex-row sm:items-center dark:border-slate-700"
@@ -139,6 +144,6 @@ export function SnapshotRow({
           </div>
         </div>
       ) : null}
-    </li>
+    </Tag>
   );
 }

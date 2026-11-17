@@ -76,6 +76,14 @@ at a time with `itemHistory(itemId, { limit, cursor })`.
   under reduced motion. Escape closes and focus returns to the menu's row.
 - **Speed.** The dialog's code loads when it is first opened. The days, runs, chips and summary are worked out once
   per loaded page and filter (memoised); 1,000 loaded events group in well under a frame (a test keeps a budget).
+- **In an editor's Tools, with Snapshots in it** (owner, 2026-11-17; [The footer's Tools
+  menu](../../../../liveworkspace/docs/specs/004-index/footer-tools-menu.md) "History, with Snapshots in it"). The
+  editor's History opens inside Tools. For someone who may take snapshots, **Take Snapshot** sits under the header and
+  each snapshot is an entry on the rail at the time it was taken: a camera on the brand's wash in place of the
+  event's disc, labelled Snapshot, with Revert and Delete confirmed in place
+  ([Snapshots](../../../../liveworkspace/docs/specs/014-snapshots/snapshots.md) "In History"). A day's heading counts
+  them ("4 events · 1 snapshot"); a filter chip leaves them out, **All** brings them back; snapshots on an item with no
+  events yet show in place of the empty state.
 
 ## 4. Webhooks and the Audit Log
 

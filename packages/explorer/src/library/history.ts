@@ -65,6 +65,43 @@ export function buildHistory(events: readonly ItemEvent[], now: number): History
 }
 
 /** The kinds the loaded events hold, in a fixed order, and how many of each: the filter's chips. */
+/** An entry another tool lays on the rail (a snapshot, owner 2026-11-17): placed by when it happened. */
+export type HistoryPinAt = { key: string; at: number };
+export type HistoryEntryOf<P> = { run: HistoryRun; pin?: never } | { pin: P; run?: never };
+export type PinnedHistoryDay<P> = {
+  key: string;
+  label: string;
+  count: number;
+  pinned: number;
+  entries: HistoryEntryOf<P>[];
+};
+
+/** The days with pins laid among their runs, newest first (a pin on a day with no events makes that day). Linear in
+ *  the runs plus the pins, but for one sort per day that holds a pin. */
+export function pinHistory<P extends HistoryPinAt>(
+  days: readonly HistoryDay[],
+  pins: readonly P[],
+  now: number,
+): PinnedHistoryDay<P>[] {
+  const out = new Map<string, PinnedHistoryDay<P>>();
+  for (const day of days)
+    out.set(day.key, { ...day, pinned: 0, entries: day.runs.map((run) => ({ run })) });
+  for (const pin of pins) {
+    const key = dateKey(pin.at);
+    let day = out.get(key);
+    if (!day) {
+      day = { key, label: historyDayLabel(key, now), count: 0, pinned: 0, entries: [] };
+      out.set(key, day);
+    }
+    day.entries.push({ pin });
+    day.pinned += 1;
+  }
+  const at = (e: HistoryEntryOf<P>) => (e.pin ? e.pin.at : e.run!.events[0]!.occurredAt);
+  const result = [...out.values()];
+  for (const day of result) if (day.pinned) day.entries.sort((a, b) => at(b) - at(a));
+  return result.sort((a, b) => (a.key < b.key ? 1 : a.key > b.key ? -1 : 0));
+}
+
 export function historyCategories(
   events: readonly ItemEvent[],
 ): { category: EventCategory; count: number }[] {

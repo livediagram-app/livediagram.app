@@ -96,8 +96,11 @@ export const TOOL_ARRIVAL_MS = 10_000;
 const TOOL_SURFACES =
   '[data-dialog-backdrop], [data-anchored-popover], [role="menu"], [role="listbox"]';
 
-// A modal dialog is open (one a tool opened over Tools): Escape is its.
-const modalOpen = () => !!document.querySelector('[data-dialog-panel]');
+// Escape is left alone while a modal dialog is open (one a tool opened over Tools),
+// or focus is in a part of a tool that takes Escape itself (a row's in-place confirm, `data-keeps-escape`).
+const modalOpen = () =>
+  !!document.querySelector('[data-dialog-panel]') ||
+  !!document.activeElement?.closest('[data-keeps-escape]');
 
 // The tools glyph: a toolbox, its handle and its lid's line.
 export function ToolsGlyph({ size = 14 }: { size?: number }) {
@@ -212,13 +215,14 @@ export function ChromeToolsMenu({
   };
   // The tool's dialog closed itself (its Cancel, Done or Escape): back to the list, or out, after the close.
   const released = !!ours?.released && !ours.held;
+  const leaving = !!ours?.leaving;
   useEffect(() => {
     if (!released) return;
-    if (closing.current) {
+    if (closing.current || leaving) {
       finish();
       anchor?.focus({ preventScroll: true });
     } else toList();
-  }, [released, finish, toList, anchor]);
+  }, [released, leaving, finish, toList, anchor]);
   // A tool's dialog that never arrives (its code failed to load) hands the list back.
   const waiting = view?.slot != null && !claimed;
   useEffect(() => {

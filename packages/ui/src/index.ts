@@ -124,6 +124,7 @@ export { useDialogDismiss, type DialogDismiss } from './dialog/dialog-dismiss';
 export {
   closeDialogSlot,
   holdDialogSlot,
+  leaveToolsWithDialog,
   openDialogSlot,
   resetDialogSlot,
   setDialogSlotNode,

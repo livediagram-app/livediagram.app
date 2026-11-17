@@ -6,7 +6,6 @@ import {
 } from '@liveworkspace/workbench/components/chrome/chrome-button';
 import { TourOfferButton } from '@liveworkspace/workbench/components/tour/TourOfferButton';
 import { SettingsIcon, SearchGlyph } from '@/components/chrome/tab-bar-icons';
-import { useSnapshotsToolsItem } from '@liveworkspace/snapshots/ui';
 import {
   ChromeToolsMenu,
   type ChromeToolsItem,
@@ -40,7 +39,6 @@ export function ChromeControls({
 }) {
   const BTN = labelled ? `${CHROME_BTN} ${CHROME_BTN_LABELLED}` : CHROME_BTN;
   const automations = useAutomationsToolsItem();
-  const snapshots = useSnapshotsToolsItem();
   const emailIntake = useEmailIntakeToolsItem();
   const calendarFeed = useCalendarFeedToolsItem();
   // Search, first in Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md).
@@ -64,7 +62,7 @@ export function ChromeControls({
           whole item, in one menu, drawn only while it holds one. */}
       <ChromeToolsMenu
         labelled={labelled}
-        items={[search, automations, emailIntake, calendarFeed, snapshots]}
+        items={[search, automations, emailIntake, calendarFeed]}
       />
       {onOpenSettings ? (
         <button type="button" onClick={onOpenSettings} aria-label={settingsLabel} className={BTN}>

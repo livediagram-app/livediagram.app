@@ -39,7 +39,7 @@ const COMMUNITY_SITE = `${ROOT}/../liveworkspace/apps/site/components/community`
 // The shared editor chrome (@liveworkspace/workbench): the comment thread's reactions, the Collaborators modal's
 // footer and the rest every editor renders as its own.
 const WORKBENCH_PACKAGE = `${ROOT}/../packages/workbench/src`;
-// The Snapshots button and dialog (@liveworkspace/snapshots), drawn in every editor's footer.
+// Snapshots (@liveworkspace/snapshots), drawn inside History in every editor's footer Tools.
 const SNAPSHOTS_PACKAGE = `${ROOT}/../packages/snapshots/src`;
 // The Walkthroughs menu, recording dock and player (@liveworkspace/walkthrough), with its device picker
 // (@liveworkspace/capture), drawn over every canvas editor.
