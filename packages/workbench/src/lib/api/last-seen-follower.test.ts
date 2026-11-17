@@ -41,7 +41,6 @@ function setup() {
     }),
     read: vi.fn(async () => null),
     readVia: vi.fn(async () => null),
-    lastReader: vi.fn(async () => null),
     forget: vi.fn(async () => {}),
     forgetVia: vi.fn(async () => {}),
     forgetAll: vi.fn(async () => {}),
@@ -83,8 +82,6 @@ describe('createLastSeenFollower', () => {
     expect(follower.follows('user_a', 'd1')).toBe(true);
     await follower.read('user_a', 'd1');
     expect(copies.read).toHaveBeenCalledWith('user_a', 'd1');
-    await follower.lastReader();
-    expect(copies.lastReader).toHaveBeenCalledOnce();
     await follower.readVia('user_a', 'CODE');
     expect(copies.readVia).toHaveBeenCalledWith('user_a', 'CODE');
   });
@@ -337,7 +334,6 @@ describe('createLastSeenFollower', () => {
         remember: vi.fn(async () => {}),
         read: vi.fn(async () => null),
         readVia: vi.fn(async () => null),
-        lastReader: vi.fn(async () => null),
         forget: vi.fn(async () => {}),
         forgetVia: vi.fn(async () => {}),
         forgetAll: vi.fn(async () => {}),
@@ -384,7 +380,6 @@ describe('createLastSeenFollower', () => {
         remember: vi.fn(async () => {}),
         read: vi.fn(async () => null),
         readVia: vi.fn(async () => null),
-        lastReader: vi.fn(async () => null),
         forget: vi.fn(async () => {}),
         forgetVia: vi.fn(async () => {}),
         forgetAll: vi.fn(async () => {}),
