@@ -163,6 +163,18 @@ Registration (`POST /oauth/register`, RFC 7591) is open, so a registered client'
   camel case (`Live Diagram`, `my-Claude`, `C.l.a.u.d.e`) (`reservedNameRefusal`, `oauth-names.ts`).
 - `POST /oauth/token` with `authorization_code` requires `client_id` and `redirect_uri`, each equal to the one the
   code was issued for (RFC 6749 §4.1.3); a missing one is `400 invalid_request`.
+- A registration lives `CLIENT_TTL` (200 days, past the six-month token it mints) and every `/oauth/authorize` renews
+  it, so a client that keeps its `client_id` (claude.ai does) can always sign in again.
+- Registration is limited 20 an hour per address, but Anthropic's egress range `160.79.104.0/21`, where every claude.ai
+  connect comes from, has its own `ANTHROPIC_REGISTER_LIMIT` of 2,000 an hour (`anthropic-egress.ts`).
+- `POST /oauth/token`: no refresh tokens are issued, so `refresh_token` is `400 invalid_grant`; another unknown grant is
+  `400 unsupported_grant_type`; a body with no `grant_type` (JSON, which the form parser reads as nothing) is
+  `400 invalid_request` saying to send it form-encoded. Every refusal of the authorization server carries an
+  `error_description` in words (the device grant's polling codes excepted, RFC 8628).
+- The protected-resource metadata names `resource` `<origin>/mcp` exactly and `bearer_methods_supported: ["header"]`,
+  at `/.well-known/oauth-protected-resource` and `/.well-known/oauth-protected-resource/mcp`. `/mcp` refuses a request
+  whose query names `access_token`, `token`, `api_key` or `apikey` (`400 invalid_request`): a token travels only in the
+  `Authorization` header. The audit against Claude's connector directory is each product's `mcp-server.md` §4.16a.
 
 ## Data and persistence
 
@@ -197,14 +209,15 @@ Registration (`POST /oauth/register`, RFC 7591) is open, so a registered client'
 
 ## Testing
 
-| Test                                                                                                | Pins                            |
-| --------------------------------------------------------------------------------------------------- | ------------------------------- |
-| `liveworkspace/apps/accounts/src/clients.test.ts` (5)                                               | registering a client            |
-| `liveworkspace/apps/accounts/src/auth-options.test.ts` (11)                                         | `idTokenClaims`, among the rest |
-| `liveworkspace/apps/accounts/src/account-api.test.ts` (33)                                          | client credentials and vouching |
-| `packages/auth-client/src/oauth.test.ts`, `silent.test.ts`, `verify.test.ts`, `return-path.test.ts` | the app side                    |
-| `packages/mcp-kit/src/oauth-device.test.ts`                                                         | the device grant                |
-| `packages/mcp-kit/src/oauth.test.ts`, `oauth-names.test.ts`                                         | registration and the token      |
+| Test                                                                                                | Pins                                            |
+| --------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| `liveworkspace/apps/accounts/src/clients.test.ts` (5)                                               | registering a client                            |
+| `liveworkspace/apps/accounts/src/auth-options.test.ts` (11)                                         | `idTokenClaims`, among the rest                 |
+| `liveworkspace/apps/accounts/src/account-api.test.ts` (33)                                          | client credentials and vouching                 |
+| `packages/auth-client/src/oauth.test.ts`, `silent.test.ts`, `verify.test.ts`, `return-path.test.ts` | the app side                                    |
+| `packages/mcp-kit/src/oauth-device.test.ts`                                                         | the device grant                                |
+| `packages/mcp-kit/src/oauth.test.ts`, `oauth-names.test.ts`                                         | registration and the token                      |
+| `packages/mcp-kit/src/app.test.ts`, `anthropic-egress.test.ts`                                      | no URL token, worded refusals, the egress range |
 
 ## Constants and configuration
 

@@ -2,7 +2,13 @@ import { Hono } from 'hono';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { pkceChallenge } from '@liveworkspace/api-kit/oauth';
 import { cliClients } from './oauth-clients';
-import { isAllowedRedirectUri, registerOauthRoutes, type OauthServer } from './oauth';
+import {
+  ANTHROPIC_REGISTER_LIMIT,
+  CLIENT_TTL,
+  isAllowedRedirectUri,
+  registerOauthRoutes,
+  type OauthServer,
+} from './oauth';
 
 // A product's MCP env, as far as the authorization server reads it, and its configuration: a CLI client of its own
 // and a consent page on its editor (here example.app, the hosted default when CONSENT_BASE_URL is unset).
@@ -225,7 +231,7 @@ describe('GET /oauth/session/:id (what the consent screen may believe)', () => {
   it('404s an unknown or expired session', async () => {
     const res = await app.request('/oauth/session/nope', {}, env);
     expect(res.status).toBe(404);
-    expect(await res.json()).toEqual({ error: 'invalid_session' });
+    expect(await res.json()).toMatchObject({ error: 'invalid_session' });
   });
 
   it('leaks no token, code or PKCE material', async () => {
@@ -691,5 +697,213 @@ describe('reserved client names (oauth-names.ts)', () => {
       env,
     );
     expect(res.status).toBe(400);
+  });
+});
+
+// What Claude's connector directory asks of the authorization server (each product's mcp-server.md "Claude connector
+// directory"): claude.ai's callback and Claude Code's loopback port both sign in, Anthropic's shared egress range is
+// never stopped by the per-address registration cap, and every refusal says what went wrong.
+describe('Claude connector directory', () => {
+  const CLAUDE_AI = 'https://claude.ai/api/mcp/auth_callback';
+  const FROM_ANTHROPIC = { 'CF-Connecting-IP': '160.79.104.5' };
+
+  async function registerFrom(name: string, uris: string[], headers: Record<string, string> = {}) {
+    return app.request(
+      '/oauth/register',
+      {
+        method: 'POST',
+        body: JSON.stringify({ redirect_uris: uris, client_name: name }),
+        headers: { 'Content-Type': 'application/json', ...headers },
+      },
+      env,
+    );
+  }
+
+  async function signIn(clientId: string, redirectUri: string): Promise<Response> {
+    const verifier = 'v'.repeat(64);
+    const auth = await app.request(
+      `/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}` +
+        `&code_challenge=${await pkceChallenge(verifier)}&code_challenge_method=S256&response_type=code&state=s`,
+      {},
+      env,
+    );
+    expect(auth.status).toBe(302);
+    const session = new URL(auth.headers.get('location')!).searchParams.get('session')!;
+    const comp = await app.request(
+      '/oauth/complete',
+      {
+        method: 'POST',
+        body: JSON.stringify({ session, token: 'lwt_claude' }),
+        headers: { 'Content-Type': 'application/json' },
+      },
+      env,
+    );
+    const code = new URL((await comp.json<{ redirectTo: string }>()).redirectTo).searchParams.get(
+      'code',
+    )!;
+    return app.request(
+      '/oauth/token',
+      {
+        method: 'POST',
+        body: new URLSearchParams({
+          grant_type: 'authorization_code',
+          code,
+          code_verifier: verifier,
+          redirect_uri: redirectUri,
+          client_id: clientId,
+        }),
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      },
+      env,
+    );
+  }
+
+  it('signs claude.ai in end to end from its callback, without reaching the network', async () => {
+    const network = vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('no network'));
+    const reg = await registerFrom('Claude', [CLAUDE_AI], FROM_ANTHROPIC);
+    expect(reg.status).toBe(201);
+    const { client_id } = await reg.json<{ client_id: string }>();
+    const token = await signIn(client_id, CLAUDE_AI);
+    expect(await token.json()).toMatchObject({ access_token: 'lwt_claude', token_type: 'Bearer' });
+    expect(network).not.toHaveBeenCalled();
+    network.mockRestore();
+  });
+
+  it('signs Claude Code in on whichever loopback port it listens on', async () => {
+    const reg = await registerFrom('Claude Code (liveexample)', ['http://localhost:3118/callback']);
+    const { client_id } = await reg.json<{ client_id: string }>();
+    const token = await signIn(client_id, 'http://localhost:54321/callback');
+    expect(await token.json()).toMatchObject({ access_token: 'lwt_claude' });
+  });
+
+  it('gives Anthropic’s egress range its own, larger registration budget', async () => {
+    for (let i = 0; i < 25; i++)
+      expect((await registerFrom('Claude', [CLAUDE_AI], FROM_ANTHROPIC)).status).toBe(201);
+    expect(ANTHROPIC_REGISTER_LIMIT.max).toBeGreaterThan(1000);
+    // A neighbour just outside the range keeps the ordinary cap.
+    const outside = { 'CF-Connecting-IP': '160.79.112.1' };
+    for (let i = 0; i < 20; i++)
+      expect((await registerFrom('Example', [REDIRECT], outside)).status).toBe(201);
+    const capped = await registerFrom('Example', [REDIRECT], outside);
+    expect(capped.status).toBe(429);
+    expect(await capped.json()).toMatchObject({
+      error: 'rate_limited',
+      error_description: expect.stringContaining('Try again later'),
+    });
+  });
+
+  it('names the exact resource, header-only bearer tokens, at the root and the path-inserted address', async () => {
+    for (const path of [
+      '/.well-known/oauth-protected-resource',
+      '/.well-known/oauth-protected-resource/mcp',
+    ]) {
+      const res = await app.request(`https://mcp.example.app${path}`, {}, env);
+      expect(await res.json()).toEqual({
+        resource: 'https://mcp.example.app/mcp',
+        authorization_servers: ['https://mcp.example.app'],
+        bearer_methods_supported: ['header'],
+      });
+    }
+  });
+
+  it('renews a registered client on every sign-in, past the six-month token', async () => {
+    const clientId = await register();
+    const put = vi.spyOn(env.OAUTH_KV, 'put');
+    await startAuthorize(clientId);
+    expect(put).toHaveBeenCalledWith(`client:${clientId}`, expect.any(String), {
+      expirationTtl: CLIENT_TTL,
+    });
+    expect(CLIENT_TTL).toBeGreaterThan(60 * 60 * 24 * 180);
+  });
+
+  async function token(body: BodyInit, type = 'application/x-www-form-urlencoded') {
+    const res = await app.request(
+      '/oauth/token',
+      { method: 'POST', body, headers: { 'Content-Type': type } },
+      env,
+    );
+    return { status: res.status, body: await res.json<Record<string, string>>() };
+  }
+
+  it('answers a refresh token invalid_grant, since it issues none, and an unknown grant in words', async () => {
+    const refresh = await token(
+      new URLSearchParams({ grant_type: 'refresh_token', refresh_token: 'rt_old' }),
+    );
+    expect(refresh).toEqual({
+      status: 400,
+      body: {
+        error: 'invalid_grant',
+        error_description: 'This server issues no refresh tokens. Sign in again.',
+      },
+    });
+    const password = await token(new URLSearchParams({ grant_type: 'password' }));
+    expect(password.body.error).toBe('unsupported_grant_type');
+    expect(password.body.error_description).toBeTruthy();
+  });
+
+  it('takes the token request form-encoded, and says so to a JSON body rather than a 415', async () => {
+    const json = await token(
+      JSON.stringify({ grant_type: 'authorization_code', code: 'c' }),
+      'application/json',
+    );
+    expect(json.status).toBe(400);
+    expect(json.body.error_description).toContain('form-encoded');
+  });
+
+  it('refuses an authorize that is missing a part, not S256 or not a code flow, in words', async () => {
+    const clientId = await register();
+    const base = `/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(REDIRECT)}`;
+    const challenge = `&code_challenge=${'c'.repeat(43)}`;
+    for (const [query, words] of [
+      [base, 'missing client_id, redirect_uri, or code_challenge'],
+      [`${base}${challenge}&code_challenge_method=plain`, 'only S256 PKCE is supported'],
+      [`${base}${challenge}&response_type=token`, 'only response_type=code is supported'],
+    ] as const) {
+      const res = await app.request(query, {}, env);
+      expect(res.status).toBe(400);
+      expect(await res.text()).toBe(words);
+    }
+  });
+
+  it('puts words on every token refusal', async () => {
+    const short = await token(
+      new URLSearchParams({
+        grant_type: 'authorization_code',
+        code: 'c',
+        code_verifier: 'short',
+        redirect_uri: REDIRECT,
+        client_id: 'x',
+      }),
+    );
+    expect(short.body.error_description).toContain('43 to 128');
+    const unknown = await token(
+      new URLSearchParams({
+        grant_type: 'authorization_code',
+        code: 'gone',
+        code_verifier: 'v'.repeat(43),
+        redirect_uri: REDIRECT,
+        client_id: 'x',
+      }),
+    );
+    expect(unknown.body).toMatchObject({ error: 'invalid_grant' });
+    expect(unknown.body.error_description).toContain('Sign in again');
+    const complete = await app.request(
+      '/oauth/complete',
+      { method: 'POST', body: '{}', headers: { 'Content-Type': 'application/json' } },
+      env,
+    );
+    expect(await complete.json()).toMatchObject({ error_description: expect.any(String) });
+    const expired = await app.request(
+      '/oauth/complete',
+      {
+        method: 'POST',
+        body: JSON.stringify({ session: 'gone', token: 'lwt_x' }),
+        headers: { 'Content-Type': 'application/json' },
+      },
+      env,
+    );
+    expect(await expired.json()).toMatchObject({
+      error_description: expect.stringContaining('expired'),
+    });
   });
 });

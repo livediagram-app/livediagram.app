@@ -65,7 +65,7 @@ describe('/mcp with a token the api refuses', () => {
     expect(res.headers.get('WWW-Authenticate')).toBe(
       'Bearer error="invalid_token", resource_metadata="https://mcp.liveexample.app/.well-known/oauth-protected-resource"',
     );
-    expect(await res.json()).toEqual({ error: 'invalid_token' });
+    expect(await res.json()).toMatchObject({ error: 'invalid_token' });
   });
 
   it('answers a tool call the api accepts as before', async () => {

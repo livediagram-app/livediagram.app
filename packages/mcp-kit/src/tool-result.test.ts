@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   answerFixable,
+  failureWords,
+  TOOL_RESULT_MAX_CHARS,
   errorResult,
   isErrorResult,
   requireToken,
@@ -153,12 +155,49 @@ describe('answerFixable', () => {
     expect(refused).toEqual(errorResult('refused: gone'));
   });
 
-  it('lets anything else throw', async () => {
+  it('lets anything else throw, in words, keeping the cause', async () => {
+    const boom = new TypeError('boom');
+    const thrown = await answerFixable(() => {
+      throw boom;
+    }, refusalOf).catch((err: Error) => err);
+    expect(thrown).toBeInstanceOf(Error);
+    expect((thrown as Error).message).toBe(
+      'This tool failed unexpectedly (boom). Try again in a moment.',
+    );
+    expect((thrown as Error).cause).toBe(boom);
+  });
+
+  it('words an api 5xx without quoting its bare body', async () => {
+    const apiDown = Object.assign(new Error('api 500: Internal Server Error'), { status: 500 });
     await expect(
       answerFixable(() => {
-        throw new TypeError('boom');
+        throw apiDown;
       }, refusalOf),
-    ).rejects.toBeInstanceOf(TypeError);
+    ).rejects.toThrow(
+      'The service behind this tool did not finish the call (HTTP 500). Try again in a moment.',
+    );
+  });
+
+  it('words a thrown value that is not an Error', async () => {
+    expect(failureWords('nope')).toBe('This tool failed unexpectedly. Try again in a moment.');
+    expect(failureWords(null)).toBe('This tool failed unexpectedly. Try again in a moment.');
+    expect(failureWords(Object.assign(new Error('x'), { status: 404 }))).toContain('(x)');
+  });
+
+  it('refuses an answer too large for a client, saying how to ask for less', async () => {
+    const big = textResult({ text: 'x'.repeat(TOOL_RESULT_MAX_CHARS) });
+    const answer = await answerFixable(() => big, refusalOf);
+    expect(isErrorResult(answer)).toBe(true);
+    expect(JSON.stringify(answer)).toContain('Ask for less');
+    // At the cap it passes, and a picture's base64 is not counted.
+    const atCap = { content: [{ type: 'text', text: 'x'.repeat(TOOL_RESULT_MAX_CHARS) }] };
+    expect(await answerFixable(() => atCap, refusalOf)).toBe(atCap);
+    const picture = { content: [{ type: 'image', data: 'x'.repeat(TOOL_RESULT_MAX_CHARS * 2) }] };
+    expect(await answerFixable(() => picture, refusalOf)).toBe(picture);
+    expect(await answerFixable(() => 'plain', refusalOf)).toBe('plain');
+    const odd = { content: [null, { text: 3 }] };
+    expect(await answerFixable(() => odd, refusalOf)).toBe(odd);
+    expect(await answerFixable(() => ({ content: 'x' }), refusalOf)).toEqual({ content: 'x' });
   });
 });
 

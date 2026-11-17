@@ -19,6 +19,16 @@ import { bearerChallenge, watchTokenRefusal } from './token-refusal';
 // transport reads the body through a counter and answers 413 past it, so no request holds more than this.
 export const MCP_MAX_REQUEST_BYTES = 15 * 1024 * 1024;
 
+// Query parameters that would carry a credential in the URL, where logs, proxies and browser history keep it. The MCP
+// authorization spec forbids an access token there, so /mcp refuses a request naming one rather than ignoring it.
+export const URL_TOKEN_PARAMS: readonly string[] = ['access_token', 'token', 'api_key', 'apikey'];
+
+function urlCarriesToken(url: string): boolean {
+  const params = new URL(url).searchParams;
+  for (const name of params.keys()) if (URL_TOKEN_PARAMS.includes(name.toLowerCase())) return true;
+  return false;
+}
+
 export function createMcpApp<E extends OauthEnv>(options: {
   // A fresh server per request: the caller's token arrives through the transport's authInfo and is read inside
   // each tool, so nothing carries over between requests.
@@ -45,6 +55,29 @@ export function createMcpApp<E extends OauthEnv>(options: {
 
   app.get('/health', (c) => c.json({ status: 'ok' }));
 
+  // Every refusal in words, never a bare "Internal Server Error" or "404 Not Found" (each product's mcp-server.md
+  // "Claude connector directory"): an unknown path names the ones there are, and a crash says what to do next.
+  app.notFound((c) =>
+    c.json(
+      {
+        error: 'not_found',
+        error_description: `No ${c.req.method} ${new URL(c.req.url).pathname} here. The MCP endpoint is /mcp.`,
+      },
+      404,
+    ),
+  );
+  app.onError((err, c) => {
+    console.error('[mcp] unhandled error', { path: new URL(c.req.url).pathname, err });
+    return c.json(
+      {
+        error: 'server_error',
+        error_description:
+          'Something went wrong on our side while answering this request. Try again in a moment.',
+      },
+      500,
+    );
+  });
+
   // The server card (mcp-server.md §4.16): what a directory or client shows before anyone signs in.
   app.get(SERVER_CARD_PATH, async (c) => {
     const origin = new URL(c.req.url).origin;
@@ -65,15 +98,32 @@ export function createMcpApp<E extends OauthEnv>(options: {
   // responses, which suits a per-request Worker: build a fresh server + transport,
   // connect, and let the transport turn the request into a response.
   app.all('/mcp', async (c) => {
+    if (urlCarriesToken(c.req.url)) {
+      return c.json(
+        {
+          error: 'invalid_request',
+          error_description:
+            'A token in the URL is never accepted. Send it in the Authorization header as "Bearer <token>".',
+        },
+        400,
+      );
+    }
     const token = bearerTokenOf(c.req.header('Authorization'));
     if (!token) {
       // Point MCP clients at the OAuth resource metadata so they can start the
       // connect flow. The origin comes from the request, like every endpoint in
       // oauth.ts, so a staging or local worker sends clients to ITS metadata.
       const origin = new URL(c.req.url).origin;
-      return c.json({ error: 'unauthorized' }, 401, {
-        'WWW-Authenticate': bearerChallenge(origin, false),
-      });
+      return c.json(
+        {
+          error: 'unauthorized',
+          error_description: 'Sign in: this server needs an OAuth access token.',
+        },
+        401,
+        {
+          'WWW-Authenticate': bearerChallenge(origin, false),
+        },
+      );
     }
     // The api is the one judge of the token: when it refuses it, the whole request answers 401 with the same
     // challenge, so the client signs in again instead of retrying a dead token (token-refusal.ts).
@@ -94,9 +144,16 @@ export function createMcpApp<E extends OauthEnv>(options: {
     );
     if (!watch.refused()) return response;
     console.warn('[mcp] token refused by the api: asking the client to sign in again');
-    return c.json({ error: 'invalid_token' }, 401, {
-      'WWW-Authenticate': bearerChallenge(new URL(c.req.url).origin, true),
-    });
+    return c.json(
+      {
+        error: 'invalid_token',
+        error_description: 'This token is no longer accepted (revoked or expired). Sign in again.',
+      },
+      401,
+      {
+        'WWW-Authenticate': bearerChallenge(new URL(c.req.url).origin, true),
+      },
+    );
   });
 
   return app;

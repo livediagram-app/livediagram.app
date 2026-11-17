@@ -21,6 +21,7 @@ import { reservedNameRefusal } from './oauth-names';
 import { formText } from './oauth-form';
 import { handleDeviceToken, registerDeviceRoutes } from './oauth-device';
 import { overWindowLimit, type RateWindow } from './rate-window';
+import { isAnthropicEgress } from './anthropic-egress';
 
 // What a product's authorization server is configured with: where its signed-in consent and device pages live
 // (its editor, `CONSENT_BASE_URL` or the hosted app), and the clients it ships.
@@ -68,11 +69,22 @@ type AuthCode = {
   expiresAt?: number;
 };
 
-const CLIENT_TTL = 60 * 60 * 24 * 30; // 30 days
+// A registration outlives the six-month token it was used to mint, and every authorize renews it, so a client such
+// as claude.ai, which keeps its client_id and reuses it when a token dies, can always sign in again.
+export const CLIENT_TTL = 60 * 60 * 24 * 200; // 200 days
 const SESSION_TTL = 60 * 10; // 10 minutes
 const CODE_TTL = 60 * 5; // 5 minutes
 // Client registrations per address.
 const REGISTER_LIMIT: RateWindow = { max: 20, windowS: 60 * 60 };
+// Claude registers a client for every new connection, and all of claude.ai calls from Anthropic's egress range
+// (anthropic-egress.ts), so those addresses share a far larger budget: room for a busy hour of connects, still bounded.
+export const ANTHROPIC_REGISTER_LIMIT: RateWindow = { max: 2000, windowS: 60 * 60 };
+
+// An OAuth error answer (RFC 6749 §5.2) always in words: `error` for the client's code, `error_description` for the
+// person reading a log or a failed connect.
+function oauthError(error: string, description: string) {
+  return { error, error_description: description };
+}
 
 function randomId(): string {
   return crypto.randomUUID().replace(/-/g, '');
@@ -117,13 +129,18 @@ export function registerOauthRoutes<E extends OauthEnv>(
     });
   });
 
-  app.get('/.well-known/oauth-protected-resource', (c) => {
+  // RFC 9728: at the root, and at the path-inserted address a client derives from the resource URL itself.
+  // `resource` is exactly the URL a client connects to; tokens travel only in the Authorization header.
+  const protectedResource = (c: { req: { url: string } }) => {
     const base = selfOrigin(c.req.url);
-    return c.json({
+    return {
       resource: `${base}/mcp`,
       authorization_servers: [base],
-    });
-  });
+      bearer_methods_supported: ['header'],
+    };
+  };
+  app.get('/.well-known/oauth-protected-resource', (c) => c.json(protectedResource(c)));
+  app.get('/.well-known/oauth-protected-resource/mcp', (c) => c.json(protectedResource(c)));
 
   // --- Dynamic client registration (RFC 7591) ---
   app.post('/oauth/register', async (c) => {
@@ -131,8 +148,15 @@ export function registerOauthRoutes<E extends OauthEnv>(
     // to flood KV: 20 an hour, over a fixed window (rate-window.ts); good enough for DCR abuse.
     // Keyed as the api's limiters are: an IPv6 caller by its /64, so rotating addresses inside it buys nothing.
     const ip = clientRateKey(c.req.raw, 'unknown');
-    if (await overWindowLimit(c.env.OAUTH_KV, 'reg-rate', ip, REGISTER_LIMIT))
-      return c.json({ error: 'rate_limited' }, 429);
+    const limit = isAnthropicEgress(ip) ? ANTHROPIC_REGISTER_LIMIT : REGISTER_LIMIT;
+    if (await overWindowLimit(c.env.OAUTH_KV, 'reg-rate', ip, limit))
+      return c.json(
+        oauthError(
+          'rate_limited',
+          'Too many client registrations from this address in the last hour. Try again later.',
+        ),
+        429,
+      );
 
     const body = objectOrEmpty(await c.req.json().catch(() => null)) as {
       redirect_uris?: unknown;
@@ -143,10 +167,10 @@ export function registerOauthRoutes<E extends OauthEnv>(
       : [];
     if (uris.length === 0 || !uris.every(isAllowedRedirectUri)) {
       return c.json(
-        {
-          error: 'invalid_redirect_uri',
-          error_description: 'https or localhost redirect_uris required',
-        },
+        oauthError(
+          'invalid_redirect_uri',
+          'redirect_uris must be https, or http on a loopback host, with no fragment',
+        ),
         400,
       );
     }
@@ -207,7 +231,16 @@ export function registerOauthRoutes<E extends OauthEnv>(
         reservedNameRefusal(registeredName(reg.clientName), reg.redirectUris) !== null)
     ) {
       console.warn('[oauth] authorize refused', { clientId, known: Boolean(reg) });
-      return c.text('unknown client or unregistered redirect_uri', 400);
+      return c.text(
+        'Unknown client or unregistered redirect_uri. Register the client again (POST /oauth/register) and retry.',
+        400,
+      );
+    }
+    // Renew a registered client on every sign-in (CLIENT_TTL), so one in use never expires under its holder.
+    if (!builtInClient(server.builtInClients, clientId)) {
+      await c.env.OAUTH_KV.put(`client:${clientId}`, JSON.stringify(reg), {
+        expirationTtl: CLIENT_TTL,
+      });
     }
     const session = randomId();
     const record: AuthSession = {
@@ -261,7 +294,14 @@ export function registerOauthRoutes<E extends OauthEnv>(
     const session = await c.env.OAUTH_KV.get<AuthSession>(`session:${c.req.param('id')}`, 'json');
     // Same answer for expired and never-existed: nothing here distinguishes
     // them and the screen's message ("start the connection again") is the same.
-    if (!session) return c.json({ error: 'invalid_session' }, 404);
+    if (!session)
+      return c.json(
+        oauthError(
+          'invalid_session',
+          'This sign-in request has expired. Start the connection again.',
+        ),
+        404,
+      );
     let redirectHost = '';
     try {
       redirectHost = new URL(session.redirectUri).host;
@@ -288,9 +328,17 @@ export function registerOauthRoutes<E extends OauthEnv>(
       token?: string;
       expiresAt?: number;
     };
-    if (!body.session || !body.token) return c.json({ error: 'invalid_request' }, 400);
+    if (!body.session || !body.token)
+      return c.json(oauthError('invalid_request', 'session and token are required'), 400);
     const session = await c.env.OAUTH_KV.get<AuthSession>(`session:${body.session}`, 'json');
-    if (!session) return c.json({ error: 'invalid_session' }, 400);
+    if (!session)
+      return c.json(
+        oauthError(
+          'invalid_session',
+          'This sign-in request has expired. Start the connection again.',
+        ),
+        400,
+      );
     await c.env.OAUTH_KV.delete(`session:${body.session}`);
     const code = randomId();
     const record: AuthCode = {
@@ -312,22 +360,59 @@ export function registerOauthRoutes<E extends OauthEnv>(
     const form: Record<string, unknown> = await c.req.parseBody().catch(() => ({}));
     const grantType = formText(form, 'grant_type');
     if (grantType === DEVICE_CODE_GRANT) return handleDeviceToken(c, server, form);
+    // This server issues no refresh tokens (each access token lives six months), so any refresh token is one it
+    // does not know: invalid_grant (RFC 6749 §5.2) tells the client to sign in again.
+    if (grantType === 'refresh_token')
+      return c.json(
+        oauthError('invalid_grant', 'This server issues no refresh tokens. Sign in again.'),
+        400,
+      );
+    // A JSON body parses as nothing: say how the request is meant to arrive rather than answer 415.
+    if (!grantType)
+      return c.json(
+        oauthError(
+          'invalid_request',
+          'grant_type is missing. Send the token request form-encoded (application/x-www-form-urlencoded).',
+        ),
+        400,
+      );
+    if (grantType !== 'authorization_code')
+      return c.json(
+        oauthError(
+          'unsupported_grant_type',
+          'grant_type must be authorization_code or the device code grant',
+        ),
+        400,
+      );
     const code = formText(form, 'code');
     const verifier = formText(form, 'code_verifier');
     const redirectUri = formText(form, 'redirect_uri');
     const clientId = formText(form, 'client_id');
     // RFC 6749 §4.1.3: redirect_uri is required when authorize had one (ours always does), and a public client
     // sends its client_id; both are required, so a code is never redeemed without naming where it was bound.
-    if (grantType !== 'authorization_code' || !code || !verifier || !redirectUri || !clientId) {
-      return c.json({ error: 'invalid_request' }, 400);
+    if (!code || !verifier || !redirectUri || !clientId) {
+      return c.json(
+        oauthError(
+          'invalid_request',
+          'code, code_verifier, redirect_uri and client_id are required (form-encoded)',
+        ),
+        400,
+      );
     }
     // RFC 7636: the code_verifier is 43-128 chars. Enforce it so a weak verifier
     // can't undermine PKCE.
     if (verifier.length < 43 || verifier.length > 128) {
-      return c.json({ error: 'invalid_request', error_description: 'bad code_verifier' }, 400);
+      return c.json(
+        oauthError('invalid_request', 'code_verifier must be 43 to 128 characters'),
+        400,
+      );
     }
     const record = await c.env.OAUTH_KV.get<AuthCode>(`code:${code}`, 'json');
-    if (!record) return c.json({ error: 'invalid_grant' }, 400);
+    if (!record)
+      return c.json(
+        oauthError('invalid_grant', 'This code is unknown, used or expired. Sign in again.'),
+        400,
+      );
     // One-time: burn the code regardless of outcome.
     await c.env.OAUTH_KV.delete(`code:${code}`);
     // RFC 6749 §4.1.3: a code is redeemable only by the client it was issued to.
