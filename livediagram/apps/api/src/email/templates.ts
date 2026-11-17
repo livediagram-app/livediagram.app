@@ -79,7 +79,7 @@ export function accountDeletedEmail(env: Env): RenderedEmail {
     html: shell(env, {
       heading: 'Your account has been deleted',
       intro:
-        'This confirms that your livediagram documents and your liveworkspace account have been permanently removed, as you requested. The account is closed for every liveworkspace app. There’s nothing left for you to do.',
+        'This confirms that your livediagram canvases and your liveworkspace account have been permanently removed, as you requested. The account is closed for every liveworkspace app. There’s nothing left for you to do.',
       outro:
         'If this wasn’t you, or you change your mind, you’re always welcome back. The canvas is free and needs no account to start.',
       ctaText: 'Start a new diagram',
@@ -103,21 +103,21 @@ export function documentJoinedEmail(
   const base = appBaseUrl(env);
   const who = joinerName && joinerName.trim() ? escapeHtml(joinerName.trim()) : 'Someone';
   const named =
-    documentName && documentName.trim() ? escapeHtml(documentName.trim()) : 'your document';
+    documentName && documentName.trim() ? escapeHtml(documentName.trim()) : 'your canvas';
   const whoText = joinerName && joinerName.trim() ? escapeText(joinerName.trim()) : 'Someone';
   return {
     kind: 'DocumentJoined',
-    subject: `${whoText} opened one of your documents`,
+    subject: `${whoText} opened one of your canvases`,
     html: shell(env, {
-      heading: 'Someone joined your document',
-      intro: `<strong>${who}</strong> just opened <strong>${named}</strong>, a document you shared. They can collaborate on it with the access you granted.`,
+      heading: 'Someone joined your canvas',
+      intro: `<strong>${who}</strong> just opened <strong>${named}</strong>, a canvas you shared. They can collaborate on it with the access you granted.`,
       outro:
-        'Join notifications are on by default for documents you share. You can turn them off any time in your notification settings.',
-      ctaText: 'Open the document',
+        'Join notifications are on by default for canvases you share. You can turn them off any time in your notification settings.',
+      ctaText: 'Open the canvas',
       ctaHref: `${base}/explorer`,
       footer: manageNotificationsFooter(
         env,
-        'You’re receiving this because someone opened a document you shared.',
+        'You’re receiving this because someone opened a canvas you shared.',
       ),
     }),
     unsubscribeUrl: profilePath(env),
@@ -146,7 +146,7 @@ export function actionAssignedEmail(
   const whoText =
     assignerName && assignerName.trim() ? escapeText(assignerName.trim()) : 'A teammate';
   const liveDoc =
-    document && document.name.trim() ? escapeHtml(document.name.trim()) : 'a shared document';
+    document && document.name.trim() ? escapeHtml(document.name.trim()) : 'a shared canvas';
   const action = escapeHtml(actionName.trim());
   const detail = description?.trim()
     ? escapeHtml(
@@ -157,7 +157,7 @@ export function actionAssignedEmail(
     : null;
   const intro = document
     ? `<strong>${who}</strong> assigned you an action on <strong>${liveDoc}</strong>: <strong>${action}</strong>.`
-    : `<strong>${who}</strong> assigned you an action: <strong>${action}</strong>. You can’t open its document yet, so ask them to share it with you.`;
+    : `<strong>${who}</strong> assigned you an action: <strong>${action}</strong>. You can’t open its canvas yet, so ask them to share it with you.`;
   return {
     kind: 'ActionAssigned',
     subject: `${whoText} assigned you an action`,
@@ -167,7 +167,7 @@ export function actionAssignedEmail(
       ...(detail ? { outro: detail } : {}),
       ...(document
         ? {
-            ctaText: 'Open the document',
+            ctaText: 'Open the canvas',
             ctaHref: `${base}/document/${encodeURIComponent(document.id)}`,
           }
         : { ctaText: 'Open livediagram', ctaHref: `${base}/explorer` }),
@@ -184,7 +184,7 @@ export function actionAssignedEmail(
 // author and document name come from server state (the notify-mention route);
 // the quote is the author's own words, escaped and cut at a word.
 // Someone asked the recipient to approve a canvas (liveworkspace/docs/specs/004-index/approvals.md "The email"):
-// who asked, the document, the day hoped for and their note. Opt-out with assigned actions (notifyActionAssigned).
+// who asked, the canvas, the day hoped for and their note. Opt-out with assigned actions (notifyActionAssigned).
 export function approvalRequestedEmail(env: Env, input: ApprovalEmailInput): RenderedEmail {
   const base = appBaseUrl(env);
   const name = input.requesterName?.trim();
@@ -239,9 +239,9 @@ export function mentionedEmail(
   const who = authorName && authorName.trim() ? escapeHtml(authorName.trim()) : 'A teammate';
   const whoText = authorName && authorName.trim() ? escapeText(authorName.trim()) : 'A teammate';
   const liveDoc =
-    documentName && documentName.trim() ? escapeHtml(documentName.trim()) : 'a shared document';
+    documentName && documentName.trim() ? escapeHtml(documentName.trim()) : 'a shared canvas';
   const documentText =
-    documentName && documentName.trim() ? escapeText(documentName.trim()) : 'a document';
+    documentName && documentName.trim() ? escapeText(documentName.trim()) : 'a canvas';
   return {
     kind: 'Mentioned',
     subject: `${whoText} mentioned you in ${documentText}`,
@@ -249,7 +249,7 @@ export function mentionedEmail(
       heading: 'You were mentioned',
       intro: `<strong>${who}</strong> mentioned you in a comment on <strong>${liveDoc}</strong>:`,
       outro: `“${escapeHtml(mentionQuote(commentText))}”`,
-      ctaText: 'Open the document',
+      ctaText: 'Open the canvas',
       ctaHref: docHref,
       footer: manageNotificationsFooter(
         env,
@@ -282,21 +282,21 @@ export function commentNotificationEmail(
   const whoText =
     commenterName && commenterName.trim() ? escapeText(commenterName.trim()) : 'Someone';
   const nameText =
-    documentName && documentName.trim() ? escapeText(documentName.trim()) : 'your document';
+    documentName && documentName.trim() ? escapeText(documentName.trim()) : 'your canvas';
   const who = commenterName && commenterName.trim() ? escapeHtml(commenterName.trim()) : 'Someone';
   const name =
-    documentName && documentName.trim() ? escapeHtml(documentName.trim()) : 'your document';
+    documentName && documentName.trim() ? escapeHtml(documentName.trim()) : 'your canvas';
   return {
     kind: 'CommentNotification',
     subject: `${whoText} commented on ${nameText}${ai ? ' (Generated by AI)' : ''}`,
     html: shell(env, {
-      heading: 'New comment on your document',
-      intro: `<strong>${who}</strong> left a comment on <strong>${name}</strong>. ${ai ? 'The comment is marked <strong>Generated by AI</strong>: an AI assistant wrote it with their access. ' : ''}Open the document to read it and reply.`,
-      ctaText: 'Open the document',
+      heading: 'New comment on your canvas',
+      intro: `<strong>${who}</strong> left a comment on <strong>${name}</strong>. ${ai ? 'The comment is marked <strong>Generated by AI</strong>: an AI assistant wrote it with their access. ' : ''}Open the canvas to read it and reply.`,
+      ctaText: 'Open the canvas',
       ctaHref: `${base}/document/${encodeURIComponent(documentId)}`,
       footer: manageNotificationsFooter(
         env,
-        'You’re receiving this because someone commented on a document you own.',
+        'You’re receiving this because someone commented on a canvas you own.',
       ),
     }),
     unsubscribeUrl: profilePath(env),
@@ -309,10 +309,10 @@ export function milestoneEmail(env: Env, count: number): RenderedEmail {
   const base = appBaseUrl(env);
   return {
     kind: 'Milestone',
-    subject: `You’ve made ${count} documents on livediagram`,
+    subject: `You’ve made ${count} canvases on livediagram`,
     html: shell(env, {
-      heading: `That’s ${count} documents`,
-      intro: `Nice work, you’ve created <strong>${count}</strong> documents on livediagram. Thanks for building with us.`,
+      heading: `That’s ${count} canvases`,
+      intro: `Nice work, you’ve created <strong>${count}</strong> canvases on livediagram. Thanks for building with us.`,
       outro: 'Here’s to the next one.',
       ctaText: 'Open your Explorer',
       ctaHref: `${base}/explorer`,
@@ -331,12 +331,12 @@ export function firstShareEmail(env: Env): RenderedEmail {
   const base = appBaseUrl(env);
   return {
     kind: 'FirstShare',
-    subject: 'You shared your first document',
+    subject: 'You shared your first canvas',
     html: shell(env, {
-      heading: 'Your first shared document',
+      heading: 'Your first shared canvas',
       preheader: 'Anyone with the link can open it now, and you stay in control.',
       intro:
-        'Nice work, you just shared a document for the first time. Anyone with the link can open it, and you stay in control:',
+        'Nice work, you just shared a canvas for the first time. Anyone with the link can open it, and you stay in control:',
       points: [
         'Hand out a <strong>view-only</strong> or an <strong>editor</strong> link, whichever fits.',
         'Set a link to <strong>expire</strong> after a week, a month, or six months.',
