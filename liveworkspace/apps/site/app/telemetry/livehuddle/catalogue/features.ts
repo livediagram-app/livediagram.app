@@ -316,6 +316,15 @@ export const SITS = chart(
   { types: ['Sit'] },
 );
 
+// The 3D view (livehuddle docs/specs/008-canvas/3d-view.md "Telemetry"): turned on from the 3D View switch or Shift+3.
+export const SPACE_3D_VIEW = chart(
+  'Canvas',
+  'Used',
+  '3D View',
+  'The 3D view turned on while walking: the Space tilted back with its walls standing up.',
+  { types: ['Space3DView'] },
+);
+
 export const IN_THE_SPACE: MetricStack = {
   stack: true,
   title: 'In the Space',
@@ -327,6 +336,7 @@ export const IN_THE_SPACE: MetricStack = {
     AVATAR_ACTIONS,
     AVATAR_REACTIONS,
     SITS,
+    SPACE_3D_VIEW,
     OFFICE_DRINKS,
     WORKDAY_PIECES_USED,
     PING_PONG_GAMES,

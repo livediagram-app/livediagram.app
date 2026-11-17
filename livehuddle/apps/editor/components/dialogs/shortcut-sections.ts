@@ -86,6 +86,7 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
       { keys: ['←', '↑', '→', '↓'], label: 'Walk' },
       { keys: ['Space'], label: 'Hop and wave a flag' },
       { keys: ['Enter'], label: 'Send a message' },
+      { keys: ['⇧', '3'], label: '3D View on or off' },
       ...AVATAR_REACTIONS.map((r) => ({ keys: [AVATAR_BEHAVIOUR_KEYS[r.id]], label: r.label })),
       ...REACTIONS.map((r) => ({ keys: [AVATAR_BURST_KEYS[r]], label: REACTION_LABEL[r] })),
     ],
