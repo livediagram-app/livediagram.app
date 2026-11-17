@@ -81,14 +81,19 @@ async function getToken(opts?: { skipCache?: boolean }): Promise<string | null> 
   return (await refresh())?.accessToken ?? null;
 }
 
+// What this browser kept for the account: its recent items and the last seen copies a warm open paints. None
+// outlives the session here (offline-mode.md "Cleared on sign-out"). Neither forget ever rejects.
+async function forgetAccount(): Promise<void> {
+  await Promise.all([forgetRecentDiagrams(), lastSeenCopies.forgetAll()]);
+}
+
 // Ends the session here and, with it, the liveworkspace one and every app's in this browser
 // (liveworkspace/docs/specs/003-accounts/accounts.md "Signing out"). Resolves the accounts site's hop, coming
 // back to `returnTo`, or null when there is none to take.
 async function endSession(returnTo = '/'): Promise<string | null> {
   current = null;
   setOwnPicture(null);
-  // The last seen copies are this account's: none outlives the session in this browser.
-  await Promise.all([forgetRecentDiagrams(), lastSeenCopies.forgetAll()]);
+  await forgetAccount();
   return (await askSignOut(returnTo, { apiBase: API_BASE })).next;
 }
 
@@ -157,8 +162,12 @@ async function initialSession(onUnreachable: () => void): Promise<Session | null
   // accounts.md "A hint that outlived its session"). Only here, on the page's first answer: a session ending under
   // an open page never reloads it. When it goes, the page is leaving: it settles nothing, so no guest hand-off or other
   // navigation cuts the bounce short (Work Tracker 1007).
-  if (!session && retrySilentSignIn()) return new Promise<never>(() => {});
-  return session;
+  if (session) return session;
+  // The sign-out elsewhere could not reach this browser's storage: what it kept for that account goes now, before
+  // the page asks again or settles, so no copy of a signed-out account waits here to be read (Work Tracker 955).
+  await forgetAccount();
+  if (retrySilentSignIn()) return new Promise<never>(() => {});
+  return null;
 }
 
 export function AccountsBridge({ onState }: { onState: (state: DeferredAuthState) => void }) {

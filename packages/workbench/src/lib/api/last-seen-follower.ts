@@ -29,7 +29,6 @@ type Copies<Item> = {
   remember: (copy: LastSeenInput<Item, unknown>) => Promise<void>;
   read: (reader: string, itemId: string) => Promise<LastSeenCopy<Item, unknown> | null>;
   readVia: (reader: string, code: string) => Promise<LastSeenCopy<Item, unknown> | null>;
-  lastReader: () => Promise<string | null>;
   forget: (reader: string, itemId: string) => Promise<void>;
   forgetVia: (reader: string, code: string) => Promise<void>;
   forgetAll: () => Promise<void>;
@@ -160,7 +159,6 @@ export function createLastSeenFollower<Item extends LastSeenItem>(
     },
     read: (reader: string, itemId: string) => copies.read(reader, itemId),
     readVia: (reader: string, code: string) => copies.readVia(reader, code),
-    lastReader: () => copies.lastReader(),
     /** The reader lost the item: its copy goes, and stops being followed. */
     async forget(reader: string, itemId: string): Promise<void> {
       if (isCurrent(reader, itemId)) {

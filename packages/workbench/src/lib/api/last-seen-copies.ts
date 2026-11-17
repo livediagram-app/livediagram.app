@@ -175,16 +175,6 @@ export function createLastSeenCopies<Item, Tab>(
       };
     },
 
-    /** Whose copies the store holds: the reader of the newest seen copy, or null with none. Prune leaves one reader's
-     *  copies at most, so this is the reader the last load ran as (the warm open's expected account). */
-    async lastReader(): Promise<string | null> {
-      let newest: { reader: string; seenAt: number } | null = null;
-      for (const entry of await store.entries()) {
-        if (newest === null || entry.seenAt > newest.seenAt) newest = entry;
-      }
-      return newest?.reader ?? null;
-    },
-
     /** The reader's newest copy kept by the share code `code`, or null: a link's own address (`/<route>/shared?s=`)
      *  names no item, so the code finds it. The copy is read as `read` reads it, so it is checked the same way. */
     async readVia(reader: string, code: string): Promise<LastSeenCopy<Item, Tab> | null> {

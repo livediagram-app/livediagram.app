@@ -1,7 +1,8 @@
 // The warm open of a cloud item (each product's docs/specs/006-*/offline-mode.md "Warm open of a cloud document",
-// livediagram's blueprints/last-seen-copy.md "Warm open"): before auth settles, the editor's bootstrap asks
-// readWarmCopy for the last seen copy of the item its address names, for the reader this browser expects, and paints
-// it read-only while the ordinary load catches up. Nothing here throws or holds the load: every answer it cannot
+// livediagram's blueprints/last-seen-copy.md "Warm open"): the editor's bootstrap asks readWarmCopy for the last seen
+// copy of the item its address names, for the reader this browser expects, and paints it read-only while the ordinary
+// load catches up. A guest's read goes before auth settles; a signed-in one waits for the session's first token answer,
+// since the signed-in hint says whether, never who. Nothing here throws or holds the load: every answer it cannot
 // give is null, and the editor opens as it always did.
 import type { LastSeenCopy, LastSeenFirstTab } from './api/last-seen-copies';
 import { firstTabToLoad } from './tab-scope';
@@ -10,16 +11,17 @@ import { firstTabToLoad } from './tab-scope';
 export type WarmOpenCopies<Item> = {
   read: (reader: string, itemId: string) => Promise<LastSeenCopy<Item, unknown> | null>;
   readVia: (reader: string, code: string) => Promise<LastSeenCopy<Item, unknown> | null>;
-  lastReader: () => Promise<string | null>;
 };
 
 /** What the address says: the item it names, the share code it carries, and its fragment (`#t=<tab>`). */
 export type WarmOpenAddress = { itemId: string | null; shareCode: string | null; hash: string };
 
-/** Who this browser expects to be reading: whether the signed-in hint says so, and the guest token's id. */
-export type WarmOpenWho = { signedIn: boolean; guestId: string | null };
+/** Who is reading, as far as the open knows when it reads: signed out by the hint, the guest token's id; signed in,
+ *  the account the session's first token answer named (null when it named none). */
+export type WarmOpenWho =
+  { signedIn: false; guestId: string | null } | { signedIn: true; accountId: string | null };
 
-// An account's id: the guest's is `guest_…`, and the store holds one reader's copies at most.
+// An account's id: the guest's is `guest_…`.
 const ACCOUNT_PREFIX = 'user_';
 
 /** The tab a `#t=<id>` fragment names, as the seed reads it, or null. */
@@ -28,15 +30,12 @@ export function hashTabId(hash: string): string | null {
   return match ? match[1]! : null;
 }
 
-/** The reader whose copy may paint: the guest token's id, or, signed in, the account the store holds copies for. A
- *  signed-in browser whose store holds a guest's copies, or none, has no reader to expect. */
-export async function expectedReader(
-  copies: Pick<WarmOpenCopies<unknown>, 'lastReader'>,
-  who: WarmOpenWho,
-): Promise<string | null> {
+/** The reader whose copy may paint: the guest token's id, or, signed in, the account the session named. A signed-in
+ *  read never takes a guest's id, so a guest's copies never paint for an account. */
+export function expectedReader(who: WarmOpenWho): string | null {
   if (!who.signedIn) return who.guestId;
-  const last = await copies.lastReader();
-  return last !== null && last.startsWith(ACCOUNT_PREFIX) ? last : null;
+  const { accountId } = who;
+  return accountId !== null && accountId.startsWith(ACCOUNT_PREFIX) ? accountId : null;
 }
 
 /** The copy the warm open paints, or null: none for this reader, another way in (a different share code, or none
@@ -51,7 +50,7 @@ export async function readWarmCopy<Item extends { tabs: readonly { id: string }[
   const { itemId, shareCode, hash } = address;
   if (!itemId && !shareCode) return null;
   try {
-    const reader = await expectedReader(copies, who);
+    const reader = expectedReader(who);
     if (!reader) return null;
     const named = itemId ? await copies.read(reader, itemId) : null;
     const copy = named ?? (shareCode ? await copies.readVia(reader, shareCode) : null);
