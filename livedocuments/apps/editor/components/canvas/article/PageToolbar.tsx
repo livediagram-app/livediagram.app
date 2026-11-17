@@ -57,6 +57,7 @@ import {
 } from '@/lib/article/article-commands';
 import { articleSchema } from '@/lib/article/article-schema';
 import { articleCountsOf } from '@/lib/article/article-word-count';
+import { selectNextLongSentence } from '@/lib/article/article-long-sentences';
 import { track } from '@/lib/telemetry';
 import { ARTICLE_BLOCK_INSERT_EVENT } from '@/lib/article/article-telemetry';
 import { insertFootnote } from '@/lib/article/article-footnotes';
@@ -538,6 +539,11 @@ export function PageToolbar({
             // Read only while the menu is open, from the writing as typed: never on the typing path.
             counts={articleCountsOf(handle.state())}
             onAction={(a) => choose(() => more(a))}
+            // The next long sentence selected, the menu shut and the writing in focus, so it can be split.
+            onNextLong={() => {
+              if (handle.run(selectNextLongSentence)) track('UI', 'Used', 'LongSentenceSelected');
+              close();
+            }}
           />
         </ToolbarPopover>
       ) : null}

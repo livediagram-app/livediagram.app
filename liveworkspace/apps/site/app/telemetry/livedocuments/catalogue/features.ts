@@ -166,6 +166,16 @@ export const FLASHCARD_FLIPS = chart(
   { types: ['FlashcardFlip'], rising: 'neutral' },
 );
 
+// The Word Count line picked to select the article's next long sentence (docs/specs/007-editor/article-pages.md
+// "Word Count").
+export const LONG_SENTENCES = chart(
+  'UI',
+  'Used',
+  'Long Sentences Selected',
+  "The Word Count line in an article's More Formatting picked to select the next sentence over 30 words, to split it.",
+  { types: ['LongSentenceSelected'], rising: 'neutral' },
+);
+
 // A stack's Previous or Next pressed under its page in front (docs/specs/007-editor/flashcards.md "Getting around a
 // stack").
 export const STACK_NAV = chart(
@@ -296,6 +306,7 @@ export const PAGE_WORK: MetricStack = {
     PRINTS,
     ARTICLE_INSERTS,
     ARTICLE_FORMATTING,
+    LONG_SENTENCES,
     ARTICLE_SUGGEST_MODE,
     ARTICLE_LOOKS,
   ],
