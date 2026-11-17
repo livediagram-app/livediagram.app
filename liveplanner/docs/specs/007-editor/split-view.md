@@ -92,7 +92,10 @@ reads **Close Side by Side**.
   does a Sheet beside a Board, Dashboard or Form tab. Until the sheets are read the Sheet draws its frame and
   headers. A stored [tab window](../009-elements/tab-window.md) on it is its frame named for its tab. On
   opening it is fitted to the pane (never enlarged past 125%) and stays fitted as the tab grows until
-  the person moves it.
+  the person moves it. When the editor moves to the other pane it hands its view to the tab it leaves, so the
+  drawing holds still; but when something covered that tab's canvas (a Sheet, a board filling its tab, a
+  maximised board, a Dashboard or Form page), the canvas view behind it was never on screen, so the pane opens
+  fitted instead.
 - **Moving around:** scroll pans; Ctrl or Cmd + scroll (and a trackpad pinch) zooms about the
   pointer (5% to 400%).
 - **Chrome:** a chip at the top left names the tab with its mode icon and a **Live** badge. No
