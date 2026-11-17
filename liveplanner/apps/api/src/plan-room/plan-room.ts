@@ -253,6 +253,8 @@ export class PlanRoom extends DurableObject<Env> {
   maintenanceAt: number | null = null;
   // When the plan's Community post next asks where it stands (null: no post).
   communityAt: number | null = null;
+  // When the next removed picture's grace is over (image-release.ts; null: none waits).
+  releaseAt: number | null = null;
 
   // The tab write queue (blueprint SR2): a Participant's writes, ONE AT A TIME per project. A Durable Object
   // only serialises the synchronous parts of its handlers: while one write is awaiting storage, the runtime happily

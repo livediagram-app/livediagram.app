@@ -975,8 +975,8 @@ Budget * 100`), and a Rollup or a Lookup may read a Formula on the cards it read
     offers no upload.
   - **Who may change it**: an Editor and a Participant (who edit cards) add, replace, remove and reorder pictures; a
     Viewer sees the pictures and opens them, with no Add, Replace, Remove or dragging. Removing a picture (or the
-    last of a Several Images field's, which clears it) is one undo step, as any field; the image stays in its
-    uploader's gallery.
+    last of a Several Images field's, which clears it) is one undo step, as any field; the image leaves storage 15
+    minutes later when nothing else uses it ([items.md](items.md#removed-pictures) "Removed pictures").
   - **On the card face**: where the type's Display places it, a small thumbnail (20 px tall, rounded) before the
     field's name, named "{Field}: image" for assistive technology; a Several Images field draws its first picture
     the same way and, when it holds more, a small count after it ("+4"), named "{Field}: 5 images". With no value it

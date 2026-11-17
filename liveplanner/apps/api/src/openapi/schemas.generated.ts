@@ -2538,6 +2538,69 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "AutomationRuleSummary": {
+    "additionalProperties": false,
+    "properties": {
+      "conditions": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "id": {
+        "type": "string"
+      },
+      "made": {
+        "additionalProperties": false,
+        "properties": {
+          "at": {
+            "type": "number"
+          },
+          "by": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "by",
+          "at"
+        ],
+        "type": "object"
+      },
+      "name": {
+        "type": "string"
+      },
+      "on": {
+        "type": "boolean"
+      },
+      "paused": {
+        "type": "boolean"
+      },
+      "picks": {
+        "type": "boolean"
+      },
+      "steps": {
+        "items": {
+          "$ref": "#/components/schemas/AutomationSummaryStep"
+        },
+        "type": "array"
+      },
+      "trigger": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "on",
+      "paused",
+      "trigger",
+      "picks",
+      "conditions",
+      "steps",
+      "made"
+    ],
+    "type": "object"
+  },
   "AutomationRun": {
     "additionalProperties": false,
     "properties": {
@@ -2885,6 +2948,130 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "object"
       }
     ]
+  },
+  "AutomationSummaryLine": {
+    "additionalProperties": false,
+    "description": "One action as a reader sees it: its kind (for its icon; an outgoing action's `via` too) and its words.",
+    "properties": {
+      "kind": {
+        "enum": [
+          "move",
+          "set_field",
+          "clear_field",
+          "assign",
+          "add_label",
+          "remove_label",
+          "comment",
+          "flag",
+          "unflag",
+          "archive",
+          "create_card",
+          "email",
+          "set_type",
+          "set_colour",
+          "restore",
+          "copy_card",
+          "add_checklist",
+          "link_card",
+          "mention",
+          "resolve_threads",
+          "notify",
+          "if",
+          "for",
+          "ai",
+          "wait"
+        ],
+        "type": "string"
+      },
+      "via": {
+        "$ref": "#/components/schemas/AutomationVia"
+      },
+      "words": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "kind",
+      "words"
+    ],
+    "type": "object"
+  },
+  "AutomationSummaryResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "rule": {
+        "$ref": "#/components/schemas/AutomationRuleSummary"
+      }
+    },
+    "required": [
+      "rule"
+    ],
+    "type": "object"
+  },
+  "AutomationSummaryStep": {
+    "additionalProperties": false,
+    "description": "One step: its line, and an If / Else's or a For Related Cards' own conditions and steps.",
+    "properties": {
+      "conditions": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "else": {
+        "items": {
+          "$ref": "#/components/schemas/AutomationSummaryLine"
+        },
+        "type": "array"
+      },
+      "kind": {
+        "enum": [
+          "move",
+          "set_field",
+          "clear_field",
+          "assign",
+          "add_label",
+          "remove_label",
+          "comment",
+          "flag",
+          "unflag",
+          "archive",
+          "create_card",
+          "email",
+          "set_type",
+          "set_colour",
+          "restore",
+          "copy_card",
+          "add_checklist",
+          "link_card",
+          "mention",
+          "resolve_threads",
+          "notify",
+          "if",
+          "for",
+          "ai",
+          "wait"
+        ],
+        "type": "string"
+      },
+      "then": {
+        "items": {
+          "$ref": "#/components/schemas/AutomationSummaryLine"
+        },
+        "type": "array"
+      },
+      "via": {
+        "$ref": "#/components/schemas/AutomationVia"
+      },
+      "words": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "kind",
+      "words"
+    ],
+    "type": "object"
   },
   "AutomationTestRequest": {
     "additionalProperties": false,
@@ -3372,6 +3559,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "object"
       }
     ]
+  },
+  "AutomationVia": {
+    "enum": [
+      "webhook",
+      "slack",
+      "teams"
+    ],
+    "type": "string"
   },
   "AutomationWait": {
     "additionalProperties": false,

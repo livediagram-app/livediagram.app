@@ -14,6 +14,7 @@ import {
   type AutomationRunsQuery,
   type AutomationRunsResponse,
   type AutomationSecretResponse,
+  type AutomationSummaryResponse,
   type AutomationsListResponse,
 } from '@liveplanner/api-schema';
 import { API_BASE, apiFetch, apiHeaders, expectOk, expectOkVoid } from '@/lib/api/core';
@@ -144,3 +145,16 @@ export const makeHookSecret = (scope: AutomationsScope, id: string) =>
   call<AutomationSecretResponse>(scope, `/${enc(id)}/secret`, 'automation secret', {
     method: 'POST',
   });
+
+/** A rule as a reader sees it (spec "On cards"): by its id (a comment's mark) or its name (a history line's), on a tab
+ *  link with its tab. A rule gone throws AutomationRefusal `automation_not_found`. */
+export function readRuleSummary(
+  scope: AutomationsScope & { tabId: string | null },
+  ask: { ruleId?: string | undefined; name: string },
+): Promise<AutomationSummaryResponse> {
+  const query = new URLSearchParams(ask.ruleId ? { rule: ask.ruleId } : { name: ask.name });
+  if (scope.tabId) query.set('tabId', scope.tabId);
+  return call<AutomationSummaryResponse>(scope, '/summary', 'Read rule summary', {
+    query: `?${query.toString()}`,
+  });
+}

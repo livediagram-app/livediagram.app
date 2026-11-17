@@ -153,8 +153,9 @@ liveworkspace's media service, as [Image fields](item-types.md#image-fields) are
   holds **Open**, **Download** (saves it under its name), **Set as Cover** (or **Remove Cover** on the cover) and
   **Remove**. A Viewer, and a link visitor who only reads, sees the rows and opens and downloads them; the menu
   then holds only Open and Download.
-- **Removing** takes the picture off the card (one undo step, as any field change); its bytes stay in the
-  uploader's gallery, which the Explorer's Image Gallery lists, until the media service's sweep (below).
+- **Removing** takes the picture off the card (one undo step, as any field change). When nothing else uses it, it
+  leaves storage, and the uploader's Image Gallery, 15 minutes later ("Removed pictures", below); an undo within
+  those 15 minutes brings it back whole.
 - **The cover**: **Set as Cover** makes that picture the card's cover (the one before stops being it). On a
   Detailed card whose type's Display holds **Cover Image** ([Card display](item-types.md#card-display)), the cover
   is drawn across the top of the card, edge to edge, 120 px tall and cropped to fill. Removing the cover's picture
@@ -171,9 +172,9 @@ liveworkspace's media service, as [Image fields](item-types.md#image-fields) are
   the plan never held does, so it shows nothing about cards the link can't reach. The same picture on a card the tab
   shows and on one it doesn't is served, since the visitor already sees it.
 - **The Trash and deleting for good**: a trashed card keeps its pictures (Restore brings them back as they were). A
-  card deleted for good, or a plan purged, no longer places them: the plan reports the pictures its cards hold to
-  the media service ("Images in use", below), and the service's daily sweep deletes a picture nothing in any
-  app has placed for 30 days.
+  card deleted for good no longer places them, and they leave storage as a removed picture does ("Removed
+  pictures", below). A plan purged reports that it places none ("Images in use", below), and the service's daily
+  sweep deletes a picture nothing in any app has placed for 30 days.
 - **Copies**: duplicating a card, or a whole plan, carries the attachment ids: no bytes are copied. In the same
   plan the copy shows them to everyone; a copied plan carries the source's grants for them too, so it shows them
   to its readers as the original does, and reports them in use under its own id (as an Image field's,
@@ -212,6 +213,37 @@ The sweep can never take a picture a plan still holds, whether or not that plan 
   Browser plan (an Image field there, which uploads with no `p`), is never swept.
 - **Past the cap.** A plan holding more pictures than one report carries (500) sends nothing and logs it, so no
   reference is dropped; it reports again once back under.
+
+### Removed pictures
+
+A picture taken off a card leaves storage once nothing else uses it, rather than waiting for the media service's
+sweep (owner, 2026-11-15, Work Tracker 1044). It holds for every way a card changes: the editor (Remove, Replace, a
+cleared Image field, one picture taken out of a Several Images field or Attachments), a rule's **Clear Field**
+([automations.md](automations.md#actions)), an agent's write through the MCP or the CLI, an import, a revert and a
+card deleted for good.
+
+- **Noted with the write.** The plan's own triggers on its cards note each picture a write took off (an Attachments
+  entry, or an Image field value the plan holds a grant for), in the write's own transaction, so no path can skip
+  them. A picture taken off, put back and taken off again starts its wait afresh.
+- **A 15-minute grace.** Each waits 15 minutes from the plan's next report of its pictures ("Images in use"), in a
+  list the plan keeps in its own storage and its alarm works through, so the wait survives the plan's object
+  restarting. An undo or a re-add within it puts the id back on a card, and the picture stays. An undo after it
+  brings back a card whose picture is gone (it shows "This image can't be shown", with Replace and Remove).
+- **Never while anything here still names it.** Once the wait is over the plan drops any picture still named by one
+  of its cards (the Trash included, since Restore needs it), a tab, an agent's change it could still revert, or a
+  snapshot it could still revert to. It asks the media service to release the rest
+  (the release route, with the plan's id, [media.md](../../../../liveworkspace/docs/specs/006-media/media.md)
+  "Releases"). The service deletes a picture only when it was uploaded for this plan and no reference in any app names
+  it, its own included, so a copied plan, or another app's file that places it, keeps it.
+- **Nothing lands mid-release.** The plan checks a picture and asks the service with its doors shut: a write that
+  puts the picture back on a card waits until the answer is in (at most 5 seconds; a slower answer counts as a
+  failure, and the plan asks nothing more until its next wake), so the service never deletes a picture a card holds
+  again.
+- **Kept is final, failures retry.** An answer either way ends the wait; a release the service can't answer tries
+  again a minute later, doubling to an hour, and gives up after 12 tries. The daily sweep stays the backstop for
+  anything kept. At most 20 releases are asked a wake.
+- **This Browser plans** release nothing: the server holds no record of them, and their pictures were uploaded for
+  no plan.
 
 ## Item types
 
