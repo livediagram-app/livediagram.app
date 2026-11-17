@@ -57,7 +57,7 @@ unmarked: an agent fills a template with real content.
 `TemplateExampleTray` (`packages/workbench/src/components/chrome/PaletteTray.tsx`, beside the palette tray it hangs
 as) draws a standing palette tray: the sparkles glyph, "Example content shows how this works.", **Clear Example
 Content** (the brand-toned `PaletteTrayAction`) and **Keep It**. It steps aside while a mode's message takes the
-slot (`data-yields-to-mode`). Without a strip (the floating palette, Draw's dock) it is the same card at the top centre.
+slot (`data-yields-to-mode`). Without a strip (the floating palette, Draw's dock) it is the same card at the top centre, placed clear of Draw's dock (`pillPlace`, shared with StartAgainTray).
 Below `sm` the sentence is screen-reader only, so the two actions fit the strip's width.
 
 Each editor mounts it from `components/start/ExampleContentTray.tsx` (inside `EditorStartPanels`), shown when the

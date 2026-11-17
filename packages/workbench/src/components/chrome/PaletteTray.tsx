@@ -12,6 +12,7 @@ import { lucideGlyph } from '@liveworkspace/ui';
 import { lucideSparkles } from '@liveworkspace/icons/lucide';
 import { EDITOR_VIEWPORT_ATTR } from '../../lib/editor-viewport';
 import { watchMove } from '../../lib/watch-move';
+import { useViewportHeight } from '../../hooks/ui/useViewportHeight';
 
 // The strip's card: the Palette in the Toolbar layout (ToolbarPalette's `data-tour-id="palette"` card).
 const STRIP_CARD = '[data-toolbar-palette] [data-tour-id="palette"]';
@@ -35,6 +36,21 @@ export function traySlot(box: StripBox, viewportWidth: number): { left: number; 
   if (width === box.width) return { left: box.left, width };
   const centred = box.left + box.width / 2 - width / 2;
   return { left: Math.max(8, Math.min(centred, viewportWidth - 8 - width)), width };
+}
+
+// A top-centre pill's room from the dock it stands clear of, px.
+const DOCK_GAP = 10;
+
+/** Where a top-centre pill goes without a strip: under a dock (livediagram's Draw dock) in the top half of the
+ *  screen, over one in the bottom half, and with no dock, below the top chrome. */
+export function pillPlace(
+  dock: { top: number; bottom: number } | null,
+  viewportHeight: number,
+): { top: number } | { bottom: number } {
+  if (!dock) return { top: 80 };
+  return dock.top < viewportHeight / 2
+    ? { top: dock.bottom + DOCK_GAP }
+    : { bottom: viewportHeight - dock.top + DOCK_GAP };
 }
 
 export type StripBox = { left: number; width: number; bottom: number; top: number };
@@ -250,6 +266,9 @@ export function TemplateExampleTray({
   onKeep: () => void;
 }) {
   const strip = usePaletteStripBox();
+  // Without a strip, Draw's dock: the pill stands just clear of it rather than over its tools.
+  const dock = useToolbarBox('[data-whiteboard-dock]', !strip);
+  const viewportHeight = useViewportHeight();
   const lead = <SparklesGlyph />;
   const end = (
     <>
@@ -268,7 +287,8 @@ export function TemplateExampleTray({
   return (
     <div
       data-template-example-pill=""
-      className="pointer-events-none fixed inset-x-0 top-20 z-[var(--z-chrome)] flex justify-center px-4 [body[data-explorer-open]_&]:hidden"
+      className="pointer-events-none fixed inset-x-0 z-[var(--z-chrome)] flex justify-center px-4 [body[data-explorer-open]_&]:hidden"
+      style={pillPlace(dock, viewportHeight)}
     >
       <PaletteTrayCard lead={lead} end={end} standing>
         {message}

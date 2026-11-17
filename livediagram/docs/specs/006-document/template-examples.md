@@ -40,7 +40,7 @@ The tray appears as soon as the template lands, and stays while any untouched ex
 used later in the session or on another day. It belongs to the tab: each tab of a document answers for its own.
 
 It is a standing message: it steps aside while a mode's message (an armed tool's Cancel) takes its place, and without
-the strip (the floating palette, Draw's dock) it stands at the top centre. On a phone the buttons alone show.
+the strip (the floating palette, Draw's dock) it stands at the top centre, just clear of Draw's dock. On a phone the buttons alone show.
 
 It sends `Template · Changed · ExampleCleared` or `Template · Changed · ExampleKept`, charted as Template Examples in
 the telemetry site's Features › Look & Feel stack. The help centre's Templates article explains both buttons

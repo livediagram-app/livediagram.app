@@ -4,6 +4,7 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import {
   PALETTE_TRAY_MIN_WIDTH_PX,
   PaletteTray,
+  pillPlace,
   TemplateExampleTray,
   traySlot,
   usePaletteStripBox,
@@ -276,5 +277,23 @@ describe('the template example tray', () => {
     const { container } = render(<TemplateExampleTray onClear={() => {}} onKeep={() => {}} />);
     expect(container.querySelector('[data-template-example-pill]')).not.toBeNull();
     expect(screen.getByRole('button', { name: 'Clear Example Content' })).toBeTruthy();
+  });
+
+  it("stands clear of Draw's dock rather than over its tools", () => {
+    const dock = document.createElement('div');
+    dock.setAttribute('data-whiteboard-dock', '');
+    vi.spyOn(dock, 'getBoundingClientRect').mockReturnValue(new DOMRect(300, 50, 600, 60));
+    document.body.append(dock);
+    const { container } = render(<TemplateExampleTray onClear={() => {}} onKeep={() => {}} />);
+    const pill = container.querySelector<HTMLElement>('[data-template-example-pill]')!;
+    expect(pill.style.top).toBe('120px');
+  });
+});
+
+describe('pillPlace', () => {
+  it('goes under a top dock, over a bottom one, and below the top chrome without one', () => {
+    expect(pillPlace({ top: 12, bottom: 60 }, 900)).toEqual({ top: 70 });
+    expect(pillPlace({ top: 830, bottom: 880 }, 900)).toEqual({ bottom: 80 });
+    expect(pillPlace(null, 900)).toEqual({ top: 80 });
   });
 });
