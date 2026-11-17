@@ -17,10 +17,11 @@ const hit = vi.hoisted(() => (id: string) => {
   chromeRenders[id] = (chromeRenders[id] ?? 0) + 1;
 });
 
-vi.mock('@/components/chrome/EditorHeader', () => ({
-  EditorHeader: (p: { documentName: string }) => {
+// The header is the top-right corner card (experiment: no header bar).
+vi.mock('@liveworkspace/workbench/components/chrome/EditorCornerActions', () => ({
+  EditorCornerActions: () => {
     renders.header++;
-    return <h1>{p.documentName}</h1>;
+    return <h1>Corner</h1>;
   },
 }));
 vi.mock('@/components/chrome/TabBar', () => ({
@@ -249,12 +250,7 @@ function Page({ value, children }: { value: EditorContextValue; children?: React
   return (
     <EditorContext.Provider value={value}>
       <EditorChromeContext.Provider value={chrome}>
-        <EditorViewHeader
-          isOffline={false}
-          headerCommunity={false}
-          isMobileViewport={false}
-          landscapeShown
-        />
+        <EditorViewHeader isOffline={false} isMobileViewport={false} landscapeShown />
         <EditorViewFooter isOffline={false} landscapeShown onSelectTab={() => {}} />
         {HOSTS}
         <DocumentReader />
@@ -271,7 +267,7 @@ beforeEach(() => {
 describe('the chrome store', () => {
   it('renders no chrome on a typing commit, and the document readers once each', () => {
     const { rerender } = render(<Page value={base} />);
-    expect(screen.getByRole('heading').textContent).toBe('Talk');
+    expect(screen.getByRole('heading').textContent).toBe('Corner');
     for (const k of Object.keys(renders) as (keyof typeof renders)[]) renders[k] = 0;
     let value = base;
     for (let i = 0; i < 5; i++) {
@@ -285,8 +281,8 @@ describe('the chrome store', () => {
     const { rerender } = render(<Page value={base} />);
     for (const k of Object.keys(renders) as (keyof typeof renders)[]) renders[k] = 0;
     rerender(<Page value={{ ...typed(base), documentName: 'Renamed' }} />);
-    expect(screen.getByRole('heading').textContent).toBe('Renamed');
-    expect(renders.header).toBe(1);
+    // The corner card never reads the name: a rename leaves it be.
+    expect(renders.header).toBe(0);
     expect(renders.tabBar).toBe(0);
     expect(renders.hosts).toBe(0);
     // A tab renamed renders the tab bar.

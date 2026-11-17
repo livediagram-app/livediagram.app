@@ -11,6 +11,7 @@ import {
   type RenderAppLogo,
 } from '@liveworkspace/explorer';
 import { trackOrganise } from '@/lib/explorer-organise';
+import { track } from '@/lib/telemetry';
 import type { Item } from '@liveworkspace/index-client';
 import Link from 'next/link';
 import { BrandMark, ProductNavLinks } from '@livedesign/ui';
@@ -182,7 +183,15 @@ function ExplorerImpl({
           currentOffline={offline}
           // The open design stops saving before it goes, then the editor leaves for the Explorer and its Undo.
           onTrashCurrent={trashCurrent}
-          onRenameCurrent={onRenameCurrent}
+          // Renamed from the Explorer's current item, the editor's one rename since the header bar went (experiment).
+          onRenameCurrent={
+            onRenameCurrent
+              ? (name: string) => {
+                  track('Document', 'Renamed');
+                  onRenameCurrent(name);
+                }
+              : undefined
+          }
           onCreate={(placement) =>
             onNewDesign && !placement.folderId && !placement.teamId
               ? onNewDesign()

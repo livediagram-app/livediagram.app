@@ -22,7 +22,6 @@ import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { resolveOwnerBadge } from '@/lib/presence-rows';
 import { useEditorChrome, useEditorChromeStore } from './EditorContext';
 import { sameTabExcept } from './editor-chrome-equal';
-import type { documentIsPublic } from '@/lib/community-public';
 
 // The document in a full tab, by its link when the frame opened it by one.
 const workbenchDocumentHref = (documentId: string, shareCode: string | null) =>
@@ -37,7 +36,6 @@ const workbenchDocumentHref = (documentId: string, shareCode: string | null) =>
 // and limits"). Its handlers read the newest view-model when they run.
 export const EditorViewHeader = memo(function EditorViewHeader(view: {
   isOffline: boolean;
-  headerCommunity: ReturnType<typeof documentIsPublic>;
   isMobileViewport: boolean;
   landscapeShown: boolean;
 }) {

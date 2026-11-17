@@ -132,7 +132,7 @@ export function roleToolsItem(role: {
                   <Glyph
                     size={14}
                     units={16}
-                    className="shrink-0 text-brand-600 dark:text-brand-300"
+                    className="shrink-0 text-brand-700 dark:text-brand-300"
                   >
                     <path d="M3 8.5l3 3 7-7" />
                   </Glyph>

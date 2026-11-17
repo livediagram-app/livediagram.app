@@ -33,6 +33,7 @@ import { explorerCommunity } from '@/lib/explorer-community-host';
 import { useCommunityEnabled } from '@liveworkspace/community-ui';
 import { explorerInboxActions, explorerInboxHost } from '@/lib/explorer-inbox-host';
 import { trackOrganise } from '@/lib/explorer-organise';
+import { track } from '@/lib/telemetry';
 import { renderDocumentThumbnail } from '@/lib/explorer-thumbnail';
 import { trashOpenDocument } from '@/lib/document-delete-undo';
 import { cloudSyncHost } from '@/components/dialogs/settings/settings-panel-host';
@@ -184,7 +185,15 @@ function ExplorerImpl({
           currentOffline={offline}
           // The open document stops saving before it goes, then the editor leaves for the Explorer and its Undo.
           onTrashCurrent={trashCurrent}
-          onRenameCurrent={onRenameCurrent}
+          // Renamed from the Explorer's current item, the editor's one rename since the header bar went (experiment).
+          onRenameCurrent={
+            onRenameCurrent
+              ? (name: string) => {
+                  track('Document', 'Renamed');
+                  onRenameCurrent(name);
+                }
+              : undefined
+          }
           onCreate={(placement) =>
             onNewDocument && !placement.folderId && !placement.teamId
               ? onNewDocument()
