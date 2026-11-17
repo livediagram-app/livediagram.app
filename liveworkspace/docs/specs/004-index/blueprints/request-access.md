@@ -9,7 +9,7 @@ Work Tracker 1137 lands in three parts, each leaving main working; nothing a per
 
 | Part | Brings                                                                                                                                                                                                                                                                                      |
 | ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1    | This spec and blueprint; migration `0021_access_requests.sql`; the index's three routes, the Inbox's `accessRequests`, closing an account; `@liveworkspace/index-client`'s types, limits, client calls and notice parser; `@liveworkspace/index-app`'s notice door (202, handlers optional) |
+| 1    | This spec and blueprint; migration `0022_access_requests.sql`; the index's three routes, the Inbox's `accessRequests`, closing an account; `@liveworkspace/index-client`'s types, limits, client calls and notice parser; `@liveworkspace/index-app`'s notice door (202, handlers optional) |
 | 2    | The managers' side: the Explorer's Inbox row, reading pane and verbs (Share, its level menu, Decline) and badge count; each app's `accessRequested` and `accessGranted` handlers and their two emails                                                                                       |
 | 3    | The requester's side: Request Access (with its note, and Requested after) on the live embed's no-access card and on each app's Not Found screen; live-embeds.md's no-access row                                                                                                             |
 
@@ -17,7 +17,7 @@ Scope, by file:
 
 | File                                                           | Role                                                                                                          |
 | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `liveworkspace/apps/index/migrations/0021_access_requests.sql` | `access_requests`, `access_request_tries` and their indexes                                                   |
+| `liveworkspace/apps/index/migrations/0022_access_requests.sql` | `access_requests`, `access_request_tries` and their indexes                                                   |
 | `liveworkspace/apps/index/src/access-requests.ts`              | `handleAccessRequests`: ask (`POST /items/:id/access-requests`), grant, decline; `recordRequest` off the path |
 | `liveworkspace/apps/index/src/inbox.ts`                        | the fourth Inbox statement, `accessRequests`                                                                  |
 | `liveworkspace/apps/index/src/account-purge.ts`                | a closed account's requests and tries deleted                                                                 |
