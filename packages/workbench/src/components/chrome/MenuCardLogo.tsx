@@ -12,10 +12,13 @@ export function MenuCardLogo({
   logo,
   scale,
   card,
+  logoClassName = '',
 }: {
   logo: ReactNode;
   scale: number;
   card: ReactNode;
+  // More classes for the logo's card, as an app's menu card takes its own (liveplanner's header band blend).
+  logoClassName?: string;
 }) {
   return (
     <div
@@ -30,7 +33,7 @@ export function MenuCardLogo({
         data-floating-panel=""
         data-logo-card=""
         onPointerDown={(e) => e.stopPropagation()}
-        className="pointer-events-auto flex h-[46px] shrink-0 items-center rounded-xl border border-slate-200 bg-white px-2.5 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
+        className={`pointer-events-auto flex h-[46px] shrink-0 items-center rounded-xl border border-slate-200 bg-white px-2.5 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40 ${logoClassName}`}
       >
         {logo}
       </div>

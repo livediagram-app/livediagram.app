@@ -2,6 +2,7 @@
 @import '@liveplanner/tailwind-config';
 /* The shared Explorer's classes (@liveworkspace/explorer, liveworkspace/docs/specs/004-index/one-explorer.md). */
 @import '@liveworkspace/explorer/explorer.css';
+@import '@liveworkspace/workbench/styles/corner-actions.css';
 @import '@liveplanner/template-previews/preview-art-tile.css';
 @import '@liveplanner/template-previews/preview-motion.css';
 @import './collab-cards.css';
@@ -1106,4 +1107,13 @@ main:has(> [data-canvas-cover]) > [data-canvas-content] [data-selection-grips] {
    dropdowns portal to the page at the overlay layer, which is under a dialog; while it is open they sit above it. */
 :root[data-practice-sheet-open] body > [data-palette-dropdown-menu] {
   z-index: var(--z-popover);
+}
+
+/* Experiment (no header bar): on a maximised board's header band (CanvasCover's data-band-blend) the top-right corner
+ * card stands flush on the header, as the menu box does at its left (toolbar-surface BAND_FLUSH). The card sits outside
+ * the canvas, so it reads the band off the page. */
+:root:has([data-band-blend]) [data-corner-actions] {
+  background-color: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { Glyph, HoverCard } from '@liveworkspace/ui';
 import { CORNER_CARD_EVENT, STRIP_NAMED_EVENT, cornerCardCompact } from '../canvas/menu-join';
 import { AuthControls } from './AuthControls';
@@ -16,9 +16,9 @@ import { HeaderShareIcon } from './EditorHeader';
 // One button in the card: 36px tall like the menu card's, its glyph beside its name (the glyph alone on a phone).
 export const CORNER_BTN =
   'flex h-9 min-w-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg px-2.5 phone:px-0 [[data-compact]_&]:px-0 text-xs font-medium transition disabled:cursor-not-allowed disabled:opacity-50';
-const CORNER_TONE =
+export const CORNER_TONE =
   'text-slate-600 enabled:hover:bg-slate-100 enabled:hover:text-slate-900 dark:text-slate-200 dark:enabled:hover:bg-slate-800 dark:enabled:hover:text-white';
-const CORNER_ON =
+export const CORNER_ON =
   'bg-brand-700 text-white hover:bg-brand-800 dark:bg-brand-600 dark:hover:bg-brand-500';
 
 // A phone's row: 6px from the screen's side and between the cards (the strip row's gutter and gap-1.5).
@@ -34,6 +34,9 @@ export type EditorCornerActionsProps = {
   onOpenAccount?: () => void;
   // Make a Copy's hover card, in the app's own noun: "Duplicate this canvas into your own files."
   copyDescription: string;
+  // In Share's place, an app's own action drawn as one of this card's buttons (CORNER_BTN): liveplanner's Share Form
+  // while a form tab is open.
+  shareAction?: ReactNode;
 };
 
 export function EditorCornerActions({
@@ -45,6 +48,7 @@ export function EditorCornerActions({
   present,
   onOpenAccount,
   copyDescription,
+  shareAction,
 }: EditorCornerActionsProps) {
   // Drawn at the toolbar's UI scale (docs/specs/007-editor/ui-scale.md), as the palette strip and the menu card are,
   // so the three stand the same height in one row, still 12px from the corner.
@@ -161,7 +165,8 @@ export function EditorCornerActions({
             </button>
           </HoverCard>
         ) : null}
-        {showShare ? (
+        {shareAction ?? null}
+        {!shareAction && showShare ? (
           <HoverCard
             title={shareable ? 'Shared' : 'Share'}
             description={shareable ? 'Click to manage links.' : 'Invite collaborators with a link.'}

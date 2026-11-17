@@ -201,14 +201,12 @@ export function useEditorCollaboration(
   // this is presentation-side only.
   // The role pill's local read-only preview (docs/specs/007-editor/editor-app.md#role-pill).
   // A workbench session that ended leaves the editor read-only (the autosave stands down with it).
-  const { viewPreview, previewLevel, canToggleRole, toggleViewPreview, canEdit } = useViewPreview(
-    workbench?.ended ? 'view' : embedSessionRole(sessionRole, readOnlyEmbed),
-    () => {
+  const { viewPreview, previewLevel, canToggleRole, toggleViewPreview, setViewPreview, canEdit } =
+    useViewPreview(workbench?.ended ? 'view' : embedSessionRole(sessionRole, readOnlyEmbed), () => {
       setSelectedId(null);
       setMultiSelectedIds(new Set());
       setEditingId(null);
-    },
-  );
+    });
   const isReadOnly = !canEdit;
   // A Participant's adder key, what it may do, and the guard on its commits (docs/specs/013-workspace/share-roles.md).
   // `isReadOnly` stays true for a Participant: its content gestures open through `participant.can` alone.
@@ -297,6 +295,7 @@ export function useEditorCollaboration(
     sharePasswordGate,
     toast,
     toggleViewPreview,
+    setViewPreview,
     unresolveThread,
     userPreferences,
     viewPreview,
