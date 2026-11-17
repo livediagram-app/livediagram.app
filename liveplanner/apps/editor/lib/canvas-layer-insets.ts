@@ -180,7 +180,9 @@ export function phoneRow(
   if (menu.right <= left || menu.bottom <= top) return null;
   return {
     height: Math.round(menu.bottom - top),
-    left: Math.round(menu.right - left + BAND_GAP_PX),
+    // Experiment (no header bar): the name close after the menu (the menu card frameless on the element), as it reads in
+    // a desktop band.
+    left: Math.round(menu.right - left - 4),
   };
 }
 

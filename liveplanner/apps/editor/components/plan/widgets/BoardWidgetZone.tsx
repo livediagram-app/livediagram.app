@@ -1,5 +1,7 @@
 'use client';
 
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
+
 // A board header's widget zone (docs/specs/026-plan/board-widgets.md "Placing and arranging widgets"):
 // the board's widgets in order, one row that never scrolls: the widgets that do not fit go into More at its end
 // (ZoneMore), the Filter then holding the zone's start (zone-overflow.ts, Work Tracker 880). Someone who may edit drags a
@@ -95,7 +97,7 @@ function ZoneButton({
 
 export function BoardWidgetZone({
   widgets,
-  canEdit,
+  canEdit: canEditBoard,
   selected = false,
   offerAdd = false,
   palette,
@@ -122,6 +124,9 @@ export function BoardWidgetZone({
   fields?: readonly BoardField[] | undefined;
   suggest?: (() => WidgetSuggestion[]) | undefined;
 }) {
+  // Experiment (no header bar): on a phone the widgets show and work, without their + and Edit Widgets (no room, and
+  // arranging them is a wider screen's job).
+  const canEdit = canEditBoard && !useIsMobileViewport();
   const zone = useRef<HTMLDivElement>(null);
   // The row's list of widgets (a drag's landmarks).
   const list = useRef<HTMLDivElement>(null);
