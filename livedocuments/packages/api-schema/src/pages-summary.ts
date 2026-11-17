@@ -6,17 +6,19 @@
 import {
   articlesOf,
   articleTitleOf,
+  articleReadability,
   articleWordCount,
   estimateArticle,
   elementIdsOnPage,
   pagesOf,
   layOutPages,
   pageHasOrientation,
+  READING_LEVEL_LABEL,
   pageKindOf,
   type PageBackground,
   type Tab,
 } from '@livedocuments/document';
-import type { ArticleSummary, PageSummary } from './pages';
+import type { ArticleReadabilitySummary, ArticleSummary, PageSummary } from './pages';
 
 export type PagesTab = Pick<Tab, 'elements' | 'pages' | 'articles'> & { pageOrientation?: unknown };
 
@@ -74,16 +76,37 @@ export function articleSummaries(tab: PagesTab): ArticleSummary[] {
     if (p.flow && articles[p.flow] && !seen.includes(p.flow)) seen.push(p.flow);
   return seen.map((flow) => {
     const doc = articles[flow]!;
+    const words = articleWordCount(doc);
+    const r = articleReadability(doc, words);
     return {
       flow,
       title: articleTitleOf(doc),
       pages: pages.flatMap((p, i) => (p.flow === flow ? [i + 1] : [])),
       blocks: doc.blocks.length,
-      words: articleWordCount(doc),
+      words,
       // How many pages its writing reaches once laid out, estimated without a browser (the editor adds pages to
       // hold it, and drops those it leaves empty).
       estimatedPages: Math.max(1, estimateArticle(tab, flow, laid, '#000000').pagesUsed),
+      readability: {
+        readingMinutes: r.readingMinutes,
+        sentences: r.sentences,
+        wordsPerSentence: r.wordsPerSentence,
+        longSentences: r.longSentences,
+        ease: r.ease,
+        level: r.level ? READING_LEVEL_LABEL[r.level] : null,
+      },
       look: doc.style?.look ?? null,
     };
   });
+}
+
+/** How easily an article reads, in the pages view's words: "4 min read · Easy to read · 2 long sentences" (a part
+ *  with nothing to say left out); empty for no words. */
+export function readabilityWords(r: ArticleReadabilitySummary): string {
+  const parts: string[] = [];
+  if (r.readingMinutes > 0) parts.push(`${r.readingMinutes} min read`);
+  if (r.level) parts.push(r.level);
+  if (r.longSentences > 0)
+    parts.push(`${r.longSentences} long ${r.longSentences === 1 ? 'sentence' : 'sentences'}`);
+  return parts.join(' · ');
 }

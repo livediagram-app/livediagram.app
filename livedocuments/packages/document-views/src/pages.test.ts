@@ -87,7 +87,7 @@ describe('the pages view', () => {
       "Rectangles and elements' x, y are canvas coordinates (the layout view prints positions from the content's corner).",
     );
     expect(out.text).toContain(
-      'article art-1 "Brief" · pages 3-4 · 3 blocks · 4 words · look report',
+      'article art-1 "Brief" · pages 3-4 · 3 blocks · 4 words · 1 min read · Easy to read · look report',
     );
     expect(out.text).toContain('  ---\n  title: Brief\n  ---\n  \n  # Goals\n  \n  - Ship it');
     expect(out.text).toMatch(/layouts slide: slide-title, /);
@@ -131,7 +131,9 @@ describe('the pages view', () => {
       elements: [],
     } as unknown as Tab;
     const out = pagesOf(articleOnly);
-    expect(out.text).toContain('article f "Untitled" · page 1 · 1 blocks · 1 words\n  Hi');
+    expect(out.text).toContain(
+      'article f "Untitled" · page 1 · 1 blocks · 1 words · 1 min read\n  Hi',
+    );
     expect(out.text).not.toContain('layouts ');
   });
 

@@ -5,6 +5,7 @@
 import {
   articleSummaries,
   pageSummaries,
+  readabilityWords,
   type PagesView,
   type ViewDoor,
 } from '@livedocuments/api-schema';
@@ -144,8 +145,9 @@ export function pagesView(model: ViewModel, options: PagesOptions = {}): ViewRes
         ? `pages ${a.pages[0]}-${a.pages[a.pages.length - 1]}`
         : `page ${a.pages[0]}`;
     lines.push({ text: '' });
+    const reads = readabilityWords(a.readability);
     lines.push({
-      text: `article ${a.flow} ${jsonString(a.title)} · ${places} · ${a.blocks} blocks · ${a.words} words${a.look ? ` · look ${a.look}` : ''}`,
+      text: `article ${a.flow} ${jsonString(a.title)} · ${places} · ${a.blocks} blocks · ${a.words} words${reads ? ` · ${reads}` : ''}${a.look ? ` · look ${a.look}` : ''}`,
       noun: PAGE,
     });
     for (const line of a.markdown.replace(/\n$/, '').split('\n'))
