@@ -114,8 +114,14 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     const person = linkCodeOf(grant.sub) ? null : grant.sub;
     const adderKey = await adderKeyOf(id, level, person);
     const answer: RoomTicketResponse = adderKey ? { ticket, adderKey } : { ticket };
-    // A view-only ticket's holder cannot read the grant inside, so the answer says when it lapses.
-    if (cap) answer.expiresAt = grant.exp * 1000;
+    // A view-only ticket's holder cannot read the grant inside, so the answer says when it lapses, and the caller's own
+    // level, which the MCP view offers its edits by (mcp-server.md "Edits in the view"): a read-only token's is view
+    // whatever the grant says, since the choke point refuses its every write. The ticket still admits at view.
+    if (cap) {
+      answer.expiresAt = grant.exp * 1000;
+      const own = workbench ? capWorkbenchRole(grant.level, workbench.level) : grant.level;
+      answer.level = ctx.token?.readOnly ? 'view' : own;
+    }
     return json(answer);
   }
 

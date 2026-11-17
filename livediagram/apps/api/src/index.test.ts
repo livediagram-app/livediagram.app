@@ -162,6 +162,27 @@ describe('read-only API token enforcement (docs/specs/015-api/mcp-server.md §4.
     }
   });
 
+  // docs/specs/015-api/mcp-server.md "Edits in the view": a view's edit is an ordinary changeset POST, so a read-only
+  // token's is refused here whatever the view sent, a forged rename or move with the MCP's own client header included.
+  it('403s an edit through the MCP view from a read-only token, a forged one included', async () => {
+    const bodies = [
+      { operations: [{ op: 'set', target: 'id:"a"', fields: { label: 'Forged' } }] },
+      { operations: [{ op: 'move', target: 'id:"a"', by: [40, 0] }] },
+    ];
+    for (const body of bodies) {
+      const res = await worker.fetch(
+        new Request('https://api.test/api/documents/d1/tabs/t1/changesets', {
+          method: 'POST',
+          headers: { ...RO, 'X-Livediagram-Client': 'mcp', 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        }),
+        env(),
+      );
+      expect(res.status).toBe(403);
+      expect(await res.json()).toEqual({ error: 'read_only_token' });
+    }
+  });
+
   // Workbenches are liveworkspace's (liveworkspace/docs/specs/011-workbench/workbench.md): the api forwards them as livediagram, before
   // any token check of its own, and accounts checks the credential.
   it('forwards /api/workbench/* to liveworkspace untouched, read-only token and all', async () => {
