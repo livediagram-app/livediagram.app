@@ -11,6 +11,7 @@ import {
   levelMeter,
   onDevice,
   useMediaDevices,
+  type CaptureKind,
   type LevelMeter,
 } from '@liveworkspace/capture';
 import {
@@ -51,6 +52,27 @@ export type RecorderState = ReturnType<typeof useRecorder>;
 
 const now = () => performance.now();
 
+// The camera switch's last choice, per browser (liveworkspace/docs/specs/006-media/walkthroughs.md "Recording without
+// a camera"): off unless this browser last recorded with it on. Storage that throws (a private window, blocked site
+// data) reads as off and keeps nothing.
+export const CAMERA_ON_KEY = 'liveworkspace:walkthrough-camera';
+
+export function readCameraOn(): boolean {
+  try {
+    return globalThis.localStorage?.getItem(CAMERA_ON_KEY) === 'on';
+  } catch {
+    return false;
+  }
+}
+
+function keepCameraOn(on: boolean): void {
+  try {
+    globalThis.localStorage?.setItem(CAMERA_ON_KEY, on ? 'on' : 'off');
+  } catch {
+    // Not kept: the next recording starts with the camera off.
+  }
+}
+
 function deviceError(err: unknown, wantsCamera: boolean): string {
   const name = err instanceof DOMException ? err.name : '';
   if (name === 'NotAllowedError' || name === 'SecurityError') {
@@ -73,6 +95,12 @@ export function useRecorder(
   const [phase, setPhase] = useState<RecorderPhase>({ kind: 'off' });
   const [microphone, setMicrophone] = useState<string | null>(null);
   const [camera, setCamera] = useState<string | null>(null);
+  // Off by default, so setting up asks for the microphone alone; the switch's choice is remembered.
+  const [cameraOn, setCameraOnState] = useState(readCameraOn);
+  const setCameraOn = useCallback((on: boolean) => {
+    setCameraOnState(on);
+    keepCameraOn(on);
+  }, []);
   const [corner, setCorner] = useState<WalkthroughCorner>('bottom-left');
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [deviceProblem, setDeviceProblem] = useState<string | null>(null);
@@ -96,7 +124,14 @@ export function useRecorder(
   const lastSlide = useRef<string | null>(null);
 
   // The devices, opened while setting up and held until the recording ends: picking another reopens them.
-  const wantsCamera = camera !== NO_CAMERA;
+  const wantsCamera = cameraOn && camera !== NO_CAMERA;
+  const fellBack = useRef(false);
+  // An Allow button pressed (a device list the browser hasn't been allowed to show): ask the browser again.
+  const [asked, setAsked] = useState(0);
+  const allow = useCallback((kind: CaptureKind) => {
+    if (kind === 'camera') setCameraOnState(true);
+    setAsked((n) => n + 1);
+  }, []);
   const setupOpen = phase.kind === 'setup';
   useEffect(() => {
     if (!setupOpen) return;
@@ -112,14 +147,18 @@ export function useRecorder(
         stopStream(streamRef.current);
         streamRef.current = next;
         setStream(next);
-        setDeviceProblem(null);
+        // The sound-only reopen after a camera that wouldn't start keeps saying why.
+        if (fellBack.current) fellBack.current = false;
+        else setDeviceProblem(null);
         setGranted((n) => n + 1);
       } catch (err) {
         if (!live) return;
         console.warn('[walkthroughs] devices refused', err);
         // A camera that won't start leaves the walkthrough to sound alone, rather than nothing.
         if (wantsCamera) {
-          setCamera(NO_CAMERA);
+          // Off for this recording only: the remembered choice stays, for a camera that works next time.
+          fellBack.current = true;
+          setCameraOnState(false);
           setDeviceProblem("The camera couldn't start, so this walkthrough records sound only.");
           return;
         }
@@ -133,7 +172,7 @@ export function useRecorder(
     return () => {
       live = false;
     };
-  }, [setupOpen, microphone, camera, wantsCamera]);
+  }, [setupOpen, microphone, camera, wantsCamera, asked]);
 
   // The level meter, over the open microphone.
   useEffect(() => {
@@ -279,13 +318,13 @@ export function useRecorder(
     window.addEventListener('resize', sampleView);
     const onMove = (e: PointerEvent) => {
       const c = content();
-      const id = elementIdAt(e.target);
+      const id = elementIdAt(e.target, hostRef.current.hideable?.marks);
       if (!c || (id && hiddenRef.current.has(id))) return log.cursor(now(), null);
       log.cursor(now(), canvasPoint(c, e.clientX, e.clientY));
     };
     const onLeave = () => log.cursor(now(), null);
     const onDown = (e: PointerEvent) => {
-      const id = elementIdAt(e.target);
+      const id = elementIdAt(e.target, hostRef.current.hideable?.marks);
       if (id) log.point(now(), id);
     };
     root?.addEventListener('pointermove', onMove, { passive: true });
@@ -376,6 +415,9 @@ export function useRecorder(
     setMicrophone,
     camera,
     setCamera,
+    cameraOn,
+    setCameraOn,
+    allow,
     corner,
     setCorner,
     stream,

@@ -7,7 +7,12 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { WalkthroughApiDeps } from './api';
 import { CONTENT_SELECTOR } from './bridge';
-import type { WalkthroughHost, WalkthroughSlides, WalkthroughViewport } from './host';
+import type {
+  WalkthroughHideable,
+  WalkthroughHost,
+  WalkthroughSlides,
+  WalkthroughViewport,
+} from './host';
 import { fingerprintOf } from './timeline';
 
 export type EditorTab = { id: string; name: string; elements?: readonly unknown[] };
@@ -51,6 +56,8 @@ export type WalkthroughHostInput = {
   slides?: WalkthroughSlides | undefined;
   selection: () => Iterable<string>;
   author: string | null;
+  // What the app can hide besides canvas elements (host.ts); absent in the apps that hide canvas elements alone.
+  hideable?: WalkthroughHideable | undefined;
 };
 
 // The element around the canvas content: where the pointer moves and the viewer pans.
@@ -102,5 +109,6 @@ export function useWalkthroughHost(input: WalkthroughHostInput): WalkthroughHost
     fingerprint,
     selection,
     author: input.author,
+    hideable: input.hideable,
   };
 }

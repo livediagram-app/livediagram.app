@@ -76,13 +76,22 @@ function HideControls({
 }) {
   const { hiding, host } = walkthroughs;
   const count = hiding.hidden.size;
+  // Nothing on this tab can be hidden (a Sheet, a Form, an empty canvas): no control rather than a dead one.
+  if (!hiding.canHide) return null;
   if (hiding.picking) {
     return (
       <div className="flex items-center gap-1.5">
         <span className="text-[12px] text-slate-600 dark:text-slate-300">
           {compact ? 'Press to hide' : 'Press elements to hide them'}
         </span>
-        <Button variant="secondary" size="xs" onClick={() => hiding.hideAll(host.selection())}>
+        <Button
+          variant="secondary"
+          size="xs"
+          onClick={() =>
+            // The canvas's selection, then what the app picks elsewhere (a board's cards).
+            hiding.hideAll([...host.selection(), ...(host.hideable?.selection?.() ?? [])])
+          }
+        >
           Hide Selection
         </Button>
         <Button variant="primary" size="xs" onClick={() => hiding.setPicking(false)}>
@@ -148,7 +157,9 @@ function SetupCard({ walkthroughs }: { walkthroughs: Walkthroughs }) {
   const { recorder, discard } = walkthroughs;
   const ready = recorder.stream !== null;
   const cameraOn =
-    recorder.camera !== NO_CAMERA && (recorder.stream?.getVideoTracks().length ?? 0) > 0;
+    recorder.cameraOn &&
+    recorder.camera !== NO_CAMERA &&
+    (recorder.stream?.getVideoTracks().length ?? 0) > 0;
   return (
     <section
       aria-label="Record a Walkthrough"
@@ -160,7 +171,8 @@ function SetupCard({ walkthroughs }: { walkthroughs: Walkthroughs }) {
             Record a Walkthrough
           </h2>
           <p className="mt-0.5 text-[12px] leading-snug text-slate-500 dark:text-slate-400">
-            Your voice, your camera and how you move around the canvas, for anyone who opens it.
+            Your voice, your camera if you turn it on, and how you move around the canvas, for
+            anyone who opens it.
           </p>
         </div>
         <HoverCard title="Close">
@@ -180,6 +192,9 @@ function SetupCard({ walkthroughs }: { walkthroughs: Walkthroughs }) {
         camera={recorder.camera}
         onMicrophone={recorder.setMicrophone}
         onCamera={recorder.setCamera}
+        cameraOn={recorder.cameraOn}
+        onCameraOn={recorder.setCameraOn}
+        onAllow={recorder.allow}
       />
       <div className="flex items-center gap-3">
         <span className="w-[4.6rem] shrink-0 text-xs font-medium text-slate-600 dark:text-slate-300">
@@ -201,7 +216,13 @@ function SetupCard({ walkthroughs }: { walkthroughs: Walkthroughs }) {
       <footer className="flex items-center justify-between gap-2 border-t border-slate-100 pt-3 dark:border-slate-800">
         <HideControls walkthroughs={walkthroughs} />
         {walkthroughs.hiding.picking ? null : (
-          <Button variant="primary" size="sm" disabled={!ready} onClick={recorder.start}>
+          <Button
+            variant="primary"
+            size="sm"
+            disabled={!ready}
+            onClick={recorder.start}
+            className="ml-auto"
+          >
             <span className="inline-flex items-center gap-1.5">
               <RecordIcon size={10} className="text-rose-300" />
               Start Recording

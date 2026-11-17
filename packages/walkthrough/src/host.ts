@@ -21,6 +21,20 @@ export type WalkthroughSlides = {
   show: (slide: string | null) => void;
 };
 
+/**
+ * What an app can hide besides its canvas elements (liveworkspace/docs/specs/006-media/walkthroughs.md "What an app
+ * can hide"): liveplanner's board cards and dashboard widgets, drawn over the canvas rather than in it.
+ */
+export type WalkthroughHideable = {
+  // Attributes, beside `data-element-id`, whose value names something that can be hidden, wherever under the canvas
+  // root it is drawn. Stable for the editor's life.
+  marks: readonly string[];
+  // Whether the tab showing has anything to hide: Hide From Recording shows only then.
+  canHide: () => boolean;
+  // What is picked outside the canvas's own selection (cards selected on a board), for Hide Selection.
+  selection?: (() => readonly string[]) | undefined;
+};
+
 export type WalkthroughHost = {
   // The open item, or null where walkthroughs don't fit (an unsaved item, This Browser, an embed, a phone, a
   // tab-scoped link): then no button shows.
@@ -41,4 +55,6 @@ export type WalkthroughHost = {
   selection: () => readonly string[];
   // The recorder's name as the list shows it to others.
   author: string | null;
+  // Absent: canvas elements alone, and Hide From Recording always offered.
+  hideable?: WalkthroughHideable | undefined;
 };

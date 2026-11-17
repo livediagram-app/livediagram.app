@@ -7,7 +7,7 @@
 
 import { selectionIds, type SelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 import { useMemo } from 'react';
-import type { WalkthroughViewport } from './host';
+import type { WalkthroughHideable, WalkthroughViewport } from './host';
 import { useWalkthroughs, type Walkthroughs } from './useWalkthroughs';
 import {
   slidesOfDeck,
@@ -36,6 +36,8 @@ export type EditorWalkthroughsInput = {
   selectionStore: Pick<SelectionStore, 'get'>;
   // livediagram's and livedocuments' slide deck; the others have none.
   deck?: SlideDeckLike | undefined;
+  // liveplanner's board cards and dashboard widgets (host.ts WalkthroughHideable); the others hide canvas elements alone.
+  hideable?: WalkthroughHideable | undefined;
 };
 
 /** Whether walkthroughs fit this editor session at all. */
@@ -73,6 +75,7 @@ export function useEditorWalkthroughs(input: EditorWalkthroughsInput): Walkthrou
       return selectionIds(selectedId, multiSelectedIds);
     },
     author: self.name || null,
+    hideable: input.hideable,
   });
   return useWalkthroughs(host);
 }
