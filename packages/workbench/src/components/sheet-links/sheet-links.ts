@@ -118,7 +118,7 @@ export function linkedAgo(readAt: number, now: number): string {
   return formatRelativeTimeShort(Math.max(0, now - readAt));
 }
 
-// The line a linked chart shows along its top edge, and its Data section's status.
+// The line a linked chart shows below its bottom edge, and its Data section's status.
 export function sheetLinkLine(
   s: ChartSheetSource,
   status: SheetLinkStatus | undefined,

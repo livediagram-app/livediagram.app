@@ -5,6 +5,7 @@
 // the open tab's linked charts (useSheetLinkedCharts) and hands the canvas and the element menu what each person
 // sees, and the Link, Update and Unlink actions. Outside it (a thumbnail, an export, the read-only renderers) a linked
 // chart draws its saved values and shows nothing more.
+import { FLOATING_CONTROL_GAP, FLOATING_CONTROL_SIZE } from '../chrome/floating-controls';
 import {
   createContext,
   lazy,
@@ -150,14 +151,19 @@ export function useChartAsSeen<E extends SheetLinkElement>(element: E): E {
   return chartAsSeen(element, links.statusOf(element.chartSheetSource));
 }
 
+// Screen pixels from the chart's bottom edge to the line: past the quick-connect plus the editors draw centred below a
+// selected element (its gap plus its size), and 6 more, so the two never meet however narrow the chart.
+export const SHEET_LINK_LINE_GAP = FLOATING_CONTROL_GAP + FLOATING_CONTROL_SIZE + 6;
+
 const DOT: Record<'live' | 'quiet' | 'warn', string> = {
   live: 'bg-emerald-500',
   quiet: 'bg-slate-400 dark:bg-slate-500',
   warn: 'bg-amber-500',
 };
 
-// "Linked to Q3 Budget · updated 2 min ago" just above a linked chart's top edge, while it is hovered or selected. It
-// takes no pointer, so it never gets in the way of a drag.
+// "Linked to Q3 Budget · updated 2 min ago" below a linked chart's bottom edge, left-aligned, while it is hovered or
+// selected: clear of the selection toolbar above and of the quick-connect plus below (SHEET_LINK_LINE_GAP). It takes no
+// pointer, so it never gets in the way of a drag.
 export function SheetLinkLine({
   element,
   selected,
@@ -196,10 +202,10 @@ function SheetLinkPill({
       data-sheet-link-line
       style={{
         transform: `scale(${1 / zoom})`,
-        transformOrigin: 'bottom left',
-        marginBottom: 6 / zoom,
+        transformOrigin: 'top left',
+        marginTop: SHEET_LINK_LINE_GAP / zoom,
       }}
-      className={`pointer-events-none absolute bottom-full left-0 z-10 flex max-w-80 items-center gap-1.5 rounded-full border border-slate-200 bg-white/95 py-0.5 pr-2.5 pl-1.5 text-[11px] leading-4 whitespace-nowrap text-slate-600 shadow-sm transition-opacity duration-150 dark:border-slate-700 dark:bg-slate-900/95 dark:text-slate-300 ${
+      className={`pointer-events-none absolute top-full left-0 z-10 flex max-w-80 items-center gap-1.5 rounded-full border border-slate-200 bg-white/95 py-0.5 pr-2.5 pl-1.5 text-[11px] leading-4 whitespace-nowrap text-slate-600 shadow-sm transition-opacity duration-150 dark:border-slate-700 dark:bg-slate-900/95 dark:text-slate-300 ${
         selected ? 'opacity-100' : 'opacity-0 group-hover/el:opacity-100'
       }`}
     >
