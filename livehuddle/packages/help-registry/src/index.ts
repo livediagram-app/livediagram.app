@@ -1190,7 +1190,7 @@ export const articles: Article[] = [
     title: 'My Work and Folders',
     description: 'Your own library: the folders you create, and your unfiled spaces at its root.',
     keywords:
-      'my documents personal space library my work your documents your diagrams own files root folder organise organize unsorted unfiled made by ai generated favourite favorite star starred bookmark pin quick access canvas space spaces',
+      'my documents personal space library my work your documents your diagrams own files root folder organise organize unsorted unfiled made by ai generated bookmark pin quick access canvas space spaces',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
