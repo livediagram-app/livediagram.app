@@ -18,6 +18,8 @@ const W: Walkthrough = {
   mediaType: 'audio/webm',
   mediaBytes: 10,
   camera: false,
+  screen: false,
+  shareCode: null,
   createdAt: 1,
   ready: true,
 };
@@ -63,6 +65,14 @@ beforeEach(() => {
       body: new Blob([new Uint8Array([1, 2, 3])]).stream(),
     })),
     remove: vi.fn(async () => ({ ok: true, value: { ok: true } })),
+    rename: vi.fn(async (_id: string, _by: unknown, title: string) => ({
+      ok: true,
+      value: { walkthrough: { ...W, title } },
+    })),
+    share: vi.fn(async (_id: string, _by: unknown, on: boolean) => ({
+      ok: true,
+      value: { walkthrough: { ...W, screen: true, shareCode: on ? 'c'.repeat(22) : null } },
+    })),
     purge: vi.fn(),
   };
 });
@@ -237,7 +247,7 @@ describe('recording', () => {
     expect(await status({ 'Content-Type': 'text/plain', 'Content-Length': '3' })).toBe(400);
     expect(await status({ 'Content-Type': 'audio/webm', 'Content-Length': '0' })).toBe(400);
     expect(
-      await status({ 'Content-Type': 'audio/webm', 'Content-Length': String(41 * 1024 * 1024) }),
+      await status({ 'Content-Type': 'audio/webm', 'Content-Length': String(91 * 1024 * 1024) }),
     ).toBe(413);
     expect(await status({ 'Content-Type': 'audio/webm', 'Content-Length': '3' }, {}, null)).toBe(
       400,
@@ -304,5 +314,50 @@ describe('deleting', () => {
     expect(
       (await door({ method: 'DELETE', path: ['w1'], level: 'view', owner: null })).status,
     ).toBe(403);
+  });
+});
+
+describe('renaming and sharing', () => {
+  const patch = (title: unknown, over: Partial<Parameters<typeof door>[0]> = {}) =>
+    door({
+      method: 'PATCH',
+      path: ['w1'],
+      request: new Request('https://app.test/api/walkthroughs/w1?d=doc', {
+        method: 'PATCH',
+        body: JSON.stringify({ title }),
+      }),
+      ...over,
+    });
+
+  it('renames as an Editor on the item, or as its recorder', async () => {
+    const res = await patch('Launch plan');
+    expect(res.status).toBe(200);
+    expect(await body(res)).toMatchObject({
+      walkthrough: { title: 'Launch plan', canDelete: true },
+    });
+    expect(calls.rename).toHaveBeenLastCalledWith('w1', { item: 'doc' }, 'Launch plan');
+    await patch('Mine', { level: 'view' });
+    expect(calls.rename).toHaveBeenLastCalledWith('w1', { owner: 'me' }, 'Mine');
+  });
+
+  it('refuses a blank or missing title, and a visitor with no account', async () => {
+    expect((await patch('   ')).status).toBe(400);
+    expect((await patch(7)).status).toBe(400);
+    expect((await patch('T', { level: 'view', owner: null })).status).toBe(403);
+    expect(calls.rename).not.toHaveBeenCalled();
+  });
+
+  it('turns the public link on with PUT and off with DELETE', async () => {
+    const on = await door({ method: 'PUT', path: ['w1', 'share'] });
+    expect(on.status).toBe(200);
+    expect(await body(on)).toMatchObject({ walkthrough: { shareCode: 'c'.repeat(22) } });
+    expect(calls.share).toHaveBeenLastCalledWith('w1', { item: 'doc' }, true);
+    const off = await door({ method: 'DELETE', path: ['w1', 'share'], level: 'view' });
+    expect(await body(off)).toMatchObject({ walkthrough: { shareCode: null } });
+    expect(calls.share).toHaveBeenLastCalledWith('w1', { owner: 'me' }, false);
+  });
+
+  it('answers 404 to a method the share route does not take', async () => {
+    expect((await door({ method: 'GET', path: ['w1', 'share'] })).status).toBe(404);
   });
 });

@@ -102,11 +102,13 @@ describe('Walkthroughs in the Library', () => {
     expect(other.textContent).toContain('Camera');
     expect(other.textContent).toContain('An item you can no longer open');
     await act(async () => fireEvent.click(play));
-    const video = await within(card).findByLabelText('Walk 1, playing');
-    expect(video.getAttribute('src')).toBe('blob:walk');
+    // It plays in the centred modal, as from the editor's Tools.
+    const dialog = await screen.findByRole('dialog', { name: 'Walk 1' });
+    expect(dialog.querySelector('video')?.getAttribute('src')).toBe('blob:walk');
+    expect(within(dialog).getByRole('button', { name: 'Full Screen' })).toBeTruthy();
     expect(h.media).toHaveBeenCalledWith(expect.objectContaining({ id: 'w1' }), expect.anything());
-    fireEvent.click(within(card).getByRole('button', { name: 'Close' }));
-    expect(within(card).queryByLabelText('Walk 1, playing')).toBeNull();
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Close' }));
+    expect(screen.queryByRole('dialog', { name: 'Walk 1' })).toBeNull();
   });
 
   it('says so when the media will not load', async () => {
@@ -145,7 +147,7 @@ describe('Walkthroughs in the Library', () => {
     expect(await screen.findByText('Walk 1')).toBeTruthy();
   });
 
-  it('draws small tiles three to a row in the panel, one playing taking the row', async () => {
+  it('draws small tiles three to a row in the panel, one playing opening the modal', async () => {
     const h = host([entry(1), entry(2)]);
     render(<ExplorerPanelHarness walkthroughs={h} />);
     const play = await screen.findByRole('button', { name: 'Play Walk 1' });
@@ -154,7 +156,8 @@ describe('Walkthroughs in the Library', () => {
     const card = play.closest('li')!;
     expect(card.textContent).not.toContain('Voice');
     await act(async () => fireEvent.click(play));
-    expect(card.className).toContain('col-span-3');
+    expect(card.className).not.toContain('col-span-3');
+    expect(await screen.findByRole('dialog', { name: 'Walk 1' })).toBeTruthy();
   });
 
   it('says the app keeps none without a host', async () => {

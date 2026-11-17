@@ -86,7 +86,12 @@ function OptionTile({
   look?: 'tile' | 'row';
 }) {
   return (
-    <label className={look === 'row' ? ROW : `${TILE} ${checked ? TILE_ON : TILE_OFF}`}>
+    // A title alone sits on the mark's centre line (owner, 2026-11-17); with a line under it, both start at the top.
+    <label
+      className={`${look === 'row' ? ROW : `${TILE} ${checked ? TILE_ON : TILE_OFF}`} ${
+        hint ? '' : '!items-center'
+      }`}
+    >
       <input
         type={type}
         name={name}
@@ -209,7 +214,7 @@ export function WhoPicker({
   const name = `webhook-who-${useId()}`;
   return (
     <div className="grid gap-2 sm:grid-cols-2">
-      {WHO_CHOICES.map(({ who, label, hint }) => (
+      {WHO_CHOICES.map(({ who, label }) => (
         <OptionTile
           key={who}
           type="radio"
@@ -218,7 +223,6 @@ export function WhoPicker({
           onChange={() => onChange(who)}
           leading={<WhoMark who={who} />}
           title={label}
-          hint={hint}
         />
       ))}
     </div>

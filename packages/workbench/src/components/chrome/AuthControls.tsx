@@ -185,7 +185,7 @@ export function AuthControls({ onOpenAccount, picture }: AuthControlsProps) {
 
 // A profile saved in Settings › Profile on this page (an editor's or the Explorer's), so the disc takes a new colour
 // or name at once; until then, null, and the session's colour stands (it catches up at the next token refresh).
-function useSavedLook(): SavedLook | null {
+export function useSavedLook(): SavedLook | null {
   const [saved, setSaved] = useState<SavedLook | null>(null);
   useEffect(() => onProfileSaved((p) => setSaved({ name: p.name, colour: p.color })), []);
   return saved;

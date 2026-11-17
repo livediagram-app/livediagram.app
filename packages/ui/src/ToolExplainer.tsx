@@ -70,3 +70,50 @@ export function ToolExplainer({
     </div>
   );
 }
+
+const PULSE = 'motion-safe:animate-pulse rounded bg-brand-100/70 dark:bg-slate-700/60';
+const PULSE_SOFT = 'motion-safe:animate-pulse rounded bg-slate-100 dark:bg-slate-700/40';
+
+/** A tool's explainer while the tool loads, in the explainer's own frame and size: most tools open empty, so the
+ *  skeleton is the empty state's shape and nothing moves when it arrives (owner, 2026-11-17: no judder on open). */
+export function ToolExplainerSkeleton({ steps = 3 }: { steps?: number }) {
+  return (
+    <div aria-hidden data-tool-explainer-skeleton="" className="flex flex-col gap-4">
+      <div className="relative overflow-hidden rounded-2xl border border-brand-100 bg-gradient-to-b from-brand-50/80 via-white to-white dark:border-brand-500/20 dark:from-brand-500/10 dark:via-slate-900 dark:to-slate-900">
+        <div className="relative flex justify-center px-5 pb-2 pt-7">
+          <span className={`h-[140px] w-full max-w-[326px] !rounded-xl ${PULSE}`} />
+        </div>
+        <div className="relative flex flex-col items-center gap-2 px-6 pb-6 pt-2">
+          <span className={`h-[18px] w-36 ${PULSE}`} />
+          <span className={`mt-1 h-3 w-64 max-w-full ${PULSE_SOFT}`} />
+          <span className={`h-3 w-48 max-w-full ${PULSE_SOFT}`} />
+        </div>
+      </div>
+      {steps > 0 ? (
+        <div className="flex flex-col gap-2.5 px-1">
+          {Array.from({ length: steps }, (_, i) => (
+            <span key={i} className="flex items-center gap-3">
+              <span className={`size-6 shrink-0 !rounded-full ${PULSE}`} />
+              <span className={`h-3 ${PULSE_SOFT}`} style={{ width: `${[72, 58, 66][i % 3]}%` }} />
+            </span>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+/** A whole tool loading inside Tools: its explainer's skeleton, then the footer with a button's, pinned at the foot
+ *  as the real one is. */
+export function ToolSkeleton({ label, steps }: { label: string; steps?: number }) {
+  return (
+    <div role="status" aria-busy="true" aria-label={label} className="flex min-h-0 flex-1 flex-col">
+      <div className="px-4 pb-5 pt-4">
+        <ToolExplainerSkeleton steps={steps} />
+      </div>
+      <div className="sticky bottom-0 mt-auto shrink-0 border-t border-slate-100 bg-white p-2 dark:border-slate-800 dark:bg-slate-900">
+        <span className={`block h-9 w-full !rounded-lg ${PULSE}`} />
+      </div>
+    </div>
+  );
+}

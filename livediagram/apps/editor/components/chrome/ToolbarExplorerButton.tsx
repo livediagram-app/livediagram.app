@@ -3,8 +3,6 @@
 import { track } from '@/lib/telemetry';
 import { Glyph } from '@livediagram/ui';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
-import { TabNameInBox } from '@liveworkspace/workbench/components/chrome/TabNameInBox';
-import { NAME_MAX_LENGTH } from '@livediagram/document';
 import { ToolbarMenuCard } from './ToolbarMenuCard';
 import { EditorModeSwitch } from './editor-mode/EditorModeSwitch';
 
@@ -59,8 +57,7 @@ export function ToolbarExplorerButton({
       {/* No hover card: it got in the way of switching apps, and the aria-label names it. */}
       {button}
       <EditorModeSwitch iconOnly={phone || inline} />
-      {/* The open tab's name, in every mode (not on a phone). */}
-      {phone || inline ? null : <TabNameInBox maxLength={NAME_MAX_LENGTH} />}
+      {/* No tab name here (owner, 2026-11-17): the tab bar names the tab. */}
     </ToolbarMenuCard>
   );
 }

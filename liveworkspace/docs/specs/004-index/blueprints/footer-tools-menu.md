@@ -3,20 +3,19 @@
 Derived from [footer-tools-menu.md](../footer-tools-menu.md). The spec decides; this file only adds engineering
 precision. Paths are relative to the repository root.
 
-| File                                                                                     | Role                                                                                       |
-| ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| `packages/workbench/src/components/chrome/ChromeToolsMenu.tsx`                           | `ChromeToolsMenu` (the button and its menu), `ChromeToolsItem`, `toolsDescription`         |
-| `packages/suggestions/src/react/SuggestionsBar.tsx`                                      | `useSuggestionsToolsItem(suggestions)`: the Suggest row and its view                       |
-| `packages/snapshots/src/ui/history-snapshots.tsx`                                        | `useHistorySnapshotsHost()`: Snapshots for History (FM9), null without a door              |
-| `packages/workbench/src/components/chrome/useItemToolsRows.tsx`                          | the History and Webhooks rows, History's modes (FM9)                                       |
-| `liveplanner/apps/editor/components/automations/automations-tools-item.tsx`              | `useAutomationsToolsItem()`: the Automations row, null without a door                      |
-| `livedocuments/apps/editor/components/versions/history-tools-item.tsx`                   | `useVersionHistoryInTools(onOpen)`: Version History offered to History                     |
-| `packages/walkthrough/src/ui/WalkthroughsTools.tsx`                                      | `WalkthroughsTools({ menu })`: the Walkthroughs row (door key `walkthroughs`) and its view |
-| `packages/workbench/src/components/chrome/ToolsView.tsx`                                 | `ToolsView`: a tool's view inside Tools (the back bar, the slot, waiting, focus)           |
-| `packages/workbench/src/components/chrome/tools-door.ts`                                 | `usePublishToolsItems`, `requestToolsView(id)`, `usePublishItemVersions`                   |
-| `packages/ui/src/dialog/dialog-slot.ts`                                                  | the slot a tool's dialog renders into, in place of a modal                                 |
-| `<app>/components/start/ExampleContentTray.tsx` (livediagram, livedocuments, livedesign) | the Clear Example Content row (door key `example-content`) and its confirm                 |
-| `<product>/apps/<editor>/components/chrome/ChromeControls.tsx`                           | builds the rows in the spec's order and draws `ChromeToolsMenu` left of Search             |
+| File                                                                        | Role                                                                                       |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `packages/workbench/src/components/chrome/ChromeToolsMenu.tsx`              | `ChromeToolsMenu` (the button and its menu), `ChromeToolsItem`, `toolsDescription`         |
+| `packages/suggestions/src/react/SuggestionsBar.tsx`                         | `useSuggestionsToolsItem(suggestions)`: the Suggest row and its view                       |
+| `packages/snapshots/src/ui/history-snapshots.tsx`                           | `useHistorySnapshotsHost()`: Snapshots for History (FM9), null without a door              |
+| `packages/workbench/src/components/chrome/useItemToolsRows.tsx`             | the History and Webhooks rows, History's modes (FM9)                                       |
+| `liveplanner/apps/editor/components/automations/automations-tools-item.tsx` | `useAutomationsToolsItem()`: the Automations row, null without a door                      |
+| `livedocuments/apps/editor/components/versions/history-tools-item.tsx`      | `useVersionHistoryInTools(onOpen)`: Version History offered to History                     |
+| `packages/walkthrough/src/ui/WalkthroughsTools.tsx`                         | `WalkthroughsTools({ menu })`: the Walkthroughs row (door key `walkthroughs`) and its view |
+| `packages/workbench/src/components/chrome/ToolsView.tsx`                    | `ToolsView`: a tool's view inside Tools (the back bar, the slot, waiting, focus)           |
+| `packages/workbench/src/components/chrome/tools-door.ts`                    | `usePublishToolsItems`, `requestToolsView(id)`, `usePublishItemVersions`                   |
+| `packages/ui/src/dialog/dialog-slot.ts`                                     | the slot a tool's dialog renders into, in place of a modal                                 |
+| `<product>/apps/<editor>/components/chrome/ChromeControls.tsx`              | builds the rows in the spec's order and draws `ChromeToolsMenu` left of Search             |
 
 FM1. `ChromeToolsItem = { id, group, label, description, icon, onSelect(anchor), inPlace?, view?, aside?, attention?,
 attentionLabel? }`. `inPlace: true`: `onSelect` opens a dialog, which renders inside Tools (FM6). `view(ctx)`: the
@@ -70,9 +69,7 @@ Focus goes to the back bar unless the tool took it; going back focuses `[data-to
 FM7. `requestToolsView(id)` (tools-door.ts) holds one request for 20s: Tools, once it lists `id`, opens at it as if its
 row were pressed. The liveplanner hosts ask it on a sign-in return (`useAskedOpen`) rather than opening a modal.
 
-FM8. Clear Example Content: `id: 'example-content'`, `group: 'content'`, `inPlace`, published by each app's
-`ExampleContentTray` while the tray shows (same gate); its press opens a `ConfirmDialog` ("Clear the Examples?",
-confirm "Clear Example Content", cancel "Keep Them") that runs the tray's own `clearExampleContent`.
+FM8. Retired (owner, 2026-11-17): Clear Example Content left Tools; the palette's example tray alone offers it.
 
 FM9. History with Snapshots in it (owner, 2026-11-17). `useItemToolsRows({ app, history, signedIn, offline, onWebhooks,
 snapshots })`, `snapshots` being the app's `useHistorySnapshotsHost()` (`{ useExtras, Alone }` or null; blueprint
@@ -91,3 +88,14 @@ but in `versions` mode; badges only in `gate` mode.
 - Open Version History calls `leaveToolsWithDialog()` (dialog-slot.ts) then closes its dialog and opens Version
   History: the slot's `leaving` flag tells Tools to close rather than go back.
 - A row's in-place confirm carries `data-keeps-escape`; Tools leaves Escape to it while focus is inside one.
+
+FM10. The item's gate for other tools (owner, 2026-11-17). While `useItemToolsRows` is gated (signed out, or the item in
+This Browser) it publishes `{ badges, open(tool) }` through `usePublishToolGate` (tools-door.ts). `WalkthroughsTools`
+reads `useToolGate()`: with no walkthroughs available and a gate set, it publishes its row badged with `gate.badges`,
+`inPlace`, its press `gate.open('walkthroughs')`, which shows the item rows' `SignInDialog` for Walkthroughs. A sync
+that passes asks `requestToolsView('walkthroughs')` (FM7), so Tools opens at the real row once it publishes.
+
+FM11. History's avatars (owner, 2026-11-17). Every entry's disc (`PersonAvatar`, packages/explorer HistoryParts.tsx)
+asks the people store for its actor's picture, the reader's own included, so your entries wear your avatar: your
+picture, else your initials on the brand. Others keep their picture or initials on their colour; someone unnamed or a
+closed account the grey person glyph.

@@ -13,6 +13,7 @@ import {
   lucideGlyph,
   useCopiedFlash,
 } from '@liveplanner/ui';
+import { ToolFooter, ToolFooterButton } from '@liveworkspace/ui';
 import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import {
   lucideExternalLink,
@@ -25,7 +26,6 @@ import { useOptionalEditorContext } from '@/app/project/[id]/EditorContext';
 import { ChoicePills } from '@/components/primitives/ChoicePills';
 import { apiPublishForm } from '@/lib/api/forms';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
-import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 import { track } from '@/lib/telemetry';
 import { readRoadmaps, saveRoadmap, unpublishRoadmap } from './roadmap-client';
 import { defaultRoadmapSettings, settingsReady } from './roadmap-defaults';
@@ -446,33 +446,30 @@ export function RoadmapDialog({
         ) : null}
       </div>
       {state === 'draft' || state === 'published' ? (
-        <DialogFooter>
+        // The tools' one footer look (owner, 2026-11-17): full width, pinned at the foot, the main action last.
+        <ToolFooter>
           {state === 'draft' ? (
-            <Button
-              size="sm"
+            <ToolFooterButton
               busy={busy || makingForm}
               disabled={!settings || !settingsReady(settings)}
               onClick={() => void publish()}
             >
               Publish Roadmap
-            </Button>
+            </ToolFooterButton>
           ) : null}
           {state === 'published' ? (
             <>
-              <Button
+              <ToolFooterButton
                 variant="secondary"
-                size="sm"
                 busy={busy}
                 onClick={(e) => setConfirming(e.currentTarget)}
               >
                 Unpublish
-              </Button>
-              <Button size="sm" onClick={onClose}>
-                Done
-              </Button>
+              </ToolFooterButton>
+              <ToolFooterButton onClick={onClose}>Done</ToolFooterButton>
             </>
           ) : null}
-        </DialogFooter>
+        </ToolFooter>
       ) : null}
       {confirming ? (
         <ConfirmPopover

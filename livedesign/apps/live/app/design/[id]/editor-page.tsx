@@ -5,7 +5,10 @@ import dynamic from 'next/dynamic';
 import { useEffect, useState, type ReactNode } from 'react';
 import { setSessionSharePassword } from '@/lib/api-client';
 import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
-import { useBrowserTabTitle } from '@liveworkspace/workbench/hooks/editor/useBrowserTabTitle';
+import {
+  editorTabTitle,
+  useBrowserTabTitle,
+} from '@liveworkspace/workbench/hooks/editor/useBrowserTabTitle';
 import { DESIGN_CONTENT_CODE, EDITOR_SURFACE_CODE } from '@/lib/editor-deferred-code';
 import { prefetchWhenIdle } from '@liveworkspace/workbench/lib/idle-prefetch';
 import {
@@ -100,9 +103,15 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
     'livedesign',
     (path) => designIdFromPath(path).id,
   );
-  // Tab title reflects the design: "<name> | livedesign" (falls back to
+  // Tab title reflects the design and its open tab: "<name> | <tab> | livedesign" (falls back to
   // Untitled when the design has no name yet). Updates as the user renames.
-  useBrowserTabTitle(`${state.designName?.trim() || 'Untitled design'} | livedesign`);
+  useBrowserTabTitle(
+    editorTabTitle(
+      state.designName?.trim() || 'Untitled design',
+      state.activeTab?.name,
+      'livedesign',
+    ),
+  );
   const {
     designNotFound,
     loadError,

@@ -32,7 +32,7 @@ export const CURRICULUM: Record<ReplayMode, readonly TopicCard[]> = {
       title: 'Look and Feel',
       line: 'Give the whole tab a new look and background.',
       telemetry: 'Look',
-      seconds: 20,
+      seconds: 17,
     },
     {
       id: 'diagram-shape',

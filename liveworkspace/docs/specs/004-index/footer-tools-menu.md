@@ -30,18 +30,17 @@ the band's paper under the pointer, so the list reads as the header's.
 The rows are grouped under small headings, in this order, a heading drawn only when its group holds a row: **Find**
 (Search), **Automate** (Automations, liveplanner's Email to Board, then Webhooks), **Collaborate** (Suggest Changes, Walkthroughs, and
 liveplanner's Subscribe to Calendar), **Versioning** (History alone: Snapshots and livedocuments' Version History live
-inside it), **Content** (Clear Example Content). Each
+inside it). Clear Example Content is not in Tools (owner, 2026-11-17): the palette's example tray offers it, and needs nothing more. Each
 group is a labelled group for screen readers; the arrow keys walk the rows straight through the groups.
 
-| Row                       | App                                                 | Drawn when                                                                                                                                                                                  | Opens, inside Tools                          |
-| ------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
-| **History**               | every app                                           | signed in, the open item not shared by link (no longer on the item's ⋯ menu inside an editor); or the person may take snapshots; or livedocuments offers Version History                    | the History below, with Snapshots in it      |
-| **Webhooks**              | every app                                           | as its row on the item's ⋯ menu was (gone from the Explorer header's and every item's menu inside an editor)                                                                                | the item's Webhooks                          |
-| **Search**                | every app                                           | the host offers search (the editor and the Explorer's bar)                                                                                                                                  | the Search dialog (closes Tools)             |
-| **Automations**           | liveplanner                                         | as its button was ([Automations](../../../../liveplanner/docs/specs/026-plan/automations.md) "The footer button")                                                                           | the Automations screen, widened              |
-| **Suggest Changes**       | livediagram, livedocuments, liveplanner, livedesign | as its header action was ([Canvas suggestions](../015-suggestions/canvas-suggestions.md) "Suggesting")                                                                                      | the mode switch and the review list          |
-| **Walkthroughs**          | livediagram, livedocuments, liveplanner, livedesign | walkthroughs fit and there is one to play or the person may record ([Walkthroughs](../../../../livediagram/docs/specs/012-collaboration/walkthroughs.md) "In Tools")                        | the list to play, and Record Walkthrough     |
-| **Clear Example Content** | livediagram, livedocuments, livedesign              | the open tab still holds untouched example content, for whoever sees the palette's example tray ([Template examples](../../../../livediagram/docs/specs/006-document/template-examples.md)) | its confirm, then the same clear as the tray |
+| Row                 | App                                                 | Drawn when                                                                                                                                                               | Opens, inside Tools                      |
+| ------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------- |
+| **History**         | every app                                           | signed in, the open item not shared by link (no longer on the item's ⋯ menu inside an editor); or the person may take snapshots; or livedocuments offers Version History | the History below, with Snapshots in it  |
+| **Webhooks**        | every app                                           | as its row on the item's ⋯ menu was (gone from the Explorer header's and every item's menu inside an editor)                                                             | the item's Webhooks                      |
+| **Search**          | every app                                           | the host offers search (the editor and the Explorer's bar)                                                                                                               | the Search dialog (closes Tools)         |
+| **Automations**     | liveplanner                                         | as its button was ([Automations](../../../../liveplanner/docs/specs/026-plan/automations.md) "The footer button")                                                        | the Automations screen, widened          |
+| **Suggest Changes** | livediagram, livedocuments, liveplanner, livedesign | as its header action was ([Canvas suggestions](../015-suggestions/canvas-suggestions.md) "Suggesting")                                                                   | the mode switch and the review list      |
+| **Walkthroughs**    | livediagram, livedocuments, liveplanner, livedesign | walkthroughs fit and there is one to play or the person may record ([Walkthroughs](../../../../livediagram/docs/specs/012-collaboration/walkthroughs.md) "In Tools")     | the list to play, and Record Walkthrough |
 
 - **Automations** keeps its count: the rules that are on, at the row's end (none at 0), amber when a rule
   paused itself. A paused rule also puts a small amber dot on the Tools button, so the warning the button carried
@@ -51,8 +50,6 @@ group is a labelled group for screen readers; the arrow keys walk the rows strai
 - **Suggest** reads **Suggesting** while this person suggests and keeps its count at the row's end.
   Suggestions waiting for an Editor put a brand dot on Tools ("Tools, 3 suggestions"); a paused rule's amber outranks
   it.
-- **Clear Example Content** is there only while the tab holds a template's untouched examples, so it never sits in
-  Tools for nothing.
 - Choosing a row opens its tool **inside Tools** (below), sending the same telemetry the button did. **Search** and
   liveplanner's **Automations** are the exceptions (owner, 2026-11-17): each closes Tools and opens its own modal, Search
   the universal search panel and Automations its full-size screen of rules, as before. Their rows read **Search…** and **Automations…**,
@@ -86,6 +83,17 @@ Signed out or in This Browser with no snapshots to take, History keeps its badge
 Owner, 2026-11-16 (Work Tracker 1182): a tool opens in the Tools popover itself, so people stay in one place and can hop
 between tools, never in a modal of its own on top of the editor.
 
+- **The main button stays at the foot** (owner, 2026-11-17). A tool's main action (Record Walkthrough; New Slide and
+  Present in Slide Deck) is pinned at the bottom of its view, and only the content above it scrolls. The Webhooks
+  dialog does the same with Add Webhook.
+- **Every tool is the list's height** (owner, 2026-11-17). Opening a tool keeps Tools exactly as tall as its list:
+  a short tool fills it, its main buttons at the very bottom, and a long one scrolls inside it with those buttons
+  pinned and always in view. Tools never jumps in height as you move between the list and a tool.
+- **A tool loads in its empty shape** (owner, 2026-11-17: opening a tool juddered). Most tools open empty, so while a
+  tool's code or data loads it draws its explainer's skeleton (the art's frame, the heading, two lines, the steps)
+  with its footer and a button's place pinned at the foot (`ToolSkeleton`, `ToolExplainerSkeleton` in
+  `@liveworkspace/ui/tool-explainer`). An empty tool then fills in where it stands, nothing moving; Webhooks shows
+  its real footer, Add Webhook waiting, from the first frame.
 - **The drill-in.** Choosing a row replaces the list with that tool's view. Tools' illustrated hero band stays at the top
   of every view (owner, 2026-11-17), with its close in the corner; under it the shared
   [back bar](../../../../livediagram/docs/specs/004-interface-design/back-bar.md) is the breadcrumb: **Tools**, with the
@@ -97,7 +105,7 @@ between tools, never in a modal of its own on top of the editor.
   (Automations' rule builder) asks first, as its own close did. Escape steps back one level (a confirm or a menu open
   in the tool first, a snapshot's in-place confirm among them), then closes Tools from the list. The close shuts Tools from any level.
 - **Sizes.** Every tool takes Tools' own width, 480px (owner, 2026-11-17), so the popover's sides never move. Each view takes
-  its own height, never under **400 px** (owner, 2026-11-17; a shorter screen caps it) (Email to Board is short, History tall), the popover easing smoothly to it whenever it grows or shrinks. A press outside closes Tools, except for a tool marked to stay open (livediagram's Slide Deck, used alongside the canvas), which only its close button or Escape shuts
+  its own height, never under **500 px** (owner, 2026-11-17; a shorter screen caps it) (Email to Board is short, History tall), the popover easing smoothly to it whenever it grows or shrinks. A press outside closes Tools, except for a tool marked to stay open (livediagram's Slide Deck, used alongside the canvas), which only its close button or Escape shuts
   (owner, 2026-11-17), up to the room above the button; past that it scrolls inside under the band.
 - **Motion** (owner, 2026-11-17). Going into a tool slides its view in from the right, as a phone opens a menu; going
   back slides the list in from the left (`animate-view-forward` / `-back`, short motion), while the popover's height
@@ -157,7 +165,9 @@ Sync Space; it needs the item saved to the server). Signed out on an item in Thi
 that tool's gate in its place, in Automations' shape, on the first thing it needs: Sign In leaves for the sign-in page
 and comes back with the tool open; Sync syncs in place and goes on to the tool. Where neither would help (a share-link holder for a tool only an
 owner has, a Viewer for an Editor's tool, an embed) the row stays out. In liveplanner: Automations, Subscribe to Calendar and Email to Board; everywhere: History and Webhooks (each Sign In,
-then Sync).
+then Sync), and in the four canvas apps Walkthroughs (owner, 2026-11-17), when it has none to play: it wears the item rows'
+badges and opens their gate through the Tools door (`usePublishToolGate` / `useToolGate`, blueprint FM10), and once
+synced Tools opens at its own row.
 
 Signed out, or on an item in This Browser, **History** and **Webhooks** still show in Tools (owner, 2026-11-16), so
 everyone can find them, badged **Sign In** and **Sync <Item>** as they need. A press
@@ -183,13 +193,14 @@ with 24 px under the line, 16 px between the card, the steps and the action, the
 It is one shared
 component (`ToolExplainer` and `tool-explainer-art` in `@liveworkspace/ui`), so every sparse screen reads alike:
 
-| Tool                  | Title                                                   | When          |
-| --------------------- | ------------------------------------------------------- | ------------- |
-| Email to Board        | Mail In, Cards Out                                      | Not turned on |
-| Webhooks              | No Webhooks Yet                                         | None added    |
-| Subscribe to Calendar | This Plan in Your Calendar / Your Work in Your Calendar | No link made  |
-| Walkthroughs          | No Walkthroughs Yet                                     | None recorded |
-| Slide Deck            | Build Your Deck                                         | No slides     |
+| Tool                  | Title                                                                                                            | When          |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------- |
+| Email to Board        | Mail In, Cards Out                                                                                               | Not turned on |
+| Webhooks              | No Webhooks Yet                                                                                                  | None added    |
+| Subscribe to Calendar | This Plan in Your Calendar / Your Work in Your Calendar                                                          | No link made  |
+| Walkthroughs          | No Walkthroughs Yet                                                                                              | None recorded |
+| Slide Deck            | Build Your Deck                                                                                                  | No slides     |
+| Suggest Changes       | Propose, Then Decide / Your Edits Are Suggestions / No Suggestions Yet (Editor, Suggest Only, other Participant) | None waiting  |
 
 A tool screen that loads in steps never shrinks and grows back: after a tool opens, Tools only grows, and any shrink
 waits until nothing in it is loading (no `aria-busy`, as every skeleton carries) and it has held still for 120 ms (at

@@ -119,7 +119,9 @@ describe('the level', () => {
     expect(rmsOf(new Float32Array([0.5, -0.5]))).toBe(0.5);
     expect(meterFill(0)).toBe(0);
     expect(meterFill(1)).toBe(1);
-    expect(meterFill(0.01)).toBeCloseTo(0.25, 2);
+    // -40 dBFS, an ordinary voice on a desk microphone, fills half; a silent room (-71) none.
+    expect(meterFill(0.01)).toBeCloseTo(0.5, 2);
+    expect(meterFill(0.00028)).toBe(0);
   });
 
   it('reads a stream through an analyser and closes without stopping it', () => {
@@ -161,6 +163,24 @@ describe('the level', () => {
     );
     levelMeter({} as MediaStream).close();
     expect(made).toHaveBeenCalled();
+  });
+
+  it('resumes a context the browser started suspended, and lets a refused resume go', async () => {
+    const resume = vi.fn(() => Promise.reject(new Error('not allowed')));
+    const context = (state: string) => ({
+      state,
+      resume,
+      createAnalyser: () =>
+        ({ fftSize: 0, getFloatTimeDomainData: () => undefined }) as unknown as AnalyserNode,
+      createMediaStreamSource: () =>
+        ({ connect: () => undefined }) as unknown as MediaStreamAudioSourceNode,
+      close: () => Promise.resolve(),
+    });
+    levelMeter({} as MediaStream, () => context('running'));
+    expect(resume).not.toHaveBeenCalled();
+    levelMeter({} as MediaStream, () => context('suspended'));
+    expect(resume).toHaveBeenCalledTimes(1);
+    await Promise.resolve();
   });
 });
 

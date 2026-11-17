@@ -459,7 +459,7 @@ export function EditorView() {
                       </CanvasPatternContext.Provider>
                     </CanvasSurfaceProvider>
                     <WalkthroughsLayer walkthroughs={walkthroughs} />
-                    <WalkthroughsTools menu={walkthroughs.menu} />
+                    <WalkthroughsTools walkthroughs={walkthroughs} />
                   </ViewportStoreProvider>
                 </SelectionStoreProvider>
               </CursorsDrawnContext.Provider>

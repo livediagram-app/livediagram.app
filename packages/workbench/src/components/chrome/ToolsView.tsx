@@ -6,7 +6,8 @@
 // until it arrives (its code loading) skeleton rows hold its place. Focus moves in as it opens: to the back bar,
 // unless the tool has already taken it (a confirm's button).
 import { useEffect, useRef, type ReactNode } from 'react';
-import { BackBar, SkeletonRows } from '@liveworkspace/ui';
+import { BackBar } from '@liveworkspace/ui';
+import { ToolSkeleton } from '@liveworkspace/ui/tool-explainer';
 
 export function ToolsView({
   id,
@@ -16,6 +17,7 @@ export function ToolsView({
   sheet,
   slotRef,
   waiting,
+  floorPx,
   children,
 }: {
   id: string;
@@ -28,6 +30,9 @@ export function ToolsView({
   slotRef?: (node: HTMLDivElement | null) => void;
   /** The tool's dialog has not arrived yet. */
   waiting: boolean;
+  /** The Tools list's height as it last showed: every tool takes exactly this height and scrolls inside it, its footer
+   *  pinned (owner, 2026-11-17). */
+  floorPx?: number | null;
   children?: ReactNode;
 }) {
   const root = useRef<HTMLDivElement>(null);
@@ -41,7 +46,18 @@ export function ToolsView({
     return () => cancelAnimationFrame(frame);
   }, []);
   return (
-    <div ref={root} data-tools-view={id} className="flex min-h-0 flex-1 flex-col">
+    <div
+      ref={root}
+      data-tools-view={id}
+      // Exactly the list's height (owner, 2026-11-17: every tool the same height as Tools, scrolling inside it with its
+      // footer pinned). Before the list has been measured, at least the room under the 100 px band (Tools' 500 px
+      // floor, less the band and the height box's 4 px pad).
+      className="flex min-h-[calc(min(500px,100dvh-2rem)-104px)] flex-1 flex-col"
+      // A phone's drawer: at least the list's height, and as tall as the drawer is dragged.
+      style={
+        floorPx ? (sheet ? { minHeight: floorPx } : { height: floorPx, minHeight: 0 }) : undefined
+      }
+    >
       <div data-tools-back="" className="flex shrink-0 items-center px-3 pb-2.5 pt-3">
         <div className="min-w-0 flex-1">
           <BackBar label="Tools" current={label} onClick={onBack} gap="none" />
@@ -49,11 +65,16 @@ export function ToolsView({
       </div>
       <div
         className={`flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain ${
-          tall ? (sheet ? 'h-[calc(75dvh-100px)]' : 'h-[min(44rem,calc(100dvh-14rem))]') : ''
+          tall && !floorPx
+            ? sheet
+              ? 'h-[calc(75dvh-100px)]'
+              : 'h-[min(44rem,calc(100dvh-14rem))]'
+            : ''
         }`}
       >
         {waiting ? (
-          <SkeletonRows label={`Loading ${label}`} rows={4} className="px-4 py-3" />
+          // In a tool's empty shape (owner, 2026-11-17: tools open empty; no judder as the real one arrives).
+          <ToolSkeleton label={`Loading ${label}`} />
         ) : null}
         {slotRef ? (
           <div

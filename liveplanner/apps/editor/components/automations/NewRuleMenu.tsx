@@ -4,6 +4,7 @@
 // Blank Rule, built step by step, Start From a Template, which opens the Templates tab, and Describe a Rule, which
 // drafts one from words with AI. Disabled while the list loads and once the plan holds its 50 rules.
 
+import { ToolFooterButton } from '@liveworkspace/ui';
 import { useState } from 'react';
 import { Button, ChevronDownIcon, PlusIcon, SparkleIcon, lucideGlyph } from '@liveplanner/ui';
 import { lucideFilePlus, lucideLayoutGrid } from '@liveworkspace/icons/lucide';
@@ -20,11 +21,14 @@ export function NewRuleMenu({
   onBlank,
   onTemplates,
   onDescribe,
+  footer = false,
 }: {
   disabled: boolean;
   onBlank: () => void;
   onTemplates: () => void;
   onDescribe: () => void;
+  // Inside Tools: the tools' full-width footer button, its menu opening upward (owner, 2026-11-17).
+  footer?: boolean;
 }) {
   const [anchor, setAnchor] = useState<HTMLButtonElement | null>(null);
   const pick = (go: () => void) => () => {
@@ -33,20 +37,37 @@ export function NewRuleMenu({
   };
   return (
     <>
-      <Button
-        variant="primary"
-        size="xs"
-        aria-haspopup="menu"
-        aria-expanded={anchor !== null}
-        disabled={disabled}
-        onClick={(e) => setAnchor(anchor ? null : e.currentTarget)}
-      >
-        <PlusIcon size={12} />
-        New Rule
-        <ChevronDownIcon size={12} />
-      </Button>
+      {footer ? (
+        <ToolFooterButton
+          aria-haspopup="menu"
+          aria-expanded={anchor !== null}
+          disabled={disabled}
+          onClick={(e) => setAnchor(anchor ? null : e.currentTarget)}
+        >
+          <PlusIcon size={12} />
+          New Rule
+          <ChevronDownIcon size={12} />
+        </ToolFooterButton>
+      ) : (
+        <Button
+          variant="primary"
+          size="xs"
+          aria-haspopup="menu"
+          aria-expanded={anchor !== null}
+          disabled={disabled}
+          onClick={(e) => setAnchor(anchor ? null : e.currentTarget)}
+        >
+          <PlusIcon size={12} />
+          New Rule
+          <ChevronDownIcon size={12} />
+        </Button>
+      )}
       {anchor ? (
-        <PortalMenu anchor={anchor} placement="below" onClose={() => setAnchor(null)}>
+        <PortalMenu
+          anchor={anchor}
+          placement={footer ? 'above-start' : 'below'}
+          onClose={() => setAnchor(null)}
+        >
           <MenuActionRow plain label="Blank Rule" icon={<BlankIcon />} onClick={pick(onBlank)} />
           <MenuActionRow
             plain

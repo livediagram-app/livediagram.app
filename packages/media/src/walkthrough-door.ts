@@ -10,6 +10,9 @@
 //   GET    /api/walkthroughs/:id?d=          one, with its events
 //   GET    /api/walkthroughs/:id/media?d=    its media
 //   DELETE /api/walkthroughs/:id?d=          delete (its recorder, or an Editor)
+//   PATCH  /api/walkthroughs/:id?d=          rename: { title } (its recorder, or an Editor)
+//   PUT    /api/walkthroughs/:id/share?d=    its public link on (its recorder, or an Editor)
+//   DELETE /api/walkthroughs/:id/share?d=    and off
 
 import {
   parseWalkthroughStart,
@@ -84,12 +87,15 @@ export async function handleWalkthroughDoor(input: WalkthroughDoorInput): Promis
         ? 'one'
         : path.length === 2 && path[1] === 'media'
           ? 'media'
-          : null;
+          : path.length === 2 && path[1] === 'share'
+            ? 'share'
+            : null;
   if (!route || (route !== 'list' && !id)) return refuse('not_found', 404);
   const allowed: Record<typeof route, readonly string[]> = {
     list: ['GET', 'POST'],
-    one: ['GET', 'DELETE'],
+    one: ['GET', 'DELETE', 'PATCH'],
     media: ['GET', 'PUT'],
+    share: ['PUT', 'DELETE'],
   };
   if (!allowed[route].includes(method)) return refuse('not_found', 404);
   // Only a route that is one gets this far, so a path the door doesn't serve answers 404 whether or not the
@@ -196,8 +202,17 @@ export async function handleWalkthroughDoor(input: WalkthroughDoorInput): Promis
     });
   }
 
-  // DELETE: an Editor deletes any on the item; anyone else only their own, which the service checks.
-  if (editor) return passOn(await calls.remove(id!, { item: itemId }));
-  if (owner === null) return refuse('forbidden', 403);
-  return passOn(await calls.remove(id!, { owner }));
+  // Rename, share and delete: an Editor on any on the item; anyone else only their own, which the service checks.
+  const by = editor ? { item: itemId } : owner !== null ? { owner } : null;
+  if (!by) return refuse('forbidden', 403);
+  const shaped = (value: { walkthrough: Walkthrough }) => ({
+    walkthrough: walkthroughSummary(value.walkthrough, 'owner' in by, true),
+  });
+  if (route === 'share') return passOn(await calls.share(id!, by, method === 'PUT'), 200, shaped);
+  if (method === 'PATCH') {
+    const body = (await request.json().catch(() => null)) as { title?: unknown } | null;
+    if (typeof body?.title !== 'string' || !body.title.trim()) return refuse('invalid_title', 400);
+    return passOn(await calls.rename(id!, by, body.title), 200, shaped);
+  }
+  return passOn(await calls.remove(id!, by));
 }

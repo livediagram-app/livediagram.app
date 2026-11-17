@@ -63,6 +63,13 @@ articles.
 
 ## Reviewing
 
+- **With none waiting**, the Tools page opens on the tool's explainer (owner, 2026-11-17: the bare list confused):
+  the shared `ToolExplainer` with `suggestionsArt` (a shape and its proposed change as a dashed ghost, Accept and
+  Reject beside it). An Editor reads **Propose, Then Decide** and three steps (switch to Suggesting, change the
+  canvas, accept or reject here), with the **Your Edits** switch (Editing or Suggesting, its line saying what each
+  does) as its action. A Participant on Suggest Only reads **Your Edits Are Suggestions** and how theirs are answered;
+  any other Participant **No Suggestions Yet**. Once there are suggestions the list shows, the switch over it.
+
 - **An Editor** has **Accept** and **Reject** on each row and **Accept All** and **Reject All** at the top of the
   list. Accept and Accept All write the accepted suggestions to the tab as **one changeset** by the Editor, summarised
   **Accepted a suggestion** or **Accepted 3 suggestions**, so they show in the canvas's changeset history like an

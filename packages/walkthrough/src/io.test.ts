@@ -71,7 +71,7 @@ describe('the recorder', () => {
     expect(FakeRecorder.last.options).toMatchObject({
       mimeType: 'video/webm;codecs=vp8,opus',
       audioBitsPerSecond: 48_000,
-      videoBitsPerSecond: 400_000,
+      videoBitsPerSecond: 1_000_000,
     });
     FakeRecorder.last.emit(10);
     FakeRecorder.last.emit(0);
@@ -291,6 +291,36 @@ describe('the api', () => {
     expect(await api.read('w1')).toMatchObject({ walkthrough: summary });
     expect((await api.media('w1'))?.size).toBe(3);
     expect(await api.remove('w1')).toBe(true);
+  });
+
+  it('renames and turns the public link on and off, answering the walkthrough as it now is', async () => {
+    const calls: [string, RequestInit | undefined][] = [];
+    const api = walkthroughApi(
+      {
+        base: '/api',
+        fetch: async (url, init) => {
+          calls.push([url, init]);
+          return respond(200, { walkthrough: { ...summary, title: 'New', shareCode: 'c' } });
+        },
+      },
+      'd',
+    );
+    expect(await api.rename('w1', 'New')).toMatchObject({ title: 'New' });
+    expect(calls.at(-1)).toEqual([
+      '/api/walkthroughs/w1?d=d',
+      {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: 'New' }),
+      },
+    ]);
+    expect(await api.share('w1', true)).toMatchObject({ shareCode: 'c' });
+    expect(calls.at(-1)).toEqual(['/api/walkthroughs/w1/share?d=d', { method: 'PUT' }]);
+    await api.share('w1', false);
+    expect(calls.at(-1)?.[1]).toEqual({ method: 'DELETE' });
+    const refused = walkthroughApi({ base: '/api', fetch: async () => respond(403) }, 'd');
+    expect(await refused.rename('w1', 'X')).toBeNull();
+    expect(await refused.share('w1', true)).toBeNull();
   });
 
   it('answers null or false where it gets nothing', async () => {

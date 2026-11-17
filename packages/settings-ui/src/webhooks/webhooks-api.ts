@@ -238,10 +238,10 @@ const EVENT_NAMES = new Map<string, string>(
 export const eventName = (app: string, type: WebhookDelivery['type']): string =>
   EVENT_NAMES.get(`${app}:${type}`) ?? WEBHOOK_EVENT_LABELS[type] ?? type;
 
-/** Who Did It: every editor's changes, or only those of whoever added it. */
-export const WHO_CHOICES: readonly { who: WebhookWho; label: string; hint: string }[] = [
-  { who: 'anyone', label: 'Anyone', hint: 'Whoever does it' },
-  { who: 'me', label: 'Only Me', hint: 'Only what you do yourself' },
+/** Who Did It: every editor's changes, or only those of whoever added it. The names alone (owner, 2026-11-17). */
+export const WHO_CHOICES: readonly { who: WebhookWho; label: string }[] = [
+  { who: 'anyone', label: 'Anyone' },
+  { who: 'me', label: 'Only Me' },
 ];
 
 // ---------- Refusals --------------------------------------------------------------------------------------------

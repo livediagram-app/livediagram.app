@@ -302,8 +302,8 @@ Migration on read, in every entry point (`migrateStoredTab` / `migrateIncomingTa
 
 ## Presentation and UX
 
-- `EditorModeSwitch`: rendered by `ToolbarExplorerButton` right after the menu button (no hover card) and before
-  `TabNameInBox`, in the same `ToolbarMenuCard` (so it follows the card into the strip's row on a phone and into the
+- `EditorModeSwitch`: rendered by `ToolbarExplorerButton` right after the menu button (no hover card), the card's
+  last item (no `TabNameInBox` since 2026-11-17), in the same `ToolbarMenuCard` (so it follows the card into the strip's row on a phone and into the
   corner on a Draw tab or for a read-only visitor). Nothing unless `canEdit && canSwitch`. A content-width slot
   (`data-editor-mode-switch`), the name dropped with `iconOnly` (`useIsMobileViewport() || inline`).
   Its chip is `ModeMenuChip compact`: `h-9 rounded-md px-2 gap-1.5`, the icon, the name unless `iconOnly`, the

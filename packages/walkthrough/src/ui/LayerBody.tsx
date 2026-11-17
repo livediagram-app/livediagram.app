@@ -9,6 +9,7 @@ import { useEffect } from 'react';
 import type { Walkthroughs } from '../useWalkthroughs';
 import { LiveBubble } from './Bubble';
 import { Player } from './Player';
+import { VideoPlayer } from './VideoPlayer';
 import { Countdown, RecordDock } from './RecordDock';
 
 // The few animations the walkthroughs use, defined once here rather than in each app's Tailwind theme.
@@ -27,6 +28,7 @@ export default function LayerBody({ walkthroughs }: { walkthroughs: Walkthroughs
     recorder.stream && recorder.stream.getVideoTracks().length > 0 && phase.kind !== 'review'
       ? recorder.stream
       : null;
+  const playingId = player.phase.kind === 'ready' ? player.phase.walkthrough.id : null;
   const failed = player.phase.kind === 'failed' ? player.phase.message : null;
   const line = failed ?? notice;
 
@@ -43,7 +45,16 @@ export default function LayerBody({ walkthroughs }: { walkthroughs: Walkthroughs
       {phase.kind === 'countdown' ? <Countdown n={phase.n} /> : null}
       <RecordDock walkthroughs={walkthroughs} />
       {player.phase.kind === 'ready' ? (
-        <Player loaded={player.phase} host={host} onClose={player.close} />
+        player.phase.events.screen ? (
+          <VideoPlayer
+            loaded={player.phase}
+            current={walkthroughs.list.find((w) => w.id === playingId)}
+            onShare={(on) => walkthroughs.menu.share(playingId!, on)}
+            onClose={player.close}
+          />
+        ) : (
+          <Player loaded={player.phase} host={host} onClose={player.close} />
+        )
       ) : null}
       {line && phase.kind === 'off' && player.phase.kind !== 'ready' ? (
         <div className="absolute inset-x-0 bottom-16 flex justify-center px-4">

@@ -20,3 +20,4 @@ export { carryPageContent, warmLayoutPlaceholders } from './page-layout-carry';
 export * from './template-tab';
 export { templateCatalogue } from './template-catalogue';
 export { withBlankPageThemed } from './blank-page-templates';
+export { templatePageKind } from './template-page-kinds';

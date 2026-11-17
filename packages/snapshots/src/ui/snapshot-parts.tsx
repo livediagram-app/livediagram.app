@@ -4,7 +4,7 @@
 // Take Snapshot with its optional name, and the notices over the list (a refusal, Reverted).
 
 import { useId, useState, type FormEvent } from 'react';
-import { Button, ResponsivePopover, TextInput } from '@liveworkspace/ui';
+import { Button, ResponsivePopover, TextInput, ToolFooterButton } from '@liveworkspace/ui';
 import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { historyHeroArt } from '@liveworkspace/ui/dialog-hero-art/history';
 import { SnapshotGlyph } from './glyphs';
@@ -105,15 +105,12 @@ export function SnapshotButton({ state }: { state: SnapshotsState }) {
   const close = () => setAnchor(null);
   return (
     <>
-      <Button
-        type="button"
-        variant="secondary"
-        size="md"
+      {/* The tools' main footer button (owner, 2026-11-17: one look across every tool). */}
+      <ToolFooterButton
         data-snapshot-button=""
         aria-haspopup="dialog"
         aria-expanded={anchor !== null}
         disabled={state.reverted}
-        className="w-full justify-center gap-1.5"
         onClick={(e) =>
           // Beside the surface it is in (Tools, or the Snapshots dialog), else the button.
           setAnchor(e.currentTarget.closest<HTMLElement>('[role="dialog"]') ?? e.currentTarget)
@@ -121,7 +118,7 @@ export function SnapshotButton({ state }: { state: SnapshotsState }) {
       >
         <SnapshotGlyph size={14} />
         Take Snapshot
-      </Button>
+      </ToolFooterButton>
       <ResponsivePopover
         open={anchor !== null}
         onClose={close}

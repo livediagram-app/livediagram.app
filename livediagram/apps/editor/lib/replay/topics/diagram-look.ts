@@ -7,6 +7,7 @@ import {
 import { lookMatches, tabLookById, withLookApplied, type TabLook } from '@/lib/tab-looks';
 import { frameOf, type Chapter, type Frame, type Topic, type TopicEnv } from '../topic';
 import { boxedShape } from './shared';
+import { loadCanvasThemeDialog } from '@/components/dialogs/canvas-theme-dialog-loader';
 
 // Look and Feel (docs/specs/007-editor/watch-it-built.md "The curriculum"): the footer's Style opens the real Tab Style
 // dialog, two looks are picked in turn and the demo and canvas restyle, then the Canvas panel and a new background.
@@ -18,7 +19,7 @@ export const CHAPTERS: readonly Chapter[] = [
     id: 'look-open',
     name: 'Open Style',
     shortName: 'Style',
-    ms: 4500,
+    ms: 3200,
     say: 'Press Style in the bottom bar to change how the whole tab looks.',
     sayTouch: 'Tap Style in the bottom bar to change how the whole tab looks.',
   },
@@ -26,7 +27,7 @@ export const CHAPTERS: readonly Chapter[] = [
     id: 'look-pick',
     name: 'Pick a Look',
     shortName: 'Looks',
-    ms: 8000,
+    ms: 6500,
     say: 'A look sets colours, font and canvas in one click. Try a few.',
     sayTouch: 'A look sets colours, font and canvas in one tap. Try a few.',
   },
@@ -40,8 +41,8 @@ export const CHAPTERS: readonly Chapter[] = [
   },
 ];
 
-export const OPEN = { press: 2100 } as const;
-export const PICK = { first: 1600, second: 4800 } as const;
+export const OPEN = { press: 1400 } as const;
+export const PICK = { first: 1000, second: 3600 } as const;
 export const CANVAS = { open: 1500, pick: 4000 } as const;
 
 export const LOOK_IDS = { a: 'wib-look-a', b: 'wib-look-b', c: 'wib-look-c' } as const;
@@ -140,6 +141,11 @@ export const look: Topic<LookLayout> = {
   id: 'diagram-look',
   chapters: CHAPTERS,
 
+  // The Tab Style dialog loads on its first open (EditorModals.tsx); loaded now, Open Style's press shows it at once.
+  warm() {
+    void loadCanvasThemeDialog();
+  },
+
   layout(env) {
     const elements = demo(env);
     // Two looks the tab is not already wearing.
@@ -217,7 +223,7 @@ export const look: Topic<LookLayout> = {
       ];
     }
     return [
-      { at: 900, to: { kind: 'element', id: LOOK_IDS.b } },
+      { at: 500, to: { kind: 'element', id: LOOK_IDS.b } },
       { at: OPEN.press, to: { kind: 'tour', id: 'canvas-theme' }, press: true },
     ];
   },
