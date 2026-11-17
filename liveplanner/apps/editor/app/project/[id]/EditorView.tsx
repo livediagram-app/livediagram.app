@@ -264,7 +264,12 @@ export function EditorView() {
       <PendingStarterRules tabId={tabs[0]?.id} projectId={ctx.projectId} offline={isOffline} />
       <SnapshotsDoorProvider door={snapshotsDoor}>
         <CalendarFeedHost scope={calendarFeedScope} gate={calendarFeedGate}>
-          <RoadmapHost scope={roadmapScope} hasBoards={roadmapHasBoards} activeTabId={activeTab.id}>
+          <RoadmapHost
+            scope={roadmapScope}
+            hasBoards={roadmapHasBoards}
+            activeTabId={activeTab.id}
+            itemTypes={ctx.plan.context?.itemTypes}
+          >
             <EmailIntakeHost
               scope={emailIntakeScope}
               gate={emailIntakeGate}

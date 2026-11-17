@@ -3,7 +3,8 @@
 // Publish as Roadmap (docs/specs/026-plan/public-roadmap.md "The dialog"): a board of the tab as a public page, read
 // fresh when it opens, in one of two states. Not published: the settings and Publish Roadmap. Published: the live link
 // with Copy Link and Open Roadmap, the settings saving as they change (the link kept), and Unpublish behind a confirm.
-// A tab with several boards gets a board picker at the top. The privacy note is always there.
+// A tab with several boards gets a board picker at the top. The privacy note is always there. With Voting on, a chosen
+// card type whose cards would not show their votes is offered Add Votes (one change to the plan's card types).
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { PublishedRoadmap, RoadmapSettings, RoadmapsResponse } from '@liveplanner/api-schema';
 import {
@@ -26,6 +27,8 @@ import { ChoicePills } from '@/components/primitives/ChoicePills';
 import { apiPublishForm } from '@/lib/api/forms';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
+import { typeShowsVotes, withInheritance, withVotesShown } from '@liveplanner/items';
+import type { ItemTypesSlice } from '@/hooks/plan/useItemTypes';
 import { track } from '@/lib/telemetry';
 import { readRoadmaps, saveRoadmap, unpublishRoadmap } from './roadmap-client';
 import { defaultRoadmapSettings, settingsReady } from './roadmap-defaults';
@@ -49,14 +52,23 @@ const settingsOf = (r: PublishedRoadmap): RoadmapSettings => ({
   formCode: r.formCode,
 });
 
+// "Project", "Project and Bug", "Project, Bug and Task".
+export function namesOf(names: readonly string[]): string {
+  if (names.length <= 1) return names[0] ?? '';
+  return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
+}
+
 export function RoadmapDialog({
   scope,
   startTabId,
+  cardTypes,
   onClose,
 }: {
   scope: RoadmapScope;
   // The tab in view when it opened: the Tab picker starts there when it holds a board.
   startTabId: string;
+  // The plan's card types and their changes (useItemTypes): what Add Votes reads and changes. Absent: no offer.
+  cardTypes?: Pick<ItemTypesSlice, 'catalogue' | 'types' | 'saveCatalogue'> | undefined;
   onClose: () => void;
 }) {
   const titleId = useId();
@@ -71,6 +83,8 @@ export function RoadmapDialog({
   const [saveFailed, setSaveFailed] = useState(false);
   const [confirming, setConfirming] = useState<HTMLElement | null>(null);
   const { copied, flash } = useCopiedFlash(1800);
+  // The types Add Votes was just given, named for the note that says so.
+  const [votesAdded, setVotesAdded] = useState<string | null>(null);
   const editor = useOptionalEditorContext();
   const [makingForm, setMakingForm] = useState(false);
   const [formProblem, setFormProblem] = useState<string | null>(null);
@@ -116,6 +130,26 @@ export function RoadmapDialog({
         : defaultRoadmapSettings(board)
     : null;
   const url = published ? `${window.location.origin}${published.path}` : null;
+  // The chosen card types whose cards would not show a vote: no Votes field, or none on the card.
+  const lackVotes =
+    settings?.voting && cardTypes
+      ? settings.types.flatMap((id) => {
+          const type = cardTypes.types.find((t) => t.id === id);
+          return type && !typeShowsVotes(type) ? [type] : [];
+        })
+      : [];
+
+  // Votes for every chosen type that lacks it, as one change to the plan's card types (one undo step).
+  function addVotes() {
+    if (!cardTypes?.catalogue || lackVotes.length === 0) return;
+    const catalogue = cardTypes.catalogue;
+    const ids = new Set(lackVotes.map((t) => t.id));
+    cardTypes.saveCatalogue({
+      ...catalogue,
+      types: withInheritance(catalogue.types.map((t) => (ids.has(t.id) ? withVotesShown(t) : t))),
+    });
+    setVotesAdded(namesOf(lackVotes.map((t) => t.label)));
+  }
 
   const putRoadmap = (roadmap: PublishedRoadmap) =>
     setData((d) =>
@@ -423,6 +457,13 @@ export function RoadmapDialog({
                 : undefined
             }
             onChange={(next) => void change(next)}
+            votes={
+              lackVotes.length > 0
+                ? { kind: 'offer', names: namesOf(lackVotes.map((t) => t.label)), add: addVotes }
+                : votesAdded && settings.voting
+                  ? { kind: 'added', names: votesAdded }
+                  : null
+            }
           />
         ) : null}
         {state === 'draft' || state === 'published' ? (
