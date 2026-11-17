@@ -305,7 +305,8 @@ export function PaletteDropdown({
       {triggerLeading}
       {selected?.icon ? <span className={ICON_WRAP}>{selected.icon}</span> : null}
       {iconOnly ? null : <span className="truncate">{selected?.label}</span>}
-      <ChevronDownIcon className="shrink-0" />
+      {/* Experiment (no header bar): no caret on a phone, where the strip has no room to spare. */}
+      <ChevronDownIcon className="shrink-0 phone:hidden" />
     </button>
   );
   return (

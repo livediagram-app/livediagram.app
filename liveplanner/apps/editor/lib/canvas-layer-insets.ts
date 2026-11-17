@@ -182,7 +182,7 @@ export function phoneRow(
     height: Math.round(menu.bottom - top),
     // Experiment (no header bar): the name close after the menu (the menu card frameless on the element), as it reads in
     // a desktop band.
-    left: Math.round(menu.right - left - 4),
+    left: Math.round(menu.right - left + 4),
   };
 }
 
