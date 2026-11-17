@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { useFillsTab, usePlanTabKind } from '@/hooks/plan/plan-cover-store';
 import { FillTabElementContext, FillTabPending } from '@/components/plan/FillTabPending';
 import { DataChartView } from '@/components/canvas/DataChartView';
+import { PlanBoardView } from '@/lib/editor-deferred-code';
 import type { BoxedElementViewProps } from '@/components/canvas/BoxedElementView.types';
 
 // Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a project without
@@ -39,10 +40,8 @@ function OffDashboard({ id, children }: { id: string; children: ReactNode }) {
   );
 }
 
-const PlanBoardView = dynamic(
-  () => import('@/components/plan/PlanBoardView').then((m) => m.PlanBoardView),
-  { ssr: false, loading: FillTabPending },
-);
+// The board is a lazy panel (lib/editor-deferred-code.ts): a warm paint has its code in first, so it draws in the
+// paint's own commit.
 
 type ShapeContentRouterProps = Pick<
   BoxedElementViewProps,

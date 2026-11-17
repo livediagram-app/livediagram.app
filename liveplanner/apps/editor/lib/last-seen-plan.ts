@@ -1,7 +1,7 @@
 // What a plan's last seen copy adds to the shared copy (docs/specs/006-project/offline-mode.md "Warm open of a cloud
 // project", blueprints/last-seen-copy.md): the cards the board read, the first tab's sheets and the tabs a Dashboard
 // first tab shows, each capped, and which first tabs can paint from what the copy holds. Pure: no React, no storage.
-import type { Project } from '@liveplanner/api-schema';
+import type { AccessLevel, Project } from '@liveplanner/api-schema';
 import type { ItemStoreState } from '@liveplanner/items';
 import { readDashboard, tabKindOf, type Tab } from '@liveplanner/project';
 import type { SheetJson } from '@liveplanner/sheets';
@@ -37,7 +37,18 @@ export type WarmPlan = {
   cards: ItemStoreState | null;
   sheets: readonly KeptSheets[];
   refTabs: readonly Tab[];
+  // The role the copy was kept with: never what the paint may do (it is a Viewer's), only the strips the board keeps
+  // room for (warmRightsOf).
+  role: AccessLevel;
 };
+
+/** What the board keeps room for during a warm paint: the strips the kept role shows once the catch-up gives it back
+ *  (offline-mode.md "The board holds its place"). Layout only: nothing here lets the paint do anything. */
+export type WarmRights = { canEdit: boolean; canEditCards: boolean };
+
+export function warmRightsOf(role: AccessLevel): WarmRights {
+  return { canEdit: role === 'edit', canEditCards: role !== 'view' };
+}
 
 /** The cards to keep: the store itself (no copy is made; the JSON is built only when the copy is written), or null
  *  past the cap. */
@@ -138,5 +149,6 @@ export function warmPlanOf(copy: LastSeenCopy<PlanCopyItem, unknown>): WarmPlan 
     cards: cards ?? null,
     sheets: [...(sheets ? [sheets] : []), ...(refs?.sheets ?? [])],
     refTabs: refs?.tabs ?? [],
+    role: copy.access.role,
   };
 }
