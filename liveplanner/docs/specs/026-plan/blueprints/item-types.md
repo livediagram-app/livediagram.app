@@ -219,7 +219,13 @@ now), [id]).ids)` per landed file; "N images added" announced at the end. The ca
   api refuses. `waitingOn(items, types, itemId)` answers every card that already waits on a card (one pass inverting the links,
   one walk down), what the panel's picker marks. Gantt: `ganttArrows(entries, index, phases)` (plan-view-gantt-arrows.ts) answers an arrow per blocker
   and blocked pair that are both row entries with a mark (`from`, `to` rows and tops, `done`), and
-  `ganttArrowPath(from, to, rowH)` the elbow path (`GANTT_ARROW_STEP = 8`, the head `GANTT_ARROW_HEAD = 5`). Linked as:
+  `ganttArrowPath(from, to, rowH)` the elbow path (`GANTT_ARROW_STEP = 8`, the head `GANTT_ARROW_HEAD = 5`). Clashes
+  (`dependency-clash.ts`, blueprint plan-views.md "Gantt dependency clashes"): `BlockedBySections` shows, under each
+  open blocker the card starts on or before (`clashesOf` over `BUILT_IN_DATES`), an amber `data-blocker-clash` line
+  with `clashText`, and adds it to that row's accessible name. Agents (`plan-listing.ts`): `itemLister` adds `clashes`
+  (the texts) to a clashing card; `applyItemChanges` takes `moveFollowing` on a `set` and, after its write, posts
+  `followingShifts(items, index, isDone, [id], BUILT_IN_DATES)` one by one, a line each ("~ #7 Launch moved 3 days
+  later, after #3 Design"). Linked as:
   `LinkField.blocks` and `LinkedGroup.blocks`; `blocksHeading(label)` is "Blocks" for a field named Blocked By
   (ignoring case), else "Blocks ({label})". The api (`item-route-kit.ts` `blockersRefused`): when
   `blocksValueChanged` names a field, a caller without edit gets 403 (`[items] items.blocks.refused`), then the

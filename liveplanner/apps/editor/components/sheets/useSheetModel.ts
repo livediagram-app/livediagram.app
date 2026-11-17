@@ -23,7 +23,6 @@ import { templateChartElements } from '@liveplanner/templates/template-sheets';
 import { chartsInSheet, type ShapeElement } from '@liveplanner/project';
 import type { SheetsBridge } from '@/hooks/sheets/useSheetsBridge';
 import {
-  registerSheetSource,
   rememberSetupStart,
   seedKeepsTitle,
   sheetSeed,
@@ -34,7 +33,7 @@ import type { PlanContextValue } from '@/components/plan/PlanContext';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { sheetStoreOf, type SheetStore, type TabStatus } from './sheet-store-client';
 import { useSheetHomeTab } from './sheet-home-tab';
-import { retitleSheets } from './sheet-rename';
+import { attachSheetStore } from './sheet-store-attach';
 import { sheetPresenceFor } from './sheet-presence-store';
 import { markCardTableSheet } from '@/hooks/sheets/card-table-sheets';
 import { CSV_TRUNCATED, csvWrites } from './sheet-csv';
@@ -47,18 +46,6 @@ type SheetModel = {
   status: TabStatus | undefined;
   version: number;
 };
-
-// How many Sheets draw from each store, so the room stays attached while any does.
-const ATTACHED = new WeakMap<SheetStore, { count: number; detach: () => void }>();
-
-function release(store: SheetStore): void {
-  const held = ATTACHED.get(store);
-  if (!held) return;
-  if (--held.count > 0) return;
-  ATTACHED.delete(store);
-  held.detach();
-  registerSheetSource(null);
-}
 
 function fillFromCsv(
   store: SheetStore,
@@ -107,30 +94,7 @@ export function useSheetModel(
   const store = sheetStoreOf(bridge);
   const dark = useCanvasSurface() === 'dark';
   // The room reaches this project's store once, whichever Sheet draws first.
-  useEffect(() => {
-    const held = ATTACHED.get(store);
-    if (held) {
-      held.count++;
-      return () => release(store);
-    }
-    const presence = sheetPresenceFor(store);
-    presence.connect((op) => bridge.sendPresence(op));
-    registerSheetSource((id) => {
-      const sheet = store.sheet(id);
-      return sheet ? sheetToJson(sheet) : undefined;
-    });
-    const detach = bridge.attach({
-      receive: (op) => store.receive(op),
-      title: (id) => store.sheet(id)?.title,
-      release: (ids) => store.release(ids),
-      retitle: (ids, from, to) => retitleSheets(store, ids, from, to),
-      presence: (from, op) => presence.receive(from, op),
-      resync: () => store.resync(),
-      reannounce: () => presence.reannounce(),
-    });
-    ATTACHED.set(store, { count: 1, detach });
-    return () => release(store);
-  }, [store, bridge]);
+  useEffect(() => attachSheetStore(store, bridge), [store, bridge]);
 
   const version = useSyncExternalStore(store.subscribe, store.getVersion, store.getVersion);
   // Someone new in the room hears this person's selection (as a Plan card hold is said again).

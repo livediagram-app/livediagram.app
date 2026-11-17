@@ -14,8 +14,8 @@ import { BAND_CONTROLS_CLASS, BAND_HEADER_END, bandControlsProps } from '../band
 import { PLAN_HEADING_STYLE, planBoardFontStyle } from '@/lib/plan-font';
 
 // The phase colours and the overdue red (phase-colours.ts), shared with the views' still pictures.
-import { OVERDUE_RED, PHASE_COLOURS } from '@liveplanner/plan-art';
-export { OVERDUE_RED, PHASE_COLOURS };
+import { CLASH_AMBER, OVERDUE_RED, PHASE_COLOURS } from '@liveplanner/plan-art';
+export { CLASH_AMBER, OVERDUE_RED, PHASE_COLOURS };
 
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
 
