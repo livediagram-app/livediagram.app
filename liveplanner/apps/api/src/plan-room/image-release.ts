@@ -20,6 +20,23 @@ export const IMAGE_RELEASES_PER_WAKE = 20;
 export const IMAGE_RELEASE_RETRY_MS = 60 * 1000;
 export const IMAGE_RELEASE_RETRY_MAX_MS = 60 * 60 * 1000;
 export const IMAGE_RELEASE_ATTEMPTS_MAX = 12;
+// How long one release may hold the room's doors (below): an answer slower than this is a failure, tried again later.
+// Well under the runtime's 30 s limit on blockConcurrencyWhile.
+export const IMAGE_RELEASE_TIMEOUT_MS = 5_000;
+
+/** Runs `work` with the room's doors shut: no request or socket message is delivered until it settles. The room
+ *  passes its `blockConcurrencyWhile`; alone (tests, scripts), the work just runs. */
+export type ReleaseHold = <T>(work: () => Promise<T>) => Promise<T>;
+const NO_HOLD: ReleaseHold = (work) => work();
+
+// The media service's answer, or 'slow' once IMAGE_RELEASE_TIMEOUT_MS passes.
+function withinTimeout<T>(answer: Promise<T>): Promise<T | 'slow'> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const late = new Promise<'slow'>((resolve) => {
+    timer = setTimeout(() => resolve('slow'), IMAGE_RELEASE_TIMEOUT_MS);
+  });
+  return Promise.race([answer, late]).finally(() => clearTimeout(timer));
+}
 // The longest id the triggers note: the service's ids are UUIDs (image-grants.ts IMAGE_ID_MAX).
 const ID_MAX = 200;
 
@@ -136,10 +153,17 @@ export type ReleaseRun = { released: number; kept: number; held: number; retried
 // The releases due now, at most IMAGE_RELEASES_PER_WAKE: one the plan still holds is dropped (it stays); the rest
 // are asked of the media service, which deletes only what nothing else places. An answer, released or kept, ends
 // the row; a failure waits and tries again. Without the service there is nobody to ask: the rows go.
+//
+// The check and the ask run together under `hold` (the room's blockConcurrencyWhile), so no write can put the picture
+// back on a card between the plan saying nothing holds it and the service deleting it: a re-add waits at the door
+// until the answer is in, and then lands on a picture that is either kept or gone, never one deleted under it. Each
+// hold lasts at most IMAGE_RELEASE_TIMEOUT_MS, and a wake stops at its first slow answer (the rest stay due). After a released answer the plan checks again, and a picture it holds
+// once more (which the hold rules out) is logged as an error rather than passed over in silence.
 export async function releaseDueImages(
   env: PlanEnv,
   planId: string,
   now: number,
+  hold: ReleaseHold = NO_HOLD,
 ): Promise<ReleaseRun> {
   const run: ReleaseRun = { released: 0, kept: 0, held: 0, retried: 0 };
   const due = await env.PLAN_DB.prepare(
@@ -157,13 +181,24 @@ export async function releaseDueImages(
       done.push(id);
       continue;
     }
-    if (await planStillHolds(env, planId, id)) {
+    const answer = await hold(async () => {
+      if (await planStillHolds(env, planId, id)) return 'held' as const;
+      const asked = await withinTimeout(media.release(id, planId)).catch(() => null);
+      if (
+        asked !== 'slow' &&
+        asked?.ok &&
+        asked.value.released &&
+        (await planStillHolds(env, planId, id))
+      )
+        console.error('[media] released a picture the plan holds again', { planId });
+      return asked;
+    });
+    if (answer === 'held') {
       run.held++;
       done.push(id);
       continue;
     }
-    const answer = await media.release(id, planId).catch(() => null);
-    if (answer?.ok) {
+    if (answer !== 'slow' && answer?.ok) {
       if (answer.value.released) run.released++;
       else run.kept++;
       done.push(id);
@@ -181,6 +216,8 @@ export async function releaseDueImages(
     )
       .bind(now + wait, attempts + 1, planId, id)
       .run();
+    // A service that stalls is asked nothing more this wake, so the room's doors shut for at most one timeout.
+    if (answer === 'slow') break;
   }
   if (done.length > 0)
     await env.PLAN_DB.prepare(

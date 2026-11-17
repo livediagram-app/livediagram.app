@@ -181,7 +181,8 @@ export async function releaseImages(room: PlanRoom, now: number): Promise<void> 
   room.releaseAt = null;
   if (!env || !planId || !room.schemaReady) return;
   try {
-    await releaseDueImages(env, planId, now);
+    // Each release shuts the room's doors while it is checked and asked (image-release.ts).
+    await releaseDueImages(env, planId, now, (work) => room.state.blockConcurrencyWhile(work));
     room.releaseAt = nextImageReleaseAt(room.state.storage.sql);
   } catch (error) {
     console.warn('[media] releases failed', { planId, error: String(error) });

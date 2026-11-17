@@ -8,6 +8,7 @@ import {
   IMAGE_RELEASE_ATTEMPTS_MAX,
   IMAGE_RELEASE_GRACE_MS,
   IMAGE_RELEASE_RETRY_MS,
+  IMAGE_RELEASE_TIMEOUT_MS,
   IMAGE_RELEASES_PER_WAKE,
   nextImageReleaseAt,
   planStillHolds,
@@ -25,18 +26,23 @@ const PLAN = 'plan-1';
 const MEDIA_URL = 'https://media.test/api/media';
 
 let released: string[];
-// What the fake service answers a release: released, kept, or a failure.
-let answer: 'released' | 'kept' | 'fail';
+// What the fake service answers a release: released, kept, a failure, or nothing at all.
+let answer: 'released' | 'kept' | 'fail' | 'silent';
+// Run as the service takes a release, before it answers: a request reaching the room meanwhile.
+let duringRelease: (() => void) | null;
 
 beforeEach(() => {
   released = [];
   answer = 'released';
+  duringRelease = null;
   vi.stubGlobal(
     'fetch',
     vi.fn(async (url: string) => {
       const u = new URL(String(url));
       if (u.pathname.endsWith('/release')) {
         if (answer === 'fail') return Response.json({ error: 'down' }, { status: 503 });
+        if (answer === 'silent') return new Promise<Response>(() => {});
+        duringRelease?.();
         released.push(
           `${decodeURIComponent(u.pathname.split('/').at(-2)!)}@${u.searchParams.get('document')}`,
         );
@@ -301,6 +307,93 @@ describe('a release', () => {
   });
 });
 
+describe('a picture put back while its release is asked', () => {
+  // The room's doors as blockConcurrencyWhile keeps them: a request arriving while they are shut waits until the
+  // work settles, then runs.
+  function doors() {
+    let shut = false;
+    const waiting: (() => void)[] = [];
+    const hold = async <T>(work: () => Promise<T>): Promise<T> => {
+      shut = true;
+      try {
+        return await work();
+      } finally {
+        shut = false;
+        for (const request of waiting.splice(0)) request();
+      }
+    };
+    const arrive = (request: () => void) => (shut ? waiting.push(request) : request());
+    return { hold, arrive };
+  }
+
+  async function removedOne(p: ReturnType<typeof plan>) {
+    p.card('a', { attachments: [pic('one')] });
+    p.edit('a', {});
+    await p.stamp(0);
+  }
+
+  it('waits at the shut doors, so the service never deletes a picture a card holds', async () => {
+    const p = plan();
+    await removedOne(p);
+    const { hold, arrive } = doors();
+    let heldWhenAsked: boolean | null = null;
+    duringRelease = () => {
+      arrive(() => p.edit('a', { attachments: [pic('one')] }));
+      heldWhenAsked =
+        p.sql.prepare("SELECT instr(fields, 'one') > 0 AS held FROM items WHERE id = 'a'").get()!
+          .held === 1;
+    };
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    expect((await releaseDueImages(p.env, PLAN, IMAGE_RELEASE_GRACE_MS, hold)).released).toBe(1);
+    // The service answered while no card held it; the re-add landed only after the answer.
+    expect(heldWhenAsked).toBe(false);
+    expect(await planStillHolds(p.env, PLAN, 'one')).toBe(true);
+    expect(error).not.toHaveBeenCalled();
+  });
+
+  it('says so loudly when a picture is back after a release, as it could be with the doors open', async () => {
+    const p = plan();
+    await removedOne(p);
+    duringRelease = () => p.edit('a', { attachments: [pic('one')] });
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    await releaseDueImages(p.env, PLAN, IMAGE_RELEASE_GRACE_MS);
+    expect(error).toHaveBeenCalledWith('[media] released a picture the plan holds again', {
+      planId: PLAN,
+    });
+  });
+
+  it('opens the doors again when the service is slow, and tries later', async () => {
+    vi.useFakeTimers();
+    const p = plan();
+    await removedOne(p);
+    answer = 'silent';
+    const { hold } = doors();
+    const run = releaseDueImages(p.env, PLAN, IMAGE_RELEASE_GRACE_MS, hold);
+    await vi.advanceTimersByTimeAsync(IMAGE_RELEASE_TIMEOUT_MS);
+    expect(await run).toMatchObject({ released: 0, retried: 1 });
+    expect(p.noted()).toEqual([
+      { id: 'one', due: IMAGE_RELEASE_GRACE_MS + IMAGE_RELEASE_RETRY_MS },
+    ]);
+  });
+
+  it('asks nothing more in a wake once the service is slow, so the doors shut for one timeout at most', async () => {
+    vi.useFakeTimers();
+    const p = plan();
+    p.card('a', { attachments: [pic('one'), pic('two')] });
+    p.edit('a', {});
+    await p.stamp(0);
+    answer = 'silent';
+    const run = releaseDueImages(p.env, PLAN, IMAGE_RELEASE_GRACE_MS, doors().hold);
+    await vi.advanceTimersByTimeAsync(IMAGE_RELEASE_TIMEOUT_MS);
+    expect(await run).toMatchObject({ retried: 1 });
+    // The second is still due as it was, for the next wake.
+    expect(p.noted()).toEqual([
+      { id: 'one', due: IMAGE_RELEASE_GRACE_MS + IMAGE_RELEASE_RETRY_MS },
+      { id: 'two', due: IMAGE_RELEASE_GRACE_MS },
+    ]);
+  });
+});
+
 describe('in the room', () => {
   it('stamps the grace at the drain, keeps it across a restart, and releases at the alarm', async () => {
     vi.useFakeTimers();
@@ -321,8 +414,11 @@ describe('in the room', () => {
     await vi.advanceTimersByTimeAsync(0);
     expect(woken.releaseAt).toBe(1_000_000 + IMAGE_RELEASE_GRACE_MS);
     vi.setSystemTime(1_000_000 + IMAGE_RELEASE_GRACE_MS);
+    const shut = vi.spyOn(woken.state, 'blockConcurrencyWhile');
     await woken.alarm();
     expect(released).toEqual([`photo@${PLAN}`]);
+    // The check and the ask ran with the room's doors shut.
+    expect(shut).toHaveBeenCalledTimes(1);
     expect(woken.releaseAt).toBeNull();
   });
 

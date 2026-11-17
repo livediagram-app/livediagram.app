@@ -760,7 +760,10 @@ dots }` under the field's id. `votesFieldsOf(type)` lists the type's Votes field
   `armPlanAlarm`, and its wake runs `releaseImages` → `releaseDueImages`: at most `IMAGE_RELEASES_PER_WAKE` (20) due
   rows; one `planStillHolds` (an `instr` text match over the plan's `items.fields`, every `tabs.data`,
   `agent_changeset_parts.data` and, when the table exists, each `snapshot_chunks.data` with the next chunk's first 400
-  characters) drops; the rest go to `MediaClient.release(id, planId)`, whose answer, released or kept, drops the row;
+  characters) drops; the rest go to `MediaClient.release(id, planId)`, whose answer, released or kept, drops the row.
+  The check and the ask run as one `ReleaseHold` (the room's `state.blockConcurrencyWhile`), so no write lands between
+  them; an answer slower than `IMAGE_RELEASE_TIMEOUT_MS` (5 s) counts as a failure and ends the wake's asking, and a picture held again after a
+  released answer logs `[media] released a picture the plan holds again` (an error the hold rules out);
   a failure sets `due_at` + `IMAGE_RELEASE_RETRY_MS` (1 min) doubling to `IMAGE_RELEASE_RETRY_MAX_MS` (1 h), dropped
   after `IMAGE_RELEASE_ATTEMPTS_MAX` (12) tries (`[media] release given up`). No media client drops the due rows. A run
   that throws waits a minute (`[media] releases failed`). Each run logs `[media] releases { released, kept, held,

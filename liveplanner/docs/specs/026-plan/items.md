@@ -235,6 +235,10 @@ card deleted for good.
   (the release route, with the plan's id, [media.md](../../../../liveworkspace/docs/specs/006-media/media.md)
   "Releases"). The service deletes a picture only when it was uploaded for this plan and no reference in any app names
   it, its own included, so a copied plan, or another app's file that places it, keeps it.
+- **Nothing lands mid-release.** The plan checks a picture and asks the service with its doors shut: a write that
+  puts the picture back on a card waits until the answer is in (at most 5 seconds; a slower answer counts as a
+  failure, and the plan asks nothing more until its next wake), so the service never deletes a picture a card holds
+  again.
 - **Kept is final, failures retry.** An answer either way ends the wait; a release the service can't answer tries
   again a minute later, doubling to an hour, and gives up after 12 tries. The daily sweep stays the backstop for
   anything kept. At most 20 releases are asked a wake.
