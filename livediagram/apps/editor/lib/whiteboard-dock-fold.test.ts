@@ -145,6 +145,15 @@ describe('placeTopDock', () => {
     expect(placed.fit).toEqual({ pins: 1, folded: new Set() });
   });
 
+  it('centred, keeps the wider of the menu card’s and the corner card’s clearances on both sides', () => {
+    // A corner card as wide as the menu card's clearance: the room beside the card already left it out, so centring
+    // costs nothing (600 + 243 + 243 - 2 * 243 = 600) and the bar centres whole, where the 12 px margin left 369.
+    expect(placeTopDock({ ...args, leftRoom: 600, wide: true }).centred).toBe(false);
+    const placed = placeTopDock({ ...args, leftRoom: 600, clearRight: 243, wide: true });
+    expect(placed.centred).toBe(true);
+    expect(placed.fit).toEqual({ pins: 1, folded: new Set() });
+  });
+
   it('centres from lg where the whole bar fits centred', () => {
     // Centred room: 731 - 243 + 12 = 500.
     expect(placeTopDock({ ...args, leftRoom: 731, wide: true }).centred).toBe(true);

@@ -5,9 +5,20 @@
 // place (read as a blob with the person's token, so nothing sits behind a public address), maximises to full screen,
 // and closes back to the preview; under it, the title, the item it was recorded on (opening it), when and how big, and
 // Delete, which asks first since it can't be undone. One plays at a time.
+import { walkthroughHeroArt } from '@liveworkspace/ui/dialog-hero-art/walkthrough';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Item } from '@liveworkspace/index-client';
-import { ConfirmPopover, EmptyState, Spinner } from '@liveworkspace/ui';
+import {
+  Button,
+  ConfirmPopover,
+  EmptyState,
+  LinkIcon,
+  Portal,
+  PublicLinkPopover,
+  Spinner,
+  VideoDialog,
+} from '@liveworkspace/ui';
+import { workspaceOriginFor } from '@liveworkspace/sites';
 import { useExplorer } from '../explorer/context';
 import { PaneHeader } from '../explorer/PaneHeader';
 import { HelpButton } from '../explorer/HomeHero';
@@ -21,8 +32,9 @@ import type { WalkthroughEntry, WalkthroughsHost } from './types';
 const LOOKUP_BATCH = 100;
 
 const PlayGlyph = lucide(<path d="M7 4.5v15l12.5-7.5z" fill="currentColor" stroke="none" />, 22);
-const MaximiseGlyph = lucide(<path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />, 15);
-const CloseGlyph = lucide(<path d="M18 6 6 18M6 6l12 12" />, 15);
+// A walkthrough's public link on liveworkspace.app (staging's from a staging app), as the editor's Share makes it.
+const walkthroughShareUrl = (code: string) =>
+  `${workspaceOriginFor(globalThis.location?.host ?? '')}/walkthrough?c=${code}`;
 const BinGlyph = lucide(<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6" />, 15);
 const CameraGlyph = lucide(
   <>
@@ -204,6 +216,13 @@ export function WalkthroughsContent({
           playing={playing === entry.id}
           onPlay={(on) => setPlaying(on ? entry.id : null)}
           compact={compact}
+          onChanged={(next) =>
+            setLoad((l) =>
+              l.state === 'ready'
+                ? { state: 'ready', entries: l.entries.map((e) => (e.id === next.id ? next : e)) }
+                : l,
+            )
+          }
           onDeleted={() =>
             setLoad((l) =>
               l.state === 'ready'
@@ -224,6 +243,7 @@ function WalkthroughCard({
   playing,
   onPlay,
   onDeleted,
+  onChanged,
   compact,
 }: {
   entry: WalkthroughEntry;
@@ -232,17 +252,19 @@ function WalkthroughCard({
   playing: boolean;
   onPlay: (on: boolean) => void;
   onDeleted: () => void;
+  onChanged: (next: WalkthroughEntry) => void;
   // In the editor panel: three small tiles a row, the title alone under each; one playing takes the whole row so its
   // controls have room.
   compact: boolean;
 }) {
   const { itemHref, Link } = useExplorer();
-  const box = useRef<HTMLDivElement>(null);
   const [url, setUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [failed, setFailed] = useState(false);
   const [confirmAt, setConfirmAt] = useState<HTMLElement | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const shareRef = useRef<HTMLButtonElement>(null);
+  const [sharing, setSharing] = useState(false);
 
   // The media is read once, when first played, and its object URL let go when the card goes.
   useEffect(() => {
@@ -281,40 +303,19 @@ function WalkthroughCard({
     <li
       data-walkthrough-card={entry.id}
       title={compact ? `${entry.title} · ${when}` : undefined}
-      className={`group flex flex-col overflow-hidden ${compact ? 'rounded-xl' : 'rounded-2xl'} ${
-        compact && playing ? 'col-span-3' : ''
-      } border border-slate-200 bg-white shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition-[box-shadow,transform,opacity] duration-short hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0 dark:border-slate-700 dark:bg-slate-900 ${
+      className={`group flex flex-col overflow-hidden ${compact ? 'rounded-xl' : 'rounded-2xl'} border border-slate-200 bg-white shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition-[box-shadow,transform,opacity] duration-short hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0 dark:border-slate-700 dark:bg-slate-900 ${
         deleting ? 'pointer-events-none opacity-50' : ''
       }`}
     >
       <div
-        ref={box}
         className={`relative aspect-video overflow-hidden ${
           entry.camera
             ? 'bg-slate-950'
             : 'bg-gradient-to-br from-brand-500 via-brand-600 to-violet-700'
         }`}
       >
-        {playing && url ? (
-          <>
-            {entry.camera ? null : (
-              // Voice only: the recorder's face, pulsing while it plays, over the gradient.
-              <span aria-hidden className="absolute inset-0 flex items-center justify-center pb-10">
-                <span className="flex size-16 items-center justify-center rounded-full bg-white/20 text-2xl font-semibold text-white ring-4 ring-white/25 motion-safe:animate-pulse">
-                  {initial}
-                </span>
-              </span>
-            )}
-            <video
-              src={url}
-              controls
-              autoPlay
-              playsInline
-              className={`relative h-full w-full ${entry.camera ? 'object-contain' : 'bg-transparent object-cover'}`}
-              aria-label={`${entry.title}, playing`}
-            />
-          </>
-        ) : (
+        {/* Playing opens the same centred modal as the editor's Tools (owner, 2026-11-17); the card stays as it is. */}
+        {
           <button
             type="button"
             onClick={() => onPlay(true)}
@@ -355,8 +356,8 @@ function WalkthroughCard({
             </span>
             {compact ? null : (
               <span className="absolute bottom-2.5 left-3 inline-flex items-center gap-1 rounded-full bg-black/35 px-2 py-0.5 text-[11px] font-medium text-white backdrop-blur-sm">
-                {entry.camera ? <CameraGlyph /> : <MicGlyph />}
-                {entry.camera ? 'Camera' : 'Voice'}
+                {entry.screen || entry.camera ? <CameraGlyph /> : <MicGlyph />}
+                {entry.screen ? 'Video' : entry.camera ? 'Camera' : 'Voice'}
               </span>
             )}
             <span
@@ -369,7 +370,7 @@ function WalkthroughCard({
               {clockOf(entry.durationMs)}
             </span>
           </button>
-        )}
+        }
         {failed ? (
           <p
             role="alert"
@@ -377,28 +378,6 @@ function WalkthroughCard({
           >
             Couldn’t play it. Try again.
           </p>
-        ) : null}
-        {playing && url ? (
-          <div className="absolute right-2 top-2 flex gap-1.5 opacity-0 transition-opacity duration-short group-hover:opacity-100 group-focus-within:opacity-100">
-            <button
-              type="button"
-              title="Maximise"
-              aria-label="Maximise"
-              onClick={() => void box.current?.requestFullscreen?.()}
-              className="flex size-8 cursor-pointer items-center justify-center rounded-lg bg-black/55 text-white backdrop-blur-sm hover:bg-black/75"
-            >
-              <MaximiseGlyph />
-            </button>
-            <button
-              type="button"
-              title="Close"
-              aria-label="Close"
-              onClick={() => onPlay(false)}
-              className="flex size-8 cursor-pointer items-center justify-center rounded-lg bg-black/55 text-white backdrop-blur-sm hover:bg-black/75"
-            >
-              <CloseGlyph />
-            </button>
-          </div>
         ) : null}
       </div>
       <div className={`flex items-start ${compact ? 'gap-0.5 p-1.5 pr-0.5' : 'gap-2 p-3'}`}>
@@ -450,6 +429,45 @@ function WalkthroughCard({
           onConfirm={() => void remove()}
           onCancel={() => setConfirmAt(null)}
         />
+      ) : null}
+      {playing && url ? (
+        <Portal>
+          <VideoDialog
+            art={walkthroughHeroArt}
+            title={entry.title}
+            meta={`${clockOf(entry.durationMs)} · ${when}`}
+            src={url}
+            onClose={() => onPlay(false)}
+            actions={
+              entry.screen && host.share ? (
+                <Button
+                  ref={shareRef}
+                  variant={entry.shareCode ? 'secondary' : 'primary'}
+                  size="sm"
+                  onClick={() => setSharing(true)}
+                >
+                  <span className="inline-flex items-center gap-1.5">
+                    <LinkIcon size={13} />
+                    {entry.shareCode ? 'Shared' : 'Share'}
+                  </span>
+                </Button>
+              ) : null
+            }
+          />
+          <PublicLinkPopover
+            open={sharing}
+            anchor={shareRef.current}
+            url={entry.shareCode ? walkthroughShareUrl(entry.shareCode) : null}
+            title="Share Walkthrough"
+            description="Anyone with the link can watch this video, without signing in. They see its name and who made it, never the canvas."
+            onShare={async (on) => {
+              const next = await host.share!(entry, on).catch(() => null);
+              if (next) onChanged(next);
+              return next !== null;
+            }}
+            onClose={() => setSharing(false)}
+          />
+        </Portal>
       ) : null}
     </li>
   );

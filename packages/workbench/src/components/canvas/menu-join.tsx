@@ -2,6 +2,7 @@
 // "Joined to the menu box"): pinned at the canvas's left, Pages mode's Contents sidebar rises to the top and the menu
 // box (the menu button and the tab's name) becomes its top row, one panel rather than a card over a sidebar. The box
 // keeps its place, its button and its name; only its own frame gives way to the sidebar's surface.
+import { editorViewportOf } from '../../lib/editor-viewport';
 import { toSurfacePx } from '../../lib/ui-scale';
 
 /** The gap the palette strip keeps from the menu box's right edge (useStripCrowded, useBarLabels). */
@@ -61,14 +62,98 @@ export function stripRoomBesideMenu(
   viewWidth: number,
   viewLeft: number,
   menu: HTMLElement | null,
+  // A strip that may leave the centre for the left, beside the menu box (STRIP_SHIFTS_LEFT): its room is everything
+  // between the box and the corner card (or the editor's right edge), not only what is centred.
+  shiftsLeft = false,
 ): number {
-  if (!menu) return viewWidth;
-  const clear = menuNaturalRight(menu) - viewLeft + STRIP_MENU_GAP_PX;
+  // Experiment (no header bar): the Share and account card at the top right (EditorCornerActions) is cleared as the
+  // menu box is, so the strip stands between the two, never under either.
+  const right = cornerCardClear(viewWidth, viewLeft);
+  if (!menu) return viewWidth - 2 * right;
+  // Joined, the box ends a gap short of the sidebar's inner edge: `clear` reaches that edge. Unjoined, the strip keeps
+  // its side space from the box.
+  const clear =
+    menuNaturalRight(menu) -
+    viewLeft +
+    (menu.hasAttribute('data-menu-joined') ? STRIP_MENU_GAP_PX : STRIP_SIDE_SPACE_PX);
+  if (shiftsLeft)
+    return viewWidth - stripLeftClear(menu, viewLeft) - Math.max(right, MENU_CARD_INSET_PX);
   // Joined, `clear` reaches the sidebar's inner edge (the box stops a gap short of it), and the strip, centred beside
-  // the sidebar, keeps the gap from it and from the editor's right edge.
+  // the sidebar, keeps the gap from it and from the editor's right edge, or the corner card's clearance where that is
+  // wider (on both sides, since the strip stays centred).
   return menu.hasAttribute('data-menu-joined')
-    ? viewWidth - clear - 2 * STRIP_MENU_GAP_PX
-    : viewWidth - 2 * clear;
+    ? viewWidth - clear - 2 * Math.max(STRIP_SIDE_SPACE_PX, right)
+    : viewWidth - 2 * Math.max(clear, right);
+}
+
+/** The room a strip keeps from what it stands beside when it leaves the centre (the menu box, the Contents sidebar,
+ *  the corner card): wider than the box's own gap, so it never reads as touching them. */
+export const STRIP_SIDE_SPACE_PX = 16;
+
+/** Where a strip standing at the left (shifted, or giving way) starts, in screen px from the editor's left: the space
+ *  past the menu box, or joined, past the sidebar the box heads (which ends a gap beyond the box). Past the box as it
+ *  stands whole (menuNaturalRight): a compact box (its mode switch down to its icon) must not draw the strip left over
+ *  where the whole box goes, or the box finds less room, stays compact and never gets its mode's name back. */
+export function stripLeftClear(menu: HTMLElement | null, viewLeft: number): number {
+  if (!menu) return 0;
+  const right = menuNaturalRight(menu) - viewLeft;
+  const edge = menu.hasAttribute('data-menu-joined') ? right + STRIP_MENU_GAP_PX : right;
+  return Math.max(0, Math.ceil(edge + STRIP_SIDE_SPACE_PX));
+}
+
+/** Sent on `window` when the top-right corner card mounts, resizes or goes, so the strip measures its room again. */
+// The corner card's inset from the editor's top-right corner, in screen px (EditorCornerActions' right-3).
+const CORNER_CARD_INSET_PX = 12;
+
+/** On a strip's root: when it can't centre, it moves left beside the menu box before it gives up names or folds
+ *  (livedocuments). Read by useStripCrowding, useBarLabels and useBarFold through `stripShiftsLeft`. */
+export const STRIP_SHIFTS_LEFT = 'data-strip-shifts-left';
+export const stripShiftsLeft = (card: Element) => card.closest(`[${STRIP_SHIFTS_LEFT}]`) !== null;
+
+/** Experiment (no header bar): a strip centred in the gap between the menu box and the corner card rather than across
+ *  the editor, filling that gap when it runs short (livediagram). Its room is the whole gap, as a shifting strip's is. */
+export const STRIP_BETWEEN = 'data-strip-between';
+export const stripSitsBetween = (card: Element) => card.closest(`[${STRIP_BETWEEN}]`) !== null;
+/** Whether the strip's room is the whole gap between the menu box and the corner card (stripRoomBesideMenu's
+ *  `shiftsLeft`). */
+export const stripTakesGap = (card: Element) => stripShiftsLeft(card) || stripSitsBetween(card);
+
+export const CORNER_CARD_EVENT = 'corner-card-change';
+
+/** Sent on `window` when the palette strip's width with its category names (`data-strip-natural-width`) changes, so
+ *  the corner card judges again whether to drop its own names first (cornerCardCompact). */
+export const STRIP_NAMED_EVENT = 'strip-named-change';
+
+/** Experiment (no header bar): whether the top-right corner card drops its names (Share, Sign in), given its width
+ *  with them in screen px. It does so first, as the window narrows: once the palette, named, no longer fits between
+ *  the menu box and the card with its names, so the palette keeps its names as long as it can. */
+export function cornerCardCompact(wideWidth: number): boolean {
+  if (typeof document === 'undefined' || wideWidth <= 0) return false;
+  const strip = document.querySelector<HTMLElement>(
+    '[data-region=palette] [data-strip-natural-width]',
+  );
+  const named = strip ? Number(strip.dataset.stripNaturalWidth) || 0 : 0;
+  if (!strip || named <= 0) return false;
+  const view = editorViewportOf(strip);
+  const menu = document.querySelector<HTMLElement>('[data-toolbar-menu]');
+  const room =
+    view.width -
+    stripLeftClear(menu, view.left) -
+    (Math.ceil(wideWidth) + CORNER_CARD_INSET_PX + STRIP_SIDE_SPACE_PX);
+  return named > room;
+}
+
+/** How far in from the editor's right edge the strip must stop to keep its gap from the top-right corner card, in
+ *  screen px; 0 with no card over this editor. Measured in the browser only (the strip's layout effects). */
+export function cornerCardClear(viewWidth: number, viewLeft: number): number {
+  const card = document.querySelector<HTMLElement>('[data-corner-actions]');
+  if (!card) return 0;
+  const box = card.getBoundingClientRect();
+  // The card stands over the editor at the window's right edge (in a split, the right pane): elsewhere, nothing to
+  // clear. Judged from the editor's box, not the card's, since a resize can measure before the card has moved.
+  if (box.width === 0 || viewLeft + viewWidth < window.innerWidth - 1) return 0;
+  // Its width, its 12px inset from the corner and the strip's space.
+  return Math.ceil(box.width) + CORNER_CARD_INSET_PX + STRIP_SIDE_SPACE_PX;
 }
 
 /** The sidebar's top row while joined: room for the menu box (drawn over it, above the sidebar), a hairline at its

@@ -722,9 +722,10 @@ open item is left out there, as the index's is.
 inside the window, and up to **45rem** (720 px) tall, kept on the canvas below its button and 24 px short of the
 canvas's bottom edge; the rail and pane fill what the card and footer leave, never shorter than 18rem. The rail is
 **15rem** (240 px) wide, so the current item's card fits at its top (owner, 2026-11-16: the picture across the card, the name with its ⋯ menu, "Updated …" and where it lives; no "Current" label) and its names sit with room either side, and the pane keeps a 1rem margin. The rail scrolls only when its entries are
-really taller than it: on a short window (the popover under about 34rem of rail, an 800 px tall window) the card
-first drops its picture, its "where it lives" pill moving to the start of the "Updated …" line, and takes the picture
-back as soon as the whole card fits again (measured, so a person with several teams sees the same rule). Below that
+really taller than it: on a short window the card's picture first shrinks to the room left (its 96 px down to 48 px;
+owner, 2026-11-17, after a canvas in Browser Storage, whose extra sidebar row cost 5 px, lost its picture entirely),
+then, with under 48 px to spare, the card drops it, its "where it lives" pill moving to the start of the "Updated …"
+line, and takes it back as soon as 48 px fit again (measured, so a person with several teams sees the same rule). Below that
 the rail scrolls, as it must (owner, 2026-11-17: no scrollbar the rail doesn't need). The pane's preview
 cards (Most Used, Recent, folders) are compact, so more fit in a row: two across in a narrow pane, three once it is 24rem
 wide (a tablet, a wide phone's sheet and the desktop popover, whose pane is about 40rem), four once it is 44rem (the

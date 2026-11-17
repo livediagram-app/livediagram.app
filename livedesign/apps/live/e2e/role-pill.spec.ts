@@ -1,16 +1,31 @@
 import type { Page } from '@playwright/test';
 import { dismissQuickTour, expect, expectNoPageErrors, test } from './fixtures';
 
-// The role pill (docs/specs/007-editor/live-app.md#role-pill), and the chrome everyone gets now Power user mode is
-// retired (docs/specs/007-editor/power-user-mode.md), in a real browser, dark mode.
+// Previewing a role (docs/specs/007-editor/live-app.md#role-pill): with no header bar (experiment) the role pill is the Editing Mode tool in
+// Tools. And the chrome everyone gets now Power user mode is retired (docs/specs/007-editor/power-user-mode.md), in a real browser, dark mode.
 test.use({ colorScheme: 'dark' });
 
-const TOOLTIP = '[role="tooltip"][data-hint="tooltip"]';
 const PREFS_KEY = 'livedesign:user-preferences:v1';
 
 const dialog = (page: Page) => page.getByRole('dialog', { name: 'Settings' });
 const tabBar = (page: Page) => page.locator('[data-editor-tabbar]');
-const header = (page: Page) => page.locator('header');
+const tools = (page: Page) => tabBar(page).getByRole('button', { name: /^Tools/ });
+const roleOption = (page: Page, role: string) => page.locator(`[data-role-option="${role}"]`);
+
+// Tools, then Editing Mode, then the role: the tool closes on the pick. Opened again, the pick is the checked one.
+async function pickRole(page: Page, role: 'edit' | 'participate' | 'view') {
+  await tools(page).click();
+  await page.locator('[data-tools-item="role"]').click();
+  await roleOption(page, role).click();
+  await expect(roleOption(page, role)).toHaveCount(0);
+  await tools(page).click();
+  await page.locator('[data-tools-item="role"]').click();
+  await expect(roleOption(page, role)).toHaveAttribute('aria-checked', 'true');
+  // Back to the list, then closed.
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('Escape');
+  await expect(page.locator('[data-tools-item="role"]')).toHaveCount(0);
+}
 
 async function openEditor(page: Page) {
   await page.setViewportSize({ width: 1280, height: 800 });
@@ -20,33 +35,20 @@ async function openEditor(page: Page) {
   await dismissQuickTour(page);
 }
 
-test.describe('Role pill', () => {
-  test('sits in the title bar for the owner and toggles a read-only preview', async ({
+test.describe('Editing Mode', () => {
+  test('previews another role from Tools for the owner, and goes back to editing', async ({
     page,
     pageErrors,
   }) => {
     await openEditor(page);
-    const pill = header(page).getByRole('button', { name: 'Editing. Owned by you' });
-    await expect(pill).toBeVisible();
+    // No header bar, so no pill in one.
+    await expect(page.locator('header[data-region="header"]')).toHaveCount(0);
     await expect(page.locator('[data-category-bar-button][aria-label="Shapes"]')).toBeVisible();
-
-    await pill.hover();
-    await expect(page.locator(TOOLTIP)).toHaveText('Owned by you', { timeout: 2_000 });
-
-    // Each click steps the preview: Editing, Participating, Viewing, back to Editing (live-app.md "Role pill").
-    await pill.click();
-    const participating = header(page).getByRole('button', {
-      name: 'Participating. Owned by you',
-    });
-    await expect(participating).toBeVisible();
-    await participating.click();
-    const viewing = header(page).getByRole('button', { name: 'Viewing. Owned by you' });
-    await expect(viewing).toBeVisible();
-    // Read-only: the palette's categories are gone.
-    await expect(page.locator('[data-category-bar-button]')).toHaveCount(0);
-
-    await viewing.click();
-    await expect(pill).toBeVisible();
+    await pickRole(page, 'view');
+    // Read-only for a Viewer, walking for a Participant: the building categories are gone.
+    await expect(page.locator('[data-category-bar-button][aria-label="Shapes"]')).toHaveCount(0);
+    await pickRole(page, 'edit');
+    await expect(page.locator('[data-category-bar-button][aria-label="Shapes"]')).toBeVisible();
     expectNoPageErrors(pageErrors);
   });
 });
@@ -82,8 +84,7 @@ test.describe('Retired power user keys', () => {
     }, PREFS_KEY);
     await openEditor(page);
 
-    // The default chrome: the role pill in the title bar, labelled status bar controls, a cycling Appearance control.
-    await expect(header(page).locator('[data-role-pill]')).toBeVisible();
+    // The default chrome: labelled status bar controls, a cycling Appearance control.
     await expect(tabBar(page).getByText('Tools', { exact: true })).toBeVisible();
     await expect(tabBar(page).getByRole('button', { name: /^Appearance: / })).toHaveAccessibleName(
       'Appearance: System. Switch to Light.',

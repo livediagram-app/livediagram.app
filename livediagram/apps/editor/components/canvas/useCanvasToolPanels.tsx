@@ -1,5 +1,6 @@
 'use client';
 
+import { ToolSkeleton } from '@liveworkspace/ui/tool-explainer';
 import { useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from 'react';
 import type { ChromeToolsItem } from '@liveworkspace/workbench/components/chrome/ChromeToolsMenu';
 import { usePublishToolsItems } from '@liveworkspace/workbench/components/chrome/tools-door';
@@ -20,6 +21,8 @@ const EraserPanel = dynamic(() => loadToolPanels().then((m) => m.EraserPanel), {
 const FormatPanel = dynamic(() => loadToolPanels().then((m) => m.FormatPanel), { ssr: false });
 const SlideDeckPanel = dynamic(() => loadToolPanels().then((m) => m.SlideDeckPanel), {
   ssr: false,
+  // Its empty shape while its code loads, so Tools never shows a blank (owner, 2026-11-17).
+  loading: () => <ToolSkeleton label="Loading Slide Deck" />,
 });
 
 // The five tool-config panels (docs/specs/008-canvas/laser-panel.md, docs/specs/008-canvas/spotlight-panel.md, docs/specs/008-canvas/eraser-panel.md,

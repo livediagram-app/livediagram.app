@@ -207,13 +207,11 @@ const created = () => calls.find((c) => c.method === 'createWebhook')!;
 const updates = () => calls.filter((c) => c.method === 'updateWebhook');
 
 describe('A document’s webhooks', () => {
-  it('says what a webhook does here and that they are this document’s alone, read through its link', async () => {
+  it('names the list for assistive technology and counts it, read through its link', async () => {
     await render();
-    expect(container.querySelector('h3')?.textContent).toBe('Post Updates Where Your Team Talks');
-    expect(container.textContent).toContain('when something happens to this canvas');
-    expect(container.querySelector('[data-webhooks-scope]')?.textContent).toBe(
-      'Only for this canvas. Your other canvases have their own.',
-    );
+    expect(container.querySelector('h3')?.textContent).toBe('Webhooks');
+    expect(container.querySelector('h3')?.className).toContain('sr-only');
+    expect(container.textContent).toContain('1 webhook');
     expect(calls[0]).toEqual({
       method: 'listWebhooks',
       args: [ITEM_ID, { code: 'abc123', password: null }],
@@ -223,8 +221,8 @@ describe('A document’s webhooks', () => {
   it('speaks in the document’s own words: a plan’s', async () => {
     webhooks = [];
     await render('liveplanner', null);
-    expect(container.querySelector('[data-webhooks-scope]')?.textContent).toBe(
-      'Only for this plan. Your other plans have their own.',
+    expect(container.textContent).toContain(
+      'the moment this plan changes. Only this plan: your other plans have their own.',
     );
     expect(calls[0]).toEqual({ method: 'listWebhooks', args: [ITEM_ID, undefined] });
   });
@@ -358,7 +356,7 @@ describe('A document’s webhooks', () => {
     expect(document.activeElement?.textContent).toBe('Copy');
     await press('Done');
     expect(container.textContent).not.toContain('whsec_abc');
-    expect(document.activeElement?.textContent).toBe('Post Updates Where Your Team Talks');
+    expect(document.activeElement?.textContent).toBe('Webhooks');
     expect(container.querySelectorAll('[data-webhook]')).toHaveLength(2);
     expect(row('w2').textContent).toContain('Added. Send a test to check it reaches your service.');
   });

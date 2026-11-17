@@ -26,7 +26,7 @@ type BoardLook = {
   columns: BoardColumnLayout;
   // The board's own card size, or Minimal on a phone.
   cardSize: CardSize | undefined;
-  // The header's widgets are shown (never on a phone: the header has no room for them).
+  // The header's widgets are shown (experiment, no header bar: on a phone too, without their + and Edit Widgets).
   widgets: boolean;
   // The body's own scroll is a size container (the column template reads 100cqw).
   container: boolean;
@@ -65,7 +65,7 @@ export function boardLook(place: BoardPlace, cardSize: CardSize | undefined): Bo
   return {
     columns: oneAScreen ? 'phone' : covering ? 'maximised' : simple ? 'slot' : 'canvas',
     cardSize: phone ? 'minimal' : cardSize,
-    widgets: !phone && !simple,
+    widgets: !simple,
     container: covering || oneAScreen,
     touch: interactive
       ? oneAScreen

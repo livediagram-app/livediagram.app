@@ -114,8 +114,8 @@ test.describe('whiteboard dock position', () => {
       .locator('xpath=ancestor::*[@data-floating-panel][1]');
     const box = (await dock(page).boundingBox())!;
     const panel = await settledBox(map);
-    // The dock reaches into the corner's columns, so the panel has to give way.
-    expect(panel.x + panel.width).toBeGreaterThan(box.x);
+    // Below the dock. (With no header bar the logo and menu cards lead the top row, so the dock starts past the Map's
+    // columns at this width; the panel still keeps below the top row's chrome, the dock included.)
     expect(panel.y).toBeGreaterThanOrEqual(box.y + box.height);
     expectNoPageErrors(pageErrors);
   });
@@ -130,10 +130,13 @@ test.describe('whiteboard dock position', () => {
     expect(overflow).toBe(0);
     const menu = (await page.getByRole('button', { name: 'Explorer' }).boundingBox())!;
     expect((await dock(page).boundingBox())!.x).toBeGreaterThan(menu.x + menu.width);
-    // A tablet's bar keeps one pin (draw-mode.md "On a phone or a tablet"); Rectangle waits in
-    // the Shapes flyout's Pinned row.
+    // A tablet's bar keeps at most one pin (draw-mode.md "On a phone or a tablet"); Rectangle waits in the Shapes
+    // flyout's Pinned row. (With no header bar the corner card at the top right shares the row, so at this width the
+    // bar sheds its one pin too, as it does where it is too wide for its room, "When the bar is too wide".)
     const shapes = dock(page).locator('[data-dock-group="shapes"]');
-    await expect(shapes.getByRole('button', { name: 'Arrow', exact: true })).toHaveCount(1);
+    expect(
+      await shapes.getByRole('button', { name: 'Arrow', exact: true }).count(),
+    ).toBeLessThanOrEqual(1);
     await expect(shapes.getByRole('button', { name: 'Rectangle', exact: true })).toHaveCount(0);
     // The other tablet widths it fits: an iPad Pro in portrait, a landscape tablet (centred), and
     // the widest window still trimmed; then the first wide one, with both pins on the bar.

@@ -26,11 +26,7 @@ import type { SheetLinkEvent } from '@liveworkspace/workbench/components/sheet-l
 import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { EditorCanvasHost } from '@/components/canvas/EditorCanvasHost';
 import { ConnectedTabHost } from '@/components/connect/ConnectedTabHost';
-import { useCommunityEnabled } from '@liveworkspace/community-ui';
-import { API_BASE } from '@/lib/api-client';
 import { useAutoCopyParam } from '@liveworkspace/workbench/hooks/canvas/useAutoCopyParam';
-import { designIsPublic } from '@/lib/community-public';
-import { useCommunityState } from '@/lib/community-state-store';
 import { EmbedChrome } from '@/components/chrome/EmbedChrome';
 import { WorkbenchReconnectLine } from '@/components/chrome/WorkbenchChrome';
 
@@ -188,11 +184,6 @@ export function EditorView() {
     userPreferences,
     sessionCommunity,
   } = ctx;
-  // The header badge follows the design's Community post (docs/specs/025-community/community.md "Publishing").
-  const communityState = useCommunityState(designId);
-  // The badge goes too while the Community is switched off. Asked only while there is a listed post to badge, and
-  // never in an embed, so other opens make no request.
-  const communityOn = useCommunityEnabled(API_BASE, communityState === 'listed' && appChrome);
   // `?copy=1` from the Community's Make a Copy (docs/specs/025-community/community.md "Viewing a post's design").
   useAutoCopyParam({
     hydrated,
@@ -200,12 +191,6 @@ export function EditorView() {
     // The author's own post copies nothing: their bar offers Edit Your Design instead.
     community: sessionCommunity !== null && !sessionCommunity.ownDesignId,
     makeCopy,
-  });
-  // Whether the design shows as public on the Community, for the header's share state.
-  const headerCommunity = designIsPublic({
-    communityOn,
-    ownPostState: communityState,
-    communitySession: sessionCommunity !== null,
   });
   // UI scale (docs/specs/007-editor/ui-scale.md): desktop only, and a dragged Settings slider's patch wins.
   const { uiScales, isMobileViewport } = useEditorUiScales(userPreferences);
@@ -288,16 +273,12 @@ export function EditorView() {
     selectTab,
     selectionStore: ctx.selectionStore,
   });
-  const header = editorViewHeader(ctx, {
-    isOffline,
-    headerCommunity,
-    role,
-    landscapeShown: landscapeBars.shown,
-  });
+  const header = editorViewHeader(ctx);
   const footer = editorViewFooter(ctx, {
     isOffline,
     selectTab,
     landscapeShown: landscapeBars.shown,
+    role,
   });
 
   // The bars handle, at the canvas's top-right corner: only on a phone held sideways (CSS), and only
@@ -517,7 +498,7 @@ export function EditorView() {
                 </CanvasPatternContext.Provider>
               </CanvasSurfaceProvider>
               <WalkthroughsLayer walkthroughs={walkthroughs} />
-              <WalkthroughsTools menu={walkthroughs.menu} />
+              <WalkthroughsTools walkthroughs={walkthroughs} />
             </ViewportStoreProvider>
           </SheetLinksHost>
         </SelectionStoreProvider>

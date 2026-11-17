@@ -136,7 +136,8 @@ export type CanvasChromeProps = CanvasProps & ChromeExtras;
 
 const DOCK_CORNER_CLASS: Record<PanelCorner, string> = {
   'top-left': 'left-4 top-4 flex-col items-start',
-  'top-right': 'right-4 top-4 flex-col items-end',
+  // Experiment (no header bar): below the Share and account card at the top right.
+  'top-right': 'right-4 top-[4.25rem] flex-col items-end',
   'bottom-left': 'left-4 bottom-4 flex-col-reverse items-start',
   // bottom-right omits `bottom-4`; its bottom is set inline to clear the
   // fixed zoom controls (cornerBottomInset), so panels docked there sit

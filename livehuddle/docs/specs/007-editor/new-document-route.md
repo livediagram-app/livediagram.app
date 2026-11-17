@@ -129,7 +129,7 @@ The owner opening an archived space's address directly gets this card, never the
 
 ### The tab title
 
-The browser tab names what the page shows. An open space names it ("<name> | livehuddle"); a status screen in its place names the screen instead, in Title Case: **Space Not Found**, **Page Not Found**, **Link Not Valid**, **No Longer Shared With You**, **Space Archived**, **Space Deleted**, **Couldn’t Load Space**, **Password Required** ("Space Not Found | livehuddle"), so a missing space's tab never reads as an empty one (`useBrowserTabTitle`'s `status`, held by the editor page's status shell). A load that ends on a status screen pins no tab on the address: the `#t=<tab>` pin waits for a tab whose content has loaded (`useTabEntryEffects`), so the placeholder tab's id never lands on the address of an item that never opened.
+The browser tab names what the page shows. An open space names it and the tab open in it ("<name> | <tab> | livehuddle", owner 2026-11-17, `editorTabTitle`; "<name> | livehuddle" until the tab is known), following renames and tab switches; a status screen in its place names the screen instead, in Title Case: **Space Not Found**, **Page Not Found**, **Link Not Valid**, **No Longer Shared With You**, **Space Archived**, **Space Deleted**, **Couldn’t Load Space**, **Password Required** ("Space Not Found | livehuddle"), so a missing space's tab never reads as an empty one (`useBrowserTabTitle`'s `status`, held by the editor page's status shell). A load that ends on a status screen pins no tab on the address: the `#t=<tab>` pin waits for a tab whose content has loaded (`useTabEntryEffects`), so the placeholder tab's id never lands on the address of an item that never opened.
 
 ### A failed load is not a missing document
 

@@ -11,7 +11,8 @@ import { InlineRenameInput } from '../ui/InlineRenameInput';
 import { EllipsisTriggerButton, useRowMenu } from '../ui/RowMenu';
 import { ItemIcon, PencilIcon } from '../ui/icons';
 import { relativeSince, useNow } from '../time';
-import { RailTight } from './useRailFit';
+import { RailPicture } from './useRailFit';
+import { SIDEBAR_LABELS } from '../views';
 
 // ---- The current item's card ----------------------------------------------------------------------------
 
@@ -165,7 +166,9 @@ function CurrentCard({
   const now = useNow();
   // On a short window the rail drops the picture before it would scroll (useRailFit), and the pill moves to the
   // start of the "Updated" line.
-  const tight = useContext(RailTight);
+  // Its height when only a smaller picture fits, 0 when none does (useRailFit).
+  const picturePx = useContext(RailPicture);
+  const tight = picturePx === 0;
   const name = title || `Untitled ${kind.lowerOne}`;
   const commit = (next: string) => {
     const trimmed = next.trim();
@@ -183,11 +186,21 @@ function CurrentCard({
       >
         {tight ? null : (
           <span data-current-picture="" className="relative block">
-            <span className="flex h-24 w-full items-center justify-center overflow-hidden rounded-lg bg-slate-50 text-slate-300 ring-1 ring-inset ring-slate-200/80 dark:bg-slate-900 dark:ring-slate-700/70 [&>*]:!h-full [&>*]:!w-full">
+            <span
+              style={picturePx ? { height: picturePx } : undefined}
+              className="flex h-24 w-full items-center justify-center overflow-hidden rounded-lg bg-slate-50 text-slate-300 ring-1 ring-inset ring-slate-200/80 dark:bg-slate-900 dark:ring-slate-700/70 [&>*]:!h-full [&>*]:!w-full"
+            >
               {thumbnail}
             </span>
-            {/* Where it lives, on the picture's corner, so the line under the name has its full width. */}
-            <span className="absolute left-1.5 top-1.5 flex">{badge}</span>
+            {/* Where it lives, on the picture's corner, so the line under the name has its full width. A local item's
+                picture says it itself (owner, 2026-11-17: no pill on the offline art). */}
+            {local ? (
+              <span className="sr-only" data-this-browser="">
+                {SIDEBAR_LABELS.thisBrowser}
+              </span>
+            ) : (
+              <span className="absolute left-1.5 top-1.5 flex">{badge}</span>
+            )}
           </span>
         )}
         <span className="flex min-w-0 flex-col gap-0.5 px-1 pb-0.5">

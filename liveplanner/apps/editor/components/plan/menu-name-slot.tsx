@@ -65,7 +65,7 @@ export function MenuNameSlot() {
     <span
       ref={setMenuNameSlot}
       data-menu-name-slot=""
-      className="flex min-w-0 items-center gap-1.5 pl-1 pr-2 text-slate-800 empty:hidden dark:text-slate-100"
+      className="-ml-1 flex min-w-0 items-center gap-1.5 pr-2 text-slate-800 empty:hidden dark:text-slate-100"
     />
   );
 }

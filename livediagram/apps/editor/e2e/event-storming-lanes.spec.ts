@@ -214,8 +214,10 @@ test('paste lands at the pointer over the canvas, and staggers when it is elsewh
   expect(pasted[0]!.y).toBe(below.y);
   expect(pasted[0]!.x).toBe(below.x + 200 + 16);
 
-  // Off the canvas: staggered on the ORIGINAL, same lane, 24px right.
-  await page.mouse.move(2, 2);
+  // Off the canvas: staggered on the ORIGINAL, same lane, 24px right. With no header bar the canvas runs to the
+  // window's top edge, so off it is the tab bar at its foot.
+  const tabBar = (await page.locator('[data-editor-tabbar]').boundingBox())!;
+  await page.mouse.move(tabBar.x + tabBar.width / 2, tabBar.y + tabBar.height / 2);
   await page.keyboard.press('ControlOrMeta+v');
   await expect(notes).toHaveCount(6);
   tab = await boardTab(page);

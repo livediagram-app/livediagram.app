@@ -24,7 +24,14 @@ import {
   type HistoryPinAt,
 } from './history';
 import { HistoryEntry, type RenderCtx } from './HistoryEntry';
-import { HistoryHeader, HistorySkeleton, MUTED, SummaryStrip } from './HistoryParts';
+import {
+  HistoryHeader,
+  HistorySkeleton,
+  MUTED,
+  SummarySkeleton,
+  SummaryStrip,
+} from './HistoryParts';
+import { ToolFooter } from '@liveworkspace/ui';
 
 export { HISTORY_PAGE };
 
@@ -134,12 +141,14 @@ export function HistoryDialog({
             <li key={day.key} aria-labelledby={`${titleId}-${day.key}`}>
               <h3
                 id={`${titleId}-${day.key}`}
-                className="sticky top-0 z-10 flex items-baseline justify-between gap-2 border-b border-slate-100 bg-white/90 px-5 py-2 text-xs font-semibold text-slate-700 backdrop-blur sm:px-6 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-200"
+                className="sticky top-0 z-10 flex items-baseline justify-between gap-2 bg-white/90 px-5 pb-1.5 pt-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500 backdrop-blur sm:px-6 dark:bg-slate-900/90 dark:text-slate-400"
               >
                 <time dateTime={day.key}>{day.label}</time>
-                <span className={`font-normal ${MUTED}`}>{dayCount(day.count, day.pinned)}</span>
+                <span className={`font-normal normal-case tracking-normal ${MUTED}`}>
+                  {dayCount(day.count, day.pinned)}
+                </span>
               </h3>
-              <ol className="relative px-5 pb-1 pt-3 sm:px-6">
+              <ol className="relative px-5 pb-1 pt-2 sm:px-6">
                 {day.entries.map((entry, i) => {
                   const last = i === day.entries.length - 1;
                   return entry.pin ? (
@@ -187,8 +196,11 @@ export function HistoryDialog({
       className="sm:max-h-[min(46rem,calc(100dvh-4rem))]"
     >
       <HistoryHeader item={item} titleId={titleId} onClose={onClose} />
-      {first ? null : (
+      {first && state.loading ? (
+        <SummarySkeleton />
+      ) : first ? null : (
         <SummaryStrip
+          events={events}
           item={item}
           now={now}
           count={summary.count}
@@ -211,12 +223,11 @@ export function HistoryDialog({
       </div>
       {/* The host's action, full width at the foot, always in reach whatever the list holds (owner, 2026-11-17). */}
       {extras?.action ? (
-        <div
-          data-history-action=""
-          className="flex shrink-0 border-t border-slate-100 px-5 py-3 sm:px-6 dark:border-slate-800 [&>*]:flex-1"
-        >
-          {extras.action}
-        </div>
+        <ToolFooter className="[&>*]:w-full">
+          <div data-history-action="" className="flex [&>*]:flex-1">
+            {extras.action}
+          </div>
+        </ToolFooter>
       ) : null}
     </Dialog>
   );

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { useBrowserTabTitle } from './useBrowserTabTitle';
+import { editorTabTitle, useBrowserTabTitle } from './useBrowserTabTitle';
 
 afterEach(() => {
   cleanup();
@@ -82,5 +82,13 @@ describe('useBrowserTabTitle', () => {
     document.title = 'Elsewhere';
     await new Promise((r) => setTimeout(r, 20));
     expect(document.title).toBe('Elsewhere');
+  });
+});
+
+describe('editorTabTitle', () => {
+  it('names the item, its tab and the app, leaving out a tab with no name yet', () => {
+    expect(editorTabTitle('Plan', 'Board', 'liveplanner')).toBe('Plan | Board | liveplanner');
+    expect(editorTabTitle('Plan', '  ', 'liveplanner')).toBe('Plan | liveplanner');
+    expect(editorTabTitle('Plan', null, 'liveplanner')).toBe('Plan | liveplanner');
   });
 });

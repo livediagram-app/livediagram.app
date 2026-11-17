@@ -22,10 +22,10 @@ afterEach(() => {
 describe('the tab name beside the menu button', () => {
   const name = () => document.querySelector('[data-tab-name-in-box]');
 
-  it('shows the open tab’s name on a desktop', () => {
+  it('leaves out the open tab’s name on a desktop too (experiment: no header bar)', () => {
     act(() => setActiveTabName('Chapter One'));
     render(<ToolbarExplorerButton open={false} onToggle={vi.fn()} />);
-    expect(name()?.textContent).toBe('Chapter One');
+    expect(name()).toBeNull();
   });
 
   it('leaves it out on a phone, and inline in the strip', () => {
@@ -118,9 +118,9 @@ describe('the menu box joined to the Contents sidebar', () => {
     expect(card().className.split(' ')).toContain('border-transparent!');
     expect(card().className.split(' ')).toContain('bg-transparent!');
     expect(card().style.width).toBe('216px');
-    // The button and the name are as ever.
+    // The button is as ever; the logo leads the band.
     expect(screen.getByRole('button', { name: 'Explorer' }).className).toContain('h-9 w-9');
-    expect(document.querySelector('[data-tab-name-in-box]')?.textContent).toBe('Chapter One');
+    expect(document.querySelector('[data-logo-in-band]')).not.toBeNull();
   });
 
   it('never joins inline in the strip’s row', () => {

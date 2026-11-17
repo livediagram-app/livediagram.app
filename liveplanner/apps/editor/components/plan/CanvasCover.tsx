@@ -110,7 +110,7 @@ export function CanvasCover({
       {pattern && isAnimatedPattern(pattern.pattern) ? <TabPatternLayer {...pattern} /> : null}
       <div
         {...marker}
-        {...(band ? { 'data-header-band': '' } : {})}
+        {...(band ? { 'data-header-band': '' } : row ? { 'data-shared-row': '' } : {})}
         // Opacity only: nothing in it is measured off its place while it fades. CSS on mount, so never on a re-render.
         className={`absolute p-2 sm:p-3 ${enter ? 'animate-tab-in' : ''}`}
         // The header band (docs/specs/026-plan/plan-board.md "The header holds the top row"): the element's header

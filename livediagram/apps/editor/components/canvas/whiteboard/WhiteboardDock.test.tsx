@@ -486,12 +486,37 @@ describe('WhiteboardDock position', () => {
     expect(cls).toEqual(
       expect.arrayContaining([
         'left-[var(--dock-clear,7.5rem)]',
-        'max-w-[calc(100%-var(--dock-clear,7.5rem)-0.75rem)]',
+        'max-w-[calc(100%-var(--dock-clear,7.5rem)-var(--dock-clear-right,0.75rem))]',
         'phone:left-[var(--dock-clear,4.125rem)]',
         'phone:max-w-[calc(100%-var(--dock-clear,4.125rem)-0.75rem)]',
       ]),
     );
     expect(dock().hasAttribute('data-dock-centred')).toBe(false);
+    // No corner card: the 12 px margin on the right.
+    expect(dock().style.getPropertyValue('--dock-clear-right')).toBe('');
+  });
+
+  it('keeps clear of the corner card at the top right, where one stands over the editor', () => {
+    const card = document.createElement('div');
+    card.setAttribute('data-corner-actions', '');
+    vi.spyOn(card, 'getBoundingClientRect').mockReturnValue(
+      new DOMRect(window.innerWidth - 12 - 200, 12, 200, 46),
+    );
+    document.body.append(card);
+    const real = Element.prototype.getBoundingClientRect;
+    const editor = vi
+      .spyOn(Element.prototype, 'getBoundingClientRect')
+      .mockImplementation(function (this: Element) {
+        if (this === card) return new DOMRect(window.innerWidth - 12 - 200, 12, 200, 46);
+        if (this.querySelector('[data-whiteboard-dock]'))
+          return new DOMRect(0, 0, window.innerWidth, 800);
+        return real.call(this);
+      });
+    renderDock();
+    // The card's width, its 12 px inset and the strip's 16 px space.
+    expect(dock().style.getPropertyValue('--dock-clear-right')).toBe('228px');
+    editor.mockRestore();
+    card.remove();
   });
 
   describe('from lg', () => {
@@ -529,7 +554,7 @@ describe('WhiteboardDock position', () => {
         expect.arrayContaining([
           'left-1/2',
           '-translate-x-1/2',
-          'max-w-[calc(100%-2*var(--dock-clear,7.5rem))]',
+          'max-w-[calc(100%-2*max(var(--dock-clear,7.5rem),var(--dock-clear-right,0px)))]',
         ]),
       );
       cleanup();

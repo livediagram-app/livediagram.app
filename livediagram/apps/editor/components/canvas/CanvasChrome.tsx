@@ -175,6 +175,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
       open={activeDockPanel === 'explorer'}
       onToggle={(button) => handleDockButtonClick('explorer', button)}
       inline={menuInStrip}
+      itemId={props.imageContext?.documentId ?? null}
     />
   );
 

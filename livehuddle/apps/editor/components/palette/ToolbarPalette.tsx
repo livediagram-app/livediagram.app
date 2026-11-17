@@ -34,7 +34,12 @@ import { TOOLBAR_SEARCH_SELECTOR, ToolbarSearchButton, ToolbarSearchPanel } from
 import { BrowseMemoryContext, useBrowseMemory } from './PaletteCategoryBrowser';
 import { setPalettePopoverOpen } from '@liveworkspace/workbench/lib/palette-popover-open';
 import { useBarLabels } from '@liveworkspace/workbench/components/palette/useBarLabels';
-import { useStripCrowded } from '@liveworkspace/workbench/components/palette/useStripCrowded';
+import {
+  crowdedPaddingRight,
+  useStripCrowding,
+} from '@liveworkspace/workbench/components/palette/useStripCrowded';
+import { useBarFold } from '@liveworkspace/workbench/components/palette/useBarFold';
+import { PHONE_EDGE_LEFT_IN_ROW } from '@liveworkspace/workbench/components/chrome/MenuCardLogo';
 import { barCategoriesFor } from './bar-categories';
 import { CategoryBarButtons, CategoryBarFlyout, useCategoryBar } from './CategoryBar';
 
@@ -86,13 +91,20 @@ export function StripRow({
       // sideways, the right gutter also clears the bars handle at the canvas's top-right corner
       // (LandscapeBarsHandle), so a long strip's rail scrolls short of it rather than under it.
       style={{
-        ...safeInlinePadding('0.75rem'),
-        paddingRight: `calc(${atLeastInset('0.75rem', 'right')} + var(--landscape-handle-room, 0px))`,
+        // 6px on a phone's row (experiment: no header bar), so the strip has every pixel it can.
+        ...safeInlinePadding('0.375rem'),
+        // Clear of the top-right corner card instead where there is one (EditorCornerActions sets --corner-card-room,
+        // its width and the row's 6 px gap: the card meets the screen's edge, so the gutter is not added to it).
+        paddingRight: `calc(max(${atLeastInset('0.375rem', 'right')}, var(--corner-card-room, 0px)) + var(--landscape-handle-room, 0px))`,
       }}
-      className={`pointer-events-none flex w-full items-start gap-2 [&>*]:pointer-events-auto ${LANDSCAPE_HANDLE_ROOM}`}
+      className={`pointer-events-none flex w-full items-start gap-1.5 [&>*]:pointer-events-auto ${LANDSCAPE_HANDLE_ROOM}`}
     >
       {leading == null ? null : (
-        <div ref={leadingRef} data-strip-leading="" className={CARD_CLASS}>
+        <div
+          ref={leadingRef}
+          data-strip-leading=""
+          className={`${CARD_CLASS} ${PHONE_EDGE_LEFT_IN_ROW}`}
+        >
           {leading}
         </div>
       )}
@@ -117,17 +129,26 @@ export function stripRootLayout({
   crowded,
   popoverOpen,
   hidden,
+  between,
 }: {
   scale: number;
   crowded: boolean;
+  // Experiment (no header bar): centred in the gap between the menu box and the corner card (STRIP_BETWEEN), with
+  // the strip's clearances on each side (useStripCrowding).
+  between?: { clear: number; clearRight: number } | undefined;
   popoverOpen: boolean;
   hidden?: boolean | undefined;
 }): { style: CSSProperties; className: string } {
   return {
     style: {
       ...(scale === 1 ? {} : { ...uiScaleStyle(scale), top: toSurfacePx(12, scale) }),
-      alignItems: crowded ? 'flex-end' : 'center',
-      paddingRight: crowded ? '0.75rem' : 0,
+      ...(between
+        ? {
+            alignItems: 'center',
+            paddingLeft: toSurfacePx(Math.max(between.clear, 12), scale),
+            paddingRight: crowdedPaddingRight(between.clearRight, scale),
+          }
+        : { alignItems: crowded ? 'flex-end' : 'center', paddingRight: crowded ? '0.75rem' : 0 }),
     },
     className: `pointer-events-none absolute inset-x-0 top-3 ${
       popoverOpen ? 'z-[var(--z-popover)]' : 'z-[var(--z-toolbar)]'
@@ -186,8 +207,15 @@ export function ToolbarPalette(props: Props) {
     scale,
   });
   const leadingRef = useRef<HTMLDivElement>(null);
-  // Too wide to centre between the menu card's sides (a tablet): the strip sits at the right instead.
-  const crowded = useStripCrowded(cardRef, leading == null);
+  // Experiment (no header bar): centred in the gap between the menu box and the corner card; still too wide once the
+  // names are gone (a narrow window), the bar shows its first categories and folds the rest behind More (useBarFold).
+  const { clear, clearRight } = useStripCrowding(cardRef, leading == null);
+  const between = leading == null;
+  const barShown = useBarFold(cardRef, {
+    enabled: !isMobile && !fittedLabels,
+    categoriesKey: barCategories.map((c) => c.id).join('|'),
+    scale,
+  });
   // On a phone the strip swipes sideways (docs/specs/007-editor/toolbar-layout.md "On a phone").
   const swipe = phoneRow;
   const barLabels = fittedLabels || swipe;
@@ -246,7 +274,14 @@ export function ToolbarPalette(props: Props) {
       // clicks through; the card and the popover take them.
       // Zoomed at the root, which still spans the canvas, so the card stays
       // centred; `top` is restated so the strip keeps its 12px from the top.
-      {...stripRootLayout({ scale, crowded, popoverOpen, hidden })}
+      {...stripRootLayout({
+        scale,
+        crowded: false,
+        popoverOpen,
+        hidden,
+        between: between ? { clear, clearRight } : undefined,
+      })}
+      data-strip-between={between ? '' : undefined}
       // While walking this strip is hidden and the avatar palette shows instead (AvatarPalette,
       // docs/specs/008-canvas/avatar-mode.md "The avatar palette").
       onPointerDown={(e) => e.stopPropagation()}
@@ -292,6 +327,7 @@ export function ToolbarPalette(props: Props) {
                       categories={barCategories}
                       labels={barLabels}
                       scrollable={swipe}
+                      shown={swipe ? null : barShown}
                     />
                   </>
                   {/* Search, last: any element type the palette offers (docs/specs/007-editor/toolbar-layout.md

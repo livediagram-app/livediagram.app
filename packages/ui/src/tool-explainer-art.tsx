@@ -230,3 +230,56 @@ export const slideDeckArt = (
     <path d="M28 56 l10 8 -10 8 z" className={BRAND} />
   </Art>
 );
+
+/** Suggest Changes: a shape on the canvas and the change proposed to it, drawn as a dashed ghost, with the Accept and
+ *  Reject an Editor answers it with. */
+export const suggestionsArt = (
+  <Art label="A proposed change shown as a ghost, waiting to be accepted or rejected">
+    <rect x="40" y="12" width="200" height="96" rx="12" className={CARD} strokeWidth={1.5} />
+    <rect x="62" y="38" width="56" height="34" rx="7" className={SOFT} />
+    <rect x="70" y="50" width="30" height="5" rx="2.5" className={BRAND} />
+    <path
+      d="M118 55 H140"
+      className="stroke-brand-300 dark:stroke-brand-500/60"
+      strokeWidth={2}
+      strokeDasharray="4 3"
+    />
+    <rect
+      x="140"
+      y="38"
+      width="56"
+      height="34"
+      rx="7"
+      className={`fill-brand-50/60 dark:fill-brand-500/10 ${STROKE_BRAND}`}
+      strokeWidth={1.5}
+      strokeDasharray="5 4"
+    />
+    <rect
+      x="148"
+      y="50"
+      width="30"
+      height="5"
+      rx="2.5"
+      className="fill-brand-300 dark:fill-brand-500/60"
+    />
+    <g className={FLOAT} style={FLOAT_STYLE}>
+      <rect x="150" y="80" width="60" height="22" rx="11" className={CARD} strokeWidth={1.5} />
+      <circle cx="166" cy="91" r="7" className="fill-slate-100 dark:fill-slate-700" />
+      <path
+        d="M163.5 88.5 l5 5 M168.5 88.5 l-5 5"
+        className="stroke-slate-500 dark:stroke-slate-300"
+        strokeWidth={1.5}
+        strokeLinecap="round"
+      />
+      <circle cx="193" cy="91" r="7" className="fill-emerald-500 dark:fill-emerald-400" />
+      <path
+        d="M189.5 91 l2.5 2.5 4.5 -5"
+        className="stroke-white dark:stroke-slate-900"
+        strokeWidth={1.5}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+    </g>
+  </Art>
+);

@@ -51,7 +51,7 @@ export function DocumentWebhooksDialog({
         title={<span title={heading}>{heading}</span>}
         onClose={onClose}
       />
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      <div className="flex min-h-0 flex-1 flex-col">
         <DocumentWebhooks client={client} itemId={itemId} app={app} share={share ?? null} />
       </div>
     </Dialog>

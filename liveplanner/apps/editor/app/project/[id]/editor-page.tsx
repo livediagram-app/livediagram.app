@@ -36,7 +36,10 @@ import { projectIdFromPath, isEditorPath } from '@/lib/editor-path';
 import { planGrantRefusal } from '@/lib/api/plan-grants';
 import { archivedByIndex, archivedChangeFolderHref } from '@liveworkspace/workbench/lib/archived';
 import { useArchivedAddress } from '@liveworkspace/workbench/lib/useArchivedAddress';
-import { useBrowserTabTitle } from '@liveworkspace/workbench/hooks/editor/useBrowserTabTitle';
+import {
+  editorTabTitle,
+  useBrowserTabTitle,
+} from '@liveworkspace/workbench/hooks/editor/useBrowserTabTitle';
 
 const NotFound = dynamic(() => import('@/components/chrome/NotFound').then((m) => m.NotFound), {
   ssr: false,
@@ -99,10 +102,16 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
     'liveplanner',
     projectIdFromPath,
   );
-  // Tab title reflects the project: "<name> | liveplanner" (falls back to
+  // Tab title reflects the project and its open tab: "<name> | <tab> | liveplanner" (falls back to
   // Untitled when the project has no name yet). Updates as the user renames. Held there (useBrowserTabTitle): Next.js
   // commits the route's static "liveplanner" title after hydration and wrote it over the plan's name.
-  useBrowserTabTitle(`${state.projectName?.trim() || 'Untitled plan'} | liveplanner`);
+  useBrowserTabTitle(
+    editorTabTitle(
+      state.projectName?.trim() || 'Untitled plan',
+      state.activeTab?.name,
+      'liveplanner',
+    ),
+  );
   const {
     projectNotFound,
     loadError,

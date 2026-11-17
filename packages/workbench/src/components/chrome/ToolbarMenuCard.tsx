@@ -1,5 +1,6 @@
 'use client';
 
+import { MENU_CARD_IN_ROW, MenuCardLogo } from './MenuCardLogo';
 import { useRef, type ReactNode } from 'react';
 import { MenuCardFormContext } from '@liveworkspace/workbench/components/chrome/menu-card-form';
 import { useMenuCardFit } from '@liveworkspace/workbench/components/chrome/useMenuCardRoom';
@@ -30,6 +31,7 @@ export function ToolbarMenuCard({
   tourId,
   region,
   joinedWidth,
+  logo,
 }: {
   inline: boolean;
   children: ReactNode;
@@ -39,6 +41,9 @@ export function ToolbarMenuCard({
   // The editor's F6 region the card stands for (@liveworkspace/workbench/hooks/ui/useRegionCycle.ts).
   region?: 'header';
   joinedWidth?: number;
+  // Experiment (no header bar): the app's logo in its own card left of this one (MenuCardLogo). Not inline (a phone's
+  // strip); joined, it leads the card's band instead.
+  logo?: ReactNode;
 }) {
   // Drawn at the UI scale (docs/specs/007-editor/ui-scale.md), still 12px from the corner. Inline it sits in the
   // strip, which is scaled already.
@@ -51,7 +56,8 @@ export function ToolbarMenuCard({
   const cardRef = useRef<HTMLDivElement>(null);
   const { maxWidth: room, form } = useMenuCardFit(cardRef, !inline && joinedWidth === undefined);
   const joined = !inline && joinedWidth !== undefined;
-  return (
+  const withLogo = !inline && !joined && !!logo;
+  const card = (
     <div
       ref={cardRef}
       data-dock-button={dockButton ? '' : undefined}
@@ -64,7 +70,7 @@ export function ToolbarMenuCard({
       data-region={region}
       data-menu-joined={joined ? '' : undefined}
       style={{
-        ...(scaled
+        ...(scaled && !withLogo
           ? { ...uiScaleStyle(scale), top: toSurfacePx(12, scale), left: toSurfacePx(12, scale) }
           : undefined),
         ...(joined ? { width: joinedMenuCardWidth(joinedWidth, scale) } : undefined),
@@ -73,7 +79,7 @@ export function ToolbarMenuCard({
       className={
         inline
           ? 'flex items-center gap-1'
-          : `pointer-events-auto absolute left-3 top-3 z-[var(--z-toolbar)] flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40 ${PHONE_TOOLBAR_ITEMS} [&>:not([data-tab-name-in-box])]:shrink-0 ${MENU_CARD_FRAME_MOTION} ${joined ? MENU_CARD_JOINED : ''}`
+          : `pointer-events-auto ${withLogo ? MENU_CARD_IN_ROW : 'absolute left-3 top-3 z-[var(--z-toolbar)]'} flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40 ${PHONE_TOOLBAR_ITEMS} [&>:not([data-tab-name-in-box])]:shrink-0 ${MENU_CARD_FRAME_MOTION} ${joined ? MENU_CARD_JOINED : ''}`
       }
       onPointerDown={(e) => e.stopPropagation()}
       onContextMenu={(e) => {
@@ -81,7 +87,16 @@ export function ToolbarMenuCard({
         e.stopPropagation();
       }}
     >
-      <MenuCardFormContext.Provider value={form}>{children}</MenuCardFormContext.Provider>
+      <MenuCardFormContext.Provider value={form}>
+        {/* Joined, the card heads the sidebar and there is no corner for the logo's own card: it leads the band. */}
+        {joined && logo ? (
+          <span data-logo-in-band="" className="mr-auto flex items-center pl-0.5 pr-1">
+            {logo}
+          </span>
+        ) : null}
+        {children}
+      </MenuCardFormContext.Provider>
     </div>
   );
+  return withLogo ? <MenuCardLogo logo={logo} scale={scale} card={card} /> : card;
 }

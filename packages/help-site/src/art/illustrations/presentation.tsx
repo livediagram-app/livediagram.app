@@ -68,11 +68,7 @@ export function SlideDeckPanel() {
   return (
     <Scene w={420} h={230}>
       <Panel x={96} y={16} w={228} h={198} title="SLIDE DECK">
-        {/* The header's presenter-settings cog, then the help link. */}
-        <g className="stroke-slate-400" strokeWidth={1.4} fill="none" transform="translate(290 27)">
-          <circle r={4.5} />
-          <circle r={1.4} />
-        </g>
+        {/* The header's help link (the presenter settings are in Settings > Presenting). */}
         <Label x={310} y={28} size={10} weight={700} anchor="middle" tone="muted">
           ?
         </Label>
