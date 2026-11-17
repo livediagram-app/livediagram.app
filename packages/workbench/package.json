@@ -628,6 +628,7 @@
     "./lib/tour-active": "./src/lib/tour-active.ts",
     "./lib/tour-tracks": "./src/lib/tour-tracks.ts",
     "./components/dialogs/settings/settings-icons": "./src/components/dialogs/settings/settings-icons.tsx",
+    "./components/dialogs/settings/SettingsIdentityRow": "./src/components/dialogs/settings/SettingsIdentityRow.tsx",
     "./components/dialogs/settings/SettingsSignInLink": "./src/components/dialogs/settings/SettingsSignInLink.tsx",
     "./components/dialogs/settings/settings-panel-host": "./src/components/dialogs/settings/settings-panel-host.tsx",
     "./components/dialogs/settings/test-pane": "./src/components/dialogs/settings/test-pane.tsx",

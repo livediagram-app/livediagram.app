@@ -48,8 +48,8 @@ Google picture URL is ever drawn (`isProfilePictureUrl`, `@liveworkspace/sites/p
   (`apps/api/src/routes/auth.ts`, `AuthUser.picture` / `pictureHidden`); the readable picture cookie carries the
   same for the account menu.
 - **Show My Google Picture**, in Settings › Profile (liveworkspace's switch, one for every app). Off keeps the
-  picture from everyone else; your own screen still shows it (the header's account button, your own presence
-  entry, your own comments). A switch saved on the page takes effect at once: the open room is sent an `identity`
+  picture from everyone else; your own screen still shows it (the header's account button, Settings › Profile's
+  large avatar, your own presence entry, your own comments). A switch saved on the page takes effect at once: the open room is sent an `identity`
   frame and updates the roster in place.
 - **Who sees others' pictures: signed-in accounts only.** The room keeps a `picture` from a `hello` or `identity`
   only from a session a signed-in account holds (the api stamps `X-Verified-Account` on the upgrade; a guest or a
