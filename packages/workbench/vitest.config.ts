@@ -114,6 +114,10 @@ const HELD_AT_100 = [
   // The palette's Icons category, icons and stickers in one (docs/specs/008-canvas/canvas-and-palette.md "Icons
   // category" in each editor).
   'src/components/palette/IconsCategoryTab.tsx',
+  // The tab drag the side by side drop zone answers, ended however the drag ends, a drop into a tab folder included
+  // (docs/specs/007-editor/split-view.md "Opening", Work Tracker 1223).
+  'src/lib/tab-drag-store.ts',
+  'src/components/chrome/useTabReorderDrag.ts',
 ];
 
 export default defineProject({
