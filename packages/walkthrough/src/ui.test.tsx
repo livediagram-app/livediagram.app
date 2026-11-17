@@ -1,15 +1,16 @@
 // @vitest-environment jsdom
-// The walkthroughs as an app mounts them (walkthroughs.md "The Walkthroughs menu", "Recording", "Playing"): the header
-// button and its menu, recording from set-up to save with what is hidden kept out, and playing with the viewer's tab
+// The walkthroughs as an app mounts them (walkthroughs.md "In Tools", "Recording", "Playing"): the row in the footer's
+// Tools and its panel, recording from set-up to save with what is hidden kept out, and playing with the viewer's tab
 // and view put back on close. Over a fake api, devices and recorder.
 import type { WalkthroughEvents, WalkthroughSummary } from '@liveworkspace/media/walkthrough';
+import { ChromeToolsMenu } from '@liveworkspace/workbench/components/chrome/ChromeToolsMenu';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { WalkthroughHost } from './host';
 import type { CanvasView } from './timeline';
 import { shiftClearOf } from './ui/Bubble';
-import { WalkthroughsButton } from './ui/WalkthroughsButton';
+import { WalkthroughsTools } from './ui/WalkthroughsTools';
 import { WalkthroughsLayer } from './ui/WalkthroughsLayer';
 import { useWalkthroughs } from './useWalkthroughs';
 
@@ -91,7 +92,8 @@ function Harness({ server, initialTab = 't1' }: { server: Server; initialTab?: s
   return (
     <>
       <span data-testid="tab">{tab}</span>
-      <WalkthroughsButton menu={walkthroughs.menu} />
+      <ChromeToolsMenu items={[]} />
+      <WalkthroughsTools menu={walkthroughs.menu} />
       <div id="canvas-root" style={{ position: 'relative' }}>
         <div data-canvas-content="">
           <div data-element-id="e1" />
@@ -120,34 +122,69 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-describe('the header button', () => {
-  it('is not there for someone with nothing to play and nothing to record', async () => {
+// Opens the footer's Tools, then its Walkthroughs row (walkthroughs.md "In Tools").
+async function openWalkthroughs() {
+  fireEvent.click(await screen.findByRole('button', { name: /^Tools/ }));
+  const row = document.querySelector<HTMLElement>('[data-tools-item="walkthroughs"]');
+  if (!row) throw new Error('no Walkthroughs row in Tools');
+  fireEvent.click(row);
+  return screen.getByRole('dialog', { name: 'Walkthroughs' });
+}
+
+describe('the Walkthroughs row in Tools', () => {
+  it('is not there for someone with nothing to play and nothing to record, nor is an empty Tools', async () => {
     render(<Harness server={{ list: [], canRecord: false, requests: [] }} />);
     await act(async () => {});
+    expect(screen.queryByRole('button', { name: /^Tools/ })).toBeNull();
     expect(screen.queryByRole('button', { name: /Walkthroughs/ })).toBeNull();
+  });
+
+  it('sits under Collaborate with its count, puts no dot on Tools, and has no header button', async () => {
+    render(<Harness server={{ list: [W], canRecord: false, requests: [] }} />);
+    const tools = await screen.findByRole('button', { name: 'Tools' });
+    expect(document.querySelector('[data-tools-attention]')).toBeNull();
+    expect(document.querySelector('[data-walkthroughs-button]')).toBeNull();
+    fireEvent.click(tools);
+    const row = document.querySelector<HTMLElement>(
+      '[data-tools-group="collaborate"] [data-tools-item="walkthroughs"]',
+    );
+    expect(row?.textContent).toContain('Walkthroughs');
+    expect(row?.textContent).toContain('Play a recorded talk-through.');
+    expect(row?.textContent).toContain('1');
   });
 
   it('counts the walkthroughs and lists them, with who and when', async () => {
     render(<Harness server={{ list: [W], canRecord: false, requests: [] }} />);
-    const button = await screen.findByRole('button', { name: /Walkthroughs/ });
-    fireEvent.click(button);
-    const menu = screen.getByRole('dialog', { name: 'Walkthroughs' });
+    const menu = await openWalkthroughs();
+    expect(document.querySelector('[data-tools-popover]')).toBeNull();
     expect(menu.textContent).toContain('Tour');
     expect(menu.textContent).toContain('1:04 · Ada · 2 days ago');
     expect(screen.queryByText('Record Walkthrough')).toBeNull();
   });
 
-  it('shows an Editor the empty state and Record Walkthrough', async () => {
+  it('shows an Editor the empty state and Record Walkthrough, which opens the dock and closes the panel', async () => {
     render(<Harness server={{ list: [], canRecord: true, requests: [] }} />);
-    fireEvent.click(await screen.findByRole('button', { name: /Walkthroughs/ }));
+    fireEvent.click(await screen.findByRole('button', { name: /^Tools/ }));
+    expect(document.querySelector('[data-tools-item="walkthroughs"]')?.textContent).toContain(
+      'Record yourself talking through it.',
+    );
+    fireEvent.click(document.querySelector<HTMLElement>('[data-tools-item="walkthroughs"]')!);
     expect(screen.getByText('No Walkthroughs Yet')).toBeTruthy();
-    expect(screen.getByText('Record Walkthrough')).toBeTruthy();
+    fireEvent.click(screen.getByText('Record Walkthrough'));
+    expect(screen.queryByRole('dialog', { name: 'Walkthroughs' })).toBeNull();
+  });
+
+  it('closes on Escape', async () => {
+    render(<Harness server={{ list: [W], canRecord: false, requests: [] }} />);
+    await openWalkthroughs();
+    fireEvent.keyDown(document, { key: 'Escape' });
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Walkthroughs' })).toBeNull());
   });
 
   it('deletes a walkthrough after asking', async () => {
     const server: Server = { list: [W], canRecord: true, requests: [] };
     render(<Harness server={server} />);
-    fireEvent.click(await screen.findByRole('button', { name: /Walkthroughs/ }));
+    await openWalkthroughs();
     fireEvent.click(screen.getByRole('button', { name: 'Delete Tour' }));
     fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
     await waitFor(() => expect(screen.queryByText('Tour')).toBeNull());
@@ -158,7 +195,7 @@ describe('the header button', () => {
 describe('playing', () => {
   it('plays over the canvas, hides what was hidden, says it was edited, and puts the viewer back', async () => {
     render(<Harness server={{ list: [W], canRecord: false, requests: [] }} />);
-    fireEvent.click(await screen.findByRole('button', { name: /Walkthroughs/ }));
+    await openWalkthroughs();
     fireEvent.click(screen.getByText('Tour'));
     await screen.findByRole('region', { name: 'Walkthrough: Tour' });
     // The recording's tab, its hidden element hidden.
@@ -182,7 +219,7 @@ describe('playing', () => {
 
   it('pauses when the viewer looks around, and resumes', async () => {
     render(<Harness server={{ list: [W], canRecord: false, requests: [] }} />);
-    fireEvent.click(await screen.findByRole('button', { name: /Walkthroughs/ }));
+    await openWalkthroughs();
     fireEvent.click(screen.getByText('Tour'));
     const audio = await waitFor(() => {
       const found = document.querySelector('audio');
@@ -247,7 +284,7 @@ describe('recording', () => {
     });
     const server: Server = { list: [], canRecord: true, requests: [] };
     render(<Harness server={server} />);
-    fireEvent.click(await screen.findByRole('button', { name: /Walkthroughs/ }));
+    await openWalkthroughs();
     fireEvent.click(screen.getByText('Record Walkthrough'));
     await screen.findByRole('region', { name: 'Record a Walkthrough' });
     const startButton = await screen.findByRole('button', { name: /Start Recording/ });
@@ -308,7 +345,7 @@ describe('recording', () => {
       },
     });
     render(<Harness server={{ list: [], canRecord: true, requests: [] }} />);
-    fireEvent.click(await screen.findByRole('button', { name: /Walkthroughs/ }));
+    await openWalkthroughs();
     fireEvent.click(screen.getByText('Record Walkthrough'));
     expect(
       await screen.findByText(

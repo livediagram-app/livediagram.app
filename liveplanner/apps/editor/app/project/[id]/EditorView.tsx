@@ -59,8 +59,8 @@ import { EmailIntakeHost } from '@/components/email-intake/EmailIntakeHost';
 import { renderEditorHeader, renderEditorTabBar } from './EditorViewBars';
 import {
   useEditorWalkthroughs,
-  WalkthroughsButton,
   WalkthroughsLayer,
+  WalkthroughsTools,
 } from '@liveworkspace/walkthrough';
 import {
   API_BASE as WALKTHROUGHS_API_BASE,
@@ -192,7 +192,7 @@ export function EditorView() {
   const landscapeBars = useLandscapeBars([renameProjectNonce, renameTabNonce]);
 
   // The site header and the tab bar, its footer (EditorViewBars), or null where they are hidden.
-  // Walkthroughs (docs/specs/012-collaboration/walkthroughs.md): the header's button and the layer over the canvas.
+  // Walkthroughs (docs/specs/012-collaboration/walkthroughs.md): their row in the footer's Tools and the layer over the canvas.
   const walkthroughs = useEditorWalkthroughs({
     itemId: ctx.projectId,
     hydrated: ctx.hydrated,
@@ -217,7 +217,6 @@ export function EditorView() {
     headerCommunity,
     role,
     barsShown: landscapeBars.shown,
-    walkthroughs: <WalkthroughsButton menu={walkthroughs.menu} />,
   });
   const footer = renderEditorTabBar(ctx, { selectTab, barsShown: landscapeBars.shown });
   // The bars handle, at the canvas's top-right corner: only on a phone held sideways (CSS), and only
@@ -452,6 +451,7 @@ export function EditorView() {
                       </CanvasPatternContext.Provider>
                     </CanvasSurfaceProvider>
                     <WalkthroughsLayer walkthroughs={walkthroughs} />
+                    <WalkthroughsTools menu={walkthroughs.menu} />
                   </ViewportStoreProvider>
                 </SelectionStoreProvider>
               </CursorsDrawnContext.Provider>

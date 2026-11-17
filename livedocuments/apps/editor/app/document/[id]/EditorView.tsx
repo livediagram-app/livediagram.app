@@ -50,7 +50,11 @@ import { useEditorAccent } from '@/hooks/ui/useEditorAccent';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useEditorContext } from './EditorContext';
 import { EditorViewFooter, EditorViewHeader } from './editor-view-bars';
-import { useEditorWalkthroughs, WalkthroughsLayer } from '@liveworkspace/walkthrough';
+import {
+  useEditorWalkthroughs,
+  WalkthroughsLayer,
+  WalkthroughsTools,
+} from '@liveworkspace/walkthrough';
 import { useSelectTab } from './useSelectTab';
 import { UiScaleProvider } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { DockNamesProvider } from '@liveworkspace/workbench/hooks/ui/useDockNames';
@@ -283,7 +287,7 @@ export function EditorView() {
   // lays them across both panes.
   // Each is its own memoised component over the chrome store (editor-view-bars.tsx), so a typing commit renders
   // neither; null where its bar is hidden.
-  // Walkthroughs (docs/specs/012-collaboration/walkthroughs.md): the header's button and the layer over the canvas.
+  // Walkthroughs (docs/specs/012-collaboration/walkthroughs.md): their row in the footer's Tools and the layer over the canvas.
   const walkthroughs = useEditorWalkthroughs({
     itemId: ctx.documentId,
     hydrated: ctx.hydrated,
@@ -311,7 +315,6 @@ export function EditorView() {
         headerCommunity={headerCommunity}
         isMobileViewport={isMobileViewport}
         landscapeShown={landscapeBars.shown}
-        walkthroughs={walkthroughs.menu}
       />
     );
   const footer =
@@ -520,6 +523,7 @@ export function EditorView() {
                 </CanvasFinishProvider>
               </CanvasSurfaceProvider>
               <WalkthroughsLayer walkthroughs={walkthroughs} />
+              <WalkthroughsTools menu={walkthroughs.menu} />
             </ViewportStoreProvider>
           </SheetLinksHost>
         </SelectionStoreProvider>

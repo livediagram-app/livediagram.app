@@ -1,7 +1,7 @@
 'use client';
 
-// One item's walkthroughs, as the header button, the recorder and the player share them
-// (liveworkspace/docs/specs/006-media/walkthroughs.md "The Walkthroughs menu"): the list (fetched when the item opens
+// One item's walkthroughs, as their row in Tools, the recorder and the player share them
+// (each canvas app's docs/specs/012-collaboration/walkthroughs.md "In Tools"): the list (fetched when the item opens
 // and after every save and delete), whether the caller may record, and the recorder, the hiding and the player.
 
 import type { WalkthroughSummary } from '@liveworkspace/media/walkthrough';
@@ -14,7 +14,7 @@ import { useRecorder } from './useRecorder';
 
 export type Walkthroughs = ReturnType<typeof useWalkthroughs>;
 
-/** What the header's button needs: one value that changes only with the list. */
+/** What the Tools row and its panel need: one value that changes only with the list. */
 export type WalkthroughsMenu = {
   available: boolean;
   list: readonly WalkthroughSummary[];
@@ -91,8 +91,8 @@ export function useWalkthroughs(host: WalkthroughHost) {
     [api],
   );
 
-  // The header's menu reads these through the latest recorder and player, so the menu's value holds still while a
-  // recording ticks (an editor's memoised header renders again only when the list does).
+  // The panel reads these through the latest recorder and player, so the menu's value holds still while a recording
+  // ticks (the Tools row is published again only when the list does).
   const latest = useRef({ player, recorder });
   useEffect(() => {
     latest.current = { player, recorder };

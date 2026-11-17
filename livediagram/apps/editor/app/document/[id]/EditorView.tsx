@@ -33,8 +33,8 @@ import { WorkbenchReconnectLine } from '@/components/chrome/WorkbenchChrome';
 import { editorViewFooter, editorViewHeader } from './editor-view-bars';
 import {
   useEditorWalkthroughs,
-  WalkthroughsButton,
   WalkthroughsLayer,
+  WalkthroughsTools,
 } from '@liveworkspace/walkthrough';
 
 import { LandscapeBarsHandle } from '@/components/chrome/LandscapeBars';
@@ -232,7 +232,7 @@ export function EditorView() {
 
   // The site header and the tab bar (editor-view-bars.tsx). Side by side (docs/specs/007-editor/split-view.md)
   // lays them across both panes.
-  // Walkthroughs (docs/specs/012-collaboration/walkthroughs.md): the header's button and the layer over the canvas.
+  // Walkthroughs (docs/specs/012-collaboration/walkthroughs.md): their row in the footer's Tools and the layer over the canvas.
   const walkthroughs = useEditorWalkthroughs({
     itemId: ctx.documentId,
     hydrated: ctx.hydrated,
@@ -259,7 +259,6 @@ export function EditorView() {
     role,
     isMobileViewport,
     landscapeShown: landscapeBars.shown,
-    walkthroughs: <WalkthroughsButton menu={walkthroughs.menu} />,
   });
   const footer = editorViewFooter(ctx, {
     isOffline,
@@ -518,6 +517,7 @@ export function EditorView() {
               </CanvasFinishProvider>
             </CanvasSurfaceProvider>
             <WalkthroughsLayer walkthroughs={walkthroughs} />
+            <WalkthroughsTools menu={walkthroughs.menu} />
           </ViewportStoreProvider>
         </SelectionStoreProvider>
       </ApprovalDoorProvider>

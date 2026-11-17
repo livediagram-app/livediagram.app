@@ -1,8 +1,11 @@
 'use client';
 
-// The header's Walkthroughs button and its menu (liveworkspace/docs/specs/006-media/walkthroughs.md "The Walkthroughs
-// menu"): a full-height header action, left of Present, with a count badge; the menu under it lists the item's
-// walkthroughs to play, each with its delete where the caller may, and Record Walkthrough for an Editor.
+// Walkthroughs in the footer's Tools (each canvas app's docs/specs/012-collaboration/walkthroughs.md "In Tools";
+// liveworkspace/docs/specs/004-index/footer-tools-menu.md): one row under Collaborate, published through the Tools
+// door, with the count of recorded walkthroughs at its end. Pressing it opens the Walkthroughs panel from the Tools
+// button, as Tools itself opens: the item's walkthroughs to play, each with its delete where the caller may, and
+// Record Walkthrough for an Editor. No row where walkthroughs don't fit (a phone, an embed, This Browser, a tab-scoped
+// link) or where there is nothing to play or record.
 
 import type { WalkthroughSummary } from '@liveworkspace/media/walkthrough';
 import {
@@ -10,182 +13,135 @@ import {
   ConfirmPopover,
   CountBadge,
   HoverCard,
-  Portal,
   Spinner,
   TrashIcon,
   formatRelativeTime,
-  useClickOutside,
-  usePopoverLayer,
 } from '@liveworkspace/ui';
-import {
-  HEADER_ACTION_BTN,
-  HeaderGlyph,
-} from '@liveworkspace/workbench/components/chrome/header-action';
-import { useLayoutEffect, useRef, useState } from 'react';
+import type { ChromeToolsItem } from '@liveworkspace/workbench/components/chrome/ChromeToolsMenu';
+import { usePublishToolsItems } from '@liveworkspace/workbench/components/chrome/tools-door';
+import { PopoverOrSheet } from '@liveworkspace/workbench/components/primitives/PopoverOrSheet';
+import { useMemo, useState } from 'react';
 import { formatClock } from '../timeline';
 import type { WalkthroughsMenu } from '../useWalkthroughs';
 import { PlayIcon, RecordIcon, WalkthroughIcon } from './icons';
 
-const MENU_WIDTH = 336;
-const MARGIN = 8;
+const PANEL_WIDTH = 360;
 
-export function WalkthroughsButton({ menu: walkthroughs }: { menu: WalkthroughsMenu }) {
-  // The button the menu hangs from, while it is open.
+export function WalkthroughsTools({ menu }: { menu: WalkthroughsMenu }) {
+  // The Tools button the panel hangs from, while it is open.
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
-  const open = anchor !== null;
-  if (!walkthroughs.available) return null;
-  const count = walkthroughs.list.length;
+  const { available, canRecord } = menu;
+  const count = menu.list.length;
+  const rows = useMemo<ChromeToolsItem[]>(
+    () =>
+      available
+        ? [
+            {
+              id: 'walkthroughs',
+              group: 'collaborate',
+              label: 'Walkthroughs',
+              description: canRecord
+                ? 'Record yourself talking through it.'
+                : 'Play a recorded talk-through.',
+              icon: <WalkthroughIcon size={16} />,
+              aside:
+                count > 0 ? (
+                  <CountBadge tone="brand" count={count} label={`${count} walkthroughs`} />
+                ) : undefined,
+              onSelect: (at) => setAnchor(at),
+            },
+          ]
+        : [],
+    [available, canRecord, count],
+  );
+  usePublishToolsItems('walkthroughs', rows);
+  if (!anchor || !available) return null;
   return (
-    <>
-      <HoverCard
-        title="Walkthroughs"
-        description={
-          count > 0
-            ? `${count} recorded ${count === 1 ? 'walkthrough' : 'walkthroughs'} of this canvas.`
-            : 'Record yourself talking through this canvas.'
-        }
-      >
-        <button
-          type="button"
-          aria-haspopup="dialog"
-          aria-expanded={open}
-          data-walkthroughs-button=""
-          onClick={(e) => setAnchor(open ? null : e.currentTarget)}
-          className={`${HEADER_ACTION_BTN} hidden text-slate-600 hover:bg-slate-50 sm:flex dark:text-slate-200 dark:hover:bg-slate-800 ${
-            open ? 'bg-slate-50 dark:bg-slate-800' : ''
-          }`}
-        >
-          <span className="relative">
-            <HeaderGlyph>
-              <WalkthroughIcon size={15} />
-            </HeaderGlyph>
-            {count > 0 ? (
-              <CountBadge
-                count={count}
-                tone="brand"
-                label={`${count} walkthroughs`}
-                className="absolute -right-2.5 -top-1.5"
-              />
-            ) : null}
-          </span>
-          <span>Walkthroughs</span>
-        </button>
-      </HoverCard>
-      {anchor ? (
-        <WalkthroughsMenu
-          anchor={anchor}
-          walkthroughs={walkthroughs}
-          onClose={() => setAnchor(null)}
-        />
-      ) : null}
-    </>
+    <PopoverOrSheet
+      anchor={anchor}
+      name="Walkthroughs"
+      width={PANEL_WIDTH}
+      onClose={() => setAnchor(null)}
+    >
+      {(sheet) => (
+        <WalkthroughsPanel walkthroughs={menu} sheet={sheet} onClose={() => setAnchor(null)} />
+      )}
+    </PopoverOrSheet>
   );
 }
 
-function WalkthroughsMenu({
-  anchor,
+// The panel's body: its heading, the list (or the empty state) and Record Walkthrough at its foot. Escape and a press
+// outside are the popover's; the delete's confirm is a popover of its own above it, so a press in it never closes this.
+export function WalkthroughsPanel({
   walkthroughs,
+  sheet = false,
   onClose,
 }: {
-  anchor: HTMLElement;
   walkthroughs: WalkthroughsMenu;
+  sheet?: boolean;
   onClose: () => void;
 }) {
-  const panel = useRef<HTMLDivElement>(null);
-  const [place, setPlace] = useState<{ top: number; left: number } | null>(null);
-  // Read once when the menu opens, so every row's "2 days ago" agrees and render stays pure.
+  // Read once when the panel opens, so every row's "2 days ago" agrees and render stays pure.
   const [now] = useState(() => Date.now());
   const [confirming, setConfirming] = useState<{ id: string; anchor: HTMLElement } | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
-
-  useLayoutEffect(() => {
-    const r = anchor.getBoundingClientRect();
-    const left = Math.max(
-      MARGIN,
-      Math.min(r.right - MENU_WIDTH, window.innerWidth - MENU_WIDTH - MARGIN),
-    );
-    setPlace({ top: r.bottom + 6, left });
-  }, [anchor]);
-
-  usePopoverLayer(panel, (e) => {
-    if (e.key === 'Escape' && !confirming) {
-      e.preventDefault();
-      onClose();
-      anchor.focus();
-    }
-  });
-  useClickOutside(
-    panel,
-    (e) => {
-      if (anchor.contains(e.target as Node)) return;
-      onClose();
-    },
-    !confirming,
-  );
-
   const { list, canRecord, loading: loadingId } = walkthroughs;
 
   return (
-    <Portal>
-      <div
-        ref={panel}
-        role="dialog"
-        aria-label="Walkthroughs"
-        data-walkthroughs-menu=""
-        style={{ top: place?.top ?? -9999, left: place?.left ?? -9999, width: MENU_WIDTH }}
-        className="fixed z-50 flex max-h-[min(32rem,calc(100vh-6rem))] flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/40"
-      >
-        <div className="flex items-baseline justify-between border-b border-slate-100 px-4 pb-2.5 pt-3 dark:border-slate-800">
-          <h2 className="text-[13px] font-semibold text-slate-900 dark:text-slate-50">
-            Walkthroughs
-          </h2>
-          {list.length > 0 ? (
-            <span className="text-[11px] text-slate-500 dark:text-slate-400">
-              {list.length} recorded
-            </span>
-          ) : null}
-        </div>
-        {list.length === 0 ? (
-          <CompactEmptyState
-            icon={<WalkthroughIcon size={16} />}
-            title="No Walkthroughs Yet"
-            description="Record yourself talking through this canvas. Anyone who can open it can play it back."
-            className="py-6"
-          />
-        ) : (
-          <ul className="min-h-0 flex-1 overflow-y-auto py-1.5">
-            {list.map((w) => (
-              <WalkthroughRow
-                key={w.id}
-                walkthrough={w}
-                now={now}
-                loading={loadingId === w.id}
-                deleting={deleting === w.id}
-                onPlay={() => {
-                  walkthroughs.play(w.id);
-                  onClose();
-                }}
-                onDelete={(at) => setConfirming({ id: w.id, anchor: at })}
-              />
-            ))}
-          </ul>
-        )}
-        {canRecord ? (
-          <div className="border-t border-slate-100 p-2 dark:border-slate-800">
-            <button
-              type="button"
-              onClick={() => {
-                walkthroughs.record();
-                onClose();
-              }}
-              className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-brand-700 px-3 py-2 text-[13px] font-medium text-white transition hover:bg-brand-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
-            >
-              <RecordIcon size={12} className="text-rose-300" />
-              Record Walkthrough
-            </button>
-          </div>
+    <div
+      data-walkthroughs-menu=""
+      className={`flex min-h-0 flex-col ${sheet ? '' : 'max-h-[min(32rem,calc(100vh-6rem))]'}`}
+    >
+      <div className="flex items-baseline justify-between border-b border-slate-100 px-4 pb-2.5 pt-3 dark:border-slate-800">
+        <h2 className="text-[13px] font-semibold text-slate-900 dark:text-slate-50">
+          Walkthroughs
+        </h2>
+        {list.length > 0 ? (
+          <span className="text-[11px] text-slate-500 dark:text-slate-400">
+            {list.length} recorded
+          </span>
         ) : null}
       </div>
+      {list.length === 0 ? (
+        <CompactEmptyState
+          icon={<WalkthroughIcon size={16} />}
+          title="No Walkthroughs Yet"
+          description="Record yourself talking through this canvas. Anyone who can open it can play it back."
+          className="py-6"
+        />
+      ) : (
+        <ul className="min-h-0 flex-1 overflow-y-auto overscroll-contain py-1.5">
+          {list.map((w) => (
+            <WalkthroughRow
+              key={w.id}
+              walkthrough={w}
+              now={now}
+              loading={loadingId === w.id}
+              deleting={deleting === w.id}
+              onPlay={() => {
+                walkthroughs.play(w.id);
+                onClose();
+              }}
+              onDelete={(at) => setConfirming({ id: w.id, anchor: at })}
+            />
+          ))}
+        </ul>
+      )}
+      {canRecord ? (
+        <div className="border-t border-slate-100 p-2 dark:border-slate-800">
+          <button
+            type="button"
+            onClick={() => {
+              walkthroughs.record();
+              onClose();
+            }}
+            className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-brand-700 px-3 py-2 text-[13px] font-medium text-white transition hover:bg-brand-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
+          >
+            <RecordIcon size={12} className="text-rose-300" />
+            Record Walkthrough
+          </button>
+        </div>
+      ) : null}
       {confirming ? (
         <ConfirmPopover
           anchor={confirming.anchor}
@@ -200,7 +156,7 @@ function WalkthroughsMenu({
           }}
         />
       ) : null}
-    </Portal>
+    </div>
   );
 }
 
