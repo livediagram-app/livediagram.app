@@ -22,6 +22,7 @@ import { coerceShapeKind } from './validate';
 import { ENTITY_MAX_FIELDS, ENTITY_MAX_TEXT, type EntityField } from './data-shapes';
 import { entityHeight } from './entity-geometry';
 import { ENTITY_KEY_LABELS } from './entity-fields';
+import { C4_NODE, c4NodeElement, type C4NodeSpec } from './c4-look';
 // `Element` is defined on the barrel (index.ts); a type-only import back into
 // it is erased at runtime, so the cycle is harmless — the package's sanctioned
 // pattern (auto-layout.ts does the same).
@@ -292,6 +293,10 @@ export function graphToElements(
     // waiting for text. Solid in the theme's accent via the preset binding,
     // which a theme walk resolves (docs/specs/020-import-export/mermaid.md).
     if (n.fields) return entityNode(n, n.fields);
+    // A C4 element (the c4 style, graph-c4.ts): its card or database at its own size.
+    const c4 = (n as { [C4_NODE]?: C4NodeSpec })[C4_NODE];
+    if (c4)
+      return { ...c4NodeElement(n.id, n.label ?? '', c4), ...(n.note ? { note: n.note } : {}) };
     // A final state is its bullseye, a little larger than the start's dot so the ring reads.
     if ((shape === 'circle' || shape === 'final-state') && !(n.label ?? '').trim()) {
       const size = shape === 'final-state' ? FINAL_STATE_SIZE : DOT_SIZE;
