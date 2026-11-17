@@ -385,6 +385,13 @@ describe('the page holding still', () => {
       // As tall as the answer will be: what the check reads when it answers.
       expect(pending!.querySelector('[data-hold]')?.getAttribute('data-hold')).toBeTruthy();
     }
+    // Each card's Uptime chip keeps its room too: arriving later, it wrapped a phone's card header onto a new line.
+    const chips = [...host!.querySelectorAll('[data-uptime-pending]')];
+    expect(chips).toHaveLength(6);
+    for (const chip of chips) {
+      expect(chip.getAttribute('aria-hidden')).toBe('true');
+      expect(chip.className).toContain('invisible');
+    }
     const telemetry = row('liveworkspace:telemetry')!.querySelector('[data-hourly="pending"]')!;
     expect(telemetry.querySelector('[data-hold]')!.getAttribute('data-hold')).toBe(
       'Answers; database not checked',
@@ -396,6 +403,7 @@ describe('the page holding still', () => {
       await new Promise((r) => setTimeout(r, 0));
     });
     expect(host!.querySelector('[data-hourly="pending"]')).toBeNull();
+    expect(host!.querySelector('[data-uptime-pending]')).toBeNull();
     const api = row('livediagram:api')!.querySelector('[data-hourly]');
     expect(api?.getAttribute('data-hourly')).toBe('up');
   });

@@ -371,7 +371,8 @@ stacked under the live ones (`HOLD` in `components/status/status-ui.tsx`, the co
 assistive tech nor the page's text reads). While the history is read, each service keeps its place: the cloud line
 reads "Checking" (holding the room of the answer it expects and of an Operational badge), the strip lies flat as a
 day without checks, and its footer reads "Reading the history", all the height the real lines take, so the cards do
-not grow under the reader when it arrives. The footer's "Checked by liveworkspace …" keeps the room of "59 min ago"
+not grow under the reader when it arrives; each card's header keeps an invisible Uptime chip's room too (the chip
+arriving later wrapped a phone's header onto a new line). The footer's "Checked by liveworkspace …" keeps the room of "59 min ago"
 whatever it reads, and a browser line keeps the room of the label it showed while checking. Only a history that
 can't be read takes those lines away (its quiet note above the groups says why).
 

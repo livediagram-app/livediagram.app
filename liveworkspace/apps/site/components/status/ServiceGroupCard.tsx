@@ -91,6 +91,12 @@ export const ServiceGroupCard = memo(function ServiceGroupCard({
         <div className="relative flex flex-wrap items-center gap-2">
           {uptime !== null && history ? (
             <UptimeFigure percent={uptime} days={history.days} />
+          ) : historyPending ? (
+            // The Uptime chip's room while the history is read: on a phone the chip arriving later wrapped this row
+            // under the blurb and lifted every card below. Invisible, so never focused or read.
+            <span aria-hidden data-uptime-pending className="invisible inline-flex">
+              <UptimeFigure percent={100} days={90} />
+            </span>
           ) : null}
           <StateBadge state={groupState} word={groupWords} />
           <a
