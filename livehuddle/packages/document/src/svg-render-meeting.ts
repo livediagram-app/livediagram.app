@@ -11,7 +11,6 @@ import {
 } from './meeting-pieces';
 import { r2, xmlEscape } from './svg-render-primitives';
 import { text, type Face } from './svg-render-face-kit';
-import type { CanvasSurface } from './colors';
 
 // The piece's design box scaled onto the element's box.
 function scaled(el: Face, w: number, h: number, body: string): string {
@@ -31,20 +30,32 @@ export function screenSvg(el: Face): string {
   return scaled(el, b.w, b.h, body);
 }
 
-// A plaque is a real sign, so the export draws the light one on every paper.
-export function roomSignSvg(el: Face, surface?: CanvasSurface): string {
+// The Room Sign as the canvas draws it (RoomSignView), reading Free: a real sign, the same on every paper.
+export function roomSignSvg(el: Face): string {
   const a = ROOM_SIGN_ART;
-  // The plaque the canvas shows on this paper (RoomSignView), so a dark export has no white card on it.
-  const t = surface === 'dark' ? a.tones.dark : a.tones.light;
-  const clip = `room-sign-${xmlEscape(el.id)}`;
+  const t = a.tones;
+  const p = a.plate;
+  const id = `room-sign-${xmlEscape(el.id)}`;
+  const tone = ROOM_SIGN_TONES.free;
   const body =
-    `<clipPath id="${clip}"><rect width="${a.plaque.w}" height="${a.plaque.h}" rx="${a.plaque.rx}"/></clipPath>` +
-    `<g clip-path="url(#${clip})"><rect width="${a.plaque.w}" height="${a.plaque.h}" fill="${t.plaque}"/>` +
-    `<rect width="${a.stripe}" height="${a.plaque.h}" fill="${ROOM_SIGN_TONES.free}"/></g>` +
-    `<rect x="0.5" y="0.5" width="${a.plaque.w - 1}" height="${a.plaque.h - 1}" rx="${a.plaque.rx}" fill="none" stroke="${t.edge}"/>` +
-    a.screws.map((c) => `<circle cx="${c.cx}" cy="${c.cy}" r="2" fill="${t.screw}"/>`).join('') +
+    `<defs><linearGradient id="${id}-f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${t.frameLit}"/>` +
+    `<stop offset="1" stop-color="${t.frame}"/></linearGradient>` +
+    `<linearGradient id="${id}-p" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${t.plate}"/>` +
+    `<stop offset="1" stop-color="${t.plateShade}"/></linearGradient>` +
+    `<clipPath id="${id}-c"><rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" rx="${p.rx}"/></clipPath></defs>` +
+    `<rect y="2" width="${a.plaque.w}" height="${a.plaque.h}" rx="${a.plaque.rx}" fill="#0b1220" opacity="0.18"/>` +
+    `<rect x="0.5" y="0.5" width="${a.plaque.w - 1}" height="${a.plaque.h - 1}" rx="${a.plaque.rx}" fill="url(#${id}-f)" stroke="${t.frameEdge}"/>` +
+    `<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" rx="${p.rx}" fill="url(#${id}-p)" stroke="${t.plateEdge}" stroke-width="0.75"/>` +
+    `<rect x="${a.stripe.x}" y="${p.y}" width="${a.stripe.w}" height="${p.h}" fill="${tone}" clip-path="url(#${id}-c)"/>` +
+    a.screws
+      .map(
+        (c) =>
+          `<circle cx="${c.cx}" cy="${c.cy}" r="1.8" fill="${t.screw}" stroke="${t.screwEdge}" stroke-width="0.5"/>`,
+      )
+      .join('') +
     text(a.name.x, a.name.y, 'Room', { size: a.name.size, weight: 600, color: t.ink }) +
-    `<circle cx="${a.status.dotX}" cy="${a.status.y - 4}" r="4" fill="${ROOM_SIGN_TONES.free}"/>` +
+    `<circle cx="${a.status.dotX}" cy="${a.status.y - 4}" r="6" fill="${tone}" opacity="0.25"/>` +
+    `<circle cx="${a.status.dotX}" cy="${a.status.y - 4}" r="3.5" fill="${tone}"/>` +
     text(a.status.dotX + 9, a.status.y, 'Free', {
       size: a.status.size,
       weight: 500,

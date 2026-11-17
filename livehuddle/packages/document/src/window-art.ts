@@ -7,7 +7,7 @@ import { ROOM_WALL } from '@livehuddle/avatar/office-geometry';
 
 /** The light patch's colour and strongest opacity on each paper (DEFAULTS.md D228): sunlight, and a fainter moonlight. */
 export const WINDOW_LIGHT = {
-  light: { colour: '#fde68a', opacity: 0.55 },
+  light: { colour: '#eedd99', opacity: 0.55 },
   dark: { colour: '#bfdbfe', opacity: 0.16 },
 } as const;
 

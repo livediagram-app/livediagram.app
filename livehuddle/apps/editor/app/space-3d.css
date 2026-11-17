@@ -8,27 +8,42 @@
 
 [data-space-view] {
   --space-ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --space-wall: #e7e5e4;
-  --space-wall-shade: #a8a29e;
-  --space-wall-top: #ffffff;
-  --space-wall-foot: rgb(68 64 60 / 0.28);
-  --space-wall-ink: #44403c;
-  --space-door: #a16207;
-  --space-door-top: #ca8a04;
+  /* Plaster walls with a wooden skirting, as the flat plan draws a room's (office.ts ROOM_TONES). */
+  --space-wall: #ddd3c3;
+  --space-wall-shade: #a99f91;
+  --space-wall-top: #f2ede5;
+  --space-wall-foot: rgb(68 52 36 / 0.3);
+  --space-wall-ink: #4a4036;
+  --space-skirting: #a87548;
+  --space-door: #9a6a3f;
+  --space-door-top: #c08d5c;
+  --space-door-frame: #5e3b1f;
+  --space-window-frame: #f7f3ec;
+  --space-glass-top: #cfe6f3;
+  --space-glass-bottom: #8fbcd8;
   --space-fence: #8a5a33;
+  --space-picket: #ffffff;
+  --space-grass: #65a30d;
   /* The floor's pattern is drawn on the screen, not on the floor: the 3D view shows the background colour alone. */
   background-image: none !important;
 }
-/* On a dark canvas the walls are slate, their top edge lighter (docs/specs/008-canvas/3d-view.md "Themes"). */
+/* On a dark canvas the plaster is in evening light: the same walls, deeper (docs/specs/008-canvas/3d-view.md "Themes"). */
 [data-space-view][data-dark-canvas] {
-  --space-wall: #475569;
-  --space-wall-shade: #1e293b;
-  --space-wall-top: #94a3b8;
-  --space-wall-foot: rgb(2 6 23 / 0.45);
-  --space-wall-ink: #f1f5f9;
-  --space-door: #ca8a04;
-  --space-door-top: #fde047;
+  --space-wall: #b7ad9e;
+  --space-wall-shade: #6f665a;
+  --space-wall-top: #d9d1c4;
+  --space-wall-foot: rgb(20 14 8 / 0.45);
+  --space-wall-ink: #2f2820;
+  --space-door: #8a5d36;
+  --space-door-top: #b07f50;
+  --space-door-frame: #4a2e18;
+  --space-window-frame: #d9d1c4;
+  /* Night through the glass, with the room's warm light in it. */
+  --space-glass-top: #2b4363;
+  --space-glass-bottom: #1b2a40;
   --space-fence: #c08a5b;
+  --space-picket: #e2e8f0;
+  --space-grass: #3f6212;
 }
 
 /* The camera: a perspective tilt about the middle of the canvas (space-3d-camera.ts `stageTransform`). */
@@ -46,15 +61,63 @@
 [data-space-view] [data-space-3d-group] {
   transform-style: preserve-3d;
 }
-/* The floor sits a pixel under the ground line, so what lies on it (rings, beams) is never coplanar with it. */
+/* The floor sits a pixel under the ground line, so what lies on it (rings, beams) is never coplanar with it. It keeps
+   its children in the scene's space so the pieces that stand up are sorted with the walls and the characters; the
+   rest of the floor has no transform of its own and stays painted in the plane. */
 [data-space-view] [data-element-plane] {
   translate: 0 0 -1px;
+  transform-style: preserve-3d;
+}
+
+/* A piece stands up about its front edge, facing the camera (3d-view.md "Pieces stand up"): only the ones near the view
+   (`data-space-near`, set by the walls layer). A turned piece stands about its middle, where its own rotation turns. */
+[data-space-view] [data-space-stands] {
+  transition: rotate 520ms var(--space-ease);
+}
+[data-space-view] [data-space-stands='base'][data-space-near] {
+  transform-origin: 50% 100%;
+  rotate: x calc(var(--space-tilt) * -1);
+}
+[data-space-view] [data-space-stands='centre'][data-space-near] {
+  rotate: x calc(var(--space-tilt) * -1);
+}
+/* An Office Pod lies flat between its standing walls; its furniture (benches, table, mug) stands up together about the
+   table's foot (3d-view.md "Which pieces"), the boxes between kept in the scene's space so it is sorted with them. */
+[data-space-view] [data-space-stands='inside'][data-space-near],
+[data-space-view] [data-space-stands='inside'][data-space-near] div:has([data-pod-furniture]) {
+  transform-style: preserve-3d;
+}
+[data-space-view] [data-pod-furniture] {
+  transform-origin: 50% var(--pod-foot, 100%);
+  transition: rotate 520ms var(--space-ease);
+}
+[data-space-view] [data-space-stands='inside'][data-space-near] [data-pod-furniture] {
+  rotate: x calc(var(--space-tilt) * -1);
+}
+/* A wall piece hangs on its back wall (3d-view.md "Wall pieces hang on the wall"): moved up the floor to the wall's
+   line, upright in the wall's own plane (as the wall's face folds), its foot a little up the wall, never taller than
+   the wall and a little over it. */
+[data-space-view] [data-space-stands][data-space-near][data-space-hung] {
+  transform-origin: 50% 100%;
+  translate: 0 var(--space-hang-y, 0px) var(--space-hang-lift, 10px);
+  rotate: x var(--space-stand);
+  scale: var(--space-hang-scale, 1);
+  transition:
+    rotate 520ms var(--space-ease),
+    translate 520ms var(--space-ease);
 }
 
 /* A character stands up about its feet, facing the camera (AvatarWalker's `data-avatar-stand`). */
+/* A sitter near a piece's front edge stands that far towards the camera, so the piece never covers them
+   (`--space-seat-lift`, canvas px along the floor; space-3d-pieces.ts `seatLift`). */
 [data-space-view] [data-avatar-stand] {
-  transform: rotateX(calc(var(--space-tilt) * -1));
+  transform: rotateX(calc(var(--space-tilt) * -1))
+    translateZ(calc(var(--space-seat-lift, 0px) * sin(var(--space-tilt))));
   transition: transform 520ms var(--space-ease);
+}
+/* A sitter behind their piece (a table's far side, behind a desk) has their legs under its front. */
+[data-space-view] [data-avatar-figure] {
+  clip-path: inset(0 0 var(--space-seat-hide, 0px) 0);
 }
 /* What floats above a head turns about that character's feet: `--space-billboard-origin` is the feet, from the
    element's own box. */
@@ -62,6 +125,20 @@
   transform-origin: var(--space-billboard-origin, 50% 100%);
   rotate: x calc(var(--space-tilt) * -1);
   transition: rotate 520ms var(--space-ease);
+}
+
+/* The overlay is flat and each card is moved and scaled about its speaker's feet to where the camera would stand it,
+   following the tilt as it turns (useFlatBillboards), so its words are drawn sharp rather than resampled through the
+   perspective. */
+[data-space-view] > [data-space-overlay] {
+  transform: none;
+  transition: none;
+}
+[data-space-view] [data-space-overlay] [data-space-billboard] {
+  rotate: none;
+  transition: none;
+  translate: var(--space-flat-x, 0px) var(--space-flat-y, 0px);
+  scale: var(--space-flat-scale, 1);
 }
 
 /* A wall: its line on the floor (left 0, the line at its top edge) and a face folding up from it. */
@@ -88,6 +165,7 @@
   animation: space-wall-rise 520ms var(--space-ease);
   /* Lit from the front: a wall running away from the camera is shaded (space-3d-walls.ts `shade`). */
   background:
+    linear-gradient(to top, var(--space-skirting) 0 4px, transparent 4px),
     linear-gradient(to top, var(--space-wall-foot), transparent 35%),
     color-mix(in srgb, var(--space-wall-shade) var(--wall-shade), var(--space-wall));
   border-top: 3px solid var(--space-wall-top);
@@ -106,9 +184,66 @@
   background: rgb(186 230 253 / 0.28);
   border-top-color: rgb(224 242 254 / 0.9);
 }
-[data-space-wall='door'] > [data-space-wall-face] {
-  background: var(--space-door);
-  border-top-color: var(--space-door-top);
+/* A doorway (3d-view.md "Doorways"): a dark wooden frame in the wall's gap with a lintel of plaster over it, so the
+   way through reads from across the room; a shut Door's leaf stands in the frame. */
+[data-space-wall='doorway'] > [data-space-wall-face] {
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--space-wall-shade) var(--wall-shade), var(--space-wall)) 0
+      calc(var(--wall-h) - var(--door-h)),
+    transparent 0
+  );
+  overflow: visible;
+}
+[data-space-door-frame] {
+  position: absolute;
+  left: -1px;
+  right: -1px;
+  bottom: 0;
+  height: calc(var(--door-h) + 4px);
+  border: 4px solid var(--space-door-frame);
+  border-bottom: 0;
+  border-radius: 1px 1px 0 0;
+  box-shadow:
+    inset 0 2px 3px rgb(0 0 0 / 0.25),
+    0 -1px 0 rgb(255 255 255 / 0.18);
+}
+[data-space-door-leaf] {
+  position: absolute;
+  inset: 0;
+  /* Two raised panels and a brass handle. */
+  background:
+    radial-gradient(circle at 82% 56%, #e2c37a 0 2px, #8a6a2a 2.5px, transparent 3px),
+    linear-gradient(var(--space-door-top), var(--space-door-top)) 50% 14% / 64% 30% no-repeat,
+    linear-gradient(var(--space-door-top), var(--space-door-top)) 50% 82% / 64% 36% no-repeat,
+    linear-gradient(to bottom, var(--space-door), color-mix(in srgb, var(--space-door) 80%, black));
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.25);
+}
+/* A window in a plaster wall: a painted frame with a sill, a transom and a mullion, the glass catching the light. */
+[data-space-window-pane] {
+  position: absolute;
+  left: max(4px, 8%);
+  right: max(4px, 8%);
+  top: 9px;
+  bottom: 17px;
+  border: 2px solid var(--space-window-frame);
+  border-bottom-width: 3px;
+  background:
+    linear-gradient(var(--space-window-frame), var(--space-window-frame)) 50% 0 / 2px 100% no-repeat,
+    linear-gradient(var(--space-window-frame), var(--space-window-frame)) 0 32% / 100% 2px no-repeat,
+    linear-gradient(
+      115deg,
+      transparent 0 22%,
+      rgb(255 255 255 / 0.45) 22% 30%,
+      transparent 30% 36%,
+      rgb(255 255 255 / 0.25) 36% 39%,
+      transparent 39%
+    ),
+    linear-gradient(to bottom, var(--space-glass-top), var(--space-glass-bottom));
+  box-shadow:
+    0 2px 0 -1px var(--space-window-frame),
+    0 3px 2px rgb(0 0 0 / 0.18),
+    inset 0 1px 2px rgb(0 0 0 / 0.2);
 }
 [data-space-wall='fence'] > [data-space-wall-face] {
   background:
@@ -120,6 +255,38 @@
     ),
     repeating-linear-gradient(to right, var(--space-fence) 0 5px, transparent 5px 40px);
   border-top: 0;
+}
+/* A Garden Fence: white pickets on two rails, the picket fence its flat drawing shows. */
+[data-space-wall='picket'] > [data-space-wall-face] {
+  background:
+    linear-gradient(
+      transparent 0 6px,
+      var(--space-picket) 6px 9px,
+      transparent 9px 15px,
+      var(--space-picket) 15px 18px,
+      transparent 18px
+    ),
+    repeating-linear-gradient(to right, var(--space-picket) 0 6px, transparent 6px 10px);
+  border-top: 0;
+}
+/* A lawn's blades: thin green blades, lighter at the tips, poking up in a row (3d-view.md "Grass pokes up"). */
+[data-space-wall='grass'] > [data-space-wall-face] {
+  background:
+    repeating-linear-gradient(
+      to right,
+      transparent 0 2px,
+      var(--space-grass) 2px 4px,
+      transparent 4px 7px,
+      var(--space-grass) 7px 8px,
+      transparent 8px 11px
+    ),
+    transparent;
+  mask-image: linear-gradient(to top, black 40%, rgb(0 0 0 / 0.55));
+  border-top: 0;
+}
+/* A fence's flat drawing goes while its run stands (3d-view.md "Fences stand as fences"). */
+[data-space-view] [data-space-walled] {
+  visibility: hidden;
 }
 /* In front of your feet: a ghost, so the wall never hides you (opacity on the face: on the wall it would flatten it). */
 [data-space-wall][data-cut] > [data-space-wall-face] {

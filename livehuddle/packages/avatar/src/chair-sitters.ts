@@ -130,32 +130,6 @@ export function sameSitters(a: ChairSitters, b: ChairSitters): boolean {
   return true;
 }
 
-/** An occupied ring, in a drawing's grid units. */
-export type SeatRing = { cx: number; cy: number; rx: number; ry: number };
-
-// The ring round one seat: a flat ellipse on the floor at the sitter's feet, the size of a chair's, never so wide
-// that it runs into the ring of a seat beside it.
-const SEAT_RING_RX = 20;
-const SEAT_RING_RY = 8;
-const SEAT_RING_SHARE = 0.45;
-
-/** The ring round seat `index` of a drawing (its seats as fractions of its grid), or null for a seat it lacks. */
-export function seatRing(grid: SeatGrid, index: number | undefined): SeatRing | null {
-  const seat = index === undefined ? undefined : grid.seats[index];
-  if (!seat) return null;
-  const cx = seat.u * grid.width;
-  const cy = seat.v * grid.height;
-  let rx = SEAT_RING_RX;
-  grid.seats.forEach((other, i) => {
-    if (i === index) return;
-    const dy = Math.abs(other.v * grid.height - cy);
-    // A seat beside this one (on its row, not above or below it) narrows the ring to its share of the gap.
-    if (dy < SEAT_RING_RY * 2)
-      rx = Math.min(rx, Math.abs(other.u * grid.width - cx) * SEAT_RING_SHARE);
-  });
-  return { cx, cy, rx, ry: SEAT_RING_RY };
-}
-
 /** The gap between the name pill and the chrome over the highest head, in canvas px. */
 export const SEAT_PILL_GAP = 3;
 

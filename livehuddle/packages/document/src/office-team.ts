@@ -12,20 +12,20 @@ import { allSides, ellipse, path, rect } from './furniture-parts';
 export const TEAM_TONES = {
   paper: '#ffffff',
   strip: '#f1f5f9',
-  header: '#ef4444',
+  header: '#de5555',
   ring: '#94a3b8',
   wood: '#c2894b',
-  woodDeep: '#92400e',
+  woodDeep: '#86431a',
   cream: '#fef3c7',
-  bulb: '#facc15',
-  bulbBase: '#a16207',
+  bulb: '#dcba33',
+  bulbBase: '#8e5f1a',
   slot: '#292524',
-  grass: '#86efac',
+  grass: '#8ee7ae',
   board: '#e0b07a',
   nail: '#57534e',
   panel: '#a3734a',
   linen: '#f5efe6',
-  brass: '#e0b232',
+  brass: '#d6ad3c',
   frame: '#5b3a1e',
   mat: '#f8fafc',
   silhouette: '#cbd5e1',
@@ -74,7 +74,6 @@ const CALENDAR_WALL_VIEW: FurnitureDrawing = {
     path('rail', calendarRules()),
   ],
   seats: [],
-  ring: { cx: 100, cy: 84, rx: 98, ry: 74 },
 };
 
 // --- Suggestion Box -----------------------------------------------------------------------------------------------
@@ -100,7 +99,6 @@ const SUGGESTION_BOX_VIEW: FurnitureDrawing = {
     rect('mark', 18, 19.5, 28, 3, 1.5, T.slot),
   ],
   seats: [],
-  ring: { cx: 32, cy: 104, rx: 22, ry: 6 },
 };
 
 // From behind: the box's plain back with the door it is emptied by and its brass lock, the note still half posted
@@ -122,7 +120,6 @@ const SUGGESTION_BOX_BACK: FurnitureDrawing = {
     rect('mark', 18, 19.5, 28, 3, 1.5, T.slot),
   ],
   seats: [],
-  ring: { cx: 32, cy: 104, rx: 22, ry: 6 },
 };
 
 // Facing left: the lid's top down the canvas with its slot along it and the note standing in it, the box's end
@@ -144,7 +141,6 @@ const SUGGESTION_BOX_SIDE: FurnitureDrawing = {
     rect('mark', 23, 18, 3, 22, 1.5, T.slot),
   ],
   seats: [],
-  ring: { cx: 24, cy: 112, rx: 18, ry: 5 },
 };
 
 // --- Signpost -----------------------------------------------------------------------------------------------------
@@ -176,7 +172,6 @@ const SIGNPOST_VIEW: FurnitureDrawing = {
     ]),
   ],
   seats: [],
-  ring: { cx: 60, cy: 132, rx: 32, ry: 8 },
 };
 
 /** A board's arrow on the signpost's grid as one closed path: its body, then a tip toward `dir`. */
@@ -244,7 +239,6 @@ const PHOTO_WALL_VIEW: FurnitureDrawing = {
     ...PHOTO_FRAME_RECTS.flatMap(emptyFrame),
   ],
   seats: [],
-  ring: { cx: 88, cy: 60, rx: 86, ry: 52 },
 };
 
 /** The grid pieces this module draws, for OFFICE_ART. */

@@ -9,6 +9,8 @@ import {
   MEETING_TABLE_ART,
   path,
   rect,
+  SEAT_FABRIC,
+  seatFabric,
   SHARED_OFFICE_ART,
   SHARED_SEATING_ART,
   turnWithArt,
@@ -41,7 +43,6 @@ describe('part builders', () => {
       height: 1,
       seats: [],
       parts: [],
-      ring: { cx: 0, cy: 0, rx: 1, ry: 1 },
     };
     expect(allSides(view)).toEqual({ front: view, back: view, side: view });
   });
@@ -129,7 +130,6 @@ describe('a long table', () => {
     // On its side, a tall table as long as the front is wide.
     expect(art.side).toMatchObject({ width: 168, height: 560 });
     expect(art.side.seats).toHaveLength(16);
-    expect(art.side.ring).toEqual({ cx: 84, cy: 280, rx: 80, ry: 276 });
     // The same table turned on its side, in its turned box, is the same drawing (cached by length).
     expect(longTableArt(168, 560, 'e')).toBe(art);
     expect(longTableArt(168, 560, 'w')).toBe(art);
@@ -140,5 +140,14 @@ describe('a long table', () => {
     for (let w = 1010; w < 1200; w += 10) longTableArt(w, 168);
     expect(longTableArt(1000, 168)).not.toBe(first);
     expect(longTableArt(1000, 168).front.width).toBe(1000);
+  });
+});
+
+// docs/specs/009-elements/furniture-art-style.md "Materials".
+describe('the seating fabric', () => {
+  it("upholsters a piece in its kind's fabric, or its own fill", () => {
+    expect(seatFabric('chair', undefined)).toBe(SEAT_FABRIC.chair);
+    expect(seatFabric('meeting-table', 'transparent')).toBe(SEAT_FABRIC['meeting-table']);
+    expect(seatFabric('sofa', '#123456')).toBe('#123456');
   });
 });

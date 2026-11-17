@@ -7,6 +7,8 @@ import {
   MEETING_PIECE_REACH_PX,
   roomSignLine,
   roomSignName,
+  ROOM_SIGN_ART,
+  ROOM_SIGN_TONES,
   screenVideoTarget,
   SCREEN_URL_MAX,
 } from './meeting-pieces';
@@ -112,6 +114,8 @@ describe('the Room Sign', () => {
     const s = { ...createShape('room-sign', 0, 0), id: 'r1' };
     const svg = svgBehaviourFace(s, '', '#000', '#000') ?? '';
     expect(svg).toContain('Free');
-    expect(svg).toContain('#22c55e');
+    // The status lamp and the enamel strip in Free's colour, on the walnut-framed sign.
+    expect(svg).toContain(ROOM_SIGN_TONES.free);
+    expect(svg).toContain(ROOM_SIGN_ART.tones.frame);
   });
 });

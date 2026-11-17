@@ -10,12 +10,12 @@ import type { FurniturePart } from './seating';
 
 // The dyes the patterned rugs are woven with, each half seen through the rug's fill.
 const DYE = {
-  crimson: '#9f1239',
-  navy: '#1e40af',
-  terracotta: '#c2410c',
-  teal: '#0f766e',
-  sage: '#4d7c0f',
-  gold: '#ca8a04',
+  crimson: '#931e3e',
+  navy: '#2544a8',
+  terracotta: '#ae4920',
+  teal: '#176e67',
+  sage: '#4c7318',
+  gold: '#b0811e',
 } as const;
 
 // No pattern repeats more than this many times however big the rug, so a huge one stays a few hundred parts.

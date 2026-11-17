@@ -20,6 +20,7 @@ import {
   type RefObject,
 } from 'react';
 import { createPortal } from 'react-dom';
+import { useFlatBillboards } from './useFlatBillboards';
 import {
   useViewportTransform,
   viewportTransform,
@@ -95,6 +96,7 @@ export function Space3DOverlayStage({
 }) {
   const world = useRef<HTMLDivElement | null>(null);
   const view = useViewportTransform(world, noBackground, noPattern);
+  useFlatBillboards(world, zoom);
   const ref = useCallback(
     (node: HTMLDivElement | null) => {
       world.current = node;

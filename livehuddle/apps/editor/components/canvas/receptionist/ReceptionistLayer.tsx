@@ -4,7 +4,7 @@
 // Ask Receptionist, and his bubble over his head while it is open. Drawn inside the transformed layer with the characters,
 // while you walk on a tab with an Avatar Pad. Owns its own clock (useReceptionist), so his frames redraw this layer alone.
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import type { Element } from '@livehuddle/document';
 import type { PadArrival } from '@livehuddle/avatar/pad';
 import type { AvatarPoint } from '@livehuddle/avatar/walk';
@@ -31,6 +31,9 @@ import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 const FAREWELL_MS = 2_000;
 // Walking away from him closes his bubble: your feet this far from his.
 const TALK_REACH = 400;
+// Walking this much further from him than the nearest you have been while his bubble is open is walking away
+// (docs/specs/008-canvas/receptionist.md "His bubble"): about two strides, so a shuffle beside him keeps it.
+const WALK_AWAY_PX = 96;
 // The box a press on him lands in, round his feet, in canvas px.
 const PRESS_W = 40;
 const PRESS_H = 84;
@@ -97,18 +100,23 @@ export function ReceptionistLayer({
     chat.open &&
     chat.topicId !== null &&
     RECEPTIONIST_TOPICS.find((t) => t.id === chat.topicId)?.target === 'room';
-  const far =
-    chat.open &&
-    !leading &&
-    pose !== null &&
-    self !== null &&
-    !pose.walking &&
-    // Not in the render an ask opens his bubble: he has not set off yet, and stands where his day had him.
-    !receptionist?.setting &&
-    Math.hypot(self.x - pose.at.x, self.y - pose.at.y) > TALK_REACH;
+  // The nearest your feet have come to him since his bubble opened (or its topic changed): walking further than that
+  // by WALK_AWAY_PX, or beyond his reach, closes it.
+  const nearest = useRef<{ key: string; d: number } | null>(null);
+  const distance =
+    pose !== null && self !== null ? Math.hypot(self.x - pose.at.x, self.y - pose.at.y) : null;
+  const talkKey = chat.open ? (chat.topicId ?? '') : null;
+  // Not while he walks, leads you, or in the render an ask opens his bubble (he has not set off yet).
+  const watching =
+    talkKey !== null && distance !== null && !pose?.walking && !leading && !receptionist?.setting;
   useEffect(() => {
-    if (far) closeReceptionist();
-  }, [far]);
+    if (talkKey === null) nearest.current = null;
+    if (!watching || talkKey === null || distance === null) return;
+    const n = nearest.current;
+    const d = n && n.key === talkKey ? Math.min(n.d, distance) : distance;
+    nearest.current = { key: talkKey, d };
+    if (distance > TALK_REACH || distance > d + WALK_AWAY_PX) closeReceptionist();
+  }, [watching, talkKey, distance]);
   useEffect(() => {
     if (!chat.open) return;
     const onKey = (e: KeyboardEvent) => {

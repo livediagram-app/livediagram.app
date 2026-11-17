@@ -133,13 +133,15 @@ renamed participant's invitation reads correctly.
 ## The element
 
 `shape: 'focus-button'`, default 120×96, in the Behaviour family with the mode
-button and the session button. Its face is a target glyph over its label, which
-defaults to "Bring Focus" and is edited like any label, so a canvas can have
-"Start here" and "The problem" rather than four identical buttons.
+button and the session button. Its face is a real push button
+([furniture-art-style.md](../009-elements/furniture-art-style.md)): a red dome with a target engraved on it, in a
+brass ring on a walnut base, over a cream nameplate carrying its label, the same on every paper (the owner,
+2026-11-17). The dome is what is pressed. The label defaults to "Bring Focus" and is edited like any label, so a
+canvas can have "Start here" and "The problem" rather than four identical buttons.
 
 Surfaces that cannot ask anyone to look (the export, the minimap) render the
 face inert rather than hiding it; a Participant or Viewer session sees the face
-without its press, and a click on it does nothing (see Rules). In an export that means the chip, the target and the label, drawn by
+without its press, and a click on it does nothing (see Rules). In an export that means the base, the dome and its target, and the nameplate, drawn by
 `svgBehaviourFace` from the same 24-unit reticle the canvas uses, so a picture
 of the canvas shows the button rather than an empty box with a word in it
 ([Export fidelity](../020-import-export/export-fidelity.md)). The press states are the one thing left

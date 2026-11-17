@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { buildTemplate } from '@livehuddle/templates';
-import type { Element } from '@livehuddle/document';
+import { isGlassRoom, type Element } from '@livehuddle/document';
 import {
   SPACE_DOOR_HEIGHT,
   SPACE_FENCE_HEIGHT,
+  SPACE_GRASS_HEIGHT,
+  SPACE_GRASS_ROW,
   SPACE_WALL_HEIGHT,
   spaceWalls,
   wallFrame,
@@ -52,17 +54,48 @@ describe('the 3D view walls (docs/specs/008-canvas/3d-view.md "What it shows")',
     expect(doors.length).toBeGreaterThan(0);
     for (const door of doors) {
       const middle = { x: door.x + door.width / 2, y: door.y + door.height / 2 };
-      expect(walls.some((w) => w.kind !== 'door' && near(w, middle, 2))).toBe(false);
+      expect(walls.some((w) => w.kind !== 'doorway' && near(w, middle, 2))).toBe(false);
+      // Its frame stands in the gap, open.
+      expect(walls.some((w) => w.kind === 'doorway' && !w.shut && near(w, middle, 2))).toBe(true);
     }
   });
 
-  it('closes a shut door with a door-height panel', () => {
+  it('frames every door on a wall, a lintel of wall over it, its leaf in it when shut', () => {
     const shutOffice = office.map((el) =>
       el.type === 'shape' && el.shape === 'door' ? { ...el, doorClosed: true } : el,
     );
-    const panels = spaceWalls(shutOffice).filter((w) => w.kind === 'door');
-    expect(panels.length).toBe(shapes.filter((el) => el.shape === 'door').length);
-    for (const p of panels) expect(p.height).toBe(SPACE_DOOR_HEIGHT);
+    const frames = spaceWalls(shutOffice).filter((w) => w.kind === 'doorway');
+    expect(frames.length).toBe(shapes.filter((el) => el.shape === 'door').length);
+    for (const f of frames) {
+      expect(f.height).toBe(SPACE_WALL_HEIGHT);
+      expect(f.shut).toBe(true);
+    }
+    expect(SPACE_DOOR_HEIGHT).toBeLessThan(SPACE_WALL_HEIGHT);
+  });
+
+  it('stands each window on a plaster wall in it, cut out of the wall, and none in a glass wall', () => {
+    const walls = spaceWalls(office);
+    const windows = shapes.filter((el) => el.shape === 'window');
+    expect(windows.length).toBeGreaterThan(0);
+    const standing = walls.filter((w) => w.kind === 'window');
+    expect(standing.length).toBeGreaterThan(0);
+    for (const w of standing) {
+      expect(w.height).toBe(SPACE_WALL_HEIGHT);
+      const middle = { x: (w.a.x + w.b.x) / 2, y: (w.a.y + w.b.y) / 2 };
+      // No plaster stands where the window does.
+      expect(walls.some((o) => o.kind === 'wall' && near(o, middle, 1))).toBe(false);
+    }
+    // A window in a glass room's wall: the glass is the window.
+    const glassRoom = shapes.find((el) => isGlassRoom(el));
+    if (glassRoom) {
+      const top = {
+        ...windows[0]!,
+        id: 'gw',
+        x: glassRoom.x + 40,
+        y: glassRoom.y - windows[0]!.height / 2,
+      };
+      expect(spaceWalls([glassRoom, top]).some((w) => w.kind === 'window')).toBe(false);
+    }
   });
 
   it('orders each wall left to right (top to bottom when upright), and shades walls running away from you', () => {
@@ -82,6 +115,51 @@ describe('the 3D view walls (docs/specs/008-canvas/3d-view.md "What it shows")',
     expect(fence).toHaveLength(1);
     expect(fence[0]!.kind).toBe('fence');
     expect(fence[0]!.height).toBe(SPACE_FENCE_HEIGHT);
+    const picket = spaceWalls([
+      { ...room!, id: 'g', shape: 'garden-fence', width: 200, height: 12 },
+    ]);
+    expect(picket.map((w) => [w.kind, w.height])).toEqual([['picket', SPACE_FENCE_HEIGHT]]);
+  });
+
+  it('stands rows of grass blades across a lawn, inside its edge, none on a sliver', () => {
+    const [room] = shapes.filter((el) => el.shape === 'room');
+    const lawn = {
+      ...room!,
+      id: 'g',
+      shape: 'grass' as const,
+      x: 0,
+      y: 0,
+      width: 240,
+      height: 160,
+    };
+    const rows = spaceWalls([lawn]);
+    expect(rows.length).toBe(Math.floor((160 - 20) / SPACE_GRASS_ROW) + 1);
+    expect(rows.every((w) => w.kind === 'grass' && w.height === SPACE_GRASS_HEIGHT)).toBe(true);
+    expect(rows[0]!.a).toEqual({ x: 10, y: 10 });
+    expect(rows[0]!.b).toEqual({ x: 230, y: 10 });
+    expect(spaceWalls([{ ...lawn, width: 15 }])).toEqual([]);
+  });
+
+  it('pokes no blade up through a room, a path or a pond lying over the lawn', () => {
+    const [room] = shapes.filter((el) => el.shape === 'room');
+    const lawn = { ...room!, id: 'g', shape: 'grass' as const, x: 0, y: 0, width: 400, height: 40 };
+    const path = {
+      ...room!,
+      id: 'p',
+      shape: 'garden-path' as const,
+      x: 100,
+      y: 0,
+      width: 50,
+      height: 40,
+    };
+    const rows = spaceWalls([lawn, path]).filter((w) => w.kind === 'grass');
+    // Each row splits round the path: blades left of it and right of it, none on it.
+    expect(rows.map((w) => [w.a.x, w.b.x])).toEqual([
+      [10, 100],
+      [150, 390],
+    ]);
+    const pond = { ...room!, id: 'w', shape: 'pond' as const, x: 0, y: 0, width: 400, height: 40 };
+    expect(spaceWalls([lawn, pond]).filter((w) => w.kind === 'grass')).toEqual([]);
   });
 
   it('stands up corridors and office pods as full walls, and a shut door only where it closes a wall', () => {

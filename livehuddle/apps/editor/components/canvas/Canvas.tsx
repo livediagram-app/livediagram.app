@@ -63,6 +63,7 @@ import { useElementReader } from '@/components/canvas/collab/ElementReader';
 import dynamic from 'next/dynamic';
 import { loadSpace3DWalls } from '@/lib/editor-deferred-code';
 import { space3DStageStyle, useSpace3DView } from './space-3d/useSpace3DView';
+import { useSpace3DZoom } from './space-3d/useSpace3DZoom';
 import { Space3DOverlayProvider, Space3DOverlayStage } from './space-3d/Space3DOverlay';
 
 // The 3D view's walls (docs/specs/008-canvas/3d-view.md "Performance"): loaded the first time a walk wants them.
@@ -310,6 +311,8 @@ function CanvasView(props: CanvasProps) {
   const elementReader = useElementReader(elements, canvasTool === 'avatar');
   // The 3D view (docs/specs/008-canvas/3d-view.md): while you walk with it on, the stage tilts the world back.
   const space3D = useSpace3DView(canvasTool === 'avatar');
+  // 3D is closer than the flat plan: switching it on while walking zooms you in, off zooms you back out.
+  useSpace3DZoom(canvasTool === 'avatar', viewportZoom, setViewportZoom);
   // The overlay's world layer, where what floats over a head is drawn while the view is 3D (Space3DOverlay).
   const [space3DOverlayNode, setSpace3DOverlayNode] = useState<HTMLElement | null>(null);
   const space3DOverlay = useMemo(

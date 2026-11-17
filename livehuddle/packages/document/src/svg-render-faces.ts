@@ -26,6 +26,7 @@ import {
 } from './office-garden';
 import { POND_FILL, pondParts } from './office-social';
 import { POOL_FILL, swimmingPoolParts } from './office-venue';
+import { FOCUS_BUTTON_ART } from './focus-button-art';
 import { r2, xmlEscape } from './svg-render-primitives';
 import { roomSignSvg, screenSvg } from './svg-render-meeting';
 import { timerPieceSvg } from './svg-render-timers';
@@ -184,28 +185,32 @@ export function svgBehaviourFace(
   const title = label.trim();
   switch (el.shape) {
     case 'focus-button': {
-      // Bring Focus (docs/specs/012-collaboration/bring-focus.md): the chip and its target, over the label. The
-      // press states are the one thing not reproduced, for the reason every
-      // other control here drops them: nothing in a still image can be
-      // hovered or held.
-      const gy = cy - 12;
+      // Bring Focus (docs/specs/012-collaboration/bring-focus.md): the push button as FocusButtonFace draws it, a red
+      // dome in a brass ring on a walnut base with its label on a cream nameplate (FOCUS_BUTTON_ART). The press
+      // states are the one thing not reproduced: nothing in a still image can be hovered or held.
+      const A = FOCUS_BUTTON_ART;
+      const T = A.tones;
+      const id = `focus-${xmlEscape(el.id)}`;
+      const gy = cy - A.rise;
+      const words = title || 'Bring Focus';
+      const plateW = Math.min(el.width - 16, words.length * 6.6 + 16);
+      const plateY = gy + A.ring + 8;
       return (
-        `<circle cx="${r2(cx)}" cy="${r2(gy)}" r="18" fill="${xmlEscape(color)}" opacity="0.07"/>` +
-        `<circle cx="${r2(cx)}" cy="${r2(gy)}" r="18" fill="none" stroke="${xmlEscape(color)}" stroke-width="1" opacity="0.2"/>` +
-        // The canvas glyph's own 24-unit geometry, dropped in at its size
-        // rather than re-derived: a reticle redrawn by hand in a second
-        // renderer is a reticle that drifts.
-        `<svg x="${r2(cx - 11)}" y="${r2(gy - 11)}" width="22" height="22" viewBox="0 0 24 24" overflow="visible">` +
-        `<circle cx="12" cy="12" r="7.5" fill="none" stroke="${xmlEscape(color)}" stroke-width="1.8"/>` +
-        `<circle cx="12" cy="12" r="2.2" fill="${xmlEscape(color)}"/>` +
-        `<path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3" fill="none" stroke="${xmlEscape(color)}" stroke-width="1.8" stroke-linecap="round"/>` +
+        `<defs><linearGradient id="${id}-b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${T.baseLit}"/><stop offset="1" stop-color="${T.base}"/></linearGradient>` +
+        `<linearGradient id="${id}-r" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${T.brassLit}"/><stop offset="0.55" stop-color="${T.brass}"/><stop offset="1" stop-color="${T.brassEdge}"/></linearGradient>` +
+        `<radialGradient id="${id}-d" cx="0.38" cy="0.3" r="0.75"><stop offset="0" stop-color="${T.domeLit}"/><stop offset="0.55" stop-color="${T.dome}"/><stop offset="1" stop-color="${T.domeDeep}"/></radialGradient></defs>` +
+        `<rect x="${r2(el.x + 0.5)}" y="${r2(el.y + 0.5)}" width="${r2(el.width - 1)}" height="${r2(el.height - 1)}" rx="7" fill="url(#${id}-b)" stroke="${T.baseEdge}"/>` +
+        `<circle cx="${r2(cx)}" cy="${r2(gy + 1.5)}" r="${A.ring}" fill="#000" opacity="0.25"/>` +
+        `<circle cx="${r2(cx)}" cy="${r2(gy)}" r="${A.ring}" fill="url(#${id}-r)" stroke="${T.brassEdge}"/>` +
+        `<circle cx="${r2(cx)}" cy="${r2(gy)}" r="${A.dome}" fill="url(#${id}-d)" stroke="${T.domeDeep}"/>` +
+        // The canvas glyph's own 24-unit geometry, dropped in at its size rather than re-derived.
+        `<svg x="${r2(cx - 9)}" y="${r2(gy - 9)}" width="18" height="18" viewBox="0 0 24 24" overflow="visible">` +
+        `<circle cx="12" cy="12" r="7.5" fill="none" stroke="${T.engrave}" stroke-width="1.8"/>` +
+        `<circle cx="12" cy="12" r="2.2" fill="${T.engrave}"/>` +
+        `<path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3" fill="none" stroke="${T.engrave}" stroke-width="1.8" stroke-linecap="round"/>` +
         `</svg>` +
-        text(cx, cy + 24, title || 'Bring Focus', {
-          size: 12,
-          weight: 600,
-          color,
-          anchor: 'middle',
-        })
+        `<rect x="${r2(cx - plateW / 2)}" y="${r2(plateY)}" width="${r2(plateW)}" height="${A.plate.h}" rx="${A.plate.rx}" fill="${T.plate}" stroke="${T.plateEdge}" stroke-width="0.75"/>` +
+        text(cx, plateY + 13, words, { size: 12, weight: 600, color: T.ink, anchor: 'middle' })
       );
     }
     case 'mode-button': {
@@ -341,7 +346,7 @@ export function svgBehaviourFace(
         : furnitureArt(el, fill ?? el.fillColor ?? RUG_FILL, stroke);
     // A Corridor (docs/specs/009-elements/corridor.md): its floor and walls.
     case 'corridor':
-      return corridorSvg(el, fill ?? el.fillColor ?? ROOM_FLOOR, stroke);
+      return corridorSvg(el, fill ?? el.fillColor ?? ROOM_FLOOR);
     case 'room':
       // A glass-walled room (office.md "Glass walls") draws its walls as panes.
       return isGlassRoom(el)
@@ -369,7 +374,7 @@ export function svgBehaviourFace(
     case 'screen':
       return screenSvg(el);
     case 'room-sign':
-      return roomSignSvg(el, surface);
+      return roomSignSvg(el);
     // The Timer and Stopwatch (docs/specs/009-elements/timer-and-stopwatch.md "Export"): the time at the export.
     case 'timer':
     case 'stopwatch':

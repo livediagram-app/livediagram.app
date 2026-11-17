@@ -492,9 +492,10 @@ describe('renderElementsToSvg — element shadows (docs/specs/008-canvas/element
     expect(svg.match(/filter="url\(#elshadow-/g)?.length).toBe(2);
   });
 
-  it('emits no defs block when nothing carries a shadow', () => {
+  it('emits no shadow filter when nothing carries a shadow', () => {
+    // (A Bring Focus face writes gradients of its own; no shadow filter.)
     const svg = renderElementsToSvg(tab([shape('a')]));
-    expect(svg).not.toContain('<defs>');
+    expect(svg).not.toContain('<filter');
     expect(svg).not.toContain('feDropShadow');
   });
 });
