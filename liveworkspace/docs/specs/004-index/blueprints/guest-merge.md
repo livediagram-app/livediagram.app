@@ -11,6 +11,7 @@ Scope, by file:
 | --------------------------------------------------- | -------------------------------------------------------------------------- |
 | `liveworkspace/apps/index/src/merge.ts`             | `POST /internal/merge`: the one batch that moves a guest's rows            |
 | `liveworkspace/apps/index/src/person-merges.ts`     | `recordPersonMerges`, `drainPersonMerges`: telling each app                |
+| `liveworkspace/apps/index/src/person-aliases.ts`    | `recordPersonAlias`: the guest kept as an alias of the person              |
 | `liveworkspace/apps/index/src/migration-handoff.ts` | `POST /app/migration/handoff`                                              |
 | `packages/index-app/src/internal.ts`                | The apps' `POST /people/:guest/merge` and `PUT /items/:id/migration` doors |
 | `packages/index-app/src/migration-door.ts`          | Writing a handed-off item's room                                           |
@@ -23,6 +24,7 @@ Scope, by file:
 | Merge        | `{ guestId, userId, legacy? }`      | Everything the guest had becomes the account's                                      |
 | Legacy merge | `legacy: true`                      | The migration's returning guest of the old livediagram.app; `userId` may be a guest |
 | Person merge | `person_app_merges (guest_id, app)` | One app still to hear of a merge                                                    |
+| Alias        | `person_aliases (guest_id)`         | A guest merged into a person, whose collab key the person's grants name             |
 | Handoff      | `POST /app/migration/handoff`       | livediagram's api handing one split part of an old document to another app          |
 
 ## Behaviour and state
@@ -40,6 +42,10 @@ differ. Then one batch, in order:
    own wins), then the guest's deleted.
 4. Events: `actor_id` the user (`UPDATE events`); the items they are about moved in step 2, so their History follows.
 5. Actions assigned to or by the guest name the user.
+6. `recordPersonAlias` (Work Tracker 678): rows naming the guest as their person name the user (a legacy chain follows
+   on); the guest's own row is upserted with `merged_at` now; a row naming the user as its own alias (a chain that
+   came back on itself) goes; past `PERSON_ALIASES_MAX` rows for the user, the oldest by `merged_at` (then
+   `guest_id`) go. Nothing outside the index is rewritten.
 
 Answer `200 { items }` (items moved). After it: Drive signalled when items or folders moved; `drainPersonMerges` run
 off the request's path; logged `[index] merged a guest { items, legacy, into }`. Run again, it finds nothing to move.
@@ -68,12 +74,14 @@ not taken`.
 
 ## Data and persistence
 
-| Table               | Key               | Indexes                                   | Written by | Read by             |
-| ------------------- | ----------------- | ----------------------------------------- | ---------- | ------------------- |
-| `person_app_merges` | `(guest_id, app)` | `person_app_merges_due (last_attempt_at)` | the merge  | `drainPersonMerges` |
+| Table               | Key               | Indexes                                        | Written by                                   | Read by             |
+| ------------------- | ----------------- | ---------------------------------------------- | -------------------------------------------- | ------------------- |
+| `person_app_merges` | `(guest_id, app)` | `person_app_merges_due (last_attempt_at)`      | the merge                                    | `drainPersonMerges` |
+| `person_aliases`    | `guest_id`        | `person_aliases_person (person_id, merged_at)` | the merge; the person purge (deletes theirs) | grants (`aliases`)  |
 
 Columns: `user_id`, `created_at`, `attempts` (default 0), `last_attempt_at`, and `legacy` (0006, `INTEGER NOT NULL
-DEFAULT 0`). The merge also writes every table listed in step 3 and 4 above.
+DEFAULT 0`). `person_aliases` (0021): `person_id`, `merged_at`. The merge also writes every table listed in step 3 and
+4 above.
 
 ## Errors and edge cases
 
@@ -82,6 +90,7 @@ DEFAULT 0`). The merge also writes every table listed in step 3 and 4 above.
 | Not accounts' key                   | `401`                                    |
 | A guest target without `legacy`     | `400`                                    |
 | The same merge twice                | `200 { items: 0 }`, the app rows renewed |
+| A person's 33rd guest               | the oldest alias goes                    |
 | An app down                         | retried hourly for 7 days                |
 | Too many handoffs                   | `429 rate_limited`                       |
 | The target app can't write the room | the item undone, `502 migration_failed`  |
@@ -90,13 +99,14 @@ DEFAULT 0`). The merge also writes every table listed in step 3 and 4 above.
 
 | Test                                                  | Pins                                                                      |
 | ----------------------------------------------------- | ------------------------------------------------------------------------- |
-| `liveworkspace/apps/index/src/app.test.ts` (15)       | the guest merge; merges told to apps                                      |
+| `liveworkspace/apps/index/src/app.test.ts` (15)       | the guest merge; merges told to apps; aliases: chain, no self, the cap    |
+| `liveworkspace/apps/index/src/account-purge.test.ts`  | a closed account's aliases go, everyone else's stay                       |
 | `liveworkspace/apps/index/src/migration.test.ts` (14) | the handoff: who may call, limits, the app's door, undoing; legacy merges |
 | `packages/index-app/src/migration-door.test.ts`       | each app writing a handed-off room                                        |
 
 ## Constants and configuration
 
-`MERGES_PER_RUN` 50, `NOTICE_RETRY_AFTER_MS` 1 h, `NOTICE_GIVE_UP_MS` 7 d (`person-merges.ts`, `person-notices.ts`);
+`PERSON_ALIASES_MAX` 32 (`person-aliases.ts`); `MERGES_PER_RUN` 50, `NOTICE_RETRY_AFTER_MS` 1 h, `NOTICE_GIVE_UP_MS` 7 d (`person-merges.ts`, `person-notices.ts`);
 `HANDOFF_MAX_BYTES` 32 MiB, `HANDOFF_APP_TIMEOUT_MS` 30 s (`migration-handoff.ts`, `config.ts`). `MIGRATION_LIMITER`:
 namespace `1106` (staging `2106`), 60 per 60 s; absent, nothing is limited.
 
