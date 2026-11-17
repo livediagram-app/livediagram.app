@@ -41,11 +41,11 @@ describe('sentencesOf', () => {
   it('carries on past a stop a lower-case word follows, and ends before a number or a capital', () => {
     expect(words('Apples, pears etc. and more.')).toEqual([5]);
     expect(words('The year ended. 2020 began.')).toEqual([3, 2]);
-    expect(words('Stop. — Then go.')).toEqual([1, 2]);
+    expect(words('Stop. – Then go.')).toEqual([1, 2]);
   });
 
   it('counts words holding a letter or digit, and ends the text', () => {
-    expect(words('A — dash and 42 numbers')).toEqual([5]);
+    expect(words('A – dash and 42 numbers')).toEqual([5]);
     expect(sentencesOf('')).toEqual([]);
     expect(sentencesOf('  … ! ')).toEqual([]);
     expect(words('"Quoted."')).toEqual([1]);
