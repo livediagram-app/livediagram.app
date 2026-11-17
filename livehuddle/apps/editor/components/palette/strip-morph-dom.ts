@@ -26,7 +26,14 @@ import {
 } from '@/lib/strip-morph';
 import { CARD_CLASS } from './ToolbarPalette';
 
-export type StripSnapshot = { box: Box; ghost: HTMLElement; radius: number };
+// `hold`: the outgoing strip as it stood, toggle and all, shown still in its place while the incoming one settles.
+export type StripSnapshot = {
+  box: Box;
+  ghost: HTMLElement;
+  radius: number;
+  hold?: HTMLElement;
+  zoom?: number;
+};
 
 const CARD = '[data-tour-id="palette"]';
 const ROOT = '[data-toolbar-palette]';
@@ -78,6 +85,7 @@ export function captureStrip(scope: ParentNode | null | undefined): StripSnapsho
   ghost.querySelectorAll(`[${GHOST}]`).forEach((n) => n.remove());
   for (const el of [ghost, ...ghost.querySelectorAll<HTMLElement>('*')])
     for (const name of STRIPPED) el.removeAttribute(name);
+  const hold = ghost.cloneNode(true) as HTMLElement;
   // The ghost's toggle and its divider stay hidden: the incoming strip's own ride the bar's edge instead.
   const toggle = card.querySelector<HTMLElement>(':scope > [data-edit-walk-toggle]');
   if (toggle) {
@@ -86,7 +94,31 @@ export function captureStrip(scope: ParentNode | null | undefined): StripSnapsho
       if (n instanceof HTMLElement) n.style.visibility = 'hidden';
   }
   const radius = parseFloat(getComputedStyle(card).borderTopLeftRadius) || 0;
-  return { box, ghost, radius };
+  return { box, ghost, radius, hold, zoom: zoomOf(card) };
+}
+
+// The outgoing strip held still where it stood (fixed to the viewport, at its own zoom), unseen by assistive tech and
+// the pointer. Answers its removal.
+function holdStrip(from: StripSnapshot): () => void {
+  const hold = from.hold;
+  if (!hold) return () => {};
+  const zoom = from.zoom ?? 1;
+  hold.setAttribute('aria-hidden', 'true');
+  hold.inert = true;
+  Object.assign(hold.style, {
+    position: 'fixed',
+    margin: '0',
+    left: `${from.box.left / zoom}px`,
+    top: `${from.box.top / zoom}px`,
+    width: `${from.box.width / zoom}px`,
+    height: `${from.box.height / zoom}px`,
+    zoom: String(zoom),
+    animation: 'none',
+    pointerEvents: 'none',
+    zIndex: 'var(--z-toolbar)',
+  });
+  document.body.append(hold);
+  return () => hold.remove();
 }
 
 /** Step 2: play the morph onto the incoming strip. Returns a cancel that puts everything back. */
@@ -106,17 +138,50 @@ export function playStripMorph(
   // one the strip lands on and no frame shows it unmorphed.
   let stop: (() => void) | null = null;
   let cancelled = false;
+  let frame = 0;
+  // Experiment (no header bar): the strip's place is settled a frame or two after its size, as it measures its room
+  // beside the menu box and the corner card and may shift left (stripRoomBesideMenu). Measured before then, the bar
+  // and the toggle rode from a place the card then left (the toggle jumped ~180 px at 1280 px). So the incoming card
+  // waits, unseen behind a still copy of the outgoing strip, until its left edge holds still for a frame (at most
+  // SETTLE_FRAMES_MAX), and the morph starts there.
+  const shown = card.style.getPropertyValue('opacity');
+  let unhold = () => {};
+  const reveal = () => {
+    unhold();
+    card.style.setProperty('opacity', shown);
+  };
+  const settle = (left: number, frames: number) => {
+    frame = requestAnimationFrame(() => {
+      if (cancelled) return;
+      const now = card.getBoundingClientRect().left;
+      if (Math.abs(now - left) > 0.5 && frames < SETTLE_FRAMES_MAX) {
+        settle(now, frames + 1);
+        return;
+      }
+      reveal();
+      stop = startMorph(card, root, from, to);
+    });
+  };
   const ro = new ResizeObserver(() => {
     ro.disconnect();
-    if (!cancelled) stop = startMorph(card, root, from, to);
+    if (cancelled) return;
+    // Meanwhile the outgoing strip stays where it stood, so nothing blinks.
+    unhold = holdStrip(from);
+    card.style.setProperty('opacity', '0');
+    settle(card.getBoundingClientRect().left, 0);
   });
   ro.observe(card);
   return () => {
     cancelled = true;
     ro.disconnect();
+    cancelAnimationFrame(frame);
+    reveal();
     stop?.();
   };
 }
+
+// The most frames the incoming strip is held unseen while its place settles (about 160 ms at 60 Hz).
+const SETTLE_FRAMES_MAX = 10;
 
 function startMorph(
   card: HTMLElement,

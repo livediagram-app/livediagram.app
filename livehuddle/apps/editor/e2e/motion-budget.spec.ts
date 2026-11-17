@@ -182,7 +182,13 @@ test.describe('Motion budget', () => {
           (b) => b.getAttribute('aria-label') === name,
         )!;
         button.click();
-        const out: { budget: number[]; edge: number; width: number; surface: boolean }[] = [];
+        const out: {
+          budget: number[];
+          edge: number;
+          width: number;
+          surface: boolean;
+          held: boolean;
+        }[] = [];
         const t0 = performance.now();
         await new Promise<void>((done) => {
           const step = () =>
@@ -204,6 +210,9 @@ test.describe('Motion budget', () => {
                 edge: tog.getBoundingClientRect().left - box.left,
                 width: box.width,
                 surface: bar !== null,
+                // Held unseen, behind a still copy of the outgoing strip, while its place settles
+                // (strip-morph-dom.ts playStripMorph): not yet on screen.
+                held: card.style.opacity === '0',
               });
               // Sample until the bar has come and gone. The morph starts only once the incoming strip has
               // rendered, which a loaded CI runner can hold back 200 ms, so a fixed window from the click caught
@@ -215,7 +224,7 @@ test.describe('Motion budget', () => {
             }, 0);
           requestAnimationFrame(step);
         });
-        return out;
+        return out.filter((f) => !f.held);
       }, side);
       await expect(toggle.getByRole('button', { name: side, exact: true })).toHaveAttribute(
         'aria-pressed',

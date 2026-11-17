@@ -79,8 +79,9 @@ test('the editor header has a plain logo, with no site switcher or apps menu', a
   pageErrors,
 }) => {
   await openStartBlank(page);
-  const header = page.locator('header[data-region="header"]');
-  await expect(header).toBeVisible();
+  // No header bar (experiment): the logo has a card of its own beside the menu card (MenuCardLogo).
+  await expect(page.locator('header[data-region="header"]')).toHaveCount(0);
+  const header = page.locator('[data-toolbar-menu]').locator('..');
   await expect(header.getByRole('link', { name: 'livedocuments' })).toBeVisible();
   await expect(header.getByRole('button', { name: 'Switch site' })).toHaveCount(0);
   // The product's links (ProductNavLinks, a "Go to" navigation) are the Explorer panel's, not the header's.
