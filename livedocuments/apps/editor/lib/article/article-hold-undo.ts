@@ -56,13 +56,13 @@ export function keepHeldWriting(from: readonly Tab[], onto: Tab[], heldIn: HeldI
     const tab = onto[t]!;
     const now = from.find((x) => x.id === tab.id);
     if (!now) continue;
-    const before = articlesOf(now);
-    const after = articlesOf(tab);
     let kept = tab;
-    for (const [flow, doc] of Object.entries(after)) {
+    for (const [flow, doc] of Object.entries(articlesOf(tab))) {
+      // Who holds what is asked first: with nobody holding, the present's writing is never read.
       const held = heldIn(tab.id, flow);
-      const was = before[flow];
-      if (held.size === 0 || !was) continue;
+      if (held.size === 0) continue;
+      const was = articlesOf(now)[flow];
+      if (!was) continue;
       const blocks = keepHeldBlocks(was.blocks, doc.blocks, held);
       if (blocks === doc.blocks) continue;
       const next: ArticleFlow = { ...doc, blocks: blocks as ArticleBlock[] };
