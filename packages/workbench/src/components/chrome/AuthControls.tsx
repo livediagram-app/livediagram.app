@@ -14,7 +14,7 @@
 // the picture from their own-picture store (`picture`). Sign Out is tracked through the workbench's `track` binding.
 
 import Link from 'next/link';
-import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useId, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { Glyph, PictureDisc, useClickOutside, useMenu, useMenuButton } from '@liveworkspace/ui';
 import { cutText } from '@liveworkspace/model-core/text-cut';
 import { onProfileSaved } from '@liveworkspace/settings-ui/profile-events';
@@ -107,11 +107,12 @@ export function AuthControls({ onOpenAccount, picture }: AuthControlsProps) {
             name={displayName}
             size={HEADER_ICON_SLOT_PX}
             aria-hidden
-            // The account's own colour, or for Automatic the one picked from its name, in a shade the white initials
-            // read on in both themes (liveworkspace/docs/specs/003-accounts/accounts.md "Profiles"): the same disc as
-            // liveworkspace.app's account menu, and the colour of this person's cursor and author dots.
-            style={{ backgroundColor: accountAvatarFill(user, savedLook) }}
-            className="text-[10px] font-semibold text-white"
+            // The account's own colour, or for Automatic the one picked from its name, in the deep shade the white
+            // initials read on in both themes (liveworkspace/docs/specs/003-accounts/accounts.md "Profiles"): the
+            // same disc as liveworkspace.app's account menu, through the same custom property, and the colour of this
+            // person's cursor and author dots.
+            style={{ '--avatar': accountAvatarFill(user, savedLook) } as CSSProperties}
+            className="bg-(--avatar) text-[10px] font-semibold text-white"
           >
             {accountInitials(user)}
           </PictureDisc>

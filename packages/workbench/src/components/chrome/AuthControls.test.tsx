@@ -162,14 +162,13 @@ describe('AuthControls', () => {
       signedIn({ firstName: 'Ada', fullName: 'Ada Quinn', colour: '#8b5cf6' }),
     );
     // Violet's deep shade, never the brand blue it used to be.
-    expect(disc()?.style.backgroundColor).toBe('rgb(109, 40, 217)');
+    expect(disc()?.style.getPropertyValue('--avatar')).toBe('#6d28d9');
+    expect(disc()?.className).toContain('bg-(--avatar)');
     expect(disc()?.className).not.toContain('bg-brand-700');
     expect(disc()?.className).toContain('text-white');
     unmount();
     renderControls(signedIn({ firstName: 'Ada', fullName: 'Ada Quinn', colour: null }));
-    const automatic = document.createElement('div');
-    automatic.style.backgroundColor = avatarColour('Ada Quinn').deep;
-    expect(disc()?.style.backgroundColor).toBe(automatic.style.backgroundColor);
+    expect(disc()?.style.getPropertyValue('--avatar')).toBe(avatarColour('Ada Quinn').deep);
   });
 
   it('repaints the disc at once when Settings › Profile saves a colour on this page', () => {
@@ -181,7 +180,7 @@ describe('AuthControls', () => {
     act(() =>
       announceProfileSaved({ patch: { color: '#ef4444' }, name: 'Ada Quinn', color: '#ef4444' }),
     );
-    expect(disc()?.style.backgroundColor).toBe('rgb(185, 28, 28)');
+    expect(disc()?.style.getPropertyValue('--avatar')).toBe('#b91c1c');
   });
 
   it('closes the menu on a click outside', () => {
