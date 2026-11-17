@@ -236,7 +236,10 @@ describe('createAuthProvider with a signed-in hint', () => {
     expect(screen.queryByRole('status')).toBeNull();
     act(() => publish({ ...DEFERRED_AUTH_DEFAULT, accountUnreachable: true }));
     expect(screen.getByText('expected unreachable')).toBeTruthy();
-    expect(screen.getByRole('status').textContent).toContain('Can’t reach your account right now');
+    // The notice's code loads lazily, as it first draws.
+    expect((await screen.findByRole('status')).textContent).toContain(
+      'Can’t reach your account right now',
+    );
     // The session answers: the notice goes and the page carries on.
     act(() => publish(SIGNED_IN));
     expect(screen.getByText('settled user_a')).toBeTruthy();

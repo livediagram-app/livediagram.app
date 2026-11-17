@@ -15,8 +15,15 @@
 // components/providers/AuthProvider.tsx, which also binds the workbench and holds the loads of its bridges' code.
 
 import { usePathname } from 'next/navigation';
-import { useEffect, useMemo, useState, type ComponentType, type ReactNode } from 'react';
-import { AccountUnreachableNotice } from '../chrome/AccountUnreachableNotice';
+import {
+  lazy,
+  Suspense,
+  useEffect,
+  useMemo,
+  useState,
+  type ComponentType,
+  type ReactNode,
+} from 'react';
 import {
   DEFERRED_AUTH_DEFAULT,
   DEFERRED_AUTH_PENDING,
@@ -36,6 +43,14 @@ export type AuthProviderDeps = {
   // once, as the provider first renders.
   readSignedInHint: () => boolean;
 };
+
+// The notice only draws in an accounts outage, so its code stays out of every editor's first load and is fetched when
+// it is first needed, under a boundary of its own so nothing else waits on it.
+const AccountUnreachableNotice = lazy(() =>
+  import('../chrome/AccountUnreachableNotice').then((m) => ({
+    default: m.AccountUnreachableNotice,
+  })),
+);
 
 /** How long a page whose hint says signed in waits for its session before it says it can't reach the account. The
  *  same 5 s a browser with no hint waits before it settles as a guest (useAccountBootstrap). */
@@ -124,7 +139,11 @@ export function createAuthProvider({
     return (
       <DeferredAuthContext.Provider value={value}>
         {children}
-        {unreachable && !workbenchRoute ? <AccountUnreachableNotice /> : null}
+        {unreachable && !workbenchRoute ? (
+          <Suspense fallback={null}>
+            <AccountUnreachableNotice />
+          </Suspense>
+        ) : null}
         {workbenchRoute || !Bridge ? null : <Bridge onState={setAuthState} />}
       </DeferredAuthContext.Provider>
     );
