@@ -7,6 +7,7 @@ import {
   stripRoomBesideMenu,
   CORNER_CARD_EVENT,
   stripShiftsLeft,
+  stripSitsBetween,
   stripLeftClear,
 } from '../canvas/menu-join';
 
@@ -49,9 +50,10 @@ export function useStripCrowding(
       const shifts = stripShiftsLeft(card);
       const natural = shifts ? Number(card.dataset.stripNaturalWidth) || 0 : 0;
       const centred = Math.max(width, natural) <= stripRoomBesideMenu(view.width, view.left, menu);
-      const crowded = shifts
-        ? width > stripRoomBesideMenu(view.width, view.left, menu, true)
-        : !centred;
+      const crowded =
+        shifts || stripSitsBetween(card)
+          ? width > stripRoomBesideMenu(view.width, view.left, menu, true)
+          : !centred;
       const shifted = shifts && !centred && !crowded;
       const clear = stripLeftClear(menu, view.left);
       // Where a crowded strip, set at the right, must end: short of the top-right corner card (EditorCornerActions).

@@ -107,6 +107,14 @@ const CORNER_CARD_INSET_PX = 12;
 export const STRIP_SHIFTS_LEFT = 'data-strip-shifts-left';
 export const stripShiftsLeft = (card: Element) => card.closest(`[${STRIP_SHIFTS_LEFT}]`) !== null;
 
+/** Experiment (no header bar): a strip centred in the gap between the menu box and the corner card rather than across
+ *  the editor, filling that gap when it runs short (livediagram). Its room is the whole gap, as a shifting strip's is. */
+export const STRIP_BETWEEN = 'data-strip-between';
+export const stripSitsBetween = (card: Element) => card.closest(`[${STRIP_BETWEEN}]`) !== null;
+/** Whether the strip's room is the whole gap between the menu box and the corner card (stripRoomBesideMenu's
+ *  `shiftsLeft`). */
+export const stripTakesGap = (card: Element) => stripShiftsLeft(card) || stripSitsBetween(card);
+
 export const CORNER_CARD_EVENT = 'corner-card-change';
 
 /** How far in from the editor's right edge the strip must stop to keep its gap from the top-right corner card, in
