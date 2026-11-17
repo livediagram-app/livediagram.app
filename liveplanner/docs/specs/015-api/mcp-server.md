@@ -526,7 +526,7 @@ unknown name with the ones there are.
   answer never passes about 200,000 characters ([Plan for agents](../026-plan/plan-agents.md) "What `list_items`
   leaves out unless asked"). A project with no board answers a hint saying how to get one.
 - **`change_items`** (destructive, as it may delete): up to 50 changes in order, each `add` `{ title, type,
-status, fields, template }` (`template` starts the card from one of its type's [card templates](../026-plan/plan-agents.md#card-templates)), `set` `{ item, fields, clear, type }`, `move` `{ item, status, before }` or `delete`
+status, fields, template }` (`template` starts the card from one of its type's [card templates](../026-plan/plan-agents.md#card-templates)), `set` `{ item, fields, clear, type, moveFollowing }` (`moveFollowing: true` with a date change then moves the cards that follow it that now clash, [Plan for agents](../026-plan/plan-agents.md)), `move` `{ item, status, before }` or `delete`
   `{ item }`. A refusal answers what was applied before it. A value past a limit is refused naming the field by
   its label, its length or count and the most it takes ("Solution is 12,412 characters; the most is 10,000"; [Plan for
   agents](../026-plan/plan-agents.md) "Errors that teach"), and the tool's description states the limits: a title 500

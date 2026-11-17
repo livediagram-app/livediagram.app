@@ -23,7 +23,7 @@ import {
 import { accentOn } from '@liveplanner/project';
 import { xmlEscape } from '@liveworkspace/icons';
 import { keptGanttModel } from './gantt-model-memo';
-import { OVERDUE_RED } from './phase-colours';
+import { CLASH_AMBER, OVERDUE_RED } from './phase-colours';
 import { ART_PAD, box, dot, emptyBody, line, viewFrame, r2 } from './plan-art-kit';
 import type { ViewArtInput } from './plan-view-art';
 
@@ -119,7 +119,7 @@ export function ganttArt({ rect, p, items, data, settings, title }: ViewArtInput
       ROW_H,
     );
     parts.push(
-      `<g opacity="${a.done ? 0.4 : 1}" color="${xmlEscape(p.muted)}"><path d="${d}" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="${head}" fill="currentColor"/></g>`,
+      `<g opacity="${a.done ? 0.4 : 1}" color="${xmlEscape(a.clash ? CLASH_AMBER : p.muted)}"${a.clash ? ' data-clash=""' : ''}><path d="${d}" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="${head}" fill="currentColor"/></g>`,
     );
   }
   shown.forEach(({ row, top: y }) => {

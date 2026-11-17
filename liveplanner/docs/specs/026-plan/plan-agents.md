@@ -63,7 +63,12 @@ never told a change worked when it shows on no board.
 - A **Blocked By** field (a Card field with Blocks on, [Blocked By](item-types.md#blocked-by)) is listed with
   `blocks: true` on its card type, and its value reads as any Card field's (`"#3 Website, #5 Launch"`). A card that
   is blocked carries `blocked`, its count of open blockers (outside the plan-wide done columns; trashed and archived
-  blockers ignored), and a card that blocks others carries `blocks`, the live cards it blocks (`["#7 Copy"]`).
+  blockers ignored), and a card that blocks others carries `blocks`, the live cards it blocks (`["#7 Copy"]`). A
+  blocked card that starts on or before an open blocker is due carries `clashes` (`["Starts 3 days before #4 Design is
+due"]`, worst first; [Dependency clashes](plan-views.md#gantt-chart)), and a `set` that changes a card's Start or
+  Due takes `moveFollowing: true` to move the cards that follow it just after their blockers, as the Gantt's offer
+  does, a line each ("~ #7 Launch moved 3 days later, after #3 Design"). Each move is its own write through the item
+  route, so a Viewer's token is refused at the first and the answer says what moved before it.
   `change_items` sets blockers by card number as any Card field (`"Blocked By": "#3, #5"`), and a change that would
   make a loop (A blocks B blocks A) is refused before the write with the chain it would close
   (`blocks_cycle`: "#5 Launch already waits on #3 Website, so it can't block it."), as the api refuses it too.

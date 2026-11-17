@@ -179,6 +179,15 @@ The **Visualisations** palette category charts the cards. Each is resizable (720
   arrow is drawn in the muted ink, a done one's fainter (40%); an arrow never takes a press (the bars under it do),
   and it is hidden from assistive technology, where the item panel's Blocked By and Blocks lists say the same. A
   dragged bar's arrows follow it. The image export draws the same arrows for the rows it fits.
+- **Dependency clashes**: a blocked card **clashes** with an open blocker when it starts on or before the day that
+  blocker is due (its mark's left end on or before the blocker's right end, as the chart draws them: a bar's start, a
+  lone diamond's day). A done blocker never clashes, nor does a done card. A clashing arrow is drawn in the **clash
+  amber** (`#d97706`, at least 3:1 on the light and dark surfaces) instead of the muted ink, and the blocked mark wears a
+  small amber clash mark (a 12 px disc with an exclamation mark) over its left end. Its tooltip, and its accessible name,
+  say "Starts 3 days before #4 Design is due" ("Starts the day #4 Design is due" for the same day; each clashing
+  blocker, worst first, joined by "; "). The clash follows a mark being dragged, so a drag shows it come and go. The
+  item panel's Blocked By list says the same under each clashing blocker (see
+  [Blocked By](item-types.md#blocked-by)).
 - A project not done whose due date has passed draws its bar or diamond in red (its edge; red wins over a
   project's Colour).
 - **Dragging dates** (to someone who may edit): each end of a bar is a handle. Dragged sideways it moves that
@@ -186,7 +195,19 @@ The **Visualisations** palette category charts the cards. Each is resizable (720
   diamond drags its one date the same way. The bar's body, between its ends, drags the whole bar: both dates
   move by the same days, so its length stays. While dragging, the bar or diamond follows the pointer and a label
   above it names the day (**12 Mar**), or a moved bar's two days (**6 Oct → 25 Oct**); letting go applies it as one change, undone in one step, and a
-  drag that ends on the day it began changes nothing. A press without a drag still opens the card. The handles
+  drag that ends on the day it began changes nothing. A press without a drag still opens the card.
+  **Moving the cards that follow**: when a drag (or a draw) leaves cards that follow the moved one clashing, a toast
+  offers to move them: "4 cards that follow #3 Design now start before it is due." with **Move 4 Cards** and **Leave
+  Them**. Nothing moves until it is pressed. Move shifts each clashing card later by just enough to start the day
+  after its latest open blocker is due, keeping its length (both dates, in their fields' own shapes), then checks the
+  cards that follow it the same way, down every chain. The walk is a topological pass over the Blocked By links
+  reachable from the moved card, linear in cards and links: a card in a loop (only links stored before loops were
+  refused) is never reached, so it never moves. It never moves a card earlier, a done card, a trashed or archived
+  one, or the moved card itself; a card that does not move still counts, at its own dates, for the cards after it.
+  The moves are one change and one undo step (`patchItems`). The offer is worked out again when it is pressed, from
+  the plan as it is then, so a collaborator's edit in between is respected; if nothing clashes any more it does
+  nothing. Only someone who may edit cards (an Editor or a Participant) drags, so only they see the offer; a Viewer
+  sees the clashes, never the offer. Telemetry: `Plan` · `Changed` · `GanttMoveFollowing`. The handles
   show a resize cursor and a grip on hover, the bar's body a grab cursor; a person who may not edit gets
   none of them.
 - **Scale**: the chart shows a window of time at one of three scales, picked in its header: **Month** (35 days),

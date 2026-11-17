@@ -191,6 +191,26 @@ apps/editor/components/palette/palette-plan-view-tiles.tsx PLAN_VIEW_TILES, spre
   `pointer-events-none` SVG over the track, `axisPx` wide, x from `ganttAt(view, day) * axisPx`, the dragged row's
   preview dates and lift applied; stroke `palette.muted` at 1.25 px, done at 40% opacity. The index is
   `planBlocking(plan)`. The export (`ganttArt`) draws the same pairs among the rows it fits.
+- Gantt dependency clashes (spec "Dependency clashes", "Moving the cards that follow"): `dependency-clash.ts` (items).
+  `cardSpan(item, dates)` is a card's `{ from, to }` days as the chart draws it (`roleDay` start and due, the earlier
+  first; one alone is both). `ganttClashDays(from, to)` answers, for an arrow's blocker and blocked rows (as shown,
+  preview applied), how many days the blocked mark starts before the blocker's right end (`from.to - to.from`, 0 for
+  the same day), or null when it does not clash, the blocker or the blocked card is done, or either lacks a mark.
+  `clashText(days, blocker)` is "Starts 3 days before #4 Design is due" ("1 day"; "Starts the day #4 Design is due"
+  at 0). `clashesOf(item, index, isDone, dates)` lists an item's clashes `{ blocker, days }`, worst (largest) first.
+  `followingShifts(items, index, isDone, seeds, dates)` is the walk: the cards reachable from `seeds` through
+  `BlockingIndex.blocks` (seeds never move), in-degrees counted among them, a queue of those at 0 (Kahn), each card's
+  need the day after the latest `span.to` of its open blockers (moved spans used); a card that is not done, not a
+  seed, has a span and starts before its need shifts by `need - from` days, written by `roleDays` for each role it
+  holds; a card in a loop never reaches 0 and is left. O(cards + links). Each shift is `{ item, days, set }`.
+  Editor: `GanttArrows` draws a clashing arrow in `CLASH_AMBER` (`#d97706`, view-frame.tsx) at full opacity;
+  `GanttView` keeps each blocked row's clash texts (from the arrows, preview applied) and `Mark` draws `GanttClashMark`
+  (gantt-clash.tsx: a 12 px amber disc with "!", `role="img"`, its label the texts joined by "; ", in a `Tooltip`) at
+  the mark's left end. After a date drag or draw commits, `useGanttMoveFollowing` (gantt-clash.tsx) works the shifts
+  out over the plan's items with the patch applied; with any, `toast.offer` says "{n} card(s) that follow #3 Design now
+  start before it is due." (Move {n} Card(s) / Leave Them). Confirm reads the latest items again (a ref), works the
+  shifts out afresh from the moved card and sends them as one `plan.patchItems` (one undo step), tracking `('Plan',
+'Changed', 'GanttMoveFollowing')`. Only an editable chart (`plan.canEdit` drags) reaches it.
 - Gantt row order: `planView.rowOrder` (card ids), validated by `isPlanViewSettings` (an array of `isValidItemId`
   strings, none repeated, at most `GANTT_ROW_ORDER_MAX` (5000, `ITEMS_MAX`)). `ganttOrderRows(rows, order)` (gantt-row-order.ts)
   puts named rows first in the order's sequence and the rest after in their date order (stable). `ganttReorder(

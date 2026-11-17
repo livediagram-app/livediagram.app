@@ -174,6 +174,14 @@ const itemChange = z.discriminatedUnion('op', [
       .describe(
         'Change its card type: custom fields carry over to the new type’s fields of the same name.',
       ),
+    moveFollowing: z
+      .boolean()
+      .optional()
+      .describe(
+        'With a Start or Due change: then move the cards that follow it (Blocked By) that now start on or before ' +
+          'their open blocker is due, each just after it, keeping their lengths, down every chain (never a done ' +
+          'card, never earlier). Each move is listed.',
+      ),
   }),
   z.strictObject({
     op: z.literal('move'),
