@@ -58,6 +58,16 @@ import { RoadmapHost } from '@/components/roadmap/RoadmapHost';
 import { EmailIntakeHost } from '@/components/email-intake/EmailIntakeHost';
 import { renderEditorHeader, renderEditorTabBar } from './EditorViewBars';
 import {
+  useEditorWalkthroughs,
+  WalkthroughsLayer,
+  WalkthroughsTools,
+} from '@liveworkspace/walkthrough';
+import {
+  API_BASE as WALKTHROUGHS_API_BASE,
+  apiFetch as walkthroughsFetch,
+  apiHeaders as walkthroughsHeaders,
+} from '@/lib/api/core';
+import {
   useCanvasPattern,
   useEditorAutomations,
   useEditorSnapshots,
@@ -144,7 +154,7 @@ export function EditorView() {
   // The header's Community state, and a Community link's `?copy=1` (editor-view-hooks).
   const headerCommunity = useHeaderCommunity(ctx);
   // UI scale (docs/specs/007-editor/ui-scale.md): desktop only, and a dragged Settings slider's patch wins.
-  const { uiScales } = useEditorUiScales(userPreferences);
+  const { uiScales, isMobileViewport } = useEditorUiScales(userPreferences);
   const role = useRoleIndicator();
 
   const selectTab = useSelectTab();
@@ -182,6 +192,26 @@ export function EditorView() {
   const landscapeBars = useLandscapeBars([renameProjectNonce, renameTabNonce]);
 
   // The site header and the tab bar, its footer (EditorViewBars), or null where they are hidden.
+  // Walkthroughs (docs/specs/012-collaboration/walkthroughs.md): their row in the footer's Tools and the layer over the canvas.
+  const walkthroughs = useEditorWalkthroughs({
+    itemId: ctx.projectId,
+    hydrated: ctx.hydrated,
+    embedMode: ctx.embedMode,
+    workbench: ctx.workbench,
+    offline: isOffline,
+    phone: isMobileViewport,
+    tabScope: ctx.sessionTabScope,
+    apiBase: WALKTHROUGHS_API_BASE,
+    apiFetch: walkthroughsFetch,
+    apiHeaders: walkthroughsHeaders,
+    self: ctx.selfParticipant,
+    shareCode: ctx.sessionShareCode,
+    viewport: ctx.viewport,
+    tabs: ctx.tabs,
+    activeTab: ctx.activeId,
+    selectTab,
+    selectionStore: ctx.selectionStore,
+  });
   const header = renderEditorHeader(ctx, {
     isOffline,
     headerCommunity,
@@ -420,6 +450,8 @@ export function EditorView() {
                         </CanvasFinishProvider>
                       </CanvasPatternContext.Provider>
                     </CanvasSurfaceProvider>
+                    <WalkthroughsLayer walkthroughs={walkthroughs} />
+                    <WalkthroughsTools menu={walkthroughs.menu} />
                   </ViewportStoreProvider>
                 </SelectionStoreProvider>
               </CursorsDrawnContext.Provider>

@@ -2,6 +2,7 @@
 // preview"): captured on a press, shown as your own bubble on your own screen alone, and sent to nobody. A call that
 // goes live takes the stream already captured (`take`), so joining never asks the browser twice. Part of the canvas
 // chunk, never the call's: it needs only the store and the constraints.
+import { canCapture as canCaptureKind } from '@liveworkspace/capture/constraints';
 import { useSyncExternalStore } from 'react';
 import { callSelf, onCallSelf, SELF_MEDIA_ID, setCallMedia, setCallSelf } from './calls-store';
 import type { CallMedia, CallSelf } from './calls-store';
@@ -16,15 +17,8 @@ export type PreviewCapture = {
   getDisplayMedia?: (options: DisplayMediaStreamOptions) => Promise<MediaStream>;
 };
 
-/** Whether this browser can capture that kind here: a secure context and the API (no screen picker on a phone). */
-export function canCapture(kind: PreviewKind): boolean {
-  if (typeof window === 'undefined' || !window.isSecureContext) return false;
-  const devices = typeof navigator === 'undefined' ? undefined : navigator.mediaDevices;
-  if (!devices) return false;
-  return kind === 'camera'
-    ? typeof devices.getUserMedia === 'function'
-    : typeof devices.getDisplayMedia === 'function';
-}
+/** Whether this browser can capture that kind here (@liveworkspace/capture, shared with the walkthroughs). */
+export const canCapture = (kind: PreviewKind): boolean => canCaptureKind(kind);
 
 const MEDIA_OF_KIND: Record<PreviewKind, CallMedia> = { camera: 'video', screen: 'screen' };
 const stopAll = (stream: MediaStream) => {

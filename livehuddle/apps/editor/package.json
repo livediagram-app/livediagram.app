@@ -35,6 +35,7 @@
     "@liveworkspace/api-client": "workspace:*",
     "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",
+    "@liveworkspace/capture": "workspace:*",
     "@liveworkspace/community-ui": "workspace:*",
     "@liveworkspace/explorer": "workspace:*",
     "@liveworkspace/icons": "workspace:*",

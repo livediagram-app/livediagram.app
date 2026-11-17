@@ -197,6 +197,12 @@ expiry, phone notifications ([push.md](../003-accounts/push.md)), webhooks
 Community, telemetry and Drive. livehuddle's part says what its calls do: microphone, camera and screen only on the
 person's own press, relayed by Cloudflare Realtime and never recorded, who hears and sees whom, and that avatar
 presence is never stored ([livehuddle proximity-audio.md](../../../../livehuddle/docs/specs/012-collaboration/proximity-audio.md)).
+Walkthroughs ([006-media/walkthroughs.md](../006-media/walkthroughs.md)) are the one recording the apps keep, and the
+policy says so apart from the calls, in a "Walkthroughs you record" item under What the apps store: a canvas app
+records a person's voice, and their camera if they leave it on, only after they press Start Recording; the
+recording, its camera path and pointer are stored with the document for the people who can open it; elements
+hidden from it are left out; deleting it, purging its document or deleting the account deletes it. Its first
+sentence is that calls are never recorded, and livehuddle's "Relayed, never recorded" stays as it is.
 The terms have a Calls section saying the same in a sentence, and that calls may be limited to audio or paused (the
 [calls kill switch](../../../../livehuddle/docs/specs/016-platform/calls-kill-switch.md)). Every app is MIT-licensed, and the terms say so app by app. Wherever
 either page names all the apps (each page's description, the terms' opening and The software), it names every listed

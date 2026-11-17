@@ -159,7 +159,7 @@ export const categories: Category[] = [
     title: 'Collaboration',
     description:
       'Work together in real time: comments, assigned actions, live presence, teams, sharing, and session tools.',
-    articleCount: 8,
+    articleCount: 9,
     kind: 'feature',
   },
   {
@@ -1748,6 +1748,15 @@ export const articles: Article[] = [
     description: 'Save points for the whole document: take one, keep five, revert to one.',
     keywords:
       'snapshot save point restore revert undo backup checkpoint version rollback go back earlier copy',
+    category: 'Collaboration',
+    categorySlug: 'collaboration',
+  },
+  {
+    slug: 'walkthroughs',
+    title: 'Walkthroughs',
+    description: 'Record a narrated tour of the canvas and let others play it back over it.',
+    keywords:
+      'walkthrough record recording narrate narration voice video camera webcam loom talktrack async tour explain play playback',
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },

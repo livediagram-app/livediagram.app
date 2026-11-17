@@ -13,6 +13,8 @@ const grants = createItemGrants({
   client: () => indexClient,
   bootGlobal: '__ldesGrant',
   itemsSegment: 'designs',
+  // A walkthrough names its item in the query (liveworkspace/docs/specs/006-media/walkthroughs.md "The routes").
+  queryItems: [{ segment: 'walkthroughs', param: 'd' }],
 });
 
 export const seedDesignGrant = grants.seed;

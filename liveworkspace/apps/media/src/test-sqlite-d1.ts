@@ -56,14 +56,19 @@ function memoryBucket() {
     objects,
     put: async (
       key: string,
-      value: string | ArrayBuffer | Uint8Array,
+      value: string | ArrayBuffer | Uint8Array | ReadableStream<Uint8Array>,
       options?: {
         httpMetadata?: { contentType?: string };
         customMetadata?: Record<string, string>;
       },
     ) => {
+      // A stream (a walkthrough's media) is read whole, as R2 stores it.
+      const bytes =
+        value instanceof ReadableStream
+          ? new Uint8Array(await new Response(value).arrayBuffer())
+          : bytesOf(value);
       objects.set(key, {
-        bytes: bytesOf(value),
+        bytes,
         contentType: options?.httpMetadata?.contentType,
         customMetadata: options?.customMetadata,
       });

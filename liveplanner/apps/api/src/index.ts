@@ -28,6 +28,7 @@ import { MAX_BODY_BYTES } from './limits';
 import { withCappedBody } from '@liveworkspace/api-kit/request-body';
 import { MAX_IMAGE_BYTES } from '@liveworkspace/media';
 import { handleImages } from './routes/images';
+import { handleWalkthroughs } from './routes/walkthroughs';
 import { handleAccount } from './routes/account';
 import { handlePlanDrafts } from './routes/plan-drafts';
 import { handleIntakeEmail } from './email-intake/email-handler';
@@ -359,6 +360,8 @@ async function routeApiRequest(
     // Image fields' pictures (docs/specs/026-plan/item-types.md "Image fields").
     case 'images':
       return await handleImages(ctx);
+    case 'walkthroughs':
+      return await handleWalkthroughs(ctx);
   }
 
   return notFound();

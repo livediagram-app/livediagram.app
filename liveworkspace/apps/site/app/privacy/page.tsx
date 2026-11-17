@@ -157,6 +157,16 @@ const SECTIONS: LegalSection[] = [
           An uploaded image that no document uses is removed once it is more than 30 days old.
         </li>
         <li>
+          <strong>Walkthroughs you record.</strong> Calls are never recorded. A walkthrough is
+          different: in livediagram, livedocuments, livedesign and liveplanner you can choose to
+          record one, a narrated tour of a document. Only after you press Start Recording does the
+          app record your voice, and your camera if you leave it on, with where you move around the
+          document and point. The recording is stored in Cloudflare object storage with the
+          document, for the people who can open it. Elements you hide from it are left out of what
+          is stored. Deleting the walkthrough, purging its document from the Trash or deleting your
+          account deletes it.
+        </li>
+        <li>
           <strong>A guest id.</strong> If you use an app without an account, liveworkspace.app gives
           your browser a random guest id, the same in every app, to link your documents to your
           browser. It is not tied to your name or email. We note the day it was last handed to an

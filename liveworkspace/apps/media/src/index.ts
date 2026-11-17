@@ -10,6 +10,7 @@ import { API_PATH, PREVIEWS_PATH, UNUSED_IMAGE_AGE_MS } from './config';
 import { mediaEnabled, type Env } from './env';
 import { json, notFound } from './http';
 import { sweepUnusedImages } from './retention';
+import { sweepPendingWalkthroughs } from './walkthroughs';
 import { handlePreviews } from './previews/routes';
 import { handleApp } from './routes';
 import { under } from '@liveworkspace/index-app/worker-http';
@@ -35,6 +36,8 @@ const routeLabel = createApiRouteLabel(
     'rename',
     'rename-folder',
     'delete',
+    'walkthroughs',
+    'media',
   ]),
 );
 
@@ -60,9 +63,10 @@ const worker = {
     );
   },
 
-  // Once a day: the unused-image sweep.
+  // Once a day: walkthroughs whose media never arrived, then the unused-image sweep.
   async scheduled(_event: ScheduledController, env: Env): Promise<void> {
     if (!mediaEnabled(env)) return;
+    await sweepPendingWalkthroughs(env);
     const cutoff = Date.now() - UNUSED_IMAGE_AGE_MS;
     const deleted = await sweepUnusedImages(env, cutoff);
     console.info(

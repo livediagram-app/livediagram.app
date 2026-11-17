@@ -37,3 +37,4 @@ liveplanner keeps no per-tab activity log: nothing records each undoable commit 
 - Project-level history (made, renamed, moved, trashed, who edited) is each item's [History](../013-workspace/history.md), kept by liveworkspace's index; the [Inbox](../013-workspace/inbox.md) is unrelated, and is liveworkspace's index's too.
 - Help has no Activity Panel category.
 - ./canvas-suggestions.md - retired: why liveplanner has no canvas suggestions, and what was removed
+- ./walkthroughs.md - when working on Walkthroughs: a narrated recording of the canvas you choose to make (voice, a round camera bubble, the camera path, tab steps and the pointer), played back over the live canvas with pause, pan and resume; Hide From Recording; edited since recording; built once in @liveworkspace/walkthrough

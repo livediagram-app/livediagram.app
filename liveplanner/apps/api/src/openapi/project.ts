@@ -226,6 +226,11 @@ const TAGS = [
     name: 'Images',
     description: 'Pictures for Image fields on cards: upload, and read with access.',
   },
+  {
+    name: 'Walkthroughs',
+    description:
+      'Recorded narrations of a plan: voice, camera path, tab steps and pointer, to play back over it.',
+  },
   { name: 'Account', description: 'Account-level data, preferences, and migration.' },
   { name: 'Meta', description: 'Capabilities and this project.' },
   {
