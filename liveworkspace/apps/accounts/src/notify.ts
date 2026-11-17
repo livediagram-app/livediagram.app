@@ -59,6 +59,9 @@ export interface TeamPerson {
   name: string | null;
   role: 'admin' | 'member';
   status: 'invited' | 'joined';
+  // A joined person's presence colour (Settings › Profile); null for Automatic or an invitation. The apps paint their
+  // assignee picker and dots in it, as their cursor is.
+  color: string | null;
 }
 
 // A live team's name and the people in it who are, or may become, members: joined and invited, never
@@ -71,7 +74,8 @@ export async function teamPeople(
     db.prepare('SELECT id, name FROM team WHERE id = ? AND deletedAt IS NULL').bind(teamId),
     db
       .prepare(
-        `SELECT m.id, m.userId, m.email, COALESCE(p.name, NULLIF(u.name, '')) AS name, m.role, m.status
+        `SELECT m.id, m.userId, m.email, COALESCE(p.name, NULLIF(u.name, '')) AS name, m.role, m.status,
+                CASE WHEN m.status = 'joined' THEN p.color END AS color
          FROM team_member m
          LEFT JOIN "user" u ON u.id = m.userId
          LEFT JOIN profile p ON p.owner_id = m.userId

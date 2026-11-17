@@ -47,6 +47,15 @@ export function automaticPresenceColour(name: string): PresenceColour {
   return PRESENCE_COLOURS[hash % PRESENCE_COLOURS.length]!;
 }
 
+const HEX = /^#[0-9a-f]{6}$/i;
+
+// A person's colour where a chosen one may ride along (a team member's `color`, an action's `assignee.color`): that
+// colour when it is a #rrggbb, else the Automatic one picked from the name. Anything else in `color` (a stray value in a
+// document blob) falls back, so it never reaches a style.
+export function presenceColourOf(name: string, color: string | null | undefined): string {
+  return color && HEX.test(color) ? color.toLowerCase() : automaticPresenceColour(name).value;
+}
+
 // The display name's limit, as the accounts Worker keeps it (liveworkspace/apps/accounts src/profiles.ts
 // PROFILE_NAME_MAX), for the Settings panel's Profile field.
 export const PROFILE_NAME_MAX = 120;

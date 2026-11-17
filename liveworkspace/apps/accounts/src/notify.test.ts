@@ -81,15 +81,27 @@ describe('teamPeople', () => {
         `INSERT INTO profile (owner_id, name, color, created_at, updated_at) VALUES (?, 'Ada L', NULL, 0, 0)`,
       )
       .run(ADA.id);
+    sql
+      .prepare(
+        `INSERT INTO profile (owner_id, name, color, created_at, updated_at) VALUES (?, NULL, '#ef4444', 0, 0)`,
+      )
+      .run(BEA.id);
 
     const found = await teamPeople(db, teamId);
     expect(found?.team).toEqual({ id: teamId, name: 'Design' });
     expect(
-      found?.members.map(({ userId, email, name, status }) => ({ userId, email, name, status })),
+      found?.members.map(({ userId, email, name, status, color }) => ({
+        userId,
+        email,
+        name,
+        status,
+        color,
+      })),
     ).toEqual([
-      { userId: ADA.id, email: 'ada@example.com', name: 'Ada L', status: 'joined' },
-      { userId: BEA.id, email: 'bea@example.com', name: 'Bea', status: 'joined' },
-      { userId: null, email: 'cy@example.com', name: null, status: 'invited' },
+      // Ada is on Automatic; Bea chose Red, and her chosen colour rides with her (the apps' assignee picker paints it).
+      { userId: ADA.id, email: 'ada@example.com', name: 'Ada L', status: 'joined', color: null },
+      { userId: BEA.id, email: 'bea@example.com', name: 'Bea', status: 'joined', color: '#ef4444' },
+      { userId: null, email: 'cy@example.com', name: null, status: 'invited', color: null },
     ]);
 
     await deleteTeam(db, ADA, teamId);

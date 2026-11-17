@@ -372,6 +372,9 @@ export interface TeamPerson {
   name: string | null;
   role: TeamRole;
   status: 'invited' | 'joined';
+  // A joined person's presence colour (Settings › Profile); null for Automatic or an invitation, absent from an
+  // accounts Worker older than it.
+  color?: string | null;
 }
 
 // The teams an account is in now, as an access token would carry them minted this moment: for an app whose

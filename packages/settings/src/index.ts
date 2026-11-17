@@ -163,5 +163,6 @@ export {
   PRESENCE_COLOURS,
   PROFILE_NAME_MAX,
   presenceColour,
+  presenceColourOf,
   type PresenceColour,
 } from './presence';

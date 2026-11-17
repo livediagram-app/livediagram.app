@@ -7432,6 +7432,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "TeamMember": {
     "additionalProperties": false,
     "properties": {
+      "color": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
       "createdAt": {
         "type": "number"
       },
