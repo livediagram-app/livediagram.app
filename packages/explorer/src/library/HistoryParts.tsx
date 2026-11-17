@@ -167,7 +167,8 @@ export function PersonAvatar({
   const letters = mine ? null : initials(personName(event));
   // The reader wears the brand; someone unnamed or a closed account stays grey. Anyone else with a Google picture
   // shows it over their disc (the one people store, which names them too).
-  const fill = !mine && letters && event.actorId ? avatarFill(personColour(event.actorId)) : null;
+  const fill =
+    !mine && letters && event.actorId ? avatarFill(personColour(personName(event))) : null;
   const { people } = useExtras();
   const picture = usePersonPicture(
     people,

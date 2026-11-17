@@ -41,6 +41,8 @@ type SessionUser = {
   // docs/specs/014-identity/profile-picture.md §1).
   picture?: string | null;
   pictureHidden?: boolean;
+  // The profile's presence colour (the ID token's `presence_color`), null for Automatic: the header avatar's fill.
+  color?: string | null;
 };
 type Session = { accessToken: string; expiresAt: number; user: SessionUser };
 
@@ -110,6 +112,7 @@ function stateOf(session: Session | null): DeferredAuthState {
       username: null,
       email: user.email,
       createdAt: null,
+      colour: user.color ?? null,
       picture: user.picture ?? null,
       pictureHidden: user.pictureHidden === true,
     },

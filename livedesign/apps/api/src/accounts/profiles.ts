@@ -13,15 +13,10 @@
 // a stored profile, and the editor keeps its own in the browser.
 
 import { ProfileError, readProfiles, writeProfile, type Profile } from '@liveworkspace/auth-client';
-import { PRESENCE_COLOUR_VALUES } from '@liveworkspace/settings';
+import { automaticPresenceColour } from '@liveworkspace/settings/presence';
 import { profilePictureOf } from '@liveworkspace/sites/picture';
 import type { Env, ParticipantDTO } from '../types';
 import { accountsClient, accountsOwner } from './client';
-
-// The colour of someone who has not picked one: the first of the shared presence palette (sky). A
-// profile's colour may be unset (liveworkspace/docs/specs/003-accounts/accounts.md "Profiles"), but a cursor, a comment and
-// an owner badge always need one.
-const DEFAULT_COLOR = PRESENCE_COLOUR_VALUES[0]!;
 
 // How long one isolate trusts a profile it read. Safe range 10 s..5 min: shorter costs accounts calls on
 // every autosave, longer leaves a rename unseen in lists for longer.
@@ -60,8 +55,10 @@ function remember(id: string, profile: StoredProfile, now: number): void {
   remembered.set(id, { profile, until: now + PROFILE_TTL_MS });
 }
 
-// A profile as livedesign's participant: no name is no participant, and no colour of their own is the
-// default colour.
+// A profile as livedesign's participant: no name is no participant, and no colour of their own (Automatic) is the
+// colour picked from the name, the one rule every app and liveworkspace.app use
+// (liveworkspace/docs/specs/003-accounts/accounts.md "Profiles"), so a cursor, a comment and an owner badge match the
+// person's avatar in every header.
 export function participantOf(id: string, profile: Profile | undefined): StoredProfile {
   if (!profile) return NO_PROFILE;
   const ownSet = profile.createdAt !== null;
@@ -70,7 +67,7 @@ export function participantOf(id: string, profile: Profile | undefined): StoredP
       ? {
           id,
           name: profile.name,
-          color: profile.color ?? DEFAULT_COLOR,
+          color: profile.color ?? automaticPresenceColour(profile.name).value,
           createdAt: profile.createdAt ?? profile.updatedAt ?? Date.now(),
         }
       : null,

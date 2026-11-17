@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { automaticPresenceColour } from '@liveworkspace/settings/presence';
 import { fakeAccounts, type FakeAccounts } from '../test-accounts';
 import type { Env } from '../types';
 import { accountsOwner } from './client';
@@ -60,7 +61,10 @@ describe('readParticipants', () => {
     ]);
     expect([...found.keys()].sort()).toEqual([GUEST, 'user_ann']);
     expect(found.get(GUEST)).toMatchObject({ id: GUEST, name: 'Otter', color: '#123' });
-    expect(found.get('user_ann')?.color).toBe('#0ea5e9');
+    // Automatic: the colour picked from the name, the one rule the avatars use.
+    expect(found.get('user_ann')?.color).toBe(
+      automaticPresenceColour(found.get('user_ann')!.name).value,
+    );
     expect(accounts.callsTo('profiles/read')).toEqual([
       { path: 'profiles/read', body: { ids: ['user_ann', `guest_${GUEST}`, 'user_nameless'] } },
     ]);

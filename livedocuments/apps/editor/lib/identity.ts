@@ -3,7 +3,6 @@
 // random colour from a curated palette. This module is the single source
 // for that name/colour generation plus presence-status semantics.
 
-import { fnv1aString } from '@livedocuments/document';
 import { PRESENCE_COLOUR_VALUES } from '@liveworkspace/settings';
 import { randomPick } from '@liveworkspace/workbench/lib/random';
 import type { AccessLevel } from '@livedocuments/api-schema';
@@ -131,16 +130,6 @@ export function randomName(): string {
 
 export function randomColor(): string {
   return pick(PALETTE);
-}
-
-// Deterministic palette pick for identities that have no persisted
-// colour of their own (e.g. team member rows, docs/specs/013-workspace/teams.md, which are
-// keyed by email rather than a participant record). Same key, same
-// colour, every render and every device — FNV-1a over the key, mapped
-// onto the curated palette above.
-export function colorForKey(key: string): string {
-  // `| 0` reads the hash as signed, the way colours have always been picked, so no key changes colour.
-  return PALETTE[Math.abs(fnv1aString(key) | 0) % PALETTE.length]!;
 }
 
 // Pick a colour from the palette that isn't in `taken`. When the

@@ -40,6 +40,8 @@ type SessionUser = {
   // The ID token's Google picture and Show My Google Picture switch (apps/api/src/routes/auth.ts AuthUser).
   picture?: string | null;
   pictureHidden?: boolean;
+  // The profile's presence colour (the ID token's `presence_color`), null for Automatic: the header avatar's fill.
+  color?: string | null;
 };
 type Session = { accessToken: string; expiresAt: number; user: SessionUser };
 
@@ -105,6 +107,7 @@ function stateOf(session: Session | null): DeferredAuthState {
       username: null,
       email: user.email,
       createdAt: null,
+      colour: user.color ?? null,
       picture: profilePictureOf(user.picture),
       pictureHidden: user.pictureHidden === true,
     },

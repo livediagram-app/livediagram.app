@@ -157,6 +157,7 @@ export function resetSettingsBlob(blob: SettingsBlob): SettingsBlob {
 }
 
 export {
+  automaticPresenceColour,
   cleanProfileName,
   PRESENCE_COLOUR_VALUES,
   PRESENCE_COLOURS,

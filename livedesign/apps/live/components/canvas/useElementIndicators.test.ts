@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import { automaticPresenceColour } from '@liveworkspace/settings/presence';
 import { createShape, type BoxedElement, type ElementAction } from '@livedesign/design';
 import {
   elementIndicatorItems,
@@ -90,7 +91,7 @@ describe('elementIndicatorItems', () => {
     expect(item.assignee?.color).toMatch(/^#|^hsl|^rgb/);
   });
 
-  it('colours an invited member by their member id, and a nameless one by the name', () => {
+  it('colours every assignee by their name, the one Automatic rule their avatar uses', () => {
     const invited = {
       ...createShape('square', 0, 0),
       action: { ...action('open', 'Ada'), assignee: { userId: null, memberId: 'm1', name: 'Ada' } },
@@ -101,8 +102,8 @@ describe('elementIndicatorItems', () => {
     } as BoxedElement;
     const a = elementIndicatorItems(invited, handlers())[0]!.assignee!.color;
     const b = elementIndicatorItems(unclaimed, handlers())[0]!.assignee!.color;
-    expect(a).toBeTruthy();
-    expect(b).toBeTruthy();
+    expect(a).toBe(automaticPresenceColour('Ada').value);
+    expect(b).toBe(a);
   });
 
   it('skips what an element already shows on its own face', () => {

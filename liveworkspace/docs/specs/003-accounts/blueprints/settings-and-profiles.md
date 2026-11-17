@@ -76,6 +76,12 @@ name: COALESCE(profile name, account name), color, picture }`; ids that are neit
   never answers either.
 - `readProfileLook` (ID token) and `readProfileColour` (`/get-session`): one primary-key read each; no row is
   Automatic colour and the picture shown.
+- `automaticPresenceColour(name)` (`packages/settings/src/presence.ts`): the colour a profile with a null colour
+  wears. `hash = (hash * 31 + codePoint) >>> 0` over the code points of `name.trim().toLowerCase()`, then
+  `PRESENCE_COLOURS[hash % 10]`. Pure, no allocation past the lower-cased string, so a presence list of 100 costs
+  microseconds. Callers pass the name the person shows (`readProfiles`' `name`; an avatar's full name, else its
+  given name): the apps' apis (`toParticipant`: `color ?? automaticPresenceColour(name).value`), the apps' assignee
+  dots, `avatarColour`/`avatarFill` in `@liveworkspace/account-menu/initials` and the Explorer's `personColour`.
 - `storeAccountPicture`: on every Google account row write, the ID token's `picture` claim (decoded, not verified:
   it came straight from Google's token endpoint) onto `"user".image`, written only when it changed.
 
@@ -125,7 +131,7 @@ name: COALESCE(profile name, account name), color, picture }`; ids that are neit
 | `liveworkspace/apps/accounts/src/settings.test.ts` (17)     | settings; a reset; a closed account; a guest signing in                    |
 | `liveworkspace/apps/accounts/src/profiles.test.ts` (20)     | profiles; profile pictures; a time zone picked by hand; a guest signing in |
 | `liveworkspace/apps/accounts/src/auth-options.test.ts` (11) | Google sign-in pictures                                                    |
-| `packages/settings/src/*.test.ts`                           | the catalogue, common keys, presence colours                               |
+| `packages/settings/src/*.test.ts`                           | the catalogue, common keys, presence colours, the Automatic colour         |
 
 ## Constants and configuration
 

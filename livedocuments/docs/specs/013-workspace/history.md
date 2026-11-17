@@ -60,7 +60,7 @@ at a time with `itemHistory(itemId, { limit, cursor })`.
   this year's). Each heading and time is a `<time datetime>`.
 - **An event.** Its kind's glyph in a disc on the rail, in its tone (red for the Trash, amber for renamed, moved and
   sharing, green for made and edited), always with the reason line in words ("Document Renamed"), so colour is never
-  the only signal. Then who did it (an avatar with their initials, in a stable colour from the presence palette,
+  the only signal. Then who did it (an avatar with their initials, in a stable colour from the presence palette picked from their name, the one Automatic rule of liveworkspace/docs/specs/003-accounts/accounts.md "Profiles",
   and their name or "You"), the detail ("Was “Q3”", "To Launches", "Anyone with the link can edit"), a comment's or
   action's words quoted beneath, and the time.
 - **Runs.** Consecutive events of one kind by one person on one day fold into one entry ("Renamed 3 times · You ·

@@ -21,6 +21,10 @@ type DeferredAuthUser = {
   // absent or null without one. `pictureHidden`: Show My Google Picture is off, so presence leaves it out.
   picture?: string | null;
   pictureHidden?: boolean;
+  // The profile's presence colour (the ID token's `presence_color`), for the person's own avatar; absent or null for
+  // Automatic, when the avatar takes the colour picked from the name (liveworkspace/docs/specs/003-accounts/accounts.md
+  // "Profiles").
+  colour?: string | null;
 };
 
 export type DeferredAuthState = {

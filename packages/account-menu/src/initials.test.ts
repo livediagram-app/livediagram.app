@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PRESENCE_COLOURS } from '@liveworkspace/settings/presence';
+import { automaticPresenceColour, PRESENCE_COLOURS } from '@liveworkspace/settings/presence';
 import { avatarColour, avatarFill, initials } from './initials';
 
 describe('initials', () => {
@@ -21,6 +21,13 @@ describe('initials', () => {
 });
 
 describe('avatarColour', () => {
+  it('is the one Automatic rule every app shares (@liveworkspace/settings/presence)', () => {
+    for (const name of ['Ada Quinn', 'Gus', '', 'Zoë Ng']) {
+      expect(avatarColour(name)).toBe(automaticPresenceColour(name));
+      expect(avatarFill(name, null)).toBe(automaticPresenceColour(name).deep);
+    }
+  });
+
   it('picks the same presence colour for the same name, whatever its case or spacing', () => {
     expect(PRESENCE_COLOURS).toContain(avatarColour('Wendy Tran'));
     expect(avatarColour('Wendy Tran')).toBe(avatarColour(' wendy tran '));

@@ -24,7 +24,7 @@ import {
   type LinkedRecord,
 } from '@liveplanner/items';
 import { actionsBoardTab } from '@liveplanner/templates';
-import { colorForKey } from '@/lib/identity';
+import { automaticPresenceColour } from '@liveworkspace/settings/presence';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
@@ -104,7 +104,10 @@ export function useLinkedActionCards(deps: {
     void Promise.all(
       [...wanted].map(
         async ([key, name]) =>
-          [key, { id: await itemPersonId(key), name, color: colorForKey(key) }] as const,
+          [
+            key,
+            { id: await itemPersonId(key), name, color: automaticPresenceColour(name).value },
+          ] as const,
       ),
     ).then((made) => {
       if (alive) setPeople((prev) => new Map([...prev, ...made]));

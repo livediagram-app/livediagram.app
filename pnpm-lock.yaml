@@ -2017,9 +2017,6 @@ importers:
       '@liveworkspace/community':
         specifier: workspace:*
         version: link:../../../packages/community
-      '@liveworkspace/settings':
-        specifier: workspace:*
-        version: link:../../../packages/settings
       '@liveworkspace/suggestions':
         specifier: workspace:*
         version: link:../../../packages/suggestions
@@ -4208,9 +4205,6 @@ importers:
       '@liveworkspace/community':
         specifier: workspace:*
         version: link:../../../packages/community
-      '@liveworkspace/settings':
-        specifier: workspace:*
-        version: link:../../../packages/settings
       '@liveworkspace/telemetry':
         specifier: workspace:*
         version: link:../../../packages/telemetry
@@ -8481,6 +8475,9 @@ importers:
 
   packages/workbench:
     dependencies:
+      '@liveworkspace/account-menu':
+        specifier: workspace:*
+        version: link:../account-menu
       '@liveworkspace/api-kit':
         specifier: workspace:*
         version: link:../api-kit

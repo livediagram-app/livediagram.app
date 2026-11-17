@@ -743,6 +743,7 @@
     "react-dom": "^19.3.0"
   },
   "dependencies": {
+    "@liveworkspace/account-menu": "workspace:*",
     "@liveworkspace/api-kit": "workspace:*",
     "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",
