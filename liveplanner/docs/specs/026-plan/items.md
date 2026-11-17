@@ -232,9 +232,9 @@ card deleted for good.
 - **Never while anything here still names it.** Once the wait is over the plan drops any picture still named by one
   of its cards (the Trash included, since Restore needs it), a tab, an agent's change it could still revert, or a
   snapshot it could still revert to. It asks the media service to release the rest
-  (`POST /app/images/<id>/release?document=<plan>`, [media.md](../../../../liveworkspace/docs/specs/006-media/media.md)
+  (the release route, with the plan's id, [media.md](../../../../liveworkspace/docs/specs/006-media/media.md)
   "Releases"). The service deletes a picture only when it was uploaded for this plan and no reference in any app names
-  it, its own included, so a copied plan or another app's document that places it keeps it.
+  it, its own included, so a copied plan, or another app's file that places it, keeps it.
 - **Kept is final, failures retry.** An answer either way ends the wait; a release the service can't answer tries
   again a minute later, doubling to an hour, and gives up after 12 tries. The daily sweep stays the backstop for
   anything kept. At most 20 releases are asked a wake.

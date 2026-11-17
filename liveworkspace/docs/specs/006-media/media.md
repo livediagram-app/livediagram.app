@@ -62,18 +62,18 @@ the app in `X-Media-App` and carries that app's key as `Authorization: Bearer <k
 time; a key speaks only for its own app. Answers are JSON except the bytes; errors are `{ "error" }`.
 `@liveworkspace/media`'s `createMediaClient` wraps each route.
 
-| Route                        | What it does                                                                        |
-| ---------------------------- | ----------------------------------------------------------------------------------- |
-| `GET /images?owner=`         | The owner's gallery from every app, newest first: `{ images: MediaImage[] }`        |
-| `POST /images?owner=`        | Upload (below): `{ image, deduped }`                                                |
-| `GET /images/<id>`           | The image and whose it is: `{ image, owner }`                                       |
-| `GET /images/<id>/bytes`     | The bytes, with their `Content-Type` and the owner in `X-Media-Owner`               |
-| `DELETE /images/<id>?owner=` | Its owner deletes it, row then bytes. Documents that place it show a broken picture |
-| `POST /images/<id>/release?document=` | A document no longer places it: deleted at once when nothing else could (below)  |
-| `GET /usage?owner=`          | Which documents, in which apps, place each of the owner's images: `{ usage }`       |
-| `POST /refs`                 | `{ documents: [{ document, images }], complete? }`, at most 500 documents (below)   |
-| `POST /owners/merge`         | `{ from, to }`: a guest signed up. `{ moved, kept }`                                |
-| `DELETE /owners/<owner>`     | An account deleted: every image it uploaded goes. `{ deleted }`                     |
+| Route                                 | What it does                                                                        |
+| ------------------------------------- | ----------------------------------------------------------------------------------- |
+| `GET /images?owner=`                  | The owner's gallery from every app, newest first: `{ images: MediaImage[] }`        |
+| `POST /images?owner=`                 | Upload (below): `{ image, deduped }`                                                |
+| `GET /images/<id>`                    | The image and whose it is: `{ image, owner }`                                       |
+| `GET /images/<id>/bytes`              | The bytes, with their `Content-Type` and the owner in `X-Media-Owner`               |
+| `DELETE /images/<id>?owner=`          | Its owner deletes it, row then bytes. Documents that place it show a broken picture |
+| `POST /images/<id>/release?document=` | A document no longer places it: deleted at once when nothing else could (below)     |
+| `GET /usage?owner=`                   | Which documents, in which apps, place each of the owner's images: `{ usage }`       |
+| `POST /refs`                          | `{ documents: [{ document, images }], complete? }`, at most 500 documents (below)   |
+| `POST /owners/merge`                  | `{ from, to }`: a guest signed up. `{ moved, kept }`                                |
+| `DELETE /owners/<owner>`              | An account deleted: every image it uploaded goes. `{ deleted }`                     |
 
 `MediaImage` is `{ id, contentType, byteSize, width, height, originalName?, createdAt, app, source? }`, `app` being
 where it was uploaded and `source` the tool that uploaded it (below), absent for a person's own upload. The owner and the hash never appear in it. The bytes route names the owner in a

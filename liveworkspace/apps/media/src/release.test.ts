@@ -25,7 +25,8 @@ const as = (who: { app: string; key: string }, path: string, init: RequestInit =
   );
 
 const PNG = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
-const png = (seed: number) => new Uint8Array([...PNG, ...Array.from({ length: 16 }, (_, i) => seed + i)]);
+const png = (seed: number) =>
+  new Uint8Array([...PNG, ...Array.from({ length: 16 }, (_, i) => seed + i)]);
 
 async function upload(seed: number, document?: string, who = PLANNER): Promise<string> {
   const bytes = png(seed);

@@ -37,7 +37,9 @@ beforeEach(() => {
       const u = new URL(String(url));
       if (u.pathname.endsWith('/release')) {
         if (answer === 'fail') return Response.json({ error: 'down' }, { status: 503 });
-        released.push(`${decodeURIComponent(u.pathname.split('/').at(-2)!)}@${u.searchParams.get('document')}`);
+        released.push(
+          `${decodeURIComponent(u.pathname.split('/').at(-2)!)}@${u.searchParams.get('document')}`,
+        );
         return Response.json(
           answer === 'released' ? { released: true } : { released: false, reason: 'referenced' },
         );
@@ -228,14 +230,15 @@ describe('a release', () => {
     await removed(p, 'in-changeset', { attachments: [pic('in-changeset')] });
     await removed(p, 'in-snapshot', { attachments: [pic('in-snapshot')] });
     p.sql
-      .prepare(
-        "INSERT INTO tabs (id, name, data, rev, updated_at) VALUES ('t', 'Tab', ?, 1, 1)",
-      )
+      .prepare("INSERT INTO tabs (id, name, data, rev, updated_at) VALUES ('t', 'Tab', ?, 1, 1)")
       .run(JSON.stringify({ elements: [{ image: 'in-tab' }] }));
-    p.sql.exec(`INSERT INTO agent_changesets (id, plan_id, tab_id, rev, author_id, author_name, author_color,
+    p.sql
+      .exec(`INSERT INTO agent_changesets (id, plan_id, tab_id, rev, author_id, author_name, author_color,
       fingerprints, added, changed, removed, created_at) VALUES ('c', '${PLAN}', 't', 1, 'u', 'U', '#000', '[]', 0, 0, 0, 1)`);
     p.sql
-      .prepare("INSERT INTO agent_changeset_parts (changeset_id, part, data) VALUES ('c', 'inverse', ?)")
+      .prepare(
+        "INSERT INTO agent_changeset_parts (changeset_id, part, data) VALUES ('c', 'inverse', ?)",
+      )
       .run('{"attachments":[{"id":"in-changeset"}]}');
     // A snapshot whose body cuts the id across two chunks.
     p.sql.exec(`CREATE TABLE snapshot_chunks (snapshot_id TEXT, seq INTEGER, data TEXT)`);
