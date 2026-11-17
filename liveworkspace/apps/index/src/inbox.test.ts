@@ -7,7 +7,7 @@ import {
   type CollabThreadInput,
   type InboxResponse,
 } from '@liveworkspace/index-client';
-import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
 import { describe, expect, it } from 'vitest';
 import { body, call, h, makeItem, person, useHarness } from './test-support';
 
@@ -88,6 +88,89 @@ describe('Inbox threads', () => {
     const forAda = await inbox(ada.auth);
     const owned = forAda.threads.find((t) => t.elementId === 'owned')!;
     expect(owned).toMatchObject({ onYourItem: true, youCommented: false, mentionsYou: false });
+  });
+
+  // Work Tracker 1036: a reply after a mention, the mentioned person's own or a third person's, never changes who
+  // mentioned them, and the latest author's id comes back so the reader's own reply reads as theirs.
+  it('name who mentioned the reader whoever replies after', async () => {
+    const ada = await person('user_a', { teams: [{ id: 'team1' }] });
+    const bea = await person('user_b', { teams: [{ id: 'team1' }] });
+    const item = await makeItem(ada.auth, { title: 'Plan', teamId: 'team1' });
+    const ADA = { id: 'user_a', name: 'Ada Qa', color: '#123456' };
+    const push = (latest: { id: string; name: string }) =>
+      asApp(`/app/items/${item.id}/collab/t1`, {
+        threads: [
+          thread({
+            elementId: 'mention',
+            participantIds: ['user_a', latest.id],
+            mentionedIds: ['user_b'],
+            mentionedBy: { user_b: ADA },
+            latestAuthorName: latest.name,
+            latestAuthorId: latest.id,
+          }),
+        ],
+        actions: [],
+      });
+    // Bea replies herself.
+    expect((await push({ id: 'user_b', name: 'Bea Qa' })).status).toBe(204);
+    let row = (await inbox(bea.auth)).threads[0]!;
+    expect(row).toMatchObject({
+      mentionsYou: true,
+      youCommented: true,
+      latestAuthorId: 'user_b',
+      latestAuthorName: 'Bea Qa',
+      mentionedBy: ADA,
+    });
+    // Cy, a third person, replies after.
+    await push({ id: 'user_c', name: 'Cy Qa' });
+    row = (await inbox(bea.auth)).threads[0]!;
+    expect(row).toMatchObject({ latestAuthorId: 'user_c', mentionedBy: ADA });
+    // Ada is not mentioned: nobody named for her.
+    expect((await inbox(ada.auth)).threads[0]).toMatchObject({
+      mentionsYou: false,
+      mentionedBy: null,
+    });
+  });
+
+  it('name no one for a thread pushed without who mentioned whom, dropping a malformed or unmentioned entry', async () => {
+    const ada = await person('user_a', { teams: [{ id: 'team1' }] });
+    const bea = await person('user_b', { teams: [{ id: 'team1' }] });
+    const item = await makeItem(ada.auth, { title: 'Plan', teamId: 'team1' });
+    const res = await asApp(`/app/items/${item.id}/collab/t1`, {
+      threads: [
+        thread({ elementId: 'old', participantIds: ['user_a'], mentionedIds: ['user_b'] }),
+        {
+          ...thread({ elementId: 'odd', participantIds: ['user_a'], mentionedIds: ['user_b'] }),
+          mentionedBy: { user_b: { id: 'bad id!', name: 'X' }, user_c: { id: null, name: 'Y' } },
+        },
+        {
+          ...thread({ elementId: 'list', participantIds: ['user_a'], mentionedIds: ['user_b'] }),
+          mentionedBy: ['user_a'],
+        },
+        {
+          ...thread({ elementId: 'clipped', participantIds: ['user_a'], mentionedIds: ['user_b'] }),
+          mentionedBy: { user_b: { name: 'N'.repeat(300), color: 7 } },
+        },
+        {
+          ...thread({ elementId: 'nulls', participantIds: ['user_a'], mentionedIds: ['user_b'] }),
+          mentionedBy: { user_b: null },
+        },
+        {
+          ...thread({ elementId: 'long', participantIds: ['user_a'], mentionedIds: ['user_b'] }),
+          mentionedBy: { user_b: { name: 'N'.repeat(300) } },
+        },
+      ],
+      actions: [],
+    });
+    expect(res.status).toBe(204);
+    const rows = Object.fromEntries((await inbox(bea.auth)).threads.map((t) => [t.elementId, t]));
+    expect(rows.old!.mentionedBy).toBeNull();
+    expect(rows.old!.latestAuthorId).toBeNull();
+    expect(rows.odd!.mentionedBy).toBeNull();
+    expect(rows.list!.mentionedBy).toBeNull();
+    expect(rows.clipped!.mentionedBy).toBeNull();
+    expect(rows.nulls!.mentionedBy).toBeNull();
+    expect(rows.long!.mentionedBy).toEqual({ id: null, name: 'N'.repeat(200) });
   });
 
   // An agent's comment with my token reaches me, but is not mine: a question it asked waits on me (agentIds).
@@ -476,4 +559,39 @@ describe('the Inbox at scale', () => {
     expect(ms).toBeLessThan(cpuBudgetMs(150));
     // wall-clock: seeding 22,000 items with their forms, threads and actions can outlast the default 5 s on a loaded machine.
   }, 30_000);
+
+  // Work Tracker 1036: who mentioned the reader, looked up per row. At its worst: a full read (100 rows), each thread
+  // naming the people cap (100) of mentioners, the reader's entry last. The lookup alone, over those rows.
+  it('looks up who mentioned the reader within budget at the people cap on every row of a read', () => {
+    const db = h.db.sql;
+    const by = Object.fromEntries(
+      Array.from({ length: 100 }, (_, p) => [
+        p === 99 ? 'user_me' : `user_${p}`,
+        { id: `user_m${p}`, name: 'N'.repeat(200), color: '#123456' },
+      ]),
+    );
+    db.prepare(
+      `INSERT INTO items (id, app, kind, owner_id, team_id, scope, folder_id, title, summary, created_at, updated_at)
+       VALUES ('i', 'liveplanner', 'plan', 'user_a', NULL, 'p:user_a', NULL, 'I', '{}', 1, 1)`,
+    ).run();
+    const threads = db.prepare(
+      `INSERT INTO collab_threads (app, item_id, tab_id, element_id, element_label, resolved, comment_count,
+         participant_ids, mentioned_ids, mentioned_by, latest_text, latest_author_name, first_at, latest_at)
+       VALUES ('liveplanner', 'i', 't', ?, 'E', 0, 1, '[]', '[]', ?, 'hi', 'Bob', 1, 1)`,
+    );
+    for (let i = 0; i < 100; i++) threads.run(`e${i}`, JSON.stringify(by));
+    const lookup = db.prepare(
+      `SELECT (SELECT value FROM json_each(t.mentioned_by) WHERE key = ?) AS m FROM collab_threads t`,
+    );
+    let rows: { m: string }[] = [];
+    const runs = 20;
+    const ms =
+      cpuMsOf(() => {
+        for (let i = 0; i < runs; i++) rows = lookup.all('user_me') as { m: string }[];
+      }) / runs;
+    expect(rows).toHaveLength(100);
+    expect(JSON.parse(rows[0]!.m)).toMatchObject({ id: 'user_m99' });
+    // Measured about 1.7 ms a read here (100 rows, 100 entries each); the budget leaves room for a slow machine.
+    expect(ms).toBeLessThan(cpuBudgetMs(20));
+  });
 });

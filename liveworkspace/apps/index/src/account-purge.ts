@@ -243,8 +243,9 @@ function personalStatements(db: Db, person: string): (() => D1PreparedStatement)
   ];
 }
 
-// The comment threads they are in on other people's items: their id in each thread's participants and
-// mentions becomes ANONYMISED_PERSON, and their own "threads I am in" rows go. The same chunk of rows, in
+// The comment threads they are in on other people's items: their id in each thread's participants, mentions and
+// latest author becomes ANONYMISED_PERSON, who mentioned whom forgets them (both ways), and their own "threads I am
+// in" rows go. The same chunk of rows, in
 // the people table's own order, in one batch.
 async function anonymiseThreads(db: Db, budget: Budget, person: string): Promise<boolean> {
   const chunk = `SELECT app, item_id, tab_id, element_id FROM collab_thread_people WHERE person_id = ?
@@ -258,10 +259,24 @@ async function anonymiseThreads(db: Db, budget: Budget, person: string): Promise
       db
         .prepare(
           `UPDATE collab_threads
-           SET participant_ids = ${swap('participant_ids')}, mentioned_ids = ${swap('mentioned_ids')}
+           SET participant_ids = ${swap('participant_ids')}, mentioned_ids = ${swap('mentioned_ids')},
+             latest_author_id = CASE WHEN latest_author_id = ? THEN ? ELSE latest_author_id END,
+             mentioned_by = (SELECT COALESCE(json_group_object(key, json(value)), '{}') FROM json_each(mentioned_by)
+               WHERE key <> ? AND json_extract(value, '$.id') IS NOT ?)
            WHERE (app, item_id, tab_id, element_id) IN (${chunk})`,
         )
-        .bind(person, ANONYMISED_PERSON, person, ANONYMISED_PERSON, person, CHUNK),
+        .bind(
+          person,
+          ANONYMISED_PERSON,
+          person,
+          ANONYMISED_PERSON,
+          person,
+          ANONYMISED_PERSON,
+          person,
+          person,
+          person,
+          CHUNK,
+        ),
       db
         .prepare(
           `DELETE FROM collab_thread_people WHERE person_id = ?

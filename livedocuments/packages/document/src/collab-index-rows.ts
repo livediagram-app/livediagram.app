@@ -12,6 +12,12 @@
 // on this tab now" for the index, and a full snapshot is what lets a
 // save be a replace rather than a diff.
 
+import {
+  mentionedByOf,
+  mentionIdsOf,
+  withMentionedBy,
+  type ThreadMentioner,
+} from '@liveworkspace/element-model/thread-mentioners';
 import type { Comment } from './comments';
 import { elementActions, isClosedAction } from './element-action';
 import { elementDisplayLabel } from './element-display-label';
@@ -46,6 +52,9 @@ export type CollabThreadRow = {
   // Distinct user ids and team member ids @-mentioned anywhere in the thread
   // (docs/specs/012-collaboration/comment-mentions.md), so the Inbox lists it for them.
   mentionedIds: string[];
+  // Who mentioned each id in `mentionedIds` (the author of the latest comment naming them), so the Inbox names them
+  // whoever replies after; absent when nobody mentioned anyone else (element-model thread-mentioners.ts).
+  mentionedBy?: Record<string, ThreadMentioner>;
   latestText: string;
   latestAuthorName: string;
   latestAuthorColor: string;
@@ -118,6 +127,7 @@ export function collabIndexRowsFromElements(elements: Element[]): CollabIndexRow
         commentCount: comments.length,
         participantIds: participants,
         mentionedIds: mentioned,
+        ...withMentionedBy(mentionedByOf(comments, mentionIdsOf)),
         latestText: latest.text,
         latestAuthorName: latest.authorName,
         latestAuthorColor: latest.authorColor,

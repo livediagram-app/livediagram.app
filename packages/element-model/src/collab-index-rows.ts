@@ -17,6 +17,12 @@
 import type { BoxedElement } from './element';
 import { ACTION_CARD_MAX, elementActions, isClosedAction } from './element-action';
 import { elementDisplayLabel } from './element-display-label';
+import {
+  mentionedByOf,
+  mentionIdsOf,
+  withMentionedBy,
+  type ThreadMentioner,
+} from './thread-mentioners';
 
 // The comment fields the index reads: every product's Comment carries them.
 type IndexedComment = {
@@ -57,6 +63,9 @@ export type CollabThreadRow = {
   // Distinct user ids and team member ids @-mentioned anywhere in the thread
   // (docs/specs/012-collaboration/comment-mentions.md), so the Inbox lists it for them.
   mentionedIds: string[];
+  // Who mentioned each id in `mentionedIds` (the author of the latest comment naming them), so the Inbox names them
+  // whoever replies after; absent when nobody mentioned anyone else (thread-mentioners.ts).
+  mentionedBy?: Record<string, ThreadMentioner>;
   latestText: string;
   latestAuthorName: string;
   latestAuthorColor: string;
@@ -144,6 +153,7 @@ function collabIndexRows<E extends { id: string }>(
         commentCount: comments.length,
         participantIds: participants,
         mentionedIds: mentioned,
+        ...withMentionedBy(mentionedByOf(comments, mentionIdsOf)),
         latestText: latest.text,
         latestAuthorName: latest.authorName,
         latestAuthorColor: latest.authorColor,

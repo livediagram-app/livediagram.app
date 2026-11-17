@@ -107,11 +107,19 @@ function arrange() {
   for (const item of ['bea-1', 'ada-1']) {
     run(
       `INSERT INTO collab_threads (app, item_id, tab_id, element_id, element_label, resolved, comment_count,
-         participant_ids, mentioned_ids, latest_text, latest_author_name, first_at, latest_at)
-       VALUES ('liveplanner', ?, 'tab', 'el', 'Box', 0, 2, ?, ?, 'hi', 'Bea', 1, 1)`,
+         participant_ids, mentioned_ids, latest_text, latest_author_name, latest_author_id, mentioned_by, first_at,
+         latest_at)
+       VALUES ('liveplanner', ?, 'tab', 'el', 'Box', 0, 2, ?, ?, 'hi', 'Ada', ?, ?, 1, 1)`,
       item,
       JSON.stringify([BEA, ADA]),
       JSON.stringify([ADA]),
+      ADA,
+      // Bea mentioned Ada and Dee; Ada mentioned Cy.
+      JSON.stringify({
+        [ADA]: { id: BEA, name: 'Bea' },
+        user_cy: { id: ADA, name: 'Ada' },
+        user_dee: { id: BEA, name: 'Bea' },
+      }),
     );
     for (const person of [ADA, BEA]) {
       run(
@@ -225,6 +233,15 @@ describe('POST /internal/purge-person', () => {
       {
         participant_ids: JSON.stringify([BEA, ANONYMISED_PERSON]),
         mentioned_ids: JSON.stringify([ANONYMISED_PERSON]),
+      },
+    ]);
+    // Who wrote last and who mentioned whom forget Ada, both ways (Work Tracker 1036).
+    expect(
+      rows(`SELECT latest_author_id, mentioned_by FROM collab_threads WHERE item_id = 'bea-1'`),
+    ).toEqual([
+      {
+        latest_author_id: ANONYMISED_PERSON,
+        mentioned_by: JSON.stringify({ user_dee: { id: BEA, name: 'Bea' } }),
       },
     ]);
     expect(
