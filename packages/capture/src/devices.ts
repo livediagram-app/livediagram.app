@@ -1,10 +1,17 @@
 // The microphones and cameras this browser can see, for the device picker. Their names are hidden until the person
-// has let the page use one (the browser's rule), so until then each is "Microphone 1", "Camera 2".
+// has let the page use one (the browser's rule), so until then each is "Microphone 1", "Camera 2", or, where the
+// browser hides them altogether until then, the kind is `locked`.
 
 import { useEffect, useState } from 'react';
 
 export type CaptureDevice = { id: string; label: string };
-export type CaptureDevices = { microphones: CaptureDevice[]; cameras: CaptureDevice[] };
+export type CaptureDevices = {
+  microphones: CaptureDevice[];
+  cameras: CaptureDevice[];
+  // A kind the browser has but won't list until the page is allowed to use it (Chrome lists one nameless, id-less
+  // entry per kind before then): the picker offers to ask rather than saying none was found.
+  locked?: { microphones: boolean; cameras: boolean };
+};
 
 export const NO_DEVICES: CaptureDevices = { microphones: [], cameras: [] };
 
@@ -26,7 +33,18 @@ export async function listDevices(source = deviceSource()): Promise<CaptureDevic
     all
       .filter((d) => d.kind === kind && d.deviceId !== '')
       .map((d, i) => ({ id: d.deviceId, label: d.label.trim() || `${noun} ${i + 1}` }));
-  return { microphones: named('audioinput', 'Microphone'), cameras: named('videoinput', 'Camera') };
+  const microphones = named('audioinput', 'Microphone');
+  const cameras = named('videoinput', 'Camera');
+  const hiddenOf = (kind: MediaDeviceKind, shown: CaptureDevice[]) =>
+    shown.length === 0 && all.some((d) => d.kind === kind && d.deviceId === '');
+  return {
+    microphones,
+    cameras,
+    locked: {
+      microphones: hiddenOf('audioinput', microphones),
+      cameras: hiddenOf('videoinput', cameras),
+    },
+  };
 }
 
 /**

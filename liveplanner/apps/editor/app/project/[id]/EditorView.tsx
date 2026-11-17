@@ -62,6 +62,7 @@ import {
   WalkthroughsLayer,
   WalkthroughsTools,
 } from '@liveworkspace/walkthrough';
+import { useWalkthroughHideable } from '@/lib/walkthrough-hideable';
 import {
   API_BASE as WALKTHROUGHS_API_BASE,
   apiFetch as walkthroughsFetch,
@@ -193,6 +194,8 @@ export function EditorView() {
 
   // The site header and the tab bar, its footer (EditorViewBars), or null where they are hidden.
   // Walkthroughs (docs/specs/012-collaboration/walkthroughs.md): their row in the footer's Tools and the layer over the canvas.
+  // What Hide From Recording can pick on the tab showing: its cards and widgets as well as canvas elements.
+  const walkthroughHideable = useWalkthroughHideable(activeTab, ctx.plan.context.items?.size ?? 0);
   const walkthroughs = useEditorWalkthroughs({
     itemId: ctx.projectId,
     hydrated: ctx.hydrated,
@@ -211,6 +214,7 @@ export function EditorView() {
     activeTab: ctx.activeId,
     selectTab,
     selectionStore: ctx.selectionStore,
+    hideable: walkthroughHideable,
   });
   const header = renderEditorHeader(ctx, {
     isOffline,

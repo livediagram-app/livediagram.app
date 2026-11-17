@@ -61,7 +61,13 @@ export function useWalkthroughs(host: WalkthroughHost) {
   }, [api, refresh]);
 
   const [recorderOpen, setRecorderOpen] = useState(false);
-  const hiding = useHidden(canvasRoot, recorderOpen);
+  // What can be hidden besides canvas elements, and whether the tab showing has anything (host.ts).
+  const hiding = useHidden(
+    canvasRoot,
+    recorderOpen,
+    host.hideable?.marks,
+    host.hideable ? host.hideable.canHide() : true,
+  );
   const onSaved = useCallback(
     (saved: WalkthroughSummary) => {
       setList((prev) => [saved, ...(prev ?? []).filter((w) => w.id !== saved.id)]);

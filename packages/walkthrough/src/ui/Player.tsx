@@ -87,7 +87,7 @@ export function Player({
         setRings(
           root && box
             ? state.points.flatMap((p) => {
-                const r = elementBox(root, box, p.id);
+                const r = elementBox(root, box, p.id, h.hideable?.marks);
                 return r ? [{ key: `${p.id}@${p.t}`, ...r }] : [];
               })
             : [],

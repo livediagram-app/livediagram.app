@@ -72,6 +72,48 @@ the service when the events arrive: every `point` naming a hidden element is dro
 `cursor-out` rather than any pointer sample over one. The `hidden` list itself names ids only, so the player can
 hide them; it holds no content.
 
+### Recording without a camera
+
+Sound alone is the easy path (owner, 2026-11-17). The recording dock's **Camera** is an on/off switch beside the
+microphone, **off** until the person turns it on, and the browser remembers it per browser (Browser Storage, key
+`liveworkspace:walkthrough-camera`, `on` or `off`; storage that throws reads as off and keeps nothing). While it is
+off the recorder asks the browser for the microphone alone (`getUserMedia({ audio, video: false })`), so no camera
+permission is asked; turning it on asks for the camera and shows its device list. A sound-only walkthrough has no
+camera bubble while recording and plays back with no video frame (the player's round mark with the presenter's
+initial, as before). A camera that won't start turns the switch off for that recording only, says "The camera
+couldn't start, so this walkthrough records sound only." and records sound; the remembered choice stays on. No
+camera at all (the default camera answers `NotFoundError`) is not a failure: the switch stays on, its list says
+**No Camera Found** (disabled) and the recording is sound alone; turning the switch off and on, or a camera plugged in,
+tries again.
+
+### The device pickers
+
+`DevicePicker` (`@liveworkspace/capture`) draws the microphone and the camera lists by one rule, so they never
+differ (owner, 2026-11-17):
+
+| The list                                                       | Shows                                                                                                         |
+| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Devices to pick                                                | **Default**, then each device's name; enabled                                                                 |
+| None, because the browser hides them until the page is allowed | "Not allowed yet" and **Allow Microphone** / **Allow Camera**, which asks the browser (its permission prompt) |
+| None at all                                                    | **No Microphone Found** / **No Camera Found**; disabled                                                       |
+
+The camera's off is the switch, never an entry in its list (there is no "No Camera" option). A browser "hides them
+until allowed" when it lists the kind with no device id (Chrome before permission); `listDevices` reports that as
+`locked`.
+
+### What an app can hide
+
+In every canvas app an element is anything marked `data-element-id` inside the canvas
+content (`data-canvas-content`). An app whose tabs draw other things over the canvas (liveplanner's Board and
+Dashboard tabs, laid over it rather than in it) names them to `@liveworkspace/walkthrough` as **hideable marks**:
+further attributes whose value is the id of a thing that can be hidden (liveplanner's `data-plan-card` and
+`data-dashboard-slot`), wherever under the canvas root they are drawn. Picking, the presenter's and the viewer's
+hiding, the pointer's `cursor-out` and the player's press rings all read them like `data-element-id`, and a `point`
+may name one. The app also says whether the tab showing has **anything to hide** at all: where it has nothing (a
+liveplanner Sheet or Form tab, an empty canvas), the dock leaves Hide From Recording out rather than offering a mode
+in which no press can do anything. An app that says neither (livediagram, livedocuments, livedesign) hides canvas
+elements alone and always offers the control, as before.
+
 **Edited since recording.** `fingerprints` holds each visited tab's content fingerprint when the recording began
 (the app's own; any string up to 128 characters). A player that finds a tab's fingerprint changed says the
 walkthrough was **edited since recording** and still plays it over the canvas as it is now.

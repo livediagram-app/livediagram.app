@@ -3,4 +3,4 @@
 export * from './constraints';
 export * from './devices';
 export * from './level';
-export { DevicePicker, NO_CAMERA, type DevicePickerProps } from './DevicePicker';
+export { DevicePicker, NO_CAMERA, type CaptureKind, type DevicePickerProps } from './DevicePicker';

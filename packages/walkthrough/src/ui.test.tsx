@@ -7,7 +7,8 @@ import { ChromeToolsMenu } from '@liveworkspace/workbench/components/chrome/Chro
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { WalkthroughHost } from './host';
+import type { WalkthroughHideable, WalkthroughHost } from './host';
+import { CAMERA_ON_KEY } from './useRecorder';
 import type { CanvasView } from './timeline';
 import { shiftClearOf } from './ui/Bubble';
 import { WalkthroughsTools } from './ui/WalkthroughsTools';
@@ -70,7 +71,15 @@ const setView = vi.fn((v: CanvasView) => {
   view = v;
 });
 
-function Harness({ server, initialTab = 't1' }: { server: Server; initialTab?: string }) {
+function Harness({
+  server,
+  initialTab = 't1',
+  hideable,
+}: {
+  server: Server;
+  initialTab?: string;
+  hideable?: WalkthroughHideable;
+}) {
   const [tab, setTab] = useState(initialTab);
   const [fetch] = useState(() => fakeFetch(server));
   const host: WalkthroughHost = {
@@ -87,6 +96,7 @@ function Harness({ server, initialTab = 't1' }: { server: Server; initialTab?: s
     fingerprint: (t) => (t === 't2' ? 'new' : 'same'),
     selection: () => ['sel1', 'sel2'],
     author: 'Grace',
+    hideable,
   };
   const walkthroughs = useWalkthroughs(host);
   return (
@@ -97,6 +107,15 @@ function Harness({ server, initialTab = 't1' }: { server: Server; initialTab?: s
       <div id="canvas-root" style={{ position: 'relative' }}>
         <div data-canvas-content="">
           <div data-element-id="e1" />
+        </div>
+        {/* A Board or Dashboard tab drawn over the canvas, outside its content (liveplanner's). */}
+        <div data-canvas-cover="">
+          <div data-plan-card="card1">
+            <span data-testid="card1-face" />
+          </div>
+          <div data-dashboard-slot="slot1">
+            <span data-testid="slot1-face" />
+          </div>
         </div>
         <WalkthroughsLayer walkthroughs={walkthroughs} />
       </div>
@@ -415,6 +434,238 @@ describe('recording', () => {
     } finally {
       Reflect.deleteProperty(document, 'permissionsPolicy');
     }
+  });
+});
+
+describe('recording, beyond the canvas', () => {
+  class FakeRecorder {
+    static isTypeSupported = (t: string) => t === 'audio/webm';
+    state = 'inactive';
+    mimeType = 'audio/webm';
+    ondataavailable: ((e: { data: Blob }) => void) | null = null;
+    onstop: (() => void) | null = null;
+    start() {
+      this.state = 'recording';
+    }
+    stop() {
+      this.ondataavailable?.({ data: new Blob([new Uint8Array(4)]) });
+      this.state = 'inactive';
+      this.onstop?.();
+    }
+  }
+  const stream = (video = false) => ({
+    getTracks: () => [{ stop: () => undefined }],
+    getAudioTracks: () => [{}],
+    getVideoTracks: () => (video ? [{}] : []),
+  });
+  // The browser's devices, answering every ask with a stream (with video when asked for it), or as `answer` says.
+  function stubDevices(answer?: (c: MediaStreamConstraints) => Promise<unknown>) {
+    const getUserMedia = vi.fn(answer ?? (async (c: MediaStreamConstraints) => stream(!!c.video)));
+    vi.stubGlobal('MediaRecorder', FakeRecorder);
+    vi.stubGlobal(
+      'AudioContext',
+      class {
+        createAnalyser() {
+          return { fftSize: 0, getFloatTimeDomainData: () => undefined };
+        }
+        createMediaStreamSource() {
+          return { connect: () => undefined };
+        }
+        close() {
+          return Promise.resolve();
+        }
+      },
+    );
+    Object.defineProperty(navigator, 'mediaDevices', {
+      configurable: true,
+      value: { getUserMedia, enumerateDevices: async () => [] },
+    });
+    return getUserMedia;
+  }
+  async function openDock(props: { hideable?: WalkthroughHideable } = {}) {
+    const server: Server = { list: [], canRecord: true, requests: [] };
+    render(<Harness server={server} {...props} />);
+    await openWalkthroughs();
+    fireEvent.click(screen.getByText('Record Walkthrough'));
+    await screen.findByRole('region', { name: 'Record a Walkthrough' });
+    const start = await screen.findByRole('button', { name: /Start Recording/ });
+    await waitFor(() => expect((start as HTMLButtonElement).disabled).toBe(false));
+    return server;
+  }
+  const board = (over: Partial<WalkthroughHideable> = {}): WalkthroughHideable => ({
+    marks: ['data-plan-card', 'data-dashboard-slot'],
+    canHide: () => true,
+    selection: () => ['card2'],
+    ...over,
+  });
+  const presenterCss = () =>
+    document.head.querySelector('[data-walkthrough-hidden="presenter"]')?.textContent ?? '';
+
+  beforeEach(() => localStorage.clear());
+
+  it('hides a board card and a dashboard widget, picked or selected, and keeps them out of the events', async () => {
+    stubDevices();
+    const server = await openDock({ hideable: board() });
+    fireEvent.click(screen.getByRole('button', { name: /Hide From Recording/ }));
+    // A press on a card's face picks the card; one on a widget picks the widget.
+    fireEvent.pointerDown(screen.getByTestId('card1-face'));
+    fireEvent.pointerDown(screen.getByTestId('slot1-face'));
+    fireEvent.click(screen.getByRole('button', { name: 'Hide Selection' }));
+    // Esc leaves the mode as Done does, and only that: a key other than Esc keeps it.
+    fireEvent.keyDown(window, { key: 'a' });
+    expect(screen.getByRole('button', { name: 'Done' })).toBeTruthy();
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(screen.queryByRole('button', { name: 'Done' })).toBeNull();
+    expect(screen.getByRole('region', { name: 'Record a Walkthrough' })).toBeTruthy();
+    expect(presenterCss()).toContain('[data-plan-card="card1"] > *');
+    expect(presenterCss()).toContain('[data-dashboard-slot="slot1"] > *');
+    expect(presenterCss()).toContain('[data-plan-card="card2"]');
+
+    vi.useFakeTimers({ toFake: ['setTimeout', 'setInterval', 'clearTimeout', 'clearInterval'] });
+    fireEvent.click(screen.getByRole('button', { name: /Start Recording/ }));
+    for (let i = 0; i < 3; i++) {
+      await act(async () => {
+        vi.advanceTimersByTime(1000);
+      });
+    }
+    // A press on a hidden card is dropped; one on a canvas element that is not hidden is kept.
+    fireEvent.pointerDown(screen.getByTestId('card1-face'));
+    fireEvent.pointerDown(document.querySelector('[data-element-id="e1"]')!);
+    await act(async () => {
+      vi.advanceTimersByTime(400);
+    });
+    vi.useRealTimers();
+    fireEvent.click(screen.getByRole('button', { name: /Finish/ }));
+    await screen.findByRole('textbox');
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    await screen.findByText(/^Saved/);
+    const start = server.requests.find((r) => r.init?.method === 'POST')!;
+    const { events } = JSON.parse(String(start.init!.body)) as { events: WalkthroughEvents };
+    expect(events.hidden.sort()).toEqual(['card1', 'card2', 'sel1', 'sel2', 'slot1']);
+    const points = events.events.flatMap((e) => (e.k === 'point' ? [e.id] : []));
+    expect(points).toEqual(['e1']);
+    expect(JSON.stringify(events.events)).not.toContain('card1');
+  });
+
+  it('leaves Hide From Recording out on a tab with nothing to hide, and the mode with it', async () => {
+    stubDevices();
+    let can = true;
+    await openDock({ hideable: board({ canHide: () => can }) });
+    fireEvent.click(screen.getByRole('button', { name: /Hide From Recording/ }));
+    expect(screen.getByRole('button', { name: 'Done' })).toBeTruthy();
+    can = false;
+    // The next drawing (a tab change) reads it again.
+    fireEvent.click(screen.getByRole('switch', { name: 'Camera' }));
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'Done' })).toBeNull());
+    expect(screen.queryByRole('button', { name: /Hide From Recording/ })).toBeNull();
+    expect(screen.getByRole('button', { name: /Start Recording/ })).toBeTruthy();
+    // A press on a card now does what it always does: nothing is picked.
+    fireEvent.pointerDown(screen.getByTestId('card1-face'));
+    expect(presenterCss()).toBe('');
+    // Let the devices it asked for again arrive while the stubs stand.
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 0));
+    });
+  });
+
+  it('starts with the camera off, asking for the microphone alone, and remembers turning it on', async () => {
+    const getUserMedia = stubDevices();
+    await openDock();
+    const toggle = screen.getByRole('switch', { name: 'Camera' });
+    expect(toggle.getAttribute('aria-checked')).toBe('false');
+    expect(screen.getByText('Off, sound only')).toBeTruthy();
+    expect(getUserMedia.mock.calls.every(([c]) => c?.video === false)).toBe(true);
+    // No bubble corner without a camera.
+    expect(screen.queryByRole('radiogroup', { name: 'Bubble corner' })).toBeNull();
+    fireEvent.click(toggle);
+    await waitFor(() =>
+      expect(getUserMedia).toHaveBeenLastCalledWith(
+        expect.objectContaining({ video: expect.objectContaining({}) }),
+      ),
+    );
+    expect(getUserMedia.mock.lastCall?.[0]?.video).not.toBe(false);
+    expect(localStorage.getItem(CAMERA_ON_KEY)).toBe('on');
+    expect(await screen.findByRole('radiogroup', { name: 'Bubble corner' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('switch', { name: 'Camera' }));
+    expect(localStorage.getItem(CAMERA_ON_KEY)).toBe('off');
+  });
+
+  it('opens with the camera on where this browser last had it on', async () => {
+    localStorage.setItem(CAMERA_ON_KEY, 'on');
+    const getUserMedia = stubDevices();
+    await openDock();
+    expect(screen.getByRole('switch', { name: 'Camera' }).getAttribute('aria-checked')).toBe(
+      'true',
+    );
+    expect(getUserMedia.mock.calls[0]?.[0]?.video).not.toBe(false);
+  });
+
+  it('falls back to sound alone, and says so, when the camera will not start', async () => {
+    localStorage.setItem(CAMERA_ON_KEY, 'on');
+    stubDevices(async (c) => {
+      if (c.video) throw new DOMException('busy', 'NotReadableError');
+      return stream(false);
+    });
+    await openDock();
+    expect(
+      await screen.findByText("The camera couldn't start, so this walkthrough records sound only."),
+    ).toBeTruthy();
+    expect(screen.getByRole('switch', { name: 'Camera' }).getAttribute('aria-checked')).toBe(
+      'false',
+    );
+    // This recording only: the choice is kept for next time.
+    expect(localStorage.getItem(CAMERA_ON_KEY)).toBe('on');
+  });
+
+  it('keeps the switch on and says No Camera Found when there is no camera at all', async () => {
+    localStorage.setItem(CAMERA_ON_KEY, 'on');
+    const getUserMedia = stubDevices(async (c) => {
+      if (c.video) throw new DOMException('none', 'NotFoundError');
+      return stream(false);
+    });
+    await openDock();
+    const list = await screen.findByRole('combobox', { name: 'Which Camera' });
+    expect(list.textContent).toBe('No Camera Found');
+    expect((list as HTMLSelectElement).disabled).toBe(true);
+    expect(screen.getByRole('switch', { name: 'Camera' }).getAttribute('aria-checked')).toBe(
+      'true',
+    );
+    expect(
+      screen.queryByText("The camera couldn't start, so this walkthrough records sound only."),
+    ).toBeNull();
+    // Sound alone was asked for after.
+    await waitFor(() => expect(getUserMedia.mock.calls.at(-1)?.[0]?.video).toBe(false));
+    // Turning the switch off and on again tries the camera again.
+    const calls = getUserMedia.mock.calls.length;
+    fireEvent.click(screen.getByRole('switch', { name: 'Camera' }));
+    fireEvent.click(screen.getByRole('switch', { name: 'Camera' }));
+    await waitFor(() =>
+      expect(getUserMedia.mock.calls.slice(calls).some(([c]) => !!c?.video)).toBe(true),
+    );
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 0));
+    });
+  });
+
+  it('asks the browser again from Allow Microphone', async () => {
+    const getUserMedia = stubDevices();
+    Object.defineProperty(navigator, 'mediaDevices', {
+      configurable: true,
+      value: {
+        getUserMedia,
+        enumerateDevices: async () => [
+          { kind: 'audioinput', deviceId: '', label: '', groupId: '' },
+        ],
+      },
+    });
+    await openDock();
+    const calls = getUserMedia.mock.calls.length;
+    fireEvent.click(await screen.findByRole('button', { name: 'Allow Microphone' }));
+    await waitFor(() => expect(getUserMedia.mock.calls.length).toBeGreaterThan(calls));
+    // Let the devices it asked for again arrive while the stubs stand.
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 0));
+    });
   });
 });
 

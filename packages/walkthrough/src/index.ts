@@ -2,7 +2,12 @@
 // (liveworkspace/docs/specs/006-media/walkthroughs.md). An app binds a WalkthroughHost, calls useWalkthroughs with it,
 // and mounts WalkthroughsTools (its row in the footer's Tools) and WalkthroughsLayer over its canvas.
 export { walkthroughApi, type WalkthroughApi, type WalkthroughApiDeps } from './api';
-export type { WalkthroughHost, WalkthroughSlides, WalkthroughViewport } from './host';
+export type {
+  WalkthroughHideable,
+  WalkthroughHost,
+  WalkthroughSlides,
+  WalkthroughViewport,
+} from './host';
 export { fingerprintOf } from './timeline';
 export {
   useEditorWalkthroughs,

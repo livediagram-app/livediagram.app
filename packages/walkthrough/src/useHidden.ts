@@ -6,16 +6,29 @@
 
 import { WALKTHROUGH_HIDDEN_MAX } from '@liveworkspace/media/walkthrough';
 import { useCallback, useEffect, useState } from 'react';
-import { applyHidden, CONTENT_SELECTOR, elementIdAt } from './bridge';
+import { applyHidden, elementIdAt, onHideableSurface } from './bridge';
 
 const PICKING_ATTR = 'data-walkthrough-picking';
 const PICKING_CSS = `[${PICKING_ATTR}],[${PICKING_ATTR}] *{cursor:crosshair !important}`;
 
 export type HiddenState = ReturnType<typeof useHidden>;
 
-export function useHidden(canvasRoot: () => HTMLElement | null, showing: boolean) {
+const NO_MARKS: readonly string[] = [];
+
+// `marks` are the host's hideable marks beside the canvas's elements, and `canHide` whether the tab showing has
+// anything to hide: on one that has nothing the mode is left, as the dock no longer offers it.
+export function useHidden(
+  canvasRoot: () => HTMLElement | null,
+  showing: boolean,
+  marks: readonly string[] = NO_MARKS,
+  canHide = true,
+) {
   const [hidden, setHidden] = useState<ReadonlySet<string>>(() => new Set());
-  const [picking, setPicking] = useState(false);
+  const [picked, setPicking] = useState(false);
+  const picking = picked && canHide;
+  useEffect(() => {
+    if (!canHide) setPicking(false);
+  }, [canHide]);
 
   const toggle = useCallback((id: string) => {
     setHidden((prev) => {
@@ -42,8 +55,8 @@ export function useHidden(canvasRoot: () => HTMLElement | null, showing: boolean
   // The presenter's look, while the recorder is open.
   useEffect(() => {
     if (!showing) return;
-    return applyHidden(document, hidden, 'presenter');
-  }, [showing, hidden]);
+    return applyHidden(document, hidden, 'presenter', marks);
+  }, [showing, hidden, marks]);
 
   // Picking: a press on an element hides or shows it, and goes no further (the editor neither selects nor drags).
   const active = showing && picking;
@@ -55,9 +68,8 @@ export function useHidden(canvasRoot: () => HTMLElement | null, showing: boolean
     style.textContent = PICKING_CSS;
     document.head.append(style);
     root.setAttribute(PICKING_ATTR, '');
-    // Only presses on the canvas content: the walkthroughs' own cards may sit inside the same root.
-    const onCanvas = (e: Event) =>
-      e.target instanceof Element && e.target.closest(CONTENT_SELECTOR) !== null;
+    // Only presses on the canvas content or a marked thing: the walkthroughs' own cards may sit inside the same root.
+    const onCanvas = (e: Event) => onHideableSurface(e.target, marks);
     const swallow = (e: Event) => {
       if (!onCanvas(e)) return;
       e.preventDefault();
@@ -66,7 +78,7 @@ export function useHidden(canvasRoot: () => HTMLElement | null, showing: boolean
     const onDown = (e: PointerEvent) => {
       if (!onCanvas(e)) return;
       swallow(e);
-      const id = elementIdAt(e.target);
+      const id = elementIdAt(e.target, marks);
       if (id) toggle(id);
     };
     root.addEventListener('pointerdown', onDown, { capture: true });
@@ -79,7 +91,20 @@ export function useHidden(canvasRoot: () => HTMLElement | null, showing: boolean
       root.removeEventListener('click', swallow, { capture: true });
       root.removeEventListener('dblclick', swallow, { capture: true });
     };
-  }, [active, canvasRoot, toggle]);
+  }, [active, canvasRoot, toggle, marks]);
 
-  return { hidden, picking, setPicking, toggle, hideAll, clear };
+  // Esc leaves the mode, as Done does, and goes no further (the editor doesn't also clear its selection).
+  useEffect(() => {
+    if (!active) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      e.preventDefault();
+      e.stopPropagation();
+      setPicking(false);
+    };
+    window.addEventListener('keydown', onKey, { capture: true });
+    return () => window.removeEventListener('keydown', onKey, { capture: true });
+  }, [active]);
+
+  return { hidden, picking, setPicking, toggle, hideAll, clear, canHide };
 }
