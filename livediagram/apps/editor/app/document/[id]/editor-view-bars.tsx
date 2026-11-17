@@ -5,18 +5,16 @@
 // (docs/specs/007-editor/split-view.md). Plain functions over the editor context, not components, so the
 // view's tree is what it always was; each is null where its bar is hidden.
 
-import { ApprovalBadge } from '@liveworkspace/explorer/approvals';
 import type { ReactNode } from 'react';
-import { truncateName } from '@livediagram/document';
 import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
 import { track } from '@/lib/telemetry';
 import { addToDocumentTargets } from '@/lib/add-to-document-targets';
-import { EditorHeader } from '@/components/chrome/EditorHeader';
+import { EditorCornerActions } from '@/components/chrome/EditorCornerActions';
+import { roleToolsItem } from '@/components/chrome/RoleTool';
 import { WorkbenchOpenLink } from '@/components/chrome/WorkbenchChrome';
 import { appHrefOfPlace } from '@/lib/workbench/workspace-place';
 import { TabBar } from '@/components/chrome/TabBar';
 import { LandscapeBarFold } from '@/components/chrome/LandscapeBars';
-import { RolePill } from '@/components/chrome/RoleIndicator';
 // Each major area fails on its own and reports which one it was (docs/specs/017-telemetry/telemetry.md).
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import type { useEditorContext } from './EditorContext';
@@ -45,86 +43,54 @@ export function editorViewHeader(
   const {
     zenMode,
     appChrome,
-    documentName,
     anyWelcomeOpen,
     canShareDocument,
     hydrated,
     documentShareable,
-    documentTeamId,
     documentId,
     sessionCommunity,
     makeCopy,
     copying,
-    isStructureReadOnly,
-    renameDocumentNonce,
     slideDeck,
     openSettingsOn,
     setShareDialogOpen,
-    nameDocument,
   } = ctx;
-  const { isOffline, headerCommunity, role, isMobileViewport } = view;
+  const { isMobileViewport } = view;
+  // Experiment: no header bar. The name, its visibility badge and the role pill are gone (the role's switch is the
+  // Editing Mode tool in Tools); Copy, Present, Share and the account float in a card at the top right.
   return zenMode || !appChrome ? null : (
-    <LandscapeBarFold shown={view.landscapeShown}>
-      <AreaErrorBoundary area="Header" fallback="panel">
-        <EditorHeader
-          itemId={documentId}
-          documentName={documentName}
-          hideTitle={anyWelcomeOpen}
-          showShare={canShareDocument && hydrated && !anyWelcomeOpen}
-          shareable={documentShareable}
-          community={headerCommunity}
-          teamDocument={!!documentTeamId}
-          offline={isOffline}
-          // Visitors see "Make a copy" instead of "Share": same slot (a joined
-          // team member is no visitor: the team's documents are theirs to share),
-          // different action. Hidden during the welcome flow so the
-          // first-paint chrome stays minimal, and during hydration so
-          // we don't render the button before we know whether the user
-          // is the owner. A Community visitor gets it from the Community bar instead.
-          onMakeCopy={
-            !canShareDocument && hydrated && !anyWelcomeOpen && documentId && !sessionCommunity
-              ? () => void makeCopy()
-              : undefined
-          }
-          copying={copying}
-          readOnly={isStructureReadOnly}
-          renameNonce={renameDocumentNonce}
-          rolePill={
-            <>
-              <RolePill {...role} />
-              <ApprovalBadge />
-            </>
-          }
-          // docs/specs/012-collaboration/presentation-mode.md "The header's Present button": only
-          // while the deck has a slide to show, on a desktop, once the document is up. Every role.
-          present={
-            hydrated && !anyWelcomeOpen && !isMobileViewport && slideDeck.runnable.length > 0
-              ? {
-                  slideCount: slideDeck.runnable.length,
-                  starting: slideDeck.startingDeck,
-                  onPresent: () => {
-                    track('UI', 'Opened', 'HeaderPresent');
-                    void slideDeck.start();
-                  },
-                }
-              : undefined
-          }
-          onOpenAccount={() => openSettingsOn('account')}
-          onOpenShare={() => {
-            setShareDialogOpen(true);
-            track('UI', 'Opened', 'Share');
-          }}
-          onRename={(next) => {
-            const prev = documentName.trim();
-            // docs/specs/006-document/name-length.md: capped here so the header rename can't outrun the
-            // limit the auto-namer and the Explorer renames both respect.
-            const nextTrim = truncateName(next);
-            nameDocument(nextTrim);
-            if (nextTrim && nextTrim !== prev) track('Document', 'Renamed');
-          }}
-        />
-      </AreaErrorBoundary>
-    </LandscapeBarFold>
+    <AreaErrorBoundary area="Header" fallback="panel">
+      <EditorCornerActions
+        showShare={canShareDocument && hydrated && !anyWelcomeOpen}
+        shareable={documentShareable}
+        // Visitors see "Make a copy" instead of "Share" (a joined team member is no visitor). Hidden during the
+        // welcome flow and hydration; a Community visitor gets it from the Community bar instead.
+        onMakeCopy={
+          !canShareDocument && hydrated && !anyWelcomeOpen && documentId && !sessionCommunity
+            ? () => void makeCopy()
+            : undefined
+        }
+        copying={copying}
+        // docs/specs/012-collaboration/presentation-mode.md "The header's Present button".
+        present={
+          hydrated && !anyWelcomeOpen && !isMobileViewport && slideDeck.runnable.length > 0
+            ? {
+                slideCount: slideDeck.runnable.length,
+                starting: slideDeck.startingDeck,
+                onPresent: () => {
+                  track('UI', 'Opened', 'HeaderPresent');
+                  void slideDeck.start();
+                },
+              }
+            : undefined
+        }
+        onOpenAccount={() => openSettingsOn('account')}
+        onOpenShare={() => {
+          setShareDialogOpen(true);
+          track('UI', 'Opened', 'Share');
+        }}
+      />
+    </AreaErrorBoundary>
   );
 }
 
@@ -135,6 +101,7 @@ export function editorViewFooter(
     isOffline: boolean;
     selectTab: ReturnType<typeof useSelectTab>;
     landscapeShown: boolean;
+    role: ReturnType<typeof useRoleIndicator>;
   },
 ): ReactNode {
   const {
@@ -242,6 +209,13 @@ export function editorViewFooter(
             track('UI', 'Opened', 'Settings');
           }}
           suggestions={ctx.canvasSuggestions}
+          extraTools={[
+            roleToolsItem({
+              ...view.role,
+              canSwitch: !!view.role.onToggle,
+              onPick: ctx.setViewPreview,
+            }),
+          ]}
           onOpenSearch={() => openSearchWithPrefetch(setSearchOpen, loadAllTabs)}
           // Canvas right-click (desktop) + long-press (touch) open the active
           // tab's menu with the canvas sections folded in, rendered by the

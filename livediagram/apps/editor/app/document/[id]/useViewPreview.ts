@@ -25,6 +25,12 @@ export function useViewPreview(sessionRole: ShareRole, onEnterPreview: () => voi
     if (next !== 'edit') onEnterPreview();
     setPreview(next);
   };
+  // Straight to one level (the Tools menu's Role tool), not a step.
+  const setViewPreview = (next: AccessLevel) => {
+    if (!canToggleRole || next === preview) return;
+    if (next !== 'edit') onEnterPreview();
+    setPreview(next);
+  };
   // The level in force: the session's, narrowed by the preview.
   const previewLevel: AccessLevel = canToggleRole ? preview : sessionRole;
   return {
@@ -33,6 +39,7 @@ export function useViewPreview(sessionRole: ShareRole, onEnterPreview: () => voi
     previewLevel,
     canToggleRole,
     toggleViewPreview,
+    setViewPreview,
     canEdit: previewLevel === 'edit',
   };
 }
