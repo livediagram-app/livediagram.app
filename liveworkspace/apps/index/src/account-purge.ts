@@ -233,6 +233,8 @@ function personalStatements(db: Db, person: string): (() => D1PreparedStatement)
     byPerson('approval_people'),
     byPerson('placement_defaults'),
     byPerson('collab_form_reads'),
+    // The guests merged into them (person-aliases.ts): with the account gone, no grant names their keys again.
+    byPerson('person_aliases'),
     // Their Drive mirror's flag (liveworkspace/docs/specs/005-drive/drive.md): accounts tells the service itself.
     byPerson('drive_people'),
     anonymiseAction('assignee'),

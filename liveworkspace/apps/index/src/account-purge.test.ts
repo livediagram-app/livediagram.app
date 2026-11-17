@@ -103,6 +103,15 @@ function arrange() {
     `INSERT INTO placement_defaults (person_id, default_key, folder_id, updated_at) VALUES (?, 'k', 'f-bea', 1)`,
     BEA,
   );
+  // The guests each signed in from (Work Tracker 678).
+  run(
+    `INSERT INTO person_aliases (guest_id, person_id, merged_at) VALUES ('guest_ada', ?, 1)`,
+    ADA,
+  );
+  run(
+    `INSERT INTO person_aliases (guest_id, person_id, merged_at) VALUES ('guest_bea', ?, 1)`,
+    BEA,
+  );
   // A thread on Bea's item that Ada is in and is mentioned in, and one on Ada's own item.
   for (const item of ['bea-1', 'ada-1']) {
     run(
@@ -152,6 +161,7 @@ function mentionsOfAda(): number {
     count('SELECT COUNT(*) AS n FROM shared_with WHERE person_id = ?', ADA) +
     count('SELECT COUNT(*) AS n FROM placement_defaults WHERE person_id = ?', ADA) +
     count('SELECT COUNT(*) AS n FROM collab_thread_people WHERE person_id = ?', ADA) +
+    count('SELECT COUNT(*) AS n FROM person_aliases WHERE person_id = ?', ADA) +
     count(
       'SELECT COUNT(*) AS n FROM collab_actions WHERE assignee_id = ? OR assigner_id = ?',
       ADA,
@@ -270,6 +280,7 @@ describe('POST /internal/purge-person', () => {
     expect(count('SELECT COUNT(*) AS n FROM favourites WHERE person_id = ?', BEA)).toBe(1);
     expect(count('SELECT COUNT(*) AS n FROM opens WHERE person_id = ?', BEA)).toBe(1);
     expect(count('SELECT COUNT(*) AS n FROM placement_defaults WHERE person_id = ?', BEA)).toBe(1);
+    expect(count('SELECT COUNT(*) AS n FROM person_aliases WHERE person_id = ?', BEA)).toBe(1);
     expect(count('SELECT COUNT(*) AS n FROM collab_thread_people WHERE person_id = ?', BEA)).toBe(
       1,
     );
