@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { createBoardViewTool, createPageViewTool, createViewTools } from './view-tool';
+import {
+  createBoardViewTool,
+  createPageViewTool,
+  createViewLiveTool,
+  createViewTools,
+} from './view-tool';
 
 // Everything the tool says: its words and both schemas with their descriptions.
 const wordsOf = (v: { description: string; input: z.ZodType; output: z.ZodType }) =>
@@ -105,5 +110,32 @@ describe('the view tools', () => {
       'Link that opens the plan in the liveplanner editor.',
     );
     expect(wordsOf(viewTab)).not.toMatch(/document/i);
+  });
+
+  // Each product's mcp-server.md "Live updates": a read-only view follows its file too, with no edit answer.
+  it('follows a page or board product live, in its words, with no canEdit', () => {
+    const designLive = createViewLiveTool(design, 'designId');
+    expect([designLive.mcp.tool, designLive.behaviour]).toEqual(['view_live', 'read']);
+    expect(Object.keys(designLive.mcpShapes.input)).toEqual(['designId']);
+    expect(Object.keys(designLive.mcpShapes.output)).toEqual([
+      'designId',
+      'url',
+      'ticket',
+      'expiresAt',
+    ]);
+    expect(designLive.description).toContain('draws the tab again');
+    expect(designLive.description).toContain('use read_design');
+    expect(wordsOf(designLive)).not.toMatch(/document/i);
+    const planLive = createViewLiveTool(planner, 'projectId', { shows: 'board' });
+    expect(Object.keys(planLive.mcpShapes.output)).toEqual([
+      'projectId',
+      'url',
+      'ticket',
+      'expiresAt',
+    ]);
+    expect(planLive.mcp.title).toBe('Follow a plan live in the interactive view');
+    expect(planLive.description).toContain('draws the board again');
+    expect(planLive.description).toContain('To read the cards, use list_items');
+    expect(wordsOf(planLive)).not.toMatch(/document/i);
   });
 });

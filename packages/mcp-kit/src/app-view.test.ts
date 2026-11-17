@@ -36,7 +36,7 @@ type Ldv = {
   ) => { at: number; label: string; name: string; prev: string | null; next: string | null } | null;
   changeOf: (frame: unknown, tabId: string | null, own?: string[]) => 'redraw' | 'trashed' | null;
   retryAfter: (tries: number) => number;
-  stopWords: (why: string) => string;
+  stopWords: (why: string, word?: string) => string;
 };
 
 // The script's pure parts, evaluated as the page would, with no window: the wiring never runs.
@@ -87,9 +87,9 @@ describe('the view resource and the tool meta', () => {
   it('keeps every page self-contained and within its budget', () => {
     const pages = [
       viewerHtml('livediagram'),
-      viewerHtml('livedocuments', { idKey: 'documentId', live: false }),
-      viewerHtml('livedesign', { idKey: 'designId', live: false }),
-      viewerHtml('liveplanner', { idKey: 'projectId', live: false, board: true }),
+      viewerHtml('livedocuments', { idKey: 'documentId' }),
+      viewerHtml('livedesign', { idKey: 'designId', word: 'design' }),
+      viewerHtml('liveplanner', { idKey: 'projectId', board: true, word: 'plan' }),
     ];
     for (const html of pages) {
       expect(new TextEncoder().encode(html).length).toBeLessThan(VIEWER_HTML_BUDGET_BYTES);
@@ -97,7 +97,14 @@ describe('the view resource and the tool meta', () => {
     }
     // The canvas pages carry the pager; the board page draws columns, with none of the canvas's parts.
     expect(pages[1]).toContain('id="pager"');
-    expect(pages[2]).toContain('ID_KEY = "designId", LIVE_ON = false');
+    expect(pages[2]).toContain('ID_KEY = "designId", LIVE_ON = true');
+    expect(pages[2]).toContain('WORD = "design", SHOWS = "tab"');
+    // Every page follows its file live ("Live updates"), the board's too, with the live mark in its header.
+    for (const html of pages)
+      expect(html).toContain('<span id="live" role="status" hidden></span>');
+    expect(pages[3]).toContain('LIVE_ON = true');
+    expect(pages[3]).toContain('WORD = "plan", SHOWS = "board"');
+    expect(pages[3]).toContain('#live[hidden]{display:none}');
     expect(pages[3]).toContain('id="board"');
     expect(pages[3]).not.toContain('id="stage"');
     expect(pages[3]).toContain('ID_KEY = "projectId"');
@@ -265,6 +272,18 @@ describe('the viewer’s pure parts', () => {
     }
     expect(LDV.changeOf(op({ kind: 'document-meta', tabs: [] }), 't1')).toBe('redraw');
     expect(LDV.changeOf(op({ kind: 'document-trashed' }), 't1')).toBe('trashed');
+    // The other products' rooms: a design's and a plan's own meta and Trash ops, a design's photo layers and
+    // component mains, a plan's cards and card types (which name no tab); their presence draws nothing.
+    expect(LDV.changeOf(op({ kind: 'design-meta', tabs: [] }), 't1')).toBe('redraw');
+    expect(LDV.changeOf(op({ kind: 'project-meta', tabs: [] }), 't1')).toBe('redraw');
+    expect(LDV.changeOf(op({ kind: 'design-trashed' }), 't1')).toBe('trashed');
+    expect(LDV.changeOf(op({ kind: 'project-trashed' }), 't1')).toBe('trashed');
+    expect(LDV.changeOf(op({ kind: 'photo', tabId: 't1' }), 't1')).toBe('redraw');
+    expect(LDV.changeOf(op({ kind: 'photo', tabId: 't2' }), 't1')).toBeNull();
+    for (const kind of ['component', 'items', 'item-types'])
+      expect(LDV.changeOf(op({ kind }), 't1'), kind).toBe('redraw');
+    for (const kind of ['plan-presence', 'sheet-presence', 'photo-presence', 'sheets', 'threads'])
+      expect(LDV.changeOf(op({ kind, tabId: 't1' }), 't1'), kind).toBeNull();
     for (const kind of [
       'cursor',
       'laser',
@@ -298,6 +317,8 @@ describe('the viewer’s pure parts', () => {
     expect(LDV.stopWords('trashed')).toBe('This document moved to the Trash.');
     expect(LDV.stopWords('lost')).toContain('connection kept dropping');
     expect(LDV.stopWords('refused')).toBe('Live updates are off for this document.');
+    expect(LDV.stopWords('trashed', 'plan')).toBe('This plan moved to the Trash.');
+    expect(LDV.stopWords('refused', 'design')).toBe('Live updates are off for this design.');
   });
 });
 

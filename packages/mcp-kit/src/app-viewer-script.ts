@@ -2,16 +2,17 @@
 // inlines: plain strings, never a function's source, so no bundler helper leaks into the sandboxed frame. It talks to
 // the host over postMessage JSON-RPC (the io.modelcontextprotocol/ui extension): ui/initialize, then the tool's result
 // arrives as ui/notifications/tool-result; the tab is read with tools/call view_tab and drawn as an <img> of its SVG,
-// so nothing in the SVG runs or fetches. A tab of pages shows one page at a time, with a pager. Where the product's
-// room allows it (livediagram), it follows the document live once drawn ("Live updates"): a view-only ticket from
-// tools/call view_live opens the room's socket, which it only listens on, and a change to the shown tab draws it
-// again. Where the page edits (livediagram, "Edits in the view") and view_live says the token may, an Edit toggle lets
+// so nothing in the SVG runs or fetches. A tab of pages shows one page at a time, with a pager. Every view (the board's
+// too) follows its file live once drawn ("Live updates"): a view-only ticket from tools/call view_live opens the room's
+// socket, which it only listens on, and a change to what it shows draws it again. Where the page edits (livediagram,
+// "Edits in the view") and view_live says the token may, an Edit toggle lets
 // the person rename and move elements, each finished gesture one tools/call view_edit. Its pure parts sit on `LDV`
 // (subjectOf, fitOf, zoomAt, hitTest, elementLink, pagerOf, changeOf, retryAfter, stopWords, nudgeOf, moveOf, stepOf,
 // hintOf) for the tests, which evaluate this text with no window; the wiring runs only in a page.
 //
-// The script is three parts: the pure `LDV`, the host wiring every view shares (`HOST`), and the view's own (the
-// canvas here, with its edit parts when asked, the board in app-viewer-board-script.ts), joined by `viewerScript`.
+// The script is four parts: the pure `LDV`, the host wiring every view shares (`HOST`), live updates (`LIVE`), and the
+// view's own (the canvas here, with its edit parts when asked, the board in app-viewer-board-script.ts), joined by
+// `viewerScript`.
 
 // The pure parts, shared by every view.
 const PURE = String.raw`
@@ -20,8 +21,13 @@ var LDV = (function () {
   // Live updates' numbers (the spec's LIVE_*): one redraw per REDRAW_MS at most, reconnects from MIN_MS doubling to
   // MAX_MS, MAX_ATTEMPTS tries without an open socket, and a fresh ticket RENEW_BEFORE_MS before one lapses.
   var LIVE = { REDRAW_MS: 1500, MIN_MS: 1000, MAX_MS: 30000, MAX_ATTEMPTS: 6, RENEW_BEFORE_MS: 30000 };
-  // The ops that change what a tab shows, or say a change was saved (tab-saved: view_tab now reads it).
-  var CONTENT = { tab: 1, el: 1, 'tab-meta': 1, 'el-delta': 1, vote: 1, qa: 1, changeset: 1, 'tab-saved': 1 };
+  // The ops that change what a view shows, or say a change was saved (tab-saved: view_tab now reads it), in every
+  // product's room: a design's photo layers and component mains, and a plan's cards and card types besides.
+  var CONTENT = { tab: 1, el: 1, 'tab-meta': 1, 'el-delta': 1, vote: 1, qa: 1, changeset: 1, 'tab-saved': 1,
+    photo: 1, component: 1, items: 1, 'item-types': 1 };
+  // A file's tab list changing, and the file going to the Trash, by each product's name for its file.
+  var META = { 'document-meta': 1, 'design-meta': 1, 'project-meta': 1 };
+  var TRASHED = { 'document-trashed': 1, 'design-trashed': 1, 'project-trashed': 1 };
   function num(v) { return typeof v === 'number' && isFinite(v); }
   function str(v) { return typeof v === 'string' && v.length > 0 ? v : null; }
   // The file and tab a tool's result names, whatever the product calls the file: create (documentId, tabIds),
@@ -83,8 +89,8 @@ var LDV = (function () {
   function changeOf(frame, tabId, own) {
     var op = frame && frame.kind === 'op' ? frame.op : null;
     if (!op || typeof op.kind !== 'string') return null;
-    if (op.kind === 'document-trashed') return 'trashed';
-    if (op.kind === 'document-meta') return 'redraw';
+    if (TRASHED[op.kind] === 1) return 'trashed';
+    if (META[op.kind] === 1) return 'redraw';
     if (op.kind === 'changeset' && own && own.indexOf(op.id) >= 0) return null;
     return CONTENT[op.kind] === 1 && (!op.tabId || op.tabId === tabId) ? 'redraw' : null;
   }
@@ -92,10 +98,12 @@ var LDV = (function () {
   function retryAfter(tries) {
     return tries >= LIVE.MAX_ATTEMPTS ? -1 : Math.min(LIVE.MAX_MS, LIVE.MIN_MS * Math.pow(2, tries));
   }
-  function stopWords(why) {
-    if (why === 'trashed') return 'This document moved to the Trash.';
+  // Why live updates stopped, in the product's word for its file (a document, a design, a plan).
+  function stopWords(why, word) {
+    var w = word || 'document';
+    if (why === 'trashed') return 'This ' + w + ' moved to the Trash.';
     if (why === 'lost') return 'Live updates stopped: the connection kept dropping.';
-    return 'Live updates are off for this document.';
+    return 'Live updates are off for this ' + w + '.';
   }
   return { subjectOf: subjectOf, fitOf: fitOf, zoomAt: zoomAt, hitTest: hitTest, elementLink: elementLink, num: num,
     pagerOf: pagerOf, changeOf: changeOf, retryAfter: retryAfter, stopWords: stopWords, LIVE: LIVE };
@@ -181,8 +189,7 @@ const HOST = String.raw`
 const CANVAS = String.raw`
   var stage = $('stage'), img = $('art'), ring = $('ring'), tabsEl = $('tabs'), pagerEl = $('pager');
   var view = { scale: 1, x: 0, y: 0 }, tab = null, subject = null;
-  var dragging = null, pointers = {}, pinch = null, moved = false, lastDraw = 0, liveEl = $('live');
-  var live = { doc: null, off: true };
+  var dragging = null, pointers = {}, pinch = null, moved = false;
   // The edit parts, when the page has them (EDIT below): null on a read-only page.
   var ED = null;
 
@@ -256,8 +263,15 @@ const CANVAS = String.raw`
     if (ED) ED.drawn();
     if (LIVE_ON) follow(documentId);
   }
+  // A live redraw: the shown tab (or page) drawn again, quietly.
+  function quietLoad() { if (subject && tab) load(subject.documentId, subject.tabId, true); }
+`;
 
-  // Live updates: the room tells the view a change landed; view_tab draws it. The socket never sends a frame.
+// Live updates, shared by every view (the canvas and the board): the room tells the view a change landed, and the view
+// draws again through its own `quietLoad`. The socket never sends a frame. The view sets `subject`, `lastDraw` and `ED`
+// (null where it has no edit parts) and calls `follow` once drawn.
+const LIVE = String.raw`
+  var lastDraw = 0, liveEl = $('live'), live = { doc: null, off: true };
   function mark(state, title) {
     liveEl.hidden = false;
     liveEl.dataset.state = state;
@@ -274,7 +288,7 @@ const CANVAS = String.raw`
     // Edits stay while the socket only dropped; a refusal or the Trash ends them, as the server would.
     if (ED && why !== 'lost') ED.allow(false);
     var at = new Date(lastDraw || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    mark('off', LDV.stopWords(why) + ' Showing the tab as drawn at ' + at + '.');
+    mark('off', LDV.stopWords(why, WORD) + ' Showing the ' + SHOWS + ' as drawn at ' + at + '.');
   }
   function follow(documentId) {
     if (live.doc === documentId) return;
@@ -285,7 +299,7 @@ const CANVAS = String.raw`
   function redraw() {
     // A drag, a rename or a save in progress keeps its picture until it ends.
     if (ED && ED.busy()) { live.redraw = setTimeout(function () { live.redraw = 0; redraw(); }, 300); return; }
-    if (subject && tab) load(subject.documentId, subject.tabId, true);
+    quietLoad();
   }
   function schedule() {
     if (live.redraw) return;
@@ -295,7 +309,7 @@ const CANVAS = String.raw`
     live.again = true;
     var wait = LDV.retryAfter(live.tries++);
     if (wait < 0) return stop('lost');
-    mark('wait', 'Reconnecting to the document…');
+    mark('wait', 'Reconnecting to the ' + WORD + '…');
     live.timer = setTimeout(connect, wait);
   }
   function connect() {
@@ -314,7 +328,7 @@ const CANVAS = String.raw`
       live.ws = ws;
       ws.onopen = function () {
         live.tries = 0;
-        mark('live', 'Live: this view follows the document as people change it.');
+        mark('live', 'Live: this view follows the ' + WORD + ' as people change it.');
         if (live.again) redraw();
         live.again = false;
         live.renew = setTimeout(function () { live.again = true; drop(); connect(); },
@@ -339,7 +353,10 @@ const CANVAS = String.raw`
     if (document.hidden) { drop(); live.again = true; }
     else if (!live.ws) connect();
   });
+`;
 
+// The canvas view's input: wheel and pinch zoom, drag to pan, a click through to the editor, and the keyboard.
+const CANVAS_INPUT = String.raw`
   stage.addEventListener('wheel', function (e) {
     e.preventDefault();
     var r = stage.getBoundingClientRect();
@@ -670,18 +687,29 @@ const CANVAS_START = String.raw`
 export type ViewerScriptOptions = {
   // The argument naming the file in view_tab and view_live: documentId (the default), designId, projectId.
   idKey?: string;
-  // Follow the room once drawn (view_live): livediagram's, whose api mints a view-only ticket. Default true.
+  // Follow the room once drawn (view_live): every product's api mints a view-only ticket. Default true.
   live?: boolean;
   // The edit parts ("Edits in the view"): livediagram's, offered only when view_live says the token may. Default false.
   edits?: boolean;
+  // The product's word for its file, in the live mark's titles: document (the default), design, plan.
+  word?: string;
 };
 
-// The page's constants, as the script reads them: the app's name, its id key, whether it follows live, and what it
-// says when the host never starts it. JSON-quoted, so a name never breaks out of its string.
-function constants(app: string, idKey: string, live: boolean, failedStart: string): string {
+// The page's constants, as the script reads them: the app's name, its id key, whether it follows live, what it says
+// when the host never starts it, its word for its file and what it shows (a tab, a board). JSON-quoted, so a name
+// never breaks out of its string.
+function constants(
+  app: string,
+  idKey: string,
+  live: boolean,
+  failedStart: string,
+  word: string,
+  shows: string,
+): string {
   return (
     `var APP = ${JSON.stringify(app)}, ID_KEY = ${JSON.stringify(idKey)}, LIVE_ON = ${live}, ` +
-    `FAILED_START = ${JSON.stringify(failedStart)};`
+    `FAILED_START = ${JSON.stringify(failedStart)}, WORD = ${JSON.stringify(word)}, ` +
+    `SHOWS = ${JSON.stringify(shows)};`
   );
 }
 
@@ -709,16 +737,28 @@ export function viewerScript(app: string, opts: ViewerScriptOptions = {}): strin
     opts.idKey ?? 'documentId',
     opts.live ?? true,
     'This chat could not start the view. The picture in the chat still holds it.',
+    opts.word ?? 'document',
+    'tab',
   );
   return opts.edits
-    ? joinViewerScript(CANVAS + EDIT + CANVAS_START, consts, EDIT_PURE)
-    : joinViewerScript(CANVAS + CANVAS_START, consts);
+    ? joinViewerScript(CANVAS + LIVE + CANVAS_INPUT + EDIT + CANVAS_START, consts, EDIT_PURE)
+    : joinViewerScript(CANVAS + LIVE + CANVAS_INPUT + CANVAS_START, consts);
 }
 
-/** The board view's constants: no live updates, and no picture to fall back on. */
-export function boardConstants(app: string, idKey: string): string {
-  return constants(app, idKey, false, 'This chat could not start the view.');
+/** The board view's constants: no picture to fall back on, and live updates as the page asks. */
+export function boardConstants(app: string, opts: ViewerScriptOptions = {}): string {
+  return constants(
+    app,
+    opts.idKey ?? 'documentId',
+    opts.live ?? true,
+    'This chat could not start the view.',
+    opts.word ?? 'document',
+    'board',
+  );
 }
+
+/** Live updates' wiring, for a view of its own (the board) to join after its parts. */
+export const LIVE_SCRIPT = LIVE;
 
 // livediagram's canvas script, as the tests run it.
 export const VIEWER_SCRIPT = viewerScript('livediagram');
