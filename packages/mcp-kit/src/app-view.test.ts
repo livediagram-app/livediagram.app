@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import {
+  VIEWER_EDIT_HTML_BUDGET_BYTES,
   VIEWER_HTML_BUDGET_BYTES,
   VIEW_MIME_TYPE,
   appOnlyToolMeta,
@@ -10,7 +11,7 @@ import {
   viewResourceMeta,
   viewerHtml,
 } from './app-view';
-import { VIEWER_SCRIPT, viewerScript } from './app-viewer-script';
+import { VIEWER_SCRIPT, compactScript, viewerScript } from './app-viewer-script';
 
 // docs/specs/015-api/mcp-server.md "Interactive view (MCP Apps)": the ui:// resource, the tool meta that links it,
 // and the viewer page with its pure parts.
@@ -33,7 +34,7 @@ type Ldv = {
     pages: unknown,
     pageId: string | null,
   ) => { at: number; label: string; name: string; prev: string | null; next: string | null } | null;
-  changeOf: (frame: unknown, tabId: string | null) => 'redraw' | 'trashed' | null;
+  changeOf: (frame: unknown, tabId: string | null, own?: string[]) => 'redraw' | 'trashed' | null;
   retryAfter: (tries: number) => number;
   stopWords: (why: string) => string;
 };
@@ -100,6 +101,29 @@ describe('the view resource and the tool meta', () => {
     expect(pages[3]).toContain('id="board"');
     expect(pages[3]).not.toContain('id="stage"');
     expect(pages[3]).toContain('ID_KEY = "projectId"');
+    expect(viewerHtml('liveplanner', { board: true })).toContain('ID_KEY = "documentId"');
+    // None of them carries the edit parts ("Edits in the view").
+    for (const html of pages) expect(html).not.toMatch(/id="edit"|view_edit|nudgeOf/);
+  });
+
+  it('keeps the page with the edit parts self-contained and within its own budget', () => {
+    const html = viewerHtml('livediagram', { edits: true });
+    expect(new TextEncoder().encode(html).length).toBeLessThan(VIEWER_EDIT_HTML_BUDGET_BYTES);
+    expect(html).not.toMatch(/<script[^>]+src=|<link[^>]+href=|https?:\/\//);
+    expect(html).toContain(
+      '<button class="tool" id="edit" type="button" aria-pressed="false" hidden>',
+    );
+    expect(html).toContain('id="name-box"');
+    for (const id of ['edit', 'save', 'sel', 'bar', 'name-box'])
+      expect(html).toContain(`#${id}[hidden]`);
+  });
+
+  it('ships the script without indentation, blank lines or comment lines', () => {
+    expect(compactScript('  var a = 1;\n\n  // why\n    b();  ')).toBe('var a = 1;\nb();');
+    for (const line of viewerScript('livediagram', { edits: true }).split('\n')) {
+      expect(line).toBe(line.trim());
+      expect(line.startsWith('//')).toBe(false);
+    }
   });
 
   it('passes the viewer’s options from the resource to the page', async () => {
@@ -259,6 +283,11 @@ describe('the viewer’s pure parts', () => {
     expect(LDV.changeOf({ kind: 'op', op: null }, 't1')).toBeNull();
     expect(LDV.changeOf({ kind: 'op', op: { kind: 3 } }, 't1')).toBeNull();
     expect(LDV.changeOf(null, 't1')).toBeNull();
+    // The view's own edit, drawn from view_edit's answer, draws nothing more; anyone else's does.
+    const cs = (id: string) => op({ kind: 'changeset', tabId: 't1', id });
+    expect(LDV.changeOf(cs('cs1'), 't1', ['cs1'])).toBeNull();
+    expect(LDV.changeOf(cs('cs2'), 't1', ['cs1'])).toBe('redraw');
+    expect(LDV.changeOf(cs('cs1'), 't1', null as unknown as string[])).toBe('redraw');
   });
 
   it('backs off from one second, doubling to thirty, then stops after six tries', () => {
@@ -270,5 +299,55 @@ describe('the viewer’s pure parts', () => {
     expect(LDV.stopWords('trashed')).toBe('This document moved to the Trash.');
     expect(LDV.stopWords('lost')).toContain('connection kept dropping');
     expect(LDV.stopWords('refused')).toBe('Live updates are off for this document.');
+  });
+});
+
+// docs/specs/015-api/mcp-server.md "Edits in the view": the edit parts' pure parts, on a page that edits.
+type EditLdv = {
+  NUDGE_SETTLE_MS: number;
+  OWN_MAX: number;
+  nudgeOf: (key: string, fine: boolean) => [number, number] | null;
+  moveOf: (dx: number, dy: number, scale: number) => [number, number];
+  stepOf: (els: { id: string }[], id: string | null, back: boolean) => number;
+  hintOf: (el: { canMove: boolean; canRename: boolean }) => string;
+};
+// oxlint-disable-next-line typescript/no-implied-eval, typescript/no-unsafe-call -- runs the page's own script, as the frame does
+const EDIT_LDV = new Function(
+  'window',
+  `${viewerScript('livediagram', { edits: true })}; return LDV;`,
+)(undefined) as EditLdv;
+
+describe('the edit parts’ pure parts', () => {
+  it('nudges ten pixels by an arrow key, one with Shift, and nothing for other keys', () => {
+    expect(EDIT_LDV.nudgeOf('ArrowLeft', false)).toEqual([-10, 0]);
+    expect(EDIT_LDV.nudgeOf('ArrowRight', true)).toEqual([1, 0]);
+    expect(EDIT_LDV.nudgeOf('ArrowUp', false)).toEqual([0, -10]);
+    expect(EDIT_LDV.nudgeOf('ArrowDown', true)).toEqual([0, 1]);
+    expect(EDIT_LDV.nudgeOf('Enter', false)).toBeNull();
+    expect(EDIT_LDV.NUDGE_SETTLE_MS).toBe(400);
+  });
+
+  it('turns a drag on screen into whole pixels of the tab', () => {
+    expect(EDIT_LDV.moveOf(30, -15, 0.5)).toEqual([60, -30]);
+    expect(EDIT_LDV.moveOf(3, 1, 2)).toEqual([2, 1]);
+    expect(EDIT_LDV.moveOf(-0.2, 0.2, 1)).toEqual([0, 0]);
+  });
+
+  it('steps the selection through the elements, and off either end', () => {
+    const els = [{ id: 'a' }, { id: 'b' }, { id: 'c' }];
+    expect(EDIT_LDV.stepOf(els, null, false)).toBe(0);
+    expect(EDIT_LDV.stepOf(els, null, true)).toBe(2);
+    expect(EDIT_LDV.stepOf(els, 'a', false)).toBe(1);
+    expect(EDIT_LDV.stepOf(els, 'b', true)).toBe(0);
+    expect(EDIT_LDV.stepOf(els, 'c', false)).toBe(-1);
+    expect(EDIT_LDV.stepOf(els, 'a', true)).toBe(-1);
+    expect(EDIT_LDV.stepOf([], null, false)).toBe(-1);
+  });
+
+  it('says what an element allows', () => {
+    expect(EDIT_LDV.hintOf({ canMove: true, canRename: true })).toBe('Drag to move');
+    expect(EDIT_LDV.hintOf({ canMove: true, canRename: false })).toBe('Drag to move');
+    expect(EDIT_LDV.hintOf({ canMove: false, canRename: true })).toBe('Move it in the editor');
+    expect(EDIT_LDV.hintOf({ canMove: false, canRename: false })).toBe('Locked');
   });
 });

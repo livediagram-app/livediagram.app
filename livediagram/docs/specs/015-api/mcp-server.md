@@ -1443,9 +1443,10 @@ cards, each from the same shared viewer (their mcp-server.md "Interactive view (
 
 - **The view resource.** The server lists `ui://livediagram/view.html` (`text/html;profile=mcp-app`), one
   self-contained page with its script and styles inline: the shared viewer (`@liveworkspace/mcp-kit/app-view`,
-  `viewerHtml(app, { edits: true })`, about 28 KB with live updates and in-view edits), its size held under
-  `VIEWER_EDIT_HTML_BUDGET_BYTES` (32 KB) by a test; a page without edits (the other products') stays under
-  `VIEWER_HTML_BUDGET_BYTES` (24 KB), the edit parts left out of it. The SVG is
+  `viewerHtml(app, { edits: true })`, about 29 KB with live updates and in-view edits), its size held under
+  `VIEWER_EDIT_HTML_BUDGET_BYTES` (32 KB) by a test; a page without edits (the other products', about 20 KB) stays
+  under `VIEWER_HTML_BUDGET_BYTES` (24 KB), the edit parts left out of it. The script ships without indentation,
+  blank lines or comment lines (`compactScript`). The SVG is
   drawn as an image, so nothing in it fetches: its `_meta.ui.csp` allows one connection only, the WebSocket to
   this deployment's own api (`connectDomains: ["wss://<editor host>"]`, from `CONSENT_BASE_URL`), no resource
   domains, and it asks for a border.
@@ -1537,11 +1538,13 @@ cards, each from the same shared viewer (their mcp-server.md "Interactive view (
     the pointer, dashed, and the drop sends one `view_edit`); dragging empty space still pans and a pinch still
     zooms. Double-click, Enter or F2 renames in a box over the element (Enter saves, Escape cancels, leaving
     it saves). With an element selected the arrow keys nudge it 10 px (Shift: 1 px), sent once the keys rest
-    (`EDIT_NUDGE_SETTLE_MS`, 400 ms) as one move; Tab and Shift+Tab step the selection through the elements;
-    Escape clears it, then leaves Edit. An element the view may not change says why in its bar (**Locked**,
-    **Moves with its host**), its controls disabled. While a save is out the header says **Saving…**; a
+    (`NUDGE_SETTLE_MS`, 400 ms) as one move; Tab and Shift+Tab step the selection through the elements (past
+    either end the selection clears and focus moves on as usual); Escape clears it, then leaves Edit. The bar
+    says what the element allows: **Drag to move**, **Move it in the editor** (a badge or its host), or
+    **Locked**; Rename is disabled, with a title saying why, where a rename is not offered. A screen reader
+    hears the selection and its keys. While a save is out the header says **Saving…**, then **Saved**; a
     refusal says the api's reason in the note and the tab is drawn again as stored. A live redraw waits for a
-    drag or a rename in progress to finish.
+    drag, a nudge, a rename or a save in progress to finish.
   - **Batched.** One `view_edit` per finished gesture (a drop, a saved rename, a run of nudges), never per
     pointer move, carrying up to `VIEW_EDIT_MAX` (20) edits; its answer is the tab drawn again (`view_tab`'s
     output with the `changesetId`), so the view redraws once without a second call, and the room's relay of
