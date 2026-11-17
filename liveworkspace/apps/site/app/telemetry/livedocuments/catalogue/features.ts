@@ -795,6 +795,16 @@ export const LOOKS_FILTERED = chart(
   { types: ['LooksFinishFilter', 'LooksSeasonal'], rising: 'neutral' },
 );
 
+// A template's example content cleared or kept (docs/specs/006-document/template-examples.md, Work Tracker 1181):
+// how often people start a template fresh rather than over its examples.
+export const TEMPLATE_EXAMPLES = chart(
+  'Template',
+  'Changed',
+  'Template Examples',
+  "A template's example content cleared (Clear Example Content) or kept as the person's own (Keep It).",
+  { types: ['ExampleCleared', 'ExampleKept'], rising: 'neutral' },
+);
+
 export const LOOK_AND_FEEL: MetricStack = {
   stack: true,
   title: 'Look & Feel',
@@ -802,6 +812,7 @@ export const LOOK_AND_FEEL: MetricStack = {
     'The visual presets people reach for: templates, themes and canvas styles. Headed by themes and canvas styles picked: a template also applies its theme, so adding templates would count that pick twice.',
   members: [
     TEMPLATES_USED,
+    TEMPLATE_EXAMPLES,
     THEMES_CHOSEN,
     CANVAS_STYLES_PICKED,
     CANVAS_CONTROLS_TWEAKED,

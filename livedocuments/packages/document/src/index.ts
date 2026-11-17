@@ -250,6 +250,7 @@ export * from './quote';
 export * from './element-images';
 export * from './table-marks';
 export * from './colors';
+export * from './template-example';
 export * from './cell-colours';
 export * from './table-header-colours';
 export * from './progress-colours';

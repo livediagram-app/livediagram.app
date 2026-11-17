@@ -220,6 +220,12 @@ shape kinds, its fields. Code that reads elements the same way in two or more pr
   livedesign bind it, livediagram keeps UML). The rewrite itself, role by role over a retired theme frozen as it
   shipped, is `element-model/retired-themes`; a product with a theme engine of its own (livehuddle) binds it with its
   own halves and colour fields, and a product's own retired themes (Autumn, Jewel) join the table beside UML.
+- A template's example content is one module too (`element-model/template-example`, Work Tracker 1181): what counts
+  as an example value (a sticky's text, a checklist's rows and ticks, a table's body cells, a chart's numbers), the
+  fingerprint a person-picked template marks each such element with, and Clear Example Content and Keep It over a
+  tab. livediagram, livedocuments and livedesign bind it in their model package's index, and their editors mount the
+  one tray `@liveworkspace/workbench` keeps for it (`TemplateExampleTray`). The detail is in
+  [blueprints/template-examples.md](blueprints/template-examples.md).
 - A shared module over a product's own record (a comment, a table cell's style) is generic over it, naming only the
   fields it reads (`threadWithComment<C extends { id: string }>`, the table helpers over `TableGrid`), so each product
   keeps its own types and gets them back.

@@ -238,6 +238,7 @@ export * from './quick-swatches';
 export * from './quick-swatch-rederive';
 export * from './web-components';
 export * from './colors';
+export * from './template-example';
 export * from './cell-colours';
 export * from './table-header-colours';
 export * from './progress-colours';

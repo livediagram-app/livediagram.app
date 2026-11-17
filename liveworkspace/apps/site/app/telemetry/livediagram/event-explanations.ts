@@ -313,6 +313,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone changed where a boundary shows its title: in a tab on its edge, inside its corner, or C4's bottom-left.",
   'Element|Changed|TabWindowTab':
     'Someone chose which tab a Tab Window shows, so a slide or page shows that tab live.',
+  'Template|Changed|ExampleCleared':
+    'Someone pressed Clear Example Content, emptying the example values a template landed with and keeping its elements.',
+  'Template|Changed|ExampleKept':
+    "Someone pressed Keep It on a template's example content, keeping its values as their own.",
   'UI|Used|TabWindowOpen':
     'Someone opened the tab a Tab Window shows, from the window or its menu.',
   'Element|Changed|BoundaryMeta':
@@ -2707,6 +2711,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Tab|Aligned':
     "Someone tidied a tab's layout with Auto Layout, arranging its elements automatically.",
   'Tab|Changed': "Someone changed a tab-wide setting, such as the tab's default font or text size.",
+  'Template|Changed': 'Someone cleared or kept the example content a template landed with.',
   'Tab|Cleared': "A tab's content was wiped.",
   'Tab|Created': 'A new tab was added to a document.',
   'Tab|Deleted': 'A tab was removed from a document.',

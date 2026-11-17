@@ -8,8 +8,11 @@
 // and the caller draws its usual top-centre pill instead.
 import { useEffect, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
+import { lucideGlyph } from '@liveworkspace/ui';
+import { lucideSparkles } from '@liveworkspace/icons/lucide';
 import { EDITOR_VIEWPORT_ATTR } from '../../lib/editor-viewport';
 import { watchMove } from '../../lib/watch-move';
+import { useViewportHeight } from '../../hooks/ui/useViewportHeight';
 
 // The strip's card: the Palette in the Toolbar layout (ToolbarPalette's `data-tour-id="palette"` card).
 const STRIP_CARD = '[data-toolbar-palette] [data-tour-id="palette"]';
@@ -33,6 +36,21 @@ export function traySlot(box: StripBox, viewportWidth: number): { left: number; 
   if (width === box.width) return { left: box.left, width };
   const centred = box.left + box.width / 2 - width / 2;
   return { left: Math.max(8, Math.min(centred, viewportWidth - 8 - width)), width };
+}
+
+// A top-centre pill's room from the dock it stands clear of, px.
+const DOCK_GAP = 10;
+
+/** Where a top-centre pill goes without a strip: under a dock (livediagram's Draw dock) in the top half of the
+ *  screen, over one in the bottom half, and with no dock, below the top chrome. */
+export function pillPlace(
+  dock: { top: number; bottom: number } | null,
+  viewportHeight: number,
+): { top: number } | { bottom: number } {
+  if (!dock) return { top: 80 };
+  return dock.top < viewportHeight / 2
+    ? { top: dock.bottom + DOCK_GAP }
+    : { bottom: viewportHeight - dock.top + DOCK_GAP };
 }
 
 export type StripBox = { left: number; width: number; bottom: number; top: number };
@@ -118,18 +136,34 @@ export function useToolbarBox(selector: string, active = true): StripBox | null 
   return box;
 }
 
-// A small text action at the tray's end (Cancel, Done).
-export function PaletteTrayAction({ label, onAction }: { label: string; onAction: () => void }) {
+// A small text action at the tray's end (Cancel, Done). `brand` marks the one a standing message offers first
+// (Clear Example Content), in the brand's ink.
+export function PaletteTrayAction({
+  label,
+  onAction,
+  tone = 'quiet',
+}: {
+  label: string;
+  onAction: () => void;
+  tone?: 'quiet' | 'brand';
+}) {
   return (
     <button
       type="button"
       onClick={onAction}
-      className="shrink-0 cursor-pointer rounded-md px-2 py-1 text-[12px] font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+      className={`shrink-0 cursor-pointer whitespace-nowrap rounded-md px-2 py-1 text-[12px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${TRAY_ACTION_TONES[tone]}`}
     >
       {label}
     </button>
   );
 }
+
+const TRAY_ACTION_TONES = {
+  quiet:
+    'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white',
+  brand:
+    'text-brand-700 hover:bg-brand-50 hover:text-brand-800 dark:text-brand-300 dark:hover:bg-brand-500/15 dark:hover:text-brand-200',
+} as const;
 
 // Where the tray goes on the page: in the editor's own box, beside the strip, so it stacks with the editor's
 // chrome. On the body it stood above the editor's whole stacking context, the header's popovers (who can see
@@ -176,24 +210,89 @@ export function PaletteTray({
         top: box.bottom + PALETTE_TRAY_GAP_PX - host.dy,
       }}
     >
-      <div
-        // Floating UI: the canvas's capture-phase pointerdown leaves its presses alone (as TopCenterBanner).
-        data-floating-panel=""
-        data-palette-tray=""
-        {...(standing ? { 'data-yields-to-mode': '' } : { 'data-mode-message': '' })}
-        role="status"
-        className="pointer-events-auto flex min-w-0 max-w-full animate-fade-in items-center gap-2 rounded-xl border border-slate-200 bg-white py-1 pl-3 pr-1 text-[13px] text-slate-700 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:shadow-slate-950/40"
-        onPointerDown={(e) => e.stopPropagation()}
-      >
-        <span className="flex shrink-0 items-center text-brand-700 dark:text-brand-300">
-          {lead}
-        </span>
-        {/* A phone-width tray wraps a long message to a second line rather than cutting off the name it gives
-            ("Click to drop or drag to draw Squ…"). */}
-        <span className="min-w-0 max-sm:line-clamp-2 sm:truncate">{children}</span>
-        {end ? <span className="flex shrink-0 items-center gap-1">{end}</span> : null}
-      </div>
+      <PaletteTrayCard lead={lead} end={end} standing={standing}>
+        {children}
+      </PaletteTrayCard>
     </div>,
     host.node,
+  );
+}
+
+// The tray's card: the strip's own surface, its lead glyph, the message and the actions at its end.
+function PaletteTrayCard({
+  lead,
+  children,
+  end,
+  standing,
+}: {
+  lead: ReactNode;
+  children: ReactNode;
+  end?: ReactNode;
+  standing: boolean;
+}) {
+  return (
+    <div
+      // Floating UI: the canvas's capture-phase pointerdown leaves its presses alone (as TopCenterBanner).
+      data-floating-panel=""
+      data-palette-tray=""
+      {...(standing ? { 'data-yields-to-mode': '' } : { 'data-mode-message': '' })}
+      role="status"
+      className="pointer-events-auto flex min-w-0 max-w-full animate-fade-in items-center gap-2 rounded-xl border border-slate-200 bg-white py-1 pl-3 pr-1 text-[13px] text-slate-700 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:shadow-slate-950/40"
+      onPointerDown={(e) => e.stopPropagation()}
+    >
+      <span className="flex shrink-0 items-center text-brand-700 dark:text-brand-300">{lead}</span>
+      {/* A phone-width tray wraps a long message to a second line rather than cutting off the name it gives
+          ("Click to drop or drag to draw Squ…"). */}
+      <span className="min-w-0 max-sm:line-clamp-2 sm:truncate">{children}</span>
+      {end ? <span className="flex shrink-0 items-center gap-1">{end}</span> : null}
+    </div>
+  );
+}
+
+const SparklesGlyph = lucideGlyph(lucideSparkles, 15);
+
+/**
+ * A template's example content (liveworkspace/docs/specs/002-architecture/blueprints/template-examples.md): while
+ * the open tab still holds example values a template landed with, an Editor's palette tray says so, with Clear
+ * Example Content and Keep It, as liveplanner's board says it of its example cards. A standing message: it steps
+ * aside while a mode's message takes the slot. Without a strip on screen (the floating palette, Draw's dock) it is
+ * the same card at the top centre. The editors mount it and own both actions (one undo step each).
+ */
+export function TemplateExampleTray({
+  onClear,
+  onKeep,
+}: {
+  onClear: () => void;
+  onKeep: () => void;
+}) {
+  const strip = usePaletteStripBox();
+  // Without a strip, Draw's dock: the pill stands just clear of it rather than over its tools.
+  const dock = useToolbarBox('[data-whiteboard-dock]', !strip);
+  const viewportHeight = useViewportHeight();
+  const lead = <SparklesGlyph />;
+  const end = (
+    <>
+      <PaletteTrayAction tone="brand" label="Clear Example Content" onAction={onClear} />
+      <PaletteTrayAction label="Keep It" onAction={onKeep} />
+    </>
+  );
+  // On a phone the strip's width holds only the two actions, so the sentence is for screen readers there.
+  const message = <span className="max-sm:sr-only">Example content shows how this works.</span>;
+  if (strip)
+    return (
+      <PaletteTray box={strip} standing lead={lead} end={end}>
+        {message}
+      </PaletteTray>
+    );
+  return (
+    <div
+      data-template-example-pill=""
+      className="pointer-events-none fixed inset-x-0 z-[var(--z-chrome)] flex justify-center px-4 [body[data-explorer-open]_&]:hidden"
+      style={pillPlace(dock, viewportHeight)}
+    >
+      <PaletteTrayCard lead={lead} end={end} standing>
+        {message}
+      </PaletteTrayCard>
+    </div>
   );
 }

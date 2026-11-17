@@ -8,6 +8,7 @@ import { EmptyCanvasBanner } from '@/components/canvas/EmptyCanvasBanner';
 import { track } from '@/lib/telemetry';
 import { showsEmptyCanvasCard } from '@/components/canvas/empty-canvas-card';
 import { StartAgainTray } from '@/components/start/StartAgainTray';
+import { ExampleContentTray } from '@/components/start/ExampleContentTray';
 import { StartViewTransition } from '@liveworkspace/workbench/components/start/StartViewTransition';
 import { templateStartMode } from '@/components/start/template-start-mode';
 import { useTemplatePickMove } from '@/components/start/useTemplatePickMove';
@@ -112,6 +113,8 @@ export function EditorStartPanels() {
           />
         ) : null}
       </StartViewTransition>
+      {/* A template's example content, once it has landed: Clear Example Content or Keep It. */}
+      <ExampleContentTray />
     </>
   );
 }

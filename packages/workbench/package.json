@@ -499,6 +499,7 @@
     "./lib/explorer-href": "./src/lib/explorer-href.ts",
     "./lib/explorer-teams-host": "./src/lib/explorer-teams-host.ts",
     "./lib/fit-clear-of-panel": "./src/lib/fit-clear-of-panel.ts",
+    "./lib/top-strip-inset": "./src/lib/top-strip-inset.ts",
     "./lib/fill-choice": "./src/lib/fill-choice.ts",
     "./lib/fits-on-screen": "./src/lib/fits-on-screen.ts",
     "./lib/focus-is-free": "./src/lib/focus-is-free.ts",

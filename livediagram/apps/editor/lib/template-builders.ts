@@ -7,7 +7,7 @@
 // /live/new imports it statically since it's the template-creation
 // page by definition.
 
-import { type Tab } from '@livediagram/document';
+import { markTemplateExamples, type Tab } from '@livediagram/document';
 import { buildTemplate, templateCanvasOverrides, type TemplateKind } from '@livediagram/templates';
 import { getTheme, recolourElementsForTheme } from './themes';
 
@@ -30,7 +30,8 @@ export function buildTemplatedTab(
   // Graph-aware recolour so multi-colour themes (docs/specs/011-theme/multicolour-themes.md) can tint each
   // branch of the scaffold a distinct hue; single-colour themes fall
   // straight through to the per-element transform.
-  const elements = recolourElementsForTheme(buildTemplate(kind, 0, 0), theme);
+  // Its example values marked as they land (docs/specs/006-document/template-examples.md).
+  const elements = markTemplateExamples(recolourElementsForTheme(buildTemplate(kind, 0, 0), theme));
   return {
     id: tabId,
     name: tabName,
