@@ -422,6 +422,21 @@ Migrations, in order:
 - `0004_form_codes.sql`
 - `0005_drive_people.sql`
 - `0006_person_app_merges_legacy.sql`
+- `0007_use_days_opens.sql`
+- `0008_webhooks.sql`
+- `0009_items_livehuddle.sql`
+- `0010_connections.sql`
+- `0011_team_audit.sql`
+- `0012_webhook_app_events.sql`
+- `0013_livediagram_mode_defaults.sql`
+- `0014_document_webhooks.sql`
+- `0015_archived.sql`
+- `0016_items_new.sql`
+- `0017_events.sql`
+- `0018_calendar_feeds.sql`
+- `0019_approvals.sql`
+- `0020_thread_mentioned_by.sql`
+- `0021_person_aliases.sql`
 
 | Table                  | Columns                                                                                                                                                                                                                                                                 | Created in                                       |
 | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
