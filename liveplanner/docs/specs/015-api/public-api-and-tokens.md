@@ -146,7 +146,9 @@ token to `GET`/`HEAD`; the api worker rejects every write it presents at a
 single dispatch choke point with `403 read_only_token`
 ([MCP server §4.11](mcp-server.md)). The same choke point refuses it the one read that is a
 credential rather than content: `GET /api/projects/:id/share`, whose links and password would let it
-open an edit link. Read-only tokens are minted through the MCP
+open an edit link. One `POST` passes it, because it writes nothing and admits only a watcher:
+`POST /api/projects/:id/room-ticket?cap=view`, the view-only room ticket the MCP server's interactive view
+follows a plan with ([MCP server §5a](mcp-server.md)). Read-only tokens are minted through the MCP
 consent screen (a "read-only access" checkbox), giving a cautious user a way to
 let an AI tool VIEW their projects without granting edit. There is still no
 finer-grained scope vocabulary (per-resource, per-verb); that remains deferred
