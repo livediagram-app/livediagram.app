@@ -134,6 +134,7 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   // planning and the interview synthesis are sticky-note boards on the dot grid.
   'c4-context': 'graph',
   'c4-container': 'graph',
+  'c4-component': 'graph',
   'architecture-decision-record': 'graph',
   'sprint-planning': 'grid',
   'interview-synthesis': 'grid',

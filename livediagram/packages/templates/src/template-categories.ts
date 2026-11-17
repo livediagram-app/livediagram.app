@@ -216,6 +216,7 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'incident-postmortem': 'software',
   'c4-context': 'software',
   'c4-container': 'software',
+  'c4-component': 'software',
   'architecture-decision-record': 'software',
   // Strategy: where the business stands and where it goes.
   swot: 'strategy',

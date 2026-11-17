@@ -18,6 +18,7 @@ export { isUntitledDocumentName, UNTITLED_DOCUMENT_NAME } from './legacy-untitle
 export * from './template-layers';
 export { buildTemplate } from './build-template';
 export { templateFamilyOf } from './template-families';
+export { linkC4Levels } from './c4-levels';
 export * from './template-tab';
 export * from './template-slides';
 export * from './template-slides-data';

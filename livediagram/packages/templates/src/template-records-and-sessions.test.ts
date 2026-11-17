@@ -22,6 +22,7 @@ const text = (els: Element[]) => els.map((e) => ('label' in e ? (e.label ?? '') 
 const NEW: readonly [TemplateKind, string, string][] = [
   ['c4-context', 'C4 System Context', 'software'],
   ['c4-container', 'C4 Container Diagram', 'software'],
+  ['c4-component', 'C4 Component Diagram', 'software'],
   ['architecture-decision-record', 'Architecture Decision Record', 'software'],
   ['sprint-planning', 'Sprint Planning', 'planning'],
   ['interview-synthesis', 'Interview Synthesis', 'product'],
@@ -60,6 +61,31 @@ describe('the C4 diagrams', () => {
     const types = shapes(els, 'card').map((c) => c.pageSubtitle);
     expect(types).toEqual(expect.arrayContaining(['React Native', 'Node.js', 'Go']));
     expect(arrows(els).filter((a) => a.flow === 'dots').length).toBeGreaterThanOrEqual(3);
+    // The boundary is drawn the C4 way: its name and type at its foot.
+    expect(shapes(els, 'boundary')[0]).toMatchObject({
+      boundaryStyle: 'c4',
+      label: 'Plateful Ordering Platform',
+    });
+  });
+
+  it('opens the Order service into components inside its container boundary, with the C4 key', () => {
+    const els = buildTemplate('c4-component', 0, 0);
+    const [boundary] = shapes(els, 'boundary');
+    expect(boundary).toMatchObject({ boundaryStyle: 'c4', label: 'Order service' });
+    const components = shapes(els, 'card').filter((c) => c.fillColor === C4.component.fill);
+    expect(components).toHaveLength(6);
+    // Every component says what it does and what it is built with, and sits inside the boundary.
+    for (const c of components) {
+      expect(c.label, c.pageTitle).toBeTruthy();
+      expect(c.pageSubtitle, c.pageTitle).toBeTruthy();
+      expect(c.x).toBeGreaterThanOrEqual(boundary!.x);
+      expect(c.x + c.width).toBeLessThanOrEqual(boundary!.x + boundary!.width);
+      expect(c.y).toBeGreaterThanOrEqual(boundary!.y);
+      expect(c.y + c.height).toBeLessThanOrEqual(boundary!.y + boundary!.height);
+    }
+    expect(shapes(els, 'cylinder')).toHaveLength(2);
+    for (const a of arrows(els)) expect(a.label, a.id).toBeTruthy();
+    expect(text(els)).toMatch(/Key/);
   });
 });
 

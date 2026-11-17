@@ -90,6 +90,7 @@ import { buildConceptMap } from './template-builders-concept-map';
 import { buildNetworkDiagram } from './template-builders-network';
 import { withTemplateNote } from './template-session-kit';
 import { buildC4Container, buildC4Context } from './template-builders-c4';
+import { buildC4Component } from './template-builders-c4-component';
 import { buildArchitectureDecisionRecord } from './template-builders-adr';
 import { buildSprintPlanning } from './template-builders-sprint-planning';
 import { buildInterviewSynthesis } from './template-builders-interview-synthesis';
@@ -280,6 +281,8 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
       return buildC4Context(cx, cy);
     case 'c4-container':
       return buildC4Container(cx, cy);
+    case 'c4-component':
+      return buildC4Component(cx, cy);
     case 'architecture-decision-record':
       return buildArchitectureDecisionRecord(cx, cy);
     case 'sprint-planning':

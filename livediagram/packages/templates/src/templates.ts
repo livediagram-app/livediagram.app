@@ -177,6 +177,8 @@ export type TemplateKind =
   // model's context and container levels, an architecture decision record, sprint planning and an interview synthesis.
   | 'c4-context'
   | 'c4-container'
+  // The C4 model's third level (Work Tracker 1029): one container opened into its components.
+  | 'c4-component'
   | 'architecture-decision-record'
   | 'sprint-planning'
   | 'interview-synthesis'
@@ -775,6 +777,13 @@ export const TEMPLATES: TemplateDescriptor[] = [
     title: 'C4 Container Diagram',
     description:
       'Level 2 of the C4 model: the apps, services and stores inside a system boundary, each with its technology.',
+    extra: true,
+  },
+  {
+    kind: 'c4-component',
+    title: 'C4 Component Diagram',
+    description:
+      'Level 3 of the C4 model: the components inside one container, what each does and what it is built with.',
     extra: true,
   },
   {
