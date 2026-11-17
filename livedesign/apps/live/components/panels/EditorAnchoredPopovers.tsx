@@ -176,6 +176,7 @@ export function EditorAnchoredPopovers() {
                 ownerId={accountUserId ?? null}
                 selfUserId={actionSelfId}
                 selfName={actionSelfName}
+                selfColor={selfParticipant.color}
                 designId={designId}
                 designTeamId={designTeamId}
                 emailEnabled={emailEnabled}

@@ -24,7 +24,7 @@ import {
   type LinkedRecord,
 } from '@liveplanner/items';
 import { actionsBoardTab } from '@liveplanner/templates';
-import { automaticPresenceColour } from '@liveworkspace/settings/presence';
+import { presenceColourOf } from '@liveworkspace/settings/presence';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
@@ -94,19 +94,25 @@ export function useLinkedActionCards(deps: {
   // trust"), worked out once per person.
   const [people, setPeople] = useState<ReadonlyMap<string, ItemPerson>>(new Map());
   useEffect(() => {
-    const wanted = new Map<string, string>();
+    const wanted = new Map<string, { name: string; color: string | undefined }>();
     for (const { action } of placed) {
       const key = assigneeKey(action.assignee);
-      if (key && !people.has(key)) wanted.set(key, action.assignee.name?.trim() || 'Teammate');
+      if (key && !people.has(key)) {
+        wanted.set(key, {
+          name: action.assignee.name?.trim() || 'Teammate',
+          color: action.assignee.color,
+        });
+      }
     }
     if (!wanted.size) return;
     let alive = true;
     void Promise.all(
       [...wanted].map(
-        async ([key, name]) =>
+        async ([key, { name, color }]) =>
           [
             key,
-            { id: await itemPersonId(key), name, color: automaticPresenceColour(name).value },
+            // Coloured as at assign time, else Automatic from the name: the card's assignee matches their cursor.
+            { id: await itemPersonId(key), name, color: presenceColourOf(name, color) },
           ] as const,
       ),
     ).then((made) => {

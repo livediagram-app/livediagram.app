@@ -177,6 +177,7 @@ function OpenEditorAnchoredPopovers() {
                 ownerId={accountUserId ?? null}
                 selfUserId={actionSelfId}
                 selfName={actionSelfName}
+                selfColor={selfParticipant.color}
                 documentId={documentId}
                 documentTeamId={documentTeamId}
                 emailEnabled={emailEnabled}

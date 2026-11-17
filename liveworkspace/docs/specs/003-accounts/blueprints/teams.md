@@ -75,15 +75,15 @@ The limiter is keyed `team-link:<range>` (an IPv4 /24 or IPv6 /48).
 
 ### The apps' doors (client credentials)
 
-| Route                                                | Body                                   | Answer                                                                                                                   |
-| ---------------------------------------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `POST /api/account/internal/teams`                   | `{ accessToken, name, organisation? }` | a team for the person the token names (introspected, this client's): `201`                                               |
-| `POST /api/account/internal/teams/of`                | `{ userId }`                           | `{ teams: TeamClaim[] }`                                                                                                 |
-| `POST /api/account/internal/teams/members`           | `{ teamId (1 to 100 chars) }`          | `{ team, members: TeamPerson[] }`: joined and invited, names from the profile then the account, `color` a joined person's profile colour (null for Automatic or an invitation); `404`                    |
-| `POST /api/account/internal/invitations`             | `{ userId }`                           | `{ invitations }` for the account's verified address (none without one)                                                  |
-| `GET /api/account/internal/teams/changes?cursor=`    |                                        | `{ teams, members, cursor, more }`                                                                                       |
-| `POST /api/account/index/teams` (`INDEX_MERGE_KEY`)  | `{ userId }`                           | `{ teams }`; `400 invalid_user`, `401`                                                                                   |
-| `POST /api/account/index/people` (`INDEX_MERGE_KEY`) | `{ ids }` (accounts' ids, 1 to 100)    | `{ people: [{ id, name }] }`, names from the profile then the account, ids not found left out; `400 too_many_ids`, `401` |
+| Route                                                | Body                                   | Answer                                                                                                                                                                                |
+| ---------------------------------------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `POST /api/account/internal/teams`                   | `{ accessToken, name, organisation? }` | a team for the person the token names (introspected, this client's): `201`                                                                                                            |
+| `POST /api/account/internal/teams/of`                | `{ userId }`                           | `{ teams: TeamClaim[] }`                                                                                                                                                              |
+| `POST /api/account/internal/teams/members`           | `{ teamId (1 to 100 chars) }`          | `{ team, members: TeamPerson[] }`: joined and invited, names from the profile then the account, `color` a joined person's profile colour (null for Automatic or an invitation); `404` |
+| `POST /api/account/internal/invitations`             | `{ userId }`                           | `{ invitations }` for the account's verified address (none without one)                                                                                                               |
+| `GET /api/account/internal/teams/changes?cursor=`    |                                        | `{ teams, members, cursor, more }`                                                                                                                                                    |
+| `POST /api/account/index/teams` (`INDEX_MERGE_KEY`)  | `{ userId }`                           | `{ teams }`; `400 invalid_user`, `401`                                                                                                                                                |
+| `POST /api/account/index/people` (`INDEX_MERGE_KEY`) | `{ ids }` (accounts' ids, 1 to 100)    | `{ people: [{ id, name }] }`, names from the profile then the account, ids not found left out; `400 too_many_ids`, `401`                                                              |
 
 The change feed: two keyset reads in one batch, `rev > ? OR (rev = ? AND id > ?) ORDER BY rev, id LIMIT 500` on
 `team_rev_idx` and `team_member_rev_idx`; the cursor is `"<rev>:<id>,<rev>:<id>"` (one position per table, start

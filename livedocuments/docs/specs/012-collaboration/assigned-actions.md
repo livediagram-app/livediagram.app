@@ -43,7 +43,7 @@ interface ElementAction {
     // membership row at send time (§4), so no address enters the blob.
     memberId?: string;
     name: string | null; // display name at assign time (render fallback: "Teammate")
-    // Their presence colour at assign time (#rrggbb): their own from Settings › Profile, else the colour Automatic
+    // Their presence colour at assign time: their own from Settings › Profile, else the colour Automatic
     // gave them (§2 "Their colour"). Optional: an action saved before it reads Automatic from `name`.
     color?: string;
   };
@@ -168,7 +168,6 @@ never block or roll back the assignment.
 Assigning requires **edit access** to the document: the action rides the tab
 blob. View-role visitors see actions read-only (§7).
 
-
 ### Their colour
 
 A person wears one colour on every surface (liveworkspace/docs/specs/003-accounts/accounts.md "Profiles"): the picker's
@@ -176,7 +175,7 @@ avatar bubbles, the badge's assignee dot, the popover's avatar and the Collabora
 assignee as their cursor does. The members list carries each joined member's chosen colour (`color`, null for
 Automatic or an invitation), the Myself row carries the caller's own participant colour, and the colour of the row
 picked is stored on the action as `assignee.color`, beside the name it was assigned under. Every surface then reads
-`presenceColourOf(name, color)` (`@liveworkspace/settings/presence`): the stored colour when it is a `#rrggbb`, else
+`presenceColourOf(name, color)` (`@liveworkspace/settings/presence`): the stored colour when it is safe to paint, else
 the Automatic colour picked from the name, so an action saved before the field keeps its Automatic dot. Like the
 name, the colour is the one at assign time: a later change in Settings shows on the next edit of the action.
 Each disc is an identity fill (`IDENTITY_FILL`, `identityVars`): the colour in light mode with the ink that reaches

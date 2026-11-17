@@ -38,6 +38,7 @@ export function useAssigneeOptions({
   ownerId,
   selfUserId,
   selfName,
+  selfColor = null,
   designTeamId,
   assignee,
   setAssignee,
@@ -48,6 +49,8 @@ export function useAssigneeOptions({
   ownerId: string | null;
   selfUserId: string | null;
   selfName: string | null;
+  // The caller's own participant colour, as their cursor wears it: the Myself row's disc.
+  selfColor?: string | null;
   designId: string | null;
   designTeamId: string | null;
   assignee: PickableMember | null;
@@ -62,12 +65,13 @@ export function useAssigneeOptions({
         ? {
             userId: selfUserId,
             name: selfName?.trim() || 'Me',
+            color: selfColor,
             email: null,
             teamId: null,
             teamName: null,
           }
         : null,
-    [selfUserId, selfName],
+    [selfUserId, selfName, selfColor],
   );
 
   // The design's team, when the caller is in it; none for a personal design, a guest, or a share-link editor
@@ -119,7 +123,9 @@ export function useAssigneeOptions({
     );
   }, [open, existing, members, selfRow, setAssignee]);
 
-  const assigneeAccess: Access = assignee ? accessOf(assignee, selfUserId, designTeamId) : 'unknown';
+  const assigneeAccess: Access = assignee
+    ? accessOf(assignee, selfUserId, designTeamId)
+    : 'unknown';
 
   const grouped = useMemo(() => {
     const byTeam = new Map<string, { teamName: string; members: PickableMember[] }>();

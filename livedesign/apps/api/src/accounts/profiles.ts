@@ -13,7 +13,7 @@
 // a stored profile, and the editor keeps its own in the browser.
 
 import { ProfileError, readProfiles, writeProfile, type Profile } from '@liveworkspace/auth-client';
-import { automaticPresenceColour } from '@liveworkspace/settings/presence';
+import { presenceColourOf } from '@liveworkspace/settings/presence';
 import { profilePictureOf } from '@liveworkspace/sites/picture';
 import type { Env, ParticipantDTO } from '../types';
 import { accountsClient, accountsOwner } from './client';
@@ -67,7 +67,7 @@ export function participantOf(id: string, profile: Profile | undefined): StoredP
       ? {
           id,
           name: profile.name,
-          color: profile.color ?? automaticPresenceColour(profile.name).value,
+          color: presenceColourOf(profile.name, profile.color),
           createdAt: profile.createdAt ?? profile.updatedAt ?? Date.now(),
         }
       : null,

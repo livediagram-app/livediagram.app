@@ -12,7 +12,7 @@ import {
 } from '@livediagram/document';
 import { describeLink } from '@/lib/link-label';
 import { initialsOf } from '@/lib/identity';
-import { automaticPresenceColour } from '@liveworkspace/settings/presence';
+import { presenceColourOf } from '@liveworkspace/settings/presence';
 import { useCommentBadges } from '@liveworkspace/workbench/components/canvas/CommentBadgesContext';
 import { useMindOutlineBadge } from '@/components/canvas/MindOutlineContext';
 import { inlineIconGap, inlineIconMetrics } from '@/components/canvas/shape-inline-icon-layout';
@@ -62,8 +62,9 @@ export function elementIndicatorItems(
           onOpen: () => onOpenAction(element.id),
           assigneeName,
           initials: initialsOf(assigneeName),
-          // The one Automatic rule (@liveworkspace/settings/presence), so the dot matches the person's avatar.
-          color: automaticPresenceColour(assigneeName).value,
+          // Their colour at assign time, else the one Automatic rule (@liveworkspace/settings/presence), so the dot
+          // matches the person's cursor and avatar.
+          color: presenceColourOf(assigneeName, assignee.color),
         }
       : undefined,
     comments: {

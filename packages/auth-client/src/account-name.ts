@@ -6,6 +6,7 @@
 // Worker-safe: the API writes it, the page reads it.
 
 import { profilePictureOf } from '@liveworkspace/sites/picture';
+import { isSafeColourValue } from '@liveworkspace/settings/presence';
 
 /** The longest name kept, in characters; a longer one is cut (the header truncates it anyway). */
 export const ACCOUNT_NAME_MAX_LENGTH = 64;
@@ -57,27 +58,12 @@ export function accountColourCookieFor(nameCookie: string): string {
   return `${nameCookie}_colour`;
 }
 
-/** The longest colour kept, as a profile keeps it (liveworkspace/apps/accounts/src/profiles.ts PROFILE_COLOR_MAX). */
-export const ACCOUNT_COLOUR_MAX_LENGTH = 64;
-
-// What no colour contains: a way out of a CSS value (a quote, a semicolon, a brace, an escape), or a function that
-// loads something (the accounts Worker's and the apps' check, profiles.ts "What no colour contains"). Every colour CSS
-// has (hex, a name, rgb(), hsl(), oklch(), color-mix(), var()) passes.
-const NOT_A_COLOUR = /[\\;{}<>"'`]|url|image|src\s*\(|element\s*\(|cross-fade|paint\s*\(/i;
-// oxlint-disable-next-line no-control-regex -- matching control characters is the point
-const CONTROL = /[\u0000-\u001f\u007f]/;
-
-/** Whether a colour is safe to paint into CSS: a non-empty string of at most 64 characters that can neither load
- *  anything nor break out of the value. */
-export function isSafeColourValue(value: unknown): value is string {
-  return (
-    typeof value === 'string' &&
-    value.length > 0 &&
-    value.length <= ACCOUNT_COLOUR_MAX_LENGTH &&
-    !NOT_A_COLOUR.test(value) &&
-    !CONTROL.test(value)
-  );
-}
+// The longest colour kept, and whether a colour is safe to paint into CSS: one rule with the presence colours
+// (@liveworkspace/settings/presence, which an assignee's dot reads too), re-exported for the account's readers.
+export {
+  PROFILE_COLOUR_MAX as ACCOUNT_COLOUR_MAX_LENGTH,
+  isSafeColourValue,
+} from '@liveworkspace/settings/presence';
 
 /** The account's presence colour, trimmed, when it has one that is safe to paint; null otherwise (Automatic). */
 export function accountColourOf(user: NamedUser | null | undefined): string | null {

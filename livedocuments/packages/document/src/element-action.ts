@@ -22,6 +22,10 @@ export type ElementActionAssignee = {
   memberId?: string;
   // Display name at assign time (render fallback: "Teammate").
   name: string | null;
+  // Their presence colour at assign time (#rrggbb), for rendering only like the name: their own from Settings ›
+  // Profile, else the one Automatic gave them. Absent on an action saved before it: the dot reads Automatic from the
+  // name (presenceColourOf in @liveworkspace/settings/presence).
+  color?: string;
 };
 
 export const ACTION_STATUSES = ['open', 'done', 'wont-do'] as const;

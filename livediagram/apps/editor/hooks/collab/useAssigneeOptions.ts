@@ -38,6 +38,7 @@ export function useAssigneeOptions({
   ownerId,
   selfUserId,
   selfName,
+  selfColor = null,
   documentTeamId,
   assignee,
   setAssignee,
@@ -48,6 +49,8 @@ export function useAssigneeOptions({
   ownerId: string | null;
   selfUserId: string | null;
   selfName: string | null;
+  // The caller's own participant colour, as their cursor wears it: the Myself row's disc.
+  selfColor?: string | null;
   documentId: string | null;
   documentTeamId: string | null;
   assignee: PickableMember | null;
@@ -62,12 +65,13 @@ export function useAssigneeOptions({
         ? {
             userId: selfUserId,
             name: selfName?.trim() || 'Me',
+            color: selfColor,
             email: null,
             teamId: null,
             teamName: null,
           }
         : null,
-    [selfUserId, selfName],
+    [selfUserId, selfName, selfColor],
   );
 
   // The document's team, when the caller is in it; none for a personal document, a guest, or a share-link editor

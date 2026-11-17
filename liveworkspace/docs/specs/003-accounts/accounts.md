@@ -1114,7 +1114,7 @@ showPicture?, timeZone? }` with one handler; a guest's bearer is refused (`401 s
   presence list and comment author dots wear it) and the assignee dots on an element. So a person on Automatic is one
   colour everywhere. A person with a colour of their own wears it on every one of those too: a team's people carry it
   (below, "A team's people"), so an app's assignee picker, the dot on an assigned element and a Plan card's assignee
-  paint them as their cursor does, through `presenceColourOf(name, color)` (the colour when it is a `#rrggbb`, else
+  paint them as their cursor does, through `presenceColourOf(name, color)` (the colour when it is safe to paint, else
   Automatic's). Renaming can change it, as it changes the initials. No app keeps a pick of its own; a live room
   may still give a newcomer the next free palette colour while two people in it would clash.
 - The account menu's avatar, in every header, shows the account's [picture](#profile-pictures) when it has one, and is otherwise painted in the account's own colour,

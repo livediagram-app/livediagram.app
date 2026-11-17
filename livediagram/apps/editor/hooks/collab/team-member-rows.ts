@@ -30,6 +30,8 @@ export function teamMemberRows(
       memberId: m.id,
       pending: m.status === 'invited',
       name: teamMemberName(m),
+      // Their chosen presence colour; null for Automatic (the picker picks it from the name).
+      color: m.color ?? null,
       email: m.email,
       teamId: team.id,
       teamName: team.name,
