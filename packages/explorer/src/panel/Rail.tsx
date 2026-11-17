@@ -35,6 +35,7 @@ import {
   type PanelSection,
   type PanelSectionGroup,
 } from './sections';
+import { RailTight, useRailFit } from './useRailFit';
 
 // ---- The rail -------------------------------------------------------------------------------------------
 
@@ -87,6 +88,13 @@ export function Rail({
   const canRunTeams = useTeams().canRun;
   const navRef = useRef<HTMLElement>(null);
   const selectedKey = sectionKey(selected);
+  // Beside the pane, the card drops its picture before the rail would scroll (useRailFit). The key changes with the
+  // entries the rail draws, so their observer follows them.
+  const tight = useRailFit(
+    navRef,
+    !phone,
+    `${top ? 1 : 0}|${canRunTeams ? 1 : 0}|${groups.map((g) => g.sections.length).join(',')}`,
+  );
   const name = (id: string) => teamName(id);
   const badges: Record<string, number | undefined> = {
     inbox: hasInbox ? inboxBadge(inbox.data, viewerId) : undefined,
@@ -148,6 +156,7 @@ export function Rail({
       ref={navRef}
       aria-label="Explorer sections"
       onKeyDown={onKeyDown}
+      data-rail-tight={tight ? '' : undefined}
       className={
         phone
           ? 'shrink-0 overflow-x-auto px-2.5 py-1 [scrollbar-width:none]'
@@ -163,7 +172,7 @@ export function Rail({
           ])}
         </ul>
       ) : (
-        <>
+        <RailTight.Provider value={tight}>
           {top ? <div className="mb-3">{top}</div> : null}
           {newItem}
           {groups.map((g, i) =>
@@ -181,7 +190,7 @@ export function Rail({
               </section>
             ) : null,
           )}
-        </>
+        </RailTight.Provider>
       )}
     </nav>
   );
