@@ -127,8 +127,12 @@ export function BoardWidgetZone({
   const list = useRef<HTMLDivElement>(null);
   // Which widgets hold a press, read from the zone after every render (the row's and the measuring layer's copies), so
   // More names the one it holds; kept by its key, so an unchanged read sets nothing.
-  const [pressed, setPressed] = useState<{ key: string; map: Map<BoardWidgetId, string[]> }>({
-    key: '',
+  // Null until the first read (useZoneFit keeps no fit made before it).
+  const [pressed, setPressed] = useState<{
+    key: string | null;
+    map: Map<BoardWidgetId, string[]>;
+  }>({
+    key: null,
     map: new Map(),
   });
   // After every render on purpose: a press is drawn by the widget the caller renders, so no prop says it changed. The
@@ -139,7 +143,10 @@ export function BoardWidgetZone({
     const key = JSON.stringify([...map]);
     setPressed((was) => (was.key === key ? was : { key, map }));
   });
-  const pressedKinds = useMemo(() => new Set(pressed.map.keys()), [pressed]);
+  const pressedKinds = useMemo(
+    () => (pressed.key === null ? null : new Set(pressed.map.keys())),
+    [pressed],
+  );
   const fit = useZoneFit(zone, widgets, pressedKinds);
   const layout = zoneLayout(widgets, fit);
   const pinned = layout.pin;
@@ -528,8 +535,8 @@ export function BoardWidgetZone({
               {render(PINNED_WIDGET)}
             </div>
           ) : null}
-          {/* Only while some widgets are in More: whether the Filter goes compact is asked only then. */}
-          {fit.overflow && widgets.includes(PINNED_WIDGET) ? (
+          {/* The compact Filter's width: whether it goes compact, and the zone's narrowest (zoneMinWidth). */}
+          {widgets.includes(PINNED_WIDGET) ? (
             <div data-widget-compact-ghost="" className="flex shrink-0 items-center">
               {render(PINNED_WIDGET, { compact: true })}
             </div>

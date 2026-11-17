@@ -253,7 +253,10 @@ export function PlanBoardHeader({
             nameSlot,
           )
         : null}
-      <div className="flex min-w-0 max-w-[var(--plan-band-mid,none)] flex-1 items-center gap-3">
+      {/* In a header band it holds the chips alone, never narrower than they are and with no cap of its own (they pick
+          their own width, short of the palette strip: use-chips-fit.ts); on the canvas it holds the title, chips and
+          widgets and may shrink. */}
+      <div className={`flex flex-1 items-center gap-3 ${inBox ? '' : 'min-w-0'}`}>
         {inBox ? (
           chips
         ) : (

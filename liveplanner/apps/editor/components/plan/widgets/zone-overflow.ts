@@ -134,6 +134,55 @@ export function fitWidgets(input: FitInput): ZoneFit {
   return fit(false, filter, 0, false);
 }
 
+// The least the zone takes across at its narrowest kept step (the Filter compact, More with its dot, the buttons; no
+// Filter: More and the buttons), or every widget when that is less. The header's card type chips give way only past it
+// (use-chips-fit.ts, plan-board.md "Card type chips"): the widgets go into More first.
+export function zoneMinWidth(input: Omit<FitInput, 'room' | 'pressed'>): number {
+  const { order, widths, controls, more, compact } = input;
+  const buttons = controls.reduce((s, c) => s + c, 0);
+  const all =
+    order.reduce((s, k) => s + (widths.get(k) ?? 0), 0) +
+    buttons +
+    ZONE_GAP_PX * Math.max(0, order.length + controls.length - 1);
+  if (order.length === 0) return all;
+  const pin = order.includes(PINNED_WIDGET);
+  const items = (pin ? 1 : 0) + 1 + controls.length;
+  const step = (pin ? compact : 0) + more + MORE_DOT_PX + buttons + ZONE_GAP_PX * (items - 1);
+  return Math.min(all, step);
+}
+
+// Whether `prev`'s row (how the Filter sits, how many widgets after it) still fits `input`, with the widths as they are
+// now, More naming a press it holds or, short of room for the name, marking it with a dot; the arrangement it would
+// keep, or null when it overflows. A refit in the same room with
+// the same widgets keeps it (useZoneFit, board-widgets.md "A press never reshuffles the row"), so a press, a typed
+// filter or a count changing moves a widget only when the row would otherwise overflow. Linear in the widgets.
+export function keptFit(input: FitInput, prev: ZoneFit): ZoneFit | null {
+  const { order, widths, room, controls, more, compact, pressed } = input;
+  const width = (k: BoardWidgetId) => widths.get(k) ?? 0;
+  const buttons = controls.reduce((s, c) => s + c, 0);
+  const all =
+    order.reduce((s, k) => s + width(k), 0) +
+    buttons +
+    ZONE_GAP_PX * Math.max(0, order.length + controls.length - 1);
+  if (!prev.overflow) return all <= room + 0.5 ? { ...prev, need: all } : null;
+  const pin = prev.pinned && order.includes(PINNED_WIDGET);
+  const rest = pin ? order.filter((k) => k !== PINNED_WIDGET) : order;
+  if (prev.shown >= rest.length) return null;
+  const pinWidth = pin ? (prev.filter === 'compact' ? compact : width(PINNED_WIDGET)) : 0;
+  let row = 0;
+  for (let i = 0; i < prev.shown; i++) row += width(rest[i]!);
+  let held = false;
+  for (let i = prev.shown; i < rest.length && !held; i++) held = pressed.has(rest[i]!);
+  const items = (pin ? 1 : 0) + prev.shown + 1 + controls.length;
+  const used = pinWidth + row + more + buttons + ZONE_GAP_PX * (items - 1);
+  // More names a press it holds where that fits, else marks it with a dot, the row as it was either way.
+  for (const named of prev.named ? [true, false] : [false]) {
+    const mark = held ? (named ? MORE_LABEL_MAX_PX : MORE_DOT_PX) : 0;
+    if (used + mark <= room + 0.5) return { ...prev, named: held ? named : prev.named, need: all };
+  }
+  return null;
+}
+
 export type ZoneLayout = {
   // The Filter holds the zone's start.
   pin: boolean;
@@ -205,6 +254,8 @@ export function moreLabel(
   return names.length === 1 ? names[0]! : `${names[0]} +${names.length - 1}`;
 }
 
+const NONE_PRESSED: ReadonlySet<BoardWidgetId> = new Set();
+
 const sameFit = (a: ZoneFit, b: ZoneFit) =>
   a.overflow === b.overflow &&
   a.pinned === b.pinned &&
@@ -217,19 +268,26 @@ const sameFit = (a: ZoneFit, b: ZoneFit) =>
 // measuring layer), the buttons and the ghost More, with one ResizeObserver that is re-pointed when the row changes.
 // Each callback works the fit out again and sets state only when it changes. The presses come in from the caller
 // (read after every render), so a press that moves a widget's need for a label refits too. Room 0 (the zone not laid
-// out: a hidden tab, jsdom) keeps the last fit.
+// out: a hidden tab, jsdom) keeps the last fit. `pressed` is null until the caller has read the presses once: a fit
+// made before then is never kept, so a board that mounts with a press lays out as if fitted afresh.
 export function useZoneFit(
   zone: RefObject<HTMLElement | null>,
   widgets: readonly BoardWidgetId[],
-  pressed: ReadonlySet<BoardWidgetId>,
+  pressedOrUnread: ReadonlySet<BoardWidgetId> | null,
 ): ZoneFit {
+  const read = pressedOrUnread !== null;
+  const pressed = pressedOrUnread ?? NONE_PRESSED;
   const [fit, setFit] = useState<ZoneFit>(FITS_ALL);
   const now = useRef(fit);
+  // The room and widgets the last fit was worked out for: a refit with both the same keeps its row (keptFit).
+  const basis = useRef<{ room: number; key: string } | null>(null);
   const pressedRef = useRef(pressed);
   pressedRef.current = pressed;
   const measureRef = useRef<() => void>(() => {});
   const key = widgets.join();
-  const pressedKey = [...pressed].join();
+  const pressedKey = `${read ? 'read' : 'unread'}:${[...pressed].join()}`;
+  const readRef = useRef(read);
+  readRef.current = read;
   useLayoutEffect(() => {
     const z = zone.current;
     if (!z) return;
@@ -249,7 +307,7 @@ export function useZoneFit(
       );
       const more = z.querySelector<HTMLElement>('[data-widget-more-ghost]')?.offsetWidth ?? 0;
       const compact = z.querySelector<HTMLElement>('[data-widget-compact-ghost]')?.offsetWidth ?? 0;
-      const next = fitWidgets({
+      const input: FitInput = {
         order: widgets,
         widths,
         room,
@@ -257,7 +315,13 @@ export function useZoneFit(
         more,
         compact,
         pressed: pressedRef.current,
-      });
+      };
+      // What the header's chips may not take from the zone (use-chips-fit.ts): a DOM write, no state.
+      z.dataset['widgetZoneMin'] = String(Math.ceil(zoneMinWidth(input)));
+      const was = basis.current;
+      const same = was !== null && was.key === key && Math.abs(was.room - room) < 0.5;
+      const next = (same ? keptFit(input, now.current) : null) ?? fitWidgets(input);
+      basis.current = readRef.current ? { room, key } : null;
       if (sameFit(next, now.current)) return;
       now.current = next;
       setFit(next);

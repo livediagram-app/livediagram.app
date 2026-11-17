@@ -6,7 +6,8 @@
 // board, into the column and row it is let go over (useCardTypeDrag). PlanBoardView decides whether they show
 // (chipsShown); in a header band they lead the header, straight after the menu box that holds the board's name. A
 // type with card templates opens the Add a Card menu with that type alone instead (docs/specs/026-plan/item-types.md
-// "Where a card is added, its templates are offered"); its drag still carries a blank card.
+// "Where a card is added, its templates are offered"); its drag still carries a blank card. They never shrink or clip:
+// short of room they drop their names, then step out (useChipsFit, Work Tracker 1086).
 import { useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { HoverCard, withArticle } from '@liveplanner/ui';
@@ -25,6 +26,7 @@ import { usePlan } from './PlanContext';
 import { CardTypeTile } from './CardTypeTile';
 import { HEADER_ARRIVAL_CLASS, headerArrivalIndex, headerArrivalRow } from './header-arrival';
 import { PlanTypeGlyph } from './plan-type-glyph';
+import { useChipsFit } from './use-chips-fit';
 import { ACCENT_BG, ACCENT_TEXT, accentVars, type PlanPalette } from './plan-palette';
 
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
@@ -76,7 +78,8 @@ export function BoardCardTypeChips({
     onRefused: (message) => plan?.announce(message),
     ghostRef,
   });
-  const named = types.length <= CHIP_NAMES_MAX;
+  const mode = useChipsFit(rowRef, types.length <= CHIP_NAMES_MAX, types.map((t) => t.id).join());
+  const named = mode === 'named';
   const carried = carrying ? types.find((t) => t.id === carrying) : undefined;
   return (
     <div
@@ -84,13 +87,14 @@ export function BoardCardTypeChips({
       data-card-type-chips=""
       role="group"
       aria-label="Add Cards"
-      // A row that scrolls sideways when it does not fit, as the widget zone does; no bar of its own.
-      className="flex min-w-0 shrink items-center gap-1 overflow-x-auto [scrollbar-width:none]"
+      // Never squeezed: its mode gives it the width it needs, or nothing (useChipsFit).
+      data-chips-mode={mode}
+      className="relative flex shrink-0 items-center gap-1"
       // The chips fan in as the header mounts, left to right (header-arrival.ts).
       style={headerArrivalRow}
       onDoubleClick={stop}
     >
-      {types.map((t, i) => (
+      {(mode === 'none' ? [] : types).map((t, i) => (
         <HoverCard
           key={t.id}
           title={`Add ${withArticle(t.label)}`}
@@ -124,6 +128,34 @@ export function BoardCardTypeChips({
           </button>
         </HoverCard>
       ))}
+      {/* The measuring layer: the chips named and as little cards alone, unseen, for their widths (useChipsFit). */}
+      <div
+        aria-hidden
+        inert
+        data-chips-measure=""
+        className="pointer-events-none invisible absolute left-0 top-0 h-0 w-0 overflow-hidden"
+      >
+        {types.length <= CHIP_NAMES_MAX ? (
+          <div data-chips-named-ghost="" className="flex w-max items-center gap-1">
+            {types.map((t) => (
+              <span
+                key={t.id}
+                className="flex h-8 shrink-0 items-center gap-1.5 pl-1.5 pr-2.5 text-[13px] font-medium"
+              >
+                <CardTypeTile color={t.color} glyph={t.glyph} />
+                <span className="whitespace-nowrap">{t.label}</span>
+              </span>
+            ))}
+          </div>
+        ) : null}
+        <div data-chips-compact-ghost="" className="flex w-max items-center gap-1">
+          {types.map((t) => (
+            <span key={t.id} className="flex h-8 shrink-0 items-center px-1.5">
+              <CardTypeTile color={t.color} glyph={t.glyph} />
+            </span>
+          ))}
+        </div>
+      </div>
       {picking ? (
         <AddCardPopover
           anchor={picking.anchor}
