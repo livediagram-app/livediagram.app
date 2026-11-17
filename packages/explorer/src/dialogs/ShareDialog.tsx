@@ -250,11 +250,9 @@ export function ShareDialog({
       // While Show Me runs, Escape is the tour's.
       closeOnEscape={!tour.active}
       size="lg"
-      // Pinned near the top, so the role picker unfolding or a pass coming or going grows the panel downward and
-      // nothing above it moves under the pointer (the centred panel jumped by half of each change).
-      placement="top"
-      // The body scrolls between a fixed header and footer, the panel filling at most the room below the gap.
-      className="max-h-[calc(100%-2rem)] sm:max-h-full"
+      // Centred at a steady height from sm up (dialogs never pin to the top), so the role picker unfolding or a pass
+      // coming or going scrolls the body between the fixed header and footer and never moves the panel.
+      className="max-h-[calc(100%-2rem)] sm:h-[min(48rem,calc(100%-2rem))]"
     >
       {/* The dialog hero header (dialog-hero-header.md): sharing drawn as a connection, the status its one line. */}
       <HeroDialogHeader
@@ -285,7 +283,7 @@ export function ShareDialog({
           id={sharePanelId('approval')}
           role="tabpanel"
           aria-labelledby={shareTabId('approval')}
-          className="flex flex-col gap-5 overflow-y-auto px-6 py-5"
+          className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-6 py-5"
         >
           <ApprovalPanel />
         </div>
@@ -294,7 +292,7 @@ export function ShareDialog({
           id={sharePanelId('app')}
           role="tabpanel"
           aria-labelledby={shareTabId('app')}
-          className="flex flex-col gap-5 overflow-y-auto px-6 py-5"
+          className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-6 py-5"
         >
           {appTab.panel}
         </div>
@@ -303,7 +301,7 @@ export function ShareDialog({
           id={tabbed ? sharePanelId('passes') : undefined}
           role={tabbed ? 'tabpanel' : undefined}
           aria-labelledby={tabbed ? shareTabId('passes') : undefined}
-          className="flex flex-col gap-5 overflow-y-auto px-6 py-5"
+          className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-6 py-5"
         >
           <ShareComposer
             tabs={tabs}
