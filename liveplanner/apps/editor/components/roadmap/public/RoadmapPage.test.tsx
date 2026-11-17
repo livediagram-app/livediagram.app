@@ -3,7 +3,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type { PublicRoadmap } from '@liveplanner/api-schema';
 import { formLook } from '@liveplanner/project';
-import { RoadmapPage } from './RoadmapPage';
+import { RoadmapPage, waitPhrase } from './RoadmapPage';
+import { retryAfterMs } from '@/lib/api/roadmaps-public';
 import { roadmapDay } from './RoadmapCard';
 
 // A public roadmap's page (docs/specs/026-plan/public-roadmap.md "What a visitor sees", "Upvotes", "States"): its four
@@ -40,7 +41,7 @@ const ROADMAP: PublicRoadmap = {
   ],
 };
 
-type Reply = { status: number; body?: unknown };
+type Reply = { status: number; body?: unknown; headers?: Record<string, string> };
 let replies: Reply[];
 let calls: { url: string; init?: RequestInit }[];
 
@@ -56,6 +57,7 @@ beforeEach(() => {
       const r = replies.shift() ?? { status: 500 };
       return new Response(r.body === undefined ? null : JSON.stringify(r.body), {
         status: r.status,
+        ...(r.headers ? { headers: r.headers } : {}),
       });
     }),
   );
@@ -132,6 +134,65 @@ describe('the read', () => {
     expect(stateOf()).toBe('loading');
     expect(screen.getByLabelText('Loading the roadmap')).toBeTruthy();
     await screen.findByRole('heading', { name: 'Acme Roadmap' });
+  });
+});
+
+// The per-network read limit's 429 is not the connection: the page says it is busy and reads again once the
+// limit's window is over (public-roadmap.md "States").
+describe('busy', () => {
+  afterEach(() => vi.useRealTimers());
+
+  it('says the roadmap is busy, never the connection, and reads again after the window', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    replies.push({
+      status: 429,
+      body: { error: 'rate_limited' },
+      headers: { 'Retry-After': '60' },
+    });
+    render(<RoadmapPage />);
+    await screen.findByRole('heading', { name: 'This roadmap is busy' });
+    expect(stateOf()).toBe('busy');
+    expect(screen.getByText(/It tries again in a minute\./)).toBeTruthy();
+    expect(screen.queryByText(/connection/)).toBeNull();
+    replies.push({ status: 200, body: ROADMAP });
+    await vi.advanceTimersByTimeAsync(59_000);
+    expect(calls).toHaveLength(1);
+    await vi.advanceTimersByTimeAsync(1_000);
+    await screen.findByRole('heading', { name: 'Acme Roadmap' });
+    expect(calls).toHaveLength(2);
+  });
+
+  it('keeps waiting a window at a time while it stays busy, and Try Again reads at once', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    replies.push({ status: 429, headers: { 'Retry-After': '10' } });
+    render(<RoadmapPage />);
+    await screen.findByText(/It tries again in 10 seconds\./);
+    replies.push({ status: 429, headers: { 'Retry-After': '10' } });
+    await vi.advanceTimersByTimeAsync(10_000);
+    await waitFor(() => expect(calls).toHaveLength(2));
+    expect(stateOf()).toBe('busy');
+    replies.push({ status: 200, body: ROADMAP });
+    fireEvent.click(screen.getByRole('button', { name: 'Try Again' }));
+    await screen.findByRole('heading', { name: 'Acme Roadmap' });
+    expect(calls).toHaveLength(3);
+    // The page is ready: no read of its own is left waiting.
+    await vi.advanceTimersByTimeAsync(20_000);
+    expect(calls).toHaveLength(3);
+  });
+
+  it('holds Retry-After to 5 seconds..5 minutes, and takes the window when it is missing or odd', () => {
+    expect(retryAfterMs('60')).toBe(60_000);
+    expect(retryAfterMs('0')).toBe(5_000);
+    expect(retryAfterMs('99999')).toBe(300_000);
+    expect(retryAfterMs(null)).toBe(60_000);
+    expect(retryAfterMs('Wed, 21 Oct 2026 07:28:00 GMT')).toBe(60_000);
+    expect(retryAfterMs(' 30 ')).toBe(30_000);
+  });
+
+  it('says the wait in words', () => {
+    expect(waitPhrase(5_000)).toBe('5 seconds');
+    expect(waitPhrase(60_000)).toBe('a minute');
+    expect(waitPhrase(300_000)).toBe('5 minutes');
   });
 });
 

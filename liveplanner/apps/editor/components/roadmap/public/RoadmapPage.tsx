@@ -29,6 +29,8 @@ type PageState =
   | { kind: 'loading' }
   | { kind: 'not_found' }
   | { kind: 'error' }
+  // Read too often from this network: read again once the limit's window is over.
+  | { kind: 'busy'; retryAfterMs: number }
   | { kind: 'ready'; planId: string; code: string; data: PublicRoadmap };
 
 // What the page says when a vote is refused.
@@ -79,6 +81,14 @@ export function RoadmapPage() {
     setPage({ kind: 'loading' });
     load();
   };
+  // Busy: a read of its own once the limit's window is over (and again after each busy answer, one a window, so it
+  // never adds to the limit); Try Again reads at once.
+  const busy = page.kind === 'busy' ? page : null;
+  useEffect(() => {
+    if (!busy) return;
+    const timer = window.setTimeout(load, busy.retryAfterMs);
+    return () => window.clearTimeout(timer);
+  }, [busy, load]);
 
   async function vote(cardId: string, up: boolean) {
     if (page.kind !== 'ready') return;
@@ -158,6 +168,13 @@ export function RoadmapPage() {
             action={{ label: 'Try Again', run: retry }}
           />
         ) : null}
+        {page.kind === 'busy' ? (
+          <Notice
+            title="This roadmap is busy"
+            body={`Lots of people are looking right now. It tries again in ${waitPhrase(page.retryAfterMs)}.`}
+            action={{ label: 'Try Again', run: retry }}
+          />
+        ) : null}
         {page.kind === 'ready' ? (
           // The header and the columns share one width, centred, so the title lines up with the first column
           // and Suggest an Idea with the last.
@@ -214,6 +231,14 @@ export function RoadmapPage() {
       </div>
     </main>
   );
+}
+
+// How long the busy page waits, in words: "a minute" for the limiter's own window.
+export function waitPhrase(ms: number): string {
+  const s = Math.round(ms / 1000);
+  if (s < 60) return `${s} seconds`;
+  if (s < 120) return 'a minute';
+  return `${Math.round(s / 60)} minutes`;
 }
 
 function Skeleton() {
