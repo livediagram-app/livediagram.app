@@ -30,6 +30,7 @@ import {
 } from '@/components/canvas/label-style';
 import { insertTextAtCaret } from '@/components/rich-text/rich-text-dom';
 import { fitInsertion } from '@liveworkspace/workbench/lib/text-cap';
+import { labelEditorBidi } from '@liveworkspace/workbench/lib/label-bidi';
 import { RichTextToolbar } from '@/components/canvas/RichTextToolbar';
 import { listStyleOfText } from '@/components/rich-text/block-type';
 import type { RichTextEditorProps } from './RichTextEditor.types';
@@ -244,6 +245,9 @@ export function RichTextEditor({
         style={{
           fontSize: `${basePx}px`,
           textAlign: TEXT_ALIGN[alignX],
+          // Line by line only when the lines could read in different directions: that layout costs the square of a
+          // line's length, 45 ms a keystroke in a 100,000-character text (canvas-performance.md).
+          unicodeBidi: labelEditorBidi(liveText),
           fontFamily,
           // Wordmark type (docs/specs/007-editor/editor-modes.md "Pages moved to livedocuments"): the tracking, weight and case the
           // committed label wears, so editing never shifts the text.
