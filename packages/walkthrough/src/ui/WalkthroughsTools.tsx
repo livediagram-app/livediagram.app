@@ -136,7 +136,7 @@ export function WalkthroughsPanel({
       )}
       {list.length === 0 ? (
         // The tool's explainer (footer-tools-menu.md "Explainers"): nothing recorded yet.
-        <div className="px-4 py-3">
+        <div className="px-4 pb-5 pt-4">
           <ToolExplainer
             art={walkthroughsArt}
             title="No Walkthroughs Yet"

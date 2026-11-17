@@ -177,7 +177,10 @@ menu and opens the same dialog.
 Where a tool screen has little to show yet (nothing set up, nothing recorded), it opens on an **explainer** (owner,
 2026-11-17) rather than a line of text: the tool's own illustration (a 280 by 120 drawing in the brand and slate ramps,
 on a faint dot grid in a soft brand-tinted card, its moving part bobbing gently and still under reduced motion), a
-title, one line on why you would use it, and two or three numbered steps, then the screen's own action. It is one shared
+title, one line on why you would use it, and two or three numbered steps, then the screen's own action. It is roomy
+(owner, 2026-11-17, "use the space better"): the drawing drawn at 140 px tall with 28 px over it, the title at 16 px
+with 24 px under the line, 16 px between the card, the steps and the action, the steps 10 px apart on 24 px numbers.
+It is one shared
 component (`ToolExplainer` and `tool-explainer-art` in `@liveworkspace/ui`), so every sparse screen reads alike:
 
 | Tool                  | Title                                                   | When          |
