@@ -38,6 +38,7 @@ import { ShareComposer } from './share/ShareComposer';
 import { ShareStatus } from './share/ShareStatus';
 import { ShareTabs, sharePanelId, shareTabId } from './share/ShareTabs';
 import { ShareTourStage, ShowMeButton, useShareTour } from './share/ShareTour';
+import { useShareStartFocus } from './share/useShareStartFocus';
 import {
   SHARE_EXPIRY_TELEMETRY,
   SHARE_LEVEL_TELEMETRY,
@@ -143,6 +144,8 @@ export function ShareDialog({
         : 'passes',
   );
   const tabbed = views.length > 1;
+  const titleId = useId();
+  useShareStartFocus(titleId, tabbed);
   const showApp = Boolean(appTab) && view === 'app';
   const showApproval = approvalTab && view === 'approval';
   const [note, setNote] = useState<{ text: string; tone: 'success' | 'info' | 'error' } | null>(
@@ -171,7 +174,6 @@ export function ShareDialog({
   const levels = APP_LINK_LEVELS[item.app];
   const legacy = (link: ShareLink) => !link.public && !levels.includes(link.level);
   const shareTour = useShareTour(multiTab, word, onTelemetry);
-  const titleId = useId();
   // Show Me walks the passes, so it starts on their tab.
   const tour = {
     ...shareTour,

@@ -258,7 +258,8 @@ response.
 
 ## Presentation and UX
 
-- Popover: `w-[26rem]`, caption "Note" (10px uppercase), toolbar, editor, footer with
+- Popover: `width: min(WIDTH, innerWidth - 2 * VIEWPORT_EDGE_MARGIN)` as an inline style, recomputed on resize with
+  the position, so the horizontal clamp uses the width it draws at; caption "Note" (10px uppercase), toolbar, editor, footer with
   `Cmd-Enter saves, Esc cancels.` and `Delete note` (slate as the footer's other text, disabled lighter).
 - Toolbar (always visible, editable only): Bold, Italic, Underline | Block type | Link, `h-8 w-8`
   buttons via `toolbarButtonClass(active, 'shrink-0')`, `TOOLBAR_DIVIDER` between groups, wrapping
@@ -335,7 +336,7 @@ Telemetry (not logs): `Note` / `Opened` / `Added` / `Changed` / `Deleted`; `Note
 | `Cmd/Ctrl+B/I/U` drive run toggles                     | none                                                 | (GD7)                                                           |
 | Link field: normalise, refuse, Remove                  | none                                                 | (GD7)                                                           |
 | Read-only viewer gets no toolbar                       | none                                                 | (GD7)                                                           |
-| Popover 416px, editor 11rem to 24rem, flip [QD3]       | none                                                 | (GD7)                                                           |
+| Popover 416px, editor 11rem to 24rem, flip [QD3]       | `NotePopover.test.tsx`                               | (GD7)                                                           |
 | One `Note` / `Used` per command [QD5]                  | none                                                 | (GD7)                                                           |
 | Note edits go through history (undo restores)          | none                                                 | (GD7)                                                           |
 | Label headings in `em`                                 | none                                                 | (GD7)                                                           |
@@ -344,7 +345,7 @@ Telemetry (not logs): `Note` / `Opened` / `Added` / `Changed` / `Deleted`; `Note
 
 | Name                    | Value                                        | Provenance / safe range                                  | Home                                                 |
 | ----------------------- | -------------------------------------------- | -------------------------------------------------------- | ---------------------------------------------------- |
-| `WIDTH`                 | `416`                                        | Spec, matches `w-[26rem]`; change both together          | `NotePopover.tsx`                                    |
+| `WIDTH`                 | `416`                                        | Spec, 26rem; capped at the viewport less both margins    | `NotePopover.tsx`                                    |
 | `APPROX_HEIGHT`         | `320`                                        | Estimate at the 11rem minimum; replaced by measure [QD3] | `NotePopover.tsx`                                    |
 | `GAP`                   | `12`                                         | Element to popover, px; 8 to 16                          | `NotePopover.tsx`                                    |
 | `VIEWPORT_EDGE_MARGIN`  | `POPOVER_VIEWPORT_MARGIN` = `8`              | Shared popover margin                                    | `../packages/workbench/src/lib/clamp-to-viewport.ts` |

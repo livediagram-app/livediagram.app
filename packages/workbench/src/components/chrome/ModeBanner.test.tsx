@@ -167,3 +167,16 @@ describe('trayHost', () => {
     expect(trayHost()).toEqual({ node: pane, dx: 640, dy: 48 });
   });
 });
+
+// Work Tracker 1014: with its Cancel beside it, a mode message wraps on a phone, so the floating banner is a card
+// whose second line stays inside its corners, not a round-ended pill.
+describe('ModeBanner floating shape', () => {
+  it('floats as a card when there is no strip', () => {
+    render(
+      <ModeBanner icon={null} message="Click a shape to copy its style" onAction={() => {}} />,
+    );
+    const banner = document.querySelector('[data-mode-message]')?.closest('[data-floating-panel]');
+    expect(banner?.className).toContain('rounded-2xl');
+    expect(banner?.className).not.toContain('rounded-full');
+  });
+});
