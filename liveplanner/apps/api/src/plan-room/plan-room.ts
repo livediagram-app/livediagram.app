@@ -53,6 +53,7 @@ import { importMigratedPlan } from './plan-migration';
 import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
 import { type RouteIdentity } from './plan-route';
 import { answerRoomRoadmap } from '../roadmap/roadmap-room';
+import { RoadmapMemo } from '../roadmap/roadmap-memo';
 import {
   answerRoomIntake,
   type IntakeDelivery,
@@ -299,6 +300,10 @@ export class PlanRoom extends DurableObject<Env> {
           AUTOMATIONS: this.automations,
           REMOVAL_GUARD: new RemovalGuard(state.storage),
           SNAPSHOT_REVERTED: () => closeAllReverted(this),
+          // Stamped with SQLite's change count, which every write in this room moves, whichever path made it.
+          ROADMAP_MEMO: new RoadmapMemo(() =>
+            Number(state.storage.sql.exec('SELECT total_changes() AS n').toArray()[0]?.n ?? 0),
+          ),
         }
       : undefined;
     this.ledger = new RoomLedgerStore(state.storage, LEDGER_RULES);

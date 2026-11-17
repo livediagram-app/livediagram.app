@@ -2,7 +2,7 @@
 // blueprint public-roadmap.md "Behaviour and state"). Reached only through the room's `roadmap` RPC, which answers as
 // no one and has already turned away an id nothing has written and a plan archived or in the Trash.
 //
-//   GET  /api/roadmaps/:planId/:code[?browser=]    the roadmap, built fresh from the plan's tables
+//   GET  /api/roadmaps/:planId/:code[?browser=]    the roadmap, as the room keeps it since the plan's last write
 //   POST /api/roadmaps/:planId/:code/votes         { card, browser, up, website }: an upvote given or taken back
 import {
   ROADMAP_BROWSER_PATTERN,
@@ -45,6 +45,7 @@ import {
   takeRoadmapVote,
   type RoadmapRow,
 } from './roadmap-store';
+import { pageFor, shownOf, type BuiltRoadmap } from './roadmap-memo';
 import { onRoadmap, publicRoadmapOf } from './roadmap-view';
 
 // How many votes one roadmap takes an hour from everyone, as a form's responses (forms.md "Abuse and limits").
@@ -80,27 +81,45 @@ async function suggestPathOf(
 const browserOf = (raw: unknown): string | null =>
   typeof raw === 'string' && ROADMAP_BROWSER_PATTERN.test(raw) ? raw : null;
 
-async function read(ctx: PlanRouteContext, planId: string, roadmap: RoadmapRow) {
+// The page built from the plan's tables for no visitor, or null once its board is gone.
+async function build(
+  ctx: PlanRouteContext,
+  planId: string,
+  roadmap: RoadmapRow,
+): Promise<BuiltRoadmap | null> {
   const board = await boardOf(ctx, planId, roadmap);
-  if (!board) return roadmapMissed('no_board');
-  const browser = browserOf(ctx.url.searchParams.get('browser'));
-  const [types, items, suggestPath, voter] = await Promise.all([
+  if (!board) return null;
+  const [types, items, suggestPath] = await Promise.all([
     planTypesOf(ctx.env, planId),
     listItems(ctx.env, planId),
     suggestPathOf(ctx, planId, roadmap),
-    browser ? publicVoterId(planId, browser) : Promise.resolve(null),
   ]);
-  return publicAnswer(
-    publicRoadmapOf({
-      settings: roadmap.settings,
-      setup: board.setup,
-      items,
-      types,
-      look: formLook(board.tab),
-      voter,
-      suggestPath,
-    }),
-  );
+  const page = publicRoadmapOf({
+    settings: roadmap.settings,
+    setup: board.setup,
+    items,
+    types,
+    look: formLook(board.tab),
+    voter: null,
+    suggestPath,
+  });
+  return { page, shown: shownOf(page, items) };
+}
+
+// The room's kept page while nothing was written since it was built, else a fresh build, kept for the next read
+// (roadmap-memo.ts). The stamp is read before the build, so a write landing while it runs makes the next read build
+// again.
+async function read(ctx: PlanRouteContext, planId: string, roadmap: RoadmapRow) {
+  const browser = browserOf(ctx.url.searchParams.get('browser'));
+  const voter = browser ? await publicVoterId(planId, browser) : null;
+  const memo = ctx.env.ROADMAP_MEMO;
+  const kept = memo?.get(roadmap.code);
+  if (kept) return publicAnswer(pageFor(kept, voter));
+  const version = memo?.version();
+  const built = await build(ctx, planId, roadmap);
+  if (!built) return roadmapMissed('no_board');
+  if (memo && version !== undefined) memo.set(roadmap.code, version, built);
+  return publicAnswer(pageFor(built, voter));
 }
 
 type VoteBody = { card: string; browser: string; up: boolean; website: unknown };

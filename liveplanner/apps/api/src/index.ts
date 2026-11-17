@@ -240,7 +240,7 @@ async function routeApiRequest(
     const ok = await env.FORM_RATE_LIMITER.limit({
       key: `${isWrite ? door : `${door}-read`}:${clientNetwork(clientIp(request))}`,
     });
-    if (!ok.success) return rateLimited();
+    if (!ok.success) return isRoadmapRequest ? roadmapRateLimited() : rateLimited();
   }
   if (
     isWrite &&
@@ -368,6 +368,16 @@ async function routeApiRequest(
 }
 
 // liveworkspace can't say whether a credential is good: neither good nor bad, so a client retries rather than drops it.
+// The per-network limit's answer on a public roadmap's doors, naming the limiter's window (FORM_RATE_LIMITER's
+// period, wrangler.toml), so the page waits it out before reading again (docs/specs/026-plan/public-roadmap.md
+// "States").
+const ROADMAP_RETRY_AFTER_SECONDS = 60;
+const roadmapRateLimited = (): Response =>
+  json(
+    { error: 'rate_limited' },
+    { status: 429, headers: { 'Retry-After': String(ROADMAP_RETRY_AFTER_SECONDS) } },
+  );
+
 const accountsUnavailable = (): Response =>
   json(
     { error: 'accounts_unavailable' },
