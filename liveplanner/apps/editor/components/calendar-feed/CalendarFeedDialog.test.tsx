@@ -3,12 +3,12 @@
 // (Off, Just made, On); Make Calendar Link with the options chosen, the link shown once to copy or hand to a
 // calendar, an option change that saves at once and keeps the link (and goes back when the save fails), Reset Link
 // and Turn Off behind their confirms, the privacy note in every state, and the read and write failures.
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CalendarFeedResponse } from '@liveplanner/api-schema';
 import { CalendarFeedDialog } from './CalendarFeedDialog';
 import { CalendarFeedHost } from './CalendarFeedHost';
-import { CalendarFeedMenuRow } from './CalendarFeedMenuRow';
+import { useCalendarFeedToolsItem } from './calendar-feed-tools-item';
 import { boardLabels } from './CalendarFeedOptions';
 
 const client = vi.hoisted(() => ({
@@ -345,30 +345,75 @@ describe('board labels', () => {
   });
 });
 
+// The Tools menu's row, as a plain button: what the footer's Tools popover draws for it, its badge beside its name.
+function Row() {
+  const item = useCalendarFeedToolsItem();
+  if (!item) return null;
+  return (
+    <button
+      type="button"
+      data-badge={item.badges?.join(', ') ?? ''}
+      onClick={() => item.onSelect(null)}
+    >
+      {item.label}
+    </button>
+  );
+}
+
 describe('the door', () => {
   it('draws no row for someone who may not have a feed', () => {
     render(
       <CalendarFeedHost scope={null}>
-        <CalendarFeedMenuRow onClose={vi.fn()} />
+        <Row />
       </CalendarFeedHost>,
     );
-    expect(screen.queryByRole('menuitem')).toBeNull();
-    expect(screen.queryByText('Subscribe to Calendar…')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Subscribe to Calendar' })).toBeNull();
   });
 
-  it('opens the dialog from the tab menu row, closing the menu', async () => {
+  it('opens the dialog from its Tools row', async () => {
     answer({ feed: null, boards: [] });
-    const onClose = vi.fn();
     render(
       <CalendarFeedHost scope={SCOPE}>
-        <CalendarFeedMenuRow onClose={onClose} />
+        <Row />
       </CalendarFeedHost>,
     );
-    fireEvent.click(screen.getByText('Subscribe to Calendar…'));
-    expect(onClose).toHaveBeenCalled();
+    const row = screen.getByRole('button', { name: 'Subscribe to Calendar' });
+    expect(row.getAttribute('data-badge')).toBe('');
+    fireEvent.click(row);
     expect(track).toHaveBeenCalledWith('UI', 'Opened', 'CalendarFeed');
-    expect(await screen.findByText('Subscribe to Calendar')).toBeTruthy();
+    expect(await screen.findByText('What It Shows')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: /close/i }));
     await waitFor(() => expect(screen.queryByText('What It Shows')).toBeNull());
+  });
+
+  // liveworkspace/docs/specs/004-index/footer-tools-menu.md "Always there": shown with a badge, opening the gate.
+  it('shows a guest the row with Sign In, opening the sign-in gate back to the feed', () => {
+    render(
+      <CalendarFeedHost scope={null} gate={{ kind: 'sign_in' }}>
+        <Row />
+      </CalendarFeedHost>,
+    );
+    const row = screen.getByRole('button', { name: 'Subscribe to Calendar' });
+    expect(row.getAttribute('data-badge')).toBe('Sign In');
+    fireEvent.click(row);
+    expect(track).toHaveBeenCalledWith('UI', 'Opened', 'CalendarFeedSignIn');
+    const href = screen.getByRole('link', { name: 'Sign In' }).getAttribute('href')!;
+    expect(decodeURIComponent(href)).toContain('calendar=1');
+  });
+
+  it('shows Sync Plan on a plan in This Browser, and syncs from the gate', async () => {
+    const sync = vi.fn(async () => {});
+    render(
+      <CalendarFeedHost scope={null} gate={{ kind: 'sync', ready: true, sync }}>
+        <Row />
+      </CalendarFeedHost>,
+    );
+    const row = screen.getByRole('button', { name: 'Subscribe to Calendar' });
+    expect(row.getAttribute('data-badge')).toBe('Sync Plan');
+    fireEvent.click(row);
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Sync Plan' }));
+    });
+    expect(sync).toHaveBeenCalledOnce();
   });
 });

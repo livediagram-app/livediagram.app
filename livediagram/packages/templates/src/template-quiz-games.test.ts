@@ -32,7 +32,7 @@ const shapes = (els: Element[], shape: string): ShapeElement[] =>
   els.filter((e): e is ShapeElement => e.type === 'shape' && e.shape === shape);
 
 describe('quiz and game templates', () => {
-  it.each(GAMES)('%s opens in Workshop, files under Quizzes & Games and builds', (kind) => {
+  it.each(GAMES)('%s opens in Workshop, files under Games and builds', (kind) => {
     expect(templateEditorMode(kind)).toBe('workshop');
     expect(templateCategory(kind)).toBe('games');
     expect(buildTemplate(kind, 0, 0).length).toBeGreaterThan(5);

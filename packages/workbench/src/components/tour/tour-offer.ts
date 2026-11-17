@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useSyncExternalStore } from 'react';
+import { useEffect, useRef, useSyncExternalStore, type ReactNode } from 'react';
 import { createListeners } from '../../lib/listeners';
 
 // The tours on offer on this page (docs/specs/007-editor/editor-tour.md "Where it appears"): each tour host publishes
@@ -53,11 +53,20 @@ export type TourOffer = {
   start: () => void;
   /** The first time this offer is on the button in a page load: the host's own literal telemetry. */
   onShown?: () => void;
+  /** The host opens its own Get Started popover of lessons (livediagram's Watch It Built, liveplanner's tracks): when
+   *  it is the only offer, a press goes straight to it, and a second press closes it. */
+  ownPanel?: boolean;
+  /** Its glyph on the Get Started row's plate (a play mark when absent). */
+  icon?: ReactNode;
+  /** How long it is ("6 steps"), worked out only as Get Started opens, so offering it costs nothing; may load. */
+  length?: () => string | undefined | Promise<string | undefined>;
 };
 
 const offers = new Map<string, TourOffer & { order: number }>();
 let order = 0;
 let top: TourOffer | null = null;
+// Every offer on now (publishTourOffer keeps it), one array per change so a snapshot is stable.
+let all: readonly TourOffer[] = [];
 const listeners = createListeners();
 
 // The most specific offer; between equals, the latest published.
@@ -74,9 +83,9 @@ function pick(): TourOffer | null {
 export function publishTourOffer(id: string, offer: TourOffer | null): void {
   if (offer) offers.set(id, { ...offer, order: ++order });
   else if (!offers.delete(id)) return;
-  const next = pick();
-  if (next === top) return;
-  top = next;
+  top = pick();
+  // Every offer, most specific first and, between equals, the latest: the Get Started popover's rows.
+  all = [...offers.values()].sort((a, b) => b.rank - a.rank || b.order - a.order);
   listeners.notify();
 }
 
@@ -88,6 +97,13 @@ export function tourOffer(): TourOffer | null {
 export function useTourOffer(): TourOffer | null {
   return useSyncExternalStore(listeners.subscribe, tourOffer, () => null);
 }
+
+const allOffers = (): readonly TourOffer[] => all;
+
+export function useTourOffers(): readonly TourOffer[] {
+  return useSyncExternalStore(listeners.subscribe, allOffers, () => EMPTY);
+}
+const EMPTY: readonly TourOffer[] = [];
 
 /**
  * Offers a host's tour on the footer button while `offer` is non-null and not `seen`, and takes it back when null,
@@ -106,6 +122,9 @@ export function useOfferTour(
     onShown?: () => void;
     /** The tour is taken (started, finished or skipped): withheld from the button until it is offered again. */
     seen?: boolean;
+    ownPanel?: boolean;
+    icon?: ReactNode;
+    length?: () => string | undefined | Promise<string | undefined>;
   } | null,
 ): void {
   const latest = useRef(offer);
@@ -116,6 +135,7 @@ export function useOfferTour(
   const rank = offer?.rank ?? 0;
   const label = offer?.label;
   const description = offer?.description;
+  const ownPanel = offer?.ownPanel === true;
   useEffect(() => {
     if (name === null) {
       publishTourOffer(id, null);
@@ -126,18 +146,29 @@ export function useOfferTour(
       name,
       ...(label ? { label } : {}),
       ...(description ? { description } : {}),
+      ...(ownPanel ? { ownPanel } : {}),
       rank,
       start: () => latest.current?.start(),
       onShown: () => latest.current?.onShown?.(),
+      // Read as Get Started draws, so a new glyph or count never republishes the offer.
+      get icon() {
+        return latest.current?.icon;
+      },
+      length: () => latest.current?.length?.(),
     });
-  }, [id, name, label, description, rank]);
+  }, [id, name, label, description, rank, ownPanel]);
   useEffect(() => () => publishTourOffer(id, null), [id]);
 }
+
+/** A tour's length on its Get Started badge: "6 steps". */
+export const stepsLength = (n: number): string | undefined =>
+  n > 0 ? `${n} ${n === 1 ? 'step' : 'steps'}` : undefined;
 
 /** Every offer withdrawn, for tests. */
 export function resetTourOffersForTests(): void {
   offers.clear();
   top = null;
+  all = [];
   order = 0;
   listeners.notify();
 }

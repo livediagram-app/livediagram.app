@@ -205,7 +205,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
     collaborateEl,
     cardTypesPopoverEl,
     trashPopoverEl,
-    cardFinderPopoverEl,
     sessionPopoverEl,
   } = useCanvasChromePanels({
     props,
@@ -309,7 +308,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {zenMode ? null : collaborateEl}
       {zenMode ? null : cardTypesPopoverEl}
       {zenMode ? null : trashPopoverEl}
-      {zenMode ? null : cardFinderPopoverEl}
       {/* The Session strip's popover, in Zen too, as its strip is (docs/specs/012-collaboration/session-tools.md). */}
       {sessionPopoverEl}
 
@@ -395,12 +393,10 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 />
               </div>
             ) : null}
-            {/* Find a Card and Card Types (docs/specs/026-plan/items.md "Finding a card", item-types.md): one strip,
+            {/* Card Types and the Trash (docs/specs/026-plan/item-types.md): one strip,
               while the tab has something that shows cards ("The Plan strip"). */}
             {!zenMode && tabShowsCards ? (
               <PlanCardsClusterStrip
-                finderOpen={activeDockPanel === 'plan-cards'}
-                onToggleFinder={(button) => handleDockButtonClick('plan-cards', button, true)}
                 // Card Types is an editor's, as the Trash is (docs/specs/026-plan/item-types.md "The Card Types panel").
                 types={
                   readOnly

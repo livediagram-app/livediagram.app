@@ -3,7 +3,6 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createShape, type BoxedElement } from '@livedesign/design';
 import { publishClearStyles } from '@liveworkspace/workbench/lib/clear-styles-store';
-import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import { ElementMenuQuickBar, quickBarItems } from './ElementMenuQuickBar';
 
 // docs/specs/008-canvas/element-menu-quick-bar.md
@@ -53,26 +52,13 @@ describe('quickBarItems', () => {
 });
 
 describe('ElementMenuQuickBar', () => {
-  const open = (attachments = true, target = square()) => {
-    const h = handlers();
+  // Assign Action, Add Comment, Add Link and Add Note moved to the Resources category (quickBarItems above); the bar
+  // keeps the element's own verbs and Clear Styles.
+  const open = (target = square()) => {
     const onClose = vi.fn();
-    render(
-      <ElementMenuQuickBar
-        target={target}
-        props={h as unknown as EditorContextMenuProps}
-        attachments={attachments}
-        onClose={onClose}
-      />,
-    );
-    return { h, onClose };
+    render(<ElementMenuQuickBar target={target} onClose={onClose} />);
+    return { onClose };
   };
-
-  it('runs a button’s action and closes the menu', () => {
-    const { h, onClose } = open();
-    fireEvent.click(screen.getByRole('button', { name: 'Add Note' }));
-    expect(h.onOpenNote).toHaveBeenCalledWith('sq');
-    expect(onClose).toHaveBeenCalledOnce();
-  });
 
   it('puts Clear Styles at the right while the element takes a quick style, and runs the panel’s own', () => {
     const clear = vi.fn();
@@ -86,14 +72,9 @@ describe('ElementMenuQuickBar', () => {
     expect(onClose).toHaveBeenCalledOnce();
   });
 
-  it('offers no Clear Styles for an element the quick style is not on', () => {
+  it('draws nothing for an element the quick style is not on', () => {
     open();
     act(() => publishClearStyles({ targetIds: new Set(['other']), clear: vi.fn() }));
-    expect(screen.queryByRole('button', { name: 'Clear Styles' })).toBeNull();
-  });
-
-  it('draws nothing with neither attachments nor Clear Styles to offer', () => {
-    open(false);
     expect(screen.queryByRole('toolbar')).toBeNull();
   });
 });

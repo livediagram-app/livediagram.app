@@ -30,7 +30,7 @@ an API token is refused (403).
 
 ## In the editor
 
-The **Snapshots** button sits in the footer's tool cluster, after Automations, just before Settings, drawn for that Editor once the plan is
+The **Snapshots** row sits in the footer's **Tools** menu ([The footer's Tools menu](../../../../liveworkspace/docs/specs/004-index/footer-tools-menu.md)), after Automations, there for that Editor once the plan is
 stored on the server (never in This Browser, a workbench frame or a Community visit). Its dialog is the shared one,
 naming the item "plan".
 

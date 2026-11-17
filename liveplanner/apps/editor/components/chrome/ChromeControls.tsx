@@ -6,9 +6,14 @@ import {
 } from '@liveworkspace/workbench/components/chrome/chrome-button';
 import { TourOfferButton } from '@liveworkspace/workbench/components/tour/TourOfferButton';
 import { SettingsIcon, SearchGlyph } from '@/components/chrome/tab-bar-icons';
-import { HoverCard } from '@liveplanner/ui';
-import { SnapshotsButton } from '@liveworkspace/snapshots/ui';
-import { AutomationsButton } from '@/components/automations/AutomationsButton';
+import { useSnapshotsToolsItem } from '@liveworkspace/snapshots/ui';
+import {
+  ChromeToolsMenu,
+  type ChromeToolsItem,
+} from '@liveworkspace/workbench/components/chrome/ChromeToolsMenu';
+import { useAutomationsToolsItem } from '@/components/automations/automations-tools-item';
+import { useCalendarFeedToolsItem } from '@/components/calendar-feed/calendar-feed-tools-item';
+import { useEmailIntakeToolsItem } from '@/components/email-intake/email-intake-tools-item';
 
 // The right-hand control cluster shared by the editor's bottom tab bar and
 // the Explorer's bottom bar (docs/specs/007-editor/editor-app.md): search, settings, and the
@@ -19,7 +24,6 @@ export function ChromeControls({
   onOpenSearch,
   onOpenSettings,
   settingsLabel = 'Settings',
-  settingsDescription = 'Configure editor behaviour.',
   labelled = false,
   appearance = true,
 }: {
@@ -35,33 +39,40 @@ export function ChromeControls({
   appearance?: boolean;
 }) {
   const BTN = labelled ? `${CHROME_BTN} ${CHROME_BTN_LABELLED}` : CHROME_BTN;
+  const automations = useAutomationsToolsItem();
+  const snapshots = useSnapshotsToolsItem();
+  const emailIntake = useEmailIntakeToolsItem();
+  const calendarFeed = useCalendarFeedToolsItem();
+  // Search, first in Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md).
+  const search: ChromeToolsItem | null = onOpenSearch
+    ? {
+        id: 'search',
+        group: 'find',
+        label: 'Search',
+        description: 'Find plans, tabs and elements.',
+        icon: <SearchGlyph />,
+        onSelect: () => onOpenSearch(),
+      }
+    : null;
   return (
     <>
-      {/* The Start Tour button, first in the cluster and immediately left of Search: the one way into a tour,
+      {/* The Get Started button, first in the cluster and left of Tools: the one way into a tour,
           drawn only while one is on offer (docs/specs/007-editor/editor-tour.md "Where it appears"). Leading the cluster, it comes and
           goes without moving the controls beside it. */}
       <TourOfferButton labelled={labelled} />
-      {onOpenSearch ? (
-        <HoverCard title="Search" description="Find plans, folders, tabs and elements.">
-          <button type="button" onClick={onOpenSearch} aria-label="Search" className={BTN}>
-            <SearchGlyph />
-            <ChromeLabel show={labelled}>Search</ChromeLabel>
-          </button>
-        </HoverCard>
-      ) : null}
-      {/* Automations (docs/specs/026-plan/automations.md "Where it lives"): drawn only inside an AutomationsHost
-          with a scope, so an Editor of the whole plan; the Explorer's bar has none. */}
-      <AutomationsButton labelled={labelled} />
-      <SnapshotsButton labelled={labelled} />
+      {/* Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md): the tools that work on the
+          whole item, in one menu, drawn only while it holds one. */}
+      <ChromeToolsMenu
+        labelled={labelled}
+        items={[search, automations, emailIntake, calendarFeed, snapshots]}
+      />
       {onOpenSettings ? (
-        <HoverCard title={settingsLabel} description={settingsDescription}>
-          <button type="button" onClick={onOpenSettings} aria-label={settingsLabel} className={BTN}>
-            <SettingsIcon />
-            <ChromeLabel show={labelled}>Settings</ChromeLabel>
-          </button>
-        </HoverCard>
+        <button type="button" onClick={onOpenSettings} aria-label={settingsLabel} className={BTN}>
+          <SettingsIcon />
+          <ChromeLabel show={labelled}>Settings</ChromeLabel>
+        </button>
       ) : null}
-      {appearance ? <AppearanceToggle labelled={labelled} /> : null}
+      {appearance ? <AppearanceToggle /> : null}
     </>
   );
 }

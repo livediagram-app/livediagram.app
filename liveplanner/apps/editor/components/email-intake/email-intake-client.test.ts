@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { emailIntakeScopeFor } from './email-intake-gate';
+import { emailIntakeGateFor, emailIntakeScopeFor } from './email-intake-gate';
 
 // docs/specs/026-plan/email-to-board.md "Who may manage an address" and "Managing an address": who gets the row, and
 // the dialog's four calls, an Editor link's code riding along.
@@ -21,6 +21,8 @@ afterEach(() => vi.clearAllMocks());
 describe('email intake gate', () => {
   const base = {
     level: 'edit' as const,
+    signedIn: true,
+    authLoaded: true,
     hydrated: true,
     embed: false,
     workbench: false,
@@ -33,6 +35,19 @@ describe('email intake gate', () => {
     expect(
       emailIntakeScopeFor({ ...base, scope: { ...base.scope, shareCode: 'c' } })?.shareCode,
     ).toBe('c');
+  });
+
+  it('opens only for someone signed in; a guest meets Sign In, then This Browser meets Sync Plan', () => {
+    expect(emailIntakeScopeFor({ ...base, signedIn: false })).toBeNull();
+    expect(emailIntakeGateFor(base)).toBeNull();
+    expect(emailIntakeGateFor({ ...base, signedIn: false })).toBe('sign_in');
+    expect(emailIntakeGateFor({ ...base, signedIn: false, authLoaded: false })).toBeNull();
+    expect(emailIntakeGateFor({ ...base, offline: true, scope: null })).toBe('sync');
+    expect(emailIntakeGateFor({ ...base, offline: true, scope: null, signedIn: false })).toBe(
+      'sign_in',
+    );
+    expect(emailIntakeGateFor({ ...base, signedIn: false, level: 'view' })).toBeNull();
+    expect(emailIntakeGateFor({ ...base, signedIn: false, embed: true })).toBeNull();
   });
 
   it('draws no row for a Participant, a Viewer, a tab link, This Browser, an embed or a workbench', () => {

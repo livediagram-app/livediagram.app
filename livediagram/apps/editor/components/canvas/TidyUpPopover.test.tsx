@@ -67,7 +67,7 @@ const tiles = () =>
 describe('TidyUpPopover', () => {
   it('lists the five layout styles in order, then Auto-align', () => {
     setup();
-    expect(screen.getByText('Tidy Up')).toBeTruthy();
+    expect(screen.getByText('Tidy')).toBeTruthy();
     expect(screen.getByText(TIDY_CAPTION)).toBeTruthy();
     expect(tiles()).toEqual([
       { kind: 'smart', name: 'Smart', disabled: false },

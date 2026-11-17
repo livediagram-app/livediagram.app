@@ -40,13 +40,14 @@ export function automationsScopeFor(input: GateInput): AutomationsScope | null {
   return { ownerId: scope.ownerId, projectId: scope.projectId, shareCode: scope.shareCode };
 }
 
-/** What stands before the screen for someone who could edit the plan: Sync Plan on a plan in This Browser, Sign In
- *  for a guest on a server plan (once sign-in has answered), else nothing. */
+/** What stands before the screen for someone who could edit the plan: Sign In for a guest (once sign-in has answered),
+ *  then Sync Plan on a plan in This Browser, else nothing. */
 export type AutomationsGateKind = 'sync' | 'sign_in';
 export function automationsGateFor(input: GateInput): AutomationsGateKind | null {
   if (!canEditWhole(input)) return null;
+  // Sign In comes first, as the Tools badges read (footer-tools-menu.md "Always there"); then Sync Plan.
+  if ((input.scope || input.offline) && input.authLoaded && !input.signedIn) return 'sign_in';
   if (input.offline) return 'sync';
-  if (input.scope && input.authLoaded && !input.signedIn) return 'sign_in';
   return null;
 }
 

@@ -31,7 +31,7 @@ function open(target: Element) {
 }
 
 describe('an image’s element menu', () => {
-  it('offers Style, where its Shadow lives', () => {
+  it('offers Appearance, where its Shadow lives', () => {
     open({
       id: 'img',
       type: 'image',
@@ -41,8 +41,8 @@ describe('an image’s element menu', () => {
       height: 80,
       imageId: null,
     });
-    expect(screen.queryAllByRole('button').some((b) => b.textContent?.trim() === 'Style')).toBe(
-      true,
-    );
+    expect(
+      screen.queryAllByRole('button').some((b) => b.textContent?.trim() === 'Appearance'),
+    ).toBe(true);
   });
 });

@@ -1,11 +1,6 @@
 'use client';
 
-import { useId, useSyncExternalStore } from 'react';
-import {
-  onRoomSuggestOnly,
-  roomSuggestOnly,
-  suggestingNow,
-} from '@liveworkspace/suggestions/room-signal';
+import { useId } from 'react';
 import { Tooltip } from '@liveplanner/ui';
 import type { AccessLevel } from '@liveplanner/api-schema';
 
@@ -44,11 +39,6 @@ const PILL_TOGGLE_TONE: Record<Role, string> = {
   view: 'cursor-pointer transition hover:ring-amber-400 dark:hover:ring-amber-400/60',
 };
 
-// A Participant on Suggest Only (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Suggest Only").
-export const SUGGESTING_HINT = 'You suggest changes; an Editor accepts or rejects them';
-// An Editor who switched the canvas to Suggesting (canvas-suggestions.md "Suggesting").
-export const SELF_SUGGESTING_HINT = 'Your changes become suggestions to accept or reject';
-
 export function roleOwnerLabel(ownerName: string | null, isSelf: boolean): string {
   if (isSelf) return 'Owned by you';
   return ownerName ? `Owned by ${ownerName}` : '';
@@ -67,14 +57,8 @@ export function RolePill({
 }) {
   const hintId = useId();
   const owner = roleOwnerLabel(ownerName, isSelf);
-  // Suggesting, whatever level the session's gestures run at: a Participant on Suggest Only (the room's word; its
-  // gestures open as an Editor's, so `role` reads edit) or an Editor who switched the canvas to Suggesting. Either
-  // way the pill takes the Participant's tone.
-  const suggestOnly = useSyncExternalStore(onRoomSuggestOnly, roomSuggestOnly, () => false);
-  const suggesting = useSyncExternalStore(onRoomSuggestOnly, suggestingNow, () => false);
-  const tone: Role = suggesting ? 'participate' : role;
-  const hint = suggestOnly ? SUGGESTING_HINT : suggesting ? SELF_SUGGESTING_HINT : '';
-  const word = suggesting ? 'Suggesting' : ROLE_WORD[role];
+  const tone: Role = role;
+  const word = ROLE_WORD[role];
   const pill = onToggle ? (
     <button
       type="button"
@@ -82,7 +66,6 @@ export function RolePill({
       aria-label={owner ? `${word}. ${owner}` : word}
       aria-describedby={hintId}
       data-role-pill={role}
-      data-suggesting={suggesting ? '' : undefined}
       className={`${PILL} ${PILL_TONE[tone]} ${PILL_TOGGLE_TONE[tone]} relative touch-target-y`}
     >
       <span className="text-optical-line text-optical-caps">{word}</span>
@@ -93,17 +76,11 @@ export function RolePill({
   ) : (
     // Static for a view-link visitor, and focusable so the Tooltip naming the
     // owner can be reached by keyboard too.
-    <span
-      tabIndex={0}
-      data-role-pill={role}
-      data-suggesting={suggesting ? '' : undefined}
-      className={`${PILL} ${PILL_TONE[tone]}`}
-    >
+    <span tabIndex={0} data-role-pill={role} className={`${PILL} ${PILL_TONE[tone]}`}>
       <span className="text-optical-line text-optical-caps">{word}</span>
-      {hint ? <span className="sr-only">{`. ${hint}`}</span> : null}
       {owner ? <span className="sr-only">{`. ${owner}`}</span> : null}
     </span>
   );
-  const tip = [hint, owner].filter(Boolean).join('. ');
+  const tip = owner;
   return tip ? <Tooltip label={tip}>{pill}</Tooltip> : pill;
 }

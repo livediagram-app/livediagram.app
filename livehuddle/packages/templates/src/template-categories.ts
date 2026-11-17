@@ -6,8 +6,8 @@
 // data plus three lookups; a Record over every non-blank kind, so a new template does not compile until it has a home.
 import type { TemplateKind } from './templates';
 
-// The Meetings & Workshops, Retrospectives, Brainstorming, Decisions, Goals & Metrics, People & Teams, Planning,
-// Product & UX, Quizzes & Games, Strategy and Teaching & Learning categories left with their templates
+// The Meetings, Retrospectives, Brainstorming, Decisions, Goals, Teams, Planning,
+// Product, Games, Strategy and Learning categories left with their templates
 // (docs/specs/002-project-scope/not-in-livehuddle.md). The one Virtual Spaces category the first four Spaces shared
 // split into four, Campus (whole sites joined by gardens) came after, and Games Rooms, Homes and Venues (Work Tracker
 // #641) after that, Venues taking the Conference Venue and the Hotel and Suites from Campus.

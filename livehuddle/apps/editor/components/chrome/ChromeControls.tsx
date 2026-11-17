@@ -7,7 +7,11 @@ import {
 import { TourOfferButton } from '@liveworkspace/workbench/components/tour/TourOfferButton';
 import { SettingsIcon, GithubIcon, SearchGlyph } from '@/components/chrome/tab-bar-icons';
 import { REPO_URL, HoverCard } from '@livehuddle/ui';
-import { SnapshotsButton } from '@liveworkspace/snapshots/ui';
+import { useSnapshotsToolsItem } from '@liveworkspace/snapshots/ui';
+import {
+  ChromeToolsMenu,
+  type ChromeToolsItem,
+} from '@liveworkspace/workbench/components/chrome/ChromeToolsMenu';
 
 // The right-hand control cluster shared by the editor's bottom tab bar and
 // the Explorer's bottom bar (docs/specs/007-editor/editor-app.md): search, the open-source GitHub
@@ -19,7 +23,6 @@ export function ChromeControls({
   onOpenSearch,
   onOpenSettings,
   settingsLabel = 'Settings',
-  settingsDescription = 'Configure editor behaviour.',
   labelled = false,
   github = true,
 }: {
@@ -35,20 +38,27 @@ export function ChromeControls({
   github?: boolean;
 }) {
   const BTN = labelled ? `${CHROME_BTN} ${CHROME_BTN_LABELLED}` : CHROME_BTN;
+  const snapshots = useSnapshotsToolsItem();
+  // Search, first in Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md).
+  const search: ChromeToolsItem | null = onOpenSearch
+    ? {
+        id: 'search',
+        group: 'find',
+        label: 'Search',
+        description: 'Find spaces, tabs and elements.',
+        icon: <SearchGlyph />,
+        onSelect: () => onOpenSearch(),
+      }
+    : null;
   return (
     <>
-      {/* The Start Tour button, first in the cluster and immediately left of Search: the one way into a tour,
+      {/* The Get Started button, first in the cluster and left of Tools: the one way into a tour,
           drawn only while one is on offer (docs/specs/007-editor/editor-tour.md "Where it appears"). Leading the cluster, it comes and
           goes without moving the controls beside it. */}
       <TourOfferButton labelled={labelled} />
-      {onOpenSearch ? (
-        <HoverCard title="Search" description="Find spaces, folders, tabs and elements.">
-          <button type="button" onClick={onOpenSearch} aria-label="Search" className={BTN}>
-            <SearchGlyph />
-            <ChromeLabel show={labelled}>Search</ChromeLabel>
-          </button>
-        </HoverCard>
-      ) : null}
+      {/* Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md): the tools that work on the
+          whole item, in one menu, drawn only while it holds one. */}
+      <ChromeToolsMenu labelled={labelled} items={[search, snapshots]} />
       {github ? (
         <>
           {/* Open-source repo link (the codebase is public + MIT, docs/specs/002-project-scope/open-source-and-business-model.md). An
@@ -79,18 +89,13 @@ export function ChromeControls({
           </span>
         </>
       ) : null}
-      {/* Snapshots, just before Settings in every app (docs/specs/013-workspace/snapshots.md "In the editor"):
-          drawn only inside the editor's door, so only for an Editor of the whole item. */}
-      <SnapshotsButton labelled={labelled} />
       {onOpenSettings ? (
-        <HoverCard title={settingsLabel} description={settingsDescription}>
-          <button type="button" onClick={onOpenSettings} aria-label={settingsLabel} className={BTN}>
-            <SettingsIcon />
-            <ChromeLabel show={labelled}>Settings</ChromeLabel>
-          </button>
-        </HoverCard>
+        <button type="button" onClick={onOpenSettings} aria-label={settingsLabel} className={BTN}>
+          <SettingsIcon />
+          <ChromeLabel show={labelled}>Settings</ChromeLabel>
+        </button>
       ) : null}
-      <AppearanceToggle labelled={labelled} />
+      <AppearanceToggle />
     </>
   );
 }

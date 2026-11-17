@@ -5,6 +5,7 @@ import { useStableCallbacks } from '@liveworkspace/workbench/hooks/ui/useStableC
 
 import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import type { PanelId } from '@/lib/panel-layout';
+import { ItemToolsHost } from '@/components/panels/ItemToolsHost';
 import { LazyExplorer } from '@/components/panels/LazyExplorer';
 import { ViewMinimap } from '@/components/canvas/view-readers';
 import type { CanvasChromeProps } from './CanvasChrome';
@@ -109,19 +110,28 @@ export function useCanvasChromePanels({
   // Withheld (a phone held sideways), an open Explorer closes.
   const explorerHidden = !!props.explorerHidden;
   useWithheldExplorerCloses(explorerHidden, explorerOpen, closeDockPanel);
-  const explorerEl =
-    chromeAway || explorerHidden || !explorerOpened ? null : (
-      <LazyExplorer
+  // History and Webhooks in the footer's Tools, there from the start (ItemToolsHost), the Explorer or not.
+  const explorerEl = (
+    <>
+      <ItemToolsHost
         currentDocumentId={currentDocumentId}
         currentShareCode={currentShareCode ?? null}
-        onRenameCurrent={onRenameCurrentDocument}
-        onNewDocument={explorerHandlers.onNewDocument}
-        menuActions={explorerMenu}
-        popoverOpen={explorerOpen}
-        popoverAnchor={activeDockAnchor ?? undefined}
-        onPopoverClose={closeDockPanel}
+        onWebhooks={explorerMenu?.onWebhooks}
       />
-    );
+      {chromeAway || explorerHidden || !explorerOpened ? null : (
+        <LazyExplorer
+          currentDocumentId={currentDocumentId}
+          currentShareCode={currentShareCode ?? null}
+          onRenameCurrent={onRenameCurrentDocument}
+          onNewDocument={explorerHandlers.onNewDocument}
+          menuActions={explorerMenu}
+          popoverOpen={explorerOpen}
+          popoverAnchor={activeDockAnchor ?? undefined}
+          onPopoverClose={closeDockPanel}
+        />
+      )}
+    </>
+  );
 
   // Minimap (docs/specs/008-canvas/minimap.md) routed through docking like the other panels: it
   // docks in the bottom-left and snaps / persists the same way. Desktop-only, gated on the map

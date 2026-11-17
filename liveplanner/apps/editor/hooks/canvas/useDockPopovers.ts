@@ -19,8 +19,6 @@ const POPOVER_WIDTHS: Partial<Record<string, number>> = {
   'plan-trash': 352,
   // The Layers popover's `w-[22rem]`: roomy rows (docs/specs/006-project/layers.md).
   layers: 352,
-  // CardFinderPanel's `sm:w-[44rem]`: wide enough for each row's state, priority, due date and assignee.
-  'plan-cards': 704,
   // CardTypesPanel's `sm:w-[34rem]`, two types to a row.
   'card-types': 544,
   // The Session strip's popovers, `w-72` each (docs/specs/012-collaboration/session-tools.md).
@@ -33,7 +31,7 @@ const POPOVER_WIDTHS: Partial<Record<string, number>> = {
 };
 
 // The popovers sized `w-[calc(100vw-2rem)] sm:w-…`: the whole width less 2rem on a narrow window.
-const FULL_BELOW_SM: ReadonlySet<string> = new Set(['plan-cards', 'card-types']);
+const FULL_BELOW_SM: ReadonlySet<string> = new Set(['card-types']);
 
 // 'card-types': the Card Types panel over its cluster button in Plan mode (docs/specs/026-plan/item-types.md).
 export type DockPanel =
@@ -42,7 +40,6 @@ export type DockPanel =
   | 'collaborate'
   | 'card-types'
   | 'plan-trash'
-  | 'plan-cards'
   // The Session strip's Timer and Vote (docs/specs/012-collaboration/session-tools.md "The Session strip").
   | 'session-timer'
   | 'session-vote'
@@ -59,7 +56,6 @@ function trackDockPanelOpened(id: DockPanel): void {
   else if (id === 'collaborate') track('UI', 'Opened', 'Collaborate');
   else if (id === 'card-types') track('Plan', 'Opened', 'CardTypes');
   else if (id === 'plan-trash') track('Plan', 'Opened', 'Trash');
-  else if (id === 'plan-cards') track('Plan', 'Opened', 'CardFinder');
   else if (id === 'session-timer') track('UI', 'Opened', 'SessionTimer');
   else if (id === 'session-vote') track('UI', 'Opened', 'SessionVote');
   else if (id === 'tidy-up') track('UI', 'Opened', 'TidyUp');

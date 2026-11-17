@@ -18,7 +18,4 @@ export const StartPanel = createStartPanel({
   CardGrid: StartCardGrid,
   tint: startTint,
   sheet: true,
-  // Hidden while what it holds draws nothing (the switch not offered: signed out, or not ready yet), so no empty
-  // strip and hairline sit under the choices.
-  hideEmptyFooter: true,
 });

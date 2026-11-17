@@ -63,14 +63,14 @@ describe('a retired shape’s element menu', () => {
     open({ mode: 'element', elementId: 'q', x: 10, y: 10 }, [qaBoard]);
     expect(button('Arrange')).toBe(true);
     expect(button('Shape')).toBe(false);
-    expect(button('Style')).toBe(false);
+    expect(button('Appearance')).toBe(false);
     expect(screen.queryByLabelText('Opacity')).toBeNull();
   });
 
-  it('still offers Style on a shape livehuddle has (the Shape section left with the diagram shapes)', () => {
+  it('still offers Appearance on a shape livehuddle has (the Shape section left with the diagram shapes)', () => {
     open({ mode: 'element', elementId: 's', x: 10, y: 10 }, [square]);
     expect(button('Shape')).toBe(false);
-    expect(button('Style')).toBe(true);
+    expect(button('Appearance')).toBe(true);
   });
 });
 
@@ -83,6 +83,6 @@ describe('a selection holding a retired shape', () => {
 
   it('offers no Style when only retired members are selected', () => {
     open({ mode: 'multi', x: 10, y: 10 }, [qaBoard, { ...qaBoard, id: 'q2' }]);
-    expect(button('Style')).toBe(false);
+    expect(button('Appearance')).toBe(false);
   });
 });

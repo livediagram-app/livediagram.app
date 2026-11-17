@@ -9,7 +9,7 @@ import {
   useItemSnapshotsDoor,
   type SnapshotsDoor,
 } from './door';
-import { SnapshotsButton } from './SnapshotsButton';
+import { useSnapshotsToolsItem } from './snapshots-tools-item';
 import { useSnapshots } from './useSnapshots';
 import {
   snapshotAuthor,
@@ -55,33 +55,51 @@ function fakeApi(initial: SnapshotSummary[]): SnapshotsApi & { list: ReturnType<
   };
 }
 
+// The Tools menu's Snapshots row, as a plain button: what the footer's Tools popover draws for it.
+function SnapshotsRow() {
+  const item = useSnapshotsToolsItem();
+  if (!item) return null;
+  return (
+    <button type="button" data-snapshots-button="" onClick={() => item.onSelect(null)}>
+      {item.label}
+    </button>
+  );
+}
+
 function mount(door: SnapshotsDoor | null) {
   return render(
     <SnapshotsDoorProvider door={door}>
-      <SnapshotsButton labelled />
+      <SnapshotsRow />
     </SnapshotsDoorProvider>,
   );
 }
 
 const open = async () => {
   fireEvent.click(screen.getByRole('button', { name: 'Snapshots' }));
-  return screen.findByRole('dialog');
+  // The dialog's code loads on first open; a cold load on a busy machine can pass findBy's default second.
+  return screen.findByRole('dialog', {}, { timeout: 5000 });
 };
 
-describe('SnapshotsButton', () => {
+describe('the Snapshots row', () => {
   it('draws nothing without a door', () => {
     const { container } = mount(null);
     expect(container.querySelector('[data-snapshots-button]')).toBeNull();
   });
 
-  it('draws the icon alone when not labelled', () => {
-    render(
-      <SnapshotsDoorProvider door={{ api: fakeApi([]), noun: 'plan', viewerId: null }}>
-        <SnapshotsButton />
-      </SnapshotsDoorProvider>,
-    );
-    const button = screen.getByRole('button', { name: 'Snapshots' });
-    expect(button.textContent).toBe('');
+  it('is a Versioning row in the Tools menu, naming the item', () => {
+    const { result } = renderHook(() => useSnapshotsToolsItem(), {
+      wrapper: ({ children }) => (
+        <SnapshotsDoorProvider door={{ api: fakeApi([]), noun: 'plan', viewerId: null }}>
+          {children}
+        </SnapshotsDoorProvider>
+      ),
+    });
+    expect(result.current).toMatchObject({
+      id: 'snapshots',
+      group: 'versions',
+      label: 'Snapshots',
+      description: 'Save points for the whole plan.',
+    });
   });
 
   it('opens the dialog, empty, and takes a named snapshot', async () => {

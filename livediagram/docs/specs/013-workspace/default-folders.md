@@ -37,8 +37,8 @@ explicit `folderId: null` is My Work's top chosen on purpose and wins over any d
 gone, or is in a team the person has left, is skipped, and the canvas lands at the top of My Work. Deleting a
 folder drops the defaults that point at it.
 
-- `/new` sends no place unless a `?folder=` / `?team=` context names one, so its creates are filed by default. The
-  wizard never asks where a canvas goes ([New document route](../007-editor/new-document-route.md#one-step-wizard)).
+- `/new` sends no place unless a `?folder=` / `?team=` context names one, so its creates are filed by default. `/new`
+  never asks where a canvas goes ([New document route](../007-editor/new-document-route.md#no-welcome-step)).
 - A template link (`/new?template=`) is filed by the mode its template opens in.
 - An API or MCP create that names no place and no intent is filed by its first seeded tab: the mode its template
   opens in (`templateEditorMode`), else the mode the tab says it opens in (`seedIntentOf`,

@@ -3,6 +3,7 @@
 // EditorView's own hooks, each one concern read from the editor's context: the header's Community state, the
 // guest sign-in nudge, the canvas style the covers draw, and Automations' scope and gate.
 import {
+  emailIntakeGateFor,
   emailIntakeScopeFor,
   type EmailIntakeScope,
 } from '@/components/email-intake/email-intake-gate';
@@ -21,7 +22,9 @@ import type { resolveViewBackdrop } from '@/lib/view-backdrop';
 import { SIGNIN_BANNER_DISMISS_KEY } from '@/components/chrome/SignInBanner';
 import { automationsScopeFor } from '@/components/automations/automations-gate';
 import { useAutomationsGate } from '@/components/automations/use-automations-gate';
+import { useToolGate } from '@/components/dialogs/tool-gate';
 import {
+  calendarFeedGateFor,
   calendarFeedScopeFor,
   type CalendarFeedScope,
 } from '@/components/calendar-feed/calendar-feed-gate';
@@ -96,20 +99,27 @@ export function useCanvasPattern(
   return canvasPattern;
 }
 
-// Subscribe to Calendar's scope (docs/specs/026-plan/calendar-feed.md "Where it lives"): the plan's owner or a team
-// member, signed in, on a plan saved to an account; null (no tab menu row) for everyone else.
-export function useEditorCalendarFeed(
-  ctx: EditorContextValue,
-  isOffline: boolean,
-): CalendarFeedScope | null {
-  return calendarFeedScopeFor({
+// Subscribe to Calendar (docs/specs/026-plan/calendar-feed.md "Where it lives"): its scope for the plan's owner or a
+// team member, signed in, on a plan saved to an account; else the gate (Sign In, Sync Plan) for one who would have it
+// but for that, so Tools always shows it.
+export function useEditorCalendarFeed(ctx: EditorContextValue, isOffline: boolean) {
+  const input = {
     hydrated: ctx.hydrated,
     embed: ctx.embedMode,
     workbench: !!ctx.workbench,
     offline: isOffline,
     signedIn: !!ctx.accountUserId,
+    authLoaded: ctx.authLoaded,
     scope: ctx.plan.context?.itemsScope ?? null,
-  });
+  };
+  const calendarFeedScope: CalendarFeedScope | null = calendarFeedScopeFor(input);
+  const calendarFeedGate = useToolGate(
+    calendarFeedScope ? null : calendarFeedGateFor(input),
+    ctx.selfParticipant.id !== 'self',
+    ctx.syncToCloud,
+    input,
+  );
+  return { calendarFeedScope, calendarFeedGate };
 }
 
 // Publish as Roadmap's scope (docs/specs/026-plan/public-roadmap.md "Who may publish"): the plan's owner or a team
@@ -124,20 +134,27 @@ export function useEditorRoadmap(ctx: EditorContextValue, isOffline: boolean): R
   });
 }
 
-// Email to Board's scope (docs/specs/026-plan/email-to-board.md "Who may manage an address"): an Editor of the whole
-// plan, in person, on a plan saved to the server.
-export function useEditorEmailIntake(
-  ctx: EditorContextValue,
-  isOffline: boolean,
-): EmailIntakeScope | null {
-  return emailIntakeScopeFor({
+// Email to Board (docs/specs/026-plan/email-to-board.md "Who may manage an address"): its scope for an Editor of the
+// whole plan, signed in, on a plan saved to the server; else the gate (Sign In, Sync Plan) for that Editor.
+export function useEditorEmailIntake(ctx: EditorContextValue, isOffline: boolean) {
+  const input = {
     level: ctx.can.level,
+    signedIn: !!ctx.accountUserId,
+    authLoaded: ctx.authLoaded,
     hydrated: ctx.hydrated,
     embed: ctx.embedMode,
     workbench: !!ctx.workbench,
     offline: isOffline,
     scope: ctx.plan.context?.itemsScope ?? null,
-  });
+  };
+  const emailIntakeScope: EmailIntakeScope | null = emailIntakeScopeFor(input);
+  const emailIntakeGate = useToolGate(
+    emailIntakeScope ? null : emailIntakeGateFor(input),
+    ctx.selfParticipant.id !== 'self',
+    ctx.syncToCloud,
+    input,
+  );
+  return { emailIntakeScope, emailIntakeGate };
 }
 
 export function useEditorAutomations(ctx: EditorContextValue, isOffline: boolean) {

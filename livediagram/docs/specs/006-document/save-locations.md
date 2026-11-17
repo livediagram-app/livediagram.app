@@ -5,8 +5,8 @@ only (This Browser, [Offline Mode](offline-mode.md)). More stores may come (GitH
 one of them: it is a mirror of cloud documents, not a place a document is stored
 ([Google Drive is a mirror, not a location](#google-drive-is-a-mirror-not-a-location)).
 
-**Nobody is asked.** The New Canvas wizard ([Dedicated route for new-document creation](../007-editor/new-document-route.md#one-step-wizard))
-has no Location step: every new document is stored in the default location for who is creating it, below. A document
+**Nobody is asked.** New Canvas ([Dedicated route for new-document creation](../007-editor/new-document-route.md#no-welcome-step))
+asks nothing: every new document is stored in the default location for who is creating it, below. A document
 moves between the two afterwards with [Offline Mode](offline-mode.md)'s **Sync Canvas** and **Take Offline**.
 (A Location step would be answered with the default by most people before they had anything on the canvas.) A
 document in This Browser says what it is on the document itself: the editor header's
@@ -28,8 +28,8 @@ Why a guest starts local: [Auth + guest access → Guest documents start local](
 
 - One function answers it: `defaultSaveLocationFor({ signedIn })` in
   `apps/editor/lib/save-locations.ts`. Every create from `/new` asks it at commit, through
-  `resolveSaveLocation` in `useNewDocumentLocation` (`apps/editor/app/new/useNewDocumentLocation.ts`): a mode chosen
-  in the wizard, its **Create** and **Skip**, and the wizard-less links (`/new?template=`, `/new?blank=1`).
+  `resolveSaveLocation` in `useNewDocumentLocation` (`apps/editor/app/new/useNewDocumentLocation.ts`): a plain `/new`
+  and its links (`/new?mode=`, `/new?template=`, `/new?blank=1`).
 - A `/new?folder=` / `?team=` context names a server place, so it is
   livediagram whoever is creating.
 - Before sign-in has answered, `signedIn` is the `ld_signed_in` hint cookie
@@ -72,7 +72,8 @@ person (livediagram).
 - **When it shows** (`showsSaveSwitch`): the canvas has loaded and the reader and their sign-in are known; the reader
   owns it and can edit it; it has one tab with nothing on it; it has no live share link, is not open through one and
   is not in a team; nobody else is in it; and the editor is not embedded or in another app's workbench. Anywhere else
-  the row is hidden, and the Explorer's Sync Canvas and Take Offline stay the way to move it. Once a move has started the
+  the row is hidden, and with it the strip it sits in and that strip's rule (every app's start screen alike), and the
+  Explorer's Sync Canvas and Take Offline stay the way to move it. Once a move has started the
   row stays until it lands.
 - **Built once.** The switch (`Switch`) and the row (`SaveSwitch`, `SaveSwitchRow`, its words and `showsSaveSwitch`)
   are `@liveworkspace/ui`'s (`packages/ui/src/Switch.tsx`, `packages/ui/src/save-switch/`), shared by every app. This
@@ -81,7 +82,7 @@ person (livediagram).
   start's own chunk, so the start screen's first paint makes no request for it.
 
 **In the wizard, before the create.** `/new`'s mode wizard shows the same row under its modes
-(`apps/editor/app/new/NewSaveSwitch.tsx`, the shared `SaveSwitchRow`). Nothing exists yet, so it moves nothing: it
+(`apps/editor/components/start/StartSaveSwitch.tsx`, the shared `SaveSwitchRow`). Nothing exists yet, so it moves nothing: it
 starts at the default for who is creating (the settled sign-in, or the hint until it answers) and the create goes
 where it says (`resolveSaveLocation`'s `chosen`, null until the person flips it, so a sign-in that answers late still
 sets the default). It is drawn once the page runs in the browser, never in the prerender, and is absent when a
@@ -141,12 +142,11 @@ is.
 - `apps/editor/lib/save-locations.ts` (+ test): the ids and helpers above.
 - `apps/editor/app/new/useNewDocumentLocation.ts`: `resolveSaveLocation`, the location every create from `/new` uses.
 - `apps/editor/components/start/StartSaveSwitch.tsx`: the start screen's Sync Canvas to Server switch, over `@liveworkspace/ui`'s `SaveSwitch` ([On the start screen](#on-the-start-screen)).
-- `apps/editor/app/new/NewSaveSwitch.tsx`: the same row in `/new`'s wizard, choosing the create's location.
 - `apps/editor/app/new/page.tsx`: derives the offline create branch from the location id.
 
 ## References
 
-See [Dedicated route for new-document creation](../007-editor/new-document-route.md) (the wizard),
+See [Dedicated route for new-document creation](../007-editor/new-document-route.md) (`/new`),
 [Offline Mode](offline-mode.md) (the browser-only store),
 [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) (events),
 [Help app](../018-help/help-app.md) (help).

@@ -7,7 +7,7 @@ import { EditorContextMenu } from './EditorContextMenu';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 
 // docs/specs/008-canvas/element-menu-quick-bar.md (Work Tracker 739): livehuddle's element menu has no quick bar band
-// above its categories. Clear Styles is a row of the appearance group, right under Style, while the element takes a
+// above its categories. Clear Styles is a row of the appearance group, right under Appearance, while the element takes a
 // quick style.
 beforeAll(() => {
   globalThis.ResizeObserver ??= class {
@@ -51,12 +51,12 @@ describe('the element menu’s Clear Styles', () => {
     expect(rows()[0]).toBe('Arrange');
   });
 
-  it('sits directly under Style, and clears in one press', () => {
+  it('sits directly under Appearance, and clears in one press', () => {
     const clear = vi.fn();
     const { onClose } = open(text());
     act(() => publishClearStyles({ targetIds: new Set(['sq']), clear }));
     const order = rows();
-    expect(order[order.indexOf('Style') + 1]).toBe('Clear Styles');
+    expect(order[order.indexOf('Appearance') + 1]).toBe('Clear Styles');
     fireEvent.click(screen.getByRole('button', { name: 'Clear Styles' }));
     expect(clear).toHaveBeenCalledOnce();
     expect(onClose).toHaveBeenCalledOnce();
@@ -66,6 +66,6 @@ describe('the element menu’s Clear Styles', () => {
     open(text());
     act(() => publishClearStyles({ targetIds: new Set(['other']), clear: vi.fn() }));
     expect(screen.queryByRole('button', { name: 'Clear Styles' })).toBeNull();
-    expect(rows()).toContain('Style');
+    expect(rows()).toContain('Appearance');
   });
 });

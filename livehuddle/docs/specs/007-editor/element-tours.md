@@ -1,11 +1,11 @@
 # Element tours
 
 An **element tour** teaches one complex element type, on the element itself: what its parts mean, how to read it and
-how to change it. It is started from the footer's Start Tour button while an element of that type is selected, and it
+how to change it. It is started from the footer's Get Started button while an element of that type is selected, and it
 walks through the real element the person selected, not a sample.
 
 It sits beside [the Receptionist](../008-canvas/receptionist.md) and [Show Me](show-me.md) (started from a
-button on one surface). Like every tour it never offers itself: the one way in is the Start Tour button
+button on one surface). Like every tour it never offers itself: the one way in is the Get Started button
 ([Tours](editor-tour.md#where-it-appears)).
 
 The toured kind: the [portal](../009-elements/portal-element.md). livediagram's tours of the elements livehuddle does
@@ -16,20 +16,20 @@ naming one of those kinds stays in `elementTourKinds`, unread.
 
 ## Domain language
 
-| Term                  | Means                                                                                        |
-| --------------------- | -------------------------------------------------------------------------------------------- |
-| **Element tour**      | This pattern, and one tour of it (the **Portal tour**)                                       |
-| **Start Tour button** | The footer button that starts every tour ([Tours](editor-tour.md#where-it-appears))          |
-| **Toured kind**       | An element type that has an element tour (`portal`)                                          |
-| **Selection toolbar** | The floating toolbar over a single selection ([Canvas](../008-canvas/canvas-and-palette.md)) |
+| Term                   | Means                                                                                        |
+| ---------------------- | -------------------------------------------------------------------------------------------- |
+| **Element tour**       | This pattern, and one tour of it (the **Portal tour**)                                       |
+| **Get Started button** | The footer button that starts every tour ([Tours](editor-tour.md#where-it-appears))          |
+| **Toured kind**        | An element type that has an element tour (`portal`)                                          |
+| **Selection toolbar**  | The floating toolbar over a single selection ([Canvas](../008-canvas/canvas-and-palette.md)) |
 
 ## Naming
 
-On the Start Tour button an element tour is named from its closing card's eyebrow, in title case, without the word
+On the Get Started button an element tour is named from its closing card's eyebrow, in title case, without the word
 "tour": **Start Portal Tour** (`tourNameOf`). Its Settings
 section is still called **Show Me**. "Element tour" is the code's and the specs' word only.
 
-## On the Start Tour button
+## On the Get Started button
 
 - **Most specific first.** While a toured element is selected its tour is the one the button offers, ahead of a tool
   in hand and Ask Receptionist (`TOUR_OFFER_RANK.element`).
@@ -49,7 +49,7 @@ section is still called **Show Me**. "Element tour" is the code's and the specs'
 - A synced user preference, `elementTourKinds`, lists the toured kinds whose tour has been started, so the record
   follows the account ([User preferences](user-preferences.md)). Until 25 October 2026 it listed the kinds whose
   offer had been answered (Play or Cancel) and hid the offer for them; from then until 1 November 2026 it only fed
-  the Settings rows. Now it hides that kind's tour from the Start Tour button again, until its switch is turned on.
+  the Settings rows. Now it hides that kind's tour from the Get Started button again, until its switch is turned on.
 - `elementToursSeen` counts every kind as taken. Nothing writes it `true` now: the switch over them all, **Show Me on
   Every Element**, wrote it (with every kind listed) until 8 November 2026, when it went because the Portal is the
   only toured kind, and so did the retired [Power user mode](power-user-mode.md)'s preset, which listed none. A stored
@@ -63,7 +63,7 @@ Settings' **Getting Started** category holds element tours in their own section,
 how many are on (`1 of 1 On`). Opened, it shows the section's line, then one switch per toured kind, named for the
 element alone: **Portal**, linking the Portals article. There is no switch over them all while the Portal is the
 only toured kind (a second kind brings one back, nesting the kinds' switches under it).
-On means "not yet taken": switching one on forgets its run and puts that kind's tour back on the Start Tour button
+On means "not yet taken": switching one on forgets its run and puts that kind's tour back on the Get Started button
 whenever such an element is selected; off takes it off the button. The accordion opens on its own when Settings is
 opened on one of its rows (a search result) or on the section.
 
@@ -123,7 +123,7 @@ tours that went (`TimelineTour`, `ChartTour`, `StackTour`, `LaneTour`, `Boundary
 livediagram's `SankeyTour`, `LayerStackTour`, `MindMapTour`, `EntityTour` and the rest) are not sent by livehuddle and
 stay explained for the shared dashboard's history:
 
-- **Offer**: `UI` · `Opened` · `<Kind>TourOffer` the first time the Start Tour button shows that kind's tour in a
+- **Offer**: `UI` · `Opened` · `<Kind>TourOffer` the first time the Get Started button shows that kind's tour in a
   page load. Until 25 October 2026 it counted the offer toolbar showing, and `UI` · `Closed` · `<Kind>TourOffer`
   counted **Cancel**; nothing sends Closed now, and its explanation stays for the history.
 - **Start**: `UI` · `Started` · `<Kind>Tour` on a press of the button.
@@ -150,7 +150,7 @@ help article's tour section; and a section here.
 
 - `apps/editor/lib/element-tours.ts`: the toured kinds, their names, their edit gates, and the taken list.
 - `../packages/workbench/src/lib/element-keyed-store.ts`: the per-element module store behind what a step shows.
-- `apps/editor/components/tour/ElementTourHost.tsx`: publishes the tour to the Start Tour button (`useOfferTour`), runs it, ends it.
+- `apps/editor/components/tour/ElementTourHost.tsx`: publishes the tour to the Get Started button (`useOfferTour`), runs it, ends it.
 - `apps/editor/components/tour/element-tour-defs.ts`: one definition per toured kind.
 - `apps/editor/components/tour/element-tour-api.ts`: what a step may do on its element.
 - `apps/editor/components/tour/element-tour-parts.ts`: the steps every tour is built from (a step on the element, a
