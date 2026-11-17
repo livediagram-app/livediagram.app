@@ -9,6 +9,7 @@ import {
   recolourColumn,
   removeColumn,
   renameColumn,
+  restoreColumn,
   setDoneColumn,
   setWipLimit,
 } from './board-setup-edits';
@@ -135,6 +136,36 @@ describe('board set-up edits', () => {
     expect(kept.doneColumnId).toBe(last.id);
     const one = { ...board, columns: [first] };
     expect(removeColumn(one, first.id)).toBe(one);
+  });
+});
+
+describe('restoreColumn (Remove Column undone, Work Tracker 1048)', () => {
+  it('puts the column back at its place in the board as it is now', () => {
+    const removed = removeColumn(board, second.id);
+    const back = restoreColumn(removed, second, 1);
+    expect(back.columns.map((c) => c.id)).toEqual(['todo', 'doing', 'done']);
+    expect(back.columns[1]).toBe(second);
+    // A place past the end goes last.
+    expect(restoreColumn(removed, second, 9).columns.map((c) => c.id)).toEqual([
+      'todo',
+      'done',
+      'doing',
+    ]);
+  });
+
+  it('changes nothing when the board has it, or its state, again, or is full', () => {
+    expect(restoreColumn(board, second, 1)).toBe(board);
+    const again = { ...board, columns: [first, { ...second, id: 'other' }, last] };
+    expect(restoreColumn(again, second, 1)).toBe(again);
+    const full = {
+      ...board,
+      columns: Array.from({ length: PLAN_COLUMNS_MAX }, (_, i) => ({
+        id: `c${i}`,
+        status: `s${i}`,
+        name: `C${i}`,
+      })),
+    };
+    expect(restoreColumn(full, second, 1)).toBe(full);
   });
 });
 

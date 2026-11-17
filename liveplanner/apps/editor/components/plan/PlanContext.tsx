@@ -118,6 +118,9 @@ export type PlanContextValue = {
   // reads its picture through it (docs/specs/026-plan/item-types.md "Image fields"). Absent outside a project.
   itemsScope?: ItemsScope | null;
   updateBoard: (boardId: string, setup: PlanBoardSetup) => void;
+  // A change worked out from the board's set-up as it is when it lands (an Undo after other edits); absent outside
+  // the editor's own slice.
+  editBoard?: (boardId: string, change: (setup: PlanBoardSetup) => PlanBoardSetup) => void;
   // The board's filter (docs/specs/026-plan/board-widgets.md "The board's filter"): sets or clears only
   // `planBoard.filter`, so a Participant's commit passes the participant rule. Absent outside a project.
   setBoardFilter?: (boardId: string, filter: BoardFilter | undefined) => void;

@@ -36,6 +36,7 @@ export function PlanColumnHeader({
   onCollapse,
   bar,
   reorder,
+  onRestoreColumn,
 }: {
   col: ProjectedColumn & { count: number; overLimit: boolean };
   setup: PlanBoardSetup;
@@ -53,6 +54,8 @@ export function PlanColumnHeader({
   bar?: string | undefined;
   // The head as the column's handle, for someone who may reorder the board's columns; absent, it is no handle.
   reorder?: ColumnReorder | undefined;
+  // Puts this column back after Remove Column (its notice's Undo); absent, no Undo.
+  onRestoreColumn?: ((column: PlanBoardSetup['columns'][number], at: number) => void) | undefined;
 }) {
   const [open, setOpen] = useState(false);
   // Opened for a column just added: its name is selected, ready to type over.
@@ -188,6 +191,8 @@ export function PlanColumnHeader({
           onTrashCards={onTrashCards}
           onDeleteStatus={onDeleteStatus}
           onCollapse={onCollapse}
+          cardCount={col.count}
+          onRestore={onRestoreColumn}
           onClose={(restoreFocus) => {
             setOpen(false);
             setFresh(false);
