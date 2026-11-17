@@ -2,7 +2,13 @@
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { hasUntouchedExamples, type Tab } from '@livediagram/document';
+import { track } from '@/lib/telemetry';
 import { useTemplateFlow } from './useTemplateFlow';
+
+vi.mock('@/lib/telemetry', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/telemetry')>()),
+  track: vi.fn(),
+}));
 
 // docs/specs/006-document/template-examples.md: a picked template lands marked, and Clear Example Content and Keep It
 // are each one commit (one undo step) on the active tab.
@@ -49,6 +55,7 @@ describe('template example content in the editor', () => {
     // The hook keeps its first render's tabs, so it is rendered again over the landed one.
     const g = flow(landed);
     act(() => g.result.current.clearExampleContent());
+    expect(track).toHaveBeenCalledWith('Template', 'Changed', 'ExampleCleared');
     expect(g.commitTabs).toHaveBeenCalledTimes(1);
     expect(notes(g.tab()).every((t) => t === '')).toBe(true);
     expect(g.tab().elements).toHaveLength(landed.elements.length);
@@ -62,6 +69,7 @@ describe('template example content in the editor', () => {
     const landed = f.tab();
     const g = flow(landed);
     act(() => g.result.current.keepExampleContent());
+    expect(track).toHaveBeenCalledWith('Template', 'Changed', 'ExampleKept');
     expect(g.commitTabs).toHaveBeenCalledTimes(1);
     expect(notes(g.tab())).toEqual(notes(landed));
     expect(hasUntouchedExamples(g.tab().elements)).toBe(false);
