@@ -60,6 +60,10 @@ export function walkthroughCalls(call: WalkthroughCall) {
     list: async (item: string) =>
       json<WalkthroughListResponse>(await call(WALKTHROUGHS_PATH, {}, { item })),
 
+    /** A person's own ready walkthroughs in this app, newest first (the Explorer's Walkthroughs library). */
+    listOwned: async (owner: string) =>
+      json<WalkthroughListResponse>(await call(WALKTHROUGHS_PATH, {}, { owner })),
+
     /** Start one: its events are stored at once; it is ready once its media arrives. */
     start: async (owner: string, start: WalkthroughStart) =>
       json<{ walkthrough: Walkthrough }>(

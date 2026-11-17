@@ -452,7 +452,15 @@ The Surface table, every gate `workbenchMode` touches (`appChrome` is `surface =
 | `LoadErrorCard`, `NotFound`                                                         | `editor-page.tsx`                                                     | `embed` forms (no recovery card; create-new in a new tab) |
 
 Preferences: `fetchUserPreferences` runs; `writeUserPreferences` keeps the local write and the event and skips
-`apiPutPreferences` under confinement. Appearance: `liveplanner:theme` calls `setAppearanceOverride(scheme)`; before
+`apiPutPreferences` under confinement.
+
+The index (Work Tracker 1138): the frame's requests present the `lvw_` session, which liveworkspace's index refuses
+(`401`), and the api resolves the session's access itself. So under confinement (`isWorkbenchConfined()`,
+`lib/api/workbench-confinement.ts`) `planGrant` answers null without asking, `keepPlanGrantFresh` keeps nothing,
+`withPlanGrant` sends the request as it is, `tabs.ts` `onOpen` records no open, `usePlanShareState` (`confined:
+workbenchMode`) reads no share links, and the Automations gate takes `workbenchMode` as an embed, so the first rules
+read (a confined `GET projects/:doc/automations`) is never asked. Tests: `plan-grants.test.ts` "a workbench frame",
+`tabs-workbench-open.test.ts`, `usePlanShareState.test.ts` "asks a workbench frame's index nothing". Appearance: `liveplanner:theme` calls `setAppearanceOverride(scheme)`; before
 one arrives the override is `null` and the system scheme applies (the stored setting in the frame's partitioned
 storage is ignored while `workbenchMode`, WB15).
 

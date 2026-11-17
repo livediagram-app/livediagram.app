@@ -98,6 +98,11 @@ export const MCP_TOOL_METRICS: readonly Metric[] = [
     'View Live',
     'The interactive view in a chat host following a document live, with a view-only ticket.',
   ),
+  mcpTool(
+    'ViewEdit',
+    'View Edit',
+    'A person renaming or moving an element in the interactive view, with an edit-level token.',
+  ),
 ];
 
 export const MCP_TOOL_CALLS: MetricStack = {

@@ -12,6 +12,8 @@ import {
   withRemoteOp,
   type RebasingHistory,
 } from '@liveworkspace/workbench/lib/remote-op-log';
+import { keepHeldWriting, type HeldIn } from '@/lib/article/article-hold-undo';
+import { peerHeldBlocks } from '@/lib/article/article-holds-store';
 
 // Bounded undo/redo over the tabs array. See docs/specs/008-canvas/canvas-and-palette.md ("Undo / Redo").
 //
@@ -154,6 +156,15 @@ export function historyRedo(h: History): History {
   };
 }
 
+/** An undo's or redo's `next` that leaves every block collaborators hold as `prev` has it (docs/specs/007-editor/
+ *  article-pages.md "Holding a paragraph", "Undo and redo"): `next` itself when nothing held would change. The redo
+ *  or undo side keeps the step as it was. */
+export function historyKeepingHeld(prev: History, next: History, heldIn: HeldIn): History {
+  if (next === prev) return next;
+  const present = keepHeldWriting(prev.present, next.present, heldIn);
+  return present === next.present ? next : { ...next, present };
+}
+
 export function historyReset(h: History, tabs: Tab[] | ((prev: Tab[]) => Tab[])): History {
   const next = typeof tabs === 'function' ? tabs(h.present) : tabs;
   return { ...clearedStacks<Tab[]>(), present: next, depth: 0, branch: branchOf(h) + 1 };
@@ -218,8 +229,9 @@ export function useDocumentHistory(initialTabs: Tab[]): DocumentHistory {
     setHistory(historyMarkCheckpoint);
   };
 
+  // A step taken back never writes over a paragraph someone else is writing in (historyKeepingHeld).
   const undo = () => {
-    setHistory(historyUndo);
+    setHistory((h) => historyKeepingHeld(h, historyUndo(h), peerHeldBlocks));
   };
 
   // Abort-to-checkpoint for Escape during a drag (see historyCancel).
@@ -228,7 +240,7 @@ export function useDocumentHistory(initialTabs: Tab[]): DocumentHistory {
   };
 
   const redo = () => {
-    setHistory(historyRedo);
+    setHistory((h) => historyKeepingHeld(h, historyRedo(h), peerHeldBlocks));
   };
 
   // Replace the present tab list with `tabs` and CLEAR history. For

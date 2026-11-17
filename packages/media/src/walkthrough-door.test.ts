@@ -47,6 +47,10 @@ beforeEach(() => {
         ],
       },
     })),
+    listOwned: vi.fn(async () => ({
+      ok: true,
+      value: { walkthroughs: [{ walkthrough: { ...W, item: 'other' }, owner: 'me' }] },
+    })),
     start: vi.fn(async () => ({ ok: true, value: { walkthrough: { ...W, ready: false } } })),
     upload: vi.fn(async () => ({ ok: true, value: { walkthrough: W } })),
     read: vi.fn(async () => ({
@@ -90,6 +94,25 @@ const door = (
 const body = async (res: Response) => (await res.json()) as Record<string, unknown>;
 
 describe('listing', () => {
+  it("lists a person's own across the app, with each one's item, reading no grant", async () => {
+    const access = vi.fn();
+    const mine = (over: Partial<WalkthroughDoorInput> = {}) =>
+      door({
+        itemId: null,
+        access,
+        request: new Request('https://app.test/api/walkthroughs?mine=1'),
+        ...over,
+      });
+    expect(await body(await mine())).toMatchObject({
+      walkthroughs: [{ id: 'w1', item: 'other', mine: true, canDelete: true }],
+    });
+    expect(calls.listOwned).toHaveBeenCalledWith('me');
+    expect(access).not.toHaveBeenCalled();
+    // Only a person, as themselves.
+    expect((await mine({ owner: null })).status).toBe(403);
+    expect((await mine({ person: false })).status).toBe(403);
+  });
+
   it('names which are yours and which you may delete, and whether you may record', async () => {
     const editor = await body(await door());
     expect(editor).toMatchObject({

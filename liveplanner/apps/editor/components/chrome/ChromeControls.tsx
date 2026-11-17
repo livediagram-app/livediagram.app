@@ -13,6 +13,7 @@ import {
 import { useAutomationsToolsItem } from '@/components/automations/automations-tools-item';
 import { useCalendarFeedToolsItem } from '@/components/calendar-feed/calendar-feed-tools-item';
 import { useEmailIntakeToolsItem } from '@/components/email-intake/email-intake-tools-item';
+import { useRoadmapToolsItem } from '@/components/roadmap/roadmap-tools-item';
 
 // The right-hand control cluster shared by the editor's bottom tab bar and
 // the Explorer's bottom bar (docs/specs/007-editor/editor-app.md): search, settings, and the
@@ -41,12 +42,14 @@ export function ChromeControls({
   const automations = useAutomationsToolsItem();
   const emailIntake = useEmailIntakeToolsItem();
   const calendarFeed = useCalendarFeedToolsItem();
+  const roadmap = useRoadmapToolsItem();
   // Search, first in Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md).
   const search: ChromeToolsItem | null = onOpenSearch
     ? {
         id: 'search',
         group: 'find',
-        label: 'Search',
+        // The ellipsis: it opens outside Tools (footer-tools-menu.md "Opening a tool inside Tools").
+        label: 'Search…',
         description: 'Find plans, tabs and elements.',
         icon: <SearchGlyph />,
         onSelect: () => onOpenSearch(),
@@ -62,7 +65,7 @@ export function ChromeControls({
           whole item, in one menu, drawn only while it holds one. */}
       <ChromeToolsMenu
         labelled={labelled}
-        items={[search, automations, emailIntake, calendarFeed]}
+        items={[search, automations, emailIntake, calendarFeed, roadmap]}
       />
       {onOpenSettings ? (
         <button type="button" onClick={onOpenSettings} aria-label={settingsLabel} className={BTN}>

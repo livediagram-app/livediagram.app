@@ -75,10 +75,17 @@ export const importBoardOutput = {
   comments: z.number().describe('The comments carried, in one Imported comments thread a card.'),
   people: z
     .object({
+      matched: z
+        .number()
+        .describe(
+          'Matched by email to a member of the plan’s team (only when you are one; never an email).',
+        ),
       onPlan: z.number().describe('Matched by name to someone already on the plan.'),
       named: z.number().describe('New named people.'),
     })
-    .describe('People matched by name to someone on the plan, and new named people.'),
+    .describe(
+      'People matched by email to team members, by name to someone on the plan, and new named people.',
+    ),
   leftOut: z.array(count).describe('What was left out, each reason with its count.'),
   fits: z
     .boolean()

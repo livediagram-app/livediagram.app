@@ -26,7 +26,13 @@ const PERSON = { id: 'p-ada', name: 'Ada', color: '#123456' };
 const NOW = Date.UTC(2026, 10, 15, 12);
 const TODAY = Math.floor(NOW / DAY_MS);
 const iso = (day: number) => new Date(day * DAY_MS).toISOString().slice(0, 10);
-const ALL: CalendarFeed = { personId: ADA, boardId: null, mine: false, includeDone: false };
+const ALL: CalendarFeed = {
+  personId: ADA,
+  typeIds: null,
+  boardId: null,
+  mine: false,
+  includeDone: false,
+};
 
 const board = (id: string, title: string): Element =>
   ({
@@ -92,7 +98,7 @@ describe('the feed store', () => {
       env,
       'P',
       ADA,
-      { boardId: 'b1', mine: true, includeDone: true },
+      { typeIds: null, boardId: 'b1', mine: true, includeDone: true },
       NOW,
     );
     expect(token).toMatch(FEED_TOKEN_PATTERN);
@@ -101,6 +107,7 @@ describe('the feed store', () => {
     expect(rows[0]).toMatchObject({ person_id: ADA, token_hash: await feedTokenHash(token) });
     expect(await calendarFeedOf(env, 'P', await feedTokenHash(token))).toEqual({
       personId: ADA,
+      typeIds: null,
       boardId: 'b1',
       mine: true,
       includeDone: true,
@@ -189,6 +196,21 @@ describe('the events', () => {
     expect(await titles({ ...ALL, includeDone: true })).toEqual(['#1 Open', '#2 Done']);
   });
 
+  it('shows only the card types picked, across every board', async () => {
+    const { env } = await arrange();
+    const due = iso(TODAY);
+    await insertItems(env, 'P', [
+      card('a', 1, { title: 'A task', status: 'b1-todo', due }),
+      card('b', 2, { title: 'A bug', status: 'b2-todo', due }, { type: 'bug' }),
+    ]);
+    const titles = async (feed: CalendarFeed) =>
+      (await feedEventsOf(env, 'P', feed, NOW))?.events.map((e) => e.summary);
+    expect(await titles({ ...ALL, typeIds: ['bug'] })).toEqual(['#2 A bug']);
+    expect(await titles({ ...ALL, typeIds: ['bug', 'task'] })).toEqual(['#1 A task', '#2 A bug']);
+    expect(await titles(ALL)).toEqual(['#1 A task', '#2 A bug']);
+  });
+
+  // A feed made before card types keeps its one board until its options are next saved.
   it("shows one board's cards, and only the person's cards", async () => {
     const { env } = await arrange();
     const due = iso(TODAY);

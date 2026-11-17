@@ -162,10 +162,10 @@ function EditorViewFooterBar(view: {
   const inWorkbench = useEditorChrome((s) => s.workbench !== null);
   const isOwner = useEditorChrome((s) => s.isOwner);
   const readOnly = useEditorChrome((s) => s.isStructureReadOnly);
-  // `isOutOfScope` answers from the session's tab scope, so the bar renders when the scope changes and reads the
-  // function then.
-  useEditorChrome((s) => s.sessionTabScope);
-  const isOutOfScope = chrome.get().isOutOfScope;
+  // `isOutOfScope` answers from the session's tab scope and is made afresh only when the scope changes (useTabScope),
+  // so the bar subscribes to the function itself: a scope set after mount (a tab-scoped link) marks the other tabs.
+  // A `chrome.get()` here was kept at its first value by the React Compiler (Work Tracker 946).
+  const isOutOfScope = useEditorChrome((s) => s.isOutOfScope);
   const renameTabNonce = useEditorChrome((s) => s.renameTabNonce);
   const participantsByTab = useEditorChrome((s) => s.participantsByTab);
   const selfId = useEditorChrome((s) => s.selfParticipant.id);

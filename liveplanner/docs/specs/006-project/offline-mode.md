@@ -217,6 +217,17 @@ not worked on, and then the tab as loaded.
   filters) and the Automations screen stay closed, nothing is saved, no card or cell write is sent, the room does
   not connect and no request goes out under the placeholder, until the reader resolves and the fresh copy lands.
   A stored role never widens what the reader may do.
+- **The code it draws is in first.** Before it paints, the warm paint waits for the code of what it mounts with a
+  Board first tab (the board, the card panel's host and the Plan tour's host: `WARM_PAINT_CODE` in
+  `apps/editor/lib/editor-deferred-code.ts`), at most 200 ms (`WARM_PAINT_CODE_WAIT_MS`, as in livediagram), so they
+  draw in the paint's own commit: the cards are on screen in the paint's first frame rather than a beat later, and no
+  waiting content's reveal holds back the next. A returning open has that code in its HTTP cache. The sign-in bridge
+  mounts as its code lands (the shared `AuthProvider`), so nothing the paint shows holds back auth, and a warm open
+  is editable no later than a cold one.
+- **The board holds its place.** The paint draws, inert, the strips the reader's kept role will show once the
+  catch-up gives it back: an Editor's example cards notice and an Editor's or Participant's card type chips. The
+  catch-up then makes them work without moving the columns under the reader. A Viewer's copy draws neither, so no
+  gap is left; a role lowered since the copy was kept takes them away at the catch-up, the one case the board moves.
 - **The ordinary load catches up** behind it, unchanged: auth, the participant, the plan, the first tab and then
   the cards and sheets. Its answer replaces the copy in place (the same tabs by id, no opening screen between) and
   its role applies. The fresh cards replace the kept ones whole, and the fresh sheets the kept ones. A first tab
@@ -231,9 +242,11 @@ not worked on, and then the tab as loaded.
 
 **Measured** on the production export (headless Chromium, the e2e stack, a guest's Kanban plan at its own address,
 100 ms round trip at 10 Mbps, 12 cold and 12 warm opens interleaved, medians / p90 from navigation start): the cards
-are on screen at **829 / 836 ms** cold (the open as it was before) and **390 / 397 ms** warm, about 440 ms (53%)
-sooner. The plan is editable at 1,036 / 1,051 ms warm against 829 / 836 ms cold: the catch-up lands about 200 ms
-later than a cold open, the same trade the other editors make (their reads wait behind the paint's work).
+are on screen at **925 / 935 ms** cold (the open as it was before) and **405 / 419 ms** warm, about 520 ms (56%)
+sooner, and the plan is editable at **775 / 787 ms** warm, about 150 ms before a cold open (Work Tracker 1111, on a
+busier machine than the first measurement, which had cold at 829 ms and warm editable at 1,036 ms, about 200 ms
+after cold, before the sign-in bridge mounted by state and the paint had its code in first). The cards' first row
+stands at the same height before and after the catch-up.
 
 The bindings are set out in the [Last seen copy blueprint](blueprints/last-seen-copy.md), which names its
 measurements.

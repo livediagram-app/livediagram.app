@@ -351,6 +351,19 @@ The panel has no loading or error state of its own: its rows derive synchronousl
 
 Rows come from the `actionRowsFromElements` + `commentRowsFromElements` derivations in `CollaboratePanel.tsx` (comment rows carry a `resolved` flag). Everything interleaves newest-first on its own timestamp (an action's createdAt, a thread's latest comment), with your own actions first.
 
+### From the Inbox
+
+An action assigned to someone reaches their Inbox ([one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md)
+"The verbs"), and **Mark Done** there completes it without opening the canvas. In the editor's panel, for an action
+on the tab it has open, it is the canvas's own `completeAction`. Anywhere else (the Explorer page, liveworkspace.app,
+another canvas's panel) it calls `POST /api/documents/:id/tabs/:tabId/actions/:actionId/status` with
+`{ elementId, status }` (`apps/api/src/routes/action-routes.ts`): an Editor's, as completing is in the editor (§7),
+written through the tab's revision like a comment route (409 `tab_busy` after a lost race twice), and relayed to the
+room as an `action-status` element delta (`withActionStatus`), so every open editor updates in place. Setting the
+status the action already has is 204 and writes nothing; an element or action that is not there is 404. The status
+is not in the collaboration ledger: an editor's whole-tab save taken before the delta arrived can put it back, as it
+can any element edit.
+
 ## 6. Preference + profile toggle
 
 One new opt-out flag in the [User preferences](../007-editor/user-preferences.md) preference blob, default **on**

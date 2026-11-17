@@ -174,7 +174,18 @@ describe('WatchItBuiltHost', () => {
     expect(writeUserPreferences).toHaveBeenCalledWith({ watchTopics: ['look'] }, 'me');
     expect(r.getByTestId('player')).toBeTruthy();
     expect(shown.player).toMatchObject({ card: { id: 'look' }, hasMore: true });
+    // Your Turn: the topic done, Get Started comes back for the next one.
     act(() => shown.player!.onEnded('completed'));
+    expect(r.queryByTestId('player')).toBeNull();
+    expect(r.getByTestId('panel')).toBeTruthy();
+  });
+
+  it('closes for good when a topic is skipped', () => {
+    editor();
+    const r = mount();
+    act(() => tourOffer()!.start());
+    act(() => shown.panel!.onPick('look'));
+    act(() => shown.player!.onEnded('skipped'));
     expect(r.queryByTestId('player')).toBeNull();
     expect(r.queryByTestId('panel')).toBeNull();
     expect(probe.shownTour).toBeNull();

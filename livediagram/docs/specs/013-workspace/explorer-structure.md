@@ -41,9 +41,11 @@ hosts, named below.
 - **New.** The `/new` flow, filed where it was pressed (`?folder=`, `?team=`) ([Default folders](default-folders.md)).
 - **What it makes.** Home's hero pictures livediagram's kinds (Flowchart, Mind Map, Whiteboard, Workshop), each
   starting its template through `/new?template=` (the package's `WORK_KINDS`, [one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) "What you can make, on Home's hero").
-- **The Library.** The person's **Image Gallery** and **Shape Libraries**, read through this site's API, and
-  **Import from**, whose buttons open this site's `/import` page for the source, which imports where New was pressed
-  and comes back (`apps/editor/lib/explorer-library-host.tsx`). Shape Libraries' tiles are drawn by
+- **The Library.** The person's **Image Gallery** and **Shape Libraries**, read through this site's API. Shape
+  Libraries' header keeps **Import from draw.io** for libraries, which opens this site's `/import` page and comes back
+  (`apps/editor/lib/explorer-library-host.tsx`). Boards from other tools are imported into a tab from the start
+  screen's **Import** ([Start diagramming](../007-editor/start-diagramming.md)), not from the Explorer's folders or
+  Home. Shape Libraries' tiles are drawn by
   `GET /api/shape-libraries/:id/previews` ([Shape libraries](shape-libraries.md)).
 - **The item menu.** In the editor's Explorer panel, **Take Offline** and **Sync Canvas** on a canvas's menu, as the
   person (`apps/editor/hooks/persistence/useOfflineItemMenu.tsx`, the package's `itemMenu`;

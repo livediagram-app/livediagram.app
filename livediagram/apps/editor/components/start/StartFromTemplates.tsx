@@ -12,6 +12,7 @@ import {
   lucideCalendarRange,
   lucideCode,
   lucideDices,
+  lucideFileDown,
   lucideGoal,
   lucideGraduationCap,
   lucideLightbulb,
@@ -52,11 +53,15 @@ import { TEMPLATE_STARTS, type TemplateStartMode } from './start-template-items'
 import { StartModeSwitch } from '@/components/start/StartModeSwitch';
 import { useStartPalette } from '@/components/start/useStartPalette';
 import { useConnectStart } from '@/components/connect/useConnectStart';
+import { useStartImport } from './useStartImport';
 
 // A Community post's live card image: this app's api's, since the document is this app's.
 const communityImage = (shareCode: string) => `${API_BASE}${communityImagePath(shareCode)}`;
 
 const glyph = (icon: Parameters<typeof lucideGlyph>[0]) => lucideGlyph(icon, 16);
+
+// The rail's Import entry, above Connect File (start-diagramming.md "Import"): liveplanner's Import glyph.
+const ImportGlyph = glyph(lucideFileDown);
 
 // Each rail group's glyph: Recommended, then every catalogue category (a Record, so a new category needs one).
 const RAIL_ICONS: Readonly<
@@ -121,6 +126,8 @@ export function StartFromTemplates({
   const palette = useStartPalette();
   // Connect File at the rail's foot, where connecting can work (useConnectStart).
   const connect = useConnectStart();
+  // Import above it, into this tab, for an editor who may change it (useStartImport).
+  const imports = useStartImport();
   // How the Community's tiles draw here: this app's card image, the credit in the panel's muted ink.
   const tiles: CommunityStartTileOptions = {
     imageUrl: communityImage,
@@ -161,63 +168,81 @@ export function StartFromTemplates({
     setStartPanelOpen(true);
     return () => setStartPanelOpen(false);
   }, [closed]);
-  if (closed) return null;
+  if (closed) return imports.dialogs;
   const close = () => {
     dismissEmptyCard(closedKey);
   };
   return (
-    <StartPanel
-      titleId={`start-${mode}-title`}
-      title={copy.title}
-      line={copy.line}
-      searchLabel="Find a template"
-      noMatchNoun={copy.noMatch}
-      helpArticle={copy.help}
-      palette={palette}
-      categories={categories}
-      initialCategory="recommended"
-      cardsIn={(id) => [
-        ...(start.groups.find((g) => g.id === id)?.kinds ?? []).map(templateCard),
-        ...communityStartCardsIn(community, id, tiles),
-      ]}
-      // The rail counts templates: the Community's tiles arriving never change it.
-      countIn={(id) => start.groups.find((g) => g.id === id)?.kinds.length ?? 0}
-      search={(query) =>
-        withCommunityStartMatches(
-          start.search(query).map((g) => ({ category: g.group, cards: g.kinds.map(templateCard) })),
-          community,
-          query,
-          rail,
-          tiles,
-        )
-      }
-      onChoose={(kind) => {
-        const post = findCommunityStartPost(community, kind);
-        if (post) {
-          // Your own copy, through the post's community link, as the gallery's Make a Copy (and counted as one).
-          track('Community', 'Copied', 'StartWith');
-          leave(communityStartHref(post));
-          return;
+    <>
+      <StartPanel
+        titleId={`start-${mode}-title`}
+        title={copy.title}
+        line={copy.line}
+        searchLabel="Find a template"
+        noMatchNoun={copy.noMatch}
+        helpArticle={copy.help}
+        palette={palette}
+        categories={categories}
+        initialCategory="recommended"
+        cardsIn={(id) => [
+          ...(start.groups.find((g) => g.id === id)?.kinds ?? []).map(templateCard),
+          ...communityStartCardsIn(community, id, tiles),
+        ]}
+        // The rail counts templates: the Community's tiles arriving never change it.
+        countIn={(id) => start.groups.find((g) => g.id === id)?.kinds.length ?? 0}
+        search={(query) =>
+          withCommunityStartMatches(
+            start
+              .search(query)
+              .map((g) => ({ category: g.group, cards: g.kinds.map(templateCard) })),
+            community,
+            query,
+            rail,
+            tiles,
+          )
         }
-        // The blank leaves the tab empty, so it closes the panel as the × does.
-        if (kind === start.blank) close();
-        onTemplate(kind as TemplateKind);
-      }}
-      elsewhere={
-        canSwitch
-          ? (query) =>
-              otherModeMatches(mode, query).map((m) => ({
-                mode: m.mode,
-                cards: m.kinds.map(templateCard),
-              }))
-          : undefined
-      }
-      onChooseElsewhere={(m, kind) => onOtherModeTemplate(m, kind as TemplateKind)}
-      lead={<StartModeSwitch />}
-      onClose={close}
-      // Where the new item lives, and a switch to move it while it is empty (save-locations.md "On the start screen").
-      footer={(palette) => <StartSaveSwitch palette={palette} />}
-      connect={connect}
-    />
+        onChoose={(kind) => {
+          const post = findCommunityStartPost(community, kind);
+          if (post) {
+            // Your own copy, through the post's community link, as the gallery's Make a Copy (and counted as one).
+            track('Community', 'Copied', 'StartWith');
+            leave(communityStartHref(post));
+            return;
+          }
+          // The blank leaves the tab empty, so it closes the panel as the × does.
+          if (kind === start.blank) close();
+          onTemplate(kind as TemplateKind);
+        }}
+        elsewhere={
+          canSwitch
+            ? (query) =>
+                otherModeMatches(mode, query).map((m) => ({
+                  mode: m.mode,
+                  cards: m.kinds.map(templateCard),
+                }))
+            : undefined
+        }
+        onChooseElsewhere={(m, kind) => onOtherModeTemplate(m, kind as TemplateKind)}
+        lead={<StartModeSwitch />}
+        onClose={close}
+        // Where the new item lives, and a switch to move it while it is empty (save-locations.md "On the start screen").
+        footer={(palette) => <StartSaveSwitch palette={palette} />}
+        connect={connect}
+        // Import, above Connect File (the rail's last entry): it places nothing and opens its dialog.
+        footLead={
+          imports.openImport
+            ? [
+                {
+                  id: 'import',
+                  name: 'Import',
+                  icon: <ImportGlyph />,
+                  onPick: imports.openImport,
+                },
+              ]
+            : []
+        }
+      />
+      {imports.dialogs}
+    </>
   );
 }

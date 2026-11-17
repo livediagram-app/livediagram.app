@@ -14,7 +14,7 @@ import { SyncProjectPrompt } from './SyncProjectPrompt';
 // asks a guest on a server plan to sign in through it.
 export function SyncGateDialog({
   title,
-  subtitle = 'Saved only in this browser.',
+  subtitle,
   help,
   promptTitle,
   message,
@@ -24,6 +24,7 @@ export function SyncGateDialog({
   onClose,
 }: {
   title: string;
+  // A line under the title (Share's "Saved only in this browser."); a tool's gate has none, its prompt says it.
   subtitle?: string;
   // A help link beside the close.
   help?: ReactNode;

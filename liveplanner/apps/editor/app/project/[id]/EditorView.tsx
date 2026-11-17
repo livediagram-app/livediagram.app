@@ -235,8 +235,12 @@ export function EditorView() {
   const snapshotsDoor = useEditorSnapshots(ctx, isOffline);
   // Subscribe to Calendar's scope: the tab menu's row (editor-view-hooks).
   const { calendarFeedScope, calendarFeedGate } = useEditorCalendarFeed(ctx, isOffline);
-  // Publish as Roadmap's scope and the active tab's boards: the tab menu's row (editor-view-hooks).
+  // Publish as Roadmap's scope (its Tools row; the dialog picks the tab), and the active tab's boards (Email to Board's).
   const roadmapScope = useEditorRoadmap(ctx, isOffline);
+  const roadmapHasBoards = useMemo(
+    () => tabs.some((t) => boardIdsOnTab(t.elements).length > 0),
+    [tabs],
+  );
   const roadmapBoards = useMemo(() => boardIdsOnTab(activeTab.elements), [activeTab.elements]);
   // Email to Board's scope: the tab menu's row, on the same boards (editor-view-hooks).
   const { emailIntakeScope, emailIntakeGate } = useEditorEmailIntake(ctx, isOffline);
@@ -260,7 +264,7 @@ export function EditorView() {
       <PendingStarterRules tabId={tabs[0]?.id} projectId={ctx.projectId} offline={isOffline} />
       <SnapshotsDoorProvider door={snapshotsDoor}>
         <CalendarFeedHost scope={calendarFeedScope} gate={calendarFeedGate}>
-          <RoadmapHost scope={roadmapScope} boardIds={roadmapBoards}>
+          <RoadmapHost scope={roadmapScope} hasBoards={roadmapHasBoards} activeTabId={activeTab.id}>
             <EmailIntakeHost
               scope={emailIntakeScope}
               gate={emailIntakeGate}

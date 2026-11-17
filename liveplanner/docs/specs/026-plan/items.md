@@ -1004,7 +1004,9 @@ Items follow the project's access ([Auth and guest access](../014-identity/auth-
 
 ## Live for everyone
 
-- Every write is pushed to everyone in the project's room at once, in order, with the store's revision.
+- Every write is pushed to everyone in the project's room at once, in order, with the store's revision. A write
+  too big for one message (200 full cards is about 12.5 MiB) goes out in parts of at most 1 MiB, in order, each with
+  the write's revision, so everyone sees every card of it without a refetch.
 - A session on a tab-scoped link hears only that the store moved on, and fetches the items its tab shows.
 - A client that sees a gap in revisions, or reconnects, fetches the whole store again.
 - Nothing a browser sends over the room changes an item: items change only through the api.

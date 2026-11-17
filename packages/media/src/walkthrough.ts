@@ -24,6 +24,8 @@ export const WALKTHROUGH_AUTHOR_MAX = 80;
 export const WALKTHROUGH_FINGERPRINT_MAX = 128;
 export const WALKTHROUGH_TABS_MAX = 500;
 export const WALKTHROUGHS_PER_ITEM_MAX = 50;
+// The Explorer's Walkthroughs library: a person's own, newest first, in one app.
+export const WALKTHROUGHS_PER_OWNER_LIST_MAX = 200;
 // A start whose media never arrives is swept after an hour.
 export const WALKTHROUGH_PENDING_MS = 60 * 60 * 1000;
 export const WALKTHROUGH_DEFAULT_TITLE = 'Walkthrough';
@@ -88,6 +90,9 @@ export type WalkthroughSummary = Omit<Walkthrough, 'item' | 'ready'> & {
   mine: boolean;
   canDelete: boolean;
 };
+
+/** One of the caller's own walkthroughs in the Explorer's library: which item it is on, too. */
+export type WalkthroughLibraryEntry = WalkthroughSummary & { item: string };
 
 /** What a recorder sends to start one. */
 export type WalkthroughStart = {

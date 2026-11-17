@@ -53,7 +53,8 @@ export function ChromeControls({
     ? {
         id: 'search',
         group: 'find',
-        label: 'Search',
+        // The ellipsis: it opens outside Tools (footer-tools-menu.md "Opening a tool inside Tools").
+        label: 'Search…',
         description: 'Find designs, tabs and elements.',
         icon: <SearchGlyph />,
         onSelect: () => onOpenSearch(),

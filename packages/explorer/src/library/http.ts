@@ -22,6 +22,8 @@ import type {
   LibraryShape,
   ShapeLibrariesHost,
   ShapeLibrary,
+  WalkthroughEntry,
+  WalkthroughsHost,
 } from './types';
 
 const ACCEPTED: readonly string[] = ACCEPTED_IMAGE_TYPES;
@@ -255,7 +257,29 @@ function shapeLibrariesHost(path: string, token: Token, origin: string): ShapeLi
   };
 }
 
-export type AppLibraryHosts = { gallery?: GalleryHost; shapeLibraries?: ShapeLibrariesHost };
+/** The person's walkthroughs over the app's door (`<path>?mine=1`, `<path>/<id>/media?d=`, `<path>/<id>?d=`). */
+function walkthroughsHost(path: string, token: Token, origin: string): WalkthroughsHost {
+  const base = `${origin}${path}`;
+  const at = (entry: WalkthroughEntry, rest = '') =>
+    `${base}/${encodeURIComponent(entry.id)}${rest}?d=${encodeURIComponent(entry.item)}`;
+  return {
+    list: async (signal) => {
+      const res = await call(token, `${base}?mine=1`, {}, signal);
+      if (!res.ok) return [];
+      return ((await res.json()) as { walkthroughs: WalkthroughEntry[] }).walkthroughs;
+    },
+    media: async (entry, signal) => (await call(token, at(entry, '/media'), {}, signal)).blob(),
+    remove: async (entry) => {
+      await call(token, at(entry), { method: 'DELETE' });
+    },
+  };
+}
+
+export type AppLibraryHosts = {
+  gallery?: GalleryHost;
+  shapeLibraries?: ShapeLibrariesHost;
+  walkthroughs?: WalkthroughsHost;
+};
 
 // One set per app, origin and token reader for the page's life, so the Explorer's reads key on stable objects.
 const cache = new WeakMap<Token, Map<string, AppLibraryHosts>>();
@@ -270,11 +294,14 @@ export function appLibraryHosts(
   const key = `${app} ${origin}`;
   let hosts = byApp.get(key);
   if (!hosts) {
-    const { imagesPath, shapeLibrariesPath } = APP_ITEMS[app];
+    const { imagesPath, shapeLibrariesPath, walkthroughsPath } = APP_ITEMS[app];
     hosts = {
       ...(imagesPath ? { gallery: galleryHost(app, imagesPath, token, origin) } : {}),
       ...(shapeLibrariesPath
         ? { shapeLibraries: shapeLibrariesHost(shapeLibrariesPath, token, origin) }
+        : {}),
+      ...(walkthroughsPath
+        ? { walkthroughs: walkthroughsHost(walkthroughsPath, token, origin) }
         : {}),
     };
     byApp.set(key, hosts);

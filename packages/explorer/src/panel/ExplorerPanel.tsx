@@ -152,6 +152,7 @@ export type ExplorerPanelProps = {
 export function ExplorerPanel({
   gallery,
   shapeLibraries,
+  walkthroughs,
   imports,
   itemMenu,
   history,
@@ -171,6 +172,7 @@ export function ExplorerPanel({
         <LibraryHostProvider
           gallery={gallery}
           shapeLibraries={shapeLibraries}
+          walkthroughs={walkthroughs}
           imports={imports}
           itemMenu={itemMenu}
           history={history}
@@ -230,8 +232,8 @@ function PanelInner({
   );
   const sheet = layout === 'sheet';
   const stacked = layout !== 'side';
-  const { gallery, shapeLibraries } = useLibraryHost();
-  const library = Boolean(gallery || shapeLibraries);
+  const { gallery, shapeLibraries, walkthroughs } = useLibraryHost();
+  const library = Boolean(gallery || shapeLibraries || walkthroughs);
   const { host: localHost, live: thisBrowserLive } = useThisBrowserItems();
   const offlineCount = thisBrowserLive.length;
   // The rail shows This Browser while it holds a live item or a local folder, as the sidebar does.

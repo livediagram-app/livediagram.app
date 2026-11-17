@@ -43,7 +43,7 @@ the public read and vote, the vote field and its sort, the editor's Publish as R
 - Editor `components/roadmap/`: `roadmap-client.ts` (the three managing calls), `roadmap-gate.ts`
   (`roadmapScopeFor`), `roadmap-defaults.ts` (`defaultRoadmapSettings`, `TRIAGE_NAMES`), `RoadmapContext.tsx`,
   `RoadmapHost.tsx` (the door; the dialog loads on first open), `RoadmapDialog.tsx`, `RoadmapSettingsForm.tsx`,
-  `RoadmapMenuRow.tsx`.
+  `roadmap-tools-item.tsx` (the Tools row, `useRoadmapToolsItem`).
 - Editor public page: `app/roadmap/[...slug]/page.tsx` (one placeholder; a catch-all, so `next dev` serves both parts),
   `lib/roadmap-path.ts` (`ROADMAP_PLACEHOLDER_PATH`, `isRoadmapPath`, `roadmapFromPath`), `lib/api/roadmaps-public.ts`,
   `components/roadmap/public/RoadmapPage.tsx`, `RoadmapColumn.tsx`, `RoadmapCard.tsx`, `lib/public-browser-id.ts`

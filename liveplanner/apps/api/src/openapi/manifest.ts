@@ -1047,7 +1047,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'projects',
     tag: 'Calendar',
     summary:
-      "Your own calendar feed of the plan: its options (which board, only my cards, include done cards) and when its link was made, never the link itself; null for none. With the plan's boards the Board option may name. The plan's owner or a team member only, signed in in person: never a share link at any level, an API token or a workbench session.",
+      "Your own calendar feed of the plan: its options (which card types, only my cards, include done cards) and when its link was made, never the link itself; null for none. With the plan's card types the Card Types option may name. The plan's owner or a team member only, signed in in person: never a share link at any level, an API token or a workbench session.",
     auth: 'clerk',
     responseSchema: 'CalendarFeedResponse',
     statuses: [200, 401, 403, 404, 405],
@@ -1360,6 +1360,19 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     requestSchema: 'ItemsImportRequest',
     responseSchema: 'ItemsResponse',
     statuses: [201, 202, 400, 401, 403, 404, 409, 410, 413],
+  },
+  {
+    method: 'POST',
+    path: '/projects/{id}/items/import/people',
+    segment: 'projects',
+    tag: 'Items',
+    summary:
+      'Match up to 1,000 emails from an import’s file to the plan’s team: one entry per email, the team member it belongs to or null, never an email. Answered only when the caller is a joined member of the plan’s team; anyone else gets null for every email. Needs edit access to the whole plan.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    requestSchema: 'ItemsImportPeopleRequest',
+    responseSchema: 'ItemsImportPeople',
+    statuses: [200, 400, 401, 403, 404, 410],
   },
   {
     method: 'POST',

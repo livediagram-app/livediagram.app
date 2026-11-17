@@ -5,7 +5,8 @@
 // (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Sharing"), so the api's `shareable` no longer knows: the editor asks
 // the index once the plan is open and again each time the Share dialog closes, as that is where links change. A
 // visitor who came in on a link knows without asking. One request per open plus one per Share dialog session, never
-// per edit; a reader who cannot manage links (a 403) keeps what the load said.
+// per edit; a reader who cannot manage links (a 403) keeps what the load said. A workbench frame (`confined`, a live
+// embed's among them) asks nothing: the index refuses its session, and it shows no badge or presence stack that needs it.
 import { useEffect } from 'react';
 import type { ShareLink } from '@liveworkspace/index-client';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
@@ -21,11 +22,14 @@ export function usePlanShareState(input: {
   // The link this session came in on, if any.
   sessionShareCode: string | null;
   shareDialogOpen: boolean;
+  // A workbench frame: its session reaches the api only.
+  confined: boolean;
   setShareable: (shareable: boolean) => void;
 }): void {
-  const { projectId, serverStored, sessionShareCode, shareDialogOpen, setShareable } = input;
+  const { projectId, serverStored, sessionShareCode, shareDialogOpen, confined, setShareable } =
+    input;
   useEffect(() => {
-    if (!projectId || !serverStored || shareDialogOpen) return;
+    if (!projectId || !serverStored || shareDialogOpen || confined) return;
     if (sessionShareCode) {
       setShareable(true);
       return;
@@ -40,5 +44,5 @@ export function usePlanShareState(input: {
     return () => {
       live = false;
     };
-  }, [projectId, serverStored, sessionShareCode, shareDialogOpen, setShareable]);
+  }, [projectId, serverStored, sessionShareCode, shareDialogOpen, confined, setShareable]);
 }

@@ -26,7 +26,7 @@ import { handleCalendarFeed, matchesEtag } from './calendar-feed-route';
 const OWNER = 'user_ada';
 const MEMBER = 'user_bea';
 const OUTSIDER = 'user_cat';
-const ALL = { boardId: null, mine: false, includeDone: false };
+const ALL = { typeIds: null, boardId: null, mine: false, includeDone: false };
 const today = new Date(Math.floor(Date.now() / DAY_MS) * DAY_MS).toISOString().slice(0, 10);
 
 const card = (id: string, key: number, fields: Item['fields']): Item => ({

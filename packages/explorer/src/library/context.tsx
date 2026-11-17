@@ -18,6 +18,7 @@ export function useLibraryHost(): LibraryHost {
 export function LibraryHostProvider({
   gallery,
   shapeLibraries,
+  walkthroughs,
   imports,
   itemMenu,
   history = true,
@@ -25,8 +26,8 @@ export function LibraryHostProvider({
   children,
 }: LibraryHostProps & { children: ReactNode }) {
   const value = useMemo<LibraryHost>(
-    () => ({ gallery, shapeLibraries, imports, itemMenu, history, webhooks }),
-    [gallery, shapeLibraries, imports, itemMenu, history, webhooks],
+    () => ({ gallery, shapeLibraries, walkthroughs, imports, itemMenu, history, webhooks }),
+    [gallery, shapeLibraries, walkthroughs, imports, itemMenu, history, webhooks],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

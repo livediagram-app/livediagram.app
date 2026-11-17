@@ -68,4 +68,7 @@ Work Tracker 930). The frame is this app's [workbench embed](workbench-embeds.md
 an **embed ticket**: minted by the host page with the reader's own access, always at the view level, bound to the host
 app's origin, and renewed through the host before its 30 minutes run out. The page is the workbench page as it is, at
 a view session: the editor read-only, with Open in liveplanner one click away. A reader without their own access never
-reaches this frame: the host shows its snapshot instead.
+reaches this frame: the host shows its snapshot instead. Like every workbench frame it asks liveworkspace's index
+nothing: no grant, no share links, no recorded open (the index refuses the session, and the api resolves its access
+itself), and it reads no route its allow-list confines (the Automations rules), so its console shows no 401 or
+confined refusal (Work Tracker 1138).

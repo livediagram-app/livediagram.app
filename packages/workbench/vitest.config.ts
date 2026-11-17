@@ -29,6 +29,7 @@ const HELD_AT_100 = [
   'src/components/live-embed/useLiveEmbedFrame.ts',
   'src/components/canvas/PageContentsList.tsx',
   'src/components/canvas/PageContentsSidebar.tsx',
+  'src/components/canvas/ContentsSummary.tsx',
   'src/components/canvas/PageRowMenu.tsx',
   'src/lib/editor-arrival.ts',
   'src/lib/editor-path.ts',

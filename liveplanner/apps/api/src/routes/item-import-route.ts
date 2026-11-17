@@ -1,7 +1,7 @@
 // A whole import (docs/specs/026-plan/tracker-import.md "The import", blueprint tracker-import.md "A whole import"):
 // `POST /api/projects/:id/items/import`, one part at a time. Every part but the last is read, checked and held aside
-// (db/item-imports.ts); the last lands every held card and its own, with their comment threads, in one batch of the
-// plan's own SQLite, so an import is never written in part. An Editor's, on the whole plan, as `/items/bulk` is.
+// (db/item-imports.ts); the last lands every held card and its own, with their comment threads, in one transaction of
+// the plan's own SQLite, streamed a statement at a time, so an import is never written in part. An Editor's, on the whole plan, as `/items/bulk` is.
 
 import type { ItemsImportStaged, ItemsResponse } from '@liveplanner/api-schema';
 import {
@@ -22,6 +22,7 @@ import {
   heldReads,
   holdPartStatements,
   jsonChars,
+  streamPlanBatch,
   sweepHeldImports,
   type HeldPart,
 } from '../db/item-imports';
@@ -144,7 +145,41 @@ function threadsOf(projectId: string, made: readonly Item[], reads: readonly Rea
   );
 }
 
-// The last part: every part held, then the whole import in one batch, or nothing.
+// The landing's statements, made as its transaction runs them (streamPlanBatch), so only the one being run holds its
+// bound JSON: the held parts go, then each relayed part of the cards (a store rev raise and its rows), then the
+// threads. `revAt` gets the place of each part's rev raise among them.
+function* landingStatements(
+  env: PlanRouteContext['env'],
+  projectId: string,
+  importId: string,
+  chunks: readonly Item[][],
+  threads: readonly CardThread[][],
+  revAt: number[],
+): Generator<D1PreparedStatement> {
+  let at = 0;
+  yield clearImportStatement(env, projectId, importId);
+  at += 1;
+  for (const chunk of chunks) {
+    revAt.push(at);
+    yield bumpRevStatement(env, projectId, Math.max(...chunk.map((m) => m.key)) + 1);
+    at += 1;
+    for (const s of insertItemRowsStatements(env, projectId, chunk.map(itemRowOf))) {
+      yield s;
+      at += 1;
+    }
+  }
+  for (const t of threads.flat()) {
+    yield insertThreadStatement(env, t);
+    yield insertLinkStatement(env, projectId, {
+      itemId: t.cards[0]!.itemId,
+      threadId: t.id,
+      home: projectId,
+      openComments: t.comments.length,
+    });
+  }
+}
+
+// The last part: every part held, then the whole import in one transaction, or nothing.
 async function land(
   ctx: PlanRouteContext,
   caller: ItemCaller,
@@ -157,7 +192,7 @@ async function land(
   if (parts.length !== head.parts - 1 || parts.some((p, i) => p.part !== i))
     return refuse(ctx, projectId, importId, conflict('import_incomplete'));
   if (tooLarge(parts, last)) return refuse(ctx, projectId, importId, importTooLarge());
-  const reads = [...(await heldReads<ReadCreate>(ctx.env, projectId, importId)), ...last];
+  const reads = [...(await heldReads<ReadCreate>(ctx.env, projectId, importId, parts)), ...last];
   const creates = reads.map(({ restoredThreads: _threads, ...c }) => c);
   // Blocked By loops, checked once over every card of the import (docs/specs/026-plan/item-types.md "Blocked By").
   const blocked = await blockersRefused(
@@ -167,46 +202,26 @@ async function land(
   );
   if (blocked) return refuse(ctx, projectId, importId, blocked);
   const by = await writer(ctx, caller.owner);
-  const db = ctx.env.PLAN_DB;
   for (let attempt = 1; attempt <= ITEM_WRITE_RETRIES; attempt += 1) {
     const made = await buildCreates(ctx, projectId, creates, by);
     if (made instanceof Response) return refuse(ctx, projectId, importId, made);
     const threads = threadsOf(projectId, made, reads);
-    // The held parts go, then each relayed part of the cards (a store rev raise and its rows), then the threads.
-    const stmts: D1PreparedStatement[] = [clearImportStatement(ctx.env, projectId, importId)];
-    const revAt: number[] = [];
     const chunks: Item[][] = [];
-    for (let i = 0; i < made.length; i += ITEM_BULK_MAX) {
-      const chunk = made.slice(i, i + ITEM_BULK_MAX);
-      chunks.push(chunk);
-      revAt.push(stmts.length);
-      stmts.push(
-        bumpRevStatement(ctx.env, projectId, Math.max(...chunk.map((m) => m.key)) + 1),
-        ...insertItemRowsStatements(ctx.env, projectId, chunk.map(itemRowOf)),
-      );
-    }
-    for (const t of threads.flat())
-      stmts.push(
-        insertThreadStatement(ctx.env, t),
-        insertLinkStatement(ctx.env, projectId, {
-          itemId: t.cards[0]!.itemId,
-          threadId: t.id,
-          home: projectId,
-          openComments: t.comments.length,
-        }),
-      );
+    for (let i = 0; i < made.length; i += ITEM_BULK_MAX)
+      chunks.push(made.slice(i, i + ITEM_BULK_MAX));
+    const revAt: number[] = [];
     let results: D1Result[];
     try {
-      results = await db.batch(stmts);
+      results = await streamPlanBatch(
+        ctx.env,
+        landingStatements(ctx.env, projectId, importId, chunks, threads, revAt),
+      );
     } catch (err) {
       // A key or id taken by a write that raced this one: read again and retry. The parts stay held.
       console.info('[items] import.retry', { projectId, attempt, error: String(err) });
       if (attempt < ITEM_WRITE_RETRIES) await itemRetryPause(attempt);
       continue;
     }
-    // Written: the statements' bound JSON (about the import's size again) is let go before the relay builds its ops,
-    // which would otherwise be the landing's peak (blueprint tracker-import.md "Performance and limits").
-    stmts.length = 0;
     const revs = revAt.map((at) => revOf(results[at]));
     relayLanded(ctx, projectId, chunks, threads, revs);
     const putBack = creates.some((c) => c.key !== undefined || c.votes !== undefined);

@@ -24,11 +24,13 @@ import {
   markLanding,
   measureAfterPaint,
   readWarmCopy,
+  warmPaintCodeIn,
   browserWarmOpenFallbackDeps,
   guardNotFound,
   warmOpenFallback,
 } from '@liveworkspace/workbench/lib/warm-open';
 import { armLoadWatchdog, getLoadProgress, setLoadStep } from '@/lib/load-progress';
+import { WARM_PAINT_CODE } from '@/lib/editor-deferred-code';
 import { track } from '@/lib/telemetry';
 import { projectLoadOrigin, noteProjectLoadEnded, startEditorTiming } from '@/lib/timing';
 import { errorNameToken, errorTypeToken } from '@liveplanner/api-schema';
@@ -436,6 +438,9 @@ export function useIdentityBootstrap(opts: {
       });
       return;
     }
+    // The code of what the paint mounts first (offline-mode.md "The code it draws is in first"), bounded: the board
+    // and the card panel host then draw in the paint's own commit, with nothing left waiting on code.
+    await warmPaintCodeIn(WARM_PAINT_CODE);
     // Too late: the ordinary load has begun to show what it fetched, or resolved someone else as reading. A load that
     // has only started (a guest's auth settles at once) is not: the copy paints and the load replaces it.
     if (landedRef.current) return;

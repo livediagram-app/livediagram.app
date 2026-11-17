@@ -36,6 +36,13 @@ export function getWorkbenchConfinement(): WorkbenchConfinement | null {
   return confinement;
 }
 
+// Whether this page is a workbench frame (a live embed's read-only frame among them). Its requests present the
+// session, which only the api knows: the index refuses it (401), so the frame asks the index nothing (no grant, no
+// share links, no open recorded) and reaches its plan through the session alone.
+export function isWorkbenchConfined(): boolean {
+  return confinement !== null;
+}
+
 function presentsSession(headers: HeadersInit | undefined): boolean {
   const auth = new Headers(headers).get('Authorization');
   return auth !== null && isWorkbenchSessionFormat(auth.replace(/^Bearer /, ''));

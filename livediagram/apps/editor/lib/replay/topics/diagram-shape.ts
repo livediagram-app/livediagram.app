@@ -86,19 +86,20 @@ export const shape: Topic<ShapeLayout> = {
       frameOf([el], { selectedId: SHAPE_ID, ...rest });
     if (id === 'shape-border') {
       if (ms < BORDER.menu) return frameOf([layout.plain]);
-      const path = ms >= BORDER.border ? ['Style', 'Border'] : ms >= BORDER.style ? ['Style'] : [];
+      const path =
+        ms >= BORDER.border ? ['Appearance', 'Border'] : ms >= BORDER.style ? ['Appearance'] : [];
       const el =
         ms >= BORDER.dashed ? layout.dashed : ms >= BORDER.thick ? layout.thick : layout.plain;
       return one(el, { menu: { on: SHAPE_ID, path } });
     }
     if (id === 'shape-shadow') {
-      const path = ms >= SHADOW.open ? ['Style', 'Shadow'] : ['Style', 'Border'];
+      const path = ms >= SHADOW.open ? ['Appearance', 'Shadow'] : ['Appearance', 'Border'];
       return one(ms >= SHADOW.pick ? layout.shadowed : layout.dashed, {
         menu: { on: SHAPE_ID, path },
       });
     }
     const path =
-      ms >= FONT.font ? ['Text', 'Font'] : ms >= FONT.text ? ['Text'] : ['Style', 'Shadow'];
+      ms >= FONT.font ? ['Text', 'Font'] : ms >= FONT.text ? ['Text'] : ['Appearance', 'Shadow'];
     const el = ms >= FONT.pick ? layout.lettered : layout.shadowed;
     if (ms >= FONT.close) return frameOf([el]);
     return one(el, { menu: { on: SHAPE_ID, path } });
@@ -122,7 +123,7 @@ export const shape: Topic<ShapeLayout> = {
     }
     return [
       { at: BORDER.menu, to: { kind: 'element', id: SHAPE_ID }, press: true },
-      { at: BORDER.style, to: { kind: 'menu', name: 'Style' }, press: true },
+      { at: BORDER.style, to: { kind: 'menu', name: 'Appearance' }, press: true },
       { at: BORDER.border, to: row('Border'), press: true },
       { at: BORDER.thick, to: tile('Thick'), press: true },
       { at: BORDER.dashed, to: tile('Dashed'), press: true },

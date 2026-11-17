@@ -7,14 +7,12 @@
 // Now that code is fetched at idle (EDITOR_SURFACE_CODE), and a failure closes what was open, says why, and lets the
 // next click mount the panel afresh.
 import { useCallback } from 'react';
-import dynamic from 'next/dynamic';
 import { isChunkLoadError } from '@liveworkspace/workbench/lib/stale-chunks';
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import type { PlanSlice } from '@/hooks/plan/usePlanSlice';
-import { loadPlanSheetsHost } from '@/lib/editor-deferred-code';
-
-// Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), its code fetched at idle.
-const PlanSheetsHost = dynamic(loadPlanSheetsHost, { ssr: false });
+// Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), its code fetched at idle, or before
+// a warm paint (WARM_PAINT_CODE), so it then draws in the paint's own commit.
+import { PlanSheetsHost } from '@/lib/editor-deferred-code';
 
 export const PANEL_FAILED_TEXT = 'Couldn’t open that card. Try again.';
 // A chunk the page could not load: a newer release is out (or the connection went), and only a reload helps.

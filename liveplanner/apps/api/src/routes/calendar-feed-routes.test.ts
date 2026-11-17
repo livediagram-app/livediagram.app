@@ -1,4 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { defaultCatalogue } from '@liveplanner/items';
+import { setPlanItemTypes } from '../plan-room/plan-content';
 import type {
   CalendarFeedIssueResponse,
   CalendarFeedOptionsResponse,
@@ -35,7 +37,7 @@ afterEach(() => {
 });
 
 const planEnv = (): PlanEnv => w.plans.get('A')!.room.requireEnv();
-const ALL = { boardId: null, mine: false, includeDone: false };
+const ALL = { typeIds: null, boardId: null, mine: false, includeDone: false };
 const tokenOf = (path: string) => /\/(lpf_[A-Za-z0-9_-]{43})\.ics$/.exec(path)![1]!;
 
 const ALLOWED: Caller[] = ['owner', 'team'];
@@ -55,34 +57,42 @@ const REFUSED: Caller[] = [
 
 describe('the owner and a team member, signed in', () => {
   it.each(ALLOWED)('%s may read, make, change, reset and turn off their feed', async (who) => {
+    await setPlanItemTypes(planEnv(), 'A', defaultCatalogue());
     const first = await w.as(who, 'GET', '/calendar-feed');
     expect(first.status).toBe(200);
     expect(first.headers.get('Cache-Control')).toBe('no-store');
     const empty = await first.json<CalendarFeedResponse>();
-    expect(empty).toEqual({
-      feed: null,
-      boards: [{ id: 'b1', title: 'Kanban', tabName: 'Board' }],
+    // The plan's card types, each with its glyph and colour, to pick from.
+    expect(empty.feed).toBeNull();
+    expect(empty.types.length).toBeGreaterThan(0);
+    expect(empty.types[0]).toMatchObject({
+      id: expect.any(String),
+      name: expect.any(String),
+      glyph: expect.any(String),
+      color: expect.any(String),
     });
+    const typeId = empty.types[0]!.id;
 
-    const made = await w.as(who, 'POST', '/calendar-feed', { ...ALL, boardId: 'b1' });
+    const made = await w.as(who, 'POST', '/calendar-feed', { typeIds: [typeId] });
     expect(made.status).toBe(201);
     const issued = await made.json<CalendarFeedIssueResponse>();
     expect(issued.path).toMatch(/^\/api\/calendar\/A\/lpf_[A-Za-z0-9_-]{43}\.ics$/);
-    expect(issued.feed).toMatchObject({ boardId: 'b1', mine: false, includeDone: false });
+    expect(issued.feed).toMatchObject({ typeIds: [typeId], mine: false, includeDone: false });
     const token = tokenOf(issued.path);
     expect(await calendarFeedOf(planEnv(), 'A', await feedTokenHash(token))).toMatchObject({
       personId: USER,
-      boardId: 'b1',
+      typeIds: [typeId],
     });
 
     // Options change, the link stays.
     const changed = await w.as(who, 'PUT', '/calendar-feed', {
-      boardId: null,
+      typeIds: null,
       mine: true,
       includeDone: true,
     });
     expect(changed.status).toBe(200);
     expect((await changed.json<CalendarFeedOptionsResponse>()).feed).toEqual({
+      typeIds: null,
       boardId: null,
       mine: true,
       includeDone: true,
@@ -138,10 +148,17 @@ describe('anyone else', () => {
 
 describe('the options', () => {
   it.each([
-    ['a board the plan lacks', { ...ALL, boardId: 'gone' }],
-    ['an empty board id', { ...ALL, boardId: '' }],
-    ['a board id past the limit', { ...ALL, boardId: 'b'.repeat(201) }],
-    ['a board id that is not a string', { ...ALL, boardId: 7 }],
+    ['a card type the plan lacks', { ...ALL, typeIds: ['gone'] }],
+    ['an empty list of types', { ...ALL, typeIds: [] }],
+    ['an empty type id', { ...ALL, typeIds: [''] }],
+    ['a type id past the limit', { ...ALL, typeIds: ['t'.repeat(201)] }],
+    ['a type id that is not a string', { ...ALL, typeIds: [7] }],
+    ['a type named twice', { ...ALL, typeIds: ['task', 'task'] }],
+    ['types that are not a list', { ...ALL, typeIds: 'task' }],
+    [
+      'more types than a feed may name',
+      { ...ALL, typeIds: Array.from({ length: 51 }, (_, i) => `t${i}`) },
+    ],
     ['a flag that is not a boolean', { ...ALL, mine: 'yes' }],
     ['another flag that is not a boolean', { ...ALL, includeDone: 1 }],
   ])('refuses %s', async (_name, body) => {
@@ -155,7 +172,7 @@ describe('the options', () => {
     expect((await w.as('owner', 'POST', '/calendar-feed', [1])).status).toBe(400);
   });
 
-  it('reads absent flags and an absent board as every board, no filters', async () => {
+  it('reads absent flags and absent types as every type, no filters', async () => {
     const res = await w.as('owner', 'POST', '/calendar-feed', {});
     expect(res.status).toBe(201);
     expect((await res.json<CalendarFeedIssueResponse>()).feed).toMatchObject(ALL);

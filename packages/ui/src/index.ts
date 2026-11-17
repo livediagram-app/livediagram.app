@@ -43,6 +43,7 @@ export {
 export { CountBadge } from './CountBadge';
 export { EmptyState, EmptyStateArt } from './EmptyState';
 export { LoadingSweep } from './LoadingSweep';
+export { SkeletonRows } from './SkeletonRows';
 export { JsonLd } from './JsonLd';
 export { Portal } from './Portal';
 export { SheetHandle, SHEET_HANDLE_PX } from './SheetHandle';

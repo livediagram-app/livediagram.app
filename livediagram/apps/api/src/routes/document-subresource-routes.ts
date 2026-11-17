@@ -18,6 +18,7 @@ import { handleChangesetRoutes, refreshAfterRead } from './changesets';
 import { handleSuggestionRoutes } from './suggestion-routes';
 import { handleReviewRoute } from './review-route';
 import { handleCommentRoutes } from './comment-routes';
+import { handleActionRoutes } from './action-routes';
 import { handleAgentPresenceRoute } from './agent-presence-routes';
 import { handleTabRender } from './tab-render-route';
 import {
@@ -216,6 +217,9 @@ export async function handleDocumentSubresources(
   // The comment endpoints (docs/specs/024-agents/agent-presence.md "Comments").
   const comments = await handleCommentRoutes(ctx);
   if (comments) return comments;
+  // An assigned action's status, from the Inbox (docs/specs/012-collaboration/assigned-actions.md "From the Inbox").
+  const actions = await handleActionRoutes(ctx);
+  if (actions) return actions;
   // Agent presence (docs/specs/024-agents/agent-presence.md "Presence").
   const presence = await handleAgentPresenceRoute(ctx);
   if (presence) return presence;

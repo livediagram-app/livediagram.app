@@ -13,11 +13,11 @@ import {
   Dialog,
   DialogCloseButton,
   DialogHeader,
-  LoadingSweep,
+  SkeletonRows,
 } from '@liveworkspace/ui';
 import type { SnapshotsDoor } from './door';
 import { SnapshotGlyph } from './glyphs';
-import { SnapshotNotices, TakeSnapshotForm } from './snapshot-parts';
+import { SnapshotButton, SnapshotNotices } from './snapshot-parts';
 import { SnapshotRow, type RowConfirm } from './SnapshotRow';
 import { useSnapshots } from './useSnapshots';
 
@@ -53,16 +53,13 @@ export function SnapshotsDialog({
       >
         <DialogCloseButton onClick={onClose} />
       </DialogHeader>
-      <TakeSnapshotForm
-        state={state}
-        className="border-b border-slate-100 px-6 py-4 dark:border-slate-800"
-      />
+      <div className="border-b border-slate-100 px-6 py-4 dark:border-slate-800">
+        <SnapshotButton state={state} />
+      </div>
       <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3 sm:px-4">
         <SnapshotNotices state={state} className="mx-3 mb-3" />
         {list === null ? (
-          <div className="flex justify-center py-10" aria-label="Loading snapshots" role="status">
-            <LoadingSweep />
-          </div>
+          <SkeletonRows label="Loading snapshots" rows={3} lead="disc" className="px-3 py-2" />
         ) : list.length === 0 && state.listFailed ? (
           <div role="alert">
             <CompactEmptyState

@@ -1022,6 +1022,9 @@ descriptions.
 - Article summaries (`write_article`, `change_pages`, the `pages` view) carry `estimatedPages`, the pages the writing
   reaches once laid out, from the same estimate; `write_article`'s last line says it in words ("It takes about 2 pages
   once laid out"), so an agent asked for one page sees at once that it ran over.
+- Article summaries also carry `readability`, the editor's Word Count figures (reading time, sentences, words a
+  sentence, long sentences, Flesch Reading Ease and its level in words; [Pages for agents](../024-agents/pages-for-agents.md)
+  "How easily it reads"), so an agent asked to make an article plainer can check its result.
 
 ## 5. Visualise: inline image render
 

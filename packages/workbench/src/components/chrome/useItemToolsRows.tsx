@@ -21,6 +21,7 @@ import {
 import { Dialog } from '../dialogs/Dialog';
 import { DialogFooter } from '../dialogs/DialogFooter';
 import { APP_ITEMS, type AppName } from '@liveworkspace/sites';
+import { toolGateCopy } from '../../lib/tool-gate-copy';
 import { useAuthHrefs } from './auth-routes';
 import { ItemHistoryDialog, useOpenItem, type HistoryExtras } from '@liveworkspace/explorer';
 import type { IndexClient } from '@liveworkspace/index-client';
@@ -47,27 +48,8 @@ export type ItemHistoryHost = {
   useTeams: (signedIn: boolean) => Teams;
 };
 
-// What each says before it works, in the words and shape of Automations' gate (liveplanner AutomationsSyncGate).
-const SIGN_IN = {
-  history: {
-    title: 'History',
-    promptTitle: 'History Is Kept With Your Account',
-    body: (noun: string) =>
-      `Every change to this ${noun}, who made it and when, is kept with your account across devices, so it needs you signed in.`,
-    syncTitle: 'History Is Kept on Our Servers',
-    syncBody: (noun: string) =>
-      `Every change to this ${noun}, who made it and when, is kept on our servers, so it needs saving to your account first.`,
-  },
-  webhooks: {
-    title: 'Webhooks',
-    promptTitle: 'Webhooks Run on Our Servers',
-    body: (noun: string) =>
-      `A webhook tells Slack, a chat or your own service each time this ${noun} changes, even when nobody has it open, so it needs you signed in.`,
-    syncTitle: 'Webhooks Run on Our Servers',
-    syncBody: (noun: string) =>
-      `A webhook tells Slack, a chat or your own service each time this ${noun} changes, from our servers, so it needs saving to your account first.`,
-  },
-} as const;
+// Each gated tool's name; what its gate says is the shared plain copy (toolGateCopy).
+const SIGN_IN = { history: { title: 'History' }, webhooks: { title: 'Webhooks' } } as const;
 type SignInFor = keyof typeof SIGN_IN;
 
 // An item in This Browser: how to save it to the server (the editor's Sync move), and whether the reader is known yet.
@@ -253,30 +235,45 @@ function OpenItemHistoryWithSnapshots({
   onClose: () => void;
 }) {
   const extras = snapshots.useExtras();
-  const top = (
-    <div className="flex flex-col gap-2">
-      {extras.top}
-      {versionsLink}
-    </div>
+  const top =
+    extras.top || versionsLink ? (
+      <div className="flex flex-col gap-2">
+        {extras.top}
+        {versionsLink}
+      </div>
+    ) : undefined;
+  return (
+    <OpenItemHistory
+      host={host}
+      top={top}
+      action={extras.action}
+      pins={extras.pins}
+      onClose={onClose}
+    />
   );
-  return <OpenItemHistory host={host} top={top} pins={extras.pins} onClose={onClose} />;
 }
 
 // The History dialog for the open item, its reads made as it opens.
 function OpenItemHistory({
   host,
   top,
+  action,
   pins,
   onClose,
 }: {
   host: ItemHistoryHost;
   top?: ReactNode;
+  // Snapshots' Snapshot button, at History's foot.
+  action?: ReactNode;
   pins?: HistoryExtras['pins'];
   onClose: () => void;
 }) {
   const item = useOpenItem(host.client, host.itemId, host.shareCode, host.sharePassword);
   const teams = host.useTeams(true);
-  const extras = useMemo<HistoryExtras>(() => ({ top, pins: pins ?? [] }), [top, pins]);
+  const extras = useMemo<HistoryExtras>(
+    () => ({ top, action, pins: pins ?? [] }),
+    [top, action, pins],
+  );
   if (!item || item.sharedVia) return null;
   return (
     <ItemHistoryDialog
@@ -355,6 +352,7 @@ function SignInDialog({
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
   const word = noun.toLowerCase();
+  const said = toolGateCopy(sync ? 'sync' : 'sign_in', copy.title, noun);
   const doSync = async () => {
     if (!sync) return;
     setBusy(true);
@@ -373,10 +371,7 @@ function SignInDialog({
   };
   return (
     <Dialog open onClose={onClose} ariaLabel={copy.title} size="md">
-      <DialogHeader
-        title={copy.title}
-        subtitle={sync ? 'Saved only in this browser.' : 'You are not signed in.'}
-      >
+      <DialogHeader title={copy.title}>
         <DialogCloseButton onClick={onClose} />
       </DialogHeader>
       <div
@@ -403,11 +398,9 @@ function SignInDialog({
           </Glyph>
         </span>
         <div className="flex flex-col gap-1.5">
-          <p className="text-sm font-medium text-slate-800 dark:text-slate-100">
-            {sync ? copy.syncTitle : copy.promptTitle}
-          </p>
+          <p className="text-sm font-medium text-slate-800 dark:text-slate-100">{said.title}</p>
           <p className="mx-auto max-w-sm text-balance text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-            {sync ? copy.syncBody(word) : copy.body(word)}
+            {said.body}
           </p>
           {failed ? (
             <p role="alert" className="text-xs text-red-600 dark:text-red-400">

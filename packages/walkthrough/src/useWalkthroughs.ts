@@ -12,6 +12,7 @@ import { walkthroughTelemetry } from './telemetry';
 import { useHidden } from './useHidden';
 import { usePlayer } from './usePlayer';
 import { useRecorder } from './useRecorder';
+import { requestToolsView } from '@liveworkspace/workbench/components/chrome/tools-door';
 
 export type Walkthroughs = ReturnType<typeof useWalkthroughs>;
 
@@ -68,6 +69,7 @@ export function useWalkthroughs(host: WalkthroughHost) {
     recorderOpen,
     host.hideable?.marks,
     host.hideable ? host.hideable.canHide() : true,
+    host.elements,
   );
   const onSaved = useCallback(
     (saved: WalkthroughSummary) => {
@@ -75,6 +77,8 @@ export function useWalkthroughs(host: WalkthroughHost) {
       setNotice(`Saved “${saved.title}”.`);
       hiding.clear();
       void refresh();
+      // Back in the Walkthroughs list inside Tools, the new one at its top (walkthroughs.md "In Tools").
+      requestToolsView('walkthroughs');
     },
     [refresh, hiding],
   );

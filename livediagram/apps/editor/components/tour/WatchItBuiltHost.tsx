@@ -93,7 +93,10 @@ export function WatchItBuiltHost() {
 
   const close = useCallback(() => setRun(null), []);
   const ended = useCallback(
-    (how: ReplayEnd) => setRun((r) => (how === 'more' && r ? { mode: r.mode, topic: null } : null)),
+    // Finishing a topic (Your Turn, or Done on its last chapter) or More Topics goes back to Get Started (owner,
+    // 2026-11-17); only a skip closes it.
+    (how: ReplayEnd) =>
+      setRun((r) => (how !== 'skipped' && r ? { mode: r.mode, topic: null } : null)),
     [],
   );
 

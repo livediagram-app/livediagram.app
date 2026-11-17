@@ -13,6 +13,7 @@ import {
   AUTO_LAYOUT_STYLE_IDS,
   type AutoLayoutChoice,
 } from './auto-layout-choices';
+import { requestToolsView } from '@liveworkspace/workbench/components/chrome/tools-door';
 import type { ShapeMarker } from '@livediagram/document';
 import type { CommandSearchItem } from './search';
 import { selectionCommands } from './editor-commands-selection';
@@ -179,9 +180,9 @@ export const CANVAS_TOOLS: {
   },
 
   {
-    // Slide Deck (docs/specs/012-collaboration/presentation-mode.md). A presenter tool like the Laser and Spotlight,
-    // so it needs content for the same reason: there is nothing to put on a
-    // slide on an empty canvas. Picking it opens the panel; Start presents.
+    // Slide Deck (docs/specs/012-collaboration/presentation-mode.md). A presenter's, like the Laser and Spotlight, so
+    // it needs content for the same reason: there is nothing to put on a slide on an empty canvas. Picking it opens
+    // Tools at Slide Deck; Start presents.
     // Desktop-only: the deck workbench has no room beside a phone's canvas.
     id: 'slide-deck',
     name: 'Slide Deck',
@@ -218,7 +219,9 @@ function toolCommands(ctx: CommandContext, h: CommandHandlers): EditorCommand[] 
     id: `tool:${t.id}`,
     name: t.name,
     keywords: `tool mode switch ${t.keywords}`,
-    run: () => h.setTool(t.id),
+    // Slide Deck is no longer a canvas tool: it lives in the footer's Tools (presentation-mode.md), so its command
+    // opens Tools there.
+    run: () => (t.id === 'slide-deck' ? requestToolsView('slide-deck') : h.setTool(t.id)),
   }));
 }
 

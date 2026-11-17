@@ -45,6 +45,9 @@ vi.mock('@/lib/api-client', () => ({
   writeCachedSharePassword: () => {},
 }));
 vi.mock('@/lib/last-seen', () => ({ lastSeenCopies: copies }));
+// What the warm paint waits for (offline-mode.md "The code it draws is in first"), answered at once unless a test holds it.
+const warmCode = vi.hoisted(() => ({ preload: vi.fn(async () => {}) }));
+vi.mock('@/lib/editor-deferred-code', () => ({ WARM_PAINT_CODE: [() => warmCode.preload()] }));
 // The not-found fallback's reload, watched rather than run (offline-mode.md "Never a wrong not found").
 vi.mock('@liveworkspace/workbench/lib/warm-open', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@liveworkspace/workbench/lib/warm-open')>()),
@@ -147,6 +150,7 @@ const lastRole = (set: Record<string, ReturnType<typeof vi.fn>>): unknown =>
 
 beforeEach(() => {
   resetLoadProgressForTests();
+  warmCode.preload.mockImplementation(async () => {});
   window.sessionStorage.clear();
   window.history.replaceState(null, '', '/project/plan-1');
   hint.signedIn = false;
@@ -184,7 +188,12 @@ describe('useIdentityBootstrap warm open', () => {
     expect(lastRole(set)).toBe('view');
     expect(set.setIsOwner).toHaveBeenCalledWith(true);
     expect(set.setWarmTabId).toHaveBeenCalledWith('t1');
-    expect(set.setWarmPlan).toHaveBeenCalledWith({ cards: CARDS, sheets: [], refTabs: [] });
+    expect(set.setWarmPlan).toHaveBeenCalledWith({
+      cards: CARDS,
+      sheets: [],
+      refTabs: [],
+      role: 'edit',
+    });
     expect(set.setLoadingProject).toHaveBeenCalledWith(false);
     // Nothing waits on the server, and nothing is saved or connected: those need `hydrated` and a project id.
     expect(api.apiLoadProject).not.toHaveBeenCalled();
@@ -394,5 +403,43 @@ describe('useIdentityBootstrap warm open', () => {
     hook.rerender({ authLoaded: true, accountUserId: null });
     await flush();
     expect(timing.started.map((t) => t.metric)).toEqual(['WarmPaint', 'ProjectLoad']);
+  });
+
+  // offline-mode.md "The code it draws is in first" (Work Tracker 1111): the board, the card panel's host and the Plan
+  // tour's host draw in the paint's own commit.
+  const holdCode = () => {
+    let codeIn: () => void = () => {};
+    warmCode.preload.mockImplementation(() => new Promise<void>((r) => (codeIn = r)));
+    return () => codeIn();
+  };
+
+  it('has the code the paint draws in before it paints', async () => {
+    const codeIn = holdCode();
+    render({ authLoaded: false, accountUserId: null });
+    await flush();
+    expect(warmCode.preload).toHaveBeenCalledOnce();
+    expect(paint).not.toHaveBeenCalled();
+    codeIn();
+    await flush();
+    expect(paint).toHaveBeenCalledExactlyOnceWith(copies.held);
+  });
+
+  it('asks for no code when there is no copy to paint', async () => {
+    copies.held = null;
+    render({ authLoaded: false, accountUserId: null });
+    await flush();
+    expect(warmCode.preload).not.toHaveBeenCalled();
+  });
+
+  it('paints nothing when the load landed while the code loaded', async () => {
+    const codeIn = holdCode();
+    const { hook, set } = render({ authLoaded: false, accountUserId: null });
+    await flush();
+    hook.rerender({ authLoaded: true, accountUserId: null });
+    await flush();
+    expect(set.setHydrated).toHaveBeenCalledWith(true);
+    codeIn();
+    await flush();
+    expect(paint).not.toHaveBeenCalled();
   });
 });

@@ -95,7 +95,7 @@ describe('the Inbox pane’s verbs in the editor’s panel', () => {
     local: false,
   };
 
-  it('replies to and resolves this app’s threads only, and marks done an action on the open tab only', () => {
+  it('replies to and resolves this app’s threads only, and marks done an action on any tab', () => {
     const markDone = vi.fn();
     const actions = explorerInboxActions('user_me', { itemId: 'i1', tabId: 't1', markDone });
     expect(actions.offers(row)).toEqual(['reply', 'resolve']);
@@ -103,7 +103,8 @@ describe('the Inbox pane’s verbs in the editor’s panel', () => {
     expect(actions.offers({ ...row, local: true })).toEqual([]);
     const action = { ...row, kind: 'Action' as const, actionId: 'a1' };
     expect(actions.offers(action)).toEqual(['done']);
-    expect(actions.offers({ ...action, tabId: 't2' })).toEqual([]);
+    // Another tab's action is marked done through the action route (assigned-actions.md "From the Inbox").
+    expect(actions.offers({ ...action, tabId: 't2' })).toEqual(['done']);
     void actions.done!(action);
     expect(markDone).toHaveBeenCalledWith('e1', 'a1');
   });

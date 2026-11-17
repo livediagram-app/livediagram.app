@@ -216,6 +216,39 @@ describe('list_items on a plan shaped like the Work Tracker', () => {
   }, 30_000);
 });
 
+describe('list_items on a 5,000-card plan (Work Tracker 981)', () => {
+  // Every card open, so every column lists its card refs: the case where they crowded the cards out.
+  const state = workTracker(5_000, 0);
+  const pages = allPages(state);
+
+  it('lists the column card refs and notOnBoard on the first page only, every name on each', () => {
+    const [first, ...later] = pages;
+    const columnRefs = first!.boards.flatMap((b) => b.columns.flatMap((c) => c.cards ?? []));
+    // Selected for Development sits on two boards, so its cards are listed twice; every card is on a board.
+    expect(new Set(columnRefs)).toEqual(new Set(state.items.map((i) => `#${i.key}`)));
+    expect(first!.notOnBoard).toEqual([]);
+    expect(later.length).toBeGreaterThan(0);
+    for (const p of later) {
+      expect(p).not.toHaveProperty('notOnBoard');
+      expect(p.boards.map((b) => b.title)).toEqual(['Backlog', 'In Flight', 'Results']);
+      for (const b of p.boards) for (const c of b.columns) expect(c).not.toHaveProperty('cards');
+      expect(p.boards[2]!.columns.map((c) => c.name)).toEqual(['Implemented', 'Done', 'Cancelled']);
+      expect(p.types.map((t) => t.name)).toEqual(['Work Item', 'Idea']);
+    }
+  });
+
+  it('reads the whole plan in far fewer requests, each page under the budget, none lost or repeated', () => {
+    for (const p of pages) expect(textOf(p).length).toBeLessThanOrEqual(LIST_ITEMS_BUDGET);
+    expect(pages.flatMap((p) => p.items.map((i) => i.ref))).toEqual(
+      state.items.map((i) => `#${i.key}`),
+    );
+    // Measured 2026-11-17 (the PR's Performance section): 70 pages with the refs on every page, 27 with them on the
+    // first page only.
+    expect(pages.length).toBeLessThanOrEqual(30);
+    console.info(`[list_items] 5,000 cards: ${pages.length} pages`);
+  });
+});
+
 describe('what list_items leaves out', () => {
   const state = planOf([
     card(1, 'review'),

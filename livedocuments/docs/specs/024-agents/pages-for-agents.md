@@ -169,6 +169,12 @@ Writes an article's text from **Markdown**.
   `card` or a portrait orientation is refused (`size_not_offered`), and the blocks go through `flashcardBlocks`: page
   breaks, zones and contents blocks are left out and a table is written as a list, the answer saying so. A card never flows: writing
   past its foot is kept, and the editor marks it Too long.
+- **How easily it reads**: every article summary (`write_article`'s answer, `change_pages`', the `pages` view)
+  carries the editor's Word Count figures ([Article pages](../007-editor/article-pages.md) "Word Count", one
+  function, `articleReadability`): `readability` with `readingMinutes`, `sentences`, `wordsPerSentence`,
+  `longSentences` (over 30 words), `ease` (the Flesch Reading Ease, or null when the writing is not English) and
+  `level` in the line's words ("Easy to read" to "Hard to read", or null). The pages view's article line adds "4 min
+  read · Easy to read · 2 long sentences". So an assistant asked to make an article plainer can check its result.
 - **The answer**: the article's flow id, title, pages, block count and words, and the page count it reaches is
   settled in the editor (below), said plainly: "Written: 42 blocks, 1,830 words. The article flows onto more pages
   as it is laid out in the editor."
@@ -247,8 +253,9 @@ Where a line breaks is measured by the editor, so the server never sets an artic
 
 - each page in row order: place, id, name, kind, size and orientation, the rectangle, background, locked, and the
   refs of the elements on it (the outline's refs, [Document views](document-views.md));
-- each article: flow id, title, its pages' places, block count, words, style look, and its writing as Markdown in
-  the form `write_article` takes (front matter, `[zone <id>]` lines), so read, edit, write back round-trips;
+- each article: flow id, title, its pages' places, block count, words, how easily it reads, style look, and its
+  writing as Markdown in the form `write_article` takes (front matter, `[zone <id>]` lines), so read, edit, write
+  back round-trips;
 - the layouts each kind on the tab offers, by id and label.
 
 The view keeps to the
