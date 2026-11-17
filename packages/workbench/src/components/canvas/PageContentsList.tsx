@@ -101,38 +101,32 @@ export function ContentsList<R extends ContentsRowBase>({
   const menu = usePageRowMenu();
   // A set-aside row's reason, read as its button's description.
   const uid = useId();
-  const rowOf = (id: string) => rows.find((r) => r.id === id);
-  // A row's page actions: an Editor's (actionsFor answers null for a Participant and a Viewer).
-  const actionsOf = (id: string) => {
-    const row = rowOf(id);
-    return row ? actionsFor(row) : null;
-  };
-  const on = useStableCallbacks<RowPresses>({
-    go: (id, at) => {
-      const row = rowOf(id);
-      if (row) go(row, at);
-    },
+  // A row's presses hand back the row as it last drew (equal, field by field, to the editor's row now: else it
+  // would have drawn again).
+  const on = useStableCallbacks<RowPresses<R>>({
+    go: (row, at) => go(row, at),
     register: registerRow,
     // A mouse or pen drags the whole row; a finger drags its grip, so the list still scrolls, and a finger held
-    // still opens the page's menu.
-    press: (id, e) => {
-      if (actionsOf(id)) menu.rowProps(id).onPointerDown(e);
-      if (e.pointerType !== 'touch') reorder.beginDrag(e, id);
+    // still opens the page's menu (an Editor's: actionsFor answers null for a Participant and a Viewer).
+    press: (row, e) => {
+      if (actionsFor(row)) menu.rowProps(row.id).onPointerDown(e);
+      if (e.pointerType !== 'touch') reorder.beginDrag(e, row.id);
     },
-    contextMenu: (id, e) => {
-      if (actionsOf(id)) menu.rowProps(id).onContextMenu(e);
+    contextMenu: (row, e) => {
+      if (actionsFor(row)) menu.rowProps(row.id).onContextMenu(e);
     },
     grip: (id, e) => {
       if (e.pointerType === 'touch') reorder.beginDrag(e, id);
     },
     move: (e) => reorder.moveDrag(e),
     end: (e) => reorder.endDrag(e),
-    remove: (id) => actionsOf(id)?.remove?.(),
+    // The newest actions: the page's Delete may have gone since the row drew it (a role changed).
+    remove: (row) => actionsFor(row)?.remove?.(),
     registerTrigger: (id, el) => menu.registerTrigger(id, el),
     toggle: (id) => menu.toggle(id),
   });
   // The open menu's page, read afresh each render so its verbs follow the page (locked, moved).
-  const menuRow = menu.openId ? rowOf(menu.openId) : undefined;
+  const menuRow = menu.openId ? rows.find((r) => r.id === menu.openId) : undefined;
   const menuModel = menuRow ? actionsFor(menuRow) : null;
   return (
     <>
@@ -177,16 +171,16 @@ export function ContentsList<R extends ContentsRowBase>({
   );
 }
 
-// A row's presses, by its page's id: the same functions for the list's life.
-type RowPresses = {
-  go: (id: string, at: number) => void;
+// A row's presses, by its row or its page's id: the same functions for the list's life.
+type RowPresses<R extends ContentsRowBase> = {
+  go: (row: R, at: number) => void;
   register: (id: string, el: HTMLElement | null) => void;
-  press: (id: string, e: ReactPointerEvent) => void;
-  contextMenu: (id: string, e: ReactMouseEvent) => void;
+  press: (row: R, e: ReactPointerEvent) => void;
+  contextMenu: (row: R, e: ReactMouseEvent) => void;
   grip: (id: string, e: ReactPointerEvent) => void;
   move: (e: ReactPointerEvent) => void;
   end: (e: ReactPointerEvent) => void;
-  remove: (id: string) => void;
+  remove: (row: R) => void;
   registerTrigger: (id: string, el: HTMLElement | null) => void;
   toggle: (id: string) => void;
 };
@@ -209,7 +203,7 @@ type ContentsRowProps<R extends ContentsRowBase> = {
   // what the row draws from it (whether it has tools, whether Delete) follows the role, which `reorderable` follows
   // (an Editor's pages move), and the page's lock, a row field. Its presses run the newest through `on`.
   actionsFor: (row: R) => PageRowModel | null;
-  on: RowPresses;
+  on: RowPresses<R>;
 };
 
 /** The same row: every field of the page's equal (Object.is), so a row rebuilt equal is the same row. */
@@ -281,9 +275,9 @@ const ContentsRow = memo(function ContentsRow<R extends ContentsRowBase>({
     <div
       role="listitem"
       data-contents-slot={index}
-      onClick={(e) => on.go(id, e.timeStamp)}
-      onContextMenu={(e) => on.contextMenu(id, e)}
-      onPointerDown={(e) => on.press(id, e)}
+      onClick={(e) => on.go(row, e.timeStamp)}
+      onContextMenu={(e) => on.contextMenu(row, e)}
+      onPointerDown={(e) => on.press(row, e)}
       onPointerMove={on.move}
       onPointerUp={on.end}
       onPointerCancel={on.end}
@@ -303,7 +297,7 @@ const ContentsRow = memo(function ContentsRow<R extends ContentsRowBase>({
         data-page-row={id}
         onClick={(e) => {
           e.stopPropagation();
-          on.go(id, e.timeStamp);
+          on.go(row, e.timeStamp);
         }}
         className="absolute inset-0 z-0 cursor-pointer rounded-[inherit] outline-none"
       />
@@ -326,7 +320,7 @@ const ContentsRow = memo(function ContentsRow<R extends ContentsRowBase>({
                 menu={menu}
                 grip={grip}
                 shown={here}
-                {...(actions.remove ? { remove: () => on.remove(id) } : {})}
+                {...(actions.remove ? { remove: () => on.remove(row) } : {})}
               />
             ) : null
           ) : actions ? (

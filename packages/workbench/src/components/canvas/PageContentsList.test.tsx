@@ -221,6 +221,31 @@ describe('ContentsList rows', () => {
     fireEvent.click(container.querySelector('[aria-label="Delete Card 2"]')!);
     expect(first).not.toHaveBeenCalled();
     expect(remove).toHaveBeenCalledWith('p1');
+    // The page's Delete gone since the row drew it (no remove, or no actions at all): the press does nothing.
+    rerender(
+      <ContentsList contents={edit(rows, { actionsFor: () => ({ groups: [] }) })} variant="film" />,
+    );
+    fireEvent.click(container.querySelector('[aria-label="Delete Card 2"]')!);
+    rerender(<ContentsList contents={edit(rows, { actionsFor: () => null })} variant="film" />);
+    fireEvent.click(container.querySelector('[aria-label="Delete Card 2"]')!);
+    expect(remove).toHaveBeenCalledTimes(1);
+  });
+
+  it("drags an Editor's row with the newest drag, and arms its long press", () => {
+    const { edit } = setup(2);
+    const contents = edit(many(2));
+    const { container } = render(<ContentsList contents={contents} variant="list" />);
+    const row = container.querySelectorAll('[role="listitem"]')[0]!;
+    fireEvent.pointerDown(row, { pointerType: 'mouse' });
+    fireEvent.pointerMove(row, { pointerType: 'mouse' });
+    fireEvent.pointerUp(row, { pointerType: 'mouse' });
+    fireEvent.pointerCancel(row, { pointerType: 'mouse' });
+    expect(contents.reorder.beginDrag).toHaveBeenCalledTimes(1);
+    expect(contents.reorder.moveDrag).toHaveBeenCalledTimes(1);
+    expect(contents.reorder.endDrag).toHaveBeenCalledTimes(2);
+    // A finger on the row (not its grip) starts no drag: it may be a long press for the menu.
+    fireEvent.pointerDown(row, { pointerType: 'touch' });
+    expect(contents.reorder.beginDrag).toHaveBeenCalledTimes(1);
   });
 
   it("opens a row's menu from a right-click, and none for a reader", () => {
