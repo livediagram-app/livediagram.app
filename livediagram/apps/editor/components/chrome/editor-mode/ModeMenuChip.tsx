@@ -96,7 +96,8 @@ export function ModeMenuChip({
       {iconOnly ? null : <span className="text-optical-line flex-1 text-left">{label}</span>}
       <ChevronDownIcon
         aria-hidden
-        className={`transition-transform duration-micro motion-reduce:transition-none ${
+        // Experiment (no header bar): no caret on a phone, where the row has no room to spare.
+        className={`phone:hidden transition-transform duration-micro motion-reduce:transition-none ${
           open ? 'rotate-180' : ''
         }`}
       />
