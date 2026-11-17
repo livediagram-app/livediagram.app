@@ -608,6 +608,12 @@ caret)`; `syncArticlePeople(participants)` names and colours carets and drops th
     (`committed`'s copy) and the commit is tried again once the claim is answered; on `refused`, the writing puts the
     block back as `committed` has it (an `article-remote` transaction, nothing committed) and says
     `announceArticleHeld(name)`.
+  - Undo and redo (`apps/editor/lib/article/article-hold-undo.ts`, `keepHeldWriting(from, onto, heldIn)`, wired in
+    `useDocumentHistory`'s `undo` and `redo` as `historyKeepingHeld(prev, next)` with `peerHeldBlocks(tabId, flow)`
+    from the store): for each tab and article in both the present (`from`) and the restored snapshot (`onto`), each
+    block a peer holds (a held cell's table) is put back as the present has it: replaced where the snapshot has another
+    copy, put in after the nearest block before it that the snapshot keeps (else first) where the snapshot has none.
+    Nothing held, or nothing different, returns `onto` itself. An article absent from the snapshot is left absent.
   - Peers' holds (same store): `receiveArticleHold(from, hold)`, `syncArticleHolders(participants)` (names, colours,
     the holds of anyone who left), `resetArticleHolds()` when the room closes; a hold not said again within
     `ARTICLE_HOLD_EXPIRE_MS` is dropped by a sweep. `useArticleHolds(flow)` answers this tab's holds in that article
@@ -844,6 +850,7 @@ ended`, `articles turned into pages`. Page-level edits log `[page] …` (Pages
 | A claim through `sequence`, refreshed by `send`, released once                                                                                                                                                     | `apps/editor/hooks/collab/useArticleHoldBroadcast.test.tsx`                                                                   |
 | Held blocks outlined with a name chip; typing, cell edits and a table's shape refused; two writers in one paragraph never lose words; a keystroke's cost with holds (5,000 paragraphs, budget 8 ms)                | `apps/editor/lib/article/article-holds.test.ts`                                                                               |
 | A pending claim commits its block as it was; a refused one is put back with the notice                                                                                                                             | `article-hold-commit.test.ts`, `apps/editor/components/canvas/article/useWritingHolds.test.tsx`                               |
+| An undo or redo keeps a peer-held block as its writer has it (replaced or put back in place), and a restore during a hold keeps their words | `article-hold-undo.test.ts`, `apps/editor/hooks/canvas/useDocumentHistory.test.ts` |
 | A peer's hold arriving from the room                                                                                                                                                                               | `apps/editor/app/document/[id]/room-op-article-hold.test.ts`                                                                  |
 | Zones settle with their elements, never swap, drawing clip, objects whole                                                                                                                                          | `packages/document/src/article-zones.test.ts`                                                                                 |
 | Margin notes: place, follow, stack, untint, go with their text                                                                                                                                                     | `packages/document/src/article-notes.test.ts`                                                                                 |

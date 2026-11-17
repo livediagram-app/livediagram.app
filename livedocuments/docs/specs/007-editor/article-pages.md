@@ -747,6 +747,13 @@ types in it until they let go. Nothing about what is stored changes, and no lett
   Every hold not said again within 12 s (`ARTICLE_HOLD_EXPIRE_MS`) is gone, in the room and on every
   screen, so a lost release, a laptop closed mid-word or a frozen tab never holds a paragraph for
   longer.
+- **Undo and redo.** An undo or redo of this person's own steps never writes over a paragraph or cell someone else
+  holds: a held block keeps the words its writer has (as last committed), and the rest of the step undoes as usual,
+  so undoing a change made before they started writing, or a paragraph added before they took it, leaves their
+  words. The block (a held cell's whole table) comes back to their words even where the step would take it away, in
+  its place after the block before it. Their typing not yet committed is theirs already and stays on their screen.
+  An undo that takes the whole article away (undoing its adding) is not held back. There is no restore of an
+  earlier version in the editor; a copy from Version History makes a new document and changes no held writing.
 - **Who holds.** Editors and Participants hold the blocks they write (a Participant writes text,
   so holds what it writes); a Viewer writes nothing and holds nothing. Holding takes nothing a role
   lacks: the role's rights over the writing are unchanged.
