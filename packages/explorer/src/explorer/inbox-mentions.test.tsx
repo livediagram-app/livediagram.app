@@ -1,13 +1,14 @@
 // Work Tracker 1036: a mention keeps naming who mentioned you whoever replies after (you included), your own reply
 // never reads as you acting on yourself, a reply sent from the pane counts in the thread's heading at once, and the
 // sidebar's Inbox badge drops on Resolve and shows nothing at 0.
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { InboxThread } from '@liveworkspace/index-client';
 import { createFakeIndex } from '../test/fakeClient';
 import type { InboxActions, InboxTarget, InboxVerb } from '../types';
 import { Explorer, type ExplorerProps } from './Explorer';
 import { entryFacts } from './inbox/InboxRows';
+import { sentMissingFrom } from './inbox/InboxReaderBody';
 import {
   inboxBadge,
   inboxEntries,
@@ -205,6 +206,36 @@ describe('a reply sent from the pane', () => {
     fireEvent.keyDown(field, { key: 'Enter', metaKey: true });
     await waitFor(() => expect(loadThread).toHaveBeenCalledTimes(2));
     await screen.findByText('Thread · 2 comments');
+  });
+  it('keeps a just-sent reply and its count when the re-read comes back without it', async () => {
+    const loadThread = vi.fn(async () => [
+      { id: 'c1', authorName: 'Ada King', text: 'Hey @me can you check this?', at: NOW - MIN },
+    ]);
+    const index = createFakeIndex();
+    index.inbox.threads.push(thread());
+    renderInbox(index, { inbox: { actions: host(['reply'], { loadThread }) } });
+    await waitFor(() => expect(loadThread).toHaveBeenCalledTimes(1));
+    const field = screen.getByRole('textbox', { name: 'Reply' });
+    fireEvent.change(field, { target: { value: 'On it' } });
+    fireEvent.keyDown(field, { key: 'Enter', metaKey: true });
+    await waitFor(() => expect(loadThread).toHaveBeenCalledTimes(2));
+    await act(async () => {});
+    expect(screen.getAllByText('On it')).toHaveLength(1);
+    expect(screen.getByText('Thread · 2 comments')).toBeTruthy();
+  });
+
+  it('matches each sent reply to one of your own comments in the read', () => {
+    const mine = (id: string, text: string) => ({
+      id,
+      authorName: null,
+      mine: true,
+      text,
+      at: NOW,
+    });
+    const sent = [mine('s0', 'Yes'), mine('s1', 'Yes'), mine('s2', 'Later')];
+    const read = [{ id: 'c1', authorName: 'Ada', text: 'Yes', at: NOW - MIN }, mine('r1', 'Yes')];
+    expect(sentMissingFrom(read, sent).map((c) => c.id)).toEqual(['s1', 's2']);
+    expect(sentMissingFrom(read, [])).toEqual([]);
   });
 });
 

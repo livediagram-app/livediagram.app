@@ -100,7 +100,8 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
   const [busy, setBusy] = useState<InboxVerb | null>(null);
   const [failed, setFailed] = useState<InboxVerb | null>(null);
   const [draft, setDraft] = useState('');
-  // Replies sent from here this visit, shown under the thread until a read of it holds them.
+  // Replies sent from here this visit, shown and counted under the thread until a read of it holds them, even a
+  // read that comes back before the app has them (InboxReaderBody `sentMissingFrom`).
   const [sent, setSent] = useState<InboxComment[]>([]);
   const [threadBump, setThreadBump] = useState(0);
   // A new row: a fresh draft, no stale error.

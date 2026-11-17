@@ -7,7 +7,7 @@ import {
   type CollabThreadInput,
   type InboxResponse,
 } from '@liveworkspace/index-client';
-import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
 import { describe, expect, it } from 'vitest';
 import { body, call, h, makeItem, person, useHarness } from './test-support';
 
@@ -559,4 +559,39 @@ describe('the Inbox at scale', () => {
     expect(ms).toBeLessThan(cpuBudgetMs(150));
     // wall-clock: seeding 22,000 items with their forms, threads and actions can outlast the default 5 s on a loaded machine.
   }, 30_000);
+
+  // Work Tracker 1036: who mentioned the reader, looked up per row. At its worst: a full read (100 rows), each thread
+  // naming the people cap (100) of mentioners, the reader's entry last. The lookup alone, over those rows.
+  it('looks up who mentioned the reader within budget at the people cap on every row of a read', () => {
+    const db = h.db.sql;
+    const by = Object.fromEntries(
+      Array.from({ length: 100 }, (_, p) => [
+        p === 99 ? 'user_me' : `user_${p}`,
+        { id: `user_m${p}`, name: 'N'.repeat(200), color: '#123456' },
+      ]),
+    );
+    db.prepare(
+      `INSERT INTO items (id, app, kind, owner_id, team_id, scope, folder_id, title, summary, created_at, updated_at)
+       VALUES ('i', 'liveplanner', 'plan', 'user_a', NULL, 'p:user_a', NULL, 'I', '{}', 1, 1)`,
+    ).run();
+    const threads = db.prepare(
+      `INSERT INTO collab_threads (app, item_id, tab_id, element_id, element_label, resolved, comment_count,
+         participant_ids, mentioned_ids, mentioned_by, latest_text, latest_author_name, first_at, latest_at)
+       VALUES ('liveplanner', 'i', 't', ?, 'E', 0, 1, '[]', '[]', ?, 'hi', 'Bob', 1, 1)`,
+    );
+    for (let i = 0; i < 100; i++) threads.run(`e${i}`, JSON.stringify(by));
+    const lookup = db.prepare(
+      `SELECT (SELECT value FROM json_each(t.mentioned_by) WHERE key = ?) AS m FROM collab_threads t`,
+    );
+    let rows: { m: string }[] = [];
+    const runs = 20;
+    const ms =
+      cpuMsOf(() => {
+        for (let i = 0; i < runs; i++) rows = lookup.all('user_me') as { m: string }[];
+      }) / runs;
+    expect(rows).toHaveLength(100);
+    expect(JSON.parse(rows[0]!.m)).toMatchObject({ id: 'user_m99' });
+    // Measured about 1.7 ms a read here (100 rows, 100 entries each); the budget leaves room for a slow machine.
+    expect(ms).toBeLessThan(cpuBudgetMs(20));
+  });
 });
