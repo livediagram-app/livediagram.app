@@ -7,7 +7,7 @@
 // one entry. One `itemHistory` page of 30, and Show older events for the next; nothing else is asked for
 // but people's names, from the Explorer's shared people store.
 
-import { useCallback, useEffect, useId, useMemo, useState, type ReactNode } from 'react';
+import { Fragment, useCallback, useEffect, useId, useMemo, useState, type ReactNode } from 'react';
 import type { Item, ItemEvent } from '@liveworkspace/index-client';
 import { Button, EmptyState } from '@liveworkspace/ui';
 import { useExplorer } from '../explorer/context';
@@ -22,7 +22,9 @@ import {
   buildHistory,
   filterHistory,
   historyCategories,
+  pinHistory,
   summariseHistory,
+  type HistoryPinAt,
 } from './history';
 import { HistoryEntry, type RenderCtx } from './HistoryEntry';
 import { Chip, HistoryHeader, HistorySkeleton, MUTED, SummaryStrip } from './HistoryParts';
@@ -33,7 +35,22 @@ type State = { events: ItemEvent[]; cursor: string | null; loading: boolean; fai
 
 const BUTTON = `inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition duration-micro hover:border-brand-300 hover:text-brand-700 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-brand-500/50 dark:hover:text-brand-300 ${FOCUS_RING}`;
 
-export function HistoryDialog({ item, onClose }: { item: Item; onClose: () => void }) {
+/** What another tool adds to History (Snapshots, owner 2026-11-17): a block over the timeline, and entries laid on its
+ *  rail by time, each drawing its own list item (`last` ends the rail). */
+export type HistoryPin = HistoryPinAt & { render: (last: boolean) => ReactNode };
+export type HistoryExtras = { top?: ReactNode; pins: readonly HistoryPin[] };
+
+const NO_PINS: readonly HistoryPin[] = [];
+
+export function HistoryDialog({
+  item,
+  onClose,
+  extras,
+}: {
+  item: Item;
+  onClose: () => void;
+  extras?: HistoryExtras;
+}) {
   const ctx = useExplorer();
   const { client, viewerId } = ctx;
   const titleId = useId();
@@ -78,9 +95,11 @@ export function HistoryDialog({ item, onClose }: { item: Item; onClose: () => vo
   const summary = useMemo(() => summariseHistory(events), [events]);
   // A chip whose kind has gone (never, with paging only adding) would leave the list empty: fall back to All.
   const active = category && chips.some((c) => c.category === category) ? category : null;
+  // Pins show under All alone: a chip narrows to one kind of event.
+  const pins = active ? NO_PINS : (extras?.pins ?? NO_PINS);
   const days = useMemo(
-    () => buildHistory(filterHistory(events, active), now),
-    [events, active, now],
+    () => pinHistory(buildHistory(filterHistory(events, active), now), pins, now),
+    [events, active, now, pins],
   );
 
   const { teamName } = ctx;
@@ -107,7 +126,7 @@ export function HistoryDialog({ item, onClose }: { item: Item; onClose: () => vo
         </button>
       </div>
     );
-  else if (first)
+  else if (first && pins.length === 0)
     body = (
       <EmptyState
         compact
@@ -139,19 +158,22 @@ export function HistoryDialog({ item, onClose }: { item: Item; onClose: () => vo
                   className="sticky top-0 z-10 flex items-baseline justify-between gap-2 border-b border-slate-100 bg-white/90 px-5 py-2 text-xs font-semibold text-slate-700 backdrop-blur sm:px-6 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-200"
                 >
                   <time dateTime={day.key}>{day.label}</time>
-                  <span className={`font-normal ${MUTED}`}>
-                    {day.count === 1 ? '1 event' : `${day.count} events`}
-                  </span>
+                  <span className={`font-normal ${MUTED}`}>{dayCount(day.count, day.pinned)}</span>
                 </h3>
                 <ol className="relative px-5 pb-1 pt-3 sm:px-6">
-                  {day.runs.map((run, i) => (
-                    <HistoryEntry
-                      key={run.key}
-                      run={run}
-                      ctx={renderCtx}
-                      last={i === day.runs.length - 1}
-                    />
-                  ))}
+                  {day.entries.map((entry, i) => {
+                    const last = i === day.entries.length - 1;
+                    return entry.pin ? (
+                      <Fragment key={entry.pin.key}>{entry.pin.render(last)}</Fragment>
+                    ) : (
+                      <HistoryEntry
+                        key={entry.run.key}
+                        run={entry.run}
+                        ctx={renderCtx}
+                        last={last}
+                      />
+                    );
+                  })}
                 </ol>
               </li>
             ))}
@@ -192,6 +214,11 @@ export function HistoryDialog({ item, onClose }: { item: Item; onClose: () => vo
       className="sm:max-h-[min(46rem,calc(100dvh-4rem))]"
     >
       <HistoryHeader item={item} titleId={titleId} onClose={onClose} />
+      {extras?.top ? (
+        <div className="shrink-0 border-b border-slate-100 px-5 py-3 sm:px-6 dark:border-slate-800">
+          {extras.top}
+        </div>
+      ) : null}
       {first ? null : (
         <SummaryStrip
           item={item}
@@ -234,4 +261,12 @@ export function HistoryDialog({ item, onClose }: { item: Item; onClose: () => vo
       </div>
     </Dialog>
   );
+}
+
+// A day's heading count: its events, and its snapshots beside them.
+function dayCount(events: number, pinned: number): string {
+  const e = events === 1 ? '1 event' : `${events} events`;
+  if (!pinned) return e;
+  const p = pinned === 1 ? '1 snapshot' : `${pinned} snapshots`;
+  return events ? `${e} · ${p}` : p;
 }

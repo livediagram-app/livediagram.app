@@ -1,9 +1,12 @@
 'use client';
 
-// The footer's History row (docs/specs/006-document/version-history.md "In the editor"): in the bottom bar's More
-// menu, for every role, on a document stored on the server once it is up. It opens Version History on the open tab.
+// Version History from the footer (docs/specs/006-document/version-history.md "In the editor"): inside Tools' History
+// (owner, 2026-11-17), for every role, on a document stored on the server once it is up. It opens Version History on
+// the open tab.
+import { useCallback } from 'react';
 import { Glyph } from '@livedocuments/ui';
-import type { ChromeToolsItem } from '@liveworkspace/workbench/components/chrome/ChromeToolsMenu';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import { usePublishItemVersions } from '@liveworkspace/workbench/components/chrome/tools-door';
 import { track } from '@/lib/telemetry';
 import { openVersionHistory } from '@/lib/version-history-store';
 
@@ -37,16 +40,12 @@ export function openHistoryFromFooter(activeTabId: string): void {
   openVersionHistory(activeTabId);
 }
 
-/** The History row in the footer's Tools menu (liveworkspace/docs/specs/004-index/footer-tools-menu.md). */
-export function historyToolsItem(onOpen: () => void): ChromeToolsItem {
-  return {
-    id: 'history',
-    group: 'versions',
-    label: 'Version History',
-    description: 'Earlier versions of this tab, to restore.',
-    icon: <HistoryIcon size={16} />,
-    onSelect: onOpen,
-  };
+/** Offers Version History inside Tools' History while `onOpen` is set (liveworkspace/docs/specs/004-index/
+ *  footer-tools-menu.md): History shows Open Version History, or opens it straight away where it has nothing else. */
+export function useVersionHistoryInTools(onOpen: (() => void) | undefined): void {
+  const latest = useLatest(onOpen);
+  const open = useCallback(() => latest.current?.(), [latest]);
+  usePublishItemVersions(onOpen ? open : null);
 }
 
 // A clock face with an arrow turning back round it: going back in time.

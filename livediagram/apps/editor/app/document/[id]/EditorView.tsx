@@ -125,7 +125,7 @@ export function EditorView() {
     shareCode: ctx.sessionShareCode,
     apiBase: ITEM_API_BASE,
     collection: 'documents',
-    noun: 'document',
+    noun: 'canvas',
     apiFetch: itemApiFetch,
     apiHeaders: itemApiHeaders,
   });

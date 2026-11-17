@@ -1,10 +1,12 @@
 'use client';
 
-// The Snapshots dialog (liveworkspace/docs/specs/014-snapshots/snapshots.md "In the editor"; blueprint SN24, SN25): take
-// one with an optional name, then the latest five, newest first, each with Revert and Delete confirmed in place in its
-// own row. A sheet on a phone. Escape inside a confirm cancels the confirm, not the dialog.
+// Snapshots on their own (liveworkspace/docs/specs/014-snapshots/snapshots.md "In History"; blueprint SN24, SN25): what
+// the footer's History shows someone who may take snapshots but has no account history to read (an Editor through a
+// share link). Take one with an optional name, then the latest five, newest first, each with Revert and Delete
+// confirmed in place in its own row. Drawn inside Tools; a sheet on a phone anywhere else. Escape inside a confirm
+// cancels the confirm, not the dialog. `after`: a line under the list (History's account prompt, Version History).
 
-import { useState, type FormEvent } from 'react';
+import { useState, type ReactNode } from 'react';
 import {
   Button,
   CompactEmptyState,
@@ -12,38 +14,28 @@ import {
   DialogCloseButton,
   DialogHeader,
   LoadingSweep,
-  TextInput,
 } from '@liveworkspace/ui';
-import { SNAPSHOT_NAME_MAX } from '../limits';
-import type { SnapshotSummary } from '../wire';
 import type { SnapshotsDoor } from './door';
 import { SnapshotGlyph } from './glyphs';
+import { SnapshotNotices, TakeSnapshotForm } from './snapshot-parts';
 import { SnapshotRow, type RowConfirm } from './SnapshotRow';
-import { snapshotTitle } from './snapshot-words';
 import { useSnapshots } from './useSnapshots';
 
 export function SnapshotsDialog({
   door,
   onClose,
+  after,
   now = Date.now,
 }: {
   door: SnapshotsDoor;
   onClose: () => void;
+  after?: ReactNode;
   now?: () => number;
 }) {
   const state = useSnapshots(door.api);
-  const [name, setName] = useState('');
   const [confirm, setConfirm] = useState<RowConfirm>(null);
   const list = state.snapshots;
-  const full = list !== null && list.length >= state.kept;
-  const oldest: SnapshotSummary | undefined = full ? list[list.length - 1] : undefined;
   const working = state.busy !== null || state.reverted;
-
-  const submit = async (event: FormEvent) => {
-    event.preventDefault();
-    if (working) return;
-    if (await state.take(name)) setName('');
-  };
 
   return (
     <Dialog
@@ -61,53 +53,12 @@ export function SnapshotsDialog({
       >
         <DialogCloseButton onClick={onClose} />
       </DialogHeader>
-      <form
-        onSubmit={submit}
-        className="flex flex-col gap-2 border-b border-slate-100 px-6 py-4 dark:border-slate-800"
-      >
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <TextInput
-            aria-label="Snapshot name"
-            placeholder="Name this snapshot (optional)"
-            value={name}
-            maxLength={SNAPSHOT_NAME_MAX}
-            onChange={(e) => setName(e.target.value)}
-            className="min-w-0 flex-1"
-            disabled={state.reverted}
-          />
-          <Button
-            type="submit"
-            variant="primary"
-            size="md"
-            busy={state.busy?.kind === 'take'}
-            disabled={working && state.busy?.kind !== 'take'}
-          >
-            {state.busy?.kind === 'take' ? 'Taking…' : 'Take Snapshot'}
-          </Button>
-        </div>
-        {oldest ? (
-          <p className="text-xs text-slate-600 dark:text-slate-300" data-snapshots-full="">
-            Taking another removes the oldest, “{snapshotTitle(oldest)}”.
-          </p>
-        ) : null}
-      </form>
+      <TakeSnapshotForm
+        state={state}
+        className="border-b border-slate-100 px-6 py-4 dark:border-slate-800"
+      />
       <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3 sm:px-4">
-        {state.error ? (
-          <p
-            role="alert"
-            className="mx-3 mb-3 rounded-md bg-red-50 px-3 py-2 text-sm text-red-800 dark:bg-red-950/50 dark:text-red-200"
-          >
-            {state.error}
-          </p>
-        ) : null}
-        {state.reverted ? (
-          <p
-            role="status"
-            className="mx-3 mb-3 rounded-md bg-slate-100 px-3 py-2 text-sm text-slate-700 dark:bg-slate-800 dark:text-slate-200"
-          >
-            Reverted. Reloading…
-          </p>
-        ) : null}
+        <SnapshotNotices state={state} className="mx-3 mb-3" />
         {list === null ? (
           <div className="flex justify-center py-10" aria-label="Loading snapshots" role="status">
             <LoadingSweep />
@@ -159,6 +110,9 @@ export function SnapshotsDialog({
           </ul>
         )}
       </div>
+      {after ? (
+        <div className="border-t border-slate-100 px-4 py-3 dark:border-slate-800">{after}</div>
+      ) : null}
     </Dialog>
   );
 }

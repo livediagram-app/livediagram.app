@@ -151,7 +151,8 @@ describe('the Automations button', () => {
     render(<Footer {...EDITOR} offline sync={sync} />);
     openAutomations();
     expect(track).toHaveBeenCalledWith('UI', 'Opened', 'AutomationsOffline');
-    const gate = await screen.findByRole('dialog', { name: 'Automations' });
+    // The gate opens inside Tools, a region under its back bar rather than a modal.
+    const gate = await screen.findByRole('region', { name: 'Automations' });
     expect(gate.textContent).toContain('Rules Run on Our Servers');
     expect(gate.textContent).toContain('so they need it saved to your account.');
     expect(gate.querySelector('[data-prompt-glyph]')!.getAttribute('data-prompt-glyph')).toBe(
@@ -203,7 +204,8 @@ describe('the Automations button', () => {
     render(<Footer {...EDITOR} signedIn={false} />);
     openAutomations();
     expect(track).toHaveBeenCalledWith('UI', 'Opened', 'AutomationsSignIn');
-    const gate = await screen.findByRole('dialog', { name: 'Automations' });
+    // The gate opens inside Tools, a region under its back bar rather than a modal.
+    const gate = await screen.findByRole('region', { name: 'Automations' });
     expect(gate.textContent).toContain('so they need you signed in');
     expect(gate.querySelector('[data-prompt-glyph]')!.getAttribute('data-prompt-glyph')).toBe(
       'person',

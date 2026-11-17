@@ -153,3 +153,4 @@ export type {
 } from './library/types';
 export { appLibraryHosts, uploadRefusal, type AppLibraryHosts } from './library/http';
 export { ItemHistoryDialog } from './library/ItemHistoryDialog';
+export type { HistoryExtras, HistoryPin } from './library/HistoryDialog';

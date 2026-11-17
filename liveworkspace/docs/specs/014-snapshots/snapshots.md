@@ -97,17 +97,37 @@ Share roles as every app applies them (each app's `013-workspace/share-roles.md`
 | An **API token** (agents, MCP, CLI)                                                                      | Refused (403 `snapshots_need_a_person`), an Editor's included  |
 | A Community visitor, a workbench frame, an item in **This Browser**                                      | Nothing: no button (a This Browser item has no Durable Object) |
 
-## In the editor
+## In History
 
-A **Snapshots** row in the footer's **Tools** menu ([The footer's Tools menu](../004-index/footer-tools-menu.md)), in
-the same place in every app: after Automations in liveplanner, before History in livedocuments. It is there only for
-someone who may use snapshots, once the item is stored on the server; with nothing else in the menu, the Tools button
-is drawn for it alone.
+Snapshots live inside **History** in the footer's **Tools** menu ([The footer's Tools menu](../004-index/footer-tools-menu.md)),
+which has one Versioning row, History (owner, 2026-11-17: merge Snapshots into History). There is no Snapshots row of
+its own. History opens inside Tools, as every tool does, and what it shows depends on what the person may use:
 
-It opens the **Snapshots** dialog (a sheet on a phone):
+| Who                                                                            | History shows                                                                                                 |
+| ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| Signed in, on a stored item they may take snapshots of (the owner, their team) | **Take Snapshot** over the timeline, and each snapshot on the timeline at the time it was taken               |
+| Signed in, may read History but not take snapshots (a Participant or Viewer)   | The timeline alone, as before                                                                                 |
+| May take snapshots but has no History to read (an Editor through a share link) | The snapshots on their own (the list below)                                                                   |
+| A guest who may take snapshots (a share link's Editor, signed out)             | The snapshots on their own, with "Sign In to see who changed this <item>, and when." under them               |
+| A guest or an item in **This Browser**, with no snapshots to take              | The Sign In or Sync <Item> prompt, as before (a This Browser item has no snapshots: it has no Durable Object) |
 
-- A name field ("Name this snapshot (optional)") and **Take Snapshot**. With five kept, a line under it says which
-  snapshot the next one removes.
+On the timeline:
+
+- **Take Snapshot** heads it: a name field ("Name this snapshot (optional)") and **Take Snapshot**. With five kept, a
+  line under it says which snapshot the next one removes.
+- Each snapshot is an entry on the rail among the item's events, newest first, under its day. It is pinned: a camera
+  on the brand's wash in place of the event's disc, a small "Snapshot" label over it, then the same row as below
+  (name or time, who took it, how long ago, its size, the `Before revert` badge), with **Revert** and **Delete**
+  confirmed in place. A day's heading counts its snapshots beside its events ("4 events · 1 snapshot").
+- A filter chip narrows the timeline to one kind of event, and snapshots step out of it with the rest; **All** brings
+  them back.
+- An item with snapshots but no events yet shows the snapshots, not the empty state.
+- A failed list leaves the timeline as it is (no snapshots on it); a refused action shows its message under Take
+  Snapshot.
+
+On their own (no timeline), the same parts in a list:
+
+- The take row, as above.
 - The snapshots, newest first. Each row: its name (or its time), then who took it, how long ago and its size; a
   `Before revert` badge on an automatic one (on a phone the badge takes its own line under the name). Two actions: **Revert** and **Delete** (a bin, named "Delete snapshot").
 - Revert and Delete each confirm **in place**, in the row: Revert says "Everyone's work since then is replaced. A
@@ -117,6 +137,9 @@ It opens the **Snapshots** dialog (a sheet on a phone):
 - The list failed to load: "Couldn't load snapshots", "Check your connection, then try again." and **Try Again**,
   never the empty state, which would say there are none.
 - While a request runs its button says so and the others wait; a refusal shows its message in the dialog.
+
+Either way, Escape inside a row's confirm cancels the confirm; the next Escape goes back to the Tools list. The data,
+routes and telemetry names are unchanged: History draws the same list from the same calls.
 
 ## API
 
@@ -135,8 +158,8 @@ Each refuses a token (403) and answers 404 to anyone else who may not use snapsh
 
 Everything the apps share lives in `@liveworkspace/snapshots` (packages/snapshots): the store with its five-snapshot
 cap, chunking and size check, the routes, the revert's order, the generation fence on both sides, and the editor's
-button, dialog and their state. Each app adds a thin door: how it exports its file, how it replaces its content from
-one, its gate, and where the button sits. The tab replacement every app shares is `replaceTabs` in
+parts (Take Snapshot, the row, the list on its own, the pins History lays on its timeline) and their state. Each app adds a thin door: how it exports its file, how it replaces its content from
+one, its gate, and handing `useHistorySnapshotsHost()` to the History host it already mounts. The tab replacement every app shares is `replaceTabs` in
 `@liveworkspace/index-app` (item-tab-writes.ts), beside the other tab writes.
 
 ## Not in scope

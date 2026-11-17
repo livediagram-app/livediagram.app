@@ -7,8 +7,7 @@ import {
 import { TourOfferButton } from '@liveworkspace/workbench/components/tour/TourOfferButton';
 import { SettingsIcon, GithubIcon, SearchGlyph } from '@/components/chrome/tab-bar-icons';
 import { REPO_URL, HoverCard } from '@livedocuments/ui';
-import { historyToolsItem } from '@/components/versions/history-tools-item';
-import { useSnapshotsToolsItem } from '@liveworkspace/snapshots/ui';
+import { useVersionHistoryInTools } from '@/components/versions/history-tools-item';
 import {
   ChromeToolsMenu,
   type ChromeToolsItem,
@@ -54,7 +53,8 @@ export function ChromeControls({
 }) {
   const BTN = labelled ? `${CHROME_BTN} ${CHROME_BTN_LABELLED}` : CHROME_BTN;
   const suggest = useSuggestionsToolsItem(suggestions);
-  const snapshots = useSnapshotsToolsItem();
+  // Version History lives inside History (owner, 2026-11-17), which the editor's ItemToolsHost publishes.
+  useVersionHistoryInTools(onOpenHistory);
   // Search, first in Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md).
   const search: ChromeToolsItem | null = onOpenSearch
     ? {
@@ -74,16 +74,7 @@ export function ChromeControls({
       <TourOfferButton labelled={labelled} />
       {/* Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md): the tools that work on the
           whole item, in one menu, drawn only while it holds one. */}
-      <ChromeToolsMenu
-        labelled={labelled}
-        items={[
-          search,
-          suggest.item,
-          snapshots,
-          onOpenHistory ? historyToolsItem(onOpenHistory) : null,
-        ]}
-      />
-      {suggest.panel}
+      <ChromeToolsMenu labelled={labelled} items={[search, suggest]} />
       {github ? (
         <>
           {/* Open-source repo link (the codebase is public + MIT, docs/specs/002-project-scope/open-source-and-business-model.md). An

@@ -27,8 +27,8 @@ Derived from [snapshots.md](../snapshots.md). Codes SN1 to SN30 are cited from t
 - `src/routes.ts` (SN10 to SN15): `answerSnapshotRoute(request, rest, caller, door)`.
 - `src/fence.ts` (SN16 to SN18): `fenceStaleWrite`, `stampGeneration`.
 - `src/client.ts` (SN19 to SN21): the editor's calls and the fence's browser half.
-- `src/ui/` (SN22 to SN27): `SnapshotsDoorProvider`, `useSnapshotsDoor`, `useSnapshotsToolsItem`, `SnapshotsDialog`,
-  `useSnapshots`, `snapshot-words.ts`.
+- `src/ui/` (SN22 to SN28): `SnapshotsDoorProvider`, `useSnapshotsDoor`, `useHistorySnapshotsHost`,
+  `useSnapshotsExtras`, `SnapshotsDialog`, `snapshot-parts.tsx`, `SnapshotRow`, `useSnapshots`, `snapshot-words.ts`.
 
 ## Data and persistence
 
@@ -145,16 +145,23 @@ editor (`@liveworkspace/workbench/lib/room-client` and the copies in livediagram
 
 ## Presentation and UX
 
-SN22. `SnapshotsDoorProvider value={door | null}`; `useSnapshotsToolsItem()` returns null without a door. The door:
-`{ api, noun, open, setOpen }` built by the app's host from its gate.
+SN22. `SnapshotsDoorProvider door={door | null}`; the door is `{ api, noun, viewerId }`, built by the app's host from
+its gate. `useHistorySnapshotsHost()` returns null without a door, else one stable `{ useExtras, Alone }` the app hands
+to `useItemToolsRows({ snapshots })` (workbench, blueprint FM9): the workbench never imports this package.
 
-SN23. The row (footer Tools menu, blueprint FM1 to FM3): id `snapshots`, label "Snapshots", the camera-shutter glyph
-(14 px, `aria-hidden`), `onSelect` the door's `open`.
+SN23. No row of its own (owner, 2026-11-17). `useExtras()` (`useSnapshotsExtras(door)`) gives History
+`{ top, pins }`: `top` is `TakeSnapshotForm` over `SnapshotNotices` (snapshot-parts.tsx); each pin is
+`{ key: 'snapshot:<id>', at: createdAt, render(last) }`, an `li data-history-snapshot` on History's rail: the rail
+line (left 16 px, under every pin but the last), a 32 px disc in `bg-brand-50 text-brand-700` (dark
+`bg-brand-500/15 text-brand-200`) holding the camera at 15 px, a "Snapshot" label (11 px, uppercase, brand ink), and
+`SnapshotRow as="div"`.
 
-SN24. The dialog: `Dialog size="md" phoneSheet`, `DialogHeader title="Snapshots" subtitle="Save points for the whole
-<noun>. The latest 5 are kept."`, a close button. Body: the take row, then the list, as the spec says. Rows are
-`li` in a `ul aria-label="Snapshots"`; the confirm replaces the row's actions, focuses its safe button (Cancel), and
-Escape inside it cancels the confirm rather than closing the dialog.
+SN24. On their own (`Alone`, `SnapshotsDialog`): `Dialog size="md" phoneSheet`, `DialogHeader title="Snapshots"
+subtitle="Save points for the whole <noun>. The latest 5 are kept."`, a close button, the take row, then the list,
+then `after` (History's account line, Open Version History) in a bordered footer. Drawn inside Tools from History.
+Rows are `li` in a `ul aria-label="Snapshots"`; the confirm replaces the row's actions, focuses its safe button
+(Cancel), and Escape inside it cancels the confirm rather than closing the dialog. The confirm carries
+`data-keeps-escape`, so the Tools popover leaves that Escape to it.
 
 SN25. States: loading (`LoadingSweep`), empty (`CompactEmptyState`), the list failed (`CompactEmptyState` in a
 `role="alert"` with a Try Again button that fetches it again; `useSnapshots` keeps `listFailed` apart from `error`),
@@ -166,6 +173,9 @@ SN26. Words (`snapshot-words.ts`): the time label (`15 Nov, 14:32` in the viewer
 sizes in KB or MB with one decimal under 10.
 
 SN27. After a revert the page reloads (SN20) and the dialog goes with it.
+
+SN28. Telemetry, routes and the stored shape are unchanged by the move into History: the same `useSnapshots` calls
+the same `SnapshotsApi`.
 
 ## Accessibility
 
@@ -206,8 +216,8 @@ writes every tab once in one batch, then deletes the extra tabs one by one.
 
 - `packages/snapshots`: store (chunking at the limit and a surrogate pair at a cut, the cap at six, unreadable bodies,
   the generation cache), routes (every row of SN10 and SN11, the revert's order with a door that fails at each step),
-  fence (each SN16 branch), client fence (stamp and note), the UI (button gating, take, revert confirm, delete confirm,
-  empty, error, busy).
+  fence (each SN16 branch), client fence (stamp and note), the UI (the History host's gating, take, revert confirm,
+  delete confirm, empty, error, busy, pins on the timeline and their rail).
 - Each app's api: snapshot, edit, revert gives the snapshot back; a sixth drops the oldest; Editor, Participant,
   Viewer, tab-scoped link and token gates; a stale write after a revert is refused.
 - `@liveworkspace/index-app`: `replaceTabs` writes, reorders, re-folders, re-creates and removes tabs, revisions move

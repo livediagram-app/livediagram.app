@@ -2,6 +2,7 @@
 
 import { CloseIcon } from '../icons/actions';
 import { useDialogDismiss } from './dialog-dismiss';
+import { useDialogInline } from './dialog-slot';
 
 // The dialog header's standard close (×) button. Two blessed shapes:
 // the default h-7 square that tucks into a title row's top-right corner
@@ -28,6 +29,8 @@ export function DialogCloseButton({
   compact?: boolean;
 }) {
   const dismiss = useDialogDismiss();
+  // Inside Tools the popover's own close, beside its back bar, closes it.
+  if (useDialogInline()) return null;
   return (
     <button
       type="button"

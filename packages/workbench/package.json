@@ -675,6 +675,8 @@
     "./components/palette/ResourcesFlyout": "./src/components/palette/ResourcesFlyout.tsx",
     "./components/chrome/tools-door": "./src/components/chrome/tools-door.ts",
     "./components/chrome/useItemToolsRows": "./src/components/chrome/useItemToolsRows.tsx",
+    "./components/chrome/useExampleContentToolsItem": "./src/components/chrome/useExampleContentToolsItem.tsx",
+    "./components/chrome/ToolsView": "./src/components/chrome/ToolsView.tsx",
     "./components/palette/library-last": "./src/components/palette/library-last.ts",
     "./components/palette/ToolbarLibraryButton": "./src/components/palette/ToolbarLibraryButton.tsx",
     "./components/palette/IconsCategoryTab": "./src/components/palette/IconsCategoryTab.tsx",

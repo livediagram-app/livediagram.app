@@ -102,7 +102,8 @@ invalid_name`. Names the row for the stored revision or inserts a `manual` row; 
 - **VH19 editor gate.** Name, Restore and Make a Copy render only when `can.edit` (Make a Copy also needs no tab
   scope); History renders when the document is server-stored, hydrated, not offline, not embedded and not in a
   workbench frame, no welcome is open and no Community visitor holds the session. It is the footer's
-  (`historyToolsItem` in `ChromeControls`' Tools menu, from the tab bar's `onOpenHistory`),
+  (`useVersionHistoryInTools` in `ChromeControls`, from the tab bar's `onOpenHistory`, offering it to the Tools
+  History row through `usePublishItemVersions`; footer-tools-menu blueprint FM9),
   never the header's: `EditorHeader` gets no `leadAction`.
 
 ## Errors and edge cases

@@ -141,13 +141,13 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-// Opens the footer's Tools, then its Walkthroughs row (walkthroughs.md "In Tools").
+// Opens the footer's Tools, then its Walkthroughs row, which opens inside Tools (walkthroughs.md "In Tools").
 async function openWalkthroughs() {
   fireEvent.click(await screen.findByRole('button', { name: /^Tools/ }));
   const row = document.querySelector<HTMLElement>('[data-tools-item="walkthroughs"]');
   if (!row) throw new Error('no Walkthroughs row in Tools');
   fireEvent.click(row);
-  return screen.getByRole('dialog', { name: 'Walkthroughs' });
+  return screen.getByRole('dialog', { name: 'Tools, Walkthroughs' });
 }
 
 describe('the Walkthroughs row in Tools', () => {
@@ -175,7 +175,7 @@ describe('the Walkthroughs row in Tools', () => {
   it('counts the walkthroughs and lists them, with who and when', async () => {
     render(<Harness server={{ list: [W], canRecord: false, requests: [] }} />);
     const menu = await openWalkthroughs();
-    expect(document.querySelector('[data-tools-popover]')).toBeNull();
+    expect(menu.querySelector('[data-tools-view="walkthroughs"]')).toBeTruthy();
     expect(menu.textContent).toContain('Tour');
     expect(menu.textContent).toContain('1:04 · Ada · 2 days ago');
     expect(screen.queryByText('Record Walkthrough')).toBeNull();
@@ -190,14 +190,16 @@ describe('the Walkthroughs row in Tools', () => {
     fireEvent.click(document.querySelector<HTMLElement>('[data-tools-item="walkthroughs"]')!);
     expect(screen.getByText('No Walkthroughs Yet')).toBeTruthy();
     fireEvent.click(screen.getByText('Record Walkthrough'));
-    expect(screen.queryByRole('dialog', { name: 'Walkthroughs' })).toBeNull();
+    expect(screen.queryByRole('dialog', { name: /^Tools/ })).toBeNull();
   });
 
-  it('closes on Escape', async () => {
+  it('steps back to the Tools list on Escape, then closes', async () => {
     render(<Harness server={{ list: [W], canRecord: false, requests: [] }} />);
     await openWalkthroughs();
     fireEvent.keyDown(document, { key: 'Escape' });
-    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Walkthroughs' })).toBeNull());
+    await waitFor(() => expect(screen.getByRole('dialog', { name: 'Tools' })).toBeTruthy());
+    fireEvent.keyDown(document, { key: 'Escape' });
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: /^Tools/ })).toBeNull());
   });
 
   it('deletes a walkthrough after asking', async () => {

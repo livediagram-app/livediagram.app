@@ -5,8 +5,10 @@
 // (TemplateExampleTray, @liveworkspace/workbench). A Participant and a Viewer never see it, nor zen, an embed or a
 // locked tab. It reads one yes or no off the chrome store, so a typing commit re-renders nothing here; the answer is
 // cached per elements array (hasUntouchedExamples).
+// Its Clear Example Content is in the footer's Tools too, while the tray shows (useExampleContentToolsItem).
 import { hasUntouchedExamples } from '@livedocuments/document';
 import { TemplateExampleTray } from '@liveworkspace/workbench/components/chrome/PaletteTray';
+import { useExampleContentToolsItem } from '@liveworkspace/workbench/components/chrome/useExampleContentToolsItem';
 import {
   useEditorChrome,
   useEditorChromeStore,
@@ -30,12 +32,19 @@ export function ExampleContentTray() {
   const chrome = useEditorChromeStore();
   const shown = useEditorChrome(exampleTrayShown);
   const tabId = useEditorChrome((s) => s.activeTab.id);
+  const confirm = useExampleContentToolsItem({
+    shown,
+    onClear: () => chrome.get().clearExampleContent(),
+  });
   if (!shown) return null;
   return (
-    <TemplateExampleTray
-      key={tabId}
-      onClear={() => chrome.get().clearExampleContent()}
-      onKeep={() => chrome.get().keepExampleContent()}
-    />
+    <>
+      <TemplateExampleTray
+        key={tabId}
+        onClear={() => chrome.get().clearExampleContent()}
+        onKeep={() => chrome.get().keepExampleContent()}
+      />
+      {confirm}
+    </>
   );
 }

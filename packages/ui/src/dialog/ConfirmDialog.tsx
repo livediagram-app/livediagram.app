@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef } from 'react';
 import { Button } from '../Button';
 import { Dialog } from './Dialog';
+import { useDialogInline } from './dialog-slot';
 import { DialogFooter } from './DialogFooter';
 
 // The one "are you sure?" modal: a title, a message and a single yes/no choice, so nothing falls back to the
@@ -45,17 +46,7 @@ export function ConfirmDialog({
 
   return (
     <Dialog open={open} onClose={onCancel} titleId={titleId}>
-      <div className="border-b border-slate-100 px-6 pt-6 pb-4 dark:border-slate-800">
-        <h2
-          id={titleId}
-          className="text-lg font-semibold text-slate-900 dark:text-slate-50"
-        >
-          {title}
-        </h2>
-        <p className="mt-2 whitespace-pre-line text-sm text-slate-600 dark:text-slate-300">
-          {message}
-        </p>
-      </div>
+      <ConfirmBody titleId={titleId} title={title} message={message} />
       <DialogFooter>
         <Button variant="secondary" onClick={onCancel}>
           {cancelLabel}
@@ -70,5 +61,33 @@ export function ConfirmDialog({
         </Button>
       </DialogFooter>
     </Dialog>
+  );
+}
+
+// The question. Asked inside Tools (dialog-slot.ts), under the back bar that already heads it, it sits closer to it.
+function ConfirmBody({
+  titleId,
+  title,
+  message,
+}: {
+  titleId: string;
+  title: string;
+  message: string;
+}) {
+  const inline = useDialogInline();
+  return (
+    <div
+      className={`border-b border-slate-100 dark:border-slate-800 ${inline ? 'px-4 pb-4 pt-1' : 'px-6 pb-4 pt-6'}`}
+    >
+      <h2
+        id={titleId}
+        className={`font-semibold text-slate-900 dark:text-slate-50 ${inline ? 'text-base' : 'text-lg'}`}
+      >
+        {title}
+      </h2>
+      <p className="mt-2 whitespace-pre-line text-sm text-slate-600 dark:text-slate-300">
+        {message}
+      </p>
+    </div>
   );
 }
