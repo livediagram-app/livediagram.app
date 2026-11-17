@@ -590,6 +590,8 @@
     "./lib/tech-icons": "./src/lib/tech-icons.ts",
     "./lib/testing/bindings": "./src/lib/testing/bindings.ts",
     "./lib/testing/storage-event": "./src/lib/testing/storage-event.ts",
+    "./lib/label-bidi": "./src/lib/label-bidi.ts",
+    "./lib/mirror-children": "./src/lib/mirror-children.ts",
     "./lib/text-cap": "./src/lib/text-cap.ts",
     "./lib/this-browser-remove": "./src/lib/this-browser-remove.ts",
     "./lib/toast-name": "./src/lib/toast-name.ts",

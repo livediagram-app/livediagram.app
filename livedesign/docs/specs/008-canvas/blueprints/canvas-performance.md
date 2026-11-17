@@ -374,6 +374,33 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   `usePresenceRows.test.tsx` ("renders nothing for a peer's laser trail"): fifty trail frames, no
   render of the hook that owns the rows, and every frame reaches a subscriber.
 
+### Typing in a long label
+
+- `labelEditorBidi(text)` (`../packages/workbench/src/lib/label-bidi.ts`) answers `'plaintext'` when the text holds
+  a `'\n'` and a strong right-to-left letter (`hasRightToLeftLetter`: Hebrew, Arabic, Syriac, Thaana, NKo,
+  Samaritan, Mandaic and their presentation forms, and the astral right-to-left blocks), else `'isolate'`. One
+  left-to-right scan, no backtracking.
+- The label editor (`apps/*/components/canvas/RichTextEditor.tsx`) sets it as its inline `unicodeBidi` from the
+  session's `liveText`, over the stylesheet's `plaintext` (`app/label-bidi.css`). With `dir="auto"`, `isolate`
+  takes the direction of the first strong letter of the whole text, which is the first line's, so a text that
+  cannot differ line by line draws the same either way.
+- `listStyleOfText` reads only the first line (up to the first `'\n'`), never splitting the whole text.
+- The hug measurer (`apps/*/components/canvas/text-hug-measure.ts`) copies the live editor with
+  `mirrorChildren(measurer, editor)` (`../packages/workbench/src/lib/mirror-children.ts`): while both hold the same
+  nodes (same elements, same attributes, same text nodes) it replaces only the changed middle of each changed text
+  (`Text.replaceData` between the common start and end), so the browser keeps the shaping it already did; any other
+  difference replaces the children with fresh clones. A committed label's runs still replace the measurer's
+  children whole.
+- Measured (production build, Chromium, a 100,000-character text box, Work Tracker 1081). One 100,000-character
+  line: a keystroke took 64 ms (46 ms laying the editor out, 8.5 ms laying out the measurer's fresh copy) and now
+  takes 16 to 24 ms (3 ms and 3 ms); with the CPU slowed four times, 256 ms before and 56 ms after. 1,350 lines of
+  74 characters: 72 ms before and 48 ms after with the CPU slowed four times.
+- Tests: `label-bidi.test.ts` (the rule, and a CPU-time budget on a 100,000-character text);
+  `mirror-children.test.ts` (edits in place, falls back to clones, and a CPU-time budget on a keystroke into
+  100,000 characters); `RichTextEditor.long-text.test.tsx` (the editor takes `isolate` for long left-to-right text
+  and `plaintext` once right-to-left text has a second line, and a keystroke's work on 100,000 characters stays
+  inside a CPU-time budget).
+
 ### At rest
 
 - The still-canvas rule is held in a real browser by `e2e/canvas-still.spec.ts`: on a seeded board,

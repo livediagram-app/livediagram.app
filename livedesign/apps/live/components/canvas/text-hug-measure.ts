@@ -20,6 +20,7 @@ import {
 } from '@livedesign/design';
 import { applyCss } from '@/components/rich-text/rich-text-format';
 import { effectiveRunStyle, labelRunPx } from '@/components/canvas/label-style';
+import { mirrorChildren } from '@liveworkspace/workbench/lib/mirror-children';
 import { TEXT_HUG_LEADING, textHugFontPx, type MeasureTextBlock } from '@/lib/text-hug';
 
 const MEASURER_ATTR = 'data-text-hug-measurer';
@@ -95,7 +96,8 @@ export function measureLabelBlock(
         }),
       );
     } else if (content.textContent) {
-      node.replaceChildren(...[...content.childNodes].map((child) => child.cloneNode(true)));
+      // Edited in place where the text changed, so a keystroke does not lay the whole text out afresh.
+      mirrorChildren(node, content);
     } else {
       node.replaceChildren('\u200b');
     }
