@@ -242,6 +242,7 @@ export * from './web-components';
 // draw their own `…` rather than taking the shared settings one.
 export * from './behaviour-shapes';
 export * from './colors';
+export * from './template-example';
 export * from './cell-colours';
 export * from './table-header-colours';
 export * from './progress-colours';
