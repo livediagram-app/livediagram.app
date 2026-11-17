@@ -279,6 +279,12 @@ A flow's screens are the layouts' screens in the flow's own words, so every scre
   stands where a real name, product or price fits ("Product Name"), the prices and totals of one flow agree from
   screen to screen, and no list repeats a row it already showed. Every word fits its box
   (`page-lint`'s `templates.test.ts` pins it for every template).
+- **No two flows share their words**: each flow names its own product (no two brands alike) and writes its own
+  headlines, body copy, messages and rows, so no screen reads like another template's with the name swapped (the
+  Launch Site is Brightside, rooftop solar paid monthly, not the Website's team tool; the Company Site is Tidewater,
+  payroll). The interface's own phrases (Forgot Password?, Continue with Google, the terms box) may repeat.
+  `template-builders-wireframe-flows.test.ts` pins it: no two screens alike with the brand set aside, and no two
+  screens of one layout sharing more than half of their sentences.
 
 ### A flow's links
 
@@ -291,35 +297,37 @@ Every flow opens linked, so pressing **Prototype** on a fresh template walks thr
   booked), where it goes to the flow's first screen, as the app would.
 - **Transition**: **Slide** on a phone, tablet or watch, **Instant** (absent) in a browser or on a laptop.
 - **Every screen is reached**: from the first screen, following the links reaches every other screen of the flow.
+- **No dead ends**: every screen has a way out (a link onward or back), so a walk through Prototype never stops on
+  a screen with nothing to press; a working tool's screens (the Project Tool's) each link every other.
 - **The page ids** are the template's own (`page-1`, `page-2`, ...), which the template's pages keep wherever it is
   applied (the start, `/new`, an agent's tab), so a link never arrives broken.
 
 The controls that come linked:
 
-| Template                   | Comes linked                                                                                                        |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| Mobile App Wireframe       | Continue and Skip, Sign In, a product, Add to Cart, Pay, the back arrows                                            |
-| Social App Wireframe       | Stories, a post, the bell, the tab bar, Your Story, Cancel and Post, a name to its profile, the Post's back arrow   |
-| Delivery App Wireframe     | the search field, a product, the bag, Add to Cart, Checkout, the back arrows                                        |
-| Travel App Wireframe       | Search Flights, a flight, Trips, the destination, the back arrows                                                   |
-| Ride App Wireframe         | Sign In, Choose a Ride, Confirm Standard                                                                            |
-| Music App Wireframe        | an album, Podcasts, Search, a song, Play, the back arrows                                                           |
-| App Sign Up Wireframe      | Continue and Skip, Create Account, Verify, Continue, the back arrows                                                |
-| Account Settings Wireframe | Edit Profile, the settings cog, Cancel and Save, Profile, Help, Home, the back arrow                                |
-| Class Booking Wireframe    | a studio, Book a Spot, Pay, Done, the back arrows                                                                   |
-| Website Wireframe          | the nav's Pricing and brand, Log In, Get Started, Start Free, Choose, Start Trial, Sign In                          |
-| Launch Site Wireframe      | the nav's Pricing and brand, Log In, Get Started, Start Free, Choose, Start Trial, the logo, Create Account, Verify |
-| Online Store Wireframe     | a product, the nav's Shop, Add to Cart, Checkout, Pay                                                               |
-| Blog Wireframe             | the featured post, the nav's Latest and About, the brand                                                            |
-| Company Site Wireframe     | the nav's Team, Help and Contact, the brand, Book a Demo                                                            |
-| Web App Wireframe          | the sidebar's and nav's entries, Recent Orders                                                                      |
-| Project Tool Wireframe     | the sidebar's entries, a task, Upcoming, the Team page's nav                                                        |
-| Team Inbox Wireframe       | a message, Reply, the sidebar's Mentions and Settings, the nav's entries, the Conversation's back arrow             |
-| Tablet App Wireframe       | the nav's Messages and profile, the Profile screen's nav, the Messages back arrow                                   |
-| Video App Wireframe        | Search, a video, a result, the nav's Home and profile                                                               |
-| Watch App Wireframe        | the step count, Messages, Dismiss (back)                                                                            |
-| Fitness Watch Wireframe    | the heart rate, the time, the run, Cancel (back)                                                                    |
-| Watch Music Wireframe      | the song, Up Next (back)                                                                                            |
+| Template                   | Comes linked                                                                                                         |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Mobile App Wireframe       | Continue and Skip, Sign In, a product, Add to Cart, Pay, the back arrows                                             |
+| Social App Wireframe       | Stories, a post, the bell, the tab bar, Your Story, Cancel and Post, a name to its profile, the Post's back arrow    |
+| Delivery App Wireframe     | the search field, a product, the bag, Add to Cart, Checkout, the back arrows                                         |
+| Travel App Wireframe       | Search Flights, a flight, Trips, the destination, My Trip, the back arrows                                           |
+| Ride App Wireframe         | Sign In, Choose a Ride, Confirm Standard, an update, the Updates tab bar                                             |
+| Music App Wireframe        | an album, Podcasts, Search, a song, Play, the back arrows                                                            |
+| App Sign Up Wireframe      | Continue and Skip, Create Account, Verify, Continue, Plan Something, the tab bar's Profile, the back arrows          |
+| Account Settings Wireframe | Edit Profile, the settings cog, Cancel and Save, Profile, Help, Home, the back arrow                                 |
+| Class Booking Wireframe    | a studio, Book a Spot, Pay, Done, the back arrows                                                                    |
+| Website Wireframe          | the nav's Pricing and brand, Log In, Get Started, Start Free, Choose, Start Trial, Sign In                           |
+| Launch Site Wireframe      | the nav's Pricing and brand, Log In, Get a Quote, Check My Roof, See the Savings, the plans, the logo, See My Report |
+| Online Store Wireframe     | a product, the nav's Shop, Add to Cart, Checkout, Pay                                                                |
+| Blog Wireframe             | the featured post, the nav's Latest and About, the brand                                                             |
+| Company Site Wireframe     | the nav's Team, Help and Contact, the brand, Book a Demo                                                             |
+| Web App Wireframe          | the sidebar's and nav's entries, Recent Orders                                                                       |
+| Project Tool Wireframe     | the sidebar's entries on Board and Tasks, a task, the Calendar's meetings, the Team page's nav                       |
+| Team Inbox Wireframe       | a message, Reply, the sidebar's Mentions and Settings, the nav's entries, the Conversation's back arrow              |
+| Tablet App Wireframe       | the nav's Messages and profile, the Profile screen's nav, the Messages back arrow                                    |
+| Video App Wireframe        | Search, a video, a result, the nav's Home and profile                                                                |
+| Watch App Wireframe        | the step count, Messages, Dismiss (back)                                                                             |
+| Fitness Watch Wireframe    | the heart rate, the time, the run, Cancel (back)                                                                     |
+| Watch Music Wireframe      | the song, Up Next (back)                                                                                             |
 
 `template-builders-wireframe-flows.test.ts` pins the links: every named control is on its screen, every link names
 one of the flow's screens and never its own, every back arrow is a back link, every screen is reached, and pressing

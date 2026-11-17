@@ -103,7 +103,9 @@ sample photo that shows what a photo page does, ready to change or replace:
   blob id as it arrives.
 - **Stored first, then set**: the files are queued for the tab as any picture is ([Photo store](photo-store.md)
   "Committing an edit"): uploaded for a cloud design, kept in this browser for an Offline Mode design. The photos
-  are set (one tab edit) once every file is stored, so the pages never name a file the store lacks. A failed upload
+  are set once every file is stored, so the pages never name a file the store lacks. Setting them is part of making
+  the tab, as the template's landing is, not an edit: it is outside the undo history, so an Undo straight after
+  opening never takes the sample away and leaves the Start a Photo card. A failed upload
   shows the save indicator's **Couldn't save the photo** with **Retry**, and the sample lands once it goes through.
 - **Only the template's own tab**: picking the template asks for the sample for the tab it just made (kept in this
   browser tab's session, so `/new`'s ask reaches the editor it opens), and the editor sets it only while that tab's
@@ -117,7 +119,9 @@ sample photo that shows what a photo page does, ready to change or replace:
 ## Working on a photo page
 
 A photo page is **in focus** for a person when it is the page they are on ([Pages](../007-editor/pages-mode.md)
-"Getting around the pages": they went to it, pressed on it, or it is in view on opening). While a photo page is in
+"Getting around the pages": they went to it, pressed on it, or it is in view on opening). A press on the chrome
+floating over a page (the photo tools, the Photo panel and its layers' eyes, a menu) is the control's, never a press
+on the page under it, so taking the Move tool over the Story leaves the Post in focus. While a photo page is in
 focus and the person may edit it:
 
 ### The photo tools

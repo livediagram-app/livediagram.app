@@ -14,17 +14,19 @@ import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 export function usePhotoEditSample({
   activeTab,
-  commitTabs,
+  tickTabs,
   ready,
   canEdit,
 }: {
   activeTab: Tab;
-  commitTabs: (map: (tabs: Tab[]) => Tab[]) => void;
+  // A tab edit outside the undo history: the sample is part of making the tab, as the template's landing is, so an
+  // undo never takes it away and leaves the Start a Photo card.
+  tickTabs: (map: (tabs: Tab[]) => Tab[]) => void;
   // The photo store's transport is set.
   ready: boolean;
   canEdit: boolean;
 }): void {
-  const commitRef = useLatest(commitTabs);
+  const tickRef = useLatest(tickTabs);
   useEffect(() => {
     // A Set lookup and a session read on each change of the open tab; the rest only for the tab asked for.
     if (!ready || !canEdit || !photoEditSampleAsked(activeTab.id)) return;
@@ -33,8 +35,7 @@ export function usePhotoEditSample({
         import('@/lib/photo-template/photo-edit-sample-load').then((m) => m.loadPhotoEditSample()),
       enqueue: (tabId, entries) => photoUploads.enqueue(tabId, entries),
       settled: (tabId) => photoUploads.whenSettled(tabId),
-      commit: (tabId, map) =>
-        commitRef.current((ts) => ts.map((t) => (t.id === tabId ? map(t) : t))),
+      commit: (tabId, map) => tickRef.current((ts) => ts.map((t) => (t.id === tabId ? map(t) : t))),
     });
-  }, [ready, canEdit, activeTab, commitRef]);
+  }, [ready, canEdit, activeTab, tickRef]);
 }

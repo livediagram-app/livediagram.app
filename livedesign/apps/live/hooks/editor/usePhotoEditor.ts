@@ -90,8 +90,8 @@ export function usePhotoEditor<V extends PagesModeView>({
     photoUploads.setTransport(apiTransport(() => scopeRef.current!));
     return () => photoUploads.setTransport(null);
   }, [ready, scopeRef]);
-  // The Photo Edit template's sample, set once its files are stored (usePhotoEditSample.ts).
-  usePhotoEditSample({ activeTab, commitTabs, ready, canEdit });
+  // The Photo Edit template's sample, set once its files are stored (usePhotoEditSample.ts), outside the undo history.
+  usePhotoEditSample({ activeTab, tickTabs, ready, canEdit });
   // The working parts arrive once the tab has a photo page (runtime.ts): a design without one never
   // downloads the pixel engine.
   const hasPhotoPage = !!pages?.some((p) => p.kind === 'photo');
