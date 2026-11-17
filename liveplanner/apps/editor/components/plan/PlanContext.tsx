@@ -31,6 +31,7 @@ import type {
   StatusPhase,
   TimeOp,
 } from '@liveplanner/items';
+import type { WarmRights } from '@/lib/last-seen-plan';
 import type { PlanItemsStatus } from '@/hooks/plan/usePlanItems';
 import type { ItemOpenVia } from './item-trail';
 import type { ItemTypesSlice } from '@/hooks/plan/useItemTypes';
@@ -45,6 +46,10 @@ export type ItemTypeEditing = 'new' | { id: string };
 
 export type PlanContextValue = {
   items: ReadonlyMap<string, Item>;
+  // During a warm paint, the rights the copy's kept role will give back at the catch-up (last-seen-plan.ts
+  // warmRightsOf): the board draws, inert, the strips they show, so the catch-up does not push its columns down.
+  // Layout only, never a right. Absent otherwise.
+  warmRights?: WarmRights;
   // The Boards tour's practice cards, on this screen alone (docs/specs/026-plan/plan-tour.md "Practice cards"): drawn
   // as practice, their comments and links not offered. Absent: none.
   practiceIds?: ReadonlySet<string>;

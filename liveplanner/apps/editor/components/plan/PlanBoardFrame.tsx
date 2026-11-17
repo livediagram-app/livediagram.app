@@ -81,7 +81,12 @@ export function PlanBoardFrame({ v }: { v: PlanBoardViewValues }) {
         />
       ) : null}
       {interactive && plan && !simplified ? (
-        <ExampleCardsNotice shown={shownItems} plan={plan} palette={palette} />
+        <ExampleCardsNotice
+          shown={shownItems}
+          plan={plan}
+          palette={palette}
+          held={!!plan.warmRights?.canEdit}
+        />
       ) : null}
       <div
         ref={bodyRef}

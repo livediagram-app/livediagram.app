@@ -101,13 +101,33 @@ export function planBoardViewHeader(v: PlanBoardViewValues) {
         track('Plan', 'Revealed', 'Board');
       }}
       chips={
-        chipsShown({ interactive, canEditCards, phone, simplified, setup, types: addTypes }) ? (
-          <BoardCardTypeChips
-            setup={setup}
-            projection={projection}
-            types={addTypes}
-            palette={palette}
-          />
+        // During a warm paint, an Editor's or Participant's chips are drawn inert, so the catch-up does not shift the
+        // header (docs/specs/006-project/offline-mode.md "The board holds its place").
+        chipsShown({
+          interactive,
+          canEditCards: canEditCards || !!plan?.warmRights?.canEditCards,
+          phone,
+          simplified,
+          setup,
+          types: addTypes,
+        }) ? (
+          canEditCards ? (
+            <BoardCardTypeChips
+              setup={setup}
+              projection={projection}
+              types={addTypes}
+              palette={palette}
+            />
+          ) : (
+            <span inert aria-hidden className="contents" data-held-chips="">
+              <BoardCardTypeChips
+                setup={setup}
+                projection={projection}
+                types={addTypes}
+                palette={palette}
+              />
+            </span>
+          )
         ) : undefined
       }
       onMoveUnplaced={(item, status) => {

@@ -166,7 +166,8 @@ export function useEditorAutomations(ctx: EditorContextValue, isOffline: boolean
     structureReadOnly: isStructureReadOnly,
     offline: isOffline,
     hydrated,
-    embed: embedMode,
+    // A workbench frame reaches no Automations route (its allow-list confines them), so it reads no rules either.
+    embed: embedMode || ctx.workbenchMode,
     signedIn: !!accountUserId,
     authLoaded: ctx.authLoaded,
     scope: ctx.plan.context?.itemsScope ?? null,

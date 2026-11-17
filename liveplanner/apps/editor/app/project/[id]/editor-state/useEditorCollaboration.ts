@@ -179,6 +179,7 @@ export function useEditorCollaboration(
     serverStored: realtime.projectServerStored,
     sessionShareCode,
     shareDialogOpen: dialogs.shareDialogOpen,
+    confined: workbenchMode,
     setShareable: setProjectShareable,
   });
   // The person's plans, for the pickers that name another plan: read from the index once the plan is open and the

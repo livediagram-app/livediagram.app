@@ -498,7 +498,10 @@ time the charts arrive.
 - **One read per range**: the editor and agents read a range's flow in one request, `GET /projects/:id/flow`, with the
   range (`days`, 1 to 180, 30 when absent) and the card types (`types`, every type when absent). The editor reads every
   type and each chart keeps its own, so the flow charts of a range on the open plan share one read, made when the
-  first of them is drawn and again 2 seconds after the cards last changed (a burst of moves reads once). It answers the range's
+  first of them is drawn and again when a card's status or type changes or a card comes or goes (an edit to a title or
+  another field changes no flow chart and reads nothing): 2 seconds after the last such change, so a burst of moves
+  reads once, and never sooner than 30 seconds after the last read, so a plan many people move cards on reads at most
+  twice a minute per range and a plan that never goes quiet still reads within about 30 seconds. It answers the range's
   daily flow counts, and each card that moved in the range with its moves over the whole history the plan keeps (a
   start can be older than the range), its type, when it was made and its oldest kept entry: what all three charts are
   worked out from, by status, never an entry's author or values.
