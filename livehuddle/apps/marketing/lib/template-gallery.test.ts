@@ -1,3 +1,4 @@
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { describe, expect, it } from 'vitest';
 import { TEMPLATES, isBlankTemplate, templateEditorMode } from '@livehuddle/templates';
 import {
@@ -51,6 +52,19 @@ describe('filterGallery', () => {
     const kinds = filterGallery(all, 'pod stand-up').map((t) => t.kind);
     expect(kinds).toEqual(['team-pod']);
     expect(filterGallery(all, 'office zebra')).toEqual([]);
+  });
+
+  it('still finds a template one typo away, and nothing for a query far from every word', () => {
+    expect(filterGallery(all, 'rooftp').map((t) => t.kind)).toContain('rooftop-bar');
+    expect(filterGallery(all, 'qqqqzzzz')).toEqual([]);
+  });
+
+  it('searches every template for each keystroke of a typo, and a long query, within a CPU budget', () => {
+    const typed = ['rooftp', ...Array.from({ length: 6 }, (_, n) => 'rooftp'.slice(0, n + 1))];
+    const ms = cpuMsOf(() => {
+      for (const query of [...typed, `rooftp ${'x'.repeat(20000)}`]) filterGallery(all, query);
+    });
+    expect(ms).toBeLessThan(cpuBudgetMs(1000));
   });
 });
 

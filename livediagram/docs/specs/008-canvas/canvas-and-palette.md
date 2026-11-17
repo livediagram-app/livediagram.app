@@ -895,7 +895,7 @@ its **search words**, punctuation and hyphens no part of a word on either side (
 "1-on-1" and "one-on-one" the Meeting agenda) (`templateKeywords(kind)` in `packages/templates/src/template-keywords.ts`: what people call it and
 the job it does, "1:1" for the Meeting agenda, "erd" for the Database schema, "persona", "kpi",
 "retro", "org"). One function,
-`templateMatchesQuery`, decides a match for the editor and the marketing gallery alike. A start shows the matches
+`templateMatchesQuery`, decides a match for the editor and the marketing gallery alike. A word of four letters or more also finds a template one typo off one of its words (a letter missing, extra, wrong or two swapped; two typos from eight letters: "wirefrme" finds Wireframe), shared in `@liveworkspace/template-previews/template-search`; shorter words stay exact, and the hero ranks typo-only finds after the exact ones. A start shows the matches
 under its own groups, then the other modes' ([Found in other modes](../007-editor/start-diagramming.md#found-in-other-modes)); the gallery groups them under their primary category.
 
 ### What a template shows

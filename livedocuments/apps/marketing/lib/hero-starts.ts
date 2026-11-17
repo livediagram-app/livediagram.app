@@ -1,4 +1,8 @@
-import { templateQueryWords, type TemplateKind } from '@livedocuments/templates';
+import {
+  templateMatchesQuery,
+  templateQueryWords,
+  type TemplateKind,
+} from '@livedocuments/templates';
 import { filterGallery, galleryTemplates, popularTemplates } from '@/lib/template-gallery';
 
 // The hero's ways in (docs/specs/019-marketing/marketing-site.md "Hero"): its template search and its
@@ -20,13 +24,15 @@ type HeroMatch = (typeof ALL)[number];
 
 // The best matches for a query, by the editor's own search (filterGallery): a template whose title
 // holds every typed word ranks before one found only through its description, category or search
-// words, then the catalogue's order. "poster" puts Event Poster ahead of a blank page that mentions one.
+// words, then one found only through a typo, then the catalogue's order. "poster" puts Event Poster ahead of a blank page that mentions one.
 export function heroSearch(query: string, limit = HERO_SEARCH_LIMIT): HeroMatch[] {
   const words = templateQueryWords(query);
   if (words.length === 0) return [];
   const inTitle = (t: HeroMatch) => {
     const title = t.title.toLowerCase();
-    return words.every((w) => title.includes(w)) ? 0 : 1;
+    if (words.every((w) => title.includes(w))) return 0;
+    // Found as typed, then only found through a slip or two off a word (a typo), last.
+    return templateMatchesQuery.exact(t, query) ? 1 : 2;
   };
   return filterGallery(ALL, query)
     .map((t, i) => ({ t, i, rank: inTitle(t) }))
