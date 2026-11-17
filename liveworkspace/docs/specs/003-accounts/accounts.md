@@ -1397,6 +1397,12 @@ the zip. Closing an account deletes its personal export.
 
 ## Closing an account
 
+A person closes their account from any app's Settings (Profile, **Delete Account** under Danger Zone, each
+product's docs/specs/014-identity/auth-and-guest-access.md "Deleting an account"). liveworkspace.app's own Settings
+says so where they would look for it: its Profile's **Your Account** has a Delete Account row that points to an app
+and links to that app's help article ([site.md](../010-site/site.md#settings), "Your Account"), since the site holds
+no app client to ask with.
+
 An app's server asks (`POST /api/auth/delete-account`, with its client credentials, the person's access token and the
 code emailed to them, `src/delete-account.ts`), and the account closes for every app at once. Without the right code
 nothing happens: the code is sent and checked first, by the same app's server

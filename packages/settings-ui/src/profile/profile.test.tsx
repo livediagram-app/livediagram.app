@@ -317,6 +317,39 @@ describe('Sign Out', () => {
   });
 });
 
+describe('Delete Account, where the host can’t close the account itself', () => {
+  const HELP =
+    'https://www.livediagram.app/help/account-and-data/deleting-your-data/#deleting-your-account';
+
+  it('ends Your Account under Sign Out, saying where closing lives and linking to the help article', () => {
+    const rows = profileRows({
+      ...base,
+      identity: ada,
+      security: fakeSecurity(),
+      onSignOut: vi.fn(),
+      closeAccountHelp: HELP,
+    });
+    expect(rows.slice(-2).map((r) => [r.key, r.section])).toEqual([
+      ['signOut', 'Your Account'],
+      ['closeAccount', 'Your Account'],
+    ]);
+    drawn(rows.at(-1));
+    expect(screen.getByText('Delete Account')).toBeTruthy();
+    expect(screen.getByText(/open Settings there, then Profile/)).toBeTruthy();
+    const link = screen.getByRole('link', { name: /How to Delete Your Account/ });
+    expect(link.getAttribute('href')).toBe(HELP);
+    expect(link.getAttribute('target')).toBe('_blank');
+    // It points the way; it never closes the account itself.
+    expect(screen.queryByRole('button')).toBeNull();
+  });
+
+  it('is left out where the host hands no article (an editor draws its own Delete Account), or has nothing to show', () => {
+    const editor = profileRows({ ...base, identity: ada, onSignOut: vi.fn() });
+    expect(editor.some((r) => r.key === 'closeAccount')).toBe(false);
+    expect(profileRows({ ...base, closeAccountHelp: HELP })).toEqual([]);
+  });
+});
+
 describe('Name and Colour, in place', () => {
   const editor = async (profile: ProfileHost) => {
     drawn(profileRows({ ...base, identity: ada, profile }).find((r) => r.key === 'profile'));

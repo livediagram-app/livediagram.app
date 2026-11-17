@@ -332,6 +332,32 @@ describe('the Settings panel, on All', () => {
     await settle();
     expect(signOut).toHaveBeenCalledTimes(1);
   });
+
+  it('ends Your Account with Delete Account: where closing lives, and the help article of the app it was opened for', async () => {
+    const cell = () => document.querySelector('[data-settings-cell="closeAccount"]');
+    const link = () => cell()?.querySelector('a');
+    fetchMock.mockImplementation(answer);
+    await open(null, { initialCategoryId: 'account:account' });
+    await until(cell);
+    expect(cell()!.textContent).toContain('Delete Account');
+    expect(cell()!.textContent).toContain('Danger Zone');
+    // Opened for no app: livediagram's article, in a new tab.
+    expect(link()!.getAttribute('href')).toBe(
+      'https://www.livediagram.app/help/account-and-data/deleting-your-data/#deleting-your-account',
+    );
+    expect(link()!.getAttribute('target')).toBe('_blank');
+    // Nothing on the site closes an account itself: no Delete Account button.
+    expect(
+      [...document.querySelectorAll('button')].some((b) => b.textContent === 'Delete Account'),
+    ).toBe(false);
+    act(() => root.unmount());
+    root = createRoot(container);
+    await open('liveplanner.app', { initialCategoryId: 'account:account' });
+    await until(cell);
+    expect(link()!.getAttribute('href')).toBe(
+      'https://www.liveplanner.app/help/account-and-data/deleting-your-data/#deleting-your-account',
+    );
+  });
 });
 
 describe('the Settings panel, for a guest on an app’s address', () => {
