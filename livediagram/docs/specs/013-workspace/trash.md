@@ -22,6 +22,10 @@ team library): it only sends the canvas to the Trash, so a question would guard 
   Undo on arrival and drops both from the address once read. The workbench frame's Explorer takes the same canvas from
   sessionStorage, kept for one page load.
 - A team canvas goes to the team's Trash, and its Undo restores it there.
+- Moving the canvas open in the editor to Archived (from the Explorer panel's menus or Change Folder's Archived)
+  leaves for the Explorer too, as deleting it does, since an archived canvas is closed: the Explorer says "Moved
+  “<name>” to Archived." once on arrival, with no Undo (`leaveArchivedItem`,
+  [one-explorer.md "Archiving the open item"](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#archived)). Archiving any other canvas keeps the editor open.
 
 Every delete of a whole canvas goes to the Trash: the Explorer, the editor, the team library, the public API with a
 token, the MCP server, and Google Drive sync. So does a canvas left empty, by the index's daily sweep
