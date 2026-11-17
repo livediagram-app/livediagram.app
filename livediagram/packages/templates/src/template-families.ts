@@ -94,6 +94,7 @@ const TEMPLATE_FAMILY: Record<TemplateKind, TemplateFamily | null> = {
   'network-diagram': null,
   'c4-context': null,
   'c4-container': null,
+  'c4-component': null,
   'architecture-decision-record': null,
   'sprint-planning': null,
   'interview-synthesis': null,

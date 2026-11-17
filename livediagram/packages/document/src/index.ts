@@ -117,6 +117,7 @@ export * from './concept';
 export * from './concept-timeline';
 export * from './concept-ramp';
 export * from './shape-variants';
+export * from './c4-look';
 export * from '@liveworkspace/model-core/title-caption';
 export * from './editor-mode';
 export * from './tab-stats';

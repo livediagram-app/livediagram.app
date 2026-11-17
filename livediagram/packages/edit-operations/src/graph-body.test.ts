@@ -22,7 +22,7 @@ describe('graphBodyIssue', () => {
   it('names the first member that is wrong', () => {
     expect(graphBodyIssue('a -> b')).toBe('graph: expected an object with nodes and edges');
     expect(graphBodyIssue({ nodes: [{ id: 1 }], edges })).toBe(
-      'graph.nodes: expected an array of { id, label?, shape?, note?, group?, icon?, tone? (strong, soft, muted or plain) }',
+      'graph.nodes: expected an array of { id, label?, shape?, note?, group?, icon?, tone? (strong, soft, muted or plain), c4Kind? (person, system, container, component, database or external), tech?, description? }',
     );
     expect(graphBodyIssue({ nodes: [{ id: 'a', fields: 'x' }], edges: [] })).toMatch(
       /^graph.nodes/,
@@ -37,7 +37,7 @@ describe('graphBodyIssue', () => {
       'graph.direction: expected down or right',
     );
     expect(graphBodyIssue({ nodes, edges, style: 'radial' })).toBe(
-      'graph.style: expected flow, tree, mindmap, lanes, cycle, storm or sequence',
+      'graph.style: expected flow, tree, mindmap, lanes, cycle, storm, sequence or c4',
     );
     expect(graphBodyIssue({ nodes, edges, lines: 'wavy' })).toBe(
       'graph.lines: expected straight, angled or curved',
@@ -74,6 +74,27 @@ describe('graphBodyIssue, the graph look', () => {
     expect(graphBodyIssue({ nodes: [{ id: 'a', icon: 'zzqx' }, { id: 'b' }], edges })).toBe(
       'graph.nodes: node "a" icon "zzqx" is not an icon; search_icons finds one by what it shows',
     );
+  });
+});
+
+describe('graphBodyIssue, the c4 style', () => {
+  it('takes C4 kinds, technologies and descriptions', () => {
+    expect(
+      graphBodyIssue({
+        style: 'c4',
+        nodes: [
+          { id: 'a', c4Kind: 'person', description: 'Orders food.' },
+          { id: 'b', c4Kind: 'container', tech: 'Go', group: 's' },
+        ],
+        edges: [{ from: 'a', to: 'b', label: 'Uses' }],
+      }),
+    ).toBeNull();
+  });
+  it('refuses a kind off the list and a technology that is not text', () => {
+    expect(graphBodyIssue({ nodes: [{ id: 'a', c4Kind: 'robot' }], edges: [] })).toMatch(
+      /^graph.nodes/,
+    );
+    expect(graphBodyIssue({ nodes: [{ id: 'a', tech: 3 }], edges: [] })).toMatch(/^graph.nodes/);
   });
 });
 

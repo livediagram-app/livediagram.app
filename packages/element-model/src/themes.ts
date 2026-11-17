@@ -201,6 +201,9 @@ export type ThemedElement = {
   colorPreset?: string;
   tablePreset?: string;
   themeLockFill?: boolean;
+  // The element's text keeps its own ink under every theme, the partner of a locked fill whose ink is chosen to read
+  // on it (a C4 element's white or dark text on its C4 colour).
+  themeLockText?: boolean;
 };
 
 // Which element-colour fields each element type writes from a theme.
@@ -267,7 +270,8 @@ const THEME_COLOUR_FIELDS: Record<Element['type'], ThemeColourField[]> = {
 // otherwise all collapse to the theme's single element-fill and lose the
 // distinction that makes the timeline readable). All three transforms
 // below funnel through this so the opt-out can't apply to one and silently
-// drift from the others. Stroke + text stay themed.
+// drift from the others. Stroke + text stay themed, unless `themeLockText`
+// keeps the text's own ink too (an ink chosen to read on that locked fill).
 export function themeColourFields(el: ThemedElement): ThemeColourField[] {
   // An accent-bar web component (docs/specs/009-elements/web-components-and-no-groups.md) paints its bar in the stroke
   // (unless a fill is picked) under white text, so only the stroke follows
@@ -278,10 +282,11 @@ export function themeColourFields(el: ThemedElement): ThemeColourField[] {
   }
   // Unknown kinds (a malformed stored element) expose nothing to theming.
   const fields = THEME_COLOUR_FIELDS[el.type as Element['type']] ?? [];
-  if (el.themeLockFill) {
-    return fields.filter((f) => f.element !== 'fillColor');
-  }
-  return fields;
+  return fields.filter(
+    (f) =>
+      !(el.themeLockFill && f.element === 'fillColor') &&
+      !(el.themeLockText && f.element === 'textColor'),
+  );
 }
 
 // Apply a theme's element-colour overrides to a single Element,

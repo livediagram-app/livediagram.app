@@ -26,7 +26,7 @@ import { getTheme } from './themes';
 
 // The catalogue's shape (count + default/extra split + no kind
 // drift) is load-bearing across both the picker and the marketing
-// site. docs/specs/019-marketing/marketing-site.md pins "89 templates (10 default + 79 extra)" and
+// site. docs/specs/019-marketing/marketing-site.md pins "90 templates (10 default + 80 extra)" and
 // docs/specs/008-canvas/canvas-and-palette.md catalogues the picker UX. These tests pin the array so
 // either the spec or the catalogue can't silently drift away from
 // the other.
@@ -121,6 +121,7 @@ describe('TEMPLATES catalogue', () => {
     'network-diagram',
     'c4-context',
     'c4-container',
+    'c4-component',
     'architecture-decision-record',
     'sprint-planning',
     'interview-synthesis',
@@ -128,21 +129,21 @@ describe('TEMPLATES catalogue', () => {
   ];
 
   // Hidden templates are buildable but never listed, so every user-facing
-  // count (docs/specs/019-marketing/marketing-site.md's "89 templates", the picker grids, the MCP catalogue)
+  // count (docs/specs/019-marketing/marketing-site.md's "90 templates", the picker grids, the MCP catalogue)
   // is over the listed subset. The mechanism is generic; nothing ships
   // hidden today (the guided-tour sample used it until the
   // interactive tour, docs/specs/007-editor/editor-tour.md, superseded it).
   const listed = TEMPLATES.filter((t) => !t.hidden);
 
-  it('lists exactly 89 templates (10 default + 79 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
-    expect(listed).toHaveLength(89);
+  it('lists exactly 90 templates (10 default + 80 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
+    expect(listed).toHaveLength(90);
   });
 
-  it('splits cleanly into 10 default + 79 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
+  it('splits cleanly into 10 default + 80 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
     const defaults = listed.filter((t) => !t.extra);
     const extras = listed.filter((t) => t.extra);
     expect(defaults).toHaveLength(10);
-    expect(extras).toHaveLength(79);
+    expect(extras).toHaveLength(80);
   });
 
   it('ships no hidden templates (the flag is generic; docs/specs/007-editor/editor-tour.md has no sample)', () => {
@@ -489,6 +490,7 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
     // Boundary: header, the boundary and its name, the key. Containers: the person, the containers, stores and
     // externals, and the links.
     'c4-container': { names: ['Boundary', 'Containers'], scaffold: 10, content: 25 },
+    'c4-component': { names: ['Boundary', 'Components'], scaffold: 10, content: 19 },
     // Record: header, the panels and their headings. Decision: status chip, the copy, the options table, the
     // decision card, the before and after sketch, the consequences and the follow-ups.
     'architecture-decision-record': { names: ['Record', 'Decision'], scaffold: 17, content: 23 },

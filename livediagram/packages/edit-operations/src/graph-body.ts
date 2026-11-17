@@ -3,6 +3,7 @@
 // untrusted JSON. Returns the first problem, naming the member, or null.
 
 import {
+  C4_KINDS,
   EVENT_STORMING_NOTES,
   SEQUENCE_MAX_ITEMS,
   SEQUENCE_MAX_PARTICIPANTS,
@@ -30,9 +31,12 @@ const isEntityField = (f: unknown) => isRecord(f) && isString(f.name) && optiona
 const isNode = (n: unknown) =>
   isRecord(n) &&
   isId(n.id) &&
-  ['label', 'shape', 'link', 'note', 'group', 'icon'].every((key) => optional(isString)(n[key])) &&
+  ['label', 'shape', 'link', 'note', 'group', 'icon', 'tech', 'description'].every((key) =>
+    optional(isString)(n[key]),
+  ) &&
   optional(isOneOf(['strong', 'soft', 'muted', 'plain']))(n.tone) &&
   optional(isOneOf(ES_KINDS))(n.esKind) &&
+  optional(isOneOf(C4_KINDS))(n.c4Kind) &&
   optional((v) => isListOf(v, isEntityField))(n.fields);
 
 const isEdge = (e: unknown) =>
@@ -120,15 +124,15 @@ const MEMBER_RULES: readonly [string, (v: unknown) => boolean, string][] = [
   [
     'nodes',
     (v) => isListOf(v, isNode),
-    'an array of { id, label?, shape?, note?, group?, icon?, tone? (strong, soft, muted or plain) }',
+    'an array of { id, label?, shape?, note?, group?, icon?, tone? (strong, soft, muted or plain), c4Kind? (person, system, container, component, database or external), tech?, description? }',
   ],
   ['edges', (v) => isListOf(v, isEdge), 'an array of { from, to, label? }'],
   ['groups', optional((v) => isListOf(v, isGroup)), 'an array of { id, members }'],
   ['direction', optional(isOneOf(['down', 'right'])), 'down or right'],
   [
     'style',
-    optional(isOneOf(['flow', 'tree', 'mindmap', 'lanes', 'cycle', 'storm', 'sequence'])),
-    'flow, tree, mindmap, lanes, cycle, storm or sequence',
+    optional(isOneOf(['flow', 'tree', 'mindmap', 'lanes', 'cycle', 'storm', 'sequence', 'c4'])),
+    'flow, tree, mindmap, lanes, cycle, storm, sequence or c4',
   ],
   ['lines', optional(isOneOf(['straight', 'angled', 'curved'])), 'straight, angled or curved'],
 ];

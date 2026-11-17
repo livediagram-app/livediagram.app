@@ -6074,6 +6074,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "themeLockFill": {
         "type": "boolean"
       },
+      "themeLockText": {
+        "type": "boolean"
+      },
       "titleOrientation": {
         "const": "upright",
         "type": "string"

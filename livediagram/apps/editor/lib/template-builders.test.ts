@@ -111,6 +111,7 @@ const ALL_KINDS = [
   'network-diagram',
   'c4-context',
   'c4-container',
+  'c4-component',
   'architecture-decision-record',
   'sprint-planning',
   'interview-synthesis',

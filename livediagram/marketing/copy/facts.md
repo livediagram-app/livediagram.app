@@ -32,7 +32,7 @@ is the team, not the individual.
   optional labels), a Freehand pen and a Shape Pen that turns rough strokes
   into clean shapes, per-element links and locks.
 - Multi-select: marquee drag, shift-click, format painter, groups.
-- 89 templates (Blank, Mind map, Flowchart, Gantt, SWOT, Retrospective, Org
+- 90 templates (Blank, Mind map, Flowchart, Gantt, SWOT, Retrospective, Org
   chart, Timeline, Fishbone, Pyramid, Flywheel, Venn, User journey).
 - 31 themes (25 in the picker, plus 6 seasonal ones) that recolor the whole
   canvas in one click.

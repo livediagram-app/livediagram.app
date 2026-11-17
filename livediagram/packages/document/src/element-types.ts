@@ -214,6 +214,9 @@ export type ShapeElement = {
   // which must stay distinct so the timeline reads as separate tasks.
   // Stroke + text still theme normally.
   themeLockFill?: boolean;
+  // When set, the theme transforms leave `textColor` alone too: an ink chosen to read on a locked fill (a C4
+  // element's white or dark text on its C4 colour, docs/specs/010-palette/build-category.md "The C4 model").
+  themeLockText?: boolean;
   // The element is one size for life: no resize handles, union-scales move
   // it without scaling it, and the menu's Size category stays away. Set at
   // creation on event-storming notes (docs/specs/021-event-storming/event-storming.md — the workshop stationery

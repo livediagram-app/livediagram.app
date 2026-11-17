@@ -24,6 +24,9 @@ export type PaletteTileSection =
   // scattered across Write, Draw, Data and Components, filed by what they look
   // like; what they have in common is that they hold other work.
   | 'build'
+  // Diagram's Diagrams category's own tiles: the C4 model's elements (docs/specs/010-palette/build-category.md
+  // "The C4 model"). Its other tiles are borrowed by the Diagram layout from Build and Components.
+  | 'diagrams'
   // The Event Storming notation (docs/specs/021-event-storming/event-storming.md): a top-level category of the
   // eight workshop note kinds, each an ordinary sticky in its semantic
   // colour.

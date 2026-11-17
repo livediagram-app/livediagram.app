@@ -13,6 +13,7 @@ import { ELEMENT_TILES } from './tile-defs/element-tiles';
 import { CONCEPT_TILES } from './tile-defs/concept-tiles';
 import { DATA_TILES } from './tile-defs/data-tiles';
 import { COMPONENT_TILES } from './tile-defs/component-tiles';
+import { C4_TILES } from './tile-defs/c4-tiles';
 import { DEVICE_TILES } from './tile-defs/device-tiles';
 import { EVENT_STORMING_TILES } from './tile-defs/event-storming-tiles';
 
@@ -37,6 +38,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   ...CONCEPT_TILES,
   ...DATA_TILES,
   ...COMPONENT_TILES,
+  ...C4_TILES,
   ...DEVICE_TILES,
   ...EVENT_STORMING_TILES,
 ];

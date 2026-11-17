@@ -46,6 +46,7 @@ import { branchExits, withExactEnds, withExactStarts } from './graph-branches';
 import { layoutCycle } from './graph-cycle';
 import { layoutMindmapGraph } from './graph-mindmap';
 import { layoutStormGraph } from './graph-storm';
+import { layoutC4Graph } from './graph-c4';
 import { MERMAID_UNSUPPORTED_ERROR, parseMermaid } from './mermaid';
 import { turnBack } from './er-hub-first';
 import {
@@ -64,10 +65,17 @@ export const GRAPH_LABEL_MAX = 40;
 
 // A node may name its group itself (`group`), as well as or instead of being
 // listed in the group's `members`: the natural shape for a model to write.
-export type GraphInputNode = LookNode & { group?: string; esKind?: string };
+// The c4 style reads three more (graph-c4.ts): the C4 element a node is, its technology and what it does.
+export type GraphInputNode = LookNode & {
+  group?: string;
+  esKind?: string;
+  c4Kind?: string;
+  tech?: string;
+  description?: string;
+};
 
 // The layouts graph input offers: the editor's three, and two of its own (docs/specs/015-api/mcp-server.md §4.7).
-export type GraphStyle = LayoutStyle | 'lanes' | 'cycle' | 'storm' | 'sequence';
+export type GraphStyle = LayoutStyle | 'lanes' | 'cycle' | 'storm' | 'sequence' | 'c4';
 
 export type GraphInput = {
   // A heading and a muted caption above the drawing, and a key of the shapes it uses (graph-header.ts).
@@ -235,6 +243,7 @@ const DEFAULT_LINES: Record<GraphStyle, ArrowStyle> = {
   cycle: 'curved',
   storm: 'straight',
   sequence: 'straight',
+  c4: 'angled',
 };
 
 // Laid-out elements for a graph: capped, positioned in the chosen style and direction, worn in the template look
@@ -244,9 +253,10 @@ const DEFAULT_LINES: Record<GraphStyle, ArrowStyle> = {
 // written, for the editor's Mermaid import: text a person pasted is theirs, not cut to a heading.
 export function layoutGraph(
   input: GraphInput,
-  options: { makeEdgeId?: () => string; wholeLabels?: boolean } = {},
+  // `footHeadings` lays each group's heading band at its foot (the c4 style's boundaries, graph-c4.ts).
+  options: { makeEdgeId?: () => string; wholeLabels?: boolean; footHeadings?: boolean } = {},
 ): Element[] {
-  const { makeEdgeId, wholeLabels } = options;
+  const { makeEdgeId, wholeLabels, footHeadings } = options;
   // A sequence diagram: lifelines and messages in order (sequence-layout.ts), from Mermaid or the graph itself.
   if (input.style === 'sequence') {
     const diagram = input.sequence ?? sequenceFromGraph(input);
@@ -258,6 +268,14 @@ export function layoutGraph(
   // An event-storming board is paper only: notes on lanes, no arrows, no heading (graph-storm.ts). A note's label is
   // its content, kept whole as a sticky's always is, so it skips the heading cap.
   if (input.style === 'storm') return layoutStormGraph(input);
+  // A C4 level: the flow layout in the C4 look, its groups C4 boundaries and a key of its kinds (graph-c4.ts).
+  if (input.style === 'c4')
+    return layoutC4Graph(
+      input,
+      makeEdgeId ? { makeEdgeId } : {},
+      (g, o) => layoutGraph(g, { ...o, ...(wholeLabels ? { wholeLabels } : {}) }),
+      capLabel,
+    );
   const g = wholeLabels ? { ...input, groups: withNodeGroups(input) } : conciseGraph(input);
   const direction =
     g.direction === 'right'
@@ -284,6 +302,7 @@ export function layoutGraph(
       look,
       flatEdges: flat,
       ...(makeEdgeId ? { makeEdgeId } : {}),
+      ...(footHeadings ? { footHeadings } : {}),
     });
   let flowDir: LayoutDirection = direction ?? 'TB';
   let laid: Element[];

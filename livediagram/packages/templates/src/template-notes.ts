@@ -305,10 +305,13 @@ const NOTES: Readonly<Record<TemplateKind, TemplateNote | null>> = {
     },
   },
   'c4-context': {
-    note: 'How to read it: the platform is the one system in focus; the people use it and the grey systems are what it depends on. Every arrow says what flows and how. Zoom in a level with the C4 Container Diagram template.',
+    note: 'How to read it: the platform is the one system in focus; the people use it and the grey systems are what it depends on. Every arrow says what flows and how. Zoom in a level: add the C4 Container Diagram on another tab and the platform card links to it.',
   },
   'c4-container': {
-    note: 'How to read it: the boundary is the platform from the context diagram, opened up. Each card is something that runs on its own, with its technology under its name. The moving dots trace an order from the app to the courier.',
+    note: 'How to read it: the boundary is the platform from the context diagram, opened up. Each card is something that runs on its own, with its technology under its name. The moving dots trace an order from the app to the courier. Add the C4 Component Diagram on another tab and the Order service card opens it.',
+  },
+  'c4-component': {
+    note: 'How to read it: the boundary is one container from the level above, the Order service, opened up. Each light-blue card is a component inside it, with what it does and what it is built with; what sits outside is what it calls or is called by. The moving dots trace an order through it.',
   },
   'architecture-decision-record': {
     note: 'How to write one: one decision per record. Say what forced it (Context), what mattered (Decision drivers), what else you weighed and how it scored, then the decision and its consequences, good and bad. Change the status chip when it is superseded; never rewrite an accepted record.',

@@ -64,6 +64,7 @@ export const ELEMENT_FIELD_NAMES = {
     'headerSize',
     'titleOrientation',
     'themeLockFill',
+    'themeLockText',
     'fixedSize',
     'strokeWidth',
     'strokeStyle',
