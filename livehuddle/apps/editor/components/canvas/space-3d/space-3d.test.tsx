@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, renderHook, screen } from '@testing-library/react';
+import { useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createStateStore } from '@liveworkspace/workbench/lib/state-store';
 import { NO_POSE, type AvatarPose } from '@livehuddle/avatar/pose';
@@ -240,5 +241,39 @@ describe('the overlay (docs/specs/008-canvas/3d-view.md "What it shows")', () =>
     });
     expect(world.style.transform).toBe('scale(1.5) translate(40px, -20px)');
     view.value = { zoom: 1, offset: { x: 0, y: 0 } };
+  });
+
+  it('keeps a half-typed message, its caret and focus as the view turns 3D and back', () => {
+    function Draft() {
+      const [text, setText] = useState('');
+      return <textarea aria-label="Say" value={text} onChange={(e) => setText(e.target.value)} />;
+    }
+    const world = document.createElement('div');
+    const overlay = document.createElement('div');
+    document.body.append(world, overlay);
+    const at = (node: HTMLElement | null) => (
+      <Space3DOverlayProvider value={{ on: node !== null, node }}>
+        <InSpace3DOverlay>
+          <Draft />
+        </InSpace3DOverlay>
+      </Space3DOverlayProvider>
+    );
+    const { rerender } = render(at(null), { container: world });
+    const field = screen.getByRole<HTMLTextAreaElement>('textbox', { name: 'Say' });
+    fireEvent.change(field, { target: { value: 'Hello there' } });
+    field.focus();
+    field.setSelectionRange(5, 5);
+    rerender(at(overlay));
+    // The same field, moved, not made again.
+    expect(screen.getByRole('textbox', { name: 'Say' })).toBe(field);
+    expect(overlay.contains(field)).toBe(true);
+    expect(field.value).toBe('Hello there');
+    expect(document.activeElement).toBe(field);
+    expect([field.selectionStart, field.selectionEnd]).toEqual([5, 5]);
+    rerender(at(null));
+    expect(world.contains(field)).toBe(true);
+    expect(field.value).toBe('Hello there');
+    expect(document.activeElement).toBe(field);
+    expect([field.selectionStart, field.selectionEnd]).toEqual([5, 5]);
   });
 });

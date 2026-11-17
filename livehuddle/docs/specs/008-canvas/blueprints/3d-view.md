@@ -15,7 +15,7 @@ Derived from [3D view](../3d-view.md). Defaults applied: D136 to D141 ([DEFAULTS
 | `apps/editor/components/canvas/space-3d/useSpace3DView.ts`               | The phase machine, the stage's style, the main's attribute, Shift+3, the lazy import               |
 | `apps/editor/components/canvas/space-3d/Space3DWalls.tsx`                | Loaded on first use: draws the walls near the view and cuts away the ones in front of your feet    |
 | `apps/editor/components/canvas/space-3d/Space3DButton.tsx`               | The cluster's 3D View switch                                                                       |
-| `apps/editor/components/canvas/space-3d/Space3DOverlay.tsx`              | The overlay: a second stage over the first, `InSpace3DOverlay` (a portal), `useInSpace3D`          |
+| `apps/editor/components/canvas/space-3d/Space3DOverlay.tsx`              | The overlay: a second stage over the first, `InSpace3DOverlay` (a moved host), `useInSpace3D`      |
 | `apps/editor/app/space-3d.css`                                           | The 3D rules: preserve-3d, the billboards, the walls' faces, the fold, the fog, the hidden pattern |
 | `apps/editor/components/canvas/Canvas.tsx`                               | The stage round the world layer; `scale: 1 1 zoom`; mounts the walls layer and the fog             |
 | `apps/editor/hooks/canvas/useCanvasSurfaceGestures.ts`                   | A walking press in 3D goes through `floorPointAt` instead of `pointerToCanvas`                     |
@@ -74,10 +74,10 @@ Synonyms banned: "isometric", "orbit", "perspective mode", "3D mode" (it is a vi
    rect and the view; a null (above the horizon) walks nowhere.
 8. The overlay: in every phase but `flat` the canvas draws `Space3DOverlayStage` after the stage and the fog, a
    second stage with the same style and a world layer moved by `useViewportTransform` as the canvas's is. Its node
-   goes to `Space3DOverlayProvider` round the characters layer; `InSpace3DOverlay` portals the speech layer, talking
+   goes to `Space3DOverlayProvider` round the characters layer; `InSpace3DOverlay` draws the speech layer, talking
    bars, raised hands, call bubbles and the Receptionist's card into it (in place while flat). Being a separate 3D
    context painted after the world, nothing in it is ever sorted behind a wall; inside it each billboard stands about
-   its feet under the same camera, so it lands over the same head. Turning the view on or off remounts them.
+   its feet under the same camera, so it lands over the same head. Each draws into a host of its own (`display: contents`) that moves between a slot in place and the overlay, never unmounted, so a half-typed message keeps its text, focus and caret and a bubble keeps floating.
    `ReceptionistBubble` reads `useInSpace3D()`: while true it never flips under his feet, and it places itself again
    when it changes.
 
