@@ -29,7 +29,7 @@ are, the panel draws them.
   the template on the tab at once (`chooseTemplate`), painted in the **tab's theme**: the panel picks no theme, so
   the scaffold takes the colours the tab already wears (its own theme, or the one a new tab inherited from the tab it
   was added beside) rather than the template's built-in ones. The tab's backdrop is left as it is.
-- **Search:** the catalogue's own search (`templateMatchesQuery`, as the marketing gallery's), across the Pages
+- **Search:** the catalogue's own search (`templateMatchesQuery`, as the marketing gallery's), A word of four letters or more also finds a template one typo off one of its words (a letter missing, extra, wrong or two swapped; two typos from eight letters: "wirefrme" finds Wireframe), shared in `@liveworkspace/template-previews/template-search`; shorter words stay exact, and the hero ranks typo-only finds after the exact ones. across the Pages
   templates; matches are grouped under their group, each once, in rail order. Escape clears a search; with nothing
   to clear it does nothing.
 - **A title match leads.** A template whose name begins with what was typed (case, punctuation and hyphens ignored,
