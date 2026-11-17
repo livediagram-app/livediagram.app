@@ -17,6 +17,8 @@ const HELD_AT_100 = [
   'src/components/sheet-links/SheetLinkSection.tsx',
   'src/components/sheet-links/LinkSheetDialog.tsx',
   'src/lib/relative-now.ts',
+  // Which side a menu flyout opens on (each product's 008-canvas canvas-and-palette.md, Work Tracker 961).
+  'src/components/primitives/menu-flyout-side.ts',
   // A live embed's rules (liveworkspace/docs/specs/004-index/live-embeds.md, Work Tracker 930).
   'src/components/live-embed/live-embed-target.ts',
   'src/components/live-embed/live-embed-slots.ts',

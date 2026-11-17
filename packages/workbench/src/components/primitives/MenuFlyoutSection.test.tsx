@@ -6,7 +6,7 @@
 // Rendered rather than tested as a pure helper because the rule is about what
 // the DOM ends up holding — a trigger row and a portalled panel, or neither.
 
-import { cleanup, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { MenuAccordionSection } from './PortalMenu';
@@ -121,5 +121,105 @@ describe('MenuFlyoutSection', () => {
       </MenuFlyoutSection>,
     );
     expect(flyoutTrigger('Tools')).toBeTruthy();
+  });
+});
+
+// Which side a nested flyout opens on (docs/specs/008-canvas/canvas-and-palette.md "A flyout can hold a
+// flyout"). jsdom has no layout, so boxes are stubbed: the host menu sits where the test puts it, each panel
+// is 224px wide at the left its own style sets, and a row spans the menu or panel it sits in.
+describe('MenuFlyoutSection nested side', () => {
+  const PANEL_WIDTH = 224;
+  let host = { left: 0, right: 0 };
+
+  function box(left: number, right: number, top: number, height: number): DOMRect {
+    const r = {
+      left,
+      right,
+      top,
+      bottom: top + height,
+      width: right - left,
+      height,
+      x: left,
+      y: top,
+    };
+    return { ...r, toJSON: () => r };
+  }
+
+  function rectOf(el: Element): DOMRect {
+    const panel = el.closest<HTMLElement>('[data-menu-flyout]');
+    const left = panel ? parseFloat(panel.style.left) || 0 : host.left;
+    const right = panel ? left + PANEL_WIDTH : host.right;
+    if (el === panel) return box(left, right, parseFloat(panel.style.top) || 0, 200);
+    if (!panel && el.hasAttribute('data-menu-surface')) return box(left, right, 100, 300);
+    return box(left, right, 120, 32);
+  }
+
+  afterEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  const frame = () =>
+    act(async () => {
+      await new Promise((r) => requestAnimationFrame(() => r(null)));
+    });
+
+  async function openNested(hostSpan: { left: number; right: number }, viewportWidth: number) {
+    host = hostSpan;
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        observe() {}
+        disconnect() {}
+      },
+    );
+    vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(viewportWidth);
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: Element,
+    ) {
+      return rectOf(this);
+    });
+    render(
+      <div data-menu-surface="">
+        <MenuFlyoutSection title="Tools" icon={GLYPH}>
+          <MenuFlyoutSection title="Mind Map" icon={GLYPH}>
+            {section('Layout')}
+            {section('Branches')}
+          </MenuFlyoutSection>
+          {section('Chart')}
+        </MenuFlyoutSection>
+      </div>,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Tools' }));
+    await frame();
+    fireEvent.click(screen.getByRole('button', { name: 'Mind Map' }));
+    await frame();
+    const [tools, mindMap] = Array.from(
+      document.querySelectorAll<HTMLElement>('[data-menu-flyout]'),
+    );
+    return { tools: parseFloat(tools!.style.left), mindMap: parseFloat(mindMap!.style.left) };
+  }
+
+  it('opens to the left of a parent that flipped left, never over the host menu', async () => {
+    // The host menu hugs the right edge, so Tools flips left (474 to 698). The third panel used to open to
+    // the right of its row, at 700: straight over the host menu.
+    const { tools, mindMap } = await openNested({ left: 700, right: 920 }, 1024);
+    expect(tools).toBe(700 - 2 - PANEL_WIDTH);
+    expect(mindMap).toBe(tools - 2 - PANEL_WIDTH);
+  });
+
+  it('keeps opening right beside a parent that opened right', async () => {
+    const { tools, mindMap } = await openNested({ left: 100, right: 320 }, 1024);
+    expect(tools).toBe(322);
+    expect(mindMap).toBe(tools + PANEL_WIDTH + 2);
+  });
+
+  it('crosses past the host menu and its parent when its own side has no room', async () => {
+    // Tools fits right (522 to 746); the third panel does not, so it opens left of the HOST menu rather
+    // than left of its own row, which would cover the host menu.
+    const { tools, mindMap } = await openNested({ left: 300, right: 520 }, 900);
+    expect(tools).toBe(522);
+    expect(mindMap).toBe(300 - 2 - PANEL_WIDTH);
   });
 });

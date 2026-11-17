@@ -22,6 +22,7 @@ Scope, by file:
 | `../packages/workbench/src/components/primitives/menu-item-props.ts`        | `useMenuItemProps`: a row's role, `tabIndex` and states from the menu it sits in                                            |
 | `../packages/workbench/src/components/primitives/usePortalMenuPlacement.ts` | An anchored menu's position, side (`flipSide`), viewport clamp and outside-press dismissal                                  |
 | `../packages/workbench/src/components/primitives/MenuFlyoutSection.tsx`     | Submenu (in a command menu) or sub-panel (in a control menu)                                                                |
+| `../packages/workbench/src/components/primitives/menu-flyout-side.ts`       | Which side a flyout opens on: its parent's side first, then past the open chain, overlapping only when neither fits         |
 | `../packages/workbench/src/components/primitives/MenuFlyoutPanel.tsx`       | The flyout's surface: `menu` or `dialog`                                                                                    |
 | `../packages/workbench/src/components/primitives/useRowMenu.ts`             | Built on `useMenuButton`                                                                                                    |
 | `../packages/workbench/src/components/primitives/EllipsisTriggerButton.tsx` | Accepts `onKeyDown` for Down / Up Arrow                                                                                     |

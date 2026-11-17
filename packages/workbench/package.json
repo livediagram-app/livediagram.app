@@ -241,6 +241,7 @@
     "./components/primitives/beside-placement": "./src/components/primitives/beside-placement.ts",
     "./components/primitives/hover-preview": "./src/components/primitives/hover-preview.ts",
     "./components/primitives/menu-flyout-cover": "./src/components/primitives/menu-flyout-cover.ts",
+    "./components/primitives/menu-flyout-side": "./src/components/primitives/menu-flyout-side.ts",
     "./components/primitives/menu-item-props": "./src/components/primitives/menu-item-props.ts",
     "./components/primitives/popover-stack": "./src/components/primitives/popover-stack.ts",
     "./components/primitives/refocus-after-field": "./src/components/primitives/refocus-after-field.ts",
