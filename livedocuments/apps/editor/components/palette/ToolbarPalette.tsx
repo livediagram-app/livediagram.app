@@ -202,7 +202,10 @@ export function ToolbarPalette(props: Props) {
   // Too wide to centre between the menu card's sides (a tablet): the strip sits at the right instead. An article's
   // docked formatting, wider still than the room beside the card (a narrow window, a side by side pane), starts
   // clear of the card and its controls scroll, as on a phone's row, rather than running under the card.
-  const { crowded, shifted, clear, clearRight } = useStripCrowding(cardRef, leading == null);
+  const { crowded, clear, clearRight } = useStripCrowding(cardRef, leading == null);
+  // Experiment (no header bar): centred in the gap between the menu box (or the Contents sidebar it heads) and the
+  // corner card, as livediagram's is.
+  const between = leading == null;
   const dockGivesWay = crowded && articleDock;
   const giveWay = swipe || dockGivesWay;
 
@@ -239,8 +242,8 @@ export function ToolbarPalette(props: Props) {
       ref={rootRef}
       data-toolbar-palette=""
       data-region="palette"
-      // Experiment (no header bar): it shifts left beside the menu box before it narrows (useStripCrowding).
-      data-strip-shifts-left=""
+      // Experiment (no header bar): centred between the menu box and the corner card (STRIP_BETWEEN).
+      data-strip-between={between ? '' : undefined}
       // The strip is the Palette, so the panel-opacity preference (docs/specs/007-editor/user-preferences.md)
       // fades it like every other panel; hovering it restores it.
       data-panel-translucent=""
@@ -255,16 +258,16 @@ export function ToolbarPalette(props: Props) {
       // centred; `top` is restated so the strip keeps its 12px from the top.
       style={{
         ...(scale === 1 ? {} : { ...uiScaleStyle(scale), top: toSurfacePx(12, scale) }),
-        // Too wide to centre between the cards, it stands at the left beside the menu box (STRIP_SHIFTS_LEFT).
-        alignItems: crowded ? 'flex-end' : shifted ? 'flex-start' : 'center',
-        paddingRight: crowded ? crowdedPaddingRight(clearRight, scale) : 0,
-        ...(dockGivesWay
-          ? { paddingLeft: toSurfacePx(Math.max(clear, besideWidth ?? 0), scale) }
-          : shifted
-            ? { paddingLeft: toSurfacePx(Math.max(clear, besideWidth ?? 0), scale) }
-            : besideWidth
-              ? { paddingLeft: toSurfacePx(besideWidth, scale) }
-              : {}),
+        // An article's docked formatting, wider than the gap, fills it and scrolls (dockGivesWay).
+        alignItems: dockGivesWay ? 'flex-end' : 'center',
+        ...(between
+          ? {
+              paddingLeft: toSurfacePx(Math.max(clear, besideWidth ?? 0, 12), scale),
+              paddingRight: crowdedPaddingRight(clearRight, scale),
+            }
+          : besideWidth
+            ? { paddingLeft: toSurfacePx(besideWidth, scale) }
+            : {}),
       }}
       // While one of its popovers is open (a category's flyout, Search) the strip rises to the popover layer,
       // so what hangs from it sits over everything on the canvas, an element's toolbar and menus included.

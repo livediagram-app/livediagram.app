@@ -2,7 +2,8 @@
 
 import { track } from '@/lib/telemetry';
 import { Brand, Glyph } from '@livedocuments/ui';
-import { useEditorChrome } from '@/app/document/[id]/EditorContext';
+import { useContext, useSyncExternalStore } from 'react';
+import { EditorChromeContext } from '@/app/document/[id]/EditorContext';
 import { explorerItemHref } from '@liveworkspace/workbench/lib/explorer-href';
 import { ToolbarMenuCard } from '@liveworkspace/workbench/components/chrome/ToolbarMenuCard';
 
@@ -31,7 +32,14 @@ export function ToolbarExplorerButton({
   onToggle: (button: HTMLElement) => void;
 }) {
   // The open document: the logo opens the Explorer on the place that holds it.
-  const itemId = useEditorChrome((s) => s.documentId);
+  // Read without requiring the editor's store, so the button renders on its own (its tests, a workbench) with the
+  // logo opening the Explorer at its root.
+  const store = useContext(EditorChromeContext);
+  const itemId = useSyncExternalStore(
+    store?.subscribe ?? noSubscribe,
+    () => store?.get().documentId ?? null,
+    () => null,
+  );
   const button = (
     <button
       type="button"
@@ -62,7 +70,8 @@ export function ToolbarExplorerButton({
         <Brand
           href={explorerItemHref(itemId)}
           size="sm"
-          wordmarkClassName="hidden lg:inline"
+          // Heading the Contents sidebar the wordmark stays, the sidebar being as wide as ever.
+          wordmarkClassName="hidden lg:inline [[data-logo-in-band]_&]:inline"
           className="relative touch-target"
         />
       }
@@ -72,3 +81,5 @@ export function ToolbarExplorerButton({
     </ToolbarMenuCard>
   );
 }
+
+const noSubscribe = () => () => {};

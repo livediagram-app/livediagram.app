@@ -1,8 +1,13 @@
 'use client';
 
-import { useLayoutEffect, useRef } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { Glyph, HoverCard } from '@liveworkspace/ui';
-import { CORNER_CARD_EVENT, STRIP_MENU_GAP_PX } from '../canvas/menu-join';
+import {
+  CORNER_CARD_EVENT,
+  STRIP_MENU_GAP_PX,
+  STRIP_NAMED_EVENT,
+  cornerCardCompact,
+} from '../canvas/menu-join';
 import { AuthControls } from './AuthControls';
 import { useUiScale } from '../providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '../../lib/ui-scale';
@@ -15,7 +20,7 @@ import { HeaderShareIcon } from './EditorHeader';
 
 // One button in the card: 36px tall like the menu card's, its glyph beside its name (the glyph alone on a phone).
 export const CORNER_BTN =
-  'flex h-9 min-w-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg px-2.5 phone:px-0 text-xs font-medium transition disabled:cursor-not-allowed disabled:opacity-50';
+  'flex h-9 min-w-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg px-2.5 phone:px-0 [[data-compact]_&]:px-0 text-xs font-medium transition disabled:cursor-not-allowed disabled:opacity-50';
 const CORNER_TONE =
   'text-slate-600 enabled:hover:bg-slate-100 enabled:hover:text-slate-900 dark:text-slate-200 dark:enabled:hover:bg-slate-800 dark:enabled:hover:text-white';
 const CORNER_ON =
@@ -73,13 +78,44 @@ export function EditorCornerActions({
       requestAnimationFrame(say);
     };
   }, []);
+  // Its names go before the palette's (cornerCardCompact): once the palette, named, no longer fits beside the card
+  // with its names, the card shows its glyphs alone. Judged by its width WITH names, kept from when it last had them,
+  // so dropping them never undoes the call.
+  const [compact, setCompact] = useState(false);
+  const wide = useRef(0);
+  useLayoutEffect(() => {
+    const el = cardRef.current;
+    if (!el) return;
+    const judge = () => {
+      if (!compact) wide.current = el.getBoundingClientRect().width;
+      const next = cornerCardCompact(wide.current);
+      if (next !== compact) setCompact(next);
+    };
+    judge();
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(judge);
+    observer?.observe(el);
+    const menu = document.querySelector<HTMLElement>('[data-toolbar-menu]');
+    if (menu) observer?.observe(menu);
+    window.addEventListener('resize', judge);
+    window.addEventListener(STRIP_NAMED_EVENT, judge);
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener('resize', judge);
+      window.removeEventListener(STRIP_NAMED_EVENT, judge);
+    };
+  }, [compact]);
   return (
     // A zero-height layer over the canvas, so the canvas keeps the whole height a header bar took.
-    <div data-app-chrome className="relative z-[var(--z-modal)] h-0">
+    // Not `data-app-chrome` (the header bar's, which keeps the app's own colours): it takes the tab's style, as the
+    // palette strip and the menu card beside it do.
+    <div className="relative z-[var(--z-modal)] h-0">
       <div
         ref={cardRef}
         data-corner-actions=""
+        data-compact={compact ? '' : undefined}
         data-floating-panel=""
+        // Fades with the panel-opacity preference as the palette strip does, so the two read as one row of chrome.
+        data-panel-translucent=""
         data-region="header"
         style={
           scale === 1
@@ -100,7 +136,9 @@ export function EditorCornerActions({
                 <rect x="5" y="5" width="8" height="8.5" rx="1.5" />
                 <path d="M3 11V3.5A1.5 1.5 0 0 1 4.5 2H10" />
               </Glyph>
-              <span className="phone:sr-only">{copying ? 'Copying' : 'Copy'}</span>
+              <span className="phone:sr-only [[data-compact]_&]:sr-only">
+                {copying ? 'Copying' : 'Copy'}
+              </span>
             </button>
           </HoverCard>
         ) : null}
@@ -119,7 +157,9 @@ export function EditorCornerActions({
               <Glyph size={14} units={16}>
                 <path d="M5 3.2v9.6a.6.6 0 0 0 .9.5l7.4-4.8a.6.6 0 0 0 0-1L5.9 2.7a.6.6 0 0 0-.9.5Z" />
               </Glyph>
-              <span className="phone:sr-only">{present.starting ? 'Starting' : 'Present'}</span>
+              <span className="phone:sr-only [[data-compact]_&]:sr-only">
+                {present.starting ? 'Starting' : 'Present'}
+              </span>
             </button>
           </HoverCard>
         ) : null}
@@ -136,7 +176,7 @@ export function EditorCornerActions({
               className={`${CORNER_BTN} ${shareable ? CORNER_ON : CORNER_TONE}`}
             >
               <HeaderShareIcon />
-              <span className="phone:sr-only">Share</span>
+              <span className="phone:sr-only [[data-compact]_&]:sr-only">Share</span>
             </button>
           </HoverCard>
         ) : null}

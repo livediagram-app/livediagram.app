@@ -43,3 +43,19 @@
     display: none;
   }
 }
+
+/* Narrower than the palette needs with both cards named, the card drops its names before the palette does
+ * (EditorCornerActions' `compact`): the same glyph-only buttons as a phone's. */
+[data-corner-actions][data-compact] > a,
+[data-corner-actions][data-compact] > div > button[aria-haspopup] {
+  width: 2.25rem;
+  justify-content: center;
+  padding-inline: 0;
+  gap: 0;
+}
+[data-corner-actions][data-compact] > a {
+  font-size: 0;
+}
+[data-corner-actions][data-compact] > div > button[aria-haspopup] > :not(:first-child) {
+  display: none;
+}

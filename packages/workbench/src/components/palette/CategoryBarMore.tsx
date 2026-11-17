@@ -1,6 +1,13 @@
 'use client';
 
-import { useState, type KeyboardEvent, type ReactNode } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type PointerEvent,
+  type ReactNode,
+} from 'react';
 import { EllipsisIcon } from '@liveworkspace/ui';
 import { MenuActionRow, MenuHeader, PortalMenu } from '../primitives/PortalMenu';
 
@@ -10,6 +17,11 @@ import { MenuActionRow, MenuHeader, PortalMenu } from '../primitives/PortalMenu'
 // own button does.
 
 export const MORE_CATEGORIES_LABEL = 'More Categories';
+
+// Hover intent, the category buttons' own (CategoryBar's HOVER_OPEN_MS, HOVER_CLOSE_MS): resting a mouse on More opens
+// its list, as resting on a category opens its flyout; leaving both closes it a moment later.
+const HOVER_OPEN_MS = 120;
+const HOVER_CLOSE_MS = 300;
 
 export type FoldedCategory = { id: string; label: string; icon: ReactNode };
 
@@ -41,6 +53,23 @@ export function CategoryBarMore({
     setOpen(true);
   };
   const lit = open || active;
+  const timer = useRef<number | undefined>(undefined);
+  const clearTimer = () => window.clearTimeout(timer.current);
+  useEffect(() => clearTimer, []);
+  const hoverIn = (e: PointerEvent<HTMLButtonElement>) => {
+    if (e.pointerType !== 'mouse') return;
+    clearTimer();
+    const button = e.currentTarget;
+    if (!open) timer.current = window.setTimeout(() => show(button), HOVER_OPEN_MS);
+  };
+  const hoverOut = (e: PointerEvent) => {
+    if (e.pointerType !== 'mouse') return;
+    clearTimer();
+    timer.current = window.setTimeout(() => setOpen(false), HOVER_CLOSE_MS);
+  };
+  const stay = (e: PointerEvent) => {
+    if (e.pointerType === 'mouse') clearTimer();
+  };
   return (
     <>
       <button
@@ -51,7 +80,13 @@ export function CategoryBarMore({
         aria-label={MORE_CATEGORIES_LABEL}
         aria-haspopup="menu"
         aria-expanded={open}
-        onClick={(e) => (open ? setOpen(false) : show(e.currentTarget))}
+        onClick={(e) => {
+          clearTimer();
+          if (open) setOpen(false);
+          else show(e.currentTarget);
+        }}
+        onPointerEnter={hoverIn}
+        onPointerLeave={hoverOut}
         onKeyDown={(e) => {
           if (e.key === 'ArrowDown') {
             e.preventDefault();
@@ -80,23 +115,26 @@ export function CategoryBarMore({
           onClose={() => setOpen(false)}
           landmark={MORE_CATEGORIES_LABEL}
         >
-          <MenuHeader title={MORE_CATEGORIES_LABEL} />
-          {folded.map((c) => (
-            <MenuActionRow
-              key={c.id}
-              plain
-              icon={
-                <span className="flex h-4 w-4 items-center justify-center [&>svg]:max-h-full [&>svg]:max-w-full">
-                  {c.icon}
-                </span>
-              }
-              label={c.label}
-              onClick={(e) => {
-                setOpen(false);
-                onChoose(c.id, e.detail === 0);
-              }}
-            />
-          ))}
+          <div onPointerEnter={stay} onPointerLeave={hoverOut}>
+            <MenuHeader title={MORE_CATEGORIES_LABEL} />
+            {folded.map((c) => (
+              <MenuActionRow
+                key={c.id}
+                plain
+                icon={
+                  <span className="flex h-4 w-4 items-center justify-center [&>svg]:max-h-full [&>svg]:max-w-full">
+                    {c.icon}
+                  </span>
+                }
+                label={c.label}
+                onClick={(e) => {
+                  clearTimer();
+                  setOpen(false);
+                  onChoose(c.id, e.detail === 0);
+                }}
+              />
+            ))}
+          </div>
         </PortalMenu>
       ) : null}
     </>

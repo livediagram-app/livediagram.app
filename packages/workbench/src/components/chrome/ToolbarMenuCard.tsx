@@ -90,7 +90,7 @@ export function ToolbarMenuCard({
       <MenuCardFormContext.Provider value={form}>
         {/* Joined, the card heads the sidebar and there is no corner for the logo's own card: it leads the band. */}
         {joined && logo ? (
-          <span data-logo-in-band="" className="flex items-center pl-1.5 pr-2">
+          <span data-logo-in-band="" className="mr-auto flex items-center pl-0.5 pr-1">
             {logo}
           </span>
         ) : null}

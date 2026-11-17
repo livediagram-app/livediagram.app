@@ -2,7 +2,12 @@
 
 import { useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { editorViewportOf } from '../../lib/editor-viewport';
-import { stripRoomBesideMenu, stripTakesGap, CORNER_CARD_EVENT } from '../canvas/menu-join';
+import {
+  stripRoomBesideMenu,
+  stripTakesGap,
+  CORNER_CARD_EVENT,
+  STRIP_NAMED_EVENT,
+} from '../canvas/menu-join';
 
 // Whether the category bar names its categories (docs/specs/007-editor/toolbar-layout.md "The category bar"), from
 // the strip's REAL sizes, as useStripTileLimit fits tiles: the centred strip may take the editor's width less the
@@ -38,7 +43,10 @@ export function useBarLabels(
         named.current = { key: categoriesKey, width };
         // The strip's width with its names, kept on the card: where it stands (useStripCrowding) goes by this, so
         // dropping the names to fit never brings a strip that moved aside back to the centre.
-        card.dataset.stripNaturalWidth = String(width);
+        if (card.dataset.stripNaturalWidth !== String(width)) {
+          card.dataset.stripNaturalWidth = String(width);
+          window.dispatchEvent(new Event(STRIP_NAMED_EVENT));
+        }
       }
       // Another set of categories: show the names once to measure them.
       if (named.current?.key !== categoriesKey) {

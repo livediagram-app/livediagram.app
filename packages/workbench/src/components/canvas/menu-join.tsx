@@ -2,6 +2,7 @@
 // "Joined to the menu box"): pinned at the canvas's left, Pages mode's Contents sidebar rises to the top and the menu
 // box (the menu button and the tab's name) becomes its top row, one panel rather than a card over a sidebar. The box
 // keeps its place, its button and its name; only its own frame gives way to the sidebar's surface.
+import { editorViewportOf } from '../../lib/editor-viewport';
 import { toSurfacePx } from '../../lib/ui-scale';
 
 /** The gap the palette strip keeps from the menu box's right edge (useStripCrowded, useBarLabels). */
@@ -116,6 +117,29 @@ export const stripSitsBetween = (card: Element) => card.closest(`[${STRIP_BETWEE
 export const stripTakesGap = (card: Element) => stripShiftsLeft(card) || stripSitsBetween(card);
 
 export const CORNER_CARD_EVENT = 'corner-card-change';
+
+/** Sent on `window` when the palette strip's width with its category names (`data-strip-natural-width`) changes, so
+ *  the corner card judges again whether to drop its own names first (cornerCardCompact). */
+export const STRIP_NAMED_EVENT = 'strip-named-change';
+
+/** Experiment (no header bar): whether the top-right corner card drops its names (Share, Sign in), given its width
+ *  with them in screen px. It does so first, as the window narrows: once the palette, named, no longer fits between
+ *  the menu box and the card with its names, so the palette keeps its names as long as it can. */
+export function cornerCardCompact(wideWidth: number): boolean {
+  if (typeof document === 'undefined' || wideWidth <= 0) return false;
+  const strip = document.querySelector<HTMLElement>(
+    '[data-region=palette] [data-strip-natural-width]',
+  );
+  const named = strip ? Number(strip.dataset.stripNaturalWidth) || 0 : 0;
+  if (!strip || named <= 0) return false;
+  const view = editorViewportOf(strip);
+  const menu = document.querySelector<HTMLElement>('[data-toolbar-menu]');
+  const room =
+    view.width -
+    stripLeftClear(menu, view.left) -
+    (Math.ceil(wideWidth) + CORNER_CARD_INSET_PX + STRIP_SIDE_SPACE_PX);
+  return named > room;
+}
 
 /** How far in from the editor's right edge the strip must stop to keep its gap from the top-right corner card, in
  *  screen px; 0 with no card over this editor. */
