@@ -64,7 +64,8 @@ describe('importing Mermaid into a tab', () => {
     );
     expect(outcome).toEqual({
       status: 'error',
-      error: 'None of this flowchart could be read. Check the brackets and arrows on “A[Start -->”.',
+      error:
+        'None of this flowchart could be read. Check the brackets and arrows on “A[Start -->”.',
     });
     expect(deps.commitTabs).not.toHaveBeenCalled();
   });

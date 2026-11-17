@@ -9,10 +9,10 @@ import type { ImportOutcome } from '@/lib/import-tab';
 
 export function textImportOutcome(
   elements: readonly Element[],
-  report: { subtitle: string; degraded?: ReportRule[]; skipped?: ReportRule[] },
+  report: { subtitle: string; degraded?: ReportRule[]; skipped: ReportRule[] },
 ): ImportOutcome {
   const degraded = report.degraded ?? [];
-  const skipped = report.skipped ?? [];
+  const { skipped } = report;
   if (degraded.length === 0 && skipped.length === 0) return { status: 'done' };
   let shape = 0;
   let connector = 0;

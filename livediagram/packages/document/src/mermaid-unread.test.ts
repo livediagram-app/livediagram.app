@@ -11,7 +11,8 @@ describe('unread flowchart lines', () => {
     const parsed = parseMermaid('flowchart TD\nA[Start -->\n((( broken');
     expect(parsed).toEqual({
       ok: false,
-      error: 'None of this flowchart could be read. Check the brackets and arrows on “A[Start -->”.',
+      error:
+        'None of this flowchart could be read. Check the brackets and arrows on “A[Start -->”.',
     });
   });
 

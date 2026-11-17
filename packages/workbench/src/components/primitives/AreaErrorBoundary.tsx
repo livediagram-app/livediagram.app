@@ -73,7 +73,11 @@ class Boundary extends Component<BoundaryProps & { label: string; track: Track }
   override componentDidCatch(error: unknown, info: ErrorInfo) {
     console.error(`${this.props.area} failed to render.`, error, info.componentStack);
     try {
-      this.props.track('Error', 'Client', errorTypeToken('Render', this.props.area, errorNameToken(error)));
+      this.props.track(
+        'Error',
+        'Client',
+        errorTypeToken('Render', this.props.area, errorNameToken(error)),
+      );
     } catch {
       // Telemetry must never throw from inside an error boundary.
     }
