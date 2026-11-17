@@ -14,7 +14,8 @@ const retrySilentSignIn = vi.hoisted(() => vi.fn());
 vi.mock('@liveworkspace/auth-client/silent', () => ({ retrySilentSignIn }));
 import type { DeferredAuthState } from '@liveworkspace/workbench/components/providers/deferred-auth';
 
-vi.mock('@/lib/recent-diagrams-snapshot', () => ({ forgetRecentDiagrams: vi.fn(async () => {}) }));
+const forgetRecent = vi.hoisted(() => vi.fn(async () => {}));
+vi.mock('@/lib/recent-diagrams-snapshot', () => ({ forgetRecentDiagrams: forgetRecent }));
 // The last seen copies go with the session (docs/specs/006-project/offline-mode.md "Warm open of a cloud project").
 const lastSeen = vi.hoisted(() => ({ forgetAll: vi.fn(async () => {}) }));
 vi.mock('@/lib/last-seen', () => ({ lastSeenCopies: lastSeen }));
@@ -77,6 +78,35 @@ describe('AccountsBridge', () => {
       '/api/auth/token',
       expect.objectContaining({ method: 'POST' }),
     );
+  });
+
+  // Work Tracker 955: a sign-out in another app can't reach this browser's storage, so the first answer that finds the
+  // hinted session gone forgets what was kept for the account, before the page asks again or settles.
+  it("forgets the account's last seen copies and recent items when the hinted session is gone", async () => {
+    lastSeen.forgetAll.mockClear();
+    forgetRecent.mockClear();
+    retrySilentSignIn.mockClear();
+    fetchMock.mockResolvedValue(new Response('{"signedIn":false}', { status: 401 }));
+    expect(await mount()).toMatchObject({ authLoaded: true, isSignedIn: false });
+    expect(lastSeen.forgetAll).toHaveBeenCalledOnce();
+    expect(forgetRecent).toHaveBeenCalledOnce();
+    expect(lastSeen.forgetAll.mock.invocationCallOrder[0]).toBeLessThan(
+      retrySilentSignIn.mock.invocationCallOrder[0]!,
+    );
+  });
+
+  it('forgets nothing for a browser without the hint, or with its session still there', async () => {
+    lastSeen.forgetAll.mockClear();
+    forgetRecent.mockClear();
+    document.cookie = 'lp_signed_in=; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+    await mount();
+    cleanup();
+    resetAccountsSessionForTests();
+    document.cookie = 'lp_signed_in=1';
+    fetchMock.mockResolvedValue(signedIn('access-1'));
+    expect(await mount()).toMatchObject({ isSignedIn: true });
+    expect(lastSeen.forgetAll).not.toHaveBeenCalled();
+    expect(forgetRecent).not.toHaveBeenCalled();
   });
 
   it('lets the silent sign-in look again when the first answer finds the hinted session gone, and only then', async () => {

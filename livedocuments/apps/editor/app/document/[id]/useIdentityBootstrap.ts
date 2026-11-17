@@ -23,6 +23,8 @@ import {
   markLanding,
   measureAfterPaint,
   readWarmCopy,
+  type WarmOpenAddress,
+  type WarmOpenWho,
   browserWarmOpenFallbackDeps,
   guardNotFound,
   warmOpenFallback,
@@ -403,6 +405,35 @@ export function useIdentityBootstrap(opts: {
   // this browser opened before warm-opens from its last seen copy instead ("Warm open of a cloud document").
   const earlyOpen = useRef(false);
   const warmTried = useRef(false);
+  // A signed-in hint's warm read waits for the session (offline-mode.md "The warm open"): the hint says whether,
+  // never who, so the address waits here until auth names the account, and warmForAccount reads for it.
+  const warmAddress = useRef<WarmOpenAddress | null>(null);
+  // The read and the paint, for the reader `who` names.
+  const warmRead = useEffectEvent(async (address: WarmOpenAddress, who: WarmOpenWho) => {
+    // From the page's start on a fresh page, else from this read: the warm paint's wait is the read and the paint.
+    const origin = documentLoadOrigin() ?? performance.now();
+    const copy = await readWarmCopy(lastSeenCopies, address, who);
+    if (!copy) return;
+    // The code of what the paint mounts first (offline-mode.md "The code it draws is in first"), bounded: anything
+    // left waiting on its code draws a beat late, behind React's reveal throttle.
+    await warmPaintCodeIn(WARM_PAINT_CODE);
+    // Too late: the ordinary load has begun to show what it fetched, or resolved someone else as reading. A load that
+    // has only started (a guest's auth settles at once) is not: the copy paints and the load replaces it.
+    if (landedRef.current) return;
+    if (readerRef.current !== null && readerRef.current !== copy.reader) return;
+    paintWarm(copy, origin);
+  });
+  // Auth has answered under a signed-in hint: the copy is read for the account the session named, once. A session
+  // that answered signed out (the hint outlived it) reads nothing: the accounts bridge has emptied the store.
+  const warmForAccount = useEffectEvent(() => {
+    const address = warmAddress.current;
+    if (!address || !authLoaded) return;
+    warmAddress.current = null;
+    if (!accountUserId || hydrated) return;
+    warmRead(address, { signedIn: true, accountId: accountUserId }).catch((err: unknown) =>
+      debugLog('[load] no warm open', err),
+    );
+  });
   const tryEarlyOpen = useEffectEvent(async () => {
     if (authLoaded || hydrated || embed || workbench) return;
     // Once per mount: StrictMode runs the layout effect twice in dev, which painted and measured twice.
@@ -419,22 +450,15 @@ export function useIdentityBootstrap(opts: {
       bootstrap(true);
       return;
     }
-    // From the page's start on a fresh page, else from this read: the warm paint's wait is the read and the paint.
-    const origin = documentLoadOrigin() ?? performance.now();
-    const copy = await readWarmCopy(
-      lastSeenCopies,
-      { itemId: id, shareCode, hash: url.hash },
-      { signedIn: readSignedInHint(), guestId: getGuestSelfId() },
-    );
-    if (!copy) return;
-    // The code of what the paint mounts first (offline-mode.md "The code it draws is in first"), bounded: anything
-    // left waiting on its code draws a beat late, behind React's reveal throttle.
-    await warmPaintCodeIn(WARM_PAINT_CODE);
-    // Too late: the ordinary load has begun to show what it fetched, or resolved someone else as reading. A load that
-    // has only started (a guest's auth settles at once) is not: the copy paints and the load replaces it.
-    if (landedRef.current) return;
-    if (readerRef.current !== null && readerRef.current !== copy.reader) return;
-    paintWarm(copy, origin);
+    const address = { itemId: id, shareCode, hash: url.hash };
+    if (readSignedInHint()) {
+      warmAddress.current = address;
+      // Auth may have answered while the local index loaded, after its layout effect ran: then the read goes now
+      // (an effect event reads the props as they are when called, not as this read began).
+      warmForAccount();
+      return;
+    }
+    await warmRead(address, { signedIn: false, guestId: getGuestSelfId() });
   });
   // Once auth answers after an early open: who is reading, their lists, and the guest naming nudge,
   // all in the background of a document already on screen.
@@ -457,6 +481,8 @@ export function useIdentityBootstrap(opts: {
       if (authLoaded) settleEarlyIdentity();
       return;
     }
+    // Before the load starts, so the copy's read races the participant's request rather than follows it.
+    warmForAccount();
     bootstrap();
   }, [authLoaded, passwordRetry]);
 }

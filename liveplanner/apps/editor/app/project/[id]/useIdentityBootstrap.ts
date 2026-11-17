@@ -24,6 +24,8 @@ import {
   markLanding,
   measureAfterPaint,
   readWarmCopy,
+  type WarmOpenAddress,
+  type WarmOpenWho,
   warmPaintCodeIn,
   browserWarmOpenFallbackDeps,
   guardNotFound,
@@ -407,29 +409,14 @@ export function useIdentityBootstrap(opts: {
   // browser opened before warm-opens from its last seen copy instead ("Warm open of a cloud project").
   const earlyOpen = useRef(false);
   const warmTried = useRef(false);
-  const tryEarlyOpen = useEffectEvent(async () => {
-    if (authLoaded || hydrated || embed || workbench) return;
-    // Once per mount: StrictMode runs the layout effect twice in dev, which painted and measured twice.
-    if (warmTried.current) return;
-    warmTried.current = true;
-    const url = new URL(window.location.href);
-    const id = projectIdFromPath(url.pathname);
-    const shareCode = url.searchParams.get('s');
-    if (id && !shareCode && (await isOfflineId(id))) {
-      // Auth may have answered while the local index loaded: then the ordinary bootstrap has run.
-      if (runRef.current !== 0) return;
-      earlyOpen.current = true;
-      debugLog('[load] early open of a project in This Browser');
-      bootstrap(true);
-      return;
-    }
+  // A signed-in hint's warm read waits for the session (offline-mode.md "The warm open"): the hint says whether,
+  // never who, so the address waits here until auth names the account, and warmForAccount reads for it.
+  const warmAddress = useRef<WarmOpenAddress | null>(null);
+  // The read and the paint, for the reader `who` names.
+  const warmRead = useEffectEvent(async (address: WarmOpenAddress, who: WarmOpenWho) => {
     // From the page's start on a fresh page, else from this read: the warm paint's wait is the read and the paint.
     const origin = projectLoadOrigin() ?? performance.now();
-    const copy = await readWarmCopy(
-      lastSeenCopies,
-      { itemId: id, shareCode, hash: url.hash },
-      { signedIn: readSignedInHint(), guestId: getGuestSelfId() },
-    );
+    const copy = await readWarmCopy(lastSeenCopies, address, who);
     if (!copy) return;
     // A Form first tab waits for the load, and a Board, Dashboard or Sheet without what it draws from opens as always.
     if (!planCopyPaints(copy)) {
@@ -446,6 +433,43 @@ export function useIdentityBootstrap(opts: {
     if (landedRef.current) return;
     if (readerRef.current !== null && readerRef.current !== copy.reader) return;
     paintWarm(copy, origin);
+  });
+  // Auth has answered under a signed-in hint: the copy is read for the account the session named, once. A session
+  // that answered signed out (the hint outlived it) reads nothing: the accounts bridge has emptied the store.
+  const warmForAccount = useEffectEvent(() => {
+    const address = warmAddress.current;
+    if (!address || !authLoaded) return;
+    warmAddress.current = null;
+    if (!accountUserId || hydrated) return;
+    warmRead(address, { signedIn: true, accountId: accountUserId }).catch((err: unknown) =>
+      debugLog('[load] no warm open', err),
+    );
+  });
+  const tryEarlyOpen = useEffectEvent(async () => {
+    if (authLoaded || hydrated || embed || workbench) return;
+    // Once per mount: StrictMode runs the layout effect twice in dev, which painted and measured twice.
+    if (warmTried.current) return;
+    warmTried.current = true;
+    const url = new URL(window.location.href);
+    const id = projectIdFromPath(url.pathname);
+    const shareCode = url.searchParams.get('s');
+    if (id && !shareCode && (await isOfflineId(id))) {
+      // Auth may have answered while the local index loaded: then the ordinary bootstrap has run.
+      if (runRef.current !== 0) return;
+      earlyOpen.current = true;
+      debugLog('[load] early open of a project in This Browser');
+      bootstrap(true);
+      return;
+    }
+    const address = { itemId: id, shareCode, hash: url.hash };
+    if (readSignedInHint()) {
+      warmAddress.current = address;
+      // Auth may have answered while the local index loaded, after its layout effect ran: then the read goes now
+      // (an effect event reads the props as they are when called, not as this read began).
+      warmForAccount();
+      return;
+    }
+    await warmRead(address, { signedIn: false, guestId: getGuestSelfId() });
   });
   // Once auth answers after an early open: who is reading, their lists, and the guest naming nudge,
   // all in the background of a project already on screen.
@@ -468,6 +492,8 @@ export function useIdentityBootstrap(opts: {
       if (authLoaded) settleEarlyIdentity();
       return;
     }
+    // Before the load starts, so the copy's read races the participant's request rather than follows it.
+    warmForAccount();
     bootstrap();
   }, [authLoaded, passwordRetry]);
 }

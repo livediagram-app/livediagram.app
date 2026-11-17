@@ -19,7 +19,6 @@ const { api, copies, fallback, hint, identity, paint, seed, seedDeps, timing } =
     held: null as LastSeenCopy<unknown, unknown> | null,
     read: vi.fn(),
     readVia: vi.fn(),
-    lastReader: vi.fn(),
     remember: vi.fn(async () => {}),
     forget: vi.fn(async () => {}),
     forgetVia: vi.fn(async () => {}),
@@ -58,8 +57,9 @@ vi.mock('@liveworkspace/workbench/lib/warm-open', async (importOriginal) => ({
 }));
 vi.mock('@/lib/signed-in-hint', () => ({ readSignedInHint: () => hint.signedIn }));
 vi.mock('@/lib/guest-identity', () => ({ ensureGuestIdentity: async () => ({ id: 'guest-1' }) }));
+const offline = vi.hoisted(() => ({ isOfflineId: vi.fn(async () => false) }));
 vi.mock('@/lib/offline/offline-store', () => ({
-  isOfflineId: async () => false,
+  isOfflineId: () => offline.isOfflineId(),
   OFFLINE_OWNER_ID: '__offline__',
 }));
 vi.mock('@/lib/api/design-grants', () => ({ designGrant: async () => ({ level: 'edit' }) }));
@@ -150,6 +150,7 @@ beforeEach(() => {
   window.sessionStorage.clear();
   window.history.replaceState(null, '', '/design/doc-1');
   hint.signedIn = false;
+  offline.isOfflineId.mockImplementation(async () => false);
   identity.guestId = 'guest-1';
   copies.held = copyFor();
   copies.read.mockImplementation(async (reader: string, itemId: string) =>
@@ -157,7 +158,6 @@ beforeEach(() => {
       ? copies.held
       : null,
   );
-  copies.lastReader.mockImplementation(async () => copies.held?.reader ?? null);
   copies.readVia.mockImplementation(async (reader: string, code: string) =>
     copies.held && copies.held.reader === reader && copies.held.via === code ? copies.held : null,
   );
@@ -254,9 +254,8 @@ describe('useIdentityBootstrap warm open', () => {
     expect(copies.forget).toHaveBeenCalledWith('guest-1', 'doc-1');
   });
 
-  it("paints a signed-in account's copy, and takes it off the screen when someone else is reading", async () => {
-    hint.signedIn = true;
-    copies.held = copyFor({ reader: 'user_a' });
+  it('takes the copy off the screen when the session names someone else after all', async () => {
+    copies.held = copyFor();
     const { hook, set } = render({ authLoaded: false, accountUserId: null });
     await flush();
     expect(paint).toHaveBeenCalledOnce();
@@ -265,6 +264,70 @@ describe('useIdentityBootstrap warm open', () => {
     expect(set.setLoadingDesign).toHaveBeenCalledWith(true);
     expect(set.setWarmTabId).toHaveBeenLastCalledWith(null);
     expect(api.apiLoadDesign).toHaveBeenCalledWith('user_b', 'doc-1');
+  });
+
+  // Work Tracker 955: the signed-in hint says whether, never who, so an account's copy is read only once the session
+  // has named the account.
+  it('reads nothing under a signed-in hint until the session answers, then paints the copy of the account it names', async () => {
+    hint.signedIn = true;
+    copies.held = copyFor({ reader: 'user_a' });
+    let landed: (found: unknown) => void = () => {};
+    api.apiLoadDesign.mockImplementation(() => new Promise((r) => (landed = r)));
+    const { hook, set } = render({ authLoaded: false, accountUserId: null });
+    await flush();
+    expect(copies.read).not.toHaveBeenCalled();
+    expect(paint).not.toHaveBeenCalled();
+    hook.rerender({ authLoaded: true, accountUserId: 'user_a' });
+    await flush();
+    expect(copies.read).toHaveBeenCalledExactlyOnceWith('user_a', 'doc-1');
+    expect(paint).toHaveBeenCalledExactlyOnceWith(copies.held);
+    expect(lastRole(set)).toBe('view');
+    landed(DOC);
+    await flush();
+    expect(lastRole(set)).toBe('edit');
+    expect(set.setHydrated).toHaveBeenCalledWith(true);
+  });
+
+  it("never paints another account's copy: the read is for the account the session names", async () => {
+    hint.signedIn = true;
+    copies.held = copyFor({ reader: 'user_a' });
+    const { hook } = render({ authLoaded: false, accountUserId: null });
+    await flush();
+    hook.rerender({ authLoaded: true, accountUserId: 'user_b' });
+    await flush();
+    expect(copies.read).toHaveBeenCalledWith('user_b', 'doc-1');
+    expect(paint).not.toHaveBeenCalled();
+    expect(api.apiLoadDesign).toHaveBeenCalledWith('user_b', 'doc-1');
+  });
+
+  // A sign-out in another app leaves this app's hint saying signed in, over a session that is gone.
+  it('paints no copy on the next load after a sign-out in another app', async () => {
+    hint.signedIn = true;
+    copies.held = copyFor({ reader: 'user_a' });
+    const { hook } = render({ authLoaded: false, accountUserId: null });
+    await flush();
+    hook.rerender({ authLoaded: true, accountUserId: null });
+    await flush();
+    expect(copies.read).not.toHaveBeenCalled();
+    expect(copies.readVia).not.toHaveBeenCalled();
+    expect(paint).not.toHaveBeenCalled();
+    expect(api.apiLoadDesign).toHaveBeenCalledWith('guest-1', 'doc-1');
+  });
+
+  it('reads at once when the session answered while the local index loaded', async () => {
+    hint.signedIn = true;
+    copies.held = copyFor({ reader: 'user_a' });
+    let indexed: (found: boolean) => void = () => {};
+    offline.isOfflineId.mockImplementation(() => new Promise((r) => (indexed = r)));
+    api.apiLoadDesign.mockImplementation(() => new Promise(() => {}));
+    const { hook } = render({ authLoaded: false, accountUserId: null });
+    await flush();
+    hook.rerender({ authLoaded: true, accountUserId: 'user_a' });
+    await flush();
+    expect(copies.read).not.toHaveBeenCalled();
+    indexed(false);
+    await flush();
+    expect(paint).toHaveBeenCalledExactlyOnceWith(copies.held);
   });
 
   it("never shows an account's copy to a signed-out browser", async () => {
@@ -306,8 +369,6 @@ describe('useIdentityBootstrap warm open', () => {
   });
 
   it('paints no late copy once the load resolved someone else as reading', async () => {
-    hint.signedIn = true;
-    copies.held = copyFor({ reader: 'user_a' });
     let answer: (copy: unknown) => void = () => {};
     copies.read.mockImplementation(() => new Promise((r) => (answer = r)));
     api.apiLoadDesign.mockImplementation(() => new Promise(() => {}));
@@ -342,14 +403,15 @@ describe('useIdentityBootstrap warm open', () => {
   });
 
   it('opens as always when the copy store fails', async () => {
-    copies.lastReader.mockRejectedValue(new Error('gone'));
     copies.read.mockRejectedValue(new Error('gone'));
     hint.signedIn = true;
     const { hook } = render({ authLoaded: false, accountUserId: null });
     await flush();
     expect(paint).not.toHaveBeenCalled();
-    hook.rerender({ authLoaded: true, accountUserId: null });
+    hook.rerender({ authLoaded: true, accountUserId: 'user_a' });
     await flush();
+    expect(copies.read).toHaveBeenCalledWith('user_a', 'doc-1');
+    expect(paint).not.toHaveBeenCalled();
     expect(api.apiLoadDesign).toHaveBeenCalledOnce();
   });
   it('keeps the tab the person moved to during the warm paint when the load catches up', async () => {
