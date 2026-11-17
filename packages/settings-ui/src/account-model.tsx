@@ -45,6 +45,10 @@ export interface AccountSection {
   security?: AccountSecurity;
   // Signing out, where the host can.
   onSignOut?: () => Promise<boolean> | boolean | void;
+  // Where closing the account is explained, for a host that can't close it itself (liveworkspace.app: closing is asked
+  // for by an app's server): an app's help article "Deleting your account". With it, Your Account ends with a Delete
+  // Account row that says where closing lives and links there. An editor draws its own Delete Account and hands none.
+  closeAccountHelp?: string;
   // The API tokens and Download Your Data
   // (liveworkspace/docs/specs/003-accounts/data-export.md "Settings"), drawn here (accountPanels) for a signed-in
   // account. A host without an account (a guest, a workbench, a self-hosted editor) hands none.

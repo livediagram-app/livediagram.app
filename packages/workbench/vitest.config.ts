@@ -17,6 +17,8 @@ const HELD_AT_100 = [
   'src/components/sheet-links/SheetLinkSection.tsx',
   'src/components/sheet-links/LinkSheetDialog.tsx',
   'src/lib/relative-now.ts',
+  // Which side a menu flyout opens on (each product's 008-canvas canvas-and-palette.md, Work Tracker 961).
+  'src/components/primitives/menu-flyout-side.ts',
   // A live embed's rules (liveworkspace/docs/specs/004-index/live-embeds.md, Work Tracker 930).
   'src/components/live-embed/live-embed-target.ts',
   'src/components/live-embed/live-embed-slots.ts',
@@ -112,6 +114,10 @@ const HELD_AT_100 = [
   // The palette's Icons category, icons and stickers in one (docs/specs/008-canvas/canvas-and-palette.md "Icons
   // category" in each editor).
   'src/components/palette/IconsCategoryTab.tsx',
+  // The tab drag the side by side drop zone answers, ended however the drag ends, a drop into a tab folder included
+  // (docs/specs/007-editor/split-view.md "Opening", Work Tracker 1223).
+  'src/lib/tab-drag-store.ts',
+  'src/components/chrome/useTabReorderDrag.ts',
 ];
 
 export default defineProject({

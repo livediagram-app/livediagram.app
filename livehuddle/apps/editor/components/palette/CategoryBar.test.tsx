@@ -208,3 +208,38 @@ describe('the keyboard', () => {
     expect(document.activeElement).toBe(button('Seats'));
   });
 });
+
+// One popover at a time (docs/specs/007-editor/toolbar-layout.md "One popover at a time"): a category opening, by
+// hover intent or the focus, closes the strip's other popovers; a pointer only passing over the bar closes nothing.
+describe('a category opening closes the strip’s other popovers', () => {
+  const restOn = (name: string) => {
+    fireEvent.pointerEnter(button(name), mouse);
+    wait(HOVER_OPEN_MS + 10);
+  };
+  const searchPopover = () => document.querySelector('[data-toolbar-search]');
+
+  it('closes Search on a rest, and keeps a typed query through a pass', () => {
+    show();
+    fireEvent.click(button('Search elements'));
+    const field = screen.getByRole<HTMLInputElement>('textbox', { name: 'Search elements' });
+    fireEvent.change(field, { target: { value: 'pie' } });
+    fireEvent.pointerEnter(button('Seats'), mouse);
+    wait(HOVER_OPEN_MS - 30);
+    fireEvent.pointerLeave(button('Seats'), mouse);
+    wait(HOVER_OPEN_MS);
+    expect(flyout()).toBeNull();
+    expect(searchPopover()).not.toBeNull();
+    expect(field.value).toBe('pie');
+    restOn('Travel');
+    expect(flyout()).not.toBeNull();
+    expect(searchPopover()).toBeNull();
+  });
+
+  it('closes Search when a category button takes the focus', () => {
+    show();
+    fireEvent.click(button('Search elements'));
+    expect(searchPopover()).not.toBeNull();
+    fireEvent.focus(button('Seats'));
+    expect(searchPopover()).toBeNull();
+  });
+});

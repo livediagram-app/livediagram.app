@@ -12,6 +12,7 @@
 // computed site with no entry, an entry with no site, or a value no chart
 // counts.
 
+import { WALKTHROUGH_LIMITS } from '../_shared/snapshot-walkthrough-metrics';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { EXPLORER_TELEMETRY_EVENTS, HOME_FRAME_PICKS } from '@liveworkspace/telemetry';
@@ -458,6 +459,10 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
   'apps/editor/hooks/persistence/useOfflineConversion.ts Document·Moved': {
     values: ['SavedToCloud', 'TakenOffline'],
+  },
+  // The limit a walkthrough met, one of the four the shared recorder names.
+  'packages/walkthrough/src/telemetry.ts Walkthrough·Refused': {
+    values: [...WALKTHROUGH_LIMITS],
   },
   'packages/workbench/src/hooks/canvas/useDebouncedCanvasTelemetry.ts Canvas·Changed': {
     values: Object.keys(CANVAS_CONTROLS),

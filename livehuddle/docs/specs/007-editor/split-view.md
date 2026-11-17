@@ -46,7 +46,11 @@ the screen wakes:
    in at the width it will open, headed **Open _name_ Side by Side** and showing the tab's own
    drawing, with a **Release to Open** chip.
 3. Releasing there opens the tab on the right. Releasing anywhere else does what it did before
-   (reorder on a pill, nothing elsewhere).
+   (reorder on a pill, joining a folder on its chip, nothing elsewhere).
+4. The rail, hint and ghost leave the moment the drag ends, however it ends: a drop anywhere (on
+   a pill, a tab folder's chip, the zone or empty space), Escape, or a cancelled drag. They never
+   outlive the drag, even when the drop moves the dragged pill into a folder and the pill the
+   browser would report the end to is gone.
 
 Which tab goes where:
 

@@ -115,18 +115,29 @@ export const STATE_LOOK: Record<ServiceState, StateLook> = {
   },
 };
 
+// Holds the room of the words in `data-hold` as well as its own (liveworkspace/docs/specs/010-site/site.md "Status",
+// "The page holds still"): a one-cell grid, the live words in its one child and an invisible copy of the held words in
+// its `::after`, which assistive tech and the page's text never read. So words that arrive shorter than the checking
+// words they replace never pull up or narrow what is around them.
+export const HOLD =
+  'grid *:col-start-1 *:row-start-1 after:invisible after:col-start-1 after:row-start-1 after:content-[attr(data-hold)]';
+
 export function StateBadge({
   state,
   size = 'md',
   word,
+  hold,
 }: {
   state: ServiceState;
   size?: 'sm' | 'md';
   // Words in place of the state's own (a group's "2 of 7 slow").
   word?: string;
+  // Words whose width the badge keeps however short its own are ("Checking", on the jump links).
+  hold?: string;
 }) {
   const look = STATE_LOOK[state];
   const Icon = look.icon;
+  const words = word ?? look.word;
   return (
     <span
       className={`inline-flex shrink-0 items-center gap-1.5 rounded-full font-semibold whitespace-nowrap ring-1 ring-inset ${look.badge} ${size === 'sm' ? 'px-2 py-0.5 text-[11px]' : 'px-2.5 py-1 text-xs'}`}
@@ -134,7 +145,13 @@ export function StateBadge({
       <span className={state === 'checking' ? 'lw-status-spin inline-flex' : 'inline-flex'}>
         <Icon />
       </span>
-      {word ?? look.word}
+      {hold ? (
+        <span data-hold={hold} className={`${HOLD} justify-items-center`}>
+          <span>{words}</span>
+        </span>
+      ) : (
+        words
+      )}
     </span>
   );
 }

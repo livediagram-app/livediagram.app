@@ -349,6 +349,7 @@ describe('the api', () => {
     expect(await refused.save(input)).toEqual({
       ok: false,
       message: 'This already has 50 walkthroughs. Delete one to save another.',
+      error: 'item_full',
     });
     const deletes: string[] = [];
     const halfway = walkthroughApi(

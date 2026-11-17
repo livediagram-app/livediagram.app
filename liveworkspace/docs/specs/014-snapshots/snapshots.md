@@ -160,6 +160,13 @@ Under each app's item route (`/api/projects/<id>`, `/api/documents/<id>`, `/api/
 
 Each refuses a token (403) and answers 404 to anyone else who may not use snapshots.
 
+## Telemetry
+
+Each editor counts three events under its own app, from the shared dialog and only once the api accepted the call:
+`Snapshot·Created` (one taken by hand), `Snapshot·Reverted` and `Snapshot·Deleted`. No type: never a name, an id or a
+size. A refused call counts nothing, and the safety snapshot a revert takes first is not counted as a take. Read
+Reverted against Created to see whether people come back to what they keep.
+
 ## Built once
 
 Everything the apps share lives in `@liveworkspace/snapshots` (packages/snapshots): the store with its five-snapshot

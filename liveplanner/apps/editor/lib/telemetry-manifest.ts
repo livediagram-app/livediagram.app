@@ -165,6 +165,9 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Session·Deleted',
   'Session·Opened',
   'Session·SignedOut',
+  'Snapshot·Created',
+  'Snapshot·Deleted',
+  'Snapshot·Reverted',
   // Sheet (docs/specs/029-sheets/sheet.md "Telemetry"): 'Changed' with the command (Bold, Sort, Merge, ...),
   // 'Used' with a function name on its first use in a formula, 'Opened' for Find, 'Imported'/'Exported' with Csv,
   // 'Deleted' Confirmed/Cancelled when deleting a Sheet asks first, 'Searched' Function from the toolbar's Search.
@@ -220,5 +223,11 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'UI·Started',
   'UI·Toggled',
   'UI·Used',
+  'Walkthrough·Abandoned',
+  'Walkthrough·Created',
+  'Walkthrough·Deleted',
+  'Walkthrough·Played',
+  'Walkthrough·Refused',
+  'Walkthrough·Started',
   'UI·View',
 ];
