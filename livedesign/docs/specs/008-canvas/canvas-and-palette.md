@@ -1334,7 +1334,10 @@ A shape can carry an inline **text label**.
   closing punctuation at the end it belongs: "مرحبا بالعالم!" ends with "!" at its left, not stranded on the right as
   under the page's left-to-right default. A line in English beside it stays left to right. Alignment is unchanged
   (a label's Left, Centre and Right are where the user put them). This holds in shapes, text, sticky notes, tables,
-  arrow labels and the inline line editors, and while editing. Exports do the same: an SVG `<text>` has one
+  arrow labels and the inline line editors, and while editing. An editor whose text cannot read
+  differently line by line (no right-to-left letters, or one line) is laid out as one isolated run in the direction
+  of its first letter instead, which draws the same and keeps a keystroke in a long text light
+  ([Canvas performance](canvas-performance.md), "Typing in a long label stays light"). Exports do the same: an SVG `<text>` has one
   direction, so an exported line holding right-to-left letters is wrapped in a First Strong Isolate (U+2068 … U+2069,
   `svg-bidi.ts` in `@livedesign/design`), and any other line is written exactly as before.
 
