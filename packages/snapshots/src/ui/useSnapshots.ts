@@ -6,6 +6,7 @@
 // close reaches this editor too), so its success only says so until then. React drops a state change on an unmounted
 // dialog, so only the list's fetch, which can land after a close and a reopen, checks it is still live.
 
+import { workbench } from '@liveworkspace/workbench/bindings';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { reloadAfterRevert, SnapshotsApiError, type SnapshotsApi } from '../client';
 import type { SnapshotSummary } from '../wire';
@@ -85,6 +86,8 @@ export function useSnapshots(
     (name: string) =>
       run({ kind: 'take' }, async () => {
         await api.take(name);
+        // Counted once the api took it (docs/specs/014-snapshots/snapshots.md "Telemetry"): no name, id or size.
+        workbench.track('Snapshot', 'Created');
         await refresh();
       }),
     [api, refresh, run],
@@ -94,6 +97,7 @@ export function useSnapshots(
     async (id: string) => {
       await run({ kind: 'delete', id }, async () => {
         await api.remove(id);
+        workbench.track('Snapshot', 'Deleted');
         setSnapshots((prev) => (prev ?? []).filter((s) => s.id !== id));
       });
     },
@@ -104,6 +108,7 @@ export function useSnapshots(
     async (id: string) => {
       await run({ kind: 'revert', id }, async () => {
         await api.revert(id);
+        workbench.track('Snapshot', 'Reverted');
         setReverted(true);
         // The room closes this editor's socket too; reloading here covers a socket that was already down.
         reload();

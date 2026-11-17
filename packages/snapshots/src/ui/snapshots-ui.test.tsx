@@ -1,7 +1,13 @@
 // @vitest-environment jsdom
 import { act, fireEvent, render, renderHook, screen, waitFor } from '@testing-library/react';
+import {
+  configureWorkbench,
+  resetWorkbenchForTests,
+  type WorkbenchTrack,
+} from '@liveworkspace/workbench/bindings';
+import { testBindings } from '@liveworkspace/workbench/lib/testing/bindings';
 import { useState } from 'react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { resetRevertReload, SnapshotsApiError, type SnapshotsApi } from '../client';
 import type { SnapshotSummary } from '../wire';
 import {
@@ -20,7 +26,10 @@ import {
   snapshotTitle,
 } from './snapshot-words';
 
-afterEach(() => resetRevertReload());
+afterEach(() => {
+  resetRevertReload();
+  resetWorkbenchForTests();
+});
 
 const NOW = Date.UTC(2026, 10, 15, 12, 0);
 
@@ -420,6 +429,49 @@ describe('useSnapshots', () => {
     const { result } = renderHook(() => useSnapshots(api));
     await act(async () => result.current.remove('s_1'));
     expect(result.current.snapshots).toEqual([]);
+  });
+
+  // Telemetry (docs/specs/014-snapshots/snapshots.md "Telemetry"): one event per accepted call, never a name or id.
+  describe('telemetry', () => {
+    const track = vi.fn<WorkbenchTrack>();
+    beforeEach(() => {
+      track.mockClear();
+      configureWorkbench(testBindings({ track }));
+    });
+
+    it('counts a snapshot taken, a revert and a delete once the api accepted them', async () => {
+      const api = fakeApi([snap(1)]);
+      const { result } = renderHook(() => useSnapshots(api, vi.fn()));
+      await waitFor(() => expect(result.current.snapshots).not.toBeNull());
+      await act(async () => void (await result.current.take('Launch')));
+      expect(track.mock.calls).toEqual([['Snapshot', 'Created', undefined]]);
+      await act(async () => result.current.revert('s_1'));
+      await act(async () => result.current.remove('s_1'));
+      expect(track.mock.calls).toEqual([
+        ['Snapshot', 'Created', undefined],
+        ['Snapshot', 'Reverted', undefined],
+        ['Snapshot', 'Deleted', undefined],
+      ]);
+    });
+
+    it('counts nothing when the api refuses', async () => {
+      const api = fakeApi([snap(1)]);
+      api.take = vi.fn(async () => {
+        throw new SnapshotsApiError(413, 'snapshot_too_large', 'Too large');
+      });
+      api.remove = vi.fn(async () => {
+        throw new SnapshotsApiError(404, 'not_found', 'Gone');
+      });
+      api.revert = vi.fn(async () => {
+        throw new SnapshotsApiError(404, 'not_found', 'Gone');
+      });
+      const { result } = renderHook(() => useSnapshots(api, vi.fn()));
+      await waitFor(() => expect(result.current.snapshots).not.toBeNull());
+      await act(async () => void (await result.current.take('x')));
+      await act(async () => result.current.revert('s_1'));
+      await act(async () => result.current.remove('s_1'));
+      expect(track).not.toHaveBeenCalled();
+    });
   });
 });
 

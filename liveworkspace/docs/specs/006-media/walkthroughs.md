@@ -181,6 +181,26 @@ The media upload refuses a row that is not the caller's (`403`), one already rea
 or length that differs from what was declared (`400 media_mismatch`), and bytes whose first bytes are not the declared
 container (`415 unsupported_type`, the stored object deleted again).
 
+## Telemetry
+
+Each canvas editor counts, under its own app and from the shared package, which of these happened (never a title, an
+id, a length or a size):
+
+| Event                             | When                                                                                       |
+| --------------------------------- | ------------------------------------------------------------------------------------------ |
+| `Walkthrough·Started`             | A recording began, after the count                                                         |
+| `Walkthrough·Created`             | It was saved                                                                               |
+| `Walkthrough·Abandoned`           | A recording that had begun was thrown away unsaved, from the dock or the save card         |
+| `Walkthrough·Refused·TooLong`     | The recording reached ten minutes and stopped itself, or the service refused a long save   |
+| `Walkthrough·Refused·TooLarge`    | The recording reached the size limit and stopped itself, or the service refused a big save |
+| `Walkthrough·Refused·ItemFull`    | A save was turned away: the document already has its most walkthroughs                     |
+| `Walkthrough·Refused·AccountFull` | A save was turned away: the person's walkthroughs or space are used up                     |
+| `Walkthrough·Played`              | A saved walkthrough was opened to play                                                     |
+| `Walkthrough·Deleted`             | A saved walkthrough was deleted                                                            |
+
+Closing set-up or the count is not an abandon: nothing had been recorded. A limit that stops a recording counts once,
+and a save the service refuses for any other reason (a forbidden caller, an outage) counts nothing.
+
 ## Deleting
 
 - **One walkthrough**: its recorder, or an Editor of its document, through the app. The row goes first, then the

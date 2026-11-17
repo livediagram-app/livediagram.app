@@ -16,6 +16,7 @@ import {
 } from '@livedocuments/api-schema';
 import { noun, type TelemetryAppConfig } from '../_shared/app';
 import { createCtaFunnel } from '../_shared/cta-funnel';
+import { SNAPSHOTS, WALKTHROUGHS } from '../_shared/snapshot-walkthrough-metrics';
 import { createEventExplanation } from '../_shared/event-explanation';
 import type { RetiredCategory } from '../_shared/retired-explorer';
 import { cliCommandSentence } from './cli-commands';
@@ -149,6 +150,10 @@ const CATEGORY_COLORS: Record<Exclude<TelemetryCategory, RetiredCategory>, strin
   Explorer: '#155e75',
   // Deep teal-green, a stopwatch: apart from Email's teal and Cta's green.
   Timing: '#047857',
+  // Deep fuchsia, a saved copy: apart from Token's lighter one and Page's wine.
+  Snapshot: '#a21caf',
+  // Deep rose, a recording light: apart from Error's red and MCP's pink.
+  Walkthrough: '#be123c',
 };
 
 const PAGE_VIEW_APPS: PageViewApp[] = ['Marketing', 'Live', 'Help', 'Dashboard', 'Community'];
@@ -253,6 +258,8 @@ export const LIVEDOCUMENTS: TelemetryAppConfig = {
           TABLES,
           SIDE_BY_SIDE,
           CONNECTED_TABS,
+          SNAPSHOTS,
+          WALKTHROUGHS,
           EDITOR_SEARCH,
           FIND_AND_REPLACE,
           EDITOR_CHROME,
