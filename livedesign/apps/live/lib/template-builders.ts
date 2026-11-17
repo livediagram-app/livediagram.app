@@ -7,7 +7,7 @@
 // /live/new imports it statically since it's the template-creation
 // page by definition.
 
-import { type Tab } from '@livedesign/design';
+import { markTemplateExamples, type Tab } from '@livedesign/design';
 import {
   templateCanvasOverrides,
   templateTabs,
@@ -59,7 +59,8 @@ function themedTab(
   // Graph-aware recolour so multi-colour themes (docs/specs/011-theme/multicolour-themes.md) can tint each
   // branch of the scaffold a distinct hue; single-colour themes fall
   // straight through to the per-element transform.
-  const elements = recolourElementsForTheme(def.build(0, 0), theme);
+  // Its example values marked as they land (docs/specs/006-design/template-examples.md).
+  const elements = markTemplateExamples(recolourElementsForTheme(def.build(0, 0), theme));
   return {
     id: tabId,
     name: tabName,

@@ -1,11 +1,19 @@
 import type { Dispatch, SetStateAction } from 'react';
-import type { EditorMode, Slide, Tab } from '@livediagram/document';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { getTheme, recolourElementsForTheme } from '@/lib/themes';
 import type { TemplateKind } from '@livediagram/templates';
 import { templateTabName } from '@/lib/template-tab-name';
 import type { Participant } from '@/lib/identity';
 import { landTemplateOnTab } from './template-tab-set';
+import {
+  clearTabExamples,
+  keepTabExamples,
+  markTemplateExamples,
+  type EditorMode,
+  type Slide,
+  type Tab,
+} from '@livediagram/document';
+import { announce } from '@liveworkspace/workbench/lib/announcer';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 // The mode a chosen template's tab opens in (docs/specs/007-editor/editor-modes.md "Where the
@@ -112,7 +120,9 @@ export function useTemplateFlow(opts: {
     // (recolourElementsForTheme, docs/specs/011-theme/multicolour-themes.md), the same helper /new's create uses.
     const activeTab = tabs.find((t) => t.id === activeId);
     const theme = getTheme(activeTab?.theme);
-    const elements = recolourElementsForTheme(rawElements, theme);
+    // Its example values are marked as they land (docs/specs/006-document/template-examples.md), so Clear Example
+    // Content can empty them and nothing a person writes.
+    const elements = markTemplateExamples(recolourElementsForTheme(rawElements, theme));
     const overrides = templateCanvasOverrides(kind);
     const opensIn = templateOpensIn(overrides);
     // Re-checked inside the commit (landTemplateOnTab): the tab may have gained a collaborator's
@@ -152,5 +162,22 @@ export function useTemplateFlow(opts: {
     setEditingId(null);
   };
 
-  return { chooseTemplate, confirmIdentity, cancelIdentity };
+  // A template's example content (docs/specs/006-document/template-examples.md): Clear Example Content empties the
+  // active tab's untouched example values, Keep It makes them the person's own. Each is one commit, one undo step.
+  const clearExampleContent = () => {
+    commitTabs((ts) => clearTabExamples(ts, activeId));
+    announce('Example content cleared');
+  };
+  const keepExampleContent = () => {
+    commitTabs((ts) => keepTabExamples(ts, activeId));
+    announce('Example content kept as your own');
+  };
+
+  return {
+    chooseTemplate,
+    confirmIdentity,
+    cancelIdentity,
+    clearExampleContent,
+    keepExampleContent,
+  };
 }

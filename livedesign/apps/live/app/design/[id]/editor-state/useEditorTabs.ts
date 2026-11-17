@@ -198,7 +198,13 @@ export function useEditorTabs({
   // stays in the page (also wired into useShareLinks) and is passed in.
   // The draw slice comes later in this hook, so the template flow reaches its cancel through a ref.
   const putToolDownRef = useRef<() => void>(() => {});
-  const { chooseTemplate, confirmIdentity, cancelIdentity } = useTemplateFlow({
+  const {
+    chooseTemplate,
+    confirmIdentity,
+    cancelIdentity,
+    clearExampleContent,
+    keepExampleContent,
+  } = useTemplateFlow({
     activeId,
     tabs,
     selfParticipant,
@@ -285,6 +291,8 @@ export function useEditorTabs({
     nameDesign,
     putToolDownRef,
     chooseTemplate,
+    clearExampleContent,
+    keepExampleContent,
     confirmIdentity,
     cancelIdentity,
     checkpointBurst,
