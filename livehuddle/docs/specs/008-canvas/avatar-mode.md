@@ -306,10 +306,19 @@ desktop apps of Zoom, Teams and Gather do.
   card in the window (it would draw in the Space's tab); each keeps its name and its card's line for a screen reader.
 - **Back to the Space.** Pressing **Back to Space**, a row or the header brings the Space's tab to the front. Let In
   and Not Now only answer.
+- **Camera tiles** (Work Tracker 984). Above the people, the cameras of the people you hear: at most 4, two to a
+  row (one alone fills the row), each a rounded 16:9 tile ringed in the person's colour, their face filling it, their
+  name on a small dark chip at its foot. The tiles follow **Near You**'s order (by name), so a tile moves only when
+  someone walks into or out of earshot or turns their camera on or off; past 4, the rest show as rows only. A tile
+  tints in the person's colour until its first frame, never black, and a stalled camera keeps its last frame. Your
+  own camera has no tile (your Camera button says it is on). Pressing a tile brings the Space's tab to the front, as
+  a row does. With nobody heard on camera there is no tile area at all.
 - **Live in a hidden tab.** The mini view draws from what the room connection keeps up to date, which it does in a
-  hidden tab: arrivals, the people heard, levels, hands and knocks. The hidden-tab video rule stays
-  ([Who sees what](../012-collaboration/video-and-screen-bubbles.md#who-sees-what)): no camera or screen is received
-  while the tab is hidden, and the mini view shows no video. Video tiles in it are a later step.
+  hidden tab: arrivals, the people heard, levels, hands and knocks. Its tiles keep their cameras while the tab is
+  hidden: an open mini view lets a hidden tab receive the 4 nearest cameras you hear, on the small layer, and no
+  screen ([Who sees what](../012-collaboration/video-and-screen-bubbles.md#who-sees-what)). Closing it, or showing
+  the tab, returns to the canvas's own rules; with the tab on show, the tiles draw whichever of those cameras the
+  canvas receives.
 - **Closing**: its own close button, pressing **Popped Out**, or leaving the Space (closing the document or the
   browser tab). It outlives the dock: leaving Avatar mode, or the chrome hiding, keeps it open, since the people it
   shows are drawn whether or not you walk. One mini view a tab; it is never reopened by itself.
@@ -322,7 +331,9 @@ desktop apps of Zoom, Teams and Gather do.
 - **Cost**: nothing until it opens. Open, it renders only when a fact it shows changes (who is here, a name, a
   costume, a status, who you hear, a level, a hand, a knock), never per frame; the people are worked out at most as
   often as the canvas's coarse copy changes (ten times a second while someone walks), as one string compare when
-  nothing it shows moved.
+  nothing it shows moved. A tile re-renders only when its camera arrives or goes; the frames go straight to the
+  video element. In a hidden tab the 4 small cameras are the whole video cost (measured in the blueprint's
+  "Performance and limits").
 - Telemetry: `Canvas · Used · SpaceMiniView` when it opens. Never who is in it.
 
 ## Not over a start
