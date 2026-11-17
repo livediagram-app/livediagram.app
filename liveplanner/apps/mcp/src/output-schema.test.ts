@@ -262,6 +262,8 @@ async function api(request: Request): Promise<Response> {
     return json({ projects: [{ id: 'd1', name: 'Roadmap', savedAt: 1_700_000_000_000 }] });
   }
   if (path === '/teams') return json({ teams: [] });
+  if (path.endsWith('/room-ticket') && url.searchParams.get('cap') === 'view')
+    return json({ ticket: 'rt2~sealed', expiresAt: 1_800_000_000_000, level: 'edit' });
   if (path.endsWith('/sheets'))
     return request.method === 'POST'
       ? json({ sheet: { ...SHEET, id: (await request.json<{ id: string }>()).id, cells: [] } })
@@ -421,6 +423,7 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
   },
   { tool: 'list_items', output: 'listItemsOutput', args: { projectId: 'd1' } },
   { tool: 'view_tab', output: 'viewTabOutput', args: { projectId: 'd1' } },
+  { tool: 'view_live', output: 'viewLiveOutput', args: { projectId: 'd1' } },
   // Work Tracker 900: several columns, text, a time, both switches and a page of one.
   {
     tool: 'list_items',
@@ -607,6 +610,10 @@ describe('tool output schemas', () => {
         const [viewText, line, ...extra] = first!.text.split('\n');
         expect([viewText, extra]).toEqual([text, []]);
         expect(JSON.parse(line!)).toEqual({ ...rest, tab: tabMeta });
+      } else if (tool === 'view_live') {
+        // Its one line never carries the ticket (docs/specs/015-api/mcp-server.md "Live updates").
+        expect(first!.text).toBe('Opened live updates for the interactive view.');
+        expect(first!.text).not.toContain((structured as { ticket: string }).ticket);
       } else if (tool === 'view_tab') {
         // The view's own tool says one line, not its boards (docs/specs/015-api/mcp-server.md "Interactive view").
         expect(first!.text).toMatch(

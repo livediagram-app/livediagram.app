@@ -1120,10 +1120,9 @@ livediagram built the pilot (its mcp-server.md "Interactive view (MCP Apps)"); l
 page at a time.
 
 - **The view resource.** The server lists `ui://livedocuments/view.html` (`text/html;profile=mcp-app`), the shared
-  viewer page (`@liveworkspace/mcp-kit/app-view`, `viewerHtml('livedocuments', { idKey: 'documentId', live: false })`)
+  viewer page (`@liveworkspace/mcp-kit/app-view`, `viewerHtml('livedocuments', { idKey: 'documentId' })`)
   with its script and styles inline, its size held under `VIEWER_HTML_BUDGET_BYTES` (24 KB) by a test. The SVG is
-  drawn as an image, so nothing in it runs or fetches: its `_meta.ui.csp` allows no connection and no resource
-  domain (`connectDomains: []`, `resourceDomains: []`), and it asks for a border.
+  drawn as an image, so nothing in it runs or fetches: its `_meta.ui.csp` allows one connection only, the WebSocket to this deployment's own api (`connectDomains: ["wss://<editor host>"]`, from `CONSENT_BASE_URL`), no resource domain, and it asks for a border.
 - **The tools that link it.** `create_document`, `add_tab`, `update_document`, `read_document`, `change_pages` and
   `write_article` carry `_meta.ui.resourceUri` (and the older flat `ui/resourceUri` key) in their definitions. Their
   results are unchanged: **the PNG always stays**, since the model checks its work from it (§5) and a host without
@@ -1149,9 +1148,34 @@ page at a time.
 - **Authority.** The view holds no lasting credential. It reads only through the host's own connection to this
   server, so every `view_tab` is the user's token through the api's ordinary read gate, and a read-only token reads as
   it does today. No share link is minted, ever. The view is read-only for every token, whatever its share role.
-- **Live updates.** Not yet: the view shows the tab as it was when drawn, and its header carries no live mark. A new
-  tool result draws it afresh. Following the room as livediagram's view does needs a view-only room ticket on this
-  api first.
+- **Live updates.** Once drawn, the view follows the document through its room, as livediagram's does (its mcp-server.md
+  "Live updates"), and draws the page again when it changes:
+  - **The ticket.** The view asks for it through the host (`tools/call view_live`); the server mints it for the
+    token's owner with `POST /api/documents/:id/room-ticket?cap=view` ([api.md](api.md)), the index's grant on this
+    document sealed with the cap `view` and no pairing (`rt2~…`,
+    [one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "A
+    view-only ticket"). So it is short-lived (the grant's 10 minutes), names one document, admits only at `view` whatever
+    the owner's own level (an Editor, Participant or Viewer token alike, and a read-only token), and is the owner's
+    access as the index has it at the mint: a person whose access was revoked gets none (the mint's 404). It is never
+    a share link, and never in a text block, the PNG, a log line or the tool's telemetry, only in `view_live`'s
+    structured content, which a host with MCP Apps hands the view alone. A revoked token stops the view at its next
+    mint, within the ticket's 10 minutes (this room keeps no token on its sockets, so none closes at once).
+  - **The socket.** The view opens `wss://<editor host>/api/documents/:id/ws?t=<ticket>` and never sends a frame,
+    so it is in no one's roster and draws no cursor. A relayed `op` that changes what the view shows (`tab`, `el`, `tab-meta`, `el-delta`, a `changeset`, on
+    the shown tab or naming none), a save landing (`tab-saved`) or a change to the tab list (`document-meta`) schedules
+    one `view_tab`, at most one every `LIVE_REDRAW_MS` (1.5 s) however busy the room; presence ops and other tabs'
+    changes draw nothing. Pan, zoom and the page shown survive a redraw. A redraw that fails, or answers another tab than the one shown, keeps
+    what the view has.
+  - **Reconnects and Snapshot.** As livediagram's: a fresh ticket `LIVE_RENEW_BEFORE_MS` (30 s) before one lapses, a
+    dropped socket retried from 1 s doubling to 30 s for at most 6 tries, a hidden frame holding no socket. The
+    header's mark reads **Live**, **Reconnecting** or **Snapshot**; Snapshot (a refused mint, the tries run out, or
+    the document moved to the Trash: `document-trashed` or the close 4004) keeps what the view last drew, its title saying
+    why and when.
+  - **Cost.** A document with no open view gets no ticket and no socket. An open view is one idle socket on the room, one
+    mint every 10 minutes, and at most one `view_tab` per `LIVE_REDRAW_MS` while people edit.
+- **`view_live`**: `{ documentId }`. Read. The view's own tool, kept from the model like `view_tab`: the socket's
+  address (`url`), the ticket and when it lapses (`expiresAt`, epoch ms). Its text block is one line without the
+  ticket. Edits in the view stay livediagram's: this view is read-only for every token.
 - **Cost.** `view_tab` renders SVG only, no resvg. A test holds one page's SVG build, on the densest slide of a
   40-page deck, to a CPU budget and its size to under 1 MB.
 

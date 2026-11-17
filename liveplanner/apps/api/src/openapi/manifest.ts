@@ -1838,12 +1838,32 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     summary:
       'Mint a one-time ticket for opening the realtime room: pass it to the WebSocket upgrade as `?t=`. Same access policy as a read, share password included. Exempt from the write rate limit.',
     auth: 'guest-or-clerk',
+    query: [
+      {
+        name: 'cap',
+        required: false,
+        description:
+          '`view` for a view-only ticket: it admits at view whatever your level, and a read-only token may mint it.',
+      },
+    ],
     responseSchema: {
       type: 'object',
-      properties: { ticket: { type: 'string' } },
+      properties: {
+        ticket: { type: 'string' },
+        expiresAt: {
+          type: 'integer',
+          description: 'A view-only ticket: when it lapses, epoch milliseconds.',
+        },
+        level: {
+          type: 'string',
+          enum: ['view', 'participate', 'edit'],
+          description:
+            'A view-only ticket: your own level on the plan (always view for a read-only token). The ticket still admits at view.',
+        },
+      },
       required: ['ticket'],
     },
-    statuses: [200, 404, 410],
+    statuses: [200, 400, 404, 410],
   },
   {
     method: 'GET',

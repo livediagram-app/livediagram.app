@@ -34,7 +34,7 @@ export function buildServer(env: Env): McpServer {
   );
 
   // The interactive view's page (docs/specs/015-api/mcp-server.md "Interactive view (MCP Apps)").
-  registerViewPage(server);
+  registerViewPage(server, env);
   registerTools(server, env);
   // The one prompt (docs/specs/015-api/mcp-server.md §4.10): show_my_document.
   registerShowMyPrompt(server, {

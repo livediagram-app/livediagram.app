@@ -26,7 +26,7 @@ export function appOnlyToolMeta(): Record<string, unknown> {
 }
 
 // The view page's own `_meta`: no network but the sockets it names (the SVG is drawn as an image, so nothing in it
-// fetches; live updates open the document's room, mcp-server.md "Live updates"), and a border round the frame.
+// fetches; live updates open the file's room, mcp-server.md "Live updates"), and a border round the frame.
 export function viewResourceMeta(connectDomains: readonly string[] = []) {
   return {
     ui: { csp: { connectDomains: [...connectDomains], resourceDomains: [] }, prefersBorder: true },
@@ -61,11 +61,20 @@ button:focus-visible,#stage:focus-visible{outline:2px solid var(--ring);outline-
 @media (prefers-reduced-motion:no-preference){#tabs button,.tool{transition:filter .15s}}
 `;
 
-// The canvas view's styles: the stage it pans and zooms, the hover ring, the pager and the live mark.
-const CANVAS_STYLE = `
+// The live mark every view's header carries ("Live updates"): its dot, and its word beside it but on a phone.
+const LIVE_STYLE = `
 #live{display:inline-flex;align-items:center;gap:5px;color:var(--muted);font-size:12px;white-space:nowrap;cursor:default}#live[hidden]{display:none}
 #live::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--muted)}
 #live[data-state=live]::before{background:var(--live)}#live[data-state=wait]::before{background:var(--wait)}
+@media (max-width:520px){#live{font-size:0;gap:0;padding:0 2px}}
+@media (prefers-reduced-motion:no-preference){#live[data-state=wait]::before{animation:pulse 1.2s ease-in-out infinite}}
+@keyframes pulse{50%{opacity:.35}}
+`;
+
+const LIVE_MARK = '<span id="live" role="status" hidden></span>';
+
+// The canvas view's styles: the stage it pans and zooms, the hover ring and the pager.
+const CANVAS_STYLE = `
 #zoom{color:var(--muted);font-variant-numeric:tabular-nums;min-width:40px;text-align:right}
 #pager{display:inline-flex;align-items:center;gap:2px;flex:none}#pager[hidden]{display:none}
 #page{color:var(--muted);font-variant-numeric:tabular-nums;min-width:44px;text-align:center;white-space:nowrap;cursor:default}
@@ -73,9 +82,7 @@ const CANVAS_STYLE = `
 #stage:active{cursor:grabbing}
 #art{position:absolute;left:0;top:0;transform-origin:0 0;user-select:none;-webkit-user-drag:none;pointer-events:none;max-width:none}
 #ring{position:absolute;border:2px solid var(--ring);border-radius:6px;pointer-events:none}
-@media (max-width:520px){#zoom{display:none}#live{font-size:0;gap:0;padding:0 2px}#page{min-width:36px}#pager:not([hidden])~#out,#pager:not([hidden])~#in{display:none}}
-@media (prefers-reduced-motion:no-preference){#live[data-state=wait]::before{animation:pulse 1.2s ease-in-out infinite}}
-@keyframes pulse{50%{opacity:.35}}
+@media (max-width:520px){#zoom{display:none}#page{min-width:36px}#pager:not([hidden])~#out,#pager:not([hidden])~#in{display:none}}
 `;
 
 // The edit parts' styles: the Edit toggle, the selection, its bar (whose hint says a save) and the rename box.
@@ -127,8 +134,10 @@ const BOARD_STYLE = `
 export type ViewerOptions = {
   // The argument naming the file in the view's tools: documentId (the default), designId, projectId.
   idKey?: string;
-  // Follow the room once drawn (view_live): only a product whose api mints a view-only room ticket. Default true.
+  // Follow the room once drawn (view_live): every product's api mints a view-only room ticket. Default true.
   live?: boolean;
+  // The product's word for its file, in the live mark's titles: document (the default), design, plan.
+  word?: string;
   // The board view (liveplanner) in place of the canvas: columns and cards drawn as HTML.
   board?: boolean;
   // The edit parts ("Edits in the view", livediagram's): offered only when view_live says the token may.
@@ -155,9 +164,9 @@ const EDIT_STAGE =
 
 function canvasHtml(app: string, opts: ViewerOptions): string {
   return (
-    head(app, CANVAS_STYLE + (opts.edits ? EDIT_STYLE : '')) +
+    head(app, LIVE_STYLE + CANVAS_STYLE + (opts.edits ? EDIT_STYLE : '')) +
     '<header><span id="title"></span><nav id="tabs" aria-label="Tabs" hidden></nav><span class="spacer"></span>' +
-    '<span id="live" role="status" hidden></span>' +
+    LIVE_MARK +
     '<span id="pager" role="group" aria-label="Pages" hidden>' +
     '<button class="tool" id="prev" type="button" title="Previous page" aria-label="Previous page">‹</button>' +
     '<span id="page" aria-live="polite"></span>' +
@@ -176,11 +185,12 @@ function canvasHtml(app: string, opts: ViewerOptions): string {
 
 function boardHtml(app: string, opts: ViewerOptions): string {
   return (
-    head(app, BOARD_STYLE) +
+    head(app, LIVE_STYLE + BOARD_STYLE) +
     '<header><span id="title"></span><nav id="tabs" aria-label="Boards" hidden></nav><span class="spacer"></span>' +
+    LIVE_MARK +
     '<button class="tool" id="open" type="button" title="Open this board in the editor">Open in editor</button>' +
     `</header><main id="board" aria-label="The board: click a card to open it in the editor">${NOTE}</main>` +
-    `<script>${boardViewerScript(app, opts.idKey ?? 'documentId')}</script></body></html>`
+    `<script>${boardViewerScript(app, opts)}</script></body></html>`
   );
 }
 

@@ -82,6 +82,7 @@ function okResponse(request: Request): Response {
   }
   if (path === '/documents' && request.method === 'GET') return json({ documents: [] });
   if (path === '/teams') return json({ teams: [] });
+  if (path.endsWith('/room-ticket')) return json({ ticket: 'rt2~sealed', expiresAt: 1 });
   if (path === '/trash') return json({ trash: [] });
   if (path.endsWith('/versions')) return json({ versions: [] });
   if (/\/versions\/[^/]+\/restore$/.test(path)) return json({ restored: null });
@@ -214,6 +215,7 @@ describe('registerTools', () => {
       'unarchive_document',
       'update_document',
       'upload_image',
+      'view_live',
       'view_tab',
       'write_article',
     ]);
@@ -309,6 +311,8 @@ describe('tool annotations', () => {
   const BEHAVIOURS: Record<string, ToolBehaviour> = {
     // docs/specs/015-api/mcp-server.md "Interactive view (MCP Apps)": the view's own read.
     view_tab: 'read',
+    // "Live updates": the view's view-only room ticket, a read a read-only token may make.
+    view_live: 'read',
     // docs/specs/015-api/mcp-server.md "Comment threads": change_threads deletes the agent's own comments.
     list_threads: 'read',
     change_threads: 'destructive',
@@ -395,6 +399,7 @@ describe('tool annotations', () => {
       'list_versions',
       'read_document',
       'search_icons',
+      'view_live',
       'view_tab',
     ]);
 
