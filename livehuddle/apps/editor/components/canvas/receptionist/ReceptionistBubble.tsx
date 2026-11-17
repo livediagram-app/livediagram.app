@@ -6,7 +6,8 @@
 
 import { billboardOrigin, SPACE_BILLBOARD_ATTR } from '@livehuddle/avatar/billboard';
 import { InSpace3DOverlay, useInSpace3D } from '@/components/canvas/space-3d/Space3DOverlay';
-import { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useViewportStoreIfAny } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { SpeechCard } from '@livehuddle/avatar/components/AvatarSpeechBubble';
 import { SPEECH_TOP_CLEAR, tailOffset } from '@livehuddle/avatar/speech';
 import type { AvatarPoint } from '@livehuddle/avatar/walk';
@@ -170,10 +171,9 @@ export function ReceptionistBubble({
   const scroller = useRef<HTMLDivElement>(null);
   const [place, setPlace] = useState({ nudge: 0, below: false, width: 0, maxH: 0 });
   const { nudge, below, width, maxH } = place;
-  const view = chat.open ? `${chat.topicId}|${chat.reason}` : '';
   // In the 3D view the card is drawn in the overlay, standing over his head, and placed again whenever the view turns.
   const in3D = useInSpace3D();
-  useLayoutEffect(() => {
+  function placeCard() {
     const el = card.current;
     const list = scroller.current;
     if (!el || !list) return;
@@ -211,7 +211,38 @@ export function ReceptionistBubble({
       nextMaxH !== maxH
     )
       setPlace({ nudge: nextNudge, below: nextBelow, width: r.width, maxH: nextMaxH });
-  }, [head.y, feet.y, head.x, zoom, view, nudge, below, width, maxH, in3D]);
+  }
+  // Placed after every render (a new line or topic, his head moving, the zoom, the 3D view turning): it measures and
+  // sets state only when the place changed, so it settles in one more pass. The latest pass is kept for the view and
+  // the window to run again (below).
+  const placeAgain = useRef<() => void>(() => {});
+  useLayoutEffect(() => {
+    placeAgain.current = placeCard;
+    placeCard();
+  });
+  // Placed again whenever the view pans or zooms under it, or the window resizes (Work Tracker 912): his head's canvas
+  // point and the zoom stay the same through a pan, a camera fit or a phone turning, so the pass above would not run
+  // and the card was left where it was, off the screen's side. At most once a frame, and only while it is open.
+  const viewport = useViewportStoreIfAny();
+  const open = chat.open;
+  useEffect(() => {
+    if (!open) return;
+    let frame = 0;
+    const again = () => {
+      if (frame) return;
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        placeAgain.current();
+      });
+    };
+    const off = viewport?.subscribe(again);
+    window.addEventListener('resize', again);
+    return () => {
+      off?.();
+      window.removeEventListener('resize', again);
+      cancelAnimationFrame(frame);
+    };
+  }, [viewport, open]);
   if (!chat.open) return null;
   const topic = chat.topicId ? (topics.find((t) => t.id === chat.topicId) ?? null) : null;
   const choose = (t: ReceptionistTopic) => {
