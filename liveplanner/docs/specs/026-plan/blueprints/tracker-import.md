@@ -153,6 +153,8 @@ as `/items/bulk`).
   `0 ≤ part < parts`, `parts ≤ ITEMS_MAX`, `items` 1 to `ITEM_BULK_MAX` creates. Each create is read as `/items/bulk`
   reads it (`readCreate`, Calculated and Time Spent refusals, required fields); its threads must be new threads homed
   in this plan (an import's are, `withImportedThreads`; `field_value_invalid` otherwise).
+- The held cards are read a part at a time (`heldReads(env, planId, importId, parts)`, one select per held part), so
+  their stored text is never all in memory at once beside what it parses to.
 - **A part before the last** is held aside, nothing written to the cards: its reads go into `item_import_parts`
   (`plan_id, import_id, part, seq, body, created_at`; plan schema step 13, `ITEM_IMPORTS_SCHEMA` in
   `apps/api/src/plan-room/item-imports-schema.ts`; statements in `apps/api/src/db/item-imports.ts`) as one chunked
@@ -164,12 +166,23 @@ as `/items/bulk`).
 - **The last part** lands the import: every part must be held (`409 import_incomplete` otherwise), the held JSON and
   its own are checked against `ITEM_IMPORT_JSON_MAX` (`413 import_too_large`), the held reads and
   its own are checked for room (`413 items_full`) and Blocked By loops (`blockersRefused`, once over all of them),
-  then made as `createMany` makes cards (`buildCreates`: free keys, one placer) and written in **one
-  `PLAN_DB.batch`**: the import's held parts deleted, then for each `ITEM_BULK_MAX` of the cards a store rev raise
+  then made as `createMany` makes cards (`buildCreates`: free keys, one placer) and written in **one transaction**,
+  streamed (`streamPlanBatch` over `ItemDb.batchEach`, `packages/index-app/src/item-db.ts`: statements made by a
+  generator as the transaction runs them, so each is let go once run): the import's held parts deleted, then for each `ITEM_BULK_MAX` of the cards a store rev raise
   and their rows through the copy's chunked insert (`insertItemRowsStatements`, `plan-room/plan-content.ts`,
   1 MB JSON chunks), then every thread with its link (`insertThreadStatement`, `insertLinkStatement`). A throw rolls
   all of it back; a lost key race retries up to `ITEM_WRITE_RETRIES`, then `409 item_busy` (the parts kept, so a
   resend of the last part can land it). Any other refusal of the last part clears the import's parts.
+- **Matching people by email** (`POST /api/projects/:id/items/import/people`, `importPeople` in
+  `apps/api/src/routes/item-import-people.ts`): body `ItemsImportPeopleRequest { emails }` (1 to
+  `TRACKER_MATCH_EMAILS_MAX` strings, each at most 320 characters), gate as the import's (`edit` on the whole plan;
+  a tab-scoped grant `403`). Answers `200 ItemsImportPeople { people }`, one entry per email in its order: the joined
+  team member it belongs to as an `ItemPerson` (`itemPersonId(userId)`, their name else the address's local part,
+  coloured by `automaticPresenceColour`, as the editor's `teamMemberPerson`), or `null`. Only when the plan has a
+  team and the caller (`requireOwner`: a token's owner, or the person signed in) is a joined member of it, read from
+  accounts' people of that team (`teamPeople`), not the token's claim, so someone who left is no longer a member.
+  Anyone else, and a team accounts can't read, is answered `null` for every email: a share link's Editor can't tell a
+  member's email from a stranger's. No email is ever in an answer or a log line (`[items] import.people` logs counts).
 - Once landed: the room hears an `items` op per `ITEM_BULK_MAX` cards (its own rev, in order) and a `threads` op per
   the same cards; history is appended once (`appendItemHistory`, untagged, or `ai` from a token: never `undo`, best
   effort as for every write). 201 `ItemsResponse` with every card.
@@ -182,8 +195,10 @@ as `/items/bulk`).
 fileName?, source?, projectId?, name?, preview? }`: `readTrackerInput` refuses a file over `TRACKER_FILE_MAX_BYTES`
   (`file_too_large`), reads it with `readTrackerFile(content, parseCsv)`, and refuses a `source` given that differs
   (`source_mismatch`).
-  - With `projectId`: `readPlanState`, then `planTrackerImport` with `members: []`: an API token never reads a team's
-    people, so an agent matches people by name only. Preview answers here. Not `fits`: `items_full` with the reason.
+  - With `projectId`: `readPlanState`, then the file's emails (`trackerEmails(board)`: assignees' and Person extras',
+    lower-cased, distinct, at most `TRACKER_MATCH_EMAILS_MAX`) matched on the server (`POST /items/import/people`,
+    below; none asked when the file has none, and a failure matches none), then `planTrackerImport` with those
+    `members`. Preview answers here, its `people.matched` counted as the editor's. Not `fits`: `items_full` with the reason.
     Else: `PUT item-types` with the merged type (`expectedRev`, retried on `item_types_stale` up to
     `CARD_TYPES_SAVE_ATTEMPTS`), then a new tab's changeset (`CLIENT_HEADER`), then the cards with
     `withImportedThreads` as one whole import (`postImport`: `importParts` to `POST /items/import`). A failure there
@@ -324,15 +339,22 @@ show, changeTarget, run, back }`. `pick` opens `pickTabFile(TRACKER_FILE_ACCEPT,
   limit) and answers every card, so its peak grows with the import's JSON, at about 2.2 times it (live V8 heap over
   the heap before the last part, a forced collection at each statement, write batch and relay; node 22). Measured: a
   450-card Trello board (0.9 MB) peaks at 3.2 MB; a 2,000-card board of 19.2 MB (the file and card caps at once) at
-  44.9 MB; an import at `ITEM_IMPORT_JSON_MAX` of 5,000 cards and 20,000 comments at 61.5 MB (57 MB at 2,000 cards). That is under the 64 MB budget (half the object's limit, the rest for the room and its other requests), so
-  the landing is not rewritten. The batch's statements are let go once written (`stmts.length = 0`), before the
-  relay builds its ops, which had been the peak (46.5 MB before).
+  44.9 MB; an import at `ITEM_IMPORT_JSON_MAX` of 5,000 cards and 20,000 comments at 61.5 MB when the landing made
+  every statement before its batch ran, its bound JSON (about the import's size again) beside the cards. So the
+  landing streams (Work Item 980): the held cards are read back a part at a time (`heldReads` by `HeldPart`), and its
+  one transaction runs statements a generator makes as it goes (`ItemDb.batchEach`), so only the statement being run
+  holds its JSON. At the cap it now peaks at 44.8 MB (the cards read back are about 30 MB of it), and the peak is no
+  longer the write but the room relays and the 201 answer after it. The budget is 48 MB, leaving the object's other
+  80 MB to the room and its other requests. `ITEM_IMPORT_JSON_MAX` stays as it is: a lower cap would lower the 20 MB
+  file limit people see.
 - The api enforces the bound itself, since the file cap is the client's: `ITEM_IMPORT_JSON_MAX` caps the JSON one
   import may hold, above the most a 20 MB file's cards come to (measured 23.3 MB, a Jira CSV with descriptions near
   their cap and 20,000 comments; about 20 MB of content plus some 1.5 KB of shape per card and 160 bytes per
-  comment). An import at the cap peaks at 57 MB; before the cap, a hand-made 35 MB import peaked at 75 MB and nothing
-  stopped a larger one. `item-import-route.test.ts` "the landing's memory" lands an import at the cap under the
-  budget, measured as above, and refuses a held or last part past it.
+  comment). Before the cap, a hand-made 35 MB import peaked at 75 MB and nothing stopped a larger one.
+  `item-import-route.test.ts` "the landing's memory" lands an import at the cap under the 48 MB budget, sampled at
+  every read and batch, every 100th streamed statement and every relay, and refuses a held or last part past it.
+- Matching people (`/items/import/people`) is one request per agent import (none when the file names no email), at
+  most `TRACKER_MATCH_EMAILS_MAX` emails: one read of the team's people from accounts and a map lookup per email.
 - The preview is computed once per file (state), not per render.
 - Reading and planning run in a Web Worker (`tracker-worker/`). Measured at the caps on a laptop (the 7.7 MB Trello
   board of `tracker-import.perf.test.ts`): read 71 ms and plan 69 ms, now off the main thread; what the page still
@@ -357,7 +379,13 @@ show, changeTarget, run, back }`. `pick` opens `pickTabFile(TRACKER_FILE_ACCEPT,
   (Editor only; Participant, Viewer and a tab-scoped grant refused), a resend replacing its part, the hour's sweep,
   an import at the caps under a CPU budget, and one at the JSON cap under the landing's memory budget, with a held
   or last part past the cap refused.
-- agent-verbs (100% coverage): into a plan (type save, changeset, import parts, stale retry, a failed part removing
+- api `/items/import/people` (`item-import-people.test.ts`): a member's token answered the members, never an email;
+  a share link's Editor, someone who left the team (their claim stale) and a plan in no team answered null for every
+  email; Viewer, Participant and a tab's Editor refused; the body's bounds.
+- index-app `ItemDb.batchEach`: statements made as they run, one write, rolled back whole on a statement's or the
+  generator's throw.
+- agent-verbs (100% coverage): the email match (members assigned, none answered, a failed match falling back to
+  names); into a plan (type save, changeset, import parts, stale retry, a failed part removing
   the tab and writing no card), into a new plan (a failed part deleting it), preview,
   refusals (`items_full`, `source_mismatch`, `forbidden` from the api), the verb's lines, the MCP tool's parity.
 - editor: the dialog's list (sections, rows, keys, the tool section only for an Editor), a dropped file's route
@@ -378,3 +406,5 @@ show, changeTarget, run, back }`. `pick` opens `pickTabFile(TRACKER_FILE_ACCEPT,
 | `TRACKER_CHOICE_MAX`        | 20      | `CUSTOM_CHOICE_OPTIONS_MAX`                                                                |
 | `ITEM_IMPORT_HOLD_MS`       | 1 hour  | how long an import's parts wait for its last part                                          |
 | `ITEM_IMPORT_JSON_MAX`      | 26 MiB  | an import's held JSON; bounds the landing's memory                                         |
+| `TRACKER_MATCH_EMAILS_MAX`  | 1,000   | emails one agent import asks to match; far above a team's people                           |
+| `TRACKER_EMAIL_MAX`         | 320     | the longest email matched (64 local, @, 255 domain)                                        |

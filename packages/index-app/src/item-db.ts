@@ -94,15 +94,24 @@ export class ItemDb {
 
   // One transaction for the whole batch, as D1. The results are D1's: a read's rows, a write's change count.
   async batch(statements: ItemStatement[]): Promise<Result[]> {
+    return this.batchEach(statements);
+  }
+
+  // `batch` over statements made as the transaction runs them (a generator), each let go once run, so a write too
+  // large to hold every statement at once (a whole import's landing) is still one transaction: a throw, from a
+  // statement or from the generator, rolls all of it back. Not D1's: reached through the app's own door to its db.
+  async batchEach(statements: Iterable<ItemStatement>): Promise<Result[]> {
     this.hooks.ensureSchema();
     let wrote = false;
-    const results = this.hooks.transaction(() =>
-      statements.map((s) => {
+    const results = this.hooks.transaction(() => {
+      const out: Result[] = [];
+      for (const s of statements) {
         const one = this.executeOne(s);
         wrote ||= one.wrote;
-        return one.result;
-      }),
-    );
+        out.push(one.result);
+      }
+      return out;
+    });
     if (wrote) this.hooks.onWrite();
     return results;
   }

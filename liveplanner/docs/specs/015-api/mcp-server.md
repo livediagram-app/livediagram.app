@@ -545,7 +545,8 @@ status, fields, template }` (`template` starts the card from one of its type's [
   (`widgets` `{ add, remove }`, by kind id or field widget name), as one changeset.
 - **`import_board`** (write): a board from a Trello, Asana, Jira or Linear export (`content`, the file's text), in a
   new Board tab of `projectId` or a new plan, with its card type, cards and imported comments; `preview` writes
-  nothing ([Importing from another tool](../026-plan/tracker-import.md#agents)).
+  nothing. Its people are matched to the plan's team by email on the server when the token's owner is in that team
+  (no email is ever answered), else by name ([Importing from another tool](../026-plan/tracker-import.md#agents)).
 - **`change_card_types`** (destructive, as deleting a type moves its cards to the Trash): up to 32 card type
   changes (`add`, `set`, `delete`, `add_default_types`; `restore_built_ins` is its older name), checked whole and saved once;
   `add` and `set` also add, edit and remove the type's [card templates](../026-plan/plan-agents.md#card-templates).

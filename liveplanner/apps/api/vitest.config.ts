@@ -22,6 +22,8 @@ const GATE_KEEPERS = [
   'src/routes/tokens.ts',
   'src/routes/project-share-routes.ts',
   'src/db/project-removal.ts',
+  // Whether a caller is in the plan's team decides what an import's email match answers.
+  'src/routes/item-import-people.ts',
 ];
 
 export default defineProject({
