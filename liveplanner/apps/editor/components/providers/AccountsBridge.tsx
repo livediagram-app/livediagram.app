@@ -39,6 +39,8 @@ type SessionUser = {
   // The account's Google picture and whether Show My Google Picture is off (the api's AuthUser).
   picture?: string | null;
   pictureHidden?: boolean;
+  // The profile's presence colour (the ID token's `presence_color`), null for Automatic: the header avatar's fill.
+  color?: string | null;
 };
 type Session = { accessToken: string; expiresAt: number; user: SessionUser };
 
@@ -104,6 +106,7 @@ function stateOf(session: Session | null): DeferredAuthState {
       username: null,
       email: user.email,
       createdAt: null,
+      colour: user.color ?? null,
       // Checked again here: only a Google picture URL is ever drawn.
       picture: profilePictureOf(user.picture),
       pictureHidden: user.pictureHidden === true,

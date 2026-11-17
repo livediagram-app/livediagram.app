@@ -123,6 +123,21 @@ describe('AccountsBridge', () => {
     warn.mockRestore();
   });
 
+  it("carries the profile's presence colour onto the session, for the header avatar (Work Tracker 1031)", async () => {
+    fetchMock.mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          signedIn: true,
+          accessToken: 'access-1',
+          expiresAt: Date.now() + 3_600_000,
+          user: { ...USER, color: '#8b5cf6' },
+        }),
+        { status: 200 },
+      ),
+    );
+    expect((await mount()).user?.colour).toBe('#8b5cf6');
+  });
+
   it('publishes the signed-in account', async () => {
     fetchMock.mockResolvedValue(signedIn('access-1'));
     const state = await mount();
@@ -136,6 +151,8 @@ describe('AccountsBridge', () => {
         firstName: 'Ada',
         lastName: 'Lovelace',
         fullName: 'Ada Lovelace',
+        // No colour on the token answer: Automatic.
+        colour: null,
       },
     });
   });
