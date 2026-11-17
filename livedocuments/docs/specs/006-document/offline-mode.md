@@ -332,7 +332,7 @@ back into This Browser's list.
 
 Every row and card of an offline document carries a **This Browser** pill,
 wherever the document is listed: the list and card views (folders, Search results,
-This Browser, Recent, Favourites), Home's Most Used and Recent, the Inbox's rows, the folder previews' tiles excepted (they
+This Browser, Recent), Home's Most Used and Recent, the Inbox's rows, the folder previews' tiles excepted (they
 are pictures, not rows), the search panel's results, the editor's Explorer
 rows and its Current Document card, and the Trash.
 
@@ -448,7 +448,7 @@ the Explorer's This Browser view, the Share dialog gate and the move prompt afte
   anywhere); the per-tab byte cap surfaces a hard failure to the caller.
 - **Everything on the record travels**, not just tabs: the slide deck
   ([Presentation mode](../012-collaboration/presentation-mode.md)), the created date, the folder (kept only when it is one of the
-  caller's own personal folders, else the root of My Work) and the star ([Favourite documents](../013-workspace/favourites.md)). The
+  caller's own personal folders, else the root of My Work). (No star: Favourites were removed, [favourites.md](../013-workspace/favourites.md).) The
   local copy is deleted next, so anything the create leaves behind is gone.
 - **A refused folder lands at the root, on the sync's say-so.** The create carries the folder as
   its placement ([Folders → Placement on create](../013-workspace/folders.md)),
@@ -499,10 +499,8 @@ confirmation:
   as `data:` URIs BEFORE the server copy is deleted (the deletion would make
   them "unused" and the retention reaper would eventually take the bytes); an
   incomplete embed aborts the conversion and the document stays on the server.
-- **The deck, star and personal folder come along** for the same reason: the
-  server row they live on is about to be deleted. The star is read from the account's
-  favourites; if that read fails the conversion aborts before anything is written,
-  rather than taking the document as unstarred and losing the star with the row. A team document's folder is a
+- **The deck and personal folder come along** for the same reason: the
+  server row they live on is about to be deleted. A team document's folder is a
   team folder, which has no place in the personal tree, so it lands at the root of My Work.
 - **Shared tabs fork.** A tab also linked into other documents
   ([Tab ↔ document many-to-many](tab-document-many-to-many.md)) is not taken
@@ -557,7 +555,7 @@ Mode is implemented **behind that boundary** so the editor is unaware of the
 target:
 
 - **One store, bound per editor.** The store's operations (the write chain, the one-transaction updates, the
-  reads, the Trash and favourite rules, Sync Canvas's delete-if-unchanged) are one copy every editor shares
+  reads, the Trash rules, Sync Canvas's delete-if-unchanged) are one copy every editor shares
   (`@liveworkspace/workbench/lib/offline/offline-store-core`). `lib/offline/offline-store.ts` binds it with its
   IndexedDB backend, whose database and store names and versions stay this editor's own, and keeps its own
   extra writes.

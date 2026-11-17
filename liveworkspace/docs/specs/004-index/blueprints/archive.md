@@ -27,7 +27,7 @@ Scope, by file:
 | Archive scope | `a:<owner>` (`archivedScope`)     | Where an archived item lives: in no person's or team's scopes          |
 | Own scopes    | `ownScopes(person)`               | `p:<me>`, `a:<me>`: what Search and the Trash read of the person's own |
 | Archived view | `view=archived`                   | `a:<me>`, not in the Trash                                             |
-| Refusal       | `409 archived`                    | Grant, open, copy, favourite, Hide from Recent, share, share password  |
+| Refusal       | `409 archived`                    | Grant, open, copy, Hide from Recent, share, share password             |
 
 `archived_at IS NOT NULL` and `scope = 'a:' || owner_id` always hold together: the archive and the move out each
 write both in one statement.
@@ -48,12 +48,12 @@ write both in one statement.
 
 1. `UPDATE items SET archived_at = now, scope = 'a:' || owner_id, team_id = NULL, folder_id = NULL WHERE id = ? AND
 archived_at IS NULL AND trashed_at IS NULL`.
-2. Events: the item's `favourited` events are deleted (Archived holds no favourites); its History stays, read by its
-   owner alone since no one else reaches it now ([events.md](events.md)).
+2. Events: its History stays, read by its owner alone since no one else reaches it now ([events.md](events.md)).
+   (An old `favourited` event stays too; History never shows one.)
 3. The `moved` event, `detail {archived: true, fromTeamId?}`; in the team's audit log when it left one
    (`auditTeams [team]`).
 4. `DELETE` from `share_links`, `share_passwords`, `shared_with`.
-5. `DELETE` from `favourites`, `opens`, `use_days` for the item (every person).
+5. `DELETE` from `opens`, `use_days` for the item (every person).
 6. `DELETE` from `collab_thread_people`, `collab_threads`, `collab_actions`, `collab_form_reads`, `collab_forms`.
 7. After the batch, the app hears `POST /items/:id/revoke {codes}` with the deleted links' codes (`waitUntil`), and
    the owner's Drive mirror (and, out of a team, nobody else's) is touched.
@@ -84,7 +84,7 @@ event. Naming neither keeps `a:<owner>` whatever the title. A move out tells the
 - `view=search`: the owned source reads `ownScopes` plus the teams, so `a:<me>` is walked with the rest; a `team`
   filter of `personal` reads `p:<me>, a:<me>`; a team's id, that team alone. `space` `mine` matches both own scopes.
 - `view=trash` and `DELETE /trash` (no team): `p:<me>, a:<me>`.
-- Every other view: unchanged. Their scopes never include `a:`, and the rows Recent, Favourites, Most Used, Shared
+- Every other view: unchanged. Their scopes never include `a:`, and the rows Recent, Most Used, Shared
   and the Inbox start from are deleted by the archive, and refused (`409 archived`) while it lasts.
 - The data export (`person.export`, personal) reads `p:<me>, a:<me>`: Download Your Data keeps archived documents.
   The Drive mirror (`person.drive`) reads `p:<me>` alone, so an archived document leaves the mirror as a trashed
@@ -127,7 +127,7 @@ No new index: every live list is driven by scope, and `a:<owner>` is a scope of 
 | Archiving an item in the Trash           | `409 trashed`                                                    |
 | An old teammate opens it                 | `404`: not in the team any more, no link                         |
 | An open session when it is archived      | link sessions end at once; others when the grant is next renewed |
-| A favourite or open sent for it          | `409 archived`; nothing written                                  |
+| A Hide from Recent or open sent for it   | `409 archived`; nothing written                                  |
 | Moved out into a team the owner has left | `403 not_team_member`                                            |
 
 ## Security and trust
@@ -163,4 +163,4 @@ None. The archive keeps no timer: an archived item stays archived until its owne
 - `IDX44`: the Drive mirror leaves archived documents out; the data export keeps them.
 - `IDX45`: an archived item in the Trash is restored to Archived.
 - `IDX46`: the Archived view takes no lens; Search finds archived documents.
-- `IDX47`: Duplicate, Share, Favourites and Hide from Recent are refused while archived; Rename and Delete are not.
+- `IDX47`: Duplicate, Share and Hide from Recent are refused while archived; Rename and Delete are not.

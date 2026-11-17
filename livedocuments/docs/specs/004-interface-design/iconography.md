@@ -27,7 +27,7 @@ Every icon livedocuments draws follows one grammar, so a glyph looks the same we
 
 - The weight holds whatever the viewBox, the rendered size, a CSS resize or a canvas zoom (the stroke is non-scaling), so the same glyph never reads heavier in one place than another.
 - 1.25px keeps line art light on 1x screens, where a 1.5px line smears across two pixels and reads as 2px.
-- Filled glyphs (play, pause, a filled star for "favourited") are allowed where the filled state carries meaning; they are the exception, not a style.
+- Filled glyphs (play, pause, a filled star for a rating) are allowed where the filled state carries meaning; they are the exception, not a style.
 
 ## Ink insets
 

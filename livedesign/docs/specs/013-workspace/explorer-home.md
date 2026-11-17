@@ -175,7 +175,7 @@ Used and Recent, on Home"): a design is in the first of New, Most Used and Recen
     Explorer's relative time), or "Changed 2 hours ago" for one made and never opened
     (`jumpBackInLine` in `@liveworkspace/explorer`).
 - **Each card has the design's ⋯ menu**, the same menu its row and card carry everywhere else in the Explorer
-  (Rename, Duplicate, Move, Favourite, History, Delete and the rest; a design shared with you gets the
+  (Rename, Duplicate, Move, History, Delete and the rest; a design shared with you gets the
   shared-with-you menu; a This Browser design gets This Browser's), so it can be changed from Home without opening
   it. A ⋯ button on the card opens it, and a right-click anywhere on the card opens it too. Under a mouse the button
   shows while the card is hovered or has keyboard focus; on touch it always shows. It is a button beside the card's

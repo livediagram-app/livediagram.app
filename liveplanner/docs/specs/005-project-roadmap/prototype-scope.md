@@ -51,7 +51,7 @@ The planner is real:
 - **Collaboration**: comments and mentions, assigned actions, and the session tools Plan's templates use (timer, vote,
   picker, temperature check; [Collaboration](../012-collaboration/README.md)).
 - **The Explorer** ([Workspace](../013-workspace/README.md)): Home, the Inbox, nested folders, default folders,
-  favourites, tags, Recent, Shared With Me, a project's History, the Trash (30 days), and teams with Admin and Member
+  tags, Recent, Shared With Me, a project's History, the Trash (30 days), and teams with Admin and Member
   roles and a shared library.
 - **Sharing**: editor, participant and view-only links per project, with expiry, an optional password, tab-scoped
   links and read-only embeds ([Share roles](../013-workspace/share-roles.md)).

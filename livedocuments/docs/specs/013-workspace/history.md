@@ -16,7 +16,7 @@ shows.
 
 The index records what it changes itself, in the same batch as the change: a document made (`created`, with `source`
 `ai` for an MCP create and `import` for a CLI one, or `copiedFrom` for a copy), `renamed`, `moved`, `trashed`,
-`restored`, `shared` (a share link made, with its level), `unshared` and `favourited`.
+`restored`, `shared` (a share link made, with its level) and `unshared`.
 
 livedocuments reports `edited`. The document's room records the editor of every save made through an HTTP route that
 carries an identity (`document-room.ts`, `recordItemEditor` from `@liveworkspace/index-app`): one outbox row per person, replaced on each

@@ -14,7 +14,7 @@ The Explorer, and everything it lists, lives in liveworkspace's index and its sh
 - ./folders.md - when working on folders (moved)
 - ./default-folders.md - when working on where a new plan is filed by default (moved)
 - ./tags.md - tags (removed from the Explorer)
-- ./favourites.md - when working on favourites (moved)
+- ./favourites.md - Favourites, removed (2026-11-16): what an old address or a local star does now
 - ./trash.md - when working on the Trash or a trashed plan's refusals (moved)
 - ./empty-project-cleanup.md - when working on Empty plan clean-up: the index's daily sweep moves a plan with nothing on any tab and no card or sheet, unchanged for 30 days, to the Trash (marked `empty`, a fresh 30 days there); guest, account and team plans, never Offline Mode
 - ./explorer-home.md - when working on Explorer Home and recording a plan's opens (moved)

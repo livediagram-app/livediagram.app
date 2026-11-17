@@ -35,7 +35,7 @@ differ. Then one batch, in order:
 1. `recordPersonMerges`: a row per app in `APPS` (an upsert that renews `user_id`, `created_at`, `legacy`, and resets
    the attempts), first so the apps hear of it however the rest goes.
 2. Items and folders: `owner_id` the user, a personal one's `scope` to `p:<user>`.
-3. Favourites, opens (the later `last_opened_at`, hidden only if both), use days, Shared with me, placement defaults,
+3. Opens (the later `last_opened_at`, hidden only if both), use days, Shared with me, placement defaults,
    form reads (the further `seen`), thread people: copied with `INSERT OR IGNORE` or the upsert shown (the account's
    own wins), then the guest's deleted.
 4. Events: `actor_id` the user (`UPDATE events`); the items they are about moved in step 2, so their History follows.
@@ -102,6 +102,6 @@ namespace `1106` (staging `2106`), 60 per 60 s; absent, nothing is limited.
 
 ## Defaults ledger
 
-- `IDX14`: where a guest and the account both have a favourite, open, default or form read, the account's is kept
+- `IDX14`: where a guest and the account both have an open, default or form read, the account's is kept
   (or the later or further of the two).
 - `IDX15`: a handed-off item always lands at the root of the person's own space, whatever its old document said.

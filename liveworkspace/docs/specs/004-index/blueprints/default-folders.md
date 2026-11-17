@@ -1,6 +1,6 @@
 # Default folders: blueprint
 
-Derived from [one-explorer-contracts.md "Folders, favourites, defaults"](../one-explorer-contracts.md#folders-favourites-defaults).
+Derived from [one-explorer-contracts.md "Folders and defaults"](../one-explorer-contracts.md#folders-and-defaults).
 The spec decides; this file only adds engineering precision, read from the code. Defaults are cited as `IDXn`.
 Paths are relative to the repository root.
 
@@ -78,7 +78,7 @@ that folder, then deletes every `livediagram`, `livediagram:kind:*` and `livedia
 | `liveworkspace/apps/index/src/default-placement.test.ts` (6) | the key order, retired keys, a gone or unreachable folder, explicit root |
 | `packages/index-client/src/constants.test.ts`                | the key order with retired keys, a mode-only app, `foldRetiredDefaults`  |
 | `packages/explorer/src/defaults/defaults.test.tsx`           | a retired key shown as the app's entry, cleared with it; mode-only lists |
-| `liveworkspace/apps/index/src/personal.test.ts` (9)          | the placement defaults routes among folders and favourites               |
+| `liveworkspace/apps/index/src/personal.test.ts` (9)          | the placement defaults routes among folders and Hide from Recent         |
 
 ## Constants and configuration
 

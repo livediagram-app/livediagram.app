@@ -163,7 +163,7 @@ The join prompt is **independent of share role**: both **edit-role and view-role
 
 ## Guest → account
 
-When a guest signs in or signs up, what they made as a guest **becomes the account's** rather than being lost. The accounts site does it: a session made for a browser carrying the `lw_guest` cookie tells the index, which moves the guest's items, folders, favourites, opens and placement defaults to the account in one batch, and clears the cookie ([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md) "Guests", [one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "Guests"). livedocuments takes no part and makes no call: the next page load lists the documents under the account.
+When a guest signs in or signs up, what they made as a guest **becomes the account's** rather than being lost. The accounts site does it: a session made for a browser carrying the `lw_guest` cookie tells the index, which moves the guest's items, folders, opens and placement defaults to the account in one batch, and clears the cookie ([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md) "Guests", [one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "Guests"). livedocuments takes no part and makes no call: the next page load lists the documents under the account.
 
 - The guest's display identity (the participant row: name, colour, picture) stays under the guest id; a signed-in person's name follows their account.
 - What a guest added to a document as a Participant stays the guest's addition ([Share roles](../013-workspace/share-roles.md) "Integrity").

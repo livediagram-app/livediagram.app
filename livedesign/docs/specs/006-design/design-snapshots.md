@@ -170,7 +170,7 @@ has to say which one it belongs to; then **Open on its own, under a
 separator**, unless the row is the design already open in this editor
 (the verb people reach for first sits first, and the current design's
 row doesn't offer a no-op); then **one full-width row per verb, icon on
-the left** (Rename, Duplicate, Change Folder, Favourite,
+the left** (Rename, Duplicate, Change Folder,
 History, Hide from Recent, Open Team, Take Offline / Sync); then
 **Delete last, under a separator** (styled as every other row: a delete is never red). It was an icon-over-
 label tile grid, two columns and then three: eight verbs in a grid read

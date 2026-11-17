@@ -13,7 +13,7 @@ The Explorer, and everything it lists, lives in liveworkspace's index and its sh
 - ./team-shared-documents.md - when working on a team's library (platform)
 - ./folders.md - when working on folders (platform)
 - ./default-folders.md - when working on where a new document is filed by default (platform)
-- ./favourites.md - when working on favourites (platform)
+- ./favourites.md - Favourites, removed (2026-11-16): what an old address or a local star does now
 - ./trash.md - when working on the Trash or a trashed document's refusals (platform)
 - ./empty-document-cleanup.md - when working on Empty document clean-up: the index's daily sweep moves a document with no element or page on any tab, unchanged for 30 days, to the Trash (marked `empty`, a fresh 30 days there); guest, account and team documents, never Offline Mode
 - ./explorer-home.md - when working on Explorer Home and recording a document's opens (platform)

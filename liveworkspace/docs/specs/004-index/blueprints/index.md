@@ -49,7 +49,7 @@ the tables, configuration, logs and tests. Each feature has its own file:
 5. An app acting for a person: on `items`, `trash`, `shared`, `inbox` (one segment) the query's `app` is
    forced to that app.
 6. The Drive mirror reaches only `items`, `trash` and `folders`, never `items/:id/share*` (`404`).
-7. `share/:code…`, `items…`, then the person routes (`folders`, `favourites`, `recent-hidden`,
+7. `share/:code…`, `items…`, then the person routes (`folders`, `recent-hidden`,
    `placement-defaults`, `shared`, `inbox`, `trash`), each `401` without a person.
 8. After the answer, the people whose personal items or folders changed are signalled to Drive (`waitUntil`).
 
@@ -132,7 +132,7 @@ is `{}`).
 | `/items/:id/history`                                                                                                                   | GET                           | [events.md](events.md)                       |
 | `/folders`, `/folders/:id`, `/folders/previews`                                                                                        | GET, POST, PATCH, DELETE      | [items.md](items.md)                         |
 | `/spaces/previews`                                                                                                                     | GET                           | [items.md](items.md)                         |
-| `/favourites`, `/favourites/:itemId`, `/recent-hidden/:itemId`                                                                         | GET, PUT, DELETE              | [items.md](items.md)                         |
+| `/recent-hidden/:itemId`                                                                                                               | GET, PUT, DELETE              | [items.md](items.md)                         |
 | `/items/:id/share`, `/items/:id/share-password`, `/share/:code`, `/share/:code/extend`, `/shared`, `/shared/:itemId`                   | GET, POST, PUT, PATCH, DELETE | [sharing.md](sharing.md)                     |
 | `/inbox`                                                                                                                               | GET                           | [inbox.md](inbox.md)                         |
 | `/trash`                                                                                                                               | GET, DELETE                   | [trash.md](trash.md)                         |
@@ -278,7 +278,7 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | `liveworkspace/apps/index/src/drive.ts`             | The Google Drive mirror's side of the index (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The index"): the per-person `drive_mirrored` flag (`/app/people/:id/drive`), and the…                            |
 | `liveworkspace/apps/index/src/env.ts`               |                                                                                                                                                                                                                        |
 | `liveworkspace/apps/index/src/folder-previews.ts`   | What a folder card shows of what is inside (`GET /folders/previews?ids=…`): for each of up to 60 of the person's folders, its newest few items and how many it holds, for …                                            |
-| `liveworkspace/apps/index/src/folders.ts`           | Folders (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Folders, favourites, defaults"): one tree per person and one per team, holding items from any app                                               |
+| `liveworkspace/apps/index/src/folders.ts`           | Folders (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Folders and defaults"): one tree per person and one per team, holding items from any app                                                        |
 | `liveworkspace/apps/index/src/fresh-teams.ts`       | A team made or joined since the caller's access token was minted (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Teams"): the token's `teams` claim is up to 15 minutes old, s…                         |
 | `liveworkspace/apps/index/src/grants.ts`            | Grants (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants"): ES256 JWTs saying who may open an item at what level, valid for ten minutes, signed with the index's own k…                            |
 | `liveworkspace/apps/index/src/http.ts`              | Responses and request bodies                                                                                                                                                                                           |
@@ -291,14 +291,14 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | `liveworkspace/apps/index/src/items/create.ts`      | Making an item: `createItem`, `insertItem`                                                                                                                                                                             |
 | `liveworkspace/apps/index/src/items/item-routes.ts` | One item's routes, /items/:id and below: read, rename and move, the Trash, copies, grants                                                                                                                              |
 | `liveworkspace/apps/index/src/items/opens.ts`       | Opens: recording an open, use days, `sharedWithUpsert`                                                                                                                                                                 |
-| `liveworkspace/apps/index/src/lists.ts`             | The Explorer's lists (`GET /items`, `GET /trash`): one query per page, keyset-paged, each driven by an index that starts with the person (their scopes, their opens, favou…                                            |
+| `liveworkspace/apps/index/src/lists.ts`             | The Explorer's lists (`GET /items`, `GET /trash`): one query per page, keyset-paged, each driven by an index that starts with the person (their scopes, their opens or sh…                                             |
 | `liveworkspace/apps/index/src/merge.ts`             | A guest becoming an account (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Becoming an account"): accounts calls this with its own key, and everything the guest had moves…                            |
 | `liveworkspace/apps/index/src/migration-handoff.ts` | The migration's handoff (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "The migration's handoff", docs/migration.md step 6): livediagram's api splits a browser's Local onl…                            |
 | `liveworkspace/apps/index/src/notices.ts`           | What the index tells an item's app for its notification emails, and the one count it answers for them (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Notices"): someone ma…                            |
 | `liveworkspace/apps/index/src/password-hash.ts`     | Share-password storage, as liveplanner keeps it (liveplanner/apps/api/src/auth/share-password-hash.ts): `pbkdf2-sha256$<iterations>$<salt>$<hash>`                                                                     |
 | `liveworkspace/apps/index/src/person-merges.ts`     | Telling the apps a guest became an account (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Becoming an account"): the merge moves the index's own rows, but each app may ke…                            |
 | `liveworkspace/apps/index/src/person-notices.ts`    | Telling the apps about a closed account (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Closing an account"): the index anonymises its own rows, but the person's name is a…                            |
-| `liveworkspace/apps/index/src/personal.ts`          | A person's own things about items (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Folders, favourites, defaults"): favourites, what they hid from Recent, and the folder Ne…                            |
+| `liveworkspace/apps/index/src/personal.ts`          | A person's own things about items (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Folders and defaults"): what they hid from Recent, and the folder Ne…                                                 |
 | `liveworkspace/apps/index/src/purge.ts`             | Purging (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Purging"): a permanent delete, emptying the Trash, or the daily sweep of items 30 days in it                                                    |
 | `liveworkspace/apps/index/src/rows.ts`              | Item rows and their wire shape                                                                                                                                                                                         |
 | `liveworkspace/apps/index/src/share-guesses.ts`     | Share-password guesses (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Sharing and access"): each try at an item's password that this isolate hasn't already found right is…                            |
@@ -408,7 +408,7 @@ Env fields (`env.ts`): `ACCOUNTS_URL`, `APP_ORIGIN_LIVEDESIGN`, `APP_ORIGIN_LIVE
 ## Data and persistence
 
 One D1 database (`INDEX_DB`). Each table's indexes, and what writes and reads it, are in the feature file that owns
-it: items, folders, favourites, opens and use days in [items.md](items.md); links, passwords and Shared with me in
+it: items, folders, opens, use days and the unread `favourites` table in [items.md](items.md); links, passwords and Shared with me in
 [sharing.md](sharing.md); the collab tables in [inbox.md](inbox.md); the event log in [events.md](events.md);
 tombstones, purges and notices in [trash.md](trash.md); placement defaults in [default-folders.md](default-folders.md);
 person merges in [guest-merge.md](guest-merge.md); `drive_people` above. Foreign keys to `items` cascade, so a purged

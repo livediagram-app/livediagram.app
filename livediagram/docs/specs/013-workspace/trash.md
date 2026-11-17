@@ -42,7 +42,7 @@ removes it for good." ([Offline Mode](../006-document/offline-mode.md)).
 
 ## While a canvas is in the Trash
 
-A trashed canvas is gone from every list (the Explorer's views, the team library, Shared With Me, Favourites,
+A trashed canvas is gone from every list (the Explorer's views, the team library, Shared With Me,
 search, the Timeline and the Inbox) and from the tab picker that links a tab into another canvas. Nothing about it
 is lost: its stars, share links, history and images stay where they are and come back on restore. Images it
 references stay referenced until the purge, so the unused-image retention never reaps them from under a restorable

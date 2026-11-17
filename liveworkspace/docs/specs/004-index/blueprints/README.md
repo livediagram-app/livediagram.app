@@ -4,7 +4,7 @@ Follow the references below only as needed; never upfront.
 
 - ./index.md - when working on the index Worker as a whole: routing, callers, the access rule, grants, the Drive
   flag, crons, config, logs, constants and tests
-- ./items.md - when making, reading, moving, copying or opening items, or listing them, their folders, favourites and
+- ./items.md - when making, reading, moving, copying or opening items, or listing them, their folders, Hide from Recent and
   Recent
 - ./sharing.md - when working on share links, share passwords, guesses or Shared with me
 - ./inbox.md - when an app pushes a summary, threads, actions or forms, or when building the Inbox
