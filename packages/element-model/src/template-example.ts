@@ -109,11 +109,24 @@ export function untouchedExampleCount<E extends { type: string }>(elements: read
 // again for free.
 const untouchedCache = new WeakMap<readonly object[], boolean>();
 
+// Elements whose mark no longer matches (a person changed their values), remembered per element object: an edit makes a
+// new object, so a changed example is fingerprinted once rather than on every commit after it, and a tab whose
+// examples were all changed but never cleared or kept rescans only cheap lookups. Only the broken verdict is
+// remembered, never an untouched one, so Clear Example Content always re-checks what it empties.
+const brokenMarks = new WeakSet<object>();
+
+function isUntouchedExampleOnce(el: { type: string }): boolean {
+  if (typeof fieldsOf(el).templateExample !== 'string' || brokenMarks.has(el)) return false;
+  if (isUntouchedExample(el)) return true;
+  brokenMarks.add(el);
+  return false;
+}
+
 /** Whether a tab's elements still hold any untouched example: whether an Editor is offered Clear Example Content. */
 export function hasUntouchedExamples<E extends { type: string }>(elements: readonly E[]): boolean {
   const known = untouchedCache.get(elements);
   if (known !== undefined) return known;
-  const answer = elements.some(isUntouchedExample);
+  const answer = elements.some(isUntouchedExampleOnce);
   untouchedCache.set(elements, answer);
   return answer;
 }

@@ -225,6 +225,39 @@ describe('hasUntouchedExamples', () => {
     expect(hasUntouchedExamples([{ ...els[0]!, label: 'mine' }])).toBe(false);
     expect(hasUntouchedExamples([])).toBe(false);
   });
+
+  it('fingerprints a changed example once, not on every commit after it', () => {
+    let reads = 0;
+    const changed = Object.defineProperty(
+      { ...markTemplateExamples<El>([sticky('Ship it')])[0]! },
+      'label',
+      {
+        get: () => {
+          reads++;
+          return 'My own words';
+        },
+        enumerable: true,
+      },
+    );
+    expect(hasUntouchedExamples([changed])).toBe(false);
+    const afterFirst = reads;
+    expect(afterFirst).toBeGreaterThan(0);
+    // A later commit: a new elements array holding the same changed element.
+    expect(hasUntouchedExamples([changed, sticky('Mine')])).toBe(false);
+    expect(reads).toBe(afterFirst);
+    // Clear Example Content still re-checks it and leaves the person's words.
+    expect(clearTemplateExamples([changed]).cleared).toBe(0);
+  });
+
+  it('rescans a tab of changed examples cheaply on each new commit', () => {
+    const changed = markTemplateExamples<El>(
+      Array.from({ length: 5000 }, (_, i) =>
+        sticky(`Example note ${i}`.repeat(10), { id: `s${i}` }),
+      ),
+    ).map((el) => ({ ...el, label: `${el.label as string}!` }));
+    hasUntouchedExamples(changed);
+    expect(cpuMsOf(() => hasUntouchedExamples([...changed]))).toBeLessThan(50);
+  });
 });
 
 describe('untouchedExampleCount', () => {
