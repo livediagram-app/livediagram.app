@@ -95,3 +95,152 @@ describe('ContentsList', () => {
     expect(container.querySelector('#part2')).not.toBeNull();
   });
 });
+
+// Work Tracker 945: each row is memoised, compared by its page's fields, so a typing commit (rows rebuilt equal but
+// for the card being written), a picture's settle and a menu opening render only the rows they change.
+describe('ContentsList rows', () => {
+  const many = (n: number, over: Partial<ContentsRowBase> = {}, at = -1): ContentsRowBase[] =>
+    Array.from({ length: n }, (_, i) => ({
+      id: `p${i}`,
+      number: i + 1,
+      name: `Card ${i + 1}`,
+      line: 'Flashcard',
+      locked: false,
+      aspect: 5 / 3,
+      ...(i === at ? over : {}),
+    }));
+  const thumbOf = (id: string, markup = `<rect id="${id}-pic"/>`) => ({
+    markup,
+    viewBox: '0 0 5 3',
+  });
+
+  function setup(n = 100) {
+    const drawn: string[] = [];
+    // The badges run once per row drawn: the count of rows rendered.
+    const badges = (row: ContentsRowBase) => {
+      drawn.push(row.id);
+      return null;
+    };
+    const thumbs = new Map(many(n).map((r) => [r.id, thumbOf(r.id)]));
+    const remove = vi.fn<(id: string) => void>();
+    const edit = (
+      rows: ContentsRowBase[],
+      over: Partial<ContentsListState<ContentsRowBase>> = {},
+    ) =>
+      state({
+        rows,
+        thumbs,
+        reorder: {
+          beginDrag: vi.fn(),
+          moveDrag: vi.fn(),
+          endDrag: vi.fn(),
+          caretBefore: () => false,
+          caretAfterLast: false,
+          moving: false,
+          draggingId: null,
+        } as unknown as ContentsListState<ContentsRowBase>['reorder'],
+        // A new function on every render, as the hook makes it.
+        actionsFor: (row) => ({
+          groups: [],
+          ...(row.locked ? {} : { remove: () => remove(row.id) }),
+        }),
+        ...over,
+      }).contents;
+    return { drawn, badges, thumbs, remove, edit };
+  }
+
+  it('renders only the row being written in on a typing commit, and shows its new words', () => {
+    const { drawn, badges, edit } = setup();
+    const { rerender, container } = render(
+      <ContentsList contents={edit(many(100))} variant="film" badges={badges} />,
+    );
+    expect(drawn).toHaveLength(100);
+    drawn.length = 0;
+    // The editor rebuilds every row object on a commit; only card 51's name changed.
+    rerender(
+      <ContentsList
+        contents={edit(many(100, { name: 'Card 51 typed' }, 50))}
+        variant="film"
+        badges={badges}
+      />,
+    );
+    expect(drawn).toEqual(['p50']);
+    expect(container.querySelector('[data-page-row="p50"]')?.getAttribute('aria-label')).toBe(
+      'Card 51 typed',
+    );
+  });
+
+  it('redraws a row whose picture settled, and only it, with the new picture', () => {
+    const { drawn, badges, thumbs, edit } = setup();
+    const rows = many(100);
+    const { rerender, container } = render(
+      <ContentsList contents={edit(rows)} variant="list" badges={badges} />,
+    );
+    drawn.length = 0;
+    thumbs.set('p7', thumbOf('p7', '<rect id="p7-new"/>'));
+    rerender(<ContentsList contents={edit(rows)} variant="list" badges={badges} />);
+    expect(drawn).toEqual(['p7']);
+    expect(container.querySelector('#p7-new')).not.toBeNull();
+    expect(container.querySelector('#p7-pic')).toBeNull();
+  });
+
+  it('redraws the rows a here or a lock changes', () => {
+    const { drawn, badges, edit } = setup(5);
+    const rows = many(5);
+    const { rerender, container } = render(
+      <ContentsList contents={edit(rows)} variant="film" badges={badges} />,
+    );
+    drawn.length = 0;
+    rerender(
+      <ContentsList contents={edit(rows, { current: 'p2' })} variant="film" badges={badges} />,
+    );
+    expect(drawn).toEqual(['p2']);
+    drawn.length = 0;
+    const locked = many(5, { locked: true }, 3);
+    rerender(
+      <ContentsList contents={edit(locked, { current: 'p2' })} variant="film" badges={badges} />,
+    );
+    expect(drawn).toEqual(['p3']);
+    // A locked page has no Delete.
+    expect(container.querySelector('[aria-label="Delete Card 4"]')).toBeNull();
+    expect(container.querySelector('[aria-label="Delete Card 3"]')).not.toBeNull();
+  });
+
+  it("runs the newest actions from a row that didn't render", () => {
+    const { remove, edit } = setup(3);
+    const rows = many(3);
+    const first = vi.fn();
+    const { rerender, container } = render(
+      <ContentsList
+        contents={edit(rows, { actionsFor: () => ({ groups: [], remove: first }) })}
+        variant="film"
+      />,
+    );
+    // The list renders again with new actions; the rows, unchanged, don't.
+    rerender(<ContentsList contents={edit(rows)} variant="film" />);
+    fireEvent.click(container.querySelector('[aria-label="Delete Card 2"]')!);
+    expect(first).not.toHaveBeenCalled();
+    expect(remove).toHaveBeenCalledWith('p1');
+  });
+
+  it("opens a row's menu from a right-click, and none for a reader", () => {
+    const { edit } = setup(2);
+    const rows = many(2);
+    const editor = render(<ContentsList contents={edit(rows)} variant="list" />);
+    fireEvent.contextMenu(editor.container.querySelectorAll('[role="listitem"]')[1]!);
+    expect(
+      document
+        .querySelector('[aria-label="More Actions for Card 2"]')
+        ?.getAttribute('aria-expanded'),
+    ).toBe('true');
+    cleanup();
+    const reader = render(
+      <ContentsList
+        contents={edit(rows, { actionsFor: () => null, reorderable: false })}
+        variant="list"
+      />,
+    );
+    fireEvent.contextMenu(reader.container.querySelectorAll('[role="listitem"]')[1]!);
+    expect(document.querySelector('[aria-label^="More Actions"]')).toBeNull();
+  });
+});

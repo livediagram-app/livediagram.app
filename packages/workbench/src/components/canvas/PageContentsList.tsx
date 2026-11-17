@@ -4,7 +4,15 @@
 // out by its two homes: the popover (PageContentsPanel) and the docked sidebar
 // (PageContentsSidebar). The state behind them is hooks/ui/usePageContents.
 import { sanitizedHtml } from '@liveworkspace/trusted-types/sanitize';
-import { Fragment, memo, useId, type CSSProperties, type ReactNode } from 'react';
+import {
+  Fragment,
+  memo,
+  useId,
+  type CSSProperties,
+  type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
+  type ReactNode,
+} from 'react';
 import { lucideGripVertical, lucideLock } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@liveworkspace/ui';
 import { htmlProps } from '@liveworkspace/trusted-types';
@@ -16,7 +24,10 @@ import {
   PageRowStack,
   rowToolsReveal,
   usePageRowMenu,
+  type PageRowMenuHandle,
+  type PageRowModel,
 } from './PageRowMenu';
+import { useStableCallbacks } from '../../hooks/ui/useStableCallbacks';
 import type { ContentsRowBase, ContentsThumb, ContentsThumbPart } from '../../lib/page-contents';
 import type { PageContents } from '../../hooks/ui/usePageContents';
 
@@ -57,6 +68,11 @@ export type ContentsBadges<R extends ContentsRowBase> = (row: R) => ReactNode;
 // under the number (the grip at the row's end). One ⋯ menu serves the whole list. In both, the grip
 // and ⋯ show and hide together by one rule (rowToolsReveal): on hover or focus under a mouse or pen,
 // always to a finger, whatever the window's width.
+//
+// Each row is a memoised ContentsRow (Work Tracker 945): a typing commit, a picture's settle and a menu opening
+// render the rows whose page changed, not all of them. The row takes its page's fields (compared one by one, so an
+// editor needn't keep row objects stable), whether it is here, its picture and the list's presses, each the same
+// function for the list's life (useStableCallbacks) calling through to the newest state.
 export function ContentsList<R extends ContentsRowBase>({
   contents,
   variant,
@@ -85,9 +101,38 @@ export function ContentsList<R extends ContentsRowBase>({
   const menu = usePageRowMenu();
   // A set-aside row's reason, read as its button's description.
   const uid = useId();
-  const Row = variant === 'film' ? FilmRow : ListRow;
+  const rowOf = (id: string) => rows.find((r) => r.id === id);
+  // A row's page actions: an Editor's (actionsFor answers null for a Participant and a Viewer).
+  const actionsOf = (id: string) => {
+    const row = rowOf(id);
+    return row ? actionsFor(row) : null;
+  };
+  const on = useStableCallbacks<RowPresses>({
+    go: (id, at) => {
+      const row = rowOf(id);
+      if (row) go(row, at);
+    },
+    register: registerRow,
+    // A mouse or pen drags the whole row; a finger drags its grip, so the list still scrolls, and a finger held
+    // still opens the page's menu.
+    press: (id, e) => {
+      if (actionsOf(id)) menu.rowProps(id).onPointerDown(e);
+      if (e.pointerType !== 'touch') reorder.beginDrag(e, id);
+    },
+    contextMenu: (id, e) => {
+      if (actionsOf(id)) menu.rowProps(id).onContextMenu(e);
+    },
+    grip: (id, e) => {
+      if (e.pointerType === 'touch') reorder.beginDrag(e, id);
+    },
+    move: (e) => reorder.moveDrag(e),
+    end: (e) => reorder.endDrag(e),
+    remove: (id) => actionsOf(id)?.remove?.(),
+    registerTrigger: (id, el) => menu.registerTrigger(id, el),
+    toggle: (id) => menu.toggle(id),
+  });
   // The open menu's page, read afresh each render so its verbs follow the page (locked, moved).
-  const menuRow = menu.openId ? rows.find((r) => r.id === menu.openId) : undefined;
+  const menuRow = menu.openId ? rowOf(menu.openId) : undefined;
   const menuModel = menuRow ? actionsFor(menuRow) : null;
   return (
     <>
@@ -99,101 +144,25 @@ export function ContentsList<R extends ContentsRowBase>({
         className={`flex min-h-0 flex-col overflow-y-auto ${className}`}
         style={style}
       >
-        {rows.map((row, i) => {
-          const actions = actionsFor(row);
-          const asideId = row.setAside ? `${uid}-aside-${row.id}` : undefined;
-          const rowMenu = actions ? menu.rowProps(row.id) : null;
-          // The popover's grip and ⋯ (apart, at the row's two ends) wear the same reveal; in the
-          // filmstrip the grip is the top of the row's stack, which wears it for all three.
-          const listReveal = variant === 'list' ? rowToolsReveal(menu.openId === row.id) : '';
-          const grip = reorderable ? (
-            <span
-              aria-hidden
-              data-contents-grip=""
-              onPointerDown={(e) => {
-                if (e.pointerType === 'touch') reorder.beginDrag(e, row.id);
-              }}
-              className={`relative z-10 flex w-5 shrink-0 cursor-grab touch-none items-center justify-center text-slate-400 transition ${
-                variant === 'film' ? 'h-6' : 'h-8'
-              } ${listReveal}`}
-            >
-              <GripIcon />
-            </span>
-          ) : null;
-          return (
-            <Fragment key={row.id}>
-              {reorder.caretBefore(i) ? <DropCaret /> : null}
-              <div
-                role="listitem"
-                data-contents-slot={i}
-                onClick={(e) => go(row, e.timeStamp)}
-                onContextMenu={rowMenu?.onContextMenu}
-                // A mouse or pen drags the whole row; a finger drags its grip, so the list still
-                // scrolls, and a finger held still opens the page's menu.
-                onPointerDown={(e) => {
-                  rowMenu?.onPointerDown(e);
-                  if (e.pointerType !== 'touch') reorder.beginDrag(e, row.id);
-                }}
-                onPointerMove={reorder.moveDrag}
-                onPointerUp={reorder.endDrag}
-                onPointerCancel={reorder.endDrag}
-                // The row wears its button's keyboard focus: the button lies under the row's own content.
-                className={`group relative flex w-full cursor-pointer select-none text-left transition [-webkit-touch-callout:none] has-[>button:focus-visible]:outline-2 has-[>button:focus-visible]:outline-brand-600 ${
-                  reorder.moving && reorder.draggingId === row.id ? 'opacity-50' : ''
-                } ${variant === 'film' ? FILM_ROW_CLASS(row.id === current) : LIST_ROW_CLASS(row.id === current)}`}
-              >
-                {/* The row opens through one button stretched across it; its tools and grip sit above that button as
-                    controls of their own. An option holding them was a control nested in a control (docs/specs/007-editor/pages-mode.md). */}
-                <button
-                  ref={(el) => registerRow(row.id, el)}
-                  type="button"
-                  aria-label={row.name}
-                  aria-describedby={asideId}
-                  aria-current={row.id === current ? 'page' : undefined}
-                  data-page-row={row.id}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    go(row, e.timeStamp);
-                  }}
-                  className="absolute inset-0 z-0 cursor-pointer rounded-[inherit] outline-none"
-                />
-                {asideId ? (
-                  <span id={asideId} className="sr-only">
-                    {row.setAside}
-                  </span>
-                ) : null}
-                <Row
-                  row={row}
-                  here={row.id === current}
-                  thumb={thumbs.get(row.id)}
-                  badges={badges?.(row)}
-                  tools={
-                    variant === 'film' ? (
-                      actions ? (
-                        <PageRowStack
-                          id={row.id}
-                          name={row.name}
-                          menu={menu}
-                          grip={grip}
-                          shown={row.id === current}
-                          {...(actions.remove ? { remove: actions.remove } : {})}
-                        />
-                      ) : null
-                    ) : actions ? (
-                      <span
-                        data-contents-row-menu=""
-                        className={`relative z-10 flex transition-opacity duration-micro ${listReveal}`}
-                      >
-                        <PageRowMenuButton id={row.id} name={row.name} menu={menu} />
-                      </span>
-                    ) : null
-                  }
-                  grip={variant === 'list' ? grip : null}
-                />
-              </div>
-            </Fragment>
-          );
-        })}
+        {rows.map((row, i) => (
+          <Fragment key={row.id}>
+            {reorder.caretBefore(i) ? <DropCaret /> : null}
+            <ContentsRow
+              row={row}
+              index={i}
+              variant={variant}
+              here={row.id === current}
+              thumb={thumbs.get(row.id)}
+              badges={badges}
+              reorderable={reorderable}
+              dragging={reorder.moving && reorder.draggingId === row.id}
+              menuOpen={menu.openId === row.id}
+              uid={uid}
+              actionsFor={actionsFor}
+              on={on}
+            />
+          </Fragment>
+        ))}
         {reorder.caretAfterLast ? <DropCaret /> : null}
       </div>
       {menuRow && menuModel ? (
@@ -207,6 +176,173 @@ export function ContentsList<R extends ContentsRowBase>({
     </>
   );
 }
+
+// A row's presses, by its page's id: the same functions for the list's life.
+type RowPresses = {
+  go: (id: string, at: number) => void;
+  register: (id: string, el: HTMLElement | null) => void;
+  press: (id: string, e: ReactPointerEvent) => void;
+  contextMenu: (id: string, e: ReactMouseEvent) => void;
+  grip: (id: string, e: ReactPointerEvent) => void;
+  move: (e: ReactPointerEvent) => void;
+  end: (e: ReactPointerEvent) => void;
+  remove: (id: string) => void;
+  registerTrigger: (id: string, el: HTMLElement | null) => void;
+  toggle: (id: string) => void;
+};
+
+type ContentsRowProps<R extends ContentsRowBase> = {
+  row: R;
+  // Its place in the list, the drop slot a drag reads.
+  index: number;
+  variant: 'list' | 'film';
+  here: boolean;
+  thumb: ContentsThumb | undefined;
+  badges: ContentsBadges<R> | undefined;
+  reorderable: boolean;
+  // Being dragged: it fades.
+  dragging: boolean;
+  // Its ⋯ menu is open: its tools stay shown.
+  menuOpen: boolean;
+  uid: string;
+  // The page's actions, worked out by the row as it renders. New on every render of the list, so it is not compared:
+  // what the row draws from it (whether it has tools, whether Delete) follows the role, which `reorderable` follows
+  // (an Editor's pages move), and the page's lock, a row field. Its presses run the newest through `on`.
+  actionsFor: (row: R) => PageRowModel | null;
+  on: RowPresses;
+};
+
+/** The same row: every field of the page's equal (Object.is), so a row rebuilt equal is the same row. */
+export function sameRow(a: ContentsRowBase, b: ContentsRowBase): boolean {
+  if (a === b) return true;
+  const ka = Object.keys(a) as (keyof ContentsRowBase)[];
+  return ka.length === Object.keys(b).length && ka.every((k) => Object.is(a[k], b[k]));
+}
+
+function sameRowProps<R extends ContentsRowBase>(
+  a: ContentsRowProps<R>,
+  b: ContentsRowProps<R>,
+): boolean {
+  return (
+    a.index === b.index &&
+    a.variant === b.variant &&
+    a.here === b.here &&
+    a.thumb === b.thumb &&
+    a.badges === b.badges &&
+    a.reorderable === b.reorderable &&
+    a.dragging === b.dragging &&
+    a.menuOpen === b.menuOpen &&
+    a.uid === b.uid &&
+    a.on === b.on &&
+    sameRow(a.row, b.row)
+  );
+}
+
+const ContentsRow = memo(function ContentsRow<R extends ContentsRowBase>({
+  row,
+  index,
+  variant,
+  here,
+  thumb,
+  badges,
+  reorderable,
+  dragging,
+  menuOpen,
+  uid,
+  actionsFor,
+  on,
+}: ContentsRowProps<R>) {
+  const id = row.id;
+  const actions = actionsFor(row);
+  const asideId = row.setAside ? `${uid}-aside-${id}` : undefined;
+  const Row = variant === 'film' ? FilmRow : ListRow;
+  // The menu as the row's ⋯ reads it: open on this page or not, and the list's one menu behind it.
+  const menu: PageRowMenuHandle = {
+    openId: menuOpen ? id : undefined,
+    registerTrigger: on.registerTrigger,
+    toggle: on.toggle,
+  };
+  // The popover's grip and ⋯ (apart, at the row's two ends) wear the same reveal; in the
+  // filmstrip the grip is the top of the row's stack, which wears it for all three.
+  const listReveal = variant === 'list' ? rowToolsReveal(menuOpen) : '';
+  const grip = reorderable ? (
+    <span
+      aria-hidden
+      data-contents-grip=""
+      onPointerDown={(e) => on.grip(id, e)}
+      className={`relative z-10 flex w-5 shrink-0 cursor-grab touch-none items-center justify-center text-slate-400 transition ${
+        variant === 'film' ? 'h-6' : 'h-8'
+      } ${listReveal}`}
+    >
+      <GripIcon />
+    </span>
+  ) : null;
+  return (
+    <div
+      role="listitem"
+      data-contents-slot={index}
+      onClick={(e) => on.go(id, e.timeStamp)}
+      onContextMenu={(e) => on.contextMenu(id, e)}
+      onPointerDown={(e) => on.press(id, e)}
+      onPointerMove={on.move}
+      onPointerUp={on.end}
+      onPointerCancel={on.end}
+      // The row wears its button's keyboard focus: the button lies under the row's own content.
+      className={`group relative flex w-full cursor-pointer select-none text-left transition [-webkit-touch-callout:none] has-[>button:focus-visible]:outline-2 has-[>button:focus-visible]:outline-brand-600 ${
+        dragging ? 'opacity-50' : ''
+      } ${variant === 'film' ? FILM_ROW_CLASS(here) : LIST_ROW_CLASS(here)}`}
+    >
+      {/* The row opens through one button stretched across it; its tools and grip sit above that button as
+          controls of their own. An option holding them was a control nested in a control (docs/specs/007-editor/pages-mode.md). */}
+      <button
+        ref={(el) => on.register(id, el)}
+        type="button"
+        aria-label={row.name}
+        aria-describedby={asideId}
+        aria-current={here ? 'page' : undefined}
+        data-page-row={id}
+        onClick={(e) => {
+          e.stopPropagation();
+          on.go(id, e.timeStamp);
+        }}
+        className="absolute inset-0 z-0 cursor-pointer rounded-[inherit] outline-none"
+      />
+      {asideId ? (
+        <span id={asideId} className="sr-only">
+          {row.setAside}
+        </span>
+      ) : null}
+      <Row
+        row={row}
+        here={here}
+        thumb={thumb}
+        badges={badges?.(row)}
+        tools={
+          variant === 'film' ? (
+            actions ? (
+              <PageRowStack
+                id={id}
+                name={row.name}
+                menu={menu}
+                grip={grip}
+                shown={here}
+                {...(actions.remove ? { remove: () => on.remove(id) } : {})}
+              />
+            ) : null
+          ) : actions ? (
+            <span
+              data-contents-row-menu=""
+              className={`relative z-10 flex transition-opacity duration-micro ${listReveal}`}
+            >
+              <PageRowMenuButton id={id} name={row.name} menu={menu} />
+            </span>
+          ) : null
+        }
+        grip={variant === 'list' ? grip : null}
+      />
+    </div>
+  );
+}, sameRowProps) as <R extends ContentsRowBase>(props: ContentsRowProps<R>) => ReactNode;
 
 const LIST_ROW_CLASS = (here: boolean) =>
   `items-center gap-3 rounded-xl px-2 py-1.5 ${
