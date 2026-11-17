@@ -29,6 +29,10 @@ export interface Env {
   // Worker's fetch to another Worker's route on its own zone isn't routed to it), else INDEX_URL.
   INDEX?: Fetcher;
   INDEX_URL?: string;
+  // Deleted teams (library/deleted-teams.ts): accounts, asked once a day which teams are gone, through its service
+  // binding, with the key the two share (accounts' ACCOUNTS_KEY_MEDIA). Either unset, every team's Library stays.
+  ACCOUNTS?: Fetcher;
+  ACCOUNTS_KEY_MEDIA?: string;
   // Where each app answers its export door (`<origin>/api/internal/items/:id/export`), called with that app's
   // media key. Unset, that app's items have no previews.
   APP_ORIGIN_LIVEDIAGRAM?: string;

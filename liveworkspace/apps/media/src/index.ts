@@ -11,6 +11,7 @@ import { mediaEnabled, type Env } from './env';
 import { json, notFound } from './http';
 import { sweepUnusedImages } from './retention';
 import { sweepPendingWalkthroughs } from './walkthroughs';
+import { sweepDeletedTeams } from './library/deleted-teams';
 import { handlePreviews } from './previews/routes';
 import { handleApp } from './routes';
 import { under } from '@liveworkspace/index-app/worker-http';
@@ -63,10 +64,11 @@ const worker = {
     );
   },
 
-  // Once a day: walkthroughs whose media never arrived, then the unused-image sweep.
+  // Once a day: walkthroughs whose media never arrived, deleted teams' Libraries, then the unused-image sweep.
   async scheduled(_event: ScheduledController, env: Env): Promise<void> {
     if (!mediaEnabled(env)) return;
     await sweepPendingWalkthroughs(env);
+    await sweepDeletedTeams(env);
     const cutoff = Date.now() - UNUSED_IMAGE_AGE_MS;
     const deleted = await sweepUnusedImages(env, cutoff);
     console.info(

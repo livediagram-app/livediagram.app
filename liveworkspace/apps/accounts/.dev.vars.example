@@ -34,6 +34,9 @@ TELEMETRY_KEY_LIVEHUDDLE=dev-livehuddle-key
 # The Google Drive mirror (liveworkspace/apps/drive), told when an account closes, through the DRIVE binding.
 # Optional: the drive Worker's DRIVE_KEY_ACCOUNTS; without it (or the binding) nothing is sent.
 DRIVE_KEY_ACCOUNTS=
+# Optional: the media service's ACCOUNTS_KEY_MEDIA, with which its daily run asks which teams are deleted; without it
+# that door is a 404.
+ACCOUNTS_KEY_MEDIA=dev-accounts-media-key
 # Optional: the export service's EXPORT_KEY_ACCOUNTS (Download Your Data); without it (or the EXPORT binding) its doors
 # answer 503.
 EXPORT_KEY_ACCOUNTS=

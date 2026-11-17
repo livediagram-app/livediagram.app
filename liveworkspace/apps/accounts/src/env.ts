@@ -38,6 +38,9 @@ export interface Env {
   INDEX_MERGE_KEY?: string;
   // The index Worker itself, so the merge reaches it rather than going out and back (wrangler.toml).
   INDEX?: Fetcher;
+  // The key the media service asks which teams are deleted with (account-api/media-door.ts), the media Worker's
+  // ACCOUNTS_KEY_MEDIA. Unset, the door answers 404 and the service keeps every team's Library.
+  ACCOUNTS_KEY_MEDIA?: string;
   // The Google Drive mirror's service (liveworkspace/docs/specs/005-drive/drive.md), told when an account closes
   // (drive-disconnect.ts): its Worker and the key it takes from accounts. Either unset, nothing is sent.
   DRIVE?: Fetcher;
