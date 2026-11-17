@@ -102,8 +102,11 @@ never told a change worked when it shows on no board.
   characters as its text is sent (`LIST_ITEMS_BUDGET`): when cards remain, the answer stops before the card that
   would pass it and gives `nextCursor`; the same call with `cursor` set to it answers the next page, and paging to
   the end lists every matching card exactly once, none lost or repeated, even while cards are added. `total` is how
-  many cards match on every page together, `count` how many this page lists. Every page lists the boards and card
-  types, so any page names everything a write takes. A page lists at least one card when any remains, so paging
+  many cards match on every page together, `count` how many this page lists. Every page lists the boards, their
+  columns and the card types by name, so any page names everything a write takes; each column's card refs (`cards`)
+  and `notOnBoard` come on the first page only (the page read without `cursor`), so later pages leave their room to
+  cards (Work Tracker 981: at 5,000 cards the refs were about 110,000 of a page's 200,000 characters). An agent that
+  needs a column's cards reads them from the first page, or from the items' `column`. A page lists at least one card when any remains, so paging
   always ends (one card is bounded by the item store's limits). A cursor `list_items` did not give is refused
   (`cursor_invalid`).
 - The CLI's `item ls` keeps listing every card, as before, unpaged: its output is a line a card, not one answer an

@@ -2,6 +2,9 @@
 // tab scope), the ordered mutation stream, and closing the sessions a change ends. Each takes the room.
 import {
   ACCESS_CHANGED_CLOSE,
+  PROJECT_TRASHED_CLOSE,
+  ROOM_FRAME_ENVELOPE_BYTES,
+  ROOM_FRAME_MAX_BYTES,
   SNAPSHOT_REVERTED_CLOSE,
   WORKBENCH_ENDED_CLOSE,
 } from '@liveplanner/api-schema';
@@ -11,6 +14,7 @@ import {
   sessionMatchesAccessClose,
   type AccessCloseMatch,
 } from '@liveworkspace/api-kit/room-access';
+import { isItemsOp, splitItemsOp } from './items-op-split';
 import type { PlanRoom } from './plan-room';
 
 // How many recent mutation ops the room keeps for reconnect catch-up
@@ -91,6 +95,13 @@ export function closeSessionsOfChangedLink(room: PlanRoom, op: unknown): void {
   );
 }
 
+// After a project-trashed op has gone out, close every socket (docs/specs/013-workspace/trash.md "Open editors"): the
+// plan is in the Trash, and no grant admits a join until it is restored. Returns how many it closed.
+export function closeAllIfTrashed(room: PlanRoom, op: unknown): number {
+  if ((op as { kind?: unknown } | null)?.kind !== 'project-trashed') return 0;
+  return closeSockets(room, () => [PROJECT_TRASHED_CLOSE, 'project-trashed']);
+}
+
 // Close every socket `pick` gives a close code and reason, shedding each one's rate window.
 // Returns how many it closed.
 export function closeSockets(
@@ -169,8 +180,15 @@ export function sendTo(room: PlanRoom, ws: WebSocket, payload: ServerMessage): v
 // exactly like a client mutation, so `resolveCatchup` replays it. Nobody is
 // excluded from the relay (there is no sending socket), so there is no
 // separate `cursor` frame to send back either.
+// An `items` op past the frame size goes out as ordered parts, each its own seq (items-op-split.ts; Work Tracker 986).
 export function broadcastOrderedSystemOp(room: PlanRoom, op: unknown): void {
-  sequenceMutation(room, 'system', op);
+  if (!isItemsOp(op)) {
+    sequenceMutation(room, 'system', op);
+    return;
+  }
+  const parts = splitItemsOp(op, ROOM_FRAME_MAX_BYTES - ROOM_FRAME_ENVELOPE_BYTES);
+  if (parts.length > 1) console.info('[room] items op split', { parts: parts.length });
+  for (const part of parts) sequenceMutation(room, 'system', part);
 }
 
 // A snapshot's revert replaced the plan in place (plan-snapshots.ts): the ledger's entries describe content that is

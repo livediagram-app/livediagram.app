@@ -951,7 +951,12 @@ const listedBoard = z.object({
           .describe(
             'How many closed cards this done column left out of cards (includeClosed lists them).',
           ),
-        cards: z.array(z.string()).describe('The cards in it, top to bottom ("#3").'),
+        cards: z
+          .array(z.string())
+          .optional()
+          .describe(
+            'The cards in it, top to bottom ("#3"). On the first page only: a page read with cursor leaves it out.',
+          ),
       }),
     )
     .describe('Left to right.'),
@@ -1016,7 +1021,12 @@ const listedItem = z.object({
 export const listItemsOutput = {
   projectId: z.string().describe('The plan id, as the interactive view reads it.'),
   boards: z.array(listedBoard).describe('The Plan boards, in tab then canvas order.'),
-  notOnBoard: z.array(z.string()).describe('Cards no board column shows.'),
+  notOnBoard: z
+    .array(z.string())
+    .optional()
+    .describe(
+      'Cards no board column shows. On the first page only: a page read with cursor leaves it out.',
+    ),
   count: z.number().describe('How many items this answer lists.'),
   total: z.number().describe('How many items match the filters, on every page together.'),
   items: z.array(listedItem).describe('The items, by number.'),

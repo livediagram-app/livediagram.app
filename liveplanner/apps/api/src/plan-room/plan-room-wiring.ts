@@ -7,6 +7,7 @@ import { type InternalRoom } from '../room-internal';
 import type { PlanRoom } from './plan-room';
 import { ensureSchema, noteWrite } from './plan-room-content';
 import {
+  closeAllIfTrashed,
   closeSessionsOfChangedLink,
   closeSessionsForAccessChange,
   sequenceMutation,
@@ -83,7 +84,11 @@ export function roomInternal(room: PlanRoom): InternalRoom {
   return {
     broadcastSystemOp: (op) => room.broadcastSystemOp(op),
     broadcastOrderedSystemOp: (op) => room.broadcastOrderedSystemOp(op),
-    closeSessionsOfChangedLink: (op) => closeSessionsOfChangedLink(room, op),
+    // A changed share link ends its sessions; a trashed plan ends them all.
+    closeSessionsOfChangedLink: (op) => {
+      closeSessionsOfChangedLink(room, op);
+      closeAllIfTrashed(room, op);
+    },
     clearAgentsFor: (op) => clearAgentsFor(room, op),
     closeSessionsForAccessChange: (close) => closeSessionsForAccessChange(room, close),
     purge: () => room.purge(),
