@@ -24,7 +24,7 @@ import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { useToast } from '@/hooks/ui/useToast';
 import { track } from '@/lib/telemetry';
 import type { PlanContextValue } from '../PlanContext';
-import { CLASH_AMBER } from './view-frame';
+import { ClashGlyph } from './clash-glyph';
 
 // Each blocked row's clashes with its open blockers, as drawn (a dragged mark's preview applied), worst first: what
 // its clash mark says.
@@ -56,15 +56,13 @@ export function GanttClashMark({ texts, at }: { texts: readonly string[]; at: nu
   const label = texts.join('; ');
   return (
     <Tooltip label={label}>
-      <span
+      <ClashGlyph
         role="img"
         aria-label={label}
         data-gantt-clash=""
-        className="absolute top-0.5 z-10 flex h-3 w-3 -translate-x-1/2 items-center justify-center rounded-full text-[9px] font-bold leading-none text-white shadow-sm ring-1 ring-white dark:ring-slate-900"
-        style={{ left: `${at}%`, backgroundColor: CLASH_AMBER }}
-      >
-        !
-      </span>
+        className="absolute top-0.5 z-10 -translate-x-1/2 shadow-sm ring-1 ring-white dark:ring-slate-900"
+        style={{ left: `${at}%` }}
+      />
     </Tooltip>
   );
 }

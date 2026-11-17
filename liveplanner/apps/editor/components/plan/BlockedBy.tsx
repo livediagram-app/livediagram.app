@@ -27,6 +27,7 @@ import { PlanTypeGlyph } from './plan-type-glyph';
 import { ACCENT_TEXT, accentVars } from './plan-palette';
 import { usePlan } from './PlanContext';
 import { planBlocking } from './blocking';
+import { ClashGlyph } from './views/clash-glyph';
 
 const CHIP =
   'shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium leading-4 ring-1 ring-inset whitespace-nowrap';
@@ -176,9 +177,7 @@ function BlockedByGroup({
                   data-blocker-clash=""
                   className="-mt-1 flex items-center gap-1.5 px-3 pb-2 pl-[2.6rem] text-[12px] font-medium text-amber-700 dark:text-amber-400"
                 >
-                  <span className="flex h-3 w-3 shrink-0 items-center justify-center rounded-full bg-amber-600 text-[9px] font-bold leading-none text-white dark:bg-amber-500 dark:text-slate-950">
-                    !
-                  </span>
+                  <ClashGlyph />
                   {clash}
                 </p>
               ) : null}
