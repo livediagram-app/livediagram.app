@@ -37,6 +37,8 @@ export type EditorCornerActionsProps = {
   // In Share's place, an app's own action drawn as one of this card's buttons (CORNER_BTN): liveplanner's Share Form
   // while a form tab is open.
   shareAction?: ReactNode;
+  // An app's own action ahead of the rest (livedesign's Prototype on a wireframe tab).
+  leadAction?: ReactNode;
 };
 
 export function EditorCornerActions({
@@ -49,6 +51,7 @@ export function EditorCornerActions({
   onOpenAccount,
   copyDescription,
   shareAction,
+  leadAction,
 }: EditorCornerActionsProps) {
   // Drawn at the toolbar's UI scale (docs/specs/007-editor/ui-scale.md), as the palette strip and the menu card are,
   // so the three stand the same height in one row, still 12px from the corner.
@@ -124,8 +127,9 @@ export function EditorCornerActions({
             ? undefined
             : { ...uiScaleStyle(scale), top: toSurfacePx(12, scale), right: toSurfacePx(12, scale) }
         }
-        className="pointer-events-auto absolute right-3 top-3 phone:right-1.5 flex h-[46px] items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40"
+        className="pointer-events-auto absolute right-3 top-3 phone:right-0 phone:rounded-r-none phone:border-r-0 flex h-[46px] items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40"
       >
+        {leadAction ?? null}
         {onMakeCopy ? (
           <HoverCard title="Make a Copy" description={copyDescription}>
             <button

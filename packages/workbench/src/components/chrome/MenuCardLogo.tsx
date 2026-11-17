@@ -8,6 +8,12 @@ import { toSurfacePx, uiScaleStyle } from '../../lib/ui-scale';
 // in as `card`, positioned in the row (MENU_CARD_IN_ROW) rather than at the corner.
 export const MENU_CARD_IN_ROW = 'relative min-w-0';
 
+// Experiment (phone, trying it out): the top row's outer cards meet the screen's edges, square on that side and with no
+// border there, for the room it buys. The menu card at the left (with the row's 6 px gutter cancelled, where it sits in
+// the strip's row); the corner card at the right (EditorCornerActions).
+export const PHONE_EDGE_LEFT = 'phone:rounded-l-none phone:border-l-0';
+export const PHONE_EDGE_LEFT_IN_ROW = `${PHONE_EDGE_LEFT} phone:-ml-[0.375rem]`;
+
 export function MenuCardLogo({
   logo,
   scale,

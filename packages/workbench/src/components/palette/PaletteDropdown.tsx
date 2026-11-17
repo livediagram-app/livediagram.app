@@ -275,8 +275,9 @@ export function PaletteDropdown({
     variant === 'flush'
       ? 'rounded-none border-0 px-3.5 py-3'
       : variant === 'toolbar'
-        ? // A phone's strip tucks the caret in a little closer.
-          'h-9 rounded-md border-0 px-2 phone:gap-1'
+        ? // A phone's strip tucks the caret in a little closer; icon alone there (no caret, experiment: no header
+          // bar), a square like the tiles beside it.
+          `h-9 rounded-md border-0 px-2 phone:gap-1 ${iconOnly ? 'phone:w-9 phone:justify-center phone:px-0' : ''}`
         : 'h-[26px] rounded-md border px-2';
   const trigger = (
     <button

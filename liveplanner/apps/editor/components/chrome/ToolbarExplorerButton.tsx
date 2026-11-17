@@ -6,6 +6,7 @@ import { explorerItemHref } from '@liveworkspace/workbench/lib/explorer-href';
 import {
   MENU_CARD_IN_ROW,
   MenuCardLogo,
+  PHONE_EDGE_LEFT,
 } from '@liveworkspace/workbench/components/chrome/MenuCardLogo';
 import { useOptionalEditorContext } from '@/app/project/[id]/EditorContext';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
@@ -82,7 +83,7 @@ export function ToolbarExplorerButton({
       className={
         inline
           ? 'flex items-center gap-1'
-          : `pointer-events-auto ${withLogo ? MENU_CARD_IN_ROW : 'absolute left-3 top-3 phone:left-1.5 z-[var(--z-toolbar)]'} flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40 ${BAND_TINT} ${BAND_BLEND} ${BAND_FLUSH} ${PHONE_TOOLBAR_ITEMS}`
+          : `pointer-events-auto ${withLogo ? MENU_CARD_IN_ROW : `absolute left-3 top-3 phone:left-0 ${PHONE_EDGE_LEFT} z-[var(--z-toolbar)]`} flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40 ${BAND_TINT} ${BAND_BLEND} ${BAND_FLUSH} ${PHONE_TOOLBAR_ITEMS}`
       }
       onPointerDown={(e) => e.stopPropagation()}
       onContextMenu={(e) => {
