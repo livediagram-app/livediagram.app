@@ -213,6 +213,17 @@ describe('valueInsertGroups', () => {
     expect(filterValueGroups(groups, 'WEBHOOK')[0]!.options[0]!.kind).toBe('webhook');
   });
 
+  // Work Tracker 1173: nobody of the plan is behind an email or a webhook call.
+  it('leaves Who Did It out of This Card in Email Received and Incoming Webhook rules only', () => {
+    const offered = (incoming: boolean, email: boolean) =>
+      valueInsertGroups(false, [], incoming, false, email)[0]!.options.map((o) => o.label);
+    expect(offered(false, false)).toContain('Who Did It');
+    expect(offered(false, true)).not.toContain('Who Did It');
+    expect(offered(true, false)).not.toContain('Who Did It');
+    // The rest of This Card stays, in its order.
+    expect(offered(false, true)).toEqual(offered(false, false).filter((l) => l !== 'Who Did It'));
+  });
+
   it('offers From Email after This Card in an Email Received rule', () => {
     const groups = valueInsertGroups(false, [], false, false, true);
     expect(groups.map((g) => g.label)).toEqual(['This Card', 'Email']);
