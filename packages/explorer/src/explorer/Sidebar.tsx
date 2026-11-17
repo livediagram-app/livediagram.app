@@ -34,7 +34,7 @@ import {
   TrashIcon,
   ArchiveIcon,
 } from '../ui/icons';
-import { inboxCount } from '../data/useInbox';
+import { inboxBadge } from './inbox/sections';
 import { InlineRenameInput } from '../ui/InlineRenameInput';
 import { explorerPath, sameView, SIDEBAR_LABELS, withLens, type ExplorerView } from '../views';
 import { useExplorer } from './context';
@@ -334,7 +334,7 @@ export function Sidebar() {
             selected={view.kind === 'inbox'}
             onActivate={() => navigate({ kind: 'inbox' })}
             depth={0}
-            badge={inboxCount(inbox.data, viewerId)}
+            badge={inboxBadge(inbox.data, viewerId)}
           />
         ) : null}
         <SidebarRow

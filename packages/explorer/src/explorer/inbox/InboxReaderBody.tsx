@@ -15,7 +15,8 @@ export function Byline({ entry, facts: f }: { entry: InboxEntry; facts: EntryFac
   const now = useNow();
   const when = now ? relativeSince(entry.at, now) : '';
   let sentence: string;
-  const who = f.who === 'You' ? 'You' : (firstName(f.who) ?? f.who);
+  // A first name for a named person; "You" and "A teammate" as they are.
+  const who = f.person?.name ? (firstName(f.who) ?? f.who) : f.who;
   switch (entry.kind) {
     case 'Action':
     case 'Card':
@@ -93,22 +94,26 @@ export function Body({
     case 'CardThread': {
       const r = entry.row;
       const read = comments && comments.length ? comments : null;
+      // The latest comment as the row holds it, by whoever wrote it (on a mention, not who mentioned the reader).
+      const latest = f.latest;
       const shown: InboxComment[] = read ?? [
         {
           id: 'latest',
-          authorName: f.who === 'You' ? null : f.who,
+          authorName: latest?.mine ? null : (latest?.person.name ?? null),
           authorColor: r.latestAuthorColor || undefined,
-          authorId: f.who === 'You' ? null : (r.latestAuthorId ?? null),
-          mine: f.who === 'You',
+          authorId: latest?.mine ? null : (latest?.person.id ?? null),
+          mine: latest?.mine ?? false,
           text: r.latestText,
           at: r.latestAt,
         },
       ];
       const earlier = read ? 0 : Math.max(0, r.commentCount - 1);
+      // Replies sent from here count at once, before the thread is read again; a read counts what it holds.
+      const count = read ? Math.max(read.length, r.commentCount) : r.commentCount + sent.length;
       return (
         <div className="flex flex-col gap-3" data-inbox-thread="">
-          <h3 className={SECTION_LABEL}>
-            Thread · {r.commentCount} {r.commentCount === 1 ? 'comment' : 'comments'}
+          <h3 className={SECTION_LABEL} data-inbox-thread-count={count}>
+            Thread · {count} {count === 1 ? 'comment' : 'comments'}
           </h3>
           {earlier > 0 ? (
             <p className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
