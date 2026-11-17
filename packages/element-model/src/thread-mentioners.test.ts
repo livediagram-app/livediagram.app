@@ -50,7 +50,7 @@ describe('mentionedByOf (Work Tracker 1036)', () => {
 
   it('names no one for a self-mention, and nothing when nobody else is mentioned', () => {
     expect(mentionedByOf([ada(1, [{ userId: 'user_ada' }]), ada(2)], mentionIdsOf)).toBeUndefined();
-    expect(mentionedByOf([{ createdAt: 1, authorName: 'X' }], mentionIdsOf)).toBeUndefined();
+    expect(mentionedByOf<C>([{ createdAt: 1, authorName: 'X' }], mentionIdsOf)).toBeUndefined();
   });
 
   it('spreads into a row only when there is one', () => {
