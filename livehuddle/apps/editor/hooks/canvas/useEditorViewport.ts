@@ -273,16 +273,21 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
   // The view the last fit landed on, and what it fitted: the Map showing up later fits again only while the view is
   // still this one and the tab still holds what it did (a Map that shows as the fourth element lands moves nothing).
   const lastFitRef = useRef<{ view: ViewPose; tabId: string; count: number } | null>(null);
+  // The glide to a fit still on its way (Walk to Edit's), and when it lands: a Map that shows meanwhile fits again.
+  const fitGlideRef = useRef<{ to: ViewPose; until: number; cancel: () => void } | null>(null);
   const fitToScreen = useCallback(() => {
     const { activeTab } = depsRef.current;
     const view = tabFitView(canvasMainRef.current, activeTab.elements);
     if (!view) return;
     lastFitRef.current = { view, tabId: activeTab.id, count: activeTab.elements.length };
+    // A fit lands at once, so a glide still on its way stops here: its last frames would put back the older view
+    // it was heading to (the fit made before the Map showed, under the Map). A glide's frames can trail its clock on
+    // a busy machine, so the Map's refit can find its time up while a frame is still to come.
+    fitGlideRef.current?.cancel();
+    fitGlideRef.current = null;
     setViewportZoom(view.zoom);
     setViewportOffset(view.offset);
   }, [depsRef, setViewportOffset, setViewportZoom]);
-  // The glide to a fit still on its way (Walk to Edit's), and when it lands: a Map that shows meanwhile fits again.
-  const fitGlideRef = useRef<{ to: ViewPose; until: number; cancel: () => void } | null>(null);
   const glideToFit = useCallback(
     (ms: number = VIEW_GLIDE_MS) => {
       const { activeTab } = depsRef.current;

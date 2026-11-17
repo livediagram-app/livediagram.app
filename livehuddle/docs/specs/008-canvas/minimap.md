@@ -81,6 +81,8 @@ The Map is found by its `data-tour-id="minimap"`; a Map that is not showing chan
 A Map that shows after the fit (it shows from four elements on, so a template's fit runs before it) fits again
 while the view is still that fit, or still gliding to it: Walk to Edit glides to the fit, and when a warm open's
 catch-up lands that glide starts before the Map has a box, so it glides on to the fit clear of the Map.
+A fit that lands at once (Fit to Screen, or that refit once the glide's time is up) stops any glide still on its
+way, so a late frame of the older glide never puts the view back under the Map.
 
 ## Geometry
 
