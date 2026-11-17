@@ -1,8 +1,12 @@
 // @vitest-environment jsdom
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
+import { partShade } from '@livehuddle/avatar/furniture-shading';
 import {
+  APPLIANCE_WHITE,
   createShape,
+  SEAT_FABRIC,
+  SEATING_TONES,
   OFFICE_TONES,
   ROOM_DOOR_WIDTH,
   STAGE_FRONT,
@@ -21,6 +25,10 @@ const shape = (kind: Parameters<typeof createShape>[0], over: Partial<ShapeEleme
   ({ ...createShape(kind, 0, 0), id: kind, ...over }) as ShapeElement;
 
 // docs/specs/009-elements/office.md
+
+// A lit part's top: its colour in the light (furniture-art-style.md "Light").
+const lit = (fill: string) => partShade(fill, 'panel').top;
+
 describe('the office views', () => {
   it('draws every piece but the room and the stage from the furniture table', () => {
     for (const kind of [
@@ -46,17 +54,17 @@ describe('the office views', () => {
     const { container } = render(
       <FurnitureView element={shape('plant')} stroke="#64748b" sitters={[]} />,
     );
-    expect(container.innerHTML).toContain(OFFICE_TONES.leaf);
+    expect(container.innerHTML).toContain(`stop-color="${lit(OFFICE_TONES.leaf)}"`);
   });
 
   it('lays a rug in its own fill', () => {
     const { container } = render(
       <FurnitureView element={shape('rug')} stroke="#64748b" fill="#bbf7d0" sitters={[]} />,
     );
-    expect(container.innerHTML).toContain('#bbf7d0');
+    expect(container.innerHTML).toContain(`stop-color="${lit('#bbf7d0')}"`);
   });
 
-  it('names who sits at a meeting table and rings the one chair they hold', () => {
+  it('names who sits at a meeting table, with no ring under their chair', () => {
     const { container, getByText } = render(
       <FurnitureView
         element={shape('meeting-table')}
@@ -65,7 +73,8 @@ describe('the office views', () => {
       />,
     );
     expect(getByText('Sam')).toBeTruthy();
-    expect(container.querySelectorAll('ellipse[stroke="#8b5cf6"]')).toHaveLength(1);
+    // Named, with no ring under the chair (chair.md "Occupied").
+    expect(container.querySelectorAll('ellipse[stroke="#8b5cf6"]')).toHaveLength(0);
   });
 
   it('draws a room at its own size, with a gap in the wall its doorway is in', () => {
@@ -96,9 +105,9 @@ describe('the office views', () => {
     const face = [...svg.querySelectorAll('rect')].filter(
       (r) => r.getAttribute('y') === String(150 - STAGE_FRONT),
     );
-    // The face and its shade.
-    expect(face).toHaveLength(2);
-    expect(svg.querySelector('rect')!.getAttribute('fill')).toBe('#fbf7ef');
+    // The face, shaded by its own gradient (furniture-art-style.md "Light").
+    expect(face).toHaveLength(1);
+    expect(svg.innerHTML).toContain(`stop-color="${lit('#fbf7ef')}"`);
     expect(svg.getAttribute('aria-label')).toBe('Stage, Stage');
     const unnamed = render(
       <StageView element={{ ...stage, label: '' }} stroke="#64748b" floor="#fbf7ef" />,
@@ -130,5 +139,40 @@ describe('the office views', () => {
     rerender(view('other'));
     expect(badge()).toBeNull();
     act(() => resetCallSelf());
+  });
+});
+
+// docs/specs/009-elements/furniture-art-style.md "Light", "Materials".
+describe('the shaded illustration style', () => {
+  it('writes one gradient per material and a soft shadow, and fills its parts from them', () => {
+    const { container } = render(
+      <FurnitureView element={shape('chair')} stroke="#64748b" sitters={[]} />,
+    );
+    const svg = container.querySelector('svg')!;
+    // The fabric and the wood as panels, the wood as a face, and the shadow.
+    expect(svg.querySelectorAll('linearGradient')).toHaveLength(3);
+    expect(svg.querySelectorAll('radialGradient')).toHaveLength(1);
+    // The backrest's frame and cushion, the seat and its apron.
+    expect(svg.querySelectorAll('rect[fill^="url("]')).toHaveLength(4);
+    expect(svg.innerHTML).toContain(`stop-color="${lit(SEAT_FABRIC.chair)}"`);
+  });
+
+  it("upholsters a chair in the element's own fill, keeping its wood", () => {
+    const { container } = render(
+      <FurnitureView
+        element={shape('chair', { fillColor: '#aa3355' })}
+        stroke="#64748b"
+        sitters={[]}
+      />,
+    );
+    expect(container.innerHTML).toContain(`stop-color="${lit('#aa3355')}"`);
+    expect(container.innerHTML).toContain(`stop-color="${lit(SEATING_TONES.wood)}"`);
+  });
+
+  it('makes a machine solid appliance white when it has no fill', () => {
+    const { container } = render(
+      <FurnitureView element={shape('water-cooler')} stroke="#64748b" sitters={[]} />,
+    );
+    expect(container.innerHTML).toContain(`stop-color="${lit(APPLIANCE_WHITE)}"`);
   });
 });

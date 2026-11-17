@@ -10,7 +10,16 @@ import type { AvatarConfig } from '../config';
 
 // The hair colour token (absent draws Brown, the palette's own hair).
 type HairColour = AvatarConfig['hairColour'];
-import { EYE, hairTones, SKIN, SKIN_DARK } from './avatar-sprite-palette';
+import {
+  BLUSH,
+  CATCHLIGHT,
+  SHEEN,
+  EYE,
+  hairTones,
+  LIP,
+  SKIN,
+  SKIN_DARK,
+} from './avatar-sprite-palette';
 
 // --- Head + hair ------------------------------------------------------------
 
@@ -65,6 +74,9 @@ function HairFront({ hair, colour }: { hair: AvatarConfig['hair']; colour?: Hair
   return (
     <g>
       <rect x={3} y={0} width={10} height={3} fill={tone.base} />
+      {/* The light on the crown: a half-pixel sheen, then a strand or two. */}
+      <rect x={5} y={0.5} width={3} height={0.5} fill={SHEEN} />
+      <rect x={4.5} y={1.5} width={1} height={0.5} fill={SHEEN} />
       {hair === 'short' ? (
         <>
           <rect x={3} y={3} width={2} height={3} fill={tone.dark} />
@@ -159,10 +171,32 @@ export function HeadFront({
       <rect x={4} y={1} width={8} height={8} fill={SKIN} />
       <rect x={10} y={1} width={2} height={8} fill={SKIN_DARK} />
       {gender === 'female' ? <rect x={4} y={8} width={1} height={1} fill={SKIN_DARK} /> : null}
+      {/* Ears, half a pixel each side, the far one in shade. */}
+      <rect x={3.5} y={4} width={0.5} height={2} fill={SKIN} />
+      <rect x={12} y={4} width={0.5} height={2} fill={SKIN_DARK} />
       <HairFront hair={hair} colour={colour} />
+      <FaceDetail hair={hair} colour={colour} />
+    </g>
+  );
+}
+
+// The face at half-pixel detail (avatar-mode.md "The figure"): brows in the hair's dark tone, eyes with a catchlight,
+// a touch of blush and a mouth with a lip shade. The silhouette and the pixel grid are unchanged; these are finer
+// marks inside it, so the face reads up close without the figure leaving its pixel style.
+function FaceDetail({ hair, colour }: { hair: AvatarConfig['hair']; colour?: HairColour }) {
+  const brow = hair === 'bald' ? SKIN_DARK : hairTones(colour).dark;
+  return (
+    <g>
+      <rect x={5.5} y={4} width={1.5} height={0.5} fill={brow} />
+      <rect x={9} y={4} width={1.5} height={0.5} fill={brow} />
       <rect x={6} y={5} width={1} height={1} fill={EYE} />
       <rect x={9} y={5} width={1} height={1} fill={EYE} />
-      <rect x={7} y={7} width={2} height={1} fill={SKIN_DARK} />
+      <rect x={6} y={5} width={0.5} height={0.5} fill={CATCHLIGHT} />
+      <rect x={9} y={5} width={0.5} height={0.5} fill={CATCHLIGHT} />
+      <rect x={5} y={6.5} width={1} height={0.5} fill={BLUSH} />
+      <rect x={10} y={6.5} width={1} height={0.5} fill={BLUSH} />
+      <rect x={7} y={7} width={2} height={0.5} fill={SKIN_DARK} />
+      <rect x={7.5} y={7.5} width={1} height={0.5} fill={LIP} />
     </g>
   );
 }
@@ -291,7 +325,15 @@ export function HeadProfile({ hair, colour }: { hair: AvatarConfig['hair']; colo
         </>
       )}
       <rect x={5} y={5} width={1} height={1} fill={EYE} />
-      <rect x={4} y={7} width={2} height={1} fill={SKIN_DARK} />
+      <rect x={5} y={5} width={0.5} height={0.5} fill={CATCHLIGHT} />
+      <rect x={4.5} y={4} width={1.5} height={0.5} fill={hair === 'bald' ? SKIN_DARK : tone.dark} />
+      <rect x={6} y={6.5} width={1} height={0.5} fill={BLUSH} />
+      <rect x={4} y={7} width={2} height={0.5} fill={SKIN_DARK} />
+      <rect x={4} y={7.5} width={1} height={0.5} fill={LIP} />
+      {/* The ear, where the hair allows. */}
+      {hair === 'bald' || hair === 'buzz' || hair === 'mohawk' ? (
+        <rect x={8.5} y={4} width={1} height={2} fill={SKIN_DARK} />
+      ) : null}
     </g>
   );
 }

@@ -9,10 +9,11 @@ import {
   PATH_STONE_INSET,
   GARDEN_PATH_FILL,
   GRASS_FILL,
-  GRASS_TILES,
   OFFICE_POD_VIEW,
   POD_DOOR,
   POD_DOORS,
+  pathStones,
+  podFurniture,
 } from './office-garden';
 import { SEAT_VIEWS } from '@livehuddle/avatar/seats';
 import { roomZones, zoneAt } from './call-geometry';
@@ -40,22 +41,25 @@ describe('the pod, the bar and the garden', () => {
   });
 
   it('lays a path’s stones along its longer side, the same size however long', () => {
-    const short = gardenPathParts(120, 60).filter((p) => p.tag === 'ellipse');
-    const long = gardenPathParts(480, 60).filter((p) => p.tag === 'ellipse');
+    const short = pathStones(120, 60);
+    const long = pathStones(480, 60);
     expect(long.length).toBeGreaterThan(short.length);
-    expect(long[0]).toMatchObject({ rx: short[0]!.tag === 'ellipse' ? short[0]!.rx : 0 });
-    const down = gardenPathParts(60, 480).filter((p) => p.tag === 'ellipse');
+    expect(long[0]!.rx).toBe(short[0]!.rx);
+    const down = pathStones(60, 480);
     expect(down).toHaveLength(long.length);
-    if (down[0]!.tag === 'ellipse') expect(down[0]!.ry).toBeGreaterThan(down[0]!.rx);
+    expect(down[0]!.ry).toBeGreaterThan(down[0]!.rx);
     expect(gardenPathParts(0, 10)).toEqual([]);
+    // Each stone is a flagstone cut by hand, lit, on gravel specks, inside the bed's edging.
+    const parts = gardenPathParts(480, 60);
+    expect(parts.filter((p) => p.tag === 'path' && p.role === 'panel')).toHaveLength(long.length);
+    expect(parts.some((p) => p.role === 'rail')).toBe(true);
+    expect(parts.filter((p) => p.role === 'mark').length).toBeGreaterThan(long.length);
   });
 
   it('keeps every stone whole and back from both ends, however long the path', () => {
     for (const thickness of [40, 64, 96]) {
       for (let length = Math.ceil(thickness * 1.3); length <= 2000; length += 7) {
-        const stones = gardenPathParts(length, thickness).flatMap((p) =>
-          p.tag === 'ellipse' ? [p] : [],
-        );
+        const stones = pathStones(length, thickness);
         expect(stones.length).toBeGreaterThanOrEqual(1);
         const inset = stones.length > 1 ? thickness * PATH_STONE_INSET : 0;
         for (const [i, s] of stones.entries()) {
@@ -77,13 +81,17 @@ describe('the pod, the bar and the garden', () => {
     for (const size of [64, 160, 280, 520]) {
       const parts = gardenPathParts(size, size);
       expect(parts[0]).toMatchObject({ tag: 'ellipse', role: 'floor', rx: size / 2 });
-      const setts = parts.filter((p) => p.tag === 'ellipse' && p.role === 'panel');
+      const setts = parts.filter((p) => p.tag === 'path' && p.role === 'panel');
       expect(setts.length).toBeGreaterThanOrEqual(6);
+      // Every corner of every sett lies between the inner ring and the kerb.
       for (const s of setts) {
-        if (s.tag !== 'ellipse') continue;
-        const r = Math.hypot(s.cx - size / 2, s.cy - size / 2);
-        expect(r + s.rx).toBeLessThan(size / 2);
-        expect(r - s.rx).toBeGreaterThan(size * 0.31);
+        if (s.tag !== 'path') continue;
+        const nums = s.d.match(/-?[\d.]+/g)!.map(Number);
+        for (let i = 0; i < nums.length; i += 2) {
+          const r = Math.hypot(nums[i]! - size / 2, nums[i + 1]! - size / 2);
+          expect(r).toBeLessThan(size / 2);
+          expect(r).toBeGreaterThan(size * 0.31);
+        }
       }
     }
   });
@@ -125,22 +133,6 @@ describe('the pod, the bar and the garden', () => {
     }
     expect(grassEdgePath(0, 10)).toBe('');
     expect(grassEdgePath(10, -1)).toBe('');
-  });
-
-  it('keeps every grass blade inside its pattern tile, so none is cut at a seam', () => {
-    expect(GRASS_TILES.length).toBe(2);
-    for (const tile of GRASS_TILES) {
-      for (const d of [tile.shade, tile.light]) {
-        // Each blade is "M x y q c1x c1y ex ey": walk them to their tips.
-        for (const blade of d.split('M').filter(Boolean)) {
-          const [x, y, , , ex, ey] = blade.split(/[ q]/).filter(Boolean).map(Number);
-          for (const v of [x!, y!, x! + ex!, y! + ey!]) {
-            expect(v).toBeGreaterThan(0);
-            expect(v).toBeLessThan(tile.size);
-          }
-        }
-      }
-    }
   });
 
   it('gives an unstyled path sand, deep on dark paper', () => {
@@ -223,5 +215,19 @@ describe('the pod and the bar turned', () => {
     };
     const [zone] = roomZones([pod]);
     expect(zone).toMatchObject({ x0: 4, y0: 36, x1: 140, y1: 172 });
+  });
+
+  // docs/specs/008-canvas/3d-view.md "Which pieces": the 3D view stands a pod's furniture up inside its walls.
+  it("picks a pod's furniture out of its drawing, and the line it stands on, in every facing", () => {
+    for (const drawing of Object.values(OFFICE_ART['office-pod'])) {
+      if (!drawing || !('parts' in drawing)) continue;
+      const { parts } = drawing;
+      const { indices, foot } = podFurniture(parts);
+      // The benches, the table and its mug; never the floor or the walls.
+      expect(indices.length).toBeGreaterThan(3);
+      expect(indices.length).toBeLessThan(parts.length);
+      for (const i of indices) expect(['floor', 'wall', 'shadow']).not.toContain(parts[i]!.role);
+      expect(foot).toBeGreaterThan(0);
+    }
   });
 });

@@ -12,7 +12,6 @@ import {
   type ShapeElement,
 } from '@livehuddle/document';
 import { HoverCard } from '@livehuddle/ui';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { useKnocker, useMeetingLive, type SignLive } from '@/lib/office/meeting-live';
 import { useKnockedRecently, useMinuteClock } from './room-sign-clock';
@@ -59,8 +58,7 @@ export function RoomSignView({
 }) {
   const snapshot = useMeetingLive(element.id);
   const live = snapshot && !('inside' in snapshot) ? snapshot : FREE;
-  const dark = useCanvasSurface() === 'dark';
-  const t = dark ? A.tones.dark : A.tones.light;
+  const t = A.tones;
   const now = useMinuteClock(live.status === 'in-use');
   const inUseMs = live.since === null ? 0 : now - live.since;
   const line = roomSignLine(live.status, live.count, inUseMs);
@@ -87,19 +85,14 @@ export function RoomSignView({
         role="img"
         aria-label={`${live.name}: ${line}`}
         data-room-sign={live.status}
-        className="absolute inset-0 overflow-hidden"
+        className="absolute inset-0"
         style={{
           borderRadius: A.plaque.rx,
-          background: t.plaque,
-          boxShadow: `inset 0 0 0 1px ${t.edge}, 0 2px 0 rgba(15,23,42,${dark ? 0.35 : 0.08}), 0 3px 8px rgba(15,23,42,${dark ? 0.35 : 0.12})`,
+          // The walnut frame, lit from above, its own deeper edge and a soft shadow under it.
+          background: `linear-gradient(${t.frameLit}, ${t.frame})`,
+          boxShadow: `inset 0 0 0 1px ${t.frameEdge}, inset 0 1px 0 rgb(255 255 255 / 0.18), 0 2px 4px rgb(11 18 32 / 0.28)`,
         }}
       >
-        {/* The status stripe: the state readable from across the room. */}
-        <span
-          aria-hidden
-          className="lh-sign-stripe absolute inset-y-0 left-0 motion-reduce:transition-none"
-          style={{ width: scale(A.stripe, A.plaque.w), background: tone }}
-        />
         {A.screws.map((c, i) => (
           <span
             key={i}
@@ -108,15 +101,34 @@ export function RoomSignView({
             style={{
               left: `calc(${scale(c.cx, A.plaque.w)} - 2px)`,
               top: `calc(${scale(c.cy, A.plaque.h)} - 2px)`,
-              background: t.screw,
+              background: `radial-gradient(circle at 35% 35%, ${t.brassLit}, ${t.screw} 60%, ${t.screwEdge})`,
             }}
           />
         ))}
+        {/* The cream nameplate, its enamel strip in the status's colour readable from across the room. */}
+        <div
+          className="absolute overflow-hidden"
+          style={{
+            left: scale(A.plate.x, A.plaque.w),
+            top: scale(A.plate.y, A.plaque.h),
+            width: scale(A.plate.w, A.plaque.w),
+            height: scale(A.plate.h, A.plaque.h),
+            borderRadius: A.plate.rx,
+            background: `linear-gradient(${t.plate}, ${t.plateShade})`,
+            boxShadow: `inset 0 0 0 0.75px ${t.plateEdge}, inset 0 1px 2px rgb(0 0 0 / 0.18)`,
+          }}
+        >
+          <span
+            aria-hidden
+            className="lh-sign-stripe absolute inset-y-0 left-0 motion-reduce:transition-none"
+            style={{ width: scale(A.stripe.w, A.plate.w), background: tone }}
+          />
+        </div>
         <span
           className="absolute truncate font-semibold leading-none"
           style={{
             left: scale(A.name.x, A.plaque.w),
-            right: scale(16, A.plaque.w),
+            right: scale(14, A.plaque.w),
             top: scale(A.name.y - A.name.size + 2, A.plaque.h),
             fontSize: type(A.name.size),
             color: t.ink,
@@ -134,10 +146,14 @@ export function RoomSignView({
             color: t.soft,
           }}
         >
+          {/* The status lamp, glowing in its colour. */}
           <span
             aria-hidden
             className="size-2 shrink-0 rounded-full"
-            style={{ background: tone, boxShadow: `0 0 0 2px ${tone}33` }}
+            style={{
+              background: `radial-gradient(circle at 35% 35%, rgb(255 255 255 / 0.7), ${tone} 55%)`,
+              boxShadow: `0 0 0 2px ${tone}40, 0 0 6px ${tone}`,
+            }}
           />
           <span className="truncate font-medium">{status}</span>
         </span>
@@ -179,15 +195,17 @@ export function RoomSignView({
             aria-disabled={knocked}
             {...press}
             data-piece-main=""
-            style={{ fontSize: type(10) }}
+            // A small brass button, lit from above, its own deeper edge.
+            style={{
+              fontSize: type(10),
+              color: t.ink,
+              background: `linear-gradient(${t.brassLit}, ${t.brass})`,
+              boxShadow: `inset 0 0 0 1px ${t.brassEdge}, 0 1px 1px rgb(0 0 0 / 0.25)`,
+            }}
             className={`flex h-full w-full items-center justify-center gap-1 rounded-full font-semibold leading-none transition focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-sky-400 motion-reduce:transition-none ${
               knocked
-                ? dark
-                  ? 'cursor-default bg-slate-700 text-slate-300'
-                  : 'cursor-default bg-slate-200 text-slate-500'
-                : dark
-                  ? 'cursor-pointer bg-white text-slate-900 hover:bg-slate-200 active:scale-95'
-                  : 'cursor-pointer bg-slate-900 text-white hover:bg-slate-700 active:scale-95'
+                ? 'cursor-default opacity-60'
+                : 'cursor-pointer hover:brightness-110 active:scale-95'
             }`}
           >
             <KnockGlyph size={10} />

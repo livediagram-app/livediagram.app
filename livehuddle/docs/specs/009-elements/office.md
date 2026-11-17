@@ -431,12 +431,16 @@ Stepping stones laid in a gravel strip: a **floor piece** like a [Rug](#rug), pl
 never a destination. Drawn to its size like a room, so a path is stretched to any length without the stones
 stretching. Not aspect locked. Default 240 × 64. The gravel takes the element's fill (a warm sand when unstyled).
 
+- **Laid by hand** (furniture-art-style.md): each stone is a flagstone with its own irregular, rounded outline, lit
+  from above like every piece and sitting on a soft shadow; the gravel is speckled with light and shadow and edged with
+  a darker line, so the path reads as stone on gravel rather than shapes on a strip (the owner, 2026-11-17: "they look
+  too amateur"). The specks are one shape a tone, capped at 900 however long the path.
 - **Whole stones only.** The stones run along the longer side, the same size however long the path, spaced evenly
   between two insets: every stone stays at least 0.7 of the path's width in from each end, so the first and last are
   whole and the rounded ends are bare gravel. A path too short for two holds one stone in its middle. However the
   path is stretched, no stone is ever cut by its own edge.
 - **Round when about square.** A path whose longer side is at most 1.25 times its shorter is a **plaza**: a round
-  paved patch filling its box, a kerb round the rim, a ring of setts inside it and an open middle for a fountain or a
+  paved patch filling its box, a kerb round the rim, a ring of flagstone setts inside it and an open middle for a fountain or a
   statue. Placed where paths meet, a small one reads as a junction; a large one is a square to gather in.
 - **Joining paths.** A path that meets another ends under it: its rounded end lies on the other's gravel (the
   other path or plaza drawn over it), and its stones, kept back from its end, stop at the other's edge, so a junction
@@ -448,8 +452,10 @@ stretching. Not aspect locked. Default 240 × 64. The gravel takes the element's
 
 A patch of lawn: a **floor piece** like a [Rug](#rug) and the [Garden Path](#garden-path), placed behind everything,
 never blocks, never a destination. Drawn to its size like a room, so it is stretched to any width and height: a soft
-rounded green area with a fine tuft texture that repeats as a pattern tile, so a large lawn looks the same close up as
-a small one and costs the same to draw (no per-blade drawing that grows with its size, no filters). Not aspect locked.
+rounded green area of fine turf: short blades in two tones and soft patches of lush and thick grass, each a pattern
+tile, with the light falling across it (brighter at its far edge, deeper toward you) and a darker rim, so it reads as
+a lawn rather than a field of tufts (the owner, 2026-11-17). A large lawn looks the same close up as a small one and
+costs the same to draw (no per-blade drawing that grows with its size, no filters). Not aspect locked.
 Default 240 × 160. The lawn takes the element's fill (a fresh green when unstyled, a deep green on dark paper).
 
 ## Garden Fence

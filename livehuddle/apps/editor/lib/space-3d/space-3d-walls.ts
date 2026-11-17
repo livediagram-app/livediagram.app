@@ -14,10 +14,16 @@ import { AVATAR_HEIGHT } from '@livehuddle/avatar/walk';
 export const SPACE_WALL_HEIGHT = AVATAR_HEIGHT;
 /** A Fence is a low run. */
 export const SPACE_FENCE_HEIGHT = 22;
-/** A shut Door's panel, a little lower than its wall. */
-export const SPACE_DOOR_HEIGHT = 50;
+/** A doorway's opening, and so a shut Door's leaf: a lintel of wall stands over it. */
+export const SPACE_DOOR_HEIGHT = 44;
 
-export type SpaceWallKind = 'wall' | 'glass' | 'fence' | 'door';
+export type SpaceWallKind = 'wall' | 'glass' | 'fence' | 'picket' | 'doorway' | 'window' | 'grass';
+
+/** How tall a row of grass blades pokes up from a lawn. */
+export const SPACE_GRASS_HEIGHT = 7;
+/** How far apart the rows of blades stand across a lawn, and how far in from its rounded edge they start. */
+export const SPACE_GRASS_ROW = 22;
+const GRASS_INSET = 10;
 
 type Point = { x: number; y: number };
 
@@ -31,6 +37,8 @@ export type SpaceWall = {
   shade: number;
   // A Room's name, on its back wall.
   label?: string;
+  // A doorway's Door is shut: its leaf stands in the frame.
+  shut?: boolean;
 };
 
 // A wall within this of level can carry a room's name (DEFAULTS.md D140).
@@ -40,7 +48,10 @@ const HEIGHT: Record<SpaceWallKind, number> = {
   wall: SPACE_WALL_HEIGHT,
   glass: SPACE_WALL_HEIGHT,
   fence: SPACE_FENCE_HEIGHT,
-  door: SPACE_DOOR_HEIGHT,
+  picket: SPACE_FENCE_HEIGHT,
+  grass: SPACE_GRASS_HEIGHT,
+  doorway: SPACE_WALL_HEIGHT,
+  window: SPACE_WALL_HEIGHT,
 };
 
 type Shape = Extract<Element, { type: 'shape' }>;
@@ -52,12 +63,15 @@ export function spaceWalls(elements: readonly Element[]): SpaceWall[] {
   const shapes = elements.filter(isShape);
   const doors = shapes.filter((el) => el.shape === 'door');
   const doorLines = doors.map((el) => doorLine(el));
-  const shut = doors
-    .filter((el) => (el as { doorClosed?: boolean }).doorClosed === true)
-    .map((el) => doorLine(el));
+  // A Window is a box on a wall as a Door is: its line across the wall (room-builder.md "Window").
+  const windowLines = shapes.filter((el) => el.shape === 'window').map((el) => doorLine(el));
   const out: SpaceWall[] = [];
+  // What lies over a lawn: no blade pokes up through a room's floor, a path, a rug or water.
+  const covers = shapes.filter((el) => COVERS_GRASS.has(el.shape));
   // Every wall a door can stand on, so a shut door is drawn only where it really closes a gap.
   const doorable: WallSegment[] = [];
+  // The plaster walls a window can stand in (a glass room's walls are glass throughout).
+  const plaster: WallSegment[] = [];
   for (const el of shapes) {
     const push = (segs: readonly WallSegment[], kind: SpaceWallKind, label?: string) => {
       const start = out.length;
@@ -70,22 +84,86 @@ export function spaceWalls(elements: readonly Element[]): SpaceWall[] {
     if (el.shape === 'room') {
       const walls = roomWalls(el);
       doorable.push(...walls);
+      if (!isGlassRoom(el)) plaster.push(...walls);
       const label = typeof el.label === 'string' ? el.label.trim() : '';
-      push(cutByDoors(walls, doorLines), isGlassRoom(el) ? 'glass' : 'wall', label || undefined);
+      const glass = isGlassRoom(el);
+      // A plaster wall's windows are cut out of it and stand as windows; a glass wall is all window already.
+      const open = cutByDoors(walls, doorLines);
+      push(
+        glass ? open : cutByDoors(open, windowLines),
+        glass ? 'glass' : 'wall',
+        label || undefined,
+      );
     } else if (el.shape === 'corridor') {
       const walls = corridorWalls(el);
       doorable.push(...walls);
-      push(cutByDoors(walls, doorLines), 'wall');
+      plaster.push(...walls);
+      push(cutByDoors(cutByDoors(walls, doorLines), windowLines), 'wall');
     } else if (el.shape === 'office-pod') push(podWalls(el), 'wall');
-    else if (el.shape === 'fence' || el.shape === 'garden-fence') push([fenceLine(el)], 'fence');
+    else if (el.shape === 'fence') push([fenceLine(el)], 'fence');
+    else if (el.shape === 'garden-fence') push([fenceLine(el)], 'picket');
+    else if (el.shape === 'grass') push(grassRows(el, covers), 'grass');
   }
-  shut.forEach((line, i) => {
+  // Every Door on a wall stands as a doorway: a wooden frame with a lintel of wall over it, its leaf in it when shut.
+  doors.forEach((el, i) => {
+    const line = doorLines[i]!;
     if (!doorable.some((w) => doorSpanOnWall(w, line))) return;
-    const wall = facingCamera(`door:${i}`, line, 'door');
+    const wall = facingCamera(`door:${i}`, line, 'doorway');
+    if (!wall) return;
+    if ((el as { doorClosed?: boolean }).doorClosed === true) wall.shut = true;
+    out.push(wall);
+  });
+  // Every Window on a plaster wall stands in it: sill, glazing and the wall over it.
+  windowLines.forEach((line, i) => {
+    if (!plaster.some((w) => doorSpanOnWall(w, line))) return;
+    const wall = facingCamera(`window:${i}`, line, 'window');
     if (wall) out.push(wall);
   });
   return out;
 }
+
+// A lawn's blades poking up: level rows across it, inside its rounded edge (3d-view.md "Grass pokes up"). A turned
+// lawn keeps its rows level across its box; a lawn too small for a row has none.
+function grassRows(el: Shape, covers: readonly Shape[]): WallSegment[] {
+  const left = el.x + GRASS_INSET;
+  const right = el.x + el.width - GRASS_INSET;
+  if (right - left < 1) return [];
+  const rows: WallSegment[] = [];
+  for (let y = el.y + GRASS_INSET; y <= el.y + el.height - GRASS_INSET; y += SPACE_GRASS_ROW) {
+    // The row, less every covering piece it runs under.
+    let spans: [number, number][] = [[left, right]];
+    for (const c of covers) {
+      if (c === el || y < c.y || y > c.y + c.height) continue;
+      const cl = c.x;
+      const cr = c.x + c.width;
+      spans = spans.flatMap(([a, b]): [number, number][] =>
+        cr <= a || cl >= b
+          ? [[a, b]]
+          : [
+              ...(cl > a ? [[a, cl] as [number, number]] : []),
+              ...(cr < b ? [[cr, b] as [number, number]] : []),
+            ],
+      );
+    }
+    for (const [a, b] of spans) if (b - a >= 1) rows.push({ a: { x: a, y }, b: { x: b, y } });
+  }
+  return rows;
+}
+
+// The floor pieces a lawn's blades never poke up through (3d-view.md "Grass pokes up").
+const COVERS_GRASS = new Set<string>([
+  'room',
+  'corridor',
+  'office-pod',
+  'garden-path',
+  'rug',
+  'stage',
+  'pond',
+  'swimming-pool',
+  'car-park',
+  'stairs',
+  'avatar-pad',
+]);
 
 // One wall, its ends ordered so its face fronts the camera (left to right; top to bottom when upright), or null when
 // it has no length.

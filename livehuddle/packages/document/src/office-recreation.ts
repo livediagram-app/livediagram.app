@@ -18,50 +18,50 @@ import {
 // Fixed colours, as SOCIAL_TONES: wood, cloth, balls, the board's rings, the machine's paint and its lit glass.
 export const RECREATION_TONES = {
   wood: '#c2894b',
-  woodDeep: '#92400e',
-  cloth: '#16a34a',
+  woodDeep: '#86431a',
+  cloth: '#20994d',
   cushion: '#166534',
   pocket: '#1c1917',
-  sight: '#fde68a',
-  cue: '#e7c58b',
-  chalk: '#38bdf8',
+  sight: '#eedd99',
+  cue: '#e5c48d',
+  chalk: '#50b4e0',
   ballWhite: '#f8fafc',
-  ballYellow: '#facc15',
-  ballRed: '#dc2626',
-  ballBlue: '#2563eb',
-  ballPurple: '#7c3aed',
-  ballOrange: '#f97316',
+  ballYellow: '#dcba33',
+  ballRed: '#d23030',
+  ballBlue: '#386ad8',
+  ballPurple: '#804bdc',
+  ballOrange: '#db7834',
   ballBlack: '#111827',
-  pitch: '#22c55e',
+  pitch: '#29be60',
   handle: '#475569',
-  teamRed: '#dc2626',
-  teamBlue: '#2563eb',
-  brass: '#e0b232',
+  teamRed: '#d23030',
+  teamBlue: '#386ad8',
+  brass: '#d6ad3c',
   sisal: '#1c1917',
   cream: '#f5e6c8',
-  boardRed: '#dc2626',
-  boardGreen: '#15803d',
-  flightA: '#f97316',
-  flightB: '#22d3ee',
-  flightC: '#a3e635',
-  vending: '#0f766e',
+  boardRed: '#d23030',
+  boardGreen: '#1a7b3e',
+  flightA: '#db7834',
+  flightB: '#37c3d9',
+  flightC: '#a0d843',
+  vending: '#176e67',
   vendingDeep: '#115e59',
-  sign: '#fbbf24',
+  sign: '#deb241',
   glass: '#ecfeff',
-  display: '#4ade80',
+  display: '#50d882',
   keypad: '#cbd5e1',
   slot: '#0f172a',
-  cans: ['#ef4444', '#f59e0b', '#3b82f6', '#10b981', '#a855f7', '#ec4899'],
-  bag: '#fb7185',
-  bagDeep: '#f43f5e',
-  armchair: '#d97706',
-  cushionLight: '#fbbf24',
-  rug: '#e9a27c',
+  cans: ['#de5555', '#d89728', '#5187e0', '#21a87b', '#a868e4', '#dd5799'],
+  bag: '#e98392',
+  bagDeep: '#df546c',
+  armchair: '#be7521',
+  cushionLight: '#deb241',
+  rug: '#e4a481',
   iron: '#374151',
-  shade: '#fde68a',
-  bookRed: '#ef4444',
-  bookBlue: '#3b82f6',
-  bookYellow: '#facc15',
+  shade: '#eedd99',
+  bookRed: '#de5555',
+  bookBlue: '#5187e0',
+  bookYellow: '#dcba33',
 } as const;
 
 const T = RECREATION_TONES;
@@ -123,7 +123,6 @@ const POOL_TABLE_VIEW: FurnitureDrawing = {
     rect('face', 6, 80, 188, 10, 4, T.wood),
   ],
   seats: [],
-  ring: { cx: 100, cy: 52, rx: 96, ry: 40 },
 };
 
 // The cloth's contents laid out by `at`, which takes a spot on the front drawing to where a turned drawing shows it:
@@ -190,7 +189,6 @@ const POOL_TABLE_SIDE: FurnitureDrawing = {
     rect('face', 8, 196, 76, 10, 4, T.wood),
   ],
   seats: [],
-  ring: { cx: 46, cy: 104, rx: 42, ry: 100 },
 };
 
 // The rods, left to right, and where their players stand: a red goalie, three blue, three red, a blue goalie.
@@ -227,7 +225,6 @@ const FOOSBALL_TABLE_VIEW: FurnitureDrawing = {
     path('panel', FOOS_RODS.map((x) => `M${x - 2.5} 82h5v9h-5z`).join(''), T.handle),
   ],
   seats: [],
-  ring: { cx: 84, cy: 47, rx: 80, ry: 34 },
 };
 
 // Players stood upright at each spot, as foosPlayers draws them.
@@ -279,7 +276,6 @@ const FOOSBALL_TABLE_SIDE: FurnitureDrawing = {
     path('panel', FOOS_SIDE_RODS.map((y) => `M5 ${y - 2.5}h9v5h-9z`).join(''), T.handle),
   ],
   seats: [],
-  ring: { cx: 49, cy: 82, rx: 40, ry: 80 },
 };
 
 /** The dartboard's centre on its grid. */
@@ -331,7 +327,6 @@ const DARTBOARD_VIEW: FurnitureDrawing = {
     ...dart(33, 60, T.flightC),
   ],
   seats: [],
-  ring: { cx: 40, cy: 50, rx: 38, ry: 38 },
 };
 
 // --- The break room -------------------------------------------------------------------------------------------
@@ -378,7 +373,6 @@ const VENDING_MACHINE_VIEW: FurnitureDrawing = {
     rect('panel', 2, 116, 68, 8, 3, T.vendingDeep),
   ],
   seats: [],
-  ring: { cx: 36, cy: 116, rx: 34, ry: 8 },
 };
 
 // Its back to you: the cabinet's plain back with a vented panel and its power cord, the sign's lit edge along the top.
@@ -396,7 +390,6 @@ const VENDING_MACHINE_BACK: FurnitureDrawing = {
     rect('panel', 2, 116, 68, 8, 3, T.vendingDeep),
   ],
   seats: [],
-  ring: { cx: 36, cy: 116, rx: 34, ry: 8 },
 };
 
 // Facing left: the cabinet's tall side toward you with a stripe down it, its front a narrow strip down the left: the
@@ -420,7 +413,6 @@ const VENDING_MACHINE_SIDE: FurnitureDrawing = {
     rect('panel', 2, 116, 56, 8, 3, T.vendingDeep),
   ],
   seats: [],
-  ring: { cx: 30, cy: 116, rx: 28, ry: 8 },
 };
 
 // --- Breakout seating -----------------------------------------------------------------------------------------
@@ -442,8 +434,6 @@ const BEAN_BAG_VIEW: FurnitureDrawing = {
   ],
   seats: BEAN_BAG_SEATS.seats.map(({ u, v }) => ({ u, v })),
   // Round the rim of the hollow, wider than a sitter, so it shows either side of them.
-  ring: { cx: 32, cy: 40, rx: 27, ry: 9 },
-  ringUnder: 2,
 };
 
 // From behind: its raised back nearest you, the hollow a sitter sinks into beyond it.
@@ -461,8 +451,6 @@ const BEAN_BAG_BACK: FurnitureDrawing = {
     path('rail', 'M18 31C21 37 21 44 19 50M46 31C43 37 43 44 45 50M32 29V51'),
     path('glint', 'M12 40C14 35 18 32 23 31'),
   ],
-  ring: { cx: 32, cy: 25, rx: 21, ry: 7 },
-  ringUnder: 3,
 };
 
 // Facing left: the hollow toward the left, its back rising on the right.
@@ -479,8 +467,6 @@ const BEAN_BAG_SIDE: FurnitureDrawing = {
     path('rail', 'M42 15C46 25 45 39 43 51M13 27C16 34 16 42 14 50'),
     path('glint', 'M36 18C40 14 45 13 49 15'),
   ],
-  ring: { cx: 27, cy: 40, rx: 23, ry: 8 },
-  ringUnder: 2,
 };
 
 // A wingback armchair on a round rug, a side table with a stack of books, and a floor lamp with its shade lit.
@@ -510,8 +496,6 @@ const READING_NOOK_VIEW: FurnitureDrawing = {
   ],
   seats: READING_NOOK_SEATS.seats.map(({ u, v }) => ({ u, v })),
   // Across the cushion's front and the arms' feet, so it shows either side of a sitter.
-  ring: { cx: 76, cy: 74, rx: 34, ry: 8 },
-  ringUnder: 12,
 };
 
 // Its back to you: the set mirrored (the lamp on the left, the side table on the right), the armchair's wingback back
@@ -538,8 +522,6 @@ const READING_NOOK_BACK: FurnitureDrawing = {
     path('face', 'M50 86V50C50 40 58 34 68 34H100C110 34 118 40 118 50V86Z', T.armchair),
     path('rail', 'M68 44v34M84 42v36M100 44v34'),
   ],
-  ring: { cx: 84, cy: 38, rx: 34, ry: 8 },
-  ringUnder: 16,
 };
 
 // Facing left: the armchair in the middle of the rug, its cushion seen from above between its two arms, its wingback
@@ -569,8 +551,6 @@ const READING_NOOK_SIDE: FurnitureDrawing = {
     path('panel', 'M6 98L10 78H26L30 98Z', T.shade),
     path('rail', 'M7.5 92H28.5'),
   ],
-  ring: { cx: 60, cy: 92, rx: 24, ry: 14 },
-  ringUnder: 14,
 };
 
 /** The grid pieces this module draws, for OFFICE_ART. */
@@ -609,7 +589,7 @@ export const NIGHT_GLOW: Readonly<
     halo: { cx: 28.5, cy: 60, rx: 30, ry: 46 },
   },
   'reading-nook': {
-    color: '#fde68a',
+    color: '#eedd99',
     pool: { cx: 132, cy: 96, rx: 36, ry: 11 },
     halo: { cx: 136, cy: 25, rx: 22, ry: 17 },
   },
@@ -632,12 +612,12 @@ const NIGHT_GLOW_TURNED: Readonly<
   },
   'reading-nook': {
     back: {
-      color: '#fde68a',
+      color: '#eedd99',
       pool: { cx: 28, cy: 96, rx: 36, ry: 11 },
       halo: { cx: 24, cy: 25, rx: 22, ry: 17 },
     },
     side: {
-      color: '#fde68a',
+      color: '#eedd99',
       pool: { cx: 22, cy: 140, rx: 30, ry: 10 },
       halo: { cx: 18, cy: 88, rx: 22, ry: 17 },
     },

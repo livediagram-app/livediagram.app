@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
+import { partShade } from '@livehuddle/avatar/furniture-shading';
 import { createShape, type ShapeElement } from '@livehuddle/document';
 import { FurnitureView, isFurnitureViewShape } from './FurnitureView';
 import { GardenFenceView, GardenPathView, GrassView } from './GardenViews';
@@ -12,6 +13,10 @@ const shape = (kind: Parameters<typeof createShape>[0]) =>
 const sitter = (name: string) => ({ name, color: '#0ea5e9' });
 
 // docs/specs/009-elements/office.md "Office Pod" to "Garden Fence".
+
+// A lit part's top: its colour in the light (furniture-art-style.md "Light").
+const lit = (fill: string) => partShade(fill, 'panel').top;
+
 describe('the pod, bar and garden views', () => {
   it('draws the grid pieces from the furniture table, the sized ones elsewhere', () => {
     for (const kind of [
@@ -87,7 +92,7 @@ describe('the pod, bar and garden views', () => {
     expect(door('e', [sitter('Ada'), sitter('Grace')]).slide).toBe('translate(0px)');
   });
 
-  it('rings a bar stool’s sitter, and on a pod only the bench seat its sitter holds', () => {
+  it('draws no ring under a bar stool’s or a pod bench’s sitter', () => {
     const rings = (kind: 'bar-stool' | 'office-pod', seat?: number) => {
       const { container, unmount } = render(
         <FurnitureView
@@ -102,9 +107,9 @@ describe('the pod, bar and garden views', () => {
       unmount();
       return found;
     };
-    expect(rings('bar-stool')).toHaveLength(1);
-    expect(rings('office-pod')).toEqual([]);
-    expect(rings('office-pod', 1)).toEqual([146]);
+    // No ring on a taken seat any more (chair.md "Occupied", the owner 2026-11-17).
+    expect(rings('bar-stool')).toEqual([]);
+    expect(rings('office-pod', 1)).toEqual([]);
   });
 
   it('draws a garden path in its fill and a garden fence in white pickets', () => {
@@ -116,16 +121,17 @@ describe('the pod, bar and garden views', () => {
     path.unmount();
     const fence = render(<GardenFenceView element={shape('garden-fence')} stroke="#94a3b8" />);
     expect(fence.container.querySelector('svg')?.getAttribute('aria-label')).toBe('Garden Fence');
-    expect(fence.container.querySelectorAll('path[fill="#ffffff"]').length).toBeGreaterThan(5);
+    expect(fence.container.innerHTML).toContain(`stop-color="${lit('#ffffff')}"`);
+    expect(fence.container.querySelectorAll('path[fill^="url("]').length).toBeGreaterThan(5);
   });
 
-  it('draws grass as its lawn plus pattern layers, the same few nodes however large', () => {
+  it('draws grass as its lawn plus its mottling, two turf tiles and the light across it, the same few nodes however large', () => {
     const count = (width: number, height: number) => {
       const el = { ...shape('grass'), width, height };
       const { container, unmount } = render(<GrassView element={el} floor="#9bd27a" />);
       const svg = container.querySelector('svg')!;
       const lawn = svg.querySelector('path[fill="#9bd27a"]');
-      const ids = [...svg.querySelectorAll('pattern')].map((p) => p.id);
+      const ids = [...svg.querySelectorAll('pattern, linearGradient')].map((p) => p.id);
       const layers = [...svg.querySelectorAll('path[fill^="url(#"]')].map((p) =>
         p.getAttribute('fill'),
       );
@@ -140,7 +146,7 @@ describe('the pod, bar and garden views', () => {
       return result;
     };
     const small = count(240, 160);
-    expect(small).toMatchObject({ label: 'Grass', lawn: true, linked: true, layers: 2 });
+    expect(small).toMatchObject({ label: 'Grass', lawn: true, linked: true, layers: 4 });
     expect(count(4000, 3000).nodes).toBe(small.nodes);
   });
 

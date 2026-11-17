@@ -68,9 +68,6 @@ describe('the second set of social pieces', () => {
     expect(OFFICE_ART['reading-nook'].front.seats).toHaveLength(1);
     for (const kind of ['pool-table', 'foosball-table', 'dartboard', 'vending-machine'] as const)
       expect(OFFICE_ART[kind].front.seats, kind).toEqual([]);
-    // The ring lies on the seat, under the nook's arms.
-    const nook = OFFICE_ART['reading-nook'].front;
-    expect(nook.ringUnder).toBeLessThan(nook.parts.length);
   });
 
   it('paints the dartboard ring by ring: ten segments a set, the black ones from 20 at the top', () => {

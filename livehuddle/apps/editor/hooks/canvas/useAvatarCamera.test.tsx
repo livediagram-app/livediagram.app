@@ -3,6 +3,7 @@ import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
 import { STRIP_MORPH_MS } from '@/lib/strip-morph';
+import { space3DPreference } from '@/lib/space-3d/space-3d-preference';
 import { useAvatarCamera } from './useAvatarCamera';
 
 // docs/specs/008-canvas/avatar-mode.md "The camera": entering and Fit centre the character at 100%, the zoom
@@ -51,6 +52,18 @@ describe('useAvatarCamera', () => {
     act(() => result.current.fitView());
     expect(fitToScreen).not.toHaveBeenCalled();
     expect(viewport.get()).toEqual({ zoom: 1, offset: { x: 400, y: 350 } });
+  });
+
+  // 3d-view.md "It brings the camera closer": with the 3D view on, the walking camera is 140%.
+  it('fits closer, at 140%, while the 3D view is on', () => {
+    space3DPreference.set(true);
+    try {
+      const { result, viewport } = setup(true);
+      act(() => result.current.fitView());
+      expect(viewport.get().zoom).toBeCloseTo(1.4);
+    } finally {
+      space3DPreference.set(false);
+    }
   });
 
   // "Changing tab": travel keeps the mode, and arriving on the next tab centres the character at 100%.

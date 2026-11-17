@@ -1,6 +1,6 @@
 'use client';
 
-import { seatPillBottom, seatRing, type Sitter } from '@livehuddle/avatar/chair-sitters';
+import { seatPillBottom, type Sitter } from '@livehuddle/avatar/chair-sitters';
 import { useEffect, useId, useRef } from 'react';
 import { podClosed } from '@livehuddle/avatar/pod';
 import { IDENTITY_FILL, identityVars } from '@livehuddle/ui';
@@ -14,33 +14,30 @@ import {
   type PartMotion,
 } from '@/lib/piece-moment-motions';
 import { MomentDrawing, PieceMoment } from './PieceMoments';
+import { FurnitureLightDefs, FurniturePartView, useFurnitureLight } from './furniture-paint';
 import { hasSocialArt, SocialArt } from './SocialArt';
 import { hasWorkdayArt, WorkdayArt } from './WorkdayFaces';
 import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-preference';
 import {
-  chairSeatFill,
+  pieceMaterial,
+  seatFabric,
   FURNITURE_ART,
-  FURNITURE_FACE_SHADE,
   FURNITURE_GLINT,
-  FURNITURE_LINE_STROKE,
   FURNITURE_PANEL_STROKE,
-  FURNITURE_RAIL_OPACITY,
   FURNITURE_RAIL_STROKE,
-  FURNITURE_SHADOW,
-  FURNITURE_WEAVE,
   furnitureFrame,
   isSeatingShape,
   OFFICE_ART,
   OFFICE_TONES,
   MACHINE_ANSWER_AT,
   POD_DOORS,
+  podFurniture,
   RUG_FILL,
   facingView,
   type MachineAnswerSpot,
   type PodDoorView,
   seatsACharacter,
   pieceFacing,
-  type FurniturePart,
   type GridOfficeKind,
   type SeatingKind,
   type ShapeElement,
@@ -145,7 +142,15 @@ export function isFurnitureViewShape(kind: string): kind is keyof typeof NOUN {
   return kind in NOUN;
 }
 
-export function FurnitureView({
+type FurnitureViewProps = Parameters<typeof FurnitureDrawingView>[0];
+
+export function FurnitureView(props: FurnitureViewProps) {
+  // Only the kinds it draws: the drawing's hooks run for those alone.
+  if (!isFurnitureViewShape(props.element.shape)) return null;
+  return <FurnitureDrawingView {...props} />;
+}
+
+function FurnitureDrawingView({
   element,
   stroke,
   fill,
@@ -159,8 +164,7 @@ export function FurnitureView({
   sitters: ChairSitter[];
   animClass?: string;
 }) {
-  const kind = element.shape;
-  if (!isFurnitureViewShape(kind)) return null;
+  const kind = element.shape as keyof typeof NOUN;
   const seating = isSeatingShape(kind);
   // A Long Table (office.md "Long Table") is drawn for its box at its facing.
   const art = isLongTable(element)
@@ -171,58 +175,49 @@ export function FurnitureView({
   // The drawing its facing shows (docs/specs/009-elements/furniture-facing.md "The camera").
   const frame = furnitureFrame(art, pieceFacing(element));
   const drawing = facingView(pieceFacing(element)).view;
-  const seat = kind === 'rug' ? (fill ?? RUG_FILL) : chairSeatFill(element.fillColor, stroke);
+  // Seating is upholstered in its own fabric (furniture-art-style.md "Materials"); the rest take the theme's wash.
+  const seat =
+    kind === 'rug'
+      ? (fill ?? RUG_FILL)
+      : seating
+        ? seatFabric(kind, element.fillColor)
+        : pieceMaterial(kind, element.fillColor);
   // Seating and the fixed seats (an Office Pod, a Bar Stool: docs/specs/009-elements/office.md) take sitters.
   const sits = seatsACharacter(kind);
   const occupied = sits && sitters.length > 0;
-  const ringColor = sitters[0]?.color ?? stroke;
+  // The pill wears the first sitter's colour; a taken seat has no ring (chair.md "Occupied").
+  const pillColor = sitters[0]?.color ?? stroke;
   const noun = NOUN[kind];
-  const { parts, ring, ringUnder = parts.length, seats } = frame.view;
-  // Soft rings on the seat and under what stands nearer the camera (ringUnder): a one-seat piece's own ring in its
-  // sitter's colour; on a piece with several (a sofa, a meeting table, a pod) a ring on each taken seat, in that
-  // sitter's colour, at the seat their presence holds (docs/specs/009-elements/chair.md "Occupancy is presence").
-  const rings = !occupied
-    ? []
-    : seats.length > 1
-      ? sitters.flatMap((s, i) => {
-          const at = seatRing(frame.view, s.seat);
-          return at ? [{ ...at, color: s.color, key: `${s.seat}-${i}` }] : [];
-        })
-      : [{ ...ring, color: ringColor, key: 'piece' }];
-  const ringView = rings.map(({ key, color, ...at }) => (
-    <ellipse
-      key={`ring-${key}`}
-      {...at}
-      fill="none"
-      stroke={color}
-      strokeWidth="3"
-      opacity="0.85"
-    />
-  ));
+  const { parts } = frame.view;
+  // The drawing's light: one gradient per material (furniture-paint.tsx).
+  const light = useFurnitureLight(parts, seat);
   // The drawing in its frame; while a moment plays on its front, the parts it moves are each wrapped in their motion.
   const width = Number(frame.viewBox.split(' ')[2]);
+  // An Office Pod's furniture is drawn on a layer of its own over its floor and walls, which the 3D view stands up
+  // inside the walls (3d-view.md "Which pieces"); flat, the two layers draw exactly the one drawing.
+  const pod = kind === 'office-pod' ? podFurniture(parts) : null;
+  const podParts = pod ? new Set(pod.indices) : null;
   const drawingOf = (moving: MovingParts | null) => (
     <g transform={frame.transform || undefined}>
       {parts.map((p, i) => {
-        const view = <FurniturePartView key={i} part={p} seat={seat} stroke={stroke} />;
+        if (podParts?.has(i)) return null;
+        const view = (
+          <FurniturePartView key={i} part={p} seat={seat} stroke={stroke} light={light} />
+        );
         const m = moving?.motions.get(i);
-        return [
-          i === ringUnder ? ringView : null,
-          m ? (
-            <g
-              key={i}
-              className={`lh-moment lh-moment-${m.motion}`}
-              style={partMotionStyle(m, moving!.side, width)}
-              data-moment-part={i}
-            >
-              {view}
-            </g>
-          ) : (
-            view
-          ),
-        ];
+        return m ? (
+          <g
+            key={i}
+            className={`lh-moment lh-moment-${m.motion}`}
+            style={partMotionStyle(m, moving!.side, width)}
+            data-moment-part={i}
+          >
+            {view}
+          </g>
+        ) : (
+          view
+        );
       })}
-      {ringUnder >= parts.length ? ringView : null}
       {kind === 'office-pod' ? (
         <PodDoor closed={podClosed(sitters.length)} stroke={stroke} door={POD_DOORS[drawing]} />
       ) : null}
@@ -252,8 +247,8 @@ export function FurnitureView({
                 : `Empty ${noun.toLowerCase()}`
         }
       >
-        {/* The ring rides inside the drawing's own frame, so a mirrored side mirrors it too. A moment kind's drawing
-            moves in its moment (docs/specs/009-elements/piece-moments.md): the whole of it, and the parts it names. */}
+        <FurnitureLightDefs light={light} />
+        {/* A moment kind's drawing moves in its moment (docs/specs/009-elements/piece-moments.md): the whole of it, and the parts it names. */}
         {hasMoment(kind) ? (
           <MomentDrawing kind={kind} id={element.id} front={drawing === 'front'}>
             {(play) => drawingOf(play && drawing === 'front' ? movingParts(kind, play) : null)}
@@ -284,11 +279,35 @@ export function FurnitureView({
           <PieceMoment kind={kind} id={element.id} />
         ) : null}
       </svg>
+      {pod ? (
+        <div
+          aria-hidden
+          data-pod-furniture=""
+          className="absolute inset-0"
+          style={{
+            ['--pod-foot' as string]: `${(pod.foot / Number(frame.viewBox.split(' ')[3])) * 100}%`,
+          }}
+        >
+          <svg viewBox={frame.viewBox} className="absolute inset-0 h-full w-full overflow-visible">
+            <g transform={frame.transform || undefined}>
+              {pod.indices.map((i) => (
+                <FurniturePartView
+                  key={i}
+                  part={parts[i]!}
+                  seat={seat}
+                  stroke={stroke}
+                  light={light}
+                />
+              ))}
+            </g>
+          </svg>
+        </div>
+      ) : null}
       {/* A Hot Desk's raised name card is its pill (WorkdayFaces hotDeskCardY). */}
       {occupied && kind !== 'hot-desk' ? (
         <SeatPill
           id={element.id}
-          color={ringColor}
+          color={pillColor}
           // Clear of the highest sitter's head and the chip over it, never below the piece's top (#582).
           top={seatPillBottom(element, frame.view, sitters)}
           names={sitters.map((s) => s.name).join(', ')}
@@ -438,79 +457,4 @@ function MachineAnswer({
       ))}
     </g>
   );
-}
-
-export function FurniturePartView({
-  part,
-  seat,
-  stroke,
-}: {
-  part: FurniturePart;
-  seat: string;
-  stroke: string;
-}) {
-  const paint = (() => {
-    switch (part.role) {
-      case 'shadow':
-        return { fill: FURNITURE_SHADOW.fill, opacity: FURNITURE_SHADOW.opacity };
-      case 'panel':
-      case 'face':
-        return { fill: part.fill ?? seat, stroke, strokeWidth: FURNITURE_PANEL_STROKE };
-      case 'floor':
-        return { fill: seat };
-      // A small unstroked mark in its own colour (docs/specs/009-elements/social-pieces.md).
-      case 'mark':
-        return { fill: part.fill ?? stroke };
-      case 'line':
-        return {
-          fill: 'none',
-          stroke,
-          strokeWidth: FURNITURE_LINE_STROKE,
-          strokeLinecap: 'round' as const,
-        };
-      case 'rail':
-        return {
-          fill: 'none',
-          stroke,
-          strokeWidth: FURNITURE_RAIL_STROKE,
-          opacity: FURNITURE_RAIL_OPACITY,
-          strokeLinecap: 'round' as const,
-        };
-      case 'screen':
-        return { fill: stroke };
-      case 'glint':
-        return {
-          fill: 'none',
-          stroke: FURNITURE_GLINT.stroke,
-          strokeWidth: FURNITURE_RAIL_STROKE,
-          opacity: FURNITURE_GLINT.opacity,
-          strokeLinecap: 'round' as const,
-        };
-      // A rug's woven pattern (docs/specs/009-elements/office.md "Rug types"): the stroke's tint, a white sheen, a dye.
-      case 'tint':
-        return { fill: stroke, opacity: FURNITURE_WEAVE.tint };
-      case 'sheen':
-        return { fill: FURNITURE_GLINT.stroke, opacity: FURNITURE_WEAVE.sheen };
-      case 'dye':
-        return { fill: part.fill ?? stroke, opacity: FURNITURE_WEAVE.dye };
-    }
-  })();
-  switch (part.tag) {
-    case 'rect': {
-      const box = { x: part.x, y: part.y, width: part.w, height: part.h, rx: part.rx };
-      // A face toward the room is the panel, shaded with its stroke colour.
-      return part.role === 'face' ? (
-        <>
-          <rect {...box} {...paint} />
-          <rect {...box} fill={stroke} opacity={FURNITURE_FACE_SHADE} />
-        </>
-      ) : (
-        <rect {...box} {...paint} />
-      );
-    }
-    case 'ellipse':
-      return <ellipse cx={part.cx} cy={part.cy} rx={part.rx} ry={part.ry} {...paint} />;
-    case 'path':
-      return <path d={part.d} {...paint} />;
-  }
 }

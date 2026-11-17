@@ -172,7 +172,6 @@ function KnownElementFace({
            look at this, on your tab. */
         <FocusButtonFace
           label={label}
-          textColor={textColor}
           onPress={onPressFocusButton ? () => onPressFocusButton(element) : undefined}
         />
       ) : element.type === 'shape' && element.shape === 'portal' && !isEditing ? (

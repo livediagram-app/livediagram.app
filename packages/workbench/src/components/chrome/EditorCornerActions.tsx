@@ -24,6 +24,17 @@ export const CORNER_ON =
 // A phone's row: 6px from the screen's side and between the cards (the strip row's gutter and gap-1.5).
 const PHONE_ROW_GAP_PX = 6;
 
+// Tells the palette strip the card's width (CORNER_CARD_EVENT), or that it has gone. A phone's strip row spans the
+// top and keeps this much room at its right for the card: its width (layout px, the strip's own scale) and the row's
+// gap. Said inside a layout effect, the strip's re-measure lands in the same commit, before paint.
+function sayCornerCard(card: HTMLElement | null) {
+  const root = document.documentElement;
+  if (card)
+    root.style.setProperty('--corner-card-room', `${card.offsetWidth + PHONE_ROW_GAP_PX}px`);
+  else root.style.removeProperty('--corner-card-room');
+  window.dispatchEvent(new Event(CORNER_CARD_EVENT));
+}
+
 export type EditorCornerActionsProps = {
   showShare: boolean;
   shareable: boolean;
@@ -62,18 +73,7 @@ export function EditorCornerActions({
   useLayoutEffect(() => {
     const el = cardRef.current;
     if (!el) return;
-    const root = document.documentElement;
-    const say = () => {
-      // A phone's strip row spans the top and keeps this much room at its right for the card: its width (layout px,
-      // the strip's own scale) and the row's gap.
-      if (cardRef.current) {
-        root.style.setProperty(
-          '--corner-card-room',
-          `${cardRef.current.offsetWidth + PHONE_ROW_GAP_PX}px`,
-        );
-      } else root.style.removeProperty('--corner-card-room');
-      window.dispatchEvent(new Event(CORNER_CARD_EVENT));
-    };
+    const say = () => sayCornerCard(cardRef.current);
     say();
     const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(say);
     observer?.observe(el);
@@ -108,6 +108,15 @@ export function EditorCornerActions({
       window.removeEventListener('resize', judge);
       window.removeEventListener(STRIP_NAMED_EVENT, judge);
     };
+  }, [compact]);
+  // Names on or off is a new width: said in this commit, so the strip re-measures before the frame paints. Its
+  // ResizeObserver alone says it a frame late, and that frame showed the strip under the card's names as they came
+  // back (the top-row sweep, editor-header-fit.spec.ts).
+  const saidCompact = useRef(compact);
+  useLayoutEffect(() => {
+    if (saidCompact.current === compact) return;
+    saidCompact.current = compact;
+    sayCornerCard(cardRef.current);
   }, [compact]);
   return (
     // A zero-height layer over the canvas, so the canvas keeps the whole height a header bar took.

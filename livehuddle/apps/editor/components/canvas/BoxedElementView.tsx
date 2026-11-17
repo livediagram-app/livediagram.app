@@ -1,3 +1,4 @@
+import { standAttr, walledIn3D } from '@/lib/space-3d/space-3d-pieces';
 import { memo, useRef } from 'react';
 import {
   BORDER_DASH_ARRAY,
@@ -295,6 +296,10 @@ function BoxedElementViewImpl({
       // What a click on it means in Avatar mode (docs/specs/008-canvas/avatar-mode.md "Clicking a piece";
       // lib/avatar-click-intent ELEMENT_KIND_ATTR).
       data-element-kind={elementClickKind(element)}
+      // A piece that stands up in the 3D view (docs/specs/008-canvas/3d-view.md "Pieces stand up"; app/space-3d.css).
+      data-space-stands={standAttr(element)}
+      // A fence's flat drawing hides in 3D, where its run stands as a wall (3d-view.md "Fences stand as fences").
+      data-space-walled={walledIn3D(element) ? '' : undefined}
       // Where a move's offset rides (docs/specs/008-canvas/drag-preview.md "Moves ride an offset").
       data-ride-id={element.id}
       // Screen-reader name (docs/specs/004-interface-design/canvas-accessibility.md): same naming the change log uses,

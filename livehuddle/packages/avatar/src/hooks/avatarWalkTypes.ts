@@ -10,9 +10,11 @@ import type { AvatarReactionKind } from '../reactions';
 import type { SeatClaim } from '../seat-claims';
 import type { AvatarFacing, AvatarPoint } from '../walk';
 
-// Canvas px of travel per leg swing. Tuned against AVATAR_SPEED so the
-// cadence reads as a walk rather than a shuffle (~6 steps/second at speed).
-export const STEP_LENGTH = 22;
+// Canvas px of travel per walk frame (avatar-mode.md "Walk animation"): four frames a cycle, so a cycle is 56 px, one
+// body height, about 4.6 a second at AVATAR_SPEED.
+export const STEP_LENGTH = 14;
+/** The walk cycle's frames: a step, the legs passing, the other step, the legs passing. */
+export const WALK_FRAMES = 4;
 // How far, in canvas px, a seat may sit from our feet before we are moved onto it (a turned or moved piece).
 export const SEAT_FOLLOW_EPSILON = 0.5;
 

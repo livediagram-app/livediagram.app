@@ -14,30 +14,36 @@ import {
   type SeatView,
 } from '@livehuddle/avatar/seats';
 import { fenceRun } from '@livehuddle/avatar/fence';
+import { flagstone, gravelSpecks } from './garden-ground';
 import { POD_DOOR_SPAN, POD_SIDE_DOOR_SPAN } from '@livehuddle/avatar/pod';
 
 // Fixed colours for what keeps its colour whatever the theme, as OFFICE_TONES: leaves, bark, stone, wood, glass,
 // bottles and cans. Outlines stay the theme's stroke.
 export const GARDEN_TONES = {
-  leaf: '#4ade80',
-  leafDeep: '#22c55e',
-  leafDark: '#16a34a',
-  bark: '#a16207',
-  barkDeep: '#854d0e',
-  stone: '#e7e5e4',
-  stoneDeep: '#a8a29e',
-  pink: '#f472b6',
-  yellow: '#facc15',
-  wood: '#c2894b',
-  woodDeep: '#92400e',
-  counter: '#57534e',
-  glass: '#e2e8f0',
-  glassDeep: '#cbd5e1',
-  cushion: '#a5b4fc',
-  cushionDeep: '#818cf8',
+  leaf: '#63ad5c',
+  leafDeep: '#428c46',
+  leafDark: '#2f6e38',
+  bark: '#8a5a32',
+  barkDeep: '#5f3d22',
+  stone: '#dedad3',
+  stoneDeep: '#a39d94',
+  pink: '#e58fb0',
+  yellow: '#dfc05a',
+  wood: '#b98352',
+  woodDeep: '#7c4f2c',
+  counter: '#4a4643',
+  glass: '#dbe6ee',
+  glassDeep: '#b9c8d4',
+  cushion: '#8496bd',
+  cushionDeep: '#64769f',
   picket: '#ffffff',
-  bottles: ['#16a34a', '#b45309', '#dc2626', '#0ea5e9', '#a855f7', '#facc15'],
-  cans: ['#ef4444', '#3b82f6', '#22c55e', '#f59e0b'],
+  // An office pod's acoustic walls, its trim, its carpet and its oak table.
+  podWall: '#ece6dc',
+  podTrim: '#cdbfa9',
+  podCarpet: '#b9b2a6',
+  oak: '#cf9d6b',
+  bottles: ['#2f7d4a', '#a8642a', '#b5403a', '#3a86b8', '#7e5aa8', '#d5b043'],
+  cans: ['#c8453d', '#3f74b8', '#3f9a5a', '#d28f36'],
 } as const;
 
 /** A garden path's gravel when it has no fill of its own: a warm sand, and its deep twin on dark paper. */
@@ -101,10 +107,10 @@ export const OFFICE_POD_VIEW: FurnitureDrawing = {
   height: POD_SEATS.height,
   parts: [
     ellipse('shadow', 88, 141, 86, 4),
-    rect('floor', 6, 30, 164, 108, 2),
+    rect('floor', 6, 30, 164, 108, 2, T.podCarpet),
     // The back wall: its top, its face with a window.
-    rect('panel', 0, 0, 176, 8, 2),
-    rect('face', 0, 7, 176, 30, 1),
+    rect('panel', 0, 0, 176, 8, 2, T.podWall),
+    rect('face', 0, 7, 176, 30, 1, T.podTrim),
     rect('panel', 58, 12, 60, 18, 3, T.glass),
     path('glint', 'M64 26L72 16M72 26L80 16'),
     // The benches, each a backrest against its side wall and a cushion.
@@ -115,21 +121,63 @@ export const OFFICE_POD_VIEW: FurnitureDrawing = {
     rect('panel', 130, 60, 30, 48, 5, T.cushion),
     path('rail', 'M134 84H156'),
     // The table between them, a mug on it.
-    path('line', 'M74 100v14M102 100v14'),
-    rect('panel', 64, 66, 48, 30, 4),
-    rect('face', 64, 94, 48, 8, 3),
+    path('line', 'M74 100v14M102 100v14', T.woodDeep),
+    rect('panel', 64, 66, 48, 30, 4, T.oak),
+    rect('face', 64, 94, 48, 8, 3, T.wood),
     rect('panel', 82, 72, 8, 9, 2, T.glass),
     // The side walls, then the front wall either side of the doorway, its frame posts.
-    rect('panel', 0, 0, 8, 144, 2),
-    rect('panel', 168, 0, 8, 144, 2),
-    rect('panel', 0, 136, DOOR_FROM, 8, 2),
-    rect('panel', DOOR_TO, 136, 176 - DOOR_TO, 8, 2),
-    rect('panel', DOOR_FROM - 4, 128, 6, 16, 2),
-    rect('panel', DOOR_TO - 2, 128, 6, 16, 2),
+    rect('panel', 0, 0, 8, 144, 2, T.podWall),
+    rect('panel', 168, 0, 8, 144, 2, T.podWall),
+    rect('panel', 0, 136, DOOR_FROM, 8, 2, T.podWall),
+    rect('panel', DOOR_TO, 136, 176 - DOOR_TO, 8, 2, T.podWall),
+    rect('panel', DOOR_FROM - 4, 128, 6, 16, 2, T.podWall),
+    rect('panel', DOOR_TO - 2, 128, 6, 16, 2, T.podWall),
   ],
   seats: POD_SEATS.seats.map(({ u, v }) => ({ u, v })),
-  ring: { cx: 88, cy: 84, rx: 80, ry: 52 },
 };
+
+// What of a pod's drawing is its furniture (its benches, their seams, its table and the mug on it), as opposed to
+// its floor and walls: the 3D view stands the furniture up inside the walls (3d-view.md "Which pieces").
+const POD_FURNITURE_FILLS: ReadonlySet<string> = new Set([
+  T.cushion,
+  T.cushionDeep,
+  T.oak,
+  T.wood,
+  T.woodDeep,
+]);
+
+/**
+ * A pod drawing's furniture: the indices of its parts and the line they stand on (the lowest edge among them, in the
+ * drawing's px), which the 3D view stands them up about.
+ */
+export function podFurniture(parts: readonly FurniturePart[]): { indices: number[]; foot: number } {
+  const indices: number[] = [];
+  let foot = 0;
+  parts.forEach((p, i) => {
+    const mug = p.tag === 'rect' && p.fill === T.glass && p.w <= 8 && p.h <= 9;
+    if (!(p.role === 'rail' || mug || (p.fill !== undefined && POD_FURNITURE_FILLS.has(p.fill))))
+      return;
+    indices.push(i);
+    const bottom = p.tag === 'rect' ? p.y + p.h : p.tag === 'ellipse' ? p.cy + p.ry : lowest(p.d);
+    foot = Math.max(foot, bottom);
+  });
+  return { indices, foot };
+}
+
+// The lowest y a part's path reaches: its absolute points and the ends of its relative vertical runs.
+function lowest(d: string): number {
+  let y = 0;
+  let max = 0;
+  for (const m of d.matchAll(/([MLHVQvh])([^MLHVQvh]*)/g)) {
+    const nums = (m[2]!.match(/-?[\d.]+/g) ?? []).map(Number);
+    if (m[1] === 'M' || m[1] === 'L') y = nums[1] ?? y;
+    else if (m[1] === 'V') y = nums[0] ?? y;
+    else if (m[1] === 'v') y += nums[0] ?? 0;
+    else if (m[1] === 'Q') y = nums[3] ?? y;
+    max = Math.max(max, y);
+  }
+  return max;
+}
 
 // Its back to you: the doorway now in the far wall, its face broken by it and the ground outside showing through;
 // the benches have swapped sides; the window wall nearest you, seen from above, its glass along its top.
@@ -137,13 +185,13 @@ const OFFICE_POD_BACK: FurnitureDrawing = {
   ...POD_SEATS_BACK,
   parts: [
     ellipse('shadow', 88, 141, 86, 4),
-    rect('floor', 6, 30, 164, 108, 2),
-    rect('floor', DOOR_FROM, 4, DOOR_TO - DOOR_FROM, 30, 0),
+    rect('floor', 6, 30, 164, 108, 2, T.podCarpet),
+    rect('floor', DOOR_FROM, 4, DOOR_TO - DOOR_FROM, 30, 0, T.podCarpet),
     // The far wall either side of the doorway: its top, its face, and the doorway's posts.
-    rect('panel', 0, 0, DOOR_FROM, 8, 2),
-    rect('panel', DOOR_TO, 0, 176 - DOOR_TO, 8, 2),
-    rect('face', 0, 7, DOOR_FROM, 30, 1),
-    rect('face', DOOR_TO, 7, 176 - DOOR_TO, 30, 1),
+    rect('panel', 0, 0, DOOR_FROM, 8, 2, T.podWall),
+    rect('panel', DOOR_TO, 0, 176 - DOOR_TO, 8, 2, T.podWall),
+    rect('face', 0, 7, DOOR_FROM, 30, 1, T.podTrim),
+    rect('face', DOOR_TO, 7, 176 - DOOR_TO, 30, 1, T.podTrim),
     // The benches.
     rect('panel', 9, 54, 9, 56, 3, T.cushionDeep),
     rect('panel', 16, 60, 30, 48, 5, T.cushion),
@@ -152,19 +200,18 @@ const OFFICE_POD_BACK: FurnitureDrawing = {
     rect('panel', 130, 60, 30, 48, 5, T.cushion),
     path('rail', 'M134 84H156'),
     // The table, its mug at the other end.
-    path('line', 'M74 100v14M102 100v14'),
-    rect('panel', 64, 66, 48, 30, 4),
-    rect('face', 64, 94, 48, 8, 3),
+    path('line', 'M74 100v14M102 100v14', T.woodDeep),
+    rect('panel', 64, 66, 48, 30, 4, T.oak),
+    rect('face', 64, 94, 48, 8, 3, T.wood),
     rect('panel', 86, 72, 8, 9, 2, T.glass),
     // The side walls, the near wall with its window, the doorway's posts.
-    rect('panel', 0, 0, 8, 144, 2),
-    rect('panel', 168, 0, 8, 144, 2),
-    rect('panel', 0, 136, 176, 8, 2),
+    rect('panel', 0, 0, 8, 144, 2, T.podWall),
+    rect('panel', 168, 0, 8, 144, 2, T.podWall),
+    rect('panel', 0, 136, 176, 8, 2, T.podWall),
     rect('panel', 58, 138, 60, 4, 1.5, T.glass),
-    rect('panel', DOOR_FROM - 4, 0, 6, 38, 2),
-    rect('panel', DOOR_TO - 2, 0, 6, 38, 2),
+    rect('panel', DOOR_FROM - 4, 0, 6, 38, 2, T.podWall),
+    rect('panel', DOOR_TO - 2, 0, 6, 38, 2, T.podWall),
   ],
-  ring: { cx: 88, cy: 84, rx: 80, ry: 52 },
 };
 
 // Facing left: the doorway down its left wall, the window wall down its right, the far wall's face along its top;
@@ -174,33 +221,32 @@ const OFFICE_POD_SIDE: FurnitureDrawing = {
   ...POD_SEATS_SIDE,
   parts: [
     ellipse('shadow', 72, 173, 70, 4),
-    rect('floor', 6, 30, 132, 140, 2),
+    rect('floor', 6, 30, 132, 140, 2, T.podCarpet),
     // The far wall: its top, its face.
-    rect('panel', 0, 0, 144, 8, 2),
-    rect('face', 0, 7, 144, 30, 1),
+    rect('panel', 0, 0, 144, 8, 2, T.podWall),
+    rect('face', 0, 7, 144, 30, 1, T.podTrim),
     // The far bench: its backrest standing against the wall, its cushion.
     rect('panel', 44, 26, 56, 22, 4, T.cushionDeep),
     rect('panel', 46, 42, 52, 28, 5, T.cushion),
     path('rail', 'M72 46V66'),
     // The table, a mug on it.
-    path('line', 'M56 118v12M88 118v12'),
-    rect('panel', 50, 84, 44, 30, 4),
-    rect('face', 50, 112, 44, 8, 3),
+    path('line', 'M56 118v12M88 118v12', T.woodDeep),
+    rect('panel', 50, 84, 44, 30, 4, T.oak),
+    rect('face', 50, 112, 44, 8, 3, T.wood),
     rect('panel', 58, 90, 8, 9, 2, T.glass),
     // The near bench: its cushion beyond, its backrest's back nearest you.
     rect('panel', 46, 132, 52, 22, 5, T.cushion),
     path('rail', 'M72 136V150'),
     rect('face', 44, 148, 56, 18, 4, T.cushionDeep),
     // The window wall, the near wall, the doorway's wall either side of it and its posts.
-    rect('panel', 136, 0, 8, 176, 2),
+    rect('panel', 136, 0, 8, 176, 2, T.podWall),
     rect('panel', 138, 62, 4, 72, 1.5, T.glass),
-    rect('panel', 0, 168, 144, 8, 2),
-    rect('panel', 0, 0, 8, SIDE_DOOR_FROM, 2),
-    rect('panel', 0, SIDE_DOOR_TO, 8, 176 - SIDE_DOOR_TO, 2),
-    rect('panel', 0, SIDE_DOOR_FROM - 4, 16, 6, 2),
-    rect('panel', 0, SIDE_DOOR_TO - 2, 16, 6, 2),
+    rect('panel', 0, 168, 144, 8, 2, T.podWall),
+    rect('panel', 0, 0, 8, SIDE_DOOR_FROM, 2, T.podWall),
+    rect('panel', 0, SIDE_DOOR_TO, 8, 176 - SIDE_DOOR_TO, 2, T.podWall),
+    rect('panel', 0, SIDE_DOOR_FROM - 4, 16, 6, 2, T.podWall),
+    rect('panel', 0, SIDE_DOOR_TO - 2, 16, 6, 2, T.podWall),
   ],
-  ring: { cx: 72, cy: 102, rx: 66, ry: 66 },
 };
 
 // --- The bar --------------------------------------------------------------------------------------------------
@@ -240,7 +286,6 @@ const BAR_VIEW: FurnitureDrawing = {
     path('line', 'M12 108H228'),
   ],
   seats: [],
-  ring: { cx: 120, cy: 96, rx: 116, ry: 14 },
 };
 
 // Bottle necks over a shelf's top, seen from behind it.
@@ -291,7 +336,6 @@ const BAR_BACK: FurnitureDrawing = {
     rect('panel', 4, 102, 232, 6, 2, T.wood),
   ],
   seats: [],
-  ring: { cx: 120, cy: 96, rx: 116, ry: 14 },
 };
 
 // Facing left: long and narrow, the counter down its left with its wooden front cheated toward you and its foot rail
@@ -317,7 +361,6 @@ const BAR_SIDE: FurnitureDrawing = {
     path('line', 'M4 24V220'),
   ],
   seats: [],
-  ring: { cx: 52, cy: 200, rx: 48, ry: 14 },
 };
 
 // A round padded seat on a tall stem with a foot ring: its sitter faces the bar.
@@ -326,15 +369,13 @@ export const BAR_STOOL_VIEW: FurnitureDrawing = {
   height: BAR_STOOL_SEATS.height,
   parts: [
     ellipse('shadow', 22, 61, 14, 2.5),
-    ellipse('panel', 22, 59, 11, 3),
-    path('line', 'M22 30V58'),
-    ellipse('rail', 22, 46, 10, 3),
-    ellipse('face', 22, 28, 17, 6),
-    ellipse('panel', 22, 25, 17, 6.5),
+    ellipse('panel', 22, 59, 11, 3, '#6b7480'),
+    path('line', 'M22 30V58', '#59616d'),
+    ellipse('rail', 22, 46, 10, 3, '#3a4049'),
+    ellipse('face', 22, 28, 17, 6, '#5a3a24'),
+    ellipse('panel', 22, 25, 17, 6.5, '#8a5a3a'),
   ],
   seats: BAR_STOOL_SEATS.seats.map(({ u, v }) => ({ u, v })),
-  ring: { cx: 22, cy: 25, rx: 19, ry: 8 },
-  ringUnder: 5,
 };
 
 // A wooden cabinet with glass doors, bottles inside, drawers below.
@@ -357,7 +398,6 @@ const DRINKS_CABINET_VIEW: FurnitureDrawing = {
     path('rail', 'M38 93h12'),
   ],
   seats: [],
-  ring: { cx: 44, cy: 108, rx: 40, ry: 7 },
 };
 
 // Its back to you: the top seen from above, the back's boards, its legs.
@@ -372,7 +412,6 @@ const DRINKS_CABINET_BACK: FurnitureDrawing = {
     path('rail', 'M24 18V104M44 18V104M64 18V104'),
   ],
   seats: [],
-  ring: { cx: 44, cy: 108, rx: 40, ry: 7 },
 };
 
 // Facing left: its top running away to its near end, its front cheated down its left: the glass doors with their
@@ -395,7 +434,6 @@ const DRINKS_CABINET_SIDE: FurnitureDrawing = {
     path('rail', 'M10 130v12'),
   ],
   seats: [],
-  ring: { cx: 26, cy: 162, rx: 22, ry: 7 },
 };
 
 function canRow(y: number, offset: number): FurniturePart[] {
@@ -424,7 +462,6 @@ const DRINKS_FRIDGE_VIEW: FurnitureDrawing = {
     path('line', 'M58 48V88'),
   ],
   seats: [],
-  ring: { cx: 36, cy: 116, rx: 32, ry: 7 },
 };
 
 // Its back to you: the top seen from above, its back, and the cooling coil's grille low down.
@@ -439,7 +476,6 @@ const DRINKS_FRIDGE_BACK: FurnitureDrawing = {
     path('rail', 'M16 86h40M16 94h40M16 102h40'),
   ],
   seats: [],
-  ring: { cx: 36, cy: 116, rx: 32, ry: 7 },
 };
 
 // Cans standing in a column down the turned fridge's glass.
@@ -471,7 +507,6 @@ const DRINKS_FRIDGE_SIDE: FurnitureDrawing = {
     path('line', 'M4 116V146'),
   ],
   seats: [],
-  ring: { cx: 32, cy: 156, rx: 26, ry: 7 },
 };
 
 // --- The garden -----------------------------------------------------------------------------------------------
@@ -494,7 +529,6 @@ const OUTDOOR_PLANT_VIEW: FurnitureDrawing = {
     path('panel', 'M15 59H57L53 76H19Z', T.stoneDeep),
   ],
   seats: [],
-  ring: { cx: 36, cy: 66, rx: 24, ry: 8 },
 };
 
 // A trunk under a full round canopy, a soft shadow on the ground.
@@ -515,7 +549,6 @@ const TREE_VIEW: FurnitureDrawing = {
     path('glint', 'M48 30C52 24 58 22 64 22'),
   ],
   seats: [],
-  ring: { cx: 60, cy: 148, rx: 30, ry: 8 },
 };
 
 /** The grid pieces this module draws, for OFFICE_ART. */
@@ -560,8 +593,58 @@ export function isPlazaPath(width: number, height: number): boolean {
 export function gardenPathParts(width: number, height: number): FurniturePart[] {
   if (width <= 0 || height <= 0) return [];
   if (isPlazaPath(width, height)) return plazaParts(width, height);
+  const { thickness } = fenceRun({ width, height });
+  const r = thickness / 2;
+  const parts: FurniturePart[] = [rect('floor', 0, 0, width, height, r)];
+  // The gravel: specks of light and shadow over the bed, inside its rounded ends.
+  const inBed = (x: number, y: number) => {
+    const ex = Math.max(r, Math.min(width - r, x));
+    const ey = Math.max(r, Math.min(height - r, y));
+    return Math.hypot(x - ex, y - ey) < r - 1.5;
+  };
+  parts.push(...gravel(width, height, inBed));
+  // The bed's edging: a soft darker line round it.
+  parts.push(rect('rail', 0.75, 0.75, width - 1.5, height - 1.5, r - 0.75, GARDEN_EDGE));
+  // The stepping stones: flagstones cut by hand, each on its own soft shadow.
+  pathStones(width, height).forEach((s, i) => {
+    const d = flagstone(s.cx, s.cy, s.rx, s.ry, i + Math.round(width + height));
+    parts.push(
+      path(
+        'mark',
+        d.replace(/^M([\d.-]+) ([\d.-]+)/, (_, x, y) => `M${x} ${+y + 1.2}`),
+        STONE_SHADOW,
+      ),
+    );
+    parts.push(path('panel', d, T.stone));
+  });
+  return parts;
+}
+
+// The gravel's specks as two marks, light and shadow.
+function gravel(width: number, height: number, inside: (x: number, y: number) => boolean) {
+  const { light, dark } = gravelSpecks(width, height, Math.round(width * 3 + height), inside);
+  const out: FurniturePart[] = [];
+  if (dark) out.push(path('mark', dark, GRAVEL_DARK));
+  if (light) out.push(path('mark', light, GRAVEL_LIGHT));
+  return out;
+}
+
+// The gravel's tints and a stone's shadow: alpha over the bed's fill, so they suit any fill and either paper.
+const GRAVEL_DARK = '#00000030';
+const GRAVEL_LIGHT = '#ffffff38';
+const GARDEN_EDGE = '#00000040';
+const STONE_SHADOW = '#00000038';
+
+/**
+ * Where a path's stepping stones lie, as the ellipse each stone is cut inside: evenly along its longer side, each the
+ * same size however long the path and every one whole, kept back from both ends.
+ */
+export function pathStones(
+  width: number,
+  height: number,
+): { cx: number; cy: number; rx: number; ry: number }[] {
+  if (width <= 0 || height <= 0 || isPlazaPath(width, height)) return [];
   const { horizontal, length, thickness } = fenceRun({ width, height });
-  const parts: FurniturePart[] = [rect('floor', 0, 0, width, height, thickness / 2)];
   const rx = thickness * 0.3;
   const ry = thickness * 0.24;
   const pitch = thickness * 0.95;
@@ -571,14 +654,15 @@ export function gardenPathParts(width: number, height: number): FurniturePart[] 
   // Spaced at least 0.7 of a pitch, so the stones never touch; a path with no room for two holds one in its middle.
   const count = last - first >= pitch * 0.7 ? Math.round((last - first) / pitch) + 1 : 1;
   const step = count > 1 ? (last - first) / (count - 1) : 0;
+  const out = [];
   for (let i = 0; i < count; i += 1) {
     const along = count > 1 ? first + step * i : length / 2;
     // Every other stone sits a little off the middle, so the stones read as laid by hand.
     const across = thickness / 2 + (i % 2 === 0 ? -1 : 1) * thickness * 0.06;
     const [cx, cy] = horizontal ? [along, across] : [across, along];
-    parts.push(ellipse('panel', cx, cy, horizontal ? rx : ry, horizontal ? ry : rx, T.stone));
+    out.push({ cx, cy, rx: horizontal ? rx : ry, ry: horizontal ? ry : rx });
   }
-  return parts;
+  return out;
 }
 
 /**
@@ -593,8 +677,13 @@ function plazaParts(width: number, height: number): FurniturePart[] {
   const kerb = Math.min(6, Math.min(rx, ry) * 0.08);
   const parts: FurniturePart[] = [
     ellipse('floor', cx, cy, rx, ry),
-    ellipse('rail', cx, cy, rx - kerb, ry - kerb),
-    ellipse('rail', cx, cy, rx * 0.62, ry * 0.62),
+    ...gravel(
+      width,
+      height,
+      (x, y) => ((x - cx) / (rx - kerb)) ** 2 + ((y - cy) / (ry - kerb)) ** 2 < 1,
+    ),
+    ellipse('rail', cx, cy, rx - kerb, ry - kerb, GARDEN_EDGE),
+    ellipse('rail', cx, cy, rx * 0.62, ry * 0.62, GARDEN_EDGE),
   ];
   // The setts' ring halfway between the inner ring and the kerb.
   const ring = (0.62 + (1 - kerb / Math.min(rx, ry))) / 2;
@@ -603,16 +692,10 @@ function plazaParts(width: number, height: number): FurniturePart[] {
   const count = Math.max(6, Math.floor(around / (size * 4)));
   for (let i = 0; i < count; i += 1) {
     const a = (2 * Math.PI * i) / count;
-    parts.push(
-      ellipse(
-        'panel',
-        cx + Math.cos(a) * rx * ring,
-        cy + Math.sin(a) * ry * ring,
-        size,
-        size,
-        T.stone,
-      ),
-    );
+    const sx = cx + Math.cos(a) * rx * ring;
+    const sy = cy + Math.sin(a) * ry * ring;
+    // Each sett a small flagstone of its own, inside the circle it is laid in.
+    parts.push(path('panel', flagstone(sx, sy, size, size, i), T.stone));
   }
   return parts;
 }
@@ -640,59 +723,6 @@ export function grassEdgePath(width: number, height: number): string {
     `Q${n(b)} ${n(b)} ${n(r)} ${n(b)}Z`
   );
 }
-
-/** One tuft of grass rooted at (x, y): three blades `tall` px high, leaning out from the middle. */
-function grassTuft(x: number, y: number, tall: number): string {
-  const lean = tall * 0.45;
-  const n = (v: number) => Math.round(v * 100) / 100;
-  return (
-    `M${x} ${y}q${n(-lean * 0.3)} ${n(-tall * 0.55)} ${n(-lean)} ${n(-tall * 0.8)}` +
-    `M${x} ${y}q${n(lean * 0.1)} ${n(-tall * 0.6)} 0 ${n(-tall)}` +
-    `M${x} ${y}q${n(lean * 0.35)} ${n(-tall * 0.5)} ${n(lean)} ${n(-tall * 0.75)}`
-  );
-}
-
-/** A repeating tile of grass texture: its side in canvas px, its shaded blades and its sunlit blades as path data. */
-export interface GrassTile {
-  size: number;
-  shade: string;
-  light: string;
-}
-
-/**
- * Grass's texture: two pattern tiles of tufts laid over its fill, sized so their repeats rarely line up (36 and 52
- * px), which hides the grid on a large lawn. The blades sit wholly inside each tile, so none is cut at its seam. A
- * lawn of any size paints these same few strokes through an SVG pattern: nothing grows with its size.
- */
-export const GRASS_TILES: readonly GrassTile[] = [
-  {
-    size: 36,
-    shade: [
-      grassTuft(7, 13, 7),
-      grassTuft(25, 9, 6),
-      grassTuft(29, 31, 8),
-      grassTuft(12, 30, 5),
-    ].join(''),
-    light: [grassTuft(18, 21, 5), grassTuft(4, 33, 4)].join(''),
-  },
-  {
-    size: 52,
-    shade: [grassTuft(40, 18, 9), grassTuft(15, 44, 8)].join(''),
-    light: [grassTuft(30, 40, 6), grassTuft(10, 15, 6), grassTuft(45, 47, 5)].join(''),
-  },
-];
-
-/** How the blades are painted over the lawn's fill: tints, so they suit any fill and either paper. */
-export const GRASS_BLADES = {
-  shade: '#14532d',
-  shadeOpacity: 0.3,
-  light: '#f0fdf4',
-  lightOpacity: 0.26,
-  width: 1.2,
-  // The lawn's edge: a faint darker rim so a patch reads against the floor round it.
-  rimOpacity: 0.22,
-  rimWidth: 1.5,
-} as const;
 
 // Roughly how far apart the pickets stand, in canvas px.
 const PICKET_PITCH = 14;
