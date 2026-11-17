@@ -217,13 +217,21 @@ their home moved (`components/calls/CallDock.tsx`).
   hides with the rest of the chrome, and a building Editor has no call to control, so the building strip has none.
   The card **draws nothing when nothing is in it** (no call to offer and no preview, for someone who may not speak):
   no empty frame.
-- **Where.** Centred along the bottom edge, 16 px up. On a phone (owner, 2026-11-07: "on mobile the audio, camera,
-  share buttons are not in line with the zoom buttons ... fix that"), **in the bottom-right cluster's row**, its
-  bottom on the zoom buttons' bottom line, not a row above them: the row is three columns (`clusterRowLayout`,
-  `components/calls/call-dock-row.ts`), the dock in the middle one, centred on the screen while there is room, and the
-  cluster's buttons, unwrapped, in the right one. The buttons take the room they need first, so on a narrow phone, or
-  with Collaborate beside Fit, the dock moves left rather than covering them. In the row it is drawn at the corner
-  buttons' UI scale, as the rest of the row is. A desktop window keeps it floating at the bottom centre.
+- **Where.** Along the bottom edge, 16 px up, **in the bottom-right cluster's row** at every width, its bottom on the
+  zoom buttons' bottom line (owner, 2026-11-07, for a phone: "on mobile the audio, camera, share buttons are not in
+  line with the zoom buttons ... fix that"; Work Tracker 1041 for a desktop window, where a dock floating at half the
+  canvas's width squeezed Pop Out past its card and over the zoom buttons at 760 px): the row is three columns
+  (`clusterRowLayout`, `components/calls/call-dock-row.ts`), the dock in the middle one, centred on the canvas while
+  there is room, and the cluster's buttons, unwrapped, in the right one. The buttons take the room they need first, so
+  in a narrow window, on a narrow phone, or with Collaborate beside Fit, the dock moves left rather than covering
+  them; the dock's column never squeezes the card below its content, so every button stays inside its border. It
+  **stands clear of the bottom-left panels** (the Map, open; Work Tracker 1041, at 640 to 700 px the centred dock
+  covered the Map's right half): the left column is at least as wide as they reach, plus 8 px, so the dock starts past
+  them (`useCallDockFit`, `callDockRowFit`). Where the panels, the dock and the buttons cannot share the bottom line,
+  the dock stands on a line of its own just above the buttons, at the right, still clear of the Map. Panels ending
+  above the row's line leave it free. It
+  keeps the toolbar's UI scale (the row is drawn at the corner buttons', so the dock takes the difference; a phone
+  draws both at 100%).
 - **What.** There is **no Join and no Leave** (owner, 2026-11-07: "Currently we have this concept of Joining audio and
   leaving audio, which is friction I don't like"): walking where there is a call joins it, so the dock holds the
   microphone (Live, Nobody Near, Muted, Mic Blocked, Mic Off, Listening; it starts muted), **Do Not Disturb** while
@@ -237,7 +245,9 @@ their home moved (`components/calls/CallDock.tsx`).
   Say, rather than palette categories"): the brand tint at rest, 36 px, rounded. On is the solid brand (a live
   microphone, a camera on, a share), so it reads at a glance against the tint; a warning is amber and Muted rose,
   each on its own soft fill.
-- **Short labels, on a desktop** (owner, 2026-11-07: "On desktop add short labels to each, on mobile do not"). Every
+- **Short labels, on a desktop** (owner, 2026-11-07: "On desktop add short labels to each, on mobile do not"), in a
+  window **1024 px wide and up** (`CALL_DOCK_NAMED_QUERY`): narrower, the names would not fit beside the zoom buttons,
+  so the dock shows glyphs alone, as on a phone (Work Tracker 1041). Every
   button is named beside its glyph: the microphone's **Mic** / **Muted** / **Blocked** / **Mic Off** /
   **Listening**, **Connecting…**, **Retry**, **Camera**, **Share**, **Calls Paused**, **Video Paused**, **Raise Hand**. On a phone, glyphs alone, 44 px. The hover cards stay as they were and carry the full name and
   state ("Mic: Live", "Camera: Off", "Share Screen"). This replaces the 2026-11-06 rule that the
@@ -263,7 +273,7 @@ desktop apps of Zoom, Teams and Gather do.
 
 - **Pop Out** is the Call dock's last button, after the call group (and the Screen Share group while you share), a
   divider before it whenever anything precedes it. It is drawn as the call's buttons are: a picture-in-picture glyph,
-  named **Pop Out** on a desktop, the brand tint at rest. Its hover card: **Pop Out**, "Keep the Space's people in a
+  named **Pop Out** where the dock names its buttons, the brand tint at rest. Its hover card: **Pop Out**, "Keep the Space's people in a
   small window on top while you work in other tabs and apps." While the mini view is open it is pressed, the solid
   brand, named **Popped Out**, its card **Mini View: Open**, "Press to close it."
 - **Where the browser can.** The mini view is a Document Picture-in-Picture window (Chrome and Edge since 116,

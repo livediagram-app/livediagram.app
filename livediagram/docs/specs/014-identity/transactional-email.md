@@ -55,9 +55,9 @@ once a minute a document, `reportOwnerActivity` from `@liveworkspace/index-app`)
 
 **Milestones, once each, opt-out `notifyMilestones`:**
 
-6. **Milestone**: a celebration when an owner's document count reaches 10,
+6. **Milestone**: a celebration when an owner's canvas count reaches 10,
    fired on a genuine create.
-7. **First share**: the first time an owner shares a document.
+7. **First share**: the first time an owner shares a canvas.
 
 Each milestone is claimed from liveworkspace before it is sent
 (`claimMilestone(credentials, { userId, milestone: 'milestone' | 'firstShare' })`):

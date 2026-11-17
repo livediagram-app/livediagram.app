@@ -152,6 +152,24 @@ A Door is open or closed, and anyone taking part can swing it.
 - For the click policy: `toggleDoor(doorId)` (the editor's, from `useDoorToggle`) swings a door and returns whether
   it did; `isNextToDoor(feet, door)` (in `@livehuddle/document`) says whether a character can reach it.
 
+### On a back wall
+
+A rectangular Room (solid or glass) draws its back wall as a tall band: its top and the face standing up from the
+floor, the room's name on it. A Door's own gap is only a wall's thickness, so on that wall it left most of the band
+standing across the doorway, and an open door did not look open (Work Tracker 1042). There:
+
+- **Open, the band breaks** from its top to the floor across the door's width, as an older room's own top doorway
+  does: you see through the doorway, with the leaf standing open into the room and its swing arc. A glass room's face
+  and pane break the same way.
+- **Shut, the door stands in the face**: a leaf between the door's jambs, from just under the wall's top to the
+  wall's foot, dyed in the room's stroke so it reads shut at a glance at any zoom, with a knob in the floor's colour.
+  On a glass room the leaf is a frosted pane, a little denser than the face.
+- **The room draws the doorway** (`backWallDoors` in `@livehuddle/document`, worked out once per board: which Doors
+  stand on each room's back wall line, and where), so the Door draws only its open leaf and swing there, no gap or
+  jambs of its own, and nothing while shut. The side and front walls, and a Room Builder room's walls (all one
+  thickness), are unchanged: the Door's own gap opens them. The canvas and the image export draw it the same; the
+  3D view already cut the standing wall at the doorway and stands a shut door's panel in it.
+
 ## Window
 
 A window in a wall: light comes in, people do not. Work Tracker #538.

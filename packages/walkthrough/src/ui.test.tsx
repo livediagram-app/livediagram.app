@@ -374,6 +374,67 @@ describe('recording', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Close' }));
     expect(screen.queryByRole('region', { name: 'Record a Walkthrough' })).toBeNull();
   });
+
+  it.each(['permissionsPolicy', 'featurePolicy'])(
+    'says the page cannot use the microphone when %s blocks it',
+    async (prop) => {
+      Object.defineProperty(navigator, 'mediaDevices', {
+        configurable: true,
+        value: {
+          getUserMedia: vi.fn(async () => {
+            throw new DOMException('no', 'NotAllowedError');
+          }),
+          enumerateDevices: async () => [],
+        },
+      });
+      Object.defineProperty(document, prop, {
+        configurable: true,
+        value: { allowsFeature: (f: string) => f !== 'microphone' },
+      });
+      try {
+        render(<Harness server={{ list: [], canRecord: true, requests: [] }} />);
+        await openWalkthroughs();
+        fireEvent.click(screen.getByText('Record Walkthrough'));
+        expect(
+          await screen.findByText(
+            "This page can't use the microphone. Reload to get the latest version.",
+          ),
+        ).toBeTruthy();
+      } finally {
+        Reflect.deleteProperty(document, prop);
+      }
+    },
+  );
+
+  it('falls back to the browser prompt when the policy cannot be read', async () => {
+    Object.defineProperty(navigator, 'mediaDevices', {
+      configurable: true,
+      value: {
+        getUserMedia: vi.fn(async () => {
+          throw new DOMException('no', 'NotAllowedError');
+        }),
+        enumerateDevices: async () => [],
+      },
+    });
+    Object.defineProperty(document, 'permissionsPolicy', {
+      configurable: true,
+      get: () => {
+        throw new Error('nope');
+      },
+    });
+    try {
+      render(<Harness server={{ list: [], canRecord: true, requests: [] }} />);
+      await openWalkthroughs();
+      fireEvent.click(screen.getByText('Record Walkthrough'));
+      expect(
+        await screen.findByText(
+          'Allow the microphone for this site in your browser, then try again.',
+        ),
+      ).toBeTruthy();
+    } finally {
+      Reflect.deleteProperty(document, 'permissionsPolicy');
+    }
+  });
 });
 
 describe('recording, beyond the canvas', () => {

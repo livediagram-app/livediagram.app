@@ -22,8 +22,10 @@ type Env = { ASSETS: AssetsBinding; PREVIEWS_ORIGIN?: string };
 //     design ids in the path; don't leak full paths to third-party
 //     sites the user might click out to.
 //   - Permissions-Policy: deny every powerful feature the editor
-//     doesn't use (camera / mic / geolocation / payment / USB) so a
-//     compromised script can't request them. Clipboard isn't denied
+//     doesn't use (geolocation / payment / USB) so a compromised
+//     script can't request them. camera and microphone are allowed
+//     for this origin alone: recording a walkthrough needs them, and
+//     a blanket deny blocks getUserMedia whatever the browser allows. Clipboard isn't denied
 //     because the image picker uses paste; fullscreen=self is
 //     allowed for the laser-presenter view.
 //   - Strict-Transport-Security: 1-year HSTS with includeSubDomains.
@@ -43,7 +45,7 @@ const SECURITY_HEADERS: Record<string, string> = {
   'X-Content-Type-Options': 'nosniff',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'Permissions-Policy':
-    'camera=(), microphone=(), geolocation=(), payment=(), usb=(), fullscreen=(self)',
+    'camera=(self), microphone=(self), geolocation=(), payment=(), usb=(), fullscreen=(self)',
   'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
 };
 

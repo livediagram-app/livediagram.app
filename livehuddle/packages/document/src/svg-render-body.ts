@@ -15,6 +15,7 @@ import { SHAPE_KINDS } from './shape-kinds';
 import type { Finish } from './finish';
 import type { BoxedElement, ShapeKind } from './index';
 import type { CanvasSurface } from './colors';
+import type { BackWallDoors } from './back-wall-doors';
 import type { ResolveEmojiArt, ResolveIconArt } from './svg-render-describe';
 
 /** The kinds whose body these emitters draw, rather than it being a box with a
@@ -55,6 +56,8 @@ export function svgElementBody(
     resolveEmojiArt?: ResolveEmojiArt;
     /** The finish the element is drawn in (docs/specs/008-canvas/finish.md), for the faces that draw their own lines. */
     finish?: Finish;
+    /** The board's back-wall Doors, for a room and a Door on its back wall (back-wall-doors.ts). */
+    backWall?: BackWallDoors;
   },
 ): string {
   if (el.type !== 'shape') return '';
@@ -62,7 +65,7 @@ export function svgElementBody(
   // The Behaviour faces (docs/specs/009-elements/mode-button.md to /137), which all exported as the same blank
   // labelled box as each other.
   return svgFace(
-    svgBehaviourFace(el, label, labelColor, stroke, o.fill, o.surface) ?? '',
+    svgBehaviourFace(el, label, labelColor, stroke, o.fill, o.surface, o.backWall) ?? '',
     fontFamily,
   );
 }

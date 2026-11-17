@@ -5,7 +5,6 @@
 // every 64 px, and a rectangle's back wall face as a tall pane with two glints. Pure: no React, no DOM.
 
 import {
-  brokenRun,
   DEFAULT_ROOM_DOOR,
   ROOM_BACK_FACE,
   ROOM_WALL,
@@ -13,7 +12,9 @@ import {
   roomWalls,
   type RoomDoor,
 } from '@livehuddle/avatar/office-geometry';
+import { cutByDoors } from '@livehuddle/avatar/room-outline';
 import { pieceVariant, ROOM_WALL_VARIANTS } from './piece-variants';
+import { backWallDoorLeaf, backWallRuns, type BackWallDoor } from './back-wall-doors';
 
 /** The `variant` a glass-walled room stores (office.md "Glass walls"). */
 export const GLASS_ROOM_VARIANT = 'glass';
@@ -57,6 +58,8 @@ export type GlassRoomArt = {
   faces: { x: number; y: number; w: number; h: number }[];
   /** The glints on the faces. */
   glints: string;
+  /** The leaves of the shut Doors on a rectangle's back wall, standing in its face (back-wall-doors.ts). */
+  doors: { x: number; y: number; w: number; h: number }[];
 };
 
 const r2 = (v: number) => Math.round(v * 100) / 100;
@@ -83,24 +86,35 @@ function mullionsOn(a: { x: number; y: number }, b: { x: number; y: number }): s
 /**
  * A glass room's drawing in its own px (0..width, 0..height): a rectangle's floor below its back wall face, or a custom
  * room's outline; the walls' centre lines (an older room's built-in doorway left open); the mullions; and a
- * rectangle's back wall face with its glints.
+ * rectangle's back wall face with its glints, broken where an open Door stands on it and a shut one's leaf in it
+ * (`backDoors`, back-wall-doors.ts).
  */
-export function glassRoomArt(el: {
-  width: number;
-  height: number;
-  roomDoor?: RoomDoor;
-  roomOutline?: readonly { x: number; y: number }[];
-}): GlassRoomArt {
+export function glassRoomArt(
+  el: {
+    width: number;
+    height: number;
+    roomDoor?: RoomDoor;
+    roomOutline?: readonly { x: number; y: number }[];
+  },
+  backDoors: readonly BackWallDoor[] = [],
+): GlassRoomArt {
   const { width, height } = el;
   const local = { x: 0, y: 0, width, height, roomDoor: el.roomDoor, roomOutline: el.roomOutline };
-  const segments = roomWalls(local);
+  // An open Door on the back wall leaves no pane across its doorway: the Door draws only what moves there.
+  const backLine = ROOM_BACK_FACE - ROOM_WALL / 2;
+  const segments = cutByDoors(
+    roomWalls(local),
+    backDoors
+      .filter((d) => !d.closed)
+      .map((d) => ({ a: { x: d.from, y: backLine }, b: { x: d.to, y: backLine } })),
+  );
   const mullions = segments.map((s) => mullionsOn(s.a, s.b)).join('');
   if (el.roomOutline && el.roomOutline.length >= 3) {
     const d =
       el.roomOutline
         .map((p, i) => `${i === 0 ? 'M' : 'L'}${r2(p.x * width)} ${r2(p.y * height)}`)
         .join(' ') + ' Z';
-    return { floor: d, walls: d, mullions, faces: [], glints: '' };
+    return { floor: d, walls: d, mullions, faces: [], glints: '', doors: [] };
   }
   const W = ROOM_WALL;
   const F = ROOM_BACK_FACE;
@@ -110,7 +124,7 @@ export function glassRoomArt(el: {
     .join('');
   const door = el.roomDoor ?? DEFAULT_ROOM_DOOR;
   const faceH = F - W / 2;
-  const faces = brokenRun(width, door === 'n' ? roomDoorSpan(width, 'n') : null)
+  const faces = backWallRuns(width, backDoors, door === 'n' ? roomDoorSpan(width, 'n') : null)
     .filter(([a, b]) => b - a > 0)
     .map(([a, b]) => ({ x: r2(a), y: 0, w: r2(b - a), h: faceH }));
   // Two slanted glints a third of the way along each face wide enough to take them.
@@ -121,5 +135,6 @@ export function glassRoomArt(el: {
       return `M${r2(x)} 5L${r2(x - 12)} ${faceH - 5}M${r2(x + 9)} 5L${r2(x + 3)} ${r2(faceH / 2)}`;
     })
     .join('');
-  return { floor, walls, mullions, faces, glints };
+  const doors = backDoors.filter((d) => d.closed).map((d) => backWallDoorLeaf(d).leaf);
+  return { floor, walls, mullions, faces, glints, doors };
 }

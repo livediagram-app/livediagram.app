@@ -38,6 +38,7 @@ import { GRASS_BLADES, GRASS_TILES, grassEdgePath } from './office-garden';
 import { r2, xmlEscape } from './svg-render-primitives';
 import { borderOf } from './svg-render-border';
 import type { Face } from './svg-render-face-kit';
+import type { BackWallDoor } from './back-wall-doors';
 import { pieceFacing } from './furniture-facing';
 
 // PortalFace's art on its own 24x36 grid, kept in proportion as the canvas
@@ -176,7 +177,13 @@ export function furnitureArt(el: Face, seat: string, stroke: string): string {
 }
 
 // A room (docs/specs/009-elements/office.md "Room"), drawn to its own size so its walls keep their thickness.
-export function roomSvg(el: Face, floor: string, stroke: string): string {
+export function roomSvg(
+  el: Face,
+  floor: string,
+  stroke: string,
+  // The Doors on its back wall (back-wall-doors.ts).
+  backDoors: readonly BackWallDoor[] = [],
+): string {
   // A room drawn with the Room Builder (docs/specs/009-elements/room-builder.md): its floor polygon and its walls,
   // stroked along the outline as the canvas draws them.
   if (el.roomOutline && el.roomOutline.length >= 3) {
@@ -193,7 +200,7 @@ export function roomSvg(el: Face, floor: string, stroke: string): string {
   }
   return sizedSvg(
     el,
-    roomParts(el.width, el.height, el.roomDoor ?? DEFAULT_ROOM_DOOR),
+    roomParts(el.width, el.height, el.roomDoor ?? DEFAULT_ROOM_DOOR, backDoors),
     floor,
     stroke,
   );
