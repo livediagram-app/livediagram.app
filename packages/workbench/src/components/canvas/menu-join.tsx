@@ -61,12 +61,16 @@ export function stripRoomBesideMenu(
   viewWidth: number,
   viewLeft: number,
   menu: HTMLElement | null,
+  // A strip that may leave the centre for the left, beside the menu box (STRIP_SHIFTS_LEFT): its room is everything
+  // between the box and the corner card (or the editor's right edge), not only what is centred.
+  shiftsLeft = false,
 ): number {
   // Experiment (no header bar): the Share and account card at the top right (EditorCornerActions) is cleared as the
   // menu box is, so the strip stands between the two, never under either.
   const right = cornerCardClear(viewWidth, viewLeft);
   if (!menu) return viewWidth - 2 * right;
   const clear = menuNaturalRight(menu) - viewLeft + STRIP_MENU_GAP_PX;
+  if (shiftsLeft) return viewWidth - clear - Math.max(right, MENU_CARD_INSET_PX);
   // Joined, `clear` reaches the sidebar's inner edge (the box stops a gap short of it), and the strip, centred beside
   // the sidebar, keeps the gap from it and from the editor's right edge, or the corner card's clearance where that is
   // wider (on both sides, since the strip stays centred).
@@ -78,6 +82,11 @@ export function stripRoomBesideMenu(
 /** Sent on `window` when the top-right corner card mounts, resizes or goes, so the strip measures its room again. */
 // The corner card's inset from the editor's top-right corner, in screen px (EditorCornerActions' right-3).
 const CORNER_CARD_INSET_PX = 12;
+
+/** On a strip's root: when it can't centre, it moves left beside the menu box before it gives up names or folds
+ *  (livedocuments). Read by useStripCrowding, useBarLabels and useBarFold through `stripShiftsLeft`. */
+export const STRIP_SHIFTS_LEFT = 'data-strip-shifts-left';
+export const stripShiftsLeft = (card: Element) => card.closest(`[${STRIP_SHIFTS_LEFT}]`) !== null;
 
 export const CORNER_CARD_EVENT = 'corner-card-change';
 

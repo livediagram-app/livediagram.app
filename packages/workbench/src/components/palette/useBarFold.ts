@@ -2,7 +2,7 @@
 
 import { useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { editorViewportOf } from '../../lib/editor-viewport';
-import { stripRoomBesideMenu, CORNER_CARD_EVENT } from '../canvas/menu-join';
+import { stripRoomBesideMenu, stripShiftsLeft, CORNER_CARD_EVENT } from '../canvas/menu-join';
 
 // How many of the category bar's categories the strip shows, the rest behind its More button
 // (docs/specs/007-editor/toolbar-layout.md "The strip's room"). The bar drops its names first (useBarLabels); a
@@ -80,7 +80,10 @@ export function useBarFold(
       if (!whole.current) return;
       const view = editorViewportOf(card);
       const menu = document.querySelector<HTMLElement>('[data-toolbar-menu]');
-      const next = barFold(whole.current.measure, stripRoomBesideMenu(view.width, view.left, menu));
+      const next = barFold(
+        whole.current.measure,
+        stripRoomBesideMenu(view.width, view.left, menu, stripShiftsLeft(card)),
+      );
       if (next !== shown) setShown(next);
     };
     measure();

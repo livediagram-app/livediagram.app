@@ -7,6 +7,7 @@ import {
   STRIP_MENU_GAP_PX,
   stripRoomBesideMenu,
   CORNER_CARD_EVENT,
+  stripShiftsLeft,
 } from '../canvas/menu-join';
 
 // Whether the centred strip would run under the top-left menu card (docs/specs/007-editor/toolbar-layout.md "The
@@ -31,8 +32,8 @@ export function crowdedPaddingRight(clearRight: number, scale: number): string |
 export function useStripCrowding(
   cardRef: RefObject<HTMLElement | null>,
   enabled: boolean,
-): { crowded: boolean; clear: number; clearRight: number } {
-  const [state, setState] = useState({ crowded: false, clear: 0, clearRight: 0 });
+): { crowded: boolean; shifted: boolean; clear: number; clearRight: number } {
+  const [state, setState] = useState({ crowded: false, shifted: false, clear: 0, clearRight: 0 });
   useLayoutEffect(() => {
     const card = cardRef.current;
     if (!enabled || !card || typeof ResizeObserver === 'undefined') return;
@@ -41,16 +42,26 @@ export function useStripCrowding(
       if (width <= 0) return;
       const view = editorViewportOf(card);
       const menu = document.querySelector<HTMLElement>('[data-toolbar-menu]');
-      const crowded = width > stripRoomBesideMenu(view.width, view.left, menu);
+      const centred = width <= stripRoomBesideMenu(view.width, view.left, menu);
+      // A strip that may shift left is crowded only when even the room beside the menu box is too small; short of
+      // that it is `shifted`, standing at the left beside the box.
+      const shifts = stripShiftsLeft(card);
+      const crowded = shifts
+        ? width > stripRoomBesideMenu(view.width, view.left, menu, true)
+        : !centred;
+      const shifted = shifts && !centred && !crowded;
       const clear = menu
         ? Math.max(0, Math.ceil(menu.getBoundingClientRect().right - view.left + STRIP_MENU_GAP_PX))
         : 0;
       // Where a crowded strip, set at the right, must end: short of the top-right corner card (EditorCornerActions).
       const clearRight = Math.ceil(cornerCardClear(view.width, view.left));
       setState((s) =>
-        s.crowded === crowded && s.clear === clear && s.clearRight === clearRight
+        s.crowded === crowded &&
+        s.shifted === shifted &&
+        s.clear === clear &&
+        s.clearRight === clearRight
           ? s
-          : { crowded, clear, clearRight },
+          : { crowded, shifted, clear, clearRight },
       );
     };
     measure();
@@ -67,5 +78,5 @@ export function useStripCrowding(
       window.removeEventListener(CORNER_CARD_EVENT, measure);
     };
   }, [cardRef, enabled]);
-  return enabled ? state : { crowded: false, clear: 0, clearRight: 0 };
+  return enabled ? state : { crowded: false, shifted: false, clear: 0, clearRight: 0 };
 }
