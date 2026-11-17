@@ -60,9 +60,12 @@ Content** (the brand-toned `PaletteTrayAction`) and **Keep It**. It steps aside 
 slot (`data-yields-to-mode`). Without a strip (the floating palette, Draw's dock) it is the same card at the top centre, placed clear of Draw's dock (`pillPlace`, shared with StartAgainTray).
 Below `sm` the sentence is screen-reader only, so the two actions fit the strip's width.
 The Pages editors frame a page below it while it shows: `topStripInset` (`packages/workbench/src/lib/top-strip-inset.ts`,
-shared by livedocuments and livedesign) reaches down to a standing tray (`data-palette-tray` with
-`data-yields-to-mode`), under the strip or as the pill, so the page's header is never under it. A mode's passing
-message gets no room.
+shared by livedocuments and livedesign, and by their Fit to Screen in `lib/tab-fit-view.ts`) reaches down to a standing
+tray (`data-palette-tray` with `data-yields-to-mode`), under the strip or as the pill, so the page's header is never under
+it. While the tray yields to a mode's message (the modifier hint as Shift+1 is pressed), that message's box counts
+instead; with no standing tray a mode's passing message gets no room. The snap as the view rests (`usePageSnap`) measures
+with `settling`, which keeps the tray's room the page was framed with once the tray goes, so Clear Example Content and
+Keep It never move the page; the next explicit frame (Fit, Shift+1, a page's label, landing) takes the room back.
 
 Each editor mounts it from `components/start/ExampleContentTray.tsx` (inside `EditorStartPanels`), shown when the
 editor is hydrated, not read-only (an Editor: a Participant and a Viewer are read-only to the editor's structure),

@@ -7,9 +7,10 @@ import { topStripInset as sharedTopStripInset } from '@liveworkspace/workbench/l
 // flyout"): the page centres below it too.
 const UNDER_STRIP_SELECTOR = '[data-photo-options]';
 
-/** How far a top strip laid over the canvas, and what stands under it, reaches down into it, in screen px. */
-export function topStripInset(canvas: HTMLElement): number {
-  return sharedTopStripInset(canvas, [UNDER_STRIP_SELECTOR]);
+/** How far a top strip laid over the canvas, and what stands under it, reaches down into it, in screen px.
+ *  `settling`: a page settling as the view rests keeps the tray's room it was framed with. */
+export function topStripInset(canvas: HTMLElement, settling = false): number {
+  return sharedTopStripInset(canvas, { under: [UNDER_STRIP_SELECTOR], settling });
 }
 
 // The bottom-right controls (undo, the pages strip, zoom: CanvasChrome's cluster).
