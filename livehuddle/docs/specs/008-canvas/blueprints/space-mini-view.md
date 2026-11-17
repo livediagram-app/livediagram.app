@@ -198,8 +198,7 @@ The fake camera runs at 20 fps; a real 24 fps camera costs about a fifth more (4
 Headless Chromium keeps every page visible, so the samples are the decoder's own time, which Chromium spends whatever
 the page's visibility (a hidden page skips painting, not decoding); the tiles' painting is the window's own, four
 150 px videos. So the open mini view costs a hidden tab at most about 3% of one core, two thirds of what the visible
-canvas's six bubbles cost, and nothing once it closes. The script: `measure.mjs` in the PR's notes (loopback, no
-server).
+canvas's six bubbles cost, and nothing once it closes.
 
 ## Presentation and UX
 
