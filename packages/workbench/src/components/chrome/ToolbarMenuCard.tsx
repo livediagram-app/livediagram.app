@@ -89,12 +89,6 @@ export function ToolbarMenuCard({
     >
       <MenuCardFormContext.Provider value={form}>
         {/* Joined, the card heads the sidebar and there is no corner for the logo's own card: it leads the band. */}
-        {/* In a phone's strip it leads the menu card, its mark alone, rather than standing in a card of its own. */}
-        {inline && logo ? (
-          <span data-logo-inline="" className="flex items-center px-1.5">
-            {logo}
-          </span>
-        ) : null}
         {joined && logo ? (
           <span data-logo-in-band="" className="mr-auto flex items-center pl-0.5 pr-1">
             {logo}
