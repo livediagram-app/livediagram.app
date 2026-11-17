@@ -47,7 +47,7 @@ describe('live worker security headers', () => {
   // walkthroughs.md: recording a walkthrough needs the microphone and camera; the rest stays denied.
   it('lets this origin alone use the camera and the microphone', async () => {
     const { env: e } = env();
-    const res = await worker.fetch(new Request('https://www.livedesign.app/document/abc'), e);
+    const res = await worker.fetch(new Request('https://www.livedesign.app/design/abc'), e);
     const policy = res.headers.get('Permissions-Policy') ?? '';
     for (const allowed of ['camera=(self)', 'microphone=(self)']) expect(policy).toContain(allowed);
     for (const denied of ['geolocation=()', 'payment=()', 'usb=()'])
