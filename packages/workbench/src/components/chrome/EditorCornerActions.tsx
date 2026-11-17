@@ -2,6 +2,8 @@
 
 import { Glyph, HoverCard } from '@liveworkspace/ui';
 import { AuthControls } from './AuthControls';
+import { useUiScale } from '../providers/ui-scale';
+import { toSurfacePx, uiScaleStyle } from '../../lib/ui-scale';
 import { HeaderShareIcon } from './EditorHeader';
 
 // Experiment (livediagram, livedocuments): no header bar. The header's right-edge actions (Copy, Present, Share and the account) float in a card of
@@ -39,6 +41,9 @@ export function EditorCornerActions({
   onOpenAccount,
   copyDescription,
 }: EditorCornerActionsProps) {
+  // Drawn at the toolbar's UI scale (docs/specs/007-editor/ui-scale.md), as the palette strip and the menu card are,
+  // so the three stand the same height in one row, still 12px from the corner.
+  const scale = useUiScale('toolbar');
   return (
     // A zero-height layer over the canvas, so the canvas keeps the whole height a header bar took.
     <div data-app-chrome className="relative z-[var(--z-modal)] h-0">
@@ -46,6 +51,11 @@ export function EditorCornerActions({
         data-corner-actions=""
         data-floating-panel=""
         data-region="header"
+        style={
+          scale === 1
+            ? undefined
+            : { ...uiScaleStyle(scale), top: toSurfacePx(12, scale), right: toSurfacePx(12, scale) }
+        }
         className="pointer-events-auto absolute right-3 top-3 flex h-[46px] items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40"
       >
         {onMakeCopy ? (
