@@ -259,10 +259,13 @@ createdAt, since, moves: FlowStep[] }` (`since`: its oldest kept history entry; 
   - Read: `fetchFlow(scope, days)` (`apps/editor/lib/api/flow.ts`; `'offline'` for a This Browser plan, `tabId` for a
     tab-scoped session, no `types`: every type is read and each chart filters with its own `viewShownTypes`).
     `createFlowStore` (`hooks/plan/plan-flow-store.ts`) keys an entry by `projectId|tabId|shareCode|days`; an entry
-    lives while a chart subscribes and is dropped with its last. `want(key, scope, days, version)` (`version`: the
-    `plan.items` map) reads at once the first time, else after `FLOW_REFETCH_MS` (2000) from the last change, one timer
-    per entry; an older read's answer is dropped (`seq`); a failed refresh keeps the last answer, a failed first read
-    is `error`. `usePlanFlow(scope, days, version)` (`useSyncExternalStore`) answers `{ status: 'none' | 'loading' |
+    lives while a chart subscribes and is dropped with its last. `want(key, scope, days, version)` (`version`:
+    `flowVersionOf(plan.items)`, the card count and an order-free hash of each card's id, type and status, kept per
+    items map in a `WeakMap` so the charts of a tab work it out once per write; a title or field edit leaves it
+    unchanged) reads at once the first time, else at the later of `FLOW_REFETCH_MS` (2000) after the last change and
+    `FLOW_MIN_INTERVAL_MS` (30,000) after the last read, never later than `FLOW_MIN_INTERVAL_MS` after the first
+    change still waiting (so steady moves still read); one timer per entry; an older read's answer is dropped
+    (`seq`); a failed refresh keeps the last answer, a failed first read is `error`. `usePlanFlow(scope, days, version)` (`useSyncExternalStore`) answers `{ status: 'none' | 'loading' |
 'ready' | 'error' | 'offline', data, retry }`.
   - Frame (`apps/editor/components/plan/views/flow-frame.tsx`): `useFlowChart` (range, read, types), `FlowFrame` over `ViewFrame` (title
     `flowTitle`: "Cycle Time · Last 30 Days"; `loadingText` "Loading flow…"; `empty` a `CompactEmptyState` for
