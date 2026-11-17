@@ -177,9 +177,11 @@ So a 403 sets `writesForbiddenRef` and a distinct `forbidden` save status:
   cause and the way out (export a copy) rather than a connection to check.
 - Opening a different document clears it; the block is about this one.
 
-The user still loses the unsaved work, and no client-side design can prevent
-that once the server has withdrawn write access. What it can do is say so
-immediately and clearly, instead of an hour later.
+The server will not take the unsaved work once it has withdrawn write access, and
+no client-side design can change that. What the editor does is say so at once
+and keep it: the changes stay on screen for an export, and leaving the page with
+them still unsent asks first (load-recovery.md "Leaving with unsaved changes asks
+first"), so a refused save never loses them silently.
 
 ### Retrying a failed save
 
