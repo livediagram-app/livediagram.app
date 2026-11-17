@@ -144,7 +144,7 @@ describe('Home’s hero', () => {
     expect(countCalls(index)).toHaveLength(1);
     expect(countCalls(index)[0]!.args[0]).toMatchObject({
       view: 'recent',
-      used: 8,
+      used: 12,
       mine: LIST_LIMIT_MAX,
       app: 'liveplanner',
     });

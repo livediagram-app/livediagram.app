@@ -217,6 +217,13 @@ purpose) would otherwise be found again only by searching. The same in every app
 liveworkspace.app; the editors' panel keeps its own Home without it, and a first run shows its starting points in its
 place, as it does for the rest.
 
+**Each item shows once.** New, Most Used and Recent never show the same item twice: an item is in the first of the
+three it qualifies for, New first, then Most Used, then Recent. Something made yesterday and opened a dozen times
+since is in New only; once newer items push it out of New, it is in Most Used. Leaving an item out never shrinks a
+section that has more to show: each fills to its size from the next items in its own order. The same holds for This
+Browser's items merged in, under All Apps and on each app's Explorer, and on a phone's strips, which draw the same
+lists. Shared With You Recently is a different list (other people's items) and keeps its own.
+
 - **Which.** The live items in the person's own space (My Work) and in each team they are in, by when each was made
   (`createdAt`, then id), at most four. Filtered to one app, that app's: documents in livedocuments, canvases in
   livediagram, plans in liveplanner, designs in livedesign, Spaces in livehuddle. Under All Apps, and on
@@ -248,10 +255,13 @@ Directly under New, Home shows what the person **opened** lately as two sections
 and Spaces are (the same heading, size and spacing), with no title over the pair: **Most Used**, then **Recent**
 directly after it (`HomePane` in `@liveworkspace/explorer`).
 
-- **Most Used** is up to eight items the person opened in the last 14 days, the most opened first, each card's line
-  saying how often ("Opened 12 times"; "Used on 5 days" from an index that counts only days).
-- **Recent** is up to eight of the person's most recently opened items not among Most Used, newest first, each line
-  saying when ("Opened 2 hours ago"). This browser's opened items are merged in by last open
+- **Most Used** is up to eight items the person opened in the last 14 days and not in New, the most opened first,
+  each card's line saying how often ("Opened 12 times"; "Used on 5 days" from an index that counts only days). An item
+  New shows leaves it, and the next most used takes its place.
+- **Recent** is up to eight of the person's most recently opened items in neither New nor Most Used, newest first,
+  each line saying when ("Opened 2 hours ago"); the next most recent fill the places they leave. A most used item
+  past Most Used's eight (one New's items pushed out) is in Recent by its last open, like any other. This browser's
+  opened items are merged in by last open, those New shows left out
   ("This Browser on Home" below). **See More** sits at the right of Recent's heading, as See All does
   on Shared With You Recently, and opens the Recent view; Most Used has no link.
 - **A card** is Home's large card, the one New and Shared With You Recently draw: the item's thumbnail, its name and
@@ -267,8 +277,10 @@ directly after it (`HomePane` in `@liveworkspace/explorer`).
   heading, at most eight; Recent's strip ends with a **See More** tile into the Recent view, in place of the heading's
   link.
 - **The read.** Both sections come from one request: Recent's first page carrying the Most Used items beside it
-  (`used=8`, `limit=16`, [contracts](one-explorer-contracts.md#items)), folded with Home's other reads
-  (`jumpBackInLoader`, `data/homeReads.ts`), so two sections cost no more than one. What the person hid from Recent
+  (`used=12`, `limit=20`, [contracts](one-explorer-contracts.md#items)), folded with Home's other reads
+  (`homeOpenedLoader`, `data/homeReads.ts`), so two sections cost no more than one. It asks for New's four more of
+  each than it shows, so both still fill once New's items (at most four) and Most Used's (at most eight) leave them:
+  twelve most used for eight, and twenty recent for eight once up to twelve leave. What the person hid from Recent
   is left out of both.
 - **The editors' panel** keeps the pair too ("The editors' panel's Home" below).
 

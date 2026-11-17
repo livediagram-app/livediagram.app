@@ -143,8 +143,9 @@ export const OPEN_DEBOUNCE_MS = 60 * 1000;
 // Most Used counts how many times a person opened an item over this window of UTC days; older days are pruned, so an
 // item not opened in it drops off.
 export const USE_WINDOW_DAYS = 14;
-// How many Most Used items one Recent request may ask for alongside its page (`used`).
-export const MOST_USED_MAX = 8;
+// How many Most Used items one Recent request may ask for alongside its page (`used`): Home's eight, and New's four
+// more so Most Used still fills once New's items leave it (one-explorer.md "Each item shows once").
+export const MOST_USED_MAX = 12;
 // How many of the most recently made items one first page may ask for alongside it (`newest`, Home's New).
 export const NEWEST_MAX = 8;
 

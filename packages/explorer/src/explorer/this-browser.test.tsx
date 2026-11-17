@@ -3,7 +3,7 @@
 // the Trash's group and Home's Recent. Without a host (liveworkspace.app) none of it shows.
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createFakeIndex, makeItem } from '../test/fakeClient';
+import { createFakeIndex, madeLater, makeItem } from '../test/fakeClient';
 import {
   dropThisBrowserConversion,
   dropThisBrowserItem,
@@ -320,7 +320,8 @@ describe('This Browser in the Explorer', () => {
   });
 
   it("merges the opened ones into Home's Recent by last open", async () => {
-    const index = createFakeIndex({ items: [makeItem(1, { lastOpenedAt: 500 })] });
+    // New's four made later, so these are in Recent (each item shows once).
+    const index = createFakeIndex({ items: [makeItem(1, { lastOpenedAt: 500 }), ...madeLater()] });
     page(
       { kind: 'home' },
       host([local(1, { lastOpenedAt: 900 }), local(2), local(3, { lastOpenedAt: 100 })]),

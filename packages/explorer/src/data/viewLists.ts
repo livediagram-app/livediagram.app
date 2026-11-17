@@ -235,7 +235,7 @@ export function viewList(
 }
 
 // Home's Most Used and Recent groups: this many most used, then this many recent not among them, each two rows of four on a
-// desktop (MOST_USED_MAX, the most the index sends).
+// desktop (Home asks for New's four more of each, homeOpenedLoader; MOST_USED_MAX is the most the index sends).
 export const JUMP_BACK_IN_PER_GROUP = 8;
 
 /** Whether an item came to Most Used and Recent as one of the most used (only those carry their opens and use days). */
@@ -286,6 +286,27 @@ export function jumpBackInLoader(
 
 /** How many Home's New shows: one row of four on a desktop. */
 export const HOME_NEW = 4;
+
+/**
+ * Home's Most Used and Recent (one-explorer.md "Each item shows once"): one request, as `jumpBackInLoader`, asking
+ * New's `newCount` more of each than it shows, so both still fill once New's items (at most `newCount`) and Most
+ * Used's (at most `n`) leave them: `n + newCount` most used, and `2n + newCount` recent. The set is every most used
+ * one, then every recent one not among them; HomePane's `homeSections` takes out New's and cuts each to `n`.
+ */
+export function homeOpenedLoader(
+  client: IndexClient,
+  app: App,
+  filter: AppFilter,
+  n = JUMP_BACK_IN_PER_GROUP,
+  newCount = HOME_NEW,
+): ListLoader {
+  const used = n + newCount;
+  const limit = 2 * n + newCount;
+  return async (_cursor, signal) => {
+    const res = await readRecentForHome(client, app, filter, { limit, used }, signal);
+    return { items: jumpBackInSet(res.mostUsed, res.items, used, limit - used), nextCursor: null };
+  };
+}
 
 /** Home's New: the items made most recently in the person's spaces, folded into Home's one items read. */
 export function newestLoader(
