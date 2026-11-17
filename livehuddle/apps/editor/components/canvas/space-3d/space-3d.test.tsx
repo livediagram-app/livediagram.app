@@ -35,6 +35,12 @@ vi.mock('@liveworkspace/workbench/hooks/canvas/useViewportStore', () => ({
 import { space3DStageStyle, useSpace3DView } from './useSpace3DView';
 import { Space3DButton } from './Space3DButton';
 import { Space3DWalls } from './Space3DWalls';
+import {
+  InSpace3DOverlay,
+  Space3DOverlayProvider,
+  Space3DOverlayStage,
+  useInSpace3D,
+} from './Space3DOverlay';
 import { loadSpace3DWalls } from '@/lib/editor-deferred-code';
 
 beforeEach(() => {
@@ -187,6 +193,52 @@ describe('Space3DWalls (docs/specs/008-canvas/3d-view.md "Walls in front of you 
           Number((w as HTMLElement).style.transform.match(/translate\(([-\d.]+)px/)![1]) > 30000,
       ),
     ).toBe(true);
+    view.value = { zoom: 1, offset: { x: 0, y: 0 } };
+  });
+});
+
+describe('the overlay (docs/specs/008-canvas/3d-view.md "What it shows")', () => {
+  function Bubble() {
+    return <span data-testid="bubble">{useInSpace3D() ? '3d' : 'flat'}</span>;
+  }
+
+  it('draws a bubble in place while flat, and in the overlay over every wall while 3D', () => {
+    const world = document.createElement('div');
+    const overlay = document.createElement('div');
+    document.body.append(world, overlay);
+    const at = (on: boolean, node: HTMLElement | null) => (
+      <Space3DOverlayProvider value={{ on, node }}>
+        <InSpace3DOverlay>
+          <Bubble />
+        </InSpace3DOverlay>
+      </Space3DOverlayProvider>
+    );
+    const { rerender } = render(at(false, null), { container: world });
+    expect(world.contains(screen.getByTestId('bubble'))).toBe(true);
+    expect(screen.getByTestId('bubble').textContent).toBe('flat');
+    rerender(at(true, overlay));
+    expect(overlay.contains(screen.getByTestId('bubble'))).toBe(true);
+    expect(world.contains(screen.getByTestId('bubble'))).toBe(false);
+    expect(screen.getByTestId('bubble').textContent).toBe('3d');
+  });
+
+  it('is a second stage with the camera, its world moved with the view without a render', () => {
+    const onNode = vi.fn();
+    view.value = { zoom: 1.5, offset: { x: 10, y: -20 } };
+    const { container } = render(
+      <Space3DOverlayStage style={space3DStageStyle('tilted')} zoom={1.5} onNode={onNode} />,
+    );
+    const stage = container.querySelector<HTMLElement>('[data-space-overlay]')!;
+    expect(stage.hasAttribute('data-space-stage')).toBe(true);
+    expect(stage.style.getPropertyValue('--space-tilt')).toBe('52deg');
+    const world = container.querySelector<HTMLElement>('[data-space-overlay-world]')!;
+    expect(onNode).toHaveBeenLastCalledWith(world);
+    expect(world.style.transform).toBe('scale(1.5) translate(10px, -20px)');
+    act(() => {
+      view.value = { zoom: 1.5, offset: { x: 40, y: -20 } };
+      for (const fn of view.subs) fn();
+    });
+    expect(world.style.transform).toBe('scale(1.5) translate(40px, -20px)');
     view.value = { zoom: 1, offset: { x: 0, y: 0 } };
   });
 });

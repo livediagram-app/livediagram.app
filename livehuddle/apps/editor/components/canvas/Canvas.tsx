@@ -9,7 +9,7 @@ import {
 } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { useDoubleTapZoom } from '@/hooks/canvas/useDoubleTapZoom';
 import { useSmallElementDoubleTap } from '@liveworkspace/workbench/hooks/canvas/useSmallElementDoubleTap';
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useFocusCanvasOnMount } from '@liveworkspace/workbench/hooks/canvas/useFocusCanvasOnMount';
 import { tabBackgroundStyle, worldPatternOrigin } from '@/lib/canvas-backgrounds';
 import { useObservedSize } from '@liveworkspace/workbench/hooks/canvas/useObservedSize';
@@ -63,6 +63,7 @@ import { useElementReader } from '@/components/canvas/collab/ElementReader';
 import dynamic from 'next/dynamic';
 import { loadSpace3DWalls } from '@/lib/editor-deferred-code';
 import { space3DStageStyle, useSpace3DView } from './space-3d/useSpace3DView';
+import { Space3DOverlayProvider, Space3DOverlayStage } from './space-3d/Space3DOverlay';
 
 // The 3D view's walls (docs/specs/008-canvas/3d-view.md "Performance"): loaded the first time a walk wants them.
 const Space3DWalls = dynamic(loadSpace3DWalls, { ssr: false });
@@ -309,6 +310,15 @@ function CanvasView(props: CanvasProps) {
   const elementReader = useElementReader(elements, canvasTool === 'avatar');
   // The 3D view (docs/specs/008-canvas/3d-view.md): while you walk with it on, the stage tilts the world back.
   const space3D = useSpace3DView(canvasTool === 'avatar');
+  // The overlay's world layer, where what floats over a head is drawn while the view is 3D (Space3DOverlay).
+  const [space3DOverlayNode, setSpace3DOverlayNode] = useState<HTMLElement | null>(null);
+  const space3DOverlay = useMemo(
+    () => ({
+      on: space3D !== 'flat',
+      node: space3D === 'flat' ? null : space3DOverlayNode,
+    }),
+    [space3D, space3DOverlayNode],
+  );
   const surface = useCanvasSurfaceGestures({
     canvasTool,
     middleMousePan: props.settings?.middleMousePan !== false,
@@ -504,7 +514,13 @@ function CanvasView(props: CanvasProps) {
             {space3D === 'flat' ? null : (
               <Space3DWalls elements={elements} poseStore={avatar.poseStore} size={mainSize} />
             )}
-            <CanvasCharactersLayer props={props} canvasAvatar={canvasAvatar} mainSize={mainSize} />
+            <Space3DOverlayProvider value={space3DOverlay}>
+              <CanvasCharactersLayer
+                props={props}
+                canvasAvatar={canvasAvatar}
+                mainSize={mainSize}
+              />
+            </Space3DOverlayProvider>
           </div>
         </div>
         {/* The horizon the tilted floor fades into (docs/specs/008-canvas/3d-view.md "What it shows"). */}
@@ -513,6 +529,14 @@ function CanvasView(props: CanvasProps) {
             aria-hidden
             data-space-fog=""
             className="pointer-events-none absolute inset-x-0 top-0 h-[36%]"
+          />
+        )}
+        {/* Over the world and its horizon: speech, cards, call bubbles and hands, never hidden by a wall. */}
+        {space3D === 'flat' ? null : (
+          <Space3DOverlayStage
+            style={space3DStageStyle(space3D)}
+            zoom={viewportZoom}
+            onNode={setSpace3DOverlayNode}
           />
         )}
 

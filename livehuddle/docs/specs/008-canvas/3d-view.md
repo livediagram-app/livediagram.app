@@ -35,7 +35,9 @@ not laggy.
   (billboarded) about their feet, so they stand on the spot they walk on, in their four facings, walking, sitting and
   hopping as in the flat view. Their name chips and status chips ride with them, upright and readable.
 - **What floats above heads stands up with them**: speech bubbles, the talking bars, raised hands and camera and
-  screen bubbles turn to face the camera about the same feet, so they stay over the head they belong to.
+  screen bubbles turn to face the camera about the same feet, so they stay over the head they belong to. They are
+  drawn over the whole scene, so no wall ever hides one, however near the wall the speaker stands; the Receptionist's
+  card too, which in 3D always stands over his head, never under his feet.
 - **What lies on the floor stays on it**: the hearing ring, the "you are here" ring, an Avatar Pad's arrival beam.
 - **The floor pattern goes**: the tab's dots or grid are drawn on the screen, not on the floor, so the 3D view
   shows the tab's background colour alone, fading into a soft horizon at the top of the screen.

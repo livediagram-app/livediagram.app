@@ -39,6 +39,7 @@
   transition: transform 520ms var(--space-ease);
 }
 [data-space-view] [data-canvas-content],
+[data-space-view] [data-space-overlay-world],
 [data-space-view] [data-space-walls],
 [data-space-view] [data-avatar],
 [data-space-view] [data-avatar-chip],
