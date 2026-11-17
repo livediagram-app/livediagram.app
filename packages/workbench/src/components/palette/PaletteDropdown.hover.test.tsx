@@ -109,3 +109,32 @@ describe('the open menu', () => {
     expect(screen.getByRole('listbox', { name: 'Toolbar category' })).toBeTruthy();
   });
 });
+
+// A host that closes the menu itself (the strip closes the selection mode when a palette category opens,
+// docs/specs/007-editor/toolbar-layout.md "One popover at a time") holds the open state.
+describe('a controlled dropdown', () => {
+  it('opens and closes as its host says, and reports each press and outside press', () => {
+    const onOpenChange = vi.fn();
+    const view = (open: boolean) => (
+      <PaletteDropdown
+        ariaLabel="Selection mode"
+        value="text"
+        options={options}
+        onChange={vi.fn()}
+        open={open}
+        onOpenChange={onOpenChange}
+      />
+    );
+    const { rerender } = render(view(false));
+    fireEvent.click(screen.getByRole('button', { name: 'Selection mode' }));
+    expect(onOpenChange).toHaveBeenLastCalledWith(true);
+    // Nothing opens until the host says so.
+    expect(menu()).toBeNull();
+    rerender(view(true));
+    expect(menu()).not.toBeNull();
+    fireEvent.pointerDown(document.body);
+    expect(onOpenChange).toHaveBeenLastCalledWith(false);
+    rerender(view(false));
+    expect(menu()).toBeNull();
+  });
+});

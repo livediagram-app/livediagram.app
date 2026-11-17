@@ -7,6 +7,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type ReactNode,
@@ -18,6 +19,7 @@ import { useIsMobileViewport } from '../../hooks/ui/useIsMobileViewport';
 import { useReposition } from '../../hooks/canvas/useReposition';
 import { VIEWPORT_EDGE_MARGIN } from '../../lib/clamp-to-viewport';
 import { coverHost } from './menu-flyout-cover';
+import { flyoutSide, type FlyoutSide, type Span } from './menu-flyout-side';
 import {
   FlyoutPanel,
   plainTriggerClass,
@@ -96,7 +98,15 @@ function loneSection(children: ReactNode): ReactNode | null {
 // How many flyouts a flyout row sits inside: 0 in the host menu, 1 in a flyout (Tools > Mind Map), and so on.
 // The controlled onToggle is told it, so the scaffold's open path (useFlyoutPath) opens a nested flyout without
 // closing the flyout it sits in (docs/specs/008-canvas/canvas-and-palette.md "A flyout can hold a flyout").
-const FlyoutDepthContext = createContext(0);
+// It also carries the parent's side and the span of every open menu above, read when a nested flyout measures,
+// so a flyout inside one that flipped left opens further left rather than over the host menu (flyoutSide).
+type FlyoutParent = { depth: number; side: () => FlyoutSide; chain: () => Span | null };
+const HOST_PARENT: FlyoutParent = { depth: 0, side: () => 'right', chain: () => null };
+const FlyoutDepthContext = createContext<FlyoutParent>(HOST_PARENT);
+
+function spanOf(r: DOMRect): Span {
+  return { left: r.left, right: r.right };
+}
 
 type FlyoutPos = { left: number; top: number; width?: number; minHeight?: number };
 
@@ -161,7 +171,10 @@ function Flyout({
   const kind = useMenuKind() === 'command' ? 'command' : 'control';
   const { itemProps } = useMenuItemProps();
   const [localOpen, setLocalOpen] = useState(false);
-  const depth = useContext(FlyoutDepthContext);
+  const parent = useContext(FlyoutDepthContext);
+  const depth = parent.depth;
+  // The side this panel last opened to, handed down to the flyouts inside it.
+  const sideRef = useRef<FlyoutSide>('right');
   const controlled = controlledOpen !== undefined;
   const open = controlled ? controlledOpen : localOpen;
   // On a phone the flyout COVERS its parent menu instead of sitting beside it
@@ -238,8 +251,17 @@ function Flyout({
         return place({ left, top, width, minHeight });
       }
     }
-    const fitsRight = tr.right + gap + pr.width + m <= window.innerWidth;
-    const rawLeft = fitsRight ? tr.right + gap : tr.left - gap - pr.width;
+    // The parent's side first, then the other side past the whole open chain (menu-flyout-side.ts).
+    const { side, left: rawLeft } = flyoutSide({
+      trigger: spanOf(tr),
+      chain: parent.chain(),
+      width: pr.width,
+      viewportWidth: window.innerWidth,
+      prefer: parent.side(),
+      margin: m,
+      gap,
+    });
+    sideRef.current = side;
     // Prefer hanging DOWN from the row. If that overflows the bottom, hang UP
     // from it instead (the flip the trigger's own row anchors), and only if
     // neither fits fall back to pinning at the top margin. Flipping keeps the
@@ -267,7 +289,30 @@ function Flyout({
     const left = Math.round(Math.max(m, Math.min(rawLeft, window.innerWidth - pr.width - m)));
     const top = Math.round(Math.max(m, Math.min(rawTop, window.innerHeight - pr.height - m)));
     return place({ left, top });
-  }, [isMobile, isPanel, place]);
+  }, [isMobile, isPanel, place, parent]);
+
+  // What the flyouts inside this one read: their depth, this panel's side, and the span of the host menu plus
+  // every open panel down to this one.
+  const childContext = useMemo<FlyoutParent>(
+    () => ({
+      depth: depth + 1,
+      side: () => sideRef.current,
+      chain: () => {
+        const trigger = triggerRef.current;
+        const above =
+          parent.chain() ??
+          (trigger
+            ? spanOf((trigger.closest(HOST_MENU) ?? trigger).getBoundingClientRect())
+            : null);
+        const own = panelRef.current?.getBoundingClientRect();
+        if (!own) return above;
+        return above
+          ? { left: Math.min(above.left, own.left), right: Math.max(above.right, own.right) }
+          : spanOf(own);
+      },
+    }),
+    [depth, parent],
+  );
 
   const [trackNonce, setTrackNonce] = useState(0);
   const retrack = useCallback(() => setTrackNonce((n) => n + 1), []);
@@ -402,7 +447,9 @@ function Flyout({
             title={title}
             onClose={() => setOpen(false)}
           >
-            <FlyoutDepthContext.Provider value={depth + 1}>{children}</FlyoutDepthContext.Provider>
+            <FlyoutDepthContext.Provider value={childContext}>
+              {children}
+            </FlyoutDepthContext.Provider>
           </FlyoutPanel>
         </Portal>
       ) : null}
