@@ -1084,13 +1084,25 @@ showPicture?, timeZone? }` with one handler; a guest's bearer is refused (`401 s
   visit with none seeds one (the account name, or a guest's placeholder), so a display name set anywhere stays.
 - A name is trimmed, 1 to 120 characters, with no control characters; a colour at most 64, and refused
   when it could load something or break out of a CSS value (the apps' `isSafeColourValue`), since it is
-  painted into every peer's page. Either may be null: no name of its own, or the app's own pick of colour.
+  painted into every peer's page. Either may be null: no name of its own, or Automatic, the colour picked from the name (below).
 - The colours offered are one palette, `PRESENCE_COLOURS` in `@liveworkspace/settings`
   (`packages/settings`): ten named colours, each with the deeper shade dark mode paints it in under
   white text. Every app and liveworkspace.app's Settings offer the same swatches from it.
-- The account menu's avatar, in every header, shows the account's [picture](#profile-pictures) when it has one, and is otherwise painted in the account's own colour
+- **Automatic.** A profile with no colour of its own (null, shown as Automatic) wears one picked from the name
+  collaborators see (its display name, else the account's full name): `automaticPresenceColour(name)` in
+  `@liveworkspace/settings/presence`, a hash of the trimmed, lower-cased name onto `PRESENCE_COLOURS`. It is the one
+  rule for an Automatic colour, used by every surface that draws a person: the account menu's avatar in every header
+  (each editor's and liveworkspace.app's), Settings › Profile's preview, a team's member discs, the forum, the
+  Explorer's history discs, each app's participants (its api fills a missing colour with it, so cursors, the
+  presence list and comment author dots wear it) and the assignee dots on an element. So a person on Automatic is one
+  colour everywhere. Renaming can change it, as it changes the initials. No app keeps a pick of its own; a live room
+  may still give a newcomer the next free palette colour while two people in it would clash.
+- The account menu's avatar, in every header, shows the account's [picture](#profile-pictures) when it has one, and is otherwise painted in the account's own colour,
+  or for Automatic the colour picked from its name, in the colour's deep shade under the white initials in both
+  themes (`avatarFill` in `@liveworkspace/account-menu/initials`; white on a palette colour's 500 step falls below AA)
   ([site.md](../010-site/site.md#the-header)). It rides where the user already does, so it costs no request: the
-  ID token's `presence_color` claim for the apps (kept in [`<prefix>account_colour`](#an-apps-signed-in-cookies)),
+  ID token's `presence_color` claim for the apps (kept in [`<prefix>account_colour`](#an-apps-signed-in-cookies) for
+  their static pages, and on the token answer's `user.color` for each editor's header, `AuthControls`),
   and `user.color` in the answer to `GET /api/auth/get-session` for liveworkspace.app (one
   primary-key read of the profile per call; the Worker adds it to that endpoint's answer only, not to
   every session lookup).
