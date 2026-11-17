@@ -91,7 +91,7 @@ export function DeclinePage() {
           <Button
             variant="none"
             busy={busy}
-            className="relative touch-target-y inline-flex cursor-pointer items-center justify-center rounded-full bg-rose-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors duration-micro hover:bg-rose-700"
+            className="relative touch-target-y inline-flex cursor-pointer items-center justify-center rounded-full forced-edge bg-rose-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors duration-micro hover:bg-rose-700"
             onClick={() => void decline()}
           >
             {busy ? 'Declining…' : 'Decline invitation'}

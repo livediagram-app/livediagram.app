@@ -9,7 +9,7 @@ export { ErrorNote } from './error-note';
 // The site's buttons, by weight.
 export const BUTTON = {
   primary:
-    'inline-flex cursor-pointer items-center justify-center rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition-colors duration-micro hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50 aria-disabled:cursor-not-allowed aria-disabled:opacity-50 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200',
+    'inline-flex cursor-pointer items-center justify-center rounded-full forced-edge bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition-colors duration-micro hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50 aria-disabled:cursor-not-allowed aria-disabled:opacity-50 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200',
   secondary:
     'inline-flex cursor-pointer items-center justify-center rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition-colors duration-micro hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 aria-disabled:cursor-not-allowed aria-disabled:opacity-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800',
   danger:

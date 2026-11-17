@@ -640,6 +640,18 @@
 }
 
 /*
+ * A button whose only shape is its fill (a primary action) loses it under forced colours: the browser repaints the
+ * fill as Canvas, and with no border it reads as bare text (the sign-in page's Continue with email, Work Tracker
+ * 1080). `forced-edge` gives it the system's button edge there, and nothing in a normal theme
+ * (docs/specs/004-interface-design/forced-colors.md "A button is never its fill alone").
+ */
+@utility forced-edge {
+  @media (forced-colors: active) {
+    border: 1px solid ButtonBorder;
+  }
+}
+
+/*
  * The one narrower variant, for dense strips where even the thin default crowds the content (the
  * editor's tab bar, packed panel lists and dialogs, the dashboard's stack modals). Same colours as
  * the default; only the webkit width differs, since `thin` is already the standard's narrowest.

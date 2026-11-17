@@ -30,14 +30,14 @@ const BASE =
   'optical-edges inline-flex items-center justify-center gap-2 rounded-md font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50 aria-disabled:cursor-not-allowed aria-disabled:opacity-50';
 
 const VARIANTS: Record<ButtonVariant, string> = {
-  primary: `bg-brand-700 text-white hover:bg-brand-800 focus-visible:outline-brand-700 ${SOLID_BRAND_DARK_CONTROL}`,
+  primary: `forced-edge bg-brand-700 text-white hover:bg-brand-800 focus-visible:outline-brand-700 ${SOLID_BRAND_DARK_CONTROL}`,
   secondary:
     'border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:bg-slate-800',
   ghost:
     'text-slate-500 hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-slate-400 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100',
   // A filled button whose fill (and hover fill) the caller supplies in `className`, for an action that takes on a
   // colour it represents, such as a share role's. White text, so the fill must hold 4.5:1 against white.
-  solid: 'text-white focus-visible:outline-slate-400',
+  solid: 'forced-edge text-white focus-visible:outline-slate-400',
 };
 
 const SIZES: Record<ButtonSize, string> = {
