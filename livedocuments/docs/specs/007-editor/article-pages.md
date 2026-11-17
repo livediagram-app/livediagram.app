@@ -270,7 +270,9 @@ footnote's reference (see "Footnotes"). Code blocks keep plain text.
   open down from it.
 - **A finger on a page** (a phone or any touch screen): a finger that travels more than a few px
   (`TOUCH_PAN_SLOP`) on an article page's writing or paper pans the view, as a thumb scrolls a
-  document, whatever the tool; one that lifts where it landed is a tap, which puts the caret there;
+  document, whatever the tool; one that lifts where it landed is a tap, which puts the caret there, in the
+  paragraph tapped, and what is typed next lands there, even just after Add Article put the caret in the new
+  article's Title;
   one held still for a long press (`LONG_PRESS_MS`) is the browser's, selecting text, so a slide
   after it stretches the selection rather than panning. Selected writing keeps the phone's Copy
   and Paste callout.
