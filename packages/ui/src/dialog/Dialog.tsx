@@ -178,6 +178,11 @@ export function keyboardBandStyles(
   };
 }
 
+// A dialog drawn inside Tools (dialog-slot.ts): its sections' side padding comes in to the header's. The rule outranks a
+// section's own `sm:px-6` too (two classes against one), so `px-5 sm:px-6` sits at px-4 at every width.
+export const INLINE_REGION =
+  'flex min-h-0 flex-1 flex-col [&_:not(button,a).px-5]:px-4 [&_:not(button,a).px-6]:px-4';
+
 export function Dialog({
   open,
   onClose,
@@ -309,7 +314,9 @@ export function Dialog({
         // Its host's tree hears no press from inside it, as a modal's backdrop keeps them (the canvas behind).
         onPointerDown={(e) => e.stopPropagation()}
         onContextMenu={(e) => e.stopPropagation()}
-        className="flex min-h-0 flex-1 flex-col"
+        // One left edge with the back bar and the slim header (px-4): a body's px-5 or px-6 steps in to it. Buttons and
+        // links keep their own padding.
+        className={INLINE_REGION}
       >
         <DialogInlineContext value>
           <DialogDismissContext value={requestClose}>{children}</DialogDismissContext>

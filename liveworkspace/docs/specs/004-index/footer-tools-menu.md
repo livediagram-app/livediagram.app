@@ -88,7 +88,7 @@ between tools, never in a modal of its own on top of the editor.
   tool's name in its chip ("Tools > History"), and the popover's close beside it. The tool's own header loses its
   title (the chip names it) and its close (the popover's closes it), keeping its one line and its actions (Automations'
   New Rule, for one) in a slim row under the bar. Everything else is the tool as it was: its form, its list, its
-  footer.
+  footer, its sides coming in to the bar's 16px so the whole view shares one left edge.
 - **Back.** The back bar returns to the list, as does the tool's own Cancel or Done. A tool that holds unsaved work
   (Automations' rule builder) asks first, as its own close did. Escape steps back one level (a confirm or a menu open
   in the tool first, a snapshot's in-place confirm among them), then closes Tools from the list. The close shuts Tools from any level.

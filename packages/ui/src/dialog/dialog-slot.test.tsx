@@ -4,7 +4,7 @@
 import { StrictMode } from 'react';
 import { act, cleanup, render, renderHook, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { Dialog } from './Dialog';
+import { Dialog, INLINE_REGION } from './Dialog';
 import {
   closeDialogSlot,
   holdDialogSlot,
@@ -41,6 +41,9 @@ describe('the dialog slot', () => {
       </Dialog>,
     );
     expect(node.contains(screen.getByRole('region', { name: 'Tool' }))).toBe(true);
+    // Its sections' px-5 and px-6 come in to the header's px-4, so the view shares one left edge.
+    expect(screen.getByRole('region', { name: 'Tool' }).className).toBe(INLINE_REGION);
+    expect(INLINE_REGION).toContain('[&_:not(button,a).px-6]:px-4');
     expect(slot.result.current?.claimed?.size).toBe('lg');
     rerender(
       <Dialog open={false} onClose={vi.fn()} ariaLabel="Tool">
@@ -75,6 +78,9 @@ describe('the dialog slot', () => {
       </StrictMode>,
     );
     expect(node.contains(screen.getByRole('region', { name: 'Tool' }))).toBe(true);
+    // Its sections' px-5 and px-6 come in to the header's px-4, so the view shares one left edge.
+    expect(screen.getByRole('region', { name: 'Tool' }).className).toBe(INLINE_REGION);
+    expect(INLINE_REGION).toContain('[&_:not(button,a).px-6]:px-4');
     expect(slot.result.current?.released).toBe(false);
     expect(slot.result.current?.claimed?.size).toBe('lg');
   });

@@ -30,7 +30,7 @@ Snapshots live inside **History** in the footer's **Tools** menu ([The footer's 
 "History, with Snapshots in it"; owner, 2026-11-17), there for that Editor once the document is stored on the server
 (never in This Browser, a workbench frame or a Community visit): **Take Snapshot** over History's timeline and each
 snapshot pinned on it, or the snapshots on their own for an Editor through a share link, naming the item
-"document" ([Snapshots](../../../../liveworkspace/docs/specs/014-snapshots/snapshots.md) "In History"). There is no
+"canvas", as the editor names it everywhere ([Snapshots](../../../../liveworkspace/docs/specs/014-snapshots/snapshots.md) "In History"). There is no
 Snapshots row of its own.
 
 ## Where it is built
