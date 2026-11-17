@@ -1,6 +1,6 @@
 # Space mini view blueprint
 
-Derived from [Avatar mode](../avatar-mode.md) "The mini view" (Work Tracker 908), with the knock's half from
+Derived from [Avatar mode](../avatar-mode.md) "The mini view" (Work Tracker 908; camera tiles Work Tracker 984, with [Video and screen share bubbles](../../012-collaboration/video-and-screen-bubbles.md) "Who sees what"), with the knock's half from
 [Knock](../../012-collaboration/knock.md) "Being knocked" and the hands' from [Meeting rooms and the
 stage](../../012-collaboration/meeting-rooms-and-stage.md) "Raise hand".
 
@@ -15,6 +15,7 @@ stage](../../012-collaboration/meeting-rooms-and-stage.md) "Raise hand".
 | `apps/editor/components/calls/mini-view/MiniViewHost.tsx`     | Mounted by the characters layer: renders the mini view into the window (its own root) while open; closes it on unmount    |
 | `apps/editor/components/calls/mini-view/MiniView.tsx`         | The window's content: header, knock, groups                                                                               |
 | `apps/editor/components/calls/mini-view/MiniViewRow.tsx`      | One row: `MiniBust`, name, status, hand, bars                                                                             |
+| `apps/editor/components/calls/mini-view/MiniViewTiles.tsx`    | The camera tiles above the people (Work Tracker 984): `miniTiles`, `MiniViewTiles`, `MiniViewTile`                        |
 | `apps/editor/components/calls/mini-view/MiniViewControls.tsx` | Your microphone and camera at the window's foot, the Call dock's own buttons (Work Tracker 992)                           |
 | `apps/editor/components/calls/MicAndCameraSegments.tsx`       | The dock's microphone (live and preview) and Camera buttons, shared by the dock and the mini view                         |
 | `apps/editor/test/fake-pip-window.ts`                         | The tests' stand-in window and API (`fakePipWindow`, `installPip`, `removePip`)                                           |
@@ -33,6 +34,7 @@ stage](../../012-collaboration/meeting-rooms-and-stage.md) "Raise hand".
 | Mini person   | `MiniPerson`    | `{ id, name, color, config, status, self }`: a row's facts, no position |
 | Group         | `MiniGroup`     | `{ id: 'near' \| 'space', people: MiniPerson[] }`                       |
 | Mini knock    | `MiniKnock`     | `{ from, name, answer(value) }`: the knock on show                      |
+| Mini tile     | `MiniTile`      | `{ person, stream }`: a heard person's received camera in the window    |
 | Back to Space | `focusSpace`    | `window.focus()` on the opener, from a press in the window              |
 
 Synonyms banned: "PiP" in copy (the code may say `pip` for the window object), "popup", "floating panel".
@@ -98,6 +100,23 @@ moves a level to 0 when stale, as on the canvas. Per row:
   yours from `self.hand` (`raised` or `speaking`).
 - Bars: `barHeight(level)` from `TalkingBars`, three bars, the middle one full, the outer ones at 60%.
 
+### Camera tiles (`MiniViewTiles`, Work Tracker 984)
+
+`MiniView` subscribes to `useCallMedia()` (it changes only when a stream arrives or goes) and passes
+`miniTiles(groups, media)` to the memoised `MiniViewTiles`, between the knock and the list. `miniTiles` walks the
+`near` group in its order (by name), skips your own row, keeps each person whose `media.get(id)?.video` is set, and
+stops at `MAX_MINI_VIEW_VIDEOS` (4, from `lib/calls/bubbles.ts`, so the window never draws more cameras than a hidden
+tab may receive). With none it renders nothing (no empty strip). `MiniViewTiles` is a `role="list"` named
+**Cameras**: a two-column grid, a lone tile spanning both columns, an odd last tile centred at one column's width.
+`MiniViewTile` (memoised by `person` and `stream`, so a level tick never touches the video) is a list item holding a
+button named "Sam's Camera" (`mediaTitle`), the canvas bubble's own `MediaVideo` (cover, muted, plays inline, shown
+on its first frame), ringed 2 px in the person's colour and tinted with it until then, and the name on a
+`bg-slate-950/70` chip at the bottom left. A press calls `focusSpace`.
+
+Which cameras exist is the call's choice (`pickSeen`): with the tab hidden and the window open, the 4 nearest heard
+cameras on the small layer; with the tab visible, whatever the canvas receives (on screen, nearest 6). So a tile
+shows a heard person's camera exactly when the call receives it.
+
 ### Your controls (`MiniViewControls`, Work Tracker 992)
 
 The last child of `MiniView`'s column, `shrink-0`. It reads `useCallSelf` and `useCallActions` and draws nothing
@@ -158,7 +177,29 @@ Answers go through the same `answer` as the toast, so the room's checks are unch
   `ROOM_MAX_CONNECTIONS`); the sort and the rows only when the key changes. Levels re-render the list at most at the
   peers store's `PEER_NOTIFY_MS` (100 ms) while someone talks. No timers but the stale clock and the knock's one.
   Held by a CPU-time test: 1,000 keys over 200 people.
-- No video, no canvas, no animation frame in the window; the hidden-tab rule (`pickSeen`'s `visible`) is untouched.
+- No canvas and no animation frame in the window. Video: at most 4 `<video>` elements (`MAX_MINI_VIEW_VIDEOS`), each
+  bound to its stream once (`srcObject` in an effect keyed by the stream); the frames never pass through React.
+- Hidden tab, window open: `pickSeen` lets through at most 4 cameras on the `h` layer (half size, 300 kbps, 24 fps)
+  and no screen; closed, nothing, as before. Measured cost: "Hidden-tab decode" below.
+
+### Hidden-tab decode (Work Tracker 984)
+
+Measured 2026-11-17 (Apple Silicon, 10 cores, Chromium from Playwright, software VP8 `libvpx`, machine under other
+load): loopback peer connections carrying the fake camera in the `h` layer's shape (640x360, 300 kbps, resolution
+held), each received into a 150 px `<video>`, sampled from `getStats()`'s `totalDecodeTime` over 20 s:
+
+| Cameras received | Decode time per second | Share of one core | Per frame |
+| ---------------- | ---------------------- | ----------------- | --------- |
+| 1                | 6.2 ms                 | 0.6%              | 0.31 ms   |
+| 4 (the cap)      | 26.8 ms                | 2.7%              | 0.34 ms   |
+| 6 (visible cap)  | 40.3 ms                | 4.0%              | 0.34 ms   |
+
+The fake camera runs at 20 fps; a real 24 fps camera costs about a fifth more (4 cameras: about 3.2% of one core).
+Headless Chromium keeps every page visible, so the samples are the decoder's own time, which Chromium spends whatever
+the page's visibility (a hidden page skips painting, not decoding); the tiles' painting is the window's own, four
+150 px videos. So the open mini view costs a hidden tab at most about 3% of one core, two thirds of what the visible
+canvas's six bubbles cost, and nothing once it closes. The script: `measure.mjs` in the PR's notes (loopback, no
+server).
 
 ## Presentation and UX
 
@@ -166,6 +207,10 @@ Answers go through the same `answer` as the toast, so the room's checks are unch
   14 px text, `overflow-y: auto` on the list.
 - Header: **In the Space** and the count (`tabular-nums`, slate), **Back to Space** as a small brand-tinted button
   with the arrow-up-right glyph. Pressing the header or a row also calls `focusSpace`.
+- Tiles: under the knock, `px-2 pt-2`, a `grid grid-cols-2 gap-1.5`; each tile `aspect-video rounded-lg`, a 2 px ring
+  in the person's colour (`box-shadow`, as the canvas bubble) and its 22% tint on slate-900 until the first frame;
+  the name chip `text-[11px] font-medium text-white` on `bg-slate-950/70`, `rounded-md`, 4 px in from the bottom
+  left, truncated. `focus-visible` draws the brand outline. 320 px wide, two tiles are about 150 by 84 px each.
 - Knock: an amber card under the header, "Sam is knocking", **Let In** (solid amber) and **Not Now** (quiet).
 - Group headings: 11 px uppercase slate, **Near You** and **In the Space**.
 - Row: 40 px high; a 28 px bust (an SVG of `HeadFront` over a shoulders rect in the person's colour, `crispEdges`)
@@ -179,6 +224,7 @@ Answers go through the same `answer` as the toast, so the room's checks are unch
 
 - The list is `role="list"`; each row `role="listitem"` with an `aria-label` of name, status, "hand raised" or "let
   speak", and "speaking".
+- The tiles are a list named **Cameras**, each tile a button read as "Sam's Camera"; the video is `aria-hidden`.
 - The knock card is `aria-live="polite"`; its buttons are real buttons with focus rings.
 - Back to Space is a button named "Back to Space". Contrast: the status and heading slate meets 4.5:1 on both
   surfaces (`text-slate-600` / `dark:text-slate-300`).
@@ -208,16 +254,19 @@ nothing until opened. No layout shift: Pop Out takes its place in the dock on fi
 | Host draws while open, closes on unmount, keeps presses in window | `MiniViewHost.test.tsx`                               |
 | A knock reaches the mini view; an answer clears it                | `mini-view-knock.test.ts`, `useMeetingPieces.test.ts` |
 | Your controls: the dock's mic per phase, camera while on, roles   | `MiniViewControls.test.tsx`                           |
+| Tiles: near only, by name, not yours, capped, none, press         | `MiniViewTiles.test.tsx`                              |
+| Hidden tab with the window open: 4 nearest small cameras, back    | `bubbles.test.ts`, `proximity-call.test.ts`           |
 
 ## Constants and configuration
 
-| Constant           | Value                     | Why                                                      |
-| ------------------ | ------------------------- | -------------------------------------------------------- |
-| `MINI_VIEW_WIDTH`  | 320                       | Room for a 28 px bust, a long name and the hand and bars |
-| `MINI_VIEW_HEIGHT` | 400                       | Seven rows and the header before it scrolls              |
-| `MINI_VIEW_TITLE`  | `'Mini View'`             | The window's title                                       |
-| Knock timeout      | `TOAST_ANSWER_TIMEOUT_MS` | The toast's own, so both go together                     |
+| Constant               | Value                      | Why                                                         |
+| ---------------------- | -------------------------- | ----------------------------------------------------------- |
+| `MINI_VIEW_WIDTH`      | 320                        | Room for a 28 px bust, a long name and the hand and bars    |
+| `MINI_VIEW_HEIGHT`     | 400                        | Seven rows and the header before it scrolls                 |
+| `MINI_VIEW_TITLE`      | `'Mini View'`              | The window's title                                          |
+| `MAX_MINI_VIEW_VIDEOS` | 4 (`lib/calls/bubbles.ts`) | A 2 by 2 grid in a 320 px window; small and measured (D142) |
+| Knock timeout          | `TOAST_ANSWER_TIMEOUT_MS`  | The toast's own, so both go together                        |
 
 ## Defaults ledger
 
-D132 to D135 in [DEFAULTS.md](DEFAULTS.md).
+D132 to D135 and D142 in [DEFAULTS.md](DEFAULTS.md).

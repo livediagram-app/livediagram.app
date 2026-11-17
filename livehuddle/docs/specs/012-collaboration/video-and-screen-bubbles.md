@@ -23,11 +23,14 @@ On top of earshot, a bubble is received only while it can be seen:
   the screen shows at any zoom: the canvas zooms about the middle of the screen, so zoomed in or out the area is
   centred where the screen's middle is, never anchored at its top-left corner (a bug until 2026-11-06 left everyone to
   your right and below you unreceived when zoomed in).
-- **A hidden tab receives none.** While the page is hidden (another browser tab, a minimised window), every video and
-  screen subscription closes; voices carry on. Coming back opens them again. Sharing a tab or a window never hides
-  the page by itself: the picker keeps you on livehuddle ([The screen share](#the-screen-share-318)). [The mini
-  view](../008-canvas/avatar-mode.md#the-mini-view) keeps the people in sight meanwhile, without video: it changes
-  nothing here.
+- **A hidden tab receives none, unless the mini view is open.** While the page is hidden (another browser tab, a
+  minimised window), every video and screen subscription closes; voices carry on. Coming back opens them again.
+  Sharing a tab or a window never hides the page by itself: the picker keeps you on livehuddle ([The screen
+  share](#the-screen-share-318)). With [the mini view](../008-canvas/avatar-mode.md#the-mini-view) open (Work Tracker
+  984), a hidden tab still receives the cameras of **the 4 nearest people you hear**, for its tiles: wherever their
+  characters stand (the canvas's visible area does not apply, since the canvas is not on show), on the small layer
+  only (half size, 300 kbps), a maximised one included. No screen, and nobody you do not hear. Closing the mini view,
+  or showing the tab, returns at once to the rules above.
 - **At most 6 camera bubbles at once**, the nearest. Further cameras in earshot show their character only.
 - **At most 2 screen bubbles at once**, the nearest. A screen is about three bubbles' worth of traffic.
 - A bubble you have maximised is kept whatever the caps and the viewport say, until you restore it.
@@ -267,7 +270,8 @@ Cloudflare bills $0.05 per GB of egress after the account's first 1,000 GB a mon
 - A camera bubble: 300 kbps, about 0.135 GB per viewer-hour; maximised, 1.5 Mbps, about 0.675.
 - A room of 30 in groups of 3 to 4, everyone on camera: about 12 GB an hour, about $0.60 an hour.
 - A screen share: about 1 Mbps, 0.45 GB per viewer-hour; one share to 10 viewers is about $0.23 an hour.
-- The caps (6 cameras, 2 screens), off-screen and hidden-tab rules bound what any one viewer can cost.
+- The caps (6 cameras, 2 screens), off-screen and hidden-tab rules bound what any one viewer can cost. A hidden
+  tab with the mini view open costs at most 4 small cameras: about 0.54 GB per viewer-hour, less than the visible tab's 6.
 
 ## Telemetry
 
