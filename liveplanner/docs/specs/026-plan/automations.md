@@ -460,6 +460,8 @@ waits for ("Set a field Today", "to a column"), beside the step's "Pick a field"
 |                                 | Yes or No (a Checkbox given other text, a number, a day or a list is refused on save and by Test  |
 |                                 | on a Card); Flagged and the Checklist are set by Flag, Unflag and Add a Checklist instead         |
 | **Clear Field**                 | empties a field                                                                                   |
+|                                 | (an Image field's or Attachments' pictures leave storage 15 minutes on when nothing else uses     |
+|                                 | them, as a person's clear does: [items.md](items.md#removed-pictures) "Removed pictures")          |
 | **Assign**                      | assigns a chosen person, **whoever triggered the rule**, nobody, or **people in turn**: each run  |
 |                                 | the next of 2 to 10 chosen people, in order, round and round                                      |
 | **Add Label**, **Remove Label** | adds or takes off one label                                                                       |

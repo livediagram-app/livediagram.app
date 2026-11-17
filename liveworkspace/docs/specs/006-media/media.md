@@ -69,6 +69,7 @@ time; a key speaks only for its own app. Answers are JSON except the bytes; erro
 | `GET /images/<id>`           | The image and whose it is: `{ image, owner }`                                       |
 | `GET /images/<id>/bytes`     | The bytes, with their `Content-Type` and the owner in `X-Media-Owner`               |
 | `DELETE /images/<id>?owner=` | Its owner deletes it, row then bytes. Documents that place it show a broken picture |
+| `POST /images/<id>/release?document=` | A document no longer places it: deleted at once when nothing else could (below)  |
 | `GET /usage?owner=`          | Which documents, in which apps, place each of the owner's images: `{ usage }`       |
 | `POST /refs`                 | `{ documents: [{ document, images }], complete? }`, at most 500 documents (below)   |
 | `POST /owners/merge`         | `{ from, to }`: a guest signed up. `{ moved, kept }`                                |
@@ -156,6 +157,25 @@ not woken since reporting began has sent nothing). It claims its pictures instea
 claimed picture keeps its reference until its own document reports a set without it, so a document that
 never reports never loses one. Its unclaimed pictures (older uploads, and This Browser documents') wait for
 `complete` like any other app's, which it never sends, so the sweep never reaches them.
+
+### Releases
+
+A document that stops placing a picture it was uploaded for can ask for it to go at once, rather than wait for the
+daily sweep: `POST /app/images/<id>/release?document=<document>`. The service never takes the caller's word that
+nothing else uses it. In one statement, at that instant, it deletes the row only when all of these hold, then the
+bytes:
+
+- the image was **claimed by that document** (`images.document`) and uploaded in the calling app (the key names it);
+- **no reference** in any app names it: not another document's, not the Library's, and not the document's own (its
+  own report must have dropped it first, so a document whose report hasn't landed keeps the picture).
+
+Anything else is kept and answered `200 { released: false, reason }`, `reason` being `missing` (no such image),
+`not_claimed` (another document's upload, an unclaimed one, or another app's) or `referenced`; the daily sweep stays
+the backstop for what is kept. A release answers `200 { released: true }`. Only an app's own Worker can call it, with
+its key; a browser never can. A failed R2 delete after the row went leaves bytes with no row, as the sweep's does.
+
+liveplanner releases a picture a card no longer holds after a 15-minute grace, so an undo brings it back whole
+(its `docs/specs/026-plan/items.md` "Images in use").
 
 ### Usage
 

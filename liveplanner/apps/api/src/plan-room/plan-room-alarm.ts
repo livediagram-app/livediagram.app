@@ -4,12 +4,19 @@ import { agentPresenceLog } from '@liveworkspace/api-kit/room-agent-presence';
 import { armRoomAlarm } from '@liveworkspace/api-kit/room-alarm';
 import { runAutomations } from './automations/plan-room-automations';
 import type { PlanRoom } from './plan-room';
-import { checkCommunity, drainIndex, drainShares, maintain, runRepeats } from './plan-room-content';
+import {
+  checkCommunity,
+  drainIndex,
+  drainShares,
+  maintain,
+  releaseImages,
+  runRepeats,
+} from './plan-room-content';
 import { checkGrants, nextGrantDue } from './plan-room-grants';
 
 /** The alarm set at the earliest of: an agent presence expiry (agent-presence I5, PR29), the outbox's next push, the
  *  Community post's next check, the plan's next upkeep, a repeating card's next copy, a rule's next run, a grant's
- *  renewal. None when nothing is due. */
+ *  renewal, a removed picture's release. None when nothing is due. */
 export function armPlanAlarm(room: PlanRoom): void {
   const due = [
     room.agents.nextExpiry(),
@@ -20,6 +27,7 @@ export function armPlanAlarm(room: PlanRoom): void {
     room.repeats.at,
     room.automations.schedule.wakeAt,
     nextGrantDue(room),
+    room.releaseAt,
   ];
   // Never sooner than a second from now, and no write when it already stands there (api-kit room-alarm.ts).
   armRoomAlarm(room.state.storage, due, Date.now());
@@ -40,6 +48,7 @@ export async function wakePlanRoom(room: PlanRoom): Promise<void> {
   if (room.repeats.due(now)) await runRepeats(room, now);
   if (room.automations.schedule.due(now)) await runAutomations(room, now);
   if (room.flushAt !== null && room.flushAt <= now) await drainIndex(room);
+  if (room.releaseAt !== null && room.releaseAt <= now) await releaseImages(room, now);
   // A shared tab written while the push was in flight (its write armed nothing then).
   room.shares.noteWrite();
   if (room.shares.due(now)) await drainShares(room);

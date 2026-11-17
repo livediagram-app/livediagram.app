@@ -21,6 +21,7 @@ import {
   type MediaListResponse,
   type MediaMergeResponse,
   type MediaRefsSync,
+  type MediaReleaseResponse,
   type MediaUploadResponse,
   type MediaUsageResponse,
 } from './wire';
@@ -125,6 +126,13 @@ export function createMediaClient({ app, key, url, fetch: doFetch = fetch }: Med
     remove: async (owner: string, id: string) =>
       json<{ ok: true }>(
         await call(`/images/${encodeURIComponent(id)}`, { method: 'DELETE' }, { owner }),
+      ),
+
+    /** A document no longer places a picture it was uploaded for: the service deletes it now when nothing else could
+     *  place it, and answers why it kept it otherwise (media.md "Releases"). */
+    release: async (id: string, document: string) =>
+      json<MediaReleaseResponse>(
+        await call(`/images/${encodeURIComponent(id)}/release`, { method: 'POST' }, { document }),
       ),
 
     /** Which documents, in any app, place each of the owner's images. */

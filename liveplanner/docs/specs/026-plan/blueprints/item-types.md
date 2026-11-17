@@ -750,6 +750,21 @@ dots }` under the field's id. `votesFieldsOf(type)` lists the type's Votes field
   `pushImageRefs` from the outbox's drain, never `complete` and nothing past `MEDIA_REFS_SYNC_MAX`; `forgetImageRefs`
   from the room's purge). `routes/images.ts` names the plan as the upload's `document`, so the media service claims
   the picture for it (none for a This Browser upload).
+  Removed pictures (items.md "Removed pictures") are `plan-room/image-release.ts`: schema step V35 makes
+  `image_releases (plan_id, image_id, due_at NULL, attempts)` and the triggers `image_releases_update` (AFTER UPDATE OF
+  fields) and `image_releases_delete` (AFTER DELETE) on `items`, firing as the `outbox_images_*` triggers do, which
+  note each id the OLD fields held (an Attachments entry's `id`, a granted text value or list member, read through
+  `json_valid`) that the NEW ones don't, `due_at` NULL (an id noted again is reset). The outbox's drain, after the
+  `images` key's push, sets every NULL `due_at` to now + `IMAGE_RELEASE_GRACE_MS` (15 min, `stampImageReleases`); the
+  room keeps `releaseAt` (`nextImageReleaseAt`, MIN `due_at`, read back on restore and after each drain) in
+  `armPlanAlarm`, and its wake runs `releaseImages` → `releaseDueImages`: at most `IMAGE_RELEASES_PER_WAKE` (20) due
+  rows; one `planStillHolds` (an `instr` text match over the plan's `items.fields`, every `tabs.data`,
+  `agent_changeset_parts.data` and, when the table exists, each `snapshot_chunks.data` with the next chunk's first 400
+  characters) drops; the rest go to `MediaClient.release(id, planId)`, whose answer, released or kept, drops the row;
+  a failure sets `due_at` + `IMAGE_RELEASE_RETRY_MS` (1 min) doubling to `IMAGE_RELEASE_RETRY_MAX_MS` (1 h), dropped
+  after `IMAGE_RELEASE_ATTEMPTS_MAX` (12) tries (`[media] release given up`). No media client drops the due rows. A run
+  that throws waits a minute (`[media] releases failed`). Each run logs `[media] releases { released, kept, held,
+  retried }`.
 - The Card Types segment of `PlanCardsClusterStrip` (a `ClusterPopoverSegment`, from `ClusterPopoverButton.tsx`,
   shared with Slides) opens dock panel `card-types`, its only door. The strip takes it as an optional `types`
   prop, as it takes `trash`: `CanvasChrome` passes it only to an editor (`!readOnly`), and `useCanvasChromePanels`
@@ -1475,6 +1490,7 @@ cards, children)` adds "{names} will keep a copy of its settings."
 | Attachments: value, cap, cover, agents                                                                           | `packages/items/src/attachments.test.ts`, `packages/items/src/card-display.test.ts`                                                                                                                                                                                                                                                                |
 | Attachments: panel, roles, drop, paste, cover on the card                                                        | `apps/editor/components/plan/AttachmentsField.test.tsx`                                                                                                                                                                                                                                                                                            |
 | Images in use: triggers, report, purge, serving                                                                  | `apps/api/src/plan-room/image-refs.test.ts`                                                                                                                                                                                                                                                                                                        |
+| Removed pictures: noted per write and door, grace, still held (Trash, tab, changeset, snapshot), release, retries | `apps/api/src/plan-room/image-release.test.ts`, `apps/api/src/plan-room/image-release-writes.test.ts` |
 | Copies keep pictures: grants, serving, refs both ways, purge, Drive files                                        | `apps/api/src/plan-room/image-copy.test.ts`                                                                                                                                                                                                                                                                                                        |
 | Add Field: option rows, Enter, Backspace, paste                                                                  | `apps/editor/components/plan/ChoiceOptionsEditor.test.tsx`                                                                                                                                                                                                                                                                                         |
 | Edit Field: value conversions, refusals, counts, options, 2,000-card budget                                      | `packages/items/src/field-kind-change.test.ts`                                                                                                                                                                                                                                                                                                     |

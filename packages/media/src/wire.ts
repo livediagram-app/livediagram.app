@@ -79,6 +79,11 @@ export type MediaRefsSync = {
   complete?: boolean;
 };
 
+// `POST /app/images/<id>/release?document=`: a document no longer places a picture it was uploaded for
+// (liveworkspace/docs/specs/006-media/media.md "Releases"). Kept, with why, unless nothing else could place it.
+export type MediaReleaseKept = 'missing' | 'not_claimed' | 'referenced';
+export type MediaReleaseResponse = { released: true } | { released: false; reason: MediaReleaseKept };
+
 // `POST /app/owners/merge`: a guest signed up. Their images move to the account, except those whose
 // bytes the account already holds, which stay on the guest (the app keeps serving them by id).
 export type MediaMergeRequest = { from: string; to: string };

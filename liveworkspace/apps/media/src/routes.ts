@@ -30,6 +30,7 @@ import { readCappedBody } from '@liveworkspace/api-kit/request-body';
 import { MAX_JSON_BYTES } from './config';
 import { appKey, indexAppOf, parsePositiveCap, type Env } from './env';
 import { badRequest, forbidden, json, notFound, ok, unauthorized, unavailable } from './http';
+import { releaseImage } from './release';
 import {
   deleteImageRow,
   deleteOwnerRows,
@@ -192,6 +193,12 @@ export async function handleApp(
       }
       console.info('[media] deleted', { app, id });
       return ok();
+    }
+    // POST /app/images/<id>/release?document=: the document that claimed it no longer places it (media.md "Releases").
+    if (segments.length === 3 && segments[2] === 'release' && method === 'POST') {
+      const document = url.searchParams.get('document');
+      if (!isId(document)) return badRequest('invalid_document');
+      return json(await releaseImage(env, bucket, app, id, document));
     }
     return notFound();
   }

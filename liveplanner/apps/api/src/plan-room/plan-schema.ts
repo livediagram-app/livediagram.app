@@ -21,6 +21,7 @@ import { COMMUNITY_POST_TABLE } from '@liveworkspace/community/app';
 import { CARD_REPEATS_SCHEMA } from './card-repeats-schema';
 import { CARD_THREADS_SCHEMA } from './card-thread-schema';
 import { IMAGE_REFS_SCHEMA } from './image-refs';
+import { IMAGE_RELEASES_SCHEMA } from './image-release';
 import { FLOW_COUNTS_SCHEMA } from './flow-counts-schema';
 import { itemsBytesStep } from './items-bytes-schema';
 import { ITEM_HISTORY_SCHEMA } from './item-history-schema';
@@ -567,6 +568,10 @@ const V33 = (exec: Exec) => {
 // Who Can Send and counts, and each sender's hour by a hash.
 const V34 = EMAIL_INTAKES_SCHEMA;
 
+// Pictures a card no longer holds, waiting their grace before the media service is asked to release them
+// (image-release.ts; docs/specs/026-plan/items.md "Removed pictures"): the list and the triggers on `items` that fill it.
+const V35 = IMAGE_RELEASES_SCHEMA;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -602,6 +607,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V32,
   V33,
   V34,
+  V35,
 ];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;

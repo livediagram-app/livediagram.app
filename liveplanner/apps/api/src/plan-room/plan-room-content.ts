@@ -24,6 +24,7 @@ import { planShares } from './tab-shares';
 import { planRoom } from '../plan-client';
 import { hasPlanSchema, migratePlanSchema } from './plan-schema';
 import { forgetImageRefs } from './image-refs';
+import { nextImageReleaseAt, releaseDueImages } from './image-release';
 import { readPlanMeta } from './plan-content';
 import {
   checkCommunityPost,
@@ -59,6 +60,8 @@ export function restoreContentState(room: PlanRoom, maintenanceAt: number | unde
   room.shares.restore();
   room.repeats.restore(Date.now());
   room.automations.restore(Date.now());
+  // A removed picture's grace, kept across a restart (image-release.ts).
+  room.releaseAt = nextImageReleaseAt(sql);
   // The Community post's next check (community-post.ts), from when it last asked.
   const post = sql
     .exec<{ checked_at: number }>('SELECT checked_at FROM community_post LIMIT 1')
@@ -166,6 +169,24 @@ export async function drainIndex(room: PlanRoom): Promise<void> {
   // Anything written while the push was in flight goes next time; a key that failed, when its wait is over.
   if (room.flushAt === null)
     room.flushAt = nextOutboxFlushAt(room.state.storage.sql, Date.now(), room.lastFlushAt);
+  // A drain that sent the plan's pictures started the grace of each one a card dropped (image-release.ts).
+  room.releaseAt = nextImageReleaseAt(room.state.storage.sql);
+}
+
+// The removed pictures whose grace is over, each released at the media service unless the plan still holds it
+// (image-release.ts). A failure as a whole tries again a minute later; one release that fails waits on its own row.
+export async function releaseImages(room: PlanRoom, now: number): Promise<void> {
+  const env = room.roomEnv;
+  const planId = room.planId;
+  room.releaseAt = null;
+  if (!env || !planId || !room.schemaReady) return;
+  try {
+    await releaseDueImages(env, planId, now);
+    room.releaseAt = nextImageReleaseAt(room.state.storage.sql);
+  } catch (error) {
+    console.warn('[media] releases failed', { planId, error: String(error) });
+    room.releaseAt = now + REPEAT_RETRY_MS;
+  }
 }
 
 // The plan's daily upkeep, once a day per plan with content: sheets unreferenced for 30 days expire
@@ -284,6 +305,7 @@ export async function purge(room: PlanRoom, planId?: string): Promise<void> {
   room.automations.clear();
   room.maintenanceAt = null;
   room.communityAt = null;
+  room.releaseAt = null;
   // The purged plan holds no pictures now, so the media service's sweep may take those only it held. A failure
   // keeps them (storage kept, never a broken picture) and does not stop the purge.
   const env = room.roomEnv;
