@@ -1,6 +1,6 @@
 // History's pure rules: day headings, runs, the filter's kinds, the summary, and a person's colour.
 import { describe, expect, it } from 'vitest';
-import { PRESENCE_COLOUR_VALUES } from '@liveworkspace/settings/presence';
+import { automaticPresenceColour, PRESENCE_COLOUR_VALUES } from '@liveworkspace/settings/presence';
 import { makeEvent } from '../test/fakeClient';
 import {
   buildHistory,
@@ -104,10 +104,11 @@ describe('filters and summary', () => {
     expect(eventCountLabel(30, true)).toBe('30+ events');
   });
 
-  it('gives each person one colour from the presence palette', () => {
-    expect(personColour('user_ada')).toBe(personColour('user_ada'));
-    expect(PRESENCE_COLOUR_VALUES).toContain(personColour('user_ada'));
-    const spread = new Set(Array.from({ length: 50 }, (_, i) => personColour(`user_${i}`)));
+  it('gives each person one colour from the presence palette, by the one Automatic rule', () => {
+    expect(personColour('Ada Quinn')).toBe(personColour(' ada quinn '));
+    expect(PRESENCE_COLOUR_VALUES).toContain(personColour('Ada Quinn'));
+    expect(personColour('Ada Quinn')).toBe(automaticPresenceColour('Ada Quinn').value);
+    const spread = new Set(Array.from({ length: 50 }, (_, i) => personColour(`Person ${i}`)));
     expect(spread.size).toBeGreaterThan(5);
   });
 });

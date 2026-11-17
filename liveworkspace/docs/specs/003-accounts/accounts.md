@@ -563,6 +563,18 @@ stayed on its placeholders. So:
   alike: not signed out (no guest handoff), but its error state with **Try Again**
   ([site.md](../010-site/site.md#the-explorer)). The account menu's own ask gives up after 10 s too and reads
   the cookies as they are.
+- **The editors.** A page whose sign-in hint says signed in (`<prefix>signed_in=1`) waits for the session's own
+  answer however long it takes, and never settles as a guest meanwhile: the editors' 5 s give-up, which settles a
+  slow session as a guest so a stalled proxy can't hold the canvas, applies only to a browser with no hint
+  (`sessionExpected` in `@liveworkspace/workbench`'s deferred auth). Settling as a guest started the guest hand-off,
+  which went to the accounts site that wasn't answering, and the tab ended on the browser's connection error page:
+  nobody signed in could open their own work while their app's api was up (Work Tracker 1082). While it waits, from
+  the first unknown answer (a `5xx`, a network error, no answer in 10 s) or after 5 s with none, the editor shows a
+  calm notice, **Can’t reach your account right now**, with **Try Again** (a reload), and goes on by itself the moment
+  the accounts bridge's asks (`askTokenUntilKnown`) get an answer. The notice sits bottom centre, clear of the
+  canvas's bottom-right cluster (undo, redo, zoom) at every width and UI scale, so on a phone it never covers the zoom
+  controls (`CORNER_CLUSTER_CLEARANCE` in `@liveworkspace/workbench`). A `401` is still signed out at once, so a person
+  whose session really ended becomes a guest as before.
 
 Every other Worker call to the accounts site, or to liveworkspace through an app's router, is bounded the same way,
 so none can hang a page the way the token answer did:
@@ -587,6 +599,11 @@ so none can hang a page the way the token answer did:
   still streaming, an upload (a body over 1 MB) and a WebSocket upgrade are never cut. A forward to a loopback
   origin (a local stack, where a cold dev server can take longer than that to compile a page) is not timed. The
   routers have no binding to liveworkspace's Workers, so these still go over the public route.
+  A page load (a `GET` or `HEAD` asking for HTML) whose forward to liveworkspace fails or times out gets a styled
+  page rather than the plain line naming the origin: **This Page Couldn’t Load**, saying liveworkspace didn't answer
+  and nothing made was lost, with **Try Again** (the same address) and the platform's status page
+  (`unreachablePage` in `@liveworkspace/sites`). The status (502 or 504) and `no-store` stay. Anything else (the
+  site's payloads and assets, the account API) keeps the plain line, which its caller reads as a failure.
 
 ## Signing out
 
@@ -1084,13 +1101,25 @@ showPicture?, timeZone? }` with one handler; a guest's bearer is refused (`401 s
   visit with none seeds one (the account name, or a guest's placeholder), so a display name set anywhere stays.
 - A name is trimmed, 1 to 120 characters, with no control characters; a colour at most 64, and refused
   when it could load something or break out of a CSS value (the apps' `isSafeColourValue`), since it is
-  painted into every peer's page. Either may be null: no name of its own, or the app's own pick of colour.
+  painted into every peer's page. Either may be null: no name of its own, or Automatic, the colour picked from the name (below).
 - The colours offered are one palette, `PRESENCE_COLOURS` in `@liveworkspace/settings`
   (`packages/settings`): ten named colours, each with the deeper shade dark mode paints it in under
   white text. Every app and liveworkspace.app's Settings offer the same swatches from it.
-- The account menu's avatar, in every header, shows the account's [picture](#profile-pictures) when it has one, and is otherwise painted in the account's own colour
+- **Automatic.** A profile with no colour of its own (null, shown as Automatic) wears one picked from the name
+  collaborators see (its display name, else the account's full name): `automaticPresenceColour(name)` in
+  `@liveworkspace/settings/presence`, a hash of the trimmed, lower-cased name onto `PRESENCE_COLOURS`. It is the one
+  rule for an Automatic colour, used by every surface that draws a person: the account menu's avatar in every header
+  (each editor's and liveworkspace.app's), Settings › Profile's preview, a team's member discs, the forum, the
+  Explorer's history discs, each app's participants (its api fills a missing colour with it, so cursors, the
+  presence list and comment author dots wear it) and the assignee dots on an element. So a person on Automatic is one
+  colour everywhere. Renaming can change it, as it changes the initials. No app keeps a pick of its own; a live room
+  may still give a newcomer the next free palette colour while two people in it would clash.
+- The account menu's avatar, in every header, shows the account's [picture](#profile-pictures) when it has one, and is otherwise painted in the account's own colour,
+  or for Automatic the colour picked from its name, in the colour's deep shade under the white initials in both
+  themes (`avatarFill` in `@liveworkspace/account-menu/initials`; white on a palette colour's 500 step falls below AA)
   ([site.md](../010-site/site.md#the-header)). It rides where the user already does, so it costs no request: the
-  ID token's `presence_color` claim for the apps (kept in [`<prefix>account_colour`](#an-apps-signed-in-cookies)),
+  ID token's `presence_color` claim for the apps (kept in [`<prefix>account_colour`](#an-apps-signed-in-cookies) for
+  their static pages, and on the token answer's `user.color` for each editor's header, `AuthControls`),
   and `user.color` in the answer to `GET /api/auth/get-session` for liveworkspace.app (one
   primary-key read of the profile per call; the Worker adds it to that endpoint's answer only, not to
   every session lookup).

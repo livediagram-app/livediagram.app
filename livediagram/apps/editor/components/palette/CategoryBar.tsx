@@ -66,7 +66,13 @@ const SIDE_OPEN_MS = 150;
 export type BarCategory = FlyoutCategory & { group?: number | undefined };
 
 /** The bar's state: which category's flyout is open, and the popover it hangs in. */
-export function useCategoryBar(rootRef: RefObject<HTMLElement | null>) {
+export function useCategoryBar(
+  rootRef: RefObject<HTMLElement | null>,
+  // Closes the strip's other popovers (Search, the Library, the selection mode): a category opening, or a bar button
+  // taking the focus, leaves one popover open, as moving between categories swaps one flyout for the next
+  // (docs/specs/007-editor/toolbar-layout.md "One popover at a time").
+  { onOpen }: { onOpen?: () => void } = {},
+) {
   const popover = useStripPopover(rootRef, BAR_SELECTOR);
   const [openId, setOpenId] = useState<string | null>(null);
   // Opened from the keyboard, so the flyout focuses its first tile.
@@ -76,6 +82,7 @@ export function useCategoryBar(rootRef: RefObject<HTMLElement | null>) {
   const open = (category: FlyoutCategory, keyboard: boolean) => {
     const button = buttons.current.get(category.id);
     if (!button) return;
+    onOpen?.();
     if (!isOpen(category.id)) track('UI', 'Changed', 'ToolbarCategory');
     setOpenId(category.id);
     setViaKeyboard(keyboard);
@@ -113,6 +120,8 @@ export function useCategoryBar(rootRef: RefObject<HTMLElement | null>) {
       open(category, keyboard);
     },
     close,
+    /** A bar button took the focus: the strip's other popovers close, as when a category opens. */
+    focused: () => onOpen?.(),
     /** The mouse came onto a bar button: open its category after a beat, or at once while another is open. */
     hoverButton: (category: FlyoutCategory) => {
       clearTimer();
@@ -240,6 +249,7 @@ export function CategoryBarButtons({
               if (e.pointerType === 'mouse') bar.leave();
             }}
             onKeyDown={(e) => onKeyDown(e, i)}
+            onFocus={bar.focused}
             className={`relative flex h-9 shrink-0 touch-target-y items-center gap-1.5 rounded-lg transition ${
               labels ? 'pl-2 pr-2.5' : 'w-9 justify-center phone:w-11'
             } ${

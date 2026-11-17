@@ -137,6 +137,10 @@ under the pointer as a category is switched.
 - **A mouse resting on a button for 120 ms opens it**; sweeping across the bar on the way to the canvas opens
   nothing. While one is open, pointing at another category moves the flyout there at once, sliding to the new
   button over 200 ms (the `short` motion token), as a menu bar does.
+- **One popover at a time.** A category opening, by that same resting intent, a press or the keyboard, closes the
+  strip's other popovers (Search, the Library and the Selection Mode menu, where the strip has them), as moving
+  between categories swaps one flyout for the next; so does a bar button taking the focus. A pointer only passing
+  over the bar closes nothing, so a query half typed into Search survives the trip to the canvas.
 - **Leaving both the bar and the flyout closes it after 300 ms**, so a diagonal path from a button into the flyout,
   across the gap or a corner of the canvas, keeps it. It stays open while a tile is being dragged out of it
   (closing would unmount the tile mid-drag; it closes on the drop), faded to 30% and letting a drop over it land on

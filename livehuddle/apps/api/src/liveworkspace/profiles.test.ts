@@ -1,4 +1,4 @@
-import { colorForKey } from '@livehuddle/api-schema';
+import { automaticPresenceColour } from '@liveworkspace/settings/presence';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { accountsServiceFor, type TestAccountsService } from '../test-accounts-service';
 import type { Env } from '../types';
@@ -38,11 +38,11 @@ describe('getParticipants (liveworkspace profiles)', () => {
       color: '#111111',
       createdAt: 5,
     });
-    // No colour of their own: the palette's pick for the id.
+    // No colour of their own (Automatic): the colour picked from the name, the one rule the avatars use too.
     expect(found.get(GUEST)).toEqual({
       id: GUEST,
       name: 'Gus',
-      color: colorForKey(GUEST),
+      color: automaticPresenceColour('Gus').value,
       createdAt: 7,
     });
     expect(found.has('user_gone')).toBe(false);

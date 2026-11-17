@@ -188,15 +188,24 @@ steps). Hiding is one stylesheet, rewritten only when the hidden set changes.
 | `error` | `[walkthroughs] media service answered { status }`   |
 | `warn`  | `[walkthrough] recorder failed { reason }` (browser) |
 
+Telemetry goes through the workbench's bound `track` from `packages/walkthrough/src/telemetry.ts`
+(`walkthroughTelemetry`, and `limitOfRefusal`, which names an api refusal code as a limit). The recorder sends Started
+when it begins, Refused when the clock or the size check ends it (once, `limitCounted`), Created or Refused when a save
+answers, and Abandoned when `close` runs in the recording or review phase; the player sends Played once a walkthrough
+is ready; the list sends Deleted once the api deleted one. Each product's `api-schema` names the `Walkthrough`
+category and the `Abandoned`, `Refused` and `Played` actions; each canvas editor's manifest pins the pairs, and the
+site charts them (`apps/site/app/telemetry/_shared/snapshot-walkthrough-metrics.ts`).
+
 ## Testing
 
-| Test                                                | Pins                                                                                               |
-| --------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `packages/media/src/walkthrough.test.ts`            | parse and seal, every refusal, hidden ids stripped, sniffing, titles                               |
-| `packages/media/src/walkthrough-door.test.ts`       | every door route and role, Community and tab-scoped visits, the service's refusals passed on       |
-| `liveworkspace/apps/media/src/walkthroughs.test.ts` | start, media, list, read, delete by owner and item, purge, caps, per-item cap, sniff, sweep, merge |
-| `packages/capture/src/*.test.ts`                    | constraints with a device, capture support, device lists and labels, the level meter               |
-| `packages/walkthrough/src/*.test.ts(x)`             | the timeline, `fitView`, the recorder's sampling and stop, the client, the UI's states and roles   |
+| Test                                                        | Pins                                                                                               |
+| ----------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `packages/media/src/walkthrough.test.ts`                    | parse and seal, every refusal, hidden ids stripped, sniffing, titles                               |
+| `packages/media/src/walkthrough-door.test.ts`               | every door route and role, Community and tab-scoped visits, the service's refusals passed on       |
+| `liveworkspace/apps/media/src/walkthroughs.test.ts`         | start, media, list, read, delete by owner and item, purge, caps, per-item cap, sniff, sweep, merge |
+| `packages/capture/src/*.test.ts`                            | constraints with a device, capture support, device lists and labels, the level meter               |
+| `packages/walkthrough/src/*.test.ts(x)`                     | the timeline, `fitView`, the recorder's sampling and stop, the client, the UI's states and roles   |
+| `packages/walkthrough/src/telemetry.test.ts`, `ui.test.tsx` | each event once, the limits, set-up closed counts nothing, a refused save by its code              |
 
 ## Constants and configuration
 

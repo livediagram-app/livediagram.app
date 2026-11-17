@@ -7,7 +7,8 @@ import {
   elementActions,
   type ArticleNoteElement,
 } from '@livedocuments/document';
-import { colorForKey, initialsOf } from '@/lib/identity';
+import { initialsOf } from '@/lib/identity';
+import { automaticPresenceColour } from '@liveworkspace/settings/presence';
 
 /** The note's fixed colours, never themed: a sticky keeps its own the same way. Contrast in the spec. */
 export const NOTE_INK = {
@@ -33,7 +34,8 @@ export function noteLook(element: ArticleNoteElement): NoteLook {
     const assignee = {
       name,
       initials: initialsOf(name),
-      color: colorForKey(action.assignee.userId ?? action.assignee.memberId ?? name),
+      // The one Automatic rule (@liveworkspace/settings/presence), so the dot matches the person's avatar.
+      color: automaticPresenceColour(name).value,
     };
     if (action.status === 'done') return { face: 'action-done', assignee };
     if (action.status === 'wont-do') return { face: 'action-wont-do', assignee };

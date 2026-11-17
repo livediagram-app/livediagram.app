@@ -7,6 +7,27 @@ import { PALETTE_ADD_HANDLER_KEYS, type PaletteAddHandlers } from './palette-add
 import { ToolbarPalette } from './ToolbarPalette';
 import { HOVER_CLOSE_MS, HOVER_OPEN_MS } from './CategoryBar';
 
+// The Library, off unless a test turns it on: an editor with one shows its button beside Search.
+const libraryOn = vi.hoisted(() => ({ value: false }));
+vi.mock('@liveworkspace/workbench/components/library/LibraryProvider', async (importOriginal) => {
+  const actual =
+    await importOriginal<
+      typeof import('@liveworkspace/workbench/components/library/LibraryProvider')
+    >();
+  const library = {
+    state: { status: 'ready' as const, items: [], teams: [], hidden: 0, legacyWritable: false },
+    notice: null,
+    reload: () => {},
+    ensureLoaded: () => {},
+    requestSave: () => {},
+    place: async () => null,
+    rename: async () => false,
+    renameFolder: async () => false,
+    remove: async () => false,
+  };
+  return { ...actual, useLibrary: () => (libraryOn.value ? library : actual.useLibrary()) };
+});
+
 beforeAll(() => {
   globalThis.ResizeObserver ??= class {
     observe() {}
@@ -315,5 +336,62 @@ describe('a tile’s side panel', () => {
     expect(side()).not.toBeNull();
     fireEvent.pointerEnter(button('Shapes'), mouse);
     expect(side()).toBeNull();
+  });
+});
+
+// One popover at a time (docs/specs/007-editor/toolbar-layout.md "One popover at a time"): a category opening, by
+// hover intent or the focus, closes the strip's other popovers; a pointer only passing over the bar closes nothing.
+describe('a category opening closes the strip’s other popovers', () => {
+  afterEach(() => {
+    libraryOn.value = false;
+  });
+  const restOn = (name: string) => {
+    fireEvent.pointerEnter(button(name), mouse);
+    wait(HOVER_OPEN_MS + 10);
+  };
+  const searchPopover = () => document.querySelector('[data-toolbar-search]');
+
+  it('closes Search on a rest, and keeps a typed query through a pass', () => {
+    show();
+    fireEvent.click(button('Search elements'));
+    const field = screen.getByRole<HTMLInputElement>('textbox', { name: 'Search elements' });
+    fireEvent.change(field, { target: { value: 'pie' } });
+    fireEvent.pointerEnter(button('Shapes'), mouse);
+    wait(HOVER_OPEN_MS - 30);
+    fireEvent.pointerLeave(button('Shapes'), mouse);
+    wait(HOVER_OPEN_MS);
+    expect(flyout()).toBeNull();
+    expect(searchPopover()).not.toBeNull();
+    expect(field.value).toBe('pie');
+    restOn('Components');
+    expect(flyout()).not.toBeNull();
+    expect(searchPopover()).toBeNull();
+  });
+
+  it('closes Search when a category button takes the focus', () => {
+    show();
+    fireEvent.click(button('Search elements'));
+    expect(searchPopover()).not.toBeNull();
+    fireEvent.focus(button('Shapes'));
+    expect(searchPopover()).toBeNull();
+  });
+
+  it('closes the Library', () => {
+    libraryOn.value = true;
+    show();
+    fireEvent.click(button('Library'));
+    expect(document.querySelector('[data-toolbar-library]')).not.toBeNull();
+    restOn('Shapes');
+    expect(flyout()).not.toBeNull();
+    expect(document.querySelector('[data-toolbar-library]')).toBeNull();
+  });
+
+  it('closes the Selection Mode menu', () => {
+    show();
+    fireEvent.click(button('Selection mode'));
+    expect(screen.queryByRole('listbox', { name: 'Selection mode' })).not.toBeNull();
+    restOn('Shapes');
+    expect(flyout()).not.toBeNull();
+    expect(screen.queryByRole('listbox', { name: 'Selection mode' })).toBeNull();
   });
 });

@@ -35,7 +35,8 @@ export function StartAgainTray({ tabId, tabName }: { tabId: string; tabName: str
       >
         <TopCenterBanner
           tone="brand"
-          className="pointer-events-auto gap-3 py-1.5 pl-3 pr-1.5 text-sm"
+          shape="card"
+          className="pointer-events-auto gap-3 py-1.5 pl-3 pr-1.5 text-sm leading-snug"
           onPointerDown={(e) => e.stopPropagation()}
         >
           <span role="status" className="flex items-center gap-2">

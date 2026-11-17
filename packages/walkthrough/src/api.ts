@@ -26,7 +26,9 @@ export type SaveInput = {
 };
 
 export type SaveResult =
-  { ok: true; walkthrough: WalkthroughSummary } | { ok: false; message: string };
+  | { ok: true; walkthrough: WalkthroughSummary }
+  // `error` is the api's refusal code, when it gave one, so a limit can be told from any other failure.
+  | { ok: false; message: string; error?: string };
 
 export type WalkthroughApi = {
   /** The item's walkthroughs, or null where there are none to have (no service, no access). */
@@ -51,10 +53,14 @@ export function walkthroughApi(
   const d = `d=${encodeURIComponent(itemId)}`;
   const at = (path = '') => `${base}/walkthroughs${path}?${d}`;
   const of = (id: string, rest = '') => at(`/${encodeURIComponent(id)}${rest}`);
-  const failed = async (res: Response) => ({
-    ok: false as const,
-    message: walkthroughRefusalMessage(await bodyOf(res)),
-  });
+  const failed = async (res: Response) => {
+    const body = await bodyOf(res);
+    return {
+      ok: false as const,
+      message: walkthroughRefusalMessage(body),
+      ...(typeof body.error === 'string' ? { error: body.error } : {}),
+    };
+  };
   const safely = async <T>(work: () => Promise<T>, fallback: T): Promise<T> => {
     try {
       return await work();

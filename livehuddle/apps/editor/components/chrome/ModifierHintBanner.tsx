@@ -49,8 +49,12 @@ function Hint({ modifier, children }: { modifier: string; children: React.ReactN
     );
   }
   return (
-    <div className="pointer-events-none fixed inset-x-0 top-16 z-[var(--z-modal)] flex justify-center">
-      <TopCenterBanner tone="neutral" className="gap-2 px-3 py-1.5 text-xs">
+    <div className="pointer-events-none fixed inset-x-0 top-16 z-[var(--z-modal)] flex justify-center px-3">
+      <TopCenterBanner
+        tone="neutral"
+        shape="card"
+        className="gap-2 px-3 py-1.5 text-xs leading-snug"
+      >
         <kbd className={KEY_CHIP}>{modifier}</kbd>
         <span data-mode-message="" className="font-medium">
           {children}

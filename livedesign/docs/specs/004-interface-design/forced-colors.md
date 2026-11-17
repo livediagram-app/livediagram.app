@@ -39,6 +39,10 @@ gradient or a shadow says nothing. Without this spec's rule, in a dark contrast 
   which are pictures of a canvas. The chrome around them is repainted as usual.
 - **A floating surface has a solid fill.** A banner, card or panel over other content that is painted with a gradient
   also sets a solid background colour under it (the gradient's end), so with gradients dropped it is still opaque.
+- **A button is never its fill alone.** A button whose only shape is its fill (a primary action: the shared
+  `Button`'s primary and solid variants, the account pages' Continue with email, Verify and Continue, the front door's
+  Create your free account) takes the `forced-edge` utility, a 1 px `ButtonBorder` edge under forced colours only, so
+  it still reads as a button once its fill is repainted as Canvas. Normal themes are unchanged.
 - The canvas, which is the user's own content, keeps the colours it is drawn with: element fills and strokes are SVG
   presentation colours, which forced colours keep.
 
@@ -46,6 +50,7 @@ gradient or a shadow says nothing. Without this spec's rule, in a dark contrast 
 
 - `../packages/tailwind-config/theme.css`, `@media (forced-colors: active)`, unlayered so it outranks the utilities that
   paint a control's chosen state: the ARIA-state Highlight rule and the switch rule.
+- `../packages/tailwind-config/theme.css`, `@utility forced-edge`: the fill-only button's edge.
 - `../packages/template-previews/src/preview-art-tile.css`: the tile and its veil keep their colours.
 - `apps/live/components/colour/ColourSwatch.tsx` (`SwatchChip`), `CustomColourEditor.tsx`,
   `../packages/workbench/src/components/panels/ToolOptionRow.tsx`: `forced-color-adjust-none` on the colour itself.

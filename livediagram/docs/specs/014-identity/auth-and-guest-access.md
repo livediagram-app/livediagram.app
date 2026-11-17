@@ -152,7 +152,7 @@ Signed-in status surfaces in the editor header via `<AuthControls>` (the account
 
 ## Identity display name
 
-A person's participant (display name and presence colour) is their **liveworkspace profile**, one per person across every app (liveworkspace/docs/specs/003-accounts/accounts.md "Profiles"; `apps/api/src/liveworkspace/profiles.ts`). A signed-in account with no display name of its own shows its liveworkspace account name, so renaming yourself on the accounts site shows on the next read (each api isolate remembers a profile for up to a minute); a name set in any app wins over it and shows in every app. On a first visit with no profile at all the editor seeds one, and so does /new when that first visit starts a document (both through `firstVisitName`): the account name when signed in (split at its first space into `firstName + lastName`, falling back to the email's local part; `namesOf` in `AccountsBridge.tsx`), a random placeholder for a guest. Profiles and settings at the accounts Worker are kept under the owner id itself (`user_…` or `guest_<uuid>`), with no mapping. A profile with no colour of its own takes the palette's pick for its id (`colorForKey`, from liveworkspace's presence palette), the same everywhere.
+A person's participant (display name and presence colour) is their **liveworkspace profile**, one per person across every app (liveworkspace/docs/specs/003-accounts/accounts.md "Profiles"; `apps/api/src/liveworkspace/profiles.ts`). A signed-in account with no display name of its own shows its liveworkspace account name, so renaming yourself on the accounts site shows on the next read (each api isolate remembers a profile for up to a minute); a name set in any app wins over it and shows in every app. On a first visit with no profile at all the editor seeds one, and so does /new when that first visit starts a document (both through `firstVisitName`): the account name when signed in (split at its first space into `firstName + lastName`, falling back to the email's local part; `namesOf` in `AccountsBridge.tsx`), a random placeholder for a guest. Profiles and settings at the accounts Worker are kept under the owner id itself (`user_…` or `guest_<uuid>`), with no mapping. A profile with no colour of its own (Automatic) takes the colour picked from its name (`automaticPresenceColour` in `@liveworkspace/settings/presence`, liveworkspace/docs/specs/003-accounts/accounts.md "Profiles"), the one rule every app and liveworkspace.app use, so the cursor, the presence list and comment author dots match the person's avatar in every header.
 
 Two welcome-modal rules follow from that:
 
@@ -241,6 +241,12 @@ The session loads deferred, so `/new` cannot wait for the token request without 
   loading line until the session itself answers, up to 15 seconds, rather than taking the page's 5-second give-up on
   sign-in as signed out, so a slow session never shows a signed-in person "Sign in to connect". Only the session's own answer that there is no one, or no hint, shows the Sign in step
   (`signInGateOf`, `../packages/workbench/src/hooks/auth/useSignInGate.ts`).
+- **The page itself** never settles as a guest while `ld_signed_in=1` and the session hasn't answered: the 5-second
+  give-up (a stalled proxy must not hold the canvas) applies only without the hint. When the accounts site doesn't
+  answer (the api's `503 accounts_unreachable`, a network error, no answer in 10 seconds, or nothing after 5 seconds),
+  the page shows **Can’t reach your account right now** with **Try Again**, starts no guest hand-off, and carries on
+  by itself once the session answers ([accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md#when-the-accounts-site-doesnt-answer)).
+  A `401` is signed out at once, as before.
 - The hint only decides a default. Every request still authenticates the real way, and a guest whose cookie misleads gets a document in This Browser, the safe direction.
 
 ### The account name cookie

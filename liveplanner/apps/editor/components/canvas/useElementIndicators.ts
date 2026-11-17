@@ -11,7 +11,8 @@ import {
   type TextSize,
 } from '@liveplanner/project';
 import { describeLink } from '@/lib/link-label';
-import { colorForKey, initialsOf } from '@/lib/identity';
+import { initialsOf } from '@/lib/identity';
+import { automaticPresenceColour } from '@liveworkspace/settings/presence';
 import { inlineIconGap, inlineIconMetrics } from '@/components/canvas/shape-inline-icon-layout';
 import {
   buildIndicatorItems,
@@ -57,7 +58,8 @@ export function elementIndicatorItems(element: BoxedElement, handlers: Handlers)
           onOpen: () => onOpenAction(element.id),
           assigneeName,
           initials: initialsOf(assigneeName),
-          color: colorForKey(assignee.userId ?? assignee.memberId ?? assigneeName),
+          // The one Automatic rule (@liveworkspace/settings/presence), so the dot matches the person's avatar.
+          color: automaticPresenceColour(assigneeName).value,
         }
       : undefined,
   });

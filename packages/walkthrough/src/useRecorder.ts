@@ -28,6 +28,7 @@ import { canvasPoint, contentOf, elementIdAt, sizeOf } from './bridge';
 import { createEventLog, type EventLog } from './event-log';
 import type { WalkthroughHost } from './host';
 import { startRecording, stopStream, type Recorded, type Recording } from './recorder';
+import { limitOfRefusal, walkthroughTelemetry, type WalkthroughLimit } from './telemetry';
 import { recordView } from './timeline';
 
 export const COUNTDOWN_FROM = 3;
@@ -136,10 +137,19 @@ export function useRecorder(
 
   const hostRef = useRef(host);
   const hiddenRef = useRef(hidden);
+  const phaseKind = useRef(phase.kind);
   useEffect(() => {
     hostRef.current = host;
     hiddenRef.current = hidden;
+    phaseKind.current = phase.kind;
   });
+  // A recording a limit ended counts once, whichever of the clock or the size check saw it first.
+  const limitCounted = useRef(false);
+  const refuse = useCallback((limit: WalkthroughLimit) => {
+    if (limitCounted.current) return;
+    limitCounted.current = true;
+    walkthroughTelemetry.refused(limit);
+  }, []);
   const streamRef = useRef<MediaStream | null>(null);
   const recordingRef = useRef<Recording | null>(null);
   const logRef = useRef<EventLog | null>(null);
@@ -243,6 +253,10 @@ export function useRecorder(
   }, []);
 
   const close = useCallback(() => {
+    // A recording begun and thrown away, from the dock or the save card, is abandoned; closing set-up or the count is not.
+    if (phaseKind.current === 'recording' || phaseKind.current === 'review') {
+      walkthroughTelemetry.abandoned();
+    }
     release();
     setPhase({ kind: 'off' });
   }, [release]);
@@ -255,7 +269,10 @@ export function useRecorder(
       recordingRef.current = startRecording({
         stream: s,
         camera: camOn,
-        onFull: () => void finishRef.current(),
+        onFull: () => {
+          refuse('TooLarge');
+          void finishRef.current();
+        },
       });
     } catch {
       setDeviceProblem(
@@ -264,6 +281,8 @@ export function useRecorder(
       setPhase({ kind: 'setup' });
       return;
     }
+    limitCounted.current = false;
+    walkthroughTelemetry.recordingStarted();
     const h = hostRef.current;
     const at = now();
     const log = createEventLog(at, () => hiddenRef.current);
@@ -277,7 +296,7 @@ export function useRecorder(
     lastSlide.current = h.slides?.current ?? null;
     if (h.slides?.current) log.slide(at, h.slides.current, h.slides.label ?? undefined);
     setPhase({ kind: 'recording', elapsed: 0 });
-  }, []);
+  }, [refuse]);
 
   const start = useCallback(() => {
     if (!streamRef.current) return;
@@ -373,8 +392,10 @@ export function useRecorder(
       const t = now();
       log.tick(t);
       const elapsed = t - startRef.current!.at;
-      if (elapsed >= WALKTHROUGH_MAX_MS) void finishRef.current();
-      else setPhase((p) => (p.kind === 'recording' ? { kind: 'recording', elapsed } : p));
+      if (elapsed >= WALKTHROUGH_MAX_MS) {
+        refuse('TooLong');
+        void finishRef.current();
+      } else setPhase((p) => (p.kind === 'recording' ? { kind: 'recording', elapsed } : p));
     }, CLOCK_MS);
     return () => {
       stopView();
@@ -384,7 +405,7 @@ export function useRecorder(
       root?.removeEventListener('pointerdown', onDown, { capture: true });
       clearInterval(clock);
     };
-  }, [recording]);
+  }, [recording, refuse]);
 
   // A tab or a slide changed while recording.
   useEffect(() => {
@@ -423,9 +444,12 @@ export function useRecorder(
       (stage) => setPhase((p) => (p.kind === 'review' ? { ...p, saving: stage } : p)),
     );
     if (result.ok) {
+      walkthroughTelemetry.saved();
       setPhase({ kind: 'off' });
       onSaved(result.walkthrough);
     } else {
+      const limit = limitOfRefusal(result.error);
+      if (limit) walkthroughTelemetry.refused(limit);
       setPhase((p) => (p.kind === 'review' ? { ...p, saving: null, error: result.message } : p));
     }
   }, [phase, api, onSaved]);

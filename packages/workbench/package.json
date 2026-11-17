@@ -83,6 +83,7 @@
     "./components/canvas/VoteDot": "./src/components/canvas/VoteDot.tsx",
     "./components/canvas/VoteStepper": "./src/components/canvas/VoteStepper.tsx",
     "./components/canvas/vote-badge": "./src/components/canvas/vote-badge.ts",
+    "./components/chrome/AccountUnreachableNotice": "./src/components/chrome/AccountUnreachableNotice.tsx",
     "./components/chrome/ApiErrorPage": "./src/components/chrome/ApiErrorPage.tsx",
     "./components/chrome/AuthLines": "./src/components/chrome/AuthLines.tsx",
     "./components/chrome/AuthPitch": "./src/components/chrome/AuthPitch.tsx",
@@ -100,6 +101,7 @@
     "./components/chrome/auth-lines": "./src/components/chrome/auth-lines.ts",
     "./components/chrome/chrome-button": "./src/components/chrome/chrome-button.tsx",
     "./components/chrome/ChromeToolsMenu": "./src/components/chrome/ChromeToolsMenu.tsx",
+    "./components/chrome/corner-cluster-clearance": "./src/components/chrome/corner-cluster-clearance.ts",
     "./components/chrome/floating-controls": "./src/components/chrome/floating-controls.ts",
     "./components/chrome/folder-colour": "./src/components/chrome/folder-colour.ts",
     "./components/chrome/header-action": "./src/components/chrome/header-action.tsx",
@@ -241,6 +243,7 @@
     "./components/primitives/beside-placement": "./src/components/primitives/beside-placement.ts",
     "./components/primitives/hover-preview": "./src/components/primitives/hover-preview.ts",
     "./components/primitives/menu-flyout-cover": "./src/components/primitives/menu-flyout-cover.ts",
+    "./components/primitives/menu-flyout-side": "./src/components/primitives/menu-flyout-side.ts",
     "./components/primitives/menu-item-props": "./src/components/primitives/menu-item-props.ts",
     "./components/primitives/popover-stack": "./src/components/primitives/popover-stack.ts",
     "./components/primitives/refocus-after-field": "./src/components/primitives/refocus-after-field.ts",
@@ -741,6 +744,7 @@
     "react-dom": "^19.3.0"
   },
   "dependencies": {
+    "@liveworkspace/account-menu": "workspace:*",
     "@liveworkspace/api-kit": "workspace:*",
     "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",

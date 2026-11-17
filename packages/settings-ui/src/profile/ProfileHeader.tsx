@@ -18,7 +18,7 @@ export type AccountIdentity = {
   // The name collaborators see (the profile's display name, else the account's).
   name: string;
   email?: string | null;
-  // The presence colour, null for Automatic (each app picks one).
+  // The presence colour, null for Automatic (the colour picked from the name).
   colour?: string | null;
   // Their own Google picture, null with none (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures"): the avatar shows
   // it over the initials. Their own screen always shows it, whatever Show My Google Picture says.

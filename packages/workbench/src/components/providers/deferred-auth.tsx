@@ -21,6 +21,10 @@ type DeferredAuthUser = {
   // absent or null without one. `pictureHidden`: Show My Google Picture is off, so presence leaves it out.
   picture?: string | null;
   pictureHidden?: boolean;
+  // The profile's presence colour (the ID token's `presence_color`), for the person's own avatar; absent or null for
+  // Automatic, when the avatar takes the colour picked from the name (liveworkspace/docs/specs/003-accounts/accounts.md
+  // "Profiles").
+  colour?: string | null;
 };
 
 export type DeferredAuthState = {
@@ -38,6 +42,13 @@ export type DeferredAuthState = {
   // Ends the session after the api has deleted the account's data
   // (DeleteAccountDialog). Null until the bridge publishes it / when disabled.
   deleteAccount: (() => Promise<void>) | null;
+  // The browser's sign-in hint says signed in and the session has not answered yet (AuthProvider): the page waits for
+  // it and never settles as a guest meanwhile, so no guest hand-off starts (liveworkspace/docs/specs/003-accounts/
+  // accounts.md "When the accounts site doesn't answer"). Absent once the session has answered, or with no hint.
+  sessionExpected?: boolean;
+  // That wait has met an answer that says nothing (a 5xx, a network error, no answer in time) or has run past
+  // ACCOUNT_STALL_MS: the page says it can't reach the account. Set by the bridge too, on its first unknown answer.
+  accountUnreachable?: boolean;
 };
 
 // The "still loading" state, until the bridge publishes the session.
