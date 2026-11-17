@@ -82,6 +82,10 @@ name: COALESCE(profile name, account name), color, picture }`; ids that are neit
   microseconds. Callers pass the name the person shows (`readProfiles`' `name`; an avatar's full name, else its
   given name): the apps' apis (`toParticipant`: `color ?? automaticPresenceColour(name).value`), the apps' assignee
   dots, `avatarColour`/`avatarFill` in `@liveworkspace/account-menu/initials` and the Explorer's `personColour`.
+- `presenceColourOf(name, color)` (`packages/settings/src/presence.ts`): a person's colour where a chosen one may ride
+  along (a team member's `color`, an action's `assignee.color`): `color` lower-cased when it is a `#rrggbb`, else
+  `automaticPresenceColour(name).value`. Anything else in `color` (a stray value in a document blob) falls back, so
+  it never reaches a style.
 - `storeAccountPicture`: on every Google account row write, the ID token's `picture` claim (decoded, not verified:
   it came straight from Google's token endpoint) onto `"user".image`, written only when it changed.
 

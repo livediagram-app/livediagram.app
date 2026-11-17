@@ -46,6 +46,9 @@ interface ElementAction {
     // membership row at send time (§4), so no address enters the blob.
     memberId?: string;
     name: string | null; // display name at assign time (render fallback: "Teammate")
+    // Their presence colour at assign time (#rrggbb): their own from Settings › Profile, else the colour Automatic
+    // gave them (§2 "Their colour"). Optional: an action saved before it reads Automatic from `name`.
+    color?: string;
   };
   // The team the assignee was picked from; null for a self-assignment
   // (Myself is not a team row).
@@ -125,7 +128,7 @@ Clicking it opens the **Assign Action dialog** (its own component under
   account, or the guest participant identity), then the **joined members
   of the team whose shared library holds this project** (`GET
 /api/teams/<projectTeamId>/members`, which the api answers from the team as liveworkspace keeps it, for a
-  caller whose token names the team), each row showing the member's avatar bubble and display name
+  caller whose token names the team), each row showing the member's avatar bubble, in their presence colour (§2 "Their colour"), and display name
   (email local-part fallback, prettified). Members of the user's
   OTHER teams are deliberately not offered: they aren't members of this
   project's team, so they almost certainly can't open the project to
@@ -172,6 +175,21 @@ never block or roll back the assignment.
 Assigning requires **edit access** to the project: the action rides the tab
 blob. View-role visitors see actions read-only (§7).
 
+
+### Their colour
+
+A person wears one colour on every surface (liveworkspace/docs/specs/003-accounts/accounts.md "Profiles"): the picker's
+avatar bubbles, the badge's assignee dot, the popover's avatar and the Collaborate panel's row avatar all paint the
+assignee as their cursor does. The members list carries each joined member's chosen colour (`color`, null for
+Automatic or an invitation), the Myself row carries the caller's own participant colour, and the colour of the row
+picked is stored on the action as `assignee.color`, beside the name it was assigned under. Every surface then reads
+`presenceColourOf(name, color)` (`@liveworkspace/settings/presence`): the stored colour when it is a `#rrggbb`, else
+the Automatic colour picked from the name, so an action saved before the field keeps its Automatic dot. Like the
+name, the colour is the one at assign time: a later change in Settings shows on the next edit of the action.
+Each disc is an identity fill (`IDENTITY_FILL`, `identityVars`): the colour in light mode with the ink that reaches
+AA on it, its deep shade under white in dark mode. A selected row keeps its brand tint and "Selected" label, so
+selection never rides on the person's colour.
+
 ## 3. On-canvas surface: badge + popover
 
 - **Badge**: the element-badges cluster (`element-badges.tsx`) gains an
@@ -182,7 +200,7 @@ blob. View-role visitors see actions read-only (§7).
   hairline separators) rather than detached circles.
 - **Popover**: `ActionPopover`, anchored on the element like
   `CommentThreadPopover`: the action name + description up top, one calm
-  assignee/assigner meta row (avatar bubble, "Assigned to you"/name,
+  assignee/assigner meta row (avatar bubble in the assignee's colour, "Assigned to you"/name,
   "by {assigner} · {relative time}"), and an icon-button footer:
   - **Complete**: sets `status: 'done'` (and `updatedAt`). The action drops
     out of the badge and moves to the panel's Completed filter, staying on
@@ -307,7 +325,7 @@ The panel follows the refreshed Collaborate cards ([Participant responses](parti
 - **Open / Resolved.** A segmented control on the shared sliding pill (`SegmentSlider`), each side carrying its count. **Open** = open actions + unresolved comment threads; **Resolved** = completed actions + resolved comment threads (the thread still reopens from its element badge). It lands on Open, or Resolved when nothing is open.
 - **Kind chips.** Under the segmented control, three small chips: **All** (the word), **Comments** (bubble glyph) and **Actions** (clipboard glyph), each with its count for the current side. Comments and Actions show only their glyph and count, so the row fits a narrow panel; their name is the chip's accessible name ("Comments 12") and its tooltip; the active one takes a soft brand fill. They show only when the tab has BOTH kinds; with one kind there is nothing to narrow. (They replace an unlabelled funnel button that cycled through three hidden states.)
 - **Sections.** In the Open view, rows assigned to you lead under a **For You** label, and everything else follows under **Everything Else**. The labels show only when both groups have rows; a single group needs no heading.
-- **Action rows** lead with a **round check**. Pressing it completes the action (or, in Resolved, reopens it) in place, through the same `completeAction` / `reopenAction` the card and popover use, with a brief pop; the row then moves to the other side. Read-only visitors see the check as a static status disc. The body is the action name (up to two lines, struck through once done) over a quiet meta line: the element label and the relative time. The assignee sits on the right: a **You** chip in brand for your own, otherwise an initials avatar with the name on its hover card.
+- **Action rows** lead with a **round check**. Pressing it completes the action (or, in Resolved, reopens it) in place, through the same `completeAction` / `reopenAction` the card and popover use, with a brief pop; the row then moves to the other side. Read-only visitors see the check as a static status disc. The body is the action name (up to two lines, struck through once done) over a quiet meta line: the element label and the relative time. The assignee sits on the right: a **You** chip in brand for your own, otherwise an initials avatar in the assignee's colour with the name on its hover card.
 - **Comment rows** lead with a bubble disc tinted in the latest author's colour, carrying the thread's comment count. The body is the element label over the latest comment, prefixed with its author's first name ("Priya: Agreed, let's queue it"), clamped to two lines, and the relative time sits top-right.
 - **Rows** are rounded, tinted on hover, fully keyboard reachable (the row is a button; the check is its own button with a label naming the action), and slide in on a short stagger (`stagger-enter`).
 - **Row click goes to the conversation.** For an ordinary element it

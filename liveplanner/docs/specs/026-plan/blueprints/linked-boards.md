@@ -69,7 +69,7 @@ apps/editor/components/dialogs/AssignActionDialog.tsx  the Status row when editi
   - any card write sets the new baseline: `linkedAt` = the record's stamp after the heal, `linkedRev = card.rev + 1`.
 - **useLinkedActionCards** (canHeal = hydrated Editor, not workbench; canMakeBoard = canHeal and may reshape):
   - `placed = placedActions(tabs, loadedTabIds)`; assignees hashed with `itemPersonId(userId ?? 'member:'+memberId)`,
-    named as at assign time, coloured by their name (`automaticPresenceColour`, `@liveworkspace/settings/presence`); a heal waits for every hash.
+    named and coloured as at assign time (`presenceColourOf(name, assignee.color)`, `@liveworkspace/settings/presence`: their stored colour, else Automatic from the name); a heal waits for every hash.
   - A project with actions and no board found reads its unloaded tabs once (`unloadedTabIds`), when it has at most
     `PLAN_SWEEP_MAX_TABS` tabs.
   - Heal effect: when canHeal, a board and items `ready`, `LINKED_HEAL_DEBOUNCE_MS` after the last change of tabs,
