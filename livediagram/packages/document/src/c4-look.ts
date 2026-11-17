@@ -188,7 +188,7 @@ export function applyC4Variant<E extends { shape: string }>(
       width: C4_CARD_W,
       height: C4_DATABASE_H,
       ...c4DatabaseFields(v.name, v.meta),
-    } as E;
+    };
   }
   if (el.shape !== 'card') return null;
   const { tags: _tags, ...rest } = el as E & { tags?: unknown };
@@ -244,7 +244,7 @@ export function c4NodeElement(id: string, name: string, spec: C4NodeSpec): Shape
       width: c4CardWidth(name),
       height: C4_DATABASE_H,
       ...c4DatabaseFields(name, spec.meta),
-    } as Shape;
+    };
   }
   const { tags: _tags, ...card } = createShape('card', 0, 0);
   const width = c4CardWidth(name);
@@ -254,5 +254,5 @@ export function c4NodeElement(id: string, name: string, spec: C4NodeSpec): Shape
     width,
     height: c4CardHeight(spec.body, width),
     ...c4CardFields(spec.kind, name, spec.meta, spec.body, spec.icon),
-  } as Shape;
+  };
 }

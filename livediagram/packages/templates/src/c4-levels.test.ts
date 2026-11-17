@@ -70,7 +70,10 @@ describe('linkC4Levels', () => {
   it('links a document of 50 tabs of 1,000 elements within budget', () => {
     const filler = containers.elements.filter((e) => e.type !== 'shape' || e.shape !== 'boundary');
     const big = Array.from({ length: 50 }, (_, i) =>
-      tab(`t${i}`, Array.from({ length: 1000 }, (_, j) => filler[j % filler.length]!)),
+      tab(
+        `t${i}`,
+        Array.from({ length: 1000 }, (_, j) => filler[j % filler.length]!),
+      ),
     );
     const ms = cpuMsOf(() => linkC4Levels([...big, components], 'cmp'));
     expect(ms).toBeLessThan(cpuBudgetMs(150));
