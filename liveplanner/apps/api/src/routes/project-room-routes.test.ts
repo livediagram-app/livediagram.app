@@ -16,7 +16,7 @@ import { makeTestRouteContext } from './test-route-context';
 import { handleProjectRoomRoutes } from './project-room-routes';
 import { personTagFor } from '../person-tag';
 import { adderKeyFor } from '../adder-key';
-import type { WorkbenchContext } from './context';
+import type { RouteContext, WorkbenchContext } from './context';
 
 vi.mock('../db/workbench', () => ({ noteWorkbenchSessionRoom: vi.fn(async () => undefined) }));
 
@@ -290,6 +290,136 @@ describe('POST room-ticket', () => {
     expect(adderKey).toBe(await adderKeyFor('p1', 'user_a'));
     await upgrade(env, `/api/projects/p1/ws?t=${encodeURIComponent(ticket)}`);
     expect(seen[0]!.headers.get('X-Verified-Role')).toBe('participate');
+    expect(seen[0]!.headers.get('X-Verified-Workbench-Pairing')).toBe('wp-1');
+  });
+});
+
+// mcp-server.md "Live updates": the MCP view's view-only ticket (`?cap=view`). It admits at view whatever the token's
+// owner may do, lapses with the grant sealed inside it (10 minutes), and is never the grant bare.
+describe('a view-only ticket (the MCP view)', () => {
+  const mint = (
+    env: Env,
+    grant: string | null,
+    query = '?cap=view',
+    token: RouteContext['token'] = null,
+  ) =>
+    handleProjectRoomRoutes(
+      makeTestRouteContext('POST', `/api/projects/p1/room-ticket${query}`, {
+        env,
+        headers: grant ? { [INDEX_GRANT_HEADER]: grant } : {},
+        grant: null,
+        ...(token ? { token, owner: 'user_a' } : {}),
+      }),
+    );
+
+  for (const level of ['edit', 'participate', 'view'] as const) {
+    it(`admits a ${level}-level token's owner at view only, with no adder key`, async () => {
+      const { env, seen } = roomEnv();
+      const grant = grantFor({ item: 'p1', sub: 'user_a', owner: 'user_a', level });
+      const res = await mint(env, grant);
+      expect(res?.status).toBe(200);
+      const answer = await res!.json<{
+        ticket: string;
+        expiresAt: number;
+        adderKey?: string;
+        level: string;
+      }>();
+      expect(answer.ticket.startsWith('rt2~')).toBe(true);
+      expect(answer.ticket).not.toContain(grant);
+      // Short-lived: it lapses with the grant inside, which the answer names because its holder cannot read it.
+      expect(answer.expiresAt).toBe((NOW + 600) * 1000);
+      expect(answer.adderKey).toBeUndefined();
+      expect(answer.level).toBe(level);
+      await upgrade(env, `/api/projects/p1/ws?t=${encodeURIComponent(answer.ticket)}`);
+      const h = seen[0]!.headers;
+      expect(h.get('X-Verified-Role')).toBe('view');
+      expect(h.get('X-Verified-Workbench-Pairing')).toBe('');
+      expect(h.get('X-Verified-Adder') ?? '').toBe('');
+      expect(h.get('X-Verified-Person')).toBe(await personTagFor('p1', 'user_a'));
+    });
+  }
+
+  it('mints none once the grant is revoked: the index answers no grant', async () => {
+    const { env } = roomEnv();
+    const res = await mint(env, null);
+    expect(res?.status).toBe(404);
+  });
+
+  it('refuses a ticket whose grant has lapsed, never reaching the room', async () => {
+    const { env, seen } = roomEnv();
+    const lapsed = grantFor({ item: 'p1', sub: 'user_a', exp: NOW - 1 });
+    const ticket = await sealRoomTicket(env, lapsed, { pairing: null, cap: 'view' });
+    const res = await upgrade(env, `/api/projects/p1/ws?t=${encodeURIComponent(ticket)}`);
+    expect(res?.status).toBe(403);
+    expect(seen).toHaveLength(0);
+  });
+
+  it("refuses another plan's view-only ticket", async () => {
+    const { env, seen } = roomEnv();
+    const other = grantFor({ item: 'p2', sub: 'user_a' });
+    const ticket = await sealRoomTicket(env, other, { pairing: null, cap: 'view' });
+    const res = await upgrade(env, `/api/projects/p1/ws?t=${encodeURIComponent(ticket)}`);
+    expect(res?.status).toBe(403);
+    expect(seen).toHaveLength(0);
+  });
+
+  it('refuses any cap but view, before asking for a grant', async () => {
+    const { env } = roomEnv();
+    const grant = grantFor({ item: 'p1', sub: 'user_a' });
+    for (const query of ['?cap=edit', '?cap=participate', '?cap=']) {
+      const res = await mint(env, grant, query);
+      expect(res?.status, query).toBe(400);
+      expect(await res!.json()).toMatchObject({ message: 'invalid_cap' });
+    }
+  });
+
+  it('answers a read-only token’s level as view, over an edit grant', async () => {
+    const { env } = roomEnv();
+    const grant = grantFor({ item: 'p1', sub: 'user_a', owner: 'user_a', level: 'edit' });
+    const levelFor = async (readOnly: boolean) =>
+      (
+        await (await mint(env, grant, '?cap=view', { id: 'tok-1', readOnly }))!.json<{
+          level: string;
+        }>()
+      ).level;
+    expect(await levelFor(true)).toBe('view');
+    expect(await levelFor(false)).toBe('edit');
+  });
+
+  it('says no lapse and no level on a ticket without the cap', async () => {
+    const { env } = roomEnv();
+    const res = await mint(env, grantFor({ item: 'p1', sub: 'user_a' }), '');
+    const answer = await res!.json();
+    expect(answer).not.toHaveProperty('level');
+    expect(answer).not.toHaveProperty('expiresAt');
+  });
+
+  it('holds a workbench session that asks for one to view, on its own pairing', async () => {
+    const { env, seen } = roomEnv();
+    const workbench = {
+      sessionId: 'ws-1',
+      ownerId: 'user_a',
+      tokenId: 'tok',
+      pairingId: 'wp-1',
+      tabId: null,
+      origin: 'https://w.example',
+      level: 'edit',
+      expiresAt: Date.now() + 60_000,
+      scope: 'plan',
+      projectId: 'p1',
+    } as unknown as WorkbenchContext;
+    const res = await handleProjectRoomRoutes(
+      makeTestRouteContext('POST', '/api/projects/p1/room-ticket?cap=view', {
+        env,
+        workbench,
+        headers: { [INDEX_GRANT_HEADER]: grantFor({ item: 'p1', sub: 'user_a' }) },
+        grant: null,
+      }),
+    );
+    const { ticket, level } = await res!.json<{ ticket: string; level: string }>();
+    expect(level).toBe('edit');
+    await upgrade(env, `/api/projects/p1/ws?t=${encodeURIComponent(ticket)}`);
+    expect(seen[0]!.headers.get('X-Verified-Role')).toBe('view');
     expect(seen[0]!.headers.get('X-Verified-Workbench-Pairing')).toBe('wp-1');
   });
 });

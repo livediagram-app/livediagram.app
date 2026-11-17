@@ -167,6 +167,39 @@ export async function openRoomTicket(
   return claims ? { claims, grant, workbench, cap, token } : null;
 }
 
+// ---------- The mint's view-only cap ------------------------------------------------------------------------
+//
+// `POST …/room-ticket?cap=view` (one-explorer-contracts.md "A view-only ticket"): every product's api reads the cap and
+// lets a read-only API token make this one write the same way.
+
+export const VIEW_ONLY_CAP = 'view';
+
+// The cap a mint asks for: none (null), `view`, or anything else ('invalid', a 400 `invalid_cap`). The only cap there
+// is: a cap is a ceiling, so asking for one never raises access.
+export function requestedRoomCap(url: URL): typeof VIEW_ONLY_CAP | null | 'invalid' {
+  const cap = url.searchParams.get('cap');
+  if (cap === null) return null;
+  return cap === VIEW_ONLY_CAP ? cap : 'invalid';
+}
+
+// Whether a request is the view-only mint on one of `collection`'s items (`POST /api/<collection>/<id>/room-ticket
+// ?cap=view`, `segments` the path's after its leading slash): the one write a read-only API token may make besides
+// revoking itself, since it writes nothing and admits only a watcher, at view.
+export function isViewOnlyRoomTicketMint(
+  method: string,
+  segments: readonly string[],
+  url: URL,
+  collection: string,
+): boolean {
+  return (
+    method === 'POST' &&
+    segments.length === 4 &&
+    segments[1] === collection &&
+    segments[3] === 'room-ticket' &&
+    requestedRoomCap(url) === VIEW_ONLY_CAP
+  );
+}
+
 // ---------- A session's grant in the room ---------------------------------------------------------------------
 //
 // Every session joins with the index's grant, which lapses after ten minutes. Shortly before it does, the room asks
