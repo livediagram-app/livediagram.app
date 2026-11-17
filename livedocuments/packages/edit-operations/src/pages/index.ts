@@ -3,13 +3,6 @@
 export { parsePagesRequest } from './parse';
 export { applyPageChanges, backgroundPatch, type PageChangesOutcome } from './page-changes';
 export { applyArticleWrite } from './article-write';
-export {
-  diffKeys,
-  suggestArticleWrite,
-  suggestedWriteLines,
-  type SuggestedWrite,
-  type SuggestionAuthor,
-} from './article-suggest';
 export { enterPages, type PagesIds } from './enter';
 export {
   articleSummaries,

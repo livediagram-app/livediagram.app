@@ -263,15 +263,6 @@ export const ARTICLE_FORMATTING = chart(
   },
 );
 
-// Suggestions (docs/specs/007-editor/suggestions.md): Suggesting or Editing chosen in the page toolbar's mode menu.
-export const ARTICLE_SUGGEST_MODE = chart(
-  'UI',
-  'Changed',
-  'Suggesting Mode',
-  "An article's page toolbar switched to Suggesting (changes become suggestions to accept or reject), or back to Editing.",
-  { types: ['SuggestingMode', 'EditingMode'], rising: 'neutral' },
-);
-
 export const ARTICLE_LOOKS = chart(
   'Tab',
   'Changed',
@@ -307,7 +298,6 @@ export const PAGE_WORK: MetricStack = {
     ARTICLE_INSERTS,
     ARTICLE_FORMATTING,
     LONG_SENTENCES,
-    ARTICLE_SUGGEST_MODE,
     ARTICLE_LOOKS,
   ],
   headline: PAGES,

@@ -268,3 +268,53 @@ describe('list markers', () => {
     ]);
   });
 });
+
+// Suggestions are retired (docs/specs/007-editor/suggestions.md): writing stored while they existed reads as rejected.
+describe('parseArticleFlow: a suggestion stored before suggestions were retired', () => {
+  const mark = (k: string, extra: object = {}) => ({
+    id: 's1',
+    k,
+    by: 'key-a',
+    n: 'Ada',
+    at: 1,
+    ...extra,
+  });
+
+  it('drops an insertion, keeps a deletion as plain text and puts back a format change', () => {
+    const flow = parseArticleFlow({
+      blocks: [
+        {
+          id: 'p',
+          type: 'paragraph',
+          runs: [
+            { text: 'Kept ' },
+            { text: 'added ', sg: mark('ins') },
+            { text: 'struck ', sg: mark('del') },
+            { text: 'bold', b: true, note: 'n1', sg: mark('fmt', { was: { i: true } }) },
+          ],
+        },
+      ],
+    });
+    expect(flow.blocks).toEqual([
+      {
+        id: 'p',
+        type: 'paragraph',
+        runs: [{ text: 'Kept struck ' }, { text: 'bold', i: true, note: 'n1' }],
+      },
+    ]);
+  });
+
+  it('joins a paragraph break put in back onto the paragraph before, and keeps one taken out', () => {
+    const flow = parseArticleFlow({
+      blocks: [
+        { id: 'a', type: 'paragraph', runs: [{ text: 'One ' }] },
+        { id: 'b', type: 'paragraph', runs: [{ text: 'two' }], sg: mark('ins') },
+        { id: 'c', type: 'list', list: 'bullet', runs: [{ text: 'three' }], sg: mark('del') },
+      ],
+    });
+    expect(flow.blocks).toEqual([
+      { id: 'a', type: 'paragraph', runs: [{ text: 'One two' }] },
+      { id: 'c', type: 'list', list: 'bullet', runs: [{ text: 'three' }] },
+    ]);
+  });
+});

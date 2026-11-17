@@ -52,9 +52,6 @@ type ParticipantSender = {
   ws: WebSocket;
   presenceId: string;
   documentId: string | null;
-  // On Suggest Only (docs/specs/007-editor/suggestions.md "The server is the rule"): whose suggestions its writing
-  // must be. It may then also add a margin comment on selected text.
-  suggestBy?: string | null;
 };
 
 type ElFrame = { kind: 'el'; tabId: string; op: ElementOp };
@@ -100,11 +97,7 @@ export class RoomParticipantWrites {
   async applyContentOp(sender: ParticipantSender, frame: unknown, ref?: unknown): Promise<void> {
     if (!isElFrame(frame)) return;
     const { tabId, op } = frame;
-    const result = await this.queued(
-      sender,
-      tabId,
-      participantOpChange(op, { marginComment: Boolean(sender.suggestBy) }),
-    );
+    const result = await this.queued(sender, tabId, participantOpChange(op));
     if (!result) return;
     const outcome = result.answer;
     if (outcome.result === 'refused') {
@@ -130,11 +123,7 @@ export class RoomParticipantWrites {
     const article = articleFrameOf(frame);
     if (!article) return;
     const { tabId, flow, ops } = article;
-    const result = await this.queued(
-      sender,
-      tabId,
-      participantArticleChange(flow, ops, { suggestBy: sender.suggestBy ?? null }),
-    );
+    const result = await this.queued(sender, tabId, participantArticleChange(flow, ops));
     if (!result) return;
     const outcome = result.answer;
     if (outcome.result === 'refused') {

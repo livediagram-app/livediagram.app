@@ -11,9 +11,6 @@ import {
   ChromeToolsMenu,
   type ChromeToolsItem,
 } from '@liveworkspace/workbench/components/chrome/ChromeToolsMenu';
-import { useSuggestionsToolsItem } from '@liveworkspace/suggestions/react/SuggestionsBar';
-import type { CanvasSuggestions } from '@liveworkspace/suggestions/react/useCanvasSuggestions';
-import type { Element as SuggestionCanvasElement } from '@livedesign/design';
 
 // The right-hand control cluster shared by the editor's bottom tab bar and
 // the Explorer's bottom bar (docs/specs/007-editor/live-app.md): search, the open-source GitHub
@@ -23,7 +20,6 @@ import type { Element as SuggestionCanvasElement } from '@livedesign/design';
 // so each host drops it straight into its own bar flex row.
 export function ChromeControls({
   onOpenSearch,
-  suggestions,
   onOpenSettings,
   settingsLabel = 'Settings',
   labelled = false,
@@ -32,8 +28,6 @@ export function ChromeControls({
   extraTools = [],
 }: {
   onOpenSearch?: () => void;
-  // The canvas's suggestions (the editor's; the Explorer's bar has none): Suggest's row and the panel it opens.
-  suggestions?: CanvasSuggestions<SuggestionCanvasElement>;
   onOpenSettings?: () => void;
   // The editor's settings are per-design; the Explorer's read the same
   // synced preferences. Let the host phrase the hover card.
@@ -50,7 +44,6 @@ export function ChromeControls({
   extraTools?: readonly (ChromeToolsItem | null)[];
 }) {
   const BTN = labelled ? `${CHROME_BTN} ${CHROME_BTN_LABELLED}` : CHROME_BTN;
-  const suggest = useSuggestionsToolsItem(suggestions);
   // Search, first in Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md).
   const search: ChromeToolsItem | null = onOpenSearch
     ? {
@@ -71,7 +64,7 @@ export function ChromeControls({
       <TourOfferButton labelled={labelled} />
       {/* Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md): the tools that work on the
           whole item, in one menu, drawn only while it holds one. */}
-      <ChromeToolsMenu labelled={labelled} items={[search, suggest, ...extraTools]} />
+      <ChromeToolsMenu labelled={labelled} items={[search, ...extraTools]} />
       {github ? (
         <>
           {/* Open-source repo link (the codebase is public + MIT, docs/specs/002-project-scope/open-source-and-business-model.md). An

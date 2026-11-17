@@ -15,8 +15,6 @@ import {
 } from './document-room-sockets';
 import { handleAgentPresence, clearAgentsFor, liveSessions } from './document-room-presence';
 import { readHolds } from './document-room-holds';
-import { reviewChanged, suggestionsChanged } from './document-room-review';
-import { suggestionsRoomOp } from '@liveworkspace/suggestions/room-signal';
 
 // This env's DOCUMENT_ROOM, answering this document's own id with this object: the code shared with the worker (a
 // document read's outline, the room relays) then calls straight in rather than through a stub.
@@ -94,8 +92,6 @@ export function roomInternal(room: DocumentRoom): InternalRoom {
     readSelections: (tabId, person) => room.selections.read(tabId, liveSessions(room), person),
     readLedger: (tabId, since) => room.ledger.read(tabId, since),
     readHolds: (tabId) => readHolds(room, tabId),
-    reviewChanged: () => reviewChanged(room),
-    suggestionsChanged: (tabId) => suggestionsChanged(room, suggestionsRoomOp(tabId)),
     epoch: () => room.epoch,
   };
 }

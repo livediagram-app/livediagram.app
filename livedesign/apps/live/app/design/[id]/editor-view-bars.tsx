@@ -194,7 +194,6 @@ export function editorViewFooter(
             setSettingsOpen(true);
             track('UI', 'Opened', 'Settings');
           }}
-          suggestions={ctx.canvasSuggestions}
           extraTools={[
             roleToolsItem({
               role: view.role.role,

@@ -153,20 +153,6 @@ describe('articleReadability', () => {
     expect(r.readingMinutes).toBe(1);
     expect(r.level).not.toBeNull();
   });
-
-  it('reads the writing as answered, a suggested insertion left out', () => {
-    const blocks: ArticleBlock[] = [
-      {
-        id: 'p',
-        type: 'paragraph',
-        runs: [
-          { text: 'The cat sat. ' },
-          { text: 'It was very tired.', sg: { id: 's1', k: 'ins', by: 'a', n: 'A', at: 1 } },
-        ],
-      },
-    ];
-    expect(articleReadability({ blocks }, 3).sentences).toBe(1);
-  });
 });
 
 describe('labels', () => {

@@ -135,7 +135,6 @@ function EditorViewFooterBar(view: {
   // Version History (docs/specs/006-document/version-history.md "In the editor"): the gate's own slices.
   const hydrated = useEditorChrome((s) => s.hydrated);
   const communityVisitor = useEditorChrome((s) => s.sessionCommunity !== null);
-  const canvasSuggestions = useEditorChrome((s) => s.canvasSuggestions);
   // The Editing Mode tool (the header's role pill, moved into Tools).
   const roleLevel = useEditorChrome((s) => s.can.level);
   const ownerName = useEditorChrome((s) => resolveOwnerBadge(s)?.name ?? null);
@@ -214,7 +213,6 @@ function EditorViewFooterBar(view: {
             chrome.get().setSettingsOpen(true);
             track('UI', 'Opened', 'Settings');
           }}
-          suggestions={canvasSuggestions}
           extraTools={[
             roleToolsItem({
               role: roleLevel,

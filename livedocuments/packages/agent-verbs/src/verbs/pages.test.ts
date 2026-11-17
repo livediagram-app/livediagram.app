@@ -377,7 +377,6 @@ describe('article get and article set', () => {
         pageNumbers: true,
         size: 'letter',
         orientation: 'portrait',
-        as: 'suggestions',
       }),
     );
     expect(sent).toEqual([
@@ -391,7 +390,6 @@ describe('article get and article set', () => {
           look: 'report',
           accent: '#ff0066',
           pageNumbers: true,
-          as: 'suggestions',
         },
       },
     ]);

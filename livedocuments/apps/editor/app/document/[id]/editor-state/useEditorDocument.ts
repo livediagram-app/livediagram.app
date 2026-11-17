@@ -1,13 +1,7 @@
 import { useWorkbenchDocumentSession } from '@/components/providers/workbench-session-context';
 import { surfaceFlags, type EditorSurface } from '@liveworkspace/workbench/lib/editor-surface';
 import { useCallback, useMemo, useRef, useState } from 'react';
-import {
-  elementFingerprint,
-  stampNewElementLayers,
-  type Element,
-  type Tab,
-} from '@livedocuments/document';
-import { useSuggestCapture } from '@liveworkspace/suggestions/react/useSuggestCapture';
+import { stampNewElementLayers, type Tab } from '@livedocuments/document';
 import { settleChipsInTabs } from '@/lib/settle-tabs';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useDocumentHistory } from '@/hooks/canvas/useDocumentHistory';
@@ -68,21 +62,6 @@ export function useEditorDocument(opts: { surface?: EditorSurface } = {}) {
     undo: tabUndo,
     redo: tabRedo,
   } = useDocumentHistory(initialTabs);
-  // Suggesting on the canvas (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Suggesting"): while
-  // this person suggests, a change to a slide's or an infographic's elements is gathered as a suggestion instead of
-  // applied. A change to the tab's own fields (an article's writing, which suggests in its own way) goes through.
-  const suggestCapture = useSuggestCapture<Tab, Element>(tabs, {
-    fingerprint: elementFingerprint,
-    passThrough: () => true,
-  });
-  const commitGathered = useMemo(
-    () => suggestCapture.capture.wrap(rawCommitTabs),
-    [suggestCapture, rawCommitTabs],
-  );
-  const tickGathered = useMemo(
-    () => suggestCapture.capture.wrap(rawTickTabs),
-    [suggestCapture, rawTickTabs],
-  );
   const canHistoryUndo = canTabUndo;
   const canHistoryRedo = canTabRedo;
   const undoHistory = tabUndo;
@@ -101,10 +80,10 @@ export function useEditorDocument(opts: { surface?: EditorSurface } = {}) {
   // Stable, as the history's own tick is: effects and loaders depend on its identity.
   const tickTabs = useCallback(
     (mapTabs: (ts: Tab[]) => Tab[]) =>
-      tickGathered((ts) =>
+      rawTickTabs((ts) =>
         guardPagesIn(ts, settleChipsInTabs(ts, mapTabs(ts)), pageLockGuardRef.current),
       ),
-    [tickGathered],
+    [rawTickTabs],
   );
   const commitTabs = (mapTabs: (ts: Tab[]) => Tab[]) => {
     localEditSeqRef.current += 1;
@@ -114,7 +93,7 @@ export function useEditorDocument(opts: { surface?: EditorSurface } = {}) {
     // import) carries layer logic. stampNewElementLayers no-ops on tabs
     // that never materialised `layers`, and on undo/remote applies (which
     // bypass commitTabs entirely).
-    commitGathered((ts) => {
+    rawCommitTabs((ts) => {
       const mapped = mapTabs(ts);
       // Locked pages (docs/specs/007-editor/pages-mode.md "Locking a page"): in Pages
       // mode nothing is added to, moved onto, changed on or taken off a locked page.
@@ -219,7 +198,6 @@ export function useEditorDocument(opts: { surface?: EditorSurface } = {}) {
     commitTabs,
     markCheckpoint,
     resetTabs,
-    suggestCapture,
     cancelToCheckpoint,
     tabSummaries,
     nameConfirmed,

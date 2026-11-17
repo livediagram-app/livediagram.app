@@ -569,9 +569,6 @@ due dates, Activity, email), because it lives on an element: a **margin note**.
   brings both back).
 - **Never printed or presented**: exports (PDF, PNG, SVG) leave the markers out and the text
   untinted, and while a deck is presented the markers hide and the tint goes.
-- **On a suggestion**: a margin note sits beside suggested text like any text, so a suggestion and its talk sit
-  together; a Participant on Suggest Only may put a comment (never an action) on selected text
-  ([Suggestions](suggestions.md#comments-on-selected-text)).
 - A tint is never taken from a paste.
 
 ## Article style
@@ -678,8 +675,8 @@ ink").
   each link in the text to its address. **Word** writes the article as an editable `.docx`, its
   headings as Word styles, its tables as Word tables, its contents as a Word table of contents,
   its header and footer as Word's, its footnotes as Word footnotes, and its zones as images
-  ([PowerPoint and Word export](../020-import-export/office-export.md)). An article holding suggestions exports
-  its rejected view, set from the writing rather than read off the screen ([Suggestions](suggestions.md#everywhere-a-page-goes)). **Markdown** (an agent's
+  ([PowerPoint and Word export](../020-import-export/office-export.md)).
+  **Markdown** (an agent's
   read) writes a table as a pipe table and a contents block as `[TOC]`
   ([Pages for agents](../024-agents/pages-for-agents.md)).
 - **The Map** shows each page's text as soft grey lines.
@@ -694,11 +691,11 @@ ink").
 
 ([Share roles](../013-workspace/share-roles.md))
 
-| Role            | With an article                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Editor**      | Everything on this page: writes, formats, inserts (tables, contents and footnotes included), shapes tables (rows, columns, header row, widths), moves zones, sets the style (header and footer included), puts margin notes on, turns articles into pages.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| **Participant** | Writes the text: paragraphs, lists and code, put, changed and removed, the text of a table's cells, and the text of the footnotes already there (removing one with its reference). Never formats the article's style (its header and footer included), inserts (a table, contents or a footnote included), adds or removes a table's rows or columns, sets its header row or widths, moves zones, adds margin notes or turns articles into pages, and never writes on a locked tab or page. Its writing reaches others block by block like anyone's; the pages it needs are grown by an Editor. A margin note's marker opens its thread, where it comments and replies. On a Suggest Only link or as a Suggest Only person it suggests instead of writing, and may put a comment on selected text ([Suggestions](suggestions.md#share-roles)). |
-| **Viewer**      | Reads the writing (in its rejected view: no suggestion shows), its footnotes and its margin notes; changes nothing.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| Role            | With an article                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Editor**      | Everything on this page: writes, formats, inserts (tables, contents and footnotes included), shapes tables (rows, columns, header row, widths), moves zones, sets the style (header and footer included), puts margin notes on, turns articles into pages.                                                                                                                                                                                                                                                                                                                                                                                                              |
+| **Participant** | Writes the text: paragraphs, lists and code, put, changed and removed, the text of a table's cells, and the text of the footnotes already there (removing one with its reference). Never formats the article's style (its header and footer included), inserts (a table, contents or a footnote included), adds or removes a table's rows or columns, sets its header row or widths, moves zones, adds margin notes or turns articles into pages, and never writes on a locked tab or page. Its writing reaches others block by block like anyone's; the pages it needs are grown by an Editor. A margin note's marker opens its thread, where it comments and replies. |
+| **Viewer**      | Reads the writing, its footnotes and its margin notes; changes nothing.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 
 ## Collaboration
 
@@ -737,8 +734,6 @@ ink").
 - **Agents** read an article as Markdown and write it from Markdown
   ([Pages for agents](../024-agents/pages-for-agents.md)); their writing arrives as anyone's, and
   never over a paragraph someone holds.
-- **Suggestions** ([Suggestions](suggestions.md)) are marks on the runs and on a block, so they sync, hold, undo and
-  merge block by block like any writing.
 
 ### Holding a paragraph
 
@@ -819,6 +814,7 @@ types in it until they let go. Nothing about what is stored changes, and no lett
   note running on onto the next page on screen.
 - Merged cells, cell colours, per-cell alignment and nested tables; a header column.
 - A first-page header or footer with text of its own, and different odd and even pages.
-- Columns. (Suggestions and tracked changes are their own feature: [Suggestions](suggestions.md). Find and replace across a tab's pages, the writing included, is its own
-  feature: [Find and replace](find-and-replace.md).)
+- Columns. (Find and replace across a tab's pages, the writing included, is its own feature:
+  [Find and replace](find-and-replace.md).)
+- Suggestions and tracked changes: retired ([Suggestions](suggestions.md)).
 - Character-level merging of two people typing in the same paragraph at the same moment.

@@ -30,7 +30,7 @@ Paths in these specs are relative to `liveworkspace/` (`apps/accounts/…`), exc
 - ./012-migrate/README.md - when working on the move from the historical livediagram.app, or on what is left of Clerk
 - ./013-export/README.md - when working on an export every product shares: the PDF writer (`@liveworkspace/vector-export`)
 - ./014-snapshots/README.md - when working on Snapshots in any app: manual save points of a whole item, the latest five, Revert, `@liveworkspace/snapshots`
-- ./015-suggestions/README.md - when working on suggestions on a canvas in any product, or Suggest Only (`@liveworkspace/suggestions`)
+- ./015-suggestions/README.md - retired: suggest mode (canvas suggestions, Suggest Only), removed from every product
 
 ## Workflow
 

@@ -137,8 +137,7 @@ describe('WebSocket upgrade', () => {
     expect(h.get('X-Verified-Account')).toBe('0');
   });
 
-  // A Suggest Only link holds the guest or signed-in person who opened it (docs/specs/007-editor/suggestions.md
-  // "Suggest Only"): the room reads the code and a verified collab key, both from the grant.
+  // The room reads the share code and a verified collab key from the grant, so revoking the link closes its sockets.
   it("takes a guest's or a signed-in link opener's share code from the grant's link claim, never ?s=", async () => {
     for (const sub of ['guest_g', 'user_a']) {
       const { env, seen } = roomEnv();

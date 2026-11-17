@@ -331,10 +331,6 @@ export const articleSet = defineVerb({
       .describe('clean, classic, report, notebook or bold'),
     accent: z.string().optional().describe('The accent colour, a hex'),
     pageNumbers: z.boolean().optional().describe('Page numbers on'),
-    as: z
-      .enum(['suggestions', 'direct'])
-      .optional()
-      .describe('suggestions: changes wait for review in the editor; direct (default) writes them'),
     // A paragraph a person is typing in holds the write back (docs/specs/024-agents/pages-for-agents.md "Held
     // paragraphs"): retried every HELD_RETRY_INTERVAL_MS while the next try fits in the seconds given.
     waitHeld: writeFlags.waitHeld.describe(
@@ -360,7 +356,6 @@ export const articleSet = defineVerb({
           ...(input.look ? { look: input.look } : {}),
           ...(input.accent ? { accent: input.accent } : {}),
           ...(input.pageNumbers !== undefined ? { pageNumbers: input.pageNumbers } : {}),
-          ...(input.as ? { as: input.as } : {}),
         },
         'cli',
       );

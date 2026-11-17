@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { EMPTY_SELECTION, type Selection } from '@liveworkspace/workbench/lib/selection-store';
 import dynamic from 'next/dynamic';
@@ -26,11 +26,6 @@ const ImportTabDialog = dynamic(
 );
 // The shared Explorer's Share dialog (@liveworkspace/explorer), with livedesign's Community tab
 // (docs/specs/025-community/community.md "Publishing"): links are the index's, managed there.
-// The Share dialog's Suggest Only section (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md).
-const SuggestionsSection = dynamic(
-  () => import('@/components/dialogs/SuggestionsSection').then((m) => m.SuggestionsSection),
-  { ssr: false },
-);
 const ShareDialog = dynamic(
   () =>
     import('@/components/dialogs/community/ShareDialogWithCommunity').then(
@@ -72,12 +67,8 @@ export function EditorTabDialogs() {
     accountDisplayName,
     designTeamId,
     setSelfParticipant,
-    sessionRole,
-    sessionShareCode,
   } = useEditorContext();
   const toast = useToast();
-  // Bumped when the dialog makes, rescopes or removes a pass, so the Suggestions section lists the new links at once.
-  const [linksRev, setLinksRev] = useState(0);
   // The selection the export covers, read from the store while a selection export is open
   // (docs/specs/008-canvas/blueprints/selection-store.md).
   const exportingSelection = exportOpen && exportScope === 'selection';
@@ -158,10 +149,7 @@ export function EditorTabDialogs() {
           shareUrl={shareUrl}
           handOver={designHandOver}
           helpHref={shareHelpHref}
-          onTelemetry={(action, type) => {
-            trackShare(action, type);
-            if (action === 'Shared' || action === 'Removed') setLinksRev((r) => r + 1);
-          }}
+          onTelemetry={trackShare}
           notify={(text, tone) => toast[tone](text)}
           // A guest's name is theirs to change here; an account's is the account's (auth-and-guest-access.md).
           identity={
@@ -185,19 +173,6 @@ export function EditorTabDialogs() {
           // (docs/specs/025-community/community.md "Something to show").
           firstTabEmpty={
             !!activeTab && tabs[0]?.id === activeTab.id && firstPageLooksEmpty(activeTab)
-          }
-          // Suggest Only (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md): an Editor's.
-          appSection={
-            sessionRole === 'edit' ? (
-              <SuggestionsSection
-                itemId={designId}
-                ownerId={selfParticipant.id}
-                shareCode={sessionShareCode}
-                linksRev={linksRev}
-                tabs={tabs}
-                onError={(text) => toast.error(text)}
-              />
-            ) : undefined
           }
           onClose={() => setShareDialogOpen(false)}
         />

@@ -29,7 +29,6 @@ import { countedVerbs } from '@livedesign/agent-verbs';
 import { MCP_TOOL_VERBS } from '@livedesign/agent-verbs/mcp';
 import { CANVAS_CONTROLS } from '../_shared/event-vocab';
 import { ADJUSTMENT_IDS, FILTERS, LAYER_ADJUSTMENT_IDS } from '@livedesign/photo-engine';
-import { CANVAS_SUGGESTION_TYPES, SUGGEST_ONLY_SHARE_TYPES } from '../_shared/suggestion-vocab';
 
 type ComputedValues = {
   values: readonly (string | null)[];
@@ -236,13 +235,6 @@ const UI_SCALE_PARTS = [
 ].map((m) => m[1]!);
 
 export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
-  // Canvas suggestions (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Telemetry").
-  'apps/live/app/design/[id]/editor-state/useEditorSuggestions.ts Element·Changed': {
-    values: CANVAS_SUGGESTION_TYPES,
-  },
-  'apps/live/components/dialogs/SuggestionsSection.tsx Document·Shared': {
-    values: SUGGEST_ONLY_SHARE_TYPES,
-  },
   // The UI Scale slider's per-part rows (UI_SCALE_PARTS above).
   'apps/live/components/dialogs/settings/settings-catalogue.ts UI·Changed': {
     values: UI_SCALE_PARTS,

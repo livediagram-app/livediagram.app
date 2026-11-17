@@ -14,19 +14,8 @@ export const blockIdsPlugin = new Plugin({
   appendTransaction(trs, _old, state) {
     if (!trs.some((tr) => tr.docChanged)) return null;
     const seen = new Set<string>();
-    const breaks = new Set<string>();
     let tr: Transaction | null = null;
     state.doc.forEach((node, offset) => {
-      // A paragraph split copies its break suggestion to the new half: the break before it is the first half's
-      // alone (docs/specs/007-editor/suggestions.md "What a suggestion is").
-      const sg = node.attrs.sg as { id?: string } | null | undefined;
-      if (sg?.id) {
-        if (breaks.has(sg.id)) {
-          tr ??= state.tr;
-          tr.setNodeAttribute(offset, 'sg', null);
-        }
-        breaks.add(sg.id);
-      }
       const id = node.attrs.id as string | undefined;
       if (id && !seen.has(id)) {
         seen.add(id);
