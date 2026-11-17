@@ -64,7 +64,9 @@ Each editor mounts it from `components/start/ExampleContentTray.tsx` (inside `Ed
 editor is hydrated, not read-only (an Editor: a Participant and a Viewer are read-only to the editor's structure),
 not zen or an embed, the tab is not locked, livediagram's Watch It Built demo is not playing, and
 `hasUntouchedExamples(activeTab.elements)`. livedocuments reads that one answer off its chrome store. Its actions are
-the editor's `clearExampleContent` and `keepExampleContent` (useTemplateFlow), each announcing what it did.
+the editor's `clearExampleContent` and `keepExampleContent` (useTemplateFlow), each announcing what it did and sending
+`Template · Changed · ExampleCleared` or `ExampleKept` (charted as Template Examples in each product's Look & Feel
+stack on the telemetry site).
 
 ## Performance
 

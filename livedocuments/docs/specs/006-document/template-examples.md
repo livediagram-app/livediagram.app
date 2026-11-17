@@ -41,6 +41,10 @@ The tray appears as soon as the template lands, and stays while any untouched ex
 the tab: each tab of a document answers for its own. It is a standing message: it steps aside while a mode's message
 takes its place, and without the strip it stands at the top centre. On a phone the buttons alone show.
 
+It sends `Template · Changed · ExampleCleared` or `Template · Changed · ExampleKept`, charted as Template Examples in
+the telemetry site's Features › Look & Feel stack. The help centre's Templates article explains both buttons
+("Clearing the Example Content").
+
 ## Who sees it
 
 Only an **Editor**: it changes the pages' content. A **Participant** and a **Viewer** never see it. Not in zen, an

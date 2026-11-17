@@ -165,10 +165,12 @@ export function useTemplateFlow(opts: {
   // A template's example content (docs/specs/006-document/template-examples.md): Clear Example Content empties the
   // active tab's untouched example values, Keep It makes them the person's own. Each is one commit, one undo step.
   const clearExampleContent = () => {
+    track('Template', 'Changed', 'ExampleCleared');
     commitTabs((ts) => clearTabExamples(ts, activeId));
     announce('Example content cleared');
   };
   const keepExampleContent = () => {
+    track('Template', 'Changed', 'ExampleKept');
     commitTabs((ts) => keepTabExamples(ts, activeId));
     announce('Example content kept as your own');
   };

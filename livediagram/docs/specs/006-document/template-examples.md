@@ -42,6 +42,10 @@ used later in the session or on another day. It belongs to the tab: each tab of 
 It is a standing message: it steps aside while a mode's message (an armed tool's Cancel) takes its place, and without
 the strip (the floating palette, Draw's dock) it stands at the top centre. On a phone the buttons alone show.
 
+It sends `Template · Changed · ExampleCleared` or `Template · Changed · ExampleKept`, charted as Template Examples in
+the telemetry site's Features › Look & Feel stack. The help centre's Templates article explains both buttons
+("Clearing the Example Content").
+
 ## Who sees it
 
 Only an **Editor**: it changes the board's content, which a Participant may only add to. A **Participant** and a
