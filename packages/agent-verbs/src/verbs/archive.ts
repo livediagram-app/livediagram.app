@@ -120,7 +120,7 @@ export function createArchiveVerbs({
   const archive = defineVerb({
     id: `${noun}.archive`,
     summary: `Put a ${word} away in Archived`,
-    description: `Moves a ${word} you own to your Archived: out of every list, its share links ended and its favourites, Recent and Inbox entries gone for everyone. It can't be opened or changed there until ${noun} unarchive moves it out.`,
+    description: `Moves a ${word} you own to your Archived: out of every list, its share links ended and its Recent and Inbox entries gone for everyone. It can't be opened or changed there until ${noun} unarchive moves it out.`,
     behaviour: 'destructive',
     input: z.object({ [arg]: z.string().describe(`A name, id prefix or link of a ${word}`) }),
     output: lineOutput,
@@ -144,7 +144,7 @@ export function createArchiveVerbs({
   const unarchive = defineVerb({
     id: `${noun}.unarchive`,
     summary: `Move a ${word} out of Archived`,
-    description: `Moves a ${word} out of your Archived, to the top of My Work, or into the folder --folder names (a team's folder files it in that team) or the top of the team --team names. It opens again, with no share links, favourites or Recent entries from before.`,
+    description: `Moves a ${word} out of your Archived, to the top of My Work, or into the folder --folder names (a team's folder files it in that team) or the top of the team --team names. It opens again, with no share links or Recent entries from before.`,
     behaviour: 'write',
     input: z.object({
       [arg]: z.string().describe(`A name or id prefix of a ${word} in Archived`),

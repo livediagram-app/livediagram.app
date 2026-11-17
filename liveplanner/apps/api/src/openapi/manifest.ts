@@ -468,7 +468,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'projects',
     tag: 'Plans',
     summary:
-      'Move a plan the caller owns to their Archived: out of every list, its share links ended, its favourites, Recent and Inbox entries removed for everyone.',
+      'Move a plan the caller owns to their Archived: out of every list, its share links ended, its Recent and Inbox entries removed for everyone.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: wrap('project', 'ProjectSummary'),

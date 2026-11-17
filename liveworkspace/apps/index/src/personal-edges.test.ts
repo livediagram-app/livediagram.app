@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import type { Person } from './auth';
 import type { PersonContext } from './context';
 import type { Env } from './env';
-import { handleFavourites, handlePlacementDefaults, handleRecentHidden } from './personal';
+import { handlePlacementDefaults, handleRecentHidden } from './personal';
 import { h, useHarness } from './test-support';
 
 useHarness();
@@ -88,17 +88,17 @@ function failing(match: RegExp, message: string, on: 'run' | 'batch'): Env {
 const status = async (c: PersonContext, handler: (c: PersonContext) => Promise<Response>) =>
   (await handler(c)).status;
 
-describe('who reaches an item to star or hide it', () => {
+describe('who reaches an item to hide it', () => {
   it('refuses an app’s delegate for another app’s item, and the Drive mirror for a team’s or another’s', async () => {
     item('i1', { app: 'livediagram' });
     item('i2', { team: 'team1' });
     item('i3', { owner: 'user_bob' });
     const app = { ...ADA, app: 'liveplanner' } as Person;
-    expect(await status(ctx(app, 'PUT', '/favourites/i1'), handleFavourites)).toBe(404);
+    expect(await status(ctx(app, 'PUT', '/recent-hidden/i1'), handleRecentHidden)).toBe(404);
     const drive = { ...ADA, drive: true } as Person;
-    expect(await status(ctx(drive, 'PUT', '/favourites/i2'), handleFavourites)).toBe(404);
-    expect(await status(ctx(drive, 'PUT', '/favourites/i3'), handleFavourites)).toBe(404);
-    expect(await status(ctx(drive, 'PUT', '/favourites/i1'), handleFavourites)).toBe(204);
+    expect(await status(ctx(drive, 'PUT', '/recent-hidden/i2'), handleRecentHidden)).toBe(404);
+    expect(await status(ctx(drive, 'PUT', '/recent-hidden/i3'), handleRecentHidden)).toBe(404);
+    expect(await status(ctx(drive, 'PUT', '/recent-hidden/i1'), handleRecentHidden)).toBe(204);
   });
 
   it('reaches a team’s item through a team the token lacks only when accounts says they joined', async () => {
@@ -111,7 +111,7 @@ describe('who reaches an item to star or hide it', () => {
         ? Response.json({ teams: [{ id: 'team9', name: 'Nine', role: 'member' }] })
         : stubbed(input, init)) as typeof fetch;
     try {
-      expect(await status(ctx(joined, 'PUT', '/favourites/t1'), handleFavourites)).toBe(204);
+      expect(await status(ctx(joined, 'PUT', '/recent-hidden/t1'), handleRecentHidden)).toBe(204);
     } finally {
       globalThis.fetch = stubbed;
     }
@@ -119,33 +119,7 @@ describe('who reaches an item to star or hide it', () => {
 
   it('keeps a trashed item out of reach of someone it was only shared with', async () => {
     item('gone', { owner: 'user_bob', trashed: 5 });
-    expect(await status(ctx(ADA, 'PUT', '/favourites/gone'), handleFavourites)).toBe(404);
-  });
-});
-
-describe('favourites', () => {
-  it('refuses a page size or cursor it cannot read', async () => {
-    expect(await status(ctx(ADA, 'GET', '/favourites?limit=0'), handleFavourites)).toBe(400);
-    expect(await status(ctx(ADA, 'GET', '/favourites?cursor=%25'), handleFavourites)).toBe(400);
-  });
-
-  it('answers 404 for an id it cannot read, and for a method it does not take', async () => {
-    expect(await status(ctx(ADA, 'PUT', '/favourites/bad%20id'), handleFavourites)).toBe(404);
-    item('i1');
-    expect(await status(ctx(ADA, 'POST', '/favourites/i1'), handleFavourites)).toBe(404);
-    expect(await status(ctx(ADA, 'GET', '/favourites/i1/more'), handleFavourites)).toBe(404);
-  });
-
-  it('answers 404 when the item goes between the read and the write, and rethrows anything else', async () => {
-    item('i1');
-    const lost = failing(/./, 'FOREIGN KEY constraint failed', 'batch');
-    expect(await status(ctx(ADA, 'PUT', '/favourites/i1', { env: lost }), handleFavourites)).toBe(
-      404,
-    );
-    const broken = failing(/./, 'disk gone', 'batch');
-    await expect(
-      handleFavourites(ctx(ADA, 'PUT', '/favourites/i1', { env: broken })),
-    ).rejects.toThrow('disk gone');
+    expect(await status(ctx(ADA, 'PUT', '/recent-hidden/gone'), handleRecentHidden)).toBe(404);
   });
 });
 

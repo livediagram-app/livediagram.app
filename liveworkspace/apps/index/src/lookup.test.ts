@@ -170,7 +170,7 @@ describe('POST /items/lookup', () => {
     const asked = Array.from({ length: ITEM_LOOKUP_IDS_MAX }, (_, i) => `lk-${i}`);
     const found = await lookupItems(env, { id: ada.id, kind: 'account', teams: [] }, asked);
     expect(found).toHaveLength(ITEM_LOOKUP_IDS_MAX / 2);
-    // The rows, the links for the rest, and decorate's batch of four.
-    expect(statements).toBe(6);
+    // The rows, the links for the rest, and decorate's batch of three (no favourites since they were removed).
+    expect(statements).toBe(5);
   });
 });

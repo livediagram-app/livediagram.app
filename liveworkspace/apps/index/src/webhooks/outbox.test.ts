@@ -45,7 +45,6 @@ describe('queuing logged events', () => {
       auth: ada.auth,
       body: { level: 'view' },
     });
-    await call(`/favourites/${item.id}`, { method: 'PUT', auth: ada.auth });
     expect(queued()).toEqual(['renamed Roadmap 2']);
     const renamed = deliveries()[0]!;
     expect(renamed).toMatchObject({

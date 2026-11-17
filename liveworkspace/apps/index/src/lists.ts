@@ -1,5 +1,5 @@
 // The Explorer's lists (`GET /items`, `GET /trash`): one query per page, keyset-paged, each driven by an
-// index that starts with the person (their scopes, their opens, favourites or shared rows) or with one
+// index that starts with the person (their scopes, their opens or shared rows) or with one
 // folder, so a page costs what the person holds, never the table. The plans are pinned by a test
 // (lists.test.ts "query plans").
 
@@ -257,12 +257,6 @@ export function buildListQuery(person: Person, spec: ListSpec, now = Date.now())
       idCol = 'o.item_id';
       // Hidden from Recent: the partial opens_recent index holds only the rest.
       where.push('o.person_id = ?', 'o.hidden = 0', 'i.trashed_at IS NULL');
-      args.push(person.id);
-      reachable();
-      break;
-    case 'favourites':
-      from = 'favourites f JOIN items i ON i.id = f.item_id';
-      where.push('f.person_id = ?', 'i.trashed_at IS NULL');
       args.push(person.id);
       reachable();
       break;

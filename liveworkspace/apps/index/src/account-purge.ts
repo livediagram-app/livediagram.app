@@ -178,12 +178,13 @@ function personalStatements(db: Db, person: string): (() => D1PreparedStatement)
           'DELETE FROM folders WHERE rowid IN (SELECT rowid FROM folders WHERE owner_id = ? LIMIT ?)',
         )
         .bind(person, CHUNK),
+    // The favourites table nothing reads since Favourites were removed: its rows are still theirs, so they go.
     byPerson('favourites'),
     // Their calendar feeds (calendar-feeds.ts): the token hash is theirs alone.
     byPerson('calendar_feeds'),
     byPerson('opens'),
     byPerson('use_days'),
-    // The event log: their favourites' events, which only they saw (their own items' events went with the
+    // The event log: their old `favourited` events, which only they saw (their own items' events went with the
     // items), then their name off the rest (team items, other people's items they edited or visited), both
     // through the actor index.
     () =>

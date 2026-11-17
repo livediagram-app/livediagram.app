@@ -40,12 +40,11 @@ const asApp = (path: string, payload: unknown) =>
     body: payload,
   });
 
-// A link visitor opens it, so they hold a Shared with me row, a Recent row and a use day; and a favourite.
+// A link visitor opens it, so they hold a Shared with me row, a Recent row and a use day.
 async function visited(itemId: string, code: string, auth: string) {
   const headers = { 'X-Share-Code': code };
   expect((await call(`/share/${code}`, { auth, headers })).status).toBe(200);
   expect((await call(`/items/${itemId}/open`, { method: 'POST', auth, headers })).status).toBe(204);
-  expect((await call(`/favourites/${itemId}`, { method: 'PUT', auth })).status).toBe(204);
 }
 
 describe('archiving', () => {
@@ -69,14 +68,13 @@ describe('archiving', () => {
     expect(again.item.archivedAt).toBe(out.archivedAt);
   });
 
-  it('deletes its links, password, Shared with me, favourites, Recent, Most Used and Inbox rows for everyone', async () => {
+  it('deletes its links, password, Shared with me, Recent, Most Used and Inbox rows for everyone', async () => {
     const ada = await person('user_a');
     const bob = await person('user_b');
     const item = await makeItem(ada.auth);
     const link = await share(ada.auth, item.id);
     await visited(item.id, link.code, bob.auth);
     await call(`/items/${item.id}/open`, { method: 'POST', auth: ada.auth });
-    await call(`/favourites/${item.id}`, { method: 'PUT', auth: ada.auth });
     await call(`/items/${item.id}/share-password`, {
       method: 'PUT',
       auth: ada.auth,
@@ -114,7 +112,6 @@ describe('archiving', () => {
       ],
     });
     expect(count('collab_threads', item.id)).toBe(1);
-    expect(count('favourites', item.id)).toBe(2);
     h.appCalls = [];
 
     expect((await archive(ada.auth, item.id)).status).toBe(200);
@@ -123,7 +120,6 @@ describe('archiving', () => {
       'share_links',
       'share_passwords',
       'shared_with',
-      'favourites',
       'opens',
       'use_days',
       'collab_threads',
@@ -151,10 +147,9 @@ describe('archiving', () => {
     expect(inbox.actions).toEqual([]);
   });
 
-  it('records “To Archived” in its History, which stays its owner’s, and drops its favourites’ events', async () => {
+  it('records “To Archived” in its History, which stays its owner’s', async () => {
     const ada = await person('user_a');
     const item = await makeItem(ada.auth);
-    await call(`/favourites/${item.id}`, { method: 'PUT', auth: ada.auth });
     await archive(ada.auth, item.id);
     const events = h.db.sql
       .prepare('SELECT type, detail FROM events WHERE item_id = ? ORDER BY occurred_at')
@@ -211,7 +206,7 @@ describe('archiving', () => {
 });
 
 describe('while archived', () => {
-  it('refuses its owner a grant, an open, a copy, a favourite, Hide from Recent and sharing', async () => {
+  it('refuses its owner a grant, an open, a copy, Hide from Recent and sharing', async () => {
     const ada = await person('user_a');
     const item = await makeItem(ada.auth);
     await archive(ada.auth, item.id);
@@ -219,7 +214,6 @@ describe('while archived', () => {
       call(`/items/${item.id}/grant`, { method: 'POST', auth: ada.auth }),
       call(`/items/${item.id}/open`, { method: 'POST', auth: ada.auth }),
       call(`/items/${item.id}/copy`, { method: 'POST', auth: ada.auth, body: {} }),
-      call(`/favourites/${item.id}`, { method: 'PUT', auth: ada.auth }),
       call(`/recent-hidden/${item.id}`, { method: 'PUT', auth: ada.auth }),
       call(`/items/${item.id}/share`, { method: 'POST', auth: ada.auth, body: {} }),
       call(`/items/${item.id}/share-password`, {
@@ -233,7 +227,6 @@ describe('while archived', () => {
       expect(await body(res)).toEqual({ error: 'archived' });
     }
     expect(count('opens', item.id)).toBe(0);
-    expect(count('favourites', item.id)).toBe(0);
     expect(count('share_links', item.id)).toBe(0);
   });
 
@@ -314,14 +307,12 @@ describe('the lists', () => {
     const gone = await makeItem(ada.auth, { title: 'Roadmap old' });
     for (const id of [kept.id, gone.id]) {
       await call(`/items/${id}/open`, { method: 'POST', auth: ada.auth });
-      await call(`/favourites/${id}`, { method: 'PUT', auth: ada.auth });
     }
     await archive(ada.auth, gone.id);
     for (const query of [
       'view=all',
       'view=unsorted',
       'view=recent',
-      'view=favourites',
       'view=shared',
       'view=all&team=personal',
     ]) {
@@ -333,7 +324,6 @@ describe('the lists', () => {
 
     const archived = await list(ada.auth, 'view=archived');
     expect(ids(archived)).toEqual([gone.id]);
-    expect(archived.items[0]!.favourite).toBe(false);
     expect(ids(await list(ada.auth, 'view=archived&app=livediagram'))).toEqual([]);
     expect(ids(await list(ada.auth, 'view=archived&team=personal'))).toEqual([gone.id]);
 
@@ -361,11 +351,9 @@ describe('a team’s item', () => {
     const ada = await person('user_a', { teams: [{ id: 'team1' }] });
     const bob = await person('user_b', { teams: [{ id: 'team1' }] });
     const item = await makeItem(ada.auth, { teamId: 'team1' });
-    await call(`/favourites/${item.id}`, { method: 'PUT', auth: bob.auth });
     const { item: out } = await body<{ item: Item }>(await archive(ada.auth, item.id));
     expect(out).toMatchObject({ teamId: null, ownerId: 'user_a' });
     expect((await call(`/items/${item.id}`, { auth: bob.auth })).status).toBe(404);
-    expect(ids(await list(bob.auth, 'view=favourites'))).toEqual([]);
     const audit = h.db.sql
       .prepare(`SELECT type FROM team_audit_events WHERE team_id = 'team1' AND item_id = ?`)
       .all(item.id) as { type: string }[];
@@ -401,7 +389,6 @@ describe('moving out', () => {
     const ada = await person('user_a');
     const item = await makeItem(ada.auth);
     await call(`/items/${item.id}/open`, { method: 'POST', auth: ada.auth });
-    await call(`/favourites/${item.id}`, { method: 'PUT', auth: ada.auth });
     const link = await share(ada.auth, item.id);
     await archive(ada.auth, item.id);
     const folder = await body<{ folder: { id: string } }>(
@@ -416,7 +403,6 @@ describe('moving out', () => {
     expect(out).toMatchObject({
       folderId: folder.folder.id,
       archivedAt: null,
-      favourite: false,
       lastOpenedAt: null,
       hasLinks: false,
     });

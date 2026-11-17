@@ -68,8 +68,8 @@ describe('the legacy guest merge', () => {
     });
     const guest = await person(NEW_GUEST, { guest: true });
     const mine = await body<{ items: Item[] }>(await call('/items', { auth: guest.auth }));
-    expect(mine.items.map((i) => [i.title, i.ownerId, i.folderId, i.favourite])).toEqual([
-      ['Old diagram', NEW_GUEST, 'f-old', true],
+    expect(mine.items.map((i) => [i.title, i.ownerId, i.folderId])).toEqual([
+      ['Old diagram', NEW_GUEST, 'f-old'],
     ]);
     // Again: nothing left to move.
     expect(await body(await merge({ guestId: LEGACY, userId: NEW_GUEST, legacy: true }))).toEqual({
