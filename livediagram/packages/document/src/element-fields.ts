@@ -106,6 +106,8 @@ export const ELEMENT_FIELD_NAMES = {
     'quizLockedAt',
     'quizRevealed',
     ...DATA_SHAPE_FIELDS,
+    // A chart linked to a liveplanner sheet (chart-sheet-source.ts); not liveplanner's own, so not shared.
+    'chartSheetSource',
     ...CODE_FIELDS,
     'entityFields',
     'reaction',

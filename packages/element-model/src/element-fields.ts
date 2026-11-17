@@ -90,8 +90,6 @@ export const DATA_SHAPE_FIELDS = [
   'chartVariant',
   'lineCategories',
   'lineSeries',
-  // A chart linked to a liveplanner sheet (chart-sheet-source.ts).
-  'chartSheetSource',
   'legendItems',
   'sankeyFlows',
   'sankeyNodes',
