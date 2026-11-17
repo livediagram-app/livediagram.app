@@ -307,15 +307,18 @@ export function LinkSheetDialog({
       <div className="grid min-h-0 flex-1 grid-cols-1 gap-x-5 gap-y-4 overflow-y-auto px-6 py-4 sm:grid-cols-2">
         <section className="flex min-w-0 flex-col gap-2">
           <h3 className={LABEL}>Plan</h3>
-          <SearchInput
-            value={query}
-            onChange={setQuery}
-            placeholder="Search your plans"
-            ariaLabel="Search your plans"
-            clearAriaLabel="Clear the search"
-            clearDescription="Clear the plan search."
-            size="row"
-          />
+          {/* A row of its own: the search box grows across, never down, when the column beside is the taller one. */}
+          <div className="flex">
+            <SearchInput
+              value={query}
+              onChange={setQuery}
+              placeholder="Search your plans"
+              ariaLabel="Search your plans"
+              clearAriaLabel="Clear the search"
+              clearDescription="Clear the plan search."
+              size="row"
+            />
+          </div>
           <div className="max-h-56 min-h-24 overflow-y-auto">{planList}</div>
         </section>
         <section className="flex min-w-0 flex-col gap-2">

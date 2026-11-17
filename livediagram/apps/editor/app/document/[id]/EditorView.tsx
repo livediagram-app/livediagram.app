@@ -307,7 +307,7 @@ export function EditorView() {
             tick={ctx.tickElements}
             grantOf={sheetLinkGrantOf}
             onTrack={trackSheetLink}
-            noun="document"
+            noun="canvas"
           >
             <ViewportStoreProvider store={ctx.viewport}>
               <CanvasSurfaceProvider surface={canvasSurface(backdrop.backgroundColor)}>

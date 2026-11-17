@@ -203,7 +203,7 @@ signal) is [liveworkspace sheet-sources.md](../../../../liveworkspace/docs/specs
   spreadsheet (`B2:E9`, prefilled with the sheet's filled extent). A preview shows what the chart will draw (its
   categories and series, or why it cannot: "That is not a range."). **Link** writes the read onto the chart (its
   slices, or its categories and series, keeping colours by position) with the source, as one undo step. The dialog
-  notes that the values are saved in the document, so people who can't open the plan still see them.
+  notes that the values are saved in the canvas, so people who can't open the plan still see them.
 - **The source** (`chartSheetSource`, `@liveworkspace/element-model/chart-sheet-source`) names the plan, the sheet and
   the range by stable row and column ids (so rows inserted inside it are read, and moves are followed), with the
   plan's and sheet's names, the range as A1 text and when it was last read (`readAt`).

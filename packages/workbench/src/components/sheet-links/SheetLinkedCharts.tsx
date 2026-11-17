@@ -35,8 +35,8 @@ const LinkSheetDialog = lazy(() =>
   import('./LinkSheetDialog').then((m) => ({ default: m.LinkSheetDialog })),
 );
 
-// What the item is called in its product's words ("saved in the document", "saved in the design").
-export type SheetLinkNoun = 'document' | 'design';
+// What the item is called in its product's words ("saved in the document", "saved in the canvas", "saved in the design").
+export type SheetLinkNoun = 'document' | 'canvas' | 'design';
 
 export type SheetLinks = {
   statusOf: (source: ChartSheetSource) => SheetLinkStatus;
