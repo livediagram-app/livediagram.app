@@ -15,7 +15,8 @@
 // components/providers/AuthProvider.tsx, which also binds the workbench and holds the loads of its bridges' code.
 
 import { usePathname } from 'next/navigation';
-import { useEffect, useState, type ComponentType, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ComponentType, type ReactNode } from 'react';
+import { AccountUnreachableNotice } from '../chrome/AccountUnreachableNotice';
 import {
   DEFERRED_AUTH_DEFAULT,
   DEFERRED_AUTH_PENDING,
@@ -31,7 +32,14 @@ export type AuthProviderDeps = {
   loadAccountsBridge: () => Promise<ComponentType<OnState>>;
   // The sessionStorage key the e2e bridge reads the test's session from (the editor's E2E_SESSION_KEY).
   e2eSessionKey: string;
+  // The app's readable sign-in hint (its lib/signed-in-hint.ts): whether this browser probably has a session. Read
+  // once, as the provider first renders.
+  readSignedInHint: () => boolean;
 };
+
+/** How long a page whose hint says signed in waits for its session before it says it can't reach the account. The
+ *  same 5 s a browser with no hint waits before it settles as a guest (useAccountBootstrap). */
+export const ACCOUNT_STALL_MS = 5_000;
 
 // The workbench page (docs/specs/013-workspace/blueprints/workbench-embeds.md "The editor in a workbench") is signed
 // in by its workbench session, never by the accounts session or the e2e bridge: both stand down there and the state
@@ -44,6 +52,7 @@ export function createAuthProvider({
   loadE2EAuthBridge,
   loadAccountsBridge,
   e2eSessionKey,
+  readSignedInHint,
 }: AuthProviderDeps) {
   // The bridge's code, fetched once per page. A failed fetch is forgotten, so a later mount tries again.
   let pending: Promise<ComponentType<OnState>> | null = null;
@@ -66,6 +75,27 @@ export function createAuthProvider({
     const [authState, setAuthState] = useState(DEFERRED_AUTH_DEFAULT);
     const pathname = usePathname();
     const workbenchRoute = pathname?.startsWith(WORKBENCH_ROUTE) === true;
+    // The hint says signed in (liveworkspace/docs/specs/003-accounts/accounts.md "When the accounts site doesn't
+    // answer", "The editors"): until the session answers, the page waits for it rather than settling as a guest, whose
+    // hand-off would leave for an accounts site that isn't answering. The prerender has no cookies and reads none.
+    const [hinted] = useState(() => typeof document !== 'undefined' && readSignedInHint());
+    const waiting = hinted && !authState.authLoaded;
+    const [stalled, setStalled] = useState(false);
+    useEffect(() => {
+      if (!waiting || workbenchRoute) return;
+      const id = window.setTimeout(() => setStalled(true), ACCOUNT_STALL_MS);
+      return () => window.clearTimeout(id);
+    }, [waiting, workbenchRoute]);
+    const unreachable = waiting && (stalled || authState.accountUnreachable === true);
+    const value = useMemo(
+      () =>
+        workbenchRoute
+          ? DEFERRED_AUTH_PENDING
+          : waiting
+            ? { ...authState, sessionExpected: true, accountUnreachable: unreachable }
+            : authState,
+      [workbenchRoute, waiting, unreachable, authState],
+    );
     // Asked for as the provider first renders, as a lazy component's code would be.
     const [Bridge, setBridge] = useState<ComponentType<OnState> | null>(() => {
       if (!workbenchRoute) loadBridge().catch(() => {});
@@ -92,8 +122,9 @@ export function createAuthProvider({
       };
     }, [workbenchRoute, Bridge]);
     return (
-      <DeferredAuthContext.Provider value={workbenchRoute ? DEFERRED_AUTH_PENDING : authState}>
+      <DeferredAuthContext.Provider value={value}>
         {children}
+        {unreachable && !workbenchRoute ? <AccountUnreachableNotice /> : null}
         {workbenchRoute || !Bridge ? null : <Bridge onState={setAuthState} />}
       </DeferredAuthContext.Provider>
     );

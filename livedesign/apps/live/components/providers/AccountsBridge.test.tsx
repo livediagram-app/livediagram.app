@@ -163,8 +163,16 @@ describe('AccountsBridge', () => {
       .mockResolvedValueOnce(signedIn('access-1'));
     const onState = vi.fn<(s: DeferredAuthState) => void>();
     render(<AccountsBridge onState={onState} />);
-    await waitFor(() => expect(onState).toHaveBeenCalled(), { timeout: 3_000 });
-    expect(onState.mock.lastCall![0]).toMatchObject({ authLoaded: true, isSignedIn: true });
+    await waitFor(
+      () =>
+        expect(onState.mock.lastCall?.[0]).toMatchObject({ authLoaded: true, isSignedIn: true }),
+      { timeout: 3_000 },
+    );
+    // Meanwhile it said it couldn't reach the account, and settled nothing (Work Tracker 1082).
+    expect(onState.mock.calls[0]![0]).toMatchObject({
+      authLoaded: false,
+      accountUnreachable: true,
+    });
     expect(onState.mock.calls.every(([s]) => s.isSignedIn || !s.authLoaded)).toBe(true);
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(warn).toHaveBeenCalledWith(

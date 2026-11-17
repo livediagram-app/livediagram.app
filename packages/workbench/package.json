@@ -83,6 +83,7 @@
     "./components/canvas/VoteDot": "./src/components/canvas/VoteDot.tsx",
     "./components/canvas/VoteStepper": "./src/components/canvas/VoteStepper.tsx",
     "./components/canvas/vote-badge": "./src/components/canvas/vote-badge.ts",
+    "./components/chrome/AccountUnreachableNotice": "./src/components/chrome/AccountUnreachableNotice.tsx",
     "./components/chrome/ApiErrorPage": "./src/components/chrome/ApiErrorPage.tsx",
     "./components/chrome/AuthLines": "./src/components/chrome/AuthLines.tsx",
     "./components/chrome/AuthPitch": "./src/components/chrome/AuthPitch.tsx",

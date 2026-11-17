@@ -253,6 +253,12 @@ The session loads deferred, so `/new` cannot wait for the token request without 
 
 - **No hint, or `lh_signed_in=0`**: a guest. The create goes ahead at once, This Browser.
 - **`lh_signed_in=1`**: probably signed in. The create waits for auth to settle (as it always has) and then uses the settled answer.
+- **The page itself** never settles as a guest while `lh_signed_in=1` and the session hasn't answered: the 5-second
+  give-up (a stalled proxy must not hold the canvas) applies only without the hint. When the accounts site doesn't
+  answer (the api's `503 accounts_unreachable`, a network error, no answer in 10 seconds, or nothing after 5 seconds),
+  the page shows **Can’t reach your account right now** with **Try Again**, starts no guest hand-off, and carries on
+  by itself once the session answers ([accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md#when-the-accounts-site-doesnt-answer)).
+  A `401` is signed out at once, as before.
 - The hint only decides a default. Every request still authenticates the real way, and a guest whose cookie misleads gets a document in This Browser, the safe direction.
 
 **livehuddle's own names.** Every auth cookie carries livehuddle's `lh_` prefix (`lh_signed_in`, `lh_account*`, `lh_refresh`, `lh_pkce`, `lh_signed_out`, `lh_silent*`), never livediagram's `ld_`, which it carried as a fork: cookies ignore the port, so on `localhost` the two apps would read and overwrite each other's session ([An app's signed-in cookies](../../../../liveworkspace/docs/specs/003-accounts/accounts.md#an-apps-signed-in-cookies)). A browser that signed in before the rename keeps its old `ld_*` cookies until they expire, read by nothing. Its first page load after the rename finds no `lh_signed_in` hint, so it is a guest for that load: the [silent sign-in](#signing-in-without-a-click) bounces once and signs it back in with no click while the accounts site still has its session (otherwise the Sign in button does, as for anyone signed out). Nothing is lost: documents belong to the account, not the cookie.

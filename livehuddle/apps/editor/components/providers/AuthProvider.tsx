@@ -7,6 +7,7 @@ import { e2eAuthEnabled } from '@liveworkspace/workbench/lib/auth-config';
 import { createAuthProvider } from '@liveworkspace/workbench/components/providers/auth-provider';
 import { bindWorkbench } from '@/lib/workbench-bindings';
 import { E2E_SESSION_KEY } from '@/lib/workbench-keys';
+import { readSignedInHint } from '@/lib/signed-in-hint';
 
 // This editor's facts for the workbench code, before anything renders (lib/workbench-bindings.ts).
 bindWorkbench();
@@ -22,4 +23,6 @@ export const AuthProvider = createAuthProvider({
     : null,
   loadAccountsBridge: () => import('./AccountsBridge').then((m) => m.AccountsBridge),
   e2eSessionKey: E2E_SESSION_KEY,
+  // A browser that looks signed in waits for its session, never a guest meanwhile (Work Tracker 1082).
+  readSignedInHint: () => readSignedInHint(),
 });

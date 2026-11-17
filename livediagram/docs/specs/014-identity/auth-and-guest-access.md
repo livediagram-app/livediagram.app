@@ -241,6 +241,12 @@ The session loads deferred, so `/new` cannot wait for the token request without 
   loading line until the session itself answers, up to 15 seconds, rather than taking the page's 5-second give-up on
   sign-in as signed out, so a slow session never shows a signed-in person "Sign in to connect". Only the session's own answer that there is no one, or no hint, shows the Sign in step
   (`signInGateOf`, `../packages/workbench/src/hooks/auth/useSignInGate.ts`).
+- **The page itself** never settles as a guest while `ld_signed_in=1` and the session hasn't answered: the 5-second
+  give-up (a stalled proxy must not hold the canvas) applies only without the hint. When the accounts site doesn't
+  answer (the api's `503 accounts_unreachable`, a network error, no answer in 10 seconds, or nothing after 5 seconds),
+  the page shows **Can’t reach your account right now** with **Try Again**, starts no guest hand-off, and carries on
+  by itself once the session answers ([accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md#when-the-accounts-site-doesnt-answer)).
+  A `401` is signed out at once, as before.
 - The hint only decides a default. Every request still authenticates the real way, and a guest whose cookie misleads gets a document in This Browser, the safe direction.
 
 ### The account name cookie

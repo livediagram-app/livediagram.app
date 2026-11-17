@@ -126,7 +126,9 @@ function stateOf(session: Session | null): DeferredAuthState {
 // Whether to ask the api at all on load. The api sets the hint beside the refresh cookie and clears
 // it with it (lib/signed-in-hint.ts), so a browser without it has no session to find: a guest settles
 // at once, with no request on every page load. A stale hint only costs the one request it saves.
-async function initialSession(): Promise<Session | null> {
+// `onUnreachable`: an answer that said nothing (a 5xx such as the api's `accounts_unreachable`, a network error, no
+// answer in time). The page keeps waiting, and says it can't reach the account meanwhile (AuthProvider).
+async function initialSession(onUnreachable: () => void): Promise<Session | null> {
   if (!readSignedInHint()) return null;
   // Asked until the api answers: a token request that fails or times out says nothing about the session, and
   // settling as a guest then would open the person's private items as not found.
@@ -136,7 +138,10 @@ async function initialSession(): Promise<Session | null> {
       return session ? { kind: 'signed-in', session } : lastAnswer;
     },
     {
-      onUnknown: (reason) => console.warn(`[auth] token answer unknown (${reason}), asking again`),
+      onUnknown: (reason) => {
+        console.warn(`[auth] token answer unknown (${reason}), asking again`);
+        onUnreachable();
+      },
     },
   );
   const session = answer.kind === 'signed-in' ? answer.session : null;
@@ -152,7 +157,10 @@ async function initialSession(): Promise<Session | null> {
 export function AccountsBridge({ onState }: { onState: (state: DeferredAuthState) => void }) {
   useEffect(() => {
     let live = true;
-    void initialSession().then((session) => {
+    const unreachable = () => {
+      if (live) onState({ ...DEFERRED_AUTH_DEFAULT, accountUnreachable: true });
+    };
+    void initialSession(unreachable).then((session) => {
       if (live) onState(stateOf(session));
     });
     return () => {
