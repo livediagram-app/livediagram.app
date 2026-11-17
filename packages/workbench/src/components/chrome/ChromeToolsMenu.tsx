@@ -166,6 +166,8 @@ export function ChromeToolsMenu({
   const ours = view?.slot != null && slot?.seq === view.slot ? slot : null;
   const claimed = ours?.claimed ?? null;
 
+  // How the view on screen arrived: a fade as Tools opens, then forward into a tool and back out to the list.
+  const [nav, setNav] = useState<'fade' | 'forward' | 'back'>('fade');
   const toList = useCallback(() => {
     if (view?.slot != null) closeDialogSlot(view.slot);
     setNav('back');
@@ -194,11 +196,12 @@ export function ChromeToolsMenu({
     }
     finish();
   };
-  // How the view on screen arrived: a fade as Tools opens, then forward into a tool and back out to the list.
-  const [nav, setNav] = useState<'fade' | 'forward' | 'back'>('fade');
-  useEffect(() => {
+  // Each opening starts on the fade (set as it renders, not in an effect, so the first frame already has it).
+  const [wasOpen, setWasOpen] = useState(open);
+  if (open !== wasOpen) {
+    setWasOpen(open);
     if (open) setNav('fade');
-  }, [open]);
+  }
   // The room under the band: the popover's own ceiling less the band, past which a view scrolls.
   const [bodyMax, setBodyMax] = useState<number | null>(null);
   // Measured from the list as it shows: the room under the band (bodyMax).

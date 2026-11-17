@@ -58,7 +58,9 @@ export function AnimatedHeightBox({
   const swappedAt = useRef(0);
   const shrinkTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const settleRef = useRef(settle);
-  settleRef.current = settle;
+  useLayoutEffect(() => {
+    settleRef.current = settle;
+  }, [settle]);
   const first = useRef(true);
   // Before the new view is measured.
   useLayoutEffect(() => {
