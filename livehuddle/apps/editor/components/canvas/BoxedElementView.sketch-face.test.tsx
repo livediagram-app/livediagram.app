@@ -120,3 +120,17 @@ describe("an element's words", () => {
     );
   });
 });
+
+// docs/specs/008-canvas/3d-view.md "What it shows": a room's name stands on its back wall in the 3D view, so its flat
+// name is marked for space-3d.css to hide there; no other element's label is.
+describe("a room's flat name", () => {
+  it('is marked as the floor label a 3D view hides', () => {
+    const { container } = draw({ ...shape('room'), label: 'Lounge' });
+    expect(container.querySelector('[data-room-floor-label]')?.textContent).toContain('Lounge');
+  });
+
+  it('leaves other labels unmarked', () => {
+    const { container } = draw({ ...createSticky(0, 0), id: 'note', label: 'Lounge' });
+    expect(container.querySelector('[data-room-floor-label]')).toBeNull();
+  });
+});

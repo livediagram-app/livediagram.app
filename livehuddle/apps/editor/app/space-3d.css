@@ -124,6 +124,10 @@
 [data-space-wall][data-cut] > [data-space-wall-face] {
   opacity: 0.18;
 }
+/* A room's name is on its back wall here, so its flat name on the floor goes (BoxedElementView). */
+[data-space-view] [data-room-floor-label] {
+  display: none;
+}
 [data-space-wall-label] {
   max-width: calc(100% - 16px);
   overflow: hidden;

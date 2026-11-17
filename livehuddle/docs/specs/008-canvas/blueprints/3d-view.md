@@ -133,6 +133,8 @@ Synonyms banned: "isometric", "orbit", "perspective mode", "3D mode" (it is a vi
   `--space-wall-shade` by `shade`; top edge 3 px `--space-wall-top` (light `#ffffff`, dark `#94a3b8`); a soft darker
   foot. Glass: `rgb(186 230 253 / 0.28)` with a `rgb(224 242 254 / 0.9)` top edge. Fence: `FENCE_WOOD` rails and posts.
   Door: wood `#a16207` (dark `#ca8a04`) with a lighter top edge. A label: 12 px, semibold, `--space-wall-ink`.
+- A Room's flat label: BoxedElementView wraps it in `data-room-floor-label` (`display: contents`), and
+  `app/space-3d.css` hides it under `[data-space-view]`, so only the back-wall sign shows.
 - The fog: the top 36% of the canvas in its own background colour, masked from opaque to clear, faded in with the tilt.
 
 ## Accessibility

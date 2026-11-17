@@ -29,7 +29,8 @@ not laggy.
     read without outlines. Each wall has a lighter top edge, its thickness seen from above.
   - **A room's name stands on its back wall**: the Room's label (the name that sits in its back wall's face in the
     flat plan) is written on the back wall as a sign, facing the camera, so it stays readable however far away the
-    room is. A room drawn with the Room Builder writes it on its furthest wall that faces the camera.
+    room is. A room drawn with the Room Builder writes it on its furthest wall that faces the camera. Its flat name on the floor is
+    hidden while the view shows, so the name is never written twice.
 - **The characters stand upright**: yours, every peer's and the Receptionist, each turned to face the camera
   (billboarded) about their feet, so they stand on the spot they walk on, in their four facings, walking, sitting and
   hopping as in the flat view. Their name chips and status chips ride with them, upright and readable.

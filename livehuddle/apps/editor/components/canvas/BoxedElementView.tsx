@@ -254,7 +254,7 @@ function BoxedElementViewImpl({
 
   // The text label, computed once so the freehand branch, the plain
   // shape branch, and the inline-icon layout below all share it.
-  const labelNode = renderLabel(
+  const flatLabel = renderLabel(
     element,
     label,
     textSize,
@@ -277,6 +277,16 @@ function BoxedElementViewImpl({
     textHug.label,
     textAnim,
   );
+  // A room's name stands on its back wall in the 3D view, so its flat name on the floor is hidden there
+  // (docs/specs/008-canvas/3d-view.md "What it shows"; app/space-3d.css). `contents` leaves the layout alone.
+  const labelNode =
+    flatLabel && element.type === 'shape' && element.shape === 'room' ? (
+      <div data-room-floor-label="" className="contents">
+        {flatLabel}
+      </div>
+    ) : (
+      flatLabel
+    );
 
   return (
     <div
