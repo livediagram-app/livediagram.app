@@ -15,7 +15,8 @@ export function Byline({ entry, facts: f }: { entry: InboxEntry; facts: EntryFac
   const now = useNow();
   const when = now ? relativeSince(entry.at, now) : '';
   let sentence: string;
-  const who = f.who === 'You' ? 'You' : (firstName(f.who) ?? f.who);
+  // A first name for a named person; "You" and "A teammate" as they are.
+  const who = f.person?.name ? (firstName(f.who) ?? f.who) : f.who;
   switch (entry.kind) {
     case 'Action':
     case 'Card':
@@ -93,22 +94,28 @@ export function Body({
     case 'CardThread': {
       const r = entry.row;
       const read = comments && comments.length ? comments : null;
+      // The latest comment as the row holds it, by whoever wrote it (on a mention, not who mentioned the reader).
+      const latest = f.latest;
       const shown: InboxComment[] = read ?? [
         {
           id: 'latest',
-          authorName: f.who === 'You' ? null : f.who,
+          authorName: latest?.mine ? null : (latest?.person.name ?? null),
           authorColor: r.latestAuthorColor || undefined,
-          authorId: f.who === 'You' ? null : (r.latestAuthorId ?? null),
-          mine: f.who === 'You',
+          authorId: latest?.mine ? null : (latest?.person.id ?? null),
+          mine: latest?.mine ?? false,
           text: r.latestText,
           at: r.latestAt,
         },
       ];
       const earlier = read ? 0 : Math.max(0, r.commentCount - 1);
+      // Replies sent from here that the thread's read does not hold yet (none read, or read before the app had
+      // them): shown and counted at once, so a reply never disappears or the count drops back.
+      const unread = read ? sentMissingFrom(read, sent) : sent;
+      const count = (read ? Math.max(read.length, r.commentCount) : r.commentCount) + unread.length;
       return (
         <div className="flex flex-col gap-3" data-inbox-thread="">
-          <h3 className={SECTION_LABEL}>
-            Thread · {r.commentCount} {r.commentCount === 1 ? 'comment' : 'comments'}
+          <h3 className={SECTION_LABEL} data-inbox-thread-count={count}>
+            Thread · {count} {count === 1 ? 'comment' : 'comments'}
           </h3>
           {earlier > 0 ? (
             <p className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
@@ -118,8 +125,8 @@ export function Body({
             </p>
           ) : null}
           <ol className="flex flex-col gap-3">
-            {/* A read is keyed past every reply sent from here (threadBump), so once one lands it holds them. */}
-            {[...shown, ...(read ? [] : sent)].map((c) => (
+            {/* A read is keyed past every reply sent from here (threadBump); one it still lacks stays below it. */}
+            {[...shown, ...unread].map((c) => (
               <Comment key={c.id} c={c} />
             ))}
           </ol>
@@ -152,6 +159,23 @@ export function Body({
       );
     }
   }
+}
+
+/** The replies sent from here that a read of the thread lacks: each matched against one of the reader's own comments
+ *  in the read with the same text, once, so two identical replies need two in the read. */
+export function sentMissingFrom(
+  read: readonly InboxComment[],
+  sent: InboxComment[],
+): InboxComment[] {
+  if (sent.length === 0) return sent;
+  const held = new Map<string, number>();
+  for (const c of read) if (c.mine) held.set(c.text, (held.get(c.text) ?? 0) + 1);
+  return sent.filter((c) => {
+    const n = held.get(c.text) ?? 0;
+    if (n === 0) return true;
+    held.set(c.text, n - 1);
+    return false;
+  });
 }
 
 function Comment({ c }: { c: InboxComment }) {

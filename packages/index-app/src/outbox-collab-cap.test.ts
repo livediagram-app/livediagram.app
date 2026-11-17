@@ -152,6 +152,22 @@ describe('capCollabPush by bytes', () => {
     expect(new Set(cut!.mentionedIds).size).toBe(COLLAB_PEOPLE_MAX);
     expect(cut!.mentionedIds[0]).toBe(person(1));
     expect(cut!.agentIds).toEqual(cut!.mentionedIds);
+    // Who mentioned whom keeps the ids the cut kept (Work Tracker 1036).
+    const by = { id: null, name: 'Ada' };
+    const [named] = capCollabPush({
+      threads: [
+        thread(1, {
+          mentionedIds: repeated,
+          mentionedBy: { [person(1)]: by, [person(119)]: by },
+        }),
+      ],
+      actions: [],
+    }).threads;
+    expect(named!.mentionedBy).toEqual({ [person(1)]: by });
+    const kept = thread(2, { mentionedIds: [person(1)], mentionedBy: { [person(1)]: by } });
+    expect(capCollabPush({ threads: [kept], actions: [] }).threads[0]!.mentionedBy).toBe(
+      kept.mentionedBy,
+    );
     // Short lists and text, and an action without a note, go as they came.
     const small = thread(2, { participantIds: ['p'], mentionedIds: [], latestText: 'Hi' });
     const bare = action(3, { description: undefined });

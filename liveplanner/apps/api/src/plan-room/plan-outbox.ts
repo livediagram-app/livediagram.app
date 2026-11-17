@@ -70,6 +70,7 @@ export function collabPushOf(
       participantIds: t.participantIds,
       ...(t.agentIds.length > 0 ? { agentIds: t.agentIds } : {}),
       mentionedIds: t.mentionedIds,
+      ...(t.mentionedBy ? { mentionedBy: t.mentionedBy } : {}),
       latestText: t.latestText,
       latestAuthorName: t.latestAuthorName ?? '',
       latestAuthorId: t.latestAuthorId ?? null,

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
-import { inboxCount } from '../data/useInbox';
+import { inboxBadge } from '../explorer/inbox/sections';
 import { useExplorer } from '../explorer/context';
 import { MyWorkMenu } from '../explorer/menus';
 import { BrowserIcon } from '../explorer/host';
@@ -89,7 +89,7 @@ export function Rail({
   const selectedKey = sectionKey(selected);
   const name = (id: string) => teamName(id);
   const badges: Record<string, number | undefined> = {
-    inbox: (hasInbox && inboxCount(inbox.data, viewerId)) || undefined,
+    inbox: hasInbox ? inboxBadge(inbox.data, viewerId) : undefined,
     offline: offlineCount || undefined,
   };
   // On a phone the picked chip may sit past the row's edge: bring it into view.

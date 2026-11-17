@@ -15,7 +15,7 @@
 // time alone, so a tick re-renders the times and not the rows.
 
 import { memo, type ReactNode } from 'react';
-import type { CardColumn } from '@liveworkspace/index-client';
+import type { CardColumn, InboxThread } from '@liveworkspace/index-client';
 import { PictureDisc } from '@liveworkspace/ui';
 import { DAY_MONTH, MEDIUM_DATE_TIME } from '@liveworkspace/ui/date-format';
 import { usePersonPicture } from '../../data/usePeople';
@@ -70,6 +70,8 @@ export type EntryFacts = {
   /** A Plan card's column now (its status chip); null off a card or when no column holds it. */
   column: CardColumn | null;
   local: boolean;
+  /** A thread's latest comment: who wrote it, the reader (`mine`) or someone else; null off a thread. */
+  latest: { person: Person; mine: boolean } | null;
 };
 
 const nameOf = (name: string | null | undefined) => name?.trim() || null;
@@ -101,6 +103,7 @@ export function entryFacts(e: InboxEntry, viewerId: string | null): EntryFacts {
         cardType: card ? { type: card.type, label: card.typeLabel || 'Card' } : null,
         column: card?.column ?? null,
         local,
+        latest: null,
       };
     }
     case 'Thread':
@@ -110,13 +113,22 @@ export function entryFacts(e: InboxEntry, viewerId: string | null): EntryFacts {
       const mine = Boolean(viewerId && r.latestAuthorId === viewerId);
       const author = nameOf(r.latestAuthorName);
       const reason = threadReason(r, viewerId);
+      const latest: Person = {
+        id: mine ? null : (r.latestAuthorId ?? null),
+        name: mine ? null : author,
+        color: r.latestAuthorColor || undefined,
+      };
+      // Who is behind it: on a mention, whoever mentioned the reader, never the reader (a reply after the mention,
+      // theirs or anyone's, changes nothing); otherwise whoever wrote last.
+      const by = reason.kind === 'mention' ? mentioner(r, viewerId, mine, latest) : null;
       return {
-        person: {
-          id: mine ? null : r.latestAuthorId,
-          name: mine ? null : author,
-          color: r.latestAuthorColor || undefined,
-        },
-        who: mine ? 'You' : (author ?? 'A teammate'),
+        person: reason.kind === 'mention' ? (by ?? { id: null, name: null }) : latest,
+        who:
+          reason.kind === 'mention'
+            ? (by?.name ?? 'A teammate')
+            : mine
+              ? 'You'
+              : (author ?? 'A teammate'),
         needsYou: threadNeedsYou(reason),
         // One of a card's threads (card.id set) is titled by the thread, and placed on its card; a row from before
         // threads was the card's one conversation, titled by the card.
@@ -137,6 +149,7 @@ export function entryFacts(e: InboxEntry, viewerId: string | null): EntryFacts {
         cardType: card ? { type: card.type, label: card.typeLabel || 'Card' } : null,
         column: card?.column ?? null,
         local,
+        latest: { person: latest, mine },
       };
     }
     case 'FormResponses': {
@@ -153,9 +166,27 @@ export function entryFacts(e: InboxEntry, viewerId: string | null): EntryFacts {
         cardType: null,
         column: null,
         local: false,
+        latest: null,
       };
     }
   }
+}
+
+/** Who mentioned the reader: as the app said (`mentionedBy`), else, for a row pushed before it said, the thread's
+ *  latest author unless that is the reader; null when neither names someone else. */
+function mentioner(
+  r: Pick<InboxThread, 'mentionedBy'>,
+  viewerId: string | null,
+  latestMine: boolean,
+  latest: Person,
+): Person | null {
+  const by = r.mentionedBy;
+  if (by && !(viewerId && by.id === viewerId)) {
+    const name = nameOf(by.name);
+    return name ? { id: by.id, name, color: by.color || undefined } : null;
+  }
+  if (by || latestMine || !latest.name) return null;
+  return latest;
 }
 
 export function reasonIcon(kind: InboxReason['kind'], size = 12): ReactNode {

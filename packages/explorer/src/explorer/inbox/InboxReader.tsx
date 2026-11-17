@@ -100,7 +100,8 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
   const [busy, setBusy] = useState<InboxVerb | null>(null);
   const [failed, setFailed] = useState<InboxVerb | null>(null);
   const [draft, setDraft] = useState('');
-  // Replies sent from here this visit, shown under the thread until a read of it holds them.
+  // Replies sent from here this visit, shown and counted under the thread until a read of it holds them, even a
+  // read that comes back before the app has them (InboxReaderBody `sentMissingFrom`).
   const [sent, setSent] = useState<InboxComment[]>([]);
   const [threadBump, setThreadBump] = useState(0);
   // A new row: a fresh draft, no stale error.
@@ -351,7 +352,7 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
                 e.currentTarget.blur();
               }
             }}
-            placeholder={`Reply to ${f.who === 'You' ? 'the thread' : (firstName(f.who) ?? 'the thread')}…`}
+            placeholder={`Reply to ${f.person?.name ? (firstName(f.who) ?? 'the thread') : 'the thread'}…`}
             className="w-full resize-y rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 transition-colors duration-micro focus-visible:border-brand-500 focus-visible:outline-2 focus-visible:outline-brand-500/40 motion-reduce:transition-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50"
           />
           <div className="flex items-center justify-between gap-2">

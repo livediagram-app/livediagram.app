@@ -2,8 +2,8 @@
 // by whose move it is (assigned to the person, assigned by them, form responses, open threads), then laid out as one
 // list, newest first, under date dividers, with a filter bar over it. The sidebar's count is the work waiting on the
 // person: what is assigned to them, and the threads that ask something of them (a mention, a thread on their item
-// they have not written in themselves), This Browser's rows included. It shows 0 once read, so an empty Inbox reads
-// as done; forms, threads they replied in and work they handed out are listed but not counted.
+// they have not written in themselves), This Browser's rows included. At 0 the sidebar and the rail show no badge;
+// forms, threads they replied in and work they handed out are listed but not counted.
 
 import type { InboxAction, InboxForm, InboxThread } from '@liveworkspace/index-client';
 import type { Located } from '../../types';
@@ -39,13 +39,19 @@ export const threadNeedsYou = (reason: InboxReason | null): boolean =>
   reason?.kind === 'mention' || reason?.kind === 'yours';
 
 /** The sidebar's Inbox count: the actions and cards assigned to the person, and the threads that ask something of
- *  them; nothing while unread. */
+ *  them; nothing while unread. Drawn as a badge only above 0 (`inboxBadge`). */
 export function inboxCount(data: InboxData | null, viewerId: string | null): number | undefined {
   if (!data) return undefined;
   const s = inboxSections(data, viewerId);
   let n = s.forMe.length;
   for (const t of s.threads) if (threadNeedsYou(threadReason(t, viewerId))) n++;
   return n;
+}
+
+/** The sidebar's and the rail's Inbox badge: the count, or nothing at 0 and while unread, so an Inbox with nothing
+ *  waiting shows no "0" pill. */
+export function inboxBadge(data: InboxData | null, viewerId: string | null): number | undefined {
+  return inboxCount(data, viewerId) || undefined;
 }
 
 /** Everything the Inbox lists: Home's pill, so "Inbox is clear" is never said over an open thread or new responses. */
@@ -174,12 +180,51 @@ export function entryFilter(e: InboxEntry): Exclude<InboxFilter, 'all'> {
   }
 }
 
-/** Every row, newest first: one pass to build, one sort. Keys are unique per row and stable across reads. */
+// Each row's key: unique per row and stable across reads.
+export const actionKey = (r: Pick<InboxAction, 'app' | 'itemId' | 'actionId'>) =>
+  `a:${r.app}:${r.itemId}:${r.actionId}`;
+export const threadKey = (r: Pick<InboxThread, 'app' | 'itemId' | 'tabId' | 'elementId'>) =>
+  `t:${r.app}:${r.itemId}:${r.tabId}:${r.elementId}`;
+export const formKey = (r: Pick<InboxForm, 'app' | 'itemId' | 'tabId'>) =>
+  `f:${r.app}:${r.itemId}:${r.tabId}`;
+
+/** What holds a row done from the pane out of the Inbox (`useInbox`'s `settle`): its key, a card thread by its own id
+ *  (whichever plan lists it, as the list shows it once), and its time then, so a row that changes after comes back. */
+export type InboxSettled = { key: string; at: number };
+const threadSettleKey = (
+  r: Pick<InboxThread, 'app' | 'itemId' | 'tabId' | 'elementId' | 'card'>,
+) => (r.card?.id ? `c:${r.app}:${r.elementId}` : threadKey(r));
+export function settledOf(e: InboxEntry): InboxSettled {
+  switch (e.kind) {
+    case 'Thread':
+    case 'CardThread':
+      return { key: threadSettleKey(e.row), at: e.row.latestAt };
+    case 'Action':
+    case 'Card':
+      return { key: actionKey(e.row), at: e.row.updatedAt };
+    case 'FormResponses':
+      return { key: formKey(e.row), at: e.row.latestAt };
+  }
+}
+
+/** The Inbox without the rows done from the pane while a read still lists them as they were. */
+export function withoutSettled(data: InboxData, settled: ReadonlyMap<string, number>): InboxData {
+  if (settled.size === 0) return data;
+  const kept = (key: string, at: number) => settled.get(key) !== at;
+  return {
+    ...data,
+    actions: data.actions.filter((a) => kept(actionKey(a), a.updatedAt)),
+    threads: data.threads.filter((t) => kept(threadSettleKey(t), t.latestAt)),
+    forms: data.forms.filter((f) => kept(formKey(f), f.latestAt)),
+  };
+}
+
+/** Every row, newest first: one pass to build, one sort. */
 export function inboxEntries(s: InboxSections): InboxEntry[] {
   const out: InboxEntry[] = [];
   const action = (r: Located<InboxAction>, forMe: boolean) =>
     out.push({
-      key: `a:${r.app}:${r.itemId}:${r.actionId}`,
+      key: actionKey(r),
       kind: r.card ? 'Card' : 'Action',
       forMe,
       row: r,
@@ -199,7 +244,7 @@ export function inboxEntries(s: InboxSections): InboxEntry[] {
         if (held.at < r.latestAt)
           out[at] = {
             ...held,
-            key: `t:${r.app}:${r.itemId}:${r.tabId}:${r.elementId}`,
+            key: threadKey(r),
             row: r,
             at: r.latestAt,
           };
@@ -208,7 +253,7 @@ export function inboxEntries(s: InboxSections): InboxEntry[] {
       cardThreads.set(key, out.length);
     }
     out.push({
-      key: `t:${r.app}:${r.itemId}:${r.tabId}:${r.elementId}`,
+      key: threadKey(r),
       kind: r.card ? 'CardThread' : 'Thread',
       forMe: false,
       row: r,
@@ -217,7 +262,7 @@ export function inboxEntries(s: InboxSections): InboxEntry[] {
   }
   for (const r of s.forms) {
     out.push({
-      key: `f:${r.app}:${r.itemId}:${r.tabId}`,
+      key: formKey(r),
       kind: 'FormResponses',
       forMe: false,
       row: r,
