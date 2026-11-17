@@ -1443,7 +1443,9 @@ cards, each from the same shared viewer (their mcp-server.md "Interactive view (
 
 - **The view resource.** The server lists `ui://livediagram/view.html` (`text/html;profile=mcp-app`), one
   self-contained page with its script and styles inline: the shared viewer (`@liveworkspace/mcp-kit/app-view`,
-  `viewerHtml(app)`, about 19 KB with live updates), its size held under `VIEWER_HTML_BUDGET_BYTES` (24 KB) by a test. The SVG is
+  `viewerHtml(app, { edits: true })`, about 28 KB with live updates and in-view edits), its size held under
+  `VIEWER_EDIT_HTML_BUDGET_BYTES` (32 KB) by a test; a page without edits (the other products') stays under
+  `VIEWER_HTML_BUDGET_BYTES` (24 KB), the edit parts left out of it. The SVG is
   drawn as an image, so nothing in it fetches: its `_meta.ui.csp` allows one connection only, the WebSocket to
   this deployment's own api (`connectDomains: ["wss://<editor host>"]`, from `CONSENT_BASE_URL`), no resource
   domains, and it asks for a border.
@@ -1460,12 +1462,13 @@ cards, each from the same shared viewer (their mcp-server.md "Interactive view (
   A tab that cannot be read says so in the frame; nothing is cached between results.
 - **`view_tab`**: `{ documentId, tabId? }`. Read. The view's own tool (`_meta.ui.visibility: ["app"]`, so a host
   with MCP Apps keeps it from the model): the tab's SVG, its view box, every element's box with its ref and label
-  (for the click), the document's tabs and links. Its text block is one short line, not the SVG, so a host without
+  (for the click) and what an edit may do to it (`canRename`, `canMove`, "Edits in the view"), the document's tabs
+  and links. Its text block is one short line, not the SVG, so a host without
   MCP Apps that shows it to the model spends few tokens on it; `read_document` stays the model's read.
 - **Authority.** The view holds no lasting credential. It reads only through the host's own connection to this
   server, so every `view_tab` is the user's token, through the api's ordinary read gate, and a read-only token
-  reads as it does today. No share link is minted, ever. The view is read-only for every token; in-view edits for
-  an edit-level token are the next part.
+  reads as it does today. No share link is minted, ever. The view is read-only unless the token is edit-level
+  ("Edits in the view" below), and even then it holds no write credential of its own.
 - **Live updates.** Once a tab is drawn, the view follows the document through its room, as the editor's peers do,
   and draws the tab again when it changes:
   - **The ticket.** The view asks for it through the host (`tools/call view_live`); the server mints it for the
@@ -1501,8 +1504,54 @@ cards, each from the same shared viewer (their mcp-server.md "Interactive view (
     An open view is one idle socket on the room, one mint every 10 minutes, and at most one `view_tab` per
     `LIVE_REDRAW_MS` while people edit.
 - **`view_live`**: `{ documentId }`. Read. The view's own tool, kept from the model like `view_tab`: the socket's
-  address (`url`), the ticket and when it lapses (`expiresAt`, epoch ms, read from the grant inside). Its text
-  block is one line without the ticket.
+  address (`url`), the ticket and when it lapses (`expiresAt`, epoch ms, read from the grant inside), and whether
+  the token may edit through the view (`canEdit`, below). Its text block is one line without the ticket.
+- **Edits in the view.** A view whose token is **edit-level** offers a small, safe set of edits; every other
+  token gets the read-only view above, unchanged, with no edit control drawn at all.
+  - **Who may.** `canEdit` is the server's answer, never the view's guess: `view_live`'s mint answers the
+    caller's own level on the document beside the ticket (`level`, [api.md](api.md) `POST
+/api/documents/:id/room-ticket?cap=view`), which is `view` for a read-only token whatever the person's own
+    level, and `canEdit` is `level === "edit"`. A Participant or Viewer token, a read-only token, a refused mint
+    and a document in the Trash all read `false`.
+  - **What.** Two edits, nothing else: **rename** an element (its label: a shape, a text or a sticky) and
+    **move** one (by a whole-pixel offset). `view_tab` marks each element `canRename` and `canMove`: neither
+    for an element that is locked, on a locked layer or on a locked tab; no move for a badge or step number
+    attached to a host, nor for the host it is attached to (the attachment follows only in the editor). A frame
+    or lane moves with what it holds, as the engine's `move` carries it. Adding, deleting, restyling and
+    reconnecting stay the editor's and the model's.
+  - **The one write path.** An edit is the view's own tool call through the host, `view_edit`, on the user's
+    own token, never a credential the frame holds. It is one agent changeset through the api
+    (`POST /api/documents/:id/tabs/:tabId/changesets`), the path `update_document` writes through: a rename is
+    `set label`, a move is `move by=dx,dy`, both on `id:"…"` targets, based on the tab as read at the call
+    (each named element's fingerprint, as `update_document`'s ops mode bases its own). So the api decides on
+    every write, whatever the view sent: a read-only token is refused at the choke point (§4.11,
+    `403 read_only_token`), a level below edit at the changeset route's edit gate, a lock by the engine, and the
+    room relays what lands to everyone with the tab open. A forged message into the frame can at most draw the
+    edit controls; it cannot make a write the token may not make.
+  - **The ticket stays view-only.** The live socket is still `view_live`'s view-only ticket, for every token:
+    the view never writes on the socket, so an edit-level token gets no stronger ticket, no share link and no
+    longer-lived credential than a read-only one.
+  - **In the frame.** An **Edit** toggle joins the header once `canEdit` is true (`aria-pressed`). While it is
+    on, a click selects an element instead of opening it: the selection ring is solid, and a small bar above
+    the element offers **Rename** and **Open in editor**. Dragging a movable element moves it (the ring follows
+    the pointer, dashed, and the drop sends one `view_edit`); dragging empty space still pans and a pinch still
+    zooms. Double-click, Enter or F2 renames in a box over the element (Enter saves, Escape cancels, leaving
+    it saves). With an element selected the arrow keys nudge it 10 px (Shift: 1 px), sent once the keys rest
+    (`EDIT_NUDGE_SETTLE_MS`, 400 ms) as one move; Tab and Shift+Tab step the selection through the elements;
+    Escape clears it, then leaves Edit. An element the view may not change says why in its bar (**Locked**,
+    **Moves with its host**), its controls disabled. While a save is out the header says **Saving…**; a
+    refusal says the api's reason in the note and the tab is drawn again as stored. A live redraw waits for a
+    drag or a rename in progress to finish.
+  - **Batched.** One `view_edit` per finished gesture (a drop, a saved rename, a run of nudges), never per
+    pointer move, carrying up to `VIEW_EDIT_MAX` (20) edits; its answer is the tab drawn again (`view_tab`'s
+    output with the `changesetId`), so the view redraws once without a second call, and the room's relay of
+    that same changeset (its `id`) draws nothing more.
+- **`view_edit`**: `{ documentId, tabId, edits: [{ elementId, label?, dx?, dy? }] }`. Write. The view's own tool,
+  kept from the model like `view_tab` (the model edits with `update_document`): each edit names an element by
+  id and gives a new `label` (up to 500 characters), a move (`dx`, `dy`, rounded to whole pixels, each within
+  ±100000), or both; one with neither, or an element not on the tab, is refused before anything is sent. Its
+  answer is `view_tab`'s for the tab as stored after the edit, with `changesetId`; its text block is one line
+  (`Saved 1 edit from the interactive view.`). A refusal is an error result with the api's reason.
 - **Cost.** `view_tab` renders SVG only, no resvg: the Worker CPU of a view is the SVG build and the image fetch the
   PNG path already pays, not the rasterise. Measured on the 100-element service blueprint: the SVG builds in about
   2 ms of CPU and weighs 26 KB, where the PNG takes about 214 ms; a test holds the SVG build to a CPU budget.
