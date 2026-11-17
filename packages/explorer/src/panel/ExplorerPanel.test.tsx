@@ -237,6 +237,53 @@ describe('<ExplorerPanel>', () => {
 
   // With nothing above the rail and pane, the popover header's rule is the only one: the body's own rule is drawn only
   // under a top block that holds something.
+  // Work Tracker 1028: the card follows the editor's title, a header, collaborator's or agent's rename, with no read.
+  it("shows the editor's own title over the copy it read, following each rename without asking the index again", () => {
+    const item = makeItem(1, { title: 'Old name' });
+    const index = createFakeIndex({ items: [item] });
+    const props = {
+      app: 'liveplanner' as const,
+      client: index.client,
+      itemHref,
+      onCreate: vi.fn(),
+      current: item,
+      currentId: item.id,
+    };
+    const { rerender } = render(<ExplorerPanel {...props} currentTitle="Old name" />);
+    const card = () => screen.getByRole('region', { name: 'Current plan' });
+    expect(within(card()).getByText('Old name')).toBeTruthy();
+    rerender(<ExplorerPanel {...props} currentTitle="Renamed in the header" />);
+    expect(within(card()).getByText('Renamed in the header')).toBeTruthy();
+    expect(within(card()).queryByText('Old name')).toBeNull();
+    expect(index.count('getItem')).toBe(0);
+    // With no title from the editor, the copy it read.
+    rerender(<ExplorerPanel {...props} currentTitle={null} />);
+    expect(within(card()).getByText('Old name')).toBeTruthy();
+  });
+
+  it("shows the editor's title on a This Browser item's card ahead of the list", () => {
+    renderPanel(createFakeIndex({ items: [] }), {
+      thisBrowser: {
+        items: [
+          {
+            id: 'l1',
+            title: 'Saved name',
+            createdAt: 1,
+            updatedAt: 2,
+            lastOpenedAt: null,
+            trashedAt: null,
+          },
+        ],
+        itemHref: (i) => `/project/${i.id}`,
+      },
+      currentId: 'l1',
+      currentTitle: 'Typed just now',
+    });
+    expect(
+      within(screen.getByRole('region', { name: 'Current plan' })).getByText('Typed just now'),
+    ).toBeTruthy();
+  });
+
   it('draws the body’s top rule only under something', () => {
     renderPanel(createFakeIndex({ items: [] }));
     const body = document.querySelector('[data-panel-body]')!;
@@ -378,7 +425,6 @@ describe("the panel's This Browser", () => {
     updatedAt: 2,
     lastOpenedAt: null,
     trashedAt: null,
-    favourite: false,
     ...extra,
   });
 
@@ -500,6 +546,46 @@ describe("the panel's This Browser", () => {
     fireEvent.click(within(dialog).getByRole('button', { name: 'Delete' }));
     expect(remove).toHaveBeenCalledWith(expect.objectContaining({ id: 'l1' }));
     expect(index.count('deleteItem')).toBe(0);
+  });
+
+  // Work Tracker 1165: the card for an offline current item, whatever the index said and before the list has it.
+  it('draws an offline current item from This Browser with its Browser Storage pill, over a copy the index read before', () => {
+    const item = makeItem(1, { id: 'l1', title: 'Index copy' });
+    renderPanel(createFakeIndex({ items: [item] }), {
+      thisBrowser: host(),
+      current: item,
+      currentId: 'l1',
+      currentOffline: true,
+    });
+    const card = screen.getByRole('region', { name: 'Current plan' });
+    expect(card.getAttribute('data-current-item')).toBe('this-browser');
+    expect(within(card).getByText('Kept here')).toBeTruthy();
+    expect(within(card).getByText('Browser Storage')).toBeTruthy();
+  });
+
+  it("draws a fresh offline item the list has not heard of from the editor's title, with This Browser's menu", async () => {
+    const sync = vi.fn();
+    const index = createFakeIndex({ items: [] });
+    renderPanel(index, {
+      thisBrowser: host({ sync }),
+      currentId: 'fresh',
+      currentOffline: true,
+      currentTitle: 'Untitled Plan',
+    });
+    const card = screen.getByRole('region', { name: 'Current plan' });
+    expect(card.getAttribute('data-current-item')).toBe('this-browser');
+    expect(within(card).getByText('Untitled Plan')).toBeTruthy();
+    expect(within(card).getByText('Browser Storage')).toBeTruthy();
+    expect(within(card).getByText('Updated just now')).toBeTruthy();
+    // Its actions are This Browser's, so nothing goes to the index.
+    fireEvent.click(within(card).getByRole('button', { name: 'Plan menu' }));
+    fireEvent.click(await screen.findByRole('menuitem', { name: /Sync Plan/ }));
+    expect(sync).toHaveBeenCalledWith(expect.objectContaining({ id: 'fresh' }));
+    expect(index.count('updateItem')).toBe(0);
+    cleanup();
+    // Not local in the editor's word, and neither holds it: no card, as before.
+    renderPanel(createFakeIndex({ items: [] }), { thisBrowser: host(), currentId: 'fresh' });
+    expect(screen.queryByRole('region', { name: 'Current plan' })).toBeNull();
   });
 
   it('says when each changed in words, its full date on hover, and the page’s sentence with none', () => {

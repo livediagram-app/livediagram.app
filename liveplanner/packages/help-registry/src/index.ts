@@ -1032,9 +1032,9 @@ export const articles: Article[] = [
   {
     slug: 'personal-space',
     title: 'My Work and Folders',
-    description: 'Your own library: the folders you create, your unfiled items and Favourites.',
+    description: 'Your own library: the folders you create and your unfiled items.',
     keywords:
-      'my projects personal space library my work your plans own files root folder organise organize unsorted unfiled favourite favorite star starred bookmark quick access plans',
+      'my projects personal space library my work your plans own files root folder organise organize unsorted unfiled bookmark quick access plans',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',

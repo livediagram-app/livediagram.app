@@ -296,7 +296,7 @@ back into This Browser's list.
 
 Every row and card of an offline project carries a **This Browser** pill,
 wherever the project is listed: the list and card views (folders, Search results,
-This Browser, Recent, Favourites), Home's Most Used and Recent, the Inbox's rows, the folder previews' tiles excepted (they
+This Browser, Recent), Home's Most Used and Recent, the Inbox's rows, the folder previews' tiles excepted (they
 are pictures, not rows), the search panel's results, the editor's Explorer
 rows, and the Trash.
 
@@ -409,7 +409,7 @@ Share dialog gate, Share Form's, and the move prompt after signing in).
   cloud project owned by the current identity (signed-in account, or the guest's
   liveworkspace guest token if not signed in; [Auth + guest access](../014-identity/auth-and-guest-access.md)).
 - **Everything on the record travels**, not just tabs: the created date, the folder (kept only when it is one of the
-  caller's own personal folders, else the root of My Work) and the star ([Favourite projects](../013-workspace/favourites.md)). The
+  caller's own personal folders, else the root of My Work). (No star: Favourites were removed, [favourites.md](../013-workspace/favourites.md).) The
   local copy is deleted next, so anything the create leaves behind is gone.
 - **A refused folder lands at the root, on the sync's say-so.** The create carries the folder as
   its placement ([Folders → Placement on create](../013-workspace/folders.md)),
@@ -465,10 +465,8 @@ and gated by a confirmation:
   the local index, then **delete the server record** (via a raw delete so the
   now-offline id isn't re-routed to the local store) and any share links. The
   badge flips to **This Browser**.
-- **The deck, star and personal folder come along** for the same reason: the
-  server row they live on is about to be deleted. The star is read from the account's
-  favourites; if that read fails the conversion aborts before anything is written,
-  rather than taking the project as unstarred and losing the star with the row. A team project's folder is a
+- **The deck and personal folder come along** for the same reason: the
+  server row they live on is about to be deleted. A team project's folder is a
   team folder, which has no place in the personal tree, so it lands at the root of My Work.
 - **Shared tabs fork.** A tab also in other plans
   ([Tab ↔ project many-to-many](tab-project-many-to-many.md)) is not taken
@@ -523,7 +521,7 @@ Mode is implemented **behind that boundary** so the editor is unaware of the
 target:
 
 - **One store, bound per editor.** The store's operations (the write chain, the one-transaction updates, the
-  reads, the Trash and favourite rules, Sync Canvas's delete-if-unchanged) are one copy every editor shares
+  reads, the Trash rules, Sync Canvas's delete-if-unchanged) are one copy every editor shares
   (`@liveworkspace/workbench/lib/offline/offline-store-core`). `lib/offline/offline-store.ts` binds it with its
   IndexedDB backend, whose database and store names and versions stay this editor's own, and keeps its own
   extra writes.

@@ -142,7 +142,6 @@ const VIEW_HELP: Partial<Record<ExplorerView['kind'], string>> = {
   folder: 'explorer/folders',
   team: 'explorer/team-spaces',
   recent: 'explorer/recent',
-  favourites: 'explorer/explorer-page',
   shared: 'explorer/shared-with-you',
   inbox: 'explorer/activity',
   trash: 'account-and-data/trash',
@@ -266,6 +265,8 @@ export const RETIRED_TARGETS = {
   dynamic: '/explorer/all',
   // My Work's root already lists what is in no folder.
   unsorted: '/explorer/all',
+  // Favourites (removed November 2026, one-explorer.md "Favourites removed"): My Work.
+  favourites: '/explorer/all',
   generated: '/explorer/search?q=made-by%3Aai',
   activity: '/explorer/inbox',
   tags: '/explorer',

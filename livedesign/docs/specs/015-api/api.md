@@ -14,7 +14,7 @@ The first prototype phase ([spec 02](../005-project-roadmap/prototype-scope.md))
 
 - **Runtime:** Cloudflare Workers.
 - **No D1 database.** livedesign has no `DB` binding and no migrations. What a design holds is in its own Durable Object, and everything else is liveworkspace's, a person's workbench included: a person's settings, name and colour, sign-in sighting and email address are the liveworkspace accounts Worker's ([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md)), read through its internal API as `livedesign.app`; API tokens are liveworkspace's alone, checked with it on use.
-- **Index:** where every design is, who may open it, its sharing and share links, folders, favourites, placement defaults, the Trash, the Timeline, the Inbox, and teams and their members are liveworkspace's index and accounts ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md), [one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md)). The api reaches the index at `INDEX_ORIGIN` (`apps/api/src/index-service.ts`) with this app's key, `INDEX_KEY`.
+- **Index:** where every design is, who may open it, its sharing and share links, folders, placement defaults, the Trash, the Timeline, the Inbox, and teams and their members are liveworkspace's index and accounts ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md), [one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md)). The api reaches the index at `INDEX_ORIGIN` (`apps/api/src/index-service.ts`) with this app's key, `INDEX_KEY`.
 - **Designs:** one SQLite-backed Durable Object per design (`DesignRoom`, binding `DESIGN_ROOM`, `new_sqlite_classes`), named by the design's id via `idFromName`. It holds the design's content and is its realtime room (see **Storage** and **Realtime model**).
 - **Workbenches:** a person's workbench pairing requests, pairings, tickets and sessions are liveworkspace's ([liveworkspace/docs/specs/011-workbench/workbench.md](../../../../liveworkspace/docs/specs/011-workbench/workbench.md)); `/api/workbench/*` is forwarded to the accounts Worker unchanged ([Workbench embeds](../013-workspace/workbench-embeds.md)).
 - **Images:** liveworkspace's media service ([liveworkspace/docs/specs/006-media/media.md](../../../../liveworkspace/docs/specs/006-media/media.md), `apps/api/src/media.ts`, `MEDIA_URL` and the secret `MEDIA_KEY`) keeps every uploaded image, its gallery, dedupe and caps. The api keeps who may read what (see **Images**).
@@ -571,7 +571,7 @@ livedesign has no D1 database, so it has no migrations. The schema is each desig
 case, so normalising element rows would buy nothing, and the editor already round-trips JSON for every save.
 
 Where a design is filed, who it is shared with, its share links and password, whether it is in the Trash, its
-favourites, placement defaults, the Timeline, the Inbox, and teams and their members are the index's and
+placement defaults, the Timeline, the Inbox, and teams and their members are the index's and
 liveworkspace's ([one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md)).
 
 ### Owner-keyed data

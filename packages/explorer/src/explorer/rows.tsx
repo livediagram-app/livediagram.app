@@ -21,14 +21,7 @@ import {
 } from '../ui/classes';
 import { DROP_ROW, useDropTarget, useFolderDrag, useItemDrag } from '../drag/drag';
 import { FolderSolidIcon, ItemIcon } from '../ui/icons';
-import {
-  AppMark,
-  ArchivedBadge,
-  FavouriteMarker,
-  FolderChip,
-  MadeByAiBadge,
-  VisibilityBadge,
-} from './badges';
+import { AppMark, ArchivedBadge, FolderChip, MadeByAiBadge, VisibilityBadge } from './badges';
 import { useExplorer } from './context';
 import { elsewhereLabel, FolderMosaic } from './FolderMosaic';
 import { FolderMenu, ItemMenu } from './menus';
@@ -52,7 +45,7 @@ const ROW = 'group items-center gap-2 px-4 transition hover:bg-slate-50 dark:hov
 export type RowOptions = {
   // The app's mark beside the name (the All filter).
   showApp: boolean;
-  // The location chip (Recent, Favourites, Search: lists that span places).
+  // The location chip (Recent, Search: lists that span places).
   showFolder: boolean;
   // The Owner column, and the owner line on a card (Recent, Search): You, the team, or Shared with you.
   showOwner?: boolean;
@@ -159,7 +152,6 @@ export const ItemRow = memo(function ItemRow({
       <span className="flex min-w-0 items-center gap-2">
         {options.showApp ? <AppMark app={item.app} /> : null}
         <RowThumb item={item} />
-        {item.favourite ? <FavouriteMarker /> : null}
         {renderItemMark?.(item, 'title')}
         {renaming ? (
           <InlineRenameInput
@@ -424,7 +416,6 @@ export const ItemCard = memo(function ItemCard({
           <VisibilityBadge item={item} />
           <MadeByAiBadge item={item} />
           <ArchivedBadge item={item} />
-          {item.favourite ? <FavouriteMarker /> : null}
           {renderItemMark?.(item, 'title')}
           {options.showFolder && bits.place ? (
             <FolderChip label={bits.place.label} onOpen={bits.place.open} />

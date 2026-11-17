@@ -7,7 +7,6 @@
 // every other device), so the UI gates it behind a confirmation.
 
 import { apiLoadDocument, apiLoadTab } from '@/lib/api-client';
-import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { DOCUMENT_CONVERSION_HEADER } from '@livediagram/api-schema';
 import { API_BASE, ApiError, apiDelete } from '@/lib/api/core';
 import { embedTabImages, isDataImageId, tabImageIds } from './offline-images';
@@ -109,11 +108,6 @@ async function downloadAndRemoveCloudCopy(
   const unembedded = tabs.some((t) => tabImageIds(t).some((id) => !isDataImageId(id)));
   if (unembedded) throw new Error('image embed incomplete');
 
-  // The person's star is the index's, on the canvas's item, which the server delete below takes too; carry it onto
-  // the offline record (docs/specs/013-workspace/favourites.md). A failed read aborts here, before anything is
-  // written: taken as "not starred" it would drop the star.
-  const { item } = await indexClient.getItem(liveDoc.id);
-  const starred = item.favourite;
   const now = Date.now();
   const rec: OfflineDocumentRecord = {
     id: liveDoc.id,
@@ -126,7 +120,6 @@ async function downloadAndRemoveCloudCopy(
     savedAt: now,
     tabs,
     ...(liveDoc.presentation ? { presentation: liveDoc.presentation } : {}),
-    ...(starred ? { favourite: true } : {}),
   };
   await offlinePutRecord(rec);
   // Raw server delete — the id is now in the offline index, so the dispatching

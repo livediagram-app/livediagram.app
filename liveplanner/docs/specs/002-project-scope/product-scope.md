@@ -21,7 +21,7 @@ says why; this says what. A feature outside the **In** list needs this spec chan
 
 **Core**, the experience around a project:
 
-- The workspace: the Explorer (Home, folders, default folders, favourites, tags, the Timeline, the Trash), teams,
+- The workspace: the Explorer (Home, folders, default folders, tags, the Timeline, the Trash), teams,
   the Inbox, Drive sync and previews, which are liveworkspace's platform services the app uses, and the app's own
   sharing and share roles ([Workspace](../013-workspace/README.md)).
 - Sign-in and identity, guests included ([Identity](../014-identity/README.md)).

@@ -133,13 +133,6 @@ export function viewList(
         cap: RECENT_LIMIT,
         enabled: true,
       };
-    case 'favourites':
-      return {
-        key: key('favourites'),
-        load: items({ view: 'favourites' }),
-        belongs: (i) => live(i) && ofApp(i) && i.favourite,
-        enabled: true,
-      };
     case 'shared':
       return {
         key: key('shared'),

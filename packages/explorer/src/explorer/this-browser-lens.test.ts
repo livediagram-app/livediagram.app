@@ -22,7 +22,6 @@ const local = (n: number, over: Partial<ThisBrowserItem> = {}): ThisBrowserItem 
   updatedAt: NOW - n * DAY,
   lastOpenedAt: null,
   trashedAt: null,
-  favourite: false,
   ...over,
 });
 

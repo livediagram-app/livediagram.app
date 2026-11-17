@@ -18,7 +18,6 @@ type Rec = {
   name: string;
   tabs: Tab[];
   savedAt: number;
-  favourite?: boolean;
   trashedAt?: number;
 };
 
@@ -137,16 +136,6 @@ describe('the operations', () => {
     expect(await s.loadTab('nope', 't1')).toBeNull();
     expect(await s.offlineGetRecord('o1')).toEqual(rec());
     expect(await s.offlineGetRecord('nope')).toBeNull();
-  });
-
-  it('stars without touching savedAt, and lists live favourites', async () => {
-    const { s } = store();
-    await s.createRecord(rec());
-    await s.createRecord(rec({ id: 'o2', favourite: true, trashedAt: 2 }));
-    await s.setFavourite('o1', true);
-    await s.setFavourite('missing', true);
-    expect((await s.offlineGetRecord('o1'))?.savedAt).toBe(1);
-    expect(await s.listFavouriteIds()).toEqual(['o1']);
   });
 
   it('writes a live record, skips a trashed one, and fails a listed missing one once', async () => {

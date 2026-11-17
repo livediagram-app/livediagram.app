@@ -1,7 +1,7 @@
 'use client';
 
 // What a person does to an item from the Explorer. Each change shows at once through the overlay (rename,
-// favourite, hide from Recent, move, Trash, restore, dismiss) and is taken back, with a toast saying why, when
+// hide from Recent, move, Trash, restore, dismiss) and is taken back, with a toast saying why, when
 // the index refuses. A copy or an emptied Trash cannot be guessed, so those reload the lists instead. Every
 // action is a stable function, so memoised rows keep their props.
 
@@ -18,7 +18,6 @@ const trashOf = (item: { teamId: string | null }) => (item.teamId ? 'Team' : 'Pe
 
 export type ItemActions = {
   rename: (item: Item, title: string) => Promise<boolean>;
-  setFavourite: (item: Item, favourite: boolean) => Promise<boolean>;
   /** Hide from Recent / Show in Recent: the person's own Recent and Home's Most Used. */
   setHiddenFromRecent: (item: Item, hidden: boolean) => Promise<boolean>;
   move: (item: Item, to: { folderId: string | null; teamId: string | null }) => Promise<boolean>;
@@ -99,13 +98,6 @@ export function createItemActions({
       if (ok) onRenamed?.(item, next);
       return ok;
     },
-    setFavourite: (item, favourite) =>
-      optimistic(
-        item,
-        { favourite },
-        () => (favourite ? client.favourite(item.id) : client.unfavourite(item.id)),
-        favourite ? 'Couldn’t add it to Favourites.' : 'Couldn’t remove it from Favourites.',
-      ),
     setHiddenFromRecent: (item, hidden) =>
       optimistic(
         item,
@@ -155,12 +147,11 @@ export function createItemActions({
     archive: async (item) => {
       const ok = await optimistic(
         item,
-        // Archiving deletes everyone's favourite, Recent and link rows (one-explorer-contracts.md "Archived").
+        // Archiving deletes everyone's Recent and link rows (one-explorer-contracts.md "Archived").
         {
           archivedAt: Date.now(),
           folderId: null,
           teamId: null,
-          favourite: false,
           hiddenFromRecent: false,
           lastOpenedAt: null,
           hasLinks: false,

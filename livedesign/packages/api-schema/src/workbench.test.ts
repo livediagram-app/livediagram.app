@@ -140,7 +140,6 @@ describe('workbenchRouteVerdict', () => {
     ['POST', 'designs'],
     ['GET', 'folders'],
     ['GET', 'shared'],
-    ['GET', 'favourites'],
     ['GET', 'home'],
     ['GET', 'timeline'],
     ['GET', 'activity'],

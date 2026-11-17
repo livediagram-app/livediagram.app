@@ -8,7 +8,7 @@ import type { Folder } from '@liveworkspace/index-client';
 import { jumpBackInLine } from '../data/viewLists';
 import type { ShownItem } from '../data/overlay';
 import { useExplorer } from '../explorer/context';
-import { AppMark, FavouriteMarker } from '../explorer/badges';
+import { AppMark } from '../explorer/badges';
 import { FolderMenu, ItemMenu } from '../explorer/menus';
 import { elsewhereLabel } from '../explorer/FolderMosaic';
 import { useDropTarget, useFolderDrag, useItemDrag } from '../drag/drag';
@@ -204,7 +204,6 @@ export const ItemRow = memo(function ItemRow({
         ) : (
           <span className="flex min-w-0 items-center gap-1">
             {filter === 'all' ? <AppMark app={item.app} size={12} /> : null}
-            {item.favourite ? <FavouriteMarker /> : null}
             {renderItemMark?.(item, 'title')}
             <span className="min-w-0 truncate">{name}</span>
           </span>

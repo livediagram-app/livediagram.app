@@ -6,6 +6,9 @@ import type { MovablePanelPopoverProps } from '@/components/primitives/MovablePa
 export type ExplorerProps = {
   // The design open in the editor, shown on top.
   currentDesignId: string | null;
+  // The editor's own title for it (its header's rename, a collaborator's or an agent's through the live room): the
+  // panel's Current card shows it (liveworkspace/docs/specs/004-index/one-explorer.md "The Current card").
+  currentTitle?: string | null;
   // The link the open design was reached through, so the panel reads it as that visitor.
   currentShareCode?: string | null;
   // The open design renamed from the panel (its card, or its row's menu): the editor's title follows.

@@ -199,6 +199,7 @@ export function useCanvasChromePanels({
       {zenMode || explorerHidden || !explorerOpened ? null : (
         <LazyExplorer
           currentProjectId={currentProjectId}
+          currentTitle={props.projectName}
           inboxOpenAction={inboxOpenAction}
           currentShareCode={currentShareCode ?? null}
           onRenameCurrent={onRenameCurrentProject}

@@ -254,12 +254,6 @@ export function createIndexClient({
       call<{ folder: Folder }>(`/folders/${enc(id)}`, { method: 'PATCH', body: input }),
     deleteFolder: (id: string) => call<void>(`/folders/${enc(id)}`, { method: 'DELETE' }),
 
-    // Favourites
-    listFavourites: (query: { limit?: number; cursor?: string } = {}) =>
-      call<Page<{ itemId: string; createdAt: number }, 'favourites'>>('/favourites', { query }),
-    favourite: (itemId: string) => call<void>(`/favourites/${enc(itemId)}`, { method: 'PUT' }),
-    unfavourite: (itemId: string) => call<void>(`/favourites/${enc(itemId)}`, { method: 'DELETE' }),
-
     // Hide from Recent / Show in Recent: the person's own Recent and Home's Most Used only.
     hideFromRecent: (itemId: string) =>
       call<void>(`/recent-hidden/${enc(itemId)}`, { method: 'PUT' }),

@@ -17,8 +17,8 @@ const CANVAS = '[data-canvas-a11y-root]';
 
 const sidebar = (page: Page) => page.getByRole('navigation', { name: 'Sections' });
 
-// Recent and Favourites are the Library's pages, folded under it until it is opened.
-const LIBRARY_PAGES = new Set(['Recent', 'Favourites']);
+// Recent is the Library's page, folded under it until it is opened.
+const LIBRARY_PAGES = new Set(['Recent']);
 
 async function showView(page: Page, name: string): Promise<void> {
   if (LIBRARY_PAGES.has(name)) {

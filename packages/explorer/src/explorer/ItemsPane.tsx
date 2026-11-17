@@ -1,6 +1,6 @@
 'use client';
 
-// Every view that lists items (My Work, a folder, a team, Recent, Favourites, Shared With Me,
+// Every view that lists items (My Work, a folder, a team, Recent, Shared With Me,
 // Search, the Trash): its header, its folder rows from the folder tree, and its items from one paged list,
 // in the chosen layout. As livediagram's: cards by default; Shared With Me is a fixed list and the Trash its
 // own grouped page, neither with the layout toggle; New Folder only where folders live.
@@ -101,7 +101,7 @@ export function ItemsPane({ view }: { view: ItemsView }) {
   // Lists that span places name where each item lives (livediagram's location chip) and, on Recent and Search,
   // whose it is.
   // A lensed scope lists its subfolders' items too, so each names its folder.
-  const showFolder = lensOn || ['recent', 'favourites', 'search', 'shared'].includes(view.kind);
+  const showFolder = lensOn || ['recent', 'search', 'shared'].includes(view.kind);
   const showOwner = view.kind === 'recent' || view.kind === 'search';
   const options = useMemo<RowOptions>(
     () => ({ showApp: filter === 'all', showFolder, showOwner }),
@@ -310,7 +310,6 @@ export function placement(
     case 'all':
     case 'home':
     case 'recent':
-    case 'favourites':
     case 'search':
       return { folderId: null, teamId: null };
     case 'folder':

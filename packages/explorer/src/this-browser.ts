@@ -25,7 +25,6 @@ export type ThisBrowserItem = {
   lastOpenedAt: number | null;
   // In the app's local Trash since then; null while live.
   trashedAt: number | null;
-  favourite: boolean;
   // Archived in this browser since then (liveworkspace/docs/specs/004-index/one-explorer.md "Archived"); null or absent
   // while it is not. The mark lives only in this list: the app's own record never hears of it, so every write of the
   // list carries the marks it already held (writeThisBrowser), and the editor reads it here before it opens one.
@@ -121,7 +120,6 @@ function clean(raw: unknown): ThisBrowserItem | null {
     updatedAt,
     lastOpenedAt: numOrNull(r.lastOpenedAt),
     trashedAt: numOrNull(r.trashedAt),
-    favourite: r.favourite === true,
     // Only an archived one carries the mark, so the list stays as it was for every other.
     ...(archivedAt !== null ? { archivedAt } : {}),
     // Only one in a folder carries it.
@@ -245,7 +243,6 @@ const sameItem = (a: ThisBrowserItem, b: ThisBrowserItem) =>
   a.updatedAt === b.updatedAt &&
   a.lastOpenedAt === b.lastOpenedAt &&
   a.trashedAt === b.trashedAt &&
-  a.favourite === b.favourite &&
   (a.archivedAt ?? null) === (b.archivedAt ?? null) &&
   // The app's records carry no folder: only a write that names one changes it.
   (b.folderId === undefined || (a.folderId ?? null) === (b.folderId ?? null));
@@ -323,7 +320,6 @@ export type OfflineRecordFields = {
   createdAt: number;
   savedAt: number;
   trashedAt?: number;
-  favourite?: boolean;
   opens?: unknown;
 };
 
@@ -346,7 +342,6 @@ export function thisBrowserPublisher<R extends OfflineRecordFields>(
     updatedAt: rec.savedAt,
     lastOpenedAt: lastOpenedAt(rec.opens),
     trashedAt: rec.trashedAt ?? null,
-    favourite: rec.favourite === true,
   });
   return {
     itemOf,

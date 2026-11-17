@@ -22,7 +22,6 @@ import {
   MyWorkIcon,
   PlusIcon,
   ShareIcon,
-  StarIcon,
   TeamIcon,
   TrashIcon,
 } from '../ui/icons';
@@ -56,8 +55,6 @@ function SectionIcon({ kind }: { kind: PanelSection['kind'] }) {
       return <MyWorkIcon />;
     case 'team':
       return <TeamIcon />;
-    case 'favourites':
-      return <StarIcon />;
     case 'offline':
       return <BrowserIcon />;
     case 'library':

@@ -196,7 +196,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Can I organise a big document?',
-        a: 'Yes. A document holds as many tabs as you need, which you can group into folders, and a Contents sidebar lists every page with a picture of it. Your documents live in nested folders in the Explorer, shown as a list, as cards or as a sortable Details table, with favourites and tags to find them again. Drag a document onto a folder to file it.',
+        a: 'Yes. A document holds as many tabs as you need, which you can group into folders, and a Contents sidebar lists every page with a picture of it. Your documents live in nested folders in the Explorer, shown as a list, as cards or as a sortable Details table, with search and filters to find them again. Drag a document onto a folder to file it.',
       },
       {
         q: 'Can I add pictures?',

@@ -9,7 +9,6 @@
 import { fetchItems } from '../api/items';
 import { fetchCloudThreads } from '../api/card-threads';
 import { apiLoadProject, apiLoadTab } from '@/lib/api-client';
-import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { PROJECT_CONVERSION_HEADER } from '@liveplanner/api-schema';
 import { API_BASE, ApiError, apiDelete } from '@/lib/api/core';
 import {
@@ -112,11 +111,6 @@ async function downloadAndRemoveCloudCopy(
   );
   const tabs = fetchedTabs;
 
-  // The person's star is the index's, on the plan's item, which the server delete below takes too; carry it onto
-  // the offline record (docs/specs/013-workspace/favourites.md). A failed read aborts here, before anything is
-  // written: taken as "none" it would drop it.
-  const { item } = await indexClient.getItem(liveDoc.id);
-  const starred = item.favourite;
   const now = Date.now();
   const rec: OfflineProjectRecord = {
     id: liveDoc.id,
@@ -128,7 +122,6 @@ async function downloadAndRemoveCloudCopy(
     createdAt: liveDoc.createdAt ?? now,
     savedAt: now,
     tabs,
-    ...(starred ? { favourite: true } : {}),
     ...(liveDoc.itemTypes ? { itemTypes: liveDoc.itemTypes } : {}),
     ...(itemStore.items.length
       ? { items: itemStore.items, itemsRev: itemStore.rev, itemsNextKey: itemStore.nextKey }

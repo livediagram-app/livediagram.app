@@ -1,11 +1,12 @@
-# Favourites
+# Favourites (removed)
 
-Stars are liveworkspace's index's: `GET /favourites`, `PUT` and `DELETE /favourites/:itemId`, one set per person
-across every app, unlimited. The shared Explorer's **Favourite** and **Unfavourite** menu items and its **Favourites**
-view (`/explorer/favourites`, personal and team stars together) read and write the index. A star is personal: starring
-a document in a team's library stars it for nobody else. livediagram keeps no stars of its own.
+Favourites are gone from livediagram and every other app (owner, 2026-11-16, Work Tracker 1155). There is no star on a
+canvas: no **Add to Favourites** or **Remove from Favourites** in its menu, no star beside its name in a row, a card or
+the Explorer panel, and no **Favourites** page, sidebar row or panel section. Home's Most Used and Recent, Search and
+folders are how a canvas is found again.
 
-The document is [one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md); the calls and types are in
-[one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "Folders, favourites,
-defaults". The Explorer that shows it is the shared package,
-[`@liveworkspace/explorer`](../../../../packages/explorer/README.md).
+- An old `/explorer/favourites` address opens My Work, and a panel left on Favourites opens on My Work.
+- A canvas kept only in This Browser carries no star either: an older local record's mark is ignored, and Take
+  Offline and Sync move none.
+- What the index keeps and why is in
+  [one-explorer.md "Favourites removed"](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#favourites-removed).

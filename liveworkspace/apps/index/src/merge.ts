@@ -1,7 +1,7 @@
 // A guest becoming an account (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Becoming an account"):
 // accounts calls this with its own key, and everything the guest had moves to the account in one batch. Each
 // app is then told (person-merges.ts), so it moves what it keeps for the guest beside their items.
-// Where the account already has the same thing (a favourite, a default), the
+// Where the account already has the same thing (a default, an open), the
 // account's stays. Running it again finds nothing left to move.
 //
 // `legacy: true` is the migration's returning guest of the old livediagram.app (docs/migration.md step 6), claimed
@@ -54,13 +54,6 @@ export async function handleMerge(
          WHERE owner_id = ?`,
       )
       .bind(user, personal, guest),
-    db
-      .prepare(
-        `INSERT OR IGNORE INTO favourites (person_id, item_id, created_at)
-         SELECT ?, item_id, created_at FROM favourites WHERE person_id = ?`,
-      )
-      .bind(user, guest),
-    db.prepare('DELETE FROM favourites WHERE person_id = ?').bind(guest),
     db
       .prepare(
         `INSERT INTO opens (person_id, item_id, last_opened_at, hidden)

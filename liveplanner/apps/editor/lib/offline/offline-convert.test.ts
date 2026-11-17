@@ -20,10 +20,10 @@ vi.mock('@/lib/api-client', () => ({
   apiLoadTab: vi.fn(async () => ({ id: 't1', name: 'Tab 1', elements: [] })),
 }));
 
-// The person's star on a plan is the index's (liveworkspace/docs/specs/004-index/one-explorer-contracts.md).
+// Favourites were removed: neither direction asks the index anything.
 vi.mock('@liveworkspace/workbench/lib/index-client', () => ({
   indexClient: {
-    getItem: vi.fn(async () => ({ item: { id: 'd1', favourite: false } })),
+    getItem: vi.fn(async () => ({ item: { id: 'd1' } })),
     favourite: vi.fn(async () => {
       calls.push('favourite');
     }),
@@ -124,8 +124,8 @@ describe('saveOfflineToCloud (offline -> cloud)', () => {
     expect(store.offlineDeleteIfUnchanged).not.toHaveBeenCalled();
   });
 
-  it('carries the star to the server once the local copy is gone', async () => {
-    // Before the delete, the id still routes stars to the offline store.
+  it('sends nothing to the index for an old record’s star', async () => {
+    // Favourites were removed: a star an older record still carries is left behind.
     vi.mocked(store.offlineGetRecord).mockResolvedValueOnce({
       id: 'd1',
       name: 'Roadmap',
@@ -133,8 +133,7 @@ describe('saveOfflineToCloud (offline -> cloud)', () => {
       favourite: true,
     } as never);
     await saveOfflineToCloud('d1', 'owner');
-    expect(calls).toEqual(['apiCreateProject', 'offlineDeleteProject', 'favourite']);
-    expect(indexClient.favourite).toHaveBeenCalledWith('d1');
+    expect(calls).toEqual(['apiCreateProject', 'offlineDeleteProject']);
   });
 
   it('carries the folder and created date, not just the tabs', async () => {
@@ -213,11 +212,6 @@ describe('saveOfflineToCloud (offline -> cloud)', () => {
     await expect(saveOfflineToCloud('d1', 'owner')).rejects.toThrow();
     expect(apiClient.apiCreateProject).toHaveBeenCalledTimes(1);
     expect(store.offlineDeleteIfUnchanged).not.toHaveBeenCalled();
-  });
-
-  it('stars nothing for an unstarred project', async () => {
-    await saveOfflineToCloud('d1', 'owner');
-    expect(indexClient.favourite).not.toHaveBeenCalled();
   });
 
   it('uploads again when the project changed during the upload, removing the local copy only then', async () => {
@@ -330,19 +324,10 @@ describe('takeCloudOffline (cloud -> offline)', () => {
     expect(rec.threads?.[0]!.cards.map((c) => c.projectId)).toEqual(['d1']);
   });
 
-  it('keeps a starred project starred on the offline record', async () => {
-    vi.mocked(indexClient.getItem).mockResolvedValueOnce({
-      item: { id: 'd1', favourite: true },
-    } as never);
+  it('takes a project offline without reading the index (Favourites were removed)', async () => {
     await takeCloudOffline('d1', 'owner');
-    expect(vi.mocked(store.offlinePutRecord).mock.calls[0]![0]).toMatchObject({ favourite: true });
-  });
-
-  it('aborts before writing anything when the star could not be read', async () => {
-    // Taken as "none", they would go with the server row.
-    vi.mocked(indexClient.getItem).mockRejectedValueOnce(new Error('offline'));
-    await expect(takeCloudOffline('d1', 'owner')).rejects.toThrow('offline');
-    expect(calls).toEqual([]);
+    expect(indexClient.getItem).not.toHaveBeenCalled();
+    expect(vi.mocked(store.offlinePutRecord).mock.calls[0]![0]).not.toHaveProperty('favourite');
   });
 
   it('writes the local copy before deleting the server one', async () => {

@@ -57,7 +57,6 @@ export type Item = {
   summary: ItemSummary;
   // For the person asking:
   access: Level;
-  favourite: boolean;
   lastOpenedAt: number | null;
   // Hidden from the person's Recent (and Most Used) by Hide from Recent. Always sent by the index.
   hiddenFromRecent?: boolean;

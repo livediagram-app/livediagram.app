@@ -1,7 +1,7 @@
 'use client';
 
 // The marks an item carries in rows, cards and its menu header (liveplanner's project-badges.tsx): the
-// visibility badge (Public, Shared, Team, Private), Made by AI, the favourite star, the folder chip, and, in the All filter,
+// visibility badge (Public, Shared, Team, Private), Made by AI, the folder chip, and, in the All filter,
 // which app it belongs to; and a Plan card's status chip on its Inbox rows.
 
 import { memo, type MouseEvent } from 'react';
@@ -14,7 +14,6 @@ import {
   SharedDotGlyph,
   SparkleIcon,
   ArchiveIcon,
-  StarIcon,
   TeamBadgeGlyph,
 } from '../ui/icons';
 import { kindWords, siteOf } from '../words';
@@ -148,18 +147,6 @@ export function ArchivedBadge({ item }: { item: Pick<Item, 'archivedAt'> }) {
     >
       <ArchiveIcon size={10} />
       Archived
-    </span>
-  );
-}
-
-export function FavouriteMarker() {
-  return (
-    <span
-      title="Favourite"
-      className="inline-flex shrink-0 items-center text-amber-500 dark:text-amber-400"
-    >
-      <StarIcon filled />
-      <span className="sr-only">Favourite</span>
     </span>
   );
 }

@@ -83,7 +83,6 @@ describe('homeSections', () => {
       updatedAt: 1,
       lastOpenedAt: openedAt,
       trashedAt: null,
-      favourite: false,
     });
     const { recent: rest } = homeSections(
       [recent('c', 30)],
@@ -195,7 +194,6 @@ describe('Home shows each item once', () => {
       updatedAt: Date.now(),
       lastOpenedAt: Date.now(),
       trashedAt: null,
-      favourite: false,
     };
     renderHome(createFakeIndex({ items: seeded() }), {
       thisBrowser: { items: [local], itemHref: (i) => `/p/${i.id}`, helpHref: '/help/' },

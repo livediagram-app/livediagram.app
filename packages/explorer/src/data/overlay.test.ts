@@ -17,11 +17,11 @@ describe('createItemOverlay', () => {
     const overlay = createItemOverlay();
     const a = makeItem(1);
     const undoRename = overlay.patch(a.id, { title: 'Renamed' });
-    overlay.patch(a.id, { favourite: true });
+    overlay.patch(a.id, { hiddenFromRecent: true });
     undoRename();
     const shown = overlay.apply(a);
     expect(shown.title).toBe('Item 1');
-    expect(shown.favourite).toBe(true);
+    expect(shown.hiddenFromRecent).toBe(true);
   });
 
   it('puts back the value an earlier patch had set', () => {
@@ -100,18 +100,18 @@ describe('createItemOverlay', () => {
     const overlay = createItemOverlay();
     const a = makeItem(1);
     overlay.patch(a.id, { folderId: 'f1', teamId: null });
-    overlay.patch(a.id, { favourite: true });
+    overlay.patch(a.id, { hiddenFromRecent: true });
     overlay.dropFolder('f1');
     const shown = overlay.apply(a);
     expect(shown.folderId).toBeNull();
-    expect(shown.favourite).toBe(true);
+    expect(shown.hiddenFromRecent).toBe(true);
   });
 
   it('holds the latest word for at most OVERLAY_BASE_MAX items', () => {
     const overlay = createItemOverlay();
     const n = OVERLAY_BASE_MAX + 50;
     const items = Array.from({ length: n }, (_, i) => makeItem(i));
-    for (const item of items) overlay.patch(item.id, { favourite: true }).settle();
+    for (const item of items) overlay.patch(item.id, { hiddenFromRecent: true }).settle();
     overlay.observe(items, overlay.stamp());
     expect(overlay.size()).toBe(OVERLAY_BASE_MAX);
   });
@@ -175,7 +175,7 @@ describe('createItemOverlay', () => {
     const listener = vi.fn();
     overlay.subscribe(listener);
     const v0 = overlay.version();
-    const undo = overlay.patch('x', { favourite: true });
+    const undo = overlay.patch('x', { hiddenFromRecent: true });
     undo();
     expect(listener).toHaveBeenCalledTimes(2);
     expect(overlay.version()).toBe(v0 + 2);

@@ -16,7 +16,7 @@ shows.
 
 The index records what it changes itself, in the same batch as the change: a canvas made (`created`, with `source`
 `ai` or `import` for one an older agent made, or `copiedFrom` for a copy), `renamed`, `moved`, `trashed`,
-`restored`, `shared` (a share link made, with its level), `unshared` and `favourited`.
+`restored`, `shared` (a share link made, with its level) and `unshared`.
 
 livehuddle reports `edited`. The canvas's room records the editor of every save made through an HTTP route that
 carries an identity (`apps/api/src/document-room/room-rpc.ts`, `recordItemEditor` from `@liveworkspace/index-app`): one outbox row per person, replaced on each

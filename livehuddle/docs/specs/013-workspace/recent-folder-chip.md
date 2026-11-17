@@ -1,6 +1,6 @@
 # Folder location on Recent rows
 
-The shared Explorer's lists that span places (Recent, Favourites, Search, Shared With Me) carry a location chip on
+The shared Explorer's lists that span places (Recent, Search, Shared With Me) carry a location chip on
 each row and card: its folder, its team for a team item in no folder, or My Work for one of yours in none; an item
 reached through a link lives in someone else's library and has none. Clicking the chip goes to that place. Recent
 and Search add an Owner column (and a line on each card): You, the team's name, or Shared with you

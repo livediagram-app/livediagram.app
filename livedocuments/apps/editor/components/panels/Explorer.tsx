@@ -19,6 +19,7 @@ import { SignInPrompt } from '@/components/chrome/SignInPrompt';
 import { ExplorerHeaderMenu } from '@/components/panels/ExplorerHeaderMenu';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useThisBrowserHost } from '@/hooks/persistence/useThisBrowserHost';
+import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
 import { useOfflineItemMenu } from '@/hooks/persistence/useOfflineItemMenu';
 import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
 import { useAppNavigation } from '@liveworkspace/workbench/hooks/navigation/useAppNavigation';
@@ -46,10 +47,11 @@ const NO_MOVE = () => {};
 
 // The editor's floating Explorer panel: the shared Explorer's panel (@liveworkspace/explorer, drawn as this panel
 // always was, with the same lists, menus and dialogs as the /explorer page, from the index) inside the editor's
-// movable panel, opened only as the canvas menu button's popover. The open document shows on top, read
-// once from the index when the panel opens; every list is one request a page, loaded only once its section is chosen.
+// movable panel, opened only as the canvas menu button's popover. The open document shows on top, from the
+// index and the editor's own title; every list is one request a page, loaded only once its section is chosen.
 function ExplorerImpl({
   currentDocumentId,
+  currentTitle = null,
   inboxOpenAction = null,
   currentShareCode = null,
   onRenameCurrent,
@@ -107,18 +109,19 @@ function ExplorerImpl({
   // one client. The panel mounts only while open, so nothing is asked before it opens.
   const drive = useMemo(() => (isSignedIn ? cloudSyncHost() : null), [isSignedIn]);
 
-  // The open document as the index has it (its title, place and star), for the card on top.
-  // Null when the index has none for it (kept only in this browser): the panel then draws its card from This
-  // Browser's list (@liveworkspace/explorer ExplorerPanel).
+  // Open, the panel reaches under the palette strip: the trays just under it step aside (PaletteTray).
+  const shown = popoverOpen === true;
+  // Kept only in this browser? Then the index is not asked and the card is This Browser's, with its Browser Storage
+  // pill, before the list has heard of it too (one-explorer.md "The Current card"). An opening asks the index again
+  // while it had nothing for the document (a new one registered since).
+  const offline = useIsOfflineDocument(currentDocumentId ?? null);
   const current = useOpenItem(
     indexClient,
     currentDocumentId,
     currentShareCode,
     getSessionSharePassword,
+    { offline, open: shown },
   );
-
-  // Open, the panel reaches under the palette strip: the trays just under it step aside (PaletteTray).
-  const shown = popoverOpen === true;
   useEffect(() => {
     if (!shown) return;
     document.body.setAttribute('data-explorer-open', '');
@@ -177,6 +180,8 @@ function ExplorerImpl({
           itemHref={itemHref}
           current={currentDocumentId ? current : null}
           currentId={currentDocumentId ?? null}
+          currentTitle={currentTitle}
+          currentOffline={offline}
           // The open document stops saving before it goes, then the editor leaves for the Explorer and its Undo.
           onTrashCurrent={trashCurrent}
           onRenameCurrent={onRenameCurrent}

@@ -48,7 +48,6 @@ const VERBS: Partial<Record<EventType, string>> = {
   restored: 'Restored',
   shared: 'Shared',
   unshared: 'Sharing Stopped',
-  favourited: 'Added to Favourites',
 };
 
 // The rest say what happened on their own, in livediagram's words.
@@ -112,7 +111,6 @@ const TONE_BY_TYPE: Record<EventType, EventTone> = {
   created: 'create',
   edited: 'create',
   restored: 'create',
-  favourited: 'create',
   commented: 'create',
   comment_resolved: 'create',
   action_assigned: 'create',
@@ -172,7 +170,6 @@ export type EventCategory =
   | 'sharing'
   | 'teams'
   | 'filing'
-  | 'favourites'
   | 'other';
 
 const CATEGORY_BY_TYPE: Record<EventType, EventCategory> = {
@@ -197,7 +194,6 @@ const CATEGORY_BY_TYPE: Record<EventType, EventCategory> = {
   team_member_removed: 'teams',
   moved: 'filing',
   synced: 'filing',
-  favourited: 'favourites',
   approval_requested: 'approvals',
   approval_approved: 'approvals',
   approval_changes_requested: 'approvals',
@@ -219,7 +215,6 @@ export const CATEGORY_LABELS: Record<EventCategory, string> = {
   sharing: 'Sharing',
   teams: 'Teams',
   filing: 'Organisation',
-  favourites: 'Favourites',
   other: 'Other',
 };
 
@@ -235,7 +230,6 @@ const CATEGORY_ORDER: EventCategory[] = [
   'sharing',
   'teams',
   'filing',
-  'favourites',
   'other',
 ];
 

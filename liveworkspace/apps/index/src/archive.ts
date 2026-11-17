@@ -1,7 +1,7 @@
 // Archived (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Archived", blueprints/archive.md): an item its
 // owner put away. It moves to their archive scope (`a:<owner>`), which no person's or team's list reads, and loses
-// every way anyone else had in (its links, its team) and every row that would list it (favourites, opens, use days,
-// the Inbox), in one batch. Its owner still reaches it (directAccess reads owner_id), so its preview draws, but no
+// every way anyone else had in (its links, its team) and every row that would list it (opens, use days, the
+// Inbox), in one batch. Its owner still reaches it (directAccess reads owner_id), so its preview draws, but no
 // grant is signed for it: it is moved out first, by a PATCH naming a folder or a team (items.ts).
 
 import { loadItem } from './access';
@@ -18,7 +18,7 @@ import { tellStanding } from './standing';
 /** Whether a row is in its owner's Archived. */
 export const isArchived = (row: Pick<ItemRow, 'archived_at'>) => row.archived_at != null;
 
-/** The refusal every opening verb answers an archived item's owner (grant, open, copy, favourite, share). */
+/** The refusal every opening verb answers an archived item's owner (grant, open, copy, share). */
 export const archivedRefusal = () => conflict('archived');
 
 // The tables that hold an item's Inbox rows, children first.
@@ -48,8 +48,6 @@ export function archiveStatements(
          WHERE id = ? AND archived_at IS NULL AND trashed_at IS NULL`,
       )
       .bind(now, to, row.id),
-    // Its History stays its owner's; its favourites' events go with the favourites (Archived holds none).
-    db.prepare(`DELETE FROM events WHERE item_id = ? AND type = 'favourited'`).bind(row.id),
     // "To Archived", in its team's audit log when it left one.
     ...eventStatements(db, {
       itemId: row.id,
@@ -63,8 +61,7 @@ export function archiveStatements(
     byItem('shared_with'),
     byItem('share_links'),
     byItem('share_passwords'),
-    // Every person's favourite, Recent and Most Used rows, so moving it out starts fresh.
-    byItem('favourites'),
+    // Every person's Recent and Most Used rows, so moving it out starts fresh.
     byItem('opens'),
     byItem('use_days'),
     // Its Inbox: threads, the people in them, actions, forms and who read them.

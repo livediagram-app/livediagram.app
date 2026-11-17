@@ -164,7 +164,6 @@ describe('mergeMade', () => {
     updatedAt: createdAt,
     lastOpenedAt: null,
     trashedAt: null,
-    favourite: false,
   });
 
   it('merges this browser’s by when each was made, at most the cap', () => {

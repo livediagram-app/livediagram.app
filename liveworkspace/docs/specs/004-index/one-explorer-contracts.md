@@ -95,7 +95,7 @@ after the cookie last vouched for the guest ([accounts.md](../003-accounts/accou
 
 **Becoming an account.** When someone signs in or signs up on liveworkspace.app with an `lw_guest`
 cookie, accounts tells the index (`POST /internal/merge`, accounts' own key), which moves the guest's
-items, folders, favourites, opens and placement defaults to the account in one batch, and clears the
+items, folders, opens and placement defaults to the account in one batch, and clears the
 cookie. The index then tells each app, `POST /api/internal/people/:guest/merge {into}` (at once, and from its
 frequent cron until the app confirms, for up to a week), so the app moves what it keeps for the guest beside
 their items, such as their images or its own per-person store (`personMerged` in `@liveworkspace/index-app`). A link visitor with no identity needs no redirect: a share code is enough for a grant.
@@ -104,7 +104,7 @@ their items, such as their images or its own per-person store (`personMerged` in
 copied work is under `guest_<old uuid>`, which accounts merges into whoever claims it
 ([accounts.md](../003-accounts/accounts.md#returning-guests-of-the-old-livediagramapp)), a guest as well as an account. So the
 merge has a second form, `{guestId, userId, legacy: true}`: `userId` may then be a guest (`guest_…`) too, and
-everything else is the same (items, folders, favourites, opens, use days, the event log, Shared with me, placement
+everything else is the same (items, folders, opens, use days, the event log, Shared with me, placement
 defaults, the Inbox's rows, one batch); an item or folder outside a team lands in `p:<userId>`, the target's own
 space, guest or account. Without `legacy: true` a guest target is still refused (400). The apps hear it as
 `POST /api/internal/people/:guest/merge {into, legacy: true}`, so an app can tell a legacy merge (whose `into` may
@@ -138,7 +138,6 @@ type Item = {
   summary: ItemSummary; // pushed by the item, see below
   // For the person asking:
   access: Level; // what they may do
-  favourite: boolean;
   lastOpenedAt: number | null;
   hiddenFromRecent: boolean; // the person hid it from Recent
   sharedVia: string | null; // the share code, when they reach it only through a link
@@ -161,7 +160,7 @@ as malformed. The parts of an item an app names (a tab, the cards' `~cards`, an 
 
 | Call                           | Who                 | Does                                                                                   |
 | ------------------------------ | ------------------- | -------------------------------------------------------------------------------------- |
-| `GET /items`                   | person              | Lists. Filters: `app`, `view` (`all`, `recent`, `favourites`,                          |
+| `GET /items`                   | person              | Lists. Filters: `app`, `view` (`all`, `recent`,                                        |
 |                                |                     | `shared`, `trash`, `archived`, `unsorted` (no folder: My Work's and a team's           |
 |                                |                     | roots; the Explorer has no Unsorted view), `search`: every live item the               |
 |                                |                     | person can open, links and their own Archived included), `folder`                      |
@@ -246,23 +245,22 @@ closed to opening and editing until it is moved out ([blueprints/archive.md](blu
   already archived answers `{item}` unchanged. Folders are never archived, and Archived holds no folders.
 - In one batch the item takes `archivedAt`, leaves its folder and its team (`teamId` null), and moves to its owner's
   archive scope (`a:<owner>`). Its share links and share password are deleted for good, with every Shared with me
-  row they made; its favourites, opens (Hide from Recent's too) and use days are deleted for everyone; its Inbox rows
-  (threads, the people in them, actions, forms and form reads) are deleted. Its History stays its owner's, its
-  `favourited` events are deleted (they were other people's, or the owner's own, and Archived holds no favourites),
+  row they made; its opens (Hide from Recent's too) and use days are deleted for everyone; its Inbox rows
+  (threads, the people in them, actions, forms and form reads) are deleted. Its History stays its owner's,
   and a `moved` event with `{archived: true}` is recorded (in its team's audit log when it left one). The app is told to end the
   sessions its links admitted (`POST <app>/api/internal/items/:id/revoke`); an owner's or teammate's open session
   ends when its grant is next renewed.
 - `view=archived` lists the person's archived items that are not in the Trash, newest change first, with `app` and
   the lens. `view=search` includes them whenever it searches the person's own space (no `team`, `team=personal`, or
-  `space` naming `mine`). Every other list leaves them out: their scope is in nobody's, and their favourite, open,
+  `space` naming `mine`). Every other list leaves them out: their scope is in nobody's, and their open,
   use-day, link and Inbox rows are gone.
-- `POST /items/:id/grant`, `POST /items/:id/open`, `POST /items/:id/copy`, `PUT /favourites/:id`,
+- `POST /items/:id/grant`, `POST /items/:id/open`, `POST /items/:id/copy`,
   `PUT /recent-hidden/:id`, `POST /items/:id/share` and `PUT /items/:id/share-password` answer `409 archived` to the
   owner (the only person who still reaches it); everyone else gets `404`. `GET /items/:id` answers as before, so the
   owner's preview (`006-media/previews.md`) still draws.
 - `PATCH /items/:id` with only `title` renames it in place. Naming `folderId` or `teamId` moves it out: `archivedAt`
   is cleared and it lands in My Work (its root or a folder) or in a team the owner has joined, its scope following.
-  It starts fresh there: no favourite, no Recent, no links.
+  It starts fresh there: no Recent, no links.
 - `DELETE /items/:id` sends it to the Trash as any item, keeping `archivedAt`; the Trash lists and empties the
   person's archive scope with their own, and a restore puts it back in Archived. The empty clean-up passes archived
   items by. A collab push for one is accepted and dropped (`204`), so its Inbox stays empty; a summary push is kept,
@@ -300,11 +298,12 @@ When a liveworkspace account closes, accounts tells the index (`POST /internal/p
 holds for that person:
 
 - **Purged**, as a permanent delete is, with the content dropped by each app: every item they own in
-  every app, the Trash included, and with each one its favourites, opens, share links, password,
+  every app, the Trash included, and with each one its opens, share links, password,
   Shared with me rows and comment and action rows.
-- **Deleted**: their folders, favourites, opens (Recent), use
+- **Deleted**: their folders, opens (Recent), use
   days (Most Used), Shared with me rows, placement defaults, their calendar feeds ([Calendar feeds](#calendar-feeds)),
-  and their own `favourited` events (the events of their own items went with the items).
+  and what is left of Favourites (removed, [one-explorer.md "Favourites removed"](one-explorer.md#favourites-removed)):
+  their rows in the unread `favourites` table and their own old `favourited` events.
 - **Kept by the team**: an item or folder they made in a team stays with that team, its owner anonymised.
   `teamIds` names the teams that closed with the account (one it ran alone); their items and folders in
   those go too, while anyone else's stay theirs.
@@ -349,7 +348,7 @@ nothing. The record is kept, and the purge run again, for two hours, so anything
 token issued before the account closed goes too. A guest's things have no account to close; the same
 purge serves a guest id when one is asked for.
 
-## Folders, favourites, defaults
+## Folders and defaults
 
 Folders are not per app: one tree per person, and one per team, holding items from any app.
 
@@ -366,11 +365,13 @@ updatedAt}`; 409 `folder_exists`, `cycle`. Deleting moves children (folders and 
   space is one walk of `items_live` (`items_live_app` with `app`), its count stopping at the cap. A team made since
   the token was minted is left out until the token is renewed; the Explorer shows it as holding nothing yet. An app
   acting for a person sees its own items only; the Drive mirror and the data export cannot reach it (404).
-- `GET /favourites`, `PUT/DELETE /favourites/:itemId`. A `PUT` here or on `/recent-hidden/:itemId` for an item the
-  person doesn't reach (not theirs, not their team's, no live link they opened) is 404, the same answer as a missing
-  one, and writes nothing.
 - `PUT/DELETE /recent-hidden/:itemId`: Hide from Recent and Show in Recent: the person's own; a hidden item
-  leaves their `view=recent` and Most Used, and says `hiddenFromRecent: true` everywhere else.
+  leaves their `view=recent` and Most Used, and says `hiddenFromRecent: true` everywhere else. A `PUT` for an item
+  the person doesn't reach (not theirs, not their team's, no live link they opened) is 404, the same answer as a
+  missing one, and writes nothing.
+- Favourites are gone ([one-explorer.md "Favourites removed"](one-explorer.md#favourites-removed)): there is no
+  `/favourites` route (404) and no `view=favourites` (400). The `favourites` table stays, unread; only an account's
+  close deletes from it, until a later migration drops it.
 - `GET /placement-defaults`, `PUT/DELETE /placement-defaults/:key`: default folders: where a person's new items
   land when made without a place, per app. The key is the app (`liveplanner`) for every new item of its kind,
   `<app>:kind:<kind>` for one whose first tab is that kind, `<app>:template:<family>` for one made from a template
@@ -792,7 +793,7 @@ copy for a year, so the sweep never cuts it short.
 
 - The index records `created` (with `source` when an AI or import made it, `copiedFrom` for a copy),
   `renamed` (`from`), `moved` (`folderName`, `teamId`, and `fromTeamId` when it changed team), `trashed`, `restored`,
-  `shared` (`level`), `unshared` and `favourited` in the same batch as the change. An approval request, decision or
+  `shared` (`level`) and `unshared` in the same batch as the change. An approval request, decision or
   cancel records `approval_requested`, `approval_approved`, `approval_changes_requested` or `approval_cancelled`
   ([approvals.md](approvals.md#history-and-the-team-audit-log)). An empty item its app tidies away
   is not news. An item created with `synced: true` (kept offline in one browser, put back under its own id) records
@@ -836,8 +837,8 @@ copy for a year, so the sweep never cuts it short.
   first. `limit` `HISTORY_PAGE` (30) by default, at most `HISTORY_LIMIT_MAX` (100) (400 `invalid_query`; a bad
   cursor is 400 `invalid_cursor`). Only someone who reaches the item directly (its owner, or a member of its team)
   reads it, the Trash and Archived included; anyone else, a link visitor among them, gets 404 as for an item they
-  can't reach. A `favourited` event shows only to the person who starred it, and `opened_by_visitor` and
-  `copied_by_visitor` only to the item's owner. Each event: `{id, app, type, actorId, actorName, itemId, title,
+  can't reach. `opened_by_visitor` and `copied_by_visitor` show only to the item's owner, and an old `favourited`
+  event (from before Favourites were removed) to nobody. Each event: `{id, app, type, actorId, actorName, itemId, title,
 detail, occurredAt, item}`, `title` being the item's name then and `item` the item as it is now. One statement: a
   range of the events' item index (`item_id`, then time), at most `limit + 1` rows plus the few the person may not
   see.
@@ -976,7 +977,7 @@ Not an index contract: the shape every app's offline store and the Explorer on i
 ([one-explorer.md "This Browser, a Space"](one-explorer.md#this-browser-a-space)), `@liveworkspace/explorer/this-browser`.
 
 - **`liveworkspace:this-browser:<app>`**: `{ v: 2, items: ThisBrowserItem[], folders: ThisBrowserFolder[] }`.
-  `ThisBrowserItem` is `{ id, title, createdAt, updatedAt, lastOpenedAt, trashedAt, favourite, archivedAt?,
+  `ThisBrowserItem` is `{ id, title, createdAt, updatedAt, lastOpenedAt, trashedAt, archivedAt?,
 folderId? }`; `ThisBrowserFolder` is `{ id, name, parentId, createdAt, updatedAt }` (`parentId` null at the root).
   Items newest change first, at most 500; folders at most 200. Never content.
 - **Version 1** (`{ v: 1, items }`, before folders) reads as version 2 with `folders: []` and every item at the root;
@@ -989,7 +990,7 @@ folderId? }`; `ThisBrowserFolder` is `{ id, name, parentId, createdAt, updatedAt
 
 ## What goes away in each app, as it moves
 
-Its tables for folders, favourites, opens, Trash state, share links, shared-with, placement
+Its tables for folders, opens, Trash state, share links, shared-with, placement
 defaults, the collab index, its own Timeline (gone: the index's event log feeds History instead), the teams mirror and guest ids,
 and the routes over them. Its
 content tables move into the item's Durable Object.

@@ -28,7 +28,7 @@ design **lives**, and which **views** compute lists of designs from wherever the
 
 - **Places.** A design lives in exactly one place: **My Work**, a **team**, or **this browser**
   ([Offline Mode](../006-design/offline-mode.md)). Moving a design changes its place.
-- **Views.** Everything else (Home, Inbox, Shared With Me, Recent, Favourites, Search results, the Library pages,
+- **Views.** Everything else (Home, Inbox, Shared With Me, Recent, Search results, the Library pages,
   Trash) is a computed view. A view never owns a design; it lists designs that live somewhere else.
 - **A space's root holds designs.** A design filed in no folder sits at the root of its space, listed beside the
   root folders: there is no Unsorted bucket and no Generated bucket. What an AI made is found with the **Made by AI**
@@ -82,8 +82,8 @@ Top to bottom. "Opens" names the view a row selects; every view keeps its own ro
 | Shared With Me | `/explorer/shared`                                   | Designs shared with the reader                                |
 
 Home is the Explorer's landing view. The **Inbox** is what is outstanding for the reader now; what happened to one
-design is its **History**, on its menu ([History](history.md)). Recent and Favourites have no sidebar row; their routes
-(`/explorer/recent`, `/explorer/favourites`) keep working. Recent is reached from Home's Recent (**See More**).
+design is its **History**, on its menu ([History](history.md)). Recent has no sidebar row; its route
+(`/explorer/recent`) keeps working (an old `/explorer/favourites` opens My Work). Recent is reached from Home's Recent (**See More**).
 The retired `/explorer/activity` opens the Inbox, and the retired `/explorer/timeline` opens Home
 ([Folders: Explorer routes](folders.md#explorer-routes)).
 
@@ -125,10 +125,10 @@ The retired `/explorer/activity` opens the Inbox, and the retired `/explorer/tim
 
 ### More
 
-| Row     | Opens                                  | Children                          | Badge |
-| ------- | -------------------------------------- | --------------------------------- | ----- |
-| Library | Nothing: the row expands and collapses | Recent, Favourites, Image Gallery | None  |
-| Trash   | `/explorer/trash` ([Trash](trash.md))  | None                              | None  |
+| Row     | Opens                                  | Children              | Badge |
+| ------- | -------------------------------------- | --------------------- | ----- |
+| Library | Nothing: the row expands and collapses | Recent, Image Gallery | None  |
+| Trash   | `/explorer/trash` ([Trash](trash.md))  | None                  | None  |
 
 - **Library** has no view of its own: activating it expands or collapses it. It opens by itself when one of its
   pages is the current view. Its **Image Gallery** is the person's images, read from livedesign's API
@@ -179,7 +179,7 @@ the breadcrumb and the help centre's copy. Routes stay as they are.
 | Image gallery  | `/explorer/images`  | Image gallery  |
 
 Every other row's view already carries its row's label (Inbox, a folder or team by its name, Invites,
-Trash). Views without a row keep their own names (Recent, Favourites, Search results). Recent is reached from
+Trash). Views without a row keep their own names (Recent, Search results). Recent is reached from
 Home, and its breadcrumb leads back to it (**Home › Recent**).
 
 ## Visibility at a glance
@@ -304,7 +304,7 @@ aside: the panel reaches under the strip and they would cover its header.
 The rail opens with **New Design** (one click to a new design; a "New" chip first in the row on a phone), then the
 sidebar's three groups, Overview, Spaces and More, as one column of entries: Home, Inbox,
 Shared With Me; My Work, each team, This Browser (while this browser holds designs or a local folder, with their
-count) and New Team (signed in); Favourites, Library and Trash. Shared With Me carries its count (the panel reads no other feed until
+count) and New Team (signed in); Library and Trash. Shared With Me carries its count (the panel reads no other feed until
 its section is shown). No
 Invites or sign-in nudge: those are the Explorer page's. A team's pane has a **Members** button that opens the
 team's card in a dialog, where the team is run as on the page.
@@ -341,7 +341,7 @@ compact size, skeleton rows while loading, and one line with **Try Again** when 
   carries the Explorer page's design menu (`⋯`, right-click, Shift+F10), the same verbs as on the Explorer page. The
   `⋯` shows on hover or focus under a mouse, always on a touch screen.
 - **Rows with designs**: a design row shows its thumbnail and "Updated <relative time>"; activating it opens the
-  design; it carries the design menu, its favourite star and, for an offline
+  design; it carries the design menu, and, for an offline
   design, the This Browser pill; the open design's row is the current one. A folder row shows its counts ("2
   folders · 5 designs") and opens the folder in the pane; Up and Down move between rows.
 - **Filing.** One of the reader's own design rows drags onto a personal folder row (resting on it opens it), or onto
@@ -384,7 +384,7 @@ from the card follows the editor's rename (an Editor only); a Participant or Vie
 
 A design saved only in this browser ([Offline Mode](../006-design/offline-mode.md)) is the reader's own: it counts
 wherever the reader's own designs count (Space `mine`, owner "You"), the same as a design in My Work. Every
-row and card of one, wherever it is listed (folders, This Browser, Recent and Favourites, Search results, the
+row and card of one, wherever it is listed (folders, This Browser, Recent, Search results, the
 editor's Explorer, the Trash), carries the **This Browser** pill
 ([Offline Mode: This Browser pill](../006-design/offline-mode.md#this-browser-pill)).
 

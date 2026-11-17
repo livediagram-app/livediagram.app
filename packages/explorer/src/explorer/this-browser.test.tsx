@@ -33,7 +33,6 @@ const local = (n: number, extra: Partial<ThisBrowserItem> = {}): ThisBrowserItem
   updatedAt: 2_000 + n,
   lastOpenedAt: null,
   trashedAt: null,
-  favourite: false,
   ...extra,
 });
 
@@ -113,12 +112,11 @@ describe('the list an app keeps', () => {
       typeof opens === 'number' ? opens : null,
     );
     const rec = (id: string, extra = {}) => ({ id, name: id, createdAt: 1, savedAt: 2, ...extra });
+    // An old record's favourite mark is no longer read (Favourites were removed).
     list.publish([rec('a', { opens: 9 }), rec('b', { trashedAt: 3, favourite: true })]);
-    expect(
-      readThisBrowser('liveplanner').map((i) => [i.id, i.lastOpenedAt, i.trashedAt, i.favourite]),
-    ).toEqual([
-      ['a', 9, null, false],
-      ['b', null, 3, true],
+    expect(readThisBrowser('liveplanner').map((i) => [i.id, i.lastOpenedAt, i.trashedAt])).toEqual([
+      ['a', 9, null],
+      ['b', null, 3],
     ]);
     list.note('a', rec('a', { name: 'Renamed', savedAt: 5 }));
     list.note('b', 'delete');

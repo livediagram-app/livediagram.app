@@ -8,14 +8,14 @@ Status: shipped, on liveworkspace's index and the shared Explorer
 Every item's menu, wherever it is listed (the Explorer page, the editor's Explorer panel, Home's cards), has
 **Hide from Recent**, or **Show in Recent** once it is hidden. A hidden item never appears in **Recent** or in
 Home's **Most Used** and **Recent** however recently it was opened, and behaves exactly as before everywhere else: folders,
-search, Favourites, direct links, sharing, teams.
+search, direct links, sharing, teams.
 
 ## Per person, not per item
 
 Recent is your view of your own work, so the choice belongs to the reader, not the item. On a shared or team plan,
 one collaborator tidying their Recent leaves everyone else's alone. The index keeps it on the person's own `opens`
 row (`hidden`), beside when they last opened the item
-([one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "Folders, favourites,
+([one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "Folders and
 defaults"):
 
 - `PUT /recent-hidden/:itemId` hides it, `DELETE /recent-hidden/:itemId` shows it again. Hiding an item never

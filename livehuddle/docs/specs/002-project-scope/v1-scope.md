@@ -93,7 +93,7 @@ spotlight, which are not in livehuddle ([Not in livehuddle](not-in-livehuddle.md
 ### 6. Workspace, identity and the platform
 
 - Spaces are filed and found in the One Explorer
-  ([One Explorer](../../../../liveworkspace/docs/specs/004-index/one-explorer.md)), with folders, favourites, the
+  ([One Explorer](../../../../liveworkspace/docs/specs/004-index/one-explorer.md)), with folders, the
   Trash and teams.
 - Share links at the three levels ([Share roles](../013-workspace/share-roles.md)), with expiry and passwords as
   livediagram has them.

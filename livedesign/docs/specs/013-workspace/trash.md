@@ -111,7 +111,7 @@ lands in the owner's personal Trash.
 A trashed design is gone from everywhere a live one shows up:
 
 - every design list: the Explorer (all sections, Recent, Search results, folders),
-  the team library, **Shared with you**, **Favourites**, search, the
+  the team library, **Shared with you**, search, the
   **Timeline**, and the **Inbox**;
 - the tab picker that links a tab into another design.
 

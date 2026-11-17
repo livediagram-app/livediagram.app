@@ -934,7 +934,7 @@ index as the caller; `@liveworkspace/index-app` `archive-doors.ts`). Both are de
 (`@liveworkspace/agent-verbs/mcp/archive-tools`) in this product's words.
 
 - **`archive_document`**: `{ documentId }`. Destructive. Moves a document the user owns to their Archived: it leaves
-  every list, its share links end, and its favourites, Recent and Most Used rows and Inbox threads are deleted for
+  every list, its share links end, and its Recent and Most Used rows and Inbox threads are deleted for
   everyone, so moving it out starts fresh. Returns `{ archived, id, name }`. Only its owner archives it (a
   teammate is refused 403 `not_owner`), a document in the Trash is refused 409 `trashed` (pointing at
   `restore_document`), and one already archived answers as it is. Each refusal is a model-correctable error.

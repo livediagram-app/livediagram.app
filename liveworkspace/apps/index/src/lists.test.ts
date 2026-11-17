@@ -48,7 +48,7 @@ describe('views and filters', () => {
     expect((await call('/items?folder=missing', { auth: ada.auth })).status).toBe(404);
   });
 
-  it('lists recent by last opened, favourites and the Trash', async () => {
+  it('lists recent by last opened and the Trash', async () => {
     const ada = await person('user_a');
     const a = await makeItem(ada.auth, { title: 'A' });
     const b = await makeItem(ada.auth, { title: 'B' });
@@ -59,8 +59,7 @@ describe('views and filters', () => {
     open.run('user_a', a.id, 3000);
     open.run('user_a', b.id, 2000);
     expect(titles(await list(ada.auth, 'view=recent'))).toEqual(['A', 'B']);
-    await call(`/favourites/${c.id}`, { method: 'PUT', auth: ada.auth });
-    expect(titles(await list(ada.auth, 'view=favourites'))).toEqual(['C']);
+    expect(c.id).toBeTruthy();
     await call(`/items/${a.id}`, { method: 'DELETE', auth: ada.auth });
     expect(titles(await list(ada.auth, 'view=trash'))).toEqual(['A']);
     // Trashed items leave every other view.
@@ -442,7 +441,6 @@ describe('query plans', () => {
     ['archived', { view: 'archived', limit: 50 }, 'items_live'],
     ['archived, one app', { view: 'archived', app: 'livedesign', limit: 50 }, 'items_live_app'],
     ['recent', { view: 'recent', limit: 50 }, 'opens_recent'],
-    ['favourites', { view: 'favourites', limit: 50 }, 'favourites_person_created'],
     ['shared', { view: 'shared', limit: 50 }, 'sqlite_autoindex_shared_with_1'],
     ['search words', { view: 'all', words: ['road', 'map'], limit: 50 }, 'items_live'],
     ['the search view', { view: 'search', limit: 50 }, 'items_live'],
@@ -591,17 +589,13 @@ describe('at 2,000 items', () => {
         1_000_000 + i,
       );
     }
-    // Every one of Ada's opened, a tenth starred.
+    // Every one of Ada's opened.
     const open = db.prepare(
       'INSERT INTO opens (person_id, item_id, last_opened_at) VALUES (?, ?, ?)',
-    );
-    const fav = db.prepare(
-      'INSERT INTO favourites (person_id, item_id, created_at) VALUES (?, ?, ?)',
     );
     for (let i = 0; i < 2000; i++) {
       const id = `item-${String(i).padStart(6, '0')}`;
       open.run('user_a', id, 2_000_000 + i);
-      if (i % 10 === 0) fav.run('user_a', id, i);
     }
     db.exec('COMMIT');
 
@@ -659,21 +653,16 @@ describe('at 2,000 items', () => {
       'mode matching nothing, every row read',
       async () => (await list(ada.auth, 'modes=nowhere&limit=200')).items.length,
     );
-    const favs = await time(
-      'favourites',
-      async () => (await list(ada.auth, 'view=favourites&limit=200')).items.length,
-    );
 
     // Generous for a loaded CI machine; locally each is a few milliseconds.
     expect(firstPage).toBeLessThan(cpuBudgetMs(150));
     expect(walk).toBeLessThan(cpuBudgetMs(1500));
-    for (const ms of [recent, oneApp, search, searchView, deepest, mode, modeNone, favs])
+    for (const ms of [recent, oneApp, search, searchView, deepest, mode, modeNone])
       expect(ms).toBeLessThan(cpuBudgetMs(250));
 
     const first = await list(ada.auth, 'limit=200');
-    expect(first.items[0]).toMatchObject({ id: 'item-001999', favourite: false });
+    expect(first.items[0]).toMatchObject({ id: 'item-001999' });
     expect(first.items.find((i) => i.id === 'item-001990')).toMatchObject({
-      favourite: true,
       lastOpenedAt: 2_001_990,
     });
   });

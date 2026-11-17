@@ -1,4 +1,4 @@
-// Folders, favourites and placement defaults over HTTP.
+// Folders, hiding from Recent and placement defaults over HTTP.
 import type { Folder, Item } from '@liveworkspace/index-client';
 import { describe, expect, it } from 'vitest';
 import { body, call, h, makeItem, person, useHarness } from './test-support';
@@ -150,53 +150,42 @@ describe('tags', () => {
   });
 });
 
-describe('favourites', () => {
-  it('stars, lists and unstars, per person', async () => {
+describe('Favourites are gone', () => {
+  // Favourites were removed (one-explorer-contracts.md "Folders and defaults"): no route, no flag on an item, and
+  // the stored table is left alone.
+  it('answers 404 on every favourites route and sends no favourite flag', async () => {
     const ada = await person('user_a');
     const one = await makeItem(ada.auth);
-    const two = await makeItem(ada.auth);
-    for (const id of [one.id, two.id]) {
-      expect((await call(`/favourites/${id}`, { method: 'PUT', auth: ada.auth })).status).toBe(204);
-    }
-    expect((await call('/favourites/missing', { method: 'PUT', auth: ada.auth })).status).toBe(404);
-    const page = await body<{ favourites: { itemId: string }[]; nextCursor: string }>(
-      await call('/favourites?limit=1', { auth: ada.auth }),
+    expect((await call('/favourites', { auth: ada.auth })).status).toBe(404);
+    expect((await call(`/favourites/${one.id}`, { method: 'PUT', auth: ada.auth })).status).toBe(
+      404,
     );
-    expect(page.favourites).toHaveLength(1);
-    const rest = await body<{ favourites: { itemId: string }[]; nextCursor: string | null }>(
-      await call(`/favourites?limit=1&cursor=${page.nextCursor}`, { auth: ada.auth }),
+    expect((await call(`/favourites/${one.id}`, { method: 'DELETE', auth: ada.auth })).status).toBe(
+      404,
     );
-    expect(rest.favourites).toHaveLength(1);
-    expect(rest.nextCursor).toBeNull();
+    expect(h.db.sql.prepare('SELECT COUNT(*) AS n FROM favourites').get()).toEqual({ n: 0 });
     const item = await body<{ item: Item }>(await call(`/items/${one.id}`, { auth: ada.auth }));
-    expect(item.item.favourite).toBe(true);
-    await call(`/favourites/${one.id}`, { method: 'DELETE', auth: ada.auth });
-    const after = await body<{ item: Item }>(await call(`/items/${one.id}`, { auth: ada.auth }));
-    expect(after.item.favourite).toBe(false);
-    expect((await call('/favourites?cursor=garbage!', { auth: ada.auth })).status).toBe(400);
+    expect(item.item).not.toHaveProperty('favourite');
+    expect((await call('/items?view=favourites', { auth: ada.auth })).status).toBe(400);
   });
+});
 
-  // Starring or hiding someone else's item answered 204 where a missing one was 404, so either told a stranger that
-  // an id was real. Both are 404 now, and nothing is written for an item out of reach.
-  it('answers an item out of reach exactly as a missing one, starring or hiding it', async () => {
+describe('hiding from Recent', () => {
+  // Hiding someone else's item answered 204 where a missing one was 404, so it told a stranger that an id was
+  // real. Both are 404 now, and nothing is written for an item out of reach.
+  it('answers an item out of reach exactly as a missing one', async () => {
     const ada = await person('user_a');
     const eve = await person('user_e');
     const bob = await person('user_b', { teams: [{ id: 'team1' }] });
     const secret = await makeItem(ada.auth);
     const team = await makeItem(bob.auth, { teamId: 'team1' });
-    for (const path of ['/favourites', '/recent-hidden']) {
-      const missing = await call(`${path}/missing`, { method: 'PUT', auth: eve.auth });
-      const forbidden = await call(`${path}/${secret.id}`, { method: 'PUT', auth: eve.auth });
-      expect(forbidden.status).toBe(missing.status);
-      expect(forbidden.status).toBe(404);
-      expect(await body(forbidden)).toEqual(await body(missing));
-    }
-    expect(h.db.sql.prepare('SELECT COUNT(*) AS n FROM favourites').get()).toEqual({ n: 0 });
+    const missing = await call('/recent-hidden/missing', { method: 'PUT', auth: eve.auth });
+    const forbidden = await call(`/recent-hidden/${secret.id}`, { method: 'PUT', auth: eve.auth });
+    expect(forbidden.status).toBe(missing.status);
+    expect(forbidden.status).toBe(404);
+    expect(await body(forbidden)).toEqual(await body(missing));
     expect(h.db.sql.prepare('SELECT COUNT(*) AS n FROM opens').get()).toEqual({ n: 0 });
-    // Reached through a team, or a link they opened, it stars and hides as before.
-    expect((await call(`/favourites/${team.id}`, { method: 'PUT', auth: bob.auth })).status).toBe(
-      204,
-    );
+    // Reached through a team, or a link they opened, it hides as before.
     expect(
       (await call(`/recent-hidden/${team.id}`, { method: 'PUT', auth: bob.auth })).status,
     ).toBe(204);
@@ -207,13 +196,13 @@ describe('favourites', () => {
     });
     const { link } = await body<{ link: { code: string } }>(made);
     await call(`/share/${link.code}`, { auth: eve.auth });
-    expect((await call(`/favourites/${secret.id}`, { method: 'PUT', auth: eve.auth })).status).toBe(
-      204,
-    );
-    // Starring twice is no different.
-    expect((await call(`/favourites/${secret.id}`, { method: 'PUT', auth: eve.auth })).status).toBe(
-      204,
-    );
+    expect(
+      (await call(`/recent-hidden/${secret.id}`, { method: 'PUT', auth: eve.auth })).status,
+    ).toBe(204);
+    // Hiding twice is no different.
+    expect(
+      (await call(`/recent-hidden/${secret.id}`, { method: 'PUT', auth: eve.auth })).status,
+    ).toBe(204);
   });
 });
 

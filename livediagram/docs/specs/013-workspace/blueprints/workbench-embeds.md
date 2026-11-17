@@ -417,14 +417,14 @@ is a person's editor and every route re-gates it with the owner's identity at th
 
 `WORKSPACE_ROUTES` (`:p` any one segment, `**` any rest, including none):
 
-| Method                 | Path under `/api`                                                                                                                                           |
-| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| GET                    | `capabilities`, `openapi.json`, `templates/**`, `icons`, `schema/**`, `preferences`, `participants/:owner` (the owner only)                                 |
-| GET                    | `share/**` (the person opening a link shared with them)                                                                                                     |
-| GET, POST, PUT, DELETE | `documents/**` but `documents/:p/community/**` and `documents/:p/tabs/:p/presence` (`WORKSPACE_CLOSED`)                                                     |
-| GET, POST, PUT, DELETE | `folders/**`, `shared/**`, `favourites/**`, `home/**`, `timeline/**`, `activity/**`, `trash/**`, `placement-defaults/**`, `images/**`, `shape-libraries/**` |
-| GET                    | `teams`, `teams/:p`, `teams/:p/library`, `teams/:p/members`                                                                                                 |
-| DELETE                 | `workbench/sessions/current`                                                                                                                                |
+| Method                 | Path under `/api`                                                                                                                          |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| GET                    | `capabilities`, `openapi.json`, `templates/**`, `icons`, `schema/**`, `preferences`, `participants/:owner` (the owner only)                |
+| GET                    | `share/**` (the person opening a link shared with them)                                                                                    |
+| GET, POST, PUT, DELETE | `documents/**` but `documents/:p/community/**` and `documents/:p/tabs/:p/presence` (`WORKSPACE_CLOSED`)                                    |
+| GET, POST, PUT, DELETE | `folders/**`, `shared/**`, `home/**`, `timeline/**`, `activity/**`, `trash/**`, `placement-defaults/**`, `images/**`, `shape-libraries/**` |
+| GET                    | `teams`, `teams/:p`, `teams/:p/library`, `teams/:p/members`                                                                                |
+| DELETE                 | `workbench/sessions/current`                                                                                                               |
 
 The Explorer's lists are the index's, which the frame reaches through `/api/index` with the person's identity
 ([one-explorer.md](../../../../../liveworkspace/docs/specs/004-index/one-explorer.md)); the folder, team and trash shapes above stay

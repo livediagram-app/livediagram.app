@@ -9,7 +9,6 @@ export type OfflineRecordBase<Tab> = {
   id: string;
   tabs: Tab[];
   savedAt: number;
-  favourite?: boolean;
   trashedAt?: number;
 };
 
@@ -219,19 +218,6 @@ export function createOfflineStore<
     return config.toItem(rec);
   }
 
-  // Star / un-star (docs/specs/013-workspace/favourites.md). The savedAt stamp is left alone on purpose: a star is
-  // a per-user bookmark, not an edit, and bumping it would reorder Recent on a click that changed nothing.
-  async function setFavourite(id: string, favourite: boolean): Promise<void> {
-    await serializeOfflineWrite(() =>
-      offlineUpdateRecord(id, (rec) => (rec ? { ...rec, favourite } : undefined)),
-    );
-  }
-
-  async function listFavouriteIds(): Promise<string[]> {
-    const recs = await backend().all();
-    return recs.filter((r) => r.favourite && r.trashedAt === undefined).map((r) => r.id);
-  }
-
   // No create-on-missing: a save must never resurrect a deleted item. A pending debounced autosave can land AFTER
   // a sync-to-cloud deleted the record; recreating it here would shadow the freshly-synced cloud copy behind a
   // one-tab offline ghost. Records are only ever created by createRecord / offlinePutRecord.
@@ -288,8 +274,6 @@ export function createOfflineStore<
     loadItem,
     loadTab,
     createRecord,
-    setFavourite,
-    listFavouriteIds,
     deleteTab,
     deleteItem,
     offlineDeleteIfUnchanged,

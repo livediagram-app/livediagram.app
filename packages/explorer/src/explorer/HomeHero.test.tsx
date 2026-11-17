@@ -179,7 +179,6 @@ describe('Home’s hero', () => {
       updatedAt: n,
       lastOpenedAt: n,
       trashedAt,
-      favourite: false,
     });
     renderHome(index, {
       thisBrowser: {

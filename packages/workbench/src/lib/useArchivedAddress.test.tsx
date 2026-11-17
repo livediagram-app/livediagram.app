@@ -17,7 +17,6 @@ const item = (id: string, archivedAt: number | null) => ({
   updatedAt: 1,
   lastOpenedAt: null,
   trashedAt: null,
-  favourite: false,
   archivedAt,
 });
 

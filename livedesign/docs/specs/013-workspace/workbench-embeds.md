@@ -132,9 +132,9 @@ The bullets above are the design scope. A **workspace** session is confined diff
 
 - **Act as the person, in their workspace.** It reaches what the person reaches in the Explorer: their library and
   folders, the designs shared with them, their teams' shared designs as a member, the Inbox, the Timeline,
-  Favourites, Recent, Search, the Trash, their image gallery and themes; and every design in
+  Recent, Search, the Trash, their image gallery and themes; and every design in
   them, opened in the frame as the design scope opens one.
-- **Everything the Explorer does.** Create, rename, move, copy, favourite, share (links, roles, password, expiry),
+- **Everything the Explorer does.** Create, rename, move, copy, share (links, roles, password, expiry),
   trash, restore, and create, rename, move and delete folders, at the person's own access to each.
 - **Never the account.** Refused `403 workbench_confined`, as in the design scope: the profile, preferences'
   writes, the guest migration, API tokens and pairings, team administration (invites, members, roles, plans,

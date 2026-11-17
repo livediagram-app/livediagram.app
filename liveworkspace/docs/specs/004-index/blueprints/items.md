@@ -1,7 +1,7 @@
 # Items, folders and lists: blueprint
 
 Derived from [one-explorer-contracts.md "Items"](../one-explorer-contracts.md#items) and
-["Folders, favourites, defaults"](../one-explorer-contracts.md#folders-favourites-defaults). The spec decides; this
+["Folders and defaults"](../one-explorer-contracts.md#folders-and-defaults). The spec decides; this
 file only adds engineering precision, read from the code. The Worker as a whole (callers, access, grants) is in
 [index.md](index.md); defaults are cited as `IDXn` from [DEFAULTS.md](DEFAULTS.md). Paths are relative to the
 repository root.
@@ -18,27 +18,27 @@ Scope, by file:
 | `liveworkspace/apps/index/src/space-previews.ts`                | `GET /spaces/previews`                                                                                                                                                                                          |
 | `liveworkspace/apps/index/migrations/0016_items_new.sql`        | `items_new`, `items_new_app` (Home's New)                                                                                                                                                                       |
 | `liveworkspace/apps/index/src/lookup.ts`                        | `POST /items/lookup`                                                                                                                                                                                            |
-| `liveworkspace/apps/index/src/personal.ts`                      | Favourites, Hide from Recent (placement defaults: [default-folders.md](default-folders.md))                                                                                                                     |
+| `liveworkspace/apps/index/src/personal.ts`                      | Hide from Recent (placement defaults: [default-folders.md](default-folders.md))                                                                                                                                 |
 | `liveworkspace/apps/index/src/visitors.ts`                      | Opened and Copied by a Visitor                                                                                                                                                                                  |
 | `liveworkspace/apps/index/src/notices.ts`                       | `tellApp`, the first-visit check, `GET /app/people/:id/count`                                                                                                                                                   |
-| `packages/index-client/src/client.ts`                           | `listItems`, `createItem`, `getItem`, `updateItem`, `copyItem`, `recordOpen`, `grant`, folder and favourite calls                                                                                               |
+| `packages/index-client/src/client.ts`                           | `listItems`, `createItem`, `getItem`, `updateItem`, `copyItem`, `recordOpen`, `grant`, folder and Hide from Recent calls                                                                                        |
 | `liveworkspace/apps/index/migrations/0009_items_livehuddle.sql` | The items rebuild that let in livehuddle's Spaces ([Rebuilding items](#rebuilding-items))                                                                                                                       |
 | `liveworkspace/apps/index/scripts/items-rebuild-check.ts`       | `snapshot`, `compare`, `foreignKeyProblems`, `itemsDescendants`: what a rebuild must leave unchanged                                                                                                            |
 | `liveworkspace/apps/index/scripts/items-rebuild-counts.ts`      | The rehearsal CLI: `rehearse <export.sql>`, `snapshot`, `compare`                                                                                                                                               |
 
 ## Domain and naming
 
-| Term    | Identifier                                                                                       | Meaning                                                                 |
-| ------- | ------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------- |
-| View    | `ITEM_VIEWS`: `all`, `recent`, `favourites`, `shared`, `trash`, `archived`, `unsorted`, `search` | Which list                                                              |
-| Filters | `ListFilters { apps, words, source, since, owner, intent, modes, space }`                        | The Explorer's lens; values of one combine with or                      |
-| Source  | `ITEM_SOURCES`: `person`, `ai`, `import`, `template`                                             | How it was made                                                         |
-| Intent  | `<mode>:<kind>[:<family>]`, ≤ 100 chars                                                          | What it was made as; its last word is the `intent` filter               |
-| Use day | `use_days (person, item, day, opens)`                                                            | A UTC day the person opened or edited it, and how many opens: Most Used |
-| Open    | `opens (person, item, last_opened_at, hidden)`                                                   | Recent; `hidden = 1` is Hide from Recent                                |
+| Term    | Identifier                                                                         | Meaning                                                                 |
+| ------- | ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| View    | `ITEM_VIEWS`: `all`, `recent`, `shared`, `trash`, `archived`, `unsorted`, `search` | Which list                                                              |
+| Filters | `ListFilters { apps, words, source, since, owner, intent, modes, space }`          | The Explorer's lens; values of one combine with or                      |
+| Source  | `ITEM_SOURCES`: `person`, `ai`, `import`, `template`                               | How it was made                                                         |
+| Intent  | `<mode>:<kind>[:<family>]`, ≤ 100 chars                                            | What it was made as; its last word is the `intent` filter               |
+| Use day | `use_days (person, item, day, opens)`                                              | A UTC day the person opened or edited it, and how many opens: Most Used |
+| Open    | `opens (person, item, last_opened_at, hidden)`                                     | Recent; `hidden = 1` is Hide from Recent                                |
 
 `Item` on the wire: `{ id, app, kind, title, ownerId, teamId, folderId, source, intent, createdAt, updatedAt,
-trashedAt, trashReason, archivedAt, summary, access, favourite, lastOpenedAt, hiddenFromRecent, hasLinks, sharedVia }`.
+trashedAt, trashReason, archivedAt, summary, access, lastOpenedAt, hiddenFromRecent, hasLinks, sharedVia }`.
 `Folder`: `{ id, name, parentId, teamId, ownerId, createdAt, updatedAt }`.
 
 ## Behaviour and state
@@ -87,16 +87,15 @@ item already has (an app echoing a name stored before the cap) leaves it as it i
 with a folder only, the filters, `used` 1 to 8 on `recent`, `mine` 1 to 200, `any=1` (never the mirror). The mirror's
 lists are its personal scope only.
 
-| View         | From                                                                                                                          | Where                                                         | Sort                       |
-| ------------ | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- | -------------------------- |
-| `all`        | `items i`                                                                                                                     | the scopes (or `folder_id =` / the subtree with `deep`), live | `updated_at DESC, id DESC` |
-| `unsorted`   | `items i`                                                                                                                     | the scopes, live, `folder_id IS NULL`                         | the same                   |
-| `trash`      | `items i`                                                                                                                     | the scopes and `a:<me>`, trashed                              | the same                   |
-| `archived`   | `items i`                                                                                                                     | `a:<me>`, live ([archive.md](archive.md))                     | the same                   |
-| `search`     | the scopes' (and `a:<me>`'s) newest live items `UNION ALL` live links' items outside them, each taken in order up to the page | live                                                          | the same                   |
-| `recent`     | `opens o JOIN items i`                                                                                                        | the person, `hidden = 0`, live, reachable                     | `last_opened_at DESC`      |
-| `favourites` | `favourites f JOIN items i`                                                                                                   | the person, live, reachable                                   | `updated_at DESC`          |
-| `shared`     | `shared_with` and live `share_links`                                                                                          | the person, live, not in their own scopes                     | `updated_at DESC`          |
+| View       | From                                                                                                                          | Where                                                         | Sort                       |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- | -------------------------- |
+| `all`      | `items i`                                                                                                                     | the scopes (or `folder_id =` / the subtree with `deep`), live | `updated_at DESC, id DESC` |
+| `unsorted` | `items i`                                                                                                                     | the scopes, live, `folder_id IS NULL`                         | the same                   |
+| `trash`    | `items i`                                                                                                                     | the scopes and `a:<me>`, trashed                              | the same                   |
+| `archived` | `items i`                                                                                                                     | `a:<me>`, live ([archive.md](archive.md))                     | the same                   |
+| `search`   | the scopes' (and `a:<me>`'s) newest live items `UNION ALL` live links' items outside them, each taken in order up to the page | live                                                          | the same                   |
+| `recent`   | `opens o JOIN items i`                                                                                                        | the person, `hidden = 0`, live, reachable                     | `last_opened_at DESC`      |
+| `shared`   | `shared_with` and live `share_links`                                                                                          | the person, live, not in their own scopes                     | `updated_at DESC`          |
 
 Filters (`filterClauses`): each search word (≤ 16 words, ≤ 200 chars) in the title or the name of one of the
 person's folders (`instr(lower(…), lower(word)) > 0`, case-blind for ASCII as `LIKE` was; never a bound `LIKE`,
@@ -145,13 +144,12 @@ each once; ids missing or out of reach are left out.
 
 Every folder route needs a folder the person can file into (their own scope or a joined team's), else `404`.
 
-### Favourites and Hide from Recent
+### Hide from Recent
 
-- `GET /favourites` pages `{ favourites: [{ itemId, createdAt }], nextCursor }`, newest first.
-- `PUT /favourites/:itemId`: the item must be reachable (`404` otherwise, as missing); `INSERT OR IGNORE` and a
-  `favourited` event on the person's own scope only, written only when the row is new and the item reachable.
-- `DELETE /favourites/:itemId`: `204`.
-- `PUT /recent-hidden/:itemId`: `opens` row with `hidden = 1` (`last_opened_at 0` if never opened).
+- `PUT /recent-hidden/:itemId`: the item must be reachable (`404` otherwise, as missing); `opens` row with
+  `hidden = 1` (`last_opened_at 0` if never opened).
+- Favourites are gone (one-explorer.md "Favourites removed"): no `/favourites` route (`404`), no
+  `view=favourites` (`400`), no `favourite` on an item.
 - `DELETE /recent-hidden/:itemId`: removes a never-opened row, else clears `hidden`.
 
 ## Data and persistence
@@ -160,7 +158,7 @@ Every folder route needs a folder the person can file into (their own scope or a
 | ------------ | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | ---------------------------------- |
 | `items`      | `id`                        | `items_live (scope, updated_at DESC, id DESC) WHERE live`; `items_live_app (scope, app, …) WHERE live`; `items_new (scope, created_at DESC, id DESC) WHERE live`; `items_new_app (scope, app, created_at DESC, id DESC) WHERE live`; `items_trash … WHERE trashed`; `items_unsorted … WHERE live AND folder_id IS NULL`; `items_folder (folder_id, …) WHERE folder_id IS NOT NULL`; `items_trashed_at`; `items_empty (updated_at) WHERE live AND empty`; `items_owner` | create, update, delete, restore, copy, summary push, merge, purges  | every list, access, Inbox, History |
 | `folders`    | `id`                        | `folders_scope (scope, created_at, id)`; `folders_parent`; `folders_owner`                                                                                                                                                                                                                                                                                                                                                                                             | folder routes, merge, purge                                         | lists, search, defaults, previews  |
-| `favourites` | `(person_id, item_id)`      | `favourites_person_created (person_id, created_at DESC, item_id DESC)`; `favourites_item`                                                                                                                                                                                                                                                                                                                                                                              | favourites, merge, purge                                            | `favourites` view, `decorate`      |
+| `favourites` | `(person_id, item_id)`      | `favourites_person_created (person_id, created_at DESC, item_id DESC)`; `favourites_item`                                                                                                                                                                                                                                                                                                                                                                              | account close only (Favourites removed)                             | nothing                            |
 | `opens`      | `(person_id, item_id)`      | `opens_recent (person_id, last_opened_at DESC, item_id DESC) WHERE hidden = 0`; `opens_item`                                                                                                                                                                                                                                                                                                                                                                           | open, Hide from Recent, merge                                       | `recent`, Most Used, `decorate`    |
 | `use_days`   | `(person_id, item_id, day)` | `use_days_person_day (person_id, day)`; `use_days_item`                                                                                                                                                                                                                                                                                                                                                                                                                | open (`opens + 1`), `edited` reports (the day only), merge (summed) | Most Used                          |
 
@@ -234,7 +232,7 @@ A folder preview is two statements for up to 60 folders; a lookup is one read an
 | `liveworkspace/apps/index/src/home-reads.test.ts` (5)            | Home's reads beside the first page, and their bound                                                                                 |
 | `liveworkspace/apps/index/src/newest.test.ts` (5)                | Home's New: newest made first, the app filter, team items, reach (left team, Trash, Archived, links), the bound and its plan        |
 | `liveworkspace/apps/index/src/most-used.test.ts` (8)             | recording use days; Most Used beside Recent; the bound; Hide from Recent                                                            |
-| `liveworkspace/apps/index/src/personal.test.ts` (9)              | folders, tags, favourites, placement defaults                                                                                       |
+| `liveworkspace/apps/index/src/personal.test.ts` (9)              | folders, tags, Hide from Recent, placement defaults                                                                                 |
 | `liveworkspace/apps/index/src/folder-previews.test.ts` (4)       | `GET /folders/previews`                                                                                                             |
 | `liveworkspace/apps/index/src/space-previews.test.ts` (4)        | `GET /spaces/previews`: per space, the app filter, the query plan, 51 spaces of 1,200 items within budget                           |
 | `liveworkspace/apps/index/src/lookup.test.ts` (6)                | `POST /items/lookup`: the access rule per item, its bound, one decoration                                                           |

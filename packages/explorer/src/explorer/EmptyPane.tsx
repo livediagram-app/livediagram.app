@@ -14,7 +14,6 @@ import {
   MyWorkIcon,
   SearchIcon,
   ShareIcon,
-  StarIcon,
   TeamIcon,
   TrashIcon,
   ArchiveIcon,
@@ -44,13 +43,6 @@ export function emptyCopy(
         title: `No recent ${w.lowerMany}`,
         description: `${w.many} show up here as you open them, newest first. Make your first one.`,
         cta: true,
-      };
-    case 'favourites':
-      return {
-        icon: <StarIcon />,
-        title: 'No favourites yet',
-        description: `Mark a ${w.lowerOne} as a favourite to show it here.`,
-        cta: false,
       };
     case 'shared':
       return {

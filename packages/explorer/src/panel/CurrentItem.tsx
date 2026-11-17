@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import type { Item } from '@liveworkspace/index-client';
 import { useExplorer } from '../explorer/context';
 import { VisibilityBadge } from '../explorer/badges';
@@ -15,10 +15,19 @@ import { relativeSince, useNow } from '../time';
 // ---- The current item's card ----------------------------------------------------------------------------
 
 // The open item as the index has it: its picture, visibility badge and the Explorer's item menu, renamed through
-// the index (the editor's title follows, onItemRenamed).
-export function CurrentItem({ item: base, compact = false }: { item: Item; compact?: boolean }) {
+// the index (the editor's title follows, onItemRenamed). Its name is the editor's own title when given (a header,
+// collaborator's or agent's rename since the read), under the overlay's while a rename from the panel is in flight.
+export function CurrentItem({
+  item: read,
+  title,
+  compact = false,
+}: {
+  item: Item;
+  title?: string | null;
+  compact?: boolean;
+}) {
   const { overlay, renderThumbnail, actions, openItem, renamingId, setRenamingId } = useExplorer();
-  const item = overlay.apply(base);
+  const item = overlay.apply(title && title !== read.title ? { ...read, title } : read);
   // Its pencil, or Rename on its menu (which names it for renaming, as every row's does).
   const [pencil, setPencil] = useState(false);
   const editing = pencil || renamingId === item.id;
@@ -53,10 +62,13 @@ export function CurrentItem({ item: base, compact = false }: { item: Item; compa
 // it is the editor's own rename (`onRenameCurrent`), which writes this browser's store; nothing goes to the index.
 export function LocalCurrentItem({
   item,
+  title,
   onRename,
   compact = false,
 }: {
   item: ThisBrowserItem;
+  // The editor's own title, ahead of the list, which hears it only once the store has saved it.
+  title?: string | null;
   onRename?: (title: string) => void;
   compact?: boolean;
 }) {
@@ -67,7 +79,7 @@ export function LocalCurrentItem({
     <CurrentCard
       compact={compact}
       local
-      title={item.title}
+      title={title || item.title}
       updatedAt={item.updatedAt}
       canRename={Boolean(onRename)}
       editing={editing}
@@ -82,6 +94,37 @@ export function LocalCurrentItem({
       ) : null}
     </CurrentCard>
   );
+}
+
+/**
+ * The open item as This Browser holds it, for the Current card: its row in This Browser's list, or, while the editor
+ * says it is local and the list has not heard of it yet (a fresh /new item), one drawn from the editor's title and
+ * the time the panel first saw it. Null for no id, and for an item neither holds that the editor does not call local.
+ */
+export function useLocalCurrent(
+  id: string | null,
+  live: readonly ThisBrowserItem[],
+  offline: boolean,
+  title: string | null,
+): ThisBrowserItem | null {
+  const listed = id ? (live.find((i) => i.id === id) ?? null) : null;
+  const [seenAt] = useState(() => Date.now());
+  const pending = Boolean(id && offline && !listed);
+  const stand = useMemo<ThisBrowserItem | null>(
+    () =>
+      pending && id
+        ? {
+            id,
+            title: title ?? '',
+            createdAt: seenAt,
+            updatedAt: seenAt,
+            lastOpenedAt: null,
+            trashedAt: null,
+          }
+        : null,
+    [pending, id, title, seenAt],
+  );
+  return listed ?? stand;
 }
 
 // The card both draw: the picture, the label "Current <Kind>" with the place's badge, the name (click to rename, for
