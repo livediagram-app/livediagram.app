@@ -56,6 +56,11 @@ header; they are not in the palette.
   - **Share roles**: everyone who sees the widgets sees More and opens it, a Viewer too, and reads the pressed values
     there; what each widget lets a person do inside it is what it lets them do in the row (a Viewer presses nothing,
     only an Editor sees ×).
+  - <a id="press-keeps-the-row"></a>**A press never reshuffles the row** (Work Tracker 1087): with the same room and
+    the same widgets, the row keeps which widgets it holds and how the Filter sits as long as they still fit, More
+    marking a press it holds with its dot when there is no room for the name. A press (a value pressed or released, a word typed in the Filter, a count changing) moves
+    a widget into More, or turns the Filter compact, only when the row would otherwise overflow, and releasing it
+    brings nothing back until the room changes (the window resized, a panel opened, widgets added or taken off).
   - Nothing a widget opens moves the row: a field widget's **+n** legend opens and closes with the row as it was.
 - Widgets are drawn for the header: the same height (28 px), a quiet border, the board's own theme colours,
   each led by a picture of what it measures (its glyph, a ring, a split bar, column bars or pips).
