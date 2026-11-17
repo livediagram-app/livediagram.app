@@ -105,7 +105,6 @@ export const BAND_RIGHT_MIN_PX = 280;
 // margin a width near the threshold flips the band every frame.
 export const BAND_HYSTERESIS_PX = 16;
 // Below this canvas width the cover's padding is a phone's (p-2) and the strip holds the menu: no band.
-const BAND_CANVAS_MIN_PX = 640;
 // Experiment (no header bar): on a desktop window the band holds down to this canvas width (a Contents panel or a
 // narrow window can take the canvas under 640 px), its card type chips gone first, so the logo, menu and top-right
 // corner card stay on the element's header. A phone's window (under PHONE_VIEW_MAX_PX) keeps its phone row.
@@ -161,8 +160,6 @@ export type PhoneRow = { height: number; left: number };
 
 // The cover's padding around the element on a phone (CanvasCover's p-2).
 const PHONE_COVER_PAD_PX = 8;
-// The least room a phone's header needs after the menu: a short title and the header's controls (Restore, the cog).
-export const PHONE_ROW_MIN_PX = 160;
 
 // The phone's shared row for `canvas` with the menu where it is, given the element's side insets; null on a wider
 // canvas (a band's), with no menu, a menu that is not in the top row or not inside the element, or too little room
@@ -171,14 +168,16 @@ export function phoneRow(
   canvas: Box,
   insets: Pick<LayerInsets, 'left' | 'right'>,
   menu: Box | null,
+  pad = PHONE_COVER_PAD_PX,
 ): PhoneRow | null {
-  if (!menu || canvas.right - canvas.left >= BAND_CANVAS_MIN_PX) return null;
+  // Experiment (no header bar): at any width, so the menu and the top-right corner card never stand above the element
+  // on a row of their own: the element's header shares their row, its content between them (BAND_HEADER_END).
+  if (!menu) return null;
   if (menu.top > canvas.top + (canvas.bottom - canvas.top) / 2) return null;
-  const left = canvas.left + insets.left + PHONE_COVER_PAD_PX;
-  const right = canvas.right - insets.right - PHONE_COVER_PAD_PX;
-  const top = canvas.top + PHONE_COVER_PAD_PX;
-  if (menu.left < left || menu.bottom <= top) return null;
-  if (right - menu.right - BAND_GAP_PX < PHONE_ROW_MIN_PX) return null;
+  const left = canvas.left + insets.left + pad;
+  const top = canvas.top + pad;
+  // The menu may stand a little outside the element (a phone's 6 px gutter against the cover's 8 px).
+  if (menu.right <= left || menu.bottom <= top) return null;
   return {
     height: Math.round(menu.bottom - top),
     left: Math.round(menu.right - left + BAND_GAP_PX),
@@ -297,7 +296,14 @@ export function measureCanvasChrome(
       );
   memo.banded = band !== null;
   if (band) return { insets: { ...insets, top: 0 }, band };
-  const row = phoneRow(area, insets, menu);
+  const row = phoneRow(
+    area,
+    insets,
+    menu,
+    typeof window !== 'undefined' && window.innerWidth > PHONE_VIEW_MAX_PX
+      ? COVER_PAD_PX
+      : PHONE_COVER_PAD_PX,
+  );
   return row ? { insets: { ...insets, top: 0 }, band: null, row } : { insets, band: null };
 }
 
