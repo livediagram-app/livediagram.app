@@ -1081,6 +1081,17 @@ SVG `href` is escaped. The api counts a page picture as an image reference
   Guarded by `page-element-buckets.test.ts` (100 pages x 30 boxes and connectors bucketed inside
   25 ms of CPU) and `usePageThumbnails.test.ts` (one page redrawn per edit, none mid-drag).
 
+- Contents' rows (Work Tracker 945): each row of the shared `ContentsList` is a memoised `ContentsRow`
+  (`../packages/workbench/src/components/canvas/PageContentsList.tsx`), compared by the page's fields (`sameRow`,
+  so an editor's rows rebuilt equal are the same rows), whether it is here, its picture, whether it is dragged and
+  whether its menu is open. Its presses are the list's, by page id, each one function for the list's life
+  (`useStableCallbacks`) calling the newest state; it works out its own actions (`actionsFor`, not compared: what
+  it draws from them follows the role, which `reorderable` follows, and the lock, a row field). Measured in jsdom
+  (a 100-row filmstrip with an Editor's tools and a mark per row, components whose function ran in the commit,
+  bailed-out subtrees skipped): 2,101 before on a typing commit (a new row list, one name changed) and 2,101 on a
+  picture's settle (one picture new); 24 after on each, the list and the one row. Guarded by `PageContentsList.test.tsx`
+  "ContentsList rows" (one row drawn of 100 per typing commit and per settle, the new name and picture shown).
+
 - At most 100 pages; per-render layout is O(pages); `withArticlesTogether` is O(pages) and
   returns the same array when nothing moves.
 - `elementPageSurfaces` and `pageSnapBoxes` run per render: O(elements x pages) and

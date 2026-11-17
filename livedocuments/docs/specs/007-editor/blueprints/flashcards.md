@@ -259,7 +259,7 @@ does (no zones, no page breaks are new to it); adding or splitting a card is a p
       `NewVersionPrompt` is made once (`EditorNewVersionPrompt`), asking the store whether edits are unsaved.
   - Still rendering on a typing commit, each reading the document: the canvas (`CanvasView`, its pages and each
     `CanvasPageSheet`, `ArticleFlows`, the element layer) and the Contents list when it shows (its rows read the
-    writing; memoising its rows in the shared `ContentsList` is a follow-up).
+    writing), which renders only the row being written in (Work Tracker 945, below).
 - Measured (#828, the #728 probe on a production `next build --profile` export, This Browser, a 100-card stack of
   three blocks a card, 390x844 touch at 3x, CPU 4x, 60 keys 120 ms apart in bursts of ten, five runs each way
   alternating, 30 typing commits each way, on a shared machine at a load of 6 to 11). Components rendered per typing
@@ -274,6 +274,12 @@ does (no zones, no page breaks are new to it); adding or splitting a card is a p
   30 of 30 commits; 61 after, none of them in any. On a desktop with Contents docked: 1,109 before (its 100 rows,
   about 1,000 components, inside each commit), 61 after; the list now renders in a commit of its own from the writing
   store (about 1,017 components), and the thumbnails' settle render (about 1,006) follows as it did before.
+- Measured (Work Tracker 945, jsdom, the shared `ContentsList` alone: a 100-row filmstrip with an Editor's tools and
+  each card's speaking time, components whose function ran in the commit, bailed-out subtrees skipped). Its rows are
+  memoised (`ContentsRow`, compared by the row's fields), so a typing commit renders the list and the card being
+  written in: 2,101 components before, 24 after; a picture's settle the same, 2,101 before, 24 after. In the browser
+  that takes the list's own commit (about 1,017 components) and the settle render (about 1,006) to the list and one
+  row each. Guarded by `PageContentsList.test.tsx` "ContentsList rows".
 - The flip clones two nodes once per flip and animates `transform` and `opacity` only (compositor).
 
 ## Presentation and UX

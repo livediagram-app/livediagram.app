@@ -21,7 +21,7 @@ import {
   withStop,
   type StopKind,
 } from '@/lib/photo-editor/gradient-edit';
-import { photoTools } from '@/lib/photo-editor/tool-state';
+import { usePhotoTools } from '@/lib/photo-editor/tool-state';
 import { OptionSlider } from './photo-controls';
 
 const STANDARD = [standardGroup('strong', 'light', 'hex')];
@@ -83,7 +83,9 @@ export function GradientEditor({
   const [chosen, setChosen] = useState<Chosen | null>({ kind: 'colour', index: 0 });
   const [leaving, setLeaving] = useState<Chosen | null>(null);
   const track = useRef<HTMLDivElement>(null);
-  const { foreground, background } = photoTools.get();
+  // The presets follow the colours as they change while the editor is open (a subscription: a `photoTools.get()`
+  // here was kept at its first value by the React Compiler, Work Tracker 946).
+  const { foreground, background } = usePhotoTools();
   const tAt = (clientX: number) => {
     const r = track.current!.getBoundingClientRect();
     return Math.min(1, Math.max(0, (clientX - r.left) / Math.max(1, r.width)));

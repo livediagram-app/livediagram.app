@@ -73,6 +73,11 @@ is the whole of what the repo enforces.
     ([Tooltips, hover cards and popovers](../004-interface-design/tooltips-hover-cards-popovers.md));
   - `liveworkspace/no-raw-icon-svg`: no icon-sized raw `<svg>` outside the art allow-list
     ([Iconography](../004-interface-design/iconography.md));
+  - `liveworkspace/no-store-get-in-render`: no store `.get()` (a call with no arguments) while a component or a hook
+    renders, in its body or a `useMemo` it computes: the React Compiler keeps such a read at its first value, so the
+    reader never sees the store change (the Quick Style bar never showed, Work Tracker 946). It subscribes instead (the
+    store's own hook, `useSyncExternalStore`), reads in a handler or an effect, or its function or file says
+    `'use no memo'` with the reason. Tests render uncompiled and are exempt;
   - `liveworkspace/disable-reason`: every disable directive names its rule and says why (see
     [Disable directives](#disable-directives)).
 - **No `console.log` in shipped code** (`eslint/no-console`, `info`, `warn`, `error` and `debug` allowed): a trace

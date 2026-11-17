@@ -262,6 +262,19 @@ export function articleHoldsOf(flow: string): readonly ArticlePeerHold[] {
   return list;
 }
 
+const NO_BLOCKS: ReadonlySet<string> = new Set();
+
+/** The blocks collaborators hold in `flow`'s writing on tab `tabId` (a held cell's table), on any tab and from anyone
+ *  in the room: what an undo or redo leaves as their writers have it (article-hold-undo). */
+export function peerHeldBlocks(tabId: string, flow: string): ReadonlySet<string> {
+  let out: Set<string> | null = null;
+  for (const h of holds.values()) {
+    if (h.tabId !== tabId || h.flow !== flow) continue;
+    (out ??= new Set()).add(h.spot.blockId);
+  }
+  return out ?? NO_BLOCKS;
+}
+
 function subscribePeers(l: () => void): () => void {
   peerListeners.add(l);
   return () => {
