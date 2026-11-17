@@ -135,6 +135,14 @@ describe('the pages view', () => {
       'article f "Untitled" · page 1 · 1 blocks · 1 words · 1 min read\n  Hi',
     );
     expect(out.text).not.toContain('layouts ');
+    // An empty article has nothing to read, so its line carries no readability words.
+    const emptyArticle = {
+      ...articleOnly,
+      articles: { f: { blocks: [] } },
+    } as unknown as Tab;
+    expect(pagesOf(emptyArticle).text).toMatch(
+      /article f "Untitled" · page 1 · 1 blocks · 0 words$/m,
+    );
   });
 
   // docs/specs/007-editor/flashcards.md "Agents".

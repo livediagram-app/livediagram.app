@@ -28,6 +28,7 @@
     "./components/canvas/CollaborateClusterButton": "./src/components/canvas/CollaborateClusterButton.tsx",
     "./components/canvas/CommentBadgesContext": "./src/components/canvas/CommentBadgesContext.tsx",
     "./components/canvas/ContentsClusterSegment": "./src/components/canvas/ContentsClusterSegment.tsx",
+    "./components/canvas/ContentsSummary": "./src/components/canvas/ContentsSummary.tsx",
     "./components/canvas/ContentsVeil": "./src/components/canvas/ContentsVeil.tsx",
     "./components/canvas/EmptyPageInvite": "./src/components/canvas/EmptyPageInvite.tsx",
     "./components/canvas/EraserBrushRing": "./src/components/canvas/EraserBrushRing.tsx",
