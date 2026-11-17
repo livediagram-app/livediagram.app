@@ -90,6 +90,16 @@ describe('elementTileSections', () => {
 });
 
 describe('searchElementTiles', () => {
+  it('finds the C4 model tiles by c4, structurizr and container', () => {
+    const c4 = (query: string) =>
+      ids(searchElementTiles({ query, mode: 'diagram', hasImage: true }).here).filter((id) =>
+        id.startsWith('diagrams:c4-'),
+      );
+    expect(c4('c4')).toHaveLength(6);
+    expect(c4('structurizr')).toHaveLength(6);
+    expect(c4('container')).toContain('diagrams:c4-container');
+  });
+
   it('finds a tile by a synonym', () => {
     const { here } = searchElementTiles({ query: 'database', mode: 'diagram', hasImage: true });
     expect(ids(here)).toContain('shapes:cylinder');

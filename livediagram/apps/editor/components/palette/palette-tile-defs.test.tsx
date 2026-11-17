@@ -150,8 +150,9 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   'collab-navigate': 3,
   // The Event Storming notation (docs/specs/021-event-storming/event-storming.md): one tile per note kind.
   'event-storming': 8,
-  // Diagram's Build as two, listed by the Diagram layout (docs/specs/010-palette/build-category.md).
-  diagrams: 0,
+  // Diagram's Build as two, listed by the Diagram layout (docs/specs/010-palette/build-category.md); Diagrams owns
+  // only the C4 model's six.
+  diagrams: 6,
   layout: 0,
   // A Participant's category borrows the landing category's sticky and text tiles (participantTiles).
   participate: 0,

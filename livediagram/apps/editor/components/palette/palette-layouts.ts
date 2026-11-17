@@ -94,6 +94,14 @@ const DIAGRAM_DIAGRAMS = [
   'tools:sequence',
   'tools:table',
   'tools:entity',
+  // The C4 model's elements (docs/specs/010-palette/build-category.md "The C4 model"), a group of their own after
+  // the Entity's divider.
+  'diagrams:c4-person',
+  'diagrams:c4-system',
+  'diagrams:c4-container',
+  'diagrams:c4-component',
+  'diagrams:c4-external',
+  'diagrams:c4-database',
 ];
 
 // Image and Avatar; no embedded pages.

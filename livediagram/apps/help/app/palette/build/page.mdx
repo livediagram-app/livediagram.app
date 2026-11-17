@@ -6,7 +6,7 @@ import { BuildRows } from '@/components/illustrations/palette-build-focus';
 export const metadata = helpMetadata({
   title: 'Build Elements',
   description:
-    'The palette Build category holds what you lay a diagram out with: mind maps, org charts, flowcharts, sequence diagrams, lanes, frames, stacks, keys and tables.',
+    'The palette Build category holds what you lay a diagram out with: mind maps, flowcharts, sequence diagrams, C4 model elements, lanes, frames, keys and tables.',
   path: '/help/palette/build/',
 });
 
@@ -44,6 +44,12 @@ In Diagram mode four more tiles follow, for the nodes and marks a finished diagr
 - An **Entity** is a class or a table: a title over its fields, for a data model. See [Entities](/help/palette/entities/).
 
 Card and Badge each come in presets: press one and its presets open in a second panel beside Layout's.
+
+### The C4 Model
+
+Diagrams ends with a **C4 Model** group, for drawing software architecture the way [the C4 model](https://c4model.com) and Structurizr do: **Person**, **Software System**, **Container**, **Component**, **External System** and **Database**. Each is a card (the Database a cylinder) in C4's own colours, which it keeps under every theme, filled in with an example to type over: the name, the technology or type, and what it does. Put a level's containers or components in a [Boundary](/help/palette/boundaries/) in its C4 style, so its name and type sit in the bottom-left corner. Search the palette for "c4", "container" or "structurizr" to find them.
+
+The **C4 System Context**, **C4 Container Diagram** and **C4 Component Diagram** templates draw the three levels ready made. Add them to one document as separate tabs and they link up: the platform on the Context tab opens the Container tab, the Order service there opens the Component tab, and each boundary leads back out a level.
 
 Diagrams and Layout are in the palette in Diagram mode, and Layout in Workshop mode. In Draw mode the palette gives way to the dock, whose shape catalogue still offers the mind node, lane and frame.
 
