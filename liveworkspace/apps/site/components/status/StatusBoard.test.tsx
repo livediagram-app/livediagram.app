@@ -1,4 +1,6 @@
 // @vitest-environment jsdom
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -362,5 +364,81 @@ describe('formatAgo', () => {
     expect(ago(23 * 3_600_000)).toBe('23 h ago');
     expect(ago(25 * 3_600_000)).toBe('1 day ago');
     expect(ago(75 * 3_600_000)).toBe('3 days ago');
+  });
+});
+
+// liveworkspace/docs/specs/010-site/site.md "Status", "The page holds still": nothing on screen moves as the round's
+// answers and the history land (a layout shift of 0.22 at 1316x860 before this held).
+describe('the page holding still', () => {
+  it('keeps each service’s history lines in place while the history is read, and the real ones replace them', async () => {
+    let answer: (r: Response) => void = () => {};
+    const rest = withHistory(HISTORY);
+    await render(async (input, init) => {
+      const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+      if (url === '/api/status/history') return new Promise<Response>((r) => (answer = r));
+      return rest(input, init);
+    });
+    for (const id of ['liveworkspace:accounts', 'livediagram:api', 'livehuddle:api']) {
+      const pending = row(id)!.querySelector('[data-hourly="pending"]');
+      expect(pending, id).toBeTruthy();
+      expect(pending!.getAttribute('aria-hidden')).toBe('true');
+      // As tall as the answer will be: what the check reads when it answers.
+      expect(pending!.querySelector('[data-hold]')?.getAttribute('data-hold')).toBeTruthy();
+    }
+    const telemetry = row('liveworkspace:telemetry')!.querySelector('[data-hourly="pending"]')!;
+    expect(telemetry.querySelector('[data-hold]')!.getAttribute('data-hold')).toBe(
+      'Answers; database not checked',
+    );
+    await act(async () => {
+      answer(
+        new Response(JSON.stringify(HISTORY), { headers: { 'Content-Type': 'application/json' } }),
+      );
+      await new Promise((r) => setTimeout(r, 0));
+    });
+    expect(host!.querySelector('[data-hourly="pending"]')).toBeNull();
+    const api = row('livediagram:api')!.querySelector('[data-hourly]');
+    expect(api?.getAttribute('data-hourly')).toBe('up');
+  });
+
+  it('takes the history lines away only when there is no history', async () => {
+    await render(withHistory({ nope: true }));
+    expect(host!.querySelector('[data-hourly="pending"]')).toBeNull();
+    expect(host!.querySelector('[data-history="unavailable"]')).toBeTruthy();
+  });
+
+  it('never lets the title, its line, a jump link or a browser line shrink below the checking words', async () => {
+    await render(fetchWhere(/$^/));
+    const h1 = host!.querySelector('h1')!;
+    expect(h1.querySelector('[data-hold]')?.getAttribute('data-hold')).toBe(
+      'Checking every service…',
+    );
+    expect(h1.nextElementSibling!.querySelector('[data-hold]')?.getAttribute('data-hold')).toBe(
+      'The first answers are on their way.',
+    );
+    const holds = [...host!.querySelectorAll('nav[aria-label="Groups"] a [data-hold]')];
+    expect(holds).toHaveLength(6);
+    for (const hold of holds) expect(hold.getAttribute('data-hold')).toBe('Checking');
+    // A browser line whose answer is shorter than the label it showed while checking keeps the label's room.
+    const accounts = row('liveworkspace:accounts')!;
+    expect(accounts.textContent).toContain('HTTP 200');
+    expect(accounts.querySelector('[data-hold]')?.getAttribute('data-hold')).toBeTruthy();
+    // The held words are drawn by CSS, never as text the page or a screen reader reads.
+    expect(h1.textContent).toBe('All systems operational');
+  });
+
+  it('moves its entrance by transform and opacity alone, never a layout property', () => {
+    const css = readFileSync(
+      join(import.meta.dirname, '../../app/status/status-motion.css'),
+      'utf8',
+    );
+    const frames = [...css.matchAll(/@keyframes\s+([\w-]+)\s*\{([\s\S]*?)\n\}/g)];
+    expect(frames.map((f) => f[1])).toContain('lw-status-rise');
+    for (const [, name, body] of frames) {
+      const props = [...new Set([...body!.matchAll(/([a-z-]+)\s*:/g)].map((m) => m[1]))];
+      expect(
+        props.filter((p) => p !== 'transform' && p !== 'opacity'),
+        name,
+      ).toEqual([]);
+    }
   });
 });

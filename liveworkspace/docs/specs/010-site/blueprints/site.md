@@ -94,6 +94,27 @@ before.
 (`#profile`, `#notifications`, `#privacy`, `#accessibility`, `#tokens`) choosing it (`lib/account-redirect.ts`). The
 retired Explorer addresses in the table below render the Explorer from the address.
 
+### The status page holding still (`components/status/`)
+
+`StatusBoard` passes `historyPending` (the history's read still out, `stored === undefined`) to each
+`ServiceGroupCard`, whose rows then draw `PendingHistory`: the cloud line, a flat strip (`h-7`) and its footer, in the
+same classes as `HourlyLine` and `UptimeBars`, `aria-hidden` and marked `data-hourly="pending"`. The hero's title and
+line, and each jump link's `StateBadge` (`hold="Checking"`), stack an invisible copy of the checking words under the
+live ones (`HOLD`, a one-cell grid whose `::after` takes `content: attr(data-hold)`), so they never shrink below the
+checking state's size; so does the "Checked by liveworkspace …" footer (`CHECKED_HOLD`, its longest within the hour),
+and a browser line keeps its label's room once the shorter answer replaces it. Measured with a `layout-shift`
+PerformanceObserver in Chromium: production scored 0.22 at 1316x860 (the jump links' second row going) and 0.39 at
+1316x2000 (the history growing the cards too); held, 0.001 or less at 1316x860, 1316x2000, 1440x1600, 450 px and
+390x844, whichever of the round and the history lands first.
+
+### Settings' Delete Account on liveworkspace.app (`components/settings/SiteSettingsDialog.tsx`)
+
+The site's `AccountHost` on liveworkspace.app carries `closeAccountHelp`: the help article "Deleting your account" of
+the app the panel was opened for, else livediagram's (`${site.url}/help/account-and-data/deleting-your-data/#deleting-your-account`).
+`profileRows` (`@liveworkspace/settings-ui`) adds the `closeAccount` row under Sign Out with it, a `SettingsRowShell`
+whose `link` opens the article in a new tab. An editor and an app's address hand none, so no second row appears
+beside an editor's own Delete Account.
+
 ## Interfaces and contracts
 
 The site has no server code: every page is static and calls the services on its own origin.

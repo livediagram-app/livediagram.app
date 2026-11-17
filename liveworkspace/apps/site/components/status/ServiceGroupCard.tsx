@@ -14,7 +14,7 @@ import { Wordmark } from '@/components/Wordmark';
 import { listedApps } from '@/lib/apps';
 import { windowUptime } from '@/lib/status/history';
 import { summarise, type ServiceView } from '@/lib/status/probe';
-import { formatAgo, formatMs, ServiceIcon, StateBadge, UptimeFigure } from './status-ui';
+import { formatAgo, formatMs, HOLD, ServiceIcon, StateBadge, UptimeFigure } from './status-ui';
 import { UptimeBars } from './UptimeBars';
 
 const ArrowIcon = lucideGlyph(lucideArrowUpRight, 14);
@@ -31,6 +31,7 @@ export const ServiceGroupCard = memo(function ServiceGroupCard({
   views,
   wide = false,
   history = null,
+  historyPending = false,
   incidents,
   now = null,
 }: {
@@ -40,6 +41,8 @@ export const ServiceGroupCard = memo(function ServiceGroupCard({
   wide?: boolean;
   // The stored history, or null to show this visit's checks alone.
   history?: StatusHistory | null;
+  // The history's read is still out: each row keeps its lines' place (PendingHistory).
+  historyPending?: boolean;
   incidents?: ReadonlyMap<string, IncidentEntry[]>;
   now?: number | null;
 }) {
@@ -113,6 +116,7 @@ export const ServiceGroupCard = memo(function ServiceGroupCard({
             view={views.get(service.id)}
             wide={wide}
             history={history}
+            historyPending={historyPending}
             incidents={incidents?.get(service.id) ?? NONE}
             now={now}
           />
@@ -129,6 +133,7 @@ function ServiceRow({
   view,
   wide,
   history,
+  historyPending,
   incidents,
   now,
 }: {
@@ -136,6 +141,7 @@ function ServiceRow({
   view: ServiceView | undefined;
   wide: boolean;
   history: StatusHistory | null;
+  historyPending: boolean;
   incidents: readonly IncidentEntry[];
   now: number | null;
 }) {
@@ -192,7 +198,18 @@ function ServiceRow({
           >
             {latest && state !== 'skipped' ? formatMs(latest.ms) : '—'}
           </span>
-          <span className="min-w-0 flex-1 leading-snug">{evidence}</span>
+          {/* Never shorter than the checking words (the service's label): an answer a line shorter in liveworkspace's
+              columns lifted every card under them. */}
+          {evidence === service.label ? (
+            <span className="min-w-0 flex-1 leading-snug">{evidence}</span>
+          ) : (
+            <span
+              data-hold={service.label}
+              className={`${HOLD} min-w-0 flex-1 items-center leading-snug`}
+            >
+              <span>{evidence}</span>
+            </span>
+          )}
         </div>
         {history && history.at !== null ? (
           <>
@@ -206,10 +223,63 @@ function ServiceRow({
               />
             </div>
           </>
+        ) : historyPending ? (
+          <PendingHistory service={service} />
         ) : null}
       </div>
     </li>
   );
+}
+
+// The hourly lines' place while the history is read (liveworkspace/docs/specs/010-site/site.md "Status", "The page
+// holds still"): the cloud line, a flat strip and its footer, in HourlyLine's and UptimeBars' own classes, so the card
+// is already the height it will be and nothing under it moves when the history lands. Hidden from assistive tech: the
+// Uptime tile already says the history is being read.
+function PendingHistory({ service }: { service: Service }) {
+  return (
+    <>
+      <div aria-hidden data-hourly="pending" className="flex min-w-0 items-center gap-3">
+        <span className="inline-flex w-3.5 shrink-0 text-slate-400 dark:text-slate-500">
+          <HourlyIcon />
+        </span>
+        <span className="w-14 shrink-0 font-mono tabular-nums text-slate-700 dark:text-slate-200">
+          —
+        </span>
+        {/* As tall as the answer will be: what the check reads on success. */}
+        <span
+          data-hold={expectedAnswer(service)}
+          className={`${HOLD} min-w-0 flex-1 items-center leading-snug`}
+        >
+          <span>Checking</span>
+        </span>
+        <span className="invisible ml-auto shrink-0">
+          {/* As wide as the badge that usually comes: Operational. */}
+          <StateBadge state="up" size="sm" />
+        </span>
+      </div>
+      <div aria-hidden className="pt-1">
+        <div className="flex h-7 items-end">
+          <span className="h-1 flex-1 rounded-[2px] bg-slate-200 dark:bg-slate-700/70" />
+        </div>
+        {/* UptimeBars' footer, its two halves as long as the real ones, so it wraps where they will. */}
+        <div className="mt-1.5 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5 text-[11px] text-slate-500 dark:text-slate-400">
+          <span data-hold={CHECKED_HOLD} className={`${HOLD} min-w-0`}>
+            <span>Reading the history</span>
+          </span>
+          <span className="invisible shrink-0">
+            <span className="font-mono font-semibold tabular-nums">99.98%</span> over 90 days
+          </span>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// What liveworkspace's hourly line says of a service that answered (HourlyLine's words without an error).
+function expectedAnswer(service: Service): string {
+  return service.check.mode === 'probe' && service.check.probe.kind === 'read'
+    ? (service.check.probe.says ?? 'HTTP 200')
+    : 'HTTP 200';
 }
 
 const ERROR_DETAIL: Record<string, string> = {
@@ -217,12 +287,18 @@ const ERROR_DETAIL: Record<string, string> = {
   network: 'No answer',
 };
 
+// The room "Checked by liveworkspace …" takes at its longest within the hour, held from the first paint: it reads
+// "this hour" until the round's clock starts, then "23 min ago", and the footer must not wrap anew between them.
+const CHECKED_HOLD = 'Checked by liveworkspace 59 min ago';
+
 // When the hourly run was: "Checked by liveworkspace 23 min ago".
 function CheckedAgo({ at, now }: { at: number; now: number | null }) {
   return (
-    <time dateTime={new Date(at).toISOString()}>
-      Checked by liveworkspace {now === null ? 'this hour' : formatAgo(at, now)}
-    </time>
+    <span data-hold={CHECKED_HOLD} className={HOLD}>
+      <time dateTime={new Date(at).toISOString()}>
+        Checked by liveworkspace {now === null ? 'this hour' : formatAgo(at, now)}
+      </time>
+    </span>
   );
 }
 
