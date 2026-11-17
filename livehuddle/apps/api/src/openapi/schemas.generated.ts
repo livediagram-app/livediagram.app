@@ -5185,7 +5185,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Liked",
       "Unliked",
       "Reported",
-      "Measured"
+      "Measured",
+      "Abandoned",
+      "Refused",
+      "Played"
     ],
     "type": "string"
   },
@@ -5225,7 +5228,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Explorer",
       "Agent",
       "Community",
-      "Timing"
+      "Timing",
+      "Snapshot",
+      "Walkthrough"
     ],
     "type": "string"
   },
