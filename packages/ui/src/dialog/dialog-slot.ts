@@ -27,6 +27,9 @@ export type DialogSlot = {
   claimed: ClaimedDialog | null;
   /** The claimer let go (it closed itself): the host goes back. */
   released: boolean;
+  /** Who let go: the same dialog may take it again straight away (React's StrictMode runs a layout effect's cleanup
+   *  and setup back to back on mount, so a dialog in dev releases and re-claims before the host ever reads it). */
+  releasedBy?: object | null;
   /** Kept for the dialog that follows this one (a gate's Sync going on to its tool): its letting go is not the end. */
   held: boolean;
   /** Its dialog left for the whole window: Tools closes rather than going back. */
@@ -76,19 +79,19 @@ export function openSlotSeq(at: DialogSlot | null): number {
 export function slotIsFor(at: DialogSlot | null, seqAt: number, owner: object): boolean {
   if (!at || at.seq !== seqAt) return false;
   if (at.owner === owner || at.held) return true;
-  return at.owner === null && !at.released;
+  return at.owner === null && (!at.released || at.releasedBy === owner);
 }
 
 export function claimDialogSlot(at: number, owner: object, claimed: ClaimedDialog): boolean {
   if (!slot || !slotIsFor(slot, at, owner)) return false;
   if (slot.owner === owner && slot.claimed === claimed) return true;
-  set({ ...slot, owner, claimed, released: false, held: false });
+  set({ ...slot, owner, claimed, released: false, releasedBy: null, held: false });
   return true;
 }
 
 export function releaseDialogSlot(owner: object): void {
   if (slot?.owner !== owner) return;
-  set({ ...slot, owner: null, claimed: null, released: true });
+  set({ ...slot, owner: null, claimed: null, released: true, releasedBy: owner });
 }
 
 /** A gate in Tools about to sync keeps the slot for the tool it goes on to, which opens in its place (held from before

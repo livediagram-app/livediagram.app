@@ -51,7 +51,10 @@ export function SnapshotRow({
   return (
     <Tag
       data-snapshot-row={snapshot.id}
-      className={`rounded-lg px-3 py-2.5 transition-colors ${
+      className={`rounded-lg ${
+        // On History's rail its text lines up with the events' (the label above it), the hover wash reaching past it.
+        Tag === 'div' ? '-mx-2 px-2 py-1.5' : 'px-3 py-2.5'
+      } transition-colors ${
         confirm
           ? 'bg-slate-100 dark:bg-slate-800/80'
           : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'

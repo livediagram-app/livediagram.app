@@ -61,7 +61,7 @@ export function useSnapshotsExtras(door: SnapshotsDoor, now = Date.now): History
           <SnapshotGlyph size={15} />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="mb-0.5 text-[11px] font-semibold uppercase tracking-wider text-brand-700 dark:text-brand-300">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-brand-700 dark:text-brand-300">
             Snapshot
           </p>
           <SnapshotRow

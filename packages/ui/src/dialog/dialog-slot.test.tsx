@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 // The slot a tool's dialog renders into inside the footer's Tools (liveworkspace/docs/specs/004-index/
 // footer-tools-menu.md "Opening a tool inside Tools"; blueprint FM6).
+import { StrictMode } from 'react';
 import { act, cleanup, render, renderHook, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Dialog } from './Dialog';
@@ -56,6 +57,26 @@ describe('the dialog slot', () => {
     expect(screen.getByRole('dialog', { name: 'Next' })).toBeTruthy();
     act(() => closeDialogSlot(at));
     expect(slot.result.current).toBeNull();
+  });
+
+  it('stays claimed under StrictMode, whose mount releases and claims again at once (the dev servers)', () => {
+    const slot = renderHook(() => useDialogSlot());
+    let at = 0;
+    act(() => {
+      at = openDialogSlot();
+    });
+    const node = slotNode();
+    act(() => setDialogSlotNode(at, node));
+    render(
+      <StrictMode>
+        <Dialog open onClose={vi.fn()} ariaLabel="Tool" size="lg">
+          <p>Inside</p>
+        </Dialog>
+      </StrictMode>,
+    );
+    expect(node.contains(screen.getByRole('region', { name: 'Tool' }))).toBe(true);
+    expect(slot.result.current?.released).toBe(false);
+    expect(slot.result.current?.claimed?.size).toBe('lg');
   });
 
   it('is held for the dialog that follows a gate, and the hold undoes', () => {
