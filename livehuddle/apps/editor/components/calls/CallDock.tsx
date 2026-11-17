@@ -27,10 +27,14 @@ export const CALL_DOCK_NAMED_QUERY = '(min-width: 1024px)';
 export function CallDock({
   doNotDisturb = false,
   onClearDoNotDisturb,
+  lifted = false,
 }: {
   // Your status is Do Not Disturb, and how to clear it (the avatar status setter).
   doNotDisturb?: boolean;
   onClearDoNotDisturb?: () => void;
+  // No room beside the bottom-left panels and the buttons: on a line of its own above the buttons, at the right
+  // (useCallDockFit).
+  lifted?: boolean;
 }) {
   const isMobile = useIsMobileViewport();
   const wide = useMediaQuery(CALL_DOCK_NAMED_QUERY);
@@ -45,7 +49,7 @@ export function CallDock({
       // The cluster row's middle column: the row's grid centres it on the canvas while there is room. `w-max` keeps
       // the column from ever squeezing the card below its content (Pop Out's two words wrapped and spilled past the
       // card, Work Tracker 1041).
-      className="pointer-events-none col-start-2 row-start-1 flex w-max justify-center"
+      className={`pointer-events-none row-start-1 flex w-max justify-center ${lifted ? 'col-start-3 justify-self-end' : 'col-start-2'}`}
       style={uiScaleStyle(scale)}
     >
       <div

@@ -225,6 +225,11 @@ their home moved (`components/calls/CallDock.tsx`).
   there is room, and the cluster's buttons, unwrapped, in the right one. The buttons take the room they need first, so
   in a narrow window, on a narrow phone, or with Collaborate beside Fit, the dock moves left rather than covering
   them; the dock's column never squeezes the card below its content, so every button stays inside its border. It
+  **stands clear of the bottom-left panels** (the Map, open; Work Tracker 1041, at 640 to 700 px the centred dock
+  covered the Map's right half): the left column is at least as wide as they reach, plus 8 px, so the dock starts past
+  them (`useCallDockFit`, `callDockRowFit`). Where the panels, the dock and the buttons cannot share the bottom line,
+  the dock stands on a line of its own just above the buttons, at the right, still clear of the Map. Panels ending
+  above the row's line leave it free. It
   keeps the toolbar's UI scale (the row is drawn at the corner buttons', so the dock takes the difference; a phone
   draws both at 100%).
 - **What.** There is **no Join and no Leave** (owner, 2026-11-07: "Currently we have this concept of Joining audio and
