@@ -177,6 +177,31 @@ const articleOut = z
       .describe(
         'About how many pages its writing reaches once laid out (an estimate): the editor grows the article to them, so more than its pages means it runs on.',
       ),
+    readability: z
+      .object({
+        readingMinutes: z
+          .number()
+          .describe('Minutes to read it (238 words a minute), 0 for no words.'),
+        sentences: z.number().describe('How many sentences its prose has.'),
+        wordsPerSentence: z.number().describe('Words a sentence on average.'),
+        longSentences: z
+          .number()
+          .describe('Sentences over 30 words: split these to make it plainer.'),
+        ease: z
+          .number()
+          .nullable()
+          .describe('Flesch Reading Ease (higher reads more easily), or null when not English.'),
+        level: z
+          .string()
+          .nullable()
+          .describe(
+            'How easily it reads, as the editor says it: Easy to read, Fairly easy to read, Plain English, Fairly hard to read, Hard to read; null when not English.',
+          ),
+      })
+      .optional()
+      .describe(
+        "How easily it reads, the editor's Word Count figures: check them after making an article plainer.",
+      ),
     look: z.string().nullable().describe('Its look, or null for the default.'),
   })
   .describe('An article.');

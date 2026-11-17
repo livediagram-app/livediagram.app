@@ -113,11 +113,13 @@ function Panel({
   mobile = false,
   onClose = () => {},
   onDock,
+  summary,
 }: {
   h: ReturnType<typeof harness>;
   mobile?: boolean;
   onClose?: () => void;
   onDock?: () => void;
+  summary?: string | null;
 }) {
   const here = usePageInViewOnOpen(PAGES);
   const contents = h.useContents(here, mobile ? onClose : undefined);
@@ -129,9 +131,13 @@ function Panel({
       onDock={onDock}
       footer={h.footer(contents)}
       badges={h.badges}
-      frame={(body: ReactNode, actions: ReactNode) => (
+      summary={summary}
+      frame={(body: ReactNode, actions: ReactNode, adornment: ReactNode) => (
         <section aria-label="Contents">
-          <header>{actions}</header>
+          <header>
+            {adornment}
+            {actions}
+          </header>
           {body}
         </section>
       )}
@@ -142,6 +148,22 @@ function Panel({
 const rowButton = (name: string) => screen.getByRole('button', { name });
 
 describe('the shared Contents popover', () => {
+  // livedocuments' flashcards.md "The whole talk": what the header says of the whole tab.
+  it.each([false, true])(
+    'says the summary beside its name (mobile %s), and nothing without one',
+    (mobile) => {
+      const { unmount } = render(
+        <Panel h={harness()} mobile={mobile} summary="10 cards · about 6 min" />,
+      );
+      const summary = document.querySelector('[data-contents-summary]');
+      expect(summary?.textContent).toBe('10 cards · about 6 min');
+      expect(summary?.closest(mobile ? 'div' : 'header')).not.toBeNull();
+      unmount();
+      render(<Panel h={harness()} mobile={mobile} />);
+      expect(document.querySelector('[data-contents-summary]')).toBeNull();
+    },
+  );
+
   it('lists every page with its marks, opens on the page in view and glides to a pressed one', () => {
     const h = harness();
     const store = createViewportStore(1);

@@ -151,6 +151,7 @@ export * from './article-suggestions';
 export * from './article-intake';
 export * from './article-markdown';
 export * from './article-markdown-io';
+export * from './article-readability';
 export * from './article-markdown-export';
 export * from './page-paint';
 export * from './page-default-background';

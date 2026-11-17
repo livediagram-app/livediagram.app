@@ -6,6 +6,8 @@ import { articleOwnTitle } from './article-page-name';
 import {
   articleTitleOf,
   flashcardSpeakingSeconds,
+  flashcardStackSummary,
+  isFlashcardStack,
   speakingTimeLabel,
   pageHasOrientation,
   pageKindOf,
@@ -103,6 +105,16 @@ export function contentsRows(
       ...(builds ? { builds } : {}),
     };
   });
+}
+
+/** What Contents' header says of the whole tab: a stack's talk, "10 cards · about 6 min"
+ *  (docs/specs/007-editor/flashcards.md "The whole talk"); null off a stack, or on one with no words. */
+export function contentsSummary(
+  pages: readonly Pick<Page, 'kind' | 'flow'>[],
+  articles: Readonly<Record<string, ArticleFlow>> | undefined,
+): string | null {
+  if (!isFlashcardStack(pages)) return null;
+  return flashcardStackSummary(pages.map((p) => (p.flow ? articles?.[p.flow] : undefined)));
 }
 
 /** The place (among the row's units, 0 first) a page dropped beside the row at `drop.index` moves

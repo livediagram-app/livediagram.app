@@ -367,7 +367,31 @@ caretOf(state))` (editable only), and `setActiveArticle({ handle, pageId, select
   `articleWordCount({ blocks: docToBlocks(doc) })`, and `selected`, with a non-empty selection, the sum over
   `selection.ranges` of `articleWordCount({ blocks: docToBlocks(doc.cut(from, to)) })` (a cell selection counts
   its cells only), else null. `wordCountLabel` writes "1 word", "840 words" or "12 of 840 words" (`en` digit
-  grouping). A `role="group"` line under a rule, `aria-label` "Word Count: <label>", no menu item.
+  grouping). The same blocks give `readability` (the article's) and `selectedReadability` (the selection's, else
+  null): `articleReadability(flow, words)` (`packages/document/src/article-readability.ts`), one left-to-right pass
+  per prose block (`paragraph` and `list` blocks; never code, tables or a footnote's note, a run with `fn` read as a
+  space) through `sentencesOf(text)`: no regex over the text, each character looked at once. It returns
+  `{ readingMinutes, sentences, wordsPerSentence, longSentences, ease, level }`: `readingMinutes` is
+  `max(1, round(words / READING_WORDS_PER_MINUTE))` (0 for no words); `ease` is
+  `fleschReadingEase(words, sentences, syllables)` (206.835 − 1.015 × words a sentence − 84.6 × syllables a word,
+  one decimal) or null when the prose is not English (at least `ENGLISH_SHARE` (0.15) of its first `ENGLISH_SAMPLE` (2,000) words
+  in `ENGLISH_MARKERS`) or has no sentence; `level` is `readingLevelOf(ease)`: `easy` (≥ 80), `fairlyEasy` (≥ 70),
+  `plain` (≥ 60), `fairlyHard` (≥ 50), `hard`. `wordCountLine(counts)` writes the line ("840 words · 4 min read ·
+  Easy to read") and `readabilityDetail(r)` the hover's numbers. A sentence (`sentencesOf`): its words are the
+  whitespace-separated tokens holding a letter or digit; a token ends one when, past its closing quotes and brackets,
+  it ends in `!`, `?`, `…` or `.`, except a `.` token that is in `ABBREVIATIONS`, a single letter, or has a `.`
+  inside (`e.g.`), and a `.` token followed by a token whose first letter is lower case (the decision waits for the
+  next token, so the pass never looks back). Syllables (`syllablesOf`): the groups of vowels (`aeiouy`), one fewer
+  for a silent final `e` (not `-le` after a consonant), at least one; a token with no letter is one.
+  The line (`WordCountLine`): with `readability.longSentences > 0` and an `onNextLong`, a `role="menuitem"` button,
+  `aria-label` "Word Count: <line>. Select the Next Long Sentence", that runs `selectNextLongSentence`
+  (`lib/article/article-long-sentences.ts`): it walks the doc's textblocks outside tables and code blocks, each one's
+  text with every inline leaf as one space (so offset i is position start + i), through `sentencesOf`, keeps those
+  over `LONG_SENTENCE_WORDS`, and sets a `TextSelection` over the first starting after the selection's `from` (an
+  empty selection: at or after it), else the first, with `scrollIntoView`; then the menu closes and the writing
+  takes focus (`close`), and `UI · Used · LongSentenceSelected` is sent. Otherwise a `role="group"` line under a
+  rule, `aria-label` "Word Count: <line>", no menu item. Either way a `HoverCard` titled "Readability" holds
+  `readabilityDetail`.
 - **Insert**: blocks through `handle.insert` (divider; page break + paragraph; quote paragraph;
   code block); objects through `articles.insertObject(handle.flow, what)`, and Comment / Assign
   Action through `articles.addNote(handle.flow, kind)`: the article the toolbar shows for, worked
@@ -761,7 +785,13 @@ ops): ArticleFlow` (never empty). For any `a`, `b`: `applyArticleOps(a, diffArti
   toolbar while open): `docToBlocks` and `articleWordCount`, O(characters), about 25 ms of CPU for a 2,000-paragraph,
   100,000-word article (budget 60 ms, `article-word-count.test.ts`). The total is kept per doc node (a `WeakMap`), so
   a selection moving over unchanged writing counts only the selection (budget 5 ms). With the menu shut, typing never
-  reaches it.
+  reaches it. Readability reads the same blocks and is kept with the total per doc node: one more look at each
+  character (`sentencesOf`, linear, no backtracking, nothing allocated per token but a short marker's slice), the
+  language judged on the first `ENGLISH_SAMPLE` (2,000) words. Measured on the 100,000-word article: about 60 ms cold
+  for the count and readability together, readability about 20 ms of it on its first run and under 10 ms warm
+  (budget 90 ms, `article-word-count.test.ts`); `sentencesOf` takes 50,000 spaces, dots or digits in under 20 ms
+  (`article-readability.test.ts`). Selecting the next long sentence walks the doc once, on the pick only (budget
+  80 ms for 2,000 paragraphs, `article-long-sentences.test.ts`).
 
 ## Presentation and UX
 
