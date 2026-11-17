@@ -1633,6 +1633,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "ElementActionAssignee": {
     "additionalProperties": false,
     "properties": {
+      "color": {
+        "type": "string"
+      },
       "memberId": {
         "type": "string"
       },
