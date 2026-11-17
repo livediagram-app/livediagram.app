@@ -23,7 +23,11 @@ test('the top row’s logo, menu, palette and corner card never overlap from 320
   const overlaps: string[] = [];
   for (const width of WIDTHS) {
     await page.setViewportSize({ width, height: 800 });
-    const found = await page.evaluate(() => {
+    const found = await page.evaluate(async () => {
+      // What a frame paints: the row as the next frame draws it. Read straight after the resize, the page is between
+      // two frames: CSS media queries (`phone:`) already apply, but the resize and media-query listeners that place
+      // the strip only run in the next frame's rendering steps, so the read saw a row no frame ever showed.
+      await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
       // Where a part paints: its box and every shown element inside it (a popover or tooltip it opens is not it).
       const box = (el: Element | null | undefined) => {
         if (!el) return null;
