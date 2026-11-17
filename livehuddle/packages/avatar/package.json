@@ -8,6 +8,7 @@
   "exports": {
     "./action-keys": "./src/action-keys.ts",
     "./bindings": "./src/bindings.ts",
+    "./billboard": "./src/billboard.ts",
     "./booth": "./src/booth.ts",
     "./chair-sitters": "./src/chair-sitters.ts",
     "./chip-widths": "./src/chip-widths.ts",

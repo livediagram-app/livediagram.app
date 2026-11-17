@@ -5,6 +5,7 @@
 // zoom and slide with the characters. A press maximises one into the panel, drawn outside the canvas. People standing
 // close have their bubbles nudged apart ("Close together", lib/calls/bubble-layout.ts), and the rects they end up
 // in are handed on so speech bubbles keep clear of them.
+import { billboardOrigin, SPACE_BILLBOARD_ATTR } from '@livehuddle/avatar/billboard';
 import { useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { avatarGlides } from '@livehuddle/avatar/relay';
 import { AVATAR_HEAD_CHROME, AVATAR_HEIGHT } from '@livehuddle/avatar/walk';
@@ -100,8 +101,13 @@ function Group({
     <div
       ref={placed}
       data-call-bubbles={id}
+      {...SPACE_BILLBOARD_ATTR}
       className="absolute z-10 -translate-x-1/2 -translate-y-full motion-reduce:transition-none"
-      style={{ left: at.x, top: bottomOf(at, scale) }}
+      style={{
+        left: at.x,
+        top: bottomOf(at, scale),
+        ...billboardOrigin(0, at.y - bottomOf(at, scale)),
+      }}
     >
       <div
         data-call-bubbles-row

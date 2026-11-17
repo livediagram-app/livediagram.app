@@ -4,6 +4,8 @@
 // his head, amber-edged, holding replies. Every topic in one grouped list, or one topic's answer with the real control
 // ringed, or his farewell. Yours alone: it is drawn on your screen and sent nowhere. It takes no focus.
 
+import { billboardOrigin, SPACE_BILLBOARD_ATTR } from '@livehuddle/avatar/billboard';
+import { space3DTiltNow } from '@/lib/space-3d/space-3d-preference';
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { SpeechCard } from '@livehuddle/avatar/components/AvatarSpeechBubble';
 import { SPEECH_TOP_CLEAR, tailOffset } from '@livehuddle/avatar/speech';
@@ -195,7 +197,9 @@ export function ReceptionistBubble({
     // Its whole height uncapped: the card round the list, plus all of the list.
     const frame = r.height - list.clientHeight;
     const natural = frame + list.scrollHeight;
-    const nextBelow = natural > roomAbove && roomBelow > roomAbove;
+    // In the 3D view the card stands over his head facing you (docs/specs/008-canvas/3d-view.md): never under his
+    // feet, where it would lie on the floor under the walls.
+    const nextBelow = space3DTiltNow() === 0 && natural > roomAbove && roomBelow > roomAbove;
     const room = nextBelow ? roomBelow : roomAbove;
     const nextMaxH = natural > room ? Math.max(80, Math.floor(room - frame)) : 0;
     if (
@@ -215,7 +219,12 @@ export function ReceptionistBubble({
   const isHeard = (t: ReceptionistTopic) => heard.includes(t.id);
   const line = topic ? topic.answer : receptionistLine(chat.reason, name);
   return (
-    <>
+    // In the 3D view the card stands up about his feet (billboard.ts); flat, this zero box does nothing.
+    <div
+      {...SPACE_BILLBOARD_ATTR}
+      className="pointer-events-none absolute left-0 top-0"
+      style={billboardOrigin(feet.x, feet.y, '0px', '0px')}
+    >
       <div
         role="dialog"
         aria-label="Receptionist"
@@ -297,6 +306,6 @@ export function ReceptionistBubble({
       {topic?.target && topic.target !== 'room' ? (
         <ReceptionistRing selector={topic.target} />
       ) : null}
-    </>
+    </div>
   );
 }

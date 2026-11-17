@@ -315,7 +315,7 @@ export function CanvasCharactersLayer({
       {/* Speech bubbles, in front of every character: yours and everyone's, and the composer above your
           own head while you type. Raised over the chips of a spread row (z-[1]) and the piece bubbles (z-[2]). */}
       {speechBubbles.length > 0 || speech.composerOpen ? (
-        <div className="pointer-events-none absolute left-0 top-0 z-[3]">
+        <div data-space-3d-group="" className="pointer-events-none absolute left-0 top-0 z-[3]">
           <AvatarSpeechLayer
             bubbles={speechBubbles}
             activeTabId={props.activeTabId ?? ''}

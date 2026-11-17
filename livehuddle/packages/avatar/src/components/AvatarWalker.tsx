@@ -144,6 +144,9 @@ function AvatarWalkerView({
     if (chipBox.current) chipBox.current.style.transition = transition;
   }, [x, y, glideMs, walking]);
   const placement = `translate(${pos.x - box.offsetX}px, ${pos.y - box.offsetY}px)`;
+  // In the 3D view (docs/specs/008-canvas/3d-view.md "What it shows") the figure and its chips stand up about the feet,
+  // facing the camera: the editor's stylesheet turns this box; flat, it is the placed box's own size and does nothing.
+  const standOrigin = `${box.offsetX}px ${box.offsetY}px`;
   const chipEl = name ? (
     <div
       ref={chip}
@@ -232,36 +235,42 @@ function AvatarWalkerView({
           height: box.height,
         }}
       >
-        {chipInRow ? null : chipEl}
-        {status === 'away' ? (
-          // Away: a slow Zz rising over the head (a CSS loop, still under reduced motion).
-          <div
-            aria-hidden
-            className="animate-avatar-zz pointer-events-none absolute z-10 text-[11px] font-bold italic text-slate-500 dark:text-slate-400"
-            style={{
-              left: box.offsetX + 8 * scale,
-              top: box.offsetY - AVATAR_HEIGHT * scale - AVATAR_ZZ_RISE,
-            }}
-          >
-            Zz
+        <div
+          data-avatar-stand=""
+          className="absolute inset-0"
+          style={{ transformOrigin: standOrigin }}
+        >
+          {chipInRow ? null : chipEl}
+          {status === 'away' ? (
+            // Away: a slow Zz rising over the head (a CSS loop, still under reduced motion).
+            <div
+              aria-hidden
+              className="animate-avatar-zz pointer-events-none absolute z-10 text-[11px] font-bold italic text-slate-500 dark:text-slate-400"
+              style={{
+                left: box.offsetX + 8 * scale,
+                top: box.offsetY - AVATAR_HEIGHT * scale - AVATAR_ZZ_RISE,
+              }}
+            >
+              Zz
+            </div>
+          ) : null}
+          <div style={status === 'away' ? { opacity: AWAY_OPACITY } : undefined}>
+            <AvatarSprite
+              headphones={status === 'focus'}
+              status={status}
+              facing={facing}
+              config={config}
+              walking={walking}
+              stepFrame={stepFrame}
+              lift={lift}
+              wave={wave}
+              pose={pose}
+              seated={seated}
+              holding={holding}
+              shirt={shirt}
+              scale={scale}
+            />
           </div>
-        ) : null}
-        <div style={status === 'away' ? { opacity: AWAY_OPACITY } : undefined}>
-          <AvatarSprite
-            headphones={status === 'focus'}
-            status={status}
-            facing={facing}
-            config={config}
-            walking={walking}
-            stepFrame={stepFrame}
-            lift={lift}
-            wave={wave}
-            pose={pose}
-            seated={seated}
-            holding={holding}
-            shirt={shirt}
-            scale={scale}
-          />
         </div>
       </div>
       {/* A chip in a spread row: the same box, its own sibling, raised over every character's figure (z-[1] in the
@@ -274,7 +283,13 @@ function AvatarWalkerView({
           className="pointer-events-none absolute z-[1]"
           style={{ left: 0, top: 0, transform: placement, width: box.width, height: box.height }}
         >
-          {chipEl}
+          <div
+            data-avatar-stand=""
+            className="absolute inset-0"
+            style={{ transformOrigin: standOrigin }}
+          >
+            {chipEl}
+          </div>
         </div>
       ) : null}
     </>
