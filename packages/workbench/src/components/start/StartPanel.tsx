@@ -134,6 +134,9 @@ export function createStartPanel<
     const [calm, setCalm] = useState(swapped);
     useEffect(() => () => noteStartPanelLeft(), []);
     const [category, setCategory] = useState<C>(initialCategory);
+    // The chosen category while the rail still shows it, else the rail's first: a filter over the start (a page
+    // type) can take the chosen group out of the rail, and it comes back chosen once the filter does.
+    const current = categories.some((c) => c.id === category) ? category : categories[0]!.id;
     // Connect File chosen in the rail: its list stands in the cards' place until a category is picked.
     const [connecting, setConnecting] = useState(false);
     // A search handed over by /new?q= (start-query.ts), else none.
@@ -182,7 +185,7 @@ export function createStartPanel<
     const onRailKey = (e: KeyboardEvent<HTMLDivElement>) => {
       if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
       e.preventDefault();
-      const at = categories.findIndex((c) => c.id === category);
+      const at = categories.findIndex((c) => c.id === current);
       const next =
         categories[
           (at + (e.key === 'ArrowDown' ? 1 : -1) + categories.length) % categories.length
@@ -195,7 +198,7 @@ export function createStartPanel<
     const chosenInk = useChosenInk(palette);
     const railButton = (c: StartPanelCategory<C>) => {
       const Icon = c.icon;
-      const on = !searching && !connecting && c.id === category;
+      const on = !searching && !connecting && c.id === current;
       return (
         <button
           key={c.id}
@@ -271,7 +274,7 @@ export function createStartPanel<
     ));
     // The cards cascade in as the panel arrives, and again each time the category or search changes them (the
     // grid is keyed by what it shows, so a change remounts it).
-    const shown = categories.find((c) => c.id === category) ?? categories[0]!;
+    const shown = categories.find((c) => c.id === current)!;
     const cards = (list: readonly K[]) => (
       <CardGrid cards={list} palette={palette} cascade={!calm} onChoose={onChoose} />
     );

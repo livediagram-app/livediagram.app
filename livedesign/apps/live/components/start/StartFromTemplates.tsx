@@ -6,7 +6,7 @@
 // category's templates come its Community tiles (@liveworkspace/community-ui/start), the month's most liked posts
 // in that category, badged Community; choosing one opens the person's own copy of it.
 import { DeviceGlyph } from '@/components/canvas/wireframe/DeviceGlyph';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { lucideGlyph } from '@livedesign/ui';
 import {
   lucideHeartPulse,
@@ -44,7 +44,9 @@ import { StartSaveSwitch } from './StartSaveSwitch';
 import { templateCard } from './template-card';
 import { setStartPanelOpen } from '@liveworkspace/workbench/components/start/start-panel-open';
 import { startClosedKey } from './start-closed-key';
-import { TEMPLATE_STARTS } from './start-template-items';
+import { templateStartFor, type StartPageType } from './start-template-items';
+import { START_PAGE_TYPES } from './start-page-types';
+import { StartKindFilter } from '@liveworkspace/workbench/components/start/StartKindFilter';
 import { useStartPalette } from '@/components/start/useStartPalette';
 import { useConnectStart } from '@/components/connect/useConnectStart';
 
@@ -109,7 +111,11 @@ export function StartFromTemplates({
     imageUrl: communityImage,
     note: communityStartCreditNote(palette.muted),
   };
-  const start = TEMPLATE_STARTS[mode];
+  // The page type the start shows (start-diagramming.md "Page type"): All Pages each time it opens.
+  const [pageType, setPageType] = useState<StartPageType>('all');
+  // The Community's tiles show only under All Pages: a post's page type is not known to the start.
+  const withCommunity = pageType === 'all';
+  const start = templateStartFor(mode, pageType);
   const copy = COPY[mode];
   const categories = useMemo(
     () =>
@@ -155,22 +161,28 @@ export function StartFromTemplates({
       helpArticle={copy.help}
       palette={palette}
       categories={categories}
+      // Leading the rail, where livediagram's start has its mode switch: the page type.
+      lead={
+        <StartKindFilter
+          label="Page type"
+          options={START_PAGE_TYPES}
+          value={pageType}
+          onChange={setPageType}
+        />
+      }
       initialCategory="recommended"
       cardsIn={(id) => [
         ...(start.groups.find((g) => g.id === id)?.kinds ?? []).map(templateCard),
-        ...communityStartCardsIn(community, id, tiles),
+        ...(withCommunity ? communityStartCardsIn(community, id, tiles) : []),
       ]}
       // The rail counts templates: the Community's tiles arriving never change it.
       countIn={(id) => start.groups.find((g) => g.id === id)?.kinds.length ?? 0}
-      search={(query) =>
-        withCommunityStartMatches(
-          start.search(query).map((g) => ({ category: g.group, cards: g.kinds.map(templateCard) })),
-          community,
-          query,
-          rail,
-          tiles,
-        )
-      }
+      search={(query) => {
+        const own = start
+          .search(query)
+          .map((g) => ({ category: g.group, cards: g.kinds.map(templateCard) }));
+        return withCommunity ? withCommunityStartMatches(own, community, query, rail, tiles) : own;
+      }}
       onChoose={(kind) => {
         const post = findCommunityStartPost(community, kind);
         if (post) {

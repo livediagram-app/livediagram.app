@@ -274,6 +274,7 @@
     "./components/start/start-band-colours": "./src/components/start/start-band-colours.ts",
     "./components/start/StartHeaderBand": "./src/components/start/StartHeaderBand.tsx",
     "./components/start/StartPanel": "./src/components/start/StartPanel.tsx",
+    "./components/start/StartKindFilter": "./src/components/start/StartKindFilter.tsx",
     "./components/start/StartTitleMark": "./src/components/start/StartTitleMark.tsx",
     "./components/start/RailFoot": "./src/components/start/RailFoot.tsx",
     "./components/start/useStartHeaderTheme": "./src/components/start/useStartHeaderTheme.ts",

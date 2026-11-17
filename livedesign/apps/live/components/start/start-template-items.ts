@@ -10,10 +10,14 @@ import {
   popularKindsFor,
   templateEditorMode,
   templateMatchesQuery,
+  templatePageKind,
   type TemplateDescriptor,
   type TemplateKind,
 } from '@livedesign/templates';
-import type { EditorMode } from '@livedesign/design';
+import type { EditorMode, PageKind } from '@livedesign/design';
+
+// What the start shows (start-diagramming.md "Page type"): every template, or only those opening on one kind of page.
+export type StartPageType = 'all' | PageKind;
 
 type TemplateStartGroup = {
   id: string;
@@ -63,16 +67,18 @@ const byKind = new Map(TEMPLATES.map((t) => [t.kind, t]));
 /** A template's descriptor. */
 export const templateOf = (kind: TemplateKind): TemplateDescriptor => byKind.get(kind)!;
 
-function build(mode: EditorMode): TemplateStart {
+function build(mode: EditorMode, type: StartPageType): TemplateStart {
+  // A page type keeps only the templates opening on that kind of page (templatePageKind).
+  const ofType = (k: TemplateKind) => type === 'all' || templatePageKind(k) === type;
   // Blank Tab, the mode's blank, leaves the same empty tab the × does, so it is made by name only (an agent's add_tab, a `/new?blank` link), in no category, so on no start either.
   const listed = TEMPLATES.filter(
-    (t) => !t.hidden && t.kind !== 'blank' && templateEditorMode(t.kind) === mode,
+    (t) => !t.hidden && t.kind !== 'blank' && templateEditorMode(t.kind) === mode && ofType(t.kind),
   ).map((t) => t.kind);
   const recommended: TemplateStartGroup = {
     id: 'recommended',
     name: 'Recommended',
     line: RECOMMENDED_LINE[mode],
-    kinds: popularKindsFor(mode),
+    kinds: popularKindsFor(mode).filter(ofType),
   };
   const rest: TemplateStartGroup[] = OWN_GROUPS[mode].map((g, i, all) => ({
     ...g,
@@ -95,5 +101,17 @@ function build(mode: EditorMode): TemplateStart {
 }
 
 export const TEMPLATE_STARTS: Readonly<Record<EditorMode, TemplateStart>> = {
-  pages: build('pages'),
+  pages: build('pages', 'all'),
 };
+
+// Each page type's start, built the first time it is chosen and kept: a handful at most.
+const BY_TYPE = new Map<string, TemplateStart>();
+
+/** The start for `mode`, showing only `type`'s templates (every template for 'all'). */
+export function templateStartFor(mode: EditorMode, type: StartPageType): TemplateStart {
+  if (type === 'all') return TEMPLATE_STARTS[mode];
+  const key = `${mode}:${type}`;
+  let start = BY_TYPE.get(key);
+  if (!start) BY_TYPE.set(key, (start = build(mode, type)));
+  return start;
+}
