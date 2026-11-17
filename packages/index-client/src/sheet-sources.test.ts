@@ -30,10 +30,12 @@ function fakeFetch(answer: unknown) {
 }
 
 describe('the apps', () => {
-  it('reads liveplanner as the source and livedocuments as the reader', () => {
+  it('reads liveplanner as the source and the canvas apps as the readers', () => {
     expect(isSheetSourceApp('liveplanner')).toBe(true);
     expect(isSheetSourceApp('livedocuments')).toBe(false);
     expect(isSourceWatchApp('livedocuments')).toBe(true);
+    expect(isSourceWatchApp('livediagram')).toBe(true);
+    expect(isSourceWatchApp('livedesign')).toBe(true);
     expect(isSourceWatchApp('liveplanner')).toBe(false);
   });
 });

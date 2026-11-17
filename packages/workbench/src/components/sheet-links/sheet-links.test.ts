@@ -1,7 +1,7 @@
-// Charts linked to a liveplanner sheet, the pure half (docs/specs/009-elements/pie-chart.md "Charts linked to a
-// liveplanner sheet"): one key per range, what a live read shows and what it would save, and the words.
+// Charts linked to a liveplanner sheet, the pure half (each reader app's docs/specs/009-elements/pie-chart.md "Charts
+// linked to a liveplanner sheet"): one key per range, what a live read shows and what it would save, and the words.
 import { describe, expect, it } from 'vitest';
-import { createShape, type ChartSheetSource, type ShapeElement } from '@livedocuments/document';
+import type { ChartSheetSource } from '@liveworkspace/element-model/chart-sheet-source';
 import type { SheetRangeRead } from '@liveworkspace/index-client';
 import {
   chartAsSeen,
@@ -14,7 +14,11 @@ import {
   sheetLinkLine,
   sourceAfterRead,
   liveChartFields,
+  isChart,
+  type SheetChart,
 } from './sheet-links';
+
+const shape = (kind: string, id = kind): SheetChart => ({ id, type: 'shape', shape: kind });
 
 const source: ChartSheetSource = {
   app: 'liveplanner',
@@ -39,8 +43,8 @@ const read: SheetRangeRead = {
   readAt: 9_000,
 };
 
-const bar = (extra: Partial<ShapeElement> = {}): ShapeElement => ({
-  ...createShape('bar-chart', 0, 0),
+const bar = (extra: Partial<SheetChart> = {}): SheetChart => ({
+  ...shape('bar-chart'),
   pieSlices: [
     { label: 'Q1', value: 1, color: '#f00' },
     { label: 'Q2', value: 2 },
@@ -51,9 +55,13 @@ const bar = (extra: Partial<ShapeElement> = {}): ShapeElement => ({
 describe('which charts are linked', () => {
   it('finds charts with a link, and nothing else', () => {
     const linked = bar({ chartSheetSource: source });
-    const box = createShape('square', 0, 0);
-    expect(linkedChartsOn([linked, bar(), box])).toEqual([linked]);
+    const box = shape('square');
+    const arrow = { id: 'a1', type: 'arrow' };
+    expect(linkedChartsOn([linked, bar(), box, arrow])).toEqual([linked]);
     expect(isLinkedChart({ ...box, chartSheetSource: source })).toBe(false);
+    expect(isChart(arrow)).toBe(false);
+    expect(isChart({ id: 'x', type: 'shape' })).toBe(false);
+    expect(isChart(shape('pie-chart'))).toBe(true);
   });
 
   it('keys a range by plan, sheet, corners and columns', () => {
@@ -86,10 +94,20 @@ describe('a live read', () => {
   });
 
   it('compares a line chart by its categories and series', () => {
-    const line = createShape('line-chart', 0, 0);
+    const line = shape('line-chart');
     const fields = liveChartFields(line, read);
     expect(sameChartData(line, fields)).toBe(false);
     expect(sameChartData({ ...line, ...fields }, fields)).toBe(true);
+  });
+
+  it('reads a chart with no rows stored as empty', () => {
+    expect(sameChartData(shape('bar-chart'), { pieSlices: [] })).toBe(true);
+    expect(
+      sameChartData(
+        { ...shape('line-chart'), lineCategories: ['Q1'] },
+        { lineCategories: ['Q1'], lineSeries: [] },
+      ),
+    ).toBe(true);
   });
 
   it('leaves the link with the read names, range and time', () => {

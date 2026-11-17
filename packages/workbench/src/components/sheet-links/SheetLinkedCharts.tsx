@@ -1,34 +1,46 @@
 'use client';
 
-// Charts linked to a liveplanner sheet (docs/specs/009-elements/pie-chart.md "Charts linked to a liveplanner sheet";
-// blueprints/data-charts.md "Linked to a sheet"): the editor's side. SheetLinksHost reads the open tab's linked charts
-// (useSheetLinkedCharts) and hands the canvas and the element menu what each person sees, and the Link, Update and
-// Unlink actions. Outside it (a thumbnail, an export, the read-only renderers) a linked chart draws its saved values
-// and shows nothing more.
-import dynamic from 'next/dynamic';
-import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
-import { SheetLinkIcon } from '@livedocuments/ui';
-import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
+// Charts linked to a liveplanner sheet (each reader app's docs/specs/009-elements/pie-chart.md "Charts linked to a
+// liveplanner sheet"): the editor's side, one copy for livedocuments, livediagram and livedesign. SheetLinksHost reads
+// the open tab's linked charts (useSheetLinkedCharts) and hands the canvas and the element menu what each person
+// sees, and the Link, Update and Unlink actions. Outside it (a thumbnail, an export, the read-only renderers) a linked
+// chart draws its saved values and shows nothing more.
 import {
-  chartFieldsFromTable,
-  type ChartSheetSource,
-  type Element,
-  type ShapeElement,
-} from '@livedocuments/document';
+  createContext,
+  lazy,
+  Suspense,
+  useContext,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react';
+import { SheetLinkIcon } from '@liveworkspace/ui';
+import type { ChartSheetSource } from '@liveworkspace/element-model/chart-sheet-source';
+import { chartFieldsFromTable } from '@liveworkspace/element-model/chart-table';
 import type { SheetRangeRead } from '@liveworkspace/index-client';
-import { useSheetLinkedCharts } from '@/hooks/canvas/useSheetLinkedCharts';
-import { useRelativeNow } from '@/lib/relative-time';
-import { chartAsSeen, sheetLinkLine, type SheetLinkStatus } from '@/lib/sheet-links';
-import { track } from '@/lib/telemetry';
+import { useCanvasZoom } from '../canvas/CanvasZoomContext';
+import { useRelativeNow } from '../../lib/relative-now';
+import { useSheetLinkedCharts, type SheetLinkGrantOf } from './useSheetLinkedCharts';
+import {
+  chartAsSeen,
+  isChart,
+  sheetLinkLine,
+  type SheetChart,
+  type SheetLinkElement,
+  type SheetLinkStatus,
+} from './sheet-links';
 
-const LinkSheetDialog = dynamic(
-  () => import('@/components/dialogs/LinkSheetDialog').then((m) => m.LinkSheetDialog),
-  { ssr: false },
+// Loaded on demand: only an Editor who opens it pays for it.
+const LinkSheetDialog = lazy(() =>
+  import('./LinkSheetDialog').then((m) => ({ default: m.LinkSheetDialog })),
 );
+
+// What the item is called in its product's words ("saved in the document", "saved in the design").
+export type SheetLinkNoun = 'document' | 'design';
 
 export type SheetLinks = {
   statusOf: (source: ChartSheetSource) => SheetLinkStatus;
-  // An Editor on an unlocked document: Link to Sheet, Update and Unlink.
+  // An Editor on an unlocked item: Link to Sheet, Update and Unlink.
   canEdit: boolean;
   openLink: (elementId: string) => void;
   update: (source: ChartSheetSource) => void;
@@ -39,30 +51,41 @@ export const SheetLinksContext = createContext<SheetLinks | null>(null);
 
 export const useSheetLinks = (): SheetLinks | null => useContext(SheetLinksContext);
 
-export function SheetLinksHost({
+// The telemetry types a link sends (`Element·Changed·<type>`), through the product's own `track`.
+export type SheetLinkEvent = 'ChartSheetLink' | 'ChartSheetUnlink';
+
+export function SheetLinksHost<E extends SheetLinkElement>({
   elements,
-  documentId,
+  itemId,
   canEdit,
   commit,
   tick,
+  grantOf,
+  onTrack,
+  noun,
   children,
 }: {
-  elements: readonly Element[];
-  documentId: string | null;
+  elements: readonly E[];
+  // The reader item's id: its grant asks the plan to say when a Sheet changes.
+  itemId: string | null;
   canEdit: boolean;
-  commit: (map: (els: Element[]) => Element[]) => void;
-  tick: (map: (els: Element[]) => Element[]) => void;
+  commit: (map: (els: E[]) => E[]) => void;
+  tick: (map: (els: E[]) => E[]) => void;
+  grantOf: SheetLinkGrantOf;
+  onTrack: (event: SheetLinkEvent) => void;
+  noun: SheetLinkNoun;
   children: ReactNode;
 }) {
   const { statusOf, update, seed } = useSheetLinkedCharts({
     elements,
-    documentId,
+    itemId,
     canSave: canEdit,
     tick,
+    grantOf,
   });
   const [linkingId, setLinkingId] = useState<string | null>(null);
   const linking = linkingId
-    ? elements.find((e): e is ShapeElement => e.id === linkingId && e.type === 'shape')
+    ? elements.find((e): e is E & SheetChart => e.id === linkingId && isChart(e))
     : undefined;
 
   const value = useMemo<SheetLinks>(
@@ -74,52 +97,56 @@ export function SheetLinksHost({
       unlink: (id) => {
         commit((els) =>
           els.map((e) => {
-            if (e.id !== id || e.type !== 'shape' || !e.chartSheetSource) return e;
+            if (e.id !== id || !isChart(e) || !e.chartSheetSource) return e;
             const { chartSheetSource: _gone, ...kept } = e;
-            return kept;
+            return kept as unknown as E;
           }),
         );
-        track('Element', 'Changed', 'ChartSheetUnlink');
+        onTrack('ChartSheetUnlink');
       },
     }),
-    [statusOf, canEdit, update, commit],
+    [statusOf, canEdit, update, commit, onTrack],
   );
 
   // A link made: the read's values and the link in one undo step, and that read kept as the chart's first.
   const link = (id: string, source: ChartSheetSource, read: SheetRangeRead) => {
     commit((els) =>
       els.map((e) =>
-        e.id === id && e.type === 'shape'
+        e.id === id && isChart(e)
           ? { ...e, ...chartFieldsFromTable(e, read.table), chartSheetSource: source }
           : e,
       ),
     );
     seed(source, read);
-    track('Element', 'Changed', 'ChartSheetLink');
+    onTrack('ChartSheetLink');
   };
 
   return (
     <SheetLinksContext.Provider value={value}>
       {children}
       {linking && canEdit ? (
-        <LinkSheetDialog
-          chart={linking}
-          documentId={documentId}
-          onLink={(source, read) => {
-            link(linking.id, source, read);
-            setLinkingId(null);
-          }}
-          onClose={() => setLinkingId(null)}
-        />
+        <Suspense fallback={null}>
+          <LinkSheetDialog
+            chart={linking}
+            itemId={itemId}
+            grantOf={grantOf}
+            noun={noun}
+            onLink={(source, read) => {
+              link(linking.id, source, read);
+              setLinkingId(null);
+            }}
+            onClose={() => setLinkingId(null)}
+          />
+        </Suspense>
       ) : null}
     </SheetLinksContext.Provider>
   );
 }
 
 // The chart as this person sees it: a live read's values over the saved ones.
-export function useChartAsSeen(element: Element): Element {
+export function useChartAsSeen<E extends SheetLinkElement>(element: E): E {
   const links = useSheetLinks();
-  if (!links || element.type !== 'shape' || !element.chartSheetSource) return element;
+  if (!links || !isChart(element) || !element.chartSheetSource) return element;
   return chartAsSeen(element, links.statusOf(element.chartSheetSource));
 }
 
@@ -131,9 +158,15 @@ const DOT: Record<'live' | 'quiet' | 'warn', string> = {
 
 // "Linked to Q3 Budget · updated 2 min ago" just above a linked chart's top edge, while it is hovered or selected. It
 // takes no pointer, so it never gets in the way of a drag.
-export function SheetLinkLine({ element, selected }: { element: Element; selected: boolean }) {
+export function SheetLinkLine({
+  element,
+  selected,
+}: {
+  element: SheetLinkElement;
+  selected: boolean;
+}) {
   const links = useSheetLinks();
-  if (!links || element.type !== 'shape' || !element.chartSheetSource) return null;
+  if (!links || !isChart(element) || !element.chartSheetSource) return null;
   return (
     <SheetLinkPill
       source={element.chartSheetSource}
@@ -144,7 +177,8 @@ export function SheetLinkLine({ element, selected }: { element: Element; selecte
 }
 
 // The line itself, mounted only for a linked chart, so only those follow the zoom. It is counter-scaled (1/zoom) like
-// the canvas's other chrome, so it reads at one size on screen at any zoom; a long plan name truncates past 20rem, the freshness always shows.
+// the canvas's other chrome, so it reads at one size on screen at any zoom; a long plan name truncates past 20rem, the
+// freshness always shows.
 function SheetLinkPill({
   source,
   status,

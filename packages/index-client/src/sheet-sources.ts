@@ -7,7 +7,11 @@ import type { App } from './constants';
 // The apps whose items hold sheets a chart may read, and the apps whose items may watch one.
 export const SHEET_SOURCE_APPS = ['liveplanner'] as const satisfies readonly App[];
 export type SheetSourceApp = (typeof SHEET_SOURCE_APPS)[number];
-export const SOURCE_WATCH_APPS = ['livedocuments'] as const satisfies readonly App[];
+export const SOURCE_WATCH_APPS = [
+  'livedocuments',
+  'livediagram',
+  'livedesign',
+] as const satisfies readonly App[];
 export type SourceWatchApp = (typeof SOURCE_WATCH_APPS)[number];
 
 export const isSheetSourceApp = (value: unknown): value is SheetSourceApp =>

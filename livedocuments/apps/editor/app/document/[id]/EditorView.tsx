@@ -18,7 +18,8 @@ import { ChangesetRevealContext } from '@/components/canvas/ChangesetRevealOverl
 import { SuggestionsContext } from '@liveworkspace/suggestions/react/suggestions-store';
 import { AgentFocusContext } from '@/components/canvas/AgentFocusOverlay';
 import { SelectionStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
-import { SheetLinksHost } from '@/components/canvas/SheetLinkedCharts';
+import { SheetLinksHost } from '@liveworkspace/workbench/components/sheet-links/SheetLinkedCharts';
+import { sheetLinkGrantOf, trackSheetLink } from '@/lib/sheet-link-bindings';
 import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { EditorCanvasHost } from '@/components/canvas/EditorCanvasHost';
 import { ConnectedTabHost } from '@/components/connect/ConnectedTabHost';
@@ -347,10 +348,13 @@ export function EditorView() {
             element menu, which both sit inside. */}
           <SheetLinksHost
             elements={activeTab.elements}
-            documentId={documentId}
+            itemId={documentId}
             canEdit={ctx.can.level === 'edit' && !isReadOnly}
             commit={ctx.commitElements}
             tick={ctx.tickElements}
+            grantOf={sheetLinkGrantOf}
+            onTrack={trackSheetLink}
+            noun="document"
           >
             <ViewportStoreProvider store={ctx.viewport}>
               <CanvasSurfaceProvider surface={canvasSurface(backdrop.backgroundColor)}>

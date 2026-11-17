@@ -1,27 +1,22 @@
 // @vitest-environment jsdom
-// Charts linked to a liveplanner sheet (docs/specs/009-elements/pie-chart.md "Charts linked to a liveplanner
-// sheet"): each range read once on open, read again on the room's frame for its Sheet and never otherwise, a reader
+// Charts linked to a liveplanner sheet (each reader app's docs/specs/009-elements/pie-chart.md "Charts linked to a
+// liveplanner sheet"): each range read once on open, read again on the room's frame for its Sheet and never otherwise, a reader
 // without access left on the saved values, and an Editor's live values saved quietly once.
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import {
-  createShape,
-  type ChartSheetSource,
-  type Element,
-  type ShapeElement,
-} from '@livedocuments/document';
+import type { ChartSheetSource } from '@liveworkspace/element-model/chart-sheet-source';
 import { IndexError, type SheetRangeRead } from '@liveworkspace/index-client';
 
-const { readSheetRange, documentGrant } = vi.hoisted(() => ({
-  readSheetRange: vi.fn(),
-  documentGrant: vi.fn(),
-}));
-vi.mock('@liveworkspace/workbench/lib/index-client', () => ({ indexClient: { readSheetRange } }));
-vi.mock('@/lib/api/document-grants', () => ({ documentGrant }));
+const { readSheetRange } = vi.hoisted(() => ({ readSheetRange: vi.fn() }));
+vi.mock('../../lib/index-client', () => ({ indexClient: { readSheetRange } }));
 
-import { emitSourceChanged } from '@/lib/sheet-link-signal';
-import type { SheetLinkStatus } from '@/lib/sheet-links';
+import { emitSourceChanged } from './sheet-link-signal';
+import type { SheetChart, SheetLinkStatus } from './sheet-links';
 import { readSheetLink, useSheetLinkedCharts } from './useSheetLinkedCharts';
+
+// An element of any product: the hook keeps each one's own type.
+type Element = SheetChart | { id: string; type: 'arrow' };
+const grantOf = vi.fn<(itemId: string) => Promise<string | null>>();
 
 const source: ChartSheetSource = {
   app: 'liveplanner',
@@ -44,9 +39,10 @@ const readOf = (values: number[]): SheetRangeRead => ({
   table: { categories: ['Q1', 'Q2'], series: [{ name: 'Sales', values }] },
   readAt: 5,
 });
-const chart = (id: string): ShapeElement => ({
-  ...createShape('bar-chart', 0, 0),
+const chart = (id: string): SheetChart => ({
   id,
+  type: 'shape',
+  shape: 'bar-chart',
   pieSlices: [
     { label: 'Q1', value: 1 },
     { label: 'Q2', value: 2 },
@@ -57,27 +53,52 @@ const chart = (id: string): ShapeElement => ({
 afterEach(() => vi.clearAllMocks());
 
 describe('readSheetLink', () => {
-  it("reads with the document's grant, asking to watch, and maps each refusal", async () => {
-    documentGrant.mockResolvedValue({ grant: 'G' });
+  it("reads with the item's grant, asking to watch, and maps each refusal", async () => {
+    grantOf.mockResolvedValue('G');
     readSheetRange.mockResolvedValueOnce(readOf([1, 2]));
-    expect(await readSheetLink(source, 'doc_1')).toEqual({ kind: 'live', read: readOf([1, 2]) });
+    expect(await readSheetLink(source, 'doc_1', grantOf)).toEqual({
+      kind: 'live',
+      read: readOf([1, 2]),
+    });
+    expect(grantOf).toHaveBeenCalledWith('doc_1');
     expect(readSheetRange).toHaveBeenCalledWith(
       'plan_1',
       { sheetId: 'sheet0001', range: source.range },
       { grant: 'G', watch: 'doc_1' },
     );
     readSheetRange.mockRejectedValueOnce(new IndexError(404, 'not_found'));
-    expect(await readSheetLink(source, 'doc_1')).toEqual({ kind: 'saved' });
+    expect(await readSheetLink(source, 'doc_1', grantOf)).toEqual({ kind: 'saved' });
+    readSheetRange.mockRejectedValueOnce(new IndexError(403, 'forbidden'));
+    expect(await readSheetLink(source, 'doc_1', grantOf)).toEqual({ kind: 'saved' });
+    readSheetRange.mockRejectedValueOnce(new IndexError(401, 'unauthorised'));
+    expect(await readSheetLink(source, 'doc_1', grantOf)).toEqual({ kind: 'saved' });
     readSheetRange.mockRejectedValueOnce(new IndexError(409, 'range_gone'));
-    expect(await readSheetLink(source, 'doc_1')).toEqual({ kind: 'gone' });
+    expect(await readSheetLink(source, 'doc_1', grantOf)).toEqual({ kind: 'gone' });
+    readSheetRange.mockRejectedValueOnce(new IndexError(503, 'source_unavailable'));
+    expect(await readSheetLink(source, 'doc_1', grantOf)).toEqual({ kind: 'failed' });
     readSheetRange.mockRejectedValueOnce(new TypeError('offline'));
-    expect(await readSheetLink(source, 'doc_1')).toEqual({ kind: 'failed' });
+    expect(await readSheetLink(source, 'doc_1', grantOf)).toEqual({ kind: 'failed' });
   });
 
-  it('reads without a watch when there is no grant', async () => {
-    documentGrant.mockRejectedValue(new Error('no'));
-    readSheetRange.mockResolvedValueOnce(readOf([1, 2]));
-    await readSheetLink({ ...source, cols: ['c001', 'c002'] }, null);
+  it('reads without a watch when there is no grant (a This Browser item, a refusal) or no item', async () => {
+    grantOf.mockRejectedValue(new Error('no'));
+    readSheetRange.mockResolvedValue(readOf([1, 2]));
+    await readSheetLink(source, 'doc_local', grantOf);
+    expect(readSheetRange).toHaveBeenLastCalledWith(
+      'plan_1',
+      { sheetId: 'sheet0001', range: source.range },
+      { grant: null, watch: null },
+    );
+    grantOf.mockResolvedValue(null);
+    await readSheetLink(source, 'doc_local', grantOf);
+    expect(readSheetRange).toHaveBeenLastCalledWith(
+      'plan_1',
+      { sheetId: 'sheet0001', range: source.range },
+      { grant: null, watch: null },
+    );
+    grantOf.mockClear();
+    await readSheetLink({ ...source, cols: ['c001', 'c002'] }, null, grantOf);
+    expect(grantOf).not.toHaveBeenCalled();
     expect(readSheetRange).toHaveBeenCalledWith(
       'plan_1',
       { sheetId: 'sheet0001', range: source.range, cols: ['c001', 'c002'] },
@@ -91,13 +112,13 @@ describe('useSheetLinkedCharts', () => {
     canSave: boolean,
     read = vi.fn(async (): Promise<SheetLinkStatus> => ({ kind: 'live', read: readOf([3, 4]) })),
   ) => {
-    let els: Element[] = [chart('a'), chart('b')];
+    let els: Element[] = [chart('a'), chart('b'), { id: 'arrow', type: 'arrow' }];
     const tick = vi.fn((map: (e: Element[]) => Element[]) => {
       els = map(els);
     });
     const hook = renderHook(
       ({ elements }) =>
-        useSheetLinkedCharts({ elements, documentId: 'doc_1', canSave, tick, read }),
+        useSheetLinkedCharts({ elements, itemId: 'doc_1', canSave, tick, grantOf, read }),
       { initialProps: { elements: els } },
     );
     return { hook, read, tick, els: () => els };
@@ -145,11 +166,12 @@ describe('useSheetLinkedCharts', () => {
   it("saves an Editor's live values quietly, once for every chart", async () => {
     const { hook, tick, els } = arrange(true);
     await waitFor(() => expect(tick).toHaveBeenCalledTimes(1));
-    expect(els().map((e) => (e as ShapeElement).pieSlices?.map((s) => s.value))).toEqual([
+    expect(els().map((e) => (e as SheetChart).pieSlices?.map((s) => s.value))).toEqual([
       [3, 4],
       [3, 4],
+      undefined,
     ]);
-    expect((els()[0] as ShapeElement).chartSheetSource?.readAt).toBe(5);
+    expect((els()[0] as SheetChart).chartSheetSource?.readAt).toBe(5);
     hook.rerender({ elements: els() });
     expect(tick).toHaveBeenCalledTimes(1);
   });
@@ -173,5 +195,25 @@ describe('useSheetLinkedCharts', () => {
     await waitFor(() => expect(read).toHaveBeenCalledTimes(2));
     act(() => hook.result.current.seed({ ...source, sheetId: 'sheet0009' }, readOf([9, 9])));
     expect(hook.result.current.statusOf({ ...source, sheetId: 'sheet0009' }).kind).toBe('live');
+  });
+
+  it("reads through the index with the item's grant when no reader is given", async () => {
+    grantOf.mockResolvedValue('G');
+    readSheetRange.mockResolvedValue(readOf([5, 6]));
+    const hook = renderHook(() =>
+      useSheetLinkedCharts({
+        elements: [chart('a')],
+        itemId: 'doc_1',
+        canSave: false,
+        tick: () => {},
+        grantOf,
+      }),
+    );
+    await waitFor(() => expect(hook.result.current.statusOf(source).kind).toBe('live'));
+    expect(readSheetRange).toHaveBeenCalledWith(
+      'plan_1',
+      { sheetId: 'sheet0001', range: source.range },
+      { grant: 'G', watch: 'doc_1' },
+    );
   });
 });

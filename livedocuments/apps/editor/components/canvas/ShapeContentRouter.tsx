@@ -43,7 +43,10 @@ import { LegendView } from '@/components/canvas/LegendView';
 import { ChecklistView } from '@/components/canvas/ChecklistView';
 import { BarChartView } from '@/components/canvas/BarChartView';
 import { LineChartView } from '@/components/canvas/LineChartView';
-import { SheetLinkLine, useChartAsSeen } from '@/components/canvas/SheetLinkedCharts';
+import {
+  SheetLinkLine,
+  useChartAsSeen,
+} from '@liveworkspace/workbench/components/sheet-links/SheetLinkedCharts';
 import type { BoxedElementViewProps } from '@/components/canvas/BoxedElementView.types';
 import {
   useChartGround,
