@@ -2,25 +2,11 @@
 
 // Where an editor offers Snapshots (liveworkspace/docs/specs/014-snapshots/snapshots.md "In the editor"; blueprint
 // SN22): the app's host builds a door from its gate (an Editor of the whole item, stored on the server, not a
-// workbench frame or a Community visit) and hands it to the provider, or null for nobody. The footer's button reads
-// it and draws nothing without one; the provider draws the dialog while it is open. The dialog's code loads the first
-// time it opens, so an editor that never opens it pays nothing for it.
+// workbench frame or a Community visit) and hands it to the provider, or null for nobody. The footer's History reads
+// it (history-snapshots.tsx) and has no snapshots without one.
 
-import {
-  createContext,
-  lazy,
-  Suspense,
-  useCallback,
-  useContext,
-  useMemo,
-  useState,
-  type ReactNode,
-} from 'react';
+import { createContext, useCallback, useContext, useMemo, type ReactNode } from 'react';
 import { snapshotsApi, type SnapshotsApi, type SnapshotsApiDeps } from '../client';
-
-const SnapshotsDialog = lazy(() =>
-  import('./SnapshotsDialog').then((m) => ({ default: m.SnapshotsDialog })),
-);
 
 export type SnapshotsDoor = {
   api: SnapshotsApi;
@@ -30,7 +16,7 @@ export type SnapshotsDoor = {
   viewerId: string | null;
 };
 
-type DoorContext = { door: SnapshotsDoor; open: () => void } | null;
+type DoorContext = { door: SnapshotsDoor } | null;
 
 const Context = createContext<DoorContext>(null);
 
@@ -118,19 +104,6 @@ export function SnapshotsDoorProvider({
   door: SnapshotsDoor | null;
   children: ReactNode;
 }) {
-  const [open, setOpen] = useState(false);
-  const value = useMemo<DoorContext>(
-    () => (door ? { door, open: () => setOpen(true) } : null),
-    [door],
-  );
-  return (
-    <Context.Provider value={value}>
-      {children}
-      {door && open ? (
-        <Suspense fallback={null}>
-          <SnapshotsDialog door={door} onClose={() => setOpen(false)} />
-        </Suspense>
-      ) : null}
-    </Context.Provider>
-  );
+  const value = useMemo<DoorContext>(() => (door ? { door } : null), [door]);
+  return <Context.Provider value={value}>{children}</Context.Provider>;
 }

@@ -184,7 +184,7 @@ export function editorView({
     canvasPointerRef: inputSlice.canvasPointerRef,
     canRedo: historySlice.canRedo,
     canUndo: historySlice.canUndo,
-    // A linked chart's live values saved quietly (components/canvas/SheetLinkedCharts.tsx).
+    // A linked chart's live values saved quietly (@liveworkspace/workbench components/sheet-links/).
     tickElements: historySlice.tick,
     cancelDrawShape: elementsSlice.cancelDrawShape,
     cancelEdit: inputSlice.cancelEdit,

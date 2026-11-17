@@ -175,6 +175,51 @@ Follows the composite-component pattern ([Timeline rail](timeline-rail.md)): a d
 `ShapeKind` + small `ShapeElement` fields + a bespoke `*View` + a borderless variant + a
 context-menu category. New chart kinds reuse it under the same Data palette category.
 
+## Charts linked to a liveplanner sheet
+
+A metric tree, a KPI board or a cost chart gets its numbers copied by hand from a spreadsheet, and goes stale the week
+after it is made. A pie, bar or line chart can instead take its data from a range of a liveplanner Sheet and keep in
+step with it (Work Tracker 1133). It stays a native chart: drawn in the design's theme, styled and exported like any other; only
+its numbers come from the sheet. It works as livedocuments' linked charts do, from one copy of the editor's side in
+`@liveworkspace/workbench` (`components/sheet-links/`); the platform's side (the range read, the door, the change
+signal) is [liveworkspace sheet-sources.md](../../../../liveworkspace/docs/specs/004-index/sheet-sources.md).
+
+- **Link to Sheet.** An Editor's chart Data section offers **Link to Sheet…** under its rows: a dialog to pick a plan
+  (the person's liveplanner plans, most recent first, with a search), one of its Sheets, and a range typed as in a
+  spreadsheet (`B2:E9`, prefilled with the sheet's filled extent). A preview shows what the chart will draw (its
+  categories and series, or why it cannot: "That is not a range."). **Link** writes the read onto the chart (its
+  slices, or its categories and series, keeping colours by position) with the source, as one undo step. The dialog
+  notes that the values are saved in the design, so people who can't open the plan still see them.
+- **The source** (`chartSheetSource`, `@liveworkspace/element-model/chart-sheet-source`) names the plan, the sheet and
+  the range by stable row and column ids (so rows inserted inside it are read, and moves are followed), with the
+  plan's and sheet's names, the range as A1 text and when it was last read (`readAt`).
+- **Linked to.** A linked chart shows a quiet line below its bottom edge, left-aligned and clear of the selection handles, while it is hovered or selected, at one
+  size on screen whatever the zoom: a sheet glyph, then "Linked to <plan> · updated 2 min ago". The Sheet row in its
+  Data section says the same, with the sheet and range under it ("Costs · B2:E9"), and offers an Editor **Update**
+  (read again now), **Change…** and **Unlink**.
+- **Keeping in step.** While the design is open, each linked chart on the open tab is read on open, on a tab change
+  and whenever its sheet changes (the room's `source-changed` frame), never by polling. Each person reads with their
+  own access:
+  - who can open the plan sees the values it holds now; an Editor's editor also saves them on the chart, quietly (no
+    undo step), so the saved values follow;
+  - who cannot open the plan (or has lost access, or the plan or sheet was deleted) sees the values last saved on the
+    chart, and the line says "saved 2 hours ago" with no Update;
+  - when the read fails (offline, the plan's app down) the line says "Couldn't update" and Update tries again.
+- **A design saved in This Browser** has no room, so no change signal reaches it: its linked charts are read on
+  open, on a tab change and on Update, each with the person's own access, and draw the saved values when offline.
+- **While linked**, the Sheet row takes the place of the slice and series rows ("These numbers come from the
+  sheet."): the next read would overwrite a hand edit. Chart type, palette, legend, values, axis and animation stay the
+  Editor's.
+- **The range breaks** when a corner row or column is deleted: the chart keeps its values, and the line says "The
+  linked range is gone" with **Change…** to pick it again.
+- **Unlink** removes the source and keeps the last values, as one undo step.
+- **Exports and copies.** An export (SVG, PNG, PDF, the design's file) draws the saved values and the file carries no
+  source, as does a copy made through a Community link and a Community visitor's read. A duplicate, a copy-paste or a
+  tab copied within livedesign keeps the source.
+- **Who may.** Link to Sheet, Update, Change and Unlink are an Editor's (`can.level === 'edit'`, not read only). A
+  Participant and a Viewer see the line and the live values on the terms above; they never write.
+- **Telemetry.** `Element·Changed·ChartSheetLink` on Link, `Element·Changed·ChartSheetUnlink` on Unlink.
+
 ## Chart palettes
 
 Without a chart-level palette, saying "this chart is greys" would mean opening

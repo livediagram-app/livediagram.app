@@ -1,16 +1,16 @@
 'use client';
 
-// The chart menu's Data section while a chart is, or could be, linked to a liveplanner sheet (docs/specs/009-elements/
-// pie-chart.md "Charts linked to a liveplanner sheet"). Linked: the Sheet row (the plan, the sheet and range, how fresh
-// the values are) with Update, Change and Unlink for an Editor, and the data rows read-only. Not linked: an Editor's
-// Link to Sheet. Opening the dialog closes the menu (`onClose`), as every other menu item that opens a dialog does: left
-// open, its flyout sat over the dialog, and on a phone its sheet covered the dialog's Link button.
+// The chart menu's Data section while a chart is, or could be, linked to a liveplanner sheet (each reader app's
+// docs/specs/009-elements/pie-chart.md "Charts linked to a liveplanner sheet"). Linked: the Sheet row (the plan, the
+// sheet and range, how fresh the values are) with Update, Change and Unlink for an Editor, in place of the data rows.
+// Not linked: the rows, and an Editor's Link to Sheet under them. Opening the dialog closes the menu (`onClose`), as
+// every other menu item that opens a dialog does: left open, its flyout sat over the dialog, and on a phone its sheet
+// covered the dialog's Link button.
 import type { ReactNode } from 'react';
-import { RefreshIcon, SheetLinkIcon } from '@livedocuments/ui';
-import type { ShapeElement } from '@livedocuments/document';
-import { useSheetLinks } from '@/components/canvas/SheetLinkedCharts';
-import { useRelativeNow } from '@/lib/relative-time';
-import { sheetLinkLine } from '@/lib/sheet-links';
+import { RefreshIcon, SheetLinkIcon } from '@liveworkspace/ui';
+import { useRelativeNow } from '../../lib/relative-now';
+import { useSheetLinks } from './SheetLinkedCharts';
+import { sheetLinkLine, type SheetChart } from './sheet-links';
 
 const ACTION =
   'inline-flex h-7 cursor-pointer items-center gap-1 rounded-md px-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-800 focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:outline-none disabled:cursor-default disabled:opacity-50 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100';
@@ -28,7 +28,7 @@ export function SheetLinkSection({
   rows,
   onClose,
 }: {
-  chart: ShapeElement;
+  chart: SheetChart;
   rows: ReactNode;
   onClose: () => void;
 }) {
@@ -75,18 +75,18 @@ export function SheetLinkSection({
             {source.sheetName || 'Sheet'} · <span className="font-mono">{source.a1}</span>
           </p>
           <p className={`mt-0.5 text-[11px] ${TONE[line.tone]}`}>
-            {status?.kind === 'reading' ? 'Reading the sheet…' : capitalise(line.detail)}
+            {status.kind === 'reading' ? 'Reading the sheet…' : capitalise(line.detail)}
           </p>
         </div>
       </div>
       {links.canEdit ? (
         <div className="-mx-1.5 flex flex-wrap items-center gap-1">
           {/* No Update for an Editor who cannot open the plan: a read would only be refused again. */}
-          {status?.kind === 'saved' ? null : (
+          {status.kind === 'saved' ? null : (
             <button
               type="button"
               className={ACTION}
-              disabled={status?.kind === 'reading'}
+              disabled={status.kind === 'reading'}
               onClick={() => links.update(source)}
             >
               <RefreshIcon size={13} />
@@ -106,7 +106,7 @@ export function SheetLinkSection({
         </div>
       ) : null}
       <p className="text-[11px] text-slate-500 dark:text-slate-400">
-        {status?.kind === 'saved'
+        {status.kind === 'saved'
           ? "These numbers come from a sheet you can't open, as last saved."
           : 'These numbers come from the sheet.'}
       </p>

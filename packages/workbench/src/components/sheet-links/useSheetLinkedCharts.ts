@@ -1,10 +1,10 @@
 'use client';
 
-// Charts linked to a liveplanner sheet (docs/specs/009-elements/pie-chart.md "Charts linked to a liveplanner sheet";
-// blueprints/data-charts.md "Linked to a sheet"): the open tab's linked charts read, each distinct range once, when the
-// tab opens and when the room says one of their Sheets changed. Never polled. Each read is this person's own: one who
-// can open the plan sees its values live, one who cannot sees the saved values. An Editor's live values are saved
-// quietly (no undo step), so a reader without access and an export see them too.
+// Charts linked to a liveplanner sheet (each reader app's docs/specs/009-elements/pie-chart.md "Charts linked to a
+// liveplanner sheet"): the open tab's linked charts read, each distinct range once, when the tab opens and when the
+// room says one of their Sheets changed. Never polled. Each read is this person's own: one who can open the plan sees
+// its values live, one who cannot sees the saved values. An Editor's live values are saved quietly (no undo step), so
+// a reader without access and an export see them too.
 import {
   useCallback,
   useEffect,
@@ -14,11 +14,10 @@ import {
   useRef,
   useState,
 } from 'react';
-import type { ChartSheetSource, Element } from '@livedocuments/document';
+import type { ChartSheetSource } from '@liveworkspace/element-model/chart-sheet-source';
 import { IndexError, type SheetRangeRead } from '@liveworkspace/index-client';
-import { indexClient } from '@liveworkspace/workbench/lib/index-client';
-import { documentGrant } from '@/lib/api/document-grants';
-import { onSourceChanged } from '@/lib/sheet-link-signal';
+import { indexClient } from '../../lib/index-client';
+import { onSourceChanged } from './sheet-link-signal';
 import {
   liveChartFields,
   linkedChartsOn,
@@ -26,18 +25,23 @@ import {
   sameSource,
   sheetLinkKey,
   sourceAfterRead,
+  type SheetLinkElement,
   type SheetLinkStatus,
-} from '@/lib/sheet-links';
+} from './sheet-links';
 
 type Read = (source: ChartSheetSource) => Promise<SheetLinkStatus>;
+
+// The reader item's own grant (the product's item grants), or null: a This Browser item, a refusal, offline.
+export type SheetLinkGrantOf = (itemId: string) => Promise<string | null>;
 
 // One read, as the index answers it: live, or why not.
 export async function readSheetLink(
   source: ChartSheetSource,
-  documentId: string | null,
+  itemId: string | null,
+  grantOf: SheetLinkGrantOf,
 ): Promise<SheetLinkStatus> {
-  // The document's grant asks the plan to say when the Sheet changes; without one the read still answers.
-  const grant = documentId ? await documentGrant(documentId).catch(() => null) : null;
+  // The item's grant asks the plan to say when the Sheet changes; without one the read still answers.
+  const grant = itemId ? await grantOf(itemId).catch(() => null) : null;
   try {
     const read: SheetRangeRead = await indexClient.readSheetRange(
       source.itemId,
@@ -46,7 +50,7 @@ export async function readSheetLink(
         range: source.range,
         ...(source.cols ? { cols: source.cols } : {}),
       },
-      { grant: grant?.grant ?? null, watch: grant ? documentId : null },
+      { grant, watch: grant ? itemId : null },
     );
     return { kind: 'live', read };
   } catch (err) {
@@ -58,18 +62,20 @@ export async function readSheetLink(
   }
 }
 
-export function useSheetLinkedCharts({
+export function useSheetLinkedCharts<E extends SheetLinkElement>({
   elements,
-  documentId,
+  itemId,
   canSave,
   tick,
-  read = (s) => readSheetLink(s, documentId),
+  grantOf,
+  read = (s) => readSheetLink(s, itemId, grantOf),
 }: {
-  elements: readonly Element[];
-  documentId: string | null;
-  // An Editor on an unlocked document: live values are saved quietly.
+  elements: readonly E[];
+  itemId: string | null;
+  // An Editor on an unlocked item: live values are saved quietly.
   canSave: boolean;
-  tick: (map: (els: Element[]) => Element[]) => void;
+  tick: (map: (els: E[]) => E[]) => void;
+  grantOf: SheetLinkGrantOf;
   read?: Read;
 }) {
   const linked = useMemo(() => linkedChartsOn(elements), [elements]);
@@ -118,9 +124,9 @@ export function useSheetLinkedCharts({
   });
   useEffect(
     () =>
-      onSourceChanged(({ itemId, sheetIds }) => {
+      onSourceChanged(({ itemId: planId, sheetIds }) => {
         for (const [key, source] of sourcesRef.current) {
-          if (source.itemId === itemId && sheetIds.includes(source.sheetId)) readKey(key, source);
+          if (source.itemId === planId && sheetIds.includes(source.sheetId)) readKey(key, source);
         }
       }),
     [readKey],
@@ -129,7 +135,7 @@ export function useSheetLinkedCharts({
   // An Editor's live values saved quietly: one tick for every chart a read changed, and none when nothing did.
   const save = useEffectEvent(() => {
     if (!canSave) return;
-    const patches = new Map<string, Partial<Element>>();
+    const patches = new Map<string, object>();
     for (const el of linked) {
       const status = statuses.get(sheetLinkKey(el.chartSheetSource));
       if (status?.kind !== 'live') continue;
@@ -142,8 +148,8 @@ export function useSheetLinkedCharts({
     tick((els) =>
       els.map((e) => {
         const patch = patches.get(e.id);
-        return patch && e.type === 'shape' && e.chartSheetSource
-          ? ({ ...e, ...patch } as Element)
+        return patch && (e as { chartSheetSource?: unknown }).chartSheetSource
+          ? { ...e, ...patch }
           : e;
       }),
     );

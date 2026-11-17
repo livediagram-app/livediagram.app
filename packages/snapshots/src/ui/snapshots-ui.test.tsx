@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { act, fireEvent, render, renderHook, screen, waitFor } from '@testing-library/react';
+import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { resetRevertReload, SnapshotsApiError, type SnapshotsApi } from '../client';
 import type { SnapshotSummary } from '../wire';
@@ -9,7 +10,7 @@ import {
   useItemSnapshotsDoor,
   type SnapshotsDoor,
 } from './door';
-import { useSnapshotsToolsItem } from './snapshots-tools-item';
+import { useHistorySnapshotsHost, useSnapshotsExtras } from './history-snapshots';
 import { useSnapshots } from './useSnapshots';
 import {
   snapshotAuthor,
@@ -55,14 +56,20 @@ function fakeApi(initial: SnapshotSummary[]): SnapshotsApi & { list: ReturnType<
   };
 }
 
-// The Tools menu's Snapshots row, as a plain button: what the footer's Tools popover draws for it.
+// History in Tools, for someone with no timeline to read: a press shows Snapshots on their own.
 function SnapshotsRow() {
-  const item = useSnapshotsToolsItem();
-  if (!item) return null;
+  const host = useHistorySnapshotsHost();
+  const [open, setOpen] = useState(false);
+  if (!host) return null;
   return (
-    <button type="button" data-snapshots-button="" onClick={() => item.onSelect(null)}>
-      {item.label}
-    </button>
+    <>
+      <button type="button" data-snapshots-button="" onClick={() => setOpen(true)}>
+        Snapshots
+      </button>
+      {open ? (
+        <host.Alone onClose={() => setOpen(false)} after={<p>Sign in for the rest</p>} />
+      ) : null}
+    </>
   );
 }
 
@@ -80,26 +87,59 @@ const open = async () => {
   return screen.findByRole('dialog', {}, { timeout: 5000 });
 };
 
-describe('the Snapshots row', () => {
+describe('Snapshots alone, in History', () => {
   it('draws nothing without a door', () => {
     const { container } = mount(null);
     expect(container.querySelector('[data-snapshots-button]')).toBeNull();
   });
 
-  it('is a Versioning row in the Tools menu, naming the item', () => {
-    const { result } = renderHook(() => useSnapshotsToolsItem(), {
+  it('hands History one host while the door is open, and draws what History puts under it', async () => {
+    const { result, rerender } = renderHook(() => useHistorySnapshotsHost(), {
       wrapper: ({ children }) => (
         <SnapshotsDoorProvider door={{ api: fakeApi([]), noun: 'plan', viewerId: null }}>
           {children}
         </SnapshotsDoorProvider>
       ),
     });
-    expect(result.current).toMatchObject({
-      id: 'snapshots',
-      group: 'versions',
-      label: 'Snapshots',
-      description: 'Save points for the whole plan.',
-    });
+    const first = result.current;
+    rerender();
+    expect(result.current).toBe(first);
+    mount({ api: fakeApi([]), noun: 'plan', viewerId: null });
+    await open();
+    expect(screen.getByText('Sign in for the rest')).toBeTruthy();
+  });
+
+  it('draws nothing once the door shuts', () => {
+    const host = renderHook(() => useHistorySnapshotsHost(), {
+      wrapper: ({ children }) => (
+        <SnapshotsDoorProvider door={{ api: fakeApi([]), noun: 'plan', viewerId: null }}>
+          {children}
+        </SnapshotsDoorProvider>
+      ),
+    }).result.current!;
+    const { container } = render(<host.Alone onClose={() => {}} />);
+    expect(container.innerHTML).toBe('');
+  });
+
+  it('gives History the open door’s snapshots, and draws alone with nothing under it', async () => {
+    const door = { api: fakeApi([snap(1)]), noun: 'plan', viewerId: null };
+    function Pins() {
+      const extras = useHistorySnapshotsHost()!.useExtras();
+      return <p>{extras.pins.length} pinned</p>;
+    }
+    function AloneBare() {
+      const host = useHistorySnapshotsHost()!;
+      return <host.Alone onClose={() => {}} />;
+    }
+    render(
+      <SnapshotsDoorProvider door={door}>
+        <Pins />
+        <AloneBare />
+      </SnapshotsDoorProvider>,
+    );
+    expect(await screen.findByText('1 pinned')).toBeTruthy();
+    const dialog = await screen.findByRole('dialog', {}, { timeout: 5000 });
+    expect(dialog.querySelector('.border-t.px-4')).toBeNull();
   });
 
   it('opens the dialog, empty, and takes a named snapshot', async () => {
@@ -241,6 +281,65 @@ describe('the Snapshots row', () => {
     fireEvent.submit(form);
     expect(api.take).toHaveBeenCalledTimes(1);
     await act(async () => finish());
+  });
+});
+
+// History's timeline with Snapshots in it: Take Snapshot over it, each snapshot a pinned entry on the rail.
+function Timeline({ door }: { door: SnapshotsDoor }) {
+  const extras = useSnapshotsExtras(door, () => NOW);
+  return (
+    <div>
+      {extras.top}
+      <ol aria-label="Timeline">
+        {extras.pins.map((pin, i) => (
+          <div key={pin.key} data-at={pin.at}>
+            {pin.render(i === extras.pins.length - 1)}
+          </div>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+describe('Snapshots in the History timeline', () => {
+  it('takes one from the top and pins each on the rail, with Revert and Delete in place', async () => {
+    const api = fakeApi([snap(1), snap(2)]);
+    const { container } = render(<Timeline door={{ api, noun: 'canvas', viewerId: 'user_a' }} />);
+    expect(await screen.findByText('Snap 1')).toBeTruthy();
+    const pins = container.querySelectorAll('[data-history-snapshot]');
+    expect(pins).toHaveLength(2);
+    expect(pins[0]!.parentElement!.getAttribute('data-at')).toBe(String(NOW - 60_000));
+    // The rail runs on under every pin but the last.
+    expect(pins[0]!.querySelector('span.w-px')).toBeTruthy();
+    expect(pins[1]!.querySelector('span.w-px')).toBeNull();
+    // The row inside a pin is a block, the pin being the list item.
+    expect(pins[0]!.querySelector('[data-snapshot-row]')!.tagName).toBe('DIV');
+    fireEvent.change(screen.getByLabelText('Snapshot name'), { target: { value: 'Launch' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Take Snapshot' }));
+    expect(await screen.findByText('Launch')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Revert to Snap 1' }));
+    const confirm = screen.getByRole('group', { name: 'Confirm revert' });
+    expect(confirm.hasAttribute('data-keeps-escape')).toBe(true);
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    fireEvent.click(screen.getAllByRole('button', { name: 'Delete snapshot' })[1]!);
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
+    });
+    await waitFor(() => expect(screen.queryByText('Snap 1')).toBeNull());
+    expect(api.remove).toHaveBeenCalledWith('s_1');
+  });
+
+  it('reverts from a pin and says so over the timeline', async () => {
+    const reload = vi.fn();
+    Object.defineProperty(window, 'location', { value: { reload }, configurable: true });
+    const api = fakeApi([snap(1)]);
+    render(<Timeline door={{ api, noun: 'canvas', viewerId: null }} />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Revert to Snap 1' }));
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Revert' }));
+    });
+    await waitFor(() => expect(reload).toHaveBeenCalledTimes(1));
+    expect(screen.getByText('Reverted. Reloading…')).toBeTruthy();
   });
 });
 

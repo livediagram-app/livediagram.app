@@ -85,10 +85,11 @@ export function usePlayer(host: WalkthroughHost, api: WalkthroughApi | null) {
 
   // The recorded hidden elements, hidden while it is open.
   const hidden = phase.kind === 'ready' ? phase.events.hidden : null;
+  const marks = host.hideable?.marks;
   useEffect(() => {
     if (!hidden) return;
-    return applyHidden(document, hidden, 'viewer');
-  }, [hidden]);
+    return applyHidden(document, hidden, 'viewer', marks);
+  }, [hidden, marks]);
 
   // Leaving the item with a walkthrough open lets go of its media.
   const url = phase.kind === 'ready' ? phase.url : null;

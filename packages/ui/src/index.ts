@@ -121,6 +121,18 @@ export * from './icons/chrome';
 export { Select, type SelectProps, type SelectVariant, type SelectSize } from './Select';
 export { DialogCloseButton } from './dialog/DialogCloseButton';
 export { useDialogDismiss, type DialogDismiss } from './dialog/dialog-dismiss';
+export {
+  closeDialogSlot,
+  holdDialogSlot,
+  leaveToolsWithDialog,
+  openDialogSlot,
+  resetDialogSlot,
+  setDialogSlotNode,
+  useDialogInline,
+  useDialogSlot,
+  type ClaimedDialog,
+  type DialogSlot,
+} from './dialog/dialog-slot';
 export { CompactEmptyState, NoMatches, noMatchHint, noMatchTitle } from './CompactEmptyState';
 export { PageNotFound } from './PageNotFound';
 export { SnapCarousel } from './SnapCarousel';

@@ -73,7 +73,8 @@ export function ShareComposer({
       </p>
       {/* The level and the fine print share one tinted panel, so the pass being made reads as one thing. */}
       <div className="flex flex-col gap-2.5 rounded-xl bg-slate-50 p-2.5 dark:bg-slate-800/50">
-        <div data-tour-id="share-role">
+        {/* data-share-start: where focus starts as the dialog opens, when it has no tabs (useShareStartFocus). */}
+        <div data-tour-id="share-role" data-share-start="">
           <RolePicker level={level} onChange={setLevel} levels={levels} app={app} />
         </div>
         {/* The fine print: one labelled row per term, labels in one column, Create Pass ending the Valid row. */}

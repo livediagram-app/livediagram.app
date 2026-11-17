@@ -28,11 +28,14 @@ As the platform spec's table, through this app's edit gate on the whole plan ([S
 Editor of the whole plan takes, reverts and deletes; a tab-scoped link, a Participant and a Viewer see nothing (404);
 an API token is refused (403).
 
-## In the editor
+## In History
 
-The **Snapshots** row sits in the footer's **Tools** menu ([The footer's Tools menu](../../../../liveworkspace/docs/specs/004-index/footer-tools-menu.md)), after Automations, there for that Editor once the plan is
-stored on the server (never in This Browser, a workbench frame or a Community visit). Its dialog is the shared one,
-naming the item "plan".
+Snapshots live inside **History** in the footer's **Tools** menu ([The footer's Tools menu](../../../../liveworkspace/docs/specs/004-index/footer-tools-menu.md)
+"History, with Snapshots in it"; owner, 2026-11-17), there for that Editor once the plan is stored on the server
+(never in This Browser, a workbench frame or a Community visit): **Take Snapshot** over History's timeline and each
+snapshot pinned on it, or the snapshots on their own for an Editor through a share link, naming the item
+"plan" ([Snapshots](../../../../liveworkspace/docs/specs/014-snapshots/snapshots.md) "In History"). There is no
+Snapshots row of its own.
 
 ## Where it is built
 

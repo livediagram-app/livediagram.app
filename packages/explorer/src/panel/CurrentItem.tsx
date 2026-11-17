@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, type ReactNode } from 'react';
+import { useContext, useMemo, useState, type ReactNode } from 'react';
 import type { Item } from '@liveworkspace/index-client';
 import { useExplorer } from '../explorer/context';
 import { VisibilityBadge } from '../explorer/badges';
@@ -11,6 +11,7 @@ import { InlineRenameInput } from '../ui/InlineRenameInput';
 import { EllipsisTriggerButton, useRowMenu } from '../ui/RowMenu';
 import { ItemIcon, PencilIcon } from '../ui/icons';
 import { relativeSince, useNow } from '../time';
+import { RailTight } from './useRailFit';
 
 // ---- The current item's card ----------------------------------------------------------------------------
 
@@ -162,6 +163,9 @@ function CurrentCard({
 }) {
   const { kind } = useExplorer();
   const now = useNow();
+  // On a short window the rail drops the picture before it would scroll (useRailFit), and the pill moves to the
+  // start of the "Updated" line.
+  const tight = useContext(RailTight);
   const name = title || `Untitled ${kind.lowerOne}`;
   const commit = (next: string) => {
     const trimmed = next.trim();
@@ -177,13 +181,15 @@ function CurrentCard({
         onContextMenu={menu.onContextMenu}
         className="flex flex-col gap-1.5 rounded-xl bg-white p-1.5 shadow-sm ring-1 ring-slate-200 dark:bg-slate-800/60 dark:ring-slate-700"
       >
-        <span className="relative block">
-          <span className="flex h-24 w-full items-center justify-center overflow-hidden rounded-lg bg-slate-50 text-slate-300 ring-1 ring-inset ring-slate-200/80 dark:bg-slate-900 dark:ring-slate-700/70 [&>*]:!h-full [&>*]:!w-full">
-            {thumbnail}
+        {tight ? null : (
+          <span data-current-picture="" className="relative block">
+            <span className="flex h-24 w-full items-center justify-center overflow-hidden rounded-lg bg-slate-50 text-slate-300 ring-1 ring-inset ring-slate-200/80 dark:bg-slate-900 dark:ring-slate-700/70 [&>*]:!h-full [&>*]:!w-full">
+              {thumbnail}
+            </span>
+            {/* Where it lives, on the picture's corner, so the line under the name has its full width. */}
+            <span className="absolute left-1.5 top-1.5 flex">{badge}</span>
           </span>
-          {/* Where it lives, on the picture's corner, so the line under the name has its full width. */}
-          <span className="absolute left-1.5 top-1.5 flex">{badge}</span>
-        </span>
+        )}
         <span className="flex min-w-0 flex-col gap-0.5 px-1 pb-0.5">
           <span className="flex min-h-6 items-center gap-1">
             {editing ? (
@@ -215,8 +221,11 @@ function CurrentCard({
               />
             ) : null}
           </span>
-          <span className="truncate text-[11px] text-slate-500 dark:text-slate-400">
-            Updated {relativeSince(updatedAt, now || Date.now())}
+          <span className="flex min-w-0 items-center gap-1.5">
+            {tight ? <span className="flex shrink-0">{badge}</span> : null}
+            <span className="truncate text-[11px] text-slate-500 dark:text-slate-400">
+              Updated {relativeSince(updatedAt, now || Date.now())}
+            </span>
           </span>
         </span>
         {children}

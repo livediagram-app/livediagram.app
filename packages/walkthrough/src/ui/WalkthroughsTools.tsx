@@ -2,10 +2,11 @@
 
 // Walkthroughs in the footer's Tools (each canvas app's docs/specs/012-collaboration/walkthroughs.md "In Tools";
 // liveworkspace/docs/specs/004-index/footer-tools-menu.md): one row under Collaborate, published through the Tools
-// door, with the count of recorded walkthroughs at its end. Pressing it opens the Walkthroughs panel from the Tools
-// button, as Tools itself opens: the item's walkthroughs to play, each with its delete where the caller may, and
-// Record Walkthrough for an Editor. No row where walkthroughs don't fit (a phone, an embed, This Browser, a tab-scoped
-// link) or where there is nothing to play or record.
+// door, with the count of recorded walkthroughs at its end. Pressing it opens the Walkthroughs list inside Tools, under
+// its back bar (footer-tools-menu.md "Opening a tool inside Tools"): the item's walkthroughs to play, each with its
+// delete where the caller may, and Record Walkthrough for an Editor; playing or recording closes Tools. No row where
+// walkthroughs don't fit (a phone, an embed, This Browser, a tab-scoped link) or where there is nothing to play or
+// record.
 
 import type { WalkthroughSummary } from '@liveworkspace/media/walkthrough';
 import {
@@ -19,17 +20,51 @@ import {
 } from '@liveworkspace/ui';
 import type { ChromeToolsItem } from '@liveworkspace/workbench/components/chrome/ChromeToolsMenu';
 import { usePublishToolsItems } from '@liveworkspace/workbench/components/chrome/tools-door';
-import { PopoverOrSheet } from '@liveworkspace/workbench/components/primitives/PopoverOrSheet';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { formatClock } from '../timeline';
 import type { WalkthroughsMenu } from '../useWalkthroughs';
 import { PlayIcon, RecordIcon, WalkthroughIcon } from './icons';
 
-const PANEL_WIDTH = 360;
+// The latest menu, for the view inside Tools: the row is memoised on its count (so a recording's ticks never republish
+// it), and the view reads the rest from here as it changes.
+type Latest<T> = { get: () => T; subscribe: (l: () => void) => () => void };
+function useLatest<T>(value: T): Latest<T> {
+  const [store] = useState(() => {
+    let current = value;
+    const listeners = new Set<() => void>();
+    return {
+      get: () => current,
+      subscribe: (l: () => void) => {
+        listeners.add(l);
+        return () => {
+          listeners.delete(l);
+        };
+      },
+      set: (next: T) => {
+        current = next;
+        for (const l of listeners) l();
+      },
+    };
+  });
+  useEffect(() => {
+    store.set(value);
+  }, [store, value]);
+  return store;
+}
+
+function WalkthroughsView({
+  menu,
+  onClose,
+}: {
+  menu: Latest<WalkthroughsMenu>;
+  onClose: () => void;
+}) {
+  const walkthroughs = useSyncExternalStore(menu.subscribe, menu.get, menu.get);
+  return <WalkthroughsPanel walkthroughs={walkthroughs} bare onClose={onClose} />;
+}
 
 export function WalkthroughsTools({ menu }: { menu: WalkthroughsMenu }) {
-  // The Tools button the panel hangs from, while it is open.
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null);
+  const latest = useLatest(menu);
   const { available, canRecord } = menu;
   const count = menu.list.length;
   const rows = useMemo<ChromeToolsItem[]>(
@@ -48,37 +83,29 @@ export function WalkthroughsTools({ menu }: { menu: WalkthroughsMenu }) {
                 count > 0 ? (
                   <CountBadge tone="brand" count={count} label={`${count} walkthroughs`} />
                 ) : undefined,
-              onSelect: (at) => setAnchor(at),
+              onSelect: () => {},
+              view: ({ close }) => <WalkthroughsView menu={latest} onClose={close} />,
             },
           ]
         : [],
-    [available, canRecord, count],
+    [available, canRecord, count, latest],
   );
   usePublishToolsItems('walkthroughs', rows);
-  if (!anchor || !available) return null;
-  return (
-    <PopoverOrSheet
-      anchor={anchor}
-      name="Walkthroughs"
-      width={PANEL_WIDTH}
-      onClose={() => setAnchor(null)}
-    >
-      {(sheet) => (
-        <WalkthroughsPanel walkthroughs={menu} sheet={sheet} onClose={() => setAnchor(null)} />
-      )}
-    </PopoverOrSheet>
-  );
+  return null;
 }
 
-// The panel's body: its heading, the list (or the empty state) and Record Walkthrough at its foot. Escape and a press
-// outside are the popover's; the delete's confirm is a popover of its own above it, so a press in it never closes this.
+// The list's body: its heading (none inside Tools, `bare`, whose back bar names it), the list (or the empty state) and
+// Record Walkthrough at its foot. Escape and a press outside are the popover's; the delete's confirm is a popover of
+// its own above it, so a press in it never closes this.
 export function WalkthroughsPanel({
   walkthroughs,
   sheet = false,
+  bare = false,
   onClose,
 }: {
   walkthroughs: WalkthroughsMenu;
   sheet?: boolean;
+  bare?: boolean;
   onClose: () => void;
 }) {
   // Read once when the panel opens, so every row's "2 days ago" agrees and render stays pure.
@@ -90,18 +117,22 @@ export function WalkthroughsPanel({
   return (
     <div
       data-walkthroughs-menu=""
-      className={`flex min-h-0 flex-col ${sheet ? '' : 'max-h-[min(32rem,calc(100vh-6rem))]'}`}
+      className={`flex min-h-0 flex-col ${sheet || bare ? '' : 'max-h-[min(32rem,calc(100vh-6rem))]'} ${
+        bare ? 'flex-1 border-t border-slate-100 dark:border-slate-800' : ''
+      }`}
     >
-      <div className="flex items-baseline justify-between border-b border-slate-100 px-4 pb-2.5 pt-3 dark:border-slate-800">
-        <h2 className="text-[13px] font-semibold text-slate-900 dark:text-slate-50">
-          Walkthroughs
-        </h2>
-        {list.length > 0 ? (
-          <span className="text-[11px] text-slate-500 dark:text-slate-400">
-            {list.length} recorded
-          </span>
-        ) : null}
-      </div>
+      {bare ? null : (
+        <div className="flex items-baseline justify-between border-b border-slate-100 px-4 pb-2.5 pt-3 dark:border-slate-800">
+          <h2 className="text-[13px] font-semibold text-slate-900 dark:text-slate-50">
+            Walkthroughs
+          </h2>
+          {list.length > 0 ? (
+            <span className="text-[11px] text-slate-500 dark:text-slate-400">
+              {list.length} recorded
+            </span>
+          ) : null}
+        </div>
+      )}
       {list.length === 0 ? (
         <CompactEmptyState
           icon={<WalkthroughIcon size={16} />}

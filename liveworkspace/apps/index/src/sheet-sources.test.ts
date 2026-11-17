@@ -268,22 +268,36 @@ describe('the change signal', () => {
 
   it("tells each watcher's app, with ids only, and answers the ones gone", async () => {
     const { ada, plan, doc } = await setup();
+    // livediagram is a reader app too (Work Tracker 1133); another plan is not.
     const diagram = await makeItem(ada.auth, { app: 'livediagram' });
+    const otherPlan = await makeItem(ada.auth, { app: 'liveplanner', title: 'Other' });
     h.appCalls = [];
     const res = await signal(plan.id, {
       sheetIds: ['s1', 's1'],
-      watchers: [doc.id, diagram.id, 'gone_doc', doc.id],
+      watchers: [doc.id, diagram.id, otherPlan.id, 'gone_doc', doc.id],
     });
     expect(res.status).toBe(200);
-    expect(await body(res)).toEqual({ gone: [diagram.id, 'gone_doc'] });
-    expect(h.appCalls).toEqual([
-      expect.objectContaining({
-        method: 'POST',
-        url: `https://livedocuments.app/api/internal/items/${doc.id}/source-changed`,
-        body: { app: 'liveplanner', itemId: plan.id, sheetIds: ['s1'] },
-      }),
-    ]);
-    expect(h.appCalls[0]!.headers.get('Authorization')).toBe('Bearer lvd-key');
+    expect(await body(res)).toEqual({ gone: [otherPlan.id, 'gone_doc'] });
+    const told = { app: 'liveplanner', itemId: plan.id, sheetIds: ['s1'] };
+    expect(h.appCalls).toHaveLength(2);
+    expect(h.appCalls).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          method: 'POST',
+          url: `https://livedocuments.app/api/internal/items/${doc.id}/source-changed`,
+          body: told,
+        }),
+        expect.objectContaining({
+          method: 'POST',
+          url: `https://www.livediagram.app/api/internal/items/${diagram.id}/source-changed`,
+          body: told,
+        }),
+      ]),
+    );
+    const keyFor = (url: string) =>
+      h.appCalls.find((c) => c.url.startsWith(url))!.headers.get('Authorization');
+    expect(keyFor('https://livedocuments.app')).toBe('Bearer lvd-key');
+    expect(keyFor('https://www.livediagram.app')).toBe('Bearer ld-key');
   });
 
   it('logs a watcher it could not reach and carries on', async () => {

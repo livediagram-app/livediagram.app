@@ -743,7 +743,9 @@ the title, notes, tools and checklists are the content.
   Ordering Platform** is the one filled system in the middle, its job in a line; the four external systems it relies
   on (Payments provider, Routing API, Email and SMS, Restaurant POS) are grey cards along the bottom.
   Every relationship is a labelled arrow saying what flows and how ("Places orders and tracks them · HTTPS"); a key
-  names Person, Software system and External system. Layers "Context" / "Systems"; graph paper.
+  names Person, Software system and External system. A short label sits on one line rather than leaving its
+  protocol alone on a second: its arrow carries a 160px label width, and the side people and systems stand 200px
+  clear of the platform so the sideways arrows have that room. Layers "Context" / "Systems"; graph paper.
 - **C4 Container Diagram** (Diagram): level 2, zooming into the same platform ("Plateful · containers"). A **system
   boundary** in the boundary's **C4 style** ("Plateful Ordering Platform", its meta line "Software system" in
   brackets in the bottom-left corner, as the C4 model draws one) holds its containers, each a card naming its
@@ -895,7 +897,7 @@ its **search words**, punctuation and hyphens no part of a word on either side (
 "1-on-1" and "one-on-one" the Meeting agenda) (`templateKeywords(kind)` in `packages/templates/src/template-keywords.ts`: what people call it and
 the job it does, "1:1" for the Meeting agenda, "erd" for the Database schema, "persona", "kpi",
 "retro", "org"). One function,
-`templateMatchesQuery`, decides a match for the editor and the marketing gallery alike. A start shows the matches
+`templateMatchesQuery`, decides a match for the editor and the marketing gallery alike. A word of four letters or more also finds a template one typo off one of its words (a letter missing, extra, wrong or two swapped; two typos from eight letters: "wirefrme" finds Wireframe), shared in `@liveworkspace/template-previews/template-search`; shorter words stay exact, and the hero ranks typo-only finds after the exact ones. A start shows the matches
 under its own groups, then the other modes' ([Found in other modes](../007-editor/start-diagramming.md#found-in-other-modes)); the gallery groups them under their primary category.
 
 ### What a template shows

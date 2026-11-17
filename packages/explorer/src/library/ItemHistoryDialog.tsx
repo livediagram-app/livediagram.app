@@ -6,7 +6,7 @@
 // context (the index client, who is reading, their teams), so it stands the dialog in a provider of its own.
 import type { IndexClient, Item } from '@liveworkspace/index-client';
 import { ExplorerProvider, type ExplorerProviderProps } from '../explorer/context';
-import { HistoryDialog } from './HistoryDialog';
+import { HistoryDialog, type HistoryExtras } from './HistoryDialog';
 
 const NOOP = () => {};
 
@@ -18,6 +18,7 @@ export function ItemHistoryDialog({
   teams,
   item,
   onClose,
+  extras,
 }: {
   app: ExplorerProviderProps['app'];
   client: IndexClient;
@@ -26,6 +27,8 @@ export function ItemHistoryDialog({
   teams?: ExplorerProviderProps['teams'];
   item: Item;
   onClose: () => void;
+  // What other tools add to it (Snapshots).
+  extras?: HistoryExtras;
 }) {
   return (
     <ExplorerProvider
@@ -40,7 +43,7 @@ export function ItemHistoryDialog({
       viewerId={viewerId}
       teams={teams}
     >
-      <HistoryDialog item={item} onClose={onClose} />
+      <HistoryDialog item={item} onClose={onClose} extras={extras} />
     </ExplorerProvider>
   );
 }

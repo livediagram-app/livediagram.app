@@ -63,7 +63,7 @@ apps/index/src/webhooks/      webhooks: the routes, the outbox, the dispatcher (
   ([one-explorer-contracts.md](one-explorer-contracts.md#the-migrations-handoff)).
 - **A sheet source's app** (liveplanner), with its key, at `POST /app/items/:id/sheet-changed`, and the index calls it
   back at `…/sheets` and `…/sheet-range` through `@liveworkspace/app-doors` for a person's range read, and calls a
-  reader app (livedocuments) at `…/source-changed` ([sheet-sources.md](sheet-sources.md)).
+  reader app (livedocuments, livediagram, livedesign) at `…/source-changed` ([sheet-sources.md](sheet-sources.md)).
 - **The media service's previews**, reading an item as the person asking (`GET /items/:id`, side-effect free) or a
   link anonymously (`GET /share/:code`), through its service binding: the index's answer is who may see a preview
   ([previews.md](../006-media/previews.md)).

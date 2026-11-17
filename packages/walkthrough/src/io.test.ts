@@ -11,6 +11,7 @@ import {
   elementBox,
   elementIdAt,
   hiddenCss,
+  onHideableSurface,
   screenPoint,
   sizeOf,
 } from './bridge';
@@ -193,6 +194,81 @@ describe('the bridge', () => {
     off();
     expect(document.head.querySelector('style')).toBeNull();
     applyHidden(document, [], 'viewer')();
+  });
+});
+
+describe("the bridge, with an app's hideable marks", () => {
+  const marks = ['data-plan-card', 'data-dashboard-slot'];
+  function board() {
+    document.body.append(
+      el(
+        'div',
+        { id: 'root' },
+        el(
+          'div',
+          { 'data-canvas-content': '' },
+          // A board drawn on the canvas, its card inside it, and a copy of a card a cover hides.
+          el(
+            'div',
+            { 'data-element-id': 'b1' },
+            el('div', { 'data-plan-card': 'c1' }, el('i', { id: 'face' })),
+          ),
+          el('div', { 'data-plan-card': 'c2', id: 'under' }),
+        ),
+        el(
+          'div',
+          { 'data-canvas-cover': '' },
+          el('div', { 'data-plan-card': 'c2', id: 'over' }, el('b', { id: 'head' })),
+        ),
+      ),
+      el('div', { id: 'frame' }),
+    );
+    const root = document.getElementById('root')!;
+    const frame = document.getElementById('frame')!;
+    frame.getBoundingClientRect = () => ({ left: 0, top: 0, width: 0, height: 0 }) as DOMRect;
+    const under = document.getElementById('under')!;
+    const over = document.getElementById('over')!;
+    under.getBoundingClientRect = () => ({ left: 1, top: 1, width: 1, height: 1 }) as DOMRect;
+    over.getBoundingClientRect = () => ({ left: 9, top: 9, width: 30, height: 20 }) as DOMRect;
+    Object.assign(under, { checkVisibility: () => false });
+    return { root, frame };
+  }
+
+  it('picks the card pressed, not the board around it, and reads marks only when given them', () => {
+    board();
+    expect(elementIdAt(document.getElementById('face'), marks)).toBe('c1');
+    expect(elementIdAt(document.getElementById('face'))).toBe('b1');
+    expect(elementIdAt(document.getElementById('head'), marks)).toBe('c2');
+    expect(elementIdAt(document.getElementById('head'))).toBeNull();
+    const blank = document.createElement('div');
+    blank.setAttribute('data-plan-card', '');
+    expect(elementIdAt(blank, marks)).toBeNull();
+  });
+
+  it('knows a press over the canvas, or on a marked thing laid over it', () => {
+    const { root } = board();
+    expect(onHideableSurface(document.getElementById('face'))).toBe(true);
+    expect(onHideableSurface(document.getElementById('head'))).toBe(false);
+    expect(onHideableSurface(document.getElementById('head'), marks)).toBe(true);
+    expect(onHideableSurface(root, marks)).toBe(false);
+    expect(onHideableSurface(null, marks)).toBe(false);
+  });
+
+  it('rings the card drawn, passing over a covered copy', () => {
+    const { root, frame } = board();
+    expect(elementBox(root, frame, 'c2', marks)).toEqual({ x: 9, y: 9, w: 30, h: 20 });
+    expect(elementBox(root, frame, 'c2')).toBeNull();
+  });
+
+  it('hides a marked thing wherever it is drawn', () => {
+    expect(hiddenCss(['c1'], 'viewer', marks)).toBe(
+      '[data-canvas-content] [data-element-id="c1"],[data-plan-card="c1"],[data-dashboard-slot="c1"]{visibility:hidden !important;pointer-events:none !important;}',
+    );
+    const off = applyHidden(document, ['c1'], 'presenter', marks);
+    expect(document.head.querySelector('style')?.textContent).toContain(
+      '[data-plan-card="c1"] > *',
+    );
+    off();
   });
 });
 

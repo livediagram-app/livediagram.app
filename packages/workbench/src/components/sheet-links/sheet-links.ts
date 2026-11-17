@@ -1,17 +1,34 @@
-// Charts linked to a liveplanner sheet (docs/specs/009-elements/pie-chart.md "Charts linked to a liveplanner sheet";
-// blueprints/data-charts.md "Linked to a sheet"): the pure half. Which charts on a tab are linked, the one key each
-// distinct range is read under, what a read gives a chart, whether that changes what it stores, and the status words.
+// Charts linked to a liveplanner sheet (each reader app's docs/specs/009-elements/pie-chart.md "Charts linked to a
+// liveplanner sheet"; liveworkspace/docs/specs/004-index/sheet-sources.md): the pure half, one copy for livedocuments,
+// livediagram and livedesign. Which charts on a tab are linked, the one key each distinct range is read under, what a
+// read gives a chart, whether that changes what it stores, and the status words. Typed on the fields every product's
+// chart shares, so each product's own element type passes through unchanged.
+import type { ChartSheetSource } from '@liveworkspace/element-model/chart-sheet-source';
+import { chartFieldsFromTable } from '@liveworkspace/element-model/chart-table';
 import {
-  chartFieldsFromTable,
   isChartShape,
-  type ChartSheetSource,
-  type Element,
-  type ShapeElement,
-} from '@livedocuments/document';
+  type LineSeries,
+  type PieSlice,
+} from '@liveworkspace/element-model/data-shapes';
 import type { SheetRangeRead } from '@liveworkspace/index-client';
-import { formatRelativeTimeShort } from '@/lib/relative-time';
+import { formatRelativeTimeShort } from '@liveworkspace/ui';
 
-export type LinkedChart = ShapeElement & { chartSheetSource: ChartSheetSource };
+// Any element of any product: what the helpers below need of one to tell a chart.
+export type SheetLinkElement = { id: string; type: string };
+
+// A chart's fields as every product stores them (the `pie*` names kept for pie and bar, the line's own two).
+export type SheetChartFields = {
+  shape: string;
+  chartVariant?: unknown;
+  pieSlices?: PieSlice[];
+  lineCategories?: string[];
+  lineSeries?: LineSeries[];
+  chartSheetSource?: ChartSheetSource;
+};
+
+export type SheetChart = SheetLinkElement & SheetChartFields;
+export type LinkedChart<E extends SheetLinkElement = SheetLinkElement> = E &
+  SheetChartFields & { chartSheetSource: ChartSheetSource };
 
 // Where a linked chart stands for the person looking at it.
 // - reading: the first read is on its way (the saved values show meanwhile);
@@ -26,10 +43,18 @@ export type SheetLinkStatus =
   | { kind: 'gone' }
   | { kind: 'failed' };
 
-export const isLinkedChart = (el: Element): el is LinkedChart =>
-  el.type === 'shape' && isChartShape(el.shape) && el.chartSheetSource !== undefined;
+// A shape element of a chart kind (pie, bar, line), whatever its product.
+export function isChart<E extends SheetLinkElement>(el: E): el is E & SheetChartFields {
+  const shape = (el as { shape?: unknown }).shape;
+  return el.type === 'shape' && typeof shape === 'string' && isChartShape(shape);
+}
 
-export function linkedChartsOn(elements: readonly Element[]): LinkedChart[] {
+export const isLinkedChart = <E extends SheetLinkElement>(el: E): el is LinkedChart<E> =>
+  isChart(el) && el.chartSheetSource !== undefined;
+
+export function linkedChartsOn<E extends SheetLinkElement>(
+  elements: readonly E[],
+): LinkedChart<E>[] {
   return elements.filter(isLinkedChart);
 }
 
@@ -40,7 +65,7 @@ export function sheetLinkKey(s: ChartSheetSource): string {
 }
 
 // The data fields a read gives a chart, its colours kept.
-export const liveChartFields = (el: ShapeElement, read: SheetRangeRead) =>
+export const liveChartFields = (el: SheetChartFields, read: SheetRangeRead) =>
   chartFieldsFromTable(el, read.table);
 
 // The link as a read leaves it: the names, the range's A1 and the ids it reads now, and when.
@@ -57,7 +82,7 @@ export function sourceAfterRead(s: ChartSheetSource, read: SheetRangeRead): Char
 
 // Whether a chart already stores what a read gives it (then an Editor's open writes nothing).
 export function sameChartData(
-  el: ShapeElement,
+  el: SheetChartFields,
   fields: ReturnType<typeof liveChartFields>,
 ): boolean {
   if ('pieSlices' in fields)
@@ -79,7 +104,10 @@ export function sameSource(a: ChartSheetSource, b: ChartSheetSource): boolean {
 }
 
 // The element a person sees: a live read's values over the saved ones (the store is not changed by this).
-export function chartAsSeen(el: ShapeElement, status: SheetLinkStatus | undefined): ShapeElement {
+export function chartAsSeen<E extends SheetChartFields>(
+  el: E,
+  status: SheetLinkStatus | undefined,
+): E {
   if (status?.kind !== 'live') return el;
   const fields = liveChartFields(el, status.read);
   return sameChartData(el, fields) ? el : { ...el, ...fields };
@@ -90,7 +118,7 @@ export function linkedAgo(readAt: number, now: number): string {
   return formatRelativeTimeShort(Math.max(0, now - readAt));
 }
 
-// The line a linked chart shows along its top edge, and its Data section's status.
+// The line a linked chart shows below its bottom edge, and its Data section's status.
 export function sheetLinkLine(
   s: ChartSheetSource,
   status: SheetLinkStatus | undefined,

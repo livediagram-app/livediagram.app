@@ -1,4 +1,8 @@
+'use client';
+
 import type { ReactNode } from 'react';
+import { InlineDialogHeader } from './InlineDialogHeader';
+import { useDialogInline } from './dialog-slot';
 
 // The dialog title row: a title, an optional subtitle, and a right-aligned
 // slot for the header actions (typically a HelpArticleLink beside a
@@ -33,6 +37,9 @@ export function DialogHeader({
   subtitle?: ReactNode;
   children?: ReactNode;
 }) {
+  // Drawn inside Tools: the back bar names the tool, so the title is for screen readers and the line leads.
+  if (useDialogInline())
+    return <InlineDialogHeader title={title} subtitle={subtitle} actions={children} />;
   return (
     <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-6 pt-6 pb-4 dark:border-slate-800">
       <div>

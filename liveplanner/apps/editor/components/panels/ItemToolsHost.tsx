@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import { useItemToolsRows } from '@liveworkspace/workbench/components/chrome/useItemToolsRows';
+import { useHistorySnapshotsHost } from '@liveworkspace/snapshots/ui';
 import { useEditorContext } from '@/app/project/[id]/EditorContext';
 import { useIsOfflineProject } from '@/hooks/persistence/useIsOfflineProject';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
@@ -30,7 +31,10 @@ export function ItemToolsHost({
     () => (currentProjectId && isOffline ? { sync: syncToCloud, ready } : null),
     [currentProjectId, isOffline, syncToCloud, ready],
   );
+  // Snapshots live inside History (owner, 2026-11-17): Take Snapshot over its timeline, each one pinned on it.
+  const snapshots = useHistorySnapshotsHost();
   return useItemToolsRows({
+    snapshots,
     app: 'liveplanner',
     signedIn: !!isSignedIn,
     offline,

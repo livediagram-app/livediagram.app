@@ -39,6 +39,16 @@ Scope, by file:
 | `apps/live/hooks/canvas/useChartSetters.ts`                                                                                          | Data, legend and animation setters                                                                                                                                      |
 | `apps/live/hooks/canvas/useStylePreview.ts`                                                                                          | `previewChartPalette` / `commitChartPalette`                                                                                                                            |
 | `apps/live/hooks/canvas/useDataShapeSetters.ts`                                                                                      | `setLegendItemsSelected`                                                                                                                                                |
+| `../packages/element-model/src/chart-sheet-source.ts`                                                                                | `ChartSheetSource`, `isChartSheetSource`, `withoutSheetSources`: the linked source on a chart                                                                           |
+| `../packages/element-model/src/chart-table.ts`                                                                                       | `ChartTable`, `chartFieldsFromTable`: a read's data fields for a chart, colours kept by position (shared with liveplanner)                                              |
+| `../packages/workbench/src/components/sheet-links/sheet-links.ts`                                                                    | `sheetLinkKey`, `linkedChartsOn`, `sourceAfterRead`, `sameChartData`, `chartAsSeen`, `sheetLinkLine`: pure helpers for linked charts                                    |
+| `../packages/workbench/src/components/sheet-links/useSheetLinkedCharts.ts`                                                           | `readSheetLink`, `useSheetLinkedCharts`: reads each linked chart on the open tab on open and on `source-changed`; the statuses, the quiet save                          |
+| `../packages/workbench/src/components/sheet-links/sheet-link-signal.ts`                                                              | The room's `source-changed` frame relayed from the room connection to `useSheetLinkedCharts`                                                                            |
+| `../packages/workbench/src/components/sheet-links/SheetLinkedCharts.tsx`                                                             | `SheetLinksHost` (the reads, Link, Unlink, the dialog), `SheetLinksContext`, `useChartAsSeen`, `SheetLinkLine`                                                          |
+| `../packages/workbench/src/components/sheet-links/SheetLinkSection.tsx`                                                              | The Data section's Sheet row: Link to Sheet, Linked to, Update, Change, Unlink                                                                                          |
+| `../packages/workbench/src/components/sheet-links/LinkSheetDialog.tsx`                                                               | The Link to Sheet dialog: plan, sheet, range, preview (loaded on demand)                                                                                                |
+| `../packages/workbench/src/lib/relative-now.ts`                                                                                      | `useRelativeNow`: the shared 30 s clock the Linked to line reads                                                                                                        |
+| `apps/api/src/design-room/design-room.ts`                                                                                            | The `source-changed` door: `sourceChanged` hands `tellSourceChanged` (`@liveworkspace/index-app`) the room                                                              |
 | `apps/live/components/canvas/EditorCanvasHost.tsx`                                                                                   | Passes `themeChartPalette(getTheme(activeTab.theme))` to the canvas                                                                                                     |
 
 ## Domain and naming
@@ -180,6 +190,32 @@ independent of the key (D106).
 The data setters match every chart kind, so a mixed pie and line selection writes both field sets
 onto both [GE2].
 
+### Linked to a sheet (spec "Charts linked to a liveplanner sheet")
+
+One copy for every reader app, in `@liveworkspace/workbench` `components/sheet-links/`; livedesign wires it in four
+places: `SheetLinksHost` around the canvas and the element menu in `EditorView.tsx` (`itemId`, `canEdit =
+can.level === 'edit' && !isReadOnly`, `commit = commitElements`, `tick = tickElements`, `grantOf` the item's grant,
+`onTrack`, `noun: 'design'`), `useChartAsSeen` and `SheetLinkLine` in `ShapeContentRouter.tsx` for the three charts,
+`SheetLinkSection` around the data rows in `ElementDataSections.tsx`, and `emitSourceChanged` on the room's
+`source-changed` frame in `useRoomConnection.ts`.
+
+1. **Link**: `LinkSheetDialog` lists `indexClient.listItems({ app: 'liveplanner', view: 'recent' })`, then
+   `indexClient.listSheets(planId)`, then reads the typed range with `indexClient.readSheetRange` (debounced
+   `LINK_PREVIEW_DEBOUNCE_MS`, 300) for the preview. Link reads once more with the item's grant and commits
+   `{ ...chartFieldsFromTable(el, read.table), chartSheetSource }` on the chart, telemetry `ChartSheetLink`.
+2. **Reads**: `useSheetLinkedCharts` keys each linked chart of the open tab by `sheetLinkKey(source)`
+   (`itemId|sheetId|range|cols`), reads each key once on open, on a tab change and on a `source-changed` frame naming
+   its plan and sheet, with the item's grant and `watch: itemId` (no grant, as in This Browser: no watch). One read in
+   flight per key; a frame while one is in flight reads once more after it.
+3. **Statuses** per key: `reading` (no answer yet: the saved values show), `live`, `saved` (401, 403 or 404),
+   `gone` (`409 range_gone`), `failed` (anything else). A chart draws a live read's fields over its own
+   (`chartAsSeen` through `useChartAsSeen`); the store is not changed by it.
+4. **Quiet save**: for an Editor, a live read whose fields or names differ from the element's (`sameChartData`,
+   `sameSource`) is saved with `tick` (no undo step), one tick for every chart a read changed.
+5. **Unlink**: commits the chart without `chartSheetSource`, telemetry `ChartSheetUnlink`.
+6. **Freezing**: `withoutSheetSources(elements)` in the file export (`apps/api/src/design-room/design-file.ts`); the
+   Community copy and visitor's read drop the link in `@liveworkspace/community` `redactElementsForCommunity`.
+
 ## Interfaces and contracts
 
 ```ts
@@ -229,17 +265,18 @@ data rows → `null`.
 
 ## Data and persistence
 
-| Field                                      | Class     | Absent means                   |
-| ------------------------------------------ | --------- | ------------------------------ |
-| `pieSlices`                                | persisted | `PIE_DEFAULT_SLICES` at render |
-| `lineCategories`, `lineSeries`             | persisted | the line defaults at render    |
-| `pieAnim`, `pieAnimSpeed`, `pieAnimRepeat` | persisted | static / `'slow'` / loop rule  |
-| `chartLegend`, `chartLegendPosition`       | persisted | shown / `'bottom'`             |
-| `chartPalette`                             | persisted | follow the tab theme           |
-| `chartVariant`                             | persisted | the kind's first chart type    |
-| `textSize`                                 | persisted | `'md'` (14 px key)             |
-| `legendItems`                              | persisted | no rows                        |
-| colour ramps, layout rects                 | derived   | recomputed per render          |
+| Field                                      | Class     | Absent means                                                |
+| ------------------------------------------ | --------- | ----------------------------------------------------------- |
+| `pieSlices`                                | persisted | `PIE_DEFAULT_SLICES` at render                              |
+| `lineCategories`, `lineSeries`             | persisted | the line defaults at render                                 |
+| `pieAnim`, `pieAnimSpeed`, `pieAnimRepeat` | persisted | static / `'slow'` / loop rule                               |
+| `chartLegend`, `chartLegendPosition`       | persisted | shown / `'bottom'`                                          |
+| `chartPalette`                             | persisted | follow the tab theme                                        |
+| `chartVariant`                             | persisted | the kind's first chart type                                 |
+| `textSize`                                 | persisted | `'md'` (14 px key)                                          |
+| `legendItems`                              | persisted | no rows                                                     |
+| `chartSheetSource`                         | persisted | not linked; dropped by the file export and Community copies |
+| colour ramps, layout rects                 | derived   | recomputed per render                                       |
 
 Field names keep the `pie*` prefix across all three charts so saved designs need no migration.
 Palette ids are permanent; names may change.
@@ -309,30 +346,35 @@ fallbacks are silent [GE12].
 
 ## Testing
 
-| Rule                                             | Test                                                                                                                                       | File                                                              |
-| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------- |
-| `isChartShape` is the three kinds                | is exactly the three chart kinds                                                                                                           | `packages/design/src/data-shapes.test.ts`                         |
-| Types map to kind + variant, changes move data   | chart types cases                                                                                                                          | `packages/design/src/chart-types.test.ts`                         |
-| Each type's marks, scatter x, export parity      | chart marks cases; chart types in the export                                                                                               | `packages/design/src/chart-marks.test.ts`                         |
-| Area / Scatter export of 500 × 12 within budget  | lays out 500 categories × 12 series quickly                                                                                                | `packages/design/src/chart-marks.test.ts`                         |
-| Chart Type tiles and setter                      | ChartTypeTiles; setChartTypeSelected cases                                                                                                 | `apps/live/components/palette/ChartTypeTiles.test.tsx`            |
-| Key Below by default, side strip, hidden         | chartFrame layout cases (seven)                                                                                                            | `apps/live/lib/chart.test.ts`                                     |
-| Per-datum colour, else cycle the palette         | prefers an explicit slice colour, else cycles the palette                                                                                  | `apps/live/lib/chart.test.ts`                                     |
-| Empty data falls back to samples                 | falls back to the default slices when the element has none                                                                                 | `apps/live/lib/chart.test.ts`                                     |
-| Palettes: eight colours, unique, resolvable      | chart palettes cases                                                                                                                       | `packages/design/src/chart-palettes.test.ts`                      |
-| Preset writes only the palette                   | sets the palette on a chart without touching its data                                                                                      | `apps/live/lib/style-presets.test.ts`                             |
-| Key sizes 11 / 14 / 18, export parity            | legendFontPx cases                                                                                                                         | `packages/design/src/label-font.test.ts`                          |
-| CSV parsing                                      | parseCsvLineData cases                                                                                                                     | `apps/live/lib/csv.test.ts`                                       |
-| Data / anim / legend setters                     | pie chart setter cases                                                                                                                     | `apps/live/hooks/canvas/useElementStyle.test.ts`                  |
-| Export draws charts unframed                     | leaves a chart unframed; draws more than a box and a label for each of them                                                                | `packages/design/src/export-consistency.test.ts`                  |
-| Menu row drafts survive a re-render, follow data | keeps a typed draft through a re-render with the same rows; follows the element when its rows change (`PieDataEditor`, `LegendDataEditor`) | `apps/live/components/palette/context-menu-data-editors.test.tsx` |
-| Line dialog suspends at its own boundary         | each carry their own Suspense boundary (ssr: false or a loading component)                                                                 | `apps/live/lib/dynamic-has-boundary.test.ts`                      |
-| Every kind renders without NaN                   | never emits NaN or undefined                                                                                                               | `packages/design/src/svg-render-coverage.test.ts`                 |
-| Ladder: datum > chart palette > theme > built-in | partial (`chartFrame` only); none for `themeChartPalette` [GE11]                                                                           |                                                                   |
-| Reset clears the palette                         | none [GE1]                                                                                                                                 |                                                                   |
-| Legend matches an adjacent chart                 | exported legend takes the theme ramp                                                                                                       | `packages/design/src/chart-palettes.test.ts`                      |
-| Grow / pop once, spin / pulse loop               | none [GE11]                                                                                                                                |                                                                   |
-| Readout on hover regardless of the key           | none [GE11]                                                                                                                                |                                                                   |
+| Rule                                                                                       | Test                                                                                                                                       | File                                                                                                    |
+| ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
+| `isChartShape` is the three kinds                                                          | is exactly the three chart kinds                                                                                                           | `packages/design/src/data-shapes.test.ts`                                                               |
+| Types map to kind + variant, changes move data                                             | chart types cases                                                                                                                          | `packages/design/src/chart-types.test.ts`                                                               |
+| Each type's marks, scatter x, export parity                                                | chart marks cases; chart types in the export                                                                                               | `packages/design/src/chart-marks.test.ts`                                                               |
+| Area / Scatter export of 500 × 12 within budget                                            | lays out 500 categories × 12 series quickly                                                                                                | `packages/design/src/chart-marks.test.ts`                                                               |
+| Chart Type tiles and setter                                                                | ChartTypeTiles; setChartTypeSelected cases                                                                                                 | `apps/live/components/palette/ChartTypeTiles.test.tsx`                                                  |
+| Key Below by default, side strip, hidden                                                   | chartFrame layout cases (seven)                                                                                                            | `apps/live/lib/chart.test.ts`                                                                           |
+| Per-datum colour, else cycle the palette                                                   | prefers an explicit slice colour, else cycles the palette                                                                                  | `apps/live/lib/chart.test.ts`                                                                           |
+| Empty data falls back to samples                                                           | falls back to the default slices when the element has none                                                                                 | `apps/live/lib/chart.test.ts`                                                                           |
+| Palettes: eight colours, unique, resolvable                                                | chart palettes cases                                                                                                                       | `packages/design/src/chart-palettes.test.ts`                                                            |
+| Preset writes only the palette                                                             | sets the palette on a chart without touching its data                                                                                      | `apps/live/lib/style-presets.test.ts`                                                                   |
+| Key sizes 11 / 14 / 18, export parity                                                      | legendFontPx cases                                                                                                                         | `packages/design/src/label-font.test.ts`                                                                |
+| CSV parsing                                                                                | parseCsvLineData cases                                                                                                                     | `apps/live/lib/csv.test.ts`                                                                             |
+| Data / anim / legend setters                                                               | pie chart setter cases                                                                                                                     | `apps/live/hooks/canvas/useElementStyle.test.ts`                                                        |
+| Export draws charts unframed                                                               | leaves a chart unframed; draws more than a box and a label for each of them                                                                | `packages/design/src/export-consistency.test.ts`                                                        |
+| Menu row drafts survive a re-render, follow data                                           | keeps a typed draft through a re-render with the same rows; follows the element when its rows change (`PieDataEditor`, `LegendDataEditor`) | `apps/live/components/palette/context-menu-data-editors.test.tsx`                                       |
+| Line dialog suspends at its own boundary                                                   | each carry their own Suspense boundary (ssr: false or a loading component)                                                                 | `apps/live/lib/dynamic-has-boundary.test.ts`                                                            |
+| Every kind renders without NaN                                                             | never emits NaN or undefined                                                                                                               | `packages/design/src/svg-render-coverage.test.ts`                                                       |
+| Ladder: datum > chart palette > theme > built-in                                           | partial (`chartFrame` only); none for `themeChartPalette` [GE11]                                                                           |                                                                                                         |
+| Reset clears the palette                                                                   | none [GE1]                                                                                                                                 |                                                                                                         |
+| Legend matches an adjacent chart                                                           | exported legend takes the theme ramp                                                                                                       | `packages/design/src/chart-palettes.test.ts`                                                            |
+| Grow / pop once, spin / pulse loop                                                         | none [GE11]                                                                                                                                |                                                                                                         |
+| Readout on hover regardless of the key                                                     | none [GE11]                                                                                                                                |                                                                                                         |
+| Linked chart reads, statuses, quiet save and frame                                         | useSheetLinkedCharts cases                                                                                                                 | `../packages/workbench/src/components/sheet-links/useSheetLinkedCharts.test.tsx`                        |
+| Link dialog: plan, sheet, range, preview, refusals; Sheet row: Editor only, Update, Unlink | LinkSheetDialog and SheetLinkSection cases                                                                                                 | `../packages/workbench/src/components/sheet-links/LinkSheetDialog.test.tsx`                             |
+| Host: live over saved, Unlink, Link to Sheet for an Editor only                            | SheetLinksHost cases                                                                                                                       | `../packages/workbench/src/components/sheet-links/SheetLinkedCharts.test.tsx`                           |
+| Source validated, frozen in exports and copies                                             | chart sheet source cases                                                                                                                   | `../packages/element-model/src/chart-sheet-source.test.ts`, `apps/api/src/routes/internal-file.test.ts` |
+| The room's `source-changed` frame                                                          | source changed cases                                                                                                                       | `apps/api/src/design-room/source-changed.test.ts`                                                       |
 
 ## Constants and configuration
 
@@ -354,3 +396,5 @@ fallbacks are silent [GE12].
 | `DOUGHNUT_HOLE`                        | 0.55 of the radius                                    | Spec "Chart types"; 0.3 to 0.75      |
 | `AREA_FILL_OPACITY`                    | 0.25                                                  | Spec "Chart types"; 0.15 to 0.4      |
 | `SCATTER_TICKS`                        | 5                                                     | Spec "Chart types"; 3 to 7           |
+| `LINK_PREVIEW_DEBOUNCE_MS`             | 300                                                   | Typing pause before a preview read   |
+| `RELATIVE_TICK_MS`                     | 30 000                                                | The Linked to line's clock           |

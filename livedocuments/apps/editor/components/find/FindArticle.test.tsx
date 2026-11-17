@@ -5,7 +5,7 @@
 // seeded from a selection in the writing, and Replace, Replace All and Undo work on the matches
 // (docs/specs/007-editor/find-and-replace.md "Opening and closing", "Replace").
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { type Tab } from '@livedocuments/document';
 import { resolveEditorCapabilities } from '@/lib/editor-capabilities';
 import { blockSearchText } from '@/lib/find/find-targets';
@@ -28,6 +28,12 @@ vi.stubGlobal(
     disconnect() {}
   },
 );
+
+// The host lazy-loads the bar and shows a stand-in (a Find box, no Replace row) until it lands. A cold import under a
+// coverage run on a busy runner can outlast a findBy's second, so the bar's module is loaded once before the tests.
+beforeAll(async () => {
+  await import('./FindBar');
+});
 
 afterEach(() => {
   cleanup();
@@ -118,7 +124,7 @@ describe('Find over an article committed while the bar was shut', () => {
     const original = textsOf(editor.tab);
     act(() => opener.current(true));
     fireEvent.change(screen.getByRole('textbox', { name: 'Find' }), { target: { value: 'teh' } });
-    fireEvent.change(screen.getByRole('textbox', { name: 'Replace With' }), {
+    fireEvent.change(await screen.findByRole('textbox', { name: 'Replace With' }), {
       target: { value: 'the' },
     });
     expect(await screen.findByText('1 of 4')).toBeTruthy();

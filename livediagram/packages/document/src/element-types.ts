@@ -29,6 +29,7 @@ import type { MindFlow, MindSpacing } from './mind-flow';
 import type { FlowchartDirection } from './flowchart';
 import type { ChartPaletteId } from './chart-palettes';
 import type { ChartVariant } from './chart-types';
+import type { ChartSheetSource } from '@liveworkspace/element-model/chart-sheet-source';
 import type {
   SankeyAlign,
   SankeyLeftover,
@@ -373,6 +374,9 @@ export type ShapeElement = {
   // series (CSV-importable). Only meaningful on the 'line-chart' kind.
   lineCategories?: string[];
   lineSeries?: LineSeries[];
+  // Linked to a liveplanner sheet (docs/specs/009-elements/pie-chart.md "Charts linked to a liveplanner sheet"): the
+  // plan, Sheet and range the data fields are read from; the fields are the last read. Only meaningful on a chart.
+  chartSheetSource?: ChartSheetSource;
   // Legend (docs/specs/009-elements/pie-chart.md): the colour-coded rows. Only meaningful on the 'legend'
   // kind; bounded in validate.ts.
   legendItems?: LegendItem[];

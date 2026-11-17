@@ -84,6 +84,17 @@ is its [version history](../006-document/version-history.md), opened from the ed
 document itself, where every role may look and an Editor restores or copies a version. The two stay apart: History is
 every app's and lives in the index; versions are livedocuments' alone and live in the document's own Durable Object.
 
+- **In an editor's Tools, with Snapshots in it** (owner, 2026-11-17; [The footer's Tools
+  menu](../../../../liveworkspace/docs/specs/004-index/footer-tools-menu.md) "History, with Snapshots in it"). The
+  editor's History opens inside Tools. For someone who may take snapshots, **Take Snapshot** sits under the header and
+  each snapshot is an entry on the rail at the time it was taken: a camera on the brand's wash in place of the
+  event's disc, labelled Snapshot, with Revert and Delete confirmed in place
+  ([Snapshots](../../../../liveworkspace/docs/specs/014-snapshots/snapshots.md) "In History"). A day's heading counts
+  them ("4 events · 1 snapshot"); a filter chip leaves them out, **All** brings them back; snapshots on an item with no
+  events yet show in place of the empty state. **Open Version History** sits under Take Snapshot (or alone under the header), giving
+  the window over to the open tab's versions and closing Tools ([Version history](../006-document/version-history.md)
+  "In the editor").
+
 ## 4. Webhooks and the Audit Log
 
 **Webhooks** sits on the same menu, after History, for a signed-in account who can edit the whole document (its owner,

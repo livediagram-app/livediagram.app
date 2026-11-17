@@ -117,6 +117,29 @@ describe('connectRoom reconnect cursor', () => {
     resetServerReleaseForTests();
   });
 
+  it('hands a source-changed frame to its handler, ids only (sheet-sources.md)', () => {
+    const onSourceChanged = vi.fn();
+    const room = connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {}, onSourceChanged },
+    );
+    const socket = FakeSocket.all[0]!;
+    socket.fire('open');
+    socket.fire('message', {
+      kind: 'source-changed',
+      app: 'liveplanner',
+      itemId: 'plan_1',
+      sheetIds: ['s1'],
+    });
+    expect(onSourceChanged).toHaveBeenCalledWith({
+      app: 'liveplanner',
+      itemId: 'plan_1',
+      sheetIds: ['s1'],
+    });
+    room.close();
+  });
+
   it("ignores another epoch's cursor, leaving the catch-up to reconcile", () => {
     expect(
       reconnectSync([

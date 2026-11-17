@@ -1,3 +1,5 @@
+'use client';
+
 // The dialog hero header (liveworkspace/docs/specs/004-index/dialog-hero-header.md): the start screens' header band
 // brought to a dialog. A band in the host's brand ramp behind a 36px title mark, the title (a real <h2>, in the app's
 // heading face) and one muted line, then the dialog's actions and its close. Exactly 100px tall at every width, a phone
@@ -8,6 +10,8 @@
 import { memo, type CSSProperties, type ReactNode } from 'react';
 import { SHEET_HANDLE_PX } from '../../SheetHandle';
 import { DialogCloseButton } from '../DialogCloseButton';
+import { InlineDialogHeader } from '../InlineDialogHeader';
+import { useDialogInline } from '../dialog-slot';
 import { heroCentreCap, type HeroArt } from './hero-art';
 import { HERO_TOKEN_STYLE } from './hero-tokens';
 
@@ -92,8 +96,14 @@ export function HeroDialogHeader({
   underHandle = false,
   className = '',
 }: HeroDialogHeaderProps) {
+  // Drawn inside Tools: no band (the back bar heads the tool), the title for screen readers, the line and the actions.
+  const inline = useDialogInline();
   // Where a centre piece shows, the title and its line stop short of it, so the two never meet.
   const cap = heroCentreCap(art);
+  if (inline)
+    return (
+      <InlineDialogHeader titleId={titleId} title={title} subtitle={subtitle} actions={actions} />
+    );
   return (
     // A plain div, not <header>: outside sectioning content that is a banner landmark, so every dialog wearing the
     // hero would give the page it opens over a second banner.

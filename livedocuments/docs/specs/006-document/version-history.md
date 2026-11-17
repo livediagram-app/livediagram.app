@@ -143,10 +143,12 @@ it has no Make a Copy.
 
 ## In the editor
 
-- **History** is the last row of the editor footer's **Tools** menu ([The footer's Tools
-  menu](../../../../liveworkspace/docs/specs/004-index/footer-tools-menu.md), left of Search in `ChromeControls`), for
-  every role, on a document stored on the server (not in This Browser, not in an embed or workbench frame), once the
-  document is up. Its glyph is a clock with an arrow turning back. It opens **Version History** on the open tab. The header carries no History. The Explorer's bottom bar has none.
+- **Version History** lives inside **History** in the editor footer's **Tools** menu ([The footer's Tools
+  menu](../../../../liveworkspace/docs/specs/004-index/footer-tools-menu.md) "History, with Snapshots in it"; owner,
+  2026-11-17), for every role, on a document stored on the server (not in This Browser, not in an embed or workbench
+  frame), once the document is up: an **Open Version History** button over History's timeline, under the snapshots, or
+  under History's sign-in prompt. Where History holds nothing else for this person, the History row opens Version
+  History straight away. Either way it opens **Version History** on the open tab and closes Tools. The header carries no History. The Explorer's bottom bar has none.
 - **Version History** covers the editor, header included, until closed (Close, or Escape): the version's pages on
   the left, drawn as the export draws them, and the rail of versions on the right (a sheet under the pages on a
   phone). Its own bar holds Close, the title "Version History" and, when the document has more than one tab the

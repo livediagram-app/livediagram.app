@@ -721,7 +721,11 @@ open item is left out there, as the index's is.
 **The editors' panel: its size and the scrim.** On a desktop or tablet the popover is roomy: up to **56rem** (896 px) wide, kept 1rem
 inside the window, and up to **45rem** (720 px) tall, kept on the canvas below its button and 24 px short of the
 canvas's bottom edge; the rail and pane fill what the card and footer leave, never shorter than 18rem. The rail is
-**15rem** (240 px) wide, so the current item's card fits at its top (owner, 2026-11-16: the picture across the card, the name with its ⋯ menu, "Updated …" and where it lives; no "Current" label) and its names sit with room either side, and the pane keeps a 1rem margin. The pane's preview
+**15rem** (240 px) wide, so the current item's card fits at its top (owner, 2026-11-16: the picture across the card, the name with its ⋯ menu, "Updated …" and where it lives; no "Current" label) and its names sit with room either side, and the pane keeps a 1rem margin. The rail scrolls only when its entries are
+really taller than it: on a short window (the popover under about 34rem of rail, an 800 px tall window) the card
+first drops its picture, its "where it lives" pill moving to the start of the "Updated …" line, and takes the picture
+back as soon as the whole card fits again (measured, so a person with several teams sees the same rule). Below that
+the rail scrolls, as it must (owner, 2026-11-17: no scrollbar the rail doesn't need). The pane's preview
 cards (Most Used, Recent, folders) are compact, so more fit in a row: two across in a narrow pane, three once it is 24rem
 wide (a tablet, a wide phone's sheet and the desktop popover, whose pane is about 40rem), four once it is 44rem (the
 full-page Explorer): a card narrower than about 12rem cuts its "This Browser" chip's time short, so the popover keeps

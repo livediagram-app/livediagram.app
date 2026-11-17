@@ -1,4 +1,6 @@
 import { type ItemHeadSync, sharesDueAt, ShareSchedule } from '@liveworkspace/index-app';
+import { tellSourceChanged } from '@liveworkspace/index-app';
+import type { SourceChange } from '@liveworkspace/index-client';
 import { DurableObject } from 'cloudflare:workers';
 import { ROOM_PING, ROOM_PONG, type AccessLevel } from '@livediagram/api-schema';
 import { roomReview, suggestionsChanged } from './room-review';
@@ -536,6 +538,16 @@ export class DocumentRoom extends DurableObject<Env> {
 
   joined(documentId: string, personId: string): Promise<void> {
     return rpc.joined(this, documentId, personId);
+  }
+
+  // A Sheet a linked chart reads changed (the index's source-changed door, @liveworkspace/index-app
+  // tellSourceChanged): every open session hears the ids and reads it again with its own access.
+  async sourceChanged(documentId: string, change: SourceChange): Promise<void> {
+    tellSourceChanged(
+      { bind: (id) => this.bindDocument(id), broadcast: (frame) => this.broadcast(frame) },
+      documentId,
+      change,
+    );
   }
 
   notifyAction(documentId: string, input: ActionNotice): Promise<boolean> {

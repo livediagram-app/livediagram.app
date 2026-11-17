@@ -3,27 +3,31 @@
 // Webhooks and History in the footer's Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md), for the item
 // the editor has open: published through the Tools door by each editor's ItemToolsHost, which is mounted with the
 // editor (not with the Explorer panel, which mounts only once opened). Nothing is read until History is pressed.
-// Returns the dialog to render while one is open. Both rows always show where signing in or syncing would make them work
+// Returns the dialog to render while one is open; opened from Tools, it draws inside Tools (footer-tools-menu.md
+// "Opening a tool inside Tools"). Both rows always show where signing in or syncing would make them work
 // (footer-tools-menu.md "Always there"), badged Sign In and Sync <Item>, and a press opens that gate first: Sign In
 // leaves for the sign-in page; Sync <Item> saves the item to the server and goes on to the tool.
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ComponentType, type ReactNode } from 'react';
 import {
   ButtonContent,
   DialogCloseButton,
   DialogHeader,
   Glyph,
   buttonClassName,
+  holdDialogSlot,
+  leaveToolsWithDialog,
+  useDialogDismiss,
 } from '@liveworkspace/ui';
 import { Dialog } from '../dialogs/Dialog';
 import { DialogFooter } from '../dialogs/DialogFooter';
 import { APP_ITEMS, type AppName } from '@liveworkspace/sites';
 import { useAuthHrefs } from './auth-routes';
-import { ItemHistoryDialog, useOpenItem } from '@liveworkspace/explorer';
+import { ItemHistoryDialog, useOpenItem, type HistoryExtras } from '@liveworkspace/explorer';
 import type { IndexClient } from '@liveworkspace/index-client';
 import { lucideGlyph } from '@liveworkspace/ui';
 import { lucideHistory, lucideWebhook } from '@liveworkspace/icons/lucide';
 import type { ChromeToolsItem } from './ChromeToolsMenu';
-import { usePublishToolsItems } from './tools-door';
+import { useItemVersions, usePublishToolsItems } from './tools-door';
 
 const WebhookIcon = lucideGlyph(lucideWebhook, 16);
 const HistoryIcon = lucideGlyph(lucideHistory, 16);
@@ -69,12 +73,37 @@ type SignInFor = keyof typeof SIGN_IN;
 // An item in This Browser: how to save it to the server (the editor's Sync move), and whether the reader is known yet.
 export type ItemToolsOffline = { sync: () => Promise<void>; ready: boolean };
 
+// Snapshots inside History (owner, 2026-11-17): the hook the timeline calls for its Take Snapshot and pinned entries,
+// and Snapshots on their own for someone with no timeline to read. The app hands `useHistorySnapshotsHost()` from
+// @liveworkspace/snapshots/ui (null without its door), so this package never imports that one.
+export type ItemSnapshotsHost = {
+  useExtras: () => HistoryExtras;
+  Alone: ComponentType<{ onClose: () => void; after?: ReactNode }>;
+};
+
+// What the History row opens, from what this person may use: the timeline (with Snapshots in it), Snapshots alone,
+// the sign-in or sync gate, or livedocuments' Version History window alone (closing Tools, as it always has).
+type HistoryMode = 'timeline' | 'snapshots' | 'gate' | 'versions' | null;
+
+export function historyMode(input: {
+  timeline: boolean;
+  snapshots: boolean;
+  gated: boolean;
+  versions: boolean;
+}): HistoryMode {
+  if (input.timeline) return 'timeline';
+  if (input.snapshots) return 'snapshots';
+  if (input.gated) return 'gate';
+  return input.versions ? 'versions' : null;
+}
+
 export function useItemToolsRows({
   app,
   onWebhooks,
   history,
   signedIn,
   offline = null,
+  snapshots = null,
 }: {
   // The app, whose word for its item the sign-in dialogs use ("this canvas", "this plan").
   app: AppName;
@@ -86,20 +115,29 @@ export function useItemToolsRows({
   signedIn: boolean;
   // Set while the open item lives in This Browser: both rows show, badged Sync <Item>, and ask for a sync.
   offline?: ItemToolsOffline | null;
+  // Snapshots, for someone who may take them (useHistorySnapshotsHost); null otherwise.
+  snapshots?: ItemSnapshotsHost | null;
 }): ReactNode {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [gate, setGate] = useState<SignInFor | null>(null);
   // A tool asked for through Sync, opened once the synced item gives it its host.
   const [pending, setPending] = useState<SignInFor | null>(null);
+  // livedocuments' Version History, published by its footer (usePublishItemVersions).
+  const versions = useItemVersions();
   const guest = !signedIn;
   const noun = APP_ITEMS[app].noun;
   const badges = useMemo(
     () => [...(guest ? ['Sign In'] : []), ...(offline ? [`Sync ${noun}`] : [])],
     [guest, offline, noun],
   );
-  const showHistory = guest || !!offline || !!history;
-  const showWebhooks = guest || !!offline || !!onWebhooks;
   const gated = guest || !!offline;
+  const mode = historyMode({
+    timeline: !!history && !gated,
+    snapshots: !!snapshots,
+    gated,
+    versions: !!versions,
+  });
+  const showWebhooks = guest || !!offline || !!onWebhooks;
   // Synced, the tool asked for opens as soon as the synced item gives it its host: History here, as it renders;
   // Webhooks (the app's own dialog) from an effect, once per ask.
   const [webhooksDue, setWebhooksDue] = useState(0);
@@ -120,16 +158,25 @@ export function useItemToolsRows({
   }, [webhooksDue, onWebhooks]);
   const rows = useMemo<ChromeToolsItem[]>(
     () => [
-      ...(showHistory
+      ...(mode
         ? [
             {
               id: 'item-history',
               group: 'versions' as const,
               label: 'History',
-              description: 'Who changed what, and when.',
+              description:
+                mode === 'snapshots' || (mode === 'timeline' && snapshots)
+                  ? 'Snapshots, and who changed what.'
+                  : 'Who changed what, and when.',
               icon: <HistoryIcon />,
-              ...(gated ? { badges } : {}),
-              onSelect: () => (gated ? setGate('history') : setHistoryOpen(true)),
+              inPlace: mode !== 'versions',
+              ...(mode === 'gate' ? { badges } : {}),
+              onSelect: () =>
+                mode === 'gate'
+                  ? setGate('history')
+                  : mode === 'versions'
+                    ? versions?.()
+                    : setHistoryOpen(true),
             },
           ]
         : []),
@@ -141,21 +188,25 @@ export function useItemToolsRows({
               label: 'Webhooks',
               description: 'Tell other services when it changes.',
               icon: <WebhookIcon />,
+              inPlace: true,
               ...(gated ? { badges } : {}),
               onSelect: () => (gated ? setGate('webhooks') : onWebhooks?.()),
             },
           ]
         : []),
     ],
-    [showHistory, showWebhooks, gated, badges, onWebhooks],
+    [mode, showWebhooks, gated, badges, onWebhooks, versions, snapshots],
   );
   usePublishToolsItems('item', rows);
-  if (gate && gated)
+  const versionsLink = (close: () => void) =>
+    versions ? <VersionsLink open={versions} onLeave={close} /> : null;
+  if (gate && gated && (gate === 'webhooks' || mode === 'gate'))
     return (
       <SignInDialog
         for={gate}
         noun={noun}
         sync={guest ? null : offline}
+        after={gate === 'history' ? versionsLink(() => setGate(null)) : null}
         onSynced={() => {
           setPending(gate);
           setGate(null);
@@ -163,15 +214,69 @@ export function useItemToolsRows({
         onClose={() => setGate(null)}
       />
     );
-  return historyOpen && !gated && history ? (
-    <OpenItemHistory host={history} onClose={() => setHistoryOpen(false)} />
-  ) : null;
+  if (!historyOpen) return null;
+  const close = () => setHistoryOpen(false);
+  if (mode === 'timeline' && history)
+    return snapshots ? (
+      <OpenItemHistoryWithSnapshots
+        host={history}
+        snapshots={snapshots}
+        versionsLink={versionsLink(close)}
+        onClose={close}
+      />
+    ) : (
+      <OpenItemHistory host={history} top={versionsLink(close)} onClose={close} />
+    );
+  if (mode === 'snapshots' && snapshots) {
+    const after =
+      guest || versions ? (
+        <div className="flex flex-col gap-2">
+          {guest ? <AccountLine noun={noun} /> : null}
+          {versionsLink(close)}
+        </div>
+      ) : null;
+    return <snapshots.Alone onClose={close} after={after} />;
+  }
+  return null;
+}
+
+// The timeline with Snapshots in it: Take Snapshot over it, each snapshot pinned on the rail at its time.
+function OpenItemHistoryWithSnapshots({
+  host,
+  snapshots,
+  versionsLink,
+  onClose,
+}: {
+  host: ItemHistoryHost;
+  snapshots: ItemSnapshotsHost;
+  versionsLink: ReactNode;
+  onClose: () => void;
+}) {
+  const extras = snapshots.useExtras();
+  const top = (
+    <div className="flex flex-col gap-2">
+      {extras.top}
+      {versionsLink}
+    </div>
+  );
+  return <OpenItemHistory host={host} top={top} pins={extras.pins} onClose={onClose} />;
 }
 
 // The History dialog for the open item, its reads made as it opens.
-function OpenItemHistory({ host, onClose }: { host: ItemHistoryHost; onClose: () => void }) {
+function OpenItemHistory({
+  host,
+  top,
+  pins,
+  onClose,
+}: {
+  host: ItemHistoryHost;
+  top?: ReactNode;
+  pins?: HistoryExtras['pins'];
+  onClose: () => void;
+}) {
   const item = useOpenItem(host.client, host.itemId, host.shareCode, host.sharePassword);
   const teams = host.useTeams(true);
+  const extras = useMemo<HistoryExtras>(() => ({ top, pins: pins ?? [] }), [top, pins]);
   if (!item || item.sharedVia) return null;
   return (
     <ItemHistoryDialog
@@ -181,8 +286,47 @@ function OpenItemHistory({ host, onClose }: { host: ItemHistoryHost; onClose: ()
       viewerId={host.viewerId}
       teams={teams}
       item={item}
+      extras={extras}
       onClose={onClose}
     />
+  );
+}
+
+// livedocuments' Version History from inside History: the window given over to one tab's versions, so History
+// closes, and Tools with it, as it opens.
+function VersionsLink({ open, onLeave }: { open: () => void; onLeave: () => void }) {
+  const dismiss = useDialogDismiss();
+  return (
+    <button
+      type="button"
+      data-history-versions=""
+      onClick={() => {
+        leaveToolsWithDialog();
+        dismiss(() => {
+          onLeave();
+          open();
+        });
+      }}
+      className={buttonClassName({ variant: 'secondary', size: 'sm', className: 'self-start' })}
+    >
+      <ButtonContent>Open Version History</ButtonContent>
+    </button>
+  );
+}
+
+// Signed out with only Snapshots to show: the rest of History is a sign-in away.
+function AccountLine({ noun }: { noun: string }) {
+  const { signInHref } = useAuthHrefs();
+  return (
+    <p data-history-account="" className="text-xs text-slate-600 dark:text-slate-300">
+      <a
+        href={signInHref}
+        className="font-semibold text-brand-700 underline-offset-2 hover:underline dark:text-brand-300"
+      >
+        Sign In
+      </a>{' '}
+      to see who changed this {noun.toLowerCase()}, and when.
+    </p>
   );
 }
 
@@ -193,11 +337,14 @@ function SignInDialog({
   for: tool,
   noun,
   sync,
+  after = null,
   onSynced,
   onClose,
 }: {
   for: SignInFor;
   noun: string;
+  // Under the prompt: what works without it (Version History).
+  after?: ReactNode;
   // Set when the item needs syncing (and the person is signed in): the gate syncs instead of signing in.
   sync: ItemToolsOffline | null;
   onSynced: () => void;
@@ -212,10 +359,13 @@ function SignInDialog({
     if (!sync) return;
     setBusy(true);
     setFailed(false);
+    // Inside Tools, the tool opens in the gate's place there once the item is synced (holdDialogSlot).
+    const undo = holdDialogSlot();
     try {
       await sync.sync();
       onSynced();
     } catch {
+      undo();
       setFailed(true);
     } finally {
       setBusy(false);
@@ -290,6 +440,7 @@ function SignInDialog({
             <ButtonContent>Sign In</ButtonContent>
           </a>
         )}
+        {after ? <div className="mt-1 flex justify-center">{after}</div> : null}
       </div>
       <DialogFooter>
         <button

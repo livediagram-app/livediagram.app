@@ -4,25 +4,25 @@ Derived from [sheet-sources.md](../sheet-sources.md). The spec decides; this fil
 
 ## Files
 
-| File                                                         | Role                                                                                                                                                                         |
-| ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/index-client/src/sheet-sources.ts`                 | The contract: `SheetAxisRange`, `SheetRangeAsk`, `SheetChartTable`, `SheetListing`, the answers, the constants, `readSheetRangeAsk`, `isSheetAxisRange`, `isSheetChartTable` |
-| `packages/index-client/src/client.ts`                        | `listSheets(itemId)`, `readSheetRange(itemId, ask, {grant?, watch?})` for browsers                                                                                           |
-| `packages/index-client/src/app-client.ts`                    | `sheetChanged(itemId, sheetIds, watchers)` for the source app's server                                                                                                       |
-| `packages/app-doors/src/doors.ts`                            | `listSheets(app, itemId)`, `readSheetRange(app, itemId, ask)`: the platform's client of the doors                                                                            |
-| `packages/index-app/src/sheet-source-doors.ts`               | The apps' side of the three doors (`sheets`, `sheet-range`, `source-changed`), wired in `internal.ts`                                                                        |
-| `liveworkspace/apps/index/src/sheet-sources.ts`              | `GET /items/:id/sheets`, `POST /items/:id/sheet-range`, `POST /app/items/:id/sheet-changed`                                                                                  |
-| `liveplanner/apps/api/src/plan-room/sheet-source.ts`         | liveplanner's door handlers: its sheet list and one range's read                                                                                                             |
-| `liveplanner/apps/api/src/plan-room/sheet-watchers.ts`       | The watches in the plan's room and the gathered change signal                                                                                                                |
-| `livedocuments/apps/api/src/document-room/source-changed.ts` | livedocuments' `source-changed` door: the room frame                                                                                                                         |
-| `packages/workbench/src/lib/room-client.ts`                  | `onSourceChanged` for the `source-changed` frame                                                                                                                             |
+| File                                                   | Role                                                                                                                                                                         |
+| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/index-client/src/sheet-sources.ts`           | The contract: `SheetAxisRange`, `SheetRangeAsk`, `SheetChartTable`, `SheetListing`, the answers, the constants, `readSheetRangeAsk`, `isSheetAxisRange`, `isSheetChartTable` |
+| `packages/index-client/src/client.ts`                  | `listSheets(itemId)`, `readSheetRange(itemId, ask, {grant?, watch?})` for browsers                                                                                           |
+| `packages/index-client/src/app-client.ts`              | `sheetChanged(itemId, sheetIds, watchers)` for the source app's server                                                                                                       |
+| `packages/app-doors/src/doors.ts`                      | `listSheets(app, itemId)`, `readSheetRange(app, itemId, ask)`: the platform's client of the doors                                                                            |
+| `packages/index-app/src/sheet-source-doors.ts`         | The apps' side of the three doors (`sheets`, `sheet-range`, `source-changed`), wired in `internal.ts`; `tellSourceChanged`, the reader room's frame                          |
+| `liveworkspace/apps/index/src/sheet-sources.ts`        | `GET /items/:id/sheets`, `POST /items/:id/sheet-range`, `POST /app/items/:id/sheet-changed`                                                                                  |
+| `liveplanner/apps/api/src/plan-room/sheet-source.ts`   | liveplanner's door handlers: its sheet list and one range's read                                                                                                             |
+| `liveplanner/apps/api/src/plan-room/sheet-watchers.ts` | The watches in the plan's room and the gathered change signal                                                                                                                |
+| `packages/workbench/src/lib/room-client.ts`            | `onSourceChanged` for the `source-changed` frame                                                                                                                             |
+| `packages/workbench/src/components/sheet-links/`       | The editors' side, one copy for every reader app: the reads and the quiet save, Link to Sheet, the Data section's Sheet row and the Linked to line                           |
 
 ## Domain and naming
 
 | Term         | Identifier                                                                          | Meaning                                                            |
 | ------------ | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
 | Source app   | `SHEET_SOURCE_APPS` (`liveplanner`)                                                 | An app whose items hold sheets a chart may read                    |
-| Reader app   | `SOURCE_WATCH_APPS` (`livedocuments`)                                               | An app whose items may watch a source                              |
+| Reader app   | `SOURCE_WATCH_APPS` (`livedocuments`, `livediagram`, `livedesign`)                  | An app whose items may watch a source                              |
 | Range        | `SheetAxisRange = {r1, c1, r2, c2}`                                                 | Corner row and column ids, each `SHEET_AXIS_ID` (`[a-z0-9]{4,12}`) |
 | Ask          | `SheetRangeAsk = {sheetId, range?, a1?, cols?}`                                     | Exactly one of `range` and `a1`                                    |
 | Read (door)  | `SheetRangeDoorRead = {sheetName, tabId, range, a1, table}`                         | What the door answers                                              |
@@ -97,16 +97,17 @@ Steps 1 and 3 above, then `doors.listSheets(app, id)`; a tab-scoped access keeps
   the pending sheets' live watchers, `SHEET_WATCHERS_MAX` a call, through `indexAppClient(env).sheetChanged`.
   The `gone` answer deletes those watchers' rows. A failure is logged (`[sheets] sheet-changed failed`) and dropped.
 
-### livedocuments (`source-changed.ts`)
+### The reader apps (`tellSourceChanged`)
 
-`sourceChanged(documentId, change)` makes the room send
-`{kind: 'source-changed', app, itemId, sheetIds}` to every socket (`broadcast`). Nothing is stored.
+livedocuments, livediagram and livedesign each wire the door to their item's room: the room's `sourceChanged(itemId, change)`
+calls `tellSourceChanged` (`packages/index-app/src/sheet-source-doors.ts`, one copy), which binds the room to its item and
+sends `{kind: 'source-changed', app, itemId, sheetIds}` to every socket (`broadcast`). Nothing is stored.
 
 ## Interfaces and contracts
 
 ```ts
 export const SHEET_SOURCE_APPS = ['liveplanner'] as const;
-export const SOURCE_WATCH_APPS = ['livedocuments'] as const;
+export const SOURCE_WATCH_APPS = ['livedocuments', 'livediagram', 'livedesign'] as const;
 export type SheetAxisRange = { r1: string; c1: string; r2: string; c2: string };
 export type SheetRangeAsk = {
   sheetId: string;
@@ -179,15 +180,15 @@ export type SourceChange = { app: SheetSourceApp; itemId: string; sheetIds: stri
 
 ## Testing
 
-| Rule                                                                                                                                            | File                                                                                          |
-| ----------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| Asks and ranges parse, malformed refused                                                                                                        | `packages/index-client/src/sheet-sources.test.ts`                                             |
-| Client calls and the app client's signal                                                                                                        | `packages/index-client/src/sheet-sources.test.ts`                                             |
-| Doors: the index key only, 404 without a handler, answers                                                                                       | `packages/index-app/src/sheet-source-doors.test.ts`                                           |
-| app-doors list and read, errors as `DoorError`                                                                                                  | `packages/app-doors/src/doors.test.ts`                                                        |
-| Index: own access only, share code / public / delegate 404, tab scope, watch only with the reader's grant, door errors, signal relay and `gone` | `liveworkspace/apps/index/src/sheet-sources.test.ts`                                          |
-| liveplanner: reads only the range, A1 to ids, range gone, watches and the gathered signal                                                       | `liveplanner/apps/api/src/plan-room/sheet-source.test.ts`, `plan-room/sheet-watchers.test.ts` |
-| livedocuments: the frame                                                                                                                        | `livedocuments/apps/api/src/document-room/source-changed.test.ts`                             |
+| Rule                                                                                                                                            | File                                                                                                       |
+| ----------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Asks and ranges parse, malformed refused                                                                                                        | `packages/index-client/src/sheet-sources.test.ts`                                                          |
+| Client calls and the app client's signal                                                                                                        | `packages/index-client/src/sheet-sources.test.ts`                                                          |
+| Doors: the index key only, 404 without a handler, answers                                                                                       | `packages/index-app/src/sheet-source-doors.test.ts`                                                        |
+| app-doors list and read, errors as `DoorError`                                                                                                  | `packages/app-doors/src/doors.test.ts`                                                                     |
+| Index: own access only, share code / public / delegate 404, tab scope, watch only with the reader's grant, door errors, signal relay and `gone` | `liveworkspace/apps/index/src/sheet-sources.test.ts`                                                       |
+| liveplanner: reads only the range, A1 to ids, range gone, watches and the gathered signal                                                       | `liveplanner/apps/api/src/plan-room/sheet-source.test.ts`, `plan-room/sheet-watchers.test.ts`              |
+| Reader apps: the frame                                                                                                                          | `source-changed.test.ts` in livedocuments' and livediagram's `document-room/`, livedesign's `design-room/` |
 
 ## Constants and configuration
 

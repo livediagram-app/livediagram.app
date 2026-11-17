@@ -5,7 +5,8 @@
 // dialog's code loads the first time it opens (docs/specs/016-platform/web-performance.md), so a plan whose people
 // never open it pays nothing for it.
 import dynamic from 'next/dynamic';
-import { useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { requestToolsView } from '@liveworkspace/workbench/components/chrome/tools-door';
 import { track } from '@/lib/telemetry';
 import { EmailIntakeDoorContext, type EmailIntakeDoor } from './EmailIntakeContext';
 import { EMAIL_INTAKE_PARAM, type EmailIntakeScope } from './email-intake-gate';
@@ -36,11 +37,13 @@ export function EmailIntakeHost({
   children: ReactNode;
 }) {
   // Taken when the dialog opens, so an edit on the canvas behind it does not move it to another board.
-  // Back from a guest's sign-in, asked open: the gate or the dialog opens on arrival, on the tab's boards.
+  // Back from a guest's sign-in, asked open: Tools opens at Email to Board on arrival (footer-tools-menu.md "From
+  // elsewhere"), on the tab's boards, where the gate or the dialog draws.
   const asked = useAskedOpen(EMAIL_INTAKE_PARAM);
-  const [openOn, setOpenOn] = useState<readonly string[] | null>(() =>
-    asked && boardIds.length ? boardIds : null,
-  );
+  useEffect(() => {
+    if (asked) requestToolsView('email-intake');
+  }, [asked]);
+  const [openOn, setOpenOn] = useState<readonly string[] | null>(null);
   const { ownerId, projectId, shareCode } = scope ?? {};
   const stable = useMemo<EmailIntakeScope | null>(
     () => (ownerId && projectId ? { ownerId, projectId, shareCode: shareCode ?? null } : null),

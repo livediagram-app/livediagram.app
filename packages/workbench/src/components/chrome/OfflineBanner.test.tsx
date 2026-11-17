@@ -60,4 +60,13 @@ describe('OfflineBanner', () => {
     render(<OfflineBanner readOnly={false} />);
     expect(screen.getByRole('status').textContent).toContain('You’re offline.');
   });
+
+  // A card, not a round-ended pill: on a phone the line wraps and must stay inside the corners (Work Tracker 1014).
+  it('is a card, so a wrapped line stays inside its corners', () => {
+    act(() => setOnline(false));
+    render(<OfflineBanner readOnly={false} />);
+    const banner = screen.getByRole('status').closest('[data-floating-panel]');
+    expect(banner?.className).toContain('rounded-2xl');
+    expect(banner?.className).not.toContain('rounded-full');
+  });
 });

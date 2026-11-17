@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, type ReactNode } from 'react';
-import { Button, DialogCloseButton, DialogHeader } from '@liveplanner/ui';
+import { Button, DialogCloseButton, DialogHeader, holdDialogSlot } from '@liveplanner/ui';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 import { SyncProjectPrompt } from './SyncProjectPrompt';
@@ -44,7 +44,16 @@ export function SyncGateDialog({
       </DialogHeader>
 
       <SyncProjectPrompt
-        onSyncToCloud={onSyncToCloud}
+        // Opened inside Tools, the tool it goes on to opens in the gate's place there (holdDialogSlot).
+        onSyncToCloud={async () => {
+          const undo = holdDialogSlot();
+          try {
+            await onSyncToCloud();
+          } catch (error) {
+            undo();
+            throw error;
+          }
+        }}
         ready={ready}
         title={promptTitle}
         onBusyChange={setBusy}

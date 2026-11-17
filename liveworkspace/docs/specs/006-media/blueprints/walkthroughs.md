@@ -94,6 +94,20 @@ Hidden elements are hidden by one `<style>` element: `[data-canvas-content] [dat
 hidden !important }` per id, through `CSS.escape`; while recording, the presenter's own view draws them at 0.35
 opacity inside a dashed rose outline (`hiddenCss(ids, "presenter")`).
 
+Hideable marks (`host.hideable`, `WalkthroughHideable`): `marks` are attributes beside `data-element-id` (liveplanner:
+`data-plan-card`, `data-dashboard-slot`) whose value is an id, matched anywhere under the canvas root. `elementIdAt`
+takes the nearest element carrying any of them (a card inside a board on the canvas is the card), `onHideableSurface`
+lets picking take presses on them outside `[data-canvas-content]`, `hiddenCss` adds `[<mark>="<id>"]` per mark, and
+`elementBox` rings the first visible match (`checkVisibility`), passing over a covered copy. `canHide()` is read as
+the dock draws: false leaves Hide From Recording out and the picking mode off. `selection()` adds to Hide Selection
+(liveplanner: the cards with `data-selected`). A host without `hideable` behaves as before.
+
+The camera switch: `useRecorder` holds `cameraOn` (from `localStorage['liveworkspace:walkthrough-camera'] === 'on'`,
+false when absent or throwing) and writes it on each flip; `getUserMedia` gets `video: false` while it is off. A
+camera that fails turns it off in state only. `allow(kind)` (the pickers' Allow buttons) asks again by bumping the
+open effect's key, turning the camera on for `camera`. `listDevices` sets `locked[kind]` when the kind is listed only
+with empty device ids.
+
 ## Interfaces and contracts
 
 `Walkthrough` = `{ id, item, title, author: string | null, durationMs, mediaType, mediaBytes, camera, createdAt,

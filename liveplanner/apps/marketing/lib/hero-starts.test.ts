@@ -1,3 +1,4 @@
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { describe, expect, it } from 'vitest';
 import { seededRandom } from '@liveplanner/project';
 import { galleryTemplates } from './template-gallery';
@@ -14,6 +15,19 @@ import {
 
 // docs/specs/019-marketing/marketing-site.md "Hero": the search's matches, and the fan's deal.
 describe('heroSearch', () => {
+  it('still lists a template for a query one typo away', () => {
+    expect(heroSearch('kanbn').length).toBeGreaterThan(0);
+    expect(heroSearch('qqqqzzzz')).toEqual([]);
+  });
+
+  it('searches every template for each keystroke of a typo, and a long query, within a CPU budget', () => {
+    const typed = ['kanbn', ...Array.from({ length: 8 }, (_, n) => 'kanbn'.slice(0, n + 1))];
+    const ms = cpuMsOf(() => {
+      for (const query of [...typed, `kanbn ${'x'.repeat(20000)}`]) heroSearch(query);
+    });
+    expect(ms).toBeLessThan(cpuBudgetMs(1000));
+  });
+
   it('lists nothing until something is typed', () => {
     expect(heroSearch('')).toEqual([]);
     expect(heroSearch('   ')).toEqual([]);

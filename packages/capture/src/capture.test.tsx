@@ -58,6 +58,18 @@ describe('devices', () => {
         { id: 'm2', label: 'Desk Mic' },
       ],
       cameras: [{ id: 'c1', label: 'Camera 1' }],
+      locked: { microphones: false, cameras: false },
+    });
+  });
+
+  it('says a kind is locked where the browser hides it until allowed', async () => {
+    const source = {
+      enumerateDevices: async () => [info('audioinput', ''), info('videoinput', '')],
+    };
+    expect(await listDevices(source)).toEqual({
+      microphones: [],
+      cameras: [],
+      locked: { microphones: true, cameras: true },
     });
   });
 
@@ -157,70 +169,95 @@ describe('the picker', () => {
     microphones: [{ id: 'm1', label: 'Desk Mic' }],
     cameras: [{ id: 'c1', label: 'FaceTime' }],
   };
+  const props = {
+    microphone: null,
+    camera: null,
+    onMicrophone: () => undefined,
+    onCamera: () => undefined,
+    cameraOn: true,
+    onCameraOn: () => undefined,
+    onAllow: () => undefined,
+  };
+  const options = (el: HTMLElement) => [...(el as HTMLSelectElement).options].map((o) => o.text);
 
-  it('picks a microphone and a camera, or No Camera', () => {
+  it('picks a microphone and a camera; off is the switch, not an entry in the list', () => {
     const onMicrophone = vi.fn();
     const onCamera = vi.fn();
+    const onCameraOn = vi.fn();
     render(
       <DevicePicker
+        {...props}
         devices={devices}
-        microphone={null}
-        camera={null}
         onMicrophone={onMicrophone}
         onCamera={onCamera}
+        onCameraOn={onCameraOn}
       />,
     );
     fireEvent.change(screen.getByLabelText('Microphone'), { target: { value: 'm1' } });
     expect(onMicrophone).toHaveBeenLastCalledWith('m1');
     fireEvent.change(screen.getByLabelText('Microphone'), { target: { value: '' } });
     expect(onMicrophone).toHaveBeenLastCalledWith(null);
-    fireEvent.change(screen.getByLabelText('Camera'), { target: { value: NO_CAMERA } });
-    expect(onCamera).toHaveBeenLastCalledWith(NO_CAMERA);
-    fireEvent.change(screen.getByLabelText('Camera'), { target: { value: '' } });
+    fireEvent.change(screen.getByLabelText('Which Camera'), { target: { value: 'c1' } });
+    expect(onCamera).toHaveBeenLastCalledWith('c1');
+    fireEvent.change(screen.getByLabelText('Which Camera'), { target: { value: '' } });
     expect(onCamera).toHaveBeenLastCalledWith(null);
+    expect(options(screen.getByLabelText('Which Camera'))).not.toContain('No Camera');
+    fireEvent.click(screen.getByRole('switch', { name: 'Camera' }));
+    expect(onCameraOn).toHaveBeenLastCalledWith(false);
   });
 
-  it('shows the picked devices', () => {
-    render(
-      <DevicePicker
-        devices={devices}
-        microphone="m1"
-        camera="c1"
-        onMicrophone={() => undefined}
-        onCamera={() => undefined}
-      />,
+  it('lists the two kinds the same way', () => {
+    render(<DevicePicker {...props} devices={devices} />);
+    const mic = screen.getByLabelText('Microphone') as HTMLSelectElement;
+    const cam = screen.getByLabelText('Which Camera') as HTMLSelectElement;
+    expect(options(mic)).toEqual(['Default', 'Desk Mic']);
+    expect(options(cam)).toEqual(['Default', 'FaceTime']);
+    expect(mic.disabled).toBe(cam.disabled);
+  });
+
+  it('shows the picked devices, and no list while the camera is off', () => {
+    const { rerender } = render(
+      <DevicePicker {...props} devices={devices} microphone="m1" camera="c1" />,
     );
-    expect((screen.getByLabelText('Camera') as HTMLSelectElement).value).toBe('c1');
+    expect((screen.getByLabelText('Which Camera') as HTMLSelectElement).value).toBe('c1');
     expect((screen.getByLabelText('Microphone') as HTMLSelectElement).value).toBe('m1');
+    rerender(<DevicePicker {...props} devices={devices} camera={NO_CAMERA} cameraOn={false} />);
+    expect(screen.getByRole('switch', { name: 'Camera' }).getAttribute('aria-checked')).toBe(
+      'false',
+    );
+    expect(screen.queryByLabelText('Which Camera')).toBeNull();
+    expect(screen.getByText('Off, sound only')).toBeTruthy();
+    // A camera id of none (an older choice) reads as the default once the switch is on.
+    rerender(<DevicePicker {...props} devices={devices} camera={NO_CAMERA} />);
+    expect((screen.getByLabelText('Which Camera') as HTMLSelectElement).value).toBe('');
   });
 
-  it('says when there is nothing to pick, and can leave the camera out', () => {
-    render(
-      <DevicePicker
-        devices={NO_DEVICES}
-        microphone={null}
-        camera={NO_CAMERA}
-        onMicrophone={() => undefined}
-        onCamera={() => undefined}
-        withCamera={false}
-      />,
-    );
-    expect((screen.getByLabelText('Microphone') as HTMLSelectElement).disabled).toBe(true);
-    expect(screen.getByText('No microphone found')).toBeTruthy();
-    expect(screen.queryByLabelText('Camera')).toBeNull();
+  it('says No Microphone Found and No Camera Found alike, and can leave the camera out', () => {
+    const { rerender } = render(<DevicePicker {...props} devices={NO_DEVICES} />);
+    const mic = screen.getByLabelText('Microphone') as HTMLSelectElement;
+    const cam = screen.getByLabelText('Which Camera') as HTMLSelectElement;
+    expect(options(mic)).toEqual(['No Microphone Found']);
+    expect(options(cam)).toEqual(['No Camera Found']);
+    expect(mic.disabled).toBe(true);
+    expect(cam.disabled).toBe(true);
+    rerender(<DevicePicker {...props} devices={NO_DEVICES} withCamera={false} />);
+    expect(screen.queryByRole('switch')).toBeNull();
   });
 
-  it('offers only No Camera when there is no camera', () => {
+  it('offers to ask the browser for a kind it has not been allowed to list yet', () => {
+    const onAllow = vi.fn();
     render(
       <DevicePicker
-        devices={NO_DEVICES}
-        microphone={null}
-        camera={NO_CAMERA}
-        onMicrophone={() => undefined}
-        onCamera={() => undefined}
+        {...props}
+        devices={{ ...NO_DEVICES, locked: { microphones: true, cameras: true } }}
+        onAllow={onAllow}
       />,
     );
-    const camera = screen.getByLabelText('Camera') as HTMLSelectElement;
-    expect([...camera.options].map((o) => o.text)).toEqual(['No Camera']);
+    expect(screen.queryByRole('combobox')).toBeNull();
+    expect(screen.getAllByText('Not allowed yet')).toHaveLength(2);
+    fireEvent.click(screen.getByRole('button', { name: 'Allow Microphone' }));
+    expect(onAllow).toHaveBeenLastCalledWith('microphone');
+    fireEvent.click(screen.getByRole('button', { name: 'Allow Camera' }));
+    expect(onAllow).toHaveBeenLastCalledWith('camera');
   });
 });

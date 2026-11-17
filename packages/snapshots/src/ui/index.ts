@@ -1,5 +1,5 @@
 // Snapshots in the editor (liveworkspace/docs/specs/014-snapshots/snapshots.md "In the editor"): the door an app's
-// host provides, the footer Tools menu's row, and the dialog it opens.
+// host provides, and Snapshots inside the footer's History.
 export {
   SnapshotsDoorProvider,
   useEditorSnapshotsDoor,
@@ -7,6 +7,12 @@ export {
   useSnapshotsDoor,
   type SnapshotsDoor,
 } from './door';
-export { useSnapshotsToolsItem } from './snapshots-tools-item';
+export {
+  useHistorySnapshotsHost,
+  useSnapshotsExtras,
+  type HistoryExtras,
+  type HistoryPin,
+  type HistorySnapshotsHost,
+} from './history-snapshots';
 export { SnapshotsDialog } from './SnapshotsDialog';
 export { useSnapshots, type SnapshotsState } from './useSnapshots';
