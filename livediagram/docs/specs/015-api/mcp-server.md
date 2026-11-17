@@ -387,6 +387,9 @@ metadata-only (no elements): the scaffold materialises server-side on create,
 so the model never has to re-emit (or accidentally mangle) a curated layout.
 The recommended flow for "make me a retrospective"-style asks: `list_templates`
 → create with `template` → `update_document` (`ops`) to fill in real content.
+Its description also says where a template is not the only start: the C4 levels are templates (`c4-context`,
+`c4-container`, `c4-component`) and a graph's `c4` style (§4.7) draws any level of the user's own system without
+coordinates.
 
 A `template` that names no kind is refused before anything is written, offering the kinds it most likely meant first:
 those whose kind or title has a word starting with a word of it of 3 letters or more (`closestTemplateKinds`, at most
@@ -503,11 +506,11 @@ or the same thing written as **`mermaid`**:
 ```
 graph: {
   title?: string, subtitle?: string, key?: boolean,
-  nodes:  [{ id, label?, shape?, note?, group?, icon?, tone? }],
+  nodes:  [{ id, label?, shape?, note?, group?, icon?, tone?, c4Kind?, tech?, description? }],
   edges:  [{ from, to, label?, line? }],
   groups?: [{ id, label?, members?: [nodeId, ...] }],
   direction?: 'down' | 'right',
-  style?:  'flow' | 'tree' | 'mindmap' | 'lanes' | 'cycle',
+  style?:  'flow' | 'tree' | 'mindmap' | 'lanes' | 'cycle' | 'storm' | 'sequence' | 'c4',
   lines?:  'straight' | 'angled' | 'curved',
 }
 mermaid: "flowchart LR\n  A[Idea] --> B{Worth it?} ..."
@@ -697,6 +700,24 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   out alike; an edge between stops that are not ring neighbours, as a star's spokes are, goes round the outside of the
   stops between them the shorter way, each hop further a lane further out, never along the ring behind them; a node with no edge at all at the ring's centre, sized on its own so a longer centre label never grows
   the stops, the ring widened until no stop comes within half a gap of the centre's stack, a node given no shape a circle).
+- `c4`: a level of the **C4 model** (Simon Brown's System Context, Container and Component diagrams), drawn as the
+  C4 templates draw them ([Templates](../008-canvas/canvas-and-palette.md), the C4 levels), with no coordinates. It is
+  the flow layout (layered, `down` unless `direction` says `right`, angled lines) with every node a **C4 element** by
+  its `c4Kind`: `person` (a deep-blue card with the person glyph), `system` (the software system in focus, mid blue),
+  `container` (the container blue), `component` (light blue, dark ink), `database` (a cylinder in the container blue)
+  or `external` (an external system, grey). Unset, a node shaped `actor` is a person, one shaped `cylinder` a
+  database, a node in a group a container and any other a software system. A card's name is the `label` (the 40
+  character heading), its meta line the `tech` (the technology: "Go", "PostgreSQL") or else its kind's name
+  ("Person", "Software system", "Container", "Component", "External system"), and its body the `description` (what
+  it does, up to 120 characters; a longer one is cut at a word with its whole text kept in the note); a database
+  draws its name over its technology. Cards are 280 wide, wider for a long name (up to 420, so a name is never cut), as tall as their description needs (up to four lines),
+  every card keeping its C4 fill under any theme (`themeLockFill`). Each **group** is a **boundary** in the C4 style:
+  its label bold in the bottom-left corner, its meta line in brackets under it, "Container" when it holds a
+  component and "Software system" otherwise; its members sit at its top, the heading's band at its foot. A **key**
+  (a frame titled "Key", right of the drawing) names each kind the drawing uses with a swatch of its fill; `key:
+false` leaves it out, an object renames a kind (`{"external": "Third party"}`). Edge labels say what flows and
+  how ("Places orders · HTTPS"). Tones and roles do not apply. `c4Kind`, `tech` and `description` are read only by
+  this style; a node naming a `c4Kind` the style does not know is refused (`graphBodyIssue`, the schema).
 - **Self-edges**: an edge from a node to itself never loses the node. The flow style (and lanes and tree) draws it as
   a loop round the node; the mindmap and cycle styles have no place for one (a branch cannot enter its own node, and
   a ring's arcs run between stops), so there the node shows and the self-edge is dropped, as if never given: a cycle
