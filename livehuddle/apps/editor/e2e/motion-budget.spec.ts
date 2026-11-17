@@ -157,6 +157,14 @@ test.describe('Motion budget', () => {
     pageErrors,
   }) => {
     await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'no-preference' });
+    // The flat walk this morph is measured on: the 3D view off (docs/specs/008-canvas/3d-view.md, DEFAULTS D141).
+    await page.addInitScript(() => {
+      try {
+        localStorage.removeItem('livehuddle:v2:space-3d');
+      } catch {
+        // No storage on this document: nothing to clear.
+      }
+    });
     await startBlank(page);
     const start = page.getByRole('region', { name: /^Start a Space$/ });
     if (await start.isVisible()) {

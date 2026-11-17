@@ -3,6 +3,7 @@
 // The talking equaliser (docs/specs/012-collaboration/proximity-audio.md "The talking equaliser"): three small bars
 // in the speaker's colour above every talking character, near or far, so you can see where the conversations are
 // and walk over. Drawn inside the canvas's transformed layer, so they pan and zoom with the characters.
+import { billboardOrigin, SPACE_BILLBOARD_ATTR } from '@livehuddle/avatar/billboard';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { HoverCard } from '@livehuddle/ui';
 import { avatarGlides } from '@livehuddle/avatar/relay';
@@ -106,11 +107,13 @@ function PeerBars({
     <div
       ref={placed}
       data-talking-bars={peer.id}
+      {...SPACE_BILLBOARD_ATTR}
       className="absolute z-10 -translate-x-1/2 -translate-y-full"
       style={{
         left: peer.at.x,
         top: peer.at.y - AVATAR_HEIGHT * peer.scale - PEER_BARS_LIFT,
         opacity,
+        ...billboardOrigin(0, AVATAR_HEIGHT * peer.scale + PEER_BARS_LIFT),
       }}
     >
       <HoverCard title={label}>
@@ -177,11 +180,13 @@ export function TalkingBars(props: {
       {props.self && selfLevel > 0 ? (
         <div
           data-talking-bars="self"
+          {...SPACE_BILLBOARD_ATTR}
           aria-hidden
           className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full px-1.5 py-1"
           style={{
             left: props.self.at.x,
             top: props.self.at.y - AVATAR_HEIGHT * props.self.scale - SELF_BARS_LIFT,
+            ...billboardOrigin(0, AVATAR_HEIGHT * props.self.scale + SELF_BARS_LIFT),
           }}
         >
           <Bars level={selfLevel} color={props.self.color} />

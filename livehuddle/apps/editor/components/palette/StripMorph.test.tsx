@@ -19,9 +19,13 @@ vi.mock('./strip-morph-dom', () => ({
 
 const SNAPSHOT = { box: { left: 0, top: 0, width: 10, height: 10 }, radius: 4 } as StripSnapshot;
 
-const parent = document.createElement('div');
+// The canvas root holds the strips; the wrapper sits one level down, inside the 3D view's stage.
+const parent = document.createElement('main');
+parent.setAttribute('data-canvas-root', '');
+const stage = document.createElement('div');
 const wrapper = document.createElement('div');
-parent.append(wrapper);
+stage.append(wrapper);
+parent.append(stage);
 const wrapperRef = { current: wrapper };
 
 function Host({ walking }: { walking: boolean }) {

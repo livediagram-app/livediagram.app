@@ -4,6 +4,7 @@
 // head of everyone whose hand is up, amber with a hand, or the brand's microphone once they are let speak. For
 // whoever may let speak (an Editor, or someone speaking from a stage) each peer's badge is a button: Let Speak on a
 // raised hand, Done on a speaking one. Drawn inside the canvas's transformed layer, beside the talking bars.
+import { billboardOrigin, SPACE_BILLBOARD_ATTR } from '@livehuddle/avatar/billboard';
 import { useLayoutEffect, useRef, type ReactNode } from 'react';
 import { lucideHand, lucideMic } from '@liveworkspace/icons/lucide';
 import { avatarGlides } from '@livehuddle/avatar/relay';
@@ -68,8 +69,13 @@ function Placed(props: {
     <div
       ref={placed}
       data-raised-hand={props.id}
+      {...SPACE_BILLBOARD_ATTR}
       className="absolute z-10 -translate-x-1/2 -translate-y-1/2 motion-safe:animate-card-rise"
-      style={{ left: centre.x, top: centre.y }}
+      style={{
+        left: centre.x,
+        top: centre.y,
+        ...billboardOrigin(props.at.x - centre.x, props.at.y - centre.y, '50%', '50%'),
+      }}
     >
       {props.children}
     </div>

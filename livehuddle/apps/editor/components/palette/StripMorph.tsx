@@ -11,16 +11,20 @@ import { captureStrip, playStripMorph, type StripSnapshot } from './strip-morph-
 
 type Props = {
   walking: boolean;
-  // The canvas wrapper; the strips are inside its parent (one editor's chrome: a split view has two).
+  // The canvas wrapper; the strips are inside its canvas root (one editor's chrome: a split view has two).
   wrapperRef: RefObject<HTMLElement | null>;
 };
+
+// The canvas root round the wrapper, where its strips are: the wrapper sits inside the 3D view's stage
+// (docs/specs/008-canvas/3d-view.md "The camera"), so its own parent holds no strip.
+const scopeOf = (wrapper: HTMLElement | null | undefined) => wrapper?.closest('[data-canvas-root]');
 
 export class StripMorph extends Component<Props> {
   private stop: (() => void) | null = null;
 
   override getSnapshotBeforeUpdate(prev: Props): StripSnapshot | null {
     if (prev.walking === this.props.walking) return null;
-    return captureStrip(this.props.wrapperRef.current?.parentElement);
+    return captureStrip(scopeOf(this.props.wrapperRef.current));
   }
 
   override componentDidUpdate(prev: Props, _state: unknown, from: StripSnapshot | null) {
@@ -29,7 +33,7 @@ export class StripMorph extends Component<Props> {
     this.end();
     if (!from) return;
     this.stop = playStripMorph(
-      this.props.wrapperRef.current?.parentElement,
+      scopeOf(this.props.wrapperRef.current),
       from,
       this.props.walking ? 'walk' : 'edit',
     );

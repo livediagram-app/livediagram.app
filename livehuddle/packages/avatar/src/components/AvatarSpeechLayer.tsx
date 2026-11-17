@@ -24,10 +24,12 @@ import {
   SPEECH_LIFT_EASE_MS,
   SPEECH_RISE_PX_PER_S,
   SPEECH_SWAY_PX,
+  SPEECH_HEAD_GAP,
   type SpeechBubble,
   type SpeechObstacle,
 } from '../speech';
-import type { AvatarPoint } from '../walk';
+import { AVATAR_HEIGHT, type AvatarPoint } from '../walk';
+import { billboardOrigin, SPACE_BILLBOARD_ATTR } from '../billboard';
 import { AVATAR_FALLBACK_COLOUR } from '../config';
 import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-preference';
 import { SendIcon, SpeechCard, SpeechCounter, SpeechDraftField } from './AvatarSpeechBubble';
@@ -56,8 +58,16 @@ export type SpeechComposerProps = {
 function AtPoint({ at, zoom, children }: { at: AvatarPoint; zoom: number; children: ReactNode }) {
   return (
     <div
+      {...SPACE_BILLBOARD_ATTR}
       className="pointer-events-none absolute"
-      style={{ left: at.x, top: at.y, width: 0, height: 0 }}
+      // In the 3D view the bubble stands up about the speaker's feet, a head below its point (billboard.ts).
+      style={{
+        left: at.x,
+        top: at.y,
+        width: 0,
+        height: 0,
+        ...billboardOrigin(0, AVATAR_HEIGHT + SPEECH_HEAD_GAP, '0px', '0px'),
+      }}
     >
       <div
         className="absolute bottom-0 left-0"

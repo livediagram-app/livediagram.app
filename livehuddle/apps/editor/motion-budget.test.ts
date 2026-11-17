@@ -27,6 +27,8 @@ const CANVAS_STYLESHEETS = [
   'app/motion-media.css',
   // The account and connect pages' entrance and lines (docs/specs/014-identity/auth-and-guest-access.md).
   'app/auth-motion.css',
+  // The 3D view's tilt and its walls standing up (docs/specs/008-canvas/3d-view.md "Turning it on and off").
+  'app/space-3d.css',
 ];
 
 describe('editor motion budget', () => {

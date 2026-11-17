@@ -110,7 +110,9 @@ describe('AvatarWalker chip in a spread row', () => {
       expect(raised.style.transform).toBe(figure.style.transform);
       expect(raised.textContent).toContain('Calm Tiger');
       expect(figure.textContent).not.toContain('Calm Tiger');
-      const chip = raised.firstElementChild as HTMLElement;
+      // The chip sits in the box that stands it up in the 3D view.
+      const chip = raised.querySelector<HTMLElement>('[data-avatar-stand]')!
+        .firstElementChild as HTMLElement;
       expect(chip.style.transform).toBe(shift ? `translateX(${shift}px)` : '');
     }
   });

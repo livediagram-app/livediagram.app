@@ -140,6 +140,11 @@ with the code, not kept with a banner.
 - **Stored view choices.** A browser that stored Zen as on, or a laser or spotlight pen, keeps the key; nothing reads
   it. The Isometric **background** is not Isometric mode; it went later with the other diagram patterns
   ([The diagram canvas patterns](#the-diagram-canvas-patterns)).
+- **The 3D view is not Isometric coming back** (Work Tracker 1043, [3D view](../008-canvas/3d-view.md)). Isometric
+  was a canvas tool of its own that turned the board 45 degrees with no perspective, raised a block under every
+  element and turned editing off while it showed. The 3D view is a switch on walking: a perspective camera tilts the
+  Space back like a map, only walls stand up (the lines that already block walking) and the characters stand on the
+  floor, and it never locks editing, because switching to Edit flattens it. The `isometric` mode and tool stay gone.
 
 ## The Frame
 

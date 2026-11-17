@@ -155,6 +155,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone clicked a form's row in the Explorer's Inbox (its new responses), jumping to the board they land on. No longer recorded: livehuddle's Explorer has no Inbox.",
   'Activity|Selected|Thread':
     "Someone clicked a comment-thread row in the Explorer's Inbox, jumping to the element it's on. No longer recorded: livehuddle's Explorer has no Inbox.",
+  'Canvas|Used|Space3DView':
+    'Someone turned on the 3D view while walking, tilting the Space back with its walls standing up.',
   'Canvas|Used|WaterCooler':
     'Someone walked their Avatar-mode character up to a water cooler and took a cup of water.',
   'Canvas|Used|CoffeeMachine':
