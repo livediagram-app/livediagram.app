@@ -1,0 +1,64 @@
+// The 3D view's camera (docs/specs/008-canvas/3d-view.md "The camera"; blueprint: 3d-view.md): the tilt and
+// perspective the stage round the canvas's world layer carries, and the same projection worked backwards, so a press
+// on the tilted floor walks to the floor point under it. Pure: no React, no DOM.
+
+/** How far the camera looks back from straight down, in degrees (DEFAULTS.md D136). */
+export const SPACE_3D_TILT_DEG = 52;
+/** The perspective's distance, in screen px (DEFAULTS.md D136). */
+export const SPACE_3D_PERSPECTIVE_PX = 1100;
+/** How long the tilt (and the walls' fold) takes, in ms. */
+export const SPACE_3D_TILT_MS = 520;
+
+type Point = { x: number; y: number };
+type View = { zoom: number; offset: Point };
+type Rect = { left: number; top: number; width: number; height: number };
+
+// Below this the press is at (or above) the horizon: the ray never meets the floor in front of the camera.
+const HORIZON_EPSILON = 1;
+
+/** The stage's transform while it is in 3D: the tilt itself is the `--space-tilt` variable, so it transitions. */
+export function stageTransform(perspective = SPACE_3D_PERSPECTIVE_PX): string {
+  return `perspective(${perspective}px) rotateX(var(--space-tilt))`;
+}
+
+/**
+ * The canvas point under a press on the tilted floor, or null above the horizon. `rect` is the canvas's (the
+ * stage's) box on the screen; the stage tilts about its centre, and the world layer inside it is the flat view's
+ * `scale(zoom) translate(offset)` about the same centre. At a tilt of 0 it is `pointerToCanvas`.
+ */
+export function floorPointAt(
+  client: Point,
+  rect: Rect,
+  view: View,
+  tiltDeg: number,
+  perspective = SPACE_3D_PERSPECTIVE_PX,
+): Point | null {
+  const cx = rect.width / 2;
+  const cy = rect.height / 2;
+  const X = client.x - rect.left - cx;
+  const Y = client.y - rect.top - cy;
+  const t = (tiltDeg * Math.PI) / 180;
+  const sin = Math.sin(t);
+  const den = perspective * Math.cos(t) + Y * sin;
+  if (den <= HORIZON_EPSILON) return null;
+  const fy = (Y * perspective) / den;
+  const fx = (X * (perspective - fy * sin)) / perspective;
+  return { x: fx / view.zoom + cx - view.offset.x, y: fy / view.zoom + cy - view.offset.y };
+}
+
+/** Where a canvas point on the floor shows on the screen (relative to the canvas's box): `floorPointAt` forwards. */
+export function screenPointOf(
+  point: Point,
+  size: { width: number; height: number },
+  view: View,
+  tiltDeg: number,
+  perspective = SPACE_3D_PERSPECTIVE_PX,
+): Point {
+  const cx = size.width / 2;
+  const cy = size.height / 2;
+  const fx = (point.x + view.offset.x - cx) * view.zoom;
+  const fy = (point.y + view.offset.y - cy) * view.zoom;
+  const t = (tiltDeg * Math.PI) / 180;
+  const w = perspective / (perspective - fy * Math.sin(t));
+  return { x: cx + fx * w, y: cy + fy * Math.cos(t) * w };
+}
