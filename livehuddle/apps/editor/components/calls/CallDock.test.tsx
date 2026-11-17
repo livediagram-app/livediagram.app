@@ -1,17 +1,35 @@
 // @vitest-environment jsdom
-// The Call dock (docs/specs/008-canvas/avatar-mode.md "The Call dock"): the call's buttons on a card of their own,
-// bottom centre, named on a desktop and glyphs alone on a phone, the Screen Share group after them while you share.
+// The Call dock (docs/specs/008-canvas/avatar-mode.md "The Call dock"): the call's buttons on a card of their own, in
+// the bottom-right cluster's row, named in a wide desktop window and glyphs alone on a phone or a narrower window, the
+// Screen Share group after them while you share.
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { resetCallSelf, setCallActions, setCallSelf, type CallSelf } from '@/lib/calls/calls-store';
 import { closeMiniView } from '@/lib/mini-view/mini-view-window';
 import { fakePipWindow, installPip, removePip } from '@/test/fake-pip-window';
-import { CallDock } from './CallDock';
+import { UiScaleProvider } from '@liveworkspace/workbench/components/providers/ui-scale';
+import { CALL_DOCK_NAMED_QUERY, CallDock } from './CallDock';
 
 const mobile = vi.hoisted(() => ({ value: false }));
 vi.mock('@liveworkspace/workbench/hooks/ui/useIsMobileViewport', () => ({
   useIsMobileViewport: () => mobile.value,
 }));
+
+// The window's width against CALL_DOCK_NAMED_QUERY (1024 px and up), read live through matchMedia.
+const wide = { value: true };
+const realMatchMedia = window.matchMedia;
+beforeAll(() => {
+  window.matchMedia = ((query: string) => ({
+    get matches() {
+      return query === CALL_DOCK_NAMED_QUERY && wide.value;
+    },
+    addEventListener: () => {},
+    removeEventListener: () => {},
+  })) as unknown as typeof window.matchMedia;
+});
+afterAll(() => {
+  window.matchMedia = realMatchMedia;
+});
 
 const actions = {
   join: vi.fn(),
@@ -36,38 +54,57 @@ afterEach(() => {
   cleanup();
   act(() => resetCallSelf());
   mobile.value = false;
+  wide.value = true;
   vi.clearAllMocks();
 });
 
 describe('CallDock', () => {
-  it('holds the call group on its card, bottom centre', () => {
-    render(<CallDock />);
-    show(live);
-    const dock = document.querySelector<HTMLElement>('[data-call-dock]')!;
-    expect(dock.getAttribute('data-region')).toBe('call');
-    for (const cls of ['absolute', 'bottom-4', 'left-1/2', '-translate-x-1/2'])
-      expect(dock.className).toContain(cls);
-    // Never lifted a row on a phone any more (Work Tracker #642).
-    expect(dock.className).not.toContain('bottom-[68px]');
-    const group = screen.getByRole('group', { name: 'Call' });
-    expect(card().contains(group)).toBe(true);
-    fireEvent.click(screen.getByRole('button', { name: 'Mute' }));
-    expect(actions.toggleMute).toHaveBeenCalledTimes(1);
-  });
+  // In the bottom-right cluster's row at every width (call-dock-row.ts places it; Work Tracker 1041): never floating
+  // at half the canvas's width, where Pop Out was squeezed past the card and over the zoom buttons.
+  it.each([
+    ['a desktop', false],
+    ['a phone', true],
+  ])(
+    'holds the call group on its card in the cluster row’s middle column on %s',
+    (_where, isMobile) => {
+      mobile.value = isMobile;
+      render(<CallDock />);
+      show(live);
+      const dock = document.querySelector<HTMLElement>('[data-call-dock]')!;
+      expect(dock.getAttribute('data-region')).toBe('call');
+      expect(dock.className.split(' ')).toEqual(
+        expect.arrayContaining(['col-start-2', 'row-start-1', 'flex', 'w-max', 'justify-center']),
+      );
+      for (const cls of ['absolute', 'bottom-4', 'left-1/2', '-translate-x-1/2'])
+        expect(dock.className.split(' ')).not.toContain(cls);
+      // Unscaled chrome: the dock takes no zoom of its own.
+      expect(dock.getAttribute('style')).toBeNull();
+      const group = screen.getByRole('group', { name: 'Call' });
+      expect(card().contains(group)).toBe(true);
+      fireEvent.click(screen.getByRole('button', { name: 'Mute' }));
+      expect(actions.toggleMute).toHaveBeenCalledTimes(1);
+    },
+  );
 
-  // On a phone it sits in the cluster's row, on the zoom buttons' bottom line (call-dock-row.ts places it).
-  it('takes the middle column of the cluster row, unscaled and unpositioned, in the row', () => {
-    mobile.value = true;
-    render(<CallDock inRow />);
-    show(live);
-    const dock = document.querySelector<HTMLElement>('[data-call-dock]')!;
-    expect(dock.className.split(' ')).toEqual(
-      expect.arrayContaining(['col-start-2', 'row-start-1', 'flex', 'justify-center']),
+  // The row is drawn at the corner buttons' UI scale; the dock keeps the toolbar's by taking the difference.
+  it('draws at the toolbar’s UI scale inside the corner buttons’ row', () => {
+    render(
+      <UiScaleProvider value={{ panels: 1, toolbar: 1.15, cornerButtons: 1 }}>
+        <CallDock />
+      </UiScaleProvider>,
     );
-    for (const cls of ['absolute', 'bottom-4', 'left-1/2', '-translate-x-1/2'])
-      expect(dock.className.split(' ')).not.toContain(cls);
-    expect(dock.getAttribute('style')).toBeNull();
-    expect(card().contains(screen.getByRole('group', { name: 'Call' }))).toBe(true);
+    show(live);
+    expect(document.querySelector<HTMLElement>('[data-call-dock]')!.style.zoom).toBe('1.15');
+    cleanup();
+    render(
+      <UiScaleProvider value={{ panels: 1, toolbar: 1.15, cornerButtons: 1.15 }}>
+        <CallDock />
+      </UiScaleProvider>,
+    );
+    show(live);
+    expect(
+      document.querySelector<HTMLElement>('[data-call-dock]')!.getAttribute('style'),
+    ).toBeNull();
   });
 
   it('adds a divider and the Screen Share group only while you share', () => {
@@ -88,12 +125,21 @@ describe('CallDock', () => {
   });
 
   // Owner, 2026-11-07: "On desktop add short labels to each, on mobile do not".
-  it('names each button on a desktop', () => {
+  it('names each button in a desktop window 1024 px wide and up', () => {
     render(<CallDock />);
     show(live);
     expect(screen.getByRole('button', { name: 'Mute' }).textContent).toBe('Mic');
     expect(screen.getByRole('button', { name: 'Turn On Camera' }).textContent).toBe('Camera');
     expect(screen.getByRole('button', { name: 'Share Screen' }).textContent).toBe('Share');
+  });
+
+  // Below 1024 px the names would not fit beside the zoom buttons (Work Tracker 1041).
+  it('shows glyphs alone in a narrower desktop window', () => {
+    wide.value = false;
+    render(<CallDock />);
+    show(live);
+    for (const name of ['Mute', 'Turn On Camera', 'Share Screen'])
+      expect(screen.getByRole('button', { name }).textContent, name).toBe('');
   });
 
   it('shows glyphs alone on a phone', () => {

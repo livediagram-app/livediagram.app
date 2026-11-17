@@ -22,6 +22,7 @@ import { inlineIconLayout } from './svg-render-inline-icon';
 import { svgIconShape, svgImageShape } from './svg-render-image-icon';
 // Which body an element draws, and the list of kinds that have one (docs/specs/020-import-export/export-fidelity.md).
 import { shapeHasBespokeBody, svgElementBody } from './svg-render-body';
+import { backWallDoors } from './back-wall-doors';
 import { isRetiredElement } from './retired-kinds';
 import { svgRetiredArrow, svgRetiredElement } from './svg-render-retired';
 import { retiredArrowBounds } from './retired-arrow';
@@ -227,6 +228,7 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
       resolveIconArt: opts.resolveIconArt,
       resolveEmojiArt: opts.resolveEmojiArt,
       finish,
+      backWall: opts.backWall,
     });
     // A SELF-PAINTING element's body is its own: the canvas gives it a
     // wrapper with no border and no background (element-variant.ts), and the
@@ -426,6 +428,8 @@ export function renderElementsToSvg(
   const visible = tab.elements;
   // Shapes something sits on keep a solid fill under Sketch (sketch-backdrop.ts), as on the canvas.
   const backdrops = sketchBackdropIds(visible, tab.finish);
+  // A room's back-wall Doors, as the canvas draws them (back-wall-doors.ts).
+  const backWall = backWallDoors(visible);
   const bounds = contentBounds(visible);
   const vbX = bounds.x - padding;
   const vbY = bounds.y - padding;
@@ -474,6 +478,7 @@ export function renderElementsToSvg(
             surface,
             paper: bg,
             retiredOutlines: opts.retiredOutlines,
+            backWall,
           }),
     ),
   );
