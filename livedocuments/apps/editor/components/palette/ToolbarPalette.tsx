@@ -86,11 +86,12 @@ function StripRow({ leading, children }: { leading?: ReactNode; children: ReactN
       // sideways, the right gutter also clears the bars handle at the canvas's top-right corner
       // (LandscapeBarsHandle), so a long strip's bar scrolls short of it rather than under it.
       style={{
-        ...safeInlinePadding('0.75rem'),
+        // 6px on a phone's row (experiment: no header bar), so the strip has every pixel it can.
+        ...safeInlinePadding('0.375rem'),
         // Clear of the top-right corner card too (EditorCornerActions sets --corner-card-room).
-        paddingRight: `calc(${atLeastInset('0.75rem', 'right')} + var(--landscape-handle-room, 0px) + var(--corner-card-room, 0px))`,
+        paddingRight: `calc(${atLeastInset('0.375rem', 'right')} + var(--landscape-handle-room, 0px) + var(--corner-card-room, 0px))`,
       }}
-      className={`pointer-events-none flex w-full items-start gap-2 [&>*]:pointer-events-auto ${LANDSCAPE_HANDLE_ROOM}`}
+      className={`pointer-events-none flex w-full items-start gap-1.5 [&>*]:pointer-events-auto ${LANDSCAPE_HANDLE_ROOM}`}
     >
       {leading == null ? null : (
         <div data-strip-leading="" className={CARD_CLASS}>
@@ -174,6 +175,17 @@ export function ToolbarPalette(props: Props) {
   // (docs/specs/007-editor/flashcards.md "Text only").
   const articleDock = docksPageToolbar(paletteKind);
   const textOnly = paletteKind === 'flashcard';
+  // The Library's button (libraries.md). On a phone it ends the category row and swipes with it, rather than taking
+  // room beside Search for good; an article's docked formatting has no category row, so it stays beside Search there.
+  const libraryButton = libraryTab ? (
+    <ToolbarLibraryButton
+      open={library.open}
+      onToggle={toggleLibrary}
+      icon={libraryTab.icon}
+      description={libraryTab.description}
+    />
+  ) : null;
+  const libraryInBar = swipe && !articleDock && !textOnly;
   // A change of kind cascades its categories in (usePaletteKindMotion).
   usePaletteKindMotion(paletteKind, rootRef);
   // The bar's categories (bar-categories): one-word names.
@@ -334,6 +346,14 @@ export function ToolbarPalette(props: Props) {
                       labels={fittedLabels || swipe}
                       shown={barShown}
                       scrollable={swipe}
+                      trailing={
+                        libraryInBar ? (
+                          <>
+                            <Divider />
+                            {libraryButton}
+                          </>
+                        ) : null
+                      }
                     />
                   )}
                   {/* Search, last: any element type (docs/specs/007-editor/toolbar-layout.md
@@ -342,14 +362,7 @@ export function ToolbarPalette(props: Props) {
                   {textOnly ? null : (
                     <>
                       <Divider />
-                      {libraryTab ? (
-                        <ToolbarLibraryButton
-                          open={library.open}
-                          onToggle={toggleLibrary}
-                          icon={libraryTab.icon}
-                          description={libraryTab.description}
-                        />
-                      ) : null}
+                      {libraryInBar ? null : libraryButton}
                       <div ref={searchButtonRef} className="flex">
                         <ToolbarSearchButton open={search.open} onToggle={toggleSearch} />
                       </div>

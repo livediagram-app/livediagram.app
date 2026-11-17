@@ -234,6 +234,19 @@ export function ToolbarPalette(props: Props) {
   // (docs/specs/007-editor/toolbar-layout.md "On a phone"); the fitted count
   // still decides whether More is needed for what is out of view.
   const swipe = phoneRow;
+  // The Library's button (libraries.md). On a phone it ends the category row and swipes with it, rather than taking
+  // room beside Search for good.
+  const libraryButton = libraryTab ? (
+    <ToolbarLibraryButton
+      open={library.open}
+      onToggle={toggleLibrary}
+      // The Library's own glyph, as in every app (libraries.md), not the My shapes tab's, whose ink sits a pixel low
+      // in an icon-only square.
+      icon={<LibraryIcon />}
+      description={libraryTab.description}
+    />
+  ) : null;
+  const libraryInBar = swipe && categoryBar;
   const tileLimit = swipe ? Infinity : stripLimit;
   const categoryTiles = category?.tiles;
   const fitted = stripTilesFor(category?.id ?? defaultId, {
@@ -418,6 +431,14 @@ export function ToolbarPalette(props: Props) {
                           labels={fittedLabels || swipe}
                           shown={swipe ? null : barShown}
                           scrollable={swipe}
+                          trailing={
+                            libraryInBar ? (
+                              <>
+                                <Divider />
+                                {libraryButton}
+                              </>
+                            ) : null
+                          }
                         />
                       ) : (
                         <>
@@ -503,16 +524,7 @@ export function ToolbarPalette(props: Props) {
                   {esBoard || participant ? null : (
                     <>
                       <Divider />
-                      {libraryTab ? (
-                        <ToolbarLibraryButton
-                          open={library.open}
-                          onToggle={toggleLibrary}
-                          // The Library's own glyph, as in every app (libraries.md), not the My shapes tab's, whose ink sits
-                          // a pixel low in an icon-only square.
-                          icon={<LibraryIcon />}
-                          description={libraryTab.description}
-                        />
-                      ) : null}
+                      {libraryInBar ? null : libraryButton}
                       <div ref={searchButtonRef} className="flex">
                         <ToolbarSearchButton open={search.open} onToggle={toggleSearch} />
                       </div>

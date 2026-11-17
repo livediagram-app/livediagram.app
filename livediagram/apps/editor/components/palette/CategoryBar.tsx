@@ -187,6 +187,7 @@ export function CategoryBarButtons({
   labels,
   shown = null,
   scrollable = false,
+  trailing = null,
 }: {
   bar: CategoryBarState;
   categories: readonly BarCategory[];
@@ -194,6 +195,8 @@ export function CategoryBarButtons({
   labels: boolean;
   // How many categories show, the rest behind More (useBarFold); null shows them all.
   shown?: number | null;
+  // After the last category, in the same row (a phone's strip puts the Library here, so it swipes with the bar).
+  trailing?: ReactNode;
   // A phone's strip: the bar is the part that gives way and swipes sideways, as the tile rail does, so the
   // selection mode and Search beside it stay in reach (docs/specs/007-editor/toolbar-layout.md "On a phone").
   scrollable?: boolean;
@@ -314,6 +317,7 @@ export function CategoryBarButtons({
           onKeyDown={(e) => onKeyDown(e, visible.length)}
         />
       ) : null}
+      {trailing}
     </div>
   );
 }

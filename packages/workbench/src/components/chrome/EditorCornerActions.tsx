@@ -2,12 +2,7 @@
 
 import { useLayoutEffect, useRef, useState } from 'react';
 import { Glyph, HoverCard } from '@liveworkspace/ui';
-import {
-  CORNER_CARD_EVENT,
-  STRIP_MENU_GAP_PX,
-  STRIP_NAMED_EVENT,
-  cornerCardCompact,
-} from '../canvas/menu-join';
+import { CORNER_CARD_EVENT, STRIP_NAMED_EVENT, cornerCardCompact } from '../canvas/menu-join';
 import { AuthControls } from './AuthControls';
 import { useUiScale } from '../providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '../../lib/ui-scale';
@@ -25,6 +20,9 @@ const CORNER_TONE =
   'text-slate-600 enabled:hover:bg-slate-100 enabled:hover:text-slate-900 dark:text-slate-200 dark:enabled:hover:bg-slate-800 dark:enabled:hover:text-white';
 const CORNER_ON =
   'bg-brand-700 text-white hover:bg-brand-800 dark:bg-brand-600 dark:hover:bg-brand-500';
+
+// A phone's row: 6px from the screen's side and between the cards (the strip row's gutter and gap-1.5).
+const PHONE_ROW_GAP_PX = 6;
 
 export type EditorCornerActionsProps = {
   showShare: boolean;
@@ -60,11 +58,11 @@ export function EditorCornerActions({
     const root = document.documentElement;
     const say = () => {
       // A phone's strip row spans the top and keeps this much room at its right for the card: its width (layout px,
-      // the strip's own scale) and the strip's gap.
+      // the strip's own scale) and the row's gap.
       if (cardRef.current) {
         root.style.setProperty(
           '--corner-card-room',
-          `${cardRef.current.offsetWidth + STRIP_MENU_GAP_PX}px`,
+          `${cardRef.current.offsetWidth + PHONE_ROW_GAP_PX}px`,
         );
       } else root.style.removeProperty('--corner-card-room');
       window.dispatchEvent(new Event(CORNER_CARD_EVENT));
@@ -122,7 +120,7 @@ export function EditorCornerActions({
             ? undefined
             : { ...uiScaleStyle(scale), top: toSurfacePx(12, scale), right: toSurfacePx(12, scale) }
         }
-        className="pointer-events-auto absolute right-3 top-3 flex h-[46px] items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40"
+        className="pointer-events-auto absolute right-3 top-3 phone:right-1.5 flex h-[46px] items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40"
       >
         {onMakeCopy ? (
           <HoverCard title="Make a Copy" description={copyDescription}>

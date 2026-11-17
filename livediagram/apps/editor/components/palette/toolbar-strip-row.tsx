@@ -33,11 +33,12 @@ export function StripRow({
       // sideways, the right gutter also clears the bars handle at the canvas's top-right corner
       // (LandscapeBarsHandle), so a long strip's rail scrolls short of it rather than under it.
       style={{
-        ...safeInlinePadding('0.75rem'),
+        // 6px on a phone's row (experiment: no header bar), so the strip has every pixel it can.
+        ...safeInlinePadding('0.375rem'),
         // Clear of the top-right corner card too (EditorCornerActions sets --corner-card-room).
-        paddingRight: `calc(${atLeastInset('0.75rem', 'right')} + var(--landscape-handle-room, 0px) + var(--corner-card-room, 0px))`,
+        paddingRight: `calc(${atLeastInset('0.375rem', 'right')} + var(--landscape-handle-room, 0px) + var(--corner-card-room, 0px))`,
       }}
-      className={`pointer-events-none flex w-full items-start gap-2 [&>*]:pointer-events-auto ${LANDSCAPE_HANDLE_ROOM}`}
+      className={`pointer-events-none flex w-full items-start gap-1.5 [&>*]:pointer-events-auto ${LANDSCAPE_HANDLE_ROOM}`}
     >
       {leading == null ? null : (
         <div ref={leadingRef} data-strip-leading="" className={CARD_CLASS}>
