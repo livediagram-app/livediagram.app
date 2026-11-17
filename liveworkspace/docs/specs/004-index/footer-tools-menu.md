@@ -28,23 +28,26 @@ its name, one line on what it does (never wrapping: kept short enough for one li
 the band's paper under the pointer, so the list reads as the header's.
 
 The rows are grouped under small headings, in this order, a heading drawn only when its group holds a row: **Find**
-(Search), **Automate** (Automations, liveplanner's Email to Board, then Webhooks), **Collaborate** (Suggest Changes, and
+(Search), **Automate** (Automations, liveplanner's Email to Board, then Webhooks), **Collaborate** (Suggest Changes, Walkthroughs, and
 liveplanner's Subscribe to Calendar), **Versioning** (History, Snapshots, Version History). Each
 group is a labelled group for screen readers; the arrow keys walk the rows straight through the groups.
 
-| Row                 | App                                                 | Drawn when                                                                                                                  | Opens                                |
-| ------------------- | --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
-| **History**         | every app                                           | signed in, the open item not shared by link (no longer on the item's ⋯ menu inside an editor)                               | the History dialog for the open item |
-| **Webhooks**        | every app                                           | as its row on the item's ⋯ menu was (gone from the Explorer header's and every item's menu inside an editor)                | the Webhooks dialog                  |
-| **Search**          | every app                                           | the host offers search (the editor and the Explorer's bar)                                                                  | the Search dialog                    |
-| **Automations**     | liveplanner                                         | as its button was ([Automations](../../../../liveplanner/docs/specs/026-plan/automations.md) "The footer button")           | the Automations screen               |
-| **Suggest Changes** | livediagram, livedocuments, liveplanner, livedesign | as its header action was ([Canvas suggestions](../015-suggestions/canvas-suggestions.md) "Suggesting")                      | the Suggestions panel, beside Tools  |
-| **Snapshots**       | every app                                           | as its button was ([Snapshots](../014-snapshots/snapshots.md) "In the editor")                                              | the Snapshots dialog                 |
-| **History**         | livedocuments                                       | as its button was ([Version history](../../../../livedocuments/docs/specs/006-document/version-history.md) "In the editor") | Version History on the open tab      |
+| Row                 | App                                                 | Drawn when                                                                                                                                                           | Opens                                |
+| ------------------- | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| **History**         | every app                                           | signed in, the open item not shared by link (no longer on the item's ⋯ menu inside an editor)                                                                        | the History dialog for the open item |
+| **Webhooks**        | every app                                           | as its row on the item's ⋯ menu was (gone from the Explorer header's and every item's menu inside an editor)                                                         | the Webhooks dialog                  |
+| **Search**          | every app                                           | the host offers search (the editor and the Explorer's bar)                                                                                                           | the Search dialog                    |
+| **Automations**     | liveplanner                                         | as its button was ([Automations](../../../../liveplanner/docs/specs/026-plan/automations.md) "The footer button")                                                    | the Automations screen               |
+| **Suggest Changes** | livediagram, livedocuments, liveplanner, livedesign | as its header action was ([Canvas suggestions](../015-suggestions/canvas-suggestions.md) "Suggesting")                                                               | the Suggestions panel, beside Tools  |
+| **Walkthroughs**    | livediagram, livedocuments, liveplanner, livedesign | walkthroughs fit and there is one to play or the person may record ([Walkthroughs](../../../../livediagram/docs/specs/012-collaboration/walkthroughs.md) "In Tools") | the Walkthroughs panel, from Tools   |
+| **Snapshots**       | every app                                           | as its button was ([Snapshots](../014-snapshots/snapshots.md) "In the editor")                                                                                       | the Snapshots dialog                 |
+| **History**         | livedocuments                                       | as its button was ([Version history](../../../../livedocuments/docs/specs/006-document/version-history.md) "In the editor")                                          | Version History on the open tab      |
 
 - **Automations** keeps its count: the rules that are on, at the row's end (none at 0), amber when a rule
   paused itself. A paused rule also puts a small amber dot on the Tools button, so the warning the button carried
   is still seen with the menu shut, and the button's name says so ("Tools, a rule is paused").
+- **Walkthroughs** keeps the count of recorded walkthroughs at the row's end (none at 0). It never puts a dot on Tools:
+  a walkthrough is there to play when wanted, not news.
 - **Suggest** reads **Suggesting** while this person suggests and keeps its count at the row's end.
   Suggestions waiting for an Editor put a brand dot on Tools ("Tools, 3 suggestions"); a paused rule's amber outranks
   it.
@@ -70,6 +73,9 @@ The open item's **History** and **Webhooks** come from each editor's Explorer ho
 and the Webhooks handler: it publishes them through the Tools door (`usePublishToolsItems`,
 `packages/workbench/src/components/chrome/tools-door.ts`; `useItemToolsRows`), and the popover lists them beside the
 rows its host hands it. livedocuments' own version history reads **Version History**, so the two never share a name.
+
+Each canvas editor's walkthroughs publish their **Walkthroughs** row the same way, from where the editor mounts them
+(`WalkthroughsTools`, `@liveworkspace/walkthrough`), so the footer needs to know nothing about them.
 
 Inside an editor, History and Webhooks are on no item's ⋯ menu: the editor's Explorer panel passes `history={false}`
 and `webhooks={false}`, and Tools has them for the open item. The Explorer on liveworkspace.app, with no footer, keeps

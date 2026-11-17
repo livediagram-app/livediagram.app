@@ -31,7 +31,7 @@ the events carry ids and coordinates, never an element's text, colours or notes.
 
 ## Recording
 
-**Record Walkthrough** is in the header's **Walkthroughs** menu (below). Pressing it opens the **recording dock**
+**Record Walkthrough** is in the **Walkthroughs** panel, opened from the footer's **Tools** (below). Pressing it opens the **recording dock**
 at the bottom centre of the canvas, in place: the canvas stays where it is and stays yours to move around.
 
 1. **Set up.** The dock shows your camera live in its bubble (in the corner you pick, bottom left to start, moved up or down to stay clear of the Map and across past a docked Contents sidebar), a
@@ -45,7 +45,7 @@ at the bottom centre of the canvas, in place: the canvas stays where it is and s
    (`1:24 / 10:00`, amber in the last minute with "1 minute left"), the level meter, Hide From Recording, **Finish**
    and **Discard**. At ten minutes it finishes on its own and says so.
 4. **Save.** The dock shows the length and a **Title** field (it starts as "Walkthrough of <tab name>"), with
-   **Save** and **Discard**. Save uploads it, showing that it is uploading; when it is stored the Walkthroughs menu lists it.
+   **Save** and **Discard**. Save uploads it, showing that it is uploading; when it is stored the Walkthroughs panel lists it.
    A refusal says why in the dock ("This walkthrough is over 40 MB", "You have 50 walkthroughs already. Delete one to
    save another.") and keeps the recording so you can **Download a Copy** rather than lose it.
 
@@ -71,7 +71,7 @@ name you shouldn't show.
 
 ## Playing
 
-Pressing a walkthrough in the Walkthroughs menu plays it.
+Pressing a walkthrough in the Walkthroughs panel plays it.
 
 - **The view follows the recording**: the tab, the camera path (fitted to your screen, so a smaller window shows the
   same region) and the presenter's pointer, a soft dot with a ring for each press. The hidden
@@ -95,21 +95,26 @@ livedesign has no slide deck, so a walkthrough's steps are its tabs: the scrubbe
 the player changes tab where the presenter did. In livediagram and livedocuments a walkthrough also replays the
 slide deck.
 
-## The Walkthroughs menu
+## In Tools
 
-A **Walkthroughs** button in the editor's header, left of Present, with a count badge, opens a menu anchored under
-it:
+**Walkthroughs** is a row in the footer's [Tools](../../../../liveworkspace/docs/specs/004-index/footer-tools-menu.md)
+menu, under **Collaborate**: its glyph, **Walkthroughs**, one line ("Record yourself talking through it." for an
+Editor, "Play a recorded talk-through." for anyone else) and, at its end, the count of recorded walkthroughs (none at
+0). It is an ordinary Tools row, so it never has a button of its own in the header or the footer. Pressing it closes
+Tools and opens the **Walkthroughs** panel from the Tools button, the way Tools opens (a popover with a pointer at the
+button):
 
 - **Each walkthrough** as a row: a play mark, its title, and its length, who made it ("You" for yours, else the name
   they had) and when ("2 days ago"). Pressing the row plays it. A row you may delete carries a delete button, with a
-  confirm beside it ("Delete this walkthrough? It is deleted for everyone who can open this design.").
+  confirm beside it ("Delete this walkthrough? It is deleted for everyone who can open this canvas.").
 - **Record Walkthrough**, for an Editor, at the foot.
-- **Empty**, for an Editor: "Record yourself talking through this design. Anyone who can open it can play it back."
-  For anyone else there is nothing to show, so there is no button.
+- **Empty**, for an Editor: "Record yourself talking through this canvas. Anyone who can open it can play it back."
+  For anyone else there is nothing to show, so there is no row.
 
-The button is not shown on a phone (below `sm`, where the header has no room and recording has no dock), in an
-embed or the workbench frame, during the welcome flow, before the design has loaded, for a design kept in
-This Browser, or for a tab-scoped link.
+Escape or a press outside closes the panel. The row is not in Tools on a phone (below `sm`, where recording has no
+dock), in an embed or the workbench frame, before the document has hydrated, for a document kept in This Browser, or
+for a tab-scoped link. Opening Tools fetches nothing: the row is drawn from the list the editor already asked for once
+it was idle after opening the item.
 
 ## Share roles
 
@@ -121,7 +126,7 @@ This Browser, or for a tab-scoped link.
 
 Recording is an Editor's because a walkthrough speaks for the design to everyone who opens it, as an edit does.
 "Their own" covers someone who recorded while they were an Editor and has since become a Participant or a Viewer.
-The api enforces all of it; the menu only leaves out what the role may not do.
+The api enforces all of it; the panel only leaves out what the role may not do.
 
 ## Limits
 
