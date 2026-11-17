@@ -78,23 +78,23 @@ const CANVAS_STYLE = `
 @keyframes pulse{50%{opacity:.35}}
 `;
 
-// The edit parts' styles: the Edit toggle, the save word, the selection, its bar and the rename box.
+// The edit parts' styles: the Edit toggle, the selection, its bar (whose hint says a save) and the rename box.
 const EDIT_STYLE = `
-#edit[aria-pressed=true]{background:var(--chip-on);color:var(--chip-on-fg)}
-#edit[hidden],#save[hidden],#sel[hidden],#bar[hidden],#name-box[hidden]{display:none}
-#save{color:var(--muted);font-size:12px;white-space:nowrap}
+#edit[aria-pressed=true]{background:color-mix(in srgb,var(--ring) 18%,var(--bg));box-shadow:inset 0 0 0 1.5px var(--ring)}
+#edit[hidden],#sel[hidden],#bar[hidden],#name-box[hidden]{display:none}
 #sel{position:absolute;border:2px solid var(--ring);border-radius:6px;pointer-events:none;box-shadow:0 0 0 3px color-mix(in srgb,var(--ring) 25%,transparent)}
 #sel.drag{border-style:dashed;background:color-mix(in srgb,var(--ring) 10%,transparent)}
 #bar{position:absolute;z-index:2;display:flex;align-items:center;gap:2px;max-width:calc(100% - 16px);padding:3px;border:1px solid var(--line);border-radius:10px;background:var(--bg);box-shadow:0 6px 18px rgb(2 6 23/.16);cursor:default}
 #bar-name{font-weight:600;padding:0 6px 0 5px;min-width:0;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#hint{color:var(--muted);font-size:12px;padding-right:6px;white-space:nowrap}
+#hint{color:var(--muted);font-size:12px;padding-right:8px;margin-right:2px;border-right:1px solid var(--line);white-space:nowrap}
 #bar button{border:0;border-radius:7px;background:none;color:var(--fg);font:inherit;padding:4px 9px;cursor:pointer;white-space:nowrap}
 #bar button:hover:not(:disabled){background:var(--chip)}
 #bar button:disabled{color:var(--muted);opacity:.6;cursor:not-allowed}
 #name-box{position:absolute;z-index:3;height:34px;padding:0 10px;border:2px solid var(--ring);border-radius:8px;background:var(--bg);color:var(--fg);font:inherit;outline:none;box-shadow:0 6px 18px rgb(2 6 23/.16)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 @media (pointer:coarse){#bar button{padding:8px 12px}#name-box{height:40px}}
-@media (max-width:520px){#hint,#save{display:none}}
+@media (max-width:760px){#live{font-size:0;gap:0;padding:0 2px}}
+@media (max-width:520px){#bar-name{max-width:110px}}
 @media (prefers-reduced-motion:no-preference){#bar button{transition:background-color .15s}}
 `;
 
@@ -142,10 +142,9 @@ const head = (app: string, style: string) =>
 
 const NOTE = '<p id="note" role="status">Waiting for the result…</p>';
 
-// The edit parts' markup: the header's save word and Edit toggle, and the stage's selection, bar, rename box and the
-// words a screen reader hears on a selection.
+// The edit parts' markup: the header's Edit toggle, and the stage's selection, bar, rename box and the words a screen
+// reader hears on a selection or a save.
 const EDIT_HEADER =
-  '<span id="save" role="status" hidden></span>' +
   '<button class="tool" id="edit" type="button" aria-pressed="false" hidden>Edit</button>';
 const EDIT_STAGE =
   '<div id="sel" hidden></div><div id="bar" role="toolbar" hidden><span id="bar-name"></span>' +
@@ -158,7 +157,6 @@ function canvasHtml(app: string, opts: ViewerOptions): string {
   return (
     head(app, CANVAS_STYLE + (opts.edits ? EDIT_STYLE : '')) +
     '<header><span id="title"></span><nav id="tabs" aria-label="Tabs" hidden></nav><span class="spacer"></span>' +
-    (opts.edits ? EDIT_HEADER : '') +
     '<span id="live" role="status" hidden></span>' +
     '<span id="pager" role="group" aria-label="Pages" hidden>' +
     '<button class="tool" id="prev" type="button" title="Previous page" aria-label="Previous page">‹</button>' +
@@ -168,6 +166,7 @@ function canvasHtml(app: string, opts: ViewerOptions): string {
     '<span id="zoom" aria-live="polite">100%</span>' +
     '<button class="tool" id="in" type="button" title="Zoom in" aria-label="Zoom in">+</button>' +
     '<button class="tool" id="fit" type="button" title="Fit to the frame">Fit</button>' +
+    (opts.edits ? EDIT_HEADER : '') +
     '<button class="tool" id="open" type="button" title="Open this tab in the editor">Open in editor</button>' +
     '</header><main id="stage" tabindex="0" aria-label="The tab: drag to pan, scroll or pinch to zoom, click an element to open it in the editor">' +
     `<img id="art" alt=""><div id="ring" hidden></div>${opts.edits ? EDIT_STAGE : ''}${NOTE}</main>` +

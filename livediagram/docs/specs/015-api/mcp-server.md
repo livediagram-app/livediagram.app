@@ -1532,7 +1532,9 @@ cards, each from the same shared viewer (their mcp-server.md "Interactive view (
   - **The ticket stays view-only.** The live socket is still `view_live`'s view-only ticket, for every token:
     the view never writes on the socket, so an edit-level token gets no stronger ticket, no share link and no
     longer-lived credential than a read-only one.
-  - **In the frame.** An **Edit** toggle joins the header once `canEdit` is true (`aria-pressed`). While it is
+  - **In the frame.** An **Edit** toggle joins the header beside **Open in editor** once `canEdit` is true
+    (`aria-pressed`, drawn pressed with the focus ring's colour; under 760 px wide the live mark shows its dot
+    alone, its title still saying how it keeps up, to make room). While it is
     on, a click selects an element instead of opening it: the selection ring is solid, and a small bar above
     the element offers **Rename** and **Open in editor**. Dragging a movable element moves it (the ring follows
     the pointer, dashed, and the drop sends one `view_edit`); dragging empty space still pans and a pinch still
@@ -1542,7 +1544,8 @@ cards, each from the same shared viewer (their mcp-server.md "Interactive view (
     either end the selection clears and focus moves on as usual); Escape clears it, then leaves Edit. The bar
     says what the element allows: **Drag to move**, **Move it in the editor** (a badge or its host), or
     **Locked**; Rename is disabled, with a title saying why, where a rename is not offered. A screen reader
-    hears the selection and its keys. While a save is out the header says **Saving…**, then **Saved**; a
+    hears the selection and its keys. While a save is out the bar says **Saving…** in place of its hint, then
+    **Saved** for a moment (and a screen reader hears it); a
     refusal says the api's reason in the note and the tab is drawn again as stored. A live redraw waits for a
     drag, a nudge, a rename or a save in progress to finish.
   - **Batched.** One `view_edit` per finished gesture (a drop, a saved rename, a run of nudges), never per

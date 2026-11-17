@@ -279,15 +279,16 @@ describe('a view whose token is edit-level', () => {
     expect(f.calls('view_edit').map((m) => m.params!.arguments)).toEqual([
       { documentId: 'd1', tabId: 't1', edits: [{ elementId: 'a', dx: 50, dy: 20 }] },
     ]);
-    expect(f.el('save')).toMatchObject({ hidden: false, textContent: 'Saving…' });
+    expect(f.el('hint').textContent).toBe('Saving…');
     const moved = { ...TAB, elements: [box('a', 50), ...TAB.elements.slice(1)] };
     f.answer('view_edit', { structuredContent: { ...moved, changesetId: 'cs1' } });
     await f.flush();
-    expect(f.el('save').textContent).toBe('Saved');
+    expect(f.el('hint').textContent).toBe('Saved');
+    expect(f.el('sr').textContent).toBe('Saved.');
     expect(f.el('sel').classes.has('drag')).toBe(false);
     expect(f.el('sel').style.cssText).toContain('left:50px');
     await vi.advanceTimersByTimeAsync(1_500);
-    expect(f.el('save').hidden).toBe(true);
+    expect(f.el('hint').textContent).toBe('Drag to move');
     // The room's relay of its own changeset draws nothing more; the held live change draws once.
     await vi.advanceTimersByTimeAsync(2_000);
     const before = f.calls('view_tab').length;
@@ -431,7 +432,7 @@ describe('a view whose token is edit-level', () => {
     await f.flush();
     expect(f.el('note').textContent).toBe('The edit was not saved: element_locked: a is locked');
     expect(f.calls('view_tab')).toHaveLength(2);
-    expect(f.el('save').hidden).toBe(true);
+    expect(f.el('hint').textContent).toBe('Drag to move');
     await vi.advanceTimersByTimeAsync(5_000);
     expect(f.el('note').hidden).toBe(true);
     // A host that fails the call says so plainly.

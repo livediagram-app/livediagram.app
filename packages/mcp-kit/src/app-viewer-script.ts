@@ -380,7 +380,7 @@ const CANVAS = String.raw`
       return;
     }
     var hit = hitAt(e), editing = ED && ED.on();
-    if (editing && hit && hit.id === ED.picked()) hit = null;
+    if (editing && hit && (hit.id === ED.picked() || ED.busy())) hit = null;
     ring.hidden = !hit;
     stage.style.cursor = hit ? (editing && hit.canMove ? 'move' : 'pointer') : 'grab';
     if (hit) {
@@ -430,10 +430,12 @@ const CANVAS = String.raw`
 // tools/call view_edit per finished gesture, whose answer is the tab drawn again. The server decides every write.
 const EDIT = String.raw`
   ED = (function () {
-    var btn = $('edit'), sel = $('sel'), bar = $('bar'), box = $('name-box'), saveEl = $('save'), sr = $('sr');
+    var btn = $('edit'), sel = $('sel'), bar = $('bar'), box = $('name-box'), sr = $('sr');
     var allowed = false, editing = false, picked = null, grab = null, naming = false, saving = false;
     // The move a drag or a nudge holds, drawn on its element (moving) until the save answers.
     var shift = [0, 0], moving = null, settle = 0, own = [], saved = 0;
+    // What the bar says of a save in place of its hint: Saving…, then Saved for a moment.
+    var status = '';
     var VIEW_LABEL = stage.getAttribute('aria-label');
     function find(id) {
       for (var i = 0; tab && id && i < tab.elements.length; i++) if (tab.elements[i].id === id) return tab.elements[i];
@@ -491,11 +493,14 @@ const EDIT = String.raw`
       bar.setAttribute('aria-label', nameOf(el));
       $('ren').disabled = !el.canRename;
       $('ren').title = el.canRename ? 'Rename (Enter)' : 'Only shapes, text and stickies are renamed here';
-      $('hint').textContent = LDV.hintOf(el);
+      $('hint').textContent = status || LDV.hintOf(el);
     }
+    function refresh() { var el = current(); if (el) { fill(el); place(); } }
     function select(hit) {
       if (naming) commitName(false);
       if (settle) flush();
+      // A word about the last save belongs to the element it was about.
+      if (!saving && (hit ? hit.id : null) !== picked) { status = ''; clearTimeout(saved); }
       picked = hit ? hit.id : null;
       var el = current();
       if (el) {
@@ -534,8 +539,8 @@ const EDIT = String.raw`
       var doc = subject.documentId, tabId = tab.tabId;
       saving = true;
       clearTimeout(saved);
-      saveEl.textContent = 'Saving…';
-      saveEl.hidden = false;
+      status = 'Saving…';
+      refresh();
       request('tools/call', { name: 'view_edit', arguments: viewArgs(doc, { tabId: tabId, edits: edits }) })
         .then(function (res) {
           var s = res && res.structuredContent;
@@ -558,9 +563,12 @@ const EDIT = String.raw`
       saving = false;
       shift = [0, 0];
       moving = null;
-      saveEl.textContent = word;
-      saveEl.hidden = !word;
-      if (word) saved = setTimeout(function () { saveEl.hidden = true; }, 1500);
+      status = word;
+      if (word) {
+        sr.textContent = word + '.';
+        saved = setTimeout(function () { status = ''; refresh(); }, 1500);
+      }
+      refresh();
       place();
     }
     function flush() {

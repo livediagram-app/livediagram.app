@@ -114,8 +114,7 @@ describe('the view resource and the tool meta', () => {
       '<button class="tool" id="edit" type="button" aria-pressed="false" hidden>',
     );
     expect(html).toContain('id="name-box"');
-    for (const id of ['edit', 'save', 'sel', 'bar', 'name-box'])
-      expect(html).toContain(`#${id}[hidden]`);
+    for (const id of ['edit', 'sel', 'bar', 'name-box']) expect(html).toContain(`#${id}[hidden]`);
   });
 
   it('ships the script without indentation, blank lines or comment lines', () => {

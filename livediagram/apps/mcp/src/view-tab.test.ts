@@ -123,7 +123,7 @@ describe('the interactive view', () => {
       host: [true, false],
       badge: [true, false],
     });
-    const locked = clickableElements({ ...tab, locked: true } as Tab);
+    const locked = clickableElements({ ...tab, locked: true });
     expect(locked.every((e) => !e.canRename && !e.canMove)).toBe(true);
   });
 });
