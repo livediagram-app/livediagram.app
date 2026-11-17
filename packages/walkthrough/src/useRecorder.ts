@@ -51,9 +51,26 @@ export type RecorderState = ReturnType<typeof useRecorder>;
 
 const now = () => performance.now();
 
+/** True when the page's Permissions-Policy blocks the microphone, whatever the browser allows. */
+function policyBlocksMicrophone(): boolean {
+  const doc = document as Document & {
+    permissionsPolicy?: { allowsFeature(feature: string): boolean };
+    featurePolicy?: { allowsFeature(feature: string): boolean };
+  };
+  try {
+    const policy = doc.permissionsPolicy ?? doc.featurePolicy;
+    return policy ? !policy.allowsFeature('microphone') : false;
+  } catch {
+    return false;
+  }
+}
+
 function deviceError(err: unknown, wantsCamera: boolean): string {
   const name = err instanceof DOMException ? err.name : '';
   if (name === 'NotAllowedError' || name === 'SecurityError') {
+    if (policyBlocksMicrophone()) {
+      return "This page can't use the microphone. Reload to get the latest version.";
+    }
     return wantsCamera
       ? 'Allow the microphone and camera for this site in your browser, then try again.'
       : 'Allow the microphone for this site in your browser, then try again.';
