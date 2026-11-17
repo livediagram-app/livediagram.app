@@ -398,6 +398,42 @@ describe('ShareDialog', () => {
     expect(onTelemetry).toHaveBeenCalledWith('Ended', 'ShareTourCompleted');
   });
 
+  // Work Tracker 1166 (liveworkspace's dialog-hero-header.md "Focus starts in the body"): focus on Show Me or Help
+  // opened its hover card over the tabs as the dialog appeared.
+  it('starts focus on the pass level, not a header action, with Help first in the page', () => {
+    renderDialog({ helpHref: (a) => `https://help.test/${a}` });
+    expect(document.activeElement?.getAttribute('aria-label')).toMatch(/^Pass level: /);
+    expect(screen.getByRole('link', { name: 'Help with sharing' })).not.toBe(
+      document.activeElement,
+    );
+  });
+
+  it('starts focus on the selected tab when the dialog has tabs, on a touch screen too', () => {
+    const matchMedia = window.matchMedia;
+    window.matchMedia = ((q: string) => ({
+      matches: q === '(pointer: coarse)',
+      media: q,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    })) as never;
+    try {
+      renderDialog({
+        appTab: { label: 'Community', panel: <p>Community panel</p> },
+        initialView: 'app',
+      });
+      expect(document.activeElement).toBe(screen.getByRole('tab', { name: 'Community' }));
+    } finally {
+      window.matchMedia = matchMedia;
+    }
+  });
+
+  it('keeps the hover cards on Show Me and Help for keyboard focus', async () => {
+    renderDialog({ helpHref: (a) => `https://help.test/${a}` });
+    const help = screen.getByRole('link', { name: 'Help with sharing' });
+    act(() => help.focus());
+    expect(await screen.findByText('Help with sharing', { selector: ':not(a *)' })).toBeTruthy();
+  });
+
   it("is titled in the app's words: Share This Plan", async () => {
     renderDialog();
     expect(await screen.findByRole('heading', { name: 'Share This Plan' })).toBeTruthy();

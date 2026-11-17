@@ -58,6 +58,13 @@ header by `[data-dialog-hero]`). The header must be the panel's first child (or 
 panel's radius. A product app that imports `@liveworkspace/ui/dialog-hero` lists `@liveworkspace/ui` in its own
 dependencies (`corepack pnpm --filter <app> add @liveworkspace/ui@workspace:*`), as liveplanner's editor does.
 
+Focus starts in the body ("Focus starts in the body"): the shared focus trap focuses the panel's first control unless
+one already holds focus, and the header's actions are first in the page. Share places it itself with
+`useShareStartFocus` (`packages/explorer/src/dialogs/share/`), a layout effect on mount that focuses the panel's
+`[role="tab"][aria-selected="true"]`, else the button inside `[data-share-start]` (the pass level picker), before the
+trap's effect runs and before the first paint. Once only: a tab that appears later never takes focus.
+`ShareDialog.test.tsx` holds it.
+
 ## HeroArt
 
 ```ts

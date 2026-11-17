@@ -48,6 +48,10 @@ Tools ([footer-tools-menu.md "The popover"](./footer-tools-menu.md)).
   can run long are said in fewer words, with the full sentence for screen readers, as Share's status does.
 - **Actions, then the close.** The dialog's own controls (a primary button, Show Me, Help) sit at the right, then
   the standard close (`DialogCloseButton`) last. Every control keeps its own look, pointer cursor and hover card.
+- **Focus starts in the body.** These actions come first in the page, but opening the dialog never puts focus on
+  one, since a focused action shows its hover card over the dialog as it appears. Focus starts on the body's first
+  real control: in Share, the selected tab when it has tabs, else the pass level picker, on a phone and a desktop
+  alike. The actions still show their hover cards on hover and on keyboard focus.
 - **The band's edges.** Its top corners follow the panel's (a card's, a sheet's, none edge to edge); a hairline in
   the band's faint colour marks its foot against the dialog's body.
 
