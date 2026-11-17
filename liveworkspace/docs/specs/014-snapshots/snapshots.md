@@ -99,10 +99,10 @@ Share roles as every app applies them (each app's `013-workspace/share-roles.md`
 
 ## In the editor
 
-A **Snapshots** button in the footer's tool cluster, in the same place in every app: just before Settings, so after
-Automations in liveplanner and after History in livedocuments. It is drawn only for someone who may use snapshots,
-once the item is stored on the server. Its label shows from `sm` up when Button Labels is on; on a phone it is a 40 px
-icon button still named "Snapshots".
+A **Snapshots** row in the footer's **Tools** menu ([The footer's Tools menu](../004-index/footer-tools-menu.md)), in
+the same place in every app: after Automations in liveplanner, before History in livedocuments. It is there only for
+someone who may use snapshots, once the item is stored on the server; with nothing else in the menu, the Tools button
+is drawn for it alone.
 
 It opens the **Snapshots** dialog (a sheet on a phone):
 

@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
-// The footer's Start Tour button (docs/specs/007-editor/editor-tour.md "Where it appears"): the one way into a tour,
-// left of Search, offering the most relevant tour on offer, and absent with none.
+// The footer's Get Started button (docs/specs/007-editor/editor-tour.md "Where it appears"): the one way into the tours,
+// left of Search, named for the most relevant tour on offer, and absent with none. A press opens the shared Get Started
+// popover listing every tour on offer; a host that draws its own panel (ownPanel) is started instead.
 import { centreOffsetPx } from '@liveworkspace/icons/centring';
 import { act, cleanup, fireEvent, render, renderHook, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -54,8 +55,8 @@ describe('TourOfferButton', () => {
   it('names the tour, wears the play glyph and sits just before Search', () => {
     render(<Footer />);
     act(() => publishTourOffer('draw', offer('draw', 'Draw', TOUR_OFFER_RANK.mode)));
-    const button = screen.getByRole('button', { name: 'Start Draw Tour' });
-    expect(button.textContent).toBe('Start Draw Tour');
+    const button = screen.getByRole('button', { name: 'Get Started, Start Draw Tour' });
+    expect(button.textContent).toBe('Get Started');
     expect(button.querySelector('svg')).not.toBeNull();
     const buttons = [...screen.getByTestId('footer').querySelectorAll<HTMLElement>('button')];
     const at = buttons.indexOf(button);
@@ -72,8 +73,8 @@ describe('TourOfferButton', () => {
         description: 'A cursor builds a small diagram while you watch.',
       }),
     );
-    const button = screen.getByRole('button', { name: 'Watch It Built' });
-    expect(button.textContent).toBe('Watch It Built');
+    const button = screen.getByRole('button', { name: 'Get Started, Watch It Built' });
+    expect(button.textContent).toBe('Get Started');
   });
 
   it("carries a host's own words through to the button, and republishes when they change", () => {
@@ -99,7 +100,9 @@ describe('TourOfferButton', () => {
   it('centres the play glyph in its disc', () => {
     render(<Footer />);
     act(() => publishTourOffer('draw', offer('draw', 'Draw', TOUR_OFFER_RANK.mode)));
-    const disc = screen.getByRole('button', { name: 'Start Draw Tour' }).querySelector('span')!;
+    const disc = screen
+      .getByRole('button', { name: 'Get Started, Start Draw Tour' })
+      .querySelector('span')!;
     expect(disc.className).not.toMatch(/\bp[lrx]-/);
     const svg = disc.querySelector('svg')!;
     const units = Number(/^0 0 ([\d.]+)/.exec(svg.getAttribute('viewBox')!)![1]);
@@ -111,26 +114,54 @@ describe('TourOfferButton', () => {
     expect(Math.abs(off.dx + shift)).toBeLessThanOrEqual(0.1);
   });
 
-  it('starts the tour on a press, and stays to be pressed again', () => {
+  it('lists every tour on offer in the Get Started popover, with its length, and starts the one picked', async () => {
     const start = vi.fn();
     render(<Footer />);
-    act(() => publishTourOffer('draw', offer('draw', 'Draw', TOUR_OFFER_RANK.mode, start)));
-    fireEvent.click(screen.getByRole('button', { name: 'Start Draw Tour' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Start Draw Tour' }));
+    act(() => {
+      publishTourOffer('draw', {
+        ...offer('draw', 'Draw', TOUR_OFFER_RANK.mode, start),
+        length: () => '6 steps',
+      });
+      publishTourOffer('pages', offer('pages', 'Pages', TOUR_OFFER_RANK.mode - 1));
+    });
+    const button = screen.getByRole('button', { name: 'Get Started, Start Draw Tour' });
+    expect(button.getAttribute('aria-expanded')).toBe('false');
+    fireEvent.click(button);
+    expect(button.getAttribute('aria-expanded')).toBe('true');
+    expect(await screen.findByText('6 steps')).toBeTruthy();
+    expect(screen.getByText('Pages Tour')).toBeTruthy();
+    fireEvent.click(screen.getByText('Draw Tour'));
+    expect(start).toHaveBeenCalledOnce();
+    expect(button.getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('starts a host that draws its own panel on a press, and stays to be pressed again', () => {
+    const start = vi.fn();
+    render(<Footer />);
+    act(() =>
+      publishTourOffer('draw', {
+        ...offer('draw', 'Draw', TOUR_OFFER_RANK.mode, start),
+        ownPanel: true,
+      }),
+    );
+    const button = screen.getByRole('button', { name: 'Get Started, Start Draw Tour' });
+    expect(button.hasAttribute('aria-expanded')).toBe(false);
+    fireEvent.click(button);
+    fireEvent.click(button);
     expect(start).toHaveBeenCalledTimes(2);
   });
 
   it('keeps its name but drops its words where its neighbours drop theirs', () => {
     render(<Footer labelled={false} />);
     act(() => publishTourOffer('draw', offer('draw', 'Draw', TOUR_OFFER_RANK.mode)));
-    const button = screen.getByRole('button', { name: 'Start Draw Tour' });
+    const button = screen.getByRole('button', { name: 'Get Started, Start Draw Tour' });
     expect(button.textContent).toBe('');
   });
 
   it('collapses to the glyph on a phone: its words are hidden below sm', () => {
     render(<Footer />);
     act(() => publishTourOffer('draw', offer('draw', 'Draw', TOUR_OFFER_RANK.mode)));
-    const words = screen.getByText('Start Draw Tour');
+    const words = screen.getByText('Get Started');
     expect(words.className).toContain('hidden');
     expect(words.className).toContain('sm:inline');
   });
@@ -205,9 +236,9 @@ describe('tour offers', () => {
         useOfferTour('draw', { name: 'Draw', rank: TOUR_OFFER_RANK.mode, start: vi.fn(), seen }),
       { initialProps: { seen: true } },
     );
-    expect(screen.queryByRole('button', { name: 'Start Draw Tour' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Get Started, Start Draw Tour' })).toBeNull();
     rerender({ seen: false });
-    expect(screen.getByRole('button', { name: 'Start Draw Tour' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Get Started, Start Draw Tour' })).toBeTruthy();
   });
 
   it('reads the start it was last given', () => {

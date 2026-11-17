@@ -103,7 +103,7 @@ selection looks like, then what the page looks like.
 
 ### Turning it off
 
-**Settings › Panels › Quick Style › Enable Quick Style Bar** (`quickStylePanelEnabled`, its stored
+**Settings › Panels › Quick Appearance › Enable Quick Style Bar** (`quickStylePanelEnabled`, its stored
 name kept, [User preferences](../007-editor/user-preferences.md)) stops the bar appearing. Style
 memory keeps working from the context menu.
 
@@ -404,3 +404,6 @@ counted as Custom Swatches in the dashboard's Look & Feel stack.
 ## Help
 
 [Quick Style Bar](/help/canvas/quick-style-panel/) (Canvas).
+
+The Quick Style bar follows the panel opacity preference as the other panels do (data-panel-translucent): faded at
+rest, opaque while hovered or focused, always opaque on a touch screen.

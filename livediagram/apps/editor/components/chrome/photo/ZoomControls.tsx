@@ -27,17 +27,15 @@ export function ZoomControls({
       // draws a box.
       onPointerDown={(e) => e.stopPropagation()}
     >
-      <HoverCard title="Zoom out" description="Shortcut: −">
-        <button
-          type="button"
-          aria-label="Zoom out"
-          disabled={zoom <= 1}
-          onClick={onZoomOut}
-          className={button}
-        >
-          −
-        </button>
-      </HoverCard>
+      <button
+        type="button"
+        aria-label="Zoom out"
+        disabled={zoom <= 1}
+        onClick={onZoomOut}
+        className={button}
+      >
+        −
+      </button>
       <span
         aria-live="polite"
         data-testid="photo-zoom-level"
@@ -45,20 +43,15 @@ export function ZoomControls({
       >
         {Math.round(zoom * 100)}%
       </span>
-      <HoverCard
-        title="Zoom in"
-        description="Shortcut: +. Or scroll, or pinch; drag with the middle button to move around."
+      <button
+        type="button"
+        aria-label="Zoom in"
+        disabled={zoom >= PHOTO_ZOOM_MAX}
+        onClick={onZoomIn}
+        className={button}
       >
-        <button
-          type="button"
-          aria-label="Zoom in"
-          disabled={zoom >= PHOTO_ZOOM_MAX}
-          onClick={onZoomIn}
-          className={button}
-        >
-          +
-        </button>
-      </HoverCard>
+        +
+      </button>
       <HoverCard title="Show the whole photo" description="Shortcut: 0">
         <button
           type="button"

@@ -60,6 +60,14 @@ function Footer({
   );
 }
 
+// Automations is a row in the footer's Tools menu (liveworkspace/docs/specs/004-index/footer-tools-menu.md).
+const toolsButton = () => screen.getByRole('button', { name: /^Tools/ });
+function automationsRow(): HTMLElement | null {
+  if (toolsButton().getAttribute('aria-expanded') !== 'true') fireEvent.click(toolsButton());
+  return document.querySelector<HTMLElement>('[data-tools-item="automations"]');
+}
+const openAutomations = () => fireEvent.click(automationsRow()!);
+
 beforeEach(() => {
   forgetAutomations();
   vi.clearAllMocks();
@@ -72,14 +80,13 @@ afterEach(() => {
 });
 
 describe('the Automations button', () => {
-  it('sits between Search and Settings for an Editor, and opens the screen', async () => {
+  it('is a row in Tools for an Editor, and opens the screen', async () => {
     render(<Footer {...EDITOR} />);
     const labels = [...document.querySelectorAll('button')].map((b) =>
       b.getAttribute('aria-label'),
     );
-    expect(labels.indexOf('Automations')).toBe(labels.indexOf('Search') + 1);
-    expect(labels.indexOf('Settings')).toBe(labels.indexOf('Automations') + 1);
-    fireEvent.click(screen.getByRole('button', { name: 'Automations' }));
+    expect(labels.indexOf('Settings')).toBe(labels.indexOf('Tools') + 1);
+    openAutomations();
     expect(track).toHaveBeenCalledWith('UI', 'Opened', 'Automations');
     await act(async () => {});
     expect(screen.getByRole('dialog', { name: 'Automations' })).toBeTruthy();
@@ -94,14 +101,14 @@ describe('the Automations button', () => {
     ['an embedded plan in Browser Storage', { offline: true, embed: true }],
   ])('is not drawn for %s', (_who, over) => {
     render(<Footer {...EDITOR} {...over} />);
-    expect(screen.queryByRole('button', { name: /Automations/ })).toBeNull();
+    expect(automationsRow()).toBeNull();
     act(() => {
       vi.advanceTimersByTime(AUTOMATIONS_FIRST_READ_MS);
     });
     expect(listAutomations).not.toHaveBeenCalled();
   });
 
-  it('reads the list once the plan settles, and shows the amber dot while a rule is paused', async () => {
+  it('reads the list once the plan settles, and shows the amber dot on Tools while a rule is paused', async () => {
     listAutomations.mockResolvedValue({
       rules: [rule({ enabled: false, paused: { reason: 'x', at: 1 } })],
       runsToday: 0,
@@ -111,8 +118,9 @@ describe('the Automations button', () => {
     expect(listAutomations).not.toHaveBeenCalled();
     await act(async () => vi.advanceTimersByTime(AUTOMATIONS_FIRST_READ_MS));
     expect(listAutomations).toHaveBeenCalledOnce();
-    expect(screen.getByRole('button', { name: 'Automations, a rule is paused' })).toBeTruthy();
-    expect(document.querySelector('[data-automations-paused]')).toBeTruthy();
+    expect(toolsButton().getAttribute('aria-label')).toBe('Tools, a rule is paused');
+    expect(document.querySelector('[data-tools-attention="amber"]')).toBeTruthy();
+    automationsRow();
     expect(document.querySelector('[data-automations-count]')).toBeNull();
   });
 
@@ -128,22 +136,20 @@ describe('the Automations button', () => {
     });
     render(<Footer {...EDITOR} />);
     await act(async () => vi.advanceTimersByTime(AUTOMATIONS_FIRST_READ_MS));
-    expect(
-      screen.getByRole('button', { name: 'Automations, 2 on, a rule is paused' }),
-    ).toBeTruthy();
+    expect(toolsButton().getAttribute('aria-label')).toBe('Tools, a rule is paused');
+    automationsRow();
     const badge = document.querySelector('[data-automations-count]')!;
     expect(badge.textContent).toBe('2');
     expect(badge.className).toContain('bg-amber-500');
     // Dark text on the amber, readable in both themes (white on amber-500 is 2.1:1).
     expect(badge.className).toContain('text-amber-950');
-    expect(document.querySelector('[data-automations-paused]')).toBeNull();
   });
 
   it('asks to sync a plan in This Browser first, as Share does, then goes on to the screen', async () => {
     vi.useRealTimers();
     const sync = vi.fn(async () => {});
     render(<Footer {...EDITOR} offline sync={sync} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Automations' }));
+    openAutomations();
     expect(track).toHaveBeenCalledWith('UI', 'Opened', 'AutomationsOffline');
     const gate = await screen.findByRole('dialog', { name: 'Automations' });
     expect(gate.textContent).toContain('Rules Run on Our Servers');
@@ -167,7 +173,7 @@ describe('the Automations button', () => {
     vi.useRealTimers();
     const sync = vi.fn(async () => {});
     render(<Footer {...EDITOR} offline ready={false} sync={sync} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Automations' }));
+    openAutomations();
     await screen.findByText('Rules Run on Our Servers');
     expect(screen.getByRole('button', { name: 'Sync Plan' })).toHaveProperty('disabled', true);
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
@@ -181,7 +187,7 @@ describe('the Automations button', () => {
       throw new Error('offline');
     });
     render(<Footer {...EDITOR} offline sync={sync} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Automations' }));
+    openAutomations();
     await screen.findByText('Rules Run on Our Servers');
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: 'Sync Plan' }));
@@ -195,7 +201,7 @@ describe('the Automations button', () => {
     vi.useRealTimers();
     window.history.replaceState(null, '', '/project/p1?s=abc#t=board');
     render(<Footer {...EDITOR} signedIn={false} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Automations' }));
+    openAutomations();
     expect(track).toHaveBeenCalledWith('UI', 'Opened', 'AutomationsSignIn');
     const gate = await screen.findByRole('dialog', { name: 'Automations' });
     expect(gate.textContent).toContain('so they need you signed in');
@@ -213,7 +219,7 @@ describe('the Automations button', () => {
 
   it('waits for sign-in to answer before offering the guest gate', () => {
     render(<Footer {...EDITOR} signedIn={false} authLoaded={false} />);
-    expect(screen.queryByRole('button', { name: /Automations/ })).toBeNull();
+    expect(automationsRow()).toBeNull();
   });
 
   it('opens on the rules when the page comes back from sign-in, dropping the ask', async () => {

@@ -19,8 +19,6 @@ afterEach(cleanup);
 const strip = (withTrash = true) =>
   render(
     <PlanCardsClusterStrip
-      finderOpen={false}
-      onToggleFinder={() => {}}
       types={{ open: false, onToggle: () => {} }}
       trash={withTrash ? { open: false, onToggle: () => {} } : undefined}
     />,
@@ -40,7 +38,6 @@ describe('the Trash in Plan’s strip', () => {
     strip();
     expect(screen.getAllByRole('button').map((b) => b.getAttribute('aria-label'))).toEqual([
       'Open the Trash, 1 card',
-      'Find a Card',
       'Open Card Types',
     ]);
     cleanup();
@@ -48,8 +45,8 @@ describe('the Trash in Plan’s strip', () => {
     expect(screen.queryByRole('button', { name: /Trash/ })).toBeNull();
   });
 
-  // docs/specs/026-plan/item-types.md "The type catalogue": with no card types, Find a Card would
-  // surface nothing; the Trash stays only while it holds cards to restore.
+  // docs/specs/026-plan/item-types.md "The type catalogue": with no card types there is nothing to
+  // type; the Trash stays only while it holds cards to restore.
   it('shows only Card Types with no card types, and the Trash while it holds cards', () => {
     plan.draggingItemId = null;
     plan.types = [];
@@ -57,8 +54,6 @@ describe('the Trash in Plan’s strip', () => {
     const withTrash = () =>
       render(
         <PlanCardsClusterStrip
-          finderOpen={false}
-          onToggleFinder={() => {}}
           types={{ open: false, onToggle: () => {} }}
           trash={{ open: false, onToggle: () => {} }}
         />,

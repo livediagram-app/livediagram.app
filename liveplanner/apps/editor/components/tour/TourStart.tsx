@@ -1,12 +1,19 @@
 'use client';
 
-// The hands-on tours' start panel (docs/specs/026-plan/plan-tour.md "Starting a tour"): what a press on Start Tour
-// opens, in the mission strip's place. Nothing is dealt, opened or drawn until the person picks a track here. With one
+// The hands-on tours' start panel (docs/specs/026-plan/plan-tour.md "Starting a tour"): what a press on Get Started
+// opens, as the Get Started popover every app draws (GetStartedPopover); with no button on show (from Settings), in the
+// mission strip's place. Nothing is dealt, opened or drawn until the person picks a track here. With one
 // track it says what will happen and offers Start; with several (Boards) it lists them, each with a line on what it
 // teaches and a tick once taken. Not Now closes it and leaves the tour on offer.
 
 import { Button } from '@liveplanner/ui';
+import { useState } from 'react';
+import { TRACK_ICONS } from './track-icons';
 import { TourTopics } from '@liveworkspace/workbench/components/tour/TourTopics';
+import {
+  GetStartedPopover,
+  getStartedAnchor,
+} from '@liveworkspace/workbench/components/tour/GetStartedPopover';
 import { StripFrame } from './MissionStrip';
 
 export type StartTrack<Id extends string> = {
@@ -38,6 +45,28 @@ export function TourStart<Id extends string>({
   onPick: (id: Id) => void;
   onClose: () => void;
 }) {
+  // From the footer's Get Started button: the Get Started popover every app opens, its tracks as lessons.
+  const [anchor] = useState(getStartedAnchor);
+  if (anchor) {
+    return (
+      <GetStartedPopover
+        anchor={anchor}
+        topics={tracks.map((t) => ({
+          id: t.id,
+          title: t.title,
+          line: t.line || line,
+          ...(t.missions
+            ? { meta: `${t.missions} ${t.missions === 1 ? 'mission' : 'missions'}` }
+            : {}),
+          ...(TRACK_ICONS[t.id] ? { icon: TRACK_ICONS[t.id] } : {}),
+          taken: t.taken,
+        }))}
+        onPick={onPick}
+        onClose={onClose}
+        idAttribute="data-tour-track"
+      />
+    );
+  }
   const only = tracks.length === 1 ? tracks[0] : undefined;
   return (
     <StripFrame name={name} onEnd={onClose} endLabel="Not Now">

@@ -257,11 +257,11 @@ type UserPreferences = {
   // Settings' Plan Tours switch, off; on its own it counts no track (lib/plan-tour.ts).
   planTourSeen?: boolean;
   // The Plan tour tracks (Boards, Sheets, Dashboards) taken (a run completed or skipped). It picks which track the footer's
-  // Start Tour button names and feeds Settings' rows; a track in it is off the button. Settings' Boards Tour, Sheets Tour and
+  // Get Started button names and feeds Settings' rows; a track in it is off the button. Settings' Boards Tour, Sheets Tour and
   // Dashboards Tour rows each add or remove their own track.
   planTourTracks?: PlanTourTrack[];
   // The Forms tour's record (docs/specs/030-forms/forms.md "The Forms tour"), written as a run starts and ends; it feeds
-  // the Settings row and, while true, keeps the tour off the Start Tour button. Show Me Around in the form's cog panel
+  // the Settings row and, while true, keeps the tour off the Get Started button. Show Me Around in the form's cog panel
   // reruns it. Missing / undefined === not seen.
   formTourSeen?: boolean;
   // DEAD (../004-interface-design/colour-picker.md "Custom colours"): Custom colours are kept with the project's tabs, not per user.
@@ -442,7 +442,7 @@ and the dialog stays as the one complete, browsable index of them.
   lazy-loaded via `next/dynamic` (matches the other on-demand
   modals: ShareDialog, ExportTabDialog). Trigger: a
   gear-icon button in the TabBar footer, sitting between Search and the
-  dark-mode toggle (with the Start Tour button immediately left of it while a tour is on offer,
+  dark-mode toggle (with the Get Started button immediately left of it while a tour is on offer,
   [Editor tours](editor-tour.md) "Where it appears"). The "Keyboard Shortcuts" command in search
   ([Command palette (⌘K)](command-palette.md)) opens it on the **Keyboard** category; that category replaced the standalone
   Shortcuts dialog and the footer's keyboard button. Settings can also open on a **section**
@@ -673,7 +673,7 @@ and the dialog stays as the one complete, browsable index of them.
   **Getting Started** is a category of its own: one switch per guided tour, **Plan Tours** (over **Boards Tour**, **Card
   Types Tour**, **Board Setup Tour**, **Sheets Tour** and **Dashboards Tour**) and **Forms Tour**, each with a line saying where it runs and a
   **Learn more** to its article, under one **Offer Again** section note. Every tour is started from the footer's
-  Start Tour button, which offers a tour until it is taken ([Editor tours](editor-tour.md) "Where it appears"); the
+  Get Started button, which offers a tour until it is taken ([Editor tours](editor-tour.md) "Where it appears"); the
   switches are the record of which have been taken, and switching one back on puts its tour back on the button. Switch one back on and close Settings to take it
   again straight away when it is on offer where you are; otherwise nothing starts, and the button is there once it
   is. The switches sit in their own category, not inside Accessibility: a tour is not an accessibility setting. Every switch is inverted: on means "not taken yet", the preference records

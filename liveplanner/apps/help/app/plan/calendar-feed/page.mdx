@@ -1,10 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import {
-  CalendarFeedMenu,
-  CalendarFeedDialog,
-  CalendarFeedWeek,
-} from '@/components/illustrations/calendar-feed';
+import { CalendarFeedDialog, CalendarFeedWeek } from '@/components/illustrations/calendar-feed';
+import { ToolsMenuFigure } from '@/components/illustrations/tools-menu';
 
 export const metadata = helpMetadata({
   title: 'Subscribe to Calendar',
@@ -34,13 +31,13 @@ Each person makes their own link, and it shows only what they can still open: if
 
 ## Make Your Link
 
-1. Open the tab menu: the **⋯** beside the open tab's name, or right-click the canvas.
-2. Choose **Subscribe to Calendar…**.
+1. Press **Tools** in the bottom bar.
+2. Choose **Subscribe to Calendar**, under Collaborate.
 3. Pick what it shows under **What It Shows** (below).
 4. Press **Make Calendar Link**.
 
-<Figure caption="Subscribe to Calendar sits in the tab menu, under Export, and covers the whole plan.">
-  <CalendarFeedMenu />
+<Figure caption="Subscribe to Calendar sits in Tools, under Collaborate, and covers the whole plan.">
+  <ToolsMenuFigure highlight="Subscribe to Calendar" />
 </Figure>
 
 The link appears with **Copy Link**. This is the only time it is shown, so copy it now: the plan keeps only a fingerprint of it, never the link itself. If you lose it, **Reset Link** makes a new one.

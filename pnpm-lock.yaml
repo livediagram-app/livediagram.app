@@ -4729,9 +4729,6 @@ importers:
       '@liveworkspace/snapshots':
         specifier: workspace:*
         version: link:../../../packages/snapshots
-      '@liveworkspace/suggestions':
-        specifier: workspace:*
-        version: link:../../../packages/suggestions
       '@liveworkspace/telemetry':
         specifier: workspace:*
         version: link:../../../packages/telemetry
@@ -4911,9 +4908,6 @@ importers:
       '@liveworkspace/style-guards':
         specifier: workspace:*
         version: link:../../../packages/style-guards
-      '@liveworkspace/suggestions':
-        specifier: workspace:*
-        version: link:../../../packages/suggestions
       '@liveworkspace/telemetry-client':
         specifier: workspace:*
         version: link:../../../packages/telemetry-client
@@ -5403,9 +5397,6 @@ importers:
       '@liveworkspace/community':
         specifier: workspace:^
         version: link:../../../packages/community
-      '@liveworkspace/suggestions':
-        specifier: workspace:*
-        version: link:../../../packages/suggestions
       '@liveworkspace/telemetry':
         specifier: workspace:*
         version: link:../../../packages/telemetry

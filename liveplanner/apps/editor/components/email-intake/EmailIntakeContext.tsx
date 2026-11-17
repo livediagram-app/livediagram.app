@@ -5,7 +5,8 @@
 // draws nothing without it.
 import { createContext, useContext } from 'react';
 
-export type EmailIntakeDoor = { open: () => void };
+// `badges`: what it needs first (Sync Plan) while a press opens its gate.
+export type EmailIntakeDoor = { open: () => void; badges?: readonly string[] | undefined };
 
 export const EmailIntakeDoorContext = createContext<EmailIntakeDoor | null>(null);
 

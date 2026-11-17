@@ -70,11 +70,11 @@ export type PanelLayout = 'side' | 'stacked' | 'sheet';
 
 /**
  * The editors' popover (liveworkspace/docs/specs/004-index/one-explorer.md "The editors' panel: its size and the
- * scrim"): up to 54rem wide, so the 13rem rail has room and the pane's compact preview cards run four across, yet a
+ * scrim"): up to 56rem wide, so the 15rem rail (with the current card at its top) has room and the pane's compact preview cards run four across, yet a
  * third of a 1280px window's canvas stays in sight; and up to 45rem tall. Each editor's MovablePanel takes these,
  * so the size lives once. The host keeps it 1rem inside the window.
  */
-export const EXPLORER_POPOVER_WIDTH = 'w-[54rem]';
+export const EXPLORER_POPOVER_WIDTH = 'w-[56rem]';
 export const EXPLORER_POPOVER_HEIGHT = '45rem';
 
 /**
@@ -149,6 +149,7 @@ export function ExplorerPanel({
   imports,
   itemMenu,
   history,
+  webhooks,
   teamsHost,
   thisBrowser = null,
   accounts = null,
@@ -167,6 +168,7 @@ export function ExplorerPanel({
           imports={imports}
           itemMenu={itemMenu}
           history={history}
+          webhooks={webhooks}
         >
           <TeamsProvider
             host={teamsHost}
@@ -229,6 +231,12 @@ function PanelInner({
   // The open item when the index has none for it (kept only in this browser): its card comes from This Browser.
   const localCurrent =
     !current && currentId ? (thisBrowserLive.find((i) => i.id === currentId) ?? null) : null;
+  // The item open in the editor: across the top when stacked, compact at the rail's head beside it.
+  const currentCard = current ? (
+    <CurrentItem item={current} compact={!stacked} />
+  ) : localCurrent ? (
+    <LocalCurrentItem item={localCurrent} onRename={onRenameCurrent} compact={!stacked} />
+  ) : null;
   const groups = useMemo(
     () =>
       panelSectionGroups(teams, {
@@ -325,17 +333,17 @@ function PanelInner({
               : 'contents'
           }
         >
+          {/* Stacked (a phone, the narrow corner panel) the current card spans the top; beside a rail it heads the
+              rail instead (owner, 2026-11-16), so the pane keeps the panel's height. */}
           <div className="flex flex-col gap-2 px-2.5 pb-2.5 pt-1 empty:hidden">
-            {current ? (
-              <CurrentItem item={current} />
-            ) : localCurrent ? (
-              <LocalCurrentItem item={localCurrent} onRename={onRenameCurrent} />
-            ) : null}
+            {stacked ? currentCard : null}
             {notice}
           </div>
+          {/* A rule under that top block only when it holds something: with nothing above, the popover header's own
+              rule is the one line. */}
           <div
             data-panel-body={layout}
-            className={`flex border-t border-slate-200 dark:border-slate-700/70 ${PANEL_BODY[layout]}`}
+            className={`flex [:not(:empty)+&]:border-t border-slate-200 dark:border-slate-700/70 ${PANEL_BODY[layout]}`}
           >
             <Rail
               groups={groups}
@@ -343,6 +351,7 @@ function PanelInner({
               onPick={pick}
               phone={stacked}
               offlineCount={offlineCount}
+              top={stacked ? undefined : currentCard}
             />
             <Pane
               section={section}

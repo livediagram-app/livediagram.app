@@ -35,8 +35,8 @@ pen widths, dock spacing) are named constants, tuned in place.
 
 ## Creating one
 
-- **New Canvas wizard:** choosing **Draw** on the wizard's Mode step ([New document
-  route](../007-editor/new-document-route.md) "Choosing a mode") makes a document with one tab in Draw mode, from the
+- **New Canvas:** `/new?mode=draw` ([New document
+  route](../007-editor/new-document-route.md) "No welcome step"), or choosing **Draw** on a new document's start, makes a document with one tab in Draw mode, from the
   **Blank Whiteboard** template (kind id `whiteboard`, a blank builder and a preview tile, `packages/templates`).
 - **Start Drawing:** an empty Draw tab offers its templates in **Start Drawing** ([Template
   starts](../007-editor/start-diagramming.md)): Blank Whiteboard first under Recommended, then **Visual Notes**,

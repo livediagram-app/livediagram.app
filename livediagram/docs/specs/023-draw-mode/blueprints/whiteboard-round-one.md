@@ -51,7 +51,7 @@ Scope, by file:
 | `apps/editor/components/canvas/CanvasChrome.tsx` and friends              | Hidden chrome; the dock's mount                                           |
 | `apps/editor/hooks/canvas/useCanvasSurfaceGestures.ts`                    | Pen versus touch; the eraser frame                                        |
 | `apps/editor/components/canvas/useCanvasDrawGesture.ts`                   | Hands a whiteboard pen press to `useWhiteboardPenGesture`                 |
-| `apps/editor/components/palette/NewDocumentWizard.tsx`                    | The Draw mode card (Blank Whiteboard); no theme step                      |
+| `apps/editor/components/start/StartModeSwitch.tsx`                        | The Draw mode card (Blank Whiteboard); no theme step                      |
 | `apps/help/app/canvas/draw-mode/page.mdx`                                 | Help article, registered in `packages/help-registry`                      |
 
 ## Domain and naming
@@ -1018,7 +1018,7 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 | Pen versus touch on the canvas                                                                | `apps/editor/hooks/canvas/useCanvasSurfaceGestures.whiteboard.test.tsx`                                                 |
 | A pinch discards a whiteboard stroke                                                          | `apps/editor/components/canvas/useCanvasDrawGesture.whiteboard.test.tsx`                                                |
 | Line / arrow heads, no colour                                                                 | `apps/editor/lib/draw-commit.test.ts`                                                                                   |
-| No theme step for a whiteboard                                                                | `apps/editor/components/palette/NewDocumentWizard.test.tsx`                                                             |
+| No theme step for a whiteboard                                                                | `apps/editor/components/start/StartModeSwitch.test.tsx`                                                                 |
 | Sticky and text open for typing                                                               | `apps/editor/lib/draw-mode.test.ts`                                                                                     |
 | Telemetry vocabulary and dashboard                                                            | `apps/editor/lib/telemetry-coverage.test.ts`, liveworkspace/apps/site/app/telemetry/livediagram/metric-emitters.test.ts |
 | End to end                                                                                    | playwright-cli walkthrough, light / dark, desktop / narrow                                                              |

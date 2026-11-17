@@ -162,6 +162,8 @@ export function QuickStyleBar({
         role="toolbar"
         aria-label="Quick Style"
         data-quick-style-bar=""
+        // A panel, so the panel-opacity preference (docs/specs/007-editor/user-preferences.md) applies to it.
+        data-panel-translucent=""
         data-testid="quick-style-bar"
         // A guided tour's anchor.
         data-tour-id="quick-style"

@@ -27,7 +27,6 @@ describe('the category bar’s categories', () => {
       'layout',
       'icons',
       'technology',
-      'media',
     ]);
   });
 
@@ -61,7 +60,7 @@ describe('the category bar’s categories', () => {
       flyoutGroups(id, bar('diagram').find((c) => c.id === id)!.tiles!).map((g) => g.title);
     expect(groups('write')).toEqual(['Text', 'Notes', 'Comments']);
     expect(groups('draw')).toEqual(['Pens', 'Outlines', 'Connectors']);
-    expect(groups('layout')).toEqual(['Containers', 'Parts']);
+    expect(groups('layout')).toEqual(['Containers', 'Parts', 'Pictures', 'People']);
   });
 
   it('gathers Workshop’s session tools into Session, Ask keeping its own button', () => {
@@ -75,7 +74,6 @@ describe('the category bar’s categories', () => {
       'collab-ask',
       SESSION_CATEGORY_ID,
       'icons',
-      'media',
       'data',
     ]);
     const session = cats.find((c) => c.id === SESSION_CATEGORY_ID)!;

@@ -12,12 +12,9 @@ import {
 } from 'react';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
 import { ApiErrorPage } from '@liveworkspace/workbench/components/chrome/ApiErrorPage';
-import { NewDocumentWizard } from '@/components/palette/NewDocumentWizard';
 import type { NewDocumentSettings } from './new-document-settings';
 import { DocumentLoading } from '@/components/chrome/DocumentLoading';
 import { OpeningScreen } from '@/components/chrome/OpeningScreen';
-import { RecentDocumentsCard } from './RecentDocumentsCard';
-import { AnimatedLinesBackdrop } from '@/components/canvas/AnimatedLinesBackdrop';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useCtaAttribution } from './useCtaAttribution';
 import { apiCreateDocument, apiLoadSelf, apiSaveSelf } from '@/lib/api-client';
@@ -28,9 +25,8 @@ import {
   type CreateIds,
 } from './create-failure';
 import { offlineCreateDocument } from '@/lib/offline/offline-store';
-import { isOfflineLocation, type SaveLocationId } from '@/lib/save-locations';
+import { isOfflineLocation } from '@/lib/save-locations';
 import { useNewDocumentLocation } from './useNewDocumentLocation';
-import { NewSaveSwitch } from './NewSaveSwitch';
 import { randomColor, randomName, type Participant } from '@/lib/identity';
 import { firstVisitName } from '@/app/document/[id]/resolve-participant';
 import { titleCaseType, track } from '@/lib/telemetry';
@@ -48,13 +44,10 @@ import {
 } from '@livediagram/templates';
 import { creationIntentOf } from '@livediagram/api-schema';
 import {
-  WIZARD_BYPASS_PARAMS,
   choosePlacementAgainUrl,
+  newDocumentKind,
   placementParamsFromSearch,
-  wizardBypassKind,
-  wizardPresetMode,
   wizardPresetQuery,
-  wizardStartsBlank,
 } from '@/lib/new-document-params';
 import { backOutTarget } from '@liveworkspace/workbench/lib/back-out';
 import { themeTelemetryLabel } from '@/lib/theme-telemetry-label';
@@ -79,29 +72,16 @@ const EditorPage = dynamic(loadEditor, {
   loading: () => <OpeningScreen />,
 });
 
-// The wizard bypass a /new URL asks for, if any (docs/specs/007-editor/new-document-route.md). The URL does
-// not change under the page, so nothing needs to subscribe.
+// What a /new URL asks for (docs/specs/007-editor/new-document-route.md "No welcome step"), read as an external store
+// whose server snapshot is null: the static export prerenders the page without a query string, so the hydration
+// render has to match the server HTML (the opening screen either way). The URL does not change under the page, so
+// nothing needs to subscribe.
 const subscribeNever = () => () => {};
-const bypassKindFromUrl = () => wizardBypassKind(window.location.search);
-// The template step's presets (`?mode=`, `?q=`), read the same way.
-const presetModeFromUrl = () => wizardPresetMode(window.location.search);
-const presetQueryFromUrl = () => wizardPresetQuery(window.location.search);
-const noPreset = () => null;
-const noBypass = () => null;
-// A `/new?folder=` / `?team=` context names a server place, so the wizard offers no save switch.
-const placedFromUrl = () => {
-  const p = placementParamsFromSearch(window.location.search);
-  return !!(p.folderId || p.teamId);
-};
-const onClient = () => true;
-const onServer = () => false;
-// Dedicated welcome / create-new flow, see docs/specs/007-editor/new-document-route.md.
-// Owns identity bootstrap, the mode choice (a one-step wizard),
-// and the actual "commit a new document" handoff. Once the user picks (or
-// skips), we POST the seeded document and navigate to /document/<id> where
-// the editor route picks it up cleanly. The Explorer is NOT rendered here:
-// the wizard's "Open Existing Document" button sends users to /explorer
-// instead, keeping this screen focused on creating.
+const searchFromUrl = () => window.location.search;
+const noSearch = () => null;
+// The create-new flow, see docs/specs/007-editor/new-document-route.md. Owns identity bootstrap and the
+// "commit a new document" handoff. It asks nothing: the document is made on arrival, as the URL asks, and opens on
+// its start, where the mode and the templates are chosen.
 const PENDING_SELF: Participant = {
   id: 'pending',
   name: 'Guest',
@@ -118,8 +98,8 @@ export default function NewDocumentPage() {
 
   // Who is creating (docs/specs/003-system-architecture/react-state-and-effects.md): derived during render.
   // The base is the account id once auth has settled, else the guest id read from its store, with a name and
-  // colour seeded once per visit. `selfOverride` holds what replaces it: the stored profile, the name
-  // chosen in the wizard, or the commit's fallback. Until auth settles it is the 'pending' placeholder.
+  // colour seeded once per visit. `selfOverride` holds what replaces it: the stored profile,
+  // or the commit's fallback. Until auth settles it is the 'pending' placeholder.
   // A guest's id is their guest token's, resolved before any owner-scoped call
   // (docs/specs/014-identity/auth-and-guest-access.md): until then `self` stays
   // 'pending', which gates every owner-scoped read below.
@@ -151,7 +131,7 @@ export default function NewDocumentPage() {
   // navigating to the editor for a document that was never persisted (which would 404). The ref
   // keeps the last attempt's args so Retry can re-run the exact same create.
   const [createError, setCreateError] = useState<CreateFailure | null>(null);
-  // Set by Skip and the bypass links: the new tab opens with its start closed (closeStartForBlank).
+  // Set by Start Blank and the template links: the new tab opens with its start closed (closeStartForBlank).
   const explicitBlank = useRef(false);
   const lastCreateArgs = useRef<{
     kind: TemplateKind | null;
@@ -165,61 +145,17 @@ export default function NewDocumentPage() {
   // here, if any. Counts the arrival now and the document once it's committed.
   const cta = useCtaAttribution();
 
-  // Wizard bypass (docs/specs/007-editor/new-document-route.md): /new?blank=1 ("Start Blank") and
-  // /new?template=<kind> (the marketing template gallery) skip the wizard
-  // entirely — the page commits that template (Default theme, the template's
-  // default name) the moment it mounts and lands on the editor. The ?folder /
-  // ?team placement context still applies (placementParams).
-  //
-  // Read from the URL as an external store whose server snapshot is "no
-  // bypass", NOT a window-reading state initializer: the static export
-  // prerenders this page without a query string, so the hydration render has
-  // to match the server HTML. The kind lands on the render after hydration;
-  // until then the inline script + style guard rendered below keeps the
-  // wizard hidden. That guard can't validate a template kind, so when the
-  // query names one we don't know, the layout effect lifts it before the
-  // first post-hydration paint and the wizard shows as normal.
-  const bypassKind = useSyncExternalStore(subscribeNever, bypassKindFromUrl, noBypass);
+  // What to create, once the page runs in the browser.
+  const search = useSyncExternalStore(subscribeNever, searchFromUrl, noSearch);
+  const plan = useMemo(() => (search === null ? null : newDocumentKind(search)), [search]);
+  const presetQuery = useMemo(() => (search === null ? null : wizardPresetQuery(search)), [search]);
   // Where a new document is stored: This Browser for a guest (docs/specs/006-document/save-locations.md), decided at
   // commit.
-  const { resolveSaveLocation, signedIn } = useNewDocumentLocation({
+  const { resolveSaveLocation } = useNewDocumentLocation({
     authLoaded,
     sessionAnswered,
     accountUserId,
   });
-  // The wizard's Sync Canvas to Server switch (save-locations.md "On the start screen"): null until flipped, so
-  // the create follows the default. Drawn only once the page runs in the browser: the prerender knows no sign-in,
-  // and a switch that flipped on at hydration would jolt.
-  const [chosenLocation, setChosenLocation] = useState<SaveLocationId | null>(null);
-  const placedByUrl = useSyncExternalStore(subscribeNever, placedFromUrl, onServer);
-  const hydratedPage = useSyncExternalStore(subscribeNever, onClient, onServer);
-  useLayoutEffect(() => {
-    if (!bypassKindFromUrl()) document.documentElement.removeAttribute('data-just-draw');
-  }, []);
-
-  // `?mode=` / `?q=` (docs/specs/007-editor/new-document-route.md): the template step opens
-  // narrowed. The prerendered step is unfiltered, so the wizard card stays hidden (the pre-paint
-  // `data-wizard-preset` flag) until the render that shows the preset.
-  const presetMode = useSyncExternalStore(subscribeNever, presetModeFromUrl, noPreset);
-  const presetQuery = useSyncExternalStore(subscribeNever, presetQueryFromUrl, noPreset);
-  useLayoutEffect(() => {
-    if (presetModeFromUrl() === presetMode && presetQueryFromUrl() === presetQuery) {
-      document.documentElement.removeAttribute('data-wizard-preset');
-    }
-  }, [presetMode, presetQuery]);
-
-  const backOut = () => {
-    if (submitting || preparing) return;
-    const target = backOutTarget({
-      referrer: document.referrer,
-      origin: window.location.origin,
-      historyLength: window.history.length,
-    });
-    debugLog(`[new] back out ${target}`);
-    track('UI', 'Closed', 'NewDocument');
-    if (target === 'back') window.history.back();
-    else window.location.assign('/');
-  };
 
   useEffect(() => {
     document.title = 'New Canvas | livediagram';
@@ -228,32 +164,24 @@ export default function NewDocumentPage() {
     loadEditor().catch(() => {});
   }, []);
 
-  // Back/forward-cache restore: creating navigates away with
-  // `submitting === true` still set, and the browser Back button
-  // restores this page from bfcache exactly as frozen — leaving the
-  // Create button stuck on "Creating…" forever. `pageshow` with
-  // `persisted` is the restore signal; reset the transient submit
-  // state so the page is usable again.
+  // Back/forward-cache restore (new-document-route.md "No welcome step"): the browser can restore this page as it was
+  // frozen mid-create, on "Creating…" for ever. Re-firing the create would trap Back behind a page that always
+  // navigates forward, so it goes back again (or home), creating nothing.
   useEffect(() => {
     const onPageShow = (e: PageTransitionEvent) => {
       if (!e.persisted || handedOff.current) return;
-      // A bypass auto-creates on mount, so a bfcache restore would
-      // either strand the user on a frozen "Creating…" card or (if we
-      // re-fired the create) trap Back behind a page that always navigates
-      // forward again. Send them to the wizard instead, keeping the
-      // ?folder / ?team placement context and dropping only the blank flag.
-      if (bypassKind) {
-        const params = new URLSearchParams(window.location.search);
-        for (const key of WIZARD_BYPASS_PARAMS) params.delete(key);
-        const qs = params.toString();
-        window.location.replace(qs ? `/new?${qs}` : '/new');
-        return;
-      }
-      setSubmitting(false);
+      const target = backOutTarget({
+        referrer: document.referrer,
+        origin: window.location.origin,
+        historyLength: window.history.length,
+      });
+      debugLog(`[new] restored, back out ${target}`);
+      if (target === 'back') window.history.back();
+      else window.location.assign('/');
     };
     window.addEventListener('pageshow', onPageShow);
     return () => window.removeEventListener('pageshow', onPageShow);
-  }, [bypassKind]);
+  }, []);
 
   useLayoutEffect(() => {
     // Wait for auth to settle so guest vs signed-in is known.
@@ -291,7 +219,7 @@ export default function NewDocumentPage() {
   // 5 s auth timeout at the latest), then fall back to the guest id.
   const { resolveSelf } = useResolveSelf(self, setSelf, ensureGuestIdentity);
 
-  // Single commit point, shared by a mode chosen, Create, Skip and the bypass links. Every new document starts on the
+  // Single commit point, for every /new create. Every new document starts on the
   // Default theme; either way we persist the document so the editor route lands on a real row.
   const themeId = NEW_DOCUMENT_THEME_ID;
   const commitNewDocument = async (
@@ -307,7 +235,7 @@ export default function NewDocumentPage() {
     // Save location (docs/specs/006-document/save-locations.md): only This Browser takes the offline branch.
     const offline = isOfflineLocation(settings.saveLocation);
     const { documentId, tabId } = createIdsFor(retrying);
-    // An explicit blank (Skip, Start Blank, a blank's link) opens with its start closed (close-start-for-blank.ts).
+    // An explicit blank (Start Blank, a template link) opens with its start closed (close-start-for-blank.ts).
     if (explicitBlank.current) closeStartForBlank(tabId, templateKind);
     // A mode's blank in the cloud: the template picked later on its start screen may move it to that template's
     // default folder (docs/specs/013-workspace/default-folders.md "A template picked after creation").
@@ -379,7 +307,7 @@ export default function NewDocumentPage() {
     track('Document', 'Created', offline ? 'Offline' : 'Cloud');
     track('Theme', 'Changed', themeTelemetryLabel(themeId));
     if (templateKind) track('Template', 'Used', titleCaseType(templateKind));
-    // A whiteboard tab born from the wizard (docs/specs/023-draw-mode/draw-mode.md "Telemetry").
+    // A whiteboard tab born on /new (docs/specs/023-draw-mode/draw-mode.md "Telemetry").
     if (templateKind === 'whiteboard') track('Draw', 'Created', 'Template');
     cta.trackCreated();
     // Created straight into a team library: the same Team·Added·Document an Explorer move into a
@@ -395,46 +323,32 @@ export default function NewDocumentPage() {
   };
 
   // Every create from /new goes where new documents go by default (docs/specs/007-editor/new-document-route.md
-  // "One-step wizard"): This Browser for a guest, livediagram for a signed-in person or anyone with a /new?folder= /
+  // "No welcome step"): This Browser for a guest, livediagram for a signed-in person or anyone with a /new?folder= /
   // ?team= context (docs/specs/006-document/save-locations.md), and that context when there is one;
   // without one it carries no placement, so a default folder may answer (docs/specs/013-workspace/default-folders.md
-  // "Precedence"). `blank` opens it with its start closed (Skip, Start Blank, a blank's link). The ref holds a second
-  // choice off while the create runs.
-  const [preparing, setPreparing] = useState(false);
-  const creating = useRef(false);
-  const createByDefault = async (kind: TemplateKind, blank: boolean) => {
-    if (creating.current || submitting) return;
-    creating.current = true;
-    setPreparing(true);
+  // "Precedence"). `startClosed` opens it with its start closed (Start Blank, a template link).
+  const createByDefault = async (kind: TemplateKind, startClosed: boolean) => {
     const placement = placementParamsFromSearch(window.location.search);
     const placed = !!(placement.folderId || placement.teamId);
-    try {
-      const saveLocation = await resolveSaveLocation(placed, resolveSelf, chosenLocation);
-      explicitBlank.current = blank;
-      await commitNewDocument(kind, { saveLocation, ...placement, placementChosen: placed });
-    } finally {
-      creating.current = false;
-      setPreparing(false);
-    }
+    const saveLocation = await resolveSaveLocation(placed, resolveSelf, null);
+    explicitBlank.current = startClosed;
+    await commitNewDocument(kind, { saveLocation, ...placement, placementChosen: placed });
   };
 
-  // Start Blank fast path (docs/specs/007-editor/new-document-route.md): fire the Skip-defaults create on mount.
-  // commitNewDocument waits out the identity bootstrap itself (resolveSelf),
-  // so firing immediately is safe. The ref makes it once-only under Strict
-  // Mode's double-invoked effects.
-  const bypassFired = useRef(false);
-  const fireBypass = useEffectEvent((kind: TemplateKind) => {
-    // Wizard-bypass adoption signal (docs/specs/017-telemetry/telemetry.md): a fixed preset per entry
-    // point, never user content. (The template itself is reported by the
-    // usual Document / Created event the commit fires.)
-    track('UI', 'Used', kind === 'blank' ? 'JustDraw' : 'TemplateLink');
-    void createByDefault(kind, true);
+  // Create on arrival. commitNewDocument waits out the identity bootstrap itself (resolveSelf), so firing at once is
+  // safe. The ref makes it once-only under Strict Mode's double-invoked effects.
+  const fired = useRef(false);
+  const fire = useEffectEvent((next: NonNullable<typeof plan>) => {
+    // Link adoption (docs/specs/017-telemetry/telemetry.md): a fixed preset per entry point, never user content.
+    // (The template itself is reported by the usual Document / Created event the commit fires.)
+    if (next.link) track('UI', 'Used', next.link === 'blank' ? 'JustDraw' : 'TemplateLink');
+    void createByDefault(next.kind, next.startClosed);
   });
   useEffect(() => {
-    if (!bypassKind || bypassFired.current) return;
-    bypassFired.current = true;
-    fireBypass(bypassKind);
-  }, [bypassKind]);
+    if (!plan || fired.current) return;
+    fired.current = true;
+    fire(plan);
+  }, [plan]);
 
   // Keyed on the id so a second handoff (not reachable today) would remount a fresh editor.
   if (openedId) return <EditorPage key={openedId} />;
@@ -458,7 +372,7 @@ export default function NewDocumentPage() {
             retryLabel={createError.actionLabel}
             onRetry={() => {
               if (createError.action === 'choose') {
-                // The refused placement would be refused again: reopen the wizard without it.
+                // The refused placement would be refused again: reopen /new without it.
                 window.location.assign(choosePlacementAgainUrl(window.location.search));
                 return;
               }
@@ -472,64 +386,8 @@ export default function NewDocumentPage() {
     );
   }
 
-  // A bypass never shows the wizard: the opening screen, at its "creating" stage, holds the screen
-  // from mount to the handoff (docs/specs/007-editor/new-document-route.md). The editor's own load
-  // renders the same screen, so create → open reads as one moment. Create failures fall through to
-  // the retryable error card branch before this one.
-  if (bypassKind) return <DocumentLoading stage="creating" />;
-
-  return (
-    <div className="flex h-dvh flex-col">
-      <EditorHeader
-        documentName="New canvas"
-        hideTitle
-        showShare={false}
-        shareable={false}
-        onOpenShare={() => {}}
-        onRename={() => {}}
-      />
-      <main className="relative flex-1 overflow-hidden bg-slate-50 dark:bg-slate-950">
-        {/* Soft animated lines give the otherwise-empty backdrop life
-            behind the wizard card. Decorative + reduced-motion aware. */}
-        <AnimatedLinesBackdrop />
-        {/* No identity spinner: the wizard is static mode data, so it renders immediately; identity resolves in the
-            background, and a create waits for it only when it must (resolveSelf). */}
-        {/* display:contents so the guard wrapper adds no box of its own;
-            visibility inherits to the wizard card. */}
-        <div data-wizard-only className="contents">
-          <NewDocumentWizard
-            busy={submitting || preparing}
-            initialMode={presetMode}
-            // A mode chosen after a Start Blank link (`?start=blank`) opens its blank with the start closed.
-            onCreate={(kind) =>
-              void createByDefault(kind, wizardStartsBlank(window.location.search))
-            }
-            onSkip={() => void createByDefault('blank', true)}
-            onOpenExisting={() => window.location.assign('/explorer/recent')}
-            // Escape backs out to the page that opened /new, creating nothing
-            // (docs/specs/007-editor/new-document-route.md "Escape backs out").
-            onBackOut={backOut}
-            saveSwitch={
-              hydratedPage && !placedByUrl ? (
-                <NewSaveSwitch
-                  chosen={chosenLocation}
-                  signedIn={signedIn}
-                  onChoose={setChosenLocation}
-                />
-              ) : undefined
-            }
-          />
-        </div>
-        {/* The right rail beside the centred wizard (desktop-only, xl+):
-            returning users get "Jump Back In" (docs/specs/007-editor/new-document-route.md, hidden with no
-            documents yet). */}
-        <div
-          data-wizard-only
-          className="pointer-events-none absolute inset-y-0 right-4 z-10 hidden items-center xl:flex 2xl:right-10"
-        >
-          <RecentDocumentsCard ownerId={self.id === 'pending' ? null : self.id} />
-        </div>
-      </main>
-    </div>
-  );
+  // The opening screen, at its "creating" stage, holds the screen from first paint (the prerender too) to the
+  // handoff (docs/specs/007-editor/new-document-route.md). The editor's own load renders the same screen, so
+  // create → open reads as one moment. Create failures fall through to the retryable error card above.
+  return <DocumentLoading stage="creating" />;
 }

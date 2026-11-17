@@ -42,10 +42,10 @@ describe('LayersThemeStrip', () => {
         onOpenTheme={() => {}}
       />,
     );
-    const strip = screen.getByRole('button', { name: 'Tidy Up' }).closest('[data-dock-button]')!;
+    const strip = screen.getByRole('button', { name: 'Tidy' }).closest('[data-dock-button]')!;
     const names = [...strip.querySelectorAll('button')].map((b) => b.getAttribute('aria-label'));
-    expect(names).toEqual(['Tidy Up', 'Open Layers', 'Theme and canvas']);
-    const tidy = screen.getByRole('button', { name: 'Tidy Up' });
+    expect(names).toEqual(['Tidy', 'Open Layers', 'Theme and canvas']);
+    const tidy = screen.getByRole('button', { name: 'Tidy' });
     expect(tidy.getAttribute('aria-expanded')).toBe('false');
     fireEvent.click(tidy);
     expect(onTidy).toHaveBeenCalledWith(tidy);
@@ -53,8 +53,6 @@ describe('LayersThemeStrip', () => {
 
   it('shows Tidy Up pressed while its popover is open', () => {
     render(<LayersThemeStrip tidyUp={{ open: true, onToggle: () => {} }} />);
-    expect(screen.getByRole('button', { name: 'Tidy Up' }).getAttribute('aria-expanded')).toBe(
-      'true',
-    );
+    expect(screen.getByRole('button', { name: 'Tidy' }).getAttribute('aria-expanded')).toBe('true');
   });
 });

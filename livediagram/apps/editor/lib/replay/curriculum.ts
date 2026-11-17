@@ -53,7 +53,7 @@ export const CURRICULUM: Record<ReplayMode, readonly TopicCard[]> = {
     {
       id: 'diagram-tidy',
       mode: 'diagram',
-      title: 'Tidy Up',
+      title: 'Tidy',
       line: 'Lay a messy flow out neatly in one press.',
       telemetry: 'Tidy',
       seconds: 10,

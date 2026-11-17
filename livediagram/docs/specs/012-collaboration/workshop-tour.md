@@ -4,19 +4,19 @@
 
 A short, optional guided tour of [Workshop mode](workshop-mode.md), started from the footer's **Start Workshop Tour**
 button. It is the [Diagram tour](../007-editor/editor-tour.md)'s sibling, as the
-[Draw tour](../023-draw-mode/draw-tour.md) is: the same Start Tour button, anchored step cards, glide, dimming ring,
+[Draw tour](../023-draw-mode/draw-tour.md) is: the same Get Started button, anchored step cards, glide, dimming ring,
 Skip, Back and closing card, driven by the same engine. Where this spec is silent, the Diagram tour's rules hold.
 
 ## Domain language
 
 | Term              | Means                                                                                      |
 | ----------------- | ------------------------------------------------------------------------------------------ |
-| **Workshop tour** | This tour. On the Start Tour button: **Start Workshop Tour**                               |
+| **Workshop tour** | This tour. On the Get Started button: **Start Workshop Tour**                              |
 | **Diagram tour**  | The Diagram mode tour ("Start Diagram Tour"), [Diagram tour](../007-editor/editor-tour.md) |
 
 ## Where it appears
 
-- **On the Start Tour button, in Workshop mode.** The footer's button, left of Search
+- **On the Get Started button, in Workshop mode.** The footer's button, left of Search
   ([Diagram tour](../007-editor/editor-tour.md) "Where it appears"), reads **Start Workshop Tour** while the open tab
   is in Workshop on a tab the person may edit, unless something more specific is on offer (a selected element's own
   tour). The editor has to be usable, as for the Diagram tour (hydrated, no welcome overlay, no start on screen, not
@@ -79,7 +79,7 @@ not theirs to use.
 
 The Diagram tour's funnel, with its own tokens:
 
-- **Offer**: `UI` · `Opened` · `WorkshopTourOffer` the first time the Start Tour button shows this tour in a page
+- **Offer**: `UI` · `Opened` · `WorkshopTourOffer` the first time the Get Started button shows this tour in a page
   load. Until 25 October 2026 it counted the welcome card showing, and `UI` · `Closed` · `WorkshopTourOffer` counted
   **No**; nothing sends Closed now, and its explanation stays for the history.
 - **Start**: `UI` · `Started` · `WorkshopTour` on a press of the button (or the Settings rerun). (`UI` · `Selected` · `WorkshopTourFromWelcome`, sent when the

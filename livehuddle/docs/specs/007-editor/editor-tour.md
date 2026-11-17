@@ -1,6 +1,6 @@
-# Tours and the Start Tour button
+# Tours and the Get Started button
 
-How every tour in the editor is offered and run: the footer's **Start Tour** button, the engine the tours share, how a
+How every tour in the editor is offered and run: the footer's **Get Started** button, the engine the tours share, how a
 step reads and moves, and the look. The tours themselves are [the Receptionist](../008-canvas/receptionist.md) (who replaced the Avatar tour, Work
 Tracker #58, and offers **Ask Receptionist** on the button), the
 [element tours](element-tours.md) and [Show Me](show-me.md). The Workshop tour left livehuddle (Work Tracker #423,
@@ -10,8 +10,10 @@ livediagram's Diagram tour and Draw tour are not part of livehuddle (cut with Di
 
 ## Where it appears
 
-- **The footer's Start Tour button is the one way in.** Every tour (the Workshop tour, the element tours, the avatar
-  tour) is started from one button in the editor's bottom bar, immediately left of Search:
+**The button reads Get Started** in every app (owner, 2026-11-16), whichever tour it offers: it has no hover card; the tour's own name ("Start Draw Tour", "Watch It Built") is in its accessible name, "Get Started, <tour name>". Icon only on a phone, as before.
+
+- **The footer's Get Started button is the one way in.** Every tour (the Workshop tour, the element tours, the avatar
+  tour) is started from one button in the editor's bottom bar, left of Tools:
   a contained chip with a play glyph in a small accent disc, reading **Start <Name> Tour**, "Start Workshop Tour" for instance (`TourOfferButton`,
   `@liveworkspace/workbench/components/tour`). It is as tall as its neighbours and set in their type, its hover runs
   at `duration-micro`, it has a visible focus ring, and it has light and dark looks. On a phone (below `sm`), and
@@ -19,7 +21,7 @@ livediagram's Diagram tour and Draw tour are not part of livehuddle (cut with Di
   accessible name; it never widens the bar past the screen. A tour never starts, prompts or offers itself on its
   own: no banner, no card, no toolbar beside an element. Offer banners would be something people have to keep turning down.
 - **First of the bar's controls.** The button leads the bar's right-hand cluster, in the same place on a
-  computer, a narrow window and a phone: **Start Tour**, then **Search**, then **Settings** and the appearance
+  computer, a narrow window and a phone: **Get Started**, then **Search**, then **Settings** and the appearance
   switch (`ChromeControls`). So the button comes and goes at the cluster's left edge, by the tabs, without moving
   Search, Settings or the appearance switch.
 - **Which tour it offers.** Each tour's host publishes its tour while the person could take it (`useOfferTour`,
@@ -122,7 +124,7 @@ Card Types, but it covers it".)
   each tour's host owns its offer, its steps and what ending means. A step anchors by `data-tour-id`, or by a
   `selector` resolved when it runs (a Show Me step's Mashup tile), and an anchorless card's `prepare` runs
   too. The last card's words (`TourCardCopy`) are a prop. The engine, the stage, the
-  card, the spotlight, the shield, the tour colours and the Start Tour button live once in
+  card, the spotlight, the shield, the tour colours and the Get Started button live once in
   `@liveworkspace/workbench/components/tour`; each editor keeps only its steps and hosts.
 - The engine drives the **real UI**, not screenshots: steps have a `prepare` phase that opens the actual panel
   / dropdown / menu (clicking the same triggers a user would, or calling editor-context handlers like

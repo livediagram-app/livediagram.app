@@ -72,16 +72,16 @@ describe('Start a Workshop', () => {
       'recommended',
       'ideas',
       'decisions',
+      'games',
       'goals',
+      'learning',
       'meetings',
-      'people',
       'planning',
       'product',
-      'games',
       'retros',
       'software',
       'strategy',
-      'learning',
+      'people',
     ]);
     const group = (id: string) => TEMPLATE_STARTS.workshop.groups.find((g) => g.id === id)!.kinds;
     // A cross-listed template shows in each of its categories.
@@ -113,12 +113,12 @@ describe('Start Drawing', () => {
       'recommended',
       'ideas',
       'decisions',
+      'games',
+      'learning',
       'meetings',
       'product',
-      'games',
       'retros',
       'strategy',
-      'learning',
     ]);
   });
 });

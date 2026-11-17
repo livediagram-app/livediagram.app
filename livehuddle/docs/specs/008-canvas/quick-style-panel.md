@@ -82,7 +82,7 @@ moment; placed before the Map existed, the panel sat over its header.
 
 ### Turning it off
 
-**Settings › Panels › Quick Style › Enable Quick Style Panel** (`quickStylePanelEnabled`,
+**Settings › Panels › Quick Appearance › Enable Quick Style Panel** (`quickStylePanelEnabled`,
 [User preferences](../007-editor/user-preferences.md)) stops the panel appearing. Style memory keeps
 working from the context menu.
 

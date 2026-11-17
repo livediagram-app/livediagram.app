@@ -11,6 +11,7 @@
 // (NoteFormatToolbar) — they host the same block-type picker (docs/specs/009-elements/block-type-picker.md) and a
 // second copy of this would drift on the first behaviour fix.
 
+import { useButtonLabels } from '@/components/canvas/SelectionPopoverButton';
 import { useEffect, useRef, useState } from 'react';
 import { ChevronDownIcon, HoverCard, useClickOutside } from '@livediagram/ui';
 import { TOOLBAR_CONTROL_REST } from '@/components/chrome/toolbar-surface';
@@ -68,6 +69,7 @@ export function ToolbarDropdown({
     document.addEventListener('scroll', close, { capture: true, passive: true });
     return () => document.removeEventListener('scroll', close, { capture: true });
   }, [open, menuAnchor]);
+  const labelled = useButtonLabels();
   return (
     <div className={menuAnchor === 'self' ? 'relative' : undefined} ref={rootRef}>
       <HoverCard title={label} description={description}>
@@ -85,6 +87,7 @@ export function ToolbarDropdown({
           }`}
         >
           {trigger}
+          {labelled ? <span className="pl-1 text-xs font-medium">{label}</span> : null}
           {hideChevron ? null : CHEVRON}
         </button>
       </HoverCard>

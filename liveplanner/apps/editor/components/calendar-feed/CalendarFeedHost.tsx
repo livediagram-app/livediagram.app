@@ -7,7 +7,13 @@ import dynamic from 'next/dynamic';
 import { useMemo, useState, type ReactNode } from 'react';
 import { track } from '@/lib/telemetry';
 import { CalendarFeedDoorContext, type CalendarFeedDoor } from './CalendarFeedContext';
-import type { CalendarFeedScope } from './calendar-feed-gate';
+import { CALENDAR_FEED_PARAM, type CalendarFeedScope } from './calendar-feed-gate';
+import {
+  ToolGateDialog,
+  toolGateBadges,
+  useAskedOpen,
+  type ToolGate,
+} from '@/components/dialogs/tool-gate';
 import type { CalendarFeedTarget } from './CalendarFeedDialog';
 
 const CalendarFeedDialog = dynamic(
@@ -17,13 +23,18 @@ const CalendarFeedDialog = dynamic(
 
 export function CalendarFeedHost({
   scope,
+  gate = null,
   children,
 }: {
   // Null for anyone who may not have a feed (calendarFeedScopeFor).
   scope: CalendarFeedScope | null;
+  // Set for someone who would have one but must sign in or sync first (calendarFeedGateFor): the door opens it.
+  gate?: ToolGate | null;
   children: ReactNode;
 }) {
-  const [open, setOpen] = useState(false);
+  // Back from a guest's sign-in, asked open: the gate or the feed opens on arrival.
+  const asked = useAskedOpen(CALENDAR_FEED_PARAM);
+  const [open, setOpen] = useState(asked);
   const { ownerId, projectId } = scope ?? {};
   const stable = useMemo<CalendarFeedScope | null>(
     () => (ownerId && projectId ? { ownerId, projectId } : null),
@@ -34,23 +45,41 @@ export function CalendarFeedHost({
     () => (stable ? { kind: 'plan', scope: stable } : null),
     [stable],
   );
-  const door = useMemo<CalendarFeedDoor | null>(
-    () =>
-      stable
-        ? {
-            open: () => {
-              setOpen(true);
-              track('UI', 'Opened', 'CalendarFeed');
-            },
-          }
-        : null,
-    [stable],
-  );
+  const gateKind = gate?.kind ?? null;
+  const door = useMemo<CalendarFeedDoor | null>(() => {
+    if (stable)
+      return {
+        open: () => {
+          setOpen(true);
+          track('UI', 'Opened', 'CalendarFeed');
+        },
+      };
+    if (!gateKind) return null;
+    // Through the gate: once synced (or signed in) the scope arrives and the feed's dialog opens in its place.
+    return {
+      badges: toolGateBadges(gate),
+      open: () => {
+        setOpen(true);
+        track('UI', 'Opened', gateKind === 'sync' ? 'CalendarFeedOffline' : 'CalendarFeedSignIn');
+      },
+    };
+  }, [stable, gateKind, gate]);
   return (
     <CalendarFeedDoorContext.Provider value={door}>
       {children}
       {target && open ? (
         <CalendarFeedDialog target={target} onClose={() => setOpen(false)} />
+      ) : null}
+      {gate && !target && open ? (
+        <ToolGateDialog
+          gate={gate}
+          title="Subscribe to Calendar"
+          promptTitle="Calendars Read It From Our Servers"
+          syncCopy="Your calendar fetches the plan's dates from our servers by a private link, so the plan needs saving to your account."
+          signInCopy="A calendar link is your own, made for your account, so it needs you signed in. You come back here with Subscribe to Calendar open."
+          param={CALENDAR_FEED_PARAM}
+          onClose={() => setOpen(false)}
+        />
       ) : null}
     </CalendarFeedDoorContext.Provider>
   );

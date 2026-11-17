@@ -81,7 +81,7 @@ test.describe('Retired power user keys', () => {
 
     // The default chrome: the role pill in the title bar, labelled status bar controls, a cycling Appearance control.
     await expect(header(page).locator('[data-role-pill]')).toBeVisible();
-    await expect(tabBar(page).getByText('Search', { exact: true })).toBeVisible();
+    await expect(tabBar(page).getByText('Tools', { exact: true })).toBeVisible();
     await expect(tabBar(page).getByRole('button', { name: /^Appearance: / })).toHaveAccessibleName(
       'Appearance: System. Switch to Light.',
     );

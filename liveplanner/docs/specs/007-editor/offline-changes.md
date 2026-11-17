@@ -147,3 +147,5 @@ A write the role may not make is never queued: offline it fails as it would onli
   at once offline with their own toast.
 - Card types, board settings and tab changes are not item or sheet writes: they are the tab autosave's or the type
   catalogue's own saves, which already retry.
+
+The Needs Review card is a modal in the middle of the screen over a dim scrim (owner, 2026-11-16): it never pushes the board down, and it waits for Keep Cards or Remove (the scrim does not close it).

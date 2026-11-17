@@ -3,8 +3,9 @@
 An empty tab starts from a choice, not a blank page and a modal. Diagram, Draw and Workshop tabs each offer their
 own: **Start Diagramming**, **Start Drawing** and **Start a Workshop**. Each is the same wide
 panel in the middle of the canvas, its rail of groups beside a grid of the mode's templates, so the templates sit
-where the work begins instead of in a step before it. The New Canvas wizard asks only for a mode
-([New document route](new-document-route.md) "Choosing a mode"), and the document opens on that mode's start.
+where the work begins instead of in a step before it. New Canvas asks nothing
+([New document route](new-document-route.md) "No welcome step"): the document opens on a start, which is where the
+mode is chosen.
 
 ## The panel
 
@@ -75,9 +76,9 @@ first**, less **Timeline**, which is left to its group. The groups (`components/
 `TEMPLATE_STARTS`) are the catalogue's categories, the same in every mode ([Canvas and
 palette](../008-canvas/canvas-and-palette.md) "Template categories"): in the catalogue's order, alphabetical by label,
 each holding the mode's templates listed in it (primary or cross-listed), a category with none of the mode's left out.
-Diagram's rail reads Brainstorming, Decisions, Goals & Metrics and on; Draw's Brainstorming, Decisions, Meetings &
-Workshops, Product & UX, Quizzes & Games, Retrospectives, Strategy and Teaching & Learning; Workshop's runs from
-Brainstorming to Teaching & Learning. The categories are grouped by use case, so they already say which session a Workshop
+Diagram's rail reads Brainstorming, Decisions, Goals and on; Draw's Brainstorming, Decisions, Meetings &
+Workshops, Product, Games, Retrospectives, Strategy and Learning; Workshop's runs from
+Brainstorming to Learning. The categories are grouped by use case, so they already say which session a Workshop
 template runs and what a Draw template is for; a mode no longer keeps groups of its own, and a new template joins
 every start's rail with no change here.
 
@@ -123,8 +124,8 @@ Participant at what they may add.
 A new tab opens on its mode's start (`newTabOpening` in `apps/editor/lib/new-tab-seed.ts`).
 
 An **explicit blank** opens with its start already closed (`closeStartForBlank`): a document made by Skip, Start
-Blank's `/new?blank=1`, a blank's `/new?template=` link, or a mode chosen after the public sites' Start Blank
-(`/new?start=blank`, [New document route](new-document-route.md) "Start Blank after a mode").
+Blank's `/new?blank=1`, a blank's `/new?template=` link, or the public sites' Start Blank
+(`/new?start=blank`, [New document route](new-document-route.md) "No welcome step").
 
 ## Bringing it back
 
@@ -196,7 +197,7 @@ picked after creation"). The move is `useTemplatePickMove` (`apps/editor/compone
 ## The tours wait
 
 A tour never lands over a start: while one is on screen the Diagram, Workshop and Draw tours are not on
-offer, so the footer's Start Tour button does not show them, and they come onto it once a template is picked or the
+offer, so the footer's Get Started button does not show them, and they come onto it once a template is picked or the
 start closed (`start-panel-open.ts`, `useStartPanelOpen`).
 
 ## Search handed over

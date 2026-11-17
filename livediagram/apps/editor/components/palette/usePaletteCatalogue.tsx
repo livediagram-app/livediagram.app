@@ -3,6 +3,7 @@ import {
   type EmbedProvider,
   type EventStormingNoteKind,
 } from '@livediagram/document';
+import { libraryLast } from '@liveworkspace/workbench/components/palette/library-last';
 import { useEffect, useState } from 'react';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import type { PaletteTileActions } from '@/components/palette/PaletteTileGrid';
@@ -221,11 +222,15 @@ export function usePaletteCatalogue({
   // shapes shows only when the owner has a shape to place (docs/specs/013-workspace/shape-libraries.md);
   // Event Storming only on an ES board (docs/specs/021-event-storming/event-storming.md).
   const hasLibraryShapes = !!sharedLibrary || libraries.some((l) => l.items.length > 0);
-  const categories = participant
-    ? participantPaletteCategories(editorMode, !!esBoard)
-    : paletteCategoriesFor(editorMode, { esBoard: !!esBoard }).filter(
-        (c) => hasLibraryShapes || c.id !== 'my-shapes',
-      );
+  // The Library (here `my-shapes`) always last (library-last.ts).
+  const categories = libraryLast(
+    participant
+      ? participantPaletteCategories(editorMode, !!esBoard)
+      : paletteCategoriesFor(editorMode, { esBoard: !!esBoard }).filter(
+          (c) => hasLibraryShapes || c.id !== 'my-shapes',
+        ),
+    'my-shapes',
+  );
   const tabs = paletteCategoryTabs({
     categories,
     pendingDraw,

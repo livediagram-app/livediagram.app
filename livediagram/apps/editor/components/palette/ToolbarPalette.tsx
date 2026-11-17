@@ -40,6 +40,11 @@ import {
   tileItems,
   useStripOpeners,
 } from './strip-rail-items';
+import {
+  TOOLBAR_LIBRARY_SELECTOR,
+  ToolbarLibraryButton,
+} from '@liveworkspace/workbench/components/palette/ToolbarLibraryButton';
+import { LibraryIcon } from '@liveworkspace/workbench/components/library/library-icons';
 import { TOOLBAR_SEARCH_SELECTOR, ToolbarSearchButton, ToolbarSearchPanel } from './ToolbarSearch';
 import { BrowseMemoryContext, useBrowseMemory } from './PaletteCategoryBrowser';
 import { CATEGORY_BAR_MODES } from './category-flyout-groups';
@@ -98,28 +103,45 @@ export function ToolbarPalette(props: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
   const more = useStripPopover(rootRef, '[data-toolbar-more], [data-toolbar-more-button]');
   const search = useStripPopover(rootRef, TOOLBAR_SEARCH_SELECTOR);
+  // The Library, icon only beside Search, not a category (liveworkspace/docs/specs/006-media/libraries.md).
+  const library = useStripPopover(rootRef, TOOLBAR_LIBRARY_SELECTOR);
   // The category bar and its flyout (CategoryBar).
   const bar = useCategoryBar(rootRef);
   // Icons, Stickers and Tech reopen on the group they were left on, for the page load (BrowseMemory).
   const browseMemory = useBrowseMemory();
   const moreOpen = more.open;
   // The template start steps aside while a popover hangs from the strip (palette-popover-open).
-  const popoverOpen = bar.popover.open || more.open || search.open;
+  const popoverOpen = bar.popover.open || more.open || search.open || library.open;
   useEffect(() => {
     setPalettePopoverOpen(popoverOpen);
     return () => setPalettePopoverOpen(false);
   }, [popoverOpen]);
   const setMoreOpen = more.setOpen;
-  const { tabs, tileActions, canvasToolOptions, onCanvasToolChange, editorMode } =
-    usePaletteCatalogue({
-      ...props,
-      // A tile used from the More or Search popover closes it, so the canvas is clear to draw on.
-      onTileUsed: () => {
-        more.setOpen(false);
-        search.setOpen(false);
-        bar.popover.setOpen(false);
-      },
-    });
+  const {
+    tabs: catalogueTabs,
+    tileActions,
+    canvasToolOptions,
+    onCanvasToolChange,
+    editorMode,
+  } = usePaletteCatalogue({
+    ...props,
+    // A tile used from the More or Search popover closes it, so the canvas is clear to draw on.
+    onTileUsed: () => {
+      more.setOpen(false);
+      search.setOpen(false);
+      library.setOpen(false);
+      bar.popover.setOpen(false);
+    },
+  });
+  // The Library leaves the categories for its own button beside Search.
+  const libraryTab = catalogueTabs.find((t) => t.id === 'my-shapes');
+  const tabs = useMemo(() => catalogueTabs.filter((t) => t.id !== 'my-shapes'), [catalogueTabs]);
+  const toggleLibrary = (button: HTMLElement) => {
+    if (library.open) return library.setOpen(false);
+    search.setOpen(false);
+    bar.popover.setOpen(false);
+    library.openFrom(button);
+  };
   // The landing rule (palette-layouts, docs/specs/021-event-storming/event-storming.md): the
   // mode's Popular, or the notation on an event-storming board. A Participant lands on Participate.
   // Diagram shows its categories on the strip, each opening a flyout of its tiles, rather than one category's tiles
@@ -453,6 +475,16 @@ export function ToolbarPalette(props: Props) {
                   {esBoard || participant ? null : (
                     <>
                       <Divider />
+                      {libraryTab ? (
+                        <ToolbarLibraryButton
+                          open={library.open}
+                          onToggle={toggleLibrary}
+                          // The Library's own glyph, as in every app (libraries.md), not the My shapes tab's, whose ink sits
+                          // a pixel low in an icon-only square.
+                          icon={<LibraryIcon />}
+                          description={libraryTab.description}
+                        />
+                      ) : null}
                       <div ref={searchButtonRef} className="flex">
                         <ToolbarSearchButton open={search.open} onToggle={toggleSearch} />
                       </div>
@@ -512,6 +544,17 @@ export function ToolbarPalette(props: Props) {
                   pendingDraw={pendingDraw}
                   tabElements={props.tabElements ?? []}
                 />
+              </StripPopover>
+            ) : null}
+            {library.open && libraryTab ? (
+              <StripPopover
+                right={library.right}
+                isMobile={isMobile}
+                scale={scale}
+                label="Library"
+                dataAttr="data-toolbar-library"
+              >
+                <div className="px-2 py-2.5">{libraryTab.content}</div>
               </StripPopover>
             ) : null}
           </PaletteTintProvider>

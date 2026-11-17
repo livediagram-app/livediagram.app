@@ -207,9 +207,10 @@ describe('the keyboard', () => {
     fireEvent.keyDown(button('Write'), { key: 'ArrowLeft' });
     fireEvent.keyDown(button('Shapes'), { key: 'ArrowLeft' });
     // Wraps round to the last.
-    expect(document.activeElement).toBe(button('Media'));
-    fireEvent.keyDown(button('Media'), { key: 'ArrowDown' });
-    expect(heading()).toBe('Media');
+    expect(document.activeElement).toBe(button('Tech'));
+    button('Layout').focus();
+    fireEvent.keyDown(button('Layout'), { key: 'ArrowDown' });
+    expect(heading()).toBe('Layout');
     expect(document.activeElement?.hasAttribute('data-flyout-item')).toBe(true);
   });
 

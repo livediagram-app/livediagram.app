@@ -81,13 +81,11 @@ export function ZoomControls({
       className="pointer-events-auto flex animate-fade-in items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
     >
       {pinchOnly ? null : (
-        <HoverCard title="Zoom out" description={why(copy.out)}>
-          <IconButton onClick={onZoomOut} label="Zoom out" disabled={zoomOff}>
-            <Glyph size={14} units={14}>
-              <line x1="3" y1="7" x2="11" y2="7" />
-            </Glyph>
-          </IconButton>
-        </HoverCard>
+        <IconButton onClick={onZoomOut} label="Zoom out" disabled={zoomOff}>
+          <Glyph size={14} units={14}>
+            <line x1="3" y1="7" x2="11" y2="7" />
+          </Glyph>
+        </IconButton>
       )}
       <ZoomMenu
         zoom={zoom}
@@ -97,14 +95,12 @@ export function ZoomControls({
         {...(zoomOff ? { offReason: ZOOM_OFF_REASON } : {})}
       />
       {pinchOnly ? null : (
-        <HoverCard title="Zoom in" description={why(copy.in)}>
-          <IconButton onClick={onZoomIn} label="Zoom in" disabled={zoomOff}>
-            <Glyph size={14} units={14}>
-              <line x1="3" y1="7" x2="11" y2="7" />
-              <line x1="7" y1="3" x2="7" y2="11" />
-            </Glyph>
-          </IconButton>
-        </HoverCard>
+        <IconButton onClick={onZoomIn} label="Zoom in" disabled={zoomOff}>
+          <Glyph size={14} units={14}>
+            <line x1="3" y1="7" x2="11" y2="7" />
+            <line x1="7" y1="3" x2="7" y2="11" />
+          </Glyph>
+        </IconButton>
       )}
       {/* Mobile-only Fit: below `sm` the percentage button (whose click
           is Fit on desktop) is hidden, and hover popovers don't exist on

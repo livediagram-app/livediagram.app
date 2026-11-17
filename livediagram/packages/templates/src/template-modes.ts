@@ -29,7 +29,7 @@ const TEMPLATE_MODES: Partial<Record<TemplateKind, EditorMode>> = {
   'workshop-board': 'workshop',
   'crazy-eights': 'workshop',
   'meeting-agenda': 'workshop',
-  // Quizzes & Games (docs/specs/012-collaboration/quiz-and-game-templates.md): run on quiz cards, pickers and polls.
+  // Games (docs/specs/012-collaboration/quiz-and-game-templates.md): run on quiz cards, pickers and polls.
   'pub-quiz': 'workshop',
   'icebreaker-questions': 'workshop',
   'two-truths-and-a-lie': 'workshop',

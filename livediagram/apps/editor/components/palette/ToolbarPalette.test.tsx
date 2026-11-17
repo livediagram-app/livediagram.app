@@ -114,7 +114,6 @@ describe('ToolbarPalette', () => {
       'Layout',
       'Icons',
       'Tech',
-      'Media',
     ]);
     // No tiles of their own on the strip: they are in the flyouts.
     expect(within(strip()).queryByRole('button', { name: 'Add Square' })).toBeNull();
@@ -189,7 +188,6 @@ describe('ToolbarPalette', () => {
       'Ask',
       'Session',
       'Icons',
-      'Media',
       'Data',
     ]);
     // The other Collaborate categories are Session's groups, not buttons of their own.

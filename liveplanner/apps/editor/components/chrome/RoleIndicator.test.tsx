@@ -1,8 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { setRoomSuggestOnly, setSelfSuggesting } from '@liveworkspace/suggestions/room-signal';
-import { RolePill, SUGGESTING_HINT, roleOwnerLabel } from './RoleIndicator';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { RolePill, roleOwnerLabel } from './RoleIndicator';
 
 // The role pill (docs/specs/007-editor/editor-app.md#role-pill).
 
@@ -64,40 +63,13 @@ describe('RolePill', () => {
   });
 });
 
-// liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Suggest Only" and "Suggesting".
-describe('RolePill while suggesting', () => {
-  afterEach(() => {
-    act(() => {
-      setRoomSuggestOnly(false);
-      setSelfSuggesting(false);
-    });
-  });
-
-  const participantTone = () => {
-    const { unmount } = render(<RolePill role="participate" ownerName={null} isSelf={false} />);
-    const tone = document.querySelector('[data-role-pill]')!.className;
-    unmount();
-    return tone;
-  };
-
-  it('reads Suggesting in the Participant tone on Suggest Only, though its gestures run as an Editor', () => {
-    const tone = participantTone();
-    act(() => setRoomSuggestOnly(true));
-    render(<RolePill role="edit" ownerName="Ada" isSelf={false} />);
-    const pill = document.querySelector('[data-role-pill]')!;
-    expect(pill.textContent).toContain('Suggesting');
-    expect(pill.textContent).not.toContain('Editing');
-    expect(pill.hasAttribute('data-suggesting')).toBe(true);
-    expect(pill.className).toBe(tone);
-    expect(pill.textContent).toContain(SUGGESTING_HINT);
-  });
-
-  it('reads Suggesting for an Editor in Suggesting mode, still a toggle, and Editing again after', () => {
-    act(() => setSelfSuggesting(true));
+// Suggest Changes is retired in liveplanner (docs/specs/012-collaboration/canvas-suggestions.md): the pill never reads
+// Suggesting.
+describe('RolePill without Suggesting', () => {
+  it('reads Editing for an Editor, with no suggesting mark', () => {
     render(<RolePill role="edit" ownerName="Ada" isSelf onToggle={vi.fn()} />);
-    const pill = screen.getByRole('button', { name: 'Suggesting. Owned by you' });
-    expect(pill.hasAttribute('data-suggesting')).toBe(true);
-    act(() => setSelfSuggesting(false));
-    expect(screen.getByRole('button', { name: 'Editing. Owned by you' })).toBeTruthy();
+    const pill = screen.getByRole('button', { name: 'Editing. Owned by you' });
+    expect(pill.hasAttribute('data-suggesting')).toBe(false);
+    expect(pill.textContent).not.toContain('Suggesting');
   });
 });

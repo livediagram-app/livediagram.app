@@ -273,7 +273,7 @@ a component's nodes are positioned:
 
 ## The Tidy Up button
 
-`LayersThemeStrip` draws a **Tidy Up** button (a broom), left of Layers, only when it is given `tidyUp`, and
+`LayersThemeStrip` draws a **Tidy** button (a broom), left of Layers, only when it is given `tidyUp`, and
 `CanvasChrome` gives it none, so liveplanner shows no button and no popover. What the editor keeps is the press's two
 halves: the verdict (`assessCleanup`, `verdictNotice`), which refuses a tidier that would not help with an info notice
 naming it and commits nothing, and the hover preview below.
@@ -311,3 +311,5 @@ Force-directed ("organic") layouts, laying shapes out inside their lanes (a lane
 rigid block, so lane diagrams are offered Auto-align), routing graph input's arrows around
 obstacles (the editor's Tidy Up does), and any LLM
 involvement (Auto Layout is deterministic and offline-safe). See issue #12 for the fuller rationale and open questions.
+
+The button and its popover read **Tidy** (owner, 2026-11-16; was Tidy Up).

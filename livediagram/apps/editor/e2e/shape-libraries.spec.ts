@@ -114,7 +114,8 @@ test('a draw.io library becomes a shape library, placed from My shapes', async (
 
   // Place both shapes from the palette's Library (My shapes) flyout: one box, then two boxes and their connection.
   await startBlankDocument(page);
-  const libraryCategory = page.locator('[data-category-bar-button][aria-label="Library"]');
+  // The strip's own Library button (Library sits beside Search, not among the categories).
+  const libraryCategory = page.locator('[data-toolbar-library-button]');
   await libraryCategory.click();
   await page.getByRole('button', { name: 'Insert Service from Personal' }).click();
   await expect.poll(() => storedElements(page), { timeout: 15_000 }).toBe(1);
