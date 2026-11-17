@@ -145,7 +145,8 @@ pointing at the button that opened it, on the edge facing the dock, over its but
      - a **search field**, **focused as soon as the flyout opens**, hover
        included, so typing at once finds any shape of the palette's shape
        catalogue by name or keyword (flowchart, basic, block and every other
-       shape kind the palette offers; not icons, templates or components).
+       shape kind the palette offers; not icons, templates, components or
+       the C4 model's elements, whose colours plain ink would erase).
        Opening it on hover is the one place hover takes the keyboard focus:
        while the field holds it, letters type there rather than picking dock
        tools, and Escape or the flyout closing gives the focus back to the
