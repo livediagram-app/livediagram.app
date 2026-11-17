@@ -100,8 +100,10 @@ export function ToolbarExplorerButton({
     <MenuCardLogo
       scale={scale}
       card={card}
-      // On a maximised board's header band it sits flush on the header, as this card does.
-      logoClassName={`${BAND_TINT} ${BAND_BLEND} ${BAND_FLUSH}`}
+      // On a maximised board's header band it sits flush on the header, as this card does, so with no frames to set
+      // the two apart, the gap and its right inset give way: the hamburger stands as near the logo as one control to the
+      // next.
+      logoClassName={`${BAND_TINT} ${BAND_BLEND} ${BAND_FLUSH} [[data-band-blend]_&]:-mr-2 [[data-band-blend]_&]:pr-0`}
       logo={
         <Brand
           href={explorerItemHref(projectId)}
