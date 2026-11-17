@@ -1,6 +1,6 @@
 import { ItemDb, type ItemHeadSync, sharesDueAt, ShareSchedule } from '@liveworkspace/index-app';
+import { tellSourceChanged } from '@liveworkspace/index-app';
 import type { SourceChange } from '@liveworkspace/index-client';
-import { sourceChanged } from './source-changed';
 import { DurableObject } from 'cloudflare:workers';
 import { grantOwnImages } from '../db/image-grants';
 import { ROOM_PING, ROOM_PONG, type AccessLevel } from '@livedesign/api-schema';
@@ -418,9 +418,14 @@ export class DesignRoom extends DurableObject<Env> {
     return joined(this, designId, personId);
   }
 
-  // A Sheet a linked chart reads changed (source-changed.ts): every open session reads it again.
+  // A Sheet a linked chart reads changed (the index's source-changed door, @liveworkspace/index-app
+  // tellSourceChanged): every open session hears the ids and reads it again with its own access.
   async sourceChanged(designId: string, change: SourceChange): Promise<void> {
-    sourceChanged(this, designId, change);
+    tellSourceChanged(
+      { bind: (id) => this.bindDesign(id), broadcast: (frame) => this.broadcast(frame) },
+      designId,
+      change,
+    );
   }
 
   anonymise(designId: string, personId: string): Promise<number> {

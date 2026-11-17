@@ -12,23 +12,8 @@ vi.mock('../design-client', async (importOriginal) => ({
 
 import { handleInternalItems } from '../routes/internal-items';
 import type { Env } from '../types';
-import { sourceChanged } from './source-changed';
 
 const change = { app: 'liveplanner' as const, itemId: 'plan_1', sheetIds: ['sheet0001'] };
-
-describe('sourceChanged', () => {
-  it('binds the room and sends every session the ids', () => {
-    const sent: unknown[] = [];
-    const bound: string[] = [];
-    sourceChanged(
-      { bindDesign: (id) => bound.push(id), broadcast: (p) => sent.push(p) },
-      'design_1',
-      change,
-    );
-    expect(bound).toEqual(['design_1']);
-    expect(sent).toEqual([{ kind: 'source-changed', ...change }]);
-  });
-});
 
 describe('POST /api/internal/items/:id/source-changed', () => {
   const send = (key: string, body: unknown) =>

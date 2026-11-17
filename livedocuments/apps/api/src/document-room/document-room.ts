@@ -7,6 +7,7 @@ import {
   type ExportQuery,
   type ExportResult,
 } from '@liveworkspace/index-app';
+import { tellSourceChanged } from '@liveworkspace/index-app';
 import { DurableObject } from 'cloudflare:workers';
 import { ROOM_PING, ROOM_PONG, type AccessLevel } from '@livedocuments/api-schema';
 import { RoomParticipantWrites } from '../room-participant';
@@ -86,7 +87,6 @@ import {
   closeAllReverted,
 } from './document-room-sockets';
 import { webSocketMessage } from './document-room-frames';
-import { sourceChanged } from './source-changed';
 import type { SourceChange } from '@liveworkspace/index-client';
 import {
   localNamespace,
@@ -420,9 +420,14 @@ export class DocumentRoom extends DurableObject<Env> {
     return revokeCodes(this, documentId, codes, reason);
   }
 
-  // A Sheet a linked chart reads changed (source-changed.ts): every open session reads it again.
+  // A Sheet a linked chart reads changed (the index's source-changed door, @liveworkspace/index-app
+  // tellSourceChanged): every open session hears the ids and reads it again with its own access.
   async sourceChanged(documentId: string, change: SourceChange): Promise<void> {
-    sourceChanged(this, documentId, change);
+    tellSourceChanged(
+      { bind: (id) => this.bindDocument(id), broadcast: (frame) => this.broadcast(frame) },
+      documentId,
+      change,
+    );
   }
 
   joined(documentId: string, personId: string): Promise<void> {

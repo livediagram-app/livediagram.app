@@ -19,7 +19,9 @@ import { SuggestionsContext } from '@liveworkspace/suggestions/react/suggestions
 import { AgentFocusContext } from '@/components/canvas/AgentFocusOverlay';
 import { SelectionStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { SheetLinksHost } from '@liveworkspace/workbench/components/sheet-links/SheetLinkedCharts';
-import { sheetLinkGrantOf, trackSheetLink } from '@/lib/sheet-link-bindings';
+import { track } from '@/lib/telemetry';
+import { documentGrant } from '@/lib/api/document-grants';
+import type { SheetLinkEvent } from '@liveworkspace/workbench/components/sheet-links/SheetLinkedCharts';
 import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { EditorCanvasHost } from '@/components/canvas/EditorCanvasHost';
 import { ConnectedTabHost } from '@/components/connect/ConnectedTabHost';
@@ -89,6 +91,16 @@ import {
 // Loaded when first drawn (docs/specs/016-platform/web-performance.md): search while it is open. Its code is
 // fetched once the editor is idle (EDITOR_SURFACE_CODE), so opening it does not wait.
 const EditorSearchPanel = dynamic(loadEditorSearchPanel, { ssr: false });
+
+// Charts linked to a liveplanner sheet (docs/specs/009-elements/pie-chart.md): what this editor hands the shared host,
+// stable so its context is too. The document's grant asks the plan to say when a Sheet changes; each event is its own
+// literal telemetry call.
+const sheetLinkGrantOf = async (itemId: string): Promise<string | null> =>
+  (await documentGrant(itemId))?.grant ?? null;
+const trackSheetLink = (event: SheetLinkEvent): void =>
+  event === 'ChartSheetLink'
+    ? track('Element', 'Changed', 'ChartSheetLink')
+    : track('Element', 'Changed', 'ChartSheetUnlink');
 
 // The editor's full view (header + canvas + tab bar + all dialogs),
 // lifted out of editor-page.tsx. Every value/handler it needs is read

@@ -1,6 +1,7 @@
 // Sheet sources' doors (sheet-source-doors.ts): the index's key alone, a 404 without a handler, and each answer.
 import { describe, expect, it, vi } from 'vitest';
 import { handleInternalItems, type InternalItemHandlers } from './internal';
+import { tellSourceChanged } from './sheet-source-doors';
 
 const OPTIONS = {
   key: 'index-key',
@@ -144,5 +145,20 @@ describe('the source-changed door', () => {
     );
     expect(res.status).toBe(400);
     expect(sourceChanged).not.toHaveBeenCalled();
+  });
+});
+
+describe('tellSourceChanged', () => {
+  it('binds the room and sends every session the ids', () => {
+    const sent: unknown[] = [];
+    const bound: string[] = [];
+    const change = { app: 'liveplanner' as const, itemId: 'plan_1', sheetIds: ['sheet0001'] };
+    tellSourceChanged(
+      { bind: (id) => bound.push(id), broadcast: (frame) => sent.push(frame) },
+      'doc_1',
+      change,
+    );
+    expect(bound).toEqual(['doc_1']);
+    expect(sent).toEqual([{ kind: 'source-changed', ...change }]);
   });
 });
