@@ -39,6 +39,9 @@ at the bottom centre of the canvas, in place: the canvas stays where it is and s
    so you can see the microphone hears you, and **Hide From Recording** (below). The browser asks for the
    microphone and camera the first time; a refusal says so in the dock and offers the choice again, and recording
    with no microphone at all is refused ("Allow the microphone to record a walkthrough").
+   The editor's `Permissions-Policy` header must therefore allow `camera=(self)` and `microphone=(self)`, as the
+   walkthroughs need them; when the policy blocks the microphone the dock says "This page can't use the microphone.
+   Reload to get the latest version." instead of asking for a browser permission.
 2. **Start Recording** counts down 3, 2, 1 over the canvas, then records. Moving around the canvas, changing tab and
    pointing are all part of it.
 3. **While recording** the dock is a compact bar: a pulsing red dot, the time so far against ten minutes
