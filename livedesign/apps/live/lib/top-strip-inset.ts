@@ -1,25 +1,15 @@
-// How far the Toolbar layout's top strip reaches down over the canvas: a page (usePagesMode) or a board
-// column (frame-board-column.ts) framed on screen centres below it.
-// The Toolbar layout's strip lies over the canvas's top edge; the page centres below it.
-const TOP_STRIP_SELECTOR = '[data-toolbar-palette]:not(.hidden)';
+// How far the Toolbar layout's top strip, and what stands under it, reaches down over the canvas: the shared measure
+// (workbench's lib/top-strip-inset, which also keeps a standing palette tray's room), which a page (usePagesMode)
+// framed on screen centres below.
+import { topStripInset as sharedTopStripInset } from '@liveworkspace/workbench/lib/top-strip-inset';
 
 // A photo page keeps a strip's height of room under the strip (docs/specs/031-photo/photo-pages.md "The options
 // flyout"): the page centres below it too.
 const UNDER_STRIP_SELECTOR = '[data-photo-options]';
 
-/** How far a top strip laid over the canvas reaches down into it, in screen px. */
+/** How far a top strip laid over the canvas, and what stands under it, reaches down into it, in screen px. */
 export function topStripInset(canvas: HTMLElement): number {
-  const strip = document.querySelector<HTMLElement>(TOP_STRIP_SELECTOR);
-  // Stood aside (a phone's page toolbar in its place): its room is the page's.
-  if (!strip || getComputedStyle(strip).visibility === 'hidden') return 0;
-  const c = canvas.getBoundingClientRect();
-  const s = strip.getBoundingClientRect();
-  const overlaps = s.bottom > c.top && s.top < c.top + c.height / 2;
-  if (!overlaps) return 0;
-  const under = document.querySelector<HTMLElement>(UNDER_STRIP_SELECTOR)?.getBoundingClientRect();
-  const bottom =
-    under && under.top < c.top + c.height / 2 ? Math.max(s.bottom, under.bottom) : s.bottom;
-  return bottom - c.top;
+  return sharedTopStripInset(canvas, [UNDER_STRIP_SELECTOR]);
 }
 
 // The bottom-right controls (undo, the pages strip, zoom: CanvasChrome's cluster).

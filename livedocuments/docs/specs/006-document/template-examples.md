@@ -39,7 +39,9 @@ glyph, **"Example content shows how this works."**, and two buttons.
 
 The tray appears as soon as the template lands, and stays while any untouched example is on the tab. It belongs to
 the tab: each tab of a document answers for its own. It is a standing message: it steps aside while a mode's message
-takes its place, and without the strip it stands at the top centre. On a phone the buttons alone show.
+takes its place, and without the strip it stands at the top centre. On a phone the buttons alone show. A page
+framed while it shows (landing, Fit, a page's label) centres below the tray too, so the tray never covers the page's
+name or its bar.
 
 It sends `Template · Changed · ExampleCleared` or `Template · Changed · ExampleKept`, charted as Template Examples in
 the telemetry site's Features › Look & Feel stack. The help centre's Templates article explains both buttons
