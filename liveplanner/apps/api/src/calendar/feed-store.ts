@@ -21,9 +21,40 @@ CREATE TABLE IF NOT EXISTS calendar_feeds (
 CREATE UNIQUE INDEX IF NOT EXISTS calendar_feeds_token ON calendar_feeds (token_hash);
 `;
 
-// What a feed shows (calendar-feed.md "What it shows"): one board's cards or every board's (null), only the cards
-// that name the person, and done cards or not.
-export type CalendarFeedOptions = { boardId: string | null; mine: boolean; includeDone: boolean };
+// Card types in place of a board (calendar-feed.md "What it shows"; owner, 2026-11-17): a JSON array of type ids, or
+// NULL for every type. Asks before the ALTER, so it is safe however far a room got (plan-schema.ts V36).
+export function addCalendarFeedTypes(
+  exec: (sql: string) => { toArray: () => Record<string, unknown>[] },
+): void {
+  const have = new Set(
+    exec('PRAGMA table_info(calendar_feeds)')
+      .toArray()
+      .map((c) => String(c.name)),
+  );
+  if (!have.has('type_ids')) exec('ALTER TABLE calendar_feeds ADD COLUMN type_ids TEXT NULL');
+}
+
+// What a feed shows (calendar-feed.md "What it shows"): some card types (null: every type), only the cards that
+// name the person, and done cards or not. `boardId` is a feed made before card types; a save clears it.
+export type CalendarFeedOptions = {
+  typeIds: string[] | null;
+  boardId: string | null;
+  mine: boolean;
+  includeDone: boolean;
+};
+
+const typeIdsOf = (raw: string | null): string[] | null => {
+  if (!raw) return null;
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    return Array.isArray(parsed) && parsed.every((t) => typeof t === 'string') && parsed.length
+      ? parsed
+      : null;
+  } catch {
+    return null;
+  }
+};
+const typeIdsText = (ids: string[] | null) => (ids && ids.length ? JSON.stringify(ids) : null);
 
 // A feed as a fetch reads it: whose it is and what it shows. Plain data, so it crosses the room's RPC boundary.
 export type CalendarFeed = CalendarFeedOptions & { personId: string };
@@ -31,6 +62,7 @@ export type CalendarFeed = CalendarFeedOptions & { personId: string };
 type FeedRow = {
   person_id: string;
   board_id: string | null;
+  type_ids: string | null;
   mine: number;
   include_done: number;
 };
@@ -45,10 +77,10 @@ export async function issueCalendarFeed(
 ): Promise<string> {
   const token = newFeedToken();
   await env.PLAN_DB.prepare(
-    `INSERT INTO calendar_feeds (plan_id, person_id, token_hash, board_id, mine, include_done, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?)
+    `INSERT INTO calendar_feeds (plan_id, person_id, token_hash, board_id, type_ids, mine, include_done, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT (plan_id, person_id) DO UPDATE SET token_hash = excluded.token_hash,
-       board_id = excluded.board_id, mine = excluded.mine, include_done = excluded.include_done,
+       board_id = excluded.board_id, type_ids = excluded.type_ids, mine = excluded.mine, include_done = excluded.include_done,
        created_at = excluded.created_at`,
   )
     .bind(
@@ -56,6 +88,7 @@ export async function issueCalendarFeed(
       personId,
       await feedTokenHash(token),
       options.boardId,
+      typeIdsText(options.typeIds),
       options.mine ? 1 : 0,
       options.includeDone ? 1 : 0,
       now,
@@ -85,13 +118,14 @@ export async function calendarFeedFor(
   personId: string,
 ): Promise<(CalendarFeedOptions & { createdAt: number }) | null> {
   const row = await env.PLAN_DB.prepare(
-    `SELECT board_id, mine, include_done, created_at FROM calendar_feeds
+    `SELECT board_id, type_ids, mine, include_done, created_at FROM calendar_feeds
       WHERE plan_id = ? AND person_id = ?`,
   )
     .bind(planId, personId)
     .first<Omit<FeedRow, 'person_id'> & { created_at: number }>();
   if (!row) return null;
   return {
+    typeIds: typeIdsOf(row.type_ids),
     boardId: row.board_id,
     mine: row.mine === 1,
     includeDone: row.include_done === 1,
@@ -107,10 +141,17 @@ export async function setCalendarFeedOptions(
   options: CalendarFeedOptions,
 ): Promise<boolean> {
   const result = await env.PLAN_DB.prepare(
-    `UPDATE calendar_feeds SET board_id = ?, mine = ?, include_done = ?
+    `UPDATE calendar_feeds SET board_id = ?, type_ids = ?, mine = ?, include_done = ?
       WHERE plan_id = ? AND person_id = ?`,
   )
-    .bind(options.boardId, options.mine ? 1 : 0, options.includeDone ? 1 : 0, planId, personId)
+    .bind(
+      options.boardId,
+      typeIdsText(options.typeIds),
+      options.mine ? 1 : 0,
+      options.includeDone ? 1 : 0,
+      planId,
+      personId,
+    )
     .run();
   return (result.meta.changes ?? 0) > 0;
 }
@@ -122,7 +163,7 @@ export async function calendarFeedOf(
   tokenHash: string,
 ): Promise<CalendarFeed | null> {
   const row = await env.PLAN_DB.prepare(
-    `SELECT person_id, board_id, mine, include_done FROM calendar_feeds
+    `SELECT person_id, board_id, type_ids, mine, include_done FROM calendar_feeds
       WHERE plan_id = ? AND token_hash = ?`,
   )
     .bind(planId, tokenHash)
@@ -130,6 +171,7 @@ export async function calendarFeedOf(
   if (!row) return null;
   return {
     personId: row.person_id,
+    typeIds: typeIdsOf(row.type_ids),
     boardId: row.board_id,
     mine: row.mine === 1,
     includeDone: row.include_done === 1,

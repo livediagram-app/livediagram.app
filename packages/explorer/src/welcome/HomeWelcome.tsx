@@ -9,12 +9,9 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { FOCUS_RING, MUTED, SECTION_LINK } from '../ui/classes';
 import { PlusIcon, SearchIcon } from '../ui/icons';
 import { useExplorer } from '../explorer/context';
-import { kindWords } from '../words';
 import { useFirstRun } from './context';
-import { useLibraryHost } from '../library/context';
-import { ImportToolbar } from '../library/ImportToolbar';
 import { NewItemButton } from '../explorer/NewChoices';
-import { importLine, signInLine, WELCOME_COPY, type WelcomeStart } from './types';
+import { signInLine, WELCOME_COPY, type WelcomeStart } from './types';
 
 const SECTION_HEADING =
   'text-2xl font-extrabold tracking-[-0.03em] text-[#17153a] dark:text-slate-100';
@@ -132,10 +129,7 @@ function StartSkeleton({ count, tall }: { count: number; tall: boolean }) {
 
 export function HomeWelcome({ withSearch = false }: { withSearch?: boolean }) {
   const { welcome } = useFirstRun();
-  const { app, words } = useExplorer();
-  // An import makes the app's own kind, whatever the list mixes.
-  const kind = kindWords(app);
-  const { imports } = useLibraryHost();
+  const { words } = useExplorer();
   const onOpened = welcome?.onOpened;
   useEffect(() => {
     onOpened?.();
@@ -187,46 +181,28 @@ export function HomeWelcome({ withSearch = false }: { withSearch?: boolean }) {
           )}
         </ul>
       </Section>
-      {(!welcome.signedIn && welcome.signInHref) || imports?.sources.length ? (
+      {!welcome.signedIn && welcome.signInHref ? (
         <Section id="have-work" title={WELCOME_COPY.haveWorkTitle}>
           <div className="grid gap-4 sm:grid-cols-2">
-            {!welcome.signedIn && welcome.signInHref ? (
-              <div className="relative flex flex-col gap-3 overflow-hidden rounded-[20px] bg-[#0b1230] p-5 dark:ring-1 dark:ring-brand-400/30">
-                <span
-                  aria-hidden
-                  className="pointer-events-none absolute -right-10 -top-10 size-[180px] rounded-full bg-[radial-gradient(circle,color-mix(in_oklab,var(--color-brand-400)_45%,transparent),transparent_70%)]"
-                />
-                <h3 className="relative text-base font-bold text-white">
-                  {WELCOME_COPY.signInTitle}
-                </h3>
-                <p className="relative text-sm leading-relaxed text-[#a9b8d0]">
-                  {signInLine(m?.name ?? 'liveworkspace', words.lowerMany)}
-                </p>
-                <a
-                  href={welcome.signInHref}
-                  onClick={() => welcome.onSelected?.('Welcome.SignIn')}
-                  className="relative mt-auto inline-flex h-10 items-center self-start rounded-xl bg-white px-4 text-sm font-semibold text-[#0b1230] transition hover:bg-brand-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
-                >
-                  {WELCOME_COPY.signIn}
-                </a>
-              </div>
-            ) : null}
-            {imports?.sources.length ? (
-              <div className="flex flex-col gap-3 rounded-[20px] border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800">
-                <h3 className="text-base font-bold text-[#17153a] dark:text-slate-100">
-                  {WELCOME_COPY.importTitle}
-                </h3>
-                <p className={`text-sm leading-relaxed ${MUTED}`}>
-                  {importLine(
-                    imports.sources.map((x) => x.name),
-                    kind.lowerOne,
-                  )}
-                </p>
-                <div className="mt-auto">
-                  <ImportToolbar placement={{ folderId: null, teamId: null }} />
-                </div>
-              </div>
-            ) : null}
+            <div className="relative flex flex-col gap-3 overflow-hidden rounded-[20px] bg-[#0b1230] p-5 dark:ring-1 dark:ring-brand-400/30">
+              <span
+                aria-hidden
+                className="pointer-events-none absolute -right-10 -top-10 size-[180px] rounded-full bg-[radial-gradient(circle,color-mix(in_oklab,var(--color-brand-400)_45%,transparent),transparent_70%)]"
+              />
+              <h3 className="relative text-base font-bold text-white">
+                {WELCOME_COPY.signInTitle}
+              </h3>
+              <p className="relative text-sm leading-relaxed text-[#a9b8d0]">
+                {signInLine(m?.name ?? 'liveworkspace', words.lowerMany)}
+              </p>
+              <a
+                href={welcome.signInHref}
+                onClick={() => welcome.onSelected?.('Welcome.SignIn')}
+                className="relative mt-auto inline-flex h-10 items-center self-start rounded-xl bg-white px-4 text-sm font-semibold text-[#0b1230] transition hover:bg-brand-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
+              >
+                {WELCOME_COPY.signIn}
+              </a>
+            </div>
           </div>
         </Section>
       ) : null}

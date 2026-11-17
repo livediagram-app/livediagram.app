@@ -74,12 +74,12 @@ async function participant(
 }
 
 // What a verb does to the tab it read: new elements and the delta the room hears, nothing to write, or a refusal.
-type Change = { elements: Element[]; elementId: string; delta: ElementDelta };
-type Mutation = Change | 'unchanged' | Response;
+export type Change = { elements: Element[]; elementId: string; delta: ElementDelta };
+export type Mutation = Change | 'unchanged' | Response;
 
-// Reads the tab, applies `mutate` and writes at the revision read; a lost race re-reads and repeats once, then
+// Reads the tab, applies `mutate` and writes at the revision read (shared with action-routes); a lost race re-reads and repeats once, then
 // answers 409 `tab_busy` (PR22). The delta is relayed after the write lands.
-async function writeTab(
+export async function writeTab(
   ctx: DocumentRouteContext,
   id: string,
   tabId: string,

@@ -33,7 +33,6 @@
 @source inline("dark:border-brand-400/60");
 @source inline("dark:border-brand-500");
 @source inline("dark:border-brand-500/30");
-@source inline("dark:border-brand-600");
 @source inline("dark:border-brand-700/70");
 @source inline("dark:border-rose-500/50");
 @source inline("dark:border-rose-500/70");
@@ -76,16 +75,15 @@
 @source inline("dark:ring-brand-400/60");
 @source inline("dark:shadow-black/40");
 @source inline("dark:shadow-black/50");
-@source inline("dark:stroke-brand-400");
 @source inline("dark:stroke-brand-700");
 @source inline("dark:stroke-brand-700/60");
 @source inline("dark:stroke-brand-700/70");
 @source inline("dark:stroke-brand-800");
 @source inline("dark:stroke-brand-800/80");
 @source inline("dark:stroke-slate-500");
-@source inline("dark:stroke-slate-600");
 @source inline("dark:text-brand-300/80");
 @source inline("dark:text-pink-300");
 @source inline("dark:text-red-400");
 @source inline("dark:text-slate-950");
 @source inline("dark:text-violet-200");
+@source inline("dark:to-slate-950/50");

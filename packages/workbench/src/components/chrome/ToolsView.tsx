@@ -1,18 +1,17 @@
 'use client';
 
 // A tool opened inside the footer's Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md "Opening a tool
-// inside Tools"; blueprint FM6): the shared back bar as the breadcrumb ("Tools", the tool's name in its chip) beside the
-// popover's close, then the tool. A tool drawn by a dialog renders into the slot here (dialog-slot.ts, @liveworkspace/ui);
-// until it arrives (its code loading) the loading sweep holds its place. Focus moves in as it opens: to the back bar,
+// inside Tools"; blueprint FM6): under Tools' illustrated band, the shared back bar as the breadcrumb ("Tools", the tool's
+// name in its chip), then the tool. The band's corner close is the popover's only close. A tool drawn by a dialog renders into the slot here (dialog-slot.ts, @liveworkspace/ui);
+// until it arrives (its code loading) skeleton rows hold its place. Focus moves in as it opens: to the back bar,
 // unless the tool has already taken it (a confirm's button).
 import { useEffect, useRef, type ReactNode } from 'react';
-import { BackBar, DialogCloseButton, LoadingSweep } from '@liveworkspace/ui';
+import { BackBar, SkeletonRows } from '@liveworkspace/ui';
 
 export function ToolsView({
   id,
   label,
   onBack,
-  onClose,
   tall,
   sheet,
   slotRef,
@@ -22,7 +21,6 @@ export function ToolsView({
   id: string;
   label: string;
   onBack: () => void;
-  onClose: () => void;
   /** A whole screen of a tool (Automations): a fixed height, so its own lists lay out and scroll as they did. */
   tall: boolean;
   sheet: boolean;
@@ -44,25 +42,18 @@ export function ToolsView({
   }, []);
   return (
     <div ref={root} data-tools-view={id} className="flex min-h-0 flex-1 flex-col">
-      <div
-        data-tools-back=""
-        // Clear of a phone drawer's grab handle above it; level with the close beside it.
-        className={`flex shrink-0 items-center gap-2 px-3 pb-2.5 ${sheet ? 'pt-1' : 'pt-3'}`}
-      >
+      <div data-tools-back="" className="flex shrink-0 items-center px-3 pb-2.5 pt-3">
         <div className="min-w-0 flex-1">
           <BackBar label="Tools" current={label} onClick={onBack} gap="none" />
         </div>
-        <DialogCloseButton compact onClick={onClose} />
       </div>
       <div
         className={`flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain ${
-          tall ? (sheet ? 'h-[75dvh]' : 'h-[min(44rem,calc(100dvh-7rem))]') : ''
+          tall ? (sheet ? 'h-[calc(75dvh-100px)]' : 'h-[min(44rem,calc(100dvh-14rem))]') : ''
         }`}
       >
         {waiting ? (
-          <div role="status" aria-label={`Loading ${label}`} className="flex justify-center py-10">
-            <LoadingSweep />
-          </div>
+          <SkeletonRows label={`Loading ${label}`} rows={4} className="px-4 py-3" />
         ) : null}
         {slotRef ? (
           <div

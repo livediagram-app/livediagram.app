@@ -20,6 +20,15 @@ export const ImageIcon = lucide(
   13,
 );
 
+// Lucide's clapperboard-like play-in-a-frame: a recording to watch.
+export const WalkthroughIcon = lucide(
+  <>
+    <rect x="2" y="4" width="20" height="16" rx="3" />
+    <path d="m10 9 5 3-5 3z" />
+  </>,
+  13,
+);
+
 export const ShapesIcon = lucide(
   <>
     <path d="M8.3 10a.7.7 0 0 1-.63-1.04l3.7-6.37a.7.7 0 0 1 1.23 0l3.7 6.37A.7.7 0 0 1 15.7 10z" />

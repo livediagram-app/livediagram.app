@@ -92,8 +92,8 @@ describe('filters and summary', () => {
       { category: 'sharing', count: 2 },
       { category: 'filing', count: 1 },
     ]);
-    expect(filterHistory(events, 'sharing').map((e) => e.id)).toEqual(['b', 'c']);
-    expect(filterHistory(events, null)).toBe(events);
+    expect(filterHistory(events, ['sharing']).map((e) => e.id)).toEqual(['b', 'c']);
+    expect(filterHistory(events, [])).toBe(events);
   });
 
   it('counts the people who took part, newest first', () => {

@@ -13,11 +13,7 @@ import {
   type ShareUrl,
 } from '@liveworkspace/explorer';
 import type { App } from '@liveworkspace/index-client';
-import {
-  DEFAULT_FOLDER_OPTIONS as DIAGRAM_FOLDER_OPTIONS,
-  LENS_MODES as DIAGRAM_MODES,
-  TEMPLATE_FAMILIES as DIAGRAM_FAMILIES,
-} from '@livediagram/api-schema';
+import { DEFAULT_FOLDER_OPTIONS as DIAGRAM_FOLDER_OPTIONS } from '@livediagram/api-schema';
 import { TEMPLATE_FAMILIES as PLAN_FAMILIES } from '@liveplanner/api-schema';
 import {
   APP_ITEMS,
@@ -156,29 +152,18 @@ export function helpHrefFor(app: App): HelpHref {
 
 // ---------- The filter lens's Template chip ----------------------------------------------------------------------
 
-const FAMILY_LABELS: Record<string, string> = { retrospective: 'Retrospective', kanban: 'Kanban' };
+const FAMILY_LABELS: Record<string, string> = { kanban: 'Kanban' };
 const familiesOf = (families: readonly string[]): LensOption[] =>
   families.map((value) => ({ value, label: FAMILY_LABELS[value] ?? value }));
 
 // The template families each app files its items' intents under (its api-schema's TEMPLATE_FAMILIES), for the
 // lens's Template chip. An app with none has no chip.
 const LENS_TEMPLATES: Partial<Record<App, readonly LensOption[]>> = {
-  livediagram: familiesOf(DIAGRAM_FAMILIES),
   liveplanner: familiesOf(PLAN_FAMILIES),
 };
 
 export function lensTemplatesFor(app: App): readonly LensOption[] | undefined {
   return LENS_TEMPLATES[app];
-}
-
-// The editor modes an app's items open in, for the lens's Mode chip (an item's `summary.mode`): only an app with more
-// than one. livediagram's Diagram, Draw and Workshop; every other app's items open in one mode, so no chip.
-const LENS_MODES: Partial<Record<App, readonly LensOption[]>> = {
-  livediagram: DIAGRAM_MODES,
-};
-
-export function lensModesFor(app: App): readonly LensOption[] | undefined {
-  return LENS_MODES[app];
 }
 
 // Default Folders' entries per editor mode, for an app that files new items by them (its api-schema's

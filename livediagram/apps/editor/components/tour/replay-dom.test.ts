@@ -51,14 +51,17 @@ describe('openMenuPath', () => {
     menu.setAttribute('data-menu-flyout', '');
     const swatch = button('Border', { 'aria-expanded': 'false' });
     const row = button('Border', { 'aria-expanded': 'false', 'data-menu-section': 'Border' });
-    const open = button('Style', { 'aria-expanded': 'true', 'data-menu-section': 'Style' });
+    const open = button('Appearance', {
+      'aria-expanded': 'true',
+      'data-menu-section': 'Appearance',
+    });
     const pressed: string[] = [];
     swatch.onclick = () => pressed.push('swatch');
     row.onclick = () => pressed.push('row');
     open.onclick = () => pressed.push('style');
     menu.append(swatch, row, open);
     document.body.append(menu);
-    openMenuPath(['Style', 'Border']);
+    openMenuPath(['Appearance', 'Border']);
     expect(pressed).toEqual(['row']);
   });
 });

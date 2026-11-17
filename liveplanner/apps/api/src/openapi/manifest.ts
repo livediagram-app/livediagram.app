@@ -1047,7 +1047,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'projects',
     tag: 'Calendar',
     summary:
-      "Your own calendar feed of the plan: its options (which board, only my cards, include done cards) and when its link was made, never the link itself; null for none. With the plan's boards the Board option may name. The plan's owner or a team member only, signed in in person: never a share link at any level, an API token or a workbench session.",
+      "Your own calendar feed of the plan: its options (which card types, only my cards, include done cards) and when its link was made, never the link itself; null for none. With the plan's card types the Card Types option may name. The plan's owner or a team member only, signed in in person: never a share link at any level, an API token or a workbench session.",
     auth: 'clerk',
     responseSchema: 'CalendarFeedResponse',
     statuses: [200, 401, 403, 404, 405],

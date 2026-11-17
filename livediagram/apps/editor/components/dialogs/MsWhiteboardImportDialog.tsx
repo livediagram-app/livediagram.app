@@ -13,9 +13,12 @@ export const MS_WHITEBOARD_IMPORT_TITLE = 'Import from Microsoft Whiteboard';
 export function MsWhiteboardImportDialog({
   importScenes,
   onClose,
+  subtitle = 'Each board becomes its own canvas.',
 }: {
   importScenes: ImportScenes;
   onClose: () => void;
+  /** The header's line: where the boards land (the start screen's import puts one into the open tab). */
+  subtitle?: string;
 }) {
   const titleId = useId();
   return (
@@ -31,7 +34,7 @@ export function MsWhiteboardImportDialog({
         art={importHeroArt}
         titleId={titleId}
         title={MS_WHITEBOARD_IMPORT_TITLE}
-        subtitle="Each board becomes its own canvas."
+        subtitle={subtitle}
         actions={<HelpArticleLink article="microsoftWhiteboardImport" size="md" />}
         onClose={onClose}
       />

@@ -53,8 +53,13 @@ export function roadmapBoardOf(
     title: setup.title.trim() || 'Board',
     tabId: tab.id,
     tabName: tab.name,
-    columns: setup.columns.map((c) => ({ status: c.status, name: c.name })),
-    types: boardAddTypes(setup, types).map((t) => ({ id: t.id, name: t.label })),
+    columns: setup.columns.map((c) => ({ status: c.status, name: c.name, color: c.color ?? null })),
+    types: boardAddTypes(setup, types).map((t) => ({
+      id: t.id,
+      name: t.label,
+      glyph: t.glyph,
+      color: t.color,
+    })),
     publishable: publishable(setup),
   };
 }

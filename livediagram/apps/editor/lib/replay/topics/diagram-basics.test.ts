@@ -51,7 +51,7 @@ const byId = (frame: ReturnType<typeof demoAt>, id: string) =>
   frame.elements.find((e) => e.id === id);
 
 describe('CHAPTERS', () => {
-  it('plays Add, Connect, Label, Style', () => {
+  it('plays Add, Connect, Label, Appearance', () => {
     expect(CHAPTERS.map((c) => c.id)).toEqual(['add', 'connect', 'label', 'style']);
     expect(basics.chapters).toBe(CHAPTERS);
   });
@@ -142,15 +142,15 @@ describe('demoAt: Label', () => {
   });
 });
 
-describe('demoAt: Style', () => {
-  it('opens the menu on B, goes into Style then Presets, and picks the green look', () => {
+describe('demoAt: Appearance', () => {
+  it('opens the menu on B, goes into Appearance then Presets, and picks the green look', () => {
     expect(at('style', 0).menu).toBeNull();
     expect(at('style', STYLE.menu)).toMatchObject({
       menu: { on: b.id, path: [] },
       selectedId: b.id,
     });
-    expect(at('style', STYLE.flyout).menu?.path).toEqual(['Style']);
-    expect(at('style', STYLE.presets).menu?.path).toEqual(['Style', 'Presets']);
+    expect(at('style', STYLE.flyout).menu?.path).toEqual(['Appearance']);
+    expect(at('style', STYLE.presets).menu?.path).toEqual(['Appearance', 'Presets']);
     expect((byId(at('style', STYLE.pick - 1), b.id) as ShapeElement).fillColor).toBe(b.fillColor);
     const picked = byId(at('style', STYLE.pick), b.id) as ShapeElement;
     expect(picked).toMatchObject({
@@ -178,7 +178,7 @@ describe('cursorPlan', () => {
 
   it('presses through the menu by the words on its rows', () => {
     const names = cursorPlan(3).flatMap((w) => (w.to.kind === 'menu' ? [w.to.name] : []));
-    expect(names).toEqual(['Style', 'Presets', 'Success']);
+    expect(names).toEqual(['Appearance', 'Presets', 'Success']);
   });
 
   it('starts each carry from the palette tile', () => {

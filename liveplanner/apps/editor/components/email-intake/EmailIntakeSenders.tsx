@@ -1,6 +1,6 @@
 'use client';
 
-// Who Can Send (docs/specs/026-plan/email-to-board.md "The dialog"): two choices as option cards, a native radio
+// Who Can Send (docs/specs/026-plan/email-to-board.md "The dialog"): two choices as full-width option rows, a native radio
 // group underneath (arrow keys move between them, the browser's own focus and form semantics), then the warning that
 // holds for both.
 import { useId } from 'react';
@@ -42,7 +42,8 @@ export function EmailIntakeSenders({
       <legend className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
         Who Can Send
       </legend>
-      <div className="grid gap-2 sm:grid-cols-2">
+      {/* One full-width row each (owner, 2026-11-17: there is room for the hint on one line). */}
+      <div className="flex flex-col gap-2">
         {CHOICES.map(({ value: v, label, hint, Icon }) => {
           const on = v === value;
           return (

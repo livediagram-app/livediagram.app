@@ -24,7 +24,8 @@ const ROW =
   'relative flex min-w-0 cursor-pointer items-start gap-3 px-3.5 py-2.5 text-left transition-colors duration-micro hover:bg-slate-50 has-[:focus-visible]:outline-2 has-[:focus-visible]:-outline-offset-2 has-[:focus-visible]:outline-slate-400 has-[:focus-visible]:outline-solid dark:hover:bg-slate-700/40';
 // A destination: a card that stands up on its own, its mark above its words from a small screen up, beside them on
 // a phone. Chosen, it lifts: the ink ring and a soft shadow; hovered, its border darkens and a shadow comes in.
-const CARD = `group relative flex min-w-0 cursor-pointer items-center gap-3 rounded-2xl border p-3.5 text-left transition-[border-color,background-color,box-shadow] duration-micro sm:flex-col sm:items-start sm:p-4 ${FOCUS}`;
+// A full-width row at every width: the mark at its left, the name and line beside it, the radio at its right.
+const CARD = `group relative flex w-full min-w-0 cursor-pointer items-center gap-3 rounded-xl border px-3.5 py-3 text-left transition-[border-color,background-color,box-shadow] duration-micro ${FOCUS}`;
 const CARD_ON =
   'border-slate-900 bg-white shadow-md shadow-slate-900/10 ring-1 ring-slate-900 dark:border-slate-100 dark:bg-slate-700/60 dark:shadow-black/30 dark:ring-slate-100';
 const CARD_OFF =
@@ -159,7 +160,7 @@ export function DestinationPicker({
   onChange: (kind: WebhookKind) => void;
 }) {
   return (
-    <div className="grid gap-2.5 sm:grid-cols-3">
+    <div className="flex flex-col gap-2">
       {KIND_ORDER.map((kind) => {
         const on = value === kind;
         return (
@@ -178,7 +179,7 @@ export function DestinationPicker({
               className="sr-only"
             />
             <KindMark kind={kind} />
-            <span className="flex min-w-0 flex-1 flex-col gap-0.5 sm:pr-6">
+            <span className="flex min-w-0 flex-1 flex-col gap-0.5">
               <span className="text-sm font-semibold text-slate-900 dark:text-slate-50">
                 {KINDS[kind].label}
               </span>
@@ -186,7 +187,7 @@ export function DestinationPicker({
                 {KINDS[kind].blurb}
               </span>
             </span>
-            <span className="shrink-0 sm:absolute sm:right-3.5 sm:top-3.5">
+            <span className="shrink-0">
               <Indicator type="radio" on={on} />
             </span>
           </label>

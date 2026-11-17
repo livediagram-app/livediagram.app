@@ -9,7 +9,7 @@ import type { CalendarFeedResponse } from '@liveplanner/api-schema';
 import { CalendarFeedDialog } from './CalendarFeedDialog';
 import { CalendarFeedHost } from './CalendarFeedHost';
 import { useCalendarFeedToolsItem } from './calendar-feed-tools-item';
-import { boardLabels } from './CalendarFeedOptions';
+import { feedSummary } from './CalendarFeedOptions';
 
 const client = vi.hoisted(() => ({
   readCalendarFeed: vi.fn(),
@@ -27,12 +27,15 @@ vi.mock('@/lib/telemetry', () => ({ track }));
 const SCOPE = { ownerId: 'user_1', projectId: 'p1' };
 const PLAN = { kind: 'plan', scope: SCOPE } as const;
 const MY_WORK = { kind: 'my-work', ownerId: 'user_1' } as const;
-const BOARDS = [
-  { id: 'b1', title: 'Roadmap', tabName: 'Plan' },
-  { id: 'b2', title: 'Bugs', tabName: 'Triage' },
+const TYPES = [
+  { id: 'feature', name: 'Feature', glyph: 'sparkles', color: 'violet' },
+  { id: 'bug', name: 'Bug', glyph: 'bug', color: 'red' },
 ];
+// A card type's pill, in Card Types.
+const pill = (name: string) =>
+  within(screen.getByRole('group', { name: 'Card Types' })).getByRole('button', { name });
 const MADE = Date.UTC(2026, 10, 3);
-const FEED = { boardId: null, mine: false, includeDone: false, createdAt: MADE };
+const FEED = { typeIds: null, mine: false, includeDone: false, createdAt: MADE };
 const PATH = '/api/calendar/p1/lpf_abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG.ics';
 const writeText = vi.fn();
 
@@ -63,12 +66,13 @@ afterEach(() => {
 
 describe('Off', () => {
   it('makes the link with the options chosen, and shows it once to copy or hand on', async () => {
-    await open({ feed: null, boards: BOARDS });
+    await open({ feed: null, types: TYPES });
     expect(stateOf()).toBe('off');
     expect(screen.getByText(/Anyone with this link can see the titles and dates/)).toBeTruthy();
-    const board = screen.getByLabelText<HTMLSelectElement>('Board');
-    expect([...board.options].map((o) => o.textContent)).toEqual(['All Boards', 'Roadmap', 'Bugs']);
-    fireEvent.change(board, { target: { value: 'b2' } });
+    expect(pill('All Types').getAttribute('aria-pressed')).toBe('true');
+    fireEvent.click(pill('Bug'));
+    expect(pill('Bug').getAttribute('aria-pressed')).toBe('true');
+    expect(pill('All Types').getAttribute('aria-pressed')).toBe('false');
     fireEvent.click(screen.getByRole('switch', { name: /Only My Cards/ }));
     // Include Done Cards on and off again: the link is made without done cards.
     fireEvent.click(screen.getByRole('switch', { name: /Include Done Cards/ }));
@@ -77,16 +81,15 @@ describe('Off', () => {
     expect(client.changeCalendarFeed).not.toHaveBeenCalled();
 
     client.issueCalendarFeed.mockResolvedValue({
-      feed: { boardId: 'b2', mine: true, includeDone: false, createdAt: MADE },
+      feed: { typeIds: ['bug'], mine: true, includeDone: false, createdAt: MADE },
       path: PATH,
     });
     fireEvent.click(screen.getByRole('button', { name: 'Make Calendar Link' }));
     const field = await screen.findByLabelText<HTMLInputElement>('Calendar link');
-    expect(client.issueCalendarFeed).toHaveBeenCalledWith(SCOPE, {
-      boardId: 'b2',
-      mine: true,
-      includeDone: false,
-    });
+    expect(client.issueCalendarFeed).toHaveBeenCalledWith(
+      SCOPE,
+      expect.objectContaining({ typeIds: ['bug'], mine: true, includeDone: false }),
+    );
     expect(track).toHaveBeenCalledWith('Plan', 'Created', 'CalendarFeed');
     expect(stateOf()).toBe('made');
     expect(field.value).toMatch(/^https?:\/\/[^/]+\/api\/calendar\/p1\/lpf_[A-Za-z0-9]{43}\.ics$/);
@@ -115,7 +118,7 @@ describe('Off', () => {
   });
 
   it('selects the link to copy by hand when the clipboard refuses', async () => {
-    await open({ feed: null, boards: BOARDS });
+    await open({ feed: null, types: TYPES });
     client.issueCalendarFeed.mockResolvedValue({ feed: FEED, path: PATH });
     fireEvent.click(screen.getByRole('button', { name: 'Make Calendar Link' }));
     const field = await screen.findByLabelText<HTMLInputElement>('Calendar link');
@@ -126,7 +129,7 @@ describe('Off', () => {
   });
 
   it('says so when the link cannot be made, and stays Off', async () => {
-    await open({ feed: null, boards: [] });
+    await open({ feed: null, types: [] });
     client.issueCalendarFeed.mockRejectedValue(new Error('500'));
     fireEvent.click(screen.getByRole('button', { name: 'Make Calendar Link' }));
     expect((await screen.findByRole('alert')).textContent).toBe('Couldn’t save. Try again.');
@@ -134,7 +137,7 @@ describe('Off', () => {
   });
 
   it('closes from Done once the link is shown, and from the header', async () => {
-    const onClose = await open({ feed: null, boards: [] });
+    const onClose = await open({ feed: null, types: [] });
     client.issueCalendarFeed.mockResolvedValue({ feed: FEED, path: PATH });
     fireEvent.click(screen.getByRole('button', { name: 'Make Calendar Link' }));
     fireEvent.click(await screen.findByRole('button', { name: 'Done' }));
@@ -144,11 +147,12 @@ describe('Off', () => {
 
 describe('On', () => {
   it('says when the link was made, never shows it, and reads the options it was made with', async () => {
-    await open({ feed: { ...FEED, boardId: 'b1', includeDone: true }, boards: BOARDS });
+    await open({ feed: { ...FEED, typeIds: ['feature'], includeDone: true }, types: TYPES });
     expect(stateOf()).toBe('on');
     expect(screen.getByText(/^Your calendar link is on\. Made .*2026\.$/)).toBeTruthy();
     expect(screen.queryByLabelText('Calendar link')).toBeNull();
-    expect(screen.getByLabelText<HTMLSelectElement>('Board').value).toBe('b1');
+    expect(pill('Feature').getAttribute('aria-pressed')).toBe('true');
+    expect(pill('Bug').getAttribute('aria-pressed')).toBe('false');
     expect(
       screen.getByRole('switch', { name: /Include Done Cards/ }).getAttribute('aria-checked'),
     ).toBe('true');
@@ -156,15 +160,14 @@ describe('On', () => {
   });
 
   it('saves a changed option at once, keeping the link', async () => {
-    await open({ feed: FEED, boards: BOARDS });
+    await open({ feed: FEED, types: TYPES });
     client.changeCalendarFeed.mockResolvedValue({ feed: { ...FEED, mine: true } });
     fireEvent.click(screen.getByRole('switch', { name: /Only My Cards/ }));
     await waitFor(() =>
-      expect(client.changeCalendarFeed).toHaveBeenCalledWith(SCOPE, {
-        boardId: null,
-        mine: true,
-        includeDone: false,
-      }),
+      expect(client.changeCalendarFeed).toHaveBeenCalledWith(
+        SCOPE,
+        expect.objectContaining({ typeIds: null, mine: true, includeDone: false }),
+      ),
     );
     expect(track).toHaveBeenCalledWith('Plan', 'Changed', 'CalendarFeedOptions');
     expect(client.issueCalendarFeed).not.toHaveBeenCalled();
@@ -172,7 +175,7 @@ describe('On', () => {
   });
 
   it('puts an option back when its save fails, and says so', async () => {
-    await open({ feed: FEED, boards: BOARDS });
+    await open({ feed: FEED, types: TYPES });
     client.changeCalendarFeed.mockRejectedValue(new Error('500'));
     const mine = screen.getByRole('switch', { name: /Only My Cards/ });
     fireEvent.click(mine);
@@ -180,15 +183,13 @@ describe('On', () => {
     expect(mine.getAttribute('aria-checked')).toBe('false');
   });
 
-  it('shows a board that went for what it is, until another is picked', async () => {
-    await open({ feed: { ...FEED, boardId: 'gone' }, boards: BOARDS });
-    const board = screen.getByLabelText<HTMLSelectElement>('Board');
-    expect(board.value).toBe('gone');
-    expect(board.selectedOptions[0]!.textContent).toBe('Removed Board');
+  it('picks All Types again, which saves every type and lets an old feed’s board go', async () => {
+    await open({ feed: { ...FEED, typeIds: ['feature'], boardId: 'b1' }, types: TYPES });
     client.changeCalendarFeed.mockResolvedValue({ feed: FEED });
-    fireEvent.change(board, { target: { value: '' } });
+    fireEvent.click(pill('All Types'));
     await waitFor(() =>
       expect(client.changeCalendarFeed).toHaveBeenCalledWith(SCOPE, {
+        typeIds: null,
         boardId: null,
         mine: false,
         includeDone: false,
@@ -197,7 +198,7 @@ describe('On', () => {
   });
 
   it('resets the link behind its confirm, and shows the new one', async () => {
-    await open({ feed: FEED, boards: BOARDS });
+    await open({ feed: FEED, types: TYPES });
     fireEvent.click(screen.getByRole('button', { name: 'Reset Link' }));
     expect(screen.getByText(/stops working at once/)).toBeTruthy();
     client.issueCalendarFeed.mockResolvedValue({
@@ -206,17 +207,16 @@ describe('On', () => {
     });
     confirmIn('Reset Link');
     await screen.findByLabelText('Calendar link');
-    expect(client.issueCalendarFeed).toHaveBeenCalledWith(SCOPE, {
-      boardId: null,
-      mine: false,
-      includeDone: false,
-    });
+    expect(client.issueCalendarFeed).toHaveBeenCalledWith(
+      SCOPE,
+      expect.objectContaining({ typeIds: null, mine: false, includeDone: false }),
+    );
     expect(track).toHaveBeenCalledWith('Plan', 'Changed', 'CalendarFeedLink');
     expect(stateOf()).toBe('made');
   });
 
   it('cancels a confirm without a change', async () => {
-    await open({ feed: FEED, boards: BOARDS });
+    await open({ feed: FEED, types: TYPES });
     fireEvent.click(screen.getByRole('button', { name: 'Turn Off' }));
     fireEvent.click(
       within(document.querySelector('[data-confirm-popover]') as HTMLElement).getByRole('button', {
@@ -237,7 +237,7 @@ describe('On', () => {
   });
 
   it('turns off behind its confirm, back to Off with Make Calendar Link focused', async () => {
-    await open({ feed: FEED, boards: BOARDS });
+    await open({ feed: FEED, types: TYPES });
     fireEvent.click(screen.getByRole('button', { name: 'Turn Off' }));
     expect(screen.getByText('Calendars using it stop updating.')).toBeTruthy();
     client.turnOffCalendarFeed.mockResolvedValue(undefined);
@@ -250,7 +250,7 @@ describe('On', () => {
   });
 
   it('stays On and says so when turning off fails', async () => {
-    await open({ feed: FEED, boards: BOARDS });
+    await open({ feed: FEED, types: TYPES });
     fireEvent.click(screen.getByRole('button', { name: 'Turn Off' }));
     client.turnOffCalendarFeed.mockRejectedValue(new Error('500'));
     confirmIn('Turn Off');
@@ -268,7 +268,7 @@ describe('reading', () => {
       'Couldn’t load your calendar link.',
     );
     expect(stateOf()).toBe('error');
-    answer({ feed: null, boards: [] });
+    answer({ feed: null, types: [] });
     fireEvent.click(screen.getByRole('button', { name: 'Try Again' }));
     await screen.findByText('What It Shows');
     expect(stateOf()).toBe('off');
@@ -289,7 +289,7 @@ describe('the My Work feed', () => {
     await openMine(null);
     expect(stateOf()).toBe('off');
     expect(screen.getByText('Your cards in your own calendar.')).toBeTruthy();
-    expect(screen.getByText(/Each open card assigned to you, in any plan you own/)).toBeTruthy();
+    expect(screen.getByText(/Every open card assigned to you, in any plan you own/)).toBeTruthy();
     expect(screen.queryByText('What It Shows')).toBeNull();
     expect(document.querySelector('[data-calendar-feed-privacy]')).toBeTruthy();
     client.issueMyWorkCalendarFeed.mockResolvedValue({ feed: { createdAt: MADE }, path: MY_PATH });
@@ -325,22 +325,14 @@ describe('the My Work feed', () => {
   });
 });
 
-describe('board labels', () => {
-  it("name a board by its title, with its tab's name when two share a title, or the tab's name for none", () => {
-    expect(
-      boardLabels([
-        { id: 'a', title: 'Kanban', tabName: 'One' },
-        { id: 'b', title: 'Kanban', tabName: 'Two' },
-        { id: 'c', title: '', tabName: 'Three' },
-        { id: 'd', title: 'Bugs', tabName: 'Four' },
-      ]),
-    ).toEqual(
-      new Map([
-        ['a', 'Kanban (One)'],
-        ['b', 'Kanban (Two)'],
-        ['c', 'Three'],
-        ['d', 'Bugs'],
-      ]),
+describe('the summary', () => {
+  it('says in one sentence what the calendar will hold', () => {
+    const base = { typeIds: null, mine: false, includeDone: false };
+    expect(feedSummary([], base)).toBe(
+      'Every card with a Start or Due date, leaving out done ones.',
+    );
+    expect(feedSummary(['Bug', 'Task', 'Idea'], { ...base, mine: true, includeDone: true })).toBe(
+      'Every Bug, Task and Idea card that names you with a Start or Due date, done ones included.',
     );
   });
 });
@@ -371,7 +363,7 @@ describe('the door', () => {
   });
 
   it('opens the dialog from its Tools row', async () => {
-    answer({ feed: null, boards: [] });
+    answer({ feed: null, types: [] });
     render(
       <CalendarFeedHost scope={SCOPE}>
         <Row />

@@ -3,17 +3,18 @@
 // plan's owner's or a team member's, signed in, in person: never an API token, a workbench session, a guest or anyone
 // who holds the plan through a share link, at any level (403 `calendar_feed_needs_member`).
 //
-//   GET    the person's feed (its options and when its link was made, never the link) and the plan's boards
+//   GET    the person's feed (its options and when its link was made, never the link) and the plan's card types
 //   POST   make the feed with the body's options, or, over an existing one, Reset Link; answers the link's path once
 //   PUT  change the feed's options, keeping its link (404 without a feed)
 //   DELETE Turn Off
 import type {
   CalendarFeedIssueResponse,
-  CalendarFeedOptions,
   CalendarFeedOptionsResponse,
   CalendarFeedResponse,
 } from '@liveplanner/api-schema';
-import { feedBoardsOf } from '../calendar/feed-boards';
+import { CALENDAR_FEED_TYPES_MAX } from '@liveplanner/api-schema';
+import { feedTypesOf } from '../calendar/feed-boards';
+import type { CalendarFeedOptions } from '../calendar/feed-store';
 import {
   calendarFeedFor,
   issueCalendarFeed,
@@ -51,33 +52,38 @@ async function feedMember(ctx: PlanRouteContext, projectId: string): Promise<str
   return person;
 }
 
-// The body's options, checked against the plan's boards, or null.
+// The body's options, checked against the plan's card types (calendar-feed.md "Managing a feed"). A save always
+// clears a board named before card types (`boardId`).
 async function optionsOf(
   ctx: PlanRouteContext,
   projectId: string,
 ): Promise<CalendarFeedOptions | Response> {
   const raw = await readBody(ctx);
   if (raw instanceof Response) return raw;
-  const { boardId = null, mine = false, includeDone = false } = raw;
+  const { typeIds = null, mine = false, includeDone = false } = raw;
   const flags = typeof mine === 'boolean' && typeof includeDone === 'boolean';
-  const boardShape =
-    boardId === null ||
-    (typeof boardId === 'string' && boardId.length > 0 && boardId.length <= FEED_BOARD_ID_MAX);
-  if (!flags || !boardShape) return refuse(400, 'calendar_feed_invalid', 'invalid');
-  if (boardId !== null) {
-    const boards = await feedBoardsOf(ctx.env, projectId);
-    if (!boards.some((b) => b.id === boardId))
+  const typesShape =
+    typeIds === null ||
+    (Array.isArray(typeIds) &&
+      typeIds.length > 0 &&
+      typeIds.length <= CALENDAR_FEED_TYPES_MAX &&
+      new Set(typeIds).size === typeIds.length &&
+      typeIds.every((t) => typeof t === 'string' && t.length > 0 && t.length <= FEED_BOARD_ID_MAX));
+  if (!flags || !typesShape) return refuse(400, 'calendar_feed_invalid', 'invalid');
+  if (typeIds !== null) {
+    const known = new Set((await feedTypesOf(ctx.env, projectId)).map((t) => t.id));
+    if (!(typeIds as string[]).every((t) => known.has(t)))
       return refuse(400, 'calendar_feed_invalid', 'invalid');
   }
-  return { boardId, mine, includeDone };
+  return { typeIds: typeIds as string[] | null, boardId: null, mine, includeDone };
 }
 
 async function read(ctx: PlanRouteContext, projectId: string, person: string): Promise<Response> {
-  const [feed, boards] = await Promise.all([
+  const [feed, types] = await Promise.all([
     calendarFeedFor(ctx.env, projectId, person),
-    feedBoardsOf(ctx.env, projectId),
+    feedTypesOf(ctx.env, projectId),
   ]);
-  const body: CalendarFeedResponse = { feed, boards };
+  const body: CalendarFeedResponse = { feed, types };
   return answer(body);
 }
 

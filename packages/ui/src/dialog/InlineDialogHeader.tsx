@@ -2,12 +2,13 @@ import type { ReactNode } from 'react';
 
 // A dialog's header drawn inside Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md "Opening a tool inside
 // Tools"): the back bar above it names the tool and closes it, so the title is for screen readers alone (still the
-// dialog's label) and what shows is the header's one line and its actions, in a slim row. Only the heading when it has
-// neither.
+// dialog's label). Its one line is left out too (owner, 2026-11-17: the tool explains itself below, better); only its
+// actions show, in a slim row. Only the heading when it has none.
 export function InlineDialogHeader({
   titleId,
   title,
-  subtitle,
+  // Accepted from the full header and not drawn here.
+  subtitle: _subtitle,
   actions,
 }: {
   titleId?: string;
@@ -20,20 +21,11 @@ export function InlineDialogHeader({
       {title}
     </h2>
   );
-  if (!subtitle && !actions) return heading;
+  if (!actions) return heading;
   return (
-    <div
-      data-dialog-inline-header=""
-      className="flex shrink-0 items-center gap-3 border-b border-slate-100 px-4 pb-3 pt-0.5 dark:border-slate-800"
-    >
+    <div data-dialog-inline-header="" className="flex shrink-0 items-center gap-3 px-4 pb-2 pt-0.5">
       {heading}
-      {subtitle ? (
-        <p className="min-w-0 flex-1 text-[13px] leading-[18px] text-slate-600 dark:text-slate-400">
-          {subtitle}
-        </p>
-      ) : (
-        <span className="flex-1" />
-      )}
+      <span className="flex-1" />
       {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
     </div>
   );

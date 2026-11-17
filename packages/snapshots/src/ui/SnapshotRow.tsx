@@ -2,11 +2,11 @@
 
 // One snapshot in the dialog (liveworkspace/docs/specs/014-snapshots/snapshots.md "In the editor"; blueprint SN24): its
 // name or time, who took it, how long ago and its size, a `Before revert` badge on an automatic one, and Revert and
-// Delete. Each confirms in place: the row's actions give way to the question and its two buttons, focus moves to
-// Cancel, and Escape there cancels.
+// Delete. Delete goes at once (owner, 2026-11-17: no question for it); Revert asks first in the shared ConfirmPopover
+// beside its button, as every other confirm in the apps does.
 
-import type { KeyboardEvent } from 'react';
-import { Button } from '@liveworkspace/ui';
+import { useState } from 'react';
+import { Button, ConfirmPopover } from '@liveworkspace/ui';
 import type { SnapshotSummary } from '../wire';
 import { BinGlyph } from './glyphs';
 import { snapshotMeta, snapshotTitle } from './snapshot-words';
@@ -43,22 +43,15 @@ export function SnapshotRow({
   const title = snapshotTitle(snapshot);
   const reverting = busy?.kind === 'revert' && busy.id === snapshot.id;
   const deleting = busy?.kind === 'delete' && busy.id === snapshot.id;
-  const cancelOnEscape = (event: KeyboardEvent) => {
-    if (event.key !== 'Escape') return;
-    event.stopPropagation();
-    onConfirm(null);
-  };
+  // The Revert button, which the confirm stands beside.
+  const [revertAt, setRevertAt] = useState<HTMLElement | null>(null);
   return (
     <Tag
       data-snapshot-row={snapshot.id}
       className={`rounded-lg ${
         // On History's rail its text lines up with the events' (the label above it), the hover wash reaching past it.
         Tag === 'div' ? '-mx-2 px-2 py-1.5' : 'px-3 py-2.5'
-      } transition-colors ${
-        confirm
-          ? 'bg-slate-100 dark:bg-slate-800/80'
-          : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
-      }`}
+      } transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50`}
     >
       <div className="flex items-center gap-3">
         <div className="min-w-0 flex-1">
@@ -80,72 +73,45 @@ export function SnapshotRow({
             {snapshotMeta(snapshot, viewerId, now)}
           </p>
         </div>
-        {confirm === null ? (
-          <div className="flex shrink-0 items-center gap-1">
-            <Button
-              variant="secondary"
-              size="sm"
-              disabled={locked}
-              onClick={() => onConfirm('revert')}
-              aria-label={`Revert to ${title}`}
-            >
-              Revert
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              disabled={locked}
-              onClick={() => onConfirm('delete')}
-              aria-label="Delete snapshot"
-              title="Delete snapshot"
-              className="relative touch-target text-slate-500 hover:text-red-700 dark:text-slate-400 dark:hover:text-red-300"
-            >
-              <BinGlyph />
-            </Button>
-          </div>
-        ) : null}
-      </div>
-      {confirm ? (
-        <div
-          role="group"
-          // Its own Escape (cancel), before the Tools popover's (popover-stack): see ChromeToolsMenu's passEscape.
-          data-keeps-escape=""
-          aria-label={confirm === 'revert' ? 'Confirm revert' : 'Confirm delete'}
-          onKeyDown={cancelOnEscape}
-          className="mt-2.5 flex flex-col gap-2.5 border-t border-slate-200 pt-2.5 sm:flex-row sm:items-center dark:border-slate-700"
-        >
-          <p className="flex-1 text-xs leading-relaxed text-slate-700 dark:text-slate-200">
-            {confirm === 'revert'
-              ? `Everyone's work since then is replaced. A snapshot of the ${noun} as it is now is taken first, so you can undo this.`
-              : "Delete this snapshot? This can't be undone."}
-          </p>
-          <div className="flex shrink-0 justify-end gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              autoFocus
-              disabled={reverting || deleting}
-              onClick={() => onConfirm(null)}
-            >
-              Cancel
-            </Button>
-            {confirm === 'revert' ? (
-              <Button variant="primary" size="sm" busy={reverting} onClick={onRevert}>
-                {reverting ? 'Reverting…' : 'Revert'}
-              </Button>
-            ) : (
-              <Button
-                variant="solid"
-                size="sm"
-                busy={deleting}
-                onClick={onDelete}
-                className="bg-red-700 text-white hover:bg-red-800 dark:bg-red-600 dark:hover:bg-red-500"
-              >
-                {deleting ? 'Deleting…' : 'Delete'}
-              </Button>
-            )}
-          </div>
+        <div className="flex shrink-0 items-center gap-1">
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled={locked && !reverting}
+            busy={reverting}
+            onClick={(e) => {
+              setRevertAt(e.currentTarget);
+              onConfirm('revert');
+            }}
+            aria-label={`Revert to ${title}`}
+          >
+            {reverting ? 'Reverting…' : 'Revert'}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            disabled={locked && !deleting}
+            busy={deleting}
+            onClick={onDelete}
+            aria-label="Delete snapshot"
+            title="Delete snapshot"
+            className="relative touch-target text-slate-500 hover:text-red-700 dark:text-slate-400 dark:hover:text-red-300"
+          >
+            <BinGlyph />
+          </Button>
         </div>
+      </div>
+      {confirm === 'revert' && revertAt ? (
+        <ConfirmPopover
+          anchor={revertAt}
+          message={`Revert to this snapshot? Everyone's work since then is replaced. A snapshot of the ${noun} as it is now is taken first, so you can undo this.`}
+          confirmLabel="Revert"
+          onConfirm={() => {
+            onConfirm(null);
+            onRevert();
+          }}
+          onCancel={() => onConfirm(null)}
+        />
       ) : null}
     </Tag>
   );

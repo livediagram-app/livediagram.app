@@ -109,33 +109,6 @@ describe('History', () => {
     expect(within(run).getByText('Was “\u2068Untitled\u2069”')).toBeTruthy();
   });
 
-  it('filters by kind with toggle chips', async () => {
-    const events = [
-      mine(1, { type: 'edited' }),
-      mine(2, { type: 'shared', detail: { level: 'view' }, actorId: 'user_ada' }),
-      mine(3, { type: 'moved', detail: { folderName: 'Launches' } }),
-    ];
-    page(createFakeIndex({ items: [makeItem(1)], events }));
-    const dialog = await openHistory();
-    const chips = await within(dialog).findByRole('group', { name: 'Filter by kind' });
-    const all = within(chips).getByRole('button', { name: /^All/ });
-    expect(all.getAttribute('aria-pressed')).toBe('true');
-    fireEvent.click(within(chips).getByRole('button', { name: /^Sharing/ }));
-    await waitFor(() => expect(entries(dialog)).toHaveLength(1));
-    expect(entries(dialog)[0]!.getAttribute('data-history-event')).toBe('shared');
-    expect(all.getAttribute('aria-pressed')).toBe('false');
-    // Pressed again, the chip lets go.
-    fireEvent.click(within(chips).getByRole('button', { name: /^Sharing/ }));
-    await waitFor(() => expect(entries(dialog)).toHaveLength(3));
-  });
-
-  it('leaves the chips off when only one kind is loaded', async () => {
-    page(createFakeIndex({ items: [makeItem(1)], events: [mine(1, { type: 'edited' })] }));
-    const dialog = await openHistory();
-    await waitFor(() => expect(entries(dialog)).toHaveLength(1));
-    expect(within(dialog).queryByRole('group', { name: 'Filter by kind' })).toBeNull();
-  });
-
   it('says when nothing has happened', async () => {
     page(createFakeIndex({ items: [makeItem(1)] }));
     const dialog = await openHistory();

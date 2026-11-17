@@ -65,6 +65,8 @@ export async function feedEventsOf(
     if (!feed.includeDone && places.isDone(status)) continue;
     // The board the options name shows the card (Work Tracker 993: boards sharing a status each show it), else
     // every board does.
+    // The card types the options name, when they name any: a type spans every board that shows it.
+    if (feed.typeIds !== null && !feed.typeIds.includes(item.type)) continue;
     if (feed.boardId !== null && !places.shows(feed.boardId, status, item.type, catalogue))
       continue;
     if (me !== null) {

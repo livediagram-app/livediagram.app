@@ -151,10 +151,13 @@ describe('the Automations button', () => {
     render(<Footer {...EDITOR} offline sync={sync} />);
     openAutomations();
     expect(track).toHaveBeenCalledWith('UI', 'Opened', 'AutomationsOffline');
-    // The gate opens inside Tools, a region under its back bar rather than a modal.
-    const gate = await screen.findByRole('region', { name: 'Automations' });
-    expect(gate.textContent).toContain('Rules Run on Our Servers');
-    expect(gate.textContent).toContain('so they need it saved to your account.');
+    // The gate opens as Automations' own modal, in the shared plain words.
+    const gate = (await screen.findByText(/You need to sync this plan/)).closest<HTMLElement>(
+      '[role="dialog"]',
+    )!;
+    expect(gate.textContent).toContain(
+      'You need to sync this plan to our servers to use Automations',
+    );
     expect(gate.querySelector('[data-prompt-glyph]')!.getAttribute('data-prompt-glyph')).toBe(
       'cloud-off',
     );
@@ -166,7 +169,7 @@ describe('the Automations button', () => {
     expect(sync).toHaveBeenCalledOnce();
     expect(toast.success).toHaveBeenCalledOnce();
     // The same opening goes on: the screen (mocked here as its dialog) in place of the gate.
-    await waitFor(() => expect(screen.queryByText('Rules Run on Our Servers')).toBeNull());
+    await waitFor(() => expect(screen.queryByText(/You need to sync this plan/)).toBeNull());
     expect(await screen.findByRole('dialog', { name: 'Automations' })).toBeTruthy();
   });
 
@@ -175,10 +178,10 @@ describe('the Automations button', () => {
     const sync = vi.fn(async () => {});
     render(<Footer {...EDITOR} offline ready={false} sync={sync} />);
     openAutomations();
-    await screen.findByText('Rules Run on Our Servers');
+    await screen.findByText(/You need to sync this plan/);
     expect(screen.getByRole('button', { name: 'Sync Plan' })).toHaveProperty('disabled', true);
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
-    expect(screen.queryByText('Rules Run on Our Servers')).toBeNull();
+    expect(screen.queryByText(/You need to sync this plan/)).toBeNull();
     expect(sync).not.toHaveBeenCalled();
   });
 
@@ -189,12 +192,12 @@ describe('the Automations button', () => {
     });
     render(<Footer {...EDITOR} offline sync={sync} />);
     openAutomations();
-    await screen.findByText('Rules Run on Our Servers');
+    await screen.findByText(/You need to sync this plan/);
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: 'Sync Plan' }));
     });
     expect(toast.error).toHaveBeenCalledOnce();
-    expect(screen.getByText('Rules Run on Our Servers')).toBeTruthy();
+    expect(screen.getByText(/You need to sync this plan/)).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Sync Plan' })).toHaveProperty('disabled', false);
   });
 
@@ -204,9 +207,13 @@ describe('the Automations button', () => {
     render(<Footer {...EDITOR} signedIn={false} />);
     openAutomations();
     expect(track).toHaveBeenCalledWith('UI', 'Opened', 'AutomationsSignIn');
-    // The gate opens inside Tools, a region under its back bar rather than a modal.
-    const gate = await screen.findByRole('region', { name: 'Automations' });
-    expect(gate.textContent).toContain('so they need you signed in');
+    // The gate opens as Automations' own modal, in the shared plain words.
+    const gate = (
+      await screen.findByText(/You need to sign in to a liveworkspace/)
+    ).closest<HTMLElement>('[role="dialog"]')!;
+    expect(gate.textContent).toContain(
+      'You need to sign in to a liveworkspace account to use Automations',
+    );
     expect(gate.querySelector('[data-prompt-glyph]')!.getAttribute('data-prompt-glyph')).toBe(
       'person',
     );

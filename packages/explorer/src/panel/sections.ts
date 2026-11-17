@@ -19,7 +19,7 @@ export type PanelSection =
   | { kind: 'trash' };
 
 /** The Library section's tabs, each one of its pages. */
-export type LibraryTab = 'gallery' | 'shape-libraries';
+export type LibraryTab = 'gallery' | 'shape-libraries' | 'walkthroughs';
 
 export type PanelSectionGroup = { id: 'overview' | 'spaces' | 'more'; sections: PanelSection[] };
 

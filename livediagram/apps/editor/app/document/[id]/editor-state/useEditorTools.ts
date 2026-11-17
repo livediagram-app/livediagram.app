@@ -12,6 +12,7 @@ import { useFormatTool } from '@liveworkspace/workbench/hooks/editor/useFormatTo
 import type { EditorDocumentSlice } from './useEditorDocument';
 import type { EditorHistorySlice } from './useEditorUndoState';
 import type { EditorSelectionSlice } from './useEditorSelection';
+import { requestToolsView } from '@liveworkspace/workbench/components/chrome/tools-door';
 
 // The canvas tool (Select, Hand, Laser, Eraser, Format and the rest), its per-browser settings, the shortcuts
 // switch, and the pickers that guard a tool change. A slice of useEditorState (../useEditorState.ts): it takes
@@ -86,6 +87,12 @@ export function useEditorTools({
     // already hide it on a phone, so this catches any path that still asks.
     if (tool === 'slide-deck' && isMobileViewportSync()) {
       toast.info('Slide Deck is only available on a larger screen');
+      return;
+    }
+    // Slide Deck is a Tools page, not a mode (presentation-mode.md "Where it lives"): any path that asks for it (the
+    // command palette, a shortcut) opens Tools there.
+    if (tool === 'slide-deck') {
+      requestToolsView('slide-deck');
       return;
     }
     // Spotlight and Laser are non-editing presenter modes, so they clear the selection on entry: no

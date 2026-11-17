@@ -4,6 +4,7 @@
 // so the four doors can't drift.
 //
 //   GET    /api/walkthroughs?d=              the item's walkthroughs
+//   GET    /api/walkthroughs?mine=1          the caller's own, on every item (the Explorer's library)
 //   POST   /api/walkthroughs?d=              start one (an Editor)
 //   PUT    /api/walkthroughs/:id/media?d=    its media, streamed (the Editor who started it)
 //   GET    /api/walkthroughs/:id?d=          one, with its events
@@ -16,6 +17,7 @@ import {
   WALKTHROUGH_START_MAX_BYTES,
   walkthroughMediaType,
   type Walkthrough,
+  type WalkthroughLibraryEntry,
   type WalkthroughSummary,
 } from './walkthrough';
 import type { WalkthroughCalls, WalkthroughResult } from './walkthrough-client';
@@ -93,6 +95,22 @@ export async function handleWalkthroughDoor(input: WalkthroughDoorInput): Promis
   // Only a route that is one gets this far, so a path the door doesn't serve answers 404 whether or not the
   // service is there.
   if (!calls) return json({ error: UNAVAILABLE }, { status: 503 });
+  // The caller's own, across the app (the Explorer's Walkthroughs library): theirs to watch and delete, so no grant
+  // is read; an item they can no longer open still lists, and its media answers 404 as the door's media route does.
+  if (
+    route === 'list' &&
+    method === 'GET' &&
+    !itemId &&
+    new URL(request.url).searchParams.get('mine') === '1'
+  ) {
+    if (owner === null || !input.person) return refuse('forbidden', 403);
+    return passOn(await calls.listOwned(owner), 200, (value) => ({
+      walkthroughs: value.walkthroughs.map(({ walkthrough }): WalkthroughLibraryEntry => ({
+        ...walkthroughSummary(walkthrough, true, true),
+        item: walkthrough.item,
+      })),
+    }));
+  }
   if (!itemId) return refuse('missing_item', 400);
 
   const access = await input.access(itemId);

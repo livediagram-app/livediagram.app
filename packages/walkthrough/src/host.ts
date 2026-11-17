@@ -57,4 +57,6 @@ export type WalkthroughHost = {
   author: string | null;
   // Absent: canvas elements alone, and Hide From Recording always offered.
   hideable?: WalkthroughHideable | undefined;
+  // The showing tab's elements, for the arrows a hidden element takes with it (withAttachedArrows).
+  elements?: (() => readonly unknown[]) | undefined;
 };

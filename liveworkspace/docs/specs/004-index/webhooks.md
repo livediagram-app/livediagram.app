@@ -219,11 +219,12 @@ webhook, with the same address, secret, retries, pausing and Recent Deliveries; 
 From the document's own ⋯ menu wherever it is listed (the Explorer in every app and on liveworkspace.app, and the
 Explorer panel inside each editor), and, for the open document in each editor, from the footer's **Tools** ([footer-tools-menu.md](./footer-tools-menu.md)): **Webhooks**, offered to anyone signed in who can edit the whole document (an editor also
 leaves it off for a Viewer, a Participant or a one-tab link, which it knows). It opens a
-dialog titled "Webhooks for “<document>”" whose line says that what is set here applies to this document
-only. It wears the dialog hero header ([dialog-hero-header.md](./dialog-hero-header.md)): a payload leaving the
-document along a send line to an endpoint, the title its name, the line the app's mark with "<Kind> · These apply to
-this <kind> only". In it: the document's webhooks, each with Send Test, Pause or Resume, Delete, Edit Events and its Recent
-Deliveries, and **Add Webhook**: where it posts (Slack, Microsoft Teams, Your Own Service), the address with how to
+dialog titled "Webhooks for “<document>”", the title alone naming whose they are (no line under it). It wears the
+dialog hero header ([dialog-hero-header.md](./dialog-hero-header.md)): a payload leaving the document along a send
+line to an endpoint, the title its name. In it: the document's webhooks, each with Send Test, Pause or Resume, Delete, Edit Events and its Recent
+Deliveries, and **Add Webhook**, which opens beside the dialog as a popover (`ResponsivePopover` `placement="side"`,
+440px; a drawer from the bottom on a phone), so the list stays in view and the dialog never grows. Its form is headed
+**Add a Webhook** alone (no line under it, and not the list's Post Updates Where Your Team Talks): where it posts (Slack, Microsoft Teams, Your Own Service), each a full-width row with its mark at the left, the address with how to
 get it, a name, **What Should It Send?** (the document's app's events in groups, none chosen at first, with Select
 All and Clear) and **Who Did It** (Anyone or Only Me). A plain webhook's signing secret shows once. Edit Events'
 Save waits for a change: the same events in another order is none. A refusal of the address (`webhook_url_invalid`,
