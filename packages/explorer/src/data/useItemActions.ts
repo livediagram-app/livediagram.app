@@ -36,12 +36,17 @@ export type ItemActions = {
 // goes): its promise settles the action. null lets the Explorer trash it.
 export type HostTrash = (item: Item) => Promise<boolean> | null;
 
+// The host's word that an item just went to Archived (an account's, or one kept in This Browser): true when it took it,
+// the item open in its editor, and leaves for the Explorer, which says so on arrival; false keeps the toast here.
+export type HostArchived = (item: { id: string; title: string | null }) => boolean;
+
 export function createItemActions({
   client,
   overlay,
   toast,
   reloadLists,
   hostTrash,
+  hostArchived,
   onPlaced,
   onRenamed,
   placeName,
@@ -52,6 +57,7 @@ export function createItemActions({
   toast: ToastApi;
   reloadLists: () => void;
   hostTrash?: HostTrash;
+  hostArchived?: HostArchived;
   // After an item changed place (moved, to the Trash, back, gone): what folders hold has changed.
   onPlaced?: () => void;
   // After the index took a new title.
@@ -159,7 +165,9 @@ export function createItemActions({
         () => client.archiveItem(item.id),
         `Couldn’t move ${named(item)} to Archived. Try again.`,
       );
-      if (ok) toast.show(`Moved ${named(item)} to Archived.`, { tone: 'success' });
+      // The item open in the editor is closed now: the host leaves for the Explorer, which says it there.
+      if (ok && !hostArchived?.(item))
+        toast.show(`Moved ${named(item)} to Archived.`, { tone: 'success' });
       return ok;
     },
     trash: async (item) => {
@@ -254,6 +262,7 @@ export function useItemActions(deps: Parameters<typeof createItemActions>[0]): I
     toast,
     reloadLists,
     hostTrash,
+    hostArchived,
     onPlaced,
     onRenamed,
     placeName,
@@ -267,11 +276,23 @@ export function useItemActions(deps: Parameters<typeof createItemActions>[0]): I
         toast,
         reloadLists,
         hostTrash,
+        hostArchived,
         onPlaced,
         onRenamed,
         placeName,
         onOrganise,
       }),
-    [client, overlay, toast, reloadLists, hostTrash, onPlaced, onRenamed, placeName, onOrganise],
+    [
+      client,
+      overlay,
+      toast,
+      reloadLists,
+      hostTrash,
+      hostArchived,
+      onPlaced,
+      onRenamed,
+      placeName,
+      onOrganise,
+    ],
   );
 }

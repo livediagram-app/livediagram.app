@@ -32,13 +32,15 @@ export function thenReload(result: Promise<unknown> | void, reloadLists: () => v
 /** Move to Archived for an item kept only in this browser: marked in this browser alone, nothing uploaded
  *  (one-explorer.md "Archived"). */
 export function useArchiveLocal(): (item: ThisBrowserItem) => void {
-  const { app, toast } = useExplorer();
+  const { app, toast, hostArchived } = useExplorer();
   return useCallback(
     (item: ThisBrowserItem) => {
       setThisBrowserArchived(app, item.id, Date.now());
+      // The one open in the editor is closed now: the host leaves for the Explorer, which says it there.
+      if (hostArchived?.(item)) return;
       toast.show(`Moved ${quoted(item.title || 'Untitled')} to Archived.`, { tone: 'success' });
     },
-    [app, toast],
+    [app, toast, hostArchived],
   );
 }
 
