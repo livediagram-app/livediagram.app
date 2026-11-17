@@ -19,7 +19,7 @@ import { authorOf, type ForumAccount } from './useForumAccount';
 
 type Mode = 'reading' | 'editing' | 'deleting';
 
-// One post in a topic, the question or a reply (liveworkspace/docs/specs/007-community/community.md "The Forum", "On
+// One post in a topic, the topic's opening post or a reply (liveworkspace/docs/specs/007-community/community.md "The Forum", "On
 // the page"): who wrote it and when, the words as plain text (paragraphs and line breaks kept), its reactions, and
 // what the reader may do with it. Its author edits it in place (the words become a field, Save and Cancel) and deletes
 // it after asking in place (Delete and Keep); anyone else reports it. A post its author alone sees says why.
@@ -141,7 +141,7 @@ export function ForumPostCard({
             />
           ) : null}
           <TextArea
-            aria-label={isTopic ? 'Your Question' : 'Your Reply'}
+            aria-label={isTopic ? 'Your Post' : 'Your Reply'}
             value={draft}
             maxLength={FORUM_BODY_MAX}
             onChange={(e) => setDraft(e.target.value)}
@@ -179,12 +179,12 @@ export function ForumPostCard({
       {mode === 'deleting' ? (
         <div
           role="group"
-          aria-label={isTopic ? 'Delete this question?' : 'Delete this reply?'}
+          aria-label={isTopic ? 'Delete this post?' : 'Delete this reply?'}
           className="flex flex-col gap-3 rounded-xl bg-slate-50 p-3 ring-1 ring-inset ring-slate-200 sm:flex-row sm:items-center sm:justify-between dark:bg-slate-800/60 dark:ring-slate-700"
         >
           <p className="text-sm text-slate-700 dark:text-slate-200">
             {isTopic
-              ? 'Delete this question and every reply to it? This cannot be undone.'
+              ? 'Delete this post and every reply to it? This cannot be undone.'
               : 'Delete this reply? This cannot be undone.'}
           </p>
           {error ? (
@@ -250,7 +250,7 @@ export function ForumPostCard({
 
       {reporting ? (
         <ReportDialog
-          noun={isTopic ? 'question' : 'reply'}
+          noun={isTopic ? 'post' : 'reply'}
           send={(input) => api.reportPost(post.id, input)}
           onClose={() => setReporting(false)}
         />

@@ -6,6 +6,7 @@ import {
 } from '@liveworkspace/community/paths';
 import type { CommunityApp } from '@liveworkspace/community';
 import { appSignInHref } from '@liveworkspace/account-menu';
+import { signInHref } from '@/lib/accounts';
 import type { AppName } from '@liveworkspace/sites';
 
 // The Community's addresses (liveworkspace/docs/specs/007-community/community.md "One page for every app"). The pages
@@ -79,7 +80,9 @@ export function communityLinks(
     embed: (post) => on(post.app, `/embed?${shareQuery(post.shareCode)}`),
     editDocument: (post) =>
       on(post.app, `/${kindOf(post.app)}/${encodeURIComponent(post.documentId)}`),
-    signIn: appSignInHref,
+    // Under an app's address its own sign-in; on liveworkspace.app the site's /sign-in page, since
+    // /api/auth/sign-in exists only behind an app's router.
+    signIn: pageApp ? appSignInHref : (returnTo) => signInHref(returnTo),
     shareYourOwn: pageApp ? '/explorer/home' : '/explorer',
   };
 }

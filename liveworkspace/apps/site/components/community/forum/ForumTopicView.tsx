@@ -3,21 +3,23 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { FORUM_HOME_PATH, type ForumReply } from '@liveworkspace/community';
+import { FORUM_HOME_PATH, forumCategoryLabel, type ForumReply } from '@liveworkspace/community';
 import { communityPlural } from '@liveworkspace/community-ui';
-import { Button, EmptyState, buttonClassName } from '@liveworkspace/ui';
+import { BackBar, Button, EmptyState, buttonClassName } from '@liveworkspace/ui';
 import { useCommunitySite } from '../client';
 import { LoadError } from '../shared/LoadError';
-import { AnswerIcon, BackIcon, ForumIcon } from '../shared/icons';
+import { AnswerIcon, ForumIcon } from '../shared/icons';
+import { ForumAppLogo } from './ForumAppLogo';
 import { AnswerChip, CategoryPill, StateBadge } from './ForumBits';
 import { forumErrorText, type ForumApi } from './forum-api';
 import { ForumPostCard } from './ForumPostCard';
+import { ForumSidebar } from './ForumSidebar';
 import { ReplyComposer } from './ReplyComposer';
 import type { ForumAccount } from './useForumAccount';
 import { useForumTopic } from './useForumTopic';
 
 // A topic (`/community/forum/topic?id=`; liveworkspace/docs/specs/007-community/community.md "The Forum", "On the
-// page"): its title and category, the question, then the replies with the answer first, then Reply at the foot.
+// page"): its title, category and app, the opening post, then the replies with the answer first, then Reply at the foot.
 export function ForumTopicView({
   api,
   account,
@@ -77,7 +79,8 @@ export function ForumTopicView({
   }
 
   const { topic } = state;
-  const asker = topic.own && account.status === 'in';
+  // Only a Question has an answer to mark: other kinds of post are conversations.
+  const canMark = topic.own && account.status === 'in' && topic.category === 'question';
 
   const mark = async (reply: ForumReply) => {
     if (account.status !== 'in' || marking) return;
@@ -98,89 +101,97 @@ export function ForumTopicView({
   };
 
   return (
-    <div className="flex flex-col gap-6">
-      <Link
-        href={FORUM_HOME_PATH}
-        className="inline-flex w-fit items-center gap-1.5 rounded-md text-sm font-medium text-slate-500 transition-colors duration-micro hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:text-slate-400 dark:hover:text-white"
-      >
-        <BackIcon size={15} aria-hidden />
-        All Questions
-      </Link>
-      <div className="flex flex-col gap-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <CategoryPill category={topic.category} />
-          {topic.answerId ? <AnswerChip label="Answered" /> : null}
-          {topic.own ? <StateBadge state={topic.state} /> : null}
+    <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start xl:gap-14">
+      <div className="flex min-w-0 flex-col gap-6">
+        <BackBar
+          label="All Posts"
+          current={forumCategoryLabel(topic.category)}
+          onClick={() => router.push(FORUM_HOME_PATH)}
+          gap="none"
+        />
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <CategoryPill category={topic.category} />
+            {topic.app ? <ForumAppLogo app={topic.app} /> : null}
+            {topic.answerId ? <AnswerChip label="Answered" /> : null}
+            {topic.own ? <StateBadge state={topic.state} /> : null}
+          </div>
+          <h1 className="text-balance text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl dark:text-white">
+            {topic.title}
+          </h1>
         </div>
-        <h1 className="text-balance text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl dark:text-white">
-          {topic.title}
-        </h1>
+
+        <ForumPostCard
+          api={api}
+          account={account}
+          post={topic}
+          title={topic.title}
+          now={now}
+          onChanged={(post) => state.replacePost(post)}
+          onDeleted={() => router.push(FORUM_HOME_PATH)}
+        />
+
+        <section aria-labelledby="forum-replies" className="flex flex-col gap-4">
+          <h2 id="forum-replies" className="text-lg font-semibold text-slate-900 dark:text-white">
+            {replies.length === 0
+              ? 'No replies yet'
+              : `${replies.length} ${communityPlural(replies.length, 'Reply', 'Replies')}`}
+          </h2>
+          {answerError ? (
+            <p role="alert" className="text-sm text-rose-600 dark:text-rose-400">
+              {answerError}
+            </p>
+          ) : null}
+          {replies.length > 0 ? (
+            <ol className="flex flex-col gap-3">
+              {replies.map((reply) => {
+                const isAnswer = reply.id === topic.answerId;
+                return (
+                  <li key={reply.id}>
+                    <ForumPostCard
+                      api={api}
+                      account={account}
+                      post={reply}
+                      now={now}
+                      className={
+                        isAnswer
+                          ? 'border-emerald-300 ring-1 ring-emerald-300 dark:border-emerald-500/50 dark:ring-emerald-500/50'
+                          : ''
+                      }
+                      badge={isAnswer ? <AnswerChip label="Answer" /> : null}
+                      answerAction={
+                        canMark && reply.state === 'listed' && topic.state === 'listed' ? (
+                          <Button
+                            variant={isAnswer ? 'ghost' : 'secondary'}
+                            size="sm"
+                            onClick={() => void mark(reply)}
+                            busy={marking === reply.id}
+                            aria-pressed={isAnswer}
+                          >
+                            <AnswerIcon aria-hidden />
+                            {isAnswer ? 'Unmark Answer' : 'Mark as Answer'}
+                          </Button>
+                        ) : null
+                      }
+                      onChanged={(post) => state.replacePost(post)}
+                      onDeleted={() => state.dropReply(reply.id)}
+                    />
+                  </li>
+                );
+              })}
+            </ol>
+          ) : null}
+          {topic.state === 'listed' ? (
+            <ReplyComposer
+              api={api}
+              account={account}
+              topicId={topic.id}
+              onPosted={state.addReply}
+            />
+          ) : null}
+        </section>
       </div>
-
-      <ForumPostCard
-        api={api}
-        account={account}
-        post={topic}
-        title={topic.title}
-        now={now}
-        onChanged={(post) => state.replacePost(post)}
-        onDeleted={() => router.push(FORUM_HOME_PATH)}
-      />
-
-      <section aria-labelledby="forum-replies" className="flex flex-col gap-4">
-        <h2 id="forum-replies" className="text-lg font-semibold text-slate-900 dark:text-white">
-          {replies.length === 0
-            ? 'No replies yet'
-            : `${replies.length} ${communityPlural(replies.length, 'Reply', 'Replies')}`}
-        </h2>
-        {answerError ? (
-          <p role="alert" className="text-sm text-rose-600 dark:text-rose-400">
-            {answerError}
-          </p>
-        ) : null}
-        {replies.length > 0 ? (
-          <ol className="flex flex-col gap-3">
-            {replies.map((reply) => {
-              const isAnswer = reply.id === topic.answerId;
-              return (
-                <li key={reply.id}>
-                  <ForumPostCard
-                    api={api}
-                    account={account}
-                    post={reply}
-                    now={now}
-                    className={
-                      isAnswer
-                        ? 'border-emerald-300 ring-1 ring-emerald-300 dark:border-emerald-500/50 dark:ring-emerald-500/50'
-                        : ''
-                    }
-                    badge={isAnswer ? <AnswerChip label="Answer" /> : null}
-                    answerAction={
-                      asker && reply.state === 'listed' && topic.state === 'listed' ? (
-                        <Button
-                          variant={isAnswer ? 'ghost' : 'secondary'}
-                          size="sm"
-                          onClick={() => void mark(reply)}
-                          busy={marking === reply.id}
-                          aria-pressed={isAnswer}
-                        >
-                          <AnswerIcon aria-hidden />
-                          {isAnswer ? 'Unmark Answer' : 'Mark as Answer'}
-                        </Button>
-                      ) : null
-                    }
-                    onChanged={(post) => state.replacePost(post)}
-                    onDeleted={() => state.dropReply(reply.id)}
-                  />
-                </li>
-              );
-            })}
-          </ol>
-        ) : null}
-        {topic.state === 'listed' ? (
-          <ReplyComposer api={api} account={account} topicId={topic.id} onPosted={state.addReply} />
-        ) : null}
-      </section>
+      <ForumSidebar api={api} topicId={topic.id} category={topic.category} />
     </div>
   );
 }

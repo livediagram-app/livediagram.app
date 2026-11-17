@@ -1,0 +1,151 @@
+'use client';
+
+import { useCallback, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { Dialog } from './dialog/Dialog';
+import { Portal } from './Portal';
+import { POPOVER_VIEWPORT_MARGIN as EDGE, clampIntoRange } from './popover';
+import { usePopoverLayer } from './popover-stack';
+import { useClickOutside } from './useClickOutside';
+import { useFocusTrap } from './useFocusTrap';
+import { useMediaQuery } from './useMediaQuery';
+
+// A panel of work that opens from the control that asked for it, never pushing the page about: from `sm` up a popover
+// under its anchor (above it when only above has room), and on a phone a drawer rising from the bottom edge (the
+// shared Dialog's phone sheet, with its grab handle and swipe to close). For a form too big for a ConfirmPopover and
+// too small to deserve a centred modal (the Community Forum's New Post).
+//
+// The popover is portalled and fixed, so no scrolling column clips it; it follows its anchor as the page scrolls or
+// resizes, and past the room on its side it scrolls inside. Escape (only the popover on top), or a press outside it
+// and its anchor, closes it; opening focuses its first control and closing hands focus back.
+
+const GAP = 8;
+const SM = '(min-width: 640px)';
+// Below this much room under the anchor, a popover with more room above opens above instead.
+const MIN_ROOM_BELOW = 320;
+
+export type ResponsivePopoverProps = {
+  open: boolean;
+  onClose: () => void;
+  /** The control it opens from (kept in state by the host, so a new anchor re-places it). */
+  anchor: HTMLElement | null;
+  /** The id of the panel's heading, for its accessible name. */
+  titleId: string;
+  /** The popover's width in px from `sm` up (clamped to the window). */
+  width?: number;
+  /** Which edge lines up with the anchor's: its right (`end`, for a control at a row's right end) or left. */
+  align?: 'start' | 'end';
+  /** Asked before closing by a press outside, Escape or a swipe: false keeps it open. */
+  beforeClose?: () => boolean;
+  children: ReactNode;
+};
+
+type Place = { left: number; top?: number; bottom?: number; maxHeight: number; width: number };
+
+export function placeResponsivePopover(
+  anchor: { left: number; right: number; top: number; bottom: number },
+  width: number,
+  viewport: { width: number; height: number },
+  align: 'start' | 'end',
+): Place {
+  const w = Math.min(width, viewport.width - EDGE * 2);
+  const start = align === 'end' ? anchor.right - w : anchor.left;
+  const left = clampIntoRange(start, EDGE, viewport.width - w - EDGE);
+  const below = viewport.height - anchor.bottom - GAP - EDGE;
+  const above = anchor.top - GAP - EDGE;
+  return below >= MIN_ROOM_BELOW || below >= above
+    ? { left, top: anchor.bottom + GAP, maxHeight: below, width: w }
+    : { left, bottom: viewport.height - anchor.top + GAP, maxHeight: above, width: w };
+}
+
+export function ResponsivePopover(props: ResponsivePopoverProps) {
+  const desktop = useMediaQuery(SM);
+  if (!props.open) return null;
+  return desktop ? <AnchoredPanel {...props} /> : <PhoneDrawer {...props} />;
+}
+
+function PhoneDrawer({ onClose, titleId, beforeClose, children }: ResponsivePopoverProps) {
+  return (
+    <Dialog
+      open
+      onClose={onClose}
+      titleId={titleId}
+      size="lg"
+      phoneSheet
+      closeOnBack
+      {...(beforeClose ? { beforeClose } : {})}
+    >
+      <div className="px-4 pb-4 pt-1">{children}</div>
+    </Dialog>
+  );
+}
+
+function AnchoredPanel({
+  onClose,
+  anchor,
+  titleId,
+  width = 512,
+  align = 'end',
+  beforeClose,
+  children,
+}: ResponsivePopoverProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [place, setPlace] = useState<Place | null>(null);
+  const close = useCallback(() => {
+    if (!beforeClose || beforeClose()) onClose();
+  }, [beforeClose, onClose]);
+
+  useLayoutEffect(() => {
+    let frame = 0;
+    const measure = () => {
+      if (!anchor) return;
+      const viewport = { width: window.innerWidth, height: window.innerHeight };
+      setPlace(placeResponsivePopover(anchor.getBoundingClientRect(), width, viewport, align));
+    };
+    const schedule = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(measure);
+    };
+    measure();
+    window.addEventListener('resize', schedule);
+    window.addEventListener('scroll', schedule, true);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener('resize', schedule);
+      window.removeEventListener('scroll', schedule, true);
+    };
+  }, [anchor, width, align]);
+
+  useFocusTrap(ref, true);
+  const { withinAbove } = usePopoverLayer(ref, (e) => {
+    if (e.key !== 'Escape') return;
+    e.preventDefault();
+    e.stopPropagation();
+    close();
+  });
+  useClickOutside(ref, (e) => {
+    if (anchor?.contains(e.target as Node) || withinAbove(e.target)) return;
+    close();
+  });
+
+  return (
+    <Portal>
+      <div
+        ref={ref}
+        role="dialog"
+        aria-labelledby={titleId}
+        data-responsive-popover=""
+        className="fixed z-[var(--z-modal)] animate-fade-in overflow-y-auto rounded-2xl border border-slate-200 bg-white p-5 shadow-xl shadow-slate-900/15 dark:border-slate-700 dark:bg-slate-900"
+        style={{
+          left: place?.left ?? -9999,
+          top: place?.top,
+          bottom: place?.bottom,
+          width: place?.width ?? width,
+          maxHeight: place?.maxHeight,
+          visibility: place ? 'visible' : 'hidden',
+        }}
+      >
+        {children}
+      </div>
+    </Portal>
+  );
+}

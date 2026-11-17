@@ -1,6 +1,7 @@
+import type { MouseEvent } from 'react';
 import { Button, ButtonContent, buttonClassName } from '@liveworkspace/ui';
 import { useCommunitySite } from '../client';
-import { AskIcon } from '../shared/icons';
+import { NewPostIcon } from '../shared/icons';
 import type { ForumAccount } from './useForumAccount';
 
 // The way in to writing (liveworkspace/docs/specs/007-community/community.md "Who can do what"): signed in, the button
@@ -16,7 +17,8 @@ export function SignedInAction({
   account: ForumAccount;
   label: string;
   signInLabel: string;
-  onClick: () => void;
+  /** The pressed button comes with it: New Post's popover opens from it. */
+  onClick: (e: MouseEvent<HTMLButtonElement>) => void;
   size?: 'md' | 'cta';
 }) {
   const { links } = useCommunitySite();
@@ -37,7 +39,7 @@ export function SignedInAction({
   }
   return (
     <Button size={size} onClick={onClick} className="shadow-sm">
-      <AskIcon size={16} aria-hidden />
+      <NewPostIcon size={16} aria-hidden />
       <ButtonContent>{label}</ButtonContent>
     </Button>
   );

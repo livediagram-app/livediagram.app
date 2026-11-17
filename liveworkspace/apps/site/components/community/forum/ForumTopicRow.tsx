@@ -2,10 +2,11 @@ import Link from 'next/link';
 import { forumTopicPath, type ForumTopicSummary } from '@liveworkspace/community';
 import { communityPlural } from '@liveworkspace/community-ui';
 import { ReplyIcon } from '../shared/icons';
+import { ForumAppLogo } from './ForumAppLogo';
 import { AnswerChip, Byline, CategoryPill, StateBadge } from './ForumBits';
 
 // One topic in the Forum's list (liveworkspace/docs/specs/007-community/community.md "On the page"): its title (the
-// link), a line of its question, the category, who asked and when; on the right how many replies it has, and
+// link), a line of it, the category, the app's logo (none for Any App), who posted it and when; on the right how many replies it has, and
 // Answered when it has one. The author's own topic nobody else sees yet carries its mark.
 export function ForumTopicRow({ topic, now }: { topic: ForumTopicSummary; now: number }) {
   return (
@@ -28,6 +29,7 @@ export function ForumTopicRow({ topic, now }: { topic: ForumTopicSummary; now: n
         ) : null}
         <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
           <CategoryPill category={topic.category} />
+          {topic.app ? <ForumAppLogo app={topic.app} /> : null}
           <Byline author={topic.author} createdAt={topic.createdAt} now={now} size={20} />
         </div>
       </div>

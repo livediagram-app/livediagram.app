@@ -9,7 +9,10 @@ import {
   FORUM_MAX_OFFSET,
   FORUM_TITLE_MAX,
   forumCategoryLabel,
-  forumCategoryOfApp,
+  FORUM_ANY_APP_LABEL,
+  FORUM_START_CATEGORY,
+  forumAppLabel,
+  isForumApp,
   forumExcerpt,
   forumFallbackColor,
   forumQueryParams,
@@ -26,21 +29,26 @@ import {
 } from './forum';
 
 describe('categories and reactions', () => {
-  it('are General, then each app as it is named', () => {
+  it('are kinds of post, starting at Question, with the app a field of its own', () => {
     expect(FORUM_CATEGORIES.map((c) => c.id)).toEqual([
+      'question',
+      'tips',
+      'feature',
+      'bug',
+      'showcase',
       'general',
-      'livediagram',
-      'liveplanner',
-      'livedocuments',
-      'livedesign',
-      'livehuddle',
     ]);
-    expect(forumCategoryLabel('general')).toBe('General');
-    expect(forumCategoryLabel('livedesign')).toBe('livedesign');
-    expect(forumCategoryOfApp('liveplanner.app')).toBe('liveplanner');
-    expect(forumCategoryOfApp(null)).toBe('general');
-    expect(isForumCategory('livehuddle')).toBe(true);
-    expect(isForumCategory('livehuddle.app')).toBe(false);
+    expect(FORUM_START_CATEGORY).toBe('question');
+    expect(forumCategoryLabel('tips')).toBe('Tips & Tricks');
+    expect(forumCategoryLabel('showcase')).toBe('Show & Tell');
+    expect(isForumApp(null)).toBe(true);
+    expect(isForumApp('livedesign.app')).toBe(true);
+    expect(isForumApp('livedesign')).toBe(false);
+    expect(isForumApp(undefined)).toBe(false);
+    expect(forumAppLabel('liveplanner.app')).toBe('liveplanner');
+    expect(forumAppLabel(null)).toBe(FORUM_ANY_APP_LABEL);
+    expect(isForumCategory('showcase')).toBe(true);
+    expect(isForumCategory('livehuddle')).toBe(false);
     expect(isForumCategory(3)).toBe(false);
   });
 
@@ -62,8 +70,24 @@ describe('validation', () => {
       }),
     ).toEqual({
       ok: true,
-      value: { category: 'general', title: 'Hello there', body: 'a\n\nb is long' },
+      value: { category: 'general', app: null, title: 'Hello there', body: 'a\n\nb is long' },
     });
+    expect(
+      validateForumTopic({
+        category: 'tips',
+        app: 'livediagram.app',
+        title: 'Hello',
+        body: 'long enough',
+      }),
+    ).toMatchObject({ ok: true, value: { app: 'livediagram.app' } });
+    expect(
+      validateForumTopic({
+        category: 'tips',
+        app: 'example.com',
+        title: 'Hello',
+        body: 'long enough',
+      }),
+    ).toEqual({ ok: false, error: 'invalid_app' });
     expect(validateForumTopic(null)).toEqual({ ok: false, error: 'invalid_category' });
     expect(validateForumTopic({ category: 'general', title: 7 })).toEqual({
       ok: false,
@@ -144,16 +168,28 @@ describe('the list', () => {
   it('reads its query leniently and writes it back', () => {
     expect(parseForumListQuery(new URLSearchParams())).toEqual({
       category: null,
+      app: null,
       sort: 'active',
       offset: 0,
     });
     const query = parseForumListQuery(
-      new URLSearchParams('category=livedesign&sort=unanswered&offset=40'),
+      new URLSearchParams('category=bug&app=livedesign&sort=unanswered&offset=40'),
     );
-    expect(query).toEqual({ category: 'livedesign', sort: 'unanswered', offset: 40 });
+    expect(query).toEqual({
+      category: 'bug',
+      app: 'livedesign.app',
+      sort: 'unanswered',
+      offset: 40,
+    });
     expect(forumQueryParams(query).toString()).toBe(
-      'category=livedesign&sort=unanswered&offset=40',
+      'category=bug&app=livedesign&sort=unanswered&offset=40',
     );
+    expect(parseForumListQuery(new URLSearchParams('app=livedesign.app')).app).toBe(
+      'livedesign.app',
+    );
+    expect(parseForumListQuery(new URLSearchParams('app=example.com')).app).toBeNull();
+    expect(parseForumListQuery(new URLSearchParams('category=livedesign')).category).toBeNull();
+    expect(parseForumListQuery(new URLSearchParams('sort=popular')).sort).toBe('popular');
     expect(forumQueryParams({ sort: 'active' }).toString()).toBe('');
     expect(parseForumListQuery(new URLSearchParams('offset=-5')).offset).toBe(0);
     expect(parseForumListQuery(new URLSearchParams('offset=99999')).offset).toBe(FORUM_MAX_OFFSET);
