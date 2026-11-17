@@ -5,6 +5,8 @@ import type { ViewportStore } from '@liveworkspace/workbench/lib/viewport-store'
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { glideViewport } from '@liveworkspace/workbench/lib/viewport-glide';
 import { STRIP_MORPH_MS } from '@/lib/strip-morph';
+import { space3DPreference } from '@/lib/space-3d/space-3d-preference';
+import { SPACE_3D_ZOOM } from '@/lib/space-3d/space-3d-zoom';
 
 type Point = { x: number; y: number };
 
@@ -50,7 +52,7 @@ export function useAvatarCamera({
   }, []);
   useEffect(() => stopGlide, [stopGlide]);
 
-  // 100% with the feet in the middle, at once or gliding over `glideMs`. The wrapper scales about its own centre, so
+  // 100% (140% in the 3D view) with the feet in the middle, at once or gliding over `glideMs`. The wrapper scales about its own centre, so
   // the offset that centres a point is half the canvas's size less the point, at any zoom (as useEditorViewport's
   // centreOn).
   const centreAvatar = useCallback(
@@ -59,7 +61,8 @@ export function useAvatarCamera({
       const node = canvasMainRef.current;
       if (!at || !node) return false;
       const to = {
-        zoom: 1,
+        // The 3D view is closer than the flat plan (docs/specs/008-canvas/3d-view.md "It brings the camera closer").
+        zoom: space3DPreference.get() ? SPACE_3D_ZOOM : 1,
         offset: { x: node.offsetWidth / 2 - at.x, y: node.offsetHeight / 2 - at.y },
       };
       stopGlide();

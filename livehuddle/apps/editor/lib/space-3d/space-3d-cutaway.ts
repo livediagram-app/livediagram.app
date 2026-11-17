@@ -74,7 +74,8 @@ function segmentMeetsBox(
 export function cutAwayIds(walls: readonly SpaceWall[], feet: Point | null): Set<string> {
   const out = new Set<string>();
   if (!feet) return out;
-  for (const wall of walls) if (inFront(wall, feet)) out.add(wall.id);
+  // Blades of grass are too low to hide anyone: never cut.
+  for (const wall of walls) if (wall.kind !== 'grass' && inFront(wall, feet)) out.add(wall.id);
   return out;
 }
 

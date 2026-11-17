@@ -51,7 +51,7 @@ describe('the games, the garden seats, the venue, the stairs and the team pieces
   it('keeps every rect and ellipse of every drawing inside its grid, its shadow at the bottom', () => {
     for (const kind of KINDS)
       for (const view of ['front', 'back', 'side'] as const) {
-        const { width, height, parts, ring } = OFFICE_ART[kind][view];
+        const { width, height, parts } = OFFICE_ART[kind][view];
         for (const p of parts) {
           const b = bounds(p);
           if (!b) continue;
@@ -60,7 +60,6 @@ describe('the games, the garden seats, the venue, the stairs and the team pieces
           expect(b.x1, `${kind} ${view}`).toBeLessThanOrEqual(width + 1);
           expect(b.y1, `${kind} ${view}`).toBeLessThanOrEqual(height + 1);
         }
-        expect(ring.cx, `${kind} ${view}`).toBeLessThanOrEqual(width);
         // Gravity points down the screen: the contact shadow lies in the lower part of the drawing (the car park's are
         // its cars', one a bay, and the hammock's runs the length of its sling).
         const shadow = parts.find((p) => p.role === 'shadow');

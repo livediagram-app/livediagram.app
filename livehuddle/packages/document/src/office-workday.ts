@@ -41,24 +41,24 @@ export const WORKDAY_TONES = {
   lining: '#475569',
   cushion: '#c7d2fe',
   pillow: '#eef2ff',
-  blanket: '#818cf8',
-  lamp: '#fde68a',
+  blanket: '#8f97ea',
+  lamp: '#eedd99',
   frame: '#334155',
   belt: '#111827',
   rail: '#64748b',
   console: '#1f2937',
-  readout: '#34d399',
+  readout: '#36d198',
   steel: '#94a3b8',
   plate: '#1f2937',
-  vinyl: '#dc2626',
+  vinyl: '#d23030',
   oak: '#c08a52',
   oakDeep: '#8a5a2b',
   felt: '#3f4b5e',
   lampOff: '#e5e7eb',
-  lampOn: '#ef4444',
-  stool: '#f97316',
+  lampOn: '#de5555',
+  stool: '#db7834',
   desk: '#e7c79a',
-  screen: '#93c5fd',
+  screen: '#a1c6ef',
   keys: '#e5e7eb',
   laptop: '#cbd5e1',
   card: '#ffffff',
@@ -71,10 +71,10 @@ export const WORKDAY_TONES = {
   wood: '#b7793f',
   front: '#f8f5ef',
   knee: '#d6cfc0',
-  leaf: '#4ade80',
-  pot: '#ea580c',
-  brass: '#e0b232',
-  brassDeep: '#a16207',
+  leaf: '#50d882',
+  pot: '#d06026',
+  brass: '#d6ad3c',
+  brassDeep: '#8e5f1a',
 } as const;
 
 const T = WORKDAY_TONES;
@@ -110,8 +110,6 @@ const NAP_POD_FRONT: FurnitureDrawing = {
     path('glint', 'M18 70C18 52 26 36 38 26'),
   ],
   // Round the cushion, under the blanket, so it shows either side of a sitter.
-  ring: { cx: 60, cy: 80, rx: 40, ry: 8 },
-  ringUnder: 8,
 };
 
 // From behind: the hood's smooth back nearest you, a seam down it, and beyond it the open foot end, its lining and the
@@ -130,8 +128,6 @@ const NAP_POD_BACK: FurnitureDrawing = {
     path('glint', 'M22 78C22 60 30 46 42 38'),
   ],
   // The sitter is under the hood: the ring lies beneath it, showing either side.
-  ring: { cx: 60, cy: 40, rx: 34, ry: 7 },
-  ringUnder: 5,
 };
 
 // Facing left: the long tub on its plinth with its lining, the cushion reclined along it and the blanket at the open
@@ -151,8 +147,6 @@ const NAP_POD_SIDE: FurnitureDrawing = {
     rect('face', 6, 94, 100, 8, 4, T.shellDeep),
     path('glint', 'M98 24C104 34 106 52 106 70'),
   ],
-  ring: { cx: 56, cy: 66, rx: 18, ry: 12 },
-  ringUnder: 5,
 };
 
 // --- The gym corner -------------------------------------------------------------------------------------------------
@@ -187,8 +181,6 @@ const TREADMILL_FRONT: FurnitureDrawing = {
     rect('panel', 12, 56, 48, 14, 4, T.console),
     path('rail', 'M24 63H48'),
   ],
-  ring: { cx: 36, cy: 46, rx: 24, ry: 7 },
-  ringUnder: 3,
 };
 
 // A running machine seen from behind its user: a dark belt between two side rails, the uprights, the handlebar and the
@@ -216,8 +208,6 @@ const TREADMILL_BACK: FurnitureDrawing = {
     rect('panel', 12, 8, 48, 14, 4, T.console),
     rect('mark', 22, 11, 28, 7, 1.5, T.readout),
   ],
-  ring: { cx: 36, cy: 90, rx: 24, ry: 7 },
-  ringUnder: 4,
 };
 
 // Facing left: the deck along the canvas between its two rails, the belt's slats across it, its near side toward you,
@@ -247,8 +237,6 @@ const TREADMILL_SIDE: FurnitureDrawing = {
     rect('panel', 6, 6, 14, 30, 4, T.console),
     rect('mark', 15, 10, 3, 22, 1, T.readout),
   ],
-  ring: { cx: 64, cy: 47, rx: 20, ry: 8 },
-  ringUnder: 3,
 };
 
 // A padded flat bench with a barbell on a rack at its head, plates on each end, and a pair of dumbbells on the floor.
@@ -268,8 +256,6 @@ const WEIGHT_BENCH_FRONT: FurnitureDrawing = {
     rect('panel', 94, 73, 7, 11, 2, T.plate),
     rect('panel', 119, 73, 7, 11, 2, T.plate),
   ],
-  ring: { cx: 80, cy: 58, rx: 30, ry: 7 },
-  ringUnder: 8,
 };
 
 // From behind: the same bench end for end, its rack and barbell now at the right, and the dumbbells on the floor beyond
@@ -290,8 +276,6 @@ const WEIGHT_BENCH_BACK: FurnitureDrawing = {
     rect('panel', 10, 48, 104, 14, 6, T.vinyl),
     path('glint', 'M66 52H106'),
   ],
-  ring: { cx: 56, cy: 58, rx: 30, ry: 7 },
-  ringUnder: 11,
 };
 
 // Facing left: the pad down the canvas, its rack at the head with the barbell across it, its near end and legs toward
@@ -312,8 +296,6 @@ const WEIGHT_BENCH_SIDE: FurnitureDrawing = {
     rect('panel', 4, 121, 7, 11, 2, T.plate),
     rect('panel', 23, 121, 7, 11, 2, T.plate),
   ],
-  ring: { cx: 44, cy: 77, rx: 16, ry: 12 },
-  ringUnder: 8,
 };
 
 // --- Calls ----------------------------------------------------------------------------------------------------------
@@ -354,8 +336,6 @@ const PHONE_BOOTH_FRONT: FurnitureDrawing = {
     ...BOOTH_ROOF,
     path('glint', 'M16 40L28 28M16 58L40 34M54 120L66 108'),
   ],
-  ring: { cx: 40, cy: 112, rx: 22, ry: 5 },
-  ringUnder: 7,
 };
 
 // From behind: its solid oak back nearest you in three raised panels between the corner posts, the sill and the roof.
@@ -373,8 +353,6 @@ const PHONE_BOOTH_BACK: FurnitureDrawing = {
     ...BOOTH_ROOF,
   ],
   // Its sitter is inside, beyond the back wall, which covers the ring.
-  ring: { cx: 40, cy: 110, rx: 22, ry: 5 },
-  ringUnder: 1,
 };
 
 // Facing left: through its glass side the felt of the far wall, the back wall edge on at the right with the shelf and
@@ -396,8 +374,6 @@ const PHONE_BOOTH_SIDE: FurnitureDrawing = {
     ...BOOTH_ROOF,
     path('glint', 'M16 44L30 30M16 64L44 36M50 122L60 112'),
   ],
-  ring: { cx: 34, cy: 112, rx: 20, ry: 5 },
-  ringUnder: 8,
 };
 
 // --- Desks ----------------------------------------------------------------------------------------------------------
@@ -421,8 +397,6 @@ const STANDING_DESK_FRONT: FurnitureDrawing = {
     rect('panel', 34, 20, 44, 21, 3, T.console),
     path('rail', 'M42 27H70M42 33H70'),
   ],
-  ring: { cx: 56, cy: 38, rx: 24, ry: 5 },
-  ringUnder: 1,
 };
 
 // A tall desk on a steel frame: two legs on wide feet and a crossbar, a pale wood top, a monitor and a keyboard on it,
@@ -444,7 +418,6 @@ const STANDING_DESK_BACK: FurnitureDrawing = {
     rect('panel', 38, 31, 36, 6, 1.5, T.keys),
     rect('mark', 94, 32, 8, 4, 1, T.console),
   ],
-  ring: { cx: 56, cy: 96, rx: 24, ry: 5 },
 };
 
 // Facing left: the top a long board down the left on its near leg and foot, the monitor side on with its glass cheated
@@ -464,7 +437,6 @@ const STANDING_DESK_SIDE: FurnitureDrawing = {
     rect('panel', 13, 16, 14, 46, 3, T.console),
     rect('mark', 19, 19, 6, 40, 1, T.screen),
   ],
-  ring: { cx: 70, cy: 66, rx: 22, ry: 6 },
 };
 
 /**
@@ -501,8 +473,6 @@ const HOT_DESK_FRONT: FurnitureDrawing = {
     path('rail', 'M48 30H72M48 36H72'),
     card(HOT_DESK_CARDS.front),
   ],
-  ring: { cx: 60, cy: 28, rx: 26, ry: 7 },
-  ringUnder: 4,
 };
 
 // A desk with a chair in front of it: the top in the piece's own colour, a monitor and a laptop dock, a name card
@@ -524,8 +494,6 @@ const HOT_DESK_BACK: FurnitureDrawing = {
     rect('panel', 40, 76, 40, 10, 4),
     rect('panel', 42, 86, 36, 14, 5),
   ],
-  ring: { cx: 60, cy: 84, rx: 26, ry: 6 },
-  ringUnder: 12,
 };
 
 // Facing left: the desk a long top down the left with its near end toward you, the monitor side on with its glass
@@ -551,8 +519,6 @@ const HOT_DESK_SIDE: FurnitureDrawing = {
     rect('panel', 85, 34, 10, 44, 3),
     rect('face', 85, 74, 10, 7, 2),
   ],
-  ring: { cx: 70, cy: 62, rx: 24, ry: 14 },
-  ringUnder: 14,
 };
 
 // --- The office dog -------------------------------------------------------------------------------------------------
@@ -574,7 +540,6 @@ const PET_BED_VIEW: FurnitureDrawing = {
     ),
   ],
   seats: [],
-  ring: { cx: 36, cy: 32, rx: 30, ry: 10 },
 };
 
 // --- Arrival --------------------------------------------------------------------------------------------------------
@@ -621,7 +586,6 @@ const RECEPTION_DESK_FRONT: FurnitureDrawing = {
     ...bell(RECEPTION_BELLS.front),
   ],
   seats: [],
-  ring: { cx: 100, cy: 100, rx: 96, ry: 8 },
 };
 
 // From behind, the receptionist's side: the counter's high ledge beyond, bowing away, with the bell on it; the work top
@@ -651,7 +615,6 @@ const RECEPTION_DESK_BACK: FurnitureDrawing = {
     rect('mark', 160, 93, 12, 2, 1, T.brassDeep),
   ],
   seats: [],
-  ring: { cx: 100, cy: 100, rx: 96, ry: 8 },
 };
 
 // Facing left: tall, its length down the canvas. The work top behind the counter, its near end toward you, the plant
@@ -676,7 +639,6 @@ const RECEPTION_DESK_SIDE: FurnitureDrawing = {
     ...bell(RECEPTION_BELLS.side),
   ],
   seats: [],
-  ring: { cx: 52, cy: 186, rx: 44, ry: 8 },
 };
 
 /** The grid pieces this module draws, for OFFICE_ART. */

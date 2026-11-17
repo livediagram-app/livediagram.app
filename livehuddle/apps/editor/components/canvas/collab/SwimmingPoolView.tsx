@@ -1,7 +1,7 @@
 'use client';
 
 import { PoolMoment } from './OfficeMoments';
-import { FurniturePartView } from './FurnitureView';
+import { LitParts } from './furniture-paint';
 import { swimmingPoolParts, type ShapeElement } from '@livehuddle/document';
 
 // A Swimming Pool (docs/specs/009-elements/venue-pieces.md "Swimming Pool"): a tiled deck, the water in the element's
@@ -28,9 +28,7 @@ export function SwimmingPoolView({
         role="img"
         aria-label="Swimming pool"
       >
-        {swimmingPoolParts(w, h).map((p, i) => (
-          <FurniturePartView key={i} part={p} seat={floor} stroke={stroke} />
-        ))}
+        <LitParts parts={swimmingPoolParts(w, h)} seat={floor} stroke={stroke} />
         <path
           d={`M${w * 0.3} ${h * 0.36}q${w * 0.06} ${h * -0.04} ${w * 0.12} 0M${w * 0.58} ${h * 0.7}q${w * 0.05} ${h * -0.03} ${w * 0.1} 0`}
           fill="none"

@@ -51,7 +51,6 @@ describe('the social pieces with live faces, turned', () => {
         // The contact shadow, where there is one, lies under the piece: in its lowest tenth.
         const shadow = view.parts.find((p) => p.role === 'shadow');
         if (shadow?.tag === 'ellipse') expect(shadow.cy, kind).toBeGreaterThan(view.height * 0.9);
-        if (view.ringUnder !== undefined) expect(view.ringUnder).toBeLessThan(view.parts.length);
       }
     }
   });

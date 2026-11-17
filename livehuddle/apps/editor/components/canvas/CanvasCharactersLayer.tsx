@@ -39,6 +39,8 @@ import { useCoarseMotion } from '@/hooks/collab/useCoarseMotion';
 import { callPlacesOf } from '@/lib/calls/call-places';
 import { loadAvatarSpeechLayer } from '@/lib/editor-deferred-code';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
+import type { Element as CanvasElement } from '@livehuddle/document';
+import { seatBehind, seatLift, standsIn3D } from '@/lib/space-3d/space-3d-pieces';
 import { useWayfindingPeople } from './wayfinding/useWayfindingPeople';
 import type { useCanvasAvatar } from './useCanvasAvatar';
 
@@ -96,6 +98,17 @@ export function CanvasCharactersLayer({
   const remoteAvatars = usePeerAvatarRows(props.peers);
   // Your feet: null outside the mode. A hop, a wave or a reaction in place renders your character alone.
   const feet = useAvatarPose(avatar.poseStore, poseFeet);
+  // The 3D view's sitter nudge (docs/specs/008-canvas/3d-view.md "Pieces stand up"): each sitter's piece by id, built
+  // once per board change, so a seat's front edge is a lookup.
+  const piecesById = useMemo(() => {
+    const byId = new Map<string, Extract<CanvasElement, { type: 'shape' }>>();
+    for (const el of props.elements) if (standsIn3D(el)) byId.set(el.id, el);
+    return byId;
+  }, [props.elements]);
+  const liftOf = (seatedOn: string | null | undefined, at: { x: number; y: number } | null) =>
+    seatedOn && at ? seatLift(piecesById.get(seatedOn), at) : 0;
+  const behindOf = (seatedOn: string | null | undefined, at: { x: number; y: number } | null) =>
+    !!seatedOn && !!at && seatBehind(piecesById.get(seatedOn), at);
   const { zoom: viewportZoom, offset: viewportOffset } = useViewportOf(wholeView);
   // The coarse copy (blueprint: peer-motion-store.md "The coarse copy"): everyone's characters and your feet at most
   // 10 times a second while people walk, at once when someone appears, leaves, sits, stands or crosses a wall or a
@@ -250,6 +263,8 @@ export function CanvasCharactersLayer({
           standingOn={null}
           glideMs={peer.glideMs}
           chipShift={chipShifts.get(peer.id)}
+          seatLift={liftOf(peer.avatar.seatedOn, peer.avatar)}
+          seatBehind={behindOf(peer.avatar.seatedOn, peer.avatar)}
         />
       ))}
       {/* The Receptionist (docs/specs/008-canvas/receptionist.md): the host by the tab's Avatar Pad, drawn while you
@@ -293,6 +308,8 @@ export function CanvasCharactersLayer({
         shirt={props.selfParticipant.color}
         standingOn={avatarStandingOn}
         chipShift={chipShifts.get(SELF_CHIP)}
+        seatLift={liftOf(avatar.seatedOn, feet)}
+        seatBehind={behindOf(avatar.seatedOn, feet)}
       />
       {/* Who is talking, near and far (docs/specs/012-collaboration/proximity-audio.md "The talking equaliser"). */}
       <InSpace3DOverlay>

@@ -112,7 +112,8 @@ that agree to a second agree on the Receptionist.
   shows seven rows and scrolls past that: every topic he has for you, in their groups, whose headings stay pinned as you
   scroll (no second screen for more topics). Under the list sits **I'll Explore**, which closes it, and for an Editor
   **Ask Receptionist to Leave** (below); they never scroll away. Escape closes it, and so does
-  walking away (your feet more than 400 px from him). It takes no focus, so the person carries on where they were.
+  walking away: two strides (96 px) further from him than the nearest you have come since it opened, or more than
+  400 px from him, so a shuffle beside him keeps it and turning to go closes it. It takes no focus, so the person carries on where they were.
 - **He types his lines**: each line he says (the welcome, a hello, an answer, his farewell) appears a letter at a
   time, about 90 letters a second, so even the longest answer is out in under two seconds. The bubble takes the whole
   line's size from the start, so nothing moves as he types, and the replies are there at once. A screen reader hears

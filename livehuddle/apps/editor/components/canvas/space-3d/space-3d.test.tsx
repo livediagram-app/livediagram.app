@@ -12,6 +12,9 @@ import {
   SPACE_3D_STORAGE_KEY,
 } from '@/lib/space-3d/space-3d-preference';
 import { SPACE_3D_TILT_MS } from '@/lib/space-3d/space-3d-camera';
+import { space3DEase } from '@/lib/space-3d/space-3d-zoom';
+import { standAttr } from '@/lib/space-3d/space-3d-pieces';
+import { standingPiecesOnScreen } from '@/lib/space-3d/standing-pieces-on-screen';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 const reduced = vi.hoisted(() => ({ on: false }));
@@ -36,6 +39,7 @@ vi.mock('@liveworkspace/workbench/hooks/canvas/useViewportStore', () => ({
 import { space3DStageStyle, useSpace3DView } from './useSpace3DView';
 import { Space3DButton } from './Space3DButton';
 import { Space3DWalls } from './Space3DWalls';
+import { useSpace3DZoom } from './useSpace3DZoom';
 import {
   InSpace3DOverlay,
   Space3DOverlayProvider,
@@ -275,5 +279,135 @@ describe('the overlay (docs/specs/008-canvas/3d-view.md "What it shows")', () =>
     expect(field.value).toBe('Hello there');
     expect(document.activeElement).toBe(field);
     expect([field.selectionStart, field.selectionEnd]).toEqual([5, 5]);
+  });
+});
+
+describe('standing pieces (docs/specs/008-canvas/3d-view.md "Pieces stand up")', () => {
+  const office = buildTemplate('virtual-office', 0, 0);
+  const far = buildTemplate('virtual-office', 40000, 0);
+  const size = { width: 1400, height: 900 };
+  // The world layer: each element's box as the element plane draws it, beside the walls layer.
+  const World = ({
+    elements,
+    walls,
+    boxes = elements,
+  }: {
+    elements: typeof office;
+    walls: boolean;
+    boxes?: typeof office;
+  }) => (
+    <div data-testid="world">
+      {boxes.map((el) => (
+        <div key={el.id} data-element-id={el.id} data-space-stands={standAttr(el)} />
+      ))}
+      {walls ? (
+        <Space3DWalls
+          elements={elements}
+          poseStore={createStateStore<AvatarPose>(NO_POSE)}
+          size={size}
+        />
+      ) : null}
+    </div>
+  );
+
+  it('stands the pieces near the view, not the far ones or what lies flat, and lays them down when it flattens', () => {
+    const board = [...office, ...far];
+    const { container, rerender } = render(<World elements={board} walls />);
+    const near = [...container.querySelectorAll<HTMLElement>('[data-space-near]')];
+    expect(near.length).toBeGreaterThan(5);
+    const nearIds = new Set(near.map((n) => n.dataset.elementId));
+    expect(far.some((el) => nearIds.has(el.id))).toBe(false);
+    for (const n of near) expect(n.hasAttribute('data-space-stands')).toBe(true);
+    rerender(<World elements={board} walls={false} />);
+    expect(container.querySelectorAll('[data-space-near]')).toHaveLength(0);
+  });
+
+  it('chooses again when the board changes: a removed piece is no longer near', () => {
+    const { container, rerender } = render(<World elements={office} walls />);
+    const first = container.querySelector<HTMLElement>('[data-space-near]')!;
+    const id = first.dataset.elementId;
+    const without = office.filter((el) => el.id !== id);
+    // The box is still drawn for a moment while the board no longer has it.
+    rerender(<World elements={without} boxes={office} walls />);
+    expect(first.hasAttribute('data-space-near')).toBe(false);
+    expect(container.querySelectorAll('[data-space-near]').length).toBeGreaterThan(0);
+  });
+
+  it('reads the near pieces on the screen for a press, skipping boxes the board no longer has', () => {
+    const root = document.createElement('div');
+    const chair = office.find((el) => el.type === 'shape' && el.shape === 'chair')!;
+    root.innerHTML = `<div data-element-id="${chair.id}" data-space-stands="base" data-space-near=""></div><div data-element-id="gone" data-space-stands="centre" data-space-near=""></div>`;
+    (root.firstElementChild as HTMLElement).getBoundingClientRect = () =>
+      ({ left: 10, top: 20, width: 30, height: 40 }) as DOMRect;
+    const read = standingPiecesOnScreen(root, office);
+    expect(read).toHaveLength(1);
+    expect(read[0]!.rect).toEqual({ left: 10, top: 20, width: 30, height: 40 });
+    expect(read[0]!.rotated).toBe(false);
+    expect(standingPiecesOnScreen(document.createElement('div'), office)).toEqual([]);
+  });
+});
+
+describe('useSpace3DZoom (docs/specs/008-canvas/3d-view.md "It brings the camera closer")', () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['requestAnimationFrame', 'cancelAnimationFrame', 'performance'] });
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+  // The zoom eases over the tilt's length; this runs it to the end.
+  const settle = () => {
+    act(() => {
+      vi.advanceTimersByTime(SPACE_3D_TILT_MS + 50);
+    });
+  };
+  const harness = (walking: boolean) =>
+    renderHook(
+      ({ walking: w }) => {
+        const [zoom, setZoom] = useState(1);
+        useSpace3DZoom(w, zoom, setZoom);
+        return { zoom, setZoom };
+      },
+      { initialProps: { walking } },
+    );
+
+  it('zooms in when the switch turns it on while walking, and back to the same zoom when it turns off', () => {
+    const { result } = harness(true);
+    act(() => space3DPreference.set(true));
+    // Eased, on the tilt's curve: part of the way there mid-tilt, all the way at its end.
+    act(() => {
+      vi.advanceTimersByTime(SPACE_3D_TILT_MS / 4);
+    });
+    expect(result.current.zoom).toBeGreaterThan(1);
+    expect(result.current.zoom).toBeLessThan(1.4);
+    settle();
+    expect(result.current.zoom).toBeCloseTo(1.4);
+    act(() => space3DPreference.set(false));
+    settle();
+    expect(result.current.zoom).toBe(1);
+  });
+
+  it('eases on the same curve as the tilt', () => {
+    expect(space3DEase(0)).toBe(0);
+    expect(space3DEase(1)).toBe(1);
+    // cubic-bezier(0.22, 1, 0.36, 1) is well past half way a quarter of the way in.
+    expect(space3DEase(0.25)).toBeGreaterThan(0.6);
+    expect(space3DEase(0.5)).toBeGreaterThan(space3DEase(0.25));
+  });
+
+  it('zooms back out by the step when you zoomed while in 3D', () => {
+    const { result } = harness(true);
+    act(() => space3DPreference.set(true));
+    settle();
+    act(() => result.current.setZoom(2.8));
+    act(() => space3DPreference.set(false));
+    settle();
+    expect(result.current.zoom).toBeCloseTo(2);
+  });
+
+  it('leaves the zoom alone when the switch turns while not walking', () => {
+    const { result } = harness(false);
+    act(() => space3DPreference.set(true));
+    act(() => space3DPreference.set(false));
+    expect(result.current.zoom).toBe(1);
   });
 });

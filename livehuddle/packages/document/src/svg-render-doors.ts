@@ -9,7 +9,7 @@ import { GLASS_WALL, glassRoomArt } from './glass-walls';
 import { WINDOW_LIGHT, windowArt } from './window-art';
 import type { CanvasSurface } from './colors';
 import { FURNITURE_PANEL_STROKE, FURNITURE_RAIL_OPACITY, FURNITURE_RAIL_STROKE } from './seating';
-import { ROOM_WALL } from './office';
+import { ROOM_TONES, ROOM_WALL, WALL_EDGE } from './office';
 import { r2, xmlEscape } from './svg-render-primitives';
 import type { Face } from './svg-render-face-kit';
 import type { BackWallDoor } from './back-wall-doors';
@@ -77,15 +77,13 @@ export function doorSvg(el: Face, floor: string, stroke: string, onBackWall = fa
 }
 
 /** A Corridor: its floor in the fill and its walls stroked as a room's, butt at the open ends. */
-export function corridorSvg(el: Face, floor: string, stroke: string): string {
+export function corridorSvg(el: Face, floor: string): string {
   const { floor: area, walls: runs } = corridorPaths(el.width, el.height, el.variant);
   const f = xmlEscape(floor);
-  const l = xmlEscape(stroke);
   return (
     `<g transform="translate(${r2(el.x)} ${r2(el.y)})">` +
     `<path d="${area}" fill="${f}"/>` +
-    `<path d="${runs}" fill="none" stroke="${l}" stroke-width="${ROOM_WALL + 2 * FURNITURE_PANEL_STROKE}" stroke-linejoin="miter"/>` +
-    `<path d="${runs}" fill="none" stroke="${f}" stroke-width="${ROOM_WALL}" stroke-linejoin="miter"/>` +
+    plasterWallsSvg(runs) +
     `</g>`
   );
 }
@@ -163,5 +161,13 @@ export function glassRoomSvg(
       ? `<path d="${art.mullions}" fill="none" stroke="${l}" stroke-opacity="${GLASS_WALL.mullion}" stroke-width="${GLASS_WALL.mullionWidth}"/>`
       : '') +
     `</g>`
+  );
+}
+
+/** A run of plaster wall, as the canvas draws a Corridor's and a drawn room's (furniture-art-style.md "Rooms"). */
+export function plasterWallsSvg(d: string): string {
+  return (
+    `<path d="${d}" fill="none" stroke="${ROOM_TONES.wallEdge}" stroke-width="${ROOM_WALL + WALL_EDGE}" stroke-linejoin="miter"/>` +
+    `<path d="${d}" fill="none" stroke="${ROOM_TONES.wallTop}" stroke-width="${ROOM_WALL}" stroke-linejoin="miter"/>`
   );
 }

@@ -17,38 +17,38 @@ export const VENUE_TONES = {
   tarmac: '#525a66',
   kerb: '#d6d3d1',
   paint: '#f8fafc',
-  carRed: '#dc2626',
-  carRedDeep: '#991b1b',
-  carBlue: '#2563eb',
-  carBlueDeep: '#1e3a8a',
+  carRed: '#d23030',
+  carRedDeep: '#942020',
+  carBlue: '#386ad8',
+  carBlueDeep: '#1f3b89',
   glass: '#bfdbfe',
   lamp: '#fef9c3',
   tyre: '#1f2937',
   steel: '#94a3b8',
   rim: '#cbd5e1',
-  bikeRed: '#ef4444',
-  bikeTeal: '#14b8a6',
+  bikeRed: '#de5555',
+  bikeTeal: '#22aa9b',
   concrete: '#d6d3d1',
   tile: '#d4c19c',
-  lane: '#0284c7',
-  float: '#ef4444',
+  lane: '#1d7bac',
+  float: '#de5555',
   floatWhite: '#ffffff',
-  velvet: '#b91c1c',
+  velvet: '#b02525',
   velvetDeep: '#7f1d1d',
-  gold: '#eab308',
+  gold: '#cea424',
   wood: '#b7793f',
   woodDeep: '#7c4a2a',
   paper: '#ffffff',
-  brass: '#e0b232',
+  brass: '#d6ad3c',
   mic: '#1f2937',
-  live: '#ef4444',
+  live: '#de5555',
 } as const;
 
 const T = VENUE_TONES;
 
 /** A swimming pool's water when it has no fill of its own, and its deep twin on dark paper. */
-export const POOL_FILL = '#38bdf8';
-export const POOL_FILL_DARK = '#0e5a7e';
+export const POOL_FILL = '#50b4e0';
+export const POOL_FILL_DARK = '#175775';
 
 // --- Structure ------------------------------------------------------------------------------------------------------
 
@@ -67,7 +67,6 @@ const PILLAR_VIEW: FurnitureDrawing = {
     rect('panel', 2, 3, 44, 11, 2),
   ],
   seats: [],
-  ring: { cx: 24, cy: 142, rx: 22, ry: 6 },
 };
 
 // A classical stone column: a stepped plinth, a round base, a fluted shaft that tapers a little, and a capital with a
@@ -92,7 +91,6 @@ const COLUMN_VIEW: FurnitureDrawing = {
     rect('panel', 6, 11, 52, 10, 1.5, T.stone),
   ],
   seats: [],
-  ring: { cx: 32, cy: 156, rx: 30, ry: 7 },
 };
 
 // --- Arrivals -------------------------------------------------------------------------------------------------------
@@ -146,7 +144,6 @@ const CAR_PARK_VIEW: FurnitureDrawing = {
     ...car(196, T.carBlue, T.carBlueDeep),
   ],
   seats: [],
-  ring: { cx: 120, cy: 84, rx: 118, ry: 40 },
 };
 
 // A car seen from behind in the bay centred on `cx`, its tail toward the kerb: wheels, the roof and rear window, the
@@ -194,7 +191,6 @@ const CAR_PARK_BACK: FurnitureDrawing = {
     rect('face', 0, 116, 240, 6, 1, T.kerb),
   ],
   seats: [],
-  ring: { cx: 120, cy: 60, rx: 118, ry: 40 },
 };
 
 // A car side on in the bay centred on `cy`, its nose to the left: the body and cabin, two windows, the door seam, a
@@ -243,7 +239,6 @@ const CAR_PARK_SIDE: FurnitureDrawing = {
     ...carSide(198, T.carBlue, T.carBlueDeep),
   ],
   seats: [],
-  ring: { cx: 60, cy: 120, rx: 58, ry: 118 },
 };
 
 // A tube of a bike's frame, `w` thick, from one point to another, as a closed quad for a 'mark' path.
@@ -307,7 +302,6 @@ const BIKE_RACK_VIEW: FurnitureDrawing = {
     ...bike(72, T.bikeTeal),
   ],
   seats: [],
-  ring: { cx: 68, cy: 66, rx: 64, ry: 10 },
 };
 
 // From behind: the stands nearest you, the bikes beyond them facing left, the teal one now on the left.
@@ -324,7 +318,6 @@ const BIKE_RACK_BACK: FurnitureDrawing = {
     path('glint', 'M13 64V45M77 64V45'),
   ],
   seats: [],
-  ring: { cx: 68, cy: 66, rx: 64, ry: 10 },
 };
 
 // A bike seen nose on, coming toward you down the canvas, its front wheel on the ground at (x, y): its back wheel
@@ -364,7 +357,6 @@ const BIKE_RACK_SIDE: FurnitureDrawing = {
     ...bikeNoseOn(22, 140, T.bikeTeal),
   ],
   seats: [],
-  ring: { cx: 28, cy: 80, rx: 26, ry: 66 },
 };
 
 // --- The stage's pieces ---------------------------------------------------------------------------------------------
@@ -419,7 +411,6 @@ const STAGE_CURTAINS_VIEW: FurnitureDrawing = {
     ),
   ],
   seats: [],
-  ring: { cx: 180, cy: 110, rx: 170, ry: 8 },
 };
 
 // A wooden lectern: a sloping top with a page of notes, a gooseneck microphone with a red light, a front panel with a
@@ -443,7 +434,6 @@ const PODIUM_VIEW: FurnitureDrawing = {
     ellipse('mark', 42, 25.5, 1.4, 1.4, T.live),
   ],
   seats: [],
-  ring: { cx: 28, cy: 80, rx: 24, ry: 6 },
 };
 
 // From behind, where the speaker stands: the sloping top tipped toward you with its page of notes, the microphone
@@ -465,7 +455,6 @@ const PODIUM_BACK: FurnitureDrawing = {
     path('rail', 'M16 60H40'),
   ],
   seats: [],
-  ring: { cx: 28, cy: 80, rx: 24, ry: 6 },
 };
 
 // Facing left: the lectern's side, its top sloping down toward the speaker on the right, a strip of the front panel
@@ -487,7 +476,6 @@ const PODIUM_SIDE: FurnitureDrawing = {
     ellipse('mark', 10, 24.5, 1.4, 1.4, T.live),
   ],
   seats: [],
-  ring: { cx: 22, cy: 80, rx: 20, ry: 6 },
 };
 
 /** The grid pieces this module draws, for OFFICE_ART. */

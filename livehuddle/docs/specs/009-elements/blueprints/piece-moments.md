@@ -121,8 +121,7 @@ board's life.
   a little larger at the corners than the floor its light falls on.
 - A Notice Board with one note: that note swings from either side. With none: the lone pin, which ends invisible.
 - A World Clock before its first minute is read (`now` 0): it draws no hands, so nothing ticks.
-- Someone sitting in the Hammock: the sitter is drawn by the characters' layer and keeps still; the ring under the
-  sling keeps still too (it is drawn at `ringUnder`, outside the moving parts).
+- Someone sitting in the Hammock: the sitter is drawn by the characters' layer and keeps still.
 - Walking out and back in mid-moment: still playing, so nothing restarts; the arrival after it ends plays.
 - A moment piece inside the placement preview: the preview's element id never plays, so it draws no moment.
 - Standing still inside a reach: no new arrival, nothing played.

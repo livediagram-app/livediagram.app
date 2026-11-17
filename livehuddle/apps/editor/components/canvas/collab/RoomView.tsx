@@ -7,7 +7,7 @@ import {
   type FurniturePart,
   type ShapeElement,
 } from '@livehuddle/document';
-import { FurniturePartView } from './FurnitureView';
+import { LitParts } from './furniture-paint';
 import { useRoomBackDoors } from './back-wall-doors-store';
 import { OutlinedRoomView } from './RoomBuilderViews';
 import { GlassRoomView } from './WindowView';
@@ -96,9 +96,7 @@ export function SizedPieceView({
         role="img"
         aria-label={label}
       >
-        {parts.map((p, i) => (
-          <FurniturePartView key={i} part={p} seat={floor} stroke={stroke} />
-        ))}
+        <LitParts parts={parts} seat={floor} stroke={stroke} />
       </svg>
     </div>
   );

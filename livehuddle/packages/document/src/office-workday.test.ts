@@ -163,7 +163,6 @@ describe('the workday pieces', () => {
           views[view].height,
         ]);
         expect(d.seats, `${kind} ${view}`).toEqual(views[view].seats);
-        expect(d.ringUnder ?? 0, `${kind} ${view}`).toBeLessThanOrEqual(d.parts.length);
       }
     }
   });

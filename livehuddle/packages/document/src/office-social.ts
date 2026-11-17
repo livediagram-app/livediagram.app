@@ -27,50 +27,50 @@ import {
 export const SOCIAL_TONES = {
   cork: '#d9a866',
   frame: '#8b5a2b',
-  brass: '#e0b232',
+  brass: '#d6ad3c',
   wood: '#c2894b',
-  woodDeep: '#92400e',
-  bark: '#a16207',
+  woodDeep: '#86431a',
+  bark: '#8e5f1a',
   brick: '#c2593a',
-  brickDeep: '#9a3412',
+  brickDeep: '#8f3a1d',
   soot: '#292524',
   stone: '#e7e5e4',
   stoneDeep: '#a8a29e',
   iron: '#374151',
-  flame: '#f97316',
-  flameHot: '#facc15',
-  ember: '#ef4444',
-  water: '#7dd3fc',
-  waterDeep: '#38bdf8',
-  lily: '#4ade80',
-  lilyDeep: '#16a34a',
-  felt: '#16a34a',
+  flame: '#db7834',
+  flameHot: '#dcba33',
+  ember: '#de5555',
+  water: '#8ecdeb',
+  waterDeep: '#50b4e0',
+  lily: '#50d882',
+  lilyDeep: '#20994d',
+  felt: '#20994d',
   feltDeep: '#166534',
   line: '#f8fafc',
-  paddleRed: '#dc2626',
+  paddleRed: '#d23030',
   paddleDark: '#1f2937',
-  cabinet: '#6366f1',
+  cabinet: '#7173e3',
   cabinetDeep: '#4338ca',
   screen: '#0f172a',
-  jukebox: '#be123c',
-  jukeboxDeep: '#881337',
+  jukebox: '#ae2244',
+  jukeboxDeep: '#801b3a',
   chrome: '#e2e8f0',
-  glow: '#fbbf24',
+  glow: '#deb241',
   record: '#1f2937',
   canvas: '#ffffff',
-  stripe: '#ef4444',
-  hammock: '#38bdf8',
-  hammockBand: '#fb923c',
-  pink: '#f472b6',
+  stripe: '#de5555',
+  hammock: '#50b4e0',
+  hammockBand: '#e29555',
+  pink: '#e77fb5',
   dial: '#fffbeb',
-  yellow: '#facc15',
-  cyan: '#22d3ee',
+  yellow: '#dcba33',
+  cyan: '#37c3d9',
 } as const;
 
 const T = SOCIAL_TONES;
 
 /** A pond's water when it has no fill of its own, and its deep twin on dark paper. */
-export const POND_FILL = '#7dd3fc';
+export const POND_FILL = '#8ecdeb';
 export const POND_FILL_DARK = '#1e4f6e';
 
 // --- On the wall ----------------------------------------------------------------------------------------------
@@ -90,7 +90,6 @@ const NOTICE_BOARD_VIEW: FurnitureDrawing = {
     path('rail', 'M76 5h24'),
   ],
   seats: [],
-  ring: { cx: 88, cy: 64, rx: 86, ry: 62 },
 };
 
 /** Where the world clock's dials sit on its grid: the plaque's face, inside its edge. */
@@ -108,7 +107,6 @@ const WORLD_CLOCK_VIEW: FurnitureDrawing = {
     rect('panel', CLOCK_FACE.x, CLOCK_FACE.y, CLOCK_FACE.w, CLOCK_FACE.h - 2, 9, T.woodDeep),
   ],
   seats: [],
-  ring: { cx: 84, cy: 40, rx: 82, ry: 30 },
 };
 
 // --- Recreation -----------------------------------------------------------------------------------------------
@@ -136,7 +134,6 @@ const JUKEBOX_VIEW: FurnitureDrawing = {
     rect('panel', 2, 100, 68, 8, 3, T.chrome),
   ],
   seats: [],
-  ring: { cx: 36, cy: 100, rx: 34, ry: 8 },
 };
 
 // Its back to you: the cabinet's plain back with a vented service door, the chrome base, the lights out of sight.
@@ -153,7 +150,6 @@ const JUKEBOX_BACK: FurnitureDrawing = {
     rect('panel', 2, 100, 68, 8, 3, T.chrome),
   ],
   seats: [],
-  ring: { cx: 36, cy: 100, rx: 34, ry: 8 },
 };
 
 /** The lit strips a side-on jukebox shows: its arch's edge on its front and the lit tube round its side. */
@@ -177,7 +173,6 @@ const JUKEBOX_SIDE: FurnitureDrawing = {
     rect('panel', 1, 100, 54, 8, 3, T.chrome),
   ],
   seats: [],
-  ring: { cx: 28, cy: 100, rx: 26, ry: 8 },
 };
 
 /** The ping-pong table's top on its grid: the rally's ball flies over it. */
@@ -204,7 +199,6 @@ const PING_PONG_TABLE_VIEW: FurnitureDrawing = {
     ellipse('panel', 134, 61, 6.5, 5.5, T.paddleDark),
   ],
   seats: PING_PONG_SEATS.seats.map(({ u, v }) => ({ u, v })),
-  ring: { cx: 92, cy: 56, rx: 88, ry: 48 },
 };
 
 // Its back to you: the table reads the same from either long side, so only the paddles change ends (the left seat's
@@ -252,7 +246,6 @@ const PING_PONG_TABLE_SIDE: FurnitureDrawing = {
     ellipse('panel', 42, 46, 5.5, 6.5, T.paddleRed),
     ellipse('panel', 70, 132, 5.5, 6.5, T.paddleDark),
   ],
-  ring: { cx: 56, cy: 92, rx: 48, ry: 84 },
 };
 
 /** The arcade machine's screen on its grid, which shimmers. */
@@ -280,7 +273,6 @@ const ARCADE_MACHINE_VIEW: FurnitureDrawing = {
     path('rail', 'M30 88h4'),
   ],
   seats: [],
-  ring: { cx: 32, cy: 100, rx: 30, ry: 8 },
 };
 
 // Its back to you: the cabinet's back with its service door and vents, the control panel's ends showing either side
@@ -299,7 +291,6 @@ const ARCADE_MACHINE_BACK: FurnitureDrawing = {
     path('line', 'M24 100c0 5 -4 7 -10 8'),
   ],
   seats: [],
-  ring: { cx: 32, cy: 100, rx: 30, ry: 8 },
 };
 
 /** The turned arcade machine's screen on its side grid: a slanted strip of the glass down its front. */
@@ -327,7 +318,6 @@ const ARCADE_MACHINE_SIDE: FurnitureDrawing = {
     rect('face', 11.5, 84, 6, 12, 1.5, T.cabinetDeep),
   ],
   seats: [],
-  ring: { cx: 32, cy: 100, rx: 28, ry: 8 },
 };
 
 /** Where a fire burns on its piece's grid: the flicker's flames stand on this base line. */
@@ -369,7 +359,6 @@ const FIREPLACE_VIEW: FurnitureDrawing = {
     rect('face', 4, 108, 120, 6, 2, T.stoneDeep),
   ],
   seats: [],
-  ring: { cx: 64, cy: 108, rx: 62, ry: 8 },
 };
 
 // Its back to you: the chimney breast's plain brick back, the mantel's top beyond it, the chimney above. The fire is
@@ -388,7 +377,6 @@ const FIREPLACE_BACK: FurnitureDrawing = {
     ),
   ],
   seats: [],
-  ring: { cx: 64, cy: 108, rx: 62, ry: 8 },
 };
 
 /** Where the fire burns on the turned fireplace's side grid: a sliver of flame in the firebox's edge. */
@@ -426,7 +414,6 @@ const FIREPLACE_SIDE: FurnitureDrawing = {
     rect('face', 2, 108, 44, 6, 2, T.stoneDeep),
   ],
   seats: [],
-  ring: { cx: 24, cy: 108, rx: 22, ry: 8 },
 };
 
 // Stones round a fire, back half then front half, on an ellipse round (40, 56).
@@ -457,7 +444,6 @@ const CAMPFIRE_VIEW: FurnitureDrawing = {
     ...stoneRing(true),
   ],
   seats: [],
-  ring: { cx: 40, cy: 56, rx: 36, ry: 14 },
 };
 
 // --- Outdoor seating -----------------------------------------------------------------------------------------
@@ -479,8 +465,6 @@ const BENCH_VIEW: FurnitureDrawing = {
     rect('panel', 128, 24, 8, 24, 3, T.iron),
   ],
   seats: BENCH_SEATS.seats.map(({ u, v }) => ({ u, v })),
-  ring: { cx: 68, cy: 38, rx: 64, ry: 10 },
-  ringUnder: 6,
 };
 
 // From behind: the seat beyond, the slatted back's two rails nearest you on their supports, the iron arms either end.
@@ -497,8 +481,6 @@ const BENCH_BACK: FurnitureDrawing = {
     rect('panel', 0, 8, 8, 26, 3, T.iron),
     rect('panel', 128, 8, 8, 26, 3, T.iron),
   ],
-  ring: { cx: 68, cy: 18, rx: 64, ry: 9 },
-  ringUnder: 4,
 };
 
 // Facing left: long, its two seats one above the other down the slatted seat, the back a bar along its right, an
@@ -515,8 +497,6 @@ const BENCH_SIDE: FurnitureDrawing = {
     rect('panel', 2, 18, 48, 7, 3, T.iron),
     rect('panel', 2, 141, 48, 7, 3, T.iron),
   ],
-  ring: { cx: 22, cy: 85, rx: 18, ry: 60 },
-  ringUnder: 6,
 };
 
 // A wooden picnic table with a bench along each side: six seats facing the table.
@@ -537,7 +517,6 @@ const PICNIC_TABLE_VIEW: FurnitureDrawing = {
     rect('face', 20, 122, 160, 5, 2, T.wood),
   ],
   seats: PICNIC_TABLE_SEATS.seats.map(({ u, v }) => ({ u, v })),
-  ring: { cx: 100, cy: 76, rx: 96, ry: 70 },
 };
 
 // From behind a picnic table looks as it does from the front (a bench either side of the table), but turned half way
@@ -559,7 +538,6 @@ const PICNIC_TABLE_SIDE: FurnitureDrawing = {
     path('rail', 'M61 12V180M83 12V180'),
     rect('face', 40, 182, 64, 8, 3, T.wood),
   ],
-  ring: { cx: 72, cy: 100, rx: 68, ry: 96 },
 };
 
 // A striped hammock slung between two posts on ropes: one seat.
@@ -576,8 +554,6 @@ const HAMMOCK_VIEW: FurnitureDrawing = {
     path('line', 'M30 28v14M122 28v14'),
   ],
   seats: HAMMOCK_SEATS.seats.map(({ u, v }) => ({ u, v })),
-  ring: { cx: 76, cy: 50, rx: 46, ry: 14 },
-  ringUnder: 4,
 };
 
 // Facing left: long, the sling down the canvas between its far post and its near post, its spreader bars across.
@@ -592,8 +568,6 @@ const HAMMOCK_SIDE: FurnitureDrawing = {
     path('line', 'M23 39h18M21 135h22'),
     rect('panel', 28, 134, 8, 62, 2, T.woodDeep),
   ],
-  ring: { cx: 32, cy: 92, rx: 20, ry: 48 },
-  ringUnder: 3,
 };
 
 // --- Garden scenery -------------------------------------------------------------------------------------------
@@ -615,7 +589,6 @@ const GARDEN_UMBRELLA_VIEW: FurnitureDrawing = {
     ellipse('panel', 60, 13, 3, 3, T.brass),
   ],
   seats: [],
-  ring: { cx: 60, cy: 143, rx: 20, ry: 6 },
 };
 
 /** The fountain's basin water and its bowl on its grid: the live shimmer and spray sit on them. */
@@ -647,7 +620,6 @@ const FOUNTAIN_VIEW: FurnitureDrawing = {
     path('glint', 'M68 26C62 18 54 22 50 46M68 26C74 18 82 22 86 46'),
   ],
   seats: [],
-  ring: { cx: 68, cy: 92, rx: 64, ry: 22 },
 };
 
 /** The grid pieces this module draws, for OFFICE_ART. */
@@ -728,7 +700,7 @@ export const NOTE_COLORS: readonly NoteColor[] = ['yellow', 'pink', 'blue', 'gre
 export const DEFAULT_NOTE_COLOR: NoteColor = 'yellow';
 /** A note card's paper, by colour. */
 export const NOTE_PAPER: Record<NoteColor, string> = {
-  yellow: '#fef08a',
+  yellow: '#eee49a',
   pink: '#fbcfe8',
   blue: '#bfdbfe',
   green: '#bbf7d0',

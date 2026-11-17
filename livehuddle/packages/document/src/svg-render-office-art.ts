@@ -10,22 +10,27 @@ import {
   type AvatarPadPaint,
 } from './avatar-pad-art';
 import {
+  FURNITURE_EDGE_STROKE,
+  FURNITURE_LIGHT,
+  FURNITURE_SOFT_SHADOW,
+  partShade,
+  shadeKeys,
+  tone,
+} from '@livehuddle/avatar/furniture-shading';
+import {
   FURNITURE_ART,
-  FURNITURE_FACE_SHADE,
   FURNITURE_GLINT,
   FURNITURE_LINE_STROKE,
-  FURNITURE_PANEL_STROKE,
   FURNITURE_RAIL_OPACITY,
   FURNITURE_RAIL_STROKE,
-  FURNITURE_SHADOW,
   FURNITURE_WEAVE,
   furnitureFrame,
   isSeatingShape,
+  seatFabric,
   type FurniturePart,
 } from './seating';
 import {
   DEFAULT_ROOM_DOOR,
-  ROOM_WALL,
   isGridOfficeShape,
   OFFICE_ART,
   roomParts,
@@ -33,8 +38,11 @@ import {
   longTableArt,
 } from './office';
 import { chairSeatFill } from './shape-geometry';
+import { pieceMaterial } from './piece-material';
+import { plasterWallsSvg } from './svg-render-doors';
 import { outlinedRoomPaths } from './room-builder';
-import { GRASS_BLADES, GRASS_TILES, grassEdgePath } from './office-garden';
+import { grassEdgePath } from './office-garden';
+import { GRASS_BLADES, GRASS_MOTTLE, GRASS_TILES } from './garden-ground';
 import { r2, xmlEscape } from './svg-render-primitives';
 import { borderOf } from './svg-render-border';
 import type { Face } from './svg-render-face-kit';
@@ -166,11 +174,19 @@ export function furnitureArt(el: Face, seat: string, stroke: string): string {
   if (!art) return '';
   // Every piece at its facing (docs/specs/009-elements/furniture-facing.md), as the canvas draws it.
   const frame = furnitureFrame(art, pieceFacing(el));
+  // Seating is upholstered in its own fabric, as the canvas draws it (furniture-art-style.md "Materials").
+  const fabric = isSeatingShape(el.shape)
+    ? seatFabric(el.shape, el.fillColor)
+    : el.shape === 'rug'
+      ? seat
+      : pieceMaterial(el.shape, el.fillColor);
+  const light = lightOf(el.id, frame.view.parts, fabric);
   const parts = frame.view.parts
-    .map((p) => furniturePart(p, xmlEscape(seat), xmlEscape(stroke)))
+    .map((p) => furniturePart(p, fabric, xmlEscape(stroke), light))
     .join('');
   return (
     `<svg x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" viewBox="${frame.viewBox}" preserveAspectRatio="xMidYMid meet" overflow="visible">` +
+    lightDefs(light) +
     (frame.transform ? `<g transform="${frame.transform}">${parts}</g>` : parts) +
     `</svg>`
   );
@@ -189,12 +205,10 @@ export function roomSvg(
   if (el.roomOutline && el.roomOutline.length >= 3) {
     const { floor: area, walls } = outlinedRoomPaths({ ...el, roomOutline: el.roomOutline });
     const f = xmlEscape(floor);
-    const l = xmlEscape(stroke);
     return (
       `<g transform="translate(${r2(el.x)} ${r2(el.y)})">` +
       `<path d="${area}" fill="${f}"/>` +
-      `<path d="${walls}" fill="none" stroke="${l}" stroke-width="${ROOM_WALL + 2 * FURNITURE_PANEL_STROKE}" stroke-linejoin="miter"/>` +
-      `<path d="${walls}" fill="none" stroke="${f}" stroke-width="${ROOM_WALL}" stroke-linejoin="miter"/>` +
+      plasterWallsSvg(walls) +
       `</g>`
     );
   }
@@ -207,26 +221,38 @@ export function roomSvg(
 }
 
 // A piece drawn to its own size (a room, a stage), its parts in its own px from its top left.
-// Grass (docs/specs/009-elements/office.md "Grass"): its lawn in the fill, then the tuft tiles as SVG patterns over it.
+// Grass (docs/specs/009-elements/office.md "Grass"; furniture-art-style.md): its lawn in the fill, the light across it,
+// soft mottling and the fine turf as SVG patterns over it, and a darker rim; GrassView paints the same.
 export function grassSvg(el: Face, floor: string): string {
   const d = grassEdgePath(el.width, el.height);
   if (!d) return '';
   const id = `grass-${xmlEscape(el.id)}`;
   const B = GRASS_BLADES;
+  const M = GRASS_MOTTLE;
   const blades = (path: string, color: string, opacity: number) =>
     `<path d="${path}" fill="none" stroke="${color}" stroke-opacity="${opacity}" stroke-width="${B.width}" stroke-linecap="round"/>`;
-  const defs = GRASS_TILES.map(
-    (t, i) =>
-      `<pattern id="${id}-${i}" width="${t.size}" height="${t.size}" patternUnits="userSpaceOnUse">` +
-      blades(t.shade, B.shade, B.shadeOpacity) +
-      blades(t.light, B.light, B.lightOpacity) +
-      `</pattern>`,
-  ).join('');
-  const layers = GRASS_TILES.map((_, i) => `<path d="${d}" fill="url(#${id}-${i})"/>`).join('');
+  const defs =
+    `<linearGradient id="${id}-l" x1="0" y1="0" x2="0" y2="1">` +
+    `<stop offset="0" stop-color="#fff" stop-opacity="${B.topLight}"/>` +
+    `<stop offset="0.45" stop-color="#fff" stop-opacity="0"/>` +
+    `<stop offset="1" stop-color="#000" stop-opacity="${B.bottomShade}"/></linearGradient>` +
+    `<pattern id="${id}-m" width="${M.size}" height="${M.size}" patternUnits="userSpaceOnUse">` +
+    `<path d="${M.lush}" fill="#fff" fill-opacity="${B.lushOpacity}"/>` +
+    `<path d="${M.thick}" fill="${B.shade}" fill-opacity="${B.thickOpacity}"/></pattern>` +
+    GRASS_TILES.map(
+      (t, i) =>
+        `<pattern id="${id}-${i}" width="${t.size}" height="${t.size}" patternUnits="userSpaceOnUse">` +
+        blades(t.shade, B.shade, B.shadeOpacity) +
+        blades(t.light, B.light, B.lightOpacity) +
+        `</pattern>`,
+    ).join('');
+  const layers = [`${id}-m`, ...GRASS_TILES.map((_, i) => `${id}-${i}`), `${id}-l`]
+    .map((ref) => `<path d="${d}" fill="url(#${ref})"/>`)
+    .join('');
   return (
     `<g transform="translate(${r2(el.x)} ${r2(el.y)})"><defs>${defs}</defs>` +
-    `<path d="${d}" fill="${xmlEscape(floor)}" stroke="${B.shade}" stroke-opacity="${B.rimOpacity}" stroke-width="${B.rimWidth}"/>` +
-    `${layers}</g>`
+    `<path d="${d}" fill="${xmlEscape(floor)}"/>${layers}` +
+    `<path d="${d}" fill="none" stroke="${B.shade}" stroke-opacity="${B.rimOpacity}" stroke-width="${B.rimWidth}"/></g>`
   );
 }
 
@@ -236,28 +262,57 @@ export function sizedSvg(
   floor: string,
   stroke: string,
 ): string {
-  const drawn = parts.map((p) => furniturePart(p, xmlEscape(floor), xmlEscape(stroke))).join('');
-  return `<g transform="translate(${r2(el.x)} ${r2(el.y)})">${drawn}</g>`;
+  const light = lightOf(el.id, parts, floor);
+  const drawn = parts.map((p) => furniturePart(p, floor, xmlEscape(stroke), light)).join('');
+  return `<g transform="translate(${r2(el.x)} ${r2(el.y)})">${lightDefs(light)}${drawn}</g>`;
 }
 
-function furniturePart(p: FurniturePart, seat: string, line: string): string {
+// A drawing's light, as the canvas paints it (furniture-paint.tsx): one gradient per material and a soft shadow.
+type Light = { prefix: string; shades: ReturnType<typeof shadeKeys> };
+
+function lightOf(id: string, parts: readonly FurniturePart[], seat: string): Light {
+  return { prefix: `fl-${xmlEscape(id)}`, shades: shadeKeys(parts, seat) };
+}
+
+function lightDefs(light: Light): string {
+  let out = '';
+  for (const s of light.shades.values()) {
+    const shade = partShade(s.color, s.role);
+    out +=
+      `<linearGradient id="${light.prefix}-${s.index}" x1="0" y1="0" x2="0" y2="1">` +
+      `<stop offset="0" stop-color="${xmlEscape(shade.top)}"/><stop offset="1" stop-color="${xmlEscape(shade.bottom)}"/></linearGradient>`;
+  }
+  const soft = FURNITURE_SOFT_SHADOW.stops
+    .map(
+      ([at, o]) =>
+        `<stop offset="${at}" stop-color="${FURNITURE_SOFT_SHADOW.color}" stop-opacity="${o}"/>`,
+    )
+    .join('');
+  return `<defs>${out}<radialGradient id="${light.prefix}-shadow">${soft}</radialGradient></defs>`;
+}
+
+function furniturePart(p: FurniturePart, seat: string, line: string, light: Light): string {
+  const own = (fallback: string) => (p.fill ? xmlEscape(p.fill) : fallback);
   const paint = (() => {
     switch (p.role) {
       case 'shadow':
-        return `fill="${FURNITURE_SHADOW.fill}" opacity="${FURNITURE_SHADOW.opacity}"`;
+        return `fill="url(#${light.prefix}-shadow)"`;
       case 'panel':
-      case 'face':
-        return `fill="${p.fill ? xmlEscape(p.fill) : seat}" stroke="${line}" stroke-width="${FURNITURE_PANEL_STROKE}"`;
+      case 'face': {
+        const color = p.fill ?? seat;
+        const shade = light.shades.get(`${p.role}|${color}`)!;
+        return `fill="url(#${light.prefix}-${shade.index})" stroke="${xmlEscape(tone(color, FURNITURE_LIGHT.edge))}" stroke-width="${FURNITURE_EDGE_STROKE}" stroke-linejoin="round"`;
+      }
       case 'floor':
-        return `fill="${seat}"`;
+        return `fill="${own(xmlEscape(seat))}"`;
       case 'mark':
-        return `fill="${p.fill ? xmlEscape(p.fill) : line}"`;
+        return `fill="${own(line)}"`;
       case 'line':
-        return `fill="none" stroke="${line}" stroke-width="${FURNITURE_LINE_STROKE}" stroke-linecap="round"`;
+        return `fill="none" stroke="${own(line)}" stroke-width="${FURNITURE_LINE_STROKE}" stroke-linecap="round"`;
       case 'rail':
-        return `fill="none" stroke="${line}" stroke-width="${FURNITURE_RAIL_STROKE}" opacity="${FURNITURE_RAIL_OPACITY}" stroke-linecap="round"`;
+        return `fill="none" stroke="${own(line)}" stroke-width="${FURNITURE_RAIL_STROKE}" opacity="${FURNITURE_RAIL_OPACITY}" stroke-linecap="round"`;
       case 'screen':
-        return `fill="${line}"`;
+        return `fill="${own(line)}"`;
       case 'glint':
         return `fill="none" stroke="${FURNITURE_GLINT.stroke}" stroke-width="${FURNITURE_RAIL_STROKE}" opacity="${FURNITURE_GLINT.opacity}" stroke-linecap="round"`;
       // A rug's woven pattern (docs/specs/009-elements/office.md "Rug types").
@@ -266,19 +321,12 @@ function furniturePart(p: FurniturePart, seat: string, line: string): string {
       case 'sheen':
         return `fill="${FURNITURE_GLINT.stroke}" opacity="${FURNITURE_WEAVE.sheen}"`;
       case 'dye':
-        return `fill="${p.fill ? xmlEscape(p.fill) : line}" opacity="${FURNITURE_WEAVE.dye}"`;
+        return `fill="${own(line)}" opacity="${FURNITURE_WEAVE.dye}"`;
     }
   })();
-  // A face toward the room is the panel, shaded with its stroke colour.
-  const shade = `fill="${line}" opacity="${FURNITURE_FACE_SHADE}"`;
   switch (p.tag) {
     case 'rect':
-      return (
-        `<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" rx="${p.rx}" ${paint}/>` +
-        (p.role === 'face'
-          ? `<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" rx="${p.rx}" ${shade}/>`
-          : '')
-      );
+      return `<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" rx="${p.rx}" ${paint}/>`;
     case 'ellipse':
       return `<ellipse cx="${p.cx}" cy="${p.cy}" rx="${p.rx}" ry="${p.ry}" ${paint}/>`;
     case 'path':
