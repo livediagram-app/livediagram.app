@@ -42,7 +42,8 @@ costs no request of its own.
 Every person avatar draws `PictureDisc` (from `@livedocuments/ui`, which re-exports `@liveworkspace/ui`): the
 picture over the initials, at the disc's own size, lazy, sent with no referrer, falling back to the initials when
 it fails or there is none. Today: presence avatars (`ParticipantAvatar`: the header, the tab stacks, Collaborators),
-remote cursors' name pills, the account button and your own comments.
+remote cursors' name pills, the account button, Settings › Profile's large avatar (your own picture from the same
+store the account button reads, whatever Show My Google Picture says) and your own comments.
 
 Not yet: other people's comment authors. A comment stores a name and colour, and the room strips author ids, so
 their picture would need a lookup keyed by comment; until then they show initials.

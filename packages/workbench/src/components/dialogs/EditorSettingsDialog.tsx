@@ -143,13 +143,16 @@ export function EditorSettingsDialog<C, P extends object>({
         all: settings as Record<string, unknown>,
         set: ownToggleSetter(model, (key, value) => onChange({ ...settings, [key]: value })),
       },
-      // The Profile's header card: who is signed in, as this editor's session has them.
+      // The Profile's header card: who is signed in, as this editor's session has them. The avatar is their own
+      // Google picture, as the header's account control draws it, whatever Show My Google Picture says (that switch
+      // only decides what others see; Work Tracker 905).
       identity:
         signedIn && user
           ? {
               name: user.fullName ?? user.username ?? user.email ?? 'Your account',
               email: user.email,
               joined: user.createdAt,
+              picture: user.picture ?? null,
             }
           : null,
       ...(profile ? { profile } : {}),
