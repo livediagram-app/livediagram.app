@@ -13,10 +13,19 @@ describe('avatarSendIntervalMs', () => {
 });
 
 describe('avatarGlideMs', () => {
-  it('draws each packet where it lands up to 10, and glides over one step above', () => {
-    expect(avatarGlideMs(10)).toBe(0);
+  it('glides over one step, in every room, before a gap is known', () => {
+    expect(avatarGlideMs(2)).toBe(33);
     expect(avatarGlideMs(11)).toBe(50);
     expect(avatarGlideMs(100)).toBe(66);
+  });
+
+  // avatar-mode.md "A peer's steps glide, in every room": two at a time every 69 ms (livehuddle.app, 2026-11-17)
+  it('glides over the gap since the peer’s last move, held between one step and three', () => {
+    expect(avatarGlideMs(2, 69)).toBe(69);
+    expect(avatarGlideMs(2, 0)).toBe(33);
+    expect(avatarGlideMs(2, 3000)).toBe(99);
+    expect(avatarGlideMs(100, 40)).toBe(66);
+    expect(avatarGlideMs(2, Number.NaN)).toBe(33);
   });
 });
 

@@ -684,9 +684,13 @@ fan-out"), shared by every product with Avatar mode:
 - **The send rate steps down with the room**: every 33 ms in a room of up to 10, 50 ms up to 32, 66 ms above that
   (`presenceStepMs` in `@liveworkspace/api-schema/presence-fanout`, read through `avatarSendIntervalMs` in
   `@livehuddle/avatar/relay`). A room of up to 10, every room most people are in, walks exactly as before.
-- **A peer's slower steps still glide**: above 10, a peer's character slides to each new position over one step
-  (`avatarGlideMs`) while it walks, instead of hopping 13 to 17 canvas px at a time; standing, sitting and a portal's
-  jump still land at once.
+- **A peer's steps glide, in every room**: a peer's character slides to each new position while it walks, instead of
+  hopping to where each packet lands; standing, sitting and a portal's jump still land at once. It slides over the
+  time since that peer's last move arrived (`avatarGlideMs`), at least one step and at most three, so it keeps
+  moving while the next one is on its way. Packets do not arrive as evenly as they leave: measured on livehuddle.app
+  (2026-11-17, two people in a Space), a walker sent every 34 ms and the other side received them two at a time
+  every 69 ms, so drawing each where it landed moved the character 14 times a second, two steps at a time. Gliding
+  over the gap draws that as one steady walk, a step or two behind the walker.
 - **The room relays a character only to the sockets on its tab, and coalesces each socket's samples per step** into
   one frame.
 - **The costume rides only when it is needed** (`createAvatarPacker` in `@livehuddle/avatar/relay`, with
