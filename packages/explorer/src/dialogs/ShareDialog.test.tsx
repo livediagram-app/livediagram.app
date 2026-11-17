@@ -427,6 +427,29 @@ describe('ShareDialog', () => {
     }
   });
 
+  it('moves focus to the pass level when the tab strip goes, and leaves a chosen control alone', () => {
+    const props: ShareDialogProps = {
+      client: fakeShareClient().client,
+      item: { id: 'p1', app: 'liveplanner', kind: 'plan', sharedVia: null, title: 'Roadmap' },
+      shareUrl: (l) => `https://x.test/s/${l.code}`,
+      onClose: vi.fn(),
+      notify: vi.fn(),
+    };
+    const appTab = { label: 'Community', panel: <p>Community panel</p> };
+    const { rerender } = render(<ShareDialog {...props} appTab={appTab} />);
+    expect(document.activeElement).toBe(screen.getByRole('tab', { name: 'Passes' }));
+    // The strip goes (as the Approval tab does when its door answers no): focus falls with the Passes tab.
+    rerender(<ShareDialog {...props} />);
+    const level = document.activeElement;
+    expect(level?.getAttribute('aria-label')).toMatch(/^Pass level: /);
+    // A strip coming back never takes focus from a control already holding it.
+    const forever = screen.getByRole('radio', { name: 'Forever' });
+    act(() => forever.focus());
+    rerender(<ShareDialog {...props} appTab={appTab} />);
+    expect(document.activeElement).toBe(forever);
+    expect(level).not.toBe(forever);
+  });
+
   it('keeps the hover cards on Show Me and Help for keyboard focus', async () => {
     renderDialog({ helpHref: (a) => `https://help.test/${a}` });
     const help = screen.getByRole('link', { name: 'Help with sharing' });
