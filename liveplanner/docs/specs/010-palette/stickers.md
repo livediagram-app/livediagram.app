@@ -25,7 +25,7 @@ and in `isSelfDrawingShape` (no label editor, no markers, no text alignment, no 
 `acceptsInlineIcon`.
 
 - **No presets.** `shapeSupportsPresets` asks `supportsColours`, so a sticker's element menu has no Presets grid,
-  and with Presets, Colours and Border all empty the Style flyout does not render (`PresetSections.tsx`).
+  and with Presets, Colours and Border all empty the Appearance flyout does not render (`PresetSections.tsx`).
 - **No text, by any route.** No Add-text button, no double-click editor, no type-to-edit, all from
   `isSelfDrawingShape`.
 - **Square and aspect-locked.** A new sticker is 104 × 104 and `aspectLocked`, because the plate and its content

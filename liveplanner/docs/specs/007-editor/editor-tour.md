@@ -8,17 +8,19 @@ Settings' **Getting Started** category.
 
 ## Where it appears
 
+**The button reads Get Started** in every app (owner, 2026-11-16), whichever tour it offers: it has no hover card; the tour's own name ("Start Draw Tour", "Watch It Built") is in its accessible name, "Get Started, <tour name>". Icon only on a phone, as before.
+
 The same way in as livediagram's ([Editor tour](../../../../livediagram/docs/specs/007-editor/editor-tour.md) "Where
 it appears"), with liveplanner's tours on it:
 
-- **The footer's Start Tour button is the one way in.** Every tour on offer is started from one button in the
-  editor's bottom bar, immediately left of Search: a contained chip with a play glyph in a small accent disc,
+- **The footer's Get Started button is the one way in.** Every tour on offer is started from one button in the
+  editor's bottom bar, left of Tools: a contained chip with a play glyph in a small accent disc,
   reading **Start Boards Tour**, **Start Sheets Tour**, **Start Forms Tour** or **Start Dashboards Tour**
   (`TourOfferButton`, `@liveworkspace/workbench/components/tour`). On a phone, and wherever its neighbours drop
   their words, it shows the glyph alone and keeps its full name as its accessible name. With no tour on offer it is
   not drawn. A tour never starts, prompts or offers itself on its own: no banner, no card.
 - **First of the bar's controls.** The button leads the bar's right-hand cluster, in the same place on a
-  computer, a narrow window and a phone: **Start Tour**, then **Search**, then **Settings** and the appearance
+  computer, a narrow window and a phone: **Get Started**, then **Search**, then **Settings** and the appearance
   switch (`ChromeControls`). So the button comes and goes at the cluster's left edge, by the tabs, without moving
   Search, Settings or the appearance switch.
 - **Which tour it offers.** Each tour's host publishes its tour while the person could take it (`useOfferTour`,
@@ -45,7 +47,7 @@ it appears"), with liveplanner's tours on it:
 ## No welcome tour
 
 No tour is offered on a brand-new user's first project: there is no Diagram tour and no `/new` handoff flag owing
-one. A stored `tourSeen` preference is never read. A new user meets the Plan tour, on the footer's Start Tour button
+one. A stored `tourSeen` preference is never read. A new user meets the Plan tour, on the footer's Get Started button
 once a board or Sheet is on the tab.
 
 ## Steps open what they explain
@@ -102,7 +104,7 @@ Card Types, but it covers it".)
   what ending means. A step anchors by `data-tour-id`, or by a `selector` resolved when it runs, and an anchorless
   card's `prepare` runs too. The [Plan tour](../026-plan/plan-tour.md)'s three tracks are hands-on instead: they
   run missions in a mission strip of their own and share only the offer and the one-tour-at-a-time store. The last card's words (`TourCardCopy`) are a prop. The engine, the stage, the card, the spotlight, the
-  shield, the tour colours and the Start Tour button live once in `@liveworkspace/workbench/components/tour`; the
+  shield, the tour colours and the Get Started button live once in `@liveworkspace/workbench/components/tour`; the
   editor keeps only its steps and hosts.
 - The engine drives the **real UI**, not screenshots: steps have a `prepare` phase that opens the actual panel
   / dropdown / menu (clicking the same triggers a user would, or calling editor-context handlers like
@@ -150,7 +152,7 @@ Card Types, but it covers it".)
 
 ## Share roles
 
-Only someone who may edit the tab sees the Start Tour button (an **Editor**). A **Participant** or a **Viewer**
+Only someone who may edit the tab sees the Get Started button (an **Editor**). A **Participant** or a **Viewer**
 never sees it (the editor is read-only for the tours' purposes: `isReadOnly`).
 
 ## Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))

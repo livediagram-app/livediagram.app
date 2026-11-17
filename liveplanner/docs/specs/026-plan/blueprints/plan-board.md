@@ -1011,7 +1011,6 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 | Linked Cards tab: shown, hidden, sections off Overview, count  | `apps/editor/components/plan/ItemPanel.linked.test.tsx`, `ItemPanel.navigation.test.tsx`                                                                       |
 | Maximise Card: desktop only, toggles, sizes, aria-pressed      | `apps/editor/components/plan/ItemPanel.maximise.test.tsx`, `item-panel-size.test.ts`                                                                           |
 | Maximised preference: read, write, tracked first, owner id     | `apps/editor/hooks/plan/useCardPanelMaximised.test.tsx`                                                                                                        |
-| Cards tiles: grid, ⋯ inside, menu rows per role, Trash         | `apps/editor/components/plan/CardFinderPanel.test.tsx`, `CardFinderTile.test.tsx`                                                                              |
 | Folded strip rows open their panels (no canvas pointerdown)    | `apps/editor/components/canvas/PlanCardsClusterStrip.test.tsx`                                                                                                 |
 
 ## Constants and configuration

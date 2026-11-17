@@ -174,7 +174,7 @@ export function ItemMenu({
         />
       ) : null}
       {/* The document's own webhooks (004-index/webhooks.md): for a signed-in account who can edit it. */}
-      {renames && signedIn ? (
+      {renames && signedIn && host.webhooks ? (
         <MenuActionRow
           label="Webhooks"
           icon={<WebhookIcon />}

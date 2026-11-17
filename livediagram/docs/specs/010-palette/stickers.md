@@ -76,7 +76,7 @@ a sticker showed a full grid of preset tiles where every one did nothing.
 `shapeSupportsPresets` now asks `supportsColours` rather than keeping a second
 exclusion list of its own, which is what let stickers through: the list knew
 about icons and charts because those predated it, and had never heard of a
-sticker. With Presets, Colours and Border all empty, the whole **Style flyout
+sticker. With Presets, Colours and Border all empty, the whole **Appearance flyout
 stops rendering** for a sticker rather than opening onto nothing.
 
 **No text, by any route.** The selection toolbar drops its Add-text button,

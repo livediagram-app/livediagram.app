@@ -12,5 +12,6 @@ Follow the references below only as needed; never upfront.
 - ./approvals.md - when working on approvals: asking named people to approve an item, their decisions, the badge, Changed Since Approval, who may approve (a Viewer included), the email, History and the audit log
 - ./webhooks.md - when working on webhooks: one document's, who adds them (its editors), the events, Slack and Teams, delivery and retries, SSRF and secrets
 - ./dialog-hero-header.md - when building a dialog's hero header: the band, title mark and title every app's main dialogs wear, its colours, the title's face and each dialog's art
+- ./footer-tools-menu.md - when working on the editor footer's Tools menu: the one button holding Automations, Snapshots and History, when it is drawn, its rows and badges
 - ./index-service.md - when working on the index Worker itself: who calls it, the decisions the contract left open, its secrets, performance, local running, deploys
 - ./blueprints/README.md - when implementing an index spec: the blueprints hold the engineering detail derived from it

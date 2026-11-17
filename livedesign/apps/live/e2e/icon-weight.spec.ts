@@ -40,6 +40,8 @@ test.describe('Icon weight', () => {
     await expect.poll(() => glyphStroke(page)).toBe('1.25');
 
     await page.locator('[data-element-id="ic"]').click({ button: 'right' });
+    // Weight sits in the element menu's Appearance flyout (docs/specs/008-canvas/canvas-and-palette.md).
+    await page.locator('[data-menu-section="Appearance"]').click();
     await page.getByRole('button', { name: 'Weight', exact: true }).click();
     await page.getByRole('button', { name: 'Bold', exact: true }).click();
     await expect.poll(() => glyphStroke(page)).toBe('2');

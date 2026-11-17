@@ -55,6 +55,8 @@ export function buildGardenRetreat(cx: number, cy: number): Element[] {
     run('garden-fence', 0, GARDEN_H - FENCE, GATE_FROM, FENCE),
     run('garden-fence', GATE_TO, GARDEN_H - FENCE, GARDEN_W - GATE_TO, FENCE),
     { kind: 'tree', x: 60, y: 60 },
+    // A hammock between the first two trees: walk up and it sways (docs/specs/009-elements/piece-moments.md).
+    { kind: 'hammock', x: 200, y: 48 },
     { kind: 'tree', x: 230, y: 150 },
     { kind: 'tree', x: 900, y: 60 },
     { kind: 'tree', x: 1030, y: 190 },
@@ -101,7 +103,7 @@ export function buildGardenRetreat(cx: number, cy: number): Element[] {
       width: 320,
       sticker: 'emoji-blossom',
       subtitle:
-        'Step outside: walk the paths, meet round the table in the summer house, or sit by the campfire.',
+        'Step outside: walk the paths, meet round the table in the summer house, sit by the campfire, or swing in the hammock.',
     },
     // On the lawn beside the summer house, its door and the campfire in view.
     arrival({
@@ -157,6 +159,8 @@ export function buildCityPark(cx: number, cy: number): Element[] {
     { kind: 'ping-pong-table', x: 184, y: 60 },
     { kind: 'bench', x: 376, y: 200 },
     { kind: 'tree', x: 1040, y: 40 },
+    // A hammock slung under the corner trees, clear of the cross path.
+    { kind: 'hammock', x: 1024, y: 222 },
     { kind: 'tree', x: 900, y: 90 },
     { kind: 'bench', x: 734, y: 200 },
     // Bottom left: a picnic table under a tree.
@@ -182,7 +186,7 @@ export function buildCityPark(cx: number, cy: number): Element[] {
       width: 240,
       sticker: 'emoji-sun',
       subtitle:
-        'Take the meeting outside: stroll the paths, sit on a bench, or gather round the bandstand.',
+        'Take the meeting outside: stroll the paths, sit on a bench, swing in a hammock, or gather round the bandstand.',
     },
     // On the open lawn above the fountain plaza, between the north path and the trees, off the paths and the
     // bandstand, its line under it clear of the path stones and the bench.

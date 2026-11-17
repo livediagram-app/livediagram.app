@@ -10,7 +10,7 @@ full-width band holding one eraser, so its one button moved into the menu as a r
 - **Clear Styles** puts the element's quick-style colours, width and line style back to the theme's, forgetting the
   style memory of its kind. livehuddle has no Quick Style panel
   ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#quick-style)), so this is the one Clear Styles.
-- It is a row of the menu's **Appearance** group, directly under the **Style** row whose colours and border it resets,
+- It is a row of the menu's **Appearance** group, directly under the **Appearance** row whose colours and border it resets,
   drawn as the menu's other rows are (the eraser in the icon slot, the label in the category rhythm). It runs on one
   press and closes the menu, so it stays one click away.
 - It shows while the element takes a quick style (a shape or a text element that is not retired). On any other
@@ -56,7 +56,7 @@ Every editor (livehuddle, liveplanner, livedocuments, livedesign) opens the same
 
 - `apps/editor/components/palette/ElementMenuClearStyles.tsx`: `ElementMenuClearStyles`, a `MenuActionRow`
   (`@liveworkspace/workbench`'s `PortalMenu`) named "Clear Styles"; rendered by `ElementAppearanceSections` right after
-  the Style flyout. Only livehuddle's own menu files change; the shared menu primitives do not.
+  the Appearance flyout. Only livehuddle's own menu files change; the shared menu primitives do not.
 - Clear Styles: `ClearStylesHost` (headless, `components/canvas/ClearStylesHost.tsx`) publishes the Quick Style view's targets and its `clearStyles` to
   `../packages/workbench/src/lib/clear-styles-store.ts` (`publishClearStyles`, `useClearStyles`) whenever the targets change, the
   press running the latest; the row shows when the store's targets include the element. Its telemetry is

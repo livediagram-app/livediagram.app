@@ -149,7 +149,7 @@ picked after creation"). The move is `useTemplatePickMove` (`apps/editor/compone
 ## The tours wait
 
 A tour never lands over a start: while one is on screen the Workshop tour and Ask Receptionist are not on
-offer, so the footer's Start Tour button does not show them, and they come onto it once a template is picked or the
+offer, so the footer's Get Started button does not show them, and they come onto it once a template is picked or the
 start closed (`start-panel-open.ts`, `useStartPanelOpen`).
 
 Walking waits the same way: while a start is open, Avatar mode cannot be entered and no walking input moves the

@@ -19,7 +19,7 @@ dimming spotlight, Skip, Back and a closing card, driven by the tour engine ever
 
 ## Where it appears
 
-The footer's Start Tour button is the one way in, for this tour as for every other; the Diagram tour spec (`007-editor/editor-tour.md`) "Where it appears" in livediagram describes the button, which tour it offers when several could run,
+The footer's Get Started button is the one way in, for this tour as for every other; the Diagram tour spec (`007-editor/editor-tour.md`) "Where it appears" in livediagram describes the button, which tour it offers when several could run,
 and the closing card. This tour's part:
 
 - **On the button as "Start Pages Tour"**, whatever the page kind, while the open tab is in Pages, to an Editor,
@@ -163,7 +163,7 @@ Every tour (this one, [Show Me](show-me.md) and the [element tours](element-tour
 ### Mechanics
 
 - **One engine.** The step runner (`useTourEngine`: prepare, await, heal, glide, Back / Next / Skip) and what it
-  draws (`TourStage`: `TourSpotlight`, `TourPopover`, `TourShield`) live once, with the Start Tour button and the tour colours, in `@liveworkspace/workbench/components/tour`; each tour's host owns when it is on offer, its steps and what
+  draws (`TourStage`: `TourSpotlight`, `TourPopover`, `TourShield`) live once, with the Get Started button and the tour colours, in `@liveworkspace/workbench/components/tour`; each tour's host owns when it is on offer, its steps and what
   ending means. A step anchors by `data-tour-id`, or by a `selector` resolved when it runs, and an anchorless card's
   `prepare` runs too.
 - **The card never covers its target.** Beside it on a computer, else below or above it; when neither has room for
@@ -225,7 +225,7 @@ Only someone who may edit the tab sees Start Pages Tour, or Show Me: an **Editor
 
 The tour's funnel; the track shows in the step tokens:
 
-- **Offer**: `UI` · `Opened` · `PagesTourOffer` the first time the Start Tour button shows this tour in a page load.
+- **Offer**: `UI` · `Opened` · `PagesTourOffer` the first time the Get Started button shows this tour in a page load.
 - **Start**: `UI` · `Started` · `PagesTour` on a press of the button (or the Settings rerun).
 - **Stage views**: `UI` · `View` · `PagesTourStep<Kind><Id>` once per step entry, `<Kind>` the track
   (`Slide`, `Infographic`, `Article`): `PagesTourStepSlideLayouts`,
@@ -250,5 +250,5 @@ tour (`elementToursSeen`). Both stay seen for someone who had it on: `upgradeLeg
   `page-tour-parts.ts` builds the steps the tracks share (a look control, Add, a Contents row and its menu);
   `page-tour-steps.ts` picks a track's steps for a kind, loaded at the press so the copy stays out of the editor's
   first load.
-- `PagesTourHost.tsx`: when the tour is on the Start Tour button, the tour page and the seen record. `PageTour.tsx`: the page panel's Show Me.
+- `PagesTourHost.tsx`: when the tour is on the Get Started button, the tour page and the seen record. `PageTour.tsx`: the page panel's Show Me.
 - `apps/editor/lib/page-panel-request.ts`: how a tour opens or closes a page's panel on a tab from outside `CanvasPages`.

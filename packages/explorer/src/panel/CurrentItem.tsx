@@ -16,7 +16,7 @@ import { relativeSince, useNow } from '../time';
 
 // The open item as the index has it: its picture, visibility badge and the Explorer's item menu, renamed through
 // the index (the editor's title follows, onItemRenamed).
-export function CurrentItem({ item: base }: { item: Item }) {
+export function CurrentItem({ item: base, compact = false }: { item: Item; compact?: boolean }) {
   const { overlay, renderThumbnail, actions, openItem, renamingId, setRenamingId } = useExplorer();
   const item = overlay.apply(base);
   // Its pencil, or Rename on its menu (which names it for renaming, as every row's does).
@@ -29,6 +29,7 @@ export function CurrentItem({ item: base }: { item: Item }) {
   const menu = useRowMenu({ disabled: editing });
   return (
     <CurrentCard
+      compact={compact}
       title={item.title}
       updatedAt={item.updatedAt}
       canRename={item.access === 'edit'}
@@ -53,15 +54,18 @@ export function CurrentItem({ item: base }: { item: Item }) {
 export function LocalCurrentItem({
   item,
   onRename,
+  compact = false,
 }: {
   item: ThisBrowserItem;
   onRename?: (title: string) => void;
+  compact?: boolean;
 }) {
   const { app } = useExplorer();
   const [editing, setEditing] = useState(false);
   const menu = useRowMenu({ disabled: editing });
   return (
     <CurrentCard
+      compact={compact}
       local
       title={item.title}
       updatedAt={item.updatedAt}
@@ -83,6 +87,7 @@ export function LocalCurrentItem({
 // The card both draw: the picture, the label "Current <Kind>" with the place's badge, the name (click to rename, for
 // someone who may), "Updated <relative time>" and the ⋯ menu.
 function CurrentCard({
+  compact = false,
   local = false,
   title,
   updatedAt,
@@ -96,6 +101,9 @@ function CurrentCard({
   menu,
   children,
 }: {
+  // At the top of the panel's sidebar (owner, 2026-11-16): the picture across the card with where it lives on its
+  // corner, then the name with its menu, then when it changed. No "Current" label: its place says it.
+  compact?: boolean;
   local?: boolean;
   title: string;
   updatedAt: number;
@@ -117,6 +125,60 @@ function CurrentCard({
     if (trimmed && trimmed !== title) onRename(trimmed);
     setEditing(false);
   };
+  if (compact)
+    return (
+      <section
+        aria-label={`Current ${kind.lowerOne}`}
+        data-current-item={local ? 'this-browser' : 'index'}
+        data-current-compact=""
+        onContextMenu={menu.onContextMenu}
+        className="flex flex-col gap-1.5 rounded-xl bg-white p-1.5 shadow-sm ring-1 ring-slate-200 dark:bg-slate-800/60 dark:ring-slate-700"
+      >
+        <span className="relative block">
+          <span className="flex h-24 w-full items-center justify-center overflow-hidden rounded-lg bg-slate-50 text-slate-300 ring-1 ring-inset ring-slate-200/80 dark:bg-slate-900 dark:ring-slate-700/70 [&>*]:!h-full [&>*]:!w-full">
+            {thumbnail}
+          </span>
+          {/* Where it lives, on the picture's corner, so the line under the name has its full width. */}
+          <span className="absolute left-1.5 top-1.5 flex">{badge}</span>
+        </span>
+        <span className="flex min-w-0 flex-col gap-0.5 px-1 pb-0.5">
+          <span className="flex min-h-6 items-center gap-1">
+            {editing ? (
+              <InlineRenameInput
+                initial={title}
+                ariaLabel={`Rename ${name}`}
+                onCommit={commit}
+                onCancel={() => setEditing(false)}
+                className="w-full min-w-0 rounded border border-brand-300 bg-white px-1.5 py-0.5 text-[13px] font-semibold text-slate-900 dark:border-brand-400 dark:bg-slate-800 dark:text-slate-50"
+              />
+            ) : (
+              <button
+                type="button"
+                aria-label={canRename ? `Rename ${name}` : undefined}
+                aria-current={canRename ? undefined : 'true'}
+                onClick={canRename ? () => setEditing(true) : onOpen}
+                title={name}
+                className="min-w-0 flex-1 cursor-pointer truncate rounded text-left text-[13px] font-semibold text-slate-900 decoration-slate-400 decoration-dotted underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 dark:text-slate-50 dark:decoration-slate-500"
+              >
+                {name}
+              </button>
+            )}
+            {!editing ? (
+              <EllipsisTriggerButton
+                {...menu.triggerProps}
+                size="md"
+                className="-my-1 -mr-1 shrink-0"
+                label={`${kind.one} menu`}
+              />
+            ) : null}
+          </span>
+          <span className="truncate text-[11px] text-slate-500 dark:text-slate-400">
+            Updated {relativeSince(updatedAt, now || Date.now())}
+          </span>
+        </span>
+        {children}
+      </section>
+    );
   return (
     <section
       aria-label={`Current ${kind.lowerOne}`}

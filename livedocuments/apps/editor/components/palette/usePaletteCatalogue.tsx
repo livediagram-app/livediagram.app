@@ -1,4 +1,5 @@
 import type { PaletteKind } from '@/lib/palette-kind';
+import { libraryLast } from '@liveworkspace/workbench/components/palette/library-last';
 import { useLibrary } from '@liveworkspace/workbench/components/library/LibraryProvider';
 import type { LibraryInsertItem } from '@liveworkspace/workbench/hooks/canvas/useLibraryItemInsert';
 import type { EmbedProvider } from '@livedocuments/document';
@@ -175,8 +176,12 @@ export function usePaletteCatalogue({
   // (palette-layouts.ts).
   // The Library (liveworkspace/docs/specs/006-media/libraries.md) only where the editor has one.
   const hasLibrary = useLibrary() !== null;
-  const categories = paletteCategoriesFor({ pagesKind: paletteKind }).filter(
-    (c) => hasLibrary || c.id !== 'library',
+  // Always last (library-last.ts).
+  const categories = libraryLast(
+    paletteCategoriesFor({ pagesKind: paletteKind }).filter(
+      (c) => hasLibrary || c.id !== 'library',
+    ),
+    'library',
   );
   const tabs = paletteCategoryTabs({
     insertLibraryItem,

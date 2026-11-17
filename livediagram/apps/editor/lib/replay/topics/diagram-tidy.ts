@@ -24,7 +24,7 @@ export const CHAPTERS: readonly Chapter[] = [
   },
   {
     id: 'tidy-press',
-    name: 'Tidy Up',
+    name: 'Tidy',
     shortName: 'Tidy',
     ms: 7500,
     say: 'Tidy Up in the bottom bar lays the whole tab out neatly in one press.',

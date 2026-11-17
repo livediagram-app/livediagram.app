@@ -1,55 +1,8 @@
-// The Email to Board article's scenes (docs/specs/026-plan/email-to-board.md): the tab menu with Email to Board…
-// under the pointer, the dialog once an address is on (the address with Copy Address, its counts line, Who Can Send
-// and the amber warning), and the panel footer of a card an email made (From email beside Created by). Composed from
-// the shared primitives so the house style holds.
+// The Email to Board article's scenes (docs/specs/026-plan/email-to-board.md): the dialog once an address is on (the
+// address with Copy Address, its counts line, Who Can Send and the amber warning), and the panel footer of a card an
+// email made (From email beside Created by). Composed from the shared primitives so the house style holds.
 
 import { Scene, Label, Dialog, Button } from '@liveworkspace/help-site/art/primitives';
-import {
-  TabPill,
-  AddTabButton,
-  TabBar,
-  MenuRowList,
-} from '@liveworkspace/help-site/art/illustrations/tabs-parts';
-
-/** The tab menu's rows, with Email to Board… under the pointer below Publish as Roadmap. */
-export function EmailMenu() {
-  const barY = 186;
-  const mx = 130;
-  const my = 16;
-  return (
-    <Scene w={420} h={238}>
-      <TabBar y={barY} w={420} />
-      <TabPill x={14} y={barY + 8} w={100} label="Requests" active />
-      <TabPill x={120} y={barY + 8} w={64} label="Bugs" />
-      <AddTabButton x={190} y={barY + 8} />
-      <rect
-        x={mx}
-        y={my}
-        width={212}
-        height={152}
-        rx={8}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      <MenuRowList
-        x={mx}
-        y={my + 6}
-        w={212}
-        rows={[
-          'Organise in Tab Folder',
-          null,
-          'Import…',
-          'Export',
-          'Subscribe to Calendar…',
-          'Publish as Roadmap…',
-          'Email to Board…',
-          'Clear',
-        ]}
-        highlight="Email to Board…"
-      />
-    </Scene>
-  );
-}
 
 // One Who Can Send choice: chosen (brand ring, filled icon tile) or not (plain outline).
 function Choice({

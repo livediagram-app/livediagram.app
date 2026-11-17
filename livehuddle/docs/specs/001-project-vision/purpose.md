@@ -22,7 +22,8 @@ livediagram grew three things that are about people being together rather than a
   [office pieces](../009-elements/office.md) (rooms, meeting tables, plants, bookshelves, water coolers, coffee
   machines, rugs).
 - The **Spaces** templates ([Virtual Office and space templates](../012-collaboration/virtual-office-template.md)):
-  offices (Virtual Office, Coworking Space, Team Pod, Focus Library), events (All-Hands Hall, Training Room),
+  offices (Virtual Office, Coworking Space, Team Pod, Focus Library, Interview Suite, Client Lounge), events
+  (All-Hands Hall, Training Room, Classroom, Hackathon Hall),
   recreation (Rooftop Bar, Cafe), outdoor ones (Garden Retreat, City Park, Beach Offsite), an Expo Hall, an open-air Festival Field and whole
   campuses (Company Campus, Conference Venue, Startup HQ, School Quad, and the Hotel and Suites and Co-working Tower
   on floors joined by lifts).
@@ -69,7 +70,7 @@ place they meet.
 The full list is in [v1 scope](../002-project-scope/v1-scope.md).
 
 - **Being together in a Space**: Avatar mode first-class, live cursors, presence, follow-me, Bring Focus.
-- **Spaces to meet in**: the twenty-six Spaces templates, every Space element to build more.
+- **Spaces to meet in**: the thirty Spaces templates, every Space element to build more.
 - **Talking**: proximity audio and calls ([Future work](../005-project-roadmap/future-work.md) and the calls specs in
   `012-collaboration/`), speech bubbles, comments with mentions and reactions.
 - **Keeping a meeting moving**: the Timer and Stopwatch pieces, and Bring Focus.

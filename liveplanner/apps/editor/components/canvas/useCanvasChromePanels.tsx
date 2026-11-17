@@ -6,6 +6,7 @@ import { useStableCallbacks } from '@liveworkspace/workbench/hooks/ui/useStableC
 import { participantKey } from '@/lib/identity';
 import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import type { PanelId } from '@/lib/panel-layout';
+import { ItemToolsHost } from '@/components/panels/ItemToolsHost';
 import { LazyExplorer } from '@/components/panels/LazyExplorer';
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import type { CanvasChromeProps } from './CanvasChrome';
@@ -14,10 +15,6 @@ import { useWithheldExplorerCloses } from '@liveworkspace/workbench/components/c
 
 // Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a project without
 // Plan pays nothing for it.
-const CardFinderPanel = dynamic(
-  () => import('@/components/plan/CardFinderPanel').then((m) => m.CardFinderPanel),
-  { ssr: false },
-);
 const TrashPanel = dynamic(() => import('@/components/plan/TrashPanel').then((m) => m.TrashPanel), {
   ssr: false,
 });
@@ -87,7 +84,6 @@ export function useCanvasChromePanels({
   // The Card Types panel over its cluster button (docs/specs/026-plan/item-types.md).
   cardTypesPopoverEl: ReactNode;
   trashPopoverEl: ReactNode;
-  cardFinderPopoverEl: ReactNode;
   // The Session strip's open popover (Timer or Vote), over its button.
   sessionPopoverEl: ReactNode;
 } {
@@ -183,7 +179,6 @@ export function useCanvasChromePanels({
   // loses edit rights with it open sees it close with its button (item-types.md "The Card Types panel").
   const cardTypesOpen = activeDockPanel === 'card-types' && !readOnly;
   const trashOpen = activeDockPanel === 'plan-trash';
-  const cardFinderOpen = activeDockPanel === 'plan-cards';
 
   // Mounted from its first opening on, never before (its code loads then), and kept mounted after so
   // the folders someone expanded stay expanded.
@@ -193,20 +188,29 @@ export function useCanvasChromePanels({
   // Withheld (the workbench frame, a phone held sideways), an open Explorer closes.
   const explorerHidden = !!props.explorerHidden;
   useWithheldExplorerCloses(explorerHidden, explorerOpen, closeDockPanel);
-  const explorerEl =
-    zenMode || explorerHidden || !explorerOpened ? null : (
-      <LazyExplorer
+  // History and Webhooks in the footer's Tools, there from the start (ItemToolsHost), the Explorer or not.
+  const explorerEl = (
+    <>
+      <ItemToolsHost
         currentProjectId={currentProjectId}
-        inboxOpenAction={inboxOpenAction}
         currentShareCode={currentShareCode ?? null}
-        onRenameCurrent={onRenameCurrentProject}
-        onNewProject={explorerHandlers.onNewProject}
-        menuActions={explorerMenu}
-        popoverOpen={explorerOpen}
-        popoverAnchor={activeDockAnchor ?? undefined}
-        onPopoverClose={closeDockPanel}
+        onWebhooks={explorerMenu?.onWebhooks}
       />
-    );
+      {zenMode || explorerHidden || !explorerOpened ? null : (
+        <LazyExplorer
+          currentProjectId={currentProjectId}
+          inboxOpenAction={inboxOpenAction}
+          currentShareCode={currentShareCode ?? null}
+          onRenameCurrent={onRenameCurrentProject}
+          onNewProject={explorerHandlers.onNewProject}
+          menuActions={explorerMenu}
+          popoverOpen={explorerOpen}
+          popoverAnchor={activeDockAnchor ?? undefined}
+          onPopoverClose={closeDockPanel}
+        />
+      )}
+    </>
+  );
 
   // Collaborate panel (docs/specs/012-collaboration/assigned-actions.md §5): a popover hanging above its
   // cluster button after Layers, in every layout (the button opens it through
@@ -318,14 +322,6 @@ export function useCanvasChromePanels({
       <LazyPopover onError={closeDockPanel}>
         <CardTypesPanel
           popoverOpen
-          popoverAnchor={activeDockAnchor ?? undefined}
-          onPopoverClose={closeDockPanel}
-        />
-      </LazyPopover>
-    ) : null,
-    cardFinderPopoverEl: cardFinderOpen ? (
-      <LazyPopover onError={closeDockPanel}>
-        <CardFinderPanel
           popoverAnchor={activeDockAnchor ?? undefined}
           onPopoverClose={closeDockPanel}
         />

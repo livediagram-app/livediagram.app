@@ -10,9 +10,9 @@ test.describe('Chrome glyph weight', () => {
   }) => {
     await page.emulateMedia({ colorScheme: 'dark' });
     await startBlankProject(page);
-    // A chrome button's glyph: the status bar's Search.
+    // A chrome button's glyph: the status bar's Settings.
     const glyph = page
-      .getByRole('button', { name: 'Search', exact: true })
+      .getByRole('button', { name: 'Application settings', exact: true })
       .locator('svg.lvd-glyph')
       .first();
     await expect(glyph).toHaveAttribute('stroke-width', '1.25');

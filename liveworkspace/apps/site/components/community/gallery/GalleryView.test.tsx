@@ -162,7 +162,7 @@ describe('the gallery', () => {
     await screen.findByText('Post 1');
 
     fireEvent.click(screen.getByRole('button', { name: 'Filter by category' }));
-    fireEvent.click(screen.getByRole('menuitemradio', { name: /Software & IT/ }));
+    fireEvent.click(screen.getByRole('menuitemradio', { name: /Software/ }));
     await waitFor(() => expect(search().value).toBe('category:software'));
 
     fireEvent.click(screen.getByRole('button', { name: 'Filter by tag' }));
@@ -478,7 +478,7 @@ describe('All Apps', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Filter by category' }));
     // The same id, two apps, two labels: each row says whose it is.
     expect(
-      await screen.findByRole('menuitemradio', { name: 'Meetings & Workshops, livediagram' }),
+      await screen.findByRole('menuitemradio', { name: 'Meetings, livediagram' }),
     ).toBeTruthy();
     fireEvent.click(screen.getByRole('menuitemradio', { name: 'Meetings, liveplanner' }));
     await waitFor(() => expect(search().value).toBe('category:liveplanner/meetings'));

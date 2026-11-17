@@ -180,7 +180,7 @@ The reasoning is the row's own: Tools exists to stop a band of bespoke rows leng
 
 Inline, it is an ordinary collapsible row participating in the menu's one-open-at-a-time state, because a permanently-expanded row in the main menu would be worse than a flyout. Only a **controlled accordion** is promoted; a lone child of any other shape has no row to become, so it stays behind the flyout.
 
-**An open element menu follows the selection.** Clicking another element while the single-element menu is open retargets the menu to the newly-selected element in place (same screen position) instead of dismissing it, so the same tweak can be applied to several elements one after another with one click each. The retarget preserves the menu's expanded state: the open accordion (scaffold `sectionProps`) and the open flyout (`flyoutProps`) both stay open, showing the new element's values, so styling five shapes via the Style flyout never re-drills the category path.
+**An open element menu follows the selection.** Clicking another element while the single-element menu is open retargets the menu to the newly-selected element in place (same screen position) instead of dismissing it, so the same tweak can be applied to several elements one after another with one click each. The retarget preserves the menu's expanded state: the open accordion (scaffold `sectionProps`) and the open flyout (`flyoutProps`) both stay open, showing the new element's values, so styling five shapes via the Appearance flyout never re-drills the category path.
 
 Control groups (rendered as context-menu categories, hidden when their gate doesn't apply):
 
@@ -1512,3 +1512,10 @@ in `Canvas` rather than in the clipboard hook.
     `migrateRetiredPattern` (run by `migrateStoredTab`, so by every stored and incoming tab) moves the tab onto
     Crosshatch on read, its pattern colour, opacity and size kept, with a `[tab-migrate] retired-pattern` log.
     Crosshatch is the nearest pattern: a lattice of diagonal lines in the same colour. The next save writes it.
+
+## Icon and Text live in Appearance (owner, 2026-11-16)
+
+The element menu's Appearance flyout holds everything about how the element looks: Presets, Colours, Border, Shadow,
+Finish, then Icon (a tech icon's size, a line icon's weight, a shape's inline icon) and Text. Neither is a row of its
+own in the menu any more. A flyout with one section inside, Tools holding only Mind Map for example, is never a row of
+its own: the section stands in the menu in its place, counting through any group of sections a host builds inline.

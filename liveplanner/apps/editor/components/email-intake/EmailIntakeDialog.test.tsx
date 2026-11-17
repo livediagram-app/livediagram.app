@@ -3,12 +3,12 @@
 // On), Turn On with Who Can Send, Copy Address, Who Can Send saving at once (and going back when the save fails), New
 // Address and Turn Off behind their confirms, the counts line, the board picker and the failures. The tab menu's row
 // draws only with the door the host sets.
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { EmailIntake, EmailIntakeBoard, EmailIntakesResponse } from '@liveplanner/api-schema';
 import { EmailIntakeDialog, intakeCountsLine } from './EmailIntakeDialog';
 import { EmailIntakeHost } from './EmailIntakeHost';
-import { EmailIntakeMenuRow } from './EmailIntakeMenuRow';
+import { useEmailIntakeToolsItem } from './email-intake-tools-item';
 
 const client = vi.hoisted(() => ({
   readEmailIntakes: vi.fn(),
@@ -206,35 +206,81 @@ describe('the counts line', () => {
   });
 });
 
-describe('the tab menu row', () => {
-  it('draws only for someone the host lets in, and opens the dialog', async () => {
+// The Tools menu's row, as a plain button: what the footer's Tools popover draws for it, its badge beside its name.
+function Row() {
+  const item = useEmailIntakeToolsItem();
+  if (!item) return null;
+  return (
+    <button
+      type="button"
+      data-badge={item.badges?.join(', ') ?? ''}
+      onClick={() => item.onSelect(null)}
+    >
+      {item.label}
+    </button>
+  );
+}
+
+describe('the Tools row', () => {
+  it('draws only for someone the host lets in, on a tab with a board, and opens the dialog', async () => {
     client.readEmailIntakes.mockResolvedValue({
       available: true,
       domain: 'x',
       intakes: [],
       boards: [BOARD],
     });
+    const row = () => screen.queryByRole('button', { name: 'Email to Board' });
     const { rerender } = render(
       <EmailIntakeHost scope={null} boardIds={['b1']}>
-        <EmailIntakeMenuRow onClose={() => {}} />
+        <Row />
       </EmailIntakeHost>,
     );
-    expect(screen.queryByText('Email to Board…')).toBeNull();
+    expect(row()).toBeNull();
     rerender(
       <EmailIntakeHost scope={SCOPE} boardIds={[]}>
-        <EmailIntakeMenuRow onClose={() => {}} />
+        <Row />
       </EmailIntakeHost>,
     );
-    expect(screen.queryByText('Email to Board…')).toBeNull();
-    const onClose = vi.fn();
+    expect(row()).toBeNull();
     rerender(
       <EmailIntakeHost scope={SCOPE} boardIds={['b1']}>
-        <EmailIntakeMenuRow onClose={onClose} />
+        <Row />
       </EmailIntakeHost>,
     );
-    fireEvent.click(screen.getByText('Email to Board…'));
-    expect(onClose).toHaveBeenCalled();
+    fireEvent.click(row()!);
     expect(track).toHaveBeenCalledWith('UI', 'Opened', 'EmailIntake');
     await waitFor(() => expect(screen.getByRole('dialog')).toBeTruthy());
+  });
+
+  // liveworkspace/docs/specs/004-index/footer-tools-menu.md "Always there".
+  it('shows an Editor on a plan in This Browser the row with Sync Plan, opening its gate', async () => {
+    const sync = vi.fn(async () => {});
+    render(
+      <EmailIntakeHost scope={null} gate={{ kind: 'sync', ready: true, sync }} boardIds={['b1']}>
+        <Row />
+      </EmailIntakeHost>,
+    );
+    const r = screen.getByRole('button', { name: 'Email to Board' });
+    expect(r.getAttribute('data-badge')).toBe('Sync Plan');
+    fireEvent.click(r);
+    expect(track).toHaveBeenCalledWith('UI', 'Opened', 'EmailIntakeOffline');
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Sync Plan' }));
+    });
+    expect(sync).toHaveBeenCalledOnce();
+  });
+
+  it('shows a guest the row with Sign In, its gate signing in back to Email to Board', () => {
+    render(
+      <EmailIntakeHost scope={null} gate={{ kind: 'sign_in' }} boardIds={['b1']}>
+        <Row />
+      </EmailIntakeHost>,
+    );
+    const r = screen.getByRole('button', { name: 'Email to Board' });
+    expect(r.getAttribute('data-badge')).toBe('Sign In');
+    fireEvent.click(r);
+    expect(track).toHaveBeenCalledWith('UI', 'Opened', 'EmailIntakeSignIn');
+    const href = screen.getByRole('link', { name: 'Sign In' }).getAttribute('href')!;
+    expect(decodeURIComponent(href)).toContain('email=1');
   });
 });

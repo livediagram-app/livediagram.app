@@ -346,7 +346,7 @@ carry a **Gone from livehuddle** banner and record what livehuddle had.
   this version does not know, so no migration is needed. Stored custom swatches (`quickSwatchOverrides`) are kept the
   same way; nothing in livehuddle shows or edits them any more.
 - **What stays for styling**: the element menu (right-click, long-press or a toolbar's More) stays the complete home
-  of every element setting, as it always was: its **Style** flyout (colours, border, shadow, opacity, corners), the
+  of every element setting, as it always was: its **Appearance** flyout (colours, border, shadow, opacity, corners), the
   Text category, the colour picker with Custom colours, and the **Clear Styles** row under Style
   ([Element menu quick bar](../008-canvas/element-menu-quick-bar.md)), which still puts the element's colours, width
   and line style back to the theme's. The multi-selection menu restyles a whole selection. **Tab Style** themes the

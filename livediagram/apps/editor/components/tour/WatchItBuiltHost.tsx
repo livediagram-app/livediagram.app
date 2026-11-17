@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { useStartPanelOpen } from '@liveworkspace/workbench/components/start/start-panel-open';
+import { TOPIC_ICONS } from './topic-icons';
 import { TOUR_OFFER_RANK, useOfferTour } from '@liveworkspace/workbench/components/tour/tour-offer';
 import { CURRICULUM, topicCard } from '@/lib/replay/curriculum';
 import type { ReplayMode } from '@/lib/replay/topic';
@@ -67,7 +68,9 @@ export function WatchItBuiltHost() {
   // rendering (React's pattern for state that follows other values), so it never paints a frame stale.
   if (run && run.topic === null && (!ready || run.mode !== mode)) setRun(null);
 
+  // The Get Started button toggles it, as Tools does: a press while the panel is open closes it.
   const open = () => {
+    if (run && run.topic === null) return setRun(null);
     if (!mode || run || otherTour) return;
     track('UI', 'Opened', 'WatchStart');
     setRun({ mode, topic: null });
@@ -105,6 +108,8 @@ export function WatchItBuiltHost() {
           start: open,
           onShown: () => track('UI', 'Opened', 'TourOffer'),
           seen: owed === 0,
+          // Its own Get Started popover of lessons (WatchStartPanel).
+          ownPanel: true,
         }
       : null,
   );
@@ -132,6 +137,7 @@ export function WatchItBuiltHost() {
           title: t.title,
           line: t.line,
           meta: `${t.seconds} s`,
+          icon: TOPIC_ICONS[t.id],
           taken: topicTaken(ctx.userPreferences, t.id),
         }))}
         canvasRef={ctx.canvasMainRef}

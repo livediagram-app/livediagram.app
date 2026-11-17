@@ -127,7 +127,6 @@ const Fixed = createStartPanel({
   CardGrid,
   tint,
   sheet: false,
-  hideEmptyFooter: true,
 });
 
 type Props = StartPanelProps<Cat, Palette, Card, string, Group, 'other'>;
@@ -415,7 +414,8 @@ describe('the start panel', () => {
     expect(onPick).toHaveBeenCalled();
     fireEvent.click(rail('Basic'));
     expect(screen.queryByText('Connect list')).toBeNull();
-    expect(screen.getByText('Sync').closest('footer')!.className).not.toContain('empty:hidden');
+    // A footer holding something shows, with its rule.
+    expect(screen.getByText('Sync').closest('footer')).toBeTruthy();
   });
 
   it('draws the foot’s lead entries above Connect File, and alone where it is not offered', () => {

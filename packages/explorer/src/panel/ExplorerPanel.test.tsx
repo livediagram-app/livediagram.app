@@ -203,15 +203,15 @@ describe('<ExplorerPanel>', () => {
     expect(classes).not.toContain('@[44rem]:grid-cols-3');
   });
 
-  it('gives the rail room beside the pane: 13rem wide', () => {
+  it('gives the rail room beside the pane, and the current card: 15rem wide', () => {
     renderPanel(createFakeIndex({ items: [] }));
     const classes = rail().className.split(' ');
-    expect(classes).toContain('w-52');
-    expect(classes).not.toContain('w-44');
+    expect(classes).toContain('w-60');
+    expect(classes).not.toContain('w-52');
   });
 
   it("names one popover size for every editor's panel", () => {
-    expect(EXPLORER_POPOVER_WIDTH).toBe('w-[54rem]');
+    expect(EXPLORER_POPOVER_WIDTH).toBe('w-[56rem]');
     expect(EXPLORER_POPOVER_HEIGHT).toBe('45rem');
   });
 
@@ -221,16 +221,28 @@ describe('<ExplorerPanel>', () => {
     expect(await screen.findByText('Nothing else yet')).toBeTruthy();
   });
 
-  it('shows the current item on top, with the notice under it', () => {
+  // Beside a rail the current card heads the rail (owner, 2026-11-16) and the notice spans the top above it.
+  it('heads the rail with the current item, the notice spanning the top', () => {
     const item = makeItem(1);
     renderPanel(createFakeIndex({ items: [item] }), {
       current: item,
       notice: <p>Sign in note</p>,
     });
     const card = screen.getByRole('region', { name: 'Current plan' });
+    expect(rail().contains(card)).toBe(true);
     expect(card.compareDocumentPosition(screen.getByText('Sign in note'))).toBe(
-      Node.DOCUMENT_POSITION_FOLLOWING,
+      Node.DOCUMENT_POSITION_PRECEDING,
     );
+  });
+
+  // With nothing above the rail and pane, the popover header's rule is the only one: the body's own rule is drawn only
+  // under a top block that holds something.
+  it('draws the body’s top rule only under something', () => {
+    renderPanel(createFakeIndex({ items: [] }));
+    const body = document.querySelector('[data-panel-body]')!;
+    expect(body.className).toContain('[:not(:empty)+&]:border-t');
+    expect(body.className.split(' ')).not.toContain('border-t');
+    expect(body.previousElementSibling?.className).toContain('empty:hidden');
   });
 
   it('remembers the section picked, per app', async () => {

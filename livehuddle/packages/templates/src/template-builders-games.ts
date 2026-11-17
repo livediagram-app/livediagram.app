@@ -12,6 +12,7 @@
 
 import type { Element } from '@livehuddle/document';
 import type { OfficePiece } from './template-office-parts';
+import type { TemplateNote } from './template-notes';
 import { campusPlan, type IndoorRoom } from './template-campus-parts';
 
 const stools = (xs: readonly number[], y: number): OfficePiece[] =>
@@ -20,6 +21,25 @@ const stools = (xs: readonly number[], y: number): OfficePiece[] =>
 // --- Arcade Lounge -----------------------------------------------------------------
 
 const ARCADE_W = 2000;
+
+// The arcade's board: what is on, and how the rooms work.
+const ARCADE_NOTES: readonly TemplateNote[] = [
+  {
+    title: 'Tournament night',
+    text: 'Moon Mail tournament every Friday at 6. The top three on the High Scores take the Party Room for the next hour.',
+    color: 'pink',
+  },
+  {
+    title: 'The Prize Counter',
+    text: 'Walk up to the counter by the doors and ring its bell, and everyone near it hears.',
+    color: 'yellow',
+  },
+  {
+    title: 'Party Room',
+    text: 'Its glass walls show whether it is free. If it is in use, knock on its sign and wait to be let in.',
+    color: 'blue',
+  },
+];
 const ARCADE_H = 1240;
 // The two banks of machines, each two rows of five facing you, the players standing in the aisle in front of a row.
 const BANK_ROWS = [760, 980];
@@ -111,6 +131,8 @@ const ARCADE_FLOOR: OfficePiece[] = [
   // The Prize Counter by the entrance, the Directory on the other side of the way in.
   { kind: 'reception-desk', x: 640, y: 1060 },
   { kind: 'directory', x: ARCADE_W / 2 + 80, y: 1080 },
+  // The arcade's Notice Board by the doors, its notes pinned already (template-notes.ts).
+  { kind: 'notice-board', x: 1200, y: 1060, notes: ARCADE_NOTES },
   { kind: 'plant', x: 300, y: 1120 },
   { kind: 'plant', x: 1640, y: 1120 },
 ];

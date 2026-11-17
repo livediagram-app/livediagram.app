@@ -27,7 +27,11 @@ const inside = (p: Shape, r: Shape) =>
 // What each Space gained: the pieces it now has at least one of, the glass rooms, and whether its rooms have windows.
 const REVIEW: Record<string, { pieces?: string[]; glass?: string[]; windows: boolean }> = {
   'virtual-office': { pieces: ['pet-bed'], glass: ['Meeting Room'], windows: true },
-  'coworking-space': { pieces: ['lockers'], glass: ['Booth 1', 'Booth 2'], windows: true },
+  'coworking-space': {
+    pieces: ['lockers'],
+    glass: ['Booth 1', 'Booth 2', 'Meeting Room'],
+    windows: true,
+  },
   'team-pod': { pieces: ['pet-bed'], windows: true },
   'focus-library': { pieces: ['reading-nook'], windows: true },
   'all-hands-hall': { windows: true },

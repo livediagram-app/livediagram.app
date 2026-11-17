@@ -62,10 +62,12 @@ export function buildRooftopBar(cx: number, cy: number): Element[] {
         { kind: 'tree', x: 956, y: 30 },
         ...stools([330, 390, 450, 510, 570, 630, 690, 750], 170),
         // Two lounges either side of the doorway, well clear of it.
-        ...lounge(60, 400, 'right'),
-        ...lounge(840, 400, 'left'),
-        { kind: 'outdoor-plant', x: 40, y: 240 },
-        { kind: 'outdoor-plant', x: 988, y: 240 },
+        ...lounge(60, 460, 'right'),
+        ...lounge(840, 460, 'left'),
+        // A hammock in each side corner under the trees, off the walk to the bar: walk up and it sways, sit in it
+        // and it is yours (docs/specs/009-elements/piece-moments.md "Hammock").
+        { kind: 'hammock', x: 30, y: 250 },
+        { kind: 'hammock', x: 918, y: 250 },
         // A planter either side of the way in.
         { kind: 'outdoor-plant', x: 420, y: 530 },
         { kind: 'outdoor-plant', x: 610, y: 530 },
@@ -82,7 +84,7 @@ export function buildRooftopBar(cx: number, cy: number): Element[] {
       width: 260,
       sticker: 'emoji-clinking-glasses',
       subtitle:
-        'Drinks after work: pull up a stool at the bar, or sink into a sofa under the trees.',
+        'Drinks after work: pull up a stool at the bar, sink into a sofa, or swing in a hammock under the trees.',
     },
     // In the middle of the terrace, the bar ahead and a sofa either side.
     arrival({

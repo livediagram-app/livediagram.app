@@ -4,7 +4,7 @@ The Diagram tab's tour is now [Watch It Built](watch-it-built.md) (owner, 2026-1
 named Example builds a small diagram with the real chrome while a player bar shows its chapters. Until then it was a
 bootstrap-style stepped tour of [Diagram mode](editor-modes.md), whose steps are kept below under
 [The stepped tour (retired)](#the-stepped-tour-retired) for the record. Everything else here still holds for every
-tour: the footer's Start Tour button, offers, taken records, Settings reruns, one tour at a time, dialogs first, and
+tour: the footer's Get Started button, offers, taken records, Settings reruns, one tour at a time, dialogs first, and
 the shared stepped engine that the [Draw tour](../023-draw-mode/draw-tour.md), the
 [Workshop tour](../012-collaboration/workshop-tour.md), element tours and Show Me still run on.
 
@@ -18,8 +18,10 @@ the shared stepped engine that the [Draw tour](../023-draw-mode/draw-tour.md), t
 
 ## Where it appears
 
-- **The footer's Start Tour button is the one way in.** Every tour (this one, the mode tours, the element tours,
-  the avatar tour) is started from one button in the editor's bottom bar, immediately left of Search:
+**The button reads Get Started** in every app (owner, 2026-11-16), whichever tour it offers: it has no hover card; the tour's own name ("Start Draw Tour", "Watch It Built") is in its accessible name, "Get Started, <tour name>". Icon only on a phone, as before.
+
+- **The footer's Get Started button is the one way in.** Every tour (this one, the mode tours, the element tours,
+  the avatar tour) is started from one button in the editor's bottom bar, left of Tools:
   a contained chip with a play glyph in a small accent disc, reading **Start <Name> Tour** (**Start Draw Tour**), or a
   tour's own words when it gives them: the Diagram tour read **Start Diagram Tour** before 8 November 2026 and
   **Watch It Built** since, with its own hover line (`TourOfferButton`,
@@ -29,7 +31,7 @@ the shared stepped engine that the [Draw tour](../023-draw-mode/draw-tour.md), t
   accessible name; it never widens the bar past the screen. A tour never starts, prompts or offers itself on its
   own: no banner, no card, no toolbar beside an element. Offer banners would be something people have to keep turning down.
 - **First of the bar's controls.** The button leads the bar's right-hand cluster, in the same place on a
-  computer, a narrow window and a phone: **Start Tour**, then **Search**, then **Settings** and the appearance
+  computer, a narrow window and a phone: **Get Started**, then **Search**, then **Settings** and the appearance
   switch (`ChromeControls`). So the button comes and goes at the cluster's left edge, by the tabs, without moving
   Search, Settings or the appearance switch.
 - **Which tour it offers.** Each tour's host publishes its tour while the person could take it (`useOfferTour`,
@@ -136,7 +138,7 @@ words too (`touchBody`), which a touch screen (a coarse pointer) reads instead: 
    centre (new tab, no underline), and a **Start** button that completes the tour.
 
 Left out: **Tab Mode** (the editor mode switch's menu), to keep the tour on diagramming, since each mode has a tour
-of its own on the Start Tour button while the person is in it; and **The Explorer** (the document browser behind the
+of its own on the Get Started button while the person is in it; and **The Explorer** (the document browser behind the
 top-left menu button), which describes the whole app rather than diagramming. There is no **Search** step, to keep the tour
 short; the search panel has its own help article.
 
@@ -204,7 +206,7 @@ Card Types, but it covers it".)
   each tour's host owns its offer, its steps and what ending means. A step anchors by `data-tour-id`, or by a
   `selector` resolved when it runs (a Show Me step's Mashup tile), and an anchorless card's `prepare` runs
   too. The last card's words (`TourCardCopy`) are a prop, defaulting to this tour's. The engine, the stage, the
-  card, the spotlight, the shield, the tour colours and the Start Tour button live once in
+  card, the spotlight, the shield, the tour colours and the Get Started button live once in
   `@liveworkspace/workbench/components/tour`; each editor keeps only its steps and hosts.
 - The engine drives the **real UI**, not screenshots: steps have a `prepare` phase that opens the actual panel
   / dropdown / menu (clicking the same triggers a user would, or calling editor-context handlers like
@@ -262,7 +264,7 @@ for the tour's purposes: `isReadOnly`).
 
 The welcome tour's tokens, unchanged, so the funnel's history reads straight through the rename:
 
-- **Offer**: `'UI'/'Opened'/'TourOffer'` the first time the Start Tour button shows this tour in a page load.
+- **Offer**: `'UI'/'Opened'/'TourOffer'` the first time the Get Started button shows this tour in a page load.
   Until 25 October 2026 it counted the welcome card showing, and `'UI'/'Closed'/'TourOffer'` counted **No**;
   nothing sends Closed now, and its explanation stays for the history.
 - **Start**: `'UI'/'Started'/'Tour'` on a press of the button (or the Settings rerun).

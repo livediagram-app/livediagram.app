@@ -2,11 +2,7 @@
 
 import { useId, useMemo, useState, useSyncExternalStore } from 'react';
 import { lucidePause } from '@liveworkspace/icons/lucide';
-import { Button, ChevronDownIcon, lucideGlyph } from '@liveworkspace/ui';
-import {
-  TopCenterBanner,
-  TopCenterRow,
-} from '@liveworkspace/workbench/components/chrome/TopCenter';
+import { Button, ChevronDownIcon, Portal, lucideGlyph } from '@liveworkspace/ui';
 import { useToast } from '@/hooks/ui/useToast';
 import {
   confirmHeldChanges,
@@ -51,9 +47,20 @@ function HeldCard({ held }: { held: number }) {
   // Read again only when the count changes (a hold, a keep, a confirm): O(queue), never on the write path.
   const groups = useMemo(() => (held > 0 ? heldGroups() : []), [held]);
   return (
-    <TopCenterRow className="w-full">
-      {/* 32 rem on a wide canvas; on a phone the stack is the canvas less its gutters, and the card fills it. */}
-      <TopCenterBanner tone="neutral" shape="card" className="w-[34rem] max-w-full p-3.5 shadow-lg">
+    <Portal>
+      {/* A modal in the middle of the screen over a dim scrim, so the board never moves for it (owner, 2026-11-16); on
+          a phone it spans the screen less its gutters. It waits for Keep or Remove: the scrim does not close it. */}
+      <div
+        aria-hidden
+        className="fixed inset-0 z-[var(--z-toast)] bg-slate-900/40 backdrop-blur-sm motion-safe:animate-fade-in dark:bg-slate-950/60"
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        data-held-removals=""
+        className="fixed left-1/2 top-1/2 z-[var(--z-toast)] w-[34rem] -translate-x-1/2 -translate-y-1/2 max-w-[calc(100vw-1.5rem)] rounded-2xl border border-slate-200 bg-white p-3.5 shadow-xl dark:border-slate-700 dark:bg-slate-900"
+      >
         <section
           aria-labelledby={titleId}
           className="flex w-full animate-dialog-in flex-col gap-2.5"
@@ -119,8 +126,8 @@ function HeldCard({ held }: { held: number }) {
             </div>
           </div>
         </section>
-      </TopCenterBanner>
-    </TopCenterRow>
+      </div>
+    </Portal>
   );
 }
 

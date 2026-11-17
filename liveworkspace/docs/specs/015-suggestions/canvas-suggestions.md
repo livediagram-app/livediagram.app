@@ -1,5 +1,8 @@
 # Canvas suggestions
 
+> liveplanner retired canvas suggestions on 2026-11-16 (its work is cards and cells, which suggestions never covered): see
+> [liveplanner's page](../../../../liveplanner/docs/specs/012-collaboration/canvas-suggestions.md). The rest of this page is the other products'.
+
 Status: built (Work Tracker 931)
 
 Anyone who may take part on a canvas can **suggest** a change instead of making it: the change waits beside the
@@ -23,9 +26,11 @@ articles.
 
 ## Suggesting
 
-- **The Suggest action** sits in the title bar, beside Share, at every width (on a phone too), so the canvas's own
-  toolbars never cover it. It reads **Suggest**, or **Suggesting** in the brand tint while this person suggests, and
-  its icon carries the active tab's suggestion count. A press opens the Suggestions panel under it.
+- **Suggest Changes** is a row in the footer's **Tools** menu ([The footer's Tools menu](../004-index/footer-tools-menu.md)), at
+  every width (on a phone too), so the canvas's own toolbars never cover it. It reads **Suggest Changes**, or **Suggesting**
+  while this person suggests, with the active tab's suggestion count at its right edge; suggestions waiting for an
+  Editor also put a brand dot on the Tools button. Choosing it opens the Suggestions panel over the footer, beside
+  More.
 - **An Editor** switches between **Editing** and **Suggesting** at the top of the panel. Suggesting is per person and
   per visit; it starts off. While it is on, the title bar's role pill reads **Suggesting**, in the Participant's tone,
   as a document editor's does.
