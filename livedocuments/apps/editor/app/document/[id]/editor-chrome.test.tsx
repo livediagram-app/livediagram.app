@@ -24,9 +24,14 @@ vi.mock('@/components/chrome/EditorHeader', () => ({
   },
 }));
 vi.mock('@/components/chrome/TabBar', () => ({
-  TabBar: (p: { tabs: Tab[] }) => {
+  TabBar: (p: { tabs: Tab[]; isOutOfScope?: (id: string) => boolean }) => {
     renders.tabBar++;
-    return <nav>{p.tabs.map((t) => t.name).join(',')}</nav>;
+    // A tab out of a tab-scoped link's scope is marked, as the real bar greys it.
+    return (
+      <nav>
+        {p.tabs.map((t) => `${t.name}${p.isOutOfScope?.(t.id) ? ' (out of scope)' : ''}`).join(',')}
+      </nav>
+    );
   },
 }));
 // Each dialog's code loads on demand: here it is a marker naming that something opened.
@@ -303,6 +308,25 @@ describe('the chrome store', () => {
       rerender(<Page value={base} />);
     });
     expect(screen.queryByTestId('opened')).toBeNull();
+  });
+});
+
+describe('a tab-scoped link', () => {
+  // Work Tracker 946: the scope is set after mount (the share-code bootstrap), and the bar marks the other tabs then.
+  // It subscribes to `isOutOfScope`, which useTabScope makes afresh only when the scope changes.
+  it('marks the tabs out of scope once the scope is set after mount', () => {
+    const other = { ...tab, id: 't2', name: 'Two' };
+    const both: EditorContextValue = { ...base, tabs: [tab, other] };
+    const { rerender } = render(<Page value={both} />);
+    expect(screen.getByRole('navigation').textContent).toBe('Cards,Two');
+    act(() => {
+      rerender(
+        <Page
+          value={{ ...both, sessionTabScope: 't2', isOutOfScope: (id: string) => id !== 't2' }}
+        />,
+      );
+    });
+    expect(screen.getByRole('navigation').textContent).toBe('Cards (out of scope),Two');
   });
 });
 

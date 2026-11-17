@@ -170,6 +170,9 @@ export default defineConfig({
     'liveworkspace/disable-reason': 'error',
     'liveworkspace/no-native-title': 'error',
     'liveworkspace/no-raw-icon-svg': 'error',
+    // A store's .get() while a component or hook renders, which the React Compiler keeps at its first value
+    // (./store-get-in-render.ts). Tests render uncompiled, so they may.
+    'liveworkspace/no-store-get-in-render': 'error',
   },
   overrides: [
     {
@@ -251,6 +254,11 @@ export default defineConfig({
       // Tests report timings and probes, and scripts print their output, to the terminal.
       files: [...TEST_FILES, ...SCRIPT_FILES],
       rules: { 'eslint/no-console': 'off' },
+    },
+    {
+      // Tests render uncompiled, and their harness components read a store to assert on it.
+      files: TEST_FILES,
+      rules: { 'liveworkspace/no-store-get-in-render': 'off' },
     },
     {
       // Art keeps its own paint; only the title rule applies there.
