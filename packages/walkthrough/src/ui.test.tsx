@@ -450,7 +450,12 @@ describe('recording, beyond the canvas', () => {
     fireEvent.pointerDown(screen.getByTestId('card1-face'));
     fireEvent.pointerDown(screen.getByTestId('slot1-face'));
     fireEvent.click(screen.getByRole('button', { name: 'Hide Selection' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Done' }));
+    // Esc leaves the mode as Done does, and only that: a key other than Esc keeps it.
+    fireEvent.keyDown(window, { key: 'a' });
+    expect(screen.getByRole('button', { name: 'Done' })).toBeTruthy();
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(screen.queryByRole('button', { name: 'Done' })).toBeNull();
+    expect(screen.getByRole('region', { name: 'Record a Walkthrough' })).toBeTruthy();
     expect(presenterCss()).toContain('[data-plan-card="card1"] > *');
     expect(presenterCss()).toContain('[data-dashboard-slot="slot1"] > *');
     expect(presenterCss()).toContain('[data-plan-card="card2"]');

@@ -93,5 +93,18 @@ export function useHidden(
     };
   }, [active, canvasRoot, toggle, marks]);
 
+  // Esc leaves the mode, as Done does, and goes no further (the editor doesn't also clear its selection).
+  useEffect(() => {
+    if (!active) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      e.preventDefault();
+      e.stopPropagation();
+      setPicking(false);
+    };
+    window.addEventListener('keydown', onKey, { capture: true });
+    return () => window.removeEventListener('keydown', onKey, { capture: true });
+  }, [active]);
+
   return { hidden, picking, setPicking, toggle, hideAll, clear, canHide };
 }
