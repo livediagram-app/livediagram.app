@@ -19,7 +19,8 @@ import {
 import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import type { WhiteboardDockModel } from '@/hooks/canvas/useWhiteboard';
 import { whiteboardShapeEntry } from '@/lib/whiteboard-shape-catalogue';
-import { fitDock, placeTopDock } from '@/lib/whiteboard-dock-fold';
+import { dockBarWidth, fitDock, placeTopDock } from '@/lib/whiteboard-dock-fold';
+import { STRIP_NAMED_EVENT } from '@liveworkspace/workbench/components/canvas/menu-join';
 import {
   pinFromMenu,
   resolveSlotDrop,
@@ -48,6 +49,7 @@ import { useDockFlyout, type DockFlyout, type DockFlyoutApi } from './useDockFly
 import { useShapeSlotDrag } from './useShapeSlotDrag';
 import { WhiteboardFlyout } from './WhiteboardFlyout';
 import { useMenuCardClearance } from './useMenuCardClearance';
+import { useCornerCardClearance } from './useCornerCardClearance';
 import { useDockRoom } from './useDockRoom';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { announceToastFloorChange } from '@liveworkspace/workbench/components/toast/toast-floor';
@@ -67,11 +69,14 @@ const HINT_MS = 4000;
 // beside the card would (placeTopDock), so a tablet in portrait still shows the whole dock. The dock is one card that
 // scrolls inside itself, with no bleed. The clearance is the card's measured right edge plus 8 px (`--dock-clear`,
 // useMenuCardClearance): the card holds the menu button, the editor mode switch and on a computer the tab's name, so
-// its width varies. Until measured, the old guesses hold: 7.5rem on a tablet, 4.125rem on a phone. The 12 px margin
-// on the right is kept.
+// its width varies. Until measured, the old guesses hold: 7.5rem on a tablet, 4.125rem on a phone. On the right it
+// keeps 12 px, or clears the corner card at the top right where one stands (`--dock-clear-right`).
 const TOP_BESIDE_CARD =
-  'top-3 left-[var(--dock-clear,7.5rem)] max-w-[calc(100%-var(--dock-clear,7.5rem)-0.75rem)] phone:left-[var(--dock-clear,4.125rem)] phone:max-w-[calc(100%-var(--dock-clear,4.125rem)-0.75rem)]';
-const TOP_CENTRED = 'top-3 left-1/2 -translate-x-1/2 max-w-[calc(100%-2*var(--dock-clear,7.5rem))]';
+  'top-3 left-[var(--dock-clear,7.5rem)] max-w-[calc(100%-var(--dock-clear,7.5rem)-var(--dock-clear-right,0.75rem))] phone:left-[var(--dock-clear,4.125rem)] phone:max-w-[calc(100%-var(--dock-clear,4.125rem)-0.75rem)]';
+// Centred, the wider of the menu card's clearance and the corner card's (`--dock-clear-right`, useCornerCardClearance)
+// on both sides.
+const TOP_CENTRED =
+  'top-3 left-1/2 -translate-x-1/2 max-w-[calc(100%-2*max(var(--dock-clear,7.5rem),var(--dock-clear-right,0px)))]';
 const BOTTOM =
   'bottom-[4.25rem] left-1/2 -translate-x-1/2 max-w-[calc(100%-1.5rem)] min-[1760px]:bottom-4';
 // The clearance until measured, in dock px (7.5rem).
@@ -100,6 +105,8 @@ export function WhiteboardDock({ model: ownModel, ink, onDrawn }: WhiteboardDock
   const scale = useUiScale('toolbar');
   const wrapper = useRef<HTMLDivElement>(null);
   const clear = useMenuCardClearance(wrapper, scale, model.position === 'top');
+  // The corner card at the top right (no header bar), which a top dock keeps clear of as well.
+  const clearRight = useCornerCardClearance(wrapper, scale, model.position === 'top');
   // A narrow dock (a phone or a tablet): one pinned shape on the bar, the rest in the Shapes flyout,
   // and no dragging shapes on or off the bar (its drop targets would not match the pins it hides).
   const phone = useIsMobileViewport();
@@ -120,9 +127,24 @@ export function WhiteboardDock({ model: ownModel, ink, onDrawn }: WhiteboardDock
     canDrag: !narrow,
   };
   const placed = top
-    ? placeTopDock({ ...fitArgs, leftRoom: room, clear: clear ?? CLEAR_FALLBACK_PX, wide })
+    ? placeTopDock({
+        ...fitArgs,
+        leftRoom: room,
+        clear: clear ?? CLEAR_FALLBACK_PX,
+        ...(clearRight === null ? {} : { clearRight }),
+        wide,
+      })
     : { centred: true, fit: fitDock({ ...fitArgs, room }) };
   const { fit } = placed;
+  // The whole bar's width on screen, nothing folded (data-strip-natural-width, as the palette strip's): the corner card
+  // at the top right drops its names first once that no longer fits beside it (cornerCardCompact), as it does for the
+  // strip, so the bar keeps its tools as long as it can (draw-mode.md "Where the dock sits").
+  const naturalWidth = top
+    ? Math.ceil(dockBarWidth(fitArgs.pens, fitArgs.pins, new Set(), fitArgs.canDrag) * scale)
+    : 0;
+  useLayoutEffect(() => {
+    if (naturalWidth > 0) window.dispatchEvent(new Event(STRIP_NAMED_EVENT));
+  }, [naturalWidth]);
   const placement = top ? (placed.centred ? TOP_CENTRED : TOP_BESIDE_CARD) : BOTTOM;
   const pins = {
     onBar: split.onBar.slice(0, fit.pins),
@@ -328,7 +350,10 @@ export function WhiteboardDock({ model: ownModel, ink, onDrawn }: WhiteboardDock
   );
 
   const zoom = scale === 1 ? undefined : uiScaleStyle(scale);
-  const clearStyle = clear === null ? {} : ({ '--dock-clear': `${clear}px` } as CSSProperties);
+  const clearStyle = {
+    ...(clear === null ? {} : { '--dock-clear': `${clear}px` }),
+    ...(clearRight === null ? {} : { '--dock-clear-right': `${clearRight}px` }),
+  } as CSSProperties;
   return (
     <>
       {/* The room the bar may take: the wrapper's own placement at full width (useDockRoom). */}
@@ -366,6 +391,7 @@ export function WhiteboardDock({ model: ownModel, ink, onDrawn }: WhiteboardDock
         {/* On a touch screen the bar reaches DOCK_REACH_PX (6) past its card: a near miss lands here, does nothing
             (the wrapper stops its pointerdown reaching the board) and never pans the page (spec "On a touch
             screen"). Behind the card, and inside the 8px gap to the menu card and the bottom-right cluster. */}
+        {naturalWidth > 0 ? <span hidden data-strip-natural-width={naturalWidth} /> : null}
         <div
           aria-hidden
           data-dock-reach=""

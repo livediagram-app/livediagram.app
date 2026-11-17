@@ -141,6 +141,7 @@ const depthOf = (fit: DockFit, pins: number) => pins - fit.pins + fit.folded.siz
 export function placeTopDock({
   leftRoom,
   clear,
+  clearRight = DOCK_RIGHT_MARGIN_PX,
   wide,
   pens,
   pins,
@@ -148,6 +149,9 @@ export function placeTopDock({
 }: {
   leftRoom: number | null;
   clear: number;
+  // The right edge's clearance (draw-mode.md "Where the dock sits"): the 12 px margin, or the corner card's clearance
+  // where one stands at the top right. Centred, the dock keeps the wider of the two on both sides.
+  clearRight?: number;
   wide: boolean;
   pens: readonly WhiteboardPenId[];
   pins: number;
@@ -155,7 +159,7 @@ export function placeTopDock({
 }): { centred: boolean; fit: DockFit } {
   const beside = fitDock({ room: leftRoom, pens, pins, canDrag });
   if (!wide || leftRoom === null) return { centred: wide, fit: beside };
-  const centredRoom = leftRoom - clear + DOCK_RIGHT_MARGIN_PX;
+  const centredRoom = leftRoom + clear + clearRight - 2 * Math.max(clear, clearRight);
   const centred = fitDock({ room: centredRoom, pens, pins, canDrag });
   return depthOf(centred, pins) <= depthOf(beside, pins)
     ? { centred: true, fit: centred }

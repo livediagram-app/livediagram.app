@@ -34,10 +34,17 @@ export function useMenuCardClearance(
     };
     measure();
     if (typeof ResizeObserver === 'undefined') return;
-    // The card changes width when the tab is renamed or the switch's form changes: one observer, no per-frame work.
+    // The card changes width when the tab is renamed or the switch's form changes, and moves when the logo's card
+    // before it changes width (its wordmark shows from lg, no header bar): one observer on both, no per-frame work.
     const observer = new ResizeObserver(measure);
     observer.observe(card);
-    return () => observer.disconnect();
+    const logo = card.parentElement?.querySelector<HTMLElement>(':scope > [data-logo-card]');
+    if (logo) observer.observe(logo);
+    window.addEventListener('resize', measure);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', measure);
+    };
   }, [dock, scale, active]);
   return active ? clearance : null;
 }

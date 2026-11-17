@@ -23,7 +23,8 @@ import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 // (toolbarTopClearancePx, lib/canvas-chrome.ts).
 
 const DOCK_CORNER_CLASS: Record<PanelCorner, string> = {
-  'top-left': 'left-4 top-4 flex-col items-start',
+  // Experiment (no header bar): below the logo and menu cards at the top left (panel-docking.md "Default layout").
+  'top-left': 'left-4 top-[4.25rem] flex-col items-start',
   // Experiment (no header bar): below the Share and account card at the top right.
   'top-right': 'right-4 top-[4.25rem] flex-col items-end',
   'bottom-left': 'left-4 bottom-4 flex-col-reverse items-start',
