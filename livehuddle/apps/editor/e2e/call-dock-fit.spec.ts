@@ -22,7 +22,10 @@ test('the Call dock keeps every button inside its card, clear of the zoom button
   // The Map opens on a desktop-width window (MovablePanel starts collapsed only on a phone).
   const map = page.locator('[data-tour-id="minimap"]');
   await expect(map).toBeVisible();
-  await expect(map.locator('[aria-hidden="true"]')).toHaveCount(0);
+  // Open: its toggle offers to collapse it, and its body (the panel's direct child that takes aria-hidden while
+  // collapsed) is not hidden. The header's icons are aria-hidden too, so only the body is checked.
+  await expect(map.getByRole('button', { name: 'Collapse map' })).toBeVisible();
+  await expect(map.locator(':scope > [aria-hidden="true"]')).toHaveCount(0);
 
   for (const width of [768, 760, 700, 640, 1024, 1440]) {
     await page.setViewportSize({ width, height: 863 });
