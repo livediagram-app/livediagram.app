@@ -57,6 +57,9 @@ export function createPresenceCoalescer({
   // for "they left the mode". Coalesced exactly like cursors — a walking
   // avatar publishes at the same ~30 Hz.
   const pendingAvatars = new Map<string, AvatarEntry>();
+  // When each peer's last move was committed, so the next one knows how far apart they arrived (its glide's length,
+  // docs/specs/008-canvas/avatar-mode.md "A peer's steps glide, in every room"). Packets in one burst share a flush.
+  const lastMoveAt = new Map<string, number>();
   let presenceRafId: number | null = null;
   let hiddenTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -83,6 +86,14 @@ export function createPresenceCoalescer({
     if (pendingAvatars.size > 0) {
       const moves = new Map(pendingAvatars);
       pendingAvatars.clear();
+      const now = performance.now();
+      const gaps = new Map<string, number>();
+      for (const [id, entry] of moves) {
+        const before = lastMoveAt.get(id);
+        if (entry && before !== undefined) gaps.set(id, now - before);
+        if (entry) lastMoveAt.set(id, now);
+        else lastMoveAt.delete(id);
+      }
       setRemoteAvatars((prev) => {
         const next = new Map(prev);
         for (const [id, entry] of moves) {
@@ -92,7 +103,12 @@ export function createPresenceCoalescer({
           // A packet that carries no costume keeps the one we last saw from them, and its resting values back.
           if (entry) {
             const known = prev.get(id)?.avatar.config;
-            next.set(id, { tabId: entry.tabId, avatar: expandAvatarPacket(entry.avatar, known) });
+            const gapMs = gaps.get(id);
+            next.set(id, {
+              tabId: entry.tabId,
+              avatar: expandAvatarPacket(entry.avatar, known),
+              ...(gapMs === undefined ? null : { gapMs }),
+            });
           } else next.delete(id);
         }
         return next;
@@ -140,6 +156,7 @@ export function createPresenceCoalescer({
       for (const pending of [pendingCursors, pendingAvatars]) {
         for (const id of pending.keys()) if (!present.has(id)) pending.delete(id);
       }
+      for (const id of lastMoveAt.keys()) if (!present.has(id)) lastMoveAt.delete(id);
     },
     cancel() {
       cancelPending();

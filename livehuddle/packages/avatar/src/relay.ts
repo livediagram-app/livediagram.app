@@ -8,7 +8,7 @@ import {
   type AvatarConfig,
   type AvatarPacket,
 } from './wire';
-import { PRESENCE_QUIET_ROOM, presenceStepMs } from '@liveworkspace/api-schema/presence-fanout';
+import { presenceStepMs } from '@liveworkspace/api-schema/presence-fanout';
 import { AVATAR_SPEED } from './walk';
 
 /** How often (ms) an editor sends its walking character in a room of `roomSize` people, itself included. */
@@ -16,13 +16,20 @@ export function avatarSendIntervalMs(roomSize: number): number {
   return presenceStepMs(roomSize);
 }
 
+/** The longest a peer's glide runs, in steps: past it, a late packet is caught up on rather than walked slowly to. */
+export const AVATAR_GLIDE_MAX_STEPS = 3;
+
 /**
- * How long (ms) a peer's character takes to slide to each new position it is sent, or 0 to jump there. A room of up
- * to 10 sends about 30 a second and draws each one where it lands, as it always has; a bigger room sends fewer, and
- * a step of 13 to 17 canvas px would read as a stutter, so the character covers it over one step instead.
+ * How long (ms) a peer's character takes to slide to each new position it is sent (docs/specs/008-canvas/avatar-mode.md
+ * "A peer's steps glide, in every room"). Packets arrive less evenly than they leave (two at a time every 69 ms
+ * where a walker sent one every 34, measured 2026-11-17), so drawing each where it lands reads as a stutter in any
+ * room. The character slides over `gapMs`, the time since that peer's last move arrived, held between one step and
+ * AVATAR_GLIDE_MAX_STEPS, so it is still moving when the next one comes. No gap yet (their first move) is one step.
  */
-export function avatarGlideMs(roomSize: number): number {
-  return roomSize > PRESENCE_QUIET_ROOM ? presenceStepMs(roomSize) : 0;
+export function avatarGlideMs(roomSize: number, gapMs?: number): number {
+  const step = presenceStepMs(roomSize);
+  if (gapMs === undefined || !Number.isFinite(gapMs)) return step;
+  return Math.round(Math.min(Math.max(gapMs, step), step * AVATAR_GLIDE_MAX_STEPS));
 }
 
 /**

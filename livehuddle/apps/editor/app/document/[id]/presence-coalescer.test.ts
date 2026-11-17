@@ -45,13 +45,13 @@ const runFrame = () => {
 type Harness = {
   presence: PresenceCoalescer;
   cursors: () => Map<string, CursorPos>;
-  avatars: () => Map<string, { tabId: string; avatar: AvatarPresence }>;
+  avatars: () => Map<string, { tabId: string; avatar: AvatarPresence; gapMs?: number }>;
   commits: () => number;
 };
 
 function setup(): Harness {
   let cursors = new Map<string, CursorPos>();
-  let avatars = new Map<string, { tabId: string; avatar: AvatarPresence }>();
+  let avatars = new Map<string, { tabId: string; avatar: AvatarPresence; gapMs?: number }>();
   let commits = 0;
   const apply =
     <T>(get: () => T, set: (v: T) => void) =>
@@ -121,6 +121,40 @@ describe('createPresenceCoalescer', () => {
     expect(h.cursors().get('peer')).toBeNull();
   });
 
+  // docs/specs/008-canvas/avatar-mode.md "A peer's steps glide, in every room"
+  it('stamps each move with the gap since that peer’s last one, which their glide runs over', () => {
+    let now = 1000;
+    vi.spyOn(performance, 'now').mockImplementation(() => now);
+    const h = setup();
+    h.presence.avatar('peer', { tabId: 't1', avatar: avatarOf(1) });
+    runFrame();
+    expect(h.avatars().get('peer')?.gapMs).toBeUndefined();
+    // Two packets in one burst share a frame: one move, 69 ms after the last.
+    now = 1069;
+    h.presence.avatar('peer', { tabId: 't1', avatar: avatarOf(2) });
+    h.presence.avatar('peer', { tabId: 't1', avatar: avatarOf(3) });
+    runFrame();
+    expect(h.avatars().get('peer')?.gapMs).toBe(69);
+    // Leaving the mode forgets the clock, so coming back starts without a gap.
+    h.presence.avatar('peer', null);
+    runFrame();
+    now = 5000;
+    h.presence.avatar('peer', { tabId: 't1', avatar: avatarOf(4) });
+    runFrame();
+    expect(h.avatars().get('peer')?.gapMs).toBeUndefined();
+    // A peer the roster dropped is forgotten too; one still here keeps their clock.
+    h.presence.avatar('stay', { tabId: 't1', avatar: avatarOf(5) });
+    runFrame();
+    h.presence.prune(new Set(['stay']));
+    now = 5040;
+    h.presence.avatar('peer', { tabId: 't1', avatar: avatarOf(6) });
+    h.presence.avatar('stay', { tabId: 't1', avatar: avatarOf(7) });
+    runFrame();
+    expect(h.avatars().get('peer')?.gapMs).toBeUndefined();
+    expect(h.avatars().get('stay')?.gapMs).toBe(40);
+    vi.restoreAllMocks();
+  });
+
   it('DELETES an avatar rather than storing a null one', () => {
     // Asymmetric with cursors on purpose: nothing renders a character that
     // isn't there, so the map stays as big as the number of people walking.
@@ -170,9 +204,16 @@ describe('createPresenceCoalescer with lean avatar packets', () => {
     runFrame();
     h.presence.avatar('peer', { tabId: 't1', avatar: lean(2) });
     runFrame();
-    expect(h.avatars().get('peer')).toEqual({
+    expect(h.avatars().get('peer')).toMatchObject({
       tabId: 't1',
       avatar: { ...lean(2), config: costume, stepFrame: 0, lift: 0, wave: null },
+    });
+    expect(h.avatars().get('peer')?.avatar).toEqual({
+      ...lean(2),
+      config: costume,
+      stepFrame: 0,
+      lift: 0,
+      wave: null,
     });
   });
 
