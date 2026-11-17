@@ -84,6 +84,11 @@ export function miniViewWindow(): Window | null {
   return win;
 }
 
+/** Subscribe to the window opening or closing (the running call: a hidden tab's tiles). */
+export function onMiniViewWindow(listener: () => void): () => void {
+  return listeners.subscribe(listener);
+}
+
 const serverWindow = () => null;
 
 /** The open window, or null: the host portals into it, Pop Out reads whether it is pressed. */

@@ -10,6 +10,7 @@
 // and a connection that fails renews as a gone session does (proximity-audio.md "Someone who arrives later").
 import { callsModeAllows, type AccessLevel } from '@livehuddle/api-schema';
 import { apiCallSession, CallsApiError } from '@/lib/api/calls';
+import { miniViewWindow, onMiniViewWindow } from '@/lib/mini-view/mini-view-window';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import { AudioGraph } from './audio-graph';
@@ -72,6 +73,8 @@ export {
 
 // Out of the call: off every stage, hand down.
 const LEFT_STAGE = { stage: 'none', barredBy: null, hand: 'down', handsUp: 0 } as const;
+
+const miniViewOpen = () => miniViewWindow() !== null;
 
 const documentVisible = () =>
   typeof document === 'undefined' || document.visibilityState !== 'hidden';
@@ -147,6 +150,8 @@ export class ProximityCall {
       onCallTracks(() => this.hear()),
       onCallsMode(() => this.applyMode()),
       onCallMaximised(() => this.hear()),
+      // Opening or closing the mini view changes what a hidden tab receives (its tiles' cameras).
+      onMiniViewWindow(() => this.hear()),
       // A peer's level changing may let them speak from the stage they stand on, or stop them.
       onCallLevels(() => this.update(this.scene)),
       // A hand going up, down or let speak changes who speaks and the count a speaker sees.
@@ -465,6 +470,7 @@ export class ProximityCall {
       mode: callSelf().mode,
       maximised: callMaximised(),
       visible: (this.input.pageVisible ?? documentVisible)(),
+      miniView: (this.input.miniViewOpen ?? miniViewOpen)(),
     });
     this.heard = chosen.heard;
     setCallSelf({ heard: this.heard });
