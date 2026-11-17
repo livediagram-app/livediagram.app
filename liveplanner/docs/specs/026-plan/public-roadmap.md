@@ -65,7 +65,12 @@ write fails, the dialog stays as it was and says "Couldn't save. Try again."
 - **Card Types**: the types the board shows, each a checkbox, all ticked to begin with. At least one.
 - **Fields**: the allowlist below, each a checkbox; **Title** always shows (no checkbox). To begin with only
   **Description** is ticked.
-- **Voting**: on to begin with: visitors may upvote.
+- **Voting**: on to begin with: visitors may upvote. While it is on and a chosen card type has no **Votes** field,
+  or has it but not on its card face, the dialog says so under the toggle ("Project cards don't show votes yet.",
+  naming the types) with **Add Votes**, which gives each of them the built-in Votes field and puts it in its
+  Detailed card's Footer, as one change to the plan's card types (one undo step), so the team sees each card's count
+  and can sort by it. The note goes once every chosen type carries Votes. The board's own Roadmap preset needs no
+  offer: its Project type carries Votes from the start ([items.md](items.md) "Item types").
 - **Suggest an Idea**: **None**, or one of the plan's published forms whose responses become cards in a column the
   roadmap does not show. A form whose responses would land in a shown column is listed but cannot be picked, with
   "Its cards would show on the roadmap at once."; a form with no live link or one sending to a Sheet is not listed.
@@ -143,14 +148,21 @@ link is gone or suspended, or once a later change sends its cards to a shown col
 - **Not available** (unknown code, unpublished, a plan archived, in the Trash or gone, a board deleted): "This roadmap isn't
   available" and "It may have been unpublished, or the link may be wrong."
 - **Error**: "We couldn't load this roadmap" with **Try Again**.
+- **Busy** (the read answered `429`, the per-network read limit): "This roadmap is busy" and "Lots of people are
+  looking right now. It tries again in a minute.", with **Try Again**. The page waits out the limit's window (the
+  answer's `Retry-After` when it can read it, else 60 seconds, the limiter's window, held to 5 to 300) and reads
+  again on its own, once a window while it stays busy, so it never adds to the limit; Try Again reads at once. Never "Check your connection", which is not the reason.
 - **An empty column**: "Nothing here yet."
 - Footer: Made with liveplanner. The page is kept out of search engines, as every editor page is.
 
 ## How it answers
 
 - `GET /api/roadmaps/<plan id>/<code>` (optionally `?browser=<key>`, to mark this browser's votes): the roadmap as
-  JSON, built fresh on every read from the plan's own tables, `Cache-Control: no-store`, so an edit, a column change
-  or an Unpublish shows on the next read.
+  JSON, `Cache-Control: no-store`. The plan's room builds the page once and keeps it in memory for the next reads
+  (a busy roadmap is read far more often than it changes); any write to the plan's storage after it was built
+  (a card, a vote, a column, a card type, a form link, the roadmap's settings, Publish or Unpublish) clears it, so an
+  edit, a column change or an Unpublish still shows on the next read. Only `voted` is worked out per read, for the
+  browser asking.
 - `POST /api/roadmaps/<plan id>/<code>/votes` with `{ card, browser, up, website }`: a vote given (`up: true`) or
   taken back; answers the card's new count and whether this browser now votes for it.
 - **One answer for every miss**: an unknown or unpublished code, a plan that was never stored, is archived, in the
@@ -159,6 +171,7 @@ roadmap_not_found`. A path no roadmap could have (no code, a malformed plan id, 
   turned away by the worker before any plan wakes, with the api's plain `404 not_found`, and a wrong method with
   `405`. A vote for a card not on the roadmap (another column, an unchosen type, archived, trashed) is
   `404 card_not_found`, as if it did not exist.
+- The per-network limit's `429` (`rate_limited`) carries `Retry-After: 60`, the limiter's window.
 - Every answer carries `X-Robots-Tag: noindex` and `Referrer-Policy: no-referrer`.
 
 ## Managing a roadmap (signed-in routes)

@@ -1281,7 +1281,7 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
 
   | Type                                        | Minimal    | Detailed                                                                                          |
   | ------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------- |
-  | Project                                     | title only | Number, Type, Assignee, Priority, Labels, Start, Due, Checklist, Comments, Description            |
+  | Project                                     | title only | Number, Type, Assignee, Priority, Labels, Start, Due, Checklist, Comments, Votes, Description     |
   | Task                                        | title only | Number, Type, Assignee, Priority, Labels, Estimate, Due, Checklist, Comments, Description, Parent |
   | Note                                        | title only | Type, Votes, Comments, Description                                                                |
   | Idea                                        | title only | Type, Labels, Votes, Comments, Description                                                        |

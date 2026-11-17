@@ -262,8 +262,9 @@ underline?, strikethrough?, size? xs|sm|md|lg, color? #rrggbb, link? http(s)/mai
 - `color` is a known field of kind `colour`: one of `PLAN_TYPE_COLOURS` (compared lower-case, stored as given in
   the palette), anything else is `field_value_invalid`; clearing removes the key. `itemColourOf(item)` returns the
   stored swatch or `undefined`, so a value written before validation (or by hand) never draws.
-- Built-in Project fields: `title, description, status, assignee, priority, color, start, due, labels` (+
-  comments). `BUILT_IN_FIELD_IDS` lists `color` after `priority`, before `estimate`.
+- Built-in Project fields: `title, description, status, assignee, priority, color, start, due, votes, labels` (+
+  comments). Votes since Work Tracker 1114, so a Roadmap board's Projects show and sort by a public roadmap's
+  upvotes; a project whose catalogue already holds Project keeps its own. `BUILT_IN_FIELD_IDS` lists `color` after `priority`, before `estimate`.
 - Editor: `apps/editor/components/plan/ColourSwatches.tsx` puts Plan on the one colour picker: `TypeColourButton` (a
   swatch at the end of the type editor's Name field, opening the picker in a popover) and `ColourSelect` (the panel's
   Colour field, None first) (`patch { set: { color } }` or `{ clear: ['color'] }`, tracked `('Plan', 'Changed', 'ProjectColour')`).

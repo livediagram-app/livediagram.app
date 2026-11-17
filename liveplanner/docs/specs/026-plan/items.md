@@ -251,7 +251,7 @@ The five **default types** ([Item types](item-types.md#the-type-catalogue)), eac
 
 | Type    | Accent | For                                    | Offers                                                                                   |
 | ------- | ------ | -------------------------------------- | ---------------------------------------------------------------------------------------- |
-| Project | Black  | A larger body of work others sit under | title, description, status, assignee, priority, color, start, due, labels                |
+| Project | Black  | A larger body of work others sit under | title, description, status, assignee, priority, color, start, due, votes, labels         |
 | Task    | Gray   | A piece of work                        | title, description, status, assignee, parent, priority, estimate, due, checklist, labels |
 | Note    | Blue   | A thought, a retro note                | title, description, status, votes                                                        |
 | Idea    | Yellow | A proposal to weigh                    | title, description, status, votes, labels                                                |
