@@ -19,6 +19,8 @@ export function useEmailIntakeToolsItem(): ChromeToolsItem | null {
     label: 'Email to Board',
     description: 'Forwarded mail becomes cards on a board.',
     icon: <MailIcon />,
+    // Its dialog opens inside Tools (footer-tools-menu.md "Opening a tool inside Tools").
+    inPlace: true,
     ...(door.badges ? { badges: door.badges } : {}),
     onSelect: () => door.open(),
   };

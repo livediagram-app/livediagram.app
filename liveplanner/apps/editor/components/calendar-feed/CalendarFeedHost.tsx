@@ -4,7 +4,8 @@
 // (docs/specs/026-plan/calendar-feed.md "Where it lives"). The dialog's code loads the first time it opens
 // (docs/specs/016-platform/web-performance.md), so a plan whose person never opens it pays nothing for it.
 import dynamic from 'next/dynamic';
-import { useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { requestToolsView } from '@liveworkspace/workbench/components/chrome/tools-door';
 import { track } from '@/lib/telemetry';
 import { CalendarFeedDoorContext, type CalendarFeedDoor } from './CalendarFeedContext';
 import { CALENDAR_FEED_PARAM, type CalendarFeedScope } from './calendar-feed-gate';
@@ -32,9 +33,13 @@ export function CalendarFeedHost({
   gate?: ToolGate | null;
   children: ReactNode;
 }) {
-  // Back from a guest's sign-in, asked open: the gate or the feed opens on arrival.
+  // Back from a guest's sign-in, asked open: Tools opens at the feed on arrival (footer-tools-menu.md "From
+  // elsewhere"), where the gate or the feed draws.
   const asked = useAskedOpen(CALENDAR_FEED_PARAM);
-  const [open, setOpen] = useState(asked);
+  useEffect(() => {
+    if (asked) requestToolsView('calendar-feed');
+  }, [asked]);
+  const [open, setOpen] = useState(false);
   const { ownerId, projectId } = scope ?? {};
   const stable = useMemo<CalendarFeedScope | null>(
     () => (ownerId && projectId ? { ownerId, projectId } : null),

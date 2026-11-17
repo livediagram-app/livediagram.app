@@ -19,6 +19,8 @@ export function useCalendarFeedToolsItem(): ChromeToolsItem | null {
     label: 'Subscribe to Calendar',
     description: 'The plan’s dates in your own calendar.',
     icon: <CalendarFeedIcon />,
+    // Its dialog opens inside Tools (footer-tools-menu.md "Opening a tool inside Tools").
+    inPlace: true,
     ...(door.badges ? { badges: door.badges } : {}),
     onSelect: () => door.open(),
   };

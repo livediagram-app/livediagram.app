@@ -100,6 +100,7 @@ export function AnchoredPopover({
   width,
   onClose,
   onEscape,
+  passEscape,
   beside,
   keepOpenWithin,
   initialFocus = 'first',
@@ -107,6 +108,7 @@ export function AnchoredPopover({
   pointer = false,
   scrim = false,
   align = 'start',
+  layer = 'popover',
   children,
 }: {
   anchor: HTMLElement;
@@ -116,6 +118,8 @@ export function AnchoredPopover({
   onClose: () => void;
   // Escape asked first: true when it was taken (a drill-down went back a level), the panel then staying open.
   onEscape?: () => boolean;
+  // Escape left alone (not taken, not stopped) while true: a modal dialog opened from inside this panel hears it.
+  passEscape?: () => boolean;
   // Open beside this panel rather than under the anchor (placeBeside).
   beside?: HTMLElement | null;
   // A press inside what this selector matches (a menu's flyout, a picker it opened, portalled elsewhere) is not a
@@ -134,6 +138,8 @@ export function AnchoredPopover({
   scrim?: boolean;
   // Which edge lines up with the anchor's (placeAnchored): the left (start) or the right (end).
   align?: AnchoredAlign;
+  // The layer it draws at: over modals (the default), or with them ('modal'), so a dialog it opens draws over it.
+  layer?: 'popover' | 'modal';
   children: ReactNode;
 }) {
   const panel = useRef<HTMLDivElement>(null);
@@ -148,9 +154,11 @@ export function AnchoredPopover({
   };
   const closeRef = useRef(close);
   const escapeRef = useRef(onEscape);
+  const passRef = useRef(passEscape);
   useEffect(() => {
     closeRef.current = close;
     escapeRef.current = onEscape;
+    passRef.current = passEscape;
   });
 
   useLayoutEffect(() => {
@@ -197,7 +205,7 @@ export function AnchoredPopover({
   // (popover-stack.ts): a popover it opened (a colour picker, a ConfirmPopover) takes Escape first, and this one
   // stays.
   const { withinAbove } = usePopoverLayer(panel, (e) => {
-    if (e.key !== 'Escape') return;
+    if (e.key !== 'Escape' || passRef.current?.()) return;
     e.stopPropagation();
     e.preventDefault();
     if (escapeRef.current?.()) return;
@@ -215,6 +223,7 @@ export function AnchoredPopover({
   });
 
   const arrow = pointer && !beside && pos && arrowX !== null;
+  const z = layer === 'modal' ? 'z-[var(--z-modal)]' : 'z-[calc(var(--z-popover)+1)]';
   return (
     <Portal>
       {scrim ? (
@@ -238,7 +247,7 @@ export function AnchoredPopover({
         <span
           aria-hidden
           data-popover-pointer={pos.side}
-          className={`pointer-events-none fixed z-[calc(var(--z-popover)+1)] size-3 rotate-45 border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900 ${
+          className={`pointer-events-none fixed ${z} size-3 rotate-45 border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900 ${
             pos.side === 'below' ? 'border-l border-t' : 'border-b border-r'
           }`}
           style={{
@@ -258,7 +267,7 @@ export function AnchoredPopover({
         tabIndex={initialFocus === 'panel' ? -1 : undefined}
         // Over its dialog, over a tour ring drawn on that dialog (TourStage layer="modal", one below), so a
         // menu opened mid-tour is never dimmed, and over a menu's flyout (z-popover) it opens from.
-        className={`fixed z-[calc(var(--z-popover)+1)] overflow-y-auto overscroll-contain rounded-lg shadow-lg outline-none ${
+        className={`fixed ${z} overflow-y-auto overscroll-contain rounded-lg shadow-lg outline-none ${
           pointer ? 'border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900' : ''
         }`}
         style={{

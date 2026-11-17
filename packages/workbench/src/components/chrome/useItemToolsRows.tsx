@@ -3,7 +3,8 @@
 // Webhooks and History in the footer's Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md), for the item
 // the editor has open: published through the Tools door by each editor's ItemToolsHost, which is mounted with the
 // editor (not with the Explorer panel, which mounts only once opened). Nothing is read until History is pressed.
-// Returns the dialog to render while one is open. Both rows always show where signing in or syncing would make them work
+// Returns the dialog to render while one is open; opened from Tools, it draws inside Tools (footer-tools-menu.md
+// "Opening a tool inside Tools"). Both rows always show where signing in or syncing would make them work
 // (footer-tools-menu.md "Always there"), badged Sign In and Sync <Item>, and a press opens that gate first: Sign In
 // leaves for the sign-in page; Sync <Item> saves the item to the server and goes on to the tool.
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
@@ -13,6 +14,7 @@ import {
   DialogHeader,
   Glyph,
   buttonClassName,
+  holdDialogSlot,
 } from '@liveworkspace/ui';
 import { Dialog } from '../dialogs/Dialog';
 import { DialogFooter } from '../dialogs/DialogFooter';
@@ -128,6 +130,7 @@ export function useItemToolsRows({
               label: 'History',
               description: 'Who changed what, and when.',
               icon: <HistoryIcon />,
+              inPlace: true,
               ...(gated ? { badges } : {}),
               onSelect: () => (gated ? setGate('history') : setHistoryOpen(true)),
             },
@@ -141,6 +144,7 @@ export function useItemToolsRows({
               label: 'Webhooks',
               description: 'Tell other services when it changes.',
               icon: <WebhookIcon />,
+              inPlace: true,
               ...(gated ? { badges } : {}),
               onSelect: () => (gated ? setGate('webhooks') : onWebhooks?.()),
             },
@@ -212,10 +216,13 @@ function SignInDialog({
     if (!sync) return;
     setBusy(true);
     setFailed(false);
+    // Inside Tools, the tool opens in the gate's place there once the item is synced (holdDialogSlot).
+    const undo = holdDialogSlot();
     try {
       await sync.sync();
       onSynced();
     } catch {
+      undo();
       setFailed(true);
     } finally {
       setBusy(false);

@@ -24,6 +24,8 @@ export function useAutomationsToolsItem(): ChromeToolsItem | null {
     label: 'Automations',
     description: 'Rules that act on cards for you.',
     icon: <BoltIcon size={16} />,
+    // Its dialog opens inside Tools (footer-tools-menu.md "Opening a tool inside Tools").
+    inPlace: true,
     ...(door.badges ? { badges: door.badges } : {}),
     onSelect: door.open,
     aside: on ? (

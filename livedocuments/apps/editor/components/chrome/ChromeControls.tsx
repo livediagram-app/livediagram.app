@@ -76,14 +76,8 @@ export function ChromeControls({
           whole item, in one menu, drawn only while it holds one. */}
       <ChromeToolsMenu
         labelled={labelled}
-        items={[
-          search,
-          suggest.item,
-          snapshots,
-          onOpenHistory ? historyToolsItem(onOpenHistory) : null,
-        ]}
+        items={[search, suggest, snapshots, onOpenHistory ? historyToolsItem(onOpenHistory) : null]}
       />
-      {suggest.panel}
       {github ? (
         <>
           {/* Open-source repo link (the codebase is public + MIT, docs/specs/002-project-scope/open-source-and-business-model.md). An

@@ -2,8 +2,11 @@
 
 import {
   ViewTransition,
+  useContext,
+  useEffect,
   useLayoutEffect,
   useRef,
+  useState,
   type CSSProperties,
   type ReactNode,
   type ViewTransitionClassPerType,
@@ -17,7 +20,17 @@ import { SheetHandle } from '../SheetHandle';
 import { safeInset } from '../safe-area';
 import { useMediaQuery } from '../useMediaQuery';
 import { useVisualViewportBand, type VisualViewportBand } from '../useVisualViewportBand';
+import { createPortal } from 'react-dom';
 import { DialogDismissContext, type DialogDismiss } from './dialog-dismiss';
+import {
+  DialogInlineContext,
+  claimDialogSlot,
+  openSlotSeq,
+  releaseDialogSlot,
+  slotIsFor,
+  useDialogSlot,
+  type ClaimedDialog,
+} from './dialog-slot';
 
 // The shared modal shell (packages/ui, so the public sites use it too; the editor wraps it with its modal
 // guard). Every editor dialog (ConfirmDialog,
@@ -183,7 +196,22 @@ export function Dialog({
   children,
 }: DialogProps) {
   const panelRef = useRef<HTMLDivElement>(null);
-  const sheet = useSheetDrag(onClose, open, beforeClose);
+  // Inside Tools (dialog-slot.ts): where this opening draws, decided the render it opens and kept while it stays open.
+  // A slot opened just before it, still waiting, takes it (its number); otherwise a modal. A dialog opened inside one
+  // drawn in Tools is a modal, as is any dialog opened with no slot waiting.
+  const slot = useDialogSlot();
+  const insideInline = useContext(DialogInlineContext);
+  const waiting = insideInline ? 0 : openSlotSeq(slot);
+  const [seat, setSeat] = useState<number | 'modal' | null>(() =>
+    open ? waiting || 'modal' : null,
+  );
+  if (open && seat === null) setSeat(waiting || 'modal');
+  if (!open && seat !== null) setSeat(null);
+  const [owner] = useState(() => ({}));
+  const inlineSeq = typeof seat === 'number' ? seat : null;
+  const ours = inlineSeq !== null && slotIsFor(slot, inlineSeq, owner);
+  const inline = inlineSeq !== null;
+  const sheet = useSheetDrag(onClose, open && !inline, beforeClose);
   // Whether the press now under way began on the backdrop itself.
   const pressedBackdrop = useRef(false);
   // Escape stays bound while open and reads closeOnEscape at the moment of the key: re-binding the listener
@@ -192,7 +220,7 @@ export function Dialog({
   const phone = useMediaQuery(PHONE_QUERY);
   // Every way out goes through here: asked first (beforeClose), then a phone sheet slides out before `then` runs
   // (spec "Menus are bottom sheets on a phone"); a card closes at once.
-  const slides = !!phoneSheet && phone;
+  const slides = !!phoneSheet && phone && !inline;
   const requestClose: DialogDismiss = (then) => {
     if (slides) {
       sheet.dismiss(panelRef.current, then);
@@ -210,12 +238,45 @@ export function Dialog({
     () => {
       if (closeOnEscapeRef.current && isTopDialog(panelRef.current)) requestClose(onClose);
     },
-    { enabled: open, preventDefault: true },
+    { enabled: open && !inline, preventDefault: true },
   );
+  // Drawn in Tools: the slot's host closes it the dialog's own way (its back bar, Escape), through the latest props.
+  const ways = useRef({ close: () => {}, escape: () => {} });
+  useLayoutEffect(() => {
+    ways.current = {
+      close: () => requestClose(onClose),
+      escape: () => {
+        if (closeOnEscapeRef.current) requestClose(onClose);
+      },
+    };
+  });
+  const [claimed] = useState<ClaimedDialog>(() => ({
+    size,
+    close: () => ways.current.close(),
+    escape: () => ways.current.escape(),
+  }));
+  useLayoutEffect(() => {
+    if (inlineSeq === null) return;
+    // Another dialog opened in the same moment took it: this one is a modal after all.
+    if (!claimDialogSlot(inlineSeq, owner, claimed)) {
+      setSeat('modal');
+      return;
+    }
+    return () => releaseDialogSlot(owner);
+  }, [inlineSeq, owner, claimed]);
+  // The slot went while this was open in it (Tools closed): the dialog closes too, so its host can open it again.
+  const lost = open && inline && !ours;
+  const onCloseRef = useRef(onClose);
+  useLayoutEffect(() => {
+    onCloseRef.current = onClose;
+  });
+  useEffect(() => {
+    if (lost) onCloseRef.current();
+  }, [lost]);
   // Trap focus inside the modal while open and hand it back on close — keeps
   // keyboard / screen-reader users out of the inert background. Re-engages on
   // `open` because the dialog stays mounted and toggles rather than unmounting.
-  useFocusTrap(panelRef, open, initialFocus);
+  useFocusTrap(panelRef, open && !inline, initialFocus);
   const band = useVisualViewportBand();
   const fitted = keyboardBandStyles(band, phone && (!!phoneSheet || EDGE_TO_EDGE_SIZES.has(size)));
   // The field being typed in stays in sight as the band changes: the panel has just shrunk to fit above the
@@ -232,6 +293,27 @@ export function Dialog({
   }, [band]);
 
   if (!open) return null;
+
+  if (inline) {
+    if (!ours || !slot?.node) return null;
+    return createPortal(
+      <div
+        role="region"
+        data-dialog-inline=""
+        aria-labelledby={titleId}
+        aria-label={ariaLabel}
+        // Its host's tree hears no press from inside it, as a modal's backdrop keeps them (the canvas behind).
+        onPointerDown={(e) => e.stopPropagation()}
+        onContextMenu={(e) => e.stopPropagation()}
+        className="flex min-h-0 flex-1 flex-col"
+      >
+        <DialogInlineContext value>
+          <DialogDismissContext value={requestClose}>{children}</DialogDismissContext>
+        </DialogInlineContext>
+      </div>,
+      slot.node,
+    );
+  }
 
   const panelEl = (
     <div
@@ -272,12 +354,15 @@ export function Dialog({
         // The grab handle, phone only (BottomSheet's). Raised, so a hero header's band can run up under it.
         <SheetHandle handleProps={sheet.handleProps} className="relative z-10 sm:hidden" />
       ) : null}
-      <DialogDismissContext value={requestClose}>{children}</DialogDismissContext>
+      <DialogInlineContext value={false}>
+        <DialogDismissContext value={requestClose}>{children}</DialogDismissContext>
+      </DialogInlineContext>
     </div>
   );
   return (
     <Portal>
       <div
+        data-dialog-backdrop=""
         onPointerDown={(e) => {
           e.stopPropagation();
           pressedBackdrop.current = e.target === e.currentTarget;

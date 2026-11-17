@@ -29,19 +29,20 @@ the band's paper under the pointer, so the list reads as the header's.
 
 The rows are grouped under small headings, in this order, a heading drawn only when its group holds a row: **Find**
 (Search), **Automate** (Automations, liveplanner's Email to Board, then Webhooks), **Collaborate** (Suggest Changes, Walkthroughs, and
-liveplanner's Subscribe to Calendar), **Versioning** (History, Snapshots, Version History). Each
+liveplanner's Subscribe to Calendar), **Versioning** (History, Snapshots, Version History), **Content** (Clear Example Content). Each
 group is a labelled group for screen readers; the arrow keys walk the rows straight through the groups.
 
-| Row                 | App                                                 | Drawn when                                                                                                                                                           | Opens                                |
-| ------------------- | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
-| **History**         | every app                                           | signed in, the open item not shared by link (no longer on the item's ⋯ menu inside an editor)                                                                        | the History dialog for the open item |
-| **Webhooks**        | every app                                           | as its row on the item's ⋯ menu was (gone from the Explorer header's and every item's menu inside an editor)                                                         | the Webhooks dialog                  |
-| **Search**          | every app                                           | the host offers search (the editor and the Explorer's bar)                                                                                                           | the Search dialog                    |
-| **Automations**     | liveplanner                                         | as its button was ([Automations](../../../../liveplanner/docs/specs/026-plan/automations.md) "The footer button")                                                    | the Automations screen               |
-| **Suggest Changes** | livediagram, livedocuments, liveplanner, livedesign | as its header action was ([Canvas suggestions](../015-suggestions/canvas-suggestions.md) "Suggesting")                                                               | the Suggestions panel, beside Tools  |
-| **Walkthroughs**    | livediagram, livedocuments, liveplanner, livedesign | walkthroughs fit and there is one to play or the person may record ([Walkthroughs](../../../../livediagram/docs/specs/012-collaboration/walkthroughs.md) "In Tools") | the Walkthroughs panel, from Tools   |
-| **Snapshots**       | every app                                           | as its button was ([Snapshots](../014-snapshots/snapshots.md) "In the editor")                                                                                       | the Snapshots dialog                 |
-| **History**         | livedocuments                                       | as its button was ([Version history](../../../../livedocuments/docs/specs/006-document/version-history.md) "In the editor")                                          | Version History on the open tab      |
+| Row                       | App                                                 | Drawn when                                                                                                                                                                                  | Opens, inside Tools                          |
+| ------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| **History**               | every app                                           | signed in, the open item not shared by link (no longer on the item's ⋯ menu inside an editor)                                                                                               | the open item's History                      |
+| **Webhooks**              | every app                                           | as its row on the item's ⋯ menu was (gone from the Explorer header's and every item's menu inside an editor)                                                                                | the item's Webhooks                          |
+| **Search**                | every app                                           | the host offers search (the editor and the Explorer's bar)                                                                                                                                  | the Search dialog (closes Tools)             |
+| **Automations**           | liveplanner                                         | as its button was ([Automations](../../../../liveplanner/docs/specs/026-plan/automations.md) "The footer button")                                                                           | the Automations screen, widened              |
+| **Suggest Changes**       | livediagram, livedocuments, liveplanner, livedesign | as its header action was ([Canvas suggestions](../015-suggestions/canvas-suggestions.md) "Suggesting")                                                                                      | the mode switch and the review list          |
+| **Walkthroughs**          | livediagram, livedocuments, liveplanner, livedesign | walkthroughs fit and there is one to play or the person may record ([Walkthroughs](../../../../livediagram/docs/specs/012-collaboration/walkthroughs.md) "In Tools")                        | the list to play, and Record Walkthrough     |
+| **Snapshots**             | every app                                           | as its button was ([Snapshots](../014-snapshots/snapshots.md) "In the editor")                                                                                                              | take, revert and delete snapshots            |
+| **Version History**       | livedocuments                                       | as its button was ([Version history](../../../../livedocuments/docs/specs/006-document/version-history.md) "In the editor")                                                                 | Version History's window (closes Tools)      |
+| **Clear Example Content** | livediagram, livedocuments, livedesign              | the open tab still holds untouched example content, for whoever sees the palette's example tray ([Template examples](../../../../livediagram/docs/specs/006-document/template-examples.md)) | its confirm, then the same clear as the tray |
 
 - **Automations** keeps its count: the rules that are on, at the row's end (none at 0), amber when a rule
   paused itself. A paused rule also puts a small amber dot on the Tools button, so the warning the button carried
@@ -51,14 +52,51 @@ group is a labelled group for screen readers; the arrow keys walk the rows strai
 - **Suggest** reads **Suggesting** while this person suggests and keeps its count at the row's end.
   Suggestions waiting for an Editor put a brand dot on Tools ("Tools, 3 suggestions"); a paused rule's amber outranks
   it.
-- Choosing a row closes the popover and opens its tool, sending the same telemetry the button did.
+- **Clear Example Content** is there only while the tab holds a template's untouched examples, so it never sits in
+  Tools for nothing.
+- Choosing a row opens its tool **inside Tools** (below), sending the same telemetry the button did. **Search** and
+  **Version History** are the two that close Tools instead: Search opens the universal search panel, and Version
+  History gives the whole window over to one tab's pages beside its versions, which no popover can hold.
 - Opening it focuses its first control. Up and down walk the rows, Home and End go to the first and last, Tab
   moves through them; Escape or a press outside closes it and focus goes back to Tools.
+
+## Opening a tool inside Tools
+
+Owner, 2026-11-16 (Work Tracker 1182): a tool opens in the Tools popover itself, so people stay in one place and can hop
+between tools, never in a modal of its own on top of the editor.
+
+- **The drill-in.** Choosing a row replaces the list with that tool's view. The hero band gives way to the shared
+  [back bar](../../../../livediagram/docs/specs/004-interface-design/back-bar.md) as the breadcrumb: **Tools**, with the
+  tool's name in its chip ("Tools > Snapshots"), and the popover's close beside it. The tool's own header loses its
+  title (the chip names it) and its close (the popover's closes it), keeping its one line and its actions (Automations'
+  New Rule, for one) in a slim row under the bar. Everything else is the tool as it was: its form, its list, its
+  footer.
+- **Back.** The back bar returns to the list, as does the tool's own Cancel or Done. A tool that holds unsaved work
+  (Automations' rule builder) asks first, as its own close did. Escape steps back one level (a confirm or a menu open
+  in the tool first), then closes Tools from the list. The close shuts Tools from any level.
+- **Sizes.** A tool keeps the width it was designed at: Tools' own 480px for most, wider for a tool drawn wider
+  (History and Webhooks), and Automations' screen at the most, 760px, never past the window's edges. The popover grows
+  leftwards from its right edge on the button, and up to the room above it; past that the tool scrolls inside, its
+  back bar and slim header staying put. Automations' screen takes a fixed height (44rem, or the room there is), so
+  its tabs and lists lay out as they did.
+- **Inside a tool.** A dialog a tool opens on top of itself (Automations' Describe a Rule, a Discard Changes confirm,
+  Webhooks from a rule) is still a dialog, drawn over Tools; a press in it, or in a menu a tool opens, never closes
+  Tools.
+- **Focus.** Opening a tool moves focus into its view (the back bar, or the control the tool focuses itself, such as a
+  confirm's button); stepping back puts focus on that tool's row. A polite live region says where focus went
+  ("Snapshots", "Tools"), and the popover's name follows ("Tools, Snapshots").
+- **On a phone** the drawer keeps the full width and its own height cap (85% of the screen), the tool scrolling inside
+  it.
+- **Waiting.** A tool whose code has not loaded yet shows the loading sweep under its back bar until it arrives.
+- **From elsewhere.** Coming back from signing in with a tool asked open (`?calendarFeed=1`, `?emailIntake=1`,
+  `?automations=1`) opens Tools at that tool. Automations alone keeps its full-screen dialog, for the ways in from outside
+  Tools: a card's Run Rule, an Automation comment's link to its rule, and coming back from GitHub.
 
 ## Performance
 
 The popover's rows are worked out from state each tool already holds (its door, the rules the host fetched); opening it
-fetches nothing. Each tool's dialog still loads its code the first time it opens.
+fetches nothing. Each tool still loads its code the first time it opens, now into Tools rather than a modal. Opening a
+tool renders only that tool: the list unmounts behind it.
 
 ## On a phone
 

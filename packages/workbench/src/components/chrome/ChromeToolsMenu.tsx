@@ -5,15 +5,38 @@
 // (Automations, Suggest, Snapshots, History) where each used to be a button of its own. It wears the dialog hero
 // header (the tools hung on a pegboard), then one row per tool: its glyph on a plate in the hero's tokens, its name,
 // one line on what it does, its count, a chevron. Drawn only while it holds a tool; its rows are worked out from state
-// each tool already holds, so opening it fetches nothing.
+// each tool already holds, so opening it fetches nothing. A row opens its tool inside the popover (ToolsView, "Opening a
+// tool inside Tools"; blueprint FM6), the back bar leading back to the list; Search and Version History close it.
 
-import { useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
-import { DialogCloseButton, Glyph } from '@liveworkspace/ui';
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type ReactNode,
+} from 'react';
+import {
+  DialogCloseButton,
+  Glyph,
+  closeDialogSlot,
+  openDialogSlot,
+  setDialogSlotNode,
+  useDialogSlot,
+  type DialogProps,
+} from '@liveworkspace/ui';
 import { HERO_TOKEN_STYLE, HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { toolsHeroArt } from '@liveworkspace/ui/dialog-hero-art/tools';
 import { CHROME_BTN, CHROME_BTN_LABELLED, ChromeLabel } from './chrome-button';
 import { PopoverOrSheet } from '../primitives/PopoverOrSheet';
-import { useToolsDoorItems } from './tools-door';
+import {
+  TOOLS_REQUEST_TTL_MS,
+  takeToolsView,
+  useToolsDoorItems,
+  useToolsViewRequest,
+} from './tools-door';
+import { ToolsView } from './ToolsView';
 
 /** The popover's sections, in the order they show; a section with no tool in it is left out. */
 export const TOOL_GROUPS = [
@@ -21,8 +44,12 @@ export const TOOL_GROUPS = [
   { id: 'automate', title: 'Automate' },
   { id: 'collaborate', title: 'Collaborate' },
   { id: 'versions', title: 'Versioning' },
+  { id: 'content', title: 'Content' },
 ] as const;
 export type ChromeToolsGroup = (typeof TOOL_GROUPS)[number]['id'];
+
+/** What a tool's own view is handed: back to the list, Tools closed, and whether it is a phone's drawer. */
+export type ToolViewContext = { back: () => void; close: () => void; sheet: boolean };
 
 export type ChromeToolsItem = {
   id: string;
@@ -33,6 +60,12 @@ export type ChromeToolsItem = {
   icon: ReactNode;
   /** Handed the Tools button, for a tool that opens a panel beside it (Suggest). */
   onSelect: (anchor: HTMLElement | null) => void;
+  /** `onSelect` opens a dialog, which renders inside Tools in place of a modal (the dialog slot). */
+  inPlace?: boolean;
+  /** The tool's own view, drawn inside Tools (pressing the row calls this, not `onSelect`). */
+  view?: (ctx: ToolViewContext) => ReactNode;
+  /** A `view` that wants the wide popover. */
+  wide?: boolean;
   /** What it needs before it works, as badges beside its name in order: "Sign In" for a tool that needs an account,
    *  "Sync Plan" (the app's own noun) for one that needs the item saved to the server. A press opens that tool's gate. */
   badges?: readonly string[];
@@ -45,7 +78,26 @@ export type ChromeToolsItem = {
 };
 
 // Wide enough for the header's line to sit clear of its art, which stands 108px in from the right edge.
-const WIDTH_PX = 480;
+export const TOOLS_WIDTH_PX = 480;
+// The widest a tool makes it: Automations' screen.
+export const TOOLS_WIDE_PX = 760;
+// A tool's dialog keeps the width it was drawn at, Tools' own at the least and TOOLS_WIDE_PX at the most.
+const DIALOG_WIDTHS: Record<NonNullable<DialogProps['size']>, number> = {
+  sm: TOOLS_WIDTH_PX,
+  md: TOOLS_WIDTH_PX,
+  lg: 544,
+  xl: 576,
+  '2xl': 640,
+  '3xl': TOOLS_WIDE_PX,
+};
+// How long a tool's dialog may take to arrive (its code loading) before Tools gives up and goes back to the list.
+export const TOOL_ARRIVAL_MS = 10_000;
+// A press in these (a dialog or menu a tool opened, drawn outside the popover) is not a press outside it.
+const TOOL_SURFACES =
+  '[data-dialog-backdrop], [data-anchored-popover], [role="menu"], [role="listbox"]';
+
+// A modal dialog is open (one a tool opened over Tools): Escape is its.
+const modalOpen = () => !!document.querySelector('[data-dialog-panel]');
 
 // The tools glyph: a toolbox, its handle and its lid's line.
 export function ToolsGlyph({ size = 14 }: { size?: number }) {
@@ -101,10 +153,120 @@ export function ChromeToolsMenu({
   const [open, setOpen] = useState(false);
   // The button, held in state (not a ref) so the popover opens from it in render.
   const [anchor, setAnchor] = useState<HTMLButtonElement | null>(null);
+  // The tool open inside the popover, and the dialog slot it waits on (a tool that opens a dialog).
+  const [view, setView] = useState<{ id: string; slot: number | null } | null>(null);
+  // The row to put focus back on once the list is drawn again.
+  const [returnTo, setReturnTo] = useState<string | null>(null);
+  // What the live region last said ("Snapshots" on the way in, "Tools" on the way out).
+  const [said, setSaid] = useState('');
+  // The close was pressed while a tool's dialog was open: once it lets go, Tools closes too.
+  const closing = useRef(false);
   const grid = useRef<HTMLDivElement>(null);
   const titleId = useId();
   const door = useToolsDoorItems();
   const shown = [...items, ...door].filter((i): i is ChromeToolsItem => i !== null);
+  const active = view ? (shown.find((i) => i.id === view.id) ?? null) : null;
+  const slot = useDialogSlot();
+  const ours = view?.slot != null && slot?.seq === view.slot ? slot : null;
+  const claimed = ours?.claimed ?? null;
+
+  const toList = useCallback(() => {
+    if (view?.slot != null) closeDialogSlot(view.slot);
+    closing.current = false;
+    setView(null);
+    setReturnTo(view?.id ?? null);
+    setSaid('Tools');
+  }, [view]);
+  const finish = useCallback(() => {
+    if (view?.slot != null) closeDialogSlot(view.slot);
+    closing.current = false;
+    setView(null);
+    setOpen(false);
+  }, [view]);
+  // Back: through the tool's dialog's own close where it has one (it may ask about unsaved work first).
+  const back = () => {
+    closing.current = false;
+    if (claimed) claimed.close();
+    else toList();
+  };
+  const closeAll = () => {
+    if (claimed) {
+      closing.current = true;
+      claimed.close();
+      return;
+    }
+    finish();
+  };
+  // The close beside the back bar, and a tool closing Tools (a walkthrough starting): focus back on the button.
+  const shut = () => {
+    closeAll();
+    if (!claimed) anchor?.focus({ preventScroll: true });
+  };
+  const openTool = (item: ChromeToolsItem, at: HTMLElement | null) => {
+    if (item.view) setView({ id: item.id, slot: null });
+    else {
+      setView({ id: item.id, slot: openDialogSlot() });
+      item.onSelect(at);
+    }
+    setSaid(item.label);
+  };
+  // The tool's dialog closed itself (its Cancel, Done or Escape): back to the list, or out, after the close.
+  const released = !!ours?.released && !ours.held;
+  useEffect(() => {
+    if (!released) return;
+    if (closing.current) {
+      finish();
+      anchor?.focus({ preventScroll: true });
+    } else toList();
+  }, [released, finish, toList, anchor]);
+  // A tool's dialog that never arrives (its code failed to load) hands the list back.
+  const waiting = view?.slot != null && !claimed;
+  useEffect(() => {
+    if (!waiting) return;
+    const timer = setTimeout(toList, TOOL_ARRIVAL_MS);
+    return () => clearTimeout(timer);
+  }, [waiting, toList]);
+  // The row went while its tool was open (Clear Example Content once cleared): back to the list.
+  const gone = !!view && !active;
+  useEffect(() => {
+    if (gone) toList();
+  }, [gone, toList]);
+  // Back on the list: focus on the row that was open.
+  useEffect(() => {
+    if (view || !returnTo) return;
+    grid.current
+      ?.querySelector<HTMLElement>(`[data-tools-item="${CSS.escape(returnTo)}"]`)
+      ?.focus({ preventScroll: true });
+    setReturnTo(null);
+  }, [view, returnTo]);
+  // Tools going (the editor leaving) lets go of its slot.
+  const slotNow = view?.slot ?? null;
+  useEffect(() => {
+    if (slotNow === null) return;
+    return () => closeDialogSlot(slotNow);
+  }, [slotNow]);
+  // Asked open at a tool from elsewhere (back from signing in, FM7): opened once Tools lists it.
+  const asked = useToolsViewRequest();
+  const askedItem = asked ? shown.find((i) => i.id === asked.id && (i.inPlace || i.view)) : null;
+  useEffect(() => {
+    if (!asked) return;
+    if (Date.now() - asked.at > TOOLS_REQUEST_TTL_MS) {
+      takeToolsView(asked);
+      return;
+    }
+    if (!askedItem || !anchor) return;
+    takeToolsView(asked);
+    setOpen(true);
+    openTool(askedItem, anchor);
+    // oxlint-disable-next-line react/exhaustive-deps -- once per ask, when its row and the button are there
+  }, [asked, askedItem, anchor]);
+  const slotRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (slotNow !== null) setDialogSlotNode(slotNow, node);
+    },
+    [slotNow],
+  );
+
   if (shown.length === 0) return null;
   const attention = shown.filter((i) => i.attention);
   const name = [
@@ -126,12 +288,26 @@ export function ChromeToolsMenu({
     e.preventDefault();
     cards[to]?.focus();
   };
+  const width = active?.view
+    ? active.wide
+      ? TOOLS_WIDE_PX
+      : TOOLS_WIDTH_PX
+    : claimed
+      ? DIALOG_WIDTHS[claimed.size]
+      : TOOLS_WIDTH_PX;
+  // Escape steps back a level (the tool's dialog asked first), then closes from the list.
+  const onEscape = () => {
+    if (!view) return false;
+    if (claimed) claimed.escape();
+    else toList();
+    return true;
+  };
   return (
     <>
       <button
         ref={setAnchor}
         type="button"
-        onClick={() => setOpen((o) => !o)}
+        onClick={() => (open ? closeAll() : setOpen(true))}
         aria-label={name}
         aria-haspopup="dialog"
         aria-expanded={open}
@@ -155,101 +331,136 @@ export function ChromeToolsMenu({
       {open && anchor ? (
         <PopoverOrSheet
           anchor={anchor}
-          name="Tools"
-          width={WIDTH_PX}
-          onClose={() => setOpen(false)}
+          name={active ? `Tools, ${active.label}` : 'Tools'}
+          width={width}
+          onClose={closeAll}
+          levels={
+            view
+              ? {
+                  onEscape,
+                  passEscape: modalOpen,
+                  layer: 'modal',
+                  keepOpenWithin: TOOL_SURFACES,
+                }
+              : undefined
+          }
         >
           {(sheet) => (
             <div
               data-tools-popover=""
-              className="relative flex min-h-0 flex-col [border-radius:inherit] [color-scheme:light] dark:[color-scheme:dark]"
+              className="relative flex max-h-[inherit] min-h-0 flex-1 flex-col [border-radius:inherit] [color-scheme:light] dark:[color-scheme:dark]"
               style={HERO_TOKEN_STYLE}
             >
-              <HeroDialogHeader
-                art={toolsHeroArt}
-                titleId={titleId}
-                title="Tools"
-                subtitle="Powerful tools to enhance your experience."
-                // The title and its line stop short of the art in the bottom right (96px, 12px in) and the close above it.
-                className="sm:pr-[7.5rem]"
-                // A phone's drawer: the band runs up under its grab handle.
-                underHandle={sheet}
-              />
-              <div
-                ref={grid}
-                onKeyDown={onKeyDown}
-                // Group headings read as sections, so the list ends on more room than a plain menu; a drawer scrolls it.
-                className={`flex flex-col gap-2 px-2 pb-3.5 pt-2 ${sheet ? 'min-h-0 overflow-y-auto overscroll-contain' : ''}`}
-              >
-                {TOOL_GROUPS.map((g) => {
-                  const items = shown.filter((i) => i.group === g.id);
-                  if (!items.length) return null;
-                  const headingId = `${titleId}-${g.id}`;
-                  return (
-                    <div
-                      key={g.id}
-                      role="group"
-                      aria-labelledby={headingId}
-                      data-tools-group={g.id}
-                    >
-                      <h3
-                        id={headingId}
-                        className="px-2.5 pb-1 pt-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
-                      >
-                        {g.title}
-                      </h3>
-                      <div className="flex flex-col gap-0.5">
-                        {items.map((item) => (
-                          <button
-                            key={item.id}
-                            type="button"
-                            data-tools-item={item.id}
-                            className={ROW}
-                            onClick={() => {
-                              setOpen(false);
-                              item.onSelect(anchor);
-                            }}
+              <p aria-live="polite" data-tools-live="" className="sr-only">
+                {said}
+              </p>
+              {view && active ? (
+                <ToolsView
+                  key={`${view.id}:${view.slot ?? 'view'}`}
+                  id={view.id}
+                  label={active.label}
+                  onBack={back}
+                  onClose={shut}
+                  sheet={sheet}
+                  tall={claimed?.size === '3xl'}
+                  waiting={waiting}
+                  slotRef={view.slot != null ? slotRef : undefined}
+                >
+                  {active.view?.({ back: toList, close: shut, sheet })}
+                </ToolsView>
+              ) : (
+                <>
+                  <HeroDialogHeader
+                    art={toolsHeroArt}
+                    titleId={titleId}
+                    title="Tools"
+                    subtitle="Powerful tools to enhance your experience."
+                    // The title and its line stop short of the art in the bottom right (96px, 12px in) and the close above it.
+                    className="sm:pr-[7.5rem]"
+                    // A phone's drawer: the band runs up under its grab handle.
+                    underHandle={sheet}
+                  />
+                  <div
+                    ref={grid}
+                    onKeyDown={onKeyDown}
+                    // Group headings read as sections, so the list ends on more room than a plain menu; a drawer scrolls it.
+                    className={`flex flex-col gap-2 px-2 pb-3.5 pt-2 ${sheet ? 'min-h-0 overflow-y-auto overscroll-contain' : ''}`}
+                  >
+                    {TOOL_GROUPS.map((g) => {
+                      const items = shown.filter((i) => i.group === g.id);
+                      if (!items.length) return null;
+                      const headingId = `${titleId}-${g.id}`;
+                      return (
+                        <div
+                          key={g.id}
+                          role="group"
+                          aria-labelledby={headingId}
+                          data-tools-group={g.id}
+                        >
+                          <h3
+                            id={headingId}
+                            className="px-2.5 pb-1 pt-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
                           >
-                            <span aria-hidden className={PLATE}>
-                              {item.icon}
-                            </span>
-                            <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                              <span className="flex min-w-0 items-center gap-2">
-                                <span className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
-                                  {item.label}
+                            {g.title}
+                          </h3>
+                          <div className="flex flex-col gap-0.5">
+                            {items.map((item) => (
+                              <button
+                                key={item.id}
+                                type="button"
+                                data-tools-item={item.id}
+                                className={ROW}
+                                onClick={() => {
+                                  if (item.inPlace || item.view) {
+                                    openTool(item, anchor);
+                                    return;
+                                  }
+                                  setOpen(false);
+                                  item.onSelect(anchor);
+                                }}
+                              >
+                                <span aria-hidden className={PLATE}>
+                                  {item.icon}
                                 </span>
-                                {item.badges?.map((badge) => (
-                                  <span key={badge} data-tools-badge="" className={BADGE}>
-                                    {badge}
+                                <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                                  <span className="flex min-w-0 items-center gap-2">
+                                    <span className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
+                                      {item.label}
+                                    </span>
+                                    {item.badges?.map((badge) => (
+                                      <span key={badge} data-tools-badge="" className={BADGE}>
+                                        {badge}
+                                      </span>
+                                    ))}
                                   </span>
-                                ))}
-                              </span>
-                              <span className="truncate text-xs leading-snug text-slate-500 dark:text-slate-400">
-                                {item.description}
-                              </span>
-                            </span>
-                            {item.aside ? (
-                              <span className="flex shrink-0 items-center">{item.aside}</span>
-                            ) : null}
-                            <Chevron />
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-              {/* The close in the top right corner, as a popover's is, not centred down the band's row. Last in the DOM, so
+                                  <span className="truncate text-xs leading-snug text-slate-500 dark:text-slate-400">
+                                    {item.description}
+                                  </span>
+                                </span>
+                                {item.aside ? (
+                                  <span className="flex shrink-0 items-center">{item.aside}</span>
+                                ) : null}
+                                <Chevron />
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {/* The close in the top right corner, as a popover's is, not centred down the band's row. Last in the DOM, so
               opening focuses the first tool, not the close. */}
-              <div className="absolute right-3 top-3">
-                <DialogCloseButton
-                  compact
-                  onClick={() => {
-                    setOpen(false);
-                    anchor.focus();
-                  }}
-                />
-              </div>
+                  <div className="absolute right-3 top-3">
+                    <DialogCloseButton
+                      compact
+                      onClick={() => {
+                        setOpen(false);
+                        anchor.focus();
+                      }}
+                    />
+                  </div>
+                </>
+              )}
             </div>
           )}
         </PopoverOrSheet>

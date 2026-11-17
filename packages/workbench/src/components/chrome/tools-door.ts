@@ -43,3 +43,41 @@ export function useToolsDoorItems(): readonly ChromeToolsItem[] {
     () => NONE,
   );
 }
+
+// Asking Tools to open at a tool from outside the footer (footer-tools-menu.md "From elsewhere"; blueprint FM7): coming
+// back from signing in with a tool asked open. One ask at a time, kept a while so a row that arrives a moment after
+// the page (its door waits on the plan) still finds it; Tools takes it once it lists that row.
+export const TOOLS_REQUEST_TTL_MS = 20_000;
+export type ToolsViewRequest = { id: string; at: number };
+let request: ToolsViewRequest | null = null;
+const requestListeners = new Set<() => void>();
+
+function emitRequest(next: ToolsViewRequest | null) {
+  request = next;
+  for (const l of requestListeners) l();
+}
+
+export function requestToolsView(id: string, now = Date.now()): void {
+  emitRequest({ id, at: now });
+}
+
+/** Tools took the ask (or it went stale). */
+export function takeToolsView(asked: ToolsViewRequest): void {
+  if (request === asked) emitRequest(null);
+}
+
+const subscribeRequests = (l: () => void) => {
+  requestListeners.add(l);
+  return () => {
+    requestListeners.delete(l);
+  };
+};
+
+/** The ask waiting for Tools, or null. */
+export function useToolsViewRequest(): ToolsViewRequest | null {
+  return useSyncExternalStore(
+    subscribeRequests,
+    () => request,
+    () => null,
+  );
+}

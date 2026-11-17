@@ -16,6 +16,8 @@ export function useSnapshotsToolsItem(): ChromeToolsItem | null {
     label: 'Snapshots',
     description: `Save points for the whole ${door.door.noun}.`,
     icon: <SnapshotGlyph size={16} />,
+    // Its dialog opens inside Tools (footer-tools-menu.md "Opening a tool inside Tools").
+    inPlace: true,
     onSelect: door.open,
   };
 }
