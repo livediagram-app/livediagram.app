@@ -1363,6 +1363,19 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
+    path: '/projects/{id}/items/import/people',
+    segment: 'projects',
+    tag: 'Items',
+    summary:
+      'Match up to 1,000 emails from an import’s file to the plan’s team: one entry per email, the team member it belongs to or null, never an email. Answered only when the caller is a joined member of the plan’s team; anyone else gets null for every email. Needs edit access to the whole plan.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    requestSchema: 'ItemsImportPeopleRequest',
+    responseSchema: 'ItemsImportPeople',
+    statuses: [200, 400, 401, 403, 404, 410],
+  },
+  {
+    method: 'POST',
     path: '/projects/{id}/items/patches',
     segment: 'projects',
     tag: 'Items',

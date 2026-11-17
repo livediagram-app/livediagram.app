@@ -113,3 +113,24 @@ export interface TrackerBoard {
 export function addSkip(skips: TrackerSkips, reason: TrackerSkipReason, n = 1): void {
   if (n > 0) skips[reason] = (skips[reason] ?? 0) + n;
 }
+
+// The most distinct emails an agent's import asks the api to match to the plan's team (tracker-import.md "Agents"); a
+// file naming more people matches the rest by name. Far above the people one team holds.
+export const TRACKER_MATCH_EMAILS_MAX = 1_000;
+// The longest email the match takes (an address's 64-character local part, @ and 255-character domain).
+export const TRACKER_EMAIL_MAX = 320;
+
+/** The board's emails, lower-cased as read, each once in the order the cards name them (assignees, then Person
+ * extras): what an agent's import asks the api to match. At most `max`. */
+export function trackerEmails(board: TrackerBoard, max = TRACKER_MATCH_EMAILS_MAX): string[] {
+  const seen = new Set<string>();
+  const add = (p: TrackerPerson) => {
+    if (p.email && p.email.length <= TRACKER_EMAIL_MAX && seen.size < max) seen.add(p.email);
+  };
+  for (const card of board.cards) {
+    if (card.assignee) add(card.assignee);
+    for (const value of Object.values(card.extras))
+      if (typeof value !== 'string') value.forEach(add);
+  }
+  return [...seen];
+}

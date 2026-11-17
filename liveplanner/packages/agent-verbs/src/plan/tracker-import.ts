@@ -7,6 +7,8 @@ import {
   CLIENT_HEADER,
   type ChangesetRequest,
   type ItemTypesRequest,
+  type ItemsImportPeople,
+  type ItemsImportPeopleRequest,
   type ItemsImportRequest,
 } from '@liveplanner/api-schema';
 import {
@@ -22,11 +24,13 @@ import {
   planTrackerImport,
   readTrackerFile,
   trackerDoneMessage,
+  trackerEmails,
   trackerRefusalMessage,
   trackerSummary,
   type ItemTypeDef,
   type TrackerBoard,
   type TrackerImportPlan,
+  type TrackerMember,
   type TrackerPreview,
   type TrackerSource,
 } from '@liveplanner/items';
@@ -182,6 +186,32 @@ function done(
   };
 }
 
+// The file's people who are members of the plan's team, matched by email on the server (tracker-import.md "Agents"):
+// the api answers each email's member or null, and never an email, and answers only a member of the team (anyone
+// else, every email null). A file with no emails asks nothing; a failed match matches none, so names match instead.
+async function teamMembersFor(
+  api: ApiClient,
+  projectId: string,
+  board: TrackerBoard,
+): Promise<TrackerMember[]> {
+  const emails = trackerEmails(board);
+  if (emails.length === 0) return [];
+  try {
+    const body: ItemsImportPeopleRequest = { emails };
+    const { people } = await api.json<ItemsImportPeople>(`${itemsPath(projectId)}/import/people`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+    return emails.flatMap((email, i) => {
+      const person = people[i];
+      return person ? [{ email, person }] : [];
+    });
+  } catch (err) {
+    console.warn('[tracker-import] people match failed; matching by name', { error: String(err) });
+    return [];
+  }
+}
+
 // The plan's import, planned against its cards, boards and card types as they are now.
 async function planIn(api: ApiClient, projectId: string, board: TrackerBoard) {
   const state = await readPlanState(api, projectId);
@@ -189,8 +219,7 @@ async function planIn(api: ApiClient, projectId: string, board: TrackerBoard) {
     types: state.plan.types,
     statuses: state.plan.statuses,
     people: assignedPeople(state.items),
-    // An API token never reads a team's people (apps/api routes/teams.ts), so an agent matches people by name.
-    members: [],
+    members: await teamMembersFor(api, projectId, board),
     room: ITEMS_MAX - state.items.length,
     boardId: crypto.randomUUID(),
   });
@@ -342,7 +371,7 @@ export function trackerImportAnswer(
     fields: p.fields,
     cards: p.cards,
     comments: p.comments.count,
-    people: { onPlan: p.people.onPlan, named: p.people.named },
+    people: { matched: p.people.matched, onPlan: p.people.onPlan, named: p.people.named },
     leftOut: p.skips.map((s) => ({ reason: s.label, count: s.count })),
     fits: p.fits,
     ...(p.reason ? { reason: p.reason } : {}),

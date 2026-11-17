@@ -9745,6 +9745,44 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "ItemsImportPeople": {
+    "additionalProperties": false,
+    "properties": {
+      "people": {
+        "items": {
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/ItemPerson"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "people"
+    ],
+    "type": "object"
+  },
+  "ItemsImportPeopleRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "emails": {
+        "description": "1 to 1,000 emails, each at most 320 characters.",
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "emails"
+    ],
+    "type": "object"
+  },
   "ItemsImportRequest": {
     "additionalProperties": false,
     "properties": {
