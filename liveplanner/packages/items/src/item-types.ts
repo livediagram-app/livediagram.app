@@ -335,6 +335,8 @@ const BUILT_IN_TYPES = [
     newTitle: 'New project',
     glyph: 'project',
     color: '#18181b',
+    // Votes, so a Roadmap board's Projects count and sort by a public roadmap's upvotes
+    // (docs/specs/026-plan/public-roadmap.md "The settings"); the count shows only once a card has one.
     fields: [
       'title',
       'description',
@@ -344,6 +346,7 @@ const BUILT_IN_TYPES = [
       'color',
       'start',
       'due',
+      'votes',
       'labels',
     ],
   },

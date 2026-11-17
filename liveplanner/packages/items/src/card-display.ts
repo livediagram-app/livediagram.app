@@ -127,6 +127,7 @@ const BUILT_IN_FIELDS: Readonly<Record<string, Partial<Record<CardSize, readonly
       'due',
       'checklist',
       'comments',
+      'votes',
       'description',
       ...WITH_ATTACHMENTS,
     ],
@@ -290,4 +291,30 @@ export function readCardDisplay(input: unknown, typeId: string): CardDisplay | n
     if (!sameCardLayout(size, layout, defaultCardLayout(typeId, size))) out[size] = layout;
   }
   return Object.keys(out).length ? out : undefined;
+}
+
+// Whether a type's cards show the built-in Votes: the type has the field, and its Detailed card places it
+// (docs/specs/026-plan/public-roadmap.md "The settings": a public roadmap's upvotes land there).
+export function typeShowsVotes(
+  type: Pick<ItemTypeDef, 'id' | 'display' | 'fields' | 'custom'>,
+): boolean {
+  return type.fields.includes('votes') && typeCardDisplay(type, 'detailed').includes('votes');
+}
+
+// The type with the built-in Votes field, placed last in its Detailed card's Footer when its layout leaves it out
+// (Publish as Roadmap's Add Votes). A type that shows it already comes back as it is.
+export function withVotesShown<T extends ItemTypeDef>(type: T): T {
+  if (typeShowsVotes(type)) return type;
+  const withField = type.fields.includes('votes')
+    ? type
+    : { ...type, fields: [...type.fields, 'votes'] };
+  if (typeShowsVotes(withField)) return withField;
+  const layout = typeCardLayout(withField, 'detailed');
+  return {
+    ...withField,
+    display: {
+      ...withField.display,
+      detailed: { ...layout, foot: [...(layout.foot ?? []), 'votes'] },
+    },
+  };
 }
