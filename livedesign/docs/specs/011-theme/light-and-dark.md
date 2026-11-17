@@ -95,7 +95,10 @@ the header (`colourIsOpaque`).
   draw a plain page in the dark editor through the same walks as the canvas (`inkedOnPaper`,
   `apps/live/lib/stock-colour-projector.ts`), so a tile matches what pressing it puts on the page. The Contents page
   pictures and the Map walk nothing of their own: they draw the canvas's own elements, already in the viewer's theme
-  half and inked off the paper, so neither shows ink the canvas does not.
+  half and inked off the paper, so neither shows ink the canvas does not. An edit, a remote one included, re-inks
+  only the parts it changed and those it could change the backdrop of, so live collaboration on a board of thousands
+  of sunk parts keeps its frames; what is drawn is the same as a re-ink of the whole board (`reinkOnPaper`,
+  `apps/live/lib/paper-reink.ts`).
   `apps/live/lib/pages-template-contrast.test.ts` holds those templates' paper marks at 3:1 too, under every theme,
   picked in either half and seen in either.
 - **A page's own paper.** An element on a page with a fill of its own (a solid, a gradient, an
