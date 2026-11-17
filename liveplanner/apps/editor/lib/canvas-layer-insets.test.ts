@@ -4,13 +4,11 @@ import {
   BAND_HYSTERESIS_PX,
   BANNER_GAP_PX,
   type BandMemo,
-  BAND_MID_MIN_PX,
   BAND_RIGHT_MIN_PX,
   MAX_INSET_SHARE,
   bannerInset,
   headerBand,
   layerInsets,
-  PHONE_ROW_MIN_PX,
   measureCanvasChrome,
   phoneRow,
   sameLayout,
@@ -187,9 +185,10 @@ describe('headerBand', () => {
     expect(headerBand({ ...canvas, right: 600 }, none, menu, box(150, 92, 400, 145))).toBeNull();
   });
 
-  it('needs room for a title between the menu and the strip at the right', () => {
-    // The strip's width that leaves exactly BAND_MID_MIN_PX.
-    const widest = stripRight - 124 - 24 - BAND_MID_MIN_PX - BAND_HYSTERESIS_PX;
+  it('needs room for the name between the menu and the strip at the right', () => {
+    // The strip's width that leaves exactly the name's room (none here) and the hysteresis: the card type chips
+    // between them give way first, so they need none.
+    const widest = stripRight - 124 - 24 - BAND_HYSTERESIS_PX;
     expect(headerBand(canvas, none, menu, box(200, 92, 200 + widest, 145), 0, END)).not.toBeNull();
     expect(headerBand(canvas, none, menu, box(200, 92, 201 + widest, 145), 0, END)).toBeNull();
     // A side panel taking the right of the canvas takes the room with it.
@@ -200,27 +199,29 @@ describe('headerBand', () => {
 
   // Hysteresis: a band that is there keeps BAND_HYSTERESIS_PX less room, so a width on the threshold does not flip it.
   it('keeps a band it has with BAND_HYSTERESIS_PX less room than it takes to lay one out', () => {
-    const room = (extra: number) =>
-      box(200, 92, 200 + stripRight - 124 - 24 - BAND_MID_MIN_PX - extra, 145);
+    const room = (extra: number) => box(200, 92, 200 + stripRight - 124 - 24 - extra, 145);
     // One px short of the room a new band needs: not laid out, but kept when there already.
     const short = room(BAND_HYSTERESIS_PX - 1);
     expect(headerBand(canvas, none, menu, short, 0, END, false)).toBeNull();
     expect(headerBand(canvas, none, menu, short, 0, END, true)).not.toBeNull();
-    // At BAND_MID_MIN_PX itself a kept band holds; one px under it, it goes.
+    // With no room to spare a kept band holds; one px under it, it goes.
     expect(headerBand(canvas, none, menu, room(0), 0, END, true)).not.toBeNull();
     expect(headerBand(canvas, none, menu, room(-1), 0, END, true)).toBeNull();
   });
 
   // "The name rides in the menu box": the room is judged without the name, the content starting after the box.
   it('judges the room from the menu box without the name riding in it', () => {
-    const wide = box(200, 92, 200 + stripRight - 124 - 24 - BAND_MID_MIN_PX, 145);
+    // Room for the 200 px name after the box without it, and no more.
+    const wide = box(200, 92, 200 + stripRight - 124 - 24 - 200, 145);
     const withName = box(12, 92, 124 + 200, 145);
     const band = headerBand(canvas, none, withName, wide, 200, END, true);
     expect(band).not.toBeNull();
     expect(band!.left).toBe(124 + 200 - 12 + 12);
-    // The strip now starts before the box's end: the content has no room, never a negative one.
+    // The strip now starts at the box's end: the content has no room, never a negative one.
     expect(band!.mid).toBe(0);
-    expect(headerBand(canvas, none, withName, wide, 0, END, true)).toBeNull();
+    // A strip one px wider leaves the name too little.
+    const wider = box(200, 92, 201 + stripRight - 124 - 24 - 200, 145);
+    expect(headerBand(canvas, none, withName, wider, 200, END, true)).toBeNull();
   });
 
   it('measures off the page with the top inset given up to the header', () => {
@@ -355,21 +356,22 @@ describe('phoneRow', () => {
   const none = { left: 0, right: 0 };
   const menu = box(12, 68, 58, 114);
 
-  it('grows the header to the menu and starts it after the menu', () => {
-    // From the element's box (8 px in): 114 - 64 tall, and 58 - 8 + 12 in.
-    expect(phoneRow(phone, none, menu)).toEqual({ height: 50, left: 62 });
+  it('grows the header past the menu, centred on it, and starts it after the menu', () => {
+    // From the element's box (8 px in, at 64): inside its 1 px border, to the menu's middle (91) and as far again,
+    // plus the header's hairline: 2 x (91 - 65) + 1 tall, so the content's middle is the menu's. The name starts 4 px
+    // after the menu: 58 - 8 + 4 in.
+    expect(phoneRow(phone, none, menu)).toEqual({ height: 53, left: 54 });
   });
 
-  it('is none on a canvas wide enough for a band, with no menu, or a menu below the middle', () => {
-    expect(phoneRow(canvas, none, box(16, 92, 200, 136))).toBeNull();
+  it('is none with no menu, or a menu below the middle', () => {
     expect(phoneRow(phone, none, null)).toBeNull();
     expect(phoneRow(phone, none, box(12, 700, 58, 746))).toBeNull();
   });
 
-  it('is none when a panel pushes the element past the menu, or leaves too little room after it', () => {
-    expect(phoneRow(phone, { left: 40, right: 0 }, menu)).toBeNull();
-    const tight = { left: 0, right: 58 + 12 + 8 + PHONE_ROW_MIN_PX - 1 };
-    expect(phoneRow({ ...phone, right: tight.right }, none, menu)).toBeNull();
+  it('is none when a panel pushes the element past the menu', () => {
+    // The menu may stand a little outside the element (a phone's gutter), never wholly before it.
+    expect(phoneRow(phone, { left: 44, right: 0 }, menu)).not.toBeNull();
+    expect(phoneRow(phone, { left: 50, right: 0 }, menu)).toBeNull();
   });
 
   it('takes the top row on the page: the element starts at the canvas top', () => {
@@ -379,11 +381,15 @@ describe('phoneRow', () => {
       ({ ...r, x: r.left, y: r.top, width: r.right - r.left, height: r.bottom - r.top }) as DOMRect;
     main!.getBoundingClientRect = rect(phone);
     menuEl!.getBoundingClientRect = rect(menu);
+    // A phone's window, whose cover pads the element 8 px.
+    const width = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 390 });
     expect(measureCanvasChrome(main!)).toEqual({
       insets: { top: 0, left: 0, right: 0, bottom: 0 },
       band: null,
-      row: { height: 50, left: 62 },
+      row: { height: 53, left: 54 },
     });
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: width });
     // A Dashboard's page starts below the top row, as on a desktop.
     expect(measureCanvasChrome(main!, false).row).toBeUndefined();
   });

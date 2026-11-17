@@ -160,6 +160,8 @@ export type PhoneRow = { height: number; left: number };
 
 // The cover's padding around the element on a phone (CanvasCover's p-2).
 const PHONE_COVER_PAD_PX = 8;
+// The element's border, and the hairline under its header on a phone (PlanBoardHeader's phone:border-b).
+const PHONE_FRAME_PX = 1;
 
 // The phone's shared row for `canvas` with the menu where it is, given the element's side insets; null on a wider
 // canvas (a band's), with no menu, a menu that is not in the top row or not inside the element, or too little room
@@ -178,8 +180,11 @@ export function phoneRow(
   const top = canvas.top + pad;
   // The menu may stand a little outside the element (a phone's 6 px gutter against the cover's 8 px).
   if (menu.right <= left || menu.bottom <= top) return null;
+  // Centred on the menu: the header starts inside the element's 1 px border and ends on its own 1 px hairline, so its
+  // content's middle is the menu's middle (the widgets and the name level with the menu and the corner card).
+  const mid = (menu.top + menu.bottom) / 2;
   return {
-    height: Math.round(menu.bottom - top),
+    height: Math.round(2 * (mid - top - PHONE_FRAME_PX) + PHONE_FRAME_PX),
     // Experiment (no header bar): the name close after the menu (the menu card frameless on the element), as it reads in
     // a desktop band.
     left: Math.round(menu.right - left + 4),

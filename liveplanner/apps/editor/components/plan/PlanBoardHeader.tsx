@@ -207,8 +207,9 @@ export function PlanBoardHeader({
       data-board-header
       // Maximised with a header band (MaximisedPlanLayer's --plan-band-*), it is as tall as the top row and starts
       // after the menu; elsewhere 52 px and 16 px in.
-      className={`relative flex h-[var(--plan-band-h,52px)] shrink-0 items-center gap-3 pl-[var(--plan-band-left,1rem)] pr-4 ${BAND_HEADER_END} [[data-header-band]_&]:border-b`}
-      // In a header band, a hairline under it as a Sheet's and a view's headers have.
+      className={`relative flex h-[var(--plan-band-h,52px)] shrink-0 items-center gap-3 pl-[var(--plan-band-left,1rem)] pr-4 ${BAND_HEADER_END} phone:border-b [[data-header-band]_&]:border-b`}
+      // In a header band, and on a phone (where the board's own header is its top row), a hairline under it as a
+      // Sheet's and a view's headers have.
       style={{ color: palette.text, borderColor: palette.border }}
       onDoubleClick={(e) => {
         if (!canRename || renaming) return;

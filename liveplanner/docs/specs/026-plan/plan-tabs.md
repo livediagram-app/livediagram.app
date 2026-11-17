@@ -396,7 +396,7 @@ it holds, `add_board` and `add_sheet` take any tab, and a changeset may add one 
   ([The name rides in the menu box](plan-board.md)), a Dashboard tab's name (no glyph) sits in the menu box beside the
   mode menu. For an Editor the name is a button (**Rename Dashboard**): a click, or Enter or Space on it, opens the
   field (Enter or leaving saves the trimmed name, up to 80 characters; Escape puts it back; focus returns to the name),
-  and the tab bar follows. A phone's box has no room for it.
+  and the tab bar follows. It stays there at every width, a phone's too (owner, 2026-11-17).
 - **Look**: each slot is a translucent card over the canvas (white at 72%, slate 900 at 60% in dark), 16 px corners,
   a hairline edge and a soft shadow, lifting a little on hover; no backdrop blur (up to 48 slots would each
   recomposite on scroll).

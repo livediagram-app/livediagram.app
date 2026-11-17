@@ -93,8 +93,9 @@ export function ToolbarExplorerButton({
     >
       {/* No hover card: it got in the way of switching apps, and the aria-label names it. */}
       {button}
-      {/* A maximised or tab-filling element's name, while its header holds the top row (menu-name-slot). */}
-      {phone || inline ? null : <MenuNameSlot />}
+      {/* A maximised or tab-filling element's name, while its header holds the top row (menu-name-slot), and a
+          Dashboard's name: beside the menu at every width, a phone's too (owner, 2026-11-17). */}
+      {inline ? null : <MenuNameSlot />}
     </div>
   );
   return withLogo ? (

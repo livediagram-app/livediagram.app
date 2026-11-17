@@ -750,7 +750,7 @@ describe('recording, beyond the canvas', () => {
   // Saving shows the media's upload as it goes (Work Tracker 1175): the share sent, the megabytes and the time left.
   describe('the upload', () => {
     const MB = 1024 * 1024;
-    // Records a moment and finishes, to the save card, with the media part held until the test answers it.
+    // Records a moment and finishes, which saves at once on the save card, with the media part held until the test answers it.
     async function toSaveCard() {
       stubDevices();
       const server = await openDock();
@@ -763,18 +763,20 @@ describe('recording, beyond the canvas', () => {
         });
       };
       vi.useFakeTimers({ toFake: ['setTimeout', 'setInterval', 'clearTimeout', 'clearInterval'] });
-      fireEvent.click(screen.getByRole('button', { name: /Start Recording/ }));
+      // The share prompt is asked inside the press; the count starts once the tab is shared.
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: /Start Recording/ }));
+      });
       for (let i = 0; i < 3; i++) {
         await act(async () => {
           vi.advanceTimersByTime(1000);
         });
       }
       vi.useRealTimers();
+      // The clock the estimate reads, moved by hand from here. Finish saves at once, onto the save card.
+      vi.useFakeTimers({ toFake: ['performance'] });
       fireEvent.click(screen.getByRole('button', { name: /Finish/ }));
       await screen.findByRole('region', { name: 'Save Walkthrough' });
-      // The clock the estimate reads, moved by hand from here.
-      vi.useFakeTimers({ toFake: ['performance'] });
-      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
       await waitFor(() => expect(report).not.toBeNull());
       return {
         server,
@@ -825,7 +827,7 @@ describe('recording, beyond the canvas', () => {
       await screen.findByRole('alert');
       expect(screen.queryByRole('progressbar')).toBeNull();
       expect(screen.getByRole('button', { name: /Download a Copy/ })).toBeTruthy();
-      expect(screen.getByRole('button', { name: 'Save' })).toBeTruthy();
+      expect(screen.getByRole('button', { name: 'Try Again' })).toBeTruthy();
     });
   });
 

@@ -126,7 +126,9 @@ export function BoardWidgetZone({
 }) {
   // Experiment (no header bar): on a phone the widgets show and work, without their + and Edit Widgets (no room, and
   // arranging them is a wider screen's job).
-  const canEdit = canEditBoard && !useIsMobileViewport();
+  // Read first and always, so the hooks run in the same order whether or not the board may be edited.
+  const phone = useIsMobileViewport();
+  const canEdit = canEditBoard && !phone;
   const zone = useRef<HTMLDivElement>(null);
   // The row's list of widgets (a drag's landmarks).
   const list = useRef<HTMLDivElement>(null);
