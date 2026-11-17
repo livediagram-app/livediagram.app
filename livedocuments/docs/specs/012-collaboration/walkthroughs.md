@@ -19,8 +19,8 @@ walkthroughs are stored, what they may be and when they go is the platform's
 call (livehuddle's) is never recorded, here or anywhere ([the privacy policy](https://www.liveworkspace.app/privacy)).
 
 - **Your voice**, from the microphone you pick.
-- **Your camera**, if you leave one on: shown to you while recording as a round bubble in a corner, and played back
-  the same way. With No Camera the recording is sound alone.
+- **Your camera**, if you turn it on: shown to you while recording as a round bubble in a corner, and played back
+  the same way. With the camera off (the start) the recording is sound alone: no camera bubble while recording, no empty video frame when played.
 - **The camera path**: where the view is, as the canvas point at its centre and the zoom, sampled at most ten times
   a second while it moves, and each tab you change to.
 - **Slide steps**: while you present the slide deck during a recording, each slide you go to, and leaving the deck.
@@ -35,11 +35,16 @@ the events carry ids and coordinates, never an element's text, colours or notes.
 **Record Walkthrough** is in the **Walkthroughs** panel, opened from the footer's **Tools** (below). Pressing it opens the **recording dock**
 at the bottom centre of the canvas, in place: the canvas stays where it is and stays yours to move around.
 
-1. **Set up.** The dock shows your camera live in its bubble (in the corner you pick, bottom left to start, moved up or down to stay clear of the Map and across past a docked Contents sidebar), a
-   **Microphone** and a **Camera** picker (the devices this browser can see, plus **No Camera**), a live level meter
-   so you can see the microphone hears you, and **Hide From Recording** (below). The browser asks for the
-   microphone and camera the first time; a refusal says so in the dock and offers the choice again, and recording
-   with no microphone at all is refused ("Allow the microphone to record a walkthrough").
+1. **Set up.** The dock shows a **Microphone** picker, a **Camera** switch, a live level meter so you can see the
+   microphone hears you, and **Hide From Recording** (below). **The camera starts off**: the browser is asked for the
+   microphone alone, and the walkthrough records your voice with no bubble. Turning the switch on asks for the camera,
+   shows its picker beside the switch and your camera live in its bubble (in the corner you pick, bottom left to start, moved up or down to stay clear of the Map and across past a docked Contents sidebar); turning it off again stops it.
+   The dock remembers the switch in this browser (Browser Storage), so it opens the way you last left it. Both pickers
+   follow one rule ([the platform's "The device pickers"](../../../../liveworkspace/docs/specs/006-media/walkthroughs.md#the-device-pickers)):
+   **Default** and each device's name; **Allow Microphone** or **Allow Camera** where the browser hasn't been allowed
+   to list them yet; **No Microphone Found** or **No Camera Found** where there are none. A refusal says so in the dock
+   and offers the choice again, a camera that won't start leaves the recording to sound alone and says so, and
+   recording with no microphone at all is refused ("Allow the microphone to record a walkthrough").
 2. **Start Recording** counts down 3, 2, 1 over the canvas, then records. Moving around the canvas, changing tab,
    pointing and presenting the deck are all part of it.
 3. **While recording** the dock is a compact bar: a pulsing red dot, the time so far against ten minutes

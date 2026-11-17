@@ -19,8 +19,8 @@ walkthroughs are stored, what they may be and when they go is the platform's
 call (livehuddle's) is never recorded, here or anywhere ([the privacy policy](https://www.liveworkspace.app/privacy)).
 
 - **Your voice**, from the microphone you pick.
-- **Your camera**, if you leave one on: shown to you while recording as a round bubble in a corner, and played back
-  the same way. With No Camera the recording is sound alone.
+- **Your camera**, if you turn it on: shown to you while recording as a round bubble in a corner, and played back
+  the same way. With the camera off (the start) the recording is sound alone: no camera bubble while recording, no empty video frame when played.
 - **The camera path**: where the view is, as the canvas point at its centre and the zoom, sampled at most ten times
   a second while it moves, and each tab you change to.
 - **Your pointer** over the canvas, at most ten times a second, and each press on an element (played back as a ring
@@ -34,11 +34,16 @@ the events carry ids and coordinates, never an element's text, colours or notes.
 **Record Walkthrough** is in the **Walkthroughs** panel, opened from the footer's **Tools** (below). Pressing it opens the **recording dock**
 at the bottom centre of the canvas, in place: the canvas stays where it is and stays yours to move around.
 
-1. **Set up.** The dock shows your camera live in its bubble (in the corner you pick; bottom left to start), a
-   **Microphone** and a **Camera** picker (the devices this browser can see, plus **No Camera**), a live level meter
-   so you can see the microphone hears you, and **Hide From Recording** (below). The browser asks for the
-   microphone and camera the first time; a refusal says so in the dock and offers the choice again, and recording
-   with no microphone at all is refused ("Allow the microphone to record a walkthrough").
+1. **Set up.** The dock shows a **Microphone** picker, a **Camera** switch, a live level meter so you can see the
+   microphone hears you, and **Hide From Recording** (below). **The camera starts off**: the browser is asked for the
+   microphone alone, and the walkthrough records your voice with no bubble. Turning the switch on asks for the camera,
+   shows its picker beside the switch and your camera live in its bubble (in the corner you pick; bottom left to start); turning it off again stops it.
+   The dock remembers the switch in this browser (Browser Storage), so it opens the way you last left it. Both pickers
+   follow one rule ([the platform's "The device pickers"](../../../../liveworkspace/docs/specs/006-media/walkthroughs.md#the-device-pickers)):
+   **Default** and each device's name; **Allow Microphone** or **Allow Camera** where the browser hasn't been allowed
+   to list them yet; **No Microphone Found** or **No Camera Found** where there are none. A refusal says so in the dock
+   and offers the choice again, a camera that won't start leaves the recording to sound alone and says so, and
+   recording with no microphone at all is refused ("Allow the microphone to record a walkthrough").
 2. **Start Recording** counts down 3, 2, 1 over the canvas, then records. Moving around the canvas, changing tab and
    pointing are all part of it.
 3. **While recording** the dock is a compact bar: a pulsing red dot, the time so far against ten minutes
@@ -68,6 +73,26 @@ name you shouldn't show.
   hidden ids holds ids alone.
 - It hides elements from the walkthrough, not from the canvas: anyone who can open the plan can still see them
   there.
+
+**What can be hidden depends on the tab showing.** A plan's tabs are not all a canvas of elements, so each kind
+says what a press picks:
+
+- **An ordinary canvas tab**: any element on it. A press on a card of a board drawn on the canvas hides that card;
+  a press on the board's own frame or header hides the whole board.
+- **A Board tab**: its cards, one at a time. Hide Selection hides the cards picked on the board.
+- **A Dashboard tab**: its widgets (each filled slot: a metric, a chart, a note, a board, a list). An empty slot
+  shows nothing to hide.
+- **A Sheet tab, a Form tab**: nothing. Cells and questions carry no ids of their own, so they can't be picked.
+
+- **No dead control.** On a tab with nothing to hide (a Sheet, a Form, an empty canvas, a Board tab while the plan has no
+  cards, a Dashboard with no filled slot) Hide From Recording is not in the dock; it comes back on a tab that has something.
+  Changing to such a tab mid-pick leaves the mode; what is already hidden stays hidden.
+- **The same look and the same rules everywhere.** A hidden card or widget is faded inside the dashed outline for
+  the presenter and not drawn for viewers (its place stays empty, the board and the dashboard keep their layout), a
+  press on one is not recorded and the pointer over one is recorded as off the canvas, exactly as for a canvas
+  element. A press on a card that is not hidden is recorded, and plays back as a ring on that card.
+- **While picking**, a press on a card or a widget only hides or shows it: it neither opens, selects nor drags it.
+  The rest of a Board or Dashboard tab (its header, a column's menu) works as usual.
 
 ## Playing
 
