@@ -3923,27 +3923,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
-  "CalendarFeedBoard": {
-    "additionalProperties": false,
-    "description": "A board the Board option may name: its element id, its title and its tab's name.",
-    "properties": {
-      "id": {
-        "type": "string"
-      },
-      "tabName": {
-        "type": "string"
-      },
-      "title": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "id",
-      "title",
-      "tabName"
-    ],
-    "type": "object"
-  },
   "CalendarFeedIssueResponse": {
     "additionalProperties": false,
     "description": "POST /api/projects/:id/calendar-feed: the feed made (or its link reset), and its link's path (`/api/calendar/<plan id>/lpf_….ics`), answered this once.",
@@ -3963,7 +3942,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "CalendarFeedOptions": {
     "additionalProperties": false,
-    "description": "What a feed shows: one board's cards (a plan-board element id) or every board's (null), only the cards that name the person, and done cards or not.",
+    "description": "What a feed shows: the cards of some card types (null: every type), only the cards that name the person, and done cards or not. `boardId`, read-only, is a feed made before card types (one board's cards); saving options clears it.",
     "properties": {
       "boardId": {
         "type": [
@@ -3976,10 +3955,23 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "mine": {
         "type": "boolean"
+      },
+      "typeIds": {
+        "anyOf": [
+          {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          {
+            "type": "null"
+          }
+        ]
       }
     },
     "required": [
-      "boardId",
+      "typeIds",
       "mine",
       "includeDone"
     ],
@@ -4000,14 +3992,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "CalendarFeedResponse": {
     "additionalProperties": false,
-    "description": "GET /api/projects/:id/calendar-feed: the person's feed, or null for none, and the plan's boards.",
+    "description": "GET /api/projects/:id/calendar-feed: the person's feed, or null for none, and the plan's card types.",
     "properties": {
-      "boards": {
-        "items": {
-          "$ref": "#/components/schemas/CalendarFeedBoard"
-        },
-        "type": "array"
-      },
       "feed": {
         "anyOf": [
           {
@@ -4017,11 +4003,17 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "null"
           }
         ]
+      },
+      "types": {
+        "items": {
+          "$ref": "#/components/schemas/CalendarFeedType"
+        },
+        "type": "array"
       }
     },
     "required": [
       "feed",
-      "boards"
+      "types"
     ],
     "type": "object"
   },
@@ -4043,13 +4035,51 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "mine": {
         "type": "boolean"
+      },
+      "typeIds": {
+        "anyOf": [
+          {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          {
+            "type": "null"
+          }
+        ]
       }
     },
     "required": [
-      "boardId",
       "createdAt",
       "includeDone",
-      "mine"
+      "mine",
+      "typeIds"
+    ],
+    "type": "object"
+  },
+  "CalendarFeedType": {
+    "additionalProperties": false,
+    "description": "A card type the Card Types option may name: its id, name, and the glyph and colour its cards wear.",
+    "properties": {
+      "color": {
+        "type": "string"
+      },
+      "glyph": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "glyph",
+      "color"
     ],
     "type": "object"
   },

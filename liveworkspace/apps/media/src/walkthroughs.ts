@@ -10,6 +10,7 @@ import {
   WALKTHROUGH_PENDING_MS,
   WALKTHROUGH_START_MAX_BYTES,
   WALKTHROUGHS_PER_ITEM_MAX,
+  WALKTHROUGHS_PER_OWNER_LIST_MAX,
   walkthroughMediaType,
   type MediaApp,
   type Walkthrough,
@@ -99,6 +100,22 @@ export async function handleWalkthroughs(
 
   if (segments.length === 1) {
     // GET /app/walkthroughs?item=: an item's ready walkthroughs, newest first.
+    // GET /app/walkthroughs?owner=: a person's own ready ones in this app, newest first (the Explorer's library).
+    if (method === 'GET' && item === null && owner !== null) {
+      if (!isId(owner)) return badRequest('invalid_owner');
+      const { results } = await env.MEDIA_DB.prepare(
+        `SELECT * FROM walkthroughs WHERE owner = ? AND app = ? AND ready = 1
+          ORDER BY created_at DESC, id LIMIT ${WALKTHROUGHS_PER_OWNER_LIST_MAX}`,
+      )
+        .bind(owner, app)
+        .all<Row>();
+      return json({
+        walkthroughs: results.map((row) => ({
+          walkthrough: rowToWalkthrough(row),
+          owner: row.owner,
+        })),
+      });
+    }
     if (method === 'GET') {
       if (!isId(item)) return badRequest('invalid_item');
       const { results } = await env.MEDIA_DB.prepare(

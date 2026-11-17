@@ -10,7 +10,6 @@
 
 import type { WalkthroughSummary } from '@liveworkspace/media/walkthrough';
 import {
-  CompactEmptyState,
   ConfirmPopover,
   CountBadge,
   HoverCard,
@@ -18,6 +17,8 @@ import {
   TrashIcon,
   formatRelativeTime,
 } from '@liveworkspace/ui';
+import { ToolExplainer } from '@liveworkspace/ui/tool-explainer';
+import { walkthroughsArt } from '@liveworkspace/ui/tool-explainer-art';
 import type { ChromeToolsItem } from '@liveworkspace/workbench/components/chrome/ChromeToolsMenu';
 import { usePublishToolsItems } from '@liveworkspace/workbench/components/chrome/tools-door';
 import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
@@ -134,12 +135,20 @@ export function WalkthroughsPanel({
         </div>
       )}
       {list.length === 0 ? (
-        <CompactEmptyState
-          icon={<WalkthroughIcon size={16} />}
-          title="No Walkthroughs Yet"
-          description="Record yourself talking through this canvas. Anyone who can open it can play it back."
-          className="py-6"
-        />
+        // The tool's explainer (footer-tools-menu.md "Explainers"): nothing recorded yet.
+        <div className="px-4 py-3">
+          <ToolExplainer
+            art={walkthroughsArt}
+            title="No Walkthroughs Yet"
+            description="Talk people through this canvas while you point and click. Anyone who can open it can play it back."
+            steps={[
+              'Press Record Walkthrough, with your camera or without.',
+              'Talk it through as you move around the canvas.',
+              'Finish, and it is saved here for everyone to watch.',
+            ]}
+            data="walkthroughs"
+          />
+        </div>
       ) : (
         <ul className="min-h-0 flex-1 overflow-y-auto overscroll-contain py-1.5">
           {list.map((w) => (

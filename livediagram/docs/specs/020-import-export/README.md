@@ -23,6 +23,6 @@ leaving as files: a page in the bottom left, a dashed line along the foot to for
 the file going out in front in the accent; an arrow rising out of a tray is its mark. Import draws files coming in:
 two files in the bottom left, a dashed line along the foot to a dashed frame in the bottom right, a file dropping
 in over its edge; an arrow into a tray is its mark. Both arts are shared
-(`@liveworkspace/ui/dialog-hero-art/export`, `/import`), so every product's pair reads alike. The Explorer's own
-import dialogs, **Import from draw.io**, **Import from Excalidraw** and **Import from Microsoft Whiteboard**, wear the
+(`@liveworkspace/ui/dialog-hero-art/export`, `/import`), so every product's pair reads alike. The start screen's **Import** list
+and the tools' own import dialogs, **Import from draw.io**, **Import from Excalidraw** and **Import from Microsoft Whiteboard**, wear the
 Import header too, each with its own one line.

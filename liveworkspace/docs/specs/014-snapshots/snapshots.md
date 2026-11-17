@@ -105,7 +105,7 @@ its own. History opens inside Tools, as every tool does, and what it shows depen
 
 | Who                                                                            | History shows                                                                                                 |
 | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
-| Signed in, on a stored item they may take snapshots of (the owner, their team) | **Take Snapshot** over the timeline, and each snapshot on the timeline at the time it was taken               |
+| Signed in, on a stored item they may take snapshots of (the owner, their team) | a **Take Snapshot** button at History's foot, and each snapshot on the timeline at the time it was taken      |
 | Signed in, may read History but not take snapshots (a Participant or Viewer)   | The timeline alone, as before                                                                                 |
 | May take snapshots but has no History to read (an Editor through a share link) | The snapshots on their own (the list below)                                                                   |
 | A guest who may take snapshots (a share link's Editor, signed out)             | The snapshots on their own, with "Sign In to see who changed this <item>, and when." under them               |
@@ -113,14 +113,19 @@ its own. History opens inside Tools, as every tool does, and what it shows depen
 
 On the timeline:
 
-- **Take Snapshot** heads it: a name field ("Name this snapshot (optional)") and **Take Snapshot**. With five kept, a
+- A **Take Snapshot** button (the camera) sits full width at the foot of History, always in reach (owner, 2026-11-17: the form is not always on show). It opens **Take a
+  Snapshot** beside Tools (or beside the Snapshots dialog) as a popover, a drawer from the bottom on a phone
+  (`SnapshotButton`, `ResponsivePopover` `placement="side"`): History's band art, a name field ("Name this snapshot
+  (optional)") that takes the keyboard, and **Take Snapshot**, which closes the popover once taken. With five kept, a
   line under it says which snapshot the next one removes.
 - Each snapshot is an entry on the rail among the item's events, newest first, under its day. It is pinned: a camera
   on the brand's wash in place of the event's disc, a small "Snapshot" label over it, then the same row as below
-  (name or time, who took it, how long ago, its size, the `Before revert` badge), with **Revert** and **Delete**
-  confirmed in place. A day's heading counts its snapshots beside its events ("4 events · 1 snapshot").
-- A filter chip narrows the timeline to one kind of event, and snapshots step out of it with the rest; **All** brings
-  them back.
+  (name or time, who took it, how long ago, its size, the `Before revert` badge), with **Revert** (asked first, in the shared confirm popover beside it) and **Delete** (at once, no
+  question; owner, 2026-11-17). A day's heading counts its snapshots beside its events ("4 events · 1 snapshot").
+- History has no filter (owner, 2026-11-17): every event and snapshot shows, newest first. Its summary is four
+  tiles: Created, Last Changed and Events, each a glyph on a soft tinted disc with the value over its name, and
+  People, the faces of those involved alone (up to five, then +N; names on hover). Two by two in Tools, four across
+  in a wide dialog.
 - An item with snapshots but no events yet shows the snapshots, not the empty state.
 - A failed list leaves the timeline as it is (no snapshots on it); a refused action shows its message under Take
   Snapshot.
@@ -130,9 +135,10 @@ On their own (no timeline), the same parts in a list:
 - The take row, as above.
 - The snapshots, newest first. Each row: its name (or its time), then who took it, how long ago and its size; a
   `Before revert` badge on an automatic one (on a phone the badge takes its own line under the name). Two actions: **Revert** and **Delete** (a bin, named "Delete snapshot").
-- Revert and Delete each confirm **in place**, in the row: Revert says "Everyone's work since then is replaced. A
-  snapshot of the <item> as it is now is taken first, so you can undo this." with **Cancel** and **Revert**; Delete
-  says "Delete this snapshot? This can't be undone." with **Cancel** and **Delete**.
+- **Delete** goes at once, its bin spinning while it runs (owner, 2026-11-17: no question). **Revert** asks first in
+  the shared confirm popover beside its button: "Revert to this snapshot?" over "Everyone's work since then is
+  replaced. A snapshot of the <item> as it is now is taken first, so you can undo this.", with **Cancel** and
+  **Revert**; the button then reads "Reverting…".
 - Empty: "No snapshots yet" and "Take one before a big change, so you can come back to it."
 - The list failed to load: "Couldn't load snapshots", "Check your connection, then try again." and **Try Again**,
   never the empty state, which would say there are none.

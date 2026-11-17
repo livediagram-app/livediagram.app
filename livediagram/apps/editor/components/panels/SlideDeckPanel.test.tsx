@@ -64,11 +64,11 @@ function panel(deck: Deck) {
 }
 
 describe('SlideDeckPanel', () => {
-  it('names the New slide button in the empty hint', () => {
+  it('explains the deck when it is empty, naming New Slide in its steps', () => {
     panel({ slides: [] });
-    expect(screen.getByText(/first slide, then press/).textContent).toContain(
-      'then press New slide.',
-    );
+    expect(screen.getByText('Build Your Deck')).toBeTruthy();
+    const steps = screen.getByRole('list', { name: 'How it works' });
+    expect(steps.textContent).toContain('Press New Slide');
   });
 
   it('offers selection edits on a slide of elements', () => {

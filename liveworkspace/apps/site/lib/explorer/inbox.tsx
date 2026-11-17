@@ -46,8 +46,8 @@ export function localInboxHost(
 
 /** The reading pane's verbs on this page (@liveworkspace/explorer/inbox-actions): Reply and Resolve on a thread,
  *  through the app's own comment routes. On liveworkspace.app every app's threads, as the workspace token's audience
- *  is every app's api; on an app's address that app's alone, as its token is only its own api's. Nothing here can
- *  mark an action done (only the editor that has it open can) or reach This Browser's items. */
+ *  is every app's api; on an app's address that app's alone, as its token is only its own api's. Mark Done on a
+ *  livediagram action goes through its action route; nothing here reaches This Browser's items. */
 export function inboxActionsFor(host: AppName | null, doFetch: typeof fetch = fetch): InboxActions {
   return createInboxActions({
     api: (app) => {

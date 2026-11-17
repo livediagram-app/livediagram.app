@@ -118,9 +118,10 @@ export function historyCategories(
 
 export function filterHistory(
   events: readonly ItemEvent[],
-  category: EventCategory | null,
+  categories: readonly EventCategory[],
 ): readonly ItemEvent[] {
-  return category ? events.filter((e) => eventCategory(e.type) === category) : events;
+  if (categories.length === 0) return events;
+  return events.filter((e) => categories.includes(eventCategory(e.type)));
 }
 
 export type HistorySummary = {

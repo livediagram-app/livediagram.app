@@ -4,19 +4,26 @@
 // fresh when it opens, in one of two states. Not published: the settings and Publish Roadmap. Published: the live link
 // with Copy Link and Open Roadmap, the settings saving as they change (the link kept), and Unpublish behind a confirm.
 // A tab with several boards gets a board picker at the top. The privacy note is always there.
-import { useCallback, useEffect, useId, useMemo, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { PublishedRoadmap, RoadmapSettings, RoadmapsResponse } from '@liveplanner/api-schema';
 import {
   Button,
   ConfirmPopover,
-  LoadingSweep,
-  Select,
   buttonClassName,
   lucideGlyph,
   useCopiedFlash,
 } from '@liveplanner/ui';
 import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
-import { lucideExternalLink, lucideGlobe, lucideLock } from '@liveworkspace/icons/lucide';
+import {
+  lucideExternalLink,
+  lucideGlobe,
+  lucideLock,
+  lucideSquareKanban,
+} from '@liveworkspace/icons/lucide';
+import { hasUnsavedWork } from '@liveworkspace/workbench/lib/unsaved-work';
+import { useOptionalEditorContext } from '@/app/project/[id]/EditorContext';
+import { ChoicePills } from '@/components/primitives/ChoicePills';
+import { apiPublishForm } from '@/lib/api/forms';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 import { track } from '@/lib/telemetry';
@@ -44,16 +51,16 @@ const settingsOf = (r: PublishedRoadmap): RoadmapSettings => ({
 
 export function RoadmapDialog({
   scope,
-  boardIds,
+  startTabId,
   onClose,
 }: {
   scope: RoadmapScope;
-  // The Plan boards on the tab, in its order.
-  boardIds: readonly string[];
+  // The tab in view when it opened: the Tab picker starts there when it holds a board.
+  startTabId: string;
   onClose: () => void;
 }) {
   const titleId = useId();
-  const pickerId = useId();
+  const [tabId, setTabId] = useState(startTabId);
   const fieldId = useId();
   const [data, setData] = useState<RoadmapsResponse | null>(null);
   const [readFailed, setReadFailed] = useState(false);
@@ -64,6 +71,13 @@ export function RoadmapDialog({
   const [saveFailed, setSaveFailed] = useState(false);
   const [confirming, setConfirming] = useState<HTMLElement | null>(null);
   const { copied, flash } = useCopiedFlash(1800);
+  const editor = useOptionalEditorContext();
+  const [makingForm, setMakingForm] = useState(false);
+  const [formProblem, setFormProblem] = useState<string | null>(null);
+  // Create a Suggestion Form is chosen, to be made on Publish.
+  const [formPending, setFormPending] = useState(false);
+  // One form at a time, whatever presses come in while it is made.
+  const making = useRef(false);
 
   const read = useCallback(async () => {
     try {
@@ -77,12 +91,22 @@ export function RoadmapDialog({
     void read();
   }, [read]);
 
-  // The tab's boards the api knows, in the tab's order (a board just drawn may not be saved yet).
+  // The plan's tabs holding a board the api knows, in plan order, and the chosen one's boards (a board just drawn may
+  // not be saved yet). A chosen tab with none falls back to the first that has some.
+  const tabs = useMemo(() => {
+    const seen = new Map<string, string>();
+    for (const b of data?.boards ?? []) if (!seen.has(b.tabId)) seen.set(b.tabId, b.tabName);
+    return [...seen].map(([id, name]) => ({ id, name }));
+  }, [data]);
+  const tab = tabs.find((t) => t.id === tabId) ?? tabs[0] ?? null;
   const boards = useMemo(
-    () => (data ? boardIds.flatMap((id) => data.boards.filter((b) => b.id === id)) : []),
-    [data, boardIds],
+    () => (data && tab ? data.boards.filter((b) => b.tabId === tab.id) : []),
+    [data, tab],
   );
   const board = boards.find((b) => b.id === boardId) ?? boards[0] ?? null;
+  // Whether a tab has a board already out as a roadmap.
+  const publishedOn = (id: string) =>
+    !!data?.boards.some((b) => b.tabId === id && data.roadmaps.some((r) => r.boardId === b.id));
   const published = board ? (data?.roadmaps.find((r) => r.boardId === board.id) ?? null) : null;
   const settings: RoadmapSettings | null = board
     ? published
@@ -105,10 +129,16 @@ export function RoadmapDialog({
 
   async function publish() {
     if (!board || !settings) return;
+    let toSave = settings;
+    if (formPending) {
+      const code = await makeForm();
+      if (!code) return;
+      toSave = { ...settings, formCode: code };
+    }
     setBusy(true);
     setSaveFailed(false);
     try {
-      const { roadmap } = await saveRoadmap(scope, board.id, settings);
+      const { roadmap } = await saveRoadmap(scope, board.id, toSave);
       track('Plan', 'Created', 'Roadmap');
       putRoadmap(roadmap);
     } catch {
@@ -159,6 +189,63 @@ export function RoadmapDialog({
     setBusy(false);
   }
 
+  // Create Suggestion Form (public-roadmap.md "Suggest an Idea"): a form on a new tab whose cards wait in the board's
+  // first hidden column, published, then chosen here; the page stays open throughout.
+  const newForm = editor?.forms.newSuggestionForm;
+  const hidden =
+    board && settings ? board.columns.find((c) => !settings.columns.includes(c.status)) : undefined;
+  // Makes the form and answers its code, or null (the problem is shown).
+  async function makeForm(): Promise<string | null> {
+    if (!board || !settings || !newForm || !hidden || !data || making.current) return null;
+    making.current = true;
+    const typeId = settings.types[0] ?? board.types[0]?.id;
+    if (!typeId) return null;
+    let code: string | null = null;
+    setMakingForm(true);
+    setFormProblem(null);
+    try {
+      const tabId = newForm({ boardElementId: board.id, status: hidden.status, typeId });
+      if (!tabId) throw new Error('not_ready');
+      // The api reads the stored form, so the new tab must be saved first: the save is queued a beat after the edit,
+      // so a refusal means not yet, tried again until it lands (12 s at most).
+      const deadline = Date.now() + 12_000;
+      for (;;) {
+        await new Promise((r) => setTimeout(r, 400));
+        if (hasUnsavedWork() && Date.now() < deadline) continue;
+        try {
+          await apiPublishForm(scope.ownerId, scope.projectId, tabId, null);
+          break;
+        } catch (e) {
+          if (Date.now() >= deadline) throw e;
+        }
+      }
+      const before = new Set(data.forms.map((f) => f.code));
+      const next = await readRoadmaps(scope);
+      setData(next);
+      const made = next.forms.find((f) => !before.has(f.code));
+      if (!made) throw new Error('not_listed');
+      code = made.code;
+      // Counted where the form is made (Form·Created·Roadmap, useFormActions).
+      setFormPending(false);
+    } catch {
+      setFormProblem('Couldn’t make the form. Try again in a moment.');
+    }
+    setMakingForm(false);
+    making.current = false;
+    return code;
+  }
+
+  // The dropdown's Create a Suggestion Form: on a roadmap already out it is made at once; otherwise on Publish.
+  async function chooseCreate(on: boolean) {
+    setFormProblem(null);
+    if (!on || !published || !settings) {
+      setFormPending(on);
+      return;
+    }
+    const code = await makeForm();
+    if (code) await change({ ...settings, formCode: code });
+  }
+
   async function copy() {
     if (!url) return;
     try {
@@ -191,19 +278,13 @@ export function RoadmapDialog({
         art={roadmapHeroArt}
         titleId={titleId}
         title="Publish as Roadmap"
-        subtitle="A public page of the cards you choose."
         onClose={onClose}
       />
       <div
         className="scrollbar-slim flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-contain px-4 py-4 sm:px-6"
         data-roadmap-dialog-state={state}
       >
-        {state === 'loading' ? (
-          <div className="flex h-24 items-center justify-center" aria-busy="true">
-            <span className="sr-only">Loading your roadmap</span>
-            <LoadingSweep />
-          </div>
-        ) : null}
+        {state === 'loading' ? <RoadmapSkeleton /> : null}
         {state === 'error' ? (
           <div className="flex items-center justify-between gap-3">
             <p role="alert" className="text-sm text-slate-700 dark:text-slate-200">
@@ -223,37 +304,66 @@ export function RoadmapDialog({
         ) : null}
         {state === 'no-board' ? (
           <p className="text-sm text-slate-700 dark:text-slate-200">
-            This tab has no saved board to publish yet. Try again in a moment.
+            This plan has no saved board to publish yet. Try again in a moment.
           </p>
         ) : null}
-        {boards.length > 1 && board ? (
-          <div className="flex items-center justify-between gap-3">
-            <label
-              htmlFor={pickerId}
-              className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400"
-            >
-              Board
-            </label>
-            <Select
-              id={pickerId}
-              value={board.id}
-              disabled={busy}
-              onChange={(e) => {
-                setBoardId(e.target.value);
-                setDraft(null);
-                setSaveFailed(false);
-              }}
-              className="min-w-0 max-w-[65%]"
-              selectClassName="w-full truncate"
-            >
-              {boards.map((b) => (
-                <option key={b.id} value={b.id}>
-                  {b.title || b.tabName}
-                  {data?.roadmaps.some((r) => r.boardId === b.id) ? ' (published)' : ''}
-                </option>
-              ))}
-            </Select>
-          </div>
+        {/* Where it comes from (owner, 2026-11-17): the tabs holding a board as pills, then the tab's boards when it
+            has several; a published one wears a green dot. */}
+        {tabs.length > 1 || boards.length > 1 ? (
+          <section
+            aria-label="Board to publish"
+            className="flex flex-col gap-2.5"
+            data-roadmap-source=""
+          >
+            {tabs.length > 1 && tab ? (
+              <div className="flex flex-col gap-1.5" data-roadmap-tab-picker="">
+                <span className={PICK_HEADING}>Tab</span>
+                <ChoicePills
+                  label="Tab"
+                  data="roadmap-tab"
+                  disabled={busy}
+                  pills={tabs.map((t) => ({
+                    id: t.id,
+                    label: t.name,
+                    icon: <BoardGlyph />,
+                    aside: publishedOn(t.id) ? <PublishedDot /> : undefined,
+                  }))}
+                  pressed={(id) => id === tab.id}
+                  onPick={(id) => {
+                    setTabId(id);
+                    setFormPending(false);
+                    setBoardId(null);
+                    setDraft(null);
+                    setSaveFailed(false);
+                  }}
+                />
+              </div>
+            ) : null}
+            {boards.length > 1 && board ? (
+              <div className="flex flex-col gap-1.5">
+                <span className={PICK_HEADING}>Board</span>
+                <ChoicePills
+                  label="Board"
+                  data="roadmap-board"
+                  disabled={busy}
+                  pills={boards.map((b) => ({
+                    id: b.id,
+                    label: b.title || b.tabName,
+                    aside: data?.roadmaps.some((r) => r.boardId === b.id) ? (
+                      <PublishedDot />
+                    ) : undefined,
+                  }))}
+                  pressed={(id) => id === board.id}
+                  onPick={(id) => {
+                    setBoardId(id);
+                    setFormPending(false);
+                    setDraft(null);
+                    setSaveFailed(false);
+                  }}
+                />
+              </div>
+            ) : null}
+          </section>
         ) : null}
         {state === 'unpublishable' ? (
           <p className="text-sm text-slate-700 dark:text-slate-200">
@@ -300,7 +410,18 @@ export function RoadmapDialog({
             board={board}
             forms={data.forms}
             settings={settings}
-            disabled={busy}
+            disabled={busy || makingForm}
+            createForm={
+              newForm
+                ? {
+                    pending: formPending,
+                    choose: (on: boolean) => void chooseCreate(on),
+                    busy: makingForm,
+                    problem: formProblem,
+                    hiddenColumn: hidden?.name ?? null,
+                  }
+                : undefined
+            }
             onChange={(next) => void change(next)}
           />
         ) : null}
@@ -329,7 +450,7 @@ export function RoadmapDialog({
           {state === 'draft' ? (
             <Button
               size="sm"
-              busy={busy}
+              busy={busy || makingForm}
               disabled={!settings || !settingsReady(settings)}
               onClick={() => void publish()}
             >
@@ -364,5 +485,50 @@ export function RoadmapDialog({
         />
       ) : null}
     </Dialog>
+  );
+}
+
+const BAR = 'animate-pulse rounded bg-slate-200/80 motion-reduce:animate-none dark:bg-slate-700/60';
+const BOX = 'animate-pulse rounded-lg bg-slate-100 motion-reduce:animate-none dark:bg-slate-800/70';
+
+/** Loading, in the settings' own shape (Title, Columns, Fields, the privacy note and the footer's room), so a roadmap
+ *  not yet published does not shrink while it loads and grow when its settings arrive (owner, 2026-11-17). */
+function RoadmapSkeleton() {
+  return (
+    <div aria-busy="true" data-roadmap-skeleton="" className="flex flex-col gap-5">
+      <span className="sr-only">Loading your roadmap</span>
+      <div className="flex flex-col gap-1.5">
+        <div className={`h-3 w-12 ${BAR}`} />
+        <div className={`h-9 ${BOX}`} />
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <div className={`h-3 w-16 ${BAR}`} />
+        {[0, 1, 2, 3].map((n) => (
+          <div key={n} className={`h-9 ${BOX}`} />
+        ))}
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <div className={`h-3 w-14 ${BAR}`} />
+        <div className={`h-9 ${BOX}`} />
+      </div>
+      <div className={`h-14 ${BOX}`} />
+      {/* The footer's room: Publish shows under the body once loaded. */}
+      <div className="h-12" />
+    </div>
+  );
+}
+
+const PICK_HEADING =
+  'text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400';
+const BoardGlyph = lucideGlyph(lucideSquareKanban, 14);
+
+/** A board already out as a roadmap. */
+function PublishedDot() {
+  return (
+    <span
+      role="img"
+      aria-label="published"
+      className="ml-0.5 size-1.5 shrink-0 rounded-full bg-emerald-500 dark:bg-emerald-400"
+    />
   );
 }

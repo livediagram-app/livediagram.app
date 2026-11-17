@@ -14,7 +14,6 @@ import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { historyHeroArt } from '@liveworkspace/ui/dialog-hero-art/history';
 import { Glyph } from '../ui/icons';
 import { avatarFill } from '../ui/avatar-fill';
-import { FOCUS_RING } from '../ui/classes';
 import { initials, personName } from './person-name';
 import { relativeSince } from '../time';
 import { kindWords } from '../words';
@@ -77,77 +76,109 @@ export function SummaryStrip({
   people: ItemEvent[];
   viewerId: string | null;
 }) {
-  const stat = 'flex min-w-0 flex-col gap-0.5';
-  const term = `text-[10px] font-semibold uppercase tracking-wider ${MUTED}`;
-  const value = 'truncate text-sm font-medium text-slate-800 dark:text-slate-100';
+  // Four tiles (owner, 2026-11-17: the plain row read too basic): each a glyph on a soft disc, the value large, its
+  // name under it. Two by two in Tools' width, four across in a wide dialog.
   return (
-    <dl
-      data-history-summary=""
-      className="grid shrink-0 grid-cols-2 gap-x-4 gap-y-3 border-b border-slate-100 bg-slate-50/70 px-5 py-3 sm:grid-cols-4 sm:px-6 dark:border-slate-800 dark:bg-slate-800/40"
-    >
-      <div className={stat}>
-        <dt className={term}>Created</dt>
-        <dd className={value}>
+    <div className="@container shrink-0 border-b border-slate-100 dark:border-slate-800">
+      <dl
+        data-history-summary=""
+        className="grid grid-cols-2 gap-2 px-4 py-3 sm:px-5 @[36rem]:grid-cols-4"
+      >
+        <SummaryTile label="Created" glyph={GLYPH_CREATED} tone="brand">
           <time dateTime={iso(item.createdAt)} title={fullDate(item.createdAt)}>
             {fullDate(item.createdAt)}
           </time>
-        </dd>
-      </div>
-      <div className={stat}>
-        <dt className={term}>Last changed</dt>
-        <dd className={value}>
+        </SummaryTile>
+        <SummaryTile label="Last Changed" glyph={GLYPH_CHANGED} tone="amber">
           <time dateTime={iso(item.updatedAt)} title={fullDate(item.updatedAt)}>
             {relativeSince(item.updatedAt, now)}
           </time>
-        </dd>
-      </div>
-      <div className={stat}>
-        <dt className={term}>People</dt>
-        <dd className={`flex items-center gap-1.5 ${value}`}>
-          <span className="flex -space-x-1" aria-hidden>
-            {people.slice(0, 3).map((e) => (
-              <PersonAvatar key={e.actorId} event={e} viewerId={viewerId} size={22} ring />
-            ))}
-          </span>
-          <span>
-            {people.length}
-            {more ? '+' : ''}
-          </span>
-        </dd>
-      </div>
-      <div className={stat}>
-        <dt className={term}>Events</dt>
-        <dd className={value}>{eventCountLabel(count, more)}</dd>
-      </div>
-    </dl>
+        </SummaryTile>
+        {/* Who was involved, as their faces alone (owner, 2026-11-17): up to five, then +N; names on hover. */}
+        <div
+          data-history-people=""
+          className="flex min-w-0 items-center rounded-xl border border-slate-200/80 bg-white px-3 py-2.5 shadow-[0_1px_2px_rgb(15_23_42/0.04)] dark:border-slate-700/70 dark:bg-slate-900"
+        >
+          <dt className="sr-only">People</dt>
+          <dd className="flex min-w-0 items-center">
+            <span className="flex -space-x-2">
+              {people.slice(0, PEOPLE_SHOWN).map((e) => {
+                const name = viewerId && e.actorId === viewerId ? 'You' : personName(e);
+                return (
+                  <span key={e.actorId} title={name} className="relative flex hover:z-10">
+                    <PersonAvatar event={e} viewerId={viewerId} size={30} ring />
+                    <span className="sr-only">{name}</span>
+                  </span>
+                );
+              })}
+            </span>
+            {people.length > PEOPLE_SHOWN || more ? (
+              <span className="ml-1.5 shrink-0 rounded-full bg-slate-100 px-1.5 py-0.5 text-[11px] font-semibold tabular-nums text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                +{Math.max(people.length - PEOPLE_SHOWN, 0)}
+                {more ? '…' : ''}
+              </span>
+            ) : null}
+          </dd>
+        </div>
+        <SummaryTile label="Events" glyph={GLYPH_EVENTS} tone="emerald">
+          <span className="tabular-nums">{eventCountLabel(count, more)}</span>
+        </SummaryTile>
+      </dl>
+    </div>
   );
 }
 
-export function Chip({
+const TONES = {
+  brand: 'bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300',
+  amber: 'bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300',
+  emerald: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300',
+} as const;
+
+// Lucide's calendar-plus, pencil-line and activity, at 24 units.
+const GLYPH_CREATED = (
+  <>
+    <path d="M8 2v4M16 2v4M21 13V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8M3 10h18M16 19h6M19 16v6" />
+  </>
+);
+const GLYPH_CHANGED = (
+  <>
+    <path d="M12 20h9" />
+    <path d="M16.4 3.6a2.1 2.1 0 1 1 3 3L7 19l-4 1 1-4Z" />
+  </>
+);
+// Faces shown in the People tile before +N.
+const PEOPLE_SHOWN = 5;
+const GLYPH_EVENTS = <path d="M22 12h-4l-3 9L9 3l-3 9H2" />;
+
+function SummaryTile({
   label,
-  count,
-  on,
-  onClick,
+  glyph,
+  tone,
+  children,
 }: {
   label: string;
-  count: number;
-  on: boolean;
-  onClick: () => void;
+  glyph: React.ReactNode;
+  tone: keyof typeof TONES;
+  children: React.ReactNode;
 }) {
   return (
-    <button
-      type="button"
-      aria-pressed={on}
-      onClick={onClick}
-      className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition duration-micro ${FOCUS_RING} ${
-        on
-          ? 'border-brand-700 bg-brand-700 text-white dark:border-brand-600 dark:bg-brand-600'
-          : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:text-white'
-      }`}
-    >
-      {label}
-      <span className={`tabular-nums ${on ? 'text-white/80' : MUTED}`}>{count}</span>
-    </button>
+    <div className="flex min-w-0 items-center gap-2.5 rounded-xl border border-slate-200/80 bg-white px-3 py-2.5 shadow-[0_1px_2px_rgb(15_23_42/0.04)] dark:border-slate-700/70 dark:bg-slate-900">
+      <span
+        aria-hidden
+        className={`flex size-8 shrink-0 items-center justify-center rounded-lg ${TONES[tone]}`}
+      >
+        <Glyph size={16} units={24}>
+          {glyph}
+        </Glyph>
+      </span>
+      {/* The value reads first, its name under it; in the DOM the name comes first, as a list of terms needs. */}
+      <div className="flex min-w-0 flex-col-reverse">
+        <dt className={`text-[11px] leading-tight ${MUTED}`}>{label}</dt>
+        <dd className="truncate text-[13px] font-semibold leading-tight text-slate-900 dark:text-slate-50">
+          {children}
+        </dd>
+      </div>
+    </div>
   );
 }
 

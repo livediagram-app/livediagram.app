@@ -4,7 +4,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createFakeIndex, makeItem } from '../test/fakeClient';
 import { Explorer } from '../explorer/Explorer';
 import type { ExplorerView } from '../views';
-import { importLine } from '../welcome/types';
 import type { ImportHost } from './types';
 
 const sources = [
@@ -36,17 +35,6 @@ function page(view: ExplorerView, imports?: ImportHost) {
 beforeEach(() => localStorage.clear());
 
 describe('Import from', () => {
-  it('sits beside New and files where New would', async () => {
-    const onImport = vi.fn();
-    page({ kind: 'folder', id: 'f1' }, { sources, onImport });
-    const bar = await screen.findByRole('toolbar', { name: 'Import from' });
-    fireEvent.click(within(bar).getByRole('button', { name: 'Import from draw.io' }));
-    expect(onImport).toHaveBeenCalledWith(sources[1], {
-      what: 'items',
-      placement: { folderId: 'f1', teamId: null },
-    });
-  });
-
   it('offers only the library sources on Shape Libraries, including its empty state', async () => {
     const onImport = vi.fn();
     page({ kind: 'shape-libraries' }, { sources, onImport });
@@ -65,11 +53,5 @@ describe('Import from', () => {
     page({ kind: 'all' });
     expect(await screen.findByRole('heading', { name: 'My Work' })).toBeTruthy();
     expect(screen.queryByRole('toolbar', { name: 'Import from' })).toBeNull();
-  });
-
-  it("names the host's tools on Home's first run", () => {
-    expect(importLine(['Excalidraw', 'draw.io', 'Microsoft Whiteboard'], 'canvas')).toBe(
-      'Import boards from Excalidraw, draw.io or Microsoft Whiteboard; each becomes its own canvas.',
-    );
   });
 });

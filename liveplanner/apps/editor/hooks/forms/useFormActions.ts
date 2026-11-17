@@ -16,6 +16,7 @@ import {
   type FormDefinition,
   type FormDraft,
   type FormQuestion,
+  type FormStarter,
   type StarterId,
 } from '@liveplanner/forms';
 import { isDefaultTabName, newPlanSheetId, type Tab } from '@liveplanner/project';
@@ -40,6 +41,21 @@ import {
   withBoardTaking,
 } from '@liveplanner/templates';
 
+// Publish as Roadmap's suggestion form: an Idea (the card's title) and its Details, as a Blank form takes its board's
+// type (so planFormStart writes no type and makes no board).
+const SUGGESTION_STARTER: FormStarter = {
+  ...formStarter('blank'),
+  sections: [
+    {
+      title: '',
+      questions: [
+        { type: 'short', prompt: 'Your idea', required: true, to: 'title' },
+        { type: 'paragraph', prompt: 'Tell us more', to: 'description' },
+      ],
+    },
+  ],
+};
+
 export type FormActions = FormDestinationActions & {
   // A starter chosen on Start Planning: the tab becomes a Form tab holding it.
   startForm: (starter: StarterId) => void;
@@ -50,6 +66,14 @@ export type FormActions = FormDestinationActions & {
   // New Form on a board's cog: a Blank form on a new Form tab after the board's, its responses going to that board,
   // opened.
   newFormFor: (boardElementId: string) => void;
+  // Publish as Roadmap's Create Suggestion Form (docs/specs/026-plan/public-roadmap.md "Suggest an Idea"): an Idea and
+  // Details form on a new Form tab after the board's, its cards of `typeId` landing in `status` (a hidden column), not
+  // opened, so the roadmap's page stays. Its new tab's id, or null when the board's tab can't take it.
+  newSuggestionForm?: (input: {
+    boardElementId: string;
+    status: string;
+    typeId: string;
+  }) => string | null;
   // One builder edit to the active Form tab's form; `kind` names it for telemetry where it is counted.
   changeForm: (change: (form: FormDefinition) => FormDefinition) => void;
   // The same with no undo step, for what the Forms tour adds and takes away itself (its example question), which Undo
@@ -271,6 +295,43 @@ export function useFormActions({
     },
     // One identity for the editor's life: it rides in the Plan context, and a new one each render redrew every card
     // of every board on any edit (docs/specs/026-plan/plan-board.md "A busy board").
+    [live],
+  );
+
+  const newSuggestionForm = useCallback<NonNullable<FormActions['newSuggestionForm']>>(
+    ({ boardElementId, status, typeId }) => {
+      const { tabs: now, itemTypes: slice, statusNames: names } = live.current;
+      const boardTab = now.find((t) => boardsOf(t).some((b) => b.element.id === boardElementId));
+      if (!boardTab || boardTab.locked) return null;
+      const name = 'Suggest an Idea';
+      const formTab: Tab = {
+        id: crypto.randomUUID(),
+        name,
+        elements: [],
+        kind: 'form',
+        ...(boardTab.theme ? { theme: boardTab.theme } : {}),
+      };
+      const plan = planFormStart({
+        starter: SUGGESTION_STARTER,
+        formTab,
+        tabs: now,
+        types: slice.types,
+        statusNames: [...names],
+        board: { tabId: boardTab.id, elementId: boardElementId },
+      });
+      const made: Tab = {
+        ...formTab,
+        form: { ...plan.form, heading: name, destination: { tabId: boardTab.id, typeId, status } },
+      };
+      live.current.commitAnyTabs((ts) => {
+        const next = [...ts];
+        next.splice(ts.findIndex((t) => t.id === boardTab.id) + 1, 0, made);
+        return next;
+      });
+      live.current.markTabLoaded?.(made.id);
+      track('Form', 'Created', 'Roadmap');
+      return made.id;
+    },
     [live],
   );
 
@@ -508,6 +569,7 @@ export function useFormActions({
       startForm,
       startDraftedForm,
       newFormFor,
+      newSuggestionForm,
       changeForm,
       changeFormQuietly,
       renameForm,
@@ -526,6 +588,7 @@ export function useFormActions({
       startForm,
       startDraftedForm,
       newFormFor,
+      newSuggestionForm,
       changeForm,
       changeFormQuietly,
       renameForm,

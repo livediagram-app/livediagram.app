@@ -30,6 +30,7 @@ import {
   InvitesPane,
   preloadExplorerPanesWhenIdle,
   ShapeLibrariesView,
+  WalkthroughsView,
 } from './lazy-panes';
 import { ItemsPane } from './ItemsPane';
 import { SearchField } from './SearchField';
@@ -54,6 +55,7 @@ export { type ExplorerProps } from './explorer-props';
 export function Explorer({
   gallery,
   shapeLibraries,
+  walkthroughs,
   imports,
   itemMenu,
   history,
@@ -65,6 +67,7 @@ export function Explorer({
       <LibraryHostProvider
         gallery={gallery}
         shapeLibraries={shapeLibraries}
+        walkthroughs={walkthroughs}
         imports={imports}
         itemMenu={itemMenu}
         history={history}
@@ -370,6 +373,8 @@ function Pane({ view, hero }: { view: ExplorerView; hero: boolean }) {
       return <GalleryView />;
     case 'shape-libraries':
       return <ShapeLibrariesView />;
+    case 'walkthroughs':
+      return <WalkthroughsView />;
     case 'offline':
       return <ThisBrowserPane />;
     default:

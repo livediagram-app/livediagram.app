@@ -370,3 +370,14 @@ Feed//EN`, `CALSCALE:GREGORIAN`, `METHOD:PUBLISH`, `X-WR-CALNAME:<name> · livep
   archive boards (Work Tracker 993).
 - Editor: `CalendarFeedDialog.test.tsx` (the My Work kind's states and copy), `calendar-feed-client.test.ts`,
   `my-work-calendar-feed.test.tsx` (the action offered only to an account).
+
+## Card types in place of a board (owner, 2026-11-17)
+
+- `CalendarFeedOptions` gains `typeIds: string[] | null` (null: every type). `boardId` stays, read-only: a feed made
+  with one keeps filtering by it until its options are next saved, which writes `boardId: null`.
+- Plan schema V36 adds `calendar_feeds.type_ids TEXT` (a JSON array, or NULL), asking `PRAGMA table_info` first.
+- `feedEventsOf` drops a card whose `item.type` is not in `typeIds` when set; `boardId` as before when set.
+- `GET` answers `types: CalendarFeedType[]` (`{ id, name }`, the plan's catalogue order) in place of `boards`.
+- Body: `typeIds` null or 1 to 50 distinct ids of the plan's types, else 400 `calendar_feed_invalid`.
+- Dialog: What It Shows leads with **Card Types**, the shared `FilterChip` (`@liveworkspace/explorer`), first option
+  All Card Types.

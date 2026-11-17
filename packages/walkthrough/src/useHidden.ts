@@ -5,7 +5,8 @@
 // The presenter sees them faded and dashed while setting up and recording; the events never name them.
 
 import { WALKTHROUGH_HIDDEN_MAX } from '@liveworkspace/media/walkthrough';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { withAttachedArrows } from './attached';
 import { applyHidden, elementIdAt, onHideableSurface } from './bridge';
 
 const PICKING_ATTR = 'data-walkthrough-picking';
@@ -22,8 +23,14 @@ export function useHidden(
   showing: boolean,
   marks: readonly string[] = NO_MARKS,
   canHide = true,
+  elements?: () => readonly unknown[],
 ) {
-  const [hidden, setHidden] = useState<ReadonlySet<string>>(() => new Set());
+  // What was picked; `hidden` adds the arrows attached to it, which go with it (withAttachedArrows).
+  const [picks, setHidden] = useState<ReadonlySet<string>>(() => new Set());
+  const hidden = useMemo(
+    () => (elements ? withAttachedArrows(elements(), picks) : picks),
+    [elements, picks],
+  );
   const [picked, setPicking] = useState(false);
   const picking = picked && canHide;
   useEffect(() => {
@@ -33,6 +40,7 @@ export function useHidden(
   const toggle = useCallback((id: string) => {
     setHidden((prev) => {
       const next = new Set(prev);
+      // A press on an arrow hidden with its element shows nothing new: it goes when its element is shown.
       if (next.has(id)) next.delete(id);
       else if (next.size < WALKTHROUGH_HIDDEN_MAX) next.add(id);
       return next;

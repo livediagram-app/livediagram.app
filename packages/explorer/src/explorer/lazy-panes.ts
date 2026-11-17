@@ -19,7 +19,11 @@ export const ShapeLibrariesView = lazyPanel('shape-libraries', () =>
   import('../library/LibraryViews').then((m) => m.ShapeLibrariesView),
 );
 
-const PANES = [InboxPane, InvitesPane, GalleryView, ShapeLibrariesView];
+export const WalkthroughsView = lazyPanel('walkthroughs', () =>
+  import('../library/WalkthroughsPane').then((m) => m.WalkthroughsView),
+);
+
+const PANES = [InboxPane, InvitesPane, GalleryView, ShapeLibrariesView, WalkthroughsView];
 
 /** Fetches every section's code. Never rejects. */
 export function preloadExplorerPanes(): Promise<void> {

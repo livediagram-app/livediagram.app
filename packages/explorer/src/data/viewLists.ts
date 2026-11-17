@@ -99,6 +99,7 @@ export function viewList(
     case 'invites':
     case 'gallery':
     case 'shape-libraries':
+    case 'walkthroughs':
     case 'offline':
       return null;
     case 'all':

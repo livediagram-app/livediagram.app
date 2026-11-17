@@ -8,12 +8,15 @@
 // The same dialog serves the My Work feed ("The My Work feed"): the person's own cards across plans, with no options.
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import type {
-  CalendarFeedBoard,
+  CalendarFeedType,
   CalendarFeedOptions,
   CalendarFeedSettings,
 } from '@liveplanner/api-schema';
-import { Button, ConfirmPopover, LoadingSweep, lucideGlyph } from '@liveplanner/ui';
+import { Button, ConfirmPopover, lucideGlyph } from '@liveplanner/ui';
+import { SkeletonRows } from '@liveworkspace/ui';
 import { MEDIUM_DATE } from '@liveworkspace/ui/date-format';
+import { ToolExplainer } from '@liveworkspace/ui/tool-explainer';
+import { calendarFeedArt } from '@liveworkspace/ui/tool-explainer-art';
 import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { lucideLock } from '@liveworkspace/icons/lucide';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
@@ -39,18 +42,19 @@ const LockIcon = lucideGlyph(lucideLock, 14);
 
 // The Off state's line, per kind of feed.
 const PLAN_OFF_COPY =
-  'Make a private link and add it to your calendar once. Each card with a Start or Due date shows as an all-day event that opens the card, and your calendar keeps it up to date.';
+  'Every card with a Start or Due date, as an all-day event that opens the card.';
 const MY_WORK_OFF_COPY =
-  'Make a private link and add it to your calendar once. Each open card assigned to you, in any plan you own or share with a team, shows as an all-day event on its Start or Due date, and your calendar keeps it up to date.';
+  'Every open card assigned to you, in any plan you own or share with a team, on its Start or Due date.';
 
 export const DEFAULT_FEED_OPTIONS: CalendarFeedOptions = {
-  boardId: null,
+  typeIds: null,
   mine: false,
   includeDone: false,
 };
 
 const optionsOf = (feed: CalendarFeedSettings): CalendarFeedOptions => ({
-  boardId: feed.boardId,
+  typeIds: feed.typeIds,
+  boardId: feed.boardId ?? null,
   mine: feed.mine,
   includeDone: feed.includeDone,
 });
@@ -59,12 +63,12 @@ const optionsOf = (feed: CalendarFeedSettings): CalendarFeedOptions => ({
 export type CalendarFeedTarget =
   { kind: 'plan'; scope: CalendarFeedScope } | { kind: 'my-work'; ownerId: string };
 
-type Loaded = { feed: CalendarFeedSettings | null; boards: CalendarFeedBoard[] };
+type Loaded = { feed: CalendarFeedSettings | null; types: CalendarFeedType[] };
 
 // The My Work feed as the dialog holds it: no options of its own, so the defaults stand in.
 const myWorkLoaded = (feed: { createdAt: number } | null): Loaded => ({
   feed: feed ? { ...DEFAULT_FEED_OPTIONS, createdAt: feed.createdAt } : null,
-  boards: [],
+  types: [],
 });
 
 async function readFeed(target: CalendarFeedTarget): Promise<Loaded> {
@@ -220,17 +224,23 @@ export function CalendarFeedDialog({
               </Button>
             </div>
           ) : (
-            <div className="flex h-24 items-center justify-center" aria-busy="true">
-              <span className="sr-only">Loading your calendar link</span>
-              <LoadingSweep />
-            </div>
+            <SkeletonRows label="Loading your calendar link" rows={2} />
           )
         ) : (
           <>
             {state === 'off' ? (
-              <p className="text-sm text-slate-700 dark:text-slate-200">
-                {myWork ? MY_WORK_OFF_COPY : PLAN_OFF_COPY}
-              </p>
+              // The tool's explainer (footer-tools-menu.md "Explainers"): no link yet.
+              <ToolExplainer
+                art={calendarFeedArt}
+                title={myWork ? 'Your Work in Your Calendar' : 'This Plan in Your Calendar'}
+                description={myWork ? MY_WORK_OFF_COPY : PLAN_OFF_COPY}
+                steps={[
+                  'Make your private link.',
+                  'Add it to Google Calendar, Outlook or Apple Calendar, once.',
+                  'Dated cards show as all-day events, kept up to date.',
+                ]}
+                data="calendar-feed"
+              />
             ) : null}
             {state === 'made' && madeUrl ? (
               <CalendarFeedLink ref={copyRef} url={madeUrl} myWork={myWork} />
@@ -242,7 +252,7 @@ export function CalendarFeedDialog({
             ) : null}
             {myWork ? null : (
               <CalendarFeedOptionsSection
-                boards={data?.boards ?? []}
+                types={data?.types ?? []}
                 options={options}
                 disabled={busy}
                 onChange={(next) => void choose(next)}

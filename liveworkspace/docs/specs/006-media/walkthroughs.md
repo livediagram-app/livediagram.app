@@ -153,6 +153,7 @@ app's: every route answers another app's walkthrough as missing.
 | Route                                 | What it does                                                                                                                         |
 | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | `GET /walkthroughs?item=`             | The document's ready walkthroughs, newest first: `{ walkthroughs: [{ walkthrough, owner }] }`                                        |
+| `GET /walkthroughs?owner=`            | A person's own ready walkthroughs in the app, newest first (at most 200), for the Explorer's library: the same shape                 |
 | `POST /walkthroughs?owner=`           | Start one: `{ item, title, author, mediaType, mediaBytes, events }`, the events stored at once; `201 { walkthrough }`, not yet ready |
 | `PUT /walkthroughs/<id>/media?owner=` | Its media, the raw body, exactly `mediaBytes` long and of `mediaType`; then it is ready: `{ walkthrough }`                           |
 | `GET /walkthroughs/<id>`              | A ready one, whose it is, and its events: `{ walkthrough, owner, events }`                                                           |
@@ -201,6 +202,7 @@ A walkthrough is not swept for age: it stays until someone deletes it or its doc
 | Route                                 | Who                                                                                    |
 | ------------------------------------- | -------------------------------------------------------------------------------------- |
 | `GET /api/walkthroughs?d=`            | Anyone who may read the whole document: `{ walkthroughs: [{ ...walkthrough, mine }] }` |
+| `GET /api/walkthroughs?mine=1`        | A person, as themselves: their own, on every item, each with its `item`                |
 | `POST /api/walkthroughs?d=`           | An Editor of the document, as a person (no API token, no workbench session)            |
 | `PUT /api/walkthroughs/<id>/media?d=` | The same Editor, for the walkthrough they started                                      |
 | `GET /api/walkthroughs/<id>?d=`       | Anyone who may read the whole document: `{ walkthrough, mine, events }`                |
@@ -210,3 +212,27 @@ A walkthrough is not swept for age: it stays until someone deletes it or its doc
 A tab-scoped link's visitor sees no walkthroughs (one can travel across tabs), nor does a document in the Trash.
 A document kept in This Browser has no walkthroughs, since no server holds it. Without a media key every route
 answers `503 { error: "walkthroughs_unavailable" }`, and the editor offers none.
+
+## The Explorer's Walkthroughs
+
+Every app with walkthroughs (livediagram, livedesign, livedocuments, liveplanner) has a **Walkthroughs** page in the
+Explorer's Library (owner, 2026-11-17), beside the Image Gallery and Shape Libraries, at `/explorer/walkthroughs`, and a
+Walkthroughs tab in the editor panel's Library, where the cards are small tiles three to a row (the box with its Play and
+length, the title under it; the item and date in its tooltip), and one playing widens to the whole row so its controls
+have room (owner, 2026-11-17). It lists every walkthrough the person recorded in that app, newest
+first (`GET /api/walkthroughs?mine=1`), as cards in a grid:
+
+- **The preview box** (16:9): a soft brand gradient with the recorder's initial (a camera icon for one with video), its
+  length as a chip, and a large Play button. Pressing it loads the media (with the person's token, as a blob, so the
+  bytes never sit behind a public address) and plays it in the box with the browser's controls; **Maximise** at its
+  corner shows it full screen, and **Close** goes back to the preview. One plays at a time.
+- **Under it**: the title, the item it was recorded on (its name from the index, a link that opens the item; "An item
+  you can no longer open" when the index has none), and when it was recorded with its size.
+- **Delete** (a bin on the card) asks in a confirm popover ("Delete this walkthrough? It can't be undone."), then
+  deletes it for good (`DELETE /api/walkthroughs/<id>?d=<item>`), the media and events with it.
+- Empty, the page says "No walkthroughs yet" with a line on recording one from Tools on any item. While it loads,
+  skeleton cards in the grid's shape.
+
+liveworkspace.app's Explorer shows the page for the app it is on, read by the workspace token as the other Library
+pages are. The sites registry's `walkthroughsPath` (`/api/walkthroughs`, null where an app has none) says which apps
+have it.

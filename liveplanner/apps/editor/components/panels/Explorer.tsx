@@ -1,5 +1,6 @@
 'use client';
 
+import { explorerLibrary } from '@/lib/explorer-library-host';
 import { memo, useCallback, useEffect, useMemo } from 'react';
 import {
   EXPLORER_POPOVER_HEIGHT,
@@ -176,6 +177,7 @@ function ExplorerImpl({
         <ExplorerPanel
           // History and Webhooks live in the footer's Tools, for the open item (footer-tools-menu.md).
           history={false}
+          walkthroughs={explorerLibrary.walkthroughs}
           webhooks={false}
           renderAppLogo={renderAppLogo}
           app="liveplanner"

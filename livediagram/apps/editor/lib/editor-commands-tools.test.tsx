@@ -44,7 +44,9 @@ describe('tool commands against the palette dropdown', () => {
     const commands = buildEditorCommands(ctx, noop())
       .map((c) => c.id)
       .filter((id) => id.startsWith('tool:'))
-      .map((id) => id.slice('tool:'.length));
+      .map((id) => id.slice('tool:'.length))
+      // Slide Deck is in the footer's Tools, not the dropdown; its command opens Tools there.
+      .filter((id) => id !== 'slide-deck');
     expect(commands).toEqual(dropdown);
   });
 

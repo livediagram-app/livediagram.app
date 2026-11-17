@@ -1,7 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { CompactEmptyState, PlusIcon } from '@liveworkspace/ui';
+import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { PlusIcon, ResponsivePopover } from '@liveworkspace/ui';
+import { ToolExplainer } from '@liveworkspace/ui/tool-explainer';
+import { webhooksArt } from '@liveworkspace/ui/tool-explainer-art';
 import {
   WEBHOOK_SIGNATURE_HEADER,
   WEBHOOKS_PER_DOCUMENT_MAX,
@@ -10,7 +12,6 @@ import {
   type ShareAccess,
   type Webhook,
 } from '@liveworkspace/index-client';
-import { SettingsSharedGlyph } from '../glyphs';
 import { BUTTON, ErrorNote } from '../account-panels/account-ui';
 import { SecretReveal } from '../account-panels/SecretReveal';
 import { AddWebhook } from './AddWebhook';
@@ -69,6 +70,9 @@ function WebhooksList() {
   const { api, app } = useDocumentWebhooks();
   const [load, setLoad] = useState<Load>({ state: 'loading' });
   const [adding, setAdding] = useState(false);
+  // What the add popover opens beside: the dialog (or Tools) the list is in, else the Add button itself.
+  const [addAnchor, setAddAnchor] = useState<HTMLElement | null>(null);
+  const addTitleId = useId();
   const [made, setMade] = useState<{ name: string; secret: string } | null>(null);
   const [fresh, setFresh] = useState<string | null>(null);
   const firstRef = useRef<HTMLInputElement>(null);
@@ -103,10 +107,15 @@ function WebhooksList() {
         : current,
     );
 
-  const open = () => {
+  const open = (from: HTMLElement) => {
     setMade(null);
     setFresh(null);
+    setAddAnchor(from.closest<HTMLElement>('[role="dialog"]') ?? from);
     setAdding(true);
+  };
+  const cancelAdd = () => {
+    setAdding(false);
+    requestAnimationFrame(() => (addRef.current ?? headingRef.current)?.focus());
   };
   const listed = load.state === 'ready' ? load.webhooks : [];
   const full = listed.length >= WEBHOOKS_PER_DOCUMENT_MAX;
@@ -135,32 +144,42 @@ function WebhooksList() {
             Only for this {one}. Your other {ITEM(app).many.toLowerCase()} have their own.
           </p>
         </div>
-        {!adding && listed.length > 0 && !full ? (
-          <button ref={addRef} type="button" className={`${BUTTON.primary} gap-1.5`} onClick={open}>
+        {listed.length > 0 && !full ? (
+          <button
+            ref={addRef}
+            type="button"
+            className={`${BUTTON.primary} gap-1.5`}
+            onClick={(e) => open(e.currentTarget)}
+          >
             <PlusIcon size={14} />
             Add Webhook
           </button>
         ) : null}
       </div>
 
-      {adding ? (
-        <div className="border-t border-slate-100 dark:border-slate-700/70">
-          <AddWebhook
-            firstRef={firstRef}
-            onCancel={() => {
-              setAdding(false);
-              requestAnimationFrame(() => (addRef.current ?? headingRef.current)?.focus());
-            }}
-            onAdded={async (webhook, secret) => {
-              setAdding(false);
-              setFresh(webhook.id);
-              if (secret) setMade({ name: webhook.name, secret });
-              await refresh();
-              if (!secret) headingRef.current?.focus();
-            }}
-          />
-        </div>
-      ) : null}
+      {/* Adding opens beside the list (a drawer on a phone), so the list stays in view and the dialog never grows. */}
+      <ResponsivePopover
+        open={adding}
+        onClose={cancelAdd}
+        anchor={addAnchor}
+        titleId={addTitleId}
+        width={440}
+        placement="side"
+        bare
+      >
+        <AddWebhook
+          titleId={addTitleId}
+          firstRef={firstRef}
+          onCancel={cancelAdd}
+          onAdded={async (webhook, secret) => {
+            setAdding(false);
+            setFresh(webhook.id);
+            if (secret) setMade({ name: webhook.name, secret });
+            await refresh();
+            if (!secret) headingRef.current?.focus();
+          }}
+        />
+      </ResponsivePopover>
       {made ? (
         <div className="border-t border-slate-100 px-5 py-4 sm:px-6 dark:border-slate-700/70">
           <SecretReveal
@@ -193,16 +212,19 @@ function WebhooksList() {
       ) : null}
 
       {load.state === 'loading' ? (
-        <div aria-busy className="border-t border-slate-100 dark:border-slate-700/70">
-          {[0, 1].map((n) => (
-            <div key={n} className="flex items-start gap-3 px-5 py-4 sm:px-6">
-              <div className="size-10 shrink-0 animate-pulse rounded-xl bg-slate-200/80 motion-reduce:animate-none dark:bg-slate-700/60" />
-              <div className="flex flex-1 flex-col gap-2 pt-1">
-                <div className="h-3.5 w-40 animate-pulse rounded bg-slate-200/80 motion-reduce:animate-none dark:bg-slate-700/60" />
-                <div className="h-3 w-64 max-w-full animate-pulse rounded bg-slate-100 motion-reduce:animate-none dark:bg-slate-700/40" />
-              </div>
-            </div>
-          ))}
+        // In the empty state's shape and size (most items have no webhooks yet), so the panel does not shrink while it
+        // loads and grow again when "No Webhooks Yet" arrives (owner, 2026-11-17).
+        <div
+          aria-busy
+          data-webhooks-skeleton=""
+          className="flex flex-col items-center gap-2 border-t border-slate-100 p-4 py-8 dark:border-slate-700/70"
+        >
+          <span className="sr-only">Loading webhooks</span>
+          <div className="h-10 w-10 animate-pulse motion-reduce:animate-none rounded-xl bg-slate-200/80 dark:bg-slate-700/60" />
+          <div className="mt-0.5 h-3.5 w-32 animate-pulse motion-reduce:animate-none rounded bg-slate-200/80 dark:bg-slate-700/60" />
+          <div className="h-3 w-64 max-w-full animate-pulse motion-reduce:animate-none rounded bg-slate-100 dark:bg-slate-700/40" />
+          <div className="h-3 w-48 max-w-full animate-pulse motion-reduce:animate-none rounded bg-slate-100 dark:bg-slate-700/40" />
+          <div className="mt-1 h-8 w-32 animate-pulse motion-reduce:animate-none rounded-lg bg-slate-200/80 dark:bg-slate-700/60" />
         </div>
       ) : null}
       {load.state === 'error' ? (
@@ -222,25 +244,33 @@ function WebhooksList() {
           ) : null}
         </div>
       ) : null}
-      {load.state === 'ready' && listed.length === 0 && !adding ? (
-        <div className="border-t border-slate-100 dark:border-slate-700/70">
-          <CompactEmptyState
-            icon={<SettingsSharedGlyph id="webhooks" />}
+      {load.state === 'ready' && listed.length === 0 ? (
+        <div
+          data-empty-state=""
+          className="border-t border-slate-100 px-4 py-4 dark:border-slate-700/70"
+        >
+          {/* The tool's explainer (footer-tools-menu.md "Explainers"): nothing set up yet. */}
+          <ToolExplainer
+            art={webhooksArt}
             title="No Webhooks Yet"
-            description={`Add one to post updates about this ${one} to a Slack or Teams channel.`}
-            action={
-              <button
-                ref={addRef}
-                type="button"
-                className={`${BUTTON.primary} gap-1.5`}
-                onClick={open}
-              >
-                <PlusIcon size={14} />
-                Add Webhook
-              </button>
-            }
-            className="py-8"
-          />
+            description={`Tell Slack, Teams or your own service the moment this ${one} changes.`}
+            steps={[
+              'Add a webhook with the address your service gives you.',
+              'Choose the changes it hears about.',
+              'Each change is posted there as it happens, signed so it can be trusted.',
+            ]}
+            data="webhooks"
+          >
+            <button
+              ref={addRef}
+              type="button"
+              className={`${BUTTON.primary} w-full justify-center gap-1.5`}
+              onClick={(e) => open(e.currentTarget)}
+            >
+              <PlusIcon size={14} />
+              Add Webhook
+            </button>
+          </ToolExplainer>
         </div>
       ) : null}
       {listed.length > 0 ? (
@@ -260,7 +290,7 @@ function WebhooksList() {
           ))}
         </ul>
       ) : null}
-      {full && !adding ? (
+      {full ? (
         <p className="border-t border-slate-100 px-5 py-3 text-xs text-slate-500 sm:px-6 dark:border-slate-700/70 dark:text-slate-400">
           A {one} can have up to {WEBHOOKS_PER_DOCUMENT_MAX} webhooks. Delete one to add another.
         </p>

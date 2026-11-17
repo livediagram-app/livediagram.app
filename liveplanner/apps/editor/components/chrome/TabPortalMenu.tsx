@@ -30,7 +30,6 @@ import {
 import { useSplitViewContext } from '@/components/split/SplitViewContext';
 import { lucideLink } from '@liveworkspace/icons/lucide';
 import type { ConnectedTabMenu } from '@liveworkspace/workbench/components/connect/tab-connection';
-import { RoadmapMenuRow } from '@/components/roadmap/RoadmapMenuRow';
 
 const ConnectAgainIcon = lucideGlyph(lucideLink, 16);
 
@@ -361,9 +360,6 @@ export function PortalMenu({
             disabled={!(canImport ?? !locked)}
           />
           <MenuActionRow plain icon={<FileExportIcon />} label="Export" onClick={onExport} />
-          {/* A board out as a public page (docs/specs/026-plan/public-roadmap.md "Where it lives"): the plan's owner or
-            a team member, on a tab holding a Plan board. */}
-          <RoadmapMenuRow onClose={onClose} />
           <MenuActionRow
             plain
             icon={<ClearIcon />}

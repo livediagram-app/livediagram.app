@@ -206,6 +206,10 @@ export type AppItems = {
   // Null where the app keeps none, and the Library leaves that page out.
   imagesPath: string | null;
   shapeLibrariesPath: string | null;
+  // The person's own walkthroughs (`GET ?mine=1`, `GET <id>/media?d=`, `DELETE <id>?d=`; the media service behind it),
+  // for the Library's Walkthroughs page (liveworkspace/docs/specs/006-media/walkthroughs.md "The Explorer's
+  // Walkthroughs"). Null where the app records none.
+  walkthroughsPath: string | null;
   // "Import from": the other tools the app reads files from, and its page that does it (`${url}${importPath}` with
   // `?source=<id>&what=items|libraries&folder=<id>`), which opens that source's import and comes back to the Explorer.
   // `libraries` marks a source whose files can also become shape libraries. Empty where the app imports nothing.
@@ -275,6 +279,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     sharePath: '/document/shared?s=',
     imagesPath: '/api/images',
     shapeLibrariesPath: '/api/shape-libraries',
+    walkthroughsPath: '/api/walkthroughs',
     imports: [
       { id: 'microsoft-whiteboard', name: 'Microsoft Whiteboard' },
       { id: 'excalidraw', name: 'Excalidraw' },
@@ -296,6 +301,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     sharePath: '/project/shared?s=',
     imagesPath: null,
     shapeLibrariesPath: null,
+    walkthroughsPath: '/api/walkthroughs',
     imports: [],
     importPath: null,
     share: shareOf(itemTabsPath('projects'), 'liveplanner tab', itemCommunityPath('projects')),
@@ -313,6 +319,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     sharePath: '/document/shared?s=',
     imagesPath: '/api/images',
     shapeLibrariesPath: null,
+    walkthroughsPath: '/api/walkthroughs',
     imports: [],
     importPath: null,
     share: shareOf(itemTabsPath('documents'), 'livedocuments tab', itemCommunityPath('documents')),
@@ -330,6 +337,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     sharePath: '/design/shared?s=',
     imagesPath: '/api/images',
     shapeLibrariesPath: null,
+    walkthroughsPath: '/api/walkthroughs',
     imports: [],
     importPath: null,
     share: shareOf(itemTabsPath('designs'), 'livedesign tab', itemCommunityPath('designs')),
@@ -351,6 +359,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     sharePath: '/document/shared?s=',
     imagesPath: '/api/images',
     shapeLibrariesPath: null,
+    walkthroughsPath: null,
     imports: [],
     importPath: null,
     share: shareOf(itemTabsPath('documents'), 'livehuddle tab', itemCommunityPath('documents')),
@@ -433,6 +442,7 @@ function explorerHasView(site: Site, section: string): boolean {
   if (section === 'offline') return items.offlinePath !== null;
   if (section === 'images') return items.imagesPath !== null;
   if (section === 'shape-libraries') return items.shapeLibrariesPath !== null;
+  if (section === 'walkthroughs') return items.walkthroughsPath !== null;
   return true;
 }
 

@@ -54,8 +54,10 @@ export type RoadmapBoard = {
   title: string;
   tabId: string;
   tabName: string;
-  columns: { status: string; name: string }[];
-  types: { id: string; name: string }[];
+  // A column's own colour (a CSS colour) when it has one, for its dot in the dialog.
+  columns: { status: string; name: string; color: string | null }[];
+  // The card types it shows, with their glyph and colour.
+  types: { id: string; name: string; glyph: string; color: string }[];
   publishable: boolean;
 };
 

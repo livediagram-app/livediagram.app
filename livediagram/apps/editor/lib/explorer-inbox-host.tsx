@@ -131,8 +131,8 @@ export type InboxOpenAction = {
 };
 
 /** The reading pane's verbs in the editor's panel (@liveworkspace/explorer/inbox-actions): Reply and Resolve on this
- *  app's threads through its comment routes, and Mark Done on an action on the open canvas's active tab, as the
- *  canvas marks it. Another app's rows, and This Browser's, are opened in their place instead. */
+ *  app's threads through its comment routes, and Mark Done on an action: on the open canvas's active tab as the
+ *  canvas marks it, anywhere else through the action route. Another app's rows, and This Browser's, are opened in their place instead. */
 export function explorerInboxActions(
   ownerId: string | null,
   open: InboxOpenAction | null,

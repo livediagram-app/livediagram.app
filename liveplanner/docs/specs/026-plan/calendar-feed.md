@@ -16,7 +16,7 @@ the Inbox). Both work the same way: a private link, made, reset and turned off b
 | **My Work feed**  | The calendar feed of the open cards assigned to the person, across plans                | personal feed, my feed  |
 | **feed link**     | The feed's private address, the one thing a calendar app is given                       | share link, invite      |
 | **feed token**    | The secret in the feed link (`lpf_…`); the whole proof a fetch carries                  | API token, `lwt_` token |
-| **feed options**  | What the feed shows: which board, only my cards, include done cards                     | filters, settings       |
+| **feed options**  | What the feed shows: which card types, only my cards, include done cards                | filters, settings       |
 | **Reset Link**    | A new feed token for the same feed; the old link stops answering at once                | regenerate, rotate      |
 
 ## Who may have one
@@ -46,10 +46,11 @@ the Inbox). Both work the same way: a private link, made, reset and turned off b
 
 ## What it shows
 
-- **Every live card with a date**: not archived, not in the Trash, on any board (or the board the options name: the
-  cards that board shows, a column of it holding the card's status, or every status on an All Cards board, and the
-  card's type one the board shows; two boards sharing a status, as the Kanban and To-do list templates do, each show
-  the card, Work Tracker 993).
+- **Every live card with a date**: not archived, not in the Trash, whatever board shows it, of the **card types** the
+  options name (all of them when they name none). A type spans every board that shows it, so a feed of Bugs holds
+  every Bug in the plan (owner, 2026-11-17: types, not boards). A feed made before then with a board named keeps
+  showing that board's cards until its options are next changed, so no calendar a person subscribed to changes under
+  them.
 - Done cards (a [done column](plan-board.md#done-columns)'s status) are left out unless the options include them.
 - **Only my cards**: just the cards a notifying Person field of their type names the person in, as the Inbox's
   Assigned to You does ([item-types.md "Notifies"](item-types.md)).
@@ -105,13 +106,14 @@ When a write fails, the dialog stays as it was and says "Couldn't save. Try agai
 
 ### The options
 
-The same three in every state, under the heading **What It Shows**:
+The same three in every state, under the heading **What It Shows**, with one live line under it saying in words what
+the calendar will hold ("Every Bug and Task card that names you with a Start or Due date, leaving out done ones."):
 
-- **Board**: **All Boards**, or one of the plan's boards by its title (with its tab's name after it when two boards
-  share a title, and its tab's name alone for a board with no title). A board that went since shows as **Removed
-  Board** until another is picked, and its feed is empty meanwhile.
-- **Only My Cards**: just the cards whose notifying Person fields name me.
-- **Include Done Cards**: cards in a done column too.
+- **Card Types**: the plan's card types as pills, each with its glyph in its colour, several picked at once, led by
+  **All Types** (none picked: every type). A picked type deleted since is dropped from the pills and from the feed.
+- **Only My Cards** and **Include Done Cards**: switch rows in one bordered card, each a glyph on a tile (brand when
+  on), its name and hint, and the switch; the whole row toggles. Only My Cards: just the cards whose notifying Person
+  fields name me. Include Done Cards: cards in a done column too.
 
 In the Off state they are what Make Calendar Link makes the feed with. Once a feed exists, a change saves at once and
 **keeps the link**: the calendar app shows the new set on its next fetch, so nobody re-subscribes to change a filter.
@@ -126,7 +128,7 @@ stops at once." The help article says the same.
 
 `/api/projects/:id/calendar-feed`, answered inside the plan's room, for the person's own feed only:
 
-- `GET`: their feed's options and when it was made (never the link), or none, and the plan's boards to pick from.
+- `GET`: their feed's options and when it was made (never the link), or none, and the plan's card types to pick from.
 - `POST`: make the feed with the body's options, or, over an existing one, Reset Link with them; answers the link once.
 - `PUT`: change an existing feed's options, keeping its link; 404 when they have none.
 - `DELETE`: Turn Off; answers 204 whether or not there was one.
@@ -134,7 +136,7 @@ stops at once." The help article says the same.
 Each needs a person **signed in, in person**: never an API token (read-only or not) or a workbench session, which
 could otherwise mint a lasting secret, and never a guest. And their grant on the plan must be the owner's or a team
 member's: a share link at any level, or a grant confined to one tab, is refused with 403 `calendar_feed_needs_member`.
-A board option must name one of the plan's boards (400 `calendar_feed_invalid`). Every answer is `no-store`.
+Card types must be the plan's (400 `calendar_feed_invalid`), at most 50. Every answer is `no-store`.
 
 ### Telemetry
 

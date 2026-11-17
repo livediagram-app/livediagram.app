@@ -21,6 +21,16 @@ draws them.
   and 2.7:1 in light. The chosen group's name is the accent leaned toward the ink just far enough to read at 4.5:1 on
   its tint and its hover's (`chosenLabel`): light's brand accent on its tint read 3.3:1, so light wears a darker
   accent there (5.2:1); dark's accent already reads (6.4:1) and is kept.
+- **Import** sits above Connect File in the rail's foot, as liveplanner's Start Planning has it (a file-down glyph,
+  the shared `footLead`). It places nothing: it opens the **Import** dialog (`StartImportDialog`, the shared Import hero
+  header, "Bring a board into this tab."), one section, **A Board from Another Tool**, listing **Microsoft
+  Whiteboard**, **Excalidraw** and **draw.io** as option rows (the tool's mark, its name, the file it takes and a line
+  saying where that file comes from), the same rows liveplanner's Import dialog draws. What it brings goes **into the
+  tab the start screen is on**, never a new canvas (`useStartImport`): Excalidraw and draw.io open the tab's own
+  Import dialog at that format (`ImportTabDialog` `formats`); Microsoft Whiteboard opens its board picker, its line
+  "The first board you choose goes into this tab.", and lands that board on the tab (`importSceneIntoActiveTab`), any
+  other chosen board named in the report as left out. Offered to an Editor; the dialogs load only on first open. The
+  Explorer no longer carries Import from for boards (explorer-structure.md "The Library").
 - **Connect File** ([Connected tabs](../../../../liveworkspace/docs/specs/004-index/connected-tabs.md#connecting)):
   the rail's last entry, stuck to its very bottom under a hairline (the shared `ConnectRailEntry`), every app's
   logo fanned where its icon goes (its own too), its name on one line; on a phone the last chip. Chosen, the content area shows the shared Connect list (Recent
@@ -268,7 +278,7 @@ are the hero's own theme (`@liveworkspace/explorer/hero-theme`), so the start an
 
 A template chosen fires `Template · Used · <kind>` through `chooseTemplate`. A template chosen from another mode's
 results also fires `UI · Used · StartOtherMode`, so how often a search crosses modes is measurable. A Community tile
-chosen fires `Community · Copied · StartWith`.
+chosen fires `Community · Copied · StartWith`. Import pressed fires `UI · Used · StartImport`.
 
 ## Tests
 

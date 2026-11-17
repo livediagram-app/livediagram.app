@@ -1,7 +1,9 @@
 'use client';
 
-// The recording dock (liveworkspace/docs/specs/006-media/walkthroughs.md "Recording"), at the bottom centre of the
-// canvas: the set-up card, the count, the compact recording bar and the save card, one at a time.
+// The recording dock (liveworkspace/docs/specs/006-media/walkthroughs.md "Recording"): the set-up card, the count, the
+// compact recording bar and the save card, one at a time. The count and the bar sit under the palette strip where the
+// palette tray goes (owner, 2026-11-17, as "Click to drop" does); without a strip, and for the two cards, at the
+// bottom centre of the canvas.
 
 import { DevicePicker, NO_CAMERA } from '@liveworkspace/capture';
 import {
@@ -18,6 +20,13 @@ import {
   TextInput,
 } from '@liveworkspace/ui';
 import { useState, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
+import {
+  PALETTE_TRAY_GAP_PX,
+  trayHost,
+  traySlot,
+  usePaletteStripBox,
+} from '@liveworkspace/workbench/components/chrome/PaletteTray';
 import { formatClock } from '../timeline';
 import type { Walkthroughs } from '../useWalkthroughs';
 import { LevelBar } from './Bubble';
@@ -30,7 +39,37 @@ const LAST_MINUTE_MS = WALKTHROUGH_MAX_MS - 60_000;
 export function RecordDock({ walkthroughs }: { walkthroughs: Walkthroughs }) {
   const { recorder } = walkthroughs;
   const phase = recorder.phase;
+  const slim = phase.kind === 'countdown' || phase.kind === 'recording';
+  const strip = usePaletteStripBox(slim);
   if (phase.kind === 'off') return null;
+  if (slim && strip && typeof document !== 'undefined') {
+    const host = trayHost();
+    const slot = traySlot(strip, window.innerWidth);
+    return createPortal(
+      <div
+        data-walkthrough-dock={phase.kind}
+        data-walkthrough-dock-at="palette"
+        // Over the palette tray's slot: its hints step aside while recording (they are not recorded anyway).
+        className="pointer-events-none fixed z-[var(--z-chrome)] flex justify-center"
+        style={{
+          left: slot.left - host.dx,
+          width: slot.width,
+          top: strip.bottom + PALETTE_TRAY_GAP_PX - host.dy,
+        }}
+      >
+        {phase.kind === 'countdown' ? (
+          <div
+            className={`${CARD} rounded-xl px-3 py-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200`}
+          >
+            Recording starts in {phase.n}
+          </div>
+        ) : (
+          <RecordingBar walkthroughs={walkthroughs} elapsed={phase.elapsed} />
+        )}
+      </div>,
+      host.node,
+    );
+  }
   return (
     <div
       data-walkthrough-dock={phase.kind}
@@ -279,7 +318,8 @@ function RecordingBar({ walkthroughs, elapsed }: { walkthroughs: Walkthroughs; e
   return (
     <section
       aria-label="Recording"
-      className={`${CARD} flex items-center gap-3 rounded-full py-1.5 pl-4 pr-1.5`}
+      // The palette tray's shape: a 12 px card whose controls sit 4 px in, their 8 px corners nesting in its own.
+      className={`${CARD} flex items-center gap-3 !rounded-xl py-1 pl-3 pr-1`}
     >
       <span className="relative flex h-2.5 w-2.5 shrink-0">
         <span className="absolute inset-0 animate-ping rounded-full bg-rose-500/70 motion-reduce:animate-none" />
@@ -303,7 +343,7 @@ function RecordingBar({ walkthroughs, elapsed }: { walkthroughs: Walkthroughs; e
             variant="primary"
             size="xs"
             onClick={() => void recorder.finish()}
-            className="rounded-full"
+            className="!rounded-lg"
           >
             <span className="inline-flex items-center gap-1.5">
               <StopIcon size={10} />

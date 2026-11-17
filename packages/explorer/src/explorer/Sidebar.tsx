@@ -56,7 +56,7 @@ import { useExtras } from './extras';
 import { useTeams } from '../teams/context';
 import { NewTeamDialog } from '../teams/NewTeamDialog';
 import { SidebarSignInNudge, teamMemberBadge } from './SidebarSignInNudge';
-import { ImageIcon, MailIcon, ShapesIcon } from '../ui/library-icons';
+import { ImageIcon, MailIcon, ShapesIcon, WalkthroughIcon } from '../ui/library-icons';
 import { useLibraryHost } from '../library/context';
 import { SIDEBAR_RENAME_FIELD, type SidebarRename, SidebarRow } from './SidebarRow';
 
@@ -67,6 +67,7 @@ const LIBRARY_VIEWS: ReadonlySet<ExplorerView['kind']> = new Set([
   'recent',
   'gallery',
   'shape-libraries',
+  'walkthroughs',
   'archived',
   'trash',
 ]);
@@ -476,6 +477,15 @@ export function Sidebar() {
               label={SIDEBAR_LABELS.shapeLibraries}
               selected={view.kind === 'shape-libraries'}
               onActivate={() => navigate({ kind: 'shape-libraries' })}
+              depth={1}
+            />
+          ) : null}
+          {library.walkthroughs ? (
+            <SidebarRow
+              icon={<WalkthroughIcon />}
+              label={SIDEBAR_LABELS.walkthroughs}
+              selected={view.kind === 'walkthroughs'}
+              onActivate={() => navigate({ kind: 'walkthroughs' })}
               depth={1}
             />
           ) : null}

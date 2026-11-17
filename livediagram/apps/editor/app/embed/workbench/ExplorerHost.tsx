@@ -19,8 +19,7 @@ import {
   type LensTelemetryType,
   type HomeTelemetry,
 } from '@liveworkspace/explorer';
-import { DEFAULT_FOLDER_OPTIONS, LENS_MODES } from '@livediagram/api-schema';
-import { CANVAS_TEMPLATE_FAMILIES } from '@/lib/canvas-template-families';
+import { DEFAULT_FOLDER_OPTIONS } from '@livediagram/api-schema';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useEditorPreferences } from '@/hooks/persistence/useEditorPreferences';
 import { useGuestId } from '@/hooks/persistence/useGuestId';
@@ -149,12 +148,11 @@ export function ExplorerHost({
         onHideHero={hideHero}
         onHome={trackHome}
         onOrganise={trackOrganise}
-        lensTemplates={CANVAS_TEMPLATE_FAMILIES}
-        lensModes={LENS_MODES}
         defaultFolderOptions={DEFAULT_FOLDER_OPTIONS}
         onFolderShown={onFolderShown}
         gallery={library.gallery}
         shapeLibraries={library.shapeLibraries}
+        walkthroughs={library.walkthroughs}
         imports={explorerImports}
         onLensSelected={trackLens}
         header={header ? ({ search }) => header(search, chrome) : undefined}

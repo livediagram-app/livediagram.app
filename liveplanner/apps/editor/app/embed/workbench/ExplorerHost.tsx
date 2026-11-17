@@ -9,6 +9,7 @@
 // account's teams from its token, or a guest's identity from liveworkspace, which the first visit fetches before the
 // Explorer asks for anything.
 
+import { explorerLibrary } from '@/lib/explorer-library-host';
 import Link from 'next/link';
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import {
@@ -120,6 +121,7 @@ export function ExplorerHost({
         app="liveplanner"
         client={indexClient}
         view={view}
+        walkthroughs={explorerLibrary.walkthroughs}
         // The filter field's writes replace the entry, so typing leaves one history entry, not one per pause.
         onNavigate={(_view, href, options) =>
           options?.replace ? router.replace(href) : router.push(href)

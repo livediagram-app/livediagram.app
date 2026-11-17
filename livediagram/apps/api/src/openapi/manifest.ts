@@ -770,6 +770,25 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [204, 401, 403, 404, 405, 409, 410, 413],
   },
   {
+    method: 'POST',
+    path: '/documents/{id}/tabs/{tabId}/actions/{actionId}/status',
+    segment: 'documents',
+    tag: 'Documents',
+    summary:
+      "Set an assigned action's status (open, done or wont-do); an Editor's, as in the editor. Setting the status it has changes nothing.",
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    requestSchema: {
+      type: 'object',
+      properties: {
+        elementId: { type: 'string' },
+        status: { type: 'string', enum: ['open', 'done', 'wont-do'] },
+      },
+      required: ['elementId', 'status'],
+    },
+    statuses: [204, 400, 401, 403, 404, 405, 409, 410, 413],
+  },
+  {
     method: 'GET',
     path: '/documents/{id}/tabs/{tabId}/render.svg',
     segment: 'documents',

@@ -12,9 +12,9 @@ describe('explorer library host', () => {
     ]);
   });
 
-  it('lends the Gallery and Shape Libraries over this site, the same objects every time', () => {
+  it('lends the Gallery, Shape Libraries and Walkthroughs over this site, the same objects every time', () => {
     const hosts = explorerLibraryHosts();
-    expect(Object.keys(hosts).sort()).toEqual(['gallery', 'shapeLibraries']);
+    expect(Object.keys(hosts).sort()).toEqual(['gallery', 'shapeLibraries', 'walkthroughs']);
     expect(explorerLibraryHosts()).toBe(hosts);
   });
 });

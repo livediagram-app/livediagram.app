@@ -214,6 +214,7 @@ function ExplorerImpl({
           itemMenu={itemMenu}
           gallery={library.gallery}
           shapeLibraries={library.shapeLibraries}
+          walkthroughs={library.walkthroughs}
           imports={explorerImports}
           // Side by side in a desktop popover; a phone's sheet stacks the chips over the pane.
           layout={sheet ? 'sheet' : 'side'}

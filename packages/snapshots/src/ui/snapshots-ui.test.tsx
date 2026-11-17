@@ -1,5 +1,13 @@
 // @vitest-environment jsdom
-import { act, fireEvent, render, renderHook, screen, waitFor } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  render,
+  renderHook,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { resetRevertReload, SnapshotsApiError, type SnapshotsApi } from '../client';
@@ -87,6 +95,16 @@ const open = async () => {
   return screen.findByRole('dialog', {}, { timeout: 5000 });
 };
 
+// Take Snapshot is a button that opens its form in a popover; the form's own button takes it.
+function openTake() {
+  fireEvent.click(document.querySelector<HTMLElement>('[data-snapshot-button]')!);
+}
+function takeButton() {
+  return within(screen.getByLabelText('Snapshot name').closest('form')!).getByRole('button', {
+    name: /Take Snapshot|Taking…/,
+  });
+}
+
 describe('Snapshots alone, in History', () => {
   it('draws nothing without a door', () => {
     const { container } = mount(null);
@@ -148,11 +166,13 @@ describe('Snapshots alone, in History', () => {
     await open();
     expect(await screen.findByText('No snapshots yet')).toBeTruthy();
     expect(screen.getByText('Save points for the whole plan. The latest 5 are kept.')).toBeTruthy();
+    openTake();
     fireEvent.change(screen.getByLabelText('Snapshot name'), { target: { value: 'Launch' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Take Snapshot' }));
+    fireEvent.click(takeButton());
     expect(await screen.findByText('Launch')).toBeTruthy();
     expect(api.take).toHaveBeenCalledWith('Launch');
-    expect((screen.getByLabelText('Snapshot name') as HTMLInputElement).value).toBe('');
+    // Taken, the popover closes.
+    await waitFor(() => expect(screen.queryByLabelText('Snapshot name')).toBeNull());
     expect(screen.getByText(/^You · /)).toBeTruthy();
   });
 
@@ -160,6 +180,8 @@ describe('Snapshots alone, in History', () => {
     const api = fakeApi([0, 1, 2, 3, 4].map((i) => snap(i)));
     mount({ api, noun: 'design', viewerId: null });
     await open();
+    await screen.findByText('Snap 4');
+    openTake();
     expect(await screen.findByText('Taking another removes the oldest, “Snap 4”.')).toBeTruthy();
   });
 
@@ -177,7 +199,7 @@ describe('Snapshots alone, in History', () => {
     expect(bin).toEqual(expect.arrayContaining(['relative', 'touch-target']));
   });
 
-  it('confirms Revert in place, can cancel by button and Escape, then reverts and reloads', async () => {
+  it('confirms Revert beside its button, can cancel by button and Escape, then reverts and reloads', async () => {
     const reload = vi.fn();
     Object.defineProperty(window, 'location', { value: { reload }, configurable: true });
     const api = fakeApi([snap(1, { kind: 'before-revert' })]);
@@ -187,13 +209,11 @@ describe('Snapshots alone, in History', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Revert to Snap 1' }));
     expect(screen.getByText(/A snapshot of the document as it is now is taken first/)).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
-    expect(screen.queryByRole('group', { name: 'Confirm revert' })).toBeNull();
+    expect(screen.queryByRole('alertdialog')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Revert to Snap 1' }));
-    fireEvent.keyDown(screen.getByRole('group', { name: 'Confirm revert' }), { key: 'Escape' });
-    expect(screen.queryByRole('group', { name: 'Confirm revert' })).toBeNull();
-    fireEvent.keyDown(screen.getByRole('button', { name: 'Revert to Snap 1' }), { key: 'a' });
+    fireEvent.keyDown(document, { key: 'Escape' });
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull());
     fireEvent.click(screen.getByRole('button', { name: 'Revert to Snap 1' }));
-    fireEvent.keyDown(screen.getByRole('group', { name: 'Confirm revert' }), { key: 'Enter' });
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: 'Revert' }));
     });
@@ -202,15 +222,13 @@ describe('Snapshots alone, in History', () => {
     expect(screen.getByText('Reverted. Reloading…')).toBeTruthy();
   });
 
-  it('confirms Delete in place and removes the row', async () => {
+  it('deletes at once, with no question, and removes the row', async () => {
     const api = fakeApi([snap(1), snap(2, { name: null, author: null })]);
     mount({ api, noun: 'Space', viewerId: null });
     await open();
     await screen.findByText('Snap 1');
-    fireEvent.click(screen.getAllByRole('button', { name: 'Delete snapshot' })[0]!);
-    expect(screen.getByText("Delete this snapshot? This can't be undone.")).toBeTruthy();
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
+      fireEvent.click(screen.getAllByRole('button', { name: 'Delete snapshot' })[0]!);
     });
     await waitFor(() => expect(screen.queryByText('Snap 1')).toBeNull());
     expect(api.remove).toHaveBeenCalledWith('s_1');
@@ -224,12 +242,13 @@ describe('Snapshots alone, in History', () => {
     mount({ api, noun: 'plan', viewerId: null });
     await open();
     await screen.findByText('No snapshots yet');
-    fireEvent.click(screen.getByRole('button', { name: 'Take Snapshot' }));
+    openTake();
+    fireEvent.click(takeButton());
     expect((await screen.findByRole('alert')).textContent).toBe('This is too large to snapshot.');
     api.take = vi.fn(async () => {
       throw new Error('offline');
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Take Snapshot' }));
+    fireEvent.click(takeButton());
     await waitFor(() =>
       expect(screen.getByRole('alert').textContent).toBe('Something went wrong. Try again.'),
     );
@@ -275,6 +294,7 @@ describe('Snapshots alone, in History', () => {
     mount({ api, noun: 'plan', viewerId: null });
     await open();
     await screen.findByText('No snapshots yet');
+    openTake();
     const form = screen.getByLabelText('Snapshot name').closest('form')!;
     fireEvent.submit(form);
     expect(await screen.findByText('Taking…')).toBeTruthy();
@@ -284,11 +304,12 @@ describe('Snapshots alone, in History', () => {
   });
 });
 
-// History's timeline with Snapshots in it: Take Snapshot over it, each snapshot a pinned entry on the rail.
+// History's timeline with Snapshots in it: the Take Snapshot button (History's action) over it, each snapshot a pinned entry on the rail.
 function Timeline({ door }: { door: SnapshotsDoor }) {
   const extras = useSnapshotsExtras(door, () => NOW);
   return (
     <div>
+      {extras.action}
       {extras.top}
       <ol aria-label="Timeline">
         {extras.pins.map((pin, i) => (
@@ -314,16 +335,15 @@ describe('Snapshots in the History timeline', () => {
     expect(pins[1]!.querySelector('span.w-px')).toBeNull();
     // The row inside a pin is a block, the pin being the list item.
     expect(pins[0]!.querySelector('[data-snapshot-row]')!.tagName).toBe('DIV');
+    openTake();
     fireEvent.change(screen.getByLabelText('Snapshot name'), { target: { value: 'Launch' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Take Snapshot' }));
+    fireEvent.click(takeButton());
     expect(await screen.findByText('Launch')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Revert to Snap 1' }));
-    const confirm = screen.getByRole('group', { name: 'Confirm revert' });
-    expect(confirm.hasAttribute('data-keeps-escape')).toBe(true);
+    expect(screen.getByRole('alertdialog')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
-    fireEvent.click(screen.getAllByRole('button', { name: 'Delete snapshot' })[1]!);
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
+      fireEvent.click(screen.getAllByRole('button', { name: 'Delete snapshot' })[1]!);
     });
     await waitFor(() => expect(screen.queryByText('Snap 1')).toBeNull());
     expect(api.remove).toHaveBeenCalledWith('s_1');

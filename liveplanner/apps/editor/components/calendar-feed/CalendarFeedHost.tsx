@@ -79,9 +79,6 @@ export function CalendarFeedHost({
         <ToolGateDialog
           gate={gate}
           title="Subscribe to Calendar"
-          promptTitle="Calendars Read It From Our Servers"
-          syncCopy="Your calendar fetches the plan's dates from our servers by a private link, so the plan needs saving to your account."
-          signInCopy="A calendar link is your own, made for your account, so it needs you signed in. You come back here with Subscribe to Calendar open."
           param={CALENDAR_FEED_PARAM}
           onClose={() => setOpen(false)}
         />
