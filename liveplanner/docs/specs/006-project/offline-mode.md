@@ -171,7 +171,10 @@ every editor's copy:
 
 - **Per reader.** A copy is keyed by who read it: the account id, or the guest's id. It is read back only for that
   reader, and every load drops the copies any other reader left.
-- **Cleared on sign-out.** Signing out, and deleting the account, empties the store before the sign-out hop.
+- **Cleared on sign-out.** Signing out, and deleting the account, empties the store before the sign-out hop. A
+  sign-out in another app, which cannot reach this store, empties it at this app's next load, the moment its first
+  token answer finds the signed-in hint outlived its session (liveworkspace's accounts.md "A hint that outlived its
+  session").
 - **Lost access forgets.** A load that ends on not found (a revoked share link, a plan no longer shared with the
   reader), on the deleted card or behind a share password removes that plan's copy, and a share link's copies go
   by its code too. A load that cannot reach the server keeps it.
@@ -187,10 +190,11 @@ every editor's copy:
   kept; a copy older than 30 days is never read. Embeds, Community posts, workbenches and This Browser plans keep
   none.
 
-**The warm open.** Before auth settles, an address naming a cloud plan with a copy for the reader this browser
-expects paints that copy under the `'self'` placeholder, read-only, exactly as the other editors do: the reader
-expected is the guest token's id, or, when the signed-in hint says this browser is signed in, the account whose
-copies the store holds. A share link warm-opens only by the code the copy was kept under, by an address that names
+**The warm open.** An address naming a cloud plan with a copy for the reader paints that copy under the `'self'`
+placeholder, read-only, before the ordinary load lands, exactly as the other editors do: signed out by the signed-in
+hint, the reader is the guest token's id and the copy is read at once, before auth settles; signed in, the warm open
+waits for the session's first token answer and reads only the copies of the account it names (the hint says whether,
+never who), so a stale hint paints nothing and its answer empties the store. A share link warm-opens only by the code the copy was kept under, by an address that names
 the plan or by the link's own address (`/project/shared?s=<code>`). Embeds, workbenches and This Browser plans never
 warm-open, and neither does a copy whose first tab is not the tab this open would show first (no first tab kept, or
 `#t=` naming another tab).

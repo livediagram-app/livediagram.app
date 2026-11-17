@@ -470,6 +470,19 @@ call it after their first token answer, and never later, so a session that ends 
 never reloads it; the marketing pages still leave a visitor who started using the page alone. A guest,
 whose hint was never `1`, never bounces this way.
 
+What the editor kept in this browser for that account goes at the same answer, before the page asks again: its
+last seen copies (the warm open's) and its recent items, as a sign-out in the app itself would have taken them
+([Signing out](#signing-out)). The sign-out elsewhere could not reach this app's storage, so this first answer is
+where the app learns the session is gone; a stale hint never leaves a signed-out account's copies waiting in this
+browser for 30 days. Should the bounce sign the same person in again, the next open of each item is a cold one.
+
+**The hint says whether, never who.** Nothing an app reads before its first token answer names the account: there
+is no account id cookie, and the name cookies are only for showing. So an editor's warm open, which paints a last
+seen copy before the ordinary load, waits for that answer when the hint says signed in, and reads only the copies
+of the account the answer names (each product's `docs/specs/006-*/offline-mode.md` "Warm open"). A stale hint
+then paints nothing, and one account never sees another's copy, at the cost of the token round trip from a signed-in
+warm open's head start. A guest's warm open reads at once, for the guest token's id, as before.
+
 A page that has gone on a bounce, this way or the boot script's, is leaving, and settles nothing: the
 script marks it (`silentSignInLeaving`), `retrySilentSignIn` answers true, and the editors' accounts bridge
 and the Explorer on an app's address then never settle as a guest, and the guest hand-off
@@ -508,7 +521,8 @@ livedocuments, `ldes_` livedesign, `lh_` livehuddle), on these and on its refres
 because cookies ignore the port: every app on `localhost` in development shares one cookie jar, and two apps with one
 name would read and overwrite each other's session:
 
-- `<prefix>signed_in`: `1` with a session, `0` once it ends. It says whether.
+- `<prefix>signed_in`: `1` with a session, `0` once it ends. It says whether, never who: no cookie carries the
+  account id ([The hint says whether, never who](#signing-in-without-a-click)).
 - `<prefix>account`: the account's name as a header shows it (given name, else full name, else email;
   at most 64 characters, URI-encoded). It says who. Set beside the hint at every sign-in and token
   refresh, cleared beside it at sign-out, a refused refresh and closing the account

@@ -25,10 +25,10 @@ liveplanner (Work Tracker 927) bind the same shared modules; their blueprints na
 | First tab       | `LastSeenFirstTab<Tab>`          | `{ id, rev, tab }`: the tab the load painted first, with the revision it was read at       |
 | Keep            | `remember(copy)`                 | Write the copy, then prune                                                                 |
 | Forget          | `forget(reader, itemId)`         | Remove one copy (lost access), then prune                                                  |
-| Clear           | `forgetAll()`                    | Empty the store (sign-out, account deletion)                                               |
+| Clear           | `forgetAll()`                    | Empty the store (sign-out, account deletion, a stale signed-in hint)                       |
 | Prune           | (inside `remember` and `forget`) | Drop other readers' copies, copies past the age limit, and the oldest past the count limit |
 | Warm open       | `readWarmCopy`, `paintWarm`      | The early paint of a copy before auth settles, read-only, until the catch-up lands         |
-| Expected reader | `expectedReader(copies, who)`    | The guest token's id, or (signed-in hint) the account `lastReader()` names                 |
+| Expected reader | `expectedReader(who)`            | The guest token's id, or (signed-in hint) the account the session's token answer names     |
 | Catch-up        | (the ordinary bootstrap load)    | The load that runs once auth settles and replaces the painted copy in place                |
 | Follower        | `createLastSeenFollower(copies)` | The copies plus the one copy this page follows (`current`) and its waiting refresh         |
 | Follow          | `followMeta`, `followSave`       | Fold the open document's name, tab list or landed first-tab save into the followed copy    |
@@ -41,7 +41,7 @@ liveplanner (Work Tracker 927) bind the same shared modules; their blueprints na
 
 | File                                                                 | Responsibility                                                                                                                                                                                                               |
 | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `../packages/workbench/src/lib/api/last-seen-copies.ts`              | `createLastSeenCopies(store)`: `remember`, `read`, `lastReader`, `forget`, `forgetAll`; the limits; `lastSeenKey`; the read-side validation                                                                                  |
+| `../packages/workbench/src/lib/api/last-seen-copies.ts`              | `createLastSeenCopies(store)`: `remember`, `read`, `readVia`, `forget`, `forgetAll`; the limits; `lastSeenKey`; the read-side validation                                                                                     |
 | `../packages/workbench/src/lib/api/last-seen-store.ts`               | `createLastSeenStore(dbName)`: the IndexedDB store, two object stores (`copies`, `seen`), one kept connection, every call bounded and never throwing                                                                         |
 | `../packages/workbench/src/lib/editor-arrival.ts`                    | `openShareLink` and `openOwnAddress` keep the copy on reaching the document and forget it on not found, the deleted card or the password gate                                                                                |
 | `../packages/workbench/src/lib/api/last-seen-follower.ts`            | `createLastSeenFollower(copies)`: `remember`, `read`, `forget`, `forgetAll`, `follows`, `followMeta`, `followSave`, `followItem`, `flush`; `LAST_SEEN_REFRESH_MS`                                                            |
@@ -50,12 +50,12 @@ liveplanner (Work Tracker 927) bind the same shared modules; their blueprints na
 | `../packages/workbench/src/lib/warm-open.ts`                         | `readWarmCopy`, `expectedReader`, `hashTabId`, `keptWarmTab`, `measureAfterPaint`: which copy may paint, and the timing marks; `guardNotFound`, `warmOpenFallback`: a warm-painted not found checked once cold               |
 | `../packages/workbench/src/hooks/editor/useBrowserTabTitle.ts`       | Holds the tab title while the editor route shows it                                                                                                                                                                          |
 | `../packages/auth-client/src/token-answer.ts`                        | `askToken`, `askTokenUntilKnown`: the first token answer, with unknown asked again                                                                                                                                           |
-| `apps/editor/app/document/[id]/useIdentityBootstrap.ts`              | `tryEarlyOpen` reads the copy before auth settles, `paintWarm` paints it, the load's catch-up replaces it or takes it off the screen                                                                                         |
+| `apps/editor/app/document/[id]/useIdentityBootstrap.ts`              | `tryEarlyOpen` reads a guest's copy before auth settles, `warmForAccount` an account's once auth has, `paintWarm` paints it, the load's catch-up replaces it or takes it off the screen                                    |
 | `apps/editor/lib/last-seen.ts`                                       | livediagram's binding: `lastSeenCopies`, a follower over `createLastSeenCopies(createLastSeenStore(LAST_SEEN_DB))` (`livediagram-last-seen`)                                                                                 |
 | `apps/editor/app/document/[id]/editor-state/useEditorPersistence.ts` | Calls `useLastSeenFollow` and hands its `onSaveLanded` to `useAutosave`                                                                                                                                                      |
 | `apps/editor/app/document/[id]/document-arrival.ts`                  | `DOCUMENT_ARRIVAL.lastSeen = lastSeenCopies`                                                                                                                                                                                 |
 | `apps/editor/app/document/[id]/seed-fetched-document.ts`             | The seed answers the first tab it painted (`LastSeenFirstTab`), or null when the eager fetch failed; `makePaintLastSeen` shows a copy the same way; the seed keeps the painted tab at an unchanged revision (`warmFirstTab`) |
-| `apps/editor/components/providers/AccountsBridge.tsx`                | `endSession` (sign-out, account deletion) awaits `lastSeenCopies.forgetAll()` beside `forgetRecentDiagrams()`                                                                                                                |
+| `apps/editor/components/providers/AccountsBridge.tsx`                | `forgetAccount()` (`lastSeenCopies.forgetAll()` beside `forgetRecentDiagrams()`), awaited by `endSession` and by a hinted first answer of signed out                                                                         |
 
 ## Behaviour and state
 
@@ -102,14 +102,21 @@ itemId, { name, tabs })` and `followSave(reader, itemId, { name, tabs, revs })` 
   - **Save landed.** `useAutosaveCore` collects each tab PUT's revision and, in the branch where the newest save moves
     the baseline, calls `onSaveLanded({ tabs, name, revs })` with the baseline `baseline.after` answered.
 - **Clear.** `forgetAll` empties both object stores in one transaction. Sign-out awaits it (bounded by the store's
-  timeout) before the hop, so no copy outlives the session in this browser.
+  timeout) before the hop, so no copy outlives the session in this browser. So does the accounts bridge's
+  `initialSession` when the signed-in hint was set and the first token answer is signed out (the session ended in
+  another app, which cannot reach this store), before it calls `retrySilentSignIn`.
 - **Warm open (part 3).** The bootstrap's first layout effect calls `tryEarlyOpen` (never awaited by anything; a
   rejection is logged and the open waits for auth as before). Unless auth has answered, the editor is hydrated, or
   it is an embed or a workbench:
   - A path naming a This Browser document takes the early open, as before (`isOfflineId`, only without `?s=`).
-  - Otherwise `readWarmCopy(lastSeenCopies, { itemId, shareCode, hash }, { signedIn: readSignedInHint(), guestId:
-getGuestSelfId() })`. `expectedReader`: signed out, the guest token's id; signed in, `lastReader()` (the reader of
-    the newest `seen` row) when it is an account (`user_…`), else nobody. Then `read(reader, itemId)`; when that finds
+  - Signed in by the hint (`readSignedInHint()`, read before the first await): no read yet. The address is kept
+    (`warmAddress`) and the layout effect on `[authLoaded, passwordRetry]` calls `warmForAccount` before `bootstrap`:
+    once auth has answered, with an `accountUserId`, it reads
+    `readWarmCopy(lastSeenCopies, address, { signedIn: true, accountId: accountUserId })`, once; an answer of signed
+    out (a stale hint) reads nothing. Auth answering while `isOfflineId` loads reads at once from `tryEarlyOpen`.
+  - Otherwise (no hint) `readWarmCopy(lastSeenCopies, { itemId, shareCode, hash }, { signedIn: false, guestId:
+getGuestSelfId() })`. `expectedReader`: signed out, the guest token's id; signed in, the `accountId` the session
+    named when it is an account (`user_…`), else nobody. Then `read(reader, itemId)`; when that finds
     none and the address carries `?s=<code>` (a link's own address, `/<route>/shared?s=<code>`, names no item, or
     names `shared` where the product's path parser reads it as an id), `readVia(reader, code)`: the reader's newest
     `seen` row whose `via` is the code, read with `read` so it is checked the same way. The address is not rewritten.
@@ -225,7 +232,7 @@ Promise<void>`, `entries() → Promise<LastSeenEntry[]>`, `clear() → Promise<v
 | A refresh's write fails or times out                      | `remember` never rejects; the copy stays as last written and the next refresh tries again                               |
 | Auth answers before the warm read does                    | The copy still paints while the load has not landed (`markLanding`) and resolved no other reader; else dropped          |
 | The read fails, times out or the store is missing         | `readWarmCopy` answers null; the open waits for auth as before                                                          |
-| A stale signed-in hint (signed out in another app)        | The account's copy paints; the participant resolves to someone else, so it leaves the screen for the opening screen     |
+| A stale signed-in hint (signed out in another app)        | Nothing is read or painted; the first token answer empties the store (`forgetAll`) before the silent sign-in's retry    |
 | The `#t=` fragment names another tab                      | No warm open: the copy holds no body for that tab                                                                       |
 | A link's own address (`/<route>/shared?s=<code>`)         | `readVia` finds the reader's newest copy kept by that code; the address is left as it is                                |
 | A tab switched to during the warm paint                   | Tab loader until the catch-up; the catch-up keeps that tab when it still exists and is in scope                         |
@@ -240,9 +247,9 @@ Promise<void>`, `entries() → Promise<LastSeenEntry[]>`, `clear() → Promise<v
 - The copy holds what the reader already saw, in their own browser profile, for at most 30 days. It is never sent
   anywhere.
 - **Per reader:** read only for the same reader; every keep or forget prunes every other reader's copies. A sign-out
-  in another app (which cannot reach this app's IndexedDB) leaves copies until this app's next load, which prunes them
-  under the guest, and part 3 reads only for the reader the signed-in hint names, so a signed-out browser never shows
-  them.
+  in another app (which cannot reach this app's IndexedDB) leaves copies until this app's next load, whose first token
+  answer finds the hint stale and empties the store. Signed in, part 3 reads only once that answer names the account,
+  so no account's copy ever paints for another account or for a signed-out browser.
 - **Lost access:** a revoked link, a removed team member, a trashed document or a new share password forgets the copy
   on the next load; the warm open (part 3) is read-only until that load answers, so lost access never yields an edit.
 - **Follow per reader:** a follow names its reader and document and changes only `current` when both match, so a
