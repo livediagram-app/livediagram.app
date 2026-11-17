@@ -2,7 +2,7 @@
 import { act, cleanup, render, screen } from '@testing-library/react';
 import { Component, useEffect, type ComponentType, type ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createAuthProvider } from './auth-provider';
+import { ACCOUNT_STALL_MS, createAuthProvider } from './auth-provider';
 import {
   DEFERRED_AUTH_DEFAULT,
   DEFERRED_AUTH_PENDING,
@@ -72,6 +72,7 @@ describe('createAuthProvider', () => {
       loadE2EAuthBridge: null,
       loadAccountsBridge,
       e2eSessionKey: 'k',
+      readSignedInHint: () => false,
     });
     render(
       <AuthProvider>
@@ -98,6 +99,7 @@ describe('createAuthProvider', () => {
       loadE2EAuthBridge: async () => E2EAuthBridge,
       loadAccountsBridge,
       e2eSessionKey: 'app:e2e:session',
+      readSignedInHint: () => false,
     });
     render(
       <AuthProvider>
@@ -116,6 +118,7 @@ describe('createAuthProvider', () => {
       loadE2EAuthBridge: null,
       loadAccountsBridge,
       e2eSessionKey: 'k',
+      readSignedInHint: () => false,
     });
     render(
       <AuthProvider>
@@ -137,6 +140,7 @@ describe('createAuthProvider', () => {
       loadE2EAuthBridge: null,
       loadAccountsBridge,
       e2eSessionKey: 'k',
+      readSignedInHint: () => false,
     });
     const first = render(
       <Boundary>
@@ -173,6 +177,7 @@ describe('createAuthProvider', () => {
       loadE2EAuthBridge: null,
       loadAccountsBridge: () => code.promise,
       e2eSessionKey: 'k',
+      readSignedInHint: () => false,
     });
     const error = vi.spyOn(console, 'error').mockImplementation(() => {});
     const view = render(
@@ -184,5 +189,107 @@ describe('createAuthProvider', () => {
     await act(async () => settle(code));
     expect(error).not.toHaveBeenCalled();
     error.mockRestore();
+  });
+});
+
+// A browser whose hint says signed in (liveworkspace/docs/specs/003-accounts/accounts.md "When the accounts site doesn't
+// answer", "The editors"; Work Tracker 1082): it waits for its session, never a guest meanwhile, and says it can't
+// reach the account while the session's answer doesn't come.
+describe('createAuthProvider with a signed-in hint', () => {
+  function Expecting() {
+    const auth = useDeferredAuth();
+    return (
+      <p>
+        {auth.authLoaded
+          ? `settled ${auth.userId ?? 'guest'}`
+          : `${auth.sessionExpected ? 'expected' : 'not expected'} ${auth.accountUnreachable ? 'unreachable' : 'reachable'}`}
+      </p>
+    );
+  }
+  // A bridge whose state the test publishes.
+  let publish: (state: DeferredAuthState) => void = () => {};
+  function Bridge({ onState }: OnState) {
+    useEffect(() => {
+      publish = onState;
+    }, [onState]);
+    return null;
+  }
+  const provider = (hinted: boolean) =>
+    createAuthProvider({
+      loadE2EAuthBridge: null,
+      loadAccountsBridge: async () => Bridge,
+      e2eSessionKey: 'k',
+      readSignedInHint: () => hinted,
+    });
+
+  afterEach(() => vi.useRealTimers());
+
+  it('expects the session, and says it can’t reach the account at the bridge’s first unknown answer', async () => {
+    const AuthProvider = provider(true);
+    render(
+      <AuthProvider>
+        <Expecting />
+      </AuthProvider>,
+    );
+    await act(async () => {});
+    expect(screen.getByText('expected reachable')).toBeTruthy();
+    expect(screen.queryByRole('status')).toBeNull();
+    act(() => publish({ ...DEFERRED_AUTH_DEFAULT, accountUnreachable: true }));
+    expect(screen.getByText('expected unreachable')).toBeTruthy();
+    // The notice's code loads lazily, as it first draws.
+    expect((await screen.findByRole('status')).textContent).toContain(
+      'Can’t reach your account right now',
+    );
+    // The session answers: the notice goes and the page carries on.
+    act(() => publish(SIGNED_IN));
+    expect(screen.getByText('settled user_a')).toBeTruthy();
+    expect(screen.queryByRole('status')).toBeNull();
+  });
+
+  it('says so after ACCOUNT_STALL_MS with no answer at all', async () => {
+    vi.useFakeTimers();
+    const AuthProvider = provider(true);
+    render(
+      <AuthProvider>
+        <Expecting />
+      </AuthProvider>,
+    );
+    await act(async () => {});
+    expect(screen.getByText('expected reachable')).toBeTruthy();
+    await act(async () => vi.advanceTimersByTime(ACCOUNT_STALL_MS));
+    expect(screen.getByText('expected unreachable')).toBeTruthy();
+    // A signed-out answer (a 401) settles at once, as a guest.
+    act(() => publish({ ...DEFERRED_AUTH_DEFAULT, authLoaded: true }));
+    expect(screen.getByText('settled guest')).toBeTruthy();
+    expect(screen.queryByRole('status')).toBeNull();
+  });
+
+  it('changes nothing without the hint', async () => {
+    vi.useFakeTimers();
+    const AuthProvider = provider(false);
+    render(
+      <AuthProvider>
+        <Expecting />
+      </AuthProvider>,
+    );
+    await act(async () => {});
+    act(() => publish({ ...DEFERRED_AUTH_DEFAULT, accountUnreachable: true }));
+    await act(async () => vi.advanceTimersByTime(ACCOUNT_STALL_MS * 2));
+    // Nothing expects a session, and no notice shows: the 5 s give-up settles it as before.
+    expect(screen.getByText(/^not expected/)).toBeTruthy();
+    expect(screen.queryByRole('status')).toBeNull();
+  });
+
+  it('shows no notice on the workbench page, which is signed in by its own session', async () => {
+    nav.pathname = '/embed/workbench/abc';
+    vi.useFakeTimers();
+    const AuthProvider = provider(true);
+    render(
+      <AuthProvider>
+        <Expecting />
+      </AuthProvider>,
+    );
+    await act(async () => vi.advanceTimersByTime(ACCOUNT_STALL_MS * 2));
+    expect(screen.queryByRole('status')).toBeNull();
   });
 });

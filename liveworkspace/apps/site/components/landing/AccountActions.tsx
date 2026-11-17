@@ -34,7 +34,7 @@ export function SignUpPromise() {
 }
 
 const PRIMARY =
-  'relative touch-target-y inline-flex min-h-12 items-center rounded-full bg-white px-6 text-sm font-semibold text-slate-900 shadow-lg transition hover:-translate-y-px hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white';
+  'relative touch-target-y inline-flex min-h-12 items-center rounded-full forced-edge bg-white px-6 text-sm font-semibold text-slate-900 shadow-lg transition hover:-translate-y-px hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white';
 const SECONDARY =
   'relative touch-target-y inline-flex min-h-12 items-center rounded-full border border-white/25 px-6 text-sm font-semibold text-white transition hover:border-white/50 hover:bg-white/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white';
 

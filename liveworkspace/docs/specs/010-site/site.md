@@ -1013,6 +1013,11 @@ pressable again, and so does coming Back to a page the browser kept.
   key the site has always used; renaming it would reset everyone's pick). Locally an app's whole port block counts
   as its address. A script in the page applies it before first paint (one lookup of the address, one read of
   storage), and the page's Appearance switch reads and writes the same key.
+- Under a Windows contrast theme (`forced-colors: active`), a button whose only shape is its fill keeps a 1 px
+  `ButtonBorder` edge (the shared `forced-edge` utility, [forced colours](../../../livediagram/docs/specs/004-interface-design/forced-colors.md)):
+  the account pages' primary button (Continue with email, Verify, Continue), the front door's and closing banner's
+  Create your free account, the account panels' primary button and Decline invitation. Before, Continue with email
+  on `/sign-in` was bare centred text with nothing marking it as a button. Normal themes are unchanged.
 - A page that fails to render never shows the framework's bare error screen. It shows the site's own: the
   title "Something went wrong · liveworkspace", a main landmark holding the logo (a link home) over one card (the
   shared empty state) with
