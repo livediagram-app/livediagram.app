@@ -48,10 +48,10 @@ describe('email templates', () => {
     expect(e.html).toContain('on by default');
   });
 
-  it('document-joined falls back to "Someone" / "your document" when unknown', () => {
+  it('document-joined falls back to "Someone" / "your canvas" when unknown', () => {
     const e = documentJoinedEmail(env, '', null);
     expect(e.subject).toMatch(/Someone/);
-    expect(e.html).toContain('your document');
+    expect(e.html).toContain('your canvas');
   });
 
   it('document-joined escapes a malicious document name', () => {
@@ -76,7 +76,7 @@ describe('mentionedEmail (docs/specs/012-collaboration/comment-mentions.md)', ()
   it('opens the document', () => {
     const doc = mentionedEmail(env, 'Sam', 'Roadmap', 'd1', 'hi');
     expect(doc.html).toContain('/document/d1');
-    expect(doc.html).toContain('Open the document');
+    expect(doc.html).toContain('Open the canvas');
   });
 
   it('falls back to "A teammate" without an author name', () => {

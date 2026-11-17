@@ -53,14 +53,14 @@ const FIXTURES: Record<string, unknown[][]> = {
 
 const EXPECTED: Record<string, string> = {
   approvalRequestedEmail: '3ba2c270959aed8ea4624df95bd6086da6195a1752f6dfde25da60658d064294',
-  accountDeletedEmail: '1b07282d2497f934456a72e517b0bb5d4845e5950625eb5f286c518d9e178b24',
-  actionAssignedEmail: 'e255fad94a57b364978e26d7d5dc2d2b39671537f97857ff486d48ac749a9b27',
-  commentNotificationEmail: '7780ada686b51f7782047fb716870c195aad656dbdb13b9b901be679bdb4f17b',
-  documentJoinedEmail: '1c50577b4dd6ee28a0e7f66b5358d3ebadab61a997d196fd0283f48f44d25450',
-  firstShareEmail: '277ec806d6e4f8d3d2278d159f522c26fdd261376bf87e016c279a3c2bb22bca',
+  accountDeletedEmail: '4a524c2cdb03309bef0ebe1bcb5bab5a97d79b8150603f531ba3155450036b04',
+  actionAssignedEmail: '83e7f2a50de6f0fb44320b6a3a9c2aad47b114c6e6a2f27c789ce325eb05fde5',
+  commentNotificationEmail: '214125241f29df67a8a18b654769f54909a60d388422fabefc1ba68813b17526',
+  documentJoinedEmail: 'b61a1744d07453592a77bb4c83828235695102c5b95c5bebf0b250b968bd9f8c',
+  firstShareEmail: '00db957ea85550f7adbf5abe05cf4d55654ae6905ba0f719a052e90f3d5637a7',
   mentionQuote: '8d3f68955246da293e50ef5ebbe33ecdd4a4b7e9d61945db180b8771a547ead9',
-  mentionedEmail: '813b78f2511c1ba75e3c35076357e92187f11dd75b21906fa316bc309f02b604',
-  milestoneEmail: '306ffb43e6929cd70631d1f3c82ff0e40a3aeef4916646bb849545bdb790189d',
+  mentionedEmail: '55774b82f5e35def8c53a0d1f8068e85a4fecadedb5c49849ed061412a059574',
+  milestoneEmail: '02b3790cb8e3110e2225823e49d788f2db4e3352c83996151eb3edbe6f4b17d7',
 };
 
 function renders(): Record<string, string> {
@@ -83,5 +83,24 @@ describe('rendered emails stay byte-identical', () => {
   it('matches every pinned hash', () => {
     if (recording()) console.log(`HASHES livediagram ${JSON.stringify(renders())}`);
     expect(renders()).toEqual(EXPECTED);
+  });
+});
+
+// People see livediagram's files as canvases (domain-language.md "Canvas"), so no email says "document" in its subject
+// or words; only the `/document/<id>` link path, which is an address, keeps the old name.
+describe('emails call the file a canvas', () => {
+  it('says no "document" in any subject or visible text', () => {
+    const offenders: string[] = [];
+    for (const [name, value] of Object.entries(templates)) {
+      const cases = FIXTURES[name];
+      if (typeof value !== 'function' || name === 'mentionQuote' || !cases) continue;
+      const fn = value as (...args: unknown[]) => { subject: string; html: string };
+      for (const args of cases) {
+        const email = fn(ENVS[0], ...args);
+        const visible = `${email.subject} ${email.html.replace(/<[^>]*>/g, ' ')}`;
+        if (/document/i.test(visible)) offenders.push(name);
+      }
+    }
+    expect(offenders).toEqual([]);
   });
 });
