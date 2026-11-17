@@ -278,6 +278,7 @@ export function EditorView() {
     isOffline,
     selectTab,
     landscapeShown: landscapeBars.shown,
+    role,
   });
 
   // The bars handle, at the canvas's top-right corner: only on a phone held sideways (CSS), and only

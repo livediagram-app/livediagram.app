@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { layOutPages, newFlashcardPage, type Page } from '@livedocuments/document';
-import { contentsRows, pageInView } from './page-contents';
+import { contentsRows, contentsSummary, pageInView } from './page-contents';
 import { contentsDropUnit } from './page-contents';
 
 // docs/specs/007-editor/pages-mode.md "Contents".
@@ -32,6 +32,24 @@ describe('a stack in Contents', () => {
       ['Card 2', 'Flashcard · Untitled'],
     ]);
     expect(rows.map((r) => r.speakingTime)).toEqual(['1 min', undefined]);
+  });
+
+  // docs/specs/007-editor/flashcards.md "The whole talk".
+  it("heads the stack with the whole talk's length, none off a stack or with no words", () => {
+    const stack = layOutPages([
+      newFlashcardPage('a', 'f1'),
+      newFlashcardPage('b', 'f2'),
+      newFlashcardPage('c', 'f3'),
+    ]);
+    const words = (n: number) => ({
+      blocks: [{ id: 'p', type: 'paragraph' as const, runs: [{ text: 'word '.repeat(n).trim() }] }],
+    });
+    expect(contentsSummary(stack, { f1: words(260), f2: words(130), f3: { blocks: [] } })).toBe(
+      '3 cards · about 3 min',
+    );
+    expect(contentsSummary(stack, { f1: { blocks: [] } })).toBeNull();
+    expect(contentsSummary(stack, undefined)).toBeNull();
+    expect(contentsSummary(pages, { f1: words(260) })).toBeNull();
   });
 });
 

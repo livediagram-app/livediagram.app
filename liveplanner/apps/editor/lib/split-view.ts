@@ -45,6 +45,14 @@ export const SPLIT_DROP_ZONE_MIN_PX = 160;
 // above it and a drop near the last pill still lands as a reorder.
 export const SPLIT_TAB_BAR_CLEARANCE_PX = 64;
 
+// The view the editor hands to the tab it leaves as it moves to the other pane (docs/specs/007-editor/split-view.md
+// "The other pane"), or null to open that pane fitted: when something covered the canvas (a Sheet, a board filling
+// its tab, a Dashboard or Form page) the canvas view behind it was never on screen, and holding it would open the
+// pane zoomed in on a corner of the drawing.
+export function handoffAnchor<T>(canvasCovered: boolean, editorAnchor: () => T): T | null {
+  return canvasCovered ? null : editorAnchor();
+}
+
 export function splitAvailable(viewportWidth: number, viewportHeight = Infinity): boolean {
   return viewportWidth >= SPLIT_MIN_VIEWPORT_PX && viewportHeight >= SPLIT_MIN_VIEWPORT_HEIGHT_PX;
 }

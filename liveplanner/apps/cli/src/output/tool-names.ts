@@ -7,6 +7,7 @@ export const COMMAND_OF_TOOL: Readonly<Record<string, string>> = {
   find_projects: 'project ls',
   read_project: 'project view',
   view_tab: 'tab view',
+  view_live: 'watch',
   list_templates: 'template ls',
   create_project: 'project create',
   add_tab: 'tab add',

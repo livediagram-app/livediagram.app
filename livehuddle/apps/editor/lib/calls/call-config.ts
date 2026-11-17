@@ -107,6 +107,8 @@ export type ProximityCallInput = {
   getDisplayMedia?: (options: DisplayMediaStreamOptions) => Promise<MediaStream>;
   // Whether the page is visible; a hidden tab receives no bubbles. Defaults to the document's.
   pageVisible?: () => boolean;
+  // Whether the mini view's window is open (a hidden tab then receives its tiles' cameras). Defaults to the window's.
+  miniViewOpen?: () => boolean;
   // The canvas's local preview (video-and-screen-bubbles.md "Local preview"): a live call sends what it may of it.
   preview?: Pick<LocalPreview, 'stream' | 'take' | 'stop' | 'subscribe'>;
   // An Editor stopped your screen share (video-and-screen-bubbles.md "Share roles"): told who, by presence id, so the

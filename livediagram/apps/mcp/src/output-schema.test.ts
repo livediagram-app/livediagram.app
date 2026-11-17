@@ -19,7 +19,13 @@ import * as outputs from '@livediagram/agent-verbs/mcp';
 // again after listTools, and the strict parse below catches the one drift
 // neither SDK side does, a result field the schema never declared.
 
-const TAB = { id: 't1', name: 'Tab 1', rev: 3, elements: [] };
+// One box, so the view's element schema is exercised and view_edit has something to rename.
+const TAB = {
+  id: 't1',
+  name: 'Tab 1',
+  rev: 3,
+  elements: [{ id: 'e1', type: 'shape', shape: 'rectangle', x: 0, y: 0, width: 10, height: 10 }],
+};
 // What the changeset route answers (docs/specs/024-agents/agent-changesets.md).
 const CHANGESET = {
   dryRun: false,
@@ -107,7 +113,7 @@ async function api(request: Request): Promise<Response> {
       ],
     });
   if (path.endsWith('/room-ticket') && url.searchParams.get('cap') === 'view')
-    return json({ ticket: 'rt2~sealed', expiresAt: 1_800_000_000_000 });
+    return json({ ticket: 'rt2~sealed', expiresAt: 1_800_000_000_000, level: 'edit' });
   if (path.endsWith('/restore')) return json({ document: LIVE_DOC });
   if (path.endsWith('/archive') || path.endsWith('/unarchive')) return json({ document: LIVE_DOC });
   if (path.endsWith('/share'))
@@ -189,6 +195,11 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
   },
   { tool: 'view_tab', output: 'viewTabOutput', args: { documentId: 'd1' } },
   { tool: 'view_live', output: 'viewLiveOutput', args: { documentId: 'd1' } },
+  {
+    tool: 'view_edit',
+    output: 'viewEditOutput',
+    args: { documentId: 'd1', tabId: 't1', edits: [{ elementId: 'e1', label: 'Renamed', dx: 8 }] },
+  },
 ];
 
 describe('tool output schemas', () => {
@@ -237,6 +248,9 @@ describe('tool output schemas', () => {
         // Its one line never carries the ticket (docs/specs/015-api/mcp-server.md "Live updates").
         expect(first!.text).toBe('Opened live updates for the interactive view.');
         expect(first!.text).not.toContain((structured as { ticket: string }).ticket);
+      } else if (tool === 'view_edit') {
+        // One line, not the SVG, as view_tab ("Edits in the view").
+        expect(first!.text).toBe('Saved 1 edit from the interactive view.');
       } else {
         expect(JSON.parse(first!.text)).toEqual(structured);
       }

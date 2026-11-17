@@ -101,6 +101,14 @@ describe('articles in the answer', () => {
         blocks: 1,
         words: 2,
         estimatedPages: 1,
+        readability: {
+          readingMinutes: 1,
+          sentences: 1,
+          wordsPerSentence: 2,
+          longSentences: 0,
+          ease: null,
+          level: null,
+        },
         look: null,
       },
       {
@@ -110,6 +118,14 @@ describe('articles in the answer', () => {
         blocks: 1,
         words: 1,
         estimatedPages: 1,
+        readability: {
+          readingMinutes: 1,
+          sentences: 1,
+          wordsPerSentence: 1,
+          longSentences: 0,
+          ease: null,
+          level: null,
+        },
         look: 'report',
       },
     ]);

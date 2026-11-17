@@ -50,7 +50,11 @@ import { BrowseMemoryContext, useBrowseMemory } from './PaletteCategoryBrowser';
 import { CATEGORY_BAR_MODES } from './category-flyout-groups';
 import { setPalettePopoverOpen } from '@liveworkspace/workbench/lib/palette-popover-open';
 import { useBarLabels } from '@liveworkspace/workbench/components/palette/useBarLabels';
-import { useStripCrowded } from '@liveworkspace/workbench/components/palette/useStripCrowded';
+import { useBarFold } from '@liveworkspace/workbench/components/palette/useBarFold';
+import {
+  crowdedPaddingRight,
+  useStripCrowding,
+} from '@liveworkspace/workbench/components/palette/useStripCrowded';
 import { SessionBrowse } from './session-category';
 import { barCategoriesFor } from './bar-categories';
 import { CategoryBarButtons, CategoryBarFlyout, useCategoryBar } from './CategoryBar';
@@ -208,7 +212,16 @@ export function ToolbarPalette(props: Props) {
   });
   const leadingRef = useRef<HTMLDivElement>(null);
   // Too wide to centre between the menu card's sides (a tablet): the strip sits at the right instead.
-  const crowded = useStripCrowded(cardRef, leading == null);
+  const { clear, clearRight } = useStripCrowding(cardRef, leading == null);
+  // Experiment (no header bar): centred in the gap between the menu box and the corner card, filling it when short.
+  const between = leading == null;
+  // Still too wide once the names are gone (a narrow window): the bar shows its first categories and folds the rest
+  // behind More (useBarFold), so the strip fits the gap between the menu box and the corner card.
+  const barShown = useBarFold(cardRef, {
+    enabled: categoryBar && !isMobile && !fittedLabels,
+    categoriesKey: barCategories.map((c) => c.id).join('|'),
+    scale,
+  });
   const stripLimit = useStripTileLimit(cardRef, {
     leadingRef,
     isMobile,
@@ -221,6 +234,19 @@ export function ToolbarPalette(props: Props) {
   // (docs/specs/007-editor/toolbar-layout.md "On a phone"); the fitted count
   // still decides whether More is needed for what is out of view.
   const swipe = phoneRow;
+  // The Library's button (libraries.md). On a phone it ends the category row and swipes with it, rather than taking
+  // room beside Search for good.
+  const libraryButton = libraryTab ? (
+    <ToolbarLibraryButton
+      open={library.open}
+      onToggle={toggleLibrary}
+      // The Library's own glyph, as in every app (libraries.md), not the My shapes tab's, whose ink sits a pixel low
+      // in an icon-only square.
+      icon={<LibraryIcon />}
+      description={libraryTab.description}
+    />
+  ) : null;
+  const libraryInBar = swipe && categoryBar;
   const tileLimit = swipe ? Infinity : stripLimit;
   const categoryTiles = category?.tiles;
   const fitted = stripTilesFor(category?.id ?? defaultId, {
@@ -311,6 +337,7 @@ export function ToolbarPalette(props: Props) {
       ref={rootRef}
       data-toolbar-palette=""
       data-region="palette"
+      data-strip-between={between ? '' : undefined}
       // The strip is the Palette in this layout, so the panel-opacity
       // preference (docs/specs/007-editor/user-preferences.md) fades it and its More popover
       // like every other panel; hovering either restores it.
@@ -326,8 +353,9 @@ export function ToolbarPalette(props: Props) {
       // centred; `top` is restated so the strip keeps its 12px from the top.
       style={{
         ...(scale === 1 ? {} : { ...uiScaleStyle(scale), top: toSurfacePx(12, scale) }),
-        alignItems: crowded ? 'flex-end' : 'center',
-        paddingRight: crowded ? '0.75rem' : 0,
+        alignItems: 'center',
+        paddingLeft: between ? toSurfacePx(Math.max(clear, 12), scale) : 0,
+        paddingRight: between ? crowdedPaddingRight(clearRight, scale) : 0,
       }}
       // While one of its popovers is open (a category's flyout, More, Search) the strip rises to the popover layer,
       // so what hangs from it sits over everything on the canvas, an element's toolbar and menus included.
@@ -401,7 +429,16 @@ export function ToolbarPalette(props: Props) {
                           bar={bar}
                           categories={barCategories}
                           labels={fittedLabels || swipe}
+                          shown={swipe ? null : barShown}
                           scrollable={swipe}
+                          trailing={
+                            libraryInBar ? (
+                              <>
+                                <Divider />
+                                {libraryButton}
+                              </>
+                            ) : null
+                          }
                         />
                       ) : (
                         <>
@@ -487,16 +524,7 @@ export function ToolbarPalette(props: Props) {
                   {esBoard || participant ? null : (
                     <>
                       <Divider />
-                      {libraryTab ? (
-                        <ToolbarLibraryButton
-                          open={library.open}
-                          onToggle={toggleLibrary}
-                          // The Library's own glyph, as in every app (libraries.md), not the My shapes tab's, whose ink sits
-                          // a pixel low in an icon-only square.
-                          icon={<LibraryIcon />}
-                          description={libraryTab.description}
-                        />
-                      ) : null}
+                      {libraryInBar ? null : libraryButton}
                       <div ref={searchButtonRef} className="flex">
                         <ToolbarSearchButton open={search.open} onToggle={toggleSearch} />
                       </div>

@@ -9,7 +9,12 @@ import {
   type AccessLevel,
   type RoomTicketResponse,
 } from '@livediagram/api-schema';
-import { openRoomTicket, roomTicketLevel, sealRoomTicket } from '@liveworkspace/index-app';
+import {
+  openRoomTicket,
+  requestedRoomCap,
+  roomTicketLevel,
+  sealRoomTicket,
+} from '@liveworkspace/index-app';
 import { adderKeyFor } from '../adder-key';
 import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
 import { documentRoom } from '../document-client';
@@ -50,15 +55,6 @@ async function adderKeyOf(
   return role === 'participate' && person ? adderKeyFor(documentId, person) : null;
 }
 
-// `?cap=view` on the mint (docs/specs/015-api/api.md): a view-only ticket, the MCP view's (mcp-server.md "Live
-// updates"). The only cap a caller may ask for; null when it asks for none.
-export const VIEW_ONLY_CAP = 'view';
-function requestedCap(url: URL): typeof VIEW_ONLY_CAP | null | 'invalid' {
-  const cap = url.searchParams.get('cap');
-  if (cap === null) return null;
-  return cap === VIEW_ONLY_CAP ? cap : 'invalid';
-}
-
 // Returns null when the request isn't a room route.
 export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Response | null> {
   const { request, env, url, segments } = ctx;
@@ -67,7 +63,8 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
   // editor knows which stickies are theirs to delete. It says nothing about anybody else.
   if (segments.length === 4 && segments[3] === 'room-ticket' && request.method === 'POST') {
     const id = segments[2]!;
-    const cap = requestedCap(url);
+    // `?cap=view` (api.md): a view-only ticket, the MCP view's (mcp-server.md "Live updates").
+    const cap = requestedRoomCap(url);
     if (cap === 'invalid') return badRequest('invalid_cap');
     const grant = await resolveDocumentGrant(ctx, id);
     if (grant instanceof Response) return grant;
@@ -114,8 +111,14 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     const person = linkCodeOf(grant.sub) ? null : grant.sub;
     const adderKey = await adderKeyOf(id, level, person);
     const answer: RoomTicketResponse = adderKey ? { ticket, adderKey } : { ticket };
-    // A view-only ticket's holder cannot read the grant inside, so the answer says when it lapses.
-    if (cap) answer.expiresAt = grant.exp * 1000;
+    // A view-only ticket's holder cannot read the grant inside, so the answer says when it lapses, and the caller's own
+    // level, which the MCP view offers its edits by (mcp-server.md "Edits in the view"): a read-only token's is view
+    // whatever the grant says, since the choke point refuses its every write. The ticket still admits at view.
+    if (cap) {
+      answer.expiresAt = grant.exp * 1000;
+      const own = workbench ? capWorkbenchRole(grant.level, workbench.level) : grant.level;
+      answer.level = ctx.token?.readOnly ? 'view' : own;
+    }
     return json(answer);
   }
 

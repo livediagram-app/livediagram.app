@@ -28,6 +28,8 @@ export type SubscriptionInput = {
   maximised: CallMaximised | null;
   // Whether the page is visible; a hidden tab receives no bubbles.
   visible: boolean;
+  // Whether the mini view's window is open: a hidden tab then receives its tiles' few small cameras.
+  miniView?: boolean;
 };
 
 export type Subscriptions = { heard: ReadonlySet<string>; wants: SfuWant[] };
@@ -68,13 +70,14 @@ export function chooseSubscriptions(input: SubscriptionInput): Subscriptions {
     peers,
     view: scene.view ?? null,
     visible: input.visible,
+    miniView: input.miniView,
     allowVideo: callsModeAllows(input.mode, 'video'),
     allowScreen: callsModeAllows(input.mode, 'screen'),
     maximised,
   });
   for (const id of seen.video) {
     const video = peers.get(id)?.video;
-    const large = maximised?.id === id && maximised.media === 'video';
+    const large = !seen.small && maximised?.id === id && maximised.media === 'video';
     if (video) wants.push(large ? { ...video, layer: 'f' } : video);
   }
   for (const id of seen.screen) {

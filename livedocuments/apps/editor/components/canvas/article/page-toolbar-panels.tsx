@@ -349,9 +349,12 @@ export function MorePanel({
   onAction,
   card = false,
   counts = null,
+  onNextLong,
 }: {
   selection: ArticleSelectionState;
   onAction: (action: MoreAction) => void;
+  // Selects the article's next long sentence (article-pages.md "Word Count").
+  onNextLong?: (() => void) | undefined;
   // On a flashcard the style is the card's (docs/specs/007-editor/flashcards.md "Text only").
   card?: boolean;
   // The article's Word Count, read as the menu opened (article-pages.md "Word Count").
@@ -400,7 +403,7 @@ export function MorePanel({
       {counts ? (
         <>
           <Rule />
-          <WordCountLine counts={counts} />
+          <WordCountLine counts={counts} onNextLong={onNextLong} />
         </>
       ) : null}
     </div>

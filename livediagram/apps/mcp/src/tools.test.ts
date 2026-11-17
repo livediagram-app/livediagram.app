@@ -53,7 +53,13 @@ type Registered = {
 
 type Emitted = { category: string; action: string; type: string };
 
-const TAB = { id: 't_1', name: 'Tab 1', rev: 1, elements: [] };
+// One box, for view_edit to rename.
+const TAB = {
+  id: 't_1',
+  name: 'Tab 1',
+  rev: 1,
+  elements: [{ id: 'e_1', type: 'shape', shape: 'rectangle', x: 0, y: 0, width: 10, height: 10 }],
+};
 const LIVE_DOC = {
   id: 'd_1',
   name: 'A diagram',
@@ -168,6 +174,9 @@ const ARGS = {
   data: 'iVBORw0KGgoAAAANSUhEUgAAAEAAAAAwCAYAAAA=',
   imageIds: ['img-1'],
 };
+// view_edit's rename of the tab's one box: its own `edits`, which update_document reads as text edits.
+const argsOf = (tool: string) =>
+  tool === 'view_edit' ? { ...ARGS, edits: [{ elementId: 'e_1', label: 'Renamed' }] } : ARGS;
 
 const AUTHED = { authInfo: { token: 'tok_test' } };
 
@@ -181,7 +190,7 @@ const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 afterEach(() => vi.unstubAllGlobals());
 
 describe('registerTools', () => {
-  it('registers the twenty documented tools, each with a description', () => {
+  it('registers the twenty-two documented tools, each with a description', () => {
     const { registered } = harness();
     const current = registered.filter((r) => !isDeprecated(r));
     expect(current.map((r) => r.name).sort()).toEqual([
@@ -204,6 +213,7 @@ describe('registerTools', () => {
       'unarchive_document',
       'update_document',
       'upload_image',
+      'view_edit',
       'view_live',
       'view_tab',
     ]);
@@ -222,7 +232,7 @@ describe('registerTools', () => {
     const seen: Record<string, Emitted[]> = {};
     for (const tool of registered) {
       const before = emitted.length;
-      const result = (await tool.handler(ARGS, AUTHED)) as { isError?: boolean };
+      const result = (await tool.handler(argsOf(tool.name), AUTHED)) as { isError?: boolean };
       // Guards the harness itself: a tool that failed here would pass the
       // "no emit" half vacuously.
       expect(result.isError, tool.name).not.toBe(true);
@@ -302,6 +312,8 @@ describe('tool annotations', () => {
     // docs/specs/015-api/mcp-server.md "Interactive view (MCP Apps)": the view's own read.
     view_tab: 'read',
     view_live: 'read',
+    // "Edits in the view": a rename or a move, changing nothing else.
+    view_edit: 'write',
     change_threads: 'destructive',
     find_documents: 'read',
     read_document: 'read',

@@ -277,3 +277,16 @@ describe('the catalogue boards leave', () => {
     expect(catalogueWithBoardTypes(stored, [board(['deal'])], { currency: 'EUR' })).toBeNull();
   });
 });
+
+// A Roadmap board publishes as a public roadmap with voting (docs/specs/026-plan/public-roadmap.md "The settings";
+// Work Tracker 1114): the type it brings carries Votes on its Detailed face, so the team sees and sorts by upvotes.
+describe('the Roadmap board preset', () => {
+  it('brings a type with Votes on its card face', () => {
+    const brought = boardTypesToAdd([preset('roadmap')], []);
+    expect(ids(brought)).toEqual(['project']);
+    for (const type of brought) {
+      expect(type.fields).toContain('votes');
+      expect(typeCardDisplay(type, 'detailed')).toContain('votes');
+    }
+  });
+});

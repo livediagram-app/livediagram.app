@@ -1,0 +1,61 @@
+/* Experiment (no header bar): the account control, a full-height header action, redrawn as a button in the top-right
+ * corner card (EditorCornerActions.tsx), its glyph beside its name. Unlayered, so it outranks the
+ * header action's utilities. */
+[data-corner-actions] > a,
+[data-corner-actions] > div > button[aria-haspopup] {
+  height: 2.25rem;
+  min-width: 0;
+  flex-direction: row;
+  gap: 0.375rem;
+  border-left-width: 0;
+  border-radius: 0.5rem;
+  padding-inline: 0.625rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+[data-corner-actions] > div {
+  height: auto;
+}
+[data-corner-actions] > a:hover,
+[data-corner-actions] > div > button[aria-haspopup]:hover {
+  background-color: var(--color-slate-100);
+}
+.dark [data-corner-actions] > a:hover,
+.dark [data-corner-actions] > div > button[aria-haspopup]:hover {
+  background-color: var(--color-slate-800);
+}
+
+/* On a phone the card's buttons are their glyphs alone (EditorCornerActions' own labels go `phone:sr-only`): Sign in's
+ * words shrink to nothing (still its accessible name), the account's first name hides (its aria-label names it). The
+ * query is the `phone:` variant's (each app's globals.css). */
+@media (max-width: 639px), (pointer: coarse) and (max-height: 499px) {
+  [data-corner-actions] > a,
+  [data-corner-actions] > div > button[aria-haspopup] {
+    width: 2.25rem;
+    justify-content: center;
+    padding-inline: 0;
+    gap: 0;
+  }
+  [data-corner-actions] > a {
+    font-size: 0;
+  }
+  [data-corner-actions] > div > button[aria-haspopup] > :not(:first-child) {
+    display: none;
+  }
+}
+
+/* Narrower than the palette needs with both cards named, the card drops its names before the palette does
+ * (EditorCornerActions' `compact`): the same glyph-only buttons as a phone's. */
+[data-corner-actions][data-compact] > a,
+[data-corner-actions][data-compact] > div > button[aria-haspopup] {
+  width: 2.25rem;
+  justify-content: center;
+  padding-inline: 0;
+  gap: 0;
+}
+[data-corner-actions][data-compact] > a {
+  font-size: 0;
+}
+[data-corner-actions][data-compact] > div > button[aria-haspopup] > :not(:first-child) {
+  display: none;
+}

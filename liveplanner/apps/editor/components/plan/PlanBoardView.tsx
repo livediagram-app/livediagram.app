@@ -152,9 +152,9 @@ export function PlanBoardView({
     canChange: canFilter,
     write: (filter) => setBoardFilter?.(element.id, filter),
   });
-  // A phone draws the board its own way (phone-board.ts): no widgets, so no quick filter either; nor does a slot board.
+  // A phone draws the board its own way (phone-board.ts); a slot board has no widgets, so no quick filter either.
   const phone = useIsMobileViewport();
-  const applied = shownQuick(quick, phone || simplified);
+  const applied = shownQuick(quick, simplified);
   // The cards follow a filter change (this person's or a teammate's arriving) as a deferred render React can yield in,
   // so narrowing a 2,000-card board is not one long task (board-widgets.md "The board's filter"; blueprint
   // "Performance and limits"). The filter bar shows the new filter at once; the cards may show the old one a frame.

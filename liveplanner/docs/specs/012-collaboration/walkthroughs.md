@@ -57,7 +57,7 @@ at the bottom centre of the canvas, in place: the canvas stays where it is and s
    2026-11-17), shaped like that tray (a 12 px card whose controls nest 4 px in); without a strip, at the bottom
    centre of the canvas.
 4. **Save.** The dock shows the length and a **Title** field (it starts as "Walkthrough of <tab name>"), with
-   **Save** and **Discard**. Save uploads it, showing that it is uploading; when it is stored, Tools opens again at the Walkthroughs list with it at the top.
+   **Save** and **Discard**. Save uploads it with a progress bar: the share sent as a percentage, the megabytes sent of the whole ("12.4 of 33.6 MB") and about how long is left at the speed so far ("About 2 minutes left"), then "Finishing" once the last byte has gone; when it is stored, Tools opens again at the Walkthroughs list with it at the top.
    A refusal says why in the dock ("This walkthrough is over 40 MB", "You have 50 walkthroughs already. Delete one to
    save another.") and keeps the recording so you can **Download a Copy** rather than lose it.
 

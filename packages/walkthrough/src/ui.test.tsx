@@ -53,6 +53,8 @@ type Server = {
   requests: { url: string; init?: RequestInit }[];
   // The api's refusal of a save's first step, as its body says.
   refuse?: { status: number; error: string };
+  // The media part, held by the test: told how to report its bytes sent, it answers when the test says.
+  upload?: (report: (sent: number, total: number) => void) => Promise<Response>;
 };
 
 // What the editor's `track` was handed (the workbench binding), for the telemetry the walkthroughs count.
@@ -60,27 +62,34 @@ const track = vi.fn<WorkbenchTrack>();
 const counted = () => track.mock.calls.map(([category, action, type]) => [category, action, type]);
 
 function fakeFetch(server: Server) {
-  return vi.fn(async (url: string, init?: RequestInit) => {
-    server.requests.push({ url, init });
-    const method = init?.method ?? 'GET';
-    if (method === 'DELETE') {
-      server.list = server.list.filter((w) => !url.includes(`/${w.id}?`));
-      return Response.json({ ok: true });
-    }
-    if (method === 'POST' && server.refuse) {
-      return Response.json({ error: server.refuse.error }, { status: server.refuse.status });
-    }
-    if (method === 'POST')
-      return Response.json({ walkthrough: { ...W, id: 'new' } }, { status: 201 });
-    if (method === 'PUT') {
-      const saved = { ...W, id: 'new', title: 'Mine', mine: true };
-      server.list = [saved, ...server.list];
-      return Response.json({ walkthrough: saved });
-    }
-    if (url.includes('/media')) return new Response(new Uint8Array([1, 2, 3]));
-    if (url.includes('/w1?')) return Response.json({ walkthrough: W, events: EVENTS });
-    return Response.json({ walkthroughs: server.list, canRecord: server.canRecord });
-  });
+  return vi.fn(
+    async (
+      url: string,
+      init?: RequestInit,
+      opts?: { uploadProgress?: (sent: number, total: number) => void },
+    ) => {
+      server.requests.push({ url, init });
+      const method = init?.method ?? 'GET';
+      if (method === 'DELETE') {
+        server.list = server.list.filter((w) => !url.includes(`/${w.id}?`));
+        return Response.json({ ok: true });
+      }
+      if (method === 'POST' && server.refuse) {
+        return Response.json({ error: server.refuse.error }, { status: server.refuse.status });
+      }
+      if (method === 'POST')
+        return Response.json({ walkthrough: { ...W, id: 'new' } }, { status: 201 });
+      if (method === 'PUT' && server.upload) return server.upload(opts!.uploadProgress!);
+      if (method === 'PUT') {
+        const saved = { ...W, id: 'new', title: 'Mine', mine: true };
+        server.list = [saved, ...server.list];
+        return Response.json({ walkthrough: saved });
+      }
+      if (url.includes('/media')) return new Response(new Uint8Array([1, 2, 3]));
+      if (url.includes('/w1?')) return Response.json({ walkthrough: W, events: EVENTS });
+      return Response.json({ walkthroughs: server.list, canRecord: server.canRecord });
+    },
+  );
 }
 
 let view: CanvasView;
@@ -735,6 +744,88 @@ describe('recording, beyond the canvas', () => {
     // Let the devices it asked for again arrive while the stubs stand.
     await act(async () => {
       await new Promise((r) => setTimeout(r, 0));
+    });
+  });
+
+  // Saving shows the media's upload as it goes (Work Tracker 1175): the share sent, the megabytes and the time left.
+  describe('the upload', () => {
+    const MB = 1024 * 1024;
+    // Records a moment and finishes, to the save card, with the media part held until the test answers it.
+    async function toSaveCard() {
+      stubDevices();
+      const server = await openDock();
+      let report: ((sent: number, total: number) => void) | null = null;
+      let answer: (res: Response) => void = () => undefined;
+      server.upload = (r) => {
+        report = r;
+        return new Promise<Response>((resolve) => {
+          answer = resolve;
+        });
+      };
+      vi.useFakeTimers({ toFake: ['setTimeout', 'setInterval', 'clearTimeout', 'clearInterval'] });
+      fireEvent.click(screen.getByRole('button', { name: /Start Recording/ }));
+      for (let i = 0; i < 3; i++) {
+        await act(async () => {
+          vi.advanceTimersByTime(1000);
+        });
+      }
+      vi.useRealTimers();
+      fireEvent.click(screen.getByRole('button', { name: /Finish/ }));
+      await screen.findByRole('region', { name: 'Save Walkthrough' });
+      // The clock the estimate reads, moved by hand from here.
+      vi.useFakeTimers({ toFake: ['performance'] });
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+      await waitFor(() => expect(report).not.toBeNull());
+      return {
+        server,
+        send: (sent: number, total: number) => act(() => report!(sent, total)),
+        answer: (res: Response) => act(async () => answer(res)),
+      };
+    }
+    const bar = () => screen.getByRole('progressbar', { name: 'Upload' });
+
+    it('shows the share sent, the megabytes and the time left, then finishing, then saved', async () => {
+      const upload = await toSaveCard();
+      // Before any byte is reported: the bytes to go, no bar yet.
+      expect(screen.getByRole('status').textContent).toMatch(/^Uploading \d+\.\d MB$/);
+      await upload.send(10 * MB, 40 * MB);
+      expect(bar().getAttribute('aria-valuenow')).toBe('25');
+      expect(screen.getByText('25%')).toBeTruthy();
+      expect(screen.getByText('· 10.0 of 40.0 MB')).toBeTruthy();
+      expect(screen.getByText('Working out the time left')).toBeTruthy();
+      // 20 MB in 20 s: 20 more at that speed is 20 s.
+      vi.advanceTimersByTime(20_000);
+      await upload.send(20 * MB, 40 * MB);
+      expect(bar().getAttribute('aria-valuenow')).toBe('50');
+      expect(screen.getByText('About 20 seconds left')).toBeTruthy();
+      expect(bar().getAttribute('aria-valuetext')).toBe(
+        '50%, 20.0 of 40.0 MB, About 20 seconds left',
+      );
+      // A report inside the same percentage, soon after, doesn't draw the card again.
+      await upload.send(20 * MB + 1, 40 * MB);
+      expect(bar().getAttribute('aria-valuetext')).toContain('20.0 of 40.0 MB');
+      await upload.send(40 * MB, 40 * MB);
+      expect(screen.getByRole('status').textContent).toBe('Finishing');
+      expect(screen.getByText('Almost done')).toBeTruthy();
+      expect(document.querySelector('[data-walkthrough-upload="finishing"]')).not.toBeNull();
+      vi.useRealTimers();
+      await upload.answer(
+        Response.json({ walkthrough: { ...W, id: 'new', title: 'Mine', mine: true } }),
+      );
+      await screen.findByText('Saved “Mine”.');
+      expect(screen.queryByRole('progressbar')).toBeNull();
+    });
+
+    it('drops the bar on a failure, says why and still offers Download a Copy', async () => {
+      const upload = await toSaveCard();
+      await upload.send(10 * MB, 40 * MB);
+      expect(bar()).toBeTruthy();
+      vi.useRealTimers();
+      await upload.answer(Response.json({ error: 'too_large' }, { status: 413 }));
+      await screen.findByRole('alert');
+      expect(screen.queryByRole('progressbar')).toBeNull();
+      expect(screen.getByRole('button', { name: /Download a Copy/ })).toBeTruthy();
+      expect(screen.getByRole('button', { name: 'Save' })).toBeTruthy();
     });
   });
 

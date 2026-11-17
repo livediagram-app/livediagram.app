@@ -262,8 +262,9 @@ underline?, strikethrough?, size? xs|sm|md|lg, color? #rrggbb, link? http(s)/mai
 - `color` is a known field of kind `colour`: one of `PLAN_TYPE_COLOURS` (compared lower-case, stored as given in
   the palette), anything else is `field_value_invalid`; clearing removes the key. `itemColourOf(item)` returns the
   stored swatch or `undefined`, so a value written before validation (or by hand) never draws.
-- Built-in Project fields: `title, description, status, assignee, priority, color, start, due, labels` (+
-  comments). `BUILT_IN_FIELD_IDS` lists `color` after `priority`, before `estimate`.
+- Built-in Project fields: `title, description, status, assignee, priority, color, start, due, votes, labels` (+
+  comments). Votes since Work Tracker 1114, so a Roadmap board's Projects show and sort by a public roadmap's
+  upvotes; a project whose catalogue already holds Project keeps its own. `BUILT_IN_FIELD_IDS` lists `color` after `priority`, before `estimate`.
 - Editor: `apps/editor/components/plan/ColourSwatches.tsx` puts Plan on the one colour picker: `TypeColourButton` (a
   swatch at the end of the type editor's Name field, opening the picker in a popover) and `ColourSelect` (the panel's
   Colour field, None first) (`patch { set: { color } }` or `{ clear: ['color'] }`, tracked `('Plan', 'Changed', 'ProjectColour')`).
@@ -325,18 +326,19 @@ WHERE id = ? RETURNING items_rev, items_next_key`, then the row write guarded by
 All under `/projects/:id/items`, auth `guest-or-clerk`, token-usable, registered in `openapi/manifest.ts`
 (tag `Items`), DTOs in `packages/api-schema/src/items.ts` (`ItemsResponse { items, rev }`, `ItemResponse { item, rev }`).
 
-| Method | Path                  | Gate | Body                                                         | Answers             |
-| ------ | --------------------- | ---- | ------------------------------------------------------------ | ------------------- |
-| GET    | `/items[?tabId=]`     | read |                                                              | `ItemsResponse`     |
-| POST   | `/items`              | edit | `ItemCreate`                                                 | 201 `ItemResponse`  |
-| POST   | `/items/bulk`         | edit | `{ items: ItemCreate[] }` ≤ `ITEM_BULK_MAX`                  | 201 `ItemsResponse` |
-| POST   | `/items/import`       | edit | `{ importId, part, parts, items }` ≤ `ITEM_BULK_MAX` a part  | 202 / 201           |
-| POST   | `/items/patches`      | edit | `{ items: ({ id } & ItemPatch)[], undo? }` ≤ `ITEM_BULK_MAX` | `ItemsResponse`     |
-| POST   | `/items/moves`        | edit | `{ items: ({ id } & ItemMove)[], undo? }` ≤ `ITEM_BULK_MAX`  | `ItemsResponse`     |
-| POST   | `/items/:itemId`      | edit | `ItemPatch`                                                  | `ItemResponse`      |
-| POST   | `/items/:itemId/move` | edit | `ItemMove`                                                   | `ItemResponse`      |
-| POST   | `/items/tally`        | edit | `{ items: { id, votes }[], field? }` ≤ `ITEM_BULK_MAX`       | `ItemsResponse`     |
-| DELETE | `/items/:itemId`      | edit |                                                              | 204                 |
+| Method | Path                   | Gate | Body                                                         | Answers             |
+| ------ | ---------------------- | ---- | ------------------------------------------------------------ | ------------------- |
+| GET    | `/items[?tabId=]`      | read |                                                              | `ItemsResponse`     |
+| POST   | `/items`               | edit | `ItemCreate`                                                 | 201 `ItemResponse`  |
+| POST   | `/items/bulk`          | edit | `{ items: ItemCreate[] }` ≤ `ITEM_BULK_MAX`                  | 201 `ItemsResponse` |
+| POST   | `/items/import`        | edit | `{ importId, part, parts, items }` ≤ `ITEM_BULK_MAX` a part  | 202 / 201           |
+| POST   | `/items/import/people` | edit | `{ emails: string[] }` ≤ `TRACKER_MATCH_EMAILS_MAX`          | `ItemsImportPeople` |
+| POST   | `/items/patches`       | edit | `{ items: ({ id } & ItemPatch)[], undo? }` ≤ `ITEM_BULK_MAX` | `ItemsResponse`     |
+| POST   | `/items/moves`         | edit | `{ items: ({ id } & ItemMove)[], undo? }` ≤ `ITEM_BULK_MAX`  | `ItemsResponse`     |
+| POST   | `/items/:itemId`       | edit | `ItemPatch`                                                  | `ItemResponse`      |
+| POST   | `/items/:itemId/move`  | edit | `ItemMove`                                                   | `ItemResponse`      |
+| POST   | `/items/tally`         | edit | `{ items: { id, votes }[], field? }` ≤ `ITEM_BULK_MAX`       | `ItemsResponse`     |
+| DELETE | `/items/:itemId`       | edit |                                                              | 204                 |
 
 Comment writes (below, "Comments") add four more under `/items/:itemId/comments`.
 
@@ -345,7 +347,9 @@ Comment writes (below, "Comments") add four more under `/items/:itemId/comments`
 none (blueprint [tracker-import.md](tracker-import.md) "A whole import"). Its other answers: `409 import_incomplete`
 (a part missing at the last), `413 items_full` (past the plan's room, held parts counted), `413 plan_full` (past
 the plan fields budget, "Performance and limits"), `413 import_too_large`
-(the import's JSON past `ITEM_IMPORT_JSON_MAX`, 26 MiB), and those of `/items/bulk`.
+(the import's JSON past `ITEM_IMPORT_JSON_MAX`, 26 MiB), and those of `/items/bulk`. `/items/import/people` matches an
+agent's import's emails to the plan's team, answering only a joined member of it (blueprint
+[tracker-import.md](tracker-import.md) "Matching people by email").
 
 - Tab-scoped grants: GET requires `tabId` matching the grant and filters to `itemIdsShownOnTab` of that tab's
   stored elements; writes require `tabId` (query) and the target id in that set (create: always allowed into the
@@ -874,7 +878,22 @@ FROM items i WHERE plan_id = ? AND id IN (SELECT value FROM json_each(?))` (the 
 `{ kind: 'items'; upserts: Item[]; removed: string[]; rev: number }`, a system kind (dropped from client sockets).
 Sent by `relayItems(env, docId, op)` in `room-client.ts` through `/broadcast` with `ordered: true` after each
 successful write. `room-scope.ts` hands a tab-scoped session the op with empty `upserts` and `removed`; its client
-refetches. Presence on cards is a separate ephemeral op, `plan-presence` (`{ tabId, itemId | null, state }`), in
+refetches.
+
+Frame size (Work Tracker 986): a card holds up to `ITEM_FIELDS_BYTES` (64 KiB), so one write's op can run to many
+MiB (200 full cards, about 12.5 MiB). Cloudflare's Durable Object limits page (read 2026-11-17,
+developers.cloudflare.com/durable-objects/platform/limits) gives 32 MiB for a WebSocket message the object
+**receives** and states no limit for one it sends, so the room keeps every frame it sends under
+`ROOM_FRAME_MAX_BYTES` (1 MiB, `@liveplanner/api-schema` room-messages.ts), the safe size. The room's
+`broadcastOrderedSystemOp` (`plan-room/plan-room-sockets.ts`) splits an `items` op with `splitItemsOp`
+(`plan-room/items-op-split.ts`): its `upserts` in order, then its `removed`, packed greedily by UTF-8 JSON bytes
+into parts whose op stays under `ROOM_FRAME_MAX_BYTES` less `ROOM_FRAME_ENVELOPE_BYTES` (1 KiB for the frame's
+`kind`, `from`, `seq` and `epoch`). Each part carries the write's `rev`, is never empty, and takes its own `seq`
+one after another, so the catch-up log replays the parts in order and a client applies them in order:
+`mergeItemChanges` keeps the higher per-card `rev`, a part at the `rev` it already holds is no gap, and the removals
+come last as in the whole op. An op that fits goes out whole, as before; a card larger than a part alone goes in a
+part of its own. A reconnect's catch-up frame bundles the ops it missed: one that would pass `ROOM_FRAME_MAX_BYTES`
+answers `resync: true` with no ops instead (`sendCatchup`, `plan-room-frames.ts`), and the client re-fetches. Presence on cards is a separate ephemeral op, `plan-presence` (`{ tabId, itemId | null, state }`), in
 `PRESENCE_OP_KINDS`.
 
 ## Editor slice

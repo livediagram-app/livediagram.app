@@ -12,6 +12,7 @@ import { svgFrameOf } from '@liveworkspace/workbench/lib/svg-frame';
 import { usePlan } from '@/components/plan/PlanContext';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useEditorContext } from '@/app/project/[id]/EditorContext';
+import { useTabSheets } from './useTabSheets';
 
 export type TabSvg = {
   markup: string;
@@ -30,7 +31,8 @@ export type TabSvg = {
 // priority, so a burst of remote edits never competes with the editor beside it. A still, as every export is.
 //
 // Drawn by renderTabDrawingSvg: a Pages tab as its pages and a Form tab as its form, any other tab as its canvas, so
-// the other pane and a Diagram slot show a tab the same way.
+// the other pane and a Diagram slot show a tab the same way. Its Sheets draw their cells (useTabSheets): a Sheet tab
+// as its image lays it out, grown to its filled cells.
 export function useTabSvg(tab: Tab | undefined): TabSvg | null {
   const { tabs } = useEditorContext();
   // A stored tab window inside this tab (docs/specs/009-elements/tab-window.md, retired) is named for the tab it
@@ -43,6 +45,7 @@ export function useTabSvg(tab: Tab | undefined): TabSvg | null {
   const threadStore = useThreadStore();
   const { appearance } = useAppearance();
   const deferredTab = useDeferredValue(tab);
+  const drawn = useTabSheets(deferredTab);
   const [iconsReady, setIconsReady] = useState(false);
 
   useEffect(() => {
@@ -54,13 +57,14 @@ export function useTabSvg(tab: Tab | undefined): TabSvg | null {
   }, []);
 
   return useMemo(() => {
-    if (!deferredTab) return null;
+    if (!drawn) return null;
     // `iconsReady` re-renders once the glyph catalogues land, so icons replace their placeholders.
     void iconsReady;
-    const seen = tabAsSeen(deferredTab, appearance);
+    const seen = tabAsSeen(drawn.tab, appearance);
     const markup = renderTabDrawingSvg(seen, {
       pattern: false,
       resolveTabWindow: windowNames,
+      ...(drawn.sheets ? { sheets: drawn.sheets } : {}),
       // Each card with its comment count, which its threads hold (docs/specs/026-plan/items.md "Comments").
       ...(plan
         ? {
@@ -76,5 +80,5 @@ export function useTabSvg(tab: Tab | undefined): TabSvg | null {
       ...svgFrameOf(markup),
       background: seen.backgroundColor ?? '#ffffff',
     };
-  }, [deferredTab, appearance, plan, threadStore, iconsReady, windowNames]);
+  }, [drawn, appearance, plan, threadStore, iconsReady, windowNames]);
 }

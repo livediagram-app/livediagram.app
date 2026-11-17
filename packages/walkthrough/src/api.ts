@@ -7,12 +7,18 @@ import {
   type WalkthroughEvents,
   type WalkthroughSummary,
 } from '@liveworkspace/media/walkthrough';
+import type { UploadProgress } from './upload-progress';
 
 export type WalkthroughApiDeps = {
   // The api's base (`/api` or the api's origin and `/api`).
   base: string;
-  // The app's fetch: adds the item's grant and the caller's bearer.
-  fetch: (url: string, init?: RequestInit) => Promise<Response>;
+  // The app's fetch: adds the item's grant and the caller's bearer. `uploadProgress` is told the bytes sent as they
+  // go: the app's funnel then sends that request by XMLHttpRequest, same headers, grant and failure report.
+  fetch: (
+    url: string,
+    init?: RequestInit,
+    opts?: { uploadProgress?: UploadProgress },
+  ) => Promise<Response>;
 };
 
 export type WalkthroughList = { walkthroughs: WalkthroughSummary[]; canRecord: boolean };
@@ -33,7 +39,12 @@ export type SaveResult =
 export type WalkthroughApi = {
   /** The item's walkthroughs, or null where there are none to have (no service, no access). */
   list: () => Promise<WalkthroughList | null>;
-  save: (input: SaveInput, onStage?: (stage: 'events' | 'media') => void) => Promise<SaveResult>;
+  // `onProgress` hears the media part's bytes sent as they go.
+  save: (
+    input: SaveInput,
+    onStage?: (stage: 'events' | 'media') => void,
+    onProgress?: UploadProgress,
+  ) => Promise<SaveResult>;
   read: (
     id: string,
   ) => Promise<{ walkthrough: WalkthroughSummary; events: WalkthroughEvents } | null>;
@@ -81,7 +92,7 @@ export function walkthroughApi(
         return res.ok ? ((await res.json()) as WalkthroughList) : null;
       }, null),
 
-    save: async (input, onStage) => {
+    save: async (input, onStage, onProgress) => {
       try {
         onStage?.('events');
         const started = await fetch(at(), {
@@ -98,11 +109,15 @@ export function walkthroughApi(
         if (!started.ok) return await failed(started);
         const { walkthrough } = (await started.json()) as { walkthrough: WalkthroughSummary };
         onStage?.('media');
-        const put = await fetch(of(walkthrough.id, '/media'), {
-          method: 'PUT',
-          headers: { 'Content-Type': input.mediaType },
-          body: input.media,
-        });
+        const put = await fetch(
+          of(walkthrough.id, '/media'),
+          {
+            method: 'PUT',
+            headers: { 'Content-Type': input.mediaType },
+            body: input.media,
+          },
+          onProgress ? { uploadProgress: onProgress } : undefined,
+        );
         if (!put.ok) {
           // The started one would wait for the daily sweep; deleting it now frees its place at once.
           void fetch(of(walkthrough.id), { method: 'DELETE' }).catch(() => undefined);

@@ -147,6 +147,11 @@ export const MCP_TOOL_METRICS: readonly Metric[] = [
     'Filling in a form as a preview response, to check it end to end.',
   ),
   mcpTool('ViewTab', 'View Tab', 'The interactive view in a chat host drawing a board.'),
+  mcpTool(
+    'ViewLive',
+    'View Live',
+    'The interactive view in a chat host following a plan live, with a view-only ticket.',
+  ),
 ];
 
 export const MCP_TOOL_CALLS: MetricStack = {

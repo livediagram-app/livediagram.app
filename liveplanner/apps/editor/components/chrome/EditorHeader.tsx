@@ -13,6 +13,13 @@ import { explorerItemHref } from '@liveworkspace/workbench/lib/explorer-href';
 import { HoverCard } from '@liveplanner/ui';
 import { AuthControls } from '@liveworkspace/workbench/components/chrome/AuthControls';
 import { useFormShareHost } from '@/lib/form-share-store';
+import {
+  CORNER_BTN,
+  CORNER_ON,
+  CORNER_TONE,
+  EditorCornerActions,
+  type EditorCornerActionsProps,
+} from '@liveworkspace/workbench/components/chrome/EditorCornerActions';
 
 export type { SaveStatus } from '@liveworkspace/workbench/components/chrome/EditorHeader';
 
@@ -83,6 +90,43 @@ function ShareFormButton({ published, open }: { published: boolean; open: () => 
           <HeaderShareIcon />
         </HeaderGlyph>
         <span>Share Form</span>
+      </button>
+    </HoverCard>
+  );
+}
+
+// Experiment (no header bar): the header's actions in the top-right corner card (EditorCornerActions), with Share Form
+// in Share's place while a form tab is open, as the header had it.
+export function PlanCornerActions(
+  props: Omit<EditorCornerActionsProps, 'shareAction' | 'copyDescription'>,
+) {
+  const formShare = useFormShareHost();
+  return (
+    <EditorCornerActions
+      {...props}
+      copyDescription={WORDS.copyDescription}
+      shareAction={formShare ? <CornerShareFormButton {...formShare} /> : undefined}
+    />
+  );
+}
+
+function CornerShareFormButton({ published, open }: { published: boolean; open: () => void }) {
+  return (
+    <HoverCard
+      title="Share Form"
+      description={
+        published ? 'Copy the form’s link, or close it.' : 'Publish the form and copy its link.'
+      }
+    >
+      <button
+        type="button"
+        data-tour-id="share-form"
+        onClick={open}
+        aria-pressed={published}
+        className={`${CORNER_BTN} ${published ? CORNER_ON : CORNER_TONE}`}
+      >
+        <HeaderShareIcon />
+        <span className="phone:sr-only [[data-compact]_&]:sr-only">Share Form</span>
       </button>
     </HoverCard>
   );

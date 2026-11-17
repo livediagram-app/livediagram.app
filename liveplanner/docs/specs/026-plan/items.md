@@ -251,7 +251,7 @@ The five **default types** ([Item types](item-types.md#the-type-catalogue)), eac
 
 | Type    | Accent | For                                    | Offers                                                                                   |
 | ------- | ------ | -------------------------------------- | ---------------------------------------------------------------------------------------- |
-| Project | Black  | A larger body of work others sit under | title, description, status, assignee, priority, color, start, due, labels                |
+| Project | Black  | A larger body of work others sit under | title, description, status, assignee, priority, color, start, due, votes, labels         |
 | Task    | Gray   | A piece of work                        | title, description, status, assignee, parent, priority, estimate, due, checklist, labels |
 | Note    | Blue   | A thought, a retro note                | title, description, status, votes                                                        |
 | Idea    | Yellow | A proposal to weigh                    | title, description, status, votes, labels                                                |
@@ -1004,7 +1004,9 @@ Items follow the project's access ([Auth and guest access](../014-identity/auth-
 
 ## Live for everyone
 
-- Every write is pushed to everyone in the project's room at once, in order, with the store's revision.
+- Every write is pushed to everyone in the project's room at once, in order, with the store's revision. A write
+  too big for one message (200 full cards is about 12.5 MiB) goes out in parts of at most 1 MiB, in order, each with
+  the write's revision, so everyone sees every card of it without a refetch.
 - A session on a tab-scoped link hears only that the store moved on, and fetches the items its tab shows.
 - A client that sees a gap in revisions, or reconnects, fetches the whole store again.
 - Nothing a browser sends over the room changes an item: items change only through the api.

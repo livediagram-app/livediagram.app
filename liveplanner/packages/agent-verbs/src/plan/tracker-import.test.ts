@@ -66,6 +66,9 @@ function planApi(
     importAnswer?: (record: RecordSent) => (r: Request) => Promise<Response>;
     // A take-back that never answers.
     dropFails?: boolean;
+    // How the email match is answered (recorded as sent): the plan's team members by email, or a failure.
+    people?: unknown;
+    peopleStatus?: number;
   } = {},
 ) {
   const sent: Sent[] = [];
@@ -110,6 +113,7 @@ function planApi(
     [`/projects/${D}/items/import`]: over.importAnswer
       ? over.importAnswer(keep)
       : keep({ items: [], rev: 2 }),
+    [`/projects/${D}/items/import/people`]: keep(over.people ?? { people: [] }, over.peopleStatus),
     [`/projects/${D}/tabs/${TAB}`]: drop,
     '/projects': keep({ project: { id: 'new-plan' } }),
     '/projects/new-plan/items/import': over.importAnswer
@@ -432,6 +436,50 @@ describe('importTrackerBoard as a new plan', () => {
   });
 });
 
+// tracker-import.md "Agents": the file's emails matched to the plan's team on the server; the api never answers an
+// email, and answers a non-member no match, so their people are matched by name.
+describe('importTrackerBoard matching people by email', () => {
+  const ASANA = [
+    'Task ID,Name,Section/Column,Assignee,Assignee Email',
+    '1,Ship it,Doing,Ana Lopez,Ana@Example.com',
+    '2,Test it,Doing,Ben Okafor,ben@example.com',
+    '3,Plan it,Doing,Zoe,',
+  ].join('\n');
+  const ana = { id: 'a'.repeat(24), name: 'Ana L', color: '#2563eb' };
+  const assignees = (body: Record<string, unknown>) =>
+    (body['items'] as { fields: { assignee?: { id: string } } }[]).map(
+      (c) => c.fields.assignee?.id,
+    );
+
+  it('asks the api for the file’s emails and assigns the members it answers', async () => {
+    const { api, sent } = planApi({ people: { people: [ana, null] } });
+    const r = await importTrackerBoard(api, { content: ASANA, projectId: D }, 'cli');
+    expect(r).toMatchObject({ ok: true, preview: { people: { matched: 1, onPlan: 0, named: 2 } } });
+    const ask = sent.find((s) => s.path === `/projects/${D}/items/import/people`)!;
+    expect(ask).toMatchObject({
+      method: 'POST',
+      body: { emails: ['ana@example.com', 'ben@example.com'] },
+    });
+    const landed = sent.find((s) => s.path === `/projects/${D}/items/import`)!;
+    expect(assignees(landed.body)).toEqual([ana.id, 'n-ben-okafor', 'n-zoe']);
+  });
+
+  it('matches by name when the api answers no member (a share link’s Editor, someone outside the team)', async () => {
+    const { api } = planApi({ people: { people: [null, null] } });
+    const r = await importTrackerBoard(api, { content: ASANA, projectId: D, preview: true }, 'mcp');
+    expect(r).toMatchObject({ ok: true, preview: { people: { matched: 0, named: 3 } } });
+  });
+
+  it('matches by name when the match fails, and the import goes on', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const { api, sent } = planApi({ people: { error: 'internal' }, peopleStatus: 500 });
+    const r = await importTrackerBoard(api, { content: ASANA, projectId: D }, 'mcp');
+    expect(r).toMatchObject({ ok: true, written: true, preview: { people: { matched: 0 } } });
+    const landed = sent.find((s) => s.path === `/projects/${D}/items/import`)!;
+    expect(assignees(landed.body)).toEqual(['n-ana-lopez', 'n-ben-okafor', 'n-zoe']);
+  });
+});
+
 describe('trackerImportAnswer', () => {
   it('answers the preview’s counts, with the reason when it would not fit', async () => {
     const full = planApi({
@@ -450,7 +498,7 @@ describe('trackerImportAnswer', () => {
       source: 'Jira',
       cards: 2,
       comments: 0,
-      people: { onPlan: 0, named: 1 },
+      people: { matched: 0, onPlan: 0, named: 1 },
       fits: false,
       reason: 'This plan has room for 1 more card and this file has 2.',
       summary: 'This plan has room for 1 more card and this file has 2.',

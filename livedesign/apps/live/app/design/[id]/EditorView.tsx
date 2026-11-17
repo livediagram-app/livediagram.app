@@ -29,7 +29,6 @@ import { ConnectedTabHost } from '@/components/connect/ConnectedTabHost';
 import { useCommunityEnabled } from '@liveworkspace/community-ui';
 import { API_BASE } from '@/lib/api-client';
 import { useAutoCopyParam } from '@liveworkspace/workbench/hooks/canvas/useAutoCopyParam';
-import { designIsPublic } from '@/lib/community-public';
 import { useCommunityState } from '@/lib/community-state-store';
 import { EmbedChrome } from '@/components/chrome/EmbedChrome';
 import { WorkbenchReconnectLine } from '@/components/chrome/WorkbenchChrome';
@@ -201,12 +200,6 @@ export function EditorView() {
     community: sessionCommunity !== null && !sessionCommunity.ownDesignId,
     makeCopy,
   });
-  // Whether the design shows as public on the Community, for the header's share state.
-  const headerCommunity = designIsPublic({
-    communityOn,
-    ownPostState: communityState,
-    communitySession: sessionCommunity !== null,
-  });
   // UI scale (docs/specs/007-editor/ui-scale.md): desktop only, and a dragged Settings slider's patch wins.
   const { uiScales, isMobileViewport } = useEditorUiScales(userPreferences);
   const role = useRoleIndicator();
@@ -288,16 +281,12 @@ export function EditorView() {
     selectTab,
     selectionStore: ctx.selectionStore,
   });
-  const header = editorViewHeader(ctx, {
-    isOffline,
-    headerCommunity,
-    role,
-    landscapeShown: landscapeBars.shown,
-  });
+  const header = editorViewHeader(ctx);
   const footer = editorViewFooter(ctx, {
     isOffline,
     selectTab,
     landscapeShown: landscapeBars.shown,
+    role,
   });
 
   // The bars handle, at the canvas's top-right corner: only on a phone held sideways (CSS), and only

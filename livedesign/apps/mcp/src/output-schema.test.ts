@@ -80,6 +80,8 @@ async function api(request: Request): Promise<Response> {
     return json({ designs: [{ id: 'd1', name: 'Roadmap', savedAt: 1_700_000_000_000 }] });
   }
   if (path === '/teams') return json({ teams: [] });
+  if (path.endsWith('/room-ticket') && url.searchParams.get('cap') === 'view')
+    return json({ ticket: 'rt2~sealed', expiresAt: 1_800_000_000_000, level: 'edit' });
   if (path === '/images' && request.method === 'POST') {
     const image = {
       id: 'img2',
@@ -243,6 +245,7 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
     args: { designId: 'd1', changes: [{ op: 'resolve', ref: 'e1' }] },
   },
   { tool: 'view_tab', output: 'viewTabOutput', args: { designId: 'd1' } },
+  { tool: 'view_live', output: 'viewLiveOutput', args: { designId: 'd1' } },
 ];
 
 describe('tool output schemas', () => {
@@ -289,6 +292,10 @@ describe('tool output schemas', () => {
         const [viewText, line, ...extra] = first!.text.split('\n');
         expect([viewText, extra]).toEqual([text, []]);
         expect(JSON.parse(line!)).toEqual({ ...rest, tab: tabMeta });
+      } else if (tool === 'view_live') {
+        // Its one line never carries the ticket (docs/specs/015-api/mcp-server.md "Live updates").
+        expect(first!.text).toBe('Opened live updates for the interactive view.');
+        expect(first!.text).not.toContain((structured as { ticket: string }).ticket);
       } else if (tool === 'view_tab') {
         // The view's own tool says one line, not its SVG (docs/specs/015-api/mcp-server.md "Interactive view").
         expect(first!.text).toMatch(/^Drew tab ".*" for the interactive view\.$/);

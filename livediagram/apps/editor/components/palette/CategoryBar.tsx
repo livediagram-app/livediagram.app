@@ -23,6 +23,10 @@ import { CategoryFlyoutSide, sidePlacement, type SideOpen } from './CategoryFlyo
 import type { PaletteTileDef } from './palette-tile-defs';
 import type { EditorMode } from '@livediagram/document';
 import { StripOpenedBody, Divider } from './strip-rail-items';
+import {
+  CategoryBarMore,
+  type FoldedCategory,
+} from '@liveworkspace/workbench/components/palette/CategoryBarMore';
 import type { PaletteTileActions } from './PaletteTileGrid';
 
 // The category bar (docs/specs/007-editor/toolbar-layout.md "The category bar"): Diagram's and Workshop's strip
@@ -58,6 +62,9 @@ const widthPx = (c: FlyoutCategory) => {
 // this long on a closed bar opens the category, so sweeping across the bar to the canvas opens nothing; and the
 // flyout waits this long after the pointer leaves before closing, so a diagonal path from a button into the flyout,
 // across the gap or a corner of the canvas, keeps it open.
+// More's place among the bar's buttons (CategoryBarMore): a folded category's flyout hangs from it.
+const MORE_KEY = '__more';
+
 export const HOVER_OPEN_MS = 120;
 export const HOVER_CLOSE_MS = 300;
 // Resting on a presets tile this long opens its side panel; a click opens it at once.
@@ -80,7 +87,8 @@ export function useCategoryBar(
   const buttons = useRef(new Map<string, HTMLElement>());
   const isOpen = (id: string) => popover.open && openId === id;
   const open = (category: FlyoutCategory, keyboard: boolean) => {
-    const button = buttons.current.get(category.id);
+    // A category folded behind More (useBarFold) opens under More.
+    const button = buttons.current.get(category.id) ?? buttons.current.get(MORE_KEY);
     if (!button) return;
     onOpen?.();
     if (!isOpen(category.id)) track('UI', 'Changed', 'ToolbarCategory');
@@ -106,7 +114,7 @@ export function useCategoryBar(
   const close = (refocus: boolean) => {
     clearTimer();
     popover.setOpen(false);
-    if (refocus && openId) buttons.current.get(openId)?.focus();
+    if (refocus && openId) (buttons.current.get(openId) ?? buttons.current.get(MORE_KEY))?.focus();
   };
   return {
     popover,
@@ -177,31 +185,42 @@ export function CategoryBarButtons({
   bar,
   categories,
   labels,
+  shown = null,
   scrollable = false,
+  trailing = null,
 }: {
   bar: CategoryBarState;
   categories: readonly BarCategory[];
   // Names beside the glyphs; off where the window is too narrow for them (and on a phone).
   labels: boolean;
+  // How many categories show, the rest behind More (useBarFold); null shows them all.
+  shown?: number | null;
+  // After the last category, in the same row (a phone's strip puts the Library here, so it swipes with the bar).
+  trailing?: ReactNode;
   // A phone's strip: the bar is the part that gives way and swipes sideways, as the tile rail does, so the
   // selection mode and Search beside it stay in reach (docs/specs/007-editor/toolbar-layout.md "On a phone").
   scrollable?: boolean;
 }) {
   // What pressed a bar button last (mouse, touch, pen), read by its click: the click alone doesn't say.
   const pressedBy = useRef<string | null>(null);
+  const visible = shown === null ? categories : categories.slice(0, shown);
+  const folded: FoldedCategory[] = shown === null ? [] : categories.slice(shown);
+  // The arrow keys walk the shown categories, then More.
+  const stops = folded.length > 0 ? visible.length + 1 : visible.length;
   const onKeyDown = (e: KeyboardEvent<HTMLButtonElement>, i: number) => {
     const step = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
     if (step) {
       e.preventDefault();
-      const next = categories[(i + step + categories.length) % categories.length]!;
-      bar.buttons.current.get(next.id)?.focus();
-      // A flyout already open follows the focus, as a menu bar's does.
-      if (bar.openId) bar.open(next, true);
+      const at = (i + step + stops) % stops;
+      const next = visible[at];
+      bar.buttons.current.get(next?.id ?? MORE_KEY)?.focus();
+      // A flyout already open follows the focus, as a menu bar's does (More opens its list on Down instead).
+      if (bar.openId && next) bar.open(next, true);
       return;
     }
-    if (e.key === 'ArrowDown') {
+    if (e.key === 'ArrowDown' && visible[i]) {
       e.preventDefault();
-      bar.open(categories[i]!, true);
+      bar.open(visible[i], true);
     }
   };
   return (
@@ -211,9 +230,9 @@ export function CategoryBarButtons({
       {...(scrollable ? { 'data-strip-rail': '' } : {})}
       className={`flex items-center ${scrollable ? STRIP_RAIL_SCROLL : ''}`}
     >
-      {categories.map((c, i) => {
+      {visible.map((c, i) => {
         const open = bar.isOpen(c.id);
-        const bandChange = i > 0 && categories[i - 1]!.group !== c.group;
+        const bandChange = i > 0 && visible[i - 1]!.group !== c.group;
         const button = (
           <button
             ref={(el) => {
@@ -282,6 +301,23 @@ export function CategoryBarButtons({
           </Fragment>
         );
       })}
+      {folded.length > 0 ? (
+        <CategoryBarMore
+          folded={folded}
+          active={folded.some((c) => bar.isOpen(c.id))}
+          register={(el) => {
+            if (el) bar.buttons.current.set(MORE_KEY, el);
+            else bar.buttons.current.delete(MORE_KEY);
+          }}
+          onOpenMenu={() => bar.close(false)}
+          onChoose={(id, keyboard) => {
+            const category = folded.find((c) => c.id === id);
+            if (category) bar.open(category as BarCategory, keyboard);
+          }}
+          onKeyDown={(e) => onKeyDown(e, visible.length)}
+        />
+      ) : null}
+      {trailing}
     </div>
   );
 }

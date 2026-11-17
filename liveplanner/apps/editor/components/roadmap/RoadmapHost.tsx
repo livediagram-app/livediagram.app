@@ -7,6 +7,7 @@
 // never open it pays nothing for it.
 import dynamic from 'next/dynamic';
 import { useMemo, useState, type ReactNode } from 'react';
+import type { ItemTypesSlice } from '@/hooks/plan/useItemTypes';
 import { track } from '@/lib/telemetry';
 import { RoadmapDoorContext, type RoadmapDoor } from './RoadmapContext';
 import type { RoadmapScope } from './roadmap-gate';
@@ -19,6 +20,7 @@ export function RoadmapHost({
   scope,
   hasBoards,
   activeTabId,
+  itemTypes,
   children,
 }: {
   // Null for anyone who may not publish (roadmapScopeFor).
@@ -27,6 +29,9 @@ export function RoadmapHost({
   hasBoards: boolean;
   // The tab in view, where the dialog starts when it holds a board.
   activeTabId: string;
+  // The plan's card types and their changes, for the dialog's Add Votes (public-roadmap.md "The settings"); absent
+  // outside a plan's editor.
+  itemTypes?: ItemTypesSlice | undefined;
   children: ReactNode;
 }) {
   // Taken when the dialog opens, so switching tabs behind it does not move it.
@@ -52,7 +57,12 @@ export function RoadmapHost({
     <RoadmapDoorContext.Provider value={door}>
       {children}
       {stable && openOn ? (
-        <RoadmapDialog scope={stable} startTabId={openOn} onClose={() => setOpenOn(null)} />
+        <RoadmapDialog
+          scope={stable}
+          startTabId={openOn}
+          cardTypes={itemTypes}
+          onClose={() => setOpenOn(null)}
+        />
       ) : null}
     </RoadmapDoorContext.Provider>
   );

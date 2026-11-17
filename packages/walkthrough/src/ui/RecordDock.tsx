@@ -16,6 +16,12 @@ import {
   usePaletteStripBox,
 } from '@liveworkspace/workbench/components/chrome/PaletteTray';
 import { formatClock } from '../timeline';
+import {
+  formatTimeLeft,
+  megabytes,
+  uploadPercent,
+  type WalkthroughUpload,
+} from '../upload-progress';
 import type { Walkthroughs } from '../useWalkthroughs';
 import { LevelBar } from './Bubble';
 import { Problem } from './record-parts';
@@ -163,7 +169,6 @@ function SaveCard({ walkthroughs }: { walkthroughs: Walkthroughs }) {
   if (phase.kind !== 'review') return null;
   const saving = phase.saving !== null;
   const stoppedAtLimit = phase.events.durationMs >= WALKTHROUGH_MAX_MS - 1000;
-  const megabytes = (phase.recorded.blob.size / (1024 * 1024)).toFixed(1);
   return (
     <section
       aria-label="Save Walkthrough"
@@ -174,19 +179,12 @@ function SaveCard({ walkthroughs }: { walkthroughs: Walkthroughs }) {
           {phase.error ? 'Walkthrough Not Saved' : 'Saving Walkthrough'}
         </h2>
         <p className="mt-0.5 text-[12px] tabular-nums text-slate-500 dark:text-slate-400">
-          {formatClock(phase.events.durationMs)} · {megabytes} MB
+          {formatClock(phase.events.durationMs)} · {megabytes(phase.recorded.blob.size)} MB
           {stoppedAtLimit ? ' · Stopped at 10 minutes, the longest a walkthrough may be.' : ''}
         </p>
       </header>
       {saving ? (
-        <div className="flex flex-col gap-1.5" role="status">
-          <span className="text-[12px] text-slate-600 dark:text-slate-300">
-            {phase.saving === 'events' ? 'Starting the upload' : `Uploading ${megabytes} MB`}
-          </span>
-          <span className="relative block h-1 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
-            <span className="absolute inset-y-0 left-0 w-1/3 animate-[walkthrough-upload_1.2s_ease-in-out_infinite] rounded-full bg-brand-600 motion-reduce:animate-none" />
-          </span>
-        </div>
+        <UploadStatus stage={phase.saving} upload={phase.upload} bytes={phase.recorded.blob.size} />
       ) : null}
       {phase.error ? <Problem tone="rose">{phase.error}</Problem> : null}
       <footer className="flex items-center justify-between gap-2 border-t border-slate-100 pt-3 dark:border-slate-800">
@@ -214,5 +212,71 @@ function SaveCard({ walkthroughs }: { walkthroughs: Walkthroughs }) {
         </span>
       </footer>
     </section>
+  );
+}
+
+const TRACK = 'relative block h-1.5 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700';
+
+// The save's progress (each app's walkthroughs.md "Save"): starting, then a bar of the media's bytes sent with the
+// percentage, the megabytes and about how long is left, then finishing while the server stores it. Only the stage
+// is announced (role="status"); the numbers move too often to read out, and the bar carries them for a screen reader.
+function UploadStatus({
+  stage,
+  upload,
+  bytes,
+}: {
+  stage: 'events' | 'media' | null;
+  upload: WalkthroughUpload | null;
+  bytes: number;
+}) {
+  if (stage !== 'media' || !upload) {
+    return (
+      <div data-walkthrough-upload="starting" className="flex flex-col gap-1.5">
+        <span role="status" className="text-[12px] text-slate-600 dark:text-slate-300">
+          {stage === 'events' ? 'Starting the upload' : `Uploading ${megabytes(bytes)} MB`}
+        </span>
+        <span className={TRACK}>
+          <span className="absolute inset-y-0 left-0 w-1/3 animate-[walkthrough-upload_1.2s_ease-in-out_infinite] rounded-full bg-brand-600 motion-reduce:animate-none" />
+        </span>
+      </div>
+    );
+  }
+  const percent = uploadPercent(upload);
+  const done = percent >= 100;
+  const amount = `${megabytes(upload.sent)} of ${megabytes(upload.total)} MB`;
+  const left = done
+    ? 'Almost done'
+    : upload.leftMs === null
+      ? 'Working out the time left'
+      : formatTimeLeft(upload.leftMs);
+  return (
+    <div data-walkthrough-upload={done ? 'finishing' : 'sending'} className="flex flex-col gap-1.5">
+      <div className="flex items-baseline justify-between gap-3 text-[12px]">
+        <span className="min-w-0 truncate text-slate-600 dark:text-slate-300">
+          <span role="status" className="font-medium text-slate-800 dark:text-slate-100">
+            {done ? 'Finishing' : 'Uploading'}
+          </span>
+          <span className="tabular-nums"> · {amount}</span>
+        </span>
+        <span className="shrink-0 font-semibold tabular-nums text-slate-800 dark:text-slate-100">
+          {percent}%
+        </span>
+      </div>
+      <span
+        role="progressbar"
+        aria-label="Upload"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={percent}
+        aria-valuetext={`${percent}%, ${amount}, ${left}`}
+        className={TRACK}
+      >
+        <span
+          className="absolute inset-y-0 left-0 rounded-full bg-brand-600 transition-[width] duration-500 ease-out motion-reduce:transition-none"
+          style={{ width: `${percent}%` }}
+        />
+      </span>
+      <span className="text-[12px] tabular-nums text-slate-500 dark:text-slate-400">{left}</span>
+    </div>
   );
 }

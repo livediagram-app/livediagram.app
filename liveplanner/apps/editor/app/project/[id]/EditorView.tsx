@@ -152,8 +152,9 @@ export function EditorView() {
     userPreferences,
     sessionCommunity,
   } = ctx;
-  // The header's Community state, and a Community link's `?copy=1` (editor-view-hooks).
-  const headerCommunity = useHeaderCommunity(ctx);
+  // A Community link's `?copy=1` (editor-view-hooks). Its header state has no header to show in (experiment: no
+  // header bar).
+  useHeaderCommunity(ctx);
   // UI scale (docs/specs/007-editor/ui-scale.md): desktop only, and a dragged Settings slider's patch wins.
   const { uiScales, isMobileViewport } = useEditorUiScales(userPreferences);
   const role = useRoleIndicator();
@@ -216,13 +217,8 @@ export function EditorView() {
     selectionStore: ctx.selectionStore,
     hideable: walkthroughHideable,
   });
-  const header = renderEditorHeader(ctx, {
-    isOffline,
-    headerCommunity,
-    role,
-    barsShown: landscapeBars.shown,
-  });
-  const footer = renderEditorTabBar(ctx, { selectTab, barsShown: landscapeBars.shown });
+  const header = renderEditorHeader(ctx);
+  const footer = renderEditorTabBar(ctx, { selectTab, barsShown: landscapeBars.shown, role });
   // The bars handle, at the canvas's top-right corner: only on a phone held sideways (CSS), and only
   // where there are bars to fold (not in zen, an embed, the workbench frame or the welcome flow).
   const landscapeBarsHandle =
@@ -264,7 +260,12 @@ export function EditorView() {
       <PendingStarterRules tabId={tabs[0]?.id} projectId={ctx.projectId} offline={isOffline} />
       <SnapshotsDoorProvider door={snapshotsDoor}>
         <CalendarFeedHost scope={calendarFeedScope} gate={calendarFeedGate}>
-          <RoadmapHost scope={roadmapScope} hasBoards={roadmapHasBoards} activeTabId={activeTab.id}>
+          <RoadmapHost
+            scope={roadmapScope}
+            hasBoards={roadmapHasBoards}
+            activeTabId={activeTab.id}
+            itemTypes={ctx.plan.context?.itemTypes}
+          >
             <EmailIntakeHost
               scope={emailIntakeScope}
               gate={emailIntakeGate}

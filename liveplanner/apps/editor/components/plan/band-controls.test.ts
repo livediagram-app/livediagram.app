@@ -16,7 +16,9 @@ describe('the header band', () => {
   it('nor around the menu box, and ends the header as far in as the menu starts', () => {
     expect(BAND_FLUSH).toContain('[[data-band-blend]_&]:border-transparent!');
     expect(BAND_FLUSH).toContain('[[data-band-blend]_&]:bg-transparent!');
-    expect(BAND_HEADER_END).toBe('[[data-header-band]_&]:pr-px');
+    expect(BAND_HEADER_END).toBe(
+      '[[data-header-band]_&]:pr-[calc(var(--corner-card-room,0px)+12px)]',
+    );
     expect(BAND_STRIP_FLUSH).toContain('[[data-strip-in-band]_&]:border-transparent!');
   });
 });

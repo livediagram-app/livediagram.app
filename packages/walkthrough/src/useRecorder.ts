@@ -31,6 +31,12 @@ import type { WalkthroughHost } from './host';
 import { startRecording, stopStream, type Recorded, type Recording } from './recorder';
 import { limitOfRefusal, walkthroughTelemetry, type WalkthroughLimit } from './telemetry';
 import { recordView } from './timeline';
+import {
+  uploadEstimate,
+  uploadMoved,
+  uploadPercent,
+  type WalkthroughUpload,
+} from './upload-progress';
 
 export const COUNTDOWN_FROM = 3;
 // How often the recording's clock (and its waiting samples) is read.
@@ -47,6 +53,8 @@ export type RecorderPhase =
       events: WalkthroughEvents;
       title: string;
       saving: 'events' | 'media' | null;
+      // The media upload so far, while it goes (upload-progress.ts); null before it starts and after it ends.
+      upload: WalkthroughUpload | null;
       error: string | null;
     };
 
@@ -401,6 +409,7 @@ export function useRecorder(
       events: sealed,
       title: `Walkthrough of ${h.tabName(started.tab)}`,
       saving: null,
+      upload: null,
       error: walkthroughMediaType(recorded.type)
         ? null
         : "This browser recorded in a format that can't be kept. Download a copy instead.",
@@ -485,7 +494,19 @@ export function useRecorder(
     if (phase.kind !== 'review' || !api || phase.saving) return;
     const mediaType = walkthroughMediaType(phase.recorded.type);
     if (!mediaType) return;
-    setPhase({ ...phase, saving: 'events', error: null });
+    setPhase({ ...phase, saving: 'events', upload: null, error: null });
+    // The media's bytes sent, drawn when the whole percentage moves or every PROGRESS_EVERY_MS, so a fast uplink's
+    // stream of progress events doesn't draw the card more than it needs.
+    let began = 0;
+    let drawn: { percent: number; at: number } | null = null;
+    const onProgress = (sent: number, total: number) => {
+      const at = now();
+      const percent = uploadPercent({ sent, total });
+      if (!uploadMoved(drawn, percent, at)) return;
+      drawn = { percent, at };
+      const upload = uploadEstimate(sent, total, at - began);
+      setPhase((p) => (p.kind === 'review' && p.saving === 'media' ? { ...p, upload } : p));
+    };
     const result = await api.save(
       {
         title: phase.title,
@@ -494,7 +515,11 @@ export function useRecorder(
         mediaType,
         events: phase.events,
       },
-      (stage) => setPhase((p) => (p.kind === 'review' ? { ...p, saving: stage } : p)),
+      (stage) => {
+        if (stage === 'media') began = now();
+        setPhase((p) => (p.kind === 'review' ? { ...p, saving: stage } : p));
+      },
+      onProgress,
     );
     if (result.ok) {
       walkthroughTelemetry.saved();
@@ -503,7 +528,9 @@ export function useRecorder(
     } else {
       const limit = limitOfRefusal(result.error);
       if (limit) walkthroughTelemetry.refused(limit);
-      setPhase((p) => (p.kind === 'review' ? { ...p, saving: null, error: result.message } : p));
+      setPhase((p) =>
+        p.kind === 'review' ? { ...p, saving: null, upload: null, error: result.message } : p,
+      );
     }
   }, [phase, api, onSaved]);
 

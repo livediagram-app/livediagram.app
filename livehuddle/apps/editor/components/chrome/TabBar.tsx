@@ -19,6 +19,7 @@ import { safeInlinePadding, safeInset } from '@livehuddle/ui';
 import { TabPresenceStack } from '@/components/chrome/TabPresenceStack';
 import { NameEditor } from '@liveworkspace/workbench/components/primitives/NameEditor';
 import { useTabReorderDrag } from '@liveworkspace/workbench/components/chrome/useTabReorderDrag';
+import type { ChromeToolsItem } from '@liveworkspace/workbench/components/chrome/ChromeToolsMenu';
 import { ChromeControls } from '@/components/chrome/ChromeControls';
 // Lazy: the tab context menu (and the 18 kB icon module it drags in)
 // only loads on the first right-click — it was the largest single
@@ -54,6 +55,8 @@ type TabBarProps = {
   // Optional callback that pops the global search panel. The
   // button sits to the LEFT of the dark-mode toggle.
   onOpenSearch?: () => void;
+  // More rows for the footer's Tools menu (the Editing Mode tool).
+  extraTools?: readonly (ChromeToolsItem | null)[];
   // When set, the active tab's menu opens at this point as the canvas
   // right-click / footer-button menu — the same tab menu with the canvas
   // sections (`canvasActions`) folded in. The page owns the open/close state
@@ -174,6 +177,7 @@ export function TabBar({
   onOpenAttendance,
   onOpenSettings,
   onOpenSearch,
+  extraTools,
   canvasMenu,
   onCloseCanvasMenu,
   canvasActions,
@@ -360,6 +364,7 @@ export function TabBar({
             desktop; icon-only on a phone. */}
         <ChromeControls
           onOpenSearch={onOpenSearch}
+          extraTools={extraTools}
           onOpenSettings={onOpenSettings}
           settingsLabel="Application settings"
           settingsDescription="Your editor preferences. They follow your account, not this space."

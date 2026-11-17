@@ -81,7 +81,12 @@ export function PlanBoardFrame({ v }: { v: PlanBoardViewValues }) {
         />
       ) : null}
       {interactive && plan && !simplified ? (
-        <ExampleCardsNotice shown={shownItems} plan={plan} palette={palette} />
+        <ExampleCardsNotice
+          shown={shownItems}
+          plan={plan}
+          palette={palette}
+          held={!!plan.warmRights?.canEdit}
+        />
       ) : null}
       <div
         ref={bodyRef}
@@ -97,7 +102,7 @@ export function PlanBoardFrame({ v }: { v: PlanBoardViewValues }) {
         // No top padding here: a scroll box's padding insets where its sticky column heads stick, which left a strip
         // of cards showing above them; the grid carries the heads' 12 px rest gap instead (plan-board.md "Column heads
         // stick flush"). plan-scroll: a scrollbar in the theme's colours and finish (globals.css).
-        className={`plan-scroll min-h-0 flex-1 overflow-auto px-3 ${look.endClearance || 'pb-3'} ${look.container ? '@container' : ''} ${look.touch} ${look.overscroll} ${
+        className={`plan-scroll min-h-0 flex-1 overflow-auto px-3 pb-3 ${look.container ? '@container' : ''} ${look.touch} ${look.overscroll} ${
           look.snap ? 'snap-x snap-mandatory' : ''
         } ${slotBoard ? 'scroll-edge-fade' : ''}`}
         // A press here never pans or moves the board, so no hand (board-cursors.ts).

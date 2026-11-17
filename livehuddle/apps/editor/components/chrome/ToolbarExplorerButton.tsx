@@ -1,10 +1,9 @@
 'use client';
 
 import { track } from '@/lib/telemetry';
-import { Glyph } from '@livehuddle/ui';
-import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
-import { TabNameInBox } from '@liveworkspace/workbench/components/chrome/TabNameInBox';
-import { NAME_MAX_LENGTH } from '@livehuddle/document';
+import { Brand, Glyph } from '@livehuddle/ui';
+import { explorerItemHref } from '@liveworkspace/workbench/lib/explorer-href';
+import { useOptionalEditorContext } from '@/app/document/[id]/EditorContext';
 import { ToolbarMenuCard } from './ToolbarMenuCard';
 
 // The Toolbar layout's menu button (docs/specs/007-editor/toolbar-layout.md), top-left of the canvas where
@@ -32,7 +31,8 @@ export function ToolbarExplorerButton({
   // Given the button itself, which the popover anchors to.
   onToggle: (button: HTMLElement) => void;
 }) {
-  const phone = useIsMobileViewport();
+  // The open space: the logo opens the Explorer on the place that holds it (at its root with no editor around it).
+  const itemId = useOptionalEditorContext()?.documentId ?? null;
   const button = (
     <button
       type="button"
@@ -54,11 +54,21 @@ export function ToolbarExplorerButton({
     </button>
   );
   return (
-    <ToolbarMenuCard inline={inline} dockButton tourId="dock-explorer">
+    <ToolbarMenuCard
+      inline={inline}
+      dockButton
+      tourId="dock-explorer"
+      logo={
+        <Brand
+          href={explorerItemHref(itemId)}
+          size="sm"
+          wordmarkClassName="hidden lg:inline"
+          className="relative touch-target"
+        />
+      }
+    >
       {/* No hover card: it got in the way of switching apps, and the aria-label names it. */}
       {button}
-      {/* The open tab's name, in every mode (not on a phone). */}
-      {phone || inline ? null : <TabNameInBox maxLength={NAME_MAX_LENGTH} />}
     </ToolbarMenuCard>
   );
 }

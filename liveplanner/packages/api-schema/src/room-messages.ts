@@ -441,6 +441,13 @@ export type RoomIncoming =
   | CollabKeyMessage
   | OpRefusedMessage;
 
+// The most UTF-8 bytes one frame the plan room sends may hold (docs/specs/026-plan/blueprints/item-store.md "Live:
+// room op"; Work Tracker 986). Cloudflare gives 32 MiB for a WebSocket message a Durable Object receives and states no
+// limit for one it sends, so the room keeps to 1 MiB: an `items` op past it goes out in ordered parts.
+export const ROOM_FRAME_MAX_BYTES = 1024 * 1024;
+// What a frame's envelope (`kind`, `from`, `seq`, `epoch`) may add around its op.
+export const ROOM_FRAME_ENVELOPE_BYTES = 1024;
+
 // The WebSocket close code the realtime room ends a session with when an access
 // change narrows who may be in it without revoking a link (docs/specs/015-api/api.md
 // "Access changes end the sessions they affect"): a share password set, or a

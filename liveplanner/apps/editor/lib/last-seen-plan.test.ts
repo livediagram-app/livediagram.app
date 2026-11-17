@@ -14,6 +14,7 @@ import {
   refsForCopy,
   sheetsForCopy,
   warmPlanOf,
+  warmRightsOf,
   type PlanCopyItem,
 } from './last-seen-plan';
 
@@ -179,8 +180,18 @@ describe('a Dashboard first tab', () => {
 describe('warmPlanOf', () => {
   it('hands the stores what the copy kept, null for each it has none of', () => {
     const cards = storeOf(1);
-    expect(warmPlanOf(copy('board', { cards }))).toEqual({ cards, sheets: [], refTabs: [] });
-    expect(warmPlanOf(copy('board'))).toEqual({ cards: null, sheets: [], refTabs: [] });
+    expect(warmPlanOf(copy('board', { cards }))).toEqual({
+      cards,
+      sheets: [],
+      refTabs: [],
+      role: 'edit',
+    });
+    expect(warmPlanOf(copy('board'))).toEqual({
+      cards: null,
+      sheets: [],
+      refTabs: [],
+      role: 'edit',
+    });
   });
 
   it("hands every kept sheets list, the first tab's and the shown tabs', and the shown tabs' bodies", () => {
@@ -189,6 +200,15 @@ describe('warmPlanOf', () => {
     const tab = { id: 's1', name: 'Budget', kind: 'sheet', elements: [] } as unknown as Tab;
     expect(
       warmPlanOf(copy('dashboard', { sheets: first, refs: { tabs: [tab], sheets: [shown] } })),
-    ).toEqual({ cards: null, sheets: [first, shown], refTabs: [tab] });
+    ).toEqual({ cards: null, sheets: [first, shown], refTabs: [tab], role: 'edit' });
+  });
+});
+
+// offline-mode.md "The board holds its place" (Work Tracker 1112): the strips the kept role shows, never a right.
+describe('warmRightsOf', () => {
+  it('keeps room for what each kept role will show', () => {
+    expect(warmRightsOf('edit')).toEqual({ canEdit: true, canEditCards: true });
+    expect(warmRightsOf('participate')).toEqual({ canEdit: false, canEditCards: true });
+    expect(warmRightsOf('view')).toEqual({ canEdit: false, canEditCards: false });
   });
 });

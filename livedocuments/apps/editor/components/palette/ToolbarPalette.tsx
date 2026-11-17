@@ -1,5 +1,6 @@
 'use client';
 
+import { PHONE_EDGE_LEFT_IN_ROW } from '@liveworkspace/workbench/components/chrome/MenuCardLogo';
 import type { Element, Page } from '@livedocuments/document';
 import { useEffect, useEffectEvent, useMemo, useRef, useState, type ReactNode } from 'react';
 import { onToolbarSearchRequest } from '@liveworkspace/workbench/lib/toolbar-search-request';
@@ -32,7 +33,10 @@ import { BrowseMemoryContext, useBrowseMemory } from './PaletteCategoryBrowser';
 import { setPalettePopoverOpen } from '@liveworkspace/workbench/lib/palette-popover-open';
 import { useBarFold } from '@liveworkspace/workbench/components/palette/useBarFold';
 import { useBarLabels } from '@liveworkspace/workbench/components/palette/useBarLabels';
-import { useStripCrowding } from '@liveworkspace/workbench/components/palette/useStripCrowded';
+import {
+  crowdedPaddingRight,
+  useStripCrowding,
+} from '@liveworkspace/workbench/components/palette/useStripCrowded';
 import { barCategoriesFor } from './bar-categories';
 import { CategoryBarButtons, CategoryBarFlyout, useCategoryBar } from './CategoryBar';
 import { usePaletteKindMotion } from './usePaletteKindMotion';
@@ -83,13 +87,16 @@ function StripRow({ leading, children }: { leading?: ReactNode; children: ReactN
       // sideways, the right gutter also clears the bars handle at the canvas's top-right corner
       // (LandscapeBarsHandle), so a long strip's bar scrolls short of it rather than under it.
       style={{
-        ...safeInlinePadding('0.75rem'),
-        paddingRight: `calc(${atLeastInset('0.75rem', 'right')} + var(--landscape-handle-room, 0px))`,
+        // 6px on a phone's row (experiment: no header bar), so the strip has every pixel it can.
+        ...safeInlinePadding('0.375rem'),
+        // Clear of the top-right corner card instead where there is one (EditorCornerActions sets --corner-card-room,
+        // its width and the row's 6 px gap: the card now meets the screen's edge, so the gutter is not added to it).
+        paddingRight: `calc(max(${atLeastInset('0.375rem', 'right')}, var(--corner-card-room, 0px)) + var(--landscape-handle-room, 0px))`,
       }}
-      className={`pointer-events-none flex w-full items-start gap-2 [&>*]:pointer-events-auto ${LANDSCAPE_HANDLE_ROOM}`}
+      className={`pointer-events-none flex w-full items-start gap-1.5 [&>*]:pointer-events-auto ${LANDSCAPE_HANDLE_ROOM}`}
     >
       {leading == null ? null : (
-        <div data-strip-leading="" className={CARD_CLASS}>
+        <div data-strip-leading="" className={`${CARD_CLASS} ${PHONE_EDGE_LEFT_IN_ROW}`}>
           {leading}
         </div>
       )}
@@ -170,6 +177,17 @@ export function ToolbarPalette(props: Props) {
   // (docs/specs/007-editor/flashcards.md "Text only").
   const articleDock = docksPageToolbar(paletteKind);
   const textOnly = paletteKind === 'flashcard';
+  // The Library's button (libraries.md). On a phone it ends the category row and swipes with it, rather than taking
+  // room beside Search for good; an article's docked formatting has no category row, so it stays beside Search there.
+  const libraryButton = libraryTab ? (
+    <ToolbarLibraryButton
+      open={library.open}
+      onToggle={toggleLibrary}
+      icon={libraryTab.icon}
+      description={libraryTab.description}
+    />
+  ) : null;
+  const libraryInBar = swipe && !articleDock && !textOnly;
   // A change of kind cascades its categories in (usePaletteKindMotion).
   usePaletteKindMotion(paletteKind, rootRef);
   // The bar's categories (bar-categories): one-word names.
@@ -198,7 +216,10 @@ export function ToolbarPalette(props: Props) {
   // Too wide to centre between the menu card's sides (a tablet): the strip sits at the right instead. An article's
   // docked formatting, wider still than the room beside the card (a narrow window, a side by side pane), starts
   // clear of the card and its controls scroll, as on a phone's row, rather than running under the card.
-  const { crowded, clear } = useStripCrowding(cardRef, leading == null);
+  const { crowded, clear, clearRight } = useStripCrowding(cardRef, leading == null);
+  // Experiment (no header bar): centred in the gap between the menu box (or the Contents sidebar it heads) and the
+  // corner card, as livediagram's is.
+  const between = leading == null;
   const dockGivesWay = crowded && articleDock;
   const giveWay = swipe || dockGivesWay;
 
@@ -235,6 +256,8 @@ export function ToolbarPalette(props: Props) {
       ref={rootRef}
       data-toolbar-palette=""
       data-region="palette"
+      // Experiment (no header bar): centred between the menu box and the corner card (STRIP_BETWEEN).
+      data-strip-between={between ? '' : undefined}
       // The strip is the Palette, so the panel-opacity preference (docs/specs/007-editor/user-preferences.md)
       // fades it like every other panel; hovering it restores it.
       data-panel-translucent=""
@@ -249,10 +272,13 @@ export function ToolbarPalette(props: Props) {
       // centred; `top` is restated so the strip keeps its 12px from the top.
       style={{
         ...(scale === 1 ? {} : { ...uiScaleStyle(scale), top: toSurfacePx(12, scale) }),
-        alignItems: crowded ? 'flex-end' : 'center',
-        paddingRight: crowded ? '0.75rem' : 0,
-        ...(dockGivesWay
-          ? { paddingLeft: toSurfacePx(Math.max(clear, besideWidth ?? 0), scale) }
+        // An article's docked formatting, wider than the gap, fills it and scrolls (dockGivesWay).
+        alignItems: dockGivesWay ? 'flex-end' : 'center',
+        ...(between
+          ? {
+              paddingLeft: toSurfacePx(Math.max(clear, besideWidth ?? 0, 12), scale),
+              paddingRight: crowdedPaddingRight(clearRight, scale),
+            }
           : besideWidth
             ? { paddingLeft: toSurfacePx(besideWidth, scale) }
             : {}),
@@ -322,6 +348,14 @@ export function ToolbarPalette(props: Props) {
                       labels={fittedLabels || swipe}
                       shown={barShown}
                       scrollable={swipe}
+                      trailing={
+                        libraryInBar ? (
+                          <>
+                            <Divider />
+                            {libraryButton}
+                          </>
+                        ) : null
+                      }
                     />
                   )}
                   {/* Search, last: any element type (docs/specs/007-editor/toolbar-layout.md
@@ -330,14 +364,7 @@ export function ToolbarPalette(props: Props) {
                   {textOnly ? null : (
                     <>
                       <Divider />
-                      {libraryTab ? (
-                        <ToolbarLibraryButton
-                          open={library.open}
-                          onToggle={toggleLibrary}
-                          icon={libraryTab.icon}
-                          description={libraryTab.description}
-                        />
-                      ) : null}
+                      {libraryInBar ? null : libraryButton}
                       <div ref={searchButtonRef} className="flex">
                         <ToolbarSearchButton open={search.open} onToggle={toggleSearch} />
                       </div>

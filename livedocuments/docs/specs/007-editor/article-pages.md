@@ -255,13 +255,39 @@ footnote's reference (see "Footnotes"). Code blocks keep plain text.
   - **Comment** (⌘⌥M) and **Assign Action**, usable while text is selected outside a table (see
     "Comments and actions"; a margin note never sits in a cell, the buttons' tooltips saying so).
 - No undo or redo (the canvas controls have them).
-- **Word Count**: the foot of More Formatting reads the length of the article the caret is in, as
-  "840 words", and while text is selected, the selection's count beside the total, as "12 of 840
-  words". It counts as agents' page summaries do (one count, `articleWordCount`): the writing, code,
-  table cells and footnote text count, a footnote's marker does not. It is read only while the menu
-  is open (as it opens, and again as the selection moves), so typing with the menu shut never counts
-  and a long article types as fast with it as without. It is a line to read, not a choice: picking it does nothing and the menu stays
-  open. A flashcard's menu has it too (a card's length is its speaking time's).
+- **Word Count**: the foot of More Formatting reads the length of the article the caret is in, how
+  long it takes to read and how easily it reads, as "840 words · 4 min read · Easy to read", and
+  while text is selected, the selection's figures, its count beside the total, as "12 of 840 words ·
+  1 min read · Plain English". No new button or panel: the line says more.
+  - **Words**: it counts as agents' page summaries do (one count, `articleWordCount`): the writing,
+    code, table cells and footnote text count, a footnote's marker does not.
+  - **Reading time**: the words at **238 a minute** (`READING_WORDS_PER_MINUTE`, an adult's silent
+    reading pace for non-fiction), to the nearest minute and at least one ("1 min read"); none with
+    no words.
+  - **How easily it reads**: the Flesch Reading Ease of the writing (its average sentence length and
+    syllables a word), said in words, never as a score: **Easy to read** (80 and over), **Fairly easy
+    to read** (70 to 80), **Plain English** (60 to 70), **Fairly hard to read** (50 to 60), **Hard to
+    read** (under 50). It reads as guidance on the writing, never a grade on the writer. Only the
+    prose counts: paragraphs, headings, lists and quotes; code, tables and footnote notes are not
+    sentences. A sentence ends at a full stop, "!", "?" or "…" (closing quotes and brackets after it
+    included) before a space or the block's end, and every block ends one; a full stop after a known
+    abbreviation ("Dr.", "e.g.", "Mr."), after an initial ("J.") or before a word that starts in
+    lower case ends none, and one inside a number ("3.5") is no full stop.
+  - **English first**: the formula is English's, so the level shows only when the writing reads as
+    English (at least 15% of its words among the commonest English words, which other languages do
+    not share). Otherwise the line says the words and the reading time, and its hover the sentence
+    figures, without a level.
+  - **The numbers** show on hovering the line: "14 words a sentence on average · 3 sentences over 30
+    words · Flesch Reading Ease 72" (no long sentences: "none over 30 words"; no level: no ease).
+  - **Long sentences**: a sentence of more than **30 words** (`LONG_SENTENCE_WORDS`) is long. When
+    the article has one, the line is a choice, **Select the Next Long Sentence**: picking it selects
+    the next long sentence after the caret (after the last, the first again), closes the menu and
+    puts the caret back in the writing, so the writer can split it; opening the menu again and
+    picking it again steps on to the next. With none, it stays a line to read: picking it does
+    nothing and the menu stays open. It steps through the whole article whatever is selected.
+  - It is read only while the menu is open (as it opens, and again as the selection moves), so
+    typing with the menu shut never counts and a long article types as fast with it as without. A
+    flashcard's menu has it too (a card's length is its speaking time's).
 - **Narrow**: when the toolbar is wider than the canvas, it scrolls sideways.
 - **On a phone** the toolbar is a bar fixed along the top of the canvas, across it (its controls
   scroll sideways), in the Toolbar strip's place: the strip (its menu and palette) stands aside
@@ -270,7 +296,9 @@ footnote's reference (see "Footnotes"). Code blocks keep plain text.
   open down from it.
 - **A finger on a page** (a phone or any touch screen): a finger that travels more than a few px
   (`TOUCH_PAN_SLOP`) on an article page's writing or paper pans the view, as a thumb scrolls a
-  document, whatever the tool; one that lifts where it landed is a tap, which puts the caret there;
+  document, whatever the tool; one that lifts where it landed is a tap, which puts the caret there, in the
+  paragraph tapped, and what is typed next lands there, even just after Add Article put the caret in the new
+  article's Title;
   one held still for a long press (`LONG_PRESS_MS`) is the browser's, selecting text, so a slide
   after it stretches the selection rather than panning. Selected writing keeps the phone's Copy
   and Paste callout.
@@ -747,6 +775,13 @@ types in it until they let go. Nothing about what is stored changes, and no lett
   Every hold not said again within 12 s (`ARTICLE_HOLD_EXPIRE_MS`) is gone, in the room and on every
   screen, so a lost release, a laptop closed mid-word or a frozen tab never holds a paragraph for
   longer.
+- **Undo and redo.** An undo or redo of this person's own steps never writes over a paragraph or cell someone else
+  holds: a held block keeps the words its writer has (as last committed), and the rest of the step undoes as usual,
+  so undoing a change made before they started writing, or a paragraph added before they took it, leaves their
+  words. The block (a held cell's whole table) comes back to their words even where the step would take it away, in
+  its place after the block before it. Their typing not yet committed is theirs already and stays on their screen.
+  An undo that takes the whole article away (undoing its adding) is not held back. There is no restore of an
+  earlier version in the editor; a copy from Version History makes a new document and changes no held writing.
 - **Who holds.** Editors and Participants hold the blocks they write (a Participant writes text,
   so holds what it writes); a Viewer writes nothing and holds nothing. Holding takes nothing a role
   lacks: the role's rights over the writing are unchanged.
@@ -775,6 +810,7 @@ types in it until they let go. Nothing about what is stored changes, and no lett
   `ArticleZoneFloat`, `ArticleZoneResized`, `ArticleZoneMoved`, `ArticleZoneRemoved`,
   `ArticleTableShape` (a table's rows, columns, header row or widths changed from its menu, Tab or a
   resize grip), `ArticleTablePaste` (a table pasted as a table block).
+- `UI · Used · LongSentenceSelected` each time the Word Count line selected a long sentence.
 - Never text.
 
 ## Non-goals

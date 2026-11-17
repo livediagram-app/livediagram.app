@@ -4,19 +4,19 @@
 // SplitViewFrame by EditorView, which lays them across both panes side by side
 // (docs/specs/007-editor/split-view.md); each renders nothing where its bar is hidden.
 
-import { ApprovalBadge } from '@liveworkspace/explorer/approvals';
 import { memo } from 'react';
-import { truncateName, type Tab } from '@livedocuments/document';
+import type { Tab } from '@livedocuments/document';
 import { withStableEventProps } from '@liveworkspace/workbench/components/primitives/withStableEventProps';
 import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
 import { track } from '@/lib/telemetry';
 import { addToDocumentTargets } from '@/lib/add-to-document-targets';
-import { EditorHeader } from '@/components/chrome/EditorHeader';
+import { EditorCornerActions } from '@liveworkspace/workbench/components/chrome/EditorCornerActions';
+import { roleToolsItem } from '@liveworkspace/workbench/components/chrome/RoleTool';
 import { WorkbenchOpenLink } from '@/components/chrome/WorkbenchChrome';
 import { appHrefOfPlace } from '@/lib/workbench/workspace-place';
 import { TabBar } from '@/components/chrome/TabBar';
 import { LandscapeBarFold } from '@/components/chrome/LandscapeBars';
-import { RolePill } from '@/components/chrome/RoleIndicator';
+import { roleOwnerLabel } from '@/components/chrome/RoleIndicator';
 import { offersHistory, openHistoryFromFooter } from '@/components/versions/history-tools-item';
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { resolveOwnerBadge } from '@/lib/presence-rows';
@@ -45,91 +45,51 @@ export const EditorViewHeader = memo(function EditorViewHeader(view: {
   const hidden = useEditorChrome((s) => s.zenMode || !s.appChrome);
   const anyWelcomeOpen = useEditorChrome((s) => s.anyWelcomeOpen);
   const documentId = useEditorChrome((s) => s.documentId);
-  const documentName = useEditorChrome((s) => s.documentName);
   const documentShareable = useEditorChrome((s) => s.documentShareable);
-  const teamDocument = useEditorChrome((s) => !!s.documentTeamId);
   const hydrated = useEditorChrome((s) => s.hydrated);
   const canShareDocument = useEditorChrome((s) => s.canShareDocument);
   const communityVisitor = useEditorChrome((s) => s.sessionCommunity !== null);
   const copying = useEditorChrome((s) => s.copying);
-  const readOnly = useEditorChrome((s) => s.isStructureReadOnly);
-  const renameNonce = useEditorChrome((s) => s.renameDocumentNonce);
   const slideCount = useEditorChrome((s) => s.slideDeck.runnable.length);
   const startingDeck = useEditorChrome((s) => s.slideDeck.startingDeck);
-  // The role pill: useRoleIndicator's answer, read as slices.
-  const roleLevel = useEditorChrome((s) => s.can.level);
-  const ownerName = useEditorChrome((s) => resolveOwnerBadge(s)?.name ?? null);
-  const isSelf = useEditorChrome((s) => s.isOwner);
-  const canToggleRole = useEditorChrome((s) => s.canToggleRole);
-  const { isOffline, headerCommunity, isMobileViewport } = view;
+  const { isMobileViewport } = view;
   if (hidden) return null;
+  // Experiment: no header bar. The name, its visibility badge and the role pill are gone (the role's switch is the
+  // Editing Mode tool in Tools); Copy, Present, Share and the account float in a card at the top right.
   return (
-    <LandscapeBarFold shown={view.landscapeShown}>
-      <AreaErrorBoundary area="Header" fallback="panel">
-        <EditorHeader
-          itemId={documentId}
-          documentName={documentName}
-          hideTitle={anyWelcomeOpen}
-          showShare={canShareDocument && hydrated && !anyWelcomeOpen}
-          shareable={documentShareable}
-          community={headerCommunity}
-          teamDocument={teamDocument}
-          offline={isOffline}
-          // Visitors see "Make a copy" instead of "Share": same slot (a joined
-          // team member is no visitor: the team's documents are theirs to share),
-          // different action. Hidden during the welcome flow so the
-          // first-paint chrome stays minimal, and during hydration so
-          // we don't render the button before we know whether the user
-          // is the owner. A Community visitor gets it from the Community bar instead.
-          onMakeCopy={
-            !canShareDocument && hydrated && !anyWelcomeOpen && documentId && !communityVisitor
-              ? () => void chrome.get().makeCopy()
-              : undefined
-          }
-          copying={copying}
-          readOnly={readOnly}
-          renameNonce={renameNonce}
-          rolePill={
-            <>
-              <RolePill
-                role={roleLevel}
-                ownerName={ownerName}
-                isSelf={isSelf}
-                onToggle={canToggleRole ? () => chrome.get().toggleViewPreview() : undefined}
-              />
-              <ApprovalBadge />
-            </>
-          }
-          // docs/specs/012-collaboration/presentation-mode.md "The header's Present button": only
-          // while the deck has a slide to show, on a desktop, once the document is up. Every role.
-          present={
-            hydrated && !anyWelcomeOpen && !isMobileViewport && slideCount > 0
-              ? {
-                  slideCount,
-                  starting: startingDeck,
-                  onPresent: () => {
-                    track('UI', 'Opened', 'HeaderPresent');
-                    void chrome.get().slideDeck.start();
-                  },
-                }
-              : undefined
-          }
-          onOpenAccount={() => chrome.get().openSettingsOn('account')}
-          onOpenShare={() => {
-            chrome.get().setShareDialogOpen(true);
-            track('UI', 'Opened', 'Share');
-          }}
-          onRename={(next) => {
-            const prev = chrome.get().documentName.trim();
-            // docs/specs/006-document/name-length.md: capped here so the header rename can't outrun the
-            // limit the auto-namer and the Explorer renames both respect.
-            const nextTrim = truncateName(next);
-            chrome.get().nameDocument(nextTrim);
-            if (nextTrim && nextTrim !== prev) track('Document', 'Renamed');
-          }}
-        />
-      </AreaErrorBoundary>
-    </LandscapeBarFold>
+    <AreaErrorBoundary area="Header" fallback="panel">
+      <EditorCornerActions
+        showShare={canShareDocument && hydrated && !anyWelcomeOpen}
+        shareable={documentShareable}
+        // Visitors see "Make a copy" instead of "Share" (a joined team member is no visitor). Hidden during the
+        // welcome flow and hydration; a Community visitor gets it from the Community bar instead.
+        onMakeCopy={
+          !canShareDocument && hydrated && !anyWelcomeOpen && documentId && !communityVisitor
+            ? () => void chrome.get().makeCopy()
+            : undefined
+        }
+        copying={copying}
+        copyDescription="Duplicate this document into your own files."
+        // docs/specs/012-collaboration/presentation-mode.md "The header's Present button".
+        present={
+          hydrated && !anyWelcomeOpen && !isMobileViewport && slideCount > 0
+            ? {
+                slideCount,
+                starting: startingDeck,
+                onPresent: () => {
+                  track('UI', 'Opened', 'HeaderPresent');
+                  void chrome.get().slideDeck.start();
+                },
+              }
+            : undefined
+        }
+        onOpenAccount={() => chrome.get().openSettingsOn('account')}
+        onOpenShare={() => {
+          chrome.get().setShareDialogOpen(true);
+          track('UI', 'Opened', 'Share');
+        }}
+      />
+    </AreaErrorBoundary>
   );
 });
 
@@ -162,10 +122,10 @@ function EditorViewFooterBar(view: {
   const inWorkbench = useEditorChrome((s) => s.workbench !== null);
   const isOwner = useEditorChrome((s) => s.isOwner);
   const readOnly = useEditorChrome((s) => s.isStructureReadOnly);
-  // `isOutOfScope` answers from the session's tab scope, so the bar renders when the scope changes and reads the
-  // function then.
-  useEditorChrome((s) => s.sessionTabScope);
-  const isOutOfScope = chrome.get().isOutOfScope;
+  // `isOutOfScope` answers from the session's tab scope and is made afresh only when the scope changes (useTabScope),
+  // so the bar subscribes to the function itself: a scope set after mount (a tab-scoped link) marks the other tabs.
+  // A `chrome.get()` here was kept at its first value by the React Compiler (Work Tracker 946).
+  const isOutOfScope = useEditorChrome((s) => s.isOutOfScope);
   const renameTabNonce = useEditorChrome((s) => s.renameTabNonce);
   const participantsByTab = useEditorChrome((s) => s.participantsByTab);
   const selfId = useEditorChrome((s) => s.selfParticipant.id);
@@ -178,6 +138,10 @@ function EditorViewFooterBar(view: {
   const hydrated = useEditorChrome((s) => s.hydrated);
   const communityVisitor = useEditorChrome((s) => s.sessionCommunity !== null);
   const canvasSuggestions = useEditorChrome((s) => s.canvasSuggestions);
+  // The Editing Mode tool (the header's role pill, moved into Tools).
+  const roleLevel = useEditorChrome((s) => s.can.level);
+  const ownerName = useEditorChrome((s) => resolveOwnerBadge(s)?.name ?? null);
+  const canToggleRole = useEditorChrome((s) => s.canToggleRole);
   const { isOffline, onSelectTab } = view;
   if (hidden) return null;
   // The bar is already hidden in an embed and behind a welcome, so those two answer false here.
@@ -253,6 +217,15 @@ function EditorViewFooterBar(view: {
             track('UI', 'Opened', 'Settings');
           }}
           suggestions={canvasSuggestions}
+          extraTools={[
+            roleToolsItem({
+              role: roleLevel,
+              owner: roleOwnerLabel(ownerName, isOwner),
+              noun: 'document',
+              canSwitch: canToggleRole,
+              onPick: (level) => chrome.get().setViewPreview(level),
+            }),
+          ]}
           onOpenSearch={() =>
             openSearchWithPrefetch(chrome.get().setSearchOpen, chrome.get().loadAllTabs)
           }

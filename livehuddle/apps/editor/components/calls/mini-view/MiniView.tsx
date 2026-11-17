@@ -1,10 +1,11 @@
 'use client';
 
 // The mini view's content (docs/specs/008-canvas/avatar-mode.md "The mini view"; blueprint: space-mini-view.md
-// "Rows"): In the Space and its count with Back to Space, a knock that reached you, then you and everyone with a
+// "Rows"): In the Space and its count with Back to Space, a knock that reached you, the cameras of the people you hear
+// (MiniViewTiles), then you and everyone with a
 // character on your tab, the people you hear under Near You, and your microphone at the foot. Rendered by MiniViewHost into the Picture-in-Picture
 // window. It subscribes to the levels, the hands, your call and the knock, and re-renders only when one changes.
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import { lucideArrowUpRight } from '@liveworkspace/icons/lucide';
 import { Button, CountBadge, lucideGlyph } from '@livehuddle/ui';
 import type { VoiceLevel } from '@livehuddle/api-schema';
@@ -12,6 +13,7 @@ import {
   levelNow,
   micOn,
   useCallHands,
+  useCallMedia,
   useCallPeers,
   useCallSelf,
   type CallHand,
@@ -23,6 +25,7 @@ import { focusSpace } from '@/lib/mini-view/mini-view-window';
 import { useStaleClock } from '../TalkingBars';
 import { MiniViewControls } from './MiniViewControls';
 import { MiniViewRow, type MiniHand } from './MiniViewRow';
+import { miniTiles, MiniViewTiles } from './MiniViewTiles';
 
 const BackIcon = lucideGlyph(lucideArrowUpRight, 14);
 
@@ -81,6 +84,9 @@ function MiniViewBody({
   const peers = useCallPeers();
   const { hands } = useCallHands();
   const knock = useMiniKnock();
+  // The received cameras: changes only when one arrives or goes, so a level tick never re-picks the tiles.
+  const media = useCallMedia();
+  const tiles = useMemo(() => miniTiles(groups, media), [groups, media]);
   // Re-renders when the oldest live level goes stale, so a lost stop clears its bars as on the canvas.
   useStaleClock(peers);
   const levelOf = (person: MiniPerson): VoiceLevel => {
@@ -113,6 +119,8 @@ function MiniViewBody({
       <div aria-live="polite" className="shrink-0 px-2 empty:hidden [&:not(:empty)]:pt-2">
         {knock ? <KnockCard knock={knock} /> : null}
       </div>
+      {/* The cameras of the people you hear (Work Tracker 984). */}
+      <MiniViewTiles tiles={tiles} levelOf={levelOf} />
       <div className="min-h-0 flex-1 overflow-y-auto px-1.5 pt-1 pb-2">
         {groups.map((group) => (
           <section key={group.id} aria-label={GROUP_TITLE[group.id]} className="pt-1">

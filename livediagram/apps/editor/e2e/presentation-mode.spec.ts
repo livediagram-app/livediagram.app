@@ -73,8 +73,9 @@ test('a deck presents slide by slide and leaves the view as it was', async ({
   await expect.poll(camera).not.toBeNull();
   const before = await camera();
 
-  await page.getByRole('button', { name: 'Selection mode' }).click();
-  await page.getByText('Slide Deck', { exact: true }).first().click();
+  // Slide Deck is a page in the footer's Tools (presentation-mode.md "Where it lives").
+  await page.locator('[data-tools-button]').click();
+  await page.locator('[data-tools-item="slide-deck"]').click();
   await page.getByRole('button', { name: /^Present \d+$/ }).click();
   await expect.poll(camera).not.toBe(before);
   const slideOne = await camera();

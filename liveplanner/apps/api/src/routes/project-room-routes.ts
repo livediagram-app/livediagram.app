@@ -11,8 +11,13 @@ import {
 import { adderKeyFor } from '../adder-key';
 import { noteWorkbenchRoom } from '../auth/workbench-session';
 import { linkCodeOf, indexService } from '../index-service';
-import { forbidden, json, notFound } from '../responses';
-import { openRoomTicket, roomTicketLevel, sealRoomTicket } from '@liveworkspace/index-app';
+import { badRequest, forbidden, json, notFound } from '../responses';
+import {
+  openRoomTicket,
+  requestedRoomCap,
+  roomTicketLevel,
+  sealRoomTicket,
+} from '@liveworkspace/index-app';
 import { type RouteContext } from './context';
 import { resolvePlanGrant } from './plan-grant';
 import {
@@ -39,19 +44,31 @@ async function isCommunityCode(env: Env, planId: string, code: string | null): P
 export async function handleProjectRoomRoutes(ctx: RouteContext): Promise<Response | null> {
   const { request, env, url, segments } = ctx;
   // POST /api/projects/<id>/room-ticket: the ticket for a caller that holds no grant of its own (an API token's
-  // CLI, a workbench session) or wants its adder key: the grant the request carries or one fetched for it.
+  // CLI, a workbench session, the MCP server's interactive view) or wants its adder key: the grant the request carries or one fetched for it.
   if (segments.length === 4 && segments[3] === 'room-ticket' && request.method === 'POST') {
     const id = segments[2]!;
+    // `?cap=view` (api.md): a view-only ticket, the MCP view's (mcp-server.md "Live updates").
+    const cap = requestedRoomCap(url);
+    if (cap === 'invalid') return badRequest('invalid_cap');
     const grant = await resolvePlanGrant(ctx, id);
     if (grant instanceof Response) return grant;
     if (!grant) return notFound();
     if (await isCommunityCode(env, id, grant.shareCode)) return forbidden('community_link');
     const workbench = ctx.workbench ?? null;
-    const role = workbench ? capWorkbenchRole(grant.level, workbench.level) : grant.level;
+    // The caller's own level, and the level the ticket admits at: view for a view-only ticket.
+    const own = workbench ? capWorkbenchRole(grant.level, workbench.level) : grant.level;
+    const role = cap ?? own;
+    // A workbench session is sealed to its pairing at its own cap (held to view when it asks for a view-only
+    // ticket); a view-only ticket otherwise is the grant sealed with the cap alone, so its holder never has the
+    // grant bare.
     const ticket = await sealRoomTicket(
       env,
       grant.token,
-      workbench ? { pairing: workbench.pairingId, cap: workbench.level } : null,
+      workbench
+        ? { pairing: workbench.pairingId, cap: cap ?? workbench.level }
+        : cap
+          ? { pairing: null, cap }
+          : null,
     );
     // A workspace session joins many rooms; each is recorded at liveworkspace, off the response's path, so ending
     // its access closes them all (WB55).
@@ -65,6 +82,12 @@ export async function handleProjectRoomRoutes(ctx: RouteContext): Promise<Respon
     const person = linkCodeOf(grant.sub) ? null : grant.sub;
     const adderKey = role === 'participate' && person ? await adderKeyFor(id, person) : null;
     const answer: RoomTicketResponse = adderKey ? { ticket, adderKey } : { ticket };
+    // A view-only ticket's holder cannot read the grant inside, so the answer says when it lapses, and the caller's
+    // own level (a read-only token's is view whatever the grant says). The ticket admits at view either way.
+    if (cap) {
+      answer.expiresAt = grant.exp * 1000;
+      answer.level = ctx.token?.readOnly ? 'view' : own;
+    }
     return json(answer);
   }
 

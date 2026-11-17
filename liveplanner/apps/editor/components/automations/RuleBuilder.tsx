@@ -6,7 +6,8 @@
 // rule drawer's ("The rule builder on a phone"): PhoneRuleHeader, the steps scrolling, PhoneRuleFoot with Rule
 // Details pinned, and the picked step's panel in its own drawer (StepDrawer). It holds the rule as changed; the dialog asks Discard Changes? before leaving it dirty (onDirty). A
 // refusal's `path` marks the step at fault and selects it. A rule opened from a template (or drafted by Describe a
-// Rule, with its `notice` above the steps) marks the steps it left to pick until they are picked. It holds the plan's webhooks for its outgoing actions, read once when one first opens.
+// Rule, with its `notice` above the steps) marks the steps it left to pick until they are picked. It holds the plan's webhooks for its outgoing actions, read once when one first opens,
+// and its board addresses for Email Received's Board picker, read once when that panel first opens (email-addresses.tsx).
 // A save stamps the rule with this browser's time zone, the saver's (spec "Time triggers").
 
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
@@ -30,6 +31,7 @@ import { AutomationRefusal, type AutomationsScope } from './automations-client';
 import { useGithubAutomations } from './github/github-automations';
 import { IncomingRuleProvider, type IncomingRule } from './incoming-rule';
 import { PlanWebhooksProvider, usePlanWebhooksState } from './plan-webhooks';
+import { EmailAddressesProvider, useEmailAddressesState } from './email-addresses';
 import {
   addAction,
   addBranch,
@@ -97,8 +99,9 @@ export function RuleBuilder({
   blank?: boolean;
   // This browser's time zone: the rule is saved in it.
   timeZone: string;
-  // The plan, for its webhooks; and whether the person is signed in (webhooks are an account's).
-  scope: Pick<AutomationsScope, 'projectId' | 'shareCode'>;
+  // The plan, for its webhooks and (with its owner) its board addresses; and whether the person is signed in
+  // (webhooks are an account's).
+  scope: Pick<AutomationsScope, 'projectId' | 'shareCode'> & { ownerId?: string | undefined };
   signedIn?: boolean;
   // Opens the plan's Webhooks dialog, calling back when it closes.
   onOpenWebhooks?: ((onClosed: () => void) => void) | undefined;
@@ -107,6 +110,7 @@ export function RuleBuilder({
 }) {
   const toast = useToast();
   const webhooks = usePlanWebhooksState({ scope, signedIn, onOpenDialog: onOpenWebhooks });
+  const addresses = useEmailAddressesState(scope);
   const [saved, setSaved] = useState(() => bodyOf(initial));
   const [body, setBody] = useState(() => bodyOf(initial));
   const [selected, setSelected] = useState<RulePart | null>({ part: 'trigger' });
@@ -383,78 +387,80 @@ export function RuleBuilder({
   return (
     <IncomingRuleProvider value={incoming}>
       <PlanWebhooksProvider value={webhooks}>
-        <div data-rule-builder="" className="flex min-h-0 flex-1 flex-col">
-          {phone ? (
-            <>
-              <PhoneRuleHeader
-                name={body.name}
-                onName={(name) => change({ ...body, name })}
-                nameFault={nameFault}
-                state={
-                  rule
-                    ? {
-                        enabled: rule.enabled,
-                        busy: toggling,
-                        onToggle: (next) => void toggle(next),
-                      }
-                    : null
-                }
-                edited={edited}
-                onBack={onBack}
-              />
-              <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto overscroll-contain bg-slate-50/60 px-4 py-4 dark:bg-slate-950/40">
-                {notice}
-                <RuleSteps
-                  body={body}
-                  outline={outline}
-                  selected={selected}
-                  fault={stepFault && fault ? { part: stepFault, message: fault.message } : null}
-                  actions={actions}
-                  picks={pickMarks}
-                  moved={moved}
-                  onMovedFocused={() => setMoved(null)}
+        <EmailAddressesProvider state={addresses}>
+          <div data-rule-builder="" className="flex min-h-0 flex-1 flex-col">
+            {phone ? (
+              <>
+                <PhoneRuleHeader
+                  name={body.name}
+                  onName={(name) => change({ ...body, name })}
+                  nameFault={nameFault}
+                  state={
+                    rule
+                      ? {
+                          enabled: rule.enabled,
+                          busy: toggling,
+                          onToggle: (next) => void toggle(next),
+                        }
+                      : null
+                  }
+                  edited={edited}
+                  onBack={onBack}
                 />
-              </div>
-              <PhoneRuleFoot
-                details={
-                  <RuleDetails
-                    placement="foot"
-                    chain={body.chain}
-                    onChain={(chain) => change({ ...body, chain })}
+                <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto overscroll-contain bg-slate-50/60 px-4 py-4 dark:bg-slate-950/40">
+                  {notice}
+                  <RuleSteps
+                    body={body}
+                    outline={outline}
+                    selected={selected}
+                    fault={stepFault && fault ? { part: stepFault, message: fault.message } : null}
+                    actions={actions}
+                    picks={pickMarks}
+                    moved={moved}
+                    onMovedFocused={() => setMoved(null)}
                   />
-                }
-                message={nameFault ?? otherFault}
-                onTest={() => setTesting(true)}
-                onSave={() => void save()}
-                saving={saving}
-                saved={!!rule && !dirty}
+                </div>
+                <PhoneRuleFoot
+                  details={
+                    <RuleDetails
+                      placement="foot"
+                      chain={body.chain}
+                      onChain={(chain) => change({ ...body, chain })}
+                    />
+                  }
+                  message={nameFault ?? otherFault}
+                  onTest={() => setTesting(true)}
+                  onSave={() => void save()}
+                  saving={saving}
+                  saved={!!rule && !dirty}
+                />
+                {stepOpen && selected ? panel : null}
+              </>
+            ) : (
+              <>
+                {bar}
+                <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_380px]">
+                  <div className="min-h-0 overflow-y-auto bg-slate-50/60 px-6 py-5 dark:bg-slate-950/40">
+                    {steps}
+                  </div>
+                  <div className="min-h-0 overflow-y-auto border-l border-slate-100 px-5 py-5 dark:border-slate-800">
+                    {panel}
+                  </div>
+                </div>
+              </>
+            )}
+            {testing ? (
+              <TestOnCard
+                body={body}
+                outline={outline}
+                // Tried as it would save: in this browser's time zone.
+                test={(tried, item) => api.test({ ...tried, timeZone }, item)}
+                onRefused={refused}
+                onClose={() => setTesting(false)}
               />
-              {stepOpen && selected ? panel : null}
-            </>
-          ) : (
-            <>
-              {bar}
-              <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_380px]">
-                <div className="min-h-0 overflow-y-auto bg-slate-50/60 px-6 py-5 dark:bg-slate-950/40">
-                  {steps}
-                </div>
-                <div className="min-h-0 overflow-y-auto border-l border-slate-100 px-5 py-5 dark:border-slate-800">
-                  {panel}
-                </div>
-              </div>
-            </>
-          )}
-          {testing ? (
-            <TestOnCard
-              body={body}
-              outline={outline}
-              // Tried as it would save: in this browser's time zone.
-              test={(tried, item) => api.test({ ...tried, timeZone }, item)}
-              onRefused={refused}
-              onClose={() => setTesting(false)}
-            />
-          ) : null}
-        </div>
+            ) : null}
+          </div>
+        </EmailAddressesProvider>
       </PlanWebhooksProvider>
     </IncomingRuleProvider>
   );

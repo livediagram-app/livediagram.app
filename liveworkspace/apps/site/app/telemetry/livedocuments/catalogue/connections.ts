@@ -105,6 +105,11 @@ export const MCP_TOOL_METRICS: readonly Metric[] = [
   ),
   mcpTool('WriteArticle', 'Write Article', 'Writing an article on pages from Markdown.'),
   mcpTool('ViewTab', 'View Tab', 'The interactive view in a chat host drawing a page.'),
+  mcpTool(
+    'ViewLive',
+    'View Live',
+    'The interactive view in a chat host following a document live, with a view-only ticket.',
+  ),
 ];
 
 export const MCP_TOOL_CALLS: MetricStack = {

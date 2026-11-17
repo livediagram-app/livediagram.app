@@ -8,6 +8,8 @@ import { csvRows } from './test-csv';
 import {
   TRACKER_CARD_COMMENTS_MAX,
   TRACKER_COMMENTS_MAX,
+  TRACKER_EMAIL_MAX,
+  trackerEmails,
   type TrackerBoard,
   type TrackerCard,
 } from './tracker-model';
@@ -194,6 +196,30 @@ describe('planning into a plan that has people, members and the type', () => {
       'n-other',
     ]);
     expect(plan.preview.people).toEqual({ matched: 1, onPlan: 1, named: 2 });
+  });
+
+  it('lists the emails an agent asks the api to match: each once, in card order, assignees and Person extras', () => {
+    const long = `${'a'.repeat(TRACKER_EMAIL_MAX)}@example.com`;
+    const b = boardOf([
+      blank('One', 'Todo', {
+        assignee: { name: 'Ana', email: 'ana@example.com' },
+        extras: { reporter: [{ name: 'Ben', email: 'ben@example.com' }], sprint: 'S1' },
+      }),
+      blank('Two', 'Todo', { assignee: { name: 'Zoe' } }),
+      blank('Unassigned', 'Todo'),
+      blank('Three', 'Todo', {
+        assignee: { name: 'Ben', email: 'ben@example.com' },
+        extras: {
+          members: [
+            { name: 'Cy', email: 'cy@example.com' },
+            { name: 'Long', email: long },
+          ],
+        },
+      }),
+    ]);
+    expect(trackerEmails(b)).toEqual(['ana@example.com', 'ben@example.com', 'cy@example.com']);
+    expect(trackerEmails(b, 2)).toEqual(['ana@example.com', 'ben@example.com']);
+    expect(trackerEmails(boardOf([]))).toEqual([]);
   });
 
   it('reuses the type on a second import, sharing statuses by name and merging Choice options', () => {

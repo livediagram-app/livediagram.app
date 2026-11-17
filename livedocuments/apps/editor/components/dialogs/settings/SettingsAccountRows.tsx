@@ -5,16 +5,16 @@ import { useState } from 'react';
 import { Button } from '@livedocuments/ui';
 import { resetSettingsBlob } from '@liveworkspace/settings';
 import {
-  ProfileHeaderCard,
   resetAccountSettings,
   resetBrowserSettings,
   ResetSettingsRow,
   SettingsRowShell,
   type SettingsRequest,
 } from '@liveworkspace/settings-ui';
-import { useAuthHrefs } from '@/components/chrome/auth-shared';
+import { SettingsIdentityRow as SharedSettingsIdentityRow } from '@liveworkspace/workbench/components/dialogs/settings/SettingsIdentityRow';
 import { SettingsSignInLink } from '@liveworkspace/workbench/components/dialogs/settings/SettingsSignInLink';
 import { useDeferredAuth } from '@liveworkspace/workbench/components/providers/deferred-auth';
+import { useOwnPicture } from '@/lib/own-picture';
 import type { UserPreferences } from '@/lib/user-preferences';
 import type {
   SettingsDeleteAccountRowSpec,
@@ -32,29 +32,11 @@ const DeleteAccountDialog = dynamic(
   { ssr: false },
 );
 
-// Identity, read from the account. Never written here: names and emails are managed
-// on the liveworkspace accounts site, so this is a card, not a form. The card is the shared Profile's header
-// (@liveworkspace/settings-ui ProfileHeaderCard; liveworkspace/docs/specs/010-site/site.md "Settings", "Profile"): the avatar,
-// name, email and when they joined; a guest gets the guest card and the way in.
+// Identity: the shared card (@liveworkspace/workbench SettingsIdentityRow), its avatar your own Google picture from the
+// own-picture store, as the header's account control draws it, whatever Show My Google Picture says.
 export function SettingsIdentityRow({ row }: { row: SettingsIdentityRowSpec }) {
-  const { authLoaded, isSignedIn, user } = useDeferredAuth();
-  const { signInHref, signUpHref } = useAuthHrefs();
-  const signedIn = Boolean(authLoaded && isSignedIn && user);
-  return (
-    <div data-settings-cell={row.key} className="rounded-[inherit]">
-      {signedIn && user ? (
-        <ProfileHeaderCard
-          identity={{
-            name: user.fullName ?? user.username ?? user.email ?? 'Your account',
-            email: user.email,
-            joined: user.createdAt,
-          }}
-        />
-      ) : (
-        <ProfileHeaderCard guest={{ signInHref, signUpHref, things: 'documents' }} />
-      )}
-    </div>
-  );
+  const { picture } = useOwnPicture();
+  return <SharedSettingsIdentityRow row={row} things="documents" picture={picture} />;
 }
 
 // Reset All Settings, directly above Delete Account (docs/specs/007-editor/user-preferences.md; the row is the shared
