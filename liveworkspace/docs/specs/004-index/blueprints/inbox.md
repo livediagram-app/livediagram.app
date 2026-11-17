@@ -47,7 +47,9 @@ must be well formed. A thread needs `elementId`, `elementLabel`, `resolved` (boo
 `participantIds` and `mentionedIds` (≤ 100 ids), `latestText`, `latestAuthorName`, `firstAt`, `latestAt`, and may
 carry `latestAuthorColor`, `latestAuthorId`, `resolvedById`, `agentIds` (≤ 100 ids; they join `collab_thread_people`
 with the participants and the mentioned, so they reach the thread, but are not stored in `participant_ids`, so
-`youCommented` stays false for them), `card` (whose optional `id`, 1 to 128 characters, names the card when the row's
+`youCommented` stays false for them), `mentionedBy` (an object keyed by ids in `mentionedIds`, each `{ id, name, color? }`:
+`id` an id or null, `name` cut to 200, `color` to 32; an entry whose key is not in `mentionedIds`, or that is
+malformed, is dropped, never the push refused), `card` (whose optional `id`, 1 to 128 characters, names the card when the row's
 `elementId` is a card thread's own id, and whose optional `column` is `{ name ≤ 200, color? #rrggbb, done boolean }`
 or null; a malformed `column` is dropped from the card, never the push refused). An action needs `elementId`, `actionId`,
 `elementLabel`, `name`, `status` (`open`, `done`, `wont-do`), `assignerId`, `createdAt`, `updatedAt`, and may carry
@@ -98,7 +100,12 @@ row before the filter's slot (`panel/Pane.tsx`) and in the page's `PaneHeader` a
 
 A Plan card's row (an action or thread with `card`) draws `CardStatusChip` (`packages/explorer/src/explorer/badges.tsx`)
 from `card.column` beside its title: no read of its own, the column rides in the row's `card` JSON. `inboxCount`
-(`sections.ts`) is `forMe` plus the threads whose `threadReason` is `mention` or `yours`; `threadReason` reads a
+(`sections.ts`) is `forMe` plus the threads whose `threadReason` is `mention` or `yours`, and the sidebar and the
+rail draw no badge at 0. `useInbox` holds the rows done from the pane (`settle(key, at)`, each with the row's time as
+it was): `data` leaves them out while a read lists them at that time, so the badge, the rail, Home's pill and the
+list drop together, and a row that changes after (a new reply, reopened) comes back. A thread's row names who mentioned
+the reader from `mentionedBy`, falling back to the latest author unless that is the reader (**A teammate**).
+`threadReason` reads a
 thread reached for no other reason (an agent with the reader's token wrote in it, nobody mentioned them, the item is
 not theirs) as `agent`, **Your agent wrote**.
 
@@ -141,7 +148,11 @@ ORDER BY a.updated_at DESC LIMIT 1000
 | `collab_forms`         | `(item_id, tab_id)`                             | `collab_forms_code` UNIQUE `(code) WHERE code IS NOT NULL` (0004)                                                      | form push                     | Inbox, `formByCode` |
 | `collab_form_reads`    | `(person_id, item_id, tab_id)`                  | `collab_form_reads_item (item_id)`                                                                                     | seen push; merge; purge       | Inbox, `formSeen`   |
 
-Defaults: `tab_name ''`, `participant_ids '[]'`, `mentioned_ids '[]'`, `latest_author_color ''`, `description ''`;
+`collab_threads` also holds `latest_author_id` (null when the app did not say) and `mentioned_by` (`'{}'`), added by
+`0020_thread_mentioned_by.sql`. The purge anonymises them with the rest: `latest_author_id` becomes the anonymised id,
+and `mentioned_by` drops the entries keyed by the person or naming them.
+
+Defaults: `tab_name ''`, `participant_ids '[]'`, `mentioned_ids '[]'`, `mentioned_by '{}'`, `latest_author_color ''`, `description ''`;
 `status` CHECK the three. Every table cascades from `items`.
 
 **livehuddle's old rows** (Work Tracker 736). livehuddle stopped pushing (#1612), but what it pushed before stays.

@@ -567,8 +567,8 @@ minute, with retries ([When a push fails](#when-a-push-fails)):
   ([approvals.md](approvals.md#changed-since-approval-the-items-revision)).
 - `PUT /app/items/:id/collab/:tabId`: the tab's comment threads and actions, replacing that tab's rows:
   `{tabName?, threads: [{elementId, elementLabel, resolved, commentCount, participantIds, mentionedIds,
-latestText, latestAuthorName, latestAuthorColor?, latestAuthorId?, resolvedById?, agentIds?, card?, firstAt,
-latestAt}],
+latestText, latestAuthorName, latestAuthorColor?, latestAuthorId?, resolvedById?, agentIds?, mentionedBy?, card?,
+firstAt, latestAt}],
 actions: [{elementId, actionId, elementLabel, name, description?, status, assigneeId, assigneeName?, assignerId,
 assignerName?, teamId, doneById?, card?, createdAt, updatedAt}]}`. The same push makes the event log's
   collaboration events (below); the optional ids say who wrote, resolved or closed. The comment text itself stays in the content, beside what it is about; the index
@@ -576,7 +576,9 @@ assignerName?, teamId, doneById?, card?, createdAt, updatedAt}]}`. The same push
   is cut to length rather than refused. `participantIds` are the people who wrote in the thread themselves;
   `agentIds` the people whose agent (an API token: the MCP, the CLI, a script) wrote in it while they never did. Both
   reach the thread, but only a comment of one's own is "you commented": a question an agent asked with my token
-  still waits on me.
+  still waits on me. `mentionedBy` says who mentioned each person: `{[mentionedId]: {id, name, color?}}`, keyed by
+  the ids in `mentionedIds`, naming the author of the latest comment that mentioned them (a comment mentioning its
+  own author names no one), so a reply in the thread, theirs or anyone's, never changes who mentioned them.
 - A collab push always fits the index's body limit (512 KiB, `INDEX_BODY_MAX_BYTES`): the push replaces the tab's
   rows, so it cannot be split, and one over the limit would be refused for good and park the tab's key, stopping its
   Inbox updates. Before sending, the item (`@liveworkspace/index-app` `capCollabPush`) cuts each row as the index
@@ -847,7 +849,8 @@ mentioned; and forms with responses I haven't seen on items I own or reach throu
 link); all limited to items I can reach (through a link scoped to one tab, that tab's threads and actions and the
 cards on its boards alone). Each row carries `app`, `itemId`, `itemTitle`, `itemTeamId`, `tabId`
 and `tabName`, so opening it goes to that app; a thread says why it is there (`mentionsYou`, `youCommented`,
-`onYourItem`). One read is three indexed queries in one batch: about 18 ms with 2,000 of my items among 22,000,
+`onYourItem`), who wrote last (`latestAuthorId`, null when the app did not say) and, when I am mentioned, who mentioned
+me (`mentionedBy`: `{id, name, color?}`, null when the app did not say). One read is three indexed queries in one batch: about 18 ms with 2,000 of my items among 22,000,
 each with a form, a thread and an action (measured when a fourth, the old Timeline count, rode along).
 
 The Explorer shows it as a list and a reading pane (`packages/explorer/src/explorer/InboxPane.tsx`), the same
@@ -866,8 +869,9 @@ livehuddle-inbox-cleanup.sql`, Work Tracker 736): it deletes the `collab_threads
 
 - **The list.** Every row newest first, under **Today**, **Earlier This Week** (the six days before) and **Older**.
   A card thread read through two items (shared between plans) is one row: its newest copy.
-  Each row is three lines: who is behind it (who assigned it, who it waits on, who wrote last; semibold when it asks
-  something of me: mine to do, a mention, a thread on my item, new responses), with its age ("12m", "3h", "2d", then
+  Each row is three lines: who is behind it (who assigned it, who it waits on, who mentioned me, who wrote last;
+  never me on a mention: a thread that names no one who mentioned me, and whose latest comment is mine, reads
+  **A teammate**; semibold when it asks something of me: mine to do, a mention, a thread on my item, new responses), with its age ("12m", "3h", "2d", then
   the date); what it is (the action, the card's number and title, a card thread's title, the element a thread is
   on, the form's heading), and for a Plan card's row (a card, or one of its threads) the card's status chip after
   the title: its column's name on its colour's dot (a done column's without a colour is green, any other's grey),
@@ -912,7 +916,10 @@ livehuddle-inbox-cleanup.sql`, Work Tracker 736): it deletes the `collab_threads
     `Activity·Resolved` (`Action`).
   - Nothing on a This Browser row (no page here reaches the offline store but the editor, which has no verbs for it
     yet), on another app's row where the token can't write, or on a Plan card (done is its board's column).
-    A row whose work is done here leaves the list at once, though the index may list it until the app's next push.
+    A row whose work is done here leaves the list at once, and the sidebar's badge and the rail's count drop with
+    it (`useInbox`'s `settle`, held while a re-read still lists the row unchanged), though the index may list it
+    until the app's next push. A reply sent here joins the thread at once and its heading's count with it
+    ("Thread · 2 comments"), before the thread is read again.
     The pane moves on to the next row (the one below it, or the one above when it was the last), never back to the
     first, so a run of resolves works down the list; with nothing left the list shows its empty state. On a phone
     and in the panel the pane stays open on that next row (Back still returns to the list), and closes only when
@@ -930,7 +937,8 @@ livehuddle-inbox-cleanup.sql`, Work Tracker 736): it deletes the `collab_threads
   filter stays the header's dropdown (36 px tall; a phone's native picker opens from it); rows and Back are at least 44 px tall; the page keeps its 16 px gutter.
 
 The sidebar's badge counts what waits on me: My Actions, and the threads that ask something of me (a mention, or a
-thread on my item I have not written in myself, an agent's question with my token included), 0 included once read.
+thread on my item I have not written in myself, an agent's question with my token included). At 0 it shows no badge,
+on the sidebar and the rail alike, in every app.
 Work I handed out, threads I replied in and form responses are listed but not counted. Coming back to the browser tab reads it again (at most
 every 30 seconds), keeping the list if that read fails. An app may add rows the index never sees (an app's items in
 This Browser) through the Explorer's `inbox` prop; they carry the This Browser pill.
