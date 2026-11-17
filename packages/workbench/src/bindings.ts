@@ -11,15 +11,23 @@ import type { BlurWorkerLike } from './lib/page-image-blur';
  * The telemetry events workbench code sends: a subset of every product's vocabulary, so each
  * product's own wider `track` binds as it is, and typecheck fails if a vocabulary drops one.
  */
-export type WorkbenchTelemetryCategory = 'Canvas' | 'Error' | 'Session' | 'Tab' | 'UI';
+export type WorkbenchTelemetryCategory =
+  'Canvas' | 'Error' | 'Session' | 'Snapshot' | 'Tab' | 'UI' | 'Walkthrough';
 export type WorkbenchTelemetryAction =
+  | 'Abandoned'
   | 'Added'
   | 'Changed'
   | 'Client'
+  | 'Created'
+  | 'Deleted'
   | 'Moved'
   | 'Opened'
+  | 'Played'
+  | 'Refused'
   | 'Removed'
+  | 'Reverted'
   | 'SignedOut'
+  | 'Started'
   | 'Toggled'
   | 'Used'
   | 'Zoomed';
@@ -148,7 +156,7 @@ function current(): Readonly<WorkbenchBindings> {
 
 /** The bound facts, each read when used. */
 export const workbench = {
-  track: ((category, action, type) =>
+  track: ((category, action, type?) =>
     current().track(category, action, type)) satisfies WorkbenchTrack,
   runningStaleBuild: (): boolean => current().runningStaleBuild(),
   readPreferences: (): WorkbenchPreferences => current().readPreferences(),

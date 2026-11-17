@@ -178,6 +178,15 @@ export const TELEMETRY_CATEGORIES = [
   // 'Measured', `type` the metric and the bucket its value fell in ('DocumentLoad.Under1000ms'), checked
   // against the closed list in timing-telemetry.ts. Never a raw number, never an id.
   'Timing',
+  // Snapshots (liveworkspace/docs/specs/014-snapshots/snapshots.md "Telemetry"): 'Created' (one taken by hand),
+  // 'Reverted' and 'Deleted', sent by the shared snapshots dialog once the api accepted the call. No type: never a
+  // name, an id or a size.
+  'Snapshot',
+  // Walkthroughs (liveworkspace/docs/specs/006-media/walkthroughs.md "Telemetry"): 'Started' (a recording began),
+  // 'Created' (it was saved), 'Abandoned' (it was thrown away unsaved), 'Refused' (a limit stopped it, `type` the
+  // limit: 'TooLong' | 'TooLarge' | 'ItemFull' | 'AccountFull'), 'Played' and 'Deleted'. Never a title, an id or
+  // a length.
+  'Walkthrough',
 ] as const;
 export type TelemetryCategory = (typeof TELEMETRY_CATEGORIES)[number];
 
@@ -280,6 +289,11 @@ export const TELEMETRY_ACTIONS = [
   // Timing (docs/specs/017-telemetry/timing-telemetry.md): a key moment was timed. Only ever paired with the
   // 'Timing' category.
   'Measured',
+  // Walkthroughs (liveworkspace/docs/specs/006-media/walkthroughs.md "Telemetry"): a recording thrown away unsaved,
+  // a recording or a save a limit refused, and a saved one played. Only ever paired with the 'Walkthrough' category.
+  'Abandoned',
+  'Refused',
+  'Played',
 ] as const;
 export type TelemetryAction = (typeof TELEMETRY_ACTIONS)[number];
 

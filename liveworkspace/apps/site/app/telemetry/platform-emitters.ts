@@ -85,12 +85,15 @@ export function platformEmitters(vocabulary?: Vocabulary, noun?: ItemNoun): Emit
 // its own, with paths from the monorepo root. Only its literal sites: the rest of it forwards an
 // app's own events, which are scanned where the app sends them. The editors' shared code
 // (@liveworkspace/workbench) sends through each editor's bound `track` the same way (a stale chunk's
-// reload, the zoom controls), so its literal sites count for every app too, as do the shared UI's (@liveworkspace/ui:
+// reload, the zoom controls), so its literal sites count for every app too, as do the shared snapshots' and walkthroughs' (their dialog and recorder
+// send through the same bound `track`), and the shared UI's (@liveworkspace/ui:
 // the page-view tracker every frontend mounts with its own `track`).
 export const SHARED_CLIENT_ROOTS = [
   'packages/telemetry-client/src',
   'packages/workbench/src',
   'packages/ui/src',
+  'packages/snapshots/src',
+  'packages/walkthrough/src',
 ];
 
 //

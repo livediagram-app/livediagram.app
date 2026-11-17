@@ -18,6 +18,7 @@ import {
 } from '@livehuddle/api-schema';
 import { noun, type TelemetryAppConfig } from '../_shared/app';
 import { createCtaFunnel } from '../_shared/cta-funnel';
+import { SNAPSHOTS } from '../_shared/snapshot-walkthrough-metrics';
 import { createEventExplanation } from '../_shared/event-explanation';
 import type { RetiredCategory } from '../_shared/retired-explorer';
 import { API_OPERATIONS, BY_ACTION, EXACT } from './event-explanations';
@@ -147,6 +148,11 @@ const CATEGORY_COLORS: Record<Exclude<TelemetryCategory, RetiredCategory>, strin
   Explorer: '#155e75',
   // Deep teal-green, a stopwatch: apart from Email's teal and Cta's green.
   Timing: '#047857',
+  // Deep fuchsia, a saved copy: apart from Token's lighter one and Page's wine.
+  Snapshot: '#a21caf',
+  // Deep rose, a recording light: apart from Error's red and MCP's pink. (Spaces record none; the shared
+  // vocabulary names it.)
+  Walkthrough: '#be123c',
 };
 
 const PAGE_VIEW_APPS: PageViewApp[] = ['Marketing', 'Live', 'Help', 'Dashboard', 'Community'];
@@ -264,6 +270,7 @@ export const LIVEHUDDLE: TelemetryAppConfig = {
           EXPORT_AND_IMPORT,
           SIDE_BY_SIDE,
           CONNECTED_TABS,
+          SNAPSHOTS,
           EDITOR_SEARCH,
           EDITOR_CHROME,
           TRASH,
