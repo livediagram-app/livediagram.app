@@ -89,8 +89,20 @@ test.describe('Retired elements', () => {
     await expect(page.locator('[data-element-id="r9"]')).toContainText('Q&A Board');
     await expect(page.locator('[data-element-id="r0"]')).toContainText('Poll');
 
-    // Edit the board around them: move the note, then let the autosave run.
+    // The open's fit leaves the Map clear (docs/specs/008-canvas/minimap.md "Fit leaves the Map clear"): the note sits
+    // in the corner the Map covers, so once the Map shows the view fits again and the note stands beside it, where a
+    // drag takes the note and not the Map.
     const note = page.locator('[data-element-id="note"]');
+    const map = page.locator('[data-tour-id="minimap"]');
+    await expect(map).toBeVisible();
+    await expect
+      .poll(async () => {
+        const [n, m] = [await note.boundingBox(), await map.boundingBox()];
+        return !!n && !!m && n.x >= m.x + m.width;
+      })
+      .toBe(true);
+
+    // Edit the board around them: move the note, then let the autosave run.
     const at = (await note.boundingBox())!;
     await page.mouse.move(at.x + at.width / 2, at.y + at.height / 2);
     await page.mouse.down();
