@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { IndexError, type Item } from '@liveworkspace/index-client';
+import type { Item } from '@liveworkspace/index-client';
 import { createFakeIndex, makeItem } from '../test/fakeClient';
 import type { ExplorerView } from '../views';
 import { Explorer, type ExplorerProps } from './Explorer';
@@ -233,21 +233,15 @@ describe('<Explorer>', () => {
     expect(screen.getByRole('treeitem', { name: 'Inbox (1)' })).toBeTruthy();
   });
 
-  it('stars from a row’s menu at once and takes it back when the index refuses', async () => {
+  // Favourites were removed (one-explorer.md "Favourites removed"): no star in a row's menu or the sidebar.
+  it('offers no Favourites in a row’s menu or the sidebar', async () => {
     const index = createFakeIndex({ items: [makeItem(1)] });
-    index.fail.set('favourite', new IndexError(500, 'unknown'));
-    index.hold.add('favourite');
     renderExplorer(index, { kind: 'all' });
     await waitFor(() => expect(rows()).toHaveLength(1));
     fireEvent.click(screen.getByRole('button', { name: 'Menu for Item 1' }));
-    fireEvent.click(await screen.findByRole('menuitem', { name: 'Add to Favourites' }));
-    const row = rows()[0] as HTMLElement;
-    expect(within(row).getByText('Favourite')).toBeTruthy();
-    act(() => index.release());
-    await waitFor(() =>
-      expect(within(rows()[0] as HTMLElement).queryByText('Favourite')).toBeNull(),
-    );
-    expect(await screen.findByRole('alert')).toBeTruthy();
+    await screen.findByRole('menuitem', { name: /Rename/ });
+    expect(screen.queryByRole('menuitem', { name: /Favourites/ })).toBeNull();
+    expect(screen.queryByRole('treeitem', { name: 'Favourites' })).toBeNull();
   });
 
   it('slides a trashed item out of the list, then offers Undo', async () => {

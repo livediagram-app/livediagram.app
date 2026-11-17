@@ -14,7 +14,6 @@ import { threadsOnCard, withoutLegacyThread } from '@liveplanner/project';
 import { recordThreads } from './offline-threads';
 import { PROJECT_CONVERSION_HEADER } from '@liveplanner/api-schema';
 import { apiCreateProject } from '@/lib/api-client';
-import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { API_BASE, ApiError, apiDelete } from '@/lib/api/core';
 import { fetchCloudItems } from '../api/items';
 import { fetchCloudSheets, sheetAsCreate } from '../api/sheets';
@@ -151,12 +150,7 @@ export async function syncOfflineProject(
     const done = await offlineDeleteIfUnchanged(rec.id, (now) => uploadMark(now) === uploaded);
     // Gone already: another tab finished a sync of it first. Nothing here is left to move.
     if (done.outcome === 'missing') return { id: rec.id };
-    if (done.outcome === 'deleted') {
-      // The star lived on the offline record (docs/specs/013-workspace/favourites.md), which just went: it goes onto
-      // the plan's index item, which the upload made. A failed star leaves the plan synced, unstarred.
-      if (done.rec.favourite) await indexClient.favourite(rec.id).catch(() => {});
-      return { id: rec.id };
-    }
+    if (done.outcome === 'deleted') return { id: rec.id };
     console.warn(`[offline-sync] changed-during-upload attempt=${attempt}`);
     await takeBackCloudCopy(rec.id, ownerId);
     if (attempt >= SYNC_UPLOAD_ATTEMPTS) throw new OfflineSyncIncompleteError('kept_changing');

@@ -4,7 +4,7 @@ import { expect, expectNoPageErrors, test } from './fixtures';
 // The shared Explorer (@liveworkspace/explorer, liveworkspace/docs/specs/004-index/one-explorer.md) as liveplanner hosts it at
 // /explorer: what it lists is the index's, reached through /api/index on this origin, beside this browser's own
 // plans (Browser Storage). One guest, one plan, every verb a person uses on it: make it (in This Browser, a guest's
-// default), sync it to liveplanner, rename it, open it, find it in Recent, star it, file it in a new folder, delete it
+// default), sync it to liveplanner, rename it, open it, find it in Recent, file it in a new folder, delete it
 // and restore it.
 
 const sidebar = (page: Page) => page.getByRole('navigation', { name: 'Sections' });
@@ -14,8 +14,8 @@ async function showView(page: Page, name: string): Promise<void> {
   await expect(page.getByRole('heading', { level: 1, name })).toBeVisible();
 }
 
-// Recent and Favourites have no sidebar entry (Home's Most Used and Recent and the panel link to them): opened by address.
-async function openView(page: Page, slug: 'recent' | 'favourites', name: string): Promise<void> {
+// Recent has no sidebar entry (Home's Most Used and Recent and the panel link to it): opened by address.
+async function openView(page: Page, slug: 'recent', name: string): Promise<void> {
   await page.goto(`/explorer/${slug}`);
   await expect(page.getByRole('heading', { level: 1, name })).toBeVisible();
 }
@@ -40,7 +40,7 @@ async function rowAction(page: Page, title: string, action: string): Promise<voi
 // The Explorer shows a change at once and writes it to the index behind it (optimistic). A step that then leaves the
 // page, or reads another list, waits until the index has taken the write: a navigation cancels a write still in
 // flight, and a list read before the write lands never shows it. A move, a delete and a restore say so in a toast;
-// a rename, a star and the editor's open say nothing, so their answer is waited for. Asked before the step acts.
+// a rename and the editor's open say nothing, so their answer is waited for. Asked before the step acts.
 const indexWrite = (page: Page, method: string, path: string) =>
   page.waitForResponse(
     (r) =>
@@ -54,7 +54,7 @@ const indexWrite = (page: Page, method: string, path: string) =>
 const toast = (page: Page, text: string) =>
   page.getByRole('status').getByText(text, { exact: true });
 
-test('a guest makes, syncs, renames, opens, stars, files, deletes and restores a plan', async ({
+test('a guest makes, syncs, renames, opens, files, deletes and restores a plan', async ({
   page,
   pageErrors,
 }) => {
@@ -110,13 +110,6 @@ test('a guest makes, syncs, renames, opens, stars, files, deletes and restores a
 
   // The open is recorded, so it is in Recent.
   await openView(page, 'recent', 'Recent');
-  await expect(row(page, 'Roadmap')).toBeVisible();
-
-  // Star it: Favourites lists it.
-  const starred = indexWrite(page, 'PUT', `/favourites/${id}`);
-  await rowAction(page, 'Roadmap', 'Add to Favourites');
-  await starred;
-  await openView(page, 'favourites', 'Favourites');
   await expect(row(page, 'Roadmap')).toBeVisible();
 
   // File it in a new folder, made from the move dialog.

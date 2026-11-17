@@ -15,7 +15,6 @@ export type ExplorerView =
   // My Work: your root folders and the items in no folder.
   | ({ kind: 'all' } & Lensed)
   | ({ kind: 'recent' } & Lensed)
-  | ({ kind: 'favourites' } & Lensed)
   // Shared with me: items reached through a link.
   | ({ kind: 'shared' } & Lensed)
   | { kind: 'trash' }
@@ -47,7 +46,6 @@ const LENS_VIEWS: Partial<Record<ExplorerView['kind'], LensViewKind>> = {
   folder: 'scoped',
   team: 'scoped',
   recent: 'aggregate',
-  favourites: 'aggregate',
   shared: 'aggregate',
   search: 'aggregate',
   // One place, this browser: a Space token does not apply, as on any scoped view.
@@ -127,7 +125,6 @@ export function viewFromLocation(
   switch (section) {
     case 'all':
     case 'recent':
-    case 'favourites':
     case 'shared':
       return lensed({ kind: section });
     case 'trash':
@@ -145,8 +142,10 @@ export function viewFromLocation(
       return { kind: 'gallery' };
     case 'search':
       return { kind: 'search', q };
-    // The old Unsorted view: My Work's root already lists what is in no folder.
+    // The old Unsorted view: My Work's root already lists what is in no folder. The old Favourites view, removed
+    // (one-explorer.md "Favourites removed"), lands on My Work too.
     case 'unsorted':
+    case 'favourites':
       return lensed({ kind: 'all' });
     // The old Generated view: Search results, made by AI.
     case 'generated':
@@ -193,7 +192,6 @@ export const VIEW_TITLES: Record<Exclude<ExplorerViewKind, 'folder' | 'team'>, s
   trash: SIDEBAR_LABELS.trash,
   archived: SIDEBAR_LABELS.archived,
   recent: 'Recent',
-  favourites: 'Favourites',
   search: 'Search results',
   invites: SIDEBAR_LABELS.invites,
   gallery: SIDEBAR_LABELS.gallery,

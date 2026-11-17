@@ -131,14 +131,6 @@ export const ClockOffIcon = lucide(
   13,
 );
 
-export function StarIcon({ filled = false, size = 13 }: { filled?: boolean; size?: number }) {
-  return (
-    <Glyph size={size} units={24} fill={filled ? 'currentColor' : 'none'}>
-      <path d="M12 2.5l2.94 5.96 6.56.95-4.75 4.63 1.12 6.54L12 17.5l-5.87 3.08 1.12-6.54L2.5 9.41l6.56-.95z" />
-    </Glyph>
-  );
-}
-
 export const ShareIcon = lucide(
   <>
     <circle cx="18" cy="5" r="3" />

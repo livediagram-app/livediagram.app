@@ -8,7 +8,6 @@ describe('views and their addresses', () => {
     { kind: 'home' },
     { kind: 'all' },
     { kind: 'recent' },
-    { kind: 'favourites' },
     { kind: 'shared' },
     { kind: 'trash' },
     { kind: 'inbox' },
@@ -51,6 +50,9 @@ describe('views and their addresses', () => {
     // Unsorted is gone: its address is My Work, whose root lists what is in no folder.
     expect(viewFromLocation('/explorer/unsorted')).toEqual({ kind: 'all' });
     expect(viewFromLocation('/explorer/unsorted', 'q=road')).toEqual({ kind: 'all', q: 'road' });
+    // Favourites were removed: an old address lands on My Work, its lens kept.
+    expect(viewFromLocation('/explorer/favourites')).toEqual({ kind: 'all' });
+    expect(viewFromLocation('/explorer/favourites', 'q=road')).toEqual({ kind: 'all', q: 'road' });
     // The sidebar's highlight is the place, whatever the lens.
     expect(sameView({ kind: 'recent', q: 'edited:7d' }, { kind: 'recent' })).toBe(true);
   });

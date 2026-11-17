@@ -40,7 +40,6 @@ const local = (extra: Partial<ThisBrowserItem> = {}): ThisBrowserItem => ({
   updatedAt: 2_000,
   lastOpenedAt: null,
   trashedAt: null,
-  favourite: false,
   ...extra,
 });
 
@@ -88,10 +87,10 @@ afterEach(() => {
 });
 
 describe('the sidebar', () => {
-  it('holds Recent, Favourites, Archived and the Trash in the Library, in that order', async () => {
+  it('holds Recent, Archived and the Trash in the Library, in that order', async () => {
     page(createFakeIndex(), { kind: 'archived' });
     const library = await sections().findByRole('treeitem', { name: 'Library' });
-    expect(rowNames(library)).toEqual(['Recent', 'Favourites', 'Archived', 'Trash']);
+    expect(rowNames(library)).toEqual(['Recent', 'Archived', 'Trash']);
     expect(row('Archived').getAttribute('aria-current')).toBe('page');
     // Overview keeps Home, Inbox and Shared With Me.
     const overview = row('Home').parentElement!;
@@ -145,7 +144,7 @@ describe('the sidebar', () => {
     expect(rowsForView({ kind: 'folder', id: 'b' }, byId)).toEqual(['my-work', 'a', 'b']);
     expect(rowsForView({ kind: 'team', id: 'T1' }, byId)).toEqual(['team:T1']);
     expect(rowsForView({ kind: 'team', id: 'T1', folderId: 't' }, byId)).toEqual(['team:T1', 't']);
-    for (const kind of ['recent', 'favourites', 'archived', 'trash'] as const)
+    for (const kind of ['recent', 'archived', 'trash'] as const)
       expect(rowsForView({ kind }, byId)).toEqual(['library']);
     expect(rowsForView({ kind: 'home' }, byId)).toEqual([]);
     expect(rowsForView({ kind: 'shared' }, byId)).toEqual([]);

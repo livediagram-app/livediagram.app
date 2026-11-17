@@ -63,14 +63,13 @@ export function useTokenTeams(signedIn: boolean | undefined): TeamRef[] {
 }
 
 // Each Explorer view's Help article: the Help button in its page header, and Home's in the hero's corner. Search opens
-// Search and Filter Designs; Favourites, with no article of its own, the Explorer's.
+// Search and Filter Designs.
 const VIEW_HELP: Partial<Record<ExplorerView['kind'], HelpArticleKey>> = {
   home: 'explorerPage',
   all: 'myWork',
   folder: 'folders',
   team: 'teamSpaces',
   recent: 'recentDesigns',
-  favourites: 'explorerPage',
   shared: 'sharedWithYou',
   inbox: 'inbox',
   trash: 'trash',

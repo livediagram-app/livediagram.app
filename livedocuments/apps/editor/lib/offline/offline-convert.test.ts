@@ -20,10 +20,10 @@ vi.mock('@/lib/api-client', () => ({
   apiLoadTab: vi.fn(async () => ({ id: 't1', name: 'Tab 1', elements: [] })),
 }));
 
-// The person's star on a document is the index's (liveworkspace/docs/specs/004-index/one-explorer-contracts.md).
+// Favourites were removed: neither direction asks the index anything.
 vi.mock('@liveworkspace/workbench/lib/index-client', () => ({
   indexClient: {
-    getItem: vi.fn(async () => ({ item: { id: 'd1', favourite: false } })),
+    getItem: vi.fn(async () => ({ item: { id: 'd1' } })),
     favourite: vi.fn(async () => {
       calls.push('favourite');
     }),
@@ -119,8 +119,8 @@ describe('saveOfflineToCloud (offline -> cloud)', () => {
     expect(store.offlineDeleteIfUnchanged).not.toHaveBeenCalled();
   });
 
-  it('carries the star to the server once the local copy is gone', async () => {
-    // Before the delete, the id still routes stars to the offline store.
+  it('sends nothing to the index for an old record’s star', async () => {
+    // Favourites were removed: a star an older record still carries is left behind.
     vi.mocked(store.offlineGetRecord).mockResolvedValueOnce({
       id: 'd1',
       name: 'Roadmap',
@@ -128,8 +128,7 @@ describe('saveOfflineToCloud (offline -> cloud)', () => {
       favourite: true,
     } as never);
     await saveOfflineToCloud('d1', 'owner');
-    expect(calls).toEqual(['apiCreateDocument', 'offlineDeleteDocument', 'favourite']);
-    expect(indexClient.favourite).toHaveBeenCalledWith('d1');
+    expect(calls).toEqual(['apiCreateDocument', 'offlineDeleteDocument']);
   });
 
   // Tags were removed: a record written while they existed still syncs, its tag
@@ -205,11 +204,6 @@ describe('saveOfflineToCloud (offline -> cloud)', () => {
     expect(store.offlineDeleteIfUnchanged).not.toHaveBeenCalled();
   });
 
-  it('stars nothing for an unstarred document', async () => {
-    await saveOfflineToCloud('d1', 'owner');
-    expect(indexClient.favourite).not.toHaveBeenCalled();
-  });
-
   it('uploads again when the document changed during the upload, removing the local copy only then', async () => {
     // docs/specs/006-document/offline-mode.md "Save to server": an edit made while the upload ran
     // would be deleted with the local copy, yet missing from the cloud one.
@@ -271,19 +265,10 @@ describe('takeCloudOffline (cloud -> offline)', () => {
     });
   });
 
-  it('keeps a starred document starred on the offline record', async () => {
-    vi.mocked(indexClient.getItem).mockResolvedValueOnce({
-      item: { id: 'd1', favourite: true },
-    } as never);
+  it('takes a document offline without reading the index (Favourites were removed)', async () => {
     await takeCloudOffline('d1', 'owner');
-    expect(vi.mocked(store.offlinePutRecord).mock.calls[0]![0]).toMatchObject({ favourite: true });
-  });
-
-  it('aborts before writing anything when the star could not be read', async () => {
-    // Taken as "none", they would go with the server row.
-    vi.mocked(indexClient.getItem).mockRejectedValueOnce(new Error('offline'));
-    await expect(takeCloudOffline('d1', 'owner')).rejects.toThrow('offline');
-    expect(calls).toEqual([]);
+    expect(indexClient.getItem).not.toHaveBeenCalled();
+    expect(vi.mocked(store.offlinePutRecord).mock.calls[0]![0]).not.toHaveProperty('favourite');
   });
 
   it('writes the local copy before deleting the server one', async () => {

@@ -30,7 +30,6 @@ export function sectionOfView(
     case 'home':
     case 'inbox':
     case 'shared':
-    case 'favourites':
     case 'offline':
     case 'archived':
     case 'trash':

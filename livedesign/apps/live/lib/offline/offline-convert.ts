@@ -8,7 +8,6 @@
 
 import { apiLoadDesign, apiLoadTab } from '@/lib/api-client';
 import { apiLoadComponents } from '@/lib/api/components';
-import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { DESIGN_CONVERSION_HEADER } from '@livedesign/api-schema';
 import { API_BASE, ApiError, apiDelete } from '@/lib/api/core';
 import { embedTabImages, isDataImageId, tabImageIds } from './offline-images';
@@ -110,14 +109,9 @@ async function downloadAndRemoveCloudCopy(
   const unembedded = tabs.some((t) => tabImageIds(t).some((id) => !isDataImageId(id)));
   if (unembedded) throw new Error('image embed incomplete');
 
-  // The person's star is the index's, on the design's item, which the server delete below takes too; carry it onto
-  // the offline record (docs/specs/013-workspace/favourites.md). A failed read aborts here, before anything is
-  // written: taken as "none" it would drop it.
-  const { item } = await indexClient.getItem(liveDoc.id);
   // The library comes along (docs/specs/009-elements/components.md "This Browser"). A failed read aborts before the
   // server copy goes, like a tab that would not load.
   const components = await apiLoadComponents(ownerId, designId, shareCode);
-  const starred = item.favourite;
   const now = Date.now();
   const rec: OfflineDesignRecord = {
     id: liveDoc.id,
@@ -129,7 +123,6 @@ async function downloadAndRemoveCloudCopy(
     createdAt: liveDoc.createdAt ?? now,
     savedAt: now,
     tabs,
-    ...(starred ? { favourite: true } : {}),
     ...(components.length > 0 ? { components } : {}),
   };
   await offlinePutRecord(rec);

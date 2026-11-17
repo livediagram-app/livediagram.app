@@ -39,7 +39,7 @@ function page(index: ReturnType<typeof createFakeIndex>, view: ExplorerView) {
 
 const seeded = () =>
   createFakeIndex({
-    items: [makeItem(1, { title: 'Zebra' }), makeItem(2, { title: 'apple', favourite: true })],
+    items: [makeItem(1, { title: 'Zebra' }), makeItem(2, { title: 'apple' })],
     folders: [folder('f1', 'Specs')],
   });
 
@@ -55,8 +55,8 @@ describe.each(['list', 'card'] as const)('the Explorer in its %s layout', (mode)
     expect(await axeViolations()).toEqual([]);
   });
 
-  it('has none on Recent, Favourites and an empty folder', async () => {
-    for (const view of [{ kind: 'recent' }, { kind: 'favourites' }] as ExplorerView[]) {
+  it('has none on Recent, Shared With Me and an empty folder', async () => {
+    for (const view of [{ kind: 'recent' }, { kind: 'shared' }] as ExplorerView[]) {
       const r = page(seeded(), view);
       await waitFor(() => expect(r.container.textContent).not.toBe(''));
       expect(await axeViolations(), `${view.kind}`).toEqual([]);

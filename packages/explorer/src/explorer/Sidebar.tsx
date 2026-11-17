@@ -2,7 +2,7 @@
 
 // The Explorer's sidebar (liveplanner's ExplorerSidebar): Overview (Home, Inbox, Shared With Me), Spaces (My Work
 // and its folders, each team and its folders, This Browser and its folders while it holds anything), and More (the
-// Library: Recent, Favourites, the host's Gallery and Shape Libraries, Archived and the Trash; then the
+// Library: Recent, the host's Gallery and Shape Libraries, Archived and the Trash; then the
 // host's own rows). Rows carry toned
 // tiles and the current row is a raised pill, in the host app's brand colour. The tree reads the folder store, so it
 // costs no request of its own. The current view's rows are always open: its space and folders, or the Library.
@@ -29,7 +29,6 @@ import {
   MyWorkIcon,
   PlusIcon,
   ShareIcon,
-  StarIcon,
   TeamIcon,
   TrashIcon,
   ArchiveIcon,
@@ -66,7 +65,6 @@ export { SIDEBAR_RENAME_FIELD, SidebarRow } from './SidebarRow';
 // The Library's pages: opening one unfolds the Library, so the current row is never hidden.
 const LIBRARY_VIEWS: ReadonlySet<ExplorerView['kind']> = new Set([
   'recent',
-  'favourites',
   'gallery',
   'shape-libraries',
   'archived',
@@ -460,13 +458,6 @@ export function Sidebar() {
             label="Recent"
             selected={is({ kind: 'recent' })}
             onActivate={() => navigate({ kind: 'recent' })}
-            depth={1}
-          />
-          <SidebarRow
-            icon={<StarIcon />}
-            label="Favourites"
-            selected={is({ kind: 'favourites' })}
-            onActivate={() => navigate({ kind: 'favourites' })}
             depth={1}
           />
           {/* The host's Library pages (livediagram's), where it has them. */}

@@ -248,12 +248,12 @@ describe('the keyboard tree', () => {
   beforeEach(() => localStorage.clear());
 
   it('keeps one tab stop, on the current row', async () => {
-    page(createFakeIndex(), { kind: 'favourites' });
-    await findRow('Favourites');
+    page(createFakeIndex(), { kind: 'recent' });
+    await findRow('Recent');
     const stops = within(nav())
       .getAllByRole('treeitem')
       .filter((i) => i.tabIndex === 0);
-    expect(stops.map((i) => i.getAttribute('aria-label'))).toEqual(['Favourites']);
+    expect(stops.map((i) => i.getAttribute('aria-label'))).toEqual(['Recent']);
   });
 
   it('moves with the arrows, Home and End, folds and opens with Left and Right, and goes with Enter', async () => {

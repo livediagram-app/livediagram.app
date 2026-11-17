@@ -63,7 +63,6 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'Searched', 'PaletteSearch')).toBe(true);
     expect(isRetiredEvent('Help', 'View', 'favourites')).toBe(true);
     expect(isRetiredEvent('UI', 'Opened', 'favourites')).toBe(true);
-    // The Explorer's project favourites carry on.
     expect(isRetiredEvent('Mcp', 'Used', 'SearchIcons')).toBe(true);
     expect(isRetiredEvent('Cli', 'Used', 'IconSearch')).toBe(true);
     expect(isRetiredEvent('Help', 'View', 'popular')).toBe(false);

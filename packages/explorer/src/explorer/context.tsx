@@ -182,7 +182,7 @@ export type FolderShown = { folderId: string; name: string | null; itemCount: nu
 
 export type NavigateOptions = { replace?: boolean };
 
-/** Where a move lands: from one aggregate list to another (Recent to Favourites) the lens comes along. */
+/** Where a move lands: from one aggregate list to another (Recent to Shared With Me) the lens comes along. */
 export function carryLens(from: ExplorerView, to: ExplorerView): ExplorerView {
   if (from.kind === to.kind) return to;
   if (lensViewOf(from.kind) !== 'aggregate' || lensViewOf(to.kind) !== 'aggregate') return to;

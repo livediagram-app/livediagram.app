@@ -17,7 +17,6 @@ const local = (extra: Partial<ThisBrowserItem> = {}): ThisBrowserItem => ({
   updatedAt: 2_000,
   lastOpenedAt: Date.now() - 60_000,
   trashedAt: null,
-  favourite: false,
   ...extra,
 });
 

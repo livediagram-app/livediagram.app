@@ -55,10 +55,6 @@ export type OfflineDocumentRecord = {
   // longer presents (Work Tracker #423 part 2), but a deck carried in from the server is kept so a sync never
   // drops it. Optional so records written before the field existed stay valid.
   presentation?: string | null;
-  // Starred in the Explorer (docs/specs/013-workspace/favourites.md). A canvas's star is the index's, on its item,
-  // which an offline canvas has none of, so its star has to live here instead. Optional so records
-  // written before the field existed stay valid.
-  favourite?: boolean;
   // When the canvas was moved to this browser's local Trash (docs/specs/013-workspace/trash.md). Absent = live.
   // A trashed record keeps everything else so a restore is exact.
   trashedAt?: number;
@@ -272,14 +268,6 @@ export async function offlineSaveDocumentMeta(
 ): Promise<void> {
   await writeLive(id, (rec) => applyMeta(rec, patch, now));
 }
-
-// Star / un-star an offline document (docs/specs/013-workspace/favourites.md). The savedAt stamp is left
-// alone on purpose: a star is a per-user bookmark, not an edit to the
-// document, and bumping it would reorder Recent on a click that changed
-// nothing about the content.
-export const offlineSetFavourite = store.setFavourite;
-
-export const offlineListFavouriteIds = store.listFavouriteIds;
 
 export async function offlineSaveTab(id: string, tab: Tab, now: number): Promise<void> {
   // No create-on-missing: a save must never resurrect a deleted document.

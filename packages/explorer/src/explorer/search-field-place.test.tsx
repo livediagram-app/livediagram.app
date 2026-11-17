@@ -32,7 +32,7 @@ describe('the filter field across views', () => {
     const field = screen.getByRole('combobox', { name: 'Filter plans' });
     fireEvent.focus(field);
     fireEvent.change(field, { target: { value: 'budget', selectionStart: 6 } });
-    rerender(at({ kind: 'favourites' }));
+    rerender(at({ kind: 'recent' }));
     await act(async () => {
       vi.advanceTimersByTime(400);
     });

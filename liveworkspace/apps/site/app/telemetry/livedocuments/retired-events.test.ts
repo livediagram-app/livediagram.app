@@ -87,7 +87,7 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'Searched', 'PaletteSearch')).toBe(true);
     expect(isRetiredEvent('Help', 'View', 'favourites')).toBe(true);
     expect(isRetiredEvent('UI', 'Opened', 'favourites')).toBe(true);
-    // The palette's other searches, and the Explorer's document favourites, carry on.
+    // The palette's other searches carry on.
     expect(isRetiredEvent('UI', 'Searched', 'IconSearch')).toBe(false);
     expect(isRetiredEvent('Help', 'View', 'popular')).toBe(false);
   });

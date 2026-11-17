@@ -34,7 +34,6 @@ export function makeItem(i: number, over: Partial<Item> = {}): Item {
     trashReason: null,
     summary: {},
     access: 'edit',
-    favourite: false,
     lastOpenedAt: null,
     sharedVia: null,
     ...over,
@@ -200,7 +199,6 @@ export function createFakeIndex(
     if (q.view === 'unsorted') out = out.filter((i) => i.folderId === null);
     // My Work and the teams' libraries: what a link reaches lives in another's space.
     if (q.view === 'all' && !q.folder) out = out.filter((i) => !i.sharedVia);
-    if (q.view === 'favourites') out = out.filter((i) => i.favourite);
     if (q.view === 'recent') {
       out = out.filter((i) => i.lastOpenedAt !== null && !i.hiddenFromRecent);
     }
@@ -381,19 +379,10 @@ export function createFakeIndex(
           archivedAt: Date.now(),
           folderId: null,
           teamId: null,
-          favourite: false,
           lastOpenedAt: null,
           hiddenFromRecent: false,
         });
         return { item: { ...item } };
-      }),
-    favourite: (id: string) =>
-      answer('favourite', [id], undefined, () => {
-        find(id).favourite = true;
-      }),
-    unfavourite: (id: string) =>
-      answer('unfavourite', [id], undefined, () => {
-        find(id).favourite = false;
       }),
     hideFromRecent: (id: string) =>
       answer('hideFromRecent', [id], undefined, () => {

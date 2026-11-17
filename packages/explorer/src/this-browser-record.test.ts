@@ -59,7 +59,6 @@ const item = (id: string) => ({
   updatedAt: 1,
   lastOpenedAt: 1,
   trashedAt: null,
-  favourite: false,
 });
 
 describe('removeThisBrowserRecord', () => {

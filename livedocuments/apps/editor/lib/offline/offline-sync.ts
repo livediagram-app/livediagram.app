@@ -9,7 +9,6 @@
 
 import { DOCUMENT_CONVERSION_HEADER } from '@livedocuments/api-schema';
 import { apiCreateDocument } from '@/lib/api-client';
-import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { API_BASE, ApiError, apiDelete } from '@/lib/api/core';
 import { uploadEmbeddedImages } from './offline-images';
 import {
@@ -111,13 +110,7 @@ export async function syncOfflineDocument(
     const done = await offlineDeleteIfUnchanged(rec.id, (now) => uploadMark(now) === uploaded);
     // Gone already: another tab finished a sync of it first. Nothing here is left to move.
     if (done.outcome === 'missing') return { id: rec.id, imageIds };
-    if (done.outcome === 'deleted') {
-      // The star lived on the offline record (docs/specs/013-workspace/favourites.md), which just went: it goes onto
-      // the document's index item, which the upload made. A failed star leaves the document synced without it.
-      // (Tag ids an older record still carries are ignored.)
-      if (done.rec.favourite) await indexClient.favourite(rec.id).catch(() => {});
-      return { id: rec.id, imageIds };
-    }
+    if (done.outcome === 'deleted') return { id: rec.id, imageIds };
     console.warn(`[offline-sync] changed-during-upload attempt=${attempt}`);
     await takeBackCloudCopy(rec.id, ownerId);
     if (attempt >= SYNC_UPLOAD_ATTEMPTS) throw new OfflineSyncIncompleteError('kept_changing');

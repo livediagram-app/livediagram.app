@@ -25,7 +25,7 @@ import { FolderSolidIcon, ItemIcon } from '../ui/icons';
 import { useCascade } from '../ui/useCascade';
 import { rowKeys, useFocusAfterRemoval } from '../ui/useFocusAfterRemoval';
 import { kindWords, siteOf } from '../words';
-import { AppMark, ArchivedBadge, FavouriteMarker, MadeByAiBadge } from './badges';
+import { AppMark, ArchivedBadge, MadeByAiBadge } from './badges';
 import { useExplorer } from './context';
 import {
   ALIGN_CLASS,
@@ -407,7 +407,6 @@ const DetailsRow = memo(function DetailsRow({
           <ItemIcon />
         </span>
         {options.showApp ? <AppMark app={item.app} /> : null}
-        {item.favourite ? <FavouriteMarker /> : null}
         {renderItemMark?.(item, 'title')}
         {renaming ? (
           <InlineRenameInput

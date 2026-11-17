@@ -13,7 +13,6 @@ export type PanelSection =
   | { kind: 'shared' }
   | { kind: 'mine' }
   | { kind: 'team'; id: string }
-  | { kind: 'favourites' }
   | { kind: 'offline' }
   | { kind: 'library' }
   | { kind: 'archived' }
@@ -38,7 +37,6 @@ const SIMPLE = [
   'inbox',
   'shared',
   'mine',
-  'favourites',
   'offline',
   'library',
   'archived',
@@ -48,6 +46,8 @@ const SIMPLE = [
 export function sectionFromKey(key: string | null | undefined): PanelSection | null {
   if (!key) return null;
   if (key.startsWith('team:')) return key.length > 5 ? { kind: 'team', id: key.slice(5) } : null;
+  // Favourites were removed (one-explorer.md "Favourites removed"): a remembered pick of it opens My Work.
+  if (key === 'favourites') return { kind: 'mine' };
   return (SIMPLE as readonly string[]).includes(key) ? ({ kind: key } as PanelSection) : null;
 }
 
@@ -84,7 +84,6 @@ export function panelSectionGroups(
       id: 'more',
       // The sidebar's Library, in its order (Recent is Home's Recent here).
       sections: [
-        { kind: 'favourites' },
         ...(library ? [{ kind: 'library' as const }] : []),
         { kind: 'archived' },
         { kind: 'trash' },
@@ -105,8 +104,6 @@ export function sectionLabel(s: PanelSection, teamName: (id: string) => string |
       return SIDEBAR_LABELS.myWork;
     case 'team':
       return teamName(s.id) ?? 'Team';
-    case 'favourites':
-      return 'Favourites';
     case 'offline':
       return SIDEBAR_LABELS.thisBrowser;
     case 'library':
