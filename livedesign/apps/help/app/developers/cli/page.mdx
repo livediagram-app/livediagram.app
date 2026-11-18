@@ -230,6 +230,10 @@ The CLI is subject to the same limits as any API client, per token: on the hoste
 
 The CLI counts which commands succeed, and which fail because of the server or the network, by the command's name only (never its arguments, your designs or the host), and sends the count to the host it talks to, as anonymous [telemetry](/help/privacy-and-security/what-we-collect/). The first time it counts one, it says so. Turn it off with `livedesign telemetry off`, `LIVEDESIGN_TELEMETRY=0` or `DO_NOT_TRACK=1`.
 
+## Updates
+
+Once a day at most, the CLI asks npm in the background whether a newer version is out. When one is, the next command that succeeds says so in one line, for example `livedesign 1.4.0 is out (you have 1.2.1). Update: npm i -g @livedesign/cli`, at most once a day. It never asks in CI or when its messages are not going to a terminal, and it never slows a command down. Turn it off with `LIVEDESIGN_NO_UPDATE_CHECK=1`.
+
 ## Keep It Safe
 
 <Note>

@@ -77,6 +77,7 @@ export function nodeIo(): CliIo {
     readStdin,
     stdinIsTTY: Boolean(process.stdin.isTTY),
     stdoutIsTTY: Boolean(process.stdout.isTTY),
+    stderrIsTTY: Boolean(process.stderr.isTTY),
     readLine,
     fetch: (request) => fetch(request),
     now: () => Date.now(),
@@ -89,6 +90,7 @@ export function nodeIo(): CliIo {
     openUrl,
     platform: process.platform,
     runTool,
+    runBackground,
     // Beside the bundle, whose module this is once bundled: dist/ holds <command>.mjs, resvg.wasm, Inter-Regular.ttf
     // and Inter-Bold.otf.
     readAsset: async (name) =>
@@ -218,6 +220,29 @@ function openUrl(url: string): Promise<boolean> {
       resolve(true);
     });
   });
+}
+
+// This CLI again (the same node, flags and entry file), detached and unreferenced; a copy that cannot start is let go.
+export const backgroundArgs = (
+  entry: string | undefined,
+  execArgv: readonly string[],
+  args: readonly string[],
+): string[] | null => (entry ? [...execArgv, entry, ...args] : null);
+
+function runBackground(args: readonly string[]): void {
+  const argv = backgroundArgs(process.argv[1], process.execArgv, args);
+  if (!argv) return;
+  try {
+    const child = spawn(process.execPath, argv, {
+      detached: true,
+      stdio: 'ignore',
+      windowsHide: true,
+    });
+    child.once('error', () => {});
+    child.unref();
+  } catch {
+    // Nothing to tell: the check waits for the next day.
+  }
 }
 
 // A system tool, no shell: its arguments are passed as they are, and the input travels on stdin.

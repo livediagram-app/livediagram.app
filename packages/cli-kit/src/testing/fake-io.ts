@@ -77,6 +77,8 @@ export type FakeIo = CliIo & {
   dirMap: Set<string>;
   // The prompts `readLine` showed, in order.
   prompts: string[];
+  // The arguments of each background copy started.
+  background: (readonly string[])[];
 };
 
 // Whether `path` lies below `dir`.
@@ -91,6 +93,7 @@ export type FakeIoOptions = {
   stdin?: string;
   stdinIsTTY?: boolean;
   stdoutIsTTY?: boolean;
+  stderrIsTTY?: boolean;
   files?: Record<string, string>;
   // The answers `readLine` gives, in order; null is the end of input; past the end, null.
   lines?: (string | null)[];
@@ -122,6 +125,7 @@ export function fakeIo(
   let seq = 0;
   const interrupts = new Set<() => void>();
   const opened: string[] = [];
+  const background: (readonly string[])[] = [];
   const loopbackWaiting: ((r: LoopbackRequest) => void)[] = [];
   const loopbackQueued: LoopbackRequest[] = [];
   return {
@@ -132,6 +136,7 @@ export function fakeIo(
     readStdin: async () => options.stdin ?? '',
     stdinIsTTY: options.stdinIsTTY ?? false,
     stdoutIsTTY: options.stdoutIsTTY ?? false,
+    stderrIsTTY: options.stderrIsTTY ?? false,
     readLine: async (prompt) => {
       prompts.push(prompt);
       err += prompt;
@@ -200,6 +205,7 @@ export function fakeIo(
     // No platform store unless a suite gives one: the credentials file keeps the token.
     platform: 'test',
     runTool: async (command, args) => (options.tool ? options.tool(command, args) : null),
+    runBackground: (args) => void background.push(args),
     readAsset: async (name) => new Uint8Array(await readFile(ASSET_PATHS[name])),
     openSocket: (url) => {
       const socket = fakeSocket(url);
@@ -232,6 +238,7 @@ export function fakeIo(
     },
     interrupt: () => [...interrupts].forEach((h) => h()),
     prompts,
+    background,
     out: () => out,
     err: () => err,
     fileMap,
