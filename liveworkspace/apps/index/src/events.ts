@@ -40,9 +40,27 @@ export type EventInput = {
   auditTeams?: readonly (string | null)[];
 };
 
+let eventSeq = 0;
+
+/**
+ * A fresh event id that sorts by time: a version 7 UUID (the event's millisecond first), with a counter after it so
+ * two events stamped in the same millisecond sort in the order they were made. History reads `occurred_at DESC,
+ * id DESC` off `events_item`, so this is what keeps same-millisecond steps (a request and its decision) in order
+ * without a sort step or a new index.
+ */
+export function eventId(at: number): string {
+  // A 24 bit counter (it wraps after 16 million events in one isolate), spread over the two groups after the time.
+  eventSeq = (eventSeq + 1) % 0x1000000;
+  const ms = Math.max(0, Math.min(Math.trunc(at), 0xffffffffffff))
+    .toString(16)
+    .padStart(12, '0');
+  const seq = eventSeq.toString(16).padStart(6, '0');
+  return `${ms.slice(0, 8)}-${ms.slice(8)}-7${seq.slice(0, 3)}-8${seq.slice(3)}-${crypto.randomUUID().slice(24)}`;
+}
+
 /** The statements that record one event; they go in the batch that makes the change. */
 export function eventStatements(db: Db, event: EventInput): D1PreparedStatement[] {
-  const id = event.id ?? crypto.randomUUID();
+  const id = event.id ?? eventId(event.at);
   const when = event.when ? ` AND ${event.when.sql}` : '';
   const statements = [
     db
