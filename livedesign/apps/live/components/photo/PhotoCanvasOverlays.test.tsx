@@ -6,6 +6,7 @@ import { cleanup, render } from '@testing-library/react';
 import type { LaidOutPage } from '@livedesign/design';
 import { photoOf } from '@/lib/photo-editor/photo-test-utils';
 import { photoTools } from '@/lib/photo-editor/tool-state';
+import { cropBox, cropReadout } from '@/lib/photo-editor/tools/crop-tool';
 import { PhotoCanvasOverlays, layerListKey } from './PhotoCanvasOverlays';
 import { photoView } from './photo-view-test-utils';
 
@@ -35,6 +36,21 @@ describe('an unstarted photo page with a tool in hand', () => {
     expect(layer.style.pointerEvents).toBe('auto');
     // ...and the card comes after it, so it is on top.
     expect(layer.compareDocumentPosition(card) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+});
+
+// photo-tools.md "Crop": taking Crop in hand puts the box over the whole photo at once, not after a first press.
+describe('Crop taken in hand', () => {
+  it('shows the crop box over the whole photo at once, and putting it down clears it', () => {
+    const { view } = photoView(photoOf(16, 12), {});
+    photoTools.take('crop');
+    const { rerender } = render(
+      <PhotoCanvasOverlays pages={[page]} photo={view} zoom={1} spaceHeld={false} />,
+    );
+    expect(cropReadout(cropBox.get()!)).toMatchObject({ x: 0, y: 0, width: 16, height: 12 });
+    photoTools.take('brush');
+    rerender(<PhotoCanvasOverlays pages={[page]} photo={view} zoom={1} spaceHeld={false} />);
+    expect(cropBox.get()).toBeNull();
   });
 });
 

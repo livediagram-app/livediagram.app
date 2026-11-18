@@ -101,6 +101,10 @@ not design: where a spec is silent the default is in [DEFAULTS.md](DEFAULTS.md).
       handler per tool family: `paint-tools.ts`, `select-tools.ts`, `fill-tools.ts`, `shape-tools.ts`,
       `move-tool.ts`, `transform-tool.ts`, `crop-tool.ts`, `text-tool.ts`, with `tool-context.ts`,
       `tool-handler.ts`, `held-keys.ts`, `lift.ts`).
+    - Crop: `PhotoCanvasOverlays` calls `beginCrop` when Crop is taken in hand on an editable photo (no box open),
+      so the box and grid show at once. `fittedBox(photo, ratio)` is the largest box of the ratio centred in a
+      rectangle; `reshapeCrop` gives a level box `fittedBox(photo, r)` clamped inside the photo about the old centre,
+      and a straightened box `fittedBox(itself, r)` about its centre. Free returns early.
     - Export: `photo-export.ts` (with `allSizesZip` and `sizeFileNames` for All Sizes).
   - `components/photo/`: `PhotoPagesLayer.tsx` and `PhotoSurface.tsx` (the page's canvas), `PhotoChrome.tsx`,
     `PhotoCanvasOverlays.tsx` and `PhotoToolOverlay.tsx` (presses, the cursor, marching ants, boxes),
