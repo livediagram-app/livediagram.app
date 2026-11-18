@@ -121,7 +121,8 @@ closes, and a closed one blocks walking). Only its drawing and its width differ.
   swing arc is. The box is what selects it, so a click on the drum's middle selects it.
 - **Opening and closing animate** as the leaf does: a sliding panel slides, a revolving door's wings turn, over 180 ms
   with the canvas easing, and jump there under reduced motion.
-- **Export** draws each type as the canvas does, shut or open.
+- **Export** draws each type as the canvas does, shut or open, in every format: an open door's leaf and dashed swing
+  arc reach past its box, and the PNG (and the PDF's raster fallback) takes them in as the SVG and PDF draw them.
 
 ### Locked doors
 

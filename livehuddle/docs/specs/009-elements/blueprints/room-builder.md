@@ -81,7 +81,10 @@ Notes:
   only a value the kind takes; a room preset's variant is never stored (the preset is its size, name and outline).
 - A door's parts carry `open` and `shut` poses (`rotate` about an origin, or a `dx` slide); the canvas sets the pose
   as a CSS transform under the 180 ms door transition (`.lh-door-leaf`, `.lh-door-swing`), the export bakes the current
-  one in. Paints are data too: a revolving drum's floor is `pane` (the glass wash, unoutlined).
+  one in. The open leaf and swing reach past the box by up to `doorOverhang(width, height)` (`width - height / 2`,
+  `door-art.ts`); the PNG (and the PDF's raster fallback) rasters a Door's SVG in a frame padded by it
+  (`renderTabToCanvas`), so the swing the SVG draws is never cropped. Paints are data too: a revolving drum's floor is
+  `pane` (the glass wash, unoutlined).
 - `CategoryFlyoutSide` lifts the side panel against `[data-canvas-root]`'s bottom (`sideFloor`), at its settled height
   (the opening animation's scale divided out, `animationScale`), re-measured on `animationend`, resize and a
   ResizeObserver.

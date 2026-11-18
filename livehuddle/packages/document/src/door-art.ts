@@ -33,6 +33,14 @@ export type DoorArtPart = (
 const r2 = (v: number) => Math.round(v * 100) / 100;
 const STILL: DoorPose = { rotate: 0, dx: 0 };
 
+/** How far a door's drawing reaches past its box: the open leaf and its swing arc stand out from the wall's centre
+ *  line (half the height down) by up to the opening, which is never wider than the door. The raster frame (the PNG,
+ *  and the PDF's raster fallback) grows by it, so the swing the SVG draws is never cut off
+ *  (docs/specs/009-elements/room-builder.md "Export"). */
+export function doorOverhang(width: number, height: number): number {
+  return Math.max(0, width - height / 2);
+}
+
 /** A door's parts for its type (an absent or unknown `variant` is the swing Door). */
 export function doorArt(width: number, height: number, variant: string | undefined): DoorArtPart[] {
   const type = pieceVariant({ shape: 'door', variant });
