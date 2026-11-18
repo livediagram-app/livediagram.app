@@ -347,6 +347,21 @@ Two Events Spaces for learning and making together (`template-builders-events-mo
   Fridge and a coffee machine). On the hack floor, six team tables, a Notice Board of the rules, a Timer for the
   countdown and bean bags on a round rug. The Avatar Pad waits on the hack floor below the Snack Bar.
 
+### Art Gallery and Wellness Studio
+
+Two Spaces unlike the rest of the set (`template-builders-gallery-wellness.ts`, the owner 2026-11-18), built as above.
+
+- **Art Gallery** (Events, parquet): a **Main Gallery** (three Photo Walls on the back wall, two benches, a pillar
+  either side), a **Sculpture Hall** (four Columns as plinths either side of a runner, two Photo Walls, two benches)
+  and a **Talk Room** (a Podium under a Screen and six chairs in two rows). Below them the foyer: the front desk, a
+  Notice Board of three notes, a coat rack and an umbrella stand, and a café corner (a Bar, four stools, a coffee
+  machine, a drinks fridge and two bean bags on a round rug). The Avatar Pad waits in the foyer.
+- **Wellness Studio** (Recreation, wood): a **Yoga Studio** (a teacher's mat and four mats facing it, a Screen, a
+  Timer and Bring Focus), a **Meditation Room** (a fountain on a round rug, four bean bags round it, a plant in every
+  corner), a **Gym** (three Treadmills, Lockers and a water cooler) and a **Nap Room** (two Nap Pods and a reading
+  nook). Below them the lobby: the front desk, a Notice Board of class times, a juice bar (a Bar, four stools, a
+  drinks fridge and a water cooler) and a hammock. The Avatar Pad waits in the lobby.
+
 ## The catalogue plan
 
 Every category, the templates in it and the element types each one uses (Work Tracker #641). Floors are the Room and
@@ -364,6 +379,7 @@ heading, a Door on every room and, outside Homes, a Room Sign by every Door.
 | Events      | Training Room                 | 1    | Stage, Podium, Bring Focus, Meeting Table, Coffee Machine, Water Cooler, Plant, Window, Timer, Suggestion Box                                                                                                                                                                |
 | Events      | Classroom                     | 1    | Desk, Notice Board, Bring Focus, Screen, Timer, Meeting Table, Lockers, Coat Rack, Water Cooler, Plant, Directory, Window                                                                                                                                                    |
 | Events      | Hackathon Hall                | 1    | Stage, Podium, Screen, Bring Focus, Chair, Meeting Table, Nap Pod, Bar, Bar Stool, Vending Machine, Drinks Fridge, Coffee Machine, Notice Board, Timer, Bean Bag, Rug, Directory, Window                                                                                     |
+| Events      | Art Gallery                   | 1    | Photo Wall, Bench, Pillar, Column, Rug, Screen, Podium, Chair, Reception Desk, Notice Board, Coat Rack, Umbrella Stand, Bar, Bar Stool, Coffee Machine, Drinks Fridge, Bean Bag, Plant, Directory, Window                                                                    |
 | Events      | Expo Hall                     | 1    | Office Pod, Stage, Stage Curtains, Podium, Pillar, Chair, Bar, Bar Stool, Meeting Table, Notice Board, Directory, Team Photo Wall, Vending Machine, Lockers, Coat Rack, Umbrella Stand                                                                                       |
 | Games Rooms | Arcade Lounge                 | 1    | Arcade Machine, Reception Desk, Bar, Bar Stool, Vending Machine, Drinks Fridge, Coffee Machine, Meeting Table, Screen, Bean Bag, Sofa, Jukebox, Team Photo Wall, Plant, glass walls, Notice Board                                                                            |
 | Games Rooms | Games Night Den               | 1    | Fireplace, Pet Bed, Sofa, Meeting Table, Bookshelf, Pool Table, Foosball Table, Dartboard, Jukebox, kitchen set, Reading Nook, Coat Rack, Umbrella Stand, Window                                                                                                             |
@@ -384,6 +400,7 @@ heading, a Door on every room and, outside Homes, a Room Sign by every Door.
 | Recreation  | Rooftop Bar                   | 1    | Bar, Bar Stool, Drinks Cabinet, Drinks Fridge, Sofa, Chair, Tree, Outdoor Plant, Hammock                                                                                                                                                                                     |
 | Recreation  | Cafe                          | 1    | Bar, Bar Stool, Coffee Machine, Drinks Fridge, Meeting Table, Chair, Sofa, Plant, Pet Bed, Window                                                                                                                                                                            |
 | Recreation  | Sports Bar (cross-listed)     | 1    | as above                                                                                                                                                                                                                                                                     |
+| Recreation  | Wellness Studio               | 1    | Rug, Screen, Timer, Bring Focus, Fountain, Bean Bag, Treadmill, Lockers, Water Cooler, Nap Pod, Reading Nook, Reception Desk, Notice Board, Bar, Bar Stool, Drinks Fridge, Hammock, Plant, Directory, Window                                                                 |
 | Venues      | Conference Venue              | 1    | Bar, Stage, Stage Curtains, Podium, Screen, Bring Focus, Chair, Meeting Table, Office Pod, garden set, Coat Rack, Umbrella Stand, Window                                                                                                                                     |
 | Venues      | Hotel and Suites              | 3    | Elevator, Directory, Column, Bar, Stage, Screen, Fireplace, Sofa, Desk, Office Pod, Garden Umbrella, Hammock, Swimming Pool, Stairs, Ping-Pong Table, Window                                                                                                                 |
 | Venues      | Music Hall                    | 1    | Stage, Stage Curtains, Screen, Bring Focus, Chair, Bar, Bar Stool, Drinks Cabinet, Drinks Fridge, Jukebox, Sofa, Coat Rack, Lockers, Umbrella Stand, Column, Reception Desk, Notice Board                                                                                    |

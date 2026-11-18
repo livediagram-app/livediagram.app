@@ -317,6 +317,28 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
     'stage',
     'snacks',
   ],
+  'art-gallery': [
+    'gallery',
+    'art',
+    'exhibition',
+    'show',
+    'museum',
+    'portfolio',
+    'launch',
+    'photo wall',
+    'artist talk',
+  ],
+  'wellness-studio': [
+    'wellness',
+    'yoga',
+    'meditation',
+    'mindfulness',
+    'gym',
+    'fitness',
+    'nap',
+    'self care',
+    'retreat',
+  ],
 };
 
 /** The words a template is searched by. */

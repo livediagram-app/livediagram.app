@@ -38,6 +38,8 @@ const TEMPLATE_FAMILY: Record<TemplateKind, TemplateFamilyOrNone> = {
   'client-lounge': null,
   classroom: null,
   'hackathon-hall': null,
+  'art-gallery': null,
+  'wellness-studio': null,
 };
 
 /** The family a document made from this template belongs to; null for no template or no family. */

@@ -636,12 +636,12 @@ marketing gallery and the agents' template catalogue, each holding two to seven 
 | Category    | Id           | Description                                        | Templates                                                                                |
 | ----------- | ------------ | -------------------------------------------------- | ---------------------------------------------------------------------------------------- |
 | Campus      | `campus`     | Whole sites: offices, halls and bars in a garden.  | Company Campus, Startup HQ, School Quad, Co-working Tower (and Beach Offsite)            |
-| Events      | `events`     | Halls and rooms for talks, demos and training.     | All-Hands Hall, Training Room, Expo Hall, Classroom, Hackathon Hall                      |
+| Events      | `events`     | Halls and rooms for talks, demos and training.     | All-Hands Hall, Training Room, Expo Hall, Classroom, Hackathon Hall, Art Gallery         |
 | Games Rooms | `games`      | Arcades, dens and bars for playing games together. | Arcade Lounge, Games Night Den, Sports Bar                                               |
 | Homes       | `homes`      | Houses to meet in, with Stairs between the floors. | Family House, City Townhouse, Country Cottage                                            |
 | Office      | `office`     | Desks, pods and meeting rooms for the workday.     | Virtual Office, Coworking Space, Team Pod, Focus Library, Interview Suite, Client Lounge |
 | Outdoor     | `outdoor`    | Gardens and parks to meet in under an open sky.    | Garden Retreat, City Park, Beach Offsite (and Festival Field)                            |
-| Recreation  | `recreation` | Bars and cafes to unwind in together after work.   | Rooftop Bar, Cafe (and Sports Bar)                                                       |
+| Recreation  | `recreation` | Bars and cafes to unwind in together after work.   | Rooftop Bar, Cafe, Wellness Studio (and Sports Bar)                                      |
 | Venues      | `venues`     | Halls, hotels and stages to host a big day at.     | Conference Venue, Hotel and Suites, Music Hall, Festival Field (and Expo Hall)           |
 
 - Blank Space is in no category: it is the start's own first card.

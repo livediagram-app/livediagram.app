@@ -8,6 +8,7 @@ import { templatePreviewGroup26 } from './template-preview-26';
 import { templatePreviewGroup27 } from './template-preview-27';
 import { templatePreviewGroup28 } from './template-preview-28';
 import { templatePreviewGroup29 } from './template-preview-29';
+import { templatePreviewGroup30 } from './template-preview-30';
 
 // Static SVG preview tiles, one branch per TemplateKind, rendered by the
 // editor's template picker and the marketing site's template gallery
@@ -20,7 +21,8 @@ import { templatePreviewGroup29 } from './template-preview-29';
 // file under the ~1000-line budget; we try each group in turn. Group 17 draws Blank Space, group 23 the first four
 // Spaces, group 24 the six that followed, group 25 the first Campus Spaces, group 26 the five after them, group 27
 // the Games Rooms, the Homes and the Music Hall, group 28 the Festival Field,
-// group 29 the Interview Suite, the Client Lounge, the Classroom and the Hackathon Hall;
+// group 29 the Interview Suite, the Client Lounge, the Classroom and the Hackathon Hall, group 30 the Art Gallery and
+// the Wellness Studio;
 // the other groups left with their templates (docs/specs/007-editor/templates-by-mode.md "The catalogue").
 export function TemplatePreview({ kind }: { kind: TemplateKind }): ReactElement | null {
   return (
@@ -31,6 +33,7 @@ export function TemplatePreview({ kind }: { kind: TemplateKind }): ReactElement 
     templatePreviewGroup26(kind) ??
     templatePreviewGroup27(kind) ??
     templatePreviewGroup28(kind) ??
-    templatePreviewGroup29(kind)
+    templatePreviewGroup29(kind) ??
+    templatePreviewGroup30(kind)
   );
 }

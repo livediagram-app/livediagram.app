@@ -99,6 +99,7 @@ describe('Start a Space', () => {
       'expo-hall',
       'classroom',
       'hackathon-hall',
+      'art-gallery',
     ]);
     expect(group('outdoor')).toEqual([
       'garden-retreat',
@@ -108,7 +109,7 @@ describe('Start a Space', () => {
     ]);
     // A cross-listed Space is in catalogue order among the category's own: the Sports Bar in Recreation, the Beach
     // Offsite in Campus, the Expo Hall in Venues and the Festival Field in Outdoor.
-    expect(group('recreation')).toEqual(['rooftop-bar', 'cafe', 'sports-bar']);
+    expect(group('recreation')).toEqual(['rooftop-bar', 'cafe', 'sports-bar', 'wellness-studio']);
     expect(group('campus')).toEqual([
       'company-campus',
       'startup-hq',
@@ -135,7 +136,7 @@ describe('Start a Space', () => {
     // The Sports Bar, cross-listed in Recreation, is found by its words but listed once, under Games Rooms.
     expect(TEMPLATE_STARTS.workshop.search('drinks')).toEqual([
       { group: 'games', kinds: ['sports-bar'] },
-      { group: 'recreation', kinds: ['rooftop-bar', 'cafe'] },
+      { group: 'recreation', kinds: ['rooftop-bar', 'cafe', 'wellness-studio'] },
     ]);
     // A template that left (Work Tracker #423) is found nowhere.
     expect(TEMPLATE_STARTS.workshop.search('postmortem')).toEqual([]);

@@ -344,7 +344,7 @@ const HQ_ROOMS: CampusRoom[] = [
     y: GAMES_Y,
     w: 500,
     h: 380,
-    door: { side: 'n', at: 250, sign: 1, reach: GAMES_Y - HQ_PATH_Y - PATH },
+    door: { side: 'n', at: 250, sign: -1, reach: GAMES_Y - HQ_PATH_Y - PATH },
     windows: [
       { side: 's', at: 250 },
       { side: 'e', at: 190 },

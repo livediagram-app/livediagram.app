@@ -277,6 +277,8 @@ const TOWN_W = 1400;
 const TOWN_H = 1200;
 const TOWN_STAIRS: OfficePiece = { kind: 'stairs', x: 1180, y: 780 };
 const TOWN_LANDING: OfficePiece = { kind: 'avatar-pad', x: 976, y: 860 };
+// Downstairs you arrive a step into the hall, clear of the plan's bottom-right corner once it opens out (template-roomy.ts).
+const TOWN_ARRIVAL_X = 900;
 
 const townDownstairs = houseFloor(TOWN_W, TOWN_H, {
   rooms: [
@@ -340,7 +342,7 @@ const townDownstairs = houseFloor(TOWN_W, TOWN_H, {
       'Downstairs: the kitchen-diner and the front room. The Stairs go up to the office and the roof terrace.',
   },
   arrival: {
-    dx: TOWN_LANDING.x + 64 - TOWN_W / 2,
+    dx: TOWN_ARRIVAL_X + 64 - TOWN_W / 2,
     dy: TOWN_LANDING.y + 40 - TOWN_H / 2 - 12,
     hint: 'You arrive on the Avatar Pad in the hall. Walk onto the Stairs to go Upstairs.',
   },

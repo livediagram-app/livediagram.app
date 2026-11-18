@@ -31,15 +31,16 @@ untitled.
 
 ## The catalogue
 
-- Thirty Spaces in eight categories ([Template categories](../008-canvas/canvas-and-palette.md#template-categories),
+- Thirty-two Spaces in eight categories ([Template categories](../008-canvas/canvas-and-palette.md#template-categories),
   [Virtual Office template](../012-collaboration/virtual-office-template.md), its "The catalogue plan" lists the
   element types each one uses):
   - **Office**: **Virtual Office** (`virtual-office`), **Coworking Space** (`coworking-space`), **Team Pod**
     (`team-pod`), **Focus Library** (`focus-library`), **Interview Suite** (`interview-suite`) and **Client Lounge**
     (`client-lounge`).
   - **Events**: **All-Hands Hall** (`all-hands-hall`), **Training Room** (`training-room`), **Expo Hall**
-    (`expo-hall`, also in Venues), **Classroom** (`classroom`) and **Hackathon Hall** (`hackathon-hall`).
-  - **Recreation**: **Rooftop Bar** (`rooftop-bar`) and **Cafe** (`cafe`), and the Sports Bar cross-listed.
+    (`expo-hall`, also in Venues), **Classroom** (`classroom`), **Hackathon Hall** (`hackathon-hall`) and **Art Gallery** (`art-gallery`).
+  - **Recreation**: **Rooftop Bar** (`rooftop-bar`), **Cafe** (`cafe`) and **Wellness Studio** (`wellness-studio`),
+    and the Sports Bar cross-listed.
   - **Outdoor**: **Garden Retreat** (`garden-retreat`), **City Park** (`city-park`) and **Beach Offsite**
     (`beach-offsite`, also in Campus), and the Festival Field cross-listed.
   - **Campus**: **Company Campus** (`company-campus`), **Startup HQ** (`startup-hq`), **School Quad** (`school-quad`)
@@ -67,12 +68,37 @@ untitled.
   Blank Space (`retired-templates.test.ts`). The Meetings & Workshops, Retrospectives, Workshops, Planning, Strategy
   and Quizzes & Games categories leave with them.
 
+## Room to move
+
+The owner, 2026-11-18: "in templates rooms should generally be bigger and less cramped", and wall pieces "are often
+floating in the middle of a room". Every Space's plan, each floor of a building too, is drawn at its builder's size and
+then opened out by one rule (`roomier`, `packages/templates/src/template-roomy.ts`), so no builder carries spacing of its
+own:
+
+- **Rooms grow** by a quarter (`TEMPLATE_ROOMY`, 1.25) about the template's centre: rooms, corridors, lawns and car
+  parks both ways, a Garden Path or a fence along its length only. Rooms that shared a wall still share it.
+- **Furniture keeps its size**, moved in groups: pieces within 16 px of each other in one room move together (a desk
+  and its chair, a sofa on its rug, a counter with the microwave on it), and wall pieces in one run along a wall (a
+  counter and a sink at one height) stay in line.
+- **Near a wall, a group keeps its distance from it** (within 64 px: a Door, a Window, a counter, a plant in a
+  corner); out in the floor it keeps its biggest piece's share of the room, so a stage centred in its hall stays
+  centred.
+- **Wall pieces go back to the wall**: a piece that stands against a wall (a counter, a fridge, a bookshelf, lockers,
+  a fireplace, a vending machine, an arcade machine, a jukebox) standing more than 96 px out is pushed back against
+  its back or a side wall, never the front wall it would turn its back to you from; a hung piece (a Notice Board, a
+  Screen, a clock) onto the back wall or, its foot on it, the front wall. A push stops short of anything in the way.
+- **Nothing stands on anything**: a group left on another piece slides to the nearest free spot inside its walls.
+- **A Room Sign stays by its Door**, Bring Focus by its stage.
+
+A Blank Space (no rooms) is left as drawn. The pass runs once, when the Space is made (under 1 ms for the biggest,
+measured), never while it is open.
+
 ## Testing
 
 - Every template opens on a meeting board (`templates.test.ts`).
 - Popular starts with Blank Space (`popular.test.ts`).
 - Every category holds a template (`template-categories.test.ts`).
-- The catalogue is the thirty Spaces and the blank, thirty-one templates (`templates.test.ts`'s kind list, the `TemplateKind`
+- The catalogue is the thirty-two Spaces and the blank, thirty-three templates (`templates.test.ts`'s kind list, the `TemplateKind`
   union and `TEMPLATES` move together).
 - Every Space is walkable (`template-builders-spaces-more.test.ts` and `template-builders-office.test.ts`): its floors
   lie first, every tab (a building's every floor) has exactly one [Avatar Pad](../009-elements/avatar-pad.md#every-space-and-blank-tab-has-one)
