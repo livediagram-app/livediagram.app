@@ -52,7 +52,7 @@ describe('quickBarItems', () => {
     ]);
     unbound.run();
     expect(onEditLiveStatus).toHaveBeenCalledWith('sq');
-    const bound = quickBarItems(square({ statusUrl: 'https://status.example.com/' } as never), {
+    const bound = quickBarItems(square({ statusUrl: 'https://status.example.com/' }), {
       ...handlers(),
       onEditLiveStatus,
     }).at(-1)!;
