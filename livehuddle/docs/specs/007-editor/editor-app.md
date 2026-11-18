@@ -278,8 +278,8 @@ upright phone whose layout shrinks for its keyboard (an older Android) from fold
   choice lasts while the document is open in that window: not saved, not synced, and a
   fresh load starts folded.
 - **The bars come back on their own** when something needs them: a rename asked for elsewhere (the
-  Rename Space and Rename Tab search commands) shows them first, so the name field takes the
-  focus; a tour on screen (any of them) keeps
+  Rename Tab search command) shows them first, so the tab's name field takes the
+  focus (Rename Space renames in the Explorer panel, which a phone held sideways withholds); a tour on screen (any of them) keeps
   them shown; and a bar never folds while focus is inside it, so a layout that changes while a
   name is typed there (the on-screen keyboard resizing it) cannot fold the field away. Pressing
   Hide takes the focus to the handle, which ends a rename as any press outside it does.

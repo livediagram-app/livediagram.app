@@ -751,7 +751,7 @@ Result sections, in order, each capped (8 per section, 12 for elements, 10 for A
    - **To an editor**: **Create New Tab**, **Rename Tab**, **Rename Plan**, **Delete Plan** (not in a workbench),
      **Open Theme** (the `CanvasThemeDialog`'s Theme tab), **Share Plan** (to the owner or a joined team member,
      never offline or in a workbench), **Import…**, **Open Settings** and **Keyboard Shortcuts** (Settings on its
-     Keyboard category). Rename commands drive the inline renames through a request nonce on `useEditorDialogs`.
+     Keyboard category). Rename commands drive the inline renames through a request nonce on `useEditorDialogs`: `TabBar` watches Rename Tab's, and Rename Plan's opens the Explorer panel from its menu button with the Current card's name field focused ([one-explorer.md "Rename from the search"](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#the-explorer-on-each-apps-address)), so Rename Plan is left out where the panel cannot open (Zen mode, a workspace frame).
 
 6. **Add to canvas**: the matcher takes an optional list of tiles to place (`paletteItems`, ranked exact name, then prefix, then substring, then keyword-only, capped at 10). The editor passes none, so the group never shows.
 7. **Settings**: rows from the settings catalogue (`lib/settings-search-items.ts`), matched on title and keywords (non-empty query only). Picking one opens the Settings dialog on that row.
