@@ -15,7 +15,7 @@ export type FakeMediaRefs = {
   deleted: string[];
   // Plans whose own report the fake refuses, as a plan whose report keeps failing.
   refusing: Set<string>;
-  // Refuse every sync that vouches for another document.
+  // Refuse every sync that vouches for another plan.
   refusePending: boolean;
   syncs: { documents: RefsEntry[]; pending?: RefsEntry[] }[];
 };
