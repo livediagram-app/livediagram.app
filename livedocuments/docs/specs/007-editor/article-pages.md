@@ -90,7 +90,7 @@ livedocuments file that holds tabs ([Document](../006-document/document.md)). Th
 | ----------- | ------------------------------------------------------------------- | ----------------------------------------------------------------- |
 | `paragraph` | `style`: body, title, subtitle, h1, h2, h3, quote; `align`          | Text in the style's type; quote with an accent bar, italic        |
 | `list`      | `list`: bullet, numbered, todo; `level` 0 to 4; `checked` (todo)    | A marker in a gutter, the text after it; level indents 28 px each |
-| `code`      | none (plain text, no runs formatting)                               | Monospaced on a tinted panel, lines kept as typed                 |
+| `code`      | `lang` (optional, a fence's language word; plain text, no runs)     | Monospaced on a tinted panel, lines kept as typed                 |
 | `divider`   | none                                                                | A hairline across the text width                                  |
 | `pageBreak` | none                                                                | On screen, a dashed line with "Page break"; ends the page         |
 | `table`     | `header`; `cols` (each a share of the text width); `rows` of cells  | A grid of cells across the text width, ruled in hairlines         |
@@ -98,6 +98,9 @@ livedocuments file that holds tabs ([Document](../006-document/document.md)). Th
 | `zone`      | `zone`: object or drawing; `wrap`; `align`; `width`; `height`; `at` | A box the size of the zone, its elements drawn over it            |
 
 - `align`: left (default), centre, right, justify; on paragraphs and list items.
+- `lang`: the language a Markdown fence names (` ```js `), its first word: 1 to 32 letters, digits or `_ + # . -`.
+  Kept so the block's Markdown names it again (an import, an agent's write, a paste, then an export or an agent's
+  read); anything else is dropped and the block stays code. The article shows no language of its own.
 - **Numbered lists** count each level 1, 2, 3 through a run of list items; a bullet or to-do at a
   level restarts that level's count; any other block ends the run. Level 0 counts 1, 2, 3;
   level 1 a, b, c; level 2 i, ii, iii; then repeat. Bullets by level: •, ◦, ▪.

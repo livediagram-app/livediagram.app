@@ -369,7 +369,7 @@ export function articleToMarkdown(flow: ArticleFlow): string {
         // One backtick more than the longest fence-like line of the code, so none of its lines closes the fence.
         const inner = Math.max(0, ...b.text.split('\n').map(fenceOpening));
         const fence = '`'.repeat(Math.max(3, inner + 1));
-        lines.push(fence, b.text, fence, '');
+        lines.push(`${fence}${b.lang ?? ''}`, b.text, fence, '');
         break;
       }
       case 'divider':

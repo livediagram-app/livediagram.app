@@ -394,6 +394,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "id": {
         "type": "string"
       },
+      "lang": {
+        "type": "string"
+      },
       "text": {
         "type": "string"
       },
