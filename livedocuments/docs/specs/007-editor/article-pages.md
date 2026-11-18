@@ -252,9 +252,10 @@ footnote's reference (see "Footnotes"). Code blocks keep plain text.
   - **More Formatting** (a menu: strikethrough, inline code, superscript, subscript, clear
     formatting, Article style, which opens the page panel on Style, and at its foot the article's
     **Word Count**);
-  - **Insert** (a menu: Image, Chart, then Table, Table of Contents, Footnote, Divider, Page break, Quote,
-    Code; a drawing starts from a shape dropped on the page or the slash menu's **Drawing**, a
-    callout from the slash menu).
+  - **Insert** (a menu: Image, Bar Chart, Pie Chart, Line Chart, then Table, Table of Contents, Footnote, Divider,
+    Page break, Quote, Code; a drawing starts from a shape dropped on the page or the slash menu's **Drawing**, a
+    callout from the slash menu). An object always goes in: at the caret, or, when the writing has no caret it can
+    measure, under its first line (Work Tracker 1090).
   - **Table** (a menu, shown only while the caret or a cell selection is in a table: Insert Row
     Above, Insert Row Below, Insert Column Left, Insert Column Right, Delete Row, Delete Column,
     Header Row (on or off), Delete Table);
@@ -737,7 +738,11 @@ ink").
   caret in it is not writing: two people in one article never both add a page for one overflow.
   The exceptions, an agent's write, a Participant's writing (a Participant never adds pages) and
   a writer who left before settling, are grown by the first editor to lay the article out
-  ([Pages for agents](../024-agents/pages-for-agents.md#pages-for-the-writing)).
+  ([Pages for agents](../024-agents/pages-for-agents.md#pages-for-the-writing)). Once its pages are right, that
+  editor also settles its zones where the writing lays them out (each zone's elements moving with it), as a quiet
+  change with no undo step and only for zones that moved, so a written template's charts stand in their zones from
+  the first open by anyone who may edit (Work Tracker 1177). An article that arrives after the tab did (a template
+  applied to the open tab) counts as loading then. A locked page holds its zones as they are.
 - **Agents** read an article as Markdown and write it from Markdown
   ([Pages for agents](../024-agents/pages-for-agents.md)); their writing arrives as anyone's, and
   never over a paragraph someone holds.

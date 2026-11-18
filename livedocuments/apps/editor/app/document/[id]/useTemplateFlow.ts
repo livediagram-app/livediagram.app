@@ -163,8 +163,9 @@ export function useTemplateFlow(opts: {
     }
     // Auto-select when a template produces a single element so the user can
     // immediately rename or edit it. Multi-element templates — and the now
-    // truly-empty Blank template (zero elements) — leave the selection cleared.
-    setSelectedId(elements.length === 1 ? elements[0]!.id : null);
+    // truly-empty Blank template (zero elements) — leave the selection cleared, as does a written template: its
+    // writing is what it is for, and its one chart (Work Tracker 1177) is part of it.
+    setSelectedId(elements.length === 1 && !overrides.articles ? elements[0]!.id : null);
     setEditingId(null);
   };
 

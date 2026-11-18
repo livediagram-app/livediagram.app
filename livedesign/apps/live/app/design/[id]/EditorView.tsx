@@ -305,6 +305,7 @@ export function EditorView() {
             commit={ctx.commitElements}
             tick={ctx.tickElements}
             grantOf={sheetLinkGrantOf}
+            ready={ctx.authLoaded && ctx.hydrated}
             onTrack={trackSheetLink}
             noun="design"
           >
