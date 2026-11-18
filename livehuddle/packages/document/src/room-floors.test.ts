@@ -62,9 +62,7 @@ describe('room floors (docs/specs/009-elements/office.md "Floors")', () => {
   it('exports a patterned room, a glass one and a drawn one', () => {
     const room = { ...createShape('room', 0, 0), id: 'r1', floor: 'stone' as const };
     expect(roomSvg(room as never, '#ccc', '#333')).toContain('url(#floor-r1)');
-    expect(roomSvg({ ...room, floor: undefined } as never, '#ccc', '#333')).not.toContain(
-      'floor-r1',
-    );
+    expect(roomSvg({ ...room, floor: undefined }, '#ccc', '#333')).not.toContain('floor-r1');
     const drawn = {
       ...room,
       roomOutline: [
