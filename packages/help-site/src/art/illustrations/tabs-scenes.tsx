@@ -60,29 +60,23 @@ export function RenamingTab() {
   );
 }
 
-/** A tab folder opening in place: its header's folder glyph stacks for its tabs; shut, only the tab you are on stays
- *  beside it; a click opens its tabs after the header on the bar, the neighbours sliding along. */
+/** A tab folder opening in place: its header's folder glyph stacks for its tabs; shut, only the header shows; on one of
+ *  its tabs it opens round you, every tab after the header and the neighbours sliding along, and stays open. */
 export function TabFolderStates() {
   const shutY = 40;
   const openY = 128;
   return (
     <Scene w={432} h={186}>
       <Label x={14} y={shutY - 14} size={10} tone="muted">
-        Shut: the tab you are on stays out beside the folder
+        Shut: just the chip, its icon stacked for the tabs inside
       </Label>
       <TabBar y={shutY} w={432} />
-      <TabPill x={8} y={shutY + 8} w={70} label="Overview" />
-      <FolderGroup
-        x={80}
-        y={shutY + 8}
-        name="Plans"
-        count={3}
-        tabs={[{ label: 'Q1 plan', w: 84, active: true }]}
-      />
-      <TabPill x={242} y={shutY + 8} w={60} label="Notes" />
-      <AddTabButton x={304} y={shutY + 8} />
+      <TabPill x={8} y={shutY + 8} w={70} label="Overview" active />
+      <FolderGroup x={80} y={shutY + 8} name="Plans" count={3} />
+      <TabPill x={156} y={shutY + 8} w={60} label="Notes" />
+      <AddTabButton x={218} y={shutY + 8} />
       <Label x={14} y={openY - 14} size={10} tone="muted">
-        Open: a click lays every tab out after the chip
+        On one of its tabs: open, and it stays open until you leave
       </Label>
       <TabBar y={openY} w={432} />
       <TabPill x={8} y={openY + 8} w={70} label="Overview" />
