@@ -16,15 +16,6 @@ export const GLYPH = {
   strokeLinejoin: 'round',
 } as const;
 
-function SearchGlyph({ x, y }: { x: number; y: number }) {
-  return (
-    <g transform={`translate(${x} ${y})`}>
-      <circle r={4.5} {...GLYPH} />
-      <path d="M3.4 3.4 L6.5 6.5" {...GLYPH} />
-    </g>
-  );
-}
-
 // Settings is two-and-more sliders in the editor (lucide sliders-horizontal),
 // never a cog: a cog's spokes read as the appearance toggle's sun.
 function SettingsGlyph({ x, y }: { x: number; y: number }) {
@@ -47,6 +38,24 @@ function SunGlyph({ x, y }: { x: number; y: number }) {
         d="M0 -7 v1.8 M0 7 v-1.8 M-7 0 h1.8 M7 0 h-1.8 M-5 -5 l1.3 1.3 M5 5 l-1.3 -1.3 M5 -5 l-1.3 1.3 M-5 5 l1.3 -1.3"
         {...GLYPH}
       />
+    </g>
+  );
+}
+
+// Tools is a toolbox (ChromeToolsMenu's ToolsGlyph): a case with a handle and a latch line.
+function ToolsGlyph({ x, y }: { x: number; y: number }) {
+  return (
+    <g transform={`translate(${x} ${y})`}>
+      <path d="M-6 -2.5 h12 v7.5 h-12 Z M-2.5 -2.5 v-2.5 h5 v2.5 M-6 1 h12" {...GLYPH} />
+    </g>
+  );
+}
+
+// The Editing Mode button in its Editor mode: the role's pencil (EditingModeButton), never a role colour.
+function PencilGlyph({ x, y }: { x: number; y: number }) {
+  return (
+    <g transform={`translate(${x} ${y})`}>
+      <path d="M2.5 -5.5 l3 3 L-2 5 h-3 v-3 Z" {...GLYPH} />
     </g>
   );
 }
@@ -146,8 +155,9 @@ export function TabPill({
   );
 }
 
-/** The quick controls at the right-hand end of the bottom bar: Search,
- *  Settings and the appearance switch, labelled as on a computer. */
+/** The quick controls at the right-hand end of the bottom bar, in the order ChromeControls draws them: Tools
+ *  (Search lives inside it), the Editing Mode button in its Editor mode, Settings and the appearance switch,
+ *  labelled as on a computer. */
 export function QuickControlsRow({
   x,
   y,
@@ -160,24 +170,29 @@ export function QuickControlsRow({
   if (!labelled) {
     return (
       <g>
-        <SearchGlyph x={x + 8} y={y} />
-        <SettingsGlyph x={x + 30} y={y} />
-        <SunGlyph x={x + 52} y={y} />
+        <ToolsGlyph x={x + 8} y={y} />
+        <PencilGlyph x={x + 30} y={y} />
+        <SettingsGlyph x={x + 52} y={y} />
+        <SunGlyph x={x + 74} y={y} />
       </g>
     );
   }
   return (
     <g>
-      <SearchGlyph x={x + 8} y={y} />
+      <ToolsGlyph x={x + 8} y={y} />
       <Label x={x + 18} y={y + 1} size={10} tone="body">
-        Search
+        Tools
       </Label>
-      <SettingsGlyph x={x + 66} y={y} />
-      <Label x={x + 77} y={y + 1} size={10} tone="body">
+      <PencilGlyph x={x + 56} y={y} />
+      <Label x={x + 66} y={y + 1} size={10} tone="body">
+        Editor
+      </Label>
+      <SettingsGlyph x={x + 108} y={y} />
+      <Label x={x + 119} y={y + 1} size={10} tone="body">
         Settings
       </Label>
-      <SunGlyph x={x + 134} y={y} />
-      <Label x={x + 145} y={y + 1} size={10} tone="body">
+      <SunGlyph x={x + 172} y={y} />
+      <Label x={x + 183} y={y + 1} size={10} tone="body">
         Light
       </Label>
     </g>
@@ -204,7 +219,7 @@ export function BottomBar({
       <Label x={180} y={y + 16} size={14} weight={600} tone="muted" anchor="middle">
         +
       </Label>
-      <QuickControlsRow x={labelled ? w - 182 : w - 72} y={y + 15} labelled={labelled} />
+      <QuickControlsRow x={labelled ? w - 214 : w - 94} y={y + 15} labelled={labelled} />
     </g>
   );
 }

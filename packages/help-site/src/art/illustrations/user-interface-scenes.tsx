@@ -20,7 +20,7 @@ import {
 
 // --- Scenes ------------------------------------------------------------------
 
-/** The quick controls, close up: Search, Settings and the appearance switch
+/** The quick controls, close up: Tools, the Editing Mode button, Settings and the appearance switch
  *  at the right-hand end of the bottom bar, each named beside its icon. */
 export function QuickControls() {
   return (
@@ -28,9 +28,9 @@ export function QuickControls() {
       <Shape x={60} y={20} w={80} h={40} label="Idea" />
       <BottomBar y={86} w={420} labelled />
       <rect
-        x={232}
+        x={200}
         y={90}
-        width={182}
+        width={216}
         height={22}
         rx={6}
         fill="none"
@@ -87,7 +87,7 @@ export function TabBar() {
         +
       </Label>
       {/* On a computer the quick controls carry their words, beside the TABS label. */}
-      <QuickControlsRow x={310} y={y + 18} />
+      <QuickControlsRow x={278} y={y + 18} />
     </Scene>
   );
 }
