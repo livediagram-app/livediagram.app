@@ -15,6 +15,7 @@ import type {
   ShareLinkExpiry,
   TeamAuditEventType,
 } from './constants';
+import type { InboxAccessRequest } from './access-requests';
 
 export type ItemSummary = {
   elements?: number;
@@ -275,6 +276,8 @@ export type InboxResponse = {
   threads: InboxThread[];
   actions: InboxAction[];
   forms: InboxForm[];
+  // Open access requests on items the reader manages (request-access.md); absent from an index before them.
+  accessRequests?: InboxAccessRequest[];
 };
 
 // A person's calendar feed in one app (one-explorer-contracts.md "Calendar feeds"): when its link was made. The token

@@ -388,6 +388,9 @@ export const INDEX_ERRORS = [
   'approval_not_found',
   'approval_conflict',
   'approvals_unavailable',
+  // Request Access (request-access.md): a caller that is no account in person, no open request with that id.
+  'access_requests_need_a_person',
+  'access_request_not_found',
   'invalid_password',
   // A new share password shorter than SHARE_PASSWORD_MIN.
   'password_too_short',

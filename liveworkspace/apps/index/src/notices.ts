@@ -6,6 +6,7 @@
 import {
   itemNoticePath,
   OWNED_COUNT_MAX,
+  type AccessNotice,
   type App,
   type ApprovalNotice,
   type ItemNotice,
@@ -21,7 +22,7 @@ export function tellApp(
   waitUntil: (promise: Promise<unknown>) => void,
   env: Env,
   item: { id: string; app: App },
-  notice: ItemNotice | ApprovalNotice,
+  notice: ItemNotice | ApprovalNotice | AccessNotice,
 ): void {
   waitUntil(
     callApp(env, item.app, 'POST', itemNoticePath(item.id), notice).then((res) => {

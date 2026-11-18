@@ -1,7 +1,7 @@
 // The Inbox (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Inbox"): across every app, open actions and cards
 // assigned to or by me, unresolved threads (an element's or a card's) on my items, where I commented, or where I am
-// mentioned, and forms with responses I haven't seen on items I own or reach through a team, limited to items I can
-// reach. Three queries, each starting from an index on the person.
+// mentioned, forms with responses I haven't seen on items I own or reach through a team, limited to items I can
+// reach, and open access requests on items I manage. Four queries, each starting from an index on the person.
 
 import {
   COLLAB_CARDS_TAB,
@@ -11,6 +11,7 @@ import {
   type App,
   type CollabCard,
   type CollabMentioner,
+  type InboxAccessRequest,
   type InboxAction,
   type InboxForm,
   type InboxThread,
@@ -92,6 +93,18 @@ type FormRow = {
   latest_at: number;
 };
 
+type AccessRequestRow = {
+  id: string;
+  app: App;
+  item_id: string;
+  item_title: string;
+  item_team_id: string | null;
+  requester_id: string;
+  requester_name: string | null;
+  note: string | null;
+  asked_at: number;
+};
+
 export function inboxQueries(personId: string, scopes: string[], app: App | null, limit: number) {
   const now = Date.now();
   const reachArgs = [personId, JSON.stringify(scopes), personId, now];
@@ -155,7 +168,23 @@ export function inboxQueries(personId: string, scopes: string[], app: App | null
       ORDER BY f.latest_at DESC LIMIT ?`,
     args: [personId, JSON.stringify(scopes), personId, ...(app ? [app] : []), limit],
   };
-  return { threads, actions, forms };
+  // Open access requests on items I manage (request-access.md "In the Inbox"): my scopes' live items (my personal
+  // scope and my teams', through items_live; Archived is a scope of its own, so it lists none), each item's open
+  // requests through access_requests_item. A requester who meanwhile reaches the item through a live link is left out.
+  const accessRequests = {
+    sql: `SELECT r.id, mine.app, r.item_id, mine.title AS item_title, mine.team_id AS item_team_id, r.requester_id,
+        r.requester_name, r.note, r.asked_at
+      FROM (SELECT id, app, title, team_id FROM items
+            WHERE scope IN (SELECT value FROM json_each(?)) AND trashed_at IS NULL) mine
+      JOIN access_requests r ON r.item_id = mine.id AND r.state = 'open'
+      WHERE r.requester_id <> ? ${app ? 'AND mine.app = ?' : ''}
+        AND NOT EXISTS (
+          SELECT 1 FROM shared_with sw JOIN share_links sl ON sl.code = sw.share_code AND sl.item_id = sw.item_id
+          WHERE sw.person_id = r.requester_id AND sw.item_id = r.item_id AND ${LIVE_LINK('sl')})
+      ORDER BY r.asked_at DESC LIMIT ?`,
+    args: [JSON.stringify(scopes), personId, ...(app ? [app] : []), now, limit],
+  };
+  return { threads, actions, forms, accessRequests };
 }
 
 /** Who mentioned the reader, as the push said (checked when it was pushed); null when it said nothing. */
@@ -188,10 +217,11 @@ export async function handleInbox(ctx: PersonContext): Promise<Response> {
   if (limit === null) return badRequest('invalid_query');
   const q = inboxQueries(person.id, scopesOf(person), app, limit);
   const db = env.INDEX_DB;
-  const [threadRes, actionRes, formRes] = (await db.batch([
+  const [threadRes, actionRes, formRes, accessRes] = (await db.batch([
     db.prepare(q.threads.sql).bind(...q.threads.args),
     db.prepare(q.actions.sql).bind(...q.actions.args),
     db.prepare(q.forms.sql).bind(...q.forms.args),
+    db.prepare(q.accessRequests.sql).bind(...q.accessRequests.args),
   ])) as D1Result<Record<string, unknown>>[];
   const threads: InboxThread[] = (threadRes!.results as ThreadRow[]).map((r) => ({
     app: r.app,
@@ -249,5 +279,18 @@ export async function handleInbox(ctx: PersonContext): Promise<Response> {
     unseen: r.unseen,
     latestAt: r.latest_at,
   }));
-  return json({ threads, actions, forms });
+  const accessRequests: InboxAccessRequest[] = (accessRes!.results as AccessRequestRow[]).map(
+    (r) => ({
+      id: r.id,
+      app: r.app,
+      itemId: r.item_id,
+      itemTitle: r.item_title,
+      itemTeamId: r.item_team_id,
+      requesterId: r.requester_id,
+      requesterName: r.requester_name,
+      note: r.note,
+      askedAt: r.asked_at,
+    }),
+  );
+  return json({ threads, actions, forms, accessRequests });
 }

@@ -59,3 +59,7 @@ export const KIT_CREATE_TIMEOUT_MS = 20_000;
 export const CONNECTION_CONFIRM_GRACE_MS = 60 * 60 * 1000;
 export const CONNECTION_SWEEP_MAX = 200;
 export const CONNECTION_OPEN_RETRY_AFTER_S = 60;
+
+// How long a person past their day's Request Access limit is asked to wait (access-requests.ts): their oldest try
+// eases within the hour or so.
+export const ACCESS_REQUEST_RETRY_AFTER_S = 3600;

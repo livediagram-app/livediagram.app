@@ -795,6 +795,8 @@ logged and dropped; an email is best-effort. Types and helpers are in `@livework
   the same batch as the `shared_with` write, so a person's first time is told once however the two doors race;
   the owner and someone with no identity are no one joining. The app decides who that emails (liveplanner: the
   owner, for an account visitor only).
+- The same, `{type: 'access_requested', …}` and `{type: 'access_granted', …}`: someone asked for access to the item,
+  and a manager granted it ([request-access.md](request-access.md#the-emails)).
 - `GET /app/people/:id/count?limit=`, with the app's key: how many items that person has made in the calling
   app, the Trash's included, counted up to `limit` (1 to 1000, default 1000) → `{count}`. One walk of the
   owner index that stops at the limit, so an app asking whether the tenth was just made (`limit=10`) pays the
@@ -876,10 +878,10 @@ name an app reported, or as a teammate.
 
 ## Inbox
 
-`GET /inbox?app=`: `{threads, actions, forms}` across every app: open actions and cards assigned
+`GET /inbox?app=`: `{threads, actions, forms, accessRequests}` across every app: open actions and cards assigned
 to or by me; unresolved threads (an element's or a card's) on my items, where I commented, or where I am
 mentioned; and forms with responses I haven't seen on items I own or reach through a team (not through a
-link); all limited to items I can reach (through a link scoped to one tab, that tab's threads and actions and the
+link; and open access requests on items I manage ([request-access.md](request-access.md#in-the-inbox)); all limited to items I can reach (through a link scoped to one tab, that tab's threads and actions and the
 cards on its boards alone). Each row carries `app`, `itemId`, `itemTitle`, `itemTeamId`, `tabId`
 and `tabName`, so opening it goes to that app; a thread says why it is there (`mentionsYou`, `youCommented`,
 `onYourItem`), who wrote last (`latestAuthorId`, null when the app did not say) and, when I am mentioned, who mentioned

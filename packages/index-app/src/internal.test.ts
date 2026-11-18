@@ -183,6 +183,43 @@ describe('handleInternalItems', () => {
     });
   });
 
+  it('hands each access notice to its own handler, and takes it with nothing to do without one', async () => {
+    const pending: Promise<unknown>[] = [];
+    const asked = {
+      type: 'access_requested',
+      requestId: 'ar_1',
+      requesterId: 'user_b',
+      requesterName: 'Bo',
+      recipientIds: ['user_a'],
+      itemTitle: 'Roadmap',
+      note: 'On the launch team',
+    };
+    const granted = {
+      type: 'access_granted',
+      requestId: 'ar_1',
+      requesterId: 'user_b',
+      granterId: 'user_a',
+      granterName: null,
+      level: 'view',
+      itemTitle: 'Roadmap',
+    };
+    const accessRequested = vi.fn(async () => {});
+    const accessGranted = vi.fn(async () => {});
+    const notice = vi.fn(async () => {});
+    const path = '/api/internal/items/A/notices';
+    const handlers = { accessRequested, accessGranted, notice };
+    const waitUntil = { waitUntil: (p: Promise<unknown>) => pending.push(p) };
+    expect((await send('POST', path, asked, handlers, waitUntil)).status).toBe(202);
+    expect((await send('POST', path, granted, handlers, waitUntil)).status).toBe(202);
+    await Promise.all(pending);
+    expect(accessRequested).toHaveBeenCalledWith('A', asked);
+    expect(accessGranted).toHaveBeenCalledWith('A', granted);
+    expect(notice).not.toHaveBeenCalled();
+    // No door: taken, nothing sent.
+    expect((await send('POST', path, asked, {})).status).toBe(202);
+    expect((await send('POST', path, granted, {})).status).toBe(202);
+  });
+
   it('copies, answering a missing source and a conflict', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
     let seen: unknown = null;
