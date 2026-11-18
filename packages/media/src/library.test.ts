@@ -239,6 +239,21 @@ describe('an app’s door', () => {
     expect(lib.list).toHaveBeenCalledWith(member, ['shape', 'arrow']);
   });
 
+  it('asks for the actor as it is now only once a route reaches the service', async () => {
+    const lib = service();
+    const fresh: LibraryActor = {
+      owner: 'user_m',
+      teams: [...member.teams, { id: 't9', name: 'New', role: 'member' }],
+    };
+    const currentActor = vi.fn(async () => fresh);
+    await door({ library: lib as never, currentActor });
+    expect(lib.list).toHaveBeenCalledWith(fresh, ['shape', 'arrow']);
+    currentActor.mockClear();
+    expect((await door({ method: 'PATCH', path: ['x'], currentActor })).status).toBe(404);
+    expect((await door({ method: 'PUT', path: [], currentActor })).status).toBe(404);
+    expect(currentActor).not.toHaveBeenCalled();
+  });
+
   it('turns away no caller, and answers 503 without the service', async () => {
     expect((await door({ actor: null })).status).toBe(401);
     expect((await door({ library: null })).status).toBe(503);

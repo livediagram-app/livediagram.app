@@ -52,14 +52,7 @@ export async function handleLibrary(ctx: RouteContext): Promise<Response> {
   }
   const owner = ctx.resolveOwner();
   if (!owner || ctx.token || ctx.workbench) return missingAuth();
-  // The caller's teams as they are now: the token's claim, and a team joined since it was minted (libraries.md "Who
-  // may do what"), read from accounts, never from the request.
-  const teams = await teamAccess.currentTeams(
-    accountsTeamReader(accountCredentials(ctx.env)),
-    owner,
-    ctx.teams ?? null,
-  );
-  const actor = libraryActorOf(await mediaOwner(owner), teams);
+  const actor = libraryActorOf(await mediaOwner(owner), ctx.teams);
   return handleLibraryDoor({
     method,
     // Read by literal index, so the route parity probe can follow it.
@@ -68,6 +61,17 @@ export async function handleLibrary(ctx: RouteContext): Promise<Response> {
     ),
     actor,
     library: mediaClient(ctx.env)?.library ?? null,
+    // The caller's teams as they are now: the token's claim, and a team joined since it was minted (libraries.md "Who
+    // may do what"), read from accounts, never from the request.
+    currentActor: async (claimed) =>
+      libraryActorOf(
+        claimed.owner,
+        await teamAccess.currentTeams(
+          accountsTeamReader(accountCredentials(ctx.env)),
+          owner,
+          ctx.teams ?? null,
+        ),
+      ),
     kit: libraryKit,
     readBody: async () => {
       const body: unknown = await ctx.request.json().catch(() => null);
