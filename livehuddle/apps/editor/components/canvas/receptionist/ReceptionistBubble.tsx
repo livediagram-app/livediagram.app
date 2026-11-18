@@ -41,6 +41,8 @@ const EDGE = 16;
 const UNDER_FEET = 10;
 // The tail's reach below the card, in screen px.
 const TAIL = 6;
+// Screen px between his head and the card when it stands beside him.
+const SIDE_GAP = 12;
 
 /** The controls on screen his card keeps clear of (keep-clear.ts): each one's box, skipping any not laid out. */
 function keepClearBoxes(): ScreenBox[] {
@@ -181,8 +183,15 @@ export function ReceptionistBubble({
   // and bottom edges, as every bubble), its replies scrolling inside when even that is too short.
   const card = useRef<HTMLDivElement>(null);
   const scroller = useRef<HTMLDivElement>(null);
-  const [place, setPlace] = useState({ nudge: 0, below: false, width: 0, maxH: 0 });
-  const { nudge, below, width, maxH } = place;
+  const [place, setPlace] = useState({
+    nudge: 0,
+    below: false,
+    width: 0,
+    maxH: 0,
+    lift: 0,
+    beside: false,
+  });
+  const { nudge, below, width, maxH, lift, beside } = place;
   // In the 3D view the card is drawn in the overlay, standing over his head, and placed again whenever the view turns.
   const in3D = useInSpace3D();
   function placeCard() {
@@ -198,10 +207,13 @@ export function ReceptionistBubble({
     const maxX = Math.min(box?.right ?? window.innerWidth, window.innerWidth) - EDGE;
     const left = r.left - nudge;
     const right = r.right - nudge;
+    // Where the card would stand with no lift (it is moved down only beside him, below).
+    const rTop = r.top - lift;
+    const rBottom = r.bottom - lift;
     const inside = left < minX ? minX - left : right > maxX ? maxX - right : 0;
     // Where his head and feet are on screen, from wherever the card sits now.
     const tall = (feet.y - head.y) * zoom;
-    const headY = below ? r.top - UNDER_FEET - tall : r.bottom + TAIL;
+    const headY = below ? rTop - UNDER_FEET - tall : rBottom + TAIL;
     const feetY = headY + tall;
     const top = Math.max(box?.top ?? 0, 0) + SPEECH_TOP_CLEAR;
     const bottom =
@@ -221,17 +233,35 @@ export function ReceptionistBubble({
     // feet, where it would lie on the floor under the walls.
     const nextBelow = !in3D && natural > roomAbove && roomBelow > roomAbove;
     const room = nextBelow ? roomBelow : roomAbove;
-    const fitH = natural > room ? Math.max(80, Math.floor(room - frame)) : 0;
+    // In 3D with too little room over his head for the whole card, it stands beside him instead, on the side with
+    // more room, level with his head and kept between the top and bottom edges, its tail dropped (receptionist.md "His
+    // bubble"): never capped to a sliver with no topics showing. Only where that side has room for the card.
+    const headX = (left + right) / 2;
+    const roomLeft = headX - SIDE_GAP - minX;
+    const roomRight = maxX - headX - SIDE_GAP;
+    const nextBeside = in3D && natural > roomAbove && Math.max(roomLeft, roomRight) >= r.width;
+    const sideH = Math.min(natural, bottom - top);
+    const sideNudge = (roomRight >= roomLeft ? 1 : -1) * (r.width / 2 + SIDE_GAP);
+    const sideTop = Math.min(Math.max(headY - sideH / 2, top), bottom - sideH);
+    const nextLift = nextBeside ? Math.round(sideTop - (rBottom - sideH)) : 0;
+    const fitH = nextBeside
+      ? sideH < natural
+        ? Math.max(80, Math.floor(sideH - frame))
+        : 0
+      : natural > room
+        ? Math.max(80, Math.floor(room - frame))
+        : 0;
     // Never over a control that must stay pressable (keep-clear.ts, Work Tracker 1256): a desk's Welcome bubble with
     // its Ring Bell. Judged on the whole card, uncapped, where it stands, so the answer is the same on every pass: off
     // to the nearer side that has the room; else, over his head, shorter, its replies scrolling.
     const keep = keepClearBoxes();
-    const cardTop = nextBelow ? r.top : r.bottom - natural;
-    const whole = { left, right, top: cardTop, bottom: cardTop + natural };
-    const sideways = keep.length > 0 ? clearNudge(whole, inside, keep, minX, maxX) : inside;
-    const nextNudge = sideways ?? inside;
+    const cardTop = nextBeside ? sideTop : nextBelow ? rTop : rBottom - natural;
+    const whole = { left, right, top: cardTop, bottom: cardTop + (nextBeside ? sideH : natural) };
+    const base = nextBeside ? sideNudge : inside;
+    const sideways = keep.length > 0 ? clearNudge(whole, base, keep, minX, maxX) : base;
+    const nextNudge = sideways ?? base;
     const trim =
-      sideways === null && !nextBelow
+      sideways === null && !nextBelow && !nextBeside
         ? clearTrim({ ...whole, left: left + inside, right: right + inside }, keep)
         : 0;
     const trimH = trim > 0 ? Math.max(80, Math.floor(natural - trim - frame)) : 0;
@@ -240,9 +270,18 @@ export function ReceptionistBubble({
       Math.abs(nextNudge - nudge) > 0.5 ||
       nextBelow !== below ||
       Math.abs(r.width - width) > 0.5 ||
-      nextMaxH !== maxH
+      nextMaxH !== maxH ||
+      nextLift !== lift ||
+      nextBeside !== beside
     )
-      setPlace({ nudge: nextNudge, below: nextBelow, width: r.width, maxH: nextMaxH });
+      setPlace({
+        nudge: nextNudge,
+        below: nextBelow,
+        width: r.width,
+        maxH: nextMaxH,
+        lift: nextLift,
+        beside: nextBeside,
+      });
   }
   // Placed after every render (a new line or topic, his head moving, the zoom, the 3D view turning): it measures and
   // sets state only when the place changed, so it settles in one more pass. The latest pass is kept for the view and
@@ -312,14 +351,18 @@ export function ReceptionistBubble({
           <div
             ref={card}
             className="pointer-events-auto"
-            style={nudge ? { transform: `translateX(${nudge}px)` } : undefined}
+            style={
+              nudge || lift
+                ? { transform: `translateX(${nudge}px)${lift ? ` translateY(${lift}px)` : ''}` }
+                : undefined
+            }
             onPointerDown={(e) => e.stopPropagation()}
           >
             <SpeechCard
               colour={RECEPTIONIST_COLOUR}
               maxWidth={BUBBLE_W}
-              // Under his feet there is nothing to point at; shifted sideways, the tail still points at his head.
-              tail={!below}
+              // Under his feet or beside him there is nothing to point at; shifted sideways, the tail still points at his head.
+              tail={!below && !beside}
               tailShift={tailOffset(nudge, width)}
             >
               {/* One scroller at a time (the topic list, or a long answer), the replies pinned at the foot

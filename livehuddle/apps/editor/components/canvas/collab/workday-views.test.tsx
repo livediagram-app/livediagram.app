@@ -9,6 +9,8 @@ import {
   TREADMILL_BELTS,
   turnPiece,
   PET_LEG_MS,
+  PET_WALK_EVERY,
+  PET_WALK_MS,
   type ShapeElement,
 } from '@livehuddle/document';
 import { AVATAR_HEIGHT } from '@livehuddle/avatar/walk';
@@ -357,9 +359,9 @@ describe('the office dog', () => {
       </CanvasSurfaceProvider>,
     );
 
-  it('sleeps in its bed until the board is read, then wanders its area leg by leg', () => {
+  it('sleeps in its bed until the board is read, then wanders its area walk by walk', () => {
     vi.useFakeTimers();
-    vi.setSystemTime(PET_LEG_MS * 4);
+    vi.setSystemTime(PET_WALK_MS * 4);
     const area = { kind: 'box' as const, box: { x: 0, y: 0, width: 600, height: 400 } };
     expect(dogOffset(bed, null, 0)).toEqual({ x: 36, y: 48 * 0.72, asleep: true });
     // Leg 3 of every four naps in the bed; the others are a spot relative to it.
@@ -371,10 +373,11 @@ describe('the office dog', () => {
     const { container } = dogIn();
     expect(container.querySelector('[data-pet]')?.getAttribute('data-pet')).toBe('asleep');
     act(() => setPetAreas(new Map([[bed.id, area]])));
-    expect(container.querySelector('[data-pet]')?.getAttribute('data-pet')).toBe('awake');
+    // Out of its bed at its spot (lying there to rest: a test's DOM has no animation, so it is there at once).
+    expect(container.querySelector('[data-pet-floor]')).not.toBeNull();
     const first = (container.querySelector('[data-pet]') as HTMLElement).style.transform;
     act(() => {
-      vi.advanceTimersByTime(PET_LEG_MS + 50);
+      vi.advanceTimersByTime(PET_WALK_MS + 50);
     });
     expect((container.querySelector('[data-pet]') as HTMLElement).style.transform).not.toBe(first);
   });
@@ -383,7 +386,7 @@ describe('the office dog', () => {
   // plays, its legs, bob and tail boxes of their own, and once it stops nothing loops.
   it('trots as one animation, steps and wags on boxes of their own, and rests when it arrives', () => {
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] });
-    vi.setSystemTime(PET_LEG_MS * 4);
+    vi.setSystemTime(PET_WALK_MS * 4);
     const played: { frames: Keyframe[]; options: KeyframeAnimationOptions; anim: Animation }[] = [];
     const animate = vi.fn(function (frames: Keyframe[], options: KeyframeAnimationOptions) {
       const anim = { currentTime: 0, cancel: vi.fn(), onfinish: null } as unknown as Animation;
@@ -418,6 +421,13 @@ describe('the office dog', () => {
       expect(container.querySelector('.lh-pet-bob')?.tagName).toBe('DIV');
       expect(tail()).toBe('calm');
       expect(container.querySelectorAll('svg [class]')).toHaveLength(0);
+      // A pat on its way wags it fast, then calm again.
+      fireEvent.click(screen.getByRole('button', { name: 'Pat the Dog' }));
+      expect(tail()).toBe('fast');
+      act(() => {
+        vi.advanceTimersByTime(1600);
+      });
+      expect(tail()).toBe('calm');
       // It arrives: the drawing stands at the route's end, the animation lets go and the loops stop.
       act(() => {
         anim.onfinish?.call(anim, {} as AnimationPlaybackEvent);
@@ -425,14 +435,16 @@ describe('the office dog', () => {
       expect(anim.cancel).toHaveBeenCalled();
       expect(at(dog().style.transform)).toEqual(at(frames[frames.length - 1]!.transform));
       expect(dog().hasAttribute('data-pet-trot')).toBe(false);
-      expect(tail()).toBe('calm');
-      // A pat wags it fast, then it rests again.
-      fireEvent.click(screen.getByRole('button', { name: 'Pat the Dog' }));
-      expect(tail()).toBe('fast');
+      // It lies down where it got to (on the floor, out of its bed) and rests, still, through the walk's other legs.
+      expect(dog().getAttribute('data-pet')).toBe('asleep');
+      expect(container.querySelector('[data-pet-floor]')).not.toBeNull();
+      expect(tail()).toBeUndefined();
+      const walks = played.length;
       act(() => {
-        vi.advanceTimersByTime(1600);
+        vi.advanceTimersByTime(PET_LEG_MS * (PET_WALK_EVERY - 1));
       });
-      expect(tail()).toBe('calm');
+      expect(played).toHaveLength(walks);
+      expect(dog().getAttribute('data-pet')).toBe('asleep');
     } finally {
       HTMLElement.prototype.animate = was;
     }
@@ -440,7 +452,7 @@ describe('the office dog', () => {
 
   it('stands where it had got to when a new goal stops it on its way', () => {
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] });
-    vi.setSystemTime(PET_LEG_MS * 4);
+    vi.setSystemTime(PET_WALK_MS * 4);
     const anims: Animation[] = [];
     const was = HTMLElement.prototype.animate;
     HTMLElement.prototype.animate = vi.fn(() => {
@@ -484,27 +496,28 @@ describe('the office dog', () => {
   });
 
   it('goes back to its bed the moment reduced motion is turned on, and wakes when it is off', async () => {
-    // Leg 4 trots (every fourth naps), so the switch is what puts it to bed.
+    // Walk 4 goes out (every fourth naps), so the switch is what puts it to bed.
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] });
-    vi.setSystemTime(PET_LEG_MS * 4);
+    vi.setSystemTime(PET_WALK_MS * 4);
     const area = { kind: 'box' as const, box: { x: 0, y: 0, width: 600, height: 400 } };
     setPetAreas(new Map([[bed.id, area]]));
     const { container, unmount } = dogIn();
-    const state = () => container.querySelector('[data-pet]')?.getAttribute('data-pet');
-    expect(state()).toBe('awake');
+    // In its bed, or out of it on the floor.
+    const state = () => (container.querySelector('[data-pet-floor]') ? 'out' : 'home');
+    expect(state()).toBe('out');
     // The in-app preference: its class on <html>, which the dog watches.
     reduced.on = true;
     await act(async () => {
       document.documentElement.classList.add('reduce-motion');
       await Promise.resolve();
     });
-    expect(state()).toBe('asleep');
+    expect(state()).toBe('home');
     reduced.on = false;
     await act(async () => {
       document.documentElement.classList.remove('reduce-motion');
       await Promise.resolve();
     });
-    expect(state()).toBe('awake');
+    expect(state()).toBe('out');
     unmount();
   });
 });

@@ -67,6 +67,11 @@ Derived from [the Receptionist](../receptionist.md). The spec decides; this file
   below the chrome along the top (`SPEECH_TOP_CLEAR`, as every speech bubble); otherwise it goes on whichever side of
   him has more room (under his feet without a tail), and the whole bubble scrolls when even that side is too short,
   keeping `SPEECH_TOP_CLEAR` off the bottom edge too, clear of the call dock.
+- In 3D (`useInSpace3D()`), when the whole card is taller than the room over his head and a side of him has room for
+  the card's width, it stands beside him (`beside`): nudged `width / 2 + SIDE_GAP` (12 px) to the side with more room,
+  its middle level with his head and clamped between `SPEECH_TOP_CLEAR` off the top and bottom (`lift`, a
+  `translateY` on the card measured from where it would stand unlifted, so each pass gives the same answer), no tail,
+  capped to that height when taller. The keep-clear rule below starts from that nudge.
 - It keeps clear of every element marked `data-bubble-keep-clear` (`KEEP_CLEAR_ATTR`, `keep-clear.ts`; a Reception
   Desk's Welcome bubble carries it, Work Tracker 1256). Judged on the whole card, uncapped (its natural height, above
   or below him as placed), so each pass gives the same answer: `clearNudge` takes the in-canvas nudge when the card

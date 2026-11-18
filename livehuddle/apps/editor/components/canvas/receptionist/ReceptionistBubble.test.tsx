@@ -16,6 +16,7 @@ import {
 import { Space3DOverlayProvider } from '@/components/canvas/space-3d/Space3DOverlay';
 import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { createViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
+import { SPEECH_TOP_CLEAR } from '@livehuddle/avatar/speech';
 import { ReceptionistBubble } from './ReceptionistBubble';
 
 const track = vi.hoisted(() => vi.fn());
@@ -211,6 +212,45 @@ describe('ReceptionistBubble', () => {
     rerender(card(true, overlay));
     expect(overlay.contains(dialog())).toBe(true);
     expect(dialog().style.top).toBe('100px');
+    spy.mockRestore();
+  });
+
+  // receptionist.md "His bubble": in 3D, with no room over his head for the whole card, it stands beside him, level with
+  // his head, on the side with room, its tail dropped, rather than capped to a sliver with no topics showing.
+  it('stands beside him in 3D when there is no room over his head', () => {
+    const root = document.body.appendChild(document.createElement('div'));
+    root.setAttribute('data-canvas-root', '');
+    const spy = vi
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockImplementation(function (this: HTMLElement) {
+        if (this === root) return { left: 0, right: 1200, top: 0, bottom: 800 } as DOMRect;
+        const x = Number(/translateX\((-?[\d.]+)px\)/.exec(this.style.transform)?.[1] ?? 0);
+        const y = Number(/translateY\((-?[\d.]+)px\)/.exec(this.style.transform)?.[1] ?? 0);
+        // Centred on his head (x 350), its foot just over it (y 210), 200 px tall: more than the room above.
+        return {
+          left: 200 + x,
+          right: 500 + x,
+          top: 10 + y,
+          bottom: 210 + y,
+          width: 300,
+          height: 200,
+        } as DOMRect;
+      });
+    openReceptionist('welcome');
+    render(
+      <Space3DOverlayProvider value={{ on: true, node: null }}>
+        <ReceptionistBubble head={{ x: 100, y: 100 }} feet={{ x: 100, y: 180 }} zoom={1} />
+      </Space3DOverlayProvider>,
+      { container: root },
+    );
+    const card = screen.getByRole('dialog', { name: 'Receptionist' })
+      .firstElementChild as HTMLElement;
+    // To his right (more room there), 12 px off his head; its middle level with his head (216: its foot plus the tail),
+    // so its top at 116, but never above the top edge's clearance; it stood with its top at 10.
+    const lift = Math.max(116, SPEECH_TOP_CLEAR) - 10;
+    expect(card.style.transform).toBe(`translateX(162px) translateY(${lift}px)`);
+    // No tail: it points at nothing beside him.
+    expect(card.querySelector('.rotate-45')).toBeNull();
     spy.mockRestore();
   });
 

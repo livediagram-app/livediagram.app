@@ -6,9 +6,9 @@
 
 import { memo, useEffect, useEffectEvent, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
-  msToNextLeg,
+  msToNextWalk,
   petLeg,
-  petLegAt,
+  petWalkAt,
   PET_RADIUS,
   WORKDAY_TONES,
   type PetArea,
@@ -32,19 +32,22 @@ const DOG_H = 32;
 const DOG_FEET = { x: 22, y: 30 };
 const PAT_MS = 1500;
 
-/** The leg the dog is on now, ticking once a leg (one timer per dog); never under reduced motion. */
-function usePetLeg(still: boolean): number {
-  const [leg, setLeg] = useState(() => petLegAt(Date.now()));
+/**
+ * The walk the dog is on now, ticking once a walk (one timer per dog, every PET_WALK_MS: it walks one leg and rests
+ * lying down through the others); never under reduced motion.
+ */
+function usePetWalk(still: boolean): number {
+  const [leg, setLeg] = useState(() => petWalkAt(Date.now()));
   useEffect(() => {
     if (still) return;
     let t: ReturnType<typeof setTimeout>;
     const arm = () => {
       t = setTimeout(
         () => {
-          setLeg(petLegAt(Date.now()));
+          setLeg(petWalkAt(Date.now()));
           arm();
         },
-        msToNextLeg(Date.now()) + 20,
+        msToNextWalk(Date.now()) + 20,
       );
     };
     arm();
@@ -93,7 +96,7 @@ export function PetDog({ element }: { element: ShapeElement }) {
   // Reduced motion sends a trotting dog straight back to sleep in its bed.
   const still = useReducedMotion();
   const area = usePetArea(element.id);
-  const leg = usePetLeg(still);
+  const leg = usePetWalk(still);
   const at = still ? dogOffset(element, null, 0) : dogOffset(element, area, leg);
   // Where it is going, on the canvas.
   const goal = { x: element.x + at.x, y: element.y + at.y };
@@ -109,8 +112,8 @@ export function PetDog({ element }: { element: ShapeElement }) {
       was && Math.hypot(was.x - goal.x, was.y - goal.y) < 4 * (PET_RADIUS + element.width);
     return near ? was : goal;
   })();
-  // Where it last came to rest, for whether it is home asleep: set only as it arrives in its bed, so arriving at a
-  // spot costs no render. Its place on the floor is written to the drawing alone (`place`), never rendered.
+  // Where it last came to rest, for whether it is lying down: set as it arrives, the walk's one render after setting
+  // off. Its place on the floor is written to the drawing alone (`place`), never rendered.
   const [rested, setRested] = useState(start);
   // Which way it faces and whether it trots are marks on the drawing (`data-pet-left`, `data-pet-trot`), written
   // straight to it rather than rendered, so setting off and turning cost no render; its stylesheet does the rest
@@ -176,7 +179,8 @@ export function PetDog({ element }: { element: ShapeElement }) {
       place(end);
       anim.cancel();
       mark('data-pet-trot', false);
-      if (at.asleep) setRested(end);
+      // It lies down where it got to and rests until its next walk.
+      setRested(end);
     };
     return () => {
       for (const t of timers) clearTimeout(t);
@@ -189,10 +193,9 @@ export function PetDog({ element }: { element: ShapeElement }) {
     };
   });
   useEffect(() => walk(), [goal.x, goal.y, grid, still, element.x, element.y]);
-  // Asleep only once home: on its way back it trots, awake.
-  const asleep = still
-    ? at.asleep
-    : at.asleep && Math.hypot(rested.x - goal.x, rested.y - goal.y) < 1;
+  // Lying down once it has come to rest where it was going, at a spot or in its bed; out of its bed it lies on the floor.
+  const asleep = still ? at.asleep : Math.hypot(rested.x - goal.x, rested.y - goal.y) < 1;
+  const home = asleep && at.asleep;
   const [pat, setPat] = useState(0);
   useEffect(() => {
     if (pat === 0) return;
@@ -238,7 +241,7 @@ export function PetDog({ element }: { element: ShapeElement }) {
   // the dog stands up about its own feet (docs/specs/008-canvas/3d-view.md "The office dog"; app/space-3d.css). The
   // wrapper is always there, only its mark changes, so setting off or getting home never re-mounts the dog.
   return (
-    <div className="pointer-events-none absolute inset-0" data-pet-floor={asleep ? undefined : ''}>
+    <div className="pointer-events-none absolute inset-0" data-pet-floor={home ? undefined : ''}>
       {dog}
     </div>
   );

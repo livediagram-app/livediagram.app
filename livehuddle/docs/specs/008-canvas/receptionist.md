@@ -122,6 +122,10 @@ that agree to a second agree on the Receptionist.
   **Ring Bell** (Work Tracker 1256), so you can ring again with his bubble open. It moves sideways off it, to the
   nearer side with the room on screen, its tail still on his head; where no side has the room (a phone), it stands
   shorter over his head, clear of it, its replies scrolling inside.
+- **In the 3D view, with no room over his head** (he stands near the top of the screen), his bubble stands beside
+  him instead, level with his head on the side with more room and without its tail, kept between the top and bottom
+  edges, so its topics always show; it never sits under his feet in 3D, where it would lie on the floor. Only where
+  neither side has room for it does it stand shorter over his head.
 - **He types his lines**: each line he says (the welcome, a hello, an answer, his farewell) appears a letter at a
   time, about 90 letters a second, so even the longest answer is out in under two seconds. The bubble takes the whole
   line's size from the start, so nothing moves as he types, and the replies are there at once. A screen reader hears
