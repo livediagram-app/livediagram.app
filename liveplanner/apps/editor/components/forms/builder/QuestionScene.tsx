@@ -5,15 +5,18 @@
 // colour, on the pickers' stage (TileStage). Moved by app/automation-scenes.css. Decoration only: aria-hidden.
 
 import type { ReactNode } from 'react';
-import type { QuestionType } from '@liveplanner/forms';
 import { lucideGlyph } from '@liveplanner/ui';
 import {
   lucideAtSign,
   lucideCalendar,
   lucideCheck,
   lucideClock,
+  lucideExternalLink,
+  lucideImage,
+  lucideInfo,
   lucideLink,
   lucidePhone,
+  lucideTimer,
 } from '@liveworkspace/icons/lucide';
 import {
   PANEL,
@@ -23,7 +26,7 @@ import {
   at,
   type ToneClasses,
 } from '@/components/tile-picker/tile-scene';
-import { QUESTION_GROUPS } from './question-groups';
+import { QUESTION_GROUPS, type AddKind } from './question-groups';
 
 const TickGlyph = lucideGlyph(lucideCheck, 7);
 const AtGlyph = lucideGlyph(lucideAtSign, 8);
@@ -31,6 +34,20 @@ const PhoneGlyph = lucideGlyph(lucidePhone, 8);
 const LinkGlyph = lucideGlyph(lucideLink, 8);
 const DayGlyph = lucideGlyph(lucideCalendar, 8);
 const ClockGlyph = lucideGlyph(lucideClock, 8);
+const TimerGlyph = lucideGlyph(lucideTimer, 8);
+const InfoGlyph = lucideGlyph(lucideInfo, 9);
+const OutGlyph = lucideGlyph(lucideExternalLink, 7);
+const PictureGlyph = lucideGlyph(lucideImage, 14);
+
+// A line of text standing still (a content block's words).
+const Line = ({ w, strong = false }: { w: string; strong?: boolean }) => (
+  <span
+    className={`h-[3px] rounded-full ${w} ${strong ? 'bg-slate-500 dark:bg-slate-400' : 'bg-slate-300 dark:bg-slate-600'}`}
+  />
+);
+
+// The swatches a Colour question offers, in the scene.
+const SCENE_SWATCHES = ['#ef4444', '#f59e0b', '#10b981', '#0ea5e9', '#8b5cf6'];
 
 // Typed text rests unwritten and writes itself from the left.
 const TYPED = 'scaleX(0)';
@@ -204,7 +221,75 @@ function Month({
   );
 }
 
-const SCENES: Readonly<Record<QuestionType, (p: { tone: ToneClasses }) => ReactNode>> = {
+const SCENES: Readonly<Record<AddKind, (p: { tone: ToneClasses }) => ReactNode>> = {
+  duration: ({ tone }) => (
+    <Question className="w-[58%]">
+      <Box tone={tone}>
+        <span className={`shrink-0 ${tone.label}`}>
+          <TimerGlyph aria-hidden size={7} />
+        </span>
+        <span
+          className="ats-in text-[7px] font-semibold leading-none tabular-nums text-slate-700 dark:text-slate-200"
+          style={after(300)}
+        >
+          2h 30m
+        </span>
+      </Box>
+    </Question>
+  ),
+  colour: () => (
+    <Question>
+      <span className="flex items-center gap-[4px]">
+        {SCENE_SWATCHES.map((c, i) => (
+          <span
+            key={c}
+            className={`size-[11px] rounded-full ${i === 3 ? 'ring-2 ring-slate-700 ring-offset-1 dark:ring-slate-200 dark:ring-offset-slate-800' : ''}`}
+            style={{ background: c }}
+          />
+        ))}
+      </span>
+    </Question>
+  ),
+  'content-text': () => (
+    <div className={`relative flex w-[74%] shrink-0 flex-col gap-[4px] px-2 py-2 ${PANEL}`}>
+      <Line w="w-[52%]" strong />
+      <Line w="w-[92%]" />
+      <Line w="w-[84%]" />
+      <Line w="w-[60%]" />
+    </div>
+  ),
+  'content-callout': ({ tone }) => (
+    <div className={`relative flex w-[74%] shrink-0 items-start gap-1.5 px-2 py-2 ${PANEL}`}>
+      <span
+        className={`mt-px grid size-[12px] shrink-0 place-items-center rounded-full ${tone.soft}`}
+      >
+        <InfoGlyph aria-hidden size={8} />
+      </span>
+      <span className="flex min-w-0 flex-1 flex-col gap-[4px]">
+        <Line w="w-[86%]" />
+        <Line w="w-[64%]" />
+      </span>
+    </div>
+  ),
+  'content-link': ({ tone }) => (
+    <div className={`relative flex w-[74%] shrink-0 flex-col gap-[5px] px-2 py-2 ${PANEL}`}>
+      <Line w="w-[70%]" />
+      <span
+        className={`ats-press flex h-[14px] w-[56%] items-center justify-center gap-1 rounded-[4px] ${tone.solid}`}
+      >
+        <span className="h-[3px] w-[44%] rounded-full bg-white/80" />
+        <OutGlyph aria-hidden size={7} />
+      </span>
+    </div>
+  ),
+  'content-image': ({ tone }) => (
+    <div className={`relative flex w-[74%] shrink-0 flex-col gap-[4px] px-2 py-2 ${PANEL}`}>
+      <span className={`grid h-[30px] place-items-center rounded-[4px] ${tone.soft}`}>
+        <PictureGlyph aria-hidden size={14} />
+      </span>
+      <Line w="w-[46%]" />
+    </div>
+  ),
   short: ({ tone }) => (
     <Question>
       <Box tone={tone}>
@@ -367,7 +452,7 @@ const TONE_OF = new Map(
 );
 
 /** The picture at the top of an Add a Question tile. */
-export function QuestionScene({ type }: { type: QuestionType }) {
+export function QuestionScene({ type }: { type: AddKind }) {
   const tone = TONE_OF.get(type) ?? TONES.blue;
   const Scene = SCENES[type];
   return (

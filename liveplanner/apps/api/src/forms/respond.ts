@@ -4,6 +4,7 @@
 import { pushFormInboxByCode } from './form-inbox';
 import type { FormResponseAccepted, FormResponseRefusal } from '@liveplanner/api-schema';
 import {
+  answerValues,
   RESPONSE_BODY_MAX,
   checkResponse,
   chooseCardType,
@@ -247,7 +248,8 @@ export async function respond(
     doc.id,
     made.items.map((after) => ({ before: null, after })),
     'form',
-    { role: 'system', form: tab.id },
+    // The answers, for a Form Response rule's {{answer.<Question>}} (docs/specs/026-plan/automations.md "Values").
+    { role: 'system', form: tab.id, answers: answerValues(form, checked.answers) },
   );
   return accepted(ctx, {
     doc,

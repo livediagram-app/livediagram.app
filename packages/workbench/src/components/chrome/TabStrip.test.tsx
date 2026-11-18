@@ -9,6 +9,7 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { createPortal } from 'react-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { COLLAPSE_WIDTH_MS } from '../primitives/CollapseWidth';
+import { PHONE_MEDIA_QUERY } from '../../lib/responsive';
 import { TabFrame } from './TabFrame';
 import { TabStrip, type TabRun, type TabStripProps } from './TabStrip';
 
@@ -21,12 +22,17 @@ const RUNS: TabRun<T>[] = [
 ];
 
 let scrollTo: ReturnType<typeof vi.fn>;
-beforeEach(() => {
-  vi.useFakeTimers();
+// Matches only the phone query (never reduced motion), so a phone strip still animates.
+const onPhone = (phone: boolean) =>
   vi.stubGlobal(
     'matchMedia',
-    vi.fn(() => ({ matches: false })),
+    vi.fn((q: string) => ({ matches: phone && q === PHONE_MEDIA_QUERY })),
   );
+beforeEach(() => {
+  vi.useFakeTimers();
+  // A phone's strip unless a test says otherwise: there every folder starts shut, which most of these build on (a small
+  // desktop bar starts with its folders open; see "on load" below).
+  onPhone(true);
   scrollTo = vi.fn();
   Object.defineProperty(HTMLElement.prototype, 'scrollTo', { value: scrollTo, configurable: true });
 });
@@ -146,6 +152,41 @@ describe('TabStrip', () => {
     expect(screen.getByRole('button', { name: /^Plans,/ }).getAttribute('aria-expanded')).toBe(
       'true',
     );
+  });
+
+  it('opens the folder holding a tab opened inside it, won’t shut it, and shuts it again on leaving', () => {
+    const { props, rerender } = strip();
+    expect(chip().getAttribute('aria-expanded')).toBe('false');
+    // Opening Q1 Goals, tucked inside the shut folder, opens the folder.
+    rerender(<TabStrip {...props} activeId="q" />);
+    expect(chip().getAttribute('aria-expanded')).toBe('true');
+    expect(visibleTabs()).toEqual([
+      'Overview',
+      'Planning, 2 tabs',
+      'Roadmap',
+      'Q1 Goals',
+      'Backlog',
+    ]);
+    // Its chip won't shut it.
+    fireEvent.click(chip());
+    expect(chip().getAttribute('aria-expanded')).toBe('true');
+    expect(chip().getAttribute('aria-disabled')).toBe('true');
+    // Back on a loose tab, it returns to this visit's shut, and toggles again.
+    rerender(<TabStrip {...props} activeId="b" />);
+    expect(chip().getAttribute('aria-expanded')).toBe('false');
+    expect(chip().getAttribute('aria-disabled')).toBeNull();
+    fireEvent.click(chip());
+    expect(chip().getAttribute('aria-expanded')).toBe('true');
+  });
+
+  it('keeps a folder this visit opened open after leaving one of its tabs', () => {
+    const { props, rerender } = strip();
+    fireEvent.click(chip());
+    rerender(<TabStrip {...props} activeId="r" />);
+    rerender(<TabStrip {...props} activeId="o" />);
+    expect(chip().getAttribute('aria-expanded')).toBe('true');
+    fireEvent.click(chip());
+    expect(chip().getAttribute('aria-expanded')).toBe('false');
   });
 
   it('keeps a shut folder shut under its new name', () => {
@@ -523,5 +564,46 @@ describe('TabStrip', () => {
     const { props } = strip();
     fireEvent.click(screen.getByRole('button', { name: 'Add tab' }));
     expect(props.onAdd).toHaveBeenCalledOnce();
+  });
+
+  describe('on load', () => {
+    const big = (n: number): TabRun<T>[] => [
+      { kind: 'folder', name: 'Planning', tabs: [t('r', 'Roadmap'), t('q', 'Q1 Goals')] },
+      ...Array.from({ length: n }, (_, i) => ({ kind: 'loose' as const, tab: t(`l${i}`) })),
+    ];
+
+    it('opens every folder of a small bar on desktop, and keeps a folder shut later shut', () => {
+      onPhone(false);
+      strip();
+      expect(chip().getAttribute('aria-expanded')).toBe('true');
+      expect(visibleTabs()).toEqual(expect.arrayContaining(['Roadmap', 'Q1 Goals']));
+      fireEvent.click(chip());
+      expect(chip().getAttribute('aria-expanded')).toBe('false');
+    });
+
+    it('opens nothing on a busy desktop bar (10 tabs) and opens a small one at 9', () => {
+      onPhone(false);
+      const { unmount } = strip({ runs: big(8) });
+      expect(chip().getAttribute('aria-expanded')).toBe('false');
+      unmount();
+      strip({ runs: big(7) });
+      expect(chip().getAttribute('aria-expanded')).toBe('true');
+    });
+
+    it('opens nothing on a phone', () => {
+      strip();
+      expect(chip().getAttribute('aria-expanded')).toBe('false');
+    });
+
+    it('decides when the tabs arrive after the strip mounts, and only then', () => {
+      onPhone(false);
+      const { props, rerender } = strip({ runs: [] });
+      rerender(<TabStrip {...props} runs={RUNS} />);
+      expect(chip().getAttribute('aria-expanded')).toBe('true');
+      fireEvent.click(chip());
+      // A later change of the bar never re-decides.
+      rerender(<TabStrip {...props} runs={[...RUNS, { kind: 'loose', tab: t('n', 'Notes') }]} />);
+      expect(chip().getAttribute('aria-expanded')).toBe('false');
+    });
   });
 });

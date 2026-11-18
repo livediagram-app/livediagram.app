@@ -16,18 +16,21 @@ import { questionsOf } from './model';
 export const MAPPABLE_KINDS: Readonly<Record<QuestionType, readonly CustomFieldKind[]>> = {
   short: ['text', 'longtext'],
   paragraph: ['longtext'],
-  number: ['number', 'currency'],
+  number: ['number', 'currency', 'percent'],
   email: ['email', 'text'],
   phone: ['phone', 'text'],
-  link: ['link', 'text'],
+  link: ['link', 'text', 'pullrequest'],
   date: ['date'],
   datetime: ['datetime'],
   daterange: ['daterange'],
   // A Risk after Text: [1] is the kind a choice with Other falls back to (newFieldFor).
-  single: ['choice', 'text', 'risk'],
-  multi: ['multichoice', 'longtext'],
-  rating: ['rating', 'number'],
+  single: ['choice', 'text', 'risk', 'labels'],
+  multi: ['multichoice', 'longtext', 'labels', 'checklist'],
+  rating: ['rating', 'number', 'percent'],
   checkbox: ['checkbox'],
+  duration: ['duration', 'number'],
+  colour: ['colour', 'text'],
+  content: [],
 };
 
 // The question types whose answer may be a card's title.
@@ -55,6 +58,10 @@ export const NEW_FIELD_KIND: Readonly<Record<QuestionType, CustomFieldKind>> = {
   multi: 'multichoice',
   rating: 'rating',
   checkbox: 'checkbox',
+  duration: 'duration',
+  colour: 'colour',
+  // Never asked: a content block has no answer to keep (newFieldFor is never called for one).
+  content: 'text',
 };
 
 // Whether `field` can keep `q`'s answer: its kind takes the type, a Rating's scale reaches the question's, and a
@@ -62,6 +69,16 @@ export const NEW_FIELD_KIND: Readonly<Record<QuestionType, CustomFieldKind>> = {
 export function fieldTakes(q: FormQuestion, field: CustomFieldDef): boolean {
   if (!MAPPABLE_KINDS[q.type].includes(field.kind)) return false;
   if (field.kind === 'rating') return ratingScaleOf(field) >= (q.scale ?? RATING_SCALE_DEFAULT);
+  // A Percent holds a whole 0 to 100: a Rating fits on any scale (it is kept as its share), a Number only while its
+  // bounds keep it there (choosing a Percent field sets them; forms.md "Mapping").
+  if (field.kind === 'percent')
+    return (
+      q.type === 'rating' ||
+      (q.whole === true && q.min !== undefined && q.min >= 0 && q.max !== undefined && q.max <= 100)
+    );
+  // A Time Spent field is tracked, never typed (item-types.md "Time Spent").
+  if (field.kind === 'duration' && field.timeSpent) return false;
+  // A Labels field takes any option as a label; a Checklist a row per option.
   // A range's ends are days or moments on both sides, never one of each (forms.md "Mapping").
   if (field.kind === 'daterange') return isTimedRange(field) === (q.withTime === true);
   // A Risk takes a question whose every option names a level (item-types.md "Risk"), never one with Other.

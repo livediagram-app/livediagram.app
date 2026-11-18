@@ -180,7 +180,7 @@ synchronous, so the api, the offline store and the editor run the same check.
 
 ### Assistants the plan remembers (`apps/api/src/plan-room/known-assistants.ts`)
 
-[Who it can be handed to](../items.md#handing-a-card-to-an-ai-assistant). The plan room's schema step V38
+[Who it can be handed to](../items.md#handing-a-card-to-an-ai-assistant). The plan room's schema step V39
 (`KNOWN_ASSISTANTS_SCHEMA`):
 
 ```sql

@@ -15,11 +15,11 @@ afterEach(cleanup);
 const labelOf = (id: BoardWidgetId) =>
   id in BOARD_WIDGET_INFO ? BOARD_WIDGET_INFO[id as keyof typeof BOARD_WIDGET_INFO].label : id;
 
-function show(selected: boolean, canEdit = true, widgets: BoardWidgetId[] = ['count', 'filter']) {
+// `_selected`: whether the board is selected, which the zone no longer reads (every case holds both ways).
+function show(_selected: boolean, canEdit = true, widgets: BoardWidgetId[] = ['count', 'filter']) {
   const onChange = vi.fn();
   const props = {
     canEdit,
-    selected,
     palette: planPalette('light', {}),
     onChange,
     labelOf,
@@ -122,16 +122,12 @@ describe('BoardWidgetZone Edit Widgets', () => {
     expect(document.activeElement).toBe(removeButton('Filter'));
   });
 
-  it("moves the focus to the zone's + when the last widget goes, on an unselected board too", () => {
+  it('moves the focus to Add Widgets when the last widget goes, on an unselected board too', () => {
     const onChange = show(false, true, ['count']);
     edit();
     fireEvent.click(removeButton()!);
     onChange.rerender([]);
-    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Add a widget' }));
-    // Once widgets are back, a peer emptying the zone leaves the unselected board clean.
-    onChange.rerender(['count']);
-    onChange.rerender([]);
-    expect(screen.queryByRole('button', { name: 'Add a widget' })).toBeNull();
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Add Widgets' }));
   });
 
   // docs/specs/013-workspace/share-roles.md: widgets are board structure, so only an Editor changes them (the editor's
@@ -144,35 +140,6 @@ describe('BoardWidgetZone Edit Widgets', () => {
     show(true, resolveEditorCapabilities({ level: role, adderKey: 'k' }).level === 'edit');
     expect(!!screen.queryByRole('button', { name: 'Edit Widgets' })).toBe(offered);
     expect(removeButton()).toBeNull();
-  });
-});
-
-// docs/specs/026-plan/board-widgets.md: an empty zone's hint shows only while the board is selected.
-describe('BoardWidgetZone empty hint', () => {
-  const empty = (selected: boolean, canEdit = true) =>
-    render(
-      <BoardWidgetZone
-        widgets={[]}
-        canEdit={canEdit}
-        selected={selected}
-        palette={planPalette('light', {})}
-        onChange={vi.fn()}
-        labelOf={labelOf}
-        render={(kind) => <span>{kind}</span>}
-      />,
-    );
-
-  it('shows the hint and its + only on a selected board, to someone who may edit', () => {
-    empty(true);
-    expect(screen.getByText('Add widgets to this board')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Add a widget' })).toBeTruthy();
-    cleanup();
-    empty(false);
-    expect(screen.queryByText('Add widgets to this board')).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Add a widget' })).toBeNull();
-    cleanup();
-    empty(true, false);
-    expect(screen.queryByText('Add widgets to this board')).toBeNull();
   });
 });
 
@@ -277,16 +244,14 @@ describe('widgetSlotAt', () => {
   });
 });
 
-// docs/specs/026-plan/board-widgets.md "The header": an empty zone in a header band keeps its +, so the controls card
-// never shows a hairline before the cog with nothing beside it.
+// docs/specs/026-plan/board-widgets.md "Header widgets": a board with no widgets shows Add Widgets to someone who may
+// edit, selected or not, and it opens the Add Widget panel.
 describe('BoardWidgetZone, empty', () => {
-  const empty = (props: { selected?: boolean; offerAdd?: boolean; canEdit?: boolean }) =>
+  const empty = (canEdit = true) =>
     render(
       <BoardWidgetZone
         widgets={[]}
-        canEdit={props.canEdit ?? true}
-        selected={props.selected ?? false}
-        offerAdd={props.offerAdd ?? false}
+        canEdit={canEdit}
         palette={planPalette('light', {})}
         onChange={vi.fn()}
         labelOf={labelOf}
@@ -294,19 +259,20 @@ describe('BoardWidgetZone, empty', () => {
       />,
     );
 
-  it('stays clean on an unselected canvas board', () => {
-    empty({});
-    expect(screen.queryByRole('button', { name: 'Add a widget' })).toBeNull();
-  });
-
-  it('offers the + alone in a header band, unselected', () => {
-    empty({ offerAdd: true });
-    expect(screen.getByRole('button', { name: 'Add a widget' })).toBeTruthy();
-    expect(screen.queryByText('Add widgets to this board')).toBeNull();
+  it('shows Add Widgets, which opens and closes the Add Widget panel', () => {
+    empty();
+    const add = screen.getByRole('button', { name: 'Add Widgets' });
+    expect(add.getAttribute('aria-haspopup')).toBe('dialog');
+    fireEvent.click(add);
+    expect(add.getAttribute('aria-expanded')).toBe('true');
+    expect(screen.getByRole('dialog', { name: 'Add a Widget' })).toBeTruthy();
+    fireEvent.click(add);
+    expect(screen.queryByRole('dialog', { name: 'Add a Widget' })).toBeNull();
   });
 
   it('offers nothing to someone who may not edit', () => {
-    empty({ offerAdd: true, canEdit: false });
+    empty(false);
+    expect(screen.queryByRole('button', { name: 'Add Widgets' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Add a widget' })).toBeNull();
   });
 });

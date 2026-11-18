@@ -23,7 +23,6 @@ import { CheckIcon, CloseIcon, PlusIcon, Tooltip, lucideGlyph } from '@liveplann
 import { glyphStrokePx } from '@liveworkspace/icons';
 import { lucidePencil } from '@liveworkspace/icons/lucide';
 import type { PlanPalette } from '../plan-palette';
-import { InfoArt } from '../plan-tile-art';
 import { widgetSlotAt } from '@/hooks/plan/widget-slot';
 import { BoardWidgetPicker } from './BoardWidgetPicker';
 import { HEADER_ARRIVAL_CLASS, headerArrivalIndex, headerArrivalRow } from '../header-arrival';
@@ -98,8 +97,6 @@ function ZoneButton({
 export function BoardWidgetZone({
   widgets,
   canEdit: canEditBoard,
-  selected = false,
-  offerAdd = false,
   palette,
   onChange,
   render,
@@ -109,11 +106,6 @@ export function BoardWidgetZone({
 }: {
   widgets: readonly BoardWidgetId[];
   canEdit: boolean;
-  // The board is selected: only then does an empty zone show its hint.
-  selected?: boolean;
-  // An empty zone shows its + to someone who may edit even while the board is not selected (in a header band, where
-  // the board is maximised or fills its tab and no selection shows), the hint still waiting for a selection.
-  offerAdd?: boolean;
   palette: PlanPalette;
   onChange: (next: BoardWidgetId[]) => void;
   // `compact`: the Filter as one button, for a zone too narrow for it whole (zone-overflow.ts).
@@ -189,20 +181,11 @@ export function BoardWidgetZone({
       document.removeEventListener('keydown', onKey, true);
     };
   }, [active]);
-  // The last widget went by this person's hand: the empty zone shows its + to them, where the focus goes next.
-  // Until widgets come back: then a later emptying (a peer's) leaves an unselected board clean again.
-  const [emptied, setEmptied] = useState(false);
-  const [seen, setSeen] = useState(widgets);
-  if (seen !== widgets) {
-    setSeen(widgets);
-    if (emptied && widgets.length > 0) setEmptied(false);
-  }
   // Takes a widget off. Edit mode stays on for the next, unless that was the last. The focus moves on to the same
   // control of the widget that takes its place once the new list lands (board-widgets.md "Remove").
   const remove = (kind: BoardWidgetId, control: 'remove' | 'widget') => {
     if (widgets.length === 1) {
       setEditing(false);
-      setEmptied(true);
     }
     refocus.current = { kind, at: widgets.indexOf(kind), control };
     (document.activeElement as HTMLElement | null)?.blur();
@@ -233,7 +216,7 @@ export function BoardWidgetZone({
     let el: HTMLElement | null | undefined;
     if (!removed) el = wrapperOf(pending.kind);
     else if (widgets.length === 0)
-      el = zone.current?.querySelector<HTMLElement>('button[aria-label="Add a widget"]');
+      el = zone.current?.querySelector<HTMLElement>('button[data-widget-add]');
     else {
       // The widget now at its place in the board's list, wherever it is drawn (the pinned Filter too).
       const next = wrapperOf(widgets[Math.min(pending.at, widgets.length - 1)]!);
@@ -267,6 +250,7 @@ export function BoardWidgetZone({
       palette={palette}
       enter={enter}
       aria-label="Add a widget"
+      data-widget-add=""
       aria-haspopup="dialog"
       aria-expanded={pickerAt !== null}
       onClick={(e) => {
@@ -330,15 +314,26 @@ export function BoardWidgetZone({
         className="flex h-9 min-w-0 flex-1 items-center rounded-md px-2 text-[12px]"
         style={{ color: palette.muted }}
       >
-        {canEdit && selected ? (
-          // The hint only while the board is selected, so an unselected header stays clean.
-          <span className="inline-flex items-center gap-1.5">
-            <InfoArt />
-            Add widgets to this board
-            {addButton('sm')}
-          </span>
-        ) : canEdit && (offerAdd || emptied) ? (
-          addButton('md', 0)
+        {canEdit ? (
+          // No widgets yet: the + with its words, selected or not (board-widgets.md "Header widgets").
+          <button
+            type="button"
+            data-widget-control=""
+            data-widget-add=""
+            aria-haspopup="dialog"
+            aria-expanded={pickerAt !== null}
+            onClick={(e) => {
+              if (pickerAt) return setPickerAt(null);
+              setSuggestions(suggest?.() ?? []);
+              setPickerAt(e.currentTarget);
+            }}
+            onPointerDown={(e) => e.stopPropagation()}
+            className={`flex h-7 shrink-0 cursor-pointer items-center gap-1.5 rounded-md border border-dashed px-2.5 text-[12px] font-medium transition hover:bg-black/5 dark:hover:bg-white/10 ${HEADER_ARRIVAL_CLASS}`}
+            style={{ borderColor: palette.border, color: palette.muted, ...headerArrivalIndex(0) }}
+          >
+            <PlusIcon size={12} />
+            <span className="text-optical-centre">Add Widgets</span>
+          </button>
         ) : null}
         {picker}
       </div>

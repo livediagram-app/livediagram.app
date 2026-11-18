@@ -11,7 +11,7 @@ export const KNOWN_ASSISTANTS_MAX = 50;
 // listing the plan's cards again and again writes nothing.
 export const KNOWN_ASSISTANT_REFRESH_MS = 60 * 60 * 1000;
 
-// The plan schema's step V38 (plan-schema.ts). IF NOT EXISTS, so running it again changes nothing.
+// The plan schema's step V39 (plan-schema.ts). IF NOT EXISTS, so running it again changes nothing.
 export const KNOWN_ASSISTANTS_SCHEMA = `
 CREATE TABLE IF NOT EXISTS known_assistants (
   id        TEXT    PRIMARY KEY,

@@ -1,6 +1,13 @@
 // Checking answers (docs/specs/030-forms/forms.md "Checking answers", blueprint §4): one set of rules for the
 // respondent page, the builder's Preview and the api, so a response the page lets through is one the api keeps.
-import { isEmailAddress, isPhoneNumber, parseDateTime, readInstant } from '@liveplanner/items';
+import {
+  DURATION_MINUTES_MAX,
+  isEmailAddress,
+  isPhoneNumber,
+  parseDateTime,
+  parseDuration,
+  readInstant,
+} from '@liveplanner/items';
 import { OTHER_MAX, PARAGRAPH_MAX, SHORT_ANSWER_MAX } from './limits';
 import { shownQuestions } from './branching';
 import type { FormDefinition, FormQuestion } from './model';
@@ -25,7 +32,9 @@ export type AnswerError =
   | 'too_few'
   | 'too_many'
   | 'out_of_scale'
-  | 'must_tick';
+  | 'must_tick'
+  | 'not_a_duration'
+  | 'not_a_colour';
 
 // What a respondent sends: answers by question id, the text of an Other option, and the hidden field.
 interface ResponseBody {
@@ -33,6 +42,9 @@ interface ResponseBody {
   other?: Record<string, unknown>;
   website?: unknown;
 }
+
+// A colour as a Colour field keeps it.
+export const HEX_COLOUR_ANSWER = /^#[0-9a-f]{6}$/i;
 
 const DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
 // A number as the box sends it once read in the respondent's locale: decimal digits, a sign, a point, an exponent.
@@ -64,7 +76,7 @@ export function normaliseLink(v: string): string | null {
 const otherText = (v: unknown) => (typeof v === 'string' ? v.trim().slice(0, OTHER_MAX) : '');
 
 // An answer that says nothing: no value, empty text, no picks, an unticked box.
-function isEmpty(v: unknown): boolean {
+export function isEmptyAnswer(v: unknown): boolean {
   return (
     v === undefined ||
     v === null ||
@@ -77,10 +89,17 @@ function isEmpty(v: unknown): boolean {
 type AnswerCheck = { value?: AnswerValue; error?: AnswerError };
 
 export function checkAnswer(q: FormQuestion, raw: unknown, other?: unknown): AnswerCheck {
+  // A content block asks nothing.
+  if (q.type === 'content') return {};
   // An Other pick stands for its typed text.
   const typedOther = q.other ? otherText(other) : '';
-  if (isEmpty(raw)) {
+  if (isEmptyAnswer(raw)) {
     if (q.required) return { error: q.type === 'checkbox' ? 'must_tick' : 'required' };
+    // Left empty: its default answer, when it has one (readForm keeps only one its check takes).
+    if (q.fallback !== undefined) {
+      const { fallback: _f, ...plain } = q;
+      return checkAnswer(plain, q.fallback);
+    }
     return {};
   }
   switch (q.type) {
@@ -172,6 +191,18 @@ export function checkAnswer(q: FormQuestion, raw: unknown, other?: unknown): Ans
     }
     case 'checkbox':
       return raw === true ? { value: true } : { error: 'must_tick' };
+    // Whole minutes, read as a Duration field reads what is typed ("2h 30m", "90m", "1.5h").
+    case 'duration': {
+      const minutes =
+        typeof raw === 'string' || typeof raw === 'number' ? parseDuration(raw) : undefined;
+      return minutes !== undefined && minutes <= DURATION_MINUTES_MAX
+        ? { value: minutes }
+        : { error: 'not_a_duration' };
+    }
+    case 'colour':
+      return typeof raw === 'string' && HEX_COLOUR_ANSWER.test(raw.trim())
+        ? { value: raw.trim().toLowerCase() }
+        : { error: 'not_a_colour' };
   }
 }
 
@@ -255,6 +286,10 @@ export function answerErrorMessage(q: FormQuestion, error: AnswerError): string 
       return `Pick at most ${q.max}`;
     case 'out_of_scale':
       return `Pick a rating from 1 to ${q.scale ?? 5}`;
+    case 'not_a_duration':
+      return 'Enter a duration like 2h 30m, 90m or 1.5h';
+    case 'not_a_colour':
+      return 'Pick a colour';
   }
 }
 

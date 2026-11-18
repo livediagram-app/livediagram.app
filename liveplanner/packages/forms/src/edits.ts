@@ -6,6 +6,7 @@ import { TITLE_TYPES } from './mapping';
 import {
   questionsOf,
   type AnswerTarget,
+  type ContentBlock,
   type FormDefinition,
   type FormQuestion,
   type FormSection,
@@ -63,17 +64,30 @@ export function blankQuestion(type: QuestionType, id: string): FormQuestion {
 export const canAddQuestion = (form: FormDefinition) => questionsOf(form).length < QUESTIONS_MAX;
 export const canAddSection = (form: FormDefinition) => form.sections.length < SECTIONS_MAX;
 
-// A new question after `afterId` (in its section), else at the end of the last section.
+// A content block of `block`'s kind (forms.md "Content blocks"): a callout starts as Info, the rest empty.
+export function blankContent(block: ContentBlock, id: string): FormQuestion {
+  const q: FormQuestion = { id, type: 'content', prompt: '', block };
+  if (block === 'callout') q.tone = 'info';
+  return q;
+}
+
+// A new question after `afterId` (in its section), else at the end of section `inSection` (the last when not given).
+// `block` makes a content block of that kind instead.
 export function addQuestion(
   form: FormDefinition,
   type: QuestionType,
   afterId: string | null,
   newId: NewId,
+  opts: { inSection?: string; block?: ContentBlock } = {},
 ): { form: FormDefinition; id: string | null } {
   if (!canAddQuestion(form)) return { form, id: null };
-  const q = blankQuestion(type, newId('q'));
+  const q =
+    type === 'content'
+      ? blankContent(opts.block ?? 'text', newId('q'))
+      : blankQuestion(type, newId('q'));
   const at = afterId ? findQuestion(form, afterId) : null;
-  const section = at ? at.section : form.sections.length - 1;
+  const named = opts.inSection ? form.sections.findIndex((s) => s.id === opts.inSection) : -1;
+  const section = at ? at.section : named >= 0 ? named : form.sections.length - 1;
   const index = at ? at.index + 1 : form.sections[section]!.questions.length;
   const sections = form.sections.map((s, i) =>
     i === section
@@ -198,7 +212,8 @@ export function setQuestionType(
   type: QuestionType,
 ): FormDefinition {
   return mapQuestion(form, id, (q) => {
-    if (q.type === type) return q;
+    // A content block never becomes a question, nor a question a block.
+    if (q.type === type || q.type === 'content' || type === 'content') return q;
     const next = blankQuestion(type, q.id);
     next.prompt = q.prompt;
     if (q.help) next.help = q.help;
@@ -287,11 +302,18 @@ export function addSection(
   form: FormDefinition,
   newId: NewId,
   afterQuestionId: string | null,
+  afterSectionId: string | null = null,
 ): { form: FormDefinition; id: string | null } {
   if (!canAddSection(form)) return { form, id: null };
   const section: FormSection = { id: newId('s'), title: '', questions: [] };
   const at = afterQuestionId ? findQuestion(form, afterQuestionId) : null;
-  if (!at) return { form: withSections(form, [...form.sections, section]), id: section.id };
+  if (!at) {
+    // Empty, after the section named (its own add bar's), else at the end.
+    const after = afterSectionId ? form.sections.findIndex((s) => s.id === afterSectionId) : -1;
+    const sections = [...form.sections];
+    sections.splice(after >= 0 ? after + 1 : sections.length, 0, section);
+    return { form: withSections(form, sections), id: section.id };
+  }
   const host = form.sections[at.section]!;
   section.questions = host.questions.slice(at.index + 1);
   const sections = [...form.sections];
@@ -320,6 +342,28 @@ export function updateSection(
       return next;
     }),
   );
+}
+
+// The section `id` placed at `index` (Move Up, Move Down, a drag's drop), its questions with it. A section moved to
+// first loses its rule (the first always shows), and every rule that no longer reads an earlier question is broken
+// until chosen again (forms.md "The form card, top to bottom": Sections).
+export function placeSection(form: FormDefinition, id: string, index: number): FormDefinition {
+  const from = form.sections.findIndex((s) => s.id === id);
+  const to = Math.max(0, Math.min(index, form.sections.length - 1));
+  if (from < 0 || from === to) return form;
+  const sections = [...form.sections];
+  const [moved] = sections.splice(from, 1);
+  sections.splice(to, 0, moved!);
+  if (sections[0]!.showIf) {
+    const { showIf: _rule, ...first } = sections[0]!;
+    sections[0] = first;
+  }
+  return withSections(form, sections);
+}
+
+export function moveSection(form: FormDefinition, id: string, by: -1 | 1): FormDefinition {
+  const from = form.sections.findIndex((s) => s.id === id);
+  return from < 0 ? form : placeSection(form, id, from + by);
 }
 
 // A section removed, its questions joining the section before it (the first section is never removed).

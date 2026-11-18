@@ -371,6 +371,20 @@ export function RuleBuilder({
   const isGithub = isGithubTrigger(body.trigger);
   // An Email Received rule's text offers the sender.
   const isEmail = body.trigger.kind === 'email_received';
+  // A Form Response rule's text offers its form's answers (every form's questions, each once, for Any Form).
+  const formTab = body.trigger.kind === 'form_response' ? (body.trigger.formTab ?? '') : null;
+  const forms = outline.forms;
+  const formQuestions = useMemo(
+    () =>
+      formTab === null
+        ? undefined
+        : [
+            ...new Set(
+              forms.filter((f) => !formTab || f.id === formTab).flatMap((f) => f.questions ?? []),
+            ),
+          ],
+    [formTab, forms],
+  );
   const incoming = useMemo<IncomingRule>(
     () => ({
       incoming: isIncoming,
@@ -380,8 +394,9 @@ export function RuleBuilder({
       now,
       github: isGithub,
       email: isEmail,
+      ...(formQuestions ? { formQuestions } : {}),
     }),
-    [isIncoming, rule, cardless, now, isGithub, isEmail],
+    [isIncoming, rule, cardless, now, isGithub, isEmail, formQuestions],
   );
 
   return (

@@ -50,9 +50,10 @@ These are livediagram's and not liveplanner's; bringing one in is a scope change
   edits every element kind of the project model when a tab holds one (a pasted or imported element), as
   [Elements](../009-elements/README.md) says, but no Plan surface places a drawing kind.
 - **Features**: event storming; the importers (draw.io, Excalidraw, Microsoft Whiteboard, Mermaid, Markdown);
-  repositories; animation and GIF export; photo and sticky-note vision; shape libraries; image search, and images
+  repositories; animation and GIF export; photo and sticky-note vision; shape libraries; image search outside Forms, and images
   placed on a canvas. A card's [Image field](../026-plan/item-types.md#image-fields) does upload a picture, kept in
-  liveworkspace's media service; that is the only image upload a plan has.
+  liveworkspace's media service; a form's cover and Picture blocks are the other pictures a plan holds, and the only place liveplanner has
+  [Image search](../030-forms/forms.md#pictures).
 - **Facilitation**: the Q&A board, live polls, quizzes, avatars, laser and spotlight, and presentation mode.
 
 ## Technical constraints

@@ -3,8 +3,8 @@
 // read. The pictures live in liveworkspace's media service
 // (liveworkspace/docs/specs/006-media/media.md, src/media.ts), in their uploader's gallery: this route keeps who may
 // upload for a plan and who may see what, and the service keeps the bytes, the dedupe and the caps. Each plan
-// records the pictures uploaded for it (plan-room/image-grants.ts). There is no gallery list, usage or delete here:
-// the Explorer's gallery lists a person's images from every app.
+// records the pictures uploaded for it (plan-room/image-grants.ts). The person's own gallery is listed here only for
+// a form's picture picker (Your Images), which then claims one for the plan; usage and delete are the Explorer's.
 
 import {
   IMAGE_GRANT_CHECK_MAX,
@@ -50,6 +50,15 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
   const media = mediaClient(ctx.env);
   if (!media) return imagesUnavailable();
   if (segments.length === 2 && request.method === 'POST') return upload(ctx, media);
+  if (segments.length === 2 && request.method === 'GET') return gallery(ctx, media);
+  if (
+    segments.length === 4 &&
+    segments[3] === 'claim' &&
+    segments[2] &&
+    request.method === 'POST'
+  ) {
+    return claim(ctx, media, segments[2]);
+  }
   if (segments.length === 3 && segments[2] === 'grants' && request.method === 'POST') {
     return grants(ctx, media);
   }
@@ -237,6 +246,40 @@ async function read(ctx: RouteContext, media: MediaClient, imageId: string): Pro
   // The stored type is the sniffed one; never let a browser re-guess it.
   headers.set('X-Content-Type-Options', 'nosniff');
   return new Response(object.body, { headers });
+}
+
+// GET /api/images: the person's own gallery, every app's pictures, newest first (docs/specs/030-forms/forms.md
+// "Cover": a form's picture picker's Your Images). Only the person themself: never a workbench session or an API
+// token, which act for them without being them.
+async function gallery(ctx: RouteContext, media: MediaClient): Promise<Response> {
+  if (ctx.workbench || ctx.token) return forbidden();
+  const owner = requireOwner(ctx);
+  if (owner instanceof Response) return owner;
+  const listed = await media.list(await mediaOwner(owner));
+  if (!listed.ok) return serviceAnswer(listed);
+  return json(
+    { images: listed.value.images.map(imageSummary) },
+    { headers: { 'Cache-Control': 'private, no-store' } },
+  );
+}
+
+// POST /api/images/{id}/claim?p={planId}: a picture already in the person's gallery taken for plan `p` (a form's
+// cover or picture block chosen from Your Images), as an upload of the same bytes would be: the plan records a grant,
+// so it serves the picture to everyone who may read it and reports it to the media sweep. The caller must own the
+// picture and be able to upload for the plan (a Participant at least).
+async function claim(ctx: RouteContext, media: MediaClient, imageId: string): Promise<Response> {
+  if (ctx.workbench || ctx.token) return forbidden();
+  if (imageId.length > IMAGE_ID_MAX) return notFound();
+  const owner = requireOwner(ctx);
+  if (owner instanceof Response) return owner;
+  const planId = ctx.url.searchParams.get('p');
+  if (!planId || planId.length > PLAN_ID_MAX) return badRequest('p must name the plan');
+  const imageOwner = await mediaImageOwner(media, imageId);
+  if (imageOwner === '' || imageOwner !== (await mediaOwner(owner))) return notFound();
+  const refused = await refusedUpload(ctx, planId);
+  if (refused) return refused;
+  await planRoom(ctx.env, planId).grantImage(imageId);
+  return json({ ok: true });
 }
 
 const tooLarge = () =>

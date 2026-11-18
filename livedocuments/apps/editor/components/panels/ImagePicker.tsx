@@ -175,7 +175,7 @@ export function ImagePicker({
             gapClass="gap-2"
           />
         ) : tab === 'search' ? (
-          <ImageSearchPane ownerId={ownerId} documentId={documentId} onPicked={onSelect} />
+          <ImageSearchPane ownerId={ownerId} itemId={documentId} onPicked={onSelect} />
         ) : (
           <GalleryGrid
             ownerId={ownerId}

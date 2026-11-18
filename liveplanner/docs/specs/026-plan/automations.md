@@ -910,6 +910,8 @@ hands focus back to the field, the caret after the value:
 | `{{pull_request.url}}`         | its address on GitHub                                  |
 | `{{from}}`                     | an Email Received rule's sender, the bare address      |
 |                                | ([Email Received](#email-received))                    |
+| `{{answer.<Question>}}`        | a Form Response rule's answer to a question, by its    |
+|                                | words ([Forms](../030-forms/forms.md))                 |
 
 - A value the rule cannot fill (no assignee) reads as nothing. A value the builder does not know is refused on save
   with its name (`automation_value_unknown`).
@@ -919,6 +921,14 @@ hands focus back to the field, the caret after the value:
 - Text whose values fill it past its limit (a comment's or a message's 2,000 characters, an email subject's 200, a
   card title's 500, a checklist item's 200) is cut to that limit, never through an emoji: a cut that would split one
   stops a character short.
+- `{{answer.<Question>}}` is known only in a Form Response rule's text (elsewhere `automation_value_unknown`), and
+  **Insert a Value** offers a **Form Answers** group there, after This Card: each question of the rule's form (of every
+  Form tab, each wording once, for Any Form). It reads the response's answer as its card's Description writes it
+  (choices joined by commas, a Rating "4 / 5", a Checkbox Yes or No, a Duration "2h 30m"), cut at **1,000** characters,
+  a question worded alike in any case matching, and an unanswered question (or one the form no longer asks, or a Test
+  on a Card, which has no response) as nothing. The answers ride on the run's event (a Wait keeps them), never on the
+  card's history. So a Create Card step can title a card "Follow up {{answer.Company}}" or set a field from an answer
+  the form maps nowhere.
 - **Who Did It** (`{{person}}`) is left out of **Insert a Value** in an Email Received or Incoming Webhook rule, which
   have nobody of the plan behind them (From Email and Webhook Field… say who sent it). Typed in, or already in a
   rule, it is still known and reads as above.

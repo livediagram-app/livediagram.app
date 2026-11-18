@@ -269,3 +269,32 @@ async function imageSize(file: Blob): Promise<{ width: number; height: number } 
     img.src = url;
   });
 }
+
+/** The person's own gallery, every app's pictures, newest first (a form's picture picker's Your Images). Empty when
+ *  it can't be read (no media service, offline). */
+export async function apiListGallery(ownerId: string): Promise<ImageSummary[]> {
+  try {
+    const res = await apiFetch(`${API_BASE}/images`, { headers: await apiHeaders(ownerId) });
+    if (!res.ok) return [];
+    return ((await res.json()) as { images: ImageSummary[] }).images;
+  } catch {
+    return [];
+  }
+}
+
+/** A picture of the person's gallery taken for the scope's plan (a form's cover or picture block chosen from Your
+ *  Images), so the plan serves it to everyone who may read it. Throws ImageUploadError when it is refused. A This
+ *  Browser plan has nothing to claim it for: its pictures are its uploader's. */
+export async function apiClaimImage(scope: ImagesScope, imageId: string): Promise<void> {
+  const local = await isOfflineId(scope.projectId);
+  if (local) return;
+  try {
+    const res = await apiFetch(
+      `${API_BASE}/images/${encodeURIComponent(imageId)}/claim${planQuery(scope, local)}`,
+      { method: 'POST', headers: await planHeaders(scope, local) },
+    );
+    await expectOk<{ ok: true }>(res, 'claim image');
+  } catch {
+    throw new ImageUploadError('upload_failed');
+  }
+}

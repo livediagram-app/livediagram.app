@@ -1989,6 +1989,17 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     requestSchema: ref('FormReportBody'),
     statuses: [201, 400, 404, 429],
   },
+  {
+    method: 'GET',
+    path: '/forms/{code}/images/{imageId}',
+    segment: 'forms',
+    tag: 'Forms',
+    summary:
+      "One of the form's pictures (its cover's or a picture block's), for anyone with the link: only a picture the form shows now and its plan holds. 404 form_not_found otherwise. Limited per network on its own key.",
+    auth: 'public',
+    responseSchema: { type: 'string', format: 'binary' },
+    statuses: [200, 404, 429],
+  },
   // Every other Community read, and likes and reports, are the liveworkspace Community service's
   // (liveworkspace/docs/specs/007-community/community.md), which the Community pages call directly.
   {
@@ -2130,6 +2141,54 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         },
       },
       required: ['images'],
+    },
+    statuses: [200, 400, 401, 403, 404, 503],
+  },
+  {
+    method: 'GET',
+    path: '/images',
+    segment: 'images',
+    tag: 'Images',
+    summary:
+      "The caller's own gallery, every app's pictures, newest first (a form's picture picker's Your Images). Never for a token or a workbench session.",
+    auth: 'guest-or-clerk',
+    responseSchema: {
+      type: 'object',
+      properties: {
+        images: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              contentType: { type: 'string' },
+              byteSize: { type: 'integer' },
+              width: { type: 'integer' },
+              height: { type: 'integer' },
+              originalName: { type: 'string' },
+              createdAt: { type: 'integer' },
+            },
+            required: ['id', 'contentType', 'byteSize', 'width', 'height', 'createdAt'],
+          },
+        },
+      },
+      required: ['images'],
+    },
+    statuses: [200, 400, 403, 503],
+  },
+  {
+    method: 'POST',
+    path: '/images/{id}/claim',
+    segment: 'images',
+    tag: 'Images',
+    summary:
+      "Take a picture of the caller's own gallery for plan p, as an upload of it would: the plan then serves it (a form's cover or picture block chosen from Your Images). The picture's owner, an Editor or a Participant of the plan; never a token or a workbench session.",
+    auth: 'guest-or-clerk',
+    query: [{ name: 'p', required: true, description: 'The plan the picture is for.' }],
+    responseSchema: {
+      type: 'object',
+      properties: { ok: { type: 'boolean' } },
+      required: ['ok'],
     },
     statuses: [200, 400, 401, 403, 404, 503],
   },

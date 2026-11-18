@@ -136,6 +136,12 @@ async function media(req: Request, url: URL): Promise<Response> {
       headers: { 'Content-Type': s.contentType, 'X-Media-Owner': s.owner },
     });
   }
+  if (req.method === 'GET' && path === '/app/images') {
+    const owner = url.searchParams.get('owner');
+    return Response.json({
+      images: [...stored.values()].filter((s) => s.owner === owner).map(image),
+    });
+  }
   const one = /^\/app\/images\/([^/]+)$/.exec(path);
   if (one) {
     const s = stored.get(decodeURIComponent(one[1]!));
@@ -423,7 +429,7 @@ describe('POST /api/images?p=', () => {
   it('answers 404 to any other method or path', async () => {
     const other = (method: string, path: string) =>
       worker.fetch(new Request(`https://api.test${path}`, { method, headers: identity({}) }), env);
-    expect((await other('GET', '/api/images')).status).toBe(404);
+    expect((await other('PUT', '/api/images')).status).toBe(404);
     expect((await other('DELETE', '/api/images/img-1')).status).toBe(404);
     expect((await other('GET', '/api/images/')).status).toBe(404);
     expect((await other('GET', '/api/images/a/b')).status).toBe(404);
@@ -656,6 +662,72 @@ describe('GET /api/images/{id}', () => {
       expect((await call('POST', '/api/images', session(PLAN), PNG)).status).toBe(404);
       expect((await call('POST', `/api/images?p=${PLAN}`, session(PLAN), PNG)).status).toBe(200);
     });
+  });
+});
+
+// A form's picture picker (docs/specs/030-forms/forms.md "Pictures"): Your Images lists the caller's own gallery,
+// and taking one claims it for the plan as an upload would.
+describe('GET /api/images and POST /api/images/{id}/claim?p=', () => {
+  const gallery = (who: Who = {}) =>
+    worker.fetch(new Request('https://api.test/api/images', { headers: identity(who) }), env);
+  const claim = (id: string, who: Who = {}, query = `?p=${PLAN}`) =>
+    worker.fetch(
+      new Request(`https://api.test/api/images/${id}/claim${query}`, {
+        method: 'POST',
+        headers: identity(who),
+      }),
+      env,
+    );
+
+  it("lists the caller's own pictures only, never cached", async () => {
+    const id = await uploaded();
+    await upload({ person: 'bob', grant: grantOf('bob', 'edit') }, new Uint8Array([...PNG, 9]));
+    const res = await gallery();
+    expect(res.status).toBe(200);
+    expect(res.headers.get('Cache-Control')).toBe('private, no-store');
+    expect((await res.json<{ images: { id: string }[] }>()).images.map((i) => i.id)).toEqual([id]);
+    expect((await gallery({ person: null })).status).toBe(400);
+  });
+
+  it('claims an own picture for a plan its caller may upload to', async () => {
+    const id = await uploaded();
+    granted = [];
+    const res = await claim(id, { grant: grantOf('alice', 'participate') });
+    expect(res.status).toBe(200);
+    expect(granted).toEqual([id]);
+  });
+
+  it("refuses someone else's picture, an unknown one, a Viewer, and a missing plan", async () => {
+    const id = await uploaded();
+    granted = [];
+    expect((await claim(id, { person: 'bob', grant: grantOf('bob', 'edit') })).status).toBe(404);
+    expect((await claim('img-404', { grant: grantOf('alice', 'edit') })).status).toBe(404);
+    expect(
+      (await claim('x'.repeat(IMAGE_ID_MAX + 1), { grant: grantOf('alice', 'edit') })).status,
+    ).toBe(404);
+    expect((await claim(id, { grant: grantOf('alice', 'view') })).status).toBe(403);
+    expect((await claim(id, { grant: grantOf('alice', 'edit') }, '')).status).toBe(400);
+    expect((await claim(id, { person: null })).status).toBe(400);
+    expect(granted).toEqual([]);
+  });
+
+  it('refuses an API token and a workbench session both', async () => {
+    for (const extra of [
+      { token: { id: 'tok' } },
+      { workbench: { scope: 'project', projectId: PLAN } },
+    ]) {
+      for (const [method, path] of [
+        ['GET', '/api/images'],
+        ['POST', `/api/images/img-1/claim?p=${PLAN}`],
+      ] as const) {
+        const ctx = makeTestRouteContext(method, path, {
+          owner: 'alice',
+          env,
+          ...(extra as object),
+        });
+        expect((await handleImages(ctx)).status, `${method} ${path}`).toBe(403);
+      }
+    }
   });
 });
 

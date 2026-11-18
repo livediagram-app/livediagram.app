@@ -12,6 +12,7 @@ export interface PublicForm {
   heading: string;
   description?: string;
   cover?: FormCover;
+  width?: 'wide';
   sections: PublicSection[];
   confirmation: string;
 }
@@ -33,6 +34,7 @@ export function publicForm(form: FormDefinition): PublicForm {
   };
   if (form.description) out.description = form.description;
   if (form.cover) out.cover = { ...form.cover };
+  if (form.width === 'wide') out.width = 'wide';
   return out;
 }
 

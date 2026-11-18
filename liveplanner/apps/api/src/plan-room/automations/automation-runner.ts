@@ -327,6 +327,8 @@ export async function runRule(
       ...(event.pull ? { github: event.pull } : {}),
       // An Email Received run's sender, for {{from}} (a Wait's held event keeps it).
       ...(event.email ? { email: event.email.from } : {}),
+      // A Form Response run's answers, for {{answer.<Question>}} (a Wait's held event keeps them).
+      ...(event.answers ? { answers: event.answers } : {}),
       turn: opts.turn ?? (opts.dry ? 0 : deps.store.turn(rule.id)),
       ...(items ? { items } : {}),
     };

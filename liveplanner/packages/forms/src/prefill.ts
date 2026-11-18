@@ -49,6 +49,7 @@ export function readPrefill(
   const out: Record<string, AnswerValue> = {};
   for (const section of form.sections) {
     for (const q of section.questions) {
+      if (q.type === 'content') continue;
       const values = params.getAll(`${PREFILL_PREFIX}${q.id}`);
       if (values.length === 0) continue;
       const value = kept(q, withoutOther(q, rawAnswer(q, values)));

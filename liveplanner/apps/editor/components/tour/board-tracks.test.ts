@@ -170,7 +170,7 @@ describe('setupMissions', () => {
   it('rings the column cog, the WIP input and the add widget button', () => {
     expect(rename!.hints[1]!.ring!()).toBe(`${boardRoot('b0')} [aria-label$=" column settings"]`);
     expect(wip!.hints[1]!.ring!()).toBe('[id^="column-"][id$="-wip"]');
-    expect(widget!.hints[1]!.ring!()).toBe(`${boardRoot('b0')} button[aria-label="Add a widget"]`);
+    expect(widget!.hints[1]!.ring!()).toBe(`${boardRoot('b0')} button[data-widget-add]`);
   });
 });
 
