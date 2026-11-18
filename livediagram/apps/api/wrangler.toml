@@ -15,8 +15,8 @@ preview_urls = false
 port = 8687
 
 # Plain (non-secret) vars. Everything here is every fork's default too, so
-# what only livediagram.app runs with is NOT here: TELEMETRY_ENABLED and the
-# image gallery caps live in `hosted-vars.json`, which the deploy workflow adds
+# what only livediagram.app runs with is NOT here: TELEMETRY_ENABLED,
+# LIVE_STATUS_ENABLED and the image gallery caps live in `hosted-vars.json`, which the deploy workflow adds
 # with `wrangler deploy --var` on livediagram.app's own repository only, and
 # then verifies on the editor worker (docs/specs/016-platform/deployment.md
 # "Hosted profile"). A fork is therefore telemetry-off and uncapped until it

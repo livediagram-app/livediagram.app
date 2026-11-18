@@ -39,6 +39,12 @@ export const STATUS_SOURCES_MAX = 25;
 // One check's deadline over the whole exchange, and the most of its body read.
 export const STATUS_TIMEOUT_MS = 5_000;
 export const STATUS_BODY_MAX = 64 * 1024;
+// How soon after a save the room looks for a URL it hasn't checked yet, so a new binding's badge appears in seconds.
+export const STATUS_BIND_DELAY_MS = 3_000;
+
+// The system op the room sends each session (docs/specs/015-api/api.md "service-status"): the latest check of each
+// status URL bound on the tabs the session may see, keyed by the URL.
+export type ServiceStatusOp = { kind: 'service-status'; statuses: Record<string, ServiceStatus> };
 
 // Atlassian Statuspage's `status.indicator`.
 const INDICATORS: Record<string, ServiceState> = {

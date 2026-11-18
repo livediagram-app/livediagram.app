@@ -117,6 +117,8 @@ export function noteWrite(room: DocumentRoom): void {
   }
   const now = Date.now();
   if (room.shares.noteWrite()) room.armAlarm();
+  // A save may have bound a URL the room hasn't checked (docs/specs/009-elements/live-status.md).
+  room.serviceStatus.noteWrite();
   // A drain set far off, for a key in backoff, gives way to the key just written.
   const at = flushAfterWrite(room.state.storage.sql, room.flushAt, now, room.lastFlushAt);
   if (at === null) return;
