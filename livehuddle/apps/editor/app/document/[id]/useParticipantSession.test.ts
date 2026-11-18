@@ -42,15 +42,10 @@ describe('useParticipantSession', () => {
     });
   });
 
-  // An Editor previewing as a Participant (docs/specs/007-editor/editor-app.md#role-pill): no key from the room, so the
-  // preview's own; a room key, once held, wins. The key still adds nothing.
-  it('takes the preview key while the room gives none', () => {
-    const { result } = renderHook(() =>
-      useParticipantSession('participate', undefined, 'preview-p1'),
-    );
-    expect(result.current.adderKey).toBe('preview-p1');
-    expect(result.current.can.addContent).toBe(false);
-    expect(result.current.can.alwaysWalks).toBe(true);
+  // The adder key comes from the room's ticket alone (docs/specs/013-workspace/share-roles.md).
+  it('holds no adder key until the room gives one', () => {
+    const { result } = renderHook(() => useParticipantSession('participate'));
+    expect(result.current.adderKey).toBeNull();
     act(() => result.current.setAdderKey('a'.repeat(32)));
     expect(result.current.adderKey).toBe('a'.repeat(32));
   });

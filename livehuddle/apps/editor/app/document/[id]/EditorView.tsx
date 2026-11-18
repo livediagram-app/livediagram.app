@@ -20,7 +20,6 @@ import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/use
 import { EditorCanvasHost } from '@/components/canvas/EditorCanvasHost';
 import { ConnectedTabHost } from '@/components/connect/ConnectedTabHost';
 import { EditorCornerActions } from '@liveworkspace/workbench/components/chrome/EditorCornerActions';
-import { roleToolsItem } from '@liveworkspace/workbench/components/chrome/RoleTool';
 import { CommunityBar } from '@/components/chrome/CommunityBar';
 import { useAutoCopyParam } from '@liveworkspace/workbench/hooks/canvas/useAutoCopyParam';
 import { EmbedChrome } from '@/components/chrome/EmbedChrome';
@@ -45,8 +44,6 @@ import { useEditorAccent } from '@/hooks/ui/useEditorAccent';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useEditorContext } from './EditorContext';
 import { useSelectTab } from './useSelectTab';
-import { useRoleIndicator } from './useRoleIndicator';
-import { roleOwnerLabel } from '@/components/chrome/RoleIndicator';
 import { UiScaleProvider } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { DockNamesProvider } from '@liveworkspace/workbench/hooks/ui/useDockNames';
 import { useEditorUiScales } from '@liveworkspace/workbench/hooks/ui/useEditorUiScales';
@@ -168,7 +165,6 @@ export function EditorView() {
   });
   // UI scale (docs/specs/007-editor/ui-scale.md): desktop only, and a dragged Settings slider's patch wins.
   const { uiScales } = useEditorUiScales(userPreferences);
-  const role = useRoleIndicator();
   // A tab's Attendance (docs/specs/012-collaboration/tab-attendance.md "Where it shows"): the tab whose dialog is open.
   // An Editor's and a Participant's, on a document with a room (not one saved only in This Browser).
   const [attendanceTabId, setAttendanceTabId] = useState<string | null>(null);
@@ -206,8 +202,8 @@ export function EditorView() {
 
   // The site header. Embeds (docs/specs/013-workspace/embeds.md) never show it. Side by
   // side (docs/specs/007-editor/split-view.md) lays it across both panes.
-  // Experiment: no header bar. The name, its visibility badge and the role pill are gone (the role's switch is the
-  // Editing Mode tool in Tools); Copy, Share and the account float in a card at the top right.
+  // Experiment: no header bar. The name and its visibility badge are gone; Copy, Share and the account float in a
+  // card at the top right.
   const header = !appChrome ? null : (
     <AreaErrorBoundary area="Header" fallback="panel">
       <EditorCornerActions
@@ -285,15 +281,6 @@ export function EditorView() {
               setSettingsOpen(true);
               track('UI', 'Opened', 'Settings');
             }}
-            extraTools={[
-              roleToolsItem({
-                role: role.role,
-                owner: roleOwnerLabel(role.ownerName, role.isSelf),
-                noun: 'space',
-                canSwitch: !!role.onToggle,
-                onPick: ctx.setViewPreview,
-              }),
-            ]}
             onOpenSearch={() => openSearchWithPrefetch(setSearchOpen, loadAllTabs)}
             // Canvas right-click (desktop) + long-press (touch) open the active
             // tab's menu with the canvas sections folded in, rendered by the

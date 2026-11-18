@@ -3,7 +3,6 @@ import { embedOpensReadOnly, embedSessionRole } from '@liveworkspace/media/embed
 import type { CommentMention } from '@livedocuments/document';
 import { useEditorContextMenu } from '@/hooks/canvas/useEditorContextMenu';
 import { useEditorPreferences } from '@/hooks/persistence/useEditorPreferences';
-import { useViewPreview } from '../useViewPreview';
 import { useParticipantSession } from '../useParticipantSession';
 import { useConfirm } from '@liveworkspace/workbench/hooks/ui/useConfirm';
 import { useToast } from '@/hooks/ui/useToast';
@@ -43,8 +42,7 @@ export function useEditorSession({
   // A pasted share link's embed opens read-only whatever the link's role (embeds.md "Pasting a share link"):
   // `&readonly=1`, read once, so an edit link unfolded into a public page gives its readers no edit rights.
   const [readOnlyEmbed] = useState(() => embedOpensReadOnly(embedMode));
-  const { sessionTabScope, activeId, setSelectedId, setEditingId, setMultiSelectedIds } =
-    selectionSlice;
+  const { sessionTabScope, activeId } = selectionSlice;
   const { dialogs } = toolsSlice;
   // Local-session participant. Initialised to a stable placeholder so the
   // SSG output and the first client paint agree (Math.random() in a lazy
@@ -281,18 +279,14 @@ export function useEditorSession({
   // code's role (docs/specs/013-workspace/embeds.md): a view code renders a read-only viewer, an edit
   // code an editable embed. The api enforces the role on every write, so
   // this is presentation-side only.
-  // The role pill's local read-only preview (docs/specs/007-editor/editor-app.md#role-pill).
-  // A workbench session that ended leaves the editor read-only (the autosave stands down with it).
-  const { viewPreview, previewLevel, canToggleRole, toggleViewPreview, setViewPreview, canEdit } =
-    useViewPreview(workbench?.ended ? 'view' : embedSessionRole(sessionRole, readOnlyEmbed), () => {
-      setSelectedId(null);
-      setMultiSelectedIds(new Set());
-      setEditingId(null);
-    });
+  // The level in force (docs/specs/013-workspace/share-roles.md): a workbench session that ended leaves the
+  // editor read-only (the autosave stands down with it).
+  const level = workbench?.ended ? 'view' : embedSessionRole(sessionRole, readOnlyEmbed);
+  const canEdit = level === 'edit';
   const isReadOnly = !canEdit;
   // What a Participant may do, and the guard on its commits (docs/specs/013-workspace/share-roles.md): text only.
   // `isReadOnly` stays true for a Participant: its text gestures open through `participant.can` alone.
-  const participant = useParticipantSession(workbench?.ended ? 'view' : previewLevel, toast.info);
+  const participant = useParticipantSession(level, toast.info);
   // The document's structure (tabs, their order and folders, the name, the
   // deck) is read-only for a view link and for any tab-scoped link: a scoped
   // edit link edits its one tab's content, nothing around it
@@ -391,10 +385,6 @@ export function useEditorSession({
     documentList,
     refreshDocumentList,
     documentTrashed,
-    viewPreview,
-    canToggleRole,
-    toggleViewPreview,
-    setViewPreview,
     canEdit,
     isReadOnly,
     participant,

@@ -65,7 +65,6 @@ import { useEditorAccent } from '@/hooks/ui/useEditorAccent';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useEditorContext } from './EditorContext';
 import { useSelectTab } from './useSelectTab';
-import { useRoleIndicator } from './useRoleIndicator';
 import { UiScaleProvider } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { DockNamesProvider } from '@liveworkspace/workbench/hooks/ui/useDockNames';
 import { useEditorUiScales } from '@liveworkspace/workbench/hooks/ui/useEditorUiScales';
@@ -206,7 +205,6 @@ export function EditorView() {
   });
   // UI scale (docs/specs/007-editor/ui-scale.md): desktop only, and a dragged Settings slider's patch wins.
   const { uiScales, isMobileViewport } = useEditorUiScales(userPreferences);
-  const role = useRoleIndicator();
 
   const selectTab = useSelectTab();
   // Contextual command palette for the SearchPanel "Actions" group (docs/specs/008-canvas/canvas-and-palette.md):
@@ -270,7 +268,6 @@ export function EditorView() {
   const header = editorViewHeader(ctx, {
     isOffline,
     headerCommunity,
-    role,
     isMobileViewport,
     landscapeShown: landscapeBars.shown,
   });
@@ -278,7 +275,6 @@ export function EditorView() {
     isOffline,
     selectTab,
     landscapeShown: landscapeBars.shown,
-    role,
   });
 
   // The bars handle, at the canvas's top-right corner: only on a phone held sideways (CSS), and only

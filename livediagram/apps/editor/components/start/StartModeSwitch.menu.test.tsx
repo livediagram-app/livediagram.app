@@ -237,7 +237,7 @@ describe('StartModeSwitch in the editor', () => {
     expect(chip().getAttribute('aria-label')).toBe('Tab mode: Diagram');
   });
 
-  // docs/specs/007-editor/editor-app.md#role-pill: previewing as a viewer, an editor is a viewer.
+  // A Viewer or a Participant (docs/specs/013-workspace/share-roles.md) cannot edit, so gets no switch.
   it('offers a visitor who cannot edit no switch', () => {
     const { container } = render(<Host tab={freshTab()} canEdit={false} />);
     expect(slot(container)).toBeNull();

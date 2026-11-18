@@ -165,60 +165,6 @@ export function buildRemoteCursorRows(
   return rows;
 }
 
-// Three-tier resolution for the canvas's top-middle "Owner" badge,
-// lifted out of EditorCanvasHost:
-//   1. Self IS the owner -> always have name + colour.
-//   2. Owner is currently in the room -> use the live presence row so
-//      the avatar (and its online dot) matches what visitors see in
-//      the TabBar.
-//   3. Owner is offline -> fall back to the joined name + colour we
-//      got from the project fetch (api worker LEFT JOINs participants
-//      on owner_id).
-// Returns null only when the owner truly has no participant record on
-// the server.
-export function resolveOwnerBadge(input: {
-  isOwner: boolean;
-  selfParticipant: Participant;
-  livePresence: Participant[];
-  projectOwnerId: string | null;
-  projectOwnerName: string | null;
-  projectOwnerColor: string | null;
-}): Participant | null {
-  const {
-    isOwner,
-    selfParticipant,
-    livePresence,
-    projectOwnerId,
-    projectOwnerName,
-    projectOwnerColor,
-  } = input;
-  if (isOwner) return selfParticipant;
-  // The share endpoint redacts ownerId to '' for visitors (so an
-  // observer can't learn + claim a guest's owner-id), so a
-  // visitor can't match the owner's live presence row by id.
-  // When we have the real id (owner opening their own link) match
-  // on it; otherwise fall back to the joined owner name + colour,
-  // which is the same identity the fetch already trusts. Without
-  // this, an online owner always resolved to the offline branch
-  // below and showed a red (offline) dot to viewers.
-  const live = projectOwnerId
-    ? livePresence.find((p) => p.id === projectOwnerId)
-    : livePresence.find((p) => p.name === projectOwnerName && p.color === projectOwnerColor);
-  if (live) return live;
-  // Owner not in the room: key the badge off the NAME, not the
-  // (blanked) id, or viewers never get the badge at all. The id
-  // here is display-only, so a synthetic fallback is fine.
-  if (projectOwnerName) {
-    return {
-      id: projectOwnerId || 'owner',
-      name: projectOwnerName,
-      color: projectOwnerColor ?? '#94a3b8',
-      status: 'offline' as const,
-    };
-  }
-  return null;
-}
-
 // A peer's `select` op as the badges and lock read it (@liveworkspace/workbench/lib/remote-selection: the whole
 // selection holds, docs/specs/007-editor/editor-app.md "The whole selection holds"), capped like the sender caps it.
 export type { RemoteSelection };

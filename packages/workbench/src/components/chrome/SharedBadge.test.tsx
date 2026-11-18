@@ -122,7 +122,7 @@ describe('SharedBadge legend', () => {
     expect(screen.queryByText('Change Who Can See This')).toBeNull();
   });
 
-  it('lays its manage button out as a box, so the chip sits level with the role pill', () => {
+  it('lays its manage button out as a box, so the chip sits level with the pills beside it', () => {
     render(<SharedBadge shareable={false} onManage={vi.fn()} />);
     const button = screen.getByRole('button', { name: 'Private' });
     // An inline button's line box stood it 24 px tall around the 19 px chip, which then sat low.

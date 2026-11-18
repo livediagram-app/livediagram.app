@@ -152,12 +152,6 @@ describe('EditorHeader pills', () => {
     rerender(header({ onOpenShare, showShare: false }));
     expect(screen.queryByRole('button', { name: 'Private' })).toBeNull();
   });
-
-  it('puts the role pill after the visibility pill', () => {
-    render(header({ rolePill: <span>Editing</span> }));
-    const pills = screen.getByText('Editing').closest('[data-header-pills]')!;
-    expect(pills.textContent).toMatch(/^Private.*Editing$/);
-  });
 });
 
 describe('EditorHeader actions', () => {

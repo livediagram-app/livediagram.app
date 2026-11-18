@@ -1,31 +1,14 @@
 import type { Page } from '@playwright/test';
 import { dismissQuickTour, expect, expectNoPageErrors, test } from './fixtures';
 
-// Previewing a role (docs/specs/007-editor/editor-app.md#role-pill): with no header bar (experiment) the role pill is the Editing Mode tool in
-// Tools. And the chrome everyone gets now Power user mode is retired (docs/specs/007-editor/power-user-mode.md), in a real browser, dark mode.
+// The chrome everyone gets: no header bar (experiment) and no Editing Mode tool in Tools, now Power user mode is retired (docs/specs/007-editor/power-user-mode.md), in a real browser, dark mode.
 test.use({ colorScheme: 'dark' });
 
-const PREFS_KEY = 'livedocuments:user-preferences:v1';
+const PREFS_KEY = 'livehuddle:user-preferences:v1';
 
 const dialog = (page: Page) => page.getByRole('dialog', { name: 'Settings' });
 const tabBar = (page: Page) => page.locator('[data-editor-tabbar]');
 const tools = (page: Page) => tabBar(page).getByRole('button', { name: /^Tools/ });
-const roleOption = (page: Page, role: string) => page.locator(`[data-role-option="${role}"]`);
-
-// Tools, then Editing Mode, then the role: the tool closes on the pick. Opened again, the pick is the checked one.
-async function pickRole(page: Page, role: 'edit' | 'participate' | 'view') {
-  await tools(page).click();
-  await page.locator('[data-tools-item="role"]').click();
-  await roleOption(page, role).click();
-  await expect(roleOption(page, role)).toHaveCount(0);
-  await tools(page).click();
-  await page.locator('[data-tools-item="role"]').click();
-  await expect(roleOption(page, role)).toHaveAttribute('aria-checked', 'true');
-  // Back to the list, then closed.
-  await page.keyboard.press('Escape');
-  await page.keyboard.press('Escape');
-  await expect(page.locator('[data-tools-item="role"]')).toHaveCount(0);
-}
 
 async function openEditor(page: Page) {
   await page.setViewportSize({ width: 1280, height: 800 });
@@ -35,20 +18,19 @@ async function openEditor(page: Page) {
   await dismissQuickTour(page);
 }
 
-test.describe('Editing Mode', () => {
-  test('previews another role from Tools for the owner, and goes back to editing', async ({
+test.describe('Tools', () => {
+  test('offers no Editing Mode: an owner edits, with no role to preview', async ({
     page,
     pageErrors,
   }) => {
     await openEditor(page);
-    // No header bar, so no pill in one.
+    // No header bar, so no role pill in one.
     await expect(page.locator('header[data-region="header"]')).toHaveCount(0);
-    await expect(page.locator('[data-category-bar-button][aria-label="Shapes"]')).toBeVisible();
-    await pickRole(page, 'view');
-    // Read-only for a Viewer, walking for a Participant: the building categories are gone.
-    await expect(page.locator('[data-category-bar-button][aria-label="Shapes"]')).toHaveCount(0);
-    await pickRole(page, 'edit');
-    await expect(page.locator('[data-category-bar-button][aria-label="Shapes"]')).toBeVisible();
+    await tools(page).click();
+    await expect(page.locator('[data-tools-item]').first()).toBeVisible();
+    await expect(page.locator('[data-tools-item="role"]')).toHaveCount(0);
+    await expect(page.getByText('Editing Mode', { exact: true })).toHaveCount(0);
+    await page.keyboard.press('Escape');
     expectNoPageErrors(pageErrors);
   });
 });
@@ -59,7 +41,7 @@ test.describe('Retired power user keys', () => {
     pageErrors,
   }) => {
     // What a person who had Power user mode on carries: the mode, its baseline, Minimal chrome, the offer's latch,
-    // and the preset's values (alignment guides, auto-attach arrows, tours seen).
+    // and the preset's values (alignment guides on, the Receptionist's welcome and element tours seen).
     await page.addInitScript((key) => {
       if (sessionStorage.getItem('seeded')) return;
       sessionStorage.setItem('seeded', '1');
@@ -76,8 +58,7 @@ test.describe('Retired power user keys', () => {
             },
           },
           alignmentGuides: true,
-          autoRebindArrows: false,
-          pagesTourSeen: true,
+          avatarTourSeen: true,
           elementToursSeen: true,
         }),
       );
@@ -99,10 +80,11 @@ test.describe('Retired power user keys', () => {
       'aria-checked',
       'true',
     );
-    await expect(dialog(page).getByRole('switch', { name: 'Auto-Attach Arrows' })).toHaveAttribute(
-      'aria-checked',
-      'false',
-    );
+    // Tours seen stay seen: the Receptionist's welcome is not given again.
+    await dialog(page).getByRole('button', { name: 'Getting Started', exact: true }).click();
+    await expect(
+      dialog(page).getByRole('switch', { name: "Receptionist's Welcome" }),
+    ).toHaveAttribute('aria-checked', 'false');
     expectNoPageErrors(pageErrors);
   });
 });

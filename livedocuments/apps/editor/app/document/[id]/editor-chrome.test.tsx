@@ -174,7 +174,6 @@ const base = {
   slideDeck: { runnable: [], startingDeck: false },
   can: { level: 'edit' },
   isOwner: true,
-  canToggleRole: false,
   selfParticipant: self,
   livePresence: [],
   documentOwnerId: 'me',

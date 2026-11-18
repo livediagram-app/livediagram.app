@@ -71,8 +71,6 @@ export type EditorHeaderProps = {
   // Bumped by the command palette's rename action to enter inline edit mode (the palette can't reach this
   // component's local editing state). A monotonic counter; each increment opens the editor (unless read-only).
   renameNonce?: number;
-  // The role pill (docs/specs/007-editor/editor-app.md#role-pill), after the visibility badge.
-  rolePill?: ReactNode;
   // The Present button (docs/specs/012-collaboration/presentation-mode.md "The header's Present button"): passed
   // only while there is something to present, so absent means no button.
   present?: { slideCount: number; starting: boolean; onPresent: () => void };
@@ -86,7 +84,7 @@ export type EditorHeaderProps = {
 };
 
 // The editor's header (docs/specs/007-editor/editor-app.md "Header actions"; `live-app.md` in livedesign): the logo,
-// the item's name with its visibility pill and role pill, and the right edge's full-height actions. One copy for
+// the item's name with its visibility pill, and the right edge's full-height actions. One copy for
 // every editor; each binds it in its components/chrome/EditorHeader.tsx with only what differs.
 export function EditorHeader({
   app,
@@ -105,7 +103,6 @@ export function EditorHeader({
   onOpenShare,
   onRename,
   renameNonce = 0,
-  rolePill,
   present,
   leadAction,
   shareAction,
@@ -195,9 +192,6 @@ export function EditorHeader({
                 community={community}
                 onManage={showShare ? onOpenShare : undefined}
               />
-              {rolePill ? (
-                <span className="ml-1 inline-flex items-center gap-2">{rolePill}</span>
-              ) : null}
             </span>
           </div>
         )}

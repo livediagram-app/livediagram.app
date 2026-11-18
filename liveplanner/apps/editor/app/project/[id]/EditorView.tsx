@@ -79,7 +79,6 @@ import {
   useSignInNudge,
 } from './editor-view-hooks';
 import { useSelectTab } from './useSelectTab';
-import { useRoleIndicator } from './useRoleIndicator';
 import { UiScaleProvider } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { DockNamesProvider } from '@liveworkspace/workbench/hooks/ui/useDockNames';
 import { CursorsDrawnContext } from '@liveworkspace/workbench/hooks/collab/useHideCursors';
@@ -157,7 +156,6 @@ export function EditorView() {
   useHeaderCommunity(ctx);
   // UI scale (docs/specs/007-editor/ui-scale.md): desktop only, and a dragged Settings slider's patch wins.
   const { uiScales, isMobileViewport } = useEditorUiScales(userPreferences);
-  const role = useRoleIndicator();
 
   const selectTab = useSelectTab();
   // A board's Form strip (docs/specs/030-forms/forms.md "On the board"): the forms feeding the open tab.
@@ -218,7 +216,7 @@ export function EditorView() {
     hideable: walkthroughHideable,
   });
   const header = renderEditorHeader(ctx);
-  const footer = renderEditorTabBar(ctx, { selectTab, barsShown: landscapeBars.shown, role });
+  const footer = renderEditorTabBar(ctx, { selectTab, barsShown: landscapeBars.shown });
   // The bars handle, at the canvas's top-right corner: only on a phone held sideways (CSS), and only
   // where there are bars to fold (not in zen, an embed, the workbench frame or the welcome flow).
   const landscapeBarsHandle =
