@@ -1,46 +1,54 @@
 'use client';
 
-// A text colour picker's readability row (docs/specs/004-interface-design/colour-picker.md "Reading on
-// its ground"): under the swatches, kept at one height for as long as the picker is open, so the swatches
-// never move under the pointer and the popover opens tall enough to show it. While the colour judged is
-// under its WCAG target where the text sits: the colour on its ground as a small Aa tile, what falls short
-// ("1.9:1, aim for 4.5:1"), and Use with the nearest shade of the same hue that passes. While it reads, a
-// quiet line says so. A hint, never a block: the status region is always there (so screen readers hear a
-// shortfall arrive) and holds only the shortfall.
-import { contrastRatio, type TextGround } from '@livedesign/design';
+// A text colour picker's readability row (each product's docs/specs/004-interface-design/colour-picker.md "Reading on
+// its ground"): under the swatches, kept at one height for as long as the picker is open, so the swatches never move
+// under the pointer and the popover opens tall enough to show it. While the colour judged is under its WCAG target
+// where the text sits: the colour on its ground as a small Aa tile, what falls short ("1.9:1, aim for 4.5:1"), and Use
+// with the nearest shade of the same hue that passes. While it reads, a quiet line says so. A hint, never a block: the
+// status region is always there (so screen readers hear a shortfall arrive) and holds only the shortfall.
 import { Tooltip } from '@liveworkspace/ui';
-import { judgeText, type TextJudgement } from '@/lib/text-contrast-judge';
-import type { TextContrastProbe } from '@/lib/text-contrast-probe';
+import { canvasSurface, contrastRatio } from '@liveworkspace/element-model/colour-math';
+import type { TextGround } from '@liveworkspace/element-model/text-contrast';
+import { judgeText, type TextJudgement } from '@liveworkspace/element-model/text-contrast-judge';
+import type { TextContrastProbe } from '@liveworkspace/element-model/text-contrast-probe';
+import { onMouseHover } from '../primitives/hover-preview';
 
 const GROUND_WORDS: Record<TextGround['on'], string> = {
   page: 'on this page',
+  canvas: 'on the canvas',
   shape: 'on its fill',
   card: 'on the shape behind',
+  cell: 'on its cell',
 };
 
-// The row's one height: three lines of the hint's text (two of what it reads on, one of the ratio), inside
-// its padding and border, the tallest it draws.
+// The row's one height: three lines of the hint's text (two of what it reads on, one of the ratio), inside its padding
+// and border, the tallest it draws.
 export const CONTRAST_ROW_PX = 60;
 
 // One decimal, never rounded up onto the target: 4.47 reads 4.4, so it never shows "4.5:1" short of 4.5.
 const ratioText = (r: number) => `${Math.floor(r * 10) / 10}:1`;
 
-// Where it was judged: the one ground, the page as exported on a dark canvas, or how many of several.
+// Where it was judged: the one ground, the page as exported on a dark canvas, the canvas as saved when it is seen in
+// the other appearance, or how many of several.
 function whereWords(j: TextJudgement): string {
   if (j.of > 1) return j.passes ? `for all ${j.of}` : `for ${j.failing} of ${j.of}`;
-  return j.exported ? 'on the exported page' : GROUND_WORDS[j.on];
+  if (!j.exported) return GROUND_WORDS[j.on];
+  return j.on === 'canvas' ? `on the ${canvasSurface(j.tone)} canvas` : 'on the exported page';
 }
 
 export function ContrastHint({
   probes,
   judged,
   onUse,
+  onArrive,
 }: {
   // Every ground the text sits on (one element, or several: the worst counts).
   probes: readonly TextContrastProbe[];
   // The swatch id judged, or null for the colour in force.
   judged: string | null;
   onUse: (hex: string) => void;
+  // The mouse reaching the row, on its way to Use (useJudgedSwatch's `arrive`).
+  onArrive?: () => void;
 }) {
   const j = judgeText(probes, judged);
   const short = j && !j.passes ? j : null;
@@ -60,6 +68,7 @@ export function ContrastHint({
       data-contrast-row=""
       className="grid *:col-start-1 *:row-start-1"
       style={{ height: CONTRAST_ROW_PX }}
+      onPointerEnter={onArrive ? onMouseHover(onArrive) : undefined}
     >
       <div role="status" data-testid="contrast-hint">
         {short ? (

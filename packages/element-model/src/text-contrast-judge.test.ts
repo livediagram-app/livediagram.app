@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { contrastRatio, type TextGround } from '@livedesign/design';
+import { contrastRatio } from './colour-math';
+import type { TextGround } from './text-contrast';
 import { judgeText } from './text-contrast-judge';
 import type { TextContrastProbe } from './text-contrast-probe';
 
-// docs/specs/004-interface-design/colour-picker.md "Reading on its ground": several grounds, the worst counts.
+// Each product's docs/specs/004-interface-design/colour-picker.md "Reading on its ground": several grounds, the worst
+// counts.
 const PAPER: TextGround = { tones: ['#ffffff'], on: 'page' };
 const CREAM: TextGround = { tones: ['#fef3c7'], on: 'card' };
 const probe = (
@@ -58,5 +60,15 @@ describe('judgeText', () => {
     expect(
       judgeText([probe(PAPER, '#808080'), probe(navy, '#808080')], null)!.suggestion,
     ).toBeNull();
+  });
+
+  it('counts a probe standing for several texts as that many', () => {
+    const j = judgeText([probe(PAPER, '#fde047', { count: 5 }), probe(CREAM, '#0f172a')], null)!;
+    expect(j).toMatchObject({ failing: 5, of: 6, passes: false });
+    expect(judgeText([probe(PAPER, '#0f172a', { count: 3 })], null)).toMatchObject({
+      passes: true,
+      failing: 0,
+      of: 3,
+    });
   });
 });

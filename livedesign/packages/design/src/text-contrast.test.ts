@@ -1,20 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
-import { contrastRatio, hexToRgb } from './colors';
 import { createShape, createSticky, createText } from './index';
 import type { BoxedElement, Element, ShapeElement } from './index';
 import { layOutPages, type Page, type PageFill } from './page';
-import {
-  isLargeText,
-  labelDrawnPx,
-  labelIsBold,
-  LARGE_TEXT_CONTRAST,
-  TEXT_CONTRAST,
-  textContrast,
-  textGroundOf,
-} from './text-contrast';
+import { labelDrawnPx, textGroundOf } from './text-contrast';
 
-// docs/specs/004-interface-design/colour-picker.md "Reading on its ground".
+// docs/specs/004-interface-design/colour-picker.md "Reading on its ground": this model's grounds. The judge's own
+// table (ratios, large text, shades) is the shared one's, @liveworkspace/element-model/text-contrast.test.ts.
 
 const PAGE = { id: 'p', orientation: 'portrait' } as const;
 const rect = layOutPages([PAGE])[0]!.rect;
@@ -45,92 +37,12 @@ function shape(id: string, extra: Partial<ShapeElement> = {}, dx = 20, dy = 20):
   };
 }
 
-// The hue of a #rrggbb, in degrees (HSL).
-function hue(hex: string): number {
-  const { r, g, b } = hexToRgb(hex)!;
-  const [R, G, B] = [r / 255, g / 255, b / 255];
-  const max = Math.max(R, G, B);
-  const d = max - Math.min(R, G, B);
-  if (d === 0) return 0;
-  const h = max === R ? ((G - B) / d) % 6 : max === G ? (B - R) / d + 2 : (R - G) / d + 4;
-  return (h * 60 + 360) % 360;
-}
-
-describe('textContrast', () => {
-  it('matches the WCAG example ratios', () => {
-    expect(textContrast('#000000', ['#ffffff'], false)!.ratio).toBeCloseTo(21, 5);
-    expect(textContrast('#ffffff', ['#ffffff'], false)!.ratio).toBeCloseTo(1, 5);
-    // #767676 on white is the classic AA pass at 4.54:1; #777777 the classic miss at 4.48:1.
-    expect(textContrast('#767676', ['#ffffff'], false)!.ratio).toBeCloseTo(4.54, 2);
-    expect(textContrast('#767676', ['#ffffff'], false)!.passes).toBe(true);
-    expect(textContrast('#777777', ['#ffffff'], false)!.passes).toBe(false);
-  });
-
-  it('holds large text to 3:1 and normal text to 4.5:1', () => {
-    // #949494 on white: about 3.03:1, large text only.
-    const large = textContrast('#949494', ['#ffffff'], true)!;
-    const normal = textContrast('#949494', ['#ffffff'], false)!;
-    expect(large.needed).toBe(LARGE_TEXT_CONTRAST);
-    expect(large.passes).toBe(true);
-    expect(large.suggestion).toBeNull();
-    expect(normal.needed).toBe(TEXT_CONTRAST);
-    expect(normal.passes).toBe(false);
-  });
-
-  it('suggests the nearest shade of the same hue that passes', () => {
-    for (const [colour, ground] of [
-      ['#fde047', '#ffffff'], // yellow on white: darkened
-      ['#60a5fa', '#ffffff'], // light blue on white
-      ['#1e3a8a', '#0f172a'], // navy on a dark page: lightened
-      ['#f97316', '#fb923c'], // orange on orange
-    ] as const) {
-      const c = textContrast(colour, [ground], false)!;
-      expect(c.passes).toBe(false);
-      expect(c.suggestion).not.toBeNull();
-      expect(contrastRatio(c.suggestion!, ground)).toBeGreaterThanOrEqual(TEXT_CONTRAST);
-      // The least change: only just past the target, not black or white.
-      expect(contrastRatio(c.suggestion!, ground)).toBeLessThan(TEXT_CONTRAST + 0.3);
-      expect(Math.abs(hue(c.suggestion!) - hue(colour))).toBeLessThan(4);
-    }
-  });
-
-  it('reads the worst tone of a gradient and names it', () => {
-    const c = textContrast('#334155', ['#ffffff', '#64748b'], false)!;
-    expect(c.tone).toBe('#64748b');
-    expect(c.ratio).toBeCloseTo(contrastRatio('#334155', '#64748b'), 5);
-  });
-
-  it('offers no shade when none of its hue passes on every tone', () => {
-    const c = textContrast('#808080', ['#000000', '#ffffff'], false)!;
-    expect(c.passes).toBe(false);
-    expect(c.suggestion).toBeNull();
-  });
-
-  it('reads nothing it cannot judge', () => {
-    expect(textContrast('transparent', ['#ffffff'], false)).toBeNull();
-    expect(textContrast('#000000', [], false)).toBeNull();
-    expect(textContrast('#000000', ['not-a-colour'], false)).toBeNull();
-  });
-});
-
-describe('large text', () => {
-  it('is 24px, or 18.66px in bold', () => {
-    expect(isLargeText(24, false)).toBe(true);
-    expect(isLargeText(23, false)).toBe(false);
-    expect(isLargeText(19, true)).toBe(true);
-    expect(isLargeText(18, true)).toBe(false);
-  });
-
-  it('measures a label as drawn, scale and weight included', () => {
+describe('labelDrawnPx', () => {
+  it('measures the labels of this model as drawn, scale included', () => {
     expect(labelDrawnPx(text('t', 0, 0, { textSize: 'md', textScale: undefined }))).toBe(22);
-    expect(labelDrawnPx(text('t', 0, 0, { textSize: 'lg' }))).toBe(32);
     expect(labelDrawnPx(text('t', 0, 0, { textSize: 20, textScale: 1.5 }))).toBe(30);
     const sticky = { ...createSticky(0, 0), id: 's' } as BoxedElement;
     expect(labelDrawnPx(sticky)).toBe(16);
-    expect(labelIsBold(text('t', 0, 0, { textBold: true }))).toBe(true);
-    expect(labelIsBold(text('t', 0, 0, { textBold: true, fontWeight: 400 }))).toBe(false);
-    expect(labelIsBold(text('t', 0, 0, { fontWeight: 700 }))).toBe(true);
-    expect(labelIsBold(text('t'))).toBe(false);
   });
 });
 

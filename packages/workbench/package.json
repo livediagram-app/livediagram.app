@@ -136,6 +136,8 @@
     "./components/colour/ColourPopover": "./src/components/colour/ColourPopover.tsx",
     "./components/colour/PipetteIcon": "./src/components/colour/PipetteIcon.tsx",
     "./components/colour/CustomColourEditor": "./src/components/colour/CustomColourEditor.tsx",
+    "./components/colour/ContrastHint": "./src/components/colour/ContrastHint.tsx",
+    "./components/colour/useJudgedSwatch": "./src/components/colour/useJudgedSwatch.ts",
     "./components/comments/CommentMarks": "./src/components/comments/CommentMarks.tsx",
     "./components/comments/CommentReactions": "./src/components/comments/CommentReactions.tsx",
     "./components/comments/CommentReactionsContext": "./src/components/comments/CommentReactionsContext.tsx",

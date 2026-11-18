@@ -125,6 +125,10 @@ const HELD_AT_100 = [
   // (livediagram docs/specs/007-editor/toolbar-layout.md "Optional groups", Work Tracker 973).
   'src/hooks/ui/useStoredOpen.ts',
   'src/components/primitives/AccordionSection.tsx',
+  // A text colour picker's readability row and the swatch it judges, in livediagram, livedocuments and livedesign
+  // (docs/specs/004-interface-design/colour-picker.md "Reading on its ground", Work Tracker 1108).
+  'src/components/colour/ContrastHint.tsx',
+  'src/components/colour/useJudgedSwatch.ts',
 ];
 
 export default defineProject({
