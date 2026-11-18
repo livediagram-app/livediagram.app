@@ -355,7 +355,7 @@ title, its state, and every comment **verbatim**, with author and date and wheth
   (an emulated phone shot, a local check) and only leave the owner what truly needs them.
 - **Never split it into parts.** Build every Acceptance Criteria item in this one PR. Never open a "part 1 of N"
   PR, write a build plan of parts, or leave the rest of the card to a later PR (AGENTS.md). However big the card,
-  it is one PR; a high-risk piece takes `not-ready` on it instead.
+  it is one PR.
 - **If you can't deliver it** (a blocker turns up, or tests or the build won't pass after a real attempt):
   close any PR you opened, delete any branch you pushed, and report FAILED with what blocked you, what you tried, and what
   would unblock it.

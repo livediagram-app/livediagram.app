@@ -13,8 +13,8 @@ The liveworkspace monorepo. Read README.md and docs/structure.md first.
   through CI (docs/ci.md "Deploys").
 - One piece of work, one PR. Never split a card or feature into "part 1 of N" PRs that wait on each other, and
   never write a build plan of parts: build it whole on one branch in logical commits (spec, data, api, UI). A
-  risky piece doesn't split it out; that PR takes `not-ready` with the reason. The owner reviews the finished
-  feature once (owner, 2026-11-15, again 2026-11-18).
+  risky piece doesn't split it out. The owner reviews code only when it migrates the database (owner,
+  2026-11-15 and 2026-11-18).
 - Specs first, everywhere. A product change updates that product's `docs/specs/` first; a platform change
   (anything under `liveworkspace/` or a service's contract in `packages/`) updates
   [liveworkspace/docs/specs](liveworkspace/docs/specs/README.md) first, then its blueprint, then the code.
