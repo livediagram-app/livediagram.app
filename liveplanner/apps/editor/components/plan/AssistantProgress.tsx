@@ -33,9 +33,10 @@ export function AssistantProgress({
       aria-live="polite"
       className="mt-1.5 rounded-md border border-brand-100 bg-brand-50/60 px-2 py-1.5 text-[12px] leading-snug text-slate-700 max-sm:text-[14px] dark:border-brand-500/20 dark:bg-brand-500/10 dark:text-slate-200"
     >
-      <p className="flex items-center gap-1.5 font-medium text-brand-800 dark:text-brand-200">
-        <SparkleIcon size={12} aria-hidden className="shrink-0" />
-        <span className="min-w-0 truncate">
+      <p className="flex items-start gap-1.5 font-medium text-brand-800 dark:text-brand-200">
+        <SparkleIcon size={12} aria-hidden className="mt-[0.2em] shrink-0" />
+        {/* Wraps rather than truncates: the assistant's name is the point of the line, and the panel is narrow. */}
+        <span className="min-w-0 break-words">
           {line.note ? `${line.assistant.name} is on it` : `Waiting for ${line.assistant.name}`}
         </span>
       </p>
