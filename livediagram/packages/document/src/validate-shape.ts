@@ -5,6 +5,7 @@
 // @liveworkspace/element-model/shape-field-checks; this list keeps this product's order and its own checks.
 
 import { isChartSlice } from './malformed-chart-rows';
+import { isStatusUrl, STATUS_URL_MAX } from './status-source';
 import { isChairFacing, isRoomDoor } from './retired-elements';
 import { SELECTION_MODES, isPickerSource, isSelectionMode, isSessionTool } from './selection-mode';
 import { RESPONSES_MAX, RESPONSE_VALUE_MAX } from './responses';
@@ -210,6 +211,12 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
   CHECKLIST_CHECK,
   LEGEND_CHECK,
   ...SANKEY_CHECKS,
+  // Live service status (docs/specs/009-elements/live-status.md "The binding"): the webhooks address rules.
+  {
+    field: 'statusUrl',
+    valid: isStatusUrl,
+    rule: `a public https URL of at most ${STATUS_URL_MAX} characters, on a host name`,
+  },
 ];
 
 // A shape's own issue, its box already checked: the kind is required, the rest optional.

@@ -290,6 +290,8 @@ export * from './table';
 // the API uses to vet incoming tabs / documents). See validate.ts.
 export * from './validate';
 export * from './savable';
+// A shape's live status binding (docs/specs/009-elements/live-status.md).
+export * from './status-source';
 
 // Every stored field per element type (docs/specs/024-agents/blueprints/edit-operations.md).
 export * from './element-fields';

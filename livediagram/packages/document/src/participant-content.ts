@@ -52,6 +52,9 @@ const PARTICIPANT_IMAGE_FIELDS = [
   'alt',
   'credit',
 ] as const;
+// What a Participant never sets, even on what it added: a live status binding makes the room fetch a URL
+// (docs/specs/009-elements/live-status.md "Who may bind"). Kept as stored on its update, dropped from its add.
+const PARTICIPANT_NEVER_FIELDS = ['statusUrl'] as const;
 
 export type ParticipantRefusal =
   | 'tab-locked'
@@ -324,6 +327,7 @@ function mergeOwn(stored: Element, incoming: Element): Element {
   next.type = stored.type;
   next.addedBy = (stored as Bag).addedBy;
   copyField(next, stored, 'locked');
+  for (const field of PARTICIPANT_NEVER_FIELDS) copyField(next, stored, field);
   keepLiveFields(next, stored);
   return next as Element;
 }
@@ -432,6 +436,7 @@ function applyAdd(
   // A new element carries no answers or threads of its own yet, and a Participant cannot lock what it adds.
   for (const field of LIVE_ELEMENT_FIELDS) delete stamped[field];
   delete stamped.locked;
+  for (const field of PARTICIPANT_NEVER_FIELDS) delete stamped[field];
   const added = stamped as Element;
   if (isHeld(tab, added)) return refuse('locked', undo);
   if (!isValidElement(added)) return refuse('invalid', undo);
