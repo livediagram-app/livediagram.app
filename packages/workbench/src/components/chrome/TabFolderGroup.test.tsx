@@ -124,6 +124,15 @@ describe('TabFolderGroup', () => {
     expect(onToggle).not.toHaveBeenCalled();
   });
 
+  it('brings the open tab back into view on a click of its locked chip', () => {
+    const onToggle = vi.fn();
+    const onClosed = vi.fn();
+    render(<TabFolderGroup {...props({ activeId: 'b', onToggle, onClosed })} />);
+    fireEvent.click(chip());
+    expect(onClosed).toHaveBeenCalledOnce();
+    expect(onToggle).not.toHaveBeenCalled();
+  });
+
   it('can be shut again once the open tab is elsewhere, back as this visit left it', () => {
     const onToggle = vi.fn();
     const { container, rerender } = render(

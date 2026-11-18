@@ -25,7 +25,7 @@ export type TabFolderGroupProps<T extends { id: string }> = {
   // This visit's own choice (TabStrip); the folder also shows open while it holds the open tab.
   expanded: boolean;
   readOnly: boolean;
-  // Never called while the folder holds the open tab: it can't be shut then.
+  // Never called while the folder holds the open tab: it can't be shut then (a click shows the open tab instead).
   onToggle: () => void;
   // One member tab, rendered by the app (its TabFrame).
   renderTab: (tab: T) => ReactNode;
@@ -68,7 +68,9 @@ export function TabFolderGroup<T extends { id: string }>({
   // Holding the open tab keeps the folder open and locks its chip; nothing is written, so leaving undoes it.
   const holdsOpen = tabs.some((t) => t.id === activeId);
   const expanded = chosen || holdsOpen;
-  const toggle = holdsOpen ? undefined : onToggle;
+  // A click on a locked chip can't shut it; it brings the open tab back into view instead (reaching the chip on a
+  // phone scrolls the strip back, leaving the open tab's menu button under the edge fade).
+  const toggle = holdsOpen ? () => onClosed?.() : onToggle;
 
   // Once it has opened, the strip brings the folder into view (a phone's folder past the edge); once it has shut, or
   // opened round the open tab, the open tab.

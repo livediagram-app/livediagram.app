@@ -24,6 +24,15 @@ describe('scrollLeftToReveal', () => {
     expect(TAB_REVEAL_PAD).toBeGreaterThan(20);
   });
 
+  it('brings a phone tab’s menu button clear of the fade, measured on livediagram at 390px', () => {
+    // Tab 3 in an open folder after a tap on the chip scrolled the strip back: its ⋯ ran 212 to 236 under the
+    // 222 edge. The whole tab, ⋯ included, comes TAB_REVEAL_PAD inside.
+    const phone = { left: 12, right: 222, scrollLeft: 71 };
+    const to = scrollLeftToReveal(phone, { left: 159, right: 240 });
+    expect(to).toBe(117);
+    expect(phone.right - (240 - (to - phone.scrollLeft))).toBe(TAB_REVEAL_PAD);
+  });
+
   it('never scrolls before the start', () => {
     expect(scrollLeftToReveal({ ...strip, scrollLeft: 10 }, { left: 30, right: 90 })).toBe(0);
   });
