@@ -7,8 +7,12 @@ import { TEMPLATES } from './templates';
 // docs/specs/007-editor/templates-by-mode.md "Room to move": rooms grow, furniture keeps its size and its groups,
 // wall pieces stay on (or go back to) their walls.
 
-const at = (kind: string, x: number, y: number, more: Partial<ShapeElement> = {}): ShapeElement =>
-  ({ ...createShape(kind as ShapeElement['shape'], x, y), ...more });
+const at = (
+  kind: string,
+  x: number,
+  y: number,
+  more: Partial<ShapeElement> = {},
+): ShapeElement => ({ ...createShape(kind as ShapeElement['shape'], x, y), ...more });
 const room = (x: number, y: number, width: number, height: number) =>
   at('room', x, y, { width, height });
 const by = (els: Element[], kind: string) =>
