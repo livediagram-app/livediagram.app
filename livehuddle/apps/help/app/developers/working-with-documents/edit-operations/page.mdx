@@ -9,7 +9,7 @@ export const metadata = helpMetadata({
   path: '/help/developers/working-with-documents/edit-operations/',
 });
 
-<ArticleLayout title="Edit Operations Reference" description="The changeset vocabulary: operations, selectors, placement, flags and results." categoryTitle="Developers" categorySlug="developers/working-with-documents" parentArticle={{ title: "Working with Spaces", slug: "working-with-documents" }} subArticles={getSubArticles("working-with-canvases").filter((a) => a.slug !== "edit-operations")}>
+<ArticleLayout title="Edit Operations Reference" description="The changeset vocabulary: operations, selectors, placement, flags and results." categoryTitle="Developers" categorySlug="developers/working-with-documents" parentArticle={{ title: "Working with Spaces", slug: "working-with-documents" }} subArticles={getSubArticles("working-with-documents").filter((a) => a.slug !== "edit-operations")}>
 
 A **changeset** changes a tab with a short list of edit operations, applied together or not at all. This page lists the whole vocabulary: every operation, how to pick the elements it acts on, where new elements go, and what the answer tells you. [Working with Spaces](/help/developers/working-with-documents/#update-a-tab) shows how to send one.
 
@@ -80,7 +80,7 @@ A selector picks the elements an operation acts on. It is a ref, a quoted label,
 | `"Orders service"`     | The element whose label is exactly that, ignoring case                   |
 | `label~orders`         | Elements whose label contains `orders`                                   |
 | `type:sticky`          | Elements of that kind, as the outline prints it, or of that element type |
-| `shape:chair`          | Shapes of that shape kind                                                |
+| `shape:chair`          | Space pieces of that kind                                                |
 | `selected`             | What the token's owner has selected in an editor open on that tab        |
 
 Terms combine: `type:sticky label~orders` is the stickies whose label mentions orders.
@@ -137,7 +137,7 @@ rev 41→42 · cs_8k2m4q7d1x · revert: livehuddle changeset revert 3f9c2a71-…
 
 The last line carries the tab's new revision, the changeset's id and the command that reverts it. A changeset that changes nothing answers `nothing changed`.
 
-**Warnings** do not stop a changeset: `value_coerced`, `label_capped` (a shape's label over 40 characters kept its heading and the rest was cut: put longer text in a text element or a sticky), `colour_overrides_theme`, and `no_base` (sent without a `base` revision).
+**Warnings** do not stop a changeset: `value_coerced`, `label_capped` (a Space piece's label over 40 characters kept its heading and the rest was cut: put longer text in a text element or a sticky), `colour_overrides_theme`, and `no_base` (sent without a `base` revision).
 
 ## Refusals
 

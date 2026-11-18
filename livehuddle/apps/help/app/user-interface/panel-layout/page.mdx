@@ -11,40 +11,41 @@ export const metadata = helpMetadata({
 
 <ArticleLayout
   title="Panel Layout"
-  description="The toolbar, panels and fixed controls that frame the canvas, and how to arrange them."
+  description="The cards, panels and fixed controls that frame the canvas, and how to arrange them."
   categoryTitle="User Interface"
   categorySlug="user-interface"
 >
 
-Everything around the canvas is a toolbar, a **panel** or a fixed control. The canvas itself fills the screen, and the rest sits on top of it at the edges rather than taking fixed slots in a rigid layout, so what is on the canvas always has room to breathe. The layout is much the same on a computer, a tablet and a phone.
+Everything around the canvas is a card, a **panel** or a fixed control. The canvas itself fills the screen, and the rest sits on top of it at the edges rather than taking fixed slots in a rigid layout, so what is on the canvas always has room to breathe. There is no title bar across the top. The layout is much the same on a computer, a tablet and a phone.
 
-<Figure caption="The canvas fills the screen: the menu button top-left, the palette strip across the top, the Map bottom-left, the corner buttons bottom-right, and the bottom bar with the tabs and quick controls.">
+<Figure caption="The canvas fills the screen: the logo and menu button top-left, the palette strip across the top, Share and your account top-right, the Map bottom-left, the corner buttons bottom-right, and the bottom bar with the tabs and quick controls.">
   <PanelLayout />
 </Figure>
 
 ## What sits where
 
-- **Top-left**: the **menu button**, which opens the [Explorer](/help/explorer/explorer-panel/) (your spaces and folders) under it, with the tab's name beside it on a computer.
+- **Top-left**: the livehuddle logo in a card of its own, which opens the Explorer on the folder that holds this space, then the **menu button**, which opens the [Explorer](/help/explorer/explorer-panel/) (your spaces and folders) under it.
 - **Top centre**: the [palette strip](/help/palette/toolbar-layout/), for switching between Edit and Walk and adding things to the canvas.
-- **Top-right**: the tool panels, when they are in use, below the strip when it reaches that far.
+- **Top-right**: a card with **Share** (or **Copy** on someone else's space) and your account. See [Share, Copy and Your Account](/help/user-interface/title-bar/).
 - **Bottom-left**: the [Map](/help/user-interface/minimap/), on a computer or tablet, once a tab has a few elements.
-- **Bottom-right**: a fixed cluster of buttons: Undo and Redo, the **Theme & canvas** button, and the [zoom controls](/help/user-interface/zoom-controls/). Their panels open as popovers over their buttons, and close when you press the button again. On a phone the whole cluster shares one row.
-- **Along the bottom**: the [tab bar](/help/user-interface/tab-bar/), with the [quick controls](/help/user-interface/quick-controls/) (Search, Settings, appearance) at its right-hand end.
+- **Bottom-right**: a fixed cluster of buttons: Undo and Redo, the **Theme & canvas** button, and the [zoom controls](/help/user-interface/zoom-controls/). Their panels open as popovers over their buttons, and close when you press the button again. While you walk, Undo, Redo and Theme & canvas step aside and the **3D View** switch takes their place. On a phone the whole cluster shares one row.
+- **Bottom centre**: while you walk, the **Call** card, with your microphone, camera and Share Screen. See [Cameras and Screen Sharing](/help/collaboration/cameras-and-screen-sharing/).
+- **Along the bottom**: the [tab bar](/help/user-interface/tab-bar/), with the [quick controls](/help/user-interface/quick-controls/) (Tools, Settings, appearance) at its right-hand end.
 - **Next to a selection**: the [toolbar](/help/user-interface/toolbar/).
 
-The tool panels appear while they are in use: **Format** while the [Format Painter](/help/selection-modes/format-painter/) is on, and the avatar's while you [walk](/help/selection-modes/avatar-mode/).
+One tool panel appears while it is in use: **Format**, while the [Format Painter](/help/selection-modes/format-painter/) is on. It docks in the bottom-right corner, above the buttons.
 
 ## Put panels in the corner you want
 
-With a mouse or trackpad, the corner panels can be dragged by their header to any corner of the screen: the Map and the tool panels. On a touch screen, tapping a panel's header collapses or expands it instead. Snap guides appear in the four corners while you drag, and the nearest one highlights to show where the panel will land; drop it away from every corner and it stays right where you left it. Panels sharing a corner stack neatly and reflow when one of them is hidden.
+With a mouse or trackpad, the corner panels (the Map and Format) can be dragged by their header to any corner of the screen. On a touch screen, tapping a panel's header collapses or expands it instead. Snap guides appear in the four corners while you drag, and the nearest one highlights to show where the panel will land; drop it away from every corner and it stays right where you left it. Panels sharing a corner stack neatly and reflow when one of them is hidden.
 
 Your arrangement is remembered on this device, so a reload restores it. Once a panel has moved from its default spot, a **Reset position** button in its header sends it back. Each panel can also be collapsed from its header to a slim banner.
 
-The palette strip, the menu button, the bottom-right buttons and the bottom bar stay where they are.
+The palette strip, the cards at the top corners, the bottom-right buttons and the bottom bar stay where they are.
 
 ## On a phone
 
-On a phone the menu button sits in a card of its own at the left of the strip, and the strip's tiles swipe sideways. Tap a panel's header to collapse or expand it. See [Toolbar Layout](/help/palette/toolbar-layout/#on-a-phone).
+On a phone the menu button sits in a card of its own at the left of the strip, the strip's tiles swipe sideways, and the Share card meets the right edge of the screen with its buttons as icons. Tap a panel's header to collapse or expand it. See [Toolbar Layout](/help/palette/toolbar-layout/#on-a-phone).
 
 [Panel Opacity](/help/palette/panel-opacity/) fades every panel so the canvas shows through, and **UI Scale** under **Appearance** makes them bigger or smaller (on a computer).
 

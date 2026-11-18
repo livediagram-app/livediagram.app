@@ -26,7 +26,7 @@ The dialog lists its categories down the left, with a **Search settings** field 
   <SettingsDialogScene noun="space" />
 </Figure>
 
-Only a guest sees **sub-categories**: Account holds Notifications and API Tokens, which are categories of their own once you sign in. Everything else in a category is in its sections, so nothing is hidden behind another level. On a computer, click Account (or its arrow) to show them beneath it, and again to fold them away. On a phone, tap Account and they are listed at the bottom of its page.
+Only a guest sees **sub-categories**: Account holds Notifications, API Tokens and Your Data, which are categories of their own once you sign in. Everything else in a category is in its sections, so nothing is hidden behind another level. On a computer, click Account (or its arrow) to show them beneath it, and again to fold them away. On a phone, tap Account and they are listed at the bottom of its page.
 
 Each category groups its settings into cards, one card per section, with a short line under each setting saying what it does. A setting that only matters while another is on (a panel's own options under its switch) sits indented beneath it, and shows only while that switch is on.
 
@@ -43,7 +43,7 @@ Under **Mouse**:
 ## Appearance
 
 - **Theme**: **Light**, **Dark** or **System**, which follows your device. This is the editor's own chrome, not a board's [theme](/help/canvas/themes/), although a tab on the Default theme follows it. The same control sits in the bottom bar. Saved on this device only (see below). See [Dark Mode](/help/tools/dark-mode/).
-- **Button Labels**: names the buttons along the bottom (such as **Search**, **Settings**, the theme and **Style**) beside their icons, on a screen wide enough for them. On by default; turn it off for icons alone. A phone always shows icons alone.
+- **Button Labels**: names the buttons along the bottom (such as **Get Started**, **Tools** and **Settings** in the bottom bar, and **Style** in the bottom-right corner) beside their icons, on a screen wide enough for them. On by default; turn it off for icons alone. A phone always shows icons alone.
 - **UI Scale**: makes the panels, the toolbar and the buttons in the bottom-right corner (zoom, undo and redo) bigger or smaller, from 80% to 120%, with 100% in the middle of the slider. The canvas, dialogs and menus stay as they are, so it is not the same as your browser's zoom. Beneath it, **Panel Scale**, **Toolbar Scale** and **Corner Buttons Scale** size each of those on its own (**Toolbar Scale** goes up to 140%); moving **UI Scale** again sets all three back to the same size. The chrome resizes as you drag. Desktop only: a phone always uses 100%.
 
 ## Keyboard
@@ -59,15 +59,20 @@ Below it, **Panels** has a section per panel, in the order below. Each starts wi
 
 - **Map**: **Enable Map** (the small overview of the whole tab in the bottom-left corner, once a tab has a few elements), **Dim Outside the View**, and **Map Size** (**Short**, **Medium** or **Tall**). Desktop only. See [Map](/help/user-interface/minimap/).
 
+Then **Collaborate**:
+
+- **Hide Participant Cursors**: stops drawing other people's cursors and names on your screen; their avatars and Follow stay. The same switch sits at the foot of the Collaborators window. Saved on this device only (see below).
+- **Audio Proximity Ring**: while you talk, a ring round your character shows where people can hear you. On by default; turning it off changes nothing else about your microphone or the call. See [Proximity Audio](/help/collaboration/proximity-audio/).
+
 ## Accessibility
 
 - **Reduce Motion**: turns off the decorative animations and transitions (panels, popovers, the snap guides) so the interface appears instantly instead of sliding. Your device's own reduce-motion setting is always respected; this lets you force it on even where the device doesn't ask for it. See [Accessibility](/help/getting-started/accessibility/).
 
 ## Getting Started
 
-**Receptionist's Welcome**: the Space's Receptionist welcomes you the first time you arrive on his Avatar Pad, and the switch turns itself off once he has. Switch it back on and close Settings to hear his welcome again, or ask him any time with **Ask Receptionist** in the bar along the bottom of the editor, just left of **Search**. See [The Receptionist](/help/selection-modes/avatar-mode/avatar-tour/).
+**Receptionist's Welcome**: the Space's Receptionist welcomes you the first time you arrive on his Avatar Pad, and the switch turns itself off once he has. Switch it back on and close Settings to hear his welcome again, or ask him any time while you walk on his tab: press **Get Started** at the left of the [quick controls](/help/user-interface/quick-controls/) and choose **Ask Receptionist**. See [The Receptionist](/help/selection-modes/avatar-mode/avatar-tour/).
 
-Below them, **Show Me** is closed until you open it, and says how many are on. The Portal has a tour of its own, on the same **Start Tour** button while one is selected (Start Portal Tour), and its switch, **Portal**, shows whether you have taken it. Once you've taken it, it leaves the button until you switch it back on here.
+Below them, **Show Me** is closed until you open it, and says how many are on. The Portal has a tour of its own, in the same **Get Started** list while one is selected, and its switch, **Portal**, shows whether you have taken it. Once you've taken it, it leaves the list until you switch it back on here.
 
 ## Explorer
 
@@ -75,22 +80,24 @@ Once called **Spaces**.
 
 - **Automatically Open Explorer**: off by default. While it's on and you're signed in, opening livehuddle.app takes you straight to your Explorer instead of the homepage. A link to the homepage from inside livehuddle still shows it, and so does `livehuddle.app/?home`. It's one setting for every app: each other app picks up a change the next time you open its Explorer or an item in it.
 - **Show Home Banner**: the greeting, status pills and large search at the top of Explorer Home. On by default; with it off, Home's search sits in the header, as on every other Explorer page.
-- **Default Folders**: the folder your new spaces go to when you create one without choosing a place, with **Change** and **Clear**. See [Default Folders](/help/explorer/folders/default-folders/).
+- **Default Folders**: **Where New Spaces Go**, the folder your new spaces go to when you create one without choosing a place, with **Change** and **Clear**. See [Default Folders](/help/explorer/folders/default-folders/).
 
 ## Account
 
-**Account** shows who you are (a guest, or your name and email when signed in), **Cloud Sync** to [Google Drive](/help/account-and-data/google-drive/) where the deployment offers it, **Reset All Settings** and **Delete Account**. **Reset All Settings** puts every setting back to its default once you confirm. Signed in, that is every setting in every liveworkspace app; your profile, API tokens, webhooks and sign-ins stay as they are, and so does your choice about anonymous usage events. As a guest, it is this app's settings in this browser. Tours offer themselves again afterwards. It holds two sub-categories:
+**Account** shows who you are (a guest, or your name and email when signed in), **Cloud Sync** to [Google Drive](/help/account-and-data/google-drive/) where the deployment offers it, **Reset All Settings** and **Delete Account**. **Reset All Settings** puts every setting back to its default once you confirm. Signed in, that is every setting in every liveworkspace app; your profile, API tokens, webhooks and sign-ins stay as they are, and so does your choice about anonymous usage events. As a guest, it is this app's settings in this browser. Tours offer themselves again afterwards. **Delete Account** permanently deletes your liveworkspace account and everything you own in every liveworkspace app, then signs you out; a guest has no account to delete, so it offers **Sign In** instead. For a guest it holds Notifications and API Tokens, below, and Your Data, a prompt to sign in:
 
 ### Notifications
 
 - **In-Editor Notifications**: the brief confirmation shown when you do something whose result isn't on screen, like moving a space to a folder or linking a tab. **Errors and warnings are always shown**, whatever this is set to, so a failure is never silently swallowed. A notification stays put while you point at it or tab into it, and Escape closes the one you are on.
+- **Join and Leave Sounds**: a soft chime when someone arrives in the space you have open, and a softer one when they leave, even while the browser tab is in the background. On by default. See [Live Presence](/help/collaboration/live-presence/).
+- **Desktop Notifications**: when someone nudges you while the browser tab is in the background, your computer shows a notification. Your browser asks for permission the first time you switch it on.
 - **Email**: once signed in, one switch per email (in this order: someone responds to a team invite, someone joins your space, then tips and check-ins and milestones last). A guest sees a sign-in prompt instead. See [Email Notifications](/help/account-and-data/email-notifications/).
 
 ### API Tokens
 
 - **API Tokens** is where you make, see and revoke the tokens your own scripts use to call livehuddle as you, right here in Settings: name a token (switch on **Read-only** if it only needs to look), copy its secret while it is shown (only once), and revoke one with **Revoke**. The same tokens show in every liveworkspace app's Settings and on liveworkspace.app. Signed-in only, and absent on a deployment without accounts. See [API Tokens](/help/account-and-data/api-tokens/).
 
-Signed in, the list has an **Account** heading over **Profile** (in Account's place), Notifications, Privacy, Accessibility and **Your Data**, where you download everything you own, and each team's you run, as one zip, and a **Developers** heading over API Tokens alone. Webhooks, which post what happens to your work to Slack, Microsoft Teams or a service you run, are set per document: open the document's ⋯ menu in the Explorer and choose **Webhooks**. With your profile are your **Sign-in Methods** (**Email Code**, always on, and **Google**, which you can **Connect**) and **Where You’re Signed In**, each browser you are signed in on, with **Sign Out** for one and **Sign Out Others** for the rest. These are the same as in liveworkspace.app's Settings, right here.
+Signed in, the list has an **Account** heading over **Profile** (in Account's place), Notifications, Privacy, Accessibility and **Your Data**, where you download everything you own, and each team's you run, as one zip, and a **Developers** heading over API Tokens alone. Webhooks, which post what happens to your work to Slack, Microsoft Teams or a service you run, are set per space: open **Tools** in the bottom bar while the space is open, or the space's ⋯ menu in the Explorer, and choose **Webhooks**. With your profile are your **Sign-in Methods** (**Email Code**, always on, and **Google**, which you can **Connect**) and **Where You’re Signed In**, each browser you are signed in on, with **Sign Out** for one and **Sign Out Others** for the rest. These are the same as in liveworkspace.app's Settings, right here.
 
 Anywhere Settings says something needs an account, it ends with a **Sign In** link that brings you back to where you were.
 
@@ -106,6 +113,7 @@ A few things deliberately stay on the device you are using:
 
 - **Theme** (light, dark or system) in **Appearance**.
 - The **Keyboard Shortcuts** switch, so you can keep shortcuts on where you have a full keyboard and off where you don't.
+- **Hide Participant Cursors** in **Panels**.
 - **Panel positions**: which corner each panel docks into.
 - **Explorer view**: List, Card or Details.
 - **Tool settings**: the Format Painter's choices and the avatar.

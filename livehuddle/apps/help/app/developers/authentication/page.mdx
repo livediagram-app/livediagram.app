@@ -56,12 +56,12 @@ The editor itself does not use an API token. When you are not signed in, the app
 <Note>
   A token has your account's full read and write access to your spaces. Treat it like a password:
   keep it out of source control and shared logs, and never put it in client-side code that ships to
-  a browser. If a token might have leaked, revoke it in **Settings**, **API Tokens** and create a
-  replacement.
+  a browser. If a token might have leaked, revoke it in **Settings**, **Developers**, **API Tokens**
+  and create a replacement.
 </Note>
 
 ## Errors
 
-A request with no credential, or a bearer that is not an API token, is refused with `400 bad_request` (its message begins `authentication required`); an `lwt_` token that is unknown, expired, or revoked is refused with `401 invalid_token`. See [Errors and Rate Limits](/help/developers/errors-and-rate-limits/) for the status codes and the error response shape.
+A request with no credential, or a bearer livehuddle does not recognise, is refused with `400 bad_request` (its message begins `authentication required`); an `lwt_` token that is unknown, expired, or revoked is refused with `401 invalid_token`. See [Errors and Rate Limits](/help/developers/errors-and-rate-limits/) for the status codes and the error response shape.
 
 </ArticleLayout>
