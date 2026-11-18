@@ -73,7 +73,7 @@ import {
 import * as rpc from './room-rpc';
 import { community, communityListing, communityPostTitle } from './room-community';
 import { renewGrant, roomFetch } from './room-grants';
-import { readStatusSources, RoomServiceStatus } from './room-service-status';
+import { roomServiceStatus, type RoomServiceStatus } from './room-service-status';
 import {
   broadcast,
   closeAllIfTrashed,
@@ -83,7 +83,6 @@ import {
   closeSockets,
   frameFor,
   relaySessionOf,
-  scopeOf,
   sendToPresence,
   turnAwayIfFull,
   VIEW_ONLY_TAG,
@@ -364,24 +363,7 @@ export class DocumentRoom extends DurableObject<Env> {
     });
     this.pollAnswers = Promise.resolve();
     this.selections = new RoomSelectionStore(state.storage);
-    this.serviceStatus = new RoomServiceStatus({
-      storage: state.storage,
-      enabled: () => this.roomEnv?.LIVE_STATUS_ENABLED === 'true',
-      sockets: () => this.state.getWebSockets(),
-      sources: () => {
-        const sql = this.state.storage.sql;
-        if (this.documentId === null || !sql || !this.hasSchema()) {
-          return { checked: [], overflow: [], byTab: new Map() };
-        }
-        this.ensureSchema();
-        return readStatusSources(sql, this.documentId);
-      },
-      scopeOf: (ws) => scopeOf(this, ws),
-      joined: (ws) => !!this.readSession(ws)?.presence,
-      send: (ws, payload) => this.sendTo(ws, payload),
-      arm: () => this.armAlarm(),
-      now: () => Date.now(),
-    });
+    this.serviceStatus = roomServiceStatus(this);
     // The keepalive (see the hibernation notes above): answered by the runtime, never by this class. Absent from a
     // test double of the state, and from a runtime without the hibernation API.
     if (typeof WebSocketRequestResponsePair !== 'undefined')

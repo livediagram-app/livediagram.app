@@ -538,11 +538,8 @@ describe('the document room', () => {
 
   type FakeSocket = { sent: string[]; attachment: unknown };
 
-  // A room on its own SQLite with one document whose two tabs bind one URL, and sockets that record what they hear.
-  async function openRoom(env: Record<string, string>) {
-    const { DocumentRoom } = await import('./document-room');
-    const db = new DatabaseSync(':memory:');
-    const sql = nodeItemSql(db);
+  // One document whose two tabs bind one URL.
+  function seedDocument(db: DatabaseSync, sql: ReturnType<typeof nodeItemSql>) {
     migrateDocumentSchema((q) => sql.exec(q));
     db.exec(`INSERT INTO document (id, saved_at, created_at) VALUES ('d1', 1, 1)`);
     const data = JSON.stringify({
@@ -569,6 +566,15 @@ describe('the document room', () => {
         'INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES (?, ?, ?, 1)',
       ).run('d1', id, i);
     }
+  }
+
+  // A real room on its own SQLite (seeded, or `fresh`: an object nothing has written to, with no schema and no
+  // document), and sockets that record what they hear.
+  async function openRoom(env: Record<string, string>, fresh = false) {
+    const { DocumentRoom } = await import('./document-room');
+    const db = new DatabaseSync(':memory:');
+    const sql = nodeItemSql(db);
+    if (!fresh) seedDocument(db, sql);
     const kv = new Map<string, unknown>();
     const sockets: FakeSocket[] = [];
     const wsOf = new Map<FakeSocket, WebSocket>();
@@ -650,6 +656,16 @@ describe('the document room', () => {
     // A later joiner hears the kept state on its hello, with no new check.
     expect(heard(join('d'))).toHaveLength(1);
     expect(checks).toHaveLength(1);
+  });
+
+  it('reads no bindings in a room nothing has written to yet', async () => {
+    const checks = stubStatusPage();
+    const { room, join, heard } = await openRoom({ LIVE_STATUS_ENABLED: 'true' }, true);
+    const a = join('a');
+    expect(room.serviceStatus.at).toBeNull();
+    await room.alarm();
+    expect(checks).toEqual([]);
+    expect(heard(a)).toEqual([]);
   });
 
   it('with LIVE_STATUS_ENABLED unset, sends and fetches nothing', async () => {

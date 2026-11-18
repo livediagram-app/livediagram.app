@@ -12,6 +12,8 @@ import { isStatusUrl, statusUrlsOf, type Element } from '@livediagram/document';
 import { pooled } from '@liveworkspace/api-kit/pooled';
 import { fetchPublicBytes, type PublicFetchResult } from '@liveworkspace/api-kit/public-fetch';
 import type { ServerMessage } from '../types';
+import type { DocumentRoom } from './document-room';
+import { scopeOf } from './room-sockets';
 
 // The room's live service status checks (docs/specs/009-elements/live-status.md "Polling"): while someone has the
 // document open and it holds shapes bound to a `statusUrl`, the room checks each distinct URL at most once a minute
@@ -268,4 +270,26 @@ export class RoomServiceStatus {
     const op: ServiceStatusOp = { kind: 'service-status', statuses };
     this.deps.send(ws, { kind: 'op', from: 'system', op });
   }
+}
+
+/** The room's checks, on its storage, sockets and scopes, switched by `LIVE_STATUS_ENABLED`. */
+export function roomServiceStatus(room: DocumentRoom): RoomServiceStatus {
+  return new RoomServiceStatus({
+    storage: room.state.storage,
+    enabled: () => room.roomEnv?.LIVE_STATUS_ENABLED === 'true',
+    sockets: () => room.state.getWebSockets(),
+    sources: () => {
+      const sql = room.state.storage.sql;
+      if (room.documentId === null || !sql || !room.hasSchema()) {
+        return { checked: [], overflow: [], byTab: new Map() };
+      }
+      room.ensureSchema();
+      return readStatusSources(sql, room.documentId);
+    },
+    scopeOf: (ws) => scopeOf(room, ws),
+    joined: (ws) => !!room.readSession(ws)?.presence,
+    send: (ws, payload) => room.sendTo(ws, payload),
+    arm: () => room.armAlarm(),
+    now: () => Date.now(),
+  });
 }
