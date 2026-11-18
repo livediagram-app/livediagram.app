@@ -75,14 +75,18 @@ type Group = { person_id: string; app: App };
 export async function drainPersonNotices(env: Env, now = Date.now()): Promise<number> {
   const db = env.INDEX_DB;
   // In the same call, the guests of every person with no notice left (confirmed or given up) go.
-  const [stale] = await db.batch([
-    db.prepare('DELETE FROM person_app_notices WHERE created_at < ?').bind(now - NOTICE_GIVE_UP_MS),
-    db.prepare(
-      `DELETE FROM person_notice_guests
+  const stale = (
+    await db.batch([
+      db
+        .prepare('DELETE FROM person_app_notices WHERE created_at < ?')
+        .bind(now - NOTICE_GIVE_UP_MS),
+      db.prepare(
+        `DELETE FROM person_notice_guests
         WHERE person_id NOT IN (SELECT person_id FROM person_app_notices)`,
-    ),
-  ]);
-  if ((stale!.meta.changes ?? 0) > 0) {
+      ),
+    ])
+  )[0]!;
+  if ((stale.meta.changes ?? 0) > 0) {
     console.warn('[index] person notices given up', { rows: stale.meta.changes });
   }
   const { results: groups } = await db

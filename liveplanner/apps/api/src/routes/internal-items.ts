@@ -109,7 +109,7 @@ export function handleInternalItems(
         }
         await communityService.mergeCopier(env, guestId, userId);
       },
-      anonymise: (id, personId) => planRoom(env, id).anonymise(personId),
+      anonymise: (id, personId, guestIds) => planRoom(env, id).anonymise(personId, guestIds),
       // The reverse of a connection made both ways (liveworkspace/docs/specs/004-index/connected-tabs.md): one
       // connected tab at the end of the plan's tab bar.
       connectedTab: (id, write) => planRoom(env, id).addConnectedTab(write),

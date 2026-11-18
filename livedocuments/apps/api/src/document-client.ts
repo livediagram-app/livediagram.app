@@ -74,8 +74,9 @@ export type DocumentRoomClient = {
   joined(personId: string): Promise<void>;
   // A Sheet a linked chart reads changed (the index's source-changed door): the room tells every open session.
   sourceChanged(change: SourceChange): Promise<void>;
-  // A closed account's name off the document (document-anonymise.ts): answers the rows changed.
-  anonymise(personId: string): Promise<number>;
+  // A closed account's name off the document (document-anonymise.ts), and the guests merged into it (`guestIds`) as its
+  // own: answers the rows changed.
+  anonymise(personId: string, guestIds?: readonly string[]): Promise<number>;
   // A tab shared between documents (document-room/tab-shares.ts): the tab and its holders for one joining, the join
   // recorded, and what another holder (`from`) sends.
   sharedTabCopy(tabId: string): Promise<SharedTabCopy | null>;
@@ -111,7 +112,7 @@ export function documentRoom(
     communityListing: (code) => room.communityListing(documentId, code),
     joined: (personId) => room.joined(documentId, personId),
     sourceChanged: (change) => room.sourceChanged(documentId, change),
-    anonymise: (personId) => room.anonymise(documentId, personId),
+    anonymise: (personId, guestIds = []) => room.anonymise(documentId, personId, guestIds),
     sharedTabCopy: (tabId) => room.sharedTabCopy(documentId, tabId),
     shareJoined: (tabId, member, seen) => room.shareJoined(documentId, tabId, member, seen),
     receiveShares: (from, messages) => room.receiveShares(documentId, from, messages),
@@ -147,7 +148,7 @@ export type DocumentRoomRpc = {
   communityListing(documentId: string, code: string): Promise<CommunityListing | null>;
   joined(documentId: string, personId: string): Promise<void>;
   sourceChanged(documentId: string, change: SourceChange): Promise<void>;
-  anonymise(documentId: string, personId: string): Promise<number>;
+  anonymise(documentId: string, personId: string, guestIds: readonly string[]): Promise<number>;
   sharedTabCopy(documentId: string, tabId: string): Promise<SharedTabCopy | null>;
   shareJoined(
     documentId: string,

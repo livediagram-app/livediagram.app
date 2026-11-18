@@ -345,12 +345,18 @@ function testDocumentRooms(
         personId,
       );
     },
-    anonymise: async (documentId: string, personId: string, guestKeys: readonly string[] = []) =>
+    anonymise: async (
+      documentId: string,
+      personId: string,
+      guestKeys: readonly string[] = [],
+      guestIds: readonly string[] = [],
+    ) =>
       (await import('./document-room/document-anonymise')).anonymiseDocument(
         env,
         documentId,
         personId,
         guestKeys,
+        guestIds,
       ),
     importCopy: async (documentId: string, copy: unknown) =>
       (await import('./document-room/document-content')).importDocumentCopy(

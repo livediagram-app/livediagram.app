@@ -4,9 +4,21 @@
 // assignments in each tab's elements, the changesets they wrote, the email claims they sent, their tab Attendance
 // visits (their guest visits from before they signed in too), and the document's owner when it was their team document. Only rows that mention them are read and rewritten, in
 // one batch; running it again changes nothing.
+//
+// The person is every id they had: the account's and the guests merged into it (the door's `guests`, Work Tracker
+// 1241), so what they left as a guest reads Deleted account as theirs does. Their comment reactions are found by the
+// reaction person the room stamps on each (`reactionPersonFor`, docs/specs/012-collaboration/comment-reactions.md).
 
-import { ANONYMISED_NAME, ANONYMISED_PERSON, anonymiseJsonText } from '@liveworkspace/index-app';
-import { collabKeyFor } from '@liveworkspace/api-kit/collab-key';
+import {
+  ANONYMISED_NAME,
+  ANONYMISED_PERSON,
+  anonymiseJsonText,
+  anonymiseReactionsText,
+  closedPersonIds,
+  isAnySql,
+  mentionsAnySql,
+} from '@liveworkspace/index-app';
+import { collabKeyFor, reactionPersonFor } from '@liveworkspace/api-kit/collab-key';
 import { isCollabKey } from '@liveworkspace/api-schema/collab-key';
 import { MERGED_GUESTS_MAX } from '../person-store/merged-guests';
 import type { DocumentEnv } from '../types';
@@ -18,22 +30,32 @@ export async function anonymiseDocument(
   // The collab keys of the guests the account signed in from (person-store/merged-guests.ts): their Attendance
   // visits go with the account's (docs/specs/012-collaboration/tab-attendance.md "Closing an account").
   guestKeys: readonly string[] = [],
+  // The guests the index names as merged into the account (Work Tracker 1241): their ids, reactions and visits go
+  // as the account's do.
+  guestIds: readonly string[] = [],
 ): Promise<number> {
   const db = env.DOCUMENT_DB;
   const now = Date.now();
-  // `instr`, never a bound LIKE: Durable Object SQLite refuses a LIKE pattern over 50 bytes.
-  const needle = personId;
+  // Every id they had and its reaction person, each list bound as one JSON parameter (`instr` over it, never a bound
+  // LIKE: Durable Object SQLite refuses a LIKE pattern over 50 bytes).
+  const ids = closedPersonIds(personId, guestIds);
+  const persons = await Promise.all(ids.map((id) => reactionPersonFor(id)));
+  const idList = JSON.stringify(ids);
+  const needles = JSON.stringify([...ids, ...persons]);
   const tabs = await db
     .prepare(
       `SELECT t.id, t.data, t.rev FROM tabs t JOIN document_tabs dt ON dt.tab_id = t.id
-        WHERE dt.document_id = ? AND instr(t.data, ?) > 0`,
+        WHERE dt.document_id = ?1 AND ${mentionsAnySql('t.data', '?2')}`,
     )
-    .bind(documentId, needle)
+    .bind(documentId, needles)
     .all<{ id: string; data: string; rev: number }>();
   const writes: D1PreparedStatement[] = [];
   for (const tab of tabs.results ?? []) {
-    const { value, changed } = anonymiseJsonText(tab.data, personId);
-    if (changed) {
+    // Their ids where the tab names them, then the reactions they left on its comments.
+    const named = anonymiseJsonText(tab.data, ids);
+    const reacted = anonymiseReactionsText(named.value, persons);
+    const { value } = reacted;
+    if (named.changed || reacted.changed) {
       writes.push(
         db
           .prepare('UPDATE tabs SET data = ?, rev = ?, updated_at = ? WHERE id = ? AND rev = ?')
@@ -44,28 +66,31 @@ export async function anonymiseDocument(
   writes.push(
     db
       .prepare(
-        'UPDATE agent_changesets SET author_id = ?, author_name = ? WHERE document_id = ? AND author_id = ?',
+        `UPDATE agent_changesets SET author_id = ?1, author_name = ?2
+          WHERE document_id = ?3 AND ${isAnySql('author_id', '?4')}`,
       )
-      .bind(ANONYMISED_PERSON, ANONYMISED_NAME, documentId, personId),
+      .bind(ANONYMISED_PERSON, ANONYMISED_NAME, documentId, idList),
     db
-      .prepare('UPDATE document SET owner_id = ? WHERE id = ? AND owner_id = ?')
-      .bind(ANONYMISED_PERSON, documentId, personId),
-    db.prepare('DELETE FROM notify_claims WHERE sender = ?').bind(personId),
+      .prepare(`UPDATE document SET owner_id = ?1 WHERE id = ?2 AND ${isAnySql('owner_id', '?3')}`)
+      .bind(ANONYMISED_PERSON, documentId, idList),
+    db.prepare(`DELETE FROM notify_claims WHERE ${isAnySql('sender')}`).bind(idList),
   );
   // Their tab Attendance visits (docs/specs/012-collaboration/tab-attendance.md "Closing an account"), as the team
   // audit log: the visit stays, so a meeting's head count stays true, with no key, no name and no picture of them.
   // Their visits as a guest before they signed in go too.
   const keys = [
-    await collabKeyFor(personId),
-    ...new Set(guestKeys.filter(isCollabKey).slice(0, MERGED_GUESTS_MAX)),
+    ...new Set([
+      ...(await Promise.all(ids.map((id) => collabKeyFor(id)))),
+      ...guestKeys.filter(isCollabKey).slice(0, MERGED_GUESTS_MAX),
+    ]),
   ];
   writes.push(
     db
       .prepare(
-        `UPDATE tab_attendance SET person_key = ?, name = ?, picture = NULL
-          WHERE person_key IN (${keys.map(() => '?').join(', ')})`,
+        `UPDATE tab_attendance SET person_key = ?1, name = ?2, picture = NULL
+          WHERE ${isAnySql('person_key', '?3')}`,
       )
-      .bind(ANONYMISED_PERSON, ANONYMISED_NAME, ...keys),
+      .bind(ANONYMISED_PERSON, ANONYMISED_NAME, JSON.stringify(keys)),
   );
   const results = await db.batch(writes);
   return results.reduce((sum, r) => sum + (r.meta.changes ?? 0), 0);

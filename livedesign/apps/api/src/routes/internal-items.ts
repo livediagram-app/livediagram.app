@@ -81,7 +81,7 @@ export function handleInternalItems(
         await mergeMediaOwner(env, guestId, userId);
         await communityService.mergeCopier(env, guestId, userId);
       },
-      anonymise: (id, personId) => designRoom(env, id).anonymise(personId),
+      anonymise: (id, personId, guestIds) => designRoom(env, id).anonymise(personId, guestIds),
       // A workbench pairing's access ended at liveworkspace: its sockets in this design's room close.
       // An old livediagram.app document's livedesign part, into its design's room (design-room/design-migration.ts). A tab
       // over the tab cap refuses the whole part (413) before the room is called.

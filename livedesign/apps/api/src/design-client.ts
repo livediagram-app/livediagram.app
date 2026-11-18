@@ -80,8 +80,9 @@ export type DesignRoomClient = {
   joined(personId: string): Promise<void>;
   // A Sheet a linked chart reads changed (the index's source-changed door): the room tells every open session.
   sourceChanged(change: SourceChange): Promise<void>;
-  // A closed account's name off the design (design-anonymise.ts): answers the rows changed.
-  anonymise(personId: string): Promise<number>;
+  // A closed account's name off the design (design-anonymise.ts), and the guests merged into it (`guestIds`) as its
+  // own: answers the rows changed.
+  anonymise(personId: string, guestIds?: readonly string[]): Promise<number>;
   // A tab shared between designs (design-room/tab-shares.ts): the tab and its holders for one joining, the join
   // recorded, and what another holder (`from`) sends.
   sharedTabCopy(tabId: string): Promise<SharedTabCopy | null>;
@@ -116,7 +117,7 @@ export function designRoom(env: Pick<Env, 'DESIGN_ROOM'>, designId: string): Des
     communityListing: (code) => room.communityListing(designId, code),
     joined: (personId) => room.joined(designId, personId),
     sourceChanged: (change) => room.sourceChanged(designId, change),
-    anonymise: (personId) => room.anonymise(designId, personId),
+    anonymise: (personId, guestIds = []) => room.anonymise(designId, personId, guestIds),
     sharedTabCopy: (tabId) => room.sharedTabCopy(designId, tabId),
     shareJoined: (tabId, member, seen) => room.shareJoined(designId, tabId, member, seen),
     receiveShares: (from, messages) => room.receiveShares(designId, from, messages),
@@ -150,7 +151,7 @@ export type DesignRoomRpc = {
   communityListing(designId: string, code: string): Promise<CommunityListing | null>;
   joined(designId: string, personId: string): Promise<void>;
   sourceChanged(designId: string, change: SourceChange): Promise<void>;
-  anonymise(designId: string, personId: string): Promise<number>;
+  anonymise(designId: string, personId: string, guestIds: readonly string[]): Promise<number>;
   sharedTabCopy(designId: string, tabId: string): Promise<SharedTabCopy | null>;
   shareJoined(
     designId: string,
