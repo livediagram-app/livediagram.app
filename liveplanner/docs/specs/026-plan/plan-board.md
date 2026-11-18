@@ -1211,7 +1211,9 @@ some card types, an Editor is offered, optionally, to tidy those away too, as de
 ## On a phone
 
 - **Cards are Minimal** on a phone (below 640 px), whatever the board's card size, so a column shows more of them; the
-  size is the board's again on a wider screen. Nothing is saved.
+  size is the board's again on a wider screen. Nothing is saved. A card keeps its **number** (`WI-100`) before its
+  title there whenever its type shows the number at the board's own size, as a wider screen draws it, so a phone
+  never hides which card is which.
 - **No collapsed columns** on a phone: no Collapse Column, and a column collapsed on a wider screen shows open (it is
   collapsed again there).
 - **The header has no widgets and no card type chips** on a phone: the title, taking the room up to the header's controls (beside widgets

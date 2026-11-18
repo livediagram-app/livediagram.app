@@ -155,7 +155,10 @@ Every write takes what a person would say, and stores the ids:
   (as the item panel's rich text keeps it), Markdown-free text stored plain with any old formatting dropped, and
   clearing the field clears its formatting. list_items reads the plain text under the field's name, and the
   formatting under its `…Rich` key, as it does a description's.
-- **An assignee** is a person object `{ id, name, color }` or a name. A name matches a person already assigned on
+- **An assignee** is a person object `{ id, name, color }` or a name. A name matches the plan's **member** with that
+  name first (case aside): an account the plan's cards hold, as maker, last editor or assignee. Two members with that
+  name are refused (`value_invalid`) naming each, "Ada Lovelace" is more than one person on this plan, so pass the
+  person object list_items shows. With no member of that name it matches a person already assigned on
   the project (case aside); otherwise it makes a named person (`n-` and a slug of the name, a Plan swatch chosen
   from the name; a hash of the name joins the slug when the slug cannot spell it, "Иван", or another person on the
   project already has that id), so "Sam" is the same person on every card.
