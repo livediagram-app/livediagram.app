@@ -4,6 +4,7 @@ import {
   isCollabPanelShape,
   isWebComponentShape,
   shapeGeometry,
+  type ShapeGeometry,
   type ShapeKind,
   type ShapePart,
   type ShapePartRole,
@@ -116,6 +117,7 @@ export function ShapeSvgOverlay({
   aspect = 1.6,
   animation,
   figure,
+  geometry: override,
 }: {
   shape: ShapeKind;
   fill: string;
@@ -138,6 +140,8 @@ export function ShapeSvgOverlay({
   // An actor's figure rect in element px (actor-figure.ts in @livediagram/document), clear of its
   // name; absent fills the box.
   figure?: { x: number; y: number; width: number; height: number };
+  // A silhouette drawn in place of the kind's: a BPMN data object's folded page (docs/specs/009-elements/bpmn.md).
+  geometry?: ShapeGeometry | null;
 }) {
   // Gradient / trace / pulse-glow plumbing (docs/specs/008-canvas/canvas-and-palette.md) — see
   // useShapeSvgAnimation.
@@ -147,7 +151,7 @@ export function ShapeSvgOverlay({
   // the canvas and an exported image can't disagree about a silhouette.
   // Browser is NOT in it: it is a CSS-rendered rounded rectangle (see
   // isSvgRenderedShape) with the HTML BrowserChrome strip on top.
-  const geometry = shapeGeometry(shape, aspect);
+  const geometry = override ?? shapeGeometry(shape, aspect);
   // Each part's paint by its role. The user's dash rides every outline; the thin detail chrome
   // (bezels, keys, creases) keeps its own solid stroke, which reads correctly: a dotted phone still
   // has a solid screen edge.

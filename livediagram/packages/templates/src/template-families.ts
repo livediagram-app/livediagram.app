@@ -19,6 +19,7 @@ const TEMPLATE_FAMILY: Record<TemplateKind, TemplateFamily | null> = {
   'decision-tree': null,
   'approval-workflow': null,
   'data-flow': null,
+  'bpmn-process': null,
   'blank-session': null,
   swot: null,
   timeline: null,

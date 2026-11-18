@@ -88,6 +88,16 @@ const FORMATS: {
     note: { article: 'importTabs', label: 'See what carries over from draw.io' },
   },
   {
+    // docs/specs/020-import-export/bpmn-import.md "Where".
+    key: 'bpmn',
+    title: 'BPMN',
+    description:
+      'A .bpmn file from Camunda, bpmn.io, Signavio or any BPMN 2.0 modeler. Keeps every event, task, gateway, pool and flow where the modeler drew it.',
+    placeholder:
+      '<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" …>\n  <bpmn:process id="Process_1">…</bpmn:process>\n  <bpmndi:BPMNDiagram>…</bpmndi:BPMNDiagram>\n</bpmn:definitions>',
+    note: { article: 'importTabs', label: 'See how a BPMN file comes across' },
+  },
+  {
     // docs/specs/020-import-export/infrastructure-import.md "The editor".
     key: 'infra',
     title: 'Infrastructure',
@@ -270,9 +280,11 @@ function FormatIcon({ kind }: { kind: Format }) {
           ? 'excali'
           : kind === 'drawio'
             ? 'drawio'
-            : kind === 'infra'
-              ? 'infra'
-              : 'json';
+            : kind === 'bpmn'
+              ? 'bpmn'
+              : kind === 'infra'
+                ? 'infra'
+                : 'json';
   return (
     <svg width="36" height="20" viewBox="0 0 36 20" aria-hidden>
       <rect

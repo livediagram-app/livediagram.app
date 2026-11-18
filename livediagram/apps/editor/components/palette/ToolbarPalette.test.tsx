@@ -318,6 +318,19 @@ describe('ToolbarPalette', () => {
       expect(document.querySelector('[data-toolbar-search]')).toBeNull();
     });
 
+    it('finds BPMN tiles while the Shapes flyout keeps its BPMN section closed', () => {
+      // toolbar-layout.md "Optional groups": the section's closed state hides nothing from Search.
+      expect(localStorage.getItem('livediagram:v2:palette-group-open:bpmn')).toBeNull();
+      show();
+      const popover = openSearch();
+      type(popover, 'gateway');
+      expect(
+        within(popover).getByRole('button', { name: 'Add BPMN Exclusive Gateway' }),
+      ).toBeTruthy();
+      type(popover, 'bpmn');
+      expect(within(popover).getByRole('button', { name: 'Add BPMN Association' })).toBeTruthy();
+    });
+
     it("keeps other modes' elements in a closed accordion until asked", () => {
       const { h } = show();
       const popover = openSearch();

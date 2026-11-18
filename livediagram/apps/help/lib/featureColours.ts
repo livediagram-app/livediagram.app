@@ -86,6 +86,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   collaborate: '#f59e0b',
   lanes: '#3b82f6',
   entities: '#0284c7',
+  bpmn: '#16a34a',
   'embed-elements': '#e11d48',
   behaviour: '#7c3aed',
   stickers: '#f43f5e',

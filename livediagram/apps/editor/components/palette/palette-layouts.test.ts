@@ -218,7 +218,14 @@ describe('palette layouts', () => {
   });
 
   it('defaults a category to its own tiles', () => {
-    expect(tileIds('diagram', 'shapes')).toEqual(tilesForCategory('shapes').map((t) => t.id));
+    expect(tileIds('workshop', 'shapes')).toEqual(tilesForCategory('shapes').map((t) => t.id));
+  });
+
+  it("ends Diagram's Shapes with the BPMN group (docs/specs/009-elements/bpmn.md)", () => {
+    expect(tileIds('diagram', 'shapes')).toEqual([
+      ...tilesForCategory('shapes').map((t) => t.id),
+      ...tilesForCategory('bpmn').map((t) => t.id),
+    ]);
   });
 
   it("fills Diagram's Popular with the shapes, the structures and the AWS marks", () => {

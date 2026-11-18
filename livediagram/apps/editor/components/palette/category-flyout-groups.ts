@@ -51,7 +51,7 @@ export function flyoutCardColumns(tileCount: number): 1 | 2 {
 // listed falls back to its own description.
 const TAGLINES: Readonly<Record<string, string>> = {
   popular: 'The tiles a diagram is most often built from.',
-  shapes: 'The basics, the flowchart vocabulary and more.',
+  shapes: 'The basics, the flowchart vocabulary, BPMN and more.',
   'my-shapes': 'Saved shapes, yours and your teams’, in every app.',
   write: 'Words on the canvas: text, notes and comments.',
   draw: 'Sketch, outline and connect by hand.',
@@ -74,7 +74,10 @@ const TAGLINES: Readonly<Record<string, string>> = {
 
 // Where a mode fills a category differently enough that its default line would mislead.
 const MODE_TAGLINES: Readonly<Partial<Record<EditorMode, Readonly<Record<string, string>>>>> = {
-  workshop: { write: 'Words, notes, tables and checklists.' },
+  workshop: {
+    shapes: 'The basics, the flowchart vocabulary and more.',
+    write: 'Words, notes, tables and checklists.',
+  },
 };
 
 export function flyoutTagline(categoryId: string, fallback: string, mode?: EditorMode): string {
@@ -89,6 +92,7 @@ const GROUP_NAMES: Readonly<Record<string, string>> = {
   'shapes:square': 'Basics',
   'shapes:cylinder': 'Flowchart',
   'shapes:cloud': 'More Shapes',
+  'bpmn:start-event': 'BPMN',
   'tools:page': 'Text',
   'tools:text': 'Text',
   'tools:sticky': 'Notes',
@@ -117,7 +121,36 @@ const GROUP_NAMES: Readonly<Record<string, string>> = {
   'data:progress-bar': 'Meters',
 };
 
-export type FlyoutGroup = { id: string; title: string | null; tiles: PaletteTileDef[] };
+// The optional notation groups, by the tile that starts them (toolbar-layout.md "Optional groups"): a group a
+// specialist wants and everyone else scrolls past, so it shows as a header row, closed until opened, remembered
+// in this browser under the key `optionalGroupKey` names, and opening one reports `UI`/`Opened`/its telemetry type.
+// Search finds their tiles whether open or not.
+const OPTIONAL_GROUPS: Readonly<Record<string, { slug: string; telemetry: string }>> = {
+  'bpmn:start-event': { slug: 'bpmn', telemetry: 'BpmnGroup' },
+};
+
+/** The browser-storage key that remembers whether an optional group is open. */
+export function optionalGroupKey(slug: string): string {
+  return `livediagram:v2:palette-group-open:${slug}`;
+}
+
+/** What an optional group carries: where its open state is kept, and what opening it reports. */
+export type OptionalGroup = { storageKey: string; telemetryType: string };
+
+export type FlyoutGroup = {
+  id: string;
+  title: string | null;
+  tiles: PaletteTileDef[];
+  // Set for an optional group, closed until opened.
+  optional: OptionalGroup | null;
+};
+
+function optionalOf(firstTileId: string): OptionalGroup | null {
+  const group = OPTIONAL_GROUPS[firstTileId];
+  return group
+    ? { storageKey: optionalGroupKey(group.slug), telemetryType: group.telemetry }
+    : null;
+}
 
 /** The category's tiles split into its named groups, in order; one untitled group when they are not all named. */
 export function flyoutGroups(categoryId: string, tiles: readonly PaletteTileDef[]): FlyoutGroup[] {
@@ -128,8 +161,17 @@ export function flyoutGroups(categoryId: string, tiles: readonly PaletteTileDef[
   });
   const groups = runs.filter((run) => run.length > 0);
   const named = groups.length > 1 && groups.every((run) => GROUP_NAMES[run[0]!.id]);
-  if (!named) return tiles.length > 0 ? [{ id: tiles[0]!.id, title: null, tiles: [...tiles] }] : [];
-  return groups.map((run) => ({ id: run[0]!.id, title: GROUP_NAMES[run[0]!.id]!, tiles: run }));
+  if (!named) {
+    return tiles.length > 0
+      ? [{ id: tiles[0]!.id, title: null, tiles: [...tiles], optional: null }]
+      : [];
+  }
+  return groups.map((run) => ({
+    id: run[0]!.id,
+    title: GROUP_NAMES[run[0]!.id]!,
+    tiles: run,
+    optional: optionalOf(run[0]!.id),
+  }));
 }
 // An item's place in the flyout, for arrow-key moves: the centre of its box.
 type FlyoutPoint = { x: number; y: number };

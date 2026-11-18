@@ -138,8 +138,10 @@ export function usePaletteCatalogue({
   const addVideo = (provider?: EmbedProvider) => armed(() => onAddVideo(provider))();
   // Components arm the draw gesture (tap-or-drag) and close a popover
   // palette so the canvas is clear to draw on.
-  const addArrow = (ends?: import('@livediagram/document').ArrowEnds) =>
-    armed(() => onAddArrow(ends))();
+  const addArrow = (
+    ends?: import('@livediagram/document').ArrowEnds,
+    flow?: import('@livediagram/document').BpmnFlow,
+  ) => armed(() => onAddArrow(ends, flow))();
   const beginFreehand = armed(onBeginFreehand);
   const beginHighlighter = armed(onBeginHighlighter);
   const beginMarker = (penId: WhiteboardPenId) => armed(() => onBeginMarker(penId))();

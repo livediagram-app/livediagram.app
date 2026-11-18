@@ -22,7 +22,10 @@ export type PaletteTileActions = {
   beginHighlighter: () => void;
   beginShapePen: () => void;
   beginPolygon: () => void;
-  addArrow: (ends?: import('@livediagram/document').ArrowEnds) => void;
+  addArrow: (
+    ends?: import('@livediagram/document').ArrowEnds,
+    flow?: import('@livediagram/document').BpmnFlow,
+  ) => void;
   // Optional fill + kind: the Event Storming tiles pass their note kind's
   // canonical colour and the kind itself (which routes the note onto its
   // stage's layer, docs/specs/021-event-storming/event-storming.md); plain "Add Sticky Note" passes nothing.
@@ -85,7 +88,7 @@ export function tileHandler(
       return actions.beginPolygon;
     case 'arrow':
       // The Arrow tile's pointer, or the Line tile's none (canvas-and-palette.md "Arrows and lines").
-      return () => actions.addArrow(a.ends);
+      return () => actions.addArrow(a.ends, a.flow);
     case 'sticky':
       // Wrapped so the button's MouseEvent can't land in the optional fill
       // parameter; the tile's own fill + kind (if any) ride instead.
@@ -153,6 +156,10 @@ export function tileActive(
     // Vimeo alongside it (the same trap the shape branch above avoids).
     case 'video':
       return pendingDraw.type === 'video' && pendingDraw.provider === a.provider;
+    // The BPMN Message Flow and Association tiles arm the arrow intent in their look: split by it, or arming one
+    // would light the Arrow and Line tiles too.
+    case 'arrow':
+      return pendingDraw.type === 'arrow' && pendingDraw.flow === a.flow;
     // The Event Storming tiles all arm the one sticky intent, split by the
     // fill + kind payload — match on both or arming Command would light up
     // all eight notes plus the plain sticky tile (the video / shape trap).

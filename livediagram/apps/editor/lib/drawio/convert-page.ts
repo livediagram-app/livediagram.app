@@ -8,6 +8,7 @@ import {
   DEFAULT_LAYER_ID,
   DEFAULT_LAYER_NAME,
   MAX_ELEMENTS_PER_TAB,
+  bpmnNameSitsUnder,
   isBoxed,
   type BoxedElement,
   type Element,
@@ -160,7 +161,7 @@ export function convertPage(graph: DrawioGraph, input: PageContext): ConvertedPa
     if (!built) return;
     place(built, layerId);
     cellToElement.set(id, built);
-    if (cls.kind === 'image') {
+    if (cls.kind === 'image' || (cls.kind === 'shape' && cls.bpmn && bpmnNameSitsUnder(cls.bpmn))) {
       const caption = buildImageCaption(cell, rect, ctx, mint());
       if (caption) place(caption, layerId);
     }

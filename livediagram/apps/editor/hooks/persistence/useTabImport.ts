@@ -10,6 +10,7 @@ import { remapElementRefs, savableElements, type Element, type Tab } from '@live
 import type { BoardScene } from '@/lib/board-scene/scene';
 import type { DrawioInput } from '@/lib/drawio/import';
 import { DRAWIO_TAB_FILE_ACCEPT } from '@/lib/drawio/limits';
+import { BPMN_FILE_ACCEPT, BPMN_MAX_FILE_BYTES } from '@/lib/bpmn/limits';
 import { INFRA_FILE_ACCEPT, INFRA_FILE_MAX_BYTES, infraImportOutcome } from '@/lib/infra-import';
 import { mergeImportedTab } from '@/lib/import-merge';
 import { mermaidImportOutcome } from '@/lib/text-import-report';
@@ -45,7 +46,8 @@ export function remintTabElements<T extends Pick<Tab, 'elements'>>(tab: T): T {
   return { ...tab, elements: remintElements(tab.elements).elements };
 }
 
-export type ImportFormat = 'json' | 'markdown' | 'mermaid' | 'excalidraw' | 'drawio' | 'infra';
+export type ImportFormat =
+  'json' | 'markdown' | 'mermaid' | 'excalidraw' | 'drawio' | 'bpmn' | 'infra';
 type ImportProgressListener = (progress: ImportImageProgress) => void;
 
 const EXCALIDRAW_TELEMETRY_TYPE = {
@@ -233,6 +235,29 @@ export function useTabImport({
     });
   };
 
+  // A .bpmn file drawn where its modeler drew it (docs/specs/020-import-export/bpmn-import.md): read through the inert
+  // parse, one replace.
+  const importBpmnText = async (text: string): Promise<ImportOutcome> => {
+    const active = tabs.find((t) => t.id === activeId);
+    const { importBpmn, bpmnImportOutcome } = await import('@/lib/bpmn/import');
+    const result = importBpmn(text);
+    if (!result.ok) return { status: 'error', error: result.error };
+    replaceActiveTabContent({
+      id: activeId,
+      name: active?.name ?? '',
+      elements: result.elements,
+      theme: active?.theme,
+    });
+    track('Tab', 'Imported', 'Bpmn');
+    debugLog('[bpmn-import]', {
+      shapes: result.tally.shapes,
+      lines: result.tally.lines,
+      approximated: result.tally.approximated,
+      leftOut: result.tally.leftOut,
+    });
+    return bpmnImportOutcome(result.elements, result.tally);
+  };
+
   const importTextIntoActiveTab = async (
     format: ImportFormat,
     text: string,
@@ -248,6 +273,7 @@ export function useTabImport({
     if (format === 'drawio') return importDrawioInput({ kind: 'text', text }, onProgress);
     if (format === 'excalidraw') return importExcalidraw(text, onProgress);
     if (format === 'infra') return importInfra(text, fileName);
+    if (format === 'bpmn') return importBpmnText(text);
 
     if (format === 'mermaid') {
       const {
@@ -322,16 +348,25 @@ export function useTabImport({
             ? '.excalidraw,.json,application/json,.png,image/png,.svg,image/svg+xml'
             : format === 'drawio'
               ? DRAWIO_TAB_FILE_ACCEPT
-              : format === 'infra'
-                ? INFRA_FILE_ACCEPT
-                : '.json,application/json';
+              : format === 'bpmn'
+                ? BPMN_FILE_ACCEPT
+                : format === 'infra'
+                  ? INFRA_FILE_ACCEPT
+                  : '.json,application/json';
     const { pickTabFile } = await import('@/lib/import-tab');
     // An infrastructure file past its cap is refused unread (infrastructure-import.md "Limits").
     const picked = await pickTabFile(
       accept,
-      format === 'infra' ? { maxBytes: INFRA_FILE_MAX_BYTES } : {},
+      format === 'infra'
+        ? { maxBytes: INFRA_FILE_MAX_BYTES }
+        : format === 'bpmn'
+          ? { maxBytes: BPMN_MAX_FILE_BYTES }
+          : {},
     );
     if (!picked) return { status: 'cancelled' };
+    // A .bpmn past its cap is refused unread (bpmn-import.md "Reading the file").
+    if (picked.tooBig && format === 'bpmn')
+      return { status: 'error', error: 'This file is too large to import (the limit is 5 MB).' };
     if (picked.tooBig)
       return {
         status: 'error',

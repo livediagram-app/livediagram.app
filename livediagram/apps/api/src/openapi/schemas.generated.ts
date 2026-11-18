@@ -623,6 +623,39 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     ]
   },
+  "BpmnSymbol": {
+    "enum": [
+      "start",
+      "start-message",
+      "start-timer",
+      "intermediate",
+      "intermediate-message",
+      "intermediate-timer",
+      "intermediate-error",
+      "end",
+      "end-message",
+      "end-error",
+      "end-terminate",
+      "task",
+      "task-user",
+      "task-service",
+      "task-script",
+      "task-manual",
+      "task-send",
+      "task-receive",
+      "task-business-rule",
+      "subprocess",
+      "gateway",
+      "gateway-exclusive",
+      "gateway-parallel",
+      "gateway-inclusive",
+      "gateway-event",
+      "gateway-complex",
+      "data-object",
+      "data-store"
+    ],
+    "type": "string"
+  },
   "CapabilitiesResponse": {
     "additionalProperties": false,
     "properties": {
@@ -5472,6 +5505,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "boundaryStyle": {
         "$ref": "#/components/schemas/BoundaryStyle"
+      },
+      "bpmn": {
+        "$ref": "#/components/schemas/BpmnSymbol"
       },
       "cardHeader": {
         "type": "boolean"

@@ -16,6 +16,7 @@ import {
 } from './category-flyout-groups';
 import { CardList, InfoFooter, opensSide, TileGrid } from './category-flyout-items';
 import { BrowseLayoutContext } from './PaletteCategoryBrowser';
+import { OptionalFlyoutGroup } from './OptionalFlyoutGroup';
 
 // The category bar's flyout (docs/specs/007-editor/toolbar-layout.md "The category bar"): one category's
 // tiles under its name, in its named groups, as a grid of pictures (Shapes) or cards with a blurb (Build). A footer
@@ -33,9 +34,12 @@ export type FlyoutCategory = {
   content: ReactNode;
 };
 
-/** Arrow keys walk the flyout's items by position (category-flyout-groups), across its groups. */
+/** Arrow keys walk the flyout's items by position (category-flyout-groups), across its groups; a closed optional
+ *  group's tiles sit in an inert body, so they are skipped and its header is the stop. */
 export function onFlyoutArrowKey(e: KeyboardEvent<HTMLElement>, body: HTMLElement | null): void {
-  const items = [...(body?.querySelectorAll<HTMLElement>('[data-flyout-item]') ?? [])];
+  const items = [...(body?.querySelectorAll<HTMLElement>('[data-flyout-item]') ?? [])].filter(
+    (el) => !el.closest('[inert]'),
+  );
   const index = items.indexOf(document.activeElement as HTMLElement);
   if (index < 0) return;
   const points = items.map((el) => {
@@ -109,15 +113,9 @@ export function CategoryFlyout({
       >
         {tiles ? (
           <div className="flex flex-col gap-3 p-3">
-            {flyoutGroups(category.id, tiles).map((group, gi) => (
-              <section key={group.id} aria-label={group.title ?? category.label}>
-                {group.title ? (
-                  <h4 className="mb-1.5 flex items-center gap-2 px-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                    {group.title}
-                    <span aria-hidden className="h-px flex-1 bg-slate-100 dark:bg-slate-800" />
-                  </h4>
-                ) : null}
-                {flyoutLayout(category.id) === 'grid' ? (
+            {flyoutGroups(category.id, tiles).map((group, gi) => {
+              const items =
+                flyoutLayout(category.id) === 'grid' ? (
                   <TileGrid
                     tiles={group.tiles}
                     offset={gi * 4}
@@ -130,9 +128,35 @@ export function CategoryFlyout({
                     columns={flyoutCardColumns(tiles.length)}
                     {...itemProps}
                   />
-                )}
-              </section>
-            ))}
+                );
+              return (
+                <section key={group.id} aria-label={group.title ?? category.label}>
+                  {group.title && group.optional ? (
+                    // An optional notation group (BPMN): a header row, closed until opened.
+                    <OptionalFlyoutGroup
+                      title={group.title}
+                      count={group.tiles.length}
+                      {...group.optional}
+                    >
+                      {items}
+                    </OptionalFlyoutGroup>
+                  ) : (
+                    <>
+                      {group.title ? (
+                        <h4 className="mb-1.5 flex items-center gap-2 px-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                          {group.title}
+                          <span
+                            aria-hidden
+                            className="h-px flex-1 bg-slate-100 dark:bg-slate-800"
+                          />
+                        </h4>
+                      ) : null}
+                      {items}
+                    </>
+                  )}
+                </section>
+              );
+            })}
           </div>
         ) : (
           // A catalogue browses as two panes (PaletteCategoryRail), edge to edge; My shapes keeps its padding.

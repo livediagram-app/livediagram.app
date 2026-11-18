@@ -173,6 +173,7 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   flowchart: 'processes',
   swimlane: 'processes',
   'approval-workflow': 'processes',
+  'bpmn-process': 'processes',
   'value-stream-map': 'processes',
   // Product and UX: screens, research, journeys and discovery.
   'paper-prototype': 'product',

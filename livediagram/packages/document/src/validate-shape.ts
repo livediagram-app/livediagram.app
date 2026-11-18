@@ -6,6 +6,7 @@
 
 import { isChartSlice } from './malformed-chart-rows';
 import { isStatusUrl, STATUS_URL_MAX } from './status-source';
+import { BPMN_SYMBOLS, isBpmnSymbol } from './bpmn';
 import { isChairFacing, isRoomDoor } from './retired-elements';
 import { SELECTION_MODES, isPickerSource, isSelectionMode, isSessionTool } from './selection-mode';
 import { RESPONSES_MAX, RESPONSE_VALUE_MAX } from './responses';
@@ -143,6 +144,8 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
   flag('hubSpokes'),
   ...SEQUENCE_CHECKS,
   BOUNDARY_CHECK,
+  // A BPMN symbol (docs/specs/009-elements/bpmn.md): a closed vocabulary.
+  { field: 'bpmn', valid: isBpmnSymbol, rule: oneOfRule(BPMN_SYMBOLS) },
   ...CONCEPT_CHECKS,
   TAGS_CHECK,
   ENTITY_FIELDS_CHECK,

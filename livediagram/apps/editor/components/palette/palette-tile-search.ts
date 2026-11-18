@@ -51,7 +51,7 @@ export function tileSignature(tile: PaletteTileDef): string | null {
     case 'polygon':
       return 'path';
     case 'arrow':
-      return a.ends === 'none' ? 'arrow:none' : 'arrow:';
+      return a.flow ? `arrow:${a.flow}` : a.ends === 'none' ? 'arrow:none' : 'arrow:';
     case 'video':
       return `video:${a.provider ?? ''}`;
     case 'text':

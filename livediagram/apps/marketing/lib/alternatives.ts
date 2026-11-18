@@ -60,7 +60,7 @@ const LIST: Alternative[] = [
       'Run the lesson on the board: an agenda that starts the timer for each segment, a roll call, and a picker that chooses someone at random so nobody has to volunteer.',
       'Around 190 emoji stickers and 32 word badges like APPROVED and WIP, for reacting to work and marking it.',
       'Switch the same tab to Diagram mode when a sketch needs to become a tidy flowchart, org chart or plan, and draw it in the Marker finish so it still looks like it came off the whiteboard.',
-      '90 templates, including retrospectives, Lean Coffee, town hall Q&A and event storming boards.',
+      '91 templates, including retrospectives, Lean Coffee, town hall Q&A and event storming boards.',
       'Free and MIT-licensed, with every board exportable, so no future retirement can take your boards away.',
     ],
     sections: [
@@ -165,7 +165,7 @@ const LIST: Alternative[] = [
       'Assign action items to teammates on the canvas itself, tracked beside comments in the Collaborate panel.',
       'Workshop tools built in: Workshop mode, a facilitator role, a shared timer, dot-voting, live polls, planning-poker estimate cards, temperature checks, quizzes, an anonymous idea box and a Q&A board.',
       'Run the meeting itself on the board: an agenda that starts the timer for each segment, a roll call, a random picker, reveal zones that cover work until the room is ready, and decision records that keep what was agreed.',
-      '90 templates, 25 one-click whole-canvas themes and ready-made looks turn a blank canvas into a polished diagram fast, drawn clean, crisp and Professional, or by hand in Sketch or Marker.',
+      '91 templates, 25 one-click whole-canvas themes and ready-made looks turn a blank canvas into a polished diagram fast, drawn clean, crisp and Professional, or by hand in Sketch or Marker.',
       'Guide the room without pulling anyone away: Bring Focus offers everyone a jump to what you mean, anyone can follow anyone’s view, even on a view-only link, and reaction pads throw confetti or applause.',
       'Present a canvas as a slide deck built from its own elements, with a laser pointer and spotlight, no export needed.',
       'Bring boards across from Excalidraw, draw.io and Microsoft Whiteboard; export PNG, SVG, PDF, Mermaid or Excalidraw.',
@@ -280,7 +280,7 @@ const LIST: Alternative[] = [
       'Nothing to install: open a link in any browser and start.',
       'Bring existing maps across: export Markdown from XMind and import it as a themed diagram.',
       'Sketch with the Freehand pen, or the Shape Pen to have a rough shape tidied into a clean one.',
-      '90 templates (three mind-map styles among them), 25 one-click themes and ready-made looks make a map look polished instantly, clean or hand-drawn in the Sketch and Marker finishes.',
+      '91 templates (three mind-map styles among them), 25 one-click themes and ready-made looks make a map look polished instantly, clean or hand-drawn in the Sketch and Marker finishes.',
       'Free and open source, with no paid tier.',
     ],
     sections: [
@@ -495,7 +495,7 @@ const LIST: Alternative[] = [
       },
     ],
     themBest: [
-      'Specialist libraries: AWS/Azure, UML, network, BPMN, and more.',
+      'Specialist libraries: AWS/Azure, full UML, network, and more.',
       'Deep native integration with Confluence and Jira (livediagram embeds are a generic iframe).',
       'Highly precise, formal technical diagrams.',
       'Files you keep in your own storage, with desktop apps for working entirely offline.',
@@ -503,9 +503,10 @@ const LIST: Alternative[] = [
     usBest: [
       'Real-time co-editing with live cursors and presence on every canvas, wherever it is stored.',
       'A modern, fast canvas with nothing to set up: open a link and go.',
-      '90 templates and 25 themes for good-looking diagrams in minutes, not blank-canvas fiddling.',
+      '91 templates and 25 themes for good-looking diagrams in minutes, not blank-canvas fiddling.',
       'Diagrams stay tidy on their own: arrows re-route as shapes move, with collision avoidance, alignment guides and snapping.',
       'Full-colour technology icons (AWS, Azure, Kubernetes, databases…) for architecture diagrams.',
+      'BPMN for business processes: events, tasks, gateways, data and pools, and draw.io’s BPMN shapes import as editable BPMN.',
       'Tidy Up lays out a tangle of shapes and arrows as a flowchart, tree or mind map, and the UML theme colours each shape by its meaning.',
       'Four finishes per tab: Professional for crisp, print-ready diagrams with square corners and thin lines, Sketch or Marker for a hand-drawn review, switched without touching the diagram.',
       'Database schemas with keys and field-to-field relationships, sequence diagrams, Sankey flows, and an Isometric view that tilts an architecture diagram into 3D blocks for a deck.',
@@ -553,7 +554,7 @@ const LIST: Alternative[] = [
       },
       {
         q: 'Does livediagram have AWS, UML, or network shape libraries?',
-        a: "It ships full-colour technology icons (AWS, Azure, Kubernetes, databases and more) that cover most architecture diagrams, plus core shapes, device frames, and class, sequence and state machine templates. It does not have draw.io's formal notation libraries (full UML, BPMN, network stencils); for strict formal notation, draw.io is the better pick.",
+        a: "It ships full-colour technology icons (AWS, Azure, Kubernetes, databases and more) that cover most architecture diagrams, plus core shapes, device frames, BPMN events, tasks, gateways and pools, and class, sequence and state machine templates. It does not have draw.io's full UML or network stencil libraries; for those, draw.io is the better pick.",
       },
     ],
   },
@@ -563,7 +564,7 @@ const LIST: Alternative[] = [
     highlights: ['No seats', 'No sign-up', 'API and MCP'],
     title: 'FigJam alternative · livediagram',
     description:
-      'A free, open-source FigJam alternative: a real-time whiteboard with workshop tools, no account needed, 90 templates, Mermaid, an API and an MCP server.',
+      'A free, open-source FigJam alternative: a real-time whiteboard with workshop tools, no account needed, 91 templates, Mermaid, an API and an MCP server.',
     h1: 'The free, open-source FigJam alternative',
     lede: 'FigJam is a polished, playful whiteboard that lives inside Figma. livediagram covers the same ground, brainstorms, workshops and diagrams with your team in real time, as free, open-source software that anyone can open from a link, no account or Figma seat needed.',
     rows: [
@@ -604,7 +605,7 @@ const LIST: Alternative[] = [
     usBest: [
       'Free with no file limits and no seats: every feature, for everyone.',
       'Open a link and start, no account needed, even to create a canvas.',
-      'Structured diagrams that stay tidy: shapes and arrows that stay attached, alignment guides, 25 one-click themes and 90 templates.',
+      'Structured diagrams that stay tidy: shapes and arrows that stay attached, alignment guides, 25 one-click themes and 91 templates.',
       'Three ways to work one tab: Diagram for structure, Draw for freehand whiteboarding, and Workshop for running a session with your team.',
       'Diagrams with a whiteboard feel: the Sketch and Marker finishes draw any tab by hand, and ready-made looks set theme, finish, font and pattern in one click.',
       'Point the room at one thing: Bring Focus offers everyone a jump to it rather than dragging them there, and anyone can follow a teammate’s view, even on a view-only link.',
@@ -626,7 +627,7 @@ const LIST: Alternative[] = [
         heading: 'A whiteboard that keeps going',
         paragraphs: [
           'FigJam is excellent for loose, freeform boards. livediagram’s Draw mode is a plain whiteboard too, with pressure-sensitive markers, sticky notes, text and shapes, but the same canvas carries on after the brainstorm. Switch a tab to Diagram when a sketch needs structure, with arrows that stay attached, themes that restyle the whole canvas in one click and a Marker or Sketch finish that keeps it looking hand-drawn; to Workshop when the room needs a timer, votes and polls to decide what happens next.',
-          'Start from one of 90 templates, from retrospectives and story maps to flowcharts and system architecture, and split larger work across tabs, folders and layers.',
+          'Start from one of 91 templates, from retrospectives and story maps to flowcharts and system architecture, and split larger work across tabs, folders and layers.',
         ],
       },
       {
@@ -650,7 +651,7 @@ const LIST: Alternative[] = [
       },
       {
         q: 'Can I import my FigJam boards?',
-        a: 'Not directly: there is no FigJam importer. You can bring a board across as a picture by exporting it from FigJam as a PNG and adding it to a tab as an image. For new work, start from one of the 90 templates.',
+        a: 'Not directly: there is no FigJam importer. You can bring a board across as a picture by exporting it from FigJam as a PNG and adding it to a tab as an image. For new work, start from one of the 91 templates.',
       },
       {
         q: 'Does livediagram work with Figma?',
@@ -686,12 +687,12 @@ const LIST: Alternative[] = [
       { label: 'Real-time multiplayer', us: 'Yes', them: 'Yes' },
       {
         label: 'Shape libraries',
-        us: 'Core shapes, technology and line-art icons, UML and charts',
-        them: 'Very broad professional libraries (UML, BPMN, network, cloud, and more)',
+        us: 'Core shapes, technology and line-art icons, UML, BPMN and charts',
+        them: 'Very broad professional libraries (UML, network, cloud, and more)',
       },
       {
         label: 'Import + export',
-        us: 'draw.io, Excalidraw, Microsoft Whiteboard, Mermaid + Markdown in; PNG, SVG, PDF, JSON, Mermaid + Excalidraw out',
+        us: 'draw.io, BPMN, Excalidraw, Microsoft Whiteboard, Mermaid + Markdown in; PNG, SVG, PDF, JSON, Mermaid + Excalidraw out',
         them: 'Visio, draw.io, Gliffy and Mermaid in; image, PDF and Visio out',
       },
       {
@@ -701,7 +702,7 @@ const LIST: Alternative[] = [
       },
     ],
     themBest: [
-      'Formal diagramming at scale: very broad shape libraries for UML, BPMN, network and cloud architecture.',
+      'Formal diagramming at scale: very broad shape libraries for UML, network and cloud architecture.',
       'Data linking, which builds or updates diagrams from spreadsheets and other sources.',
       'Visio import and export, and deep integrations with enterprise suites.',
       'Enterprise admin, security and compliance controls.',
@@ -709,10 +710,11 @@ const LIST: Alternative[] = [
     usBest: [
       'Free with no plan limits on documents or shapes, and no paid tier.',
       'Open a link and start, no account needed, even to create a canvas.',
-      '90 templates, from flowcharts, org charts and swimlanes to system and cloud architecture, database schemas and sequence, class and state diagrams.',
+      '91 templates, from flowcharts, org charts and swimlanes to system and cloud architecture, database schemas and sequence, class and state diagrams.',
       'Real-time multiplayer with live cursors, comments, assigned actions and a laser pointer for presenting.',
       '25 one-click themes restyle the whole canvas, shapes and arrows, and the Professional finish draws it crisp and print-ready: square corners, thin lines, Inter lettering, no default shadows.',
       'Mermaid in and out: flowcharts import as editable diagrams and export back to text.',
+      'BPMN for business processes: events, tasks, gateways, data, pools and message flows, and .bpmn files from Camunda or bpmn.io import with their layout.',
       'Diagrams that tidy themselves: a new arrow curves around shapes in its way, Tidy Up lays a graph out as a flowchart or tree, and the UML theme colours each shape by its meaning.',
       'Database schemas with keys and field-to-field relationships, Sankey flows, and an Isometric view that tilts an architecture diagram into 3D blocks.',
       'A free REST API and an MCP server, so scripts and AI assistants can read and edit your canvases.',
@@ -728,20 +730,20 @@ const LIST: Alternative[] = [
       {
         heading: 'The diagrams you need, ready to go',
         paragraphs: [
-          'livediagram ships 90 templates, including flowcharts in four styles, swimlanes, org charts, mind maps, data-flow diagrams, system and cloud architecture, database schemas, Sankey flows, and sequence, class and state diagrams. Shapes and arrows stay attached and re-route as you move things, alignment guides and snapping keep layouts tidy, and themes restyle the whole canvas in one click. A finish sets how it is drawn: Professional for crisp, print-ready work, or Sketch and Marker when a review should feel like a whiteboard.',
+          'livediagram ships 91 templates, including flowcharts in four styles, swimlanes, org charts, mind maps, data-flow diagrams, system and cloud architecture, database schemas, Sankey flows, and sequence, class and state diagrams. Shapes and arrows stay attached and re-route as you move things, alignment guides and snapping keep layouts tidy, and themes restyle the whole canvas in one click. A finish sets how it is drawn: Professional for crisp, print-ready work, or Sketch and Marker when a review should feel like a whiteboard.',
           'Bigger work splits across tabs inside one canvas, grouped into folders, with Photoshop-style layers on each tab. Presentation mode turns elements from any tab into a slide deck, so you can walk a room through a diagram without exporting it.',
         ],
       },
       {
         heading: 'Where Lucidchart goes further',
         paragraphs: [
-          'Lucidchart has spent years on formal notation, and it shows: its libraries for BPMN, network diagrams and cloud providers are far broader than ours, it can generate diagrams from data, it reads and writes Visio files, and it imports draw.io, Gliffy and Mermaid too. If your work depends on those, Lucidchart is the better tool. livediagram aims at the everyday diagrams most teams draw, and makes them free, fast and collaborative.',
+          'Lucidchart has spent years on formal notation, and it shows: its libraries for network diagrams and cloud providers are far broader than ours, it can generate diagrams from data, it reads and writes Visio files, and it imports draw.io, Gliffy and Mermaid too. If your work depends on those, Lucidchart is the better tool. livediagram aims at the everyday diagrams most teams draw, and makes them free, fast and collaborative.',
         ],
       },
       {
         heading: 'Open at the edges',
         paragraphs: [
-          'livediagram imports draw.io, Excalidraw, Microsoft Whiteboard, Mermaid and Markdown, and exports PNG, SVG, PDF, Mermaid, Markdown, Excalidraw or portable JSON. Any share link embeds as a live-updating iframe in Confluence, Notion or any page that allows iframes: an editor link embeds an editable canvas, and a participant or view-only link a read-only one.',
+          'livediagram imports draw.io, BPMN, Excalidraw, Microsoft Whiteboard, Mermaid and Markdown, and exports PNG, SVG, PDF, Mermaid, Markdown, Excalidraw or portable JSON. Any share link embeds as a live-updating iframe in Confluence, Notion or any page that allows iframes: an editor link embeds an editable canvas, and a participant or view-only link a read-only one.',
           'For automation there is a free REST API with personal tokens and an MCP server that lets AI assistants read and edit your canvases directly, with their changes shown live and undoable as one unit.',
         ],
       },
@@ -757,7 +759,7 @@ const LIST: Alternative[] = [
       },
       {
         q: 'Does livediagram support UML and architecture diagrams?',
-        a: 'Yes, for the common cases: there are templates for class, sequence and state diagrams, database schemas, data flow, and system and cloud architecture, plus a technology icon library. Full BPMN, network and cloud-provider shape libraries remain Lucidchart’s strength.',
+        a: 'Yes, for the common cases: there are templates for class, sequence and state diagrams, database schemas, data flow, and system and cloud architecture, plus BPMN elements with a .bpmn import and a technology icon library. Full network and cloud-provider shape libraries remain Lucidchart’s strength.',
       },
       {
         q: 'Can my team collaborate without accounts?',

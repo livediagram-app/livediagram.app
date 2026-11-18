@@ -10,7 +10,7 @@
 // host so it can enforce "only one at a time" (or, for the Avatar Panel, "all
 // closed to start"); the class hooks keep each host's own padding + tone.
 
-import type { ReactNode } from 'react';
+import { useId, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import { ChevronIcon } from './ChevronIcon';
 
 export function AccordionSection({
@@ -22,6 +22,7 @@ export function AccordionSection({
   titleClassName = 'text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400',
   chevronClassName,
   bodyClassName = 'flex flex-col gap-2 pb-2',
+  headerProps,
   children,
 }: {
   title: string;
@@ -34,11 +35,26 @@ export function AccordionSection({
   titleClassName?: string;
   chevronClassName?: string;
   bodyClassName?: string;
+  // More for the header button (a data hook a host's arrow keys walk by); never its own type, click, expanded
+  // state, controls or class.
+  headerProps?: Omit<
+    ButtonHTMLAttributes<HTMLButtonElement>,
+    'type' | 'onClick' | 'aria-expanded' | 'aria-controls' | 'className'
+  > & { [data: `data-${string}`]: string | boolean | undefined };
   children: ReactNode;
 }) {
+  // The header names the body it shows and hides (aria-controls), so a screen reader can jump to it.
+  const bodyId = useId();
   return (
     <div>
-      <button type="button" onClick={onToggle} aria-expanded={open} className={headerClassName}>
+      <button
+        type="button"
+        {...headerProps}
+        onClick={onToggle}
+        aria-expanded={open}
+        aria-controls={bodyId}
+        className={headerClassName}
+      >
         <span className={titleClassName}>{title}</span>
         <span className="flex items-center gap-1.5">
           {trailing}
@@ -46,6 +62,7 @@ export function AccordionSection({
         </span>
       </button>
       <div
+        id={bodyId}
         // Collapsed, the body has no height but its controls are still there: inert keeps them out of the focus
         // order (Tab no longer lands on a hidden switch), aria-hidden out of the accessibility tree.
         inert={!open}
