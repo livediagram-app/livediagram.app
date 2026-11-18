@@ -193,7 +193,7 @@ onto both [GE2].
 
 The editor's side is one copy in `@liveworkspace/workbench` `components/sheet-links/`, shared with livediagram and
 livedesign. livedocuments hands `SheetLinksHost` its document id (`itemId`), `documentGrant` (`grantOf`), its `track`
-(`onTrack`) and `noun: 'document'`.
+(`onTrack`), `noun: 'document'` and `ready = authLoaded && hydrated` (Work Tracker 1215).
 
 1. **Link**: `LinkSheetDialog` lists `indexClient.listItems({ apps: ['liveplanner'], view: 'recent' })`, then
    `indexClient.listSheets(planId)`, then reads the typed range with `indexClient.readSheetRange` (debounced
@@ -203,6 +203,10 @@ chartSheetSource: sourceAfterRead(read) }` on the selected chart, telemetry `Cha
    (`itemId|sheetId|range|cols`), reads each key once on open, on a tab change and on a `source-changed` frame naming its
    plan and sheet, with the document's grant and `watch: {itemId: documentId}`. One read in flight per key; a frame
    while one is in flight reads once more after it.
+   **The first read waits** for `ready` (sign-in answered, so the token provider is registered, and the item
+   loaded): before it no range is read and no frame reads, so there is no anonymous read and the grant asked for is
+   the signed-in person's; the read awaits `grantOf`, so its `watch` registers the item on that first read. Not
+   ready after `SHEET_LINK_READY_TIMEOUT_MS` (10 s), an unread range shows `saved`; the read still goes on `ready`.
 3. **Statuses** per key: `reading` (no answer yet: the saved values show), `live` (read now), `saved` (refused: 401,
    403 or 404, the person cannot open the plan or the sheet), `gone` (`409 range_gone`), `failed` (anything else).
    A chart draws a live read's fields over its own (`chartAsSeen`, through `useChartAsSeen` in ShapeContentRouter);

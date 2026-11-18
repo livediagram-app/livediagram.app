@@ -31,6 +31,10 @@ import {
 
 type Read = (source: ChartSheetSource) => Promise<SheetLinkStatus>;
 
+// How long the first read waits for `ready` before an unread range shows the saved values ("saved"), as a reader
+// without access sees them. The read still goes once `ready` turns true.
+export const SHEET_LINK_READY_TIMEOUT_MS = 10_000;
+
 // The reader item's own grant (the product's item grants), or null: a This Browser item, a refusal, offline.
 export type SheetLinkGrantOf = (itemId: string) => Promise<string | null>;
 
@@ -68,10 +72,15 @@ export function useSheetLinkedCharts<E extends SheetLinkElement>({
   canSave,
   tick,
   grantOf,
+  ready,
   read = (s) => readSheetLink(s, itemId, grantOf),
 }: {
   elements: readonly E[];
   itemId: string | null;
+  // Sign-in has answered (so the account's token is in place) and the item has loaded: no range is read before it,
+  // so the first read is never anonymous, its grant is the person's own, and its watch registers the item at once
+  // (Work Tracker 1215).
+  ready: boolean;
   // An Editor on an unlocked item: live values are saved quietly.
   canSave: boolean;
   tick: (map: (els: E[]) => E[]) => void;
@@ -111,20 +120,32 @@ export function useSheetLinkedCharts<E extends SheetLinkElement>({
     });
   }, []);
 
-  // On open and on a tab change: every range not yet read this session. A range already known is skipped, so a
-  // status landing starts nothing.
+  // On open (once ready) and on a tab change: every range not yet read this session. A range already known is skipped,
+  // so a status landing starts nothing.
   useEffect(() => {
+    if (!ready) return;
     for (const [key, source] of sources) if (!statuses.has(key)) readKey(key, source);
-  }, [sources, statuses, readKey]);
+  }, [ready, sources, statuses, readKey]);
+
+  // Not ready for too long (sign-in not answering): unread ranges show the saved values until it does.
+  const [waitedOut, setWaitedOut] = useState(false);
+  useEffect(() => {
+    if (ready) return;
+    const timer = setTimeout(() => setWaitedOut(true), SHEET_LINK_READY_TIMEOUT_MS);
+    return () => clearTimeout(timer);
+  }, [ready]);
 
   // The room's frame: the ranges of the Sheets it names, read again.
   const sourcesRef = useRef(sources);
+  const readyRef = useRef(ready);
   useLayoutEffect(() => {
     sourcesRef.current = sources;
+    readyRef.current = ready;
   });
   useEffect(
     () =>
       onSourceChanged(({ itemId: planId, sheetIds }) => {
+        if (!readyRef.current) return;
         for (const [key, source] of sourcesRef.current) {
           if (source.itemId === planId && sheetIds.includes(source.sheetId)) readKey(key, source);
         }
@@ -163,8 +184,9 @@ export function useSheetLinkedCharts<E extends SheetLinkElement>({
   );
   const statusOf = useCallback(
     (source: ChartSheetSource): SheetLinkStatus =>
-      statuses.get(sheetLinkKey(source)) ?? { kind: 'reading' },
-    [statuses],
+      statuses.get(sheetLinkKey(source)) ??
+      (waitedOut && !ready ? { kind: 'saved' } : { kind: 'reading' }),
+    [statuses, waitedOut, ready],
   );
   // A link just made carries its own first read: no second read for it.
   const seed = useCallback((source: ChartSheetSource, read: SheetRangeRead) => {
