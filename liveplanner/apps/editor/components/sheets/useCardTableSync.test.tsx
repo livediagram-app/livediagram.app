@@ -230,7 +230,7 @@ describe('card table sync', () => {
     await waitFor(() => expect(h.cell('A2')?.input).toEqual({ s: 'Theirs' }));
     expect(table().drafts).toBeUndefined();
     expect(h.notify).toHaveBeenCalledWith(
-      "Card #1 changed elsewhere, so its row's edits were put back",
+      "Card T-1 changed elsewhere, so its row's edits were put back",
     );
   });
 

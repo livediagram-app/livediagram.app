@@ -4,6 +4,7 @@
 // people as discs stacked a third over each other, and a Card field's linked cards as their numbers, each the first
 // SEVERAL_ON_CARD then "+N" for the rest. Each is one accessible name listing every value; nothing when empty.
 import { GlyphDisc } from '@liveplanner/ui';
+import { cardRefIn } from './card-ref';
 import {
   itemColourOf,
   linkedCard,
@@ -91,9 +92,11 @@ export function LinkedNumbersPill({
   const first = cards.find((c): c is Item => !!c);
   const firstType = first ? typeIn(types, first.type) : undefined;
   const colour = first ? itemColourOf(first, firstType) : undefined;
-  const numbers = cards.slice(0, SEVERAL_ON_CARD).map((c) => (c ? `#${c.key}` : '?'));
+  const numbers = cards.slice(0, SEVERAL_ON_CARD).map((c) => (c ? cardRefIn(types)(c) : '?'));
   const more = ids.length - numbers.length;
-  const spoken = cards.map((c) => (c ? `#${c.key} ${itemTitle(c)}` : 'Missing card')).join(', ');
+  const spoken = cards
+    .map((c) => (c ? `${cardRefIn(types)(c)} ${itemTitle(c)}` : 'Missing card'))
+    .join(', ');
   return (
     <MetaPill palette={palette} label={`${label}: ${spoken}`}>
       {colour ? (

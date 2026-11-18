@@ -13,6 +13,7 @@ import {
   searchFields,
   searchFilterLabel,
   searchValues,
+  prefixOf,
   typeIn,
   type BoardStatusTypes,
   type CardFinderShow,
@@ -55,6 +56,7 @@ export function useCardSearch(
     show: opts.show ?? 'all',
     boardStatuses: opts.boardStatuses,
     typeLabel: (id: string) => typeIn(plan.types, id).label,
+    typePrefix: (id: string) => prefixOf(plan.types, id),
   });
   return { query, setQuery, filters, setFilters, filtered, found };
 }

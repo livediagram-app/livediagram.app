@@ -9,6 +9,7 @@
 // own row order when it has one; a row's grip drags it to a new place (useGanttRowReorder). Blocked By links draw as
 // arrows from blocker to blocked (gantt-arrows.tsx).
 import { useMemo, useRef, useState } from 'react';
+import { cardRefIn } from '../card-ref';
 import { useMinute, useToday } from '@/hooks/ui/useToday';
 import { IDENTITY_FILL, identityVars } from '@liveplanner/ui';
 import {
@@ -196,7 +197,7 @@ export function GanttView({
             const to = reorder.move(row.item.id, lane, by);
             if (to !== null)
               plan?.announce(
-                `Moved #${row.item.key} ${itemTitle(row.item)} to position ${to + 1} of ${lane.length}`,
+                `Moved ${cardRefIn(types)(row.item)} ${itemTitle(row.item)} to position ${to + 1} of ${lane.length}`,
               );
           },
         }
@@ -211,7 +212,7 @@ export function GanttView({
     preview?.itemId === row.item.id ? { ...row, from: preview.from, to: preview.to } : row;
   const arrows = ganttArrows(layout.entries, blocking ?? planBlocking(plan!), phases);
   // Each blocked row's clashes, as drawn (plan-views.md "Dependency clashes").
-  const clashes = ganttClashTexts(arrows, shownOf);
+  const clashes = ganttClashTexts(arrows, shownOf, types);
   return (
     <ViewFrame
       title="Gantt Chart"

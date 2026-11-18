@@ -4,6 +4,7 @@
 // the bottom on a phone. Name, colour, glyph and fields are edited as a draft; Save applies the whole
 // edit as one change, Cancel drops it. Delete Type, for a type with items, asks where they go first.
 import { pickableStatuses } from './column-status-picks';
+import { ItemTypePrefixField, useTypePrefixDraft } from './ItemTypePrefix';
 import { useId, useMemo, useState } from 'react';
 import {
   ITEM_TYPE_CATALOGUE_VERSION,
@@ -172,6 +173,8 @@ export function ItemTypeEditor({
     [base, types],
   );
 
+  // Its card prefix (item-types.md "Card number prefixes"), beside Name.
+  const prefix = useTypePrefixDraft(start, type, types, label);
   const removedSome = start.fields.some((f) => !layout.fields.includes(f));
   const clash = others.some((t) => t.label.toLowerCase() === label.trim().toLowerCase());
   const draft = useMemo((): ItemTypeDef => {
@@ -186,6 +189,7 @@ export function ItemTypeEditor({
       label: name,
       newTitle: type && type.label === name ? type.newTitle : defaultNewTitle(name),
       color,
+      ...(prefix.stored ? { prefix: prefix.stored } : {}),
       glyph,
       fields: layout.fields,
       ...(layout.custom.length ? { custom: layout.custom } : {}),
@@ -222,6 +226,7 @@ export function ItemTypeEditor({
     types,
     label,
     color,
+    prefix.stored,
     glyph,
     layout,
     tabs,
@@ -276,17 +281,19 @@ export function ItemTypeEditor({
     ? 'Give the type a name.'
     : clash
       ? 'Another type has this name.'
-      : tabProblem
-        ? tabProblem
-        : heirProblem
-          ? `${heirProblem.label} inherits from this type and can’t hold any more fields.`
-          : statusesProblem
-            ? `Too many states on: a type can use at most ${ITEM_TYPE_STATUSES_MAX}.`
-            : templateProblem
-              ? templateProblem.message
-              : !check.ok
-                ? 'A custom field needs a name, and a Choice field at least one option.'
-                : null;
+      : prefix.problem
+        ? prefix.problem
+        : tabProblem
+          ? tabProblem
+          : heirProblem
+            ? `${heirProblem.label} inherits from this type and can’t hold any more fields.`
+            : statusesProblem
+              ? `Too many states on: a type can use at most ${ITEM_TYPE_STATUSES_MAX}.`
+              : templateProblem
+                ? templateProblem.message
+                : !check.ok
+                  ? 'A custom field needs a name, and a Choice field at least one option.'
+                  : null;
 
   // The tabs holding what stops Save (a status list problem is States'; a clashing name, a tab or a custom field
   // problem is Configuration's). A missing name is not flagged: a new type starts without one, and Save says so.
@@ -367,6 +374,7 @@ export function ItemTypeEditor({
               isNew={!type}
               label={label}
               onLabel={setLabel}
+              prefixField={<ItemTypePrefixField id={`${titleId}-prefix`} draft={prefix} />}
               glyph={glyph}
               onGlyph={setGlyph}
               color={color}

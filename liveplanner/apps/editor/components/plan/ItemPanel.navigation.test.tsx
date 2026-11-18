@@ -105,7 +105,7 @@ describe('the item panel’s navigation', () => {
     expect(screen.queryByRole('heading', { name: /Linked as Parent/ })).toBeNull();
     fireEvent.click(screen.getByRole('tab', { name: 'Linked Cards, 1 card' }));
     expect(screen.getByRole('heading', { name: /Linked as Parent/ })).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: /^Open #2 Card 2/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Open T-2 Card 2/ }));
     expect(onOpenItem).toHaveBeenCalledWith('c', 'ChildCard');
   });
 
@@ -113,7 +113,7 @@ describe('the item panel’s navigation', () => {
     const project = item('p', 1, 'project');
     const task = item('t', 2, 'task', { parent: 'p' });
     const onOpenItem = panel(task, [project, task], []);
-    fireEvent.click(screen.getByRole('button', { name: /^#1 Card 1/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^P-1 Card 1/ }));
     expect(onOpenItem).toHaveBeenCalledWith('p', 'Breadcrumb');
   });
 
@@ -128,7 +128,7 @@ describe('the item panel’s navigation', () => {
     const project = item('p', 1, 'project');
     const task = item('t', 2, 'task', { parent: 'p' });
     const onOpenItem = panel(task, [project, task], []);
-    const back = screen.getByRole('button', { name: /^#1 Card 1/ });
+    const back = screen.getByRole('button', { name: /^P-1 Card 1/ });
     const typePicker = screen.getByRole('combobox', { name: 'Card Type' });
     expect(
       back.compareDocumentPosition(typePicker) & Node.DOCUMENT_POSITION_FOLLOWING,
@@ -148,9 +148,9 @@ describe('the item panel header', () => {
     panel(task, [task], []);
     const picker = screen.getByRole('combobox', { name: 'Card Type' });
     expect((picker as HTMLSelectElement).value).toBe('task');
-    fireEvent.click(screen.getByRole('button', { name: 'Copy card number #7' }));
-    expect(writeText).toHaveBeenCalledWith('#7');
-    expect(await screen.findByRole('button', { name: 'Copied #7' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Copy card number T-7' }));
+    expect(writeText).toHaveBeenCalledWith('T-7');
+    expect(await screen.findByRole('button', { name: 'Copied T-7' })).toBeTruthy();
   });
 });
 

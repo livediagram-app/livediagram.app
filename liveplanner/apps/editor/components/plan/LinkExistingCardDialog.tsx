@@ -7,6 +7,7 @@
 // (one ordinary card write); a refused one keeps the dialog open.
 
 import { useMemo, useState } from 'react';
+import { cardRefIn } from './card-ref';
 import { ConfirmDialog } from '@liveworkspace/workbench/components/dialogs/ConfirmDialog';
 import {
   itemTitle,
@@ -25,7 +26,8 @@ type LinkRow = CardPickerRow & {
   elsewhere: { id: string; name: string | null } | null;
 };
 
-const cardName = (card: Item) => `#${card.key} ${itemTitle(card) || 'Untitled'}`;
+const cardName = (card: Item, types: readonly ItemTypeDef[]) =>
+  `${cardRefIn(types)(card)} ${itemTitle(card) || 'Untitled'}`;
 
 /** The rows Link Existing offers, newest change first, each saying where it links now. */
 export function linkExistingRows(
@@ -37,7 +39,7 @@ export function linkExistingRows(
   return linkableCards(target, group, items.values())
     .map(({ card, elsewhere }) => {
       const now = elsewhere ? linkedCard(items, elsewhere) : undefined;
-      const name = now ? cardName(now) : null;
+      const name = now ? cardName(now, types) : null;
       return {
         ...pickCardOf(card, types),
         elsewhere: elsewhere ? { id: elsewhere, name } : null,
@@ -98,7 +100,7 @@ export function LinkExistingCardDialog({
     <>
       <CardPickerDialog
         title="Link Existing Card"
-        description={`Pick a card to link to ${cardName(target)} as ${group.label}.`}
+        description={`Pick a card to link to ${cardName(target, types)} as ${group.label}.`}
         cards={picker.shown}
         query={picker.query}
         onQuery={picker.setQuery}
@@ -112,7 +114,7 @@ export function LinkExistingCardDialog({
       {moving ? (
         <ConfirmDialog
           open
-          title={`Move #${moving.key} ${moving.title}?`}
+          title={`Move ${moving.ref} ${moving.title}?`}
           message={
             from
               ? `It is linked as ${group.label} to ${from}. Linking it here moves it, and it leaves ${from}'s Linked as ${group.label}.`

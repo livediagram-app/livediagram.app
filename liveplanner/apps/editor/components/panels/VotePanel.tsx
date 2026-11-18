@@ -29,6 +29,7 @@ import type { DockAnchor } from '@/lib/canvas-chrome';
 import type { VoteReview } from '@/hooks/canvas/useVoteReview';
 import { voteRules } from '@/components/panels/session-studio/session-studio';
 import { buttonClassName } from '@liveplanner/ui';
+import { cardRefIn } from '@/components/plan/card-ref';
 
 // A popover never moves.
 const NO_MOVE = () => {};
@@ -371,7 +372,7 @@ function VoteResultsList({
         const card = itemId ? plan?.items.get(itemId) : undefined;
         const el = itemId ? undefined : elements.find((e) => e.id === row.id);
         const label = card
-          ? `#${card.key} ${itemTitle(card) || 'Untitled'}`
+          ? `${cardRefIn(plan?.types)(card)} ${itemTitle(card) || 'Untitled'}`
           : itemId
             ? 'Card'
             : el

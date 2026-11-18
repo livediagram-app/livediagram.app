@@ -23,7 +23,7 @@ const item = (key: number): Item => ({
 });
 
 function draw(keys: number[], onBack = vi.fn()) {
-  const { container } = render(<ItemTrailCrumbs trail={keys.map(item)} onBack={onBack} />);
+  const { container } = render(<ItemTrailCrumbs trail={keys.map(item)} types={undefined} onBack={onBack} />);
   return { onBack, container };
 }
 

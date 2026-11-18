@@ -208,7 +208,7 @@ describe('Setup Sheet', () => {
     const list = screen.getByRole('list', { name: 'Cards found' });
     const rows = within(list).getAllByRole('listitem');
     expect(rows).toHaveLength(10);
-    expect(rows[0]!.textContent).toContain('#1');
+    expect(rows[0]!.textContent).toContain('T-1');
     expect(rows[0]!.textContent).toContain('Card 1');
     // Nothing in it opens.
     expect(within(list).queryAllByRole('button')).toHaveLength(0);

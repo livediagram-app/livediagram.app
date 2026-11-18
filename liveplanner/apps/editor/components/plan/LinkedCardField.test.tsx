@@ -45,10 +45,10 @@ describe('LinkedCardField', () => {
   it('reads as one field: the linked card’s number and full title, and opens it from its end', () => {
     const launch = card('a', 1, 'Launch the new pricing page', { color: '#ea580c' });
     const { onOpen } = field('a', [launch]);
-    const trigger = screen.getByRole('button', { name: 'Parent: #1 Launch the new pricing page' });
+    const trigger = screen.getByRole('button', { name: 'Parent: P-1 Launch the new pricing page' });
     expect(trigger.textContent).toContain('Launch the new pricing page');
     expect(screen.getByRole('img', { name: 'Orange colour' })).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Open #1 Launch the new pricing page' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Open P-1 Launch the new pricing page' }));
     expect(onOpen).toHaveBeenCalledWith('a');
   });
 
@@ -87,8 +87,8 @@ describe('LinkedCardField', () => {
     const list = screen.getByRole('listbox', { name: 'Parent' });
     expect(screen.getAllByRole('option').map((o) => o.textContent)).toEqual([
       'None',
-      '#1Alpha',
-      '#2Beta',
+      'P-1Alpha',
+      'P-2Beta',
     ]);
     fireEvent.keyDown(list, { key: 'ArrowDown' });
     fireEvent.keyDown(list, { key: 'ArrowDown' });
@@ -100,10 +100,10 @@ describe('LinkedCardField', () => {
   it('clears the link with None, and closes on Escape without saving', () => {
     const a = card('a', 1, 'Alpha');
     const { onSave } = field('a', [a]);
-    fireEvent.click(screen.getByRole('button', { name: 'Parent: #1 Alpha' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Parent: P-1 Alpha' }));
     fireEvent.click(screen.getByRole('option', { name: 'None' }));
     expect(onSave).toHaveBeenCalledWith(undefined);
-    fireEvent.click(screen.getByRole('button', { name: 'Parent: #1 Alpha' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Parent: P-1 Alpha' }));
     fireEvent.keyDown(window, { key: 'Escape' });
     expect(screen.queryByRole('listbox')).toBeNull();
     expect(onSave).toHaveBeenCalledTimes(1);
@@ -119,7 +119,7 @@ describe('LinkedCardField', () => {
     fireEvent.change(filter, { target: { value: 'hiring' } });
     expect(screen.getAllByRole('option').map((o) => o.textContent)).toEqual([
       'None',
-      '#4Hiring plan',
+      'P-4Hiring plan',
     ]);
     fireEvent.keyDown(filter, { key: 'ArrowDown' });
     fireEvent.keyDown(filter, { key: 'Enter' });
@@ -150,12 +150,12 @@ describe('a long card title in the list', () => {
   it('wraps to two lines rather than cutting off, and names the whole card', () => {
     field(undefined, [card('a', 1, long), card('b', 2, unbroken)]);
     fireEvent.click(screen.getByRole('button', { name: 'Parent: None' }));
-    const option = screen.getByRole('option', { name: `#1 ${long}` });
+    const option = screen.getByRole('option', { name: `P-1 ${long}` });
     const title = option.querySelector('.line-clamp-2');
     expect(title?.textContent).toBe(long);
     expect(title?.className).toContain('[overflow-wrap:anywhere]');
     expect(option.className).not.toContain('truncate');
-    expect(screen.getByRole('option', { name: `#2 ${unbroken}` })).toBeTruthy();
+    expect(screen.getByRole('option', { name: `P-2 ${unbroken}` })).toBeTruthy();
   });
 
   // docs/specs/026-plan/item-types.md "Card fields": over the page, never the narrow field's width.

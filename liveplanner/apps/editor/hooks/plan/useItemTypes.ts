@@ -150,6 +150,7 @@ export function useItemTypes(opts: {
             { ownerId, projectId: doc, shareCode },
             next,
             base.itemTypesRev,
+            base.itemTypes,
           );
           keepStored(saved);
           done();

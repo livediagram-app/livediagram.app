@@ -82,7 +82,7 @@ describe('Link Cards to a card the plan no longer has', () => {
   it('names a card it has by number and title', () => {
     render(<Panel body={linkTo('i48')} part={{ part: 'step', index: 0 }} />);
     expect(described(screen.getByRole('button', { name: 'Change Card' }))).toBe(
-      '#48Publish pricing page',
+      'T-48Publish pricing page',
     );
   });
 });

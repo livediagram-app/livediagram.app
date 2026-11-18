@@ -5,6 +5,7 @@
 // person's edits make a row a draft, which its Save writes to the card (or makes a new card) and its Cancel puts
 // back; a deleted linked row's card goes to the Trash at once.
 import { useEffect, useRef } from 'react';
+import { cardRefIn } from '@/components/plan/card-ref';
 import { newItemId } from '@liveplanner/items';
 import {
   CARD_CONTROLS_COL_PX,
@@ -191,7 +192,9 @@ export function useCardTableSync(
         else if (item.rev > was) {
           baseline.current.delete(key);
           cancelCardRow(c, plan, t.id, r);
-          c.notify(`Card #${item.key} changed elsewhere, so its row's edits were put back`);
+          c.notify(
+            `Card ${cardRefIn(plan.types)(item)} changed elsewhere, so its row's edits were put back`,
+          );
           debugLog('[sheets] cardTable.draftSuperseded', { row: r, item: item.id });
         }
       }

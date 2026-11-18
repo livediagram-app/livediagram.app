@@ -44,6 +44,7 @@ import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobi
 import { DebouncedText } from './item-field-editors';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ItemPanelMenu } from './ItemPanelMenu';
+import { cardRefIn } from './card-ref';
 import { useCardMorph } from './useCardMorph';
 import { useItemRepeat } from './ItemRepeatLine';
 import { useRunRule } from '@/components/automations/use-run-rule';
@@ -188,7 +189,9 @@ export function ItemPanel(props: ItemPanelProps) {
     <Dialog
       open
       onClose={morphClose}
-      ariaLabel={item.key === PRACTICE_KEY ? 'Practice Card' : `Item #${item.key}`}
+      ariaLabel={
+        item.key === PRACTICE_KEY ? 'Practice Card' : `Item ${cardRefIn(props.types)(item)}`
+      }
       size="3xl"
       phoneSheet
       // The trap lands on the panel itself, never its first control (the type picker, which nobody opens a card
@@ -353,7 +356,7 @@ function ItemPanelContent({
   const trailRow =
     trail.length > 1 ? (
       <div className="border-b border-slate-200 px-3 pt-1.5 dark:border-slate-700">
-        <ItemTrailCrumbs trail={trail} onBack={(id) => onOpenItem(id, 'Breadcrumb')} />
+        <ItemTrailCrumbs trail={trail} types={types} onBack={(id) => onOpenItem(id, 'Breadcrumb')} />
       </div>
     ) : null;
 
@@ -372,7 +375,7 @@ function ItemPanelContent({
           Practice
         </span>
       ) : (
-        <ItemKeyTag itemKey={item.key} />
+        <ItemKeyTag text={cardRefIn(types)(item)} />
       )}
       {isFlagged(item) ? (
         <span
@@ -386,7 +389,7 @@ function ItemPanelContent({
       <span className="flex-1" />
       {practice ? null : (
         <ItemPanelMenu
-          itemKey={item.key}
+          itemRef={cardRefIn(types)(item)}
           canEdit={canEdit}
           canRetire={canRetire}
           archived={isArchived(item)}

@@ -566,7 +566,7 @@ describe('StepPanel', () => {
     expect(document.querySelector('[data-step-preview]')!.textContent).toContain(
       'Shipped by Ana Costa',
     );
-    expect(screen.getByText(/Preview on #48 Publish pricing page/)).toBeTruthy();
+    expect(screen.getByText(/Preview on T-48 Publish pricing page/)).toBeTruthy();
     // The rule's name beside Automation reads on the violet wash (slate 500 there was 4.34:1).
     expect(document.querySelector('[data-preview-via]')!.className).toContain('text-slate-600');
   });
