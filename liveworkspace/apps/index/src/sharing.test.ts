@@ -777,6 +777,87 @@ describe('what a link opens, and Shared with me', () => {
     expect(await claimsOf(ada.auth, { 'X-Share-Code': link.code })).not.toHaveProperty('link');
   });
 
+  // Work Tracker 1244: a password-protected item reopened by its own address, with no code sent.
+  it('names the link in a password refusal only to a person reaching it through Shared', async () => {
+    const ada = await person('user_a');
+    const bob = await person('user_b');
+    const cyd = await person('user_c');
+    const item = await makeItem(ada.auth, { title: 'Secret Board' });
+    const link = await share(ada.auth, item.id, { level: 'participate', tabId: 't1' });
+    await call(`/items/${item.id}/share-password`, {
+      method: 'PUT',
+      auth: ada.auth,
+      body: { password: 'hunter2' },
+    });
+    const withCode = { 'X-Share-Code': link.code };
+    // Bob opens the link with its password: recorded in his Shared with me.
+    expect(
+      (
+        await call(`/share/${link.code}`, {
+          auth: bob.auth,
+          headers: { ...withCode, 'X-Share-Password': 'hunter2' },
+        })
+      ).status,
+    ).toBe(200);
+
+    // Reopened with no code: the grant and the item's read both ask for the password, naming the link and nothing
+    // else (no title, owner or level).
+    for (const path of [`/items/${item.id}/grant`, `/items/${item.id}`]) {
+      const method = path.endsWith('/grant') ? 'POST' : 'GET';
+      const res = await call(path, { method, auth: bob.auth });
+      expect(res.status).toBe(401);
+      expect(await body(res)).toEqual({ error: 'password_required', link: link.code });
+    }
+    // With the password the link's code is what admits him, at its level and tab.
+    const granted = await call(`/items/${item.id}/grant`, {
+      method: 'POST',
+      auth: bob.auth,
+      headers: { ...withCode, 'X-Share-Password': 'hunter2' },
+    });
+    expect(await body(granted)).toMatchObject({
+      level: 'participate',
+      tabId: 't1',
+      link: link.code,
+    });
+
+    // A caller that sent the code already holds it: the refusal is as before.
+    for (const auth of [bob.auth, undefined]) {
+      const sent = await call(`/items/${item.id}/grant`, {
+        method: 'POST',
+        auth,
+        headers: withCode,
+      });
+      expect(sent.status).toBe(401);
+      expect(await body(sent)).toEqual({ error: 'password_required' });
+    }
+    // Someone who never opened the link learns nothing: not that the item exists, nor its link.
+    const stranger = await call(`/items/${item.id}/grant`, { method: 'POST', auth: cyd.auth });
+    expect(stranger.status).toBe(404);
+    expect(await body(stranger)).toEqual({ error: 'not_found' });
+    const nobody = await call(`/items/${item.id}/grant`, { method: 'POST' });
+    expect(await body(nobody)).not.toHaveProperty('link');
+
+    // A new password clears Shared with me: Bob is back to a stranger until he enters it through the link again.
+    await call(`/items/${item.id}/share-password`, {
+      method: 'PUT',
+      auth: ada.auth,
+      body: { password: 'swordfish' },
+    });
+    const after = await call(`/items/${item.id}/grant`, { method: 'POST', auth: bob.auth });
+    expect(after.status).toBe(404);
+    expect(await body(after)).toEqual({ error: 'not_found' });
+
+    // A revoked link names nothing either.
+    await call(`/share/${link.code}`, {
+      auth: bob.auth,
+      headers: { ...withCode, 'X-Share-Password': 'swordfish' },
+    });
+    await call(`/share/${link.code}`, { method: 'DELETE', auth: ada.auth });
+    const revoked = await call(`/items/${item.id}/grant`, { method: 'POST', auth: bob.auth });
+    expect(revoked.status).toBe(404);
+    expect(await body(revoked)).toEqual({ error: 'not_found' });
+  });
+
   it('keeps no Shared entry, notice or visit for a public link', async () => {
     const ada = await person('user_a');
     const bob = await person('user_b');
