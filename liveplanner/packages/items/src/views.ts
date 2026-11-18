@@ -6,7 +6,7 @@ import { itemAssignee, itemTitle } from './item';
 import { ITEM_TYPES, type ItemTypeDef } from './item-types';
 import { typeIn } from './type-catalogue';
 import { PRIORITY_LABELS, isPriority } from './fields';
-import { cardRef, cardRefTitle } from './card-prefix';
+import { cardRefOrKey, cardRefTitle } from './card-prefix';
 
 // "WI-12 Fix login" ("#12 Fix login" with no types to read its prefix from: item-types.md "Card number prefixes"), or
 // just the title for a card with no number of its own: a tour's practice card is key 0
@@ -33,5 +33,5 @@ export function itemSummary(item: Item, types?: readonly ItemTypeDef[]): string 
   const p = item.fields['priority'];
   if (isPriority(p)) extras.push(`!${p}`);
   const tail = extras.length ? ` (${extras.join(', ')})` : '';
-  return `${cardRef(item, types) || `#${item.key}`} [${item.type}] ${itemTitle(item)}${tail}`;
+  return `${cardRefOrKey(item, types)} [${item.type}] ${itemTitle(item)}${tail}`;
 }

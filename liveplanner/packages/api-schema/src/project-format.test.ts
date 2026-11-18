@@ -184,7 +184,7 @@ const READS: Readonly<
   },
 };
 // Format 8 adds a card type's prefix and no field kind or calculation.
-const READS_NOW = { ...READS, 8: READS[7]! };
+const READS_NOW: typeof READS = { ...READS, 8: READS[7]! };
 
 describe('a new card field kind or calculation bumps the format', () => {
   it('reads exactly the kinds and calculations this format names', () => {

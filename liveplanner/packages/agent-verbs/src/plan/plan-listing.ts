@@ -46,7 +46,7 @@ import {
   isBlocksField,
   blockingIndexOf,
   clashText,
-  cardRef,
+  cardRefOrKey,
   prefixOf,
   clashesOf,
   hasBlocksFields,
@@ -170,7 +170,9 @@ function listedBlocking(
   const open = index.open.get(item.id);
   const blocks = index.blocks.get(item.id);
   const clashes = open
-    ? clashesOf(item, index, (c) => isDone(itemStatus(c))).map((c) => clashText(c.days, c.blocker, types))
+    ? clashesOf(item, index, (c) => isDone(itemStatus(c))).map((c) =>
+        clashText(c.days, c.blocker, types),
+      )
     : [];
   return {
     ...(open ? { blocked: open } : {}),
@@ -334,7 +336,7 @@ export function resolveListingFilter(
 
 // A card as agents name it: its number with its type's prefix ("WI-12"; docs/specs/026-plan/item-types.md "Card number
 // prefixes"), "#12" for a type the catalogue lacks. Every form ("WI-12", "#12", "12") reads back as the card.
-const ref = (item: Item, types: readonly ItemTypeDef[]) => cardRef(item, types) || `#${item.key}`;
+const ref = (item: Item, types: readonly ItemTypeDef[]) => cardRefOrKey(item, types);
 
 function columnName(status: string | undefined, state: PlanState): string | null {
   if (!status) return null;
@@ -623,7 +625,10 @@ export function listedBoards(
       }),
     };
   });
-  return { boards, notOnBoard: live.filter((i) => !onABoard.has(i.id)).map((i) => ref(i, plan.types)) };
+  return {
+    boards,
+    notOnBoard: live.filter((i) => !onABoard.has(i.id)).map((i) => ref(i, plan.types)),
+  };
 }
 
 // Each card as list_items and `item ls` list it, from one read of the plan: the lookups a card's calculated fields,

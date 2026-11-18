@@ -11,7 +11,7 @@ import {
   resolveItem,
   type Item,
   type ItemFields,
-  cardRef,
+  cardRefOrKey,
   type ItemTypeDef,
 } from '@liveplanner/items';
 import { defineVerb, VerbRefusal, type VerbContext } from '../define';
@@ -53,7 +53,7 @@ const listedItemOut = itemOut.extend({
 const outOf = (item: Item, types: readonly ItemTypeDef[]) => ({
   id: item.id,
   key: item.key,
-  ref: cardRef(item, types) || `#${item.key}`,
+  ref: cardRefOrKey(item, types),
   type: item.type,
   status: itemStatus(item) ?? null,
   title: itemTitle(item),

@@ -9,7 +9,7 @@ import {
   type Item,
   type ItemTypeCatalogue,
   type ItemTypeDef,
-  cardRef,
+  cardRefOrKey,
 } from '@liveplanner/items';
 import type { ShapeElement, Tab } from './index';
 import { planBoardLayout } from './plan-board-layout';
@@ -42,7 +42,7 @@ export function tabExportItems(
 function cardLine(item: Item | undefined, types: readonly ItemTypeDef[]): string {
   if (!item) return '- _Card not found_';
   const title = itemTitle(item).trim() || 'Untitled';
-  return `- ${cardRef(item, types) || `#${item.key}`} ${title} (${typeIn(types, item.type).label})`;
+  return `- ${cardRefOrKey(item, types)} ${title} (${typeIn(types, item.type).label})`;
 }
 
 // The outline's Plan Boards and Plan Cards sections, top to bottom then left to right; empty when the tab has

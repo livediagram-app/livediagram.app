@@ -8,7 +8,7 @@ import { itemTitle, type Item, type ItemFieldValue } from './item';
 import { BUILT_IN_DATES, type ViewDates } from './view-fields';
 import { roleDay, roleDays } from './view-dates-write';
 import type { ItemTypeDef } from './item-types';
-import { cardRef } from './card-prefix';
+import { cardRefOrKey } from './card-prefix';
 
 // Inclusive day numbers.
 export interface DaySpan {
@@ -48,7 +48,7 @@ export function clashText(
   blocker: Pick<Item, 'key' | 'type' | 'fields'>,
   types?: readonly ItemTypeDef[],
 ): string {
-  const named = `${cardRef(blocker, types) || `#${blocker.key}`} ${itemTitle(blocker).trim() || 'Untitled'}`;
+  const named = `${cardRefOrKey(blocker, types)} ${itemTitle(blocker).trim() || 'Untitled'}`;
   if (days === 0) return `Starts the day ${named} is due`;
   return `Starts ${days} ${days === 1 ? 'day' : 'days'} before ${named} is due`;
 }

@@ -14,7 +14,7 @@ import {
   isItemPerson,
   itemStatus,
   itemSummary,
-  cardRef,
+  cardRefOrKey,
   cardRefTitle,
   itemTitle,
   resolveFields,
@@ -167,7 +167,7 @@ const SET_VALUE_MAX = 40;
 // A value as a set line reads it back: what was stored, so a value that landed other than meant shows ("Rating =
 // ★"). A card link by its number, a person by name, a list by its length.
 function storedText(value: unknown, items: readonly Item[], types: readonly ItemTypeDef[]): string {
-  const refOf = (i: Item) => cardRef(i, types) || `#${i.key}`;
+  const refOf = (i: Item) => cardRefOrKey(i, types);
   if (isItemPerson(value)) return value.name;
   // A field that holds several (docs/specs/026-plan/item-types.md "Holds Several"): its people or cards, named.
   if (Array.isArray(value) && value.length > 0 && value.every(isItemPerson))

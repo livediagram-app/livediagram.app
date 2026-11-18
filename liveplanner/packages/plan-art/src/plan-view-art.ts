@@ -36,7 +36,7 @@ import {
   type MetricKind,
   type PlanViewId,
   type StatusPhase,
-  cardRef,
+  cardRefOrKey,
 } from '@liveplanner/items';
 import { BOARD_WIDGET_INFO } from './board-widget-info';
 import { metricModel } from './metric-tile-model';
@@ -345,7 +345,7 @@ function cardRows(
     parts.push(
       box({ x: body.x + ART_PAD, y, width: 4, height: rowH }, { fill: type.color, rx: 2 }),
     );
-    const tag = cardRef(it, types) || `#${it.key}`;
+    const tag = cardRefOrKey(it, types);
     parts.push(line(body.x + ART_PAD + 12, y + 19, tag, { size: 11, color: p.muted }));
     parts.push(
       line(body.x + ART_PAD + 20 + tag.length * 7, y + 19, itemTitle(it).trim() || 'Untitled', {

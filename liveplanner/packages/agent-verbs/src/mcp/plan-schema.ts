@@ -687,7 +687,9 @@ export const cardTypeChangeSchema = z.discriminatedUnion('op', [
     detailsLabel: detailsLabelArg.optional(),
     detailsGlyph: detailsGlyphArg.optional(),
     assigneeNotifies: assigneeNotifiesArg.optional(),
-    prefix: prefixArg.optional().describe('Its card prefix; default made from its name (Work Item WI).'),
+    prefix: prefixArg
+      .optional()
+      .describe('Its card prefix; default made from its name (Work Item WI).'),
     inherits: typeArg
       .optional()
       .describe(
@@ -735,7 +737,9 @@ export const cardTypeChangeSchema = z.discriminatedUnion('op', [
     prefix: prefixArg
       .nullable()
       .optional()
-      .describe('Its card prefix; "" or null puts the one made from its name back. A rename keeps it.'),
+      .describe(
+        'Its card prefix; "" or null puts the one made from its name back. A rename keeps it.',
+      ),
     inherits: typeArg
       .nullable()
       .optional()

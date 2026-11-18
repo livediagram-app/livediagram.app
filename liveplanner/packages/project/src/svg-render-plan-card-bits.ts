@@ -41,7 +41,7 @@ import {
   readTimeValue,
   timePerson,
   type BlockingIndex,
-  cardRef,
+  cardRefOrKey,
 } from '@liveplanner/items';
 import { lucideLink } from '@liveworkspace/icons/lucide';
 import {
@@ -135,7 +135,7 @@ export function bitOf(
   const v = item.fields[f];
   switch (f) {
     case 'key':
-      return { kind: 'text', text: cardRef(item, ctx.types) || `#${item.key}`, color: type.color, weight: 600 };
+      return { kind: 'text', text: cardRefOrKey(item, ctx.types), color: type.color, weight: 600 };
     case 'type':
       return { kind: 'text', text: type.label, color: type.color, weight: 600, dot: type.color };
     case 'priority':

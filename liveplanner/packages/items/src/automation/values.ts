@@ -4,7 +4,7 @@
 
 import { itemAssignee, itemStatus, itemTitle, type Item, type ItemFieldValue } from '../item';
 import type { ItemTypeDef } from '../item-types';
-import { cardRef } from '../card-prefix';
+import { cardRefOrKey } from '../card-prefix';
 import { PRIORITY_LABELS, isPriority } from '../fields';
 import { addDays, isDay, localDay } from '../repeat-dates';
 import { dayNumber, dayParts, MONTH_SHORT } from '../plan-view-dates';
@@ -155,7 +155,7 @@ function valueOf(name: string, ctx: ValueContext, iso: boolean): string {
     case 'card.title':
       return itemTitle(ctx.card);
     case 'card.key':
-      return cardRef(ctx.card, ctx.outline.types) || `#${ctx.card.key}`;
+      return cardRefOrKey(ctx.card, ctx.outline.types);
     case 'card.url':
       return ctx.url;
     case 'card.assignee':
@@ -175,9 +175,7 @@ function valueOf(name: string, ctx: ValueContext, iso: boolean): string {
     case 'trigger.title':
       return ctx.trigger ? itemTitle(ctx.trigger.card) : '';
     case 'trigger.key':
-      return ctx.trigger
-        ? cardRef(ctx.trigger.card, ctx.outline.types) || `#${ctx.trigger.card.key}`
-        : '';
+      return ctx.trigger ? cardRefOrKey(ctx.trigger.card, ctx.outline.types) : '';
     case 'trigger.url':
       return ctx.trigger?.url ?? '';
     case 'pull_request.title':

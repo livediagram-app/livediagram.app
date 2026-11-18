@@ -88,7 +88,7 @@ describe('fillValues', () => {
       '{{card.title}} {{card.key}} {{card.url}} {{card.assignee}} {{card.column}} {{card.due}} ' +
       '{{person}} {{rule}} {{now.date}} {{now}} {{now + 3d}} {{card.field.Severity}} {{card.field.deadline}}';
     expect(fillValues(text, ctx())).toBe(
-      'Login fails #48 https://app.test/c/48 Sam Lee To Do 20 Nov 2026 Ana Costa Escalate 11 Nov 2026 ' +
+      'Login fails B-48 https://app.test/c/48 Sam Lee To Do 20 Nov 2026 Ana Costa Escalate 11 Nov 2026 ' +
         '11 Nov 2026, 10:42 14 Nov 2026 High 20 Nov 2026',
     );
   });
@@ -140,7 +140,7 @@ describe('the triggering card’s values', () => {
   it('fill from the triggering card, and read as nothing without one', () => {
     const trigger = { card: bug({ title: 'Epic' }, { key: 7 }), url: 'https://app.test/7' };
     const text = '{{trigger.title}} {{trigger.key}} {{trigger.url}}';
-    expect(fillValues(text, ctx({}, { trigger }))).toBe('Epic #7 https://app.test/7');
+    expect(fillValues(text, ctx({}, { trigger }))).toBe('Epic B-7 https://app.test/7');
     expect(fillValues(text, ctx())).toBe('  ');
   });
 });

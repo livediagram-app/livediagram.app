@@ -3,6 +3,7 @@
 // fields, custom fields, tabs, Details name and card templates, and a fresh id. The type editor opens on it; nothing is stored
 // until it is saved.
 import type { ItemTypeDef } from './item-types';
+import { autoPrefix, prefixesOf } from './card-prefix';
 import { ITEM_TYPE_LABEL_MAX, defaultNewTitle, newItemTypeId } from './type-catalogue';
 
 // The first free "<label> copy", "<label> copy 2"... ignoring case, cut so the whole fits the label limit.
@@ -28,6 +29,8 @@ export function duplicateItemType(type: ItemTypeDef, types: readonly ItemTypeDef
     id: newItemTypeId(label, types),
     label,
     newTitle: defaultNewTitle(label),
+    // Its own card prefix, made from its new name, never the type's it copies (item-types.md "Card number prefixes").
+    prefix: autoPrefix(label, new Set(prefixesOf(types).values())),
     fields: [...type.fields],
     ...(type.custom ? { custom: type.custom.map((f) => ({ ...f })) } : {}),
     ...(type.tabs ? { tabs: type.tabs.map((t) => ({ ...t, fields: [...t.fields] })) } : {}),

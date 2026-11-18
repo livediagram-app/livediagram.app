@@ -87,11 +87,11 @@ describe('item ls', () => {
     const all = await itemLs.run!(ctx, { project: DOC_A, type: undefined, status: undefined });
     expect(itemLs.text!(all)).toEqual([
       'Sprint: To Do 1 · Doing 1 · Done ✓ 0 | Widgets: Item Count, Filter',
-      '#1  bug   Doing  "Fix login"',
-      '#2  task  To Do  "Docs"',
+      'B-1  bug   Doing  "Fix login"',
+      'T-2  task  To Do  "Docs"',
     ]);
     const bugs = await itemLs.run!(ctx, { project: DOC_A, type: ['bug'], status: undefined });
-    expect(itemLs.quiet!(bugs)).toEqual(['#1']);
+    expect(itemLs.quiet!(bugs)).toEqual(['B-1']);
     expect(
       (await itemLs.run!(ctx, { project: DOC_A, type: undefined, status: ['todo'] })).items,
     ).toHaveLength(1);
@@ -187,7 +187,7 @@ describe('item writes', () => {
         fields: ['priority=high', 'labels=ux, api', 'estimate=3'],
       }),
     );
-    expect(out.text).toBe('+ #3 [task] New');
+    expect(out.text).toBe('+ T-3 [task] New');
     expect(seen[0]).toMatchObject({
       method: 'POST',
       body: {
@@ -220,7 +220,7 @@ describe('item writes', () => {
       body: { status: 'todo', before: 'itemaaa222' },
     });
     const rm = await itemRm.run!(ctx, { project: DOC_A, item: 'itembbb' });
-    expect(rm.text).toBe('- #1 [bug] Fix login (!high)');
+    expect(rm.text).toBe('- B-1 [bug] Fix login (!high)');
     expect(seen[2]).toMatchObject({ method: 'DELETE' });
   });
 
@@ -291,7 +291,7 @@ describe('item flags', () => {
     });
     const all = await itemLs.run!(ctx, { project: DOC_A, type: undefined, status: undefined });
     expect(all.items[0]!.fields).toMatchObject({ flagged: true });
-    expect(itemLs.text!(all)).toContain('#1  task  Doing  "Fix login"  flagged');
+    expect(itemLs.text!(all)).toContain('T-1  task  Doing  "Fix login"  flagged');
   });
 });
 
@@ -300,15 +300,15 @@ describe('item output and refusals', () => {
     const { ctx, seen } = api();
     const added = await itemAdd.run!(ctx, itemAdd.input.parse({ project: DOC_A, title: 'New' }));
     expect(seen[0]!.body).toEqual({ type: 'task', fields: { title: 'New' } });
-    expect(itemAdd.text!(added)).toEqual(['+ #3 [task] New']);
-    expect(itemAdd.quiet!(added)).toEqual(['#3']);
+    expect(itemAdd.text!(added)).toEqual(['+ T-3 [task] New']);
+    expect(itemAdd.quiet!(added)).toEqual(['T-3']);
     const set = await itemSet.run!(
       ctx,
       itemSet.input.parse({ project: DOC_A, item: '#1', fields: ['estimate=3'] }),
     );
     expect(seen[1]!.body).toEqual({ set: { estimate: 3 } });
-    expect(itemSet.text!(set)).toEqual(['~ #3 [task] New']);
-    expect(itemSet.quiet!(set)).toEqual(['#3']);
+    expect(itemSet.text!(set)).toEqual(['~ T-3 [task] New']);
+    expect(itemSet.quiet!(set)).toEqual(['T-3']);
     const moved = await itemMove.run!(ctx, {
       project: DOC_A,
       item: '#1',
@@ -316,10 +316,10 @@ describe('item output and refusals', () => {
       before: undefined,
     });
     expect(seen[2]!.body).toEqual({ status: 'done', before: null });
-    expect(itemMove.text!(moved)).toEqual(['→ #3 [task] New in done']);
-    expect(itemMove.quiet!(moved)).toEqual(['#3']);
+    expect(itemMove.text!(moved)).toEqual(['→ T-3 [task] New in done']);
+    expect(itemMove.quiet!(moved)).toEqual(['T-3']);
     const rm = await itemRm.run!(ctx, { project: DOC_A, item: '#1' });
-    expect(itemRm.text!(rm)).toEqual(['- #1 [bug] Fix login (!high)']);
+    expect(itemRm.text!(rm)).toEqual(['- B-1 [bug] Fix login (!high)']);
     expect(itemRm.quiet!(rm)).toEqual(['itembbb111']);
   });
 
@@ -364,7 +364,7 @@ describe('item edges', () => {
     expect(out.items[0]!.status).toBeNull();
     expect(itemLs.text!(out)).toEqual([
       'Sprint: To Do 0 · Doing 0 · Done ✓ 0',
-      '#5  task  -  "Loose"',
+      'T-5  task  -  "Loose"',
     ]);
   });
 
@@ -603,7 +603,7 @@ describe('formula fields', () => {
       Broken: null,
     });
     expect(out.items.find((i) => i.id === 'itemdeal02')!.fields).toMatchObject({
-      Grade: '#1 Acme',
+      Grade: 'D-1 Acme',
     });
     expect(listedType(DEAL as ItemTypeDef).custom).toEqual(
       expect.arrayContaining([
@@ -967,8 +967,8 @@ describe('item ls: pull requests', () => {
     ]);
     expect(all.items.find((i) => i.key === 2)).not.toHaveProperty('pullRequests');
     expect(itemLs.text!(all).slice(1)).toEqual([
-      '#1  bug   Doing  "Fix login"  acme/web#42 open, checks failing; acme/api#7 merged',
-      '#2  task  To Do  "Docs"',
+      'B-1  bug   Doing  "Fix login"  acme/web#42 open, checks failing; acme/api#7 merged',
+      'T-2  task  To Do  "Docs"',
     ]);
   });
 });

@@ -93,7 +93,7 @@ describe('agents and dependency clashes', () => {
     const early = { ...build, fields: { ...build.fields, start: '2026-03-04' } };
     const { api: a } = api([design, early, ship]);
     const lister = itemLister(await readPlanState(a, D));
-    expect(lister(early).clashes).toEqual(['Starts 2 days before #1 Design is due']);
+    expect(lister(early).clashes).toEqual(['Starts 2 days before T-1 Design is due']);
     expect(lister(design).clashes).toBeUndefined();
     expect(lister(ship).clashes).toBeUndefined();
   });
@@ -114,8 +114,8 @@ describe('agents and dependency clashes', () => {
       ['ccc333', { start: '2026-03-14', due: '2026-03-14' }],
     ]);
     expect(r.applied.slice(1)).toEqual([
-      expect.stringMatching(/^~ #2 .*Build.*; moved 2 days later, after #1 Design$/),
-      expect.stringMatching(/^~ #3 .*Ship.*; moved 2 days later, after #1 Design$/),
+      expect.stringMatching(/^~ T-2 .*Build.*; moved 2 days later, after T-1 Design$/),
+      expect.stringMatching(/^~ T-3 .*Ship.*; moved 2 days later, after T-1 Design$/),
     ]);
 
     const { api: b, writes: alone } = api([design, build, ship]);
@@ -136,7 +136,7 @@ describe('agents and dependency clashes', () => {
       [{ op: 'set', item: '#1', fields: { due: '2026-03-09' }, moveFollowing: true }],
       await readPlanState(a, D),
     );
-    expect(r.applied[1]).toMatch(/; moved 1 day later, after #1 Design$/);
+    expect(r.applied[1]).toMatch(/; moved 1 day later, after T-1 Design$/);
   });
 
   it('stops where the api refuses a card it may not change, saying what moved', async () => {

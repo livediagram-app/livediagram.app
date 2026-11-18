@@ -106,6 +106,14 @@ export function cardRef(
   return prefix ? `${prefix}-${item.key}` : `#${item.key}`;
 }
 
+// Its ref, or "#0" for a card of no number: where a card is always named (a rule's run line, an agent's listing).
+export function cardRefOrKey(
+  item: { key: number; type: string },
+  types: readonly ItemTypeDef[] | undefined,
+): string {
+  return cardRef(item, types) || `#${item.key}`;
+}
+
 // "WI-100 Fix login", or the title alone for a card with no number.
 export function cardRefTitle(
   item: { key: number; type: string },

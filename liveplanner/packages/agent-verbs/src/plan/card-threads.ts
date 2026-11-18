@@ -22,7 +22,7 @@ import {
   typeIn,
   type Item,
   type ItemTypeDef,
-  cardRef,
+  cardRefOrKey,
   cardRefTitle,
 } from '@liveplanner/items';
 import {
@@ -324,7 +324,9 @@ export async function applyThreadChanges(
             { text: change.text, ...(field && field !== COMMENTS_FIELD ? { field } : {}) },
           );
           keep(made, '');
-          applied.push(`+ thread ${made!.id} "${made!.title}" on ${cardRef(item, initial.types) || `#${item.key}`}`);
+          applied.push(
+            `+ thread ${made!.id} "${made!.title}" on ${cardRefOrKey(item, initial.types)}`,
+          );
           break;
         }
         case 'reply': {

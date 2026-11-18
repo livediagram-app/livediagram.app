@@ -83,9 +83,10 @@ number, case aside), up to 10 (`LINKED_PULL_REQUESTS_MAX`):
 
 A **card mention** is the plan's name, then spaces or none, an optional `#`, then the card's number, with no letter
 or digit on either side: "Work Tracker #143", "work tracker 143" and "(Work Tracker #143)" name card 143 of the plan
-called Work Tracker; "Work Trackers #143" and "Work Tracker #1430" do not name card 143. The name compares as names
-do (case and repeated spaces aside). Only the first 65,536 characters of a body are read (`MENTION_TEXT_MAX`), and
-a pull request names at most 20 cards (`MENTIONS_MAX`). A mention matches only in plans connected to that
+called Work Tracker. After a space or the `#`, the number may carry a card prefix and its dash ("Work Tracker WI-143",
+item-types.md "Card number prefixes"): any prefix reads, and the number names the card. "Work Trackers #143" and
+"Work Tracker #1430" do not name card 143. The name compares as names do (case and repeated spaces aside). Only the first
+65,536 characters of a body are read (`MENTION_TEXT_MAX`), and a pull request names at most 20 cards (`MENTIONS_MAX`). A mention matches only in plans connected to that
 pull request's repository, never in another plan of the same name.
 
 ## The GitHub connection
