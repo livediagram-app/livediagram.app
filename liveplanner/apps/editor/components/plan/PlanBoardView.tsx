@@ -360,6 +360,7 @@ export function PlanBoardView({
   const cellBase = usePlanCellBase({
     palette,
     cardSize,
+    numberFrom: look.numberFrom,
     slotBoard,
     cardTouch: look.cardTouch,
     interactive,
