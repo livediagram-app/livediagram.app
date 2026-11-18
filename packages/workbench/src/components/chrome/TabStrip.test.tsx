@@ -148,6 +148,41 @@ describe('TabStrip', () => {
     );
   });
 
+  it('opens the folder holding a tab opened inside it, won’t shut it, and shuts it again on leaving', () => {
+    const { props, rerender } = strip();
+    expect(chip().getAttribute('aria-expanded')).toBe('false');
+    // Opening Q1 Goals, tucked inside the shut folder, opens the folder.
+    rerender(<TabStrip {...props} activeId="q" />);
+    expect(chip().getAttribute('aria-expanded')).toBe('true');
+    expect(visibleTabs()).toEqual([
+      'Overview',
+      'Planning, 2 tabs',
+      'Roadmap',
+      'Q1 Goals',
+      'Backlog',
+    ]);
+    // Its chip won't shut it.
+    fireEvent.click(chip());
+    expect(chip().getAttribute('aria-expanded')).toBe('true');
+    expect(chip().getAttribute('aria-disabled')).toBe('true');
+    // Back on a loose tab, it returns to this visit's shut, and toggles again.
+    rerender(<TabStrip {...props} activeId="b" />);
+    expect(chip().getAttribute('aria-expanded')).toBe('false');
+    expect(chip().getAttribute('aria-disabled')).toBeNull();
+    fireEvent.click(chip());
+    expect(chip().getAttribute('aria-expanded')).toBe('true');
+  });
+
+  it('keeps a folder this visit opened open after leaving one of its tabs', () => {
+    const { props, rerender } = strip();
+    fireEvent.click(chip());
+    rerender(<TabStrip {...props} activeId="r" />);
+    rerender(<TabStrip {...props} activeId="o" />);
+    expect(chip().getAttribute('aria-expanded')).toBe('true');
+    fireEvent.click(chip());
+    expect(chip().getAttribute('aria-expanded')).toBe('false');
+  });
+
   it('keeps a shut folder shut under its new name', () => {
     const { props, rerender } = strip();
     fireEvent.doubleClick(chip());

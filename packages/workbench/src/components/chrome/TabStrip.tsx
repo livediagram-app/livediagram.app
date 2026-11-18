@@ -55,7 +55,8 @@ export function TabStrip<T extends { id: string }>({
   const listRef = useRef<HTMLDivElement>(null);
   const sliderRef = useRef<HTMLDivElement>(null);
 
-  // Which folders are open: this visit's own, never stored or broadcast. Every folder starts collapsed.
+  // Which folders are open: this visit's own, never stored or broadcast. Every folder starts collapsed. The one holding
+  // the open tab shows open on top of this (TabFolderGroup), without being added here, so leaving it restores this.
   const [expanded, setExpanded] = useState<ReadonlySet<string>>(() => new Set());
   const toggleFolder = useCallback((name: string) => {
     setExpanded((prev) => {
