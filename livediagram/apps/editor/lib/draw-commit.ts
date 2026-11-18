@@ -23,6 +23,7 @@ import {
   createTable,
   createText,
   createVideo,
+  BPMN_FLOW_LOOKS,
   defaultIconAnimation,
   snapToArrowPoint,
   type ArrowElement,
@@ -192,7 +193,9 @@ export function buildDressedDrawnArrow(
     ends: intent.ends,
     unpainted: board.whiteboard,
   });
-  return styleNewElement(board.whiteboard ? boardShape(drawn) : drawn);
+  const styled = styleNewElement(board.whiteboard ? boardShape(drawn) : drawn);
+  // A BPMN line look wins over the tool's remembered style: the tile promised it (docs/specs/009-elements/bpmn.md).
+  return intent.flow ? { ...styled, ...BPMN_FLOW_LOOKS[intent.flow] } : styled;
 }
 
 // Component branch (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/009-elements/web-components-and-no-groups.md): build the component at the theme's

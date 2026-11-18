@@ -30,6 +30,7 @@ import { DIAMOND_POINTS } from './shape-geometry';
 import { svgTableShape } from './svg-render-table';
 import { svgElementBody } from './svg-render-body';
 import { svgPageFold } from './svg-render-page';
+import { svgBpmnMarks } from './svg-render-bpmn';
 import { svgHeroCaption } from './svg-render-web';
 import {
   fitWholeWordLines,
@@ -313,6 +314,12 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
     (shape.kind === 'icon' || shape.kind === 'sticker')
   )
     shapeStr = `<g filter="url(#${SKETCH_ART_FILTER_ID})">${shapeStr}</g>`;
+  // A BPMN mark over the shape (docs/specs/009-elements/bpmn.md), as the canvas's BpmnMarkLayer draws it.
+  if (
+    el.type === 'shape' &&
+    (shape.kind === 'rect' || shape.kind === 'ellipse' || shape.kind === 'diamond')
+  )
+    shapeStr += svgBpmnMarks(el, shape.fill, shape.stroke);
   // An inline icon beside the label, as the canvas lays it out (svg-render-inline-icon); it moves the label aside.
   const iconArt =
     el.type === 'shape' &&

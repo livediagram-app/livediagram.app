@@ -1,11 +1,13 @@
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { useState } from 'react';
 import {
+  BPMN_FLOW_LOOKS,
   bestAnchorTowards,
   isBoxed,
   startsAtExactAnchor,
   type ArrowElement,
   type ArrowEnds,
+  type BpmnFlow,
   type Element,
   type Tab,
 } from '@livediagram/document';
@@ -41,7 +43,7 @@ export function useArrowConnect({
   // Read when an arrow is armed (docs/specs/008-canvas/blueprints/selection-store.md).
   readSelection: () => Selection;
   setSelectedId: (id: string | null) => void;
-  beginDraw: (intent: { type: 'arrow'; ends?: ArrowEnds }) => void;
+  beginDraw: (intent: { type: 'arrow'; ends?: ArrowEnds; flow?: BpmnFlow }) => void;
   commitTabs: (fn: (tabs: Tab[]) => Tab[]) => void;
   // Style memory (docs/specs/008-canvas/quick-style-panel.md): the connecting arrow is user-drawn.
   styleNewElement: <T extends Element>(el: T) => T;
@@ -54,6 +56,8 @@ export function useArrowConnect({
   // The armed connector's heads: the Arrow tool's pointer at its end, the Line tool's none
   // (docs/specs/008-canvas/canvas-and-palette.md "Arrows and lines").
   const [connectEnds, setConnectEnds] = useState<ArrowEnds>('to');
+  // A BPMN line look the connect gesture lands in (docs/specs/009-elements/bpmn.md "Lines"); undefined = the plain arrow.
+  const [connectFlow, setConnectFlow] = useState<BpmnFlow | undefined>(undefined);
   const cancelConnect = () => setConnectSourceId(null);
 
   // Arm connect-from-selection when a shape is selected; otherwise fall
@@ -61,7 +65,7 @@ export function useArrowConnect({
   // shapes later). The palette + the A shortcut both route here.
   // `ends`: the Arrow tool's pointer at its end by default, `'none'` for the Line tool. Guarded,
   // because a button can hand its click event in as the first argument.
-  const addArrow = (ends?: ArrowEnds) => {
+  const addArrow = (ends?: ArrowEnds, flow?: BpmnFlow) => {
     if (editsBlocked) return;
     const heads: ArrowEnds = typeof ends === 'string' ? ends : 'to';
     const { selectedId } = readSelection();
@@ -69,9 +73,10 @@ export function useArrowConnect({
     if (sel && isBoxed(sel)) {
       setConnectSourceId(sel.id);
       setConnectEnds(heads);
+      setConnectFlow(flow);
       return;
     }
-    beginDraw({ type: 'arrow', ends: heads });
+    beginDraw({ type: 'arrow', ends: heads, ...(flow ? { flow } : {}) });
   };
 
   // Complete the connect gesture: draw a pinned arrow from the armed
@@ -108,6 +113,7 @@ export function useArrowConnect({
       },
       ...(stroke ? { strokeColor: stroke } : {}),
       ...(connectEnds === 'to' ? {} : { arrowEnds: connectEnds }),
+      ...(connectFlow ? BPMN_FLOW_LOOKS[connectFlow] : {}),
       // From a mind node or a flowchart step it starts at the exact anchor (docs/specs/008-canvas/arrow-anchors.md).
       ...(startsAtExactAnchor(from) ? { exactStart: true } : {}),
     });

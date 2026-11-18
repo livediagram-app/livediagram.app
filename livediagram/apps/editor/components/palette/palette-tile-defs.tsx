@@ -16,6 +16,7 @@ import { COMPONENT_TILES } from './tile-defs/component-tiles';
 import { C4_TILES } from './tile-defs/c4-tiles';
 import { DEVICE_TILES } from './tile-defs/device-tiles';
 import { EVENT_STORMING_TILES } from './tile-defs/event-storming-tiles';
+import { BPMN_TILES } from './tile-defs/bpmn-tiles';
 
 export { TILE_GLYPH_PX, TOOL_GROUPS } from './tile-defs/types';
 export type { PaletteTileDef, PaletteTileSection, ToolGroupId } from './tile-defs/types';
@@ -41,6 +42,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   ...C4_TILES,
   ...DEVICE_TILES,
   ...EVENT_STORMING_TILES,
+  ...BPMN_TILES,
 ];
 
 export function tilesInSection(section: PaletteTileSection): PaletteTileDef[] {

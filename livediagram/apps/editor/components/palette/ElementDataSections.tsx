@@ -16,6 +16,7 @@
 import { SheetLinkSection } from '@liveworkspace/workbench/components/sheet-links/SheetLinkSection';
 import dynamic from 'next/dynamic';
 import {
+  bpmnSymbolOf,
   isChipShape,
   isConceptShape,
   LINE_DEFAULT_SERIES,
@@ -154,6 +155,7 @@ export function ElementDataSections({
     hasWebRowsSection(target) ||
     isChip ||
     shapeTarget?.shape === 'boundary' ||
+    (shapeTarget ? !!bpmnSymbolOf(shapeTarget) : false) ||
     shapeTarget?.shape === 'pointer-note' ||
     shapeTarget?.shape === 'stack' ||
     shapeTarget?.shape === 'sequence' ||

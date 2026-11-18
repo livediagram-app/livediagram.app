@@ -51,7 +51,7 @@ export function flyoutCardColumns(tileCount: number): 1 | 2 {
 // listed falls back to its own description.
 const TAGLINES: Readonly<Record<string, string>> = {
   popular: 'The tiles a diagram is most often built from.',
-  shapes: 'The basics, the flowchart vocabulary and more.',
+  shapes: 'The basics, the flowchart vocabulary, BPMN and more.',
   'my-shapes': 'Saved shapes, yours and your teams’, in every app.',
   write: 'Words on the canvas: text, notes and comments.',
   draw: 'Sketch, outline and connect by hand.',
@@ -74,7 +74,10 @@ const TAGLINES: Readonly<Record<string, string>> = {
 
 // Where a mode fills a category differently enough that its default line would mislead.
 const MODE_TAGLINES: Readonly<Partial<Record<EditorMode, Readonly<Record<string, string>>>>> = {
-  workshop: { write: 'Words, notes, tables and checklists.' },
+  workshop: {
+    shapes: 'The basics, the flowchart vocabulary and more.',
+    write: 'Words, notes, tables and checklists.',
+  },
 };
 
 export function flyoutTagline(categoryId: string, fallback: string, mode?: EditorMode): string {
@@ -89,6 +92,7 @@ const GROUP_NAMES: Readonly<Record<string, string>> = {
   'shapes:square': 'Basics',
   'shapes:cylinder': 'Flowchart',
   'shapes:cloud': 'More Shapes',
+  'bpmn:start-event': 'BPMN',
   'tools:page': 'Text',
   'tools:text': 'Text',
   'tools:sticky': 'Notes',

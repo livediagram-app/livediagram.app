@@ -104,6 +104,14 @@ const DIAGRAM_DIAGRAMS = [
   'diagrams:c4-database',
 ];
 
+// Diagram's Shapes: its own tiles, then the BPMN notation as a group of its own (docs/specs/009-elements/bpmn.md
+// "The palette"): no category or toolbar button of its own.
+const DIAGRAM_SHAPES = [
+  ...tilesForCategory('shapes').map((t) => t.id),
+  DIVIDE,
+  ...tilesForCategory('bpmn').map((t) => t.id),
+];
+
 // Image and Avatar; no embedded pages.
 const MEDIA_WITHOUT_EMBEDS = tilesExcept('media', ...EMBED_TILES);
 
@@ -177,7 +185,7 @@ const DIAGRAM: PaletteLayout = {
         'tools:entity',
       ],
     },
-    { id: 'shapes' },
+    { id: 'shapes', tiles: DIAGRAM_SHAPES },
     { id: 'my-shapes' },
     // Comments and assigned actions belong to every mode, so their two Collaborate tiles stay here.
     { id: 'write', tiles: WRITE_WITH_COMMENTS },

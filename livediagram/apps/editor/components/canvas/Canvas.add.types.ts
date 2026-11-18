@@ -64,7 +64,10 @@ export type CanvasAddProps = {
   // Palette's Image entry hides when missing (docs/specs/009-elements/images.md).
   onAddImage?: () => void;
   // `ends`: the Arrow tool's pointer at its end by default, `'none'` for the Line tool.
-  onAddArrow: (ends?: import('@livediagram/document').ArrowEnds) => void;
+  onAddArrow: (
+    ends?: import('@livediagram/document').ArrowEnds,
+    flow?: import('@livediagram/document').BpmnFlow,
+  ) => void;
   // The arrow whose shape a handle drag is changing (a bend, curve, elbow or endpoint): its
   // selection frame stands down until the drag ends (docs/specs/008-canvas/arrow-bending.md).
   reshapingArrowId?: string | null;

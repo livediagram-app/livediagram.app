@@ -3,6 +3,7 @@ import { WHITEBOARD_SHAPES } from './whiteboard-tool';
 import { shapeKindLabel } from './element-names';
 import type {
   ArrowEnds,
+  BpmnFlow,
   ComponentKind,
   EmbedProvider,
   EstimateScale,
@@ -84,7 +85,8 @@ export type PendingDraw =
   | { type: 'video'; provider?: EmbedProvider }
   // `ends` rides the arrow intent for the whiteboard's Line and Arrow shapes
   // (docs/specs/023-draw-mode/draw-mode.md), which differ only in their heads.
-  | { type: 'arrow'; ends?: ArrowEnds; board?: true }
+  // `flow`: a BPMN line look (docs/specs/009-elements/bpmn.md "Lines"), the Message Flow and Association tiles'.
+  | { type: 'arrow'; ends?: ArrowEnds; flow?: BpmnFlow; board?: true }
   // A composite Component (docs/specs/008-canvas/canvas-and-palette.md): banner / hero / header / callout / stat /
   // process / avatar. Draws to size exactly like a shape — a tap drops it at
   // its natural size, a drag scales the whole group to the dragged box.
@@ -279,9 +281,13 @@ export function drawBannerMessage(intent: PendingDraw, isMobile: boolean): strin
         : `${press} to drop or drag to draw ${EMBED_PROVIDER_LABEL[intent.provider ?? 'website']} (stays 16:9)`;
     case 'arrow':
       // The Line is the arrow without its heads, and its tile says Line (docs/specs/008-canvas/canvas-and-palette.md).
-      return intent.ends === 'none'
-        ? `${press} to drop or drag to draw a line`
-        : `${press} to drop or drag to draw an arrow`;
+      return intent.flow === 'message'
+        ? `${press} to drop or drag to draw a message flow`
+        : intent.flow === 'association'
+          ? `${press} to drop or drag to draw an association`
+          : intent.ends === 'none'
+            ? `${press} to drop or drag to draw a line`
+            : `${press} to drop or drag to draw an arrow`;
     case 'component':
       return `${press} to drop or drag to draw ${COMPONENT_LABELS[intent.kind]}`;
     case 'freehand':
