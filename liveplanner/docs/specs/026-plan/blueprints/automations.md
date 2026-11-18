@@ -1118,6 +1118,16 @@ Threads and Wait (spec "Actions", "Wait").
 - **Template scenes** live in `apps/editor/components/automations/template-scenes/` (`first.tsx`, `board.tsx`,
   `linked.tsx`, `github.tsx`); `TemplateScene.tsx` maps each template id to its scene.
 
+## Trip Planner's templates (Work Tracker 1183)
+
+- `flag-due-soon` (Due Dates): `due_in` 3 days at 9:00, a Column condition not in the done columns (left out when the
+  plan has none), Flag and a comment naming `{{card.assignee}}`. No picks.
+- `done-on-checklist` (Status): `checklist_completed`, Move to the first done column (else a column pick at
+  `steps.0`). Both ids sit before the GitHub ones in `AUTOMATION_TEMPLATE_IDS`; their tiles reuse the Flag Blocked
+  scene and a new `DoneOnChecklist` scene.
+- Trip Planner's starters: `Starter.narrow` (`template-starter-rules.ts`) fits `done-on-checklist` to To Pack and
+  Packed.
+
 ## GitHub templates (Work Tracker 806)
 
 The spec's six GitHub rows of the Templates table, on the GitHub triggers of github-pull-requests.md part 4.

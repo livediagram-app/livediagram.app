@@ -30,7 +30,13 @@ import {
   SortIncoming,
   SummariseRequests,
 } from './template-scenes/board';
-import { CloseParent, TellUnblocked, NudgeStuck, DoneWhenResolved } from './template-scenes/linked';
+import {
+  CloseParent,
+  TellUnblocked,
+  NudgeStuck,
+  DoneWhenResolved,
+  DoneOnChecklist,
+} from './template-scenes/linked';
 import {
   ReviewOnOpen,
   DoneOnMerge,
@@ -65,6 +71,8 @@ const SCENES: Readonly<Record<AutomationTemplateId, (p: { tone: ToneClasses }) =
   'tell-unblocked': TellUnblocked,
   'nudge-stuck': NudgeStuck,
   'done-when-resolved': DoneWhenResolved,
+  'flag-due-soon': FlagBlocked,
+  'done-on-checklist': DoneOnChecklist,
   'review-on-open': ReviewOnOpen,
   'done-on-merge': DoneOnMerge,
   'flag-failing-checks': FlagFailingChecks,
