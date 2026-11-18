@@ -6,10 +6,14 @@
 // The mark is a fingerprint of the element's example values, not a bare flag: an element still holding the values it
 // landed with matches its mark, and any change to them (typed text, a tick, an edited cell, from any editor path, an
 // agent or a peer) breaks the match, so no edit path has to remember to clear a flag. Structure (headings, a table's
-// header row and column, lanes, quadrant titles, the template note, shape labels) is never marked, so it stays.
+// header row and column, lanes, quadrant titles, the template note, shape labels) is never marked, so it stays. Free
+// text is marked only where its template's rule names it sample copy (isSampleCopy, or a template's own words).
 //
 // Generic over each product's element union: every function reads the fields structurally and hands the caller's own
 // element type back.
+
+import { labelFontPx, TEXT_PX_MAX } from '@liveworkspace/model-core/label-font';
+import type { TextSize } from '@liveworkspace/model-core/basics';
 
 /** The field an element carries its mark in. */
 export const TEMPLATE_EXAMPLE_FIELD = 'templateExample';
@@ -25,6 +29,13 @@ type ExampleFields = {
   templateExample?: string;
   label?: string;
   richText?: unknown;
+  textBold?: boolean;
+  textSize?: TextSize;
+  textScale?: number;
+  fontWeight?: number;
+  letterSpacing?: number;
+  textCase?: string;
+  textArc?: number;
   checklistItems?: readonly ChecklistRow[];
   cells?: readonly (readonly string[])[];
   headerRow?: boolean;
@@ -34,6 +45,70 @@ type ExampleFields = {
 };
 
 const fieldsOf = (el: { type: string }) => el as ExampleFields;
+
+/** Which of a template's free texts are its sample copy: the rule a template lands with (each product's
+ *  templateExampleText). Without one, no text is an example. */
+export type ExampleTextRule = (el: { type: string }) => boolean;
+
+// A weight that reads as bold: a heading's.
+const BOLD_WEIGHT = 600;
+
+// One character at a time, so the pattern never runs over the label.
+const LETTER = /\p{L}/u;
+const isLetter = (ch: string) => LETTER.test(ch);
+
+// Whether the words hold at least two with a letter in them: one left-to-right walk, no pattern over the label.
+function hasTwoWords(text: string): boolean {
+  let words = 0;
+  let inWord = false;
+  let lettered = false;
+  for (const ch of text) {
+    if (ch.trim() === '') {
+      if (inWord && lettered && ++words >= 2) return true;
+      inWord = false;
+      lettered = false;
+    } else {
+      inWord = true;
+      if (!lettered && isLetter(ch)) lettered = true;
+    }
+  }
+  return inWord && lettered && words === 1;
+}
+
+// Every run of a label's rich text bold: a heading written in runs.
+function allRunsBold(runs: unknown): boolean {
+  if (!Array.isArray(runs) || runs.length === 0) return false;
+  return runs.every((run) => (run as { bold?: boolean } | null)?.bold === true);
+}
+
+/**
+ * Body copy and sample sentences, never a title or a heading (liveworkspace's template-examples blueprint): a `text`
+ * whose words are not bold, carry no wordmark type, draw at a body size (48 px or less) and hold at least two
+ * words with a letter in them, so a page number, a price or a one-word label stays.
+ */
+export function isSampleCopy(el: { type: string }): boolean {
+  const f = fieldsOf(el);
+  if (f.type !== 'text' || !f.label) return false;
+  if (f.textBold === true || (f.fontWeight ?? 0) >= BOLD_WEIGHT || allRunsBold(f.richText))
+    return false;
+  if (
+    f.letterSpacing !== undefined ||
+    f.fontWeight !== undefined ||
+    f.textCase !== undefined ||
+    f.textArc !== undefined
+  ) {
+    return false;
+  }
+  // Display type: past the model's largest whole size (a size and its Shift-resize scale together).
+  if (labelFontPx(f.textSize) * (f.textScale ?? 1) > TEXT_PX_MAX) return false;
+  return hasTwoWords(f.label);
+}
+
+/** A rule naming a template's sample copy by its words: the free texts whose label is one of them. */
+export function sampleCopyNamed(words: Iterable<string>): ExampleTextRule {
+  const named = new Set(words);
+  return (el) => el.type === 'text' && named.has(fieldsOf(el).label ?? '');
+}
 
 // A table's body: every cell outside its header row and header column, which are structure.
 function bodyCells(el: ExampleFields): string[] {
@@ -49,13 +124,14 @@ function bodyCells(el: ExampleFields): string[] {
 }
 
 /**
- * The example values an element holds, as one string, or null when it holds none: a sticky's text, a checklist's rows
- * and ticks, a table's body cells, a chart's numbers. Empty values are none, so a blank sticky or an empty table is
- * never an example.
+ * The example values an element holds, as one string, or null when it holds none: a sticky's or a text's words, a
+ * checklist's rows and ticks, a table's body cells, a chart's numbers. Empty values are none, so a blank sticky or an
+ * empty table is never an example. (Which texts are examples is the template's rule, read when marking.)
  */
 export function exampleValuesOf<E extends { type: string }>(el: E): string | null {
   const f = fieldsOf(el);
   if (f.type === 'sticky') return f.label?.trim() ? `s${f.label}` : null;
+  if (f.type === 'text') return f.label?.trim() ? `x${f.label}` : null;
   if (f.type === 'table') {
     const body = bodyCells(f);
     return body.some((cell) => cell.trim() !== '') ? `t${JSON.stringify(body)}` : null;
@@ -82,9 +158,16 @@ function fingerprint(values: string): string {
   return (hash >>> 0).toString(36);
 }
 
-/** Marks every element holding example values with their fingerprint; the rest come back as they were. */
-export function markTemplateExamples<E extends { type: string }>(elements: readonly E[]): E[] {
+/**
+ * Marks every element holding example values with their fingerprint; the rest come back as they were. A free text is
+ * an example only when `isExampleText` (the template's rule) says so.
+ */
+export function markTemplateExamples<E extends { type: string }>(
+  elements: readonly E[],
+  isExampleText?: ExampleTextRule,
+): E[] {
   return elements.map((el) => {
+    if (el.type === 'text' && !isExampleText?.(el)) return el;
     const values = exampleValuesOf(el);
     return values === null ? el : { ...el, [TEMPLATE_EXAMPLE_FIELD]: fingerprint(values) };
   });
@@ -143,7 +226,7 @@ function withoutMark<E extends { type: string }>(el: E): E {
 function emptied<E extends { type: string }>(el: E): E {
   const f = fieldsOf(el);
   const base = withoutMark(el) as E & ExampleFields;
-  if (f.type === 'sticky') {
+  if (f.type === 'sticky' || f.type === 'text') {
     const { richText: _runs, ...rest } = base;
     return { ...rest, label: '' } as unknown as E;
   }
