@@ -923,7 +923,13 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
     On an app's own address (the Explorer at `www.livediagram.app/explorer`, signed in with that app's token), Your
     Account has the app's own two rows (Work Tracker 1228): **Sign Out**, which signs out of the app as its editor's
     Sign Out does (`appSignOut`: every liveworkspace app in this browser, through the accounts site's hop, back to this
-    page as a visitor), and **Delete Account**, "Permanently deletes your liveworkspace account and everything you own
+    page as a visitor). It is the editors' sign-out, not a lighter one (Work Tracker 1283): the page posts to the app's
+    own `POST /api/auth/sign-out` on this address (the app's router sends `/api/auth/*` to the app's API, never to
+    liveworkspace.app), whose shared handler (`createAppAuth`) ends the liveworkspace session its refresh token came
+    from, with every app's tokens from that session, and answers the hop through the accounts site that clears its
+    cookie there; so the row's "Sign out of every liveworkspace app in this browser." holds. Only when the accounts
+    site doesn't answer (or there is no refresh token) is it this app alone, remembered by its signed-out mark, as in
+    the editors ([accounts.md](../003-accounts/accounts.md#signing-out)). And **Delete Account**, "Permanently deletes your liveworkspace account and everything you own
     in every liveworkspace app.", whose **Delete Account** button (`AccountHost.deleteAccount`) opens that app's own
     Delete Account dialog, the one its editor opens (`DeleteAccountDialog` in `@liveworkspace/workbench`, with the
     app's name and its This Browser items), its confirmation unchanged: the typed email, then the code emailed to the
