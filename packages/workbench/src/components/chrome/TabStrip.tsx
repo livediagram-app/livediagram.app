@@ -13,6 +13,7 @@ import { TAB_ADD_CLASS, TAB_LIST_CLASS, TAB_SLIDER_CLASS, TAB_STRIP_CLASS } from
 import { useTabSlider } from './useTabSlider';
 import { useStripRoving } from './useStripRoving';
 import { TabFolderGroup, type TabFolderGroupProps } from './TabFolderGroup';
+import { foldersOpenOnLoad } from './tab-folder-start';
 
 // The footer's tab strip, shared by every editor (docs/specs/007-editor/editor-app.md "Tab bar", "How a tab looks";
 // docs/specs/006-document/tab-folders.md "Tab bar rendering"): the scroller, the `toolbar` of tabs and folders, Add
@@ -55,9 +56,17 @@ export function TabStrip<T extends { id: string }>({
   const listRef = useRef<HTMLDivElement>(null);
   const sliderRef = useRef<HTMLDivElement>(null);
 
-  // Which folders are open: this visit's own, never stored or broadcast. Every folder starts collapsed. The one holding
-  // the open tab shows open on top of this (TabFolderGroup), without being added here, so leaving it restores this.
-  const [expanded, setExpanded] = useState<ReadonlySet<string>>(() => new Set());
+  // Which folders are open: this visit's own, never stored or broadcast. On load a small bar on desktop starts with
+  // every folder open, any other with every folder shut (foldersOpenOnLoad), decided once, the first time the strip has
+  // tabs. The one holding the open tab shows open on top of this (TabFolderGroup), without being added here, so leaving
+  // it restores this.
+  const [expanded, setExpanded] = useState<ReadonlySet<string>>(() => foldersOpenOnLoad(runs));
+  const [loaded, setLoaded] = useState(() => runs.length > 0);
+  if (!loaded && runs.length > 0) {
+    // The tabs arrived after the strip mounted: decide now, while rendering, so no folder animates open.
+    setLoaded(true);
+    setExpanded(foldersOpenOnLoad(runs));
+  }
   const toggleFolder = useCallback((name: string) => {
     setExpanded((prev) => {
       const next = new Set(prev);

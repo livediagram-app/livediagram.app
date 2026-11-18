@@ -179,26 +179,42 @@ describe('TabFolderGroup', () => {
     }
   });
 
-  it('says what a click and a double-click do in its hover card', () => {
+  it('has no tooltip in any state, and says what a click and a double-click do to assistive technology', () => {
+    const hover = () => {
+      fireEvent.pointerEnter(chip());
+      fireEvent.mouseEnter(chip());
+      fireEvent.focus(chip());
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+    };
+    const noTooltip = () => {
+      expect(screen.queryByRole('tooltip')).toBeNull();
+      expect(document.querySelector('[data-tab-folder] [title]')).toBeNull();
+      expect(chip().getAttribute('title')).toBeNull();
+    };
     const { rerender } = render(<TabFolderGroup {...props()} />);
-    fireEvent.pointerEnter(chip());
-    fireEvent.mouseEnter(chip());
-    fireEvent.focus(chip());
-    act(() => {
-      vi.advanceTimersByTime(1000);
-    });
-    expect(document.body.textContent).toMatch(
-      /3 tabs\. Click to show them here, double-click to rename\./,
+    hover();
+    noTooltip();
+    expect(chip().getAttribute('aria-label')).toBe('Planning, 3 tabs');
+    expect(chip().getAttribute('aria-description')).toBe(
+      'Click to show its tabs here, double-click to rename.',
     );
     rerender(<TabFolderGroup {...props({ expanded: true, readOnly: true })} />);
-    expect(document.body.textContent).toMatch(/3 tabs\. Click to tuck them away\./);
-    // Holding the open tab, it says why a click won't shut it.
+    hover();
+    noTooltip();
+    expect(chip().getAttribute('aria-description')).toBe('Click to tuck its tabs away.');
+    // Holding the open tab, it says why a click won't shut it, still without a tooltip.
     rerender(<TabFolderGroup {...props({ activeId: 'b' })} />);
-    expect(document.body.textContent).toMatch(
-      /3 tabs\. It holds the tab you're on, so it stays open\. Double-click to rename\./,
+    hover();
+    noTooltip();
+    expect(chip().getAttribute('aria-description')).toBe(
+      "It holds the tab you're on, so it stays open. Double-click to rename.",
     );
     rerender(<TabFolderGroup {...props({ activeId: 'b', readOnly: true })} />);
-    expect(document.body.textContent).toMatch(/so it stays open\.(?! Double)/);
+    expect(chip().getAttribute('aria-description')).toBe(
+      "It holds the tab you're on, so it stays open.",
+    );
   });
 
   it('colours itself from its name', () => {
