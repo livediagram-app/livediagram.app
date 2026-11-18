@@ -11,6 +11,12 @@ import { cssZoomOf } from '../../lib/ui-scale';
 // position, where its 1.5px strokes anti-alias to a smear. Rounding the box
 // that holds the text stops the fraction there.
 //
+// The width is a floor (`min-width`), not a fixed size: content that grows in
+// a commit (a strip's names coming back) widens its box in that same layout,
+// rather than hanging off one side of a box still at the old width until the
+// observer runs (Work Tracker 911 took the per-commit read out); only the
+// rounding up waits for the observer.
+//
 // `matchParentParity` also nudges the width by a pixel so its parity matches
 // the parent's: a box centred in its parent sits (parent - box) / 2 in, which
 // is half a pixel off whenever one width is odd and the other even.
@@ -48,7 +54,7 @@ export function SnapWidth({
       // Written straight onto the box as well: a ResizeObserver runs before the paint but its state lands a frame
       // later, and for that frame a content grown past the old width hung off one side of its centred box.
       const outer = outerRef.current;
-      if (outer) outer.style.width = `${w}px`;
+      if (outer) outer.style.minWidth = `${w}px`;
       setWidth((prev) => (prev === w ? prev : w));
     };
     measure();
@@ -64,7 +70,11 @@ export function SnapWidth({
   // cost after React (docs/specs/008-canvas/canvas-performance.md "Chrome after a gesture", Work Tracker 911).
 
   return (
-    <div ref={outerRef} className={`shrink-0 ${className}`} style={{ width: width ?? undefined }}>
+    <div
+      ref={outerRef}
+      className={`shrink-0 ${className}`}
+      style={{ minWidth: width ?? undefined }}
+    >
       <div ref={innerRef} className="w-max">
         {children}
       </div>

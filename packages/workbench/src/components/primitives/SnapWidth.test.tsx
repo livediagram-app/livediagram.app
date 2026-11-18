@@ -39,7 +39,7 @@ function snapped(props: { matchParentParity?: boolean }) {
       <SnapWidth {...props}>label</SnapWidth>
     </div>,
   );
-  return (container.querySelector('[data-parent] > div') as HTMLElement).style.width;
+  return (container.querySelector('[data-parent] > div') as HTMLElement).style.minWidth;
 }
 
 describe('SnapWidth', () => {
@@ -91,9 +91,20 @@ describe('SnapWidth', () => {
       expect(rect).not.toHaveBeenCalled();
       measureAs(80.2, 1440);
       report();
-      expect((view.container.firstElementChild as HTMLElement).style.width).toBe('81px');
+      expect((view.container.firstElementChild as HTMLElement).style.minWidth).toBe('81px');
     } finally {
       vi.unstubAllGlobals();
     }
+  });
+
+  // Content that grows in a commit (a strip's names coming back) is not held to the old width until the observer
+  // runs: the snapped width is a floor, so the box widens with its content in that same layout and nothing reading
+  // the page in between finds the content hanging off one side (editor-header-fit.spec.ts, the top-row sweep).
+  it('sets a floor, never a fixed width, so grown content widens its box at once', () => {
+    measureAs(61.39, 1440);
+    const { container } = render(<SnapWidth>label</SnapWidth>);
+    const box = container.firstElementChild as HTMLElement;
+    expect(box.style.minWidth).toBe('62px');
+    expect(box.style.width).toBe('');
   });
 });
