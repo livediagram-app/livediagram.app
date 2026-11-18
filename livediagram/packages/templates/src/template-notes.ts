@@ -160,6 +160,9 @@ const NOTES: Readonly<Record<TemplateKind, TemplateNote | null>> = {
   'approval-workflow': {
     note: 'Read it left to right: the request, the manager’s sign-off, then finance. The rework and decline paths loop back; the chips under each step say how long it usually takes.',
   },
+  'bpmn-process': {
+    note: 'How to read it: a pool is one party and a lane a role inside it. Thin circles start, thick ones end, diamonds decide (X one way, + every way), and solid lines run the process inside a pool. Dashed lines are messages between pools; dotted lines tie on the data. Right-click a symbol, then Tools, BPMN, to change its type.',
+  },
   'value-stream-map': {
     note: 'How to read it: process boxes carry their process time (PT) and the share done right first time (%C&A); the triangles between them are the waits. The totals add it up, and the kaizen bursts mark what to fix first.',
   },

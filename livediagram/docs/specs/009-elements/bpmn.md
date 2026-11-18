@@ -116,10 +116,10 @@ They stay editable through the arrow's own controls; nothing remembers that they
 
 ## The template
 
-**BPMN Process** (`bpmn-process`, Processes, extra): an online order handled across a pool of three lanes
-(Customer, Sales, Warehouse): a message start, user and service tasks, an exclusive gateway with its Yes and No
-flows, a parallel split and join, a timer, a data store and a data object joined by associations, a message flow to
-the customer and an end event. Its names follow the rule above. Search finds it by "bpmn", "process model",
+**BPMN Process** (`bpmn-process`, Processes, extra): an online order between the customer's pool and the
+shop's pool of two lanes (Sales, Warehouse): a plain start and a message start, user and service tasks, an exclusive gateway with its Yes and No
+flows, a parallel split and join, a timer, a data store and a data object joined by associations, message flows
+between the pools and end events. Its names follow the rule above. Search finds it by "bpmn", "process model",
 "camunda", "bpmn.io" and "workflow".
 
 ## Share roles
