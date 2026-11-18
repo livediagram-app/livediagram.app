@@ -37,11 +37,19 @@ export const SYNTHETIC_ITALIC_SKEW = 0.25;
 export const OUTLINE_PRECISION = 2;
 const LIGATURES_OFF = { liga: false, clig: false, dlig: false, hlig: false, calt: false };
 
-/** Skia's fake-bold stroke as a share of the size: 1/24 at 9 px, 1/32 at 36 px and up, linear between. */
-export function syntheticBoldWidth(size: number): number {
+/** The device scale the browser's synthetic bold is matched at: the PNG export draws at 2x, as a Retina screen does.
+ *  Skia interpolates its fake bold on the size in device px, so a 24 px headline there is thickened by 1/32 of its
+ *  size, not the 1/28 its CSS size alone gives (Work Tracker 1121; measured in Chromium on 2026-11-18, Anton, Bebas
+ *  Neue and Archivo Black at weight 600: at 2x the fitted share was 0.031 at 24 px and 0.030 to 0.031 from 36 to 72
+ *  px, against 0.036 drawn before). Safe range 1..3. */
+export const SYNTHETIC_BOLD_DEVICE_SCALE = 2;
+
+/** Skia's fake-bold stroke for text of `size` CSS px drawn at `scale`: a share of the size that is 1/24 at 9 device
+ *  px, 1/32 at 36 device px and up, linear between. */
+export function syntheticBoldWidth(size: number, scale = SYNTHETIC_BOLD_DEVICE_SCALE): number {
   const lo = 9;
   const hi = 36;
-  const t = Math.min(1, Math.max(0, (size - lo) / (hi - lo)));
+  const t = Math.min(1, Math.max(0, (size * scale - lo) / (hi - lo)));
   return size * (1 / 24 + (1 / 32 - 1 / 24) * t);
 }
 

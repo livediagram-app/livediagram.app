@@ -71,7 +71,8 @@ Exclude), **Wordmark**, **Logo Kit**.
 | `THUMB_W`                                  | 120 px                                        | `apps/live/components/canvas/layout-thumb.tsx`           | Two layout tiles to a row (user request, every kind)             |
 | `DISPLAY_FONTS.length`                     | 90                                            | `packages/design/src/display-fonts.ts`                   | Spec ("about 50 to 100"); a closed list, OFL only                |
 | `SYNTHETIC_ITALIC_SKEW`                    | 0.25 (tan of the slant)                       | `packages/vector-export/src/outline-text/glyph-paths.ts` | Chromium and Skia's fake italic                                  |
-| `SYNTHETIC_BOLD_RATIO`                     | 1/24 at 9 px to 1/32 at 36 px and up          | `packages/vector-export/src/outline-text/glyph-paths.ts` | Skia's fake-bold stroke, interpolated by size                    |
+| `SYNTHETIC_BOLD_RATIO`                     | 1/24 at 9 px to 1/32 at 36 px and up          | `packages/vector-export/src/outline-text/glyph-paths.ts` | Skia's fake-bold stroke, interpolated by device size             |
+| `SYNTHETIC_BOLD_DEVICE_SCALE`              | 2                                             | `packages/vector-export/src/outline-text/glyph-paths.ts` | The PNG export's scale and a Retina screen's; measured, WT 1121  |
 | `OUTLINE_PRECISION`                        | 2 (decimals)                                  | `packages/vector-export/src/outline-text/glyph-paths.ts` | 0.01 px, well inside the 0.5 px fidelity                         |
 | `LOGO_KIT_FALLBACK_FONT`                   | `inter`                                       | `apps/live/lib/export-logo-kit.ts`                       | Spec ("set in Inter")                                            |
 | `DISPLAY_LIBRARY_LIST_MAX_PX`              | 240 px                                        | `apps/live/components/palette/DisplayFontLibrary`        | About six rows in view inside a menu flyout                      |
@@ -574,7 +575,7 @@ page, count)`. Both the kit and `LogoKitPanel`'s preview draw `logoKitTab(tab)`:
   character's rotation, scaled `size / unitsPerEm` with y flipped, skewed for a synthetic italic, and bakes the
   transform into absolute path data (`OUTLINE_PRECISION`); a variable face takes `wght` (the asked weight within
   the face's range) and `opsz` (the font size) when it has those axes. A synthetic bold adds a stroke of the fill's
-  colour, `SYNTHETIC_BOLD_RATIO × size` wide. Underline and strikethrough are a quad per character along its
+  colour, `SYNTHETIC_BOLD_RATIO × size` wide, the ratio read at `size × SYNTHETIC_BOLD_DEVICE_SCALE` device px. Underline and strikethrough are a quad per character along its
   advance (spaces included), where Chromium draws an `auto` line: a tenth of the size thick, an underline's top
   `max(1, ceil(thickness / 2))` under the baseline, a strikethrough's centre a third of the face's ascent above it.
 - `outline-svg.ts`: `outlineSvgText(svg, fontCss)` parses the SVG inertly, mounts it off screen (`position: fixed`,
