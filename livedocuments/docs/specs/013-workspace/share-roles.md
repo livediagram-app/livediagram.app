@@ -126,6 +126,13 @@ chooses it.
   `collab-key` frame sent to that socket alone, and the editor records its reactions under it from then on. Before
   that (a document only in This Browser, or the moment before the room answers) the editor uses this browser's own
   key, as it always did.
+- **A guest who signs in keeps their entries.** When a guest becomes an account, the index keeps the guest as an
+  alias of the account, and every grant for the account names the collab keys of its aliases (`aliases`, at most 32;
+  [one-explorer-contracts.md "Becoming an account"](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md#guests)). The upgrade forwards them as `X-Verified-Collab-Aliases`, the session keeps them, and the `collab-key`
+  frame carries them beside the key. The room, the api and the editor read reactions under any of the person's keys
+  as theirs: shown as theirs, theirs to take back (taking one back clears it under every key of theirs), kept or
+  changed as theirs by a whole-tab write, and counted once. New entries go under the session's own key. Nothing
+  stored is rewritten (owner, 2026-11-15, Work Tracker 678).
 - **A session with no identity** (a link visitor whose guest handoff could not run) gets a random key the room mints
   for that socket. Nobody else can be handed it, so nobody can act under it; it lasts as long as the socket.
 - **Nobody acts as someone else, at any level.** The room stamps every reaction's `by` with the sender's key, an

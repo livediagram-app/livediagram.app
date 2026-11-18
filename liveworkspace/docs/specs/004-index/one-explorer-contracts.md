@@ -100,6 +100,17 @@ cookie. The index then tells each app, `POST /api/internal/people/:guest/merge {
 frequent cron until the app confirms, for up to a week), so the app moves what it keeps for the guest beside
 their items, such as their images or its own per-person store (`personMerged` in `@liveworkspace/index-app`). A link visitor with no identity needs no redirect: a share code is enough for a grant.
 
+**A guest's answers stay theirs.** A guest's dots, responses, answers and comment reactions are recorded under the
+guest's collab key (each product's `docs/specs/013-workspace/share-roles.md` "The collab key"), inside documents
+that are often other people's, so the merge never rewrites them: nothing lists every document a guest reacted in, and
+a rewrite would touch other people's content. Instead the merge keeps the guest as an **alias** of the account
+(`person_aliases`, in the merge's own batch, so a merge never lands without it): one row per guest, naming the
+person it now belongs to. Guests merged into this guest before (a legacy merge's) follow it on, a person is never
+their own alias, and a person keeps their newest 32 (one per browser they signed in on; the oldest go first). Every
+grant for the person names the collab keys of their aliases (`aliases`, [Grants](#grants)), and each app's rooms
+read an entry under any of them as the person's own (owner, 2026-11-15, Work Tracker 678). An adder is not a collab
+key: a guest who signs in is still a different adder. The aliases go when the account closes.
+
 **A returning guest of the old livediagram.app** ([docs/migration.md](../../../../docs/migration.md) step 6). Their
 copied work is under `guest_<old uuid>`, which accounts merges into whoever claims it
 ([accounts.md](../003-accounts/accounts.md#returning-guests-of-the-old-livediagramapp)), a guest as well as an account. So the
@@ -305,7 +316,8 @@ holds for that person:
 - **Deleted**: their folders, opens (Recent), use
   days (Most Used), Shared with me rows, placement defaults, their calendar feeds ([Calendar feeds](#calendar-feeds)),
   and what is left of Favourites (removed, [one-explorer.md "Favourites removed"](one-explorer.md#favourites-removed)):
-  their rows in the unread `favourites` table and their own old `favourited` events.
+  their rows in the unread `favourites` table and their own old `favourited` events, and the guests merged into them
+  (`person_aliases`, [Becoming an account](#guests)), so no grant names those keys again.
 - **Kept by the team**: an item or folder they made in a team stays with that team, its owner anonymised.
   `teamIds` names the teams that closed with the account (one it ran alone); their items and folders in
   those go too, while anyone else's stay theirs.
@@ -466,6 +478,7 @@ check access and guest tokens against accounts' keys through an `ACCOUNTS` bindi
   "owner": "user_…",
   "trashed": true,
   "link": "<code>",
+  "aliases": ["<collab key>"],
   "iat": 0,
   "iatMs": 0,
   "exp": 0,
@@ -494,6 +507,12 @@ item by its own address, with no code, takes the visitor's role, tab and code fr
 keeps its own copy of both (for its emails, its pushes and its alarm), and takes it from every grant it is handed
 (`@liveworkspace/index-app` `createItemHeadSync`), so a guest's merge into an account or a move to another team
 reaches the item the next time anyone opens it.
+
+`aliases` is there only on a person's grant (never a link visitor's) when guests have merged into them: the collab
+key (`collabKeyFor`, `@liveworkspace/api-kit/collab-key`) of each guest in `person_aliases`, newest first, at most 32.
+It holds keys, never guest ids, so it gives no id away. An app's room upgrade forwards them beside the session's own
+key, so the person's entries from before they signed in read as theirs ([Becoming an account](#guests)). A grant
+signed before an alias was recorded lacks it until its next renewal, ten minutes at most.
 
 An archived item is never granted: `POST /items/:id/grant` answers its owner `409 archived` (everyone else `404`,
 as for any item they don't reach), and the held grants remember it as the refusal (`refusal(id) === 'archived'`).
