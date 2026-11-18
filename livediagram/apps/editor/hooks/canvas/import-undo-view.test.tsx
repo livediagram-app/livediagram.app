@@ -12,7 +12,7 @@ import {
   computeViewportCanvasRect,
 } from '@liveworkspace/workbench/lib/viewport';
 import { useDocumentHistory } from './useDocumentHistory';
-import { useImportUndoView } from './useImportUndoView';
+import { useImportUndoView } from '@liveworkspace/workbench/hooks/canvas/useImportUndoView';
 import { useTabImport } from '@/hooks/persistence/useTabImport';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
@@ -77,7 +77,7 @@ function setup(tabs: Tab[] = [{ id: 't1', name: 'One', elements: [shape('old', -
       tabs: history.tabs,
       activeId: active,
       viewport,
-      landOnTab,
+      land: landOnTab,
     });
     const tabImport = useTabImport({
       tabs: history.tabs,

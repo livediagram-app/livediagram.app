@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import type { Element, Tab } from '@livediagram/document';
-import { importViewMove, type ImportViewMark } from './import-undo-view';
+import { importViewMove, type ImportViewMark, type ImportViewTab } from './import-undo-view';
 
-// docs/specs/008-canvas/canvas-and-palette.md "Undoing an import brings its view back".
+// Each editor's docs/specs/008-canvas/canvas-and-palette.md "Undoing an import brings its view back".
 
-const el = (id: string) => ({ id }) as Element;
-const tab = (id: string, ids: string[]): Tab => ({ id, name: id, elements: ids.map(el) });
+const tab = (id: string, ids: string[]): ImportViewTab => ({
+  id,
+  elements: ids.map((e) => ({ id: e })),
+});
 const mark: ImportViewMark = {
   tabId: 't1',
   ids: new Set(['i1', 'i2']),

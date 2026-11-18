@@ -1,10 +1,14 @@
-// Where the view goes when the person's own undo or redo crosses an import (docs/specs/008-canvas/canvas-and-palette.md
-// "Undoing an import brings its view back"). The view is not in history, so an undo leaves it alone, except across an
-// import, which replaced the tab's content and framed it: undone, the view goes back to where it was before the
-// import; redone, the tab lands on the import again. Pure, so the rule is tested without a canvas.
+// Where the view goes when the person's own undo or redo crosses an import (each editor's
+// docs/specs/008-canvas/canvas-and-palette.md "Undoing an import brings its view back", Work Tracker 1247). The view
+// is not in history, so an undo leaves it alone, except across an import, which replaced the tab's content and framed
+// it: undone, the view goes back to where it was before the import; redone, the tab lands on the import again. Pure,
+// so the rule is tested without a canvas. Every editor's tab (a diagram's, a design's, a page's, a plan's) has an id
+// and elements with ids, which is all it reads.
 
-import type { Tab } from '@livediagram/document';
-import type { ViewPose } from '@liveworkspace/workbench/lib/viewport-glide';
+import type { ViewPose } from './viewport-glide';
+
+// The smallest tab the rule reads.
+export type ImportViewTab = { id: string; elements: readonly { id: string }[] };
 
 // The latest import: the tab it landed on, the ids of what it landed, and the view it started from.
 export type ImportViewMark = {
@@ -17,7 +21,7 @@ export type ImportViewMark = {
 export type ImportViewMove = 'restore' | 'land' | null;
 
 // Whether the mark's tab holds any element the import landed. Linear in that tab's elements.
-function holdsImport(tabs: readonly Tab[], mark: ImportViewMark): boolean {
+function holdsImport(tabs: readonly ImportViewTab[], mark: ImportViewMark): boolean {
   const tab = tabs.find((t) => t.id === mark.tabId);
   return !!tab && tab.elements.some((el) => mark.ids.has(el.id));
 }
@@ -25,8 +29,8 @@ function holdsImport(tabs: readonly Tab[], mark: ImportViewMark): boolean {
 /** The view move an undo or redo from `before` to `after` asks for, with `activeId` the tab on screen. */
 export function importViewMove(
   mark: ImportViewMark | null,
-  before: readonly Tab[],
-  after: readonly Tab[],
+  before: readonly ImportViewTab[],
+  after: readonly ImportViewTab[],
   activeId: string,
 ): ImportViewMove {
   // Only the tab the import landed on, while it is the one on screen: an undo that reaches another tab's import
