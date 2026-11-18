@@ -179,7 +179,10 @@ its tabs, catalogues and explanations. Picking an app on the page updates the li
 - **All apps** adds every app's events together. It shows the three windows (today, last 7 days,
   last 30 days) and the 30-day trend line, then **Apps Compared** (its own section, below), then **Project Kits**
   (liveworkspace.app's own kit events, [../004-index/kits.md](../004-index/kits.md) "Telemetry": Started, Retried,
-  Completed and Removed a day, every kit together, with each window's totals), then the busiest events.
+  Completed and Removed a day, every kit together, with each window's totals), then **Forum Checks** (the Community
+  Forum's server check: today's checks and Neurons against the daily caps, and both a day for the last 30 days, read
+  from the Community service's `GET /forum/checks`, which keeps the tally itself, [007-community](../007-community/community.md)
+  "The Forum"), then the busiest events.
   The same event from two apps counts as one busiest-events row, added up.
 - **One app** shows the dashboard that app had before. Every app's dashboard is the same views, in
   `_shared/` in the dashboard's folder (a private folder, so it is no route), filled from that app's

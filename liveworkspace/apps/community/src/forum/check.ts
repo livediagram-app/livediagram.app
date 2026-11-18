@@ -7,11 +7,13 @@ import {
   FORUM_CHECK_TIMEOUT_MS,
   FORUM_CHECKS_PER_DAY,
   FORUM_RETRY_BATCH,
+  FORUM_REPORTS_KEEP_MS,
   FORUM_RETRY_EVERY_MS,
 } from '../config';
 import { forumCheckSkippedLocally, type Env } from '../env';
 import { countAgainst, DAY_MS, pruneForumCounters } from './rate';
-import { pendingDue, settleCheck, type ForumRow, type Verdict } from './store';
+import { pendingDue, pruneForumReports, settleCheck, type ForumRow, type Verdict } from './store';
+import { neuronsOf, recordCheck, withinNeuronBudget, type CheckOutcome } from './tally';
 
 /** The model's answer as a verdict: `{ response: { safe } }`, `{ safe }`, or text starting `safe` or `unsafe`.
  *  Anything else is not an answer. */
@@ -38,13 +40,35 @@ export function checkedText(name: string, title: string, body: string): string {
 
 const SLOW = Symbol('slow');
 
-/** One check: the day's cap first, then the model, bounded by the timeout. Never throws. */
+const OUTCOME: Record<Verdict, CheckOutcome> = {
+  pass: 'listed',
+  refuse: 'refused',
+  unavailable: 'waiting',
+};
+
+// The tally is for the dashboard: a failure to write it never changes a check's answer.
+async function tally(env: Env, verdict: Verdict, neurons: number, now: number): Promise<void> {
+  try {
+    await recordCheck(env, OUTCOME[verdict], neurons, now);
+  } catch (error) {
+    console.warn('[forum] tally failed', { error: String(error) });
+  }
+}
+
+/** One check: the day's caps first (checks, then Neurons), then the model, bounded by the timeout. Its outcome and the
+ *  Neurons it used are tallied. Never throws. */
 export async function checkForumText(env: Env, text: string, now: number): Promise<Verdict> {
   if (forumCheckSkippedLocally(env)) return 'pass';
   const ai = env.AI;
   if (!ai) return 'unavailable';
   if (!(await countAgainst(env, 'checks', DAY_MS, FORUM_CHECKS_PER_DAY, now))) {
     console.warn('[forum] check failed', { reason: 'daily_cap' });
+    await tally(env, 'unavailable', 0, now);
+    return 'unavailable';
+  }
+  if (!(await withinNeuronBudget(env, now).catch(() => true))) {
+    console.warn('[forum] check failed', { reason: 'neuron_cap' });
+    await tally(env, 'unavailable', 0, now);
     return 'unavailable';
   }
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -58,13 +82,16 @@ export async function checkForumText(env: Env, text: string, now: number): Promi
     ]);
     if (raw === SLOW) {
       console.warn('[forum] check failed', { reason: 'slow' });
+      await tally(env, 'unavailable', 0, now);
       return 'unavailable';
     }
     const verdict = readVerdict(raw);
     if (verdict === 'unavailable') console.warn('[forum] check failed', { reason: 'unreadable' });
+    await tally(env, verdict, neuronsOf(raw, text), now);
     return verdict;
   } catch (error) {
     console.warn('[forum] check failed', { reason: 'error', error: String(error) });
+    await tally(env, 'unavailable', 0, now);
     return 'unavailable';
   } finally {
     clearTimeout(timer);
@@ -89,4 +116,6 @@ export async function retryForumChecks(env: Env, now: number = Date.now()): Prom
     }
   }
   await pruneForumCounters(env, now);
+  // Reports are pruned once an hour: the first run of each hour (the cron's five minutes make it exactly one).
+  if (new Date(now).getUTCMinutes() < 5) await pruneForumReports(env, now - FORUM_REPORTS_KEEP_MS);
 }

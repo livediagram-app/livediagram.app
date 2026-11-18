@@ -1,5 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { communityPostFixture } from '@liveworkspace/community/testing';
+import {
+  communityPostFixture,
+  forumReplyFixture,
+  forumTopicFixture,
+} from '@liveworkspace/community/testing';
 import { isCommunityPath, routeCommunity, type CommunityRouteOptions } from './index';
 import { API_TIMEOUT_MS } from './post-head';
 
@@ -183,6 +187,93 @@ describe('the Community step: a post page', () => {
       },
     );
     expect(moved!.status).toBe(308);
+    expect(api).not.toHaveBeenCalled();
+  });
+});
+
+describe('the Community step: a Forum topic page', () => {
+  const TOPIC = '/community/forum/topic?id=t1';
+
+  it('names a listed, answered topic, lets search engines index it, and gives it a canonical', async () => {
+    const seen: string[] = [];
+    const { options, forwarded } = makeRoute((path) => {
+      seen.push(path);
+      return Response.json({
+        topic: forumTopicFixture({ answerId: 'r1' }),
+        replies: [forumReplyFixture()],
+      });
+    });
+    const edits = (await (await get(TOPIC, options))!.json()) as Edits;
+    expect(forwarded).toEqual([TOPIC]);
+    expect(seen).toEqual(['/api/community/forum/topics/t1']);
+    expect(edits.title!.inner).toBe('How do I connect two shapes? | livediagram Community Forum');
+    expect(edits['meta[name="description"]']!.attrs.content).toMatch(/^I drew two boxes/);
+    expect(edits['meta[name="robots"]']!.attrs.content).toBe('index, follow');
+    const head = edits.head!.appended.join('');
+    expect(head).toContain(
+      '<link rel="canonical" href="https://www.livediagram.app/community/forum/topic?id=t1"/>',
+    );
+    expect(head).toContain('QAPage');
+  });
+
+  it('names a listed topic with no answer for a link preview only: still noindex, no canonical', async () => {
+    const { options } = makeRoute(() =>
+      Response.json({ topic: forumTopicFixture(), replies: [forumReplyFixture()] }),
+    );
+    const edits = (await (await get(TOPIC, options))!.json()) as Edits;
+    expect(edits.title!.inner).toContain('How do I connect two shapes?');
+    expect(edits['meta[name="robots"]']!.attrs.content).toBe('noindex, follow');
+    const head = edits.head!.appended.join('');
+    expect(head).not.toContain('canonical');
+    expect(head).not.toContain('ld+json');
+  });
+
+  it('never writes a Pending, refused or hidden topic’s words into the page, even if the service sent them', async () => {
+    for (const state of ['pending', 'refused', 'hidden'] as const) {
+      const { options } = makeRoute(() =>
+        Response.json({
+          topic: forumTopicFixture({
+            state,
+            title: 'Secret title words',
+            body: 'Secret body words',
+            answerId: 'r1',
+          }),
+          replies: [forumReplyFixture({ body: 'Secret reply words' })],
+        }),
+      );
+      const res = (await get(TOPIC, options))!;
+      expect(res.status).toBe(200);
+      expect(await res.text()).toBe(SHELL);
+    }
+  });
+
+  it('keeps the generic noindex shell for a topic the service does not answer, or fails on', async () => {
+    for (const make of [
+      () => makeRoute(() => new Response('', { status: 404 })).options,
+      () => makeRoute(() => new Response('', { status: 500 })).options,
+      () => makeRoute().options,
+    ]) {
+      const res = (await get(TOPIC, make()))!;
+      expect(res.status).toBe(200);
+      expect(await res.text()).toBe(SHELL);
+    }
+  });
+
+  it('asks without any account, so the service can only answer a listed topic', async () => {
+    let init: RequestInit | undefined;
+    const { options } = makeRoute((_path, i) => {
+      init = i;
+      return Response.json({ topic: forumTopicFixture(), replies: [] });
+    });
+    await get(TOPIC, options);
+    expect(new Headers(init?.headers).has('Authorization')).toBe(false);
+  });
+
+  it('leaves the shell alone with no id or for a HEAD request', async () => {
+    const api = vi.fn(() => Response.json({}));
+    const { options } = makeRoute(api);
+    expect(await (await get('/community/forum/topic', options))!.text()).toBe(SHELL);
+    expect((await get(TOPIC, options, 'HEAD'))!.status).toBe(200);
     expect(api).not.toHaveBeenCalled();
   });
 });

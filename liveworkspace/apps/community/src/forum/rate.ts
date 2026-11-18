@@ -2,6 +2,7 @@
 // account's writes and reactions per clock hour, and the checks every account made together per UTC day, kept in the
 // service's own database (no other binding). One upsert per count, which answers the count it left.
 
+import { FORUM_CHECK_TALLY_KEEP_DAYS, FORUM_TALLY_PREFIX } from '../config';
 import type { Env } from '../env';
 
 export const HOUR_MS = 60 * 60_000;
@@ -27,9 +28,12 @@ export async function countAgainst(
   return (row?.n ?? 1) <= limit;
 }
 
-/** Drops every window older than two days: none of them can be counted against again. */
+/** Drops every window older than two days (none of them can be counted against again), and the check's daily tally
+ *  once it is older than the dashboard shows. */
 export async function pruneForumCounters(env: Env, now: number): Promise<void> {
-  await env.COMMUNITY_DB.prepare('DELETE FROM forum_counters WHERE bucket < ?')
-    .bind(now - 2 * DAY_MS)
+  await env.COMMUNITY_DB.prepare(
+    `DELETE FROM forum_counters WHERE bucket < CASE WHEN subject LIKE ?3 THEN ?1 ELSE ?2 END`,
+  )
+    .bind(now - FORUM_CHECK_TALLY_KEEP_DAYS * DAY_MS, now - 2 * DAY_MS, `${FORUM_TALLY_PREFIX}%`)
     .run();
 }
