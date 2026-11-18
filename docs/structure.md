@@ -14,7 +14,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ auth-client              sign-in redirect, code swap, refresh, token check, the one return-path check
 │  ├─ brand                    every app's logo drawn once: the Living Prism and wordmark, as React and as SVG strings
 │  ├─ capture                  a browser's microphone and camera: the constraints, the device list and picker, the level meter, for livehuddle's calls and the walkthroughs
-│  ├─ cli-kit                  a product CLI's shared modules: the io shape, exit codes and errors, config.toml, XDG paths, debug lines, credentials and the keychain, OAuth sign-in, the api transport, PNG pictures; each product binds its names
+│  ├─ cli-kit                  a product CLI's shared modules: the io shape, exit codes and errors, config.toml, XDG paths, debug lines, credentials and the keychain, OAuth sign-in, the api transport, PNG pictures, the npm update check; each product binds its names
 │  ├─ help-registry            a help centre's article shapes, links, grouping, search and telemetry ids; each product binds its catalogue
 │  ├─ help-site                every help centre's pages, components, styles, SEO and catalogue checks; each product binds its own
 │  ├─ explorer                 the One Explorer UI over the index, rendered at every app's /explorer
