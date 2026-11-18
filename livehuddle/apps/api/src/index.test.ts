@@ -227,6 +227,27 @@ describe('worker room-ticket throttle', () => {
     expect(res.status).toBe(429);
     expect(limit).toHaveBeenCalledWith({ key: 'room-ticket:2001:0db8:0000:0001::/64' });
   });
+
+  // api.md "Rate limiting" (Work Tracker 1103): an MCP server's mint arrives over the service binding with no
+  // CF-Connecting-IP, so it keys on its token, never on the `anonymous` bucket every MCP view would share.
+  it('keys a token’s mint on the token, with no client address', async () => {
+    resolveApiTokenMock.mockResolvedValue({
+      ownerId: 'user_1',
+      tokenId: 'tok-mcp',
+      readOnly: false,
+    });
+    const limit = vi.fn(async () => ({ success: false }));
+    const res = await worker.fetch(
+      new Request('https://api.test/api/documents/d1/room-ticket?cap=view', {
+        method: 'POST',
+        headers: { Authorization: `Bearer lwt_${'x'.repeat(43)}` },
+      }),
+      { WRITE_RATE_LIMITER: { limit } } as unknown as Env,
+    );
+    expect(res.status).toBe(429);
+    expect(limit).toHaveBeenCalledWith({ key: 'room-ticket:token:tok-mcp' });
+    expect(limit).not.toHaveBeenCalledWith({ key: 'room-ticket:anonymous' });
+  });
 });
 
 // API tokens carried over from the old livehuddle.app (docs/migration.md step 1.5, @liveworkspace/api-kit api-token.ts): `lvd_`

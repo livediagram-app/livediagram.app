@@ -7,6 +7,13 @@
 // that it reaches the room only with a grant the index signed for this document. These tests read the headers the
 // stub actually received rather than trusting the route's intent.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+// The note a token's ticket leaves at liveworkspace (public-api-and-tokens.md "Revoking a token").
+const { noteTokenRoom } = vi.hoisted(() => ({ noteTokenRoom: vi.fn(async () => {}) }));
+vi.mock('../auth/token-rooms', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../auth/token-rooms')>()),
+  noteTokenRoom,
+}));
 import type { GrantClaims } from '@liveworkspace/index-client';
 import type { Env } from '../types';
 import { setGrantVerifierForTests } from '../index-service';
@@ -432,5 +439,101 @@ describe('the presence name', () => {
     );
     expect(post?.status).toBe(403);
     expect(relayed).toEqual([]);
+  });
+});
+
+// docs/specs/015-api/public-api-and-tokens.md "Revoking a token": the token that minted a ticket rides in it, sealed,
+// so the room can close its sockets when it is revoked; liveworkspace notes the room until the ticket lapses.
+describe("a token's ticket", () => {
+  const grant = () => grantFor({ item: 'p1', sub: 'user_a', owner: 'user_a', level: 'edit' });
+  const mint = (env: Env, query = '', pending: Promise<unknown>[] = []) =>
+    handleDocumentRoomRoutes(
+      makeTestRouteContext('POST', `/api/documents/p1/room-ticket${query}`, {
+        env,
+        owner: 'user_a',
+        token: { id: 'tok-1', readOnly: false },
+        headers: { [ITEM_GRANT_HEADER]: grant() },
+        grant: null,
+        waitUntil: (p) => void pending.push(p),
+      }),
+    );
+
+  it('seals the minting token into its ticket, notes the room, and the room hears it', async () => {
+    noteTokenRoom.mockClear();
+    const { env, seen } = roomEnv();
+    const pending: Promise<unknown>[] = [];
+    const res = await mint(env, '', pending);
+    const { ticket } = await res!.json<{ ticket: string }>();
+    expect(ticket.startsWith('rt2~')).toBe(true);
+    expect(ticket).not.toContain('tok-1');
+    expect(ticket).not.toContain(grant());
+    await Promise.all(pending);
+    expect(noteTokenRoom).toHaveBeenCalledWith(env, {
+      ownerId: 'user_a',
+      tokenId: 'tok-1',
+      itemId: 'p1',
+      until: (NOW + 600) * 1000,
+    });
+    await upgrade(env, `/api/documents/p1/ws?t=${encodeURIComponent(ticket)}`);
+    expect(seen[0]!.headers.get('X-Verified-Api-Token')).toBe('tok-1');
+    // No cap asked: the ticket admits at the grant's own level.
+    expect(seen[0]!.headers.get('X-Verified-Role')).toBe('edit');
+  });
+
+  it('notes nothing when the caller resolves to no owner, but still seals the token', async () => {
+    noteTokenRoom.mockClear();
+    const { env, seen } = roomEnv();
+    const res = await handleDocumentRoomRoutes(
+      makeTestRouteContext('POST', '/api/documents/p1/room-ticket', {
+        env,
+        owner: null,
+        token: { id: 'tok-1', readOnly: false },
+        headers: { [ITEM_GRANT_HEADER]: grant() },
+        grant: null,
+      }),
+    );
+    const { ticket } = await res!.json<{ ticket: string }>();
+    expect(noteTokenRoom).not.toHaveBeenCalled();
+    await upgrade(env, `/api/documents/p1/ws?t=${encodeURIComponent(ticket)}`);
+    expect(seen[0]!.headers.get('X-Verified-Api-Token')).toBe('tok-1');
+  });
+
+  it('waits for the note when the request has no waitUntil', async () => {
+    noteTokenRoom.mockClear();
+    const { env } = roomEnv();
+    await handleDocumentRoomRoutes(
+      makeTestRouteContext('POST', '/api/documents/p1/room-ticket', {
+        env,
+        owner: 'user_a',
+        token: { id: 'tok-1', readOnly: false },
+        headers: { [ITEM_GRANT_HEADER]: grant() },
+        grant: null,
+      }),
+    );
+    expect(noteTokenRoom).toHaveBeenCalledTimes(1);
+  });
+
+  it("stamps no token on a person's own ticket, over a spoofed header, and notes nothing", async () => {
+    noteTokenRoom.mockClear();
+    const { env, seen } = roomEnv();
+    const t = grant();
+    const res = await handleDocumentRoomRoutes(
+      makeTestRouteContext('POST', '/api/documents/p1/room-ticket', {
+        env,
+        headers: { [ITEM_GRANT_HEADER]: t },
+        grant: null,
+      }),
+    );
+    const { ticket } = await res!.json<{ ticket: string }>();
+    expect(ticket).toBe(t);
+    await handleDocumentRoomRoutes(
+      makeTestRouteContext('GET', `/api/documents/p1/ws?t=${encodeURIComponent(ticket)}`, {
+        env,
+        headers: { ...SPOOFED, 'X-Verified-Api-Token': 'evil' },
+        grant: null,
+      }),
+    );
+    expect(seen[0]!.headers.get('X-Verified-Api-Token')).toBe('');
+    expect(noteTokenRoom).not.toHaveBeenCalled();
   });
 });

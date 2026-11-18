@@ -293,6 +293,18 @@ Five limiters, each a Cloudflare Workers Rate Limiting binding declared under `[
 
 Other reads (a signed-in or guest `GET`, and every `OPTIONS`) are unmetered. The write ceiling sits well above realistic editing traffic (autosave fires once per debounce window, comments are typed by humans) but low enough to stop a bot from spamming project creation into storage exhaustion. The room-ticket mint is exempt because it shares the per-owner budget with the autosave, and a 429 there would cost a team member the whole session's realtime; `/api/events` is exempt so telemetry never competes with a user's real writes.
 
+**The room-ticket mint's bucket, and MCP calls.** The mint is metered on `WRITE_RATE_LIMITER` under its own key,
+apart from the autosave budget: `room-ticket:token:<tokenId>` for an API token (an MCP server's view, a CLI), else
+`room-ticket:<network>` (the caller's IP, IPv6 /64; `callerRateKey`, `@liveworkspace/api-kit/client-ip`). An MCP
+server's calls reach this api over its service binding (`API`) as fresh requests carrying only the caller's `lwt_`
+bearer, so the api sees no `CF-Connecting-IP` on them: keyed on an address, every MCP view in the world would share the
+one `anonymous` bucket. So no limit an MCP call meets is keyed on an address: every MCP call bears a token, and the
+write, token-read and mint limits key on it. The MCP forwards no address either (Work Tracker 1103,
+2026-11-18): its own caller is the chat host's server, shared by everyone using that host, so a forwarded address
+would bucket them together just the same, and a header naming one could be believed only beside a marker the binding
+alone carries. The per-IP doors (the share resolve, unfurl, the events relay) are the browser's and the CLI's; an MCP
+tool never calls them.
+
 Before any limiter, a write whose `Content-Length` exceeds the body cap (`writeBodyCap`, `limits.ts`: `MAX_BODY_BYTES`, 8 MB, but an Image field's upload `MAX_IMAGE_BYTES` and `POST /api/projects/:id/file` `PROJECT_FILE_MAX_BYTES`, 20 MB) is refused with `413`. The header is only the fast refusal: every write body is then read through a byte counter that stops at the same cap (`withCappedBody`, `@liveworkspace/api-kit/request-body`) and answers the same `413` `payload_too_large`, so a chunked body that declares no length is held to the cap as well, and no route ever reads more than it. The counted body reaches the route as it came: one chunk as those bytes, several as a stream over the chunks that lets each go as it is read, never one joined copy beside them, so a body is not held twice (a 32 MB chunked body read whole peaks near 97 MB in workerd, where a joined copy reached 137 MB, past the Worker's 128 MB; `packages/api-kit/test/workerd-body`). A route forwarding it to a Durable Object forwards it as before.
 
 Every limiter is optional. When a binding is absent its check short-circuits to "allow", so deployments without the feature (local development) still serve (per [Business model + licence](../002-project-scope/business-model-and-licence.md)).

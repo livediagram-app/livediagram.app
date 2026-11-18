@@ -57,6 +57,7 @@ export async function roomFetch(
     v.reactionPerson ?? null,
     v.name ?? null,
     v.account === true,
+    v.apiToken ?? null,
   );
   if (v.documentId) {
     room.bindDocument(v.documentId);

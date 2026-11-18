@@ -2556,6 +2556,56 @@ describe('DocumentRoom tab-scoped sessions', () => {
       expect(person.closed).toBeUndefined();
     });
 
+    // docs/specs/015-api/public-api-and-tokens.md "Revoking a token": only the sockets the revoked token's room
+    // tickets opened close, with 4005; another token's view and a person's session stay open.
+    it("closes a revoked token's sockets, and leaves another token's and a person's open", async () => {
+      const TOKEN = '9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d';
+      const OTHER = '00000000-0000-4000-8000-000000000000';
+      const { room } = newRoom();
+      type Closable = FakeSocket & { closed?: [number, string] };
+      const closable = (): Closable => {
+        const ws = makeSocket() as Closable;
+        (ws as unknown as { close: (code: number, reason: string) => void }).close = (
+          code,
+          reason,
+        ) => {
+          ws.closed = [code, reason];
+        };
+        return ws;
+      };
+      const [revoked, other, person] = [closable(), closable(), closable()] as [
+        Closable,
+        Closable,
+        Closable,
+      ];
+      // As the upgrade admits a token's view (X-Verified-Api-Token, room-session.ts `apiToken`).
+      const watch = (ws: Closable, token: string) =>
+        room.acceptSession(
+          asWs(ws),
+          'view',
+          false,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          false,
+          token,
+        );
+      watch(revoked, TOKEN);
+      watch(other, OTHER);
+      room.acceptSession(asWs(person), 'edit');
+      expect((revoked.attachment as { apiToken?: string }).apiToken).toBe(TOKEN);
+      expect((await closeSessions(room, { match: 'token', tokenId: TOKEN })).status).toBe(204);
+      expect(revoked.closed).toEqual([4005, 'access-changed']);
+      expect(other.closed).toBeUndefined();
+      expect(person.closed).toBeUndefined();
+    });
+
     it('400s a match it does not know, closing nobody', async () => {
       const { room, state } = newRoom();
       const visitor = makeSocket() as FakeSocket & { closed?: [number, string] };

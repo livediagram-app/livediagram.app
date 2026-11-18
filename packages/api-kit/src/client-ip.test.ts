@@ -1,8 +1,24 @@
 import { describe, expect, it } from 'vitest';
-import { addressRateKey, clientIp, clientNetwork, clientRateKey } from './client-ip';
+import { addressRateKey, callerRateKey, clientIp, clientNetwork, clientRateKey } from './client-ip';
 
 const req = (ip?: string) =>
   new Request('https://x.test/', { headers: ip ? { 'CF-Connecting-IP': ip } : {} });
+
+// Work Tracker 1103: an MCP server's calls reach the api over its service binding with no CF-Connecting-IP. A limit a
+// token-bearing caller meets keys on the token, never on the `anonymous` bucket every MCP call would share.
+describe('callerRateKey', () => {
+  it('keys a token-bearing call on its token, with or without an address', () => {
+    expect(callerRateKey(req(), 'tok-1')).toBe('token:tok-1');
+    expect(callerRateKey(req(), 'tok-2')).not.toBe(callerRateKey(req(), 'tok-1'));
+    expect(callerRateKey(req('203.0.113.9'), 'tok-1')).toBe('token:tok-1');
+  });
+
+  it('keys any other call on its address, and one with none on the anonymous bucket', () => {
+    expect(callerRateKey(req('203.0.113.9'), null)).toBe('203.0.113.9');
+    expect(callerRateKey(req(), undefined)).toBe('anonymous');
+    expect(callerRateKey(req(), '')).toBe('anonymous');
+  });
+});
 
 describe('clientRateKey', () => {
   it('keeps an IPv4 address exact', () => {

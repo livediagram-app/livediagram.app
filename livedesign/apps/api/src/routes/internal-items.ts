@@ -25,7 +25,7 @@ import { deleteAccount } from '../db/account';
 import { mergeMediaOwner } from '../media';
 import { purgeDesignPreviews } from '../db/designs';
 import { designRoom } from '../design-client';
-import { closeWorkbenchSessions, tellTrashed } from '../room-access-client';
+import { closeTokenSessions, closeWorkbenchSessions, tellTrashed } from '../room-access-client';
 import { reportServerEvent } from '../server-telemetry';
 import { importDesignFileFor } from './internal-file';
 import { designFromTemplate } from './internal-template';
@@ -93,6 +93,8 @@ export function handleInternalItems(
       // connected tab at the end of the design's tab bar.
       connectedTab: (id, write) => designRoom(env, id).addConnectedTab(write),
       workbenchClose: (id, pairingId) => closeWorkbenchSessions(env, id, pairingId),
+      // A revoked API token: the sockets its room tickets opened (public-api-and-tokens.md "Revoking a token").
+      tokenClose: (id, tokenId) => closeTokenSessions(env, id, tokenId),
       // Where the design stands after an archive, move, trash or restore (docs/specs/013-workspace/trash.md "Open
       // editors"): trashed anywhere (the api, MCP, the Explorer), its room tells every editor and
       // closes. Nothing is kept, so a restore reopens as before.
