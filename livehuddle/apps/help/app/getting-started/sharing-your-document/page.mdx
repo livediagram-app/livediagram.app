@@ -18,13 +18,14 @@ livehuddle is multiplayer from the moment someone walks in. Sharing is just crea
 
 <Step n={1}>
   Open the space you want to share and click **Share** at the top right of the editor, or choose
-  **Share** from the space's **⋯** menu in the Explorer. Only the space's owner can issue passes, so
-  someone who joined through a link sees no **Share** button.
+  **Share** from the space's **⋯** menu in the Explorer. Only the space's owner, or a member of the
+  team it belongs to, can issue passes: someone who joined through a link sees **Copy** (Make a
+  Copy) there instead of **Share**.
 </Step>
 
 <Step n={2}>
-  Under **Issue a pass**, the role card starts on **Participant** (always walking in, talks and
-  sends reactions, but adds nothing to the Space), the pass most meetings want; press it to pick
+  Under **Issue a pass**, the role card starts on **Participant** (always walking: walks, talks and
+  uses the pieces, but adds nothing to the Space), the pass most meetings want; press it to pick
   **Editor** (changes the Space with you in real time) instead. **Valid** sets how long it lasts:
   Forever, 1 week, 1 month or 6 months. In a space with several tabs, **Opens** can limit the link
   to one tab.
@@ -37,7 +38,8 @@ livehuddle is multiplayer from the moment someone walks in. Sharing is just crea
 
 If you are a guest, check the name under **Sharing as** at the foot of the dialog first (or press the
 shuffle button beside it for another): that is the name peers see on your cursor and character. A space
-saved to **This Browser** has to be synced to your account before it can be shared.
+saved to **This Browser** has nothing to share yet: **Share** opens on **This Space Is in This Browser**, and
+**Sync Space** puts it on livehuddle's servers (guest or signed in) and shows the share options in its place.
 
 <Figure caption="The Share dialog: choose Participant or Editor, set how long the pass is valid, then Create Pass. Live passes are listed below.">
   <SharePassesDialog />

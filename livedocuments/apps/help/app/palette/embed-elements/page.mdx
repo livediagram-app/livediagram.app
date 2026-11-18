@@ -9,7 +9,7 @@ import {
 export const metadata = helpMetadata({
   title: 'Embeds on the canvas',
   description:
-    'Put a YouTube or Vimeo video, a Loom recording, a Figma file, a Google Doc or any website on the canvas, and play or load it in place.',
+    'Put a YouTube or Vimeo video, a Loom recording, a Figma file, a Google Doc, any website or a live file from our apps on the canvas, and play it in place.',
   path: '/help/palette/embed-elements/',
 });
 
@@ -23,14 +23,15 @@ export const metadata = helpMetadata({
 
 An **Embed** puts someone else's page on your canvas: a video that plays where it sits, a Figma file, a Google Doc, or any website at all.
 
-| Service         | Links that work                                                   |
-| --------------- | ----------------------------------------------------------------- |
-| **YouTube**     | watch, share (`youtu.be`), Shorts, live and embed links           |
-| **Vimeo**       | a `vimeo.com` video link                                          |
-| **Loom**        | a share or embed link                                             |
-| **Figma**       | any file, prototype or board link                                 |
-| **Google Docs** | a Doc, Sheet or Slides link you have shared                       |
-| **Website**     | any `http` or `https` address, for anything not in the list above |
+| Service         | Links that work                                                                                      |
+| --------------- | ---------------------------------------------------------------------------------------------------- |
+| **YouTube**     | watch, share (`youtu.be`), Shorts, live and embed links                                              |
+| **Vimeo**       | a `vimeo.com` video link                                                                             |
+| **Loom**        | a share or embed link                                                                                |
+| **Figma**       | any file, prototype or board link                                                                    |
+| **Google Docs** | a Doc, Sheet or Slides link you have shared                                                          |
+| **Website**     | any `http` or `https` address, for anything not in the list above                                    |
+| **Live Embed**  | not a link: a file from our apps, chosen from your files ([below](#live-embed-a-file-from-our-apps)) |
 
 Pick **Website** when the page you want isn't one of the named services. It
 frames the address exactly as you type it. Be aware that plenty of sites refuse
@@ -55,7 +56,7 @@ Embeds live in the palette's **Media** category, each as its own card in the **E
 
 **The tile you picked is only a hint.** It names the empty card ("Add a Figma link") and the dialog, and the link is what actually decides: paste a Vimeo URL into a card you made from the Figma tile and you get Vimeo, because refusing a link that plainly works would be pedantry. There is no separate URL field to keep in step either: double-clicking the card is how you change its address. A link the card can't use leaves it reading "Can't embed that link", with the address beneath.
 
-The dialog is deliberately narrow: an embed can only point at a **web address**, never at a tab or another document, because a video pointed at a tab has nothing to play. It checks the address as you type and again when you save.
+The link dialog is deliberately narrow: it takes only a **web address**, never a tab, because a video pointed at a tab has nothing to play. It checks the address as you type and again when you save. To show another of your files instead, use a [Live Embed](#live-embed-a-file-from-our-apps).
 
 **Embed cards keep a 16:9 shape** as you resize them, for the same reason an icon is locked square: a letterboxed or stretched video frame is never what anyone wanted. And like images and stickies, an embed **keeps its own look across [themes](/help/canvas/themes/)**: somebody else's page is not yours to recolour.
 
@@ -88,5 +89,23 @@ When you want to use the player itself, hover it: two small buttons appear in it
   The link badge in the corner still opens the original page in a new tab. Playing something here
   and opening it at the source are different intentions, and both are worth having.
 </Note>
+
+## Live Embed: a file from our apps
+
+The **Live Embed** card, last in the **Embeds** group, shows a canvas, plan, page or design from livediagram, liveplanner, livedocuments or livedesign, live and read-only. It follows every change the file's people make, as they make it.
+
+<Step n={1}>Add **Live Embed** from the **Embeds** group, then double-click the card.</Step>
+
+<Step n={2}>
+  In **Choose a File**, pick one of your **Connected** files or a **Recent** one (**Find a file**
+  searches them), or paste one of those apps' share links under **Paste a Share Link**.
+</Step>
+
+Double-click it again to choose another file. Only an Editor of this document can choose one, and not while the card is locked.
+
+- **Everyone sees it with their own access.** Someone who can open the file sees it live. Anyone else sees a blurred picture of it, "You don't have access to" the file, and **Open in** its app. Choosing a file never shares it with anyone.
+- **Hover it** for **Use the file**, which hands it the pointer so you can scroll and click inside it (**Done using the file** gives dragging back), and **Open in** its app, which opens the file in a new tab.
+- **It runs only on screen.** A live embed starts once it is in view, and at most three run on a page at once; the rest show their last picture until one leaves the screen.
+- **Exports draw its picture**, as do thumbnails, so an image or PDF of the page shows the file as it last looked.
 
 </ArticleLayout>

@@ -12,44 +12,44 @@ export const metadata = helpMetadata({
 
 <ArticleLayout
   title="Finding Designs and Folders"
-  description="The always-on scope of search: your designs, your folders, and anything shared with you."
+  description="How search finds your designs, the ones shared with you and, on the Explorer page, your folders."
   categoryTitle="Search Panel"
   categorySlug="search-panel"
   parentArticle={{ title: 'The Search Panel', slug: 'the-search-panel' }}
   subArticles={getSubArticles('the-search-panel').filter((a) => a.slug !== 'search-designs')}
 >
 
-Wherever you open the [search panel](/help/search-panel/the-search-panel/), it always covers your own library, so you never have to remember which folder a design is in. Matching is on the name only, and any part of it will do: `brief` finds "Project brief" and "Debriefing".
+Wherever you open the [search panel](/help/search-panel/the-search-panel/), it covers your own library, so you never have to remember which folder a design is in. Matching is on the name, and any part of it will do: `brief` finds "Project brief" and "Debriefing".
 
-<Figure caption="The always-on scope: your designs, designs shared with you, and your folders.">
+<Figure caption="Your designs by name, with the rest of what you can open listed after them.">
   <SearchDesigns />
 </Figure>
 
-## Designs
+## In the editor
 
-The **Designs** group matches your own designs by name (a design you never named is listed as "Untitled design"). Pick one and it opens, the quickest way back into a design without scrolling the [Explorer](/help/explorer/explorer-page/). This group is in scope from anywhere: the editor and the Explorer page alike.
+The **Designs** group matches your livedesign designs by name (a design you never named is listed as "Untitled design"), the ones in your teams' libraries included. Pick one and it opens, the quickest way back into a design without scrolling the [Explorer](/help/explorer/explorer-page/). It searches your 100 most recently changed designs, read in the background once the open design has loaded.
 
-A design saved only in this browser (see [Offline Mode](/help/privacy-and-security/offline-mode/)) carries a **This Browser** label in the results, so you can tell it apart from one saved to your account.
+Once you type, an **Every App** group lists the rest of what you can open that matches: a design [shared with you](/help/explorer/shared-with-you/) through a link, an older design, or work in another liveworkspace app, each marked with its app. Picking one opens it, a shared design on its share link with whatever access the owner granted.
 
-Designs in a team's library are not in this group: they are listed under **Teams**, tagged with their team. See [Searching Teams](/help/search-panel/the-search-panel/search-teams/).
+Folders are not searched from the editor: open search on the Explorer page to find a folder.
 
-## Shared with You
+## On the Explorer page
 
-Once you have opened someone else's design through a share link, a **Shared with You** group matches it too, marked with a share icon. (It is the same list as [Shared With Me](/help/explorer/shared-with-you/) in the Explorer, so a link you were sent but never opened is not in it yet.) Picking one opens it on its share link, with whatever access the owner granted. This keeps shared work findable alongside your own, without it cluttering your folders. If the owner turns sharing off, the link expires, or the design goes to the Trash, it drops out of the results.
+The Explorer's search asks liveworkspace's index, so it reaches everything you can open:
 
-## My Work (your folders)
-
-The **My Work** group matches the folders in your personal [folder tree](/help/explorer/folders/) by name. Picking a folder opens it on the Explorer page (from the editor, search takes you there), so search doubles as a way to jump around your folder tree without expanding it by hand. Team folders are listed under **Teams** instead.
+- **Items**: your designs and everything shared with you or in your teams, in every app (or just this app's, when the Explorer is showing only livedesign). An archived design says **Archived**, and picking it opens the Archived view on it.
+- **Folders**: the folders in your [folder tree](/help/explorer/folders/) and your teams', a team's marked "in" its name. Picking one opens it.
 
 ## Limits
 
-Each group lists up to 8 matches. If what you want is not among them, type a little more of its name. With an empty box the panel lists your designs, shared designs, folders and teams (and, in a design, its tabs and elements), so you can open it and arrow straight down to one.
+Each group lists up to 8 matches. If what you want is not among them, type a little more of its name. With an empty box the editor lists your designs (and, in a design, its tabs and elements), so you can open it and arrow straight down to one; the Explorer page lists nothing until you type.
 
 <Tip>
-  Search is owner-scoped: a guest finds the designs their own browser owns, and the ones it has
-  opened through share links; signing in brings your account's designs into scope. Search only
-  looks at names: it does not look inside other designs, so to find a word on a canvas, open that
-  design and search there.
+  Search is owner-scoped: a guest finds what their own browser owns, and what it has opened through
+  share links; signing in brings your account's designs into scope. Designs kept in [This
+  Browser](/help/privacy-and-security/offline-mode/) are not searched. Search only looks at names:
+  it does not look inside other designs, so to find a word on a canvas, open that design and search
+  there.
 </Tip>
 
 </ArticleLayout>

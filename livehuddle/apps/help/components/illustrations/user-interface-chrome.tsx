@@ -1,10 +1,11 @@
 // The editor's fixed chrome the User Interface figures (user-interface.tsx) are composed from: the
-// glyphs, the bottom bar with its tab card, tab pill and quick controls, and the bottom-right
-// corner cluster (Undo / Redo, the Theme & canvas paintbrush, zoom). livehuddle's cluster has no
-// Layers button, and its icon buttons can be drawn pressed in the brand colour.
+// glyphs, the top corners' cards (the logo, Share and the account), the bottom bar with its tab card,
+// tab pill and quick controls, and the bottom-right corner cluster (Undo / Redo, the Theme & canvas
+// paintbrush, zoom). livehuddle's cluster has no Layers button, and its icon buttons can be drawn
+// pressed in the brand colour.
 
 import type { ReactNode } from 'react';
-import { Label, Panel } from '@liveworkspace/help-site/art/primitives';
+import { Avatar, Label, Panel } from '@liveworkspace/help-site/art/primitives';
 
 // --- Glyphs ------------------------------------------------------------------
 
@@ -16,11 +17,12 @@ export const GLYPH = {
   strokeLinejoin: 'round',
 } as const;
 
-function SearchGlyph({ x, y }: { x: number; y: number }) {
+// Tools is a toolbox in the editor's footer (ChromeToolsMenu): a case with a handle.
+function ToolsGlyph({ x, y }: { x: number; y: number }) {
   return (
     <g transform={`translate(${x} ${y})`}>
-      <circle r={4.5} {...GLYPH} />
-      <path d="M3.4 3.4 L6.5 6.5" {...GLYPH} />
+      <rect x={-6} y={-3} width={12} height={8} rx={1.5} {...GLYPH} />
+      <path d="M-2.5 -3 v-2 h5 v2 M-6 1 h12" {...GLYPH} />
     </g>
   );
 }
@@ -162,8 +164,8 @@ export function TabPill({
   );
 }
 
-/** The quick controls at the right-hand end of the bottom bar: Search,
- *  Settings and the appearance switch, labelled as on a computer. */
+/** The quick controls at the right-hand end of the bottom bar (ChromeControls): Tools and
+ *  Settings, named beside their icons as on a computer, then the appearance switch, an icon alone. */
 export function QuickControlsRow({
   x,
   y,
@@ -176,7 +178,7 @@ export function QuickControlsRow({
   if (!labelled) {
     return (
       <g>
-        <SearchGlyph x={x + 8} y={y} />
+        <ToolsGlyph x={x + 8} y={y} />
         <SettingsGlyph x={x + 30} y={y} />
         <SunGlyph x={x + 52} y={y} />
       </g>
@@ -184,18 +186,15 @@ export function QuickControlsRow({
   }
   return (
     <g>
-      <SearchGlyph x={x + 8} y={y} />
-      <Label x={x + 18} y={y + 1} size={10} tone="body">
-        Search
+      <ToolsGlyph x={x + 8} y={y} />
+      <Label x={x + 19} y={y + 1} size={10} tone="body">
+        Tools
       </Label>
-      <SettingsGlyph x={x + 66} y={y} />
-      <Label x={x + 77} y={y + 1} size={10} tone="body">
+      <SettingsGlyph x={x + 64} y={y} />
+      <Label x={x + 75} y={y + 1} size={10} tone="body">
         Settings
       </Label>
-      <SunGlyph x={x + 134} y={y} />
-      <Label x={x + 145} y={y + 1} size={10} tone="body">
-        Light
-      </Label>
+      <SunGlyph x={x + 132} y={y} />
     </g>
   );
 }
@@ -220,7 +219,7 @@ export function BottomBar({
       <Label x={180} y={y + 16} size={14} weight={600} tone="muted" anchor="middle">
         +
       </Label>
-      <QuickControlsRow x={labelled ? w - 182 : w - 72} y={y + 15} labelled={labelled} />
+      <QuickControlsRow x={labelled ? w - 150 : w - 72} y={y + 15} labelled={labelled} />
     </g>
   );
 }
@@ -256,6 +255,70 @@ export function CornerCluster({ x, y, level = '100%' }: { x: number; y: number; 
           +
         </Label>
       </Panel>
+    </g>
+  );
+}
+
+/** The logo's card at the top-left, before the menu button's (ToolbarExplorerButton's MenuCardLogo): the mark
+ *  alone, as a narrow window draws it. */
+export function LogoCard({ x, y }: { x: number; y: number }) {
+  return (
+    <g>
+      <rect
+        x={x}
+        y={y}
+        width={28}
+        height={32}
+        rx={9}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.5}
+      />
+      <rect x={x + 6} y={y + 8} width={16} height={16} rx={4} className="fill-brand-500" />
+    </g>
+  );
+}
+
+/** The card at the top-right (EditorCornerActions): Share, solid once the space has a live link, then the
+ *  account's initial. */
+export function CornerActionsCard({
+  x,
+  y,
+  shared = true,
+}: {
+  x: number;
+  y: number;
+  shared?: boolean;
+}) {
+  return (
+    <g>
+      <rect
+        x={x}
+        y={y}
+        width={64}
+        height={32}
+        rx={9}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.5}
+      />
+      <rect
+        x={x + 4}
+        y={y + 4}
+        width={34}
+        height={24}
+        rx={6}
+        className={shared ? 'fill-brand-700' : 'fill-slate-50'}
+      />
+      <Label
+        x={x + 21}
+        y={y + 17}
+        size={8.5}
+        weight={600}
+        anchor="middle"
+        tone={shared ? 'onAccent' : 'body'}
+      >
+        Share
+      </Label>
+      <Avatar cx={x + 51} cy={y + 16} r={8} initial="S" />
     </g>
   );
 }

@@ -20,6 +20,8 @@ export const metadata = helpMetadata({
 
 Home opens with a greeting across the top of the page. Under it, a pill says how many spaces you have across My Work and your teams; click it to go there. The search field sits right there in the greeting, with **New Space** inside it, so the first screen always offers a way to find something or start something. Home also shows **What you can make**: a Virtual Office, a Team Pod, a Coworking Space and an All-Hands Hall, each a click away from a new space laid out that way.
 
+Switch the Explorer to **All Apps** and **What you can make** shows a kind of work from each app, with **Start a Project** beside its heading. It opens liveworkspace's project kits: pick one and a single click makes everything the project needs, such as a space, a plan, a diagram and a document, together in a new folder and each linked to the others. See [livehuddle or All Apps](/help/explorer/explorer-page/#livehuddle-or-all-apps).
+
 Prefer a plainer Home? Press the **×** beside **Help** in the greeting's corner to hide it. Home then opens with its title and the search field in the header, like every other page, and stays that way on your other devices. Turn it back on in **Settings > Explorer** with **Show Home Banner**.
 
 Rather skip the homepage? Turn on **Automatically Open Explorer** in **Settings > Explorer**, and opening livehuddle.app while you're signed in comes straight here.
@@ -32,14 +34,18 @@ Below the greeting, Home is one column of sections, each under its own heading: 
   <HomeOverview recent={['Stand-up', 'Auth flow', 'Sprint 12', 'Brainstorm']} />
 </Figure>
 
+## New
+
+**New**, first under the greeting, holds the four spaces made most recently in My Work and your teams, newest first, opened or not, so something you just made is one look away. Each card says when it was made and where it lives. Nothing in the Trash or Archived, and nothing reached only through a link, appears here. With nothing made yet, the section is left out.
+
 ## Most Used and Recent
 
-Two sections keep up to sixteen spaces within reach: **Most Used**, the **eight you opened most** lately, then **Recent** directly under it, the **eight you used last**.
+Two more sections keep up to sixteen spaces within reach: **Most Used**, the **eight you opened most** lately, then **Recent** directly under it, the **eight you used last**.
 
 - **Most Used** counts how many times you opened a space over the last 14 days, so a space you open a lot over a few days rises to the top. A day you only edited or made it counts as one open. A space you have not opened in 14 days drops off, so the list stays about what you are working on now.
 - **Recent** holds the spaces you opened, edited or made most recently, newest first.
-- **What you make is in at once**, opened or not: a new space, a duplicate, a single imported board, or one an AI tool made for you. An import of several spaces at once is the exception, so a big import never pushes your work aside; those join when you first open one.
-- A space is never shown twice: if a recent one is also among the most used, it stays in Most Used, and the next most recent takes its place in Recent.
+- **What you make shows in New at once**, opened or not. Most Used and Recent go by what you opened or edited, so a space made without opening it (through the API, say) joins them once you open it.
+- A space is never shown twice: it sits in the first of New, Most Used and Recent it belongs in, and the next one in line takes its place in the others.
 
 On a computer or a tablet each section is cards, up to two rows of four: **Most Used** with a line under each saying how many times you opened it, then **Recent**, saying when you last used each. On a phone each section is its own strip of up to eight you scroll sideways, under its own heading, and Recent's strip ends in a **See More** tile. If every space you have opened lately is among the most used, Recent is left out until there is another.
 

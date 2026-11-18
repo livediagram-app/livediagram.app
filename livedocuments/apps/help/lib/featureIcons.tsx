@@ -165,6 +165,15 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M17.5 14v7M14 17.5h7" />
     </Glyph>
   ),
+  // Three books on a shelf, the last leaning: what you saved, kept to reach for again.
+  library: (
+    <Glyph>
+      <path d="M3 20.5h18" />
+      <rect x="4" y="5" width="4" height="15.5" rx="0.5" />
+      <rect x="9" y="7.5" width="4" height="13" rx="0.5" />
+      <path d="M15.2 9.2l3.6-1 3 11.8-3.6 1z" />
+    </Glyph>
+  ),
   devices: (
     <Glyph>
       <rect x="2" y="4" width="14" height="10" rx="1" />
@@ -1003,6 +1012,16 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     <Glyph>
       <path d="M4 11.5 12 4.5l8 7" />
       <path d="M6 10v9.5h4.5v-5h3v5H18V10" />
+    </Glyph>
+  ),
+  // Three files fanned out of one folder, joined by a line: a whole project in one press.
+  'start-a-project': (
+    <Glyph>
+      <path d="M3 9.5h6l1.5 2H21v8.5H3z" />
+      <rect x="5" y="3.5" width="4.5" height="5" rx="0.6" />
+      <rect x="10.5" y="3.5" width="4.5" height="5" rx="0.6" />
+      <rect x="16" y="3.5" width="4.5" height="5" rx="0.6" />
+      <path d="M9.5 6h1M15 6h1" />
     </Glyph>
   ),
   // An inbox tray with a tick above it: what is waiting on you.

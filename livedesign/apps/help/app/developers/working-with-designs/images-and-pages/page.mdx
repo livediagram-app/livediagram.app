@@ -5,13 +5,13 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Images, Pages and More',
   description:
-    'livedesign API examples for image uploads, pages, SVG renders of a tab and copying a design.',
+    'livedesign API examples for image uploads, pages, components, SVG renders of a tab and copying a design.',
   path: '/help/developers/working-with-designs/images-and-pages/',
 });
 
 <ArticleLayout title="Images, Pages and More" description="Worked examples for the rest of a design: images, pages, pictures of a tab and copies." categoryTitle="Developers" categorySlug="developers/working-with-designs" parentArticle={{ title: "Working with Designs", slug: "working-with-designs" }} subArticles={getSubArticles("working-with-designs").filter((a) => a.slug !== "images-and-pages")}>
 
-A tab's elements change through [changesets](/help/developers/working-with-designs/edit-operations/), but a design holds more than elements: the images it shows and its pages. Each has its own endpoints, shown here with `curl`. The examples assume your [API token](/help/developers/authentication/) is in `$TOKEN` and a design id in `$DOC`; paths are relative to `https://www.livedesign.app/api`, and `/api/openapi.json` has every field.
+A tab's elements change through [changesets](/help/developers/working-with-designs/edit-operations/), but a design holds more than elements: the images it shows, its pages and its components. Each has its own endpoints, shown here with `curl`. The examples assume your [API token](/help/developers/authentication/) is in `$TOKEN` and a design id in `$DOC`; paths are relative to `https://www.livedesign.app/api`, and `/api/openapi.json` has every field.
 
 Every write here reaches anyone with the design open straight away, credited to you.
 
@@ -69,6 +69,10 @@ curl -X POST https://www.livedesign.app/api/designs/$DOC/tabs/$TAB/pages \
 ```
 
 A page change is `add` (a `kind` of `logo`, `wireframe` or `photo`, with an optional `name`, `background`, `layout` and `at`; a wireframe takes its `device`, `frameLook` and `systemBars`, and a photo its `width` and `height` in pixels, 1920 x 1080 when left out), `set`, `layout`, `move`, `duplicate`, `delete` or `apply_background_to_all`; a page is named by its id, its place in the row (from 1) or its name. The answer lists every page with its rectangle on the canvas, which is where a changeset puts elements to land them on that page.
+
+## Components
+
+A design's components live beside its tabs: `GET /designs/$DOC/components` lists the mains, `PUT /designs/$DOC/components/{componentId}` makes (or replaces) one, and `PATCH` on the same path changes one, element by element, with any of `name`, `archived`, `upsert` (elements by id), `remove` (ids) and `order` (ids). Every instance redraws as the main changes. Writes need edit access. Instances are placed and detached with a changeset (see [Edit Operations Reference](/help/developers/working-with-designs/edit-operations/)), and `livedesign component make` does both steps at once.
 
 ## A Tab as a Picture
 

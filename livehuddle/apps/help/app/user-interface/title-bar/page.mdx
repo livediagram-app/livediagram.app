@@ -3,42 +3,30 @@ import { helpMetadata } from '@/lib/seo';
 import { TitleBarParts } from '@liveworkspace/help-site/art/illustrations/title-bar';
 
 export const metadata = helpMetadata({
-  title: 'The Top Corners',
+  title: 'Share, Copy and Your Account',
   description:
-    'The two cards over the top of the editor: the logo and the menu at the left, Share or Copy and your account at the right.',
+    'The card at the top right of the editor: Share if you can share the space, Copy if you cannot, and your account. Where the old title bar’s name and pills went.',
   path: '/help/user-interface/title-bar/',
 });
 
 <ArticleLayout
-  title="The Top Corners"
-  description="The menu card and the actions card over the top corners of the editor."
+  title="Share, Copy and Your Account"
+  description="The card at the top right of the editor, and where the old title bar's parts went."
   categoryTitle="User Interface"
   categorySlug="user-interface"
 >
 
-There is no bar across the top of the editor: the canvas takes the whole height, and two cards float over its top corners. The **menu card** at the top left holds the logo and the menu button. The **actions card** at the top right holds **Share** or **Copy** and your account. The [palette](/help/palette/) sits between them.
+livehuddle has **no title bar**: the canvas runs right up to the top of the window, and the few things that sat in a bar there now float in two cards. At the top left are the logo and the menu button. At the top right is a card with the button that matters most for this space, **Share** if you can share it or **Copy** if you can't, and your account.
 
 <Figure caption="The top of a shared space, as its owner sees it: the menu card with the logo and the menu button, the palette, and the actions card with a solid Share button and the account.">
   <TitleBarParts product="livehuddle" />
 </Figure>
 
-On a phone the menu card joins the palette's row and the actions card shows its glyphs alone, without names; in a window too narrow for the palette and the actions card's names side by side, the actions card drops its names first. an [embed](/help/collaboration/sharing/embeds/) hides both cards.
-
-## The logo
-
-The logo at the left of the menu card opens the [Explorer](/help/explorer/explorer-page/) on the folder that holds this space. Its wordmark shows on a wide screen only.
-
-## The menu button
-
-The **≡** button beside the logo opens the [Explorer panel](/help/explorer/explorer-panel/) under it, and pressing it again closes the panel. The current space is at the top of the panel: its name, a badge saying who can see it and its **⋯** menu. Click the name there to rename the space: `Enter` keeps the new name and `Escape` the old one.
-
-A new space names itself: while it still has its starting name (such as "Untitled Space"), the first label you type on its first tab becomes its name. A name you gave it yourself is never replaced.
-
 ## Share or Copy
 
-The actions card holds one main action, and which one you get depends on whose space it is.
+Which button you get depends on whose space it is.
 
-**Share** is for the owner, and for members of the team whose library holds the space. It opens the [Share dialog](/help/collaboration/sharing/), where you create and manage links. The button turns solid blue once the space has a live link, so you can tell at a glance that it is shared. On a [This Browser](/help/privacy-and-security/offline-mode/) space it asks you to save the space to your account first, since there is nothing on a server to share yet.
+**Share** is for the owner, and for members of the team whose library holds the space. It opens the [Share dialog](/help/collaboration/sharing/), where you create and manage links and choose who can see the space. The button turns solid once the space has a live link, so you can tell at a glance that it is shared. On a [This Browser](/help/privacy-and-security/offline-mode/) space it asks you to save the space to your account first, since there is nothing on a server to share yet.
 
 **Copy** is for everyone else who has the space open: someone on a share link of any role. It makes a copy of the space that belongs to you:
 
@@ -50,10 +38,18 @@ The actions card holds one main action, and which one you get depends on whose s
 
 Your copy starts **Private**: no share links come with it, and nothing you do to it touches the original. If you opened the space through a link to a single tab, the copy holds just that tab. You do not need an account to copy; as a guest the copy is saved under your [guest identity](/help/account-and-data/guest-identity/).
 
-Someone who opened a space from the [Community](/help/collaboration/sharing/finding-community-documents/) does not get **Copy** in the title bar. A slim bar under the title bar offers **Make a Copy** instead, which works the same way.
+Someone who opened a space from the [Community](/help/collaboration/sharing/finding-community-documents/) does not get **Copy** in this card. A slim bar under the top of the canvas offers **Make a Copy** instead, which works the same way.
+
+On a phone the card meets the right edge of the screen and its buttons show their icons alone. Share and Copy wait while the welcome screen of a new space is open, and the whole card is hidden inside an [embed](/help/collaboration/sharing/embeds/).
 
 ## Your account
 
-At the end of the actions card is your account. Signed in, it shows your initial; click it for a menu with your name and email, **Account** (which opens [Settings](/help/user-interface/settings/) on your account details, without leaving the space) and **Sign Out**. Not signed in, it shows **Sign in** instead (see [Signing In](/help/account-and-data/signing-in/)).
+At the right of the card is your account. Signed in, it shows your picture or initials and your first name; click it for a menu with your name and email, **Account** (which opens [Settings](/help/user-interface/settings/) on your account details, without leaving the space) and **Sign Out**. Not signed in, it shows **Sign in** instead (see [Signing In](/help/account-and-data/signing-in/)).
 
+## Where the title bar's parts went
+
+- **The logo** sits in its own card at the top left. Click it to open the Explorer on the folder that holds this space.
+- **The space's name** is no longer shown in the editor; the tab bar names the tabs. To rename the space, use **Rename** on its ⋯ menu in the [Explorer](/help/explorer/explorer-panel/).
+- **Who can see the space** is in the Share dialog, behind **Share**.
+- **Your role** is no longer shown: the link you opened the space with sets it.
 </ArticleLayout>

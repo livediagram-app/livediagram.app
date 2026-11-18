@@ -174,6 +174,8 @@ describe('legacyHelpRedirect', () => {
       ['/help/explorer/drawio-import/', '/help/tabs/import-tabs/'],
       ['/help/explorer/microsoft-whiteboard-import/', '/help/tabs/import-tabs/'],
       ['/help/tools/markdown-import/', '/help/tabs/import-tabs/'],
+      // Element animations left livehuddle (2026-11-18).
+      ['/help/canvas/animations/', '/help/canvas/'],
       // The Frame left livehuddle (docs/specs/002-project-scope/not-in-livehuddle.md "The Frame"): its articles land on
       // Virtual Office, whose Rooms mark out an area of a Space.
       ['/help/palette/build/', '/help/palette/virtual-office/'],

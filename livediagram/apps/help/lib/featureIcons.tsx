@@ -9,6 +9,7 @@ import {
   lucideFolder,
   lucideGitCommitHorizontal,
   lucideLayoutGrid,
+  lucideLibrary,
   lucideLightbulb,
   lucideLink,
   lucideLocateFixed,
@@ -27,6 +28,7 @@ import {
   lucideToggleRight,
   lucideUsers,
   lucideVote,
+  lucideWebhook,
 } from '@liveworkspace/icons/lucide';
 import { Prims, Glyph as UiGlyph } from '@livediagram/ui';
 import type { ReactNode } from 'react';
@@ -405,6 +407,12 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     <Glyph>
       <circle cx="12" cy="12" r="8.5" />
       <path d="M10.2 8.8v6.4l5-3.2z" />
+    </Glyph>
+  ),
+  // The webhook mark: an event handed on to another tool. Nothing else in either set draws it.
+  webhooks: (
+    <Glyph>
+      <Prims prims={lucideWebhook} />
     </Glyph>
   ),
   // A camera: a save point taken of the whole item. Not a clock (history's) and not a page (export's).
@@ -1311,6 +1319,13 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   technology: (
     <Glyph>
       <Prims prims={lucideCpu} />
+    </Glyph>
+  ),
+  // Books on a shelf, one leaning: the saved things you take down and place again. Not a stack of cards
+  // (shape-libraries') and not a folder (the Explorer's).
+  library: (
+    <Glyph>
+      <Prims prims={lucideLibrary} />
     </Glyph>
   ),
   // Two overlapping panels with the back one showing through.

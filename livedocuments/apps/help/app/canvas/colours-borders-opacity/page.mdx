@@ -19,13 +19,13 @@ export const metadata = helpMetadata({
   categorySlug="canvas"
 >
 
-Every element starts in your tab's [theme](/help/canvas/themes/) colours, so a new page already looks coherent. When one element needs to stand apart (a warning in red, a dashed box for something planned, a pill-shaped button, a faded background note), its colours, border and opacity are all in its right-click menu. Open the menu by right-clicking the element (a long press on a touch screen). Colours and Border live under **Style**, which opens beside the menu; Opacity lives under **Layer**, at the top of the menu.
+Every element starts in your tab's [theme](/help/canvas/themes/) colours, so a new page already looks coherent. When one element needs to stand apart (a warning in red, a dashed box for something planned, a pill-shaped button, a faded background note), its colours, border and opacity are all in its right-click menu. Open the menu by right-clicking the element (a long press on a touch screen). Colours and Border live under **Appearance**, which opens beside the menu; Opacity lives under **Layer**, the first category of the menu.
 
-These controls are for Editors. Viewers and Participants don't get the element menu, so they see your colours but can't change them. For quick one-click changes, the [Quick Style bar](/help/canvas/quick-style-panel/), beside the page while something is selected, offers the most common colours and strokes without opening a menu.
+These controls are for Editors. A Viewer's or Participant's element menu has no style controls, so they see your colours but can't change them. For quick one-click changes, the [Quick Style bar](/help/canvas/quick-style-panel/), beside the page while something is selected, offers the most common colours and strokes without opening a menu.
 
 ## Colours
 
-Open **Style**, then **Colours**. Each row names the surface it paints, shows the colour in force on its right, and opens the colour picker beside the menu:
+Open **Appearance**, then **Colours**. Each row names the surface it paints, shows the colour in force on its right, and opens the colour picker beside the menu:
 
 - **Text** colours the element's label (all of it; to colour only some words, see [Formatting Label Text](/help/canvas/text-and-fonts/formatting-label-text/)).
 - **Background** fills the element.
@@ -52,13 +52,17 @@ Every colour row opens the same picker, the one used everywhere in the editor. F
 
 With a mouse, hovering a swatch previews it on the element; clicking commits it and closes the picker. The keyboard works too: arrow keys move between swatches, **Enter** picks and **Escape** closes. On a text or line row, the custom colour editor warns you when a colour would be hard to read on a light or dark canvas, and offers a readable version beside the warning.
 
+### Reading on Its Page
+
+Every text colour picker (an element's **Text** row, the Quick Style bar's more colours, an article's formatting toolbar and a table cell's text) shows, under its swatches, whether the colour reads where the text sits: on the page, on the shape's fill or on its cell. While you hover a swatch it judges that one, otherwise the colour in force. A colour that reads well shows its contrast quietly. One that falls short shows how far, such as "1.9:1, aim for 4.5:1", with **Use** beside it: press it for the nearest shade of the same hue that does read. It is only a hint: you can still pick any colour you like.
+
 ### Ink and Colours That Adapt
 
 **Ink** is the first strong standard colour: near-black on a light canvas, near-white on a dark one. A strong standard colour you pick for a shape's text or border, a text element, a sticky note's text, an arrow or a pen stroke is stored by its name, so it is drawn in its version for the canvas you see it on and stays readable when a tab or a reader switches between light and dark. Text with no colour of its own is drawn in Ink. Any other colour is kept exactly as picked.
 
 ## Borders
 
-Open **Style**, then **Border**. Three grids of small preview tiles set the outline, and hovering a tile previews it before you click:
+Open **Appearance**, then **Border**. Three grids of small preview tiles set the outline, and hovering a tile previews it before you click:
 
 - **Strength**: no border (a faint dashed outline), then thin, medium, thick and extra thick. New shapes start at medium and tables at thin.
 - **Pattern**: solid, dashed, dotted, dash-dot, long dash and dash-dot-dot.

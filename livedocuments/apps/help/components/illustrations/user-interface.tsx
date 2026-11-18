@@ -8,12 +8,12 @@
 
 import { Scene, Shape, Arrow, Panel, Label } from '@liveworkspace/help-site/art/primitives';
 import { MenuCard, Strip } from './toolbar-layout';
-import { GLYPH, BottomBar } from '@liveworkspace/help-site/art/illustrations/user-interface-chrome';
+import { GLYPH, TabPill } from '@liveworkspace/help-site/art/illustrations/user-interface-chrome';
 
 // These scenes are the shared ones (@liveworkspace/help-site/art/illustrations/user-interface-scenes), drawn as
-// they are; the panel layout and the corner cluster, zoom controls and Map below are this app's own.
+// they are; the quick controls, the panel layout and the corner cluster, zoom controls and Map below are this app's
+// own.
 export {
-  QuickControls,
   TabBar,
   MultiSelectToolbar,
   ElementContextMenu,
@@ -24,22 +24,16 @@ export {
 // The glyphs, the bottom bar and its tabs are the shared help chrome; the corner cluster is this
 // editor's own, with no paintbrush (Tab Style sits on each page's title bar).
 
-/** The bottom-right corner cluster: Undo / Redo, Layers, then the zoom controls (minus, the
- *  level, plus). Tab Style is on each page's title bar. */
+/** The bottom-right corner cluster: Undo / Redo, then the zoom controls (minus, the level, plus).
+ *  Tab Style is on each page's title bar, and the Layers button is retired. */
 function CornerCluster({ x, y, level = '100%' }: { x: number; y: number; level?: string }) {
   return (
     <g>
-      <Panel x={x} y={y} w={52} h={28}>
-        <path d={`M${x + 10} ${y + 15} a6 6 0 1 1 3 5`} {...GLYPH} />
-        <path d={`M${x + 8} ${y + 11} l2 4 l4 -2`} {...GLYPH} />
-        <path d={`M${x + 42} ${y + 15} a6 6 0 1 0 -3 5`} {...GLYPH} />
-        <path d={`M${x + 44} ${y + 11} l-2 4 l-4 -2`} {...GLYPH} />
-      </Panel>
-      <Panel x={x + 56} y={y} w={28} h={28}>
-        <path
-          d={`M${x + 63} ${y + 11} l7 -4 l7 4 l-7 4 Z M${x + 63} ${y + 16} l7 4 l7 -4`}
-          {...GLYPH}
-        />
+      <Panel x={x + 32} y={y} w={52} h={28}>
+        <path d={`M${x + 42} ${y + 15} a6 6 0 1 1 3 5`} {...GLYPH} />
+        <path d={`M${x + 40} ${y + 11} l2 4 l4 -2`} {...GLYPH} />
+        <path d={`M${x + 74} ${y + 15} a6 6 0 1 0 -3 5`} {...GLYPH} />
+        <path d={`M${x + 76} ${y + 11} l-2 4 l-4 -2`} {...GLYPH} />
       </Panel>
       <Panel x={x + 88} y={y} w={94} h={28}>
         <Label x={x + 102} y={y + 15} size={13} weight={700} tone="muted" anchor="middle">
@@ -56,14 +50,132 @@ function CornerCluster({ x, y, level = '100%' }: { x: number; y: number; level?:
   );
 }
 
+// --- The bottom bar's quick controls -----------------------------------------
+
+/** Tools' glyph: a toolbox, its handle and its lid's line (ChromeToolsMenu's ToolsGlyph). */
+function ToolsGlyph({ x, y }: { x: number; y: number }) {
+  return (
+    <g transform={`translate(${x - 8} ${y - 8})`}>
+      <rect x={2} y={5} width={12} height={8.5} rx={1.5} {...GLYPH} strokeWidth={1.4} />
+      <path d="M6 5V3.6c0-.4.3-.6.6-.6h2.8c.3 0 .6.2.6.6V5" {...GLYPH} strokeWidth={1.4} />
+      <path d="M2 8.5h12M7 8.5v1.2h2V8.5" {...GLYPH} strokeWidth={1.4} />
+    </g>
+  );
+}
+
+/** Settings is sliders in the editor, never a cog. */
+function SettingsGlyph({ x, y }: { x: number; y: number }) {
+  return (
+    <g transform={`translate(${x} ${y})`}>
+      <path
+        d="M-7 -4 h3 M-1 -4 h8 M-7 0 h7 M3 0 h4 M-7 4 h2 M1 4 h6 M-2.5 -6 v4 M1.5 -2 v4 M-3 2 v4"
+        {...GLYPH}
+      />
+    </g>
+  );
+}
+
+/** The appearance switch's sun (Light in force). */
+function SunGlyph({ x, y }: { x: number; y: number }) {
+  return (
+    <g transform={`translate(${x} ${y})`}>
+      <circle r={3} {...GLYPH} />
+      <path
+        d="M0 -7 v1.8 M0 7 v-1.8 M-7 0 h1.8 M7 0 h-1.8 M-5 -5 l1.3 1.3 M5 5 l-1.3 -1.3 M5 -5 l-1.3 1.3 M-5 5 l1.3 -1.3"
+        {...GLYPH}
+      />
+    </g>
+  );
+}
+
+/** The quick controls as the editor draws them: Tools and Settings named on a computer, the
+ *  appearance switch always its glyph alone. */
+function QuickControlsRow({ x, y, labelled = true }: { x: number; y: number; labelled?: boolean }) {
+  if (!labelled) {
+    return (
+      <g>
+        <ToolsGlyph x={x + 8} y={y} />
+        <SettingsGlyph x={x + 30} y={y} />
+        <SunGlyph x={x + 52} y={y} />
+      </g>
+    );
+  }
+  return (
+    <g>
+      <ToolsGlyph x={x + 8} y={y} />
+      <Label x={x + 19} y={y + 1} size={10} tone="body">
+        Tools
+      </Label>
+      <SettingsGlyph x={x + 62} y={y} />
+      <Label x={x + 73} y={y + 1} size={10} tone="body">
+        Settings
+      </Label>
+      <SunGlyph x={x + 128} y={y} />
+    </g>
+  );
+}
+
+/** The bottom bar: tabs, the + button, then the quick controls at its right-hand end. */
+function BottomBar({ y, w, labelled = false }: { y: number; w: number; labelled?: boolean }) {
+  return (
+    <g>
+      <rect x={0} y={y} width={w} height={30} className="fill-slate-100" />
+      <line x1={0} y1={y} x2={w} y2={y} className="stroke-slate-200" strokeWidth={1.5} />
+      <TabPill x={46} y={y + 5} w={74} label="Overview" active />
+      <TabPill x={124} y={y + 5} w={44} label="Flow" />
+      <Label x={180} y={y + 16} size={14} weight={600} tone="muted" anchor="middle">
+        +
+      </Label>
+      <QuickControlsRow x={labelled ? w - 150 : w - 72} y={y + 15} labelled={labelled} />
+    </g>
+  );
+}
+
+/** The quick controls at the bottom bar's right-hand end, outlined: Tools, Settings and the
+ *  appearance switch. */
+export function QuickControls() {
+  return (
+    <Scene w={420} h={130}>
+      <Shape x={60} y={20} w={80} h={40} label="Idea" />
+      <BottomBar y={86} w={420} labelled />
+      <rect
+        x={264}
+        y={90}
+        width={150}
+        height={22}
+        rx={6}
+        fill="none"
+        className="stroke-brand-400"
+        strokeWidth={1.5}
+        strokeDasharray="4 3"
+      />
+    </Scene>
+  );
+}
+
 /** The whole frame at a glance: the menu button card top-left, the palette strip across the
- *  top, a tool panel (Format) docked top-right under it, the Map bottom-left, the corner cluster
- *  bottom-right, and the bottom bar. */
+ *  top, the Share and account card top-right with a tool panel (Format) docked under it, Contents
+ *  down the left, the corner cluster bottom-right, and the bottom bar. */
 export function PanelLayout() {
   return (
     <Scene w={420} h={250}>
-      <MenuCard x={12} y={12} />
-      <Strip x={82} y={12} />
+      <MenuCard x={12} y={12} menuOnly />
+      <Strip x={52} y={12} />
+      {/* The actions card top-right: Share, then the account. */}
+      <rect
+        x={340}
+        y={12}
+        width={68}
+        height={32}
+        rx={9}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.5}
+      />
+      <rect x={345} y={17} width={38} height={22} rx={6} className="fill-brand-500" />
+      <Label x={364} y={28} size={9} weight={600} tone="onAccent" anchor="middle">
+        Share
+      </Label>
+      <circle cx={396} cy={28} r={7} className="fill-slate-200" />
       <Panel x={318} y={56} w={90} h={66} title="FORMAT">
         {[0, 1].map((i) => (
           <rect

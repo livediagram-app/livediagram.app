@@ -11,7 +11,7 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Share Link Security" description="Two self-serve controls, a share password and link expiry, that bound who can open a shared space and for how long." categoryTitle="Privacy and Security" categorySlug="privacy-and-security">
 
-A share link (the Share dialog calls each one a **pass**) is a capability: anyone holding the URL has its role: **Editor**, **Participant** or **Viewer**. That is what makes sharing frictionless, but it also means a link left lying around keeps working. livehuddle gives you two controls to tighten that up, a password on the space and an expiry on each link, plus revoking a link outright. All three live in the **Share** dialog, and none of them ever stops you, the owner.
+A share link (the Share dialog calls each one a **pass**) is a capability: anyone holding the URL has its role, **Editor** or **Participant** (a new pass starts as Participant). A pass made before livehuddle stopped offering Viewer links still works as a **Viewer (Legacy)** pass. That is what makes sharing frictionless, but it also means a link left lying around keeps working. livehuddle gives you two controls to tighten that up, a password on the space and an expiry on each link, plus revoking a link outright. All three live in the **Share** dialog, and none of them ever stops you, the owner.
 
 ## Share password
 
@@ -52,11 +52,23 @@ When a link expires it stops granting access everywhere at once: the share URL, 
   disconnects everyone using it straight away.
 </Note>
 
+## Link Previews
+
+Paste a share link into Slack, Microsoft Teams, Discord, iMessage, WhatsApp, X or LinkedIn and its preview shows the space's name and a picture of its tab: the link's own tab for a [link to one tab](/help/collaboration/sharing/one-tab/), otherwise the first. The picture is the same one a [live image](/help/collaboration/sharing/live-image/) shows, and it updates after the space is saved.
+
+A preview never gives away more than the link does. These show only the plain livehuddle card, with no name and no picture:
+
+- A link to a space with a **share password**.
+- A link that is revoked or expired, or to a space in the Trash.
+- A space's own address, which only its owner can open, so pasting it in a public channel tells the channel nothing.
+
+So if a space's name or first tab is sensitive, set a share password before you paste its link anywhere public.
+
 <Tip>
   Use the two together for sensitive work: a password stops casual access, and an expiry bounds how
-  long even the right people keep it. Prefer a **Viewer** pass when people only need to look, or a
-  **Participant** pass when they need to walk, talk and react without changing the space, and
-  remember that anyone who can see an embed's page source can see its link.
+  long even the right people keep it. Keep to a **Participant** pass, the default, unless people
+  need to build: Participants walk, talk and react without changing the space. And remember that
+  anyone who can see an embed's page source can see its link.
 </Tip>
 
 </ArticleLayout>

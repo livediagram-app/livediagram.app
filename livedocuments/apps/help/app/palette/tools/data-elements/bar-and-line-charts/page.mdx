@@ -52,7 +52,7 @@ Switching keeps the chart's size, colours, legend and animation. Moving between 
 
 ## Editing a column or bar chart
 
-A column or bar chart holds one value per bar, the same way a pie chart holds one per slice. Right-click it, open **Tools**, then **Data**: each row is a bar, with a swatch for its colour, a label and a value. Edit them in place, remove a bar with **×**, or add one with **+ Add Slice**. The chart updates as soon as you leave a field.
+A column or bar chart holds one value per bar, the same way a pie chart holds one per slice. Right-click it, open **Tools**, then **Data**: each row is a bar, with a swatch for its colour, a label and a value. Edit them in place, remove a bar with **×**, or add one with **+ Add Slice**. The chart updates as soon as you leave a field. A negative value hangs below the baseline (or to its left on a bar chart), as in any spreadsheet chart.
 
 ## Editing a line, area or scatter chart
 
@@ -63,15 +63,17 @@ A line chart's data is a grid (an area or scatter chart's too), too wide for the
 
 Changes apply as you make them (a typed cell when you leave it); **Done** closes the dialog.
 
+To keep the numbers in step with a spreadsheet instead, link the chart to a liveplanner Sheet: see [Charts Linked to a Sheet](/help/palette/tools/data-elements/#charts-linked-to-a-sheet).
+
 <Figure caption="The Chart Data dialog: Import CSV, a column per series, a row per category, and + Add row.">
   <LineDataDialog />
 </Figure>
 
 ## Display and colours
 
-Both charts share the pie chart's display options: in **Tools**, **Chart** places the legend (**Off**, **Top**, **Left**, **Right** or **Below**, the default) and sets its **Text Size**, and the **Animation** section offers **Grow**, **Pop**, **Spin** and **Pulse**. Hovering a bar or a point shows its label and value. **Show Values**, under the legend, prints each bar's or point's number on the chart; a column chart also names each column under it, so you can turn the legend off.
+Both charts share the pie chart's display options: in **Tools**, **Chart** places the legend (**Off**, **Top**, **Left**, **Right** or **Below**, the default) and sets its **Text Size**, and the **Animation** section offers **Grow**, **Pop**, **Spin** and **Pulse**. Hovering a bar or a point shows its label and value. **Show Values**, under the legend, prints each bar's or point's number on the chart; a column chart also names each column under it, so you can turn the legend off. **Show Axis**, under that, draws the value axis: round tick values with a faint gridline at each. On a line, area or scatter chart with two or more series, **Right Axis** moves one series onto a scale of its own on the right, so a series in the thousands and one in the tens both read; the Data summary marks it "(right)".
 
-Colours default to variants of the theme, so a multi-series chart stays legible and on-brand. To recolour the whole chart at once, open **Style** and pick a palette from its **Presets**: **Vivid**, **Ocean**, **Forest**, **Sunset**, **Berry**, **Earth**, **Grey** or **Contrast**. A colour you set on one bar by hand wins over the palette. Animations freeze on export, so a still image looks right.
+Colours default to variants of the theme, so a multi-series chart stays legible and on-brand. To recolour the whole chart at once, open **Appearance** and pick a palette from its **Presets**: **Vivid**, **Ocean**, **Forest**, **Sunset**, **Berry**, **Earth**, **Grey** or **Contrast**. A colour you set on one bar by hand wins over the palette. Animations freeze on export, so a still image looks right.
 
 <Tip>
   For a single percentage rather than a series, a [progress bar or

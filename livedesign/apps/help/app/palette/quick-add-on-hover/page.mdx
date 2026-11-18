@@ -4,23 +4,23 @@ import { helpMetadata } from '@/lib/seo';
 import { SettingsEditorPane } from '@liveworkspace/help-site/art/illustrations/settings-dialog';
 
 export const metadata = helpMetadata({
-  title: 'Quick-add on Hover',
+  title: 'Quick-Add on Hover',
   description:
     'Open an element’s quick-add (+) menu just by hovering it, instead of clicking, so connecting and adding nearby elements is faster.',
   path: '/help/palette/quick-add-on-hover/',
 });
 
 <ArticleLayout
-  title="Quick-add on Hover"
+  title="Quick-Add on Hover"
   description="Open an element’s + menu by hovering it instead of clicking, set with a toggle in Settings."
   categoryTitle="Palette"
   categorySlug="palette"
   subArticles={getSubArticles("quick-add-on-hover")}
 >
 
-When you select an element, a **+** button appears on each of its sides. Clicking one opens the quick-add menu, a strip of actions for that side: **Duplicate** (copy the element to that side, connected), **Arrow** (drag out an arrow) and **Text** (add a label beside it, with no connector). Quick-add on Hover changes how that menu opens, so you can reach it without a click.
+When you select an element, a **+** button appears on each of its sides. Clicking one opens the quick-add menu, a strip of actions for that side: **Duplicate** (copy the element to that side, connected), **Arrow** (drag out an arrow), **Pencil** (draw a freehand sketch) and **Text** (add a label beside it, with no connector). Quick-Add on Hover changes how that menu opens, so you can reach it without a click.
 
-Some elements put their own actions on the **+**: a stat row offers **Add Stat**, a table offers **Add Row** and **Add Column**, and a timeline offers **Add Milestone**.
+Some elements add their own action to the **+**: a stat row offers **Add Stat**, a card **Add Tag** and a timeline **Add Milestone**. A table's **+** is slimmer: **Add Row** below it or **Add Column** to its right, and **Arrow**.
 
 ## What it does
 
@@ -32,9 +32,9 @@ Hovering needs a mouse or trackpad. On a touch screen there is no hover, so you 
 
 ## Turning it on
 
-It is **off by default**, since menus that open on hover can feel twitchy if you didn’t ask for them. Switch on **Quick-Add on Hover** in [Settings](/help/user-interface/settings/), under **Editor**.
+It is **off by default**, since menus that open on hover can feel twitchy if you didn’t ask for them. Switch on **Quick-Add on Hover** in [Settings](/help/user-interface/settings/), under **Editor**, in its **Mouse** section. It is a mouse setting, so it does nothing on a phone.
 
-<Figure caption="Settings, Editor: Quick-Add on Hover is the first row, off until you switch it on.">
+<Figure caption="Settings, Editor: Quick-Add on Hover leads the Mouse section, off until you switch it on.">
   <SettingsEditorPane noun="design" highlight="quick-add" />
 </Figure>
 

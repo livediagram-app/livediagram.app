@@ -19,31 +19,28 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles('the-search-panel').filter((a) => a.slug !== 'search-teams')}
 >
 
-When you are signed in and belong to one or more [teams](/help/collaboration/teams/), the [search panel](/help/search-panel/the-search-panel/) reaches into them as well, so team work is as findable as your own. It works the same from the editor and from the Explorer page.
+When you are signed in and belong to one or more [teams](/help/collaboration/teams/), the [search panel](/help/search-panel/the-search-panel/) reaches into them as well, so team work is as findable as your own.
 
 ## What the Teams group matches
 
-A single **Teams** group gathers three kinds of match, in this order:
+A **Teams** group lists the teams themselves, by name. Picking one opens that team's page in the Explorer. It works the same from the editor and from the Explorer page.
 
-- **Teams** themselves, by name. Picking one opens that team's page in the Explorer.
-- **Team folders** in a team's shared library. A folder is shown with its full path (for example "Marketing / Q3"), and it matches on any part of that path, so typing a parent folder's name also finds the folders inside it. Picking one opens the team page with that folder already open.
-- **Team designs** in a team's shared library, by name. Picking one opens the design.
-
-Team folders and designs carry an **"in &lt;team&gt;"** suffix, so when a name appears in more than one place you can tell which team it belongs to at a glance. They also match on the team's name, so typing a team's name lists its folders and designs alongside the team itself.
-
-<Figure caption="The Teams group: the team itself, plus its shared folders and designs tagged with their team.">
+<Figure caption="A team found by name, and one of its designs in the Designs group.">
   <SearchTeams />
 </Figure>
 
-Each of the three kinds lists up to 8 matches, counted separately, so a team with many designs can't crowd its folders out of the list.
+## Team folders and designs
 
-Team designs only appear here, not in the **Designs** group, which is for your personal designs. See [Finding Designs and Folders](/help/search-panel/the-search-panel/search-designs/).
+A team's work is found alongside your own rather than in a group of its own:
+
+- **In the editor**, a team's designs are in the **Designs** group with yours. Team folders are not searched from the editor.
+- **On the Explorer page**, a team's designs are among the **Items**, and its folders are in the **Folders** group with an **"in &lt;team&gt;"** suffix, so when a name appears in more than one place you can tell which team it belongs to. Picking a team folder opens the team page with that folder already open.
+
+Each group lists up to 8 matches. See [Finding Designs and Folders](/help/search-panel/the-search-panel/search-designs/).
 
 ## Signed-in only
 
-Teams require an account, so this group only appears when you are signed in with teams to search. Guests, and signed-in users with no teams, simply will not see it. The rest of search, your [designs and folders](/help/search-panel/the-search-panel/search-designs/), works the same either way.
-
-The team libraries are fetched in the background, one request per team, and their results arrive together. If you search the moment a page opens, or straight after joining a team, its folders and designs can take a second to appear. If a team's library cannot be fetched, its folders and designs are left out of the results until the libraries are fetched again (for example, when you reload the page), while the team itself still shows.
+Teams require an account, so the Teams group only appears when you are signed in with teams to search. Guests, and signed-in users with no teams, simply will not see it. The rest of search, your [designs and folders](/help/search-panel/the-search-panel/search-designs/), works the same either way.
 
 <Tip>
   Searching is often faster than expanding the Teams tree in the Explorer: type a team or folder

@@ -28,6 +28,13 @@ While you drag, the element snaps to nearby elements':
 
 A guide line only appears once a match is actually in effect, so the canvas stays clean until alignment is doing something.
 
+## Rooms, Doors and Windows
+
+A few pieces snap in ways of their own, so a floor goes together without double walls or doors hanging in mid-air:
+
+- **Rooms share walls.** Drag or resize a room near another and it lands on the other room's wall line, so the two share one wall rather than standing two walls back to back. The guide runs along the shared wall. When a shared wall and an edge line up are both in reach, the nearer one wins. A custom room from the Room Builder snaps by its box only.
+- **Doors and windows land on a wall.** Move a Door or a Window near a room and it settles onto the nearest wall, turned to sit along it.
+
 ## Snapping while you resize and draw
 
 Resizing snaps too. Dragging a resize handle lines the moving edge up with a neighbour's edge or centre, and also **matches sizes**: drag a box to within a few pixels of a neighbour's width or height and it takes exactly that width or height, so siblings share a size without typing numbers. With **Shift** held (or the aspect ratio locked), only the leading side snaps and the other follows the ratio.
@@ -38,7 +45,7 @@ A few things never snap: a multi-selection being resized, and a rotated element 
 
 ## Dragging freely: hold Cmd or Ctrl
 
-Sometimes you want a deliberately off-grid position and snapping gets in the way. **Hold Cmd (⌘) on a Mac, or Ctrl on Windows and Linux, while you drag or resize** to switch snapping off for that gesture: no snap, no size matching, no guide lines, and the element follows your pointer exactly. You can press or release the key mid-drag and it takes effect on the next move. Let go and the next drag snaps as usual, so it's a per-drag override, not a mode you have to remember to turn back on.
+Sometimes you want a deliberately off-grid position and snapping gets in the way. **Hold Cmd (⌘) on a Mac, or Ctrl on Windows and Linux, while you drag or resize** to switch snapping off for that gesture: no snap, no size matching, no guide lines, and the element follows your pointer exactly. You can press or release the key mid-drag and it takes effect on the next move. It also leaves a Door or a Window where you drop it rather than on a wall. Let go and the next drag snaps as usual, so it's a per-drag override, not a mode you have to remember to turn back on.
 
 <Note>
   The modifier works the same for a single element, a multi-selection and a resize handle: anything

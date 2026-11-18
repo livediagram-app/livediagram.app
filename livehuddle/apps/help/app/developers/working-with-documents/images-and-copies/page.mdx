@@ -9,7 +9,7 @@ export const metadata = helpMetadata({
   path: '/help/developers/working-with-documents/images-and-copies/',
 });
 
-<ArticleLayout title="Images, Copies and Libraries" description="Worked examples for the rest of a space: images, pictures, copies and your libraries." categoryTitle="Developers" categorySlug="developers/working-with-documents" parentArticle={{ title: "Working with Spaces", slug: "working-with-documents" }} subArticles={getSubArticles("working-with-canvases").filter((a) => a.slug !== "images-and-copies")}>
+<ArticleLayout title="Images, Copies and Libraries" description="Worked examples for the rest of a space: images, pictures, copies and your libraries." categoryTitle="Developers" categorySlug="developers/working-with-documents" parentArticle={{ title: "Working with Spaces", slug: "working-with-documents" }} subArticles={getSubArticles("working-with-documents").filter((a) => a.slug !== "images-and-copies")}>
 
 A tab's elements change through [changesets](/help/developers/working-with-documents/edit-operations/), but a space holds more than elements: the images it shows, pictures of its tabs, copies of it. Each has its own endpoints, shown here with `curl`. The examples assume your [API token](/help/developers/authentication/) is in `$TOKEN` and a space id in `$DOC`; paths are relative to `https://livehuddle.app/api`, and `/api/openapi.json` has every field.
 

@@ -15,6 +15,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   themes: '#d946ef',
   items: '#7c3aed',
   boards: '#4f46e5',
+  'configure-board': '#6d28d9',
   cards: '#0d9488',
   'card-types': '#0891b2',
   'card-templates': '#0e7490',

@@ -17,6 +17,7 @@ import {
   lucideToggleRight,
   lucideUsers,
   lucideVideo,
+  lucideWebhook,
 } from '@liveworkspace/icons/lucide';
 import { Prims, Glyph as UiGlyph } from '@livehuddle/ui';
 import type { ReactNode } from 'react';
@@ -259,6 +260,15 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     </Glyph>
   ),
   // A speech bubble over a little figure, under a dashed spotlight ring: a guided look at Avatar mode.
+  // A room seen in 3D: a floor tilted back with its walls standing, and a quarter-turn arrow over it.
+  '3d-view': (
+    <Glyph>
+      <path d="M3 20l3-8h12l3 8z" />
+      <path d="M6 12V7h12v5M10.5 12V9.5h3V12" />
+      <path d="M8 4.5a6 3 0 018 0" />
+      <path d="M16 2.5v2h-2" />
+    </Glyph>
+  ),
   'avatar-tour': (
     <Glyph>
       <path d="M8 6h8a2 2 0 012 2v2a2 2 0 01-2 2h-3l-1 2-1-2H8a2 2 0 01-2-2V8a2 2 0 012-2z" />
@@ -653,6 +663,12 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <Prims prims={lucideTimer} />
     </Glyph>
   ),
+  // A Space's events leaving for another service.
+  webhooks: (
+    <Glyph>
+      <Prims prims={lucideWebhook} />
+    </Glyph>
+  ),
   'layout-cleanup': (
     <Glyph>
       <Prims prims={lucideLayoutGrid} />
@@ -702,17 +718,11 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M19 1.5V5h-3.5" />
     </Glyph>
   ),
-  animations: (
-    <Glyph>
-      <rect x="10" y="8" width="10" height="8" rx="1.5" />
-      <path d="M3 9h4M2 12h5M3 15h4" />
-    </Glyph>
-  ),
   // The element plus a real drop shadow: a FILLED offset copy behind an
   // outlined one. The only glyph here that fills and fades, because it is the
   // only one whose subject is a fill and a fade — the stroke-only alternatives
   // both landed on another glyph's meaning (two outlined rects read as
-  // "duplicate", diagonal hatching read as the motion lines on `animations`).
+  // "duplicate", diagonal hatching read as motion lines).
   shadows: (
     <Glyph>
       <rect

@@ -27,7 +27,7 @@ Paths are relative to `https://www.livedesign.app/api`. For the exact request an
 
 ## List your designs
 
-A design **list** returns the designs in your personal library (designs in a team library are not included), as metadata only, not the tab contents:
+A design **list** returns the designs in your personal library, as metadata only, not the tab contents. Add `?team=all` to include every team you have joined, `q=` to search by name, `limit=` for one page of results, or `archived=1` for your Archived designs instead:
 
 ```bash
 curl https://www.livedesign.app/api/designs \
@@ -91,17 +91,19 @@ Other views answer other questions:
 - `view=comments` shows the open comment threads in full; add `all=1` for resolved ones too.
 - `view=show&ref=n1` prints one element with every field and its arrows both ways.
 - `view=find&q=api` lists the elements whose text contains `api`.
+- `view=pages` lists the tab's pages in order, each with its rectangle and what is on it, and the layouts each page kind offers.
 
-`view=lint` checks how the tab is drawn: boxes that overlap, arrows that cross or run behind boxes, labels too long for their box. One summary line, then one finding a line, each ending with a fix you can send as a changeset:
+`view=lint` checks that the tab's text fits where it is drawn: labels too long for their box, text that runs out of its box or prints over other text. One summary line, then one finding a line, each ending with a fix you can send as a changeset:
 
 ```text
-5 crossings · 2 behind · 0 overlaps · 1317×1196 → 3 warnings, 6 info
-W arrow-behind-box   orders→bus passes behind pay  fix: set orders->bus line=angled
+1440×900 · 12 boxes · 30 texts → 2 warnings
+W label-overflow  b3 needs 2 lines, holds 1  fix: set b3 text=sm
+W text-overflow   t7 prints over t8          fix: move t8 below:t7
 ```
 
 Every changeset's last line carries the same verdict, such as `lint clean` or `lint 1 warning`, beside the new revision and the revert command. A changeset that changes nothing answers `nothing changed`.
 
-Add `budget=2000` to fit any view except `lint` to about 2,000 tokens. The view then leaves out detail in a fixed order, and its last line says what it left out and how to see it. Add `json=1` for the same view as JSON. To see every tab of a design at a glance, ask the design itself: `GET /designs/abc123?view=overview`.
+Add `budget=2000` to fit any view except `lint` to about 2,000 tokens. The view then leaves out detail in a fixed order, and its last line says what it left out and how to see it. Add `json=1` for the same view as JSON. To see every tab of a design at a glance, ask the design itself: `GET /designs/abc123?view=overview`. `GET /designs/abc123?view=components` lists the design's components: each main and the elements an instance can override.
 
 ## Create a design
 
@@ -162,7 +164,7 @@ curl -X POST https://www.livedesign.app/api/designs/$DOC/tabs/$TAB/changesets \
   }'
 ```
 
-Elements are named by the refs a [text view](#read-a-tab-as-text) prints, or picked by what they are: `"Orders API"` by label, `type:sticky`, `in:f2` for what a frame holds, `n3->n4` for an arrow. [Edit Operations Reference](/help/developers/working-with-designs/edit-operations/) lists every operation, selector, placement and flag. Besides `add`, `set` and `rm` there are `move`, `connect`, `rewire`, `insert` (a step between two connected ones, making room for it), `wrap` and `unwrap` (frames), `order`, `layout`, and `test`, which refuses the changeset unless an element still holds the values you read. New boxes are sized for their label and placed beside what you name, and the answer has one line per element changed:
+Elements are named by the refs a [text view](#read-a-tab-as-text) prints, or picked by what they are: `"Orders API"` by label, `type:sticky`, `in:f2` for what a frame holds, `n3->n4` for an arrow. [Edit Operations Reference](/help/developers/working-with-designs/edit-operations/) lists every operation, selector, placement and flag. Besides `add`, `set` and `rm` there are `move`, `connect`, `rewire`, `insert` (a step between two connected ones, making room for it), `wrap` and `unwrap` (frames), `order`, `layout`, `detach` (a component instance into plain elements), and `test`, which refuses the changeset unless an element still holds the values you read. New boxes are sized for their label and placed beside what you name, and the answer has one line per element changed:
 
 ```text
 ~ n2  label "API"→"Orders API"
@@ -226,12 +228,11 @@ curl -X POST https://www.livedesign.app/api/designs/$DOC/share \
   -d '{ "role": "view" }'
 ```
 
-The response includes the share code to build a link from. See [Sharing and Embeds](/help/collaboration/sharing/) for what the different roles allow.
+Add `"expiry"` (`never`, the default, `week`, `month` or `sixMonths`) for a link that ends, or `"tabId"` for a link to one tab. The answer is `201` with the `link`: its `code` to build a link from, its `role` and when it expires. See [Sharing and Embeds](/help/collaboration/sharing/) for what the different roles allow.
 
 <Note>
-  **Send the `role` explicitly.** Omitting it does not mean "view": a body with no role mints an
-  **edit** link, which is the app's own default. An unrecognised role is rejected outright rather
-  than quietly falling back, so a typo fails loudly, but an absent one does not.
+  **Send the `role` explicitly, and check it in the answer.** Omitting it does not mean "view": a
+  body with no role mints an **edit** link, which is the app's own default.
 </Note>
 
 <Tip>

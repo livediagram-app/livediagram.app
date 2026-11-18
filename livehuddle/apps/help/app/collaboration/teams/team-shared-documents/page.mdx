@@ -10,7 +10,7 @@ export const metadata = helpMetadata({
   path: '/help/collaboration/teams/team-shared-documents/',
 });
 
-<ArticleLayout title="Team Shared Spaces" description="A shared library of spaces and folders that everyone on the team can manage." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Teams", slug: "teams" }} subArticles={getSubArticles("teams").filter((a) => a.slug !== "team-shared-canvases")}>
+<ArticleLayout title="Team Shared Spaces" description="A shared library of spaces and folders that everyone on the team can manage." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Teams", slug: "teams" }} subArticles={getSubArticles("teams").filter((a) => a.slug !== "team-shared-documents")}>
 
 Every team has a shared library: a folder tree plus spaces that all joined members can see and manage. It works just like your personal folder tree, only shared. It is listed on the team's page in the Explorer, below the team's card.
 
@@ -18,7 +18,7 @@ Every team has a shared library: a folder tree plus spaces that all joined membe
   <TeamSharedTree noun="space" />
 </Figure>
 
-## What everyone can do
+## What Everyone Can Do
 
 A team space belongs to the whole team, not just to the person who made it. Any **joined** member can:
 
@@ -33,7 +33,7 @@ Joined membership grants edit access to every space in the library. There are no
 
 Any member can [share](/help/collaboration/sharing/) a team space: create, extend and revoke its passes and set its share password, as its owner (the person who created it, or who moved it in) can. Members themselves open the space directly from the library and don't need a link. A team space also can't be [shared to the Community](/help/collaboration/sharing/community/), since it belongs to the team.
 
-## How spaces are placed
+## How Spaces Are Placed
 
 A space lives in exactly one place: your personal tree, or one team's library. Within a team, a space sits either in a folder or at the team's root, listed beside its folders.
 
@@ -44,11 +44,11 @@ A space lives in exactly one place: your personal tree, or one team's library. W
 
 **Change Folder** opens a browser of every place you can file a space: pick a space first (**My Work**, or one of your teams), then browse into the folder you want, so you can file a space anywhere you have access from one place. A space already in a folder opens the picker where it is, that folder selected. On a team's own page the picker opens on that team, with My Work and your other teams one step back (**‹ Back** to **Choose a Space**), so a team space can always be moved back to your personal tree.
 
-## When someone leaves
+## When Someone Leaves
 
 When a member leaves the team or is removed, the spaces and folders they created in the library stay with the team: ownership passes to a remaining member (the longest-standing Admin). If they have one of the team's spaces open at the time, they lose access straight away.
 
-## When a team is deleted
+## When a Team Is Deleted
 
 Deleting a team never destroys anyone's work. Its spaces are re-homed to the root of their owners' My Work, and the team's folders are dropped. Each member keeps the spaces they own.
 
