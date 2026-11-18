@@ -208,7 +208,7 @@ async function routeApiRequest(
     // An Image field's upload carries raw bytes with its own, larger cap (docs/specs/026-plan/item-types.md
     // "Image fields"; the route answers file_too_large with limitBytes), and a whole plan's file its own (the route
     // answers too_large): writeBodyCap.
-    const cap = writeBodyCap(request.method, segments);
+    const cap = writeBodyCap(request.method, segments.length, segments[1], segments[3]);
     if (Number.isFinite(len) && len > cap) {
       return payloadTooLarge();
     }

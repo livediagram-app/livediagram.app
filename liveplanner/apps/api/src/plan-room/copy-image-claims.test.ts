@@ -1,5 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { MEDIA_REFS_PER_DOCUMENT_MAX, MEDIA_REFS_SYNC_MAX } from '@liveworkspace/media';
+import {
+  MEDIA_REFS_PER_PROJECT_MAX as MEDIA_REFS_PER_PROJECT_MAX,
+  MEDIA_REFS_SYNC_MAX,
+} from '@liveworkspace/media';
 import { nodeItemSql } from '@liveworkspace/index-app/testing';
 import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
@@ -30,7 +33,7 @@ type Entry = { document: string; images: string[] };
 let refs: Map<string, Set<string>>;
 let pending: Map<string, Set<string>>;
 let deleted: string[];
-// Documents whose own report the fake refuses, as a copy whose report keeps failing.
+// Plans whose own report the fake refuses, as a copy whose report keeps failing.
 let refusing: Set<string>;
 // Refuse every sync that vouches for a copy.
 let refusePending: boolean;
@@ -52,7 +55,8 @@ beforeEach(() => {
       const u = new URL(String(url));
       if (u.pathname.endsWith('/app/refs')) {
         const body = JSON.parse(init?.body as string) as { documents: Entry[]; pending?: Entry[] };
-        if (body.documents.some((d) => refusing.has(d.document)))
+        const { documents: own } = body;
+        if (own.some((d) => refusing.has(d.document)))
           return Response.json({ error: 'down' }, { status: 503 });
         if (refusePending && body.pending?.length)
           return Response.json({ error: 'down' }, { status: 503 });
@@ -60,7 +64,7 @@ beforeEach(() => {
         for (const p of body.pending ?? [])
           if (!refs.get(p.document)?.size)
             pending.set(p.document, new Set([...(pending.get(p.document) ?? []), ...p.images]));
-        for (const d of body.documents) {
+        for (const d of own) {
           refs.set(d.document, new Set(d.images));
           pending.delete(d.document);
         }
@@ -238,11 +242,11 @@ describe('what a copy is noted for', () => {
     expect(w.claims()).toEqual([]);
   });
 
-  it('caps a note at what one document carries', async () => {
+  it('caps a note at what one plan's report carries', async () => {
     const w = world();
-    const many = Array.from({ length: MEDIA_REFS_PER_DOCUMENT_MAX + 5 }, (_, i) => `p${i}`);
+    const many = Array.from({ length: MEDIA_REFS_PER_PROJECT_MAX + 5 }, (_, i) => `p${i}`);
     expect(await noteCopyClaim(w.env, SOURCE, COPY, many, 1)).toBe(true);
-    expect(w.claims()[0]!.images).toHaveLength(MEDIA_REFS_PER_DOCUMENT_MAX);
+    expect(w.claims()[0]!.images).toHaveLength(MEDIA_REFS_PER_PROJECT_MAX);
   });
 
   it('sends nothing, and keeps the notes, without the media service', async () => {

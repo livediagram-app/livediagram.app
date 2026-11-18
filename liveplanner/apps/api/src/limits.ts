@@ -17,14 +17,15 @@ export const MAX_BODY_BYTES = 8 * 1024 * 1024; // 8 MB
 // service's own cap (docs/specs/026-plan/item-types.md "Image fields"), and a whole plan's file
 // (`POST /api/projects/:id/file`) the plan file's (PROJECT_FILE_MAX_BYTES, 20 MB; Work Tracker 1019), so a full
 // plan's export imports back. Each route checks its own cap again.
-export function writeBodyCap(method: string, segments: readonly string[]): number {
-  if (segments[1] === 'images') return MAX_IMAGE_BYTES;
-  if (
-    method === 'POST' &&
-    segments.length === 4 &&
-    segments[1] === 'projects' &&
-    segments[3] === 'file'
-  )
+// `count` is how many path segments the request has, `area` the second (`images`, `projects`) and `sub` the fourth.
+export function writeBodyCap(
+  method: string,
+  count: number,
+  area: string | undefined,
+  sub: string | undefined,
+): number {
+  if (area === 'images') return MAX_IMAGE_BYTES;
+  if (method === 'POST' && count === 4 && area === 'projects' && sub === 'file')
     return PROJECT_FILE_MAX_BYTES;
   return MAX_BODY_BYTES;
 }

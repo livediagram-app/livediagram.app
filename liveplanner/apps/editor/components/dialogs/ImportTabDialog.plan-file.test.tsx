@@ -7,7 +7,7 @@
 
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { defaultCatalogue, type Item } from '@liveplanner/items';
+import { TRACKER_FILE_MAX_BYTES, defaultCatalogue, type Item } from '@liveplanner/items';
 import { PROJECT_FILE_MAX_BYTES, projectToEnvelopeText } from '@liveplanner/project';
 import type { PlanFileImportActions } from '@/hooks/plan/usePlanFileImport';
 import { ImportTabDialog } from './ImportTabDialog';
@@ -235,6 +235,10 @@ describe('ImportTabDialog: a dropped plan file', () => {
     Object.defineProperty(big, 'size', { value: PROJECT_FILE_MAX_BYTES + 1 });
     dropOn(big);
     expect(await screen.findByText(PLAN_TOO_BIG)).toBeTruthy();
+  });
+
+  it('reads a plan file up to the cap every import reads', () => {
+    expect(PROJECT_FILE_MAX_BYTES).toBeLessThanOrEqual(TRACKER_FILE_MAX_BYTES);
   });
 
   it('says the offline reason, and is no file this dialog takes without the section', async () => {

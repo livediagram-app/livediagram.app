@@ -6,7 +6,10 @@
 // references (pushCopyClaims), which the service keeps until the copy's own report lands. A note stays until the
 // service has taken it, and the source never asks to release a picture a note still names (planStillHolds).
 
-import { MEDIA_REFS_PER_DOCUMENT_MAX, MEDIA_REFS_SYNC_MAX } from '@liveworkspace/media';
+import {
+  MEDIA_REFS_PER_DOCUMENT_MAX as MEDIA_REFS_PER_PROJECT_MAX,
+  MEDIA_REFS_SYNC_MAX,
+} from '@liveworkspace/media';
 import { mediaClient } from '../media';
 import type { PlanEnv } from '../types';
 import { IMAGES_OUTBOX_KIND, placedImagesSql } from './image-refs';
@@ -42,7 +45,7 @@ export async function copiedPlacedImages(
 
 // The source's note of what copy `copyId` holds, with its `images` report queued so the next drain sends it. Nothing
 // when the copy holds no picture. A copy past what one report carries is noted at that cap: the service can take no
-// more for one document, and the copy's own report sends nothing past it either (image-refs.ts pushImageRefs).
+// more for one plan, and the copy's own report sends nothing past it either (image-refs.ts pushImageRefs).
 export async function noteCopyClaim(
   env: Pick<PlanEnv, 'PLAN_DB'>,
   planId: string,
@@ -58,7 +61,7 @@ export async function noteCopyClaim(
         `INSERT INTO copy_image_claims (plan_id, copy_id, images, noted_at) VALUES (?, ?, ?, ?)
            ON CONFLICT (plan_id, copy_id) DO UPDATE SET images = excluded.images, noted_at = excluded.noted_at`,
       )
-      .bind(planId, copyId, JSON.stringify(images.slice(0, MEDIA_REFS_PER_DOCUMENT_MAX)), now),
+      .bind(planId, copyId, JSON.stringify(images.slice(0, MEDIA_REFS_PER_PROJECT_MAX)), now),
     db
       .prepare('DELETE FROM outbox WHERE plan_id = ? AND kind = ? AND key = ?')
       .bind(planId, IMAGES_OUTBOX_KIND, ''),

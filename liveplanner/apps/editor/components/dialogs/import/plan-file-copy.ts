@@ -8,6 +8,8 @@ export const PLAN_SECTION = 'A Whole Plan';
 // Why the row is dimmed while the browser is offline: the new plan is made on the server.
 export const PLAN_OFFLINE = 'You’re offline. Connect to import a whole plan.';
 // What the picker asks for: the file Export saves, or the same JSON renamed.
+// A plan's file by its name, as Export names it.
+export const PLAN_FILE_EXTENSION = '.liveplanner';
 export const PROJECT_FILE_ACCEPT =
   '.liveplanner,application/vnd.liveplanner+json,.json,application/json';
 
