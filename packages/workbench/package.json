@@ -109,6 +109,7 @@
     "./components/chrome/corner-cluster-clearance": "./src/components/chrome/corner-cluster-clearance.ts",
     "./components/chrome/floating-controls": "./src/components/chrome/floating-controls.ts",
     "./components/chrome/folder-colour": "./src/components/chrome/folder-colour.ts",
+    "./components/chrome/FolderStackGlyph": "./src/components/chrome/FolderStackGlyph.tsx",
     "./components/chrome/header-action": "./src/components/chrome/header-action.tsx",
     "./components/chrome/EditorHeader": "./src/components/chrome/EditorHeader.tsx",
     "./components/chrome/SharedBadge": "./src/components/chrome/SharedBadge.tsx",
