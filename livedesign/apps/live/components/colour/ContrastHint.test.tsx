@@ -162,6 +162,11 @@ describe('ColourPicker with a contrast probe', () => {
     { id: '#fef08a', colour: '#fef08a', label: 'Pale yellow' },
     { id: '#0f172a', colour: '#0f172a', label: 'Navy' },
   ];
+  // A key pressed in the picker, then the focus it moves.
+  const keyTo = (name: string) => {
+    fireEvent.keyDown(screen.getByRole('group', { name: 'Text colour' }), { key: 'Shift' });
+    fireEvent.focus(screen.getByRole('button', { name }));
+  };
   function setup(current: string | null, onPreviewEnd?: () => void) {
     const onPick = vi.fn();
     render(
@@ -196,7 +201,7 @@ describe('ColourPicker with a contrast probe', () => {
       pointerType: 'mouse',
     });
     expect(hint().childElementCount).toBe(0);
-    fireEvent.focus(screen.getByRole('button', { name: 'Pale yellow' }));
+    keyTo('Pale yellow');
     expect(hint().textContent).toContain('Hard to read');
     fireEvent.pointerLeave(root, { pointerType: 'mouse' });
     expect(hint().childElementCount).toBe(0);
@@ -205,13 +210,23 @@ describe('ColourPicker with a contrast probe', () => {
 
   it('forgets the hovered swatch when focus leaves the picker', () => {
     const { root } = setup('#0f172a');
-    fireEvent.focus(screen.getByRole('button', { name: 'Pale yellow' }));
+    keyTo('Pale yellow');
     expect(hint().textContent).toContain('Hard to read');
     fireEvent.blur(root, { relatedTarget: document.body });
     expect(hint().childElementCount).toBe(0);
     // Focus moving inside the picker keeps it.
-    fireEvent.focus(screen.getByRole('button', { name: 'Pale yellow' }));
+    keyTo('Pale yellow');
     fireEvent.blur(root, { relatedTarget: screen.getByRole('button', { name: 'Navy' }) });
+    expect(hint().textContent).toContain('Hard to read');
+  });
+
+  it('does not judge the swatches focused as the picker opens, only focus moved by a key', () => {
+    setup(null);
+    // Opening focuses the first key, then the Tab stop: with no swatch picked, a pale one here.
+    fireEvent.focus(screen.getByRole('button', { name: 'No text colour' }));
+    fireEvent.focus(screen.getByRole('button', { name: 'Pale yellow' }));
+    expect(hint().childElementCount).toBe(0);
+    keyTo('Pale yellow');
     expect(hint().textContent).toContain('Hard to read');
   });
 

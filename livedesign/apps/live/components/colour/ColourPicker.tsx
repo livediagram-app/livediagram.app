@@ -77,6 +77,10 @@ export function ColourPicker({
   // kept while there is a contrast hint, so other pickers never re-render on hover.
   const [probe, setProbe] = useState<string | null>(null);
   const probeOn = contrast ? setProbe : undefined;
+  // Focus previews and is judged only once a key is pressed in the picker: the swatches it focuses as it
+  // opens (its first key, then its Tab stop) are not, so opening changes nothing and the hint opens on the
+  // colour in force.
+  const keyed = useRef(false);
   const endProbe = () => setProbe(null);
   // + takes focus back when the editor closes, so it never drops to the page (where Escape would reach
   // the canvas and drop the tool in hand, rather than close the surface the picker sits in).
@@ -144,7 +148,10 @@ export function ColourPicker({
       data-colour-picker=""
       className="flex flex-col gap-2.5"
       style={{ width: COLOUR_PICKER_WIDTH }}
-      onKeyDown={onColourKeys}
+      onKeyDown={(e) => {
+        keyed.current = true;
+        onColourKeys(e);
+      }}
       onPointerLeave={onPreviewEnd || contrast ? onMouseHover(leave) : undefined}
       onBlur={onPreviewEnd || contrast ? previewEndOnLeave : undefined}
     >
@@ -174,6 +181,7 @@ export function ColourPicker({
                     onFocus={
                       hover
                         ? () => {
+                            if (!keyed.current) return;
                             onPreview?.(option.id);
                             probeOn?.(option.id);
                           }

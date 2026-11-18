@@ -124,6 +124,8 @@ reads. It is a **hint, never a block**: any colour can still be picked.
 - **Its row**: under the swatches, a row kept for it for as long as the picker is open, so the swatches never
   move under the pointer and the picker opens tall enough to show it however low in the window it opens. The
   colour judged is the swatch the pointer or focus last rested on in this picker, else the colour in force.
+  The swatches focus lands on as the picker opens are not judged (with no swatch the colour in force, that is
+  the first one): the hint opens on the colour in force, and judges focus once a key moves it (see Previews).
   While it falls short the row names the ground ("on this page", "on its fill"), the ratio and the target
   ("1.9:1, aim for 4.5:1"), with the colour on its ground as a small **Aa** tile, and screen readers hear it
   arrive. While it reads, the row says so quietly ("Easy to read on this page", the ratio), and with no colour
@@ -175,7 +177,7 @@ exactly as it did:
 
 ## Previews
 
-Where the surface previews (the element menu, page backgrounds and gradient ends), hovering or focusing a swatch shows the colour live and leaving the picker puts the colour back. A
+Where the surface previews (the element menu, page backgrounds and gradient ends), hovering a swatch, or moving focus to one with a key, shows the colour live and leaving the picker puts the colour back. The swatches the picker focuses as it opens are not previewed, so opening it changes nothing. A
 pick commits it, once, for undo.
 
 ## Skins

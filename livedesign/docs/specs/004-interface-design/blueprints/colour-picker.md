@@ -85,7 +85,8 @@ ColourPicker({
   each ground; the worst is the least `ratio / needed`; `failing` and `of` count the grounds; `suggestion` is the
   worst colour's `textContrast` suggestion on the union of every ground's tones, as large text only when all are.
 - `ColourPicker` holds the last hovered or focused swatch's id (`probe`) only while `contrast` is set, cleared when
-  the pointer leaves the picker. `ContrastHint({ probes, judged, onUse })` (`components/colour/ContrastHint.tsx`)
+  the pointer leaves the picker. A focus sets it (and previews) only after a key was pressed in the root (`keyed`), so
+  the first key and Tab stop the popover focuses on opening are neither judged nor previewed. `ContrastHint({ probes, judged, onUse })` (`components/colour/ContrastHint.tsx`)
   renders under the groups a row `CONTRAST_ROW_PX` (60) tall (three 15px lines in 6px padding and a 1px
   border): a `role="status"` region holding only a shortfall, and in the same grid cell a quiet "Easy to read …"
   line while the colour passes. Words: one ground `GROUND_WORDS[on]`, or "on the exported page" when `exported`;
@@ -127,7 +128,7 @@ ColourPicker({
   own controls keep their arrows. `preventDefault` + `stopPropagation` so a host menu's roving keys do not also move.
 - Quick Style colour rows (`QuickRadioRow` with swatches) reuse `colourKeyTarget` across the row and More colours;
   rows of glyph buttons stay radio groups whose arrows move and choose.
-- Preview: `onPointerEnter` (mouse only, `onMouseHover`) and `onFocus` call `onPreview(id)`; `onPointerLeave` of the root
+- Preview: `onPointerEnter` (mouse only, `onMouseHover`) and `onFocus` (once `keyed`) call `onPreview(id)`; `onPointerLeave` of the root
   and focus leaving the root call `onPreviewEnd`; unmount reverts (`useRevertOnUnmount`).
 - **Add a custom colour** (`MoreColoursGlyph`) toggles the editor; Use calls `onPick(hex)` and closes it.
 - Outside-press handling: `ContextMenu`, `PagePanel` and `RichTextEditor` ignore presses and focus inside

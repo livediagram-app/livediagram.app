@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createText, layOutPages, type BoxedElement, type Element } from '@livedesign/design';
@@ -101,6 +101,16 @@ describe('rich-text Text colour', () => {
     toolbar(undefined);
     open();
     expect(document.querySelector('[data-contrast-row]')).not.toBeNull();
+  });
+
+  it('opens on the colour in force, not the first swatch it focuses, when the words have none of their own', async () => {
+    toolbar(undefined);
+    open();
+    // The picker focuses its Tab stop a frame after opening: with no swatch picked, the first (a pale one).
+    await act(() => new Promise((r) => requestAnimationFrame(() => r(undefined))));
+    expect(document.activeElement?.getAttribute('aria-label')).not.toBe('Text colour');
+    expect(hint()!.childElementCount).toBe(0);
+    expect(document.querySelector('[data-contrast-reads]')!.textContent).toContain('Easy to read');
   });
 
   it('judges nothing without an element', () => {
