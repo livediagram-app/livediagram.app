@@ -8,6 +8,8 @@ import {
   SPACE_SCREEN_MARGIN,
   SPACE_SEAT_LIFT_SHARE,
   hangOnWall,
+  pieceQuarters,
+  seenFromCamera,
   screenRoomOnWall,
   seatBehind,
   seatLift,
@@ -211,5 +213,18 @@ describe('wall pieces hang on the wall (3d-view.md "Wall pieces hang on the wall
       2 * (50 - SPACE_SCREEN_MARGIN),
     );
     expect(screenRoomOnWall(shape('room-sign', { x: 150, y: 20 }), [back], dy)).toBeNull();
+  });
+});
+
+describe('pieces turned on the plan are seen from the camera (3d-view.md "Turning the camera")', () => {
+  it("reads a quarter-turned piece's turn, and none for another angle", () => {
+    expect(pieceQuarters(shape('sofa'))).toBe(0);
+    expect(pieceQuarters(shape('sofa', { rotation: 90 }))).toBe(1);
+    expect(pieceQuarters(shape('sofa', { rotation: -90 }))).toBe(3);
+    expect(pieceQuarters(shape('sofa', { rotation: 45 }))).toBeNull();
+  });
+  it('sees a quarter-turned sofa from the camera, not one at 45 degrees', () => {
+    expect(seenFromCamera(shape('sofa', { rotation: 90 }))).toBe(true);
+    expect(seenFromCamera(shape('sofa', { rotation: 45 }))).toBe(false);
   });
 });

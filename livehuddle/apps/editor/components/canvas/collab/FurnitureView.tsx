@@ -4,9 +4,9 @@ import { seatPillBottom, type Sitter } from '@livehuddle/avatar/chair-sitters';
 import { Fragment, useEffect, useId, useMemo, useRef, type CSSProperties } from 'react';
 import { rowLayouts, type RowLayout } from '@livehuddle/avatar/furniture-rows';
 import { turnFacing } from '@livehuddle/avatar/facing';
-import { builtIn3D, seenFromCamera } from '@/lib/space-3d/space-3d-pieces';
+import { builtIn3D, pieceQuarters, seenFromCamera } from '@/lib/space-3d/space-3d-pieces';
 import { turnQuarter } from '@/lib/space-3d/space-3d-turn';
-import { useSpace3DTurn } from '@/components/canvas/space-3d/useSpace3DView';
+import { useSpace3DShowing, useSpace3DTurn } from '@/components/canvas/space-3d/useSpace3DView';
 import { podClosed } from '@livehuddle/avatar/pod';
 import { IDENTITY_FILL, identityVars } from '@livehuddle/ui';
 import { useMachineAnswered } from '@/lib/machine-answer';
@@ -174,8 +174,11 @@ function FurnitureDrawingView({
   const seating = isSeatingShape(kind);
   // The 3D camera's quarter turns (3d-view.md "Turning the camera"): turned, the piece is drawn as the camera sees it,
   // the side it looks at (its back from behind), in a box turned back to face the camera that stands up on its own.
-  const quarter = turnQuarter(useSpace3DTurn());
-  const seen = quarter !== 0 && seenFromCamera(element);
+  // A piece turned on the plan by quarter turns is seen the same way, its own turn added to the camera's.
+  const showing = useSpace3DShowing();
+  const own3D = pieceQuarters(element) ?? 0;
+  const quarter = turnQuarter(useSpace3DTurn() + (showing ? own3D : 0));
+  const seen = quarter !== 0 && seenFromCamera(element) && (showing || own3D === 0);
   const facing = seen ? turnFacing(pieceFacing(element), quarter) : pieceFacing(element);
   const across = seen && quarter % 2 === 1;
   // A table drawn from above (a Long Table, one built row by row) turns its plan with the camera, so its box swaps
@@ -189,16 +192,22 @@ function FurnitureDrawingView({
     : seating
       ? FURNITURE_ART[kind]
       : OFFICE_ART[kind as GridOfficeKind];
+  // Seen side on, a piece that stands up shows its end: its back drawing (an upright one, unlike the side drawing,
+  // which the flat plan sees from above and which stood up floats at its far end: the owner, 2026-11-18, the sofa,
+  // bookcase and lockers "floating in the air on one side, not connected to the ground"), narrowed to its depth.
+  const sideOn = across && !plan;
   // The drawing its facing shows (docs/specs/009-elements/furniture-facing.md "The camera").
-  const frame = furnitureFrame(art, facing);
+  const frame = furnitureFrame(art, sideOn ? 's' : facing);
+  // How deep it is, from its side drawing: an end is as wide as that.
+  const depth = sideOn ? furnitureFrame(art, facing).view.width : 0;
   // A piece that stands up is seen at the scale its own drawing has on the canvas, at the seen drawing's own size: a
   // sofa seen from the side is its side, as tall as its front, and a coat stand keeps its height (the owner,
   // 2026-11-18: "rotated the coat stand and umbrellas shrink in size"), rather than its box laid on its side.
   const own = seen && !plan ? furnitureFrame(art, pieceFacing(element)).view : null;
   const ownScale = own ? Math.min(element.width / own.width, element.height / own.height) : 1;
-  const boxW = own ? frame.view.width * ownScale : planW;
+  const boxW = own ? (sideOn ? depth : frame.view.width) * ownScale : planW;
   const boxH = own ? frame.view.height * ownScale : planH;
-  const drawing = facingView(facing).view;
+  const drawing = facingView(sideOn ? 's' : facing).view;
   // Seating is upholstered in its own fabric (furniture-art-style.md "Materials"); the rest take the theme's wash.
   const seat =
     kind === 'rug'
@@ -266,6 +275,8 @@ function FurnitureDrawingView({
     <>
       <svg
         viewBox={frame.viewBox}
+        // An end is the back drawing narrowed to the piece's depth.
+        preserveAspectRatio={sideOn ? 'none' : undefined}
         className="absolute inset-0 h-full w-full overflow-visible"
         role="img"
         aria-label={

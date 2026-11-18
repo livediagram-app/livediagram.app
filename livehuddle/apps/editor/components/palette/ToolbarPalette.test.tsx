@@ -161,7 +161,7 @@ describe('ToolbarPalette', () => {
     // The Room opens its presets beside the flyout (docs/specs/009-elements/office.md "Room presets"); a preset places.
     fireEvent.click(within(rooms).getByRole('button', { name: 'Add Room' }));
     const presets = screen.getByRole('dialog', { name: 'Room' });
-    fireEvent.click(within(presets).getByRole('button', { name: 'Add Boardroom' }));
+    fireEvent.click(within(presets).getByRole('button', { name: 'Add Hexagon Room' }));
     expect(flyout()).toBeNull();
   });
 

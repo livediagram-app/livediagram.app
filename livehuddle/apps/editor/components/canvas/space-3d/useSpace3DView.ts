@@ -19,6 +19,7 @@ import { nextSpace3DPhase, type Space3DPhase } from '@/lib/space-3d/space-3d-pha
 import { isSpace3DKey, space3DTurnKey } from '@/lib/space-3d/space-3d-key';
 import {
   resetSpace3DTurn,
+  space3DShowing,
   space3DTurn,
   turnQuarter,
   turnSpace3D,
@@ -29,6 +30,11 @@ import { loadSpace3DWalls } from '@/lib/editor-deferred-code';
 /** The camera's quarter turns now (3d-view.md "Turning the camera"). */
 export function useSpace3DTurn(): number {
   return useSyncExternalStore(space3DTurn.subscribe, space3DTurn.get, () => 0);
+}
+
+/** Whether the 3D view shows now. */
+export function useSpace3DShowing(): boolean {
+  return useSyncExternalStore(space3DShowing.subscribe, space3DShowing.get, () => false);
 }
 
 /** The remembered choice, as it changes. */
@@ -52,6 +58,11 @@ export function useSpace3DView(walking: boolean): Space3DPhase {
     setWanted(want);
     setPhase((p) => nextSpace3DPhase(p, want, { reducedMotion: prefersReducedMotion() }));
   }
+  // The pieces turned on the plan read it, to stand as the camera sees them (3d-view.md "Turning the camera").
+  useEffect(() => {
+    space3DShowing.set(phase !== 'flat');
+  }, [phase]);
+  useEffect(() => () => space3DShowing.set(false), []);
   // `rising` waits two frames, so the flat start is styled before the tilt is asked for and the browser animates it;
   // `falling` waits out the tilt before the walls unmount.
   useEffect(() => {

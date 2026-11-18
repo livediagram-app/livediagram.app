@@ -1,8 +1,7 @@
 // Room presets (docs/specs/009-elements/office-amenities.md "The Restroom preset", office.md "Room presets"): a palette
 // tile that places a Room already furnished. The Restroom brings two Toilet Cubicles, a Hand Dryer, two Washbasins and
-// a Room Sign outside by the door; the Room tile's presets bring what each room is for (a desk in the Office, a long
-// table in the Boardroom, desk pods in the Open Plan, a kitchen along the Kitchen's back wall, sofas round a fire in the
-// Lounge). Placed in one change with the Room and its Door (`withDoorPiece`, room-builder.ts). Pure: no React, no DOM.
+// a Room Sign outside by the door; the Room tile's other presets are empty shapes and sizes (room-preset-shapes.ts).
+// Placed in one change with the Room and its Door (`withDoorPiece`, room-builder.ts). Pure: no React, no DOM.
 
 import { ROOM_BACK_FACE, ROOM_DOOR_WIDTH } from '@livehuddle/avatar/office-geometry';
 import type { ChairFacing, ShapeElement, ShapeKind } from './index';
@@ -43,62 +42,6 @@ export const PRESET_SCREEN_TOP = ROOM_BACK_FACE + 2;
  */
 export const ROOM_PRESET_LAYOUTS: Readonly<Record<string, readonly PresetPiece[]>> = {
   [RESTROOM_VARIANT]: RESTROOM_LAYOUT,
-  // A desk against the back wall, a plant and a bookshelf beside it.
-  office: [
-    { kind: 'desk', x: 16, y: 40 },
-    { kind: 'plant', x: 152, y: 52 },
-    { kind: 'bookshelf', x: 224, y: 36 },
-  ],
-  // A Long Table for sixteen down the middle under a Screen just below the back wall's face (clear of the room's name
-  // band, PRESET_SCREEN_TOP), plants in the back corners, drinks in the front corners clear of the door.
-  boardroom: [
-    { kind: 'plant', x: 20, y: 40 },
-    { kind: 'plant', x: 724, y: 40 },
-    { kind: 'screen', x: 336, y: PRESET_SCREEN_TOP, width: 128 },
-    { kind: 'meeting-table', x: 120, y: 120, variant: 'long' },
-    { kind: 'water-cooler', x: 24, y: 276 },
-    { kind: 'coffee-machine', x: 704, y: 290 },
-  ],
-  // Five pods of two desks face to face across the wide floor, the shared kit and plants in the wing.
-  'open-plan': [
-    ...[24, 148, 300, 424, 548].flatMap((x): PresetPiece[] => [
-      { kind: 'desk', x, y: 36, facing: 'n' },
-      { kind: 'desk', x, y: 148 },
-    ]),
-    { kind: 'printer', x: 24, y: 310 },
-    { kind: 'coffee-machine', x: 112, y: 300 },
-    { kind: 'plant', x: 208, y: 306 },
-    { kind: 'water-cooler', x: 24, y: 400 },
-    { kind: 'plant', x: 208, y: 408 },
-  ],
-  // A fridge, a sink, a counter with a microwave and a coffee machine along the back wall, bar stools at the counter.
-  kitchen: [
-    { kind: 'fridge', x: 16, y: 28 },
-    { kind: 'kitchen-sink', x: 96, y: 76 },
-    { kind: 'kitchen-counter', x: 212, y: 76 },
-    { kind: 'microwave', x: 238, y: 66 },
-    { kind: 'coffee-machine', x: 336, y: 68 },
-    { kind: 'bar-stool', x: 122, y: 196 },
-    { kind: 'bar-stool', x: 182, y: 196 },
-    { kind: 'bar-stool', x: 242, y: 196 },
-    { kind: 'water-cooler', x: 20, y: 196 },
-  ],
-  // A fire on the back wall, a bordered rug before it, two sofas facing in across it, plants either side of the door.
-  lounge: [
-    { kind: 'rug', x: 100, y: 170, variant: 'bordered' },
-    { kind: 'fireplace', x: 156, y: 44 },
-    { kind: 'sofa', x: 36, y: 174, facing: 'w' },
-    { kind: 'sofa', x: 319, y: 174, facing: 'e' },
-    { kind: 'plant', x: 110, y: 324 },
-    { kind: 'plant', x: 274, y: 324 },
-  ],
-  // A glass booth (office.md "Glass walls"): a Screen just below the back wall's face, centred over a Meeting Table for
-  // six, a plant in a corner.
-  'meeting-booth': [
-    { kind: 'screen', x: 112, y: PRESET_SCREEN_TOP, width: 96 },
-    { kind: 'meeting-table', x: 44, y: 100 },
-    { kind: 'plant', x: 290, y: 40 },
-  ],
 };
 
 /** The Restroom's door sign: a Room Sign this wide (aspect locked), beside the Door, this far below the front wall. */
