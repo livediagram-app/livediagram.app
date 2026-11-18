@@ -1,8 +1,9 @@
-// A server-side fetch of a URL someone else chose (an MCP caller's image URL), safe against SSRF
+// A server-side fetch of a URL someone else chose (an MCP caller's image URL, live status), safe against SSRF
 // (liveworkspace/docs/specs/006-media/media.md "Uploaded by a tool"): HTTPS on 443 only, to a host that resolves only to
 // public addresses (public-address.ts), each redirect checked the same way and at most MAX_REDIRECTS of them, a
 // deadline over the whole exchange body included, and the body read through a byte counter that stops at the cap, so
-// a huge or endless answer is cut off there. Never trusts the answer's type: the caller sniffs the bytes.
+// a huge or endless answer is cut off there. Never trusts the answer's type: the caller sniffs the bytes. Its per-hop
+// check (checkPublicHop) is the link unfurl's too (unfurl-fetch.ts).
 
 import { readCappedBody } from './request-body';
 import { classifyHost } from '@liveworkspace/model-core/private-host';
@@ -15,7 +16,7 @@ export const PUBLIC_URL_MAX = 2048;
 export type PublicFetchRefusal =
   // Not an absolute URL, too long, or one carrying a user name or password.
   | 'invalid_url'
-  // Not https, or a port other than 443.
+  // Not https on 443 (with the http schemes: neither http nor https).
   | 'not_https'
   // A literal private address, an internal name, or a name resolving to a private address.
   | 'private_address'
@@ -53,33 +54,51 @@ class Refused extends Error {
   }
 }
 
-// Where one hop may go, or why not.
-async function checkTarget(raw: string, resolve: Resolve): Promise<URL> {
+/** Which schemes a hop may use: `https` on 443 only (the image upload), or `http` as well, on any port (the link
+ *  unfurl, whose people paste http links). Which hosts a hop may reach never changes with it. */
+export type HopSchemes = 'https' | 'http';
+
+export type HopCheck = { ok: true; url: URL } | { ok: false; reason: PublicFetchRefusal };
+
+/** Where one hop of a server fetch may go, or why not: an absolute URL with no credentials, in `schemes`, to a host
+ *  that is a public address or a name resolving only to public ones (architecture.md "Fetching a URL someone gave").
+ *  Every hop of a fetch, the first and each redirect, goes through it. */
+export async function checkPublicHop(
+  raw: string,
+  resolve: Resolve,
+  schemes: HopSchemes = 'https',
+): Promise<HopCheck> {
   let url: URL;
   try {
     url = new URL(raw);
   } catch {
-    throw new Refused('invalid_url');
+    return { ok: false, reason: 'invalid_url' };
   }
-  if (url.username || url.password) throw new Refused('invalid_url');
-  if (url.protocol !== 'https:' || (url.port !== '' && url.port !== '443')) {
-    throw new Refused('not_https');
-  }
+  if (url.username || url.password) return { ok: false, reason: 'invalid_url' };
+  const https = url.protocol === 'https:' && (url.port === '' || url.port === '443');
+  const http = schemes === 'http' && (url.protocol === 'http:' || url.protocol === 'https:');
+  if (!https && !http) return { ok: false, reason: 'not_https' };
   // The platform's one rule for private addresses and internal names (model-core's private-host). A public address
   // typed as one is judged as it stands (architecture.md "Fetching a URL someone gave"); a name must resolve public.
   const target = classifyHost(url.hostname);
-  if (target.private) throw new Refused('private_address');
-  if (target.kind === 'address') return url;
+  if (target.private) return { ok: false, reason: 'private_address' };
+  if (target.kind === 'address') return { ok: true, url };
   const verdict = await resolvesPublic(target.host, resolve);
-  if (verdict === 'private') throw new Refused('private_address');
-  if (verdict === 'unresolved') throw new Refused('unresolved');
-  return url;
+  if (verdict === 'private') return { ok: false, reason: 'private_address' };
+  if (verdict === 'unresolved') return { ok: false, reason: 'unresolved' };
+  return { ok: true, url };
 }
 
-const isRedirect = (status: number) => status >= 300 && status < 400;
+async function checkTarget(raw: string, resolve: Resolve): Promise<URL> {
+  const hop = await checkPublicHop(raw, resolve);
+  if (!hop.ok) throw new Refused(hop.reason);
+  return hop.url;
+}
+
+export const isRedirect = (status: number) => status >= 300 && status < 400;
 
 // An answer whose body is not wanted: its stream let go. A source whose cancel throws has nothing left to say.
-async function discard(res: Response): Promise<void> {
+export async function discard(res: Response): Promise<void> {
   try {
     await res.body?.cancel();
   } catch {
