@@ -512,7 +512,9 @@ item by its own address, with no code, takes the visitor's role, tab and code fr
 That refusal, and only it, names the link beside the error, `{error: "password_required", link: "<code>"}`, so the
 editor can ask for the password: it opens the item through that link (`openShareLink`), which reads the password the
 browser remembers under the code and, when there is none or it changed, shows the password gate, never Not Found.
-It names only the code, never the item's title, owner or anything else, and only to the person the index already
+While the gate is up its retries go straight through that link (`openOwnAddress` remembers it per reader and item,
+bounded), and the editor's api client does not report that `401` as an error (`isPasswordRefusal`,
+`@liveworkspace/workbench/lib/api/core`). It names only the code, never the item's title, owner or anything else, and only to the person the index already
 found in `shared_with` for that live link: someone who opened that very link before (and entered the password since
 it was last set, which clears `shared_with`). Anyone with no link, a revoked or expired one, a public link, or a
 request that sent a code of its own hears what they heard before (`404`, or `password_required` with no `link`). The item's Durable Object

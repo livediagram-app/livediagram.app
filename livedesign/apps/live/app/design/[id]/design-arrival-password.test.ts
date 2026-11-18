@@ -1,6 +1,9 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { openOwnAddress } from '@liveworkspace/workbench/lib/editor-arrival';
+import {
+  openOwnAddress,
+  resetGatedReopensForTests,
+} from '@liveworkspace/workbench/lib/editor-arrival';
 
 // Reopening a password-protected design by its own address, with no share code (docs/specs/013-workspace/share-password.md
 // "Reopened by its own address", Work Tracker 1244): the index refuses the grant and names the link, so the editor
@@ -67,6 +70,7 @@ function reopen() {
 }
 
 beforeEach(() => {
+  resetGatedReopensForTests();
   loadOwn.mockReset().mockRejectedValue(refused);
   loadShared.mockReset();
   passwordLink.mockReset().mockResolvedValue('CODE');
@@ -77,6 +81,7 @@ beforeEach(() => {
 describe('reopening a password-protected design without its share code', () => {
   it('shows the password gate, never Not Found, whether the load is refused or misses', async () => {
     for (const miss of [false, true]) {
+      resetGatedReopensForTests();
       if (miss) loadOwn.mockResolvedValue(null);
       loadShared.mockResolvedValue({ passwordRequired: true, invalid: false });
       const { set, reached } = reopen();
@@ -101,6 +106,25 @@ describe('reopening a password-protected design without its share code', () => {
     expect(set.setSessionShareCode).toHaveBeenCalledWith('CODE');
     expect(set.setSessionTabScope).toHaveBeenCalledWith('t1');
     expect(seed).toHaveBeenCalledWith('visitor', item, 'CODE', 't1');
+  });
+
+  it('retries the password through the link without loading the own address again', async () => {
+    loadShared.mockResolvedValueOnce({ passwordRequired: true, invalid: false });
+    expect(await reopen().reached).toBe(false);
+    session = 'hunter2';
+    loadShared.mockResolvedValueOnce({
+      design: item,
+      role: 'participate',
+      tabId: null,
+      community: null,
+    });
+    const { set, reached } = reopen();
+    expect(await reached).toBe(true);
+    expect(loadOwn).toHaveBeenCalledOnce();
+    expect(passwordLink).toHaveBeenCalledOnce();
+    expect(set.setSessionShareCode).toHaveBeenCalledWith('CODE');
+    // The accepted password is remembered under the link's code for the next reopen.
+    expect(cache.get('CODE')).toBe('hunter2');
   });
 
   it('keeps Not Found for a design the index names no link for', async () => {
