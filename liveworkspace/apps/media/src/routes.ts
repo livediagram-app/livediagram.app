@@ -236,7 +236,7 @@ export async function handleApp(
   if (segments[0] === 'refs' && segments.length === 1 && method === 'POST') {
     const sync = parseRefsSync(await readJson(request));
     if (!sync) return badRequest('invalid_body');
-    await syncRefs(env, app, sync.documents, sync.complete === true);
+    await syncRefs(env, app, sync.documents, sync.complete === true, sync.pending);
     return ok();
   }
 
@@ -282,19 +282,35 @@ export async function handleApp(
   return notFound();
 }
 
+// `documents` and `pending` (unconfirmed references, media.md "Unconfirmed references") held together to the cap.
 function parseRefsSync(value: unknown): MediaRefsSync | null {
   if (typeof value !== 'object' || value === null) return null;
-  const { documents, complete } = value as { documents?: unknown; complete?: unknown };
-  if (!Array.isArray(documents) || documents.length > MEDIA_REFS_SYNC_MAX) return null;
+  const { documents, pending, complete } = value as {
+    documents?: unknown;
+    pending?: unknown;
+    complete?: unknown;
+  };
+  if (!Array.isArray(documents)) return null;
+  if (pending !== undefined && !Array.isArray(pending)) return null;
+  const vouched = pending ?? [];
+  if (documents.length + vouched.length > MEDIA_REFS_SYNC_MAX) return null;
   if (complete !== undefined && typeof complete !== 'boolean') return null;
+  const own = refEntries(documents);
+  const unconfirmed = refEntries(vouched);
+  if (!own || !unconfirmed) return null;
+  return { documents: own, pending: unconfirmed, complete: complete === true };
+}
+
+// Each `{ document, images }` checked, or null when any is not.
+function refEntries(entries: readonly unknown[]): MediaRefsSync['documents'] | null {
   const out: MediaRefsSync['documents'] = [];
-  for (const entry of documents) {
+  for (const entry of entries) {
     const { document, images } = (entry ?? {}) as { document?: unknown; images?: unknown };
     if (!isId(document) || !Array.isArray(images)) return null;
     if (images.length > MEDIA_REFS_PER_DOCUMENT_MAX || !images.every(isId)) return null;
     out.push({ document, images });
   }
-  return { documents: out, complete: complete === true };
+  return out;
 }
 
 const unsupported = () =>

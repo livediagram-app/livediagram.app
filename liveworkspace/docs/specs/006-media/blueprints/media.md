@@ -15,7 +15,7 @@ Scope, by file:
 | `liveworkspace/apps/media/src/routes.ts`                      | `handleApp`: images, previews purge, usage, refs, owner merge and delete; `upload`; `originalNameOf`                                                                                                                                      |
 | `liveworkspace/apps/media/src/images.ts`                      | `images` reads and writes: `listImages`, `getImage`, `findBySha`, `ownerTotals`, `insertImage` (atomic caps), `deleteImageRow`, `usageOf`, `mergeOwner`, `deleteOwnerRows`                                                                |
 | `liveworkspace/apps/media/src/release.ts`                     | `releaseImage`: a document's release of a picture it claimed, re-checked in one statement, then the bytes                                                                                                                                 |
-| `liveworkspace/apps/media/src/refs.ts`                        | `syncRefs`, `claimRef`, `pendingApps`                                                                                                                                                                                                     |
+| `liveworkspace/apps/media/src/refs.ts`                        | `syncRefs` (with unconfirmed references), `claimRef`, `pendingApps`                                                                                                                                                                       |
 | `liveworkspace/apps/media/src/retention.ts`                   | `sweepUnusedImages`, `sweepTripped`, `reap`                                                                                                                                                                                               |
 | `liveworkspace/apps/media/src/jpeg-strip.ts`                  | `stripJpegMetadata`: drop every APPn and COM segment but the ICC profile and Adobe ones (between scans too) and everything after EOI, write back the Exif Orientation alone, keep the image bit-identical                                 |
 | `liveworkspace/apps/media/src/previews/routes.ts`             | `handlePreviews`: the item preview and the three share doors                                                                                                                                                                              |
@@ -28,6 +28,7 @@ Scope, by file:
 | `liveworkspace/apps/media/migrations/0001_media.sql`          | `images`, `refs`, `ref_sync`                                                                                                                                                                                                              |
 | `liveworkspace/apps/media/migrations/0002_image_document.sql` | `images.document`, the document an image was uploaded for                                                                                                                                                                                 |
 | `liveworkspace/apps/media/migrations/0003_image_source.sql`   | `images.source`, the tool that uploaded an image (`mcp` or `cli`)                                                                                                                                                                         |
+| `liveworkspace/apps/media/migrations/0007_pending_refs.sql`   | `pending_refs`, the unconfirmed references a document's source vouched for (media.md "Unconfirmed references")                                                                                                                            |
 | `packages/media/src/*`                                        | The contract: `MEDIA_APPS`, limits, `sniffImageType`, owners, wire headers, `createMediaClient`, previews' paths and caches, `createSharePage`, `fetchShareCard`, `createOEmbed`, `embedOpensReadOnly`, `embedSessionRole`, gallery usage |
 
 ## Domain and naming
@@ -83,10 +84,12 @@ limit, current }`.
   otherwise the row first, then the R2 object (a failed R2 delete is logged, never undone).
 - **A release** (`POST /app/images/:id/release?document=`, `releaseImage`): `document` must be an id (`400
 invalid_document`). `DELETE FROM images WHERE id = ?1 AND app = <caller> AND document = ?2 AND NOT EXISTS (SELECT 1
-FROM refs WHERE image_id = ?1) RETURNING id`: the claim and every app's references re-checked at that instant, the
-  document's own reference included. A row gone: the R2 object (a failure logged, never undone), `200 { released:
+FROM refs WHERE image_id = ?1) AND NOT EXISTS (SELECT 1 FROM pending_refs WHERE image_id = ?1) RETURNING id`: the
+  claim and every app's references, confirmed and unconfirmed, re-checked at that instant, the document's own
+  reference included. A row gone: the R2 object (a failure logged, never undone), `200 { released:
 true }`, logged `[media] released`. None: `getImage` says why, `200 { released: false, reason }` with `missing`, a
-  claim by another document or app (`not_claimed`), else `referenced`; logged `[media] release kept`.
+  claim by another document or app (`not_claimed`), a confirmed reference (`referenced`), else `unconfirmed`; logged
+  `[media] release kept` with the reason.
 - **An owner** (`DELETE /app/owners/:owner`): `DELETE … RETURNING id`, then R2 deletes in pages of 1000.
 - **An item's previews** (`DELETE /app/previews/:itemId`): every object under `previews/<caller's app>/<itemId>/`,
   listed and deleted page by page; `200 { deleted }`.
@@ -98,16 +101,22 @@ stay on the guest. `200 { moved, kept }` (ids, sorted); `400 invalid_body` when 
 
 ### References (`syncRefs`)
 
-Per listed document, in one batch: delete its refs not in the new list, `INSERT OR IGNORE` the new ones (an empty
-list clears it). `complete: true` adds the app to `ref_sync` once (`ON CONFLICT DO NOTHING`).
+In one batch: first each `pending` entry, `INSERT OR IGNORE INTO pending_refs (app, document, image_id, created_at)`
+for its images, only while `refs` holds nothing for that app and document (`WHERE NOT EXISTS`). Then per listed
+document: delete its refs not in the new list, `INSERT OR IGNORE` the new ones (an empty list clears it), and delete
+its `pending_refs` (its own report confirms it). `complete: true` adds the app to `ref_sync` once (`ON CONFLICT DO
+NOTHING`). `parseRefsSync` holds `documents` and `pending` together to `MEDIA_REFS_SYNC_MAX` (500), each to
+`MEDIA_REFS_PER_DOCUMENT_MAX` (1000) ids; a `pending` that is not a list is `400 invalid_body`.
 
 ### The daily sweep (`41 3 * * *`)
 
 1. Off or no bucket: nothing.
 2. `pendingApps(keyedApps)`: the keyed apps not in `ref_sync`. Two or more: log `sweep paused` and stop.
 3. Count images older than `UNUSED_IMAGE_AGE_MS` (30 days) and how many of them are **sweepable**: no ref names them,
-   and either nothing is pending, or the image is claimed (`document` not null) and the one pending app is the app
-   it was uploaded in (`SWEEPABLE`).
+   no unconfirmed reference names them, and either nothing is pending, or the image is claimed (`document` not null)
+   and the one pending app is the app it was uploaded in (`SWEEPABLE`). The same count reads how many old images
+   only an unconfirmed reference keeps (`UNCONFIRMED`); above zero it logs `[media] sweep kept <n> images awaiting a
+document's own report`.
 4. None unplaced: stop. `sweepTripped`: more than `SWEEP_TRIPWIRE_MIN` (20) and over `SWEEP_TRIPWIRE_RATIO` (0.5) of
    the old ones: log an error and reap one page of `SWEEP_PAGE` (1000), oldest first.
 5. Otherwise page by id (`id > after`, 1000 at a time) and reap each page.
@@ -216,34 +225,37 @@ must carry an `ETag` that `etagVersion` reads.
 
 ## Data and persistence
 
-| Table      | Key                                   | Columns                                                                                                                                                    | Indexes                                                                                                                                 |
-| ---------- | ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `images`   | `id` TEXT PK                          | `owner`, `app`, `content_type`, `byte_size`, `width`, `height`, `sha256`, `original_name` null, `created_at`, `document` null (0002), `source` null (0003) | `images_owner_sha_idx` UNIQUE `(owner, sha256)`; `images_owner_created_idx (owner, created_at DESC)`; `images_created_idx (created_at)` |
-| `refs`     | `(app, document, image_id)`, no rowid | no foreign key: a document may place a deleted image                                                                                                       | `refs_image_idx (image_id)`                                                                                                             |
-| `ref_sync` | `app`, no rowid                       | `completed_at`                                                                                                                                             |                                                                                                                                         |
+| Table                 | Key                                   | Columns                                                                                                                                                    | Indexes                                                                                                                                 |
+| --------------------- | ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `images`              | `id` TEXT PK                          | `owner`, `app`, `content_type`, `byte_size`, `width`, `height`, `sha256`, `original_name` null, `created_at`, `document` null (0002), `source` null (0003) | `images_owner_sha_idx` UNIQUE `(owner, sha256)`; `images_owner_created_idx (owner, created_at DESC)`; `images_created_idx (created_at)` |
+| `refs`                | `(app, document, image_id)`, no rowid | no foreign key: a document may place a deleted image                                                                                                       | `refs_image_idx (image_id)`                                                                                                             |
+| `ref_sync`            | `app`, no rowid                       | `completed_at`                                                                                                                                             |                                                                                                                                         |
+| `pending_refs` (0007) | `(app, document, image_id)`, no rowid | `created_at`; no foreign key, as `refs`                                                                                                                    | `pending_refs_image_idx (image_id)`                                                                                                     |
 
-Written by: `images` upload, delete, release, merge, owner delete, sweep; `refs` `syncRefs` and a claimed upload; `ref_sync` a complete sync.
-Read by: galleries, dedupe, caps, usage (refs joined to images), the sweep.
+Written by: `images` upload, delete, release, merge, owner delete, sweep; `refs` `syncRefs` and a claimed upload; `pending_refs` `syncRefs` (inserted by a `pending` entry, deleted by the document's own entry); `ref_sync` a complete sync.
+Read by: galleries, dedupe, caps, usage (refs joined to images), the sweep; `pending_refs` only by a release and the sweep.
 
 R2 (`MEDIA`, `liveworkspace-media`): image bytes at `<uuid>` (`customMetadata { owner, app }`); previews under
 `previews/` with `customMetadata { v, av, e? }`. Image ids never hold a slash, so the two never meet.
 
 ## Errors and edge cases
 
-| Case                                  | Behaviour                                                      |
-| ------------------------------------- | -------------------------------------------------------------- |
-| `MEDIA_ENABLED` `false`/`0`/`off`     | every route `404`; the cron does nothing                       |
-| No bucket                             | media `503 media_unavailable`; previews `503`; sweep returns 0 |
-| The same bytes twice (any app)        | the one image, `deduped: true`                                 |
-| Two uploads race the caps             | the insert re-checks atomically; the loser's bytes deleted     |
-| A row insert throws                   | the bytes deleted, the error rethrown                          |
-| R2 delete fails after the row went    | logged; bytes stay unreferenced                                |
-| Two or more keyed apps not complete   | the sweep pauses                                               |
-| One keyed app not complete            | only that app's claimed, unplaced images can go                |
-| A reference gap looks like mass unuse | the tripwire: one page, oldest first, logged as an error       |
-| The app cannot draw (timeout, error)  | a stale private picture, else `503`                            |
-| No door configured for an app         | its items have no previews (`app_not_configured`)              |
-| Share password                        | the share doors answer `404` (an `<img>` can't send one)       |
+| Case                                    | Behaviour                                                                                     |
+| --------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `MEDIA_ENABLED` `false`/`0`/`off`       | every route `404`; the cron does nothing                                                      |
+| No bucket                               | media `503 media_unavailable`; previews `503`; sweep returns 0                                |
+| The same bytes twice (any app)          | the one image, `deduped: true`                                                                |
+| Two uploads race the caps               | the insert re-checks atomically; the loser's bytes deleted                                    |
+| A row insert throws                     | the bytes deleted, the error rethrown                                                         |
+| R2 delete fails after the row went      | logged; bytes stay unreferenced                                                               |
+| Two or more keyed apps not complete     | the sweep pauses                                                                              |
+| One keyed app not complete              | only that app's claimed, unplaced images can go                                               |
+| A copy's own report hasn't landed       | its source's unconfirmed reference keeps the picture (release `unconfirmed`, sweep counts it) |
+| A source's word after its copy reported | not recorded: the copy's own set stands                                                       |
+| A reference gap looks like mass unuse   | the tripwire: one page, oldest first, logged as an error                                      |
+| The app cannot draw (timeout, error)    | a stale private picture, else `503`                                                           |
+| No door configured for an app           | its items have no previews (`app_not_configured`)                                             |
+| Share password                          | the share doors answer `404` (an `<img>` can't send one)                                      |
 
 ## Security and trust
 
@@ -261,7 +273,7 @@ Per-owner caps (both environments): 500 images, 1,073,741,824 bytes (1 GiB). A f
 storage a person (about $0.015 a month at R2's standard rate). One D1 statement checks both caps at
 insert. The gallery's usage looks up every distinct document in batches of 200 ids, 4 at a time, up to
 5,000 documents. Measured over a fake index answering in 50 ms: 200 documents are 1 request (52 ms, 1.0 ms CPU),
-1,000 are 5 in 2 rounds (104 ms, 1.3 ms CPU) and 5,000 are 25 in 7 rounds (366 ms, 9.5 ms CPU). A ref sync is two statements per document in one batch. The sweep is bounded by pages of 1000. Previews: one
+1,000 are 5 in 2 rounds (104 ms, 1.3 ms CPU) and 5,000 are 25 in 7 rounds (366 ms, 9.5 ms CPU). A ref sync is three statements per document, and one per unconfirmed entry, in one batch. The sweep is bounded by pages of 1000. Previews: one
 index read per request (5 s), the app's door only on a miss (15 s), stores after the response. Figures are in
 [previews.md "Cost and performance"](../previews.md#cost-and-performance).
 
@@ -280,6 +292,7 @@ index read per request (5 s), the app's door only on a miss (15 s), stores after
 | `error` | `[media] R2 delete failed for a deleted owner`                       | `routes.ts`          |
 | `log`   | `[media] sweep: deleted <n> images older than <iso>`                 | `index.ts`           |
 | `log`   | `[media] sweep paused: not every app has reported its documents yet` | `retention.ts`       |
+| `log`   | `[media] sweep kept <n> images awaiting a document's own report`     | `retention.ts`       |
 | `error` | `[media] sweep tripwire: <u> of <o> old images unplaced; …`          | `retention.ts`       |
 | `error` | `[media] sweep: R2 delete failed`                                    | `retention.ts`       |
 | `warn`  | `[previews] index unreachable`                                       | `previews/access.ts` |
@@ -294,8 +307,8 @@ index read per request (5 s), the app's door only on a miss (15 s), stores after
 | Test                                         | Pins                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `apps/media/src/index.test.ts`               | key auth; off and outside paths; 503 without a bucket; store and list newest first; dedupe across apps; the hash shortcut unread; type, size and dimension refusals; JPEG stripping; caps across apps; bytes with the owner header; one image with owner; owner-only delete; owner delete everywhere; refs per document and usage; malformed sync; guest merge keeping held bytes                                                    |
-| `apps/media/src/release.test.ts`             | a claimed, unreferenced image goes with its bytes; kept for another document's claim, another app's, an unclaimed upload, another document's or the Library's reference, the document's own reference; missing; key auth; a bad document                                                                                                                                                                                             |
-| `apps/media/src/retention.test.ts`           | waits for every keyed app; a claimed image waits only for the other apps; an unclaimed one, and a claim whose document never reported, survive; keeps young and placed images; the tripwire page; no bucket; the tripwire bounds                                                                                                                                                                                                     |
+| `apps/media/src/release.test.ts`             | a claimed, unreferenced image goes with its bytes; kept for another document's claim, another app's, an unclaimed upload, another document's or the Library's reference, the document's own reference, a copy's unconfirmed one (until its own report lands); missing; key auth; a bad document                                                                                                                                      |
+| `apps/media/src/retention.test.ts`           | waits for every keyed app; a claimed image waits only for the other apps; an unconfirmed reference keeps an image, logged and counted; an unclaimed one, and a claim whose document never reported, survive; keeps young and placed images; the tripwire page; no bucket; the tripwire bounds                                                                                                                                        |
 | `apps/media/src/jpeg-strip.test.ts`          | no SOI unchanged; clean JPEG unchanged; APP0 to APP15 and COM dropped but ICC profile chunks and Adobe kept; Exif Orientation written back alone (both byte orders, first Exif only, nothing for 1 or a broken Exif); a real phone photo keeps profile and orientation and loses camera, GPS, XMP and comment; SOS and scan copied verbatim; segments between scans walked; nothing after EOI kept; RST kept; truncated input throws |
 | `apps/media/src/previews/previews.test.ts`   | draw on a miss then serve fresh; the caller's own credentials, no access as missing; redraw after a change; empty items; one-tab links; stale on failure, 503 without; no door; public links asked each time; share image caching and tabs; unknown codes ask no app; one card per drawing and the brand card; the card's name; purge per app; an appearance drawn and stored on its own key, passed to the door, a bad one refused  |
 | `apps/media/src/previews/share-card.test.ts` | fit wide and tall, aspect kept, upscale cap, nested viewBox, the drawing's paint, white fallback, prolog and size-only roots, null with no sized root                                                                                                                                                                                                                                                                                |

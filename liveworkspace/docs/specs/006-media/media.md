@@ -71,7 +71,7 @@ time; a key speaks only for its own app. Answers are JSON except the bytes; erro
 | `DELETE /images/<id>?owner=`          | Its owner deletes it, row then bytes. Documents that place it show a broken picture |
 | `POST /images/<id>/release?document=` | A document no longer places it: deleted at once when nothing else could (below)     |
 | `GET /usage?owner=`                   | Which documents, in which apps, place each of the owner's images: `{ usage }`       |
-| `POST /refs`                          | `{ documents: [{ document, images }], complete? }`, at most 500 documents (below)   |
+| `POST /refs`                          | `{ documents: [{ document, images }], pending?, complete? }`, at most 500 (below)   |
 | `POST /owners/merge`                  | `{ from, to }`: a guest signed up. `{ moved, kept }`                                |
 | `DELETE /owners/<owner>`              | An account deleted: every image it uploaded goes. `{ deleted }`                     |
 
@@ -158,6 +158,28 @@ claimed picture keeps its reference until its own document reports a set without
 never reports never loses one. Its unclaimed pictures (older uploads, and This Browser documents') wait for
 `complete` like any other app's, which it never sends, so the sweep never reaches them.
 
+### Unconfirmed references
+
+A copy of a document places its source's pictures from the moment it is made, but its own report can lag: it is
+sent on idle and retried when it fails, for as long as it takes. Until it lands the service would see no reference
+from the copy, so the source dropping a picture could let it go while the copy still shows it (Work Tracker 1190).
+So the source, which already reports, vouches for its copy: `POST /app/refs` takes `pending: [{ document, images }]`
+beside `documents`, each one the pictures a document **will** report but has not yet (at most 500 entries in all,
+1000 images each). They are kept as **unconfirmed** references (`pending_refs`), apart from the confirmed ones.
+
+- **Confirmed by the document's own report.** A report for a document (an entry in `documents`, an empty one
+  included) drops every unconfirmed reference to it: from then on its own set is the truth.
+- **Never over a report that landed.** An unconfirmed reference is recorded only for a document with no confirmed
+  reference yet, so a source's late word never overrides its copy's own newer report. A copy that reports an empty
+  set before its source's word lands keeps the picture until it reports again (storage kept, never a broken picture).
+- **Holds like a reference.** A release and the sweep keep any picture an unconfirmed reference names, and say so
+  (below). Neither the Gallery's usage nor anything else reads them: a picture is "Used in" a document once that
+  document reports it.
+
+liveplanner sends one for every copy of a plan (a duplicate, a tab copied into a new plan, a copy through a link),
+from the source plan's own report, before that plan can ask for any of the copy's pictures to be released (its
+`docs/specs/026-plan/items.md` "Images in use").
+
 ### Releases
 
 A document that stops placing a picture it was uploaded for can ask for it to go at once, rather than wait for the
@@ -167,10 +189,13 @@ bytes:
 
 - the image was **claimed by that document** (`images.document`) and uploaded in the calling app (the key names it);
 - **no reference** in any app names it: not another document's, not the Library's, and not the document's own (its
-  own report must have dropped it first, so a document whose report hasn't landed keeps the picture).
+  own report must have dropped it first, so a document whose report hasn't landed keeps the picture);
+- **no unconfirmed reference** names it: a copy whose own report hasn't landed keeps the picture its source vouched
+  for (above).
 
 Anything else is kept and answered `200 { released: false, reason }`, `reason` being `missing` (no such image),
-`not_claimed` (another document's upload, an unclaimed one, or another app's) or `referenced`; the daily sweep stays
+`not_claimed` (another document's upload, an unclaimed one, or another app's), `referenced`, or `unconfirmed` (only an
+unconfirmed reference names it), and logged with that reason; the daily sweep stays
 the backstop for what is kept. A release answers `200 { released: true }`. Only an app's own Worker can call it, with
 its key; a browser never can. A failed R2 delete after the row went leaves bytes with no row, as the sweep's does.
 
@@ -215,6 +240,9 @@ document in any app**. It keeps bytes whenever in doubt:
 - **Tripwire.** When over half of the old images, and more than 20, look unplaced, the run deletes at
   most one page of 1000, oldest first, and logs `[media] sweep tripwire` as an error. A gap in the
   references looks exactly like that.
+- **Unconfirmed references.** An image an unconfirmed reference names is never swept, however old the reference.
+  Each run logs how many old images it kept only for one (`[media] sweep kept <n> images awaiting a document's own
+report`).
 - Each page is deleted by a statement that re-checks the references at that instant, rows first, then
   the bytes. A failed R2 delete leaves bytes with no row (storage kept, never a broken picture).
 

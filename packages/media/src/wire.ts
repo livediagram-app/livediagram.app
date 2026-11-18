@@ -73,15 +73,19 @@ export type MediaUsageResponse = { usage: MediaUsage };
 
 // `POST /app/refs`: the images each listed document places now, replacing what the service held for
 // it. An empty list means the document places none, or is gone. `complete` says every document the
-// app holds has now been sent at least once, which the unused-image sweep waits for.
+// app holds has now been sent at least once, which the unused-image sweep waits for. `pending` lists the images
+// other documents will report but have not yet (a copy, vouched for by its source): unconfirmed references, which keep
+// those images until each document's own report lands (liveworkspace/docs/specs/006-media/media.md "Unconfirmed
+// references").
 export type MediaRefsSync = {
   documents: { document: string; images: string[] }[];
+  pending?: { document: string; images: string[] }[];
   complete?: boolean;
 };
 
 // `POST /app/images/<id>/release?document=`: a document no longer places a picture it was uploaded for
 // (liveworkspace/docs/specs/006-media/media.md "Releases"). Kept, with why, unless nothing else could place it.
-export type MediaReleaseKept = 'missing' | 'not_claimed' | 'referenced';
+export type MediaReleaseKept = 'missing' | 'not_claimed' | 'referenced' | 'unconfirmed';
 export type MediaReleaseResponse =
   { released: true } | { released: false; reason: MediaReleaseKept };
 
