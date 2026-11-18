@@ -224,6 +224,13 @@ The sweep can never take a picture a plan still holds, whether or not that plan 
   stays and is sent again with the next report. The copy marks its first report as owed, so it always sends one
   (even of no pictures, if it dropped them all first), and a copy purged before it reported tells the service it
   holds none.
+- **A plan file vouches for itself** (Work Tracker 1254). A plan made from a `.liveplanner` file (the Import
+  dialog's liveplanner Plan, a Drive file's Import as a Copy, a project kit's template) can name another plan's
+  pictures, but has no source plan to vouch for it. So before its content lands, the import sends the pictures its
+  cards' Attachments hold (what its first report will send: a file brings no grants) as its own **unconfirmed**
+  references, and the copy's first report is owed as above. When the service refuses them, nothing lands: the
+  import fails and can be tried again (the Drive mirror retries on its next pass), so a picture is never let go
+  that the new plan shows. A file with no pictures, or a deploy without the media service, sends nothing.
 
 ### Removed pictures
 

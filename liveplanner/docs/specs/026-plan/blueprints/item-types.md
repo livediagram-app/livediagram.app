@@ -797,6 +797,11 @@ dots }` under the field's id. `votesFieldsOf(type)` lists the type's Votes field
   when its insert queued an `images` key (`ON CONFLICT DO NOTHING`), a value no real set equals, so the copy's first
   report always sends, and `forgetImageRefs` at its purge sends an empty set. A purge of the source sends its
   unsent notes with its own empty set (`forgetImageRefs(env, planId, images, claims)`).
+  A plan file's import (Work Tracker 1254) vouches for itself: `importProjectFile` (`plan-room/project-file.ts`, the
+  door of both `routes/project-file-route.ts` and `routes/internal-file.ts`) runs `claimImportedImages` from
+  `copy-image-claims.ts` before `importPlanCopy`: the ids its card rows' `attachments` hold (`attachedImageIds`, a
+  superset of what `placedImagesSql` reads with no grants), capped at what one plan's report carries, sent as one
+  `pending` entry for the new plan's id. A refusal throws before anything is written, so the import fails whole.
   Removed pictures (items.md "Removed pictures") are `plan-room/image-release.ts`: schema step V35 makes
   `image_releases (plan_id, image_id, due_at NULL, attempts)` and the triggers `image_releases_update` (AFTER UPDATE OF
   fields) and `image_releases_delete` (AFTER DELETE) on `items`, firing as the `outbox_images_*` triggers do, which
