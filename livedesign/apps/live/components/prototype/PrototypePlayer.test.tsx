@@ -321,6 +321,36 @@ describe('PrototypePlayer on a phone', () => {
     expect(shownScreenId()).toBe('p1');
     fireEvent.click(screen.getByRole('button', { name: 'Close prototype' }));
   });
+
+  it('goes edge to edge, keeping the screen and the pill inside the safe areas', () => {
+    const meta = document.createElement('meta');
+    meta.name = 'viewport';
+    meta.content = 'width=device-width, initial-scale=1';
+    document.head.append(meta);
+    m.phone = true;
+    const { view } = play();
+    expect(meta.content).toContain('viewport-fit=cover');
+    const layer = document.querySelector('[data-prototype-screen="p1"]')!.parentElement!;
+    for (const side of ['top', 'right', 'bottom', 'left'])
+      expect(layer.style.getPropertyValue(side)).toBe(`env(safe-area-inset-${side}, 0px)`);
+    const bar = document.querySelector<HTMLElement>('[data-prototype-bar="phone"]')!;
+    expect(bar.style.top).toBe('max(8px, env(safe-area-inset-top, 0px))');
+    expect(bar.style.paddingLeft).toBe('max(8px, env(safe-area-inset-left, 0px))');
+    expect(bar.style.paddingRight).toBe('max(8px, env(safe-area-inset-right, 0px))');
+    view.unmount();
+    expect(meta.content).toBe('width=device-width, initial-scale=1');
+    meta.remove();
+  });
+
+  it('leaves the viewport alone on a desktop', () => {
+    const meta = document.createElement('meta');
+    meta.name = 'viewport';
+    meta.content = 'width=device-width';
+    document.head.append(meta);
+    play();
+    expect(meta.content).toBe('width=device-width');
+    meta.remove();
+  });
 });
 
 describe('svgInner', () => {
