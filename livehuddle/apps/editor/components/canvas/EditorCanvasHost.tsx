@@ -73,6 +73,7 @@ export function EditorCanvasHost() {
     sessionTabScope,
     participating,
     nameDocument,
+    renameDocumentNonce,
     dropPaletteItem,
     duplicateMultiSelected,
     contextMenu,
@@ -338,6 +339,7 @@ export function EditorCanvasHost() {
         currentDocumentId={documentId}
         currentShareCode={sessionShareCode}
         onRenameCurrentDocument={nameDocument}
+        renameCurrentNonce={renameDocumentNonce}
         onNewDocument={newDocument}
         explorerMenuActions={{
           // The header's Share gate: the owner, or a joined member of the document's team

@@ -148,7 +148,6 @@ export function EditorView() {
     setSettingsOpen,
     openSettingsOn,
     setShareDialogOpen,
-    renameDocumentNonce,
     renameTabNonce,
     tabs,
     openCollaborators,
@@ -198,7 +197,7 @@ export function EditorView() {
 
   // A phone held sideways folds the header and the tab bar (docs/specs/007-editor/editor-app.md "A phone
   // held sideways"); a rename asked for elsewhere shows them first, so its field can take the focus.
-  const landscapeBars = useLandscapeBars([renameDocumentNonce, renameTabNonce]);
+  const landscapeBars = useLandscapeBars([renameTabNonce]);
 
   // The site header. Embeds (docs/specs/013-workspace/embeds.md) never show it. Side by
   // side (docs/specs/007-editor/split-view.md) lays it across both panes.

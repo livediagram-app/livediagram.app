@@ -145,7 +145,6 @@ export function EditorView() {
     isReadOnly,
     makeCopy,
     sessionShareCode,
-    renameProjectNonce,
     renameTabNonce,
     tabs,
     userPreferences,
@@ -189,7 +188,7 @@ export function EditorView() {
 
   // A phone held sideways folds the header and the tab bar (docs/specs/007-editor/editor-app.md "A phone
   // held sideways"); a rename asked for elsewhere shows them first, so its field can take the focus.
-  const landscapeBars = useLandscapeBars([renameProjectNonce, renameTabNonce]);
+  const landscapeBars = useLandscapeBars([renameTabNonce]);
 
   // The site header and the tab bar, its footer (EditorViewBars), or null where they are hidden.
   // Walkthroughs (docs/specs/012-collaboration/walkthroughs.md): their row in the footer's Tools and the layer over the canvas.

@@ -27,6 +27,7 @@ export function useMenuCanvasProps({
     canvasTool,
     designId,
     nameDesign,
+    renameDesignNonce,
     contextMenu,
     exitFormatTool,
     hydrated,
@@ -53,6 +54,7 @@ export function useMenuCanvasProps({
     currentDesignId: designId,
     currentShareCode: sessionShareCode,
     onRenameCurrentDesign: nameDesign,
+    renameCurrentNonce: renameDesignNonce,
     onNewDesign: newDesign,
     explorerMenuActions: {
       // The header's Share gate: the owner, or a joined member of the design's team

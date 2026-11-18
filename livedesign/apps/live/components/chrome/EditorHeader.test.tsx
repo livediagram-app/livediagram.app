@@ -98,43 +98,21 @@ describe('EditorHeader account menu', () => {
   });
 });
 
-describe('EditorHeader rename requests', () => {
-  const header = (renameNonce: number, hideTitle = false) => (
+describe('EditorHeader title rename', () => {
+  const header = () => (
     <EditorHeader
       designName="Untitled design"
       showShare={false}
       shareable={false}
       onOpenShare={() => {}}
       onRename={() => {}}
-      renameNonce={renameNonce}
-      hideTitle={hideTitle}
     />
   );
   const editing = () => screen.queryByDisplayValue('Untitled design');
 
-  it('opens the name editor for a request, never on mount', () => {
-    const { rerender } = render(header(0));
-    expect(editing()).toBeNull();
-    rerender(header(1));
-    expect(editing()).not.toBeNull();
-  });
-
-  it('honours a request made while the title is hidden once it shows, and only once', () => {
-    const { rerender } = render(header(0, true));
-    rerender(header(1, true));
-    expect(editing()).toBeNull();
-    rerender(header(1, false));
-    expect(editing()).not.toBeNull();
-    fireEvent.blur(screen.getByDisplayValue('Untitled design'));
-    expect(editing()).toBeNull();
-    rerender(header(1, true));
-    rerender(header(1, false));
-    expect(editing()).toBeNull();
-  });
-
   it('hands focus back to the title when a rename ends from the keyboard', async () => {
     // The field goes as the rename ends, so Escape (or Enter) left focus on the page (NameEditor).
-    render(header(0));
+    render(header());
     fireEvent.click(screen.getByRole('button', { name: 'Untitled design' }));
     fireEvent.keyDown(screen.getByDisplayValue('Untitled design'), { key: 'Escape' });
     expect(editing()).toBeNull();

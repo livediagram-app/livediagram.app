@@ -35,6 +35,31 @@ test.describe('Tools', () => {
   });
 });
 
+// The search's Rename opens the Explorer panel on the open item's name, focused with the name selected
+// (liveworkspace/docs/specs/004-index/one-explorer.md "Rename from the search"): there is no header bar to rename in.
+test.describe('Rename from the search', () => {
+  test('Rename Document opens the Explorer on its name field, focused', async ({
+    page,
+    pageErrors,
+  }) => {
+    await openEditor(page);
+    await page.keyboard.press('ControlOrMeta+k');
+    await page.keyboard.type('Rename Document');
+    await page.keyboard.press('Enter');
+    const field = page.getByRole('textbox', { name: /^Rename / });
+    await expect(field).toBeFocused();
+    await expect(page.getByRole('button', { name: 'Explorer' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+    const selected = await field.evaluate(
+      (el: HTMLInputElement) => el.selectionEnd! - el.selectionStart! === el.value.length,
+    );
+    expect(selected).toBe(true);
+    expectNoPageErrors(pageErrors);
+  });
+});
+
 test.describe('Retired power user keys', () => {
   test('a stored blob with them loads the default chrome and keeps every other setting', async ({
     page,

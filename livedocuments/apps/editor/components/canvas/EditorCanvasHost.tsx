@@ -79,6 +79,7 @@ export function EditorCanvasHost() {
     documentId,
     documentName,
     nameDocument,
+    renameDocumentNonce,
     sessionShareCode,
     duplicateMultiSelected,
     contextMenu,
@@ -374,6 +375,7 @@ export function EditorCanvasHost() {
                 currentDocumentId={documentId}
                 currentShareCode={sessionShareCode}
                 onRenameCurrentDocument={nameDocument}
+                renameCurrentNonce={renameDocumentNonce}
                 onNewDocument={newDocument}
                 explorerMenuActions={explorerMenuActions}
                 onDeselect={onDeselect}
