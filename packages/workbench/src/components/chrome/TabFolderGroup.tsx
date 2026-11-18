@@ -119,13 +119,15 @@ export function TabFolderGroup<T extends { id: string }>({
         ) : (
           <HoverCard
             title={name}
-            description={`${count}. ${
+            description={
               holdsOpen
-                ? "Holds the tab you're on, so it stays open"
-                : expanded
-                  ? 'Click to tuck them away'
-                  : 'Click to show them here'
-            }${readOnly ? '' : ', double-click to rename'}.`}
+                ? `${count}. It holds the tab you're on, so it stays open.${
+                    readOnly ? '' : ' Double-click to rename.'
+                  }`
+                : `${count}. ${expanded ? 'Click to tuck them away' : 'Click to show them here'}${
+                    readOnly ? '' : ', double-click to rename'
+                  }.`
+            }
           >
             <button
               type="button"

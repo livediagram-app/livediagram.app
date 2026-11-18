@@ -186,8 +186,10 @@ describe('TabFolderGroup', () => {
     // Holding the open tab, it says why a click won't shut it.
     rerender(<TabFolderGroup {...props({ activeId: 'b' })} />);
     expect(document.body.textContent).toMatch(
-      /3 tabs\. Holds the tab you're on, so it stays open, double-click to rename\./,
+      /3 tabs\. It holds the tab you're on, so it stays open\. Double-click to rename\./,
     );
+    rerender(<TabFolderGroup {...props({ activeId: 'b', readOnly: true })} />);
+    expect(document.body.textContent).toMatch(/so it stays open\.(?! Double)/);
   });
 
   it('colours itself from its name', () => {
