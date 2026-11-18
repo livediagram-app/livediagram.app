@@ -131,6 +131,10 @@ const HELD_AT_100 = [
   // (docs/specs/004-interface-design/colour-picker.md "Reading on its ground", Work Tracker 1108).
   'src/components/colour/ContrastHint.tsx',
   'src/components/colour/useJudgedSwatch.ts',
+  // The Editing Mode button between Tools and Settings, every editor's (liveworkspace/docs/specs/004-index/
+  // footer-tools-menu.md "The Editing Mode button", Work Tracker 1291).
+  'src/lib/editing-mode.ts',
+  'src/components/chrome/EditingModeButton.tsx',
 ];
 
 export default defineProject({
