@@ -11,6 +11,7 @@ import {
   PANEL_BODY,
   type ExplorerPanelProps,
 } from './ExplorerPanel';
+import { PANE_CARD_PICTURE } from './pane-parts';
 import { panelSectionStorageKey } from './sections';
 import type { ThisBrowserHost } from '../explorer/ThisBrowser';
 import type { ThisBrowserItem } from '../this-browser';
@@ -688,6 +689,77 @@ describe("the panel's This Browser", () => {
       expect(within(card).getByText('Updated just now')).toBeTruthy();
     } finally {
       rects.mockRestore();
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it("draws the current card's picture in the pane cards' 16:9 frame, full width (Work Tracker 1293)", () => {
+    renderPanel(createFakeIndex({ items: [] }), {
+      thisBrowser: host(),
+      currentId: 'fresh',
+      currentOffline: true,
+      currentTitle: 'Untitled Plan',
+    });
+    const card = screen.getByRole('region', { name: 'Current plan' });
+    const frame = card.querySelector<HTMLElement>('[data-current-picture]')!;
+    // The same frame as Home's and Spaces' cards: 16:9 across the card, no fixed height (it was h-24, 96 px).
+    for (const c of PANE_CARD_PICTURE.split(' ')) expect(frame.className.split(' ')).toContain(c);
+    expect(frame.className.split(' ')).not.toContain('h-24');
+    expect(frame.style.height).toBe('');
+    expect(frame.firstElementChild!.className.split(' ')).toContain('aspect-[16/9]');
+    // Flush with the card, as a pane card's picture is: no padding round it.
+    expect(card.className.split(' ')).not.toContain('p-1.5');
+    expect(card.className.split(' ')).toContain('overflow-hidden');
+    cleanup();
+    // A phone's sheet draws it as a row over the chips: the same 16:9 picture at the row's height (it was 80 by 56).
+    renderPanel(createFakeIndex({ items: [] }), {
+      layout: 'sheet',
+      open: true,
+      thisBrowser: host(),
+      currentId: 'fresh',
+      currentOffline: true,
+      currentTitle: 'Untitled Plan',
+    });
+    const row = screen.getByRole('region', { name: 'Current plan' });
+    const thumb = row.querySelector<HTMLElement>('[data-current-thumb]')!.className.split(' ');
+    for (const c of ['aspect-[16/9]', 'h-14']) expect(thumb).toContain(c);
+    expect(thumb).not.toContain('w-20');
+  });
+
+  it('shrinks the frame on a short rail but keeps the picture 16:9 inside it, never squashed (Work Tracker 1293)', () => {
+    class Observer {
+      observe() {}
+      disconnect() {}
+      unobserve() {}
+    }
+    vi.stubGlobal('ResizeObserver', Observer);
+    // Every block 100 px tall in a 224 px wide card (16:9: 126 px), in a rail with 80 px of room.
+    const rects = vi
+      .spyOn(Element.prototype, 'getBoundingClientRect')
+      .mockReturnValue({ top: 0, bottom: 100, height: 100, width: 224 } as DOMRect);
+    const drawn = vi
+      .spyOn(Element.prototype, 'getClientRects')
+      .mockReturnValue([{}] as unknown as DOMRectList);
+    const room = vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(80);
+    try {
+      renderPanel(createFakeIndex({ items: [] }), {
+        thisBrowser: host(),
+        currentId: 'fresh',
+        currentOffline: true,
+        currentTitle: 'Untitled Plan',
+      });
+      const card = screen.getByRole('region', { name: 'Current plan' });
+      const frame = card.querySelector<HTMLElement>('[data-current-picture]')!;
+      expect(frame.style.height).toBe('79px');
+      expect(frame.className.split(' ')).toContain('overflow-hidden');
+      expect(frame.className.split(' ')).toContain('items-center');
+      const picture = frame.firstElementChild!.className.split(' ');
+      expect(picture).toContain('aspect-[16/9]');
+      expect(picture).not.toContain('h-full');
+    } finally {
+      rects.mockRestore();
+      drawn.mockRestore();
+      room.mockRestore();
       vi.unstubAllGlobals();
     }
   });
