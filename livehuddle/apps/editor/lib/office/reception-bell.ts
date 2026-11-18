@@ -3,7 +3,8 @@
 // The reception bell (docs/specs/009-elements/workday-pieces.md "Reception Desk", "The wire"): the Ring Bell button in a
 // desk's Welcome bubble sends one `avatar-bell`, one per 5 seconds; the room broadcasts it, and each screen that
 // receives it decides whether it stands in earshot (the desk's room, or within BELL_RADIUS of a desk in no room). Who
-// hears it hears a ding, sees the bell ring out on the desk, and is told who rang. Nothing is stored or replayed.
+// hears it hears a ding and sees the bell ring out on the desk; everyone walking on the tab is told who rang, in
+// earshot or not. Nothing is stored or replayed.
 //
 // The canvas's call hook (useCanvasCall) points the ringer at the room and listens for rings; the desk's face reads
 // the stores below. Each store wakes only the faces it concerns.
@@ -190,8 +191,11 @@ export function useReceptionBell(deps: {
       onBell((from, op) => {
         const now = latest.current;
         if (!now.inMode || now.doNotDisturb) return;
-        if (!hearsBell(now.desks.get(op.deskId), now.self, now.zones)) return;
-        hearRing(op.deskId);
+        const desk = now.desks.get(op.deskId);
+        if (!desk) return;
+        // In earshot you hear the ding and see the bell ring out; anywhere else in the Space you are still told, so a
+        // ring at an empty front desk reaches the people it is for (Work Tracker 1185).
+        if (hearsBell(desk, now.self, now.zones)) hearRing(op.deskId);
         now.toast.info(bellToast(now.walkers.find((w) => w.id === from)?.name));
       }),
     [latest],
