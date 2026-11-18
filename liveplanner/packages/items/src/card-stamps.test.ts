@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   STAMP_FIELDS,
+  heldPerson,
+  heldStampPerson,
   isStampField,
   itemHasStamp,
   itemStampPerson,
@@ -18,6 +20,7 @@ import {
   LINKED_REV_FIELD,
 } from './linked-fields';
 import { STATUS_SINCE_FIELD } from './item';
+import { applyItemWrite } from './store';
 import { ALI, SAM, item } from './test-items';
 
 // docs/specs/026-plan/items.md "Created and Last Edited".
@@ -158,5 +161,54 @@ describe('clients never write them', () => {
       });
       expect(validateFields({ [k]: SAM }, 'patch')).toMatchObject({ ok: false, field: k });
     }
+  });
+});
+
+// items.md "One person, one colour on a card".
+describe('one person, one colour on a card', () => {
+  // The same account in another session: the same hashed id, a colour that moved (a renamed profile on Automatic).
+  const SAM_ELSEWHERE = { ...SAM, name: 'Sam Lee-Jones', color: '#16a34a' };
+
+  it("stamps an edit by the card's maker in the colour the card holds for them", () => {
+    const made = makeItem(
+      { type: 'task', fields: { title: 'A' } },
+      { ...ctx, by: SAM, id: 'i1', key: 1, items: [] },
+    );
+    const next = applyPatch(made, { set: { title: 'B' } }, { now: NOW, by: SAM_ELSEWHERE });
+    expect(next.createdBy).toEqual(SAM);
+    expect(next.updatedBy).toEqual({ ...SAM_ELSEWHERE, color: SAM.color });
+  });
+
+  it("keeps a last editor's colour when the maker is someone else", () => {
+    const card = item({}, { createdBy: ALI, updatedBy: SAM, createdAt: MADE, updatedAt: LATER });
+    const next = applyMove(card, { status: 'done', before: null }, [card], {
+      now: NOW,
+      by: SAM_ELSEWHERE,
+    });
+    expect(next.updatedBy.color).toBe(SAM.color);
+  });
+
+  it('leaves another person in their own colour', () => {
+    const next = applyPatch(stamped(), { set: { title: 'B' } }, ctx);
+    expect(next.updatedBy).toEqual(ALI);
+  });
+
+  it('applies the same rule through the store the editor writes with', () => {
+    const card = stamped();
+    const done = applyItemWrite(
+      { items: [card], rev: 1, nextKey: 2 },
+      { kind: 'patch', id: card.id, patch: { set: { title: 'B' } } },
+      { now: NOW, by: SAM_ELSEWHERE },
+    );
+    expect(done.ok && done.upserts[0]!.updatedBy.color).toBe(SAM.color);
+  });
+
+  it('finds the person a card holds, and none for no id or a stranger', () => {
+    const cards = [item({}, { createdBy: ALI, updatedBy: SAM })];
+    expect(heldPerson(SAM.id, cards)).toEqual(SAM);
+    expect(heldPerson(ALI.id, cards)).toEqual(ALI);
+    expect(heldPerson('', cards)).toBeUndefined();
+    expect(heldPerson('p-zoe', cards)).toBeUndefined();
+    expect(heldStampPerson(SAM, cards)).toBe(SAM);
   });
 });
