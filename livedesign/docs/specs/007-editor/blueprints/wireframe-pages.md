@@ -39,48 +39,48 @@ Derived from [Wireframe pages](../wireframe-pages.md). The page machinery it ext
 
 ## Where the code lives
 
-| File                                                                                    | Role                                                                                                                |
-| --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `packages/design/src/wireframe-device.ts` (+ test)                                      | Devices, groups, gutters, geometry (`deviceGeometry`), the safe area, paths, `wireframeAddress`                     |
-| `packages/design/src/wireframe-device-svg.ts`                                           | The frame under the screen, in each device and look; re-exports the two below                                       |
-| `packages/design/src/wireframe-frame-paint.ts`                                          | Each look's paint and finish (Theme, Outline, Sketch, Marker) and the parts a frame is built from                   |
-| `packages/design/src/wireframe-frame-over.ts`                                           | What is drawn over the screen: the camera in it, the status bar and home indicator                                  |
-| `packages/design/src/wireframe-page.ts`                                                 | The page-level answers every caller asks once: geometry, screen, content box, clip, frame                           |
-| `packages/design/src/pages-edits.ts`                                                    | `pageDeviceSet` (orientation, frame look, system bars; re-fit), `not_a_wireframe`                                   |
-| `packages/templates/src/wireframe-layouts.ts`, `wireframe-layouts-*.ts`                 | The layouts by category; `wireframeLayoutsFor`                                                                      |
-| `packages/templates/src/wireframe-layout-kit.ts`                                        | `WF` (the wireframe greys), `ui(box)`, `screenForm`, bars and navs, `fitToBox`, `scaleFrom`                         |
-| `packages/templates/src/wireframe-flow-data.ts`, `template-builders-wireframe-flows.ts` | The Wireframes templates' flows: their screens, words and links, and building them                                  |
-| `apps/live/components/canvas/WireframeDeviceSheet.tsx`, `WireframeDeviceOverlays.tsx`   | The frame under the page's content, and the bars over it                                                            |
-| `apps/live/components/canvas/wireframe/`                                                | `ChooseDeviceStep`, `DevicePicker`, `DeviceMiniature`, `DeviceGlyph`, `PageDeviceButton`, `WireframeDeviceSettings` |
-| `apps/live/components/canvas/AddScreenPopover.tsx`                                      | **Add a Screen of Another Device**                                                                                  |
-| `apps/live/hooks/editor/page-edits.ts`                                                  | `addPage(kind, device)`, `choosePageKind(pageId, kind, device)`, `setDevice(pageId, patch)`, telemetry              |
-| `apps/live/hooks/editor/usePagesMode.ts`                                                | Framing a wireframe page (`WIREFRAME_FIT_MAX_ZOOM`)                                                                 |
-| `apps/live/lib/wireframe-device-memory.ts`                                              | The device last chosen in this browser                                                                              |
-| `apps/live/lib/palette-kind.ts`, `components/palette/palette-wireframe-tiles.tsx`       | The palette's Wireframe kind and its Elements tiles                                                                 |
-| `apps/live/components/tour/wireframe-tour-steps.ts`                                     | The Wireframe track of the Pages tour ([Pages tour](../pages-tour.md))                                              |
-| `packages/design/src/inspect-element.ts` (+ test)                                       | Inspect's reading of an element (`inspectElement`) and its CSS and plain values                                     |
-| `packages/design/src/inspect-spacing.ts` (+ test)                                       | The spacing lines to neighbours, containers and the screen edge; between two elements                               |
-| `apps/live/lib/inspect-target.ts`                                                       | Which element is inspected, its neighbours on its page, its spec and lines in page points                           |
-| `apps/live/lib/inspect-link.ts`, `inspect-export.ts`                                    | The `inspect` parameter and the Viewer link it rides; exporting one element at a scale                              |
-| `apps/live/components/canvas/inspect/`                                                  | `InspectOverlay` (outlines, lines, pills), `InspectClusterSegment`, `useInspectHost`, `InspectSessionContext`       |
-| `apps/live/components/panels/inspect/`                                                  | `InspectPanel`, `InspectSpacingBox`, `inspect-panel-parts` (sections, copyable value cells, swatches)               |
-| `packages/design/src/page-link.ts` (+ test)                                             | Screen links: the stored shape, `isWellFormedLinkField`, `resolveScreenLink`, `screenName`, `describeScreenLink`    |
-| `packages/design/src/validate.ts`                                                       | The `link` field check in `COMMON_FIELD_CHECKS` (`SCREEN_LINK_RULE`)                                                |
-| `packages/design-views/src/attributes.ts`                                               | `link=page:<pageId>`, `link=back`, `transition=`, `broken` (`ViewModel.pageIds`)                                    |
-| `packages/agent-verbs/src/mcp/element-docs.ts`                                          | `SCREEN_LINKS`: the element format's screen link facts                                                              |
-| `apps/live/lib/link-label.ts`, `components/canvas/LinkCardView.tsx`                     | A screen link's hover line (`describeLink(link, tabs, pages)`) and a link card holding one                          |
-| `apps/live/hooks/canvas/useElementLinks.ts`                                             | `followLink` leaves a screen link to Prototype mode                                                                 |
-| `apps/live/lib/editor-capabilities.ts`                                                  | `linkScreens`, `playPrototype`                                                                                      |
-| `apps/live/lib/screen-link-choices.ts` (+ test)                                         | `screenLinkChoices`, `screenOfElement`, `relinkToScreen`, `showsScreenLinkHandle`, `wireframeTabPages`              |
-| `apps/live/components/dialogs/ScreenLinkMode.tsx`, `LinkPickerDialog.tsx`               | Link Element's Screen mode: the transition, the screens, Back, the broken note                                      |
-| `apps/live/components/canvas/ScreenLinkHandle.tsx`, `LayerSelectionChrome.tsx`          | The link handle, its drag line and the outlined screen                                                              |
-| `apps/live/components/canvas/screen-link-pages.tsx`, `useElementIndicators.ts`          | The tab's pages for the markers (a store, so a page edit re-renders only the linked elements) and the marker item   |
-| `apps/live/components/canvas/screen-link-glyphs.tsx`, `ElementIndicators.tsx`           | The screen, broken screen and back glyphs; the marker drawn in its state                                            |
-| `apps/live/lib/prototype-player.ts` (+ test)                                            | The player's pure state: screens, hotspots, following, stepping, the change and its direction                       |
-| `apps/live/lib/prototype-player-store.ts`                                               | Whether the player is open and on which screen it starts (one per browser tab)                                      |
-| `apps/live/lib/link-flag.ts`, `prototype-link.ts`, `copy-flagged-view-link.ts`          | A link's flag (`inspect`, `prototype`); the `prototype` flag; copying a flagged Viewer link (Inspect's too)         |
-| `apps/live/components/prototype/`                                                       | `PrototypePlayer` (stage, bar, keys), `PrototypeScreen` (one screen and its hotspots), `usePrototypeHost`           |
-| `apps/live/components/chrome/PrototypeHeaderButton.tsx`                                 | The header's **Prototype** action (the shared `EditorHeader`'s `leadAction` slot)                                   |
+| File                                                                                    | Role                                                                                                                             |
+| --------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/design/src/wireframe-device.ts` (+ test)                                      | Devices, groups, gutters, geometry (`deviceGeometry`), the safe area, paths, `wireframeAddress`                                  |
+| `packages/design/src/wireframe-device-svg.ts`                                           | The frame under the screen, in each device and look; re-exports the two below                                                    |
+| `packages/design/src/wireframe-frame-paint.ts`                                          | Each look's paint and finish (Theme, Outline, Sketch, Marker) and the parts a frame is built from                                |
+| `packages/design/src/wireframe-frame-over.ts`                                           | What is drawn over the screen: the camera in it, the status bar and home indicator                                               |
+| `packages/design/src/wireframe-page.ts`                                                 | The page-level answers every caller asks once: geometry, screen, content box, clip, frame                                        |
+| `packages/design/src/pages-edits.ts`                                                    | `pageDeviceSet` (orientation, frame look, system bars; re-fit), `not_a_wireframe`                                                |
+| `packages/templates/src/wireframe-layouts.ts`, `wireframe-layouts-*.ts`                 | The layouts by category; `wireframeLayoutsFor`                                                                                   |
+| `packages/templates/src/wireframe-layout-kit.ts`                                        | `WF` (the wireframe greys), `ui(box)`, `screenForm`, bars and navs, `fitToBox`, `scaleFrom`                                      |
+| `packages/templates/src/wireframe-flow-data.ts`, `template-builders-wireframe-flows.ts` | The Wireframes templates' flows: their screens, words and links, and building them                                               |
+| `apps/live/components/canvas/WireframeDeviceSheet.tsx`, `WireframeDeviceOverlays.tsx`   | The frame under the page's content, and the bars over it                                                                         |
+| `apps/live/components/canvas/wireframe/`                                                | `ChooseDeviceStep`, `DevicePicker`, `DeviceMiniature`, `DeviceGlyph`, `PageDeviceButton`, `WireframeDeviceSettings`              |
+| `apps/live/components/canvas/AddScreenPopover.tsx`                                      | **Add a Screen of Another Device**                                                                                               |
+| `apps/live/hooks/editor/page-edits.ts`                                                  | `addPage(kind, device)`, `choosePageKind(pageId, kind, device)`, `setDevice(pageId, patch)`, telemetry                           |
+| `apps/live/hooks/editor/usePagesMode.ts`                                                | Framing a wireframe page (`WIREFRAME_FIT_MAX_ZOOM`)                                                                              |
+| `apps/live/lib/wireframe-device-memory.ts`                                              | The device last chosen in this browser                                                                                           |
+| `apps/live/lib/palette-kind.ts`, `components/palette/palette-wireframe-tiles.tsx`       | The palette's Wireframe kind and its Elements tiles                                                                              |
+| `apps/live/components/tour/wireframe-tour-steps.ts`                                     | The Wireframe track of the Pages tour ([Pages tour](../pages-tour.md))                                                           |
+| `packages/design/src/inspect-element.ts` (+ test)                                       | Inspect's reading of an element (`inspectElement`) and its CSS and plain values                                                  |
+| `packages/design/src/inspect-spacing.ts` (+ test)                                       | The spacing lines to neighbours, containers and the screen edge; between two elements                                            |
+| `apps/live/lib/inspect-target.ts`                                                       | Which element is inspected, its neighbours on its page, its spec and lines in page points                                        |
+| `apps/live/lib/inspect-link.ts`, `inspect-export.ts`                                    | The `inspect` parameter and the Viewer link it rides; exporting one element at a scale                                           |
+| `apps/live/components/canvas/inspect/`                                                  | `InspectOverlay` (outlines, lines, pills), `InspectClusterSegment`, `useInspectHost`, `InspectSessionContext`                    |
+| `apps/live/components/panels/inspect/`                                                  | `InspectPanel`, `InspectSpacingBox`, `inspect-panel-parts` (sections, copyable value cells, swatches)                            |
+| `packages/design/src/page-link.ts` (+ test)                                             | Screen links: the stored shape, `isWellFormedLinkField`, `resolveScreenLink`, `screenName`, `describeScreenLink`                 |
+| `packages/design/src/validate.ts`                                                       | The `link` field check in `COMMON_FIELD_CHECKS` (`SCREEN_LINK_RULE`)                                                             |
+| `packages/design-views/src/attributes.ts`                                               | `link=page:<pageId>`, `link=back`, `transition=`, `broken` (`ViewModel.pageIds`)                                                 |
+| `packages/agent-verbs/src/mcp/element-docs.ts`                                          | `SCREEN_LINKS`: the element format's screen link facts                                                                           |
+| `apps/live/lib/link-label.ts`, `components/canvas/LinkCardView.tsx`                     | A screen link's hover line (`describeLink(link, tabs, pages)`) and a link card holding one                                       |
+| `apps/live/hooks/canvas/useElementLinks.ts`                                             | `followLink` leaves a screen link to Prototype mode                                                                              |
+| `apps/live/lib/editor-capabilities.ts`                                                  | `linkScreens`, `playPrototype`                                                                                                   |
+| `apps/live/lib/screen-link-choices.ts` (+ test)                                         | `screenLinkChoices`, `screenOfElement`, `relinkToScreen`, `showsScreenLinkHandle`, `wireframeTabPages`                           |
+| `apps/live/components/dialogs/ScreenLinkMode.tsx`, `LinkPickerDialog.tsx`               | Link Element's Screen mode: the transition, the screens, Back, the broken note                                                   |
+| `apps/live/components/canvas/ScreenLinkHandle.tsx`, `LayerSelectionChrome.tsx`          | The link handle, its drag line and the outlined screen                                                                           |
+| `apps/live/components/canvas/screen-link-pages.tsx`, `useElementIndicators.ts`          | The tab's pages for the markers (a store, so a page edit re-renders only the linked elements) and the marker item                |
+| `apps/live/components/canvas/screen-link-glyphs.tsx`, `ElementIndicators.tsx`           | The screen, broken screen and back glyphs; the marker drawn in its state                                                         |
+| `apps/live/lib/prototype-player.ts` (+ test)                                            | The player's pure state: screens, hotspots, following, stepping, the change and its direction                                    |
+| `apps/live/lib/prototype-player-store.ts`                                               | Whether the player is open and on which screen it starts (one per browser tab)                                                   |
+| `apps/live/lib/link-flag.ts`, `prototype-link.ts`, `copy-flagged-view-link.ts`          | A link's flag (`inspect`, `prototype`); the `prototype` flag; copying a flagged Viewer link (Inspect's too)                      |
+| `apps/live/components/prototype/`                                                       | `PrototypePlayer` (stage, bar, keys), `PrototypeScreen` (one screen and its hotspots), `usePrototypeHost`, `useViewportFitCover` |
+| `apps/live/components/chrome/PrototypeHeaderButton.tsx`                                 | The header's **Prototype** action (the shared `EditorHeader`'s `leadAction` slot)                                                |
 
 ## Behaviour and state
 
@@ -288,7 +288,12 @@ transition, direction: 'forward' | 'back', seq }` (`transition` the link's `page
   "Make a Viewer link, then copy the Prototype link."; tracks `UI · Copied · PrototypeLink`. Offered when
   `sessionShareCode !== null || (canShareDesign && !offline)`.
 - **Phone.** `useIsMobileViewport`: the stage fills `100dvh` on black with no padding, the bar a floating pill
-  (`top: max(8px, env(safe-area-inset-top))`), the screen's `viewBox` the screen rect.
+  (`top: atLeastInset('8px', 'top')`, side padding `safeInlinePadding('8px')`), the screen's `viewBox` the screen rect.
+  Each screen layer is inset by `safeInset(side)` on all four sides (`PHONE_LAYER`), so the screen fits inside the
+  safe areas. `useViewportFitCover(phone)` (`components/prototype/useViewportFitCover.ts`) sets the
+  `meta[name="viewport"]` content to `withViewportFitCover(before)` (any `viewport-fit` dropped, `viewport-fit=cover`
+  added, by splitting on commas) while the player is open on a phone, and puts `before` back on close, so the insets
+  are the device's own only while the player shows; the editor keeps its inset-free fit.
 - **Drag pill.** `ScreenLinkDragLine` measures its name pill after layout and shifts it by whatever keeps its box
   `SCREEN_LINK_PILL_MARGIN_PX` inside the window on each side.
 
@@ -311,8 +316,13 @@ transition, direction: 'forward' | 'back', seq }` (`transition` the link's `page
   `visibleLayerElements` with a screen link, its page is `rowPageAt(pages, elementAnchorPoint(el, index))` (none:
   skipped), its `box` is `contentBounds([el])` cut to `pageScreenRect(page)` (empty: skipped). The link resolves with
   `resolveScreenLink`:
-  - `back` gives `{ state: 'back', box }`; `broken` gives `{ state: 'broken', box, stub }`, the stub from the box's
-    right edge at its middle, `FLOW_STUB_PX / zoom` long;
+  - `back` gives `{ state: 'back', box, at, side }`; `broken` gives `{ state: 'broken', box, stub, at, side }`, the
+    stub from the box's edge on `side` at its middle, `FLOW_STUB_PX / zoom` long; `at` is where the tag starts
+    (`FLOW_TAG_GAP_PX / zoom` past the box, or half that past the stub's end), and it runs `side` from there. Tags are
+    placed after every arrow: the right is taken unless the tag's reach (stub and `FLOW_TAG_WIDTH_PX[kind]` by
+    `FLOW_TAG_HEIGHT_PX`, padded `FLOW_TAG_CLEAR_PX`, all `/ zoom`) meets an arrow's run, then the left when it meets
+    none, else the right. The runs are the axis-aligned boxes of each arc's start run, rise, drop and entry and each
+    adjacent curve's ends (its handles run level), in a 128 px grid (`RunGrid`), so a tag checks only the runs near it;
   - a page link to its own page gives `{ state: 'self', box }`;
   - a page link to an adjacent page (indexes one apart) gives `{ state: 'page', box, path, toPageId }`: from the
     middle of the box's facing side (right when the target lies right) to the target rect's near edge at the start's
@@ -326,10 +336,14 @@ transition, direction: 'forward' | 'back', seq }` (`transition` the link's `page
     `FLOW_LANE_SPREAD` above it, that no earlier arc holds over an overlapping run of pages (page indices `[lo, hi]`
     overlap when each starts before the other ends); with all of those held it takes the highest and holds nothing,
     so each lane's runs stay apart (at most one per page) and the walk stays linear in the links,
-    level along it, and down onto the target's top edge at `x` its near side plus
-    `FLOW_ENTRY_FRACTION` of its width plus `FLOW_ENTRY_STEP` for each earlier arc into that target (capped at
-    `FLOW_ENTRY_MAX`): straight runs joined by quadratic corners of `FLOW_CORNER_PX / zoom` (never more than the
-    runs allow), ending vertical. Arcs leaving one page share its gap's column up to their lanes.
+    level along it to `dropX`, down the gap on the target's near side and level into the target's near edge at
+    `entry`. The arcs into one side of one target (`placeDrops`, after the walk) are sorted by lane, highest first;
+    the `k`th drops `min((FLOW_DROP_PX + FLOW_DROP_STEP_PX * k) / zoom, room)` out from the near edge (`room`
+    `max(gap / 2 - 2 * side, (gap / 2 - side) / 2)`, between the target and the column arcs leaving it rise in) and
+    enters `FLOW_ENTRY_INSET + FLOW_ENTRY_STEP_PX * k / zoom` below its top (past a phone frame's rounded corner) (held above its foot), so they nest without
+    crossing and never cross the label and title bar above the target. `arcPath` is `roundedPath` over those six
+    points: straight runs joined by quadratic corners of `FLOW_CORNER_PX / zoom`, each never past half a run it joins
+    (the whole of the first and last), ending level. Arcs leaving one page share its gap's column up to their lanes.
     Items come in paint order. The walk is linear in the tab's elements (`buildElementIndex` once): about 2 ms warm for
     4,000 elements with 1,333 links over 20 screens, 0.15 ms for 200 (measured on an M-series laptop, 2026-11-15);
     `flow-view.test.ts` holds a 4,000-element tab to a CPU budget. It reruns on each render while the view is on (the
@@ -340,7 +354,8 @@ transition, direction: 'forward' | 'back', seq }` (`transition` the link's `page
   dark `stroke-slate-900`, `FLOW_HALO_PX / zoom`, opacity 0.85) under the brand stroke, with a start dot and an
   arrowhead `marker` in `markerUnits="strokeWidth"` (so it holds its size), `orient="auto"`. The broken stub is
   dashed (`6 / zoom`, `4 / zoom`). The tags (**Back** with `BackLinkGlyph`, **Broken** with `BrokenScreenLinkGlyph`)
-  are HTML pills counter-scaled by `1 / zoom` like the drag pill, beside the box's right edge or at the stub's end.
+  are HTML pills counter-scaled by `1 / zoom` like the drag pill, anchored at the item's `at`, running right, or left
+  (`-translate-x-full`, `data-flow-tag-side="left"`) when its `side` is -1.
 
 ## Interfaces and contracts
 
@@ -422,41 +437,45 @@ Played) and `UI · Copied · PrototypeLink` (counted in Share Links Copied). Flo
 
 ## Constants and configuration
 
-| Constant                               | Value                                      | Where                        |
-| -------------------------------------- | ------------------------------------------ | ---------------------------- |
-| `DEFAULT_WIREFRAME_DEVICE`             | `'iphone'`                                 | `wireframe-device.ts`        |
-| `WIREFRAME_GUTTER`                     | phone 16, tablet 24, computer 32, watch 12 | `wireframe-device.ts`        |
-| Device screens                         | as the spec's table                        | `WIREFRAME_DEVICES`          |
-| `BROWSER`                              | border 1, toolbar 52, radius 12            | `wireframe-device.ts`        |
-| `STATUS_TIME` / `WATCH_TIME`           | `9:41` / `10:09`                           | `wireframe-frame-over.ts`    |
-| `SKETCH_FRAME_PX` / `MARKER_FRAME_PX`  | 1.4 / 3                                    | `wireframe-frame-paint.ts`   |
-| `WATCH_MAX_WIDTH` / `PHONE_MAX_WIDTH`  | 300 / 600                                  | `wireframe-layout-kit.ts`    |
-| `SHORT_HEIGHT` / `SHORT_SCALE_MIN`     | 600 / 0.72                                 | `wireframe-layouts-start.ts` |
-| `TALL_RATIO` / `COLUMN_MAX`            | 1.2 / 560                                  | `wireframe-layouts-start.ts` |
-| `WIREFRAME_FIT_MAX_ZOOM`               | 2.5                                        | `usePagesMode.ts`            |
-| Device memory key                      | `livedesign:v2:wireframe-device`           | `wireframe-device-memory.ts` |
-| `INSPECT_PARAM`                        | `'inspect'` (copied as `inspect=1`)        | `inspect-link.ts`            |
-| `INSPECT_EXPORT_SCALES`                | 1, 2, 3                                    | `inspect-export.ts`          |
-| `INSPECT_LINE_COLOUR`                  | `#e5484d`                                  | `InspectOverlay.tsx`         |
-| `PAGE_LINK_TRANSITIONS`                | `instant`, `slide`, `dissolve`             | `page-link.ts`               |
-| `DEFAULT_PAGE_LINK_TRANSITION`         | `'instant'`                                | `page-link.ts`               |
-| `PAGE_LINK_ID_MAX`                     | 64 (a page id is `page-` and 8 hex)        | `page-link.ts`               |
-| `SCREEN_LINK_HANDLE_PX`                | 22 (the quick-connect plus's size)         | `ScreenLinkHandle.tsx`       |
-| `SCREEN_LINK_HANDLE_GAP_PX`            | 6 (screen px past the corner)              | `ScreenLinkHandle.tsx`       |
-| `SCREEN_LINK_DRAG_SLOP_PX`             | 4 (screen px before a press is a drag)     | `ScreenLinkHandle.tsx`       |
-| `SCREEN_LINK_PILL_MARGIN_PX`           | 8 (the drag pill's gap from the window)    | `ScreenLinkHandle.tsx`       |
-| `PROTOTYPE_PARAM`                      | `'prototype'` (copied as `prototype=1`)    | `prototype-link.ts`          |
-| `PROTOTYPE_TRANSITION_MS`              | 250                                        | `prototype-player.ts`        |
-| `PROTOTYPE_FLASH_MS`                   | 500                                        | `prototype-player.ts`        |
-| `FLOW_EDGE_INSET`                      | 24 (canvas px inside a screen's top, foot) | `flow-view.ts`               |
-| `FLOW_PULL_MIN_PX`                     | 40 (screen px, a curve's least handle)     | `flow-view.ts`               |
-| `FLOW_LANE_BASE_PX` / `_STEP_PX`       | 44 / 20 (screen px over the row's top)     | `flow-view.ts`               |
-| `FLOW_GAP_SIDE_PX`                     | 6 (screen px off a gap's middle)           | `flow-view.ts`               |
-| `FLOW_LANE_SPREAD`                     | 4 (lanes an arc rises over its own)        | `flow-view.ts`               |
-| `FLOW_ENTRY_FRACTION` / `_STEP`/`_MAX` | 0.2 / 0.12 / 0.8 (of the target's width)   | `flow-view.ts`               |
-| `FLOW_CORNER_PX`                       | 12 (screen px, an arc's corner radius)     | `flow-view.ts`               |
-| `FLOW_STUB_PX`                         | 32 (screen px, the broken stub)            | `flow-view.ts`               |
-| `FLOW_STROKE_PX` / `FLOW_HALO_PX`      | 2 / 6 (screen px)                          | `FlowViewLayer.tsx`          |
+| Constant                              | Value                                       | Where                        |
+| ------------------------------------- | ------------------------------------------- | ---------------------------- |
+| `DEFAULT_WIREFRAME_DEVICE`            | `'iphone'`                                  | `wireframe-device.ts`        |
+| `WIREFRAME_GUTTER`                    | phone 16, tablet 24, computer 32, watch 12  | `wireframe-device.ts`        |
+| Device screens                        | as the spec's table                         | `WIREFRAME_DEVICES`          |
+| `BROWSER`                             | border 1, toolbar 52, radius 12             | `wireframe-device.ts`        |
+| `STATUS_TIME` / `WATCH_TIME`          | `9:41` / `10:09`                            | `wireframe-frame-over.ts`    |
+| `SKETCH_FRAME_PX` / `MARKER_FRAME_PX` | 1.4 / 3                                     | `wireframe-frame-paint.ts`   |
+| `WATCH_MAX_WIDTH` / `PHONE_MAX_WIDTH` | 300 / 600                                   | `wireframe-layout-kit.ts`    |
+| `SHORT_HEIGHT` / `SHORT_SCALE_MIN`    | 600 / 0.72                                  | `wireframe-layouts-start.ts` |
+| `TALL_RATIO` / `COLUMN_MAX`           | 1.2 / 560                                   | `wireframe-layouts-start.ts` |
+| `WIREFRAME_FIT_MAX_ZOOM`              | 2.5                                         | `usePagesMode.ts`            |
+| Device memory key                     | `livedesign:v2:wireframe-device`            | `wireframe-device-memory.ts` |
+| `INSPECT_PARAM`                       | `'inspect'` (copied as `inspect=1`)         | `inspect-link.ts`            |
+| `INSPECT_EXPORT_SCALES`               | 1, 2, 3                                     | `inspect-export.ts`          |
+| `INSPECT_LINE_COLOUR`                 | `#e5484d`                                   | `InspectOverlay.tsx`         |
+| `PAGE_LINK_TRANSITIONS`               | `instant`, `slide`, `dissolve`              | `page-link.ts`               |
+| `DEFAULT_PAGE_LINK_TRANSITION`        | `'instant'`                                 | `page-link.ts`               |
+| `PAGE_LINK_ID_MAX`                    | 64 (a page id is `page-` and 8 hex)         | `page-link.ts`               |
+| `SCREEN_LINK_HANDLE_PX`               | 22 (the quick-connect plus's size)          | `ScreenLinkHandle.tsx`       |
+| `SCREEN_LINK_HANDLE_GAP_PX`           | 6 (screen px past the corner)               | `ScreenLinkHandle.tsx`       |
+| `SCREEN_LINK_DRAG_SLOP_PX`            | 4 (screen px before a press is a drag)      | `ScreenLinkHandle.tsx`       |
+| `SCREEN_LINK_PILL_MARGIN_PX`          | 8 (the drag pill's gap from the window)     | `ScreenLinkHandle.tsx`       |
+| `PROTOTYPE_PARAM`                     | `'prototype'` (copied as `prototype=1`)     | `prototype-link.ts`          |
+| `PROTOTYPE_TRANSITION_MS`             | 250                                         | `prototype-player.ts`        |
+| `PROTOTYPE_FLASH_MS`                  | 500                                         | `prototype-player.ts`        |
+| `FLOW_EDGE_INSET`                     | 24 (canvas px inside a screen's top, foot)  | `flow-view.ts`               |
+| `FLOW_PULL_MIN_PX`                    | 40 (screen px, a curve's least handle)      | `flow-view.ts`               |
+| `FLOW_LANE_BASE_PX` / `_STEP_PX`      | 44 / 20 (screen px over the row's top)      | `flow-view.ts`               |
+| `FLOW_GAP_SIDE_PX`                    | 6 (screen px off a gap's middle)            | `flow-view.ts`               |
+| `FLOW_LANE_SPREAD`                    | 4 (lanes an arc rises over its own)         | `flow-view.ts`               |
+| `FLOW_DROP_PX` / `_STEP_PX`           | 14 / 8 (screen px out from a target's side) | `flow-view.ts`               |
+| `FLOW_ENTRY_STEP_PX`                  | 14 (screen px lower per nested arc)         | `flow-view.ts`               |
+| `FLOW_CORNER_PX`                      | 12 (screen px, an arc's corner radius)      | `flow-view.ts`               |
+| `FLOW_STUB_PX`                        | 32 (screen px, the broken stub)             | `flow-view.ts`               |
+| `FLOW_TAG_GAP_PX` / `_HEIGHT_PX`      | 6 / 22 (screen px)                          | `flow-view.ts`               |
+| `FLOW_TAG_WIDTH_PX`                   | Back 62, Broken 74 (screen px)              | `flow-view.ts`               |
+| `FLOW_TAG_CLEAR_PX`                   | 3 (screen px kept from an arrow's run)      | `flow-view.ts`               |
+| `FLOW_STROKE_PX` / `FLOW_HALO_PX`     | 2 / 6 (screen px)                           | `FlowViewLayer.tsx`          |
 
 ## Defaults ledger
 
