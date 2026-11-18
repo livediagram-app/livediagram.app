@@ -43,7 +43,7 @@ function Harness({
         </button>
       </span>
       {open ? (
-        <div role="tooltip" data-source={source ?? ''} {...surfaceProps}>
+        <div role="tooltip" data-hint={kind} data-source={source ?? ''} {...surfaceProps}>
           Zoom in
         </div>
       ) : null}
@@ -386,6 +386,77 @@ describe('useHint, after a press', () => {
     fireEvent.pointerLeave(first, mouse);
     fireEvent.pointerEnter(first, mouse);
     expect(screen.getAllByRole('tooltip')).toHaveLength(1);
+  });
+});
+
+// A device where no pointer can hover (a phone): the browser's own mouse moves, however late, are echoes of taps
+// (Work Tracker 1236: a tapped tab pill moved the presence avatars under the finger, and their card opened for good).
+describe('useHint, on a device that cannot hover', () => {
+  function noHover() {
+    vi.stubGlobal('matchMedia', (query: string) => ({ matches: query !== '(any-hover: hover)' }));
+    resetTouches();
+  }
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    resetTouches();
+  });
+
+  it('opens nothing from a mouse, however long after the last touch', () => {
+    noHover();
+    render(<Harness kind="hover-card" />);
+    fireEvent.pointerDown(document.body, touch);
+    fireEvent.pointerUp(document.body, touch);
+    advance(HINT_TOUCH_COMPAT_MS * 5);
+    fireEvent.pointerEnter(wrapper(), mouse);
+    fireEvent.pointerMove(wrapper(), mouse);
+    advance(TOOLTIP_OPEN_DELAY_MS);
+    expect(tip()).toBeNull();
+  });
+
+  it('still opens a hover card from a long press', () => {
+    noHover();
+    render(<Harness kind="hover-card" />);
+    fireEvent.pointerDown(button(), { ...touch, clientX: 10, clientY: 10 });
+    advance(HINT_LONG_PRESS_MS);
+    expect(tip()?.dataset.source).toBe('touch');
+  });
+});
+
+// T16: a press outside an open hint and its trigger closes it; a tap on a phone is the case no pointer leave covers.
+describe('useHint, a press elsewhere', () => {
+  it.each([
+    ['a tap', touch],
+    ['a click', mouse],
+  ])('closes an open hover card on %s outside it', (_, pointer) => {
+    render(<Harness kind="hover-card" />);
+    fireEvent.pointerEnter(wrapper(), mouse);
+    expect(tip()).not.toBeNull();
+    fireEvent.pointerDown(document.body, pointer);
+    expect(tip()).toBeNull();
+  });
+
+  it('keeps it open for a press on the card itself', () => {
+    render(<Harness kind="hover-card" />);
+    fireEvent.pointerEnter(wrapper(), mouse);
+    fireEvent.pointerDown(tip()!, touch);
+    expect(tip()).not.toBeNull();
+  });
+
+  it('closes one kept open by keyboard focus too', () => {
+    focusVisible(true);
+    render(<Harness kind="hover-card" />);
+    act(() => button().focus());
+    expect(tip()?.dataset.source).toBe('focus');
+    fireEvent.pointerDown(document.body, touch);
+    expect(tip()).toBeNull();
+  });
+
+  it('stops listening once closed', () => {
+    const remove = vi.spyOn(document, 'removeEventListener');
+    render(<Harness kind="hover-card" />);
+    fireEvent.pointerEnter(wrapper(), mouse);
+    fireEvent.pointerDown(document.body, touch);
+    expect(remove).toHaveBeenCalledWith('pointerdown', expect.any(Function), true);
   });
 });
 

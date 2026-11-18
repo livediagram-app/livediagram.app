@@ -25,4 +25,16 @@ export function touchedRecently(now: number): boolean {
 
 export function resetTouches(): void {
   lastTouchAt = Number.NEGATIVE_INFINITY;
+  hoverQuery = undefined;
+}
+
+// Whether any pointer on this device can hover (`(any-hover: hover)`). A phone's or a touch-only tablet's cannot: every
+// mouse event there is an echo of a tap, even one arriving long after it (a tapped tab pill moves the presence avatars
+// under the finger, and the browser's own mouse move over them is no hover). One media query, read on each ask, so a
+// trackpad attached later counts. Without matchMedia (a test DOM), it can.
+let hoverQuery: MediaQueryList | null | undefined;
+export function canHover(): boolean {
+  if (hoverQuery === undefined)
+    hoverQuery = typeof matchMedia === 'function' ? matchMedia('(any-hover: hover)') : null;
+  return hoverQuery?.matches ?? true;
 }

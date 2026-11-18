@@ -140,7 +140,11 @@ hidden. A control that shows its own text needs no hint on touch, and its long p
 - A long press that showed a hint does not also press the control.
 - Moving the finger more than 10 px before the hint shows cancels it, so drags and scrolls are
   untouched.
-- A tap never shows a hint.
+- A tap never shows a hint. On a device none of whose pointers can hover (a phone, a tablet with no trackpad), no
+  mouse event opens one either, however late it comes: they are all echoes of taps. A tapped tab pill moves the
+  presence avatars beside it under the finger, and the browser's own mouse move over them is no hover, so their
+  hover card must not open and stay.
+- A tap anywhere outside an open hint and its control closes the hint.
 
 ## On-screen keyboard
 

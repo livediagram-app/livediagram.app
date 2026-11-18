@@ -7,21 +7,21 @@ cited as `Dn`.
 
 Scope, by file:
 
-| File                                                   | Role                                                                                                            |
-| ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
-| `../packages/ui/src/hint/hint-constants.ts`            | Every timing and size, named                                                                                    |
-| `../packages/ui/src/hint/place-hint.ts`                | Pure placement: trigger rect + surface size + viewport to a layout                                              |
-| `../packages/ui/src/hint/hint-registry.ts`             | Module state: the one open hint, and the tooltip warm-up clock                                                  |
-| `../packages/ui/src/hint/trigger-text.ts`              | `hasVisibleText` (touch gate) and `accessibleNameOf` (the name check)                                           |
-| `../packages/ui/src/hint/useHint.ts`                   | The state machine: pointer, focus, press, long press, Escape, grace                                             |
-| `../packages/ui/src/hint/input-modality.ts`            | When a touch last ended: a mouse `pointerenter` within `HINT_TOUCH_COMPAT_MS` (1000 ms) of it is the tap's echo |
-| `../packages/ui/src/hint/HintSurface.tsx`              | The portal, the measured layout, the pointer triangle, the two looks                                            |
-| `../packages/ui/src/Tooltip.tsx`                       | `Tooltip`: the name, 1 s, on a `display: contents` wrapper                                                      |
-| `../packages/ui/src/HoverCard.tsx`                     | `HoverCard`: title + description, instant, on the layout wrapper it always had                                  |
-| `packages/ui/src/index.ts`                             | Exports `Tooltip`, `HoverCard` and their prop types                                                             |
-| `packages/oxlint-config/native-title.ts`               | `liveworkspace/no-native-title`: native `title` outside the exceptions                                          |
-| `apps/editor/components/palette/PaletteIconButton.tsx` | Which hint a palette tile carries (`tileHint`)                                                                  |
-| `apps/editor/components/palette/palette-controls.tsx`  | `SizeButton` names its swatch with a Tooltip                                                                    |
+| File                                                   | Role                                                                                                                                            |
+| ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `../packages/ui/src/hint/hint-constants.ts`            | Every timing and size, named                                                                                                                    |
+| `../packages/ui/src/hint/place-hint.ts`                | Pure placement: trigger rect + surface size + viewport to a layout                                                                              |
+| `../packages/ui/src/hint/hint-registry.ts`             | Module state: the one open hint, and the tooltip warm-up clock                                                                                  |
+| `../packages/ui/src/hint/trigger-text.ts`              | `hasVisibleText` (touch gate) and `accessibleNameOf` (the name check)                                                                           |
+| `../packages/ui/src/hint/useHint.ts`                   | The state machine: pointer, focus, press, long press, Escape, grace                                                                             |
+| `../packages/ui/src/hint/input-modality.ts`            | When a touch last ended (a mouse `pointerenter` within `HINT_TOUCH_COMPAT_MS` of it is the tap's echo), and `canHover()` (`(any-hover: hover)`) |
+| `../packages/ui/src/hint/HintSurface.tsx`              | The portal, the measured layout, the pointer triangle, the two looks                                                                            |
+| `../packages/ui/src/Tooltip.tsx`                       | `Tooltip`: the name, 1 s, on a `display: contents` wrapper                                                                                      |
+| `../packages/ui/src/HoverCard.tsx`                     | `HoverCard`: title + description, instant, on the layout wrapper it always had                                                                  |
+| `packages/ui/src/index.ts`                             | Exports `Tooltip`, `HoverCard` and their prop types                                                                                             |
+| `packages/oxlint-config/native-title.ts`               | `liveworkspace/no-native-title`: native `title` outside the exceptions                                                                          |
+| `apps/editor/components/palette/PaletteIconButton.tsx` | Which hint a palette tile carries (`tileHint`)                                                                                                  |
+| `apps/editor/components/palette/palette-controls.tsx`  | `SizeButton` names its swatch with a Tooltip                                                                                                    |
 
 ## Domain and naming
 
@@ -64,24 +64,25 @@ pointer events from bubbling, and the hint must still see them.
 
 ### Transitions
 
-| #   | Event (on the wrapper unless noted)        | Guard                                                                                   | Effect                                                                                     |
-| --- | ------------------------------------------ | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| T1  | `pointerenter`, `pointerType !== 'touch'`  | not `dismissed`, no touch ended within `HINT_TOUCH_COMPAT_MS`                           | `overTrigger`; cancel close; open after `openDelayMs(kind, now)`                           |
-| T1b | `pointermove`, `pointerType !== 'touch'`   | not `overTrigger` (no `pointerenter` came: the trigger mounted under a resting pointer) | as T1                                                                                      |
-| T2  | `pointerleave`, `pointerType !== 'touch'`  |                                                                                         | clear `overTrigger`; cancel open; `settle()`                                               |
-| T3  | surface `pointerenter`                     |                                                                                         | `overSurface`; cancel close                                                                |
-| T4  | surface `pointerleave`                     |                                                                                         | clear `overSurface`; `settle()`                                                            |
-| T5  | `focus` (bubbled)                          | target matches `:focus-visible` (D27)                                                   | `focused`; unless `dismissed`, cancel timers and open now, source `focus`                  |
-| T6  | `blur` (bubbled)                           |                                                                                         | clear `focused`; `settle()`                                                                |
-| T7  | `pointerdown`, not touch                   |                                                                                         | cancel open; close; `dismissed`                                                            |
-| T8  | `pointerdown`, touch                       | `!hasVisibleText(anchor)`                                                               | clear `suppressClick`; remember the point; `pressTimer` for `HINT_LONG_PRESS_MS`           |
-| T9  | `pressTimer` fires                         |                                                                                         | open, source `touch`; `suppressClick`                                                      |
-| T10 | `pointermove`, touch, `pressTimer` pending | moved > `HINT_LONG_PRESS_SLOP_PX`                                                       | cancel `pressTimer`                                                                        |
-| T11 | `pointerup` / `pointercancel`, touch       |                                                                                         | cancel `pressTimer`; if open from touch, `lingerTimer` closes after `HINT_TOUCH_LINGER_MS` |
-| T12 | `click` (capture)                          | `suppressClick`                                                                         | `preventDefault`, `stopPropagation`, clear `suppressClick`                                 |
-| T13 | document `keydown` `Escape` while open     |                                                                                         | close; `dismissed`; the event keeps propagating (spec)                                     |
-| T14 | another hint opens (registry)              |                                                                                         | close at once                                                                              |
-| T15 | unmount                                    |                                                                                         | clear every timer; release the registry                                                    |
+| #   | Event (on the wrapper unless noted)                      | Guard                                                                                   | Effect                                                                                     |
+| --- | -------------------------------------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| T1  | `pointerenter`, `pointerType !== 'touch'`                | not `dismissed`, `canHover()`, no touch ended within `HINT_TOUCH_COMPAT_MS`             | `overTrigger`; cancel close; open after `openDelayMs(kind, now)`                           |
+| T1b | `pointermove`, `pointerType !== 'touch'`                 | not `overTrigger` (no `pointerenter` came: the trigger mounted under a resting pointer) | as T1                                                                                      |
+| T2  | `pointerleave`, `pointerType !== 'touch'`                |                                                                                         | clear `overTrigger`; cancel open; `settle()`                                               |
+| T3  | surface `pointerenter`                                   |                                                                                         | `overSurface`; cancel close                                                                |
+| T4  | surface `pointerleave`                                   |                                                                                         | clear `overSurface`; `settle()`                                                            |
+| T5  | `focus` (bubbled)                                        | target matches `:focus-visible` (D27)                                                   | `focused`; unless `dismissed`, cancel timers and open now, source `focus`                  |
+| T6  | `blur` (bubbled)                                         |                                                                                         | clear `focused`; `settle()`                                                                |
+| T7  | `pointerdown`, not touch                                 |                                                                                         | cancel open; close; `dismissed`                                                            |
+| T8  | `pointerdown`, touch                                     | `!hasVisibleText(anchor)`                                                               | clear `suppressClick`; remember the point; `pressTimer` for `HINT_LONG_PRESS_MS`           |
+| T9  | `pressTimer` fires                                       |                                                                                         | open, source `touch`; `suppressClick`                                                      |
+| T10 | `pointermove`, touch, `pressTimer` pending               | moved > `HINT_LONG_PRESS_SLOP_PX`                                                       | cancel `pressTimer`                                                                        |
+| T11 | `pointerup` / `pointercancel`, touch                     |                                                                                         | cancel `pressTimer`; if open from touch, `lingerTimer` closes after `HINT_TOUCH_LINGER_MS` |
+| T12 | `click` (capture)                                        | `suppressClick`                                                                         | `preventDefault`, `stopPropagation`, clear `suppressClick`                                 |
+| T13 | document `keydown` `Escape` while open                   |                                                                                         | close; `dismissed`; the event keeps propagating (spec)                                     |
+| T14 | another hint opens (registry)                            |                                                                                         | close at once                                                                              |
+| T15 | unmount                                                  |                                                                                         | clear every timer; release the registry                                                    |
+| T16 | `pointerdown` on the trigger's page (capture) while open | target outside the wrapper and every hint surface (`[data-hint]`)                       | close                                                                                      |
 
 `settle()`: if neither `overTrigger` nor `overSurface` holds, clear `dismissed` (the pointer has gone, even if the
 control keeps focus: a pressed button left focused in an open flyout showed its hint again only after a blur); then,
@@ -103,7 +104,7 @@ which, for a tooltip or a preview, stamps that kind's warm-up clock.
 - **I3:** keyboard-visible focus opens either hint in the same task; mouse focus opens nothing.
 - **I4:** Escape never calls `stopPropagation` or `preventDefault`.
 - **I5:** a hint never mounts anything into the trigger's layout; its surface is portalled to the `body` of the trigger's own document (`ownerDocument`) and placed against that document's window (`hintHost` in `HintSurface.tsx`), so a trigger in a Document Picture-in-Picture window (livehuddle's mini view) draws its hint there, never in the tab that opened it (Work Tracker 1109); a trigger in the page portals to `document.body` as before. Escape is heard in that document too.
-- **I6:** a touch tap (no long press) never opens a hint and never has its click suppressed.
+- **I6:** a touch tap (no long press) never opens a hint and never has its click suppressed. On a device with no pointer that can hover (`canHover()` false), no mouse event opens a hint, however late it arrives (Work Tracker 1236: a tapped tab pill moved the presence avatars under the finger, and Chrome's own mouse move opened their hover card for good). A press outside an open hint and its trigger closes it (T16).
 - **I7:** a tooltip never opens from touch (long press included), never opens while a pointer button is held
   (`buttons !== 0` on enter), and its surface is `pointer-events: none`, so it never takes a press; hover cards and
   previews keep the hoverable surface and the grace.
