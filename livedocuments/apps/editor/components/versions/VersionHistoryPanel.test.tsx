@@ -53,6 +53,8 @@ const box = (id: string, label: string): Element => ({
 });
 const NOW_TAB: Tab = { id: 't1', name: 'Pitch', elements: [box('a', 'After')] };
 const OLD_TAB: Tab = { id: 't1', name: 'Pitch', elements: [box('a', 'Before')] };
+// A fixed midday, so "kept today" never flips to "yesterday" when the suite runs near midnight.
+const SAVED_AT = new Date('2026-06-15T12:00:00').getTime();
 const VERSION: VersionSummary = {
   id: 'v1',
   tabId: 't1',
@@ -60,8 +62,8 @@ const VERSION: VersionSummary = {
   kind: 'idle',
   name: 'Draft',
   author: { name: 'Ada', color: '#123456' },
-  savedAt: Date.now() - 60_000,
-  createdAt: Date.now() - 60_000,
+  savedAt: SAVED_AT,
+  createdAt: SAVED_AT,
   bytes: 10,
   elementCount: 1,
 };
@@ -91,10 +93,13 @@ async function openVersion() {
 }
 
 beforeEach(() => {
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(SAVED_AT + 60_000);
   api.apiListVersions.mockResolvedValue([VERSION]);
   api.apiReadVersion.mockResolvedValue({ version: VERSION, tab: OLD_TAB });
 });
 afterEach(() => {
+  vi.useRealTimers();
   cleanup();
   vi.clearAllMocks();
   resetOwnVersionWrites();
