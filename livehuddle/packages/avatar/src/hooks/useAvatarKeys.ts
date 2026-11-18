@@ -70,7 +70,8 @@ export function useAvatarKeys({
       const dir = ARROW_KEYS[e.key];
       if (dir) {
         e.preventDefault();
-        liveRef.current.onSteer();
+        // A held key repeats: only a new arrow steers afresh, so holding two never stutters the walk.
+        if (!pressed.has(dir)) liveRef.current.onSteer();
         pressed.add(dir);
         heldRef.current = heldFrom(pressed);
         return;

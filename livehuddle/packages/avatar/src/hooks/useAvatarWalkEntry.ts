@@ -18,6 +18,9 @@ import type { Dispatch, RefObject, SetStateAction } from 'react';
 import type { StateStore } from '@liveworkspace/workbench/lib/state-store';
 import type { AvatarSnapshot, HeldDrink, PlayingReaction, WalkRects } from './avatarWalkTypes';
 
+/** How long a travel's landing stays the entry's start (a tab switch re-entering the walk soon after). */
+const ARRIVAL_FRESH_MS = 4000;
+
 export function useAvatarWalkEntry<E extends AvatarSceneElement>({
   active,
   setSeatedOn,
@@ -46,6 +49,7 @@ export function useAvatarWalkEntry<E extends AvatarSceneElement>({
   fences,
   spawnPadRef,
   spawnAtRef,
+  arrivalRef,
   elements,
   setViewportOffset,
   follow,
@@ -78,6 +82,7 @@ export function useAvatarWalkEntry<E extends AvatarSceneElement>({
   fences: FenceSegment[];
   spawnPadRef?: React.MutableRefObject<string | null>;
   spawnAtRef?: React.MutableRefObject<AvatarPoint | null>;
+  arrivalRef?: React.MutableRefObject<{ at: AvatarPoint; when: number } | null>;
   elements: readonly E[];
   setViewportOffset: (offset: AvatarPoint) => void;
   follow: (at: AvatarPoint, r: WalkRects) => void;
@@ -152,6 +157,16 @@ export function useAvatarWalkEntry<E extends AvatarSceneElement>({
       setPos(clear);
       setFacing('down');
     };
+    // A travel just landed the character (a lift, stairs, a portal): it starts there, on the new tab, over the pad.
+    const arrival = arrivalRef?.current ?? null;
+    if (arrivalRef) arrivalRef.current = null;
+    if (arrival && performance.now() - arrival.when < ARRIVAL_FRESH_MS) {
+      if (spawnPadRef) spawnPadRef.current = null;
+      if (spawnAtRef) spawnAtRef.current = null;
+      posRef.current = arrival.at;
+      setPos(arrival.at);
+      return;
+    }
     // An Avatar Pad on the tab (docs/specs/009-elements/avatar-pad.md "Starting on the pad") is the board's
     // entrance: it wins over the button and the remembered spot, and the view comes to it when it is off screen.
     const pressedPad = spawnPadRef?.current ?? null;

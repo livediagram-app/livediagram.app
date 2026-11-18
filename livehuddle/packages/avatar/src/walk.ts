@@ -291,6 +291,26 @@ export function facingFromDelta(dx: number, dy: number): AvatarFacing | null {
   return dy < 0 ? 'up' : 'down';
 }
 
+// How near even two axes of a step must be to read as a diagonal (the larger over the smaller).
+const DIAGONAL_RATIO = 1.3;
+
+// The facing for a step, kept steady on a diagonal (the owner, 2026-11-18: walking with two arrows held "feels not
+// fluid"): while the step runs near 45 degrees, a facing along either of its two axes is kept rather than flipped
+// frame by frame as rounding or a fence's slide tips which axis is larger.
+export function steadyFacing(dx: number, dy: number, current: AvatarFacing): AvatarFacing | null {
+  const next = facingFromDelta(dx, dy);
+  if (!next) return null;
+  const ax = Math.abs(dx);
+  const ay = Math.abs(dy);
+  if (Math.max(ax, ay) > DIAGONAL_RATIO * Math.min(ax, ay)) return next;
+  const along =
+    (current === 'left' && dx < 0) ||
+    (current === 'right' && dx > 0) ||
+    (current === 'up' && dy < 0) ||
+    (current === 'down' && dy > 0);
+  return along ? current : next;
+}
+
 // How far the character walks (canvas px) for an off-centre view to close half its gap to it
 // (docs/specs/008-canvas/avatar-mode.md "The camera").
 export const AVATAR_CAMERA_HALF_LIFE = 400;

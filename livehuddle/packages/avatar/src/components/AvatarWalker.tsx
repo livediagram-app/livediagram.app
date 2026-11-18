@@ -7,6 +7,7 @@
 // same component draws PEERS' characters (from their presence snapshot), which
 // is why every animation input is a prop rather than read from the walk hook.
 
+import { screenDir } from '../arrow-turn';
 import { memo, useLayoutEffect, useRef, type CSSProperties } from 'react';
 import type { DrinkKind } from '../office-geometry';
 import { avatarGlides } from '../relay';
@@ -80,7 +81,11 @@ function AvatarWalkerView({
   chipShift,
   seatLift = 0,
   seatBehind = false,
+  turn = 0,
 }: {
+  // The 3D camera's quarter turns (3d-view.md "Turning the camera"): the figure is drawn facing the way the turned
+  // camera sees it, walking or seated, never the plan's way.
+  turn?: number;
   // Feet position in canvas coords.
   pos: { x: number; y: number };
   facing: AvatarFacing;
@@ -294,7 +299,7 @@ function AvatarWalkerView({
             <AvatarSprite
               headphones={status === 'focus'}
               status={status}
-              facing={facing}
+              facing={turn ? screenDir(facing, turn) : facing}
               config={config}
               walking={walking}
               stepFrame={stepFrame}

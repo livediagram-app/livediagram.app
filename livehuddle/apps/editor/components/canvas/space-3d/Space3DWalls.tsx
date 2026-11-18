@@ -20,6 +20,7 @@ import {
 import {
   areaMovedFar,
   cutAwayIds,
+  spaceRooms,
   turnedArea,
   viewArea,
   wallsInArea,
@@ -27,7 +28,7 @@ import {
 } from '@/lib/space-3d/space-3d-cutaway';
 import { useStandingPieces } from './useStandingPieces';
 import { useSpace3DTurn } from './useSpace3DView';
-import { turnQuarter } from '@/lib/space-3d/space-3d-turn';
+import { seenFromBehind, turnQuarter } from '@/lib/space-3d/space-3d-turn';
 
 export function Space3DWalls({
   elements,
@@ -42,6 +43,9 @@ export function Space3DWalls({
   floor?: CSSProperties;
 }) {
   const walls = useMemo(() => spaceWalls(elements), [elements]);
+  // The rooms you can stand in, whose walls facing you fade while you are inside (3d-view.md "Walls in front of you
+  // are cut away").
+  const rooms = useMemo(() => spaceRooms(elements), [elements]);
   const viewport = useViewportStore();
   // The camera's quarter turns (3d-view.md "Turning the camera"): turned, the area reaches every way, and the walls in
   // front are the camera's way.
@@ -68,7 +72,7 @@ export function Space3DWalls({
   const cut = useRef(new Set<string>());
   useEffect(() => {
     const apply = () => {
-      const next = cutAwayIds(drawn, poseStore.get().pos, turn);
+      const next = cutAwayIds(drawn, poseStore.get().pos, turn, rooms);
       for (const id of cut.current)
         if (!next.has(id)) nodes.current.get(id)?.removeAttribute('data-cut');
       for (const id of next)
@@ -79,7 +83,7 @@ export function Space3DWalls({
     cut.current = new Set();
     apply();
     return poseStore.subscribe(apply);
-  }, [drawn, poseStore, turn]);
+  }, [drawn, poseStore, turn, rooms]);
   return (
     <div
       ref={layer}
@@ -105,6 +109,7 @@ export function Space3DWalls({
         <Wall
           key={wall.id}
           wall={wall}
+          turn={turn}
           nodeRef={(node) => {
             if (node) nodes.current.set(wall.id, node);
             else nodes.current.delete(wall.id);
@@ -115,7 +120,15 @@ export function Space3DWalls({
   );
 }
 
-function Wall({ wall, nodeRef }: { wall: SpaceWall; nodeRef: (node: HTMLElement | null) => void }) {
+function Wall({
+  wall,
+  turn,
+  nodeRef,
+}: {
+  wall: SpaceWall;
+  turn: number;
+  nodeRef: (node: HTMLElement | null) => void;
+}) {
   const { x, y, length, angle } = wallFrame(wall);
   return (
     <div
@@ -137,7 +150,14 @@ function Wall({ wall, nodeRef }: { wall: SpaceWall; nodeRef: (node: HTMLElement 
             {wall.shut ? <span data-space-door-leaf="" /> : null}
           </span>
         ) : null}
-        {wall.label ? <span data-space-wall-label="">{wall.label}</span> : null}
+        {wall.label ? (
+          <span
+            data-space-wall-label=""
+            data-from-behind={seenFromBehind(wall, turn) ? '' : undefined}
+          >
+            {wall.label}
+          </span>
+        ) : null}
       </div>
     </div>
   );

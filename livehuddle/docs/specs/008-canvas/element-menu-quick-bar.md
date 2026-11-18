@@ -2,19 +2,20 @@
 
 The other four products open the element menu (a right-click, a long-press, or a toolbar's More) on a **quick bar**:
 one row of glyph buttons above its first category, holding Assign Action, Add Comment, Add Link, Add Note and Clear
-Styles. **livehuddle has no quick bar** (Work Tracker 739): once its four attachment buttons left, the bar was a
-full-width band holding one eraser, so its one button moved into the menu as a row and the band is gone.
+Styles. livehuddle's quick bar holds Clear Styles alone (its four attachment buttons left). It was a menu row for a
+while (Work Tracker 739); the owner moved it back, 2026-11-18: "clear styles should be a toolbar item at the top of the
+context list (like in livediagram) not an option in the dropdown as a full width row".
 
 ## Clear Styles
 
 - **Clear Styles** puts the element's quick-style colours, width and line style back to the theme's, forgetting the
   style memory of its kind. livehuddle has no Quick Style panel
   ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#quick-style)), so this is the one Clear Styles.
-- It is a row of the menu's **Appearance** group, directly under the **Appearance** row whose colours and border it resets,
-  drawn as the menu's other rows are (the eraser in the icon slot, the label in the category rhythm). It runs on one
-  press and closes the menu, so it stays one click away.
-- It shows while the element takes a quick style (a shape or a text element that is not retired). On any other
-  element there is no row and nothing in its place.
+- It is the eraser glyph button at the right of the quick bar, a toolbar above the menu's first category, as
+  livediagram's, with a tooltip ("Put this element back to the tab's theme."). It runs on one press and closes the
+  menu, so it stays one click away.
+- The bar shows while the element takes a quick style (a shape or a text element that is not retired). On any other
+  element there is no bar and nothing in its place.
 
 **Assign Action, Add Comment, Add Link and Add Note are gone** (owner, 2026-11-11, Work Tracker #714): livehuddle has
 no comments, actions, element links or notes ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#comments-actions-links-and-notes)),
@@ -54,9 +55,8 @@ Every editor (livehuddle, liveplanner, livedocuments, livedesign) opens the same
 
 ## Implementation
 
-- `apps/editor/components/palette/ElementMenuClearStyles.tsx`: `ElementMenuClearStyles`, a `MenuActionRow`
-  (`@liveworkspace/workbench`'s `PortalMenu`) named "Clear Styles"; rendered by `ElementAppearanceSections` right after
-  the Appearance flyout. Only livehuddle's own menu files change; the shared menu primitives do not.
+- `apps/editor/components/palette/ElementMenuClearStyles.tsx`: `ElementMenuQuickBar`, a `role="toolbar"` row with
+  Clear Styles as a `PopoverButton`; rendered by `EditorContextMenu` first in the element menu. Only livehuddle's own menu files change; the shared menu primitives do not.
 - Clear Styles: `ClearStylesHost` (headless, `components/canvas/ClearStylesHost.tsx`) publishes the Quick Style view's targets and its `clearStyles` to
   `../packages/workbench/src/lib/clear-styles-store.ts` (`publishClearStyles`, `useClearStyles`) whenever the targets change, the
   press running the latest; the row shows when the store's targets include the element. Its telemetry is

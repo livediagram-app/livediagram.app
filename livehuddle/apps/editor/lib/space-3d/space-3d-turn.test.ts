@@ -3,6 +3,8 @@ import { planDir } from '@livehuddle/avatar/arrow-turn';
 import {
   boxToCamera,
   resetSpace3DTurn,
+  screenToPlan,
+  seenFromBehind,
   space3DTurn,
   toCamera,
   turnQuarter,
@@ -109,5 +111,23 @@ describe('the camera\'s quarter turns (docs/specs/008-canvas/3d-view.md "Turning
     const turned = turnedArea(area);
     expect(turned.bottom - turned.centre.y).toBe(turned.centre.y - turned.top);
     expect(turned.bottom).toBeGreaterThan(area.bottom);
+  });
+});
+
+describe('screenToPlan and seenFromBehind (3d-view.md "Turning the camera")', () => {
+  it('turns a drag on the screen back onto the plan, so a pan follows the hand', () => {
+    expect(screenToPlan({ x: 10, y: 0 }, 0)).toEqual({ x: 10, y: 0 });
+    for (const q of [1, 2, 3]) {
+      const d = { x: 7, y: -3 };
+      const back = toCamera(screenToPlan(d, q), q);
+      expect(back.x).toBeCloseTo(d.x);
+      expect(back.y).toBeCloseTo(d.y);
+    }
+  });
+
+  it('reads a level wall from the front unturned and from behind turned round', () => {
+    const w = { a: { x: 0, y: 0 }, b: { x: 100, y: 0 } };
+    expect(seenFromBehind(w, 0)).toBe(false);
+    expect(seenFromBehind(w, 2)).toBe(true);
   });
 });

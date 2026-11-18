@@ -248,6 +248,7 @@ export function CanvasCharactersLayer({
       {props.settings.hearingRing !== false ? <HearingRing {...call.ring} /> : null}
       {remoteAvatars.map((peer) => (
         <AvatarWalker
+          turn={turn}
           key={peer.id}
           pos={{ x: peer.avatar.x, y: peer.avatar.y }}
           facing={peer.avatar.facing}
@@ -311,6 +312,7 @@ export function CanvasCharactersLayer({
       ) : null}
       {/* Your character, subscribed to its whole pose: a hop or a wave in place renders it alone. */}
       <AvatarSelfWalker
+        turn={turn}
         poseStore={avatar.poseStore}
         config={avatarLook.config}
         seated={sitsDown(avatar.seatedOn)}
@@ -346,7 +348,11 @@ export function CanvasCharactersLayer({
       <AvatarPadArrivals arrivals={padArrivals} />
       {/* The proximity bubbles of the piece you stand at (Insert Coin, Welcome), over every character and its chip
         (PieceBubbleLayer, Work Tracker 793). */}
-      <PieceBubbleHost />
+      {/* In the 3D view they stand up over their piece in the overlay, sharp and never under the floor (the owner,
+          2026-11-18: the reception desk's Welcome "is broken in 3d"). */}
+      <InSpace3DOverlay>
+        <PieceBubbleHost />
+      </InSpace3DOverlay>
       {/* Speech bubbles, in front of every character: yours and everyone's, and the composer above your
           own head while you type. Raised over the chips of a spread row (z-[1]) and the piece bubbles (z-[2]). */}
       <InSpace3DOverlay>

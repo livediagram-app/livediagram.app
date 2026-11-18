@@ -4,7 +4,13 @@ import { SHAPE_KINDS, type Element } from '@livehuddle/document';
 import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { viewArea } from './space-3d-cutaway';
 import {
+  SPACE_HANG_ACROSS,
+  SPACE_SCREEN_MARGIN,
   SPACE_SEAT_LIFT_SHARE,
+  hangOnWall,
+  pieceQuarters,
+  seenFromCamera,
+  screenRoomOnWall,
   seatBehind,
   seatLift,
   standAttr,
@@ -170,5 +176,55 @@ describe('a press on a standing piece', () => {
       standingPiecePointAt([piece(0, { left: 0, top: 0, width: 0, height: 0 })], { x: 0, y: 0 }),
     ).toBeNull();
     expect(standingPiecePointAt([], { x: 0, y: 0 })).toBeNull();
+  });
+});
+
+describe('wall pieces hang on the wall (3d-view.md "Wall pieces hang on the wall")', () => {
+  const back = { a: { x: 0, y: 0 }, b: { x: 400, y: 0 }, kind: 'wall' };
+
+  it('hangs a piece below a back wall on it, its foot a hair in front of the face', () => {
+    const sign = shape('room-sign', { x: 100, y: 20, width: 60, height: 30 });
+    expect(hangOnWall(sign, [back])).toBe(0 + 1 - 50);
+  });
+
+  it('hangs a piece over a wall line, or just behind it, on that wall', () => {
+    const sign = shape('room-sign', { x: 100, y: -30, width: 60, height: 30 });
+    expect(hangOnWall(sign, [back])).toBe(1);
+    const far = shape('room-sign', {
+      x: 100,
+      y: -30 - SPACE_HANG_ACROSS - 10,
+      width: 60,
+      height: 30,
+    });
+    expect(hangOnWall(far, [back])).toBeNull();
+  });
+
+  it('hangs nothing that does not hang, or is turned', () => {
+    expect(hangOnWall(shape('desk', { x: 100, y: 20 }), [back])).toBeNull();
+    expect(hangOnWall(shape('room-sign', { x: 100, y: 20, rotation: 90 }), [back])).toBeNull();
+  });
+
+  it('lets a Screen grow to its wall run, less a margin each end, about its middle', () => {
+    const screen = shape('screen', { x: 150, y: 20, width: 100, height: 60 });
+    const dy = hangOnWall(screen, [back])!;
+    expect(screenRoomOnWall(screen, [back], dy)).toBe(2 * (200 - SPACE_SCREEN_MARGIN));
+    const nearEnd = shape('screen', { x: 0, y: 20, width: 100, height: 60 });
+    expect(screenRoomOnWall(nearEnd, [back], hangOnWall(nearEnd, [back])!)).toBe(
+      2 * (50 - SPACE_SCREEN_MARGIN),
+    );
+    expect(screenRoomOnWall(shape('room-sign', { x: 150, y: 20 }), [back], dy)).toBeNull();
+  });
+});
+
+describe('pieces turned on the plan are seen from the camera (3d-view.md "Turning the camera")', () => {
+  it("reads a quarter-turned piece's turn, and none for another angle", () => {
+    expect(pieceQuarters(shape('sofa'))).toBe(0);
+    expect(pieceQuarters(shape('sofa', { rotation: 90 }))).toBe(1);
+    expect(pieceQuarters(shape('sofa', { rotation: -90 }))).toBe(3);
+    expect(pieceQuarters(shape('sofa', { rotation: 45 }))).toBeNull();
+  });
+  it('sees a quarter-turned sofa from the camera, not one at 45 degrees', () => {
+    expect(seenFromCamera(shape('sofa', { rotation: 90 }))).toBe(true);
+    expect(seenFromCamera(shape('sofa', { rotation: 45 }))).toBe(false);
   });
 });

@@ -68,35 +68,39 @@ export function WindowView({
           </linearGradient>
         </defs>
         <path d={art.light} fill={`url(#${gradient})`} data-window-light="" />
-        <rect
-          x={art.frame.x}
-          y={art.frame.y}
-          width={art.frame.w}
-          height={art.frame.h}
-          fill={floor}
-          stroke={stroke}
-          strokeWidth={FURNITURE_PANEL_STROKE}
-        />
-        <rect
-          x={art.pane.x}
-          y={art.pane.y}
-          width={art.pane.w}
-          height={art.pane.h}
-          fill={stroke}
-          fillOpacity={GLASS_OPACITY}
-          stroke={stroke}
-          strokeWidth={FURNITURE_RAIL_STROKE}
-        />
-        <path d={art.mullion} stroke={stroke} strokeWidth={FURNITURE_RAIL_STROKE} />
-        <rect
-          x={art.sill.x}
-          y={art.sill.y}
-          width={art.sill.w}
-          height={art.sill.h}
-          fill={floor}
-          stroke={stroke}
-          strokeWidth={FURNITURE_RAIL_STROKE}
-        />
+        {/* The flat plan's frame, pane and sill: in the 3D view the window stands in its wall instead, so these give
+            way as the plan's walls do and leave no line along the floor (3d-view.md "What it shows"); its light stays. */}
+        <g data-room-back="">
+          <rect
+            x={art.frame.x}
+            y={art.frame.y}
+            width={art.frame.w}
+            height={art.frame.h}
+            fill={floor}
+            stroke={stroke}
+            strokeWidth={FURNITURE_PANEL_STROKE}
+          />
+          <rect
+            x={art.pane.x}
+            y={art.pane.y}
+            width={art.pane.w}
+            height={art.pane.h}
+            fill={stroke}
+            fillOpacity={GLASS_OPACITY}
+            stroke={stroke}
+            strokeWidth={FURNITURE_RAIL_STROKE}
+          />
+          <path d={art.mullion} stroke={stroke} strokeWidth={FURNITURE_RAIL_STROKE} />
+          <rect
+            x={art.sill.x}
+            y={art.sill.y}
+            width={art.sill.w}
+            height={art.sill.h}
+            fill={floor}
+            stroke={stroke}
+            strokeWidth={FURNITURE_RAIL_STROKE}
+          />
+        </g>
         {/* Walking up brightens its light (docs/specs/009-elements/piece-moments.md). */}
         <WindowMoment id={element.id} light={art.light} gradient={gradient} pane={art.pane} />
       </svg>

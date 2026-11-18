@@ -13,6 +13,7 @@ import {
   SPACE_NEAR_ATTR,
   SPACE_STANDS_ATTR,
   hangOnWall,
+  screenRoomOnWall,
   standingIdsInArea,
 } from '@/lib/space-3d/space-3d-pieces';
 import { SPACE_WALL_HEIGHT, type SpaceWall } from '@/lib/space-3d/space-3d-walls';
@@ -29,11 +30,11 @@ export function useStandingPieces(
   const near = useMemo(() => standingIdsInArea(elements, area), [elements, area]);
   // The wall pieces that hang on a back wall, by id: how far each one's foot moves up to its wall's line.
   const hung = useMemo(() => {
-    const out = new Map<string, number>();
+    const out = new Map<string, { dy: number; width: number | null }>();
     for (const el of elements) {
       if (!near.has(el.id)) continue;
       const dy = hangOnWall(el, walls);
-      if (dy !== null) out.set(el.id, dy);
+      if (dy !== null) out.set(el.id, { dy, width: screenRoomOnWall(el, walls, dy) });
     }
     return out;
   }, [elements, near, walls]);
@@ -47,8 +48,8 @@ export function useStandingPieces(
       if (id && near.has(id)) {
         if (!box.hasAttribute(SPACE_NEAR_ATTR)) box.setAttribute(SPACE_NEAR_ATTR, '');
       } else if (box.hasAttribute(SPACE_NEAR_ATTR)) box.removeAttribute(SPACE_NEAR_ATTR);
-      const dy = id ? hung.get(id) : undefined;
-      if (dy === undefined) {
+      const hang = id ? hung.get(id) : undefined;
+      if (hang === undefined) {
         if (box.hasAttribute(SPACE_HUNG_ATTR)) {
           box.removeAttribute(SPACE_HUNG_ATTR);
           box.style.removeProperty('--space-hang-y');
@@ -56,13 +57,20 @@ export function useStandingPieces(
         }
       } else {
         box.setAttribute(SPACE_HUNG_ATTR, '');
-        box.style.setProperty('--space-hang-y', `${dy}px`);
+        box.style.setProperty('--space-hang-y', `${hang.dy}px`);
         // A piece taller than its wall is drawn smaller, so it hangs inside the wall with a hand's width over it.
         const room = SPACE_WALL_HEIGHT - SPACE_HANG_LIFT - 12;
-        box.style.setProperty(
-          '--space-hang-scale',
-          `${Math.min(1, room / Math.max(1, box.offsetHeight))}`,
-        );
+        const tall = room / Math.max(1, box.offsetHeight);
+        // A Screen grows to fill its wall, as tall as the wall allows and as wide as its run of wall (3d-view.md "Wall
+        // pieces hang on the wall").
+        const scale =
+          hang.width === null
+            ? Math.min(1, tall)
+            : Math.max(
+                Math.min(1, tall),
+                Math.min(tall, hang.width / Math.max(1, box.offsetWidth)),
+              );
+        box.style.setProperty('--space-hang-scale', `${scale}`);
       }
     }
   }, [layer, near, hung]);

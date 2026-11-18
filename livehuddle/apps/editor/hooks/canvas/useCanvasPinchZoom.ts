@@ -1,5 +1,6 @@
 'use client';
 
+import { screenToPlan } from '@/lib/space-3d/space-3d-turn';
 import type { ViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
 import { useEffect, useRef, type RefObject } from 'react';
 import { clamp } from '@livehuddle/document';
@@ -247,10 +248,9 @@ export function useCanvasPinchZoom(deps: Deps): Api {
       noteWheel('pan');
       const { zoom: viewportZoom, offset: current } = depsRef.current.viewport.get();
       const base = pendingPan ?? current;
-      pendingPan = {
-        x: base.x - e.deltaX / viewportZoom,
-        y: base.y - e.deltaY / viewportZoom,
-      };
+      // Turned in 3D, the scroll is turned back onto the plan, so the floor follows the fingers.
+      const move = screenToPlan({ x: e.deltaX / viewportZoom, y: e.deltaY / viewportZoom });
+      pendingPan = { x: base.x - move.x, y: base.y - move.y };
       if (panRaf === null) panRaf = requestAnimationFrame(flushPan);
     };
 

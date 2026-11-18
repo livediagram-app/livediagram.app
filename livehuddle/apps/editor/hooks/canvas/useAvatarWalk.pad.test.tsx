@@ -115,6 +115,20 @@ describe('useAvatarWalk entering on an Avatar Pad', () => {
     expect(result.current.readPos()).toEqual(avatarPadCore(lobby as never));
   });
 
+  it('starts a travel\'s landing on the new tab over the pad (avatar-mode.md "Changing tab")', () => {
+    const lobby = pad('lobby', 100, 100);
+    const { result, rerender } = setup({ elements: [lobby] });
+    rerender({ active: true, els: [lobby] });
+    act(() => result.current.teleportTo({ x: 300, y: 300 }, undefined, true));
+    rerender({ active: false, els: [lobby] });
+    rerender({ active: true, els: [lobby] });
+    expect(result.current.readPos()).toEqual({ x: 300, y: 300 });
+    // Used once: the next entry starts on the pad again.
+    rerender({ active: false, els: [lobby] });
+    rerender({ active: true, els: [lobby] });
+    expect(result.current.readPos()).toEqual(avatarPadCore(lobby as never));
+  });
+
   it('without a pad, keeps the button spawn first', () => {
     const { result, rerender } = setup({ elements: [], spawnAt: { x: 600, y: 500 } });
     rerender({ active: true, els: [] });

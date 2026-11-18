@@ -429,6 +429,26 @@
   font-weight: 600;
   color: var(--space-wall-ink);
 }
+/* Seen from behind (the camera turned round), the name is mirrored back so it reads the right way round. */
+[data-space-wall-label][data-from-behind] {
+  scale: -1 1;
+}
+/* A room's name over its door (3d-view.md "Doorways"): a sign on the lintel, as wide as it needs, where no piece on
+   the back wall covers it. */
+[data-space-wall='doorway'] > [data-space-wall-face] > [data-space-wall-label] {
+  position: absolute;
+  left: 50%;
+  top: calc((var(--wall-h) - var(--door-h)) / 2);
+  translate: -50% -50%;
+  max-width: none;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--space-wall-top);
+  box-shadow: 0 1px 0 rgb(0 0 0 / 0.12);
+}
+[data-space-wall='doorway'] > [data-space-wall-face] > [data-space-wall-label][data-from-behind] {
+  scale: -1 1;
+}
 
 /* The horizon: the top of the canvas fades into its own background colour (Space3DFog). */
 [data-space-fog] {
@@ -439,4 +459,21 @@
 }
 [data-space-view='tilted'] > [data-space-fog] {
   opacity: 1;
+}
+
+/* Words on the floor (a Text element) turn with the camera about their middle, so they always read the right way up
+   (3d-view.md "Turning the camera"). */
+[data-space-view] [data-element-kind='text'] > * {
+  rotate: calc(var(--space-turn) * -1);
+}
+
+/* What you can use reads at a glance (3d-view.md "Pieces you can use"): in the 3D view a piece with a control of its
+   own (an Arcade's Insert Coin, the Notice Board, the dog) glows under the pointer, and its cursor is a hand. */
+[data-space-view]
+  [data-space-stands]:not(:has([data-space-seen])):has(button[aria-label]:not([disabled])):hover,
+[data-space-view]
+  [data-space-stands]:has(button[aria-label]:not([disabled])):hover
+  [data-space-seen-stand] {
+  /* On the drawing that stands, never on a box that keeps its children in 3D (a filter flattens them). */
+  filter: drop-shadow(0 0 6px rgb(56 189 248 / 0.85));
 }
