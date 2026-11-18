@@ -172,7 +172,7 @@ function AtDesk({
   useWorkdayPieces({ active: true, feet, elements });
   return (
     <CanvasSurfaceProvider surface="light">
-      <PieceArt element={desk} stroke="#334155" fill="#ffffff" sitters={[]} />
+      <PieceArt element={desk} stroke="#334155" fill="#ffffff" />
     </CanvasSurfaceProvider>
   );
 }
@@ -301,7 +301,7 @@ describe('the office dog', () => {
   const dogIn = () =>
     render(
       <CanvasSurfaceProvider surface="dark">
-        <PieceArt element={bed} stroke="#cbd5e1" fill="#1e293b" sitters={[]} />
+        <PieceArt element={bed} stroke="#cbd5e1" fill="#1e293b" />
       </CanvasSurfaceProvider>,
     );
 

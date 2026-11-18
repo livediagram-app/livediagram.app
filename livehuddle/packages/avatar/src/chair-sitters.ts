@@ -114,18 +114,20 @@ export function sittersByChair(
   return byChair;
 }
 
+/** Whether two chairs' sitters read the same: the same people, colours, seats and sizes, in the same order. */
+export function sameSitterList(a: readonly Sitter[], b: readonly Sitter[]): boolean {
+  if (a.length !== b.length) return false;
+  return a.every((s, i) => {
+    const o = b[i]!;
+    return s.name === o.name && s.color === o.color && s.seat === o.seat && s.scale === o.scale;
+  });
+}
+
 export function sameSitters(a: ChairSitters, b: ChairSitters): boolean {
   if (a.size !== b.size) return false;
   for (const [chair, list] of a) {
     const other = b.get(chair);
-    if (!other || other.length !== list.length) return false;
-    if (
-      list.some((s, i) => {
-        const o = other[i]!;
-        return s.name !== o.name || s.color !== o.color || s.seat !== o.seat || s.scale !== o.scale;
-      })
-    )
-      return false;
+    if (!other || !sameSitterList(list, other)) return false;
   }
   return true;
 }

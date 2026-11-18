@@ -9,7 +9,7 @@ stage](../../012-collaboration/meeting-rooms-and-stage.md) "Raise hand".
 | File                                                          | Role                                                                                                                      |
 | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | `apps/editor/lib/mini-view/mini-view-window.ts`               | The one window: `miniViewSupported`, `openMiniView`, `closeMiniView`, `toggleMiniView`, `useMiniViewWindow`, `focusSpace` |
-| `apps/editor/lib/mini-view/mini-view-styles.ts`               | `mirrorDocumentLook`: the opener's stylesheets, `<html>` classes and theme copied into the window                         |
+| `apps/editor/lib/mini-view/mini-view-styles.ts`               | `mirrorDocumentLook`: the opener's stylesheets, `<html>` classes and theme copied in; `followRootLook` keeps them in step |
 | `apps/editor/lib/mini-view/mini-view-knock.ts`                | The knock on show: `showMiniKnock`, `clearMiniKnock`, `useMiniKnock`, `resetMiniKnock`                                    |
 | `apps/editor/lib/mini-view/mini-view-people.ts`               | Pure: `miniViewPeople` (the rows and groups), `miniPeopleKey` (their by-value key)                                        |
 | `apps/editor/components/calls/mini-view/MiniViewHost.tsx`     | Mounted by the characters layer: renders the mini view into the window (its own root) while open; closes it on unmount    |
@@ -50,10 +50,13 @@ A module store: `win: Window | null`, with `createListeners`.
   renders no button and hydration agrees.
 - `openMiniView()`: returns at once when `win` is set or a request is in flight (`opening`). Otherwise
   `await documentPictureInPicture.requestWindow({ width: MINI_VIEW_WIDTH, height: MINI_VIEW_HEIGHT })`, then
-  `mirrorDocumentLook(document, pip.document)`, `pip.document.title = MINI_VIEW_TITLE`, one `pagehide` listener that
+  `mirrorDocumentLook(document, pip.document)`, `unfollow = followRootLook(document, pip.document)` (one
+  MutationObserver on the opener's `<html>` `class`, `style` and `lang`, re-running `mirrorRootLook`, so a theme,
+  scale or language change reaches the open window; it fires only on those changes, never per frame),
+  `pip.document.title = MINI_VIEW_TITLE`, one `pagehide` listener that
   calls `forget()`, `win = pip`, notify, then `track('Canvas', 'Used', 'SpaceMiniView')`. A refusal (no user
   activation, the browser's own refusal) leaves `win` null and logs `[mini-view] open refused` with the error's name.
-- `closeMiniView()`: `win?.close()` and `forget()`. `forget()` removes the `pagehide` listener, sets `win = null` and
+- `closeMiniView()`: `win?.close()` and `forget()`. `forget()` removes the `pagehide` listener, calls `unfollow()`, sets `win = null` and
   notifies; a second call is a no-op.
 - `toggleMiniView()`: close when open, else open. Pop Out calls it from its click, so the request carries the click's
   user activation.
@@ -243,19 +246,19 @@ nothing until opened. No layout shift: Pop Out takes its place in the dock on fi
 
 ## Testing
 
-| Rule                                                              | Test                                                  |
-| ----------------------------------------------------------------- | ----------------------------------------------------- |
-| Pop Out only where the API exists                                 | `PopOutSegment.test.tsx`                              |
-| Pop Out for an Editor, a Participant and a Viewer; its divider    | `CallDock.test.tsx` "Pop Out"                         |
-| Open, close, pagehide, refusal, double press, telemetry           | `mini-view-window.test.ts`                            |
-| Styles and theme mirrored                                         | `mini-view-styles.test.ts`                            |
-| Groups, order, You, key stable over a move                        | `mini-view-people.test.ts` (with the CPU budget)      |
-| Rows: speaking, hand, DND, Viewer's own row, knock answer, focus  | `MiniView.test.tsx`                                   |
-| Host draws while open, closes on unmount, keeps presses in window | `MiniViewHost.test.tsx`                               |
-| A knock reaches the mini view; an answer clears it                | `mini-view-knock.test.ts`, `useMeetingPieces.test.ts` |
-| Your controls: the dock's mic per phase, camera while on, roles   | `MiniViewControls.test.tsx`                           |
-| Tiles: near only, by name, not yours, capped, none, press         | `MiniViewTiles.test.tsx`                              |
-| Hidden tab with the window open: 4 nearest small cameras, back    | `bubbles.test.ts`, `proximity-call.test.ts`           |
+| Rule                                                              | Test                                                   |
+| ----------------------------------------------------------------- | ------------------------------------------------------ |
+| Pop Out only where the API exists                                 | `PopOutSegment.test.tsx`                               |
+| Pop Out for an Editor, a Participant and a Viewer; its divider    | `CallDock.test.tsx` "Pop Out"                          |
+| Open, close, pagehide, refusal, double press, telemetry           | `mini-view-window.test.ts`                             |
+| Styles and theme mirrored; a theme switch follows while open      | `mini-view-styles.test.ts`, `mini-view-window.test.ts` |
+| Groups, order, You, key stable over a move                        | `mini-view-people.test.ts` (with the CPU budget)       |
+| Rows: speaking, hand, DND, Viewer's own row, knock answer, focus  | `MiniView.test.tsx`                                    |
+| Host draws while open, closes on unmount, keeps presses in window | `MiniViewHost.test.tsx`                                |
+| A knock reaches the mini view; an answer clears it                | `mini-view-knock.test.ts`, `useMeetingPieces.test.ts`  |
+| Your controls: the dock's mic per phase, camera while on, roles   | `MiniViewControls.test.tsx`                            |
+| Tiles: near only, by name, not yours, capped, none, press         | `MiniViewTiles.test.tsx`                               |
+| Hidden tab with the window open: 4 nearest small cameras, back    | `bubbles.test.ts`, `proximity-call.test.ts`            |
 
 ## Constants and configuration
 

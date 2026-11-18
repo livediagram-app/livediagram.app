@@ -2,7 +2,6 @@
 
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { cssZoomOf } from '../../lib/ui-scale';
-import { styleChangeInFlight } from '../../lib/tab-style-ease';
 
 // Rounds a content-sized box UP to a whole-pixel width, so whatever sits
 // after it (or inside a centred parent) lands on the pixel grid.
@@ -27,7 +26,6 @@ export function SnapWidth({
   const outerRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState<number | null>(null);
-  const measureRef = useRef<(() => void) | null>(null);
 
   useLayoutEffect(() => {
     const inner = innerRef.current;
@@ -53,25 +51,17 @@ export function SnapWidth({
       if (outer) outer.style.width = `${w}px`;
       setWidth((prev) => (prev === w ? prev : w));
     };
-    measureRef.current = measure;
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(inner);
     if (matchParentParity && parent) ro.observe(parent);
-    return () => {
-      measureRef.current = null;
-      ro.disconnect();
-    };
+    return () => ro.disconnect();
   }, [matchParentParity]);
-  // And again on every render of the box, in the same commit: content its host re-rendered (a strip's names
-  // going, a strip just shown) is measured before anything else in that frame reads where the box sits, where
-  // the observer alone reports it later in the frame. One rect read, only when the host renders. Not while a Tab Style
-  // change is drawn: it restyles the canvas, never this box's content, and the read would make the browser restyle
-  // every recoloured element of a big canvas inside React's commit and again for the frame (docs/specs/008-canvas/
-  // canvas-performance.md "A theme pick on a big board"); the observer still hears a real size change before paint.
-  useLayoutEffect(() => {
-    if (!styleChangeInFlight()) measureRef.current?.();
-  });
+  // Nothing more on a render of the box: content its host re-rendered (a strip's names going, a strip just shown) is
+  // measured by the observer, after the frame's layout and before its paint, so the box is never drawn at a stale
+  // width. A read in every commit instead made the browser lay out the whole page inside React's commit, and the
+  // toolbar renders on every drop of a canvas element: on a 1,000-element board that layout was the drop's largest
+  // cost after React (docs/specs/008-canvas/canvas-performance.md "Chrome after a gesture", Work Tracker 911).
 
   return (
     <div ref={outerRef} className={`shrink-0 ${className}`} style={{ width: width ?? undefined }}>

@@ -62,6 +62,13 @@ large move rides as one layer").
 - **A still canvas does nothing.** Chrome that positions itself re-measures on a real change (a
   resize, a move, a layout event), and an observer never re-arms in a way that notifies itself
   again.
+- <a id="chrome-after-a-gesture"></a>**Chrome after a gesture reads no layout in the gesture's task.** The selection's toolbar
+  and popover place themselves in the next frame, before that frame is painted, never in the commit that drew them
+  (a press that selects, a drop that ends a drag), and a box that rounds its width to whole pixels measures on its
+  resize observer, never in a render's commit. A read inside the commit made the browser lay out the whole board in
+  the press's or the drop's task, the ones the budget holds to 50 ms; in the frame it is the layout the browser does
+  anyway. Nothing is drawn unplaced: a flip or nudge
+  found in that frame is applied in it (Work Tracker 911).
 - **A pan or zoom moves the canvas, not its elements.** The viewport is one transform on the
   element layer. No element view takes the pan offset as a prop or reads it from a context; zoom
   reaches only what is counter-scaled to stay a constant screen size (grips, handles, badges).

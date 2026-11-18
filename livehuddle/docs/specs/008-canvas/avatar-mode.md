@@ -281,7 +281,8 @@ desktop apps of Zoom, Teams and Gather do.
   Firefox since 151). A browser without it (desktop Safari, every phone) shows no Pop Out, and nothing else changes.
   A Viewer with no call and no preview sees a dock holding Pop Out alone.
 - **The window** opens 320 by 400 px (the browser may keep a size the person dragged it to), in the app's light or
-  dark theme as it was when it opened. Its title is **Mini View**. At its top: **In the Space** and how many people
+  dark theme, and follows it while open: switching Appearance, or the OS turning dark under System, switches the
+  window too (Work Tracker 1110). Its title is **Mini View**. At its top: **In the Space** and how many people
   are on the tab (you included), and **Back to Space**.
 - **Who is in it**: you first, then everyone with a character on your tab, the same people the canvas draws. While
   you are in a call the people you hear lead under **Near You**, the rest under **In the Space**; with nobody heard

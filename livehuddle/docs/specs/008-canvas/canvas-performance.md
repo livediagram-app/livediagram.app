@@ -63,6 +63,13 @@ large move rides as one layer").
 - **A still canvas does nothing.** Chrome that positions itself re-measures on a real change (a
   resize, a move, a layout event), and an observer never re-arms in a way that notifies itself
   again.
+- <a id="chrome-after-a-gesture"></a>**Chrome after a gesture reads no layout in the gesture's task.** The selection's toolbar
+  and popover place themselves in the next frame, before that frame is painted, never in the commit that drew them
+  (a press that selects, a drop that ends a drag), and a box that rounds its width to whole pixels measures on its
+  resize observer, never in a render's commit. A read inside the commit made the browser lay out the whole board in
+  the press's or the drop's task, the ones the budget holds to 50 ms; in the frame it is the layout the browser does
+  anyway. Nothing is drawn unplaced: a flip or nudge
+  found in that frame is applied in it (Work Tracker 911).
 - **A pan or zoom moves the canvas, not its elements.** The viewport is one transform on the
   element layer. No element view takes the pan offset as a prop or reads it from a context; zoom
   reaches only what is counter-scaled to stay a constant screen size (grips, handles, badges).
@@ -103,7 +110,9 @@ large move rides as one layer").
   bubbles) and the sprites that changed; it renders neither the canvas nor the element layer. What
   follows a character as a fact (the element under your feet and its ring, the stage you speak from,
   who sits or stands on each piece, which pod is shut) subscribes by value and renders only when the
-  fact changes; what acts on a position (a click on a peer, Walk There, a climb, a seat on arrival)
+  fact changes. Who sits on each piece is read by that piece alone, from one source the canvas never replaces: a sit or
+  a stand renders the pieces whose sitters changed, never the element layer, where a fresh lookup each time rendered
+  every element of the board (two long tasks a walk round Team Pod on a slowed phone, Work Tracker 1185). What acts on a position (a click on a peer, Walk There, a climb, a seat on arrival)
   reads it when it runs. What follows everyone's positions as a fact and draws nothing that walks
   with them (the call's scene, the Screens and Room Signs, the game seats, who is where, the pad
   arrivals) reads a coarse copy of the characters and of your feet: taken at most 10 times a second
@@ -284,7 +293,9 @@ Taken up only when the rules above leave the budget unmet; each is a change to t
   holds the arrow work, and render counts hold "renders nothing".
 - **A performance probe** (`pnpm perf:canvas`) builds the reference board, runs each gesture at the
   reference speed and prints the budget table with pass or fail per row. It also runs by hand,
-  against any build.
+  against any build, and with `E2E_PERF_BOARD=<template kind>` (`virtual-office`) on a Space template seeded as
+  it is made instead of the reference board, so a reworked Space is held to the same budget (Work Tracker 1185).
+  The nightly run never sets it.
 - **Each gesture runs five times and a row reads the median**, since one run of the same gesture
   can read two to five times another. Opening the board is no exception: it is opened five times,
   each in a fresh browser context, and the row reads the median.

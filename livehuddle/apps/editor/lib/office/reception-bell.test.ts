@@ -140,12 +140,19 @@ describe('the bell on the canvas', () => {
     view.unmount();
   });
 
-  it('stays quiet out of earshot, out of Avatar mode, under Do Not Disturb, and for a malformed ring', () => {
-    for (const over of [
-      { self: { x: 2000, y: 2000 } },
-      { inMode: false },
-      { doNotDisturb: true },
-    ]) {
+  // Work Tracker 1185: a guest rang at an empty front desk and the owner, on the Avatar Pad outside Reception, got nothing.
+  it('tells you who rang out of earshot, without the ding or the waves', () => {
+    const view = mount({ self: { x: 2000, y: 2000 } });
+    const rings = renderHook(() => useBellRings('in-lobby'));
+    act(() => receiveBellOp('tab-sam', { kind: 'avatar-bell', tabId: 't1', deskId: 'in-lobby' }));
+    expect(playTones).not.toHaveBeenCalled();
+    expect(rings.result.current).toBe(0);
+    expect(toast.info).toHaveBeenCalledWith('Sam rang the bell at Reception');
+    view.unmount();
+  });
+
+  it('stays quiet out of Avatar mode, under Do Not Disturb, for a desk not on the board, and for a malformed ring', () => {
+    for (const over of [{ inMode: false }, { doNotDisturb: true }]) {
       const view = mount(over);
       receiveBellOp('tab-sam', { kind: 'avatar-bell', tabId: 't1', deskId: 'in-lobby' });
       view.unmount();

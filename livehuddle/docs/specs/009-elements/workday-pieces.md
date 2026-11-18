@@ -183,9 +183,10 @@ plant behind the counter, and a brass service bell on the counter.
 - **The bubble holds a Ring Bell button.** Pressing it rings the bell: you hear a bright ding, the bell on the desk
   rings out (two waves spread from it and fade), and so does it for everyone who hears it.
 - **Who hears it**: everyone walking whose character stands in the desk's room (the room it stands in, or beside, as a
-  Screen belongs to one), or, for a desk in no room, within 480 px of it. They hear the ding, see the bell ring out, and see
-  a toast, **"Sam rang the bell at Reception"**, unless they are on Do Not Disturb, who are not rung. You do not get the
-  toast for your own ring.
+  Screen belongs to one), or, for a desk in no room, within 480 px of it. They hear the ding and see the bell ring out.
+- **Who is told**: everyone walking on the tab, in earshot or not, sees a toast, **"Sam rang the bell at Reception"**,
+  so a ring at an empty front desk still reaches the people it is for, wherever they are in the Space (Work Tracker
+  1185). Nobody on Do Not Disturb is rung or told. You do not get the toast for your own ring.
 - **One ring per 5 seconds per person**: the button reads **Rang** for five seconds, and the room drops a second ring
   from the same person inside that window.
 - A ring is a moment, like a knock: presence, never stored, never logged, never replayed.

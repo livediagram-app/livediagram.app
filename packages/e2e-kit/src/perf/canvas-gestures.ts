@@ -106,13 +106,19 @@ async function targets(
         const hit = document.elementFromPoint(x, y);
         return !!hit && !!hit.closest('[data-canvas-a11y-root]') && !hit.closest(bareExclude);
       };
-      for (let y = 220; y < h - 260; y += 37)
-        for (let x = 320; x < w - 420; x += 41)
-          if (isBare(x, y))
-            return {
-              shape: { x: near.r.x + near.r.width / 2, y: near.r.y + near.r.height / 2 },
-              bare: { x, y },
-            };
+      // A coarse sweep first; then a fine one, for a board packed so close at fit that only its corridors (a few px
+      // wide) are bare, which the coarse sweep can step over.
+      for (const [dy, dx] of [
+        [37, 41],
+        [3, 3],
+      ] as const)
+        for (let y = 220; y < h - 260; y += dy)
+          for (let x = 320; x < w - 420; x += dx)
+            if (isBare(x, y))
+              return {
+                shape: { x: near.r.x + near.r.width / 2, y: near.r.y + near.r.height / 2 },
+                bare: { x, y },
+              };
       throw new Error('no bare canvas in view');
     },
     { w: PROBE_VIEW.width, h: PROBE_VIEW.height, shapeIds: [...shapeIds], bareExclude },
