@@ -128,6 +128,17 @@ and cookie have lapsed, so no app can be handed the id again, and accounts asks 
 ([accounts.md](../003-accounts/accounts.md#guests-who-never-come-back) "Guests who never come back"): every item it
 owns goes, as a closed account's do ([Closing an account](#closing-an-account)).
 
+Accounts only knows a guest was seen from 2026-10-25 on, so the index tells it about the guests from before:
+the daily cron (`src/guest-seen-backfill.ts`) reads the next 500 distinct guest owners of items (`guest_…` ids, in id
+order after the cursor it keeps in `cron_cursors`, leaving out any guest already merged into someone,
+`person_aliases`) and sends them to accounts over the `ACCOUNTS` service binding, with `MERGE_KEY`:
+`POST https://accounts.internal/api/account/index/guests-seen` `{ ids }`, answered `{ added }`. The host is reachable
+only through the binding, and accounts refuses the route on any other (404), so no public request reaches it.
+Accounts adds a `guest_seen` row only for an id without one
+([accounts.md](../003-accounts/accounts.md#guests-who-never-come-back) "Guests from before the stamp"). The cursor
+moves on only when accounts answers; a page shorter than 500 marks the pass finished, and the step never runs again.
+Without the binding or the key it does nothing.
+
 ## Items
 
 ```ts

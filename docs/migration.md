@@ -247,8 +247,10 @@ So the old id can't simply be reused, and the plan is:
 3. From then on the work is the browser's ordinary new guest's, or the account's if they were signed in (a
    signed-in person whose old guest work never moved is covered by the same door).
 
-A guest who never comes back keeps their copied documents, unreachable but intact, as on the old site. Guests
-can't be emailed; the old site's banner before the switch (step 7) tells them nothing is needed.
+A guest who never comes back keeps their copied documents, unreachable but intact, until 400 days after the old site
+closed, like any guest who never comes back (from 2027-12-02,
+[accounts.md](../liveworkspace/docs/specs/003-accounts/accounts.md#guests-who-never-come-back) "Guests from before the
+stamp"). Guests can't be emailed; the old site's banner before the switch (step 7) tells them nothing is needed.
 
 **Local only documents.** For a guest the old site's default is a Local only document, kept in that browser's
 IndexedDB and never sent to the server, so no server step can copy it. Both editors use the same database

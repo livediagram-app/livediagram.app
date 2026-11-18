@@ -1247,6 +1247,20 @@ with its link could still open it: a visit through a link is not the guest being
 (Guest identity, Deleting your data). Signing in removes the guest's stamp with the rest of the guest, so a guest who
 becomes an account is never swept; their items are the account's by then.
 
+**Guests from before the stamp.** `guest_seen` began on 2026-10-25, so a guest last seen before then has no row, and
+neither has any returning guest of the old livediagram.app ([above](#returning-guests-of-the-old-livediagramapp)) who
+never claimed their work: the sweep would never find them, and their items would stay for good (measured 2026-11-18:
+327 of the index's 371 guest owners had no row, 326 of them old livediagram.app guests). The index's daily run sends
+accounts every guest that owns an item, 500 a run in id order after a cursor it keeps, until it has been through
+them all once ([one-explorer-contracts.md](../004-index/one-explorer-contracts.md#guests)): `POST
+/api/account/index/guests-seen` `{ ids }`, which accounts answers only over the index's service binding, never a
+public request. Each id without a row gets one dated 2026-10-25 (the end of that day, UTC: every hand-off since has
+been stamped, so any token or cookie the guest still holds was issued before then); an unclaimed old livediagram.app
+guest's is dated the end of 2026-10-27 instead, the day the old site closed, since that is the latest they could
+have used it. A row already there is never changed, and a claimed old guest gets none (its work is its claimer's).
+From then on they are swept like any other guest: 400 days on, from 2027-11-30. An old guest who comes back after
+that finds nothing to claim.
+
 ## Names and other typed text
 
 Token names, team names and organisations, account names and display names are kept as typed, with three things

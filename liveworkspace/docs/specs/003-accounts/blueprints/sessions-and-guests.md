@@ -20,7 +20,8 @@ Scope, by file:
 | `liveworkspace/apps/accounts/src/own-sessions.ts`                                                                        | The bearer's Where You're Signed In: list, end one, end the others                        |
 | `liveworkspace/apps/accounts/src/link-google.ts`                                                                         | The bearer's Sign-in Methods, and `GET /api/auth/link-google`, the hop to Google          |
 | `liveworkspace/apps/accounts/src/legacy-guests.ts`                                                                       | `POST /api/account/internal/legacy-guests/claim`                                          |
-| `liveworkspace/apps/accounts/src/guest-sweep.ts`                                                                         | `noteGuestSeen`, `sweepIdleGuests`                                                        |
+| `liveworkspace/apps/accounts/src/guest-sweep.ts`                                                                         | `noteGuestSeen`, `sweepIdleGuests`, `backfillGuestSeen`                                   |
+| `liveworkspace/apps/accounts/src/account-api/index-door.ts`                                                              | `POST /api/account/index/guests-seen`, over the binding only                              |
 | `liveworkspace/apps/accounts/src/account-api/signed-in.ts`, `liveworkspace/apps/accounts/src/account-api/bearer-door.ts` | `GET /api/account/people` on each door                                                    |
 | `liveworkspace/apps/accounts/src/profiles.ts`                                                                            | `withSessionColour` on `GET /api/auth/get-session`                                        |
 | `packages/auth-client/src/silent.ts`, `oauth.ts`                                                                         | Each app's side: the guest hand-off and `prompt=none`                                     |
@@ -224,12 +225,21 @@ and deletes their `settings`, `profile` and `guest_seen` rows, rechecking the cu
 is never dropped as unfinished), which deletes every item the guest owns. At 25 a run that step sends 2,400 a day,
 well above the sweep's 500.
 
+Guests from before the stamp: `POST /api/account/index/guests-seen` `{ ids }` (`index-door.ts`
+`handleIndexGuestsSeen`). Any host but `accounts.internal` (`ACCOUNTS_BINDING_ORIGIN`, reached only over the index's
+`ACCOUNTS` service binding) is `404 not_found`, before the key is read; then a POST with `Bearer INDEX_MERGE_KEY`
+(else `401`), and `ids` an array of at most 500 (`GUEST_SEEN_BACKFILL_PAGE`, else `400 too_many_ids`). Strings that
+are not guest ids are dropped. `backfillGuestSeen` is one statement: `INSERT … SELECT` over `json_each`, left-joined
+to `legacy_guest`, skipping a claimed one (`claimedAt` set), `seen_at` `GUEST_SEEN_FROM` (2026-10-25 23:59:59.999
+UTC) or, for an unclaimed legacy guest, `OLD_SITE_CLOSED` (2026-10-27 23:59:59.999 UTC), `ON CONFLICT (guest_id) DO
+NOTHING`. Answer `{ added }` (the rows written).
+
 ## Data and persistence
 
-| Table          | Key        | Indexes                   | Written by                                      | Read by           |
-| -------------- | ---------- | ------------------------- | ----------------------------------------------- | ----------------- |
-| `guest_seen`   | `guest_id` | `guest_seen_at (seen_at)` | `noteGuestSeen`; profile merge deletes          | `sweepIdleGuests` |
-| `legacy_guest` | `id`       |                           | the migration's copy (`firstSeenAt`); the claim | the claim         |
+| Table          | Key        | Indexes                   | Written by                                                  | Read by           |
+| -------------- | ---------- | ------------------------- | ----------------------------------------------------------- | ----------------- |
+| `guest_seen`   | `guest_id` | `guest_seen_at (seen_at)` | `noteGuestSeen`, `backfillGuestSeen`; profile merge deletes | `sweepIdleGuests` |
+| `legacy_guest` | `id`       |                           | the migration's copy (`firstSeenAt`); the claim             | the claim         |
 
 `legacy_guest` columns: `firstSeenAt`, `claimedAt`, `claimedBy`, `claimingBy`, `claimingUntil` (0013).
 
@@ -273,6 +283,7 @@ well above the sweep's 500.
 | `liveworkspace/apps/accounts/src/end-session.test.ts` (20)                                           | ending a session from an app, the browser's hop, liveworkspace.app and Security: every app's tokens gone, tickets, redirects refused |
 | `liveworkspace/apps/accounts/src/legacy-guests.test.ts` (14)                                         | claiming a returning guest of the old livediagram.app                                                                                |
 | `liveworkspace/apps/accounts/src/guest-sweep.test.ts` (6)                                            | noting a guest seen; sweeping guests who can never come back, and queueing their items' purge                                        |
+| `liveworkspace/apps/accounts/src/guest-seen-backfill.test.ts`                                        | guests from before the stamp: an existing row kept, a missing one dated, old guests, the binding-only door, 500 in budget            |
 | `liveworkspace/apps/accounts/src/account-api.test.ts` (43)                                           | the people door and bearers among the rest, sessions, tokens                                                                         |
 | `liveworkspace/apps/accounts/src/link-google.test.ts` (10)                                           | connecting Google from an app: the hop, the state cookie alone, Better Auth's callback, tickets, return addresses                    |
 
@@ -287,7 +298,9 @@ well above the sweep's 500.
 `WORKSPACE_TOKEN_TTL_SECONDS` 900 (`workspace-token.ts`); `END_SESSION_PATH` `/end-session`, `TICKET_TTL_SECONDS` 300,
 `REDIRECT_MAX_LENGTH` 2,000, `SESSIONS_PER_STATEMENT` 40 (`end-session.ts`); `KEYS_TTL_MS` 5 min (`bearer.ts`);
 `LINK_GOOGLE_PATH` `/link-google`, `LINK_TICKET_TTL_SECONDS` 300 (`link-google.ts`); `LEGACY_CLAIM_HOLD_MS`
-60 s (`legacy-guests.ts`); `GUEST_IDLE_MS` 400 d, `GUEST_SWEEP_LIMIT` 500 (`guest-sweep.ts`); `MAX_PROFILE_IDS` 100.
+60 s (`legacy-guests.ts`); `GUEST_IDLE_MS` 400 d, `GUEST_SWEEP_LIMIT` 500, `GUEST_SEEN_FROM` 2026-10-25 23:59:59.999 UTC, `OLD_SITE_CLOSED`
+2026-10-27 23:59:59.999 UTC (`guest-sweep.ts`); `ACCOUNTS_BINDING_ORIGIN` `https://accounts.internal`,
+`GUEST_SEEN_BACKFILL_PATH`, `GUEST_SEEN_BACKFILL_PAGE` 500 (`@liveworkspace/auth-client/guest-seen-backfill`); `MAX_PROFILE_IDS` 100.
 Rate limiters: `GUEST_LIMITER` `1003` (`2003`), 60 per 60 s; `TEAM_LINK_LIMITER` `1004` (`2004`), 20 per 60 s;
 `LEGACY_GUEST_LIMITER` `1105` (`2105`), 10 per 60 s.
 
@@ -295,4 +308,6 @@ Rate limiters: `GUEST_LIMITER` `1003` (`2003`), 60 per 60 s; `TEAM_LINK_LIMITER`
 
 - `ACC6`: a guest id unseen for 400 days (past the token's year and a browser's cookie cap) has its settings and
   profile swept.
+- `ACC30`: a guest from before `guest_seen` is dated the end of 2026-10-25 (an unclaimed old livediagram.app guest the
+  end of 2026-10-27), late enough that no credential issued unstamped outlives its 400 days.
 - `ACC7`: a merge that fails keeps the guest cookie, so the next sign-in tries again; the sign-in itself never fails.
