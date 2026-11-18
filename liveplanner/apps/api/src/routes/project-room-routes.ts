@@ -9,7 +9,7 @@ import {
   type RoomTicketResponse,
 } from '@liveplanner/api-schema';
 import { adderKeyFor } from '../adder-key';
-import { noteWorkbenchRoom } from '../auth/workbench-session';
+import { noteTokenRoom, noteWorkbenchRoom } from '../auth/workbench-session';
 import { linkCodeOf, indexService } from '../index-service';
 import { badRequest, forbidden, json, notFound } from '../responses';
 import {
@@ -58,18 +58,34 @@ export async function handleProjectRoomRoutes(ctx: RouteContext): Promise<Respon
     // The caller's own level, and the level the ticket admits at: view for a view-only ticket.
     const own = workbench ? capWorkbenchRole(grant.level, workbench.level) : grant.level;
     const role = cap ?? own;
+    // The API token minting it (an MCP server's live view, a CLI), outside a workbench session (whose pairing closes
+    // with its token already): sealed into the ticket, so revoking the token closes the sockets it opens.
+    const token = workbench ? null : (ctx.token?.id ?? null);
     // A workbench session is sealed to its pairing at its own cap (held to view when it asks for a view-only
     // ticket); a view-only ticket otherwise is the grant sealed with the cap alone, so its holder never has the
-    // grant bare.
+    // grant bare; a token's ticket carries the token, with the cap it asked for or none.
     const ticket = await sealRoomTicket(
       env,
       grant.token,
       workbench
         ? { pairing: workbench.pairingId, cap: cap ?? workbench.level }
-        : cap
-          ? { pairing: null, cap }
+        : cap || token
+          ? { pairing: null, cap, token }
           : null,
     );
+    // ...and liveworkspace notes the room against the token until the ticket's grant lapses, which is how a revoke
+    // finds the rooms to close without asking every plan (public-api-and-tokens.md "Revoking a token").
+    const owner = token ? ctx.resolveOwner() : null;
+    if (token && owner) {
+      const noted = noteTokenRoom(env, {
+        ownerId: owner,
+        tokenId: token,
+        itemId: id,
+        until: grant.exp * 1000,
+      });
+      if (ctx.waitUntil) ctx.waitUntil(noted);
+      else await noted;
+    }
     // A workspace session joins many rooms; each is recorded at liveworkspace, off the response's path, so ending
     // its access closes them all (WB55).
     if (workbench?.scope === 'workspace') {
@@ -95,7 +111,7 @@ export async function handleProjectRoomRoutes(ctx: RouteContext): Promise<Respon
     const id = segments[2]!;
     const opened = await openRoomTicket(indexService, env, url.searchParams.get('t'), id);
     if (!opened) return forbidden();
-    const { claims, workbench } = opened;
+    const { claims, workbench, token } = opened;
     const role: AccessLevel = roomTicketLevel(opened);
     const person = linkCodeOf(claims.sub) ? null : claims.sub;
     // The share code a session came in by, from the grant the index signed (its `link` claim, set for a person who
@@ -121,6 +137,9 @@ export async function handleProjectRoomRoutes(ctx: RouteContext): Promise<Respon
     // the room and see others' (docs/specs/014-identity/profile-and-email-notifications.md "Profile pictures").
     forwarded.headers.set('X-Verified-Account', person && isAccountId(person) ? '1' : '0');
     forwarded.headers.set('X-Verified-Workbench-Pairing', workbench?.pairing ?? '');
+    // The API token whose ticket this is (public-api-and-tokens.md "Revoking a token"), so revoking it closes the
+    // socket. Empty for every other session, over whatever the client sent.
+    forwarded.headers.set('X-Verified-Api-Token', token ?? '');
     forwarded.headers.set(
       'X-Verified-Adder',
       role === 'participate' && person ? await adderKeyFor(id, person) : '',

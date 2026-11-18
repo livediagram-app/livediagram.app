@@ -14,6 +14,8 @@ import TelemetryDashboard from './page';
 // what this checks.
 vi.mock('@/components/Header', () => ({ Header: () => <header data-testid="header" /> }));
 vi.mock('@/components/Footer', () => ({ Footer: () => <footer /> }));
+// Forum Checks reads the Community service, not the telemetry one this test counts requests to (its own test).
+vi.mock('./_all/ForumChecks', () => ({ ForumChecks: () => null }));
 // Each app's Body stands in with the window the page handed it.
 vi.mock('./livediagram/Body', () => ({
   Body: ({ summary, active }: { summary: TelemetrySummary; active: string }) => (

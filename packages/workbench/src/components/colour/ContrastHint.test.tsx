@@ -1,13 +1,12 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { contrastRatio, type TextGround } from '@livedesign/design';
-import type { TextContrastProbe } from '@/lib/text-contrast-probe';
-import { ColourPicker } from './ColourPicker';
+import { contrastRatio } from '@liveworkspace/element-model/colour-math';
+import type { TextGround } from '@liveworkspace/element-model/text-contrast';
+import type { TextContrastProbe } from '@liveworkspace/element-model/text-contrast-probe';
 import { CONTRAST_ROW_PX, ContrastHint } from './ContrastHint';
-import { noColour } from './colour-options';
 
-// docs/specs/004-interface-design/colour-picker.md "Reading on its ground".
+// Each product's docs/specs/004-interface-design/colour-picker.md "Reading on its ground".
 afterEach(cleanup);
 
 const PAPER: TextGround = { tones: ['#ffffff'], on: 'page' };
@@ -156,90 +155,57 @@ describe('ContrastHint row', () => {
   });
 });
 
-describe('ColourPicker with a contrast probe', () => {
-  const probe = (current: string | null) => [on(PAPER, current)];
-  const theme = [
-    { id: '#fef08a', colour: '#fef08a', label: 'Pale yellow' },
-    { id: '#0f172a', colour: '#0f172a', label: 'Navy' },
-  ];
-  // A key pressed in the picker, then the focus it moves.
-  const keyTo = (name: string) => {
-    fireEvent.keyDown(screen.getByRole('group', { name: 'Text colour' }), { key: 'Shift' });
-    fireEvent.focus(screen.getByRole('button', { name }));
-  };
-  function setup(current: string | null, onPreviewEnd?: () => void) {
-    const onPick = vi.fn();
-    render(
-      <ColourPicker
-        label="Text colour"
-        value={current}
-        onPick={onPick}
-        theme={theme}
-        leading={[noColour('transparent', 'No text colour')]}
-        contrast={probe(current)}
-        onPreviewEnd={onPreviewEnd}
+describe('ContrastHint grounds', () => {
+  it('names a canvas, a cell, and a canvas judged as saved in the other appearance', () => {
+    const { rerender } = render(
+      <Hint colour="#fde047" ground={{ tones: ['#fbfaf7'], on: 'canvas' }} />,
+    );
+    expect(hint().textContent).toContain('Hard to read on the canvas');
+    rerender(<Hint colour="#fde047" ground={{ tones: ['#fef3c7'], on: 'cell' }} />);
+    expect(hint().textContent).toContain('Hard to read on its cell');
+    rerender(
+      <ContrastHint
+        probes={[on({ tones: ['#fbfaf7'], on: 'canvas' }, '#fde047', { exported: true })]}
+        judged={null}
+        onUse={vi.fn()}
       />,
     );
-    return { onPick, root: screen.getByRole('group', { name: 'Text colour' }) };
-  }
-
-  it('judges the colour in force when nothing is hovered', () => {
-    setup('#fef08a');
-    expect(hint().textContent).toContain('Hard to read');
-  });
-
-  it('judges the swatch hovered or focused, and goes back when the pointer leaves', () => {
-    const onPreviewEnd = vi.fn();
-    const { root } = setup('#0f172a', onPreviewEnd);
-    expect(hint().childElementCount).toBe(0);
-    fireEvent.pointerEnter(screen.getByRole('button', { name: 'Pale yellow' }), {
-      pointerType: 'mouse',
-    });
-    expect(hint().textContent).toContain('Hard to read');
-    // No colour judges nothing.
-    fireEvent.pointerEnter(screen.getByRole('button', { name: 'No text colour' }), {
-      pointerType: 'mouse',
-    });
-    expect(hint().childElementCount).toBe(0);
-    keyTo('Pale yellow');
-    expect(hint().textContent).toContain('Hard to read');
-    fireEvent.pointerLeave(root, { pointerType: 'mouse' });
-    expect(hint().childElementCount).toBe(0);
-    expect(onPreviewEnd).toHaveBeenCalled();
-  });
-
-  it('forgets the hovered swatch when focus leaves the picker', () => {
-    const { root } = setup('#0f172a');
-    keyTo('Pale yellow');
-    expect(hint().textContent).toContain('Hard to read');
-    fireEvent.blur(root, { relatedTarget: document.body });
-    expect(hint().childElementCount).toBe(0);
-    // Focus moving inside the picker keeps it.
-    keyTo('Pale yellow');
-    fireEvent.blur(root, { relatedTarget: screen.getByRole('button', { name: 'Navy' }) });
-    expect(hint().textContent).toContain('Hard to read');
-  });
-
-  it('does not judge the swatches focused as the picker opens, only focus moved by a key', () => {
-    setup(null);
-    // Opening focuses the first key, then the Tab stop: with no swatch picked, a pale one here.
-    fireEvent.focus(screen.getByRole('button', { name: 'No text colour' }));
-    fireEvent.focus(screen.getByRole('button', { name: 'Pale yellow' }));
-    expect(hint().childElementCount).toBe(0);
-    keyTo('Pale yellow');
-    expect(hint().textContent).toContain('Hard to read');
-  });
-
-  it('picks the suggested shade with Use', () => {
-    const { onPick } = setup('#fef08a');
-    fireEvent.click(screen.getByRole('button', { name: /^Use #/ }));
-    expect(contrastRatio(onPick.mock.calls[0]![0] as string, '#ffffff')).toBeGreaterThanOrEqual(
-      4.5,
+    expect(hint().textContent).toContain('Hard to read on the light canvas');
+    rerender(
+      <ContrastHint
+        probes={[on({ tones: ['#0d121a'], on: 'canvas' }, '#1e3a8a', { exported: true })]}
+        judged={null}
+        onUse={vi.fn()}
+      />,
     );
+    expect(hint().textContent).toContain('Hard to read on the dark canvas');
   });
 
-  it('shows no hint region without a probe', () => {
-    render(<ColourPicker label="Fill" value={null} onPick={vi.fn()} theme={theme} />);
-    expect(screen.queryByTestId('contrast-hint')).toBeNull();
+  it('counts a probe standing for several cells as that many', () => {
+    render(
+      <ContrastHint
+        probes={[on({ tones: ['#ffffff'], on: 'cell' }, '#fde047', { count: 4 })]}
+        judged={null}
+        onUse={vi.fn()}
+      />,
+    );
+    expect(hint().textContent).toContain('Hard to read for 4 of 4');
+  });
+
+  it('tells the picker when the mouse reaches the row, and only the mouse', () => {
+    const onArrive = vi.fn();
+    render(
+      <ContrastHint
+        probes={[on(PAPER, '#fde047')]}
+        judged={null}
+        onUse={vi.fn()}
+        onArrive={onArrive}
+      />,
+    );
+    const row = document.querySelector<HTMLElement>('[data-contrast-row]')!;
+    fireEvent.pointerEnter(row, { pointerType: 'touch' });
+    expect(onArrive).not.toHaveBeenCalled();
+    fireEvent.pointerEnter(row, { pointerType: 'mouse' });
+    expect(onArrive).toHaveBeenCalledTimes(1);
   });
 });

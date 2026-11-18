@@ -194,6 +194,23 @@ deep link (`/explorer?settings=tokens`), which opens the Explorer with Settings 
 them, so no credential outlives the account. Their workbench pairings and sessions are liveworkspace's and close with
 the account there.
 
+### Revoking a token
+
+A revoke ends every live thing the token holds, at once, not when it next calls:
+
+- Its REST and MCP calls fail on the next request (the lookup above).
+- Its workbench pairings and sessions end, and their rooms close (liveworkspace's workbench.md "Ending access").
+- Its own room tickets' sockets close. A room ticket minted through a token (`POST /api/documents/:id/room-ticket`,
+  an MCP server's live view or a CLI) is sealed with the token's id beside its grant (`rt2~`, `@liveworkspace/index-app/room-ticket`), and the
+  upgrade forwards it to the room as `X-Verified-Api-Token`, kept on the socket (`apiToken`, `room-session.ts`). Off
+  the mint's path the api tells liveworkspace the room it opened (`POST
+/api/account/internal/workbench/token-rooms {ownerId, tokenId, itemId, until}`, `until` being the ticket's grant
+  lapse; `noteTokenRoom`, `@liveworkspace/auth-client/workbench-sessions`). On revoke accounts closes each noted room
+  through the index (`/internal/workbench-close {app, tokenId, itemIds}`), the index calls this app's door
+  (`POST /api/internal/items/:id/workbench-close {tokenId}`, `tokenClose`), and the room closes the sockets carrying
+  that token (`{match: 'token'}`, `4005 access-changed`). No other token's sockets and no person's are touched, and
+  no document that token never opened is asked: the fan-out is the noted rooms only.
+
 ### 3.6a A token's view of itself
 
 A token may read and revoke **itself**, which escalates nothing, so the [CLI](cli.md) can show who it is and sign

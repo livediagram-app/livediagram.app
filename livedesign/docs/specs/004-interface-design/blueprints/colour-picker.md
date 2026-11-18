@@ -36,19 +36,60 @@ min(chroma * SOFT_CHROMA_SCALE, SOFT_MAX_CHROMA), hue)`; grey at chroma 0.
   - `standardColourAt(hex)`: `{ name, label, tone, appearance } | null` for any version's hex, case-insensitive.
   - `isHexColour(v)`: `#rrggbb` only, for the apps.
 - `quick-swatches.ts`: `colourWords(hexes)`: hue words, a repeat "Light"/"Deep", a third numbered.
-- `text-contrast.ts` ("Reading on its ground"), built on the shared re-inking maths (`worstContrast`, `inkToward`,
-  `pageGroundUnder`, `boxFill`, `keptCover`):
-  - `TEXT_CONTRAST = 4.5`, `LARGE_TEXT_CONTRAST = 3`, `LARGE_TEXT_PX = 24`, `LARGE_BOLD_TEXT_PX = 18.66`.
-  - `isLargeText(px, bold)`; `labelDrawnPx(el)` = `labelFontPx(textSize, sticky) * labelTextScale(el)`;
-    `labelIsBold(el)` = `fontWeight >= 700`, else `textBold`.
-  - `textGroundOf(el, tab, surface): TextGround | null`, `TextGround = { tones: string[]; on: 'page' | 'shape'
-| 'card' }`: the element's own opaque fill (a `box` kind, a sticky or link card); else the
-    topmost earlier-painted element under its centre (`layerBands`, hidden layers out) that covers it (an opaque
-    box fill, a kept cover's tone; `null` for a picture or widget); else its page's `pageGroundUnder` tones. `null`
-    off every page, on a picture page, or under a cover of unknown tone.
+- `text-contrast.ts` binds the shared judge (below) to this model: `textGroundOf(el, tab, surface)` is
+  `textGroundIn` over `layerBands(tab.elements, tab.layers)` (hidden layers out), `below` the box's page's
+  `pageGroundUnder` tones (`on: 'page'`); `null` off every page or on a picture page. Built by the shared `pagedTextGroundFor`
+  (`../packages/element-model/src/text-ground-pages.ts`) from this model's `layerBands`, `pagesOf`, `layOutPages`,
+  `rowPageAt` and `pageGroundUnder`.
+
+### Shared (`@liveworkspace/element-model`, `@liveworkspace/workbench`)
+
+- `../packages/element-model/src/text-contrast.ts` ("Reading on its ground", one copy for every product), built on the
+  shared re-inking maths (`worstContrast`, `inkToward`, `boxFill`, `keptCover`, `tableHeaderColours`):
+  - `TEXT_CONTRAST = 4.5`, `LARGE_TEXT_CONTRAST = 3`, `LARGE_TEXT_PX = 24`, `LARGE_BOLD_TEXT_PX = 18.66`,
+    `ZEBRA_TINT = 0x11 / 0xff` (TableCellView's banded row).
+  - `isLargeText(px, bold)`; `labelDrawnPx(el)` = `labelFontPx(textSize, sticky)` times `textScale` on a text or a
+    shape; `labelIsBold(el)` = `fontWeight >= 700`, else `textBold`.
+  - `TextGround = { tones: string[]; on: 'page' | 'canvas' | 'shape' | 'card' | 'cell' }`. `textGroundIn(el,
+painted, surface, below)`: the element's own opaque fill (a `box` kind, a sticky or link card); else the topmost
+    earlier element of `painted` under its centre that covers it (an opaque box fill, a kept cover's tone; `null` for
+    a picture or widget); else `below(box)`.
+  - `cellTextGround(table, r, c, surface, under)`: the cell's own opaque `bg`; else, in a header cell, the opaque
+    `tableHeaderColours` band; else the table's opaque `fillColor`, a zebra body row `mixHex(fill, grid, ZEBRA_TINT)`;
+    else `under` (its tones tinted the same way on a zebra row). `cellTextSize(table, r, c)`: `tableCellFontPx` of
+    the cell's or table's size at the mean row height; bold from the cell, else a header, else `textBold`.
   - `textContrast(colour, tones, large): { ratio, needed, passes, tone, suggestion } | null`: `worstContrast`,
-    the tone it is worst on, the target, and when it falls short `inkToward(colour, tones, needed, needed)` if that reaches it, else null.
-    `null` for a colour it can't read.
+    the tone it is worst on, the target, and when it falls short `inkToward(colour, tones, needed, needed)` if that
+    reaches it, else null. `null` for a colour it can't read.
+- `../packages/element-model/src/text-contrast-probe.ts`: `TextContrastProbe = { ground; large; exported; current:
+string | null; colourOf: (id) => string | null; count?: number }`. `textContrastProbesFor<T, B>({ groundOf,
+defaultTextColor, exported })` gives `textContrastProbe(el, tab, surface, groundOf?)`, `textContrastProbes(els,
+tab, surface, memo?)` (a table among `els` gives `cellContrastProbes` of `tableTextCells`, its body cells with no
+  `textColor` of their own) and `cellContrastProbes(table, cells, tab, surface)` (one probe per distinct ground,
+  colour and size, `count` the cells it stands for). `colourOf` reads a stock name in its version for the ground's
+  paper (`canvasSurface(tones[0])`), a hex lower-cased.
+- `../packages/element-model/src/text-ground-memo.ts`: `textGroundMemo(compute)`: `batch()` gives a `GroundOf` that
+  reuses the ground worked out for the same element id in the batch before while the surface, `tab.pages`,
+  `tab.pageOrientation`, `tab.layers`, `tab.backgroundColor`, the element's index, the element but for
+  `textColor`/`penTextColour`, and the boxed elements holding its centre (by identity, in tab order) are unchanged. It
+  keeps only the latest batch.
+- `../packages/element-model/src/text-contrast-judge.ts`: `judgeText(probes, id)`: `textContrast` of `id` (null:
+  each probe's `current`) on each ground; the worst is the least `ratio / needed`; `failing` and `of` count the texts
+  (a probe's `count`, else 1); `suggestion` is the worst colour's `textContrast` suggestion on the union of every
+  ground's tones, as large text only when all are.
+- `../packages/workbench/src/components/colour/ContrastHint.tsx`: `ContrastHint({ probes, judged, onUse, onArrive })`
+  renders a row `CONTRAST_ROW_PX` (60) tall (three 15px lines in 6px padding and a 1px border): a `role="status"`
+  region holding only a shortfall, and in the same grid cell a quiet "Easy to read …" line while the colour passes.
+  Words: one ground `GROUND_WORDS[on]` ("on this page", "on the canvas", "on its fill", "on the shape behind", "on
+  its cell"); when `exported`, "on the exported page", or on a canvas "on the light canvas" / "on the dark canvas"
+  (`canvasSurface(tone)`); several, "for N of M" (short) or "for all M" (reads), with "Worst" / "At least" before
+  the ratio. The mouse entering the row calls `onArrive`.
+- `../packages/workbench/src/components/colour/useJudgedSwatch.ts`: `useJudgedSwatch(on, now = performance.now)` gives
+  `{ judged, keyed, hover(id), focus(id): boolean, arrive(): { id } | undefined, end }`. `hover` judges the swatch at
+  once and, when the swatch before it was held at least `SWATCH_REST_MS` (150), records that one as rested on;
+  `focus` counts (judges, and returns true so the picker previews) only after `keyed`, and always rests; `arrive`,
+  while the swatch judged was held under `SWATCH_REST_MS`, judges the one rested on before (null: the colour in
+  force) and returns it; `end` forgets both. With `on` false `judged` stays null and nothing re-renders.
 
 ### `apps/live/components/colour`
 
@@ -70,27 +111,16 @@ ColourPicker({
 })
 ```
 
-- `TextContrastProbe = { ground: TextGround; large: boolean; exported: boolean; current: string | null; colourOf:
-(id) => string | null }` (`lib/text-contrast-probe.ts`): `current` is the text's drawn colour on its ground,
-  `colourOf` an option id's colour there (a stock name in its version for the ground's surface), `exported` is a
-  page ground on a dark canvas (judged as the page exports). `textContrastProbes(els, tab, surface, memo)`: one
-  probe for each element whose ground can be judged, `undefined` for none.
+- `lib/text-contrast-probe.ts` binds `textContrastProbesFor` to this model's `textGroundOf`, `defaultTextColor` and
+  `exported`; `lib/text-ground-memo.ts` binds `textGroundMemo(compute = textGroundOf)`.
 - `useTextContrast(els, open)` (`hooks/ui/useTextContrast.ts`): the probes only while `open`, memoised on the tab,
-  `els` and surface, with one `textGroundMemo` per hook.
-- `textGroundMemo(compute = textGroundOf)` (`lib/text-ground-memo.ts`): `batch()` gives a `GroundOf` that reuses
-  the ground worked out for the same element id in the batch before while the surface, `tab.pages`,
-  `tab.pageOrientation`, `tab.layers`, the element's index, the element but for `textColor`/`penTextColour`, and
-  the boxed elements holding its centre (by identity, in tab order) are unchanged. It keeps only the latest batch.
-- `judgeText(probes, id)` (`lib/text-contrast-judge.ts`): `textContrast` of `id` (null: each probe's `current`) on
-  each ground; the worst is the least `ratio / needed`; `failing` and `of` count the grounds; `suggestion` is the
-  worst colour's `textContrast` suggestion on the union of every ground's tones, as large text only when all are.
-- `ColourPicker` holds the last hovered or focused swatch's id (`probe`) only while `contrast` is set, cleared when
-  the pointer leaves the picker. A focus sets it (and previews) only after a key was pressed in the root (`keyed`), so
-  the first key and Tab stop the popover focuses on opening are neither judged nor previewed. `ContrastHint({ probes, judged, onUse })` (`components/colour/ContrastHint.tsx`)
-  renders under the groups a row `CONTRAST_ROW_PX` (60) tall (three 15px lines in 6px padding and a 1px
-  border): a `role="status"` region holding only a shortfall, and in the same grid cell a quiet "Easy to read …"
-  line while the colour passes. Words: one ground `GROUND_WORDS[on]`, or "on the exported page" when `exported`;
-  several, "for N of M" (short) or "for all M" (reads), with "Worst" / "At least" before the ratio.
+  `els` and surface, with one `textGroundMemo` per hook. `useCellTextContrast(table, cells, open)`: the stored
+  table's `cellContrastProbes` only while `open`.
+- `exported`: a page ground on a dark canvas (judged as the page exports).
+- `ColourPicker` keeps `useJudgedSwatch(contrast !== undefined)`: swatch `onPointerEnter` (mouse) previews and
+  `hover`s, `onFocus` previews only when `focus` counts, the root's `onKeyDown` calls `keyed`, the pointer or focus
+  leaving the root calls `onPreviewEnd` and `end`. Under the groups it renders `ContrastHint({ probes: contrast,
+judged, onUse: onPick, onArrive })`; `onArrive` previews the swatch `arrive` returns (`onPreviewEnd` for null).
 
 - `optionMatches(option, value)`: the same id, or for a hex value the same `option.colour` in any case (a colour
   stored by name arrives as the hex it is drawn in).
@@ -118,6 +148,7 @@ ColourPicker({
 | Canvas, pattern           | `components/palette/palette-controls.tsx` (`useColourWell`, `ColorSwatch`)                               | none                        | soft + strong ("Soft colours", "Strong colours") by hex for the canvas; pattern strong only                                                      | hex                                   |
 | Element menu Text row     | `ElementColourBorderSections.tsx` (`useTextContrast([target], open)`); several: `MultiStyleSections.tsx` | as the colour rows          | as the colour rows                                                                                                                               | as the colour rows; `contrast` probe  |
 | Rich-text colour          | `components/canvas/RichTextToolbar.tsx` (`element`; `current` is the words' own colour)                  | none                        | strong hex for the canvas                                                                                                                        | hex                                   |
+| Table cell Text row       | `components/canvas/TableCellMenu.tsx` (`useCellTextContrast(element, cells, open)`)                      | as the colour rows          | as the colour rows                                                                                                                               | `applyStyle({ textColor })`           |
 | Pie and legend rows       | `components/palette/context-menu-data-editors.tsx`                                                       | none                        | strong light hex                                                                                                                                 | hex                                   |
 
 ## Behaviour and state
@@ -128,7 +159,7 @@ ColourPicker({
   own controls keep their arrows. `preventDefault` + `stopPropagation` so a host menu's roving keys do not also move.
 - Quick Style colour rows (`QuickRadioRow` with swatches) reuse `colourKeyTarget` across the row and More colours;
   rows of glyph buttons stay radio groups whose arrows move and choose.
-- Preview: `onPointerEnter` (mouse only, `onMouseHover`) and `onFocus` (once `keyed`) call `onPreview(id)`; `onPointerLeave` of the root
+- Preview: `onPointerEnter` (mouse only, `onMouseHover`) and `onFocus` (once a key was pressed, `useJudgedSwatch`) call `onPreview(id)`; `onPointerLeave` of the root
   and focus leaving the root call `onPreviewEnd`; unmount reverts (`useRevertOnUnmount`).
 - **Add a custom colour** (`MoreColoursGlyph`) toggles the editor; Use calls `onPick(hex)` and closes it.
 - Outside-press handling: `ContextMenu`, `PagePanel` and `RichTextEditor` ignore presses and focus inside
@@ -179,7 +210,8 @@ from typed constants; nothing is injected as markup.
 - A text ground is worked out only while its picker is open. A hover previews the colour live, changing the tab:
   `textGroundMemo` then checks one pass over the elements (boxes under the text) instead of walking them in paint
   order, measured at 5,000 elements: 0.32 ms uncached, 0.14 ms reused (`text-ground-memo.test.ts` holds it under
-  2 ms CPU).
+  2 ms CPU). A table's cells are judged in one pass, alike cells sharing a probe: a whole 100 by 100 table selected
+  is two probes (`text-contrast-probe.test.ts` holds it under 100 ms CPU).
 
 ## Presentation and UX
 
@@ -211,26 +243,27 @@ Picks are reported by each surface's own write path (`track('Element', 'Changed'
 
 ## Testing
 
-| Rule                                                                      | Test                                                                                                                        |
-| ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| ten standard colours, both tones, readable                                | `../packages/element-model/src/standard-colours.test.ts`                                                                    |
-| Grey is a stock colour, not hued                                          | `packages/design/src/pen-colours.test.ts`                                                                                   |
-| one Tab stop, arrows wrap, Home/End                                       | `apps/live/components/colour/ColourPicker.test.tsx`                                                                         |
-| pick, custom Use, value matching, yours cap                               | `ColourPicker.test.tsx`                                                                                                     |
-| preview and revert                                                        | `ColourPicker.test.tsx`                                                                                                     |
-| skins open, pick closes, Escape refocuses                                 | `ColourSkins.test.tsx`                                                                                                      |
-| custom colours kept and listed                                            | `../packages/element-model/src/custom-colours.test.ts`, `apps/live/lib/design-colours.test.ts`                              |
-| no new pickers: no colour well, editor only in the picker                 | `apps/live/components/colour/one-picker.test.ts`                                                                            |
-| element menu rows                                                         | `components/palette/context-menu-input-rows.test.tsx`                                                                       |
-| Quick Style rows, More colours, keys                                      | `components/canvas/QuickStyleBar.test.tsx`, `quick-style-rows.test.tsx`, `hooks/canvas/useQuickStyle.test.tsx`              |
-| page background                                                           | `page-background-section.test.tsx`                                                                                          |
-| laser and colour wells                                                    | `LaserColourRow.test.tsx`, `../packages/workbench/src/lib/laser-config.test.ts`, `components/palette/colour-wells.test.tsx` |
-| ratios, large text, grounds, pictures skipped, shade keeps hue and passes | `packages/design/src/text-contrast.test.ts`                                                                                 |
-| hint under the target, hover judges, Use applies, nothing on a picture    | `apps/live/components/colour/ContrastHint.test.tsx`, `hooks/ui/useTextContrast.test.tsx`                                    |
-| row height kept, reads line, exported-page wording, several grounds       | `ContrastHint.test.tsx`, `lib/text-contrast-judge.test.ts`, `lib/text-contrast-probe.test.ts`                               |
-| Quick Style Text colour and rich-text colour judge the text               | `components/colour/text-colour-surfaces.test.tsx`                                                                           |
-| ground reused across a hover, recomputed on change, CPU budget            | `lib/text-ground-memo.test.ts`                                                                                              |
-| rows fit, e2e                                                             | `e2e/quick-style-swatch-rows.spec.ts`, `quick-style-panel.spec.ts`                                                          |
+| Rule                                                                      | Test                                                                                                                          |
+| ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| ten standard colours, both tones, readable                                | `../packages/element-model/src/standard-colours.test.ts`                                                                      |
+| Grey is a stock colour, not hued                                          | `packages/design/src/pen-colours.test.ts`                                                                                     |
+| one Tab stop, arrows wrap, Home/End                                       | `apps/live/components/colour/ColourPicker.test.tsx`                                                                           |
+| pick, custom Use, value matching, yours cap                               | `ColourPicker.test.tsx`                                                                                                       |
+| preview and revert                                                        | `ColourPicker.test.tsx`                                                                                                       |
+| skins open, pick closes, Escape refocuses                                 | `ColourSkins.test.tsx`                                                                                                        |
+| custom colours kept and listed                                            | `../packages/element-model/src/custom-colours.test.ts`, `apps/live/lib/design-colours.test.ts`                                |
+| no new pickers: no colour well, editor only in the picker                 | `apps/live/components/colour/one-picker.test.ts`                                                                              |
+| element menu rows                                                         | `components/palette/context-menu-input-rows.test.tsx`                                                                         |
+| Quick Style rows, More colours, keys                                      | `components/canvas/QuickStyleBar.test.tsx`, `quick-style-rows.test.tsx`, `hooks/canvas/useQuickStyle.test.tsx`                |
+| page background                                                           | `page-background-section.test.tsx`                                                                                            |
+| laser and colour wells                                                    | `LaserColourRow.test.tsx`, `../packages/workbench/src/lib/laser-config.test.ts`, `components/palette/colour-wells.test.tsx`   |
+| ratios, large text, shade keeps hue and passes, cells, the judge          | `../packages/element-model/src/text-contrast.test.ts`, `text-contrast-judge.test.ts`, `text-contrast-probe.test.ts`           |
+| this model's grounds: pages, gradients, pictures skipped                  | `packages/design/src/text-contrast.test.ts`, `apps/live/lib/text-contrast-probe.test.ts`, `hooks/ui/useTextContrast.test.tsx` |
+| row height kept, reads line, wording, several grounds, the row arrived at | `../packages/workbench/src/components/colour/ContrastHint.test.tsx`                                                           |
+| hover judges, crossed swatches give way, focus once keyed, Use applies    | `useJudgedSwatch.test.ts`, `apps/live/components/colour/ColourPicker.contrast.test.tsx`                                       |
+| Quick Style, rich-text and table cell Text colours judge the text         | `components/colour/text-colour-surfaces.test.tsx`, `components/palette/MultiSelectionContextMenu.contrast.test.tsx`           |
+| ground reused across a hover, recomputed on change, CPU budget            | `lib/text-ground-memo.test.ts`                                                                                                |
+| rows fit, e2e                                                             | `e2e/quick-style-swatch-rows.spec.ts`, `quick-style-panel.spec.ts`                                                            |
 
 ## Constants and configuration
 

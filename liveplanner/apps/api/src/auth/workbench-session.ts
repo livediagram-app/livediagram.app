@@ -14,12 +14,13 @@ export type WorkbenchReach =
   | { scope: 'project'; projectId: string; folderId: null }
   | { scope: 'workspace'; projectId: null; folderId: string | null };
 
-export const { resolveWorkbenchSession, noteWorkbenchRoom } = createWorkbenchSessions({
-  // Read at call time, so a test's mock of ./accounts is the one asked.
-  credentials: (env: Parameters<typeof accountCredentials>[0]) => accountCredentials(env),
-  reach: (s): WorkbenchReach =>
-    s.scope === 'item'
-      ? { scope: 'project', projectId: s.itemId!, folderId: null }
-      : { scope: 'workspace', projectId: null, folderId: s.folderId },
-  unavailable: () => new AccountsUnavailable(),
-});
+export const { resolveWorkbenchSession, noteWorkbenchRoom, noteTokenRoom } =
+  createWorkbenchSessions({
+    // Read at call time, so a test's mock of ./accounts is the one asked.
+    credentials: (env: Parameters<typeof accountCredentials>[0]) => accountCredentials(env),
+    reach: (s): WorkbenchReach =>
+      s.scope === 'item'
+        ? { scope: 'project', projectId: s.itemId!, folderId: null }
+        : { scope: 'workspace', projectId: null, folderId: s.folderId },
+    unavailable: () => new AccountsUnavailable(),
+  });

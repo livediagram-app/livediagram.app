@@ -133,6 +133,7 @@ export * from './page-ink';
 export * from './page-ink-contrast';
 export * from './label-backdrop';
 export * from './page-ink-ground';
+export * from './text-contrast';
 export * from './page-ink-rules';
 export * from './paginate';
 export * from './article-flow';
