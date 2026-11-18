@@ -22,6 +22,7 @@ import type { PlanGrant } from '../index-service';
 import { copiedRuleStatements } from '../plan-room/automations/automation-copy';
 import { ruleBody } from '../plan-room/automations/test-automation-world';
 import { setPlanItemTypes } from '../plan-room/plan-content';
+import { MEDIA_URL, stubMediaRefs } from '../plan-room/test-media-refs';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { handlePlanRequest } from './projects';
 import { makeTestRouteContext } from './test-route-context';
@@ -380,6 +381,37 @@ describe('POST /api/projects/:id/file', () => {
     const res = await call('POST', 'B', { body: JSON.stringify(envelope) });
     expect(res.status).toBe(413);
     expect(await res.json()).toEqual({ error: 'too_large' });
+  });
+
+  it('answers 503 media_unavailable with nothing made when the media service refuses the pictures’ claim', async () => {
+    // A card holding a picture, on a deploy with the media service (items.md "A plan file vouches for itself").
+    await insertItems(db.env, 'A', [
+      card('card3', 3, {
+        title: 'Shots',
+        attachments: [{ id: 'pic1', name: 'pic1.png', size: 100, type: 'image/png' }],
+      }),
+    ]);
+    Object.assign(db.env, { MEDIA_KEY: 'k', MEDIA_URL });
+    const media = stubMediaRefs();
+    try {
+      const file = await exported();
+      media.refusePending = true;
+      const res = await call('POST', 'B', { body: file });
+      expect(res.status).toBe(503);
+      expect(await res.json()).toEqual({ error: 'media_unavailable' });
+      expect(db.sql.prepare('SELECT id FROM plan WHERE id = ?').get('B')).toBeUndefined();
+      expect(db.sql.prepare('SELECT id FROM items WHERE plan_id = ?').all('B')).toEqual([]);
+      expect(media.pending.has('B')).toBe(false);
+      // Tried again once the service takes it, the plan lands, its picture claimed for it.
+      media.refusePending = false;
+      expect((await call('POST', 'B', { body: file })).status).toBe(201);
+      expect(media.pending.get('B')).toEqual(new Set(['pic1']));
+      // Any other failure is not the claim's, and goes on as it did.
+      vi.mocked(fetch).mockRejectedValueOnce(new TypeError('network down'));
+      await expect(call('POST', 'C', { body: file })).rejects.toThrow('network down');
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 
   it('refuses an id that already holds a plan with 409, the plan left as it was', async () => {

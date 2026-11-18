@@ -74,7 +74,9 @@ name) }`. `offered` is the tools' `canImport`; `blocked` is the offline sentence
   holds content), then `initPlan`. Picture ids stay in the cards' fields; `importProjectFile` drops any `imageGrants`
   (item-types.md "Image fields"), so a picture shows only to its uploader in the new plan. Before the content is
   written it sends the media service the pictures the cards' Attachments hold as the new plan's unconfirmed
-  references (`claimImportedImages`, items.md "A plan file vouches for itself"); a refusal throws, so nothing lands.
+  references (`claimImportedImages`, items.md "A plan file vouches for itself"); a refusal throws `ImportClaimRefused`,
+  so nothing lands: `POST /api/projects/:id/file` answers it 503 `media_unavailable` (the editor's Try again), the
+  Drive door's `importItemAs` undoes the index item and answers 503.
 
 ## Errors and edge cases
 

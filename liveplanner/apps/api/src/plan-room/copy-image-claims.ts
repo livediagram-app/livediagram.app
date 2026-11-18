@@ -112,6 +112,14 @@ export async function pushCopyClaims(env: PlanEnv, planId: string): Promise<numb
 // brings no grants, so that is its cards' Attachments alone (placedImagesSql with no grant). Answers whether it sent
 // one. Throws when the service refuses, so nothing lands and the import is tried again. Without the service, or with
 // no picture, there is nothing to say.
+// The service refused an import's claim: nothing landed, and the import can be tried again.
+export class ImportClaimRefused extends Error {
+  constructor(status: number) {
+    super(`media import claim failed: ${status}`);
+    this.name = 'ImportClaimRefused';
+  }
+}
+
 export async function claimImportedImages(
   env: Pick<PlanEnv, 'MEDIA_KEY' | 'MEDIA_URL'>,
   planId: string,
@@ -125,7 +133,7 @@ export async function claimImportedImages(
     documents: [],
     pending: [{ document: planId, images: images.slice(0, MEDIA_REFS_PER_PROJECT_MAX) }],
   });
-  if (!answer.ok) throw new Error(`media import claim failed: ${answer.status}`);
+  if (!answer.ok) throw new ImportClaimRefused(answer.status);
   console.info('[media] import vouched for', { planId, images: images.length });
   return true;
 }

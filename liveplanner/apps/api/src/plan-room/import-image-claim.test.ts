@@ -5,6 +5,7 @@ import { nodeItemSql } from '@liveworkspace/index-app/testing';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import type { PlanEnv } from '../types';
 import {
+  ImportClaimRefused,
   UNCONFIRMED_REFS,
   attachedImageIds,
   claimImportedImages,
@@ -136,7 +137,7 @@ describe('the import’s claim', () => {
   it('lands nothing when the service refuses it, so the import is tried again', async () => {
     const w = await seeded();
     media.refusePending = true;
-    await expect(w.importFile()).rejects.toThrow('media import claim failed: 503');
+    await expect(w.importFile()).rejects.toBeInstanceOf(ImportClaimRefused);
     expect(w.held(IMPORTED)).toBe(0);
     expect(w.mediaRefs(IMPORTED)).toBeNull();
     // Tried again once the service is back, it lands.
