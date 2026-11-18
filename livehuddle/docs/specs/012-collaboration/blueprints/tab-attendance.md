@@ -84,7 +84,8 @@ person_key = 'anonymised', name = 'Deleted account', picture = NULL WHERE person
   merged into this guest passes its keys on). `INSERT OR IGNORE` with `merged_at`; past `MERGED_GUESTS_MAX` the
   oldest go. Idempotent.
 - **Guest keys at close**: the internal door's `anonymise` reads `mergedGuestKeys()` from the account's store once
-  per request (memoised), and passes them to each document's `anonymise`. `PersonStore.purge()` (run first, by
+  per request (memoised), adds `collabKeyFor` of each guest id the index names in the door's `guests` (Work Tracker
+  1241), and passes them to each document's `anonymise`. `PersonStore.purge()` (run first, by
   `personClosed`) keeps `merged_guests` and arms an alarm `MERGED_GUESTS_KEEP_MS` (8 days) on; the alarm deletes
   the store whole. A purge of a store with no merged guests deletes it whole at once, as before.
 - **A visitor's key**: in the hello handler (`room-message.ts`), when the session's key was minted at the upgrade

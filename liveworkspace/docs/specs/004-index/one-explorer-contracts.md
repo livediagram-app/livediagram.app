@@ -319,7 +319,8 @@ holds for that person:
   days (Most Used), Shared with me rows, placement defaults, their calendar feeds ([Calendar feeds](#calendar-feeds)),
   their own old `favourited` events (what is left of Favourites, removed,
   [one-explorer.md "Favourites removed"](one-explorer.md#favourites-removed)), and the guests merged into them
-  (`person_aliases`, [Becoming an account](#guests)), so no grant names those keys again.
+  (`person_aliases`, [Becoming an account](#guests)), so no grant names those keys again (a copy stays only for
+  the apps' notices, below).
 - **Kept by the team**: an item or folder they made in a team stays with that team, its owner anonymised.
   `teamIds` names the teams that closed with the account (one it ran alone); their items and folders in
   those go too, while anyone else's stay theirs.
@@ -342,11 +343,21 @@ holds for that person:
   commented on, were given or gave an action on, or did something to in the event log, and, since that log keeps
   only 30 days, any they opened or reached by a link (a superset; an item that turns out not to name them changes
   nothing). It then
-  sends each app `POST /api/internal/people/:id/purge {items}` with the app's key, at most 100 items a
+  sends each app `POST /api/internal/people/:id/purge {items, guests}` with the app's key, at most 100 items a
   call. The app drops what it keeps for the person and takes their name off each item: their id becomes
   `deleted` and the name kept beside it becomes "Deleted account" (`@liveworkspace/index-app`,
-  `anonymiseJson`). The notices go when the app confirms. An app that answers anything else is asked
+  `anonymiseJson`), and their comment reactions (found by the reaction person each one stores) read "Deleted
+  account" too. The notices go when the app confirms. An app that answers anything else is asked
   again an hour later, and given up on after a week.
+- **Their guest days too** (Work Tracker 1241): what they left as a guest before they signed in (comments, reactions,
+  a meeting visit) is recorded under the guest's id, or a key made from it, which the merge never rewrote
+  ([Becoming an account](#guests)). So, in the same batch that records the notices and before the aliases go, the
+  index copies the person's aliases into `person_notice_guests`, and every call names them as `guests` (the guest
+  ids, at most 32). The app treats each guest id exactly as it treats the account's own: their id, their reaction
+  person and their collab key are anonymised wherever the account's are. Only the guests merged into this account
+  are named, never another person's; the copy goes once no notice for the person is left. Dots, done checks and
+  answers carry only a collab key and no name, the account's as well as the guests', so nothing in them names the
+  person and they are left as they are.
 
 Their rows in the team audit log ([team-audit-log.md](team-audit-log.md)) are anonymised the same way: where they
 acted, the actor is `deleted` with no name; where a team event is about them, its person is `deleted` and their name

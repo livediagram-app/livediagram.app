@@ -791,6 +791,10 @@ history.retention` with the count.
   the hash, or whose `resolved_by_id` is the hash; it sets `resolved_by` to Deleted account and `resolved_by_id` to
   `deleted`, and each reaction whose `person` is the hash to name Deleted account, `person` `deleted`. Older rows
   without the id are left as they are.
+- Every match above is over the person's ids, not one: the account's and those of the guests merged into it (the
+  purge door's `guests`, at most 32; Work Tracker 1241), each raw id and its `itemPersonId` hash. The raw ids and the
+  hashes go to SQL as one JSON list each (`IN (SELECT value FROM json_each(?))`, and `instr` over `json_each` to
+  narrow), so the bound parameters stay a handful whatever the count.
 - Copies (`exportPlanCopy`), project files and offline records carry no history: none of them reads the table.
 
 ### REST

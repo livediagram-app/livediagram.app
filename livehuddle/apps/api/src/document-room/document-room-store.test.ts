@@ -9,6 +9,7 @@ import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { mediaServiceFor } from '../test-media-service';
 import { mediaImages } from '../db/test-image-fixtures';
 import { mediaOwner } from '../media';
+import { collabKeyFor, reactionPersonFor } from '@liveworkspace/api-kit/collab-key';
 import { MAX_TAB_HOLDERS } from '@liveworkspace/index-app';
 import { nodeItemSql, nodeTransaction } from '@liveworkspace/index-app/testing';
 import type { Env } from '../types';
@@ -768,6 +769,94 @@ describe('/api/internal/items (docs/specs/015-api/api.md "Internal")', () => {
     ).toBe(404);
     // The media service's key opens only this door.
     expect((await w.send('DELETE', '/api/internal/items/A', undefined, media)).status).toBe(401);
+  });
+
+  // What they left as a guest before signing in is under the guest's id and reaction person; the index names the
+  // guests merged into the account (`guests`, Work Tracker 1241), and each reads Deleted account as the account's.
+  it("takes a closed account's name off what it left as a merged guest, its reactions too, and no one else's", async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const w = world({ INDEX_KEY: 'index-key' });
+    await createDocument(w, 'A');
+    const document = w.documents.get('A')!;
+    const reaction = async (person: string, name: string) => ({
+      emoji: 'heart',
+      by: `k-${name}`,
+      name,
+      person: await reactionPersonFor(person),
+    });
+    const data = JSON.stringify({
+      elements: [
+        {
+          ...box('a'),
+          comments: [
+            {
+              id: 'c1',
+              authorId: 'guest_was',
+              authorName: 'Ada as a guest',
+              text: 'hi',
+              reactions: [
+                await reaction('user_ada', 'Ada'),
+                await reaction('guest_was', 'Ada as a guest'),
+                await reaction('guest_other', 'Cy'),
+              ],
+            },
+            { id: 'c2', authorId: 'guest_other', authorName: 'Cy', text: 'yo' },
+          ],
+        },
+      ],
+    });
+    document.db.prepare('UPDATE tabs SET data = ?, rev = rev + 1').run(data);
+    // A visit each: Ada's as a guest, which this app never heard of at her sign-in, and another guest's.
+    const visit = document.db.prepare(
+      `INSERT INTO tab_attendance (tab_id, person_key, name, color, picture, guest, joined_at, seen_at)
+       VALUES ('t1', ?, ?, '#000', NULL, 1, 1, 2)`,
+    );
+    visit.run(await collabKeyFor('guest_was'), 'Ada as a guest');
+    visit.run(await collabKeyFor('guest_other'), 'Cy');
+    // The door refuses a guests list that is not guest ids.
+    expect(
+      (
+        await w.send(
+          'POST',
+          '/api/internal/people/user_ada/purge',
+          { items: ['A'], guests: ['user_bea'] },
+          auth,
+        )
+      ).status,
+    ).toBe(400);
+    const res = await w.send(
+      'POST',
+      '/api/internal/people/user_ada/purge',
+      { items: ['A'], guests: ['guest_was'] },
+      auth,
+    );
+    expect(await res.json()).toEqual({ ok: true, anonymised: 1, unreached: [] });
+    type Stored = {
+      elements: {
+        comments: {
+          authorId: string;
+          authorName: string;
+          reactions?: { by: string; name: string; person: string }[];
+        }[];
+      }[];
+    };
+    const stored = JSON.parse(
+      String(document.db.prepare('SELECT data FROM tabs').get()!.data),
+    ) as Stored;
+    const [mine, theirs] = stored.elements[0]!.comments;
+    expect([mine!.authorId, mine!.authorName]).toEqual(['deleted', 'Deleted account']);
+    expect([theirs!.authorId, theirs!.authorName]).toEqual(['guest_other', 'Cy']);
+    expect(mine!.reactions!.map((r) => [r.by, r.name, r.person === 'deleted'])).toEqual([
+      ['k-Ada', 'Deleted account', true],
+      ['k-Ada as a guest', 'Deleted account', true],
+      ['k-Cy', 'Cy', false],
+    ]);
+    expect(
+      document.db
+        .prepare('SELECT name FROM tab_attendance ORDER BY name')
+        .all()
+        .map((r) => r.name),
+    ).toEqual(['Cy', 'Deleted account']);
   });
 
   it("takes a closed account's name off the documents that name them, and starts none", async () => {

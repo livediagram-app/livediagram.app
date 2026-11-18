@@ -79,5 +79,7 @@ export async function knownAssistants(env: PlanEnv): Promise<ItemAssistant[]> {
   return out;
 }
 
-// A closed account's assistants (plan-anonymise.ts), by its hashed person id: forgotten with its name.
-export const FORGET_ASSISTANTS_SQL = 'DELETE FROM known_assistants WHERE person_id = ?';
+// A closed account's assistants (plan-anonymise.ts), by its hashed person ids (a JSON list: the account's and its
+// merged guests'): forgotten with its name.
+export const FORGET_ASSISTANTS_SQL =
+  'DELETE FROM known_assistants WHERE person_id IN (SELECT value FROM json_each(?))';
