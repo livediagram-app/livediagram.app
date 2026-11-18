@@ -41,6 +41,7 @@ import { BorderControls } from '@/components/palette/BorderControls';
 import { AccentEdgeRow } from '@/components/palette/AccentEdgeRow';
 import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { inkSwatch, shownColour } from '@/components/palette/ink-row';
+import { useTextContrast } from '@/hooks/ui/useTextContrast';
 
 // The multi-selection menu's style + motion sections (docs/specs/008-canvas/canvas-and-palette.md), each
 // applying selection-wide with display values read off the first
@@ -59,6 +60,7 @@ export function MultiStyleSections({
   arrowSrc,
   colourable,
   textSrc,
+  textSel,
   fillSrc,
   strokeSrc,
   borderableSel,
@@ -75,6 +77,8 @@ export function MultiStyleSections({
   arrowSrc: ArrowElement | undefined;
   colourable: boolean;
   textSrc: Element | undefined;
+  // Every member the Text row colours, judged together for its readability hint (the worst counts).
+  textSel: readonly BoxedElement[];
   fillSrc: BoxedElement | undefined;
   strokeSrc: BoxedElement | undefined;
   borderableSel: boolean;
@@ -93,6 +97,8 @@ export function MultiStyleSections({
   // As in the single-element menu: a swatch reads the canvas's ink for any
   // element that carries no colour of its own (docs/specs/007-editor/live-app.md).
   const surface = useCanvasSurface();
+  // Whether the text reads on every member's ground, judged only while the Text row's picker is open.
+  const textContrast = useTextContrast(textSel, part === 'style' && colorProps('m-text').open);
   // The accent edge (docs/specs/008-canvas/accent-edge.md) reads off the first member that takes one.
   const accentEdgeSrc = boxedSel.find(supportsAccentEdge);
   // First line-art icon: gates + feeds the Weight row, which applies to every line-art icon.
@@ -133,6 +139,7 @@ export function MultiStyleSections({
                 defaultTextColor(textSrc as BoxedElement, surface),
               )}
               ink={inkSwatch(textSrc, 'text', surface)}
+              contrast={textContrast}
               {...textColorHandlers}
               {...colorProps('m-text')}
               {...props.colourPalette}

@@ -4,8 +4,8 @@
 // surface chooses a colour with. Top to bottom: the Theme Palette (the active tab's), the standard
 // colours, and Custom colours ending in +, which opens the custom colour editor in place. Leading
 // options (no colour, a surface's named defaults) go first in the first group. One Tab stop, the
-// arrows move through every swatch, Enter or Space picks. On the element menu's Text row, a hint under
-// the groups says when the colour judged would be hard to read where the text sits (ContrastHint).
+// arrows move through every swatch, Enter or Space picks. On a picker that colours text, a row under the
+// groups says whether the colour judged reads where the text sits (ContrastHint).
 import { useContext, useId, useRef, useState, type FocusEvent } from 'react';
 import { isHexColour } from '@livedesign/design';
 import {
@@ -52,8 +52,9 @@ export type ColourPickerProps = {
   // Live preview while a swatch is hovered or focused, and its revert.
   onPreview?: (id: string) => void;
   onPreviewEnd?: () => void;
-  // The Text row's ground and size, to judge its colours on (colour-picker.md "Reading on its ground").
-  contrast?: TextContrastProbe;
+  // Where the text sits, one ground or several, to judge its colours on (colour-picker.md "Reading on
+  // its ground").
+  contrast?: readonly TextContrastProbe[];
 };
 
 type Group = { heading: string; options: readonly ColourOption[] };
@@ -208,14 +209,7 @@ export function ColourPicker({
           </div>
         );
       })}
-      {contrast ? (
-        <ContrastHint
-          colour={probe !== null ? contrast.colourOf(probe) : contrast.current}
-          ground={contrast.ground}
-          large={contrast.large}
-          onUse={onPick}
-        />
-      ) : null}
+      {contrast ? <ContrastHint probes={contrast} judged={probe} onUse={onPick} /> : null}
       {editorOpen ? (
         <CustomColourEditor
           start={inForce ?? undefined}

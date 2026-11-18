@@ -18,15 +18,25 @@ import {
 } from '@/components/rich-text/toolbar-chrome';
 import { noFocusSteal, ToolbarDropdown } from '@/components/rich-text/ToolbarDropdown';
 import type { ActiveFormat } from '@/components/rich-text/rich-text-format';
-import type { ListStyle, RunBoolKey, RunHeading, TextAlignX, TextAlignY } from '@livedesign/design';
+import type {
+  BoxedElement,
+  ListStyle,
+  RunBoolKey,
+  RunHeading,
+  TextAlignX,
+  TextAlignY,
+} from '@livedesign/design';
+import { useMemo, useState } from 'react';
 import { HoverCard } from '@livedesign/ui';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { standardGroup } from '@/components/colour/colour-options';
 import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { useDesignColours } from '@/hooks/ui/useDesignColours';
+import { useTextContrast } from '@/hooks/ui/useTextContrast';
 
 // What the swatch shows while the selection has no colour of its own.
 const DEFAULT_TEXT_COLOUR = '#0f172a';
+const NONE: readonly BoxedElement[] = [];
 
 // Matches the element toolbar's PopoverButton (h-8 w-8 rounded-md, same
 // active + hover tones) so the two toolbars read as one system.
@@ -41,6 +51,7 @@ export function RichTextToolbar({
   listStyle,
   onColor,
   onSetAlign,
+  element,
 }: {
   active: ActiveFormat;
   alignX: TextAlignX;
@@ -54,10 +65,20 @@ export function RichTextToolbar({
   listStyle: ListStyle;
   onColor: (color: string) => void;
   onSetAlign: (x: TextAlignX, y: TextAlignY) => void;
+  // The element whose label is edited: the colour is judged where it sits (colour-picker.md "Reading on its ground").
+  element?: BoxedElement;
 }) {
   const toggles = runToggles('bold', 'italic', 'underline', 'strikethrough');
   const appearance = useCanvasSurface();
   const yours = useDesignColours();
+  // Judged only while the colour picker is open; the selected words' own colour is the one in force.
+  const [colourOpen, setColourOpen] = useState(false);
+  const judged = useMemo(() => (colourOpen && element ? [element] : NONE), [colourOpen, element]);
+  const grounds = useTextContrast(judged, colourOpen);
+  const contrast = useMemo(
+    () => grounds?.map((p) => (active.color ? { ...p, current: p.colourOf(active.color) } : p)),
+    [grounds, active.color],
+  );
 
   return (
     <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-950/40">
@@ -113,6 +134,8 @@ export function RichTextToolbar({
           standard={[standardGroup('strong', appearance, 'hex')]}
           yours={yours}
           preserveFocus
+          contrast={contrast}
+          onOpenChange={setColourOpen}
           className={`h-8 w-8 text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800`}
           onPick={onColor}
         />

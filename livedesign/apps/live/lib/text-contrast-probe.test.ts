@@ -9,7 +9,7 @@ import {
   type Page,
   type PageFill,
 } from '@livedesign/design';
-import { textContrastProbe } from './text-contrast-probe';
+import { textContrastProbe, textContrastProbes } from './text-contrast-probe';
 
 // docs/specs/004-interface-design/colour-picker.md "Reading on its ground".
 const PAGE = { id: 'p', orientation: 'portrait' } as const;
@@ -75,5 +75,25 @@ describe('textContrastProbe', () => {
       fillColor: '#1e293b',
     } as Element;
     expect(textContrastProbe(s, tabOf([s]), 'light')!.ground.on).toBe('shape');
+  });
+
+  it('judges a page ground as exported on a dark canvas, never a fill', () => {
+    const t = text();
+    expect(textContrastProbe(t, tabOf([t]), 'dark')!.exported).toBe(true);
+    expect(textContrastProbe(t, tabOf([t]), 'light')!.exported).toBe(false);
+    const s = {
+      ...createShape('square', rect.x + 10, rect.y + 10),
+      id: 's',
+      fillColor: '#1e293b',
+    } as Element;
+    expect(textContrastProbe(s, tabOf([s]), 'dark')!.exported).toBe(false);
+  });
+
+  it('gives a probe for each element it can judge, or undefined for none', () => {
+    const t = text();
+    const away = text({ id: 'away', x: rect.x - 9000 });
+    const tab = tabOf([t, away]);
+    expect(textContrastProbes([t, away], tab, 'light')).toHaveLength(1);
+    expect(textContrastProbes([away], tab, 'light')).toBeUndefined();
   });
 });
