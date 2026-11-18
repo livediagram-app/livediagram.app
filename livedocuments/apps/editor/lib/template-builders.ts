@@ -10,6 +10,7 @@
 import { markTemplateExamples, type Tab } from '@livedocuments/document';
 import {
   templateCanvasOverrides,
+  templateExampleText,
   templateTabs,
   withBlankPageThemed,
   type TemplateKind,
@@ -21,6 +22,7 @@ export {
   buildTemplate,
   isDefaultDocumentName,
   templateCanvasOverrides,
+  templateExampleText,
   templateTabs,
   untitledNameForTemplate,
 } from '@livedocuments/templates';
@@ -61,7 +63,10 @@ function themedTab(
   // branch of the scaffold a distinct hue; single-colour themes fall
   // straight through to the per-element transform.
   // Its example values marked as they land (docs/specs/006-document/template-examples.md).
-  const elements = markTemplateExamples(recolourElementsForTheme(def.build(0, 0), theme));
+  const elements = markTemplateExamples(
+    recolourElementsForTheme(def.build(0, 0), theme),
+    templateExampleText(kind),
+  );
   return withBlankPageThemed(
     {
       id: tabId,

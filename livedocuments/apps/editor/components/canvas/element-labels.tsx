@@ -33,6 +33,8 @@ import type { TextHugLabel } from './useTextHug';
 import type { TextAnimView } from './useTextAnimation';
 import { wordmarkTextStyle } from './label-style';
 import { WordmarkArcLabel } from './WordmarkArcLabel';
+import { EmptyTextPrompt } from '@liveworkspace/workbench/components/canvas/EmptyTextPrompt';
+import { GIF_OMIT_ATTR } from '@/lib/gif-export/gif-omit';
 
 export function renderLabel(
   element: BoxedElement,
@@ -67,6 +69,9 @@ export function renderLabel(
   // The label's Text animation (docs/specs/028-animation/element-animations.md "Text"), undefined
   // when it has none or is being edited; useTextAnimation builds it.
   textAnim?: TextAnimView,
+  // An empty text draws its faint "Text" prompt (EmptyTextPrompt): on for an Editor only, the tab and the element not
+  // locked (docs/specs/008-canvas/canvas-and-palette.md "Text element").
+  emptyPrompt = false,
 ) {
   const isSticky = element.type === 'sticky';
   // A Shift-resized text box, and a text or shape a page re-fit scaled, draws its words scaled.
@@ -157,6 +162,21 @@ export function renderLabel(
               : STEP_LABEL_MAX
             : undefined
         }
+      />
+    );
+  }
+
+  // An empty text shows an Editor where its words go. The flag is checked first, so a text with words, a Viewer's
+  // canvas and every other kind pay nothing.
+  if (emptyPrompt && element.type === 'text' && !hug && label.trim() === '') {
+    return (
+      <EmptyTextPrompt
+        px={textSize === 'scale' ? labelFontPx('sm') : labelFontPx(textSize) * textScale}
+        alignX={alignX}
+        alignY={alignY}
+        padding={padding}
+        fontFamily={fontFamily}
+        omitAttr={GIF_OMIT_ATTR}
       />
     );
   }

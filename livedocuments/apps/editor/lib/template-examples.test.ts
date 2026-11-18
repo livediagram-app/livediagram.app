@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   clearTabExamples,
   hasUntouchedExamples,
+  isSampleCopy,
   untouchedExampleCount,
   type Element,
 } from '@livedocuments/document';
@@ -19,9 +20,10 @@ const chartValues = (el: Element) =>
     : [];
 
 describe('template example content', () => {
-  it("a Live Card's notes clear, and every element keeps its place", () => {
+  it("a Live Card's notes and body copy clear, and every element keeps its place", () => {
     const [tab] = buildTemplatedTabs('live-card', 'slate', 't1', 'Tab 1');
-    expect(untouchedExampleCount(tab!.elements)).toBe(7);
+    // Seven notes and three lines of body copy.
+    expect(untouchedExampleCount(tab!.elements)).toBe(10);
     const [cleared] = clearTabExamples([tab!], 't1');
     expect(cleared!.elements).toHaveLength(tab!.elements.length);
     for (const el of cleared!.elements.filter((e) => e.type === 'sticky')) {
@@ -31,6 +33,31 @@ describe('template example content', () => {
       const before = tab!.elements[i] as { x?: number; y?: number };
       expect([(el as { x?: number }).x, (el as { y?: number }).y]).toEqual([before.x, before.y]);
     });
+    expect(hasUntouchedExamples(cleared!.elements)).toBe(false);
+  });
+
+  it("a Recipe Card's body copy clears, and its headings, labels and figures stay", () => {
+    const [tab] = buildTemplatedTabs('recipe-card', 'slate', 't1', 'Tab 1');
+    const before = tab!.elements;
+    expect(before.some((el) => el.type === 'text' && isSampleCopy(el))).toBe(true);
+    expect(hasUntouchedExamples(before)).toBe(true);
+    const [cleared] = clearTabExamples([tab!], 't1');
+    cleared!.elements.forEach((el, i) => {
+      const was = before[i]!;
+      if (el.type !== 'text' || was.type !== 'text') return;
+      expect(el.label).toBe(isSampleCopy(was) ? '' : was.label);
+      expect([el.x, el.y, el.width, el.height, el.textSize]).toEqual([
+        was.x,
+        was.y,
+        was.width,
+        was.height,
+        was.textSize,
+      ]);
+    });
+    // The title is bold display type: it stays.
+    expect(
+      cleared!.elements.some((el) => el.type === 'text' && el.label === 'Butter Bean Bake'),
+    ).toBe(true);
     expect(hasUntouchedExamples(cleared!.elements)).toBe(false);
   });
 

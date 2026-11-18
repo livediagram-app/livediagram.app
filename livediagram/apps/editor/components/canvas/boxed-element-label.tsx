@@ -55,6 +55,8 @@ export function useBoxedLabel(
     onOpenAction,
     onOpenNote,
     tabSummaries,
+    readOnly,
+    tabLocked,
   }: BoxedElementViewProps,
   { label, textSize, alignX, alignY, textColor, cornerPx }: BoxedLabelLocals,
 ) {
@@ -173,6 +175,9 @@ export function useBoxedLabel(
     textHug.label,
     textAnim,
     mindFit.onLiveText,
+    // An empty text's faint prompt, for an Editor only: never a Viewer's or a Participant's canvas, a locked tab or a
+    // locked text (docs/specs/008-canvas/canvas-and-palette.md "Text element").
+    !readOnly && !tabLocked && element.locked !== true,
   );
 
   return {
