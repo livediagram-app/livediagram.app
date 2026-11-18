@@ -3,35 +3,7 @@
 // The sign-in page's name fields and Google mark (SignInFlow.tsx): first and last name, and the G drawn
 // in Google's colours on its button.
 
-import { FIELD, LABEL, PRIMARY_BUTTON, SECONDARY_BUTTON } from './AccountPage';
-
-// Where the signed-in card goes next, when the sign-in had nowhere to go back to (opened at /sign-in itself): the
-// Explorer, where the person's work in every app is, and the home page. Paths on this address, so on an app's own
-// address they are that app's Explorer and home.
-export const NEXT_STEPS = [
-  { label: 'Open Explorer', href: '/explorer', primary: true },
-  { label: 'Go Home', href: '/', primary: false },
-] as const;
-
-export function SignedInNextSteps() {
-  return (
-    <div data-signed-in-next="" className="flex flex-col gap-4">
-      <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-        Every liveworkspace app knows you now. Pick up your work in the Explorer, or go back to the
-        app you came from.
-      </p>
-      {NEXT_STEPS.map((step) => (
-        <a
-          key={step.href}
-          href={step.href}
-          className={`${step.primary ? PRIMARY_BUTTON : SECONDARY_BUTTON} flex items-center justify-center no-underline`}
-        >
-          {step.label}
-        </a>
-      ))}
-    </div>
-  );
-}
+import { FIELD, LABEL } from './AccountPage';
 
 export function NameFields({
   prefix,

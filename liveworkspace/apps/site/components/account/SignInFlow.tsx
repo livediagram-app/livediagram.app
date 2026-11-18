@@ -42,7 +42,7 @@ import {
   codeDayMessage,
   field,
 } from './sign-in-flow-model';
-import { NameFields, GoogleGlyph, SignedInNextSteps } from './SignInFlowParts';
+import { NameFields, GoogleGlyph } from './SignInFlowParts';
 import { forgetInvitedAddress, invitedAddress } from '@/lib/invited-address';
 export { codeDayMessage } from './sign-in-flow-model';
 
@@ -51,6 +51,9 @@ export { codeDayMessage } from './sign-in-flow-model';
 // signed by the accounts Worker, and goes back with each step so the sign-in finishes in the app.
 
 type Flow = 'sign-in' | 'sign-up';
+
+// Where a sign-in with nowhere to go back to ends.
+const EXPLORER_HOME = '/explorer';
 
 export function SignInFlow({ flow }: { flow: Flow }) {
   const signingUp = flow === 'sign-up';
@@ -270,15 +273,10 @@ export function SignInFlow({ flow }: { flow: Flow }) {
     if (continueTo.current) {
       return window.location.assign(await afterSignIn(continueTo.current, query));
     }
-    // Signed in from the site's header: back to the page it was on.
-    const back = returnPath(query);
-    if (back) return window.location.assign(back);
-    setBusy(null);
-    // The code step's banners ("We sent you a new code.") are over.
-    setNotice('');
-    setErrorText('');
-    setTitle("You're signed in");
-    setStep('done');
+    // Signed in from the site's header: back to the page it was on. Opened at /sign-in or /sign-up itself, with
+    // nowhere to go back to: on to the Explorer's Home, where the work is (a path on this address, so on an app's
+    // own address it is that app's Explorer).
+    return window.location.assign(returnPath(query) ?? EXPLORER_HOME);
   }
 
   async function resend() {
@@ -497,8 +495,6 @@ export function SignInFlow({ flow }: { flow: Flow }) {
             </button>
           </form>
         )}
-
-        {step === 'done' && <SignedInNextSteps />}
 
         <div ref={captchaBox} className="mt-4 empty:hidden" />
 
