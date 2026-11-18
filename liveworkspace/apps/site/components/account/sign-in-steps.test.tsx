@@ -135,6 +135,21 @@ describe('the end of a sign-in, with nowhere to go back to', () => {
     expect(assign).toHaveBeenCalledWith('/telemetry');
   });
 
+  // CodeQL's client-side redirect alert on this path: a `return` that would leave the site is ignored (returnPath),
+  // so the sign-in lands on the Explorer Home instead of the hostile address.
+  it.each([
+    ['//evil.example', '%2F%2Fevil.example'],
+    ['https://evil.example', 'https%3A%2F%2Fevil.example'],
+    ['javascript:alert(1)', 'javascript%3Aalert(1)'],
+    ['/\\evil.example', '%2F%5Cevil.example'],
+    ['/<tab>/evil.example', '%2F%09%2Fevil.example'],
+  ])('ignores a return of %s and goes on to the Explorer Home', async (_, encoded) => {
+    window.history.replaceState(null, '', `/sign-in?return=${encoded}`);
+    await signIn();
+    expect(assign).toHaveBeenCalledTimes(1);
+    expect(assign).toHaveBeenCalledWith('/explorer');
+  });
+
   it('still goes back to the app when the sign-in came from one', async () => {
     answers['/sign-in/email-otp'] = () =>
       respond({ url: 'https://livediagram.app/auth/callback?code=c' });
