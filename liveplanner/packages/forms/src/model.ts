@@ -15,8 +15,31 @@ export const QUESTION_TYPES = [
   'multi',
   'rating',
   'checkbox',
+  // How long: hours and minutes, kept as whole minutes as a Duration field keeps them.
+  'duration',
+  // A colour from a set of swatches (or any #rrggbb), as a Colour field keeps it.
+  'colour',
+  // Not a question: a content block (text, a callout, a link, a picture) between questions, asking nothing
+  // (docs/specs/030-forms/forms.md "Content blocks"). It has no answer, mapping, column or Required.
+  'content',
 ] as const;
 export type QuestionType = (typeof QUESTION_TYPES)[number];
+
+// The kinds of content block (forms.md "Content blocks").
+export const CONTENT_BLOCKS = ['text', 'callout', 'link', 'image'] as const;
+export type ContentBlock = (typeof CONTENT_BLOCKS)[number];
+export const CONTENT_BLOCK_NAMES: Readonly<Record<ContentBlock, string>> = {
+  text: 'Text',
+  callout: 'Callout',
+  link: 'Link Button',
+  image: 'Picture',
+};
+// A callout's tone: its colour and icon.
+export const CALLOUT_TONES = ['info', 'tip', 'warning'] as const;
+export type CalloutTone = (typeof CALLOUT_TONES)[number];
+
+// Whether a part of a section asks something (every type but a content block).
+export const isAsked = (q: Pick<FormQuestion, 'type'>): boolean => q.type !== 'content';
 
 export const isQuestionType = (v: unknown): v is QuestionType =>
   (QUESTION_TYPES as readonly unknown[]).includes(v);
@@ -36,6 +59,9 @@ export const QUESTION_TYPE_NAMES: Readonly<Record<QuestionType, string>> = {
   multi: 'Multiple Choice',
   rating: 'Rating',
   checkbox: 'Checkbox',
+  duration: 'Duration',
+  colour: 'Colour',
+  content: 'Content',
 };
 
 // The telemetry type each question type is counted as (a preset value, never content).
@@ -53,6 +79,9 @@ export const QUESTION_TYPE_TELEMETRY: Readonly<Record<QuestionType, string>> = {
   multi: 'MultipleChoice',
   rating: 'Rating',
   checkbox: 'Checkbox',
+  duration: 'Duration',
+  colour: 'Colour',
+  content: 'Content',
 };
 
 // Where an answer is kept on the response's card. Absent reads as Description.
@@ -82,7 +111,19 @@ export interface FormQuestion {
   style?: 'stars' | 'numbers';
   lowLabel?: string;
   highLabel?: string;
+  // Checkbox: the words beside its box ("Tick if it applies" when absent, "Required" when required and absent).
+  checkLabel?: string;
+  // The answer kept when a question that is not required is left empty (forms.md "A default answer"): a value its
+  // own check takes (never on a Checkbox, a Date Range or a content block).
+  fallback?: string | number | string[];
   goesTo?: AnswerTarget;
+  // A content block (type 'content'): which kind, and what it holds. Its heading is `prompt` (optional), its text
+  // `help`; a link's address `url` and button words `linkLabel`; a callout's `tone`; a picture's `imageId`.
+  block?: ContentBlock;
+  url?: string;
+  linkLabel?: string;
+  tone?: CalloutTone;
+  imageId?: string;
 }
 
 // When a section shows (docs/specs/030-forms/forms.md "Showing a section only sometimes"): an earlier Single Choice,
@@ -151,7 +192,18 @@ export interface FormDestination {
 
 // The band across the form's top (docs/specs/030-forms/forms.md "The form card"): a colour background, a
 // solid colour, a gradient (a moving one included) and a pattern. No pictures.
-export type FormCover = ColourBackground;
+// A cover may instead (or as well, a pattern over it) hold a picture from the plan's images (forms.md "Cover"):
+// `imageId` the picture, `focus` where it sits vertically (0 top to 100 bottom, 50 when absent), `credit` an Image
+// Search pick's credit line.
+export type FormCover = ColourBackground & {
+  imageId?: string;
+  focus?: number;
+  credit?: string;
+};
+
+// How wide the form's column is (forms.md "Width"): Narrow (640 px, the default) or Wide.
+export type FormWidth = 'narrow' | 'wide';
+export const FORM_WIDTH_PX: Readonly<Record<FormWidth, number>> = { narrow: 640, wide: 880 };
 
 export const STARTER_IDS = [
   'blank',
@@ -178,13 +230,28 @@ export interface FormDefinition {
   confirmation?: string;
   closedMessage?: string;
   starter?: StarterId;
+  // Absent: Narrow.
+  width?: 'wide';
 }
 
 export const FORM_VERSION = 1;
 
-// Every question, in form order.
+// Every question, in form order (content blocks, which ask nothing, left out).
 export function questionsOf(form: Pick<FormDefinition, 'sections'>): FormQuestion[] {
+  return form.sections.flatMap((s) => s.questions).filter(isAsked);
+}
+
+// Every part of every section, questions and content blocks, in form order.
+export function partsOf(form: Pick<FormDefinition, 'sections'>): FormQuestion[] {
   return form.sections.flatMap((s) => s.questions);
+}
+
+// The pictures a form shows: its cover's and each picture block's (the api serves only these on its link).
+export function formImageIds(form: Pick<FormDefinition, 'sections' | 'cover'>): string[] {
+  const ids = new Set<string>();
+  if (form.cover?.imageId) ids.add(form.cover.imageId);
+  for (const q of partsOf(form)) if (q.type === 'content' && q.imageId) ids.add(q.imageId);
+  return [...ids];
 }
 
 export function promptOf(q: Pick<FormQuestion, 'prompt'>): string {

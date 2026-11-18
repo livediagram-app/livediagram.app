@@ -102,6 +102,7 @@ const HINTS: Partial<Record<FormQuestion['type'], string>> = {
   date: 'dd/mm/yyyy',
   datetime: 'dd/mm/yyyy, --:--',
   daterange: 'dd/mm/yyyy to dd/mm/yyyy',
+  duration: 'Such as 2h 30m',
 };
 
 function star(cx: number, cy: number, r: number, fill: string, stroke: string): string {

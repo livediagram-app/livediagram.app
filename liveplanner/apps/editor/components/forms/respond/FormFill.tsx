@@ -4,9 +4,16 @@
 // card (a later section's title), a progress bar past one section, the section's questions, an error summary on Next
 // or Submit, Back / Next / Submit, and then the confirmation. The form link's page and the builder's Preview both draw
 // it; only what Submit does differs.
-import { useEffect, useRef } from 'react';
-import { Button } from '@liveplanner/ui';
-import { answerErrorMessage, promptOf, type PublicForm } from '@liveplanner/forms';
+import { useEffect, useMemo, useRef } from 'react';
+import { Button, lucideGlyph } from '@liveplanner/ui';
+import { lucideClock } from '@liveworkspace/icons/lucide';
+import {
+  answerErrorMessage,
+  promptOf,
+  secondsLeft,
+  timeLeftText,
+  type PublicForm,
+} from '@liveplanner/forms';
 import { FormCoverBand } from '../FormCoverBand';
 import { LinkedText } from '../LinkedText';
 import { QuestionView } from '../QuestionView';
@@ -15,6 +22,8 @@ import { useFormFill, type FillState, type SubmitOutcome } from './useFormFill';
 
 // The form's colour, as its look (form-look.ts) sets it on an ancestor: the builder's page or the form link's.
 export const FORM_ACCENT = 'var(--form-accent)';
+
+const ClockIcon = lucideGlyph(lucideClock, 14);
 
 // A mouse press on Back, Next or Submit leaves focus in the field (see the buttons).
 const keepFocus = (e: { preventDefault: () => void }) => e.preventDefault();
@@ -46,6 +55,11 @@ export function FormFill({
     (state) => submit({ ...state, website: honeypot.current?.value ?? '' }),
     draftKey,
     initial,
+  );
+  // How long is left (forms.md "How long it takes"), counted again as each answer goes in.
+  const left = useMemo(
+    () => secondsLeft(form, fill.state.answers, fill.order, fill.section),
+    [form, fill.state.answers, fill.order, fill.section],
   );
   const summaryRef = useRef<HTMLDivElement>(null);
   const topRef = useRef<HTMLDivElement>(null);
@@ -123,10 +137,25 @@ export function FormFill({
           <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-slate-900 max-sm:text-[24px] dark:text-slate-50">
             {first ? form.heading : fill.current.title || `Section ${fill.section + 1}`}
           </h1>
+          <TimeLeft
+            total={left.total}
+            section={sections > 1 ? (left.bySection.get(fill.section) ?? 0) : null}
+          />
           {first && form.description ? (
             <LinkedText
               text={form.description}
               className="mt-2 text-[15px] leading-relaxed text-slate-600 dark:text-slate-300"
+            />
+          ) : null}
+          {first && sections > 1 && fill.current.title ? (
+            <h2 className="mt-5 border-t border-slate-100 pt-4 text-[18px] font-semibold text-slate-900 dark:border-slate-800 dark:text-slate-50">
+              {fill.current.title}
+            </h2>
+          ) : null}
+          {first && sections > 1 && fill.current.description ? (
+            <LinkedText
+              text={fill.current.description}
+              className="mt-1 text-[14px] leading-relaxed text-slate-600 dark:text-slate-300"
             />
           ) : null}
           {!first && fill.current.description ? (
@@ -259,11 +288,33 @@ export function FormFill({
             Next
           </button>
         )}
-        <span className="order-first mr-auto basis-full text-[12px] text-slate-500 sm:basis-auto dark:text-slate-400">
-          Never submit passwords through liveplanner forms.
-        </span>
       </div>
       {footer}
     </div>
+  );
+}
+
+// The time left under the heading: this section's and the whole form's past one section, the form's alone otherwise.
+// Polite live region, so a screen reader hears it settle without being interrupted at every key.
+function TimeLeft({ total, section }: { total: number; section: number | null }) {
+  const all = timeLeftText(total);
+  if (!all) return null;
+  const here = section !== null && section < total ? timeLeftText(section) : null;
+  return (
+    <p
+      aria-live="polite"
+      className="mt-1.5 flex flex-wrap items-center gap-x-2 text-[13px] font-medium text-slate-500 tabular-nums dark:text-slate-400"
+    >
+      <ClockIcon aria-hidden />
+      {here ? (
+        <>
+          <span>{here.replace(' left', ' in this section')}</span>
+          <span aria-hidden>·</span>
+          <span>{all.replace(' left', ' left in all')}</span>
+        </>
+      ) : (
+        <span>{all}</span>
+      )}
+    </p>
   );
 }

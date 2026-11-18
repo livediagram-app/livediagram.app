@@ -78,6 +78,9 @@ const TYPE_MEANINGS: Readonly<Record<QuestionType, string>> = {
   multi: `any of its ${FORM_DRAFT_OPTIONS_MIN} to ${FORM_DRAFT_OPTIONS_MAX} options; min and max may bound the picks`,
   rating: `a scale of ${RATING_SCALE_MIN} to ${RATING_SCALE_MAX} (5 by default), style stars or numbers, numbers with lowLabel and highLabel`,
   checkbox: 'one tick, such as agreeing to terms',
+  duration: 'how long, such as hours spent',
+  colour: 'a colour picked from swatches',
+  content: '',
 };
 
 const SYSTEM =
@@ -93,7 +96,9 @@ const SYSTEM =
   `questions: 1 to ${FORM_DRAFT_QUESTIONS_MAX} in all, the ones the request names and those the form plainly needs, ` +
   `each prompt up to ${PROMPT_MAX} characters, as a question or a label in sentence case, none twice; required true ` +
   'for what the form cannot do without; help only when the prompt needs explaining. ' +
-  `type: one of ${QUESTION_TYPES.map((t) => `${t} (${TYPE_MEANINGS[t]})`).join(', ')}. ` +
+  `type: one of ${QUESTION_TYPES.filter((t) => t !== 'content')
+    .map((t) => `${t} (${TYPE_MEANINGS[t]})`)
+    .join(', ')}. ` +
   `Options are short, up to ${OPTION_MAX} characters, none twice; only single and multi have them. ` +
   'Ask for a name with short and an email address with email. ' +
   'respondsTo: "board" when each response is something to work through (a request, a report, an application), ' +

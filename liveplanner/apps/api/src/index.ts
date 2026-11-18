@@ -246,7 +246,8 @@ async function routeApiRequest(
   // reads and votes are limited per network as a form's are, each on its own key.
   const isRoadmapRequest = segments[1] === 'roadmaps';
   if ((isFormRequest || isRoadmapRequest) && env.FORM_RATE_LIMITER) {
-    const door = isRoadmapRequest ? 'roadmap' : 'form';
+    // A form's pictures have a key of their own, so a form with pictures never eats its reads' allowance.
+    const door = isRoadmapRequest ? 'roadmap' : segments[3] === 'images' ? 'form-image' : 'form';
     const ok = await env.FORM_RATE_LIMITER.limit({
       key: `${isWrite ? door : `${door}-read`}:${clientNetwork(clientIp(request))}`,
     });

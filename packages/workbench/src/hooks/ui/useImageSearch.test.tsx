@@ -36,9 +36,7 @@ const useImageSearch = createImageSearch({ track, openImportSession });
 
 function setup(filters?: { aspectRatio?: 'wide' }) {
   const onPicked = vi.fn();
-  const hook = renderHook(() =>
-    useImageSearch({ ownerId: 'o1', documentId: 'd1', onPicked, filters }),
-  );
+  const hook = renderHook(() => useImageSearch({ ownerId: 'o1', itemId: 'd1', onPicked, filters }));
   return { hook, onPicked };
 }
 
@@ -145,7 +143,7 @@ describe('useImageSearch', () => {
     act(() => hook.result.current.pick(image('a')));
     expect(hook.result.current.pickingId).toBe('a');
     await waitFor(() => expect(hook.result.current.pickStage).toBe('saving'));
-    expect(openImportSession).toHaveBeenCalledWith({ ownerId: 'o1', documentId: 'd1' });
+    expect(openImportSession).toHaveBeenCalledWith({ ownerId: 'o1', itemId: 'd1' });
     expect(session.store).toHaveBeenCalledOnce();
     expect(track).toHaveBeenCalledWith('Error', 'Warning', 'ImageSearch.ThumbnailFallback');
     // A second press while the first is in flight does nothing.

@@ -58,9 +58,7 @@ export function FormTourHost() {
   // The example question the tour added, while it is on the form (no undo step: changeFormQuietly).
   const questionRef = useRef<string | null>(null);
   const previewButton = () =>
-    [...document.querySelectorAll<HTMLButtonElement>('button[aria-pressed]')].find((b) =>
-      /^(Preview|Back to Editing)$/.test(b.textContent?.trim() ?? ''),
-    ) ?? null;
+    document.querySelector<HTMLButtonElement>('button[data-tour-id="preview-form"]');
   const removeQuestion = () => {
     const id = questionRef.current;
     if (!id) return;

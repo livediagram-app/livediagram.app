@@ -16,8 +16,9 @@ import { effectiveTarget, titleTakenBy } from './mapping';
 import { questionsOf, type FormDefinition, type FormQuestion, type QuestionType } from './model';
 import { readOptions } from './read';
 
-// The question each custom kind becomes; a kind missing here is one a respondent cannot sensibly fill (Person,
-// Labels, Colour, Checklist, Image, Comments, Votes, Percent, Duration, Link to Card, Calculated).
+// The question each custom kind becomes; a kind missing here is one a respondent cannot fill (Person, which would
+// show the plan's people to anyone with the link; Image, a file upload; Comments, Votes, Link to Card and Calculated,
+// which are the board's own). A Time Spent duration is tracked, never typed, so it is left out too.
 export const TYPE_QUESTION_KINDS: Partial<Record<CustomFieldKind, QuestionType>> = {
   text: 'short',
   longtext: 'paragraph',
@@ -35,6 +36,15 @@ export const TYPE_QUESTION_KINDS: Partial<Record<CustomFieldKind, QuestionType>>
   multichoice: 'multi',
   rating: 'rating',
   checkbox: 'checkbox',
+  // Asked as a duration, typed "2h 30m".
+  duration: 'duration',
+  colour: 'colour',
+  // A whole 0 to 100, its bounds set.
+  percent: 'number',
+  // Labels and a Checklist from options: a question for them is a Multiple Choice the Editor fills in.
+  labels: 'multi',
+  checklist: 'multi',
+  pullrequest: 'link',
 };
 
 export type TypeQuestionField =
@@ -48,6 +58,7 @@ export function typeQuestionFields(type: ItemTypeDef): TypeQuestionField[] {
   for (const id of type.fields) {
     const field = type.custom?.find((f) => f.id === id);
     if (!field || isNewerField(field) || !TYPE_QUESTION_KINDS[field.kind]) continue;
+    if (field.kind === 'duration' && field.timeSpent) continue;
     out.push({ kind: 'field', field });
   }
   return out;
@@ -80,6 +91,9 @@ export function questionFromField(
     q.style = 'stars';
   }
   if (qType === 'daterange' && isTimedRange(field)) q.withTime = true;
+  if (field.kind === 'percent') Object.assign(q, { min: 0, max: 100, whole: true });
+  if ((field.kind === 'labels' || field.kind === 'checklist') && !q.options?.length)
+    q.options = ['Option 1', 'Option 2'];
   return q;
 }
 

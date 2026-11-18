@@ -2,9 +2,13 @@
 // fields from a checked response. Pure, so the api makes it and the builder's Preview can show what would be made.
 import {
   DESCRIPTION_RICH_FIELD,
+  ITEM_CHECKLIST_TEXT_MAX,
   ITEM_DESCRIPTION_MAX,
+  ITEM_LABEL_MAX,
   ITEM_TITLE_MAX,
+  durationText,
   momentText,
+  pullRequestValueOf,
   ratingScaleOf,
   readInstant,
   riskOf,
@@ -52,6 +56,7 @@ export function answerText(q: FormQuestion, value: AnswerValue): string {
   if (Array.isArray(value)) return value.join(', ');
   if (typeof value === 'boolean') return value ? 'Yes' : 'No';
   if (q.type === 'rating') return `${value} / ${q.scale ?? RATING_SCALE_DEFAULT}`;
+  if (q.type === 'duration' && typeof value === 'number') return durationText(value);
   return String(value);
 }
 
@@ -93,6 +98,27 @@ function fieldValue(q: FormQuestion, value: AnswerValue, field: CustomFieldDef):
       return answerText(q, value);
     case 'rating':
       return Math.min(value as number, ratingScaleOf(field));
+    // A Rating as its share of the scale; a Number as it is, its bounds already 0 to 100.
+    case 'percent':
+      return q.type === 'rating'
+        ? Math.round(((value as number) / (q.scale ?? RATING_SCALE_DEFAULT)) * 100)
+        : Math.max(0, Math.min(100, Math.round(value as number)));
+    // Picks as labels (each cut to a label's length).
+    case 'labels':
+      return (Array.isArray(value) ? value : [String(value)]).map((l) =>
+        l.trim().slice(0, ITEM_LABEL_MAX),
+      );
+    // Every option a row, the picked ones ticked (only a Multiple Choice maps here).
+    case 'checklist': {
+      const picks = new Set(value as string[]);
+      const rows = [...(q.options ?? []), ...[...picks].filter((p) => !q.options?.includes(p))];
+      return rows.map((text) => ({
+        text: text.slice(0, ITEM_CHECKLIST_TEXT_MAX),
+        done: picks.has(text),
+      }));
+    }
+    case 'pullrequest':
+      return pullRequestValueOf(value) ?? String(value);
     default:
       return value;
   }

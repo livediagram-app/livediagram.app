@@ -13,6 +13,7 @@ import { questionsOf, type FormDefinition, type FormQuestion } from './model';
 
 // The longest label New Field gives a field, and the base kept before " 2" on a clash.
 const LABEL_MAX = 32;
+export const NEW_FIELD_LABEL_MAX = LABEL_MAX;
 const LABEL_BASE_MAX = 28;
 
 // A field label from `prompt`, unique among `taken` (case aside): "Answer" for a blank prompt, " 2", " 3" on a clash.

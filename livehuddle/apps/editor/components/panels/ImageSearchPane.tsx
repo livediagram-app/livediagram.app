@@ -43,7 +43,7 @@ export function ImageSearchPane({
   onPicked: (image: PickedImage, result: OpenverseImage) => void;
 }) {
   const [draft, setDraft] = useState('');
-  const search = useImageSearch({ ownerId, documentId, onPicked });
+  const search = useImageSearch({ ownerId, itemId: documentId, onPicked });
   const loading = search.status === 'loading';
   // A new search swaps the grid for placeholders; a further page adds a row of them under it.
   const searching = loading && !search.loadingMore;

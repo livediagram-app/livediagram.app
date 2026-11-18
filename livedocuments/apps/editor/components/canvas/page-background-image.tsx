@@ -195,7 +195,7 @@ export function ImageBackgroundChoices({
     <>
       <ImageSearchPane
         ownerId={access.ownerId}
-        documentId={access.documentId}
+        itemId={access.documentId}
         filters={pageImageFilters(page)}
         columns={3}
         autoFocus={false}

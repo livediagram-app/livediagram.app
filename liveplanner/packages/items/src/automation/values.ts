@@ -29,11 +29,27 @@ const EMAIL: ReadonlySet<string> = new Set(AUTOMATION_EMAIL_VALUE_NAMES);
 // Where a text is written: a branch's text may also name the card that started the rule (`{{trigger.title}}`), and
 // an Incoming Webhook rule's the call's body (`{{webhook.<path>}}`), and a GitHub rule's the pull request
 // (`{{pull_request.title}}`), and an Email Received rule's the sender (`{{from}}`).
-export type ValuePlace = { branch?: boolean; webhook?: boolean; github?: boolean; email?: boolean };
+export type ValuePlace = {
+  branch?: boolean;
+  webhook?: boolean;
+  github?: boolean;
+  email?: boolean;
+  // A Form Response rule's text may name the response's answers (`{{answer.<Question>}}`).
+  form?: boolean;
+};
 
 const VALUE = /\{\{([^{}]*)\}\}/g;
 const SHIFT = /^now\s*([+-])\s*(\d{1,4})\s*d$/;
 const FIELD_PREFIX = 'card.field.';
+const ANSWER_PREFIX = 'answer.';
+
+// `answer.<Question>`: the question's words after the prefix, when they hold more than spaces (a prefix check, as
+// fieldNameOf's).
+export function answerNameOf(name: string): string | null {
+  if (!name.startsWith(ANSWER_PREFIX)) return null;
+  const rest = name.slice(ANSWER_PREFIX.length).trim();
+  return rest ? rest : null;
+}
 
 // `card.field.<Field Name>`: the name after the prefix, when it holds more than spaces. A prefix check, never a
 // regular expression, so a long hostile name costs one linear pass (CodeQL polynomial-regex).
@@ -57,6 +73,7 @@ export const isKnownValue = (name: string, place: ValuePlace = {}): boolean =>
   (place.branch === true && BRANCH.has(name)) ||
   (place.github === true && PULL_REQUEST.has(name)) ||
   (place.email === true && EMAIL.has(name)) ||
+  (place.form === true && answerNameOf(name) !== null) ||
   (place.webhook === true && webhookPathOf(name) !== null);
 
 // The first value a text holds that the builder does not know, or null.
@@ -120,12 +137,23 @@ export interface ValueContext {
   github?: PullRequestValues;
   // An Email Received run: the sender's bare address (absent, as Test on a Card's: `{{from}}` reads nothing).
   email?: string;
+  // A Form Response run: the response's answers as text by question (absent, as Test on a Card's: each reads nothing).
+  answers?: Readonly<Record<string, string>>;
   // The text is an outgoing message's (Slack, Teams, Your Own Service): the one place a private repository's title
   // fills in (spec "A private repository's title").
   outgoing?: boolean;
 }
 
 const pad = (n: number) => String(n).padStart(2, '0');
+
+// The answer to the question worded `question`: as written, else the one worded alike in any case. Own keys only.
+function answerValueOf(answers: ValueContext['answers'], question: string): string {
+  if (!answers) return '';
+  if (Object.hasOwn(answers, question)) return answers[question] ?? '';
+  const lower = question.toLowerCase();
+  const key = Object.keys(answers).find((k) => k.toLowerCase() === lower);
+  return key === undefined ? '' : (answers[key] ?? '');
+}
 
 // One value's text. `iso`: a day reads `YYYY-MM-DD`, for a date field.
 function valueOf(name: string, ctx: ValueContext, iso: boolean): string {
@@ -142,6 +170,8 @@ function valueOf(name: string, ctx: ValueContext, iso: boolean): string {
     const value = ctx.webhook && Object.hasOwn(ctx.webhook, key) ? ctx.webhook[key] : undefined;
     return value === undefined ? '' : String(value);
   }
+  const question = answerNameOf(name);
+  if (question !== null) return answerValueOf(ctx.answers, question);
   if (ctx.cardless && name.startsWith('card.')) return '';
   const field = fieldNameOf(name);
   if (field !== null) {

@@ -5,8 +5,8 @@
 // photos fill the grid with a glint rolling across them under a scanning lens; while a pick is
 // stored, its tile lifts behind a chasing ring and says which stage it is at.
 import type { ReactNode } from 'react';
-import { SearchIcon } from '@livedocuments/ui';
-import type { PickStage } from '@liveworkspace/workbench/lib/image-search/pick';
+import { SearchIcon } from '@liveworkspace/ui';
+import type { PickStage } from '../../lib/image-search/pick';
 
 // One search page fills two rows of four; a further page adds one row.
 export const SKELETON_TILES_FIRST = 8;

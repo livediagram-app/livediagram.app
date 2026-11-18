@@ -1,7 +1,8 @@
 // What Insert a Value offers (docs/specs/026-plan/automations.md "Values"), grouped: This Card's fixed values, The
 // Triggering Card's inside a For Related Cards branch, each of the card's fields by name, and in an Incoming Webhook
 // rule Webhook Field…, which asks for a path rather than inserting at once, in a GitHub rule the pull request's, and
-// in an Email Received rule the sender's (From Email).
+// in an Email Received rule the sender's (From Email), and in a Form Response rule each question's answer (Form
+// Answers).
 // Pure.
 
 import {
@@ -84,10 +85,23 @@ export function valueInsertGroups(
   incoming: boolean,
   github = false,
   email = false,
+  // A Form Response rule's questions: a Form Answers group after This Card.
+  formQuestions?: readonly string[],
 ): ValueGroup[] {
   const groups: ValueGroup[] = [incoming || email ? THIS_CARD_PERSONLESS : THIS_CARD];
   if (github) groups.push(PULL_REQUEST);
   if (email) groups.push(EMAIL);
+  if (formQuestions?.length)
+    groups.push({
+      id: 'answers',
+      label: 'Form Answers',
+      options: formQuestions.map((q) => ({
+        kind: 'value',
+        id: `answer:${q}`,
+        label: q,
+        name: `answer.${q}`,
+      })),
+    });
   if (branch) groups.push(TRIGGERING_CARD);
   if (fields.length > 0)
     groups.push({

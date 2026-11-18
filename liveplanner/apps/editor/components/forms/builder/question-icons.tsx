@@ -8,7 +8,13 @@ import {
   lucideCalendarClock,
   lucideCalendarRange,
   lucideCircleDot,
+  lucideExternalLink,
   lucideHash,
+  lucideImage,
+  lucideInfo,
+  lucidePalette,
+  lucidePilcrow,
+  lucideTimer,
   lucideLink,
   lucideListChecks,
   lucidePhone,
@@ -16,7 +22,7 @@ import {
   lucideStar,
   lucideTextCursorInput,
 } from '@liveworkspace/icons/lucide';
-import type { QuestionType } from '@liveplanner/forms';
+import type { ContentBlock, QuestionType } from '@liveplanner/forms';
 
 export const QUESTION_TYPE_ICONS: Readonly<Record<QuestionType, ReturnType<typeof lucideGlyph>>> = {
   short: lucideGlyph(lucideTextCursorInput, 16),
@@ -32,6 +38,17 @@ export const QUESTION_TYPE_ICONS: Readonly<Record<QuestionType, ReturnType<typeo
   multi: lucideGlyph(lucideListChecks, 16),
   rating: lucideGlyph(lucideStar, 16),
   checkbox: lucideGlyph(lucideSquareCheck, 16),
+  duration: lucideGlyph(lucideTimer, 16),
+  colour: lucideGlyph(lucidePalette, 16),
+  content: lucideGlyph(lucidePilcrow, 16),
+};
+
+// Each content block's icon (forms.md "Content blocks").
+export const CONTENT_BLOCK_ICONS: Readonly<Record<ContentBlock, ReturnType<typeof lucideGlyph>>> = {
+  text: lucideGlyph(lucidePilcrow, 16),
+  callout: lucideGlyph(lucideInfo, 16),
+  link: lucideGlyph(lucideExternalLink, 16),
+  image: lucideGlyph(lucideImage, 16),
 };
 
 // The order the types are offered in: the everyday ones first.
@@ -49,4 +66,6 @@ export const QUESTION_TYPE_ORDER: readonly QuestionType[] = [
   'daterange',
   'link',
   'checkbox',
+  'duration',
+  'colour',
 ];

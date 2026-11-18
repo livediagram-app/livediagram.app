@@ -50,6 +50,8 @@ export interface AutomationEvent {
   fields?: string[];
   // The Form tab whose response made the card.
   form?: string;
+  // That response's answers as text, by question (a Form Response rule's `{{answer.<Question>}}`).
+  answers?: Record<string, string>;
   // An email that made the card (Email to Board): its sender's bare address and the board whose address took it.
   email?: { from: string; board: string };
   by: ItemPerson;
@@ -114,7 +116,10 @@ export const TRIGGER_EVENT_KINDS: Readonly<
 };
 
 // Who and why a write was made, as the event carries it.
-export type EventSource = Pick<AutomationEvent, 'role' | 'rule' | 'chain' | 'form' | 'email'>;
+export type EventSource = Pick<
+  AutomationEvent,
+  'role' | 'rule' | 'chain' | 'form' | 'answers' | 'email'
+>;
 
 // Changes that start nothing: the Trash both ways. The Archive both ways starts Card Archived and Card Restored alone.
 const QUIET = new Set(['trashed', 'untrashed']);
@@ -159,6 +164,7 @@ export function eventOfWrite(
       kind: 'created',
       ...(status ? { to: status } : {}),
       ...(source.form ? { form: source.form } : {}),
+      ...(source.form && source.answers ? { answers: source.answers } : {}),
       ...(source.email ? { email: source.email } : {}),
     };
   }

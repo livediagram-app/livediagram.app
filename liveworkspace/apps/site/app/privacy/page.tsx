@@ -260,11 +260,11 @@ const SECTIONS: LegalSection[] = [
     title: 'Image search',
     body: (
       <p>
-        In livediagram, livedocuments, livedesign and livehuddle, the image picker&rsquo;s Search
-        tab sends your search words from your browser to <strong>Openverse</strong>, run by the
-        WordPress Foundation, which sees them and your IP address under its own privacy policy; our
-        servers never see the search. A picture you pick is downloaded from its original host and
-        stored like any image you upload.
+        In livediagram, livedocuments, livedesign and livehuddle, and in liveplanner Forms, the
+        image picker&rsquo;s Search tab sends your search words from your browser to{' '}
+        <strong>Openverse</strong>, run by the WordPress Foundation, which sees them and your IP
+        address under its own privacy policy; our servers never see the search. A picture you pick
+        is downloaded from its original host and stored like any image you upload.
       </p>
     ),
   },

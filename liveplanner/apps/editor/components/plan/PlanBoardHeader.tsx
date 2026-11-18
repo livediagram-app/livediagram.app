@@ -143,9 +143,6 @@ export function PlanBoardHeader({
       <BoardWidgetZone
         widgets={widgets}
         canEdit={canEdit}
-        selected={selected}
-        // In a header band the board is maximised or fills its tab, where no selection shows: an empty zone keeps its +.
-        offerAdd={inBox}
         palette={palette}
         onChange={(next) => {
           // Taking a widget off clears what it narrowed.

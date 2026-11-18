@@ -6,7 +6,7 @@
 import { useState } from 'react';
 import type { Tab } from '@liveplanner/project';
 import { lucideGlyph } from '@liveplanner/ui';
-import { lucideSettings } from '@liveworkspace/icons/lucide';
+import { lucideRoute, lucideSettings, lucideSlidersHorizontal } from '@liveworkspace/icons/lucide';
 import type { FormLinkState } from '@/hooks/forms/useFormLink';
 import { DestinationPicker } from './DestinationPicker';
 import { FormSettingsTab } from './FormSettingsTab';
@@ -14,6 +14,10 @@ import { FormSheet } from './FormSheet';
 import { requestFormTourRelaunch } from '@/lib/form-tour';
 
 const CogIcon = lucideGlyph(lucideSettings, 16);
+const ResponsesIcon = lucideGlyph(lucideRoute, 15);
+const FormIcon = lucideGlyph(lucideSlidersHorizontal, 15);
+// Wide enough for Board and Card Type side by side, and a response's card drawn at the board's size.
+const PANEL_W = 480;
 
 export type FormSettingsSection = 'destination' | 'settings';
 
@@ -52,21 +56,24 @@ export function FormSettingsButton({
         Settings
       </button>
       {open !== false && anchor ? (
-        <FormSheet anchor={anchor} name="Form Settings" width={320} onClose={onClose}>
-          <Sections tabs={tabs} link={link} first={open} onLeave={onClose} />
-          {/* The Forms tour, again (docs/specs/030-forms/forms.md "The Forms tour"). */}
-          <div className="mt-3 flex justify-end border-t border-slate-100 pt-2 dark:border-slate-800">
+        <FormSheet anchor={anchor} name="Form Settings" width={PANEL_W} titled onClose={onClose}>
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <p className="text-[15px] font-semibold text-slate-900 dark:text-slate-50">
+              Form Settings
+            </p>
+            {/* The Forms tour, again (docs/specs/030-forms/forms.md "The Forms tour"). */}
             <button
               type="button"
               onClick={() => {
                 onClose();
                 requestFormTourRelaunch();
               }}
-              className="cursor-pointer rounded-md px-2 py-1 text-[12px] font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-50"
+              className="cursor-pointer rounded-md px-2 py-1 text-[12px] font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-50"
             >
               Show Me Around
             </button>
           </div>
+          <Sections tabs={tabs} link={link} first={open} onLeave={onClose} />
         </FormSheet>
       ) : null}
     </>
@@ -86,30 +93,31 @@ function Sections({
   onLeave: () => void;
 }) {
   const [shown, setShown] = useState<FormSettingsSection>(first ?? 'destination');
-  const tab = (id: FormSettingsSection, name: string) => (
+  const tab = (id: FormSettingsSection, name: string, icon: React.ReactNode) => (
     <button
       type="button"
       role="tab"
       aria-selected={shown === id}
       onClick={() => setShown(id)}
-      className={`flex h-7 flex-1 cursor-pointer items-center justify-center rounded-md px-2 text-[12px] font-semibold transition ${
+      className={`flex h-8 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-md px-2 text-[13px] font-semibold transition ${
         shown === id
           ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-50'
           : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100'
       }`}
     >
+      {icon}
       {name}
     </button>
   );
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4">
       <div
         role="tablist"
         aria-label="Form Settings"
         className="flex gap-0.5 rounded-lg bg-slate-100 p-0.5 dark:bg-slate-800"
       >
-        {tab('destination', 'Responses Go To')}
-        {tab('settings', 'Settings')}
+        {tab('destination', 'Responses Go To', <ResponsesIcon aria-hidden />)}
+        {tab('settings', 'Settings', <FormIcon aria-hidden />)}
       </div>
       <div role="tabpanel" aria-label={shown === 'destination' ? 'Responses Go To' : 'Settings'}>
         {shown === 'destination' ? (
