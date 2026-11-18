@@ -157,12 +157,6 @@ function Wall({
             {wall.shut ? <span data-space-door-leaf="" /> : null}
           </span>
         ) : null}
-        {/* An open door's leaf stands out of the wall at its hinge, swung as the plan draws it (3d-view.md "Doorways"). */}
-        {wall.kind === 'doorway' && wall.hinge ? (
-          <span data-space-door-open={wall.hinge} data-space-door-id={wall.doorId}>
-            <span data-space-door-leaf="" />
-          </span>
-        ) : null}
         {wall.label ? (
           <span
             data-space-wall-label=""
@@ -173,6 +167,16 @@ function Wall({
           </span>
         ) : null}
       </div>
+      {/* An open door's leaf stands out of the wall at its hinge, swung as the plan draws it (3d-view.md "Doorways").
+          Beside the face, not in it: a cut-away face's opacity would flatten it shut into the wall (the owner,
+          2026-11-18: walking up to a door "closes the door"). */}
+      {wall.kind === 'doorway' && wall.hinge ? (
+        <div data-space-wall-stand="">
+          <span data-space-door-open={wall.hinge} data-space-door-id={wall.doorId}>
+            <span data-space-door-leaf="" />
+          </span>
+        </div>
+      ) : null}
     </div>
   );
 }

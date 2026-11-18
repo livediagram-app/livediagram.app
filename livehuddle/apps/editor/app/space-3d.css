@@ -492,6 +492,29 @@
 [data-space-wall][data-cut] > [data-space-wall-face] {
   opacity: 0.18;
 }
+/* Beside the face, the parts that stand out of the wall (an open door's leaf): stood up with it, ghosted part by
+   part, so a cut-away wall leaves an open door open (3d-view.md "Walls in front of you are cut away"). */
+[data-space-wall-stand] {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: var(--wall-h);
+  transform-origin: 50% 100%;
+  transform: rotateX(var(--space-stand));
+  transform-style: preserve-3d;
+  transition: transform 520ms var(--space-ease);
+  animation: space-wall-rise 520ms var(--space-ease);
+  pointer-events: none;
+}
+[data-space-wall-stand] [data-space-door-leaf] {
+  transition:
+    rotate 180ms var(--space-ease),
+    opacity 180ms ease-out;
+}
+[data-space-wall][data-cut] > [data-space-wall-stand] [data-space-door-leaf] {
+  opacity: 0.18;
+}
 /* A room on grass has a pitched roof on its walls (3d-view.md "Rooms on grass have roofs"): tiles on its slopes,
    plaster on its gable ends, all a ghost like the walls in front of you (the opacity is on each part: on the roof it
    would flatten it), gone while you stand inside. */

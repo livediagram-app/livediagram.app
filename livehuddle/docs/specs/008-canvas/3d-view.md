@@ -168,7 +168,9 @@ not laggy.
 
 A wall between the camera and your own character would hide you, so it fades out: any wall with a part less than
 150 canvas px in front of your feet (towards the bottom of the screen) and within 72 canvas px of them to either side
-fades to a ghost (18% opacity) while you stand there, and comes back as you walk away. Only your own character cuts
+fades to a ghost (18% opacity) while you stand there, and comes back as you walk away. A door in a faded wall keeps
+its state: an open one stays swung open, a ghost like its wall, never folded shut (the owner, 2026-11-18: "it should
+remain open but transparent if it was open before"). Only your own character cuts
 walls; peers behind a wall are hidden by it, as people are.
 
 **Rooms open up as you come near** (the owner, 2026-11-18: "when I am in a room, the wall(s) facing me in that room
