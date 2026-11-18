@@ -4,7 +4,7 @@
 import { useSyncExternalStore } from 'react';
 import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 import { track } from '@/lib/telemetry';
-import { mirrorDocumentLook } from './mini-view-styles';
+import { followRootLook, mirrorDocumentLook } from './mini-view-styles';
 
 /** The window's opening size (D132): a long name, the hand and the bars beside the bust, seven rows before it scrolls. */
 export const MINI_VIEW_WIDTH = 320;
@@ -30,12 +30,16 @@ export function miniViewSupported(scope: unknown = globalThis): boolean {
 
 let win: Window | null = null;
 let opening = false;
+// Stops following the opener's theme; set while a window is open.
+let unfollow: (() => void) | null = null;
 const listeners = createListeners();
 
 // The person closed the window (or the browser did): forget it, once.
 function forget(): void {
   if (!win) return;
   win.removeEventListener('pagehide', forget);
+  unfollow?.();
+  unfollow = null;
   win = null;
   listeners.notify();
 }
@@ -48,6 +52,7 @@ export async function openMiniView(): Promise<void> {
   try {
     const pip = await api.requestWindow({ width: MINI_VIEW_WIDTH, height: MINI_VIEW_HEIGHT });
     mirrorDocumentLook(document, pip.document);
+    unfollow = followRootLook(document, pip.document);
     pip.document.title = MINI_VIEW_TITLE;
     pip.document.body.style.margin = '0';
     pip.addEventListener('pagehide', forget);

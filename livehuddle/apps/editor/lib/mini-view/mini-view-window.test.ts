@@ -124,6 +124,27 @@ describe('closing', () => {
   });
 });
 
+// Work Tracker 1110: the open window follows the page's theme, and stops following once closed.
+describe('theme', () => {
+  const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
+
+  it('switches the open window from dark to light with the page, and lets go when it closes', async () => {
+    document.documentElement.classList.add('dark');
+    await act(() => openMiniView());
+    const html = pip.document.documentElement;
+    expect(html.classList.contains('dark')).toBe(true);
+    document.documentElement.classList.remove('dark');
+    await flush();
+    expect(html.classList.contains('dark')).toBe(false);
+    expect(html.style.colorScheme).toBe('light');
+    act(() => closeMiniView());
+    document.documentElement.classList.add('dark');
+    await flush();
+    expect(html.classList.contains('dark')).toBe(false);
+    document.documentElement.classList.remove('dark');
+  });
+});
+
 describe('focusSpace', () => {
   it('brings the Space’s window to the front', () => {
     const focus = vi.spyOn(window, 'focus').mockImplementation(() => {});
