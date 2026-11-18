@@ -279,6 +279,8 @@ export * from './cta-sources';
 export * from './page-views';
 export * from './read-notes';
 export * from './poll';
+// Live service status (docs/specs/009-elements/live-status.md): the states the room sends and the badge reads.
+export * from './service-status';
 export * from './room-messages';
 export * from './changesets';
 export * from './telemetry-schema';

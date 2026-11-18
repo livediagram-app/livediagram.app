@@ -5985,6 +5985,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "statusUrl": {
+        "type": "string"
+      },
       "stepSequence": {
         "type": "boolean"
       },

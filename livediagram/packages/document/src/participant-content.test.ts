@@ -493,6 +493,45 @@ describe('applyParticipantOp: what its own element may not become', () => {
     expect(r.op).toEqual({ kind: 'patch', id: 'mine', set: {}, clear: ['note'] });
   });
 
+  // docs/specs/009-elements/live-status.md "Who may bind": a binding makes the room fetch, so it is an Editor's.
+  it('never takes a status binding: set, changed or cleared, it stays as stored', () => {
+    const url = 'https://status.example.com/api/v2/status.json';
+    const unbound = sticky('mine', { addedBy: ME });
+    const set = applied(
+      applyParticipantOp(
+        tabOf([unbound]),
+        { kind: 'update', element: sticky('mine', { addedBy: ME, statusUrl: url, width: 200 }) },
+        ME,
+      ),
+    );
+    expect(set.tab.elements[0]).not.toHaveProperty('statusUrl');
+    expect(set.tab.elements[0]).toMatchObject({ width: 200 });
+    const bound = sticky('mine', { addedBy: ME, statusUrl: url });
+    const cleared = applied(
+      applyParticipantOp(
+        tabOf([bound]),
+        { kind: 'update', element: sticky('mine', { addedBy: ME, label: 'API' }) },
+        ME,
+      ),
+    );
+    expect(cleared.tab.elements[0]).toMatchObject({ statusUrl: url, label: 'API' });
+  });
+
+  it('drops a status binding from what it adds', () => {
+    const r = applied(
+      applyParticipantOp(
+        tabOf([]),
+        {
+          kind: 'add',
+          element: sticky('n', { statusUrl: 'https://status.example.com/health' }),
+          at: 0,
+        },
+        ME,
+      ),
+    );
+    expect(r.tab.elements[0]).not.toHaveProperty('statusUrl');
+  });
+
   it('refuses moving it onto a locked layer', () => {
     const tab = tabOf([sticky('mine', { addedBy: ME })], {
       layers: [

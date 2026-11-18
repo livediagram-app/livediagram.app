@@ -510,6 +510,10 @@ export type ShapeElement = {
   // is a TextSize preset where 'scale' tracks the element's text size (never a px: a marker is a dot).
   marker?: ShapeMarker;
   markerSize?: TextSizePreset;
+  // Live service status (docs/specs/009-elements/live-status.md): the public https URL the document's room checks
+  // while it is open, shown as a read-only badge. An Editor's alone (the participant rule keeps it as stored);
+  // absent = unbound. Checked by `isStatusUrl` in validate-shape.ts.
+  statusUrl?: string;
   aspectLocked?: boolean;
   opacity?: number; // 0..1, defaults to 1
   // Drop shadow (docs/specs/008-canvas/element-shadows.md). Absent = no shadow; see shadow.ts.

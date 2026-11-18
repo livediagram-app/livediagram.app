@@ -13,6 +13,7 @@ Follow the references below only as needed; never upfront.
 - ./images.md - when implementing or changing the image element, uploads, the picker, image reads or image export
 - ./flowchart.md - when implementing or changing the flowchart, its layout, growth, step types or lanes
 - ./lane.md - when implementing or changing the lane, its gutter, the seam drag or lane stacking
+- ./live-status.md - when implementing or changing `statusUrl`, the shared public https address check, the answer reader, the room's status rounds or the badge
 - ./link-cards.md - when implementing or changing link cards, the unfurl endpoint or its SSRF guard
 - ./mind-node.md - when implementing or changing mind nodes, Tab / Enter growth, flows or collision placement
 - ./mode-button.md - when implementing or changing the Selection Mode button, its press, Leave or its palette tiles
