@@ -417,6 +417,7 @@ export { dropRetiredPlan, isRetiredPlanElement } from './retired-plan';
 // Photoshop-style layers (docs/specs/006-document/layers.md): the Layer type used by the Tab field
 // above, band-aware render ordering, and the pure layer operations.
 export * from './layers';
+export * from './text-contrast';
 export * from './layer-operations';
 
 // Element-level realtime ops (docs/specs/012-collaboration/realtime-conflict-resolution.md): the ElementOp type + the pure

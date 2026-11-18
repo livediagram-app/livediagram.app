@@ -19,20 +19,27 @@ import {
 import { noFocusSteal, ToolbarDropdown } from '@/components/rich-text/ToolbarDropdown';
 import type { ActiveFormat } from '@/components/rich-text/rich-text-format';
 import type {
+  BoxedElement,
+  Element,
   ListStyle,
   RunBoolKey,
   RunHeading,
   TextAlignX,
   TextAlignY,
 } from '@livediagram/document';
+import { useContext, useMemo, useState } from 'react';
+import { EditorContext } from '@/app/document/[id]/EditorContext';
+import { elementRunDefaults } from './label-style';
 import { HoverCard } from '@livediagram/ui';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { standardGroup } from '@/components/colour/colour-options';
 import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
+import { useTextContrast } from '@/hooks/ui/useTextContrast';
 
 // What the swatch shows while the selection has no colour of its own.
 const DEFAULT_TEXT_COLOUR = '#0f172a';
+const NONE: readonly Element[] = [];
 
 // Matches the element toolbar's PopoverButton (h-8 w-8 rounded-md, same
 // active + hover tones) so the two toolbars read as one system.
@@ -47,6 +54,7 @@ export function RichTextToolbar({
   listStyle,
   onColor,
   onSetAlign,
+  element,
 }: {
   active: ActiveFormat;
   alignX: TextAlignX;
@@ -60,10 +68,32 @@ export function RichTextToolbar({
   listStyle: ListStyle;
   onColor: (color: string) => void;
   onSetAlign: (x: TextAlignX, y: TextAlignY) => void;
+  // The element whose label is edited: the colour is judged where it sits (colour-picker.md "Reading on its ground").
+  element?: BoxedElement;
 }) {
   const toggles = runToggles('bold', 'italic', 'underline', 'strikethrough');
   const appearance = useCanvasSurface();
   const yours = useDocumentColours();
+  // Judged only while the colour picker is open, on the element as stored: the one handed to the editor is
+  // projected for the canvas (on a dark canvas its text colour is the drawn light ink, not what is saved).
+  const [colourOpen, setColourOpen] = useState(false);
+  const tab = useContext(EditorContext)?.activeTab;
+  const judged = useMemo(() => {
+    if (!colourOpen || !element || !tab) return NONE;
+    const stored = tab.elements.find((el) => el.id === element.id);
+    return stored ? [stored] : NONE;
+  }, [colourOpen, element, tab]);
+  const grounds = useTextContrast(judged, colourOpen);
+  // The selected words' colour is the one in force only when it is their own: with none, active.color is
+  // the projected element's colour, and the stored element's colour is judged instead.
+  const ownColour =
+    active.color && element && active.color !== elementRunDefaults(element).color
+      ? active.color
+      : null;
+  const contrast = useMemo(
+    () => grounds?.map((p) => (ownColour ? { ...p, current: p.colourOf(ownColour) } : p)),
+    [grounds, ownColour],
+  );
 
   return (
     <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-950/40">
@@ -121,6 +151,8 @@ export function RichTextToolbar({
           preserveFocus
           className={`h-8 w-8 text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800`}
           onPick={onColor}
+          contrast={contrast}
+          onOpenChange={setColourOpen}
         />
       </HoverCard>
     </div>

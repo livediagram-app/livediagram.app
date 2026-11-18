@@ -4,7 +4,8 @@
 // surface chooses a colour with. Top to bottom: the Theme Palette (the active tab's), the standard
 // colours, and Custom colours ending in +, which opens the custom colour editor in place. Leading
 // options (no colour, a surface's named defaults) go first in the first group. One Tab stop, the
-// arrows move through every swatch, Enter or Space picks.
+// arrows move through every swatch, Enter or Space picks. On a picker that colours text, a row under the
+// groups says whether the colour judged reads where the text sits (ContrastHint, judging useJudgedSwatch's swatch).
 import { useContext, useId, useRef, useState, type FocusEvent } from 'react';
 import { isHexColour } from '@livedocuments/document';
 import {
@@ -26,6 +27,9 @@ import {
 } from './colour-options';
 import { onColourKeys } from '@liveworkspace/workbench/components/colour/useColourKeys';
 import { useThemeColours } from './useThemeColours';
+import { ContrastHint } from '@liveworkspace/workbench/components/colour/ContrastHint';
+import { useJudgedSwatch } from '@liveworkspace/workbench/components/colour/useJudgedSwatch';
+import type { TextContrastProbe } from '@/lib/text-contrast-probe';
 
 const NOOP = () => {};
 
@@ -49,6 +53,9 @@ export type ColourPickerProps = {
   // Live preview while a swatch is hovered or focused, and its revert.
   onPreview?: (id: string) => void;
   onPreviewEnd?: () => void;
+  // Where the text sits, one ground or several, to judge its colours on (colour-picker.md "Reading on
+  // its ground").
+  contrast?: readonly TextContrastProbe[];
 };
 
 type Group = { heading: string; options: readonly ColourOption[] };
@@ -64,8 +71,14 @@ export function ColourPicker({
   boardWarning = false,
   onPreview,
   onPreviewEnd,
+  contrast,
 }: ColourPickerProps) {
   const [editorOpen, setEditorOpen] = useState(false);
+  // The swatch the pointer or focus last rested on, judged in place of the colour in force; only kept while there is
+  // a contrast hint, so other pickers never re-render on hover. Focus previews and is judged only once a key is
+  // pressed in the picker: the swatches it focuses as it opens (its first key, then its Tab stop) are not, so opening
+  // changes nothing and the hint opens on the colour in force.
+  const judging = useJudgedSwatch(contrast !== undefined);
   // + takes focus back when the editor closes, so it never drops to the page (where Escape would reach
   // the canvas and drop the tool in hand, rather than close the surface the picker sits in).
   const plusRef = useRef<HTMLButtonElement>(null);
@@ -113,7 +126,21 @@ export function ColourPicker({
   const tabStop = pickedAt >= 0 ? pickedAt : 0;
 
   const previewEndOnLeave = (e: FocusEvent<HTMLDivElement>) => {
-    if (!e.currentTarget.contains(e.relatedTarget)) onPreviewEnd?.();
+    if (e.currentTarget.contains(e.relatedTarget)) return;
+    onPreviewEnd?.();
+    judging.end();
+  };
+  const leave = () => {
+    onPreviewEnd?.();
+    judging.end();
+  };
+  const hover = onPreview || contrast;
+  // The mouse reaching the hint past swatches it only crossed: the one it rested on is previewed and judged again.
+  const arrive = () => {
+    const back = judging.arrive();
+    if (!back) return;
+    if (back.id === null) onPreviewEnd?.();
+    else onPreview?.(back.id);
   };
 
   let index = 0;
@@ -124,9 +151,12 @@ export function ColourPicker({
       data-colour-picker=""
       className="flex flex-col gap-2.5"
       style={{ width: COLOUR_PICKER_WIDTH }}
-      onKeyDown={onColourKeys}
-      onPointerLeave={onPreviewEnd ? onMouseHover(onPreviewEnd) : undefined}
-      onBlur={onPreviewEnd ? previewEndOnLeave : undefined}
+      onKeyDown={(e) => {
+        judging.keyed();
+        onColourKeys(e);
+      }}
+      onPointerLeave={onPreviewEnd || contrast ? onMouseHover(leave) : undefined}
+      onBlur={onPreviewEnd || contrast ? previewEndOnLeave : undefined}
     >
       {all.map((group, g) => {
         const id = `${headingId}-${g}`;
@@ -151,9 +181,20 @@ export function ColourPicker({
                     picked={optionMatches(option, value)}
                     tabIndex={at === tabStop ? 0 : -1}
                     onClick={() => onPick(option.id)}
-                    onFocus={onPreview ? () => onPreview(option.id) : undefined}
+                    onFocus={
+                      hover
+                        ? () => {
+                            if (judging.focus(option.id)) onPreview?.(option.id);
+                          }
+                        : undefined
+                    }
                     onPointerEnter={
-                      onPreview ? onMouseHover(() => onPreview(option.id)) : undefined
+                      hover
+                        ? onMouseHover(() => {
+                            onPreview?.(option.id);
+                            judging.hover(option.id);
+                          })
+                        : undefined
                     }
                   />
                 );
@@ -177,6 +218,9 @@ export function ColourPicker({
           </div>
         );
       })}
+      {contrast ? (
+        <ContrastHint probes={contrast} judged={judging.judged} onUse={onPick} onArrive={arrive} />
+      ) : null}
       {editorOpen ? (
         <CustomColourEditor
           start={inForce ?? undefined}

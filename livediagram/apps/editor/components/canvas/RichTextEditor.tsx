@@ -312,6 +312,7 @@ export function RichTextEditor({
           listStyle={listStyleOfText(liveText)}
           onColor={(color) => onPatch({ color })}
           onSetAlign={(x, y) => onSetAlign?.(x, y)}
+          element={element}
         />
       </div>
     </div>

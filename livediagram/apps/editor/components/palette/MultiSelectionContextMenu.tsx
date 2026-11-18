@@ -250,6 +250,7 @@ export function MultiSelectionContextMenu({
                   arrowSrc={arrowSrc}
                   colourable={colourable}
                   textSrc={textSrc}
+                  textSel={colourSrcs}
                   fillSrc={fillSrc}
                   strokeSrc={strokeSrc}
                   borderableSel={borderableSel}
@@ -271,6 +272,7 @@ export function MultiSelectionContextMenu({
               arrowSrc={arrowSrc}
               colourable={colourable}
               textSrc={textSrc}
+              textSel={colourSrcs}
               fillSrc={fillSrc}
               strokeSrc={strokeSrc}
               borderableSel={borderableSel}
