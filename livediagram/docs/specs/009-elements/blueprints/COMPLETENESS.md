@@ -582,18 +582,18 @@
 
 ## live-status
 
-Parts 2 to 4 of Work Tracker 932 cover the unchecked categories as the room, the badge and the dialog land.
+Parts 3 and 4 of Work Tracker 932 cover the unchecked categories as the badge and the dialog land.
 
 - [x] Domain and naming
 - [x] Behaviour and state
-- [ ] Interfaces and contracts
-- [ ] Data and persistence
-- [ ] Errors and edge cases
-- [ ] Security and trust
-- [ ] Performance and limits
+- [x] Interfaces and contracts
+- [x] Data and persistence
+- [x] Errors and edge cases
+- [x] Security and trust
+- [x] Performance and limits
 - [ ] Presentation and UX
 - [ ] Accessibility
-- [ ] Observability
+- [x] Observability
 - [x] Testing
 - [x] Constants and configuration
 - [x] Defaults ledger

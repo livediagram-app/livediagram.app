@@ -1,9 +1,10 @@
 # Live service status
 
 Status: **in progress** (Work Tracker 932). Built so far: the binding's data (part 1 of 4): `statusUrl` on a shape,
-its validation and role rule, the shared address check, and the pure answer reader. Not built yet: the room's
-polling (part 2), the badge (part 3) and the Live Status dialog (part 4). Until part 4 nothing in the editor offers a
-binding, and until part 2 nothing is fetched.
+its validation and role rule, the shared address check, and the pure answer reader; and the room's polling (part 2),
+which checks bound URLs and sends `service-status` on a deployment with `LIVE_STATUS_ENABLED`. Not built yet: the
+badge (part 3) and the Live Status dialog (part 4). Until part 4 nothing in the editor offers a binding, and until
+part 3 nothing shows the states the room sends.
 
 ## What
 
@@ -74,12 +75,16 @@ headers) still works.
 - **Once per URL per round.** A round collects the distinct `statusUrl`s across every tab of the document, so five
   shapes bound to one URL are one check. A tab linked into two documents is checked by each document's room while
   each is open.
-- **About once a minute** (`STATUS_POLL_MS`, 60 s), driven by the room's alarm. A round also runs within a few
-  seconds of an Editor binding a URL the room hasn't checked yet, and on the first join after an idle spell, so a
-  badge never waits a whole minute to appear.
+- **About once a minute** (`STATUS_POLL_MS`, 60 s), driven by the room's alarm. A URL is checked only when its last
+  check is at least a minute old (or it has none), so extra rounds never check a URL twice in a minute. A round also
+  runs within a few seconds (`STATUS_BIND_DELAY_MS`, 3 s) of a save while someone is connected, which checks only a
+  URL the room hasn't checked yet, and on the first join after an idle spell, so a badge never waits a whole minute
+  to appear.
 - **At most 25 URLs a round** (`STATUS_SOURCES_MAX`), in the order the tabs and their elements hold them; any beyond
-  show Unknown ("Too many status links in this document"). All of a round's checks run at once, each bounded, so a
-  round takes at most one timeout (5 s).
+  show Unknown ("Too many status links in this document"). A round's checks run three at a time
+  (`STATUS_CHECKS_AT_ONCE`): a Worker holds six connections open at once and a check holds two while it resolves its
+  host, so no check's 5 s deadline runs while it waits in the platform's queue. A round of answering URLs takes well
+  under a second; one where every URL hangs takes at most nine timeouts, about 45 s.
 - **Each check** is a `GET` through the shared SSRF-safe fetch (`fetchPublicBytes`,
   `@liveworkspace/api-kit/public-fetch`): the host resolved (DNS over HTTPS, A and AAAA) right before the request and
   refused when any answer is private, loopback, link-local, carrier NAT, multicast, documentation or reserved;
@@ -91,6 +96,14 @@ headers) still works.
   of four states an internal address answered with. That residual is accepted, as webhooks accept theirs: the api
   Worker has no private network binding, Cloudflare refuses a Worker's subrequest to its own addresses, and every
   check re-resolves first. Revisit if the api ever gains a private network (a Workers VPC or Tunnel binding).
+
+- **What the room sends.** The `service-status` system op, `{ statuses: Record<url, ServiceStatus> }`, to a
+  session as it says hello and to every session after each round that checked a URL, since each check moves
+  `checkedAt` and the badge's stale rule reads it. A URL past the cap is sent as Unknown, reason
+  `too_many_sources`. A session that may see no bound URL is sent nothing.
+- **What it keeps.** The latest `ServiceStatus` per checked URL under the storage key `service-status`, at most 25
+  entries; a URL no shape is bound to any more is dropped at the next round, and the whole key when the last binding
+  goes. The states survive a hibernation wake, so a viewer joining a sleeping room sees the last check at once.
 
 ## Reading an answer
 
@@ -142,9 +155,10 @@ A state carries `checkedAt` (ms) and, for anything but Up, a `reason`: `http_sta
 ## Cost
 
 - **Idle documents: nothing.** No socket, no round, no alarm.
-- **An open document with bindings:** one alarm a minute and one subrequest per distinct URL (at most 25), each at
-  most 5 s and 64 KiB. Duration is billed while the round waits on its checks, so a room whose URLs all time out
-  costs about 5 s of Durable Object time a minute while open.
+- **An open document with bindings:** one alarm a minute and three subrequests per distinct URL (the A and AAAA
+  lookups, then the check; at most 25 URLs, so 75), each check at most 5 s and 64 KiB. Duration is billed while the
+  round waits on its checks, so a room whose 25 URLs all hang costs about 45 s of Durable Object time a minute while
+  open, and one whose URLs answer well under a second.
 - **An open document without bindings:** a scan of its tabs for `statusUrl` when a socket joins and when an element
   changes, linear in elements, no fetch and no alarm.
 
