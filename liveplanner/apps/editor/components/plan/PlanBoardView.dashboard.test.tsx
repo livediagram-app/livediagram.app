@@ -109,7 +109,7 @@ const forms: FormBoardValue = {
 const setUpShown = () => ({
   columnCogs: document.querySelectorAll('[data-column-cog]').length > 0,
   boardSettings: !!screen.queryByRole('button', { name: 'Board Settings' }),
-  addWidget: !!screen.queryByRole('button', { name: 'Add a widget' }),
+  addWidget: !!screen.queryByRole('button', { name: /^Add (a widget|Widgets)$/ }),
   formStrip: !!document.querySelector('[data-form-strip]'),
 });
 const WHOLE = { columnCogs: true, boardSettings: true, addWidget: true, formStrip: true };
@@ -147,7 +147,7 @@ describe('a board in a Dashboard slot', () => {
     expect(setUpShown()).toEqual(WHOLE);
     expect(document.querySelectorAll('[data-column-cog]').length).toBeGreaterThan(0);
     expect(screen.getByRole('button', { name: 'Board Settings' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Add a widget' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /^Add (a widget|Widgets)$/ })).toBeTruthy();
     expect(screen.getByRole('listitem', { name: /widget$/ })).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Slot Settings' })).toBeNull();
     fireEvent.doubleClick(screen.getByText('Sprint'));

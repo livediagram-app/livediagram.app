@@ -27,7 +27,10 @@ Planning happens on tabs of three **kinds**: a **Board tab** (one board, always 
   stays.
 - Its **kind's glyph** marks it where a tab is listed with an icon (a split view's chip, a Dashboard's links), rather
   than Plan's mark (a general tab's): a kanban for a Board tab, a grid for a Sheet tab, a layout of tiles for a
-  Dashboard. The footer tab itself shows its name alone ([Editor app](../007-editor/editor-app.md#how-a-tab-looks)).
+  Dashboard, a clipboard for a Form. The footer tab leads with it too, before its name, but only while the plan holds
+  tabs of more than one kind (a Board and a Form, say): there it tells them apart, and in a plan of one kind it would
+  only repeat itself, so the tab shows its name alone ([Editor app](../007-editor/editor-app.md#how-a-tab-looks)). The
+  open tab's glyph is full strength, the others' 70%.
 - A tab's kind is stored on the tab (`kind`) and syncs as tab metadata. A Board or Sheet tab whose element is deleted
   shows Start Planning again; choosing anew sets the kind anew.
 

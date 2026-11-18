@@ -16,6 +16,7 @@ import {
   jumpStep,
   stepTowards,
   waveFrame,
+  AVATAR_RUN_FACTOR,
   AVATAR_SPEED,
   AVATAR_WAVE_TAIL_MS,
   type AvatarFacing,
@@ -94,8 +95,10 @@ export function useAvatarWalkLoop({
       // Arrow-key steering (a direction) or a click-walk (a target); the
       // key listeners clear the target, so only one is ever live.
       const held = arrowDirection(heldRef.current);
-      const travel = AVATAR_SPEED * dt;
-      const step = held ? null : stepTowards(from, targetRef.current, dt);
+      // Shift held runs, by the arrows or to a click (avatar-mode.md "Running").
+      const speed = AVATAR_SPEED * (heldRef.current.run ? AVATAR_RUN_FACTOR : 1);
+      const travel = speed * dt;
+      const step = held ? null : stepTowards(from, targetRef.current, dt, speed);
       const wanted = held
         ? { x: from.x + held.x * travel, y: from.y + held.y * travel }
         : step!.pos;

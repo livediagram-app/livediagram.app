@@ -19,7 +19,10 @@ export function ModifierHintBanner({
   drag,
   hasElements,
   suppressed,
+  walking = false,
 }: {
+  // Walk mode: Shift runs (avatar-mode.md "Running"), nothing is selected there.
+  walking?: boolean;
   drag: DragState | null;
   // False on an empty canvas — nothing to multi-select.
   hasElements: boolean;
@@ -29,7 +32,7 @@ export function ModifierHintBanner({
 }) {
   const shiftHeld = useShiftHeld();
   if (suppressed || !shiftHeld) return null;
-  const message = shiftHintMessage(drag, hasElements);
+  const message = walking ? 'Running' : shiftHintMessage(drag, hasElements);
   if (!message) return null;
   return <Hint modifier="⇧ Shift">{message}</Hint>;
 }

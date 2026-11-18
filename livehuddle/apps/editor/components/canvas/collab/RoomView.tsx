@@ -7,6 +7,7 @@ import {
   roomFloorArea,
   roomFloorOf,
   ROOM_BACK_FACE,
+  ROOM_WALL,
   roomBackParts,
   roomSideParts,
   roomParts,
@@ -94,12 +95,14 @@ export function RoomView({
               stroke={stroke}
             />
           </g>
+          {/* Only from the back wall's line in: behind it is outside the room, so a turned camera never sees the
+            room's floor carry on past its wall (the owner, 2026-11-18). */}
           <rect
             data-room-back-floor=""
-            x={0}
-            y={0}
-            width={width}
-            height={ROOM_BACK_FACE}
+            x={ROOM_WALL / 2}
+            y={ROOM_BACK_FACE - ROOM_WALL / 2}
+            width={width - ROOM_WALL}
+            height={ROOM_WALL / 2}
             fill={floor}
           />
         </>

@@ -25,8 +25,9 @@ export type HistorySource = {
   // The rule that made the change, and the chain so far (its run's).
   rule?: string;
   chain?: number;
-  // The Form tab whose response made the card.
+  // The Form tab whose response made the card, and that response's answers as text by question.
   form?: string;
+  answers?: Record<string, string>;
   // An email that made the card (Email to Board): its sender and the board whose address took it.
   email?: { from: string; board: string };
   // A run a GitHub trigger started: its card writes are tagged 'automation_github' (drawn as GitHub's).
@@ -60,6 +61,7 @@ export async function eventsOfWrites(
     role: 'editor' as AutomationRole,
     ...(source.rule !== undefined ? { rule: source.rule, chain: source.chain ?? 0 } : {}),
     ...(source.form !== undefined ? { form: source.form } : {}),
+    ...(source.answers !== undefined ? { answers: source.answers } : {}),
     ...(source.email !== undefined ? { email: source.email } : {}),
   };
   for (const w of writes) {

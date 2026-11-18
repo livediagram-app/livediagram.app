@@ -55,6 +55,13 @@ export const EDITOR_SETTINGS = settingsStack(
       'Alignment Guides',
       'Snap guides while dragging.',
     ),
+    toggle(
+      'UI',
+      'RotateIn3DOn',
+      'RotateIn3DOff',
+      'Rotate in 3D View',
+      'Turn the camera in the 3D view.',
+    ),
   ],
 );
 

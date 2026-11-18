@@ -43,6 +43,7 @@ export const FOLDER_SHELF_CLASS =
 
 // The chip, the folder's header: the shelf's first cell, the tabs' own height and padding, its stacked folder glyph and
 // name in the folder's ink (AA on the shelf in both appearances), with the tabs' inset wash, in the folder's tint,
-// on hover. No box of its own: the shelf is its container.
+// on hover. No box of its own: the shelf is its container. Holding the open tab it can't be shut (`aria-disabled`), so
+// it drops the pointer and the wash.
 export const FOLDER_CHIP_CLASS =
-  'relative isolate flex h-10 shrink-0 cursor-pointer items-center gap-1.5 rounded-t-[10px] pr-2.5 pl-3 text-[13px] font-semibold whitespace-nowrap touch-target-y text-[color-mix(in_srgb,var(--tf)_72%,black)] dark:text-[var(--tfd)] after:pointer-events-none after:absolute after:inset-x-1 after:inset-y-1.5 after:-z-10 after:rounded-lg after:bg-[color-mix(in_srgb,var(--tf)_14%,transparent)] after:opacity-0 after:transition-opacity after:duration-150 hover:after:opacity-100 dark:after:bg-[color-mix(in_srgb,var(--tfd)_12%,transparent)] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-500 motion-reduce:after:transition-none';
+  'relative isolate flex h-10 shrink-0 cursor-pointer items-center gap-1.5 rounded-t-[10px] pr-2.5 pl-3 text-[13px] font-semibold whitespace-nowrap touch-target-y text-[color-mix(in_srgb,var(--tf)_72%,black)] dark:text-[var(--tfd)] after:pointer-events-none after:absolute after:inset-x-1 after:inset-y-1.5 after:-z-10 after:rounded-lg after:bg-[color-mix(in_srgb,var(--tf)_14%,transparent)] after:opacity-0 after:transition-opacity after:duration-150 hover:after:opacity-100 dark:after:bg-[color-mix(in_srgb,var(--tfd)_12%,transparent)] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-500 motion-reduce:after:transition-none aria-disabled:cursor-default aria-disabled:after:hidden';

@@ -3,13 +3,14 @@
 // A form link's page (docs/specs/030-forms/forms.md "Filling in a form"): the form, on its tab theme's backdrop and
 // canvas style, with nothing of the editor around it: no sign-in, no project, no Explorer. Loading, not found, closed
 // and the form itself are the page's four states; the form's own flow is FormFill.
-import { useEffect, useState, type CSSProperties } from 'react';
+import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { useBrowserTabTitle } from '@liveworkspace/workbench/hooks/editor/useBrowserTabTitle';
 import dynamic from 'next/dynamic';
 import type { PublicFormResponse } from '@liveplanner/api-schema';
-import { readPrefill } from '@liveplanner/forms';
+import { FORM_WIDTH_PX, readPrefill } from '@liveplanner/forms';
 import { formCodeFromPath } from '@/lib/form-path';
-import { loadPublicForm, sendFormResponse } from '@/lib/api/forms-public';
+import { formImageUrl, loadPublicForm, sendFormResponse } from '@/lib/api/forms-public';
+import { FormImageContext, type FormImageReader } from '../form-images';
 import { FormCoverBand } from '../FormCoverBand';
 import { formLookProps } from '../form-look';
 import { FORM_ACCENT, FormFill } from './FormFill';
@@ -68,6 +69,12 @@ export function FormRespondPage() {
         : page.data.heading
       : null;
   useBrowserTabTitle(heading ? `${heading} | liveplanner` : null);
+  // The form's pictures, through its own link (which serves only the pictures it shows).
+  const code = page.kind === 'ready' ? page.code : null;
+  const imageReader = useMemo<FormImageReader | null>(
+    () => (code ? { src: async (id) => formImageUrl(code, id) } : null),
+    [code],
+  );
 
   // The form's look (its tab's theme, finish and font) dresses the whole page, the backdrop included.
   const look = page.kind === 'ready' ? formLookProps(page.data.look) : null;
@@ -90,7 +97,17 @@ export function FormRespondPage() {
       {page.kind === 'ready' && page.data.look.canvas ? (
         <FormCanvasLayer canvas={page.data.look.canvas} />
       ) : null}
-      <div className="relative mx-auto w-full max-w-[640px]">
+      <div
+        className="relative mx-auto w-full"
+        style={{
+          maxWidth:
+            FORM_WIDTH_PX[
+              page.kind === 'ready' && page.data.state === 'open' && page.data.form.width
+                ? 'wide'
+                : 'narrow'
+            ],
+        }}
+      >
         {page.kind === 'loading' ? <Skeleton /> : null}
         {page.kind === 'not_found' ? (
           <Notice
@@ -122,45 +139,48 @@ export function FormRespondPage() {
           </div>
         ) : null}
         {page.kind === 'ready' && page.data.state === 'open' ? (
-          <FormFill
-            form={page.data.form}
-            draftKey={`liveplanner:form:${page.code}`}
-            initial={page.prefill}
-            footer={<FormFooter code={page.code} />}
-            submit={async (state): Promise<SubmitOutcome> => {
-              const r = await sendFormResponse(page.code, state);
-              if (r.kind === 'sent') return { kind: 'sent' };
-              if (r.kind === 'offline')
-                return {
-                  kind: 'failed',
-                  message: 'We couldn’t send your response. Check your connection and try again.',
-                };
-              switch (r.refusal.error) {
-                case 'invalid_answers':
-                  return { kind: 'invalid', errors: r.refusal.errors };
-                case 'form_closed':
-                case 'form_full':
-                case 'form_not_found':
-                  return { kind: 'closed' };
-                case 'form_busy':
-                  return {
-                    kind: 'failed',
-                    message: 'This form is busy. Try again in a few minutes.',
-                  };
-                case 'rate_limited':
-                  return {
-                    kind: 'failed',
-                    message: 'You’ve sent a lot of responses. Wait a minute and try again.',
-                  };
-                default:
-                  // Anything else the api answers (a fault on its side): said as a failed send, answers kept.
+          <FormImageContext.Provider value={imageReader}>
+            <FormFill
+              form={page.data.form}
+              draftKey={`liveplanner:form:${page.code}`}
+              initial={page.prefill}
+              footer={<FormFooter code={page.code} />}
+              submit={async (state): Promise<SubmitOutcome> => {
+                const r = await sendFormResponse(page.code, state);
+                if (r.kind === 'sent') return { kind: 'sent' };
+                if (r.kind === 'offline')
                   return {
                     kind: 'failed',
                     message: 'We couldn’t send your response. Check your connection and try again.',
                   };
-              }
-            }}
-          />
+                switch (r.refusal.error) {
+                  case 'invalid_answers':
+                    return { kind: 'invalid', errors: r.refusal.errors };
+                  case 'form_closed':
+                  case 'form_full':
+                  case 'form_not_found':
+                    return { kind: 'closed' };
+                  case 'form_busy':
+                    return {
+                      kind: 'failed',
+                      message: 'This form is busy. Try again in a few minutes.',
+                    };
+                  case 'rate_limited':
+                    return {
+                      kind: 'failed',
+                      message: 'You’ve sent a lot of responses. Wait a minute and try again.',
+                    };
+                  default:
+                    // Anything else the api answers (a fault on its side): said as a failed send, answers kept.
+                    return {
+                      kind: 'failed',
+                      message:
+                        'We couldn’t send your response. Check your connection and try again.',
+                    };
+                }
+              }}
+            />
+          </FormImageContext.Provider>
         ) : null}
       </div>
     </main>

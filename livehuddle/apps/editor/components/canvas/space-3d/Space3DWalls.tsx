@@ -27,8 +27,10 @@ import {
   type SpaceArea,
 } from '@/lib/space-3d/space-3d-cutaway';
 import { useStandingPieces } from './useStandingPieces';
+import { Space3DRoofs } from './Space3DRoofs';
+import { spaceRoofs } from '@/lib/space-3d/space-3d-roofs';
 import { useSpace3DTurn } from './useSpace3DView';
-import { seenFromBehind, turnQuarter } from '@/lib/space-3d/space-3d-turn';
+import { runsAway, seenFromBehind, turnQuarter } from '@/lib/space-3d/space-3d-turn';
 
 export function Space3DWalls({
   elements,
@@ -46,6 +48,7 @@ export function Space3DWalls({
   // The rooms you can stand in, whose walls facing you fade while you are inside (3d-view.md "Walls in front of you
   // are cut away").
   const rooms = useMemo(() => spaceRooms(elements), [elements]);
+  const roofs = useMemo(() => spaceRoofs(elements), [elements]);
   const viewport = useViewportStore();
   // The camera's quarter turns (3d-view.md "Turning the camera"): turned, the area reaches every way, and the walls in
   // front are the camera's way.
@@ -116,6 +119,7 @@ export function Space3DWalls({
           }}
         />
       ))}
+      {roofs.length > 0 ? <Space3DRoofs roofs={roofs} area={area} poseStore={poseStore} /> : null}
     </div>
   );
 }
@@ -130,6 +134,9 @@ function Wall({
   nodeRef: (node: HTMLElement | null) => void;
 }) {
   const { x, y, length, angle } = wallFrame(wall);
+  // A name on a wall running away from the camera turns out to face it (the owner, 2026-11-18: room signs over a door
+  // "rotated" when the camera turns).
+  const along = wall.label ? runsAway(wall, turn) : 0;
   return (
     <div
       ref={nodeRef}
@@ -146,19 +153,30 @@ function Wall({
       <div data-space-wall-face="" data-shut={wall.shut ? '' : undefined}>
         {wall.kind === 'window' ? <span data-space-window-pane="" /> : null}
         {wall.kind === 'doorway' ? (
-          <span data-space-door-frame="">
+          <span data-space-door-frame="" data-space-door-id={wall.doorId}>
             {wall.shut ? <span data-space-door-leaf="" /> : null}
           </span>
         ) : null}
         {wall.label ? (
           <span
             data-space-wall-label=""
-            data-from-behind={seenFromBehind(wall, turn) ? '' : undefined}
+            data-from-behind={!along && seenFromBehind(wall, turn) ? '' : undefined}
+            data-along={along || undefined}
           >
             {wall.label}
           </span>
         ) : null}
       </div>
+      {/* An open door's leaf stands out of the wall at its hinge, swung as the plan draws it (3d-view.md "Doorways").
+          Beside the face, not in it: a cut-away face's opacity would flatten it shut into the wall (the owner,
+          2026-11-18: walking up to a door "closes the door"). */}
+      {wall.kind === 'doorway' && wall.hinge ? (
+        <div data-space-wall-stand="">
+          <span data-space-door-open={wall.hinge} data-space-door-id={wall.doorId}>
+            <span data-space-door-leaf="" />
+          </span>
+        </div>
+      ) : null}
     </div>
   );
 }

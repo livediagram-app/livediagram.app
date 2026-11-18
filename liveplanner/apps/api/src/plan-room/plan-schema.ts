@@ -20,7 +20,7 @@ import {
 import { COMMUNITY_POST_TABLE } from '@liveworkspace/community/app';
 import { CARD_REPEATS_SCHEMA } from './card-repeats-schema';
 import { CARD_THREADS_SCHEMA } from './card-thread-schema';
-import { IMAGE_REFS_SCHEMA } from './image-refs';
+import { FORM_IMAGE_REFS_SCHEMA, IMAGE_REFS_SCHEMA } from './image-refs';
 import { IMAGE_RELEASES_SCHEMA } from './image-release';
 import { COPY_IMAGE_CLAIMS_SCHEMA } from './copy-image-claims';
 import { FLOW_COUNTS_SCHEMA } from './flow-counts-schema';
@@ -580,6 +580,10 @@ const V36 = addCalendarFeedTypes;
 // (copy-image-claims.ts; docs/specs/026-plan/items.md "Images in use").
 const V37 = COPY_IMAGE_CLAIMS_SCHEMA;
 
+// A Form tab's pictures (image-refs.ts FORM_IMAGE_REFS_SCHEMA; docs/specs/030-forms/forms.md "Cover"): a tab write
+// that names a picture queues the plan's media report, as a card write does.
+const V38 = FORM_IMAGE_REFS_SCHEMA;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -618,6 +622,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V35,
   V36,
   V37,
+  V38,
 ];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;

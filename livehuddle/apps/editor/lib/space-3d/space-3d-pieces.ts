@@ -72,9 +72,16 @@ export function builtIn3D(el: Element): el is Extract<Element, { type: 'shape' }
 
 /**
  * The value of a standing piece's attribute: `base` or `centre` for a piece that stands, `inside` for one whose
- * furniture stands inside its walls, `rows` for one built row by row, undefined for one that lies flat.
+ * furniture stands inside its walls, `rows` for one built row by row, `raised` for a Stage whose top rises, undefined
+ * for one that lies flat.
  */
-export function standAttr(el: Element): 'base' | 'centre' | 'inside' | 'rows' | undefined {
+export function standAttr(
+  el: Element,
+): 'base' | 'centre' | 'inside' | 'rows' | 'raised' | 'along' | undefined {
+  // A Stage's top rises on its sides (3d-view.md "A stage stands up").
+  if (el.type === 'shape' && el.shape === 'stage') return 'raised';
+  // A backdrop stands on its own line as a wall does, so a turned camera never swings it in front of its stage.
+  if (el.type === 'shape' && STANDS_ALONG.has(el.shape)) return 'along';
   if (standsInside3D(el)) return 'inside';
   if (builtIn3D(el)) return 'rows';
   if (!standsIn3D(el)) return undefined;
@@ -212,7 +219,9 @@ export function pieceQuarters(el: Element): number | null {
  * looks at (its back from behind) rather than turning with you.
  */
 export function seenFromCamera(el: Element): boolean {
-  if (el.type !== 'shape' || hangsOnWall(el.shape) || standsInside3D(el)) return false;
+  // A backdrop stands on its own line and is seen from wherever the camera is.
+  if (el.type !== 'shape' || hangsOnWall(el.shape) || STANDS_ALONG.has(el.shape)) return false;
+  if (standsInside3D(el)) return false;
   // A piece turned by quarter turns on the plan (a sofa facing into the room, lockers along a side wall) is seen as
   // the camera sees it too (the owner, 2026-11-18: they looked "like they are floating in the air on one side").
   if (pieceQuarters(el) === null) return false;
@@ -277,4 +286,104 @@ export function screenRoomOnWall(
     return Math.max(0, 2 * (Math.min(mid - lo, hi - mid) - SPACE_SCREEN_MARGIN));
   }
   return null;
+}
+
+/** Whether a facing shows a piece's side drawing: its back to the east or the west. */
+export function isSideFacing(facing: string): boolean {
+  return facing === 'e' || facing === 'w';
+}
+
+/**
+ * The kinds whose side drawing is an upright elevation of the piece's end (a chair, a jukebox, a treadmill), so it
+ * stands up as it is. Every other kind's side drawing is the flat plan's view from above, turned (a desk's top, a
+ * sofa's seat, a counter's worktop), which stood up lies the piece on its side (the owner, 2026-11-18: "the Printer,
+ * its lying on its side"); side on, those show the end of their front drawing instead (`endSlice`).
+ */
+export const SIDE_IS_ELEVATION: ReadonlySet<string> = new Set([
+  'chair',
+  'water-cooler',
+  'coffee-machine',
+  'bar-stool',
+  'jukebox',
+  'arcade-machine',
+  'fireplace',
+  'vending-machine',
+  'bean-bag',
+  'reading-nook',
+  'kettle',
+  'washbasin',
+  'podium',
+  'nap-pod',
+  'treadmill',
+  'weight-bench',
+  'phone-booth',
+  'suggestion-box',
+  'fridge',
+  'hammock',
+]);
+
+/**
+ * The end of a piece's front drawing the 3D view shows when the camera sees its side (3d-view.md "Turning the
+ * camera"), in the drawing's own units: a strip about as wide as the piece is deep, from its left end seen from the east and its right end from the west. A desk's end is its leg
+ * and the edge of its top, a sofa's its arm, a bookshelf's its side: upright, at the piece's height, on its foot.
+ */
+export function endSlice(
+  front: { width: number; height: number },
+  side: { width: number },
+  facing: 'e' | 'w',
+): { x: number; width: number } {
+  // A side drawing seen from above is the plan's box turned, its width the front's height rather than the piece's
+  // depth, so the end is no wider than half the front either way: a desk's leg and the edge of its top.
+  const width = Math.min(side.width, front.width / 2, front.height / 2);
+  return { x: facing === 'e' ? 0 : front.width - width, width };
+}
+
+/**
+ * How far a piece seen as the camera sees it moves its drawing towards the camera, in the drawing's own turned frame
+ * (canvas px): from standing about its footprint's middle to standing on the footprint's edge nearest the camera, so
+ * what you see covers the ground that blocks you (3d-view.md "Turning the camera").
+ */
+export function seenFootShift(
+  box: { width: number; height: number },
+  quarter: number,
+  standHeight: number,
+): number {
+  const depth = turnQuarter(quarter) % 2 === 1 ? box.width : box.height;
+  return (depth - standHeight) / 2;
+}
+
+/** The pieces that stand along their own line like a wall, never turning to the camera (3d-view.md "A stage stands up"). */
+const STANDS_ALONG: ReadonlySet<string> = new Set(['stage-curtains']);
+
+/** How high a Stage stands in the 3D view, in canvas px (3d-view.md "A stage stands up"; DEFAULTS.md D148). */
+export const SPACE_STAGE_LIFT = 20;
+
+/** How far up a character at `at` stands: on a Stage's top, its height; else on the floor. */
+export function standsRaised(
+  stages: readonly { x: number; y: number; width: number; height: number }[],
+  at: { x: number; y: number } | null | undefined,
+): number {
+  if (!at) return 0;
+  for (const s of stages)
+    if (at.x >= s.x && at.x <= s.x + s.width && at.y >= s.y && at.y <= s.y + s.height)
+      return SPACE_STAGE_LIFT;
+  return 0;
+}
+
+/**
+ * The flat pieces whose drawing is a picture to read rather than a floor covering: an Avatar Pad (drawn as a disc seen
+ * from the room's camera) and the board's controls. In the 3D view they turn with the camera about their middle, as
+ * words on the floor do, so a turned camera never shows a pad as a sideways ellipse or a control on its side (the
+ * owner, 2026-11-18: "nor avatar landing pads").
+ */
+const FACES_CAMERA: ReadonlySet<string> = new Set([
+  'avatar-pad',
+  'mode-button',
+  'focus-button',
+  'timer',
+  'stopwatch',
+]);
+
+export function facesCameraFlat(el: Element): boolean {
+  return el.type === 'shape' && FACES_CAMERA.has(el.shape);
 }

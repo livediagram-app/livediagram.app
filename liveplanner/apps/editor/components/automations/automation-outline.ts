@@ -5,6 +5,7 @@
 // Form tabs and the boards' saved filters. The sentence (ruleSentence) and every step panel read it; nothing here is
 // fetched. The tabs are read once, when the screen opens (PlanContext's planTabs reads them when called).
 
+import { promptOf, questionsOf, readForm } from '@liveplanner/forms';
 import { useMemo } from 'react';
 import {
   BUILT_IN_FIELD_NAMES,
@@ -40,7 +41,8 @@ export type AutomationOutline = RuleSentenceOutline & {
   // Where each column sits in the work (a board's done columns, its in-progress ones), for the templates.
   phases: ReadonlyMap<string, StatusPhase>;
   labels: readonly string[];
-  forms: readonly { id: string; name: string }[];
+  // Each Form tab, with its questions' words (a Form Response rule's Insert a Value offers their answers).
+  forms: readonly OutlineForm[];
   boards: readonly OutlineBoard[];
   items: ReadonlyMap<string, Item>;
 };
@@ -48,15 +50,31 @@ export type AutomationOutline = RuleSentenceOutline & {
 const NO_ITEMS: ReadonlyMap<string, Item> = new Map();
 const NO_PHASES: ReadonlyMap<string, StatusPhase> = new Map();
 
+export type OutlineForm = { id: string; name: string; questions?: readonly string[] };
+
+// A Form tab's questions' words, in order, each once.
+const questionNames = (tab: Tab): string[] => {
+  const form = readForm(tab.form);
+  if (!form) return [];
+  return [
+    ...new Set(
+      questionsOf(form)
+        .map((q) => promptOf(q).trim())
+        .filter(Boolean),
+    ),
+  ];
+};
+
 /** The Form tabs and the boards with their saved filters, from the plan's tabs. */
 export function tabsOutline(tabs: readonly Tab[]): {
-  forms: { id: string; name: string }[];
+  forms: OutlineForm[];
   boards: OutlineBoard[];
 } {
-  const forms: { id: string; name: string }[] = [];
+  const forms: OutlineForm[] = [];
   const boards: OutlineBoard[] = [];
   for (const tab of tabs) {
-    if (tabKindOf(tab) === 'form') forms.push({ id: tab.id, name: tab.name });
+    if (tabKindOf(tab) === 'form')
+      forms.push({ id: tab.id, name: tab.name, questions: questionNames(tab) });
     for (const el of tab.elements) {
       if (el.type !== 'shape' || el.shape !== 'plan-board') continue;
       const setup = normaliseBoardSetup(el.planBoard);

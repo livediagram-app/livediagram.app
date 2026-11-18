@@ -333,7 +333,8 @@ title, its state, and every comment **verbatim**, with author and date and wheth
   spaces).
 - **Commits:** small logical commits, each ending with the Co-Authored-By trailer. Never use em dashes in
   anything you write. Don't commit pnpm-lock.yaml unless the change needs it.
-- **One PR, at most two pushes** (the builder's, and one from the verifier if it fixes something). (On rework,
+- **One PR, at most three pushes** (the builder's, one from the verifier if it fixes something, and one for the
+  follow-ups the coordinator sends back). (On rework,
   push to the open PR instead, gated as above.) The PR is
   ready (never draft), against `main`. Once verified, keep `not-ready` only when the PR carries a D1 migration, a
   new secret, or new infrastructure (a new Worker, D1 database, KV namespace, R2 bucket, queue, Durable Object
@@ -361,9 +362,12 @@ title, its state, and every comment **verbatim**, with author and date and wheth
 - **If you can't deliver it** (a blocker turns up, or tests or the build won't pass after a real attempt):
   close any PR you opened, delete any branch you pushed, and report FAILED with what blocked you, what you tried, and what
   would unblock it.
-- **Simple follow-ups go in this PR.** A test gap, a doc or blueprint gap, a formatting fix, a small bug or
-  layout fix in the files you already touch: do it now. Only list as a follow-up what needs a decision the
-  owner must take, reaches a new area, is risky or is big.
+- **Follow-ups go in this PR** (owner, 2026-11-18: "why would the follow-ups not just be implemented at the
+  time"). A test gap, a doc, help or blueprint gap, a formatting fix, a small bug, a layout or polish fix, dead
+  code, a missing guard: build it now, including a problem that was already on main and that this work came
+  across in the area it touches ("not caused by this PR" is not a reason to leave it). Only list as a follow-up
+  what needs a decision the owner must take, reaches a different area, is high risk (a D1 migration, a new secret
+  or new infrastructure) or is Large. Nice-to-haves that aren't worth building now are dropped, not listed.
 - **Clean up:** before you report, stop every server you started (by the PIDs you recorded, as the hard rules
   say) and remove your build output. Your port block must be empty when you report.
 - **Report:** `DONE <PR url>`, `BUILT <PR url>` (with the Verify section) or `FAILED`, then an **Acceptance
@@ -411,6 +415,9 @@ $(git merge-base origin/main HEAD)`, sharing your `node_modules`) on a This Brow
 - **A small fix you make yourself:** fix it, rerun the checks for the files you touched (as the builder brief
   says), and push once, gated on the PR being OPEN. Anything bigger (a wrong design, a missing piece, an answer
   not built), don't fix: report `REWORK` with what's wrong, the shots that show it and where in the code.
+  Something you spot that the cards didn't ask for (a layout slip, a polish gap, an existing bug in the area)
+  is fixed the same way when it is small, or reported as a follow-up for the builder to build in this PR; it is
+  never left for a card.
   On `REWORK`, **keep your servers running** for the recheck and end the report with
   `Kept running: <pid> <port> <command>` for each. The coordinator resumes you once the builder has pushed: pull,
   recheck what failed and what the fix touched (not the whole list again), then finish as below.
@@ -469,29 +476,22 @@ as FAILED.
   this PR built, in one line: "Built in <PR url>: <how, short>". Then resolve every question thread the loop
   started on the card that is now settled. The owner hears through the Inbox that the card was built and where; a thread they
   must read but not answer never stays open (see "Open threads mean a reply is needed").
-- **Send simple follow-ups back first** (on DONE): any item on the Follow-ups list that the builder brief's
-  "Simple follow-ups go in this PR" covers goes back to the same agent with SendMessage, to build on the open
-  PR, before anything is filed.
-- **File the follow-ups** (on DONE and FAILED): the owner never reads the chat or this loop's report, so a
-  follow-up left there is lost. Sort every item on the agent's Follow-ups list, and anything else you noticed
-  that needs doing later, into **must-do** or **optional**, then file them all in one `change_items` batch.
-  Check the board first and skip one an existing card (Work Item or Idea) already covers.
-  - **Must-do** becomes a **new Work Item in Under Review**: a bug, a risk the PR leaves open, a missing test or
-    help article, a deferred part of the card's own Acceptance Criteria, anything that leaves the product wrong
-    or worse if nobody does it.
-    `{"op": "add", "type": "Work Item", "status": "Under Review", "title": "...", "fields": {"Type": "Feature" or
+- **Send follow-ups back first** (on BUILT and DONE): every item on the builder's or verifier's Follow-ups list
+  that the builder brief's "Follow-ups go in this PR" covers goes back to the builder with SendMessage, to build
+  on the open PR (gated on OPEN) before the card is ticked; a verifier's finds go back the same way. Filing a card
+  is the last resort, never the easy path.
+- **File only what can't go in the PR** (on DONE and FAILED): the owner never reads the chat or this loop's
+  report, so a follow-up left there is lost. What is left after the send-back (it needs the owner's decision,
+  reaches a different area, is high risk or Large, or the build FAILED) becomes a **new Work Item in Under
+  Review**, all in one `change_items` batch. Check the board first and skip one an existing card already covers.
+  `{"op": "add", "type": "Work Item", "status": "Under Review", "title": "...", "fields": {"Type": "Feature" or
 "Bug", "App": [...], "description": "<the Problem>", "Acceptance Criteria": [{"text": "...", "done": false}], "Risks":
-"- ...", "Risk": "Low", "Related Work Item": "#12"}}`. Plain Title Case titles. Every card fills all four of
-    description (the Problem), Acceptance Criteria (one checklist item per thing to do and per check that proves it), Risks and Risk; see "Risk levels" in the review-loop skill.
-  - **Optional** becomes a **new Idea in Under Review**, for the owner to accept or reject: a nice-to-have, a
-    polish pass, a way to take the feature further, anything the product is fine without. Follow the ideation-loop
-    skill's "Add the cards" fields, with Source `PR History`, and name the card and PR it came from in the
-    description as "card N" and the PR link (never "Work Tracker N", which links the PR to it):
-    `{"op": "add", "type": "Idea", "status": "Under Review", "title": "...", "fields": {"description": "<the
-problem, then: Came up building card 12 in <PR url>>", "f-solution": "...", "f-apps": [...], "f-kind": "Polish", "Consistency", "Rework",
-"Extend" or "New Feature", "f-source": "PR History", "f-effort": "Small", "priority": "low"}}`. Never set
-    Reviewed or Reason.
-  - Unsure which? A follow-up is optional unless you can say what goes wrong without it.
+"- ...", "Risk": "Low", "Related Work Item": "#12"}}`. Plain Title Case titles that say what goes wrong or what
+  changes, in words the owner would use. Every card fills all four of description (the Problem), Acceptance
+  Criteria (one checklist item per thing to do and per check that proves it), Risks and Risk; see "Risk levels" in
+  the review-loop skill.
+- **Never file an Idea** (owner, 2026-11-18). A nice-to-have that isn't worth building in the PR is dropped; it
+  isn't parked on the board. Ideas come only from the ideation loop.
 - **Never file an owner-only step as a Work Item** (no "Owner: ..." cards). It belongs on the PR's Owner
   checklist, with `not-ready` if it must happen before merging. If the agent put one on its Follow-ups list,
   add it to the PR's checklist yourself (`gh pr edit`) and set the label when needed.
@@ -530,7 +530,7 @@ If the MCP refuses a change, report it and carry on with the other cards.
 
 - On the board, only ever do these: move Work Items from Selected for Development to Under Review or In
   Progress, from In Progress to Implemented or Development Failure, start question threads on those cards, reply in the loop's own threads and resolve
-  them once their answers are built, and add follow-up Work Items and Ideas
+  them once their answers are built, and add follow-up Work Items (never Ideas)
   to Under Review (step 4). Never
   edit titles, descriptions or other fields, never add Question cards, never resolve, edit or
   delete a thread or comment a person wrote, and never touch cards in any other column, except the step-4 sweep's
@@ -557,4 +557,4 @@ End each pass with a short table, plus one line on anything that went wrong:
 After the table, list what needs the owner's attention first, one line each: PRs with a D1 migration, new secret or new infrastructure (`not-ready`), PRs
 waiting on Owner steps (with the steps),
 decisions an agent took that a person might want to change, stale In Progress cards with no PR, and the
-follow-up Work Items and Ideas this pass added (number and title).
+follow-up Work Items this pass added (number and title, each with why it couldn't go in its PR).

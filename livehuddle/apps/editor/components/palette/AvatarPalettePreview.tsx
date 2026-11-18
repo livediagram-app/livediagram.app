@@ -21,7 +21,8 @@ import { previewView, useAvatarPreview } from '@/lib/avatar-preview';
 // it names, and a caption saying what is shown. The card's surface and place are the host's (AvatarPalette); this is
 // its body. Hidden from assistive tech: every option already says what it is.
 
-// The figure's scale: the flyout's portrait (1.4) made large.
+// The figure's scale: the flyout's portrait made large, five CSS pixels to a sprite pixel so it stays crisp
+// (crispAvatarScale).
 const SCALE = 2;
 // The pause between two plays of a Behaviour, so the loop reads as the move done again rather than one long dance.
 const LOOP_REST_MS = 500;

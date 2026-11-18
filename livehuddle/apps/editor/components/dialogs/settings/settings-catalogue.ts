@@ -354,6 +354,20 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         event: { category: 'UI', on: 'AlignmentGuidesOn', off: 'AlignmentGuidesOff' },
       },
       {
+        // docs/specs/008-canvas/3d-view.md "Turning the camera": Turn Left and Turn Right in the 3D view. Off unless
+        // set.
+        kind: 'toggle',
+        key: 'rotateIn3D',
+        keywords: 'rotate turn camera 3d view walk round',
+        section: 'Canvas',
+        label: 'Rotate in 3D View',
+        description:
+          'Shows Turn Left and Turn Right in the 3D view, to walk the camera round the room.',
+        read: (p) => p.rotateIn3D === true,
+        write: (p, v) => ({ ...p, rotateIn3D: v }),
+        event: { category: 'UI', on: 'RotateIn3DOn', off: 'RotateIn3DOff' },
+      },
+      {
         kind: 'toggle',
         key: 'middleMousePan',
         keywords: 'scroll wheel drag pan navigate mouse',

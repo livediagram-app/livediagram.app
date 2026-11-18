@@ -34,8 +34,8 @@ describe('a character in the 3D view', () => {
   });
 
   // 3d-view.md "Pieces stand up": a sitter near a piece's front is nudged towards the camera, on its figure and chip.
-  it("carries a sitter's seat lift on its box and chip, and none while standing", () => {
-    const walker = (seated: boolean) =>
+  it("carries a seat's lift on its box and chip, sitting or standing at it, and none standing behind it", () => {
+    const walker = (seated: boolean, seatBehind = false) =>
       render(
         <AvatarWalker
           pos={{ x: 100, y: 200 }}
@@ -47,6 +47,7 @@ describe('a character in the 3D view', () => {
           name="Sam"
           seated={seated}
           seatLift={30}
+          seatBehind={seatBehind}
           chipShift={0}
         />,
       ).container;
@@ -62,9 +63,18 @@ describe('a character in the 3D view', () => {
         .style.getPropertyValue('--space-seat-lift'),
     ).toBe('30px');
     cleanup();
-    const standing = walker(false);
+    // On a treadmill's belt (a seat you stand at): lifted in front of it, never hidden behind it.
+    const onBelt = walker(false);
     expect(
-      standing
+      onBelt
+        .querySelector<HTMLElement>('[data-avatar]')!
+        .style.getPropertyValue('--space-seat-lift'),
+    ).toBe('30px');
+    cleanup();
+    // Behind a Podium: the podium's front hides their legs, so no lift.
+    const behind = walker(false, true);
+    expect(
+      behind
         .querySelector<HTMLElement>('[data-avatar]')!
         .style.getPropertyValue('--space-seat-lift'),
     ).toBe('');

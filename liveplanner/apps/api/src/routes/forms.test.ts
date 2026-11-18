@@ -382,6 +382,79 @@ describe('the public form (docs/specs/030-forms/forms.md "Filling in a form")', 
   });
 });
 
+describe('the form\'s pictures (docs/specs/030-forms/forms.md "Pictures")', () => {
+  const PNG = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 1, 2]);
+  let asked: string[];
+  beforeEach(() => {
+    asked = [];
+    Object.assign(sql.env, { MEDIA_URL: 'https://media.test/api/media', MEDIA_KEY: 'k' });
+    const index = globalThis.fetch;
+    vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = new URL(input instanceof Request ? input.url : String(input));
+      if (url.host !== 'media.test') return index(input, init);
+      asked.push(url.pathname);
+      return url.pathname.endsWith('/img_cover/bytes') || url.pathname.endsWith('/img_block/bytes')
+        ? new Response(PNG, { headers: { 'Content-Type': 'image/png' } })
+        : Response.json({ error: 'not_found' }, { status: 404 });
+    });
+    writeForm(
+      form({
+        cover: { imageId: 'img_cover' },
+        sections: [
+          {
+            ...form().sections[0]!,
+            questions: [
+              ...form().sections[0]!.questions,
+              { id: 'q-pic', type: 'content', prompt: '', block: 'image', imageId: 'img_block' },
+            ],
+          },
+        ],
+      }),
+    );
+    sql.sql.exec(`
+      INSERT INTO card_image_grants (plan_id, image_id, created_at) VALUES ('d1', 'img_cover', 1);
+      INSERT INTO card_image_grants (plan_id, image_id, created_at) VALUES ('d1', 'img_block', 1);
+      INSERT INTO card_image_grants (plan_id, image_id, created_at) VALUES ('d1', 'img_other', 1);
+    `);
+  });
+
+  const image = async (code: string, id: string) => {
+    const ctx = makeTestRouteContext('GET', `/api/forms/${code}/images/${id}`, {
+      env: sql.env,
+      owner: null,
+      headers: { 'CF-Connecting-IP': '203.0.113.9' },
+    });
+    return handleForms(ctx);
+  };
+
+  it('serves the cover and a picture block to anyone with the link, cached privately', async () => {
+    const code = await publish();
+    for (const id of ['img_cover', 'img_block']) {
+      const res = await image(code, id);
+      expect(res.status, id).toBe(200);
+      expect(res.headers.get('Content-Type')).toBe('image/png');
+      expect(res.headers.get('Cache-Control')).toBe('private, max-age=3600');
+      expect(res.headers.get('X-Content-Type-Options')).toBe('nosniff');
+      expect(new Uint8Array(await res.arrayBuffer())).toEqual(PNG);
+    }
+  });
+
+  it('serves nothing else: a picture the form does not show, one the plan never took, a bad id or link', async () => {
+    const code = await publish();
+    // The plan holds it, but the form does not show it.
+    expect((await image(code, 'img_other')).status).toBe(404);
+    // The form shows it, but the plan holds no grant.
+    sql.sql.exec(`DELETE FROM card_image_grants WHERE image_id = 'img_block'`);
+    expect((await image(code, 'img_block')).status).toBe(404);
+    expect((await image(code, 'bad%20id')).status).toBe(404);
+    expect((await image(generateFormCode(), 'img_cover')).status).toBe(404);
+    // The service lost the bytes.
+    writeForm(form({ cover: { imageId: 'img_other' } }));
+    expect((await image(code, 'img_other')).status).toBe(404);
+    expect(asked.some((p) => p.endsWith('/img_other/bytes'))).toBe(true);
+  });
+});
+
 describe('responses (docs/specs/030-forms/forms.md "What a response makes")', () => {
   it('makes one card in the destination, relays it and numbers it', async () => {
     const code = await publish();

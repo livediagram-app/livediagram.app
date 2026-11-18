@@ -139,6 +139,8 @@ function fixedCell(c: SheetFixedColumn, at: number): CellInput {
 }
 
 function cellFor(q: FormQuestion, value: AnswerValue): CellInput {
+  // A duration reads as people write it ("2h 30m"), not its minutes.
+  if (q.type === 'duration') return { s: answerText(q, value) };
   if (typeof value === 'number') return { n: value };
   if (typeof value === 'boolean') return { b: value };
   return { s: answerText(q, value) };

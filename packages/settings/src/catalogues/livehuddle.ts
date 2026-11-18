@@ -118,6 +118,24 @@ export const CATALOGUE: AppCatalogue = {
             off: 'AlignmentGuidesOff',
           },
         },
+        {
+          kind: 'toggle',
+          id: 'rotateIn3D',
+          label: 'Rotate in 3D View',
+          description:
+            'Shows Turn Left and Turn Right in the 3D view, to walk the camera round the room.',
+          keywords: 'rotate turn camera 3d view walk round',
+          section: 'Canvas',
+          key: 'rotateIn3D',
+          on: true,
+          off: false,
+          fallback: false,
+          event: {
+            category: 'UI',
+            on: 'RotateIn3DOn',
+            off: 'RotateIn3DOff',
+          },
+        },
       ],
     },
     {

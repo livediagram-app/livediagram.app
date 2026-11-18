@@ -51,6 +51,31 @@ INSERT OR IGNORE INTO outbox (plan_id, kind, key)
   SELECT plan_id, 'images', '' FROM card_image_grants LIMIT 1;
 `;
 
+// A Form tab's pictures (docs/specs/030-forms/forms.md "Cover", "Content blocks"): its cover's and each picture
+// block's `imageId`, in the tab's stored JSON. Its own schema step (plan-schema.ts V38): a tab whose data names a
+// picture, before or after a write, queues the plan's `images` key, as a card write does, and so does a tab leaving
+// the plan. `instr` is a prefilter on the JSON text; the drain reads the ids themselves.
+export const FORM_IMAGE_REFS_SCHEMA = `
+CREATE TRIGGER IF NOT EXISTS outbox_images_tab_update AFTER UPDATE OF data ON tabs
+WHEN instr(NEW.data, '"imageId"') > 0 OR instr(OLD.data, '"imageId"') > 0
+BEGIN
+  DELETE FROM outbox WHERE (plan_id, kind, key) IN (SELECT plan_id, 'images', '' FROM plan_tabs WHERE tab_id = NEW.id);
+  INSERT INTO outbox (plan_id, kind, key) SELECT plan_id, 'images', '' FROM plan_tabs WHERE tab_id = NEW.id;
+END;
+CREATE TRIGGER IF NOT EXISTS outbox_images_tab_insert AFTER INSERT ON plan_tabs
+WHEN EXISTS (SELECT 1 FROM tabs WHERE id = NEW.tab_id AND instr(data, '"imageId"') > 0)
+BEGIN
+  DELETE FROM outbox WHERE plan_id = NEW.plan_id AND kind = 'images' AND key = '';
+  INSERT INTO outbox (plan_id, kind, key) VALUES (NEW.plan_id, 'images', '');
+END;
+CREATE TRIGGER IF NOT EXISTS outbox_images_tab_delete AFTER DELETE ON plan_tabs
+WHEN EXISTS (SELECT 1 FROM card_image_grants WHERE plan_id = OLD.plan_id)
+BEGIN
+  DELETE FROM outbox WHERE plan_id = OLD.plan_id AND kind = 'images' AND key = '';
+  INSERT INTO outbox (plan_id, kind, key) VALUES (OLD.plan_id, 'images', '');
+END;
+`;
+
 // The query: ?1 the plan; `scoped` keeps it to the cards ?2 names (a JSON list of item ids), as a tab-scoped copy
 // takes them (image-grants.ts copiedImageGrants).
 export function placedImagesSql(scoped: boolean): string {
@@ -75,8 +100,19 @@ export function placedImagesSql(scoped: boolean): string {
           AND f.type = 'array'
           AND v.type = 'text'
           AND v.value IN (SELECT image_id FROM card_image_grants WHERE plan_id = ?1)
+       ${scoped ? '' : FORM_IMAGES_UNION}
      ) WHERE typeof(id) = 'text' ORDER BY id`;
 }
+
+// Every Form tab's pictures the plan holds a grant for (its cover's and picture blocks' `imageId`): a scoped copy
+// takes cards only, so the union is the whole plan's.
+const FORM_IMAGES_UNION = `UNION
+       SELECT j.value AS id
+         FROM plan_tabs, tabs, json_tree(tabs.data) AS j
+        WHERE plan_tabs.plan_id = ?1 AND tabs.id = plan_tabs.tab_id
+          AND instr(tabs.data, '"imageId"') > 0
+          AND j.key = 'imageId' AND j.type = 'text'
+          AND j.value IN (SELECT image_id FROM card_image_grants WHERE plan_id = ?1)`;
 
 // Every card of the plan: what the media report reads.
 export const PLACED_IMAGES_SQL = placedImagesSql(false);

@@ -66,6 +66,7 @@ export const StageView = memo(function StageView({
       {live ? (
         // The pill shrinks (its names truncate) before the badge beside it does; the pair may run past a narrow stage.
         <div
+          data-space-reads=""
           className={`pointer-events-none absolute top-full left-1/2 mt-1.5 flex -translate-x-1/2 items-center gap-1.5 whitespace-nowrap ${
             heardByAll ? 'max-w-[max(100%,26rem)]' : 'max-w-[max(100%,14rem)]'
           }`}

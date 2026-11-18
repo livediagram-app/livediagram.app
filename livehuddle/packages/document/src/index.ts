@@ -333,6 +333,7 @@ export * from './piece-material';
 export * from './furniture-facing';
 export * from './office';
 export * from './room-builder';
+export * from './wall-mounted';
 export * from './room-snap';
 export * from './room-outline-field';
 export * from './office-garden';

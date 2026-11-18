@@ -11,6 +11,10 @@ import { API_BASE } from '@liveworkspace/workbench/lib/api/base';
 const formUrl = (code: string, door = '') =>
   `${API_BASE}/forms/${encodeURIComponent(code)}${door ? `/${door}` : ''}`;
 
+/** One of the form's pictures (its cover's or a picture block's), as the form's link serves it to anyone with it. */
+export const formImageUrl = (code: string, imageId: string) =>
+  formUrl(code, `images/${encodeURIComponent(imageId)}`);
+
 type FormLoad =
   { kind: 'ok'; data: PublicFormResponse } | { kind: 'not_found' } | { kind: 'error' };
 

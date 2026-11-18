@@ -2,19 +2,22 @@
 
 // A question's own settings, inside its selected card (docs/specs/030-forms/forms.md "Question types"): a Number's
 // bounds and Whole Numbers Only, a Multiple Choice's fewest and most picks, a Single Choice's
-// Show as Dropdown, a Rating's scale, style and end labels. Each change one undo step.
+// Show as Dropdown, a Rating's scale, style and end labels, and a Checkbox's words beside its box (a Default Answer is
+// set on the answer area itself: DefaultAnswer.tsx). Each change one undo step.
 import { withMax, withMin } from './question-range';
 import {
   RATING_SCALE_DEFAULT,
   RATING_SCALE_MAX,
   RATING_SCALE_MIN,
   SCALE_LABEL_MAX,
+  CHECK_LABEL_MAX,
   type FormQuestion,
 } from '@liveplanner/forms';
 import { Select, TextInput, SwitchRow } from '@liveplanner/ui';
 import { SettingsField } from '@/components/plan/settings-panel-parts';
 import { updateQuestion } from '@liveplanner/forms';
 import { DraftText } from './DraftText';
+import { checkLabelOf } from '../QuestionControl';
 import { useFormBuilder } from './form-builder-context';
 
 const FIELD_BOX =
@@ -104,6 +107,19 @@ export function QuestionSettings({ question: q }: { question: FormQuestion }) {
             onChange={(max) => set(withMax(q, max && max <= picks ? max : undefined))}
           />
         </div>
+      ) : null}
+      {q.type === 'checkbox' ? (
+        <SettingsField label="Words Beside the Box">
+          <div className={FIELD_BOX}>
+            <DraftText
+              value={q.checkLabel ?? ''}
+              maxLength={CHECK_LABEL_MAX}
+              label="Words beside the box"
+              placeholder={checkLabelOf({ required: q.required })}
+              onSave={(text) => set({ checkLabel: text.trim() || undefined })}
+            />
+          </div>
+        </SettingsField>
       ) : null}
       {q.type === 'daterange' ? (
         <SwitchRow
@@ -195,4 +211,4 @@ export function QuestionSettings({ question: q }: { question: FormQuestion }) {
 
 // Whether a question has settings beyond its card's own controls (Required sits in the card's footer).
 export const hasQuestionSettings = (q: FormQuestion): boolean =>
-  ['number', 'multi', 'single', 'rating', 'daterange'].includes(q.type);
+  ['number', 'multi', 'single', 'rating', 'daterange', 'checkbox'].includes(q.type);
