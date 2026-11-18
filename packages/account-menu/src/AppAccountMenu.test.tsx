@@ -89,7 +89,7 @@ describe('AppAccountMenu', () => {
     fireEvent.click(trigger);
     const items = screen.getAllByRole('menuitem');
     expect(items.map((i) => i.textContent)).toEqual([
-      'Sign in',
+      'Sign In',
       'Create accountFree, and one account for every app',
     ]);
     expect(items[0]!.getAttribute('href')).toBe('/api/auth/sign-in?return_to=%2Fpricing%3Fx%3D1');
@@ -509,7 +509,7 @@ describe('DeferredAccountMenu (a marketing page’s Guest button)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Guest, account menu' }));
     await act(async () => arrive());
     expect(load).toHaveBeenCalledOnce();
-    expect(screen.getAllByRole('menuitem')[0]!.textContent).toBe('Sign in');
+    expect(screen.getAllByRole('menuitem')[0]!.textContent).toBe('Sign In');
   });
 
   // Work Tracker 734: the code landing mid-press swapped the button under the pointer, and the click opened nothing.
@@ -535,7 +535,7 @@ describe('DeferredAccountMenu (a marketing page’s Guest button)', () => {
     expect(standIn()).toBe(pressedOn);
     fireEvent.pointerUp(pressedOn, { pointerType: 'mouse' });
     fireEvent.click(pressedOn);
-    expect(screen.getAllByRole('menuitem')[0]!.textContent).toBe('Sign in');
+    expect(screen.getAllByRole('menuitem')[0]!.textContent).toBe('Sign In');
   });
 
   it('waits for a lifted touch’s click, then opens', async () => {
@@ -552,7 +552,7 @@ describe('DeferredAccountMenu (a marketing page’s Guest button)', () => {
       expect(standIn()).toBe(pressedOn);
       fireEvent.click(pressedOn);
       act(() => vi.runAllTimers());
-      expect(screen.getAllByRole('menuitem')[0]!.textContent).toBe('Sign in');
+      expect(screen.getAllByRole('menuitem')[0]!.textContent).toBe('Sign In');
     } finally {
       vi.useRealTimers();
     }
@@ -599,7 +599,7 @@ describe('DeferredAccountMenu (a marketing page’s Guest button)', () => {
       </StrictMode>,
     );
     expect(standIn().getAttribute('aria-expanded')).toBe('true');
-    expect(screen.getAllByRole('menuitem')[0]!.textContent).toBe('Sign in');
+    expect(screen.getAllByRole('menuitem')[0]!.textContent).toBe('Sign In');
   });
 
   it('asks again on the next approach when the code could not be fetched', async () => {

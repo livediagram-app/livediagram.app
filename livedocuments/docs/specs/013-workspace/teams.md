@@ -11,7 +11,7 @@ One team across every app means someone sets a team up once, in the Explorer, an
 Teams are keyed by account user ids, so the whole feature requires a verified signed-in session:
 
 - Every `/api/teams*` endpoint requires a verified account access token or API token. A guest gets `401 sign_in_required`. This does NOT violate [Auth + guest access](../014-identity/auth-and-guest-access.md)'s no-sign-in-wall rule: the canvas and everything else stays guest-accessible; only the Teams surface asks for an account.
-- In the Explorer sidebar, guests see the sign-in nudge ("Sign in to access Teams") at the end of the Spaces group instead of team rows ([Explorer structure](explorer-structure.md)). Deployments without sign-in ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)) show neither.
+- In the Explorer sidebar, guests see the sign-in nudge ("Sign In to Use Teams") at the end of the Spaces group instead of team rows ([Explorer structure](explorer-structure.md)). Deployments without sign-in ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)) show neither.
 
 ## Roles
 

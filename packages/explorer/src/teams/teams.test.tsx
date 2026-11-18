@@ -468,7 +468,7 @@ describe('New Team', () => {
 
   it('is not offered to a guest, nor without a TeamsHost', async () => {
     page({ kind: 'all' }, fakeHost(), { signedIn: false, signInHref: '/sign-in' });
-    const nudge = await screen.findByRole('link', { name: /Sign in to access Teams/ });
+    const nudge = await screen.findByRole('link', { name: /Sign In to Use Teams/ });
     expect(screen.queryByRole('button', { name: 'New Team' })).toBeNull();
     // Outside the Spaces tree, which holds only treeitems (axe aria-required-children).
     expect(nudge.closest('[role="tree"]')).toBeNull();
