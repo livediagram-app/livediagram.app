@@ -38,7 +38,9 @@ min(chroma * SOFT_CHROMA_SCALE, SOFT_MAX_CHROMA), hue)`; grey at chroma 0.
 - `quick-swatches.ts`: `colourWords(hexes)`: hue words, a repeat "Light"/"Deep", a third numbered.
 - `text-contrast.ts` binds the shared judge (below) to this model: `textGroundOf(el, tab, surface)` is
   `textGroundIn` over `layerBands(tab.elements, tab.layers)` (hidden layers out), `below` the box's page's
-  `pageGroundUnder` tones (`on: 'page'`); `null` off every page or on a picture page.
+  `pageGroundUnder` tones (`on: 'page'`); `null` off every page or on a picture page. Built by the shared `pagedTextGroundFor`
+  (`../packages/element-model/src/text-ground-pages.ts`) from this model's `layerBands`, `pagesOf`, `layOutPages`,
+  `rowPageAt` and `pageGroundUnder`.
 
 ### Shared (`@liveworkspace/element-model`, `@liveworkspace/workbench`)
 

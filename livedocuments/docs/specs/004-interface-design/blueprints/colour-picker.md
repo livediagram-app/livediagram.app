@@ -197,7 +197,9 @@ for every product.
 
 - `packages/document/src/text-contrast.ts`: `textGroundOf(el, tab, surface)` is `textGroundIn` over
   `layerBands(tab.elements, tab.layers)` (hidden layers out), `below` the box's page's `pageGroundUnder` tones
-  (`on: 'page'`); `null` off every page or on a picture page.
+  (`on: 'page'`); `null` off every page or on a picture page. Built by the shared `pagedTextGroundFor`
+  (`../packages/element-model/src/text-ground-pages.ts`) from this model's `layerBands`, `pagesOf`, `layOutPages`,
+  `rowPageAt` and `pageGroundUnder`.
 
 ### Shared (`@liveworkspace/element-model`, `@liveworkspace/workbench`)
 
