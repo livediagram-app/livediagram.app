@@ -62,17 +62,23 @@ export function PanelField({
 }: {
   label: string;
   hint?: ReactNode;
-  // Handed the id its control should carry, so the label names it.
-  children: (id: string) => ReactNode;
+  // Handed the id its control should carry, so the label names it, and the hint's id (when there is a hint) for the
+  // control's `aria-describedby` (a TextInput's `hintId`), so a screen reader hears it too.
+  children: (id: string, hintId: string | undefined) => ReactNode;
 }) {
   const id = useId();
+  const hintId = useId();
   return (
     <div className="flex flex-col gap-1.5">
       <label htmlFor={id} className="text-[12px] font-semibold text-slate-700 dark:text-slate-200">
         {label}
       </label>
-      {children(id)}
-      {hint ? <p className="text-[12px] text-slate-500 dark:text-slate-400">{hint}</p> : null}
+      {children(id, hint ? hintId : undefined)}
+      {hint ? (
+        <p id={hintId} className="text-[12px] text-slate-500 dark:text-slate-400">
+          {hint}
+        </p>
+      ) : null}
     </div>
   );
 }
