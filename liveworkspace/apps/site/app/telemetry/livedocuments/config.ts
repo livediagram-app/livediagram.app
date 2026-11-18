@@ -17,6 +17,7 @@ import {
 import { noun, type TelemetryAppConfig } from '../_shared/app';
 import { createCtaFunnel } from '../_shared/cta-funnel';
 import { SNAPSHOTS, WALKTHROUGHS } from '../_shared/snapshot-walkthrough-metrics';
+import { LIBRARY } from '../_shared/library-metrics';
 import { createEventExplanation } from '../_shared/event-explanation';
 import type { RetiredCategory } from '../_shared/retired-explorer';
 import { cliCommandSentence } from './cli-commands';
@@ -154,6 +155,7 @@ const CATEGORY_COLORS: Record<Exclude<TelemetryCategory, RetiredCategory>, strin
   Snapshot: '#a21caf',
   // Deep rose, a recording light: apart from Error's red and MCP's pink.
   Walkthrough: '#be123c',
+  Library: '#0f766e',
 };
 
 const PAGE_VIEW_APPS: PageViewApp[] = ['Marketing', 'Live', 'Help', 'Dashboard', 'Community'];
@@ -260,6 +262,7 @@ export const LIVEDOCUMENTS: TelemetryAppConfig = {
           CONNECTED_TABS,
           SNAPSHOTS,
           WALKTHROUGHS,
+          LIBRARY,
           EDITOR_SEARCH,
           FIND_AND_REPLACE,
           EDITOR_CHROME,

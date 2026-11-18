@@ -11,25 +11,36 @@ import {
   type Tab,
 } from '@livediagram/document';
 import { resolveIconExportArt, resolveStickerArt } from '@liveworkspace/icons/resolve';
+import { accountsTeamReader, createTeamAccess } from '@liveworkspace/index-app';
 import {
   handleLegacyShapeLibrariesDoor,
   handleLibraryDoor,
   libraryActorOf,
   libraryKitOf,
 } from '@liveworkspace/media';
+import { accountCredentials } from '../auth/accounts';
 import { mediaClient, mediaOwner } from '../media';
 import { personStore } from '../person-client';
 import { json, missingAuth } from '../responses';
 import type { Env } from '../types';
 import type { RouteContext } from './context';
 
-// Elements drawn as a library tile: the canvas's own DOM-free renderer, on a transparent ground.
-export function drawLibraryElements(elements: readonly unknown[], name = ''): string {
+// The caller's teams as accounts has them now, remembered for a moment (@liveworkspace/index-app createTeamAccess).
+const teamAccess = createTeamAccess();
+
+// Elements drawn as a library tile: the canvas's own DOM-free renderer, on a transparent ground; a picture from the
+// small copy the save sent (`imageHref`), else as its name.
+export function drawLibraryElements(
+  elements: readonly unknown[],
+  name = '',
+  imageHref?: (imageId: string) => string | undefined,
+): string {
   return renderElementsToSvg({ id: 'library-item', name, elements } as unknown as Tab, {
     padding: 4,
     background: 'transparent',
     resolveIconArt: resolveIconExportArt,
     resolveStickerArt,
+    resolveImageHref: imageHref,
   });
 }
 
@@ -37,7 +48,7 @@ export const libraryKit = libraryKitOf({
   kinds: ELEMENT_TYPES,
   migrate: migrateIncomingElements,
   isValid: isValidElement,
-  render: (elements) => drawLibraryElements(elements),
+  render: (elements, imageHref) => drawLibraryElements(elements, '', imageHref),
 });
 
 export async function handleLibrary(ctx: RouteContext): Promise<Response> {
@@ -57,6 +68,17 @@ export async function handleLibrary(ctx: RouteContext): Promise<Response> {
     ),
     actor,
     library: mediaClient(ctx.env)?.library ?? null,
+    // The caller's teams as they are now: the token's claim, and a team joined since it was minted (libraries.md "Who
+    // may do what"), read from accounts, never from the request.
+    currentActor: async (claimed) =>
+      libraryActorOf(
+        claimed.owner,
+        await teamAccess.currentTeams(
+          accountsTeamReader(accountCredentials(ctx.env)),
+          owner,
+          ctx.teams ?? null,
+        ),
+      ),
     kit: libraryKit,
     readBody: async () => {
       const body: unknown = await ctx.request.json().catch(() => null);

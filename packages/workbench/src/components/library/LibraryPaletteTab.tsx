@@ -2,7 +2,7 @@
 
 // The palette's Library (liveworkspace/docs/specs/006-media/libraries.md): Personal, then each of the person's teams,
 // each holding its folders and their items, with a search over them all. A click places a copy at the middle of the
-// view. Its owner tidies Personal and a team's admins tidy the team's: rename an item or a folder in place, or delete
+// view; a drag places it where it is dropped (useLibraryDrop). Its owner tidies Personal and a team's admins tidy the team's: rename an item or a folder in place, or delete
 // an item. Items using kinds this app can't draw were left out by the door, and a line says how many.
 
 import { useEffect, useState, type ReactNode } from 'react';
@@ -11,6 +11,7 @@ import type { LibraryItemSummary } from '@liveworkspace/media';
 import { ConfirmDialog } from '../dialogs/ConfirmDialog';
 import { SearchInput } from '../primitives/SearchInput';
 import type { LibraryInsertItem } from '../../hooks/canvas/useLibraryItemInsert';
+import { libraryItemDrag } from '../../lib/library/library-dnd';
 import { canTidy, libraryGroups, type LibraryGroup } from '../../lib/library/library-groups';
 import { useLibrary } from './LibraryProvider';
 import {
@@ -110,7 +111,7 @@ export function LibraryPaletteTab({
   onInsert: (item: LibraryInsertItem<unknown>) => void;
   // The editor's own drawing of an item with no stored preview.
   thumbnailFor?: (item: LibraryItemSummary) => ReactNode;
-  // A tile's drag payload, where the editor's canvas takes one.
+  // A tile's own drag payload (livediagram's shape library items), else the Library's (libraryItemDrag).
   dragFor?: (item: LibraryItemSummary) => LibraryTileDrag | null;
 }) {
   const library = useLibrary();
@@ -198,7 +199,7 @@ export function LibraryPaletteTab({
                             groupLabel={group.label}
                             tidy={canTidy(group, item, state.legacyWritable)}
                             thumbnail={thumbnailFor?.(item)}
-                            drag={dragFor?.(item)}
+                            drag={dragFor?.(item) ?? libraryItemDrag(item.id)}
                             onInsert={() => void place(item)}
                             onRename={(title) => void library.rename(item, title)}
                             onDelete={() => setDeleting({ item, group })}

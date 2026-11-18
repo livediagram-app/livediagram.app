@@ -13,6 +13,15 @@ import {
 import { useShapeLibraries } from '@/components/primitives/ShapeLibraryProvider';
 import { libraryApiOver } from '@liveworkspace/workbench/lib/library/library-api';
 import { API_BASE, apiFetch, apiHeaders } from '@/lib/api/core';
+import { apiFetchImageBlobUrl, releaseImageBlobUrl } from '@/lib/api/images';
+import { track } from '@/lib/telemetry';
+import { useOptionalEditorContext } from '@/app/document/[id]/EditorContext';
+
+// Saving to the Library and placing from it, counted by whose library (libraries.md "Telemetry").
+const librarySaved = (scope: 'personal' | 'team') =>
+  track('Library', 'Created', scope === 'team' ? 'Team' : 'Personal');
+const libraryPlaced = (scope: 'personal' | 'team') =>
+  track('Library', 'Added', scope === 'team' ? 'Team' : 'Personal');
 
 // This app, as the media service names it: its shape libraries' ids in the Library carry it.
 const MEDIA_APP_NAME = 'livediagram.app' as const;
@@ -34,6 +43,21 @@ export function EditorLibraryProvider({
           })
         : null,
     [ownerId],
+  );
+  // Where the canvas shows a picture from, so a save sends its small copies for the tile (libraries.md "Pictures").
+  const editor = useOptionalEditorContext();
+  const documentId = editor?.documentId ?? undefined;
+  const shareCode = editor?.sessionShareCode ?? null;
+  const pictures = useMemo(
+    () =>
+      ownerId
+        ? {
+            url: (imageId: string) =>
+              apiFetchImageBlobUrl(ownerId, imageId, { documentId, shareCode }),
+            release: releaseImageBlobUrl,
+          }
+        : undefined,
+    [ownerId, documentId, shareCode],
   );
   const { libraries } = useShapeLibraries();
   const localItems = useMemo<LocalLibraryItem[]>(
@@ -61,7 +85,13 @@ export function EditorLibraryProvider({
     [libraries],
   );
   return (
-    <LibraryProvider api={api} localItems={localItems}>
+    <LibraryProvider
+      api={api}
+      localItems={localItems}
+      pictures={pictures}
+      onSaved={librarySaved}
+      onPlaced={libraryPlaced}
+    >
       {children}
     </LibraryProvider>
   );

@@ -146,6 +146,7 @@ function galleryHost(app: AppName, path: string, token: Token, origin: string): 
       const body = (await res.json()) as {
         usage: Record<string, WireUse[]>;
         unchecked?: string[];
+        library?: string[];
         unknown?: boolean;
       };
       if (body.unknown) return { uses: {}, unchecked: 'all' };
@@ -153,7 +154,11 @@ function galleryHost(app: AppName, path: string, token: Token, origin: string): 
       for (const [id, list] of Object.entries(body.usage)) {
         uses[id] = list.map((u) => galleryUse(app, u, itemUrl));
       }
-      return { uses, unchecked: new Set(body.unchecked ?? []) };
+      return {
+        uses,
+        unchecked: new Set(body.unchecked ?? []),
+        library: new Set(body.library ?? []),
+      };
     },
     imageBlob: async (image, signal) => {
       const res = await call(token, `${base}/${encodeURIComponent(image.id)}`, {}, signal).catch(

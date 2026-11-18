@@ -18,6 +18,7 @@ import {
   WALKTHROUGH_BY_ACTION,
   WALKTHROUGH_EXACT,
 } from '../_shared/snapshot-walkthrough-metrics';
+import { LIBRARY_BY_ACTION, LIBRARY_EXACT } from '../_shared/library-metrics';
 import { COMMUNITY_CATEGORIES, COMMUNITY_REPORT_REASONS } from '@livedocuments/api-schema';
 
 // One sentence per Community category, read off the closed list so a new one reads by its own label the day it ships.
@@ -28,6 +29,7 @@ const perCommunityCategory = (action: string, sentence: (label: string) => strin
 
 export const EXACT: Readonly<Record<string, string>> = {
   ...WALKTHROUGH_EXACT,
+  ...LIBRARY_EXACT,
   'Element|Changed|CanvasSuggesting':
     'Someone switched the canvas to Suggesting, so their changes become suggestions for an Editor to accept or reject.',
   'Element|Changed|CanvasEditing': 'Someone switched the canvas back from Suggesting to Editing.',
@@ -1647,6 +1649,7 @@ export const EXACT: Readonly<Record<string, string>> = {
 export const BY_ACTION: Readonly<Record<string, string>> = {
   ...SNAPSHOT_BY_ACTION,
   ...WALKTHROUGH_BY_ACTION,
+  ...LIBRARY_BY_ACTION,
   'Community|Shared':
     'Someone shared a document to the Community, the public gallery of documents.',
   'Community|Changed': 'A Community post changed: its owner edited the listing.',

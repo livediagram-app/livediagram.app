@@ -19,8 +19,13 @@ export const LIBRARY_ITEMS_PER_SCOPE_MAX = 500;
 // One item's elements as JSON: a selection of a few hundred elements fits with room to spare.
 export const LIBRARY_ITEM_BYTES_MAX = 256 * 1024;
 export const LIBRARY_ITEM_ELEMENTS_MAX = 500;
-// One item's preview SVG. A larger drawing is not kept, and its tile shows the title alone.
-export const LIBRARY_PREVIEW_BYTES_MAX = 16 * 1024;
+// One item's preview SVG, its pictures' small copies included (a 10-element drawing is about 4 KB, a picture's copy
+// 3 to 9 KB). A larger drawing is not kept, and its tile shows the title alone.
+export const LIBRARY_PREVIEW_BYTES_MAX = 32 * 1024;
+// The longest side of a picture's copy in a tile's preview, in pixels: a tile shows at most about 100 x 48 CSS px.
+export const LIBRARY_PICTURE_EDGE = 128;
+// The most an item's picture copies may take together, as data URLs: the rest of the preview's budget is its drawing.
+export const LIBRARY_PICTURES_BYTES_MAX = 24 * 1024;
 // An item's width or height, in canvas units.
 export const LIBRARY_ITEM_SIDE_MAX = 100_000;
 // The apps whose old shape libraries the service reads in place, and how long it waits for each.
@@ -143,6 +148,52 @@ export function libraryImageIds(elements: readonly unknown[]): string[] {
     if (isRecord(el) && el.type === 'image' && isGalleryImageId(el.imageId)) ids.add(el.imageId);
   }
   return [...ids];
+}
+
+// The prefixes a picture's copy for a preview may have: a still image, as base64.
+const PICTURE_PREFIXES = [
+  'data:image/jpeg;base64,',
+  'data:image/png;base64,',
+  'data:image/webp;base64,',
+];
+
+// Whether `body` is base64 alone: its alphabet, then at most two `=`. A plain loop, so a long input costs linear time.
+function isBase64(body: string): boolean {
+  if (body.length === 0 || body.length % 4 !== 0) return false;
+  let end = body.length;
+  if (body.endsWith('==')) end -= 2;
+  else if (body.endsWith('=')) end -= 1;
+  for (let i = 0; i < end; i++) {
+    const c = body.charCodeAt(i);
+    const ok =
+      (c >= 65 && c <= 90) || (c >= 97 && c <= 122) || (c >= 48 && c <= 57) || c === 43 || c === 47;
+    if (!ok) return false;
+  }
+  return true;
+}
+
+/**
+ * The picture copies a save sent for its preview (libraries.md "Pictures"), kept only where each names a picture the
+ * elements place and is a still image as base64, within LIBRARY_PICTURES_BYTES_MAX together; anything else is left
+ * out, and its picture shows its name in the preview as before. Never stored apart from the preview.
+ */
+export function libraryPreviewPictures(
+  value: unknown,
+  elements: readonly unknown[],
+): Map<string, string> {
+  const out = new Map<string, string>();
+  if (!isRecord(value)) return out;
+  let bytes = 0;
+  for (const id of libraryImageIds(elements)) {
+    const url = value[id];
+    if (typeof url !== 'string') continue;
+    const prefix = PICTURE_PREFIXES.find((p) => url.startsWith(p));
+    if (!prefix || bytes + url.length > LIBRARY_PICTURES_BYTES_MAX) continue;
+    if (!isBase64(url.slice(prefix.length))) continue;
+    bytes += url.length;
+    out.set(id, url);
+  }
+  return out;
 }
 
 // The elements with each image element's picture swapped for its copy in `copies`; the rest unchanged.

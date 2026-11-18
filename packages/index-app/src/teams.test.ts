@@ -56,6 +56,34 @@ describe('team access', () => {
     expect(a.calls).toHaveLength(2);
   });
 
+  it('lists the teams as they are now, a team joined a moment ago included, asking once a moment', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    let teams: unknown[] = [T1];
+    const a = accounts(() => teams);
+    const access = createTeamAccess();
+    const R = accountsTeamReader(CREDENTIALS, a.fetcher);
+    const now = Date.now();
+    expect(await access.currentTeams(R, 'user_a', [T1], now)).toEqual([T1]);
+    teams = [T1, { ...T2, role: 'member' }];
+    // Within the moment: the remembered answer.
+    expect(await access.currentTeams(R, 'user_a', [T1], now + 1)).toEqual([T1]);
+    expect(a.calls).toHaveLength(1);
+    expect(await access.currentTeams(R, 'user_a', [T1, T2], now + MISS_RECHECK_MS)).toEqual([
+      T1,
+      { ...T2, role: 'member' },
+    ]);
+    // A guest has none; no reader leaves the claim; never narrowed.
+    expect(await access.currentTeams(R, 'guest_x', [T1])).toEqual([]);
+    expect(await access.currentTeams(null, 'user_a', [T1])).toEqual([T1]);
+    teams = [];
+    expect(await access.currentTeams(R, 'user_a', [T1], now + 3 * MISS_RECHECK_MS)).toEqual([T1]);
+    // Accounts down: the claim stands.
+    const down = accountsTeamReader(CREDENTIALS, (async () => {
+      throw new Error('down');
+    }) as unknown as typeof fetch);
+    expect(await createTeamAccess().currentTeams(down, 'user_a', [T1])).toEqual([T1]);
+  });
+
   it('keeps the claim when accounts is down', async () => {
     vi.spyOn(console, 'warn').mockImplementation(() => {});
     const fetcher = (async () => new Response(null, { status: 503 })) as unknown as typeof fetch;
