@@ -30,6 +30,7 @@ import { getParticipant } from '../person/profiles';
 import { redactItemsForCommunity } from '../community-redact';
 import { forbidden, json, notFound } from '../responses';
 import { relayItems } from '../room-client';
+import { noteAssistant } from './item-assistants-route';
 import {
   deniedOnTab,
   gateEdit,
@@ -169,7 +170,12 @@ export async function blockersRefused(
   if (!loop) return null;
   console.info('[items] items.blocks.cycle', { projectId: caller.projectId, id: loop.itemId });
   return json(
-    { error: 'blocks_cycle', id: loop.itemId, field, message: blockingLoopMessage(loop.chain) },
+    {
+      error: 'blocks_cycle',
+      id: loop.itemId,
+      field,
+      message: blockingLoopMessage(loop.chain, types),
+    },
     { status: 400 },
   );
 }
@@ -242,8 +248,12 @@ export async function itemCaller(
   if (level === 'read' && opts.community && grantOn(ctx, projectId, opts)?.community)
     return { projectId, owner, doc, scope: null, community: true };
   const gate = GATES[level];
-  if (await gate(ctx, projectId, doc.ownerId, doc.teamId))
-    return { projectId, owner, doc, scope: null };
+  if (await gate(ctx, projectId, doc.ownerId, doc.teamId)) {
+    const caller = { projectId, owner, doc, scope: null };
+    // A token's AI assistant, remembered for the Assignee picker (items.md "Who it can be handed to").
+    if (ctx.token) ctx.waitUntil?.(noteAssistant(ctx, caller, level, writer));
+    return caller;
+  }
   const tabId = ctx.url.searchParams.get('tabId');
   if (!tabId) {
     // A whole-project grant that falls short of the level (a view link writing) is refused

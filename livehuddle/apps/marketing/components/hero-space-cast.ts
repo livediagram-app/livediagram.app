@@ -101,18 +101,18 @@ export const castHref = (spec: SpaceSceneSpec) => `/hero/${spec.id}-cast.svg`;
 
 // ── The Team Pod's stand-up ───────────────────────────────────────────────────────────────────────────────────────
 
-// Where everyone comes in: under the pod's doorway (the room spans x -550..210 and y -252..228, its door at
-// x -212..-128), just below the window's edge.
-const POD_DOOR = { x: -170, y: 262 } as const;
+// Where everyone comes in: under the pod's doorway (the room spans x -687..263 and y -315..285, its door at
+// x -260..-164), just below the window's edge.
+const POD_DOOR = { x: -212, y: 319 } as const;
 
 // Five teammates. Ana is already by the coffee machine; the other four walk in through the door one after
-// another, then everyone gathers round the meeting table (x -110..122, y -172..-4) for the stand-up: one at each
-// end, three along its near side. The paths go round the furniture (the bookshelf is x 50..170, y 48..180).
+// another, then everyone gathers round the meeting table (x -65..167, y -243..-75) for the stand-up: one at each
+// end, three along its near side. The paths go round the furniture (the bookshelf is x 103..223, y 105..237).
 export const TEAM_POD: SpaceSceneSpec = {
   id: 'team-pod',
   template: 'team-pod',
   // The pod and its board, a little paper round them.
-  stage: { x: -560, y: -262, width: 1120, height: 500 },
+  stage: { x: -720, y: -328, width: 1400, height: 625 },
   cast: [
     {
       name: 'Maya',
@@ -121,9 +121,9 @@ export const TEAM_POD: SpaceSceneSpec = {
       from: POD_DOOR,
       start: 0.4,
       path: [
-        { x: -170, y: 90 },
-        { x: -64, y: 90 },
-        { x: -64, y: 44 },
+        { x: -212, y: 19 },
+        { x: -19, y: 19 },
+        { x: -19, y: -27 },
       ],
       rest: 'down',
     },
@@ -133,7 +133,10 @@ export const TEAM_POD: SpaceSceneSpec = {
       config: { gender: 'male', clothing: 'hoodie', hair: 'short', size: 'regular' },
       from: POD_DOOR,
       start: 1.2,
-      path: [{ x: -170, y: -48 }],
+      path: [
+        { x: -212, y: -119 },
+        { x: -125, y: -119 },
+      ],
       rest: 'right',
       reaction: { kind: 'wave', at: 8.0 },
     },
@@ -144,9 +147,9 @@ export const TEAM_POD: SpaceSceneSpec = {
       from: POD_DOOR,
       start: 2.0,
       path: [
-        { x: -170, y: 130 },
-        { x: 6, y: 130 },
-        { x: 6, y: 44 },
+        { x: -212, y: 59 },
+        { x: 51, y: 59 },
+        { x: 51, y: -27 },
       ],
       rest: 'down',
     },
@@ -157,9 +160,9 @@ export const TEAM_POD: SpaceSceneSpec = {
       from: POD_DOOR,
       start: 2.8,
       path: [
-        { x: -170, y: 206 },
-        { x: 186, y: 206 },
-        { x: 186, y: -48 },
+        { x: -212, y: 263 },
+        { x: 231, y: 263 },
+        { x: 231, y: -119 },
       ],
       rest: 'left',
       reaction: { kind: 'cheer', at: 10.4 },
@@ -168,14 +171,14 @@ export const TEAM_POD: SpaceSceneSpec = {
       name: 'Ana',
       colour: '#8b5cf6',
       config: { gender: 'female', clothing: 'suit', hair: 'long', size: 'regular' },
-      from: { x: -392, y: 186 },
+      from: { x: -487, y: 243 },
       start: 0,
       leaves: 2.8,
       path: [
-        { x: -392, y: 196 },
-        { x: 30, y: 196 },
-        { x: 30, y: 44 },
-        { x: 76, y: 44 },
+        { x: -487, y: 253 },
+        { x: 86, y: 253 },
+        { x: 86, y: -27 },
+        { x: 121, y: -27 },
       ],
       rest: 'down',
       holding: 'coffee',
@@ -187,14 +190,14 @@ export const TEAM_POD: SpaceSceneSpec = {
     { who: 'Priya', text: 'Two wins on the board', at: 13.4 },
     { who: 'Ana', text: 'Coffee first ☕', at: 16.4 },
   ],
-  // The Team Board's stickies (the template's): This week, Blocked on, Wins, Questions, 146 square from x 250. A
+  // The Team Board's stickies (the template's): This week, Blocked on, Wins, Questions, 146 square from x 350. A
   // teammate on the board from their laptop writes a note into Wins.
   board: {
     stickies: {
-      thisWeek: { x: 250, y: -208 },
-      blocked: { x: 404, y: -208 },
-      wins: { x: 250, y: -54 },
-      questions: { x: 404, y: -54 },
+      thisWeek: { x: 350, y: -216 },
+      blocked: { x: 504, y: -216 },
+      wins: { x: 350, y: -62 },
+      questions: { x: 504, y: -62 },
     },
     size: 146,
     note: { sticky: 'wins', text: 'Beta shipped', at: 8.0 },

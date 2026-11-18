@@ -245,9 +245,14 @@ describe('the card face', () => {
 });
 
 describe('the form questions', () => {
-  it('gives a Date Range question its settings (Include Time), and Phone and Date and Time none', () => {
+  it('gives a Date Range question its settings (Include Time), and a required Phone or Date and Time none', () => {
     expect(hasQuestionSettings({ id: 'q', type: 'daterange', prompt: 'Q' })).toBe(true);
-    expect(hasQuestionSettings({ id: 'q', type: 'datetime', prompt: 'Q' })).toBe(false);
+    expect(hasQuestionSettings({ id: 'q', type: 'datetime', prompt: 'Q', required: true })).toBe(
+      false,
+    );
+    expect(hasQuestionSettings({ id: 'q', type: 'phone', prompt: 'Q', required: true })).toBe(
+      false,
+    );
     expect(hasQuestionSettings({ id: 'q', type: 'phone', prompt: 'Q' })).toBe(false);
   });
   const q = (

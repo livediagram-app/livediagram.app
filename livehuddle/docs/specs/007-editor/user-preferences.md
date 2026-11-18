@@ -233,6 +233,11 @@ type UserPreferences = {
   // (guides on). See docs/specs/008-canvas/canvas-and-palette.md's Alignment guides subsection.
   alignmentGuides?: boolean;
 
+  // When true, the 3D view offers Turn Left / Turn Right (and [ and ]) to
+  // turn its camera. Missing / false === off, the default.
+  // See docs/specs/008-canvas/3d-view.md "Turning the camera".
+  rotateIn3D?: boolean;
+
   // When true, the editor adds `.reduce-motion` to <html> so globals.css
   // collapses decorative animations + transitions to ~instant
   // (accessibility). Independent of the OS `prefers-reduced-motion` media
@@ -516,7 +521,7 @@ and the dialog stays as the one complete, browsable index of them.
     you flip things whose effect is on the canvas behind it.
 
   **It is the central place to find every preference.** Categories:
-  **Editor** (a **Canvas** section: alignment guides,
+  **Editor** (a **Canvas** section: alignment guides, Rotate in 3D View,
   element indicators (Auto-Attach Arrows left in Work Tracker #423 part 4); a **Mouse** section: middle-mouse
   pan (Quick-Add on Hover left with Quick Connect); no Presenting sub-category since Work Tracker #423 part 2), **Appearance** (theme, then an **Interface** section:
   Button Labels, and UI scale with a slider per part nested under it), **Keyboard**
@@ -827,7 +832,8 @@ and the dialog stays as the one complete, browsable index of them.
   **Editor** group holds `middleMousePan` (default on): holding the
   middle mouse button drags the canvas in both axes from anywhere, over
   empty space or elements, whatever tool is active; off leaves the middle
-  button to the browser. The
+  button to the browser, and `rotateIn3D` (default off): when on, the [3D view](../008-canvas/3d-view.md#turning-the-camera) offers Turn
+  Left and Turn Right (and `[` and `]`) to turn its camera. The
   **Keyboard** group holds the **Keyboard Shortcuts** switch, which is
   per-device (localStorage, not `UserPreferences`) so shortcuts can be on at
   a full keyboard and off on a tablet. Below it, the shortcut

@@ -5,76 +5,67 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Walkthroughs',
   description:
-    'Record a video of yourself talking someone through the design, camera bubble and all, then play it, rename it or share it with a link.',
+    'Record yourself talking someone through the design, camera bubble and all, and let them play it back over the design, pausing to look around.',
   path: '/help/collaboration/walkthroughs/',
 });
 
 <ArticleLayout
   title="Walkthroughs"
-  description="A video tour of the design: this tab as you see it, your voice and, if you like, your camera."
+  description="A recorded tour of the design: your voice, your camera and where you went, played back over the design as it is now."
   categoryTitle="Collaboration"
   categorySlug="collaboration"
   subArticles={getSubArticles('walkthroughs')}
 >
 
-A walkthrough is a video of you talking someone through the design. It films this browser tab as you see it, with your voice, and your camera as a round bubble in a corner if you turn it on. Anyone who can open the design can watch it, and you can share it with a public link too.
+A walkthrough is a recording of you talking someone through the design. It keeps your voice, your camera if you leave it on (shown as a round bubble in a corner), your pointer, and every pan, zoom and tab change you make. Whoever plays it watches it over the design itself, not in a video, so they can pause, look around and resume.
 
 ## Recording a walkthrough
 
 <Step n={1}>
-  Open **Tools** in the footer and press **Walkthroughs** (under Collaborate), then **Record
-  Walkthrough** at the foot of the list. **Record a Walkthrough** opens beside Tools.
+  Open **Tools** in the footer, press **Walkthroughs**, then **Record Walkthrough**. The recording
+  dock opens at the bottom of the design.
 </Step>
 
 <Step n={2}>
   Pick your **Microphone**. The **Camera** switch starts off, so a walkthrough records your voice
-  alone and the browser asks only for the microphone; turn it on to pick a camera, show yourself in
-  a round bubble and choose its corner. The switch is remembered in this browser. If the browser
-  hasn't been allowed to list your devices yet, press **Allow Microphone** (or **Allow Camera**).
-  **Mic Level** moves as you speak, so you know you are heard.
+  alone and the browser asks only for the microphone; turn it on to pick a camera and show yourself
+  in a round bubble. The dock remembers your choice in this browser. If the browser hasn't been
+  allowed to list your devices yet, press **Allow Microphone** (or **Allow Camera**) to ask it. The
+  level meter shows the microphone hears you.
 </Step>
 
 <Step n={3}>
-  Press **Start Recording**. Your browser asks you to share this tab: allow it. If you don't,
-  nothing is recorded and the set-up says so. Safari and phones can't film a tab. After a 3, 2, 1
-  countdown, talk and move around the design as you would with someone beside you.
+  Press **Start Recording**. After a 3, 2, 1 countdown, talk and move around the design as you would
+  with someone beside you. Press **Finish** when you are done.
 </Step>
 
 <Step n={4}>
-  Press **Finish** in the recording bar (or stop sharing from the browser's own bar). The
-  walkthrough saves straight away as "Walkthrough of" the tab you started on, with a progress bar,
-  then shows at the top of the Walkthroughs list. **Discard** throws the recording away, after
-  asking.
+  Give it a **Title** and press **Save**. It is listed under Walkthroughs in Tools for everyone who
+  can open the design.
 </Step>
 
-A walkthrough can run for up to ten minutes: the bar turns amber with "1 minute left" and finishes on its own at ten. If saving is refused (it is over 90 MB, or you already have 50 walkthroughs), the card says why and offers **Download a Copy** so the recording isn't lost, and **Try Again**.
+A walkthrough can run for up to ten minutes; the bar turns amber with a minute left and finishes on its own at ten. If saving is refused (it is too large, or you have reached your limit), the dock says why and offers **Download a Copy** so the recording isn't lost.
 
 ## Hiding elements from the recording
 
-Before you start, press **Hide From Recording** in the set-up, then press each element viewers shouldn't see: a private note, an unfinished corner. **Hide Selection** hides what is already selected, and **Done** or `Esc` leaves the mode; the button's count shows how many are hidden. While you record they are hidden from your own screen, so the video never shows them. They stay on the design itself for anyone who opens it. What is hidden is settled before the recording starts.
+Press **Hide From Recording** in the dock, then press each element viewers shouldn't see: a private note, an unfinished corner. **Hide Selection** hides what is already selected, and **Done** or `Esc` leaves the mode. You still see hidden elements, faded inside a dashed outline; people playing the walkthrough never do, and presses and pointer moves over them are left out of what is stored. They stay on the design itself for anyone who opens it.
 
-## Watching a walkthrough
+## Playing a walkthrough
 
-Open **Tools**, press **Walkthroughs**, and press one in the list. It plays in a video player over the design, with its title, its length, who made it and when, the browser's own controls (play, seek, speed) and **Full Screen**.
+Open **Tools** in the footer, press **Walkthroughs**, and press one to play it. The view follows the recording, fitted to your screen, with the presenter's pointer and, in the corner, their camera bubble, or a small chip with their name when they recorded without the camera.
 
-Walkthroughs recorded before videos came in still play the old way, over the design as it is now: pan or zoom to pause and look around, then **Resume**.
+- **Pause, look around, resume.** Pan, zoom or press on the design and it pauses, leaving the view with you. **Resume** puts the view back where the recording is and plays on.
+- **Keys.** `Space` plays and pauses, `←` and `→` skip five seconds, `Esc` closes. The bar also has a scrubber and a speed of 1x, 1.5x or 2x.
+- **Edited since recording.** If the design has changed since, a line says so and it still plays over the design as it is now.
 
-Every walkthrough you have recorded in livedesign is also in the Explorer, under **Walkthroughs** in the Library, where you can play it, open the design it was made on, or delete it.
+Closing puts you back where you were.
 
-## Renaming, sharing and deleting
+## Who can record and delete
 
-Each walkthrough's row has a **⋯** menu:
-
-- **Rename** edits the title in place (up to 120 characters). `Enter` saves, `Esc` cancels.
-- **Share**, on a video, turns its **Public Link** on or off. On, **Copy Link** copies a liveworkspace.app link: anyone with it can watch the video, its title and who made it, without signing in, but never the design. Off, the link stops working at once. A shared walkthrough shows a link mark in the list, and the player's **Share** reads **Shared**.
-- **Delete** asks first, then deletes it for everyone who can open the design.
-
-## Who can record and manage them
-
-Editors record walkthroughs, and can rename, share and delete any of them. Everyone who can open the design can watch them; Participants and Viewers can rename, share and delete only one they recorded themselves. Walkthroughs aren't offered on a phone, in an embed or through a link to one tab. On a design kept in **This Browser**, the Walkthroughs row is marked **Sync Design** and asks you to sync it first.
+Editors record walkthroughs and can delete any of them. Everyone who can open the design can play them, and anyone can delete one they recorded. Walkthroughs aren't offered on a phone, in an embed, for a design kept in **This Browser**, or through a link to one tab.
 
 ## Privacy
 
-Calls are never recorded. A walkthrough is only made when you press Start Recording and share the tab, and the browser shows that it is sharing the whole time. It is stored with the design for the people who can open it, and reaches anyone else only through a public link you turn on. Deleting a walkthrough, purging its design from the Trash or deleting your account deletes it. See the [privacy policy](https://www.liveworkspace.app/privacy).
+Calls are never recorded. A walkthrough is only made when you press Start Recording, and it is stored with the design for the people who can open it. Deleting a walkthrough, purging its design from the Trash or deleting your account deletes it. See the [privacy policy](https://www.liveworkspace.app/privacy).
 
 </ArticleLayout>

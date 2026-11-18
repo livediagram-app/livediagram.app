@@ -119,7 +119,7 @@ describe('For Related Cards', () => {
     const [run] = await runs();
     expect(run).toMatchObject({
       result: 'failed',
-      reason: `Failed on #${noteId.key}: A Note card can't go in In Progress`,
+      reason: `Failed on N-${noteId.key}: A Note card can't go in In Progress`,
     });
     expect(run!.steps.find((s) => s.kind === 'branch')).toMatchObject({ ok: false, cards: 3 });
   });

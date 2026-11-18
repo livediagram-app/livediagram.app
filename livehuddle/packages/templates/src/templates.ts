@@ -1,7 +1,7 @@
 import { headlineCase, isUntitledName, titleCase } from '@livehuddle/api-schema';
 import { UNTITLED_DOCUMENT_NAME, isUntitledDocumentName } from './legacy-untitled';
 
-// The catalogue (docs/specs/007-editor/templates-by-mode.md "The catalogue"): Blank Space and the thirty Spaces, every
+// The catalogue (docs/specs/007-editor/templates-by-mode.md "The catalogue"): Blank Space and the thirty-two Spaces, every
 // one opening on a meeting board. livehuddle is for meeting in Spaces; the retrospectives, workshops, planning and
 // strategy boards and the quizzes and games are livediagram's (docs/specs/002-project-scope/not-in-livehuddle.md).
 export type TemplateKind =
@@ -45,7 +45,11 @@ export type TemplateKind =
   | 'interview-suite'
   | 'client-lounge'
   | 'classroom'
-  | 'hackathon-hall';
+  | 'hackathon-hall'
+  // Two unlike the rest (the owner, 2026-11-18): a show to walk round, and time out together
+  // (virtual-office-template.md "Art Gallery and Wellness Studio").
+  | 'art-gallery'
+  | 'wellness-studio';
 
 export type TemplateDescriptor = {
   kind: TemplateKind;
@@ -284,6 +288,20 @@ export const TEMPLATES: TemplateDescriptor[] = [
     title: 'Hackathon Hall',
     description:
       'A hackathon in Avatar mode: team tables on the floor, a demo stage, a mentor room, a nap room and a snack bar.',
+    extra: true,
+  },
+  {
+    kind: 'art-gallery',
+    title: 'Art Gallery',
+    description:
+      'A show in Avatar mode: a main gallery of Photo Walls, a sculpture hall, a talk room with a podium and a foyer café.',
+    extra: true,
+  },
+  {
+    kind: 'wellness-studio',
+    title: 'Wellness Studio',
+    description:
+      'Time out together in Avatar mode: a yoga studio, a meditation room, a gym, a nap room and a juice bar.',
     extra: true,
   },
 ];

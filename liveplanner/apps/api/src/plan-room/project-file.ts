@@ -46,6 +46,7 @@ import { MAX_TAB_BYTES, byteLength, logTabRefused } from '../limits';
 import { capStoredName } from '../names';
 import type { PlanEnv } from '../types';
 import { copiedRules, ruleForFile, rulesFromFile } from './automations/automation-copy';
+import { claimImportedImages } from './copy-image-claims';
 import {
   COPY_PLAN,
   copiedThreads,
@@ -344,6 +345,9 @@ export async function importProjectFile(
 ): Promise<void> {
   // A file is the person's own bytes and could name any picture: it brings no grants (item-types.md "Image fields").
   const { imageGrants: _none, ...copy } = file.copy;
+  // It has no source plan to vouch for the pictures it names, so it vouches for itself before it lands
+  // (copy-image-claims.ts claimImportedImages): a refusal throws, and nothing is written.
+  await claimImportedImages(env, planId, copy.items);
   await importPlanCopy(env, planId, copy, now);
   await initPlan(env, planId, {
     name: file.name,

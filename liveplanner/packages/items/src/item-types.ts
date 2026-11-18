@@ -260,6 +260,9 @@ export interface ItemTypeDef {
   glyph: PlanGlyphId | 'item';
   // The stripe and glyph colour on a card face.
   color: string;
+  // Its card prefix (docs/specs/026-plan/item-types.md "Card number prefixes"; card-prefix.ts): the letters before its
+  // cards' numbers, upper case. Absent: the one made from its name.
+  prefix?: string;
   // The fields its item panel offers, in order: built-in field ids and its custom fields' ids.
   fields: readonly string[];
   custom?: readonly CustomFieldDef[];

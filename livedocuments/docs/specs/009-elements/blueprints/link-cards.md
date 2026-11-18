@@ -36,18 +36,18 @@ Scope, by file:
 
 ## Domain and naming
 
-| Term          | Identifier                              | Meaning                                                 |
-| ------------- | --------------------------------------- | ------------------------------------------------------- |
-| Link card     | `LinkCardElement` (`type: 'link-card'`) | Boxed bookmark element                                  |
-| Card link     | `LinkCardElement.link: ElementLink`     | The destination; any kind `[QB11]`; only `url` unfurls  |
-| Preview       | `LinkCardElement.meta: LinkCardMeta`    | Cached unfurl fields, keyed by `meta.url`               |
-| Stale preview | `meta.url !== link.url`                 | Ignored by the view                                     |
-| Unfurl        | `GET /api/unfurl`, `apiUnfurl`          | Server-side fetch and parse of a page's head            |
-| Unfurl result | `UnfurlResult`                          | Wire DTO of one unfurl                                  |
-| Public URL    | `parsePublicHttpUrl(raw) !== null`      | `http(s)` to a host `isBlockedHost` allows              |
-| Blocked host  | `isBlockedHost(hostname)`               | Loopback, private, link-local, metadata, local names    |
-| Banner        | top area of `LinkCardView`              | OG image, or a neutral globe placeholder                |
-| Info row      | bottom area of `LinkCardView`           | Favicon or glyph, title, destination; the follow target |
+| Term          | Identifier                              | Meaning                                                         |
+| ------------- | --------------------------------------- | --------------------------------------------------------------- |
+| Link card     | `LinkCardElement` (`type: 'link-card'`) | Boxed bookmark element                                          |
+| Card link     | `LinkCardElement.link: ElementLink`     | The destination; any kind `[QB11]`; only `url` unfurls          |
+| Preview       | `LinkCardElement.meta: LinkCardMeta`    | Cached unfurl fields, keyed by `meta.url`                       |
+| Stale preview | `meta.url !== link.url`                 | Ignored by the view                                             |
+| Unfurl        | `GET /api/unfurl`, `apiUnfurl`          | Server-side fetch and parse of a page's head                    |
+| Unfurl result | `UnfurlResult`                          | Wire DTO of one unfurl                                          |
+| Public URL    | `parsePublicHttpUrl(raw) !== null`      | `http(s)` to a host `isBlockedHost` allows                      |
+| Blocked host  | `isBlockedHost(hostname)`               | The shared private-host rule: private addresses, internal names |
+| Banner        | top area of `LinkCardView`              | OG image, or a neutral globe placeholder                        |
+| Info row      | bottom area of `LinkCardView`           | Favicon or glyph, title, destination; the follow target         |
 
 Banned synonyms: "bookmark" in code (say link card), "OG card", "embed" (an embed is a video
 element), "scrape" (say unfurl), "thumbnail" for the banner.
@@ -101,14 +101,20 @@ text/html,application/xhtml+xml`, aborted after `UNFURL_FETCH_TIMEOUT_MS` measur
 
 ### `isBlockedHost(hostname)`
 
-Lower-cased, IPv6 brackets stripped. Blocked when any holds:
+`classifyHost(hostname).private`, the platform's shared host rule (`@liveworkspace/model-core/private-host`,
+`liveworkspace/docs/specs/002-architecture/architecture.md` "Fetching a URL someone gave"). Lower-cased, IPv6
+brackets and one trailing dot stripped, read left to right as an IPv4 address, an IPv6 address or a name. Blocked
+when any holds:
 
-- empty; `localhost`, `*.localhost`, `*.local`;
-- `::1`, `::`, `0.0.0.0`;
-- dotted IPv4 in `0/8`, `10/8`, `127/8`, `169.254/16`, `172.16/12`, `192.168/16`, `100.64/10`
-  (D58), plus `224/4`, `240/4`, `192.0.0/24`, `198.18/15` `[QB12]`;
-- IPv4-mapped IPv6 (`::ffff:` dotted or hex) whose embedded IPv4 is blocked;
-- an IPv6 literal (contains `:`) starting `fc`, `fd`, `fe80`, `ff` or `64:ff9b:` `[QB12]`.
+- empty; `localhost`; a single-label name; a name under `.localhost`, `.local`, `.internal`, `.lan`, `.home.arpa`
+  or `.intranet`; a name whose last label is a number;
+- an IPv4 address in this network `0/8`, `10/8`, carrier NAT `100.64/10`, `127/8`, `169.254/16`, `172.16/12`,
+  `192.0.0/24`, the documentation ranges, `192.88.99/24`, `192.168/16`, `198.18/15`, `224/4` or `240/4` (D58,
+  `[QB12]`);
+- an IPv6 address that is unspecified, loopback or IPv4-compatible (`::/96`), unique local `fc00::/7`, link-local
+  `fe80::/10`, site-local `fec0::/10`, multicast `ff00::/8`, documentation `2001:db8::/32`, 6to4 `2002::/16` or
+  discard `100::/64`, or one carrying a blocked IPv4 (mapped `::ffff:0:0/96`, NAT64 `64:ff9b::/96`);
+- a host with a colon or bracket that is no IPv6 address.
 
 Invariants:
 
@@ -205,7 +211,7 @@ export function apiUnfurl(url: string): Promise<UnfurlResult | null>;
   (`UNFURL_RATE_LIMITER`) and asks no guest signature.
 - **SSRF.** Scheme and host validated before the fetch and again on the final URL. DNS names that
   resolve to private addresses are not resolved here; Workers `fetch` cannot reach a private
-  network, which is the residual control. Hostnames are never matched by IPv6 prefix `[QB12]`.
+  network, which is the residual control. Hostnames are never matched by IPv6 prefix `[QB12]`: a host is an IPv6 address only when it parses as one.
 - **Response trust.** Parsed fields are text; the view renders them as text and as `<img src>`
   with `referrerPolicy="no-referrer"`, so markup cannot execute. `meta` also arrives from peers,
   API tokens and MCP, so it is validated on write (GB13).
@@ -258,24 +264,25 @@ LinkUnfurled` exist.
 
 ## Testing
 
-| Rule                                                    | Test                                                        | File                                             |
-| ------------------------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------ |
-| Blocked hosts and ranges                                | `blocks loopback / localhost / .local / metadata + private` | `../packages/api-kit/src/unfurl.test.ts`         |
-| Public hosts allowed                                    | `allows public hosts + public IPs`                          | `../packages/api-kit/src/unfurl.test.ts`         |
-| Domains starting `fc` / `fd` allowed `[QB12]`           | none                                                        |                                                  |
-| http(s) only                                            | `parsePublicHttpUrl` suite                                  | `../packages/api-kit/src/unfurl.test.ts`         |
-| og:\* precedence, relative resolution, favicon fallback | `buildUnfurlResult` suite                                   | `../packages/api-kit/src/unfurl.test.ts`         |
-| Rate limit, redirect re-check, non-HTML, timeout, cap   | none (GB16)                                                 |                                                  |
-| 280×120 factory, no link or meta                        | `createLinkCard is a 280x120 boxed bookmark…`               | `packages/document/src/factories.test.ts`        |
-| Drawn to size                                           | `draws a link card to the dragged box`                      | `apps/editor/lib/draw-commit.test.ts`            |
-| Draw banner copy                                        | `drawBannerMessage` case                                    | `apps/editor/lib/draw-mode.test.ts`              |
-| Telemetry token `LinkCard`                              | `elementTelemetryType` case                                 | `apps/editor/lib/element-telemetry.test.ts`      |
-| Boxed                                                   | `isBoxed is true for every boxed-element kind…`             | `packages/document/src/geometry.test.ts`         |
-| No inline text                                          | `is false for label-less kinds…`                            | `packages/document/src/element-has-text.test.ts` |
-| Shadow supported                                        | `supportsShadow` suite                                      | `packages/document/src/shadow.test.ts`           |
-| Theme leaves cards alone                                | none                                                        |                                                  |
-| Stale-meta guard, unfurl only for cards, meta commit    | none (GB9, GB11, GB16)                                      |                                                  |
-| Contrast                                                | none (GB14)                                                 |                                                  |
+| Rule                                                    | Test                                                        | File                                                  |
+| ------------------------------------------------------- | ----------------------------------------------------------- | ----------------------------------------------------- |
+| Blocked hosts and ranges                                | `blocks loopback / localhost / .local / metadata + private` | `../packages/api-kit/src/unfurl.test.ts`              |
+| Public hosts allowed                                    | `allows public hosts + public IPs`                          | `../packages/api-kit/src/unfurl.test.ts`              |
+| Domains starting `fc` / `fd` allowed `[QB12]`           | `allows public hosts + public IPs`                          | `../packages/api-kit/src/unfurl.test.ts`              |
+| Same hosts refused as webhooks and image uploads        | `refuses every private, internal and metadata host`         | `../packages/api-kit/src/private-host-parity.test.ts` |
+| http(s) only                                            | `parsePublicHttpUrl` suite                                  | `../packages/api-kit/src/unfurl.test.ts`              |
+| og:\* precedence, relative resolution, favicon fallback | `buildUnfurlResult` suite                                   | `../packages/api-kit/src/unfurl.test.ts`              |
+| Rate limit, redirect re-check, non-HTML, timeout, cap   | none (GB16)                                                 |                                                       |
+| 280×120 factory, no link or meta                        | `createLinkCard is a 280x120 boxed bookmark…`               | `packages/document/src/factories.test.ts`             |
+| Drawn to size                                           | `draws a link card to the dragged box`                      | `apps/editor/lib/draw-commit.test.ts`                 |
+| Draw banner copy                                        | `drawBannerMessage` case                                    | `apps/editor/lib/draw-mode.test.ts`                   |
+| Telemetry token `LinkCard`                              | `elementTelemetryType` case                                 | `apps/editor/lib/element-telemetry.test.ts`           |
+| Boxed                                                   | `isBoxed is true for every boxed-element kind…`             | `packages/document/src/geometry.test.ts`              |
+| No inline text                                          | `is false for label-less kinds…`                            | `packages/document/src/element-has-text.test.ts`      |
+| Shadow supported                                        | `supportsShadow` suite                                      | `packages/document/src/shadow.test.ts`                |
+| Theme leaves cards alone                                | none                                                        |                                                       |
+| Stale-meta guard, unfurl only for cards, meta commit    | none (GB9, GB11, GB16)                                      |                                                       |
+| Contrast                                                | none (GB14)                                                 |                                                       |
 
 ## Constants and configuration
 

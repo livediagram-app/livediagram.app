@@ -4,6 +4,7 @@
 // widgets, then Reveal and Retry when they apply, Maximise Board, and the list of items not on the board. The header's
 // own background is the board's handle: a press there moves the board, its controls do not.
 import { FormBoardStrip } from '@/components/forms/FormBoardStrip';
+import { cardRefIn } from './card-ref';
 import { useRef, useState } from 'react';
 import { useToday } from '@/hooks/ui/useToday';
 import { useKeepOnScreen } from '@/hooks/plan/useKeepOnScreen';
@@ -142,9 +143,6 @@ export function PlanBoardHeader({
       <BoardWidgetZone
         widgets={widgets}
         canEdit={canEdit}
-        selected={selected}
-        // In a header band the board is maximised or fills its tab, where no selection shows: an empty zone keeps its +.
-        offerAdd={inBox}
         palette={palette}
         onChange={(next) => {
           // Taking a widget off clears what it narrowed.
@@ -366,11 +364,11 @@ export function PlanBoardHeader({
             return (
               <div key={item.id} className="flex items-center gap-2 rounded px-1 py-1 text-[12px]">
                 <span className="min-w-0 flex-1 truncate">
-                  #{item.key} {itemTitle(item)}
+                  {cardRefIn(types)(item)} {itemTitle(item)}
                 </span>
                 {canEdit && open.length > 0 ? (
                   <select
-                    aria-label={`Move #${item.key} to`}
+                    aria-label={`Move ${cardRefIn(types)(item)} to`}
                     className="rounded border bg-transparent px-1 text-[12px]"
                     style={{ borderColor: palette.border, color: palette.text }}
                     value=""

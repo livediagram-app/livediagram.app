@@ -22,6 +22,8 @@
   --space-glass-top: #cfe6f3;
   --space-glass-bottom: #8fbcd8;
   --space-fence: #8a5a33;
+  --space-stage-side: #6b4423;
+  --space-roof: #b4553b;
   --space-picket: #ffffff;
   --space-grass: #65a30d;
   /* The screen's copy of the pattern would stay flat: the walls layer lays it on the floor instead ([data-space-floor]). */
@@ -42,6 +44,8 @@
   --space-glass-top: #2b4363;
   --space-glass-bottom: #1b2a40;
   --space-fence: #c08a5b;
+  --space-stage-side: #8a5a33;
+  --space-roof: #8f3f2b;
   --space-picket: #e2e8f0;
   --space-grass: #3f6212;
 }
@@ -68,6 +72,7 @@
    Rx(-tilt), as an axis and an angle (the quaternion's parts), so it is one `rotate`. A standing piece stands on the
    edge of its box nearest the camera: its foot moved there from its front edge (`--space-foot-shift`). */
 [data-space-view] [data-space-stage] {
+  --space-stage-lift: 20px;
   --space-face: calc(cos(var(--space-turn) * -0.5) * sin(var(--space-tilt) * -0.5) + 0.000001)
     calc(sin(var(--space-turn) * -0.5) * sin(var(--space-tilt) * -0.5))
     calc(cos(var(--space-tilt) * -0.5) * sin(var(--space-turn) * -0.5))
@@ -81,6 +86,11 @@
 [data-space-view] [data-avatar-chip],
 [data-space-view] [data-space-3d-group] {
   transform-style: preserve-3d;
+}
+/* A character on a Stage stands on its top, raised off the floor (3d-view.md "A stage stands up"). */
+[data-space-view] [data-avatar],
+[data-space-view] [data-avatar-chip] {
+  translate: 0 0 var(--space-raise, 0px);
 }
 /* The floor sits a pixel under the ground line, so what lies on it (rings, beams) is never coplanar with it. It keeps
    its children in the scene's space so the pieces that stand up are sorted with the walls and the characters; the
@@ -100,17 +110,19 @@
 [data-space-view] [data-space-stands='base'][data-space-near] {
   transform-origin: 50% 100%;
   rotate: var(--space-face);
-  translate: var(--space-foot-shift);
+  /* On a Stage, it stands on the stage's top (`--space-raise`, useStandingPieces). */
+  translate: var(--space-foot-shift) var(--space-raise, 0px);
 }
 [data-space-view] [data-space-stands='centre'][data-space-near] {
   rotate: var(--space-face);
+  translate: 0 0 var(--space-raise, 0px);
 }
 /* Turned (3d-view.md "Turning the camera"), a piece is drawn as the camera sees it, in a box turned back to face the
    camera (FurnitureView `data-space-seen`): its own box lies flat, and the seen box stands about its own front edge
    (or builds its rows), so a bookcase seen from behind shows its back. */
 [data-space-view] [data-space-stands][data-space-near]:has([data-space-seen]) {
   rotate: none;
-  translate: none;
+  translate: 0 0 var(--space-raise, 0px);
   transform-style: preserve-3d;
 }
 [data-space-view] [data-space-stands][data-space-near] div:has(> [data-space-seen]),
@@ -188,13 +200,23 @@
     rotate 520ms var(--space-ease),
     translate 520ms var(--space-ease);
 }
+/* Turned, it stands out from its wall facing the camera, a blade sign, so its words still read. */
+[data-space-view] [data-space-stands][data-space-near][data-space-hung='blade'] {
+  rotate: var(--space-face);
+}
 
 /* A character stands up about its feet, facing the camera (AvatarWalker's `data-avatar-stand`). */
 /* A sitter near a piece's front edge stands that far towards the camera, so the piece never covers them
    (`--space-seat-lift`, canvas px along the floor; space-3d-pieces.ts `seatLift`). */
+/* The lift is its own `translate`, never eased: the transform eases only the camera's turn, so taking a seat lifts the
+   sitter on the same frame they land on it, never a few frames inside the chair (the owner, 2026-11-18). It is the
+   transform's own towards-the-camera step, Rz(-turn) Rx(-tilt) (0, 0, d), written in the parent's frame. */
 [data-space-view] [data-avatar-stand] {
-  transform: rotateZ(calc(var(--space-turn) * -1)) rotateX(calc(var(--space-tilt) * -1))
-    translateZ(calc(var(--space-seat-lift, 0px) * sin(var(--space-tilt))));
+  --space-seat-d: calc(var(--space-seat-lift, 0px) * sin(var(--space-tilt)));
+  transform: rotateZ(calc(var(--space-turn) * -1)) rotateX(calc(var(--space-tilt) * -1));
+  translate: calc(var(--space-seat-d) * sin(var(--space-tilt)) * sin(var(--space-turn)))
+    calc(var(--space-seat-d) * sin(var(--space-tilt)) * cos(var(--space-turn)))
+    calc(var(--space-seat-d) * cos(var(--space-tilt)));
   transition: transform 520ms var(--space-ease);
 }
 /* A sitter behind their piece (a table's far side, behind a desk) has their legs under its front. */
@@ -260,6 +282,8 @@
   box-sizing: border-box;
   transform-origin: 50% 100%;
   transform: rotateX(var(--space-stand));
+  /* Its name may turn out of it (a blade sign, below). */
+  transform-style: preserve-3d;
   transition:
     transform 520ms var(--space-ease),
     opacity 180ms ease-out;
@@ -329,6 +353,32 @@
     linear-gradient(to bottom, var(--space-door), color-mix(in srgb, var(--space-door) 80%, black));
   box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.25);
 }
+/* An open door: its leaf stands at a right angle to the wall, hinged at the door's first jamb, swung the way the plan
+   draws it (3d-view.md "Doorways"); a hinge at the face's end swings it to the face's back. */
+[data-space-door-open] {
+  position: absolute;
+  left: 3px;
+  right: 3px;
+  bottom: 0;
+  height: var(--door-h);
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+[data-space-door-open] > [data-space-door-leaf] {
+  transform-origin: 0 50%;
+  /* Short of square, so the camera sees the leaf's face, never just its edge (the owner, 2026-11-18: "atm I just see
+     a line"). */
+  rotate: y -70deg;
+  transition: rotate 180ms var(--space-ease);
+}
+[data-space-door-open='end'] > [data-space-door-leaf] {
+  transform-origin: 100% 50%;
+}
+/* The plan's leaf and swing arc lie flat under the doorway's standing leaf: the 3D view draws the door standing. */
+[data-space-view] .lh-door-leaf,
+[data-space-view] .lh-door-swing {
+  display: none;
+}
 /* A Door in a glass wall is a glass door (the owner, 2026-11-18): a slim pale metal frame, and a shut leaf of the wall's
    glass with a bar handle, so the room stays see-through. */
 [data-space-wall='doorway'][data-space-glass] [data-space-door-frame] {
@@ -380,6 +430,32 @@
     repeating-linear-gradient(to right, var(--space-fence) 0 5px, transparent 5px 40px);
   border-top: 0;
 }
+/* A Stage's sides: dark wood boards under a lit lip, from the floor up to its raised top (3d-view.md "A stage stands
+   up"). */
+[data-space-wall='stage'] > [data-space-wall-face] {
+  background:
+    linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--space-stage-side) 70%, white) 0 3px,
+      transparent 3px
+    ),
+    repeating-linear-gradient(to right, transparent 0 46px, rgb(0 0 0 / 0.18) 46px 48px),
+    linear-gradient(
+      to bottom,
+      var(--space-stage-side),
+      color-mix(in srgb, var(--space-stage-side) 70%, black)
+    );
+  box-shadow: none;
+}
+/* Stage Curtains stand along their own line, like a wall: turned, the camera sees them edge on or from behind. */
+[data-space-view] [data-space-stands='along'][data-space-near] {
+  transform-origin: 50% 100%;
+  rotate: x var(--space-stand);
+}
+/* Its top rides up on them, with what stands on it (AvatarWalker `raised`). */
+[data-space-view] [data-space-stands='raised'] {
+  translate: 0 0 var(--space-stage-lift);
+}
 /* A Garden Fence: white pickets on two rails, the picket fence its flat drawing shows. */
 [data-space-wall='picket'] > [data-space-wall-face] {
   background:
@@ -416,6 +492,72 @@
 [data-space-wall][data-cut] > [data-space-wall-face] {
   opacity: 0.18;
 }
+/* Beside the face, the parts that stand out of the wall (an open door's leaf): stood up with it, ghosted part by
+   part, so a cut-away wall leaves an open door open (3d-view.md "Walls in front of you are cut away"). */
+[data-space-wall-stand] {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: var(--wall-h);
+  transform-origin: 50% 100%;
+  transform: rotateX(var(--space-stand));
+  transform-style: preserve-3d;
+  transition: transform 520ms var(--space-ease);
+  animation: space-wall-rise 520ms var(--space-ease);
+  pointer-events: none;
+}
+[data-space-wall-stand] [data-space-door-leaf] {
+  transition:
+    rotate 180ms var(--space-ease),
+    opacity 180ms ease-out;
+}
+[data-space-wall][data-cut] > [data-space-wall-stand] [data-space-door-leaf] {
+  opacity: 0.18;
+}
+/* A room on grass has a pitched roof on its walls (3d-view.md "Rooms on grass have roofs"): tiles on its slopes,
+   tiles on its hip ends too, all a ghost like the walls in front of you (the opacity is on each part: on the roof it
+   would flatten it), gone while you stand inside. */
+[data-space-roof] {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  transform-origin: 0 0;
+  transform-style: preserve-3d;
+  --space-roof-ghost: 0.5;
+}
+[data-space-roof][data-inside] {
+  --space-roof-ghost: 0;
+}
+[data-space-roof-slope] {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: var(--space-roof-ghost);
+  transition: opacity 260ms ease-out;
+  backface-visibility: visible;
+}
+[data-space-roof-slope] {
+  background:
+    repeating-linear-gradient(to bottom, transparent 0 14px, rgb(0 0 0 / 0.22) 14px 16px),
+    repeating-linear-gradient(to right, transparent 0 22px, rgb(0 0 0 / 0.12) 22px 24px),
+    var(--space-roof);
+}
+[data-space-roof-slope][data-far] {
+  background:
+    repeating-linear-gradient(to top, transparent 0 14px, rgb(0 0 0 / 0.22) 14px 16px),
+    repeating-linear-gradient(to right, transparent 0 22px, rgb(0 0 0 / 0.12) 22px 24px),
+    color-mix(in srgb, var(--space-roof) 82%, black);
+}
+/* A hip end: its courses run across it, a shade between the near and far slopes. */
+[data-space-roof-slope][data-end] {
+  background:
+    repeating-linear-gradient(to right, transparent 0 14px, rgb(0 0 0 / 0.22) 14px 16px),
+    repeating-linear-gradient(to bottom, transparent 0 22px, rgb(0 0 0 / 0.12) 22px 24px),
+    color-mix(in srgb, var(--space-roof) 90%, black);
+}
 /* A room's name is on its back wall here, so its flat name on the floor goes (BoxedElementView). */
 [data-space-view] [data-room-floor-label] {
   display: none;
@@ -449,11 +591,24 @@
 [data-space-wall='doorway'] > [data-space-wall-face] > [data-space-wall-label][data-from-behind] {
   scale: -1 1;
 }
+/* On a wall running away from the camera, the name turns out from the wall to face it, a blade sign, so it reads,
+   standing just over the wall's top so the wall never hides half of it. */
+[data-space-wall='doorway'] > [data-space-wall-face] > [data-space-wall-label][data-along] {
+  top: -10px;
+}
+[data-space-wall-label][data-along='1'] {
+  rotate: y -90deg;
+}
+[data-space-wall-label][data-along='-1'] {
+  rotate: y 90deg;
+}
 
 /* The horizon: the top of the canvas fades into its own background colour (Space3DFog). */
+/* Only the far edge: it fades out quickly, so what stands at the back of a room (a bar and its stools) stays crisp
+   (the owner, 2026-11-18: bar stools "look blurry"). */
 [data-space-fog] {
   background-color: inherit;
-  mask-image: linear-gradient(to bottom, black, transparent);
+  mask-image: linear-gradient(to bottom, black, rgb(0 0 0 / 0.35) 45%, transparent);
   opacity: 0;
   transition: opacity 520ms var(--space-ease);
 }
@@ -463,7 +618,9 @@
 
 /* Words on the floor (a Text element) turn with the camera about their middle, so they always read the right way up
    (3d-view.md "Turning the camera"). */
-[data-space-view] [data-element-kind='text'] > * {
+[data-space-view] [data-element-kind='text'] > *,
+[data-space-view] [data-space-faces] > *,
+[data-space-view] [data-space-reads] {
   rotate: calc(var(--space-turn) * -1);
 }
 

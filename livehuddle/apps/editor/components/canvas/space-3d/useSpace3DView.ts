@@ -42,7 +42,8 @@ export function useSpace3DPreference(): boolean {
   return useSyncExternalStore(space3DPreference.subscribe, space3DPreference.get, () => false);
 }
 
-export function useSpace3DView(walking: boolean): Space3DPhase {
+// `turning` is the Rotate in 3D View setting (3d-view.md "Turning the camera"): off, `[` and `]` do nothing.
+export function useSpace3DView(walking: boolean, turning = false): Space3DPhase {
   // Held flat while the arrival's overview shows the whole tab (3d-view.md "Arriving").
   const overview = useSyncExternalStore(
     space3DOverview.subscribe,
@@ -92,10 +93,11 @@ export function useSpace3DView(walking: boolean): Space3DPhase {
     setSpace3DTiltNow(phase === 'tilted' || phase === 'rising' ? SPACE_3D_TILT_DEG : 0);
   }, [phase]);
   useEffect(() => () => setSpace3DTiltNow(0), []);
-  // The camera turns back as the view flattens, so the flat plan never turns (3d-view.md "Turning the camera").
+  // The camera turns back as the view flattens, so the flat plan never turns, and when Rotate in 3D View goes off
+  // (3d-view.md "Turning the camera").
   useEffect(() => {
-    if (phase === 'falling' || phase === 'flat') resetSpace3DTurn();
-  }, [phase]);
+    if (phase === 'falling' || phase === 'flat' || !turning) resetSpace3DTurn();
+  }, [phase, turning]);
   // The walls' code, fetched as soon as a walk will want it.
   useEffect(() => {
     if (want) void loadSpace3DWalls();
@@ -110,7 +112,7 @@ export function useSpace3DView(walking: boolean): Space3DPhase {
       if (isInMenuSurface(e.target)) return;
       // `[` and `]` turn the camera while the view is 3D (3d-view.md "Turning the camera").
       if (turn !== null) {
-        if (!space3DPreference.get()) return;
+        if (!space3DPreference.get() || !turning) return;
         e.preventDefault();
         turnSpace3D(turn);
         return;
@@ -120,7 +122,7 @@ export function useSpace3DView(walking: boolean): Space3DPhase {
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [walking]);
+  }, [walking, turning]);
   return phase;
 }
 

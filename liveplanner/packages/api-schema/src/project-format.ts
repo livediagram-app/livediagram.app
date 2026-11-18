@@ -16,7 +16,9 @@
 //      icons"), and unknown card type keys kept through a save ("Settings from a newer version"); editors on 5 drop them.
 //   7: a card type's card templates, `templates` (15 Nov 2026; docs/specs/026-plan/item-types.md "Card templates"),
 //      which editors on 6 keep through a save only while they fit the 4 KB cap on unknown keys.
-export const PROJECT_FORMAT = 7;
+//   8: a card type's card prefix, `prefix` (18 Nov 2026; docs/specs/026-plan/item-types.md "Card number prefixes"),
+//      which editors on 6 and 7 keep through a save as an unknown key and do not show.
+export const PROJECT_FORMAT = 8;
 
 // Every api response carries the server's number in this header.
 export const PROJECT_FORMAT_HEADER = 'X-Liveplanner-Format';

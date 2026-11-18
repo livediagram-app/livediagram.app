@@ -5,7 +5,7 @@
 // commit once the answer comes back. A refused or failed fetch lands nothing (the Library says why), so nothing is
 // ever half placed. Null in an editor without the Library, so its canvas takes no such drop.
 
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useLayoutEffect, useRef } from 'react';
 import type { LibraryInsertItem } from '../../hooks/canvas/useLibraryItemInsert';
 import { useLibrary } from './LibraryProvider';
 
@@ -17,10 +17,12 @@ export function useLibraryDrop(
   insert: (item: LibraryInsertItem<unknown>, at: Point) => boolean,
 ): LibraryItemDrop | null {
   const library = useLibrary();
-  // The latest of each, read when the answer arrives: the canvas may have changed while the fetch ran.
+  // The latest of each, read when the answer arrives: the canvas may have changed while the fetch ran. Kept in a
+  // layout effect so they are current the moment a render commits, not a frame later: a drop straight after the
+  // list arrives must see that list.
   const insertRef = useRef(insert);
   const libraryRef = useRef(library);
-  useEffect(() => {
+  useLayoutEffect(() => {
     insertRef.current = insert;
     libraryRef.current = library;
   });

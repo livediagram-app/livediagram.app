@@ -40,7 +40,7 @@ Resource, then verb. `el` is accepted for `element`. liveplanner makes projects,
 | `tab diff <project> [--tab <t>] --since <rev>`                                      | The diff view, computed by the CLI from its copy of the tab at that rev                                                                                                    |
 | `tab render <project> [--tab <t>] --png <file>\|--svg <file>`                       | A preview image; prints the path and its size, never image bytes                                                                                                           |
 | `element set\|rm <project> ...`                                                     | One [edit operation](../024-agents/edit-operations.md) as a changeset; an `add` takes a whole element, through `changeset apply`                                           |
-| `item ls\|add\|set\|move\|rm <project> ...`                                         | [Items](../026-plan/items.md) by number (`#12`); columns, types, fields by name                                                                                            |
+| `item ls\|add\|set\|move\|rm\|hand-back <project> ...`                              | [Items](../026-plan/items.md) by number (`#12`); columns, types, fields by name                                                                                            |
 | `board add\|set <project> ...`                                                      | Add a Plan board, or change one's title, columns or card types ([Plan for agents](../026-plan/plan-agents.md#adding-a-board))                                              |
 | `board import <file> [--project] [--from] [--name] [--preview]`                     | Make a board from a Trello, Asana, Jira or Linear export ([Importing from another tool](../026-plan/tracker-import.md#agents))                                             |
 | `type ls\|apply <project> ...`                                                      | Card types, and changes to them from a JSON file ([Plan for agents](../026-plan/plan-agents.md))                                                                           |
@@ -73,6 +73,11 @@ on the CLI's host that its token reads.
 **Flags.** `item add` and `item set` take `--fields flagged=true` to flag a card ([Flags](../026-plan/items.md#flags)),
 `item set --fields flagged=false` or `--clear flagged` unflags it, and `item ls` ends a flagged card's line with
 `flagged`, as the MCP's `change_items` and `list_items` do ([Flagging a card](../026-plan/plan-agents.md)).
+
+**Cards handed to an assistant.** `item ls --handed-to-me` lists only the cards handed to this token's assistant,
+`item set <project> #12 --fields assignee=me` takes one, `item hand-back <project> #12` hands it back to the token's
+person, and `item ls` ends a card handed to an assistant with its name ("→ Claude (Thomas)"), as the MCP's do
+([Cards handed to an assistant](../026-plan/plan-agents.md#cards-handed-to-an-assistant)).
 
 **Item filters.** `item ls` takes `list_items`' filters: `--type` and `--status` (each repeatable), `--query`,
 `--updated-since` and `--include-closed`. It lists every card unless `--query` or `--updated-since` is given; then a

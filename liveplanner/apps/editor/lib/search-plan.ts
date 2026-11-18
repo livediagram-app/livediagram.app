@@ -1,5 +1,5 @@
 // The search panel's Plan results (docs/specs/008-canvas/canvas-and-palette.md "Search panel"): the open project's
-// boards, by title, and its cards, by number or by the words of their title or description, as the Cards panel's Find
+// boards, by title, and its cards, by number ("12", "#12", "WI-12"), prefix or by the words of their title or description, as the Cards panel's Find
 // matches them (@liveplanner/items cardMatches). Pure, for buildSearchResults.
 //
 // Fast at a project's size: a keystroke walks each card once, reading the lowercased text Find already caches per card
@@ -8,12 +8,16 @@ import type { Tab } from '@liveplanner/project';
 import {
   boardShowsType,
   cardMatches,
+  cardRefOrKey,
+  cardRefKey,
+  prefixOf,
   isArchived,
   isTrashed,
   itemStatus,
   itemTitle,
   normaliseBoardSetup,
   type Item,
+  type ItemTypeDef,
   type PlanBoardSetup,
 } from '@liveplanner/items';
 
@@ -34,6 +38,8 @@ export type CardResult = {
   // The card's item id.
   id: string;
   key: number;
+  // Its number as people see it, "WI-12" (docs/specs/026-plan/item-types.md "Card number prefixes").
+  ref: string;
   name: string;
   // The tab whose board shows it, when one does: picking it opens that tab under the card.
   tab?: { id: string; name: string };
@@ -42,6 +48,8 @@ export type CardResult = {
 // What the editor hands search for its cards: every card, and the tab a card shows on.
 export type CardSearchSource = {
   items: ReadonlyMap<string, Item>;
+  // The plan's card types, for each card's prefix ("WI-12"); absent, cards read "#12".
+  types?: readonly ItemTypeDef[];
   tabOf?: (item: Item) => { id: string; name: string } | null;
 };
 
@@ -66,7 +74,7 @@ export function boardResults(q: string, tabs: readonly Tab[]): BoardResult[] {
 
 // How well a card answers the query: its number (0), its title (1), else only its description (2).
 function rankOf(item: Item, needle: string): number {
-  if (String(item.key) === needle) return 0;
+  if (cardRefKey(needle) === item.key) return 0;
   return itemTitle(item).toLowerCase().includes(needle) ? 1 : 2;
 }
 
@@ -81,7 +89,12 @@ export function cardResults(q: string, source: CardSearchSource): CardResult[] {
   // The best few so far, kept sorted: a short insertion, never a sort of every match.
   const best: Ranked[] = [];
   for (const item of source.items.values()) {
-    if (isTrashed(item) || isArchived(item) || !cardMatches(item, needle)) continue;
+    if (
+      isTrashed(item) ||
+      isArchived(item) ||
+      !cardMatches(item, needle, undefined, prefixOf(source.types ?? [], item.type))
+    )
+      continue;
     const next = { item, rank: rankOf(item, needle) };
     if (best.length === CARD_RESULT_LIMIT && before(next, best[best.length - 1]!) >= 0) continue;
     let at = best.length;
@@ -95,6 +108,7 @@ export function cardResults(q: string, source: CardSearchSource): CardResult[] {
       kind: 'card',
       id: item.id,
       key: item.key,
+      ref: cardRefOrKey(item, source.types),
       name: itemTitle(item) || 'Untitled',
       ...(tab ? { tab } : {}),
     };

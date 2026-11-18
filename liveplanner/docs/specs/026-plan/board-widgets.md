@@ -64,11 +64,10 @@ header; they are not in the palette.
   - Nothing a widget opens moves the row: a field widget's **+n** legend opens and closes with the row as it was.
 - Widgets are drawn for the header: the same height (28 px), a quiet border, the board's own theme colours,
   each led by a picture of what it measures (its glyph, a ring, a split bar, column bars or pips).
-- A board with no widgets shows nothing in the zone. Only while the board is selected does it say, to someone
-  who may edit, **Add widgets to this board** in muted type, with an info glyph and the **+**; an unselected board's
-  header stays clean. Maximised or filling its tab (where no selection shows), the widgets' place in the controls
-  card keeps its **+** for someone who may edit, so the hairline before the cog never stands alone; someone who may not
-  edit sees neither the zone nor its hairline there.
+- A board with no widgets shows, to someone who may edit, an **Add Widgets** button in the zone (a **+** and the
+  words, in the zone's dashed outline and muted colour), selected or not, on the canvas, maximised or filling its tab.
+  It opens the Add Widget panel, as the **+** does once widgets are there. Someone who may not edit sees nothing in
+  the empty zone, and maximised or filling its tab neither the zone nor its hairline.
 - **Not in a Dashboard slot**: a board shown in a slot draws no widgets (and no filter they set narrows it), for
   anyone, so a small slot keeps its room for the cards; maximised from the slot they are its own again
   ([Dashboard tab](plan-tabs.md#dashboard-tab) "A board in a slot is simplified").

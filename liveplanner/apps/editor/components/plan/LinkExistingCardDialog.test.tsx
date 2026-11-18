@@ -107,7 +107,7 @@ describe('Link Existing', () => {
     expect(buttons.slice(-3)).toEqual(['New Objective', 'New Key Result', 'Link Existing']);
     fireEvent.click(linkButton());
     expect(screen.getByRole('dialog', { name: 'Link Existing Card' })).toBeTruthy();
-    expect(screen.getByText('Pick a card to link to #1 Sam as Owner.')).toBeTruthy();
+    expect(screen.getByText('Pick a card to link to PE-1 Sam as Owner.')).toBeTruthy();
   });
 
   it('offers the field’s types newest first, never this card, one linked here, archived or trashed', () => {
@@ -116,9 +116,9 @@ describe('Link Existing', () => {
     const list = screen.getByRole('list', { name: 'Cards to link as Owner' });
     const rows = within(list).getAllByRole('button');
     expect(rows.map((r) => r.getAttribute('aria-label'))).toEqual([
-      'Ten new customers, Key Result #6',
-      'Hire two, Objective #4, Linked to #2 Lee',
-      'Ship it, Objective #5, Linked to a missing card',
+      'Ten new customers, Key Result KR-6',
+      'Hire two, Objective O-4, Linked to PE-2 Lee',
+      'Ship it, Objective O-5, Linked to a missing card',
     ]);
     // Several types: each row names its type.
     expect(within(list).getByText('Key Result')).toBeTruthy();
@@ -129,10 +129,10 @@ describe('Link Existing', () => {
     open();
     fireEvent.click(linkButton());
     const search = screen.getByRole('textbox', { name: 'Search cards' });
-    fireEvent.change(search, { target: { value: '#4' } });
-    expect(screen.getAllByRole('button', { name: /Objective #|Key Result #/ })).toHaveLength(1);
+    fireEvent.change(search, { target: { value: 'T-4' } });
+    expect(screen.getAllByRole('button', { name: /Objective O-|Key Result KR-/ })).toHaveLength(1);
     fireEvent.change(search, { target: { value: 'key result' } });
-    expect(screen.getByRole('button', { name: 'Ten new customers, Key Result #6' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Ten new customers, Key Result KR-6' })).toBeTruthy();
     fireEvent.change(search, { target: { value: 'nothing like it' } });
     expect(screen.getByText('No cards match.')).toBeTruthy();
   });
@@ -140,7 +140,7 @@ describe('Link Existing', () => {
   it('links a free card at once and closes', async () => {
     const { onLink, free } = open();
     fireEvent.click(linkButton());
-    fireEvent.click(screen.getByRole('button', { name: 'Ten new customers, Key Result #6' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Ten new customers, Key Result KR-6' }));
     await flush();
     expect(onLink).toHaveBeenCalledWith(free.id, false);
     expect(screen.queryByRole('dialog', { name: 'Link Existing Card' })).toBeNull();
@@ -150,19 +150,19 @@ describe('Link Existing', () => {
     const { onLink, theirs } = open();
     fireEvent.click(linkButton());
     fireEvent.click(
-      screen.getByRole('button', { name: 'Hire two, Objective #4, Linked to #2 Lee' }),
+      screen.getByRole('button', { name: 'Hire two, Objective O-4, Linked to PE-2 Lee' }),
     );
-    expect(screen.getByText('Move #4 Hire two?')).toBeTruthy();
+    expect(screen.getByText('Move O-4 Hire two?')).toBeTruthy();
     expect(
       screen.getByText(
-        "It is linked as Owner to #2 Lee. Linking it here moves it, and it leaves #2 Lee's Linked as Owner.",
+        "It is linked as Owner to PE-2 Lee. Linking it here moves it, and it leaves PE-2 Lee's Linked as Owner.",
       ),
     ).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(onLink).not.toHaveBeenCalled();
     expect(screen.getByRole('dialog', { name: 'Link Existing Card' })).toBeTruthy();
     fireEvent.click(
-      screen.getByRole('button', { name: 'Hire two, Objective #4, Linked to #2 Lee' }),
+      screen.getByRole('button', { name: 'Hire two, Objective O-4, Linked to PE-2 Lee' }),
     );
     fireEvent.click(screen.getByRole('button', { name: 'Move Here' }));
     await flush();
@@ -174,7 +174,7 @@ describe('Link Existing', () => {
     open();
     fireEvent.click(linkButton());
     fireEvent.click(
-      screen.getByRole('button', { name: 'Ship it, Objective #5, Linked to a missing card' }),
+      screen.getByRole('button', { name: 'Ship it, Objective O-5, Linked to a missing card' }),
     );
     expect(
       screen.getByText('It is linked as Owner to a missing card. Linking it here moves it.'),
@@ -184,7 +184,7 @@ describe('Link Existing', () => {
   it('stays open when the write is refused', async () => {
     open({ onLink: vi.fn(async () => false) });
     fireEvent.click(linkButton());
-    fireEvent.click(screen.getByRole('button', { name: 'Ten new customers, Key Result #6' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Ten new customers, Key Result KR-6' }));
     await flush();
     expect(screen.getByRole('dialog', { name: 'Link Existing Card' })).toBeTruthy();
   });

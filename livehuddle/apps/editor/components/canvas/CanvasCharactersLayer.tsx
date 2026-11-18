@@ -40,7 +40,13 @@ import { callPlacesOf } from '@/lib/calls/call-places';
 import { loadAvatarSpeechLayer } from '@/lib/editor-deferred-code';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import type { Element as CanvasElement } from '@livehuddle/document';
-import { builtIn3D, seatBehind, seatLift, standsIn3D } from '@/lib/space-3d/space-3d-pieces';
+import {
+  builtIn3D,
+  seatBehind,
+  seatLift,
+  standsIn3D,
+  standsRaised,
+} from '@/lib/space-3d/space-3d-pieces';
 import { seatRowBox } from '@/lib/space-3d/space-3d-rows';
 import { turnQuarter } from '@/lib/space-3d/space-3d-turn';
 import { useSpace3DTurn } from '@/components/canvas/space-3d/useSpace3DView';
@@ -108,6 +114,15 @@ export function CanvasCharactersLayer({
     for (const el of props.elements) if (standsIn3D(el)) byId.set(el.id, el);
     return byId;
   }, [props.elements]);
+  // The Stages a character stands up on (3d-view.md "A stage stands up"), once per board change.
+  const stageBoxes = useMemo(
+    () =>
+      props.elements.filter(
+        (el): el is Extract<CanvasElement, { type: 'shape' }> =>
+          el.type === 'shape' && el.shape === 'stage',
+      ),
+    [props.elements],
+  );
   // A table built row by row lifts its sitter to the chair or bench they are on (3d-view.md "Tables are built").
   // Turned (3d-view.md "Turning the camera"), a built table lies flat (no lift), and the lift follows the camera's side.
   const turn = useSpace3DTurn();
@@ -277,6 +292,7 @@ export function CanvasCharactersLayer({
           chipShift={chipShifts.get(peer.id)}
           seatLift={liftOf(peer.avatar.seatedOn, peer.avatar)}
           seatBehind={behindOf(peer.avatar.seatedOn, peer.avatar)}
+          raised={standsRaised(stageBoxes, peer.avatar)}
         />
       ))}
       {/* The Receptionist (docs/specs/008-canvas/receptionist.md): the host by the tab's Avatar Pad, drawn while you
@@ -323,6 +339,7 @@ export function CanvasCharactersLayer({
         chipShift={chipShifts.get(SELF_CHIP)}
         seatLift={liftOf(avatar.seatedOn, feet)}
         seatBehind={behindOf(avatar.seatedOn, feet)}
+        raised={standsRaised(stageBoxes, feet)}
       />
       {/* Who is talking, near and far (docs/specs/012-collaboration/proximity-audio.md "The talking equaliser"). */}
       <InSpace3DOverlay>

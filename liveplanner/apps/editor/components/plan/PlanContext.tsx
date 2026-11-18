@@ -22,6 +22,7 @@ import type {
   ItemMove,
   ItemPatch,
   ItemPatchOf,
+  ItemAssistant,
   ItemMoveOf,
   ItemPerson,
   ItemTypeDef,
@@ -78,6 +79,10 @@ export type PlanContextValue = {
   self: ItemPerson | null;
   // People who could be assigned (the room, and the people already on items).
   people: readonly ItemPerson[];
+  // The AI assistants a card can be handed to (docs/specs/026-plan/items.md "Who it can be handed to"), and a re-read of
+  // the ones the plan remembers (the Assignee picker's open). Absent outside the editor: none.
+  assistants?: readonly ItemAssistant[];
+  refreshAssistants?: () => void;
   // The board's structure: columns, card types, fields, settings, and retiring a card (Trash, Archive).
   canEdit: boolean;
   // Adding, editing and moving cards (docs/specs/013-workspace/share-roles.md): an Editor's and a Participant's.

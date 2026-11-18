@@ -14,6 +14,7 @@ import {
   importTrackerBoard,
   pictureLinkFor,
   listItemsPage,
+  handedToOf,
   readPlanState,
   resolveListItemsPage,
   resolveListingFilter,
@@ -52,14 +53,22 @@ export function registerPlanTools(server: McpServer, env: Env): void {
       // out (docs/specs/026-plan/plan-agents.md "What list_items leaves out unless asked").
       const page = resolveListItemsPage(args);
       if (!page.ok) return errorResult(page.message);
+      // Only the cards handed to the calling assistant, when asked (plan-agents.md "Cards handed to an assistant").
+      const handed = await handedToOf(api, state.items, args.handedToMe);
+      if (!handed.ok) return errorResult(handed.message);
       // Each picture listed with a link the agent's own token reads (docs/specs/015-api/mcp-server.md §4.5b).
       // The plan's id first, so the interactive view knows which plan to draw (mcp-server.md "Interactive view").
       return textResult({
         projectId: args.projectId,
-        ...listItemsPage(state, filter, page, {
-          pictureLink: pictureLinkFor(appBase(env), args.projectId),
-          url: deepLink(env, args.projectId),
-        }),
+        ...listItemsPage(
+          state,
+          filter,
+          { ...page, ...(handed.handedTo ? { handedTo: handed.handedTo } : {}) },
+          {
+            pictureLink: pictureLinkFor(appBase(env), args.projectId),
+            url: deepLink(env, args.projectId),
+          },
+        ),
       });
     },
     VIEW_TOOL_META,

@@ -10,6 +10,8 @@ import {
   isPlacedShape,
   isWallPiece,
   snapDoorToWall,
+  mountsOnWall,
+  snapToWallFace,
   turnPiece,
   turnsWithFacing,
   type ChairFacing,
@@ -41,6 +43,11 @@ export function placementLanding(
 ): { piece: ShapeElement; onWall: boolean } {
   const base = placedPiece(kind, variant, facing);
   const free = { ...base, x: at.x - base.width / 2, y: at.y - base.height / 2 };
+  // A wall piece shows where it will land: against the nearest wall (wall-pieces.md "Only on a wall").
+  if (mountsOnWall(free.shape)) {
+    const mounted = snapToWallFace(free, elements);
+    return { piece: mounted, onWall: mounted !== free };
+  }
   if (!isWallPiece(free)) return { piece: free, onWall: false };
   const snapped = snapDoorToWall(free, elements);
   return { piece: snapped, onWall: snapped !== free };

@@ -81,6 +81,7 @@ function AvatarWalkerView({
   chipShift,
   seatLift = 0,
   seatBehind = false,
+  raised = 0,
   turn = 0,
 }: {
   // The 3D camera's quarter turns (3d-view.md "Turning the camera"): the figure is drawn facing the way the turned
@@ -134,6 +135,9 @@ function AvatarWalkerView({
   seatLift?: number;
   // In the 3D view, whether the sitter sits behind their piece, which then hides their legs (app/space-3d.css).
   seatBehind?: boolean;
+  // In the 3D view, how far up off the floor the character stands, in canvas px: on a Stage, its height (3d-view.md
+  // "A stage stands up"). 0 (the default) on the floor.
+  raised?: number;
 }) {
   // A transform on top of the chip's centring (the `translate` of -translate-x-1/2), so the two add up.
   const chipMove = chipShift ? `translateX(${chipShift}px)` : undefined;
@@ -165,9 +169,13 @@ function AvatarWalkerView({
   // facing the camera: the editor's stylesheet turns this box; flat, it is the placed box's own size and does nothing.
   const standOrigin = `${box.offsetX}px ${box.offsetY}px`;
   // A sitter's nudge towards the camera, read by the stand's 3D rule (app/space-3d.css); nothing while standing.
+  // A character standing at a piece (a treadmill's belt, a standing desk) is lifted the same way, so the piece never
+  // covers them (the owner, 2026-11-18: "I seem to be hidden behind it"); one standing behind theirs (a Podium's
+  // speaker) stays where the piece's own front hides their legs.
   const liftVar =
-    seated && seatLift > 0
+    seatLift > 0 && (seated || !seatBehind)
       ? ({
+          ...(raised > 0 ? { '--space-raise': `${raised}px` } : null),
           '--space-seat-lift': `${seatLift}px`,
           // Behind the piece: the legs, and the slack under the feet, are hidden under its front.
           ...(seatBehind
@@ -176,7 +184,9 @@ function AvatarWalkerView({
               }
             : null),
         } as CSSProperties)
-      : null;
+      : raised > 0
+        ? ({ '--space-raise': `${raised}px` } as CSSProperties)
+        : null;
   const chipEl = name ? (
     <div
       ref={chip}

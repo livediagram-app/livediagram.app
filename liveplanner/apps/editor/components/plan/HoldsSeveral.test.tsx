@@ -184,12 +184,12 @@ describe('a Card field that holds several', () => {
 
   it('draws a chip per linked card that opens it, and a missing card', () => {
     const { onOpen } = field([a.id, 'gone']);
-    fireEvent.click(screen.getByRole('button', { name: 'Open #1 Launch' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Open P-1 Launch' }));
     expect(onOpen).toHaveBeenCalledWith(a.id);
     expect(screen.getByText('Missing card')).toBeTruthy();
     cleanup();
     field(b.id, { onOpen: false });
-    expect(screen.getByRole('button', { name: 'Remove #2 Billing from Related' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Remove P-2 Billing from Related' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: /^Open/ })).toBeNull();
     cleanup();
     field(undefined);
@@ -202,19 +202,19 @@ describe('a Card field that holds several', () => {
     const list = screen.getByRole('listbox', { name: 'Related' });
     expect(within(list).queryByRole('option', { name: 'None' })).toBeNull();
     expect(
-      within(list).getByRole('option', { name: '#1 Launch' }).getAttribute('aria-selected'),
+      within(list).getByRole('option', { name: 'P-1 Launch' }).getAttribute('aria-selected'),
     ).toBe('true');
-    fireEvent.click(within(list).getByRole('option', { name: '#3 Search' }));
+    fireEvent.click(within(list).getByRole('option', { name: 'P-3 Search' }));
     expect(onSave).toHaveBeenLastCalledWith([a.id, c.id]);
-    fireEvent.click(within(list).getByRole('option', { name: '#1 Launch' }));
+    fireEvent.click(within(list).getByRole('option', { name: 'P-1 Launch' }));
     expect(onSave).toHaveBeenLastCalledWith(undefined);
   });
 
   it('removes a chip and says so', () => {
     const { onSave } = field([a.id, b.id, 'gone']);
-    fireEvent.click(screen.getByRole('button', { name: 'Remove #2 Billing from Related' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Remove P-2 Billing from Related' }));
     expect(onSave).toHaveBeenLastCalledWith([a.id, 'gone']);
-    expect(announce).toHaveBeenLastCalledWith('Removed #2');
+    expect(announce).toHaveBeenLastCalledWith('Removed P-2');
     fireEvent.click(screen.getByRole('button', { name: 'Remove Missing card from Related' }));
     expect(announce).toHaveBeenLastCalledWith('Removed Missing card');
   });
@@ -269,8 +269,8 @@ describe('on the card face', () => {
         palette={palette}
       />,
     );
-    expect(container.textContent).toContain('#1 #2 #3 +3');
-    expect(screen.getByText(/^Related: #1 T1, #2 T2/).textContent).toContain('Missing card');
+    expect(container.textContent).toContain('P-1 P-2 P-3 +3');
+    expect(screen.getByText(/^Related: P-1 T1, P-2 T2/).textContent).toContain('Missing card');
     cleanup();
     const coloured = card({ title: 'C', color: '#ea580c' }, 'project', 9);
     const one = render(
@@ -282,7 +282,7 @@ describe('on the card face', () => {
         palette={palette}
       />,
     );
-    expect(one.container.textContent).toContain('? #9');
+    expect(one.container.textContent).toContain('? P-9');
     cleanup();
     const none = render(
       <LinkedNumbersPill

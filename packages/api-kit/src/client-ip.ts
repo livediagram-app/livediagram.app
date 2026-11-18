@@ -19,6 +19,14 @@ export function clientRateKey(request: Request, fallback = 'anonymous'): string 
   return addressRateKey(clientIp(request, fallback));
 }
 
+// The key for a limit a token-bearing caller may meet (the room-ticket mint): the API token when the request
+// bears one, else the caller's address (clientRateKey). An MCP server's calls reach an api over its service binding
+// as fresh requests with no CF-Connecting-IP, so keyed on an address every MCP call would share one `anonymous`
+// bucket; each bears a token, so it keys on that (each product's docs/specs/015-api/api.md "Rate limiting").
+export function callerRateKey(request: Request, tokenId: string | null | undefined): string {
+  return tokenId ? `token:${tokenId}` : clientRateKey(request);
+}
+
 // clientRateKey for an address already in hand (one an app's router named).
 export function addressRateKey(ip: string): string {
   const address = unmappedAddress(ip);

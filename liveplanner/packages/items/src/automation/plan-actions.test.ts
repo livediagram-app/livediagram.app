@@ -124,14 +124,14 @@ describe('Set Field', () => {
       ),
     );
     expect(r.patch.set).toMatchObject({
-      title: 'Login fails (#7)',
+      title: 'Login fails (B-7)',
       'f-when': '2026-11-12',
       'f-points': 8,
       'f-tags': ['a'],
       'f-owner': SAM,
       estimate: 5,
       labels: ['x', 'y'],
-      'f-x': 'Login fails (#7)',
+      'f-x': 'Login fails (B-7)',
       assignee: ALI,
       'f-y': 'plain',
     });
@@ -291,7 +291,7 @@ describe('Comments, emails and Create Card', () => {
       ),
     );
     expect(r.comments).toEqual(['Over to Ali']);
-    expect(r.emails[0]).toEqual({ to: ALI, subject: '#4 is yours', body: 'Login fails' });
+    expect(r.emails[0]).toEqual({ to: ALI, subject: 'B-4 is yours', body: 'Login fails' });
     expect(r.emails[1]!.to).toEqual(SAM);
     expect(r.emails[1]!.body).toHaveLength(2000);
     expect(r.emails[2]!.to).toBeNull();
@@ -318,7 +318,7 @@ describe('Comments, emails and Create Card', () => {
       ),
     );
     expect(r.emails).toEqual([
-      { to: null, addresses: ['ana@example.com', 'bo@example.com'], subject: '#4', body: 'b' },
+      { to: null, addresses: ['ana@example.com', 'bo@example.com'], subject: 'B-4', body: 'b' },
     ]);
     expect(r.lines.map((l) => l.text)).toEqual(['Send Email to ana@example.com and 1 more']);
   });
@@ -344,10 +344,15 @@ describe('Comments, emails and Create Card', () => {
       {
         type: 'bug',
         status: 'todo',
-        fields: { title: `Follow up #${card.key}`, labels: ['a'], assignee: SAM, 'f-parent': 'c1' },
+        fields: {
+          title: `Follow up B-${card.key}`,
+          labels: ['a'],
+          assignee: SAM,
+          'f-parent': 'c1',
+        },
       },
     ]);
-    expect(r.lines[0]!.text).toBe(`Create Bug "Follow up #${card.key}"`);
+    expect(r.lines[0]!.text).toBe(`Create Bug "Follow up B-${card.key}"`);
     const notes = done(
       run(
         [{ kind: 'create_card', type: 'note', title: '{{card.assignee}}', linkField: 'f-links' }],
@@ -526,7 +531,7 @@ describe('a Set Field the card’s type lacks', () => {
     expect(r.lines.at(-1)).toEqual({
       kind: 'action',
       ok: true,
-      text: `#${linked.key} Skipped: a Note card has no When`,
+      text: `N-${linked.key} Skipped: a Note card has no When`,
     });
   });
 

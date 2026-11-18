@@ -105,7 +105,7 @@ function Harness({
   return (
     <>
       <ItemPanelMenu
-        itemKey={7}
+        itemRef="#7"
         canEdit
         canRetire={canSet}
         archived={false}

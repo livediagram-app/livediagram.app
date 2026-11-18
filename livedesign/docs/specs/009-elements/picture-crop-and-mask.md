@@ -70,8 +70,9 @@ image on the canvas:
 - **What shows**: the whole picture at the size it is drawn, the part outside the box dimmed under a dark veil; the
   box as a white frame with faint thirds lines; eight handles on the frame (four corners, four edges), the same size on
   screen at any zoom. The element's own resize handles step aside while it is cropped, and so do the selection
-  toolbar over it and the quick-add **+** buttons round it, so nothing competes with the crop handles and the bar;
-  all three come back as cropping ends, however it ends.
+  toolbar over it, the quick-add **+** buttons round it, and on a wireframe page its screen link marker and the link
+  handle at its corners, so nothing competes with the crop handles and the bar; all of them come back as cropping
+  ends, however it ends (Done, Cancel or Undo).
 - **Moving the picture**: dragging anywhere on the picture (inside the frame or the dimmed part) slides the picture
   under the frame. It never leaves a gap: the frame always lies on the picture.
 - **Changing the crop**: dragging a handle moves that edge or corner of the frame, never past the picture's edge and

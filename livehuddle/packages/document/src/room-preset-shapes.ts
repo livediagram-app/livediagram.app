@@ -1,7 +1,7 @@
-// The Room tile's presets (docs/specs/009-elements/office.md "Room presets"): six rooms to start from, each an ordinary
-// Room placed at a size and a name, the shaped ones with their walls (a custom room's `roomOutline`) and the point their
-// Door stands at; the pieces each is furnished with are room-presets.ts's. Nothing about a preset is stored but the
-// Meeting Booth's glass walls, which are the room's own wall style. A LEAF module: types and the avatar's outline
+// The Room tile's presets (docs/specs/009-elements/office.md "Room presets"): rooms of different shapes and sizes to
+// start from, each an ordinary empty Room placed at a size and a name, the shaped ones with their walls (a custom
+// room's `roomOutline`) and the point their Door stands at. Nothing about a preset is stored but the Glass Room's
+// walls, which are the room's own wall style. A LEAF module: types and the avatar's outline
 // geometry only.
 
 import { pointInPolygon, type OutlinePoint } from '@livehuddle/avatar/room-outline';
@@ -19,61 +19,96 @@ type RoomPreset = {
   variant?: 'glass';
 };
 
-// The Lounge's octagon: a 430 px square of centre line with its corners cut so every wall is the same length.
-const OCT = 430 / (2 + Math.SQRT2);
-const oct = (v: number) => Math.round(v * 100) / 100;
+// Each shape's walls' centre line is drawn half a wall (5 px) in from its box, so the walls sit inside it.
+const IN = 5;
+const r2 = (v: number) => Math.round(v * 100) / 100;
 
-/** The Room presets after the plain Room (no variant), in palette order (DEFAULTS.md D224). */
+/** An octagon in a `size` square box: every wall the same length. */
+function octagon(size: number): OutlinePoint[] {
+  const side = size - 2 * IN;
+  const cut = r2(side / (2 + Math.SQRT2));
+  const lo = IN;
+  const hi = size - IN;
+  return [
+    { x: r2(lo + cut), y: lo },
+    { x: r2(hi - cut), y: lo },
+    { x: hi, y: r2(lo + cut) },
+    { x: hi, y: r2(hi - cut) },
+    { x: r2(hi - cut), y: hi },
+    { x: r2(lo + cut), y: hi },
+    { x: lo, y: r2(hi - cut) },
+    { x: lo, y: r2(lo + cut) },
+  ];
+}
+
+/** A hexagon with flat top and bottom walls in a `width` by `height` box: its points at the left and right. */
+function hexagon(width: number, height: number): OutlinePoint[] {
+  const q = r2((width - 2 * IN) / 4);
+  return [
+    { x: IN + q, y: IN },
+    { x: width - IN - q, y: IN },
+    { x: width - IN, y: height / 2 },
+    { x: width - IN - q, y: height - IN },
+    { x: IN + q, y: height - IN },
+    { x: IN, y: height / 2 },
+  ];
+}
+
+/**
+ * The Room presets after the plain Room (no variant), in palette order (DEFAULTS.md D224): rooms of different shapes
+ * and sizes, empty, to furnish (the owner, 2026-11-18: "I also didn't want the room types in the palette to be fully
+ * furnished, but different shapes and sizes of rooms, like maybe I wanted a hexagon shaped room").
+ */
 export const ROOM_PRESETS: Readonly<Record<string, RoomPreset>> = {
-  office: { label: 'Office', width: 360, height: 240 },
-  boardroom: { label: 'Boardroom', width: 800, height: 400 },
+  // The plain Room (no preset) is the small one, 480 by 320.
+  medium: { label: 'Room', width: 640, height: 440 },
+  large: { label: 'Large Room', width: 960, height: 640 },
+  long: { label: 'Long Room', width: 1080, height: 400 },
   // An L: a wide floor along the top and a wing down the left, its Door in the wing's front wall.
-  'open-plan': {
-    label: 'Open Plan',
+  'l-shape': {
+    label: 'L-Shaped Room',
+    width: 880,
+    height: 640,
+    outline: [
+      { x: IN, y: IN },
+      { x: 880 - IN, y: IN },
+      { x: 880 - IN, y: 360 },
+      { x: 400, y: 360 },
+      { x: 400, y: 640 - IN },
+      { x: IN, y: 640 - IN },
+    ],
+    door: { x: 200, y: 640 - IN },
+  },
+  hexagon: {
+    label: 'Hexagon Room',
+    width: 680,
+    height: 560,
+    outline: hexagon(680, 560),
+    door: { x: 340, y: 560 - IN },
+  },
+  octagon: {
+    label: 'Octagon Room',
+    width: 600,
+    height: 600,
+    outline: octagon(600),
+    door: { x: 300, y: 600 - IN },
+  },
+  // A rectangle with its front right corner cut at 45 degrees, its Door in the cut.
+  'cut-corner': {
+    label: 'Cut Corner Room',
     width: 720,
     height: 520,
     outline: [
-      { x: 5, y: 5 },
-      { x: 715, y: 5 },
-      { x: 715, y: 300 },
-      { x: 285, y: 300 },
-      { x: 285, y: 515 },
-      { x: 5, y: 515 },
+      { x: IN, y: IN },
+      { x: 720 - IN, y: IN },
+      { x: 720 - IN, y: 340 },
+      { x: 540, y: 520 - IN },
+      { x: IN, y: 520 - IN },
     ],
-    door: { x: 145, y: 515 },
+    door: { x: 627.5, y: 427.5 },
   },
-  // A rectangle with its front right corner cut at 45 degrees, its Door in the cut.
-  kitchen: {
-    label: 'Kitchen',
-    width: 440,
-    height: 340,
-    outline: [
-      { x: 5, y: 5 },
-      { x: 435, y: 5 },
-      { x: 435, y: 215 },
-      { x: 315, y: 335 },
-      { x: 5, y: 335 },
-    ],
-    door: { x: 375, y: 275 },
-  },
-  lounge: {
-    label: 'Lounge',
-    width: 440,
-    height: 440,
-    outline: [
-      { x: oct(5 + OCT), y: 5 },
-      { x: oct(435 - OCT), y: 5 },
-      { x: 435, y: oct(5 + OCT) },
-      { x: 435, y: oct(435 - OCT) },
-      { x: oct(435 - OCT), y: 435 },
-      { x: oct(5 + OCT), y: 435 },
-      { x: 5, y: oct(435 - OCT) },
-      { x: 5, y: oct(5 + OCT) },
-    ],
-    door: { x: 220, y: 435 },
-  },
-  // A meeting room in glass (office.md "Glass walls", DEFAULTS.md D230): seen into from outside, a call of its own.
-  'meeting-booth': { label: 'Meeting Booth', width: 360, height: 300, variant: 'glass' },
+  // A room in glass (office.md "Glass walls", DEFAULTS.md D230): seen into from outside, a call of its own.
+  glass: { label: 'Glass Room', width: 640, height: 440, variant: 'glass' },
 };
 
 /** The room preset `variant` names, or null when it is none (the Restroom is a preset of its own, office-amenities). */

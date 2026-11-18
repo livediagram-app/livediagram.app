@@ -36,6 +36,8 @@ export interface PlanActionsContext extends ConditionContext {
   github?: PullRequestValues;
   // An Email Received run: the sender's bare address, for `{{from}}`.
   email?: string;
+  // A Form Response run: the response's answers as text by question, for `{{answer.<Question>}}`.
+  answers?: Record<string, string>;
 }
 
 // The card a Create Card makes: its type, its column (absent: the type's Default State) and fields.
@@ -238,6 +240,7 @@ export const walkOf = (card: Item, run: Run, ctx: PlanActionsContext, prefix = '
     ...(ctx.cardless ? { cardless: true } : {}),
     ...(ctx.github ? { github: ctx.github } : {}),
     ...(ctx.email ? { email: ctx.email } : {}),
+    ...(ctx.answers ? { answers: ctx.answers } : {}),
   };
   return { plan, ctx, type, values };
 };

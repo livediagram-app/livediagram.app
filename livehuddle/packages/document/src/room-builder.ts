@@ -120,8 +120,8 @@ function wallLines(el: ShapeElement) {
   return isOutlinedRoom(el) ? outlineWalls(el, el.roomOutline) : roomWalls(el);
 }
 
-// Every room's and corridor's walls, uncut, with the piece each belongs to.
-function wallsOf(elements: readonly Element[]) {
+/** Every room's and corridor's walls, uncut, with the piece each belongs to. */
+export function wallsOf(elements: readonly Element[]) {
   const out: { room: ShapeElement; a: OutlinePoint; b: OutlinePoint }[] = [];
   for (const el of elements) {
     if (!isWalled(el)) continue;

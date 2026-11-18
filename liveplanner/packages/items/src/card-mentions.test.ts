@@ -14,6 +14,15 @@ describe('a card mention', () => {
     expect(cardMentions('Planner12', 'Planner')).toEqual([12]);
   });
 
+  it('may carry a card prefix before the number, any prefix, the number naming the card', () => {
+    expect(cardMentions('Fixes Work Tracker WI-143', 'Work Tracker')).toEqual([143]);
+    expect(cardMentions('Work Tracker #bug2-7 and Work Tracker 8', 'Work Tracker')).toEqual([7, 8]);
+    // Only after a space or a #, and only a prefix: a letter, at most 6 letters and digits, a dash and a digit.
+    expect(cardMentions('Work Trackers-12', 'Work Tracker')).toEqual([]);
+    expect(cardMentions('Work Tracker ABCDEFG-1', 'Work Tracker')).toEqual([]);
+    expect(cardMentions('Work Tracker WI-', 'Work Tracker')).toEqual([]);
+  });
+
   it('needs no letter or digit on either side', () => {
     expect(cardMentions('Work Trackers #143', 'Work Tracker')).toEqual([]);
     expect(cardMentions('MyWork Tracker #143', 'Work Tracker')).toEqual([]);

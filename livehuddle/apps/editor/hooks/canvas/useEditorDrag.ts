@@ -24,6 +24,7 @@ import {
   isBoxed,
   doorsFollowRooms,
   snapMovedDoors,
+  snapMovedWallPieces,
   type Element,
 } from '@livehuddle/document';
 import { trackDuplicated } from '@/lib/element-telemetry';
@@ -254,8 +255,10 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
           // Translate every dragged boxed element.
           const moved = translateBoxedSelection(els, drag.startBounds, move.tx, move.ty);
           // A moved door lands on the nearest wall (docs/specs/009-elements/room-builder.md "Door"), unless
-          // Cmd / Ctrl places it freely.
-          return noSnap ? moved : snapMovedDoors(moved, drag.startBounds);
+          // Cmd / Ctrl places it freely. A wall piece goes back against the nearest wall (wall-pieces.md "Only on a
+          // wall"), always.
+          const walled = snapMovedWallPieces(moved, drag.startBounds);
+          return noSnap ? walled : snapMovedDoors(walled, drag.startBounds);
         });
         // Shift-duplicate identity swap (docs/specs/008-canvas/shift-drag-duplicate.md): holding Shift turns
         // this move into a copy by parking the originals and handing the

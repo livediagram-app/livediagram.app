@@ -12,7 +12,8 @@ contrast they were made with" and "Ink marks on the plain paper stay seen".
   no filled element under its centre.
 - **Made contrast**: the paper label's ink as stored against the stored paper.
 - **Ink mark**: a shape (not a cycle, opacity 1 or unset) that paints with one hex colour: an icon (`shape: 'icon'`)
-  its `strokeColor`, any other shape its own `fillColor`. A **paper mark** is one whose backdrop is the paper.
+  its `strokeColor`, any other shape its own `fillColor` unless it sets `themeLockFill` (a fixed colour, drawn at
+  its exact value). A **paper mark** is one whose backdrop is the paper.
 
 ## Behaviour and state
 
@@ -130,7 +131,7 @@ drawn #66696e, an Ocean card's #254752 drawn #4b6e7a).
   kept).
 - `packages/design/src/paper-label-ink.test.ts` `withPaperMarkInks`: fills to 3:1 with a matching stroke, icons to
   their made contrast with their steps kept, light editor and unsunk parts untouched, parts on cards, washes, cycles,
-  words and stroke-less icons untouched, new and moved parts untouched, identity kept, a 4,000-part board in budget.
+  words, stroke-less icons and locked fills (`themeLockFill`) untouched, new and moved parts untouched, identity kept, a 4,000-part board in budget.
 - `apps/live/lib/paper-reink.test.ts`: `reinkOnPaper` equals a whole `inkedOnPaper` after every one of 960 random
   edits (moves, recolours, resizes, adds, removals, a bring to front) on 24 seeded boards with nested cards, washes,
   stickies, cycles, words and icons; a moved part re-inks alone and every other walked part keeps its object; a label

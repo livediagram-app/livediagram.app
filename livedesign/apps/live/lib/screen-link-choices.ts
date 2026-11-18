@@ -67,6 +67,9 @@ export function showsScreenLinkHandle(input: {
   editing: boolean;
   menuOpen: boolean;
   paintMode: boolean;
+  // An image is being cropped: the handle stands down with the rest of the selection chrome
+  // (docs/specs/009-elements/picture-crop-and-mask.md "Cropping in the editor").
+  cropping?: boolean;
   tabLocked: boolean;
   // Who may link the element (`can.linkScreens`; Inspect hands the canvas a never). Not `readOnly`: a Participant's
   // canvas is read-only and still links its own elements.
@@ -76,7 +79,8 @@ export function showsScreenLinkHandle(input: {
 }): boolean {
   const { element, pages } = input;
   if (!element || !isBoxed(element) || !pages || pages.length < 2) return false;
-  if (input.multiSelected || input.editing || input.menuOpen || input.paintMode) return false;
+  if (input.multiSelected || input.editing || input.menuOpen || input.paintMode || input.cropping)
+    return false;
   if (input.tabLocked || !input.canLink?.(element)) return false;
   const page = screenOfElement(pages, element, input.elements);
   return !!page && pageKindOf(page) === 'wireframe';

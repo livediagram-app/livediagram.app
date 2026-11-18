@@ -42,13 +42,13 @@ describe('tileDragStart', () => {
   });
 
   it('publishes a preset at its own size with its variant (office.md "Room presets")', () => {
-    const { data } = drag({ type: 'shape', kind: 'room', variant: 'boardroom' });
-    expect(data.get(PALETTE_DND_MIME)).toBe('room|boardroom');
+    const { data } = drag({ type: 'shape', kind: 'room', variant: 'large' });
+    expect(data.get(PALETTE_DND_MIME)).toBe('room|large');
     expect(setPaletteDragPreview).toHaveBeenCalledWith({
       kind: 'room',
-      width: 800,
-      height: 400,
-      variant: 'boardroom',
+      width: 960,
+      height: 640,
+      variant: 'large',
     });
   });
 

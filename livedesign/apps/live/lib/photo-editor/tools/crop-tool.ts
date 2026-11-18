@@ -121,16 +121,32 @@ export function drawnBox(
 // A drag shorter than this, photo px, on a fresh box draws nothing (a click leaves the box as it was).
 const DRAW_MIN_PX = 2;
 
-/** The Ratio changed: the box reshaped to it, centred where it was. */
+/** The Ratio changed: the box reshaped to it. A level box becomes the largest box of the ratio inside the photo,
+ *  centred as near where it was as the photo allows, so a ratio never grows the page (1:1 on 800x600 is 600x600). A
+ *  straightened box becomes the largest box of the ratio inside itself, about the same centre. Free leaves it. */
 export function reshapeCrop(ctx: ToolCtx, ratio: ToolOptions['crop']['ratio']): void {
   if (!state) return beginCrop(ctx);
-  const r = ratioOf(ratio, ctx.session.photo);
+  const photo = ctx.session.photo;
+  const r = ratioOf(ratio, photo);
   const now = cropReadout(state);
   if (!r) return;
   const centre = apply(state.matrix, { x: UNIT / 2, y: UNIT / 2 });
-  const area = now.width * now.height;
-  const width = Math.sqrt(area * r);
-  const height = width / r;
+  const { width, height } = fittedBox(now.angle ? now : photo, r);
+  if (!now.angle) {
+    const clamp = (c: number, size: number, max: number) =>
+      Math.min(Math.max(c - size / 2, 0), max - size);
+    set({
+      ...state,
+      matrix: matrixOf({
+        x: clamp(centre.x, width, photo.width),
+        y: clamp(centre.y, height, photo.height),
+        width,
+        height,
+        angle: 0,
+      }),
+    });
+    return show(ctx);
+  }
   // The top-left found by walking back from the centre along the box's own axes.
   const a = (now.angle * Math.PI) / 180;
   const x = centre.x - (Math.cos(a) * width) / 2 + (Math.sin(a) * height) / 2;

@@ -452,6 +452,28 @@ describe('the element plane', () => {
     expect(container.querySelectorAll('[data-element-plane]').length).toBe(1);
     expect(plane!.querySelector('[data-selection-grips]')).toBeNull();
   });
+
+  // docs/specs/009-elements/components.md "Editing the main": the instance being edited is never drawn, only its
+  // members; shown again once the session ends.
+  it('draws no instance with an edit session open, only its members', () => {
+    const instance = {
+      id: 'inst',
+      type: 'shape',
+      shape: 'instance',
+      componentId: 'm',
+      x: 0,
+      y: 800,
+      width: 100,
+      height: 40,
+    } as Element;
+    const member = { ...createShape('square', 0, 800), id: 'inst-a' } as Element;
+    const editing = [...BOARD, { ...instance, componentEditBy: 'me' } as Element, member];
+    const { container, rerender } = mount(layerProps({ elements: editing }));
+    expect(container.querySelector('[data-boxed-stub="inst"]')).toBeNull();
+    expect(container.querySelector('[data-boxed-stub="inst-a"]')).not.toBeNull();
+    rerender(<CanvasElementsLayer {...layerProps({ elements: [...BOARD, instance] })} />);
+    expect(container.querySelector('[data-boxed-stub="inst"]')).not.toBeNull();
+  });
 });
 
 // The large-selection board, as livediagram's e2e/perf/large-selection-board.ts builds it: 900 boxes in a 30 x 30

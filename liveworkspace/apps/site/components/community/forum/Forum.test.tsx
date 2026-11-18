@@ -122,6 +122,10 @@ const reply = (id: string, over: Partial<ForumReply> = {}): ForumReply => ({
 type Call = { url: string; method: string; auth: string | null; key: string | null; body: unknown };
 const calls: Call[] = [];
 let answer: (call: Call) => Response | Promise<Response>;
+// A topic's sidebar reads its Popular Posts from an effect that can run after the screen a test waited for, so
+// after the test has moved `answer` on to a write's reply. Set on a topic, the topic list is answered from here.
+let popularList: ((call: Call) => Response) | null;
+const isList = (call: Call) => call.url.includes('/forum/topics?');
 
 const signedIn = (name = 'Ada'): Account => ({
   status: 'in',
@@ -138,6 +142,7 @@ beforeEach(() => {
   calls.length = 0;
   window.history.replaceState(null, '', '/community/forum');
   answer = () => Response.json({ topics: [summary()], nextOffset: null });
+  popularList = null;
   vi.stubGlobal(
     'fetch',
     vi.fn(async (input: string, init: RequestInit = {}) => {
@@ -150,7 +155,7 @@ beforeEach(() => {
         body: typeof init.body === 'string' ? JSON.parse(init.body) : null,
       };
       calls.push(call);
-      return answer(call);
+      return popularList && isList(call) ? popularList(call) : answer(call);
     }),
   );
   vi.spyOn(console, 'warn').mockImplementation(() => {});
@@ -309,26 +314,27 @@ describe('the Forum list', () => {
 });
 
 describe('a Forum topic', () => {
-  // The topic, and an empty list for its sidebar's Popular Posts.
-  const read = (t: ForumTopic, replies: ForumReply[]) => (call: Call) =>
-    call.url.includes('/forum/topics?')
-      ? Response.json({ topics: [], nextOffset: null })
-      : Response.json({ topic: t, replies });
+  // An empty list for the sidebar's Popular Posts, whenever it asks.
+  beforeEach(() => {
+    popularList = () => Response.json({ topics: [], nextOffset: null });
+  });
+  const read = (t: ForumTopic, replies: ForumReply[]) => () => Response.json({ topic: t, replies });
+  // The last write, past any Popular Posts read.
+  const lastWrite = () => calls.filter((c) => !isList(c)).at(-1);
   // The replies' cards, apart from the sidebar's rows.
   const replyCards = () =>
     within(screen.getByRole('region', { name: /Repl/ })).getAllByRole('listitem');
 
   it("sits in the Forum's hero, with a back bar, Popular Posts and the categories beside it", async () => {
-    answer = (call) =>
-      call.url.includes('/forum/topics?')
-        ? Response.json({
-            topics: [
-              summary(),
-              summary({ id: 'pop1', title: 'Snap to the grid', category: 'tips', replyCount: 6 }),
-            ],
-            nextOffset: null,
-          })
-        : Response.json({ topic: topic({ category: 'showcase' }), replies: [] });
+    popularList = () =>
+      Response.json({
+        topics: [
+          summary(),
+          summary({ id: 'pop1', title: 'Snap to the grid', category: 'tips', replyCount: 6 }),
+        ],
+        nextOffset: null,
+      });
+    answer = () => Response.json({ topic: topic({ category: 'showcase' }), replies: [] });
     render(<ForumTopicPage />, { wrapper });
     await screen.findByRole('heading', { level: 1, name: 'How do I curve a line?' });
     // The same hero as the list, its heading a plain line: the topic's title is the page's h1.
@@ -411,7 +417,7 @@ describe('a Forum topic', () => {
     answer = () => Response.json({ answerId: 'r2' });
     fireEvent.click(screen.getAllByRole('button', { name: /Mark as Answer/ })[1]!);
     await waitFor(() => expect(within(replyCards()[0]!).getByText('Reply r2')).toBeTruthy());
-    const sent = calls.at(-1);
+    const sent = lastWrite();
     expect(sent).toMatchObject({
       url: `${API}/forum/topics/top1/answer`,
       method: 'PUT',
@@ -433,7 +439,7 @@ describe('a Forum topic', () => {
       });
     fireEvent.click(helpful);
     await screen.findByRole('button', { name: 'Take Back Helpful, 4' });
-    expect(calls.at(-1)).toMatchObject({
+    expect(lastWrite()).toMatchObject({
       url: `${API}/forum/posts/top1/reactions/helpful`,
       method: 'PUT',
       auth: 'Bearer tok-1',
@@ -468,7 +474,7 @@ describe('a Forum topic', () => {
       );
     fireEvent.click(screen.getByRole('button', { name: 'Reply' }));
     await screen.findByText('Hold Alt and drag.', { selector: 'p' });
-    expect(calls.at(-1)).toMatchObject({
+    expect(lastWrite()).toMatchObject({
       url: `${API}/forum/topics/top1/replies`,
       method: 'POST',
       auth: 'Bearer tok-1',
@@ -494,7 +500,7 @@ describe('a Forum topic', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     await screen.findByText('Better words.');
     expect(screen.getByText('edited')).toBeTruthy();
-    expect(calls.at(-1)).toMatchObject({
+    expect(lastWrite()).toMatchObject({
       url: `${API}/forum/posts/r1`,
       method: 'PATCH',
       auth: 'Bearer tok-1',
@@ -538,7 +544,7 @@ describe('a Forum topic', () => {
       }),
     );
     await waitFor(() => expect(screen.queryByText('Reply r1')).toBeNull());
-    expect(calls.at(-1)).toMatchObject({
+    expect(lastWrite()).toMatchObject({
       url: `${API}/forum/posts/r1`,
       method: 'DELETE',
       auth: 'Bearer tok-1',
@@ -589,7 +595,7 @@ describe('a Forum topic', () => {
       fireEvent.click(within(dialog).getByRole('button', { name: 'Send Report' }));
     });
     await within(dialog).findByText(/Thanks for letting us know/);
-    const sent = calls.at(-1);
+    const sent = lastWrite();
     expect(sent).toMatchObject({
       url: `${API}/forum/posts/r1/report`,
       method: 'POST',

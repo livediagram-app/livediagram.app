@@ -101,7 +101,7 @@ type ComponentOverride = {
 **Edit Component** (an instance's menu, and double-click on an instance) starts an **edit session** on that instance:
 
 1. The instance stays on the tab, hidden (`componentEditBy` set to the session's person), so arrows pinned to it,
-   its comments and its links stay.
+   its comments and its links stay. The canvas never draws it while the session is open, only its members.
 2. The main's elements are put on the tab as plain elements at the instance's place and scale, each marked
    `componentMember: { instanceId, elementId }`. The instance's overrides and its opacity do not apply to them: this
    is the main, so a faded instance never fades the main it is edited from.
@@ -123,7 +123,8 @@ design open on.
 
 - **The frame stays as it was made.** Members moved beyond it draw beyond every instance's box. A session never
   rescales other instances.
-- Deleting every member ends the session and deletes the instance; the main keeps its last state.
+- Deleting every member ends the session and deletes the instance at once, in the same edit (the session bar goes
+  with it, no Done needed); the main keeps its last state.
 - Undo through a session moves the members back, and the main follows them. Undo past its start removes the members
   and shows the instance again.
 - A session is data on the tab, so it survives a reload and reaches peers. Exports during a session draw the members

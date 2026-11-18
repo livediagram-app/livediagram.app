@@ -25,6 +25,7 @@ import {
   canvasSurface,
   boxedNeedsSvgRaster,
   contentBounds,
+  doorOverhang,
   EXPORT_BG,
   EXPORT_PADDING,
   r2,
@@ -220,7 +221,11 @@ export async function renderTabToCanvas(
     const shadowPad = shadow
       ? Math.max(Math.abs(shadow.offsetX), Math.abs(shadow.offsetY)) + shadow.blur
       : 0;
-    const pad = (el.rotation ? (diag - Math.min(el.width, el.height)) / 2 + 2 : 2) + shadowPad;
+    // A Door's open leaf and swing arc reach past its box (doorOverhang): the frame takes them in, as the SVG draws them.
+    const overhang =
+      el.type === 'shape' && el.shape === 'door' ? doorOverhang(el.width, el.height) : 0;
+    const pad =
+      (el.rotation ? (diag - Math.min(el.width, el.height)) / 2 + 2 : 2) + shadowPad + overhang;
     const w = el.width + pad * 2;
     const h = el.height + pad * 2;
     const svg =

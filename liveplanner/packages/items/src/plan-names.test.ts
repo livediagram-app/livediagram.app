@@ -12,6 +12,7 @@ import {
   resolveType,
 } from './plan-names';
 import { ALI, SAM, item } from './test-items';
+import { itemAssistantFor } from './assistant';
 
 const statuses = [
   { status: 'backlog~k3f2', name: 'Backlog' },
@@ -125,6 +126,19 @@ describe('resolveFields', () => {
   it('keeps a person object as given', () => {
     const r = resolveFields({ assignee: ALI }, ITEM_TYPES[1], naming);
     expect(r).toEqual({ ok: true, fields: { assignee: ALI } });
+  });
+
+  // docs/specs/026-plan/plan-agents.md "Cards handed to an assistant": a listed assistant written back.
+  it('reads an assistant given back as list_items lists it as the one a card holds', () => {
+    const claude = itemAssistantFor({ ...SAM, id: 'a1b2c3d4e5f6a1b2c3d4e5f6' }, 'Claude')!;
+    const held = { statuses, items: [item({ assignee: claude })] };
+    const listed = { id: claude.id, name: claude.name, color: claude.color, assistant: true };
+    expect(resolveFields({ assignee: listed }, ITEM_TYPES[1], held)).toEqual({
+      ok: true,
+      fields: { assignee: claude },
+    });
+    // No card holds it: checked as given, so refused.
+    expect(resolveFields({ assignee: listed }, ITEM_TYPES[1], naming).ok).toBe(false);
   });
 
   // The api refused these with a bare field_value_invalid (production Error·Api·Http400.ItemChange); they are

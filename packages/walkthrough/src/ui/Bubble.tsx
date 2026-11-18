@@ -1,8 +1,9 @@
 'use client';
 
 // The presenter's round bubble (liveworkspace/docs/specs/006-media/walkthroughs.md "The bubble"): their camera, live
-// while recording and played back after, in the corner they chose. Recorded with no camera, a round mark with their
-// initial stands in, pulsing while it plays. And the microphone's level meter beside it while setting up.
+// while recording and played back after, in the corner they chose. Recorded with no camera, the voice chip stands in:
+// a small pill with their initial, name and level bars, never a camera-sized circle that reads as an empty camera
+// ("Recording without a camera"). And the microphone's level meter beside it while setting up.
 
 import type { LevelMeter } from '@liveworkspace/capture';
 import type { WalkthroughCorner } from '@liveworkspace/media/walkthrough';
@@ -11,6 +12,10 @@ import { MAP_PANEL_SELECTOR } from '@liveworkspace/workbench/lib/fit-clear-of-pa
 import { useEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
 
 export const BUBBLE_PX = 132;
+// The voice chip's height: a label beside the canvas, not a picture.
+export const VOICE_CHIP_PX = 40;
+// The player's bar (Player.tsx), which a bottom corner's mark keeps clear of on a narrow window.
+export const PLAYER_BAR_SELECTOR = '[data-walkthrough-bar]';
 
 // Clear of each app's bottom chrome (the tab strip and zoom) and of the header.
 const CORNER_CLASS: Record<WalkthroughCorner, string> = {
@@ -30,12 +35,19 @@ const CHECK_MS = 500;
 const INSET = { side: 16, top: 16, bottom: 64 };
 
 type Box = { left: number; top: number; right: number; bottom: number };
+type Size = { w: number; h: number };
+const BUBBLE_SIZE: Size = { w: BUBBLE_PX, h: BUBBLE_PX };
 
-/** How far the bubble moves from its corner (screen px) to stay clear of the Map and a docked Contents sidebar. */
+/**
+ * How far the bubble (or the voice chip, by its own `size`) moves from its corner (screen px) to stay clear of the Map,
+ * a docked Contents sidebar and the player's bar.
+ */
 export function shiftClearOf(
   corner: WalkthroughCorner,
   frame: Box,
-  around: { map: Box | null; sidebar: Box | null },
+  // `bar`: the player's bar, centred along the bottom; absent while recording.
+  around: { map: Box | null; sidebar: Box | null; bar?: Box | null },
+  size: Size = BUBBLE_SIZE,
 ): { x: number; y: number } {
   const bottom = corner.startsWith('bottom');
   const leftSide = corner.endsWith('left');
@@ -45,17 +57,29 @@ export function shiftClearOf(
   if (sidebar && leftSide && sidebar.right > frame.left + INSET.side) {
     x = sidebar.right + CLEARANCE_PX - (frame.left + INSET.side);
   }
-  const left = (leftSide ? frame.left + INSET.side : frame.right - INSET.side - BUBBLE_PX) + x;
-  const top = bottom ? frame.bottom - INSET.bottom - BUBBLE_PX : frame.top + INSET.top;
+  const left = (leftSide ? frame.left + INSET.side : frame.right - INSET.side - size.w) + x;
+  const top = bottom ? frame.bottom - INSET.bottom - size.h : frame.top + INSET.top;
   let y = 0;
   if (
     map &&
     left < map.right &&
-    left + BUBBLE_PX > map.left &&
+    left + size.w > map.left &&
     top < map.bottom &&
-    top + BUBBLE_PX > map.top
+    top + size.h > map.top
   ) {
-    y = bottom ? map.top - CLEARANCE_PX - (top + BUBBLE_PX) : map.bottom + CLEARANCE_PX - top;
+    y = bottom ? map.top - CLEARANCE_PX - (top + size.h) : map.bottom + CLEARANCE_PX - top;
+  }
+  // On a narrow window a bottom corner reaches under the centred player bar: it goes up above the bar too.
+  const bar = around.bar;
+  if (
+    bar &&
+    bottom &&
+    left < bar.right &&
+    left + size.w > bar.left &&
+    top + y < bar.bottom &&
+    top + y + size.h > bar.top
+  ) {
+    y = bar.top - CLEARANCE_PX - (top + size.h);
   }
   return { x, y };
 }
@@ -68,12 +92,20 @@ function useClearShift(frame: RefObject<HTMLDivElement | null>, corner: Walkthro
   const [shift, setShift] = useState(NO_SHIFT);
   useEffect(() => {
     const measure = () => {
-      const parent = frame.current?.offsetParent;
-      if (!parent) return;
-      const next = shiftClearOf(corner, parent.getBoundingClientRect(), {
-        map: boxOf(MAP_PANEL_SELECTOR),
-        sidebar: boxOf(CONTENTS_SIDEBAR_SELECTOR),
-      });
+      const el = frame.current;
+      const parent = el?.offsetParent;
+      if (!el || !parent) return;
+      const next = shiftClearOf(
+        corner,
+        parent.getBoundingClientRect(),
+        {
+          map: boxOf(MAP_PANEL_SELECTOR),
+          sidebar: boxOf(CONTENTS_SIDEBAR_SELECTOR),
+          bar: boxOf(PLAYER_BAR_SELECTOR),
+        },
+        // Its own size, untouched by the shift's transform: the bubble's, or the chip's as its name sets it.
+        { w: el.offsetWidth || BUBBLE_PX, h: el.offsetHeight || BUBBLE_PX },
+      );
       setShift((prev) => (prev.x === next.x && prev.y === next.y ? prev : next));
     };
     measure();
@@ -87,22 +119,43 @@ function useClearShift(frame: RefObject<HTMLDivElement | null>, corner: Walkthro
   return shift;
 }
 
-function BubbleFrame({ corner, children }: { corner: WalkthroughCorner; children: ReactNode }) {
+// What sits in the presenter's corner, kept clear of the Map and a docked sidebar: the camera bubble or the voice chip.
+function CornerFrame({
+  corner,
+  className,
+  attrs,
+  children,
+}: {
+  corner: WalkthroughCorner;
+  className: string;
+  attrs?: Record<string, string>;
+  children: ReactNode;
+}) {
   const frame = useRef<HTMLDivElement>(null);
   const shift = useClearShift(frame, corner);
   return (
     <div
       ref={frame}
-      data-walkthrough-bubble={corner}
+      {...attrs}
       style={{
-        width: BUBBLE_PX,
-        height: BUBBLE_PX,
         transform: shift.x || shift.y ? `translate(${shift.x}px, ${shift.y}px)` : undefined,
       }}
-      className={`pointer-events-none absolute z-40 overflow-hidden rounded-full bg-slate-900 shadow-xl shadow-slate-900/25 ring-[3px] ring-white transition-[top,left,right,bottom,transform] duration-300 dark:ring-slate-800 ${CORNER_CLASS[corner]}`}
+      className={`pointer-events-none absolute z-40 transition-[top,left,right,bottom,transform] duration-300 ${CORNER_CLASS[corner]} ${className}`}
     >
       {children}
     </div>
+  );
+}
+
+function BubbleFrame({ corner, children }: { corner: WalkthroughCorner; children: ReactNode }) {
+  return (
+    <CornerFrame
+      corner={corner}
+      attrs={{ 'data-walkthrough-bubble': corner }}
+      className="h-[132px] w-[132px] overflow-hidden rounded-full bg-slate-900 shadow-xl shadow-slate-900/25 ring-[3px] ring-white dark:ring-slate-800"
+    >
+      {children}
+    </CornerFrame>
   );
 }
 
@@ -136,26 +189,65 @@ export function PlaybackBubble({
   return <BubbleFrame corner={corner}>{children}</BubbleFrame>;
 }
 
-/** Sound alone: the presenter's initial, pulsing while it plays. */
-export function InitialBubble({
+// The voice chip's level bars: each a quarter of a cycle behind the last, so together they read as a voice.
+const VOICE_BARS = [0, 0.225, 0.45, 0.675] as const;
+
+/**
+ * Sound alone: the voice chip, a small pill with the presenter's initial, their name (when known) and four level bars
+ * that move while it plays and rest while paused. Far smaller than the camera bubble and not round, so it never reads
+ * as a camera with no picture.
+ */
+export function VoiceChip({
   corner,
   name,
+  fallback,
   playing,
 }: {
   corner: WalkthroughCorner;
-  name: string;
+  // The presenter as the list names them ("You" for one's own), or null when it has no name for them.
+  name: string | null;
+  // What the initial comes from without a name: the walkthrough's title.
+  fallback: string;
   playing: boolean;
 }) {
-  const initial = (name.trim()[0] ?? '?').toUpperCase();
+  const initial = ((name ?? fallback).trim()[0] ?? '?').toUpperCase();
   return (
-    <BubbleFrame corner={corner}>
-      <span className="relative flex h-full w-full items-center justify-center bg-gradient-to-br from-brand-500 to-brand-700">
-        {playing ? (
-          <span className="absolute inset-3 animate-ping rounded-full bg-white/20 motion-reduce:animate-none" />
-        ) : null}
-        <span className="relative text-4xl font-semibold text-white">{initial}</span>
+    <CornerFrame
+      corner={corner}
+      attrs={{ 'data-walkthrough-voice': corner }}
+      className="flex h-10 items-center gap-2 rounded-full border border-slate-200 bg-white/95 py-1 pl-1 pr-3 shadow-lg shadow-slate-900/10 backdrop-blur dark:border-slate-700 dark:bg-slate-900/95 dark:shadow-black/30"
+    >
+      <span
+        aria-hidden
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-500 to-brand-700 text-[13px] font-semibold text-white"
+      >
+        {initial}
       </span>
-    </BubbleFrame>
+      {name ? (
+        <span className="max-w-[9rem] truncate text-[12px] font-medium text-slate-700 dark:text-slate-200">
+          {name}
+        </span>
+      ) : null}
+      <span
+        aria-hidden
+        data-voice-bars={playing ? 'moving' : 'resting'}
+        className="flex h-4 items-center gap-[3px]"
+      >
+        {VOICE_BARS.map((delay) => (
+          <span
+            key={delay}
+            // Rests at a third of its height; while playing it rises and falls, started part-way through its cycle.
+            style={{
+              transform: 'scaleY(0.35)',
+              animation: playing
+                ? `walkthrough-voice 0.9s ease-in-out -${delay}s infinite alternate`
+                : undefined,
+            }}
+            className="h-4 w-[3px] origin-center rounded-full bg-brand-600 motion-reduce:!animate-none dark:bg-brand-400"
+          />
+        ))}
+      </span>
+    </CornerFrame>
   );
 }
 

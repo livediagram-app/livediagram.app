@@ -15,6 +15,7 @@ import {
   hasRepeat,
   isPriority,
   itemAssignee,
+  isAssistantId,
   itemStatus,
   itemLabels,
   itemTitle,
@@ -76,6 +77,7 @@ import {
   VotesPill,
   checklistProgress,
 } from './plan-card-parts';
+import { cardRefIn } from './card-ref';
 import { customFieldBit } from './card-face-custom-bit';
 
 type PlanCardFaceProps = {
@@ -276,7 +278,13 @@ export function PlanCardFace({
     switch (f) {
       case 'key':
         // A practice card has no number of its own (key 0, docs/specs/026-plan/plan-tour.md "Practice cards").
-        return item.key > 0 ? <KeyTag key={f} itemKey={item.key} accent={accent} /> : null;
+        return item.key > 0 ? (
+          <KeyTag
+            key={f}
+            label={cardRefIn(plan?.types)({ key: item.key, type: type.id })}
+            accent={accent}
+          />
+        ) : null;
       case 'type':
         return (
           <TypeChip
@@ -345,7 +353,11 @@ export function PlanCardFace({
         return <VotesPill key={f} total={votes} palette={palette} />;
       case 'assignee':
         return assignee ? (
-          <PersonDisc key={f} person={assignee} label={`Assigned to ${assignee.name}`} />
+          <PersonDisc
+            key={f}
+            person={assignee}
+            label={`${isAssistantId(assignee.id) ? 'Handed to' : 'Assigned to'} ${assignee.name}`}
+          />
         ) : null;
       case 'labels':
         return labels.length > 0 ? <LabelChips key={f} labels={labels} palette={palette} /> : null;

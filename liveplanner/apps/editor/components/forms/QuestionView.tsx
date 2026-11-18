@@ -15,13 +15,14 @@ import {
 import { lucideGlyph } from '@liveplanner/ui';
 import { lucideCircleAlert } from '@liveworkspace/icons/lucide';
 import { QuestionControl } from './QuestionControl';
+import { ContentBlockView } from './ContentBlockView';
 
 const AlertIcon = lucideGlyph(lucideCircleAlert, 16);
 
 // A single control is labelled by its prompt as a <label>; a group (choices, a rating) names itself by the prompt.
 export function labelsAsOne(question: PublicQuestion): boolean {
   return (
-    !['single', 'multi', 'rating', 'checkbox'].includes(question.type) ||
+    !['single', 'multi', 'rating', 'checkbox', 'colour'].includes(question.type) ||
     (question.type === 'single' &&
       (!!question.dropdown || (question.options?.length ?? 0) > DROPDOWN_AFTER))
   );
@@ -53,6 +54,9 @@ export function QuestionView({
   aside?: ReactNode;
 }) {
   const base = useId();
+  // A content block asks nothing: it is drawn as what it shows.
+  if (question.type === 'content')
+    return <ContentBlockView block={question} aside={aside} {...(domId ? { domId } : {})} />;
   const promptId = `${base}-prompt`;
   const helpId = `${base}-help`;
   const errorId = `${base}-error`;

@@ -1480,8 +1480,26 @@ export const FORM_QUESTIONS_ADDED = chart(
   'Form',
   'Added',
   'Form Questions Added',
-  "A question added to a form, by its type, or all at once from a card type's fields.",
+  "A question or content block added to a form, by its type, or all at once from a card type's fields.",
   { types: [...Object.values(QUESTION_TYPE_TELEMETRY), 'FromCardType'] },
+);
+
+// A form's cover or picture block (docs/specs/030-forms/forms.md "Pictures"), by where the picture came from.
+export const FORM_PICTURES_ADDED = chart(
+  'Form',
+  'Added',
+  'Form Pictures Added',
+  "A picture put on a form's cover or a picture block: uploaded, taken from Your Images, or found by Search.",
+  { types: ['PictureUpload', 'PictureGallery', 'PictureSearch'] },
+);
+
+// Searches run in a form picture's Search tab, for openly licensed pictures.
+export const FORM_PICTURE_SEARCHES = chart(
+  'Element',
+  'Searched',
+  'Form Picture Searches',
+  "Searches run in a form picture's Search tab, for openly licensed pictures.",
+  { types: ['Image'] },
 );
 
 export const FORMS_CONNECTED = chart(
@@ -1593,6 +1611,8 @@ export const FORMS: MetricStack = {
     FORM_DESCRIBE_MADE,
     FORM_DESCRIBE_DRAFTS,
     FORM_QUESTIONS_ADDED,
+    FORM_PICTURES_ADDED,
+    FORM_PICTURE_SEARCHES,
     FORM_FIELDS_FROM_QUESTIONS,
     FORMS_CONNECTED,
     FORMS_PUBLISHED,

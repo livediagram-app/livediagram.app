@@ -501,6 +501,7 @@ export class DesignRoom extends DurableObject<Env> {
       v.grantExp ?? null,
       v.collabKey ?? null,
       v.reactionPerson ?? null,
+      v.apiToken ?? null,
     );
     if (v.designId) {
       this.bindDesign(v.designId);
@@ -530,6 +531,9 @@ export class DesignRoom extends DurableObject<Env> {
     // The person stamped on its reactions (X-Verified-Reaction-Person,
     // docs/specs/012-collaboration/comment-reactions.md).
     reactionPerson: string | null = null,
+    // The API token whose ticket opened it (X-Verified-Api-Token, public-api-and-tokens.md "Revoking a token"):
+    // revoking the token closes it.
+    apiToken: string | null = null,
   ): void {
     acceptSession(
       this,
@@ -544,6 +548,7 @@ export class DesignRoom extends DurableObject<Env> {
       grantExp,
       collabKey,
       reactionPerson,
+      apiToken,
     );
   }
 

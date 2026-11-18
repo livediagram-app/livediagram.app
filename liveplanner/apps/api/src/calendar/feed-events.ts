@@ -10,6 +10,7 @@ import {
   itemTitle,
   notifiedPeople,
   typesOf,
+  cardRef,
 } from '@liveplanner/items';
 import { cardPlacesOf } from '@liveplanner/project';
 import { listItems } from '../db/items';
@@ -84,7 +85,7 @@ export async function feedEventsOf(
     events.push({
       order: item.key,
       uid: `${item.id}.${planId}@liveplanner.app`,
-      summary: summaryOf(item.key, itemTitle(item), span.startOnly),
+      summary: summaryOf(cardRef(item, catalogue), itemTitle(item), span.startOnly),
       url,
       description: where ? `${where}\n${url}` : url,
       startDay: span.startDay,

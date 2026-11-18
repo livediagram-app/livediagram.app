@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import {
   activeComponentSessions,
   deriveComponentFromSession,
+  endEmptiedSessions,
   finishComponentEdit,
+  isEditedInstance,
   sessionMembers,
   startComponentEdit,
   stampSessionMembers,
@@ -151,5 +153,23 @@ describe('the edit session', () => {
     expect(done[0]).not.toHaveProperty('componentEditBy');
     const emptied = started.filter((e) => !e.componentMember);
     expect(finishComponentEdit(emptied, 'inst').map((e) => e.id)).toEqual(['keep']);
+  });
+
+  it('ends a session the moment its last member is deleted, taking the instance with it', () => {
+    const started = startComponentEdit([instanceOf(main), box('keep', 0, 0)], 'inst', main, 'me');
+    expect(isEditedInstance(started[0]!)).toBe(true);
+    expect(isEditedInstance(instanceOf(main))).toBe(false);
+    expect(isEditedInstance(box('keep', 0, 0))).toBe(false);
+    // One member deleted of several: the session stays.
+    const members = sessionMembers(started, 'inst');
+    const fewer = started.filter((e) => e.id !== members[0]!.id);
+    expect(endEmptiedSessions(started, fewer)).toBe(fewer);
+    // The last one deleted: the instance goes too, nothing else changes.
+    const emptied = started.filter((e) => !e.componentMember);
+    expect(endEmptiedSessions(fewer, emptied).map((e) => e.id)).toEqual(['keep']);
+    // No session, or a session that never had members in the previous state (just started): left alone.
+    const plain = [instanceOf(main), box('keep', 0, 0)];
+    expect(endEmptiedSessions(plain, plain)).toBe(plain);
+    expect(endEmptiedSessions(emptied, emptied)).toBe(emptied);
   });
 });

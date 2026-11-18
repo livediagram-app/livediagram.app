@@ -96,12 +96,16 @@ Classical, in the browser, with no model to download:
 
 ## Crop
 
-**Crop** (C) puts a crop box over the photo (the whole photo at first). While it is still that first box, a drag on
+**Crop** (C, or its button) puts a crop box over the photo at once, with its grid (the whole photo at first, or the
+largest box of a fixed Ratio centred in it); no first press is needed. While it is still that first box, a drag on
 the photo draws a new box from the press (held to the Ratio; a click leaves the box whole). After that, drag its edges
 or corners, inside to move, outside to straighten (rotate), with a rule-of-thirds grid inside and the cropped-away part dimmed. Options:
 **Ratio** (**Free**, **Original**, **1:1**, **4:5**, **3:2**, **16:9**, **9:16**, or width x height), **Delete
 Cropped Pixels** (on: pixels outside are dropped; off: layers keep them off the photo's edges), and **Straighten**
-(draw a line that should be level). Enter crops (one edit; the page takes the new size); Escape leaves it.
+(draw a line that should be level). Choosing a Ratio fits the largest box of that ratio inside the photo, centred as
+near where the box was as the photo allows (1:1 on an 800 x 600 photo is 600 x 600), so a ratio never makes the page
+bigger than the photo; only dragging the box past the photo's edges does. A straightened box takes the largest box of
+the ratio inside itself, about its centre. Free leaves the box as it is. Enter crops (one edit; the page takes the new size); Escape leaves it.
 
 ## Painting and erasing
 

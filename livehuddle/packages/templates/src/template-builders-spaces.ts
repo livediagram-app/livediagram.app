@@ -212,7 +212,8 @@ export function buildTeamPod(cx: number, cy: number): Element[] {
         { kind: 'phone-booth', x: 676, y: 40 },
         { kind: 'coffee-machine', x: 50, y: 330 },
         { kind: 'plant', x: 140, y: 360 },
-        { kind: 'bookshelf', x: 600, y: 300 },
+        // Against the right wall, its back to it (docs/specs/009-elements/wall-pieces.md "Only on a wall").
+        { kind: 'bookshelf', x: 700, y: 300 },
         // The team's dog (docs/specs/009-elements/workday-pieces.md "Pet Bed and its dog"), between the pad and the
         // table, right of the doorway's column.
         { kind: 'pet-bed', x: 456, y: 422 },
@@ -224,7 +225,8 @@ export function buildTeamPod(cx: number, cy: number): Element[] {
   const by = y0 + HEAD;
   const board: Element[] = [
     // The stand-up's Timer under the board: press it to timebox the round (docs/specs/009-elements/timer-and-stopwatch.md).
-    createShape('timer', bx, by + 44 + 2 * 154 + 16),
+    // Close enough under it (the stickies' own gap) to move with it when the plan opens out (template-roomy.ts).
+    createShape('timer', bx, by + 44 + 2 * 154),
     {
       ...createText(bx, by),
       width: BOARD_W,

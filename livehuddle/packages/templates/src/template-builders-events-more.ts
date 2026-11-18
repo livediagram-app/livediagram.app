@@ -247,7 +247,8 @@ const HACK_FLOOR: OfficePiece[] = [
   table(412, 1290),
   table(764, 1290),
   // The rules on a board, the countdown on a Timer, and bean bags to think on.
-  { kind: 'notice-board', x: 1400, y: 1250, notes: HACK_NOTES },
+  // The board hangs on the Snack Bar's front wall, past its door and sign (wall-pieces.md "Only on a wall").
+  { kind: 'notice-board', x: 1830, y: 965, notes: HACK_NOTES },
   { kind: 'timer', x: 1620, y: 1270 },
   { kind: 'rug', x: 1840, y: 1230, variant: 'round' },
   { kind: 'bean-bag', x: 1856, y: 1260 },

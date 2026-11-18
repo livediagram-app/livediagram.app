@@ -143,12 +143,12 @@ export function setupMissions(boardId: string): Mission<SetupCtx>[] {
     {
       id: 'add-widget',
       title: 'Add a Widget',
-      why: 'Press **+** in the board’s header and pick a widget, such as Only Mine.',
-      points: [`${boardRoot(boardId)} button[aria-label="Add a widget"]`],
+      why: 'Press **+** (or **Add Widgets** on a board with none) in the board’s header and pick a widget, such as Only Mine.',
+      points: [`${boardRoot(boardId)} button[data-widget-add]`],
       lesson: 'Widgets count, filter and sum this board’s cards, live as they move.',
       hints: [
-        { text: 'Press + at the end of the header’s widgets and pick one.' },
-        { text: 'This +.', ring: () => `${boardRoot(boardId)} button[aria-label="Add a widget"]` },
+        { text: 'Press + at the end of the header’s widgets, or Add Widgets, and pick one.' },
+        { text: 'This one.', ring: () => `${boardRoot(boardId)} button[data-widget-add]` },
       ],
       done: (c) => {
         const had = new Set(widgetsOf(c.start));

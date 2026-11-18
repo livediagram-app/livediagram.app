@@ -15,7 +15,7 @@ import { templateMatchesQuery } from './template-search';
 import { TEMPLATES } from './templates';
 
 // docs/specs/008-canvas/canvas-and-palette.md "Template categories", docs/specs/007-editor/templates-by-mode.md "The
-// catalogue": the thirty Spaces in eight categories by the kind of place they are, the blank in none.
+// catalogue": the thirty-two Spaces in eight categories by the kind of place they are, the blank in none.
 describe('template categories', () => {
   const ids = TEMPLATE_CATEGORIES.map((c) => c.id);
 
@@ -79,8 +79,9 @@ describe('template categories', () => {
       'expo-hall',
       'classroom',
       'hackathon-hall',
+      'art-gallery',
     ]);
-    expect(inCategory('recreation')).toEqual(['rooftop-bar', 'cafe']);
+    expect(inCategory('recreation')).toEqual(['rooftop-bar', 'cafe', 'wellness-studio']);
     expect(inCategory('outdoor')).toEqual(['garden-retreat', 'city-park', 'beach-offsite']);
     expect(inCategory('campus')).toEqual([
       'company-campus',

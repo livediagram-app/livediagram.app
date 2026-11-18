@@ -14,7 +14,11 @@ import {
   isItemPerson,
   itemStatus,
   itemSummary,
+  cardRefOrKey,
+  cardRefTitle,
   itemTitle,
+  assistantPersonOf,
+  itemAssistantOf,
   resolveFields,
   calculatedWritten,
   isFormulaField,
@@ -53,6 +57,8 @@ import {
 } from './card-pictures';
 import { itemsPath } from '../verbs/shared';
 import type { PlanState } from './plan-state';
+import { assistantOnce } from './assistant-caller';
+import { handBackRefusal, isMe } from './hand-back';
 
 export type ItemChange =
   | {
@@ -76,7 +82,9 @@ export type ItemChange =
       moveFollowing?: boolean;
     }
   | { op: 'move'; item: string; status: string; before?: string }
-  | { op: 'delete'; item: string };
+  | { op: 'delete'; item: string }
+  // Hands a card the calling assistant holds back to its person (plan-agents.md "Cards handed to an assistant").
+  | { op: 'hand_back'; item: string };
 
 interface ItemChangesResult {
   applied: string[];
@@ -111,7 +119,7 @@ function loopStop(
   change: BlockingChange,
 ): void {
   const loop = blockingCycleOf(items, types, [change]);
-  if (loop) throw new Stop('blocks_cycle', blockingLoopMessage(loop.chain));
+  if (loop) throw new Stop('blocks_cycle', blockingLoopMessage(loop.chain, types));
 }
 
 function must<T extends object>(
@@ -144,7 +152,7 @@ function placeOf(item: Item, state: PlanState): string {
 
 // "#3 [task] Fix login in In Progress", then what a set changed and any note.
 function line(prefix: string, item: Item, state: PlanState, notes: readonly string[] = []): string {
-  return `${prefix} ${itemSummary(item)}${placeOf(item, state)}${notes.map((n) => `; ${n}`).join('')}`;
+  return `${prefix} ${itemSummary(item, state.plan.types)}${placeOf(item, state)}${notes.map((n) => `; ${n}`).join('')}`;
 }
 
 // A note for an assignee given by a name nobody on the project has: a name only, not linked to an account.
@@ -164,17 +172,18 @@ const SET_VALUE_MAX = 40;
 
 // A value as a set line reads it back: what was stored, so a value that landed other than meant shows ("Rating =
 // ★"). A card link by its number, a person by name, a list by its length.
-function storedText(value: unknown, items: readonly Item[]): string {
+function storedText(value: unknown, items: readonly Item[], types: readonly ItemTypeDef[]): string {
+  const refOf = (i: Item) => cardRefOrKey(i, types);
   if (isItemPerson(value)) return value.name;
   // A field that holds several (docs/specs/026-plan/item-types.md "Holds Several"): its people or cards, named.
   if (Array.isArray(value) && value.length > 0 && value.every(isItemPerson))
     return cut(value.map((p) => p.name).join(', '));
   if (Array.isArray(value) && value.length > 0 && value.every((v) => byIdIn(items, v)))
-    return cut(value.map((v) => `#${byIdIn(items, v)!.key}`).join(', '));
+    return cut(value.map((v) => refOf(byIdIn(items, v)!)).join(', '));
   if (Array.isArray(value)) return `${value.length} entr${value.length === 1 ? 'y' : 'ies'}`;
   if (typeof value === 'string') {
     const linked = items.find((i) => i.id === value);
-    if (linked) return `#${linked.key}`;
+    if (linked) return refOf(linked);
     return JSON.stringify(cut(value.split('\n')[0]!));
   }
   // A number or flag as written; anything else as its JSON, cut.
@@ -204,6 +213,7 @@ function setNote(
   cleared: readonly string[],
   type: ItemTypeDef,
   items: readonly Item[],
+  types: readonly ItemTypeDef[],
 ): string[] {
   const name = (key: string) => type.custom?.find((f) => f.id === key)?.label ?? key;
   // Formatting reads back as the field it belongs to.
@@ -215,7 +225,7 @@ function setNote(
           `set ${Object.entries(set)
             .map(
               ([k, v]) =>
-                `${name(k)} = ${isPictureKey(k, type) ? picturesText(v) : storedText(v, items)}`,
+                `${name(k)} = ${isPictureKey(k, type) ? picturesText(v) : storedText(v, items, types)}`,
             )
             .join(', ')}`,
         ]
@@ -291,7 +301,7 @@ export async function applyItemChanges(
     const isDone = doneStatusesOf(state.plan.boards);
     const index = blockingIndexOf(items, types, isDone);
     const shifts = followingShifts(index, (i) => isDone(itemStatus(i)), [moved.id]);
-    const after = `#${moved.key} ${itemTitle(moved)}`;
+    const after = cardRefTitle(moved, itemTitle(moved), types);
     for (const s of shifts) {
       writing = typeIn(types, s.item.type);
       const { item } = await post(`${base}/${encodeURIComponent(s.item.id)}`, { set: s.set });
@@ -316,6 +326,26 @@ export async function applyItemChanges(
     const target = resolveItem(c.item, items);
     return target.ok ? typeIn(types, target.item.type) : null;
   };
+  // The calling assistant, read only when a change hands a card to "me" or back (plan-agents.md "Cards handed to an
+  // assistant").
+  const caller = assistantOnce(api, () => items);
+  const me = async () => {
+    const read = await caller();
+    if (!read.ok) throw new Stop(read.code, read.message);
+    return read.assistant;
+  };
+  // A change's fields with an Assignee of "me" made the calling assistant.
+  const withMe = async (
+    fields: Readonly<Record<string, unknown>> | undefined,
+    type: ItemTypeDef,
+  ): Promise<Readonly<Record<string, unknown>> | undefined> => {
+    if (!fields) return fields;
+    const key = Object.keys(fields).find(
+      (k) =>
+        isMe(fields[k]) && fieldKeyOf(k, type).ok && must(fieldKeyOf(k, type)).key === 'assignee',
+    );
+    return key === undefined ? fields : { ...fields, [key]: await me() };
+  };
   try {
     // Every picture the call adds is checked in one request before any card is written; a change whose card is made
     // earlier in the call is checked when it comes.
@@ -337,7 +367,7 @@ export async function applyItemChanges(
             'value_invalid',
             'A new card needs a title, or a template to take one from.',
           );
-        const pictures = must(splitPictureFields(c.fields, type));
+        const pictures = must(splitPictureFields(await withMe(c.fields, type), type));
         // A new card has nothing to clear: an empty value leaves the field unset.
         const given = {
           ...markdownFields(fieldsFor(pictures.rest, type).fields, type).set,
@@ -370,7 +400,7 @@ export async function applyItemChanges(
         const target = must(resolveItem(c.item, items)).item;
         const type = c.type ? must(resolveType(c.type, types)).type : typeIn(types, target.type);
         writing = type;
-        const pictures = must(splitPictureFields(c.fields, type));
+        const pictures = must(splitPictureFields(await withMe(c.fields, type), type));
         const placed = await placePictures(pictures.pictures, type, target.fields);
         const given = fieldsFor(pictures.rest, type);
         given.clear = [...given.clear, ...placed.clear];
@@ -419,7 +449,7 @@ export async function applyItemChanges(
           ...(clear.length ? { clear } : {}),
           ...(c.type ? { type: type.id } : {}),
         });
-        const notes = [...setNote(set, clear, type, items), ...personNote(set, items)];
+        const notes = [...setNote(set, clear, type, items, types), ...personNote(set, items)];
         keep(item);
         applied.push(line('~', item, state, notes));
         if (c.moveFollowing) await moveFollowing(item);
@@ -433,6 +463,21 @@ export async function applyItemChanges(
         });
         keep(item);
         applied.push(line('→', item, state));
+      } else if (c.op === 'hand_back') {
+        const target = must(resolveItem(c.item, items)).item;
+        writing = typeIn(types, target.type);
+        const mine = await me();
+        const held = itemAssistantOf(target);
+        if (held?.id !== mine.id) {
+          const refused = handBackRefusal(target, mine);
+          throw new Stop(refused.code, refused.message);
+        }
+        const person = assistantPersonOf(held);
+        const { item } = await post(`${base}/${encodeURIComponent(target.id)}`, {
+          set: { assignee: person },
+        });
+        keep(item);
+        applied.push(line('~', item, state, [`handed back to ${person.name}`]));
       } else {
         const target = must(resolveItem(c.item, items)).item;
         const res = await api.fetch(`${base}/${encodeURIComponent(target.id)}`, {
@@ -441,7 +486,7 @@ export async function applyItemChanges(
         if (!res.ok) throw new ApiError(res.status, await res.text());
         items = items.filter((i) => i.id !== target.id);
         touched.delete(target.id);
-        applied.push(`- ${itemSummary(target)}`);
+        applied.push(`- ${itemSummary(target, types)}`);
       }
     }
   } catch (err) {

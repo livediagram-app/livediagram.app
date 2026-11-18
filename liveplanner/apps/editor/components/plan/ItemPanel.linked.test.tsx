@@ -146,7 +146,7 @@ describe('the Linked Cards tab', () => {
     // Some card links here, so an empty section keeps its own note, and no tab-wide empty state shows.
     expect(screen.getByText('No cards link here as Owner yet.')).toBeTruthy();
     expect(screen.queryByText('No Linked Cards Yet')).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: /^Open #2 Card 2/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Open T-2 Card 2/ }));
     expect(onOpenItem).toHaveBeenCalledWith('c', 'ChildCard');
     fireEvent.click(screen.getAllByRole('button', { name: /New Task/ })[0]!);
     expect(onAddLinked).toHaveBeenCalledWith(
@@ -184,7 +184,7 @@ describe('the Linked Cards tab', () => {
   it('gives a Viewer the cards, without New or Link Existing', () => {
     panel(PROJECT, { groups: [parentGroup([item('c', 2, 'task')])], canEdit: false });
     fireEvent.click(screen.getByRole('tab', { name: /^Linked Cards/ }));
-    expect(screen.getByRole('button', { name: /^Open #2 Card 2/ })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /^Open T-2 Card 2/ })).toBeTruthy();
     expect(screen.queryByRole('button', { name: /New Task|Link an existing/ })).toBeNull();
   });
 
@@ -195,7 +195,7 @@ describe('the Linked Cards tab', () => {
     expect(screen.getByRole('tab', { selected: true }).getAttribute('aria-label')).toBe(
       'Linked Cards, 2 cards',
     );
-    expect(screen.getAllByRole('button', { name: /^Open #/ })).toHaveLength(2);
+    expect(screen.getAllByRole('button', { name: /^Open [A-Z][A-Z0-9]*-/ })).toHaveLength(2);
     rerender([]);
     expect(selected()).toBe('Overview');
     expect(screen.queryByRole('tab', { name: /Linked Cards/ })).toBeNull();
@@ -270,7 +270,7 @@ describe('Blocked By and Blocks', () => {
     const first = screen.getByRole('tabpanel');
     expect(within(first).getByRole('heading', { name: /^Blocked By/ })).toBeTruthy();
     expect(within(first).queryByRole('heading', { name: /^Blocks/ })).toBeNull();
-    fireEvent.click(within(first).getByRole('button', { name: /^Open #1 Card 1/ }));
+    fireEvent.click(within(first).getByRole('button', { name: /^Open T-1 Card 1/ }));
     expect(onOpenItem).toHaveBeenCalledWith('b', 'ChildCard');
     fireEvent.click(screen.getByRole('tab', { name: 'Linked Cards, 1 card' }));
     const linked = screen.getByRole('tabpanel');

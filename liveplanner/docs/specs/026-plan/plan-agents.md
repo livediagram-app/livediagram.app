@@ -33,7 +33,8 @@ never told a change worked when it shows on no board.
   - **tabs**: every tab the caller may read, in order, with its id, name, kind and theme, and a Sheet tab's sheet ids, read
     from the stored tabs without their bodies, so a form verb names a board, a sheet or a Form tab in one request
     ([Forms](../030-forms/forms.md#agents)).
-- A card link (Parent, a Card field) reads as its card's number and title (`"#12 Fix login"`); writes take that form
+- A card link (Parent, a Card field) reads as its card's number and title (`"#12 Fix login"`, its type's prefix before
+  the number where it has one: `"WI-12 Fix login"`, [Card number prefixes](item-types.md#card-number-prefixes)); writes take that form
   back, by the number.
 - A Person or Card field that holds several ([Holds Several](item-types.md#holds-several)) reads as a comma list
   (`"Sam Reed, Ana Diaz"`, `"#3 Website, #5 Launch"`); writes take a comma list or a JSON list of names or numbers
@@ -298,7 +299,9 @@ planView={…}` or a changeset, and the api refuses a range outside 14, 30, 90 a
 ## Changing card types
 
 - **`change_card_types`** (MCP; the CLI's `type` verbs) changes the catalogue in order, each change one of:
-  - `add` `{ name, color?, glyph?, fields?, custom?, defaultStatus?, statuses? }`: a new type. Fields are
+  - `add` `{ name, prefix?, color?, glyph?, fields?, custom?, defaultStatus?, statuses? }`: a new type. `prefix` is its
+    [card prefix](item-types.md#card-number-prefixes) (absent, the one made from its name, stored); a `set` takes `prefix`
+    too (empty puts the made one back), and a prefix another type has is refused, naming that type. Fields are
     built-in field names (`assignee`, `due`...) added after Title and Status (Description and Assignee when none
     are given, as the type editor starts a type); `custom` is `[{ name, kind, options?, linkType?, linkTypes?, currency?, calculation?, formula?, result?, through?, aggregate?, source?, showAs?, timeSpent?, onCard?, required? }]`
     (kinds `text`, `longtext`, `number`, `currency`, `percent`, `duration`, `date`, `datetime`, `daterange`, `checkbox`, `link`, `email`, `phone`, `choice`, `card`,
@@ -463,29 +466,39 @@ Title`, and a card in another plan as `#4 in Sprint 12`), the Comments field it 
 
 ## Cards handed to an assistant
 
-> **Status: Planned** (Work Tracker 901 part 2). The stored shape is built ([Items](items.md#handing-a-card-to-an-ai-assistant));
-> the tools below are not yet.
+> **Status: Built** (Work Tracker 901). The stored shape is [Items](items.md#handing-a-card-to-an-ai-assistant)'s.
 
 A card can be handed to an AI assistant as to a person ([Items](items.md#handing-a-card-to-an-ai-assistant)); the
 assistant finds its cards here, works them with the tools above and hands each back.
 
 - **Which assistant is calling**: the token's. Its client is the token's name and its person the token's account,
-  read from `GET /api/tokens/current` (cached with the token), so a tool call sends nothing new and no token id or
-  secret reaches a card.
+  read from `GET /api/tokens/current` once per call that needs it (`handedToMe`, `"me"`, `hand_back`; never for any
+  other call), so no token id or secret reaches a card. The person's name and colour are the ones the plan's cards
+  already give that person (a card's Created By or Last Edited By), else the account's name and a Plan swatch. A
+  token with no name, or a call that is not a token's, has no assistant: those three are refused (`not_an_assistant`,
+  "only an AI tool or API token can be handed cards; this token has no name to be known by").
 - **`list_items`** takes `handedToMe: true`: only the cards whose Assignee is the calling assistant, every other filter
-  and the closed-card rule applying as usual. Any card handed to an assistant lists its Assignee by name with
-  `assistant: true` beside it, so an agent can tell an assistant from a person.
+  and the closed-card rule applying as usual. Any card handed to an assistant lists its Assignee as
+  `{ id, name, color, assistant: true, worksFor: "<its person's name>" }`, so an agent can tell an assistant from a
+  person; a card handed to the caller adds `handedToYou: true` when the call asked `handedToMe`.
 - **`change_items`** hands cards over and back:
-  - `set` with `"assignee": "me"` takes a card: it is handed to the calling assistant.
+  - `set` (or `add`) with `"assignee": "me"` (case aside) takes a card: it is handed to the calling assistant.
   - `"assignee"` naming an assistant as the board shows it ("Claude (Thomas)") hands it to that assistant, when a card
-    already holds it; naming a person hands it to them.
+    already holds it; naming a person hands it to them. A listed assistant given back whole (its `id`) names the one a
+    card holds.
   - `hand_back {item}` sets the Assignee to the person the calling assistant works for; a card not handed to the
-    calling assistant is refused (`not_handed_to_you`, naming who has it).
+    calling assistant is refused (`not_handed_to_you`, naming who has it: "#12 is Sam's, not Claude (Thomas)'s: only
+    the assistant a card is handed to hands it back").
+  - A set line names the hand-over: "~ #12 [task] Fix login in In Progress; set Assignee = Claude (Thomas)".
+- **The `work_my_cards` prompt** tells an assistant how to work the cards handed to it in one plan: list them with
+  `handedToMe`, take each in turn, move it to the board's working column, comment as it goes (each comment marked
+  Generated by AI), move it on when done and hand it back with `hand_back`.
 - **Progress** is what the assistant already writes: its comments ([Generated by AI](items.md#generated-by-ai)) and its
-  moves; the card shows them (part 3).
-- **The CLI**: `item ls --handed-to-me`, `item set #12 --fields assignee=me`, `item hand-back #12`.
+  moves; the card shows them ([Items](items.md#handing-a-card-to-an-ai-assistant) "Progress on the card").
+- **The CLI**: `item ls <plan> --handed-to-me`, `item set <plan> #12 --fields assignee=me`, `item hand-back <plan> #12`.
+  `item ls` marks a card handed to an assistant with its name after the title.
 - **Who may**: as `change_items`: a token of an Editor or a Participant hands cards over and back; a read-only token
-  only lists them; a Viewer's token is refused by the item routes (403).
+  only lists them (its writes are refused); a Viewer's token is refused by the item routes (403).
 
 ## Automations
 

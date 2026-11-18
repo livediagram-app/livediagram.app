@@ -46,6 +46,8 @@ import {
   isBlocksField,
   blockingIndexOf,
   clashText,
+  cardRefOrKey,
+  prefixOf,
   clashesOf,
   hasBlocksFields,
   formulaProblem,
@@ -77,6 +79,7 @@ import {
   type BlockingIndex,
   boardFields,
   isFieldWidgetKey,
+  itemAssistantOf,
   type BoardWidgetId,
 } from '@liveplanner/items';
 import { widgetName } from './board-widget-change';
@@ -136,6 +139,9 @@ export interface ListedItem {
   // Its linked pull requests with a state (docs/specs/026-plan/github-pull-requests.md "Agents"); only on a card with
   // any.
   pullRequests?: ListedPullRequest[];
+  // Handed to the calling assistant (plan-agents.md "Cards handed to an assistant"); only on a list_items call that
+  // asked handedToMe.
+  handedToYou?: true;
 }
 
 interface ListedRepeat {
@@ -163,15 +169,18 @@ function listedBlocking(
   index: BlockingIndex,
   item: Item,
   isDone: (status: string | undefined) => boolean,
+  types: readonly ItemTypeDef[],
 ): Pick<ListedItem, 'blocked' | 'blocks' | 'clashes'> {
   const open = index.open.get(item.id);
   const blocks = index.blocks.get(item.id);
   const clashes = open
-    ? clashesOf(item, index, (c) => isDone(itemStatus(c))).map((c) => clashText(c.days, c.blocker))
+    ? clashesOf(item, index, (c) => isDone(itemStatus(c))).map((c) =>
+        clashText(c.days, c.blocker, types),
+      )
     : [];
   return {
     ...(open ? { blocked: open } : {}),
-    ...(blocks?.length ? { blocks: blocks.map((c) => `${ref(c)} ${itemTitle(c)}`) } : {}),
+    ...(blocks?.length ? { blocks: blocks.map((c) => `${ref(c, types)} ${itemTitle(c)}`) } : {}),
     ...(clashes.length ? { clashes } : {}),
   };
 }
@@ -259,6 +268,8 @@ export interface ListedType {
   display: Record<string, Record<string, string[]>>;
   // Each tab's icon and Details' (item-types.md "Tab icons"), the defaults filled in.
   tabs: { name: string; fields: string[]; glyph: string }[];
+  // Its card prefix (docs/specs/026-plan/item-types.md "Card number prefixes"), stored or made from its name.
+  prefix: string;
   detailsLabel: string;
   detailsGlyph: string;
   // An inherited type's base type by name and its own fields by name (docs/specs/026-plan/item-types.md "Inherited
@@ -327,7 +338,9 @@ export function resolveListingFilter(
   return { ok: true, ...out };
 }
 
-const ref = (item: Item) => `#${item.key}`;
+// A card as agents name it: its number with its type's prefix ("WI-12"; docs/specs/026-plan/item-types.md "Card number
+// prefixes"), "#12" for a type the catalogue lacks. Every form ("WI-12", "#12", "12") reads back as the card.
+const ref = (item: Item, types: readonly ItemTypeDef[]) => cardRefOrKey(item, types);
 
 function columnName(status: string | undefined, state: PlanState): string | null {
   if (!status) return null;
@@ -390,6 +403,14 @@ function namedFields(
   for (const [key, value] of Object.entries(fields)) {
     // A repeat reads as its own entry (listedRepeat), in words.
     if (key === REPEAT_FIELD) continue;
+    // An AI assistant Assignee says it is one, and who it works for (plan-agents.md "Cards handed to an assistant").
+    if (key === 'assignee') {
+      const assistant = itemAssistantOf(item);
+      if (assistant) {
+        out[key] = listedAssistant(assistant);
+        continue;
+      }
+    }
     if (rich !== true && isRichFieldKey(key)) {
       richLeftOut = true;
       continue;
@@ -403,11 +424,21 @@ function namedFields(
       value,
       byId,
       link,
+      types,
     );
   }
   if (richLeftOut && rich !== true) rich.onLeftOut();
   return out;
 }
+
+// An assistant as agents read it: by name, marked, with the person it works for; never its client or person ids.
+const listedAssistant = (a: NonNullable<ReturnType<typeof itemAssistantOf>>) => ({
+  id: a.id,
+  name: a.name,
+  color: a.color,
+  assistant: true as const,
+  worksFor: a.assistant.person.name,
+});
 
 // Whether a card's formatting runs are listed: true, or left out with a word to the caller for each card that had some.
 export type RichFields = true | { onLeftOut: () => void };
@@ -423,10 +454,11 @@ function listedValue(
   value: unknown,
   byId: ReadonlyMap<string, Item>,
   link: PictureLink,
+  types: readonly ItemTypeDef[],
 ): unknown {
   const linkText = (id: string) => {
     const linked = byId.get(id);
-    return linked ? `#${linked.key} ${itemTitle(linked)}` : id;
+    return linked ? `${ref(linked, types)} ${itemTitle(linked)}` : id;
   };
   // An Image field its picture, a Several Images field its list of them, whichever way the value was stored, each as
   // its id and a link the agent can read (docs/specs/026-plan/item-types.md "Image fields"); Attachments each entry
@@ -513,6 +545,7 @@ export function listedType(
       fields: tab.fields.map(fieldName),
       glyph: tabGlyphOf(tab),
     })),
+    prefix: prefixOf(types, t.id) ?? prefixOf([t], t.id)!,
     detailsLabel: detailsLabelOf(t),
     detailsGlyph: detailsGlyphOf(t),
     ...(t.inherits
@@ -608,12 +641,15 @@ export function listedBoards(
           ...(c.wipLimit ? { wipLimit: c.wipLimit } : {}),
           ...(c.done ? { done: true as const } : {}),
           ...(cut ? { closed: cards.length } : {}),
-          cards: cut ? [] : cards.map(ref),
+          cards: cut ? [] : cards.map((i) => ref(i, plan.types)),
         };
       }),
     };
   });
-  return { boards, notOnBoard: live.filter((i) => !onABoard.has(i.id)).map(ref) };
+  return {
+    boards,
+    notOnBoard: live.filter((i) => !onABoard.has(i.id)).map((i) => ref(i, plan.types)),
+  };
 }
 
 // Each card as list_items and `item ls` list it, from one read of the plan: the lookups a card's calculated fields,
@@ -639,7 +675,7 @@ export function itemLister(
   // Linked pull requests' states, as the board picks them, and only when the api answered any.
   const prsOf = pullRequestLister(state.pullRequests, plan.types);
   return (i) => ({
-    ref: ref(i),
+    ref: ref(i, plan.types),
     id: i.id,
     type: i.type,
     status: itemStatus(i) ?? null,
@@ -669,7 +705,7 @@ export function itemLister(
       ),
     ),
     ...withRepeat(listedRepeat(i, now)),
-    ...(blocking ? listedBlocking(blocking, i, isDone) : {}),
+    ...(blocking ? listedBlocking(blocking, i, isDone, plan.types) : {}),
     ...withPullRequests(prsOf(i)),
   });
 }

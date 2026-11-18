@@ -4083,6 +4083,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "CalloutTone": {
+    "enum": [
+      "info",
+      "tip",
+      "warning"
+    ],
+    "type": "string"
+  },
   "CapabilitiesResponse": {
     "additionalProperties": false,
     "properties": {
@@ -5139,18 +5147,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
-  "ColourBackground": {
-    "additionalProperties": false,
-    "properties": {
-      "fill": {
-        "$ref": "#/components/schemas/PageColourFill"
-      },
-      "pattern": {
-        "$ref": "#/components/schemas/PagePattern"
-      }
-    },
-    "type": "object"
-  },
   "ColumnWidth": {
     "enum": [
       1,
@@ -5752,6 +5748,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "between",
       "eq",
       "neq"
+    ],
+    "type": "string"
+  },
+  "ContentBlock": {
+    "enum": [
+      "text",
+      "callout",
+      "link",
+      "image"
     ],
     "type": "string"
   },
@@ -7225,7 +7230,25 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "type": "object"
   },
   "FormCover": {
-    "$ref": "#/components/schemas/ColourBackground"
+    "additionalProperties": false,
+    "properties": {
+      "credit": {
+        "type": "string"
+      },
+      "fill": {
+        "$ref": "#/components/schemas/PageColourFill"
+      },
+      "focus": {
+        "type": "number"
+      },
+      "imageId": {
+        "type": "string"
+      },
+      "pattern": {
+        "$ref": "#/components/schemas/PagePattern"
+      }
+    },
+    "type": "object"
   },
   "FormDefinition": {
     "additionalProperties": false,
@@ -7269,6 +7292,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "v": {
         "const": 1,
         "type": "number"
+      },
+      "width": {
+        "const": "wide",
+        "type": "string"
       }
     },
     "required": [
@@ -7500,9 +7527,31 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "FormQuestion": {
     "additionalProperties": false,
     "properties": {
+      "block": {
+        "$ref": "#/components/schemas/ContentBlock"
+      },
+      "checkLabel": {
+        "type": "string"
+      },
       "dropdown": {
         "const": true,
         "type": "boolean"
+      },
+      "fallback": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        ]
       },
       "goesTo": {
         "$ref": "#/components/schemas/AnswerTarget"
@@ -7514,6 +7563,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "string"
       },
       "id": {
+        "type": "string"
+      },
+      "imageId": {
+        "type": "string"
+      },
+      "linkLabel": {
         "type": "string"
       },
       "lowLabel": {
@@ -7555,8 +7610,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         ],
         "type": "string"
       },
+      "tone": {
+        "$ref": "#/components/schemas/CalloutTone"
+      },
       "type": {
         "$ref": "#/components/schemas/QuestionType"
+      },
+      "url": {
+        "type": "string"
       },
       "whole": {
         "const": true,
@@ -8764,6 +8825,62 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "ItemAssistant": {
+    "additionalProperties": false,
+    "properties": {
+      "assistant": {
+        "additionalProperties": false,
+        "properties": {
+          "client": {
+            "type": "string"
+          },
+          "person": {
+            "$ref": "#/components/schemas/ItemPerson"
+          }
+        },
+        "required": [
+          "client",
+          "person"
+        ],
+        "type": "object"
+      },
+      "color": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "via": {
+        "const": "github",
+        "type": "string"
+      }
+    },
+    "required": [
+      "assistant",
+      "color",
+      "id",
+      "name"
+    ],
+    "type": "object"
+  },
+  "ItemAssistantsResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "assistants": {
+        "items": {
+          "$ref": "#/components/schemas/ItemAssistant"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "assistants"
+    ],
+    "type": "object"
+  },
   "ItemCreate": {
     "additionalProperties": false,
     "properties": {
@@ -9662,6 +9779,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "type": "string"
         },
         "type": "array"
+      },
+      "prefix": {
+        "type": "string"
       },
       "statuses": {
         "items": {
@@ -12482,6 +12602,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "$ref": "#/components/schemas/PublicSection"
         },
         "type": "array"
+      },
+      "width": {
+        "const": "wide",
+        "type": "string"
       }
     },
     "required": [
@@ -12544,9 +12668,31 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "PublicQuestion": {
     "additionalProperties": false,
     "properties": {
+      "block": {
+        "$ref": "#/components/schemas/ContentBlock"
+      },
+      "checkLabel": {
+        "type": "string"
+      },
       "dropdown": {
         "const": true,
         "type": "boolean"
+      },
+      "fallback": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        ]
       },
       "help": {
         "type": "string"
@@ -12555,6 +12701,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "string"
       },
       "id": {
+        "type": "string"
+      },
+      "imageId": {
+        "type": "string"
+      },
+      "linkLabel": {
         "type": "string"
       },
       "lowLabel": {
@@ -12596,8 +12748,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         ],
         "type": "string"
       },
+      "tone": {
+        "$ref": "#/components/schemas/CalloutTone"
+      },
       "type": {
         "$ref": "#/components/schemas/QuestionType"
+      },
+      "url": {
+        "type": "string"
       },
       "whole": {
         "const": true,
@@ -12723,7 +12881,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "single",
       "multi",
       "rating",
-      "checkbox"
+      "checkbox",
+      "duration",
+      "colour",
+      "content"
     ],
     "type": "string"
   },

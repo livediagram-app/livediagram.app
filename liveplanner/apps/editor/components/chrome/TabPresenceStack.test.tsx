@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { act, render } from '@testing-library/react';
+import { act, fireEvent, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MOTION_MS } from '@liveworkspace/style-guards/motion';
 import type { Participant } from '@/lib/identity';
@@ -59,5 +59,68 @@ describe('TabPresenceStack', () => {
     });
     expect(view.container.querySelectorAll('.animate-pop-out')).toHaveLength(0);
     expect(view.container.querySelectorAll('.animate-pop-in')).toHaveLength(2);
+  });
+});
+
+// docs/specs/004-interface-design/tooltips-hover-cards-popovers.md "Touch" (Work Tracker 1236): on a phone, tapping a
+// tab pill moves its presence avatars under the finger, and the browser's own mouse move over them is no hover; a
+// card that is open closes on a tap anywhere else.
+describe('TabPresenceStack on a touch phone', () => {
+  const device = { hover: true };
+  beforeEach(() => {
+    device.hover = true;
+    vi.stubGlobal('matchMedia', (query: string) => ({
+      get matches() {
+        return query === '(any-hover: hover)' ? device.hover : false;
+      },
+    }));
+  });
+  afterEach(() => vi.unstubAllGlobals());
+
+  // A tab pill holding the stack, as TabPill draws it.
+  function pill() {
+    const view = render(
+      <div>
+        <button type="button">Board</button>
+        <TabPresenceStack
+          participants={[ada]}
+          selfId="me"
+          selfRole="edit"
+          onOpenCollaborators={vi.fn()}
+        />
+      </div>,
+    );
+    const avatarWrap = view.getByRole('img', { name: /Ada/ }).parentElement!;
+    const tap = (el: Element) => {
+      fireEvent.pointerDown(el, { pointerType: 'touch' });
+      fireEvent.pointerUp(el, { pointerType: 'touch' });
+      fireEvent.click(el);
+    };
+    return { view, avatarWrap, tap, card: () => view.queryByRole('tooltip') };
+  }
+
+  it('leaves no presence card open after a tab pill is tapped', () => {
+    device.hover = false;
+    const { view, avatarWrap, tap, card } = pill();
+    tap(view.getByRole('button', { name: 'Board' }));
+    // Long after the tap, the browser moves its mouse over the avatar now under the finger.
+    act(() => {
+      vi.advanceTimersByTime(5000);
+    });
+    fireEvent.pointerEnter(avatarWrap, { pointerType: 'mouse' });
+    fireEvent.pointerMove(avatarWrap, { pointerType: 'mouse' });
+    expect(card()).toBeNull();
+  });
+
+  it('closes an open presence card on a tap anywhere else', () => {
+    const { view, avatarWrap, tap, card } = pill();
+    // A mouse, well clear of any earlier test's touch (a mouse just after one is that touch's echo).
+    act(() => {
+      vi.advanceTimersByTime(5000);
+    });
+    fireEvent.pointerEnter(avatarWrap, { pointerType: 'mouse' });
+    expect(card()?.textContent).toContain('Ada');
+    tap(view.getByRole('button', { name: 'Board' }));
+    expect(card()).toBeNull();
   });
 });

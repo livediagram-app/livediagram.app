@@ -6,6 +6,7 @@ import {
   glyphRunPath,
   glyphRunPlacements,
   glyphStarts,
+  SYNTHETIC_BOLD_DEVICE_SCALE,
   syntheticBoldWidth,
   type CharPlace,
   type GlyphRun,
@@ -54,12 +55,32 @@ const run = (
 });
 
 describe('syntheticBoldWidth', () => {
-  it('is a 24th of the size at 9 px and under, a 32nd at 36 px and over', () => {
-    expect(syntheticBoldWidth(9)).toBeCloseTo(9 / 24);
-    expect(syntheticBoldWidth(4)).toBeCloseTo(4 / 24);
-    expect(syntheticBoldWidth(36)).toBeCloseTo(36 / 32);
-    expect(syntheticBoldWidth(96)).toBeCloseTo(96 / 32);
-    expect(syntheticBoldWidth(22.5)).toBeCloseTo(22.5 * (1 / 24 + (1 / 32 - 1 / 24) / 2));
+  it('is a 24th of the size at 9 device px and under, a 32nd at 36 and over', () => {
+    expect(syntheticBoldWidth(9, 1)).toBeCloseTo(9 / 24);
+    expect(syntheticBoldWidth(4, 1)).toBeCloseTo(4 / 24);
+    expect(syntheticBoldWidth(36, 1)).toBeCloseTo(36 / 32);
+    expect(syntheticBoldWidth(96, 1)).toBeCloseTo(96 / 32);
+    expect(syntheticBoldWidth(22.5, 1)).toBeCloseTo(22.5 * (1 / 24 + (1 / 32 - 1 / 24) / 2));
+  });
+
+  // Work Tracker 1121: a 600 headline in a face with no bold looked heavier in the PDF than in the PNG. Chromium's
+  // own synthetic bold, fitted as a stroke share of the size at 2x (the PNG export's scale and a Retina screen's),
+  // measured 2026-11-18 on Anton, Bebas Neue and Archivo Black (fit-svg probe): the PDF's stroke stays within 0.002 of
+  // it from 24 px up, where the CSS size alone gave a stroke up to 15% wider.
+  it('draws at the 2x device scale the PNG and the screen draw at, matching Chromium', () => {
+    expect(SYNTHETIC_BOLD_DEVICE_SCALE).toBe(2);
+    const measured: [number, number][] = [
+      [24, 0.0313],
+      [36, 0.0301],
+      [48, 0.0312],
+      [72, 0.0312],
+    ];
+    for (const [size, share] of measured) {
+      expect(Math.abs(syntheticBoldWidth(size) / size - share)).toBeLessThan(0.002);
+    }
+    // A 24 px headline: the CSS size alone would thicken it past the browser's.
+    expect(syntheticBoldWidth(24, 1) / 24 - 0.0313).toBeGreaterThan(0.004);
+    expect(syntheticBoldWidth(12)).toBeCloseTo(syntheticBoldWidth(24, 1) / 2);
   });
 });
 

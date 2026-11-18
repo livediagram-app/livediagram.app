@@ -79,7 +79,8 @@ test('an Idea turned into a Work Item shows its Solution on the Hidden tab', asy
 
   const board = page.locator('[data-plan-board]').first();
   await board.locator('[data-plan-card]').filter({ hasText: 'Map fields' }).first().click();
-  const panel = page.getByRole('dialog', { name: /^Item #/ });
+  // Named for the card's prefixed number (Item I-1, then Item WI-1 once it is a Work Item).
+  const panel = page.getByRole('dialog', { name: /^Item [A-Z][A-Z0-9]*-\d+$/ });
   await expect(panel).toBeVisible();
   await expect(panel.getByRole('tab', { name: /^Hidden/ })).toHaveCount(0);
 

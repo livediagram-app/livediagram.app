@@ -11,7 +11,7 @@ import {
   type HintKind,
 } from './hint-constants';
 import { claimHint, isHintWarm, releaseHint, type HintToken } from './hint-registry';
-import { touchedRecently, watchTouches } from './input-modality';
+import { canHover, touchedRecently, watchTouches } from './input-modality';
 import { hasVisibleText } from './trigger-text';
 
 type HintOpenSource = 'pointer' | 'focus' | 'touch';
@@ -198,7 +198,7 @@ export function useHint(
 
   // T1: a mouse or pen arrived over the trigger.
   const enter = (e: React.PointerEvent) => {
-    if (e.pointerType === 'touch' || touchedRecently(Date.now())) return;
+    if (e.pointerType === 'touch' || !canHover() || touchedRecently(Date.now())) return;
     // I7: a drag across a toolbar or palette (a button held) opens no tooltip on its way.
     if (kind === 'tooltip' && e.buttons !== 0) return;
     const m = machine.current;
@@ -297,6 +297,21 @@ export function useHint(
 
   // Hear touches from the first hint on, so a mouse echo of a tap can be told from a mouse.
   useEffect(watchTouches, []);
+
+  // T16: a press anywhere outside the trigger and the hint closes it (a tap elsewhere on a phone, where no pointer
+  // leaves). Heard in the trigger's own document, in the capture phase, as presses are.
+  useEffect(() => {
+    if (!open) return;
+    const doc = machine.current.wrapper?.ownerDocument ?? document;
+    const onPointerDown = (e: PointerEvent) => {
+      const target = e.target;
+      if (target instanceof Node && machine.current.wrapper?.contains(target)) return;
+      if (target instanceof Element && target.closest('[data-hint]')) return;
+      close();
+    };
+    doc.addEventListener('pointerdown', onPointerDown, true);
+    return () => doc.removeEventListener('pointerdown', onPointerDown, true);
+  }, [open, close]);
 
   // Escape dismisses without consuming the key: a menu or dialog listening
   // for it closes on the same press (spec). Heard in the trigger's own document, where the key lands when the trigger

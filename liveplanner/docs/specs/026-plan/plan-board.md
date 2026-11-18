@@ -596,7 +596,11 @@ In Plan mode:
   while it is open, outside its text fields ([Keyboard shortcuts](../008-canvas/canvas-and-palette.md#keyboard-shortcuts)).
   - **A card just made opens at once**: one this person adds with **Add Card**, places from the palette into a
     column, or makes with **New {Type}** in a card's Linked as sections opens in its panel, its
-    title ("New task") selected on a desktop so typing replaces it. A card made by someone else, brought back by
+    title ("New task") selected on a desktop so typing replaces it. Typing may start the moment the card is
+    chosen, before its panel has opened: every character typed in between is kept and becomes the start of the
+    title, in order (a Backspace takes the last one back), and none of it reaches the board's shortcuts. A keyboard
+    composing text (an IME) or a shortcut with Ctrl, Cmd or Alt is left alone, and a phone, where the title takes no
+    focus, holds nothing back. A card made by someone else, brought back by
     undo or redo, duplicated, or made by a template or an agent is not opened. The card stays where it was
     placed.
   - **Look**: a thin band of the card type's colour across the panel's top edge (lifted on the dark chrome as

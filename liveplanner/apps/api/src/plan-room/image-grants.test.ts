@@ -7,6 +7,7 @@ import type { Env } from '../types';
 import {
   IMAGE_GRANTS_MAX,
   IMAGE_ID_MAX,
+  formServesImage,
   planGrantedImages,
   planServesImage,
   recordImageGrant,
@@ -185,6 +186,39 @@ describe('planServesImage', () => {
     });
     expect(served).toBe(true);
     expect(ms / (runs * 4)).toBeLessThan(cpuBudgetMs(20));
+  });
+});
+
+// A form's cover and picture blocks (docs/specs/030-forms/forms.md "Pictures"): a grant, and a tab of the plan whose
+// data names the id as an imageId.
+describe('formServesImage', () => {
+  function withTab(id: string, data: unknown) {
+    const s = store();
+    s.db
+      .prepare(`INSERT INTO tabs (id, name, data, updated_at) VALUES (?, 'Form', ?, 1)`)
+      .run(id, JSON.stringify(data));
+    s.db
+      .prepare(`INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at) VALUES (?, ?, 0, 1)`)
+      .run(PLAN, id);
+    return s;
+  }
+  const formTab = { kind: 'form', elements: [], form: { cover: { imageId: IMAGE } } };
+
+  it('serves a picture a form tab shows and the plan holds, on any tab or that tab', () => {
+    const { sql } = withTab('ftab', formTab);
+    recordImageGrant(sql, PLAN, IMAGE, 1);
+    expect(formServesImage(sql, PLAN, IMAGE)).toBe(true);
+    expect(formServesImage(sql, PLAN, IMAGE, 'ftab')).toBe(true);
+    expect(formServesImage(sql, PLAN, IMAGE, 'other')).toBe(false);
+  });
+
+  it('serves nothing without the grant, nothing no tab shows, and no id too long or empty', () => {
+    const { sql } = withTab('ftab', formTab);
+    expect(formServesImage(sql, PLAN, IMAGE)).toBe(false);
+    recordImageGrant(sql, PLAN, 'elsewhere', 1);
+    expect(formServesImage(sql, PLAN, 'elsewhere')).toBe(false);
+    expect(formServesImage(sql, PLAN, '')).toBe(false);
+    expect(formServesImage(sql, PLAN, 'x'.repeat(IMAGE_ID_MAX + 1))).toBe(false);
   });
 });
 

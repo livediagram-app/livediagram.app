@@ -3,6 +3,7 @@
 
 import type {
   Item,
+  ItemAssistant,
   ItemCreate,
   ItemHistoryEntry,
   ItemMove,
@@ -58,6 +59,10 @@ export type ItemsResponse = {
 
 // One item as written: POST /items, PATCH /items/:itemId, POST .../move, POST .../vote.
 export type ItemResponse = { item: Item; rev: number };
+
+// GET /api/projects/:id/items/assistants (docs/specs/026-plan/items.md "Who it can be handed to"): the AI assistants
+// the plan remembers, newest first; none for a tab-scoped link or a Community visitor.
+export type ItemAssistantsResponse = { assistants: ItemAssistant[] };
 
 // GET /api/projects/:id/items/:itemId/history (docs/specs/026-plan/items.md "History"): the card's history, newest
 // first, grouped. An author is named by name and colour; `mine` marks the caller's own.

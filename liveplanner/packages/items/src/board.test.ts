@@ -374,7 +374,7 @@ describe('item text', () => {
       { type: 'project', key: 12 },
     );
     expect(itemAccessibleName(a)).toBe(
-      '#12 Fix login, Project, assigned to Sam Lee, high priority',
+      'P-12 Fix login, Project, assigned to Sam Lee, high priority',
     );
     expect(itemSummary(a)).toBe('#12 [project] Fix login (@Sam Lee, !high)');
     expect(itemSummary(item({ title: 'x' }, { key: 3 }))).toBe('#3 [task] x');

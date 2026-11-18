@@ -1,7 +1,12 @@
 // A Plan board's keyboard (docs/specs/026-plan/plan-board.md "Keyboard"), as a pure function of the
 // board as drawn: arrow keys move focus between cards, Shift+Left/Right moves the card a column,
 // Shift+Up/Down moves it within its column, Enter opens, Delete moves it to the Trash, N adds to the column.
-import { itemNumberedTitle, type BoardProjection, type ItemMove } from '@liveplanner/items';
+import {
+  itemNumberedTitle,
+  type BoardProjection,
+  type ItemMove,
+  type ItemTypeDef,
+} from '@liveplanner/items';
 
 type PlanKeyAction =
   | { kind: 'focus'; itemId: string }
@@ -65,6 +70,8 @@ export function planBoardKey(
   // A sorted board's first field ("Priority"), named when Shift+Up/Down cannot reorder.
   sortedBy?: string,
   selection?: SelectionKeys,
+  // The plan's card types, so an announcement names a card by its prefixed number ("WI-12").
+  types?: readonly ItemTypeDef[],
 ): PlanKeyAction | null {
   const at = locate(p, itemId);
   if (!at) return null;
@@ -77,7 +84,7 @@ export function planBoardKey(
   }
   const items = cellItems(p, at.col, at.lane);
   const item = items[at.index]!;
-  const title = itemNumberedTitle(item);
+  const title = itemNumberedTitle(item, types);
   if (key === 'Enter' || key === ' ') return { kind: 'open' };
   if ((key === 'Delete' || key === 'Backspace') && canEdit)
     return { kind: 'trash', focusAfter: focusAfterTrash(p, at) };

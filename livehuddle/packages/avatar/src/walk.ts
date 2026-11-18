@@ -61,6 +61,8 @@ export const AVATAR_HEARTBEAT_MS = 3000;
 const AVATAR_SHOVE_REACH = 46;
 
 export const AVATAR_SPEED = 260;
+/** How much faster a character runs, Shift held (avatar-mode.md "Running"; DEFAULTS.md). */
+export const AVATAR_RUN_FACTOR = 1.9;
 
 // Sprite footprint in canvas px at the REGULAR size. The position point is the
 // FEET, so the body is drawn above it and centred on it. The Size choice in the
@@ -108,6 +110,16 @@ export const AVATAR_PORTRAIT_VIEW_BOX = `0 ${-PORTRAIT_TOP_UNITS} ${GRID_W} ${GR
 
 // How far the standing figure reaches above its feet at a given scale, tallest hair included: the portrait's top, so
 // whatever stands that far above the feet clears every hairstyle.
+/**
+ * A scale rounded down so each sprite pixel is a whole number of CSS pixels (at least one): a figure drawn crisp
+ * edged at a scale between two whole sizes gets pixels of uneven widths, its eyes one pixel or two and its outline
+ * soft (the owner, 2026-11-18: the palette's pictures looked "broken and blurry"). For a picture outside the canvas,
+ * whose zoom is its own.
+ */
+export function crispAvatarScale(scale: number): number {
+  return Math.max(1, Math.floor(scale * AVATAR_UNIT + 1e-6)) / AVATAR_UNIT;
+}
+
 export function avatarFigureHeight(scale = 1): number {
   return (AVATAR_HEIGHT + PORTRAIT_TOP_UNITS * AVATAR_UNIT) * scale;
 }

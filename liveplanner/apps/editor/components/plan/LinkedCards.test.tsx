@@ -47,7 +47,7 @@ describe('LinkedCardGroup', () => {
       />,
     );
     expect(screen.getByRole('heading', { name: /Linked as Owner/ }).textContent).toContain('1');
-    fireEvent.click(screen.getByRole('button', { name: 'Open #4 Card 4, In Progress' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Open T-4 Card 4, In Progress' }));
     expect(onOpen).toHaveBeenCalledWith('o1');
     fireEvent.click(screen.getByRole('button', { name: 'New Task' }));
     expect(onAdd).toHaveBeenCalledWith('task');

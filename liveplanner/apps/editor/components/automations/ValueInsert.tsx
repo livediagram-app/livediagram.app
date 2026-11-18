@@ -90,11 +90,11 @@ export function ValueTextField({
   const [menu, setMenu] = useState<HTMLButtonElement | null>(null);
   // A phone's sheet just closed: its button keeps its hover card away until focus leaves it.
   const [quiet, setQuiet] = useState(false);
-  const { incoming, github = false, email = false } = useIncomingRule();
+  const { incoming, github = false, email = false, formQuestions } = useIncomingRule();
   const phone = !useMediaQuery('(min-width: 640px)');
   const groups = useMemo(
-    () => valueInsertGroups(branch, fields, incoming, github, email),
-    [branch, fields, incoming, github, email],
+    () => valueInsertGroups(branch, fields, incoming, github, email, formQuestions),
+    [branch, fields, incoming, github, email, formQuestions],
   );
 
   // Grows with its text (no inner scroll, so the backdrop never drifts), and puts the caret after an inserted value.

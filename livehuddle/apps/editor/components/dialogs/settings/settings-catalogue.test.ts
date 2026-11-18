@@ -286,7 +286,7 @@ describe('settings sub-categories', () => {
 
   it('keeps every setting that acts in both modes on Editor itself', () => {
     const keys = SETTINGS_CATEGORIES.find((c) => c.id === 'editor')!.rows.map((r) => r.key);
-    expect(keys).toEqual(['alignmentGuides', 'middleMousePan']);
+    expect(keys).toEqual(['alignmentGuides', 'rotateIn3D', 'middleMousePan']);
   });
 
   it('files each panel as a section of Panels, after Panel Opacity', () => {

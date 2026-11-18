@@ -151,6 +151,8 @@ liveplanner item ls "Sprint 14" --query checkout --updated-since 2026-11-01  # o
 liveplanner item add "Sprint 14" "Fix login" --type task --status "To Do" --fields priority=high
 liveplanner item move "Sprint 14" "#12" "In Progress"
 liveplanner item set "Sprint 14" "#12" --fields assignee=Sam --clear due
+liveplanner item ls "Sprint 14" --handed-to-me          # the open cards handed to this token's AI assistant
+liveplanner item hand-back "Sprint 14" "#12"              # give one back to its person when done
 liveplanner board add "Sprint 14" --preset sprint
 liveplanner board set "Sprint 14" Kanban --columns "To Do,Doing,Review,Done"
 liveplanner board set "Sprint 14" Kanban --add-widgets "Budget Sum,due"    # show widgets in the board's header
@@ -165,6 +167,8 @@ liveplanner sheet set "Budget 2027" Costs B2 1200 =B2*12
 Cards, boards and sheets are named the way the editor shows them: a column by its name, a card by its number, a sheet by its title. These writes are not changesets: each lands at once, for everyone with the plan open.
 
 To empty a field, name it in `--clear` (`--clear due`). A field that holds several values, such as Blocked By, also clears with `key=` and nothing after it (`--fields "Blocked By="`). To flag a card for attention, set `--fields flagged=true` on `item add` or `item set`; `--clear flagged` (or `flagged=false`) takes the flag off, and `item ls` ends a flagged card's line with `flagged`. `board set --add-widgets` and `--remove-widgets` take widget names or ids, separated by commas.
+
+A card [handed to an AI assistant](/help/plan/cards/#hand-a-card-to-an-ai-assistant) is handed to a token: `--handed-to-me` lists the open ones handed to the token you run with, `--fields assignee=me` hands one to it, and `item hand-back` gives one back to the token's person. A session (no token) has no assistant, so each of these is refused.
 
 `item ls` lists every card unless you narrow it. `--type` and `--status` take a card type or a column, and repeat for several. `--query` keeps the cards whose title or description holds the text, and `--updated-since` the ones changed since a date or time (`2026-11-01`, `2026-11-01T09:00:00Z`). With either of those two, closed cards (in a done column such as Done, trashed or archived) are left out, as they are for an AI assistant, and the last line says how many: add `--include-closed` to list them too, or name their column with `--status`.
 

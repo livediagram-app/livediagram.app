@@ -179,6 +179,20 @@ describe('withPaperMarkInks', () => {
     expect(colours(out[2]).strokeColor).toBe('#cbd5e1');
   });
 
+  it('draws a locked fill (a brand swatch) at its exact value on the dark paper', () => {
+    // The Brand Board's Ink and Teal swatches: dark on the slate, but marked to stay as printed.
+    const els = [
+      part('ink', '#14213d', { themeLockFill: true, strokeColor: '#14213d' }),
+      part('teal', '#0f4c5c', { themeLockFill: true }, 300),
+      // An icon's stroke is not its fill: a locked fill leaves its stroke to the walk.
+      { ...glyph('icon', '#0f172a', 500), themeLockFill: true } as Element,
+    ];
+    const out = withPaperMarkInks(els, WHITE, els, SLATE);
+    expect(out[0]).toBe(els[0]);
+    expect(out[1]).toBe(els[1]);
+    expect(colours(out[2]).strokeColor).not.toBe('#0f172a');
+  });
+
   it('walks an icon to the contrast it had on white, keeping a chosen glyph above a muted one', () => {
     const els = [glyph('chosen', '#0f172a'), glyph('muted', '#5f6f86', 300)];
     const out = withPaperMarkInks(els, WHITE, els, SLATE);

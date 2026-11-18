@@ -83,7 +83,8 @@ export type FormActions = FormDestinationActions & {
   // while it is still on its automatic name ("<Form> Responses").
   renameForm: (name: string) => void;
   // New Field "<Prompt>": a custom field of the question's kind on the destination's card type; answers its id.
-  addFieldFor: (question: FormQuestion, type: ItemTypeDef) => string | null;
+  // `label`: the name typed for it (Answer Goes To's New Field), kept unique; the question's prompt when absent.
+  addFieldFor: (question: FormQuestion, type: ItemTypeDef, label?: string) => string | null;
   // A choice question's options changed: the field it maps to follows (one catalogue change).
   syncFieldOptions: (type: ItemTypeDef, fieldId: string, options: readonly string[]) => void;
   // Responses Go To's New Board: a Board tab after this one, "<Form> Responses", its New column the destination.
@@ -391,10 +392,13 @@ export function useFormActions({
   );
 
   const addFieldFor = useCallback<FormActions['addFieldFor']>(
-    (question, type) => {
+    (question, type, named) => {
       const slice = live.current.itemTypes;
       const current = slice.types.find((t) => t.id === type.id) ?? type;
-      const label = newFieldLabel(question.prompt, current.custom?.map((f) => f.label) ?? []);
+      const label = newFieldLabel(
+        named?.trim() || question.prompt,
+        current.custom?.map((f) => f.label) ?? [],
+      );
       const id = newCustomFieldId(label, [
         ...current.fields,
         ...(current.custom ?? []).map((f) => f.id),

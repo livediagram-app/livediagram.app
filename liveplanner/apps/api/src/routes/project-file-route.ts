@@ -7,6 +7,7 @@
 import { PROJECT_FILE_MAX_BYTES } from '@liveplanner/project';
 import { getProject } from '../db';
 import { byteLength } from '../limits';
+import { ImportClaimRefused } from '../plan-room/copy-image-claims';
 import { capStoredName } from '../names';
 import {
   exportProjectFile,
@@ -77,12 +78,19 @@ async function importFile(ctx: PlanRouteContext, id: string): Promise<Response> 
       read.failure,
       json({ error: read.failure }, { status: read.failure === 'too_large' ? 413 : 400 }),
     );
-  await importProjectFile(ctx.env, id, {
-    ...read.content,
-    name: capStoredName(read.content.title, null, 'project') || 'Untitled',
-    ownerId: owner,
-    teamId: ctx.grant?.team ?? null,
-  });
+  try {
+    await importProjectFile(ctx.env, id, {
+      ...read.content,
+      name: capStoredName(read.content.title, null, 'project') || 'Untitled',
+      ownerId: owner,
+      teamId: ctx.grant?.team ?? null,
+    });
+  } catch (err) {
+    // The media service refused the pictures' claim (copy-image-claims.ts claimImportedImages): nothing landed, so
+    // the editor's Try again works.
+    if (!(err instanceof ImportClaimRefused)) throw err;
+    return refuse('media_unavailable', json({ error: 'media_unavailable' }, { status: 503 }));
+  }
   console.info('[plan-file] imported', {
     projectId: id,
     tabs: read.content.copy.tabs.length,

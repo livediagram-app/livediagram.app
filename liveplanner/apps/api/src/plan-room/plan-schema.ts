@@ -20,9 +20,10 @@ import {
 import { COMMUNITY_POST_TABLE } from '@liveworkspace/community/app';
 import { CARD_REPEATS_SCHEMA } from './card-repeats-schema';
 import { CARD_THREADS_SCHEMA } from './card-thread-schema';
-import { IMAGE_REFS_SCHEMA } from './image-refs';
+import { FORM_IMAGE_REFS_SCHEMA, IMAGE_REFS_SCHEMA } from './image-refs';
 import { IMAGE_RELEASES_SCHEMA } from './image-release';
 import { COPY_IMAGE_CLAIMS_SCHEMA } from './copy-image-claims';
+import { KNOWN_ASSISTANTS_SCHEMA } from './known-assistants';
 import { FLOW_COUNTS_SCHEMA } from './flow-counts-schema';
 import { itemsBytesStep } from './items-bytes-schema';
 import { ITEM_HISTORY_SCHEMA } from './item-history-schema';
@@ -580,6 +581,14 @@ const V36 = addCalendarFeedTypes;
 // (copy-image-claims.ts; docs/specs/026-plan/items.md "Images in use").
 const V37 = COPY_IMAGE_CLAIMS_SCHEMA;
 
+// A Form tab's pictures (image-refs.ts FORM_IMAGE_REFS_SCHEMA; docs/specs/030-forms/forms.md "Cover"): a tab write
+// that names a picture queues the plan's media report, as a card write does.
+const V38 = FORM_IMAGE_REFS_SCHEMA;
+
+// The AI assistants the plan remembers for its Assignee picker (known-assistants.ts; docs/specs/026-plan/items.md "Who it
+// can be handed to").
+const V39 = KNOWN_ASSISTANTS_SCHEMA;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -618,6 +627,8 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V35,
   V36,
   V37,
+  V38,
+  V39,
 ];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;

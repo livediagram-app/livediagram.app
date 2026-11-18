@@ -1,7 +1,8 @@
 'use client';
 
-// The form as built (docs/specs/030-forms/forms.md "Building a form"): its header, the connect box under it while responses go nowhere, each section's questions (a later
-// section headed by its own card), and the add bar (under the selected question, else at the end), in a 640 px column.
+// The form as built (docs/specs/030-forms/forms.md "Building a form"): its header, the connect box under it while
+// responses go nowhere, each section's questions (every section headed by its own card once there are several, each
+// draggable and movable), and each section's add bar at its foot, in a column as wide as the form's Width.
 // A press on the column's background deselects. Questions slide when moved and grow in when added (question-motion).
 // Until the form's responses have somewhere to go (no board, no sheet chosen), its questions are shown but not
 // editable and the add bar is gone: the connect box is the one thing to do first.
@@ -9,7 +10,7 @@ import { Fragment, useCallback, useMemo, useRef } from 'react';
 import { CompactEmptyState, lucideGlyph } from '@liveplanner/ui';
 import { lucideClipboardList } from '@liveworkspace/icons/lucide';
 import type { DestinationProblem } from '@liveplanner/forms';
-import { placeQuestion } from '@liveplanner/forms';
+import { FORM_WIDTH_PX, placeQuestion, placeSection } from '@liveplanner/forms';
 import { FormAddBar } from './FormAddBar';
 import { FormConnectCard } from './FormConnectCard';
 import { FormHeaderCard, SectionHeader } from './FormHeaderCard';
@@ -17,6 +18,7 @@ import { FormQuestionCard } from './FormQuestionCard';
 import { FormBuilderContext, useFormBuilder } from './form-builder-context';
 import { DescribeFormButton } from '../describe-form/DescribeFormButton';
 import { useQuestionDrag } from './useQuestionDrag';
+import { useSectionDrag } from './useSectionDrag';
 import { useFlipList } from '@liveworkspace/workbench/hooks/ui/useFlipList';
 import { QUESTION_FLIP } from './question-motion';
 
@@ -44,10 +46,15 @@ export function FormBuilderColumn({
     [b.actions],
   );
   const drag = useQuestionDrag(columnRef, scrollRef, onDrop);
+  const onSectionDrop = useCallback(
+    (id: string, index: number) => b.actions.changeForm((f) => placeSection(f, id, index)),
+    [b.actions],
+  );
+  const sectionDrag = useSectionDrag(columnRef, scrollRef, onSectionDrop);
+  const mark = drag.mark ?? sectionDrag.mark;
   const all = b.form.sections.flatMap((s) => s.questions);
   const firstId = all[0]?.id;
   const lastId = all[all.length - 1]?.id;
-  const selectedShown = all.some((q) => q.id === b.selectedId);
   // Questions slide to a new place, and a new one grows in (question-motion.ts).
   const rowRef = useFlipList(
     all.map((q) => q.id),
@@ -57,19 +64,20 @@ export function FormBuilderColumn({
     <div
       ref={columnRef}
       data-flip-root=""
-      className="relative mx-auto flex w-full max-w-[640px] flex-col gap-3"
+      className="relative mx-auto flex w-full flex-col gap-3"
+      style={{ maxWidth: FORM_WIDTH_PX[b.form.width ?? 'narrow'] }}
       onPointerDown={(e) => {
         if (e.target === e.currentTarget) b.select(null);
       }}
     >
-      {drag.mark ? (
+      {mark ? (
         <div
           aria-hidden
           className="pointer-events-none absolute inset-x-0 z-[3] h-1 rounded-full bg-[var(--form-accent)]"
-          style={{ top: drag.mark.top }}
+          style={{ top: mark.top }}
         />
       ) : null}
-      <FormHeaderCard sections={b.form.sections.length} />
+      <FormHeaderCard />
       <FormConnectCard hasExisting={hasDestinations} problem={problem} />
       <FormBuilderContext.Provider value={b}>
         <div
@@ -84,8 +92,14 @@ export function FormBuilderColumn({
               data-form-section-id={section.id}
               className="flex flex-col gap-3"
             >
-              {s > 0 ? (
-                <SectionHeader section={section} index={s} count={b.form.sections.length} />
+              {b.form.sections.length > 1 ? (
+                <SectionHeader
+                  section={section}
+                  index={s}
+                  count={b.form.sections.length}
+                  onGrab={sectionDrag.grab}
+                  dragging={sectionDrag.dragging === section.id}
+                />
               ) : null}
               {section.questions.map((q) => (
                 <Fragment key={q.id}>
@@ -98,8 +112,6 @@ export function FormBuilderColumn({
                       dragging={drag.dragging === q.id}
                     />
                   </div>
-                  {/* The add bar follows the selected question: what it adds goes there. */}
-                  {q.id === b.selectedId ? <FormAddBar /> : null}
                 </Fragment>
               ))}
               {section.questions.length === 0 ? (
@@ -127,10 +139,11 @@ export function FormBuilderColumn({
                 />
               ) : null}
               <span data-form-section-end aria-hidden className="h-0" />
+              {/* Every section ends with its own add bar: what it adds goes into this section. */}
+              <FormAddBar section={section} index={s} />
             </div>
           ))}
         </div>
-        {selectedShown ? null : <FormAddBar />}
       </FormBuilderContext.Provider>
     </div>
   );

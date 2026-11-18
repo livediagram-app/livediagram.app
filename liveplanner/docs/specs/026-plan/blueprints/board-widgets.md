@@ -210,8 +210,9 @@ false`), More named, then dotted. Each step is one linear pass, at most five, so
   is inside the zone for edit mode (`data-widget-more-panel`).
 - A drag's slot (`widgetSlotAt` over the row's list) and a nudge are in the row's order (`slotInList`, `nudgeInRow`);
   a removal's refocus finds the next widget by id, in the row or the More panel.
-- Empty zone copy for an editor, only while the board is selected (`BoardWidgetZone` `selected`): "Add widgets to
-  this board" and its **+**; unselected, the empty zone draws nothing.
+- Empty zone for an editor (`BoardWidgetZone`, `widgets.length === 0 && canEdit`): one `ZoneButton` with its words,
+  **+** "Add Widgets" (accessible name the same), opening the picker as the **+** does; selected or not, in a header
+  band or on the canvas. The last widget taken off moves the focus to it.
 - Edit Widgets: after the **+**, while `widgets.length > 0` and `canEdit`, a 28 px button (a pencil, `lucideGlyph(lucidePencil, 14)` drawn at 10, `Tooltip`
   "Edit Widgets", `aria-pressed={false}`); in edit mode it is `CheckIcon` drawn at 12 in `palette.focus` on a tint of it, named
   "Done Editing Widgets", `aria-pressed`. Both glyphs are sized by their ink to match the **+** (14 px box, ink 14 of 24 units) and take its stroke weight. Its state (`editing`) lives in `BoardWidgetZone`, never saved; it ends on

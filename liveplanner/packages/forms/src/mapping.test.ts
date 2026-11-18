@@ -40,7 +40,10 @@ const type: ItemTypeDef = {
 
 describe('the mapping table', () => {
   it('names a new field kind each type may map to', () => {
-    for (const t of QUESTION_TYPES) expect(MAPPABLE_KINDS[t]).toContain(NEW_FIELD_KIND[t]);
+    // A content block asks nothing, so it maps to nothing.
+    for (const t of QUESTION_TYPES)
+      if (t !== 'content') expect(MAPPABLE_KINDS[t]).toContain(NEW_FIELD_KIND[t]);
+    expect(MAPPABLE_KINDS.content).toEqual([]);
   });
 
   it('lets only some types be the title', () => {
@@ -167,10 +170,12 @@ describe('newFieldFor', () => {
 
   // The field New Field makes is mapped at once, so it must never read as broken (the amber chip).
   it.each(
-    QUESTION_TYPES.flatMap((t): [FormQuestion['type'], Partial<FormQuestion>][] => [
-      [t, {}],
-      [t, { options: ['X', 'Y'], other: true, scale: 10 }],
-    ]),
+    QUESTION_TYPES.filter((t) => t !== 'content').flatMap(
+      (t): [FormQuestion['type'], Partial<FormQuestion>][] => [
+        [t, {}],
+        [t, { options: ['X', 'Y'], other: true, scale: 10 }],
+      ],
+    ),
   )('makes a field a %s question takes (%o)', (type, extra) => {
     const q = Q(type, extra);
     expect(fieldTakes(q, newFieldFor(q, 'f-a', 'A'))).toBe(true);

@@ -22,6 +22,8 @@ export type IncomingRule = {
   github?: boolean;
   // Whether the rule is on Email Received: Insert a Value then offers the sender (automations.md "Email Received").
   email?: boolean;
+  // A Form Response rule's questions (its form's, or every form's for Any Form): Insert a Value offers their answers.
+  formQuestions?: readonly string[];
 };
 
 const NONE: IncomingRule = {

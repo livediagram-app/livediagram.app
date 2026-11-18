@@ -2,6 +2,7 @@ import { useWorkbenchDesignSession } from '@/components/providers/workbench-sess
 import { surfaceFlags, type EditorSurface } from '@liveworkspace/workbench/lib/editor-surface';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import {
+  endEmptiedSessions,
   stampSessionMembers,
   stampTabKind,
   stampNewElementLayers,
@@ -110,7 +111,11 @@ export function useEditorDesign(opts: { surface?: EditorSurface } = {}) {
         if (before.has(t)) return t;
         const prev = ts.find((p) => p.id === t.id);
         if (!prev) return t;
-        const els = stampSessionMembers(prev.elements, t.elements);
+        // Deleting a session's last member ends it at once, taking the instance with it ("Deleting every member").
+        const els = endEmptiedSessions(
+          prev.elements,
+          stampSessionMembers(prev.elements, t.elements),
+        );
         return els === t.elements ? t : { ...t, elements: els };
       });
       const stamp = activeLayerStampRef.current;

@@ -9,7 +9,7 @@ import { TEAM_POD, roomHref } from '../hero-space-cast';
 import { OFFICE } from '../hero-space-places';
 import { SpaceShot, at } from './space-shot';
 
-const OFFICE_WALL = [-320, -90, 420, 140] as const;
+const OFFICE_WALL = [-395, -112, 420, 140] as const;
 
 /** The office's notes wall with one sticky singled out, for the cards about working on a note together. */
 function WallShot({ children }: { children?: ReactNode }) {
@@ -21,7 +21,7 @@ function WallShot({ children }: { children?: ReactNode }) {
 }
 
 // The wall's second sticky ("Cake"), the one each card singles out.
-const NOTE = { x: -214, y: -8, size: 70 };
+const NOTE = { x: -289, y: -30, size: 70 };
 
 /** See what others are working on: Kit's colour glowing round the note they picked, their initials on its corner. */
 export function SelectedNoteArt() {

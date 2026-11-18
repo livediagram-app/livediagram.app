@@ -85,6 +85,9 @@ export type SessionAttachment = {
   //     row. The room is named after it, so every session carries the same value.
   adderKey?: string | null;
   documentId?: string | null;
+  //   - `apiToken`: the API token whose ticket opened it (X-Verified-Api-Token, docs/specs/015-api/public-api-and-tokens.md
+  //     "Revoking a token"), so revoking the token closes exactly its sockets. Absent for every other session.
+  apiToken?: string | null;
   //   - `grantExp`: when the session's grant lapses (epoch ms), from X-Verified-Grant-Exp
   //     (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants"), moved on by each fresh grant the session sends. The
   //     room asks for a fresh one ROOM_GRANT_ASK_BEFORE_MS before (`renewAsked`) and drops the socket after.
@@ -102,6 +105,8 @@ export type SessionAttachment = {
 
 // A person tag is a SHA-256 hex digest; the clamp keeps a forged header from bloating the attachment.
 const MAX_PERSON_TAG_LEN = 64;
+// An API token id is a UUID; the clamp keeps a forged header from bloating the attachment.
+const MAX_API_TOKEN_ID_LEN = 64;
 // A document id is usually a UUID, but an API or MCP client may choose a longer one, up to the documents route's
 // bound: the clamp keeps a forged header from bloating the attachment and never cuts an id the api accepts, since a
 // cut id fails every later check against the real one (a grant's renewal, a call's session token).
@@ -120,6 +125,7 @@ type VerifiedSession = {
   account?: boolean;
   adderKey: string | null;
   documentId: string | null;
+  apiToken?: string | null;
   grantExp?: number | null;
   // The canvas's owner and team as the grant names them (null owner: a grant that names none). Not pinned to the
   // session: the room takes them as its own copy (document-room.ts takeHead).
@@ -170,6 +176,7 @@ export function verifiedSessionOf(request: Request): VerifiedSession {
     account: request.headers.get('X-Verified-Account') === '1',
     adderKey: header('X-Verified-Adder'),
     documentId: header('X-Verified-Document'),
+    apiToken: header('X-Verified-Api-Token'),
     grantExp: grantExpOf(request.headers.get('X-Verified-Grant-Exp')),
     head: { owner: header('X-Verified-Item-Owner'), team: header('X-Verified-Item-Team') },
   };
@@ -202,6 +209,7 @@ export function newSessionAttachment(v: VerifiedSession, presenceId: string): Se
     adderKey: v.adderKey?.slice(0, ADDER_KEY_LENGTH) ?? null,
     documentId: v.documentId?.slice(0, MAX_DOCUMENT_ID_LEN) ?? null,
     grantExp: v.grantExp ?? null,
+    ...(v.apiToken ? { apiToken: v.apiToken.slice(0, MAX_API_TOKEN_ID_LEN) } : {}),
   };
 }
 

@@ -115,7 +115,7 @@ describe('the interactive view', () => {
     expect(result.structuredContent).toMatchObject({
       projectId: 'p1',
       tabId: 't1',
-      boards: [{ id: 'b1', columns: [{ name: 'To Do', count: 1, cards: [{ ref: '#1' }] }] }],
+      boards: [{ id: 'b1', columns: [{ name: 'To Do', count: 1, cards: [{ ref: 'T-1' }] }] }],
     });
   });
 

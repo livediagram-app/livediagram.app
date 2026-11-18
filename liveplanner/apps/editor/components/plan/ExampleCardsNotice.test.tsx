@@ -63,6 +63,19 @@ describe('ExampleCardsNotice', () => {
     expect(screen.getByRole('button', { name: 'Keep Them' })).toBeTruthy();
   });
 
+  it('keeps its two buttons together, so a narrow board never leaves Keep Them on a line alone', () => {
+    const { container } = render(
+      <ExampleCardsNotice shown={[example]} plan={planOf(true)} palette={palette} />,
+    );
+    const actions = container.querySelector('[data-example-cards-actions]')!;
+    expect([...actions.querySelectorAll('button')].map((b) => b.textContent)).toEqual([
+      'Clear Example Cards',
+      'Keep Them',
+    ]);
+    // One flex item that never shrinks: it wraps whole under the sentence.
+    expect(actions.className).toContain('shrink-0');
+  });
+
   it('shows nothing on a board of no example cards', () => {
     const { container } = render(
       <ExampleCardsNotice shown={[own]} plan={planOf(true)} palette={palette} />,

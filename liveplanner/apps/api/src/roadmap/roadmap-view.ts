@@ -23,6 +23,7 @@ import {
   type Item,
   type ItemTypeDef,
   type PlanBoardSetup,
+  cardRef,
 } from '@liveplanner/items';
 
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
@@ -70,7 +71,10 @@ export function publicCardOf(
     card.voted = voter !== null && hasPublicVote(item, voter);
   }
   const chosen = new Set(settings.fields);
-  if (chosen.has('number')) card.number = item.key;
+  if (chosen.has('number')) {
+    card.number = item.key;
+    card.ref = cardRef(item, types);
+  }
   if (chosen.has('description')) {
     const d = textOf(item.fields['description']);
     if (d) card.description = d;

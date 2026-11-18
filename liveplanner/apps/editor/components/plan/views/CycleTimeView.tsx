@@ -5,6 +5,7 @@
 // summary line. Hovering names a dot's card; pressing it opens the card; on the keyboard ← and → step the dots and
 // Enter opens one.
 import { memo, useMemo, useState, type KeyboardEvent } from 'react';
+import { cardRefIn } from '../card-ref';
 import { plural } from '@liveplanner/project';
 import { cycleTimesOf, itemTitle, type CycleTime } from '@liveplanner/items';
 import type { PlanPalette } from '../plan-palette';
@@ -122,7 +123,9 @@ function CyclePlot({
   const describe = (i: number) => {
     const c = cards[i]!;
     const item = plan?.items.get(c.itemId);
-    const name = item ? `#${item.key} ${itemTitle(item) || 'Untitled'}` : 'A card no longer here';
+    const name = item
+      ? `${cardRefIn(plan?.types)(item)} ${itemTitle(item) || 'Untitled'}`
+      : 'A card no longer here';
     return `${name}, ${daysText(c.days)}, finished ${flowDayLabel(c.day)}`;
   };
   const open = (i: number | null) => {
@@ -227,7 +230,7 @@ function CyclePlot({
         <FlowTip x={hit.x} y={hit.y} width={size.width} height={size.height} palette={palette}>
           <div className="max-w-[200px] truncate font-semibold">
             {activeItem
-              ? `#${activeItem.key} ${itemTitle(activeItem) || 'Untitled'}`
+              ? `${cardRefIn(plan?.types)(activeItem)} ${itemTitle(activeItem) || 'Untitled'}`
               : 'A card no longer here'}
           </div>
           <div style={{ color: palette.muted }}>

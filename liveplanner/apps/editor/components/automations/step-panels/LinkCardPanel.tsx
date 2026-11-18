@@ -10,6 +10,7 @@ import { Button } from '@liveplanner/ui';
 import { CardPickerDialog } from '@/components/plan/CardPickerDialog';
 import { byNewestChange, pickCardOf, useCardPickerSearch } from '@/components/plan/card-picker';
 import type { AutomationOutline } from '../automation-outline';
+import { cardRefIn } from '@/components/plan/card-ref';
 import { PanelField, PanelSelect } from './panel-parts';
 
 type LinkAction = AutomationAction & { kind: 'link_card' };
@@ -117,7 +118,9 @@ export function LinkCardPanel({
               >
                 {chosen ? (
                   <>
-                    <span className="mr-1 text-slate-500 dark:text-slate-400">#{chosen.key}</span>
+                    <span className="mr-1 text-slate-500 dark:text-slate-400">
+                      {cardRefIn(outline.types)(chosen)}
+                    </span>
                     {itemTitle(chosen)}
                   </>
                 ) : (

@@ -460,8 +460,8 @@ marker but neither way in.
   when it already had a screen link), and letting go on the element's own screen, off every screen, or pressing
   Escape changes nothing. The screen's name pill sits above the screen's top-left corner, and is kept inside the
   window (8 px from its edges) when that corner is off screen. A press without a drag (or Enter on the focused handle) opens Link Element on its Screen
-  mode. The handle hides while the element is being edited, while a menu covers it, on a locked tab and for
-  anyone who may not link it.
+  mode. The handle hides while the element is being edited, while a menu covers it, while an image is being cropped,
+  on a locked tab and for anyone who may not link it.
 - A linked element shows a small **link marker** while editing (its [element indicator](../008-canvas/element-indicators.md)):
   a screen with an arrow, which names the screen on hover ("Goes to Checkout", "Goes back to the screen before").
   Pressing it brings that screen into view on the canvas, as its label does; it never plays the prototype. A

@@ -75,3 +75,14 @@ export function seenFromBehind(wall: { a: Point; b: Point }, q: number): boolean
   const normal = { x: -(wall.b.y - wall.a.y), y: wall.b.x - wall.a.x };
   return toCamera(normal, q).y < 0;
 }
+
+/**
+ * Whether a wall runs away from the turned camera (3d-view.md "Turning the camera"), and which way: 1 when it runs from
+ * `a` up the screen, -1 when down it, 0 for a wall more across the screen than along it. A room's name over a door in
+ * such a wall would run sideways, so it turns out from the wall to face the camera, a blade sign.
+ */
+export function runsAway(wall: { a: Point; b: Point }, q: number): -1 | 0 | 1 {
+  const d = toCamera({ x: wall.b.x - wall.a.x, y: wall.b.y - wall.a.y }, q);
+  if (Math.abs(d.y) <= Math.abs(d.x)) return 0;
+  return d.y < 0 ? 1 : -1;
+}

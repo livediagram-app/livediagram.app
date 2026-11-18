@@ -2,6 +2,7 @@
 // lines walking is stopped by (@livehuddle/avatar's collision), each a face on the floor from `a` to `b`, with the
 // doorways cut out and a shut Door standing in its gap. Built once per board change, never per frame. Pure.
 
+import { SPACE_STAGE_LIFT } from './space-3d-pieces';
 import { isGlassRoom, type Element } from '@livehuddle/document';
 import { roomWalls, type WallSegment } from '@livehuddle/avatar/office-geometry';
 import { cutByDoors, doorLine, doorSpanOnWall } from '@livehuddle/avatar/room-outline';
@@ -22,7 +23,8 @@ export const SPACE_FENCE_HEIGHT = 22;
 /** A doorway's opening, and so a shut Door's leaf: a lintel of wall stands over it. */
 export const SPACE_DOOR_HEIGHT = 96;
 
-export type SpaceWallKind = 'wall' | 'glass' | 'fence' | 'picket' | 'doorway' | 'window' | 'grass';
+export type SpaceWallKind =
+  'wall' | 'glass' | 'fence' | 'picket' | 'doorway' | 'window' | 'grass' | 'stage';
 
 /** How tall a row of grass blades pokes up from a lawn. */
 export const SPACE_GRASS_HEIGHT = 7;
@@ -44,6 +46,11 @@ export type SpaceWall = {
   label?: string;
   // A doorway's Door is shut: its leaf stands in the frame.
   shut?: boolean;
+  // A doorway's Door, by id: a press on its frame or leaf is a press on the door (3d-view.md "Doorways").
+  doorId?: string;
+  // An open Door's leaf stands out of the wall at its hinge, swung the way the plan draws it: hinged at the face's
+  // `start` (its `a`) or `end`, swung to the face's `front` (the camera's side) or `back`. Always the two together.
+  hinge?: 'start' | 'end';
   // A doorway in a glass wall: the panel over its frame is glass, as the wall is (3d-view.md "Doorways").
   glass?: boolean;
 };
@@ -59,6 +66,7 @@ const HEIGHT: Record<SpaceWallKind, number> = {
   grass: SPACE_GRASS_HEIGHT,
   doorway: SPACE_WALL_HEIGHT,
   window: SPACE_WALL_HEIGHT,
+  stage: SPACE_STAGE_LIFT,
 };
 
 type Shape = Extract<Element, { type: 'shape' }>;
@@ -93,6 +101,20 @@ export function spaceWalls(elements: readonly Element[]): SpaceWall[] {
         if (wall) out.push(wall);
       });
     };
+    // A Stage stands up (3d-view.md "A stage stands up"): its top rises (app/space-3d.css) on four wooden sides.
+    if (el.shape === 'stage') {
+      const { x, y, width: w, height: h } = el;
+      push(
+        [
+          { a: { x, y }, b: { x: x + w, y } },
+          { a: { x: x + w, y }, b: { x: x + w, y: y + h } },
+          { a: { x: x + w, y: y + h }, b: { x, y: y + h } },
+          { a: { x, y: y + h }, b: { x, y } },
+        ],
+        'stage',
+      );
+      continue;
+    }
     if (el.shape === 'room') {
       const walls = roomWalls(el);
       doorable.push(...walls);
@@ -135,7 +157,11 @@ export function spaceWalls(elements: readonly Element[]): SpaceWall[] {
       wall.label = room.label;
       room.done = true;
     }
+    wall.doorId = el.id;
     if ((el as { doorClosed?: boolean }).doorClosed === true) wall.shut = true;
+    // Open, its leaf stands hinged at the door's first jamb, swung to the side the plan draws (doorParts): the face
+    // keeps the door's own way unless facingCamera turned it round, and then the hinge and the swing both swap.
+    else wall.hinge = wall.a.x === line.a.x && wall.a.y === line.a.y ? 'start' : 'end';
     if (glassy.some((w) => doorSpanOnWall(w, line))) wall.glass = true;
     out.push(wall);
   });

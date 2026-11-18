@@ -12,9 +12,14 @@ export const PANE_THUMB_BOX =
 // A preview card's thumbnail: filling the card's top.
 export const PANE_PREVIEW_BOX = 'h-full w-full bg-white dark:bg-slate-900';
 
-// The surface every card in the pane shares: raised a touch off the pane, lifting on hover.
-const CARD =
-  'rounded-xl bg-white ring-1 ring-slate-200/80 shadow-[0_1px_2px_rgba(15,23,42,0.05)] transition duration-micro hover:-translate-y-px hover:shadow-[0_6px_16px_-6px_rgba(15,23,42,0.18)] hover:ring-slate-300 motion-reduce:hover:translate-y-0 dark:bg-slate-800/70 dark:ring-slate-700/80 dark:hover:ring-slate-600';
+// The surface every card in the pane shares, raised a touch off the pane; the rail's Current card wears it too.
+export const PANE_CARD_SURFACE =
+  'rounded-xl bg-white ring-1 ring-slate-200/80 shadow-[0_1px_2px_rgba(15,23,42,0.05)] dark:bg-slate-800/70 dark:ring-slate-700/80';
+// A preview card's picture frame: 16:9 across the card's top over a hairline (the Current card's too, Work Tracker 1293).
+export const PANE_CARD_PICTURE =
+  'block aspect-[16/9] w-full overflow-hidden border-b border-slate-100 dark:border-slate-700/70';
+// A pane card lifts on hover.
+const CARD = `${PANE_CARD_SURFACE} transition duration-micro hover:-translate-y-px hover:shadow-[0_6px_16px_-6px_rgba(15,23,42,0.18)] hover:ring-slate-300 motion-reduce:hover:translate-y-0 dark:hover:ring-slate-600`;
 const CARD_CURRENT =
   'rounded-xl bg-brand-50/70 ring-2 ring-brand-400/70 shadow-[0_1px_2px_rgba(15,23,42,0.05)] dark:bg-brand-500/10 dark:ring-brand-400/50';
 
@@ -278,9 +283,7 @@ export function PaneCard({
           onClick={onActivate}
           className="flex min-w-0 flex-col text-left focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-500"
         >
-          <span className="block aspect-[16/9] w-full overflow-hidden border-b border-slate-100 dark:border-slate-700/70">
-            {preview}
-          </span>
+          <span className={PANE_CARD_PICTURE}>{preview}</span>
           <span className="flex min-w-0 flex-col gap-0.5 px-2.5 pb-2 pt-1.5">
             <span
               className={`truncate text-[13px] font-semibold leading-5 ${
@@ -301,9 +304,7 @@ export function PaneCard({
       ) : (
         // Renaming: the name is a field, which may not sit inside a button.
         <div className="flex min-w-0 flex-col">
-          <span className="block aspect-[16/9] w-full overflow-hidden border-b border-slate-100 dark:border-slate-700/70">
-            {preview}
-          </span>
+          <span className={PANE_CARD_PICTURE}>{preview}</span>
           <span className="flex min-w-0 flex-col gap-0.5 px-2.5 pb-2 pt-1.5">
             <span
               className={`truncate text-[13px] font-semibold leading-5 ${

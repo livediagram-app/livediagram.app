@@ -81,7 +81,10 @@ Notes:
   only a value the kind takes; a room preset's variant is never stored (the preset is its size, name and outline).
 - A door's parts carry `open` and `shut` poses (`rotate` about an origin, or a `dx` slide); the canvas sets the pose
   as a CSS transform under the 180 ms door transition (`.lh-door-leaf`, `.lh-door-swing`), the export bakes the current
-  one in. Paints are data too: a revolving drum's floor is `pane` (the glass wash, unoutlined).
+  one in. The open leaf and swing reach past the box by up to `doorOverhang(width, height)` (`width - height / 2`,
+  `door-art.ts`); the PNG (and the PDF's raster fallback) rasters a Door's SVG in a frame padded by it
+  (`renderTabToCanvas`), so the swing the SVG draws is never cropped. Paints are data too: a revolving drum's floor is
+  `pane` (the glass wash, unoutlined).
 - `CategoryFlyoutSide` lifts the side panel against `[data-canvas-root]`'s bottom (`sideFloor`), at its settled height
   (the opening animation's scale divided out, `animationScale`), re-measured on `animationend`, resize and a
   ResizeObserver.
@@ -130,7 +133,7 @@ Derived from [Window](../room-builder.md#window), [Glass walls](../office.md#gla
 | `packages/document/src/window-art.ts`                            | `windowArt(width, height)`: frame, pane, mullion, sill and the light patch (`WINDOW_LIGHT`), for the canvas and the export              |
 | `packages/document/src/glass-walls.ts`                           | `GLASS_ROOM_VARIANT`, `isGlassRoom`, `glassRoomArt(el)`: a glass room's floor, wall band, pane line, mullions, back face and glints     |
 | `packages/document/src/piece-variants.ts`                        | `room: ['solid', 'glass']` in the stored variants, so `pieceVariant` reads a room's wall style                                          |
-| `packages/document/src/room-preset-shapes.ts`, `room-presets.ts` | The Meeting Booth preset (`variant: 'glass'` on the room) and its table and plant                                                       |
+| `packages/document/src/room-preset-shapes.ts`, `room-presets.ts` | The Glass Room preset (`variant: 'glass'` on the room), empty                                                                           |
 | `packages/document/src/svg-render-doors.ts`                      | The export's `windowSvg` and `glassRoomSvg`                                                                                             |
 | `apps/editor/components/canvas/collab/WindowView.tsx`            | `WindowView` (light patch by `useCanvasSurface`), `GlassRoomView`                                                                       |
 | `apps/editor/components/palette/CollabMenuSections.tsx`          | `RoomWallsMenuSection`: Solid and Glass tiles, every room; `setRoomWallsSelected` in `useDataShapeSetters`                              |

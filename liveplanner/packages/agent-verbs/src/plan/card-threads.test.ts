@@ -127,7 +127,7 @@ describe('listing threads', () => {
           id: T1.id,
           title: T1.title,
           state: 'open',
-          cards: ['#12 Basket', '#4 in Sprint 12'],
+          cards: ['T-12 Basket', '#4 in Sprint 12'],
           field: 'Comments',
           comments: [
             {
@@ -298,7 +298,7 @@ describe('changing threads', () => {
     );
     expect(out.refusal).toBeUndefined();
     expect(out.applied).toEqual([
-      `+ thread ${made.id} "Priya: Started" on #12`,
+      `+ thread ${made.id} "Priya: Started" on T-12`,
       `+ comment cm-2 on "Priya: Started"`,
       `+ comment cm-2 on "${T1.title}"`,
       `~ comment cm-agent1 on "${T1.title}"`,

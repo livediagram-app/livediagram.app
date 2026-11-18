@@ -9,6 +9,7 @@ import {
   freshCopyFields,
   isBoxed,
   snapMovedDoors,
+  snapMovedWallPieces,
   type BoxedElement,
   type Element,
   type Tab,
@@ -36,7 +37,8 @@ export function useElementDuplication(deps: {
     const { dx, dy } = groupDuplicateOffset(activeTab.elements, multiSelectedIds);
     const { newElements } = duplicateElements(activeTab.elements, multiSelectedIds, dx, dy);
     const merged = [...activeTab.elements, ...newElements];
-    const copies = snapMovedDoors(merged, new Set(newElements.map((c) => c.id))).slice(
+    const ids = new Set(newElements.map((c) => c.id));
+    const copies = snapMovedWallPieces(snapMovedDoors(merged, ids), ids).slice(
       activeTab.elements.length,
     );
     if (copies.length === 0) return;

@@ -49,8 +49,8 @@ describe('placementLanding', () => {
     const { piece: door, onWall } = placementLanding('door', { x: 200, y: 120 }, [room], 'double');
     expect(onWall).toBe(true);
     expect(door).toMatchObject({ width: 144, variant: 'double' });
-    const { piece } = placementLanding('room', { x: 0, y: 0 }, [], 'boardroom');
-    expect(piece).toMatchObject({ x: -400, y: -200, width: 800, label: 'Boardroom' });
+    const { piece } = placementLanding('room', { x: 0, y: 0 }, [], 'large');
+    expect(piece).toMatchObject({ x: -480, y: -320, width: 960, label: 'Large Room' });
   });
 
   it('centres any other placed piece on the pointer at its own size, never on a wall', () => {

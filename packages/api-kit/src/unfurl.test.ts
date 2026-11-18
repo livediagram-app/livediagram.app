@@ -34,6 +34,17 @@ describe('isBlockedHost (SSRF guard)', () => {
       // IPv4-compatible IPv6 (::127.0.0.1 as WHATWG URL normalises it).
       '::7f00:1',
       '[::a9fe:a9fe]',
+      // The deprecated IPv4-compatible range ::/96 is refused whole, a public IPv4 in it too (the shared rule).
+      '::808:808',
+      // Internal names the webhooks refuse too.
+      'metadata',
+      'metadata.google.internal',
+      'router.lan',
+      // Multicast, reserved, documentation and 6to4.
+      '224.0.0.1',
+      '240.0.0.1',
+      '192.0.2.1',
+      '2002:7f00:1::1',
     ]) {
       expect(isBlockedHost(h), h).toBe(true);
     }
@@ -47,7 +58,6 @@ describe('isBlockedHost (SSRF guard)', () => {
       '172.32.0.1',
       '93.184.216.34',
       '::ffff:808:808', // 8.8.8.8 mapped — public, allowed
-      '::808:808', // 8.8.8.8, IPv4-compatible
       'example.com.',
       // Domains that start with an IPv6 private prefix's letters.
       'fdic.gov',
@@ -84,6 +94,17 @@ describe('parsePublicHttpUrl', () => {
 
 describe('buildUnfurlResult', () => {
   const final = 'https://example.com/blog/post';
+
+  it('drops an image or favicon that cannot be resolved', () => {
+    expect(buildUnfurlResult({ ogImage: 'http://[', title: 'T' }, final)).toMatchObject({
+      title: 'T',
+      image: undefined,
+    });
+    expect(buildUnfurlResult({ ogImage: '/a.png' }, 'not a url')).toMatchObject({
+      image: undefined,
+      favicon: undefined,
+    });
+  });
 
   it('prefers og:* over the bare tags and resolves relative image/favicon', () => {
     const out = buildUnfurlResult(

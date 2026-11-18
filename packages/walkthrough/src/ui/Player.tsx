@@ -10,7 +10,7 @@ import { contentOf, elementBox, screenPoint, sizeOf } from '../bridge';
 import type { WalkthroughHost } from '../host';
 import { fitView, formatClock, type PlayState } from '../timeline';
 import type { Loaded } from '../usePlayer';
-import { InitialBubble, PlaybackBubble } from './Bubble';
+import { PlaybackBubble, VoiceChip } from './Bubble';
 import { PauseIcon, PlayIcon } from './icons';
 
 const SPEEDS = [1, 1.5, 2] as const;
@@ -236,9 +236,10 @@ export function Player({
       ) : (
         <>
           {mediaEl}
-          <InitialBubble
+          <VoiceChip
             corner={events.corner}
-            name={walkthrough.mine ? 'You' : (walkthrough.author ?? walkthrough.title)}
+            name={walkthrough.mine ? 'You' : (walkthrough.author ?? null)}
+            fallback={walkthrough.title}
             playing={playing}
           />
         </>
@@ -316,6 +317,7 @@ function PlayerBar({
   return (
     <section
       aria-label={`Walkthrough: ${title}`}
+      data-walkthrough-bar=""
       className="pointer-events-auto flex w-[min(36rem,100%)] items-center gap-3 rounded-2xl border border-slate-200 bg-white/95 py-2 pl-2 pr-2 shadow-2xl shadow-slate-900/15 backdrop-blur dark:border-slate-700 dark:bg-slate-900/95 dark:shadow-black/40"
     >
       {playing ? (

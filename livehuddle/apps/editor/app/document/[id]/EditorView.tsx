@@ -53,6 +53,7 @@ import { useEditorUiScales } from '@liveworkspace/workbench/hooks/ui/useEditorUi
 // Each major area fails on its own and reports which one it was (docs/specs/017-telemetry/telemetry.md).
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { ClearStylesHost } from '@/components/canvas/ClearStylesHost';
+import { SpaceQuickStylePanel } from '@/components/canvas/SpaceQuickStylePanel';
 import { EditorStartPanels } from '@/components/start/EditorStartPanels';
 import { SnapshotsDoorProvider, useEditorSnapshotsDoor } from '@liveworkspace/snapshots/ui';
 import {
@@ -393,10 +394,11 @@ export function EditorView() {
                           />
                         ) : null}
                         {footerInColumn}
-                        {/* What the element menu's Clear Styles resets (docs/specs/008-canvas/element-menu-quick-bar.md).
-            Headless: livehuddle has no Quick Style panel (docs/specs/002-project-scope/not-in-livehuddle.md#quick-style). */}
+                        {/* What the element menu's Clear Styles resets (docs/specs/008-canvas/element-menu-quick-bar.md),
+            and the Quick Style panel: a room's walls and floor, a piece's type (docs/specs/008-canvas/space-quick-style.md). */}
                         <AreaErrorBoundary area="QuickStyle">
                           <ClearStylesHost deps={quickStyleDeps} />
+                          <SpaceQuickStylePanel editing={canvasTool !== 'avatar' && !drag} />
                         </AreaErrorBoundary>
                         {ctx.searchOpen ? (
                           <AreaErrorBoundary area="Search">
@@ -448,6 +450,7 @@ export function EditorView() {
                         <ModifierHintBanner
                           drag={drag}
                           hasElements={activeTab.elements.length > 0}
+                          walking={canvasTool === 'avatar'}
                           suppressed={
                             canvasTool === 'format' ||
                             formatSourceId !== null ||

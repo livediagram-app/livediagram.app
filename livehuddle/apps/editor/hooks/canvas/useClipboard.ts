@@ -31,7 +31,12 @@
 
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { useEffect, useRef, useState } from 'react';
-import { duplicateElements, type Element, type Tab } from '@livehuddle/document';
+import {
+  duplicateElements,
+  snapMovedWallPieces,
+  type Element,
+  type Tab,
+} from '@livehuddle/document';
 import { anyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
 import { watchPrimarySelectionPaste } from '@liveworkspace/workbench/lib/primary-selection-paste';
 import {
@@ -204,7 +209,13 @@ export function useClipboard(deps: ClipboardDeps) {
     const merged = [...activeTab.elements.filter((el) => !clipIds.has(el.id)), ...pasting];
     // An uncopied end stays pinned only to what is on this tab, never to a clipboard element that did not land.
     const onTab = new Set(activeTab.elements.map((el) => el.id));
-    const { newElements } = duplicateElements(merged, clipIds, dx, dy, onTab);
+    const { newElements: copies } = duplicateElements(merged, clipIds, dx, dy, onTab);
+    // A wall piece pasted away from a wall goes onto the nearest one (docs/specs/009-elements/wall-pieces.md); one
+    // pasted with its room is on its wall already.
+    const pastedIds = new Set(copies.map((el) => el.id));
+    const newElements = snapMovedWallPieces([...activeTab.elements, ...copies], pastedIds).slice(
+      activeTab.elements.length,
+    );
     if (newElements.length === 0) return;
     commit((els) => [...els, ...newElements]);
     if (newElements.length === 1) {

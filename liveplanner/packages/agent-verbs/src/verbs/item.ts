@@ -7,10 +7,13 @@ import {
   itemStatus,
   itemSummary,
   itemTitle,
+  itemAssistantOf,
   FLAGGED_FIELD,
   resolveItem,
   type Item,
   type ItemFields,
+  cardRefOrKey,
+  type ItemTypeDef,
 } from '@liveplanner/items';
 import { defineVerb, VerbRefusal, type VerbContext } from '../define';
 import { applyItemChanges, type ItemChange } from '../plan/item-changes';
@@ -25,6 +28,7 @@ import {
   resolveListingFilter,
 } from '../plan/plan-listing';
 import { readPlanState, type PlanState } from '../plan/plan-state';
+import { handedToOf } from '../plan/assistant-caller';
 import { columns, projectOf } from './shared';
 
 const projectArg = z.string().describe('A name, id prefix or liveplanner URL');
@@ -33,6 +37,9 @@ const itemArg = z.string().describe('The item, by its number (#12) or an id pref
 const itemOut = z.object({
   id: z.string(),
   key: z.number(),
+  // Its number as people see it, with its type's prefix ("WI-12"; docs/specs/026-plan/item-types.md "Card number
+  // prefixes"); every form reads back as the card.
+  ref: z.string(),
   type: z.string(),
   status: z.string().nullable(),
   title: z.string(),
@@ -43,11 +50,14 @@ const itemOut = z.object({
 // "Agents").
 const listedItemOut = itemOut.extend({
   pullRequests: z.array(listedPullRequestSchema).optional(),
+  // The AI assistant it is handed to, by name (docs/specs/026-plan/plan-agents.md "Cards handed to an assistant").
+  assistant: z.string().optional(),
 });
 
-const outOf = (item: Item) => ({
+const outOf = (item: Item, types: readonly ItemTypeDef[]) => ({
   id: item.id,
   key: item.key,
+  ref: cardRefOrKey(item, types),
   type: item.type,
   status: itemStatus(item) ?? null,
   title: itemTitle(item),
@@ -64,7 +74,11 @@ async function planOf(
 
 // One change through the Plan engine (docs/specs/026-plan/plan-agents.md): names resolved as the MCP resolves
 // them, a refusal as the verb's.
-async function changeOne(ctx: VerbContext, projectRef: string, change: ItemChange): Promise<Item> {
+async function changeOne(
+  ctx: VerbContext,
+  projectRef: string,
+  change: ItemChange,
+): Promise<{ item: Item; types: readonly ItemTypeDef[] }> {
   const { projectId, state } = await planOf(ctx, projectRef);
   const result = await applyItemChanges(ctx.api, projectId, [change], state);
   if (result.refusal)
@@ -75,7 +89,7 @@ async function changeOne(ctx: VerbContext, projectRef: string, change: ItemChang
       hint: 'list the columns, card types and fields with: liveplanner item ls <project>',
     });
   // An add, set or move that was not refused always answers its item.
-  return result.touched[0]!;
+  return { item: result.touched[0]!, types: state.plan.types };
 }
 
 // `key=value` pairs into fields: numbers stay numbers, `labels` splits on commas, the rest is text.
@@ -163,6 +177,7 @@ export const itemLs = defineVerb({
       .boolean()
       .optional()
       .describe('With --query or --updated-since, list closed items too'),
+    handedToMe: z.boolean().optional().describe("Only items handed to this token's assistant"),
   }),
   output: z.object({
     items: z.array(listedItemOut),
@@ -195,7 +210,19 @@ export const itemLs = defineVerb({
         message: page.message.replace('updatedSince', '--updated-since'),
         hint: 'for example: liveplanner item ls <project> --updated-since 2026-11-01',
       });
-    const { kept, closed, closedOut } = keptListItems(state, filter, page);
+    // Only the cards handed to this token's assistant, when asked.
+    const handed = await handedToOf(ctx.api, state.items, input.handedToMe);
+    if (!handed.ok)
+      throw new VerbRefusal({
+        status: 400,
+        code: handed.code,
+        message: handed.message,
+        hint: 'sign in with an AI tool or a named API token: liveplanner auth login',
+      });
+    const { kept, closed, closedOut } = keptListItems(state, filter, {
+      ...page,
+      ...(handed.handedTo ? { handedTo: handed.handedTo } : {}),
+    });
     // Each picture with a link the CLI's token reads (docs/specs/015-api/cli.md "Pictures").
     const lister = itemLister(state, pictureLinkFor(ctx.host, projectId));
     const listed = listedBoards(state, { closedOut });
@@ -210,14 +237,17 @@ export const itemLs = defineVerb({
       boards: state.plan.boards.length === 0 ? [NO_BOARD_HINT] : boards,
       items: kept.map((item) => {
         const i = lister(item);
+        const assistant = itemAssistantOf(item);
         return {
           id: i.id,
           key: item.key,
+          ref: i.ref,
           type: i.type,
           status: i.column ?? i.status,
           title: i.title,
           fields: i.fields,
           ...(i.pullRequests ? { pullRequests: i.pullRequests } : {}),
+          ...(assistant ? { assistant: assistant.name } : {}),
         };
       }),
       ...(closed > 0 ? { closedLeftOut: closed } : {}),
@@ -228,25 +258,27 @@ export const itemLs = defineVerb({
     ...boards,
     ...columns(
       items.map((i) => [
-        `#${i.key}`,
+        i.ref,
         i.type,
         i.status ?? '-',
         JSON.stringify(i.title) +
           (i.fields[FLAGGED_FIELD] === true ? '  flagged' : '') +
+          (i.assistant ? `  → ${i.assistant}` : '') +
           (i.pullRequests?.length ? `  ${i.pullRequests.map(pullRequestLine).join('; ')}` : ''),
       ]),
     ),
     ...(closedLeftOut ? [closedLeftOutLine(closedLeftOut)] : []),
   ],
-  quiet: ({ items }) => items.map((i) => `#${i.key}`),
+  quiet: ({ items }) => items.map((i) => i.ref),
   cli: {
     positionals: ['project'],
     examples: [
       'liveplanner item ls 3f9c --status "To Do" --status Doing --type bug --type task',
-      'liveplanner item ls "Sprint 14" --query checkout --updated-since 2026-11-01 --include-closed',
+      'liveplanner item ls "Sprint 14" --updated-since 2026-11-01 --handed-to-me',
     ],
     prints:
-      'one item a line: #number, type, status, title, flagged on a flagged card, then its pull requests with their states',
+      'one item a line: #number, type, status, title, flagged on a flagged card, its AI assistant, then its pull ' +
+      'requests with their states',
   },
 });
 
@@ -273,7 +305,7 @@ export const itemAdd = defineVerb({
   }),
   output: lineOut,
   run: async (ctx, input) => {
-    const item = await changeOne(ctx, input.project, {
+    const { item, types } = await changeOne(ctx, input.project, {
       op: 'add',
       ...(input.title ? { title: input.title } : {}),
       type: input.type,
@@ -281,10 +313,10 @@ export const itemAdd = defineVerb({
       fields: fieldsFromPairs(input.fields),
       ...(input.template ? { template: input.template } : {}),
     });
-    return { item: outOf(item), text: `+ ${itemSummary(item)}` };
+    return { item: outOf(item, types), text: `+ ${itemSummary(item, types)}` };
   },
   text: ({ text }) => [text],
-  quiet: ({ item }) => [`#${item.key}`],
+  quiet: ({ item }) => [item.ref],
   cli: {
     positionals: ['project', 'title'],
     examples: [
@@ -321,17 +353,17 @@ export const itemSet = defineVerb({
   }),
   output: lineOut,
   run: async (ctx, input) => {
-    const item = await changeOne(ctx, input.project, {
+    const { item, types } = await changeOne(ctx, input.project, {
       op: 'set',
       item: input.item,
       fields: withPictureRemovals(fieldsFromPairs(input.fields), input.remove),
       ...(input.clear.length ? { clear: input.clear } : {}),
       ...(input.type ? { type: input.type } : {}),
     });
-    return { item: outOf(item), text: `~ ${itemSummary(item)}` };
+    return { item: outOf(item, types), text: `~ ${itemSummary(item, types)}` };
   },
   text: ({ text }) => [text],
-  quiet: ({ item }) => [`#${item.key}`],
+  quiet: ({ item }) => [item.ref],
   cli: {
     positionals: ['project', 'item'],
     examples: [
@@ -356,16 +388,16 @@ export const itemMove = defineVerb({
   }),
   output: lineOut,
   run: async (ctx, input) => {
-    const item = await changeOne(ctx, input.project, {
+    const { item, types } = await changeOne(ctx, input.project, {
       op: 'move',
       item: input.item,
       status: input.status,
       ...(input.before ? { before: input.before } : {}),
     });
-    return { item: outOf(item), text: `→ ${itemSummary(item)} in ${input.status}` };
+    return { item: outOf(item, types), text: `→ ${itemSummary(item, types)} in ${input.status}` };
   },
   text: ({ text }) => [text],
-  quiet: ({ item }) => [`#${item.key}`],
+  quiet: ({ item }) => [item.ref],
   cli: {
     positionals: ['project', 'item', 'status'],
     examples: [
@@ -402,7 +434,7 @@ export const itemRm = defineVerb({
         message: result.refusal.message,
         hint: 'list them with: liveplanner item ls <project>',
       });
-    return { id, text: `- ${itemSummary(target.item)}` };
+    return { id, text: `- ${itemSummary(target.item, state.plan.types)}` };
   },
   text: ({ text }) => [text],
   quiet: ({ id }) => [id],
@@ -413,4 +445,40 @@ export const itemRm = defineVerb({
   },
 });
 
-export const itemVerbs = [itemLs, itemAdd, itemSet, itemMove, itemRm];
+// Hands a card this token's assistant holds back to its person (plan-agents.md "Cards handed to an assistant").
+export const itemHandBack = defineVerb({
+  id: 'item.hand-back',
+  summary: 'Hand an item back',
+  description:
+    "Hands an item handed to this token's AI assistant back to the person it works for: its assignee becomes " +
+    'them. Refused for an item not handed to it. Take one with: item set <project> <item> --fields assignee=me.',
+  behaviour: 'write',
+  input: z.object({ project: projectArg, item: itemArg }),
+  output: lineOut,
+  run: async (ctx, input) => {
+    const { item, types } = await changeOne(ctx, input.project, {
+      op: 'hand_back',
+      item: input.item,
+    });
+    const person = item.fields['assignee'];
+    const named =
+      person && typeof person === 'object' && 'name' in person ? person.name : undefined;
+    const name = typeof named === 'string' ? named : 'its person';
+    return {
+      item: outOf(item, types),
+      text: `~ ${itemSummary(item, types)} handed back to ${name}`,
+    };
+  },
+  text: ({ text }) => [text],
+  quiet: ({ item }) => [item.ref],
+  cli: {
+    positionals: ['project', 'item'],
+    examples: [
+      'liveplanner item hand-back "Sprint 14" "#12"',
+      'liveplanner item hand-back 3f9c 12',
+    ],
+    prints: '~ #<number> [<type>] <title> handed back to <person>',
+  },
+});
+
+export const itemVerbs = [itemLs, itemAdd, itemSet, itemMove, itemRm, itemHandBack];
