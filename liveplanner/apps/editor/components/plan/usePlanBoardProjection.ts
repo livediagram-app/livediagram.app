@@ -50,10 +50,9 @@ export function usePlanBoardProjection(
   const shownItems = useMemo(() => (unfiltered ? boardItems(unfiltered) : NO_SHOWN), [unfiltered]);
   // A filter that hides every card the board holds (docs/specs/026-plan/board-widgets.md "When the filter hides every
   // card"): never a board that is really empty.
-  const hidesAll =
-    quickOn &&
-    !!projection &&
-    projection.total > 0 &&
-    projection.columns.every((c) => c.lanes.every((l) => l.items.length === 0));
-  return { projection, busy, pickable, shownItems, hidesAll };
+  // Whether it draws any card at all, after the filter: Hide From Recording reads it (board-shown-store.ts).
+  const showsAny =
+    !!projection && projection.columns.some((c) => c.lanes.some((l) => l.items.length > 0));
+  const hidesAll = quickOn && !!projection && projection.total > 0 && !showsAny;
+  return { projection, busy, pickable, shownItems, hidesAll, showsAny };
 }
