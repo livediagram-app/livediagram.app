@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  MEDIA_REFS_PER_PROJECT_MAX as MEDIA_REFS_PER_PROJECT_MAX,
+  MEDIA_REFS_PER_DOCUMENT_MAX as MEDIA_REFS_PER_PROJECT_MAX,
   MEDIA_REFS_SYNC_MAX,
 } from '@liveworkspace/media';
 import { nodeItemSql } from '@liveworkspace/index-app/testing';
@@ -242,7 +242,7 @@ describe('what a copy is noted for', () => {
     expect(w.claims()).toEqual([]);
   });
 
-  it('caps a note at what one plan's report carries', async () => {
+  it('caps a note at what one plan’s report carries', async () => {
     const w = world();
     const many = Array.from({ length: MEDIA_REFS_PER_PROJECT_MAX + 5 }, (_, i) => `p${i}`);
     expect(await noteCopyClaim(w.env, SOURCE, COPY, many, 1)).toBe(true);
