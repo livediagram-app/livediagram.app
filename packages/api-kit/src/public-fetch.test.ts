@@ -1,7 +1,12 @@
 // A fetch of a URL someone else chose: https to public addresses only, every redirect checked, bounded in time and
 // bytes (public-fetch.ts).
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { fetchPublicBytes, PUBLIC_URL_MAX, type PublicFetchOptions } from './public-fetch';
+import {
+  checkPublicHop,
+  fetchPublicBytes,
+  PUBLIC_URL_MAX,
+  type PublicFetchOptions,
+} from './public-fetch';
 
 const PUBLIC = async () => ['93.184.216.34'];
 const opts = (more: Partial<PublicFetchOptions> = {}): PublicFetchOptions => ({
@@ -243,5 +248,46 @@ describe('fetchPublicBytes', () => {
     ).toMatchObject({ ok: false, reason: 'timeout' });
     await failed;
     await new Promise((settle) => setTimeout(settle, 0));
+  });
+});
+
+describe('checkPublicHop', () => {
+  it.each([
+    ['https://example.com/', 'https'],
+    ['https://example.com:443/', 'https'],
+    ['http://example.com/', 'http'],
+    ['http://example.com:8080/', 'http'],
+    ['https://example.com:8443/', 'http'],
+  ] as const)('lets %s through with the %s schemes', async (raw, schemes) => {
+    expect(await checkPublicHop(raw, PUBLIC, schemes)).toMatchObject({ ok: true });
+  });
+
+  it.each([
+    ['http://example.com/', 'https', 'not_https'],
+    ['https://example.com:8443/', 'https', 'not_https'],
+    ['ftp://example.com/', 'http', 'not_https'],
+    ['file:///etc/passwd', 'http', 'not_https'],
+    ['http://user:pw@example.com/', 'http', 'invalid_url'],
+    ['http://10.0.0.1/', 'http', 'private_address'],
+    ['http://metadata.google.internal/', 'http', 'private_address'],
+  ] as const)('refuses %s with the %s schemes: %s', async (raw, schemes, reason) => {
+    expect(await checkPublicHop(raw, PUBLIC, schemes)).toEqual({ ok: false, reason });
+  });
+
+  it('judges the http variant by the address a name resolves to, like the https one', async () => {
+    expect(
+      await checkPublicHop('http://sneaky.example.com/', async () => ['10.0.0.5'], 'http'),
+    ).toEqual({ ok: false, reason: 'private_address' });
+    expect(await checkPublicHop('http://gone.example.com/', async () => null, 'http')).toEqual({
+      ok: false,
+      reason: 'unresolved',
+    });
+  });
+
+  it('takes the https schemes when none are named', async () => {
+    expect(await checkPublicHop('http://example.com/', PUBLIC)).toEqual({
+      ok: false,
+      reason: 'not_https',
+    });
   });
 });

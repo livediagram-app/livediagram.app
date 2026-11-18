@@ -1,15 +1,20 @@
-// The Workers half of the link unfurl (unfurl.ts): fetch a public page, bounded in time and bytes, read its <head>
-// with HTMLRewriter, and validate the URL again after redirects.
+// The Workers half of the link unfurl (unfurl.ts): fetch a public page, bounded in time and bytes, and read its
+// <head> with HTMLRewriter. Every hop, the first and each redirect (followed by hand), goes through the same check as
+// the image upload's (public-fetch.ts checkPublicHop, http variant), so neither a name resolving to a private address
+// nor a redirect can reach one (liveworkspace/docs/specs/002-architecture/architecture.md "Fetching a URL someone gave").
 
-import {
-  buildUnfurlResult,
-  parsePublicHttpUrl,
-  type CollectedMeta,
-  type UnfurlResult,
-} from './unfurl';
+import { dohResolve, type Resolve } from './public-address';
+import { checkPublicHop, discard, isRedirect } from './public-fetch';
+import { buildUnfurlResult, type CollectedMeta, type UnfurlResult } from './unfurl';
 
 export const UNFURL_FETCH_TIMEOUT_MS = 8000;
 export const UNFURL_MAX_HTML_BYTES = 512 * 1024; // only the <head> is needed
+export const UNFURL_MAX_REDIRECTS = 5;
+
+export type UnfurlOptions = {
+  resolve?: Resolve;
+  fetch?: (request: Request) => Promise<Response>;
+};
 
 async function collectMeta(res: Response, maxBytes: number): Promise<CollectedMeta> {
   const collected: CollectedMeta = {};
@@ -55,7 +60,7 @@ async function collectMeta(res: Response, maxBytes: number): Promise<CollectedMe
     while (read < maxBytes) {
       const { done, value } = await reader.read();
       if (done) break;
-      read += value?.byteLength ?? 0;
+      read += value.byteLength;
     }
     await reader.cancel().catch(() => {});
   }
@@ -63,41 +68,56 @@ async function collectMeta(res: Response, maxBytes: number): Promise<CollectedMe
   return collected;
 }
 
-// The unfurl of a public http(s) URL (already parsePublicHttpUrl'd): the page's card fields, or `disallowed` when
-// a redirect ended on a host it must not read. A network failure or timeout answers the bare URL, so the card
-// still renders. The deadline covers the body as well as the headers: a page that sends its headers and then
-// trickles its <head> a byte at a time is cut off at UNFURL_FETCH_TIMEOUT_MS like one that never answers.
+// The unfurl of a public http(s) URL (already parsePublicHttpUrl'd): the page's card fields, or `disallowed` when a
+// hop (the URL itself or a redirect) is or resolves to a host it must not read. A name that won't resolve, a network
+// failure, a timeout, a broken redirect or too many of them answers the bare URL, so the card still renders. The
+// deadline covers the lookups and the body as well as the headers: a page that sends its headers and then trickles its
+// <head> a byte at a time is cut off at UNFURL_FETCH_TIMEOUT_MS like one that never answers.
 export async function unfurl(
   target: URL,
   userAgent: string,
+  options: UnfurlOptions = {},
 ): Promise<{ result: UnfurlResult } | { disallowed: true }> {
+  const { resolve = dohResolve, fetch: doFetch = (request) => fetch(request) } = options;
+  const bare = { result: { url: target.toString() } };
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), UNFURL_FETCH_TIMEOUT_MS);
   try {
+    let current = target.toString();
     let res: Response;
-    try {
-      res = await fetch(target.toString(), {
-        method: 'GET',
-        redirect: 'follow',
-        signal: controller.signal,
-        headers: { 'User-Agent': userAgent, Accept: 'text/html,application/xhtml+xml' },
-      });
-    } catch {
-      return { result: { url: target.toString() } };
+    for (let hop = 0; ; hop += 1) {
+      const check = await checkPublicHop(current, resolve, 'http');
+      if (!check.ok) return check.reason === 'private_address' ? { disallowed: true } : bare;
+      // The lookups ran the clock out: no request after the deadline.
+      if (controller.signal.aborted) return bare;
+      current = check.url.toString();
+      try {
+        res = await doFetch(
+          new Request(current, {
+            method: 'GET',
+            redirect: 'manual',
+            signal: controller.signal,
+            headers: { 'User-Agent': userAgent, Accept: 'text/html,application/xhtml+xml' },
+          }),
+        );
+      } catch {
+        return bare;
+      }
+      if (!isRedirect(res.status)) break;
+      await discard(res);
+      const location = res.headers.get('Location');
+      if (!location || hop >= UNFURL_MAX_REDIRECTS) return bare;
+      try {
+        current = new URL(location, current).toString();
+      } catch {
+        return bare;
+      }
     }
-
-    // Re-validate the FINAL url after any redirects, so a redirect to a private
-    // host can't leak data back through the card.
-    const finalParsed = parsePublicHttpUrl(res.url || target.toString());
-    if (!finalParsed) {
-      await res.body?.cancel().catch(() => {});
-      return { disallowed: true };
-    }
-    const finalUrl = finalParsed.toString();
+    const finalUrl = current;
 
     if (!(res.headers.get('content-type') ?? '').includes('html')) {
       // Not an HTML page (PDF, image, …): no metadata, but still offer a favicon. Its body is never read.
-      await res.body?.cancel().catch(() => {});
+      await discard(res);
       return { result: buildUnfurlResult({}, finalUrl) };
     }
     try {
