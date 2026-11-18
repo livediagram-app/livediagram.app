@@ -196,10 +196,16 @@ The owner, 2026-11-18: "quarter turns is fine". You can walk round to see the ot
   original direction, making it impossible to navigate around"); the walls in front of you, in the camera's direction, are
   the ones cut away; a sitter's lift and legs follow the camera's side of their piece. Pieces hung on a wall stay on
   it. The office dog's bed lies flat on the floor while the dog is out of it.
-- **A turned piece keeps its size** (the owner, 2026-11-18: the coat stand and umbrellas "shrink in size", the sofa,
-  bookcase, kitchen counters and fireplace looked wrong): the drawing the camera sees is drawn at the scale the piece's
-  own drawing has on the canvas, at that drawing's own shape, so a sofa from the side is its side as tall as its front
-  and a coat stand keeps its height. Only a table drawn from above (a Long Table, one built row by row) turns its box.
+- **A turned piece keeps its size and stands on the floor** (the owner, 2026-11-18: the coat stand and umbrellas
+  "shrink in size"; the sofa, bookcase and lockers looked "like they are floating in the air on one side, not connected
+  to the ground"): the drawing the camera sees is drawn at the scale the piece's own drawing has on the canvas. From the
+  front or behind it is the front or back drawing at its own shape. Side on it is the piece's end: its back drawing (an
+  upright drawing) narrowed to the piece's depth (its side drawing's width), standing on its foot, because the side
+  drawing is the flat plan's view from above and stood up it floats at its far end. Only a table drawn from above (a
+  Long Table, one built row by row) turns its box.
+- **A piece turned on the plan** by quarter turns (a sofa facing into the room, lockers along a side wall) is seen the
+  same way in the 3D view, its own turn added to the camera's, so it stands grounded from every side, the camera
+  unturned included. The flat plan draws it as before.
 - **Words read the right way up**: a room's name over its door is mirrored back when the camera sees that wall from
   behind, and a Text element on the floor turns with the camera about its middle.
 - **Your character's facing follows the camera**: a sitter, a walker and the receptionist are drawn facing the way they

@@ -9,6 +9,8 @@ import { track } from '@/lib/telemetry';
 
 /** Quarter turns made, unbounded (turning on past a full turn keeps going round). */
 export const space3DTurn = createStateStore<number>(0);
+/** Whether the 3D view shows (any phase but flat): a piece turned on the plan is drawn as the camera sees it only then. */
+export const space3DShowing = createStateStore<boolean>(false);
 
 /** Turns the camera a quarter turn: -1 left, 1 right. The camera going right round you turns the floor the other way. */
 export function turnSpace3D(by: -1 | 1): void {

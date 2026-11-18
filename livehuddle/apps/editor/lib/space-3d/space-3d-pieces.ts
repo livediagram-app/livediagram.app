@@ -200,6 +200,12 @@ export function hangsOnWall(kind: string): boolean {
   return HUNG_KINDS.has(kind);
 }
 
+/** A piece's rotation on the plan in clockwise quarter turns (0 to 3), or null for any other angle. */
+export function pieceQuarters(el: Element): number | null {
+  const r = ((((el as { rotation?: number }).rotation ?? 0) % 360) + 360) % 360;
+  return r % 90 === 0 ? r / 90 : null;
+}
+
 /**
  * Whether a piece is drawn as the turned camera sees it (3d-view.md "Turning the camera"): a piece that stands on its
  * front edge or is built row by row, unturned on the canvas, not hung on a wall. It then shows the side the camera
@@ -207,7 +213,9 @@ export function hangsOnWall(kind: string): boolean {
  */
 export function seenFromCamera(el: Element): boolean {
   if (el.type !== 'shape' || hangsOnWall(el.shape) || standsInside3D(el)) return false;
-  if (((el as { rotation?: number }).rotation ?? 0) % 360 !== 0) return false;
+  // A piece turned by quarter turns on the plan (a sofa facing into the room, lockers along a side wall) is seen as
+  // the camera sees it too (the owner, 2026-11-18: they looked "like they are floating in the air on one side").
+  if (pieceQuarters(el) === null) return false;
   return standsIn3D(el) || builtIn3D(el);
 }
 
