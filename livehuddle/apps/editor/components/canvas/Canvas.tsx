@@ -131,7 +131,6 @@ function CanvasView(props: CanvasProps) {
   // Long tasks, with the gesture they fell in, while the canvas-perf debug scope is on
   // (docs/specs/008-canvas/canvas-performance.md "Observability").
   useCanvasLongTaskLog(canvasGestureNow);
-  const offscreenContent = useOffscreenContent(elements, mainRef);
   // The canvas's size, for the pattern's zoom centre (worldPatternOrigin).
   const mainSize = useObservedSize(mainRef) ?? { width: 0, height: 0 };
   // No text selection starts on the canvas (docs/specs/008-canvas/canvas-performance.md "A press on the canvas
@@ -336,6 +335,10 @@ function CanvasView(props: CanvasProps) {
   // The 3D view (docs/specs/008-canvas/3d-view.md): while you walk with it on, the stage tilts the world back.
   const space3D = useSpace3DView(canvasTool === 'avatar');
   const spaceTurn = useSpace3DTurn();
+  const offscreenContent = useOffscreenContent(elements, mainRef, undefined, {
+    tilted: space3D !== 'flat',
+    turned: space3DTurned(space3D, spaceTurn) !== undefined,
+  });
   // 3D is closer than the flat plan: switching it on while walking zooms you in, off zooms you back out.
   useSpace3DZoom(canvasTool === 'avatar', viewportZoom, setViewportZoom);
   // The overlay's world layer, where what floats over a head is drawn while the view is 3D (Space3DOverlay).
@@ -563,7 +566,7 @@ function CanvasView(props: CanvasProps) {
           <div
             aria-hidden
             data-space-fog=""
-            className="pointer-events-none absolute inset-x-0 top-0 h-[36%]"
+            className="pointer-events-none absolute inset-x-0 top-0 h-[20%]"
           />
         )}
         {/* Over the world and its horizon: speech, cards, call bubbles and hands, never hidden by a wall. */}

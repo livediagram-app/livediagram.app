@@ -10,6 +10,7 @@ import {
   type Tab,
   isWallPiece,
   snapDoorToWall,
+  snapToWallFace,
 } from '@livehuddle/document';
 import { withPlacingFacing } from '@/lib/placing-facing';
 import { buildDrawnBoxed } from '@/lib/draw-commit';
@@ -195,7 +196,12 @@ export function useElementCreation(opts: {
           const styled = styleNewElement(el);
           // A dropped door or window lands on the nearest wall (docs/specs/009-elements/room-builder.md "Door",
           // "Window").
-          const placed = isWallPiece(styled) ? snapDoorToWall(styled, activeTab.elements) : styled;
+          // A wall piece lands against the nearest wall (wall-pieces.md "Only on a wall").
+          const mounted: Element =
+            styled.type === 'shape' ? snapToWallFace(styled, activeTab.elements) : styled;
+          const placed = isWallPiece(mounted)
+            ? snapDoorToWall(mounted, activeTab.elements)
+            : mounted;
           return placed as typeof el;
         },
       },

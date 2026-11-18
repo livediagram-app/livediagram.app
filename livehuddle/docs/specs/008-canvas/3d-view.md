@@ -18,7 +18,7 @@ not laggy.
   background").
 - **The floor** is the board as it is drawn flat (rooms' floors, rugs, furniture, stickies, text, everything), tilted
   back about the middle of the screen with perspective: what is nearer the top of the screen is further away and
-  smaller. What covers the floor stays on it: rugs, grass, garden paths, the Stage, ponds and pools, the Car Park,
+  smaller. What covers the floor stays on it: rugs, grass, garden paths, ponds and pools, the Car Park,
   stairs, Avatar Pads, stickies, text and everything that is not a piece of the Space.
 - **The walls stand up**: every line a character cannot cross because it is a wall (a Room's walls, a Corridor's walls, a
   Fence's and a Garden Fence's run) rises from the floor as a wall face. They are the same
@@ -29,7 +29,11 @@ not laggy.
     from across the room (the owner, 2026-11-17: "the doors should be more visible"). In a glass wall the panel over
     the frame is glass, as the wall is, never plaster, and the door is a glass door: a slim pale metal frame and a
     shut leaf of glass with a bar handle (the owner, 2026-11-18). A **shut** Door's leaf stands in
-    the frame, two raised panels and a brass handle; an open one leaves the opening clear.
+    the frame, two raised panels and a brass handle. An **open** one's leaf stands swung 70 degrees out of the wall at
+    its hinge, the side the plan's swing shows, so an open door reads as a door rather than a line on the floor (the
+    owner, 2026-11-18: "I just see a line"); the plan's flat leaf and swing arc give way to it. **Clicking a door**
+    (its frame or its open leaf) walks you to it and opens or closes it, as clicking it in the flat plan does
+    ([Room builder](../009-elements/room-builder.md) "Opening and closing").
   - **Windows are windows.** A Window on a plaster wall ([Room builder](../009-elements/room-builder.md#window)) is
     cut out of it and stands in it as a window: plaster below its sill and over its head, a painted frame with a
     transom and a mullion, and glass catching the light (night on a dark canvas). A glass room's walls are glass
@@ -40,7 +44,9 @@ not laggy.
     the wall with 12 px of wall over it (the owner, 2026-11-18: "items placed on them like screens and bookshelfs etc
     don't go higher than the wall"). A Screen fills its wall: as wide as the wall run it hangs on, 16 px clear of each
     end, as tall as the wall allows (the owner: "as large as possible on that wall"). One with no back wall near stands where it is, as any piece. (The owner, 2026-11-17: "not just
-    floating in the air".)
+    floating in the air".) With the camera turned, a hung piece stands out from its wall facing the camera, as a
+    blade sign does, so its words still read. Wall pieces are only ever placed on a wall
+    ([Wall pieces](../009-elements/wall-pieces.md)).
   - **Fences stand as fences**: a Fence's run stands as wooden rails and posts, a Garden Fence's as white pickets on
     two rails, the picket fence its flat drawing shows. A Window's flat frame and sill give way to the standing one,
     leaving only its light on the floor (the owner, 2026-11-18: windows "leave a line along the floor line"). A fence's flat drawing on the floor is hidden while the view
@@ -57,13 +63,25 @@ not laggy.
     flat plan) is a small sign on each doorway's lintel, where no piece on the wall covers it (the owner, 2026-11-18:
     "put the room names above the door, not on the back wall - which may be covered by elements"). A room no Door
     leads into keeps it on its back wall; one drawn with the Room Builder on its furthest wall that faces the camera. Its flat name on the floor is
-    hidden while the view shows, so the name is never written twice.
+    hidden while the view shows, so the name is never written twice. With the camera turned so the wall runs away
+    from it, the name stands out from the lintel facing the camera, a blade sign over the door, so it always reads
+    (the owner, 2026-11-18: "text on the room signs above the door is rotated").
   - **The plan's walls give way to the standing ones** (the owner, 2026-11-18: "one wall of every room ... is a
     different size" and "weird bits of wall poking out the back"): the flat plan's wall tops and the back wall's deep
     face are hidden while the view shows, with plain floor under the back wall's face, so every wall stands the same
     height and nothing flat pokes past them from any side the camera turns to. A glass room's flat panes and frames
     give way the same. A room's side walls end at its back and front walls, never past them (the owner: "the sides
     are going further than the back wall").
+- **A stage stands up** (the owner, 2026-11-18: "stage should have some height, depth when i stand on it"): a
+  Stage's top rises 20 canvas px on four sides of dark wooden boards under a lit lip, and what stands on it (a
+  character, a Podium) stands on its top. Stage Curtains stand along their own line, as a wall does, so a turned
+  camera sees them edge on or from behind, never swung in front of the stage.
+- **Rooms on grass have roofs** (the owner, 2026-11-18: "a roof like a house, but sloped ... Only for rooms on grass"):
+  a Room whose middle stands on Grass is a house, so a pitched roof sits on its walls, its ridge along the room's
+  long side, its slopes tiled and its gable ends plaster, at about 35 degrees and never more than 150 canvas px over
+  the wall tops. It is a ghost, like the walls in front of you (half see-through), so it never hides anyone, and it
+  fades away while you stand inside that room. A room on any other floor is a room inside a building and has none;
+  a turned room or one drawn with the Room Builder has none either.
 - **The pieces stand up** (the owner, 2026-11-17: "none of the furniture and items are 3d, they remain 2d
   in 3d mode"): every piece of the Space drawn upright in the flat plan (furniture, seats, desks, tables, plants and
   trees, machines, shelves, signs, screens, boards, portals, everything with legs or a pot on the ground) rises from
@@ -101,13 +119,15 @@ not laggy.
   their speaker on every frame.
 - **What lies on the floor stays on it**: the hearing ring, the "you are here" ring, an Avatar Pad's arrival beam.
 - **The floor pattern goes**: the tab's dots or grid are drawn on the screen, not on the floor, so the 3D view
-  shows the tab's background colour alone, fading into a soft horizon at the top of the screen.
+  shows the tab's background colour alone, fading into a soft horizon along the top fifth of the screen, faint past
+  its first half so what stands at the back of a room (a bar and its stools) stays crisp (the owner, 2026-11-18: "bar
+  stools look blurry in 3d").
 
 ## Pieces stand up
 
 - **Which pieces**: every shape kind of the Space that is drawn standing (`standsIn3D` in the blueprint). Floor
   coverings lie flat: the Room and Corridor (their walls stand instead), Fences (theirs too), Doors and
-  Windows (part of a wall), the Rug, Grass, Garden Path, Stage, Pond, Swimming Pool, Car Park, Stairs and Avatar Pad,
+  Windows (part of a wall), the Rug, Grass, Garden Path, Pond, Swimming Pool, Car Park, Stairs and Avatar Pad,
   and the board's controls (Mode Button, Focus Button, Timer, Stopwatch), icons and stickers. Every other element
   (stickies, text, cards, pictures, charts) is the floor's. An **Office Pod's furniture stands up inside
   its walls**: its walls stand as a room's do, and its benches, table and mug stand up together about the table's
@@ -129,6 +149,11 @@ not laggy.
 - **In the scene**: pieces, walls and characters are sorted by depth together, so a character behind a desk is
   hidden by it, one in front of a bookshelf stands over it, and a piece behind a wall is hidden by the wall (unless
   the wall is cut away in front of you).
+- **Standing at a piece** (a Treadmill's belt, a Standing Desk) is drawn as sitting near its front is, in front of
+  it, so the piece never covers you (the owner, 2026-11-18: "I seem to be hidden behind it"); one standing behind
+  theirs (a Podium's speaker) has their legs hidden under its front.
+- **Taking a seat is one frame**: the step towards the camera a sitter takes lands with them, never eased in after,
+  so no frame shows them inside the chair (the owner, 2026-11-18: "I see a few frames of clipping").
 - **Sitting**: a character sitting near a piece's front (a chair, a sofa, a bench, a table's near side: feet within
   60% of the piece's depth of its front edge) is drawn in front of the piece, as in the flat plan; one sitting further
   in (behind a desk, on the far side of a table, with a chair's back towards you) sits behind the piece's front, so
@@ -201,8 +226,13 @@ The owner, 2026-11-18: "quarter turns is fine". You can walk round to see the ot
   to the ground"): the drawing the camera sees is drawn at the scale the piece's own drawing has on the canvas. From the
   front or behind it is the front or back drawing at its own shape. Side on it is the piece's end: its back drawing (an
   upright drawing) narrowed to the piece's depth (its side drawing's width), standing on its foot, because the side
-  drawing is the flat plan's view from above and stood up it floats at its far end. Only a table drawn from above (a
-  Long Table, one built row by row) turns its box.
+  drawing is the flat plan's view from above and stood up it floats at its far end. Where the side drawing is
+  itself upright (no more than 15% taller than the front: a chair, a jukebox, a fridge), it is drawn whole; a taller
+  one (drawn from above: a sofa, a bench, lockers, a hammock) is cut to the front drawing's height from its foot, so
+  it never leans back (the owner, 2026-11-18: lockers "look like they are leaning backwards"). It stands on the edge
+  of its own footprint nearest the camera, so it covers exactly the floor that stops you walking: a turned fountain
+  is never stood in (the owner: "the original blocks ... move"). Only a table drawn from above (a Long Table, one
+  built row by row) turns its box.
 - **A piece turned on the plan** by quarter turns (a sofa facing into the room, lockers along a side wall) is seen the
   same way in the 3D view, its own turn added to the camera's, so it stands grounded from every side, the camera
   unturned included. The flat plan draws it as before.
@@ -211,6 +241,13 @@ The owner, 2026-11-18: "quarter turns is fine". You can walk round to see the ot
 - **Your character's facing follows the camera**: a sitter, a walker and the receptionist are drawn facing the way they
   face on the floor as the camera sees it (the owner: "I rotated screen then sat down at this desk, my character is
   facing the wrong way").
+
+## Bring it back into view
+
+The flat view's nudge when everything has scrolled out of view ([Canvas](canvas-and-palette.md)) counts what the
+3D camera sees: the floor it draws, far ahead and less behind (all round when turned), so content up ahead is never
+called out of view, and the nudge's button, which centres on your character, brings it back (the owner, 2026-11-18:
+"Bring it back into view does nothing when I am in 3d").
 
 ## Pieces you can use
 

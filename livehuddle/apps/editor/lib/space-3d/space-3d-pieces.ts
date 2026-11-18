@@ -72,9 +72,16 @@ export function builtIn3D(el: Element): el is Extract<Element, { type: 'shape' }
 
 /**
  * The value of a standing piece's attribute: `base` or `centre` for a piece that stands, `inside` for one whose
- * furniture stands inside its walls, `rows` for one built row by row, undefined for one that lies flat.
+ * furniture stands inside its walls, `rows` for one built row by row, `raised` for a Stage whose top rises, undefined
+ * for one that lies flat.
  */
-export function standAttr(el: Element): 'base' | 'centre' | 'inside' | 'rows' | undefined {
+export function standAttr(
+  el: Element,
+): 'base' | 'centre' | 'inside' | 'rows' | 'raised' | 'along' | undefined {
+  // A Stage's top rises on its sides (3d-view.md "A stage stands up").
+  if (el.type === 'shape' && el.shape === 'stage') return 'raised';
+  // A backdrop stands on its own line as a wall does, so a turned camera never swings it in front of its stage.
+  if (el.type === 'shape' && STANDS_ALONG.has(el.shape)) return 'along';
   if (standsInside3D(el)) return 'inside';
   if (builtIn3D(el)) return 'rows';
   if (!standsIn3D(el)) return undefined;
@@ -212,7 +219,9 @@ export function pieceQuarters(el: Element): number | null {
  * looks at (its back from behind) rather than turning with you.
  */
 export function seenFromCamera(el: Element): boolean {
-  if (el.type !== 'shape' || hangsOnWall(el.shape) || standsInside3D(el)) return false;
+  // A backdrop stands on its own line and is seen from wherever the camera is.
+  if (el.type !== 'shape' || hangsOnWall(el.shape) || STANDS_ALONG.has(el.shape)) return false;
+  if (standsInside3D(el)) return false;
   // A piece turned by quarter turns on the plan (a sofa facing into the room, lockers along a side wall) is seen as
   // the camera sees it too (the owner, 2026-11-18: they looked "like they are floating in the air on one side").
   if (pieceQuarters(el) === null) return false;
@@ -277,4 +286,62 @@ export function screenRoomOnWall(
     return Math.max(0, 2 * (Math.min(mid - lo, hi - mid) - SPACE_SCREEN_MARGIN));
   }
   return null;
+}
+
+/** Whether a facing shows a piece's side drawing: its back to the east or the west. */
+export function isSideFacing(facing: string): boolean {
+  return facing === 'e' || facing === 'w';
+}
+
+/**
+ * How much taller than its front drawing a side drawing may be and still be an upright view of the piece's end (a
+ * chair's, a jukebox's): taller, it is the plan seen from above (a sofa's, a bench's, lockers'), lying the piece's
+ * length up the drawing.
+ */
+export const SPACE_END_SLACK = 1.15;
+
+/**
+ * The part of a piece's side drawing the 3D view shows when the camera sees its end (3d-view.md "Turning the
+ * camera"), in the side drawing's own units: all of an upright side drawing, or the near end of one seen from above,
+ * as tall as its front drawing stands, so the end is crisp and as tall as the piece rather than a squeezed back or a
+ * tall plank.
+ */
+export function endView(
+  front: { height: number },
+  side: { height: number },
+): { top: number; height: number } {
+  if (side.height <= front.height * SPACE_END_SLACK) return { top: 0, height: side.height };
+  return { top: side.height - front.height, height: front.height };
+}
+
+/**
+ * How far a piece seen as the camera sees it moves its drawing towards the camera, in the drawing's own turned frame
+ * (canvas px): from standing about its footprint's middle to standing on the footprint's edge nearest the camera, so
+ * what you see covers the ground that blocks you (3d-view.md "Turning the camera").
+ */
+export function seenFootShift(
+  box: { width: number; height: number },
+  quarter: number,
+  standHeight: number,
+): number {
+  const depth = turnQuarter(quarter) % 2 === 1 ? box.width : box.height;
+  return (depth - standHeight) / 2;
+}
+
+/** The pieces that stand along their own line like a wall, never turning to the camera (3d-view.md "A stage stands up"). */
+const STANDS_ALONG: ReadonlySet<string> = new Set(['stage-curtains']);
+
+/** How high a Stage stands in the 3D view, in canvas px (3d-view.md "A stage stands up"; DEFAULTS.md D148). */
+export const SPACE_STAGE_LIFT = 20;
+
+/** How far up a character at `at` stands: on a Stage's top, its height; else on the floor. */
+export function standsRaised(
+  stages: readonly { x: number; y: number; width: number; height: number }[],
+  at: { x: number; y: number } | null | undefined,
+): number {
+  if (!at) return 0;
+  for (const s of stages)
+    if (at.x >= s.x && at.x <= s.x + s.width && at.y >= s.y && at.y <= s.y + s.height)
+      return SPACE_STAGE_LIFT;
+  return 0;
 }

@@ -6,7 +6,7 @@ import {
 import { pointerToCanvas } from '@/lib/canvas';
 import { floorPointAt } from '@/lib/space-3d/space-3d-camera';
 import { standingPiecePointAt } from '@/lib/space-3d/space-3d-pieces';
-import { standingPiecesOnScreen } from '@/lib/space-3d/standing-pieces-on-screen';
+import { doorPointAt, standingPiecesOnScreen } from '@/lib/space-3d/standing-pieces-on-screen';
 import { space3DTiltNow } from '@/lib/space-3d/space-3d-preference';
 import { space3DTurn } from '@/lib/space-3d/space-3d-turn';
 import { isDoubleTapZoomPointer } from '@liveworkspace/workbench/lib/double-tap-zoom';
@@ -158,8 +158,10 @@ export function useCanvasSurfaceGestures({
     const tilt = space3DTiltNow();
     const main = mainRef && 'current' in mainRef ? mainRef.current : null;
     if (tilt !== 0 && main)
-      // A press over a standing piece is a press on that piece (3d-view.md "Pieces stand up"), else the floor.
+      // A press on a doorway is a press on its Door (3d-view.md "Doorways"), over a standing piece a press on that
+      // piece (3d-view.md "Pieces stand up"), else the floor.
       return (
+        doorPointAt(main, elements ?? [], { x: clientX, y: clientY }) ??
         standingPiecePointAt(
           standingPiecesOnScreen(main, elements ?? []),
           { x: clientX, y: clientY },

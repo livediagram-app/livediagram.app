@@ -26,3 +26,25 @@ export function standingPiecesOnScreen(
   }
   return out;
 }
+
+/**
+ * The canvas point a press on a doorway stands for (3d-view.md "Doorways": clicking a door), or null: its Door's
+ * middle, when the press is on the doorway's frame or its open leaf as the browser projects them, so a door standing
+ * up is clicked where you see it, never on the floor behind it.
+ */
+export function doorPointAt(
+  root: ParentNode,
+  elements: readonly Element[],
+  client: { x: number; y: number },
+): { x: number; y: number } | null {
+  for (const node of root.querySelectorAll<HTMLElement>('[data-space-door-id]')) {
+    const r = node.getBoundingClientRect();
+    if (client.x < r.left || client.x > r.right || client.y < r.top || client.y > r.bottom)
+      continue;
+    const id = node.getAttribute('data-space-door-id');
+    const door = elements.find((el) => el.id === id);
+    if (door && door.type === 'shape')
+      return { x: door.x + door.width / 2, y: door.y + door.height / 2 };
+  }
+  return null;
+}

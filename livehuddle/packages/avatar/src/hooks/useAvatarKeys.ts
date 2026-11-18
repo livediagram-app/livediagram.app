@@ -14,25 +14,35 @@ import { walkInputBlocked } from '../walk-guard';
 import { avatarKeyClaimed } from '../key-claims';
 import { planDir } from '../arrow-turn';
 
-export type AvatarHeldKeys = { up: boolean; down: boolean; left: boolean; right: boolean };
+// `run`: Shift held, so the character runs while it walks, by the arrows or to a click (avatar-mode.md "Running").
+export type AvatarHeldKeys = {
+  up: boolean;
+  down: boolean;
+  left: boolean;
+  right: boolean;
+  run: boolean;
+};
 
 export const NO_KEYS_HELD: AvatarHeldKeys = {
   up: false,
   down: false,
   left: false,
   right: false,
+  run: false,
 };
 
-const ARROW_KEYS: Record<string, keyof AvatarHeldKeys> = {
+const ARROW_KEYS: Record<string, ArrowKey> = {
   ArrowUp: 'up',
   ArrowDown: 'down',
   ArrowLeft: 'left',
   ArrowRight: 'right',
 };
 
-// The plan directions the held screen arrows steer.
-function heldFrom(pressed: ReadonlySet<keyof AvatarHeldKeys>): AvatarHeldKeys {
-  const held = { ...NO_KEYS_HELD };
+type ArrowKey = Exclude<keyof AvatarHeldKeys, 'run'>;
+
+// The plan directions the held screen arrows steer, and whether Shift is held.
+function heldFrom(pressed: ReadonlySet<ArrowKey>, run: boolean): AvatarHeldKeys {
+  const held = { ...NO_KEYS_HELD, run };
   for (const d of pressed) held[planDir(d)] = true;
   return held;
 }
@@ -60,8 +70,15 @@ export function useAvatarKeys({
   useEffect(() => {
     if (!active) return;
     // The arrows held on the keyboard, by the screen; what they steer is read through the 3D camera's turn (arrow-turn).
-    const pressed = new Set<keyof AvatarHeldKeys>();
+    const pressed = new Set<ArrowKey>();
+    // Shift held: the character runs (avatar-mode.md "Running"), only while it is held.
+    let run = false;
     const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Shift') {
+        run = true;
+        heldRef.current = heldFrom(pressed, run);
+        return;
+      }
       // A panel input (search, rename), an open modal or a start screen in front of the canvas owns the keyboard
       // (walk-guard): arrowing through Start a Space's templates never walks the character behind it.
       if (isTypingTarget(e.target, { select: false }) || walkInputBlocked()) return;
@@ -73,7 +90,7 @@ export function useAvatarKeys({
         // A held key repeats: only a new arrow steers afresh, so holding two never stutters the walk.
         if (!pressed.has(dir)) liveRef.current.onSteer();
         pressed.add(dir);
-        heldRef.current = heldFrom(pressed);
+        heldRef.current = heldFrom(pressed, run);
         return;
       }
       // Space jumps. In every other mode Space is the hold-to-pan modifier
@@ -86,16 +103,22 @@ export function useAvatarKeys({
       }
     };
     const onKeyUp = (e: KeyboardEvent) => {
+      if (e.key === 'Shift') {
+        run = false;
+        heldRef.current = heldFrom(pressed, run);
+        return;
+      }
       const dir = ARROW_KEYS[e.key];
       if (dir) {
         pressed.delete(dir);
-        heldRef.current = heldFrom(pressed);
+        heldRef.current = heldFrom(pressed, run);
       }
     };
     // Held keys can't be trusted across a blur (the keyup lands on another
     // window), so drop them all rather than walking away forever.
     const onBlur = () => {
       pressed.clear();
+      run = false;
       heldRef.current = { ...NO_KEYS_HELD };
     };
     window.addEventListener('keydown', onKeyDown);

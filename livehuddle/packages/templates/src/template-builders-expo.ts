@@ -138,7 +138,7 @@ const FLOOR: OfficePiece[] = [
   { kind: 'lockers', x: 120, y: 1310 },
   { kind: 'coat-rack', x: 280, y: 1310 },
   { kind: 'umbrella-stand', x: 352, y: 1374 },
-  { kind: 'plant', x: 1820, y: 340 },
+  { kind: 'plant', x: 1960, y: 340 },
   { kind: 'plant', x: 2080, y: 340 },
   // The Directory beside the entrance.
   { kind: 'directory', x: MID + 120, y: 1320 },

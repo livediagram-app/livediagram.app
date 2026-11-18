@@ -450,6 +450,7 @@ export function EditorView() {
                         <ModifierHintBanner
                           drag={drag}
                           hasElements={activeTab.elements.length > 0}
+                          walking={canvasTool === 'avatar'}
                           suppressed={
                             canvasTool === 'format' ||
                             formatSourceId !== null ||

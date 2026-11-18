@@ -29,13 +29,14 @@ export type CampusRoom = Omit<OfficeRoom, 'door'> & {
   door: { side: DoorSide; at: number; sign: -1 | 1; reach?: number; variant?: DoorVariant };
 };
 
-// The Room Sign at a campus size: 88 wide (aspect locked, 136 x 72 drawn, so about 47 high). It stands SIDE_GAP off a
-// side wall (its middle then 52 px out of the wall, 62 from the room's floor, inside the 64 px a sign reaches for its
+// The Room Sign at a campus size: 88 wide (aspect locked, 136 x 72 drawn, so about 47 high). It stands against a side
+// wall, out from it like a blade sign (wall-pieces.md "Only on a wall"; its middle then 49 px out of the wall, 54 from
+// the room's floor, inside the 64 px a sign reaches for its
 // room: docs/specs/009-elements/screen-and-room-sign.md "A piece's room"), END_GAP below a bottom wall, or on the face
 // of a back wall, SIGN_BESIDE along from the door's path, clear of the Door.
 export const CAMPUS_SIGN_W = 88;
 export const CAMPUS_SIGN_H = 47;
-const SIDE_GAP = 8;
+const SIDE_GAP = 5;
 const END_GAP = 10;
 const BACK_SIGN = 2;
 const SIGN_BESIDE = 18;
