@@ -22,8 +22,8 @@ import { computeTabSaveDiff } from './editor-page-helpers';
 import { participantElementOps, relayParticipantChanges } from './tab-save-flow';
 import { isSaveFailing, isTabTooLarge } from '@liveworkspace/workbench/lib/save-health';
 
-/** Whether leaving now asks first: changes the server has not taken, while the last save failed or the browser is
- *  offline. */
+/** Whether leaving now asks first: changes the server has not taken, while the last save failed or was refused, or the
+ *  browser is offline. */
 export const shouldWarnOnLeave = (
   unsaved: boolean,
   saveFailing: boolean,
@@ -53,11 +53,10 @@ export function useUnloadFlush(opts: {
   const flushedRef = useRef<{ tabs: Tab[]; name: string } | null>(null);
 
   useEffect(() => {
-    // What the server has not taken yet, or null where nothing may be sent.
-    const unsaved = () => {
+    // What the server has not taken yet, or null where there is nothing of this person's to keep.
+    const pending = () => {
       const o = latest.current;
       if (!o.hydrated || !o.documentId || o.isReadOnly) return null;
-      if (o.writesForbiddenRef.current) return null;
       // The user just deleted this document (navigating to /explorer fires beforeunload): don't send its
       // tabs back and re-create it.
       if (isDocumentDeleted(o.documentId)) return null;
@@ -70,6 +69,8 @@ export function useUnloadFlush(opts: {
       );
       return diff.hasChanges ? diff : null;
     };
+    // What may still be sent: nothing once the server has refused a write to this item.
+    const unsaved = () => (latest.current.writesForbiddenRef.current ? null : pending());
     const flush = () => {
       const o = latest.current;
       const flushed = flushedRef.current;
@@ -120,7 +121,12 @@ export function useUnloadFlush(opts: {
     const beforeUnload = (e: BeforeUnloadEvent) => {
       leave();
       if (
-        shouldWarnOnLeave(unsaved() !== null, isSaveFailing() || isTabTooLarge(), navigator.onLine)
+        shouldWarnOnLeave(
+          pending() !== null,
+          // A refused save keeps its changes on screen, never sent: leaving would lose them, so it asks too.
+          latest.current.writesForbiddenRef.current || isSaveFailing() || isTabTooLarge(),
+          navigator.onLine,
+        )
       ) {
         e.preventDefault();
         // Older browsers ask only when returnValue is set.

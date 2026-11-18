@@ -338,6 +338,9 @@ export type GrantResponse = {
   expiresAt: number;
   // The item is in the Trash (as the grant's `trashed` claim says).
   trashed?: true;
+  // The share code the access came through (the grant's `link` claim), sent or not: a visitor reopening the item by
+  // its own address is still that link's visitor. Absent for the owner and the team.
+  link?: string;
 };
 
 export type Page<T, K extends string> = { [key in K]: T[] } & { nextCursor: string | null };

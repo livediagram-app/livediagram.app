@@ -210,11 +210,10 @@ the server, which the rest of this spec covers.
   reconnect." instead of the connection message: one line, as every toast is
   ([Toasts](../004-interface-design/toasts.md)).
 - **Leaving with unsaved changes asks first.** While this tab holds changes the server has not taken, and
-  either the browser is offline or the last save failed (status `error`: a network failure or a 5xx, waiting on
-  its retry), closing, reloading or leaving the page raises the browser's own "Leave site? Changes you made may
+  either the browser is offline, the last save failed (status `error`: a network failure or a 5xx, waiting on
+  its retry) or a save was refused for good (`forbidden`: its changes are kept on screen, never sent), closing, reloading or leaving the page raises the browser's own "Leave site? Changes you made may
   not be saved." (`beforeunload` with `preventDefault`). It never asks in the healthy case, a save in flight on a
-  working connection, or the prompt would teach people to click through it; nor once a save is refused for good
-  (`forbidden`, its own toast says to export), nor with nothing unsaved. A Participant's changes, relayed to the
+  working connection, or the prompt would teach people to click through it, nor with nothing unsaved. A Participant's changes, relayed to the
   room, are asked about on the same terms. The browser may skip the prompt where the page has had no gesture; the
   last-chance flush still runs either way.
 - **A failing save stays on screen.** Online, while the last save failed and its retry is waiting, the top of

@@ -757,7 +757,11 @@ describe('what a link opens, and Shared with me', () => {
     const claimsOf = async (auth: string, headers: Record<string, string> = {}) => {
       const res = await call(`/items/${item.id}/grant`, { method: 'POST', auth, headers });
       expect(res.status).toBe(200);
-      return decodeJwt((await body<{ grant: string }>(res)).grant);
+      const answer = await body<{ grant: string; link?: string }>(res);
+      const claims = decodeJwt(answer.grant);
+      // The answer names the claim's code beside the grant, for the editor's chrome.
+      expect(answer.link).toBe(claims.link);
+      return claims;
     };
     // Through Shared, with no code sent: still the link's access, and the grant says so.
     expect(await claimsOf(bob.auth)).toMatchObject({

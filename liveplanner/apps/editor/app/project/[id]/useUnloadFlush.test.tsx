@@ -145,6 +145,22 @@ describe('the leave prompt', () => {
     view.unmount();
   });
 
+  // A refused save (per-tab-storage.md "A refused save stops; a failed save doesn't") keeps its changes on screen:
+  // nothing is sent, but leaving would lose them, so it asks.
+  it('raises the prompt once a save is refused, sending nothing', () => {
+    const view = renderHook(() =>
+      useUnloadFlush({ ...options([tab('typed')]), writesForbiddenRef: { current: true } }),
+    );
+    expect(leave()).toBe(true);
+    expect(flush).not.toHaveBeenCalled();
+    view.unmount();
+    const saved = renderHook(() =>
+      useUnloadFlush({ ...options([tab('saved')]), writesForbiddenRef: { current: true } }),
+    );
+    expect(leave()).toBe(false);
+    saved.unmount();
+  });
+
   it('raises the prompt offline', () => {
     const view = mount([tab('typed')]);
     setOnline(false);

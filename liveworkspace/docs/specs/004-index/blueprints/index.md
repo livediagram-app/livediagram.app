@@ -94,7 +94,7 @@ password_required`; a guess this isolate hasn't seen right is counted (`429 rate
 `aud = <app>`, `sub = <person id>` or `link:<code>`, `iat = floor(iatMs / 1000)` (`iatMs` the signing moment in epoch
 ms, one `Date.now()` for both), `exp = iat + 600`, `jti` a UUID, header `{ alg: ES256, kid, typ: JWT }`;
 `createGrantVerifier` (`packages/index-client/src/grant.ts`) keeps `iatMs` only when it is an integer inside `iat`'s
-second, and `itemGrantOf` carries it onto the app's `ItemGrant` (absent on a grant signed before it existed); answers `{ grant, level, tabId, expiresAt (ms), trashed? }`. The key is `GRANT_SIGNING_KEY` (a private P-256
+second, and `itemGrantOf` carries it onto the app's `ItemGrant` (absent on a grant signed before it existed); answers `{ grant, level, tabId, expiresAt (ms), trashed?, link? }` (`link` the claim's code, for the editor's chrome). The key is `GRANT_SIGNING_KEY` (a private P-256
 JWK with `kid`), cached by its text, a bad one retried next request. Development with no key signs with an ephemeral
 `dev-<8 hex>` key per isolate. Production without one: `503 grants_unavailable` on create and grant, and `GET /jwks`
 answers `503`. `GET /jwks` answers `{ keys: [publicJwk] }`, `Cache-Control: public, max-age=300`.

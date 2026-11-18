@@ -5,6 +5,7 @@
 // arrival sets what it found, in the order the editors always did, and answers whether the load reached the item
 // (true) or ended on a gate, a not-found or an error screen (false). The specs, in each product's docs/specs:
 // 013-workspace/share-password.md, trash.md, tab-scoped-share-links.md and 025-community/community.md.
+import { parseStoredLevel, type AccessLevel } from '@liveworkspace/api-schema/access-levels';
 import { isArchivedLoadError } from './archived';
 import { indexClient } from './index-client';
 import type { LastSeenDoors, LastSeenFirstTab, LastSeenInput } from './api/last-seen-copies';
@@ -61,8 +62,9 @@ export type ArrivalProduct<
   }) => ArrivalSession<Role>;
   // The Community session a post's link opens, with the author's own item when the reader is its author.
   communitySession: (post: Post, ownItemId: string | null) => Community;
-  // The person's grant on the item: edit on it without a link is the owner's chrome.
-  grant: (id: string) => Promise<{ level: string } | null>;
+  // The person's grant on the item: edit on it without a link is the owner's chrome. `link` (the code a link's access
+  // came through) and `tabId` say who a visitor reopening the item by its own address is.
+  grant: (id: string) => Promise<{ level: string; tabId?: string | null; link?: string } | null>;
   // The local sentinel an Offline Mode item is owned by.
   offlineOwnerId: string;
   // A link's own address names no item: the address to put in the bar for the one it opened, or null to keep it.
@@ -85,8 +87,8 @@ export type ArrivalSetters<Role, Community> = {
   setIsOwner: (owner: boolean) => void;
   setLoading: (loading: boolean) => void;
   setNameConfirmed: (confirmed: boolean) => void;
-  // An own address is always 'edit'.
-  setSessionRole: (role: Role | 'edit') => void;
+  // An owner's or team member's own address is 'edit'; a visitor's is the level their grant names.
+  setSessionRole: (role: Role | AccessLevel) => void;
   setSessionShareCode: (code: string | null) => void;
   setSessionCommunity: (community: Community | null) => void;
   // The one tab a tab-scoped link opens (docs/specs/013-workspace/tab-scoped-share-links.md); null = all.
@@ -288,6 +290,44 @@ export async function openShareLink<
   return true;
 }
 
+/** Who the person reading an item by its own address is, from their grant. */
+type OwnReader = {
+  isOwner: boolean;
+  role: AccessLevel;
+  // Opened at a link's level: the session carries its code and tab, as a share link's would.
+  visitor: boolean;
+  shareCode: string | null;
+  tabScope: string | null;
+};
+
+const OWN_READER: OwnReader = {
+  isOwner: true,
+  role: 'edit',
+  visitor: false,
+  shareCode: null,
+  tabScope: null,
+};
+
+/** The index's grant decides who reads an item by its own address (liveworkspace one-explorer-contracts.md "Sharing
+ *  and access"). Edit with no link is its owner's or a team member's. A link the person opened before (Shared with
+ *  me) still admits them with no code sent, and the grant names it: they open as that link's visitor, at its level,
+ *  on its tab, carrying its code, never as Editing for saves the api would refuse. No grant (the index out of reach)
+ *  keeps edit without the owner's chrome; the api and the room still refuse what no grant allows. */
+export function readerOfGrant(
+  grant: { level: string; tabId?: string | null; link?: string } | null,
+): OwnReader {
+  if (!grant) return { ...OWN_READER, isOwner: false };
+  const role = parseStoredLevel(grant.level);
+  if (role === 'edit' && !grant.link) return OWN_READER;
+  return {
+    isOwner: false,
+    role,
+    visitor: true,
+    shareCode: grant.link ?? null,
+    tabScope: grant.tabId ?? null,
+  };
+}
+
 /** The item's own address: the item fetched for this person, then seeded as its owner (or a team member) sees it. */
 export async function openOwnAddress<
   Item extends ArrivalItem,
@@ -333,22 +373,22 @@ export async function openOwnAddress<
     forgetCopy(product.lastSeen, self.id, id);
     return endShort(product, set);
   }
-  // Tab seeding, name and owner fields (shared with the share link above). The owner's eager first-tab fetch
-  // presents no share code.
-  product.setLoadStep('first-tab');
-  const firstTab = await seed(self.id, fetched, null, null);
   // An offline item (the product's offline-mode.md) is yours by construction: its ownerId is the local
   // sentinel, never a participant id, so without this it would wrongly get visitor chrome (Make a copy, the owner
   // badge row).
   const offline = fetched.ownerId === product.offlineOwnerId;
+  const reader = offline ? OWN_READER : readerOfGrant(await product.grant(fetched.id));
+  // Tab seeding, name and owner fields (shared with the share link above). The owner's eager first-tab fetch
+  // presents no share code; a visitor's presents their link's, and its scope comes first, as on a share link.
+  if (reader.visitor) set.setSessionTabScope(reader.tabScope);
+  product.setLoadStep('first-tab');
+  const firstTab = await seed(self.id, fetched, reader.shareCode, reader.tabScope);
   // Every server-stored item has a room, personal ones included (docs/specs/024-agents/agent-changesets.md);
   // an offline one has none.
   set.setServerStored(!offline);
-  // The owner's chrome goes to whoever holds edit on the item without a link: its owner, or a member of the team
-  // that owns it. The index decides that, so a guest's items stay theirs once the guest becomes an account.
-  const isOwner = offline || (await product.grant(fetched.id))?.level === 'edit';
-  set.setIsOwner(isOwner);
-  set.setSessionRole('edit');
+  set.setIsOwner(reader.isOwner);
+  set.setSessionRole(reader.role);
+  if (reader.visitor) set.setSessionShareCode(reader.shareCode);
   // The own address: a signed-in user is the owner here and their identity is settled, so no identity prompt.
   // Guests fall back to the local gate so they still get the one-time naming nudge.
   if (!early && !accountUserId && !product.hasConfirmedName()) {
@@ -362,8 +402,13 @@ export async function openOwnAddress<
       itemId: id,
       item: fetched,
       firstTab: firstTab ?? null,
-      via: null,
-      access: { role: 'edit', isOwner, sessionShareCode: null, tabScope: null },
+      via: reader.shareCode,
+      access: {
+        role: reader.role,
+        isOwner: reader.isOwner,
+        sessionShareCode: reader.shareCode,
+        tabScope: reader.tabScope,
+      },
     });
   }
   return true;
