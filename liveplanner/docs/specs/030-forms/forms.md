@@ -147,13 +147,14 @@ An **Editor** builds the form **in place**, and everything about it is edited th
 side panel. Until the form's responses have somewhere to go (no board and no sheet chosen), its questions are shown
 dimmed and cannot be selected, changed, moved or added to (no add bar; an empty form reads "Choose where responses go
 above, then add questions."): the connect box under the title is the one thing to do first. Its heading, description
-and Settings stay editable. The Form tab shows the form as respondents will see it, centred in a column 640 px wide (full width less
-16 px gutters on a phone), on the tab theme's background. The form's **status bar** (see
+and Settings stay editable. The Form tab shows the form as respondents will see it, centred in a column 640 px wide (880 px when its
+[Width](#responses-go-to-and-settings) is Wide; full width less 16 px gutters on a phone), on the tab theme's background. The form's **status bar** (see
 [Hearing about responses](#hearing-about-responses)) is its palette: on a desktop it sits where every other tab's
 palette does, centred in the top row at the menu box's height (12 px down, at the toolbar's UI scale), drawn as the
 shared toolbar card (hairline border, soft shadow, 36 px controls, hairlines between its groups, as livehuddle's
-palette is); on a phone it heads the form's column. It ends with **Preview** (**Back to Editing** while previewing)
-and the form's **Settings** (the cog, named). It has no help link.
+palette is); on a phone it heads the form's column. It ends with the form's **Settings** (the cog, named). It has no help link.
+On a desktop the bottom-right cluster (Style, Layers, zoom) sits 20 px further in and 12 px further up over a Form tab,
+clear of the page's own scrollbar down its right edge; a phone's scrollbars float over the page and take no room.
 
 - The answer controls the builder draws (unselected questions, and a selected one's control) are a picture of the
   form: they show a not-allowed cursor and take no input; a press on one selects its question. For a screen reader an
@@ -161,15 +162,21 @@ and the form's **Settings** (the cog, named). It has no help link.
   behind that name), with its grip a control of its own beside it rather than inside it.
 - **Share Form** is the header's Share button: on a Form tab, for someone who may edit it, the header's **Share** is
   **Share Form** (filled once the form is published), so the page never shows two share buttons. Everyone else keeps
-  the project's Share.
+  the project's Share. **Preview** sits to its left in the same corner (**Edit Form** while previewing, filled then),
+  so trying the form and sending it out are side by side.
 
 ### The form card, top to bottom
 
 - **Cover**: a band 160 px tall (96 on a phone) across the top of the column, painted with a colour background
   (`@liveworkspace/page-background`): a **Background** section with **Solid**, **Gradient** (the tab theme's gradients
   first) and **Animated** (the background motions, moving on screen; still under reduced motion), then **Pattern**.
-  No **Image**: a cover takes no picture. Stored as `form.cover` (`{ fill?, pattern? }`, the
-  `@liveworkspace/page-background` shape). A hover previews on the band; a press sets it.
+  Above them, **Picture**: **Add Picture** opens the [picture picker](#pictures); once set, its thumbnail with
+  **Change** and **Remove**, and **Position** (a slider, top to bottom, previewed on the band as it moves) for where it
+  sits in the band. The picture fills the band (cropped to cover it), a pattern drawn over it, a colour under it
+  while it loads; a Search pick's credit sits in the band's corner. Stored as `form.cover`
+  (`{ fill?, pattern?, imageId?, focus?, credit? }`: the `@liveworkspace/page-background` shape and the picture's id,
+  its focus 0 to 100, 50 when absent, and its credit up to 300 characters). A hover previews on the band; a press
+  sets it.
   Without a cover, a 10 px band of the form colour. **Add Cover** / **Change Cover** on hover (always shown on a
   touch screen, which has no hover) opens the cover popover, with **Remove Cover**.
 - **Heading**: the form's name (1 to 80 characters), edited in place (renaming it renames the board or sheet its
@@ -182,25 +189,32 @@ and the form's **Settings** (the cog, named). It has no help link.
   Number, Email, Link, Phone) as respondents see it with its **placeholder** typed straight into it, grey as it will show
   ("Placeholder: shown in the box until someone types." under it; emptied, the type's own hint), or any other type's
   answer control as respondents see it, disabled; its own **settings** in a tinted block (bounds and Whole Numbers Only, fewest and most
-  picks, Show as Dropdown, scale, style and end labels, a Date Range's Include Time: whichever its type has), and a **footer**: **Answer goes to**
+  picks, Show as Dropdown, scale, style and end labels, a Date Range's Include Time, a Checkbox's **Words Beside the
+  Box**, and a [Default Answer](#a-default-answer): whichever its type has), and a **footer**: **Answer goes to**
   (a badge naming the mapping, opening [Answer Goes To](#mapping-where-an-answer-goes) under itself, a sheet on a
   phone, which closes once a choice is made), **Move Up**, **Move Down**, **Duplicate**, **Delete** and
   **Required**. Selecting a question grows its card open to the editing chrome, and letting go shrinks it back
   (220 ms; none under reduced motion). Escape lets go of it. Unselected questions show exactly
   what respondents see. Text is saved as typing pauses (half a second) and when a field is left, so typing is one
   undo step a pause, not one a key.
-- **Sections**: a form with more than one section draws each as a block with its own title and description,
-  headed "Section 2 of 3". The first section's title and description are the form's heading and description. A later
-  section's block ends with its rule's badge ([Showing a section only sometimes](#showing-a-section-only-sometimes)).
-- **Add bar**: under the selected question (or at the end when none is), a pill with **Add <Type>** (the selected
-  question's type, as people tend to ask runs of the same kind; Short Answer with none), an arrow (tooltip **More
-  Question Types**) opening the **Add a Question** gallery, and **Add Section**, which splits the form after the
-  selected question (else adds an empty section at the end). The new question is selected with its prompt focused.
+- **Sections**: a form with more than one section draws each, the first too, as a block headed by a band: a grip
+  (drag the section, its questions with it, to another place: a line marks where it lands, Escape cancels), **Move
+  Section Up** and **Move Section Down**, and on every section but the first **Delete Section**; then its own title
+  and description. The first section's title, when set, shows under the form's heading on the form link's page. A
+  later section's block ends with its rule's badge ([Showing a section only
+  sometimes](#showing-a-section-only-sometimes)). A section moved first loses its rule (the first section always
+  shows).
+- **Add bar**: at the foot of **every section**, so a question is always added where it is wanted: a pill with **Add
+  <Type>** (the selected question's type, as people tend to ask runs of the same kind; Short Answer with none), an
+  arrow (tooltip **More Question Types**) opening the **Add a Question** gallery, and **Add Section**, which adds an
+  empty section after this one. A question is added after the selected question when that is in this section, else
+  at the section's end. The new question is selected with its prompt focused.
 - **Add a Question gallery**: the dialog Add an Action uses (the dialog hero header with its own art, a form card
   with a plus; a search; a rail of the groups from `sm`, chips on a phone, where it is a bottom sheet), every type as
-  a tile in five groups: **Text** (Short Answer, Paragraph), **Choices** (Single Choice, Multiple Choice, Checkbox),
-  **Ratings and Numbers** (Rating, Number), **Dates** (Date, Date and Time, Date Range) and **Contact Details**
-  (Email, Phone, Link). A tile is a small picture of the question being answered (playing on hover or focus; still
+  a tile in six groups: **Text** (Short Answer, Paragraph), **Choices** (Single Choice, Multiple Choice, Checkbox,
+  Colour), **Ratings and Numbers** (Rating, Number, Duration), **Dates** (Date, Date and Time, Date Range), **Contact
+  Details** (Email, Phone, Link) and **Content** (Text, Callout, Link Button, Picture: [content
+  blocks](#content-blocks)). A tile is a small picture of the question being answered (playing on hover or focus; still
   on touch and under reduced motion), the type's icon, its name and a line on what it collects. Picking one adds it
   as **Add <Type>** would (after the selected question, selected and focused) and closes the gallery; Escape or the
   close leaves it with nothing added. The arrow keys walk the tiles, Down from the search reaches the first and
@@ -210,6 +224,60 @@ and the form's **Settings** (the cog, named). It has no help link.
   card; mouse, pen or touch) to
   reorder it, between sections too: a line in the form colour marks where it will land, the page scrolls near its
   edges and Escape cancels. Alt+Up and Alt+Down move the selected question from the keyboard.
+
+### Content blocks
+
+Not every part of a form asks something: a form often needs to explain a concept, point to a policy or show a
+picture. A **content block** sits between questions, in any section, and asks nothing. It is stored among the
+section's questions (type `content`, so it orders, drags, moves and duplicates as a question does) with `block`:
+
+- **Text**: a heading (optional, the block's `prompt`) and text (up to 2,000 characters, line breaks kept, links made
+  clickable).
+- **Callout**: the same, on a tinted panel with an icon, in a tone: **Info**, **Tip** or **Warning** (`tone`). Read
+  out as a note.
+- **Link Button**: a heading and text, then a button opening `url` (`https://` only, up to 2,048 characters) in a
+  new tab, its words `linkLabel` (up to 60 characters, "Open Link" when empty).
+- **Picture**: a picture from the [picture picker](#pictures) (`imageId`), drawn at the column's width, its text as
+  its caption and its alt text.
+
+Selected, a block's card shows the block kind as chips (changing kind keeps its words), the tone chips for a
+Callout, its heading and text, a Link Button's address and button words, a Picture's Choose / Change / Remove, and
+**As People See It** under them. Its footer reads "Asks nothing: shown as it is": no Answer Goes To, no Required, no
+Default Answer. A block is never a question: it has no answer, no mapping, no sheet column, and no problems; its type
+cannot be changed to a question's or back. A section rule or card type rule never names it.
+
+### Pictures
+
+A form's cover and its Picture blocks show pictures stored for the plan, as a card's Image field's are
+([Who sees the bytes](../026-plan/items.md)). The **picture picker** (a dialog, a tall sheet on a phone) has three
+tabs:
+
+- **Upload**: a drop zone, or a file chosen (PNG, JPEG, WebP or GIF), uploaded for the plan.
+- **Your Images**: the person's own gallery (every app's pictures, newest first: `GET /api/images`, theirs alone, never
+  a workbench session's or a token's); one picked is **claimed** for the plan (`POST /api/images/:id/claim?p=`, its
+  owner only, a Participant at least on the plan), so the plan holds a grant for it as for an upload.
+- **Search**: openly licensed pictures from Openverse, the editor's image search (`@liveworkspace/workbench`'s
+  search pane, shared with livedocuments); a pick is uploaded for the plan and keeps its credit line.
+
+**Who sees them**: in the builder and Preview, everyone who may read the plan, as a card's pictures (the plan room
+serves a picture a Form tab's data names, within a tab-scoped link's own tab). On the form link's page, anyone with
+the link: `GET /api/forms/:code/images/:imageId` serves only a picture the form shows now and the plan holds a grant
+for, else the same 404 as a missing form (limited per network on its own key, cached in the respondent's browser for
+an hour). A plan's form pictures are among the pictures it reports to the media sweep (`outbox` triggers on the tabs'
+data), so a picture a form still shows is never swept. A plan kept only in this browser says pictures come once it is
+synced.
+
+### A default answer
+
+A question that is not Required may have a **Default Answer** (`fallback`): its answer when the respondent leaves it
+empty. It is set on the selected card's answer itself: a small **Default Answer** toggle at the top right of the
+answer box (or the options) turns that area into the question's own control, as respondents answer it, with **Clear**
+beside its hint; pressed again, the area goes back to the placeholder (or the options). It starts off, every time a
+card is selected, and shows a dot while a default is set. A default is kept only when it is an answer the question
+accepts ("That isn't an answer this question accepts." otherwise). A Checkbox (unticked is its answer), a Date Range and a content block have none;
+making a question Required drops its default. The api and the page check a response with the default in place of an
+empty answer, so the card, the sheet's row and the automations see it as if it had been given. Respondents see the
+question empty, as ever.
 
 ### Showing a section only sometimes
 
@@ -235,8 +303,12 @@ you coming?"):
 
 ### Responses Go To and Settings
 
-The status bar's **cog** (an Editor's) opens one panel, 320 px wide under it (a sheet on a phone), switching between
-**Responses Go To** (first) and **Settings**; a paused form's fix opens it on Responses Go To.
+The status bar's **cog** (an Editor's) opens one panel, 480 px wide under it (a sheet on a phone), headed **Form
+Settings** with **Show Me Around**, and switching (two tabs with icons) between **Responses Go To** (first) and
+**Settings**; a paused form's fix opens it on Responses Go To. Responses Go To leads with two tiles, **Cards on a
+Board** and **Rows in a Sheet**, each saying what it makes; then Board and Card Type side by side, the Column chips,
+and where a response goes read as a path ("Each response → Bug card → New → Bugs"); the rest (Card Type by Answer,
+What a Response Makes, Set Automatically) stays closed until opened.
 
 - **The connect box**: while a form sends its responses nowhere (no board and no sheet), an Editor's builder shows a
   card under the form's title card, drawn as the form's cards are (the accent bar at its left): "Where Should
@@ -358,10 +430,13 @@ The status bar's **cog** (an Editor's) opens one panel, 320 px wide under it (a 
     from the type, no longer fits (its kind changed), or names an option the field no longer has is left off the card,
     and Problems with this Form lists "{Field} is set automatically to a value its field no longer has: change or
     remove it." (`broken_fixed`, a publish problem). A required field set here needs no required question.
-- **Settings**: **Accepting Responses** (the link's switch; dimmed until published), **Close On** (a date and time,
-  with Clear; a time already past says the form is closed) beside **Response Limit** (1 to 5,000, a plan's cards), **Confirmation
-  Message** (up to 500 characters, default "Thanks, your response has been recorded."), **Closed Message** (up to
-  500 characters, default "This form is no longer accepting responses."). A form has no colour setting of its own: it
+- **Settings**, in three groups: **Taking Responses**: **Accepting Responses** (the link's switch; dimmed until
+  published), **Close On** (a date and time, with Clear; a time already past says the form is closed) beside
+  **Response Limit** (1 to 5,000, a plan's cards); **Layout**: **Width**, **Narrow** (640 px, the default) or **Wide**
+  (880 px; `form.width: 'wide'`), two tiles each drawing a little page at its width, the builder, Preview and the
+  form link's page all following it; **Messages**: **Confirmation Message** (up to 500 characters, default "Thanks,
+  your response has been recorded."), **Closed Message** (up to 500 characters, default "This form is no longer
+  accepting responses."). A form has no colour setting of its own: it
   wears its tab's [look](#look), changed from **Style** as ever.
 
 ### Choosing the card type by an answer
@@ -457,9 +532,9 @@ so text contrast never depends on the theme.
 
 ### Preview
 
-**Preview** (in the menu box) hides every piece of editing chrome and draws the form
-exactly as the form link does, working: sections, validation and the confirmation. Escape or **Back to Editing**
-returns; both start at the form's top.
+**Preview** (left of Share Form, in the top-right corner) hides every piece of editing chrome and draws the form
+exactly as the form link does, working: sections, validation and the confirmation. Escape or **Edit Form** (the same
+button, filled while previewing) returns; both start at the form's top.
 
 **Submit in Preview makes the card**, so the whole road from question to board can be tried before the link goes out:
 the answers are checked as the api checks them, and the card a response would make lands on the destination, in its
@@ -494,8 +569,13 @@ no copy of the plan. A board's card is made in the editor there, as for a form w
 | **Single Choice**   | Radio buttons (or a dropdown past 7 options)                                     | Options (2 to 20), Show as Dropdown                                           | One option                    |
 | **Multiple Choice** | Checkboxes                                                                       | Options (2 to 20), Minimum and Maximum Picks                                  | A list of options             |
 | **Rating**          | Stars, or numbered buttons on a scale (Numbers' labels under the first and last) | Scale 3 to 10 (5 by default), Stars or Numbers, Low and High labels (Numbers) | A whole number 1 to the scale |
-| **Checkbox**        | One checkbox beside the prompt ("I agree to...")                                 |                                                                               | true or false                 |
+| **Checkbox**        | One checkbox beside the prompt ("I agree to..."), its own words beside the box   | Words Beside the Box (up to 120; "Tick if it applies", or "Required")         | true or false                 |
+| **Duration**        | A text box ("Such as 2h 30m")                                                    | Placeholder, typed into its box                                               | Whole minutes                 |
+| **Colour**          | Twelve swatches and **Custom** (any colour)                                      |                                                                               | A colour (`#rrggbb`)          |
 
+- A **Duration** answer is read as a Duration field reads one ("2h 30m", "90m", "1.5h"): "Enter a duration like 2h 30m,
+  90m or 1.5h" otherwise. A **Colour** answer is a swatch or a custom colour: "Pick a colour" otherwise. Custom opens
+  the one colour picker (docs/specs/004-interface-design/colour-picker.md) in a popover, loaded only when opened.
 - A prompt is 1 to 200 characters ("Untitled Question" until typed); help text up to 500.
 - Options are 1 to 100 characters (a Choice field's limit, as a question's options may become its field's), unique
   ignoring case (a repeat is put back), edited as a list: Enter adds the next ("Option 3", selected), Backspace in an
@@ -533,25 +613,40 @@ Every question's answer is kept on the response's card. **Answer Goes To** offer
   "4 / 5", a Checkbox as Yes or No). Unanswered questions are left out.
 - **Title**: Short Answer, Email, Phone, Number, Single Choice and Date questions may map to Title; one question at most
   (picking it for one unmaps it from another, saying so).
-- **A custom field** of the destination card type whose kind takes the answer (below), or **New Field "<Prompt>"**,
-  which adds a custom field of the right kind named after the prompt (made unique) to the card type at once. A
-  field mapped by another question is shown as taken.
+- **A custom field** of the destination card type whose kind takes the answer (below), or a **New Field** of the right
+  kind, named as the Editor types it (the prompt to start, up to 32 characters; a name the type's fields already have
+  is refused, saying to pick that field instead), added to the card type with **Create** or Enter. A field mapped by
+  another question is shown as taken.
 
-| Question type   | Field kinds it may map to                            |
-| --------------- | ---------------------------------------------------- |
-| Short Answer    | Text, Long Text                                      |
-| Paragraph       | Long Text                                            |
-| Number          | Number, Currency                                     |
-| Email           | Email, Text                                          |
-| Link            | Link, Text                                           |
-| Date            | Date                                                 |
-| Date and Time   | Date and Time                                        |
-| Date Range      | Date Range (its Include Time matching)               |
-| Phone           | Phone, Text                                          |
-| Single Choice   | Choice (options matched by name), Text               |
-| Multiple Choice | Multiple Choice (options matched by name), Long Text |
-| Rating          | Rating (scale equal or larger), Number               |
-| Checkbox        | Checkbox                                             |
+The panel (460 px wide, a sheet on a phone) is headed **Answer Goes To**, "Where “<prompt>” lands on each response's
+<Type> card.", then groups its choices as tiles with icons: **On the Card** (Description, Title), **<Type> Fields**
+(each field with its kind's icon and "<Kind> field", or who uses it now), and the New Field box with the kind it
+makes.
+
+| Question type   | Field kinds it may map to                                                                                  |
+| --------------- | ---------------------------------------------------------------------------------------------------------- |
+| Short Answer    | Text, Long Text                                                                                            |
+| Paragraph       | Long Text                                                                                                  |
+| Number          | Number, Currency, Percent (Whole Numbers Only, 0..100)                                                     |
+| Email           | Email, Text                                                                                                |
+| Link            | Link, Text, Pull Request                                                                                   |
+| Date            | Date                                                                                                       |
+| Date and Time   | Date and Time                                                                                              |
+| Date Range      | Date Range (its Include Time matching)                                                                     |
+| Phone           | Phone, Text                                                                                                |
+| Single Choice   | Choice (options matched by name), Text, Labels                                                             |
+| Multiple Choice | Multiple Choice (options matched by name), Long Text, Labels, Checklist (every option a row, picks ticked) |
+| Rating          | Rating (scale equal or larger), Number, Percent                                                            |
+| Checkbox        | Checkbox                                                                                                   |
+| Duration        | Duration (not Time Spent, which time tracking keeps), Number                                               |
+| Colour          | Colour, Text                                                                                               |
+
+**Every card field kind** a form can fill is in the table above, so **Add Questions for {Type}'s Fields** offers a
+question for each (a Percent field a Whole Numbers Only Number from 0 to 100, Labels and a Checklist a Multiple
+Choice). Six kinds are left out, each for a reason: **Person** (a respondent has no account to name, and the plan's
+people are not public), **Image** (an upload from anyone with the link is an abuse door we do not open), **Comments**
+and **Votes** (the plan's own activity, not an answer), **Link to Card** (a respondent cannot see the plan's cards)
+and **Calculated** (worked out from other fields, never typed), with **Time Spent** (kept by time tracking).
 
 - A Single or Multiple Choice question may map to a Choice or Multiple Choice field only while the field holds every
   option it offers and it has no Other (an Other answer is no option of the field), case aside. A pick is kept as
@@ -606,7 +701,7 @@ away again:
 2. **Edit It in Place**: opens that question in the builder (its wording, description, answers and Required);
 3. **Any Kind of Answer**: opens its type menu;
 4. **Try It as They Will**: turns on Preview, the form as respondents see it, and highlights the example question
-   there to answer (not the whole page), saying Back to Editing returns; it turns Preview off after;
+   there to answer (not the whole page), saying Edit Form returns; it turns Preview off after;
 5. **Where Responses Go**: opens the cog's panel;
 6. **Responses Arrive Here** (a board) or **Responses Land Here** (a sheet): it opens the tab the form's responses go
    to and comes back to the form after, only when the form has one;
@@ -735,6 +830,15 @@ no editor code loaded (its own small bundle).
 - **Sections**: one section at a time, a progress bar across the top ("Section 2 of 3"), **Back** and **Next**; Next
   checks only that section's questions. The last section's button is **Submit**. Sections that do not show for the
   answers so far are stepped over and not counted ([Showing a section only sometimes](#showing-a-section-only-sometimes)).
+  On the first section, the first section's title and description (when set) sit under the form's heading and
+  description, after a rule.
+- **How long it takes**: under the heading, a clock and the time left ("About 3 min left", "Under a minute left"),
+  counted again as each answer goes in (`secondsLeft`, `packages/forms/src/time-estimate.ts`): each unanswered question
+  counts its type's usual time (a Checkbox 4 s, a Rating 6 s, a Short Answer 20 s, a Paragraph a minute, and so on)
+  and each content block its words at 200 a minute (3 s at least), over this section and the sections after it that
+  show. Past one section it reads both: "About 1 min in this section · About 4 min left in all". Gone once nothing is
+  left. No progress bar of its own (the sections' bar shows progress); a polite live region, so a screen reader hears
+  it settle.
 - **Answers are kept while filling in**: in the browser's session storage per form, so a reload or a wrong Back keeps
   what was typed; cleared on submit. **Submit Another Response** starts afresh.
 - **Pre-filled answers**: the form link may carry answers in its address, one parameter per question,
@@ -776,7 +880,7 @@ no editor code loaded (its own small bundle).
   found page, its Form tab says "This form’s link was suspended after reports from respondents", and the owner is
   emailed. Publishing again makes a new link; a project whose form links have been suspended twice cannot publish
   another.
-- Beside Submit, in small type: "Never submit passwords through liveplanner forms."
+- No password warning beside Submit: Report This Form's **Asking for Passwords** covers a form that asks for one.
 
 ## What a response makes
 
@@ -1135,5 +1239,7 @@ Every chart is on the public dashboard's **Forms** stack.
 - File uploads, logic that skips sections by an answer, quizzes and scores.
 - A responses summary of charts per question (a Dashboard over the board covers it for now).
 - Importing questions from another form.
-- A cover image (a cover is a colour background): an image would join the image store's reference index.
+- Pictures on a form's questions (a choice with pictures): content blocks and the cover hold them for now.
+- Respondents uploading pictures or files (an abuse door; see the field kinds left out under
+  [Mapping](#mapping-where-an-answer-goes)).
 - Dragging a choice's options (Alt+Up and Alt+Down move them).

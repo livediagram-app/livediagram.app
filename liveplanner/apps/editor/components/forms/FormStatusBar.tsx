@@ -44,7 +44,7 @@ export function FormStatusBar({
   full?: boolean;
   canEdit: boolean;
   onFix: () => void;
-  // At its end, an Editor's: Preview (or Back to Editing), the help link and the form's cog.
+  // At its end, an Editor's: the help link and the form's cog (Preview sits left of Share Form).
   controls?: ReactNode;
   // Opens the tab the responses go to (absent without one), named for its tooltip.
   onOpenResponses?: (() => void) | null;

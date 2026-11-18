@@ -209,7 +209,7 @@ either page names all the apps (each page's description, the terms' opening and 
 app, five today (livediagram, liveplanner, livedocuments, livedesign and livehuddle), and so do the site's own
 description (`app/layout.tsx`) and its install manifest; `app/app-lists.test.ts` fails when a listed app is missing from
 any of them. Each listed app has its own part under App by app, if only to say it does nothing beyond the rest. A
-sentence about a feature only some apps have (Image search: every app but liveplanner) names just those. Both share
+sentence about a feature only some apps have (Image search: every app, but in liveplanner only its Forms builder) names just those. Both share
 `components/LegalPage.tsx`, and their date and contact form are in `lib/legal.ts`. Change them when what an app stores or who it uses changes.
 The privacy policy's Security section and the terms' Acceptable use send a vulnerability to the private advisory
 form (`SECURITY_ADVISORY_URL`), never the contact form

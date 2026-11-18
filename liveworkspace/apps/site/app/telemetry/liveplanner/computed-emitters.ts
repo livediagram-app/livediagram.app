@@ -45,6 +45,18 @@ type ComputedValues = {
 const APPS = resolve(__dirname, '../../../../../../liveplanner/apps');
 const read = (path: string) => readFileSync(resolve(APPS, path), 'utf8');
 
+// A form picture search's failures (@liveworkspace/workbench lib/image-search/telemetry.ts): every
+// `ImageSearch.<Reason>` token in its fixed tables.
+const IMAGE_SEARCH_WARNINGS = [
+  ...new Set(
+    [
+      ...read('../../packages/workbench/src/lib/image-search/telemetry.ts').matchAll(
+        /'(ImageSearch\.[A-Za-z.]+)'/g,
+      ),
+    ].map((m) => m[1]!),
+  ),
+];
+
 // Every quoted token in the first block that follows `marker`.
 function tokensAfter(source: string, marker: string, close: string): string[] {
   const start = source.indexOf(marker);
@@ -394,6 +406,9 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
       'Command',
       'Workspace',
     ],
+  },
+  'packages/workbench/src/hooks/ui/useImageSearch.ts Error·Warning': {
+    values: IMAGE_SEARCH_WARNINGS,
   },
   'packages/workbench/src/components/primitives/AreaErrorBoundary.tsx Error·Client': {
     values: ['Render.Canvas.TypeError', 'Render.Header.Error'],

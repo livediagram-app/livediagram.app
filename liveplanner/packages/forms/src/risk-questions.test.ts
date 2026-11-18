@@ -47,7 +47,7 @@ describe('a Risk field as a question', () => {
   });
 
   it('takes a single question whose every option names a level, never one with Other', () => {
-    expect(MAPPABLE_KINDS.single).toEqual(['choice', 'text', 'risk']);
+    expect(MAPPABLE_KINDS.single).toEqual(['choice', 'text', 'risk', 'labels']);
     expect(fieldTakes(single(['high', 'Low']), RISK)).toBe(true);
     expect(fieldTakes(single(['High', 'Severe']), RISK)).toBe(false);
     expect(fieldTakes(single(['High'], { other: true }), RISK)).toBe(false);

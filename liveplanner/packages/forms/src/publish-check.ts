@@ -69,6 +69,8 @@ export function publishProblems(
     if (i > 0 && s.showIf && !ruleQuestion(form, i, s.showIf))
       out.push({ kind: 'broken_rule', sectionId: s.id });
     for (const q of s.questions) {
+      // A content block asks nothing: its heading is optional.
+      if (q.type === 'content') continue;
       if (!q.prompt.trim()) out.push({ kind: 'unworded', questionId: q.id });
       if ((q.type === 'single' || q.type === 'multi') && !q.options?.length)
         out.push({ kind: 'no_options', questionId: q.id });

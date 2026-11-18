@@ -1,3 +1,4 @@
+import { isPlanTabKind } from '@liveplanner/project';
 import { useButtonLabelsSetting } from '@liveworkspace/workbench/hooks/ui/useDockNames';
 import dynamic from 'next/dynamic';
 import { intoTabOf } from '@/components/dialogs/import/into-tab';
@@ -270,6 +271,7 @@ export function TabBar({
   // One tab, see TabPill. The ctx bundle keeps the render callback (the strip's, for loose tabs and folder
   // members alike) a one-liner.
   const pillCtx: TabPillCtx = {
+    mixedKinds: new Set(tabs.map((t) => (isPlanTabKind(t.kind) ? t.kind : 'tab'))).size > 1,
     isOutOfScope,
     activeId,
     editingId,

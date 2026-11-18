@@ -12,9 +12,12 @@ export function FormSheet({
   anchor,
   name,
   width = 340,
+  titled = false,
   onClose,
   children,
 }: {
+  // The panel draws its own heading: a phone's sheet doesn't add the name above it.
+  titled?: boolean;
   anchor: HTMLElement;
   // The panel's accessible name, and the heading a sheet shows.
   name: string;
@@ -32,14 +35,18 @@ export function FormSheet({
         zClassName="z-[var(--z-overlay)]"
       >
         <div className="px-4 pb-4">
-          <p className="pb-2 text-[13px] font-semibold text-slate-900 dark:text-slate-50">{name}</p>
+          {titled ? null : (
+            <p className="pb-2 text-[13px] font-semibold text-slate-900 dark:text-slate-50">
+              {name}
+            </p>
+          )}
           {children}
         </div>
       </BottomSheet>
     );
   return (
     <AnchoredPopover anchor={anchor} name={name} width={width} onClose={onClose}>
-      <div className="rounded-xl border border-slate-200 bg-white p-3 text-[13px] shadow-lg dark:border-slate-700 dark:bg-slate-900">
+      <div className="max-h-[min(36rem,calc(100dvh-8rem))] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-4 text-[13px] shadow-xl dark:border-slate-700 dark:bg-slate-900">
         {children}
       </div>
     </AnchoredPopover>

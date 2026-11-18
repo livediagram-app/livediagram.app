@@ -5,16 +5,24 @@
 // icon, its name and a line on what it collects, in the pickers' shared dialog (TilePicker).
 
 import { useMemo } from 'react';
-import { QUESTION_TYPE_NAMES, type QuestionType } from '@liveplanner/forms';
+import { CONTENT_BLOCK_NAMES, QUESTION_TYPE_NAMES } from '@liveplanner/forms';
 import { TilePicker, type PickerSection } from '@/components/tile-picker/TilePicker';
 import { TONES, type SceneTone } from '@/components/tile-picker/tile-scene';
 import { addQuestionHeroArt } from './AddQuestionHeroArt';
-import { QUESTION_TYPE_ICONS } from './question-icons';
-import { QUESTION_GROUPS, QUESTION_LINES } from './question-groups';
+import { CONTENT_BLOCK_ICONS, QUESTION_TYPE_ICONS } from './question-icons';
+import { QUESTION_GROUPS, QUESTION_LINES, contentKind, type AddKind } from './question-groups';
 import { QuestionScene } from './QuestionScene';
 
-function TypeIcon({ type, tone }: { type: QuestionType; tone: SceneTone }) {
-  const Icon = QUESTION_TYPE_ICONS[type];
+type AskedKind = Exclude<AddKind, `content-${string}`>;
+
+const kindName = (k: AddKind) => {
+  const block = contentKind(k);
+  return block ? CONTENT_BLOCK_NAMES[block] : QUESTION_TYPE_NAMES[k as AskedKind];
+};
+
+function TypeIcon({ type, tone }: { type: AddKind; tone: SceneTone }) {
+  const block = contentKind(type);
+  const Icon = block ? CONTENT_BLOCK_ICONS[block] : QUESTION_TYPE_ICONS[type as AskedKind];
   return (
     <span
       aria-hidden
@@ -29,17 +37,17 @@ export function AddQuestionDialog({
   onPick,
   onClose,
 }: {
-  onPick: (type: QuestionType) => void;
+  onPick: (type: AddKind) => void;
   onClose: () => void;
 }) {
-  const sections = useMemo<PickerSection<QuestionType>[]>(
+  const sections = useMemo<PickerSection<AddKind>[]>(
     () =>
       QUESTION_GROUPS.map((g) => ({
         id: g.id,
         name: g.name,
         tiles: g.types.map((t) => ({
           key: t,
-          name: QUESTION_TYPE_NAMES[t],
+          name: kindName(t),
           line: QUESTION_LINES[t],
           icon: <TypeIcon type={t} tone={g.tone} />,
           scene: <QuestionScene type={t} />,
@@ -53,7 +61,7 @@ export function AddQuestionDialog({
       line="What should people answer?"
       art={addQuestionHeroArt}
       noun="question type"
-      emptyHint="Try another word, such as “date”, “email” or “stars”."
+      emptyHint="Try another word, such as “date”, “email”, “stars” or “picture”."
       sections={sections}
       onPick={onPick}
       onClose={onClose}

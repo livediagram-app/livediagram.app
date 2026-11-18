@@ -153,3 +153,38 @@ export function planServesImage(
       .toArray().length > 0
   );
 }
+
+// Whether a Form tab of the plan shows `imageId` (its cover's or a picture block's; docs/specs/030-forms/forms.md
+// "Cover"), among `onlyTab` alone when given (a tab-scoped session, or a form link's own tab), and the plan holds a
+// grant for it (it was uploaded or claimed for this plan). `instr` on the stored JSON, never a bound LIKE.
+export function formServesImage(
+  sql: Sql,
+  planId: string,
+  imageId: string,
+  onlyTab: string | null = null,
+): boolean {
+  if (!imageId || imageId.length > IMAGE_ID_MAX) return false;
+  const granted = sql
+    .exec(
+      'SELECT 1 FROM card_image_grants WHERE plan_id = ? AND image_id = ? LIMIT 1',
+      planId,
+      imageId,
+    )
+    .toArray();
+  if (granted.length === 0) return false;
+  const needle = `"imageId":${JSON.stringify(imageId)}`;
+  const scoped = onlyTab === null ? '' : 'AND tabs.id = ?';
+  return (
+    sql
+      .exec(
+        `SELECT 1 FROM plan_tabs, tabs
+          WHERE plan_tabs.plan_id = ? AND tabs.id = plan_tabs.tab_id ${scoped}
+            AND instr(tabs.data, ?) > 0
+          LIMIT 1`,
+        planId,
+        ...(onlyTab === null ? [] : [onlyTab]),
+        needle,
+      )
+      .toArray().length > 0
+  );
+}

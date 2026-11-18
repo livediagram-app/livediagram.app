@@ -1,10 +1,17 @@
 // The header's Share on a Form tab (docs/specs/030-forms/forms.md "Publishing and the form link"): while an Editor has
 // a Form tab open, the header's Share button is the form's Share Form, so the page never shows two share buttons. The
-// Form page says it is there (and whether its link is published); the header asks it to open its dialog.
+// Form page says it is there (and whether its link is published); the header asks it to open its dialog. Preview sits
+// beside it, to its left (forms.md "Preview"): whether the form is previewed, and the toggle between Preview and
+// Edit Form.
 import { useSyncExternalStore } from 'react';
 import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
-type FormShareHost = { published: boolean; open: () => void };
+export type FormShareHost = {
+  published: boolean;
+  open: () => void;
+  preview: boolean;
+  togglePreview: () => void;
+};
 
 let host: FormShareHost | null = null;
 const listeners = createListeners();
