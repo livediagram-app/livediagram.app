@@ -1,4 +1,5 @@
 import { useEffect, useEffectEvent, useRef } from 'react';
+import { useAnnounceSelf } from '@liveworkspace/workbench/hooks/collab/useAnnounceSelf';
 import { noteAccessEnded } from '@/lib/access-notice';
 import type { AgentPresence } from '@liveplanner/api-schema';
 import { nextFreeColor } from '@/lib/identity';
@@ -72,14 +73,9 @@ export function useRoomConnection(opts: RoomConnectionOptions) {
     self: selfForRoom(),
     shareCode: sessionShareCode,
   }));
-  // The switch flipped, or the picture changed: tell the open room, which updates the roster in place.
-  const announceSelf = useEffectEvent(() => roomRef.current?.updateSelf(selfForRoom()));
-  const announcedPicture = useRef(picture);
-  useEffect(() => {
-    if (announcedPicture.current === picture) return;
-    announcedPicture.current = picture;
-    announceSelf();
-  }, [picture]);
+  // A changed name or colour (Settings › Profile, or one yielded to a peer), or the picture switch: told to the open
+  // room, which updates the roster in place, so everyone already here sees it live (Work Tracker 1221).
+  useAnnounceSelf(selfForRoom(), () => roomRef.current?.updateSelf(selfForRoom()));
   const announceAdderKey = useEffectEvent((key: string | null) => onAdderKey?.(key));
   // Each peer's server-verified role by presence id, refreshed with every presence list.
   const roleByPresenceRef = useRef<Map<string, string | undefined>>(new Map());

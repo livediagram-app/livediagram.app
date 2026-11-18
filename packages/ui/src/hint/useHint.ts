@@ -299,16 +299,18 @@ export function useHint(
   useEffect(watchTouches, []);
 
   // Escape dismisses without consuming the key: a menu or dialog listening
-  // for it closes on the same press (spec).
+  // for it closes on the same press (spec). Heard in the trigger's own document, where the key lands when the trigger
+  // is in a Picture-in-Picture window.
   useEffect(() => {
     if (!open) return;
+    const doc = machine.current.wrapper?.ownerDocument ?? document;
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return;
       machine.current.dismissed = true;
       close();
     };
-    document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
+    doc.addEventListener('keydown', onKeyDown);
+    return () => doc.removeEventListener('keydown', onKeyDown);
   }, [open, close]);
 
   useEffect(() => {

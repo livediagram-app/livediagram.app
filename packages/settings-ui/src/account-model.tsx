@@ -49,6 +49,11 @@ export interface AccountSection {
   // for by an app's server): an app's help article "Deleting your account". With it, Your Account ends with a Delete
   // Account row that says where closing lives and links there. An editor draws its own Delete Account and hands none.
   closeAccountHelp?: string;
+  // Opens the host's own Delete Account dialog, for a host that can close the account but draws no Delete Account row
+  // of its own: the Explorer on an app's address, whose dialog is that app's editor's (liveworkspace/docs/specs/010-site/
+  // site.md "Settings", "Your Account"; Work Tracker 1228). With it, Your Account has a Delete Account row under Sign
+  // Out whose button calls it. A host hands this or closeAccountHelp, never both; an editor hands neither.
+  deleteAccount?: () => void;
   // The API tokens and Download Your Data
   // (liveworkspace/docs/specs/003-accounts/data-export.md "Settings"), drawn here (accountPanels) for a signed-in
   // account. A host without an account (a guest, a workbench, a self-hosted editor) hands none.

@@ -170,6 +170,10 @@ export type ClientMessage =
   // epoch+seq I applied, tell me what I missed, or that I must re-hydrate".
   // `epoch` is null on a client that hasn't seen an ordered op yet.
   | { kind: 'sync'; epoch: string | null; lastSeq: number }
+  // An identity update over an open socket (liveworkspace/docs/specs/003-accounts/accounts.md "Profiles", "A change
+  // reaches the room at once"; Work Tracker 1221): the hello's participant again, read by the same rules, without
+  // re-joining, when the person's name, colour or picture changes. Ignored before the session's hello.
+  | { kind: 'identity'; participant: ParticipantPresence }
   | GrantMessage;
 
 // Client-side narrowings of `ClientMessage` / `ServerMessage` that
@@ -185,6 +189,7 @@ export type RoomOutgoing =
     }
   | { kind: 'op'; op: RoomOp; ref?: number }
   | { kind: 'sync'; epoch: string | null; lastSeq: number }
+  | { kind: 'identity'; participant: ParticipantPresence }
   | ({ kind: 'facilitator' } & FacilitatorAction)
   | GrantMessage;
 

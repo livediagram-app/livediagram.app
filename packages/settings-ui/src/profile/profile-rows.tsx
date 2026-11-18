@@ -77,7 +77,7 @@ function SignOutRow({ onSignOut }: { onSignOut: NonNullable<AccountSection['onSi
 
 /** The signed-in Profile's rows; none when the host has nothing to show. */
 export function profileRows(section: AccountSection): SettingsRow[] {
-  const { identity, profile, security, onSignOut, closeAccountHelp } = section;
+  const { identity, profile, security, onSignOut, closeAccountHelp, deleteAccount } = section;
   const rows: SettingsRow[] = [];
   if (identity) {
     rows.push({
@@ -156,8 +156,40 @@ export function profileRows(section: AccountSection): SettingsRow[] {
       render: () => <SignOutRow onSignOut={onSignOut} />,
     });
   }
-  if (closeAccountHelp && rows.length > 0) rows.push(closeAccountRow(closeAccountHelp));
+  if (deleteAccount && rows.length > 0) rows.push(deleteAccountRow(deleteAccount));
+  else if (closeAccountHelp && rows.length > 0) rows.push(closeAccountRow(closeAccountHelp));
   return rows;
+}
+
+// Delete Account where the host can close the account but draws no row for it (the Explorer on an app's address,
+// liveworkspace/docs/specs/010-site/site.md "Settings", "Your Account"; Work Tracker 1228): the editors' row, its button
+// opening the host's own dialog, which asks for the typed email and the emailed code as it does in the editor.
+export const DELETE_ACCOUNT_DESCRIPTION =
+  'Permanently deletes your liveworkspace account and everything you own in every liveworkspace app.';
+
+function deleteAccountRow(open: () => void): SettingsRow {
+  const row = {
+    key: 'deleteAccount',
+    label: 'Delete Account',
+    description: DELETE_ACCOUNT_DESCRIPTION,
+  };
+  return {
+    kind: 'custom',
+    ...row,
+    keywords: 'delete close remove erase account data leave danger',
+    section: PROFILE_SECTIONS.account,
+    render: () => (
+      <SettingsRowShell
+        row={row}
+        control={
+          // Sign Out's own button, in the row above.
+          <Button variant="none" className={SETTINGS_ROW_BUTTON} onClick={open}>
+            Delete Account
+          </Button>
+        }
+      />
+    ),
+  };
 }
 
 // Delete Account where the host can't close the account itself (liveworkspace/docs/specs/010-site/site.md "Settings",

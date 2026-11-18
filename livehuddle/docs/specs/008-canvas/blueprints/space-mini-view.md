@@ -123,15 +123,16 @@ shows a heard person's camera exactly when the call receives it.
 ### Your controls (`MiniViewControls`, Work Tracker 992)
 
 The last child of `MiniView`'s column, `shrink-0`. It reads `useCallSelf` and `useCallActions` and draws nothing
-without actions or without `canSpeak`. Inside `CallNames` (true: named) and `CallHoverCards` (false), it draws
+without actions or without `canSpeak`. Inside `CallNames` (true: named), it draws
 `miniMicSegment(self, actions)` and, while `selfCamera(self) === 'on'`, `CameraSegment`:
 
 - `miniMicSegment`: live (`available` and `phase === 'live'`) → `LiveMicSegment`, the dock's microphone; no call
   (`!available`, the kill switch's pause, or `phase === 'error'`) → `PreviewMicSegment` (null without
   `canPreviewMic`); `off` or `joining` in a call → null.
 - With neither button the bar draws nothing (`empty:hidden`), so no empty footer.
-- `CallHoverCards` (in `CallSegment.tsx`, default true): false passes `disabled` to each `HoverCard`, so no card
-  is drawn in the opener's document; the hidden description stays for `aria-describedby`.
+- Each button keeps its hover card: the shared hint surface (`HintSurface` in `@liveworkspace/ui`) portals into the
+  trigger's own document and places against that window, so the card draws in the mini view's window, never in the
+  opener's (Work Tracker 1109).
 
 ### Knocks (`mini-view-knock.ts`)
 

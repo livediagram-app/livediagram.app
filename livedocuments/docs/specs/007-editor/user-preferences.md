@@ -813,7 +813,9 @@ and the dialog stays as the one complete, browsable index of them.
   (`ProfileEditor` in `@liveworkspace/settings-ui`), which reads and patches the profile over the
   same door (`/api/workspace/account/profile`, `requestProfileHost`). A saved name or colour is the
   editor's own at once: its cursor, name tag and presence avatar in the room follow it without a
-  reload (`announceProfileSaved` / `onProfileSaved`), and opening the editor again never overwrites
+  reload (`announceProfileSaved` / `onProfileSaved`), and so does what everyone already in the room sees: it goes
+  to the room over the open socket (an `identity` frame), which sends the roster again, so their cursors, avatars
+  and selection rings wear it live, not at their next load (Work Tracker 1221), and opening the editor again never overwrites
   a stored name with the account name. Its Time Zone (the zone the emails that can wait keep to, Automatic
   or one picked from a searchable list) is set in place over the same door (`TimeZonePicker`,
   liveworkspace/docs/specs/010-site/site.md "Settings", "Profile"). Sign-in Methods and Where You're Signed In are drawn in place too, as are API Tokens

@@ -7,6 +7,7 @@ import { createListeners } from '../../lib/listeners';
 import { LIVE_BUILD_MAX_CHECKS, LIVE_BUILD_POLL_MS } from '../../hooks/ui/useNewerEditorLive';
 import { RELOAD_SAVE_WAIT_MS } from '../../lib/reload-when-saved';
 import { setStartPanelOpen } from '../start/start-panel-open';
+import { CORNER_CLUSTER_CLEARANCE, CORNER_CLUSTER_CLEARANCE_PX } from './corner-cluster-clearance';
 import {
   NewVersionPrompt,
   OVER_START_SHEET,
@@ -92,6 +93,21 @@ describe('NewVersionPrompt', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  // Work Tracker 1193: at 80px up it covered the canvas's zoom bar on a phone and at 450px.
+  it('stands clear of the canvas’s bottom-right cluster, the shared offset, start sheet or not', async () => {
+    mount();
+    newer();
+    await flush();
+    const status = screen.getByRole('status');
+    expect(status.className).toContain(CORNER_CLUSTER_CLEARANCE);
+    expect(status.className).not.toContain('bottom-20');
+    // Over a start sheet it never sinks below that clearance either.
+    for (const variant of ['max-sm', 'short-window'])
+      expect(OVER_START_SHEET).toContain(
+        `${variant}:bottom-[max(${CORNER_CLUSTER_CLEARANCE_PX}px,var(--start-clear))]`,
+      );
+  });
+
   // Work Tracker 784: on a phone, an empty tab's start sheet (the overlay layer) hid it until a board was picked.
   it('stands over a start panel’s phone sheet while one is open, and back on the chrome layer after', async () => {
     mount();
@@ -127,7 +143,7 @@ describe('NewVersionPrompt', () => {
       // 844 - 694 and the toasts' gap over chrome: clear of the row, whatever its height.
       const clear = parseInt(status.style.getPropertyValue('--start-clear'), 10);
       expect(clear).toBeGreaterThan(150);
-      expect(OVER_START_SHEET).toContain('max-sm:bottom-[max(5rem,var(--start-clear))]');
+      expect(OVER_START_SHEET).toContain('max-sm:bottom-[max(135px,var(--start-clear))]');
       act(() => setStartPanelOpen(false));
       expect(status.style.getPropertyValue('--start-clear')).toBe('');
     } finally {
