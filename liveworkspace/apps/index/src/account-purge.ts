@@ -3,11 +3,11 @@
 // for that person goes.
 //
 // - Their own items, in every app and the Trash included, are purged as a permanent delete is: the rows go
-//   with a tombstone each (their favourites, opens, use days, links, passwords, Shared with me and Inbox rows
+//   with a tombstone each (their opens, use days, links, passwords, Shared with me and Inbox rows
 //   cascade), and the apps are asked to drop the content.
 // - Items and folders in a team stay with the team, their owner anonymised; those in a team that closed
 //   with the account (one they ran alone, named in `teamIds`) are theirs alone and go too.
-// - Their folders, favourites, opens (Recent), use days (Most Used), Shared with me rows, placement
+// - Their folders, opens (Recent), use days (Most Used), Shared with me rows, placement
 //   defaults and their own `favourited` events go.
 // - Rows on other people's items that only name them (comment threads they are in, actions assigned to
 //   or by them, events they did or a team's are about, webhook deliveries of what they did) keep
@@ -178,8 +178,6 @@ function personalStatements(db: Db, person: string): (() => D1PreparedStatement)
           'DELETE FROM folders WHERE rowid IN (SELECT rowid FROM folders WHERE owner_id = ? LIMIT ?)',
         )
         .bind(person, CHUNK),
-    // The favourites table nothing reads since Favourites were removed: its rows are still theirs, so they go.
-    byPerson('favourites'),
     // Their calendar feeds (calendar-feeds.ts): the token hash is theirs alone.
     byPerson('calendar_feeds'),
     byPerson('opens'),

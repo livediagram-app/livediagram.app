@@ -315,8 +315,8 @@ holds for that person:
   Shared with me rows and comment and action rows.
 - **Deleted**: their folders, opens (Recent), use
   days (Most Used), Shared with me rows, placement defaults, their calendar feeds ([Calendar feeds](#calendar-feeds)),
-  and what is left of Favourites (removed, [one-explorer.md "Favourites removed"](one-explorer.md#favourites-removed)):
-  their rows in the unread `favourites` table and their own old `favourited` events, and the guests merged into them
+  their own old `favourited` events (what is left of Favourites, removed,
+  [one-explorer.md "Favourites removed"](one-explorer.md#favourites-removed)), and the guests merged into them
   (`person_aliases`, [Becoming an account](#guests)), so no grant names those keys again.
 - **Kept by the team**: an item or folder they made in a team stays with that team, its owner anonymised.
   `teamIds` names the teams that closed with the account (one it ran alone); their items and folders in
@@ -384,8 +384,8 @@ updatedAt}`; 409 `folder_exists`, `cycle`. Deleting moves children (folders and 
   the person doesn't reach (not theirs, not their team's, no live link they opened) is 404, the same answer as a
   missing one, and writes nothing.
 - Favourites are gone ([one-explorer.md "Favourites removed"](one-explorer.md#favourites-removed)): there is no
-  `/favourites` route (404) and no `view=favourites` (400). The `favourites` table stays, unread; only an account's
-  close deletes from it, until a later migration drops it.
+  `/favourites` route (404) and no `view=favourites` (400). The `favourites` table is gone too
+  (`0023_drop_favourites.sql`).
 - `GET /placement-defaults`, `PUT/DELETE /placement-defaults/:key`: default folders: where a person's new items
   land when made without a place, per app. The key is the app (`liveplanner`) for every new item of its kind,
   `<app>:kind:<kind>` for one whose first tab is that kind, `<app>:template:<family>` for one made from a template

@@ -57,7 +57,7 @@ fixed namespace), so the same inputs make the same bundle, byte for byte. In ord
 3. Folders and placement defaults (`plan/folders.ts`), parents first; a parent in another scope is dropped.
 4. Documents (`plan/documents.ts`), one at a time in id order: read raw (`read-documents.ts`), split, pictures drawn
    for frozen references (unless `--no-pictures`), each part's room written, and its index rows: `items` (summary
-   `{"imported":"1"}`), `favourites`, `opens`, `use_days`, `share_passwords`; media `refs` and drawn `images`.
+   `{"imported":"1"}`), `opens`, `use_days`, `share_passwords`; media `refs` and drawn `images`.
 5. Shares (`plan/shares.ts`): each old link to the part that holds what it shares, codes upper-cased (a case collision:
    the oldest keeps it, the other reported); Shared with me rows on every part, with a derived link per level where a
    part holds none.
@@ -130,12 +130,12 @@ The ledger:
 
 All three `WITHOUT ROWID`. Tables written on the new side, with the keys verify reads:
 
-| Database  | Tables (key)                                                                                                                                                                                                                  |
-| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| accounts  | `"user"` (id), `team` (id), `team_member` (id), `api_token` (id), `settings` (owner_id, scope), `email_lifecycle` (user_id), `account_app` (user_id, app), `profile` (owner_id), `legacy_guest` (id)                          |
-| index     | `folders`, `items` (id), `favourites`, `opens` (person_id, item_id), `use_days` (+ day), `share_links` (code), `share_passwords` (item_id), `shared_with` (person_id, item_id), `placement_defaults` (person_id, default_key) |
-| media     | `images` (id), `refs` (app, document, image_id)                                                                                                                                                                               |
-| community | `posts` (id), `post_tags` (post_id, tag), `likes` (post_id, liker_key), `copies` (post_id, copier), `reports` (post_id, reporter_key)                                                                                         |
+| Database  | Tables (key)                                                                                                                                                                                                    |
+| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| accounts  | `"user"` (id), `team` (id), `team_member` (id), `api_token` (id), `settings` (owner_id, scope), `email_lifecycle` (user_id), `account_app` (user_id, app), `profile` (owner_id), `legacy_guest` (id)            |
+| index     | `folders`, `items` (id), `opens` (person_id, item_id), `use_days` (+ day), `share_links` (code), `share_passwords` (item_id), `shared_with` (person_id, item_id), `placement_defaults` (person_id, default_key) |
+| media     | `images` (id), `refs` (app, document, image_id)                                                                                                                                                                 |
+| community | `posts` (id), `post_tags` (post_id, tag), `likes` (post_id, liker_key), `copies` (post_id, copier), `reports` (post_id, reporter_key)                                                                           |
 
 Plus the media bucket's objects, each app's rooms, and the livediagram MCP's `OAUTH_KV` `client:` keys.
 

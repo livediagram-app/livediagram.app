@@ -486,14 +486,14 @@ const SECTIONS: LegalSection[] = [
           You can delete your account yourself from <strong>Settings</strong>, then{' '}
           <strong>Account</strong>, then <strong>Delete Account</strong>, in any app, with a code we
           email you to confirm it. Your liveworkspace account closes, for every app at once: the
-          documents you own in every app (the Trash included), your folders, favourites, images and
-          preferences, your account details and Google picture address, sessions, API tokens,
-          sign-in records, phone notification devices and your own webhooks are deleted straight
-          away. We also disconnect your Google Drive and delete any download of your data at the
-          same time; if either fails, the Drive access ends when you remove it in your Google
-          account, and a download is deleted by itself after 3 days. You leave every team (a team
-          you ran alone goes; one you were the only admin of passes to its longest-standing member).
-          Documents that belong to a team stay with the team.
+          documents you own in every app (the Trash included), your folders, images and preferences,
+          your account details and Google picture address, sessions, API tokens, sign-in records,
+          phone notification devices and your own webhooks are deleted straight away. We also
+          disconnect your Google Drive and delete any download of your data at the same time; if
+          either fails, the Drive access ends when you remove it in your Google account, and a
+          download is deleted by itself after 3 days. You leave every team (a team you ran alone
+          goes; one you were the only admin of passes to its longest-standing member). Documents
+          that belong to a team stay with the team.
         </p>
         <p>
           Other things are kept only as long as they are useful: anonymous product events for 60

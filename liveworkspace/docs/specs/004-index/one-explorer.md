@@ -556,9 +556,9 @@ History. What replaced them is what was always beside them: Home's Most Used and
   does; on liveworkspace.app it is a retired address that replaces itself with `/explorer/all`
   (`RETIRED_TARGETS`). A panel left on Favourites opens on My Work.
 - **The index.** `GET /favourites` and `PUT/DELETE /favourites/:itemId` are gone (404), `view=favourites` is refused
-  (400), and an item no longer carries `favourite`. The `favourites` table is left in place, read and written by
-  nothing but an account's close, which still deletes the person's rows; a later migration can drop it. Old
-  `favourited` events stay out of every History until they age out.
+  (400), and an item no longer carries `favourite`. The `favourites` table, left unread when they went, is
+  dropped with its rows by migration `0023_drop_favourites.sql` (Work Tracker 1199), so nothing about a favourite
+  is stored any more. Old `favourited` events stay out of every History until they age out.
 - **This Browser.** A local record's `favourite` mark is no longer read or written; an older record keeping one is
   harmless. Take Offline and Sync carry no star either way.
 - **Agents.** The MCP and CLI never had a favourite verb; the archive verbs no longer mention favourites.

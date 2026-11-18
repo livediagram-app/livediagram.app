@@ -59,7 +59,7 @@ stands").
 
 ### Purging (`purgeRows`)
 
-50 items a batch, two statements each: a tombstone (`ON CONFLICT DO NOTHING`) and the row's delete (its favourites,
+50 items a batch, two statements each: a tombstone (`ON CONFLICT DO NOTHING`) and the row's delete (its
 opens, use days, links, passwords, Shared with me, collab rows and events cascade). `drainTombstones` asks each
 app `DELETE <app>/api/internal/items/:id`, 6 at a time; a `404` counts as done; confirmed rows go, failed ones get
 `attempts + 1`, `last_attempt_at`, `last_error`, all in one batch.
@@ -88,7 +88,7 @@ first 25 purged items are drained at once, and person notices sent.
    actions, edits), up to 5,000 per source per pass.
 2. Items and folders in a team that outlives them: owner becomes `deleted`.
 3. Their own items (including those in teams closed with them): tombstones in, rows out.
-4. Everything else theirs: folders (defaults cascade), favourites (the unread table), opens, use days, Shared with me, placement defaults,
+4. Everything else theirs: folders (defaults cascade), opens, use days, Shared with me, placement defaults,
    form reads, thread people; their id in threads' participants and mentions becomes `deleted`; actions assigned to
    or by them name `deleted`, their name beside it null; an `action_assigned` event's and delivery's detail naming
    them as `assigneeId` take `deleted` and `assigneeName` null (the events through the `aa:` id range); their old `favourited` events deleted, then `actor_id

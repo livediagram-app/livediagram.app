@@ -255,7 +255,7 @@ export function scenario(): DatabaseSync {
   image('img-3', GUEST_B, 'same');
   image('img-4', 'user_cy', 'same');
 
-  // A diagram, with a plain-text share password, a lower-case share code, a favourite, an open and a share.
+  // A diagram, with a plain-text share password, a lower-case share code, an old favourite (not carried), an open and a share.
   putDocument(
     db,
     {

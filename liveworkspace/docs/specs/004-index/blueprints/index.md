@@ -408,7 +408,7 @@ Env fields (`env.ts`): `ACCOUNTS_URL`, `APP_ORIGIN_LIVEDESIGN`, `APP_ORIGIN_LIVE
 ## Data and persistence
 
 One D1 database (`INDEX_DB`). Each table's indexes, and what writes and reads it, are in the feature file that owns
-it: items, folders, opens, use days and the unread `favourites` table in [items.md](items.md); links, passwords and Shared with me in
+it: items, folders, opens and use days in [items.md](items.md); links, passwords and Shared with me in
 [sharing.md](sharing.md); the collab tables in [inbox.md](inbox.md); the event log in [events.md](events.md);
 tombstones, purges and notices in [trash.md](trash.md); placement defaults in [default-folders.md](default-folders.md);
 person merges and aliases in [guest-merge.md](guest-merge.md); `drive_people` above. Foreign keys to `items` cascade, so a purged
@@ -437,6 +437,8 @@ Migrations, in order:
 - `0019_approvals.sql`
 - `0020_thread_mentioned_by.sql`
 - `0021_person_aliases.sql`
+- `0022_access_requests.sql`
+- `0023_drop_favourites.sql` (drops the unread `favourites` table, Work Tracker 1199)
 
 | Table                  | Columns                                                                                                                                                                                                                                                                 | Created in                                       |
 | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
@@ -448,7 +450,6 @@ Migrations, in order:
 | `collab_threads`       | `app`, `item_id`, `tab_id`, `tab_name`, `element_id`, `element_label`, `resolved`, `comment_count`, `participant_ids`, `mentioned_ids`, `latest_text`, `latest_author_name`, `latest_author_color`, `card`, `first_at`, `latest_at`; `latest_author_id`, `mentioned_by` | `0001_index.sql`, `0020_thread_mentioned_by.sql` |
 | `drive_people`         | `person_id`, `since`                                                                                                                                                                                                                                                    | `0005_drive_people.sql`                          |
 | `events`               | `id`, `app`, `item_id`, `actor_id`, `actor_name`, `type`, `title`, `detail`, `occurred_at`                                                                                                                                                                              | `0017_events.sql` (from 0001)                    |
-| `favourites`           | `person_id`, `item_id`, `created_at`                                                                                                                                                                                                                                    | `0001_index.sql`                                 |
 | `folders`              | `id`, `name`, `parent_id`, `owner_id`, `team_id`, `scope`, `created_at`, `updated_at`                                                                                                                                                                                   | `0001_index.sql`                                 |
 | `items`                | `id`, `app`, `kind`, `owner_id`, `team_id`, `scope`, `folder_id`, `title`, `source`, `intent`, `summary`, `created_at`, `updated_at`, `trashed_at`, `trash_reason`, `empty_swept_for`                                                                                   | `0001_index.sql`                                 |
 | `opens`                | `person_id`, `item_id`, `last_opened_at`, `hidden`                                                                                                                                                                                                                      | `0001_index.sql`                                 |
