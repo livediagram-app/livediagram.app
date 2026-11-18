@@ -18,6 +18,7 @@ let animations: {
   keyframes: Keyframe[];
   options: KeyframeAnimationOptions;
   cancel: () => void;
+  startTime?: number | null;
 }[] = [];
 
 function rectOf(el: Element): DOMRect {
@@ -213,6 +214,21 @@ describe('playStripMorph', () => {
       expect(animations.find((a) => a.el === el)!.keyframes[0]!.transform).toBe('translateX(50px)');
     const pill = animations.find((a) => a.el === next.pill)!;
     expect(pill.keyframes.map((k) => k.transform)).toEqual(['translateX(0%)', 'translateX(100%)']);
+  });
+
+  it('starts every part on one clock, so the toggle never drifts off the bar', () => {
+    Object.defineProperty(document, 'timeline', {
+      configurable: true,
+      value: { currentTime: 1234 },
+    });
+    try {
+      play('walk');
+      fire();
+      expect(animations.length).toBeGreaterThan(3);
+      expect(animations.every((a) => a.startTime === 1234)).toBe(true);
+    } finally {
+      delete (document as { timeline?: unknown }).timeline;
+    }
   });
 
   it('fades the old contents out to the left and slides the new ones in from the right on Walk', () => {

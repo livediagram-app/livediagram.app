@@ -18,6 +18,7 @@
 import { defaultTabName } from '@livediagram/document';
 import {
   normalizeFolderOrder,
+  opensInOf,
   tabFolderName,
   truncateName,
   type EditorMode,
@@ -111,14 +112,15 @@ export function useTabActions(deps: TabActionsDeps) {
     // Skips the look when the active tab can't be resolved (mid-mount, or removed in another
     // window), falling back to brand defaults the same way Tab 1 does.
     const seed = newTabSeed(tabs.find((t) => t.id === activeId));
-    // A new tab opens on its mode's own start (Start Diagramming, Start Drawing...) (newTabOpening).
-    const opening = newTabOpening(deps.editorMode, mode);
-    const tab: Tab = {
-      ...createTab(defaultTabName(tabs.length + 1)),
-      ...seed,
-      ...(opening.opensIn ? { opensIn: opening.opensIn } : {}),
-    };
-    commitTabs((ts) => [...ts, tab]);
+    const tab: Tab = { ...createTab(defaultTabName(tabs.length + 1)), ...seed };
+    // A new tab opens on its mode's own start (Start Drawing...) in its maker's mode (newTabOpening), read from the
+    // tabs this commit lands on rather than this render's: a switch still landing (the start's runs as a transition)
+    // is already in them, so + pressed straight after a switch follows it (editor-modes.md).
+    commitTabs((ts) => {
+      const maker = ts.find((t) => t.id === activeId);
+      const opening = newTabOpening(maker ? opensInOf(maker) : deps.editorMode, mode);
+      return [...ts, opening.opensIn ? { ...tab, opensIn: opening.opensIn } : tab];
+    });
     markTabLoaded(tab.id);
     track('Tab', 'Created');
     setActiveId(tab.id);

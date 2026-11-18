@@ -10,6 +10,7 @@ import type { ReactNode } from 'react';
 import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
 import { type Element } from '@livehuddle/document';
 import { requestToolbarSearch } from '@liveworkspace/workbench/lib/toolbar-search-request';
+import { PACKED_TOOLBAR_ITEMS } from '@liveworkspace/workbench/components/chrome/phone-toolbar-items';
 
 const mobile = vi.hoisted(() => ({ value: false }));
 // The window's width.
@@ -131,6 +132,17 @@ describe('ToolbarPalette', () => {
     fireEvent.click(within(openFlyout('Seats')).getByRole('button', { name: 'Add Chair' }));
     expect(h.onAddShape).toHaveBeenCalledWith('chair', expect.anything());
     expect(flyout()).toBeNull();
+  });
+
+  // docs/specs/004-interface-design/touch-targets.md "touch-target-packed": the card packs its tiles' 44 x 44 touch pads
+  // behind them, which needs the card's own stacking context, so a category's flyout hangs beside the card, never in it.
+  it('packs the card’s touch pads, and hangs a category’s flyout outside the card', () => {
+    show();
+    const card = document.querySelector<HTMLElement>(
+      '[data-toolbar-palette] [data-tour-id="palette"]',
+    )!;
+    for (const cls of PACKED_TOOLBAR_ITEMS.split(' ')) expect(card.classList).toContain(cls);
+    expect(card.contains(openFlyout('Seats'))).toBe(false);
   });
 
   // docs/specs/010-palette/palette-top-level-categories.md "Rooms opens on Build".
