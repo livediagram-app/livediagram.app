@@ -24,7 +24,7 @@ The dialog lists its categories down the left, with a **Search settings** field 
   <SettingsDialogScene noun="design" />
 </Figure>
 
-Only a guest sees **sub-categories**: Account holds Notifications and API Tokens, which are categories of their own once you sign in. Everything else in a category is in its sections, so nothing is hidden behind another level. On a computer, click Account (or its arrow) to show them beneath it, and again to fold them away. On a phone, tap Account and they are listed at the bottom of its page.
+Only a guest sees **sub-categories**: Account holds Notifications, API Tokens and Your Data, which are categories of their own once you sign in. Everything else in a category is in its sections, so nothing is hidden behind another level. On a computer, click Account (or its arrow) to show them beneath it, and again to fold them away. On a phone, tap Account and they are listed at the bottom of its page.
 
 Each category groups its settings into cards, one card per section, with a short line under each setting saying what it does. A setting that only matters while another is on (a panel's own options under its switch) sits indented beneath it, and shows only while that switch is on.
 
@@ -54,7 +54,7 @@ Under **Logo Pages**:
 ## Appearance
 
 - **Theme**: **Light**, **Dark** or **System**, which follows your device. This is the editor's own chrome, not a tab's [theme](/help/canvas/themes/), although a tab on the Default theme follows it. The same control sits in the bottom bar. Saved on this device only (see below). See [Dark Mode](/help/tools/dark-mode/).
-- **Button Labels**: names the buttons along the bottom (such as **Search**, **Settings** and **Style**) beside their icons, on a screen wide enough for them. On by default; turn it off for icons alone. A phone always shows icons alone.
+- **Button Labels**: names the buttons along the bottom (such as **Get Started**, **Tools** and **Settings**) beside their icons, on a screen wide enough for them. On by default; turn it off for icons alone. A phone always shows icons alone.
 - **UI Scale**: makes the panels, the toolbar and the buttons in the bottom-right corner (zoom, undo and redo) bigger or smaller, from 80% to 120%, with 100% in the middle of the slider. The canvas, dialogs and menus stay as they are, so it is not the same as your browser's zoom. Beneath it, **Panel Scale**, **Toolbar Scale** and **Corner Buttons Scale** size each of those on its own (**Toolbar Scale** goes up to 140%); moving **UI Scale** again sets all three back to the same size. The chrome resizes as you drag. Desktop only: a phone always uses 100%.
 
 ## Keyboard
@@ -69,8 +69,8 @@ Under **Logo Pages**:
 Below it, **Panels** has a section per panel, in the order below. Each starts with a switch that turns its panel on or off; the panel's other settings show beneath it only while it is on.
 
 - **Quick Style**: **Enable Quick Style Bar**, the bar of common styles that shows beside the page's title bar for a selected shape or arrow, or a marker in hand. With it off, every style is still in the element's right-click menu. See [Quick Style Bar](/help/canvas/quick-style-panel/).
-- **Map**: **Enable Map** (the small overview of the whole tab in the bottom-left corner, once a tab has a few elements), **Dim Outside the View**, and **Map Size** (**Short**, **Medium** or **Tall**). Desktop only. See [Map](/help/user-interface/minimap/).
-- **Collaborate**: **Enable Collaborate Panel**, the list of a tab's comment threads and actions. It only appears while the tab has a comment or an action. With it off, comments and actions still work from the elements. See [Comments](/help/collaboration/comments/).
+- **Map**: **Enable Map**, **Dim Outside the View**, and **Map Size** (**Short**, **Medium** or **Tall**). Desktop only. The Map is an overview for a canvas without pages, and every livedesign tab is made of pages, which [Contents](/help/pages/working-with-pages/) lists instead, so these settings change nothing you see here.
+- **Collaborate**: **Enable Collaborate Panel**, the list of a tab's comment threads and actions. It only appears while the tab has a comment or an action. With it off, comments and actions still work from the elements. See [Comments](/help/collaboration/comments/). Beneath it, **Hide Participant Cursors** stops drawing other people's cursors and names on your screen; their avatars and Follow stay. Saved on this device only.
 
 ## Accessibility
 
@@ -78,9 +78,9 @@ Below it, **Panels** has a section per panel, in the order below. Each starts wi
 
 ## Getting Started
 
-The Pages tour has one tour for each kind of page: **Pages Tours** switches them all at once, with **Wireframe Tour**, **Logo Tour** and **Photo Tour** beneath it. Tours never start on their own: you start one from Start Pages Tour in the bar at the bottom of the editor, just left of **Search**, until you've taken every kind of page on the tab, when the button makes room for other tours. A switch here turns itself off once you've finished or skipped that tour. Switch one back on and close Settings while you're in Pages, and the tour starts straight away. See [The Pages Tour](/help/pages/pages-tour/).
+The Pages tour has one tour for each kind of page: **Pages Tours** switches them all at once, with **Wireframe Tour**, **Logo Tour** and **Photo Tour** beneath it. Tours never start on their own: you start one from **Get Started** in the bar at the bottom of the editor, just left of **Tools**, which lists the tours on offer. A switch here turns itself off once you've started, finished or skipped that tour. Switch one back on and close Settings while you're in Pages, and the tour starts straight away. See [The Pages Tour](/help/pages/pages-tour/).
 
-Below them, **Show Me** is closed until you open it, and says how many are on. Some elements, such as the [Sankey Diagram](/help/palette/concept-graphics/sankey-diagram/), have a tour of their own: select one and the button at the bottom reads Start Sankey Tour (or that element's name). **Show Me on Every Element** switches them all; beneath it, one switch per element (such as **Sankey Diagram**, **Timeline** and **Stack**) shows whether you've taken that one. Once you've taken one, it leaves the button until you switch it back on here.
+Below them, **Show Me** is closed until you open it, and says how many are on. Some elements, such as the [Sankey Diagram](/help/palette/concept-graphics/sankey-diagram/), have a tour of their own: select one and **Get Started** offers its tour. **Show Me on Every Element** switches them all; beneath it, one switch per element (such as **Sankey Diagram**, **Timeline** and **Stack**) shows whether you've taken that one. Once you've taken one, it leaves the button until you switch it back on here.
 
 ## Explorer
 
@@ -103,7 +103,7 @@ Once called **Designs**.
 
 - **API Tokens** is where you make, see and revoke the tokens your own scripts and connected AI tools use to call livedesign as you, right here in Settings: name a token (switch on **Read-only** if it only needs to look), copy its secret while it is shown (only once), and revoke one with **Revoke**. The same tokens show in every liveworkspace app's Settings and on liveworkspace.app. Below them, the workbenches paired with your tokens are listed, each with **Unpair**. Signed-in only, and absent on a deployment without accounts. See [API Tokens](/help/account-and-data/api-tokens/).
 
-Signed in, the list has an **Account** heading over **Profile** (in Account's place), Notifications, Privacy, Accessibility and **Your Data**, where you download everything you own, and each team's you run, as one zip, and a **Developers** heading over API Tokens alone. Webhooks, which post what happens to your work to Slack, Microsoft Teams or a service you run, are set per document: open the document's ⋯ menu in the Explorer and choose **Webhooks**. With your profile are your **Time Zone** (when the emails that can wait arrive; **Automatic** follows your browser), your **Sign-in Methods** (**Email Code**, always on, and **Google**, which you can **Connect**) and **Where You’re Signed In**, each browser you are signed in on, with **Sign Out** for one and **Sign Out Others** for the rest. These are the same as in liveworkspace.app's Settings, right here.
+Signed in, the list has an **Account** heading over **Profile** (in Account's place), Notifications, Privacy, Accessibility and **Your Data**, where you download everything you own, and each team's you run, as one zip, and a **Developers** heading over API Tokens alone. Webhooks, which post what happens to your work to Slack, Microsoft Teams or a service you run, are set per design: choose **Webhooks** in **Tools** in the editor's bottom bar, or on the design's ⋯ menu in the Explorer. With your profile are your **Time Zone** (when the emails that can wait arrive; **Automatic** follows your browser), your **Sign-in Methods** (**Email Code**, always on, and **Google**, which you can **Connect**) and **Where You’re Signed In**, each browser you are signed in on, with **Sign Out** for one and **Sign Out Others** for the rest. These are the same as in liveworkspace.app's Settings, right here.
 
 Anywhere Settings says something needs an account, it ends with a **Sign In** link that brings you back to where you were.
 
@@ -119,6 +119,7 @@ A few things deliberately stay on the device you are using:
 
 - **Theme** (light, dark or system) in **Appearance**.
 - The **Keyboard Shortcuts** switch, so you can keep shortcuts on where you have a full keyboard and off where you don't.
+- **Hide Participant Cursors** in **Panels**.
 - **Panel positions**: which corner each panel docks into.
 - **Explorer view**: List, Card or Details.
 - **Tool settings**: the laser's pen and the spotlight.

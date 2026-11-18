@@ -11,18 +11,18 @@ import {
 export const metadata = helpMetadata({
   title: 'Request Approval',
   description:
-    'Ask named people to approve a design, approve it or request changes, and read the badge that says where it stands.',
+    'Ask named people to approve a design, approve it or request changes, and see where the request stands.',
   path: '/help/collaboration/sharing/request-approval/',
 });
 
 <ArticleLayout title="Request Approval" description="Ask named people to sign off on a design, and see where their answers stand." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Sharing and Embeds", slug: "sharing" }} subArticles={getSubArticles("sharing").filter((a) => a.slug !== "request-approval")}>
 
-Some designs need a sign-off: a decision record, a policy, a design review. **Request Approval** asks the people you name to approve a design, each answering **Approve** or **Request Changes**. The design wears a badge saying where it stands, and keeps saying so after it is approved.
+Some designs need a sign-off: a decision record, a policy, a design review. **Request Approval** asks the people you name to approve a design, each answering **Approve** or **Request Changes**. The Share dialog's **Approval** tab says where it stands, and keeps saying so after it is approved.
 
 ## Asking for approval
 
 <Step n={1}>
-  Open the **Share** dialog on the design and choose its **Approval** tab, beside **Passes**.
+  Open the **Share** dialog on the design and choose its **Approval** tab, the last of its tabs.
 </Step>
 <Step n={2}>
   Tick the people who should approve it under **Approvers**. The list holds your team's members,
@@ -32,7 +32,7 @@ Some designs need a sign-off: a decision record, a policy, a design review. **Re
 </Step>
 <Step n={3}>
   Add a **Note** about what to look at, and a **Due** day if you hope for an answer by then. The due
-  day is shown, never enforced: when it passes, the badge and the banner say **Overdue**.
+  day is shown, never enforced: when it passes, the banner and the Approval tab say **Overdue**.
 </Step>
 <Step n={4}>
   Tick **Save this version as a snapshot** to keep the design as it is now, then press **Request
@@ -63,18 +63,18 @@ Once they have answered, the banner says so ("You approved this. Waiting on 2 mo
 
 When the last approver approves, the banner says "Everyone has approved." and the request closes.
 
-## What the badge says
+## Where it stands
 
-The badge sits in the header after your role, from small screens up. It is there for everyone who can open the design, and for an Editor of the whole design it opens the Approval tab. Hover it to see who asked, the due day and who has and hasn't answered.
+The **Approval** tab shows the request's state at the top, with who asked and when, and the due day. It is there for an Editor of the whole design.
 
-<Figure caption="The four badge states.">
+<Figure caption="The four states a request can be in.">
   <ApprovalBadges />
 </Figure>
 
 - **Awaiting 1 of 3**: waiting on answers; the numbers say how many have approved.
 - **Changes Requested**: at least one approver asked for changes.
 - **Approved**: everyone approved and the design has not changed since.
-- **Changed Since Approval**: the design was saved after it was approved. The badge can take **up to a minute** to turn after the first save, because an edit reaches the badge when the editor next reports its changes, at most once a minute. A rename, a move or a share does not count as a change.
+- **Changed Since Approval**: the design was saved after it was approved. This can take **up to a minute** to show after the first save, because an edit is reported at most once a minute. A rename, a move or a share does not count as a change.
 
 The page reads the approval when you open the design, again when you return to the browser tab (at most every 30 seconds) and after your own changes. Someone else's answer shows on the next read; nothing is pushed live.
 
@@ -88,13 +88,12 @@ With a request open, the Approval tab lists each approver with their answer (**A
 
 ## History and the audit log
 
-Every step is written to the design's **History** under its **Approvals** filter: Approval Requested, Approved (Approved by everyone on the last one), Changes Requested, and Approval Cancelled (Approval Asked Again when a new request replaced it), each with the note beneath. Open it from the design's menu in the Explorer; it covers the last 30 days. On a team's design, the same events are copied to the team's [Audit Log](/help/collaboration/teams/audit-log/), kept for a year, so who asked whom and who approved is a record the team can look back on.
+Every step is written to the design's **History**: Approval Requested, Approved (Approved by everyone on the last one), Changes Requested, and Approval Cancelled (Approval Asked Again when a new request replaced it), each with the note beneath. Open it from **Tools** in the editor's footer, or from the design's menu in the Explorer; it covers the last 30 days. On a team's design, the same events are copied to the team's [Audit Log](/help/collaboration/teams/audit-log/), kept for a year, so who asked whom and who approved is a record the team can look back on.
 
 ## Who can do what
 
-- **Editors of the whole design** ask, cancel and see the badge.
+- **Editors of the whole design** ask, cancel and see where it stands on the Approval tab.
 - **Named approvers** approve or request changes, whatever their level: Editor, Participant or Viewer.
-- **Everyone else who can open the design** sees the badge only.
 - Guests, Community visitors, embeds, designs in This Browser, and AI assistants or scripts using an API token see no approval.
 
 </ArticleLayout>

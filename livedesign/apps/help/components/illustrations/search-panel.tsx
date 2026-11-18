@@ -8,7 +8,6 @@ import {
   AddIcon,
   CommandIcon,
   ElementIcon,
-  FolderIcon,
   HelpIcon,
   SearchOverlay,
   SharedIcon,
@@ -72,7 +71,7 @@ export function SearchOverview() {
   );
 }
 
-/** Results limited to designs, folders, and shared designs. */
+/** The editor's results: your designs, then a shared design under Every App. */
 export function SearchDesigns() {
   return (
     <SearchOverlay
@@ -83,31 +82,27 @@ export function SearchDesigns() {
           rows: [{ icon: <DesignIcon />, label: 'Onboarding flow', active: true }],
         },
         {
-          title: 'Shared with You',
-          rows: [{ icon: <SharedIcon />, label: 'Onboarding v2' }],
-        },
-        {
-          title: 'My Work',
-          rows: [{ icon: <FolderIcon />, label: 'Onboarding' }],
+          title: 'Every App',
+          rows: [{ icon: <SharedIcon />, label: 'Onboarding v2', meta: 'livedesign' }],
         },
       ]}
     />
   );
 }
 
-/** Results showing teams plus their shared folders and designs. */
+/** The editor's results: a team by name, and one of its designs among your designs. */
 export function SearchTeams() {
   return (
     <SearchOverlay
       query="platform"
       groups={[
         {
+          title: 'Designs',
+          rows: [{ icon: <DesignIcon />, label: 'Platform overview' }],
+        },
+        {
           title: 'Teams',
-          rows: [
-            { icon: <TeamIcon />, label: 'Platform team', active: true },
-            { icon: <FolderIcon />, label: 'Architecture / Services', meta: 'in Platform team' },
-            { icon: <DesignIcon />, label: 'Platform overview', meta: 'in Platform team' },
-          ],
+          rows: [{ icon: <TeamIcon />, label: 'Platform team', active: true }],
         },
       ]}
     />

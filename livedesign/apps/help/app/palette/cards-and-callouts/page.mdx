@@ -1,7 +1,10 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { CardAnatomy, AccentEdges } from '@liveworkspace/help-site/art/illustrations/palette-diagram-elements';
+import {
+  CardAnatomy,
+  AccentEdges,
+} from '@liveworkspace/help-site/art/illustrations/palette-diagram-elements';
 
 export const metadata = helpMetadata({
   title: 'Cards and Callouts',
@@ -20,7 +23,7 @@ export const metadata = helpMetadata({
 
 A **Card** is a single block with slots: a title, a muted meta line, a body, an icon and a row of tags. Use it wherever a node has more to say than its name: a service with what it runs on, a persona with their role, a feature with its status.
 
-It sits in the palette's [Components](/help/palette/components/) category, or in **Elements** on a wireframe page. A new card shows every slot filled in, so you can see what each one is and switch off the ones you don't need.
+It sits in the palette's [Components](/help/palette/components/) category, or in **Elements** on a wireframe page. Its tile opens six presets to start from: **Service** (an icon, a title and meta line, a body and tags), **Compact** (an icon with a title and meta line on one row), **Panel** (a header band with a badge), **Person** (an initial, a name and role), **Accent** (a coloured edge) and **Callout**. Each is an ordinary card, so you can switch any slot on or off afterwards.
 
 <Figure caption="A card with a tile and tags, one with a header band and a badge, and the Callout preset.">
   <CardAnatomy />
@@ -38,7 +41,7 @@ From the top:
 
 Select a card, then click its title, meta line or a tag to type in place. Enter keeps the change and Escape puts it back.
 
-Right-click and open the **Card** section to switch **Header Band**, **Title** and **Meta Line** on or off, pick the **Media**, and add, reorder or remove tags. **Add Tag** is also on the ring round a selected card.
+Right-click and open **Tools**, then **Card**, to switch **Header Band**, **Title** and **Meta Line** on or off and pick the **Media**. The **Tags** section beside it adds, reorders and removes tags. **Add Tag** is also on the ring round a selected card.
 
 Everything else is an ordinary element: resize it and the text re-wraps, recolour it from **Colours**, connect arrows to it, and animate it like any shape.
 
@@ -48,13 +51,19 @@ The **Callout** tile places a card with a badge, a heading and a body: a soft no
 
 ## Accent edge
 
-Any card, rectangle, stadium or mind-map node can carry an **accent edge**: a coloured strip down its left side, or across its top or bottom. Use it to colour-code nodes by team or status without filling the whole box.
+Any card, square or stadium can carry an **accent edge**: a coloured strip down its left side, or across its top or bottom. Use it to colour-code nodes by team or status without filling the whole box.
 
 <Figure caption="An accent edge on the left, the top and the bottom.">
   <AccentEdges />
 </Figure>
 
-Right-click, open **Border** and pick the side under **Accent Edge**. **Edge Colour** sets its colour, and **Match Border** makes it the border's own colour again. The format painter copies it along with the border.
+Right-click, open **Appearance**, then **Border**, and pick the side under **Accent Edge**. **Edge Colour** sets its colour, and **Match Border** makes it the border's own colour again. The format painter copies it along with the border.
+
+## Colour by tag
+
+Give a tag a colour once and every card on the tab carrying that tag follows it: the tag's chip is tinted, and the card draws an accent edge in that colour (on the left, unless it has an edge side of its own). Retag a card and its colour follows; change a tag's colour and every card with it changes.
+
+Right-click a card with tags, open **Tools**, then **Card**, and pick a colour for any of its tags under **Tag Colours**. **Clear** beside it removes the colour. A card takes the colour of its first coloured tag, and a card with its own **Edge Colour** keeps it. A tab holds colours for up to 12 tags, and tags match whatever their capitals.
 
 <Tip>
   For a node with a name and one quiet line under it, you don't need a card: type both lines in a

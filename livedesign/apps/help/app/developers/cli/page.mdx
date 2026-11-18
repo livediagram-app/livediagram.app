@@ -112,13 +112,13 @@ livedesign design ls auth                  # designs whose name contains "auth"
 livedesign tab ls "Auth flow"                # the design's tabs
 livedesign tab view "Auth flow"              # the first tab, as an outline
 livedesign tab view "Auth flow" --tab Flow --view graph
-livedesign tab lint "Auth flow"              # what is wrong with how it is drawn
+livedesign tab lint "Auth flow"              # text that does not fit where it is drawn
 livedesign tab render "Auth flow" --png auth.png
 ```
 
 `design ls` covers your personal library and every team you have joined, newest first. Wherever a command takes a design, you can give its **name**, the start of its **id**, or a pasted **livedesign link**; a share link acts through that link. A name that matches more than one design is refused with the candidates, rather than guessed. `--tab` takes a tab name or the start of its id, and the first tab is used when you leave it out.
 
-`tab view` reads a tab as text, the outline by default; `--view` picks `graph`, `layout`, `comments`, `show` (one element, with `--ref`) or `find` (with `--text`), and `--budget` fits it to about that many tokens. `tab render` writes a PNG or SVG preview and prints its path and size, never image bytes.
+`tab view` reads a tab as text, the outline by default; `--view` picks `graph`, `layout`, `comments`, `show` (one element, with `--ref`), `find` (with `--text`) or `pages`, and `--budget` fits it to about that many tokens. `tab render` writes a PNG or SVG preview and prints its path and size, never image bytes.
 
 A few commands read livedesign's catalogues rather than your designs, which helps before writing anything:
 
@@ -139,9 +139,13 @@ livedesign edit "Auth flow" -f ops.txt                     # many edit operation
 livedesign changeset revert "Auth flow" cs_8k2m4q7d1x
 livedesign tab add "Auth flow" Details -f detail.json      # a new tab, empty, from a file or --template
 livedesign tab rm "Auth flow" Scratch                      # delete one tab; the others stay
+livedesign design rename "Auth flow" "Sign-in flow"
+livedesign design share "Auth flow" --role edit --expiry week
 ```
 
 Every change is **one changeset**, applied all or nothing and checked against the version of the tab you last read, so the CLI never silently overwrites someone else's work. Each write prints what changed, the new revision, a lint summary and the command that reverts it. Add `--dry-run` to see the plan without writing anything, and `--summary` to say what the change is for. `livedesign guide edit` explains how edit operations read.
+
+`design share` makes a share link: `view` unless you give `--role participate` or `--role edit`, and lasting for ever unless you give `--expiry week`, `month` or `sixMonths`.
 
 `design rm` moves a design to the [Trash](/help/account-and-data/trash/) for 30 days, and `design restore` brings it back to its folder (or the top level, when that folder is gone); the CLI has no permanent delete. `design archive` puts a design you own away in Archived, out of every list with its share links ended, and `design unarchive` moves it back, to the top of My Work or the folder (`--folder`) or team (`--team`) you name; `design ls --archived` lists what is there.
 
@@ -166,6 +170,29 @@ livedesign page set "Brand kit" --add logo --layout logo-icon-above  # add, lay 
 ```
 
 `page set` makes one change from its flags, or up to 50 from a JSON list with `--changes`.
+
+## Components and Images
+
+A design's components (a main, and instances of it that redraw when it changes) have commands of their own:
+
+```bash
+livedesign component ls "Shop"                                  # each main and the elements an instance overrides
+livedesign component make "Shop" logo menu cart --name "Nav bar"  # these elements become a main, and one instance takes their place
+livedesign component set "Shop" "Nav bar" --name "Top bar"      # rename, --archived, --restore, or --patch a JSON file
+livedesign element detach "Shop" nav-bar                        # an instance back into plain elements
+```
+
+`component make` takes up to 200 elements, but no image, video, link card or locked element. An instance is placed with an ordinary `element add instance componentId=<main>`.
+
+The image gallery your designs draw from:
+
+```bash
+livedesign image ls                                    # your pictures: id, pixels, size, name
+livedesign image add chart.png                         # a PNG, JPEG, WebP or GIF up to 10 MB, or a public https URL
+livedesign image rm 3f9c2a1e                           # kept, and named where it is used, unless --force
+```
+
+`image add` prints the id an image element's `imageId` takes. Uploading the same picture again gives back the one you already have. There is no Trash for pictures.
 
 ## Files, Exports and Pictures
 
