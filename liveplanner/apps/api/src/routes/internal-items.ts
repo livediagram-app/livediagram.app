@@ -124,7 +124,8 @@ export function handleInternalItems(
       copy: async (from, to, tabId, copier, title) => {
         // The source as the copier may take it; through the plan's Community post's link, without its comments, its
         // people or its form responses' answers (community-redact.ts).
-        const source = await planRoom(env, from).exportCopy(tabId, copier);
+        // The source vouches for the copy's pictures until the copy's own report lands (copy-image-claims.ts).
+        const source = await planRoom(env, from).exportCopy(tabId, copier, to);
         // No such plan, or no such tab in it.
         if (!source || (tabId && source.copy.tabs.length === 0)) return 'not_found';
         const { copy } = source;

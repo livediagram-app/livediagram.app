@@ -23,6 +23,7 @@ import type { PlanEnv } from '../types';
 import { ruleWithTabIds, type AutomationRule } from '@liveplanner/items';
 import { copiedRuleStatements, copiedRules } from './automations/automation-copy';
 import { copiedGrantsStatement, copiedImageGrants } from './image-grants';
+import { UNCONFIRMED_REFS } from './copy-image-claims';
 
 // ---------- Copies --------------------------------------------------------------------------------------------
 
@@ -398,6 +399,17 @@ export async function importPlanCopy(
         .bind(planId, chunk),
     );
   }
+  // A copy holding pictures owes its first report (copy-image-claims.ts): until it lands its source vouches for it,
+  // and a value no real set equals makes it send even an empty one, which confirms the source's word.
+  stmts.push(
+    db
+      .prepare(
+        `INSERT INTO media_refs (plan_id, images)
+         SELECT ?1, ?2 WHERE EXISTS (SELECT 1 FROM outbox WHERE plan_id = ?1 AND kind = 'images')
+         ON CONFLICT (plan_id) DO NOTHING`,
+      )
+      .bind(planId, UNCONFIRMED_REFS),
+  );
   // Its threads, after the cards they are on.
   stmts.push(...copiedThreadStatements(env, planId, copy.threads ?? []));
   stmts.push(...copiedRuleStatements(env, copy.automations ?? []));

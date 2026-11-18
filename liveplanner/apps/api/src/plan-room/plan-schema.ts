@@ -22,6 +22,7 @@ import { CARD_REPEATS_SCHEMA } from './card-repeats-schema';
 import { CARD_THREADS_SCHEMA } from './card-thread-schema';
 import { IMAGE_REFS_SCHEMA } from './image-refs';
 import { IMAGE_RELEASES_SCHEMA } from './image-release';
+import { COPY_IMAGE_CLAIMS_SCHEMA } from './copy-image-claims';
 import { FLOW_COUNTS_SCHEMA } from './flow-counts-schema';
 import { itemsBytesStep } from './items-bytes-schema';
 import { ITEM_HISTORY_SCHEMA } from './item-history-schema';
@@ -575,6 +576,10 @@ const V35 = IMAGE_RELEASES_SCHEMA;
 // Calendar feeds by card type (../calendar/feed-store.ts; docs/specs/026-plan/calendar-feed.md "What it shows").
 const V36 = addCalendarFeedTypes;
 
+// A copy's pictures, noted until the media service has taken them as the copy's unconfirmed references
+// (copy-image-claims.ts; docs/specs/026-plan/items.md "Images in use").
+const V37 = COPY_IMAGE_CLAIMS_SCHEMA;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -612,6 +617,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V34,
   V35,
   V36,
+  V37,
 ];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;

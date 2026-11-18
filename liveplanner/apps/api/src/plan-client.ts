@@ -77,7 +77,13 @@ export type PlanRoomClient = {
   grantedImages(imageIds: readonly string[]): Promise<string[]>;
   // A copy's two halves (plan-content.ts): the source as `copier` may take it (anyone but the owner takes the
   // comments without other people's author ids), and whether it went through the plan's open Community post's link.
-  exportCopy(onlyTabId: string | null, copier: Copier | null): Promise<CopySource | null>;
+  // `copyId` is the plan the copy lands in, whose pictures this plan vouches for until its own report lands
+  // (plan-room/copy-image-claims.ts).
+  exportCopy(
+    onlyTabId: string | null,
+    copier: Copier | null,
+    copyId?: string | null,
+  ): Promise<CopySource | null>;
   importCopy(copy: PlanCopy): Promise<void>;
   // An old livediagram.app document's part, written with its own times (the migration door, docs/migration.md).
   importMigrated(payload: MigrationRoomPayload): Promise<MigrationDoorAnswer>;
@@ -150,7 +156,8 @@ export function planRoom(env: Pick<Env, 'PLAN_ROOM'>, planId: string): PlanRoomC
     grantImage: (imageId) => room.grantImage(planId, imageId),
     servesImage: (imageId, tabScope) => room.servesImage(planId, imageId, tabScope),
     grantedImages: (imageIds) => room.grantedImages(planId, imageIds),
-    exportCopy: (onlyTabId, copier) => room.exportCopy(planId, onlyTabId, copier),
+    exportCopy: (onlyTabId, copier, copyId) =>
+      room.exportCopy(planId, onlyTabId, copier, copyId ?? null),
     importCopy: (copy) => room.importCopy(planId, copy),
     importMigrated: (payload) => room.importMigrated(planId, payload),
     purge: () => room.purge(planId),
@@ -205,6 +212,7 @@ export type PlanRoomRpc = {
     planId: string,
     onlyTabId: string | null,
     copier: Copier | null,
+    copyId?: string | null,
   ): Promise<CopySource | null>;
   importCopy(planId: string, copy: PlanCopy): Promise<void>;
   importMigrated(planId: string, payload: MigrationRoomPayload): Promise<MigrationDoorAnswer>;

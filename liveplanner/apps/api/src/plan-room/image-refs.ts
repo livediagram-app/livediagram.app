@@ -131,15 +131,22 @@ export async function pushImageRefs(env: PlanEnv, planId: string): Promise<boole
   return true;
 }
 
-// A purged plan holds nothing: the service is told so, when it was ever told the plan held something. `images` is
-// what was last sent (read before the purge drops the table). Without the service there is nobody to tell.
+// A purged plan holds nothing: the service is told so, when it was ever told the plan held something, or a copy's
+// first report was still owed (copy-image-claims.ts UNCONFIRMED_REFS). `images` is what was last sent (read before
+// the purge drops the table). `claims` are the copies it vouched for whose notes were not sent yet: they go with it, so
+// a copy keeps its pictures after its source is gone. Without the service there is nobody to tell.
 export async function forgetImageRefs(
   env: Pick<PlanEnv, 'MEDIA_KEY' | 'MEDIA_URL'>,
   planId: string,
   images: string | null,
+  claims: readonly { document: string; images: string[] }[] = [],
 ): Promise<void> {
   const media = mediaClient(env);
-  if (!media || images === null || images === '[]') return;
-  const sent = await media.syncRefs({ documents: [{ document: planId, images: [] }] });
+  const told = images !== null && images !== '[]';
+  if (!media || (!told && claims.length === 0)) return;
+  const sent = await media.syncRefs({
+    documents: told ? [{ document: planId, images: [] }] : [],
+    ...(claims.length > 0 ? { pending: claims.slice(0, MEDIA_REFS_SYNC_MAX - 1) } : {}),
+  });
   if (!sent.ok) throw new Error(`media refs sync failed: ${sent.status}`);
 }
