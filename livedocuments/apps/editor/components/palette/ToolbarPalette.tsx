@@ -8,7 +8,7 @@ import { atLeastInset, safeInlinePadding } from '@livedocuments/ui';
 import { LANDSCAPE_HANDLE_ROOM } from '@/components/chrome/LandscapeBars';
 import { track } from '@/lib/telemetry';
 import { SnapWidth } from '@liveworkspace/workbench/components/primitives/SnapWidth';
-import { PHONE_TOOLBAR_ITEMS } from '@liveworkspace/workbench/components/chrome/phone-toolbar-items';
+import { PACKED_TOOLBAR_ITEMS } from '@liveworkspace/workbench/components/chrome/phone-toolbar-items';
 import { TOOLBAR_CARD } from '@liveworkspace/workbench/components/chrome/toolbar-surface';
 import { PaletteTintProvider } from './palette-controls';
 import { PaletteGroupProvider } from '@liveworkspace/workbench/components/palette/palette-group-state';
@@ -72,8 +72,11 @@ type Props = Pick<
     // The tab's pages in Pages mode, whose kind is the palette's (lib/palette-kind.ts).
     tabPages?: readonly Pick<Page, 'kind'>[] | null;
   };
-// The strip's card, and the leading card beside it on a phone.
-const CARD_CLASS = `${TOOLBAR_CARD} ${PHONE_TOOLBAR_ITEMS}`;
+// The strip's card, and the leading card beside it on a phone. Its 36px items are packed 2px apart, so on a touch
+// screen each gets a full 44 x 44 pad behind it and a tap in a gap still picks a tile (PACKED_TOOLBAR_ITEMS,
+// docs/specs/004-interface-design/touch-targets.md); the category flyouts hang beside the card, not in it, so the
+// card's own stacking context traps none of them.
+const CARD_CLASS = `${TOOLBAR_CARD} ${PACKED_TOOLBAR_ITEMS}`;
 
 // On a phone's row, the menu card sits at the left gutter and the strip beside
 // it rather than centred (docs/specs/007-editor/toolbar-layout.md "On a phone");

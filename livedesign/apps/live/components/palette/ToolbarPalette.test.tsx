@@ -10,6 +10,7 @@ import type { Element } from '@livedesign/design';
 import type { ReactNode } from 'react';
 import { EditorModeProvider } from '@/components/chrome/editor-mode/editor-mode-context';
 import { requestToolbarSearch } from '@liveworkspace/workbench/lib/toolbar-search-request';
+import { PACKED_TOOLBAR_ITEMS } from '@liveworkspace/workbench/components/chrome/phone-toolbar-items';
 
 const mobile = vi.hoisted(() => ({ value: false }));
 // The window's width.
@@ -129,6 +130,17 @@ describe('ToolbarPalette', () => {
     fireEvent.click(within(openFlyout('Shapes')).getByRole('button', { name: 'Add Square' }));
     expect(h.onAddShape).toHaveBeenCalledWith('square', expect.anything());
     expect(flyout()).toBeNull();
+  });
+
+  // docs/specs/004-interface-design/touch-targets.md "touch-target-packed": the card packs its tiles' 44 x 44 touch pads
+  // behind them, which needs the card's own stacking context, so a category's flyout hangs beside the card, never in it.
+  it('packs the card’s touch pads, and hangs a category’s flyout outside the card', () => {
+    show();
+    const card = document.querySelector<HTMLElement>(
+      '[data-toolbar-palette] [data-tour-id="palette"]',
+    )!;
+    for (const cls of PACKED_TOOLBAR_ITEMS.split(' ')) expect(card.classList).toContain(cls);
+    expect(card.contains(openFlyout('Shapes'))).toBe(false);
   });
 
   // docs/specs/007-editor/toolbar-layout.md "On a phone": held sideways the row has no menu card, and the strip

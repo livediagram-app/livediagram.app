@@ -181,7 +181,14 @@ export function ToolbarStripRail({
       }${animate ? ' transition-[width] duration-short ease-out' : ''}`}
       style={{ width: width ?? undefined }}
     >
-      <div key={railKey} ref={contentRef} className="flex w-max items-center gap-0.5 px-[3px]">
+      {/* Its own stacking context (`isolate`): on a touch screen a packed card's tiles draw their 44px pads behind
+          themselves (PACKED_TOOLBAR_ITEMS), and this row's box spans the 2px gaps between them, so without it the
+          row, not a pad, took a tap in a gap. Inside it the pads sit over the row and under every tile. */}
+      <div
+        key={railKey}
+        ref={contentRef}
+        className="isolate flex w-max items-center gap-0.5 px-[3px]"
+      >
         {items.map((item, i) => (
           <span
             // Keyed by the item, so a tile that moves within a category
