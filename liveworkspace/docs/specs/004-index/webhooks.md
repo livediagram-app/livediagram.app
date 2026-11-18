@@ -173,7 +173,9 @@ webhook, with the same address, secret, retries, pausing and Recent Deliveries; 
 
 ## Security
 
-- **HTTPS only**, on port 443, with no user name or password in the URL, and a host name, never an IP address.
+- **HTTPS only**, on port 443, with no user name or password in the URL, and a host name, never an IP address. This shape check (with the internal names below) is shared, `parsePublicHttpsUrl` in
+  `@liveworkspace/model-core/public-https-url`, so every product that fetches a URL a person typed holds it to the same
+  rules (livediagram's [live service status](../../../../livediagram/docs/specs/009-elements/live-status.md)).
 - **No private or internal addresses (SSRF).** `localhost` and names under `.local`, `.localhost`, `.internal`,
   `.lan`, `.home.arpa` and single-label names are refused, and the host is resolved (DNS over HTTPS, A and AAAA)
   when the webhook is added and again right before every delivery is sent: an answer in a private, loopback,
