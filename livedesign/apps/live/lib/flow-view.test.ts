@@ -352,8 +352,10 @@ describe('flowLinks', () => {
       const link = i % 4 < 2 ? to(page === 0 ? 'p3' : 'p2') : to('gone');
       many.push(linked(`e${i}`, page, link, { x: 10 + (i % 30) * 10, y: 10 + (i % 70) * 10 }));
     }
+    // It reruns on every render while the view is on, so the budget holds a warm walk, not the first compile.
+    flowLinks(many, undefined, pages, 0.5);
     const ms = cpuMsOf(() => flowLinks(many, undefined, pages, 0.5));
-    expect(ms).toBeLessThan(cpuBudgetMs(60));
+    expect(ms).toBeLessThan(cpuBudgetMs(40));
   });
 });
 
