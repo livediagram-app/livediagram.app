@@ -113,10 +113,17 @@ describe('showsScreenLinkHandle', () => {
     expect(showsScreenLinkHandle(base(own, viewer.linkScreens))).toBe(false);
   });
 
-  it('hides while editing, a menu, paint, a lock, a multi-selection or no permission check', () => {
+  it('hides while editing, a menu, paint, a crop, a lock, a multi-selection or no permission check', () => {
     const el = onPage(0);
     const can = editor.linkScreens;
-    for (const flag of ['multiSelected', 'editing', 'menuOpen', 'paintMode', 'tabLocked'] as const)
+    for (const flag of [
+      'multiSelected',
+      'editing',
+      'menuOpen',
+      'paintMode',
+      'cropping',
+      'tabLocked',
+    ] as const)
       expect(showsScreenLinkHandle({ ...base(el, can), [flag]: true }), flag).toBe(false);
     expect(showsScreenLinkHandle({ ...base(el, can), canLink: undefined })).toBe(false);
     expect(showsScreenLinkHandle(base(undefined, can))).toBe(false);
