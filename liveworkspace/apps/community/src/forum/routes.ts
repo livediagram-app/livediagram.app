@@ -22,7 +22,7 @@ import {
   type ForumTopicsResponse,
 } from '@liveworkspace/community';
 import { readCappedBody } from '@liveworkspace/api-kit/request-body';
-import { LIST_MAX_AGE_S, MAX_BODY_BYTES } from '../config';
+import { CHECKS_DAYS, CHECKS_MAX_AGE_S, LIST_MAX_AGE_S, MAX_BODY_BYTES } from '../config';
 import type { Env } from '../env';
 import { badRequest, conflict, json, noContent, notFound } from '../http';
 import { clientIp, networkHash } from '../network';
@@ -30,6 +30,7 @@ import { readReport } from '../public-routes';
 import { forumAccountOf } from './account';
 import { checkedText, checkForumText } from './check';
 import { countAgainst, HOUR_MS } from './rate';
+import { readChecks } from './tally';
 import {
   deleteForumPost,
   editForumPost,
@@ -97,6 +98,9 @@ export async function handleForum(
     return report(request, env, id, now);
   }
 
+  // The check's daily tally: counts only, public, for the telemetry dashboard.
+  if (kind === 'checks' && !id && method === 'GET') return checks(env, now);
+
   // Everything else may name who is asking: a read to answer their own posts, a write to be allowed at all.
   const viewer = await forumAccountOf(request, env);
 
@@ -132,6 +136,13 @@ export async function handleForum(
     }
   }
   return notFound();
+}
+
+// A few minutes old is fine: the dashboard reads days.
+async function checks(env: Env, now: number): Promise<Response> {
+  return json(await readChecks(env, now, CHECKS_DAYS), {
+    headers: { 'Cache-Control': `public, max-age=${CHECKS_MAX_AGE_S}` },
+  });
 }
 
 async function list(env: Env, url: URL, viewer: string | null): Promise<Response> {

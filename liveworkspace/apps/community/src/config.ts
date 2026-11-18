@@ -31,3 +31,21 @@ export const FORUM_CHECKS_PER_DAY = 500;
 export const FORUM_RETRY_BATCH = 10;
 // Just under the cron's five minutes, so each run asks again for what the last could not answer.
 export const FORUM_RETRY_EVERY_MS = 4 * 60_000;
+
+// What the check costs, from Workers AI's price list for FORUM_CHECK_MODEL (community.md "The check"): Neurons per
+// million tokens, input and output. The binding reports tokens, never Neurons, so a check's cost is worked out here.
+export const FORUM_NEURONS_PER_M_INPUT = 44_003;
+export const FORUM_NEURONS_PER_M_OUTPUT = 2_730;
+// The Neurons the check may use in a UTC day: 80% of the free 10,000, so the account's other Workers AI (liveplanner's
+// Automations) keep the rest. Past it new posts wait as Pending, as past FORUM_CHECKS_PER_DAY.
+export const FORUM_NEURONS_PER_DAY = 8_000;
+// What the dashboard's read of the tally covers, and how long an answer may be kept.
+export const CHECKS_DAYS = 30;
+export const CHECKS_MAX_AGE_S = 300;
+// The counter subjects the check's daily tally lives under (src/forum/tally.ts).
+export const FORUM_TALLY_PREFIX = 'chk:';
+// How long the check's daily tallies are kept for the dashboard (every other counter is dropped after two days).
+export const FORUM_CHECK_TALLY_KEEP_DAYS = 90;
+// Reports older than this are pruned by the cron (community.md "The check", Reports). A post three reports hid stays
+// hidden: the state is on the post, not counted again from its reports.
+export const FORUM_REPORTS_KEEP_MS = 90 * 24 * 60 * 60 * 1000;

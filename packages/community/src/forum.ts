@@ -155,6 +155,19 @@ export type ForumReply = ForumPost & { topicId: string };
 
 export type ForumTopicsResponse = { topics: ForumTopicSummary[]; nextOffset: number | null };
 export type ForumTopicResponse = { topic: ForumTopic; replies: ForumReply[] };
+/** One UTC day of the Forum's check: how its checks ended, and the Neurons they used. */
+export type ForumCheckDay = {
+  day: number;
+  listed: number;
+  refused: number;
+  waiting: number;
+  neurons: number;
+};
+/** The check's last days (`GET /forum/checks`), oldest first, with what a day may use: checks and Neurons. */
+export type ForumChecksResponse = {
+  caps: { checks: number; neurons: number };
+  days: ForumCheckDay[];
+};
 export type ForumReactionsResponse = { reactions: ForumReactions };
 
 export type ForumTopicInput = {

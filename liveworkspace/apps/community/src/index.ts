@@ -39,6 +39,7 @@ const routeLabel = createApiRouteLabel(
     'replies',
     'answer',
     'reactions',
+    'checks',
   ]),
 );
 

@@ -6,6 +6,7 @@ import { WindowPanel } from './_shared/WindowPanel';
 import { previousSpanLabel, windowLabel } from './_shared/windows';
 import { compareApps } from './_all/apps-compared';
 import { EventsByApp } from './_all/EventsByApp';
+import { ForumChecks } from './_all/ForumChecks';
 import { ProjectKits } from './_all/ProjectKits';
 import { VisitorsAndAccounts } from './_all/VisitorsAndAccounts';
 
@@ -68,6 +69,8 @@ export function AllApps({
       </section>
 
       <ProjectKits summary={summary} active={active} />
+
+      <ForumChecks />
 
       <h2 className="mt-12 text-lg font-semibold text-slate-900 dark:text-slate-100">
         Busiest Events
