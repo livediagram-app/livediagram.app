@@ -2,7 +2,7 @@
 // be named; Changed Since Approval from a summary push; the replace, the cap and the day's limit; the notice, History,
 // the team audit log and closing an account.
 import type { Approval, ApprovalCandidate, ItemEvent } from '@liveworkspace/index-client';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { purgePerson } from './account-purge';
 import { body, call, h, makeItem, person, settle, useHarness, type AppCall } from './test-support';
 
@@ -381,14 +381,18 @@ describe('the people an Editor may name', () => {
 describe('History and the team audit log', () => {
   it('records each step in History, the actor named', async () => {
     const { ada, bo, item } = await setup();
-    // A millisecond apart at least: History orders by time, then by a random id, so two steps in the same
-    // millisecond could swap.
-    const tick = () => new Promise((r) => setTimeout(r, 2));
-    await ask(ada.auth, item.id, { approverIds: ['user_b'], due: '2026-12-01' });
-    await tick();
-    await ask(ada.auth, item.id, { approverIds: ['user_b'] });
-    await tick();
-    await decide(bo.auth, item.id, 'approve', 'Fine');
+    // The clock is pinned, so the second request and the decision land in the same millisecond: History breaks
+    // that tie by insert order, not by a random id.
+    const start = Date.now();
+    vi.useFakeTimers({ toFake: ['Date'], now: start });
+    try {
+      await ask(ada.auth, item.id, { approverIds: ['user_b'], due: '2026-12-01' });
+      vi.setSystemTime(start + 100);
+      await ask(ada.auth, item.id, { approverIds: ['user_b'] });
+      await decide(bo.auth, item.id, 'approve', 'Fine');
+    } finally {
+      vi.useRealTimers();
+    }
     const { events } = await body<{ events: ItemEvent[] }>(
       await call(`/items/${item.id}/history`, { auth: ada.auth }),
     );

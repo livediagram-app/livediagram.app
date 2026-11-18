@@ -8,6 +8,14 @@ import type { ForumReply, ForumTopic, ForumTopicSummary } from '@liveworkspace/c
 // topic; signing in is what Ask, Reply, reactions, Mark as Answer, Edit and Delete need, and each write carries the
 // account's token; a post nobody else sees yet says so to its author; reports go through the gallery's dialog.
 
+// Telemetry fires from an effect or after a state update, so it can land just after the screen the test waited for.
+// Wait for it, then let the page settle and check it did not fire twice.
+async function firedOnce(fn: { mock: { calls: unknown[] } }) {
+  await waitFor(() => expect(fn.mock.calls).toHaveLength(1));
+  await act(async () => {});
+  expect(fn.mock.calls).toHaveLength(1);
+}
+
 type Account =
   | { status: 'checking' }
   | { status: 'out' }
@@ -164,7 +172,7 @@ describe('the Forum list', () => {
     expect(ask.getAttribute('href')).toContain('community%2Fforum');
     expect(screen.queryByRole('button', { name: 'New Post' })).toBeNull();
     expect(screen.getByRole('link', { name: 'Forum' }).getAttribute('aria-current')).toBe('page');
-    expect(h.telemetry.opened).toHaveBeenCalledTimes(1);
+    await firedOnce(h.telemetry.opened);
   });
 
   it('marks an answered topic and counts its replies', async () => {
@@ -270,7 +278,7 @@ describe('the Forum list', () => {
         author: { name: 'Ada', color: '#2563eb' },
       },
     });
-    expect(h.telemetry.postedTopic).toHaveBeenCalledTimes(1);
+    await firedOnce(h.telemetry.postedTopic);
   });
 
   it('says why a post was refused, and keeps it to try again', async () => {
@@ -376,7 +384,7 @@ describe('a Forum topic', () => {
     expect(screen.queryByRole('button', { name: 'Edit' })).toBeNull();
     expect(screen.queryByRole('button', { name: /Mark as Answer/ })).toBeNull();
     expect(screen.getByRole('link', { name: 'Sign In to Reply' })).toBeTruthy();
-    expect(h.telemetry.openedTopic).toHaveBeenCalledTimes(1);
+    await firedOnce(h.telemetry.openedTopic);
   });
 
   it("says a topic that isn't there, with a way back", async () => {
@@ -410,7 +418,7 @@ describe('a Forum topic', () => {
       auth: 'Bearer tok-1',
       body: { reply: 'r2' },
     });
-    expect(h.telemetry.markedAnswer).toHaveBeenCalledTimes(1);
+    await firedOnce(h.telemetry.markedAnswer);
     expect(screen.getByRole('button', { name: /Unmark Answer/ })).toBeTruthy();
   });
 
@@ -468,7 +476,7 @@ describe('a Forum topic', () => {
     });
     // Waiting for the check: its author is told.
     expect(screen.getByText(/Pending: being checked/)).toBeTruthy();
-    expect(h.telemetry.postedReply).toHaveBeenCalledTimes(1);
+    await firedOnce(h.telemetry.postedReply);
   });
 
   it('edits its own reply in place, and saves it with the token', async () => {
