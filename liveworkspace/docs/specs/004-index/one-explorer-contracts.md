@@ -215,7 +215,9 @@ as malformed. The parts of an item an app names (a tab, the cards' `~cards`, an 
 | `POST /items/:id/grant`        | person or link      | `→ {grant, level, tabId, expiresAt, link?}`. A link visitor sends                      |
 |                                |                     | `X-Share-Code` (and `X-Share-Password` when set). `link` is the grant's `link` claim:  |
 |                                |                     | the code a link's access came through, sent or not, so an editor reopening the item by |
-|                                |                     | its own address opens it as that link's visitor ("Grants").                            |
+|                                |                     | its own address opens it as that link's visitor ("Grants"). Its refusal for a password |
+|                                |                     | asked of a person who sent no code names the link: `401 {error: "password_required",   |
+|                                |                     | link}` (only the code, which that person opened it by; "Reopened without the code").   |
 | `POST /items/:id/archive`      | owner               | To its owner's Archived (below) → `{item}`.                                            |
 | `GET /trash` / `DELETE /trash` | person              | List, empty (`?team=`; `?app=` empties that app's items only).                         |
 
@@ -503,7 +505,17 @@ the item again through Shared with no code sent). An app reads link access from 
 carried `X-Share-Code`: the caller can leave a header off, so a link's limits (a Community post's content-only pass,
 the owner-only "Add to <Item>") would fall away with it. The header only adds to a grant signed without the claim. The answer names the same code beside the grant (`link`), for the editor's chrome only: an editor that opens an
 item by its own address, with no code, takes the visitor's role, tab and code from it, never the owner's
-(`openOwnAddress` in `@liveworkspace/workbench/lib/editor-arrival`); the api and the room still read the claim. The item's Durable Object
+(`openOwnAddress` in `@liveworkspace/workbench/lib/editor-arrival`); the api and the room still read the claim.
+
+**Reopened without the code.** A person whose link is behind a password and who reopens the item by its own address
+(Shared with me, Recent, a bookmark) sends no code and no password, so the grant is refused `401 password_required`.
+That refusal, and only it, names the link beside the error, `{error: "password_required", link: "<code>"}`, so the
+editor can ask for the password: it opens the item through that link (`openShareLink`), which reads the password the
+browser remembers under the code and, when there is none or it changed, shows the password gate, never Not Found.
+It names only the code, never the item's title, owner or anything else, and only to the person the index already
+found in `shared_with` for that live link: someone who opened that very link before (and entered the password since
+it was last set, which clears `shared_with`). Anyone with no link, a revoked or expired one, a public link, or a
+request that sent a code of its own hears what they heard before (`404`, or `password_required` with no `link`). The item's Durable Object
 keeps its own copy of both (for its emails, its pushes and its alarm), and takes it from every grant it is handed
 (`@liveworkspace/index-app` `createItemHeadSync`), so a guest's merge into an account or a move to another team
 reaches the item the next time anyone opens it.

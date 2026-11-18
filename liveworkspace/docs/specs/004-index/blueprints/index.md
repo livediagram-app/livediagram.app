@@ -83,7 +83,8 @@ public `${ACCOUNTS_URL}/api/auth/jwks` and its twin only when the binding is mis
 4. A live link (`expires_at IS NULL OR expires_at > now`): the code sent, else the one the person opened it through
    (`shared_with`). None: `404`.
 5. `linkAccess`: a public link behind a password is `404`; a password needed and none sent is `401
-password_required`; a guess this isolate hasn't seen right is counted (`429 rate_limited`, `Retry-After: 60`); a
+password_required`, naming the link (`link`, its code) only when the caller sent no code and reached it through
+   `shared_with` (`accessTo`'s `nameLink`), so the editor reopening it by its own address shows the password gate; a guess this isolate hasn't seen right is counted (`429 rate_limited`, `Retry-After: 60`); a
    wrong one is `403 password_invalid`; else the link's level and tab.
 6. `loadItem(need, { manage })`: an app delegate reaches its own app's items only, the mirror its own personal
    items only (`404` otherwise); `manage` refuses a link (`403`); a level below `need` is `403 forbidden`.
