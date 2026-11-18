@@ -13,11 +13,29 @@
 // (bodyExceedsCap at the bottom of this file) bound what a route accepts below it.
 export const MAX_BODY_BYTES = 8 * 1024 * 1024; // 8 MB
 
+// The outer cap for one write (index.ts): MAX_BODY_BYTES, but an Image field's upload carries raw bytes with the media
+// service's own cap (docs/specs/026-plan/item-types.md "Image fields"), and a whole plan's file
+// (`POST /api/projects/:id/file`) the plan file's (PROJECT_FILE_MAX_BYTES, 20 MB; Work Tracker 1019), so a full
+// plan's export imports back. Each route checks its own cap again.
+export function writeBodyCap(method: string, segments: readonly string[]): number {
+  if (segments[1] === 'images') return MAX_IMAGE_BYTES;
+  if (
+    method === 'POST' &&
+    segments.length === 4 &&
+    segments[1] === 'projects' &&
+    segments[3] === 'file'
+  )
+    return PROJECT_FILE_MAX_BYTES;
+  return MAX_BODY_BYTES;
+}
+
 // A single tab's data (the element + comment tree), held to a SQLite row's cap in a Durable Object, less headroom
 // (docs/specs/015-api/api.md "Tab size"). Defined in @liveplanner/api-schema, so the editor checks
 // the same number before it sends. The body cap above bounds one request; this bounds one tab.
 export { MAX_TAB_BYTES, tabDataBytes } from '@liveplanner/api-schema';
 import { MAX_TAB_BYTES as MAX_TAB_BYTES_CAP } from '@liveplanner/api-schema';
+import { MAX_IMAGE_BYTES } from '@liveworkspace/media';
+import { PROJECT_FILE_MAX_BYTES } from '@liveplanner/project';
 
 /**
  * A tab write refused for size at the storage layer (db/tabs.ts): every route that stores a tab

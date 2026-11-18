@@ -15,9 +15,11 @@ import { isCardThread, type CardThread } from './card-threads';
 
 export const PROJECT_ENVELOPE_KIND = 'liveplanner.project';
 export const PROJECT_SCHEMA_VERSION = 1;
-// The largest plan file an import reads (docs/specs/015-api/api.md `POST /api/projects/:id/file`): the api's outer
-// bound on any write body (apps/api/src/limits.ts MAX_BODY_BYTES), so the editor refuses unread what the api would.
-export const PROJECT_FILE_MAX_BYTES = 8 * 1024 * 1024;
+// The largest plan file an import reads (docs/specs/015-api/api.md `POST /api/projects/:id/file`; Work Tracker 1019):
+// that one route's outer write cap (apps/api/src/limits.ts writeBodyCap), above every other write's 8 MB so a full
+// plan's export imports back, and the editor refuses unread what the api would. A full plan (5,000 cards) at the cap
+// lands inside the plan's Durable Object's 128 MB (blueprint plan-file.md "Performance and limits").
+export const PROJECT_FILE_MAX_BYTES = 20 * 1024 * 1024;
 
 export type EnvelopeTab = Tab & { folder?: string };
 

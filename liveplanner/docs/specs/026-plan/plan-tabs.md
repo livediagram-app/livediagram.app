@@ -87,7 +87,7 @@ as every dialog's does, so no row lights up unasked.
 - **A Whole Plan**, for an Editor only, under the tools: one row, **liveplanner Plan**, with the prism tile, a
   `.liveplanner` file chip and "A whole plan's .liveplanner file from Export. Makes a new plan." (the
   [Whole Plan](#whole-plan) export read back). Pressing it opens the file picker (`.liveplanner` or `.json`); the file
-  is read and checked in the browser (over 8 MB refused unread, then its envelope: the `liveplanner.project` kind
+  is read and checked in the browser (over 20 MB refused unread, then its envelope: the `liveplanner.project` kind
   and a schema version this build reads), and a preview replaces the list under an **All Imports** back bar, headed
   **Import a Plan**, "See what it will make, then import it.": the plan's name, then how many tabs, cards, card
   types, comment threads and rules it holds (each count that is above zero), a quiet line "Rules come in off: turn
@@ -100,7 +100,7 @@ as every dialog's does, so no row lights up unasked.
     here only to whoever uploaded them."), the line shown only when a card holds one.
   - Refusals are said on the list (or the preview, which stays): a file of another kind "That file isn't a
     liveplanner plan. Export one with Whole Plan, then import it.", a newer schema "That plan was exported by a newer
-    liveplanner. Reload the page, then try again.", over 8 MB "That plan's file is over 8 MB, the most an import reads.", and the api refusing it
+    liveplanner. Reload the page, then try again.", over 20 MB "That plan's file is over 20 MB, the most an import reads.", and the api refusing it
     (a malformed tab, card, card type or Sheet, or past any store's cap) "Couldn't import that plan: its file is
     damaged or holds more than a plan can." Anything else: "Couldn't import that plan. Try again."
   - A guest imports as a signed-in Editor does: the new plan is saved on liveworkspace servers under their guest id,

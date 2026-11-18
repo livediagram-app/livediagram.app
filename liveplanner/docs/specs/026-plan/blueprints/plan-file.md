@@ -18,8 +18,11 @@ uses (`apps/api/src/plan-room/project-file.ts` `exportProjectFile`, `readProject
 
 ## Constants and configuration
 
-- `PROJECT_FILE_MAX_BYTES` = 8 MiB (`project-envelope.ts`): the api's outer bound on any write body
-  (`MAX_BODY_BYTES`, `apps/api/src/limits.ts`), so the editor refuses unread what the worker would refuse anyway. The api refuses past it by `Content-Length` before reading and by the text's UTF-8 length
+- `PROJECT_FILE_MAX_BYTES` = 20 MiB (`project-envelope.ts`; Work Tracker 1019): the api's outer bound on this one
+  write body (`writeBodyCap`, `apps/api/src/limits.ts`, for `POST /api/projects/:id/file` only; every other write
+  keeps `MAX_BODY_BYTES`, 8 MiB), so a full plan's export (5,000 cards with long descriptions) imports back, and the
+  editor refuses unread what the worker would refuse anyway. Safe range 8 to 24 MiB: the import's peak heap grows
+  about 3 bytes for each byte of file (below). The api refuses past it by `Content-Length` before reading and by the text's UTF-8 length
   after; the editor refuses unread past it (`pickTabFile(..., { maxBytes })`, and a drop's `file.size`).
 - `PROJECT_FILE_ACCEPT` = `.liveplanner,application/vnd.liveplanner+json,.json,application/json`.
 
@@ -89,7 +92,14 @@ name) }`. `offered` is the tools' `canImport`; `blocked` is the offline sentence
 ## Performance and limits
 
 - The export is one read of each store inside the plan's object (as the Drive mirror's); the import is one parse and
-  one transaction. The editor reads the file's text once for the summary and posts the same string; the summary is a
+  one transaction.
+- **The import's memory** (Work Tracker 1019). The route runs inside the new plan's Durable Object (128 MB). It reads
+  the body's text in its own function (`readBodyFile`), so the text is let go once the content is read, before the
+  write. A full plan's file at the cap (5,000 cards, 20 MB of ASCII text) peaks at 62.4 MB of live heap, the text
+  counted (82 MB while the route still held the text through the write); the request's bytes (20 MB, outside the
+  heap) are the rest. It costs about 0.3 s of CPU (node, unloaded). A file of mostly non-Latin text holds its text
+  at two bytes a character, about 20 MB more at the cap, still inside the object.
+  `project-file-import-memory.test.ts` holds it to 80 MB of heap and a CPU budget. The editor reads the file's text once for the summary and posts the same string; the summary is a
   single pass over cards. Both run only when a person presses them.
 
 ## Observability
@@ -105,6 +115,10 @@ imported` (`projectId`, `tabs`, `cards`) on the api; `[plan-file] import failed`
   a guest's import 201 owned by their guest id; Participant and Viewer 403; tab-scoped 404), rules exported
   without maker and editor ids, a malformed file, an oversized one by header and by length, a newer
   schema, unknown fields dropped, and a started plan 409.
+- `apps/api/src/routes/project-file-import-memory.test.ts`: a full plan's 20 MB file imports, under the heap budget
+  (sampled with a forced collection at every tenth statement and the batch) and a CPU budget.
+- `apps/api/src/index.test.ts` "the write body cap": a plan file past 8 MB reaches its route up to 20 MB, past it 413
+  by length and by header; every other write keeps 8 MB.
 - `packages/project/src/project-file-summary.test.ts`: the counts and every refusal.
 - Editor: `ImportTabDialog.plan-file.test.tsx` (the section for an Editor only, the offline dimmed row, the preview
   and its import, refusals, drops), `import-drop.test.ts` (a plan file's route), `ExportTabDialog.whole-plan.test.tsx`

@@ -15,7 +15,7 @@ export const PLAN_NOT_A_PLAN =
   'That file isn’t a liveplanner plan. Export one with Whole Plan, then import it.';
 export const PLAN_NEWER =
   'That plan was exported by a newer liveplanner. Reload the page, then try again.';
-export const PLAN_TOO_BIG = 'That plan’s file is over 8 MB, the most an import reads.';
+export const PLAN_TOO_BIG = 'That plan’s file is over 20 MB, the most an import reads.';
 export const PLAN_DAMAGED =
   'Couldn’t import that plan: its file is damaged or holds more than a plan can.';
 export const PLAN_FAILED = 'Couldn’t import that plan. Try again.';
