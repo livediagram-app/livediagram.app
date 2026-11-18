@@ -76,12 +76,18 @@ clients sit beside it. Ask before editing a `.dev.vars` you didn't make.
   (`/api/auth/guest` comes straight back to `/auth/guest#error=guest_not_configured`), and share links can't be
   checked.
 
-## Driving the app (Claude in Chrome)
+## Driving the app (ego lite)
 
+- Drive the browser with ego lite ([github.com/citrolabs/ego-lite](https://github.com/citrolabs/ego-lite)), not the
+  Claude in Chrome extension: load the `ego-browser` skill and run scripts with `ego-browser nodejs`. Each verifier
+  works in its own TaskSpace, so parallel agents never fight over one browser. If `ego-browser` is missing or won't
+  connect, stop and ask for ego lite to be installed or opened; don't fall back to another browser silently.
+- Sign in with local accounts only (codes from the accounts Worker's output), never a production session.
 - Create a document through the real user path: `http://localhost:<router>/new`, a two-step wizard
   (Template, then Theme, then Create). It lands on the document's page with `#t=<tabId>`.
-- The wizard modal REFLOWS between renders, so coordinate clicks misfire. Use `find` to get element
-  refs and click by ref. The template search box is the reliable way to pick a template.
+- The wizard modal REFLOWS between renders, so coordinate clicks misfire. Take a `page.snapshot()` and click by its
+  `@ref` or a `loc=role:` selector. The template search box is the reliable way to pick a template.
+- The canvas has no useful DOM: check it with `page.screenshot()` and drive it with `page.mouse`.
 - The palette defaults to the Shapes tool: a click-drag on the canvas DRAWS a square instead of
   selecting or moving. Click "Select" in the palette header first when testing drags.
 - livediagram only (livedesign has no Layers panel since #1444; its photo editor has a Layers tab): the Layers panel opens from the stacked-squares dock button in the bottom-right zoom cluster. Each
