@@ -15,7 +15,7 @@ Scope, by file:
 | `apps/live/app/design/[id]/useRoleIndicator.ts`                              | Role in force, owner name and toggle, for the pill                        |
 | `apps/live/app/design/[id]/useEditorState.ts`                                | `isReadOnly` includes the preview                                         |
 | `apps/live/app/design/[id]/editor-view-bars.tsx`                             | Hands the Editing Mode button its wiring (`editingMode`) through `TabBar` |
-| `apps/editor/components/chrome/ChromeControls.tsx`                           | Draws `EditingModeButton` between Tools and Settings                      |
+| `apps/live/components/chrome/ChromeControls.tsx`                             | Draws `EditingModeButton` between Tools and Settings                      |
 | `packages/workbench/src/components/chrome/EditingModeButton.tsx` (repo root) | `EditingModeButton`, the shared button                                    |
 | `packages/workbench/src/lib/editing-mode.ts` (repo root)                     | `editingModes`, `nextEditingMode`: the modes and their order              |
 | `apps/live/components/chrome/EditorHeader.tsx`                               | `rolePill` slot after the visibility badge                                |
