@@ -590,6 +590,50 @@ export const AUTOMATION_TEMPLATES: readonly AutomationTemplate[] = [
       };
     },
   },
+  {
+    id: 'flag-due-soon',
+    name: 'Flag Cards Due Soon',
+    description: 'Three days before a card is due, flag it and ask in a comment if it is sorted.',
+    category: 'due_dates',
+    build(plan) {
+      const done = doneStatuses(plan);
+      return {
+        body: rule(
+          plan,
+          this.name,
+          { kind: 'due_in', days: 3, at: NINE },
+          done.length ? [{ kind: 'column', not: true, statuses: done }] : [],
+          [
+            { kind: 'flag' },
+            {
+              kind: 'comment',
+              text: '{{card.assignee}}, this is due on {{card.due}}. Is it sorted?',
+            },
+          ],
+        ),
+        picks: [],
+      };
+    },
+  },
+  {
+    id: 'done-on-checklist',
+    name: 'Done When the Checklist Is Complete',
+    description: "When the last item on a card's checklist is ticked, move it to Done.",
+    category: 'status',
+    build(plan) {
+      const done = doneStatuses(plan)[0];
+      return {
+        body: rule(
+          plan,
+          this.name,
+          { kind: 'checklist_completed' },
+          [],
+          [{ kind: 'move', status: done ?? '' }],
+        ),
+        picks: done ? [] : [{ path: 'steps.0', pick: 'column' }],
+      };
+    },
+  },
   ...GITHUB_TEMPLATES,
 ];
 

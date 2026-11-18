@@ -92,6 +92,8 @@ describe('the templates', () => {
       'Done When Feedback Is Resolved',
       'Sort Incoming Cards',
       'Summarise Form Requests',
+      'Flag Cards Due Soon',
+      'Done When the Checklist Is Complete',
       'Review When a Pull Request Opens',
       'Done When the Pull Request Merges',
       'Flag Failing Checks',
@@ -221,6 +223,23 @@ describe('the GitHub templates', () => {
       expect(JSON.stringify(body)).not.toContain('"trigger":true');
       expect(body.conditions.some((c) => c.kind === 'who')).toBe(false);
     }
+  });
+
+  it('Flag Cards Due Soon flags and comments three days ahead, sparing done columns where the plan has them', () => {
+    const { body, picks } = build('flag-due-soon', FULL);
+    expect(body.trigger).toEqual({ kind: 'due_in', days: 3, at: '09:00' });
+    expect(body.conditions).toEqual([{ kind: 'column', not: true, statuses: ['done', 'shipped'] }]);
+    expect(body.steps.map((s) => s.kind)).toEqual(['flag', 'comment']);
+    expect(picks).toEqual([]);
+    expect(build('flag-due-soon', BARE).body.conditions).toEqual([]);
+  });
+
+  it('Done When the Checklist Is Complete moves to the first done column, else leaves it to pick', () => {
+    const { body, picks } = build('done-on-checklist', FULL);
+    expect(body.trigger).toEqual({ kind: 'checklist_completed' });
+    expect(body.steps).toEqual([{ kind: 'move', status: 'done' }]);
+    expect(picks).toEqual([]);
+    expect(build('done-on-checklist', BARE).picks).toEqual([{ path: 'steps.0', pick: 'column' }]);
   });
 
   it('Review When a Pull Request Opens moves to the column named like Review, else leaves it to pick', () => {

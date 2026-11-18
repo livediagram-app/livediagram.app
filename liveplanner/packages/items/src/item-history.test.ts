@@ -13,6 +13,7 @@ import {
 } from './item-history';
 import { ALI, SAM, item } from './test-items';
 import { STATUS_SINCE_FIELD, type Item } from './item';
+import { automationPerson } from './automation/types';
 
 // docs/specs/026-plan/items.md "History": what a write kept, its values, grouping and the reader's shape.
 
@@ -209,6 +210,20 @@ describe('groupHistory', () => {
         e(1, [{ kind: 'unarchived' }]),
       ]),
     ).toHaveLength(3);
+  });
+
+  it('keeps two rules on one move apart, each under its own name, and groups one rule’s own changes', () => {
+    const rule = (name: string) => automationPerson(name);
+    const grouped = groupHistory([
+      e(4, [{ kind: 'set', field: 'due', value: '2026-11-20' }], rule('Second'), 'automation'),
+      e(3, [{ kind: 'set', field: 'priority', value: 'high' }], rule('Second'), 'automation'),
+      e(2, [{ kind: 'flagged' }], rule('First'), 'automation'),
+      e(1, [{ kind: 'set', field: 'labels', value: ['x'] }], rule('First'), 'automation'),
+    ]);
+    expect(grouped.map((g) => [g.by.name, g.changes.length])).toEqual([
+      ['Second', 2],
+      ['First', 2],
+    ]);
   });
 
   it('drops a there-and-back, an on-and-off and a group with nothing left', () => {

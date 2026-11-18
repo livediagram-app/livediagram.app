@@ -10,6 +10,7 @@ import {
   type ItemPerson,
 } from './item';
 import { EXAMPLE_FIELD, TRASHED_FROM_FIELD, TRASH_STATUS, isArchived, isFlagged } from './board';
+import { AUTOMATION_PERSON_ID } from './automation/types';
 import { isRichFieldKey, richFieldOf } from './rich-text-field';
 
 // The newest entries a card keeps, and the oldest an entry may be: each write drops its card's entries past either.
@@ -228,7 +229,9 @@ function mergeChanges(oldestFirst: readonly StoredHistoryEntry[]): ItemHistoryCh
 }
 
 // Entries newest first, grouped: an entry joins the group before it (in time) when the same person made it, with the
-// same tag, within ITEM_HISTORY_GROUP_MS of the group's oldest entry. A group with nothing left after merging goes.
+// same tag, within ITEM_HISTORY_GROUP_MS of the group's oldest entry. Every rule writes as Automation (one id), so a
+// rule's entries also need the same name, its own: two rules on one move stay two entries. A group with nothing left
+// after merging goes.
 export function groupHistory(newestFirst: readonly StoredHistoryEntry[]): StoredHistoryEntry[] {
   const groups: StoredHistoryEntry[][] = [];
   // Walk oldest first, so a group's window is measured from its first entry.
@@ -240,6 +243,7 @@ export function groupHistory(newestFirst: readonly StoredHistoryEntry[]): Stored
       group &&
       first &&
       first.by.id === entry.by.id &&
+      (first.by.id !== AUTOMATION_PERSON_ID || first.by.name === entry.by.name) &&
       first.tag === entry.tag &&
       entry.at - first.at <= ITEM_HISTORY_GROUP_MS
     ) {

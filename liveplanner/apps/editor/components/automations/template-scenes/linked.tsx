@@ -145,3 +145,30 @@ export function DoneWhenResolved({ tone }: { tone: ToneClasses }) {
     </>
   );
 }
+
+export function DoneOnChecklist({ tone }: { tone: ToneClasses }) {
+  return (
+    <>
+      <Column tone={tone} label="Doing" count={<Count from={1} to={0} d={560} />}>
+        <div className="ats-t ats-drag relative z-10" style={at(NEXT_COLUMN, 'none', 460)}>
+          <Card>
+            <span className="absolute bottom-1 right-1 inline-grid">
+              <span className="col-start-1 row-start-1 text-[7px] font-bold tabular-nums text-slate-500 dark:text-slate-300">
+                2/3
+              </span>
+              <span
+                className="ats-t ats-in ats-pop col-start-1 row-start-1 grid size-3 place-items-center rounded-full bg-emerald-500 text-white"
+                style={at('none', 'scale(0.2)', 160)}
+              >
+                <CheckGlyph aria-hidden />
+              </span>
+            </span>
+          </Card>
+        </div>
+      </Column>
+      <Column tone={tone} label="Done" count={<Count from={1} to={2} d={560} />}>
+        <Card ghost wide="w-3/5" />
+      </Column>
+    </>
+  );
+}

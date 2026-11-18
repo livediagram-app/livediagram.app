@@ -9,6 +9,7 @@ import {
 import { buildTemplateTabs } from './template-tab';
 import { PLAN_TEMPLATE_KINDS, STARTER_RULE_KINDS, hasStarterRules } from './plan-template-kinds';
 import {
+  PACKED,
   STARTER_STEP_KINDS,
   TEMPLATE_STARTER_RULES,
   starterOf,
@@ -75,6 +76,28 @@ describe('templateStarterRules', () => {
     }
     expect(by['Triage New Bugs']!.body.conditions).toEqual([{ kind: 'type', types: ['sb-bug'] }]);
     expect(by['Route Reviews']!.body.trigger).toEqual({ kind: 'card_moved', to: ['sb-review'] });
+  });
+
+  it('gives a trip rules that fit it: bookings due soon, packing ticked off into Packed', () => {
+    const rules = templateStarterRules('trip-planner', 'UTC');
+    expect(rules.map((r) => [r.body.name, r.on])).toEqual([
+      ['Flag Cards Due Soon', true],
+      ['Done When the Checklist Is Complete', true],
+    ]);
+    const [soon, packed] = rules.map((r) => r.body);
+    expect(soon!.trigger).toEqual({ kind: 'due_in', days: 3, at: '09:00' });
+    expect(soon!.conditions).toEqual([
+      { kind: 'column', not: true, statuses: ['tr-paid', 'tr-packed'] },
+    ]);
+    expect(kindsOf(soon!.steps)).toEqual(['flag', 'comment']);
+    expect(packed!.trigger).toEqual({ kind: 'checklist_completed' });
+    expect(packed!.conditions).toEqual([{ kind: 'column', statuses: ['tr-to-pack'] }]);
+    expect(packed!.steps).toEqual([{ kind: 'move', status: 'tr-packed' }]);
+  });
+
+  it('leaves the checklist rule as the gallery builds it where the plan has no To Pack and Packed', () => {
+    const body = { name: 'x' } as unknown as AutomationRuleBody;
+    expect(PACKED.narrow!(body, { statuses: [] } as never)).toBe(body);
   });
 
   it('starts every template with a board with at least one rule on, and only those', () => {

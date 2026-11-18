@@ -1041,36 +1041,38 @@ allowing. On a phone the header keeps its desktop look (100px, the mark, the tit
   hidden from screen readers. With reduced motion, or on a touch screen, it shows the moment after, still. The tile
   lifts a little on hover:
 
-  | Template                          | Does                                                                                        | Category       |
-  | --------------------------------- | ------------------------------------------------------------------------------------------- | -------------- |
-  | Stamp the Finish Date             | When a card moves to a done column, set Completed On to today and clear its flag.           | Status         |
-  | Assign on Start                   | When a card moves to In Progress with no assignee, assign whoever moved it.                 | Assigning      |
-  | Overdue Nudge                     | Every weekday at 9:00, flag overdue cards and email their assignee.                         | Due Dates      |
-  | Share Out Form Responses          | When a form response lands, assign people in turn and thank the sender in a comment.        | Forms          |
-  | Post Shipped Work to Slack        | When a card with a chosen label moves to Done, post its title and link to a channel.        | Telling People |
-  | Triage New Bugs                   | When a Bug card is added, label it triage and assign the people on triage in turn.          | Assigning      |
-  | Unblock the Next Card             | When a card is done, comment on every card it was blocking that it can start.               | Status         |
-  | Due Soon Reminder                 | Two days before a card is due, email its assignee with a link to the card.                  | Due Dates      |
-  | Clean Up Done                     | Every Monday at 9:00, archive cards that have been done for more than 14 days.              | Status         |
-  | Escalate Urgent Work              | When a card's priority becomes Urgent, flag it, email its assignee and post to Slack.       | Telling People |
-  | Reopen on New Comment             | When someone comments on a done card, move it back to In Progress and flag it.              | Status         |
-  | Route Reviews                     | When a card moves to Review, assign reviewers in turn and say it is ready for them.         | Assigning      |
-  | Give It a Due Date                | When a card moves to In Progress with no due date, set it due a week from today.            | Due Dates      |
-  | Flag Blocked Cards                | When a card gets the blocked label, flag it and ask in a comment what it waits on.          | Status         |
-  | Verify the Fix                    | When a Bug card is done, add a Verify Fix card to its first column to check it.             | Status         |
-  | Back to the Backlog               | When a card moves back to a to-do column, unassign it and clear its due date.               | Assigning      |
-  | Sort Incoming Cards               | When a card is added, AI suggests its card type and sets its priority and labels.           | AI             |
-  | Summarise Form Requests           | When a form response lands, AI summarises it in a comment and sets its priority and labels. | AI             |
-  | Close the Parent                  | When the last of a card’s children is done, move the card to Done too.                      | Status         |
-  | Tell Them It’s Unblocked          | When the last card blocking a card is done, mention its assignee so they can start.         | Telling People |
-  | Nudge Stuck Cards                 | Each morning, flag cards that have not changed for 5 days and ask for an update.            | Telling People |
-  | Done When Feedback Is Resolved    | When the last comment thread on a card in Review is resolved, move it to Done.              | Status         |
-  | Review When a Pull Request Opens  | When a linked pull request opens, move its card to Review.                                  | GitHub         |
-  | Done When the Pull Request Merges | When a linked pull request merges, move its card to Done and set Completed On to today.     | GitHub         |
-  | Flag Failing Checks               | When a linked pull request's checks fail, flag its card and say so in a comment.            | GitHub         |
-  | Tell Them the Checks Pass         | When a linked pull request's checks pass, clear the flag and mention the assignee.          | GitHub         |
-  | Back to In Progress When Closed   | When a linked pull request closes without merging, move its card back to In Progress.       | GitHub         |
-  | Post Merged Work to Slack         | When a linked pull request merges, post its card's title and link to a Slack channel.       | GitHub         |
+  | Template                            | Does                                                                                        | Category       |
+  | ----------------------------------- | ------------------------------------------------------------------------------------------- | -------------- |
+  | Stamp the Finish Date               | When a card moves to a done column, set Completed On to today and clear its flag.           | Status         |
+  | Assign on Start                     | When a card moves to In Progress with no assignee, assign whoever moved it.                 | Assigning      |
+  | Overdue Nudge                       | Every weekday at 9:00, flag overdue cards and email their assignee.                         | Due Dates      |
+  | Share Out Form Responses            | When a form response lands, assign people in turn and thank the sender in a comment.        | Forms          |
+  | Post Shipped Work to Slack          | When a card with a chosen label moves to Done, post its title and link to a channel.        | Telling People |
+  | Triage New Bugs                     | When a Bug card is added, label it triage and assign the people on triage in turn.          | Assigning      |
+  | Unblock the Next Card               | When a card is done, comment on every card it was blocking that it can start.               | Status         |
+  | Due Soon Reminder                   | Two days before a card is due, email its assignee with a link to the card.                  | Due Dates      |
+  | Clean Up Done                       | Every Monday at 9:00, archive cards that have been done for more than 14 days.              | Status         |
+  | Escalate Urgent Work                | When a card's priority becomes Urgent, flag it, email its assignee and post to Slack.       | Telling People |
+  | Reopen on New Comment               | When someone comments on a done card, move it back to In Progress and flag it.              | Status         |
+  | Route Reviews                       | When a card moves to Review, assign reviewers in turn and say it is ready for them.         | Assigning      |
+  | Give It a Due Date                  | When a card moves to In Progress with no due date, set it due a week from today.            | Due Dates      |
+  | Flag Blocked Cards                  | When a card gets the blocked label, flag it and ask in a comment what it waits on.          | Status         |
+  | Verify the Fix                      | When a Bug card is done, add a Verify Fix card to its first column to check it.             | Status         |
+  | Back to the Backlog                 | When a card moves back to a to-do column, unassign it and clear its due date.               | Assigning      |
+  | Sort Incoming Cards                 | When a card is added, AI suggests its card type and sets its priority and labels.           | AI             |
+  | Summarise Form Requests             | When a form response lands, AI summarises it in a comment and sets its priority and labels. | AI             |
+  | Close the Parent                    | When the last of a card’s children is done, move the card to Done too.                      | Status         |
+  | Tell Them It’s Unblocked            | When the last card blocking a card is done, mention its assignee so they can start.         | Telling People |
+  | Nudge Stuck Cards                   | Each morning, flag cards that have not changed for 5 days and ask for an update.            | Telling People |
+  | Done When Feedback Is Resolved      | When the last comment thread on a card in Review is resolved, move it to Done.              | Status         |
+  | Flag Cards Due Soon                 | Three days before a card is due, flag it and ask in a comment if it is sorted.              | Due Dates      |
+  | Done When the Checklist Is Complete | When the last item on a card's checklist is ticked, move it to Done.                        | Status         |
+  | Review When a Pull Request Opens    | When a linked pull request opens, move its card to Review.                                  | GitHub         |
+  | Done When the Pull Request Merges   | When a linked pull request merges, move its card to Done and set Completed On to today.     | GitHub         |
+  | Flag Failing Checks                 | When a linked pull request's checks fail, flag its card and say so in a comment.            | GitHub         |
+  | Tell Them the Checks Pass           | When a linked pull request's checks pass, clear the flag and mention the assignee.          | GitHub         |
+  | Back to In Progress When Closed     | When a linked pull request closes without merging, move its card back to In Progress.       | GitHub         |
+  | Post Merged Work to Slack           | When a linked pull request merges, post its card's title and link to a Slack channel.       | GitHub         |
 
   Picking one opens the builder filled in, unsaved and off, named after it (made unique). What the plan has is
   filled in by its role (its done columns, its In Progress column, a column named like Review, a date field named like

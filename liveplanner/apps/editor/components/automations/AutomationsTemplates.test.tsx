@@ -115,7 +115,7 @@ describe('the Templates gallery', () => {
       'moving, assigning, labelling and telling people about cards',
     );
     const tiles = () => document.querySelectorAll('[data-template]');
-    expect(tiles()).toHaveLength(22);
+    expect(tiles()).toHaveLength(24);
     const chips = screen.getByRole('group', { name: 'Template categories' });
     expect(
       within(chips)
@@ -130,9 +130,10 @@ describe('the Templates gallery', () => {
       'overdue-nudge',
       'due-soon',
       'due-on-start',
+      'flag-due-soon',
     ]);
     fireEvent.click(within(chips).getByRole('button', { name: 'All' }));
-    expect(tiles()).toHaveLength(22);
+    expect(tiles()).toHaveLength(24);
   });
 
   it('opens a template in the builder, unsaved and off, named uniquely, tracking its id', async () => {
