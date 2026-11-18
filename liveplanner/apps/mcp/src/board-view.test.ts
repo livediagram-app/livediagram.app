@@ -70,8 +70,8 @@ describe('boardView', () => {
       ['Done', 1, null, true],
     ]);
     expect(b!.columns[0]!.cards).toEqual([
-      { id: 'i1', ref: '#1', title: 'Card 1', color: '#71717a' },
-      { id: 'i3', ref: '#3', title: 'Card 3', color: '#71717a' },
+      { id: 'i1', ref: 'T-1', title: 'Card 1', color: '#71717a' },
+      { id: 'i3', ref: 'T-3', title: 'Card 3', color: '#71717a' },
     ]);
   });
 

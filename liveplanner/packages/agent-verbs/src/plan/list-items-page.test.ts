@@ -3,6 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import {
+  cardRefOrKey,
   ITEMS_MAX,
   ITEM_TYPES,
   TRASH_STATUS,
@@ -196,7 +197,7 @@ describe('list_items on a plan shaped like the Work Tracker', () => {
       expect(p.omitted).toBeUndefined();
     }
     const refs = pages.flatMap((p) => p.items.map((i) => i.ref));
-    expect(refs).toEqual(state.items.map((i) => `#${i.key}`));
+    expect(refs).toEqual(state.items.map((i) => cardRefOrKey(i, state.plan.types)));
     expect(pages.at(-1)!.nextCursor).toBeUndefined();
   });
 
@@ -225,7 +226,9 @@ describe('list_items on a 5,000-card plan (Work Tracker 981)', () => {
     const [first, ...later] = pages;
     const columnRefs = first!.boards.flatMap((b) => b.columns.flatMap((c) => c.cards ?? []));
     // Selected for Development sits on two boards, so its cards are listed twice; every card is on a board.
-    expect(new Set(columnRefs)).toEqual(new Set(state.items.map((i) => `#${i.key}`)));
+    expect(new Set(columnRefs)).toEqual(
+      new Set(state.items.map((i) => cardRefOrKey(i, state.plan.types))),
+    );
     expect(first!.notOnBoard).toEqual([]);
     expect(later.length).toBeGreaterThan(0);
     for (const p of later) {
@@ -240,7 +243,7 @@ describe('list_items on a 5,000-card plan (Work Tracker 981)', () => {
   it('reads the whole plan in far fewer requests, each page under the budget, none lost or repeated', () => {
     for (const p of pages) expect(textOf(p).length).toBeLessThanOrEqual(LIST_ITEMS_BUDGET);
     expect(pages.flatMap((p) => p.items.map((i) => i.ref))).toEqual(
-      state.items.map((i) => `#${i.key}`),
+      state.items.map((i) => cardRefOrKey(i, state.plan.types)),
     );
     // Measured 2026-11-17 (the PR's Performance section): 70 pages with the refs on every page, 27 with them on the
     // first page only.
@@ -261,7 +264,7 @@ describe('what list_items leaves out', () => {
 
   it('leaves out done, cancelled, trashed and archived cards, and empties the done columns', () => {
     const answer = page(state);
-    expect(answer.items.map((i) => i.ref)).toEqual(['#1', '#6']);
+    expect(answer.items.map((i) => i.ref)).toEqual(['WI-1', 'WI-6']);
     expect(answer.omitted?.closed).toBe(4);
     expect(answer.omitted?.note).toContain('4 closed cards');
     expect(answer.omitted?.note).toContain('includeClosed: true');
@@ -275,17 +278,24 @@ describe('what list_items leaves out', () => {
 
   it('lists them all with includeClosed, the done columns whole', () => {
     const answer = page(state, { includeClosed: true });
-    expect(answer.items.map((i) => i.ref)).toEqual(['#1', '#2', '#3', '#4', '#5', '#6']);
+    expect(answer.items.map((i) => i.ref)).toEqual([
+      'WI-1',
+      'WI-2',
+      'WI-3',
+      'WI-4',
+      'WI-5',
+      'WI-6',
+    ]);
     expect(answer.omitted?.closed).toBeUndefined();
     const done = answer.boards.find((b) => b.title === 'Results')!.columns[1]!;
-    expect(done).toMatchObject({ cards: ['#2'] });
+    expect(done).toMatchObject({ cards: ['WI-2'] });
     expect(done).not.toHaveProperty('closed');
   });
 
   it('lists every card in a column a status filter names, closed or not', () => {
     expect(page(state, { status: ['Done', 'trash'] }).items.map((i) => i.ref)).toEqual([
-      '#2',
-      '#4',
+      'WI-2',
+      'WI-4',
     ]);
   });
 
@@ -329,23 +339,26 @@ describe('list_items filters', () => {
   const refs = (args: Parameters<typeof page>[1]) => page(state, args).items.map((i) => i.ref);
 
   it('takes several columns and several card types, a card in any of them', () => {
-    expect(refs({ status: ['Under Review', 'In Progress'] })).toEqual(['#1', '#3', '#9']);
-    expect(refs({ type: ['Idea'] })).toEqual(['#9']);
-    expect(refs({ type: ['Work Item', 'Idea'], status: ['under-review'] })).toEqual(['#1', '#9']);
+    expect(refs({ status: ['Under Review', 'In Progress'] })).toEqual(['WI-1', 'WI-3', 'I-9']);
+    expect(refs({ type: ['Idea'] })).toEqual(['I-9']);
+    expect(refs({ type: ['Work Item', 'Idea'], status: ['under-review'] })).toEqual([
+      'WI-1',
+      'I-9',
+    ]);
   });
 
   it('keeps a card whose title or description holds the text, case aside', () => {
-    expect(refs({ query: '  Login ' })).toEqual(['#1', '#2']);
-    expect(refs({ query: '   ' })).toEqual(['#1', '#2', '#3', '#4', '#9']);
+    expect(refs({ query: '  Login ' })).toEqual(['WI-1', 'WI-2']);
+    expect(refs({ query: '   ' })).toEqual(['WI-1', 'WI-2', 'WI-3', 'WI-4', 'I-9']);
   });
 
   it('keeps a card changed at or after updatedSince', () => {
     expect(refs({ updatedSince: new Date(T0 + 3 * DAY).toISOString() })).toEqual([
-      '#3',
-      '#4',
-      '#9',
+      'WI-3',
+      'WI-4',
+      'I-9',
     ]);
-    expect(refs({ updatedSince: '2026-10-04' })).toEqual(['#3', '#4', '#9']);
+    expect(refs({ updatedSince: '2026-10-04' })).toEqual(['WI-3', 'WI-4', 'I-9']);
   });
 
   it('refuses a time that reads as no date, and a cursor it did not give', () => {
@@ -367,10 +380,10 @@ describe('list_items paging', () => {
   it('pages by limit to the last card, none lost or repeated', () => {
     const pages = allPages(state, { limit: 3 });
     expect(pages.map((p) => p.items.map((i) => i.ref))).toEqual([
-      ['#1', '#2', '#3'],
-      ['#4', '#5', '#6'],
-      ['#7', '#8', '#9'],
-      ['#10'],
+      ['WI-1', 'WI-2', 'WI-3'],
+      ['WI-4', 'WI-5', 'WI-6'],
+      ['WI-7', 'WI-8', 'I-9'],
+      ['WI-10'],
     ]);
     expect(pages.map((p) => p.nextCursor)).toEqual(['after-3', 'after-6', 'after-9', undefined]);
     expect(pages.every((p) => p.total === 10)).toBe(true);
@@ -383,7 +396,7 @@ describe('list_items paging', () => {
       card(11, 'review'),
     ]);
     const next = page(changed, { limit: 4, cursor: first.nextCursor });
-    expect(next.items.map((i) => i.ref)).toEqual(['#5', '#7', '#8', '#9']);
+    expect(next.items.map((i) => i.ref)).toEqual(['WI-5', 'WI-7', 'WI-8', 'I-9']);
   });
 
   it('answers no cards past the last one', () => {
@@ -405,7 +418,7 @@ describe('list_items paging', () => {
         descriptionRich: undefined,
       });
     const pages = allPages(planOf([huge(1), huge(2)]));
-    expect(pages.map((p) => p.items.map((i) => i.ref))).toEqual([['#1'], ['#2']]);
+    expect(pages.map((p) => p.items.map((i) => i.ref))).toEqual([['WI-1'], ['WI-2']]);
   });
 
   it('answers an empty plan with no cards and no cursor', () => {

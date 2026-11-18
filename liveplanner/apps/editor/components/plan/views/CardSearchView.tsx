@@ -7,6 +7,7 @@
 // (each with its count), so no pick ever leaves nothing. The filters are the view's own, saved with it, so everyone
 // sees the same search; someone who may only view sees them but cannot change them.
 import { useMemo } from 'react';
+import { cardRefIn } from '../card-ref';
 import {
   CARD_FIELDS,
   CARD_SEARCH_FILTERS_MAX,
@@ -174,7 +175,7 @@ export function CardSearchView({
                 <li key={card.id} className="min-w-0">
                   <button
                     type="button"
-                    aria-label={`Open ${itemTitle(card) || 'Untitled'}, ${type.label} #${card.key}, ${status ? statusNames.get(status) : 'No status'}`}
+                    aria-label={`Open ${itemTitle(card) || 'Untitled'}, ${type.label} ${cardRefIn(types)(card)}, ${status ? statusNames.get(status) : 'No status'}`}
                     className="block w-full cursor-pointer rounded-xl text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
                     {...openProps(plan, card.id)}
                   >

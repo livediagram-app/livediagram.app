@@ -52,6 +52,7 @@ export * from './locale-currency';
 export * from './type-statuses';
 export * from './card-search';
 export * from './card-display';
+export * from './card-prefix';
 export * from './status-names';
 export * from './plan-outline';
 export * from './removal-guard';

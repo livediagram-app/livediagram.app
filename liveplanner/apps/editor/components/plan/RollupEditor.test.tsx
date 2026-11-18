@@ -131,7 +131,7 @@ describe('Rollup', () => {
     );
     // The first live Project with a value, not the first one.
     expect(screen.getByLabelText('Preview').textContent).toContain(
-      `On #2 Website${currencyText(20, 'USD')}`,
+      `On P-2 Website${currencyText(20, 'USD')}`,
     );
     pick('Calculate', 'countDone');
     expect(stored()).not.toHaveProperty('source');
@@ -140,7 +140,7 @@ describe('Rollup', () => {
     expect(screen.getByRole('status').textContent).toContain(
       'Counts the done ones of the Task cards linking here through Parent.',
     );
-    expect(screen.getByLabelText('Preview').textContent).toContain('On #2 Website1');
+    expect(screen.getByLabelText('Preview').textContent).toContain('On P-2 Website1');
     pick('Through', '');
     expect(stored().through).toBeUndefined();
   });
@@ -205,7 +205,7 @@ describe('Lookup', () => {
       'Shows Due Date of the card Parent links to.',
     );
     expect(screen.getByLabelText('Preview').textContent).toContain(
-      `On #3 A${dayLabel('2026-12-01', 'medium')}`,
+      `On T-3 A${dayLabel('2026-12-01', 'medium')}`,
     );
   });
 

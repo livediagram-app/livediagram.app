@@ -206,7 +206,7 @@ describe('a plan view’s picture', () => {
     const svg = planViewArt(view('search'), data, 'light');
     expect(svg).toContain('Card Search');
     expect(svg).toContain('Write docs');
-    expect(svg).toContain('#2');
+    expect(svg).toContain('T-2');
   });
 
   it('draws Status Breakdown’s statuses by name', () => {

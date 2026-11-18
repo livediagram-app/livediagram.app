@@ -33,7 +33,8 @@ never told a change worked when it shows on no board.
   - **tabs**: every tab the caller may read, in order, with its id, name, kind and theme, and a Sheet tab's sheet ids, read
     from the stored tabs without their bodies, so a form verb names a board, a sheet or a Form tab in one request
     ([Forms](../030-forms/forms.md#agents)).
-- A card link (Parent, a Card field) reads as its card's number and title (`"#12 Fix login"`); writes take that form
+- A card link (Parent, a Card field) reads as its card's number and title (`"#12 Fix login"`, its type's prefix before
+  the number where it has one: `"WI-12 Fix login"`, [Card number prefixes](item-types.md#card-number-prefixes)); writes take that form
   back, by the number.
 - A Person or Card field that holds several ([Holds Several](item-types.md#holds-several)) reads as a comma list
   (`"Sam Reed, Ana Diaz"`, `"#3 Website, #5 Launch"`); writes take a comma list or a JSON list of names or numbers
@@ -298,7 +299,9 @@ planView={…}` or a changeset, and the api refuses a range outside 14, 30, 90 a
 ## Changing card types
 
 - **`change_card_types`** (MCP; the CLI's `type` verbs) changes the catalogue in order, each change one of:
-  - `add` `{ name, color?, glyph?, fields?, custom?, defaultStatus?, statuses? }`: a new type. Fields are
+  - `add` `{ name, prefix?, color?, glyph?, fields?, custom?, defaultStatus?, statuses? }`: a new type. `prefix` is its
+    [card prefix](item-types.md#card-number-prefixes) (absent, the one made from its name, stored); a `set` takes `prefix`
+    too (empty puts the made one back), and a prefix another type has is refused, naming that type. Fields are
     built-in field names (`assignee`, `due`...) added after Title and Status (Description and Assignee when none
     are given, as the type editor starts a type); `custom` is `[{ name, kind, options?, linkType?, linkTypes?, currency?, calculation?, formula?, result?, through?, aggregate?, source?, showAs?, timeSpent?, onCard?, required? }]`
     (kinds `text`, `longtext`, `number`, `currency`, `percent`, `duration`, `date`, `datetime`, `daterange`, `checkbox`, `link`, `email`, `phone`, `choice`, `card`,

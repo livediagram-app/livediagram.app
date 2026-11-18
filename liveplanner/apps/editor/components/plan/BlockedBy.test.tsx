@@ -203,7 +203,9 @@ describe('the item panel', () => {
     const section = screen.getByRole('region', { name: /Blocked By/ });
     expect(within(section).getByText('1 open').className).toContain('dark:text-red-400');
     expect(section.querySelectorAll('[data-blocker-done]')).toHaveLength(1);
-    fireEvent.click(within(section).getByRole('button', { name: `Open #${a.key} Website, Doing` }));
+    fireEvent.click(
+      within(section).getByRole('button', { name: `Open T-${a.key} Website, Doing` }),
+    );
     expect(onOpen).toHaveBeenCalledWith(a.id);
     cleanup();
     const allDone = card('Later', 'todo', [done.id]);
@@ -238,11 +240,11 @@ describe('the item panel', () => {
     );
     const lines = [...document.querySelectorAll('[data-blocker-clash]')];
     expect(lines.map((l) => l.textContent)).toEqual([
-      `!Starts the day #${design.key} Design is due`,
+      `!Starts the day T-${design.key} Design is due`,
     ]);
     expect(
       screen.getByRole('button', {
-        name: `Open #${design.key} Design, Doing. Starts the day #${design.key} Design is due`,
+        name: `Open T-${design.key} Design, Doing. Starts the day T-${design.key} Design is due`,
       }),
     ).toBeTruthy();
   });
@@ -305,7 +307,7 @@ describe('the Blocked By control', () => {
     const a = card('Website', 'doing');
     const launch = card('Launch', 'todo', [a.id]);
     draw(launch, [a, launch], EDITOR);
-    const key = screen.getByText(`#${a.key}`);
+    const key = screen.getByText(`T-${a.key}`);
     expect(key.className.split(/\s+/)).toContain('text-slate-600');
   });
 
@@ -318,15 +320,15 @@ describe('the Blocked By control', () => {
     const onSave = draw(a, [a, launch, other], EDITOR);
     fireEvent.click(screen.getByRole('button', { name: 'Add to Blocked By' }));
     const looped = screen.getByRole('option', {
-      name: `#${launch.key} Launch, waits on this card`,
+      name: `T-${launch.key} Launch, waits on this card`,
     });
     expect(screen.getByText('Waits on this card')).toBeTruthy();
     fireEvent.click(looped);
-    const message = `#${launch.key} Launch already waits on #${a.key} Website, so it can't block it.`;
+    const message = `T-${launch.key} Launch already waits on T-${a.key} Website, so it can't block it.`;
     expect(announce).toHaveBeenCalledWith(message);
     expect(notify).toHaveBeenCalledWith(message);
     expect(onSave).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('option', { name: `#${other.key} Other` }));
+    fireEvent.click(screen.getByRole('option', { name: `T-${other.key} Other` }));
     expect(onSave).toHaveBeenCalledWith(BLOCKED_BY.id, [other.id]);
   });
 

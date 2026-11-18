@@ -6,7 +6,9 @@
 import type { ItemTypesResponse, ItemTypesStale } from '@liveplanner/api-schema';
 import {
   readItemTypeCatalogue,
+  typesOf,
   validateItemTypeCatalogue,
+  withPinnedPrefixes,
   type ItemTypeCatalogue,
 } from '@liveplanner/items';
 import { isOfflineId, offlineSaveItemTypes } from '../offline/offline-store';
@@ -34,12 +36,18 @@ export async function saveItemTypes(
   scope: { ownerId: string; projectId: string; shareCode: string | null },
   itemTypes: ItemTypeCatalogue | null,
   expectedRev: number,
+  // The catalogue the change was made to: a type whose made card prefix it would shift keeps the one it had, as the
+  // api keeps it (item-types.md "Card number prefixes").
+  before: ItemTypeCatalogue | null = null,
 ): Promise<SavedItemTypes> {
   if (await isOfflineId(scope.projectId)) {
     // The same check the api makes, so an offline project never holds what a sync would refuse.
     let stored: ItemTypeCatalogue | null = null;
     if (itemTypes) {
-      const checked = validateItemTypeCatalogue(itemTypes);
+      const checked = validateItemTypeCatalogue({
+        ...itemTypes,
+        types: withPinnedPrefixes(typesOf(before), itemTypes.types),
+      });
       if (!checked.ok) throw new Error(`item types refused: ${checked.reason}`);
       stored = checked.catalogue;
     }

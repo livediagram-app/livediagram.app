@@ -7,6 +7,8 @@ import { itemTitle, type Item, type ItemPerson } from '@liveplanner/items';
 
 export type PreviewContext = {
   card: Item;
+  // Its number as people see it ("WI-12": item-types.md "Card number prefixes"), what {{card.key}} reads.
+  ref: string;
   // The column the card is in, by name.
   column: string;
   // The card's address (Copy Card Link's).
@@ -19,7 +21,7 @@ export type PreviewContext = {
   // A custom field's value on the card by its name ("Completed On"), as text.
   fieldByName: (name: string) => string;
   // Inside a branch, the card that started the rule (`{{trigger.…}}`); absent, those read as nothing.
-  trigger?: { title: string; key: number; link: string };
+  trigger?: { title: string; ref: string; link: string };
 };
 
 /** A day as values read it: "11 Nov 2026". */
@@ -38,7 +40,7 @@ function valueOf(name: string, ctx: PreviewContext): string {
     case 'card.title':
       return itemTitle(ctx.card);
     case 'card.key':
-      return `#${ctx.card.key}`;
+      return ctx.ref;
     case 'card.url':
       return ctx.link;
     case 'card.assignee': {
@@ -60,7 +62,7 @@ function valueOf(name: string, ctx: PreviewContext): string {
     case 'trigger.title':
       return ctx.trigger?.title ?? '';
     case 'trigger.key':
-      return ctx.trigger ? `#${ctx.trigger.key}` : '';
+      return ctx.trigger?.ref ?? '';
     case 'trigger.url':
       return ctx.trigger?.link ?? '';
   }

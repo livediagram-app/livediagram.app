@@ -50,7 +50,7 @@ describe('a branch', () => {
     expect(r.related.map((x) => x.card.id)).toEqual([kids[0]!.id, kids[2]!.id]);
     expect(r.related[0]!.patch).toEqual({ set: { flagged: true } });
     expect(r.related[0]!.comments).toEqual([
-      `#${parent.key} Epic https://app.test/project/p1?card=x / One https://app.test/c/${kids[0]!.id}`,
+      `B-${parent.key} Epic https://app.test/project/p1?card=x / One https://app.test/c/${kids[0]!.id}`,
     ]);
     expect(r.lines[0]).toEqual({
       kind: 'branch',
@@ -58,9 +58,9 @@ describe('a branch', () => {
       text: 'For each Child Card: on 3 related cards',
       cards: 3,
     });
-    expect(r.lines.map((l) => l.text)).toContain(`#${kids[0]!.key} Flag`);
+    expect(r.lines.map((l) => l.text)).toContain(`B-${kids[0]!.key} Flag`);
     expect(r.lines.find((l) => l.kind === 'condition')!.text).toBe(
-      `#${kids[1]!.key} Column is To Do (Done)`,
+      `B-${kids[1]!.key} Column is To Do (Done)`,
     );
   });
 
@@ -76,7 +76,7 @@ describe('a branch', () => {
       r.lines.filter((l) => l.kind === 'action' && !l.ok).map((l) => 'gone' in l && l.gone),
     ).toEqual(r.related.map(() => ({ kind: 'column', id: 'gone' })));
     expect(r.related[0]!.patch).toEqual({ set: { flagged: true } });
-    expect(r.lines[0]).toMatchObject({ ok: false, text: expect.stringContaining('failed on #') });
+    expect(r.lines[0]).toMatchObject({ ok: false, text: expect.stringContaining('failed on B-') });
   });
 
   it('says one card, a capped count, and finds none without the plan’s cards', () => {

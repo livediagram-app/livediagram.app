@@ -16,7 +16,7 @@ fields people usually want, and any item may carry other fields. The store never
 | **item type**  | What an item is (Task, Bug, Note...): a name, a glyph, a colour and the fields it offers          | kind (that is a tab's), category |
 | **field**      | One named value in an item's `fields` bag (`title`, `status`, `assignee`...)                      | column, property, attribute      |
 | **item store** | Every item of one project                                                                         | backlog, database, table         |
-| **item key**   | The short number people say out loud, `#12`: assigned once, per project, never reused             | id (the id is internal)          |
+| **item key**   | The short number people say out loud, `WI-12`: assigned once, per project, never reused           | id (the id is internal)          |
 | **rank**       | The ordering key that places an item among others in a column                                     | position, index, order           |
 | **status**     | The `status` field: the value a board's columns are made of                                       | state, column, stage             |
 | **card**       | How an item is drawn: on a board, or alone as a Plan card. A card is a view; the item is the data | item (the data is the item)      |
@@ -30,7 +30,9 @@ fields people usually want, and any item may carry other fields. The store never
 - **`fields`**: a JSON object of field values. Known fields are validated by kind; other keys are kept as long as
   their values are JSON scalars, or arrays of them, within the size bounds.
 - **`rank`**: a fractional ordering key. Moving one item writes one item; nothing else is renumbered.
-- **`key`**: the item's number in its project, assigned by the store when the item is made (1, 2, 3...).
+- **`key`**: the item's number in its project, assigned by the store when the item is made (1, 2, 3...). People
+  see it after its card type's prefix (`WI-12`, [Card number prefixes](item-types.md#card-number-prefixes)); the
+  prefix is never stored on the item, so a card keeps its number when its type or prefix changes.
 - **Who and when**: `createdBy` and `updatedBy` (the display identity of the person or agent), `createdAt` and
   `updatedAt`. A person's id on an item is a one-way hash of their identity, never the identity itself: a guest's
   id is their credential, so items never carry it. They are stamped by the plan on each write, never sent by a
@@ -647,7 +649,7 @@ A card's history marks an agent's changes with the same sparkle, worded by what 
 
 **Add Thread to Card** opens a dialog, **Add Thread to Card**, naming the thread:
 
-- A search field (focused on open with a mouse), matching a card's number (`12`, `#12`), title or type.
+- A search field (focused on open with a mouse), matching a card's number (`12`, `#12`, `WI-12`), title or type.
 - **This plan's cards only** (not archived, not in the Trash), as the card finder draws them (type glyph and
   colour, number, title), newest change first, at most 50 until a search narrows them. A card the thread is already
   on is shown with **Already on this card**, and cannot be picked. No other plan is offered, in the cloud or in
@@ -898,7 +900,7 @@ card and read one card at a time).
 
 ## Finding a card
 
-The editor's **Search** (in the footer's Tools, and ⌘K) finds a card by its number, title or description, as it finds
+The editor's **Search** (in the footer's Tools, and ⌘K) finds a card by its number (`12`, `#12`, `WI-12`), title or description, as it finds
 tabs and elements. The **Cards** button and its Find a Card panel are gone (owner, 2026-11-16), and with them the
 plan strip's Find row on a phone; the strip holds the Trash and Card Types.
 

@@ -42,6 +42,16 @@ import {
 import type { CardTypeChange, TypeChangesResult } from './type-change-inputs';
 import type { Item } from './item';
 import { templateProblem, withTemplateChanges } from './type-change-templates';
+import {
+  PREFIX_RULE,
+  autoPrefix,
+  normalPrefix,
+  prefixOf,
+  prefixOwner,
+  prefixTaken,
+  prefixesOf,
+  withPinnedPrefixes,
+} from './card-prefix';
 
 // The changes' shapes, the type-level parts and the custom fields live in their own modules; this entry keeps every
 // export.
@@ -86,6 +96,16 @@ function withStatusList(type: ItemTypeDef, list: readonly string[]): ItemTypeDef
   return next;
 }
 
+// A prefix an agent gave type `id`, read (item-types.md "Card number prefixes"): refused when it is not a prefix or
+// another type of the plan has it.
+function prefixFor(input: string, id: string, types: readonly ItemTypeDef[]): string {
+  const prefix = normalPrefix(input);
+  if (!prefix) throw invalid(`"${input.trim()}": ${PREFIX_RULE}`);
+  const owner = prefixOwner(types, id, prefix);
+  if (owner) throw invalid(prefixTaken(prefix, owner));
+  return prefix;
+}
+
 // A catalogue refusal with the type it names: "Bug: types[3].fields", so a base change that takes a type inheriting
 // from it past a cap says which.
 function namedReason(reason: string, types: readonly ItemTypeDef[]): string {
@@ -123,11 +143,16 @@ export function applyCardTypeChanges(
         const name = c.name.trim();
         if (types.some((t) => statusKey(t.label) === statusKey(name)))
           throw invalid(`A card type "${name}" already exists.`);
+        const id = newItemTypeId(name, types);
         let type: ItemTypeDef = {
           ...NEW_ITEM_TYPE,
-          id: newItemTypeId(name, types),
+          id,
           label: name,
           newTitle: defaultNewTitle(name),
+          prefix:
+            c.prefix !== undefined && c.prefix.trim()
+              ? prefixFor(c.prefix, id, types)
+              : autoPrefix(name, new Set(prefixesOf(types).values())),
           ...(c.color ? { color: colourOf(c.color) } : {}),
           ...(c.glyph ? { glyph: glyphOf(c.glyph) } : {}),
         };
@@ -193,7 +218,19 @@ export function applyCardTypeChanges(
           if (types.some((t) => t.id !== id && statusKey(t.label) === statusKey(name)))
             throw invalid(`A card type "${name}" already exists.`);
           formerNames.set(statusKey(type.label), id);
-          type = { ...type, label: name, newTitle: defaultNewTitle(name) };
+          // Renaming keeps the prefix it had ("Card number prefixes"): a made one is stored first.
+          type = {
+            ...type,
+            label: name,
+            newTitle: defaultNewTitle(name),
+            prefix: type.prefix ?? prefixOf(types, id)!,
+          };
+        }
+        if (c.prefix === null || (c.prefix !== undefined && !c.prefix.trim())) {
+          const { prefix: _cleared, ...rest } = type;
+          type = rest;
+        } else if (c.prefix !== undefined) {
+          type = { ...type, prefix: prefixFor(c.prefix, id, types) };
         }
         if (c.color) type = { ...type, color: colourOf(c.color) };
         if (c.glyph) type = { ...type, glyph: glyphOf(c.glyph) };
@@ -279,6 +316,8 @@ export function applyCardTypeChanges(
     if (err instanceof Refused) return { ok: false, applied, ...err.refusal };
     throw err;
   }
+  // A type whose made prefix these changes would shift (one before it deleted) keeps the one it had.
+  types = withPinnedPrefixes(typesOf(stored), types);
   const checked = validateItemTypeCatalogue({ version: ITEM_TYPE_CATALOGUE_VERSION, types });
   if (!checked.ok) {
     // A card template's rule is said in words (type-change-templates.ts), the type and template named.

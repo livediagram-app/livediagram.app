@@ -153,14 +153,14 @@ describe('planListing', () => {
       title: 'Sprint',
       takes: 'every type',
       columns: [
-        { name: 'To Do', wipLimit: 2, cards: ['#2', '#1'] },
+        { name: 'To Do', wipLimit: 2, cards: ['T-2', 'T-1'] },
         // Done counts as done by its name (docs/specs/026-plan/plan-board.md "Done columns").
-        { name: 'Done', done: true, cards: ['#3'] },
+        { name: 'Done', done: true, cards: ['B-3'] },
       ],
     });
-    expect(listing.notOnBoard).toEqual(['#4']);
-    expect(listing.items.find((i) => i.ref === '#5')!.column).toBe('Trash');
-    expect(listing.items.find((i) => i.ref === '#4')!.column).toBeNull();
+    expect(listing.notOnBoard).toEqual(['T-4']);
+    expect(listing.items.find((i) => i.ref === 'T-5')!.column).toBe('Trash');
+    expect(listing.items.find((i) => i.ref === 'T-4')!.column).toBeNull();
     expect(listing.types.find((t) => t.id === 'bug')!.custom).toEqual([
       { id: 'f-sev', name: 'Severity', kind: 'choice', options: ['S1', 'S2'] },
     ]);
@@ -181,7 +181,7 @@ describe('planListing', () => {
     expect(listing.boards[0]).toMatchObject({
       sortBy: ['Severity (Reverse Option Order)'],
       columns: [
-        { name: 'To Do', cards: ['#2', '#1'] },
+        { name: 'To Do', cards: ['B-2', 'B-1'] },
         { name: 'Done', cards: [] },
       ],
     });
@@ -192,7 +192,7 @@ describe('planListing', () => {
     const listing = planListing(await readPlanState(a, D));
     expect(listing.boards[0]!.takes).toEqual([]);
     expect(listing.boards[0]!.columns.flatMap((c) => c.cards)).toEqual([]);
-    expect(listing.notOnBoard).toEqual(expect.arrayContaining(['#1', '#2']));
+    expect(listing.notOnBoard).toEqual(expect.arrayContaining(['T-1', 'T-2']));
   });
 
   it('names custom fields as writes do', async () => {
@@ -360,9 +360,9 @@ describe('planListing', () => {
     it('lists it as a comma list, and the switch on its type', async () => {
       const { api: a } = api({ [`/projects/${D}/items`]: { items: cards, rev: 1 } }, plan);
       const listing = planListing(await readPlanState(a, D));
-      expect(listing.items.find((i) => i.ref === '#9')!.fields).toMatchObject({
+      expect(listing.items.find((i) => i.ref === 'TE-9')!.fields).toMatchObject({
         Reviewers: 'Sam, Ana',
-        Related: '#1 B, #2 A, gone',
+        Related: 'T-1 B, T-2 A, gone',
       });
       expect(listing.types.find((t) => t.id === 'team')!.custom).toEqual([
         { id: 'f-rev', name: 'Reviewers', kind: 'person', multiple: true },
@@ -390,12 +390,12 @@ describe('planListing', () => {
       const result = await applyItemChanges(
         a,
         D,
-        [{ op: 'set', item: '#9', fields: { Reviewers: 'Sam, Ana', Related: ['#1', '#2'] } }],
+        [{ op: 'set', item: 'TE-9', fields: { Reviewers: 'Sam, Ana', Related: ['T-1', 'T-2'] } }],
         await readPlanState(a, D),
       );
       expect(result.refusal).toBeUndefined();
       expect(result.applied.join('\n')).toContain('Sam, Ana');
-      expect(result.applied.join('\n')).toContain('#1, #2');
+      expect(result.applied.join('\n')).toContain('T-1, T-2');
     });
   });
 
@@ -486,12 +486,12 @@ describe('planListing', () => {
 
     it('lists the switch, the blockers, the open count and what each card blocks', async () => {
       const listing = planListing(await readPlanState(engine(), D));
-      const copy = listing.items.find((i) => i.ref === '#3')!;
-      expect(copy.fields['Blocked By']).toBe('#1 Website, #2 Launch');
+      const copy = listing.items.find((i) => i.ref === 'J-3')!;
+      expect(copy.fields['Blocked By']).toBe('J-1 Website, J-2 Launch');
       // Launch is done, so one blocker is open.
       expect(copy.blocked).toBe(1);
-      expect(listing.items.find((i) => i.ref === '#1')!.blocks).toEqual(['#3 Copy']);
-      expect(listing.items.find((i) => i.ref === '#1')!.blocked).toBeUndefined();
+      expect(listing.items.find((i) => i.ref === 'J-1')!.blocks).toEqual(['J-3 Copy']);
+      expect(listing.items.find((i) => i.ref === 'J-1')!.blocked).toBeUndefined();
       expect(listing.types.find((t) => t.id === 'job')!.custom[0]).toMatchObject({ blocks: true });
     });
 
@@ -501,12 +501,12 @@ describe('planListing', () => {
       const result = await applyItemChanges(
         a,
         D,
-        [{ op: 'set', item: '#1', fields: { 'Blocked By': '#3' } }],
+        [{ op: 'set', item: 'J-1', fields: { 'Blocked By': 'J-3' } }],
         await readPlanState(a, D),
       );
       expect(result.refusal).toEqual({
         code: 'blocks_cycle',
-        message: "#3 Copy already waits on #1 Website, so it can't block it.",
+        message: "J-3 Copy already waits on J-1 Website, so it can't block it.",
       });
       expect(writes).toEqual([]);
       // A link that closes nothing is written, and so is a new card blocked by one.
@@ -514,8 +514,8 @@ describe('planListing', () => {
         a,
         D,
         [
-          { op: 'set', item: '#1', fields: { 'Blocked By': '#2' } },
-          { op: 'add', title: 'Later', type: 'Job', fields: { 'Blocked By': '#3' } },
+          { op: 'set', item: 'J-1', fields: { 'Blocked By': 'J-2' } },
+          { op: 'add', title: 'Later', type: 'Job', fields: { 'Blocked By': 'J-3' } },
         ],
         await readPlanState(a, D),
       );
@@ -550,7 +550,7 @@ describe('planListing', () => {
           a,
           D,
           [
-            { op: 'set', item: '#3', fields: { 'Blocked By': blank }, clear: ['f-blk'] },
+            { op: 'set', item: 'B-3', fields: { 'Blocked By': blank }, clear: ['f-blk'] },
             { op: 'add', title: 'Later', type: 'Job', fields: { 'f-blk': blank } },
           ],
           await readPlanState(a, D),
@@ -578,7 +578,7 @@ describe('planListing', () => {
     ];
     const { api: a } = api({ [`/projects/${D}/items`]: { items: linked, rev: 1 } });
     const listing = planListing(await readPlanState(a, D));
-    expect(listing.items.find((i) => i.ref === '#4')!.fields['Parent']).toBe('#3 Epic');
+    expect(listing.items.find((i) => i.ref === 'T-4')!.fields['Parent']).toBe('P-3 Epic');
   });
 
   it('hides cards of types a board does not take, filters by names, and hints with no board', async () => {
@@ -592,7 +592,7 @@ describe('planListing', () => {
     const listing = planListing(state, filter);
     expect(listing.boards[0]!.takes).toEqual(['Bug']);
     expect(listing.boards[0]!.columns[0]!.cards).toEqual([]);
-    expect(listing.items.map((i) => i.ref)).toEqual(['#3']);
+    expect(listing.items.map((i) => i.ref)).toEqual(['B-3']);
     const { api: none } = api({}, { boards: [], statuses: [], types: ITEM_TYPES });
     expect(planListing(await readPlanState(none, D)).hint).toBe(NO_BOARD_HINT);
   });
@@ -614,7 +614,7 @@ describe('resolveListingFilter', () => {
       types: ['task'],
     });
     const listing = planListing(state, { statuses: ['todo~x'] });
-    expect(listing.items.map((i) => i.ref)).toEqual(['#1', '#2']);
+    expect(listing.items.map((i) => i.ref)).toEqual(['T-1', 'T-2']);
   });
 
   it('refuses a card type the project lacks, naming the ones it has', async () => {
@@ -651,7 +651,7 @@ describe('applyItemChanges', () => {
       D,
       [
         { op: 'add', title: 'New', type: 'Bug', status: 'to do' },
-        { op: 'set', item: '#1', fields: { Priority: 'High' } },
+        { op: 'set', item: 'T-1', fields: { Priority: 'High' } },
       ],
       state,
     );
@@ -659,7 +659,7 @@ describe('applyItemChanges', () => {
     expect(result.refusal?.code).toBe('api_error');
     // Before anything landed, the failure is thrown as ever.
     await expect(
-      applyItemChanges(a, D, [{ op: 'set', item: '#1', fields: { Priority: 'High' } }], state),
+      applyItemChanges(a, D, [{ op: 'set', item: 'T-1', fields: { Priority: 'High' } }], state),
     ).rejects.toThrow();
   });
 
@@ -676,8 +676,8 @@ describe('applyItemChanges', () => {
           status: 'to do',
           fields: { severity: 's2', assignee: 'sam' },
         },
-        { op: 'set', item: '#1', fields: { Priority: 'High' }, clear: ['Due Date'] },
-        { op: 'move', item: '#1', status: 'DONE', before: '#3' },
+        { op: 'set', item: 'T-1', fields: { Priority: 'High' }, clear: ['Due Date'] },
+        { op: 'move', item: 'T-1', status: 'DONE', before: 'B-3' },
       ],
       await readPlanState(a, D),
     );
@@ -695,7 +695,7 @@ describe('applyItemChanges', () => {
       { set: { priority: 'high' }, clear: ['due'] },
       { status: 'done~x', before: 'ccc333' },
     ]);
-    expect(result.applied[0]).toBe('+ #9 [task] New in To Do');
+    expect(result.applied[0]).toBe('+ T-9 [task] New in To Do');
   });
 
   it('stops at an unknown name, saying what applied before it', async () => {
@@ -705,8 +705,8 @@ describe('applyItemChanges', () => {
       D,
       [
         { op: 'add', title: 'New' },
-        { op: 'move', item: '#1', status: 'Review' },
-        { op: 'delete', item: '#2' },
+        { op: 'move', item: 'T-1', status: 'Review' },
+        { op: 'delete', item: 'T-2' },
       ],
       await readPlanState(a, D),
     );
@@ -724,7 +724,7 @@ describe('applyItemChanges', () => {
     const r = await applyItemChanges(
       refusing,
       D,
-      [{ op: 'move', item: '#1', status: 'Done' }],
+      [{ op: 'move', item: 'T-1', status: 'Done' }],
       await readPlanState(refusing, D),
     );
     expect(r.refusal!.message).toContain('card type does not use that column');
@@ -735,7 +735,7 @@ describe('applyItemChanges', () => {
       applyItemChanges(
         down,
         D,
-        [{ op: 'set', item: '#1', fields: { priority: 'low' } }],
+        [{ op: 'set', item: 'T-1', fields: { priority: 'low' } }],
         await readPlanState(down, D),
       ),
     ).rejects.toBeInstanceOf(ApiError);
@@ -745,7 +745,7 @@ describe('applyItemChanges', () => {
     const del = await applyItemChanges(
       gone,
       D,
-      [{ op: 'delete', item: '#1' }],
+      [{ op: 'delete', item: 'T-1' }],
       await readPlanState(gone, D),
     );
     expect(del.refusal).toMatchObject({ code: 'http_404' });
@@ -763,9 +763,9 @@ describe('flagging a card', () => {
         { op: 'add', title: 'New', type: 'Bug', fields: { flagged: true } },
         // An add given false has nothing to clear: the card starts unflagged.
         { op: 'add', title: 'New', fields: { Flag: false } },
-        { op: 'set', item: '#1', fields: { Flag: 'yes' } },
-        { op: 'set', item: '#1', fields: { flagged: false } },
-        { op: 'set', item: '#3', clear: ['flagged'] },
+        { op: 'set', item: 'T-1', fields: { Flag: 'yes' } },
+        { op: 'set', item: 'T-1', fields: { flagged: false } },
+        { op: 'set', item: 'B-3', clear: ['flagged'] },
       ],
       await readPlanState(a, D),
     );
@@ -786,7 +786,7 @@ describe('flagging a card', () => {
     const result = await applyItemChanges(
       a,
       D,
-      [{ op: 'set', item: '#1', fields: { flagged: 'soon' } }],
+      [{ op: 'set', item: 'T-1', fields: { flagged: 'soon' } }],
       await readPlanState(a, D),
     );
     expect(result.refusal).toMatchObject({ code: 'value_invalid' });
@@ -803,8 +803,8 @@ describe('flagging a card', () => {
       [`/projects/${D}/items`]: () => Response.json({ items: flagged, rev: 1 }),
     });
     const listing = planListing(await readPlanState(a, D));
-    expect(listing.items.find((i) => i.ref === '#1')!.fields).toMatchObject({ flagged: true });
-    expect(listing.items.find((i) => i.ref === '#2')!.fields).not.toHaveProperty('flagged');
+    expect(listing.items.find((i) => i.ref === 'T-1')!.fields).toMatchObject({ flagged: true });
+    expect(listing.items.find((i) => i.ref === 'T-2')!.fields).not.toHaveProperty('flagged');
   });
 });
 
@@ -826,7 +826,7 @@ describe('changeCardTypes', () => {
     expect(seen.find((s) => s.path.endsWith('/ccc333'))!.body).toEqual({
       set: { status: TRASH_STATUS, trashedFrom: 'done~x' },
     });
-    expect(r.trashed).toEqual(['#3']);
+    expect(r.trashed).toEqual(['B-3']);
     expect(r.types.some((t) => t.id === 'risk')).toBe(true);
   });
 
@@ -1024,8 +1024,8 @@ describe('change lines', () => {
       a,
       D,
       [
-        { op: 'set', item: '#1', fields: { labels: ['a', 'b'], description: long } },
-        { op: 'set', item: '#1', fields: { labels: ['a'], estimate: 3, parent: '#2' } },
+        { op: 'set', item: 'T-1', fields: { labels: ['a', 'b'], description: long } },
+        { op: 'set', item: 'T-1', fields: { labels: ['a'], estimate: 3, parent: 'T-2' } },
       ],
       await readPlanState(a, D),
     );
@@ -1033,7 +1033,7 @@ describe('change lines', () => {
     expect(r.applied[0]).toContain('…');
     expect(r.applied[1]).toContain('labels = 1 entry');
     expect(r.applied[1]).toContain('estimate = 3');
-    expect(r.applied[1]).toContain('= #2');
+    expect(r.applied[1]).toContain('= T-2');
   });
 
   it('clears a value a removed field left behind, by its key', async () => {
@@ -1042,7 +1042,7 @@ describe('change lines', () => {
     const r = await applyItemChanges(
       a,
       D,
-      [{ op: 'set', item: '#1', clear: ['f-browser'] }],
+      [{ op: 'set', item: 'T-1', clear: ['f-browser'] }],
       await readPlanState(a, D),
     );
     expect(r.refusal).toBeUndefined();
@@ -1054,7 +1054,7 @@ describe('change lines', () => {
     const r = await applyItemChanges(
       a,
       D,
-      [{ op: 'set', item: '#1', fields: { priority: 'high', assignee: 'Robin' }, clear: ['due'] }],
+      [{ op: 'set', item: 'T-1', fields: { priority: 'high', assignee: 'Robin' }, clear: ['due'] }],
       await readPlanState(a, D),
     );
     expect(r.applied[0]).toContain('; set priority = "high", assignee = Robin; cleared due');
@@ -1442,8 +1442,8 @@ describe('every branch of the engine', () => {
       a,
       D,
       [
-        { op: 'set', item: '#9', type: 'Triage' },
-        { op: 'set', item: '#9', type: 'Triage', fields: { Severity: 'S3' } },
+        { op: 'set', item: 'T-9', type: 'Triage' },
+        { op: 'set', item: 'T-9', type: 'Triage', fields: { Severity: 'S3' } },
       ],
       state,
     );
@@ -1469,9 +1469,9 @@ describe('every branch of the engine', () => {
       a,
       D,
       [
-        { op: 'set', item: '#1', clear: ['due'] },
-        { op: 'set', item: '#1', type: 'Bug' },
-        { op: 'set', item: '#1', fields: { assignee: 'robin' } },
+        { op: 'set', item: 'T-1', clear: ['due'] },
+        { op: 'set', item: 'T-1', type: 'Bug' },
+        { op: 'set', item: 'T-1', fields: { assignee: 'robin' } },
       ],
       state,
     );
@@ -1598,7 +1598,7 @@ describe('a description written as Markdown', () => {
       D,
       [
         { op: 'add', title: 'New', status: 'To Do', fields: { description: '## Why\n**Soon**' } },
-        { op: 'set', item: '#1', fields: { description: 'See [docs](https://x.dev)' } },
+        { op: 'set', item: 'T-1', fields: { description: 'See [docs](https://x.dev)' } },
       ],
       await readPlanState(a, D),
     );
@@ -1627,7 +1627,7 @@ describe('a description written as Markdown', () => {
     const r = await applyItemChanges(
       a,
       D,
-      [{ op: 'set', item: '#1', fields: { description: 'Plain now' } }],
+      [{ op: 'set', item: 'T-1', fields: { description: 'Plain now' } }],
       await readPlanState(a, D),
     );
     expect(posted(seen)[0]).toEqual({
@@ -1640,7 +1640,7 @@ describe('a description written as Markdown', () => {
     await applyItemChanges(
       b,
       D,
-      [{ op: 'set', item: '#1', fields: { description: 'Plain now' } }],
+      [{ op: 'set', item: 'T-1', fields: { description: 'Plain now' } }],
       await readPlanState(b, D),
     );
     expect(posted(seenB)[0]).toEqual({ set: { description: 'Plain now' } });
@@ -1651,7 +1651,7 @@ describe('a description written as Markdown', () => {
     const r = await applyItemChanges(
       a,
       D,
-      [{ op: 'set', item: '#1', clear: ['Description'] }],
+      [{ op: 'set', item: 'T-1', clear: ['Description'] }],
       await readPlanState(a, D),
     );
     expect(posted(seen)[0]).toEqual({ clear: ['description', 'descriptionRich'] });
@@ -1681,7 +1681,7 @@ describe('a Long Text field written as Markdown', () => {
     const r = await applyItemChanges(
       a,
       D,
-      [{ op: 'set', item: '#1', fields: { Steps: '1. Open **Settings**' } }],
+      [{ op: 'set', item: 'T-1', fields: { Steps: '1. Open **Settings**' } }],
       await readPlanState(a, D),
     );
     expect(posted(seen)[0]).toEqual({
@@ -1700,7 +1700,7 @@ describe('a Long Text field written as Markdown', () => {
     await applyItemChanges(
       a,
       D,
-      [{ op: 'set', item: '#1', fields: { Steps: 'Plain' } }],
+      [{ op: 'set', item: 'T-1', fields: { Steps: 'Plain' } }],
       await readPlanState(a, D),
     );
     expect(posted(seen)[0]).toEqual({ set: { 'f-steps': 'Plain' }, clear: ['f-stepsRich'] });
@@ -1712,7 +1712,7 @@ describe('a Long Text field written as Markdown', () => {
     const r = await applyItemChanges(
       a,
       D,
-      [{ op: 'set', item: '#1', clear: ['Steps'] }],
+      [{ op: 'set', item: 'T-1', clear: ['Steps'] }],
       await readPlanState(a, D),
     );
     expect(posted(seen)[0]).toEqual({ clear: ['f-steps', 'f-stepsRich'] });
@@ -1728,7 +1728,7 @@ describe('a Long Text field written as Markdown', () => {
     await applyItemChanges(
       a,
       D,
-      [{ op: 'set', item: '#1', fields: { description: '**Now**' } }],
+      [{ op: 'set', item: 'T-1', fields: { description: '**Now**' } }],
       await readPlanState(a, D),
     );
     expect(posted(seen)[0]).toEqual({

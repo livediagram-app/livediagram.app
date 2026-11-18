@@ -22,7 +22,7 @@ import { PlanTypeGlyph } from './plan-type-glyph';
 const LinkIcon = lucideGlyph(lucideLink, 14);
 
 export function ItemPanelMenu({
-  itemKey,
+  itemRef,
   canEdit,
   canRetire = canEdit,
   archived,
@@ -36,7 +36,8 @@ export function ItemPanelMenu({
   repeat,
   runRules,
 }: {
-  itemKey: number;
+  // Its number as people see it ("WI-12": item-types.md "Card number prefixes").
+  itemRef: string;
   // Someone who may only view gets Help alone.
   canEdit: boolean;
   // Archive, Trash and the type editor are an Editor's; a Participant duplicates and flags
@@ -69,7 +70,7 @@ export function ItemPanelMenu({
       <EllipsisTriggerButton
         ref={setButton}
         size="lg"
-        label={`More for #${itemKey}`}
+        label={`More for ${itemRef}`}
         expanded={open}
         onClick={() => setOpen((v) => !v)}
       />

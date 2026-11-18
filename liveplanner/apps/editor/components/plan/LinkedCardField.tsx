@@ -12,6 +12,7 @@
 // list stays open for more. A Blocked By field (item-types.md "Blocked By") never adds a card that already waits on
 // this one: the pick leaves the field as it was and says why, and such a card reads "Waits on this card" in the list.
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { cardRefIn } from './card-ref';
 import {
   blockingLoop,
   blockingLoopMessage,
@@ -76,6 +77,7 @@ export function LinkedCardField({
 }) {
   const plan = usePlan();
   const announce = plan?.announce;
+  const refOf = cardRefIn(types);
   // The chain a card would close as this card's blocker, when it already waits on it; null otherwise.
   const loopOf = (card: Item) =>
     blocksFor ? blockingLoop(items, types, blocksFor, card.id) : null;
@@ -101,18 +103,21 @@ export function LinkedCardField({
     ? (linkedCard(items, linkedId) ?? candidates.find((c) => c.id === linkedId))
     : undefined;
   const missing = !!linkedId && !linked;
-  const name = linked ? `#${linked.key} ${itemTitle(linked)}` : missing ? 'Missing card' : 'None';
+  const name = linked ? `${refOf(linked)} ${itemTitle(linked)}` : missing ? 'Missing card' : 'None';
 
   // None first, then the candidates matching the filter (by number or title, ignoring case).
   const options = useMemo(() => {
     const q = query.trim().toLowerCase().replace(/^#/, '');
     const list = q
       ? candidates.filter(
-          (c) => String(c.key).startsWith(q) || itemTitle(c).toLowerCase().includes(q),
+          (c) =>
+            String(c.key).startsWith(q) ||
+            cardRefIn(types)(c).toLowerCase().startsWith(q) ||
+            itemTitle(c).toLowerCase().includes(q),
         )
       : candidates;
     return (multiple ? list : [undefined, ...list]) as (Item | undefined)[];
-  }, [candidates, query, multiple]);
+  }, [candidates, query, multiple, types]);
 
   const close = (refocus = true) => {
     setOpen(false);
@@ -124,7 +129,7 @@ export function LinkedCardField({
     if (multiple) {
       const loop = card && !chosen.includes(card.id) ? loopOf(card) : null;
       if (loop) {
-        const message = blockingLoopMessage(loop);
+        const message = blockingLoopMessage(loop, types);
         announce?.(message);
         plan?.notify?.(message);
         return;
@@ -137,7 +142,7 @@ export function LinkedCardField({
     }
     const loop = card && card.id !== linkedId ? loopOf(card) : null;
     if (loop) {
-      const message = blockingLoopMessage(loop);
+      const message = blockingLoopMessage(loop, types);
       announce?.(message);
       plan?.notify?.(message);
       close();
@@ -200,12 +205,12 @@ export function LinkedCardField({
               ) as string[] | undefined,
             );
             const gone = cardOf(key);
-            announce?.(`Removed ${gone ? `#${gone.key}` : 'Missing card'}`);
+            announce?.(`Removed ${gone ? refOf(gone) : 'Missing card'}`);
           }}
           chips={chosen.map((cid) => {
             const card = cardOf(cid);
             const t = card ? typeIn(types, card.type) : undefined;
-            const cardName = card ? `#${card.key} ${itemTitle(card)}` : 'Missing card';
+            const cardName = card ? `${refOf(card)} ${itemTitle(card)}` : 'Missing card';
             const body = (
               <>
                 {t && card ? (
@@ -220,7 +225,7 @@ export function LinkedCardField({
                   <>
                     {/* slate-600: slate-500 reads 4.3:1 on the chip's slate-100. */}
                     <span className="text-optical-line shrink-0 tabular-nums text-slate-600 dark:text-slate-400">
-                      #{card.key}
+                      {refOf(card)}
                     </span>
                     <span className="text-optical-line min-w-0 truncate">{itemTitle(card)}</span>
                   </>
@@ -295,7 +300,7 @@ export function LinkedCardField({
               {linked ? (
                 <>
                   <span className="shrink-0 rounded bg-slate-100 px-1 text-[11px] font-medium tabular-nums text-slate-600 dark:bg-slate-800">
-                    #{linked.key}
+                    {refOf(linked)}
                   </span>
                   <span className="min-w-0 flex-1 truncate font-medium text-slate-800 dark:text-slate-100">
                     {itemTitle(linked)}
@@ -376,7 +381,7 @@ export function LinkedCardField({
                     // The full number and title, whatever the clamp hides.
                     aria-label={
                       card
-                        ? `#${card.key} ${itemTitle(card)}${waits ? ', waits on this card' : ''}`
+                        ? `${refOf(card)} ${itemTitle(card)}${waits ? ', waits on this card' : ''}`
                         : 'None'
                     }
                     aria-disabled={waits || undefined}
@@ -396,7 +401,7 @@ export function LinkedCardField({
                           <PlanTypeGlyph glyph={t.glyph} size={14} />
                         </span>
                         <span className="mt-[2px] shrink-0 text-[11px] tabular-nums text-slate-500 dark:text-slate-400">
-                          #{card.key}
+                          {refOf(card)}
                         </span>
                         {/* The title on up to two lines; a longer one ends in an ellipsis (the whole title in the
                           tooltip), and an unbroken string breaks rather than overflow. */}

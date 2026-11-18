@@ -125,7 +125,7 @@ describe('Run Rule in the card menu', () => {
   it('is drawn only with a manual rule on, and runs it', () => {
     render(
       <ItemPanelMenu
-        itemKey={7}
+        itemRef="#7"
         canEdit
         archived={false}
         flagged={false}
@@ -140,7 +140,7 @@ describe('Run Rule in the card menu', () => {
     const onManage = vi.fn();
     render(
       <ItemPanelMenu
-        itemKey={7}
+        itemRef="#7"
         canEdit
         archived={false}
         flagged={false}

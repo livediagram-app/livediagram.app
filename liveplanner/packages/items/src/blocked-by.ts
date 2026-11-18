@@ -10,6 +10,7 @@ import { isArchived, isTrashed } from './board';
 import type { CustomFieldDef, ItemTypeDef } from './item-types';
 import { typeIn } from './type-catalogue';
 import { linkedCardIds } from './several-values';
+import { cardRefTitle } from './card-prefix';
 
 // Whether a status counts as done (calculated-fields.ts IsDoneStatus, restated so this module stays a leaf).
 type IsDone = (status: string | undefined) => boolean;
@@ -245,15 +246,18 @@ export function blockingCycleOf(
   return null;
 }
 
-// "#3 Website"; a card not yet made (no number) is named by its title alone.
-const named = (it: BlockingCard) => {
-  const title = itemTitle(it).trim() || 'Untitled';
-  return it.key ? `#${it.key} ${title}` : title;
-};
+// "T-3 Website" ("#3 Website" with no types to read its prefix from); a card not yet made (no number) is named by its
+// title alone.
+const namedIn = (types: readonly ItemTypeDef[] | undefined) => (it: BlockingCard) =>
+  cardRefTitle({ key: it.key ?? 0, type: it.type }, itemTitle(it).trim() || 'Untitled', types);
 
-// What a refused loop says: "#5 Launch already waits on #3 Website, so it can't block it.", naming the cards between
-// when the chain is longer ("... waits on #3 Website through #7 Copy, ...").
-export function blockingLoopMessage(chain: readonly BlockingCard[]): string {
+// What a refused loop says: "T-5 Launch already waits on T-3 Website, so it can't block it.", naming the cards between
+// when the chain is longer ("... waits on T-3 Website through T-7 Copy, ...").
+export function blockingLoopMessage(
+  chain: readonly BlockingCard[],
+  types?: readonly ItemTypeDef[],
+): string {
+  const named = namedIn(types);
   const blocker = chain[0]!;
   const item = chain[chain.length - 1]!;
   const between = chain.slice(1, -1);

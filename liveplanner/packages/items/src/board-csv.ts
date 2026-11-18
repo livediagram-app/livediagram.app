@@ -42,6 +42,7 @@ import { durationText, isTimeSpent, parseDuration } from './duration-fields';
 import { instantIso, parseDateTime } from './date-time-fields';
 import { isTimedRange, parseDateRange, rangeIso } from './date-range-fields';
 import { isPhoneNumber } from './phone-fields';
+import { cardRef } from './card-prefix';
 import { riskLabel, riskOf } from './risk-fields';
 import { pullRequestValueOf } from './pull-request-fields';
 
@@ -155,7 +156,8 @@ export function boardCsvRows(
           : ''
         : col.column.name || statusLabel(col.column.status, statusNames);
       rows.push([
-        String(item.key),
+        // Its number as people see it, with its type's prefix ("WI-12": item-types.md "Card number prefixes").
+        cardRef(item, types) || String(item.key),
         itemTitle(item),
         type.label,
         statusText,

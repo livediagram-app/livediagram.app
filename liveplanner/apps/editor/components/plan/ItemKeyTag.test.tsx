@@ -17,7 +17,7 @@ describe('ItemKeyTag', () => {
 
   it('copies "#12" and flashes Copied, then reads as the copy button again', async () => {
     vi.useFakeTimers();
-    render(<ItemKeyTag itemKey={12} />);
+    render(<ItemKeyTag text="#12" />);
     fireEvent.click(screen.getByRole('button', { name: 'Copy card number #12' }));
     expect(writeText).toHaveBeenCalledWith('#12');
     await act(async () => {});
@@ -30,7 +30,7 @@ describe('ItemKeyTag', () => {
 
   it('does not flash when the clipboard refuses the write', async () => {
     writeText.mockImplementation(() => Promise.reject(new Error('blocked')));
-    render(<ItemKeyTag itemKey={3} />);
+    render(<ItemKeyTag text="#3" />);
     fireEvent.click(screen.getByRole('button', { name: 'Copy card number #3' }));
     await act(async () => {});
     expect(screen.queryByRole('button', { name: 'Copied #3' })).toBeNull();
@@ -39,7 +39,7 @@ describe('ItemKeyTag', () => {
   // docs/specs/004-interface-design/touch-targets.md: the tag is about 26 by 22px, so on a touch screen its tap area
   // reaches 44px both ways (the owner's decision, 2026-11-01), from a positioned host.
   it('takes a 44px tap area on a touch screen', () => {
-    render(<ItemKeyTag itemKey={5} />);
+    render(<ItemKeyTag text="#5" />);
     const tag = screen.getByRole('button', { name: 'Copy card number #5' });
     expect(tag.className.split(' ')).toEqual(expect.arrayContaining(['relative', 'touch-target']));
     expect(tag.className.split(' ')).not.toContain('touch-target-y');

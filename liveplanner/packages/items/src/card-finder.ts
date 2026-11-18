@@ -5,6 +5,7 @@
 // naming that status leaves out (its Card Types); a set of card types narrows them to those types.
 import { isArchived, isTrashed } from './board';
 import { itemStatus, itemTitle, type Item } from './item';
+import { cardRefKey } from './card-prefix';
 
 export type CardFinderShow = 'all' | 'off-board';
 
@@ -22,12 +23,20 @@ function haystackOf(item: Item): string {
   return hay;
 }
 
-// `typeLabel`, when given, names the card's type ("Person"), so a search for a type's name finds its cards.
-export function cardMatches(item: Item, query: string, typeLabel?: string): boolean {
+// `typeLabel`, when given, names the card's type ("Person"), so a search for a type's name finds its cards; `prefix`,
+// its card prefix ("WI"), so a search for the prefix alone does too. A number in any form ("12", "#12", "WI-12") finds
+// its card (item-types.md "Card number prefixes").
+export function cardMatches(
+  item: Item,
+  query: string,
+  typeLabel?: string,
+  prefix?: string,
+): boolean {
   const q = query.trim().toLowerCase().replace(/^#/, '');
   if (!q) return true;
-  if (String(item.key) === q) return true;
+  if (cardRefKey(q) === item.key) return true;
   if (typeLabel && typeLabel.toLowerCase().includes(q)) return true;
+  if (prefix && prefix.toLowerCase() === q) return true;
   return haystackOf(item).includes(q);
 }
 
@@ -54,6 +63,8 @@ export function findCards(
     types?: ReadonlySet<string>;
     // A card type's name by its id, so the query matches it.
     typeLabel?: (typeId: string) => string;
+    // A card type's prefix by its id, so the query matches it.
+    typePrefix?: (typeId: string) => string | undefined;
   },
 ): Item[] {
   const out: Item[] = [];
@@ -62,7 +73,8 @@ export function findCards(
     if (isTrashed(it) || isArchived(it)) continue;
     if (byType && !byType.has(it.type)) continue;
     if (opts.show === 'off-board' && !isOffBoard(it, opts.boardStatuses)) continue;
-    if (cardMatches(it, opts.query, opts.typeLabel?.(it.type))) out.push(it);
+    if (cardMatches(it, opts.query, opts.typeLabel?.(it.type), opts.typePrefix?.(it.type)))
+      out.push(it);
   }
   return out.sort((a, b) => b.updatedAt - a.updatedAt);
 }

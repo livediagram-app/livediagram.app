@@ -17,6 +17,7 @@ import {
   type StatusPhase,
   namedStatus,
 } from '@liveplanner/items';
+import { cardRefIn } from '../card-ref';
 import { Tooltip } from '@liveplanner/ui';
 import type { PlanPalette } from '../plan-palette';
 import { PHASE_COLOURS, openProps } from './view-frame';
@@ -122,7 +123,7 @@ export function GanttNameRow({
       <button
         type="button"
         className="flex h-full w-full min-w-0 cursor-pointer items-center gap-1.5 px-3 text-left text-[12px] transition hover:bg-black/5 dark:hover:bg-white/10"
-        aria-label={`#${row.item.key} ${itemTitle(row.item)}${status ? `, ${status.name}` : ''}${kids ? `, ${row.done} of ${row.total} done` : ''}`}
+        aria-label={`${cardRefIn(plan?.types)(row.item)} ${itemTitle(row.item)}${status ? `, ${status.name}` : ''}${kids ? `, ${row.done} of ${row.total} done` : ''}`}
         {...openProps(plan, row.item.id)}
         onKeyDown={
           reorder
@@ -137,7 +138,7 @@ export function GanttNameRow({
       >
         {own ? <ColourDot colour={own} /> : null}
         <span className="shrink-0 tabular-nums" style={{ color: palette.muted }}>
-          #{row.item.key}
+          {cardRefIn(plan?.types)(row.item)}
         </span>
         <span className="min-w-0 flex-1 truncate font-medium">{itemTitle(row.item)}</span>
         {status ? <GanttStatusPill status={status} narrow={narrow} /> : null}

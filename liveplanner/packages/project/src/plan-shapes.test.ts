@@ -150,7 +150,7 @@ describe('plan shapes in exports', () => {
     expect(svg).toContain('Fix &lt;login&gt;');
     // Each card from its type's Display: the type and number in the header, the assignee at the bottom right.
     expect(svg).toContain('>Task</text>');
-    expect(svg).toContain('>#7</text>');
+    expect(svg).toContain('>T-7</text>');
     expect(svg).toContain('>Note</text>');
     expect(svg).toContain('AR');
     expect(svg).toContain('2 items');

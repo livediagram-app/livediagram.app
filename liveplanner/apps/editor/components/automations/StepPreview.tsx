@@ -10,6 +10,7 @@ import { usePlan } from '@/components/plan/PlanContext';
 import type { AutomationOutline } from './automation-outline';
 import { AutomationDisc } from './automation-glyphs';
 import { previewText, type PreviewContext } from './preview-values';
+import { cardRefIn } from '@/components/plan/card-ref';
 
 function contextFor(
   card: Item,
@@ -24,6 +25,7 @@ function contextFor(
   return {
     ...(trigger ? { trigger } : {}),
     card,
+    ref: cardRefIn(outline.types)(card),
     column: (status && outline.statuses.get(status)) ?? '',
     link,
     people: outline.people,
@@ -77,14 +79,18 @@ export function StepPreview({
       now,
       cardLink?.(card.id) ?? '',
       starter
-        ? { title: itemTitle(starter), key: starter.key, link: cardLink?.(starter.id) ?? '' }
+        ? {
+            title: itemTitle(starter),
+            ref: cardRefIn(outline.types)(starter),
+            link: cardLink?.(starter.id) ?? '',
+          }
         : undefined,
     ),
   );
   return (
     <div data-step-preview="" className="flex flex-col gap-2">
       <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-200">
-        Preview on #{card.key} {itemTitle(card)}
+        Preview on {cardRefIn(outline.types)(card)} {itemTitle(card)}
       </span>
       <div className="flex gap-2.5 rounded-xl bg-brand-50 p-3 ring-1 ring-brand-100 dark:bg-brand-500/10 dark:ring-brand-500/20">
         <AutomationDisc />

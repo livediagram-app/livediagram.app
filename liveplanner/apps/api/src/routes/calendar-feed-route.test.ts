@@ -87,7 +87,7 @@ describe('GET /api/calendar/:projectId/:token.ics', () => {
     const body = await res.text();
     expect(body).toMatch(/^BEGIN:VCALENDAR\r\n/);
     expect(body).toContain('X-WR-CALNAME:Relaunch · liveplanner\r\n');
-    expect(body).toContain('SUMMARY:#1 Launch\r\n');
+    expect(body).toContain('SUMMARY:T-1 Launch\r\n');
     expect(body).toContain('URL:https://plan.test/project/P#item=c1\r\n');
   });
 

@@ -95,6 +95,8 @@ export type CardTypeChange =
   | ({
       op: 'add';
       name: string;
+      // Its card prefix (docs/specs/026-plan/item-types.md "Card number prefixes"); absent, the one made from its name.
+      prefix?: string;
       color?: string;
       glyph?: string;
       fields?: readonly string[];
@@ -112,6 +114,8 @@ export type CardTypeChange =
       op: 'set';
       type: string;
       name?: string;
+      // Its card prefix; "" or null puts the one made from its name back. A rename alone keeps the prefix it had.
+      prefix?: string | null;
       color?: string;
       glyph?: string;
       addFields?: readonly string[];

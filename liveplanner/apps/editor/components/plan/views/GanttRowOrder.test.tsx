@@ -62,7 +62,7 @@ function chart(settings: Omit<PlanViewRef, 'view'> = {}, over: Partial<PlanConte
 
 const names = () =>
   screen
-    .getAllByRole('button', { name: /^#\d+ / })
+    .getAllByRole('button', { name: /^[A-Z][A-Z0-9]*-\d+ / })
     .map((b) => b.getAttribute('aria-label')!.split(',')[0]);
 const grip = (id: string) =>
   document.querySelector(`[data-gantt-row="${id}"] [data-gantt-row-grip]`) as HTMLElement;
@@ -70,7 +70,7 @@ const grip = (id: string) =>
 describe('reordering Gantt rows', () => {
   it('shows a grip on hover or focus to an editor only, and follows a saved order', () => {
     chart({ rowOrder: ['item-gamma', 'item-alpha'] });
-    expect(names()).toEqual(['#3 Gamma', '#1 Alpha', '#2 Beta']);
+    expect(names()).toEqual(['P-3 Gamma', 'P-1 Alpha', 'P-2 Beta']);
     expect(grip('item-alpha').className).toMatch(/opacity-0/);
     expect(grip('item-alpha').className).toMatch(/group-hover:opacity-100/);
     expect(grip('item-alpha').className).toMatch(/group-focus-within:opacity-100/);
@@ -108,7 +108,7 @@ describe('reordering Gantt rows', () => {
 
   it('moves a row one place with Alt+Arrow, and says so', () => {
     const plan = chart();
-    fireEvent.keyDown(screen.getByRole('button', { name: /^#1 Alpha/ }), {
+    fireEvent.keyDown(screen.getByRole('button', { name: /^P-1 Alpha/ }), {
       key: 'ArrowDown',
       altKey: true,
     });
@@ -116,10 +116,10 @@ describe('reordering Gantt rows', () => {
       view: 'gantt',
       rowOrder: ['item-betaa', 'item-alpha', 'item-gamma'],
     });
-    expect(plan.announce).toHaveBeenCalledWith('Moved #1 Alpha to position 2 of 3');
+    expect(plan.announce).toHaveBeenCalledWith('Moved P-1 Alpha to position 2 of 3');
     // At the top, Alt+Up does nothing.
     vi.mocked(plan.updateView).mockClear();
-    fireEvent.keyDown(screen.getByRole('button', { name: /^#1 Alpha/ }), {
+    fireEvent.keyDown(screen.getByRole('button', { name: /^P-1 Alpha/ }), {
       key: 'ArrowUp',
       altKey: true,
     });
