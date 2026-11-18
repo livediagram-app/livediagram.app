@@ -5,6 +5,7 @@
 // month steps are each viewer's own. Someone who may move cards drags an entry to another day, or moves it with
 // Alt+Arrows, to move its date there (calendarMove).
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { cardRefIn } from '../card-ref';
 import { useToday } from '@/hooks/ui/useToday';
 import {
   ITEM_TYPES,
@@ -121,7 +122,9 @@ export function CalendarView({
     track('Plan', 'Changed', field === 'due' ? 'CalendarDue' : 'CalendarStart');
     const other = dates[field === 'due' ? 'start' : 'due'];
     const carried = m.carried ? `, its ${viewDateName(types, other)} too` : '';
-    plan.announce(`Moved #${item.key} ${itemTitle(item)} to ${dayLabel(toDay)}${carried}`);
+    plan.announce(
+      `Moved ${cardRefIn(types)(item)} ${itemTitle(item)} to ${dayLabel(toDay)}${carried}`,
+    );
     return true;
   };
   const { drag, begin, ghost } = useCalendarDrag({

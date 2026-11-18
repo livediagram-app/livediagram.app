@@ -108,7 +108,7 @@ export function TestOnCard({
             Test on a Card
           </h2>
           <p className="mt-1 truncate text-sm text-slate-600 dark:text-slate-400">
-            #{card.key} {card.title}
+            {card.ref} {card.title}
           </p>
         </div>
         <DialogCloseButton onClick={onClose} />

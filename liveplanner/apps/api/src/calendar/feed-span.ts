@@ -37,8 +37,10 @@ export const cutText = (text: string, max: number) =>
   [...text].length > max ? `${[...text].slice(0, max - 1).join('')}…` : text;
 
 /** An event's title: the card's number and title, `Starts: ` before it for a Start alone, cut to FEED_SUMMARY_MAX. */
-export const summaryOf = (key: number | null, title: string, startOnly: boolean) => {
-  const named = `${key === null ? '' : `#${key} `}${title || 'Untitled'}`;
+// `ref`: the card's number as people see it ("WI-12", or "#12" for a card of another plan: item-types.md "Card number
+// prefixes"), or none.
+export const summaryOf = (ref: string | null, title: string, startOnly: boolean) => {
+  const named = `${ref ? `${ref} ` : ''}${title || 'Untitled'}`;
   return cutText(startOnly ? `Starts: ${named}` : named, FEED_SUMMARY_MAX);
 };
 

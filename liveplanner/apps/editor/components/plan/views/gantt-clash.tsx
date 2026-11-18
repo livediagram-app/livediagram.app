@@ -4,6 +4,7 @@
 // follow"): the amber mark on a blocked card's mark that starts before an open blocker is due, named in its tooltip,
 // and, after a date drag or draw leaves cards that follow clashing, the offer to move them, as one change.
 import { useCallback } from 'react';
+import { cardRefIn } from '../card-ref';
 import {
   blockingIndexOf,
   clashText,
@@ -17,6 +18,7 @@ import {
   type GanttRow,
   type Item,
   type ItemPatch,
+  type ItemTypeDef,
   type ViewDates,
 } from '@liveplanner/items';
 import { Tooltip } from '@liveplanner/ui';
@@ -31,6 +33,8 @@ import { ClashGlyph } from './clash-glyph';
 export function ganttClashTexts(
   arrows: readonly GanttArrow[],
   shownOf: (row: GanttRow) => GanttRow,
+  // The plan's card types, so a blocker is named by its prefixed number ("T-4 Design").
+  types?: readonly ItemTypeDef[],
 ): Map<string, string[]> {
   const found = new Map<string, { days: number; text: string }[]>();
   for (const a of arrows) {
@@ -38,7 +42,7 @@ export function ganttClashTexts(
     if (days === null) continue;
     const id = a.to.row.item.id;
     const list = found.get(id) ?? [];
-    list.push({ days, text: clashText(days, a.from.row.item) });
+    list.push({ days, text: clashText(days, a.from.row.item, types) });
     found.set(id, list);
   }
   const out = new Map<string, string[]>();
@@ -110,7 +114,7 @@ export function useGanttMoveFollowing(
       const found = shiftsAfter(p, itemId, patch, latestDates.current);
       if (!found?.shifts.length) return;
       const n = found.shifts.length;
-      const name = `#${found.moved.key} ${itemTitle(found.moved).trim() || 'Untitled'}`;
+      const name = `${cardRefIn(p.types)(found.moved)} ${itemTitle(found.moved).trim() || 'Untitled'}`;
       toast.offer({
         message:
           n === 1

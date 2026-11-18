@@ -5,6 +5,7 @@
 // there is nothing to try it on. A Formula tries the type's first live card; a Rollup or Lookup the first live card
 // it gives a value (other than 0) on, else the first.
 import { useEffect, useMemo, useRef } from 'react';
+import { cardRefIn } from './card-ref';
 import {
   calculatedText,
   isArchived,
@@ -131,7 +132,7 @@ export function CalculatedPreview({
               <span className="shrink-0 whitespace-pre">
                 On{' '}
                 <span className="tabular-nums text-slate-500 dark:text-slate-400">
-                  #{card.key}
+                  {cardRefIn(plan?.types)(card)}
                 </span>{' '}
               </span>
               <span className="min-w-[1.5em] truncate">{itemTitle(card) || 'Untitled'}</span>

@@ -14,13 +14,23 @@ const isSpace = (c: string | undefined) =>
 const isWordChar = (c: string | undefined) =>
   c !== undefined && (isDigit(c) || c.toLowerCase() !== c.toUpperCase());
 
+// Past a card prefix ("wi-") starting at `j`, or `j` itself when there is none there.
+function afterPrefix(t: string, j: number): number {
+  const c = t[j];
+  if (c === undefined || c < 'a' || c > 'z') return j;
+  let k = j + 1;
+  while (k - j < 6 && ((t[k]! >= 'a' && t[k]! <= 'z') || isDigit(t[k]))) k++;
+  return t[k] === '-' && isDigit(t[k + 1]) ? k + 1 : j;
+}
+
 // A plan name's words as names compare: case aside, any run of spaces one space.
 function nameWords(name: string): string[] {
   return name.toLowerCase().split(/\s+/).filter(Boolean);
 }
 
 /**
- * The card numbers `text` mentions as `planName` followed by spaces or none, an optional `#` and the number, with no
+ * The card numbers `text` mentions as `planName` followed by spaces or none, an optional `#`, an optional card prefix
+ * and dash ("WI-") and the number, with no
  * letter or digit on either side. In the order first met, each once, at most `MENTIONS_MAX`; only the first
  * `MENTION_TEXT_MAX` characters are read.
  */
@@ -63,6 +73,10 @@ function mentionAt(t: string, i: number, words: readonly string[]): number | und
   while (isSpace(t[j])) j++;
   if (t[j] === '#') j++;
   if (j === nameEnd && isDigit(t[j - 1])) return undefined;
+  // An optional card prefix and its dash ("Work Tracker WI-143": item-types.md "Card number prefixes"): a letter, then
+  // up to 5 more letters or digits, after a space or a `#` ("Work Trackers-12" names nothing). Any prefix reads; the
+  // number names the card.
+  if (j > nameEnd) j = afterPrefix(t, j);
   const start = j;
   while (isDigit(t[j]) && j - start <= NUMBER_DIGITS_MAX) j++;
   const digits = j - start;

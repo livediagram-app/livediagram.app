@@ -156,6 +156,7 @@ describe('publicCardOf', () => {
       voted: true,
       description: 'Night owls rejoice',
       number: c.key,
+      ref: `F-${c.key}`,
       type: 'Feature',
       labels: ['ui', 'Secret label'],
       start: '2027-03-03',
@@ -176,7 +177,7 @@ describe('publicCardOf', () => {
     );
     expect(
       publicCardOf(c, settings({ fields: [...ROADMAP_FIELDS], voting: false }), types, null),
-    ).toEqual({ id: c.id, title: 'Untitled', number: c.key });
+    ).toEqual({ id: c.id, title: 'Untitled', number: c.key, ref: `#${c.key}` });
   });
 
   it('cuts a long description and sends no vote count with voting off', () => {

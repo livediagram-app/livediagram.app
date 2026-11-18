@@ -1,6 +1,7 @@
 // A key on a Plan board's card (PlanBoardView.tsx): what the board's keyboard (plan-board-keys.ts) makes of it, done
 // against the board as drawn (docs/specs/026-plan/plan-board.md "Keyboard").
 import type { Dispatch, RefObject, SetStateAction } from 'react';
+import { cardRefIn } from './card-ref';
 import {
   boardSortFieldOf,
   type BoardProjection,
@@ -68,11 +69,20 @@ export function boardCardKey(
           ),
         }
       : projection;
-  const action = planBoardKey(drawn, item.id, e.key, e.shiftKey, canEditCards, sortedBy, {
-    canSelect: canEditCards && !simplified,
-    grouped: selection.ids.has(item.id) && selection.ids.size > 1,
-    canRetire: canEdit,
-  });
+  const action = planBoardKey(
+    drawn,
+    item.id,
+    e.key,
+    e.shiftKey,
+    canEditCards,
+    sortedBy,
+    {
+      canSelect: canEditCards && !simplified,
+      grouped: selection.ids.has(item.id) && selection.ids.size > 1,
+      canRetire: canEdit,
+    },
+    plan.types,
+  );
   if (!action) return;
   e.preventDefault();
   e.stopPropagation();
@@ -101,7 +111,7 @@ export function boardCardKey(
     // Focus goes on to a neighbour rather than falling to the page with the card.
     focusNextRef.current = action.focusAfter;
     plan.trashItem(item.id);
-    plan.announce(`#${item.key} moved to the Trash`);
+    plan.announce(`${cardRefIn(plan.types)(item)} moved to the Trash`);
   } else if (action.kind === 'add') setAdding({ status: action.status, laneKey: action.laneKey });
   else if (action.kind === 'refuse') plan.announce(action.announce);
   else {

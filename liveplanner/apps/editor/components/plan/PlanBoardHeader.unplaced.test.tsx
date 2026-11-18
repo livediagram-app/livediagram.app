@@ -51,7 +51,7 @@ describe('the cards not on the board', () => {
       />,
     );
     fireEvent.click(screen.getByRole('button', { name: /not on board/ }));
-    const options = [...screen.getByLabelText('Move #7 to').querySelectorAll('option')].map(
+    const options = [...screen.getByLabelText('Move T-7 to').querySelectorAll('option')].map(
       (o) => o.textContent,
     );
     expect(options).toContain(setup.columns[0]!.name);

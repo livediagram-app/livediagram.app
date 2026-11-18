@@ -161,7 +161,7 @@ describe('FormulaEditor', () => {
     render(<Harness start={{ id: 'f-left', formula: '{f-budget} - {f-spent}' }} keep={false} />);
     expect(box().value).toBe('Budget - Spent');
     expect(screen.getByRole('status').textContent).toBe('Works');
-    expect(screen.getByLabelText('Preview').textContent).toContain('On #3 Acme3,000');
+    expect(screen.getByLabelText('Preview').textContent).toContain('On D-3 Acme3,000');
     type('Budget - Spnt');
     expect(screen.getByRole('status').textContent).toBe('Unknown field "Spnt" at 10');
     expect(box().getAttribute('aria-invalid')).toBe('true');
@@ -217,7 +217,7 @@ describe('FormulaEditor', () => {
       card('c', 2, { title: 'Zed', 'f-budget': 1 }),
     ]);
     const { unmount } = render(<Harness start={{ formula: '{f-budget} / 0' }} keep={false} />);
-    expect(screen.getByLabelText('Preview').textContent).toContain('On #2 Zed');
+    expect(screen.getByLabelText('Preview').textContent).toContain('On D-2 Zed');
     expect(screen.getByLabelText('Preview').textContent).toContain('Divides by 0');
     type('Spent');
     expect(screen.getByLabelText('Preview').textContent).toContain('No value');

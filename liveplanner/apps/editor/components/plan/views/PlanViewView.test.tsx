@@ -111,7 +111,7 @@ describe('plan views', () => {
     const kid = item({ title: 'Kid', parent: p.id, status: 'done' });
     const plan = planWith([p, kid]);
     draw('gantt', plan);
-    fireEvent.click(screen.getByRole('button', { name: `#${p.key} Launch, 1 of 1 done` }));
+    fireEvent.click(screen.getByRole('button', { name: `P-${p.key} Launch, 1 of 1 done` }));
     expect(plan.openItem).toHaveBeenCalledWith(p.id);
     expect(screen.queryByText('Add a start date')).toBeNull();
     // The today line's label, and the header's Today.
@@ -294,7 +294,7 @@ describe('the Gantt rows', () => {
     const p = item({ title: 'Launch', status: 'todo', start: '2026-10-01' }, 'project');
     draw('gantt', planWith([p]));
     expect(screen.getByText('To do')).toBeTruthy();
-    expect(screen.getByRole('button', { name: `#${p.key} Launch, To do` })).toBeTruthy();
+    expect(screen.getByRole('button', { name: `P-${p.key} Launch, To do` })).toBeTruthy();
   });
 
   it('shows a dot, named in a tooltip, in a narrow names column', () => {

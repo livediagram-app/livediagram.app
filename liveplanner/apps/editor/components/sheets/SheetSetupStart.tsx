@@ -3,6 +3,7 @@
 // Setup Sheet's steps before Style (docs/specs/029-sheets/sheet.md "Setup Sheet"): Start From, an option row per
 // start; and for Plan Cards, Cards (the Cards panel's own search and filters) then Columns (the fields those cards have).
 import type { ReactNode } from 'react';
+import { cardRefIn } from '@/components/plan/card-ref';
 import { itemTitle, namedStatus, typeIn, type Item, type ItemTypeDef } from '@liveplanner/items';
 import { PlanTypeGlyph } from '@/components/plan/plan-type-glyph';
 import { ACCENT_TEXT, accentVars } from '@/components/plan/plan-palette';
@@ -283,7 +284,7 @@ function CardsPreview({
                 <PlanTypeGlyph glyph={type.glyph} size={13} />
               </span>
               <span className="shrink-0 tabular-nums" style={{ color: palette.muted }}>
-                #{card.key}
+                {cardRefIn(plan.types)(card)}
               </span>
               <span className="min-w-0 flex-1 truncate" style={{ color: palette.text }}>
                 {itemTitle(card)}

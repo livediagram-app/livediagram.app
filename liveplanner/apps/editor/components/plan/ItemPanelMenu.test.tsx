@@ -13,7 +13,13 @@ afterEach(cleanup);
 function open(archived = false, canEdit = true) {
   const fns = { onDuplicate: vi.fn(), onFlag: vi.fn(), onArchive: vi.fn(), onTrash: vi.fn() };
   render(
-    <ItemPanelMenu itemKey={7} canEdit={canEdit} archived={archived} flagged={archived} {...fns} />,
+    <ItemPanelMenu
+      itemRef="#7"
+      canEdit={canEdit}
+      archived={archived}
+      flagged={archived}
+      {...fns}
+    />,
   );
   fireEvent.click(screen.getByRole('button', { name: 'More for #7' }));
   return fns;
@@ -56,7 +62,7 @@ describe('ItemPanelMenu', () => {
     const onEditType = vi.fn();
     render(
       <ItemPanelMenu
-        itemKey={7}
+        itemRef="#7"
         canEdit
         archived={false}
         flagged={false}
@@ -87,7 +93,7 @@ describe('ItemPanelMenu', () => {
     const onCopyLink = vi.fn();
     render(
       <ItemPanelMenu
-        itemKey={7}
+        itemRef="#7"
         canEdit={canEdit}
         canRetire={canRetire}
         archived={false}
@@ -156,7 +162,7 @@ describe('the Repeat rows', () => {
     const repeat = { repeating, onRepeat: vi.fn(), onStopRepeat: vi.fn() };
     render(
       <ItemPanelMenu
-        itemKey={7}
+        itemRef="#7"
         canEdit={canEdit}
         canRetire={canRetire}
         archived={false}

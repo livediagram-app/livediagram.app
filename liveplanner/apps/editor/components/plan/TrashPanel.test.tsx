@@ -90,19 +90,19 @@ describe('the Trash popover', () => {
     );
     expect(rows).toHaveLength(2);
     expect(rows[0]?.textContent).toContain('Untitled');
-    expect(rows[0]?.textContent).toMatch(/#2 · from DoingTrashed just now by you/);
+    expect(rows[0]?.textContent).toMatch(/T-2 · from DoingTrashed just now by you/);
     expect(rows[1]?.textContent).toContain('Older');
-    expect(rows[1]?.textContent).toMatch(/#1Trashed 3 hours ago by Ana/);
+    expect(rows[1]?.textContent).toMatch(/T-1Trashed 3 hours ago by Ana/);
   });
 
   it('restores to the status it came from, and deletes forever only after asking', () => {
     const { restoreItem, deleteItem } = setPlan([card(2, 'Launch', 0, YOU, 'doing')]);
     render(<TrashPanel onPopoverClose={() => {}} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Restore #2 to Doing' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Restore T-2 to Doing' }));
     expect(restoreItem).toHaveBeenCalledWith('item0002');
-    fireEvent.click(screen.getByRole('button', { name: 'Delete #2 Forever' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Delete T-2 Forever' }));
     expect(deleteItem).not.toHaveBeenCalled();
-    const ask = screen.getByRole('dialog', { name: /Delete #2 for good\?/ });
+    const ask = screen.getByRole('dialog', { name: /Delete T-2 for good\?/ });
     fireEvent.click(within(ask).getByRole('button', { name: 'Confirm' }));
     expect(deleteItem).toHaveBeenCalledWith('item0002');
   });

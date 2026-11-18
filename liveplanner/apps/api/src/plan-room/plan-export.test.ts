@@ -177,9 +177,9 @@ describe('GET /api/internal/items/:id/export?format=csv', () => {
     // a title a spreadsheet would run as a formula made inert.
     expect(boardCsv![0]).toMatch(/^Key,Title,Type,Status,/);
     expect(boardCsv![0]).toContain('Priority');
-    expect(boardCsv![1]).toMatch(/^1,Write it,Task,To Do,/);
+    expect(boardCsv![1]).toMatch(/^T-1,Write it,Task,To Do,/);
     expect(boardCsv![1]).toContain('High');
-    expect(boardCsv![2]).toMatch(/^2,"'=HYPERLINK\(""x""\)",Task,Finished,/);
+    expect(boardCsv![2]).toMatch(/^T-2,"'=HYPERLINK\(""x""\)",Task,Finished,/);
     // The Sheet: each value as shown (a formula's result, the cards it counts), and text that would run made inert.
     expect(sheetCsv).toEqual(["2,6,'=1+1", '2,,', '']);
   });

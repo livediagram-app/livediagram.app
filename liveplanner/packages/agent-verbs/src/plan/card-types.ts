@@ -14,6 +14,7 @@ import {
   TRASHED_FROM_FIELD,
   typesOf,
   type CardTypeChange,
+  cardRefOrKey,
 } from '@liveplanner/items';
 import { apiRefusalOf } from './api-refusal';
 import { listedTypes, type ListedType } from './plan-listing';
@@ -95,7 +96,7 @@ async function trashDeletedTypes(
           set: { status: TRASH_STATUS, ...(from ? { [TRASHED_FROM_FIELD]: from } : {}) },
         }),
       });
-      trashed.push(`#${item.key}`);
+      trashed.push(cardRefOrKey(item, state.plan.types));
     }
   } catch (err) {
     const refusal = apiRefusalOf(err);

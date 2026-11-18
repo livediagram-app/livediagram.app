@@ -9,6 +9,7 @@ import { riskLabel } from './risk-fields';
 import { itemAssignee, itemLabels, itemTitle, type Item, type ItemFieldValue } from './item';
 import type { CustomFieldDef, ItemTypeDef } from './item-types';
 import { calculatedResultOf } from './calculated-result';
+import { cardRefTitle } from './card-prefix';
 import { durationMinutes, durationText } from './duration-fields';
 import { instantIso } from './date-time-fields';
 import { readRange } from './date-range-fields';
@@ -56,6 +57,8 @@ export const formulaResultOf = (f: Pick<CustomFieldDef, 'result'>): FormulaResul
 // fields give (worked out by calculated-fields.ts, which passes `calculated`), and today.
 export interface FormulaContext {
   items?: ReadonlyMap<string, Item>;
+  // The catalogue, so a Card field reads as its card's number with its type's prefix ("WI-12 Title"); "#12" without it.
+  types?: readonly ItemTypeDef[];
   // Another Calculated field's value (Child Count, Children Done, a Rollup's or Lookup's) on this card; none without
   // it. A Date result is a stored day ("2026-10-31").
   calculated?: (field: CustomFieldDef) => FormulaScalar;
@@ -108,7 +111,7 @@ interface Run {
 
 function cardLabel(run: Run, id: string): string {
   const card = run.ctx.items?.get(id);
-  return card ? `#${card.key} ${itemTitle(card)}` : 'Missing card';
+  return card ? cardRefTitle(card, itemTitle(card), run.ctx.types) : 'Missing card';
 }
 
 // A custom field's value on the card as a formula reads it (item-types.md "Formula fields", Values).

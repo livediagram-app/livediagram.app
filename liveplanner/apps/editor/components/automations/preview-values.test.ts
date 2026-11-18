@@ -5,6 +5,7 @@ import { ANA, MARCO, NOW, card } from './test-fixtures';
 
 const ctx = (over: Partial<PreviewContext> = {}): PreviewContext => ({
   card: card(48, 'Publish pricing page', { assignee: MARCO.id, due: '2026-11-20' }),
+  ref: '#48',
   column: 'Done',
   link: 'https://x/c/48',
   people: [ANA, MARCO],

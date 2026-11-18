@@ -425,7 +425,7 @@ export function SearchPanel({
                         <SearchResultIcon item={item} />
                         {item.kind === 'card' ? (
                           <span className="shrink-0 tabular-nums text-slate-500 dark:text-slate-400">
-                            #{item.key}
+                            {item.ref}
                           </span>
                         ) : null}
                         <span className="min-w-0 flex-1 truncate">

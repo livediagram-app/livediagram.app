@@ -33,7 +33,11 @@ export function myWorkEventsOf(
       // The newest change first among ties: the index lists them newest first.
       order: events.length,
       uid,
-      summary: summaryOf(c.card.key, c.card.title, span.startOnly),
+      summary: summaryOf(
+        c.card.key === null ? null : `#${c.card.key}`,
+        c.card.title,
+        span.startOnly,
+      ),
       url,
       description: where ? `${where}\n${url}` : url,
       startDay: span.startDay,
