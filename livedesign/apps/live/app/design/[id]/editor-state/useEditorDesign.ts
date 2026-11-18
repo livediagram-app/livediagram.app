@@ -112,7 +112,10 @@ export function useEditorDesign(opts: { surface?: EditorSurface } = {}) {
         const prev = ts.find((p) => p.id === t.id);
         if (!prev) return t;
         // Deleting a session's last member ends it at once, taking the instance with it ("Deleting every member").
-        const els = endEmptiedSessions(prev.elements, stampSessionMembers(prev.elements, t.elements));
+        const els = endEmptiedSessions(
+          prev.elements,
+          stampSessionMembers(prev.elements, t.elements),
+        );
         return els === t.elements ? t : { ...t, elements: els };
       });
       const stamp = activeLayerStampRef.current;
