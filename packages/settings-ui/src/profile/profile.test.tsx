@@ -351,6 +351,45 @@ describe('Delete Account, where the host can’t close the account itself', () =
   });
 });
 
+// Work Tracker 1228: the Explorer on an app's own address holds the app's token, so its Your Account signs out of the
+// app and opens the app's own Delete Account dialog.
+describe('Delete Account, where the host opens its own dialog', () => {
+  it('ends Your Account under Sign Out, its button opening the host’s dialog, and never the pointer row too', () => {
+    const deleteAccount = vi.fn();
+    const rows = profileRows({
+      ...base,
+      identity: ada,
+      security: fakeSecurity(),
+      onSignOut: vi.fn(),
+      deleteAccount,
+      closeAccountHelp: 'https://example.com/help',
+    });
+    expect(rows.slice(-2).map((r) => [r.key, r.section])).toEqual([
+      ['signOut', 'Your Account'],
+      ['deleteAccount', 'Your Account'],
+    ]);
+    expect(rows.some((r) => r.key === 'closeAccount')).toBe(false);
+    drawn(rows.at(-1));
+    expect(
+      screen.getByText(
+        'Permanently deletes your liveworkspace account and everything you own in every liveworkspace app.',
+      ),
+    ).toBeTruthy();
+    // Nothing is deleted from the row: it only opens the dialog, which asks for the email and the code.
+    expect(deleteAccount).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Delete Account' }));
+    expect(deleteAccount).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('link')).toBeNull();
+  });
+
+  it('shows neither Sign Out nor Delete Account to a host with nothing signed in', () => {
+    expect(profileRows({ ...base, onSignOut: vi.fn(), deleteAccount: vi.fn() })).toEqual([]);
+    expect(
+      guestProfileRows({ signInHref: '/sign-in', things: 'work' }).map((r) => r.key),
+    ).not.toEqual(expect.arrayContaining(['signOut', 'deleteAccount']));
+  });
+});
+
 describe('Name and Colour, in place', () => {
   const editor = async (profile: ProfileHost) => {
     drawn(profileRows({ ...base, identity: ada, profile }).find((r) => r.key === 'profile'));

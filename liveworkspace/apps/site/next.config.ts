@@ -50,6 +50,7 @@ const nextConfig: NextConfig = {
     '@liveworkspace/status',
     '@liveworkspace/telemetry',
     '@liveworkspace/trusted-types',
+    '@liveworkspace/workbench',
   ],
   ...(process.env.NODE_ENV === 'production'
     ? {}
