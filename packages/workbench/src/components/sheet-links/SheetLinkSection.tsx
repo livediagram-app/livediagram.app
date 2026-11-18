@@ -81,8 +81,9 @@ export function SheetLinkSection({
       </div>
       {links.canEdit ? (
         <div className="-mx-1.5 flex flex-wrap items-center gap-1">
-          {/* No Update for an Editor who cannot open the plan: a read would only be refused again. */}
-          {status.kind === 'saved' ? null : (
+          {/* No Update for an Editor who cannot open the plan, or once the range is gone (Work Tracker 1212): a read
+              would only be refused again. Change… picks a range anew. */}
+          {status.kind === 'saved' || status.kind === 'gone' ? null : (
             <button
               type="button"
               className={ACTION}
