@@ -1009,20 +1009,32 @@
   }
 }
 
-/* The Avatar Pad (docs/specs/009-elements/avatar-pad.md). Every keyframe is stepped, so an animation restyles only
-   on its steps. The pad's lights (its glow, ring and lamps: eight nodes) breathe on one gentle opacity pulse, ten
-   steps each way, fine enough to read as eased. The arrival is one beam, a floor flash and six sparks per arriving
-   person, capped at AVATAR_PAD_MAX_ARRIVALS on screen, unmounted when the beam is over (AVATAR_PAD_ARRIVAL_MS = 900ms). */
+/* The Avatar Pad (docs/specs/009-elements/avatar-pad.md). The pad's lights (its glow, ring and lamps) breathe on one
+   gentle opacity pulse, 1.6 s each way, eased. The pulse runs on the two boxes that hold the lights (AvatarPadView), so
+   the compositor plays it and a still board does no main-thread work for it (canvas-performance.md "A still Space does
+   nothing"): smooth, never stepped (a stepped fade is restyled on the page at every step), and ten pulses to an
+   iteration, so the page handles an iteration's end once every 16 s. The arrival is one beam, a floor flash and six
+   sparks per arriving person, capped at AVATAR_PAD_MAX_ARRIVALS on screen, unmounted when the beam is over
+   (AVATAR_PAD_ARRIVAL_MS = 900ms). */
 @keyframes avatar-pad-shimmer {
-  from {
+  0%,
+  20%,
+  40%,
+  60%,
+  80%,
+  100% {
     opacity: 1;
   }
-  to {
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
     opacity: 0.62;
   }
 }
 .avatar-pad-shimmer {
-  animation: avatar-pad-shimmer 1.6s steps(10, jump-none) infinite alternate;
+  animation: avatar-pad-shimmer 16s ease-in-out infinite;
 }
 @keyframes avatar-pad-beam {
   0% {
