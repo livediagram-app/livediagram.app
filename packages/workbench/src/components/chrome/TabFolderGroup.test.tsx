@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 // One tab folder in the strip (docs/specs/006-document/tab-folders.md "Tab bar rendering"): the chip opens and shuts
-// its tabs in place, the open tab never tucks away, a drop on the chip joins the folder, a resting drag springs it
+// its tabs in place, the folder holding the open tab stays open and won't shut, a drop on the chip joins the folder, a resting drag springs it
 // open, a double-click renames it, and nothing is a popover.
 
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
@@ -101,9 +101,72 @@ describe('TabFolderGroup', () => {
     expect(container.querySelector('[data-tab-folder]')?.hasAttribute('data-expanded')).toBe(true);
   });
 
-  it('keeps the open tab beside the chip while collapsed, on the shelf', () => {
+  it('opens round the open tab, every tab out, though this visit had it shut', () => {
     const { container } = render(<TabFolderGroup {...props({ activeId: 'b' })} />);
-    expect(shown(container)).toEqual(['Q1 Goals']);
+    expect(shown(container)).toEqual(['Roadmap', 'Q1 Goals', 'Q2 Goals']);
+    expect(chip().getAttribute('aria-expanded')).toBe('true');
+    expect(container.querySelector('[data-tab-folder]')?.hasAttribute('data-expanded')).toBe(true);
+  });
+
+  it('won’t shut while it holds the open tab, whether this visit opened it or not', () => {
+    const onToggle = vi.fn();
+    for (const expanded of [false, true]) {
+      const { unmount } = render(
+        <TabFolderGroup {...props({ activeId: 'b', expanded, onToggle })} />,
+      );
+      expect(chip().getAttribute('aria-disabled')).toBe('true');
+      // A click, and Enter or Space (a button's keys arrive as a click), do nothing.
+      fireEvent.click(chip());
+      fireEvent.click(chip());
+      expect(chip().getAttribute('aria-expanded')).toBe('true');
+      unmount();
+    }
+    expect(onToggle).not.toHaveBeenCalled();
+  });
+
+  it('brings the open tab back into view on a click of its locked chip', () => {
+    const onToggle = vi.fn();
+    const onClosed = vi.fn();
+    render(<TabFolderGroup {...props({ activeId: 'b', onToggle, onClosed })} />);
+    fireEvent.click(chip());
+    expect(onClosed).toHaveBeenCalledOnce();
+    expect(onToggle).not.toHaveBeenCalled();
+  });
+
+  it('can be shut again once the open tab is elsewhere, back as this visit left it', () => {
+    const onToggle = vi.fn();
+    const { container, rerender } = render(
+      <TabFolderGroup {...props({ activeId: 'b', onToggle })} />,
+    );
+    // Left for a tab outside: shut, as it was, and free to toggle.
+    rerender(<TabFolderGroup {...props({ activeId: 'z', onToggle })} />);
+    expect(shown(container)).toEqual([]);
+    expect(chip().getAttribute('aria-disabled')).toBeNull();
+    fireEvent.click(chip());
+    expect(onToggle).toHaveBeenCalledOnce();
+    // One this visit opened stays open on leaving, and can be shut.
+    rerender(<TabFolderGroup {...props({ activeId: 'z', expanded: true, onToggle })} />);
+    expect(shown(container)).toEqual(['Roadmap', 'Q1 Goals', 'Q2 Goals']);
+    fireEvent.click(chip());
+    expect(onToggle).toHaveBeenCalledTimes(2);
+  });
+
+  it('drops the pointer and the hover wash while it can’t be shut', () => {
+    const { rerender } = render(<TabFolderGroup {...props({ activeId: 'b' })} />);
+    expect(chip().className).toMatch(/aria-disabled:cursor-default/);
+    expect(chip().className).toMatch(/aria-disabled:after:hidden/);
+    rerender(<TabFolderGroup {...props({ activeId: 'b', readOnly: true })} />);
+    expect(chip().getAttribute('aria-disabled')).toBe('true');
+  });
+
+  it('still renames on a double-click while it holds the open tab', () => {
+    const onRename = vi.fn();
+    render(<TabFolderGroup {...props({ activeId: 'b', onRename })} />);
+    fireEvent.doubleClick(chip());
+    const field = screen.getByRole<HTMLInputElement>('textbox', { name: 'Folder name' });
+    field.value = 'Plans';
+    fireEvent.keyDown(field, { key: 'Enter' });
+    expect(onRename).toHaveBeenCalledWith('Planning', 'Plans');
   });
 
   it('stands on its shelf open or shut, holding the open tab or not', () => {
@@ -116,19 +179,42 @@ describe('TabFolderGroup', () => {
     }
   });
 
-  it('says what a click and a double-click do in its hover card', () => {
+  it('has no tooltip in any state, and says what a click and a double-click do to assistive technology', () => {
+    const hover = () => {
+      fireEvent.pointerEnter(chip());
+      fireEvent.mouseEnter(chip());
+      fireEvent.focus(chip());
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+    };
+    const noTooltip = () => {
+      expect(screen.queryByRole('tooltip')).toBeNull();
+      expect(document.querySelector('[data-tab-folder] [title]')).toBeNull();
+      expect(chip().getAttribute('title')).toBeNull();
+    };
     const { rerender } = render(<TabFolderGroup {...props()} />);
-    fireEvent.pointerEnter(chip());
-    fireEvent.mouseEnter(chip());
-    fireEvent.focus(chip());
-    act(() => {
-      vi.advanceTimersByTime(1000);
-    });
-    expect(document.body.textContent).toMatch(
-      /3 tabs\. Click to show them here, double-click to rename\./,
+    hover();
+    noTooltip();
+    expect(chip().getAttribute('aria-label')).toBe('Planning, 3 tabs');
+    expect(chip().getAttribute('aria-description')).toBe(
+      'Click to show its tabs here, double-click to rename.',
     );
     rerender(<TabFolderGroup {...props({ expanded: true, readOnly: true })} />);
-    expect(document.body.textContent).toMatch(/3 tabs\. Click to tuck them away\./);
+    hover();
+    noTooltip();
+    expect(chip().getAttribute('aria-description')).toBe('Click to tuck its tabs away.');
+    // Holding the open tab, it says why a click won't shut it, still without a tooltip.
+    rerender(<TabFolderGroup {...props({ activeId: 'b' })} />);
+    hover();
+    noTooltip();
+    expect(chip().getAttribute('aria-description')).toBe(
+      "It holds the tab you're on, so it stays open. Double-click to rename.",
+    );
+    rerender(<TabFolderGroup {...props({ activeId: 'b', readOnly: true })} />);
+    expect(chip().getAttribute('aria-description')).toBe(
+      "It holds the tab you're on, so it stays open.",
+    );
   });
 
   it('colours itself from its name', () => {
@@ -147,9 +233,12 @@ describe('TabFolderGroup', () => {
 
   it('shows who is on its tucked-away tabs, and nobody once it is open', () => {
     const hiddenPresence = vi.fn((ids: string[]) => <span data-testid="who">{ids.join(',')}</span>);
-    const { rerender } = render(<TabFolderGroup {...props({ activeId: 'b', hiddenPresence })} />);
-    expect(screen.getByTestId('who').textContent).toBe('a,c');
-    rerender(<TabFolderGroup {...props({ activeId: 'b', expanded: true, hiddenPresence })} />);
+    const { rerender } = render(<TabFolderGroup {...props({ hiddenPresence })} />);
+    expect(screen.getByTestId('who').textContent).toBe('a,b,c');
+    rerender(<TabFolderGroup {...props({ expanded: true, hiddenPresence })} />);
+    expect(screen.queryByTestId('who')).toBeNull();
+    // Holding the open tab it is open, so nobody is tucked away.
+    rerender(<TabFolderGroup {...props({ activeId: 'b', hiddenPresence })} />);
     expect(screen.queryByTestId('who')).toBeNull();
   });
 
@@ -191,6 +280,18 @@ describe('TabFolderGroup', () => {
       vi.advanceTimersByTime(1000);
     });
     expect(onClosed).toHaveBeenCalledOnce();
+  });
+
+  it('shows the open tab, not the chip, once it has opened round the open tab', () => {
+    const onOpened = vi.fn();
+    const onClosed = vi.fn();
+    const { rerender } = render(<TabFolderGroup {...props({ onOpened, onClosed })} />);
+    rerender(<TabFolderGroup {...props({ activeId: 'b', onOpened, onClosed })} />);
+    act(() => {
+      vi.advanceTimersByTime(COLLAPSE_WIDTH_MS + 20);
+    });
+    expect(onClosed).toHaveBeenCalledOnce();
+    expect(onOpened).not.toHaveBeenCalled();
   });
 
   it('joins a tab dropped on the chip at the folder’s head', () => {

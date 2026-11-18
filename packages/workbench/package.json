@@ -119,6 +119,7 @@
     "./components/dialogs/EditorSettingsDialog": "./src/components/dialogs/EditorSettingsDialog.tsx",
     "./lib/preferences-local-only": "./src/lib/preferences-local-only.ts",
     "./components/chrome/tab-strip-scroll": "./src/components/chrome/tab-strip-scroll.ts",
+    "./components/chrome/tab-folder-start": "./src/components/chrome/tab-folder-start.ts",
     "./components/chrome/tab-shape": "./src/components/chrome/tab-shape.ts",
     "./components/chrome/useStripRoving": "./src/components/chrome/useStripRoving.ts",
     "./components/chrome/useTabReorderDrag": "./src/components/chrome/useTabReorderDrag.ts",
