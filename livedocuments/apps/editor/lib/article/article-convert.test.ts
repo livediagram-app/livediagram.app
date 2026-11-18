@@ -69,6 +69,6 @@ describe('the writing in the editor and back', () => {
     expect(div.querySelectorAll('pre')[1]?.hasAttribute('data-lang')).toBe(false);
     // A paste gives its blocks fresh ids; the language comes with it.
     const pasted = PMDOMParser.fromSchema(articleSchema).parse(div);
-    expect(pasted.content.content.map((n) => n.attrs.lang)).toEqual(['ts', '']);
+    expect(pasted.content.content.map((n) => n.attrs.lang as string)).toEqual(['ts', '']);
   });
 });

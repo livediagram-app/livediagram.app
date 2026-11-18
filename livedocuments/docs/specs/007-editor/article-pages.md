@@ -629,7 +629,8 @@ article, the same on each page but for the fields in them. They are part of the 
 - **Different First Page**: on, the article's first page shows no header, no footer and no page number
   (a title page); the pages after it count on from 2.
 - **Where**: the footer sits on the page number's line, half the bottom margin up, in the page number's
-  12 px muted type. The header sits in the top margin under the page toolbar's room: an article with
+  12 px muted type, inked for the paper it sits on as the writing is: a page's own fill by its tone, else the
+  plain paper, white in light and slate-900 in dark, each at 4.5:1 (an export and a print draw it as in light). The header sits in the top margin under the page toolbar's room: an article with
   a header has a top margin of at least `ARTICLE_TOP_MIN_PX` + 32 px (104 px, `ARTICLE_HEADER_BAND_PX`),
   and the header's line is centred in the 32 px band just above the text, so the toolbar's card (in the
   72 px above the band) never covers it at 100% and the writing starts below it.

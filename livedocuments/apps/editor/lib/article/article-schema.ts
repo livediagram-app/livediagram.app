@@ -262,7 +262,7 @@ export const articleSchema = new Schema({
         {
           tag: 'pre',
           preserveWhitespace: 'full',
-          getAttrs: (dom) => ({ lang: (dom as HTMLElement).getAttribute('data-lang') ?? '' }),
+          getAttrs: (dom) => ({ lang: dom.getAttribute('data-lang') ?? '' }),
         },
       ],
       toDOM(node): DOMOutputSpec {
