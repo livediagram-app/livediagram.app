@@ -94,6 +94,16 @@ export const LINKS_REMOVED = chart(
   { rising: 'neutral' },
 );
 
+// Live service status (livediagram/docs/specs/009-elements/live-status.md "Telemetry"): a shape bound to a public
+// status URL, or its binding removed. Never the URL or its host.
+export const LIVE_STATUS_BINDINGS = chart(
+  'Element',
+  'Linked',
+  'Live Status Bindings',
+  'A shape bound to a service’s public status URL, so its badge shows Up, Degraded or Down while the canvas is open, or that binding removed.',
+  { types: ['LiveStatus'], actionIn: ['Cleared'] },
+);
+
 export const TABS_CLEARED = chart(
   'Tab',
   'Cleared',
@@ -722,6 +732,7 @@ export const ELEMENT_EDITING: MetricStack = {
     LANES_SETTLED,
     LINKS_ADDED,
     LINKS_REMOVED,
+    LIVE_STATUS_BINDINGS,
   ],
   seeAlso: { section: 'editing', label: 'See Each Formatting Control in Features › Editing' },
 };

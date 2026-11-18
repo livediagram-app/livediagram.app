@@ -59,6 +59,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'multicolour-themes': '#ec4899',
   'multi-select': '#8b5cf6',
   'link-cards': '#10b981',
+  'live-status': '#10b981',
   'choosing-fonts': '#0284c7',
   // Canvas category: Undo / Redo
   undo: '#0ea5e9',

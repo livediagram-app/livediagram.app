@@ -1,4 +1,10 @@
-import { defaultFillColor, elementHasText, type ownColours } from '@livediagram/document';
+import {
+  defaultFillColor,
+  elementHasText,
+  isSelfDrawingShape,
+  type ownColours,
+} from '@livediagram/document';
+import { ServiceStatusBadge } from '@/components/canvas/ServiceStatusBadge';
 import { LockBadge, SelectionChromeLayer } from '@/components/canvas/element-parts';
 import { ShapeHitOutline, type outlineHit } from '@/components/canvas/ShapeHitOutline';
 import { ReactionBurst } from '@/components/canvas/ReactionBurst';
@@ -127,6 +133,13 @@ export function useBoxedElementChrome(
       {element.locked === true ? <LockBadge /> : null}
 
       {remoteSelectors.length > 0 ? <RemoteSelectorsStrip selectors={remoteSelectors} /> : null}
+
+      {/* A bound shape's live status (docs/specs/009-elements/live-status.md "The badge"): every role, Present too. */}
+      {element.type === 'shape' &&
+      typeof element.statusUrl === 'string' &&
+      !isSelfDrawingShape(element.shape) ? (
+        <ServiceStatusBadge url={element.statusUrl} />
+      ) : null}
 
       {/* The annotation marker IS the note affordance, so it suppresses
           the generic note badge (it would be redundant). */}

@@ -4,6 +4,7 @@ import type { ElementDelta, QaNote, RoomElementOp, Slide, Tab } from '@livediagr
 import type { LivePoll } from './poll';
 import type { DragPreviewPatch, DragPreviewRide } from './drag-preview';
 import type { ChangesetRoomOp } from './changesets';
+import type { ServiceStatusOp } from './service-status';
 
 // ---------------------------------------------------------------------
 // Realtime room: op vocabulary (client view)
@@ -267,4 +268,7 @@ export type RoomOp =
   // The document went to the Trash (docs/specs/013-workspace/trash.md). Every
   // session shows the deleted state; the room then closes every socket (4004).
   // Worker-originated, like share-revoked.
-  | { kind: 'document-trashed' };
+  | { kind: 'document-trashed' }
+  // The latest check of each status URL the session's tabs bind (docs/specs/009-elements/live-status.md). The room
+  // originates it from its own alarm; a client never sends one.
+  | ServiceStatusOp;

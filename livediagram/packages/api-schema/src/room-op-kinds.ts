@@ -115,6 +115,9 @@ export const MUTATION_OP_KINDS = [
 // `changeset` (docs/specs/024-agents/agent-changesets.md): one write the api applied and recorded,
 // sequenced through /mutation. A forged one would show people a change nobody made (CS24).
 //
+// `service-status` (docs/specs/009-elements/live-status.md): the room's own checks of the status URLs shapes are bound
+// to. A forged one would paint every collaborator's badges green over a service that is down.
+//
 // `deck-slides` (docs/specs/012-collaboration/presentation-mode.md "Slides an agent appends"): slides the api
 // appended to the stored deck, sequenced through /mutation. A forged one would put slides on every open deck.
 export const SYSTEM_OP_KINDS = [
@@ -123,6 +126,7 @@ export const SYSTEM_OP_KINDS = [
   'qa',
   'document-trashed',
   'changeset',
+  'service-status',
   'deck-slides',
 ] as const;
 

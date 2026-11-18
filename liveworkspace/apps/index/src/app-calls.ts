@@ -3,6 +3,7 @@
 // (migration-handoff.ts), and a connected tab's reverse write (connections.ts). Each carries the
 // app's key and name, the same pair the app pushes with.
 
+import { pooled } from '@liveworkspace/api-kit/pooled';
 import { INDEX_APP_HEADER, type App } from '@liveworkspace/index-client';
 import { APP_CALL_TIMEOUT_MS } from './config';
 import { appKey, appOrigin, type Env } from './env';
@@ -77,18 +78,14 @@ export async function callAppForJson(
   return { ok: true, body: parsed as Record<string, unknown> };
 }
 
-// Runs `work` over `items`, at most `limit` at a time.
+// Runs `work` over `items`, at most `limit` at a time (api-kit's pool).
 export async function eachLimited<T>(
   items: T[],
   limit: number,
   work: (item: T) => Promise<void>,
 ): Promise<void> {
-  let next = 0;
-  const runners = Array.from({ length: Math.min(limit, items.length) }, async () => {
-    while (next < items.length) {
-      const item = items[next++]!;
-      await work(item);
-    }
-  });
-  await Promise.all(runners);
+  await pooled(
+    items.map((item) => () => work(item)),
+    limit,
+  );
 }

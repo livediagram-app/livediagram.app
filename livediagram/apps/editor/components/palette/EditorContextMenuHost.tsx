@@ -1,5 +1,7 @@
 'use client';
 
+import { useCapabilities } from '@/hooks/persistence/useCapabilities';
+import { canBindLiveStatus } from '@/lib/live-status-input';
 import { useCallback } from 'react';
 import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { EMPTY_SELECTION, type Selection } from '@liveworkspace/workbench/lib/selection-store';
@@ -145,6 +147,7 @@ export function EditorContextMenuHost() {
     sankey,
     setSankeyFlowsOpenForId,
     setSequenceOpenForId,
+    setLiveStatusOpenForId,
     can,
     setMindFlowSelected,
     setMindSpacingSelected,
@@ -235,6 +238,8 @@ export function EditorContextMenuHost() {
   );
 
   const { swatches } = useColourPalette();
+  // Whether this deployment checks status URLs (docs/specs/009-elements/live-status.md "Scope"): off, no Live Status.
+  const { liveStatusEnabled } = useCapabilities();
 
   // A Participant or a Viewer gets its own short menu, holding only what its role may do
   // (ReadOnlyElementMenuHost), so nothing below needs a second `isReadOnly` guard: everything past
@@ -438,6 +443,17 @@ export function EditorContextMenuHost() {
           ? (id: string) => {
               closeContextMenu();
               setSequenceOpenForId(id);
+            }
+          : undefined
+      }
+      onEditLiveStatus={
+        liveStatusEnabled &&
+        can.level === 'edit' &&
+        ctxSelectedEl &&
+        canBindLiveStatus(ctxSelectedEl)
+          ? (id: string) => {
+              closeContextMenu();
+              setLiveStatusOpenForId(id);
             }
           : undefined
       }

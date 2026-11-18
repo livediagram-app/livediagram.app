@@ -73,6 +73,7 @@ import {
 import * as rpc from './room-rpc';
 import { community, communityListing, communityPostTitle } from './room-community';
 import { renewGrant, roomFetch } from './room-grants';
+import { roomServiceStatus, type RoomServiceStatus } from './room-service-status';
 import {
   broadcast,
   closeAllIfTrashed,
@@ -118,7 +119,8 @@ import {
 // The class holds the room's state and its doors; what each door does lives beside it, in functions that take the
 // room: room-content-state.ts (schema, outbox, upkeep), room-rpc.ts and room-community.ts (the worker's calls),
 // room-grants.ts (the upgrade and grants), room-sockets.ts (fan-out and closes), room-message.ts (inbound frames),
-// room-qa-poll.ts (Q&A writes, poll answers), room-roster.ts (presence) and room-lifecycle.ts (alarm, purge). So
+// room-qa-poll.ts (Q&A writes, poll answers), room-roster.ts (presence), room-service-status.ts (live service status)
+// and room-lifecycle.ts (alarm, purge). So
 // the members those functions read are not `private`.
 //
 // Duration cost: the object is billed while it runs a request or an alarm, not while sockets idle (hibernation,
@@ -299,6 +301,9 @@ export class DocumentRoom extends DurableObject<Env> {
     },
     schedule: (fn, ms) => void setTimeout(fn, ms),
   });
+  // The live service status checks (docs/specs/009-elements/live-status.md, room-service-status.ts): each bound
+  // URL's latest state and the next round, while someone has the document open on a deployment that polls.
+  readonly serviceStatus: RoomServiceStatus;
   // The element gate (@liveworkspace/api-kit/room-element-ops, docs/specs/015-api/blueprints/room-element-ops.md):
   // one per room instance, so its bounded log is per room. Answers a refused op to its sender alone.
   readonly elementGate = createRoomElementGate(ROOM_ELEMENT_RULES);
@@ -358,6 +363,7 @@ export class DocumentRoom extends DurableObject<Env> {
     });
     this.pollAnswers = Promise.resolve();
     this.selections = new RoomSelectionStore(state.storage);
+    this.serviceStatus = roomServiceStatus(this);
     // The keepalive (see the hibernation notes above): answered by the runtime, never by this class. Absent from a
     // test double of the state, and from a runtime without the hibernation API.
     if (typeof WebSocketRequestResponsePair !== 'undefined')
@@ -383,6 +389,7 @@ export class DocumentRoom extends DurableObject<Env> {
       await this.poll.restore();
       for (const r of await this.agents.restore()) agentPresenceLog('expired', r);
       restoreContentState(this, await state.storage.get<number>(MAINTENANCE_KEY));
+      await this.serviceStatus.restore();
       this.armAlarm();
     });
   }

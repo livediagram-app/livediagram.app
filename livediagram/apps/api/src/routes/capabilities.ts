@@ -58,6 +58,9 @@ export function handleCapabilities(ctx: RouteContext): Response {
     // docs/specs/025-community/community.md "Turning the Community off": false hides the Community from every app. A
     // deploy without the liveworkspace Community service's key has none to show (by default).
     communityEnabled: communityEnabled(env) && communityServiceConfigured(env),
+    // docs/specs/009-elements/live-status.md "Scope": the editor offers the Live Status dialog only where the room
+    // checks the URLs, so a fork (polling off) never offers a binding that would show nothing.
+    liveStatusEnabled: env.LIVE_STATUS_ENABLED === 'true',
     ...cliCapabilities(ctx),
   });
 }

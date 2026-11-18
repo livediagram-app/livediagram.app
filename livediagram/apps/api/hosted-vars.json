@@ -1,5 +1,6 @@
 {
   "TELEMETRY_ENABLED": "true",
+  "LIVE_STATUS_ENABLED": "true",
   "environments": {
     "production": {
       "APP_BASE_URL": "https://www.livediagram.app",

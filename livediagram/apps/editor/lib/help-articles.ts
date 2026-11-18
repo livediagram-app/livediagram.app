@@ -73,6 +73,7 @@ export const HELP_ARTICLES = {
   eventStormingBoards: 'canvas/event-storming-boards',
   drawTour: 'canvas/draw-mode/draw-tour',
   links: 'canvas/links',
+  liveStatus: 'canvas/links/live-status',
   comments: 'collaboration/comments',
   livePresence: 'collaboration/live-presence',
   assignedActions: 'collaboration/assigned-actions',
@@ -263,6 +264,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   links: {
     title: 'Learn about links',
     description: 'Linking elements to tabs, canvases, and web addresses.',
+  },
+  liveStatus: {
+    title: 'Learn about live status',
+    description: 'Which addresses work, what each state means and who sees the badge.',
   },
   comments: {
     title: 'Learn about comments',

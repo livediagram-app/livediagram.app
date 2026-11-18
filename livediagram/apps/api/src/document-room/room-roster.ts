@@ -50,6 +50,7 @@ export function dropSession(room: DocumentRoom, ws: WebSocket): void {
   // runtime prunes it from getWebSockets(), it could otherwise still
   // appear in the roster of this very broadcast.
   room.broadcastPresence(ws);
+  room.serviceStatus.left(ws);
 }
 
 // The person tags of the hello'd sessions: who is looking at the canvas now, whom a phone notification skips

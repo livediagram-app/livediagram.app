@@ -82,6 +82,32 @@ describe('a received share-revoked', () => {
   });
 });
 
+describe('a received service-status (docs/specs/009-elements/live-status.md)', () => {
+  const statuses = { 'https://status.example.com/': { state: 'down', checkedAt: 1 } };
+  const send = (from: string, receiveServiceStatus?: (s: unknown) => void) =>
+    receiveRoomOp(
+      from,
+      { kind: 'service-status', statuses } as never,
+      {} as PresenceCoalescer,
+      { markSeen: vi.fn(), receiveServiceStatus } as unknown as RoomConnectionOptions,
+      new Map(),
+      new Map(),
+    );
+
+  it("hands the room's states to the store", () => {
+    const receive = vi.fn();
+    send('system', receive);
+    expect(receive).toHaveBeenCalledWith(statuses);
+  });
+
+  it('ignores one from a peer, and one with no store to take it', () => {
+    const receive = vi.fn();
+    send('peer', receive);
+    expect(receive).not.toHaveBeenCalled();
+    expect(() => send('system')).not.toThrow();
+  });
+});
+
 // Slides an agent appended (docs/specs/012-collaboration/presentation-mode.md "Slides an agent appends"): handed to
 // the deck from the worker alone.
 describe('a received deck-slides', () => {

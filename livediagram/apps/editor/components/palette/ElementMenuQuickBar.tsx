@@ -10,6 +10,7 @@ import {
   ActionMenuIcon,
   CommentMenuIcon,
   LinkMenuIcon,
+  LiveStatusMenuIcon,
   NoteMenuIcon,
 } from '@/components/palette/context-menu-icons';
 import {
@@ -27,7 +28,7 @@ export function quickBarItems(
   target: BoxedElement,
   props: Pick<
     EditorContextMenuProps,
-    'onAssignAction' | 'onOpenComments' | 'onLinkElement' | 'onOpenNote'
+    'onAssignAction' | 'onOpenComments' | 'onLinkElement' | 'onOpenNote' | 'onEditLiveStatus'
   >,
 ): ResourceItem[] {
   const comments = (target as { commentThread?: { comments: readonly unknown[] } }).commentThread;
@@ -67,6 +68,18 @@ export function quickBarItems(
     on: !!target.note,
     run: () => props.onOpenNote(target.id),
   });
+  // An Editor's binding to a status URL (docs/specs/009-elements/live-status.md "The Live Status dialog"): passed only
+  // when this session may bind this shape on a deployment that checks.
+  const { onEditLiveStatus } = props;
+  if (onEditLiveStatus)
+    items.push({
+      key: 'live-status',
+      detail: 'Whether its service is up',
+      label: 'Live Status…',
+      icon: <LiveStatusMenuIcon />,
+      on: target.type === 'shape' && typeof target.statusUrl === 'string',
+      run: () => onEditLiveStatus(target.id),
+    });
   return items;
 }
 
