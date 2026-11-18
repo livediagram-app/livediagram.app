@@ -68,9 +68,6 @@ export type EditorHeaderProps = {
   readOnly?: boolean;
   onOpenShare: () => void;
   onRename: (name: string) => void;
-  // Bumped by the command palette's rename action to enter inline edit mode (the palette can't reach this
-  // component's local editing state). A monotonic counter; each increment opens the editor (unless read-only).
-  renameNonce?: number;
   // The Present button (docs/specs/012-collaboration/presentation-mode.md "The header's Present button"): passed
   // only while there is something to present, so absent means no button.
   present?: { slideCount: number; starting: boolean; onPresent: () => void };
@@ -102,22 +99,12 @@ export function EditorHeader({
   readOnly = false,
   onOpenShare,
   onRename,
-  renameNonce = 0,
   present,
   leadAction,
   shareAction,
   account,
 }: EditorHeaderProps) {
   const [editing, setEditing] = useState(false);
-
-  // The command palette requests a rename by bumping renameNonce. Each request is honoured once, as soon as the
-  // title can be edited (it may be hidden behind the welcome modal when it arrives); the mount value is never a
-  // request.
-  const [handledNonce, setHandledNonce] = useState(renameNonce);
-  if (renameNonce !== handledNonce && !readOnly && !hideTitle) {
-    setHandledNonce(renameNonce);
-    setEditing(true);
-  }
 
   return (
     // `relative z-[var(--z-modal)]` puts the entire header into its own stacking context above the canvas sibling

@@ -106,32 +106,6 @@ describe('EditorHeader title', () => {
     expect(screen.queryByText('Untitled item')).toBeNull();
     expect(container.querySelector('[data-header-pills]')).toBeNull();
   });
-
-  it('opens the name editor for a palette request, never on mount', () => {
-    const { rerender } = render(header({ renameNonce: 0 }));
-    expect(editing()).toBeNull();
-    rerender(header({ renameNonce: 1 }));
-    expect(editing()).not.toBeNull();
-  });
-
-  it('honours a request made while the title is hidden once it shows, and only once', () => {
-    const { rerender } = render(header({ renameNonce: 0, hideTitle: true }));
-    rerender(header({ renameNonce: 1, hideTitle: true }));
-    expect(editing()).toBeNull();
-    rerender(header({ renameNonce: 1 }));
-    expect(editing()).not.toBeNull();
-    fireEvent.blur(screen.getByDisplayValue('Untitled item'));
-    expect(editing()).toBeNull();
-    rerender(header({ renameNonce: 1, hideTitle: true }));
-    rerender(header({ renameNonce: 1 }));
-    expect(editing()).toBeNull();
-  });
-
-  it('ignores a palette request for a viewer', () => {
-    const { rerender } = render(header({ readOnly: true, renameNonce: 0 }));
-    rerender(header({ readOnly: true, renameNonce: 1 }));
-    expect(editing()).toBeNull();
-  });
 });
 
 describe('EditorHeader pills', () => {

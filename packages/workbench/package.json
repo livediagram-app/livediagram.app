@@ -325,6 +325,7 @@
     "./hooks/editor/useEditorDialogs": "./src/hooks/editor/useEditorDialogs.ts",
     "./hooks/editor/useFormatTool": "./src/hooks/editor/useFormatTool.ts",
     "./hooks/editor/useModeDefaultTool": "./src/hooks/editor/useModeDefaultTool.ts",
+    "./hooks/editor/useRenameCurrentRequest": "./src/hooks/editor/useRenameCurrentRequest.ts",
     "./hooks/editor/useSelectTab": "./src/hooks/editor/useSelectTab.ts",
     "./hooks/editor/useTabEntryEffects": "./src/hooks/editor/useTabEntryEffects.ts",
     "./hooks/persistence/useAccountBootstrap": "./src/hooks/persistence/useAccountBootstrap.ts",
