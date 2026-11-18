@@ -133,9 +133,9 @@ test('an Editor and a Participant vote by keyboard and converge; a Viewer cannot
   // The Participant: Tab to the first sticky, + casts a dot, and says so.
   await focusCanvas(participant);
   await participant.keyboard.press('Tab');
-  // A dot goes down the room's socket, and one cast before that socket is made reaches nobody
-  // (useEditorSessionTools emitVote): the Editor seeing the Participant's hold on the sticky says
-  // the Participant's room is open. Under a loaded runner the canvas can be up before the room.
+  // The Editor seeing the Participant's hold on the sticky says the Participant's room is open, so the
+  // walk's selection lock below holds. A dot cast before then is held and sent as the room opens
+  // (pre-room-outbox.ts, useRoomConnection.pre-room-vote.test.tsx); this walk waits for the lock.
   await expect(editor.getByLabel(/^Locked to /)).toHaveCount(1, { timeout: 20_000 });
   await participant.keyboard.press('+');
   await expect(said(participant)).toHaveText("Dot added to 'Idea'. 1 of 2 dots left.");

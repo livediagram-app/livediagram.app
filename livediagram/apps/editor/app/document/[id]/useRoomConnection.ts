@@ -26,6 +26,7 @@ import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { prunePeerDragPreviews } from '@/hooks/collab/peer-drag-previews';
 import { joinRefusedBecauseTrashed } from './room-refusal';
 import { receiveRoomOp } from './room-op-receive';
+import { clearPreRoomOutbox, flushPreRoomOutbox } from './pre-room-outbox';
 import type { RoomConnectionOptions } from './useRoomConnection.types';
 
 // Realtime room: one WebSocket per document, opened for every document saved on
@@ -52,6 +53,7 @@ export function useRoomConnection(opts: RoomConnectionOptions) {
     selfParticipantRef,
     sessionShareCodeRef,
     roomRef,
+    preRoomOutbox,
     setLivePresence,
     setLiveAgents,
     setRemoteSelections,
@@ -295,11 +297,16 @@ export function useRoomConnection(opts: RoomConnectionOptions) {
       roomReadFacilitatorToken,
     );
     roomRef.current = openedRoom;
+    // What was cast before this room existed goes to it now, once (pre-room-outbox.ts): the connector holds it in
+    // its own outbox until the socket has said hello.
+    if (preRoomOutbox) flushPreRoomOutbox(preRoomOutbox, openedRoom, documentId);
     return () => {
       stopGrant();
       presence.cancel();
       openedRoom.close();
       roomRef.current = null;
+      // Leaving the document: anything still held for it goes too.
+      if (preRoomOutbox) clearPreRoomOutbox(preRoomOutbox);
     };
   }, [
     enabled,
@@ -308,6 +315,7 @@ export function useRoomConnection(opts: RoomConnectionOptions) {
     documentServerStored,
     documentTeamId,
     roomRef,
+    preRoomOutbox,
     setLivePresence,
     setLiveAgents,
     setRemoteSelections,
