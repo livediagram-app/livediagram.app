@@ -29,8 +29,8 @@ export function RoadmapHost({
   hasBoards: boolean;
   // The tab in view, where the dialog starts when it holds a board.
   activeTabId: string;
-  // The plan's card types and their changes, for the dialog's Add Votes (public-roadmap.md "The settings"); absent
-  // outside a plan's editor.
+  // The plan's card types and their changes, where the dialog adds Votes to a published roadmap's types
+  // (public-roadmap.md "The settings"); absent outside a plan's editor.
   itemTypes?: ItemTypesSlice | undefined;
   children: ReactNode;
 }) {

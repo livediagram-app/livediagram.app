@@ -3,8 +3,9 @@
 // Publish as Roadmap (docs/specs/026-plan/public-roadmap.md "The dialog"): a board of the tab as a public page, read
 // fresh when it opens, in one of two states. Not published: the settings and Publish Roadmap. Published: the live link
 // with Copy Link and Open Roadmap, the settings saving as they change (the link kept), and Unpublish behind a confirm.
-// A tab with several boards gets a board picker at the top. The privacy note is always there. With Voting on, a chosen
-// card type whose cards would not show their votes is offered Add Votes (one change to the plan's card types).
+// A tab with several boards gets a board picker at the top. The privacy note is always there. Once published with
+// Voting on, a chosen card type whose cards would not show their votes gets Votes on its own (one change to the plan's
+// card types), never as an offer.
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { PublishedRoadmap, RoadmapSettings, RoadmapsResponse } from '@liveplanner/api-schema';
 import {
@@ -67,7 +68,7 @@ export function RoadmapDialog({
   scope: RoadmapScope;
   // The tab in view when it opened: the Tab picker starts there when it holds a board.
   startTabId: string;
-  // The plan's card types and their changes (useItemTypes): what Add Votes reads and changes. Absent: no offer.
+  // The plan's card types and their changes (useItemTypes): where a published roadmap's types get Votes. Absent: none.
   cardTypes?: Pick<ItemTypesSlice, 'catalogue' | 'types' | 'saveCatalogue'> | undefined;
   onClose: () => void;
 }) {
@@ -83,7 +84,7 @@ export function RoadmapDialog({
   const [saveFailed, setSaveFailed] = useState(false);
   const [confirming, setConfirming] = useState<HTMLElement | null>(null);
   const { copied, flash } = useCopiedFlash(1800);
-  // The types Add Votes was just given, named for the note that says so.
+  // The types just given Votes, named for the note that says so.
   const [votesAdded, setVotesAdded] = useState<string | null>(null);
   const editor = useOptionalEditorContext();
   const [makingForm, setMakingForm] = useState(false);
@@ -139,17 +140,25 @@ export function RoadmapDialog({
         })
       : [];
 
-  // Votes for every chosen type that lacks it, as one change to the plan's card types (one undo step).
-  function addVotes() {
-    if (!cardTypes?.catalogue || lackVotes.length === 0) return;
-    const catalogue = cardTypes.catalogue;
-    const ids = new Set(lackVotes.map((t) => t.id));
+  // A published roadmap with Voting on gives every chosen type that lacks Votes the field, as one change to the plan's
+  // card types (one undo step): at Publish, when a type or Voting comes on later, and on opening one published before.
+  // Each type is tried once per opening, so a save that does not take is never repeated. A draft changes nothing.
+  const triedVotes = useRef(new Set<string>());
+  const owedKey = published ? lackVotes.map((t) => t.id).join(' ') : '';
+  useEffect(() => {
+    const catalogue = cardTypes?.catalogue;
+    if (!owedKey || !catalogue) return;
+    const ids = new Set(owedKey.split(' ').filter((id) => !triedVotes.current.has(id)));
+    if (ids.size === 0) return;
+    for (const id of ids) triedVotes.current.add(id);
+    const types = catalogue.types.filter((t) => ids.has(t.id));
+    if (types.length === 0) return;
     cardTypes.saveCatalogue({
       ...catalogue,
       types: withInheritance(catalogue.types.map((t) => (ids.has(t.id) ? withVotesShown(t) : t))),
     });
-    setVotesAdded(namesOf(lackVotes.map((t) => t.label)));
-  }
+    setVotesAdded(namesOf(types.map((t) => t.label)));
+  }, [owedKey, cardTypes]);
 
   const putRoadmap = (roadmap: PublishedRoadmap) =>
     setData((d) =>
@@ -457,13 +466,7 @@ export function RoadmapDialog({
                 : undefined
             }
             onChange={(next) => void change(next)}
-            votes={
-              lackVotes.length > 0
-                ? { kind: 'offer', names: namesOf(lackVotes.map((t) => t.label)), add: addVotes }
-                : votesAdded && settings.voting
-                  ? { kind: 'added', names: votesAdded }
-                  : null
-            }
+            votesAdded={votesAdded && settings.voting ? votesAdded : null}
           />
         ) : null}
         {state === 'draft' || state === 'published' ? (

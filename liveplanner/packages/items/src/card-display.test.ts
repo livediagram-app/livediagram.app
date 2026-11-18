@@ -232,7 +232,7 @@ describe('a new type’s Minimal card', () => {
   });
 });
 
-// Publish as Roadmap's Add Votes (docs/specs/026-plan/public-roadmap.md "The settings").
+// Votes for a published roadmap's types (docs/specs/026-plan/public-roadmap.md "The settings").
 describe('typeShowsVotes and withVotesShown', () => {
   const base: Omit<ItemTypeDef, 'fields'> = {
     id: 'mine',
