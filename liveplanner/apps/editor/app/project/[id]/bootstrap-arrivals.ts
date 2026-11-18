@@ -38,8 +38,6 @@ export type BootstrapSetters = {
   setLoadError: SetState<boolean>;
   // The project is in the Trash (docs/specs/013-workspace/trash.md).
   setProjectTrashed: (trashed: boolean) => void;
-  setProjectOwnerColor: SetState<string | null>;
-  setProjectOwnerId: SetState<string | null>;
   setProjectOwnerName: SetState<string | null>;
   setProjectShareable: SetState<boolean>;
   setProjectTeamId: SetState<string | null>;

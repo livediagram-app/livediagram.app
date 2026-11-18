@@ -176,9 +176,7 @@ const base = {
   isOwner: true,
   selfParticipant: self,
   livePresence: [],
-  documentOwnerId: 'me',
   documentOwnerName: null,
-  documentOwnerColor: null,
   // The tab bar.
   tabs: [tab],
   activeId: 't1',

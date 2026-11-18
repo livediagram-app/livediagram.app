@@ -133,8 +133,6 @@ export function useIdentityBootstrap(opts: {
     setActiveId: s.setActiveId,
     setProjectName: s.setProjectName,
     setProjectItemTypes: s.setProjectItemTypes,
-    setProjectOwnerColor: s.setProjectOwnerColor,
-    setProjectOwnerId: s.setProjectOwnerId,
     setProjectOwnerName: s.setProjectOwnerName,
     setProjectShareable: s.setProjectShareable,
     setProjectShareCode: s.setProjectShareCode,
