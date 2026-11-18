@@ -6,6 +6,7 @@
 import { useState } from 'react';
 import { Button } from '@liveworkspace/ui';
 import { Dialog, DialogCloseButton, DialogFooter, DialogHeader } from '../ui/Dialog';
+import type { CreateTeam, FindTeam } from '../teams/RefreshTeamsButton';
 import {
   PlacementBrowser,
   parsePlacement,
@@ -30,8 +31,9 @@ export type MoveToFolderDialogProps = {
     parentId: string | null,
     teamId: string | null,
   ) => Promise<PickerFolder | null>;
-  // New Team among the spaces (items only).
-  onCreateTeam?: (name: string) => Promise<{ id: string; name: string } | null>;
+  // New Team among the spaces (items only), and Refresh after its unconfirmed answer (PlacementBrowser's).
+  onCreateTeam?: CreateTeam;
+  onFindTeam?: FindTeam;
   onPick: (dest: Destination) => void;
   onClose: () => void;
   // Spaces of their own (Archived, This Browser), chosen by `onPickSpace`; `currentSpace` when it is in one now.
@@ -51,6 +53,7 @@ export function MoveToFolderDialog({
   currentFolderId = null,
   onCreateFolder,
   onCreateTeam,
+  onFindTeam,
   onPick,
   onClose,
   spaces,
@@ -92,6 +95,7 @@ export function MoveToFolderDialog({
           teams={teamList}
           onCreateFolder={onCreateFolder}
           onCreateTeam={onCreateTeam}
+          onFindTeam={onFindTeam}
           spaces={spaces}
         />
       </div>

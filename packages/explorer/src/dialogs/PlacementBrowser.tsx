@@ -11,6 +11,13 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { FOLDER_NAME_MAX } from '@liveworkspace/index-client';
 import { BackBar, Button } from '@liveworkspace/ui';
 import { compareNames } from '../data/name-order';
+import { TEAM_CREATE_UNCONFIRMED, teamErrorMessage } from '../data/teams';
+import {
+  recheckMadeTeam,
+  RefreshTeamsButton,
+  type CreateTeam,
+  type FindTeam,
+} from '../teams/RefreshTeamsButton';
 import {
   ChevronRightIcon,
   FolderPlaceIcon,
@@ -83,6 +90,7 @@ export function PlacementBrowser({
   showPersonal = true,
   onCreateFolder,
   onCreateTeam,
+  onFindTeam,
   spaces = NO_SPACES,
 }: {
   spaces?: readonly PlacementSpace[];
@@ -97,8 +105,10 @@ export function PlacementBrowser({
     parentId: string | null,
     teamId: string | null,
   ) => Promise<PickerFolder | null>;
-  /** New Team on the spaces: makes one and answers it, or null when refused. */
-  onCreateTeam?: (name: string) => Promise<{ id: string; name: string } | null>;
+  /** New Team on the spaces: makes one and answers it, or the refusal's code (null for one with none). */
+  onCreateTeam?: CreateTeam;
+  /** Refresh after New Team's unconfirmed answer: the team named so, made after all, or null for none. */
+  onFindTeam?: FindTeam;
 }) {
   const chosen = parsePlacement(placement);
   // Teams made here, shown at once (the host's list catches up after).
@@ -128,6 +138,22 @@ export function PlacementBrowser({
   const [naming, setNaming] = useState(false);
   const [namingTeam, setNamingTeam] = useState(false);
   const [teamError, setTeamError] = useState<string | null>(null);
+  // The name New Team last sent, while its answer is unconfirmed: what Refresh looks for.
+  const [unconfirmed, setUnconfirmed] = useState<string | null>(null);
+  const [checking, setChecking] = useState(false);
+  const teamFailed = (message: string | null, name: string | null = null) => {
+    setTeamError(message);
+    setUnconfirmed(name);
+  };
+  // Straight into the new team, its root chosen: the point of making it here is to file in it.
+  const openMade = (team: { id: string; name: string }) => {
+    setMade((m) => [...m, { id: team.id, name: team.name, folders: [] }]);
+    setNamingTeam(false);
+    teamFailed(null);
+    setSpace(team.id);
+    setOpenId(null);
+    onPlacement(`team:${team.id}`);
+  };
 
   if (space === null) {
     return (
@@ -169,23 +195,33 @@ export function PlacementBrowser({
               label="New team name"
               maxLength={TEAM_NAME_MAX}
               error={teamError}
+              errorAction={
+                unconfirmed !== null && onFindTeam ? (
+                  <RefreshTeamsButton
+                    busy={checking}
+                    onClick={() => {
+                      setChecking(true);
+                      void recheckMadeTeam(onFindTeam, unconfirmed)
+                        .then((found) => {
+                          if (found.ok) openMade(found.value);
+                          else if (found.error !== TEAM_CREATE_UNCONFIRMED)
+                            teamFailed(teamErrorMessage(found.error));
+                        })
+                        .finally(() => setChecking(false));
+                    }}
+                  />
+                ) : null
+              }
               onCancel={() => {
                 setNamingTeam(false);
-                setTeamError(null);
+                teamFailed(null);
               }}
               onCreate={async (name) => {
                 const team = await onCreateTeam(name).catch(() => null);
-                if (!team) {
-                  setTeamError('That team could not be made. Try again.');
-                  return;
-                }
-                setMade((m) => [...m, { id: team.id, name: team.name, folders: [] }]);
-                setNamingTeam(false);
-                setTeamError(null);
-                // Straight into the new team, its root chosen: the point of making it here is to file in it.
-                setSpace(team.id);
-                setOpenId(null);
-                onPlacement(`team:${team.id}`);
+                if (team && 'id' in team) return openMade(team);
+                if (team?.error === TEAM_CREATE_UNCONFIRMED)
+                  return teamFailed(teamErrorMessage(TEAM_CREATE_UNCONFIRMED), name);
+                teamFailed('That team could not be made. Try again.');
               }}
             />
           ) : (
@@ -410,6 +446,7 @@ function NameField({
   label,
   maxLength,
   error = null,
+  errorAction = null,
 }: {
   onCreate: (name: string) => Promise<void>;
   onCancel: () => void;
@@ -417,6 +454,8 @@ function NameField({
   label: string;
   maxLength: number;
   error?: string | null;
+  // An action said with the error, after it (New Team's Refresh).
+  errorAction?: ReactNode;
 }) {
   const [name, setName] = useState('');
   const [busy, setBusy] = useState(false);
@@ -458,6 +497,7 @@ function NameField({
       {error ? (
         <p role="alert" className="w-full text-xs text-rose-600 dark:text-rose-400">
           {error}
+          {errorAction ? <> {errorAction}</> : null}
         </p>
       ) : null}
     </form>
