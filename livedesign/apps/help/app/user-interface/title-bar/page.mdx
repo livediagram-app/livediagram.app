@@ -1,62 +1,44 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import {
-  TitleBarParts,
-  VisibilityLegendFigure,
-} from '@liveworkspace/help-site/art/illustrations/title-bar';
+import { TitleBarParts } from '@liveworkspace/help-site/art/illustrations/title-bar';
 
 export const metadata = helpMetadata({
-  title: 'The Title Bar',
+  title: 'The Top Corners',
   description:
-    'The strip across the top of the editor: the design name, who can see it, and Share or Copy at the right.',
+    'The two cards over the top of the editor: the logo and the menu at the left, Share or Copy and your account at the right.',
   path: '/help/user-interface/title-bar/',
 });
 
 <ArticleLayout
-  title="The Title Bar"
-  description="The design's name, who can see it, and Share or Copy, in the strip above the canvas."
+  title="The Top Corners"
+  description="The menu card and the actions card over the top corners of the editor."
   categoryTitle="User Interface"
   categorySlug="user-interface"
 >
 
-The **title bar** is the strip across the top of the editor, above the canvas. Reading from left to right, it holds the logo, the design's name, a pill saying who can see the design, and at the right edge the button that matters most for this design: **Share** if it is yours, **Copy** if it is someone else's. Your account button sits at the very end.
+There is no bar across the top of the editor: the canvas takes the whole height, and two cards float over its top corners. The **menu card** at the top left holds the logo and the menu button. The **actions card** at the top right holds **Prototype** on a wireframe tab, **Share** or **Copy** and your account. The [palette](/help/palette/) sits between them.
 
-<Figure caption="The title bar of a shared design, as its owner sees it: the name, the Shared visibility pill, a solid Share button and the account button.">
-  <TitleBarParts product="livedesign" noun="design" />
+<Figure caption="The top of a shared design, as its owner sees it: the menu card with the logo and the menu button, the palette, and the actions card with a solid Share button and the account.">
+  <TitleBarParts product="livedesign" />
 </Figure>
+
+On a phone the menu card joins the palette's row and the actions card shows its glyphs alone, without names; in a window too narrow for the palette and the actions card's names side by side, the actions card drops its names first. [Zen mode](/help/tools/zen-mode/) and an [embed](/help/collaboration/sharing/embeds/) hide both cards.
 
 ## The logo
 
-The logo on the left takes you to the livedesign home page. On a phone it shows without its wordmark. The other parts of livedesign (the **Explorer**, **Help** and more) are links along the foot of the [Explorer panel](/help/explorer/explorer-panel/).
+The logo at the left of the menu card opens the [Explorer](/help/explorer/explorer-page/) on the folder that holds this design. Its wordmark shows on a wide screen only.
 
-## The design name
+## The menu button
 
-The name sits in the middle of the bar. To rename the design, click the name, type the new one, and press `Enter` (or click away) to keep it. `Escape` leaves the old name in place, and clearing the box and confirming keeps the old name too. Names are capped at 60 characters, the same limit the Explorer uses. You can also start a rename from the [command palette](/help/tips-and-tricks/command-palette/) with **Rename Design**.
+The **≡** button beside the logo opens the [Explorer panel](/help/explorer/explorer-panel/) under it, and pressing it again closes the panel. The current design is at the top of the panel: its name, a badge saying who can see it and its **⋯** menu. Click the name there to rename the design: `Enter` keeps the new name and `Escape` the old one.
 
-Only people who can change the design's structure can rename it: its owner and anyone on an Editor link. On a Participant or Viewer link, or a [link to a single tab](/help/collaboration/sharing/one-tab/), the name is plain text and clicking it does nothing.
+## Prototype
 
-## The visibility pill
-
-Right after the name, a small pill says who can see this design. It reads one of four words:
-
-- **Private**: only you can see it.
-- **Shared**: anyone with one of its [share links](/help/collaboration/sharing/) can open it.
-- **Team**: it lives in a [team library](/help/collaboration/teams/team-shared-designs/) and every member of the team can open it. A team design with a live share link reads **Shared** instead.
-- **This Browser**: it is saved only in this browser, never on our servers (see [Offline Mode](/help/privacy-and-security/offline-mode/)). This wins over all the others.
-
-Hover the pill, or tab to it with the keyboard, and a legend opens beneath it. At the top it shows **Who Can See This** for the current state, with rings around a figure of you lit out as far as the design reaches. Under that the three audiences sit on one scale: Just you (Private), Link (Shared) and Team, filled up to where the design is now. Hover any other stop to see what it would mean (the heading changes to **If It Were**). This Browser sits apart below the scale, since it is the opposite of sharing: the design never leaves this browser.
-
-<Figure caption="The legend under the visibility pill of a Shared design: who can see it, the four audiences from Just you to Everyone, This Browser apart, and the owner's Change Who Can See This button.">
-  <VisibilityLegendFigure />
-</Figure>
-
-If the design is yours, the pill is also a button: clicking it opens the Share dialog, and the legend ends with a **Change Who Can See This** button that does the same. Everyone else gets the legend to read but no button, since only the owner decides who can see a design.
-
-The pill does not show on a phone (the bar has no room for it), while the welcome screen of a new design is open, in [Zen mode](/help/tools/zen-mode/), or inside an [embed](/help/collaboration/sharing/embeds/), which hides the whole title bar.
+On a wireframe tab, **Prototype** leads the actions card and plays the wireframe as a clickable prototype, for every role.
 
 ## Share or Copy
 
-The right edge of the bar holds one main action, and which one you get depends on whose design it is.
+The actions card holds one main action, and which one you get depends on whose design it is.
 
 **Share** is for the owner. It opens the [Share dialog](/help/collaboration/sharing/), where you create and manage links. The button turns solid blue once the design has a live link, so you can tell at a glance that it is shared. On a [This Browser](/help/privacy-and-security/offline-mode/) design it asks you to save the design to your account first, since there is nothing on a server to share yet.
 
@@ -72,6 +54,6 @@ Your copy starts **Private**: no share links come with it, and nothing you do to
 
 ## Your account
 
-At the far right is your account. Signed in, it shows your initial; click it for a menu with your name and email, **Account** (which opens [Settings](/help/user-interface/settings/) on your account details, without leaving the design) and **Sign Out**. Not signed in, it shows **Sign in** instead (see [Signing In](/help/account-and-data/signing-in/)).
+At the end of the actions card is your account. Signed in, it shows your initial; click it for a menu with your name and email, **Account** (which opens [Settings](/help/user-interface/settings/) on your account details, without leaving the design) and **Sign Out**. Not signed in, it shows **Sign in** instead (see [Signing In](/help/account-and-data/signing-in/)).
 
 </ArticleLayout>

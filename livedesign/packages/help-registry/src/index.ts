@@ -257,10 +257,11 @@ export const articles: Article[] = [
 
   {
     slug: 'title-bar',
-    title: 'The Title Bar',
-    description: 'Rename the design, see who can see it, preview as a viewer, and Share or Copy.',
+    title: 'The Top Corners',
+    description:
+      'The logo and menu button at the top left, Share or Copy and your account at the top right.',
     keywords:
-      'header top bar design name rename visibility private shared team public local only role pill editing viewing participating owner preview read only share copy make a copy account',
+      'top corners menu card actions card header top bar title bar logo menu button explorer rename design name share copy make a copy account sign in untitled auto name prototype wireframe',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
