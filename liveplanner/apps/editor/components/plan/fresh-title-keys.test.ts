@@ -84,7 +84,7 @@ describe('typing ahead of a new card’s title', () => {
 
   it('holds a key aimed at the page itself', () => {
     armFreshTitleKeys();
-    expect(press('a', {}, document).reached).toBe(false);
+    expect(press('a', {}, globalThis.document).reached).toBe(false);
     expect(takeFreshTitleKeys()).toBe('a');
   });
 
