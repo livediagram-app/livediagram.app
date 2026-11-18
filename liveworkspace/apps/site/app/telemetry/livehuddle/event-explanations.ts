@@ -1653,6 +1653,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone turned off Plan mode, in Settings > Experimental. No longer recorded: Plan mode is always offered.',
   'UI|Toggled|PlanModeOn':
     'Someone turned on Plan mode, in Settings > Experimental. No longer recorded: Plan mode is always offered.',
+  'UI|Toggled|RotateIn3DOff':
+    'Someone turned off Turn Left and Turn Right in the 3D view, in Settings > Editor.',
+  'UI|Toggled|RotateIn3DOn':
+    'Someone turned on Turn Left and Turn Right in the 3D view, in Settings > Editor.',
   'UI|Toggled|ReduceMotionOff': 'Someone turned off reduced motion, in Settings > Accessibility.',
   'UI|Toggled|ReduceMotionOn': 'Someone turned on reduced motion, in Settings > Accessibility.',
   'UI|Toggled|HideCursorsOff':

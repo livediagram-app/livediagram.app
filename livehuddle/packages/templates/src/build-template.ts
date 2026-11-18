@@ -34,6 +34,7 @@ import {
   AVATAR_PAD_DEFAULT_SIZE,
   createShape,
   isFloorShape,
+  snapToWallFace,
   type Element,
 } from '@livehuddle/document';
 import type { TemplateKind } from './templates';
@@ -43,7 +44,15 @@ import { roomier } from './template-roomy';
 // point. Each template is intentionally small and editable; users grow them.
 export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Element[] {
   // Opened out to roomier rooms, one rule for every Space (template-roomy.ts).
-  return floorsFirst(roomier(buildElements(kind, cx, cy), cx, cy));
+  return floorsFirst(onWalls(roomier(buildElements(kind, cx, cy), cx, cy)));
+}
+
+/**
+ * Every wall piece (a Fireplace, a Screen, a Notice Board, a Room Sign...) against a wall, as placing one puts it
+ * (docs/specs/009-elements/wall-pieces.md "Only on a wall"): one already on its wall stays where the builder put it.
+ */
+export function onWalls(elements: Element[]): Element[] {
+  return elements.map((el) => (el.type === 'shape' ? snapToWallFace(el, elements) : el));
 }
 
 const isFloor = (el: Element) => el.type === 'shape' && isFloorShape(el.shape);

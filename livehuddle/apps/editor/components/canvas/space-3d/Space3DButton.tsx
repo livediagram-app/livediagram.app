@@ -17,12 +17,13 @@ const TurnRightIcon = lucideGlyph(lucideRotateCw, 18);
 
 // The 3D View switch in the bottom-right cluster while walking (docs/specs/008-canvas/3d-view.md "Turning it on and
 // off"): lit while the view is 3D, named "3D" beside its icon on a wide desktop.
-export function Space3DButton() {
+// `turning` is the Rotate in 3D View setting (3d-view.md "Turning the camera"): off, there are no Turn buttons.
+export function Space3DButton({ turning = false }: { turning?: boolean }) {
   const on = useSpace3DPreference();
   return (
     <>
       {/* Turn Left and Turn Right while it is on (3d-view.md "Turning the camera"). */}
-      {on ? (
+      {on && turning ? (
         <ClusterStrip dataTourId="space-3d-turn">
           <ClusterPopoverSegment
             label="Turn Left"

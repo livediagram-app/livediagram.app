@@ -2,6 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, type ReactNode } from 'react';
 import { AvatarSprite } from '@livehuddle/avatar/components/avatar-sprite';
+import { crispAvatarScale } from '@livehuddle/avatar/walk';
 import { avatarBindings } from '@livehuddle/avatar/bindings';
 import {
   AVATAR_CLOTHING,
@@ -72,7 +73,8 @@ function Portrait({
       lift={0}
       wave={null}
       shirt={shirt}
-      scale={scale}
+      // Whole pixels per sprite pixel, so the picture is crisp (crispAvatarScale).
+      scale={crispAvatarScale(scale)}
       portrait
     />
   );
@@ -381,7 +383,7 @@ function BehaviourBody({ a, mobile }: { a: AvatarPaletteActions; mobile: boolean
                   lift={0}
                   wave={null}
                   shirt={a.shirt}
-                  scale={0.46}
+                  scale={crispAvatarScale(0.46)}
                   pose={pose}
                   portrait
                 />

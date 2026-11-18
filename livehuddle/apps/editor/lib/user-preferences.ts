@@ -98,6 +98,9 @@ export type UserPreferences = {
   // unaffected; only the visual hint is suppressed). Missing /
   // undefined === guides on, the default.
   alignmentGuides?: boolean;
+  // Rotate in 3D View (docs/specs/008-canvas/3d-view.md "Turning the camera"): when true the 3D view offers Turn Left
+  // and Turn Right (and [ and ]). Missing / false === off, the default.
+  rotateIn3D?: boolean;
   // Reduce motion (accessibility, docs/specs/007-editor/user-preferences.md). When `true`, the editor adds
   // `.reduce-motion` to <html> so the CSS in globals.css collapses every
   // decorative animation + transition to ~instant. Independent of the OS

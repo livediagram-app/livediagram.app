@@ -12,6 +12,7 @@ import {
   createOutlinedRoom,
   isWallPiece,
   snapDoorToWall,
+  snapToWallFace,
   withDoorPiece,
   type Element,
   type Tab,
@@ -168,7 +169,13 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     const pieces = wallPiece
       ? [sized]
       : withDoorPiece(sized, intent.type === 'shape' ? intent.variant : undefined);
-    commit((els) => [...els, ...(wallPiece ? [snapDoorToWall(wallPiece, els)] : pieces)]);
+    // A wall piece lands against the nearest wall (wall-pieces.md "Only on a wall").
+    commit((els) => [
+      ...els,
+      ...(wallPiece
+        ? [snapDoorToWall(wallPiece, els)]
+        : pieces.map((el) => (el.type === 'shape' ? snapToWallFace(el, els) : el))),
+    ]);
     setSelection(placedSelection(pieces));
     // A freshly added text element drops straight into typing mode
     // (matches the double-click-to-add-text path in useElementCreation):
