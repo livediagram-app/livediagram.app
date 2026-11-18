@@ -270,9 +270,11 @@ synced.
 ### A default answer
 
 A question that is not Required may have a **Default Answer** (`fallback`): its answer when the respondent leaves it
-empty. It is set in the question's settings block (**+ Default Answer**, then the question's own control, as
-respondents answer it; **Remove**), and kept only when it is an answer the question accepts ("That isn't an answer
-this question accepts." otherwise). A Checkbox (unticked is its answer), a Date Range and a content block have none;
+empty. It is set on the selected card's answer itself: a small **Default Answer** toggle at the top right of the
+answer box (or the options) turns that area into the question's own control, as respondents answer it, with **Clear**
+beside its hint; pressed again, the area goes back to the placeholder (or the options). It starts off, every time a
+card is selected, and shows a dot while a default is set. A default is kept only when it is an answer the question
+accepts ("That isn't an answer this question accepts." otherwise). A Checkbox (unticked is its answer), a Date Range and a content block have none;
 making a question Required drops its default. The api and the page check a response with the default in place of an
 empty answer, so the card, the sheet's row and the automations see it as if it had been given. Respondents see the
 question empty, as ever.

@@ -230,3 +230,79 @@ describe('an Editor', () => {
     }
   });
 });
+
+// docs/specs/030-forms/forms.md "A default answer": a toggle at the top right of a selected card's answer area, off each
+// time, turns the area into the question's own control and back; a Required question has none.
+describe('a Default Answer', () => {
+  it('starts off, swaps the options for the control, saves a pick, clears, and swaps back', () => {
+    render(<Harness canEdit />);
+    fireEvent.click(screen.getByRole('button', { name: 'Edit question: Severity' }));
+    const toggle = screen.getByRole('button', { name: 'Default Answer' });
+    expect(toggle.getAttribute('aria-pressed')).toBe('false');
+    expect(screen.getByRole('list', { name: 'Options' })).toBeTruthy();
+    fireEvent.click(toggle);
+    expect(toggle.getAttribute('aria-pressed')).toBe('true');
+    expect(screen.queryByRole('list', { name: 'Options' })).toBeNull();
+    fireEvent.click(screen.getByRole('radio', { name: 'High' }));
+    expect(questionsOf(latest)[1]!.fallback).toBe('High');
+    fireEvent.click(screen.getByRole('button', { name: 'Clear' }));
+    expect(questionsOf(latest)[1]!.fallback).toBeUndefined();
+    fireEvent.click(toggle);
+    expect(screen.getByRole('list', { name: 'Options' })).toBeTruthy();
+  });
+
+  it('is not offered on a Required question', () => {
+    render(<Harness canEdit />);
+    fireEvent.click(screen.getByRole('button', { name: 'Edit question: Summary' }));
+    expect(screen.queryByRole('button', { name: 'Default Answer' })).toBeNull();
+  });
+});
+
+describe('a Default Answer typed in', () => {
+  it('names its box and saves the answer when the box is left', () => {
+    render(
+      <Harness
+        canEdit
+        start={{
+          ...START,
+          sections: [
+            { id: 's-1', title: '', questions: [{ id: 'q-3', type: 'short', prompt: 'Team' }] },
+          ],
+        }}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Edit question: Team' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Default Answer' }));
+    const box = screen.getByRole('textbox', { name: 'Default Answer' });
+    fireEvent.change(box, { target: { value: 'Ops' } });
+    fireEvent.blur(box);
+    expect(questionsOf(latest)[0]!.fallback).toBe('Ops');
+  });
+});
+
+describe('a Default Answer the question would refuse', () => {
+  it('is not kept, and says so', () => {
+    render(
+      <Harness
+        canEdit
+        start={{
+          ...START,
+          sections: [
+            {
+              id: 's-1',
+              title: '',
+              questions: [{ id: 'q-4', type: 'number', prompt: 'Guests', min: 1, max: 5 }],
+            },
+          ],
+        }}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Edit question: Guests' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Default Answer' }));
+    const box = screen.getByLabelText('Default Answer');
+    fireEvent.change(box, { target: { value: '9' } });
+    fireEvent.blur(box);
+    expect(questionsOf(latest)[0]!.fallback).toBeUndefined();
+    expect(screen.getByText('That isn’t an answer this question accepts.')).toBeTruthy();
+  });
+});

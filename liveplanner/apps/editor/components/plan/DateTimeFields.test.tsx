@@ -253,8 +253,7 @@ describe('the form questions', () => {
     expect(hasQuestionSettings({ id: 'q', type: 'phone', prompt: 'Q', required: true })).toBe(
       false,
     );
-    // Left optional, each takes a default answer (forms.md "A default answer").
-    expect(hasQuestionSettings({ id: 'q', type: 'phone', prompt: 'Q' })).toBe(true);
+    expect(hasQuestionSettings({ id: 'q', type: 'phone', prompt: 'Q' })).toBe(false);
   });
   const q = (
     type: PublicQuestion['type'],

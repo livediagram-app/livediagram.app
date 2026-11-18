@@ -47,6 +47,7 @@ import { QuestionSettings, hasQuestionSettings } from './QuestionSettings';
 import { useFormBuilder } from './form-builder-context';
 import { growBetween, leaveThen } from './question-motion';
 import { PlaceholderField, takesPlaceholder } from './PlaceholderField';
+import { AnswerArea } from './DefaultAnswer';
 import { targetLabel } from './target-label';
 
 const GripIcon = lucideGlyph(lucideGripVertical, 16);
@@ -266,35 +267,40 @@ export function FormQuestionCard({
             }
           />
           <div className="px-3">
-            {q.type === 'single' || q.type === 'multi' ? (
-              <OptionsEditor
-                question={q}
-                onOptions={(options) => {
-                  change((f) => setOptions(f, q.id, options));
-                  if (mapped) b.actions.syncFieldOptions(b.type!, mapped.id, options);
-                }}
-                onOther={(other) =>
-                  change((f) => updateQuestion(f, q.id, { other: other || undefined }))
-                }
-              />
-            ) : takesPlaceholder(q) ? (
-              // The answer box as respondents see it, its placeholder typed straight into it.
-              <PlaceholderField question={q} />
-            ) : (
-              // The control alone, as respondents will see it: the prompt and help are edited just above.
-              <div className="cursor-not-allowed opacity-80 [&>*]:pointer-events-none" aria-hidden>
-                <QuestionControl
+            <AnswerArea question={q}>
+              {q.type === 'single' || q.type === 'multi' ? (
+                <OptionsEditor
                   question={q}
-                  value={undefined}
-                  other=""
-                  onChange={() => {}}
-                  onOther={() => {}}
-                  disabled
-                  labelledBy=""
-                  controlId={`preview-${q.id}`}
+                  onOptions={(options) => {
+                    change((f) => setOptions(f, q.id, options));
+                    if (mapped) b.actions.syncFieldOptions(b.type!, mapped.id, options);
+                  }}
+                  onOther={(other) =>
+                    change((f) => updateQuestion(f, q.id, { other: other || undefined }))
+                  }
                 />
-              </div>
-            )}
+              ) : takesPlaceholder(q) ? (
+                // The answer box as respondents see it, its placeholder typed straight into it.
+                <PlaceholderField question={q} />
+              ) : (
+                // The control alone, as respondents will see it: the prompt and help are edited just above.
+                <div
+                  className="cursor-not-allowed opacity-80 [&>*]:pointer-events-none"
+                  aria-hidden
+                >
+                  <QuestionControl
+                    question={q}
+                    value={undefined}
+                    other=""
+                    onChange={() => {}}
+                    onOther={() => {}}
+                    disabled
+                    labelledBy=""
+                    controlId={`preview-${q.id}`}
+                  />
+                </div>
+              )}
+            </AnswerArea>
           </div>
           {hasQuestionSettings(q) ? (
             <div className="mx-3 rounded-lg bg-slate-50 p-3 dark:bg-slate-800/50">
