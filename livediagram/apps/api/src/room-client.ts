@@ -2,6 +2,7 @@ import {
   ledgerCommentAuthors,
   mergeLedgerIntoTab,
   type ElementDelta,
+  type Slide,
   type Tab,
   type TabLedger,
 } from '@livediagram/document';
@@ -12,7 +13,11 @@ import {
   type ChangesetRoomOp,
 } from '@livediagram/api-schema';
 import type { AgentPresenceWrite } from '@liveworkspace/api-kit/room-agent-presence';
-import { createRoomClient, type RoomSelection } from '@liveworkspace/api-kit/room-client';
+import {
+  createRoomClient,
+  roomMutationInit,
+  type RoomSelection,
+} from '@liveworkspace/api-kit/room-client';
 import type { Env } from './types';
 
 // The worker's calls into a document's realtime room (docs/specs/012-collaboration/collab-race-hardening.md): reading its
@@ -75,6 +80,36 @@ export const relayDocumentRename: (
   name: string,
   tabs: readonly { id: string; name: string; orderIndex: number; folder?: string }[],
 ) => Promise<boolean> = room.relayItemRename;
+
+// Slides the api appended to the deck (docs/specs/012-collaboration/presentation-mode.md "Slides an agent appends"),
+// into the room's ordered stream so every open editor appends them, and one whose socket blipped replays them.
+// Best-effort and logged, like the rename relay: the stored deck is already written.
+export async function relayDeckSlides(
+  env: Env,
+  documentId: string,
+  slides: readonly Slide[],
+): Promise<boolean> {
+  try {
+    const res = await roomFetch(
+      env,
+      documentId,
+      '/mutation',
+      roomMutationInit({ kind: 'deck-slides', slides }),
+      ROOM_RELAY_TIMEOUT_MS,
+    );
+    if (res.ok) return true;
+    console.warn('[room-mutation] deck-slides did not reach the room', {
+      documentId,
+      error: `status ${res.status}`,
+    });
+  } catch (err) {
+    console.warn('[room-mutation] deck-slides did not reach the room', {
+      documentId,
+      error: String(err),
+    });
+  }
+  return false;
+}
 
 // A tab the api renamed (CS42), as the same tab-meta op an editor's own rename sends.
 export const relayTabRename: (

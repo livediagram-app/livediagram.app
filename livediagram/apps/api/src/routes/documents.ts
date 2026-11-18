@@ -3,8 +3,13 @@
 // index's (liveworkspace/docs/specs/004-index/one-explorer.md); the doors an API client still calls for those are answered from it
 // (document-index-routes.ts).
 
-import type { Tab } from '@livediagram/document';
-import { isValidTab, migrateIncomingTab } from '@livediagram/document';
+import type { Slide, Tab } from '@livediagram/document';
+import {
+  appendToStoredPresentation,
+  isValidTab,
+  migrateIncomingTab,
+  parseSlides,
+} from '@livediagram/document';
 import {
   createItemGrant,
   itemSourceOf,
@@ -51,7 +56,7 @@ import { reportOwnerActivity } from '@liveworkspace/index-app';
 import { accountCredentials } from '../auth/accounts';
 import { handleDocumentSharedTabs } from './document-shared-tabs-route';
 import { handleCommunityOwnerRoutes } from './community-owner-routes';
-import { relayDocumentRename } from '../room-client';
+import { relayDeckSlides, relayDocumentRename } from '../room-client';
 import { lockCreatedTabs, lockRecommittedTabs } from '../whole-tab-lock';
 import { handleDocumentRoomRoutes } from './document-room-routes';
 import { handleDocumentSubresources } from './document-subresource-routes';
@@ -431,6 +436,8 @@ export async function handleDocumentRequest(ctx: DocumentRouteContext): Promise<
         // Slide deck (docs/specs/012-collaboration/presentation-mode.md): serialised StoredPresentation, or null to
         // clear. Absent leaves the stored deck alone, so an ordinary rename can never wipe it.
         presentation?: string | null;
+        // Slides to append to the deck (presentation-mode.md "Slides an agent appends"): the MCP's add_tab.
+        appendSlides?: unknown;
       };
       const owner = requireOwner(ctx);
       if (owner instanceof Response) return owner;
@@ -459,11 +466,27 @@ export async function handleDocumentRequest(ctx: DocumentRouteContext): Promise<
       ) {
         return badRequest('presentation too large');
       }
+      // Appended slides (presentation-mode.md "Slides an agent appends"): merged into the stored deck here, by id, so
+      // a deck someone has open is never read and written back whole by the caller. Never with a whole deck.
+      let appended: { presentation: string | null; added: Slide[] } | null = null;
+      if (body.appendSlides !== undefined) {
+        const slides = parseSlides(body.appendSlides);
+        if (!slides || body.presentation !== undefined) return badRequest('invalid appendSlides');
+        appended = appendToStoredPresentation(existing.presentation, slides);
+        if ((appended.presentation?.length ?? 0) > MAX_DECK_LEN) {
+          return badRequest('presentation too large');
+        }
+      }
       await renameDocument(env, id, name, Date.now());
       // Only when the caller actually sent the field: `undefined` means "not my business", which is what every
       // existing client sends.
       if (body.presentation !== undefined)
         await setDocumentPresentation(env, id, body.presentation);
+      if (appended && appended.added.length > 0) {
+        await setDocumentPresentation(env, id, appended.presentation);
+        // Every open editor appends them too, so its next deck edit keeps them.
+        ctx.waitUntil?.(relayDeckSlides(env, id, appended.added));
+      }
       if (order) await reorderTabs(env, id, order);
       const liveDoc = await getDocument(env, id);
       // An agent's rename reaches the open editors (docs/specs/024-agents/agent-changesets.md "Whole-tab saves and

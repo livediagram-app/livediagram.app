@@ -28,8 +28,15 @@ export type InternalRoom = {
 };
 
 // The room ops the worker originates through /mutation: a view-role visitor's comment, an agent
-// changeset, a tab rename (docs/specs/024-agents/agent-changesets.md), an agent's form write.
-const WORKER_MUTATION_KINDS = new Set(['el-delta', 'changeset', 'tab-meta', 'document-meta']);
+// changeset, a tab rename (docs/specs/024-agents/agent-changesets.md), an agent's form write, and the slides an
+// agent appended to the deck (docs/specs/012-collaboration/presentation-mode.md "Slides an agent appends").
+const WORKER_MUTATION_KINDS = new Set([
+  'el-delta',
+  'changeset',
+  'tab-meta',
+  'document-meta',
+  'deck-slides',
+]);
 
 /** Answer an internal endpoint, or null when the request is none of them. */
 export async function answerInternal(

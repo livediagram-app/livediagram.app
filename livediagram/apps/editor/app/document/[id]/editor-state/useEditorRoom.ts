@@ -2,7 +2,7 @@
 
 import { ROOM_FULL_NOTICE } from '@/lib/api/room';
 import { useCallback, useMemo, useRef } from 'react';
-import type { Tab } from '@livediagram/document';
+import type { Slide, Tab } from '@livediagram/document';
 import { peerModeSwitchMessage } from '@/lib/peer-mode-switch';
 import { useQaBoard } from '@/hooks/canvas/useQaBoard';
 import { useFacilitator } from '@/hooks/collab/useFacilitator';
@@ -114,6 +114,9 @@ export function useEditorRoom({
   const receiveFocusRef = useRef<
     ((from: string, tabId: string, at: { x: number; y: number }) => void) | null
   >(null);
+  // Filled in useEditorPresentation, which owns the deck and is composed after the room: slides an agent appended
+  // (docs/specs/012-collaboration/presentation-mode.md "Slides an agent appends").
+  const receiveDeckSlidesRef = useRef<((slides: readonly Slide[]) => void) | null>(null);
   // Live poll (docs/specs/012-collaboration/live-poll.md): the ephemeral pulse-check. Declared before the
   // room connection because that's what feeds it inbound ops. Nothing it
   // holds is persisted — no tab field, no autosave, no change log.
@@ -248,6 +251,7 @@ export function useEditorRoom({
     countAppliedOp,
     sessionShareCodeRef,
     roomRef,
+    preRoomOutbox: realtime.preRoomOutbox,
     applyRemoteOp,
     pendingIdeaIds: ideaPosts.pendingIdeaIds,
     loadedTabIdsRef,
@@ -282,6 +286,7 @@ export function useEditorRoom({
     receiveDocumentTrashed: () => documentTrashed.setDocumentTrashed(true),
     resyncFromServer,
     receiveChangeset: changesetFeed.receiveChangeset,
+    receiveDeckSlides: (slides) => receiveDeckSlidesRef.current?.(slides),
     // A peer's landed save moves this Editor's delta base copy, when its baseline proves to hold what was stored
     // (docs/specs/006-document/delta-saves.md "A peer's save moves the base copy"). Nobody else saves deltas.
     receiveTabSaved: (tab, rev, digest) => {
@@ -366,6 +371,7 @@ export function useEditorRoom({
     pollCollaboratorsRef,
     reactions,
     receiveFocusRef,
+    receiveDeckSlidesRef,
     revealChangesetRef,
     view: {
       // The outlines relayed changesets draw (useChangesetFeed), for the canvas overlay.

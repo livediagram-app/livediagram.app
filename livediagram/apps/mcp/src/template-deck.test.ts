@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { Env } from '@liveworkspace/mcp-kit/env';
 import { parseStoredPresentation } from '@livediagram/document';
-import { buildTemplateTab, TEMPLATE_SLIDES } from '@livediagram/templates';
+import { buildTemplateTab, TEMPLATE_SLIDES, withAppendedSlides } from '@livediagram/templates';
 
 // The renderer cannot load here; the stub hands back the structured result.
 vi.mock('./image-result', () => ({
@@ -17,7 +17,8 @@ import { registerTools } from './tools';
 
 const ROADMAP_SLIDES = TEMPLATE_SLIDES.roadmap!.map((s) => s.name);
 
-function harness(opts: { deck?: string | null; refuseDeck?: boolean } = {}) {
+// `oldApi`: an api from before `appendSlides`, which ignores it and answers the deck unchanged.
+function harness(opts: { deck?: string | null; refuseDeck?: boolean; oldApi?: boolean } = {}) {
   const writes: { method: string; path: string; body: Record<string, unknown> }[] = [];
   const handlers: Record<string, (args: unknown, extra: unknown) => Promise<unknown>> = {};
   const server = {
@@ -34,15 +35,21 @@ function harness(opts: { deck?: string | null; refuseDeck?: boolean } = {}) {
         const path = url.pathname.replace(/^\/api/, '');
         if (path === '/events') return new Response(null, { status: 204 });
         if (url.searchParams.get('view') === 'lint') return new Response('down', { status: 503 });
+        let body: Record<string, unknown> = {};
         if (request.method === 'POST' || request.method === 'PUT') {
           if (opts.refuseDeck && request.method === 'PUT')
             return new Response('down', { status: 503 });
-          writes.push({
-            method: request.method,
-            path,
-            body: await request.json<Record<string, unknown>>(),
-          });
+          body = await request.json<Record<string, unknown>>();
+          writes.push({ method: request.method, path, body });
         }
+        if (request.method === 'PUT' && Array.isArray(body.appendSlides) && !opts.oldApi)
+          return Response.json({
+            document: {
+              id: 'd',
+              tabs: [],
+              presentation: withAppendedSlides(opts.deck ?? null, body.appendSlides as never),
+            },
+          });
         if (request.method === 'POST' && path === '/documents') return Response.json({});
         if (path.endsWith('/changesets'))
           return Response.json({ changeset: { id: 'c1' }, text: 'ok' });
@@ -95,16 +102,30 @@ describe('create_document from a presented template', () => {
 });
 
 describe('add_tab from a presented template', () => {
-  it("appends its slides after the deck's own", async () => {
-    const deck = JSON.stringify({
-      decks: [{ slides: [{ id: 'mine', tabId: 'x', elementIds: ['e'] }] }],
-    });
+  const deck = JSON.stringify({
+    decks: [{ slides: [{ id: 'mine', tabId: 'x', elementIds: ['e'] }] }],
+  });
+
+  it('asks the api to append its slides, never writing the deck whole', async () => {
     const { call, writes } = harness({ deck });
     const result = await call('add_tab', { documentId: 'd', template: 'roadmap' });
     expect(result.isError).toBeFalsy();
-    const put = writes.find((w) => w.method === 'PUT')!;
-    expect(put.path).toBe('/documents/d');
-    const slides = parseStoredPresentation(put.body.presentation)!.decks[0]!.slides;
+    const puts = writes.filter((w) => w.method === 'PUT');
+    expect(puts).toHaveLength(1);
+    expect(puts[0]!.path).toBe('/documents/d');
+    expect(puts[0]!.body).not.toHaveProperty('presentation');
+    const slides = puts[0]!.body.appendSlides as { name: string }[];
+    expect(slides.map((s) => s.name)).toEqual(ROADMAP_SLIDES);
+    expect(result.structuredContent?.notes).toEqual([expect.stringContaining('added to the deck')]);
+  });
+
+  it("falls back to writing the deck whole, after the deck's own, against an api from before", async () => {
+    const { call, writes } = harness({ deck, oldApi: true });
+    const result = await call('add_tab', { documentId: 'd', template: 'roadmap' });
+    expect(result.isError).toBeFalsy();
+    const whole = writes.filter((w) => w.method === 'PUT' && 'presentation' in w.body);
+    expect(whole).toHaveLength(1);
+    const slides = parseStoredPresentation(whole[0]!.body.presentation)!.decks[0]!.slides;
     expect(slides[0]!.id).toBe('mine');
     expect(slides.slice(1).map((s) => s.name)).toEqual(ROADMAP_SLIDES);
     expect(result.structuredContent?.notes).toEqual([expect.stringContaining('added to the deck')]);

@@ -7,6 +7,7 @@ import { commitUserPreferences } from '@/lib/user-preferences';
 import { useSlideDeck } from '../useSlideDeck';
 import { slideFitOptions } from '@/lib/presentation-config';
 import { apiSaveDocumentMeta } from '@/lib/api-client';
+import { useAssignRef } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import type { EditorDocumentSlice } from './useEditorDocument';
 import type { EditorHistorySlice } from './useEditorUndoState';
 import type { EditorSelectionSlice } from './useEditorSelection';
@@ -50,7 +51,7 @@ export function useEditorPresentation({
   const { isReadOnly, sessionShareCode } = fromCollaboration;
   const { documentPresentation, setDocumentPresentation, setUserPreferences, userPreferences } =
     fromPersistence;
-  const { loadAllTabs } = fromRoom;
+  const { loadAllTabs, receiveDeckSlidesRef } = fromRoom;
   const { canvasMainRef, fitToBounds, viewport } = fromViewport;
 
   // Slide deck (docs/specs/012-collaboration/presentation-mode.md). Owns the deck, the panel's editing verbs, and the
@@ -82,6 +83,8 @@ export function useEditorPresentation({
     },
     loadAllTabs,
   });
+  // Slides an agent appended reach the deck through the room (presentation-mode.md "Slides an agent appends").
+  useAssignRef(receiveDeckSlidesRef, slideDeck.receiveSlides);
   // Seed the deck once the document's stored blob arrives. Triggered only when a stored deck appears or
   // the document changes: hydrating on every deck edit would fight the editing verbs, so the blob itself
   // is read at that moment (an effect event), not depended on.

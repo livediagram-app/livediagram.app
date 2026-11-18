@@ -81,3 +81,29 @@ describe('a received share-revoked', () => {
     expect(revoke('c1', null)).not.toHaveBeenCalled();
   });
 });
+
+// Slides an agent appended (docs/specs/012-collaboration/presentation-mode.md "Slides an agent appends"): handed to
+// the deck from the worker alone.
+describe('a received deck-slides', () => {
+  const slides = [{ id: 's1', tabId: 't1', elementIds: ['a'] }];
+  function deliver(from: string, receiveDeckSlides?: RoomConnectionOptions['receiveDeckSlides']) {
+    const opts = { markSeen: vi.fn(), receiveDeckSlides } as unknown as RoomConnectionOptions;
+    receiveRoomOp(
+      from,
+      { kind: 'deck-slides', slides },
+      {} as PresenceCoalescer,
+      opts,
+      new Map(),
+      new Map(),
+    );
+  }
+
+  it('hands the slides to the deck when the worker sent them, never from a peer', () => {
+    const receiveDeckSlides = vi.fn();
+    deliver('system', receiveDeckSlides);
+    deliver('peer', receiveDeckSlides);
+    expect(receiveDeckSlides).toHaveBeenCalledTimes(1);
+    expect(receiveDeckSlides).toHaveBeenCalledWith(slides);
+    expect(() => deliver('system')).not.toThrow();
+  });
+});
