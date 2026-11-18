@@ -6,6 +6,8 @@ import {
   createShape,
   doorArt,
   doorOnRoom,
+  doorOverhang,
+  doorParts,
   doorPoseTransform,
   doorsFollowRooms,
   isPieceVariant,
@@ -251,6 +253,16 @@ describe('doors in a corridor', () => {
 describe('doorArt', () => {
   const moving = (variant: string | undefined) =>
     doorArt(96, 24, variant).filter((p) => p.motion).length;
+
+  it('names how far an open door reaches past its box, enough for its swing', () => {
+    // The swing's far end sits at the wall's centre line plus the opening: past a 96 x 24 box by doorOverhang or less.
+    const { swing } = doorParts(96, 24);
+    const endY = Number(swing.split(' ').at(-1));
+    expect(endY - 24).toBeLessThanOrEqual(doorOverhang(96, 24));
+    expect(endY - 24).toBeGreaterThan(0);
+    // A door deeper than twice its width stays inside its box.
+    expect(doorOverhang(10, 40)).toBe(0);
+  });
 
   it('draws each type its own way, every one with a gap and two jambs', () => {
     for (const v of DOOR_VARIANTS) {

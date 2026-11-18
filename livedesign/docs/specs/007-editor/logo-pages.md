@@ -433,7 +433,8 @@ it holds no `<text>`, no `@font-face` and no `@import`, and opens in the chosen 
   (tracking, weight, case and arc included, a letter on an arc turned with it), so the outlined logo matches
   the canvas to within half a pixel at the artboard's size. Ligatures the face draws stay ligatures; underline
   and strikethrough are drawn where Chrome and Edge draw them. A bold or italic the face lacks is drawn as the
-  browser synthesises it (its outline thickened, or slanted by a quarter).
+  browser synthesises it (its outline thickened, or slanted by a quarter), thickened as much as a 2x screen and the
+  PNG export thicken it, so a 600 headline in a face with no bold weighs the same in the PDF as in the PNG.
 - **Text with no face of its own** (neither the element nor the tab chose one) is set in **Inter** in every file
   of the kit, its preview included: the editor's system sans has no font file to outline, and differs by
   computer anyway.

@@ -20,6 +20,11 @@ export function activeComponentSessions(elements: readonly Element[]): InstanceE
   return elements.filter((e): e is InstanceElement => isInstance(e) && !!e.componentEditBy);
 }
 
+/** An instance with its edit session open: hidden on the canvas, its members drawn in its place. */
+export function isEditedInstance(el: Element): boolean {
+  return isInstance(el) && !!el.componentEditBy;
+}
+
 /** The members of one session, in array order. */
 export function sessionMembers(elements: readonly Element[], instanceId: string): Element[] {
   return elements.filter((e) => e.componentMember?.instanceId === instanceId);
@@ -75,6 +80,20 @@ export function stampSessionMembers(prev: readonly Element[], next: Element[]): 
     out[i] = { ...el, componentMember: { instanceId, elementId: el.id } };
   });
   return out ?? next;
+}
+
+/** Ends every session a change emptied: a session whose members were on the tab in `prev` and are all gone from
+ *  `next` (the person deleted the last one) loses its instance at once, as Done would with no members left. The
+ *  main keeps its last derived state. Returns `next` when no session emptied. */
+export function endEmptiedSessions(prev: readonly Element[], next: Element[]): Element[] {
+  const sessions = activeComponentSessions(next);
+  if (sessions.length === 0) return next;
+  const emptied = new Set<string>();
+  for (const s of sessions) {
+    const had = prev.some((e) => e.componentMember?.instanceId === s.id);
+    if (had && !next.some((e) => e.componentMember?.instanceId === s.id)) emptied.add(s.id);
+  }
+  return emptied.size === 0 ? next : next.filter((e) => !emptied.has(e.id));
 }
 
 /** The main as the session's members now stand: each member back in the frame's space (at the instance's scale),

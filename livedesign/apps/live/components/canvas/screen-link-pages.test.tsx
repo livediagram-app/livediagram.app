@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { memo } from 'react';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
+import { endImageCrop, startImageCrop } from '@liveworkspace/workbench/lib/image-crop-store';
 import { describe, expect, it, vi } from 'vitest';
 import { createShape, type Element, type ElementLink, type Page } from '@livedesign/design';
 import { resolveEditorCapabilities } from '@/lib/editor-capabilities';
@@ -55,6 +56,19 @@ describe('useScreenLinkMarker', () => {
     lastPress?.();
     expect(focusPage).toHaveBeenCalledWith('page-2');
     expect(pick).not.toHaveBeenCalled();
+  });
+
+  it('stands down while the element is being cropped, and comes back when the crop ends', () => {
+    mount([wire('page-1'), wire('page-2', 'Checkout')], el({ kind: 'page', pageId: 'page-2' }));
+    act(() => startImageCrop('el'));
+    expect(screen.getByTestId('el').textContent).toBe('none');
+    // Done, Cancel and Undo all end the crop through the one store.
+    act(() => endImageCrop());
+    expect(screen.getByTestId('el').textContent).toBe('page: Goes to Checkout');
+    // Another image's crop leaves this marker alone.
+    act(() => startImageCrop('other'));
+    expect(screen.getByTestId('el').textContent).toBe('page: Goes to Checkout');
+    act(() => endImageCrop());
   });
 
   it('reads a back link, whose press does nothing', () => {

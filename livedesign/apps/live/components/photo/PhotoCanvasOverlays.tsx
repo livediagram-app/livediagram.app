@@ -13,7 +13,7 @@ import { pickColour } from '@/lib/photo-editor/tools/fill-tools';
 import type { PhotoEditorView } from '@/hooks/editor/usePhotoEditor';
 import { optionsKey, usePhotoTools, type PhotoToolId } from '@/lib/photo-editor/tool-state';
 import { toolHandler } from '@/lib/photo-editor/tools';
-import { useCropBox } from '@/lib/photo-editor/tools/crop-tool';
+import { beginCrop, cropBox, useCropBox } from '@/lib/photo-editor/tools/crop-tool';
 import type { PhotoPoint } from '@/lib/photo-editor/tools/tool-context';
 import { useFreeTransform } from '@/lib/photo-editor/tools/transform-tool';
 import { photoPointer, photoPress } from '@/lib/photo-editor/photo-pointer';
@@ -117,6 +117,12 @@ export function PhotoCanvasOverlays({
     },
     [handler],
   );
+  // Crop taken in hand (its button or C) shows its box and grid at once, the whole photo at first
+  // (docs/specs/031-photo/photo-tools.md "Crop"), not after a first press.
+  const canEdit = photo.canEdit;
+  useEffect(() => {
+    if (tool === 'crop' && ctx && canEdit && !cropBox.get()) beginCrop(ctx);
+  }, [tool, ctx, canEdit]);
   const layerRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);

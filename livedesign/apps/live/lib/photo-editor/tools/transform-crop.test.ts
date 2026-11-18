@@ -173,6 +173,58 @@ describe('the crop box', () => {
     expect(cropReadout(cropBox.get()!).width).toBeCloseTo(r.width, 6);
   });
 
+  it('fits each ratio inside the photo, centred, never growing the page', async () => {
+    // [photo w, h, ratio, expected w, h]
+    const cases: [number, number, '1:1' | '4:5' | '16:9' | '9:16', number, number][] = [
+      [800, 600, '1:1', 600, 600],
+      [800, 600, '4:5', 480, 600],
+      [800, 600, '16:9', 800, 450],
+      [800, 600, '9:16', 337.5, 600],
+      [600, 800, '1:1', 600, 600],
+      [600, 800, '4:5', 600, 750],
+      [600, 800, '16:9', 600, 337.5],
+      [600, 800, '9:16', 450, 800],
+    ];
+    for (const [pw, ph, ratio, w, hgt] of cases) {
+      const h = harness(photoOf(pw, ph));
+      beginCrop(h.ctx);
+      reshapeCrop(h.ctx, ratio);
+      const r = cropReadout(cropBox.get()!);
+      expect(r.width).toBeCloseTo(w, 6);
+      expect(r.height).toBeCloseTo(hgt, 6);
+      expect(r.x).toBeCloseTo((pw - w) / 2, 6);
+      expect(r.y).toBeCloseTo((ph - hgt) / 2, 6);
+      cancelCrop(h.ctx);
+    }
+    // A box moved to one side keeps as near its place as the photo allows.
+    const h = harness(photoOf(80, 60), { a: solid(80, 60, [9, 9, 9, 255]) });
+    h.state.options.crop = { ...h.state.options.crop, ratio: 'free' };
+    const t = toolHandler('crop', h.ctx);
+    t.down(at(60, 10));
+    t.move!(at(78, 20));
+    t.up!(at(78, 20));
+    reshapeCrop(h.ctx, '1:1');
+    expect(cropReadout(cropBox.get()!)).toMatchObject({ x: 20, y: 0, width: 60, height: 60 });
+    t.key!('Enter', k);
+    await h.s.settled();
+    expect([h.s.photo.width, h.s.photo.height]).toEqual([60, 60]);
+  });
+
+  it('fits a ratio inside a straightened box, about its centre', () => {
+    const h = harness(photoOf(40, 40));
+    setStraighten(h.ctx, true);
+    const t = toolHandler('crop', h.ctx);
+    t.down(at(5, 5));
+    t.move!(at(25, 15));
+    t.up!(at(25, 15));
+    const before = cropReadout(cropBox.get()!);
+    reshapeCrop(h.ctx, '16:9');
+    const r = cropReadout(cropBox.get()!);
+    expect(r.angle).toBeCloseTo(before.angle, 6);
+    expect(r.width).toBeLessThanOrEqual(before.width + 1e-6);
+    expect(r.width / r.height).toBeCloseTo(16 / 9, 6);
+  });
+
   it('turns the box so a line drawn with Straighten lies level, and ignores a short one', () => {
     const h = harness(photoOf(40, 40));
     setStraighten(h.ctx, true);

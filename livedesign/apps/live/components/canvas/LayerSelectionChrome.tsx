@@ -17,6 +17,7 @@ import {
 import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
+import { useImageCropId } from '@liveworkspace/workbench/lib/image-crop-store';
 
 const singleId = (s: Selection) => s.selectedId;
 const multiSelected = (s: Selection) => s.multiSelectedIds.size > 0;
@@ -61,6 +62,7 @@ export function LayerSelectionChrome({
   const selectedId = useSelectionOf(singleId);
   const multi = useSelectionOf(multiSelected);
   const selectedElement = selectedId ? elements.find((e) => e.id === selectedId) : undefined;
+  const cropping = useImageCropId() !== null;
   const linkHandle =
     screenLink &&
     selectionBounds &&
@@ -71,6 +73,7 @@ export function LayerSelectionChrome({
       editing: selectionInput.editingId === selectedElement.id,
       menuOpen: !!selectionInput.elementMenuOpen || !!selectionInput.canvasCovered,
       paintMode: selectionInput.isPaintMode,
+      cropping,
       tabLocked: selectionInput.tabLocked,
       canLink: screenLink.canLink,
       pages,

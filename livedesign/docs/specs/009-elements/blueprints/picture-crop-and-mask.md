@@ -67,6 +67,9 @@ The layout, the mask paths, the crop math and the session are livedocuments' blu
   `showPlus` (the quick-add buttons) off; the store ending turns them back on, whichever way it ends (Done, Enter,
   Cancel, Escape, a press off the picture, Ctrl or Cmd+Z / Y, the selection moving, the image unmounting). The undo
   keys end the crop without consuming the key, so the editor's undo or redo still runs.
+- A wireframe's screen link marker reads the same store per element: `useScreenLinkMarker`
+  (`apps/live/components/canvas/screen-link-pages.tsx`) answers null while `useIsImageCropping(element.id)`, so only
+  the cropped image re-renders, and the marker returns as the store ends, whichever way.
 - Apply calls `imageContext.onCommitImageCrop(id, result)` once: one `commit`, refused for a locked element
   (`el.locked`) and by the tab's lock through `commit`.
 

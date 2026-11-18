@@ -20,6 +20,7 @@ import {
   type Element,
   type Page,
 } from '@livedesign/design';
+import { useIsImageCropping } from '@liveworkspace/workbench/lib/image-crop-store';
 
 type PagesStoreFields = {
   pages: readonly Page[];
@@ -88,9 +89,13 @@ export type ScreenLinkMarker = {
   press: () => void;
 };
 
-/** An element's link marker, or null when its link is not a screen link (or no pages are on hand). */
+/** An element's link marker, or null when its link is not a screen link (or no pages are on hand), or while the
+ *  element is the image being cropped: the marker stands down with the selection chrome
+ *  (docs/specs/009-elements/picture-crop-and-mask.md "Cropping in the editor") and comes back when the crop ends. */
 export function useScreenLinkMarker(element: Element): ScreenLinkMarker | null {
   const store = useContext(ScreenLinkPagesContext);
+  // A boolean per element, so only the image being cropped re-renders when a crop starts or ends.
+  const cropping = useIsImageCropping(element.id);
   const link = element.link;
   const screen = isScreenLink(link) ? link : null;
   const listens = !!store && !!screen;
@@ -108,7 +113,7 @@ export function useScreenLinkMarker(element: Element): ScreenLinkMarker | null {
     () => (store && screen ? describeScreenLink(screen, store.pages) : null),
     () => null,
   );
-  if (!store || !screen || description === null) return null;
+  if (!store || !screen || description === null || cropping) return null;
   const state = resolveScreenLink(screen, store.pages).state;
   return {
     description,

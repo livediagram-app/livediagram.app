@@ -208,7 +208,10 @@ export function viewElementInTheme<T extends object>(
   if (map.size === 0) return el;
   let patch: Record<string, string> | null = null;
   const preset = (el as { colorPreset?: unknown }).colorPreset;
+  // A fill marked to stay fixed (`themeLockFill`, a brand swatch) is no theme's: it is drawn as stored in either half.
+  const lockedFill = (el as { themeLockFill?: unknown }).themeLockFill === true;
   for (const field of VIEWED_FIELDS) {
+    if (lockedFill && field === 'fillColor') continue;
     const value = (el as Record<string, unknown>)[field];
     if (typeof value !== 'string') continue;
     const to =

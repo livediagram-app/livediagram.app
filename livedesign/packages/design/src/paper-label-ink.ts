@@ -74,15 +74,18 @@ type Mark = {
   fillColor?: unknown;
   strokeColor?: unknown;
   opacity?: unknown;
+  themeLockFill?: unknown;
 };
 
 const HEX = /^#[0-9a-f]{6}$/i;
 
 /** The colour a part paints with on the paper: an icon's stroke, else its own opaque fill; null for anything else (a
- *  word, an arrow, a translucent wash, a cycle, which writes between its discs). */
+ *  word, an arrow, a translucent wash, a cycle, which writes between its discs) and for a fill marked to stay fixed
+ *  (`themeLockFill`: a brand swatch is drawn at its exact value, docs/specs/011-theme/light-and-dark.md). */
 function markOf(el: Element): { colour: string; stroke: boolean } | null {
   const m = el as Mark;
   if (m.type !== 'shape' || m.shape === 'cycle') return null;
+  if (m.themeLockFill === true && m.shape !== 'icon') return null;
   if (typeof m.opacity === 'number' && m.opacity < 1) return null;
   const colour = m.shape === 'icon' ? m.strokeColor : m.fillColor;
   return typeof colour === 'string' && HEX.test(colour)

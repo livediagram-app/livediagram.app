@@ -31,6 +31,14 @@ describe('viewElementInTheme', () => {
     expect(viewElementInTheme(el, map)).toEqual({ ...el, strokeColor: '#7dd3fc' });
   });
 
+  it('draws a locked fill as stored in either half, its other colours redrawn', () => {
+    const el = { fillColor: '#ffffff', strokeColor: '#0369a1', themeLockFill: true };
+    expect(viewElementInTheme(el, map)).toEqual({ ...el, strokeColor: '#7dd3fc' });
+    // Its text keeps the pair it was made with: the locked white stays, so the theme text stays dark on it.
+    const box = { fillColor: '#ffffff', textColor: '#0c4a6e', themeLockFill: true };
+    expect(viewElementInTheme(box, map)).toBe(box);
+  });
+
   it('returns the same object when only the pair would have changed', () => {
     const el = { fillColor: '#ffffff', textColor: '#334155' };
     expect(viewElementInTheme(el, map)).toBe(el);

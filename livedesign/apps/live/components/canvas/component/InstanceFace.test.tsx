@@ -5,6 +5,7 @@
 import { cleanup, fireEvent, render, renderHook, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
+  endEmptiedSessions,
   libraryLookup,
   type DesignComponent,
   type Element,
@@ -149,5 +150,32 @@ describe('useComponentSession', () => {
     expect(elsewhere.changeComponent).not.toHaveBeenCalled();
     const missing = { ...open, componentId: 'gone' } as Element;
     expect(session([missing, member('X')]).changeComponent).not.toHaveBeenCalled();
+  });
+
+  it('ends the session as the last member is deleted: no bar, no instance, the main as it last stood', () => {
+    const before = [open, member('Edited')];
+    // The trash on the last member, through the editor's commit (useEditorDesign runs endEmptiedSessions).
+    const after = endEmptiedSessions(before, [open]);
+    expect(after.some((e) => e.id === 'i')).toBe(false);
+    const s = session(after);
+    expect(s.result.current.sessionInstanceId).toBeNull();
+    expect(s.changeComponent).not.toHaveBeenCalled();
+    // The bar shows only for an open session, as EditorCanvasHost mounts it.
+    function Host({ elements }: { elements: Element[] }) {
+      const { sessionInstanceId } = useComponentSession({
+        canEdit: true,
+        selfId: 'me',
+        elements,
+        library: { lookup: libraryLookup(lib), changeComponent: () => {} },
+        owned: { current: new Set(['i']) },
+      });
+      return sessionInstanceId ? (
+        <ComponentSessionBar name="Header" nothingSelected={() => true} onDone={() => {}} />
+      ) : null;
+    }
+    const view = render(<Host elements={before} />);
+    expect(screen.getByText('Done')).toBeTruthy();
+    view.rerender(<Host elements={after} />);
+    expect(screen.queryByText('Done')).toBeNull();
   });
 });
