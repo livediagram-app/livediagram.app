@@ -12,6 +12,7 @@ import type { DrawioInput } from '@/lib/drawio/import';
 import { DRAWIO_TAB_FILE_ACCEPT } from '@/lib/drawio/limits';
 import { INFRA_FILE_ACCEPT, INFRA_FILE_MAX_BYTES, infraImportOutcome } from '@/lib/infra-import';
 import { mergeImportedTab } from '@/lib/import-merge';
+import { mermaidImportOutcome } from '@/lib/text-import-report';
 import { getTheme } from '@/lib/themes';
 import type { ImportOutcome } from '@/lib/import-tab';
 import type { ImportImageProgress } from '@/lib/import-images';
@@ -254,6 +255,7 @@ export function useTabImport({
         layoutGraph,
         MERMAID_UNSUPPORTED_ERROR,
         rederiveColorPresetForTheme,
+        unreadMermaidLines,
       } = await import('@livediagram/document');
       const parsed = graphFromMermaid(text);
       if (!parsed.ok) return { status: 'error', error: parsed.error };
@@ -275,7 +277,9 @@ export function useTabImport({
         theme: active?.theme,
       });
       track('Tab', 'Imported', 'Mermaid');
-      return { status: 'done' };
+      // Lines it could not read, and subgraphs folded, are said in the report rather than lost (mermaid.md).
+      if (parsed.unread) debugLog('[mermaid-import] unread', { lines: parsed.unread.length });
+      return mermaidImportOutcome(elements, parsed, unreadMermaidLines);
     }
 
     if (format === 'markdown') {

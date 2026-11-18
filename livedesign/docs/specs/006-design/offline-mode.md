@@ -128,6 +128,12 @@ auth has settled, the path names a design registered in the local index
   creating This Browser, the create writes to IndexedDB and hands off without
   waiting on auth, the guest id or the participant, which resolve in the
   background (`commitNewDesign` in `app/new/page.tsx`).
+- **Except a first visit's guest token.** A browser with no guest token yet (or one near its end) fetches one before
+  the create: the handoff ([Auth + guest access → Guests](../014-identity/auth-and-guest-access.md#guests)) leaves
+  the page and comes back to the same `/new` address, so a create begun first would run again on the way back and
+  make the design twice, the first left behind in Browser Storage. `commitNewDesign` awaits `ensureGuestToken` first; a
+  returning guest's token is already in `localStorage`, so it answers at once and nothing waits. With no accounts
+  site the handoff comes straight back failed, and the create goes ahead.
 - The editor reads back the record `/new` has just written rather than taking
   the tabs across in memory: the read is one IndexedDB get, small beside the
   waits removed, and keeps one load path.

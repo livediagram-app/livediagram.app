@@ -47,7 +47,7 @@ import { layoutCycle } from './graph-cycle';
 import { layoutMindmapGraph } from './graph-mindmap';
 import { layoutStormGraph } from './graph-storm';
 import { layoutC4Graph } from './graph-c4';
-import { MERMAID_UNSUPPORTED_ERROR, parseMermaid } from './mermaid';
+import { MERMAID_UNSUPPORTED_ERROR, parseMermaid, unreadMermaidLines } from './mermaid';
 import { turnBack } from './er-hub-first';
 import {
   afterWord,
@@ -389,7 +389,9 @@ export function layoutGraph(
 // and subgraphs become `direction` and `groups`.
 export function graphFromMermaid(
   text: string,
-): { ok: true; graph: GraphInput; notes?: string[] } | { ok: false; error: string } {
+):
+  | { ok: true; graph: GraphInput; notes?: string[]; folded?: number; unread?: string[] }
+  | { ok: false; error: string } {
   if (isSequenceDiagram(text)) {
     const read = parseSequenceDiagram(text);
     return read.ok
@@ -407,6 +409,14 @@ export function graphFromMermaid(
     : undefined;
   const parsed = parseMermaid(front ? text.slice(front[0].length) : text);
   if (!parsed.ok) return parsed;
+  const notes = [
+    ...(parsed.folded
+      ? [
+          `${parsed.folded} nested subgraph${parsed.folded === 1 ? '' : 's'} folded into their outer group: groups draw one level deep`,
+        ]
+      : []),
+    ...(parsed.unread ? [unreadMermaidLines(parsed.unread)] : []),
+  ];
   return {
     ok: true,
     graph: {
@@ -416,14 +426,11 @@ export function graphFromMermaid(
       groups: parsed.graph.clusters,
       direction: parsed.direction === 'LR' ? 'right' : 'down',
     },
-    // Said, not dropped: what the drawing cannot keep of what the Mermaid asked.
-    ...(parsed.folded
-      ? {
-          notes: [
-            `${parsed.folded} nested subgraph${parsed.folded === 1 ? '' : 's'} folded into their outer group: groups draw one level deep`,
-          ],
-        }
-      : {}),
+    // Said, not dropped: what the drawing cannot keep of what the Mermaid asked, and the lines it could not read
+    // (mermaid.md). The counts come too, for the editor's import report.
+    ...(notes.length ? { notes } : {}),
+    ...(parsed.folded ? { folded: parsed.folded } : {}),
+    ...(parsed.unread ? { unread: parsed.unread } : {}),
   };
 }
 
