@@ -24,7 +24,11 @@ const person = (userId: string | null, status: TeamPerson['status'] = 'joined'):
 beforeEach(() => {
   db = sqliteD1(ACCOUNTS_ON);
   accounts = stubAccounts();
-  accounts.teams.set('team_1', [person('user_ada'), person('user_bob'), person(null, 'invited')]);
+  accounts.teams.set('team_1', [
+    { ...person('user_ada'), color: '#ef4444' },
+    person('user_bob'),
+    person(null, 'invited'),
+  ]);
   vi.spyOn(console, 'warn').mockImplementation(() => {});
 });
 afterEach(() => {
@@ -48,12 +52,13 @@ describe('GET /api/teams/:id/members', () => {
     const res = await members();
     expect(res.status).toBe(200);
     const { members: people } = await res.json<{
-      members: { userId: string | null; status: string }[];
+      members: { userId: string | null; status: string; color: string | null }[];
     }>();
-    expect(people.map((p) => [p.userId, p.status])).toEqual([
-      ['user_ada', 'joined'],
-      ['user_bob', 'joined'],
-      [null, 'invited'],
+    // Ada chose Red; Bob is on Automatic and the invitation has none: the picker paints each from this.
+    expect(people.map((p) => [p.userId, p.status, p.color])).toEqual([
+      ['user_ada', 'joined', '#ef4444'],
+      ['user_bob', 'joined', null],
+      [null, 'invited', null],
     ]);
   });
 

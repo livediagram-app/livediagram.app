@@ -9,7 +9,7 @@
 // so the writer sees their own change; another isolate sees it within the minute.
 
 import { readProfiles, writeProfile, type Profile } from '@liveworkspace/auth-client';
-import { automaticPresenceColour } from '@liveworkspace/settings/presence';
+import { presenceColourOf } from '@liveworkspace/settings/presence';
 import { accountCredentials } from '../auth/accounts';
 import type { Env, ParticipantDTO } from '../types';
 import { liveworkspaceOwnerOf, liveworkspaceTarget } from './owner';
@@ -46,7 +46,7 @@ function toParticipant(id: string, profile: Profile): ParticipantDTO | null {
   return {
     id,
     name: profile.name,
-    color: profile.color ?? automaticPresenceColour(profile.name).value,
+    color: presenceColourOf(profile.name, profile.color),
     createdAt: profile.createdAt ?? 0,
     // The published Google picture (null when Show My Google Picture is off); readers strip it for a caller that
     // is not signed in (withoutPicture).

@@ -8,7 +8,8 @@ import {
   TrashIcon,
   useClickOutside,
   useEscape,
-  SOLID_BRAND_DARK,
+  IDENTITY_FILL,
+  identityVars,
   Glyph,
   GlyphDisc,
   Portal,
@@ -21,6 +22,7 @@ import { initialsOf } from '@/lib/identity';
 import { formatRelativeTimeCompact, useRelativeNow } from '@/lib/relative-time';
 import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@liveworkspace/workbench/lib/clamp-to-viewport';
 import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
+import { presenceColourOf } from '@liveworkspace/settings/presence';
 
 // Portal-rendered assigned-action card (docs/specs/012-collaboration/assigned-actions.md), anchored to the right
 // edge of the element like CommentThreadPopover. Name + description up
@@ -159,7 +161,9 @@ export function ActionPopover({
             <GlyphDisc
               size={28}
               aria-hidden
-              className={`bg-brand-700 text-[10px] font-semibold text-white ${SOLID_BRAND_DARK}`}
+              data-testid="assignee-disc"
+              className={`${IDENTITY_FILL} text-[10px] font-semibold`}
+              style={identityVars(presenceColourOf(assigneeName, action.assignee.color))}
             >
               {initialsOf(assigneeName)}
             </GlyphDisc>

@@ -20,6 +20,7 @@ import {
 } from '@/components/dialogs/AssignActionAssigneePicker';
 import { track } from '@/lib/telemetry';
 import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
+import { presenceColourOf } from '@liveworkspace/settings/presence';
 
 // Assign Action dialog (docs/specs/012-collaboration/assigned-actions.md §2). The picker always offers a pinned
 // **Myself** row (the feature is not sign-in gated: a signed-out user can
@@ -57,6 +58,8 @@ type AssignActionDialogProps = {
   // identity (docs/specs/014-identity/auth-and-guest-access.md). Drives the Myself row.
   selfUserId: string | null;
   selfName: string | null;
+  // The assigner's participant colour, as their cursor wears it (the Myself row's disc).
+  selfColor?: string | null;
   // The document's id + team-library team (null team for a personal
   // document). Drive the access check: picking a teammate asks the server
   // whether they can actually open this document (docs/specs/012-collaboration/assigned-actions.md §4).
@@ -83,6 +86,7 @@ export function AssignActionDialog({
   ownerId,
   selfUserId,
   selfName,
+  selfColor,
   documentId,
   documentTeamId,
   emailEnabled,
@@ -113,6 +117,7 @@ export function AssignActionDialog({
     ownerId,
     selfUserId,
     selfName,
+    selfColor,
     documentId,
     documentTeamId,
     assignee,
@@ -194,6 +199,9 @@ export function AssignActionDialog({
         userId: assignee.userId,
         ...(assignee.memberId ? { memberId: assignee.memberId } : {}),
         name: assignee.name,
+        // Their colour at assign time, as the name is (docs/specs/012-collaboration/assigned-actions.md "Their
+        // colour"): every dot and avatar of the action wears it.
+        color: presenceColourOf(assignee.name, assignee.color),
       },
       teamId: assignee.teamId,
       notifyEmail: showEmailControl && notifyEmail,

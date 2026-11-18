@@ -178,7 +178,7 @@ as `/items/bulk`).
   `TRACKER_MATCH_EMAILS_MAX` strings, each at most 320 characters), gate as the import's (`edit` on the whole plan;
   a tab-scoped grant `403`). Answers `200 ItemsImportPeople { people }`, one entry per email in its order: the joined
   team member it belongs to as an `ItemPerson` (`itemPersonId(userId)`, their name else the address's local part,
-  coloured by `automaticPresenceColour`, as the editor's `teamMemberPerson`), or `null`. Only when the plan has a
+  coloured by `presenceColourOf(name, color)`: their chosen colour, else Automatic, as the editor's `teamMemberPerson`), or `null`. Only when the plan has a
   team and the caller (`requireOwner`: a token's owner, or the person signed in) is a joined member of it, read from
   accounts' people of that team (`teamPeople`), not the token's claim, so someone who left is no longer a member.
   Anyone else, and a team accounts can't read, is answered `null` for every email: a share link's Editor can't tell a

@@ -20,6 +20,7 @@ const action = (status: 'open' | 'done' = 'open', mine = false): ActionRow => ({
   actionName: 'Confirm the retry budget',
   status,
   assigneeName: 'Sam Lee',
+  assigneeColor: '#ef4444',
   mine,
   createdAt: Date.now(),
 });

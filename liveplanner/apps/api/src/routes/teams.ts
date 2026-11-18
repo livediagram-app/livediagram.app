@@ -69,6 +69,8 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
       role: p.role,
       status: p.status,
       name: p.name,
+      // Their chosen presence colour, null for Automatic (the picker and assignee dots wear it).
+      color: p.color ?? null,
       createdAt: 0,
       updatedAt: 0,
     }));

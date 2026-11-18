@@ -13,7 +13,7 @@ import {
   teamMemberPersonOf,
   type ItemPerson,
 } from '@liveplanner/items';
-import { automaticPresenceColour } from '@liveworkspace/settings/presence';
+import { presenceColourOf } from '@liveworkspace/settings/presence';
 import { teamPeople } from '../person/notify';
 import { badRequest, forbidden, json } from '../responses';
 import { readBody, type PlanRouteContext } from './context';
@@ -45,7 +45,7 @@ async function membersFor(
   if (!people?.some((p) => p.status === 'joined' && p.userId === owner)) return null;
   const byEmail = new Map<string, ItemPerson>();
   for (const p of people) {
-    const person = await teamMemberPersonOf(p, (name) => automaticPresenceColour(name).value);
+    const person = await teamMemberPersonOf(p, (name) => presenceColourOf(name, p.color));
     if (person) byEmail.set(p.email.trim().toLowerCase(), person);
   }
   return byEmail;

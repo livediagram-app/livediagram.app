@@ -35,7 +35,12 @@ const person = (userId: string | null, status: TeamPerson['status'] = 'joined'):
 beforeEach(() => {
   env = { INDEX_ORIGIN, INDEX_KEY: 'k' } as Env;
   accountsServiceFor(env);
-  people = new Map([['team_1', [person('user_ada'), person('user_bob'), person(null, 'invited')]]]);
+  people = new Map([
+    [
+      'team_1',
+      [{ ...person('user_ada'), color: '#ef4444' }, person('user_bob'), person(null, 'invited')],
+    ],
+  ]);
   teamsOf = new Map();
   accountsCalls = [];
   index = {};
@@ -156,12 +161,13 @@ describe('GET /api/teams/:id/members', () => {
     const res = await call('GET', '/api/teams/team_1/members');
     expect(res.status).toBe(200);
     const { members } = await res.json<{
-      members: { userId: string | null; status: string; teamId: string }[];
+      members: { userId: string | null; status: string; teamId: string; color: string | null }[];
     }>();
-    expect(members.map((p) => [p.userId, p.status, p.teamId])).toEqual([
-      ['user_ada', 'joined', 'team_1'],
-      ['user_bob', 'joined', 'team_1'],
-      [null, 'invited', 'team_1'],
+    // Ada chose Red; Bob is on Automatic and the invitation has none: the picker paints each from this.
+    expect(members.map((p) => [p.userId, p.status, p.teamId, p.color])).toEqual([
+      ['user_ada', 'joined', 'team_1', '#ef4444'],
+      ['user_bob', 'joined', 'team_1', null],
+      [null, 'invited', 'team_1', null],
     ]);
   });
 

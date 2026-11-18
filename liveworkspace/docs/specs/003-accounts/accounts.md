@@ -1126,7 +1126,10 @@ showPicture?, timeZone? }` with one handler; a guest's bearer is refused (`401 s
   (each editor's and liveworkspace.app's), Settings › Profile's preview, a team's member discs, the forum, the
   Explorer's history discs, each app's participants (its api fills a missing colour with it, so cursors, the
   presence list and comment author dots wear it) and the assignee dots on an element. So a person on Automatic is one
-  colour everywhere. Renaming can change it, as it changes the initials. No app keeps a pick of its own; a live room
+  colour everywhere. A person with a colour of their own wears it on every one of those too: a team's people carry it
+  (below, "A team's people"), so an app's assignee picker, the dot on an assigned element and a Plan card's assignee
+  paint them as their cursor does, through `presenceColourOf(name, color)` (the colour when it is safe to paint, else
+  Automatic's). Renaming can change it, as it changes the initials. No app keeps a pick of its own; a live room
   may still give a newcomer the next free palette colour while two people in it would clash.
 - The account menu's avatar, in every header, shows the account's [picture](#profile-pictures) when it has one, and is otherwise painted in the account's own colour,
   or for Automatic the colour picked from its name, in the colour's deep shade under the white initials in both
@@ -1304,8 +1307,9 @@ the devices, the `push…` switches and the VAPID key, and sends what an app han
   does. A switch read that fails counts as on; an address read that fails reaches nobody. Guests are
   dropped first: they have no address.
 - **A team's people.** `POST /api/account/internal/teams/members` `{ teamId }` (`readTeamPeople`)
-  answers the team's name and its joined and invited people (`{ id, userId, email, name, role, status }`,
-  `id` the membership row, `name` the profile's, else the account's, null for someone invited), or 404
+  answers the team's name and its joined and invited people (`{ id, userId, email, name, role, status, color }`,
+  `id` the membership row, `name` the profile's, else the account's, null for someone invited, `color` a joined
+  person's presence colour, null for Automatic or someone invited; an older client ignores it), or 404
   for no such team. One query. The app shows it only to someone its token says is in the team, and an
   app sends a mention or an assignment only to these people (`teamTargets`), never to anyone a request
   names.

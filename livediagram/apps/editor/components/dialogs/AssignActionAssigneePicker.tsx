@@ -1,6 +1,7 @@
 import { initialsOf } from '@/lib/identity';
 import { explorerHref } from '@liveworkspace/workbench/lib/explorer-href';
-import { SOLID_BRAND_DARK, GlyphDisc } from '@livediagram/ui';
+import { GlyphDisc, IDENTITY_FILL, identityVars } from '@livediagram/ui';
+import { presenceColourOf } from '@liveworkspace/settings/presence';
 
 // One pickable assignee (docs/specs/012-collaboration/assigned-actions.md): the pinned Myself row, or a joined
 // member of the document's team.
@@ -13,6 +14,9 @@ export type PickableMember = {
   // True while the member hasn't accepted the team invite (docs/specs/013-workspace/teams.md).
   pending?: boolean;
   name: string;
+  // Their presence colour (docs/specs/012-collaboration/assigned-actions.md "Their colour"): a member's chosen one,
+  // the Myself row's participant colour; null or absent for Automatic, picked from the name.
+  color?: string | null;
   email: string | null;
   // Null for the pinned Myself row (no team involved, no email).
   teamId: string | null;
@@ -78,7 +82,10 @@ export function AssigneePicker({
         <GlyphDisc
           size={24}
           aria-hidden
-          className={`bg-brand-700 text-[10px] font-semibold text-white ${SOLID_BRAND_DARK}`}
+          data-testid="assignee-disc"
+          // The person as their cursor and avatar show them: their colour, with the ink that reads on it.
+          className={`${IDENTITY_FILL} text-[10px] font-semibold`}
+          style={identityVars(presenceColourOf(m.name, m.color))}
         >
           {initialsOf(m.name)}
         </GlyphDisc>
