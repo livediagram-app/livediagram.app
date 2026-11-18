@@ -422,8 +422,7 @@ export async function runRule(
       await ai(true);
       await sendMessages(messages, live.sends, lines, offset);
       const related = writes.related.filter((r) => r.failed);
-      const reason =
-        live.failed ?? (related.length ? relatedFailure(related, plan.types) : null);
+      const reason = live.failed ?? (related.length ? relatedFailure(related, plan.types) : null);
       return end(
         reason === null ? 'done' : 'failed',
         reason ?? undefined,

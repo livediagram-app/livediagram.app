@@ -356,7 +356,11 @@ function ItemPanelContent({
   const trailRow =
     trail.length > 1 ? (
       <div className="border-b border-slate-200 px-3 pt-1.5 dark:border-slate-700">
-        <ItemTrailCrumbs trail={trail} types={types} onBack={(id) => onOpenItem(id, 'Breadcrumb')} />
+        <ItemTrailCrumbs
+          trail={trail}
+          types={types}
+          onBack={(id) => onOpenItem(id, 'Breadcrumb')}
+        />
       </div>
     ) : null;
 

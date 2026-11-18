@@ -203,7 +203,9 @@ describe('the item panel', () => {
     const section = screen.getByRole('region', { name: /Blocked By/ });
     expect(within(section).getByText('1 open').className).toContain('dark:text-red-400');
     expect(section.querySelectorAll('[data-blocker-done]')).toHaveLength(1);
-    fireEvent.click(within(section).getByRole('button', { name: `Open T-${a.key} Website, Doing` }));
+    fireEvent.click(
+      within(section).getByRole('button', { name: `Open T-${a.key} Website, Doing` }),
+    );
     expect(onOpen).toHaveBeenCalledWith(a.id);
     cleanup();
     const allDone = card('Later', 'todo', [done.id]);

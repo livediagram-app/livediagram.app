@@ -226,7 +226,9 @@ describe('list_items on a 5,000-card plan (Work Tracker 981)', () => {
     const [first, ...later] = pages;
     const columnRefs = first!.boards.flatMap((b) => b.columns.flatMap((c) => c.cards ?? []));
     // Selected for Development sits on two boards, so its cards are listed twice; every card is on a board.
-    expect(new Set(columnRefs)).toEqual(new Set(state.items.map((i) => cardRefOrKey(i, state.plan.types))));
+    expect(new Set(columnRefs)).toEqual(
+      new Set(state.items.map((i) => cardRefOrKey(i, state.plan.types))),
+    );
     expect(first!.notOnBoard).toEqual([]);
     expect(later.length).toBeGreaterThan(0);
     for (const p of later) {
@@ -276,7 +278,14 @@ describe('what list_items leaves out', () => {
 
   it('lists them all with includeClosed, the done columns whole', () => {
     const answer = page(state, { includeClosed: true });
-    expect(answer.items.map((i) => i.ref)).toEqual(['WI-1', 'WI-2', 'WI-3', 'WI-4', 'WI-5', 'WI-6']);
+    expect(answer.items.map((i) => i.ref)).toEqual([
+      'WI-1',
+      'WI-2',
+      'WI-3',
+      'WI-4',
+      'WI-5',
+      'WI-6',
+    ]);
     expect(answer.omitted?.closed).toBeUndefined();
     const done = answer.boards.find((b) => b.title === 'Results')!.columns[1]!;
     expect(done).toMatchObject({ cards: ['WI-2'] });
@@ -332,7 +341,10 @@ describe('list_items filters', () => {
   it('takes several columns and several card types, a card in any of them', () => {
     expect(refs({ status: ['Under Review', 'In Progress'] })).toEqual(['WI-1', 'WI-3', 'I-9']);
     expect(refs({ type: ['Idea'] })).toEqual(['I-9']);
-    expect(refs({ type: ['Work Item', 'Idea'], status: ['under-review'] })).toEqual(['WI-1', 'I-9']);
+    expect(refs({ type: ['Work Item', 'Idea'], status: ['under-review'] })).toEqual([
+      'WI-1',
+      'I-9',
+    ]);
   });
 
   it('keeps a card whose title or description holds the text, case aside', () => {
