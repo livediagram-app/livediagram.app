@@ -153,6 +153,11 @@ that agree to a second agree on the Receptionist.
   ring reaches everyone on the tab, in earshot or not). He goes round behind the desk (a quarter in from its left, clear of its Welcome bubble) when he can get there, facing
   whoever rang, else beside its front; a desk he cannot reach at all is left ringing. He waves on arrival and stays
   for the greeting's few seconds, then carries on with his day.
+- **Behind the desk he is seen whole in the 3D view** (the coordinator, 2026-11-18; 3D is a phone's default view):
+  every Space's desk leaves the floor behind it for him, in front of the room's back wall, never in the wall's band,
+  and while he stands there with the camera facing the desk's front he is drawn towards the camera by his own height,
+  so a character leaning back from its feet, as every one does in 3D, never cuts into the wall behind him. The desk's
+  front still stands in front of his legs.
 - **When it was you who rang**, any bubble he had open for you closes as he sets off, and once he reaches the desk his
   bubble opens there: "You rang, <your first name>? What can I help with?" over the whole topic list, as Ask
   Receptionist's does, and it holds him until it closes.

@@ -32,6 +32,14 @@ Derived from [the Receptionist](../receptionist.md). The spec decides; this file
 - **A rung bell** (`bellDetour`) walks him behind that desk (`BEHIND_DESK`), else beside its front, the first spot
   with a route; held `RECEPTIONIST_GREET_MS` with a wave, as a greeting. Yours sets an `answeringYou` flag that opens
   his bubble (`'bell'`) when he stands there. A ring from someone else is skipped while your bubble is open.
+- **Seen behind the desk in 3D**: `deskBehind(desks, at)` (receptionist-timeline.ts) finds the desk whose
+  `BEHIND_DESK` spot (or nearer) he stands on. While he stands still there with the camera unturned (`turnQuarter`
+  0), `ReceptionistLayer` passes `AvatarWalker` a `seatLift` of `(AVATAR_HEIGHT + AVATAR_HEAD_CHROME) * scale`: the
+  stylesheet's `--space-seat-lift` draws him that far towards the camera (nothing flat), so his figure, leaning back
+  from its feet at the tilt, clears a wall a few px behind him and stays behind the desk's front. Every template's
+  spot is on the floor with no wall between it and the desk or within 8 px behind it
+  (`receptionist-desk-spot.test.ts`); the Virtual Office's desk stands at y 84 for it (it stood at 48, its spot in the
+  back wall's band).
 - **Leaving** is `receptionistLeft: true` on his pad (an element field, validated and in the element format), so
   `receptionistWorld` returns null for everyone. The farewell shows for `FAREWELL_MS`, then the layer patches the pad.
 - **The detour is keyed by his pad id**: an edit to the tab rebuilds the world and keeps the detour; another tab drops
