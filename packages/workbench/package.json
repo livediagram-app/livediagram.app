@@ -713,6 +713,7 @@
     "./hooks/persistence/useAfterApiWrite": "./src/hooks/persistence/useAfterApiWrite.ts",
     "./lib/canvas-backgrounds": "./src/lib/canvas-backgrounds.ts",
     "./components/canvas/element-label-views": "./src/components/canvas/element-label-views.tsx",
+    "./components/canvas/EmptyTextPrompt": "./src/components/canvas/EmptyTextPrompt.tsx",
     "./components/canvas/label-align": "./src/components/canvas/label-align.ts",
     "./components/canvas/canvas-menu-context": "./src/components/canvas/canvas-menu-context.ts",
     "./components/canvas/SwatchOverridePopover": "./src/components/canvas/SwatchOverridePopover.tsx",

@@ -301,6 +301,9 @@ function BoxedElementViewImpl(props: BoxedElementViewProps) {
     labelAnimClass,
     textHug.label,
     textAnim,
+    // An empty text's faint prompt, for an Editor only: never a Viewer's or a Participant's canvas, a locked tab or a
+    // locked text (docs/specs/008-canvas/canvas-and-palette.md "Text element").
+    !readOnly && !tabLocked && element.locked !== true,
   );
 
   // Palette-icon drop target (docs/specs/008-canvas/canvas-and-palette.md inline icons) — see

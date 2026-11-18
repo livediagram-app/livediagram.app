@@ -1282,6 +1282,12 @@ A free-floating text element. The text **is** the element: there is no border or
 - **Drag** to move; **resize** via the same four corner handles as shapes. Text auto-scales to fit the box (same SVG-based fit-to-bounds technique as shape labels).
 - **Double-click** to edit content; **Enter** and **Escape** commit (see [Labels](#labels) "Escape keeps what you typed").
 - A faint dashed outline appears when selected so the bounds are visible.
+- **Empty, it shows where its words go.** A text with no words (Clear Example Content empties a template's sample
+  copy, [Template example content](../006-document/template-examples.md)) draws a faint **"Text"** in its own ink at
+  35%, at its size and alignment, the word its editor shows while typing, so a double-click there opens it without a
+  jump. Only an **Editor** sees it: a Participant, a Viewer, an embed and a locked tab or text see nothing, as before.
+  It is never content: not exported (image, vector, PDF), not read aloud, never stored. A whiteboard text box that
+  hugs its words has none (it goes when left empty).
 - **Colour.** The text takes the theme's label colour, and can be recoloured like any other element:
   the context menu's **Colours** category (a single **Text** row and Reset to Theme; no Background or
   Border, since a text element has neither) and the [Quick style panel](quick-style-panel.md)'s

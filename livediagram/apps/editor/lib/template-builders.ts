@@ -8,13 +8,19 @@
 // page by definition.
 
 import { markTemplateExamples, type Tab } from '@livediagram/document';
-import { buildTemplate, templateCanvasOverrides, type TemplateKind } from '@livediagram/templates';
+import {
+  buildTemplate,
+  templateCanvasOverrides,
+  templateExampleText,
+  type TemplateKind,
+} from '@livediagram/templates';
 import { getTheme, recolourElementsForTheme } from './themes';
 
 export {
   buildTemplate,
   isDefaultDocumentName,
   templateCanvasOverrides,
+  templateExampleText,
   templateSlides,
   untitledNameForTemplate,
   withAppendedSlides,
@@ -31,7 +37,10 @@ export function buildTemplatedTab(
   // branch of the scaffold a distinct hue; single-colour themes fall
   // straight through to the per-element transform.
   // Its example values marked as they land (docs/specs/006-document/template-examples.md).
-  const elements = markTemplateExamples(recolourElementsForTheme(buildTemplate(kind, 0, 0), theme));
+  const elements = markTemplateExamples(
+    recolourElementsForTheme(buildTemplate(kind, 0, 0), theme),
+    templateExampleText(kind),
+  );
   return {
     id: tabId,
     name: tabName,

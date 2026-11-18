@@ -104,6 +104,7 @@ export function useTemplateFlow(opts: {
       templateCanvasOverrides,
       isDefaultDocumentName,
       templateSlides,
+      templateExampleText,
       untitledNameForTemplate,
     } = await import('@/lib/template-builders');
     // The first tab's template names a document still on a default name ("Untitled Flowchart",
@@ -122,7 +123,11 @@ export function useTemplateFlow(opts: {
     const theme = getTheme(activeTab?.theme);
     // Its example values are marked as they land (docs/specs/006-document/template-examples.md), so Clear Example
     // Content can empty them and nothing a person writes.
-    const elements = markTemplateExamples(recolourElementsForTheme(rawElements, theme));
+    const exampleText = templateExampleText(kind);
+    const elements = markTemplateExamples(
+      recolourElementsForTheme(rawElements, theme),
+      exampleText,
+    );
     const overrides = templateCanvasOverrides(kind);
     const opensIn = templateOpensIn(overrides);
     // Re-checked inside the commit (landTemplateOnTab): the tab may have gained a collaborator's
