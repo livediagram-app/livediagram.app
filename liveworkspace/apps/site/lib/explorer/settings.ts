@@ -20,16 +20,11 @@ export type ExplorerSettings = {
   onHideHero: () => void;
 };
 
-/** `kind`: who the page is for, once known (null while the identity is asked for). */
-export function useExplorerSettings(
-  app: AppName,
-  kind: 'account' | 'guest' | null,
-): ExplorerSettings {
-  const site = APP_ITEMS[app].site as AppId;
-  // Kept with the app it was read for, so a page that moves to another app never shows the last one's.
-  const [read, setRead] = useState<{ site: AppId; scopes: AppScopes } | null>(null);
-  const scopes = read?.site === site ? read.scopes : null;
-
+/** The person's telemetry choice, for the site's emitter (telemetry.ts): read once the page knows who it is for
+ *  (`kind`, null while the identity is asked for), so the events that waited go out or are dropped. A guest follows
+ *  their choice in the app's storage and the browser; an account its `telemetryEnabled` (the `all` scope, the same
+ *  whichever app's settings are read; one read per app, shared with the Settings panel). */
+export function useTelemetryConsent(site: AppId, kind: 'account' | 'guest' | null): void {
   useEffect(() => {
     if (kind === null) return;
     if (kind === 'guest') {
@@ -42,7 +37,30 @@ export function useExplorerSettings(
       // Unread, telemetry stays as the apps default it: on unless turned off.
       const all = result.ok ? result.data.all : {};
       setExplorerConsent(all.telemetryEnabled !== false);
-      if (result.ok) setRead({ site, scopes: result.data });
+    });
+    return () => {
+      live = false;
+    };
+  }, [site, kind]);
+}
+
+/** `kind`: who the page is for, once known (null while the identity is asked for). */
+export function useExplorerSettings(
+  app: AppName,
+  kind: 'account' | 'guest' | null,
+): ExplorerSettings {
+  const site = APP_ITEMS[app].site as AppId;
+  // Kept with the app it was read for, so a page that moves to another app never shows the last one's.
+  const [read, setRead] = useState<{ site: AppId; scopes: AppScopes } | null>(null);
+  const scopes = read?.site === site ? read.scopes : null;
+
+  useTelemetryConsent(site, kind);
+  useEffect(() => {
+    if (kind !== 'account') return;
+    let live = true;
+    // The same read as the consent's (the store shares one).
+    void settingsStore.loadApp(site).then((result) => {
+      if (live && result.ok) setRead({ site, scopes: result.data });
     });
     return () => {
       live = false;

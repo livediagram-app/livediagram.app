@@ -1,6 +1,6 @@
 import type { TabConnectionWire } from '@liveworkspace/api-schema/tab-connection';
 import type { TabSavedOp } from '@liveworkspace/api-schema/tab-delta';
-import type { ElementDelta, QaNote, RoomElementOp, Tab } from '@livediagram/document';
+import type { ElementDelta, QaNote, RoomElementOp, Slide, Tab } from '@livediagram/document';
 import type { LivePoll } from './poll';
 import type { DragPreviewPatch, DragPreviewRide } from './drag-preview';
 import type { ChangesetRoomOp } from './changesets';
@@ -261,6 +261,10 @@ export type RoomOp =
   // One changeset the api applied (docs/specs/024-agents/agent-changesets.md "What the room does").
   // Worker-originated through /mutation.
   | ChangesetRoomOp
+  // Slides the api appended to the document's deck (docs/specs/012-collaboration/presentation-mode.md "Slides an
+  // agent appends"): a presented template's, from the MCP's add_tab. Each open editor appends the ones it lacks.
+  // Worker-originated through /mutation.
+  | { kind: 'deck-slides'; slides: Slide[] }
   // The document went to the Trash (docs/specs/013-workspace/trash.md). Every
   // session shows the deleted state; the room then closes every socket (4004).
   // Worker-originated, like share-revoked.

@@ -14,6 +14,7 @@ import { drawPlan } from '../thumbnail';
 import { planShares, type ShareAnswer, type ShareMessage } from './tab-shares';
 import { planGrantedImages, planServesImage } from './image-grants';
 import { exportPlanCopy, readPlanMeta, readPlanOutline } from './plan-content';
+import { copiedPlacedImages, noteCopyClaim } from './copy-image-claims';
 import {
   communityCheckDueAt,
   communityPostAuthor,
@@ -260,12 +261,14 @@ export function grantedImages(
 
 // The source side of a copy (plan-content.ts exportPlanCopy); a copy through the plan's open Community post's link
 // takes it as the link shows it (docs/specs/025-community/community.md). `community` says which, so the copy is
-// counted toward the post.
+// counted toward the post. `copyId` names the plan the copy lands in: this plan vouches for the pictures it holds
+// until its own report lands (copy-image-claims.ts).
 export async function exportCopy(
   room: PlanRoom,
   planId: string,
   onlyTabId: string | null,
   copier: Copier | null,
+  copyId: string | null = null,
 ): Promise<CopySource | null> {
   room.bindPlan(planId);
   const env = room.requireEnv();
@@ -274,7 +277,14 @@ export async function exportCopy(
   // The rules go with a whole-plan copy by someone not reaching it through a link (its owner or team).
   const withRules = onlyTabId === null && !community && !copier?.code;
   const copy = await exportPlanCopy(env, planId, onlyTabId, null, community, withRules);
-  return copy ? { copy, community } : null;
+  if (!copy) return null;
+  if (copyId !== null) {
+    // A tab copy's cards are the ones it carries.
+    const itemIds = onlyTabId === null ? null : copy.items.map((row) => String(row.id));
+    const images = await copiedPlacedImages(env, planId, itemIds);
+    if (await noteCopyClaim(env, planId, copyId, images, Date.now())) noteWrite(room);
+  }
+  return { copy, community };
 }
 
 // Share links the index revoked: each one's sessions hear it and end now, as the worker's own revoke does.

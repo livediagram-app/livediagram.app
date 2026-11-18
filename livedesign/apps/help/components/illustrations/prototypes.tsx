@@ -300,7 +300,8 @@ export function PrototypeModeScene() {
   );
 }
 
-/** The Flow view: Home's card curving to Product beside it, its Shop button arcing over the row to Cart, Product's
+/** The Flow view: Home's card curving to Product beside it, its Shop button arcing over the row and down the gap into
+ *  Cart's side (clear of its label), Product's
  *  button to Cart, a broken link's dashed stub and tag, and Cart's back button tagged Back. */
 export function FlowViewScene() {
   const top = 54;
@@ -352,9 +353,9 @@ export function FlowViewScene() {
       />
       <LinkBox x={48} y={178} w={72} h={14} />
       <FlowArrow
-        d="M120 185 L 141 185 Q 147 185 147 179 L 147 28 Q 147 22 153 22 L 304 22 Q 310 22 310 28 L 310 54"
+        d="M120 185 L 141 185 Q 147 185 147 179 L 147 28 Q 147 22 153 22 L 280 22 Q 286 22 286 28 L 286 64 Q 286 68 290 68 L 292 68"
         start={{ x: 120, y: 185 }}
-        head="306,47 310,54 314,47"
+        head="285,64 292,68 285,72"
       />
 
       {/* Product: Add to Cart to Cart beside it; a link whose screen was deleted. */}

@@ -2664,6 +2664,19 @@ describe('DocumentRoom and agent changesets', () => {
     expect((await room.fetch(mutation({ kind: 'tab', tabId: 't1' }))).status).toBe(400);
   });
 
+  // docs/specs/012-collaboration/presentation-mode.md "Slides an agent appends".
+  it('sequences the slides an agent appended to the deck, and never relays them from a client', async () => {
+    const { room } = newRoom();
+    const peer = join(room, 'p');
+    const op = { kind: 'deck-slides', slides: [{ id: 's1', tabId: 't1', elementIds: ['a'] }] };
+    expect((await room.fetch(mutation(op))).status).toBe(204);
+    expect(received(peer).at(-1)).toMatchObject({ from: 'system', op, seq: 1 });
+    const sender = join(room, 's');
+    peer.sent.length = 0;
+    sendFrame(room, sender, { kind: 'op', op });
+    expect(peer.sent).toEqual([]);
+  });
+
   it('never relays a changeset from a client socket', () => {
     const { room } = newRoom();
     const sender = join(room, 's');

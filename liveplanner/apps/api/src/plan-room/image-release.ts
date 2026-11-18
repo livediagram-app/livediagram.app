@@ -119,8 +119,9 @@ export function nextImageReleaseAt(sql: Sql): number | null {
 }
 
 // Whether anything the plan keeps still names the picture: a card (in the Trash too), a tab, an agent's changeset
-// (a revert puts it back) or a snapshot (a revert puts it back). A plain text match, so it errs on keeping: a card
-// naming the id anywhere keeps it. A snapshot's body is cut into chunks, so each is read with the start of the next.
+// (a revert puts it back), a copy's note the media service has not taken yet (copy-image-claims.ts: the copy may still
+// show it) or a snapshot (a revert puts it back). A plain text match, so it errs on keeping: a card naming the id
+// anywhere keeps it. A snapshot's body is cut into chunks, so each is read with the start of the next.
 export async function planStillHolds(
   env: Pick<PlanEnv, 'PLAN_DB'>,
   planId: string,
@@ -129,7 +130,8 @@ export async function planStillHolds(
   const held = await env.PLAN_DB.prepare(
     `SELECT EXISTS (SELECT 1 FROM items WHERE plan_id = ?1 AND instr(fields, ?2) > 0)
          OR EXISTS (SELECT 1 FROM tabs WHERE instr(data, ?2) > 0)
-         OR EXISTS (SELECT 1 FROM agent_changeset_parts WHERE instr(data, ?2) > 0) AS held`,
+         OR EXISTS (SELECT 1 FROM agent_changeset_parts WHERE instr(data, ?2) > 0)
+         OR EXISTS (SELECT 1 FROM copy_image_claims WHERE plan_id = ?1 AND instr(images, ?2) > 0) AS held`,
   )
     .bind(planId, imageId)
     .first<{ held: number }>();

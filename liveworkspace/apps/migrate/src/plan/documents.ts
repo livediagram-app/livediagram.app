@@ -1,6 +1,6 @@
 // The documents (docs/migration.md, steps 2 to 4): each old document read raw, split by product, its parts' rooms
-// written for the apps' migration doors, its pictures drawn, and its index rows (the item per part, favourites,
-// recent opens, share links, password and Shared with me) and media references written.
+// written for the apps' migration doors, its pictures drawn, and its index rows (the item per part, recent
+// opens, share links, password and Shared with me) and media references written.
 import { createHash } from 'node:crypto';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -85,9 +85,6 @@ export type DocumentPassDeps = {
 
 export async function documentPass(ctx: PlanContext, deps: DocumentPassDeps): Promise<void> {
   const split = deps.split ?? splitOldDocument;
-  const favourites = ctx.snapshot.prepare(
-    'SELECT owner_id, created_at FROM favourites WHERE document_id = ? ORDER BY owner_id',
-  );
   const opens = ctx.snapshot.prepare(
     'SELECT owner_id, last_opened_at FROM document_opens WHERE document_id = ? ORDER BY owner_id',
   );
@@ -209,19 +206,6 @@ export async function documentPass(ctx: PlanContext, deps: DocumentPassDeps): Pr
       closed: d.teamId !== null || extra.sharePassword !== null,
     });
 
-    for (const f of favourites.all(d.id) as Row[]) {
-      const person = ctx.owners.ownerOf(String(f.owner_id));
-      for (const part of parts) {
-        ctx.sql.index.row({
-          table: 'favourites',
-          key: `${person}|${part.id}`,
-          columns: ['person_id', 'item_id', 'created_at'],
-          values: [person, part.id, Number(f.created_at)],
-          conflict: ['person_id', 'item_id'],
-          version: 1,
-        });
-      }
-    }
     // Who hid the document from Recent: their open row says so, and someone who hid it without ever opening it
     // gets a row with no open (last_opened_at 0), as the index's own hide makes.
     const hiders = hiddenFromRecent.get(d.id);

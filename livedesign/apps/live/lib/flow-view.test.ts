@@ -12,15 +12,17 @@ import {
   type ShapeElement,
 } from '@livedesign/design';
 import {
+  FLOW_DROP_PX,
   FLOW_EDGE_INSET,
-  FLOW_ENTRY_FRACTION,
-  FLOW_ENTRY_STEP,
+  FLOW_ENTRY_INSET,
+  FLOW_ENTRY_STEP_PX,
   FLOW_GAP_SIDE_PX,
   FLOW_LANE_BASE_PX,
   FLOW_LANE_SPREAD,
   FLOW_LANE_STEP_PX,
   FLOW_PULL_MIN_PX,
   FLOW_STUB_PX,
+  FLOW_TAG_GAP_PX,
   adjacentPath,
   arcPath,
   flowLinks,
@@ -53,6 +55,12 @@ const to = (pageId: string): ScreenLink => ({ kind: 'page', pageId });
 
 // The numbers of an SVG path, in order.
 const nums = (path: string) => (path.match(/-?\d+(\.\d+)?/g) ?? []).map(Number);
+// The path's points (every x, y pair, corners' control points too), in order.
+const points = (path: string) => {
+  const n = nums(path);
+  return Array.from({ length: n.length / 2 }, (_, i) => ({ x: n[2 * i]!, y: n[2 * i + 1]! }));
+};
+const r1 = (v: number) => Math.round(v * 10) / 10;
 const only = (links: FlowLink[]) => {
   expect(links).toHaveLength(1);
   return links[0]!;
@@ -84,7 +92,7 @@ describe('flowLinks', () => {
     expect(nums(link.path).slice(-2)[0]).toBe(pages[0]!.rect.x + pages[0]!.rect.width);
   });
 
-  it('arcs over the row to a screen further along, onto its top edge, higher the further it goes', () => {
+  it('arcs over the row to a screen further along, into its near side below its top, higher the further it goes', () => {
     const two = only(flowLinks([linked('a', 0, to('p3'))], undefined, pages, 1));
     const three = only(flowLinks([linked('a', 0, to('p4'))], undefined, pages, 1));
     if (two.state !== 'page' || three.state !== 'page') throw new Error('page');
@@ -92,12 +100,47 @@ describe('flowLinks', () => {
     const laneOf = (path: string) => nums(path)[11]!;
     expect(laneOf(two.path)).toBe(top - FLOW_LANE_BASE_PX);
     expect(laneOf(three.path)).toBe(top - FLOW_LANE_BASE_PX - FLOW_LANE_STEP_PX);
-    const end = nums(two.path).slice(-2);
     const target = pages[2]!.rect;
-    expect(end).toEqual([
-      Math.round((target.x + FLOW_ENTRY_FRACTION * target.width) * 10) / 10,
-      target.y,
-    ]);
+    expect(nums(two.path).slice(-2)).toEqual([target.x, target.y + FLOW_ENTRY_INSET]);
+    // It drops in the gap before the target, on the target's side of the gap's middle, FLOW_DROP_PX out.
+    expect(nums(two.path)[20]).toBe(target.x - FLOW_DROP_PX);
+  });
+
+  it('never crosses the label and toolbar above its target (or any screen’s)', () => {
+    // The band the page chrome takes above every page (34 px, 6 px off the top), at a few zooms.
+    for (const zoom of [0.25, 0.5, 1, 2]) {
+      const links = flowLinks(
+        [
+          linked('a', 0, to('p3')),
+          linked('b', 0, to('p4'), { x: 40, y: 300 }),
+          linked('c', 3, to('p1')),
+          linked('d', 2, to('p1'), { x: 40, y: 400 }),
+        ],
+        undefined,
+        pages,
+        zoom,
+      );
+      for (const link of links) {
+        if (link.state !== 'page') throw new Error('page');
+        const pts = points(link.path);
+        // Each run joins two points level or upright, so a run inside a band has a point in it, or spans it.
+        for (let i = 1; i < pts.length; i++) {
+          const a = pts[i - 1]!;
+          const b = pts[i]!;
+          for (const page of pages) {
+            const band = { top: page.rect.y - 40 / zoom, bottom: page.rect.y };
+            const xs = [Math.min(a.x, b.x), Math.max(a.x, b.x)];
+            const ys = [Math.min(a.y, b.y), Math.max(a.y, b.y)];
+            const overlaps =
+              xs[0]! < page.rect.x + page.rect.width &&
+              page.rect.x < xs[1]! &&
+              ys[0]! < band.bottom &&
+              band.top < ys[1]!;
+            expect(overlaps).toBe(false);
+          }
+        }
+      }
+    }
   });
 
   it('lifts an arc to the next free lane over screens an earlier arc already runs over', () => {
@@ -151,16 +194,42 @@ describe('flowLinks', () => {
     expect(gapOf(left!)).toBeCloseTo(middle + FLOW_GAP_SIDE_PX, 0);
   });
 
-  it('spreads the arcs landing on one screen', () => {
-    const links = flowLinks(
-      [linked('a', 0, to('p4')), linked('b', 1, to('p4'), { x: 40, y: 300 })],
+  it('nests the arcs into one side of a screen: the higher lane drops nearest and enters highest', () => {
+    // a (0 to 3) passes more screens, so takes the higher lane, though b comes first in the walk.
+    const [b, a] = flowLinks(
+      [linked('b', 1, to('p4'), { x: 40, y: 300 }), linked('a', 0, to('p4'))],
       undefined,
       pages,
       1,
     );
-    const ends = links.map((l) => (l.state === 'page' ? nums(l.path).at(-2)! : NaN));
-    const w = pages[3]!.rect.width;
-    expect(ends[1]! - ends[0]!).toBeCloseTo(FLOW_ENTRY_STEP * w, 0);
+    if (a?.state !== 'page' || b?.state !== 'page') throw new Error('page');
+    const target = pages[3]!.rect;
+    expect(nums(a.path).slice(-2)).toEqual([target.x, target.y + FLOW_ENTRY_INSET]);
+    expect(nums(b.path).slice(-2)).toEqual([
+      target.x,
+      target.y + FLOW_ENTRY_INSET + FLOW_ENTRY_STEP_PX,
+    ]);
+    expect(nums(a.path)[20]).toBeGreaterThan(nums(b.path)[20]!);
+    expect(nums(a.path)[11]).toBeLessThan(nums(b.path)[11]!);
+  });
+
+  it('drops leftward arcs in the gap on the target’s right, clear of the arcs rising there', () => {
+    const links = flowLinks(
+      [linked('a', 3, to('p1')), linked('b', 1, to('p4'), { x: 40, y: 500 })],
+      undefined,
+      pages,
+      0.25,
+    );
+    const [left, right] = links;
+    if (left?.state !== 'page' || right?.state !== 'page') throw new Error('page');
+    const target = pages[0]!.rect;
+    const edge = target.x + target.width;
+    expect(nums(left.path).slice(-2)).toEqual([r1(edge), r1(target.y + FLOW_ENTRY_INSET)]);
+    const dropX = nums(left.path)[20]!;
+    const gapMiddle = (edge + pages[1]!.rect.x) / 2;
+    // Between the target and the column a leftward arc leaving the next screen would rise in.
+    expect(dropX).toBeGreaterThan(edge);
+    expect(dropX).toBeLessThan(gapMiddle - FLOW_GAP_SIDE_PX / 0.25 / 4);
   });
 
   it('tags a back link, outlines a link to its own screen, and never draws an arrow for either', () => {
@@ -177,8 +246,61 @@ describe('flowLinks', () => {
     const el = linked('a', 0, to('gone'));
     const link = only(flowLinks([el], undefined, pages, 2));
     if (link.state !== 'broken') throw new Error('broken');
+    expect(link.side).toBe(1);
     expect(link.stub.from).toEqual({ x: el.x + el.width, y: el.y + el.height / 2 });
     expect(link.stub.to.x - link.stub.from.x).toBe(FLOW_STUB_PX / 2);
+    expect(link.at).toEqual({ x: link.stub.to.x + FLOW_TAG_GAP_PX / 4, y: link.stub.from.y });
+  });
+
+  it('moves a tag to the box’s left where its right would sit over an arc rising in the gap', () => {
+    const s = screen(1);
+    const edge = { ...linked('x', 1, to('gone')), x: s.x + s.width - 30, width: 20, height: 20 };
+    const back = {
+      ...linked('y', 1, { kind: 'back' }),
+      x: s.x + s.width - 30,
+      width: 20,
+      height: 20,
+      y: s.y + 200,
+    };
+    // An arc from low on the same screen rises in the gap on its right, past both tags.
+    const arc = linked('a', 1, to('p4'), { x: 40, y: 600 });
+    const links = flowLinks([edge, back, arc], undefined, pages, 1);
+    const [broken, backTag] = links;
+    if (broken?.state !== 'broken' || backTag?.state !== 'back') throw new Error('tags');
+    expect(broken.side).toBe(-1);
+    expect(broken.stub.from.x).toBe(edge.x);
+    expect(broken.stub.to.x).toBe(edge.x - FLOW_STUB_PX);
+    expect(broken.at.x).toBe(edge.x - FLOW_STUB_PX - FLOW_TAG_GAP_PX / 2);
+    expect(backTag.side).toBe(-1);
+    expect(backTag.at.x).toBe(back.x - FLOW_TAG_GAP_PX);
+    // Without the arc, both keep the right.
+    const alone = flowLinks([edge, back], undefined, pages, 1);
+    expect(alone.map((l) => (l.state === 'broken' || l.state === 'back' ? l.side : 0))).toEqual([
+      1, 1,
+    ]);
+  });
+
+  it('keeps a tag on the right when arrows run on both sides', () => {
+    const s = screen(2);
+    const wide = {
+      ...linked('w', 2, to('gone')),
+      x: s.x + 10,
+      width: s.width - 20,
+      height: 20,
+      y: s.y + 120,
+    };
+    // Curves to the screens either side, level with the tag.
+    const right = {
+      ...linked('r', 2, to('p4')),
+      x: s.x + s.width - 40,
+      width: 20,
+      height: 20,
+      y: s.y + 120,
+    };
+    const left = { ...linked('l', 2, to('p2')), x: s.x + 20, width: 20, height: 20, y: s.y + 120 };
+    const [tag] = flowLinks([wide, right, left], undefined, pages, 1);
+    if (tag?.state !== 'broken') throw new Error('broken');
+    expect(tag.side).toBe(1);
   });
 
   it('cuts the box to the screen, and leaves out elements off every screen or wholly off theirs', () => {
@@ -221,6 +343,20 @@ describe('flowLinks', () => {
     const ms = cpuMsOf(() => flowLinks(many, undefined, pages, 0.5));
     expect(ms).toBeLessThan(cpuBudgetMs(40));
   });
+
+  it('places a crowd of tags among a crowd of arcs well inside a frame', () => {
+    // 4,000 links on four screens, half arcs and half broken, the worst case for placing tags.
+    const many: Element[] = [];
+    for (let i = 0; i < 4000; i++) {
+      const page = i % 2 === 0 ? 0 : 3;
+      const link = i % 4 < 2 ? to(page === 0 ? 'p3' : 'p2') : to('gone');
+      many.push(linked(`e${i}`, page, link, { x: 10 + (i % 30) * 10, y: 10 + (i % 70) * 10 }));
+    }
+    // It reruns on every render while the view is on, so the budget holds a warm walk, not the first compile.
+    flowLinks(many, undefined, pages, 0.5);
+    const ms = cpuMsOf(() => flowLinks(many, undefined, pages, 0.5));
+    expect(ms).toBeLessThan(cpuBudgetMs(40));
+  });
 });
 
 describe('the paths', () => {
@@ -254,15 +390,19 @@ describe('the paths', () => {
   });
 
   it('keeps a corner within half of each run it joins', () => {
-    const n = nums(arcPath({ x: 0, y: 0 }, 10, { x: 1000, y: 50 }, -100, 1, 40));
+    const n = nums(arcPath({ x: 0, y: 0 }, 10, -100, 900, { x: 1000, y: 50 }, 40));
     // The first corner starts no further back than the start.
     expect(n[2]).toBe(0);
+    // A drop with no room beside its entry turns no corner there.
+    const flush = nums(arcPath({ x: 0, y: 0 }, 60, -100, 1000, { x: 1000, y: 50 }, 12));
+    expect(flush.slice(-6)).toEqual([1000, 50, 1000, 50, 1000, 50]);
   });
 
-  it('ends an arc vertical, so its head points down into the screen', () => {
-    const n = nums(arcPath({ x: 0, y: 0 }, 60, { x: 1000, y: 50 }, -100, 1, 12));
-    const [c2x, , ex] = n.slice(-4);
-    expect(c2x).toBe(ex);
+  it('ends an arc level, so its head points into the screen', () => {
+    const n = nums(arcPath({ x: 0, y: 0 }, 60, -100, 970, { x: 1000, y: 50 }, 12));
+    const [, qy, ex, ey] = n.slice(-4);
+    expect(qy).toBe(ey);
+    expect(ex).toBe(1000);
   });
 });
 

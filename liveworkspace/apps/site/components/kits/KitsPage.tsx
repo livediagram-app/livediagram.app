@@ -15,27 +15,38 @@ import {
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { signInHref } from '@/lib/accounts';
+import { useTelemetryConsent } from '@/lib/explorer/settings';
 import { workspaceToken } from '@/lib/explorer/token';
 import { useSession } from '@/lib/session';
 import { KitCards } from './KitCards';
 import { KitRunCard } from './KitRunCard';
 import { KitSetup } from './KitSetup';
-import { useKitRun } from './useKitRun';
+import { useKitRun, type KitTrack } from './useKitRun';
 
 const KITS_PATH = '/kits';
+// Whose settings the person's telemetry choice is read from: any app's, since the choice is in the `all` scope.
+const CONSENT_SITE = 'livediagram.app';
 
 export function KitsPage({
   client: given,
+  track,
 }: {
   // The index, handed in by tests.
   client?: Pick<IndexClient, 'startKit' | 'removeKit'>;
+  // The run's telemetry, handed in by tests.
+  track?: KitTrack;
 }) {
   const client = useMemo(() => given ?? createIndexClient({ getToken: workspaceToken }), [given]);
   const session = useSession();
+  // Signed out, telemetry follows the browser; signed in, the person's choice.
+  useTelemetryConsent(
+    CONSENT_SITE,
+    session.state === 'checking' ? null : session.state === 'in' ? 'account' : 'guest',
+  );
   const [kitId, setKitId] = useState<KitId>(KITS[0]!.id);
   const [name, setName] = useState('');
   const [level, setLevel] = useState<Level>('edit');
-  const runner = useKitRun(client);
+  const runner = useKitRun(client, track);
   const kit = kitById(kitId);
   const project = name.trim() || kit.title;
   const { phase } = runner;

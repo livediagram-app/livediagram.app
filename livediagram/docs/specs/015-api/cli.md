@@ -2,7 +2,7 @@
 
 **Status: published.** `@livediagram/cli` is on npm (0.1.0, 2026-10-06; 0.2.0 adds `link`, `sync` and `workbench`; 0.3.0, not yet on npm, adds `folder`, `workbench --workspace` and `link review`). Every command below signs in through the
 browser, a device code or a token kept in the system's keychain, and is counted on the dashboard. The help centre
-article is `/help/developers/cli/` (Developers). The update check is planned ([Distribution](#distribution)).
+article is `/help/developers/cli/` (Developers).
 
 `livediagram` is a command-line front door to the api, built first for **agents** (a coding agent in a repo, a chat
 agent changing a diagram while a person talks to it) and second for people (scripts, syncing documents to files).
@@ -195,8 +195,11 @@ test fails when a verb is exposed by neither, or a tool's schema drifts from its
   bundled ESM file plus the resvg wasm and font, Node 22 or later, run with `npx @livediagram/cli@latest` or installed.
   npm refuses the plain name `livediagram` as too close to the existing `live-diagram`. Published to npm by hand, outside CI, and versioned on its own; CI builds and packs the CLI on every run that reaches it (`npm pack --dry-run`, see the root `docs/ci.md`).
 - Standalone binaries and a Homebrew tap may follow; a `curl | sh` installer is never offered.
-- **Update check.** **Status: Planned.** Not built yet; today the CLI never contacts npm. Once a day at most, after a command, it checks npm for a newer version and says so on stderr; never in CI, when
-  stderr is not a terminal, or with `LIVEDIAGRAM_NO_UPDATE_CHECK=1`.
+- **Update check.** Once a day at most, in the background, the CLI asks npm for the newest version, and after a later
+  command succeeds it says so in one line on stderr, at most once a day:
+  `livediagram 1.4.0 is out (you have 1.2.1). Update: npm i -g @livediagram/cli`. Never in CI, when stderr is not a
+  terminal, or with `LIVEDIAGRAM_NO_UPDATE_CHECK=1`; it never slows or fails a command, and when it last asked is kept
+  in the CLI's config folder (`update.json`).
 
 ## Telemetry
 

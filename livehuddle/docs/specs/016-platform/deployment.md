@@ -122,6 +122,10 @@ From the router:
 
 The other workers have no hostname: they are reached only over the router's service bindings. No worker has a `*.workers.dev` address or preview URLs: every `wrangler.toml` sets `workers_dev = false` and `preview_urls = false` at the top level and in each `[env.*]`, so nothing reaches a worker around the zone's WAF and rate-limit rules.
 
+A deployment of your own must also set the api's `APP_BASE_URL` (the origin every email link points at,
+[Transactional email](../014-identity/transactional-email.md)), or its links lead to livehuddle.app. Local dev sets it to
+`http://localhost:3500` in the api's dev script (`wrangler dev --var`), so a local run never links to production.
+
 ## Rollback
 
 A rollback is **Deploy Production** with an older `ref`: a commit older than production's own redeploys every Worker, as **all** does.

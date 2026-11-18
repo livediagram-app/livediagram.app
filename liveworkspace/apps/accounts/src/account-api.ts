@@ -7,6 +7,7 @@
 //     reading profiles and setting one's own, an app's sign-ups and milestones, accounts' emails, and
 //     for notification emails, many people's notify switches at once and a team's people; and for livediagram's
 //     api, a returning guest of the old livediagram.app claimed (legacy-guests.ts).
+//   - for the media service, with the key it shares (account-api/media-door.ts): which of its teams are deleted;
 //   - for an app's Settings, by the app's bearer (bearer.ts): the same teams, settings, profile, phone devices, API
 //     tokens and Download Your Data, and the account's sessions and sign-in methods (own-sessions.ts, link-google.ts);
 //   - workbenches, for every app (/api/account/workbench/*, workbench/routes.ts), and the apps' servers' checks of
@@ -21,6 +22,7 @@ import type { WaitUntil } from './account-api/http.ts';
 import { handleSignedIn, sessionActor } from './account-api/signed-in.ts';
 import { handleInternal } from './account-api/internal.ts';
 import { handleIndexPeople, handleIndexTeams } from './account-api/index-door.ts';
+import { handleMediaTeamsDeleted } from './account-api/media-door.ts';
 import { handleBearer } from './account-api/bearer-door.ts';
 
 export const ACCOUNT_API_PATH = '/api/account';
@@ -63,6 +65,9 @@ export async function handleAccountApi(
   }
   if (parts[0] === 'index' && parts[1] === 'people' && parts.length === 2) {
     return handleIndexPeople(request, env);
+  }
+  if (parts[0] === 'media' && parts[1] === 'teams-deleted' && parts.length === 2) {
+    return handleMediaTeamsDeleted(request, env);
   }
   const bearer = bearerOf(request);
   if (bearer) return handleBearer(request, env, auth, parts, bearer, waitUntil);

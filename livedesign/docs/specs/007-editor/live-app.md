@@ -364,7 +364,8 @@ header below the top inset and past the side insets, the tab bar above the home 
 the side insets, the strip's row and the bottom-right cluster past a landscape notch. Inline
 `env(safe-area-inset-*)` styles, at least the chrome's own gutters. The editor does not set
 `viewport-fit=cover`, so the insets are 0 today and nothing moves; the rules keep the chrome clear
-the day it goes edge to edge.
+the day it goes edge to edge. Prototype mode on a phone is the one exception: it takes `viewport-fit=cover` while it is
+open and keeps its screen and pill inside the insets ([Wireframe pages](wireframe-pages.md) "Safe areas on a phone").
 
 ## Per-user grants
 

@@ -24,7 +24,6 @@ export const KEY_COLUMNS: Record<Db, Record<string, readonly string[]>> = {
   index: {
     folders: ['id'],
     items: ['id'],
-    favourites: ['person_id', 'item_id'],
     opens: ['person_id', 'item_id'],
     use_days: ['person_id', 'item_id', 'day'],
     share_links: ['code'],

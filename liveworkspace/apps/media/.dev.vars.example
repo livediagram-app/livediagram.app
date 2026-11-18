@@ -14,3 +14,6 @@ APP_ORIGIN_LIVEPLANNER=http://localhost:3200
 APP_ORIGIN_LIVEDOCUMENTS=http://localhost:3300
 APP_ORIGIN_LIVEDESIGN=http://localhost:3400
 APP_ORIGIN_LIVEHUDDLE=http://localhost:3500
+# Deleted teams (liveworkspace/docs/specs/006-media/libraries.md "Account and guest lifecycle"): the same as accounts'
+# ACCOUNTS_KEY_MEDIA. Without it the daily run keeps every team's Library.
+ACCOUNTS_KEY_MEDIA=dev-accounts-media-key

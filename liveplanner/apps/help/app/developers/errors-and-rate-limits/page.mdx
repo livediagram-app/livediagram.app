@@ -61,7 +61,7 @@ The budgets are **300 writes a minute** and **120 token reads a minute**, per to
 
 ## Payload size
 
-Request bodies are capped at 8 MB, and one tab's data at about 1.9 MB. A body that declares a larger size is rejected with `413 payload_too_large` before it is read; an oversized tab or changeset is rejected with `413` when it is checked. If you hit this, split the work across more, smaller tabs or plans.
+Request bodies are capped at 8 MB (a whole plan's `.liveplanner` file at 20 MB), and one tab's data at about 1.9 MB. A body that declares a larger size is rejected with `413 payload_too_large` before it is read; an oversized tab or changeset is rejected with `413` when it is checked. If you hit this, split the work across more, smaller tabs or plans.
 
 ## Token expiry and revocation
 

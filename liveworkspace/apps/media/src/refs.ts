@@ -6,15 +6,30 @@ import type { MediaApp } from '@liveworkspace/media';
 import type { Env } from './env';
 
 // Replace each listed document's references with the images it places now, all in one batch so a
-// document is never half replaced. An empty list clears the document.
+// document is never half replaced. An empty list clears the document. `pending` records unconfirmed references
+// (media.md "Unconfirmed references"), first, and only for a document with no confirmed reference yet; a listed
+// document's own report then drops its unconfirmed ones.
 export async function syncRefs(
   env: Env,
   app: MediaApp,
   documents: { document: string; images: string[] }[],
   complete: boolean,
+  pending: readonly { document: string; images: string[] }[] = [],
 ): Promise<void> {
   const db = env.MEDIA_DB;
   const statements: D1PreparedStatement[] = [];
+  const now = Date.now();
+  for (const { document, images } of pending) {
+    statements.push(
+      db
+        .prepare(
+          `INSERT OR IGNORE INTO pending_refs (app, document, image_id, created_at)
+           SELECT ?1, ?2, value, ?4 FROM json_each(?3)
+            WHERE NOT EXISTS (SELECT 1 FROM refs WHERE app = ?1 AND document = ?2)`,
+        )
+        .bind(app, document, JSON.stringify([...new Set(images)]), now),
+    );
+  }
   for (const { document, images } of documents) {
     const ids = JSON.stringify([...new Set(images)]);
     statements.push(
@@ -30,6 +45,7 @@ export async function syncRefs(
            SELECT ?1, ?2, value FROM json_each(?3)`,
         )
         .bind(app, document, ids),
+      db.prepare('DELETE FROM pending_refs WHERE app = ?1 AND document = ?2').bind(app, document),
     );
   }
   if (complete) {

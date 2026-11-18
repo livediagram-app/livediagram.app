@@ -14,6 +14,7 @@ liveworkspace/apps/media/src/library/routes.ts          handleLibrary: list, sav
 liveworkspace/apps/media/src/library/store.ts           D1 reads and writes, the per-scope cap, owner merge and delete
 liveworkspace/apps/media/src/library/pictures.ts        copying pictures between galleries (team grant)
 liveworkspace/apps/media/src/library/legacy.ts          reading the old shape libraries in place, the lazy copy
+liveworkspace/apps/media/src/library/deleted-teams.ts   the daily run's deleted teams: asked of accounts, their Library and gallery deleted
 packages/workbench/src/components/library/              LibraryProvider, SaveToLibraryDialog, SaveToLibraryButton,
                                                         LibraryPaletteTab, LibraryTile, library-icons
 packages/workbench/src/lib/library/                     library-api (the editor's calls), library-groups, library-draft
@@ -48,6 +49,26 @@ sweep keeps them while the item exists; `usageOf` (the gallery's "Used in") leav
 
 Owner merge (`POST /owners/merge`) re-keys Personal rows; owner delete removes them with their refs.
 
+## Deleted teams (the daily cron, `sweepDeletedTeams`)
+
+Runs before the unused-image sweep. Needs the `ACCOUNTS` service binding and `ACCOUNTS_KEY_MEDIA`; either unset, it
+logs `[library] deleted teams skipped` and does nothing.
+
+1. The teams held: `SELECT DISTINCT scope_id FROM library_items WHERE scope = 'team'`, and the team galleries'
+   owners, `images.owner` between `team:` and `team;` (a range, so the owner index serves it), the `team:` cut off.
+   Sorted, at most `DELETED_TEAMS_ASK_MAX` (5,000) a run.
+2. Asked in chunks of `DELETED_TEAMS_CHUNK` (100): `POST https://accounts/api/account/media/teams-deleted { ids }`
+   through the binding with `Bearer ACCOUNTS_KEY_MEDIA`, 10 s each. Anything but `200 { deleted: string[] }` stops
+   the run (logged `[library] deleted teams not answered`); what was already found is still deleted. An id in
+   `deleted` that wasn't asked is ignored.
+3. Each deleted team (`deleteTeamLibrary`): its items' ids, then `deleteRows` (rows and their `library` refs), then
+   `deleteOwnerRows('team:<id>')` and the bytes from R2, 1,000 keys a call. Idempotent: a second run finds nothing.
+   A run that deleted any logs `[library] deleted a team's library` once, with counts, never names.
+
+Accounts' side (`liveworkspace/apps/accounts/src/account-api/media-door.ts`): `POST` only (else `404`), the bearer
+compared with `sameSecret` (else `401`), `ids` an array of at most `MAX_DELETED_TEAM_IDS` (100) strings (else `400
+too_many_ids`); answers `{ deleted }`, the ids whose `team` row has `deletedAt` set, in one query.
+
 ## Constants
 
 `LIBRARY_TITLE_MAX` 200, `LIBRARY_FOLDER_MAX` 80, `LIBRARY_ITEMS_PER_SCOPE_MAX` 500, `LIBRARY_ITEM_BYTES_MAX` 256 KB,
@@ -78,5 +99,7 @@ shape library items draw with its LibraryItemThumbnail and keep their drag.
 
 `packages/media/src/library*.test.ts` (rules, door, client, legacy door), `liveworkspace/apps/media/src/library/*.test.ts`
 (roles: member saves, member can't tidy, admin tidies, Personal is its owner's; kinds hidden; pictures copied under
-the team; legacy read-through and lazy copy; owner merge and delete), each app's `routes/library.test.ts`, and the
+the team; legacy read-through and lazy copy; owner merge and delete; a deleted team's Library and gallery go while
+another team's and Personal stay, a live or unknown team untouched, no key or no answer deleting nothing, a second run
+a no-op), each app's `routes/library.test.ts`, and the
 workbench's library tests (groups, api, provider, dialog, palette tab, insert hook).

@@ -240,12 +240,20 @@ function testPlanRooms(
       planId: string,
       onlyTabId: string | null,
       copier: { by: string | null; code: string | null } | null,
+      copyId: string | null = null,
     ) => {
       const post = copier?.code ? await communityOf(planId) : null;
       const community = post !== null && post.open && post.code === copier?.code;
       const copy = await (
         await import('./plan-room/plan-content')
       ).exportPlanCopy(env, planId, onlyTabId, null, community);
+      if (copy && copyId !== null) {
+        // As the room's door notes them (plan-room-doors.ts exportCopy).
+        const claims = await import('./plan-room/copy-image-claims');
+        const ids = onlyTabId === null ? null : copy.items.map((row) => String(row.id));
+        const images = await claims.copiedPlacedImages(env, planId, ids);
+        await claims.noteCopyClaim(env, planId, copyId, images, Date.now());
+      }
       return copy ? { copy, community } : null;
     },
     community: (planId: string) => communityOf(planId),

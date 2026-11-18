@@ -135,6 +135,11 @@ the window. Resting on the tile for 150 ms opens it, a press opens it at once, a
 resting on another tile closes it. On a phone it lies over the flyout. Its header names the tile and says what can
 change after a preset is placed; its presets are one column of cards, placing and dragging as any tile.
 
+The keyboard reaches it as it reaches a submenu: **ArrowRight** on the tile opens its panel at once (or enters the
+one a rest already opened) and focuses its first card, Up and Down walk the cards, and **ArrowLeft** on a card or
+**Escape** anywhere in the panel closes it and hands the focus back to the tile, the flyout staying open. ArrowRight
+on any other tile still steps to the next one.
+
 The **Devices** row in Components opens the same way: its side panel lists the seven device frames ("Frames to set a screen design in."), each placing and dragging as any tile, the row's line reading "7 devices" where a presets row reads "6 presets". Devices was a category of its own until the owner folded it in (2026-11-15) to quiet the bar while keeping the frames one rest away.
 
 ### Icons: two panes

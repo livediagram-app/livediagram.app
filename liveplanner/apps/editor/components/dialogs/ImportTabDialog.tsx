@@ -34,6 +34,7 @@ import {
   PLAN_ROW_LABEL,
   PLAN_TOO_BIG,
   PROJECT_FILE_ACCEPT,
+  PLAN_FILE_EXTENSION,
   planFileRefusal,
 } from './import/plan-file-copy';
 import type { ProjectFileSummary } from '@liveplanner/project';
@@ -168,9 +169,10 @@ export function ImportTabDialog({
   const dropFile = async (file: File) => {
     if (flow.busy || importing || planBusy) return;
     setDropError(null);
-    // Refused unread past the cap, as a picked file is.
+    // Refused unread past the cap, as a picked file is: a plan's file (PROJECT_FILE_MAX_BYTES, no more than the
+    // tracker cap) in its own words.
     if (file.size > TRACKER_FILE_MAX_BYTES) {
-      setDropError(TRACKER_TOO_BIG);
+      setDropError(file.name.endsWith(PLAN_FILE_EXTENSION) ? PLAN_TOO_BIG : TRACKER_TOO_BIG);
       return;
     }
     const text = await file.text();

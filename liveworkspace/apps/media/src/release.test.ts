@@ -45,11 +45,12 @@ async function upload(seed: number, document?: string, who = PLANNER): Promise<s
   return ((await res.json()) as MediaUploadResponse).image.id;
 }
 
-const sync = (documents: { document: string; images: string[] }[], who = PLANNER) =>
+type Entry = { document: string; images: string[] };
+const sync = (documents: Entry[], who = PLANNER, pending?: Entry[]) =>
   as(who, '/app/refs', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ documents }),
+    body: JSON.stringify(pending ? { documents, pending } : { documents }),
   });
 
 const release = async (id: string, document: string, who = PLANNER) => {
@@ -89,6 +90,53 @@ describe('a release', () => {
     ]);
     expect((await release(id, 'plan-1')).body).toEqual({ released: false, reason: 'referenced' });
     expect(stored(id)).toEqual({ row: true, bytes: true });
+  });
+
+  // A copy whose own report keeps failing past the source's grace (media.md "Unconfirmed references", Work Tracker
+  // 1190): its source vouched for it, so the picture stays until the copy's own report says otherwise.
+  it('keeps it while a copy whose own report has not landed is vouched for, until that report lands', async () => {
+    const id = await upload(30, 'plan-1');
+    await sync([{ document: 'plan-1', images: [] }], PLANNER, [
+      { document: 'plan-copy', images: [id] },
+    ]);
+    expect((await release(id, 'plan-1')).body).toEqual({ released: false, reason: 'unconfirmed' });
+    expect(stored(id)).toEqual({ row: true, bytes: true });
+    // The copy's report holds it: a confirmed reference now.
+    await sync([{ document: 'plan-copy', images: [id] }]);
+    expect((await release(id, 'plan-1')).body).toEqual({ released: false, reason: 'referenced' });
+    // The copy dropped it too: nothing names it.
+    await sync([{ document: 'plan-copy', images: [] }]);
+    expect(await release(id, 'plan-1')).toEqual({ status: 200, body: { released: true } });
+    expect(stored(id)).toEqual({ row: false, bytes: false });
+  });
+
+  it('records no unconfirmed reference over a document that has reported', async () => {
+    const id = await upload(31, 'plan-1');
+    const other = await upload(32, 'plan-1');
+    // The copy reported first, without the picture; its source's word comes after and is not recorded.
+    await sync([{ document: 'plan-copy', images: [other] }]);
+    await sync([{ document: 'plan-1', images: [other] }], PLANNER, [
+      { document: 'plan-copy', images: [id] },
+    ]);
+    expect(await release(id, 'plan-1')).toEqual({ status: 200, body: { released: true } });
+  });
+
+  it('refuses a malformed pending list, and one past the cap with the documents', async () => {
+    const status = async (body: unknown) =>
+      (
+        await as(PLANNER, '/app/refs', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        })
+      ).status;
+    expect(await status({ documents: [], pending: 'plan-copy' })).toBe(400);
+    expect(await status({ documents: [], pending: [{ document: 'plan-copy', images: [1] }] })).toBe(
+      400,
+    );
+    const many = Array.from({ length: 300 }, (_, i) => ({ document: `p${i}`, images: [] }));
+    expect(await status({ documents: many, pending: many })).toBe(400);
+    expect(await status({ documents: many.slice(0, 200), pending: many.slice(0, 200) })).toBe(200);
   });
 
   it('keeps it while another app places it', async () => {

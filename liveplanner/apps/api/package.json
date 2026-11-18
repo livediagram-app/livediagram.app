@@ -5,7 +5,7 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "dev": "node ../../../packages/api-kit/scripts/dev-vars.ts --after ../../../liveworkspace/apps/accounts/.dev.vars && wrangler dev --inspector-port 9332",
+    "dev": "node ../../../packages/api-kit/scripts/dev-vars.ts --after ../../../liveworkspace/apps/accounts/.dev.vars && wrangler dev --inspector-port 9332 --var APP_BASE_URL:http://localhost:3200",
     "build": "wrangler deploy --dry-run --outdir dist",
     "deploy": "wrangler deploy",
     "staging:check": "wrangler deploy --dry-run --env staging",

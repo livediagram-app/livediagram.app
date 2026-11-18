@@ -36,10 +36,10 @@ const TONE_CLASS: Record<BannerTone, string> = {
 
 // The positioned container: pinned to the top centre, above the canvas,
 // laying its children out as a column of rows that never overlap. On
-// mobile it anchors to the top RIGHT (`right-3`, right-aligned), under the
-// top row of chrome; from `sm:` up it centres (`sm:left-1/2 -translate-x-1/2`). `pointer-events-none` so the
-// gaps between pills stay click-through; each pill re-enables pointer
-// events for itself.
+// mobile it spans the width with equal 12 px insets (`left-3 right-3`), under the top row of chrome, its pills
+// anchored to the top RIGHT (right-aligned) unless their row spans it (`TopCenterRow` `across`); from `sm:` up it
+// centres (`sm:left-1/2 -translate-x-1/2`). `pointer-events-none` so the gaps between pills stay click-through; each
+// pill re-enables pointer events for itself.
 const STACK_TOP: Record<'toolbar' | 'tray' | 'dock' | 'none', string> = {
   toolbar: 'top-[4.25rem]',
   // A message sits just under the strip as its tray (docs/specs/007-editor/toolbar-layout.md): the stack starts
@@ -77,7 +77,7 @@ export function TopCenterStack({
     // docs/specs/026-plan/plan-board.md "Maximised board").
     <div
       data-top-center-stack=""
-      className={`pointer-events-none absolute right-3 z-[var(--z-panel)] flex max-w-[calc(100%-1.5rem)] flex-col items-end gap-2 sm:left-1/2 sm:right-auto ${STACK_TOP[below ?? 'none']} sm:z-[var(--z-chrome)] sm:-translate-x-1/2 sm:items-center`}
+      className={`pointer-events-none absolute left-3 right-3 z-[var(--z-panel)] flex max-w-[calc(100%-1.5rem)] flex-col items-end gap-2 sm:left-1/2 sm:right-auto ${STACK_TOP[below ?? 'none']} sm:z-[var(--z-chrome)] sm:-translate-x-1/2 sm:items-center`}
     >
       {children}
     </div>
@@ -88,15 +88,20 @@ export function TopCenterStack({
 // and wrap onto the next line on narrow widths. Used to keep the timer
 // beside the active mode / selection banner (and under it on mobile).
 export function TopCenterRow({
+  across = false,
   className = '',
   children,
 }: {
+  // A status line read across the canvas (Offline): on a phone the row spans the stack, so its banner sits centred
+  // between equal insets rather than against the right one. A one-line banner nearly as wide as a ~450 px window
+  // otherwise kept 12 px on the right and twice that on the left.
+  across?: boolean;
   className?: string;
   children: ReactNode;
 }) {
   return (
     <div
-      className={`flex flex-wrap items-center justify-center gap-2${className ? ` ${className}` : ''}`}
+      className={`flex flex-wrap items-center justify-center gap-2${across ? ' self-stretch sm:self-auto' : ''}${className ? ` ${className}` : ''}`}
     >
       {children}
     </div>

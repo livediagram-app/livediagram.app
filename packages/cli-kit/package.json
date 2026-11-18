@@ -27,6 +27,7 @@
     "./product": "./src/product.ts",
     "./testing/fake-io": "./src/testing/fake-io.ts",
     "./transport": "./src/transport.ts",
+    "./update-check": "./src/update-check.ts",
     "./version": "./src/version.ts"
   },
   "scripts": {

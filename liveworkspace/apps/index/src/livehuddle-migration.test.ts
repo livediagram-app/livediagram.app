@@ -245,7 +245,7 @@ describe('a livehuddle Space through the index service', () => {
 
 describe('the rebuild check', () => {
   it('names every way two snapshots can differ', () => {
-    const sql = migrated(() => true);
+    const sql = migrated((f) => f <= REBUILD_MIGRATION);
     seed(sql);
     sql.exec('CREATE TABLE widened (id TEXT PRIMARY KEY, n INTEGER)');
     const before = snapshot(sql);
@@ -291,7 +291,7 @@ describe('the rebuild check', () => {
   });
 
   it('reports a child whose parent is missing', () => {
-    const sql = migrated(() => true);
+    const sql = migrated((f) => f <= REBUILD_MIGRATION);
     sql.exec('PRAGMA foreign_keys = OFF');
     sql.exec(`INSERT INTO favourites (person_id, item_id, created_at) VALUES ('u1', 'nope', 1)`);
     expect(foreignKeyProblems(sql)).toEqual(['favourites row 1: no items']);

@@ -329,6 +329,56 @@ describe('a tile’s side panel', () => {
     expect(side()).toBeNull();
   });
 
+  // docs/specs/007-editor/toolbar-layout.md "A tile's side panel": the arrow keys reach it, as a submenu's.
+  it.each(['Add Card', 'Devices'])(
+    'takes the arrow keys into %s’s side panel and back out',
+    (name) => {
+      show();
+      fireEvent.click(button('Components'), { detail: 0 });
+      const row = within(flyout()!).getByRole('button', { name });
+      row.focus();
+      // ArrowRight opens the panel at once and focuses its first card, the flyout staying open behind it.
+      fireEvent.keyDown(row, { key: 'ArrowRight' });
+      expect(side()).not.toBeNull();
+      expect(flyout()).not.toBeNull();
+      expect(side()!.contains(document.activeElement)).toBe(true);
+      expect(document.activeElement?.hasAttribute('data-flyout-item')).toBe(true);
+      // The arrows walk its cards (End to the last), and the flyout's do not take them.
+      const first = document.activeElement;
+      fireEvent.keyDown(first!, { key: 'End' });
+      expect(document.activeElement).not.toBe(first);
+      expect(side()!.contains(document.activeElement)).toBe(true);
+      // ArrowLeft on a card closes the panel and hands the focus back to its row.
+      fireEvent.keyDown(document.activeElement!, { key: 'ArrowLeft' });
+      expect(side()).toBeNull();
+      expect(document.activeElement).toBe(row);
+      // Escape in the panel does the same, leaving the flyout open.
+      fireEvent.keyDown(row, { key: 'ArrowRight' });
+      fireEvent.keyDown(document.activeElement!, { key: 'Escape' });
+      expect(side()).toBeNull();
+      expect(flyout()).not.toBeNull();
+      expect(document.activeElement).toBe(row);
+      // A panel the focus's rest already opened is entered the same way.
+      fireEvent.blur(row);
+      fireEvent.focus(row);
+      wait(200);
+      expect(side()).not.toBeNull();
+      fireEvent.keyDown(row, { key: 'ArrowRight' });
+      expect(side()!.contains(document.activeElement)).toBe(true);
+    },
+  );
+
+  it('still steps from a tile without a side panel to the next one', () => {
+    show();
+    fireEvent.click(button('Components'), { detail: 0 });
+    const hero = within(flyout()!).getByRole('button', { name: 'Add Hero' });
+    hero.focus();
+    fireEvent.keyDown(hero, { key: 'ArrowRight' });
+    expect(side()).toBeNull();
+    expect(document.activeElement).not.toBe(hero);
+    expect(flyout()!.contains(document.activeElement)).toBe(true);
+  });
+
   it('drops the side panel when the flyout moves to another category', () => {
     show();
     fireEvent.click(button('Components'), { detail: 1 });

@@ -5,7 +5,9 @@
 //
 // An image claimed at upload (images.document) is vouched for by its own app document by document: it is
 // unplaced there only because its document reported a set without it. So it waits only for the other keyed
-// apps. An unclaimed one waits for every keyed app, its own included.
+// apps. An unclaimed one waits for every keyed app, its own included. One an unconfirmed reference names (a copy
+// whose own report hasn't landed, media.md "Unconfirmed references") is never swept, and each run says how many
+// old images it kept for that alone.
 
 import { SWEEP_PAGE, SWEEP_TRIPWIRE_MIN, SWEEP_TRIPWIRE_RATIO } from './config';
 import { keyedApps, type Env } from './env';
@@ -13,9 +15,14 @@ import { pendingApps } from './refs';
 
 // ?1 is the JSON list of keyed apps that have not reported complete (at most one when this runs).
 const SWEEPABLE = `NOT EXISTS (SELECT 1 FROM refs r WHERE r.image_id = images.id)
+  AND NOT EXISTS (SELECT 1 FROM pending_refs p WHERE p.image_id = images.id)
   AND (json_array_length(?1) = 0
        OR (images.document IS NOT NULL
            AND NOT EXISTS (SELECT 1 FROM json_each(?1) p WHERE p.value != images.app)))`;
+
+// An image no confirmed reference names that an unconfirmed one keeps.
+const UNCONFIRMED = `NOT EXISTS (SELECT 1 FROM refs r WHERE r.image_id = images.id)
+  AND EXISTS (SELECT 1 FROM pending_refs p WHERE p.image_id = images.id)`;
 
 export function sweepTripped(old: number, unused: number): boolean {
   return unused > SWEEP_TRIPWIRE_MIN && unused / old > SWEEP_TRIPWIRE_RATIO;
@@ -33,13 +40,17 @@ export async function sweepUnusedImages(env: Env, cutoff: number): Promise<numbe
   }
   const waiting = JSON.stringify(pending);
   const counts = await env.MEDIA_DB.prepare(
-    `SELECT COUNT(*) AS old, COALESCE(SUM(${SWEEPABLE}), 0) AS unused
+    `SELECT COUNT(*) AS old, COALESCE(SUM(${SWEEPABLE}), 0) AS unused,
+            COALESCE(SUM(${UNCONFIRMED}), 0) AS unconfirmed
        FROM images WHERE created_at < ?2`,
   )
     .bind(waiting, cutoff)
-    .first<{ old: number; unused: number }>();
+    .first<{ old: number; unused: number; unconfirmed: number }>();
   const old = counts?.old ?? 0;
   const unused = counts?.unused ?? 0;
+  const unconfirmed = counts?.unconfirmed ?? 0;
+  if (unconfirmed > 0)
+    console.info(`[media] sweep kept ${unconfirmed} images awaiting a document's own report`);
   if (unused === 0) return 0;
 
   if (sweepTripped(old, unused)) {

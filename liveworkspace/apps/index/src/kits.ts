@@ -15,7 +15,7 @@ import {
 import { callAppForJson, eachLimited } from './app-calls';
 import { personalScope, type Person } from './auth';
 import { isId } from './codec';
-import { APP_CALL_CONCURRENCY, KIT_CREATE_TIMEOUT_MS } from './config';
+import { APP_CALL_CONCURRENCY, KIT_CREATE_TIMEOUT_MS, KIT_RUN_RETRY_AFTER_S } from './config';
 import { isDelegate } from './connections';
 import type { PersonContext } from './context';
 import { touchItem } from './drive';
@@ -126,8 +126,22 @@ async function makePart(
   return null;
 }
 
+// Over KIT_RUN_LIMITER: per person, a Retry counting as a run.
+async function overRunLimit(env: Env, person: Person): Promise<Response | null> {
+  if (!env.KIT_RUN_LIMITER) return null;
+  const { success } = await env.KIT_RUN_LIMITER.limit({ key: `kit:${person.id}` });
+  if (success) return null;
+  console.info('[kits] rate limited');
+  return json(
+    { error: 'rate_limited' },
+    { status: 429, headers: { 'Retry-After': String(KIT_RUN_RETRY_AFTER_S) } },
+  );
+}
+
 async function startKit(ctx: PersonContext): Promise<Response> {
   const { env, person } = ctx;
+  const limited = await overRunLimit(env, person);
+  if (limited) return limited;
   const input = readKitStartInput(await readObject(ctx.request));
   if (!input) return badRequest();
   const kit = kitById(input.kit);

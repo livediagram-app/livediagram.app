@@ -39,6 +39,7 @@ import { projectStatsSql } from '../db/tab-stats';
 import { isEmptyCount, type ContentSummary } from '@liveworkspace/index-app';
 import { pushFormInbox } from '../forms/form-inbox';
 import { IMAGES_OUTBOX_KIND, pushImageRefs } from './image-refs';
+import { pushCopyClaims } from './copy-image-claims';
 import { stampImageReleases } from './image-release';
 import { indexAppClient } from '../index-service';
 import { reportOwnerActivity } from '../person/account-app';
@@ -288,6 +289,9 @@ export async function drainOutbox(
   let pushes = outcome.pushes;
   if (imageKeys.length > 0) {
     try {
+      // The copies this plan vouches for first (copy-image-claims.ts), so the service holds them before any picture
+      // this report drops can be released.
+      pushes += await pushCopyClaims(env, planId);
       if (await pushImageRefs(env, planId)) pushes++;
       done.push(...imageKeys);
       // The service has the plan's set now, so each picture a card dropped since waits its grace from here

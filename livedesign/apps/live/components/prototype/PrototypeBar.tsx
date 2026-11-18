@@ -9,7 +9,7 @@ import {
   lucidePlay,
   lucideX,
 } from '@liveworkspace/icons/lucide';
-import { lucideGlyph } from '@livedesign/ui';
+import { atLeastInset, lucideGlyph, safeInlinePadding } from '@livedesign/ui';
 
 const PlayIcon = lucideGlyph(lucidePlay, 14);
 const PrevIcon = lucideGlyph(lucideChevronLeft, 18);
@@ -48,7 +48,8 @@ export function PrototypeBar({
       <div
         data-prototype-bar="phone"
         className="pointer-events-none absolute inset-x-0 z-10 flex justify-center"
-        style={{ top: 'max(8px, env(safe-area-inset-top))' }}
+        // 8px down, or below the status bar and the notch; clear of a landscape notch at the sides.
+        style={{ top: atLeastInset('8px', 'top'), ...safeInlinePadding('8px') }}
       >
         <div className="pointer-events-auto flex items-center gap-0.5 rounded-full bg-slate-900/80 p-1 text-white shadow-lg shadow-black/30 backdrop-blur-md">
           <button

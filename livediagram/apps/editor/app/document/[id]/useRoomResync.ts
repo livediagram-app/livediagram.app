@@ -18,7 +18,8 @@ import {
 //
 // What a reconnect gap can lose is the document's content: the tabs' content
 // and the tab list and name (a peer's tab added, deleted, renamed or moved, or
-// the document renamed, a `document-meta` op), so a full resync reads both back. Everything else the
+// the document renamed, a `document-meta` op), so a full resync reads both back, and the stored deck too, whose
+// `deck-slides` op (slides an agent appended) is just as lost. Everything else the
 // editor holds (which tab is active, where the canvas is panned, what's
 // selected, presence) is either unaffected or re-established by the reconnect.
 export function useRoomResync(opts: {
@@ -41,6 +42,9 @@ export function useRoomResync(opts: {
   // `document-meta` op too, so the stored name comes back with the list.
   setDocumentName: Dispatch<SetStateAction<string>>;
   lastSavedNameRef: MutableRefObject<string>;
+  // The stored slide deck, on a full resync (docs/specs/012-collaboration/presentation-mode.md "Slides an agent
+  // appends"): the deck takes in the slides it lacks. Absent, the deck is not read back.
+  receiveStoredDeck?: (presentation: string | null) => void;
 }) {
   const {
     documentId,
@@ -54,6 +58,7 @@ export function useRoomResync(opts: {
     noteChangesetSeen,
     setDocumentName,
     lastSavedNameRef,
+    receiveStoredDeck,
   } = opts;
 
   // `tabIds` narrows the refetch to the tabs a relayed changeset could not bring
@@ -70,9 +75,9 @@ export function useRoomResync(opts: {
         .map((t) => t.id)
         .filter((id) => loadedTabIdsRef.current.has(id))
         .filter((id) => !scope?.tabIds || scope.tabIds.includes(id));
-      const [list, ...fetched] = await Promise.all([
-        // The tab list, on a full resync only: a narrowed refetch is about content alone.
-        scope?.tabIds ? null : loadTabList(selfId, documentId, sessionShareCode),
+      const [head, ...fetched] = await Promise.all([
+        // The tab list and deck, on a full resync only: a narrowed refetch is about content alone.
+        scope?.tabIds ? null : loadDocumentHead(selfId, documentId, sessionShareCode),
         ...targets.map(async (id) => {
           try {
             return await apiLoadTabRevisioned(selfId, documentId, id, sessionShareCode);
@@ -81,6 +86,9 @@ export function useRoomResync(opts: {
           }
         }),
       ]);
+      const list = head?.list ?? null;
+      // The deck stands apart from the tabs: taken in whatever the tab fetches did.
+      if (head) receiveStoredDeck?.(head.presentation);
       const byId = new Map<string, Tab>();
       const revs = new Map<string, number>();
       for (const loaded of fetched) {
@@ -149,24 +157,26 @@ export function useRoomResync(opts: {
       noteChangesetSeen,
       setDocumentName,
       lastSavedNameRef,
+      receiveStoredDeck,
     ],
   );
 }
 
-// The document's stored tab list, through the share link for a visitor. Null when it can't be read: the content
-// refetch still runs, and the next resync or reload reads the list again.
-async function loadTabList(
+// The document's stored tab list and slide deck, through the share link for a visitor. Null when it can't be read:
+// the content refetch still runs, and the next resync or reload reads them again.
+async function loadDocumentHead(
   selfId: string,
   documentId: string,
   shareCode: string | null,
-): Promise<ResyncTabList | null> {
+): Promise<{ list: ResyncTabList | null; presentation: string | null } | null> {
   try {
-    if (shareCode) {
-      const shared = await apiLoadShared(shareCode, selfId);
-      return shared && 'document' in shared && shared.document ? tabListOf(shared.document) : null;
-    }
-    const document = await apiLoadDocument(selfId, documentId);
-    return document ? tabListOf(document) : null;
+    const document = shareCode
+      ? await apiLoadShared(shareCode, selfId).then((shared) =>
+          shared && 'document' in shared ? shared.document : null,
+        )
+      : await apiLoadDocument(selfId, documentId);
+    if (!document) return null;
+    return { list: tabListOf(document), presentation: document.presentation ?? null };
   } catch {
     return null;
   }

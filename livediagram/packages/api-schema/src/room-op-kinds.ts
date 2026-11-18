@@ -117,6 +117,9 @@ export const MUTATION_OP_KINDS = [
 //
 // `service-status` (docs/specs/009-elements/live-status.md): the room's own checks of the status URLs shapes are bound
 // to. A forged one would paint every collaborator's badges green over a service that is down.
+//
+// `deck-slides` (docs/specs/012-collaboration/presentation-mode.md "Slides an agent appends"): slides the api
+// appended to the stored deck, sequenced through /mutation. A forged one would put slides on every open deck.
 export const SYSTEM_OP_KINDS = [
   'share-revoked',
   'share-rescoped',
@@ -124,6 +127,7 @@ export const SYSTEM_OP_KINDS = [
   'document-trashed',
   'changeset',
   'service-status',
+  'deck-slides',
 ] as const;
 
 // The whole vocabulary. Every op the editor sends or handles is one of these

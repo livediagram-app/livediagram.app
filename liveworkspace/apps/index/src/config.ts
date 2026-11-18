@@ -56,6 +56,8 @@ export const CONNECTION_REVERSE_TIMEOUT_MS = 5_000;
 // How long a project kit's part may take in its app's template door (kits.md "Limits"): a template's file built and
 // imported, which a large plan template with Sheets can take seconds over.
 export const KIT_CREATE_TIMEOUT_MS = 20_000;
+// How long a person over KIT_RUN_LIMITER (wrangler.toml, 10 runs a minute) is told to wait: its period.
+export const KIT_RUN_RETRY_AFTER_S = 60;
 export const CONNECTION_CONFIRM_GRACE_MS = 60 * 60 * 1000;
 export const CONNECTION_SWEEP_MAX = 200;
 export const CONNECTION_OPEN_RETRY_AFTER_S = 60;

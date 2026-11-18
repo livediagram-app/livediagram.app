@@ -149,6 +149,13 @@ then shows My shapes as before).
 - **A guest signs up**: `POST /owners/merge` moves the guest's Personal items to the account, as it moves their pictures.
 - **An account is deleted**: `DELETE /owners/<owner>` deletes its Personal items with its pictures. Items it saved to a
   team stay the team's.
+- **A team is deleted** (by an admin, by its last member leaving, or with the account that ran it alone): its Library
+  items and its gallery (`team:<teamId>`) go, rows, references and bytes. The media Worker's daily run finds them: it
+  lists the teams it holds items or pictures for and asks accounts which of them are deleted (`POST
+/api/account/media/teams-deleted`, up to 100 ids a call, with the key the two share, `ACCOUNTS_KEY_MEDIA`). Only a
+  team accounts answers as deleted is touched: a live team, a team accounts doesn't know, or no answer at all leaves
+  everything as it is, and the next day's run asks again. A member leaving, or being removed, deletes nothing; the
+  team keeps its Library. Deleting a team's Library twice changes nothing.
 
 ## Out of scope (for now)
 

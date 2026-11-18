@@ -335,7 +335,10 @@ export function CategoryBarFlyout({
   scale: number;
 }) {
   // The side panel (CategoryFlyoutSide) and the category it belongs to: a switch of category drops it.
-  const [side, setSide] = useState<(SideOpen & { category: string }) | null>(null);
+  // `focus` counts the keyboard's entries into it (ArrowRight on its tile), each moving the focus to its first card.
+  const [side, setSide] = useState<(SideOpen & { category: string; focus: number }) | null>(null);
+  // The tile it opened from, which ArrowLeft and Escape in the panel hand the focus back to.
+  const sideTile = useRef<HTMLElement | null>(null);
   // Its own hover intent: resting on a presets tile opens its panel, resting on another tile closes it.
   const sideTimer = useRef<number | null>(null);
   const clearSideTimer = () => {
@@ -346,10 +349,23 @@ export function CategoryBarFlyout({
   const category = categories.find((c) => c.id === bar.openId);
   if (!category) return null;
   const openSide = side && side.category === category.id ? side : null;
-  const showSide = (def: PaletteTileDef, el: HTMLElement) => {
+  const showSide = (def: PaletteTileDef, el: HTMLElement, focus = 0) => {
     clearSideTimer();
     const placed = sidePlacement(el, def);
-    if (placed) setSide({ ...placed, category: category.id });
+    if (!placed) return;
+    sideTile.current = el;
+    setSide({ ...placed, category: category.id, focus });
+  };
+  // ArrowRight on a side-panel tile: into its panel, opening it first if a rest has not yet.
+  const enterSide = (def: PaletteTileDef, el: HTMLElement) => {
+    if (openSide?.def.id === def.id) {
+      clearSideTimer();
+      setSide({ ...openSide, focus: openSide.focus + 1 });
+    } else showSide(def, el, 1);
+  };
+  const leaveSide = () => {
+    setSide(null);
+    sideTile.current?.focus({ preventScroll: true });
   };
   const onItemHover = (def: PaletteTileDef | null, el: HTMLElement | null) => {
     clearSideTimer();
@@ -400,6 +416,7 @@ export function CategoryBarFlyout({
             focusFirst={bar.viaKeyboard}
             sideOpenId={openSide?.def.id ?? null}
             onSide={(def, el) => (openSide?.def.id === def.id ? setSide(null) : showSide(def, el))}
+            onEnterSide={enterSide}
             onItemHover={onItemHover}
           />
         </div>
@@ -408,6 +425,8 @@ export function CategoryBarFlyout({
         <CategoryFlyoutSide
           key={openSide.def.id}
           side={openSide}
+          focusKey={openSide.focus}
+          onBack={leaveSide}
           isMobile={isMobile}
           scale={scale}
           actions={actions}

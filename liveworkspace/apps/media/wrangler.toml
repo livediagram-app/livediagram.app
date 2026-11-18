@@ -30,6 +30,8 @@ globs = ["**/*.ttf", "**/*.otf"]
 #   unused-image sweep doesn't wait for it. Previews call that app's export door with the same key.
 #   MEDIA_KEY_EXPORT the data export service's MEDIA_KEY_EXPORT: with X-Media-App: export it reads an owner's
 #   gallery and an image's bytes alone (liveworkspace/docs/specs/003-accounts/data-export.md).
+#   ACCOUNTS_KEY_MEDIA accounts' ACCOUNTS_KEY_MEDIA: the daily run asks which teams are deleted, so their Libraries
+#   and galleries go (liveworkspace/docs/specs/006-media/libraries.md "Account and guest lifecycle").
 [vars]
 # Per person, across every app: 500 images and 1 GB (a full-window screenshot is 0.3 to 1.1 MB, so 1 GB holds
 # the 500 with room to spare).
@@ -52,6 +54,12 @@ APP_ORIGIN_LIVEHUDDLE = "https://www.livehuddle.app"
 [[services]]
 binding = "INDEX"
 service = "liveworkspace-index"
+
+# Accounts, asked once a day which teams are deleted, so their Libraries go (src/library/deleted-teams.ts), with the
+# ACCOUNTS_KEY_MEDIA secret. Without either, every team's Library stays.
+[[services]]
+binding = "ACCOUNTS"
+service = "liveworkspace-accounts"
 
 # Its own database, apart from accounts, telemetry, the Community and every app's own data.
 [[d1_databases]]
@@ -92,6 +100,10 @@ APP_ORIGIN_LIVEHUDDLE = "https://staging.livehuddle.app"
 [[env.staging.services]]
 binding = "INDEX"
 service = "liveworkspace-index-staging"
+
+[[env.staging.services]]
+binding = "ACCOUNTS"
+service = "liveworkspace-accounts-staging"
 
 [[env.staging.d1_databases]]
 binding = "MEDIA_DB"

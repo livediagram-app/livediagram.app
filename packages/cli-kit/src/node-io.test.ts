@@ -1,6 +1,6 @@
 import { connect } from 'node:net';
 import { describe, expect, it } from 'vitest';
-import { nodeIo, openerFor } from './node-io';
+import { backgroundArgs, nodeIo, openerFor } from './node-io';
 
 // The real loopback server (sign-in's callback). A browser keeps a preconnected or keep-alive socket open to
 // it after the callback; closing must end those too, or the command never exits until the tab is closed.
@@ -37,6 +37,17 @@ describe('interrupts', () => {
 });
 
 // Opening the sign-in URL (CLI34): never through a shell, so `&` in the query is a character, not a command.
+describe('backgroundArgs', () => {
+  it('runs the same entry with the same node flags, or nothing without an entry', () => {
+    expect(backgroundArgs('/bin/example', ['--no-warnings'], ['--check'])).toEqual([
+      '--no-warnings',
+      '/bin/example',
+      '--check',
+    ]);
+    expect(backgroundArgs(undefined, [], ['--check'])).toBeNull();
+  });
+});
+
 describe('openerFor', () => {
   const url = 'https://example.app/oauth/authorize?a=1&b=2&calc.exe';
 

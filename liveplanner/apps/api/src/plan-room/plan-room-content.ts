@@ -24,6 +24,7 @@ import { planShares } from './tab-shares';
 import { planRoom } from '../plan-client';
 import { hasPlanSchema, migratePlanSchema } from './plan-schema';
 import { forgetImageRefs } from './image-refs';
+import { unsentCopyClaims } from './copy-image-claims';
 import { nextImageReleaseAt, releaseDueImages } from './image-release';
 import { readPlanMeta } from './plan-content';
 import {
@@ -294,6 +295,8 @@ export async function purge(room: PlanRoom, planId?: string): Promise<void> {
   await room.ledger.settled();
   // What the media service last heard the plan's cards hold (image-refs.ts), read before it goes.
   const sentImages = lastSentImages(room);
+  // And the copies it vouched for whose notes the service has not taken yet (copy-image-claims.ts).
+  const claims = unsentCopyClaims(room.state.storage.sql);
   await disarmRoomAlarm(room.state.storage);
   await room.state.storage.deleteAll();
   // The one key kept, so a grant from before the purge can't start the plan again (plan-room-purged.ts).
@@ -311,7 +314,7 @@ export async function purge(room: PlanRoom, planId?: string): Promise<void> {
   // keeps them (storage kept, never a broken picture) and does not stop the purge.
   const env = room.roomEnv;
   if (env && room.planId) {
-    await forgetImageRefs(env, room.planId, sentImages).catch((error: unknown) =>
+    await forgetImageRefs(env, room.planId, sentImages, claims).catch((error: unknown) =>
       console.warn('[media] refs not cleared for a purged plan', { error: String(error) }),
     );
   }

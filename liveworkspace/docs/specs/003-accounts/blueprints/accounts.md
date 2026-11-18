@@ -62,14 +62,15 @@ app addresses (`getGoogleAuthFor`, at most a dozen).
 
 ### The account API's doors (`account-api.ts`), in order
 
-| Path                                  | Door                                                                                                   | Blueprint                                                    |
-| ------------------------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------ |
-| `/api/account/internal/*`             | an app's client credentials (`Basic`), checked by introspection, cached 5 min per isolate (≤ 100 keys) | by route                                                     |
-| `/api/account/workbench/*`            | an API token, a ticket, a workbench session or the owner                                               | [011-workbench](../../011-workbench/blueprints/workbench.md) |
-| `POST /api/account/index/teams`       | `Bearer INDEX_MERGE_KEY`                                                                               | [teams.md](teams.md)                                         |
-| `POST /api/account/index/people`      | `Bearer INDEX_MERGE_KEY`                                                                               | [teams.md](teams.md)                                         |
-| anything with `Authorization: Bearer` | an access or guest token for an app API (`bearer.ts`); never an API token                              | [sessions-and-guests.md](sessions-and-guests.md)             |
-| the rest                              | the session cookie; writes must carry `Origin` equal to `BASE_URL` (`403 cross_origin`)                | by route                                                     |
+| Path                                    | Door                                                                                                   | Blueprint                                                      |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------- |
+| `/api/account/internal/*`               | an app's client credentials (`Basic`), checked by introspection, cached 5 min per isolate (≤ 100 keys) | by route                                                       |
+| `/api/account/workbench/*`              | an API token, a ticket, a workbench session or the owner                                               | [011-workbench](../../011-workbench/blueprints/workbench.md)   |
+| `POST /api/account/index/teams`         | `Bearer INDEX_MERGE_KEY`                                                                               | [teams.md](teams.md)                                           |
+| `POST /api/account/index/people`        | `Bearer INDEX_MERGE_KEY`                                                                               | [teams.md](teams.md)                                           |
+| `POST /api/account/media/teams-deleted` | `Bearer ACCOUNTS_KEY_MEDIA`                                                                            | [006-media libraries](../../006-media/blueprints/libraries.md) |
+| anything with `Authorization: Bearer`   | an access or guest token for an app API (`bearer.ts`); never an API token                              | [sessions-and-guests.md](sessions-and-guests.md)               |
+| the rest                                | the session cookie; writes must carry `Origin` equal to `BASE_URL` (`403 cross_origin`)                | by route                                                       |
 
 Every account API answer is JSON with `cache-control: no-store`; a refusal is `{ error: <code> }`. A body that won't
 parse is read as `{}`.
@@ -173,7 +174,7 @@ Shared(Link)|Removed(Link|Self|Invite|Member)|Added(Member)|Changed(Role)|Joined
 - An app's client credentials reach only its own app's data where the data is per app (settings, sightings,
   milestones, notify switches, legacy guests); the client's app comes from `oauth_client_app`, never the request.
 - Secrets (not in `[vars]`): `BETTER_AUTH_SECRET`, `TURNSTILE_SECRET_KEY`, `ADMIN_TOKEN`, `GOOGLE_CLIENT_ID`,
-  `GOOGLE_CLIENT_SECRET`, `INDEX_MERGE_KEY`, `DRIVE_KEY_ACCOUNTS`, `TELEMETRY_KEY_<APP>`, `LEGACY_GUEST_ID_HMAC_SECRET`,
+  `GOOGLE_CLIENT_SECRET`, `INDEX_MERGE_KEY`, `ACCOUNTS_KEY_MEDIA`, `DRIVE_KEY_ACCOUNTS`, `TELEMETRY_KEY_<APP>`, `LEGACY_GUEST_ID_HMAC_SECRET`,
   `WORKSPACE_PROXY_SECRET`.
 - The per-network limits (`CODE_IP_LIMITER`, `GUEST_LIMITER`, `TEAM_LINK_LIMITER`; `networkOf`, `rangeOf`) count the
   address an app's router names only beside `X-Liveworkspace-Proxy-Secret` matching `WORKSPACE_PROXY_SECRET`
@@ -254,6 +255,7 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | `liveworkspace/apps/accounts/src/account-api/http.ts`         | The account API's answers and request bodies                                                                                                                                                                       |
 | `liveworkspace/apps/accounts/src/account-api/shared.ts`       | What the doors share: the team helpers (`tellAdmins`, `peopleNames`, `overLinkLimit`), the shared settings patch, an account's name                                                                                |
 | `liveworkspace/apps/accounts/src/account-api/index-door.ts`   | The index's door: `/index/teams`, `/index/people`                                                                                                                                                                  |
+| `liveworkspace/apps/accounts/src/account-api/media-door.ts`   | The media service's door: `/media/teams-deleted`                                                                                                                                                                   |
 | `liveworkspace/apps/accounts/src/account-api/signed-in.ts`    | The signed-in person's door on liveworkspace.app: `sessionActor`, `handleOpen`, `handleSignedIn`                                                                                                                   |
 | `liveworkspace/apps/accounts/src/account-api/both-doors.ts`   | The routes both doors answer: API tokens, the profile, running teams, the reads                                                                                                                                    |
 | `liveworkspace/apps/accounts/src/account-api/bearer-door.ts`  | An app's bearer's door: `handleBearer`                                                                                                                                                                             |
@@ -418,7 +420,7 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | Var `SIGN_IN_ON_APP_ORIGINS`      | `true`                                                              |
 | Var `GOOGLE_ON_APP_ORIGINS`       | `false`                                                             |
 
-Env fields (`env.ts`): `ADMIN_TOKEN`, `BASE_URL`, `BETTER_AUTH_SECRET`, `DRIVE_KEY_ACCOUNTS`, `EMAIL_FROM`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_ON_APP_ORIGINS`, `INDEX_MERGE_KEY`, `INDEX_URL`, `LEGACY_GUEST_ID_HMAC_SECRET`, `SIGN_IN_ON_APP_ORIGINS`, `TELEMETRY_KEY_LIVEDESIGN`, `TELEMETRY_KEY_LIVEDIAGRAM`, `TELEMETRY_KEY_LIVEDOCUMENTS`, `TELEMETRY_KEY_LIVEPLANNER`, `TELEMETRY_URL`, `TURNSTILE_SECRET_KEY`, `TURNSTILE_SITE_KEY`.
+Env fields (`env.ts`): `ACCOUNTS_KEY_MEDIA`, `ADMIN_TOKEN`, `BASE_URL`, `BETTER_AUTH_SECRET`, `DRIVE_KEY_ACCOUNTS`, `EMAIL_FROM`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_ON_APP_ORIGINS`, `INDEX_MERGE_KEY`, `INDEX_URL`, `LEGACY_GUEST_ID_HMAC_SECRET`, `SIGN_IN_ON_APP_ORIGINS`, `TELEMETRY_KEY_LIVEDESIGN`, `TELEMETRY_KEY_LIVEDIAGRAM`, `TELEMETRY_KEY_LIVEDOCUMENTS`, `TELEMETRY_KEY_LIVEPLANNER`, `TELEMETRY_URL`, `TURNSTILE_SECRET_KEY`, `TURNSTILE_SITE_KEY`.
 
 ## Data and persistence
 

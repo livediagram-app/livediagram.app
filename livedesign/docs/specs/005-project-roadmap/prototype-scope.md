@@ -56,7 +56,7 @@ The editor is real. Every tab is Pages ([Pages mode](../007-editor/pages-mode.md
   edit operations based on read copies; creates, renames, shares and removes designs and tabs; comments, shows its
   presence, and waits on or watches a design's room; pulls a design to a file and pushes it back, exports every
   design, and draws tabs as SVG or PNG. It counts its commands like the MCP's tools, and the MCP's
-  tools are verbs of the same catalogue. Published on npm as `@livedesign/cli`, by hand outside CI.
+  tools are verbs of the same catalogue. Published on npm as `@livedesign/cli`, by hand outside CI. Once a day at most it tells a person when a newer version is out.
 - **Workbench embeds** ([Workbench embeds](../013-workspace/workbench-embeds.md)): a developer tool, once paired in the
   person's browser, opens a design signed in inside its own frame through a ticket the person's CLI mints; the
   frame is confined to that one design, and the person's selection reaches their agent as a selection reference.
@@ -73,12 +73,6 @@ The editor is real. Every tab is Pages ([Pages mode](../007-editor/pages-mode.md
 - **Identity bootstrap**: the guest participant id, the name-confirmed flag and the collaboration key (`lib/local-identity.ts`); signed-in users key their data off their account id instead.
 - **Device-local preferences and UI state**: the preferences cache ([User preferences](../007-editor/user-preferences.md)), the UI mode, the panel layout, per-tool configs (format painter, laser, spotlight), recent toolbar tiles, style memory, the Explorer and Settings views, and the keyboard-shortcuts switch.
 - **One-off prompts and counters**: the sign-in prompt and banner dismissals, the last active day.
-
-## Next
-
-**Status: Planned.** Not built yet; the CLI is published without it.
-
-- **The CLI's update check** ([CLI](../015-api/cli.md)): the CLI tells a person when a newer version is published.
 
 ## Later
 

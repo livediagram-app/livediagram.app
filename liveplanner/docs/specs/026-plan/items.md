@@ -213,6 +213,15 @@ The sweep can never take a picture a plan still holds, whether or not that plan 
   Browser plan (an Image field there, which uploads with no `p`), is never swept.
 - **Past the cap.** A plan holding more pictures than one report carries (500) sends nothing and logs it, so no
   reference is dropped; it reports again once back under.
+- **A copy is vouched for by its source** (Work Tracker 1190). A copy (a duplicate, a tab copied into a new plan, a
+  copy through a link) holds its source's pictures from the moment it lands, but its own report can keep failing
+  for longer than the source's release grace ("Removed pictures", below). So the source notes the pictures each copy
+  holds when it hands the copy over, in its own storage with an `images` report queued, and its next report sends
+  them as the copy's **unconfirmed** references (media.md "Unconfirmed references"). The service keeps any picture
+  one names, in a release and in its sweep, until the copy's own report lands; a note the service has not taken yet
+  stays and is sent again with the next report. The copy marks its first report as owed, so it always sends one
+  (even of no pictures, if it dropped them all first), and a copy purged before it reported tells the service it
+  holds none.
 
 ### Removed pictures
 
@@ -230,8 +239,8 @@ card deleted for good.
   restarting. An undo or a re-add within it puts the id back on a card, and the picture stays. An undo after it
   brings back a card whose picture is gone (it shows "This image can't be shown", with Replace and Remove).
 - **Never while anything here still names it.** Once the wait is over the plan drops any picture still named by one
-  of its cards (the Trash included, since Restore needs it), a tab, an agent's change it could still revert, or a
-  snapshot it could still revert to. It asks the media service to release the rest
+  of its cards (the Trash included, since Restore needs it), a tab, an agent's change it could still revert, a
+  snapshot it could still revert to, or a copy's note the service has not taken yet ("Images in use"). It asks the media service to release the rest
   (the release route, with the plan's id, [media.md](../../../../liveworkspace/docs/specs/006-media/media.md)
   "Releases"). The service deletes a picture only when it was uploaded for this plan and no reference in any app names
   it, its own included, so a copied plan, or another app's file that places it, keeps it.

@@ -32,6 +32,12 @@ the key it shares with accounts). Each gets the list a token minted now would ca
 and the answer is remembered for a moment (`@liveworkspace/index-app` `createTeamAccess`). Leaving a
 team takes effect when the person's token is next minted.
 
+**How the media service learns a team is gone.** A team's Library and its gallery live in the media service
+([../006-media/libraries.md](../006-media/libraries.md) "Account and guest lifecycle"). Once a day it asks
+`POST /api/account/media/teams-deleted {ids}` (with the key it shares with accounts, `ACCOUNTS_KEY_MEDIA`) and gets
+back `{ deleted }`: those of the ids, up to 100 a call, whose team is deleted (`deletedAt` set). A live team and an
+id that is no team are left out, so the service never deletes for a team that still stands.
+
 | Who may                                                        | Admin                                      | Member |
 | -------------------------------------------------------------- | ------------------------------------------ | ------ |
 | See the team, its members and invitations                      | ✓                                          | ✓      |

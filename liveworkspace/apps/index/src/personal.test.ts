@@ -152,7 +152,7 @@ describe('tags', () => {
 
 describe('Favourites are gone', () => {
   // Favourites were removed (one-explorer-contracts.md "Folders and defaults"): no route, no flag on an item, and
-  // the stored table is left alone.
+  // no stored table (0023_drop_favourites.sql).
   it('answers 404 on every favourites route and sends no favourite flag', async () => {
     const ada = await person('user_a');
     const one = await makeItem(ada.auth);
@@ -163,7 +163,11 @@ describe('Favourites are gone', () => {
     expect((await call(`/favourites/${one.id}`, { method: 'DELETE', auth: ada.auth })).status).toBe(
       404,
     );
-    expect(h.db.sql.prepare('SELECT COUNT(*) AS n FROM favourites').get()).toEqual({ n: 0 });
+    expect(
+      h.db.sql
+        .prepare(`SELECT COUNT(*) AS n FROM sqlite_master WHERE name LIKE 'favourites%'`)
+        .get(),
+    ).toEqual({ n: 0 });
     const item = await body<{ item: Item }>(await call(`/items/${one.id}`, { auth: ada.auth }));
     expect(item.item).not.toHaveProperty('favourite');
     expect((await call('/items?view=favourites', { auth: ada.auth })).status).toBe(400);

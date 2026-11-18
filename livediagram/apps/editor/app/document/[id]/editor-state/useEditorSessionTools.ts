@@ -6,6 +6,7 @@ import { useQuizElements } from '@/hooks/canvas/useQuizElements';
 import { track } from '@/lib/telemetry';
 import { pollResultElement } from '@/lib/poll-capture';
 import { useTabSession } from '@/hooks/persistence/useTabSession';
+import { sendOrHold } from '../pre-room-outbox';
 import type { EditorDocumentSlice } from './useEditorDocument';
 import type { EditorHistorySlice } from './useEditorUndoState';
 import type { EditorSelectionSlice } from './useEditorSelection';
@@ -37,10 +38,10 @@ export function useEditorSessionTools({
   fromEditing: EditorEditingSlice;
   fromLayers: EditorLayersSlice;
 }) {
-  const { selfParticipant, voteSelfId } = fromDocument;
+  const { documentId, selfParticipant, voteSelfId } = fromDocument;
   const { commitTabs, tickTabs } = fromHistory;
   const { activeId } = fromSelection;
-  const { applyElementDelta, ideaPosts, livePresence, roomRef } = fromCollaboration;
+  const { applyElementDelta, ideaPosts, livePresence, realtime, roomRef } = fromCollaboration;
   const { facilitator, livePoll } = fromRoom;
   const { activeTab } = fromComments;
   const { editsBlocked, runsBlocked } = fromEditing;
@@ -78,11 +79,11 @@ export function useEditorSessionTools({
     // owner id is a guest's credential, and a dot op broadcasts its voter to
     // every socket in the room (docs/specs/012-collaboration/collab-race-hardening.md, docs/specs/012-collaboration/participant-responses.md).
     selfId: voteSelfId,
-    // Straight down the socket, ahead of the autosave (docs/specs/012-collaboration/session-tools.md). A no-op
-    // before the room is open, exactly like every other presence-speed send —
-    // a solo vote still works, it just has nobody to tell.
+    // Straight down the socket, ahead of the autosave (docs/specs/012-collaboration/session-tools.md). Cast before
+    // the room exists (the first moment after the page opens), it is held and sent as the room is made
+    // (pre-room-outbox.ts), so the room still hears it; with no document there is nobody to tell.
     emitVote: (tabId, elementId, delta, round) =>
-      roomRef.current?.send({
+      sendOrHold(realtime.preRoomOutbox, roomRef.current, documentId, {
         kind: 'op',
         op: {
           kind: 'vote',

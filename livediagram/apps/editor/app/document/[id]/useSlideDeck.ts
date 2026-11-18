@@ -23,6 +23,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   EMPTY_DECK,
   firstDeck,
+  mergeSlides,
+  parseSlides,
   parseStoredPresentation,
   presentableSlides,
   storePresentation,
@@ -51,6 +53,12 @@ import { loadPresentationOverlay } from '@/lib/editor-deferred-code';
 // bursts (drag a row through four positions, type a sentence of notes), and
 // each one is a whole-document metadata PUT.
 const DECK_SAVE_DEBOUNCE_MS = 900;
+
+// Slides an agent appended arrive by the room after the api stored them (docs/specs/012-collaboration/
+// presentation-mode.md "Slides an agent appends"). A deck save of ours that is still waiting, or that went out this
+// recently, may land after the append without them, so it is made again with them in. Each is one round trip
+// apart, so 10 s is a wide margin; past it, our save landed long before the append. Safe range: 3 s to 60 s (PM3).
+export const DECK_ECHO_WINDOW_MS = 10_000;
 
 export type SlideDeckState = ReturnType<typeof useSlideDeck>;
 
@@ -112,7 +120,23 @@ export function useSlideDeck({
   // edit, or opening a document would immediately PUT the deck straight back.
   const hydratedRef = useRef(false);
   const saveTimer = useRef<number | null>(null);
+  // When this editor's last deck save went out (Date.now()), for DECK_ECHO_WINDOW_MS.
+  const lastSaveAt = useRef(Number.NEGATIVE_INFINITY);
   const saveRef = useLatest(saveDeck);
+
+  // The one place a deck save is scheduled: debounced, the latest deck winning.
+  const scheduleSave = useCallback(
+    (deckToSave: Deck) => {
+      if (saveTimer.current !== null) window.clearTimeout(saveTimer.current);
+      saveTimer.current = window.setTimeout(() => {
+        saveTimer.current = null;
+        lastSaveAt.current = Date.now();
+        const stored = storePresentation(deckToSave);
+        saveRef.current?.(stored ? JSON.stringify(stored) : null);
+      }, DECK_SAVE_DEBOUNCE_MS);
+    },
+    [saveRef],
+  );
 
   /** Seed from the loaded document. Never counts as an edit. */
   const hydrateDeck = useCallback((serialised: string | null | undefined) => {
@@ -128,16 +152,44 @@ export function useSlideDeck({
         const resolved = typeof next === 'function' ? next(prev) : next;
         // Nothing changed: nothing to save.
         if (resolved === prev) return prev;
-        if (saveTimer.current !== null) window.clearTimeout(saveTimer.current);
-        saveTimer.current = window.setTimeout(() => {
-          const stored = storePresentation(resolved);
-          saveRef.current?.(stored ? JSON.stringify(stored) : null);
-        }, DECK_SAVE_DEBOUNCE_MS);
+        scheduleSave(resolved);
         return resolved;
       });
     },
-    [saveRef],
+    [scheduleSave],
   );
+
+  /**
+   * Slides an agent appended, from the room (presentation-mode.md "Slides an agent appends"): each one the deck does
+   * not hold, after its own. They are stored already, so nothing is saved, unless a save of ours is waiting or went
+   * out within DECK_ECHO_WINDOW_MS and so may have written over them. A malformed slide is dropped.
+   */
+  const receiveSlides = useCallback(
+    (added: readonly Slide[]) => {
+      const slides = added.filter((s) => parseSlides([s]) !== null);
+      setDeck((prev) => {
+        const next = mergeSlides(prev, slides);
+        if (next === prev) return prev;
+        const echoed =
+          saveTimer.current !== null || Date.now() - lastSaveAt.current < DECK_ECHO_WINDOW_MS;
+        if (!isReadOnly && echoed) scheduleSave(next);
+        return next;
+      });
+    },
+    [isReadOnly, scheduleSave],
+  );
+
+  /**
+   * The stored deck read back by a resync (useRoomResync), for slides whose `deck-slides` op the room could no longer
+   * replay: each one the deck lacks goes on after its own, and nothing is saved. Skipped while a deck save of ours is
+   * waiting or went out within DECK_ECHO_WINDOW_MS: the stored deck may predate it, and a slide deleted here would
+   * come back.
+   */
+  const receiveStoredDeck = useCallback((presentation: string | null) => {
+    if (saveTimer.current !== null || Date.now() - lastSaveAt.current < DECK_ECHO_WINDOW_MS) return;
+    const stored = firstDeck(parseStoredPresentation(presentation)).slides;
+    setDeck((prev) => mergeSlides(prev, stored));
+  }, []);
 
   useEffect(
     () => () => {
@@ -424,6 +476,8 @@ export function useSlideDeck({
   return {
     deck,
     hydrateDeck,
+    receiveSlides,
+    receiveStoredDeck,
     openSlideId,
     openSlide,
     setOpenSlideId,

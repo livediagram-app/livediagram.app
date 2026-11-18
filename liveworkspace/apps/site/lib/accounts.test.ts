@@ -58,6 +58,7 @@ describe('going back after signing in', () => {
     expect(returnPath('?return=https%3A%2F%2Fevil.example')).toBeNull();
     expect(returnPath('?return=%2F%2Fevil.example')).toBeNull();
     expect(returnPath('?return=%2F%5Cevil.example')).toBeNull();
+    expect(returnPath('?return=javascript%3Aalert(1)')).toBeNull();
     // A browser drops a tab or newline inside a URL, so these would land on //evil.example.
     expect(returnPath('?return=%2F%09%2Fevil.example')).toBeNull();
     expect(returnPath('?return=%2F%0A%2Fevil.example')).toBeNull();

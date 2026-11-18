@@ -318,8 +318,9 @@ Add a **new tab** (its own canvas) to an existing document, the motivating case:
 instead of `elements`, exactly like a `create_document` tab. Validates + lays out
 exactly like a `create_document` tab, then submits a [changeset](../024-agents/agent-changesets.md)
 that creates the tab, so anyone with the document open sees it arrive. A presented template's slides are then
-appended after the document's deck (read with `GET /documents/:id`, written back whole with `PUT`,
-[Decks a template seeds](../012-collaboration/presentation-mode.md#decks-a-template-seeds)); a note says so, or that
+appended after the document's deck (`PUT /documents/:id` with `appendSlides`, which tells everyone with the document
+open, [Slides an agent appends](../012-collaboration/presentation-mode.md#slides-an-agent-appends); against an api
+that does not know `appendSlides` yet, read with `GET` and written back whole as before); a note says so, or that
 the tab was made without them when the deck could not be written. A C4 `template` (`c4-context`, `c4-container`,
 `c4-component`) links its level to the levels already in the document, as the editor's template flow does
 ([Templates](../008-canvas/canvas-and-palette.md), the C4 levels link to each other): the new links are written as one
@@ -1060,10 +1061,10 @@ Every post (these reports and `Mcp·Used`) is handed to the request's
 The MCP worker reads three bindings and two out-of-band values. Bindings
 (`API` service binding, `OAUTH_KV`) are declared in `wrangler.toml`; the rest:
 
-| Name               | Where                          | Absent means                                                                                                                                                                      |
-| ------------------ | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CONSENT_BASE_URL` | `[vars]` (not secret)          | Defaults to `https://livediagram.app`, so a deployment's OAuth callers land on the hosted consent screen instead of their own. Also the host of every tool's `url` and share link |
-| `TELEMETRY_KEY`    | worker secret, **also on api** | livediagram's key on the liveworkspace telemetry service; unset, this worker sends no telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))      |
+| Name               | Where                          | Absent means                                                                                                                                                                                                                                                                                                                                             |
+| ------------------ | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CONSENT_BASE_URL` | `[vars]` (not secret)          | Required on a deployment of your own: unset, it is `https://www.livediagram.app`, so the deployment's OAuth callers land on the hosted consent screen instead of their own. Also the host of every tool's `url` and share link. Local dev (`pnpm dev`) passes `http://localhost:3100` with `--var`; production and staging set theirs in `wrangler.toml` |
+| `TELEMETRY_KEY`    | worker secret, **also on api** | livediagram's key on the liveworkspace telemetry service; unset, this worker sends no telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))                                                                                                                                                                             |
 
 `TELEMETRY_KEY` is what lets §4.12's telemetry posts reach the liveworkspace
 telemetry service directly: a Worker sends no Origin, so the key is how the

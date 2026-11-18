@@ -35,6 +35,9 @@ workers_dev = false
 #   DRIVE_KEY_ACCOUNTS    accounts' key on the Google Drive mirror (the drive Worker's DRIVE_KEY_ACCOUNTS):
 #                         DELETE /app/people/<id> when an account closes (src/drive-disconnect.ts); optional,
 #                         without it (or the DRIVE binding) nothing is sent
+#   ACCOUNTS_KEY_MEDIA    shared with the media service (its ACCOUNTS_KEY_MEDIA): its daily run asks
+#                         POST /api/account/media/teams-deleted which teams are gone (src/account-api/media-door.ts);
+#                         without it the door is 404 and every team's Library stays
 #   EXPORT_KEY_ACCOUNTS   shared with the export service (its EXPORT_KEY_ACCOUNTS): accounts' calls to it, and its
 #                         call back when an export finishes (src/data-export/); without it Download Your Data is 503
 #   TELEMETRY_KEY_LIVEDIAGRAM, TELEMETRY_KEY_LIVEPLANNER, TELEMETRY_KEY_LIVEDOCUMENTS,

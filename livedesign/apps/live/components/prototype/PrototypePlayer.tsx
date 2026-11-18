@@ -4,9 +4,10 @@
 // time inside its device frame, over the whole window. A press on a hotspot follows its link with its transition; a
 // press anywhere else flashes the hotspots; Previous, Next and the arrow keys step through the screens; Escape or
 // Close returns to the editor. Nothing here edits: it draws the live tab and writes nothing.
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import { layOutPages, pagesOf, screenName, type Tab } from '@livedesign/design';
+import { safeInset } from '@livedesign/ui';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import {
@@ -24,8 +25,18 @@ import {
 import { useDisplayFonts } from '@/hooks/canvas/useDisplayFonts';
 import { PrototypeBar } from './PrototypeBar';
 import { PrototypeScreen } from './PrototypeScreen';
+import { useViewportFitCover } from './useViewportFitCover';
 
 const EASE = 'cubic-bezier(0.2, 0, 0, 1)';
+
+// A phone's screen layer: inside the device's safe areas on every side ("Safe areas on a phone"), the black running on
+// under the notch, the home indicator and the rounded corners.
+const PHONE_LAYER: CSSProperties = {
+  top: safeInset('top'),
+  right: safeInset('right'),
+  bottom: safeInset('bottom'),
+  left: safeInset('left'),
+};
 
 /** Whether motion is allowed: neither the system's reduced motion nor Settings' Reduce Motion is on. */
 export function prefersReducedMotion(): boolean {
@@ -70,6 +81,8 @@ export function PrototypePlayer({
   const index = shown ? pages.indexOf(shown) : -1;
   const hotspots = shown ? prototypeHotspots(tab, shown, pages) : [];
   const phone = useIsMobileViewport();
+  // Edge to edge on a phone, so the insets the layer and the pill keep inside are the device's own.
+  useViewportFitCover(phone);
   // The display faces the screens use: linked once, as the canvas links them, so a direct share-link open has them
   // too (the screens carry no stylesheet of their own).
   useDisplayFonts(tab.elements);
@@ -164,7 +177,8 @@ export function PrototypePlayer({
 
   if (!shown) return null;
   const place = `${index + 1} of ${pages.length}`;
-  const layer = phone ? 'absolute inset-0' : 'absolute inset-0 p-6 sm:p-10';
+  const layer = phone ? 'absolute' : 'absolute inset-0 p-6 sm:p-10';
+  const layerStyle = phone ? PHONE_LAYER : undefined;
   return createPortal(
     <div
       ref={dialogRef}
@@ -193,7 +207,7 @@ export function PrototypePlayer({
         }}
       >
         {leavingPage ? (
-          <div ref={leavingRef} className={layer} aria-hidden>
+          <div ref={leavingRef} className={layer} style={layerStyle} aria-hidden>
             <PrototypeScreen
               tab={tab}
               page={leavingPage}
@@ -206,7 +220,7 @@ export function PrototypePlayer({
             />
           </div>
         ) : null}
-        <div ref={incomingRef} key={shown.id} className={layer}>
+        <div ref={incomingRef} key={shown.id} className={layer} style={layerStyle}>
           <PrototypeScreen
             tab={tab}
             page={shown}

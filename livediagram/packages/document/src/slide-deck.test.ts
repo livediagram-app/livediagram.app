@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  appendToStoredPresentation,
+  mergeSlides,
+  parseSlides,
   deckTabIds,
   firstDeck,
   parseStoredPresentation,
@@ -287,5 +290,41 @@ describe('item slides', () => {
       ],
     });
     expect(firstDeck(parseStoredPresentation(stored)).slides.map((s) => s.id)).toEqual(['b']);
+  });
+});
+
+// docs/specs/012-collaboration/presentation-mode.md "Slides an agent appends".
+describe('slides an agent appends', () => {
+  const s = (id: string) => ({ id, tabId: 't', elementIds: ['e'] });
+
+  it('parses a list of slides only when every entry is one', () => {
+    expect(parseSlides([s('a'), s('b')])).toEqual([s('a'), s('b')]);
+    expect(parseSlides([])).toEqual([]);
+    expect(parseSlides([s('a'), { id: 'x' }])).toBeNull();
+    expect(parseSlides('[]')).toBeNull();
+    expect(parseSlides(null)).toBeNull();
+  });
+
+  it("merges by id, after the deck's own, each new slide once", () => {
+    const deck = { slides: [s('a')] };
+    expect(mergeSlides(deck, [s('a'), s('b'), s('b')]).slides.map((x) => x.id)).toEqual(['a', 'b']);
+    expect(mergeSlides(deck, [s('a')])).toBe(deck);
+    expect(mergeSlides(deck, [])).toBe(deck);
+  });
+
+  it('appends to a stored deck, keeping a later deck, and says what it added', () => {
+    const stored = JSON.stringify({ decks: [{ slides: [s('a')] }, { slides: [s('z')] }] });
+    const next = appendToStoredPresentation(stored, [s('a'), s('b')]);
+    expect(next.added).toEqual([s('b')]);
+    expect(
+      parseStoredPresentation(next.presentation)?.decks.map((d) => d.slides.map((x) => x.id)),
+    ).toEqual([['a', 'b'], ['z']]);
+    expect(appendToStoredPresentation(stored, [s('a')])).toEqual({
+      presentation: stored,
+      added: [],
+    });
+    expect(appendToStoredPresentation(null, [s('a')]).presentation).toBe(
+      JSON.stringify({ decks: [{ slides: [s('a')] }] }),
+    );
   });
 });
