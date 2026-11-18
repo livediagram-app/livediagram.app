@@ -112,7 +112,9 @@ livedocuments file that holds tabs ([Document](../006-document/document.md)). Th
   writing, or press / for blocks". An empty list item keeps its bullet, number or to-do box from
   the moment it exists: its placeholder ("List", or "To-do" for a to-do) sits after the marker,
   where the text will go, whole and never in the marker's place. A ticked empty to-do shows its
-  tick and no placeholder.
+  tick and no placeholder. Markers are always the ones a fresh editor would draw, however the writing
+  last changed (a collaborator, an undo, the document moved into an account on sign-in), so no
+  reload is ever needed to bring them back.
 - **Empty headings and header cells are named for a screen reader.** The title is drawn as the page's
   h1 and Heading 1, 2 and 3 as h2, h3 and h4. An empty one carries its placeholder as its accessible
   name ("Title", "Heading 1") to someone writing, and is hidden from a screen reader for anyone who
@@ -137,7 +139,8 @@ footnote's reference (see "Footnotes"). Code blocks keep plain text.
 
 - **A press on the writing puts the caret there**, at once, in any tool that is not a drawing
   tool; a drag selects text across blocks and pages; double-click selects a word, triple-click a
-  block. Text selection spans blocks, lists and pages freely.
+  block. Text selection spans blocks, lists and pages freely. Typing straight after a press lands at the caret and
+  leaves every letter already in the block as it was (`e2e/article-click-type.spec.ts`).
 - **The caret stays in sight.** After the writer types or moves the caret (the arrow keys, Page Down, a paste), the
   view pans the least it must to show the caret, as the canvas brings any element into view (`scrollIntoView`), so
   writing that runs onto the next page, below the window or behind a phone's on-screen keyboard (what shows ends 24 px

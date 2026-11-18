@@ -159,3 +159,40 @@ describe('decorationsPlugin', () => {
     expect(spent).toBeLessThan(cpuBudgetMs(150));
   });
 });
+
+// Work Tracker 1052: after Move Documents on sign-in, a reported article showed its list items with no markers until
+// a reload. Whatever the writing becomes from outside (a peer, an undo, a reloaded copy), and whether the editor
+// turns editable or read-only meanwhile, the markers drawn are always the ones a fresh editor draws.
+describe('list markers after the writing is replaced from outside', () => {
+  let seed = 1052;
+  const rnd = (n: number) => {
+    seed = (seed * 16807) % 2147483647;
+    return seed % n;
+  };
+  const TEXTS = ['', 'a', 'Ever', 'Every word'];
+  const LISTS = ['bullet', 'numbered', 'todo'] as const;
+  const writing = (): ArticleBlock[] =>
+    Array.from({ length: 1 + rnd(5) }, (_, i): ArticleBlock => {
+      const text = TEXTS[rnd(TEXTS.length)]!;
+      const runs = text ? [{ text }] : [];
+      const kind = rnd(4);
+      return kind === 0
+        ? { id: `p${i}`, type: 'paragraph', runs }
+        : { id: `l${i}`, type: 'list', list: LISTS[kind - 1]!, level: rnd(2), runs };
+    });
+
+  it('match a fresh build for every replace, editable or not', () => {
+    let replaced = 0;
+    for (let round = 0; round < 1500; round++) {
+      let editable = rnd(2) === 0;
+      const { plugin, state } = start(writing(), () => editable);
+      const tr = replaceContentTr(state, writing(), false);
+      if (!tr) continue;
+      replaced++;
+      if (rnd(3) === 0) editable = !editable;
+      const next = state.applyTransaction(tr).state;
+      expect(decosOf(shown(next, plugin))).toEqual(decosOf(fresh(next, editable)));
+    }
+    expect(replaced).toBeGreaterThan(1000);
+  });
+});

@@ -130,7 +130,10 @@ missing.
 
 - **Where**: a card at the top right of the canvas, under the Toolbar strip, over the pages
   (`TOOLBAR_CARD`'s surface). On a phone, a bar across the top of the canvas under the strip, the
-  full width less 8 px a side; the Replace row wraps under it.
+  full width less 8 px a side; the Replace row wraps under it. It never covers a page's title bar
+  (Style, Text, Background, Lock page and the cog): where it would, it sits 8 px under that title bar
+  instead, following it as the canvas pans or zooms, and back under the strip once it is out of the
+  way; with no room under the title bars it keeps its place.
 - **Find row**, left to right: the chevron (Show Replace / Hide Replace, `aria-expanded`), the Find
   field (placeholder "Find", the count inside its end), **Match Case** (`Aa`) and **Whole Word**
   (`ab` underlined) as toggles (`aria-pressed`), a hairline, **Previous Match** and **Next Match**,
