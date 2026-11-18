@@ -249,9 +249,10 @@ footnote's reference (see "Footnotes"). Code blocks keep plain text.
   - **More Formatting** (a menu: strikethrough, inline code, superscript, subscript, clear
     formatting, Article style, which opens the page panel on Style, and at its foot the article's
     **Word Count**);
-  - **Insert** (a menu: Image, Chart, then Table, Table of Contents, Footnote, Divider, Page break, Quote,
-    Code; a drawing starts from a shape dropped on the page or the slash menu's **Drawing**, a
-    callout from the slash menu).
+  - **Insert** (a menu: Image, Bar Chart, Pie Chart, Line Chart, then Table, Table of Contents, Footnote, Divider,
+    Page break, Quote, Code; a drawing starts from a shape dropped on the page or the slash menu's **Drawing**, a
+    callout from the slash menu). An object always goes in: at the caret, or, when the writing has no caret it can
+    measure, under its first line (Work Tracker 1090).
   - **Table** (a menu, shown only while the caret or a cell selection is in a table: Insert Row
     Above, Insert Row Below, Insert Column Left, Insert Column Right, Delete Row, Delete Column,
     Header Row (on or off), Delete Table);

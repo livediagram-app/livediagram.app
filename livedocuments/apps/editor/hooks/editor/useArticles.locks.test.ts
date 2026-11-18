@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ArticleBlock, Tab } from '@livedocuments/document';
+import { layOutPages, pagesOf, type ArticleBlock, type Tab } from '@livedocuments/document';
+import { articleTextOrigin } from '@/lib/article/article-flow-geometry';
 import { articleEditRefused, useArticles } from './useArticles';
 
 const track = vi.hoisted(() => vi.fn());
@@ -147,12 +148,14 @@ describe('a locked page holds its article', () => {
 
 // docs/specs/007-editor/article-pages.md "Telemetry": an insert counts once it went in.
 describe('insert telemetry', () => {
-  it('counts nothing for an insert that found no caret or no room', () => {
-    const { view } = setup(tabWith(false));
+  it('counts nothing for an insert that found no place or no room', () => {
+    // No caret and no page holding the writing: nowhere to put it.
+    const { view, placeAt } = setup({ ...tabWith(false), pages: [] });
     handle.caretCanvasPoint.mockReturnValue(null);
     handle.insertZone.mockReturnValue(null);
     view.insertObject('a', 'table');
     view.insertObject('a', 'drawing');
+    expect(placeAt).not.toHaveBeenCalled();
     expect(track).not.toHaveBeenCalled();
   });
 
@@ -162,5 +165,28 @@ describe('insert telemetry', () => {
     view.insertObject('a', 'table');
     expect(placeAt).toHaveBeenCalledWith({ type: 'table' }, 10, 50);
     expect(track).toHaveBeenCalledWith('Element', 'Added', 'ArticleTable');
+  });
+
+  // Work Tracker 1090: Insert > Bar Chart in an article.
+  it('places a Bar Chart from the Insert menu at the caret, as a chart', () => {
+    const { view, placeAt } = setup(tabWith(false));
+    handle.caretCanvasPoint.mockReturnValue({ x: 40, y: 60 });
+    view.insertObject('a', 'chart');
+    expect(handle.flush).toHaveBeenCalled();
+    expect(placeAt).toHaveBeenCalledWith({ type: 'shape', kind: 'bar-chart' }, 40, 90);
+    expect(track).toHaveBeenCalledWith('Element', 'Added', 'ArticleChart');
+  });
+
+  it('places it at the start of the writing when the writing has no caret to measure', () => {
+    const { view, placeAt } = setup(tabWith(false));
+    handle.caretCanvasPoint.mockReturnValue(null);
+    view.insertObject('a', 'chart');
+    expect(placeAt).toHaveBeenCalledTimes(1);
+    const [intent, x, y] = placeAt.mock.calls[0]!;
+    expect(intent).toEqual({ type: 'shape', kind: 'bar-chart' });
+    // The first page's text area, just under its first line.
+    const origin = articleTextOrigin(layOutPages(pagesOf(tabWith(false))), 'a', undefined)!;
+    expect([x, y]).toEqual([origin.x, origin.y + 30]);
+    expect(track).toHaveBeenCalledWith('Element', 'Added', 'ArticleChart');
   });
 });

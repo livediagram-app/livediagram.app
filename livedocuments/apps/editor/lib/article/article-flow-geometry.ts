@@ -97,3 +97,20 @@ export function articleTextBox(
   );
   return { width: frame.columnWidth, height: frame.height };
 }
+
+/** Where the article's writing starts on the canvas (its first page's text area, top-left), or null when no page holds
+ *  it: where an insert goes when the writing has no caret to place it at (Work Tracker 1090). */
+export function articleTextOrigin(
+  pages: readonly LaidOutPage[],
+  flow: string,
+  style: ArticleStyle | undefined,
+): { x: number; y: number } | null {
+  const own = pages.filter((p) => p.flow === flow);
+  if (!own.length) return null;
+  const frame = flowFrame(
+    own,
+    articleMarginPx(style),
+    ARTICLE_TOP_MIN_PX + articleHeaderBandPx(style),
+  );
+  return { x: frame.x, y: frame.y };
+}

@@ -43,7 +43,7 @@ import {
   markZoneReleased,
   type ZoneMoveTo,
 } from '@/lib/article/article-editor-store';
-import { articleTextBox } from '@/lib/article/article-flow-geometry';
+import { articleTextBox, articleTextOrigin } from '@/lib/article/article-flow-geometry';
 import { articleLocked } from '@/lib/article/article-lock';
 import {
   articleGrowFloor,
@@ -340,7 +340,15 @@ export function useArticles(deps: {
         track('Element', 'Added', INSERT_EVENT[what]);
         return;
       }
-      const at = handle.caretCanvasPoint();
+      // The caret's place, else (the writing never had a caret, or it cannot be measured) the start of the writing:
+      // an insert from the menu always lands (Work Tracker 1090).
+      const at =
+        handle.caretCanvasPoint() ??
+        articleTextOrigin(
+          layOutPages(pagesOf(d.activeTab)),
+          flow,
+          articlesOf(d.activeTab)[flow]?.style,
+        );
       if (!at) return;
       // Just under the caret's line, so the object lands after the block being written in.
       handle.flush();
