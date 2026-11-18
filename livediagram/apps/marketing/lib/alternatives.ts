@@ -495,7 +495,7 @@ const LIST: Alternative[] = [
       },
     ],
     themBest: [
-      'Specialist libraries: AWS/Azure, UML, network, BPMN, and more.',
+      'Specialist libraries: AWS/Azure, full UML, network, and more.',
       'Deep native integration with Confluence and Jira (livediagram embeds are a generic iframe).',
       'Highly precise, formal technical diagrams.',
       'Files you keep in your own storage, with desktop apps for working entirely offline.',
@@ -506,6 +506,7 @@ const LIST: Alternative[] = [
       '91 templates and 25 themes for good-looking diagrams in minutes, not blank-canvas fiddling.',
       'Diagrams stay tidy on their own: arrows re-route as shapes move, with collision avoidance, alignment guides and snapping.',
       'Full-colour technology icons (AWS, Azure, Kubernetes, databases…) for architecture diagrams.',
+      'BPMN for business processes: events, tasks, gateways, data and pools, and draw.io’s BPMN shapes import as editable BPMN.',
       'Tidy Up lays out a tangle of shapes and arrows as a flowchart, tree or mind map, and the UML theme colours each shape by its meaning.',
       'Four finishes per tab: Professional for crisp, print-ready diagrams with square corners and thin lines, Sketch or Marker for a hand-drawn review, switched without touching the diagram.',
       'Database schemas with keys and field-to-field relationships, sequence diagrams, Sankey flows, and an Isometric view that tilts an architecture diagram into 3D blocks for a deck.',
@@ -553,7 +554,7 @@ const LIST: Alternative[] = [
       },
       {
         q: 'Does livediagram have AWS, UML, or network shape libraries?',
-        a: "It ships full-colour technology icons (AWS, Azure, Kubernetes, databases and more) that cover most architecture diagrams, plus core shapes, device frames, and class, sequence and state machine templates. It does not have draw.io's formal notation libraries (full UML, BPMN, network stencils); for strict formal notation, draw.io is the better pick.",
+        a: "It ships full-colour technology icons (AWS, Azure, Kubernetes, databases and more) that cover most architecture diagrams, plus core shapes, device frames, BPMN events, tasks, gateways and pools, and class, sequence and state machine templates. It does not have draw.io's full UML or network stencil libraries; for those, draw.io is the better pick.",
       },
     ],
   },
@@ -686,12 +687,12 @@ const LIST: Alternative[] = [
       { label: 'Real-time multiplayer', us: 'Yes', them: 'Yes' },
       {
         label: 'Shape libraries',
-        us: 'Core shapes, technology and line-art icons, UML and charts',
-        them: 'Very broad professional libraries (UML, BPMN, network, cloud, and more)',
+        us: 'Core shapes, technology and line-art icons, UML, BPMN and charts',
+        them: 'Very broad professional libraries (UML, network, cloud, and more)',
       },
       {
         label: 'Import + export',
-        us: 'draw.io, Excalidraw, Microsoft Whiteboard, Mermaid + Markdown in; PNG, SVG, PDF, JSON, Mermaid + Excalidraw out',
+        us: 'draw.io, BPMN, Excalidraw, Microsoft Whiteboard, Mermaid + Markdown in; PNG, SVG, PDF, JSON, Mermaid + Excalidraw out',
         them: 'Visio, draw.io, Gliffy and Mermaid in; image, PDF and Visio out',
       },
       {
@@ -701,7 +702,7 @@ const LIST: Alternative[] = [
       },
     ],
     themBest: [
-      'Formal diagramming at scale: very broad shape libraries for UML, BPMN, network and cloud architecture.',
+      'Formal diagramming at scale: very broad shape libraries for UML, network and cloud architecture.',
       'Data linking, which builds or updates diagrams from spreadsheets and other sources.',
       'Visio import and export, and deep integrations with enterprise suites.',
       'Enterprise admin, security and compliance controls.',
@@ -713,6 +714,7 @@ const LIST: Alternative[] = [
       'Real-time multiplayer with live cursors, comments, assigned actions and a laser pointer for presenting.',
       '25 one-click themes restyle the whole canvas, shapes and arrows, and the Professional finish draws it crisp and print-ready: square corners, thin lines, Inter lettering, no default shadows.',
       'Mermaid in and out: flowcharts import as editable diagrams and export back to text.',
+      'BPMN for business processes: events, tasks, gateways, data, pools and message flows, and .bpmn files from Camunda or bpmn.io import with their layout.',
       'Diagrams that tidy themselves: a new arrow curves around shapes in its way, Tidy Up lays a graph out as a flowchart or tree, and the UML theme colours each shape by its meaning.',
       'Database schemas with keys and field-to-field relationships, Sankey flows, and an Isometric view that tilts an architecture diagram into 3D blocks.',
       'A free REST API and an MCP server, so scripts and AI assistants can read and edit your canvases.',
@@ -735,13 +737,13 @@ const LIST: Alternative[] = [
       {
         heading: 'Where Lucidchart goes further',
         paragraphs: [
-          'Lucidchart has spent years on formal notation, and it shows: its libraries for BPMN, network diagrams and cloud providers are far broader than ours, it can generate diagrams from data, it reads and writes Visio files, and it imports draw.io, Gliffy and Mermaid too. If your work depends on those, Lucidchart is the better tool. livediagram aims at the everyday diagrams most teams draw, and makes them free, fast and collaborative.',
+          'Lucidchart has spent years on formal notation, and it shows: its libraries for network diagrams and cloud providers are far broader than ours, it can generate diagrams from data, it reads and writes Visio files, and it imports draw.io, Gliffy and Mermaid too. If your work depends on those, Lucidchart is the better tool. livediagram aims at the everyday diagrams most teams draw, and makes them free, fast and collaborative.',
         ],
       },
       {
         heading: 'Open at the edges',
         paragraphs: [
-          'livediagram imports draw.io, Excalidraw, Microsoft Whiteboard, Mermaid and Markdown, and exports PNG, SVG, PDF, Mermaid, Markdown, Excalidraw or portable JSON. Any share link embeds as a live-updating iframe in Confluence, Notion or any page that allows iframes: an editor link embeds an editable canvas, and a participant or view-only link a read-only one.',
+          'livediagram imports draw.io, BPMN, Excalidraw, Microsoft Whiteboard, Mermaid and Markdown, and exports PNG, SVG, PDF, Mermaid, Markdown, Excalidraw or portable JSON. Any share link embeds as a live-updating iframe in Confluence, Notion or any page that allows iframes: an editor link embeds an editable canvas, and a participant or view-only link a read-only one.',
           'For automation there is a free REST API with personal tokens and an MCP server that lets AI assistants read and edit your canvases directly, with their changes shown live and undoable as one unit.',
         ],
       },
@@ -757,7 +759,7 @@ const LIST: Alternative[] = [
       },
       {
         q: 'Does livediagram support UML and architecture diagrams?',
-        a: 'Yes, for the common cases: there are templates for class, sequence and state diagrams, database schemas, data flow, and system and cloud architecture, plus a technology icon library. Full BPMN, network and cloud-provider shape libraries remain Lucidchart’s strength.',
+        a: 'Yes, for the common cases: there are templates for class, sequence and state diagrams, database schemas, data flow, and system and cloud architecture, plus BPMN elements with a .bpmn import and a technology icon library. Full network and cloud-provider shape libraries remain Lucidchart’s strength.',
       },
       {
         q: 'Can my team collaborate without accounts?',
