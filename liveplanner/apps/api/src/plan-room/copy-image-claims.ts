@@ -106,6 +106,54 @@ export async function pushCopyClaims(env: PlanEnv, planId: string): Promise<numb
   return sent;
 }
 
+// A plan made from a plan file vouches for itself (items.md "A plan file vouches for itself", Work Tracker 1254): it
+// can name another plan's pictures, but has no source to note them, so before its content lands (project-file.ts
+// importProjectFile) the import sends what its first report will send as its own unconfirmed references. A file
+// brings no grants, so that is its cards' Attachments alone (placedImagesSql with no grant). Answers whether it sent
+// one. Throws when the service refuses, so nothing lands and the import is tried again. Without the service, or with
+// no picture, there is nothing to say.
+export async function claimImportedImages(
+  env: Pick<PlanEnv, 'MEDIA_KEY' | 'MEDIA_URL'>,
+  planId: string,
+  items: readonly Record<string, unknown>[],
+): Promise<boolean> {
+  const media = mediaClient(env);
+  if (!media) return false;
+  const images = attachedImageIds(items);
+  if (images.length === 0) return false;
+  const answer = await media.syncRefs({
+    documents: [],
+    pending: [{ document: planId, images: images.slice(0, MEDIA_REFS_PER_PROJECT_MAX) }],
+  });
+  if (!answer.ok) throw new Error(`media import claim failed: ${answer.status}`);
+  console.info('[media] import vouched for', { planId, images: images.length });
+  return true;
+}
+
+// The picture ids card rows' Attachments hold, sorted and unique, read as placedImagesSql reads them
+// (json_each over `$.attachments`, each entry's `id` when it is text). An object of entries counts its values, as
+// json_each walks them; anything unreadable holds none. Linear in the rows' text.
+export function attachedImageIds(items: readonly Record<string, unknown>[]): string[] {
+  const ids = new Set<string>();
+  for (const row of items) {
+    const text = row.fields;
+    if (typeof text !== 'string' || !text.includes('"attachments"')) continue;
+    let fields: unknown;
+    try {
+      fields = JSON.parse(text);
+    } catch {
+      continue;
+    }
+    const list = (fields as { attachments?: unknown } | null)?.attachments;
+    if (typeof list !== 'object' || list === null) continue;
+    for (const entry of Object.values(list)) {
+      const id = (entry as { id?: unknown } | null)?.id;
+      if (typeof id === 'string') ids.add(id);
+    }
+  }
+  return [...ids].sort();
+}
+
 // A note's ids; a row that is not a list of ids (never written so) vouches for none.
 function idsOf(images: string): string[] {
   try {
