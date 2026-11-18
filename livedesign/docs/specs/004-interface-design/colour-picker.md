@@ -95,33 +95,46 @@ one, and **Use**. Use (or Enter in the hex field) applies the colour and keeps i
 
 - Where a line or text has to read on both appearances (the element menu's line and text rows), the editor warns
   when a colour is under 3:1 on either and offers a readable version beside the warning. Elsewhere it does not.
-  The Text row also judges the swatches against what the text sits on ("Reading on its ground").
+  A picker that colours text also judges the swatches against what the text sits on ("Reading on its ground").
 - Quick Style's custom swatch popover holds the same editor
   ([Quick Style bar](../008-canvas/quick-style-panel.md#custom-swatches)).
 - There is **no system colour well** anywhere in the editor; the custom colour editor is the only one.
 
 ## Reading on its ground
 
-Text is made to be read: a banner, a social image or a wireframe's screen goes out into the world. So the
-element menu's **Text** row, for one element on a page, says when a colour would be hard to read where that
-text sits, and offers one that reads. It is a **hint, never a block**: any colour can still be picked.
+Text is made to be read: a banner, a social image or a wireframe's screen goes out into the world. So every
+picker that colours text says when a colour would be hard to read where that text sits, and offers one that
+reads. It is a **hint, never a block**: any colour can still be picked.
 
+- **Where it shows**: the element menu's **Text** row (one element or several), the Quick Style bar's Text
+  colour **More colours**, and the rich-text toolbar's **Text colour** (the selected words, judged where their
+  element sits).
 - **What it is judged against**: what the words sit on. A box's own fill (a shape, a sticky note); else the
   topmost filled box under the text; else the page's background: a solid colour, every colour a gradient runs
   through under the text (the worst counts), or the plain white paper.
+- **The page as exported**: a page is judged as it exports. On a dark canvas the plain paper is drawn dark but
+  exports white, so there the hint says **"Hard to read on the exported page"**, and its **Aa** tile shows the
+  white page the words are judged on.
+- **Several grounds at once**: for several elements, the colour is judged on every one's ground and the
+  **worst counts**: the hint shows while any of them falls short, says how many ("Hard to read for 2 of 3"),
+  shows the worst ratio and its ground in the **Aa** tile, and **Use** offers one shade that passes on all of
+  them (judged as normal text unless every one is large). Elements whose ground can't be judged are left out.
 - **What passes**: [WCAG 2.2 SC 1.4.3](https://www.w3.org/TR/WCAG22/#contrast-minimum): **4.5:1**, or **3:1**
   for large text (24px and over, or 18.66px and over in bold, at the size it draws, scale included).
-- **When it shows**: under the swatches, only while the colour judged falls short. The colour judged is the
-  swatch the pointer or focus last rested on in this picker, else the colour in force. It names the ground
-  ("on this page", "on this shape"), the ratio and the target ("1.9:1, aim for 4.5:1"), with the colour on
-  its ground as a small **Aa** tile.
+- **Its row**: under the swatches, a row kept for it for as long as the picker is open, so the swatches never
+  move under the pointer and the picker opens tall enough to show it however low in the window it opens. The
+  colour judged is the swatch the pointer or focus last rested on in this picker, else the colour in force.
+  While it falls short the row names the ground ("on this page", "on its fill"), the ratio and the target
+  ("1.9:1, aim for 4.5:1"), with the colour on its ground as a small **Aa** tile, and screen readers hear it
+  arrive. While it reads, the row says so quietly ("Easy to read on this page", the ratio), and with no colour
+  to judge (No colour) it is empty.
 - **The fix, in one click**: beside it, **Use** with the nearest shade of the same hue that passes (the least
   change toward lighter or darker, whichever is smaller), shown as an **Aa** tile on the ground. Pressing it
   applies that shade as the text colour (one undoable edit) and closes the picker. It is not added to Custom
   colours: no one picked it with **Add a custom colour**. When no shade of that hue passes (a gradient from
   black to white), the hint shows without **Use**.
-- **Nothing is shown** where the ground can't be judged, rather than a wrong ratio: text on a picture (a
-  page's picture background, an image or video under it), text off every page, and several elements at once.
+- **Nothing is shown**, and no row is kept, where the ground can't be judged, rather than a wrong ratio: text on
+  a picture (a page's picture background, an image or video under it) and text off every page.
 
 ## What a picker stores
 

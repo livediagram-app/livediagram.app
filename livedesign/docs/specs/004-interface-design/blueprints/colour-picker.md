@@ -66,16 +66,30 @@ ColourPicker({
   yours?,         // string[]: Custom colours (hex)
   boardWarning?,  // the editor's hard-to-see warning
   onPreview?, onPreviewEnd?,
-  contrast?,      // TextContrastProbe: the ground and size the Text row's colours are judged on
+  contrast?,      // TextContrastProbe[]: every ground and size a text colour picker's colours are judged on
 })
 ```
 
-- `TextContrastProbe = { ground: TextGround; large: boolean; current: string | null; colourOf: (id) => string |
-null }`: `current` is the text's drawn colour on its ground, `colourOf` an option id's colour there (a stock
-  name in its version for the ground's surface). `ColourPicker` holds the last hovered or focused swatch's id
-  (`probe`) only while `contrast` is set, cleared when the pointer leaves the picker; the judged colour is
-  `colourOf(probe)`, else `current`. `ContrastHint` (`components/colour/ContrastHint.tsx`) renders under the
-  groups, a `role="status"` region always mounted and empty while the colour passes.
+- `TextContrastProbe = { ground: TextGround; large: boolean; exported: boolean; current: string | null; colourOf:
+(id) => string | null }` (`lib/text-contrast-probe.ts`): `current` is the text's drawn colour on its ground,
+  `colourOf` an option id's colour there (a stock name in its version for the ground's surface), `exported` is a
+  page ground on a dark canvas (judged as the page exports). `textContrastProbes(els, tab, surface, memo)`: one
+  probe for each element whose ground can be judged, `undefined` for none.
+- `useTextContrast(els, open)` (`hooks/ui/useTextContrast.ts`): the probes only while `open`, memoised on the tab,
+  `els` and surface, with one `textGroundMemo` per hook.
+- `textGroundMemo(compute = textGroundOf)` (`lib/text-ground-memo.ts`): `batch()` gives a `GroundOf` that reuses
+  the ground worked out for the same element id in the batch before while the surface, `tab.pages`,
+  `tab.pageOrientation`, `tab.layers`, the element's index, the element but for `textColor`/`penTextColour`, and
+  the boxed elements holding its centre (by identity, in tab order) are unchanged. It keeps only the latest batch.
+- `judgeText(probes, id)` (`lib/text-contrast-judge.ts`): `textContrast` of `id` (null: each probe's `current`) on
+  each ground; the worst is the least `ratio / needed`; `failing` and `of` count the grounds; `suggestion` is the
+  worst colour's `textContrast` suggestion on the union of every ground's tones, as large text only when all are.
+- `ColourPicker` holds the last hovered or focused swatch's id (`probe`) only while `contrast` is set, cleared when
+  the pointer leaves the picker. `ContrastHint({ probes, judged, onUse })` (`components/colour/ContrastHint.tsx`)
+  renders under the groups a row `CONTRAST_ROW_PX` (60) tall (three 15px lines in 6px padding and a 1px
+  border): a `role="status"` region holding only a shortfall, and in the same grid cell a quiet "Easy to read …"
+  line while the colour passes. Words: one ground `GROUND_WORDS[on]`, or "on the exported page" when `exported`;
+  several, "for N of M" (short) or "for all M" (reads), with "Worst" / "At least" before the ratio.
 
 - `optionMatches(option, value)`: the same id, or for a hex value the same `option.colour` in any case (a colour
   stored by name arrives as the hex it is drawn in).
@@ -93,17 +107,17 @@ null }`: `current` is the text's drawn colour on its ground, `colourOf` an optio
 
 ### Surfaces
 
-| Surface                   | File                                                                                                 | Leading                     | Standard                                                                                                                                         | Value                                 |
-| ------------------------- | ---------------------------------------------------------------------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------- |
-| Element menu colour rows  | `components/palette/context-menu-input-rows.tsx` (`ColourRow`)                                       | `transparent` "No … colour" | `tone` prop (soft on Background, Heading, caption and cell background), by name where the row stores names (`ink` prop), else hex for the canvas | id via `onCommit` / `onChange`        |
-| Quick Style More colours  | `components/canvas/QuickMoreColours.tsx`                                                             | none                        | strong by name (soft hex on Background)                                                                                                          | `setColour(role, id)`, `setPenColour` |
-| Quick Style custom swatch | `packages/workbench/src/components/canvas/SwatchOverridePopover.tsx`                                 | n/a (editor only)           | n/a                                                                                                                                              | Use saves and closes                  |
-| Page background           | `components/canvas/page-background-section.tsx`, `page-background-custom.tsx` (`PAGE_COLOUR_GROUPS`) | Paper                       | soft "Light" + strong "Dark", light hex                                                                                                          | `PageFill` / undefined                |
-| Laser                     | `components/panels/LaserColourRow.tsx`                                                               | Your colour (`presence`)    | strong by name for the canvas                                                                                                                    | `presence` / name / hex               |
-| Canvas, pattern           | `components/palette/palette-controls.tsx` (`useColourWell`, `ColorSwatch`)                           | none                        | soft + strong ("Soft colours", "Strong colours") by hex for the canvas; pattern strong only                                                      | hex                                   |
-| Element menu Text row     | `ElementColourBorderSections.tsx` (`useTextContrast(target, open)`, `hooks/ui/useTextContrast.ts`)   | as the colour rows          | as the colour rows                                                                                                                               | as the colour rows; `contrast` probe  |
-| Rich-text colour          | `components/canvas/RichTextToolbar.tsx`                                                              | none                        | strong hex for the canvas                                                                                                                        | hex                                   |
-| Pie and legend rows       | `components/palette/context-menu-data-editors.tsx`                                                   | none                        | strong light hex                                                                                                                                 | hex                                   |
+| Surface                   | File                                                                                                     | Leading                     | Standard                                                                                                                                         | Value                                 |
+| ------------------------- | -------------------------------------------------------------------------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------- |
+| Element menu colour rows  | `components/palette/context-menu-input-rows.tsx` (`ColourRow`)                                           | `transparent` "No … colour" | `tone` prop (soft on Background, Heading, caption and cell background), by name where the row stores names (`ink` prop), else hex for the canvas | id via `onCommit` / `onChange`        |
+| Quick Style More colours  | `components/canvas/QuickMoreColours.tsx` (Text colour row: `judgeIds` = `view.targetIds`)                | none                        | strong by name (soft hex on Background)                                                                                                          | `setColour(role, id)`, `setPenColour` |
+| Quick Style custom swatch | `packages/workbench/src/components/canvas/SwatchOverridePopover.tsx`                                     | n/a (editor only)           | n/a                                                                                                                                              | Use saves and closes                  |
+| Page background           | `components/canvas/page-background-section.tsx`, `page-background-custom.tsx` (`PAGE_COLOUR_GROUPS`)     | Paper                       | soft "Light" + strong "Dark", light hex                                                                                                          | `PageFill` / undefined                |
+| Laser                     | `components/panels/LaserColourRow.tsx`                                                                   | Your colour (`presence`)    | strong by name for the canvas                                                                                                                    | `presence` / name / hex               |
+| Canvas, pattern           | `components/palette/palette-controls.tsx` (`useColourWell`, `ColorSwatch`)                               | none                        | soft + strong ("Soft colours", "Strong colours") by hex for the canvas; pattern strong only                                                      | hex                                   |
+| Element menu Text row     | `ElementColourBorderSections.tsx` (`useTextContrast([target], open)`); several: `MultiStyleSections.tsx` | as the colour rows          | as the colour rows                                                                                                                               | as the colour rows; `contrast` probe  |
+| Rich-text colour          | `components/canvas/RichTextToolbar.tsx` (`element`; `current` is the words' own colour)                  | none                        | strong hex for the canvas                                                                                                                        | hex                                   |
+| Pie and legend rows       | `components/palette/context-menu-data-editors.tsx`                                                       | none                        | strong light hex                                                                                                                                 | hex                                   |
 
 ## Behaviour and state
 
@@ -161,6 +175,10 @@ from typed constants; nothing is injected as markup.
 - `designColours`: reads at most 12 stored colours a tab, never the elements, so its cost is the tab count, not the
   design size; memoised on the tabs.
 - `ColourPicker` renders at most about 50 buttons; no context provider, no per-swatch store read.
+- A text ground is worked out only while its picker is open. A hover previews the colour live, changing the tab:
+  `textGroundMemo` then checks one pass over the elements (boxes under the text) instead of walking them in paint
+  order, measured at 5,000 elements: 0.32 ms uncached, 0.14 ms reused (`text-ground-memo.test.ts` holds it under
+  2 ms CPU).
 
 ## Presentation and UX
 
@@ -208,6 +226,9 @@ Picks are reported by each surface's own write path (`track('Element', 'Changed'
 | laser and colour wells                                                    | `LaserColourRow.test.tsx`, `../packages/workbench/src/lib/laser-config.test.ts`, `components/palette/colour-wells.test.tsx` |
 | ratios, large text, grounds, pictures skipped, shade keeps hue and passes | `packages/design/src/text-contrast.test.ts`                                                                                 |
 | hint under the target, hover judges, Use applies, nothing on a picture    | `apps/live/components/colour/ContrastHint.test.tsx`, `hooks/ui/useTextContrast.test.tsx`                                    |
+| row height kept, reads line, exported-page wording, several grounds       | `ContrastHint.test.tsx`, `lib/text-contrast-judge.test.ts`, `lib/text-contrast-probe.test.ts`                               |
+| Quick Style Text colour and rich-text colour judge the text               | `components/colour/text-colour-surfaces.test.tsx`                                                                           |
+| ground reused across a hover, recomputed on change, CPU budget            | `lib/text-ground-memo.test.ts`                                                                                              |
 | rows fit, e2e                                                             | `e2e/quick-style-swatch-rows.spec.ts`, `quick-style-panel.spec.ts`                                                          |
 
 ## Constants and configuration
