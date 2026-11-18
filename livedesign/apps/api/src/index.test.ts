@@ -148,6 +148,42 @@ describe('read-only API token enforcement (docs/specs/015-api/mcp-server.md §4.
     expect(off.status).toBe(503);
   });
 
+  // Work Tracker 1070: over the API's own ACCOUNTS binding when it has one, the whole request, the public route untouched.
+  it('forwards /api/workbench/* over env.ACCOUNTS with its method, headers and body', async () => {
+    const publicRoute = vi.fn(async () => new Response(null, { status: 500 }));
+    vi.stubGlobal('fetch', publicRoute);
+    const seen: Request[] = [];
+    const ACCOUNTS = {
+      fetch: async (request: Request) => {
+        seen.push(request);
+        return Response.json({ ticket: 't1' }, { status: 201 });
+      },
+    };
+    try {
+      const res = await worker.fetch(
+        new Request('https://api.test/api/workbench/tickets?x=1', {
+          method: 'POST',
+          headers: { ...RO, 'Content-Type': 'application/json', Cookie: 'a=b' },
+          body: '{"documentId":"d1"}',
+        }),
+        { ACCOUNTS_URL: 'https://accounts.test', ACCOUNTS } as unknown as Env,
+      );
+      expect(res.status).toBe(201);
+      expect(await res.json()).toEqual({ ticket: 't1' });
+      expect(publicRoute).not.toHaveBeenCalled();
+      const sent = seen[0]!;
+      expect(sent.url).toBe('https://accounts.test/api/account/workbench/tickets?x=1');
+      expect(sent.method).toBe('POST');
+      expect(await sent.text()).toBe('{"documentId":"d1"}');
+      expect(sent.headers.get('Authorization')).toBe(RO.Authorization);
+      expect(sent.headers.get('Content-Type')).toBe('application/json');
+      expect(sent.headers.get('X-Liveworkspace-Proxy')).toBe('livedesign');
+      expect(sent.headers.get('Cookie')).toBeNull();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('lets a GET through (reads are allowed)', async () => {
     const res = await worker.fetch(req('GET'), env());
     expect(res.status).not.toBe(403);

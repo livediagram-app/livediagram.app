@@ -371,7 +371,8 @@ export type ProxyOptions = {
   proxySecret?: string;
   // The router's bindings to liveworkspace (its env): the site's or accounts' is used when present.
   bindings?: WorkspaceBindings;
-  // The public route's fetch, for tests.
+  // The fetch used without a binding: the public route's by default, an app API's `accountsFetch(env.ACCOUNTS)` for
+  // its workbench forward, a stub in tests.
   fetch?: typeof fetch;
 };
 
