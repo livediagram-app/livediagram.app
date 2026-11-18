@@ -12,7 +12,7 @@ import type { AvatarHeldKeys } from './useAvatarKeys';
 import type { SeatClaim } from '../seat-claims';
 import {
   arrowDirection,
-  facingFromDelta,
+  steadyFacing,
   jumpStep,
   stepTowards,
   waveFrame,
@@ -196,8 +196,8 @@ export function useAvatarWalkLoop({
         patch.pos = next;
         patch.stepFrame = Math.floor(travelledRef.current / STEP_LENGTH) % WALK_FRAMES;
         patch.walking = true;
-        const nextFacing = facingFromDelta(dx, dy);
-        if (nextFacing) patch.facing = nextFacing;
+        const nextFacing = steadyFacing(dx, dy, facingRef.current);
+        if (nextFacing && nextFacing !== facingRef.current) patch.facing = nextFacing;
         // Camera: keep the avatar centred, or clear of the viewport edges.
         const r = rects();
         if (r) {

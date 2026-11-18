@@ -4,7 +4,7 @@ import { seatPillBottom, type Sitter } from '@livehuddle/avatar/chair-sitters';
 import { Fragment, useEffect, useId, useMemo, useRef, type CSSProperties } from 'react';
 import { rowLayouts, type RowLayout } from '@livehuddle/avatar/furniture-rows';
 import { turnFacing } from '@livehuddle/avatar/facing';
-import { seenFromCamera } from '@/lib/space-3d/space-3d-pieces';
+import { builtIn3D, seenFromCamera } from '@/lib/space-3d/space-3d-pieces';
 import { turnQuarter } from '@/lib/space-3d/space-3d-turn';
 import { useSpace3DTurn } from '@/components/canvas/space-3d/useSpace3DView';
 import { podClosed } from '@livehuddle/avatar/pod';
@@ -178,16 +178,26 @@ function FurnitureDrawingView({
   const seen = quarter !== 0 && seenFromCamera(element);
   const facing = seen ? turnFacing(pieceFacing(element), quarter) : pieceFacing(element);
   const across = seen && quarter % 2 === 1;
-  const boxW = across ? element.height : element.width;
-  const boxH = across ? element.width : element.height;
+  // A table drawn from above (a Long Table, one built row by row) turns its plan with the camera, so its box swaps
+  // on a quarter turn.
+  const plan = isLongTable(element) || builtIn3D(element);
+  const planW = across && plan ? element.height : element.width;
+  const planH = across && plan ? element.width : element.height;
   // A Long Table (office.md "Long Table") is drawn for its box at its facing.
   const art = isLongTable(element)
-    ? longTableArt(boxW, boxH, facing)
+    ? longTableArt(planW, planH, facing)
     : seating
       ? FURNITURE_ART[kind]
       : OFFICE_ART[kind as GridOfficeKind];
   // The drawing its facing shows (docs/specs/009-elements/furniture-facing.md "The camera").
   const frame = furnitureFrame(art, facing);
+  // A piece that stands up is seen at the scale its own drawing has on the canvas, at the seen drawing's own size: a
+  // sofa seen from the side is its side, as tall as its front, and a coat stand keeps its height (the owner,
+  // 2026-11-18: "rotated the coat stand and umbrellas shrink in size"), rather than its box laid on its side.
+  const own = seen && !plan ? furnitureFrame(art, pieceFacing(element)).view : null;
+  const ownScale = own ? Math.min(element.width / own.width, element.height / own.height) : 1;
+  const boxW = own ? frame.view.width * ownScale : planW;
+  const boxH = own ? frame.view.height * ownScale : planH;
   const drawing = facingView(facing).view;
   // Seating is upholstered in its own fabric (furniture-art-style.md "Materials"); the rest take the theme's wash.
   const seat =

@@ -7,6 +7,7 @@ import {
   SPACE_GRASS_HEIGHT,
   SPACE_GRASS_ROW,
   SPACE_WALL_HEIGHT,
+  sidesToCorners,
   spaceWalls,
   wallFrame,
   type SpaceWall,
@@ -29,7 +30,7 @@ const near = (w: SpaceWall, p: { x: number; y: number }, r: number) =>
   })();
 
 describe('the 3D view walls (docs/specs/008-canvas/3d-view.md "What it shows")', () => {
-  it("stands up every Room's walls on a Virtual Office, each at a person's height, with its name on its back wall", () => {
+  it("stands up every Room's walls on a Virtual Office, each at a person's height, with its name over its door", () => {
     const walls = spaceWalls(office);
     const rooms = shapes.filter((el) => el.shape === 'room');
     expect(rooms.length).toBeGreaterThan(0);
@@ -38,12 +39,18 @@ describe('the 3D view walls (docs/specs/008-canvas/3d-view.md "What it shows")',
       expect(own.length).toBeGreaterThan(3);
       for (const w of own) expect(w.height).toBe(SPACE_WALL_HEIGHT);
       if (room.label?.trim()) {
+        const name = room.label.trim();
+        // Over a doorway when a Door leads in (the owner, 2026-11-18: "put the room names above the door"), else on
+        // its back wall.
+        const doorways = walls.filter((w) => w.kind === 'doorway' && w.label === name);
         const labelled = own.filter((w) => w.label);
-        expect(labelled).toHaveLength(1);
-        expect(labelled[0]!.label).toBe(room.label.trim());
-        // The back wall: no level wall of the room is higher up.
-        const top = Math.min(...own.filter((w) => w.a.y === w.b.y).map((w) => w.a.y));
-        expect(labelled[0]!.a.y).toBe(top);
+        if (doorways.length > 0) expect(labelled).toHaveLength(0);
+        else {
+          expect(labelled).toHaveLength(1);
+          expect(labelled[0]!.label).toBe(name);
+          const top = Math.min(...own.filter((w) => w.a.y === w.b.y).map((w) => w.a.y));
+          expect(labelled[0]!.a.y).toBe(top);
+        }
       }
     }
   });
@@ -209,5 +216,25 @@ describe('the 3D view walls (docs/specs/008-canvas/3d-view.md "What it shows")',
       shade: 1,
     };
     expect(wallFrame(wall)).toEqual({ x: 10, y: 20, length: 100, angle: 90 });
+  });
+
+  it("puts a room's name over its door, and on its back wall only when no door leads in", () => {
+    const walls = spaceWalls(office);
+    const named = shapes.filter((el) => el.shape === 'room' && el.label?.trim());
+    expect(walls.some((w) => w.kind === 'doorway' && !!w.label)).toBe(true);
+    for (const room of named)
+      expect(walls.filter((w) => w.label === room.label!.trim()).length).toBeGreaterThan(0);
+  });
+
+  it("ends a room's side walls at its back and front walls, never past them", () => {
+    const walls = sidesToCorners([
+      { a: { x: 0, y: 20 }, b: { x: 200, y: 20 } },
+      { a: { x: 0, y: 160 }, b: { x: 200, y: 160 } },
+      { a: { x: 0, y: 0 }, b: { x: 0, y: 160 } },
+      { a: { x: 200, y: 0 }, b: { x: 200, y: 10 } },
+    ]);
+    expect(walls).toHaveLength(3);
+    expect(walls[2]).toEqual({ a: { x: 0, y: 20 }, b: { x: 0, y: 160 } });
+    expect(sidesToCorners([{ a: { x: 0, y: 0 }, b: { x: 0, y: 9 } }])).toHaveLength(1);
   });
 });

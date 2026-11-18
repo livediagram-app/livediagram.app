@@ -40,7 +40,7 @@ export type SpaceWall = {
   height: number;
   // 0 facing the camera, 1 running straight away from it: how far the face is shaded.
   shade: number;
-  // A Room's name, on its back wall.
+  // A Room's name: over its doorway, on the lintel, or on its back wall when it has no doorway.
   label?: string;
   // A doorway's Door is shut: its leaf stands in the frame.
   shut?: boolean;
@@ -81,14 +81,17 @@ export function spaceWalls(elements: readonly Element[]): SpaceWall[] {
   const plaster: WallSegment[] = [];
   // The glass walls a Door can stand in: its doorway's panel over the frame is glass too.
   const glassy: WallSegment[] = [];
+  // Each doorable wall's named room, as its place in `named` (-1 for a corridor or an unnamed room), in step with
+  // `doorable`.
+  const doorableRoom: number[] = [];
+  // Each named room's walls in `out`, to put its name on its back wall when no doorway carries it.
+  const named: { from: number; to: number; label: string; done: boolean }[] = [];
   for (const el of shapes) {
-    const push = (segs: readonly WallSegment[], kind: SpaceWallKind, label?: string) => {
-      const start = out.length;
+    const push = (segs: readonly WallSegment[], kind: SpaceWallKind) => {
       segs.forEach((s, i) => {
         const wall = facingCamera(`${el.id}:${i}`, s, kind);
         if (wall) out.push(wall);
       });
-      if (label) labelBackWall(out, start, label);
     };
     if (el.shape === 'room') {
       const walls = roomWalls(el);
@@ -98,15 +101,15 @@ export function spaceWalls(elements: readonly Element[]): SpaceWall[] {
       const label = typeof el.label === 'string' ? el.label.trim() : '';
       const glass = isGlassRoom(el);
       // A plaster wall's windows are cut out of it and stand as windows; a glass wall is all window already.
-      const open = cutByDoors(walls, doorLines);
-      push(
-        glass ? open : cutByDoors(open, windowLines),
-        glass ? 'glass' : 'wall',
-        label || undefined,
-      );
+      const open = cutByDoors(sidesToCorners(walls), doorLines);
+      const from = out.length;
+      push(glass ? open : cutByDoors(open, windowLines), glass ? 'glass' : 'wall');
+      const room = label ? named.push({ from, to: out.length, label, done: false }) - 1 : -1;
+      for (let i = 0; i < walls.length; i++) doorableRoom.push(room);
     } else if (el.shape === 'corridor') {
       const walls = corridorWalls(el);
       doorable.push(...walls);
+      for (let i = 0; i < walls.length; i++) doorableRoom.push(-1);
       plaster.push(...walls);
       push(cutByDoors(cutByDoors(walls, doorLines), windowLines), 'wall');
     } else if (el.shape === 'office-pod') {
@@ -121,9 +124,17 @@ export function spaceWalls(elements: readonly Element[]): SpaceWall[] {
   // Every Door on a wall stands as a doorway: a wooden frame with a lintel of wall over it, its leaf in it when shut.
   doors.forEach((el, i) => {
     const line = doorLines[i]!;
-    if (!doorable.some((w) => doorSpanOnWall(w, line))) return;
+    const on = doorable.findIndex((w) => doorSpanOnWall(w, line));
+    if (on < 0) return;
     const wall = facingCamera(`door:${i}`, line, 'doorway');
     if (!wall) return;
+    // The room's name over its door, on the lintel, where no piece covers it (the owner, 2026-11-18: "put the room
+    // names above the door, not on the back wall").
+    const room = named[doorableRoom[on] ?? -1];
+    if (room) {
+      wall.label = room.label;
+      room.done = true;
+    }
     if ((el as { doorClosed?: boolean }).doorClosed === true) wall.shut = true;
     if (glassy.some((w) => doorSpanOnWall(w, line))) wall.glass = true;
     out.push(wall);
@@ -134,6 +145,8 @@ export function spaceWalls(elements: readonly Element[]): SpaceWall[] {
     const wall = facingCamera(`window:${i}`, line, 'window');
     if (wall) out.push(wall);
   });
+  // A named room no doorway leads into keeps its name on its back wall.
+  for (const n of named) if (!n.done) labelBackWall(out, n.from, n.label, n.to);
   return out;
 }
 
@@ -194,11 +207,11 @@ function facingCamera(id: string, s: WallSegment, kind: SpaceWallKind): SpaceWal
 }
 
 // The room's name on its back wall: of its level walls, those nearest the top, the longest (DEFAULTS.md D140).
-function labelBackWall(walls: SpaceWall[], from: number, label: string): void {
+function labelBackWall(walls: SpaceWall[], from: number, label: string, to = walls.length): void {
   let best: SpaceWall | null = null;
   let bestTop = Infinity;
   let bestLength = 0;
-  for (let i = from; i < walls.length; i++) {
+  for (let i = from; i < to; i++) {
     const w = walls[i]!;
     const length = Math.hypot(w.b.x - w.a.x, w.b.y - w.a.y);
     if (Math.abs(w.b.y - w.a.y) / length > LABEL_LEVEL_SIN) continue;
@@ -210,6 +223,29 @@ function labelBackWall(walls: SpaceWall[], from: number, label: string): void {
     }
   }
   if (best) best.label = label;
+}
+
+/**
+ * A room's walls with its side walls ending at the back and front walls' lines (3d-view.md "The plan's walls give
+ * way"): the walking lines run the side walls up into the back wall's deep face, which in 3D poked up behind the back
+ * wall (the owner, 2026-11-18: "the sides are going further than the back wall").
+ */
+export function sidesToCorners(walls: readonly WallSegment[]): WallSegment[] {
+  const level = walls.filter((w) => w.a.y === w.b.y).map((w) => w.a.y);
+  if (level.length === 0) return [...walls];
+  const back = Math.min(...level);
+  const front = Math.max(...level);
+  const out: WallSegment[] = [];
+  for (const w of walls) {
+    if (w.a.x !== w.b.x) {
+      out.push(w);
+      continue;
+    }
+    const a = Math.max(back, Math.min(front, w.a.y));
+    const b = Math.max(back, Math.min(front, w.b.y));
+    if (Math.abs(b - a) > 0) out.push({ a: { x: w.a.x, y: a }, b: { x: w.b.x, y: b } });
+  }
+  return out;
 }
 
 /** A wall's place on the floor: where it starts, how long it is and its angle (degrees clockwise). */

@@ -9,6 +9,7 @@
 import { useCallback, useRef, useSyncExternalStore, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { createListeners } from '@liveworkspace/workbench/lib/listeners';
+import { SPACE_BILLBOARD_ATTR } from '@livehuddle/avatar/billboard';
 
 let host: HTMLElement | null = null;
 const listeners = createListeners();
@@ -52,7 +53,10 @@ export function PieceBubblePortal({
   );
   if (!target) return <div className="pointer-events-none absolute inset-0">{children}</div>;
   return createPortal(
+    // In the 3D view the box stands up about its front edge, as its piece does (billboard.ts), so the bubble rises over
+    // the standing piece; flat, nothing reads the mark.
     <div
+      {...SPACE_BILLBOARD_ATTR}
       className="pointer-events-none absolute"
       style={{ left: box.x, top: box.y, width: box.width, height: box.height }}
     >

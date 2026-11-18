@@ -6,8 +6,10 @@ import { spaceWalls } from './space-3d-walls';
 import {
   SPACE_CUT_DEPTH,
   SPACE_CUT_HALF_WIDTH,
+  SPACE_ROOM_NEAR,
   areaMovedFar,
   cutAwayIds,
+  spaceRooms,
   viewArea,
   wallsInArea,
 } from './space-3d-cutaway';
@@ -95,5 +97,54 @@ describe('the drawn area', () => {
     });
     // 100 poses: well under a millisecond each.
     expect(ms).toBeLessThan(100);
+  });
+});
+
+describe('rooms open up as you come near (3d-view.md "Walls in front of you are cut away")', () => {
+  // A 200 by 160 room at the origin: back wall y 0, front wall y 160, sides at x 0 and 200.
+  const room = { id: 'r', x: 0, y: 0, width: 200, height: 160 };
+  const walls = [
+    wall('r:0', 0, 0, 200, 0),
+    wall('r:1', 200, 0, 200, 160),
+    wall('r:2', 0, 160, 200, 160),
+    wall('r:3', 0, 0, 0, 160),
+  ];
+
+  it('fades the front wall while you stand inside, and keeps the back and sides', () => {
+    const cut = cutAwayIds(walls, { x: 100, y: 40 }, 0, [room]);
+    expect(cut.has('r:2')).toBe(true);
+    expect(cut.has('r:0')).toBe(false);
+    expect(cut.has('r:1')).toBe(false);
+    expect(cut.has('r:3')).toBe(false);
+  });
+
+  it('fades it while you walk near, not once you are past SPACE_ROOM_NEAR', () => {
+    expect(cutAwayIds(walls, { x: 100, y: 160 + SPACE_ROOM_NEAR - 10 }, 0, [room]).has('r:2')).toBe(
+      true,
+    );
+    expect(cutAwayIds(walls, { x: 600, y: 600 }, 0, [room]).has('r:2')).toBe(false);
+  });
+
+  it('fades the wall on the camera side when turned: from behind, the back wall', () => {
+    const cut = cutAwayIds(walls, { x: 100, y: 120 }, 2, [room]);
+    expect(cut.has('r:0')).toBe(true);
+    expect(cut.has('r:2')).toBe(false);
+  });
+
+  it("takes a doorway on the front edge as the room's own", () => {
+    const door = { ...wall('door:0', 80, 160, 120, 160), kind: 'doorway' as const };
+    expect(cutAwayIds([...walls, door], { x: 100, y: 40 }, 0, [room]).has('door:0')).toBe(true);
+  });
+
+  it('lists rooms and pods, unturned, and nothing else', () => {
+    const rooms = spaceRooms([
+      { id: 'a', type: 'shape', shape: 'room', x: 1, y: 2, width: 3, height: 4 },
+      { id: 'b', type: 'shape', shape: 'office-pod', x: 0, y: 0, width: 5, height: 5 },
+      { id: 'c', type: 'shape', shape: 'room', rotation: 90, x: 0, y: 0, width: 5, height: 5 },
+      { id: 'd', type: 'shape', shape: 'desk', x: 0, y: 0, width: 5, height: 5 },
+      { id: 'e', type: 'text' },
+    ]);
+    expect(rooms.map((r) => r.id)).toEqual(['a', 'b']);
+    expect(rooms[0]).toEqual({ id: 'a', x: 1, y: 2, width: 3, height: 4 });
   });
 });

@@ -168,6 +168,10 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
   // into — ignored until it steps off, so a portal doesn't ping-pong.
   const lastUnderFeetRef = useRef<string | null>(null);
   const arrivedPortalRef = useRef<string | null>(null);
+  // A travel's landing (a lift, stairs, a portal, the Directory's Go): where the character stands on the new tab. The
+  // entry honours it over the tab's Avatar Pad and its centre (avatar-mode.md "Changing tab"), so a ride never lands
+  // on the pad and walks from where it stood on the floor before.
+  const arrivalRef = useRef<{ at: AvatarPoint; when: number } | null>(null);
   // Fires once when the current walk target is reached, then clears itself.
   const arriveRef = useRef<(() => void) | null>(null);
   const seatedRef = useRef<string | null>(null);
@@ -225,6 +229,7 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     fences,
     spawnPadRef,
     spawnAtRef,
+    arrivalRef,
     elements,
     setViewportOffset,
     follow,
@@ -350,12 +355,14 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
   // Portals (docs/specs/009-elements/portal-element.md): drop the character at a point (the far portal's threshold),
   // without walking there. `arrivedPortalId` is remembered so standing in the exit
   // portal doesn't immediately trigger it again.
-  const teleportTo = (point: AvatarPoint, arrivedPortalId?: string) => {
+  // `travel`: a jump to another tab (a lift, stairs, the Directory's Go), whose landing the next entry keeps.
+  const teleportTo = (point: AvatarPoint, arrivedPortalId?: string, travel = false) => {
     stopWalk();
     aimRef.current = null;
     heldRef.current = { ...NO_KEYS_HELD };
     posRef.current = point;
     setPos(point);
+    arrivalRef.current = travel ? { at: point, when: performance.now() } : null;
     arrivedPortalRef.current = arrivedPortalId ?? null;
     lastUnderFeetRef.current = arrivedPortalId ?? null;
   };

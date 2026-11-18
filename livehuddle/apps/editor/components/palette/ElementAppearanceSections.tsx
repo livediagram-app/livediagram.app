@@ -33,7 +33,6 @@ import {
   turnsWithFacing,
 } from '@livehuddle/document';
 import { ContextMenuDivider } from '@liveworkspace/workbench/components/palette/ContextMenu';
-import { ElementMenuClearStyles } from './ElementMenuClearStyles';
 import {
   IconCategoryGlyph,
   RemoveIconGlyph,
@@ -351,9 +350,6 @@ export function ElementAppearanceSections({
           ) : null}
         </MenuFlyoutSection>
       ) : null}
-      {/* Clear Styles (docs/specs/008-canvas/element-menu-quick-bar.md): under the Style row whose colours and border it
-          resets, while the element takes a quick style. livehuddle has no quick bar above the categories. */}
-      <ElementMenuClearStyles target={target} onClose={onClose} />
       <ElementDataSections
         props={props}
         target={target}

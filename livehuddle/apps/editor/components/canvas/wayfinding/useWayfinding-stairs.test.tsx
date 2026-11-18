@@ -74,7 +74,7 @@ describe('taking the Stairs', () => {
     act(() => {
       (walkTo.mock.calls[0]![1] as () => void)();
     });
-    expect(teleportTo).toHaveBeenCalledWith(stairsTopPoint(up), up.id);
+    expect(teleportTo).toHaveBeenCalledWith(stairsTopPoint(up), up.id, true);
     expect(onTravelToTab).toHaveBeenCalledWith('l2');
     showUpstairs();
     expect(walkTo).toHaveBeenLastCalledWith(stairsFootPoint(up));
@@ -122,7 +122,7 @@ describe('taking the Stairs', () => {
     });
     far.climb();
     expect(far.base.avatar.walkTo).not.toHaveBeenCalled();
-    expect(far.base.avatar.teleportTo).toHaveBeenCalledWith(stairsTopPoint(up), up.id);
+    expect(far.base.avatar.teleportTo).toHaveBeenCalledWith(stairsTopPoint(up), up.id, true);
     expect(far.onTravelToTab).toHaveBeenCalledWith('l2');
   });
 
@@ -130,7 +130,7 @@ describe('taking the Stairs', () => {
     vi.mocked(prefersReducedMotion).mockReturnValue(true);
     const { walkTo, teleportTo, onTravelToTab, climb, showUpstairs } = setup();
     climb();
-    expect(teleportTo).toHaveBeenCalledWith(stairsFootPoint(up), up.id);
+    expect(teleportTo).toHaveBeenCalledWith(stairsFootPoint(up), up.id, true);
     expect(onTravelToTab).toHaveBeenCalledWith('l2');
     showUpstairs();
     expect(walkTo).not.toHaveBeenCalled();

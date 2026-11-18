@@ -1,5 +1,6 @@
 'use client';
 
+import { screenToPlan } from '@/lib/space-3d/space-3d-turn';
 import {
   useCallback,
   useEffect,
@@ -212,9 +213,9 @@ export function useCanvasPanAndMarquee(deps: Deps): Api {
       // Pan offset is stored in canvas-coords; mouse delta is
       // screen-coords. Divide by zoom so a 100px screen drag
       // produces 100/zoom canvas-pixels of pan.
-      const dx = rawDx / d.viewportZoom;
-      const dy = rawDy / d.viewportZoom;
-      pending = { x: pan.startOffsetX + dx, y: pan.startOffsetY + dy };
+      // Turned in 3D, the screen's drag is turned back onto the plan, so the floor follows the hand.
+      const move = screenToPlan({ x: rawDx / d.viewportZoom, y: rawDy / d.viewportZoom });
+      pending = { x: pan.startOffsetX + move.x, y: pan.startOffsetY + move.y };
       if (rafId === null) rafId = requestAnimationFrame(flush);
     };
     const onUp = () => {

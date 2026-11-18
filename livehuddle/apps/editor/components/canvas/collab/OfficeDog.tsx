@@ -4,16 +4,18 @@
 // at its spot in the bed's area, its legs pattering while it walks and a pat answered. WorkdayFace (WorkdayFaces.tsx)
 // draws it; WorkdayFaces.tsx re-exports dogOffset.
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import {
   msToNextLeg,
   petLeg,
   petLegAt,
-  PET_TROT_MS,
+  PET_RADIUS,
   WORKDAY_TONES,
   type PetArea,
   type ShapeElement,
 } from '@livehuddle/document';
+import { buildNavGrid, findWalkPath } from '@livehuddle/avatar/pathing';
+import type { FenceSegment } from '@livehuddle/avatar/collision';
 import { useReducedMotion } from '@/lib/reduced-motion';
 import { pieceControlProps } from '@/lib/piece-control';
 import { track } from '@/lib/telemetry';
@@ -63,30 +65,128 @@ export function dogOffset(
   return { x: spot.x - bed.x, y: spot.y - bed.y, asleep: false };
 }
 
+// The dog's pace on its way, in canvas px a second: a trot across its room takes a few seconds.
+const DOG_SPEED = 70;
+// How far its body keeps from a piece's box as it walks round it, in canvas px.
+const DOG_REACH = 18;
+
+// Where each bed's dog stands now, in canvas px, kept across a re-mount (the view going 3D or turning, a tab coming
+// back), so it walks on from where it was and never jumps (the owner, 2026-11-18: "transport back to his bed or to
+// random nearby places").
+const dogAt = new Map<string, { x: number; y: number }>();
+
+/** The pieces in the dog's area as lines it cannot cross: each box's four edges. */
+function blockLines(area: PetArea | null): FenceSegment[] {
+  const out: FenceSegment[] = [];
+  for (const b of area?.blocks ?? []) {
+    const tl = { x: b.x, y: b.y };
+    const tr = { x: b.x + b.width, y: b.y };
+    const br = { x: b.x + b.width, y: b.y + b.height };
+    const bl = { x: b.x, y: b.y + b.height };
+    out.push({ a: tl, b: tr }, { a: tr, b: br }, { a: br, b: bl }, { a: bl, b: tl });
+  }
+  return out;
+}
+
 export function PetDog({ element }: { element: ShapeElement }) {
   // Reduced motion sends a trotting dog straight back to sleep in its bed.
   const still = useReducedMotion();
   const area = usePetArea(element.id);
   const leg = usePetLeg(still);
   const at = still ? dogOffset(element, null, 0) : dogOffset(element, area, leg);
-  // Which way it faces: the way it last trotted.
-  const last = useRef(at.x);
+  // Where it is going, on the canvas.
+  const goal = { x: element.x + at.x, y: element.y + at.y };
+  // The pieces it walks round (pet-wander.ts PetArea's blocks), as a walking grid, built once per change to them.
+  const grid = useMemo(() => {
+    const lines = blockLines(area);
+    return lines.length > 0 ? buildNavGrid(lines, DOG_REACH) : null;
+  }, [area]);
+  // Where it stands now: where it was (kept across a re-mount) when that is near its bed, else where it is going.
+  const start = (() => {
+    const was = dogAt.get(element.id);
+    const near =
+      was && Math.hypot(was.x - goal.x, was.y - goal.y) < 4 * (PET_RADIUS + element.width);
+    return near ? was : goal;
+  })();
+  const [pos, setPos] = useState(start);
   const [facingLeft, setFacingLeft] = useState(false);
-  useEffect(() => {
-    if (Math.abs(at.x - last.current) > 1) setFacingLeft(at.x < last.current);
-    last.current = at.x;
-  }, [at.x]);
-  // Trotting: from the moment it sets off for its spot until it gets there (PET_TROT_MS), its legs step and it bobs.
   const [trotting, setTrotting] = useState(false);
-  const from = useRef({ x: at.x, y: at.y });
-  useEffect(() => {
-    const moved = Math.hypot(at.x - from.current.x, at.y - from.current.y) > 1;
-    from.current = { x: at.x, y: at.y };
-    if (!moved || at.asleep) return;
-    setTrotting(true);
-    const t = setTimeout(() => setTrotting(false), PET_TROT_MS);
-    return () => clearTimeout(t);
-  }, [at.x, at.y, at.asleep]);
+  const node = useRef<HTMLDivElement>(null);
+  const place = (p: { x: number; y: number }) => {
+    dogAt.set(element.id, p);
+    const el = node.current;
+    if (el)
+      el.style.transform = `translate(${p.x - element.x - DOG_FEET.x}px, ${p.y - element.y - DOG_FEET.y}px)`;
+  };
+  // Walk to the goal along a route round the pieces, a frame at a time, writing the position straight to the drawing
+  // (no render a frame); a render only when it sets off, turns or arrives.
+  // An effect event, so the walk reads the latest position and goal but starts only when the goal, the pieces in the
+  // way or the bed change.
+  const walk = useEffectEvent((): (() => void) | undefined => {
+    const from = dogAt.get(element.id) ?? pos;
+    // With reduced motion it is simply where it is going (drawn there by the render below); nothing walks.
+    if (still) {
+      place(goal);
+      return;
+    }
+    const path =
+      Math.hypot(goal.x - from.x, goal.y - from.y) < 1 ? [] : findWalkPath(grid, from, goal);
+    if (path.length === 0) return;
+    let here = from;
+    let next = 0;
+    let last = performance.now();
+    let frame = 0;
+    let left: boolean | null = null;
+    let started = false;
+    const step = (now: number) => {
+      // It sets off on the first frame, so the effect itself sets no state.
+      if (!started) {
+        started = true;
+        setTrotting(true);
+      }
+      let budget = (DOG_SPEED * Math.min(100, now - last)) / 1000;
+      last = now;
+      while (budget > 0 && next < path.length) {
+        const to = path[next]!;
+        const d = Math.hypot(to.x - here.x, to.y - here.y);
+        if (Math.abs(to.x - here.x) > 0.5) {
+          const goingLeft = to.x < here.x;
+          if (goingLeft !== left) {
+            left = goingLeft;
+            setFacingLeft(goingLeft);
+          }
+        }
+        if (d <= budget) {
+          here = to;
+          next += 1;
+          budget -= d;
+        } else {
+          here = {
+            x: here.x + ((to.x - here.x) * budget) / d,
+            y: here.y + ((to.y - here.y) * budget) / d,
+          };
+          budget = 0;
+        }
+      }
+      place(here);
+      if (next < path.length) frame = requestAnimationFrame(step);
+      else {
+        setPos(here);
+        setTrotting(false);
+      }
+    };
+    frame = requestAnimationFrame(step);
+    return () => {
+      cancelAnimationFrame(frame);
+      setPos(dogAt.get(element.id) ?? here);
+    };
+  });
+  // A new goal, a moved bed or new pieces in the way start a fresh walk from where it stands.
+  useEffect(() => walk(), [goal.x, goal.y, grid, still, element.x, element.y]);
+  // Asleep only once home: on its way back it trots, awake.
+  const asleep = still
+    ? at.asleep
+    : at.asleep && !trotting && Math.hypot(pos.x - goal.x, pos.y - goal.y) < 1;
   const [pat, setPat] = useState(0);
   useEffect(() => {
     if (pat === 0) return;
@@ -95,13 +195,14 @@ export function PetDog({ element }: { element: ShapeElement }) {
   }, [pat]);
   const dog = (
     <div
-      className="lh-pet-trot pointer-events-none absolute left-0 top-0"
+      ref={node}
+      className="pointer-events-none absolute left-0 top-0"
       style={{
         width: DOG_W,
         height: DOG_H,
-        transform: `translate(${at.x - DOG_FEET.x}px, ${at.y - DOG_FEET.y}px)`,
+        transform: `translate(${(still ? goal : pos).x - element.x - DOG_FEET.x}px, ${(still ? goal : pos).y - element.y - DOG_FEET.y}px)`,
       }}
-      data-pet={at.asleep ? 'asleep' : 'awake'}
+      data-pet={asleep ? 'asleep' : 'awake'}
     >
       <div className="absolute inset-0" data-pet-stand="">
         <button
@@ -116,7 +217,7 @@ export function PetDog({ element }: { element: ShapeElement }) {
           }}
         >
           <DogDrawing
-            asleep={at.asleep}
+            asleep={asleep}
             facingLeft={facingLeft}
             patted={pat > 0}
             trotting={trotting && !still}
@@ -137,11 +238,10 @@ export function PetDog({ element }: { element: ShapeElement }) {
     </div>
   );
   // Out of its bed, the dog trots on the floor: in the 3D view its layer lies back down under the standing bed and
-  // the dog stands up about its own feet (docs/specs/008-canvas/3d-view.md "The office dog"; app/space-3d.css).
-  return at.asleep ? (
-    dog
-  ) : (
-    <div className="pointer-events-none absolute inset-0" data-pet-floor="">
+  // the dog stands up about its own feet (docs/specs/008-canvas/3d-view.md "The office dog"; app/space-3d.css). The
+  // wrapper is always there, only its mark changes, so setting off or getting home never re-mounts the dog.
+  return (
+    <div className="pointer-events-none absolute inset-0" data-pet-floor={asleep ? undefined : ''}>
       {dog}
     </div>
   );

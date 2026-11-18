@@ -41,7 +41,7 @@ export type WayfindingInput = {
     readPos: () => AvatarPoint | null;
     standingOnId: string | null;
     walkTo: (point: AvatarPoint, onArrive?: () => void) => void;
-    teleportTo: (point: AvatarPoint, arrivedPortalId?: string) => void;
+    teleportTo: (point: AvatarPoint, arrivedPortalId?: string, travel?: boolean) => void;
   };
   /** Enters Avatar mode as the Avatar pick does. */
   enterWalking: () => void;
@@ -191,7 +191,8 @@ export function useWayfinding(input: WayfindingInput): Wayfinding {
     // the same update as the switch, so the new tab never draws it anywhere else.
     if (on) {
       ignoreRef.current = ignoreId ?? null;
-      walk.teleportTo(point, ignoreId);
+      // To another tab, the landing is kept for the walk the new tab enters (avatar-mode.md "Changing tab").
+      walk.teleportTo(point, ignoreId, !!tabNow && tabId !== tabNow);
     }
     if (!tabNow || tabId === tabNow) {
       centreOn(point);

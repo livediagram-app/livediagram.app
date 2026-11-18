@@ -12,6 +12,15 @@ export function setArrowTurn(quarters: number): void {
   turn = quarters;
 }
 
+/**
+ * The screen direction a plan direction shows as, for the camera's turn (3d-view.md "Turning the camera"): a character
+ * facing the plan's west faces up the screen when the camera has turned one quarter. planDir's inverse.
+ */
+export function screenDir(plan: ArrowDir, quarters: number): ArrowDir {
+  const i = ORDER.indexOf(plan);
+  return ORDER[(((i + quarters) % 4) + 4) % 4]!;
+}
+
 /** The plan direction a screen direction steers, for the camera's turn now (or `quarters`). */
 export function planDir(screen: ArrowDir, quarters = turn): ArrowDir {
   const i = ORDER.indexOf(screen);

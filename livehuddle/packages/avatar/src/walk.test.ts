@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { steadyFacing } from './walk';
 import { AVATAR_SIZES, avatarScale } from './config';
 import {
   AVATAR_SPAWN_GAP,
@@ -306,5 +307,19 @@ describe('viewportOffsetCentredOn', () => {
       const p = { x: 50, y: 50 };
       expect(centredCamera(offset, p, p, size, z)).toEqual(offset);
     }
+  });
+});
+
+describe('steadyFacing keeps a diagonal walk steady (avatar-mode.md "Arrow keys")', () => {
+  it('keeps the facing along either axis of a near-45 degree step', () => {
+    expect(steadyFacing(1, 1.05, 'right')).toBe('right');
+    expect(steadyFacing(1.05, 1, 'down')).toBe('down');
+  });
+  it('turns to the larger axis when the current facing runs along neither', () => {
+    expect(steadyFacing(1.05, 1, 'up')).toBe('right');
+  });
+  it('turns to the larger axis off the diagonal, and nothing for no step', () => {
+    expect(steadyFacing(3, 1, 'down')).toBe('right');
+    expect(steadyFacing(0, 0, 'down')).toBeNull();
   });
 });

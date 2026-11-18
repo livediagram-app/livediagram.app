@@ -4,6 +4,7 @@
 // Ask Receptionist, and his bubble over his head while it is open. Drawn inside the transformed layer with the characters,
 // while you walk on a tab with an Avatar Pad. Owns its own clock (useReceptionist), so his frames redraw this layer alone.
 
+import { useSpace3DTurn } from '@/components/canvas/space-3d/useSpace3DView';
 import { useEffect, useRef } from 'react';
 import type { Element } from '@livehuddle/document';
 import type { PadArrival } from '@livehuddle/avatar/pad';
@@ -132,6 +133,8 @@ export function ReceptionistLayer({
     return () => window.removeEventListener('keydown', onKey, { capture: true });
   }, [chat.open]);
 
+  // He faces the way the turned 3D camera sees him (3d-view.md "Turning the camera").
+  const turn = useSpace3DTurn();
   if (!receptionist || !pose) return null;
   const scale = avatarScale(RECEPTIONIST_LOOK.size);
   const top = headPoint(pose.at, scale);
@@ -139,6 +142,7 @@ export function ReceptionistLayer({
   return (
     <>
       <AvatarWalker
+        turn={turn}
         pos={pose.at}
         facing={pose.facing}
         config={RECEPTIONIST_LOOK}

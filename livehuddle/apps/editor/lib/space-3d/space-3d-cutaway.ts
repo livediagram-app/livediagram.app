@@ -65,12 +65,80 @@ function segmentMeetsBox(
   );
 }
 
-/** The ids of the walls standing in front of your feet, which fade so they never hide you. None without feet. */
+export type SpaceRoom = { id: string; x: number; y: number; width: number; height: number };
+
+// How close to a room's edge a doorway or window stands to be in that room's wall, in canvas px.
+const ROOM_EDGE = 16;
+
+/** The rooms and pods on the board, unturned (a turned room's box is not its walls). */
+export function spaceRooms(
+  elements: readonly {
+    id: string;
+    type: string;
+    shape?: string;
+    x?: number;
+    y?: number;
+    width?: number;
+    height?: number;
+    rotation?: number;
+  }[],
+): SpaceRoom[] {
+  const out: SpaceRoom[] = [];
+  for (const el of elements) {
+    if (el.type !== 'shape' || (el.shape !== 'room' && el.shape !== 'office-pod')) continue;
+    if (el.rotation) continue;
+    out.push({
+      id: el.id,
+      x: el.x ?? 0,
+      y: el.y ?? 0,
+      width: el.width ?? 0,
+      height: el.height ?? 0,
+    });
+  }
+  return out;
+}
+
+/** How near a room your feet must come for its walls facing the camera to fade, in canvas px. */
+export const SPACE_ROOM_NEAR = 96;
+
+/** The rooms whose box holds the feet or lies within SPACE_ROOM_NEAR of them. */
+function roomsNear(rooms: readonly SpaceRoom[], feet: Point): SpaceRoom[] {
+  return rooms.filter(
+    (r) =>
+      feet.x > r.x - SPACE_ROOM_NEAR &&
+      feet.x < r.x + r.width + SPACE_ROOM_NEAR &&
+      feet.y > r.y - SPACE_ROOM_NEAR &&
+      feet.y < r.y + r.height + SPACE_ROOM_NEAR,
+  );
+}
+
+/** Whether a wall is one of the room's own: its walls, or a doorway or window standing on its edge. */
+function inRoomWall(wall: SpaceWall, room: SpaceRoom): boolean {
+  if (wall.id.startsWith(`${room.id}:`)) return true;
+  if (wall.kind !== 'doorway' && wall.kind !== 'window') return false;
+  const m = { x: (wall.a.x + wall.b.x) / 2, y: (wall.a.y + wall.b.y) / 2 };
+  const { x, y, width, height } = room;
+  if (m.x < x - ROOM_EDGE || m.x > x + width + ROOM_EDGE) return false;
+  if (m.y < y - ROOM_EDGE || m.y > y + height + ROOM_EDGE) return false;
+  return (
+    Math.abs(m.x - x) <= ROOM_EDGE ||
+    Math.abs(m.x - x - width) <= ROOM_EDGE ||
+    Math.abs(m.y - y) <= ROOM_EDGE ||
+    Math.abs(m.y - y - height) <= ROOM_EDGE
+  );
+}
+
+/**
+ * The ids of the walls standing in front of your feet, which fade so they never hide you. None without feet. In or near
+ * a room, its walls on the camera's side fade too, so you see into the whole room and can choose to go in (3d-view.md
+ * "Walls in front of you are cut away").
+ */
 export function cutAwayIds(
   walls: readonly SpaceWall[],
   feet: Point | null,
   // The camera's quarter turns (3d-view.md "Turning the camera"): in front is the camera's way.
   turn = 0,
+  rooms: readonly SpaceRoom[] = [],
 ): Set<string> {
   const out = new Set<string>();
   if (!feet) return out;
@@ -88,10 +156,29 @@ export function cutAwayIds(
   );
   const right = box.x + box.width;
   const bottom = box.y + box.height;
+  // Towards the camera, on the plan: one axis, so a wall's side and run are read from its plan points as they stand.
+  const toward = toCamera({ x: 0, y: 1 }, -turn);
+  const level = toward.x === 0;
+  const near = roomsNear(rooms, feet).map((room) => ({
+    room,
+    middle: (room.x + room.width / 2) * toward.x + (room.y + room.height / 2) * toward.y,
+  }));
   // Blades of grass are too low to hide anyone: never cut.
-  for (const wall of walls)
-    if (wall.kind !== 'grass' && segmentMeetsBox(wall.a, wall.b, box.x, box.y, right, bottom))
+  for (const wall of walls) {
+    if (wall.kind === 'grass') continue;
+    if (segmentMeetsBox(wall.a, wall.b, box.x, box.y, right, bottom)) {
       out.add(wall.id);
+      continue;
+    }
+    if (near.length === 0) continue;
+    // A wall across the view (level when the camera looks up or down the plan, upright when it looks across)...
+    const dx = Math.abs(wall.b.x - wall.a.x);
+    const dy = Math.abs(wall.b.y - wall.a.y);
+    if (level ? dx < dy : dy < dx) continue;
+    // ...on the camera's side of a near room's middle, and that room's own.
+    const at = ((wall.a.x + wall.b.x) / 2) * toward.x + ((wall.a.y + wall.b.y) / 2) * toward.y;
+    if (near.some((n) => at > n.middle && inRoomWall(wall, n.room))) out.add(wall.id);
+  }
   return out;
 }
 
