@@ -65,6 +65,9 @@ export type ArrivalProduct<
   // The person's grant on the item: edit on it without a link is the owner's chrome. `link` (the code a link's access
   // came through) and `tabId` say who a visitor reopening the item by its own address is.
   grant: (id: string) => Promise<{ level: string; tabId?: string | null; link?: string } | null>;
+  // The link a person reopening the item by its own address must enter the password of: the code the index's
+  // `password_required` refusal named (liveworkspace one-explorer-contracts.md "Reopened without the code"), or null.
+  passwordLink: (id: string) => Promise<string | null>;
   // The local sentinel an Offline Mode item is owned by.
   offlineOwnerId: string;
   // A link's own address names no item: the address to put in the bar for the one it opened, or null to keep it.
@@ -290,6 +293,18 @@ export async function openShareLink<
   return true;
 }
 
+// The link to open a protected item through when its own address could not load it, or null; a failure to ask is null.
+async function passwordLinkOf(
+  product: { passwordLink: (id: string) => Promise<string | null> },
+  id: string,
+): Promise<string | null> {
+  try {
+    return await product.passwordLink(id);
+  } catch {
+    return null;
+  }
+}
+
 /** Who the person reading an item by its own address is, from their grant. */
 type OwnReader = {
   isOwner: boolean;
@@ -360,10 +375,20 @@ export async function openOwnAddress<
       // index's `409 archived`, which only the owner hears. Not a connection problem: the item ends on not found,
       // which the editor shows as its archived card (the held grant's refusal says archived).
       set.setNotFound(true);
-    } else set.setLoadError(true);
+    } else {
+      // The api relays the index's `401 password_required`: a link visitor reopening a protected item with no code
+      // (one-explorer-contracts.md "Reopened without the code"). They open it through the link the refusal names,
+      // with its remembered password or the gate, never an error screen.
+      const link = await passwordLinkOf(product, id);
+      if (link) return openShareLink(product, run, { shareCodeParam: link, id, embed: false });
+      set.setLoadError(true);
+    }
     return endShort(product, set);
   }
   if (!fetched) {
+    // A protected item the person opened through its link before: through that link, as above, never Not Found.
+    const link = await passwordLinkOf(product, id);
+    if (link) return openShareLink(product, run, { shareCodeParam: link, id, embed: false });
     // The address named an item the api returned nothing for: it doesn't exist or isn't ours. A NotFound page
     // instead of the new-item welcome flow. An item in the Trash has no grant, so the api cannot tell it from a
     // missing one; the index can (its item outlives the trashing), and then it gets the deleted card.
