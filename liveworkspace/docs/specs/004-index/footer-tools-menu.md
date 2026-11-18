@@ -9,12 +9,40 @@ Settings, the appearance and one way into the rest.
 ## Where it sits
 
 - **Tools** leads the cluster, before Settings. The **Start Tour** button, when a tour is on offer, comes before it.
+- The **Editing Mode** button sits between Tools and Settings ([below](#the-editing-mode-button)); it is a button of
+  its own, never a row in Tools.
 - Its glyph is a toolbox. Labelled **Tools** from `sm` up like its neighbours (unless **Button Labels** is off),
   icon-only on a phone (a 40 px target, named "Tools"). It has no hover card: its label says what it is, and the
   popover says the rest.
 - It is drawn only while it holds at least one tool. Someone who may use none of them (a Viewer, a Community visitor,
   a workbench frame, an item in **This Browser** without Automations) sees no Tools button at all, never an empty popover.
 - The Explorer's bottom bar has it too, holding Search alone.
+
+## The Editing Mode button
+
+Owner, 2026-11-18 (Work Tracker 1291): Editing Mode was a row in Tools, opening a list of three plates in the role
+colours. It is now a **button of its own in the footer cluster, between Tools and Settings**, in every editor
+(livediagram, liveplanner, livedocuments, livedesign, livehuddle). The shared `EditingModeButton` draws it; each app
+hands it only its wiring (the mode in force, the modes the person may preview, the owner line, the setter).
+
+- **It shows only the mode you are in**: the mode's icon and its label, **Editor**, **Participant** or **Viewer**. The
+  icons are the roles' own (a pencil, a person with a plus, an eye). **No role colour**: it wears the neutral styling of
+  Tools and Settings beside it (`CHROME_BTN`), labelled from `sm` up like them (unless **Button Labels** is off) and
+  icon-only on a phone, as they are, the label then in its hover card and accessible name.
+- **A click moves to the next mode** the person may preview, in order down from their real role (Editor, Participant,
+  Viewer) and back round to it: an Editor steps Editor, Participant, Viewer, Editor; a Participant steps Participant,
+  Viewer, Participant. An app that offers fewer roles leaves the missing ones out (livehuddle has no Viewer step, so an
+  Editor steps Editor, Participant, Editor).
+- **One mode, no button.** Someone with a single mode (a Viewer, a livehuddle Participant) sees no Editing Mode
+  button: there is nothing to switch, and the bar keeps the room.
+- **Hover card.** Titled "Editing Mode: <mode>", it says what the next click does ("Click to see the <item> as a
+  Participant.", "Click to see the <item> as a Viewer.", "Click to go back to editing.", "Click to go back to
+  participating."), who owns the item where that is known ("Owned by Sam."), and "Only you see the change; everyone
+  else keeps their own role."
+- **Accessible name**: "Editing Mode: <mode>. Switch to <next mode>.", the Appearance control's shape, so a screen
+  reader hears the mode and that pressing changes it. It is a plain button (no popup); a press announces nothing more,
+  since the name itself changes.
+- The preview is local to the tab and the visit, as each app's Editor app spec ("Role pill") sets out.
 
 ## What it holds
 

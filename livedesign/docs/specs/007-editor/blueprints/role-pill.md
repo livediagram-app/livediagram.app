@@ -8,15 +8,18 @@ retired, [Power user mode](../power-user-mode.md); the role pill is what remains
 
 Scope, by file:
 
-| File                                              | Role                                                |
-| ------------------------------------------------- | --------------------------------------------------- |
-| `apps/live/components/chrome/RoleIndicator.tsx`   | `RolePill` (title bar)                              |
-| `apps/live/app/design/[id]/useViewPreview.ts`     | `viewPreview`, `canToggleRole`, `toggleViewPreview` |
-| `apps/live/app/design/[id]/useRoleIndicator.ts`   | Role in force, owner name and toggle, for the pill  |
-| `apps/live/app/design/[id]/useEditorState.ts`     | `isReadOnly` includes the preview                   |
-| `apps/live/app/design/[id]/editor-view-bars.tsx`  | Places the pill in the header's `rolePill` slot     |
-| `apps/live/components/chrome/EditorHeader.tsx`    | `rolePill` slot after the visibility badge          |
-| `apps/live/components/chrome/TopCenterChrome.tsx` | No separate visitor owner / role badge              |
+| File                                                                         | Role                                                                      |
+| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `apps/live/components/chrome/RoleIndicator.tsx`                              | `RolePill` (title bar)                                                    |
+| `apps/live/app/design/[id]/useViewPreview.ts`                                | `viewPreview`, `canToggleRole`, `toggleViewPreview`                       |
+| `apps/live/app/design/[id]/useRoleIndicator.ts`                              | Role in force, owner name and toggle, for the pill                        |
+| `apps/live/app/design/[id]/useEditorState.ts`                                | `isReadOnly` includes the preview                                         |
+| `apps/live/app/design/[id]/editor-view-bars.tsx`                             | Hands the Editing Mode button its wiring (`editingMode`) through `TabBar` |
+| `apps/editor/components/chrome/ChromeControls.tsx`                           | Draws `EditingModeButton` between Tools and Settings                      |
+| `packages/workbench/src/components/chrome/EditingModeButton.tsx` (repo root) | `EditingModeButton`, the shared button                                    |
+| `packages/workbench/src/lib/editing-mode.ts` (repo root)                     | `editingModes`, `nextEditingMode`: the modes and their order              |
+| `apps/live/components/chrome/EditorHeader.tsx`                               | `rolePill` slot after the visibility badge                                |
+| `apps/live/components/chrome/TopCenterChrome.tsx`                            | No separate visitor owner / role badge                                    |
 
 ## Domain and naming
 
@@ -45,6 +48,23 @@ where `role` is the role in force (`isReadOnly ? 'view' : 'edit'`).
   word without an owner), `aria-describedby` a visually hidden hint "Switch to viewing (read-only)" / "Switch to
   editing".
 - Without: a `<span tabIndex={0}>` with the visible role word and the owner phrase as visually hidden text.
+
+## Editing Mode button
+
+Work Tracker 1291: the role pill's switch is the **Editing Mode button** in the tab bar, between Tools and Settings
+(the spec's "Role pill"; the shared rules in
+[footer-tools-menu blueprint](../../../../../liveworkspace/docs/specs/004-index/blueprints/footer-tools-menu.md) FM-EM).
+
+- `useViewPreview` returns `previewModes = editingModes(sessionRole, PREVIEW_MODES)`: the app's offered modes from the
+  session's role down. `setViewPreview(level)` takes any of them (a level outside them is ignored), and the level in
+  force is the preview while it is one of them, else the session's role. `canToggleRole` keeps meaning "an Editor's
+  session" (the Participant preview's own adder key follows it); a Participant previewing as a Viewer keeps the room's
+  key and simply reads.
+- The bars pass `editingMode = { mode: can.level, modes: previewModes, noun, owner: roleOwnerLabel(...), onPick:
+setViewPreview }`, and `ChromeControls` draws `<EditingModeButton {...editingMode} labelled={labelled} />` straight
+  after `ChromeToolsMenu`. With one mode the button renders nothing.
+- `RolePill` is no longer mounted (the title bar went with the header experiment); `roleOwnerLabel` stays as the owner
+  line's one source.
 
 ## Errors and edge cases
 
@@ -76,12 +96,14 @@ where `role` is the role in force (`isReadOnly ? 'view' : 'edit'`).
 
 ## Testing
 
-| Rule                                               | Test                                                                          |
-| -------------------------------------------------- | ----------------------------------------------------------------------------- |
-| Toggle for owner and edit link, none for view link | `app/design/[id]/useViewPreview.test.tsx` (jsdom)                             |
-| Role pill: toggle vs static, names, Tooltip label  | `components/chrome/RoleIndicator.test.tsx` (jsdom)                            |
-| Role pill toggles view preview for the owner       | `e2e/role-pill.spec.ts`                                                       |
-| A blob with the retired power user keys loads      | `e2e/role-pill.spec.ts`, `packages/api-schema/src/legacy-preferences.test.ts` |
+| Rule                                                                 | Test                                                                                                                     |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Toggle for owner and edit link, none for view link                   | `app/design/[id]/useViewPreview.test.tsx` (jsdom)                                                                        |
+| Role pill: toggle vs static, names, Tooltip label                    | `components/chrome/RoleIndicator.test.tsx` (jsdom)                                                                       |
+| The button: modes, order, wrap, names, hover card, none for one mode | `packages/workbench/src/components/chrome/EditingModeButton.test.tsx`, `packages/workbench/src/lib/editing-mode.test.ts` |
+| A Participant previews as a Viewer and back                          | `app/design/[id]/useViewPreview.test.tsx` (jsdom)                                                                        |
+| The Editing Mode button steps the owner through the modes            | `e2e/role-pill.spec.ts`                                                                                                  |
+| A blob with the retired power user keys loads                        | `e2e/role-pill.spec.ts`, `packages/api-schema/src/legacy-preferences.test.ts`                                            |
 
 ## Defaults ledger
 

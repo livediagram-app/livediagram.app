@@ -119,7 +119,7 @@ once a plan is open.
   in real time."). Each link shows its level on a chip and can be changed in place.
 - A link visitor's level comes from the grant the index issues for the link (`level`, and `tab` when the link opens
   one tab). The api and the room check it on every request and socket ([API](../015-api/api.md) "Access").
-- The editor's role pill reads Editing, Participating or Viewing.
+- The editor's Editing Mode button (the role pill's successor, between Tools and Settings) reads Editor, Participant or Viewer, and lets a person preview the roles below their own.
 - **Losing access is explained, never silent.** A session ended by an access change (a link turned off, a password
   set, a grant whose level or tab changed on renewal) reloads into the access check, and a refusal then reads **No
   Longer Shared With You** ("Your access to this project was removed while you had it open. Ask its owner to share

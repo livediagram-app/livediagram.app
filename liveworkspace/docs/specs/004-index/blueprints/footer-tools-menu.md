@@ -15,6 +15,8 @@ precision. Paths are relative to the repository root.
 | `packages/workbench/src/components/chrome/tools-door.ts`                    | `usePublishToolsItems`, `requestToolsView(id)`, `usePublishItemVersions`                   |
 | `packages/ui/src/dialog/dialog-slot.ts`                                     | the slot a tool's dialog renders into, in place of a modal                                 |
 | `<product>/apps/<editor>/components/chrome/ChromeControls.tsx`              | builds the rows in the spec's order and draws `ChromeToolsMenu` left of Search             |
+| `packages/workbench/src/components/chrome/EditingModeButton.tsx`            | `EditingModeButton`: the Editing Mode button between Tools and Settings (FM-EM)            |
+| `packages/workbench/src/lib/editing-mode.ts`                                | `editingModes(real, offered)`, `nextEditingMode(mode, modes)`: the modes and their order   |
 
 FM1. `ChromeToolsItem = { id, group, label, description, icon, onSelect(anchor), inPlace?, view?, aside?, attention?,
 attentionLabel? }`. `inPlace: true`: `onSelect` opens a dialog, which renders inside Tools (FM6). `view(ctx)`: the
@@ -98,3 +100,12 @@ FM11. History's avatars (owner, 2026-11-17). Every entry's disc (`PersonAvatar`,
 asks the people store for its actor's picture, the reader's own included, so your entries wear your avatar: your
 picture, else your initials on the brand. Others keep their picture or initials on their colour; someone unnamed or a
 closed account the grey person glyph.
+
+FM-EM. The Editing Mode button (spec "The Editing Mode button"). `EditingModeButton({ mode, modes, noun, owner, labelled,
+onPick })`: `modes` is `editingModes(realRole, offered)`, the offered roles from the real one down, in `EDITING_MODES`
+order (`edit`, `participate`, `view`); fewer than two and it renders nothing. A press calls
+`onPick(nextEditingMode(mode, modes))`, the next in `modes`, wrapping round (a `mode` outside `modes` steps to the
+first). The button: `CHROME_BTN` (+ `CHROME_BTN_LABELLED`), the mode's glyph, `ChromeLabel` with the mode's word
+(Editor, Participant, Viewer), `aria-label` "Editing Mode: <word>. Switch to <next word>.", `data-editing-mode={mode}`,
+inside a `HoverCard` (`@liveworkspace/ui`) titled "Editing Mode: <word>". Each `ChromeControls` takes `editingMode`
+(the props less `labelled`) and draws it straight after `ChromeToolsMenu`, before Settings; `TabBar` passes it through.

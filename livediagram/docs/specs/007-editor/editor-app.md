@@ -65,33 +65,26 @@ The tabs read as tabs, not buttons, and every editor draws them alike from `pack
 
 ## Role pill
 
-The **role pill** says whether you are editing, participating in or viewing this document. Everyone sees it, owner included.
+The role pill is now the **Editing Mode button** (Work Tracker 1291): it says which mode you are in and a click moves
+to the next mode you may preview. Everyone with more than one mode sees it, owner included. It is the shared
+`EditingModeButton` ([The Editing Mode button](../../../../liveworkspace/docs/specs/004-index/footer-tools-menu.md#the-editing-mode-button)); this app hands it only its wiring.
 
-- **Where.** In the title bar, after the visibility badge. From `sm` up, like the visibility badge: a phone's title
-  bar has no room.
-- **What it reads.** "Editing" (emerald), "Participating" (teal) or "Viewing" (amber).
-- **Level with the visibility badge.** Both are 19 px pills centred on the title's line: neither sits higher or lower.
-- **Who owns the document** is disclosed progressively: a Tooltip on the pill reads "Owned by <name>" ("Owned by you"
-  for the owner), and the pill's accessible name carries the same words after its role. There is no separate owner
-  badge. With no known owner (the owner has never joined the room), the pill has no Tooltip. **On a team canvas** (a
-  document in a team library, [Team shared documents](../013-workspace/team-shared-documents.md)) the team owns it, so
-  the pill names the team for everyone, its members and link visitors alike: "Owned by <team name>", or "Owned by a
-  team" where the session does not know the team's name (a visitor outside the team). Every joined member holds edit
-  and gets the owner's chrome, so "Owned by you" there told each of them they owned it. Who gets the toggle is
-  unchanged: it still follows your role.
-- **A toggle when your role allows editing.** For the owner, and equally for a visitor whose link grants edit, the pill is a
-  button: each click steps **Editing**, then **Participating**, a preview of the document as a Participant sees and
-  works it ([Share roles](../013-workspace/share-roles.md)), then **Viewing**, a read-only preview as a view-link
-  visitor sees it, then back to Editing. The preview is local to this tab and this visit: it changes no one's role on
-  the server, nothing other participants see of you, and a reload returns to Editing. Participating works as a
-  Participant does: the Participate palette and its limits, adding stickies and text, and moving, rewriting and
-  deleting only what you added while previewing. An Editor has no adder key from the room, so the preview stamps
-  what it adds with its own (`preview-<participant id>`); what you add stays in the document, and no real
-  Participant's key matches it. The pill's accessible description says what a click does ("Switch to participating
-  (as a Participant sees it)" / "Switch to viewing (read-only)" / "Switch to editing").
-- **Not a toggle when your role is view.** A view-link visitor's pill is static text, focusable so its Tooltip
-  can be read by keyboard.
-- Zen mode and embeds hide it with the rest of the header.
+- **Where.** In the tab bar's control cluster, straight after **Tools** and before **Settings**. It is not a tool in
+  Tools, and the title bar has no pill.
+- **What it shows.** Only the mode in force: its icon (a pencil, a person with a plus, an eye) and its label,
+  **Editor**, **Participant** or **Viewer**. No role colour: it wears the same neutral styling as Tools and Settings,
+  labelled from `sm` up like them (unless **Button Labels** is off) and icon-only on a phone, the label then in its
+  hover card and accessible name.
+- **A click moves to the next mode**, in order down from your real role and back round to it: an Editor (the owner, or a visitor whose link grants edit) steps **Editor**, then **Participant**, a preview of the canvas as a Participant sees and works it ([Share roles](../013-workspace/share-roles.md)), then **Viewer**, a read-only preview as a view-link visitor sees it, then back to Editor. A Participant steps **Participant**, then **Viewer**, then back to Participant. The preview is
+  local to this tab and this visit: it changes no one's role on the server, nothing other participants see of you,
+  and a reload returns to your own role. Participating works as a Participant does: the Participate palette and its limits, adding stickies and text, and moving, rewriting and deleting only what you added while previewing as a Participant. An Editor has no adder key from the room, so the preview stamps what it adds with its own (`preview-<participant id>`); what you add stays in the document, and no real Participant's key matches it.
+- **One mode, no button.** A Viewer has one mode, so sees no Editing Mode button: there is nothing to switch.
+- **Hover card and name.** Its hover card is titled "Editing Mode: <mode>" and says what the next click does
+  ("Click to see the canvas as a Participant." / "Click to see the canvas as a Viewer." / "Click to go back to editing." / "Click to go back to participating."), then who owns the canvas: "Owned by <name>" ("Owned by you" for the owner), and that "Only you see the
+  change; everyone else keeps their own role.". With no known owner (the owner has never joined the room) it says
+  only what the click does. **On a team canvas** (a document in a team library, [Team shared documents](../013-workspace/team-shared-documents.md)) the team owns it, so the line names the team for everyone, its members and link visitors alike: "Owned by <team name>", or "Owned by a team" where the session does not know the team's name (a visitor outside the team). Who gets the button is unchanged: it still follows your role. Its accessible name is "Editing Mode: <mode>. Switch to <next mode>.", so a screen
+  reader hears the mode and that pressing changes it.
+- Zen mode and embeds hide it with the rest of the tab bar.
 
 ## What the editor supports today
 
