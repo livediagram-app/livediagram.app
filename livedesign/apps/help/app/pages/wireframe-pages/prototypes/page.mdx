@@ -87,7 +87,7 @@ A prototype link opens into Prototype mode only on a wireframe tab; on any other
 
 ### On a Phone
 
-Open a prototype link on a phone and the screen fills the whole display: the device frame steps aside, so it feels like the real app. The bar becomes a small floating pill at the top with **Previous**, the screen's place, **Next** and **Close**. Tap a linked element to follow it.
+Open a prototype link on a phone and the screen fills the whole display: the device frame steps aside, so it feels like the real app. The bar becomes a small floating pill at the top with **Previous**, the screen's place, **Next** and **Close**. Tap a linked element to follow it. The pill and the screen stay clear of the notch, the home indicator and the browser's bars, upright or held sideways.
 
 ## The Flow View
 
@@ -95,9 +95,10 @@ Press **Flow** in the bottom-right corner, after **Inspect**, to see the prototy
 
 - Every linked element is outlined.
 - A link to the **screen beside it** curves across the gap into that screen's edge.
-- A link to a **screen further along** arcs over the row of screens and drops onto that screen's top edge, so it never looks as if it goes to a screen it passes.
+- A link to a **screen further along** arcs over the row of screens, drops down the gap beside that screen and enters its side just below the top, so it never looks as if it goes to a screen it passes and never crosses the screen's name or buttons above it.
 - A **Back** link is tagged **Back**: where it goes depends on how you got there.
 - A **broken** link is outlined in red, with a short dashed line and a **Broken** tag.
+- A **Back** or **Broken** tag moves to the element's left when its right would cover an arrow.
 
 <Figure caption="The Flow view: Home's card curving to Product, its Shop button arcing over to Cart, a broken link on Product, and Cart's back button tagged Back.">
   <FlowViewScene />
