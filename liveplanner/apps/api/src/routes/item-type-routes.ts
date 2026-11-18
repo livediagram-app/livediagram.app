@@ -6,7 +6,12 @@
 // refused with what is stored, so two editors saving at once never overwrite each other.
 
 import type { ItemTypesResponse, ItemTypesStale } from '@liveplanner/api-schema';
-import { validateItemTypeCatalogue, type ItemTypeCatalogue } from '@liveplanner/items';
+import {
+  typesOf,
+  validateItemTypeCatalogue,
+  withPinnedPrefixes,
+  type ItemTypeCatalogue,
+} from '@liveplanner/items';
 import { getProject } from '../db';
 import { setPlanItemTypes } from '../plan-room/plan-content';
 import { badRequest, forbidden, json, methodNotAllowed } from '../responses';
@@ -34,7 +39,15 @@ async function put(ctx: PlanRouteContext, projectId: string): Promise<Response> 
   if (raw !== null) {
     // The newest build: a field kind it does not know is a mistake, never a newer field (item-types.md "Fields from a
     // newer version").
-    const result = validateItemTypeCatalogue(raw, { newerFields: 'refuse' });
+    const sent = validateItemTypeCatalogue(raw, { newerFields: 'refuse' });
+    // A type whose made card prefix this change would shift keeps the one it had, and a new type stores its own
+    // (item-types.md "Card number prefixes"); checked again, so a prefix set over another type's made one is refused.
+    const result = sent.ok
+      ? validateItemTypeCatalogue(
+          { ...sent.catalogue, types: withPinnedPrefixes(typesOf(doc.itemTypes), sent.catalogue.types) },
+          { newerFields: 'refuse' },
+        )
+      : sent;
     if (!result.ok) {
       console.info('[item-types] item-types.rejected', { reason: result.reason });
       return json({ error: 'item_types_invalid', reason: result.reason }, { status: 400 });

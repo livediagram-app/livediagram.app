@@ -14,6 +14,7 @@ import {
   typeIn,
   type Item,
   type PlanBoardOutline,
+  cardRef,
 } from '@liveplanner/items';
 import type { PlanState } from '@liveplanner/agent-verbs';
 
@@ -76,7 +77,8 @@ export function boardView(state: PlanState, tabId?: string): BoardView {
     const color = typeIn(plan.types, i.type).color;
     return {
       id: i.id,
-      ref: `#${i.key}`,
+      // Its number with its type's prefix ("WI-12"; docs/specs/026-plan/item-types.md "Card number prefixes").
+      ref: cardRef(i, plan.types) || `#${i.key}`,
       title: cut(itemTitle(i)),
       color: HEX_COLOUR.test(color) ? color : null,
     };

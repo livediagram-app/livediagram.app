@@ -22,6 +22,8 @@ import {
   typeIn,
   type Item,
   type ItemTypeDef,
+  cardRef,
+  cardRefTitle,
 } from '@liveplanner/items';
 import {
   reactionSummary,
@@ -78,12 +80,18 @@ export type ListedThread = {
 
 const iso = (ms: number) => new Date(ms).toISOString();
 
-// A card a thread is on, as people say it: "#12 Title" here, "#4 in Sprint 12" in another plan.
-function cardName(card: CardRef, projectId: string, items: ReadonlyMap<string, Item>): string {
+// A card a thread is on, as people say it: "WI-12 Title" here (its type's prefix: docs/specs/026-plan/item-types.md "Card
+// number prefixes"), "#4 in Sprint 12" in another plan, whose card types are not read.
+function cardName(
+  card: CardRef,
+  projectId: string,
+  items: ReadonlyMap<string, Item>,
+  types: readonly ItemTypeDef[],
+): string {
   const num = card.key !== null ? `#${card.key}` : 'a card';
   if (card.projectId !== projectId) return `${num} in ${card.projectName || 'another plan'}`;
   const item = items.get(card.itemId);
-  return item ? `${num} ${itemTitle(item) || 'Untitled'}` : num;
+  return item ? cardRefTitle(item, itemTitle(item) || 'Untitled', types) : num;
 }
 
 export function listedComment(c: Comment): ListedComment {
@@ -129,7 +137,7 @@ export function listedThread(
     title: t.title,
     state: t.resolved ? 'resolved' : 'open',
     ...(t.resolved && t.resolvedBy ? { resolvedBy: t.resolvedBy } : {}),
-    cards: t.cards.map((c) => cardName(c, projectId, items)),
+    cards: t.cards.map((c) => cardName(c, projectId, items, types)),
     ...(field ? { field } : {}),
     comments: t.comments.map(listedComment),
   };
@@ -316,7 +324,7 @@ export async function applyThreadChanges(
             { text: change.text, ...(field && field !== COMMENTS_FIELD ? { field } : {}) },
           );
           keep(made, '');
-          applied.push(`+ thread ${made!.id} "${made!.title}" on #${item.key}`);
+          applied.push(`+ thread ${made!.id} "${made!.title}" on ${cardRef(item, initial.types) || `#${item.key}`}`);
           break;
         }
         case 'reply': {

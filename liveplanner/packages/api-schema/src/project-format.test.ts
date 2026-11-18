@@ -11,8 +11,8 @@ import { PROJECT_FORMAT, PROJECT_FORMAT_HEADER } from './project-format';
 
 // docs/specs/016-platform/new-version-prompt.md "The project format number".
 describe('the project format number', () => {
-  it('is 7, card templates, carried in one header', () => {
-    expect(PROJECT_FORMAT).toBe(7);
+  it('is 8, card prefixes, carried in one header', () => {
+    expect(PROJECT_FORMAT).toBe(8);
     expect(PROJECT_FORMAT_HEADER).toBe('X-Liveplanner-Format');
   });
 });
@@ -183,10 +183,12 @@ const READS: Readonly<
     calculations: ['childCount', 'childrenDone', 'formula', 'lookup', 'rollup'],
   },
 };
+// Format 8 adds a card type's prefix and no field kind or calculation.
+const READS_NOW = { ...READS, 8: READS[7]! };
 
 describe('a new card field kind or calculation bumps the format', () => {
   it('reads exactly the kinds and calculations this format names', () => {
-    const reads = READS[PROJECT_FORMAT];
+    const reads = READS_NOW[PROJECT_FORMAT];
     expect(reads, `no kinds listed for format ${PROJECT_FORMAT}`).toBeDefined();
     expect(
       [...CUSTOM_FIELD_KINDS].sort(),
@@ -259,7 +261,13 @@ const TYPE_SHAPE_7 = {
   type: [...TYPE_SHAPE.type, 'templates'].sort(),
   template: ['fields', 'id', 'name'],
 };
-const KEYS: Readonly<Record<number, typeof TYPE_SHAPE>> = { 6: TYPE_SHAPE, 7: TYPE_SHAPE_7 };
+// Format 8 adds a type's card prefix (docs/specs/026-plan/item-types.md "Card number prefixes").
+const TYPE_SHAPE_8 = { ...TYPE_SHAPE_7, type: [...TYPE_SHAPE_7.type, 'prefix'].sort() };
+const KEYS: Readonly<Record<number, typeof TYPE_SHAPE>> = {
+  6: TYPE_SHAPE,
+  7: TYPE_SHAPE_7,
+  8: TYPE_SHAPE_8,
+};
 
 describe("a new key in a card type's stored shape bumps the format", () => {
   it('reads exactly the type, tab and field keys this format names', () => {

@@ -225,7 +225,7 @@ export const mcpListItems = mcpTool('list_items', {
   description:
     'Read a plan’s boards: each one with its columns (by name) and the cards in each, and its header ' +
     'widgets by the names change_board takes, the items with ' +
-    'their number (#12), card type, column and fields (flagged: true on a flagged card; each picture of an image field or attachments as its id ' +
+    'their number with its type’s prefix (WI-12), card type, column and fields (flagged: true on a flagged card; each picture of an image field or attachments as its id ' +
     'and a link your token can read) and linked GitHub pull requests’ states, and the card types with their ' +
     'fields and card templates. Everything ' +
     'change_items, add_board and change_card_types name comes from here. Open cards only by default: closed ' +
@@ -256,7 +256,7 @@ export const mcpChangeItems = mcpTool('change_items', {
     'for this plan. ' +
     'Name things as the board shows them: a ' +
     'column by its name ("In Progress"), a card type by name ("Bug"), a custom field by name, an assignee ' +
-    'by a person’s name, an item by its number ("#12"). An unknown column, type or field is refused with ' +
+    'by a person’s name, an item by its number ("WI-12", "#12" and "12" all work). An unknown column, type or field is refused with ' +
     'the ones there are. ' +
     FIELD_LIMITS +
     ' A value past one is refused naming the field, its length and the most it takes. Everyone with the plan open ' +
@@ -380,7 +380,7 @@ export const mcpChangeCardTypes = mcpTool('change_card_types', {
   title: 'Change the card types',
   description:
     'Add, edit or delete a plan’s card types (the kinds of card its boards hold, like Task ' +
-    'or Bug), with custom fields by name: add {name, color, glyph, fields, custom, defaultStatus, ' +
+    'or Bug), with custom fields by name: add {name, prefix (its cards’ number prefix, WI in WI-12), color, glyph, fields, custom, defaultStatus, ' +
     'statuses (its columns, in order), display, tabs (each with an optional icon glyph), detailsLabel, detailsGlyph, templates}, set {type, ...; editCustom renames a field, replaces a ' +
     'choice field’s options or a card field’s linkTypes in place; inherits names a base type, null detaches; addTemplates, ' +
     'editTemplates and removeTemplates change its card templates}, delete {type} ' +

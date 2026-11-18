@@ -14,6 +14,8 @@ import {
   isItemPerson,
   itemStatus,
   itemSummary,
+  cardRef,
+  cardRefTitle,
   itemTitle,
   resolveFields,
   calculatedWritten,
@@ -111,7 +113,7 @@ function loopStop(
   change: BlockingChange,
 ): void {
   const loop = blockingCycleOf(items, types, [change]);
-  if (loop) throw new Stop('blocks_cycle', blockingLoopMessage(loop.chain));
+  if (loop) throw new Stop('blocks_cycle', blockingLoopMessage(loop.chain, types));
 }
 
 function must<T extends object>(
@@ -144,7 +146,7 @@ function placeOf(item: Item, state: PlanState): string {
 
 // "#3 [task] Fix login in In Progress", then what a set changed and any note.
 function line(prefix: string, item: Item, state: PlanState, notes: readonly string[] = []): string {
-  return `${prefix} ${itemSummary(item)}${placeOf(item, state)}${notes.map((n) => `; ${n}`).join('')}`;
+  return `${prefix} ${itemSummary(item, state.plan.types)}${placeOf(item, state)}${notes.map((n) => `; ${n}`).join('')}`;
 }
 
 // A note for an assignee given by a name nobody on the project has: a name only, not linked to an account.
@@ -164,17 +166,18 @@ const SET_VALUE_MAX = 40;
 
 // A value as a set line reads it back: what was stored, so a value that landed other than meant shows ("Rating =
 // ★"). A card link by its number, a person by name, a list by its length.
-function storedText(value: unknown, items: readonly Item[]): string {
+function storedText(value: unknown, items: readonly Item[], types: readonly ItemTypeDef[]): string {
+  const refOf = (i: Item) => cardRef(i, types) || `#${i.key}`;
   if (isItemPerson(value)) return value.name;
   // A field that holds several (docs/specs/026-plan/item-types.md "Holds Several"): its people or cards, named.
   if (Array.isArray(value) && value.length > 0 && value.every(isItemPerson))
     return cut(value.map((p) => p.name).join(', '));
   if (Array.isArray(value) && value.length > 0 && value.every((v) => byIdIn(items, v)))
-    return cut(value.map((v) => `#${byIdIn(items, v)!.key}`).join(', '));
+    return cut(value.map((v) => refOf(byIdIn(items, v)!)).join(', '));
   if (Array.isArray(value)) return `${value.length} entr${value.length === 1 ? 'y' : 'ies'}`;
   if (typeof value === 'string') {
     const linked = items.find((i) => i.id === value);
-    if (linked) return `#${linked.key}`;
+    if (linked) return refOf(linked);
     return JSON.stringify(cut(value.split('\n')[0]!));
   }
   // A number or flag as written; anything else as its JSON, cut.
@@ -204,6 +207,7 @@ function setNote(
   cleared: readonly string[],
   type: ItemTypeDef,
   items: readonly Item[],
+  types: readonly ItemTypeDef[],
 ): string[] {
   const name = (key: string) => type.custom?.find((f) => f.id === key)?.label ?? key;
   // Formatting reads back as the field it belongs to.
@@ -215,7 +219,7 @@ function setNote(
           `set ${Object.entries(set)
             .map(
               ([k, v]) =>
-                `${name(k)} = ${isPictureKey(k, type) ? picturesText(v) : storedText(v, items)}`,
+                `${name(k)} = ${isPictureKey(k, type) ? picturesText(v) : storedText(v, items, types)}`,
             )
             .join(', ')}`,
         ]
@@ -291,7 +295,7 @@ export async function applyItemChanges(
     const isDone = doneStatusesOf(state.plan.boards);
     const index = blockingIndexOf(items, types, isDone);
     const shifts = followingShifts(index, (i) => isDone(itemStatus(i)), [moved.id]);
-    const after = `#${moved.key} ${itemTitle(moved)}`;
+    const after = cardRefTitle(moved, itemTitle(moved), types);
     for (const s of shifts) {
       writing = typeIn(types, s.item.type);
       const { item } = await post(`${base}/${encodeURIComponent(s.item.id)}`, { set: s.set });
@@ -419,7 +423,7 @@ export async function applyItemChanges(
           ...(clear.length ? { clear } : {}),
           ...(c.type ? { type: type.id } : {}),
         });
-        const notes = [...setNote(set, clear, type, items), ...personNote(set, items)];
+        const notes = [...setNote(set, clear, type, items, types), ...personNote(set, items)];
         keep(item);
         applied.push(line('~', item, state, notes));
         if (c.moveFollowing) await moveFollowing(item);
@@ -441,7 +445,7 @@ export async function applyItemChanges(
         if (!res.ok) throw new ApiError(res.status, await res.text());
         items = items.filter((i) => i.id !== target.id);
         touched.delete(target.id);
-        applied.push(`- ${itemSummary(target)}`);
+        applied.push(`- ${itemSummary(target, types)}`);
       }
     }
   } catch (err) {

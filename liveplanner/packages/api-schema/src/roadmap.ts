@@ -82,6 +82,8 @@ export type PublicRoadmapCard = {
   voted?: boolean;
   description?: string;
   number?: number;
+  // Its number as people see it, with its type's prefix ("WI-12": item-types.md "Card number prefixes"), beside `number`.
+  ref?: string;
   type?: string;
   labels?: string[];
   start?: string;

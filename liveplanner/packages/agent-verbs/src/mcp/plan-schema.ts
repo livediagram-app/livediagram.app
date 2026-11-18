@@ -44,7 +44,9 @@ const WIDGETS_CHANGE_MAX = BOARD_WIDGET_KINDS.length + FIELD_WIDGETS_MAX;
 
 const url = z.string().describe('Link that opens the plan in the liveplanner editor.');
 const projectId = z.string().describe('The plan (from find_projects).');
-const itemRef = z.string().describe('The item, by its number ("#12") or an id prefix.');
+const itemRef = z
+  .string()
+  .describe('The item, by its number ("WI-12", "#12" or "12") or an id prefix.');
 const statusArg = z
   .string()
   .describe(
@@ -586,6 +588,12 @@ const tabsArg = z
       'Fields in no tab show under Details. Replaces the tabs whole.',
   );
 const detailsLabelArg = z.string().describe('What the panel calls Details (1-24 characters).');
+const prefixArg = z
+  .string()
+  .describe(
+    'Its card prefix, shown before its cards’ numbers (WI in WI-12): 1-6 letters and digits starting with a letter; ' +
+      'another type’s prefix is refused.',
+  );
 const detailsGlyphArg = glyphIdArg.describe(
   'The icon Details wears, a Plan glyph id; null puts the default (checklist) back.',
 );
@@ -679,6 +687,7 @@ export const cardTypeChangeSchema = z.discriminatedUnion('op', [
     detailsLabel: detailsLabelArg.optional(),
     detailsGlyph: detailsGlyphArg.optional(),
     assigneeNotifies: assigneeNotifiesArg.optional(),
+    prefix: prefixArg.optional().describe('Its card prefix; default made from its name (Work Item WI).'),
     inherits: typeArg
       .optional()
       .describe(
@@ -723,6 +732,10 @@ export const cardTypeChangeSchema = z.discriminatedUnion('op', [
     detailsLabel: detailsLabelArg.optional(),
     detailsGlyph: detailsGlyphArg.optional(),
     assigneeNotifies: assigneeNotifiesArg.optional(),
+    prefix: prefixArg
+      .nullable()
+      .optional()
+      .describe('Its card prefix; "" or null puts the one made from its name back. A rename keeps it.'),
     inherits: typeArg
       .nullable()
       .optional()
@@ -889,6 +902,7 @@ const listedType = z.object({
       }),
     )
     .describe('Its item panel’s tabs; fields in none show under Details.'),
+  prefix: z.string().describe('Its card prefix, before its cards’ numbers (WI in WI-12).'),
   detailsLabel: z.string().describe('What its panel calls Details.'),
   detailsGlyph: z
     .string()
@@ -971,7 +985,7 @@ const listedBoard = z.object({
 });
 
 const listedItem = z.object({
-  ref: z.string().describe('The item’s number as people say it, "#12".'),
+  ref: z.string().describe('The item’s number as people say it, with its type’s prefix: "WI-12".'),
   id: z.string().describe('The item id.'),
   type: z.string().describe('Its card type id.'),
   status: z.string().nullable().describe('Its status id, or null.'),

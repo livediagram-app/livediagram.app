@@ -11,6 +11,8 @@ import {
   resolveItem,
   type Item,
   type ItemFields,
+  cardRef,
+  type ItemTypeDef,
 } from '@liveplanner/items';
 import { defineVerb, VerbRefusal, type VerbContext } from '../define';
 import { applyItemChanges, type ItemChange } from '../plan/item-changes';
@@ -33,6 +35,9 @@ const itemArg = z.string().describe('The item, by its number (#12) or an id pref
 const itemOut = z.object({
   id: z.string(),
   key: z.number(),
+  // Its number as people see it, with its type's prefix ("WI-12"; docs/specs/026-plan/item-types.md "Card number
+  // prefixes"); every form reads back as the card.
+  ref: z.string(),
   type: z.string(),
   status: z.string().nullable(),
   title: z.string(),
@@ -45,9 +50,10 @@ const listedItemOut = itemOut.extend({
   pullRequests: z.array(listedPullRequestSchema).optional(),
 });
 
-const outOf = (item: Item) => ({
+const outOf = (item: Item, types: readonly ItemTypeDef[]) => ({
   id: item.id,
   key: item.key,
+  ref: cardRef(item, types) || `#${item.key}`,
   type: item.type,
   status: itemStatus(item) ?? null,
   title: itemTitle(item),
@@ -64,7 +70,11 @@ async function planOf(
 
 // One change through the Plan engine (docs/specs/026-plan/plan-agents.md): names resolved as the MCP resolves
 // them, a refusal as the verb's.
-async function changeOne(ctx: VerbContext, projectRef: string, change: ItemChange): Promise<Item> {
+async function changeOne(
+  ctx: VerbContext,
+  projectRef: string,
+  change: ItemChange,
+): Promise<{ item: Item; types: readonly ItemTypeDef[] }> {
   const { projectId, state } = await planOf(ctx, projectRef);
   const result = await applyItemChanges(ctx.api, projectId, [change], state);
   if (result.refusal)
@@ -75,7 +85,7 @@ async function changeOne(ctx: VerbContext, projectRef: string, change: ItemChang
       hint: 'list the columns, card types and fields with: liveplanner item ls <project>',
     });
   // An add, set or move that was not refused always answers its item.
-  return result.touched[0]!;
+  return { item: result.touched[0]!, types: state.plan.types };
 }
 
 // `key=value` pairs into fields: numbers stay numbers, `labels` splits on commas, the rest is text.
@@ -213,6 +223,7 @@ export const itemLs = defineVerb({
         return {
           id: i.id,
           key: item.key,
+          ref: i.ref,
           type: i.type,
           status: i.column ?? i.status,
           title: i.title,
@@ -228,7 +239,7 @@ export const itemLs = defineVerb({
     ...boards,
     ...columns(
       items.map((i) => [
-        `#${i.key}`,
+        i.ref,
         i.type,
         i.status ?? '-',
         JSON.stringify(i.title) +
@@ -238,7 +249,7 @@ export const itemLs = defineVerb({
     ),
     ...(closedLeftOut ? [closedLeftOutLine(closedLeftOut)] : []),
   ],
-  quiet: ({ items }) => items.map((i) => `#${i.key}`),
+  quiet: ({ items }) => items.map((i) => i.ref),
   cli: {
     positionals: ['project'],
     examples: [
@@ -273,7 +284,7 @@ export const itemAdd = defineVerb({
   }),
   output: lineOut,
   run: async (ctx, input) => {
-    const item = await changeOne(ctx, input.project, {
+    const { item, types } = await changeOne(ctx, input.project, {
       op: 'add',
       ...(input.title ? { title: input.title } : {}),
       type: input.type,
@@ -281,10 +292,10 @@ export const itemAdd = defineVerb({
       fields: fieldsFromPairs(input.fields),
       ...(input.template ? { template: input.template } : {}),
     });
-    return { item: outOf(item), text: `+ ${itemSummary(item)}` };
+    return { item: outOf(item, types), text: `+ ${itemSummary(item, types)}` };
   },
   text: ({ text }) => [text],
-  quiet: ({ item }) => [`#${item.key}`],
+  quiet: ({ item }) => [item.ref],
   cli: {
     positionals: ['project', 'title'],
     examples: [
@@ -321,17 +332,17 @@ export const itemSet = defineVerb({
   }),
   output: lineOut,
   run: async (ctx, input) => {
-    const item = await changeOne(ctx, input.project, {
+    const { item, types } = await changeOne(ctx, input.project, {
       op: 'set',
       item: input.item,
       fields: withPictureRemovals(fieldsFromPairs(input.fields), input.remove),
       ...(input.clear.length ? { clear: input.clear } : {}),
       ...(input.type ? { type: input.type } : {}),
     });
-    return { item: outOf(item), text: `~ ${itemSummary(item)}` };
+    return { item: outOf(item, types), text: `~ ${itemSummary(item, types)}` };
   },
   text: ({ text }) => [text],
-  quiet: ({ item }) => [`#${item.key}`],
+  quiet: ({ item }) => [item.ref],
   cli: {
     positionals: ['project', 'item'],
     examples: [
@@ -356,16 +367,16 @@ export const itemMove = defineVerb({
   }),
   output: lineOut,
   run: async (ctx, input) => {
-    const item = await changeOne(ctx, input.project, {
+    const { item, types } = await changeOne(ctx, input.project, {
       op: 'move',
       item: input.item,
       status: input.status,
       ...(input.before ? { before: input.before } : {}),
     });
-    return { item: outOf(item), text: `→ ${itemSummary(item)} in ${input.status}` };
+    return { item: outOf(item, types), text: `→ ${itemSummary(item, types)} in ${input.status}` };
   },
   text: ({ text }) => [text],
-  quiet: ({ item }) => [`#${item.key}`],
+  quiet: ({ item }) => [item.ref],
   cli: {
     positionals: ['project', 'item', 'status'],
     examples: [
@@ -402,7 +413,7 @@ export const itemRm = defineVerb({
         message: result.refusal.message,
         hint: 'list them with: liveplanner item ls <project>',
       });
-    return { id, text: `- ${itemSummary(target.item)}` };
+    return { id, text: `- ${itemSummary(target.item, state.plan.types)}` };
   },
   text: ({ text }) => [text],
   quiet: ({ id }) => [id],

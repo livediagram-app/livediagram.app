@@ -46,6 +46,8 @@ import {
   type LivePlan,
   type PlannedAi,
   type PlannedSegment,
+  cardRef,
+  type ItemTypeDef,
 } from '@liveplanner/items';
 import { getItemsRev, listItems, readItem } from '../../db/items';
 import type { Item } from '@liveplanner/items';
@@ -162,9 +164,16 @@ function chainStop(event: AutomationEvent, store: AutomationStore): string | nul
 }
 
 // `turn`: a test's Assign in Turn place (the saved rule's, when it has one).
-// A branch's failed cards, named: "Failed on #12, #14: Column qa is gone".
-const relatedFailure = (related: readonly { card: { key: number }; failed?: string }[]): string =>
-  `Failed on ${related.map((r) => `#${r.card.key}`).join(', ')}: ${related[0]!.failed!}`;
+// A card as a run's notes name it: its number with its type's prefix ("T-12": item-types.md "Card number prefixes").
+const refOf = (card: { key: number; type: string }, types: readonly ItemTypeDef[]) =>
+  cardRef(card, types) || `#${card.key}`;
+
+// A branch's failed cards, named: "Failed on T-12, T-14: Column qa is gone".
+const relatedFailure = (
+  related: readonly { card: { key: number; type: string }; failed?: string }[],
+  types: readonly ItemTypeDef[],
+): string =>
+  `Failed on ${related.map((r) => refOf(r.card, types)).join(', ')}: ${related[0]!.failed!}`;
 
 export type RunOptions = { dry?: boolean; turn?: number };
 
@@ -413,7 +422,7 @@ export async function runRule(
       await ai(true);
       await sendMessages(messages, live.sends, lines, offset);
       const related = writes.related.filter((r) => r.failed);
-      const reason = live.failed ?? (related.length ? relatedFailure(related) : null);
+      const reason = live.failed ?? (related.length ? relatedFailure(related, state.plan.types) : null);
       return end(
         reason === null ? 'done' : 'failed',
         reason ?? undefined,
@@ -437,7 +446,7 @@ export async function runRule(
       capped ??= out.skipped;
       const bad = segment.related.filter((r) => r.failed);
       if (failed === null && bad.length) {
-        failed = relatedFailure(bad);
+        failed = relatedFailure(bad, state.plan.types);
         gone = bad[0]!.gone;
       }
       for (const r of segment.related) {
@@ -456,12 +465,12 @@ export async function runRule(
         const wrote = await applyPlannedRun(writer, plan, rule, r.card, one, source, url);
         if (wrote.ok) {
           for (const note of wrote.notes ?? [])
-            notes.push({ ...note, text: `#${r.card.key} ${note.text}` });
+            notes.push({ ...note, text: `${refOf(r.card, state.plan.types)} ${note.text}` });
           capped ??= wrote.skipped;
           continue;
         }
-        notes.push({ kind: 'action', ok: false, text: `#${r.card.key} ${wrote.reason}` });
-        refused.push(`#${r.card.key}`);
+        notes.push({ kind: 'action', ok: false, text: `${refOf(r.card, state.plan.types)} ${wrote.reason}` });
+        refused.push(refOf(r.card, state.plan.types));
         failed ??= `Failed on ${refused[0]}: ${wrote.reason}`;
       }
       return null;
