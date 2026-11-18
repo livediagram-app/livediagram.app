@@ -174,8 +174,7 @@ card: "Work Tracker 98, Work Tracker 110"), so each pass opens about as many PRs
 the whole of CI for what it reaches, and CI is the bottleneck: on 2026-11-04 PR jobs waited a median 19 minutes for
 a runner, and a dozen small PRs from one pass queued behind each other all afternoon. So fold every card in a group
 into its PR, and split a card out to its own PR only when it would make the PR hard to review in one sitting or
-riskier to merge than the cards would be apart (a D1 migration, an auth change, a change a person must check on
-staging before it merges, with its `not-ready` label). Say in the PR description which cards it carries, each under
+riskier to merge than the cards would be apart (a D1 migration, with its `not-ready` label). Say in the PR description which cards it carries, each under
 its own heading, so a reviewer can follow them one at a time.
 
 Work through the groups in the Priority order of their highest card, with **at most six agents running at once**
@@ -187,8 +186,7 @@ run at the same time: hold the later one until the earlier one's agent has finis
 - **Large cards are one PR, never parts** (owner, 2026-11-15: each part waited on the one before for hours or
   days, ran CI again, and the owner reviews only the finished feature anyway). One agent on Opus builds the whole
   card on one branch, in logical commits (spec, data model, api, UI), and the PR lists the commits so a reviewer
-  can follow them. A high-risk piece doesn't split it out: the PR takes `not-ready` with that reason, and the
-  owner reviews the complete feature once. A Large card already built partway in parts finishes everything left
+  can follow them. A risky piece doesn't split it out either. A Large card already built partway in parts finishes everything left
   in one PR (on the open part's branch, when one is still open).
 
 **Rework uses the open PR.** Before spawning, look for the card's open PR:
@@ -337,9 +335,11 @@ title, its state, and every comment **verbatim**, with author and date and wheth
   anything you write. Don't commit pnpm-lock.yaml unless the change needs it.
 - **One PR, at most two pushes** (the builder's, and one from the verifier if it fixes something). (On rework,
   push to the open PR instead, gated as above.) The PR is
-  ready (never draft), against `main`. Once verified, keep `not-ready` only for high-risk changes (D1 tables or migrations, auth, sharing or
-  permissions, deleting or migrating user data, worker bindings or deploy config, or a change to what existing
-  data shows people), and say why. Use `not-ready` for only three things: a PR that isn't ready yet and that you will un-label yourself (the browser check above), a risk that really is high, or a step only the owner can take (below). Judge the real risk, not the category: if the PR can't do harm once merged, it gets no label. So a stored-shape change that only adds and still reads old data needs none, and nor does a workflow that only runs when a person starts it. Push the images to an orphan `pr-assets/<PR#>` branch and link each one pinned
+  ready (never draft), against `main`. Once verified, keep `not-ready` only when the PR carries a D1 migration
+  (owner, 2026-11-18: "I never review the code unless it migrates the database"), or a Before merging step only the
+  owner can take (below). Use `not-ready` for only those two and the browser check above, which the loop removes itself.
+  Auth, sharing, server fetches of customer URLs, data deletion, worker bindings and deploy config get no label and
+  no code-review line on the Owner checklist: their tests carry them, so make those tests thorough. Push the images to an orphan `pr-assets/<PR#>` branch and link each one pinned
   to that branch's commit as `https://github.com/<repo>/blob/<sha>/<file>?raw=true`. Use this blob form, not
   `raw.githubusercontent.com` links. The description: one calm paragraph of context, then what it solves, then what was done, then
   **Answers** (one line per question: "<thread title>: <the answer, short> → <how it was built>"), Decisions, Performance
@@ -413,8 +413,8 @@ $(git merge-base origin/main HEAD)`, sharing your `node_modules`) on a This Brow
   `Kept running: <pid> <port> <command>` for each. The coordinator resumes you once the builder has pushed: pull,
   recheck what failed and what the fix touched (not the whole list again), then finish as below.
 - Push the shots to the `pr-assets/<PR#>` branch and add them to the description (as the builder brief says),
-  remove "Verifying in the browser" (`gh pr edit` is allowed), and remove `not-ready` unless the description gives a high-risk or Owner
-  reason to keep it.
+  remove "Verifying in the browser" (`gh pr edit` is allowed), and remove `not-ready` unless the PR carries a D1 migration or an unticked
+  Before merging Owner step.
 - **Clean up:** before you report, stop every server you started (by the PIDs you recorded, as the hard rules
   say). Your port block must be empty when you report.
 - Report `DONE <PR url>` (with what you checked, each Acceptance Criteria item you confirmed, any fix you pushed,
@@ -552,7 +552,7 @@ End each pass with a short table, plus one line on anything that went wrong:
 | #16 "Organise in Tab Folder" label | Low      | Development Failure, 1 question  |
 | #13 Flash Cards Feature            | High     | Implemented, PR #130             |
 
-After the table, list what needs the owner's attention first, one line each: high-risk PRs (`not-ready`), PRs
+After the table, list what needs the owner's attention first, one line each: PRs with a D1 migration (`not-ready`), PRs
 waiting on Owner steps (with the steps),
 decisions an agent took that a person might want to change, stale In Progress cards with no PR, and the
 follow-up Work Items and Ideas this pass added (number and title).
