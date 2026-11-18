@@ -87,7 +87,10 @@ the header (`colourIsOpaque`).
   chip, a progress dot, a play disc and its prev and next arrows: its own opaque fill, nothing filled under it) that
   the dark paper sinks under 3:1 is drawn, in the dark editor, with its fill walked in lightness, hue and chroma kept,
   until it reaches 3:1 against the slate (WCAG's non-text minimum); a stroke the part draws in its fill's colour
-  follows. So a wireframe's ink button is drawn a mid slate under its white word, not slate on slate. An icon straight
+  follows. So a wireframe's ink button is drawn a mid slate under its white word, not slate on slate. A fill marked to
+  stay fixed (`themeLockFill`: a Brand Board swatch, a logo's identity colour) is never walked, nor redrawn in the
+  viewer's half: it is drawn at its exact value in both editors, so a swatch matches the hex printed under it. An icon
+  straight
   on the plain paper has its stroke walked as a word is, to the contrast it had on white, 3:1 at the least, so a tab
   bar's chosen ink glyph still reads above its muted neighbours (`withPaperMarkInks`,
   `packages/design/src/paper-label-ink.ts`). It runs before the label walks, so the words on a walked fill are read
