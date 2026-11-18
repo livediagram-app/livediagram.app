@@ -731,8 +731,13 @@ open item is left out there, as the index's is.
 inside the window, and up to **45rem** (720 px) tall, kept on the canvas below its button and 24 px short of the
 canvas's bottom edge; the rail and pane fill what the card and footer leave, never shorter than 18rem. The rail is
 **15rem** (240 px) wide, so the current item's card fits at its top (owner, 2026-11-16: the picture across the card, the name with its ⋯ menu, "Updated …" and where it lives; no "Current" label) and its names sit with room either side, and the pane keeps a 1rem margin. The rail scrolls only when its entries are
-really taller than it: on a short window the card's picture first shrinks to the room left (its 96 px down to 48 px;
-owner, 2026-11-17, after a canvas in Browser Storage, whose extra sidebar row cost 5 px, lost its picture entirely),
+really taller than it. The card is drawn as the pane's preview cards are (Work Tracker 1293: it was a fixed 96 px
+strip inset in the card, so it read shorter than Home's and Spaces' cards for no reason): its picture flush across
+the card's top in the same **16:9** frame (about 124 px tall in the 240 px rail), a hairline under it, then the name
+and its line. On a phone's sheet, where the card is a row over the chips, its picture keeps the same 16:9 at the
+row's 56 px height (100 px wide; it was 80 by 56). On a short window the picture first shrinks to the room left (its 16:9 height down to 48 px; owner,
+2026-11-17, after a canvas in Browser Storage, whose extra sidebar row cost 5 px, lost its picture entirely): the
+frame gets shorter but the picture inside keeps its 16:9 shape, centred and cut top and bottom, never squashed;
 then, with under 48 px to spare, the card drops it, its "where it lives" pill moving to the start of the "Updated …"
 line, and takes it back as soon as 48 px fit again (measured, so a person with several teams sees the same rule). Below that
 the rail scrolls, as it must (owner, 2026-11-17: no scrollbar the rail doesn't need). The pane's preview

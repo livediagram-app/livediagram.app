@@ -11,6 +11,7 @@ import { InlineRenameInput } from '../ui/InlineRenameInput';
 import { EllipsisTriggerButton, useRowMenu } from '../ui/RowMenu';
 import { ItemIcon, PencilIcon } from '../ui/icons';
 import { relativeSince, useNow } from '../time';
+import { PANE_CARD_PICTURE, PANE_CARD_SURFACE } from './pane-parts';
 import { RailPicture } from './useRailFit';
 import { SIDEBAR_LABELS } from '../views';
 
@@ -87,7 +88,7 @@ export function LocalCurrentItem({
       editing={editing}
       setEditing={setEditing}
       onRename={(title) => onRename?.(title)}
-      thumbnail={<LocalPreview app={app} iconSize={18} className="h-14 w-20 shrink-0" />}
+      thumbnail={<LocalPreview app={app} iconSize={18} className="h-full w-full shrink-0" />}
       badge={<ThisBrowserPill />}
       menu={menu}
     >
@@ -147,7 +148,8 @@ function CurrentCard({
   children,
 }: {
   // At the top of the panel's sidebar (owner, 2026-11-16): the picture across the card with where it lives on its
-  // corner, then the name with its menu, then when it changed. No "Current" label: its place says it.
+  // corner, then the name with its menu, then when it changed. No "Current" label: its place says it. Drawn as the
+  // pane's preview cards are (Work Tracker 1293): their surface, and the picture in their 16:9 frame.
   compact?: boolean;
   local?: boolean;
   title: string;
@@ -164,8 +166,8 @@ function CurrentCard({
 }) {
   const { kind } = useExplorer();
   const now = useNow();
-  // On a short window the rail drops the picture before it would scroll (useRailFit), and the pill moves to the
-  // start of the "Updated" line.
+  // On a short window the rail shrinks the picture, then drops it, before it would scroll (useRailFit); dropped, the
+  // pill moves to the start of the "Updated" line.
   // Its height when only a smaller picture fits, 0 when none does (useRailFit).
   const picturePx = useContext(RailPicture);
   const tight = picturePx === 0;
@@ -182,14 +184,17 @@ function CurrentCard({
         data-current-item={local ? 'this-browser' : 'index'}
         data-current-compact=""
         onContextMenu={menu.onContextMenu}
-        className="flex flex-col gap-1.5 rounded-xl bg-white p-1.5 shadow-sm ring-1 ring-slate-200 dark:bg-slate-800/60 dark:ring-slate-700"
+        className={`flex flex-col overflow-hidden ${PANE_CARD_SURFACE}`}
       >
         {tight ? null : (
-          <span data-current-picture="" className="relative block">
-            <span
-              style={picturePx ? { height: picturePx } : undefined}
-              className="flex h-24 w-full items-center justify-center overflow-hidden rounded-lg bg-slate-50 text-slate-300 ring-1 ring-inset ring-slate-200/80 dark:bg-slate-900 dark:ring-slate-700/70 [&>*]:!h-full [&>*]:!w-full"
-            >
+          // The 16:9 frame; on a short rail a shorter frame (useRailFit) over the same 16:9 picture, centred and cut
+          // top and bottom, never squashed.
+          <span
+            data-current-picture=""
+            style={picturePx ? { height: picturePx } : undefined}
+            className={`relative ${PANE_CARD_PICTURE} ${picturePx ? '!flex items-center' : ''}`}
+          >
+            <span className="flex aspect-[16/9] w-full shrink-0 items-center justify-center bg-white text-slate-300 dark:bg-slate-900 [&>*]:!h-full [&>*]:!w-full">
               {thumbnail}
             </span>
             {/* Where it lives, on the picture's corner, so the line under the name has its full width. A local item's
@@ -203,7 +208,7 @@ function CurrentCard({
             )}
           </span>
         )}
-        <span className="flex min-w-0 flex-col gap-0.5 px-1 pb-0.5">
+        <span className="flex min-w-0 flex-col gap-0.5 px-2.5 pb-2 pt-1.5">
           <span className="flex min-h-6 items-center gap-1">
             {editing ? (
               <InlineRenameInput
@@ -251,7 +256,10 @@ function CurrentCard({
       onContextMenu={menu.onContextMenu}
       className="flex items-center gap-3 rounded-xl bg-slate-50 p-2.5 ring-1 ring-slate-200/70 dark:bg-slate-800/50 dark:ring-slate-700/60"
     >
-      <span className="flex h-14 w-20 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-white text-slate-300 dark:border-slate-700 dark:bg-slate-900 [&>*]:!h-14 [&>*]:!w-20">
+      <span
+        data-current-thumb=""
+        className="flex aspect-[16/9] h-14 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-white text-slate-300 dark:border-slate-700 dark:bg-slate-900 [&>*]:!h-full [&>*]:!w-full"
+      >
         {thumbnail}
       </span>
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
