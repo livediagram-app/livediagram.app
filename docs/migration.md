@@ -138,7 +138,7 @@ One script, per document, in batches:
    (`document_not_empty`), so a catch-up run could never update one. The migration door writes the old times,
    takes changesets, marks what it wrote as imported with the old row's `updated_at`, and on a re-run replaces
    a tab only when it is still the imported revision (no one has edited it on the new side since).
-3. Register the document with the index: owner, team, folder, favourites, Trash state, recent opens
+3. Register the document with the index: owner, team, folder, Trash state, recent opens
    (`document_opens`) with what each person hid from Recent (the old `recentExcludedIds` preference: an open row
    marked `hidden`, or a row with no open, `last_opened_at` 0, for a document they hid but never opened), and who
    it's shared with (`shared_with`, `share_links`, keeping each link's token so old share URLs still work).
@@ -371,7 +371,7 @@ What `plan` decides for you (all reported in `report.json`):
 **Writing without overwriting.** Every SQL row is keyed by its old id. A first run inserts (`INSERT OR IGNORE`); a
 catch-up run updates a row only where it still holds what the last run wrote
 (`ON CONFLICT … DO UPDATE … WHERE <row>.updated_at = <the value in the ledger>`), so a row someone has changed on
-the new side since is left alone and reported. Rows without a time of their own (favourites, image refs, liveplanner
+the new side since is left alone and reported. Rows without a time of their own (image refs, liveplanner
 cells and `sheet_refs`) are only ever inserted. Nothing is deleted. The ledger is a local SQLite file kept with the
 bundles.
 
