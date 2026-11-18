@@ -92,6 +92,10 @@ const MILESTONES: { title: string; date: string; detail: string; icon: string; s
 // the three statuses under the title. Lighter than the milestone timelines
 // (no cards, no stems): the one to reach for when you need a
 // status-at-a-glance line, not a story.
+// Each milestone's line of what it meant is the worked example's sample copy: Clear Example Content empties it
+// (template-example-text.ts).
+export const TIMELINE_SAMPLE_COPY: readonly string[] = MILESTONES.map((m) => m.detail);
+
 export function buildTimeline(cx: number, cy: number): Element[] {
   const lineLength = 1440;
   const dot = 52;
