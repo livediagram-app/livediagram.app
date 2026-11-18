@@ -43,12 +43,27 @@ export const FLOW_ENTRY_STEP_PX = 14;
 export const FLOW_CORNER_PX = 12;
 // The broken stub's length (screen px).
 export const FLOW_STUB_PX = 32;
-// The tags (screen px): the gap between a box (or a stub's end) and its tag, each tag's width and their height, and the
-// clearance kept from an arrow's run (its halo's half).
+// The tags (screen px). The gap between a box (or a stub's end) and its tag, and the clearance kept from an arrow's run
+// (its halo's half).
 export const FLOW_TAG_GAP_PX = 6;
-export const FLOW_TAG_WIDTH_PX = { back: 62, broken: 74 } as const;
-export const FLOW_TAG_HEIGHT_PX = 22;
 export const FLOW_TAG_CLEAR_PX = 3;
+// What a tag is made of, as FlowViewLayer draws it, so its size is worked out from the same parts (FlowViewLayer.test
+// ties them to the drawing): its words, its side padding (`px-2`), its glyph and the gap after it (`gap-1`), its
+// padding above and below (`py-0.5`), the line of its `text-xs` text, and its `ring-1`.
+export const FLOW_TAG_LABEL = { back: 'Back', broken: 'Broken' } as const;
+export const FLOW_TAG_PAD_X_PX = 8;
+export const FLOW_TAG_GLYPH_PX = 12;
+export const FLOW_TAG_GLYPH_GAP_PX = 4;
+export const FLOW_TAG_PAD_Y_PX = 2;
+export const FLOW_TAG_LINE_PX = 16;
+export const FLOW_TAG_RING_PX = 1;
+// Each word's width in the tag's 12 px semibold system face, rounded up (measured in Chrome on macOS, 2026-11-18: Back
+// 29.0, Broken 41.4); a face a pixel or two wider is inside FLOW_TAG_CLEAR_PX.
+export const FLOW_TAG_TEXT_PX = { back: 30, broken: 42 } as const;
+const tagWidth = (kind: keyof typeof FLOW_TAG_TEXT_PX) =>
+  2 * FLOW_TAG_PAD_X_PX + FLOW_TAG_GLYPH_PX + FLOW_TAG_GLYPH_GAP_PX + FLOW_TAG_TEXT_PX[kind];
+export const FLOW_TAG_WIDTH_PX = { back: tagWidth('back'), broken: tagWidth('broken') } as const;
+export const FLOW_TAG_HEIGHT_PX = 2 * FLOW_TAG_PAD_Y_PX + FLOW_TAG_LINE_PX + 2 * FLOW_TAG_RING_PX;
 
 export type FlowRect = { x: number; y: number; width: number; height: number };
 export type FlowPoint = { x: number; y: number };

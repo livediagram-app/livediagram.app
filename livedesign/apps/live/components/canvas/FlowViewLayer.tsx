@@ -5,7 +5,13 @@
 // coords, drawn after the elements, its strokes and tags held in screen px; it takes no presses and is never exported.
 import { memo, useId, useMemo } from 'react';
 import type { Element, LaidOutPage, Layer } from '@livedesign/design';
-import { flowLinks, type FlowLink, type FlowRect } from '@/lib/flow-view';
+import {
+  FLOW_TAG_GLYPH_PX,
+  FLOW_TAG_LABEL,
+  flowLinks,
+  type FlowLink,
+  type FlowRect,
+} from '@/lib/flow-view';
 import { BackLinkGlyph, BrokenScreenLinkGlyph } from './screen-link-glyphs';
 
 // The arrows' stroke and the canvas-coloured edge under it (screen px).
@@ -63,8 +69,12 @@ function Tag({
             : 'bg-white text-brand-700 ring-brand-200 dark:bg-slate-900 dark:text-brand-200 dark:ring-brand-500/40'
         }`}
       >
-        {kind === 'broken' ? <BrokenScreenLinkGlyph size={12} /> : <BackLinkGlyph size={12} />}
-        {kind === 'broken' ? 'Broken' : 'Back'}
+        {kind === 'broken' ? (
+          <BrokenScreenLinkGlyph size={FLOW_TAG_GLYPH_PX} />
+        ) : (
+          <BackLinkGlyph size={FLOW_TAG_GLYPH_PX} />
+        )}
+        {FLOW_TAG_LABEL[kind]}
       </div>
     </div>
   );

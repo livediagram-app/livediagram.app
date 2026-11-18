@@ -319,7 +319,9 @@ transition, direction: 'forward' | 'back', seq }` (`transition` the link's `page
   - `back` gives `{ state: 'back', box, at, side }`; `broken` gives `{ state: 'broken', box, stub, at, side }`, the
     stub from the box's edge on `side` at its middle, `FLOW_STUB_PX / zoom` long; `at` is where the tag starts
     (`FLOW_TAG_GAP_PX / zoom` past the box, or half that past the stub's end), and it runs `side` from there. Tags are
-    placed after every arrow: the right is taken unless the tag's reach (stub and `FLOW_TAG_WIDTH_PX[kind]` by
+    placed after every arrow: the right is taken unless the tag's reach (stub and `FLOW_TAG_WIDTH_PX[kind]` (worked out
+    from the tag's drawn parts, `FLOW_TAG_PAD_X_PX`, `FLOW_TAG_GLYPH_PX`, `FLOW_TAG_GLYPH_GAP_PX` and each word's
+    measured `FLOW_TAG_TEXT_PX`, which `FlowViewLayer` draws from and its test ties to the tag's classes) by
     `FLOW_TAG_HEIGHT_PX`, padded `FLOW_TAG_CLEAR_PX`, all `/ zoom`) meets an arrow's run, then the left when it meets
     none, else the right. The runs are the axis-aligned boxes of each arc's start run, rise, drop and entry and each
     adjacent curve's ends (its handles run level), in a 128 px grid (`RunGrid`), so a tag checks only the runs near it;
@@ -473,7 +475,7 @@ Played) and `UI · Copied · PrototypeLink` (counted in Share Links Copied). Flo
 | `FLOW_CORNER_PX`                      | 12 (screen px, an arc's corner radius)      | `flow-view.ts`               |
 | `FLOW_STUB_PX`                        | 32 (screen px, the broken stub)             | `flow-view.ts`               |
 | `FLOW_TAG_GAP_PX` / `_HEIGHT_PX`      | 6 / 22 (screen px)                          | `flow-view.ts`               |
-| `FLOW_TAG_WIDTH_PX`                   | Back 62, Broken 74 (screen px)              | `flow-view.ts`               |
+| `FLOW_TAG_WIDTH_PX`                   | Back 62, Broken 74 (screen px), from parts  | `flow-view.ts`               |
 | `FLOW_TAG_CLEAR_PX`                   | 3 (screen px kept from an arrow's run)      | `flow-view.ts`               |
 | `FLOW_STROKE_PX` / `FLOW_HALO_PX`     | 2 / 6 (screen px)                           | `FlowViewLayer.tsx`          |
 
