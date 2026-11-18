@@ -119,6 +119,18 @@ canonical `https://www.<app>/community/post?id=`, JSON-LD) and answers 404 for a
 no trailing slash, as the rest of the site: `/community/` and `/community/post/?id=` answer one redirect that stays
 on the app.
 
+**A Forum topic's head.** The topic's page (`/community/forum/topic?id=`) is one static shell that names no topic and
+is `noindex`. On an app's address the same step asks the service for the topic, without any account, and fills the head
+from a **listed** topic only: its title (`<title> | <product> Community Forum`) and the first 160 characters of its
+words as the description (also `og:` and `twitter:`), so a shared link has a preview. A topic with a marked, listed
+answer is also let into search: its `robots` becomes `index, follow` and it gets a canonical
+(`https://www.<app>/community/forum/topic?id=`) and `QAPage` structured data holding the question and its answer; a
+listed topic with no answer is named for the preview alone and stays `noindex`. A **Pending**, **refused** or **hidden**
+topic (which the service never answers to a reader with no account), one that is gone, and a service that is slow or
+failing all leave the shell exactly as built: the generic title, `noindex`, and none of the topic's words. The router
+also refuses to name any topic whose `state` is not `listed`, whatever the service sent. Every app's router does this
+through the one step (`@liveworkspace/community-site/router`).
+
 **Likes** keep each app's per-browser key on the app's origin (`<product>:v2:community-key`), the key its own
 Community app used, so a visitor's hearts carry over. On liveworkspace.app the key is `liveworkspace:v2:community-key`.
 
@@ -293,14 +305,35 @@ same way liveplanner's Automations ask it). The check reads the title, the body 
   again every five minutes, oldest first, and lists or refuses it then. Nothing is ever listed unchecked.
 
 An edit of a listed post is checked the same way: until it passes, the post shows to its author alone again
-(**Pending** or **refused**), with the new words. The checks a day are capped (`FORUM_CHECKS_PER_DAY`, 500), so the
-allowance can't be run past; past the cap new posts wait as Pending for the next day's.
+(**Pending** or **refused**), with the new words. The checks a day are capped twice, so the
+allowance can't be run past: by number (`FORUM_CHECKS_PER_DAY`, 500) and by Neurons (`FORUM_NEURONS_PER_DAY`, 8,000, 80%
+of the free 10,000 a day, so the account's other Workers AI keeps the rest). Past either, new posts wait as Pending for
+the next day's.
+
+**What a check costs.** The `AI` binding reports tokens, never Neurons, so each check's Neurons are worked out from the
+tokens it reports at the model's list price (`@cf/meta/llama-guard-3-8b`: 44,003 Neurons per million input tokens and
+2,730 per million output; about four characters a token when none are reported). The service tallies, for each UTC day,
+how many checks listed, refused or could not answer (waiting) and the Neurons used, in `forum_counters` (subjects
+`chk:listed`, `chk:refused`, `chk:waiting`, `chk:neurons`, kept 90 days; every other counter goes after two), and
+answers the last 30 days from `GET /forum/checks`, counts only, for the telemetry dashboard's **Forum Checks**
+([008-telemetry](../008-telemetry/telemetry.md) "The dashboard"). The service sends no telemetry events: it holds no
+telemetry key, and a new secret or binding is not needed for this.
+
+**Why these caps.** A post is at most 5,000 characters of body, 120 of title and 60 of name, about 1,300 tokens, and
+the model's own wrapper adds a few hundred: a check of the longest post costs about 70 Neurons, a short one about 10.
+500 checks of the longest posts would pass 10,000, which a count alone doesn't guard against, so the Neuron budget
+holds the allowance and the count holds the cap on volume. The numbers are the list price applied to reported tokens,
+not billed Neurons: the dashboard's Neurons per Check shows what the checks really use, and `FORUM_CHECKS_PER_DAY` and
+`FORUM_NEURONS_PER_DAY` are raised or lowered from it.
 
 **Reports** hide a forum post exactly as they hide a gallery post: three reports from three browsers on three networks
 hide it for good (**hidden**), with the same reasons and the same optional note, keyed by the same per-browser
 community key, and limited per network the same way. A hidden post shows to its author alone, marked Hidden, and can't
 be edited; its author can still delete it. A hidden topic hides its replies with it. Nobody removes or bans by hand
-(owner, 2026-11-15: reports plus the server check only).
+(owner, 2026-11-15: reports plus the server check only). A report is kept 90 days (`FORUM_REPORTS_KEEP_MS`): the cron
+prunes, once an hour, the forum reports older than that and those whose post is gone. Hiding doesn't depend on them
+afterwards: the **hidden** state is on the post, set when the third report arrived, and stays. A post three reports
+haven't yet hidden counts only the reports of the last 90 days.
 
 **Limits per account**, counted in the service's database by the hour: 20 writes (a topic, a reply or an edit) and
 200 reactions. Past either, the write is refused `429 rate_limited` and the page says to wait a little.
@@ -441,6 +474,7 @@ app API's audience, `INDEX_AUDIENCES`). A guest token, an API token, an expired 
 | `DELETE /forum/posts/<id>`                     | Delete by its author (a topic takes its replies)                                |
 | `PUT`/`DELETE /forum/posts/<id>/reactions/<r>` | React or take it back (`helpful`, `thanks`, `celebrate`); `{ reactions }`       |
 | `POST /forum/posts/<id>/report`                | `{ reason, note? }`, with `X-Community-Key`; `204` always, as a gallery post    |
+| `GET /forum/checks`                            | The check's last 30 days and its caps: counts only, cached five minutes         |
 
 `author` is how the page shows the person, `{ name, color }` (the name 1 to 60 characters, checked with the post;
 a colour that isn't `#rrggbb` is replaced by one picked from the account id). A write answers its post's `state`
@@ -690,7 +724,9 @@ Measured against the real schema in SQLite, with 1,000 posts by 40 owners:
   is the reader's own waiting topics, then the page with each topic's reply count on `forum_posts (topic_id, state,
 created_at)`; a topic is the question, its replies, then every post's reactions in one query. Under 20 ms of CPU
   each, the token check included. A write adds one counter upsert and, while the check answers, one Workers AI call
-  bounded by `FORUM_CHECK_TIMEOUT_MS` and capped at `FORUM_CHECKS_PER_DAY`.
+  bounded by `FORUM_CHECK_TIMEOUT_MS` and capped at `FORUM_CHECKS_PER_DAY` and `FORUM_NEURONS_PER_DAY`, with one batch
+  of two upserts to tally it and one read of the day's Neurons. The hourly report prune is one `DELETE` on a table the
+  90-day window keeps small.
 - Every list and count is one indexed query per app (`posts (app, …, state, document_state, …)`). All Apps' list
   and count lead with the state instead (`posts (state, document_state, …)`, migration 0002), so they stay one
   indexed query across every app.
