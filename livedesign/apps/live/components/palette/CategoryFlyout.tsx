@@ -49,6 +49,18 @@ export function onFlyoutArrowKey(e: KeyboardEvent<HTMLElement>, body: HTMLElemen
   items[next]?.focus();
 }
 
+/** The side panel's tile under the focus when ArrowRight is pressed: the arrow enters its panel (spec "A tile's side
+ *  panel"), as it enters a submenu, rather than stepping to the next tile. */
+export function sideRowFor(
+  e: KeyboardEvent<HTMLElement>,
+  tiles: readonly PaletteTileDef[] | null,
+): { def: PaletteTileDef; el: HTMLElement } | null {
+  if (e.key !== 'ArrowRight' || !(e.target instanceof HTMLElement)) return null;
+  const id = e.target.dataset.sideRow;
+  const def = id ? tiles?.find((t) => t.id === id) : undefined;
+  return def ? { def, el: e.target } : null;
+}
+
 export function CategoryFlyout({
   category,
   mode,
@@ -57,6 +69,7 @@ export function CategoryFlyout({
   focusFirst,
   sideOpenId,
   onSide,
+  onEnterSide,
   onItemHover,
 }: {
   category: FlyoutCategory;
@@ -70,6 +83,8 @@ export function CategoryFlyout({
   sideOpenId: string | null;
   // A side-panel tile was pressed (`el` is the tile, which the panel lines up with).
   onSide: (def: PaletteTileDef, el: HTMLElement) => void;
+  // ArrowRight on a side-panel tile: its panel opens, if it is not open, and takes the focus.
+  onEnterSide: (def: PaletteTileDef, el: HTMLElement) => void;
   // The pointer or focus reached a tile (the host opens or closes the side panel on a beat).
   onItemHover: (def: PaletteTileDef | null, el: HTMLElement | null) => void;
 }) {
@@ -105,7 +120,12 @@ export function CategoryFlyout({
       <div
         key={category.id}
         ref={bodyRef}
-        onKeyDown={(e) => onFlyoutArrowKey(e, bodyRef.current)}
+        onKeyDown={(e) => {
+          const row = sideRowFor(e, tiles);
+          if (!row) return onFlyoutArrowKey(e, bodyRef.current);
+          e.preventDefault();
+          onEnterSide(row.def, row.el);
+        }}
         className="animate-fade-in"
       >
         {tiles ? (

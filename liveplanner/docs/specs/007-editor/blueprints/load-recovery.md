@@ -78,7 +78,8 @@ Invariant: on every path the bootstrap leaves `loadingProject` false or the watc
   `embed`. A ref notes having been offline; the online transition after it calls `reload` once.
 - `OfflineBanner` (`components/chrome/`): first child of `TopCenterStack` in `TopCenterChrome`,
   `TopCenterBanner tone="neutral"` with an amber dot, copy by `readOnly`, `role="status"`; with changes waiting, their
-  count ([Offline changes](offline-changes.md) "Banner").
+  count ([Offline changes](offline-changes.md) "Banner"). Its `TopCenterRow across` spans the stack on a phone (`left-3 right-3`), so the banner sits
+  centred between equal 12 px insets.
 - `useAutosave`: an `online` listener clears a pending retry timer and bumps `retryTick`; nothing
   happens when no retry is pending.
 - `editor-persistence`: the `'error'` toast picks the offline copy when `getOnline()` is false.

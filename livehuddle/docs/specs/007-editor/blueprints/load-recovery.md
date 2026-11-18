@@ -75,7 +75,9 @@ Invariant: on every path the bootstrap leaves `loadingDocument` false or the wat
   `ApiErrorPage` with the offline eyebrow / title / message while offline, `LoadRecoveryCard` unless
   `embed`. A ref notes having been offline; the online transition after it calls `reload` once.
 - `OfflineBanner` (`components/chrome/`): first child of `TopCenterStack` in `TopCenterChrome`,
-  `TopCenterBanner tone="neutral" shape="card"` (`leading-snug`, so a wrapped line on a phone stays inside its corners), copy by `readOnly`, `role="status"`.
+  `TopCenterBanner tone="neutral" shape="card"` (`leading-snug`, so a wrapped line on a phone stays inside its corners), copy by `readOnly`, `role="status"`, in a
+  `TopCenterRow across`: on a phone the row spans the stack (`left-3 right-3`), so the banner sits centred between
+  equal 12 px insets, never against the right one.
 - `useAutosave`: an `online` listener clears a pending retry timer and bumps `retryTick`; nothing
   happens when no retry is pending.
 - `editor-persistence`: the `'error'` toast picks the offline copy when `getOnline()` is false.

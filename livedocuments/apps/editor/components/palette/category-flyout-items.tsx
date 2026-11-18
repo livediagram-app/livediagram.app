@@ -53,6 +53,8 @@ function useFlyoutItem({ def, pendingDraw, onPress, onHover, sideOpenId }: ItemP
   const props = {
     type: 'button' as const,
     'data-flyout-item': '',
+    // A row with a side panel, which ArrowRight enters (CategoryFlyout).
+    'data-side-row': side ? def.id : undefined,
     'aria-label': def.label,
     'aria-pressed': side ? undefined : active || undefined,
     'aria-expanded': side ? sideOpenId === def.id : undefined,
