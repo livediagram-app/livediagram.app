@@ -73,6 +73,7 @@
     "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",
     "@liveworkspace/media": "workspace:*",
+    "@liveworkspace/model-core": "workspace:*",
     "@liveworkspace/sites": "workspace:*"
   },
   "devDependencies": {

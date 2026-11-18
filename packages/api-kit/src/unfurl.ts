@@ -3,6 +3,8 @@
 // module is the pure part, safe in any runtime: the result's shape, the SSRF guard and the normalising. A
 // product's route keeps the routing, its rate limit and its User-Agent.
 
+import { classifyHost } from '@liveworkspace/model-core/private-host';
+
 // The fields a link card shows; only the resolved url is always there (the card falls back to the bare URL).
 export type UnfurlResult = {
   url: string;
@@ -15,51 +17,12 @@ export type UnfurlResult = {
 
 // --- Pure helpers (unit-tested) -------------------------------------------
 
-// True for a hostname we must NOT fetch: loopback / private / link-local /
-// cloud-metadata / *.local. Defence-in-depth — Cloudflare Workers don't sit on
-// a private network, but we still refuse to fetch (or return data from) these.
-// True for a private / loopback / link-local / metadata IPv4 (from its first
-// two octets). Shared by the dotted-quad and IPv4-mapped-IPv6 paths.
-function isBlockedIpv4(a: number, b: number): boolean {
-  if (a === 0 || a === 10 || a === 127) return true; // this-host / 10·8 / loopback
-  if (a === 169 && b === 254) return true; // link-local + cloud metadata (169.254.169.254)
-  if (a === 172 && b >= 16 && b <= 31) return true; // 172.16·12
-  if (a === 192 && b === 168) return true; // 192.168·16
-  if (a === 100 && b >= 64 && b <= 127) return true; // CGNAT 100.64·10
-  return false;
-}
-
+// True for a hostname we must NOT fetch: a private, loopback, link-local, metadata or reserved address, or an
+// internal name. The platform's one rule (model-core's private-host), so a host the webhooks or the image upload
+// refuse is refused here too. Workers don't sit on a private network, but we still refuse to fetch (or return data
+// from) these.
 export function isBlockedHost(hostname: string): boolean {
-  // IPv6 brackets off, and a fully qualified name's trailing dot: `localhost.` and `printer.local.` reach the same
-  // hosts as without it, and WHATWG URL keeps the dot in `hostname`.
-  const h = hostname.toLowerCase().replace(/^\[/, '').replace(/\]$/, '').replace(/\.$/, '');
-  if (!h) return true;
-  if (h === 'localhost' || h.endsWith('.localhost') || h.endsWith('.local')) return true;
-  if (h === '::1' || h === '::' || h === '0.0.0.0') return true; // loopback / unspecified
-  const m = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(h);
-  if (m && isBlockedIpv4(Number(m[1]), Number(m[2]))) return true;
-  // IPv4-mapped IPv6 (e.g. ::ffff:127.0.0.1, which WHATWG URL normalises to the
-  // hex form ::ffff:7f00:1): unwrap the embedded IPv4 and re-run the checks,
-  // else a mapped loopback / metadata address slips past the IPv6 prefixes.
-  // The deprecated IPv4-compatible form (::127.0.0.1, normalised to ::7f00:1) embeds one the same way.
-  const mapped = h.startsWith('::ffff:')
-    ? h.slice('::ffff:'.length)
-    : /^::[0-9a-f]{1,4}:[0-9a-f]{1,4}$/.test(h)
-      ? h.slice(2)
-      : null;
-  if (mapped !== null) {
-    const dotted = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(mapped);
-    if (dotted && isBlockedIpv4(Number(dotted[1]), Number(dotted[2]))) return true;
-    const hex = /^([0-9a-f]{1,4}):([0-9a-f]{1,4})$/.exec(mapped);
-    if (hex) {
-      const hi = parseInt(hex[1]!, 16);
-      if (isBlockedIpv4((hi >> 8) & 0xff, hi & 0xff)) return true;
-    }
-  }
-  // IPv6 ULA (fc00::/7) and link-local (fe80::/10), on an IPv6 literal only: a domain such as fdic.gov or
-  // fcbarcelona.com starts with the same letters and is public.
-  if (h.includes(':') && /^(f[cd]|fe[89ab])/.test(h)) return true;
-  return false;
+  return classifyHost(hostname).private;
 }
 
 // Parse + validate a target for SSRF safety. Returns the URL only when it's a

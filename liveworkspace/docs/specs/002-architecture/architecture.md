@@ -69,6 +69,37 @@ it is good the answer is the api's `503 accounts_unavailable`, so a client retri
 own wire pieces every product shares (the op `ref` echo, the format and grant frames, its close codes and keepalive)
 are one copy too, `@liveworkspace/api-schema/room-wire`, re-exported by each product's `room-messages.ts`.
 
+## Fetching a URL someone gave
+
+Some Workers fetch a URL a person, an AI assistant or a stored document chose: the index's webhooks
+([webhooks.md](../004-index/webhooks.md#security)), livediagram's live service status, an MCP's `upload_image` by URL
+(`fetchPublicBytes`, `@liveworkspace/api-kit/public-fetch`) and every product's link-card unfurl (`isBlockedHost`,
+`@liveworkspace/api-kit/unfurl`). Each refuses the same hosts (SSRF), by one shared rule,
+`@liveworkspace/model-core/private-host`:
+
+- **Internal names:** `localhost`, a single-label name (`metadata`, `intranet`), and names under `.localhost`,
+  `.local`, `.internal` (`metadata.google.internal`), `.lan`, `.home.arpa` and `.intranet`. A trailing dot changes
+  nothing (`localhost.` is `localhost`).
+- **Private addresses**, typed as IPv4 or IPv6 (bracketed or not, IPv4 carried in IPv6 judged as that IPv4): this
+  network, private, carrier NAT, loopback, link-local and cloud metadata (`169.254.169.254`, AWS's `fd00:ec2::254`),
+  IETF protocol assignments, documentation, benchmarking, multicast and reserved ranges, IPv6 unspecified, loopback,
+  unique local, link-local, site-local, multicast, discard, documentation, and 6to4 (whose embedded IPv4 could be
+  anything).
+- **Anything that is neither** a public address nor a name a URL can carry: a host with a colon that is not an IPv6
+  address, or a name whose last label is a number (a URL turns a real IPv4 spelling such as `0x7f.1` into dotted
+  decimal, so such a name never reaches a fetch honestly).
+
+Where the paths differ is deliberate, never in what they count as private:
+
+- **A public IP literal**, such as `https://93.184.216.34/a.png`, stays allowed for an image upload and a link unfurl,
+  judged by its address: image hosts and pages are reached that way today, and refusing them breaks those calls for no
+  gain, since the address itself is checked. A webhook and a live status URL refuse every IP literal, public or not
+  (IDX15): they are stored and fetched again for months, so they must be names re-resolved before each send.
+- **Names resolving to private addresses:** the webhooks, live status and image upload resolve the name (DNS over
+  HTTPS, A and AAAA) before each request and refuse a private answer by the same address list. The link unfurl
+  follows redirects in Workers `fetch` and checks the final URL's host by spelling only; Workers can't reach a
+  private network, which is the residual control there.
+
 ## When a request fails
 
 Every Worker that owns storage (each service above but the site, and each app's api) answers a request that throws

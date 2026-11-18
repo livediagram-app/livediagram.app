@@ -5,8 +5,8 @@
 // a huge or endless answer is cut off there. Never trusts the answer's type: the caller sniffs the bytes.
 
 import { readCappedBody } from './request-body';
-import { dohResolve, isPrivateAddress, resolvesPublic, type Resolve } from './public-address';
-import { isBlockedHost } from './unfurl';
+import { classifyHost } from '@liveworkspace/model-core/private-host';
+import { dohResolve, resolvesPublic, type Resolve } from './public-address';
 
 export const PUBLIC_FETCH_TIMEOUT_MS = 10_000;
 export const PUBLIC_FETCH_MAX_REDIRECTS = 3;
@@ -43,8 +43,6 @@ export type PublicFetchOptions = {
   headers?: Record<string, string>;
 };
 
-const IPV4 = /^\d{1,3}(\.\d{1,3}){3}$/;
-
 class Refused extends Error {
   readonly reason: PublicFetchRefusal;
   readonly status: number | undefined;
@@ -67,19 +65,12 @@ async function checkTarget(raw: string, resolve: Resolve): Promise<URL> {
   if (url.protocol !== 'https:' || (url.port !== '' && url.port !== '443')) {
     throw new Refused('not_https');
   }
-  const host = url.hostname
-    .toLowerCase()
-    .replace(/^\[|\]$/g, '')
-    .replace(/\.$/, '');
-  // An address typed as one is judged as it stands.
-  if (IPV4.test(host) || host.includes(':')) {
-    if (isPrivateAddress(host)) throw new Refused('private_address');
-    return url;
-  }
-  if (isBlockedHost(host) || !host.includes('.') || host.endsWith('.internal')) {
-    throw new Refused('private_address');
-  }
-  const verdict = await resolvesPublic(host, resolve);
+  // The platform's one rule for private addresses and internal names (model-core's private-host). A public address
+  // typed as one is judged as it stands (architecture.md "Fetching a URL someone gave"); a name must resolve public.
+  const target = classifyHost(url.hostname);
+  if (target.private) throw new Refused('private_address');
+  if (target.kind === 'address') return url;
+  const verdict = await resolvesPublic(target.host, resolve);
   if (verdict === 'private') throw new Refused('private_address');
   if (verdict === 'unresolved') throw new Refused('unresolved');
   return url;
