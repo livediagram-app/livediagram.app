@@ -87,10 +87,15 @@ favicon }` on each selected link card whose link is still that URL (D50), and tr
 2. `UNFURL_RATE_LIMITER` bound and over limit for `clientIp(request)` → 429 `rate_limited`.
    Unbound → allowed.
 3. No `url` → 400 `missing url`. `parsePublicHttpUrl` null → 400 `invalid or disallowed url`.
-4. `fetch` with `redirect: 'follow'`, `User-Agent: USER_AGENT`, `Accept:
-text/html,application/xhtml+xml`, aborted after `UNFURL_FETCH_TIMEOUT_MS` measured to the end of the
-   body read (GB10). A throw → 200 `{ url }` (D53).
-5. Final URL (`res.url`) re-validated; blocked → 400 `redirected to a disallowed url`.
+4. Each hop, starting with the given URL: `checkPublicHop(url, resolve, 'http')` (http or https, no
+   credentials, the host by the private-host rule, a name resolved over DNS over HTTPS and refused on any
+   private answer). Private → 400 `disallowed url`; unresolved or invalid → 200 `{ url }`. Then `fetch`
+   with `redirect: 'manual'`, `User-Agent: USER_AGENT`, `Accept: text/html,application/xhtml+xml`,
+   aborted after `UNFURL_FETCH_TIMEOUT_MS` measured from the first lookup to the end of the body read
+   (GB10). A throw → 200 `{ url }` (D53).
+5. A 3xx with a `Location`: the next hop is that location against the current URL, at most
+   `UNFURL_MAX_REDIRECTS` (5) of them; past that, or with no or a broken `Location` → 200 `{ url }`.
+   Any other status ends the chain, and its URL is the final URL.
 6. `content-type` without `html` → 200 `buildUnfurlResult({}, finalUrl)` (url + favicon).
 7. `collectMeta` streams through `HTMLRewriter`, reading at most `UNFURL_MAX_HTML_BYTES` then cancelling:
    `<title>` text; the first `og:title`, `og:site_name`, `og:image` or `og:image:url`,
@@ -165,7 +170,7 @@ export function apiUnfurl(url: string): Promise<UnfurlResult | null>;
 | -------- | ---------------------------------------- | ------------------------------------------- |
 | 200      | Fetched, or network error / timeout      | `UnfurlResult` (at least `url`)             |
 | 400      | Missing, malformed, non-http(s), blocked | `missing url` / `invalid or disallowed url` |
-| 400      | Redirected to a blocked host             | `redirected to a disallowed url`            |
+| 400      | A hop resolves to or is a blocked host   | `disallowed url`                            |
 | 404      | Not GET, or an extra path segment        | `notFound()`                                |
 | 429      | Rate limited                             | `rate_limited`                              |
 

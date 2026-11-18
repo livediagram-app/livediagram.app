@@ -46,7 +46,12 @@ The endpoint is **SSRF-safe** (public repo):
   and private, loopback, carrier NAT, link-local / cloud-metadata
   (`169.254.169.254`), documentation, multicast and reserved addresses, IPv4 or
   IPv6, so a host the webhooks or image uploads refuse is refused here too. A
-  public IP literal stays allowed. Re-validates the **final** post-redirect URL.
+  public IP literal stays allowed. Resolves a name before fetching (DNS over HTTPS) and refuses one
+  that answers with any private address, and follows at most 5 redirects by hand,
+  putting **every hop** through the same check (`checkPublicHop`), so neither a
+  name nor a redirect can step onto a private host. `http` links keep their
+  preview: the same per-hop check in its http variant. A refused or unresolved
+  hop leaves the card on the bare URL.
 - 8s `AbortController` timeout, ~512 KB read cap, HTML-only `Accept`, a
   descriptive `User-Agent`. Parses with **`HTMLRewriter`** (streaming; there's
   no DOMParser in Workers): `<title>`, `og:title|image|site_name|description`,
