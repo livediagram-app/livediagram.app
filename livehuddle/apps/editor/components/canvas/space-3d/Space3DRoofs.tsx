@@ -50,7 +50,8 @@ export function Space3DRoofs({
 }
 
 function Roof({ roof, nodeRef }: { roof: SpaceRoof; nodeRef: (node: HTMLElement | null) => void }) {
-  const { length, span, rise, slant, pitch, base } = roofShape(roof);
+  const { length, span, slant, pitch, base } = roofShape(roof);
+  const half = span / 2;
   // Along the ridge on its own x axis; a roof whose ridge runs down the plan is turned a quarter onto it.
   const place = roof.across
     ? `translate(${roof.x + roof.width}px, ${roof.y}px) rotate(90deg)`
@@ -62,6 +63,8 @@ function Roof({ roof, nodeRef }: { roof: SpaceRoof; nodeRef: (node: HTMLElement 
       // On the wall tops (up off the floor is +z here); each slope tips up from its eaves to the ridge.
       style={{ transform: `${place} translateZ(${base}px)` }}
     >
+      {/* A hipped roof (the owner, 2026-11-18: "roof should come up from all sides"): every slope rises at one pitch
+          from its wall to the ridge, which runs between the two ends half a span in from each. */}
       <div
         data-space-roof-slope=""
         style={{
@@ -69,6 +72,7 @@ function Roof({ roof, nodeRef }: { roof: SpaceRoof; nodeRef: (node: HTMLElement 
           height: slant,
           transformOrigin: '0 0',
           transform: `rotateX(${pitch}deg)`,
+          clipPath: `polygon(0 0, 100% 0, calc(100% - ${half}px) 100%, ${half}px 100%)`,
         }}
       />
       <div
@@ -80,22 +84,32 @@ function Roof({ roof, nodeRef }: { roof: SpaceRoof; nodeRef: (node: HTMLElement 
           top: span - slant,
           transformOrigin: '0 100%',
           transform: `rotateX(${-pitch}deg)`,
+          clipPath: `polygon(${half}px 0, calc(100% - ${half}px) 0, 100% 100%, 0 100%)`,
         }}
       />
-      {[0, length].map((at) => (
-        <div
-          key={at}
-          data-space-roof-gable=""
-          style={{
-            left: at,
-            top: -rise,
-            width: span,
-            height: rise,
-            transformOrigin: '0 100%',
-            transform: 'rotateZ(90deg) rotateX(-90deg)',
-          }}
-        />
-      ))}
+      <div
+        data-space-roof-slope=""
+        data-end=""
+        style={{
+          width: slant,
+          height: span,
+          transformOrigin: '0 50%',
+          transform: `rotateY(${-pitch}deg)`,
+          clipPath: 'polygon(0 0, 100% 50%, 0 100%)',
+        }}
+      />
+      <div
+        data-space-roof-slope=""
+        data-end=""
+        style={{
+          left: length - slant,
+          width: slant,
+          height: span,
+          transformOrigin: '100% 50%',
+          transform: `rotateY(${pitch}deg)`,
+          clipPath: 'polygon(100% 0, 100% 100%, 0 50%)',
+        }}
+      />
     </div>
   );
 }

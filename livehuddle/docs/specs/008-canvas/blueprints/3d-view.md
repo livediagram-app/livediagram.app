@@ -77,7 +77,7 @@ Synonyms banned: "isometric", "orbit", "perspective mode", "3D mode" (it is a vi
    screen or the zoom or size changed, it sets the area, and draws `wallsInArea(walls, area)`. It subscribes to your
    pose store: on each pose it works out `cutAwayIds(drawn, feet)` and toggles `data-cut` on the walls whose state
    changed, outside React. It also builds `spaceRoofs(elements)` and draws `Space3DRoofs` over the walls: two slopes
-   and two gables per roof, ghosted, the roof over your feet hidden by `data-inside`, toggled outside React.
+   and two hip ends per roof, ghosted, the roof over your feet hidden by `data-inside`, toggled outside React.
    A Stage adds its four edges to `spaceWalls` as `stage` walls 20 px tall, and `standsRaised` lifts a character
    (`AvatarWalker`'s `raised`, `--space-raise`) or a near piece (`useStandingPieces`) whose foot is on it.
 5. Standing pieces: BoxedElementView sets `data-space-stands={standAttr(el)}` on every element's box (absent for

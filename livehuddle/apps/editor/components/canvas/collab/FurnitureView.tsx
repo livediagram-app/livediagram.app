@@ -6,7 +6,8 @@ import { rowLayouts, type RowLayout } from '@livehuddle/avatar/furniture-rows';
 import { turnFacing } from '@livehuddle/avatar/facing';
 import {
   builtIn3D,
-  endView,
+  endSlice,
+  SIDE_IS_ELEVATION,
   isSideFacing,
   seenFootShift,
   pieceQuarters,
@@ -51,6 +52,7 @@ import {
   type PodDoorView,
   seatsACharacter,
   pieceFacing,
+  turnsWithFacing,
   type GridOfficeKind,
   type SeatingKind,
   type ShapeElement,
@@ -205,21 +207,26 @@ function FurnitureDrawingView({
     : seating
       ? FURNITURE_ART[kind]
       : OFFICE_ART[kind as GridOfficeKind];
-  // Seen side on, a piece that stands up shows its end (3d-view.md "Turning the camera"): its side drawing's near end,
-  // at its own height (space-3d-pieces.ts endView), never its back squeezed to its depth, which read as the piece
-  // facing the wrong way and shrinking (the owner, 2026-11-18: sofas, chairs, the hammock and benches).
+  // Seen side on, a piece that stands up shows its end (3d-view.md "Turning the camera"), never its back squeezed to
+  // its depth, which read as the piece facing the wrong way and shrinking (the owner, 2026-11-18).
   const sideOn = seen && !plan && isSideFacing(facing);
+  // Side on, a piece whose side drawing is the plan seen from above shows the end of its front drawing instead, so it
+  // stands upright rather than lying on its side (space-3d-pieces.ts endSlice; the owner, 2026-11-18: the printer and
+  // the desks "lying on its side").
+  const slice =
+    sideOn && turnsWithFacing(kind) && !SIDE_IS_ELEVATION.has(kind)
+      ? endSlice(art.front, art.side, facing === 'w' ? 'w' : 'e')
+      : null;
   // The drawing its facing shows (docs/specs/009-elements/furniture-facing.md "The camera").
-  const frame = furnitureFrame(art, facing);
-  const end = sideOn ? endView(art.front, frame.view) : null;
+  const frame = furnitureFrame(art, slice ? 'n' : facing);
   // A piece that stands up is seen at the scale its own drawing has on the canvas, at the seen drawing's own size: a
   // sofa seen from the side is its end, as tall as its front, and a coat stand keeps its height (the owner,
   // 2026-11-18: "rotated the coat stand and umbrellas shrink in size"), rather than its box laid on its side.
   const own = seen && !plan ? furnitureFrame(art, pieceFacing(element)).view : null;
   const ownScale = own ? Math.min(element.width / own.width, element.height / own.height) : 1;
-  const boxW = own ? frame.view.width * ownScale : planW;
-  const boxH = own ? (end ? end.height : frame.view.height) * ownScale : planH;
-  const drawing = facingView(facing).view;
+  const boxW = own ? (slice ? slice.width : frame.view.width) * ownScale : planW;
+  const boxH = own ? frame.view.height * ownScale : planH;
+  const drawing = facingView(slice ? 'n' : facing).view;
   // Its foot on the footprint's edge nearest the camera (see the stand's transform below).
   const footShift = seenFootShift({ width: element.width, height: element.height }, quarter, boxH);
   // Seating is upholstered in its own fabric (furniture-art-style.md "Materials"); the rest take the theme's wash.
@@ -288,8 +295,9 @@ function FurnitureDrawingView({
   const body = (
     <>
       <svg
-        // An end is its side drawing's near end: the bottom of the drawing, as tall as the piece stands.
-        viewBox={end ? `0 ${end.top} ${frame.view.width} ${end.height}` : frame.viewBox}
+        viewBox={frame.viewBox}
+        // Seen end on, the front drawing narrowed to the piece's depth, as a piece turned steeply away reads.
+        preserveAspectRatio={slice ? 'none' : undefined}
         className="absolute inset-0 h-full w-full overflow-visible"
         role="img"
         aria-label={

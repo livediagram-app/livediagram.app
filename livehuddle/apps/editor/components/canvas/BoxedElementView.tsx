@@ -1,4 +1,4 @@
-import { standAttr, walledIn3D } from '@/lib/space-3d/space-3d-pieces';
+import { facesCameraFlat, standAttr, walledIn3D } from '@/lib/space-3d/space-3d-pieces';
 import { memo, useRef } from 'react';
 import {
   BORDER_DASH_ARRAY,
@@ -298,6 +298,8 @@ function BoxedElementViewImpl({
       data-element-kind={elementClickKind(element)}
       // A piece that stands up in the 3D view (docs/specs/008-canvas/3d-view.md "Pieces stand up"; app/space-3d.css).
       data-space-stands={standAttr(element)}
+      // A pad or a control lying on the floor turns with the camera so it reads (3d-view.md "Turning the camera").
+      data-space-faces={facesCameraFlat(element) ? '' : undefined}
       // A fence's flat drawing hides in 3D, where its run stands as a wall (3d-view.md "Fences stand as fences").
       data-space-walled={walledIn3D(element) ? '' : undefined}
       // Where a move's offset rides (docs/specs/008-canvas/drag-preview.md "Moves ride an offset").

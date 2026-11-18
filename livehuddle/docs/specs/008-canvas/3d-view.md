@@ -70,15 +70,16 @@ not laggy.
     different size" and "weird bits of wall poking out the back"): the flat plan's wall tops and the back wall's deep
     face are hidden while the view shows, with plain floor under the back wall's face, so every wall stands the same
     height and nothing flat pokes past them from any side the camera turns to. A glass room's flat panes and frames
-    give way the same. A room's side walls end at its back and front walls, never past them (the owner: "the sides
+    give way the same. The plain floor stops at the back wall's line, so a turned camera never sees the room's floor
+    carry on outside its wall (the owner, 2026-11-18: "the floor outside the room continues the rooms floor"). A room's side walls end at its back and front walls, never past them (the owner: "the sides
     are going further than the back wall").
 - **A stage stands up** (the owner, 2026-11-18: "stage should have some height, depth when i stand on it"): a
   Stage's top rises 20 canvas px on four sides of dark wooden boards under a lit lip, and what stands on it (a
   character, a Podium) stands on its top. Stage Curtains stand along their own line, as a wall does, so a turned
   camera sees them edge on or from behind, never swung in front of the stage.
 - **Rooms on grass have roofs** (the owner, 2026-11-18: "a roof like a house, but sloped ... Only for rooms on grass"):
-  a Room whose middle stands on Grass is a house, so a pitched roof sits on its walls, its ridge along the room's
-  long side, its slopes tiled and its gable ends plaster, at about 35 degrees and never more than 150 canvas px over
+  a Room whose middle stands on Grass is a house, so a hipped roof sits on its walls, rising from all four of them
+  (the owner: "roof should come up from all sides") to a ridge along the room's long side, every slope tiled, at about 35 degrees and never more than 150 canvas px over
   the wall tops. It is a ghost, like the walls in front of you (half see-through), so it never hides anyone, and it
   fades away while you stand inside that room. A room on any other floor is a room inside a building and has none;
   a turned room or one drawn with the Room Builder has none either.
@@ -228,10 +229,12 @@ The owner, 2026-11-18: "quarter turns is fine". You can walk round to see the ot
   to the ground"): the drawing the camera sees is drawn at the scale the piece's own drawing has on the canvas. From the
   front or behind it is the front or back drawing at its own shape. Side on it is the piece's end: its back drawing (an
   upright drawing) narrowed to the piece's depth (its side drawing's width), standing on its foot, because the side
-  drawing is the flat plan's view from above and stood up it floats at its far end. Where the side drawing is
-  itself upright (no more than 15% taller than the front: a chair, a jukebox, a fridge), it is drawn whole; a taller
-  one (drawn from above: a sofa, a bench, lockers, a hammock) is cut to the front drawing's height from its foot, so
-  it never leans back (the owner, 2026-11-18: lockers "look like they are leaning backwards"). It stands on the edge
+  drawing is the flat plan's view from above and stood up it floats at its far end. A kind whose side drawing is an
+  upright view of its end (a chair, a jukebox, a treadmill, a fridge, a hammock: `SIDE_IS_ELEVATION`) shows it whole;
+  every other kind's side drawing is the plan's box turned (a desk's top, a sofa's seat, a printer), which stood up
+  lies the piece on its side (the owner, 2026-11-18: "the Printer, its lying on its side"), so side on it shows its
+  front drawing narrowed to about its depth (half its front at most), upright on its foot, as a piece turned steeply
+  away reads. A piece drawn the same from every side (a coat stand) is never narrowed. It stands on the edge
   of its own footprint nearest the camera, so it covers exactly the floor that stops you walking: a turned fountain
   is never stood in (the owner: "the original blocks ... move"). Only a table drawn from above (a Long Table, one
   built row by row) turns its box.
@@ -239,7 +242,9 @@ The owner, 2026-11-18: "quarter turns is fine". You can walk round to see the ot
   same way in the 3D view, its own turn added to the camera's, so it stands grounded from every side, the camera
   unturned included. The flat plan draws it as before.
 - **Words read the right way up**: a room's name over its door is mirrored back when the camera sees that wall from
-  behind, and a Text element on the floor turns with the camera about its middle.
+  behind, and a Text element on the floor turns with the camera about its middle. So do an Avatar Pad and the board's
+  controls (Mode Button, Focus Button, Timer, Stopwatch), whose drawings are pictures to read, so a pad never shows as
+  a sideways ellipse (the owner, 2026-11-18: "nor avatar landing pads").
 - **Your character's facing follows the camera**: a sitter, a walker and the receptionist are drawn facing the way they
   face on the floor as the camera sees it (the owner: "I rotated screen then sat down at this desk, my character is
   facing the wrong way").

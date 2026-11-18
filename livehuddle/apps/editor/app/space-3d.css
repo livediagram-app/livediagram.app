@@ -516,7 +516,7 @@
   opacity: 0.18;
 }
 /* A room on grass has a pitched roof on its walls (3d-view.md "Rooms on grass have roofs"): tiles on its slopes,
-   plaster on its gable ends, all a ghost like the walls in front of you (the opacity is on each part: on the roof it
+   tiles on its hip ends too, all a ghost like the walls in front of you (the opacity is on each part: on the roof it
    would flatten it), gone while you stand inside. */
 [data-space-roof] {
   position: absolute;
@@ -531,8 +531,7 @@
 [data-space-roof][data-inside] {
   --space-roof-ghost: 0;
 }
-[data-space-roof-slope],
-[data-space-roof-gable] {
+[data-space-roof-slope] {
   position: absolute;
   left: 0;
   top: 0;
@@ -552,9 +551,12 @@
     repeating-linear-gradient(to right, transparent 0 22px, rgb(0 0 0 / 0.12) 22px 24px),
     color-mix(in srgb, var(--space-roof) 82%, black);
 }
-[data-space-roof-gable] {
-  background: var(--space-wall);
-  clip-path: polygon(0 100%, 50% 0, 100% 100%);
+/* A hip end: its courses run across it, a shade between the near and far slopes. */
+[data-space-roof-slope][data-end] {
+  background:
+    repeating-linear-gradient(to right, transparent 0 14px, rgb(0 0 0 / 0.22) 14px 16px),
+    repeating-linear-gradient(to bottom, transparent 0 22px, rgb(0 0 0 / 0.12) 22px 24px),
+    color-mix(in srgb, var(--space-roof) 90%, black);
 }
 /* A room's name is on its back wall here, so its flat name on the floor goes (BoxedElementView). */
 [data-space-view] [data-room-floor-label] {
@@ -617,6 +619,7 @@
 /* Words on the floor (a Text element) turn with the camera about their middle, so they always read the right way up
    (3d-view.md "Turning the camera"). */
 [data-space-view] [data-element-kind='text'] > *,
+[data-space-view] [data-space-faces] > *,
 [data-space-view] [data-space-reads] {
   rotate: calc(var(--space-turn) * -1);
 }

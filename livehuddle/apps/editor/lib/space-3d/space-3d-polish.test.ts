@@ -4,9 +4,10 @@ import { describe, expect, it } from 'vitest';
 import { buildTemplate } from '@livehuddle/templates';
 import type { Element } from '@livehuddle/document';
 import {
-  SPACE_END_SLACK,
+  SIDE_IS_ELEVATION,
   SPACE_STAGE_LIFT,
-  endView,
+  endSlice,
+  facesCameraFlat,
   isSideFacing,
   seenFootShift,
   seenFromCamera,
@@ -54,10 +55,16 @@ describe('a turned piece’s end', () => {
     expect(isSideFacing('w')).toBe(true);
     expect(isSideFacing('n')).toBe(false);
   });
-  it('draws an upright end whole, and cuts one seen from above to the front’s height from its foot', () => {
-    expect(endView({ height: 100 }, { height: 110 })).toEqual({ top: 0, height: 110 });
-    expect(SPACE_END_SLACK).toBeGreaterThan(1);
-    expect(endView({ height: 60 }, { height: 140 })).toEqual({ top: 80, height: 60 });
+  it('shows the end of the front drawing for a piece drawn from above, from the near end', () => {
+    expect(endSlice({ width: 120, height: 132 }, { width: 50 }, 'e')).toEqual({ x: 0, width: 50 });
+    expect(endSlice({ width: 120, height: 132 }, { width: 50 }, 'w')).toEqual({ x: 70, width: 50 });
+    // A desk's side drawing is its box turned: its end is half its front at most.
+    expect(endSlice({ width: 120, height: 112 }, { width: 112 }, 'e')).toEqual({ x: 0, width: 56 });
+  });
+  it('stands an upright side drawing as it is', () => {
+    expect(SIDE_IS_ELEVATION.has('chair')).toBe(true);
+    expect(SIDE_IS_ELEVATION.has('desk')).toBe(false);
+    expect(SIDE_IS_ELEVATION.has('printer')).toBe(false);
   });
   it('stands on its footprint’s edge nearest the camera', () => {
     expect(seenFootShift({ width: 200, height: 80 }, 0, 40)).toBe(20);
@@ -108,5 +115,13 @@ describe('clicking a door in 3D', () => {
       y: d.y + d.height / 2,
     });
     expect(doorPointAt(root, [room, door], { x: 200, y: 50 })).toBeNull();
+  });
+});
+
+describe('flat pictures turn with the camera', () => {
+  it('turns an Avatar Pad and the board controls, not a rug', () => {
+    expect(facesCameraFlat(piece('avatar-pad'))).toBe(true);
+    expect(facesCameraFlat(piece('timer'))).toBe(true);
+    expect(facesCameraFlat(piece('rug'))).toBe(false);
   });
 });

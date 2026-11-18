@@ -294,24 +294,48 @@ export function isSideFacing(facing: string): boolean {
 }
 
 /**
- * How much taller than its front drawing a side drawing may be and still be an upright view of the piece's end (a
- * chair's, a jukebox's): taller, it is the plan seen from above (a sofa's, a bench's, lockers'), lying the piece's
- * length up the drawing.
+ * The kinds whose side drawing is an upright elevation of the piece's end (a chair, a jukebox, a treadmill), so it
+ * stands up as it is. Every other kind's side drawing is the flat plan's view from above, turned (a desk's top, a
+ * sofa's seat, a counter's worktop), which stood up lies the piece on its side (the owner, 2026-11-18: "the Printer,
+ * its lying on its side"); side on, those show the end of their front drawing instead (`endSlice`).
  */
-export const SPACE_END_SLACK = 1.15;
+export const SIDE_IS_ELEVATION: ReadonlySet<string> = new Set([
+  'chair',
+  'water-cooler',
+  'coffee-machine',
+  'bar-stool',
+  'jukebox',
+  'arcade-machine',
+  'fireplace',
+  'vending-machine',
+  'bean-bag',
+  'reading-nook',
+  'kettle',
+  'washbasin',
+  'podium',
+  'nap-pod',
+  'treadmill',
+  'weight-bench',
+  'phone-booth',
+  'suggestion-box',
+  'fridge',
+  'hammock',
+]);
 
 /**
- * The part of a piece's side drawing the 3D view shows when the camera sees its end (3d-view.md "Turning the
- * camera"), in the side drawing's own units: all of an upright side drawing, or the near end of one seen from above,
- * as tall as its front drawing stands, so the end is crisp and as tall as the piece rather than a squeezed back or a
- * tall plank.
+ * The end of a piece's front drawing the 3D view shows when the camera sees its side (3d-view.md "Turning the
+ * camera"), in the drawing's own units: a strip about as wide as the piece is deep, from its left end seen from the east and its right end from the west. A desk's end is its leg
+ * and the edge of its top, a sofa's its arm, a bookshelf's its side: upright, at the piece's height, on its foot.
  */
-export function endView(
-  front: { height: number },
-  side: { height: number },
-): { top: number; height: number } {
-  if (side.height <= front.height * SPACE_END_SLACK) return { top: 0, height: side.height };
-  return { top: side.height - front.height, height: front.height };
+export function endSlice(
+  front: { width: number; height: number },
+  side: { width: number },
+  facing: 'e' | 'w',
+): { x: number; width: number } {
+  // A side drawing seen from above is the plan's box turned, its width the front's height rather than the piece's
+  // depth, so the end is no wider than half the front either way: a desk's leg and the edge of its top.
+  const width = Math.min(side.width, front.width / 2, front.height / 2);
+  return { x: facing === 'e' ? 0 : front.width - width, width };
 }
 
 /**
@@ -344,4 +368,22 @@ export function standsRaised(
     if (at.x >= s.x && at.x <= s.x + s.width && at.y >= s.y && at.y <= s.y + s.height)
       return SPACE_STAGE_LIFT;
   return 0;
+}
+
+/**
+ * The flat pieces whose drawing is a picture to read rather than a floor covering: an Avatar Pad (drawn as a disc seen
+ * from the room's camera) and the board's controls. In the 3D view they turn with the camera about their middle, as
+ * words on the floor do, so a turned camera never shows a pad as a sideways ellipse or a control on its side (the
+ * owner, 2026-11-18: "nor avatar landing pads").
+ */
+const FACES_CAMERA: ReadonlySet<string> = new Set([
+  'avatar-pad',
+  'mode-button',
+  'focus-button',
+  'timer',
+  'stopwatch',
+]);
+
+export function facesCameraFlat(el: Element): boolean {
+  return el.type === 'shape' && FACES_CAMERA.has(el.shape);
 }
