@@ -255,14 +255,15 @@ export function keyTextOn(fill: string): string {
   return contrastRatio(fill, '#ffffff') >= contrastRatio(fill, KEY_DARK) ? '#ffffff' : KEY_DARK;
 }
 
-// The card's number on a fill of its type's colour: where the type's colour shows at a glance.
-export function KeyTag({ itemKey, accent }: { itemKey: number; accent: string }) {
+// The card's number ("WI-12": item-types.md "Card number prefixes") on a fill of its type's colour: where the type's
+// colour shows at a glance.
+export function KeyTag({ label, accent }: { label: string; accent: string }) {
   return (
     <span
       className="inline-flex h-[calc(1.25rem*var(--plan-text-scale,1))] shrink-0 items-center rounded-md px-1.5 text-[length:calc(11px*var(--plan-text-scale,1))] font-semibold tabular-nums"
       style={{ backgroundColor: accent, color: keyTextOn(accent) }}
     >
-      #{itemKey}
+      {label}
     </span>
   );
 }

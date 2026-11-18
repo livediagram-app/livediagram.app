@@ -9,6 +9,7 @@ import { useId, useState } from 'react';
 import type { AutomationRun } from '@liveplanner/items';
 import { ChevronDownIcon } from '@liveplanner/ui';
 import { RunSteps } from './RunSteps';
+import { useCardRefById } from '@/components/plan/card-ref';
 import { goneText } from './needs-words';
 import { RESULT_LABELS, RESULT_PILL, nextRunWords, runWhen, tookWords } from './run-words';
 
@@ -28,10 +29,11 @@ export function ResultPill({ result }: { result: AutomationRun['result'] }) {
 }
 
 function CardRef({ card }: { card: AutomationRun['card'] }) {
+  const refOf = useCardRefById();
   if (!card) return <span className="text-slate-500 dark:text-slate-400">No card</span>;
   return (
     <span className="min-w-0 truncate">
-      <span className="mr-1.5 tabular-nums text-slate-500 dark:text-slate-400">#{card.key}</span>
+      <span className="mr-1.5 tabular-nums text-slate-500 dark:text-slate-400">{refOf(card)}</span>
       {card.title}
     </span>
   );
@@ -60,6 +62,7 @@ export function RunRow({
 }) {
   const [open, setOpen] = useState(defaultOpen);
   const stepsId = useId();
+  const refOf = useCardRefById();
   // A Wait's run says when it goes on; a failed or skipped one, why.
   const reason =
     run.result === 'waiting' && run.waitsUntil !== undefined
@@ -74,7 +77,7 @@ export function RunRow({
       type="button"
       aria-expanded={open}
       aria-controls={stepsId}
-      aria-label={`${open ? 'Collapse' : 'Expand'} run: ${run.ruleName}${card ? `, #${card.key}` : ''}`}
+      aria-label={`${open ? 'Collapse' : 'Expand'} run: ${run.ruleName}${card ? `, ${refOf(card)}` : ''}`}
       onClick={() => setOpen((v) => !v)}
       // Its hit area spreads over the row (the row's `relative` holds it), so a click or a tap anywhere on the row
       // opens it: the whole row is its touch target.

@@ -8825,6 +8825,62 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "ItemAssistant": {
+    "additionalProperties": false,
+    "properties": {
+      "assistant": {
+        "additionalProperties": false,
+        "properties": {
+          "client": {
+            "type": "string"
+          },
+          "person": {
+            "$ref": "#/components/schemas/ItemPerson"
+          }
+        },
+        "required": [
+          "client",
+          "person"
+        ],
+        "type": "object"
+      },
+      "color": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "via": {
+        "const": "github",
+        "type": "string"
+      }
+    },
+    "required": [
+      "assistant",
+      "color",
+      "id",
+      "name"
+    ],
+    "type": "object"
+  },
+  "ItemAssistantsResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "assistants": {
+        "items": {
+          "$ref": "#/components/schemas/ItemAssistant"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "assistants"
+    ],
+    "type": "object"
+  },
   "ItemCreate": {
     "additionalProperties": false,
     "properties": {
@@ -9723,6 +9779,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "type": "string"
         },
         "type": "array"
+      },
+      "prefix": {
+        "type": "string"
       },
       "statuses": {
         "items": {

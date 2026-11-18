@@ -1,11 +1,12 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { ItemPerson } from '@liveplanner/items';
+import { itemAssistantFor, type ItemAssistant, type ItemPerson } from '@liveplanner/items';
 import { resolveEditorCapabilities } from '@/lib/editor-capabilities';
 import { track } from '@/lib/telemetry';
 import { PersonPicker } from './PersonPicker';
 import { ACCOUNT_MARK_LABEL } from './AccountMark';
+import { ASSISTANTS_HEADING, NO_ASSISTANTS_LINE } from './PersonPickerRows';
 
 // The Assignee picker (docs/specs/026-plan/items.md "Custom assignees", "Accounts are marked").
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
@@ -198,5 +199,109 @@ describe('PersonPicker', () => {
     const { field } = picker({ disabled: !can.planCards });
     expect(field.disabled).toBe(!offered);
     if (offered) expect(rowLabels(openList(field))).toContain('+ Custom Assignee');
+  });
+});
+
+// docs/specs/026-plan/items.md "Handing a card to an AI assistant": the Assignee's AI Assistants group.
+describe('PersonPicker and AI assistants', () => {
+  const CLAUDE = itemAssistantFor(ME, 'Claude')!;
+  const CURSOR = itemAssistantFor(SAM, 'Cursor')!;
+  const withAssistants = (
+    opts: {
+      value?: ItemPerson;
+      assistants?: ItemAssistant[];
+      disabled?: boolean;
+      multiple?: boolean;
+    } = {},
+  ) => {
+    const onSave = vi.fn();
+    const onOpen = vi.fn();
+    render(
+      <PersonPicker
+        id="assignee"
+        value={opts.value}
+        people={[ME, SAM]}
+        disabled={opts.disabled ?? false}
+        onSave={onSave}
+        assistants={opts.assistants ?? [CLAUDE, CURSOR]}
+        onOpen={onOpen}
+        {...(opts.multiple ? { multiple: true, label: 'Reviewers' } : {})}
+      />,
+    );
+    const field = screen.getByRole<HTMLButtonElement>('button', {
+      name: opts.multiple ? 'Add to Reviewers' : /^Assignee:/,
+    });
+    return { onSave, onOpen, field };
+  };
+
+  it('lists the assistants after the people under their heading, each named as one', () => {
+    const { field, onOpen } = withAssistants();
+    const list = openList(field);
+    expect(onOpen).toHaveBeenCalledTimes(1);
+    expect(rowLabels(list)).toEqual([
+      'No one',
+      'Me',
+      'Sam',
+      'Claude (Me)',
+      'Cursor (Sam)',
+      '+ Custom Assignee',
+    ]);
+    expect(within(list).getByText(ASSISTANTS_HEADING)).toBeTruthy();
+    expect(within(list).queryByText(NO_ASSISTANTS_LINE)).toBeNull();
+    expect(row(list, 'Claude (Me)').getAttribute('aria-label')).toBe('Claude (Me), AI assistant');
+    expect(row(list, 'Claude (Me)').querySelector('[data-assistant-mark]')).not.toBeNull();
+    // The heading is no option: the arrows pass over it.
+    expect(list.querySelector('[data-assistants-heading]')?.getAttribute('role')).toBe(
+      'presentation',
+    );
+  });
+
+  it('hands the card to a picked assistant, and shows it held with its mark', () => {
+    const { field, onSave } = withAssistants();
+    fireEvent.click(row(openList(field), 'Cursor (Sam)'));
+    expect(onSave).toHaveBeenCalledWith(CURSOR);
+    cleanup();
+    const held = withAssistants({ value: CLAUDE });
+    expect(held.field.textContent).toBe('Claude (Me)');
+    expect(held.field.querySelector('[data-assistant-mark]')).not.toBeNull();
+    expect(row(openList(held.field), 'Claude (Me)').getAttribute('aria-selected')).toBe('true');
+  });
+
+  it('says how to get one when the plan has none, and still lists one a card holds', () => {
+    const none = withAssistants({ assistants: [] });
+    const list = openList(none.field);
+    expect(within(list).getByText(NO_ASSISTANTS_LINE)).toBeTruthy();
+    expect(rowLabels(list)).toEqual(['No one', 'Me', 'Sam', '+ Custom Assignee']);
+    cleanup();
+    const held = withAssistants({ assistants: [], value: CURSOR });
+    expect(rowLabels(openList(held.field))).toEqual([
+      'No one',
+      'Me',
+      'Sam',
+      'Cursor (Sam)',
+      '+ Custom Assignee',
+    ]);
+  });
+
+  it('leaves assistants out of a field that holds several', () => {
+    const { field } = withAssistants({ multiple: true });
+    fireEvent.click(field);
+    const list = screen.getByRole('listbox', { name: 'Reviewers' });
+    expect(rowLabels(list)).not.toContain('Claude (Me)');
+    expect(within(list).queryByText(ASSISTANTS_HEADING)).toBeNull();
+  });
+
+  // docs/specs/013-workspace/share-roles.md: handing a card over is editing its fields.
+  it.each([
+    ['edit', true],
+    ['participate', true],
+    ['view', false],
+  ] as const)('lets a %s session hand a card to an assistant: %s', (level, offered) => {
+    const can = resolveEditorCapabilities({ level, adderKey: null });
+    const { field, onSave } = withAssistants({ disabled: !can.planCards });
+    expect(field.disabled).toBe(!offered);
+    if (!offered) return;
+    fireEvent.click(row(openList(field), 'Claude (Me)'));
+    expect(onSave).toHaveBeenCalledWith(CLAUDE);
   });
 });

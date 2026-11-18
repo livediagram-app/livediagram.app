@@ -343,8 +343,8 @@ export still draws a stored Comment panel's thread. So the retirement can be rev
 ## Agents
 
 - Agents read and write items through the api, the CLI and MCP ([Agents](../024-agents/README.md)): the CLI's
-  `item ls|add|set|move|rm`, and the MCP's `list_items` and `change_items`. Items are named by number (`#12`) or
-  id prefix.
+  `item ls|add|set|move|rm`, and the MCP's `list_items` and `change_items`. Items are named by number (`#12`, `12`, or with
+  its type's prefix, `WI-12`) or id prefix.
 - A project made from a Plan template by an agent (the CLI's `--template`, the MCP's `create_project`) gets the
   same tabs and boards, with no cards, as one made in the editor ([Plan templates](plan-templates.md)).
 - How agents read the plan, name columns, card types and fields, and change card types: [Plan for agents](plan-agents.md).

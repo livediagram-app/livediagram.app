@@ -88,6 +88,8 @@ export {
   pictureLinkFor,
   resolveListingFilter,
   readPlanState,
+  handedToOf,
+  callerAssistant,
   type ItemChange,
   type PlanState,
   applyThreadChanges,

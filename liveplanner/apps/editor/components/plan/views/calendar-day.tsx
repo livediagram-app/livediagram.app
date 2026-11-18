@@ -5,6 +5,7 @@
 // "+N more". Pressing an entry opens its card; someone who may move cards drags it to another day, or moves it
 // with Alt+Arrows while it has focus (CalendarView's moveBy).
 import { memo } from 'react';
+import { cardRefIn } from '../card-ref';
 import {
   CARD_FIELDS,
   itemTitle,
@@ -237,6 +238,7 @@ function CalendarEntry({
   plan: PlanViewProps['plan'];
   actions: CalendarEntryActions;
 }) {
+  const refOf = cardRefIn(plan?.types);
   const open = openProps(plan, item.id);
   const { begin, moveBy } = actions;
   const movable = !!begin;
@@ -248,7 +250,7 @@ function CalendarEntry({
         actions.draggingId === item.id ? 'opacity-40' : ''
       }`}
       style={asCards ? undefined : { height: ENTRY_H, color: done ? palette.muted : palette.text }}
-      aria-label={`#${item.key} ${itemTitle(item)}${at === undefined ? '' : `, at ${timeOfDayText(at)}`}${done ? ', done' : ''}`}
+      aria-label={`${refOf(item)} ${itemTitle(item)}${at === undefined ? '' : `, at ${timeOfDayText(at)}`}${done ? ', done' : ''}`}
       {...(movable
         ? {
             'aria-keyshortcuts': 'Alt+ArrowLeft Alt+ArrowRight Alt+ArrowUp Alt+ArrowDown',

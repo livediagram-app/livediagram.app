@@ -76,7 +76,7 @@ beforeEach(() => vi.clearAllMocks());
 describe('Download CSV', () => {
   it('writes the board’s cards as quoted CSV', () => {
     expect(boardCsvText(planOf(), setup)).toBe(
-      'Key,Title,Type,Status,Assignee,Description\r\n4,"Say ""hi"", world",Task,To Do,,"two\nlines"\r\n',
+      'Key,Title,Type,Status,Assignee,Description\r\nT-4,"Say ""hi"", world",Task,To Do,,"two\nlines"\r\n',
     );
   });
 

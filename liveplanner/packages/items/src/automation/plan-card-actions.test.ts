@@ -217,8 +217,8 @@ describe('Link Cards', () => {
     const r = done(run([link, link], card, { items: [card, target] }));
     expect(r.patch).toEqual({ set: { 'f-links': [target.id] } });
     expect(r.lines.map((l) => [l.text, 'already' in l])).toEqual([
-      [`Link Links to #${target.key}`, false],
-      [`Link Links to #${target.key}`, true],
+      [`Link Links to B-${target.key}`, false],
+      [`Link Links to B-${target.key}`, true],
     ]);
   });
 
@@ -301,7 +301,7 @@ describe('Link Cards', () => {
     );
     expect(r.related[0]!.patch).toEqual({});
     expect(r.lines[1]).toMatchObject({
-      text: `#${kid.key} Link Parent Bug to #${parent.key}`,
+      text: `B-${kid.key} Link Parent Bug to B-${parent.key}`,
       already: true,
     });
   });

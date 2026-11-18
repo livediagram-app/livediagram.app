@@ -669,9 +669,9 @@ export const articles: Article[] = [
     slug: 'cards',
     title: 'Cards',
     description:
-      'Plan cards: add, open and fill one in, attachments, child cards, comments, flags, find any card, and archive or trash it.',
+      'Plan cards: add, open and fill one in, attachments, child cards, comments, flags, hand one to an AI assistant, find any card, and archive or trash it.',
     keywords:
-      'card cards ticket tickets plan card add card open card panel modal details tab tabs description rich text bullet list numbered list labels checklist steps parent open parent assignee team members comments comment thread resolve mention trash restore empty trash archive duplicate card size flag flagged child breadcrumb trail find search finder not on a board maximise maximize full screen expand card attachment attachments attach file upload picture image photo screenshot cover image reaction emoji comment and resolve repeat',
+      'card cards ticket tickets plan card add card open card panel modal details tab tabs description rich text bullet list numbered list labels checklist steps parent open parent assignee team members comments comment thread resolve mention trash restore empty trash archive duplicate card size flag flagged child breadcrumb trail find search finder not on a board maximise maximize full screen expand card attachment attachments attach file upload picture image photo screenshot cover image reaction emoji comment and resolve repeat ai assistant agent claude hand off hand back delegate',
     category: 'Plan',
     categorySlug: 'plan',
     group: 'Boards and Cards',

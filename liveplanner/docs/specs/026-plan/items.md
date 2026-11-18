@@ -16,7 +16,7 @@ fields people usually want, and any item may carry other fields. The store never
 | **item type**  | What an item is (Task, Bug, Note...): a name, a glyph, a colour and the fields it offers          | kind (that is a tab's), category |
 | **field**      | One named value in an item's `fields` bag (`title`, `status`, `assignee`...)                      | column, property, attribute      |
 | **item store** | Every item of one project                                                                         | backlog, database, table         |
-| **item key**   | The short number people say out loud, `#12`: assigned once, per project, never reused             | id (the id is internal)          |
+| **item key**   | The short number people say out loud, `WI-12`: assigned once, per project, never reused           | id (the id is internal)          |
 | **rank**       | The ordering key that places an item among others in a column                                     | position, index, order           |
 | **status**     | The `status` field: the value a board's columns are made of                                       | state, column, stage             |
 | **card**       | How an item is drawn: on a board, or alone as a Plan card. A card is a view; the item is the data | item (the data is the item)      |
@@ -30,7 +30,9 @@ fields people usually want, and any item may carry other fields. The store never
 - **`fields`**: a JSON object of field values. Known fields are validated by kind; other keys are kept as long as
   their values are JSON scalars, or arrays of them, within the size bounds.
 - **`rank`**: a fractional ordering key. Moving one item writes one item; nothing else is renumbered.
-- **`key`**: the item's number in its project, assigned by the store when the item is made (1, 2, 3...).
+- **`key`**: the item's number in its project, assigned by the store when the item is made (1, 2, 3...). People
+  see it after its card type's prefix (`WI-12`, [Card number prefixes](item-types.md#card-number-prefixes)); the
+  prefix is never stored on the item, so a card keeps its number when its type or prefix changes.
 - **Who and when**: `createdBy` and `updatedBy` (the display identity of the person or agent), `createdAt` and
   `updatedAt`. A person's id on an item is a one-way hash of their identity, never the identity itself: a guest's
   id is their credential, so items never carry it. They are stamped by the plan on each write, never sent by a
@@ -222,6 +224,13 @@ The sweep can never take a picture a plan still holds, whether or not that plan 
   stays and is sent again with the next report. The copy marks its first report as owed, so it always sends one
   (even of no pictures, if it dropped them all first), and a copy purged before it reported tells the service it
   holds none.
+- **A plan file vouches for itself** (Work Tracker 1254). A plan made from a `.liveplanner` file (the Import
+  dialog's liveplanner Plan, a Drive file's Import as a Copy, a project kit's template) can name another plan's
+  pictures, but has no source plan to vouch for it. So before its content lands, the import sends the pictures its
+  cards' Attachments hold (what its first report will send: a file brings no grants) as its own **unconfirmed**
+  references, and the copy's first report is owed as above. When the service refuses them, nothing lands: the
+  import fails and can be tried again (the Drive mirror retries on its next pass), so a picture is never let go
+  that the new plan shows. A file with no pictures, or a deploy without the media service, sends nothing.
 
 ### Removed pictures
 
@@ -647,7 +656,7 @@ A card's history marks an agent's changes with the same sparkle, worded by what 
 
 **Add Thread to Card** opens a dialog, **Add Thread to Card**, naming the thread:
 
-- A search field (focused on open with a mouse), matching a card's number (`12`, `#12`), title or type.
+- A search field (focused on open with a mouse), matching a card's number (`12`, `#12`, `WI-12`), title or type.
 - **This plan's cards only** (not archived, not in the Trash), as the card finder draws them (type glyph and
   colour, number, title), newest change first, at most 50 until a search narrows them. A card the thread is already
   on is shown with **Already on this card**, and cannot be picked. No other plan is offered, in the cloud or in
@@ -898,15 +907,14 @@ card and read one card at a time).
 
 ## Finding a card
 
-The editor's **Search** (in the footer's Tools, and ⌘K) finds a card by its number, title or description, as it finds
+The editor's **Search** (in the footer's Tools, and ⌘K) finds a card by its number (`12`, `#12`, `WI-12`), title or description, as it finds
 tabs and elements. The **Cards** button and its Find a Card panel are gone (owner, 2026-11-16), and with them the
 plan strip's Find row on a phone; the strip holds the Trash and Card Types.
 
 ## Handing a card to an AI assistant
 
-> **Status: part 1 of 3 built** (Work Tracker 901): the stored shape, its checks and its copies. The agents' side
-> ([Plan for agents](plan-agents.md#cards-handed-to-an-assistant), part 2) and the card and board (part 3) follow;
-> until then nothing in the editor or the agents' tools offers an assistant.
+> **Status: Built** (Work Tracker 901): the stored shape, its checks and copies, the agents' side
+> ([Plan for agents](plan-agents.md#cards-handed-to-an-assistant)), and the card and board below.
 
 Teams give work to AI agents the way they give it to a teammate. A card can be handed to an **AI assistant** as it is
 assigned to a person: the assistant becomes its Assignee, finds it, works it (its comments marked
@@ -942,11 +950,34 @@ assigned to a person: the assistant becomes its Assignee, finds it, works it (it
   as one: its own lane, filter option and bar.
 - **Handing back**: setting the Assignee to a person (or No one) hands the card back; it keeps no trace of the
   assistant beyond its history and comments.
-- **Who it can be handed to** (part 3): the assistants of the plan's people: your own AI tools and tokens, each
-  assistant that has written to this plan (the plan remembers the tool's name and its person the first time a token
-  writes, never the token), and every assistant a card already holds.
+- **Who it can be handed to**: the assistants of the plan's people. The plan **remembers an assistant** the first time
+  its token reaches the plan's cards (lists them or changes them) with the right to change them: a token of an Editor
+  or a Participant of the whole plan, never a read-only token, a tab-scoped link or a Community visitor. It keeps the
+  tool's name and its person (id, name, colour), never the token, refreshed at most once an hour, the most recent
+  `KNOWN_ASSISTANTS_MAX` (50) kept; a closed account's assistants are forgotten with its name. Every assistant a card
+  already holds is offered too. An AI tool connected but never pointed at the plan is not known yet: asking it to
+  look at the plan (or to take a card, `"assignee": "me"`) makes it one. The list is the plan's own and travels with
+  no copy, export or Community post.
 - **Who may**: handing a card to an assistant, or back, is assigning, so editing a card's fields: an Editor or a
   Participant, a guest and a link editor included. A Viewer can't, and the api refuses their write (403).
+- **The Assignee picker** (the card panel's, and the board selection bar's Assign menu) lists the people, then a
+  group headed **AI Assistants**: the plan's assistants by name ("Claude (Thomas)"), each with the AI mark, sorted by
+  name. Picking one hands the card over at once. With none known the group shows one quiet line instead: "Connect an
+  AI tool and ask it to look at this plan to hand it cards". A custom Person field never offers an assistant (it
+  refuses one), and the plan's people lists (automations, sheets, filters of a Person field) never list one as a
+  person. A Viewer's picker is disabled, as it is for people.
+- **The AI mark**: wherever a person's disc shows an assistant (the card face, the panel's Assignee, swimlanes, the
+  Gantt's lanes, workload rows, the People tile, the board's Assignee filter, linked cards), it is a sparkle on its
+  person's colour instead of initials, the same sparkle that marks a [Generated by AI](#generated-by-ai) comment. Its
+  accessible name reads "<name>, AI assistant". The card face's disc says "Handed to Claude (Thomas)".
+- **Progress on the card**: a card handed to an assistant shows a progress line under its Assignee in the panel, from
+  what the assistant already writes, never anything stored for it:
+  - once it has written: "Claude (Thomas) is on it", the card's column with how long it has been there ("In
+    Progress for 2 hours"), and its newest Generated by AI comment on the card by its person: "Latest note 5m ago:
+    <the first line, cut to 80 characters>";
+  - with no note yet: "Waiting for Claude (Thomas)", the column line, and "It picks the card up the next time it is
+    asked to work its cards." An AI tool cannot be woken: it finds its cards the next time someone asks it to.
+    The line is read-only and updates live as comments and moves arrive.
 - **Copies** keep or drop it as they do a person:
   - [Duplicate](#copies-and-exports), a Drive export and its import (the `.liveplanner` file), a tab's JSON export and
     importing it, a [repeating card's](#repeating-cards) next copy, a duplicated card and an automation's Create Card

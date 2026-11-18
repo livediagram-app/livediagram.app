@@ -1,9 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { ITEM_TYPES, type Item, type ItemTypeDef } from '@liveplanner/items';
+import {
+  ITEM_TYPES,
+  itemAssistantFor,
+  itemPersonId,
+  type Item,
+  type ItemTypeDef,
+} from '@liveplanner/items';
 import { listedType } from '../plan/plan-listing';
 import { VerbRefusal } from '../define';
 import { contextOf, DOC_A, fakeApi, library, tabsOfA } from '../testing/fake-api';
-import { fieldsFromPairs, itemAdd, itemLs, itemMove, itemRm, itemSet } from './item';
+import { fieldsFromPairs, itemAdd, itemHandBack, itemLs, itemMove, itemRm, itemSet } from './item';
 
 // The item verbs (docs/specs/026-plan/plan-mode.md "Agents"; docs/specs/015-api/cli.md "Commands").
 const by = { id: 'p', name: 'Priya', color: '#7c3aed' };
@@ -87,11 +93,11 @@ describe('item ls', () => {
     const all = await itemLs.run!(ctx, { project: DOC_A, type: undefined, status: undefined });
     expect(itemLs.text!(all)).toEqual([
       'Sprint: To Do 1 · Doing 1 · Done ✓ 0 | Widgets: Item Count, Filter',
-      '#1  bug   Doing  "Fix login"',
-      '#2  task  To Do  "Docs"',
+      'B-1  bug   Doing  "Fix login"',
+      'T-2  task  To Do  "Docs"',
     ]);
     const bugs = await itemLs.run!(ctx, { project: DOC_A, type: ['bug'], status: undefined });
-    expect(itemLs.quiet!(bugs)).toEqual(['#1']);
+    expect(itemLs.quiet!(bugs)).toEqual(['B-1']);
     expect(
       (await itemLs.run!(ctx, { project: DOC_A, type: undefined, status: ['todo'] })).items,
     ).toHaveLength(1);
@@ -187,7 +193,7 @@ describe('item writes', () => {
         fields: ['priority=high', 'labels=ux, api', 'estimate=3'],
       }),
     );
-    expect(out.text).toBe('+ #3 [task] New');
+    expect(out.text).toBe('+ T-3 [task] New');
     expect(seen[0]).toMatchObject({
       method: 'POST',
       body: {
@@ -220,7 +226,7 @@ describe('item writes', () => {
       body: { status: 'todo', before: 'itemaaa222' },
     });
     const rm = await itemRm.run!(ctx, { project: DOC_A, item: 'itembbb' });
-    expect(rm.text).toBe('- #1 [bug] Fix login (!high)');
+    expect(rm.text).toBe('- B-1 [bug] Fix login (!high)');
     expect(seen[2]).toMatchObject({ method: 'DELETE' });
   });
 
@@ -291,7 +297,7 @@ describe('item flags', () => {
     });
     const all = await itemLs.run!(ctx, { project: DOC_A, type: undefined, status: undefined });
     expect(all.items[0]!.fields).toMatchObject({ flagged: true });
-    expect(itemLs.text!(all)).toContain('#1  task  Doing  "Fix login"  flagged');
+    expect(itemLs.text!(all)).toContain('T-1  task  Doing  "Fix login"  flagged');
   });
 });
 
@@ -300,15 +306,15 @@ describe('item output and refusals', () => {
     const { ctx, seen } = api();
     const added = await itemAdd.run!(ctx, itemAdd.input.parse({ project: DOC_A, title: 'New' }));
     expect(seen[0]!.body).toEqual({ type: 'task', fields: { title: 'New' } });
-    expect(itemAdd.text!(added)).toEqual(['+ #3 [task] New']);
-    expect(itemAdd.quiet!(added)).toEqual(['#3']);
+    expect(itemAdd.text!(added)).toEqual(['+ T-3 [task] New']);
+    expect(itemAdd.quiet!(added)).toEqual(['T-3']);
     const set = await itemSet.run!(
       ctx,
       itemSet.input.parse({ project: DOC_A, item: '#1', fields: ['estimate=3'] }),
     );
     expect(seen[1]!.body).toEqual({ set: { estimate: 3 } });
-    expect(itemSet.text!(set)).toEqual(['~ #3 [task] New']);
-    expect(itemSet.quiet!(set)).toEqual(['#3']);
+    expect(itemSet.text!(set)).toEqual(['~ T-3 [task] New']);
+    expect(itemSet.quiet!(set)).toEqual(['T-3']);
     const moved = await itemMove.run!(ctx, {
       project: DOC_A,
       item: '#1',
@@ -316,10 +322,10 @@ describe('item output and refusals', () => {
       before: undefined,
     });
     expect(seen[2]!.body).toEqual({ status: 'done', before: null });
-    expect(itemMove.text!(moved)).toEqual(['→ #3 [task] New in done']);
-    expect(itemMove.quiet!(moved)).toEqual(['#3']);
+    expect(itemMove.text!(moved)).toEqual(['→ T-3 [task] New in done']);
+    expect(itemMove.quiet!(moved)).toEqual(['T-3']);
     const rm = await itemRm.run!(ctx, { project: DOC_A, item: '#1' });
-    expect(itemRm.text!(rm)).toEqual(['- #1 [bug] Fix login (!high)']);
+    expect(itemRm.text!(rm)).toEqual(['- B-1 [bug] Fix login (!high)']);
     expect(itemRm.quiet!(rm)).toEqual(['itembbb111']);
   });
 
@@ -364,7 +370,7 @@ describe('item edges', () => {
     expect(out.items[0]!.status).toBeNull();
     expect(itemLs.text!(out)).toEqual([
       'Sprint: To Do 0 · Doing 0 · Done ✓ 0',
-      '#5  task  -  "Loose"',
+      'T-5  task  -  "Loose"',
     ]);
   });
 
@@ -603,7 +609,7 @@ describe('formula fields', () => {
       Broken: null,
     });
     expect(out.items.find((i) => i.id === 'itemdeal02')!.fields).toMatchObject({
-      Grade: '#1 Acme',
+      Grade: 'D-1 Acme',
     });
     expect(listedType(DEAL as ItemTypeDef).custom).toEqual(
       expect.arrayContaining([
@@ -967,8 +973,85 @@ describe('item ls: pull requests', () => {
     ]);
     expect(all.items.find((i) => i.key === 2)).not.toHaveProperty('pullRequests');
     expect(itemLs.text!(all).slice(1)).toEqual([
-      '#1  bug   Doing  "Fix login"  acme/web#42 open, checks failing; acme/api#7 merged',
-      '#2  task  To Do  "Docs"',
+      'B-1  bug   Doing  "Fix login"  acme/web#42 open, checks failing; acme/api#7 merged',
+      'T-2  task  To Do  "Docs"',
     ]);
+  });
+});
+
+// docs/specs/026-plan/plan-agents.md "Cards handed to an assistant": the CLI's side.
+describe('items handed to an assistant', () => {
+  const CURRENT = {
+    accountId: 'acct_priya',
+    accountName: 'Priya Shah',
+    tokenId: 't',
+    tokenName: 'Claude',
+    role: 'full',
+    expiresAt: 1,
+  };
+  async function handed() {
+    const priya = { id: await itemPersonId('acct_priya'), name: 'Priya Shah', color: '#7c3aed' };
+    const claude = itemAssistantFor(priya, 'Claude')!;
+    const cards = [
+      item(1, 'itembbb111', { title: 'Fix login', status: 'doing', assignee: claude }),
+      item(2, 'itemaaa222', { title: 'Docs', status: 'todo' }),
+    ];
+    const { ctx, seen } = api({
+      [path]: (r: Request) =>
+        r.method === 'GET' ? Response.json({ items: cards, rev: 4 }) : Response.json({}),
+      '/tokens/current': CURRENT,
+      [`${path}/itembbb111`]: async (r: Request) => {
+        const body = (await r.json()) as { set: Record<string, unknown> };
+        seen.push({ method: r.method, path: `${path}/itembbb111`, body });
+        return Response.json({
+          item: { ...cards[0]!, fields: { ...cards[0]!.fields, ...body.set } },
+        });
+      },
+    });
+    return { ctx, seen, priya, claude };
+  }
+
+  it('lists only the handed items with --handed-to-me, each line naming its assistant', async () => {
+    const { ctx } = await handed();
+    const all = await itemLs.run!(ctx, { project: DOC_A, handedToMe: true });
+    expect(all.items.map((i) => [i.key, i.assistant])).toEqual([[1, 'Claude (Priya)']]);
+    expect(itemLs.text!(all)).toContain('T-1  task  Doing  "Fix login"  → Claude (Priya)');
+  });
+
+  it('hands an item back to the token’s person', async () => {
+    const { ctx, seen, priya } = await handed();
+    const out = await itemHandBack.run!(ctx, { project: DOC_A, item: '#1' });
+    expect(seen.at(-1)?.body).toEqual({ set: { assignee: priya } });
+    expect(itemHandBack.text!(out)).toEqual([expect.stringMatching(/handed back to Priya Shah$/)]);
+    expect(itemHandBack.quiet!(out)).toEqual(['T-1']);
+  });
+
+  it('says its person when the api answers the item without one', async () => {
+    const claude = itemAssistantFor(
+      { id: await itemPersonId('acct_priya'), name: 'Priya Shah', color: '#7c3aed' },
+      'Claude',
+    )!;
+    const held = item(1, 'itembbb111', { title: 'Fix login', status: 'doing', assignee: claude });
+    const out = await itemHandBack.run!(
+      api({
+        [path]: () => Response.json({ items: [held], rev: 4 }),
+        '/tokens/current': CURRENT,
+        [`${path}/itembbb111`]: () =>
+          Response.json({ item: { ...held, fields: { title: 'Fix login' } } }),
+      }).ctx,
+      { project: DOC_A, item: '#1' },
+    );
+    expect(itemHandBack.text!(out)[0]).toMatch(/handed back to its person$/);
+  });
+
+  it('refuses --handed-to-me for a session, and a hand-back of an item not handed to it', async () => {
+    const { ctx } = await handed();
+    await expect(itemHandBack.run!(ctx, { project: DOC_A, item: '#2' })).rejects.toMatchObject({
+      code: 'not_handed_to_you',
+    });
+    const session = api({ '/tokens/current': () => Response.json({}, { status: 403 }) });
+    await expect(
+      itemLs.run!(session.ctx, { project: DOC_A, handedToMe: true }),
+    ).rejects.toBeInstanceOf(VerbRefusal);
   });
 });

@@ -38,6 +38,8 @@ the open editor asks, calmly, to be reloaded.
     14 November 2026), and keys from a newer version kept through a save, which editors built on `5` would drop.
   - `7`: a card type's [card templates](../026-plan/item-types.md#card-templates) (`templates`, 15 November 2026),
     which editors built on `6` keep through a save only while a type's templates fit their 4 KB cap for newer keys.
+  - `8`: a card type's [card prefix](../026-plan/item-types.md#card-number-prefixes) (`prefix`, 18 November 2026),
+    which editors built on `6` and `7` keep through a save and do not show (their cards read `#12`).
 
 ## How a running editor learns the server's number
 

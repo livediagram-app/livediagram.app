@@ -4,6 +4,7 @@
 
 import type { Item } from './item';
 import { itemAssignee, itemLabels, itemStatus, itemTitle } from './item';
+import { cardRefKey } from './card-prefix';
 import { typeIn } from './type-catalogue';
 import type { IsDoneStatus } from './calculated-fields';
 import { isNotified } from './notify-fields';
@@ -91,6 +92,8 @@ export function quickFilterMatches(
   }
   const text = quick.text?.trim().toLowerCase();
   if (text) {
+    // A number in any form ("12", "#12", "WI-12": item-types.md "Card number prefixes") finds its card.
+    if (cardRefKey(text) === item.key) return true;
     const hay = [itemTitle(item), `#${item.key}`, ...itemLabels(item)].join(' ').toLowerCase();
     if (!hay.includes(text)) return false;
   }

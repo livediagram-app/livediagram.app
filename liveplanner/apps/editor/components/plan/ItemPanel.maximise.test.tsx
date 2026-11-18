@@ -67,7 +67,7 @@ describe('Maximise Card', () => {
     const button = screen.getByRole('button', { name: 'Maximise Card' });
     expect(button.getAttribute('aria-pressed')).toBe('false');
     const order = [
-      screen.getByRole('button', { name: 'More for #4' }),
+      screen.getByRole('button', { name: 'More for T-4' }),
       button,
       screen.getByRole('button', { name: 'Close' }),
     ];

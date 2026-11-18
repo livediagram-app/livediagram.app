@@ -118,7 +118,7 @@ describe('Gantt dependency clashes', () => {
     expect(arrows.filter((a) => a.hasAttribute('data-clash'))).toHaveLength(1);
     const marks = [...document.querySelectorAll('[data-gantt-clash]')];
     expect(marks.map((m) => m.getAttribute('aria-label'))).toEqual([
-      'Starts 2 days before #1 Design is due',
+      'Starts 2 days before P-1 Design is due',
     ]);
   });
 
@@ -151,7 +151,7 @@ describe('moving the cards that follow', () => {
     result.current('item-design', later);
     expect(offers).toHaveLength(1);
     expect(offers[0]).toMatchObject({
-      message: '2 cards that follow #1 Design now start before it is due.',
+      message: '2 cards that follow P-1 Design now start before it is due.',
       confirmLabel: 'Move 2 Cards',
       declineLabel: 'Leave Them',
     });
@@ -167,7 +167,7 @@ describe('moving the cards that follow', () => {
       { id: 'item-build', patch: { set: { start: '2026-10-21', due: '2026-10-26' } } },
       { id: 'item-ship', patch: { set: { start: '2026-10-27', due: '2026-10-28' } } },
     ]);
-    expect(plan.announce).toHaveBeenCalledWith('Moved 2 cards that follow #1 Design');
+    expect(plan.announce).toHaveBeenCalledWith('Moved 2 cards that follow P-1 Design');
     expect(tracked).toEqual(['Plan Changed GanttMoveFollowing']);
     offers[0]!.onDecline();
   });
@@ -177,7 +177,7 @@ describe('moving the cards that follow', () => {
     const { result } = renderHook(() => useGanttMoveFollowing(plan, BUILT_IN_DATES));
     result.current('item-design', later);
     expect(offers[0]).toMatchObject({
-      message: '1 card that follows #1 Design now starts before it is due.',
+      message: '1 card that follows P-1 Design now starts before it is due.',
       confirmLabel: 'Move 1 Card',
     });
     // A collaborator moved Build well after Design before it was pressed.

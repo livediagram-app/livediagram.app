@@ -4,24 +4,16 @@
 // can refuse as someone types and a document's validation can hold a stored URL to it. Resolving the name to public
 // addresses only is the fetcher's (@liveworkspace/api-kit/public-address), right before each request.
 
+import { classifyHost } from './private-host';
+
+export { INTERNAL_HOST_SUFFIXES } from './private-host';
+
 export type PublicHttpsUrlRefusal = 'invalid' | 'private';
 
 export type PublicHttpsUrlResult =
   { ok: true; url: URL; host: string } | { ok: false; error: PublicHttpsUrlRefusal };
 
 export const PUBLIC_HTTPS_URL_MAX = 2048;
-
-// Names that only mean something inside a network.
-export const INTERNAL_HOST_SUFFIXES: readonly string[] = [
-  '.local',
-  '.localhost',
-  '.internal',
-  '.lan',
-  '.home.arpa',
-  '.intranet',
-];
-
-const IPV4 = /^\d{1,3}(\.\d{1,3}){3}$/;
 
 /** The URL a server may fetch, or why not: `invalid` for its shape, `private` for an address or internal name. */
 export function parsePublicHttpsUrl(
@@ -41,18 +33,10 @@ export function parsePublicHttpsUrl(
     return { ok: false, error: 'invalid' };
   }
   if (url.port !== '' && url.port !== '443') return { ok: false, error: 'invalid' };
-  const host = url.hostname.toLowerCase().replace(/\.$/, '');
-  // An address rather than a name (the URL parser has already turned `0x7f000001` into dotted decimal), or a name
-  // that never leaves a network.
-  if (IPV4.test(host) || host.startsWith('[') || host.includes(':')) {
-    return { ok: false, error: 'private' };
-  }
-  if (
-    !host.includes('.') ||
-    host === 'localhost' ||
-    INTERNAL_HOST_SUFFIXES.some((suffix) => host.endsWith(suffix))
-  ) {
-    return { ok: false, error: 'private' };
-  }
+  // An address rather than a name (the URL parser has already turned `0x7f000001` into dotted decimal), public or
+  // not: a stored URL is fetched again for months, so it must be a name resolved before each request. Or a name that
+  // never leaves a network, by the rule every server fetch shares (private-host.ts).
+  const { host, kind, private: internal } = classifyHost(url.hostname);
+  if (kind === 'address' || internal) return { ok: false, error: 'private' };
   return { ok: true, url, host };
 }

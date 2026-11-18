@@ -178,7 +178,8 @@ beside `documents`, each one the pictures a document **will** report but has not
 
 liveplanner sends one for every copy of a plan (a duplicate, a tab copied into a new plan, a copy through a link),
 from the source plan's own report, before that plan can ask for any of the copy's pictures to be released (its
-`docs/specs/026-plan/items.md` "Images in use").
+`docs/specs/026-plan/items.md` "Images in use"), and one for every plan made from a plan file, from the import
+itself, before the new plan's content lands.
 
 ### Releases
 

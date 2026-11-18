@@ -275,6 +275,7 @@ function worked(
   if (calc === 'formula') {
     const out = formulaOutcome(field, item, type, {
       items: w.items,
+      ...(w.types ? { types: w.types } : {}),
       today: w.today,
       steps: w.steps,
       calculated: (f) => valueIn(w, f, item, type),
@@ -318,7 +319,12 @@ function readOn(w: Walk, card: Item, id: string): FormulaValue {
     const v = valueIn(w, f.custom, card, type);
     return typeof v === 'string' && calculatedResultOf(f.custom) === 'date' ? dateOf(v) : v;
   }
-  return fieldValueOn(card, type, id, w.items ? { items: w.items } : {});
+  return fieldValueOn(
+    card,
+    type,
+    id,
+    w.items ? { items: w.items, ...(w.types ? { types: w.types } : {}) } : {},
+  );
 }
 
 // A Rollup on a card: its children's values aggregated, rounded as its result reads.

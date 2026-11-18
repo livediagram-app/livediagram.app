@@ -51,8 +51,8 @@ describe('the picker’s cards', () => {
   it('matches a number, with or without #, a title or a type', () => {
     const [c] = pickCardsOf([card('a', 12, 'Promo maths')], PLAN, ITEM_TYPES, { cards: [] });
     expect(matchesPick(c!, '12')).toBe(true);
-    expect(matchesPick(c!, '#12')).toBe(true);
-    expect(matchesPick(c!, '#13')).toBe(false);
+    expect(matchesPick(c!, 'T-12')).toBe(true);
+    expect(matchesPick(c!, 'T-13')).toBe(false);
     expect(matchesPick(c!, 'MATHS')).toBe(true);
     expect(matchesPick(c!, 'task')).toBe(true);
     expect(matchesPick(c!, '')).toBe(true);
@@ -64,11 +64,11 @@ describe('Add Thread to Card', () => {
   it('lists this plan’s cards, the current one already on it', () => {
     open();
     const on = screen.getByRole('button', {
-      name: 'Basket empties, Task #1, already on this thread',
+      name: 'Basket empties, Task T-1, already on this thread',
     });
     expect(on).toHaveProperty('disabled', true);
     expect(screen.getByText('Already on this card')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Promo code, Task #2' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Promo code, Task T-2' })).toBeTruthy();
   });
 
   it('offers no other plan', () => {
@@ -81,10 +81,10 @@ describe('Add Thread to Card', () => {
   it('narrows by the search', () => {
     open();
     fireEvent.change(screen.getByRole('textbox', { name: 'Search cards' }), {
-      target: { value: '#3' },
+      target: { value: 'T-3' },
     });
-    expect(screen.queryByRole('button', { name: 'Promo code, Task #2' })).toBeNull();
-    expect(screen.getByRole('button', { name: 'Apple Pay, Task #3' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Promo code, Task T-2' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Apple Pay, Task T-3' })).toBeTruthy();
     fireEvent.change(screen.getByRole('textbox', { name: 'Search cards' }), {
       target: { value: 'nothing like it' },
     });
@@ -93,10 +93,10 @@ describe('Add Thread to Card', () => {
 
   it('adds the thread to a card in this plan at once', async () => {
     const { acts, onClose, ctx } = open();
-    fireEvent.click(screen.getByRole('button', { name: 'Promo code, Task #2' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Promo code, Task T-2' }));
     await flush();
     expect(acts).toEqual([{ kind: 'addToCard', threadId: 'th-a', itemId: 'card-2' }]);
-    expect(ctx.announce).toHaveBeenCalledWith('Added to #2');
+    expect(ctx.announce).toHaveBeenCalledWith('Added to T-2');
     expect(onClose).toHaveBeenCalled();
   });
 
@@ -116,7 +116,7 @@ describe('Add Thread to Card', () => {
         <AddThreadToCardDialog thread={t} ctx={ctx} onClose={onClose} />
       </PlanProvider>,
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Promo code, Task #2' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Promo code, Task T-2' }));
     await flush();
     expect(acts).toHaveLength(1);
     expect(onClose).not.toHaveBeenCalled();

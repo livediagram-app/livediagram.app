@@ -25,6 +25,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 | **inherited type**  | A card type that takes its fields, tabs, statuses, Default State and display from a base type, adding fields of its own                           | subtype, child type         |
 | **newer field**     | A custom field whose kind (or calculation) this editor does not know: a newer liveplanner made it. Kept, read-only                                | unknown field, broken field |
 | **card template**   | A named set of starting values a card type holds, so a new card of that type starts filled in                                                     | preset, blueprint, default  |
+| **card prefix**     | The letters a card type puts before its cards' numbers (`WI` in `WI-100`): made from its name, changeable, unique in the plan                     | key, code, abbreviation     |
 
 ## The type catalogue
 
@@ -56,6 +57,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `id`            | A slug, `a-z0-9-`, up to 32 characters, unique in the catalogue. A ready-made type keeps its own (`task`, `bug`...); a new type's is made from its name (`customer-call`), with `-2`, `-3` on a clash. Never changes once made: items store it.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | `label`         | The name, 1 to 32 characters, unique in the catalogue ignoring case                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `prefix`        | The [card prefix](#card-number-prefixes): 1 to 6 letters and digits, starting with a letter, stored upper case, unique in the catalogue ignoring case. Absent on a type stored before prefixes: it reads as the one made from its name                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | `color`         | Any `#rrggbb` colour, from the [colour picker](../004-interface-design/colour-picker.md); on a board an accent that would not read on its card (Project's black on a dark card, Idea's yellow on a light one, any accent on a coloured theme's card) is drawn leaned toward white or black until it reaches 3:1 on that card, and its words on the type chip 4.5:1 ([Plan board](plan-board.md) "Theme and style"); in the app's own chrome it is lifted toward white to 3:1 in dark mode                                                                                                                                                                                                                                                                                                                                                        |
 | `icon`          | A glyph from the Plan glyph set: 75 line glyphs in eight categories, the ready-made types' among them (ids never change or go, so a stored type always draws)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | `fields`        | The fields its item panel offers, in order: built-in field ids and custom field ids                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
@@ -1043,6 +1045,45 @@ Budget * 100`), and a Rollup or a Lookup may read a Formula on the cards it read
   placed custom fields starts Under the Title on Detailed cards, until the type's Detailed layout is changed; the
   tick is gone from the field's settings.
 
+## Card number prefixes
+
+Every card's number carries its card type's **prefix**, so a number says what kind of card it is: a Work Item's
+card 100 reads **WI-100**, a Task's T-7. The number itself is unchanged: one count per plan, as before
+([Items](items.md#what-an-item-is) `key`), so WI-100 and #100 are the same card and nothing is renumbered.
+
+- **Made from the name.** A type with no prefix of its own takes one from its name: the first letter of each word
+  (letters and digits only, accents dropped), upper case, up to 6: Work Item `WI`, Customer Call `CC`, Task `T`,
+  Sprint 4 `S4`. Leading digits are dropped (a name of only digits or symbols gives `C`, for card). When another
+  type already has that prefix, the next letters of the name's last word are added one at a time (Task `T`, then
+  Theme `TH`, Ticket `TI`), and past those (or past 6 characters) a digit from 2 (`T2`, `T3`...), so every type in
+  the plan gets its own. Types claim prefixes in catalogue order, stored ones first, so the result is the same on
+  every screen and in every client.
+- **Stored on the type.** A type added in the editor or by an agent stores the prefix it was given. A type stored
+  before prefixes has none stored and reads as its made one (no migration step); the api stores it the first time
+  a change to the catalogue would otherwise change it (a type renamed, deleted or moved before it), so a card's
+  prefix never shifts under people.
+- **Renaming keeps it.** A type renamed keeps the prefix it had; changing a prefix is its own edit.
+- **Changing it.** Whoever may edit card types (Editors; Participants and Viewers never open the type editor) sets
+  a type's prefix in the type editor's Configuration tab, the **Prefix** field beside Name, or an agent sets it
+  with `change_card_types` (`prefix`). It takes 1 to 6 letters and digits starting with a letter, read upper case
+  (`wi` saves as `WI`); left empty, the type goes back to the one made from its name. A prefix another type of the
+  plan has (its own or made, ignoring case) is refused with "{PREFIX} is already {Type}'s prefix. Pick another."
+  and nothing is saved; the api refuses a catalogue whose stored prefixes clash (`item_types_invalid`,
+  `types[n].prefix`).
+- **Where it shows.** Everywhere a card's number shows, the number reads `{PREFIX}-{number}`: a board card's number
+  tag, the card panel's header and its menu, linked cards and Card fields, Blocked By, the Cards and Search
+  panels, card pickers, the Trash, the calendar and Gantt chart, automation runs and their notes, comment threads'
+  card chips, a sheet's card columns, CSV and tab exports, the calendar feed's event titles, and the agents' card
+  refs (`ref: "WI-100"`). A card whose type the catalogue lacks (it draws as "Item") and a plan with no card types
+  read `#100` as before; a tour's practice card shows no number.
+- **Finding a card by any form.** `WI-100`, `wi-100`, `#100` and `100` all name card 100: in search (the Cards
+  panel, Search, card pickers, Card fields), in links, and wherever agents and the CLI take a card (`item: "WI-100"`).
+  The number decides: a prefix written with it is not checked, so a ref made before a prefix changed, or before a
+  card changed type, still finds its card. Searching a prefix alone (`WI`) finds that type's cards, as its name does.
+  Pull request mentions keep the plan's name and number ("Work Tracker 1290"); a prefix there is not needed.
+- **Old clients.** A client from before prefixes keeps a stored prefix as a [setting from a newer
+  version](#settings-from-a-newer-version) and shows `#100`; its saves carry the prefix back unchanged.
+
 ## Card templates
 
 A card type can hold **card templates**: named sets of starting values, so a card of that type starts already filled
@@ -1925,7 +1966,7 @@ copied across or tidied up.
 
 ## Collaboration
 
-- A saved change reaches everyone with the project open at once: their cards, panels and palette redraw.
+- A saved change reaches everyone with the project open at once: their cards, panels and palette redraw, their card numbers with a changed prefix too.
 - Two people saving the same type: the later save wins, whole (the catalogue is one value), as a board's set-up.
 
 ## Undo

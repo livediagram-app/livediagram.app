@@ -26,6 +26,7 @@ import { planBoardTarget } from './plan-board-targets';
 import { countFieldFilters, tabsWithoutFieldFilters } from '@/components/plan/field-retype-tabs';
 import { useTypeForBoard } from './useTypeForBoard';
 import { usePlanPeople } from './usePlanPeople';
+import { usePlanAssistants } from './usePlanAssistants';
 import type { StatusBoard } from './usePlanStatusNames';
 
 const NO_STATUS_BOARDS: readonly StatusBoard[] = [];
@@ -162,6 +163,12 @@ export function usePlanSlice(opts: {
   // You, your teams' members and the plan's custom assignees (usePlanPeople); a card's current assignee who is
   // not among them still shows in its own picker.
   const people = usePlanPeople(planItems.self, opts.teamPeople, planItems.items);
+  // The plan's AI assistants, the Assignee picker's second group (docs/specs/026-plan/items.md "Who it can be handed to").
+  const planAssistants = usePlanAssistants(
+    planItems.items,
+    planItems.scope ?? null,
+    planItems.items.size > 0,
+  );
 
   const write = planItems.write;
   const writeQuiet = planItems.writeQuiet;
@@ -301,6 +308,8 @@ export function usePlanSlice(opts: {
       status: planItems.status,
       self: planItems.self,
       people,
+      assistants: planAssistants.assistants,
+      refreshAssistants: planAssistants.refresh,
       canEdit,
       canEditCards,
       canVote,
@@ -356,6 +365,8 @@ export function usePlanSlice(opts: {
       planItems.self,
       planItems.refetch,
       people,
+      planAssistants.assistants,
+      planAssistants.refresh,
       canEdit,
       canEditCards,
       canVote,

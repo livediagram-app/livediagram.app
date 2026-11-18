@@ -177,7 +177,8 @@ webhook, with the same address, secret, retries, pausing and Recent Deliveries; 
   `@liveworkspace/model-core/public-https-url`, so every product that fetches a URL a person typed holds it to the same
   rules (livediagram's [live service status](../../../../livediagram/docs/specs/009-elements/live-status.md)).
 - **No private or internal addresses (SSRF).** `localhost` and names under `.local`, `.localhost`, `.internal`,
-  `.lan`, `.home.arpa` and single-label names are refused, and the host is resolved (DNS over HTTPS, A and AAAA)
+  `.lan`, `.home.arpa` and `.intranet`, and single-label names, are refused (the platform's one rule for every fetch of a
+  URL someone gave, [architecture.md](../002-architecture/architecture.md#fetching-a-url-someone-gave)), and the host is resolved (DNS over HTTPS, A and AAAA)
   when the webhook is added and again right before every delivery is sent: an answer in a private, loopback,
   link-local, carrier NAT, multicast, documentation or reserved range refuses it (400 `webhook_url_private` when
   adding; a failed delivery after, and the rest of that run's deliveries for it too). A host that resolves to nothing

@@ -11,6 +11,7 @@ import type { CardRef, CardThread } from '@liveplanner/project';
 import { MenuHeader, PortalMenu } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { useMenuItemProps } from '@liveworkspace/workbench/components/primitives/menu-item-props';
 import { sharedBeyond, sharedLabel } from './thread-words';
+import { useCardRefById } from '../card-ref';
 import type { CardThreadsContextValue } from './CardThreadsContext';
 
 const LinkIcon = lucideGlyph(lucideLink, 11);
@@ -101,7 +102,14 @@ function SharedCardRow({
   onOpen: () => void;
 }) {
   const { itemProps } = useMenuItemProps({ disabled: current });
-  const num = card.key !== null ? `#${card.key}` : 'A card';
+  const refById = useCardRefById();
+  // Its prefixed number here ("WI-12"); a card in another plan by its number alone.
+  const num =
+    card.key === null
+      ? 'A card'
+      : here
+        ? refById({ id: card.itemId, key: card.key })
+        : `#${card.key}`;
   const name = here ? title || 'Untitled' : card.projectName || 'Another plan';
   return (
     <button

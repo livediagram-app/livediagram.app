@@ -107,6 +107,8 @@ export function resolveChild(child: ItemTypeDef, base: ItemTypeDef): ItemTypeDef
     newTitle: child.newTitle,
     glyph: child.glyph,
     color: child.color,
+    // Its card prefix is its own ("Card number prefixes"), never its base's.
+    ...(child.prefix !== undefined ? { prefix: child.prefix } : {}),
     fields: [...base.fields, ...own],
   };
   if (custom.length) next.custom = custom;

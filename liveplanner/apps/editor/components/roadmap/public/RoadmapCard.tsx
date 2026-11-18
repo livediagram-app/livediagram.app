@@ -66,7 +66,7 @@ export function RoadmapCard({
         <h3 className="text-[15px] font-semibold leading-snug text-slate-900 [overflow-wrap:anywhere] dark:text-slate-50">
           {card.number !== undefined ? (
             <span className="mr-1.5 font-medium tabular-nums text-slate-500 dark:text-slate-400">
-              #{card.number}
+              {card.ref ?? `#${card.number}`}
             </span>
           ) : null}
           {card.title}

@@ -72,9 +72,9 @@ export function ItemTypePill({
   );
 }
 
-export function ItemKeyTag({ itemKey }: { itemKey: number }) {
+// The card's number as people see it, `text` ("WI-12": item-types.md "Card number prefixes"), copied on a click.
+export function ItemKeyTag({ text }: { text: string }) {
   const { copied, flash } = useCopiedFlash(KEY_COPIED_MS);
-  const text = `#${itemKey}`;
   return (
     <Tooltip label={copied ? 'Copied' : 'Copy Card Number'}>
       <button

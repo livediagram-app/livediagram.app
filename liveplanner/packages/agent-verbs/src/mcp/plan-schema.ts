@@ -44,7 +44,9 @@ const WIDGETS_CHANGE_MAX = BOARD_WIDGET_KINDS.length + FIELD_WIDGETS_MAX;
 
 const url = z.string().describe('Link that opens the plan in the liveplanner editor.');
 const projectId = z.string().describe('The plan (from find_projects).');
-const itemRef = z.string().describe('The item, by its number ("#12") or an id prefix.');
+const itemRef = z
+  .string()
+  .describe('The item, by its number ("WI-12", "#12" or "12") or an id prefix.');
 const statusArg = z
   .string()
   .describe(
@@ -58,7 +60,8 @@ const fieldsArg = z
   .record(z.string(), z.unknown())
   .describe(
     'Fields by name: description (Markdown: # headings, **bold**, *italic*, [links](https://…), - bullets; ' +
-      'shown formatted on the card), status (a column name), assignee (a person’s name, e.g. "Sam"), priority ' +
+      'shown formatted on the card), status (a column name), assignee (a person’s name, e.g. "Sam"; "me" hands the card to you, the AI assistant ' +
+      'calling; an assistant by its name as listed, e.g. "Claude (Sam)"), priority ' +
       '(urgent|high|medium|low), labels (["seo","copy"] or "seo, copy"), estimate (0-999), start and due ' +
       '(YYYY-MM-DD), color (a #rrggbb colour, e.g. ' +
       PLAN_TYPE_COLOURS.slice(0, 4).join(' ') +
@@ -127,6 +130,13 @@ export const listItemsShape = {
     .string()
     .optional()
     .describe('The nextCursor of the previous answer, with the same filters, for the next page.'),
+  handedToMe: z
+    .boolean()
+    .optional()
+    .describe(
+      'Only the cards handed to you, the AI assistant calling (your token’s name and person), each marked ' +
+        'handedToYou. Work them, then hand each back with change_items’ hand_back.',
+    ),
 };
 
 // Each change is strict: a key it does not take is refused, never dropped. A dropped `column` (the board's own word for
@@ -192,6 +202,12 @@ const itemChange = z.discriminatedUnion('op', [
       .describe('The item it lands before; the end of the column when absent.'),
   }),
   z.strictObject({ op: z.literal('delete'), item: itemRef }),
+  z
+    .strictObject({ op: z.literal('hand_back'), item: itemRef })
+    .describe(
+      'Hand a card handed to you back to the person you work for: its assignee becomes them. Refused for a card ' +
+        'not handed to you.',
+    ),
 ]);
 
 // upload_image (docs/specs/015-api/mcp-server.md §4.5b): the gallery upload's input and answer, for a plan.
@@ -586,6 +602,12 @@ const tabsArg = z
       'Fields in no tab show under Details. Replaces the tabs whole.',
   );
 const detailsLabelArg = z.string().describe('What the panel calls Details (1-24 characters).');
+const prefixArg = z
+  .string()
+  .describe(
+    'Its card prefix, shown before its cards’ numbers (WI in WI-12): 1-6 letters and digits starting with a letter; ' +
+      'another type’s prefix is refused.',
+  );
 const detailsGlyphArg = glyphIdArg.describe(
   'The icon Details wears, a Plan glyph id; null puts the default (checklist) back.',
 );
@@ -679,6 +701,9 @@ export const cardTypeChangeSchema = z.discriminatedUnion('op', [
     detailsLabel: detailsLabelArg.optional(),
     detailsGlyph: detailsGlyphArg.optional(),
     assigneeNotifies: assigneeNotifiesArg.optional(),
+    prefix: prefixArg
+      .optional()
+      .describe('Its card prefix; default made from its name (Work Item WI).'),
     inherits: typeArg
       .optional()
       .describe(
@@ -723,6 +748,12 @@ export const cardTypeChangeSchema = z.discriminatedUnion('op', [
     detailsLabel: detailsLabelArg.optional(),
     detailsGlyph: detailsGlyphArg.optional(),
     assigneeNotifies: assigneeNotifiesArg.optional(),
+    prefix: prefixArg
+      .nullable()
+      .optional()
+      .describe(
+        'Its card prefix; "" or null puts the one made from its name back. A rename keeps it.',
+      ),
     inherits: typeArg
       .nullable()
       .optional()
@@ -889,6 +920,7 @@ const listedType = z.object({
       }),
     )
     .describe('Its item panel’s tabs; fields in none show under Details.'),
+  prefix: z.string().describe('Its card prefix, before its cards’ numbers (WI in WI-12).'),
   detailsLabel: z.string().describe('What its panel calls Details.'),
   detailsGlyph: z
     .string()
@@ -971,7 +1003,7 @@ const listedBoard = z.object({
 });
 
 const listedItem = z.object({
-  ref: z.string().describe('The item’s number as people say it, "#12".'),
+  ref: z.string().describe('The item’s number as people say it, with its type’s prefix: "WI-12".'),
   id: z.string().describe('The item id.'),
   type: z.string().describe('Its card type id.'),
   status: z.string().nullable().describe('Its status id, or null.'),
@@ -986,7 +1018,8 @@ const listedItem = z.object({
       'Every field, title and status included; custom fields by their names, as change_items takes them. A ' +
         'calculated field’s value is worked out (a count, a whole percentage, a formula’s number, text, ' +
         'true or false or ISO date, or null) and read-only. A duration reads as text ("2h 30m"). A flagged ' +
-        'card has flagged: true.',
+        'card has flagged: true. A card handed to an AI assistant has assignee { id, name, color, assistant: ' +
+        'true, worksFor }.',
     ),
   time: z
     .record(
@@ -1024,6 +1057,10 @@ const listedItem = z.object({
       'Its linked GitHub pull requests the plan has a state for (a Pull Request or Link field’s, then the ones ' +
         'naming the card), as the board shows them to you.',
     ),
+  handedToYou: z
+    .literal(true)
+    .optional()
+    .describe('Handed to you, the AI assistant calling: on a handedToMe listing.'),
 });
 
 export const listItemsOutput = {

@@ -102,7 +102,7 @@ describe('thread ls', () => {
     const out = await threadLs.run!(ctx, threadLs.input.parse({ project: DOC_A }));
     const lines = threadLs.text!(out);
     expect(lines[0]).toMatch(
-      /^th-abcd1234abcd1234\s+open\s+"Ada: Basket empties"\s+Comments\s+#12 Basket$/,
+      /^th-abcd1234abcd1234\s+open\s+"Ada: Basket empties"\s+Comments\s+T-12 Basket$/,
     );
     expect(lines.slice(1)).toEqual([
       '  cm-person Ada: It empties on switch',
@@ -172,7 +172,7 @@ describe('the thread writes', () => {
     const { ctx, sent } = ctxWith();
     const base = `/projects/${DOC_A}`;
     const start = await threadStart.run!(ctx, { project: DOC_A, item: '#12', text: 'Hi' });
-    expect(threadStart.text!(start)).toEqual([`+ thread ${THREAD.id} "${THREAD.title}" on #12`]);
+    expect(threadStart.text!(start)).toEqual([`+ thread ${THREAD.id} "${THREAD.title}" on T-12`]);
     await threadReply.run!(ctx, { project: DOC_A, thread: 'ada: basket empties', text: 'Yes' });
     await threadResolve.run!(ctx, { project: DOC_A, thread: THREAD.id });
     const reopened = await threadReopen.run!(ctx, { project: DOC_A, thread: THREAD.id });

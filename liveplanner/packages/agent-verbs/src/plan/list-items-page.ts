@@ -6,6 +6,7 @@ import {
   doneStatusesOf,
   isArchived,
   isTrashed,
+  itemAssistantOf,
   itemStatus,
   itemTitle,
   type Item,
@@ -39,6 +40,7 @@ export interface ListItemsPageArgs {
   includeRich?: boolean | undefined;
   limit?: number | undefined;
   cursor?: string | undefined;
+  handedToMe?: boolean | undefined;
 }
 
 // The same, read: the text lower-cased, the time in ms, the cursor as the last card number listed.
@@ -49,6 +51,9 @@ export interface ListItemsPage {
   includeRich: boolean;
   limit: number;
   after: number;
+  // The calling assistant's id, when only the cards handed to it are kept (plan-agents.md "Cards handed to an
+  // assistant"); set by the caller once it has read who is calling.
+  handedTo?: string;
 }
 
 type PageRefusal = { ok: false; code: string; message: string };
@@ -164,7 +169,7 @@ const holdsText = (i: Item, query: string) => {
 export function keptListItems(
   state: PlanState,
   filter: ResolvedListingFilter,
-  page: Pick<ListItemsPage, 'query' | 'updatedSince' | 'includeClosed'>,
+  page: Pick<ListItemsPage, 'query' | 'updatedSince' | 'includeClosed' | 'handedTo'>,
 ): { kept: Item[]; closed: number; closedOut: boolean } {
   const isDone = doneStatusesOf(state.plan.boards);
   // A column filter lists every card in the columns it names, closed or not.
@@ -173,6 +178,7 @@ export function keptListItems(
   const kept: Item[] = [];
   for (const i of state.items) {
     if (!passesListingFilter(filter, i)) continue;
+    if (page.handedTo !== undefined && itemAssistantOf(i)?.id !== page.handedTo) continue;
     if (page.updatedSince !== undefined && i.updatedAt < page.updatedSince) continue;
     if (page.query !== undefined && !holdsText(i, page.query)) continue;
     if (closedOut && isClosed(isDone, i)) {
@@ -235,7 +241,9 @@ export function listItemsPage(
   if (at < 0) at = kept.length;
   for (; at < kept.length && items.length < page.limit; at++) {
     cardRich = false;
-    const card = lister(kept[at]!);
+    const card = page.handedTo
+      ? { ...lister(kept[at]!), handedToYou: true as const }
+      : lister(kept[at]!);
     const cost = cardCost(card);
     // The first card of a page is listed whatever its size, so paging always ends.
     if (items.length > 0 && size + cost > LIST_ITEMS_BUDGET) break;

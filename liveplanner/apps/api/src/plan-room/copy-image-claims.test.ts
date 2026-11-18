@@ -19,67 +19,25 @@ import { forgetImageRefs, pushImageRefs } from './image-refs';
 import { IMAGE_RELEASE_GRACE_MS, planStillHolds, releaseDueImages } from './image-release';
 import { exportPlanCopy, importPlanCopy } from './plan-copy';
 import { drainOutbox } from './plan-outbox';
+import { MEDIA_URL, stubMediaRefs, type FakeMediaRefs } from './test-media-refs';
 
 // A copy's pictures are vouched for by the plan it was copied from (docs/specs/026-plan/items.md "Images in use", "A
 // copy is vouched for by its source"; liveworkspace/docs/specs/006-media/media.md "Unconfirmed references"; Work
-// Tracker 1190). The media service is a fake behind `fetch` that keeps references, confirmed and unconfirmed, and
-// answers a release as the real one does, so a picture it "deletes" is one the real service would have deleted.
+// Tracker 1190). The media service is the fake in test-media-refs.ts, which answers a release as the real one does.
 
 const SOURCE = 'source';
 const COPY = 'copy';
-const MEDIA_URL = 'https://media.test/api/media';
 
-type Entry = { document: string; images: string[] };
-let refs: Map<string, Set<string>>;
-let pending: Map<string, Set<string>>;
-let deleted: string[];
-// Plans whose own report the fake refuses, as a copy whose report keeps failing.
-let refusing: Set<string>;
-// Refuse every sync that vouches for a copy.
-let refusePending: boolean;
-let syncs: { documents: Entry[]; pending?: Entry[] }[];
-
-const named = (id: string, within: Map<string, Set<string>>) =>
-  [...within.values()].some((set) => set.has(id));
+let media: FakeMediaRefs;
+let refs: FakeMediaRefs['refs'];
+let pending: FakeMediaRefs['pending'];
+let deleted: FakeMediaRefs['deleted'];
+let refusing: FakeMediaRefs['refusing'];
+let syncs: FakeMediaRefs['syncs'];
 
 beforeEach(() => {
-  refs = new Map();
-  pending = new Map();
-  deleted = [];
-  refusing = new Set();
-  refusePending = false;
-  syncs = [];
-  vi.stubGlobal(
-    'fetch',
-    vi.fn(async (url: string, init?: RequestInit) => {
-      const u = new URL(String(url));
-      if (u.pathname.endsWith('/app/refs')) {
-        const body = JSON.parse(init?.body as string) as { documents: Entry[]; pending?: Entry[] };
-        const { documents: own } = body;
-        if (own.some((d) => refusing.has(d.document)))
-          return Response.json({ error: 'down' }, { status: 503 });
-        if (refusePending && body.pending?.length)
-          return Response.json({ error: 'down' }, { status: 503 });
-        syncs.push(body);
-        for (const p of body.pending ?? [])
-          if (!refs.get(p.document)?.size)
-            pending.set(p.document, new Set([...(pending.get(p.document) ?? []), ...p.images]));
-        for (const d of own) {
-          refs.set(d.document, new Set(d.images));
-          pending.delete(d.document);
-        }
-        return Response.json({ ok: true });
-      }
-      if (u.pathname.endsWith('/release')) {
-        const id = decodeURIComponent(u.pathname.split('/').at(-2)!);
-        if (named(id, refs)) return Response.json({ released: false, reason: 'referenced' });
-        if (named(id, pending)) return Response.json({ released: false, reason: 'unconfirmed' });
-        deleted.push(id);
-        return Response.json({ released: true });
-      }
-      return Response.json({ error: 'not_found' }, { status: 404 });
-    }),
-  );
+  media = stubMediaRefs();
+  ({ refs, pending, deleted, refusing, syncs } = media);
   vi.spyOn(console, 'info').mockImplementation(() => {});
 });
 
@@ -189,7 +147,7 @@ describe('a copy whose own report keeps failing', () => {
   it('holds the picture while the note itself is not taken, retrying with the report', async () => {
     const w = await seeded();
     await w.copy();
-    refusePending = true;
+    media.refusePending = true;
     w.edit(SOURCE, 'b', { title: 'Shots' });
     await w.drain(SOURCE);
     // The note is still here, and the source's own report waits behind it, so no grace started.
@@ -211,10 +169,10 @@ describe('a copy whose own report keeps failing', () => {
   it('sends a note noted again meanwhile once more, and drops only what was sent', async () => {
     const w = await seeded();
     await w.copy();
-    const media = vi.mocked(fetch);
-    const real = media.getMockImplementation()!;
+    const stub = vi.mocked(fetch);
+    const real = stub.getMockImplementation()!;
     // The copy is noted again while the first note's sync is in flight.
-    media.mockImplementationOnce(async (url, init) => {
+    stub.mockImplementationOnce(async (url, init) => {
       await noteCopyClaim(w.env, SOURCE, COPY, ['kept'], Date.now() + 1);
       return real(url, init);
     });

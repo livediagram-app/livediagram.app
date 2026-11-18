@@ -114,7 +114,7 @@ describe('Blocked By through the api', () => {
         error: 'blocks_cycle',
         id: a.id,
         field: BLOCKED_BY,
-        message: `#${b.key} Launch already waits on #${a.key} Website, so it can't block it.`,
+        message: `T-${b.key} Launch already waits on T-${a.key} Website, so it can't block it.`,
       },
     });
     // Removing a link is never refused.
@@ -136,7 +136,7 @@ describe('Blocked By through the api', () => {
     });
     expect(res.status).toBe(400);
     expect(res.body.error).toBe('blocks_cycle');
-    expect(res.body.message).toContain(`through #${b.key} B`);
+    expect(res.body.message).toContain(`through T-${b.key} B`);
     // A batch that closes nothing lands.
     const d = (await add('D')).body.item;
     expect(

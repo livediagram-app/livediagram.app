@@ -3,6 +3,7 @@
 // with the project. Validation here is the api's and the editor's both, so a catalogue the editor
 // saves is one the api keeps.
 import { readCardDisplay } from './card-display';
+import { normalPrefix } from './card-prefix';
 import { readFieldLabels } from './built-in-field-labels';
 import { isPlanGlyphId } from './glyphs';
 import { isCalculation } from './calculated-fields';
@@ -523,6 +524,13 @@ function readType(input: unknown, at: string, newer: NewerFields): ItemTypeDef |
   // Its card templates ("Card templates"), carried as given: validateItemTypeCatalogue reads them once the type is
   // resolved, so an inherited type's templates are read against the fields its base gives it too.
   const templates = input['templates'] as CardTemplate[] | undefined;
+  // Its card prefix ("Card number prefixes"): a write refuses one that is not a prefix, a read drops it.
+  let prefix: string | undefined;
+  if (input['prefix'] !== undefined) {
+    const p = normalPrefix(input['prefix']);
+    if (p) prefix = p;
+    else if (newer === 'refuse') return `${at}.prefix`;
+  }
   const newTitle =
     typeof input['newTitle'] === 'string' && input['newTitle'].trim()
       ? input['newTitle'].trim().slice(0, ITEM_TYPE_LABEL_MAX + 4)
@@ -533,6 +541,7 @@ function readType(input: unknown, at: string, newer: NewerFields): ItemTypeDef |
     newTitle,
     glyph,
     color: color.toLowerCase(),
+    ...(prefix ? { prefix } : {}),
     fields,
     ...(custom.length ? { custom } : {}),
     ...(tabs ? { tabs } : {}),
@@ -667,11 +676,20 @@ export function validateItemTypeCatalogue(
     return { ok: false, reason: 'types' };
   const types: ItemTypeDef[] = [];
   for (const [i, t] of typesIn.entries()) {
-    const type = readType(t, `types[${i}]`, newerFields);
-    if (typeof type === 'string') return { ok: false, reason: type };
+    const read = readType(t, `types[${i}]`, newerFields);
+    if (typeof read === 'string') return { ok: false, reason: read };
+    let type: ItemTypeDef = read;
     if (types.some((x) => x.id === type.id)) return { ok: false, reason: `types[${i}].id` };
     if (types.some((x) => x.label.toLowerCase() === type.label.toLowerCase()))
       return { ok: false, reason: `types[${i}].label` };
+    // Two stored prefixes alike ("Card number prefixes"): a write is refused; a read drops the later one, so a stored
+    // catalogue always opens.
+    const prefix = type.prefix;
+    if (prefix !== undefined && types.some((x) => x.prefix === prefix)) {
+      if (newerFields === 'refuse') return { ok: false, reason: `types[${i}].prefix` };
+      const { prefix: _clash, ...rest } = type;
+      type = rest;
+    }
     types.push(type);
   }
   // Inherited types (docs/specs/026-plan/item-types.md "Inherited types"): one level only, each resolved against its

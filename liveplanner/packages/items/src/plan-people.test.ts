@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { isNamedPerson, peopleKey, planPeople } from './plan-people';
+import { isNamedPerson, peopleKey, planAssistants, planPeople } from './plan-people';
+import { itemAssistantFor } from './assistant';
 import { assignedPeople, personNamed } from './plan-names';
 import type { Item, ItemPerson } from './item';
 
@@ -62,5 +63,31 @@ describe('peopleKey', () => {
     expect(peopleKey(a)).not.toBe(peopleKey([p('x', 'Y', '#111')]));
     expect(peopleKey(a)).not.toBe(peopleKey([p('x', 'X', '#222')]));
     expect(peopleKey(a)).not.toBe(peopleKey([p('y', 'X', '#111')]));
+  });
+});
+
+// docs/specs/026-plan/items.md "Handing a card to an AI assistant": "Who it can be handed to", "The Assignee picker".
+describe('the plan’s AI assistants', () => {
+  const thomas = p('a1b2c3d4e5f6a1b2c3d4e5f6', 'Thomas McClean', '#2563eb');
+  const claude = itemAssistantFor(thomas, 'Claude')!;
+  const cursor = itemAssistantFor(thomas, 'Cursor')!;
+
+  it('are never offered as people', () => {
+    const sam = p('sam', 'Sam');
+    expect(planPeople(null, [], assignedPeople([card(1, claude), card(2, sam)]))).toEqual([sam]);
+  });
+
+  it('lists the cards’ assistants and the remembered ones once each by id, by name, the card’s value first', () => {
+    const renamed = { ...claude, name: 'Claude (Tom)' };
+    const list = planAssistants(assignedPeople([card(1, claude), card(2, p('sam', 'Sam'))]), [
+      renamed,
+      cursor,
+    ]);
+    expect(list).toEqual([claude, cursor]);
+  });
+
+  it('leaves out a malformed assistant a card holds', () => {
+    const forged = { ...claude, id: 'ai-forged' };
+    expect(planAssistants([forged, claude], [])).toEqual([claude]);
   });
 });

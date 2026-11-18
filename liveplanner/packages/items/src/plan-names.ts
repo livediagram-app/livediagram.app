@@ -3,6 +3,7 @@
 // custom field id, a person, an item id). Unknown names are refused with what is there, never stored.
 import { withArticle } from './indefinite-article';
 import { isItemPerson, itemAssignee, type Item, type ItemPerson } from './item';
+import { isAssistantId } from './assistant';
 import {
   builtInFieldOfKind,
   isEmailAddress,
@@ -99,15 +100,16 @@ export function resolveType(
   );
 }
 
-// An item by number or id prefix, as people say it; "#12 Fix login", as list_items reads a card link, by its number.
+// An item by number or id prefix, as people say it; "#12 Fix login" or "WI-12 Fix login", as list_items reads a card
+// link, by its number.
 export function resolveItem(input: string, items: readonly Item[]): Named<{ item: Item }> {
-  const titled = /^(#\d+)\s+\S/.exec(input.trim());
+  const titled = /^(#\d+|#?[A-Za-z][A-Za-z0-9]{0,5}-\d+)\s+\S/.exec(input.trim());
   const found = resolveItemRef(items, titled ? titled[1]! : input);
   if (found.ok) return { ok: true, item: found.item };
   return refuse(
     'item_unknown',
     found.reason === 'ambiguous'
-      ? `"${input}" names more than one item: ${found.matches.map(itemSummary).join('; ')}`
+      ? `"${input}" names more than one item: ${found.matches.map((m) => itemSummary(m)).join('; ')}`
       : `No item "${input}". List them with list_items.`,
   );
 }
@@ -535,6 +537,12 @@ function builtInValue(key: string, value: unknown, naming: FieldNaming): Named<{
   }
   if (key === 'assignee' && typeof value === 'string' && !isItemPerson(value))
     return { ok: true, value: personNamed(value, assignedPeople(naming.items)) };
+  // An assistant as list_items lists it (`assistant: true`), written back: the one a card holds by that id
+  // (docs/specs/026-plan/plan-agents.md "Cards handed to an assistant"); any other is checked as given.
+  if (key === 'assignee' && isItemPerson(value) && isAssistantId(value.id)) {
+    const held = assignedPeople(naming.items).find((p) => p.id === value.id);
+    return { ok: true, value: held ?? value };
+  }
   if (key === 'parent' && typeof value === 'string') {
     const parent = resolveItem(value, naming.items);
     return parent.ok ? { ok: true, value: parent.item.id } : parent;

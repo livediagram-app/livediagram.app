@@ -173,19 +173,19 @@ describe('flow charts', () => {
       clientX: Number(first.getAttribute('cx')),
       clientY: Number(first.getAttribute('cy')),
     });
-    expect(screen.getByText('#1 Card 1')).toBeTruthy();
+    expect(screen.getByText('T-1 Card 1')).toBeTruthy();
     fireEvent.click(svg, {
       clientX: Number(first.getAttribute('cx')),
       clientY: Number(first.getAttribute('cy')),
     });
     expect(plan.openItem).toHaveBeenCalledWith('i1');
     fireEvent.pointerLeave(svg);
-    expect(screen.queryByText('#1 Card 1')).toBeNull();
+    expect(screen.queryByText('T-1 Card 1')).toBeNull();
     // Keys: → steps from the first dot, Enter opens it.
     fireEvent.keyDown(chart, { key: 'ArrowRight' });
     fireEvent.keyDown(chart, { key: 'ArrowRight' });
     expect(plan.announce).toHaveBeenLastCalledWith(
-      expect.stringMatching(/^#2 Card 2, 4 days, finished/),
+      expect.stringMatching(/^T-2 Card 2, 4 days, finished/),
     );
     fireEvent.keyDown(chart, { key: 'ArrowLeft' });
     fireEvent.keyDown(chart, { key: 'Enter' });

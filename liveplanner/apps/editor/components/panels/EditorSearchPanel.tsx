@@ -50,7 +50,10 @@ export function EditorSearchPanel() {
   // The cards to search, and the tab each shows on (worked out for the few listed); kept while the cards, types and
   // tabs are, so typing reuses them.
   const cards = useMemo<CardSearchSource | undefined>(
-    () => (items ? { items, tabOf: cardTabResolver(tabs, types) } : undefined),
+    () =>
+      items
+        ? { items, ...(types ? { types } : {}), tabOf: cardTabResolver(tabs, types) }
+        : undefined,
     [items, types, tabs],
   );
 
