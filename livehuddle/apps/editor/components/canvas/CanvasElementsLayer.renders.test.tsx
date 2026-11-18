@@ -79,6 +79,7 @@ import { clearLocalPreview, resetDragPreviewForTests, setLocalPreview } from '@/
 import { buildLargeSelectionBoard } from '@/e2e/perf/large-selection-board';
 import { createPeerMotion } from '@/lib/peer-motion';
 import type { CanvasElementsLayerProps } from './CanvasElementsLayer';
+import { createSittersSource } from './chair-sitters-source';
 
 const { CanvasElementsLayer } = await import('./CanvasElementsLayer');
 const { createSelectionStore } = await import('@liveworkspace/workbench/lib/selection-store');
@@ -93,7 +94,7 @@ const ab = storedPinnedArrow('ab', a.id, 'e', b.id, 'w');
 const BOARD: Element[] = [a, b, c, ab];
 
 const STABLE = {
-  chairSitters: () => [],
+  chairSitters: createSittersSource(),
   selfParticipant: { id: 'me', name: 'Me', color: '#000000' },
   settings: {},
   peers: {

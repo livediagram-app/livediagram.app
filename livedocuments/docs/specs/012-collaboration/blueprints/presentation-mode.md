@@ -168,7 +168,10 @@ CPU-time test; the map keeps its identity while the numbers hold, so an edit re-
 The Build section: the effect tiles (`BuildTiles`, `components/palette/BuildTiles.tsx`) are four
 `AnimationPreviewTile`s whose miniature is a slide with two lines and a third that builds in (`.lvd-build-mini-*`
 in `canvas-motion.css`), then **Order** (`BorderGrid`, a `SizeButton` per step and New). The badge is `BuildBadge`
-(`element-parts.tsx`): a 20px brand disc at the element's top-left, moved right of the lock badge when both show.
+(`element-parts.tsx`): a 20px brand disc at the element's top-left, moved right of the lock badge when both show;
+white with `text-brand-700` digits in light, `dark:bg-brand-200 dark:text-slate-900` in dark (`app/dark-palette.test.ts`
+"chrome on the dark paper": digits 4.5:1 on the disc, the disc 3:1 on slate-900). Below the zoom where it is
+`BUILD_BADGE_MIN_PX` (18) on screen it scales by `18 / (20 x zoom)` from its top-left corner.
 
 The travel, curve and durations are the `lvd-slide-*` keyframes on `--lvd-slide-ms`. The page root takes no part, so the HUD
 does not cross-fade.

@@ -9,6 +9,8 @@ import {
   test,
 } from '../fixtures';
 import { runCanvasProbe } from '@liveworkspace/e2e-kit/perf/canvas-probe';
+import { buildTemplate, type TemplateKind } from '@livehuddle/templates';
+import type { Element } from '@livehuddle/document';
 import { FURNITURE_KINDS, buildReferenceBoard } from './reference-board';
 
 // The canvas performance probe (docs/specs/008-canvas/canvas-performance.md "Measuring";
@@ -22,20 +24,26 @@ import { FURNITURE_KINDS, buildReferenceBoard } from './reference-board';
 
 type Tab = 'space';
 
+// The board measured: the reference Space, or with E2E_PERF_BOARD a Space template by its kind (`virtual-office`), so
+// a reworked template can be held to the same budget by hand (Work Tracker 1185). Built once, so the gestures' ids
+// match the seeded board's.
+const TEMPLATE = process.env.E2E_PERF_BOARD as TemplateKind | undefined;
+const BOARD: Element[] = TEMPLATE ? buildTemplate(TEMPLATE, 0, 0) : buildReferenceBoard();
+
 // The gestures select and drag a piece of furniture, the commonest thing moved in a Space.
-const SHAPE_IDS = buildReferenceBoard()
-  .filter((el) => el.type === 'shape' && FURNITURE_KINDS.includes(el.shape))
-  .map((el) => el.id);
+const SHAPE_IDS = BOARD.filter(
+  (el) => el.type === 'shape' && FURNITURE_KINDS.includes(el.shape),
+).map((el) => el.id);
 
 async function seed(page: Page, baseURL: string, owner: string, tab: Tab): Promise<string> {
   const id = crypto.randomUUID();
-  const elements = buildReferenceBoard();
+  const elements = BOARD;
   const res = await seedDocumentItem(
     page.request,
     ownerHeaders(owner, { Origin: new URL(baseURL).origin }),
     {
       id,
-      name: `Reference Space (${tab})`,
+      name: TEMPLATE ? `${TEMPLATE} (${tab})` : `Reference Space (${tab})`,
       tabs: [{ id: crypto.randomUUID(), name: 'Space', opensIn: 'workshop', elements }],
     },
   );

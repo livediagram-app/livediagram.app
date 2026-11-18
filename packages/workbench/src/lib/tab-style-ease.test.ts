@@ -7,7 +7,6 @@ import {
   canvasIsBusy,
   easedStyleChange,
   easeNextStyleChange,
-  styleChangeInFlight,
   SURFACE_EASE_ATTR,
 } from './tab-style-ease';
 
@@ -66,10 +65,8 @@ describe('easeNextStyleChange on a busy canvas', () => {
   it('eases the busy surface by its attribute, for the moment of the change', () => {
     vi.useFakeTimers();
     const surface = canvas(true);
-    expect(styleChangeInFlight()).toBe(false);
     easeNextStyleChange();
     expect(surface.hasAttribute(SURFACE_EASE_ATTR)).toBe(true);
-    expect(styleChangeInFlight()).toBe(true);
     expect(easing()).toBe(false);
     vi.advanceTimersByTime(200);
     easeNextStyleChange();
@@ -77,7 +74,6 @@ describe('easeNextStyleChange on a busy canvas', () => {
     expect(surface.hasAttribute(SURFACE_EASE_ATTR)).toBe(true);
     vi.advanceTimersByTime(100);
     expect(surface.hasAttribute(SURFACE_EASE_ATTR)).toBe(false);
-    expect(styleChangeInFlight()).toBe(false);
     expect(easing()).toBe(false);
   });
 

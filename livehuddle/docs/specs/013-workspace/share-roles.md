@@ -168,6 +168,13 @@ chooses it.
   `collab-key` frame sent to that socket alone, and the editor records its answers and reactions under it from then on. Before
   that (a document only in This Browser, or the moment before the room answers) the editor uses this browser's own
   key, as it always did.
+- **A guest who signs in keeps their key.** When a guest becomes an account, the index keeps the guest as an alias
+  of the account, and every grant for the account names the collab keys of its aliases (`aliases`, at most 32;
+  [one-explorer-contracts.md "Becoming an account"](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md#guests)). The upgrade forwards them as `X-Verified-Collab-Aliases` and the session keeps them, as in every app, so
+  anything recorded under the guest's key reads as the person's (owner, 2026-11-15, Work Tracker 678). livehuddle
+  records nothing under a key today, so nothing reads differently yet; closing the account already anonymises the
+  Attendance visits made as a guest, from livehuddle's own list of merged guests
+  ([Tab attendance](../012-collaboration/tab-attendance.md)).
 - **A session with no identity** (a link visitor whose guest handoff could not run) gets a key per browser: its
   first `hello` carries the browser's own secret (a random kept in this browser, never on the roster or in a URL),
   and the room derives the key from it, one-way, so the same browser is the same visitor across reconnects and

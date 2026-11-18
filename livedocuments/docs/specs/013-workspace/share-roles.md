@@ -75,6 +75,12 @@ once a document is open.
   in real time."). Each link shows its level on a chip and can be changed in place.
 - A link visitor's level comes from the grant the index issues for the link (`level`, and `tab` when the link opens
   one tab). The api and the room check it on every request and socket ([API](../015-api/api.md) "Access").
+- **Reopening without the code keeps the link's level.** A visitor who opened a link once reaches the document again
+  by its own address (`/document/<id>`, a reload, Shared With Me, a bookmark) with no code. The index's grant still
+  names the link (`link`, beside its `level` and `tab`), so the editor opens them as that link's visitor: its role,
+  its tab, and its code on every write. Edit with no link is the owner's or a team member's. The role never comes
+  from the address, so a Viewer or Participant is never shown Editing for saves the api would refuse
+  (`openOwnAddress`, `@liveworkspace/workbench/lib/editor-arrival`, shared by every editor).
 - The editor's role pill reads Editing, Participating or Viewing.
 - **Losing access is explained, never silent.** A session ended by an access change (a link turned off, a password
   set, a grant whose level or tab changed on renewal) reloads into the access check, and a refusal then reads **No
@@ -120,6 +126,13 @@ chooses it.
   `collab-key` frame sent to that socket alone, and the editor records its reactions under it from then on. Before
   that (a document only in This Browser, or the moment before the room answers) the editor uses this browser's own
   key, as it always did.
+- **A guest who signs in keeps their entries.** When a guest becomes an account, the index keeps the guest as an
+  alias of the account, and every grant for the account names the collab keys of its aliases (`aliases`, at most 32;
+  [one-explorer-contracts.md "Becoming an account"](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md#guests)). The upgrade forwards them as `X-Verified-Collab-Aliases`, the session keeps them, and the `collab-key`
+  frame carries them beside the key. The room, the api and the editor read reactions under any of the person's keys
+  as theirs: shown as theirs, theirs to take back (taking one back clears it under every key of theirs), kept or
+  changed as theirs by a whole-tab write, and counted once. New entries go under the session's own key. Nothing
+  stored is rewritten (owner, 2026-11-15, Work Tracker 678).
 - **A session with no identity** (a link visitor whose guest handoff could not run) gets a random key the room mints
   for that socket. Nobody else can be handed it, so nobody can act under it; it lasts as long as the socket.
 - **Nobody acts as someone else, at any level.** The room stamps every reaction's `by` with the sender's key, an

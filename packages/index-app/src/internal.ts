@@ -61,6 +61,7 @@
 import {
   COMMUNITY_STATES_MAX,
   isItemCommunityState,
+  parseAccessNotice,
   parseApprovalNotice,
   parseItemNotice,
   parseItemStanding,
@@ -329,13 +330,14 @@ export async function handleInternalItems(
     const body = await bodyOf(request);
     // An approval request (approvals.md "The email"): the app's own handler emails the approvers; an app without
     // the door takes the notice and sends nothing.
-    const approval = parseApprovalNotice(body);
-    if (approval) {
-      const ask = handlers.approvalRequested;
-      if (ask) {
+    // Request Access (request-access.md "The emails") the same way: each notice to its own handler, if any.
+    const special = noticeRun(handlers, id, body);
+    if (special) {
+      if (special.run) {
+        const { type, run } = special;
         waitUntil(
-          ask(id, approval).catch((err: unknown) => {
-            console.warn('[internal] notice failed', { type: approval.type, error: String(err) });
+          run().catch((err: unknown) => {
+            console.warn('[internal] notice failed', { type, error: String(err) });
           }),
         );
       }
@@ -391,4 +393,26 @@ export async function handleInternalItems(
   }
 
   return notFound();
+}
+
+// A notice with a handler of its own (an approval request, an access request or grant): its type, and the run of its
+// handler (none when the app has no door, so the notice is taken with nothing to do). Null for any other notice.
+function noticeRun(
+  handlers: InternalItemHandlers,
+  id: string,
+  body: unknown,
+): { type: string; run: (() => Promise<unknown>) | null } | null {
+  const approval = parseApprovalNotice(body);
+  if (approval) {
+    const handler = handlers.approvalRequested;
+    return { type: approval.type, run: handler ? () => handler(id, approval) : null };
+  }
+  const access = parseAccessNotice(body);
+  if (!access) return null;
+  if (access.type === 'access_requested') {
+    const handler = handlers.accessRequested;
+    return { type: access.type, run: handler ? () => handler(id, access) : null };
+  }
+  const handler = handlers.accessGranted;
+  return { type: access.type, run: handler ? () => handler(id, access) : null };
 }

@@ -14,18 +14,24 @@ const reducedMotion = prefersReducedMotion;
 
 /**
  * Moves the view from `from` to `to`, a frame at a time; returns a cancel, for a later move that
- * starts from wherever this one has got to.
+ * starts from wherever this one has got to. `set.landed` is told once the view is at `to` (never
+ * after a cancel), so a caller can say the view has come to rest.
  */
 export function glideViewport(
   from: ViewPose,
   to: ViewPose,
-  set: { zoom: (zoom: number) => void; offset: (offset: { x: number; y: number }) => void },
+  set: {
+    zoom: (zoom: number) => void;
+    offset: (offset: { x: number; y: number }) => void;
+    landed?: () => void;
+  },
   ms = VIEW_GLIDE_MS,
 ): () => void {
   const sameZoom = from.zoom === to.zoom;
   if (reducedMotion() || ms <= 0) {
     if (!sameZoom) set.zoom(to.zoom);
     set.offset(to.offset);
+    set.landed?.();
     return () => {};
   }
   const t0 = performance.now();
@@ -41,6 +47,7 @@ export function glideViewport(
     });
     if (!sameZoom) set.zoom(from.zoom + (to.zoom - from.zoom) * e);
     raf = k < 1 ? requestAnimationFrame(step) : 0;
+    if (k >= 1) set.landed?.();
   };
   raf = requestAnimationFrame(step);
   return () => {

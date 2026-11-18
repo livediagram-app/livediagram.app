@@ -22,7 +22,16 @@ import {
   seatsOnBoard,
   sittersByChair,
 } from '@livehuddle/avatar/chair-sitters';
-import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { createSittersSource } from './chair-sitters-source';
 import {
   DEFAULT_BUTTON_MODE,
   callStages,
@@ -353,12 +362,11 @@ export function useCanvasAvatar({
     [peers, selfColor, avatar.seatedOn, avatar.seatClaim, selfScale, seatsOf, stages],
   );
   const chairSitters = useStoreSlice(everyone, selectSitters, sameSitters);
-  // Stable while nobody sits or stands, so the element views' memo holds
-  // (docs/specs/008-canvas/canvas-performance.md); it changes exactly when a chair must re-render.
-  const sittersOf = useCallback(
-    (elementId: string) => chairSitters.get(elementId) ?? [],
-    [chairSitters],
-  );
+  // One source for the life of the canvas, so the element views' memo always holds; each chair reads its own row and
+  // re-renders alone when somebody sits in it or stands up (docs/specs/008-canvas/canvas-performance.md, Work Tracker
+  // 1185). Written after the commit that worked the sitters out.
+  const [sittersOf] = useState(createSittersSource);
+  useLayoutEffect(() => sittersOf.set(chairSitters), [sittersOf, chairSitters]);
   // Somebody pushed us (docs/specs/008-canvas/avatar-mode.md): slide along their direction, once per push.
   // Keyed on the sequence number, not the vector, so two identical shoves in a
   // row both land.

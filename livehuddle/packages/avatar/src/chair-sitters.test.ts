@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   SEAT_PILL_GAP,
+  sameSitterList,
   sameSitters,
   seatedPeer,
   seatPillBottom,
@@ -137,6 +138,15 @@ describe('seatedPeer', () => {
       name: 'Bo',
       color: '#00f',
     });
+  });
+});
+
+describe('sameSitterList', () => {
+  it('compares one chair: the same people in order, or not', () => {
+    const ada = { name: 'Ada', color: '#f00' };
+    expect(sameSitterList([ada], [{ ...ada }])).toBe(true);
+    expect(sameSitterList([ada], [])).toBe(false);
+    expect(sameSitterList([ada], [{ ...ada, seat: 2 }])).toBe(false);
   });
 });
 

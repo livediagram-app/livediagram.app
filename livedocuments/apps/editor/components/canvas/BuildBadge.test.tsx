@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import type { Slide, Tab } from '@livedocuments/document';
 import { SuppressElementIndicators } from '@liveworkspace/workbench/components/canvas/ElementIndicatorStyleContext';
 import { CanvasZoomProvider } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
-import { BuildBadge } from './element-parts';
+import { BUILD_BADGE_MIN_PX, BuildBadge } from './element-parts';
 import { BuildStepsProvider, useBuildStep } from './BuildStepsContext';
 
 // docs/specs/012-collaboration/presentation-mode.md "Setting builds up": each built element carries its step number,
@@ -21,6 +21,21 @@ describe('BuildBadge', () => {
     expect(badge(container)?.className).toContain('-left-2');
     rerender(<BuildBadge step={2} besideLock />);
     expect(badge(container)?.className).toContain('left-4');
+  });
+
+  it('never shows smaller than its minimum on screen, so its number reads at a slide zoom', () => {
+    const at = (zoom: number) =>
+      render(
+        <CanvasZoomProvider zoom={zoom}>
+          <BuildBadge step={3} besideLock={false} />
+        </CanvasZoomProvider>,
+      ).container.querySelector<HTMLElement>('[data-build-badge]')!;
+    expect(at(1).style.transform).toBe('');
+    cleanup();
+    const small = at(0.6);
+    expect(small.style.transform).toBe(`scale(${BUILD_BADGE_MIN_PX / (20 * 0.6)})`);
+    expect(small.style.transformOrigin).toBe('left top');
+    expect(small.textContent).toBe('3');
   });
 
   it('hides while presenting or in an embed, and at overview zooms', () => {

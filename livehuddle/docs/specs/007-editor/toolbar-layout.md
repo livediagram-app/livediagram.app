@@ -68,6 +68,9 @@ walk is jarring, no animation to soften the transition and size change on the pa
   measures its room between the menu card and the top-right corner card, and may shift). Until its left edge holds
   still for a frame (at most ten frames), it waits unseen behind a still copy of the outgoing strip, and the morph
   then starts from there, so the toggle never jumps (`playStripMorph` in `apps/editor/components/palette/strip-morph-dom.ts`).
+- **One clock.** Every part of the morph (the bar, the clip, the toggle's ride, the pill, both crossfades) starts at
+  the same moment. Left to start on their own, the toggle's ride (run by the compositor) could begin a frame after
+  the bar's resize on a busy device, and the toggle drifted a few pixels off the bar's edge before catching up.
 - **A flyout closes first.** A category's flyout, More or Search open at the switch goes with its strip and is not
   there when that strip comes back.
 - **Timing.** 240 ms (just inside the chrome ceiling, [Motion](../004-interface-design/motion.md)), a soft ease-out
@@ -567,6 +570,8 @@ is its flyout's ("Opening a flyout").
 - **Undo / Redo stay where they are**, in the bottom-right dock.
 - **A phone's toolbar items keep their size** (`PHONE_TOOLBAR_ITEMS`): 36px, the bottom-right
   cluster's 44px, each with a 44px-tall tap area ([Touch targets](../004-interface-design/touch-targets.md)).
+  The strip's own tiles get a full 44 x 44 one, drawn behind them, so a tap in the 2px gap between two tiles
+  picks one rather than falling through to the canvas (`PACKED_TOOLBAR_ITEMS`).
   Only the pickers give up 4px of side padding, and the strip's dividers their margins down to
   1px, so more tiles show beside the menu card. The row keeps its 12px gutters and 8px gap.
 - **The category picker stays on the bar**, left of the tiles. Folding it

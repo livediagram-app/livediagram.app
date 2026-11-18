@@ -113,6 +113,8 @@ export async function mintGrant(env: Env, subject: GrantSubject): Promise<GrantR
     tabId: subject.tabId,
     expiresAt: exp * 1000,
     ...(subject.trashed ? { trashed: true as const } : {}),
+    // Beside the claim, for the editor's chrome: a reopen by the item's own address opens as the link's visitor.
+    ...(subject.link ? { link: subject.link } : {}),
   };
 }
 

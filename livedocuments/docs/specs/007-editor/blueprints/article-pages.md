@@ -154,7 +154,11 @@ style? }`. Saved with the tab (one row in the document's store, `MAX_TAB_BYTES` 
     cut never falls inside a surrogate pair, so an emoji is kept whole or left out.
   - `level` floored and capped to `ARTICLE_LIST_MAX_LEVEL`; `checked` only on a to-do; zone
     `width` / `height` rounded and clamped to `ARTICLE_ZONE_MIN..MAX`; `at` kept only with an id
-    page and finite `x`, `y`; code text sliced to the cap.
+    page and finite `x`, `y`; code text sliced to the cap, its `lang` kept only when it matches
+    `ARTICLE_CODE_LANG` (`^[A-Za-z0-9_+#.-]{1,32}$`).
+  - Markdown: `fenceLanguage(line)` reads an opening fence's first info word; `parseMarkdownBlocks` stores it as
+    `lang` when valid and `articleToMarkdown` writes it after the opening fence. The editor's `code_block` node
+    carries it as its `lang` attr (`data-lang` on its `pre`), so editing the article keeps it.
   - Style: each field kept when valid (`look` a look id, fonts `^[a-z0-9-]{1,40}$`, `accent` hex,
     booleans, the five enums); an empty style is dropped.
 - **Pages read**: an article page with no readable flow reads as an article of its own (its id);

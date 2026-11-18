@@ -75,7 +75,9 @@ async function openBoard<Tab extends string>(
   await cdp.send('Emulation.setCPUThrottlingRate', { rate: throttle });
   await page.goto(settings.itemPath(id));
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 60_000 });
-  await page.locator('[data-element-id="ref-0"]').first().waitFor({ timeout: 60_000 });
+  // The board is drawn once a piece the gestures move is: any seeded board, the reference one or a template.
+  const drawn = settings.shapeIds[0] ?? 'ref-0';
+  await page.locator(`[data-element-id="${drawn}"]`).first().waitFor({ timeout: 60_000 });
   const ms = await settledOpenMs(page, settings.tabResponsePath);
   await settings.dismissQuickTour(page);
   await page.keyboard.press('Escape');

@@ -13,7 +13,7 @@ The import reads Markdown the way pasting it into an article page does, so a fil
 
 - **ATX headings** (`#`..`######`): `#` the largest heading, `##` the next, `###` and deeper the smallest.
 - **Lists** (`-`, `*`, `+` bulleted; `1.` numbered; `- [ ]` / `- [x]` a to-do, ticked or not), nested by indentation.
-- **Quotes** (`>`), **fenced code** (kept exactly as written) and **dividers** (`---`, `***`, `___`).
+- **Quotes** (`>`), **fenced code** (kept exactly as written, with the language its opening fence names, so ` ```js ` exports as ` ```js ` again) and **dividers** (`---`, `***`, `___`).
 - **Inline marks**: bold, italic, strikethrough, inline code and links.
 - **Pipe tables** (a header line, a `|---|` line, then rows): a table block, the header line its header row.
 - **`[TOC]`** alone on a line: a table of contents.

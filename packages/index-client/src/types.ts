@@ -15,6 +15,7 @@ import type {
   ShareLinkExpiry,
   TeamAuditEventType,
 } from './constants';
+import type { InboxAccessRequest } from './access-requests';
 
 export type ItemSummary = {
   elements?: number;
@@ -275,6 +276,8 @@ export type InboxResponse = {
   threads: InboxThread[];
   actions: InboxAction[];
   forms: InboxForm[];
+  // Open access requests on items the reader manages (request-access.md); absent from an index before them.
+  accessRequests?: InboxAccessRequest[];
 };
 
 // A person's calendar feed in one app (one-explorer-contracts.md "Calendar feeds"): when its link was made. The token
@@ -338,6 +341,9 @@ export type GrantResponse = {
   expiresAt: number;
   // The item is in the Trash (as the grant's `trashed` claim says).
   trashed?: true;
+  // The share code the access came through (the grant's `link` claim), sent or not: a visitor reopening the item by
+  // its own address is still that link's visitor. Absent for the owner and the team.
+  link?: string;
 };
 
 export type Page<T, K extends string> = { [key in K]: T[] } & { nextCursor: string | null };

@@ -11,6 +11,7 @@ import worker from './index';
 import { sweep, sweepEmpty } from './purge';
 import { NOTICE_GIVE_UP_MS, NOTICE_RETRY_AFTER_MS } from './person-notices';
 import { drainPersonMerges } from './person-merges';
+import { PERSON_ALIASES_MAX } from './person-aliases';
 import { body, call, h, makeItem, person, settle, useHarness } from './test-support';
 
 useHarness();
@@ -191,7 +192,7 @@ describe('the Inbox', () => {
 
     // Cat is mentioned and assigned, but cannot reach the item: nothing shows.
     const forCat = await body<InboxResponse>(await call('/inbox', { auth: cat.auth }));
-    expect(forCat).toEqual({ threads: [], actions: [], forms: [] });
+    expect(forCat).toEqual({ threads: [], actions: [], forms: [], accessRequests: [] });
     // Given a link and having opened it, Cat sees them.
     const { link } = await body<{ link: { code: string } }>(
       await call(`/items/${teamItem.id}/share`, {
@@ -294,6 +295,55 @@ describe('the guest merge', () => {
     expect(await body(await merge({ guestId: 'guest_g1', userId: 'user_u1' }))).toEqual({
       items: 0,
     });
+  });
+});
+
+describe('the guest merge keeps the guest as an alias (Work Tracker 678)', () => {
+  const merge = (payload: unknown) =>
+    call('/internal/merge', { method: 'POST', auth: 'merge-key', body: payload });
+  const aliases = () =>
+    h.db.sql.prepare('SELECT guest_id, person_id FROM person_aliases ORDER BY guest_id').all() as {
+      guest_id: string;
+      person_id: string;
+    }[];
+
+  it('records the guest, with the guests merged into it before, once', async () => {
+    expect((await merge({ guestId: 'guest_a', userId: 'guest_b', legacy: true })).status).toBe(200);
+    expect(aliases()).toEqual([{ guest_id: 'guest_a', person_id: 'guest_b' }]);
+    expect((await merge({ guestId: 'guest_b', userId: 'user_u' })).status).toBe(200);
+    const both = [
+      { guest_id: 'guest_a', person_id: 'user_u' },
+      { guest_id: 'guest_b', person_id: 'user_u' },
+    ];
+    expect(aliases()).toEqual(both);
+    expect((await merge({ guestId: 'guest_b', userId: 'user_u' })).status).toBe(200);
+    expect(aliases()).toEqual(both);
+  });
+
+  it('never makes a person their own alias', async () => {
+    await merge({ guestId: 'guest_x', userId: 'guest_y', legacy: true });
+    await merge({ guestId: 'guest_y', userId: 'guest_x', legacy: true });
+    expect(aliases()).toEqual([{ guest_id: 'guest_y', person_id: 'guest_x' }]);
+  });
+
+  it(`keeps a person's newest ${PERSON_ALIASES_MAX}`, async () => {
+    const add = h.db.sql.prepare(
+      "INSERT INTO person_aliases (guest_id, person_id, merged_at) VALUES (?, 'user_u', ?)",
+    );
+    for (let i = 1; i <= PERSON_ALIASES_MAX; i++) add.run(`guest_${String(i).padStart(2, '0')}`, i);
+    add.run('guest_other', 0);
+    h.db.sql
+      .prepare("UPDATE person_aliases SET person_id = 'user_v' WHERE guest_id = 'guest_other'")
+      .run();
+    expect((await merge({ guestId: 'guest_new', userId: 'user_u' })).status).toBe(200);
+    const kept = aliases()
+      .filter((r) => r.person_id === 'user_u')
+      .map((r) => r.guest_id);
+    expect(kept).toHaveLength(PERSON_ALIASES_MAX);
+    expect(kept).toContain('guest_new');
+    expect(kept).not.toContain('guest_01');
+    // Someone else's are not theirs to count.
+    expect(aliases()).toContainEqual({ guest_id: 'guest_other', person_id: 'user_v' });
   });
 });
 

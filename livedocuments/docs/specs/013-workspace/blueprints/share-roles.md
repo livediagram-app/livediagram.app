@@ -363,6 +363,10 @@ Image grants (`db/image-grants.ts`) come from edit collaborators only: a Partici
 - **E16** A socket with `PARTICIPANT_PENDING_MAX` writes waiting sends another: refused, the sender re-hydrates.
 - **E17** A Participant empties a text box that sizes to its words: it stays, empty, rather than being removed (a
   remove would be refused).
+- **E18** A visitor reopens the document by its own address with no code: `openOwnAddress` asks the grant before it
+  seeds; a grant naming a `link`, or below `edit`, opens them at the grant's level (`parseStoredLevel`) with its tab
+  scope and the link's code as the session's share code, `isOwner` false. Only `edit` with no `link` is the owner's
+  chrome; no grant (the index out of reach) keeps `edit` without it, and the api still refuses what it does not grant.
 
 ## Security and trust
 
@@ -455,6 +459,7 @@ The Share dialog is a lazy chunk; a third card adds no request. A Participant's 
 | Op gate per level: `participant-content`, `participant-article`, drop            | `apps/api/src/room-op-gate.test.ts`                                                                                      |
 | Room: participant path, corrections, re-hydrate, `grow` relay                    | `apps/api/src/room-participant.test.ts`, `document-room-participant.test.ts`, `document-room-routes.test.ts`             |
 | Capabilities per level                                                           | `apps/editor/lib/editor-capabilities.test.ts`                                                                            |
+| Reopening by the own address takes the grant's level, tab and link (E18)         | `../packages/workbench/src/lib/editor-arrival.test.ts`, `apps/editor/app/document/[id]/document-arrival.test.ts`         |
 | Held-back notice                                                                 | `apps/editor/app/document/[id]/useParticipantSession.test.ts`                                                            |
 | Participant save branch: element ops and article frames                          | `apps/editor/app/document/[id]/tab-save-flow.test.ts`                                                                    |
 | Three cards and keys                                                             | [`ShareDialog.test.tsx`](../../../../../packages/explorer/src/dialogs/ShareDialog.test.tsx) in `@liveworkspace/explorer` |

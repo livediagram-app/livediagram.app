@@ -106,7 +106,11 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
   - `onOpenElementSettings`, `onEnterPortal`, `onFireReaction`, `onReactionBurstDone`: into the
     layer's `useStableHandlers` bag. (The timer, panel-action, session and collab props went with the
     Collaborate faces in Work Tracker #423 part 4.)
-  - `chairSitters`: a `useCallback` over the sitters map in `Canvas`.
+  - `chairSitters`: one `SittersSource` for the canvas's life (`components/canvas/chair-sitters-source.ts`,
+    `createSittersSource` in `useCanvasAvatar`, written in a layout effect from the by-value sitters map). `PieceArt`
+    reads its own row with `useChairSitters(source, element.id)`; `set` keeps each chair's array while
+    `sameSitterList` holds, so only the chairs whose sitters changed render (Work Tracker 1185: a `useCallback` over the
+    map changed on every sit or stand and rendered all 25 element views of Team Pod, 75 to 85 ms at 4x on a phone).
 - `zoom` leaves `BoxedElementView`'s props. `CanvasZoomProvider` (in `Canvas`, around the element
   layer) carries it; every child that sizes by zoom reads `useCanvasZoom()`: `LaneGutter`, `ShapeHitOutline`,
   `RemoteSelectorsStrip`, `ElementIndicators`, `SelectionChromeLayer`,
@@ -219,7 +223,8 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   the board in its first task and the Map's picture is built in a background render after it.
 - `Canvas` keeps the chair sitters by value (`useByValue(sittersByChair(...), sameSitters)`,
   `packages/avatar/src/chair-sitters.ts`): presence rebuilds the peers' list after opening, and a new map handed every
-  element view a new `chairSitters` and rendered all of them again.
+  element view a new `chairSitters` and rendered all of them again. Since Work Tracker 1185 the map only feeds the
+  sitters source, so even a real change renders the chairs it concerns.
 
 ### Opening animates nothing across the board
 
@@ -273,10 +278,17 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   `SURFACE_EASE_ATTR` (`data-style-easing`) on that surface, not the `lvd-style-transition` class on `:root`: a class
   on the root invalidated every node of the page (the toolbars, the dialog). `globals.css` adds
   `[data-canvas-root][data-style-easing]` to the surface ease rule. A pick while it eases extends the ease.
-- `styleChangeInFlight()` is true while an ease runs; `SnapWidth` skips its every-render measure then (its
-  `getBoundingClientRect` forced the style recalc inside the commit). It measures again on its resize observer.
-- Tests: `tab-style-ease.test.ts` (busy surface attribute, root class otherwise, `easedStyleChange`,
-  `styleChangeInFlight`), `SnapWidth.test.tsx` (no read while a style change draws), `app/canvas-motion.test.ts`
+- `SnapWidth` measures only on mount and on its resize observer, never in a render's commit (Work Tracker 911): the
+  every-render read forced the style recalc and layout inside the commit, during an eased style change and after
+  every drop alike (the toolbar renders on each one). The observer reports a size change after the frame's layout,
+  before its paint, so the box is never drawn at a stale width.
+- `useEdgeAwarePlacement` (`packages/workbench/src/hooks/canvas/useEdgeAwarePlacement.ts`) places in the next
+  animation frame under `flushSync`, never in its layout effect (Work Tracker 911), so neither a press's nor a drop's
+  task reads layout. One frame at a time: renders before it share it, a suspension or unmount cancels it, and the
+  re-render a flip causes inside the frame places again at once. Every placement
+  reads the floating chrome (`querySelectorAll` over the page and a rect each) at most once, shared by the flip
+  check and the sideways slide.
+- Tests: `tab-style-ease.test.ts` (busy surface attribute, root class otherwise, `easedStyleChange`), `SnapWidth.test.tsx` (no read on a re-render; the observer measures), `useEdgeAwarePlacement.test.tsx` (nothing read in a commit; one frame places), `app/canvas-motion.test.ts`
   (the surface attribute in the ease rule).
 
 ### The Map is one image

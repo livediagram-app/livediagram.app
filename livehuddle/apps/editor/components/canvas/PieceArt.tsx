@@ -3,11 +3,7 @@
 import { rugDrawnToSize, rugParts, type ShapeElement } from '@livehuddle/document';
 import { AvatarPadView } from '@/components/canvas/collab/AvatarPadView';
 import { FenceView } from '@/components/canvas/collab/FenceView';
-import {
-  FurnitureView,
-  isFurnitureViewShape,
-  type ChairSitter,
-} from '@/components/canvas/collab/FurnitureView';
+import { FurnitureView, isFurnitureViewShape } from '@/components/canvas/collab/FurnitureView';
 import { GardenFenceView, GardenPathView, GrassView } from '@/components/canvas/collab/GardenViews';
 import { CorridorView, DoorView } from '@/components/canvas/collab/RoomBuilderViews';
 import { WindowView } from '@/components/canvas/collab/WindowView';
@@ -21,8 +17,7 @@ import { RoomSignView } from '@/components/canvas/collab/RoomSignView';
 import { ScreenView } from '@/components/canvas/collab/ScreenView';
 import { StageView } from '@/components/canvas/collab/StageView';
 import { TimerView } from '@/components/canvas/collab/TimerView';
-
-const NO_SITTERS: ChairSitter[] = [];
+import { useChairSitters, type SittersSource } from './chair-sitters-source';
 
 // The pieces of a Space drawn as art (docs/specs/009-elements/office.md and its neighbours): the one place that
 // says which view draws which kind, shared by the canvas (BoxedElementView) and the placement preview
@@ -63,7 +58,7 @@ export function PieceArt({
   stroke,
   fill,
   animClass,
-  sitters = NO_SITTERS,
+  sittersSource,
   walking = false,
   onPressAvatarPad,
   live = false,
@@ -73,8 +68,9 @@ export function PieceArt({
   fill: string;
   animClass?: string;
   // Whoever presence says sits in a chair, desk or sofa (docs/specs/009-elements/chair.md), or stands on a stage
-  // (docs/specs/012-collaboration/meeting-rooms-and-stage.md "The stage shows who is on it").
-  sitters?: ChairSitter[];
+  // (docs/specs/012-collaboration/meeting-rooms-and-stage.md "The stage shows who is on it"); absent in a preview.
+  // Read here, by this piece alone, so a sit re-renders the chair and not the board (Work Tracker 1185).
+  sittersSource?: SittersSource;
   // The viewer is in Avatar mode: a reading piece's whole face opens it in the reader
   // (docs/specs/008-canvas/avatar-mode.md "The reader").
   walking?: boolean;
@@ -84,6 +80,7 @@ export function PieceArt({
   live?: boolean;
 }) {
   const kind = element.shape;
+  const sitters = useChairSitters(sittersSource, element.id);
   // A patterned rug (docs/specs/009-elements/office.md "Rug types") is drawn to its size; the Oval is furniture art.
   if (rugDrawnToSize(element))
     return (

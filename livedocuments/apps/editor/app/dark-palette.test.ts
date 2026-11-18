@@ -16,6 +16,7 @@ import {
 import { parseSourceFiles } from '@liveworkspace/source-ast';
 import { describe, expect, it } from 'vitest';
 import { contrastRatio } from '@livedocuments/document';
+import { PAGE_BAND_INK } from '@/components/canvas/article/PageBands';
 
 // The dark palette (docs/specs/004-interface-design/color-scheme.md, Dark palette (Steel)) is a set of
 // token overrides plus two class rules. None of it fails a build when it drifts: a new button painted
@@ -293,5 +294,42 @@ describe('secondary text in dark mode', () => {
       tokens(text).some((t) => /^dark:(placeholder:)?text-slate-500(\/\d+)?$/.test(t)),
     ).map(({ path, text }) => `${path}: ${text.slice(0, 90)}`);
     expect(offenders).toEqual([]);
+  });
+});
+
+// Chrome drawn on a page in dark mode (Work Tracker 1176): the plain paper is the dark slate-900, so what sits on it
+// must read there. An article's header and footer (12 px) take the dark ink, and a slide's build badge is a light disc
+// with dark digits that stands off the paper, never a slate-900 disc that vanishes into it.
+describe('chrome on the dark paper', () => {
+  const dark = block(THEME_CSS, '.dark');
+  const token = (name: string) => dark[`--color-${name}`] ?? '';
+  const paper = token('slate-900');
+  // An `rgb(r g b / a)` ink laid over an opaque hex ground, as the eye sees it.
+  const over = (ink: string, ground: string) => {
+    const [r, g, b, a] = ink.match(/[\d.]+/g)!.map(Number) as [number, number, number, number];
+    const base = [1, 3, 5].map((i) => parseInt(ground.slice(i, i + 2), 16));
+    const mix = [r, g, b].map((c, i) => Math.round(c * a + base[i]! * (1 - a)));
+    return `#${mix.map((c) => c.toString(16).padStart(2, '0')).join('')}`;
+  };
+
+  it("keeps an article's header and footer at 4.5:1 on the paper, light and dark", () => {
+    expect(paper).toMatch(/^#[0-9a-f]{6}$/);
+    expect(contrastRatio(over(PAGE_BAND_INK.dark, paper), paper)).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(over(PAGE_BAND_INK.light, '#ffffff'), '#ffffff')).toBeGreaterThanOrEqual(
+      4.5,
+    );
+  });
+
+  it("keeps a build badge's digits at 4.5:1 on its disc, and the disc at 3:1 on the paper", () => {
+    const source = readFileSync(resolve(ROOT, 'components/canvas/element-parts.tsx'), 'utf8');
+    const badge = source.slice(source.indexOf('export function BuildBadge'));
+    const cls = (prefix: string) =>
+      new RegExp(`(?<![\\w:-])dark:${prefix}-([a-z]+-\\d+)(?![\\w/])`).exec(badge)?.[1];
+    const disc = token(cls('bg') ?? '');
+    const digits = token(cls('text') ?? '');
+    expect(disc).toMatch(/^#[0-9a-f]{6}$/);
+    expect(digits).toMatch(/^#[0-9a-f]{6}$/);
+    expect(contrastRatio(digits, disc)).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(disc, paper)).toBeGreaterThanOrEqual(3);
   });
 });

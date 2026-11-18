@@ -42,9 +42,6 @@ export function easeNextStyleChange(): void {
   }, STYLE_TRANSITION_MS + 50);
 }
 
-/** Whether a Tab Style change is being drawn (its ease is on). */
-export const styleChangeInFlight = (): boolean => easing !== null;
-
 /** A Tab Style setter the canvas eases into, its change drawn as a transition (docs/specs/008-canvas/
  *  canvas-performance.md "A theme pick on a big board"): React draws the restyled elements in slices between frames
  *  instead of one long task, the old style staying on screen until the new one is ready. */

@@ -55,3 +55,6 @@ One row per default applied where a spec is silent. Each code is cited in its bl
 | IDX50 | webhooks        | an automation send dated ahead is dated now; one sent again after its delivery was trimmed (20 finished kept) queues again.        |
 | IDX51 | approvals       | a closed account's approval rows are anonymised (`deleted`), not deleted, so a request's count of approvers stays true.            |
 | IDX52 | approvals       | an approval request's email follows the approver's Actions Assigned to Me switch; approvals have no switch of their own.           |
+| IDX53 | request-access  | a closed account's access requests and tries are deleted, not anonymised: a request from no one asks nothing.                      |
+| IDX54 | request-access  | a grant defaults to `view` (or the app's default level where it offers no Viewer); the ask names no level.                         |
+| IDX55 | request-access  | a team item's request email goes to its maker while they are in the team; the whole team sees it in the Inbox.                     |

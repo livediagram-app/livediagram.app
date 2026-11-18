@@ -116,6 +116,36 @@ describe('createIndexClient', () => {
     expect(seen[2]!.headers.get('Content-Type')).toBeNull();
   });
 
+  it('asks for access, and grants or declines a request', async () => {
+    const { seen, doFetch } = fakeFetch((s) =>
+      s.url.endsWith('/decline') ? new Response(null, { status: 204 }) : Response.json({}),
+    );
+    const client = createIndexClient({
+      baseUrl: 'http://localhost:8793/api/index',
+      getToken: async () => 'tok',
+      fetch: doFetch,
+    });
+    await client.requestAccess('i1', { note: 'Please' });
+    await client.requestAccess('i1');
+    await client.grantAccessRequest('i1', 'ar/1', { level: 'edit' });
+    await client.grantAccessRequest('i1', 'ar_2');
+    await client.declineAccessRequest('i1', 'ar_3');
+    expect(seen.map((s) => `${s.method} ${s.url}`)).toEqual([
+      'POST http://localhost:8793/api/index/items/i1/access-requests',
+      'POST http://localhost:8793/api/index/items/i1/access-requests',
+      'POST http://localhost:8793/api/index/items/i1/access-requests/ar%2F1/grant',
+      'POST http://localhost:8793/api/index/items/i1/access-requests/ar_2/grant',
+      'POST http://localhost:8793/api/index/items/i1/access-requests/ar_3/decline',
+    ]);
+    expect(seen.map((s) => s.body)).toEqual([
+      { note: 'Please' },
+      {},
+      { level: 'edit' },
+      {},
+      undefined,
+    ]);
+  });
+
   it('sends a link visitor’s code and password, and no token when there is none', async () => {
     const { seen, doFetch } = fakeFetch(() =>
       Response.json({ grant: 'g', level: 'view', tabId: null, expiresAt: 1 }),

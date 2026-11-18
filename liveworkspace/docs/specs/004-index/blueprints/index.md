@@ -94,7 +94,7 @@ password_required`; a guess this isolate hasn't seen right is counted (`429 rate
 `aud = <app>`, `sub = <person id>` or `link:<code>`, `iat = floor(iatMs / 1000)` (`iatMs` the signing moment in epoch
 ms, one `Date.now()` for both), `exp = iat + 600`, `jti` a UUID, header `{ alg: ES256, kid, typ: JWT }`;
 `createGrantVerifier` (`packages/index-client/src/grant.ts`) keeps `iatMs` only when it is an integer inside `iat`'s
-second, and `itemGrantOf` carries it onto the app's `ItemGrant` (absent on a grant signed before it existed); answers `{ grant, level, tabId, expiresAt (ms), trashed? }`. The key is `GRANT_SIGNING_KEY` (a private P-256
+second, and `itemGrantOf` carries it onto the app's `ItemGrant` (absent on a grant signed before it existed); answers `{ grant, level, tabId, expiresAt (ms), trashed?, link? }` (`link` the claim's code, for the editor's chrome). The key is `GRANT_SIGNING_KEY` (a private P-256
 JWK with `kid`), cached by its text, a bad one retried next request. Development with no key signs with an ephemeral
 `dev-<8 hex>` key per isolate. Production without one: `503 grants_unavailable` on create and grant, and `GET /jwks`
 answers `503`. `GET /jwks` answers `{ keys: [publicJwk] }`, `Cache-Control: public, max-age=300`.
@@ -411,7 +411,7 @@ One D1 database (`INDEX_DB`). Each table's indexes, and what writes and reads it
 it: items, folders, opens, use days and the unread `favourites` table in [items.md](items.md); links, passwords and Shared with me in
 [sharing.md](sharing.md); the collab tables in [inbox.md](inbox.md); the event log in [events.md](events.md);
 tombstones, purges and notices in [trash.md](trash.md); placement defaults in [default-folders.md](default-folders.md);
-person merges in [guest-merge.md](guest-merge.md); `drive_people` above. Foreign keys to `items` cascade, so a purged
+person merges and aliases in [guest-merge.md](guest-merge.md); `drive_people` above. Foreign keys to `items` cascade, so a purged
 item takes every row about it.
 
 Migrations, in order:
@@ -422,6 +422,21 @@ Migrations, in order:
 - `0004_form_codes.sql`
 - `0005_drive_people.sql`
 - `0006_person_app_merges_legacy.sql`
+- `0007_use_days_opens.sql`
+- `0008_webhooks.sql`
+- `0009_items_livehuddle.sql`
+- `0010_connections.sql`
+- `0011_team_audit.sql`
+- `0012_webhook_app_events.sql`
+- `0013_livediagram_mode_defaults.sql`
+- `0014_document_webhooks.sql`
+- `0015_archived.sql`
+- `0016_items_new.sql`
+- `0017_events.sql`
+- `0018_calendar_feeds.sql`
+- `0019_approvals.sql`
+- `0020_thread_mentioned_by.sql`
+- `0021_person_aliases.sql`
 
 | Table                  | Columns                                                                                                                                                                                                                                                                 | Created in                                       |
 | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
@@ -437,6 +452,7 @@ Migrations, in order:
 | `folders`              | `id`, `name`, `parent_id`, `owner_id`, `team_id`, `scope`, `created_at`, `updated_at`                                                                                                                                                                                   | `0001_index.sql`                                 |
 | `items`                | `id`, `app`, `kind`, `owner_id`, `team_id`, `scope`, `folder_id`, `title`, `source`, `intent`, `summary`, `created_at`, `updated_at`, `trashed_at`, `trash_reason`, `empty_swept_for`                                                                                   | `0001_index.sql`                                 |
 | `opens`                | `person_id`, `item_id`, `last_opened_at`, `hidden`                                                                                                                                                                                                                      | `0001_index.sql`                                 |
+| `person_aliases`       | `guest_id`, `person_id`, `merged_at`                                                                                                                                                                                                                                    | `0021_person_aliases.sql`                        |
 | `person_app_merges`    | `guest_id`, `user_id`, `app`, `created_at`, `attempts`, `last_attempt_at`, `legacy (0006)`                                                                                                                                                                              | `0003_person_app_merges.sql`                     |
 | `person_app_notices`   | `person_id`, `app`, `item_id`, `created_at`, `attempts`, `last_attempt_at`                                                                                                                                                                                              | `0002_person_app_notices.sql`                    |
 | `person_purges`        | `person_id`, `team_ids`, `requested_at`, `finished_at`, `runs`                                                                                                                                                                                                          | `0001_index.sql`                                 |

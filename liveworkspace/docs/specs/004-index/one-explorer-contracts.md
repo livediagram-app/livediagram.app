@@ -100,6 +100,17 @@ cookie. The index then tells each app, `POST /api/internal/people/:guest/merge {
 frequent cron until the app confirms, for up to a week), so the app moves what it keeps for the guest beside
 their items, such as their images or its own per-person store (`personMerged` in `@liveworkspace/index-app`). A link visitor with no identity needs no redirect: a share code is enough for a grant.
 
+**A guest's answers stay theirs.** A guest's dots, responses, answers and comment reactions are recorded under the
+guest's collab key (each product's `docs/specs/013-workspace/share-roles.md` "The collab key"), inside documents
+that are often other people's, so the merge never rewrites them: nothing lists every document a guest reacted in, and
+a rewrite would touch other people's content. Instead the merge keeps the guest as an **alias** of the account
+(`person_aliases`, in the merge's own batch, so a merge never lands without it): one row per guest, naming the
+person it now belongs to. Guests merged into this guest before (a legacy merge's) follow it on, a person is never
+their own alias, and a person keeps their newest 32 (one per browser they signed in on; the oldest go first). Every
+grant for the person names the collab keys of their aliases (`aliases`, [Grants](#grants)), and each app's rooms
+read an entry under any of them as the person's own (owner, 2026-11-15, Work Tracker 678). An adder is not a collab
+key: a guest who signs in is still a different adder. The aliases go when the account closes.
+
 **A returning guest of the old livediagram.app** ([docs/migration.md](../../../../docs/migration.md) step 6). Their
 copied work is under `guest_<old uuid>`, which accounts merges into whoever claims it
 ([accounts.md](../003-accounts/accounts.md#returning-guests-of-the-old-livediagramapp)), a guest as well as an account. So the
@@ -201,8 +212,10 @@ as malformed. The parts of an item an app names (a tab, the cards' `~cards`, an 
 | `POST /items/:id/open`         | person or link      | Records an open for Recent, and counts it on the day's row for Most Used               |
 |                                |                     | (`use_days.opens`, kept 14 days). Debounced: at most one write a minute                |
 |                                |                     | per person and item.                                                                   |
-| `POST /items/:id/grant`        | person or link      | `→ {grant, level, tabId, expiresAt}`. A link visitor sends                             |
-|                                |                     | `X-Share-Code` (and `X-Share-Password` when set).                                      |
+| `POST /items/:id/grant`        | person or link      | `→ {grant, level, tabId, expiresAt, link?}`. A link visitor sends                      |
+|                                |                     | `X-Share-Code` (and `X-Share-Password` when set). `link` is the grant's `link` claim:  |
+|                                |                     | the code a link's access came through, sent or not, so an editor reopening the item by |
+|                                |                     | its own address opens it as that link's visitor ("Grants").                            |
 | `POST /items/:id/archive`      | owner               | To its owner's Archived (below) → `{item}`.                                            |
 | `GET /trash` / `DELETE /trash` | person              | List, empty (`?team=`; `?app=` empties that app's items only).                         |
 
@@ -303,7 +316,8 @@ holds for that person:
 - **Deleted**: their folders, opens (Recent), use
   days (Most Used), Shared with me rows, placement defaults, their calendar feeds ([Calendar feeds](#calendar-feeds)),
   and what is left of Favourites (removed, [one-explorer.md "Favourites removed"](one-explorer.md#favourites-removed)):
-  their rows in the unread `favourites` table and their own old `favourited` events.
+  their rows in the unread `favourites` table and their own old `favourited` events, and the guests merged into them
+  (`person_aliases`, [Becoming an account](#guests)), so no grant names those keys again.
 - **Kept by the team**: an item or folder they made in a team stays with that team, its owner anonymised.
   `teamIds` names the teams that closed with the account (one it ran alone); their items and folders in
   those go too, while anyone else's stay theirs.
@@ -464,6 +478,7 @@ check access and guest tokens against accounts' keys through an `ACCOUNTS` bindi
   "owner": "user_…",
   "trashed": true,
   "link": "<code>",
+  "aliases": ["<collab key>"],
   "iat": 0,
   "iatMs": 0,
   "exp": 0,
@@ -486,10 +501,18 @@ An app never keeps such a grant in its cache, so a restore is seen on the next r
 access came through, on every grant a link gave, a signed-in person's included (one who opened the link before reaches
 the item again through Shared with no code sent). An app reads link access from it, never from whether the request
 carried `X-Share-Code`: the caller can leave a header off, so a link's limits (a Community post's content-only pass,
-the owner-only "Add to <Item>") would fall away with it. The header only adds to a grant signed without the claim. The item's Durable Object
+the owner-only "Add to <Item>") would fall away with it. The header only adds to a grant signed without the claim. The answer names the same code beside the grant (`link`), for the editor's chrome only: an editor that opens an
+item by its own address, with no code, takes the visitor's role, tab and code from it, never the owner's
+(`openOwnAddress` in `@liveworkspace/workbench/lib/editor-arrival`); the api and the room still read the claim. The item's Durable Object
 keeps its own copy of both (for its emails, its pushes and its alarm), and takes it from every grant it is handed
 (`@liveworkspace/index-app` `createItemHeadSync`), so a guest's merge into an account or a move to another team
 reaches the item the next time anyone opens it.
+
+`aliases` is there only on a person's grant (never a link visitor's) when guests have merged into them: the collab
+key (`collabKeyFor`, `@liveworkspace/api-kit/collab-key`) of each guest in `person_aliases`, newest first, at most 32.
+It holds keys, never guest ids, so it gives no id away. An app's room upgrade forwards them beside the session's own
+key, so the person's entries from before they signed in read as theirs ([Becoming an account](#guests)). A grant
+signed before an alias was recorded lacks it until its next renewal, ten minutes at most.
 
 An archived item is never granted: `POST /items/:id/grant` answers its owner `409 archived` (everyone else `404`,
 as for any item they don't reach), and the held grants remember it as the refusal (`refusal(id) === 'archived'`).
@@ -772,6 +795,8 @@ logged and dropped; an email is best-effort. Types and helpers are in `@livework
   the same batch as the `shared_with` write, so a person's first time is told once however the two doors race;
   the owner and someone with no identity are no one joining. The app decides who that emails (liveplanner: the
   owner, for an account visitor only).
+- The same, `{type: 'access_requested', …}` and `{type: 'access_granted', …}`: someone asked for access to the item,
+  and a manager granted it ([request-access.md](request-access.md#the-emails)).
 - `GET /app/people/:id/count?limit=`, with the app's key: how many items that person has made in the calling
   app, the Trash's included, counted up to `limit` (1 to 1000, default 1000) → `{count}`. One walk of the
   owner index that stops at the limit, so an app asking whether the tenth was just made (`limit=10`) pays the
@@ -853,10 +878,10 @@ name an app reported, or as a teammate.
 
 ## Inbox
 
-`GET /inbox?app=`: `{threads, actions, forms}` across every app: open actions and cards assigned
+`GET /inbox?app=`: `{threads, actions, forms, accessRequests}` across every app: open actions and cards assigned
 to or by me; unresolved threads (an element's or a card's) on my items, where I commented, or where I am
 mentioned; and forms with responses I haven't seen on items I own or reach through a team (not through a
-link); all limited to items I can reach (through a link scoped to one tab, that tab's threads and actions and the
+link; and open access requests on items I manage ([request-access.md](request-access.md#in-the-inbox)); all limited to items I can reach (through a link scoped to one tab, that tab's threads and actions and the
 cards on its boards alone). Each row carries `app`, `itemId`, `itemTitle`, `itemTeamId`, `tabId`
 and `tabName`, so opening it goes to that app; a thread says why it is there (`mentionsYou`, `youCommented`,
 `onYourItem`), who wrote last (`latestAuthorId`, null when the app did not say) and, when I am mentioned, who mentioned

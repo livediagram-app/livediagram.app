@@ -1,6 +1,9 @@
+// @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
 import type { ArticleBlock } from '@livedocuments/document';
+import { DOMParser as PMDOMParser, DOMSerializer } from 'prosemirror-model';
 import { blocksToDoc, docToBlocks } from './article-convert';
+import { articleSchema } from './article-schema';
 
 // docs/specs/007-editor/article-pages.md "Blocks": every block survives the round trip.
 const blocks: ArticleBlock[] = [
@@ -20,6 +23,7 @@ const blocks: ArticleBlock[] = [
   { id: 'l1', type: 'list', list: 'todo', checked: true, runs: [{ text: 'done' }] },
   { id: 'l2', type: 'list', list: 'numbered', level: 2, runs: [] },
   { id: 'c', type: 'code', text: 'const a = 1;\n  b();' },
+  { id: 'c2', type: 'code', text: 'let a;', lang: 'ts' },
   { id: 'd', type: 'divider' },
   { id: 'pb', type: 'pageBreak' },
   {
@@ -50,5 +54,21 @@ describe('the writing in the editor and back', () => {
     );
     const out = docToBlocks(edited, blocks);
     expect(out[2]).toBe(blocks[2]);
+  });
+
+  it("keeps a code block's language through a copy and paste of its HTML", () => {
+    const code: ArticleBlock[] = [
+      { id: 'c', type: 'code', text: 'let a;', lang: 'ts' },
+      { id: 'd', type: 'code', text: 'plain' },
+    ];
+    const div = document.createElement('div');
+    div.append(
+      DOMSerializer.fromSchema(articleSchema).serializeFragment(blocksToDoc(code).content),
+    );
+    expect(div.querySelector('pre')?.getAttribute('data-lang')).toBe('ts');
+    expect(div.querySelectorAll('pre')[1]?.hasAttribute('data-lang')).toBe(false);
+    // A paste gives its blocks fresh ids; the language comes with it.
+    const pasted = PMDOMParser.fromSchema(articleSchema).parse(div);
+    expect(pasted.content.content.map((n) => n.attrs.lang as string)).toEqual(['ts', '']);
   });
 });

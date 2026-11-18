@@ -80,8 +80,9 @@ RECEPTION_REACH`) holds your feet. A module store like the arcade's; a step re-r
 - **Ringing**: the face calls `ringBell(deskId)`, which the canvas hook points at `send({ kind: 'avatar-bell', deskId
 })` while walking; `ringBell` starts the 5 s Rang itself; the ringer plays its own ding and waves (no toast). A received op
   (`receiveBellOp`) reaches `useReceptionBell`, which checks the desk is a Reception Desk on the board, you walk, you
-  are not on Do Not Disturb, and `hearsBell`: the desk's room (`meetingPieceRoom`) equals your zone, or the desk has
-  no room and your feet are within `BELL_RADIUS`. Then the ding, the waves (`bumpBell(deskId)`) and the toast.
+  are not on Do Not Disturb. Then, when `hearsBell` (the desk's room (`meetingPieceRoom`) equals your zone, or the desk
+  has no room and your feet are within `BELL_RADIUS`), the ding and the waves (`bumpBell(deskId)`); and, in earshot or
+  not, the toast (Work Tracker 1185).
 
 ## Interfaces and contracts
 

@@ -10,9 +10,10 @@ export const TOOLBAR_CARD =
  *  for its tiles' pressed rings (cancelled by a matching negative margin, so the strip doesn't move), contains its swipe
  *  so it never pans the page, hides its scrollbar, and fades the edge with more beyond it (`scroll-edge-fade`), so a
  *  tile cut by the edge reads as more to swipe to rather than a stray sliver. Its y axis is hidden, not auto: the
- *  tiles' 44px tap areas (touch-target-y) reach past it and made it scroll 1px. */
+ *  tiles' 44px tap areas reach past it and made it scroll 1px. Its 4px inset is the card's own (`p-1`), so a 36px tile's
+ *  pad (touch-target-y, or touch-target-packed in a packed card) reaches its full 44px inside it rather than being clipped. */
 export const STRIP_RAIL_SCROLL =
-  'scroll-edge-fade min-w-0 -my-[3px] overflow-x-auto overflow-y-hidden overscroll-x-contain py-[3px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
+  'scroll-edge-fade min-w-0 -my-1 overflow-x-auto overflow-y-hidden overscroll-x-contain py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
 
 /** The hairline between groups of controls. */
 export const TOOLBAR_DIVIDER = 'mx-0.5 h-6 w-px shrink-0 bg-slate-200 dark:bg-slate-700';

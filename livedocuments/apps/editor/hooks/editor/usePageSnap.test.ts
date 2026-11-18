@@ -43,7 +43,7 @@ const fitOf = (pageId: string) => computeFitBelow(SIZE, row.find((p) => p.id ===
 
 function mount(
   viewport: ViewportStore,
-  opts: { suspended?: () => boolean; canvas?: HTMLElement } = {},
+  opts: { suspended?: () => boolean; canvas?: HTMLElement; tabLoaded?: boolean } = {},
 ) {
   const canvas = opts.canvas ?? document.createElement('main');
   Object.defineProperty(canvas, 'offsetWidth', { value: SIZE.width });
@@ -52,7 +52,7 @@ function mount(
     usePagesMode({
       activeTab: tab,
       canEdit: true,
-      tabLoaded: false,
+      tabLoaded: opts.tabLoaded ?? false,
       commitTabs: vi.fn(),
       canvasMainRef: { current: canvas },
       setViewportZoom: viewport.setZoom,
@@ -166,6 +166,58 @@ describe('a zoom letting go', () => {
     act(() => end());
     nextFrame();
     expect(viewport.get()).toEqual(fitOf('p2'));
+  });
+});
+
+// docs/specs/007-editor/pages-mode.md "Getting around the pages": the canvas says when the view is at rest.
+describe('the view at rest', () => {
+  it('is marked once the tab has landed and no snap waits, and unmarked while one does', () => {
+    const canvas = document.createElement('main');
+    const viewport = createViewportStore(1);
+    mount(viewport, { canvas, tabLoaded: true });
+    const atRest = () => canvas.hasAttribute('data-view-at-rest');
+    expect(atRest()).toBe(false);
+    // The landing frame (a frame after the tab loads) moves the view, so a rest's snap waits.
+    nextFrame();
+    expect(viewport.get().zoom).not.toBe(1);
+    expect(atRest()).toBe(false);
+    rest();
+    expect(atRest()).toBe(true);
+    // A move by anything but a hand waits for its snap; a pointer going down calls the snap off.
+    act(() => viewport.setView(pannedFromP2(300)));
+    expect(atRest()).toBe(false);
+    act(() => {
+      window.dispatchEvent(new PointerEvent('pointerdown', { pointerId: 1 }));
+    });
+    expect(atRest()).toBe(true);
+    act(() => {
+      window.dispatchEvent(new PointerEvent('pointerup', { pointerId: 1 }));
+    });
+    expect(atRest()).toBe(false);
+    rest();
+    rest();
+    expect(viewport.get()).toEqual(fitOf('p2'));
+    expect(atRest()).toBe(true);
+  });
+
+  it("is marked at once for a view moved for the writing's caret, which never snaps", () => {
+    const canvas = document.createElement('main');
+    const viewport = createViewportStore(1);
+    mount(viewport, { canvas, tabLoaded: true });
+    nextFrame();
+    rest();
+    act(() => viewport.setView(pannedFromP2(300)));
+    expect(canvas.hasAttribute('data-view-at-rest')).toBe(false);
+    act(() =>
+      setActiveArticle({
+        handle: { flow: 'f' },
+        pageId: 'p2',
+        focused: true,
+      } as unknown as ActiveArticle),
+    );
+    act(() => viewport.setView(pannedFromP2(200)));
+    expect(canvas.hasAttribute('data-view-at-rest')).toBe(true);
+    act(() => setActiveArticle(null));
   });
 });
 

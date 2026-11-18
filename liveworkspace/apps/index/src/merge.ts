@@ -13,6 +13,7 @@ import { sendDriveSignals } from './drive';
 import { isId } from './codec';
 import type { Env } from './env';
 import { badRequest, json, notFound, readObject, unauthorized } from './http';
+import { recordPersonAlias } from './person-aliases';
 import { drainPersonMerges, recordPersonMerges } from './person-merges';
 
 export async function handleMerge(
@@ -108,6 +109,8 @@ export async function handleMerge(
       )
       .bind(user, guest),
     db.prepare('DELETE FROM collab_form_reads WHERE person_id = ?').bind(guest),
+    // The guest's collab key stays theirs (person-aliases.ts): in the same batch, so a merge never lands without it.
+    ...recordPersonAlias(db, guest, user, Date.now()),
   ]);
   const items = (results[1] as D1Result).meta.changes ?? 0;
   const folders = (results[2] as D1Result).meta.changes ?? 0;

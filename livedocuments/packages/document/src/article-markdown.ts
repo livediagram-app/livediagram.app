@@ -5,6 +5,7 @@
 import { tableFromGrid } from './article-table';
 import { ARTICLE_FOOTNOTE_REF, cleanFootnoteText } from './article-footnotes';
 import {
+  isArticleCodeLang,
   isSafeArticleHref,
   nextArticleBlockId,
   normaliseRuns,
@@ -227,6 +228,14 @@ export function fenceOpening(line: string): number {
   const m = /^\s*(`{3,})/.exec(line);
   return m ? m[1]!.length : 0;
 }
+/** The language an opening fence names (```js → js): its info string's first word, when a valid one. */
+export function fenceLanguage(line: string): string | undefined {
+  const start = line.indexOf('`');
+  let end = start;
+  while (line[end] === '`') end++;
+  const word = line.slice(end).trim().split(/\s/, 1)[0];
+  return isArticleCodeLang(word) ? word : undefined;
+}
 /** True when `line` closes a fence opened with `fence` backticks. */
 export function closesFence(line: string, fence: number): boolean {
   const bare = line.trim();
@@ -336,7 +345,8 @@ export function parseMarkdownBlocks(text: string, given?: FootnoteNotes): Articl
       flush();
       const body: string[] = [];
       for (i++; i < lines.length && !closesFence(lines[i]!, fence); i++) body.push(lines[i]!);
-      blocks.push({ id: id(), type: 'code', text: body.join('\n') });
+      const lang = fenceLanguage(line);
+      blocks.push({ id: id(), type: 'code', text: body.join('\n'), ...(lang ? { lang } : {}) });
       continue;
     }
     if (!line.trim()) {

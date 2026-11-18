@@ -8,6 +8,7 @@ import {
   isTrashedInIndex,
   openOwnAddress,
   openShareLink,
+  readerOfGrant,
   type ArrivalProduct,
   type ArrivalResolution,
   type ArrivalSetters,
@@ -344,6 +345,60 @@ describe('openOwnAddress', () => {
     );
     await openOwnAddress(named.product, named.run, own);
     expect(named.calls).not.toContain('prompt:true');
+  });
+
+  // Work Tracker 1117: a visitor reopening the item by its own address, with no code, used to open as Editing and
+  // lose what they typed to refused saves. The grant names the link they came through, so they open as its visitor.
+  it("opens a link visitor reopening the own address at the grant's level, tab and code", async () => {
+    const lastSeen = {
+      remember: vi.fn(async () => {}),
+      forget: vi.fn(async () => {}),
+    };
+    const h = harness({
+      loadOwn: vi.fn(async () => ({ id: 'i1', ownerId: 'them' })),
+      grant: vi.fn(async () => ({ level: 'view', tabId: 't1', link: 'code' })),
+      lastSeen,
+    });
+    expect(await openOwnAddress(h.product, h.run, { ...own, accountUserId: 'u1' })).toBe(true);
+    expect(h.calls).toEqual([
+      'step:item',
+      'tabScope:"t1"',
+      'step:first-tab',
+      'seed:i1:code',
+      'serverStored:true',
+      'isOwner:false',
+      'role:"view"',
+      'shareCode:"code"',
+      'itemId:"i1"',
+    ]);
+    expect(lastSeen.remember).toHaveBeenCalledWith(
+      expect.objectContaining({
+        via: 'code',
+        access: { role: 'view', isOwner: false, sessionShareCode: 'code', tabScope: 't1' },
+      }),
+    );
+  });
+
+  it('never escalates: an unknown level reads as view, and below edit is never the owner', async () => {
+    expect(readerOfGrant({ level: 'admin', link: 'code' })).toMatchObject({
+      role: 'view',
+      isOwner: false,
+      visitor: true,
+    });
+    expect(readerOfGrant({ level: 'participate' })).toEqual({
+      isOwner: false,
+      role: 'participate',
+      visitor: true,
+      shareCode: null,
+      tabScope: null,
+    });
+    expect(readerOfGrant({ level: 'edit', link: 'code' })).toMatchObject({
+      isOwner: false,
+      role: 'edit',
+      shareCode: 'code',
+    });
+    expect(readerOfGrant({ level: 'edit' })).toMatchObject({ isOwner: true, visitor: false });
+    expect(readerOfGrant(null)).toMatchObject({ isOwner: false, role: 'edit', visitor: false });
   });
 
   it('opens an Offline Mode item as its owner with no room, asking no grant', async () => {

@@ -67,9 +67,7 @@ export type BoxedElementViewProps = {
   // now. A function of the element id rather than a map prop so the common
   // case (no chairs on the tab) costs nothing. Occupancy is never in the
   // document, so a disconnected sitter vacates for free.
-  chairSitters?: (
-    elementId: string,
-  ) => import('@/components/canvas/collab/FurnitureView').ChairSitter[];
+  chairSitters?: import('@/components/canvas/chair-sitters-source').SittersSource;
   // The viewer's current mode, so a Selection Mode button offering it renders
   // disabled (docs/specs/009-elements/mode-button.md).
   activeMode?: import('@livehuddle/document').SelectionMode;

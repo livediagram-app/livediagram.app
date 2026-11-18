@@ -96,7 +96,8 @@ export type ArticleListBlock = {
   runs: ArticleRun[];
 };
 
-export type ArticleCodeBlock = { id: string; type: 'code'; text: string };
+// `lang`: the language a Markdown fence named (```js), kept so the block's Markdown names it again.
+export type ArticleCodeBlock = { id: string; type: 'code'; text: string; lang?: string };
 export type ArticleDividerBlock = { id: string; type: 'divider' };
 export type ArticlePageBreakBlock = { id: string; type: 'pageBreak' };
 
@@ -185,6 +186,10 @@ export function isSafeArticleHref(v: unknown): v is string {
 export const isArticleId = (v: unknown): v is string =>
   typeof v === 'string' && v.length > 0 && v.length <= 64;
 const isId = isArticleId;
+/** A code block's language: a fence's first info word, as Markdown writes one (`js`, `c++`, `objective-c`). */
+export const ARTICLE_CODE_LANG = /^[A-Za-z0-9_+#.-]{1,32}$/;
+export const isArticleCodeLang = (v: unknown): v is string =>
+  typeof v === 'string' && ARTICLE_CODE_LANG.test(v);
 const member = <T extends string>(list: readonly T[], v: unknown): v is T => list.includes(v as T);
 
 export const RUN_FLAGS = ['b', 'i', 'u', 's', 'code', 'sup', 'sub'] as const;
@@ -328,6 +333,7 @@ export function parseArticleBlock(v: unknown): ArticleBlock | undefined {
         id,
         type: 'code',
         text: typeof b.text === 'string' ? b.text.slice(0, MAX_ARTICLE_BLOCK_TEXT) : '',
+        ...(isArticleCodeLang(b.lang) ? { lang: b.lang } : {}),
       };
     case 'divider':
       return { id, type: 'divider' };
