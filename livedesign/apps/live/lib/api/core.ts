@@ -160,8 +160,12 @@ export function expectOk<T>(
   return core.expectOk<T>(res, action, expected);
 }
 // As expectOk, but a 404 answers null.
-export function expectOkOrNull<T>(res: Response, action: string): Promise<T | null> {
-  return core.expectOkOrNull<T>(res, action);
+export function expectOkOrNull<T>(
+  res: Response,
+  action: string,
+  expected?: (code: string | null) => boolean,
+): Promise<T | null> {
+  return core.expectOkOrNull<T>(res, action, expected);
 }
 // For endpoints with no response body.
 export function expectOkVoid(res: Response, action: string): Promise<void> {
