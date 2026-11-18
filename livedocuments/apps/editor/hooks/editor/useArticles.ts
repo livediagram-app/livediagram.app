@@ -235,15 +235,31 @@ export function useArticles(deps: {
       if (!d.canEdit || t.id !== tabId || !articlesOf(t)[flow])
         return clearArticleGrow(tabId, flow);
       const own = pagesOf(t).filter((p) => p.flow === flow);
+      const locked = t.locked === true || own.some((p) => p.locked === true);
       const count = absentWriterPageCount({
         local: false,
         pending: true,
         needed: layout.pagesNeeded,
         have: own.length,
-        locked: t.locked === true || own.some((p) => p.locked === true),
+        locked,
         floor: articleGrowFloor(tabId, flow),
       });
-      if (count === null) return clearArticleGrow(tabId, flow);
+      if (count === null) {
+        // The pages are right: the zones settled where the writing lays them out, so a template's charts (written
+        // with a zone and its chart where the writing will put them roughly) stand in their zones from the first
+        // open by an Editor (Work Tracker 1177). Only zones that moved change; a locked page holds them as they are.
+        if (!locked && layout.zones.length > 0) {
+          d.tickTabs((ts) => {
+            const out = ts.map((x) =>
+              x.id === tabId && x.locked !== true ? withZonesSettled(x, flow, layout.zones) : x,
+            );
+            if (out.every((x, i) => x === ts[i])) return ts;
+            debugLog('[article] zones settled for an absent writer', { tabId, flow });
+            return out;
+          });
+        }
+        return clearArticleGrow(tabId, flow);
+      }
       noteArticleGrown(tabId, flow, own.length);
       debugLog('[article] grown for an absent writer', {
         tabId,
@@ -297,11 +313,16 @@ export function useArticles(deps: {
   );
 
   // Every article of the tab as it loads may be grown once (a writer who left before settling).
-  const loadMarked = useRef<string | null>(null);
+  // So may an article that arrives after the tab did (a template applied to the open tab, Work Tracker 1177): each
+  // article is marked once, the first time this tab shows it.
+  const loadMarked = useRef(new Set<string>());
   useEffect(() => {
-    if (loadMarked.current === tabId) return;
-    loadMarked.current = tabId;
-    for (const flow of Object.keys(articlesOf(activeTab))) markArticleGrow(tabId, flow);
+    for (const flow of Object.keys(articlesOf(activeTab))) {
+      const key = `${tabId}|${flow}`;
+      if (loadMarked.current.has(key)) continue;
+      loadMarked.current.add(key);
+      markArticleGrow(tabId, flow);
+    }
   }, [activeTab, tabId]);
 
   useArticleIntake({

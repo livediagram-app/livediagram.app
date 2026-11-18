@@ -735,7 +735,11 @@ ink").
   caret in it is not writing: two people in one article never both add a page for one overflow.
   The exceptions, an agent's write, a Participant's writing (a Participant never adds pages) and
   a writer who left before settling, are grown by the first editor to lay the article out
-  ([Pages for agents](../024-agents/pages-for-agents.md#pages-for-the-writing)).
+  ([Pages for agents](../024-agents/pages-for-agents.md#pages-for-the-writing)). Once its pages are right, that
+  editor also settles its zones where the writing lays them out (each zone's elements moving with it), as a quiet
+  change with no undo step and only for zones that moved, so a written template's charts stand in their zones from
+  the first open by anyone who may edit (Work Tracker 1177). An article that arrives after the tab did (a template
+  applied to the open tab) counts as loading then. A locked page holds its zones as they are.
 - **Agents** read an article as Markdown and write it from Markdown
   ([Pages for agents](../024-agents/pages-for-agents.md)); their writing arrives as anyone's, and
   never over a paragraph someone holds.
