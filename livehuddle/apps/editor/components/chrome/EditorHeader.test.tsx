@@ -1,11 +1,10 @@
 // @vitest-environment jsdom
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-// Header stack row (docs/specs/004-interface-design/optical-alignment.md, "A stack row shares one line"):
-// every header action holds its glyph in the same 20px icon slot, so an avatar beside a 13px icon no
-// longer drops its label below its neighbour's.
-
+// The bar over the pages that stand in for a space (docs/specs/007-editor/editor-app.md "Header actions"): livehuddle's logo to the
+// Explorer and the account control. Its account control holds its glyph in the 20px icon slot every header action uses
+// (docs/specs/004-interface-design/optical-alignment.md, "A stack row shares one line").
 vi.mock('@liveworkspace/workbench/components/providers/deferred-auth', () => ({
   useDeferredAuth: () => ({
     authLoaded: true,
@@ -22,41 +21,22 @@ const { HEADER_ICON_SLOT_PX } =
 
 afterEach(cleanup);
 
-function renderHeader() {
-  return render(
-    <EditorHeader
-      documentName="Untitled canvas"
-      showShare
-      shareable={false}
-      onMakeCopy={() => {}}
-      onOpenShare={() => {}}
-      onRename={() => {}}
-    />,
-  );
-}
-
-describe('EditorHeader stack row', () => {
-  it('uses a 20px slot', () => {
-    expect(HEADER_ICON_SLOT_PX).toBe(20);
+describe('EditorHeader', () => {
+  it('holds the logo and the account control, and nothing of an open space', () => {
+    const { container } = render(<EditorHeader />);
+    expect(screen.getByRole('link', { name: 'livehuddle' })).toBeTruthy();
+    expect(screen.getAllByRole('button').map((b) => b.getAttribute('aria-label'))).toEqual([
+      'Account menu',
+    ]);
+    expect(container.querySelector('input')).toBeNull();
   });
 
-  it.each([['Copy'], ['Share'], ['Account menu']])(
-    '%s holds its glyph in the shared slot',
-    (name) => {
-      renderHeader();
-      const action = screen.getByRole('button', { name: new RegExp(name) });
-      const slot = action.firstElementChild as HTMLElement;
-      expect(slot.dataset.optical).toBe('slot');
-      expect(slot.style.width).toBe(`${HEADER_ICON_SLOT_PX}px`);
-      expect(slot.style.height).toBe(`${HEADER_ICON_SLOT_PX}px`);
-    },
-  );
-
-  it('draws the account avatar, its initial as a glyph disc filling the slot', () => {
-    renderHeader();
+  it('draws the account avatar, its initial as a glyph disc filling the shared 20px slot', () => {
+    render(<EditorHeader />);
     const slot = screen.getByRole('button', { name: 'Account menu' })
       .firstElementChild as HTMLElement;
-    // The account avatar holds the slot at its size.
+    expect(slot.dataset.optical).toBe('slot');
+    expect(slot.style.width).toBe(`${HEADER_ICON_SLOT_PX}px`);
     const disc = slot.firstElementChild as HTMLElement;
     expect(disc.dataset.optical).toBe('disc');
     expect(disc.style.width).toBe(`${HEADER_ICON_SLOT_PX}px`);
@@ -64,155 +44,23 @@ describe('EditorHeader stack row', () => {
   });
 });
 
-// The account menu's Account item opens Settings in place
-// (docs/specs/007-editor/user-preferences.md) instead of navigating to the Explorer.
-describe('EditorHeader account menu', () => {
-  it('opens Settings on Account in place when the host can', () => {
-    const onOpenAccount = vi.fn();
-    render(
-      <EditorHeader
-        documentName="d"
-        showShare={false}
-        shareable={false}
-        onOpenShare={() => {}}
-        onOpenAccount={onOpenAccount}
-        onRename={() => {}}
-      />,
-    );
-    fireEvent.click(screen.getByRole('button', { name: 'Account menu' }));
-    const item = screen.getByRole('menuitem', { name: 'Account' });
-    expect(item.tagName).toBe('BUTTON');
-    fireEvent.click(item);
-    expect(onOpenAccount).toHaveBeenCalledOnce();
-    // The account menu closes (the section switch keeps its own menu mounted).
-    expect(screen.queryByRole('menuitem', { name: 'Account' })).toBeNull();
-  });
-
-  it('falls back to the Explorer deep link without a handler', () => {
-    renderHeader();
-    fireEvent.click(screen.getByRole('button', { name: 'Account menu' }));
-    expect(screen.getByRole('menuitem', { name: 'Account' }).getAttribute('href')).toBe(
-      '/explorer?settings=account',
-    );
-  });
-});
-
-describe('EditorHeader title rename', () => {
-  const header = () => (
-    <EditorHeader
-      documentName="Untitled canvas"
-      showShare={false}
-      shareable={false}
-      onOpenShare={() => {}}
-      onRename={() => {}}
-    />
-  );
-  const editing = () => screen.queryByDisplayValue('Untitled canvas');
-
-  it('hands focus back to the title when a rename ends from the keyboard', async () => {
-    // The field goes as the rename ends, so Escape (or Enter) left focus on the page (NameEditor).
-    render(header());
-    fireEvent.click(screen.getByRole('button', { name: 'Untitled canvas' }));
-    fireEvent.keyDown(screen.getByDisplayValue('Untitled canvas'), { key: 'Escape' });
-    expect(editing()).toBeNull();
-    await act(() => new Promise<void>((resolve) => requestAnimationFrame(() => resolve())));
-    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Untitled canvas' }));
-  });
-});
-
-// docs/specs/004-interface-design/touch-targets.md: the document title is a 44px-tall tap target on a
-// touch screen, by padding, since `truncate` would clip a ::before pad.
-describe('EditorHeader title on a touch screen', () => {
-  it('pads the rename button to 44px tall without a clipped pad', () => {
-    renderHeader();
-    const title = screen.getByRole('button', { name: 'Untitled canvas' });
-    expect(title.className).toMatch(/\bpointer-coarse:py-3\b/);
-    expect(title.className).toMatch(/\btruncate\b/);
-    expect(title.className).not.toMatch(/\btouch-target/);
-  });
-});
-
-// livehuddle has no presenting (docs/specs/002-project-scope/not-in-livehuddle.md, Work Tracker #423 part 2).
-describe('EditorHeader', () => {
-  it('offers no Present button', () => {
-    renderHeader();
-    expect(screen.queryByRole('button', { name: /Present|Starting/ })).toBeNull();
-    expect(document.querySelector('[data-presentation-start]')).toBeNull();
-  });
-
-  it('links the logo to the Explorer on this address, not the homepage', () => {
-    renderHeader();
-    expect(screen.getByRole('link', { name: 'livehuddle' }).getAttribute('href')).toBe('/explorer');
-  });
-});
-
-// A long document name truncates rather than pushing the header's actions off a phone: every flex box between the
-// header row and the name may shrink below its content (min-w-0), and the actions never shrink. jsdom does no layout,
-// so this holds the classes that make the layout work.
-describe('EditorHeader with a long name', () => {
-  it('lets the name shrink and keeps the actions whole', () => {
-    const { container } = renderHeader();
-    const header = container.firstElementChild as HTMLElement;
-    const name = screen.getByRole('button', { name: 'Untitled canvas' });
-    expect(name.className).toContain('truncate');
-    for (let el = name.parentElement; el && el !== header; el = el.parentElement) {
-      expect(el.className, el.outerHTML.slice(0, 80)).toContain('min-w-0');
-    }
-    const actions = screen.getByRole('button', { name: /Share/ }).closest('.self-stretch');
-    expect(actions?.className).toContain('shrink-0');
-  });
-});
-
 // In an editor the logo is a plain link to the Explorer, with no site switcher
 // (liveworkspace/docs/specs/010-site/site-switcher.md "Where it shows").
 describe('EditorHeader logo', () => {
+  it('goes to the Explorer, not the homepage', () => {
+    render(<EditorHeader />);
+    expect(screen.getByRole('link', { name: 'livehuddle' }).getAttribute('href')).toBe('/explorer');
+  });
+
   it('is a plain link with no site switcher, on hover or click', () => {
-    renderHeader();
+    render(<EditorHeader />);
     const logo = screen.getByRole('link', { name: 'livehuddle' });
     expect(logo.className).toContain('touch-target');
     expect(screen.queryByRole('button', { name: 'Switch site' })).toBeNull();
     fireEvent.mouseEnter(logo);
     fireEvent.pointerEnter(logo);
     expect(screen.queryByRole('menu', { name: 'liveworkspace sites' })).toBeNull();
-    expect(screen.queryByText('liveworkspace')).toBeNull();
     fireEvent.click(logo);
     expect(screen.queryByRole('menu')).toBeNull();
-  });
-});
-
-// The logo opens the Explorer on the place that holds the open document (liveworkspace/docs/specs/004-index/one-explorer.md
-// "Opening from an open item"); with no document, the Explorer as before.
-describe('EditorHeader logo', () => {
-  const logo = (container: HTMLElement) =>
-    container.querySelector<HTMLAnchorElement>('header a[href^="/explorer"]')?.getAttribute('href');
-
-  it('names the open document', () => {
-    const { container } = render(
-      <EditorHeader
-        itemId="d 1"
-        documentName="Untitled canvas"
-        showShare
-        shareable={false}
-        onMakeCopy={() => {}}
-        onOpenShare={() => {}}
-        onRename={() => {}}
-      />,
-    );
-    expect(logo(container)).toBe('/explorer?item=d%201');
-  });
-
-  it('opens the Explorer as before with no document', () => {
-    const { container } = renderHeader();
-    expect(logo(container)).toBe('/explorer');
-  });
-});
-
-// livehuddle's items are spaces (docs/specs/007-editor/editor-app.md "Tab bar"): the name field says so.
-describe('EditorHeader name field', () => {
-  it('names the rename field Space name', () => {
-    renderHeader();
-    fireEvent.click(screen.getByRole('button', { name: /Untitled canvas/ }));
-    expect(screen.getByRole('textbox', { name: 'Space name' })).toBeTruthy();
-    expect(screen.queryByRole('textbox', { name: 'Diagram name' })).toBeNull();
   });
 });

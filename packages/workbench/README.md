@@ -90,11 +90,11 @@ fallback (livediagram, livehuddle, livedesign; livedocuments and liveplanner kee
 its commit identity through `hooks/persistence/useResolveSelf`; livedocuments, livedesign and liveplanner also back out
 of a restored `/new` through `hooks/ui/useBackOutOnRestore` (livediagram and livehuddle back out their own way).
 
-The editor header (`components/chrome/EditorHeader`, with its visibility pill `SharedBadge`, the pill's
-`share-states` and `VisibilityLegend`) is one copy for every editor: each editor's `components/chrome/EditorHeader.tsx`
-is a thin door that hands in its logo (`app`), the logo's way to the Explorer, its nouns (`words`), its account control
-(`account`) and what is its own (livediagram's and livedocuments' `present`, liveplanner's Share Form as
-`shareAction`), and re-exports `SaveStatus`. The account control it hands in is one copy too
+The open editor has no header bar: its actions are the corner card's (`components/chrome/EditorCornerActions`, with
+`HeaderShareIcon`). `components/chrome/EditorHeader` is only the bar over the pages that stand in for an item (loading,
+not found, a failed create): the app's logo to the Explorer and the account control. Each editor's
+`components/chrome/EditorHeader.tsx` is a thin door that hands in its logo (`app`), the logo's way to the Explorer and
+its account control (`account`), and re-exports `SaveStatus`. The account control is one copy too
 (`components/chrome/AuthControls`, with the `SignInIcon` every sign-in affordance wears): an editor passes only where
 Account goes (`onOpenAccount`) and, for livedocuments and livedesign, the picture from their own-picture store
 (`picture`); Sign Out is tracked through the `track` binding. The Settings panel's host

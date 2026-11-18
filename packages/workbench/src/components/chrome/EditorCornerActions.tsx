@@ -6,7 +6,6 @@ import { CORNER_CARD_EVENT, STRIP_NAMED_EVENT, cornerCardCompact } from '../canv
 import { AuthControls } from './AuthControls';
 import { useUiScale } from '../providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '../../lib/ui-scale';
-import { HeaderShareIcon } from './EditorHeader';
 
 // Experiment (livediagram, livedocuments): no header bar. The header's right-edge actions (Copy, Present, Share and the account) float in a card of
 // their own at the canvas's top right, the same card as the menu card at its top left. The account control is the
@@ -199,5 +198,17 @@ export function EditorCornerActions({
         <AuthControls onOpenAccount={onOpenAccount} />
       </div>
     </div>
+  );
+}
+
+/** Share's glyph, also liveplanner's Share Form. */
+export function HeaderShareIcon() {
+  return (
+    <Glyph size={13} units={16}>
+      <circle cx="4" cy="8" r="1.6" />
+      <circle cx="12" cy="3.5" r="1.6" />
+      <circle cx="12" cy="12.5" r="1.6" />
+      <path d="M5.4 7.2l5.2-3M5.4 8.8l5.2 3" />
+    </Glyph>
   );
 }
