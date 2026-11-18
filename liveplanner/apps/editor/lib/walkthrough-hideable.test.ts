@@ -8,6 +8,7 @@ import {
   WALKTHROUGH_HIDE_MARKS,
   type HideableTab,
 } from './walkthrough-hideable';
+import { useRegisterShownCards } from '../hooks/plan/board-shown-store';
 
 const dashboard = (filled: boolean): HideableTab => ({
   kind: 'dashboard',
@@ -72,6 +73,19 @@ describe('what a walkthrough can hide on each tab', () => {
     expect(tabHasHideable({ kind: 'diagram', elements: [sheet, {}] }, 2)).toBe(false);
   });
 
+  it("is the cards a Board tab's board shows after its filter, the plan's cards until it says", () => {
+    const board: HideableTab = {
+      kind: 'board',
+      elements: [{ id: 'b', type: 'shape', shape: 'plan-board' }],
+    };
+    // Filtered down to nothing: nothing to hide, however many cards the plan holds.
+    expect(tabHasHideable(board, 7, { elementId: 'b', any: false })).toBe(false);
+    expect(tabHasHideable(board, 7, { elementId: 'b', any: true })).toBe(true);
+    // Another board's word, or none yet: the plan's cards stand in.
+    expect(tabHasHideable(board, 7, { elementId: 'other', any: false })).toBe(true);
+    expect(tabHasHideable(board, 0, null)).toBe(false);
+  });
+
   it('is nothing on a Sheet or a Form tab', () => {
     expect(tabHasHideable({ kind: 'sheet', elements: [{}] }, 9)).toBe(false);
     expect(tabHasHideable({ kind: 'form', elements: [{}] }, 9)).toBe(false);
@@ -98,5 +112,39 @@ describe('the host hand-off', () => {
     expect(result.current.selection?.()).toEqual([]);
     rerender({ tab: { kind: 'board', elements: [] } });
     expect(result.current.canHide()).toBe(true);
+  });
+
+  it("leaves Hide out when the Board tab's board is filtered to no cards, and brings it back", () => {
+    const tab: HideableTab = {
+      kind: 'board',
+      elements: [{ id: 'b', type: 'shape', shape: 'plan-board' }],
+    };
+    const { result, rerender } = renderHook(
+      ({ any, on }: { any: boolean; on: boolean }) => {
+        useRegisterShownCards('b', any, on);
+        return useWalkthroughHideable(tab, 5);
+      },
+      { initialProps: { any: true, on: true } },
+    );
+    expect(result.current.canHide()).toBe(true);
+    rerender({ any: false, on: true });
+    expect(result.current.canHide()).toBe(false);
+    rerender({ any: true, on: true });
+    expect(result.current.canHide()).toBe(true);
+    // Gone from the screen, the board's word goes with it: the plan's cards stand in.
+    rerender({ any: false, on: false });
+    expect(result.current.canHide()).toBe(true);
+  });
+
+  it("can't pick an empty Dashboard slot: only a filled one carries the widget mark", () => {
+    document.body.innerHTML =
+      '<div data-dashboard-slot="empty" data-slot-empty=""><button id="add">Add to Slot</button></div>' +
+      '<div data-dashboard-slot="full" data-dashboard-widget="full"><span id="face"></span></div>';
+    // Picking takes the nearest element carrying a mark (@liveworkspace/walkthrough's elementIdAt reads them so).
+    const marked = (id: string) =>
+      document.getElementById(id)!.closest(WALKTHROUGH_HIDE_MARKS.map((m) => `[${m}]`).join(','));
+    expect(marked('add')).toBeNull();
+    expect(marked('face')?.getAttribute('data-dashboard-widget')).toBe('full');
+    document.body.innerHTML = '';
   });
 });

@@ -10,7 +10,7 @@ import { contentOf, elementBox, screenPoint, sizeOf } from '../bridge';
 import type { WalkthroughHost } from '../host';
 import { fitView, formatClock, type PlayState } from '../timeline';
 import type { Loaded } from '../usePlayer';
-import { InitialBubble, PlaybackBubble } from './Bubble';
+import { PlaybackBubble, VoiceChip } from './Bubble';
 import { PauseIcon, PlayIcon } from './icons';
 
 const SPEEDS = [1, 1.5, 2] as const;
@@ -236,9 +236,10 @@ export function Player({
       ) : (
         <>
           {mediaEl}
-          <InitialBubble
+          <VoiceChip
             corner={events.corner}
-            name={walkthrough.mine ? 'You' : (walkthrough.author ?? walkthrough.title)}
+            name={walkthrough.mine ? 'You' : (walkthrough.author ?? null)}
+            fallback={walkthrough.title}
             playing={playing}
           />
         </>

@@ -116,6 +116,9 @@ export function DashboardSlotView({
       data-dashboard-slot={slot.id}
       // Show Me (plan-tabs.md "Show Me") points at an empty slot to fill and a filled one to change.
       data-slot-empty={slot.content ? undefined : ''}
+      // What Hide From Recording picks (lib/walkthrough-hideable.ts): a filled slot alone, as an empty one has nothing
+      // to hide.
+      data-dashboard-widget={slot.content ? slot.id : undefined}
       className={`group/slot relative min-w-0 ${phone ? '' : 'transition-[flex-basis] duration-short ease-out motion-reduce:transition-none'}`}
       style={
         phone ??

@@ -16,7 +16,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { WalkthroughHideable, WalkthroughHost } from './host';
 import { CAMERA_ON_KEY } from './useRecorder';
 import type { CanvasView } from './timeline';
-import { shiftClearOf } from './ui/Bubble';
+import { shiftClearOf, VoiceChip } from './ui/Bubble';
 import { WalkthroughsTools } from './ui/WalkthroughsTools';
 import { WalkthroughsLayer } from './ui/WalkthroughsLayer';
 import { useWalkthroughs } from './useWalkthroughs';
@@ -293,6 +293,28 @@ describe('playing', () => {
     expect(await screen.findByText('Paused. Look around, then Resume.')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Resume' }));
     expect(screen.queryByText('Paused. Look around, then Resume.')).toBeNull();
+  });
+
+  it('plays sound alone with the small voice chip, never a camera-sized frame', async () => {
+    render(<Harness server={{ list: [W], canRecord: false, requests: [] }} />);
+    await openWalkthroughs();
+    fireEvent.click(screen.getByText('Tour'));
+    const chip = await waitFor(() => {
+      const found = document.querySelector<HTMLElement>('[data-walkthrough-voice="bottom-right"]');
+      if (!found) throw new Error('no voice chip yet');
+      return found;
+    });
+    expect(document.querySelector('[data-walkthrough-bubble]')).toBeNull();
+    expect(chip.textContent).toBe('AAda');
+    expect(chip.className).toContain('h-10');
+    const bars = chip.querySelector<HTMLElement>('[data-voice-bars]')!;
+    expect(bars.dataset.voiceBars).toBe('resting');
+    fireEvent.play(document.querySelector('audio')!);
+    await waitFor(() => expect(bars.dataset.voiceBars).toBe('moving'));
+    expect(bars.querySelector<HTMLElement>('span')!.style.animation).toContain('walkthrough-voice');
+    fireEvent.pause(document.querySelector('audio')!);
+    await waitFor(() => expect(bars.dataset.voiceBars).toBe('resting'));
+    expect(bars.querySelector<HTMLElement>('span')!.style.animation).toBe('');
   });
 });
 
@@ -1006,5 +1028,39 @@ describe('the bubble', () => {
     );
     // A right corner ignores a left sidebar.
     expect(shiftClearOf('bottom-right', frame, { map: null, sidebar })).toEqual({ x: 0, y: 0 });
+  });
+
+  it("keeps the voice chip clear by its own size, not the bubble's", () => {
+    const chip = { w: 120, h: 40 };
+    // A Map just above where a bubble would reach, but clear of the chip: the chip stays put.
+    const map = { left: 4, top: 600, right: 260, bottom: 690 };
+    expect(shiftClearOf('bottom-left', frame, { map, sidebar: null })).not.toEqual({ x: 0, y: 0 });
+    expect(shiftClearOf('bottom-left', frame, { map, sidebar: null }, chip)).toEqual({
+      x: 0,
+      y: 0,
+    });
+    // A Map under it: up above it by the chip's height.
+    const low = { left: 4, top: 650, right: 260, bottom: 796 };
+    expect(shiftClearOf('bottom-left', frame, { map: low, sidebar: null }, chip)).toEqual({
+      x: 0,
+      y: 650 - 12 - (800 - 64),
+    });
+    // A right corner lines up by the chip's width.
+    const right = { left: 860, top: 700, right: 900, bottom: 760 };
+    expect(shiftClearOf('bottom-right', frame, { map: right, sidebar: null }, chip).y).toBe(
+      700 - 12 - (800 - 64),
+    );
+  });
+
+  it('names the presenter on the chip when it can, and takes the initial from the title when not', () => {
+    const { rerender } = render(
+      <VoiceChip corner="top-left" name="You" fallback="Tour" playing={false} />,
+    );
+    const chip = () => document.querySelector<HTMLElement>('[data-walkthrough-voice="top-left"]')!;
+    expect(chip().textContent).toBe('YYou');
+    rerender(<VoiceChip corner="top-left" name={null} fallback="tour" playing={false} />);
+    expect(chip().textContent).toBe('T');
+    rerender(<VoiceChip corner="top-left" name={null} fallback="  " playing={false} />);
+    expect(chip().textContent).toBe('?');
   });
 });
