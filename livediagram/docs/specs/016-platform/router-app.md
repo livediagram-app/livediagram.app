@@ -150,6 +150,17 @@ The router does **not** count page views. It can't see client-side navigations i
 
 Service bindings target deployed Workers. The downstream apps deploy as their own units; the router stitches them together.
 
+liveworkspace's Workers are reached over six more service bindings, one per Worker the router forwards to:
+`WORKSPACE_SITE` (`liveworkspace-site`: the Explorer, the Community page, the sign-in pages, `/_liveworkspace`),
+`WORKSPACE_ACCOUNTS` (`liveworkspace-accounts`: `/api/workspace/auth`, `/api/workspace/account`, `/api/workbench`),
+`WORKSPACE_INDEX` (`liveworkspace-index`), `WORKSPACE_DRIVE` (`liveworkspace-drive`), `WORKSPACE_MEDIA`
+(`liveworkspace-media`: previews, the share doors and `/oembed`'s card) and `WORKSPACE_COMMUNITY`
+(`liveworkspace-community`: the Community page's head and sitemap), each `-staging` under `[env.staging]`. A fetch to
+another Worker's public route can stall (2026-11-13, 2026-11-15); a binding doesn't take that path. The request is the
+one the public route would get (URL, host, headers and body), and the 30 s deadline holds. Each target resolves as
+_binding if present, else proxy to the origin_ (`viaBinding` in `@liveworkspace/sites/workspace-proxy`), so local
+runs and forks keep the origins (liveworkspace/docs/specs/002-architecture/architecture.md "On an app's address").
+
 <!-- legacy-names -->
 
 ## Legacy editor route
