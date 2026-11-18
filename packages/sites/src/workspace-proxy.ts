@@ -308,6 +308,57 @@ export function flowCookieOut(setCookie: string, path: string, now = Date.now())
 const swapPrefix = (pathname: string, from: string, to: string) =>
   `${to}${pathname.slice(from.length)}`;
 
+// ---------- Service bindings ----------------------------------------------------------------------------------------
+// (liveworkspace/docs/specs/002-architecture/blueprints/architecture.md "Which Worker a forward reaches"). A deployed
+// router reaches liveworkspace's Workers over service bindings, so a forward never takes the public Worker-to-Worker
+// route that stalled on 2026-11-13 and 2026-11-15. Without one (a local run, a fork) the public route is used.
+
+/** A service binding as a router sees it (a Worker's `Fetcher`), written out so this file needs no Worker types. */
+export type ServiceBinding = {
+  fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response>;
+};
+
+/** The router's bindings to liveworkspace's Workers, by the names every router's `wrangler.toml` declares. */
+export type WorkspaceBindings = {
+  /** `liveworkspace-site`: the Explorer, the Community page, the sign-in pages and the site's assets. */
+  WORKSPACE_SITE?: ServiceBinding;
+  /** `liveworkspace-accounts`: `/api/auth/*` and `/api/account/*`. */
+  WORKSPACE_ACCOUNTS?: ServiceBinding;
+  /** `liveworkspace-index`: `/api/index/*`. */
+  WORKSPACE_INDEX?: ServiceBinding;
+  /** `liveworkspace-drive`: `/api/drive/*`. */
+  WORKSPACE_DRIVE?: ServiceBinding;
+  /** `liveworkspace-media`: `/api/previews/*`, the share doors and `/oembed`'s card. */
+  WORKSPACE_MEDIA?: ServiceBinding;
+  /** `liveworkspace-community`: the Community page's head and sitemap reads. */
+  WORKSPACE_COMMUNITY?: ServiceBinding;
+};
+
+/** The fetch a forward uses: the binding's when there is one, else `fallback` (the public route; the global fetch,
+ *  looked up when called, by default). The request itself is never changed. */
+export function viaBinding(
+  binding: ServiceBinding | undefined,
+  fallback?: typeof fetch,
+): typeof fetch {
+  if (binding) return (input, init) => binding.fetch(input, init);
+  return fallback ?? ((input, init) => fetch(input, init));
+}
+
+// The paths the accounts Worker's routes own on liveworkspace.app (liveworkspace/apps/accounts/wrangler.toml).
+const ACCOUNTS_PATHS = ['/api/auth', '/api/account'];
+
+/** The binding a workspace route's target path reaches, as the zone's routes would send it: accounts for its own
+ *  paths, the site for everything else. */
+export function workspaceBindingFor(
+  targetPath: string,
+  bindings: WorkspaceBindings | undefined,
+): ServiceBinding | undefined {
+  if (ACCOUNTS_PATHS.some((prefix) => underPrefix(targetPath, prefix))) {
+    return bindings?.WORKSPACE_ACCOUNTS;
+  }
+  return bindings?.WORKSPACE_SITE;
+}
+
 // ---------- Forwarding -------------------------------------------------------------------------------------------
 
 export type ProxyOptions = {
@@ -318,7 +369,9 @@ export type ProxyOptions = {
   routes?: readonly WorkspaceRoute[];
   // `WORKSPACE_PROXY_SECRET`: sent beside the visitor's address, so accounts counts it. Unset, none is sent.
   proxySecret?: string;
-  // For tests.
+  // The router's bindings to liveworkspace (its env): the site's or accounts' is used when present.
+  bindings?: WorkspaceBindings;
+  // The public route's fetch, for tests.
   fetch?: typeof fetch;
 };
 
@@ -466,7 +519,7 @@ async function forwardToWorkspace(
   const response = await forwardOr502(
     forwarded,
     'liveworkspace',
-    options.fetch,
+    viaBinding(workspaceBindingFor(target.pathname, options.bindings), options.fetch),
     forwardDeadlineFor(forwarded),
     isPageLoad(request)
       ? (status) => unreachablePage(status, statusPageUrl(options.app, options.origin))
