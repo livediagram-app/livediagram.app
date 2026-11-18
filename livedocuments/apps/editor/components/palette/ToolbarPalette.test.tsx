@@ -179,11 +179,30 @@ describe('ToolbarPalette', () => {
     expect(within(popover).getByRole('navigation', { name: 'icons groups' })).toBeTruthy();
   });
 
-  it('leaves focus alone on a phone, where it would raise the keyboard', () => {
+  it('leaves focus alone on a touch screen, where it would raise the keyboard (Work Tracker 1224)', () => {
+    mobile.value = true;
+    vi.stubGlobal('matchMedia', (query: string) => ({
+      matches: query === '(pointer: coarse)',
+      media: query,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    }));
+    try {
+      show();
+      const popover = openFlyout('Icons');
+      expect(document.activeElement).not.toBe(
+        within(popover).getByPlaceholderText('Search icons and stickers'),
+      );
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('focuses Search at a narrow width with a mouse, so keys typed straight away go in (Work Tracker 1224)', () => {
     mobile.value = true;
     show();
     const popover = openFlyout('Icons');
-    expect(document.activeElement).not.toBe(
+    expect(document.activeElement).toBe(
       within(popover).getByPlaceholderText('Search icons and stickers'),
     );
   });

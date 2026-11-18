@@ -386,6 +386,7 @@
     "./hooks/canvas/useViewportStore": "./src/hooks/canvas/useViewportStore.tsx",
     "./hooks/canvas/useViewportTransform": "./src/hooks/canvas/useViewportTransform.ts",
     "./hooks/canvas/useZoomControls": "./src/hooks/canvas/useZoomControls.ts",
+    "./hooks/collab/useAnnounceSelf": "./src/hooks/collab/useAnnounceSelf.ts",
     "./hooks/collab/useHideCursors": "./src/hooks/collab/useHideCursors.ts",
     "./hooks/collab/useFocusInvite": "./src/hooks/collab/useFocusInvite.ts",
     "./hooks/collab/useFocusLanding": "./src/hooks/collab/useFocusLanding.ts",

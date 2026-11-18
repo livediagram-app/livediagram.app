@@ -62,6 +62,7 @@ export function SheetLinksHost<E extends SheetLinkElement>({
   commit,
   tick,
   grantOf,
+  ready,
   onTrack,
   noun,
   children,
@@ -73,6 +74,8 @@ export function SheetLinksHost<E extends SheetLinkElement>({
   commit: (map: (els: E[]) => E[]) => void;
   tick: (map: (els: E[]) => E[]) => void;
   grantOf: SheetLinkGrantOf;
+  // Sign-in has answered and the item has loaded: the first reads wait for it (useSheetLinkedCharts).
+  ready: boolean;
   onTrack: (event: SheetLinkEvent) => void;
   noun: SheetLinkNoun;
   children: ReactNode;
@@ -83,6 +86,7 @@ export function SheetLinksHost<E extends SheetLinkElement>({
     canSave: canEdit,
     tick,
     grantOf,
+    ready,
   });
   const [linkingId, setLinkingId] = useState<string | null>(null);
   const linking = linkingId

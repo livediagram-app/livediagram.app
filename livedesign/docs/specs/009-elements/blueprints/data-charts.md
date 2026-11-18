@@ -195,7 +195,7 @@ onto both [GE2].
 One copy for every reader app, in `@liveworkspace/workbench` `components/sheet-links/`; livedesign wires it in four
 places: `SheetLinksHost` around the canvas and the element menu in `EditorView.tsx` (`itemId`, `canEdit =
 can.level === 'edit' && !isReadOnly`, `commit = commitElements`, `tick = tickElements`, `grantOf` the item's grant,
-`onTrack`, `noun: 'design'`), `useChartAsSeen` and `SheetLinkLine` in `ShapeContentRouter.tsx` for the three charts,
+`ready = authLoaded && hydrated` (Work Tracker 1215), `onTrack`, `noun: 'design'`), `useChartAsSeen` and `SheetLinkLine` in `ShapeContentRouter.tsx` for the three charts,
 `SheetLinkSection` around the data rows in `ElementDataSections.tsx`, and `emitSourceChanged` on the room's
 `source-changed` frame in `useRoomConnection.ts`.
 
@@ -207,6 +207,10 @@ can.level === 'edit' && !isReadOnly`, `commit = commitElements`, `tick = tickEle
    (`itemId|sheetId|range|cols`), reads each key once on open, on a tab change and on a `source-changed` frame naming
    its plan and sheet, with the item's grant and `watch: itemId` (no grant, as in This Browser: no watch). One read in
    flight per key; a frame while one is in flight reads once more after it.
+   **The first read waits** for `ready` (sign-in answered, so the token provider is registered, and the item
+   loaded): before it no range is read and no frame reads, so there is no anonymous read and the grant asked for is
+   the signed-in person's; the read awaits `grantOf`, so its `watch` registers the item on that first read. Not
+   ready after `SHEET_LINK_READY_TIMEOUT_MS` (10 s), an unread range shows `saved`; the read still goes on `ready`.
 3. **Statuses** per key: `reading` (no answer yet: the saved values show), `live`, `saved` (401, 403 or 404),
    `gone` (`409 range_gone`), `failed` (anything else). A chart draws a live read's fields over its own
    (`chartAsSeen` through `useChartAsSeen`); the store is not changed by it.

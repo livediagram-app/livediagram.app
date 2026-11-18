@@ -13,11 +13,11 @@ import { HALL, OFFICE } from '../hero-space-places';
 import { SpaceShot, SpeechBubble, at, headOf, shotPoint } from './space-shot';
 
 // The crops, [x, y, width, height] in each template's canvas coordinates, about the card frame's 3:1.
-const POD_TABLE = [-260, -150, 560, 190] as const;
-const OFFICE_DESKS = [-300, -445, 470, 170] as const;
-const OFFICE_MEETING = [400, -445, 420, 170] as const;
-const OFFICE_CORRIDOR = [-120, -200, 600, 200] as const;
-const HALL_ROOM = [-470, -365, 900, 290] as const;
+const POD_TABLE = [-215, -221, 560, 190] as const;
+const OFFICE_DESKS = [-375, -552, 470, 170] as const;
+const OFFICE_MEETING = [495, -552, 420, 170] as const;
+const OFFICE_CORRIDOR = [-140, -250, 720, 240] as const;
+const HALL_ROOM = [-571, -448, 1080, 348] as const;
 
 /** A small pill over a character's head: a status, a role, a view being followed. */
 function Pill({
@@ -58,14 +58,14 @@ function Pill({
 
 /** Walk in as yourself: Priya on her way to the table, a click ring where she is heading. */
 export function WalkInArt() {
-  const to = { x: 6, y: 44 };
+  const to = { x: 51, y: -27 };
   return (
     <SpaceShot
       spec={TEAM_POD}
-      box={[-250, -130, 520, 210]}
+      box={[-205, -201, 520, 210]}
       cast={[
         { name: 'Maya' },
-        { name: 'Priya', still: 'walk-right-0', x: -150, y: 80 },
+        { name: 'Priya', still: 'walk-right-0', x: -105, y: 9 },
         { name: 'Sam' },
       ]}
       under={
@@ -133,11 +133,11 @@ export function FourSpacesArt() {
 
 /** Spaces that open walking: Maya arriving on the Avatar Pad by the door in a beam of light. */
 export function ArriveArt() {
-  const p = { x: -170, y: 150 };
+  const p = { x: -212, y: 207 };
   return (
     <SpaceShot
       spec={TEAM_POD}
-      box={[-430, 10, 520, 200]}
+      box={[-472, 67, 520, 200]}
       cast={[{ name: 'Maya', still: 'stand', x: p.x, y: p.y }]}
       under={
         <g>
@@ -179,8 +179,8 @@ export function FurnitureArt() {
 
 /** Fences and portals: step into one portal on the corridor and come out of its partner. */
 export function PortalArt() {
-  const a = { x: -10, y: -40 };
-  const b = { x: 420, y: -40 };
+  const a = { x: -7, y: -62 };
+  const b = { x: 515, y: -62 };
   const ring = (p: { x: number; y: number }, delay: number) => (
     <g className="fa-a-pop" style={at(delay)}>
       <ellipse
@@ -209,7 +209,7 @@ export function PortalArt() {
             strokeWidth={3}
             strokeDasharray="6 7"
             className="fa-a-draw stroke-violet-400"
-            style={{ '--len': 520, '--d': '0.8s' } as CSSProperties}
+            style={{ '--len': 620, '--d': '0.8s' } as CSSProperties}
           />
         </g>
       }
@@ -310,7 +310,7 @@ export function ReactArt() {
 
 /** A view that keeps up, or follows a teammate's: the screen's edge travelling with a character down the corridor. */
 function ViewFrame({ following }: { following?: string }) {
-  const p = { x: 260, y: -54 };
+  const p = { x: 316, y: -76 };
   return (
     <SpaceShot
       spec={OFFICE}

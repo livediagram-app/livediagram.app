@@ -3,8 +3,8 @@
 // Your microphone and camera at the mini view's foot (docs/specs/008-canvas/avatar-mode.md "The mini view", "Your
 // microphone and camera"; blueprint: space-mini-view.md "Your controls"; Work Tracker 992): the Call dock's own buttons,
 // so muting is one press from any app. The microphone follows the dock's phases; the camera shows only while on, to
-// turn it off. No hang up: leaving a call is walking away. No hover cards: the window would have them drawn in the
-// Space's tab.
+// turn it off. No hang up: leaving a call is walking away. Their hover cards draw in the mini view's own window (the
+// shared hint surface portals into the trigger's document, Work Tracker 1109).
 import type { ReactNode } from 'react';
 import {
   useCallActions,
@@ -13,7 +13,7 @@ import {
   type CallSelf,
 } from '@/lib/calls/calls-store';
 import { selfCamera } from '@/lib/calls/local-preview';
-import { CallHoverCards, CallNames } from '../CallSegment';
+import { CallNames } from '../CallSegment';
 import { CameraSegment, LiveMicSegment, PreviewMicSegment } from '../MicAndCameraSegments';
 
 /**
@@ -36,17 +36,15 @@ export function MiniViewControls() {
   if (!actions || !self.canSpeak) return null;
   return (
     <CallNames.Provider value>
-      <CallHoverCards.Provider value={false}>
-        <div
-          role="group"
-          aria-label="Your microphone and camera"
-          data-mini-controls=""
-          className="flex shrink-0 items-center justify-center gap-0.5 border-t border-slate-200 px-2 py-2 empty:hidden dark:border-slate-800"
-        >
-          {miniMicSegment(self, actions)}
-          {selfCamera(self) === 'on' ? <CameraSegment self={self} actions={actions} /> : null}
-        </div>
-      </CallHoverCards.Provider>
+      <div
+        role="group"
+        aria-label="Your microphone and camera"
+        data-mini-controls=""
+        className="flex shrink-0 items-center justify-center gap-0.5 border-t border-slate-200 px-2 py-2 empty:hidden dark:border-slate-800"
+      >
+        {miniMicSegment(self, actions)}
+        {selfCamera(self) === 'on' ? <CameraSegment self={self} actions={actions} /> : null}
+      </div>
     </CallNames.Provider>
   );
 }

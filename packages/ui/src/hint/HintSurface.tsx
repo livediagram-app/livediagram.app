@@ -55,8 +55,19 @@ const LOOK: Record<HintKind, { surface: string; arrow: string; gap: number; arro
 
 // The portalled box both hints paint into. Measured off-screen and hidden
 // for its first frame, then placed beside the anchor; re-placed on scroll,
-// resize, and whenever the anchor moves (a canvas pan or zoom) while open. Portalled to <body> so it is never clipped by a
-// panel and never moves the page (spec: no layout shift).
+// resize, and whenever the anchor moves (a canvas pan or zoom) while open. Portalled to the <body> of the trigger's own
+// document so it is never clipped by a panel and never moves the page (spec: no layout shift), and placed against that
+// document's window: a trigger in a Document Picture-in-Picture window (livehuddle's mini view) shows its card there,
+// not in the tab that opened it (Work Tracker 1109).
+
+/** The document a trigger lives in and its window: the page's own unless the trigger was rendered into another (a
+ *  Document Picture-in-Picture window), or none outside a browser. */
+export function hintHost(target: Element | null): { doc: Document; win: Window } | null {
+  const doc = target?.ownerDocument ?? (typeof document === 'undefined' ? null : document);
+  if (!doc) return null;
+  return { doc, win: doc.defaultView ?? window };
+}
+
 export function HintSurface({
   kind,
   anchor,
@@ -74,6 +85,9 @@ export function HintSurface({
   const look = LOOK[kind];
 
   useLayoutEffect(() => {
+    const host = hintHost(anchor());
+    if (!host) return;
+    const { win } = host;
     const place = () => {
       const target = anchor();
       const surface = ref.current;
@@ -83,15 +97,15 @@ export function HintSurface({
         placeHint({
           trigger: target.getBoundingClientRect(),
           surface: { width: box.width, height: box.height },
-          viewport: { width: window.innerWidth, height: window.innerHeight },
+          viewport: { width: win.innerWidth, height: win.innerHeight },
           gap: look.gap,
           margin: POPOVER_VIEWPORT_MARGIN,
         }),
       );
     };
     place();
-    window.addEventListener('scroll', place, true);
-    window.addEventListener('resize', place);
+    win.addEventListener('scroll', place, true);
+    win.addEventListener('resize', place);
     // A trigger can move without a scroll or a resize (a control on the canvas, as the canvas pans or
     // zooms): while open, the hint follows it, re-placing only on a frame where the trigger's box changed.
     // The loop sleeps after HINT_FOLLOW_IDLE_FRAMES still frames, and any input that can move the canvas
@@ -107,25 +121,26 @@ export function HintSurface({
         last = key;
         idle = 0;
       } else idle += 1;
-      frame = idle < HINT_FOLLOW_IDLE_FRAMES ? requestAnimationFrame(follow) : 0;
+      frame = idle < HINT_FOLLOW_IDLE_FRAMES ? win.requestAnimationFrame(follow) : 0;
     };
     const wake = () => {
       idle = 0;
-      if (!frame) frame = requestAnimationFrame(follow);
+      if (!frame) frame = win.requestAnimationFrame(follow);
     };
     wake();
     const WAKE_EVENTS = ['wheel', 'pointermove', 'pointerup', 'keydown'] as const;
     for (const type of WAKE_EVENTS)
-      window.addEventListener(type, wake, { capture: true, passive: true });
+      win.addEventListener(type, wake, { capture: true, passive: true });
     return () => {
-      if (frame) cancelAnimationFrame(frame);
-      for (const type of WAKE_EVENTS) window.removeEventListener(type, wake, { capture: true });
-      window.removeEventListener('scroll', place, true);
-      window.removeEventListener('resize', place);
+      if (frame) win.cancelAnimationFrame(frame);
+      for (const type of WAKE_EVENTS) win.removeEventListener(type, wake, { capture: true });
+      win.removeEventListener('scroll', place, true);
+      win.removeEventListener('resize', place);
     };
   }, [anchor, look.gap, children]);
 
-  if (typeof document === 'undefined') return null;
+  const host = hintHost(anchor());
+  if (!host) return null;
   return createPortal(
     <div
       ref={ref}
@@ -151,7 +166,7 @@ export function HintSurface({
         />
       ) : null}
     </div>,
-    document.body,
+    host.doc.body,
   );
 }
 

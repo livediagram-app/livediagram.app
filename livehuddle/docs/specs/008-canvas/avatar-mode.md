@@ -304,8 +304,9 @@ desktop apps of Zoom, Teams and Gather do.
   level fill, and a press does what the dock's press does, the dock following. While your camera is on, the dock's
   Camera sits beside it, so you can turn it off. They follow the dock's phases: in a live call the call's microphone;
   with no call (This Browser, calls off, paused or failed) the local preview's **Mic: Only You**; while the call
-  connects, or for a listener, no bar. There is no hang up: leaving a call is walking away. The buttons carry no hover
-  card in the window (it would draw in the Space's tab); each keeps its name and its card's line for a screen reader.
+  connects, or for a listener, no bar. There is no hang up: leaving a call is walking away. The buttons carry the
+  dock's hover cards, drawn in the window itself (every hint draws in the document its control is in, Work Tracker
+  1109), never in the Space's tab.
 - **Back to the Space.** Pressing **Back to Space**, a row or the header brings the Space's tab to the front. Let In
   and Not Now only answer.
 - **Camera tiles** (Work Tracker 984). Above the people, the cameras of the people you hear: at most 4, two to a

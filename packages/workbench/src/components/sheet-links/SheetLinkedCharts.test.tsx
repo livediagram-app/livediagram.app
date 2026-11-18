@@ -121,6 +121,7 @@ function arrange(canEdit: boolean, start: Element[] = [chart]) {
       commit={commit}
       tick={tick}
       grantOf={async () => null}
+      ready
       onTrack={onTrack}
       noun="design"
     >

@@ -22,13 +22,15 @@ painters: a ProseMirror plugin in the writing and a ring overlay on the canvas. 
 
 ## Constants and configuration
 
-| Constant           | Value | Where                  | Why                                                                       |
-| ------------------ | ----- | ---------------------- | ------------------------------------------------------------------------- |
-| `FIND_QUERY_MAX`   | 500   | `find-text.ts`         | A sentence or two; the field's `maxLength`                                |
-| `FIND_MATCHES_MAX` | 5000  | `find-matches.ts`      | More than anyone steps through; bounds the highlight work                 |
-| `FIND_DEBOUNCE_MS` | 150   | `useFindReplace.ts`    | Under the 200 ms a pause reads as "done typing", over a fast typist's gap |
-| `FIND_SEED_MAX`    | 200   | `useFindReplace.ts`    | The longest selection taken as the query on opening                       |
-| ring outset        | 4 px  | `FindHighlightOverlay` | As an agent's focus ring, clear of the element's own selection ring       |
+| Constant             | Value | Where                  | Why                                                                       |
+| -------------------- | ----- | ---------------------- | ------------------------------------------------------------------------- |
+| `FIND_QUERY_MAX`     | 500   | `find-text.ts`         | A sentence or two; the field's `maxLength`                                |
+| `FIND_MATCHES_MAX`   | 5000  | `find-matches.ts`      | More than anyone steps through; bounds the highlight work                 |
+| `FIND_DEBOUNCE_MS`   | 150   | `useFindReplace.ts`    | Under the 200 ms a pause reads as "done typing", over a fast typist's gap |
+| `FIND_SEED_MAX`      | 200   | `useFindReplace.ts`    | The longest selection taken as the query on opening                       |
+| ring outset          | 4 px  | `FindHighlightOverlay` | As an agent's focus ring, clear of the element's own selection ring       |
+| `FIND_BAR_CLEARANCE` | 8 px  | `find-bar-top.ts`      | The gap the toolbar cards keep from one another                           |
+| `PLACE_SETTLE_MS`    | 500   | `FindHost.tsx`         | Longer than the canvas's eases (200 ms pages, its edge spring-back)       |
 
 ## Behaviour and state
 
@@ -172,7 +174,13 @@ are.` when any held (`1 match ... was left as it is.`).
   `TOOLBAR_CONTROL_PRESSED` controls (36 px, 44 px on touch), `TOOLBAR_DIVIDER`; the shared `Tooltip` and `Button`.
 - `FindHost` places it `fixed` over the canvas column (its rect read through a `ResizeObserver`), `top` the column's
   top plus `toolbarTopClearancePx(1)`. Desktop: 16 px from the column's right, `min(420px, 100vw - 32px)` wide.
-  Phone: 8 px from each side. Lazy-loaded on first open (`React.lazy`); until it arrives
+  Phone: 8 px from each side. Clear of the page title bars (`[data-page-title-bar]`): `findBarTop` (`find-bar-top.ts`)
+  steps the top under every title bar the bar would overlap (`FIND_BAR_CLEARANCE` 8 px under it, at most 8 steps),
+  keeping the base top when the bar's bottom would pass the column's bottom less 16 px. FindHost writes it straight to
+  the bar's `style.top` (no render) after each render, on a canvas gesture (`subscribeCanvasGesture`), a wheel, a
+  `pointerup` or `keyup` (the zoom buttons and keys) and the bar's own resize (the Replace row), then each frame while
+  a pan or zoom is under way and for `PLACE_SETTLE_MS` (500 ms) after the last cause (the canvas easing back from its
+  edge), never on idle frames. Lazy-loaded on first open (`React.lazy`); until it arrives
   `FindBarLoading` stands in its place, the bar's card holding only the Find field (bound to the query, focused in a
   layout effect, `data-find-loading`), so keys typed meanwhile are the query and the canvas's shortcuts stand down
   (the target is a text field). The bar, mounting, takes the keyboard from it with the caret at the end rather than
@@ -192,19 +200,20 @@ are.` when any held (`1 match ... was left as it is.`).
 
 ## Testing
 
-| Rule                                                                    | Test                                                             |
-| ----------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| Case, whole word, no overlaps, linear worst case                        | `lib/find/find-text.test.ts`                                     |
-| Order, fields searched, held by lock and role                           | `lib/find/find-targets.test.ts`                                  |
-| Replace keeps formatting, label and richText agree, one tab             | `lib/find/find-replace.test.ts`                                  |
-| Roles: Editor anything, Participant text (guard passes), Viewer nothing | `lib/find/find-roles.test.ts`, `lib/editor-capabilities.test.ts` |
-| 100-page article budget                                                 | `lib/find/find-performance.test.ts`                              |
-| Bar: count, steps, toggles, Replace row by role, Escape                 | `components/find/FindBar.test.tsx`                               |
-| Writing highlights                                                      | `lib/article/article-find-plugin.test.ts`                        |
-| Cmd+F where the browser keeps it                                        | `hooks/editor/find-shortcut.test.ts`                             |
-| Hook end to end: debounce, steps, Replace, Replace All, each role       | `hooks/editor/useFindReplace.test.tsx`                           |
-| Typing in the bar re-renders the bar alone; the editor's door opens it  | `components/find/FindHost.test.tsx`                              |
-| Shortcut list                                                           | `components/dialogs/shortcut-sections.test.ts`                   |
+| Rule                                                                    | Test                                                                        |
+| ----------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| Case, whole word, no overlaps, linear worst case                        | `lib/find/find-text.test.ts`                                                |
+| Order, fields searched, held by lock and role                           | `lib/find/find-targets.test.ts`                                             |
+| Replace keeps formatting, label and richText agree, one tab             | `lib/find/find-replace.test.ts`                                             |
+| Roles: Editor anything, Participant text (guard passes), Viewer nothing | `lib/find/find-roles.test.ts`, `lib/editor-capabilities.test.ts`            |
+| 100-page article budget                                                 | `lib/find/find-performance.test.ts`                                         |
+| Bar: count, steps, toggles, Replace row by role, Escape                 | `components/find/FindBar.test.tsx`                                          |
+| Writing highlights                                                      | `lib/article/article-find-plugin.test.ts`                                   |
+| Cmd+F where the browser keeps it                                        | `hooks/editor/find-shortcut.test.ts`                                        |
+| Hook end to end: debounce, steps, Replace, Replace All, each role       | `hooks/editor/useFindReplace.test.tsx`                                      |
+| Typing in the bar re-renders the bar alone; the editor's door opens it  | `components/find/FindHost.test.tsx`                                         |
+| Never over a page title bar, following it as the canvas moves           | `components/find/find-bar-top.test.ts`, `components/find/FindHost.test.tsx` |
+| Shortcut list                                                           | `components/dialogs/shortcut-sections.test.ts`                              |
 
 ## Defaults ledger
 

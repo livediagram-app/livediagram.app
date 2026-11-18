@@ -920,6 +920,16 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
     Account of its own: closing is asked for by an app's server, with its own client and the person's token for it,
     and deletes that app's data first ([accounts.md](../003-accounts/accounts.md#closing-an-account)); liveworkspace.app
     has neither, so a second dialog here would be a second way to close an account, not the same one.
+    On an app's own address (the Explorer at `www.livediagram.app/explorer`, signed in with that app's token), Your
+    Account has the app's own two rows (Work Tracker 1228): **Sign Out**, which signs out of the app as its editor's
+    Sign Out does (`appSignOut`: every liveworkspace app in this browser, through the accounts site's hop, back to this
+    page as a visitor), and **Delete Account**, "Permanently deletes your liveworkspace account and everything you own
+    in every liveworkspace app.", whose **Delete Account** button (`AccountHost.deleteAccount`) opens that app's own
+    Delete Account dialog, the one its editor opens (`DeleteAccountDialog` in `@liveworkspace/workbench`, with the
+    app's name and its This Browser items), its confirmation unchanged: the typed email, then the code emailed to the
+    account, sent to the app's own `POST /api/account/deletion-code` and `DELETE /api/account` on this address with the
+    app's token, which deletes the app's data and closes the account. Deleted, the page goes to the app's landing page
+    as a fresh guest. Signed out (a guest's settings for the app), neither row shows, as no account rows do.
   - **Reset All Settings**, an editor's row directly above Delete Account (`ResetSettingsRow`,
     `packages/settings-ui/src/reset-settings/`): **Reset** asks first in place (**Reset Now** and **Keep**, as Revoke
     does), then, for an account, sends one `DELETE /api/account/settings` over the app's token

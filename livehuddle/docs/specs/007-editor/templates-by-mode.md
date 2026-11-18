@@ -89,6 +89,10 @@ own:
   Screen, a clock) onto the back wall or, its foot on it, the front wall. A push stops short of anything in the way.
 - **Nothing stands on anything**: a group left on another piece slides to the nearest free spot inside its walls.
 - **A Room Sign stays by its Door**, Bring Focus by its stage.
+- **Outside the rooms, a group keeps its place beside the plan**: one beside the rooms (the Team Pod's Team Board and
+  its Timer) moves as the plan's near edge moves, so the gap between them stays and a wall never grows under it; one
+  between them keeps its share of the plan, as a piece in a room does. The title, sticker and description above the
+  plan move as one, never tied to what stands beside the rooms.
 
 A Blank Space (no rooms) is left as drawn. The pass runs once, when the Space is made (under 1 ms for the biggest,
 measured), never while it is open.

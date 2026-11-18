@@ -8,12 +8,15 @@ import { useTemplateFlow } from './useTemplateFlow';
 // A tab with content opens on Select. A template that lands content makes the tab one, so the tool picked up for the
 // empty tab is put down; Blank lands nothing and leaves it.
 
-async function pick(
-  kind: TemplateKind,
-): Promise<{ putToolDown: ReturnType<typeof vi.fn>; requestFit: ReturnType<typeof vi.fn> }> {
+async function pick(kind: TemplateKind): Promise<{
+  putToolDown: ReturnType<typeof vi.fn>;
+  requestFit: ReturnType<typeof vi.fn>;
+  setSelectedId: ReturnType<typeof vi.fn>;
+}> {
   let tabs: Tab[] = [{ id: 't1', name: '', elements: [] }];
   const putToolDown = vi.fn();
   const requestFit = vi.fn();
+  const setSelectedId = vi.fn();
   const { result } = renderHook(() =>
     useTemplateFlow({
       activeId: 't1',
@@ -26,7 +29,7 @@ async function pick(
         tabs = update(tabs);
       },
       confirmName: vi.fn(),
-      setSelectedId: vi.fn(),
+      setSelectedId,
       setEditingId: vi.fn(),
       setSelfParticipant: vi.fn(),
       setIdentityPromptOpen: vi.fn(),
@@ -38,7 +41,7 @@ async function pick(
   await act(async () => {
     await result.current.chooseTemplate(kind);
   });
-  return { putToolDown, requestFit };
+  return { putToolDown, requestFit, setSelectedId };
 }
 
 describe('chooseTemplate and the tool in hand', () => {
@@ -62,5 +65,14 @@ describe('chooseTemplate and the frame', () => {
 
   it('leaves the view where it is on Blank, which lands no page', async () => {
     expect((await pick('blank')).requestFit).not.toHaveBeenCalled();
+  });
+});
+
+// Work Tracker 1177: a written template with one chart opens on its writing, the chart not selected.
+describe('chooseTemplate and the selection', () => {
+  it('selects nothing on a written template whose one element is its chart', async () => {
+    const { setSelectedId, putToolDown } = await pick('status-report');
+    expect(putToolDown).toHaveBeenCalledOnce();
+    expect(setSelectedId).toHaveBeenLastCalledWith(null);
   });
 });

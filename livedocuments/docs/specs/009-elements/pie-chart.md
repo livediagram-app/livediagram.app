@@ -198,6 +198,11 @@ sheet. The editor's side is one copy, shared with livediagram and livedesign, in
   sheet glyph, then "Linked to <plan> · updated 2 min ago" (the time ticks on its own, "just now" under a minute).
   The Sheet row in its Data section says the same, with the sheet and range under it ("Budget · B2:E9"), and
   offers **Update** (read again now) and **Unlink**.
+- **The first read waits for sign-in.** The first read of each range goes out once sign-in has answered and the
+  document has loaded, and carries the document's grant, so it is read with the person's own access (never an
+  anonymous read first) and the plan counts the document as watching from that first read: the first change to the
+  sheet updates the chart (Work Tracker 1215). Meanwhile the saved values show; if sign-in has not answered
+  within 10 seconds the line says "saved" as for a reader without access, and the read still goes once it does.
 - **Keeping in step.** While the document is open, each linked chart on the open tab is read on open and again
   whenever its sheet changes (the room's `source-changed` frame), never by polling. Each person reads with their own
   access:

@@ -21,6 +21,7 @@ import { buildStoryboard } from './template-builders-storyboard';
 import { buildOnDesignPage } from './template-design-pages';
 import { buildFloorPlan } from './template-builders-floorplan';
 import { buildLiveCard } from './template-builders-livecard';
+import { articleTemplateElements } from './article-templates';
 
 // Build the elements for a given template, centred on the supplied canvas
 // point. Each template is intentionally small and editable; users grow them.
@@ -62,14 +63,16 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
     case 'lesson-plan':
     case 'business-proposal':
     case 'design-doc':
-    case 'status-report':
     case 'cover-letter':
     case 'product-one-pager':
-    case 'research-report':
     case 'newsletter':
-    case 'case-study':
     case 'onboarding-handbook':
       return [];
+    // The written templates with charts carry them as elements, each in its zone of the writing.
+    case 'status-report':
+    case 'research-report':
+    case 'case-study':
+      return articleTemplateElements(kind);
     // Built on their own pages (template-pages.ts), whatever the centre.
     case 'event-poster':
       return buildEventPoster();

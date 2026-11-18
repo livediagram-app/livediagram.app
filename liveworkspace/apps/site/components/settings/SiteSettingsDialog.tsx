@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { BrandMark } from '@livediagram/ui';
 import { Dialog, useMediaQuery } from '@liveworkspace/ui';
 import type { StoredValue } from '@liveworkspace/settings/catalogue';
@@ -22,12 +23,13 @@ import {
   type SettingsAppId,
   type SettingsScope,
 } from '@liveworkspace/settings-ui';
-import { APP_SITES, PLATFORM_SITE } from '@liveworkspace/sites';
+import { APP_SITES, PLATFORM_SITE, type AppName } from '@liveworkspace/sites';
 import { accountApi } from '@/lib/account-api';
 import { accountSecurity } from '@/lib/account-security';
 import { cloudSyncHost } from '@/lib/drive/client';
 import {
   appAccount,
+  appSignOut,
   onAppAccountChange,
   setAppAccountColour,
   type AppAccount,
@@ -59,6 +61,10 @@ const PHONE_QUERY = '(max-width: 639px), (pointer: coarse) and (max-height: 499p
 const HELP_FALLBACK = APP_SITES[0]!;
 const closeAccountHelp = (site: { url: string } | undefined) =>
   `${(site ?? HELP_FALLBACK).url}/help/account-and-data/deleting-your-data/#deleting-your-account`;
+
+// The app's own Delete Account dialog, on an app's address (site.md "Settings", "Your Account"; Work Tracker 1228):
+// its code loads only when Delete Account is pressed.
+const AppDeleteAccountDialog = dynamic(() => import('./AppDeleteAccountDialog'), { ssr: false });
 
 // Each app's prism in its accent, and liveworkspace's own for All and the Account section, as the Explorer's filter.
 const renderLogo = (id: SettingsAppId | 'all') => (
@@ -120,6 +126,11 @@ export default function SiteSettingsDialog({
   // Cloud Sync, for an account: its section shows once the Drive service says the deployment offers it.
   const cloudSyncFor = useMemo(() => (guestSignIn ? null : cloudSyncHost()), [guestSignIn]);
   const cloudSync = useCloudSync(cloudSyncFor);
+  // On an app's address, the app account Delete Account was pressed for: its dialog shows while set.
+  const [deleting, setDeleting] = useState<{
+    app: AppName;
+    account: { id: string; email: string | null };
+  } | null>(null);
   const account = useMemo<AccountHost>(
     () =>
       guestSignIn
@@ -130,6 +141,18 @@ export default function SiteSettingsDialog({
               profile,
               cloudSync,
               security: APP_SECURITY,
+              // The app's own: Sign Out as its editor's (every app in this browser, back here as a visitor), and its
+              // own Delete Account dialog (Work Tracker 1228).
+              onSignOut: () => appSignOut(),
+              deleteAccount: () => {
+                const host = pageApp();
+                void appAccount().then(
+                  (found) =>
+                    host &&
+                    found &&
+                    setDeleting({ app: host, account: { id: found.sub, email: found.email } }),
+                );
+              },
               ...ACCOUNT_PANELS,
             }
           : {
@@ -237,6 +260,13 @@ export default function SiteSettingsDialog({
             )
           }
         />
+        {deleting ? (
+          <AppDeleteAccountDialog
+            app={deleting.app}
+            account={deleting.account}
+            onClose={() => setDeleting(null)}
+          />
+        ) : null}
       </SettingsUiKitProvider>
     </Dialog>
   );

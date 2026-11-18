@@ -50,7 +50,8 @@ facts.
 ## The prompt
 
 - A small panel at the bottom centre of the screen, above the canvas, in the app's chrome
-  colours, light and dark. It never covers the dialogs and never takes focus. On a phone or a short window, where an
+  colours, light and dark. It stands clear of the canvas's bottom-right controls (undo, redo, the theme brush, zoom),
+  which it covered on a phone and in a narrow window, at the same height as every bottom-centre notice. It never covers the dialogs and never takes focus. On a phone or a short window, where an
   empty tab's start panel is a sheet over the canvas, it stands over that sheet (still under
   every dialog), above the sheet's foot row (the Save switch) so both stay in reach, and Reload is
   there before anything is picked.

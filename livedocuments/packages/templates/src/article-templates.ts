@@ -3,9 +3,15 @@
 // contents, a header and footer, page numbers, footnotes, a code block). Written as Markdown and read by the article's
 // own Markdown reader, so the words stay easy to edit here; the first two lines become the title and subtitle, and a
 // divider a page break. Pure data: the tab's pages and writing, merged in by templateCanvasOverrides.
-import { type ArticleBlock, type ArticleStyle, type Tab } from '@livedocuments/document';
+import {
+  type ArticleBlock,
+  type ArticleStyle,
+  type ShapeElement,
+  type Tab,
+} from '@livedocuments/document';
 import { articleTabOverrides } from './article-template';
 import { markdownArticleBlocks } from './article-markdown-blocks';
+import { withTemplateCharts, type ArticleTemplateChart } from './article-template-charts';
 import { MORE_ARTICLE_TEMPLATES, type MoreArticleTemplateKind } from './article-templates-2';
 
 export type ArticleTemplateKind =
@@ -24,6 +30,8 @@ export type ArticleTemplate = {
   // Each table's column shares, in the order the tables appear (a table not listed keeps even columns).
   columns?: readonly (readonly number[])[];
   markdown: string;
+  // The charts its writing places with a `{chart:<key>}` line, by key (article-template-charts.ts).
+  charts?: Readonly<Record<string, ArticleTemplateChart>>;
 };
 
 const ARTICLE_TEMPLATES: Readonly<Record<ArticleTemplateKind, ArticleTemplate>> = {
@@ -285,6 +293,23 @@ The server merges changes by operation, not by whole note, so two people typing 
       footer: { left: '{name}', right: 'Page {page} of {pages}' },
     },
     columns: [[0.26, 0.16, 0.58]],
+    charts: {
+      spend: {
+        shape: 'bar-chart',
+        height: 240,
+        fields: {
+          pieSlices: [
+            { label: 'Nov', value: 6 },
+            { label: 'Dec', value: 9 },
+            { label: 'Jan', value: 13 },
+            { label: 'Feb', value: 15 },
+            { label: 'Mar', value: 18 },
+          ],
+          chartLegend: false,
+          chartValues: true,
+        },
+      },
+    },
     markdown: `
 # Website Relaunch: March Status
 
@@ -308,6 +333,10 @@ The server merges changes by operation, not by whole note, so two people typing 
 - **Budget:** £61,000 spent of £90,000 (68%), against 70% planned[^1]
 - **Scope:** 3 changes requested, 2 accepted, 1 moved to after launch
 - **Quality:** 14 open bugs, none blocking launch
+
+**Spend by month, £ thousands.** March was the heaviest month, as the build peaked.
+
+{chart:spend}
 
 ## Risks and issues
 
@@ -362,9 +391,15 @@ Alex Morgan
 
 // A template's blocks, each with an id of its own and the same on every build: the first two headings are the title
 // and subtitle, a divider the page break, and each table's columns its own shares.
-function articleTemplateBlocks(kind: ArticleTemplateKind): ArticleBlock[] {
+function articleTemplateWriting(kind: ArticleTemplateKind): {
+  blocks: ArticleBlock[];
+  elements: ShapeElement[];
+} {
   const t = ARTICLE_TEMPLATES[kind];
-  return markdownArticleBlocks(t.flow.slice(4), t.markdown, t.columns);
+  const blocks = markdownArticleBlocks(t.flow.slice(4), t.markdown, t.columns);
+  return t.charts
+    ? withTemplateCharts(t.flow, t.style, blocks, t.charts)
+    : { blocks, elements: [] };
 }
 
 /** The kinds written as articles here. */
@@ -375,5 +410,10 @@ export function isArticleTemplate(kind: string): kind is ArticleTemplateKind {
 /** A written template's pages and writing (opens in Pages). */
 export function articleTemplateOverridesFor(kind: ArticleTemplateKind): Partial<Tab> {
   const t = ARTICLE_TEMPLATES[kind];
-  return articleTabOverrides(t.flow, articleTemplateBlocks(kind), t.style);
+  return articleTabOverrides(t.flow, articleTemplateWriting(kind).blocks, t.style);
+}
+
+/** A written template's elements: the charts in its writing, each in its zone (article-template-charts.ts). */
+export function articleTemplateElements(kind: ArticleTemplateKind): ShapeElement[] {
+  return articleTemplateWriting(kind).elements;
 }

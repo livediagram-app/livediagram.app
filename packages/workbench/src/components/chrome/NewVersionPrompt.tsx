@@ -24,13 +24,15 @@ import { START_FOOTER_SELECTOR, useStartPanelOpen } from '../start/start-panel-o
 import { useChromeFloor } from '../toast/useToastFloor';
 import { TOAST_SURFACE } from '../toast/ToastCard';
 import { announceToastFloorChange } from '../toast/toast-floor';
+import { CORNER_CLUSTER_CLEARANCE } from './corner-cluster-clearance';
 
 type Phase = 'offered' | 'saving' | 'unsaved' | 'arriving';
 
 /** The layer and height the prompt takes while a start panel is open, where that panel is a sheet (StartPanel): one
- *  above the overlay layer, and standing on the sheet's foot row (`--start-clear`, measured), never lower than usual. */
+ *  above the overlay layer, and standing on the sheet's foot row (`--start-clear`, measured), never lower than usual
+ *  (CORNER_CLUSTER_CLEARANCE_PX, written out: Tailwind reads only literal classes). */
 export const OVER_START_SHEET =
-  'max-sm:z-[calc(var(--z-overlay)+1)] short-window:z-[calc(var(--z-overlay)+1)] max-sm:bottom-[max(5rem,var(--start-clear))] short-window:bottom-[max(5rem,var(--start-clear))]';
+  'max-sm:z-[calc(var(--z-overlay)+1)] short-window:z-[calc(var(--z-overlay)+1)] max-sm:bottom-[max(135px,var(--start-clear))] short-window:bottom-[max(135px,var(--start-clear))]';
 
 const SAVING = 'Saving your changes…';
 const UNSAVED = "Your latest changes aren't saved yet. Reload once they are.";
@@ -126,9 +128,10 @@ export function NewVersionPrompt({
       role="status"
       data-new-version-prompt=""
       // The toast's look, not its stack (docs/specs/004-interface-design/toasts.md "Out of scope"); the toasts
-      // stand on it, as on any bottom chrome.
+      // stand on it, as on any bottom chrome. Clear of the canvas's bottom-right cluster (zoom), which it covered on a
+      // phone and at 450px at 80px up, as the accounts-outage notice is (Work Tracker 1193).
       data-toast-floor=""
-      className={`fixed bottom-20 left-1/2 z-[var(--z-chrome)] ${overStart ? OVER_START_SHEET : ''} flex w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 animate-toast-in items-center gap-3 border-slate-200 px-4 py-3 text-sm dark:border-slate-700 ${TOAST_SURFACE}`}
+      className={`fixed ${CORNER_CLUSTER_CLEARANCE} left-1/2 z-[var(--z-chrome)] ${overStart ? OVER_START_SHEET : ''} flex w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 animate-toast-in items-center gap-3 border-slate-200 px-4 py-3 text-sm dark:border-slate-700 ${TOAST_SURFACE}`}
       style={overStart ? ({ '--start-clear': `${startClear}px` } as CSSProperties) : undefined}
     >
       <p className="min-w-0 flex-1">{copy}</p>

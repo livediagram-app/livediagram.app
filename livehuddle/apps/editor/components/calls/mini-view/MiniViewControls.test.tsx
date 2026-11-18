@@ -89,18 +89,25 @@ describe('MiniViewControls', () => {
     expect(buttons()).toEqual(['Unmute', 'Turn Off Camera']);
   });
 
-  it('draws no hover card in the window, keeping the line for a screen reader', () => {
-    render(<MiniViewControls />);
-    show({ phase: 'live', mic: 'open', muted: true });
-    const unmute = screen.getByRole('button', { name: 'Unmute' });
-    fireEvent.pointerEnter(unmute.parentElement!, { pointerType: 'mouse' });
-    fireEvent.mouseEnter(unmute.parentElement!);
-    fireEvent.focus(unmute);
-    expect(screen.queryByText('Mic: Muted')).toBeNull();
-    const described = unmute.getAttribute('aria-describedby')!;
-    expect(document.getElementById(described)?.textContent).toBe(
-      'Nobody hears you. Press to unmute.',
-    );
+  // Work Tracker 1109: the window is a document of its own, and the hover card draws there, not in the Space's tab.
+  it('draws its hover cards in the mini view’s own window', () => {
+    const frame = document.createElement('iframe');
+    document.body.append(frame);
+    const pipDoc = frame.contentDocument!;
+    const container = pipDoc.body.appendChild(pipDoc.createElement('div'));
+    try {
+      render(<MiniViewControls />, { container });
+      show({ phase: 'live', mic: 'open', muted: true });
+      const unmute = pipDoc.querySelector<HTMLButtonElement>('button[aria-label="Unmute"]')!;
+      fireEvent.pointerEnter(unmute, { pointerType: 'mouse' });
+      const card = pipDoc.querySelector('[data-hint="hover-card"]');
+      expect(card?.textContent).toContain('Nobody hears you. Press to unmute.');
+      expect(card?.parentElement).toBe(pipDoc.body);
+      expect(document.querySelector('[data-hint]')).toBeNull();
+    } finally {
+      cleanup();
+      frame.remove();
+    }
   });
 
   it('shows the local preview microphone with no call, paused or failed', () => {

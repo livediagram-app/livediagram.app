@@ -115,6 +115,24 @@ the app the panel was opened for, else livediagram's (`${site.url}/help/account-
 whose `link` opens the article in a new tab. An editor and an app's address hand none, so no second row appears
 beside an editor's own Delete Account.
 
+### Settings' Sign Out and Delete Account on an app's address (Work Tracker 1228)
+
+On an app's address (`pageApp()`), the site's `AccountHost` carries `onSignOut: () => appSignOut()` (`lib/explorer/
+app-session.ts`, the account menu's own app sign-out) and `deleteAccount`, which opens
+`components/settings/AppDeleteAccountDialog.tsx`, loaded with `next/dynamic` the first time it is asked for. That
+dialog is `DeleteAccountDialog` from `@liveworkspace/workbench/components/dialogs/DeleteAccountDialog`, unchanged,
+bound to the app: `appName` the app's name, `localItems` its `APP_ITEMS[app].nouns`, `sendCode` a `POST
+/api/account/deletion-code` and `deleteAccount(code)` a `DELETE /api/account { code }` on the page's own origin (the
+app's router sends both to the app's api) with `Authorization: Bearer` the app account's token (`appAccount()`), read
+through the workbench's `deletionCodeSentOf` and `accountDeletionOf`; no token is `failed`. It reads the person through
+a `DeferredAuthContext` the site provides: `user.email` the app account's address, `deleteAccount` (ending the session
+once the data is gone) `appSignOut` with no navigation, throwing when the app refuses so the dialog says "Sign out to
+finish". `onDeleted` goes to `/`, the app's landing page; `onDataDeleted` counts `Session Deleted Account` in the app's
+name (`trackAppEvent`). `profileRows` (`@liveworkspace/settings-ui`) draws the `deleteAccount` row under Sign Out from
+`AccountSection.deleteAccount`: a `SettingsRowShell` with the editors' description and a secondary **Delete Account**
+button; the `closeAccount` pointer row is liveworkspace.app's alone, so a host hands one or the other. A guest's
+`AccountHost` is `{ guest }`, which has neither.
+
 ## Interfaces and contracts
 
 The site has no server code: every page is static and calls the services on its own origin.
