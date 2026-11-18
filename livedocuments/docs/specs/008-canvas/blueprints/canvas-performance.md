@@ -342,14 +342,17 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 - `SnapWidth` measures only on mount and on its resize observer, never in a render's commit (Work Tracker 911): the
   every-render read forced the style recalc and layout inside the commit, during an eased style change and after
   every drop alike (the toolbar renders on each one). The observer reports a size change after the frame's layout,
-  before its paint, so the box is never drawn at a stale width.
+  before its paint, so the box is never drawn at a stale width. The snapped width is a `min-width`, not a `width`:
+  content that grows in a commit (a strip's names coming back) widens its box in that same layout, so nothing that
+  reads the page before the observer runs (a layout effect, a script, the top-row sweep in `editor-header-fit.spec.ts`)
+  finds the content hanging off one side of a box still at the old width. Only the rounding up waits for the observer.
 - `useEdgeAwarePlacement` (`packages/workbench/src/hooks/canvas/useEdgeAwarePlacement.ts`) places in the next
   animation frame under `flushSync`, never in its layout effect (Work Tracker 911), so neither a press's nor a drop's
   task reads layout. One frame at a time: renders before it share it, a suspension or unmount cancels it, and the
   re-render a flip causes inside the frame places again at once. Every placement
   reads the floating chrome (`querySelectorAll` over the page and a rect each) at most once, shared by the flip
   check and the sideways slide.
-- Tests: `tab-style-ease.test.ts` (busy surface attribute, root class otherwise, `easedStyleChange`), `SnapWidth.test.tsx` (no read on a re-render; the observer measures), `useEdgeAwarePlacement.test.tsx` (nothing read in a commit; one frame places), `app/canvas-motion.test.ts`
+- Tests: `tab-style-ease.test.ts` (busy surface attribute, root class otherwise, `easedStyleChange`), `SnapWidth.test.tsx` (no read on a re-render; the observer measures; grown content widens the box at once), `useEdgeAwarePlacement.test.tsx` (nothing read in a commit; one frame places), `app/canvas-motion.test.ts`
   (the surface attribute in the ease rule).
 
 ### The Map is one image
