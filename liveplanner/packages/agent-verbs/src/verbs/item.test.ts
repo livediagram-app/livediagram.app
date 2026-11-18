@@ -1,9 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { ITEM_TYPES, type Item, type ItemTypeDef } from '@liveplanner/items';
+import {
+  ITEM_TYPES,
+  itemAssistantFor,
+  itemPersonId,
+  type Item,
+  type ItemTypeDef,
+} from '@liveplanner/items';
 import { listedType } from '../plan/plan-listing';
 import { VerbRefusal } from '../define';
 import { contextOf, DOC_A, fakeApi, library, tabsOfA } from '../testing/fake-api';
-import { fieldsFromPairs, itemAdd, itemLs, itemMove, itemRm, itemSet } from './item';
+import { fieldsFromPairs, itemAdd, itemHandBack, itemLs, itemMove, itemRm, itemSet } from './item';
 
 // The item verbs (docs/specs/026-plan/plan-mode.md "Agents"; docs/specs/015-api/cli.md "Commands").
 const by = { id: 'p', name: 'Priya', color: '#7c3aed' };
@@ -970,5 +976,82 @@ describe('item ls: pull requests', () => {
       '#1  bug   Doing  "Fix login"  acme/web#42 open, checks failing; acme/api#7 merged',
       '#2  task  To Do  "Docs"',
     ]);
+  });
+});
+
+// docs/specs/026-plan/plan-agents.md "Cards handed to an assistant": the CLI's side.
+describe('items handed to an assistant', () => {
+  const CURRENT = {
+    accountId: 'acct_priya',
+    accountName: 'Priya Shah',
+    tokenId: 't',
+    tokenName: 'Claude',
+    role: 'full',
+    expiresAt: 1,
+  };
+  async function handed() {
+    const priya = { id: await itemPersonId('acct_priya'), name: 'Priya Shah', color: '#7c3aed' };
+    const claude = itemAssistantFor(priya, 'Claude')!;
+    const cards = [
+      item(1, 'itembbb111', { title: 'Fix login', status: 'doing', assignee: claude }),
+      item(2, 'itemaaa222', { title: 'Docs', status: 'todo' }),
+    ];
+    const { ctx, seen } = api({
+      [path]: (r: Request) =>
+        r.method === 'GET' ? Response.json({ items: cards, rev: 4 }) : Response.json({}),
+      '/tokens/current': CURRENT,
+      [`${path}/itembbb111`]: async (r: Request) => {
+        const body = (await r.json()) as { set: Record<string, unknown> };
+        seen.push({ method: r.method, path: `${path}/itembbb111`, body });
+        return Response.json({
+          item: { ...cards[0]!, fields: { ...cards[0]!.fields, ...body.set } },
+        });
+      },
+    });
+    return { ctx, seen, priya, claude };
+  }
+
+  it('lists only the handed items with --handed-to-me, each line naming its assistant', async () => {
+    const { ctx } = await handed();
+    const all = await itemLs.run!(ctx, { project: DOC_A, handedToMe: true });
+    expect(all.items.map((i) => [i.key, i.assistant])).toEqual([[1, 'Claude (Priya)']]);
+    expect(itemLs.text!(all)).toContain('#1  task  Doing  "Fix login"  → Claude (Priya)');
+  });
+
+  it('hands an item back to the token’s person', async () => {
+    const { ctx, seen, priya } = await handed();
+    const out = await itemHandBack.run!(ctx, { project: DOC_A, item: '#1' });
+    expect(seen.at(-1)?.body).toEqual({ set: { assignee: priya } });
+    expect(itemHandBack.text!(out)).toEqual([expect.stringMatching(/handed back to Priya Shah$/)]);
+    expect(itemHandBack.quiet!(out)).toEqual(['#1']);
+  });
+
+  it('says its person when the api answers the item without one', async () => {
+    const claude = itemAssistantFor(
+      { id: await itemPersonId('acct_priya'), name: 'Priya Shah', color: '#7c3aed' },
+      'Claude',
+    )!;
+    const held = item(1, 'itembbb111', { title: 'Fix login', status: 'doing', assignee: claude });
+    const out = await itemHandBack.run!(
+      api({
+        [path]: () => Response.json({ items: [held], rev: 4 }),
+        '/tokens/current': CURRENT,
+        [`${path}/itembbb111`]: () =>
+          Response.json({ item: { ...held, fields: { title: 'Fix login' } } }),
+      }).ctx,
+      { project: DOC_A, item: '#1' },
+    );
+    expect(itemHandBack.text!(out)[0]).toMatch(/handed back to its person$/);
+  });
+
+  it('refuses --handed-to-me for a session, and a hand-back of an item not handed to it', async () => {
+    const { ctx } = await handed();
+    await expect(itemHandBack.run!(ctx, { project: DOC_A, item: '#2' })).rejects.toMatchObject({
+      code: 'not_handed_to_you',
+    });
+    const session = api({ '/tokens/current': () => Response.json({}, { status: 403 }) });
+    await expect(
+      itemLs.run!(session.ctx, { project: DOC_A, handedToMe: true }),
+    ).rejects.toBeInstanceOf(VerbRefusal);
   });
 });

@@ -15,6 +15,8 @@ import {
   itemStatus,
   itemSummary,
   itemTitle,
+  assistantPersonOf,
+  itemAssistantOf,
   resolveFields,
   calculatedWritten,
   isFormulaField,
@@ -53,6 +55,8 @@ import {
 } from './card-pictures';
 import { itemsPath } from '../verbs/shared';
 import type { PlanState } from './plan-state';
+import { assistantOnce } from './assistant-caller';
+import { handBackRefusal, isMe } from './hand-back';
 
 export type ItemChange =
   | {
@@ -76,7 +80,9 @@ export type ItemChange =
       moveFollowing?: boolean;
     }
   | { op: 'move'; item: string; status: string; before?: string }
-  | { op: 'delete'; item: string };
+  | { op: 'delete'; item: string }
+  // Hands a card the calling assistant holds back to its person (plan-agents.md "Cards handed to an assistant").
+  | { op: 'hand_back'; item: string };
 
 interface ItemChangesResult {
   applied: string[];
@@ -316,6 +322,26 @@ export async function applyItemChanges(
     const target = resolveItem(c.item, items);
     return target.ok ? typeIn(types, target.item.type) : null;
   };
+  // The calling assistant, read only when a change hands a card to "me" or back (plan-agents.md "Cards handed to an
+  // assistant").
+  const caller = assistantOnce(api, () => items);
+  const me = async () => {
+    const read = await caller();
+    if (!read.ok) throw new Stop(read.code, read.message);
+    return read.assistant;
+  };
+  // A change's fields with an Assignee of "me" made the calling assistant.
+  const withMe = async (
+    fields: Readonly<Record<string, unknown>> | undefined,
+    type: ItemTypeDef,
+  ): Promise<Readonly<Record<string, unknown>> | undefined> => {
+    if (!fields) return fields;
+    const key = Object.keys(fields).find(
+      (k) =>
+        isMe(fields[k]) && fieldKeyOf(k, type).ok && must(fieldKeyOf(k, type)).key === 'assignee',
+    );
+    return key === undefined ? fields : { ...fields, [key]: await me() };
+  };
   try {
     // Every picture the call adds is checked in one request before any card is written; a change whose card is made
     // earlier in the call is checked when it comes.
@@ -337,7 +363,7 @@ export async function applyItemChanges(
             'value_invalid',
             'A new card needs a title, or a template to take one from.',
           );
-        const pictures = must(splitPictureFields(c.fields, type));
+        const pictures = must(splitPictureFields(await withMe(c.fields, type), type));
         // A new card has nothing to clear: an empty value leaves the field unset.
         const given = {
           ...markdownFields(fieldsFor(pictures.rest, type).fields, type).set,
@@ -370,7 +396,7 @@ export async function applyItemChanges(
         const target = must(resolveItem(c.item, items)).item;
         const type = c.type ? must(resolveType(c.type, types)).type : typeIn(types, target.type);
         writing = type;
-        const pictures = must(splitPictureFields(c.fields, type));
+        const pictures = must(splitPictureFields(await withMe(c.fields, type), type));
         const placed = await placePictures(pictures.pictures, type, target.fields);
         const given = fieldsFor(pictures.rest, type);
         given.clear = [...given.clear, ...placed.clear];
@@ -433,6 +459,21 @@ export async function applyItemChanges(
         });
         keep(item);
         applied.push(line('→', item, state));
+      } else if (c.op === 'hand_back') {
+        const target = must(resolveItem(c.item, items)).item;
+        writing = typeIn(types, target.type);
+        const mine = await me();
+        const held = itemAssistantOf(target);
+        if (held?.id !== mine.id) {
+          const refused = handBackRefusal(target, mine);
+          throw new Stop(refused.code, refused.message);
+        }
+        const person = assistantPersonOf(held);
+        const { item } = await post(`${base}/${encodeURIComponent(target.id)}`, {
+          set: { assignee: person },
+        });
+        keep(item);
+        applied.push(line('~', item, state, [`handed back to ${person.name}`]));
       } else {
         const target = must(resolveItem(c.item, items)).item;
         const res = await api.fetch(`${base}/${encodeURIComponent(target.id)}`, {

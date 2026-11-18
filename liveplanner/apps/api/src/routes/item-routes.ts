@@ -71,6 +71,7 @@ import { historyTagOf, itemHistory } from './item-history-route';
 import { appendItemHistory } from '../db/item-history';
 import { planTabs } from './plan-route';
 import { tally } from './item-tally-route';
+import { listAssistants } from './item-assistants-route';
 import { importPeople } from './item-import-people';
 import { importItems } from './item-import-route';
 import { pullRequestsFor } from './item-pull-requests';
@@ -372,6 +373,12 @@ export async function handleItemRoutes(ctx: PlanRouteContext): Promise<Response 
     return method === 'POST' ? moves(ctx, projectId) : methodNotAllowed();
   if (segments.length === 5 && segments[4] === 'tally')
     return method === 'POST' ? tally(ctx, projectId) : methodNotAllowed();
+  // The plan's AI assistants, for the Assignee picker (docs/specs/026-plan/items.md "Who it can be handed to").
+  if (segments.length === 5 && segments[4] === 'assistants') {
+    if (method !== 'GET') return methodNotAllowed();
+    const caller = await itemCaller(ctx, projectId, 'read', COMMUNITY_CONTENT);
+    return caller instanceof Response ? caller : listAssistants(ctx, caller);
+  }
   const itemId = segments[4]!;
   if (segments.length === 5) {
     // A field patch is a POST: the api's CORS (responses.ts) admits GET, POST, PUT and DELETE.

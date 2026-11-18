@@ -26,6 +26,7 @@ import {
   type ItemFieldValue,
   type ItemPatch,
   typeFieldLabel,
+  type ItemAssistant,
   type ItemPerson,
   type ItemTypeDef,
   type LabelUse,
@@ -34,6 +35,7 @@ import { ChecklistEditor, DateField, EstimateSelect, PriorityPicker } from './it
 import { LabelsEditor } from './LabelsEditor';
 import { ParagraphField } from './ParagraphField';
 import { PersonPicker } from './PersonPicker';
+import { AssistantProgress } from './AssistantProgress';
 import { CustomFieldEditor } from './CustomFieldEditor';
 import { CalculatedFieldValue } from './CalculatedFieldValue';
 import { NewerFieldValue } from './NewerFieldValue';
@@ -110,6 +112,7 @@ export type ItemFieldContext = {
 export const fieldId = (item: Item, f: string) => `item-${item.id}-${f}`;
 
 const NO_ITEMS: ReadonlyMap<string, Item> = new Map();
+const NO_ASSISTANTS: readonly ItemAssistant[] = [];
 
 export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }) {
   const { item, type, canEdit, onSave } = ctx;
@@ -279,16 +282,33 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
       );
     }
     case 'assignee':
+      // A custom Person field never holds an AI assistant; the built-in Assignee lists them, and says how far one has
+      // got with the card (docs/specs/026-plan/items.md "Handing a card to an AI assistant").
+      if (custom)
+        return (
+          <PersonPicker
+            id={id}
+            value={value}
+            people={ctx.people}
+            disabled={disabled}
+            onSave={save}
+            label={custom.label}
+            multiple={holdsSeveral(custom)}
+          />
+        );
       return (
-        <PersonPicker
-          id={id}
-          value={value}
-          people={ctx.people}
-          disabled={disabled}
-          onSave={save}
-          {...(custom ? { label: custom.label } : {})}
-          multiple={holdsSeveral(custom)}
-        />
+        <>
+          <PersonPicker
+            id={id}
+            value={value}
+            people={ctx.people}
+            disabled={disabled}
+            onSave={save}
+            assistants={plan?.assistants ?? NO_ASSISTANTS}
+            {...(plan?.refreshAssistants ? { onOpen: plan.refreshAssistants } : {})}
+          />
+          <AssistantProgress item={item} statuses={ctx.statuses} />
+        </>
       );
     case 'priority':
       return <PriorityPicker id={id} value={value} disabled={disabled} onSave={save} />;

@@ -15,6 +15,7 @@ import {
   hasRepeat,
   isPriority,
   itemAssignee,
+  isAssistantId,
   itemStatus,
   itemLabels,
   itemTitle,
@@ -345,7 +346,11 @@ export function PlanCardFace({
         return <VotesPill key={f} total={votes} palette={palette} />;
       case 'assignee':
         return assignee ? (
-          <PersonDisc key={f} person={assignee} label={`Assigned to ${assignee.name}`} />
+          <PersonDisc
+            key={f}
+            person={assignee}
+            label={`${isAssistantId(assignee.id) ? 'Handed to' : 'Assigned to'} ${assignee.name}`}
+          />
         ) : null;
       case 'labels':
         return labels.length > 0 ? <LabelChips key={f} labels={labels} palette={palette} /> : null;

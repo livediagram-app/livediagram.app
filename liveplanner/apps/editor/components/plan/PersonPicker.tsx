@@ -7,29 +7,27 @@
 // liveworkspace account mark left of a real person's name ("Accounts are marked"); the closed field shows none.
 // Keys: Enter, Space or the arrows open it, the arrows move, Enter picks, Escape closes. A Person field that holds
 // several (docs/specs/026-plan/item-types.md "Holds Several") draws its people as chips (FieldChips) and its list
-// toggles: a pick adds a person, picking one held takes them off, and the list stays open for more.
-import {
-  Button,
-  CheckIcon,
-  ChevronDownIcon,
-  TextInput,
-  useClickOutside,
-  useEscape,
-} from '@liveplanner/ui';
+// toggles: a pick adds a person, picking one held takes them off, and the list stays open for more. The Assignee alone
+// also lists the plan's AI assistants under an AI Assistants heading (docs/specs/026-plan/items.md "The Assignee
+// picker"), each with the AI mark: picking one hands the card to it.
+import { Button, ChevronDownIcon, TextInput, useClickOutside, useEscape } from '@liveplanner/ui';
 import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import {
   CUSTOM_ASSIGNEE_NAME_MAX,
+  isAssistantId,
   fieldPeople,
   personKey,
   personNamed,
   severalValue,
   toggledValues,
+  type ItemAssistant,
   type ItemFieldValue,
   type ItemPerson,
 } from '@liveplanner/items';
 import { track } from '@/lib/telemetry';
-import { ACCOUNT_MARK_LABEL, AccountMark, hasAccountMark } from './AccountMark';
+import { AssistantMark } from './AccountMark';
+import { AssistantsHeading, PersonOption } from './PersonPickerRows';
 import { FieldChips } from './FieldChips';
 import { PersonDisc } from './PersonDisc';
 import { usePlan } from './PlanContext';
@@ -56,6 +54,8 @@ export function PersonPicker({
   onSave,
   label = 'Assignee',
   multiple = false,
+  assistants,
+  onOpen,
 }: {
   id: string;
   value: ItemFieldValue | undefined;
@@ -67,6 +67,10 @@ export function PersonPicker({
   label?: string;
   // A Person field that holds several: its people as chips, the list toggling them.
   multiple?: boolean;
+  // The built-in Assignee's AI assistants (absent for any other field: a Person field refuses one).
+  assistants?: readonly ItemAssistant[];
+  // The list opened (the plan reads its remembered assistants again).
+  onOpen?: () => void;
 }) {
   const announce = usePlan()?.announce;
   const listId = useId();
@@ -81,12 +85,24 @@ export function PersonPicker({
   const chosen = fieldPeople(multiple ? SEVERAL : undefined, value);
   const current = multiple ? null : (chosen[0] ?? null);
   const held = (row: Row) => (multiple ? chosen.some((p) => sameId(row, p)) : sameId(row, current));
-  const extra = chosen.filter((c) => !people.some((p) => p.id === c.id));
+  // A value the lists lack still shows, a person among the people and an assistant among the assistants.
+  const listsAssistants = !!assistants && !multiple;
+  const extra = chosen.filter(
+    (c) => !people.some((p) => p.id === c.id) && !(listsAssistants && isAssistantId(c.id)),
+  );
   const options = extra.length ? [...extra, ...people] : people;
+  const ais: ItemPerson[] = listsAssistants
+    ? [
+        ...chosen.filter((c) => isAssistantId(c.id) && !assistants.some((a) => a.id === c.id)),
+        ...assistants,
+      ]
+    : [];
   const lead: Row[] = multiple ? [] : [null];
   const rows: Row[] = disabled
-    ? [...lead, ...options]
-    : [...lead, ...options, CUSTOM_ASSIGNEE_OPTION];
+    ? [...lead, ...options, ...ais]
+    : [...lead, ...options, ...ais, CUSTOM_ASSIGNEE_OPTION];
+  // Where the AI Assistants heading goes: before the first assistant, else before the custom row (its empty line).
+  const firstAssistant = lead.length + options.length;
   const name = current?.name ?? 'No one';
   const saveMany = (list: readonly ItemPerson[]) =>
     void onSave(
@@ -120,6 +136,7 @@ export function PersonPicker({
     const at = rows.findIndex((r) => held(r));
     setActive(at < 0 ? 0 : at);
     setOpen(true);
+    onOpen?.();
   };
   useEffect(() => {
     if (open) listRef.current?.focus();
@@ -191,6 +208,7 @@ export function PersonPicker({
               : 'border-slate-200 dark:border-slate-700'
           }`}
         >
+          {current && isAssistantId(current.id) ? <AssistantMark /> : null}
           <span
             className={`min-w-0 flex-1 truncate ${
               current ? 'text-slate-800 dark:text-slate-100' : 'text-slate-500 dark:text-slate-400'
@@ -218,44 +236,26 @@ export function PersonPicker({
         >
           {rows.map((row, i) => {
             const custom = row === CUSTOM_ASSIGNEE_OPTION;
-            const person = custom ? null : row;
-            const selected = held(row);
-            const marked = !!person && hasAccountMark(person);
-            const text = custom ? `+ Custom ${label}` : (person?.name ?? 'No one');
-            return (
-              <li
-                key={custom ? CUSTOM_ASSIGNEE_OPTION : (person?.id ?? 'none')}
+            const option = (
+              <PersonOption
+                key={custom ? CUSTOM_ASSIGNEE_OPTION : (row?.id ?? 'none')}
                 id={`${listId}-${i}`}
-                role="option"
-                aria-selected={selected}
-                // The name first, then what the mark says ("Sam, liveworkspace account").
-                aria-label={marked ? `${text}, ${ACCOUNT_MARK_LABEL}` : text}
+                row={custom ? 'custom' : row}
+                customText={`+ Custom ${label}`}
+                selected={held(row)}
+                active={i === active}
+                ticked={multiple && held(row)}
                 onPointerMove={() => setActive(i)}
-                onClick={() => pick(row)}
-                className={`flex cursor-pointer items-center gap-1.5 px-2 py-1.5 text-[13px] leading-snug max-sm:text-[16px] ${
-                  i === active ? 'bg-slate-100 dark:bg-slate-800' : ''
-                } ${selected ? 'font-semibold' : ''} ${
-                  person
-                    ? 'text-slate-800 dark:text-slate-100'
-                    : 'text-slate-500 dark:text-slate-400'
-                }`}
-              >
-                {/* A real person's account mark, left of the name; a custom assignee keeps the same room empty so
-                    the names line up. No one and the custom row have neither. */}
-                {marked ? (
-                  <AccountMark />
-                ) : person ? (
-                  <span aria-hidden className="size-3 shrink-0" />
-                ) : null}
-                <span className="min-w-0 flex-1 truncate">{text}</span>
-                {/* Several: each person held is ticked. */}
-                {multiple && selected ? (
-                  <span aria-hidden className="shrink-0 text-brand-700 dark:text-brand-400">
-                    <CheckIcon size={12} />
-                  </span>
-                ) : null}
-              </li>
+                onPick={() => pick(row)}
+              />
             );
+            // The AI Assistants heading, before the first assistant, or (none yet) with its quiet line before the
+            // custom row.
+            if (!listsAssistants || i !== firstAssistant) return option;
+            return [
+              <AssistantsHeading key="assistants-heading" empty={ais.length === 0} />,
+              option,
+            ];
           })}
         </ul>
       ) : null}

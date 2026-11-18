@@ -173,25 +173,37 @@ change, boardFields(setup, types, false))` on the reshaped set-up; each name thr
 - `listedType` adds `templates?: { id, name, fields: string[] }[]`, field names by `fieldName` (Title, Description,
   Checklist, Labels by their built-in ids), Rich keys folded into their field; absent when the type has none.
 
-### Cards handed to an assistant (planned, Work Tracker 901 part 2)
+### Cards handed to an assistant (Work Tracker 901)
 
-Derived from [Plan for agents](../plan-agents.md#cards-handed-to-an-assistant); nothing below is built yet. The stored
-shape it writes is built (item-store.md "The AI assistant Assignee").
+Derived from [Plan for agents](../plan-agents.md#cards-handed-to-an-assistant). The stored shape is item-store.md "The
+AI assistant Assignee"; the plan's remembered assistants and the editor are item-store.md "Assistants the plan
+remembers" and "The assistant on the card".
 
-- The calling assistant: `callerAssistant(api)` reads `GET /api/tokens/current` once per call (`{ accountName,
-tokenName }`, with the caller's person id from `itemPersonId(accountId)`) and builds
-  `itemAssistantFor(person, tokenName)`; the person's colour is the one the plan's cards already give that id, else a
-  Plan swatch as `personNamed` picks one. A session that is not a token (`not_a_token`) has no assistant: `handedToMe`
-  and `"me"` are refused (`not_an_assistant`, "only an AI tool or API token can be handed cards").
-- `list_items { handedToMe? }`: filters `itemAssistantOf(item)?.id === caller.id` before paging; the listed card's
-  `assignee` stays its name, plus `assistant: true` when `itemAssistantOf` reads one.
-- `change_items`: `"assignee": "me"` resolves to the caller's assistant; an assistant's name resolves through
-  `assignedPeople`, which already returns the stored assistant whole; `hand_back { item }` writes
-  `assistantPersonOf(itemAssistantOf(card))` and is refused `not_handed_to_you` when the card's assistant is not the
-  caller's.
-- The plan remembers its assistants (part 2): a plan room table beside `known_people`, `known_assistants (id TEXT
-PRIMARY KEY, client TEXT, person TEXT JSON, seen_at INTEGER)`, written on an API-token write, oldest past
-  `KNOWN_PEOPLE_MAX` going first, read by the part 3 picker. It never holds a token id.
+- `packages/agent-verbs/src/plan/assistant-caller.ts`: `callerAssistant(api, items)` reads `GET /api/tokens/current`
+  (`CurrentTokenResponse`), hashes `accountId` with `itemPersonId`, takes the person's name and colour from the first
+  card stamp (`createdBy`, `updatedBy`) with that id, else `accountName` and `personNamed(accountName, people)`'s
+  swatch, and answers `itemAssistantFor(person, tokenName)`, or a `not_an_assistant` refusal for a `403 not_a_token`,
+  a null or blank `tokenName`, or one past `ASSISTANT_CLIENT_MAX`. Called at most once per tool call (memoised by the
+  caller) and only by `handedToMe`, `"me"` and `hand_back`.
+- `list_items { handedToMe? }` (`ListItemsPageArgs.handedToMe`): `keptListItems` takes `handedTo?: string` (the
+  caller's assistant id) and keeps `itemAssistantOf(item)?.id === handedTo` before paging; each kept card gets
+  `handedToYou: true`. `itemLister` lists any Assignee `itemAssistantOf` reads as
+  `{ id, name, color, assistant: true, worksFor }` (`listedAssignee`).
+- `change_items`: `resolveFields` reads `"assignee"` as before; `applyItemChanges` first swaps a `"me"` (trimmed,
+  case aside) for the caller's assistant, and `builtInValue` maps an Assignee object with an `ai-` id to the assistant
+  a card holds by that id (`assignedPeople`), so a listed assistant written back names it. `hand_back { item }`
+  (`ItemChange` op `hand_back`) writes `{ set: { assignee: assistantPersonOf(held) } }` through the item route, refused
+  `not_handed_to_you` (with who holds it: a person's name, an assistant's, or "no one") when `itemAssistantOf(card)?.id`
+  is not the caller's. Its line is `~ #12 [task] Fix login in In Progress; handed back to Thomas McClean`.
+- MCP: `listItemsShape.handedToMe`, the `hand_back` member of `itemChange`, the descriptions of both tools, and the
+  `work_my_cards` prompt (`apps/mcp/src/prompts.ts`, one `plan` argument).
+- CLI: `item ls --handed-to-me`, `item hand-back <project> <item>` (`itemHandBack`), and `item ls`'s line ending
+  `  → <assistant name>`.
+- Errors: `not_an_assistant` and `not_handed_to_you` are tool errors (MCP) and `VerbRefusal` 400s (CLI); a
+  `tokens/current` failure other than 403 is thrown as any api failure is.
+- Tests: `packages/agent-verbs/src/plan/assistant-cards.test.ts` (the caller, list, me, hand back, refusals, a
+  Viewer's token through the api's 403), `packages/agent-verbs/src/verbs/item.test.ts` (CLI),
+  `apps/mcp/src/prompts.test.ts` and `apps/mcp/src/output-schema.test.ts` (handedToMe end to end).
 
 ## Interfaces and contracts
 
