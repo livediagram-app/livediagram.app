@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { readdirSync, readFileSync, type Dirent } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
@@ -37,21 +37,18 @@ const SKIP_DIRS = new Set([
 const ROLE_SWITCH = /(?<![[\w`-])role\s*(=\s*\{?\s*|:\s*)["'`]switch["'`]/;
 
 function sources(dir: string): string[] {
-  let names: string[];
+  let entries: Dirent[];
   try {
-    names = readdirSync(dir);
+    entries = readdirSync(dir, { withFileTypes: true });
   } catch {
     return [];
   }
-  return names.flatMap((name) => {
+  // One readdir per folder with the entry kinds, not a stat per entry: the repo holds tens of thousands of files.
+  return entries.flatMap((entry) => {
+    const { name } = entry;
     const path = join(dir, name);
-    let isDir: boolean;
-    try {
-      isDir = statSync(path).isDirectory();
-    } catch {
-      return [];
-    }
-    if (isDir) return SKIP_DIRS.has(name) ? [] : sources(path);
+    if (entry.isDirectory()) return SKIP_DIRS.has(name) ? [] : sources(path);
+    if (!entry.isFile() && !entry.isSymbolicLink()) return [];
     if (!/\.(tsx|ts|jsx|js)$/.test(name) || /\.(test|spec)\.[jt]sx?$/.test(name)) return [];
     if (name.endsWith('.d.ts')) return [];
     return [path];
@@ -64,7 +61,13 @@ function strayRoleSwitches(): string[] {
     for (const file of sources(join(REPO, root))) {
       const rel = relative(REPO, file);
       if (ALLOWED.has(rel)) continue;
-      const text = readFileSync(file, 'utf8');
+      let text: string;
+      try {
+        text = readFileSync(file, 'utf8');
+      } catch {
+        // A file another process removed since the listing (a build's or a test run's temp file): nothing to guard.
+        continue;
+      }
       if (!text.includes('switch')) continue;
       text.split('\n').forEach((line, i) => {
         if (ROLE_SWITCH.test(line))

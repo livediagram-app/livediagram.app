@@ -81,7 +81,8 @@ deletions.
 (someone outside, a link visitor whatever their level, no one signed in, an item that isn't there) is
 `404 not_found`, as for any item they can't reach. Archived and trashed items read for their owner as any other.
 
-One statement (`buildHistoryQuery`): a range of `events_item` (`item_id = ?1`, then `occurred_at DESC, id DESC`),
+One statement (`buildHistoryQuery`): a range of `events_item` (`item_id = ?1`, then `occurred_at DESC, id DESC`; event ids are version 7 UUIDs with a counter, so the id
+tiebreak is also the order events were made in),
 from `now - EVENT_RETENTION_MS` (so a lapsed event the sweep has not reached yet never shows), past the cursor,
 `limit + 1` rows; never an old `favourited` (Favourites were removed), and `opened_by_visitor` and
 `copied_by_visitor` only for the owner. The index order is the page order, so there is no sort, and the rows it skips are only those

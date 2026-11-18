@@ -12,7 +12,7 @@ import {
 import type { SQLInputValue } from 'node:sqlite';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
-import { EVENT_SWEEP_CHUNK, EVENT_SWEEP_ROUNDS, sweepEvents } from './events';
+import { EVENT_SWEEP_CHUNK, EVENT_SWEEP_ROUNDS, eventId, sweepEvents } from './events';
 import { buildHistoryQuery } from './history';
 import { body, call, h, makeItem, person, useHarness } from './test-support';
 
@@ -751,4 +751,18 @@ describe('the daily sweep', () => {
     );
     expect(ms).toBeLessThan(cpuBudgetMs(1_000));
   }, 60_000);
+});
+
+describe('event ids', () => {
+  it('sort by time, then by the order they were made, whatever the random part', () => {
+    const same = Array.from({ length: 200 }, () => eventId(1_800_000_000_000));
+    expect([...same].sort()).toEqual(same);
+    expect(eventId(1_800_000_000_001) > same[199]!).toBe(true);
+    expect(eventId(1_800_000_000_000 - 1) < same[0]!).toBe(true);
+  });
+
+  it('look like a UUID, and hold an odd time inside it', () => {
+    const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-8[0-9a-f]{3}-[0-9a-f]{12}$/;
+    for (const at of [0, -5, 1.9, 1e15]) expect(eventId(at)).toMatch(uuid);
+  });
 });

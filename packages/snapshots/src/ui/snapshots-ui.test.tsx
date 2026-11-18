@@ -15,7 +15,7 @@ import {
 } from '@liveworkspace/workbench/bindings';
 import { testBindings } from '@liveworkspace/workbench/lib/testing/bindings';
 import { useState } from 'react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { resetRevertReload, SnapshotsApiError, type SnapshotsApi } from '../client';
 import type { SnapshotSummary } from '../wire';
 import {
@@ -33,6 +33,16 @@ import {
   snapshotTime,
   snapshotTitle,
 } from './snapshot-words';
+
+// The dialog's code loads lazily on first open. Load it once up front, in a hook with its own generous budget, so no
+// test spends its 5 second limit on a cold import: on a busy runner that import alone was passing the limit.
+beforeAll(async () => {
+  await import('./SnapshotsDialog');
+}, 60_000);
+
+// The first dialog still pays for the first render of its code (about 350 ms alone, several seconds on a loaded CI
+// runner), so every test here gets a limit sized for that, with findBy's wait kept inside it.
+vi.setConfig({ testTimeout: 30_000 });
 
 afterEach(() => {
   resetRevertReload();
@@ -101,7 +111,7 @@ function mount(door: SnapshotsDoor | null) {
 const open = async () => {
   fireEvent.click(screen.getByRole('button', { name: 'Snapshots' }));
   // The dialog's code loads on first open; a cold load on a busy machine can pass findBy's default second.
-  return screen.findByRole('dialog', {}, { timeout: 5000 });
+  return screen.findByRole('dialog', {}, { timeout: 20_000 });
 };
 
 // Take Snapshot is a button that opens its form in a popover; the form's own button takes it.
@@ -165,7 +175,7 @@ describe('Snapshots alone, in History', () => {
       </SnapshotsDoorProvider>,
     );
     expect(await screen.findByText('1 pinned')).toBeTruthy();
-    const dialog = await screen.findByRole('dialog', {}, { timeout: 5000 });
+    const dialog = await screen.findByRole('dialog', {}, { timeout: 20_000 });
     expect(dialog.querySelector('.border-t.px-4')).toBeNull();
   });
 
