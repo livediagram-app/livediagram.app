@@ -348,6 +348,8 @@ describe('a Forum topic', () => {
     // Popular Posts, read anonymously and leaving this topic out.
     const popular = await screen.findByRole('region', { name: 'Popular Posts' });
     expect(calls.find((c) => c.url.includes('sort=popular'))).toMatchObject({ auth: null });
+    // The card shows skeleton rows while its list loads, so wait for the row itself.
+    await within(popular).findByRole('link', { name: /Snap to the grid/ });
     expect(
       within(popular)
         .getAllByRole('link')

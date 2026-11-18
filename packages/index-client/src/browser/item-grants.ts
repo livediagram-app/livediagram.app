@@ -47,6 +47,7 @@ export type ItemGrants = {
   ) => Promise<GrantResponse | null>;
   held: (itemId: string, share?: ItemShare) => string | null;
   refusal: (itemId: string, share?: ItemShare) => string | null;
+  passwordLink: (itemId: string) => Promise<string | null>;
   keepFresh: (itemId: string, share?: ItemShare) => () => void;
   itemIdOfPath: (apiBase: string, url: string) => string | null;
   withGrant: (
@@ -73,6 +74,8 @@ export function createItemGrants(opts: ItemGrantOptions): ItemGrants {
   const freshKeepers = new Map<string, number>();
   // Why the last request was refused, by key, for the callers that say so (a password prompt).
   const refusals = new Map<string, string>();
+  // The link a `password_required` refusal named, by key: a person reopening the item with no code.
+  const refusalLinks = new Map<string, string>();
 
   const keyOf = (itemId: string, share: ItemShare) => `${itemId}|${share?.code ?? ''}`;
   // Requests in flight are shared per item, link and password: one sent with a password typed meanwhile never joins
@@ -121,6 +124,7 @@ export function createItemGrants(opts: ItemGrantOptions): ItemGrants {
         .grant(itemId, share ? { code: share.code, password: share.password ?? null } : null);
       if (remember(key, { grant, until: grant.expiresAt - GRANT_RENEW_BEFORE_MS, seq })) {
         refusals.delete(key);
+        refusalLinks.delete(key);
       }
       return grant;
     } catch (err) {
@@ -129,6 +133,8 @@ export function createItemGrants(opts: ItemGrantOptions): ItemGrants {
         remember(key, { grant: null, until: Date.now() + GRANT_REFUSAL_MEMORY_MS, seq })
       ) {
         refusals.set(key, err.code);
+        if (err.link) refusalLinks.set(key, err.link);
+        else refusalLinks.delete(key);
       }
       // A network failure is not remembered: the next request asks again.
       return null;
@@ -180,6 +186,13 @@ export function createItemGrants(opts: ItemGrantOptions): ItemGrants {
     },
     // Why the index last refused this item (`password_required`, `password_invalid`, `not_found`, ...), or null.
     refusal: (itemId, share = null) => refusals.get(keyOf(itemId, share)) ?? null,
+    // The link to ask for the password through, when the item, asked for with no code, needs one
+    // (one-explorer-contracts.md "Reopened without the code"): the held answer, else one request. Null otherwise.
+    passwordLink: async (itemId) => {
+      const key = keyOf(itemId, null);
+      if (await grant(itemId, null)) return null;
+      return refusals.get(key) === 'password_required' ? (refusalLinks.get(key) ?? null) : null;
+    },
     // Keep the open item's grant fresh, for as long as it stays open. Answers the stop. One timer per item, however
     // many keep it fresh: it runs until the last of them stops. A renewal the network failed is tried again after
     // GRANT_RETRY_MS; a refusal ends the renewals (the item can't be opened on this grant any more).
@@ -233,6 +246,7 @@ export function createItemGrants(opts: ItemGrantOptions): ItemGrants {
       held.clear();
       inflight.clear();
       refusals.clear();
+      refusalLinks.clear();
       for (const timer of renewTimers.values()) clearTimeout(timer);
       renewTimers.clear();
       freshKeepers.clear();

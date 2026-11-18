@@ -104,7 +104,7 @@ export function handleInternalItems(
       // every one of them is keyed by any owner id (the media owner of a guest is its hash, `mediaOwner`).
       personMerged: (guestId, intoId) => mergeGuest(env, guestId, intoId),
       // Their name off each canvas of someone else's that names them.
-      anonymise: (id, personId) => documentRoom(env, id).anonymise(personId),
+      anonymise: (id, personId, guestIds) => documentRoom(env, id).anonymise(personId, guestIds),
       // The canvas drawn, for liveworkspace's previews (document-room.ts `exportImage`), or its whole file, for the
       // Drive mirror (`exportFile`).
       export: (id, query) =>

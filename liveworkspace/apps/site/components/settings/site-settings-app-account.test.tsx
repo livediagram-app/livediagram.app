@@ -121,6 +121,10 @@ describe('the Explorer’s Settings on an app’s address, signed in', () => {
     await openSignedIn();
     // The app's rows, not liveworkspace.app's pointer to where closing lives.
     expect(cell('closeAccount')).toBeNull();
+    // What it promises, which lib/explorer/app-sign-out.test.ts pins it to (Work Tracker 1283).
+    expect(cell('signOut')?.textContent).toContain(
+      'Sign out of every liveworkspace app in this browser.',
+    );
     act(() => buttonIn(cell('signOut'), 'Sign Out')!.click());
     await until(() => app.signOut.mock.calls.length > 0);
     expect(app.signOut).toHaveBeenCalledTimes(1);

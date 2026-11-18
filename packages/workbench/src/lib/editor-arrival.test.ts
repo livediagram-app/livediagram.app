@@ -5,10 +5,12 @@ const getItem = vi.hoisted(() => vi.fn());
 vi.mock('./index-client', () => ({ indexClient: { getItem } }));
 
 import {
+  GATED_REOPENS_MAX,
   isTrashedInIndex,
   openOwnAddress,
   openShareLink,
   readerOfGrant,
+  resetGatedReopensForTests,
   type ArrivalProduct,
   type ArrivalResolution,
   type ArrivalSetters,
@@ -58,6 +60,7 @@ function harness(
     },
     communitySession: (post, ownItemId) => ({ ...post, ownItemId }),
     grant: vi.fn(async () => ({ level: 'edit' })),
+    passwordLink: vi.fn(async () => null),
     offlineOwnerId: 'offline',
     ...over,
   };
@@ -102,6 +105,7 @@ const resolved = (
 const link = { shareCodeParam: 'code', id: null, embed: false };
 
 beforeEach(() => {
+  resetGatedReopensForTests();
   getItem.mockReset();
   window.history.replaceState(null, '', '/item/shared?s=code#h');
 });
@@ -399,6 +403,122 @@ describe('openOwnAddress', () => {
     });
     expect(readerOfGrant({ level: 'edit' })).toMatchObject({ isOwner: true, visitor: false });
     expect(readerOfGrant(null)).toMatchObject({ isOwner: false, role: 'edit', visitor: false });
+  });
+
+  // Work Tracker 1244: a visitor reopening a password-protected item by its own address sends no code, so the index
+  // refuses the grant. The refusal names the link, and the item opens through it: the gate, never Not Found.
+  it('shows the password gate when a protected item is reopened with no code, whether the load misses or fails', async () => {
+    const refused = Object.assign(new Error('load failed: 401'), {
+      status: 401,
+      code: 'password_required',
+    });
+    for (const loadOwn of [vi.fn(async () => null), vi.fn(async () => Promise.reject(refused))]) {
+      // Each way in is a first reopen, not the other's retry.
+      resetGatedReopensForTests();
+      const lastSeen = { remember: vi.fn(async () => {}), forget: vi.fn(async () => {}) };
+      const loadShared = vi.fn(async () => ({ passwordRequired: true as const, invalid: false }));
+      const h = harness({
+        loadOwn,
+        loadShared,
+        passwordLink: vi.fn(async () => 'code'),
+        lastSeen,
+      });
+      expect(await openOwnAddress(h.product, h.run, own)).toBe(false);
+      expect(h.product.passwordLink).toHaveBeenCalledWith('i1');
+      // Through the link the refusal named, for the item the address names.
+      expect(loadShared).toHaveBeenCalledWith('code', 'me', 'i1');
+      expect(h.calls).toContain('gate:{"invalid":false}');
+      expect(h.calls).not.toContain('notFound:true');
+      expect(h.calls).not.toContain('loadError:true');
+      expect(lastSeen.forget).toHaveBeenCalledWith('me', 'i1');
+      expect(getItem).not.toHaveBeenCalled();
+    }
+  });
+
+  it('opens a protected item reopened with no code straight away with the password this browser remembers', async () => {
+    const loadShared = vi.fn(async () => resolved({ role: 'view', tabId: 't1' }));
+    const h = harness(
+      { loadShared, passwordLink: vi.fn(async () => 'code') },
+      { cached: 'hunter2' },
+    );
+    expect(await openOwnAddress(h.product, h.run, own)).toBe(true);
+    expect(h.calls).toContain('session:hunter2');
+    expect(h.calls).not.toContain('gate:{"invalid":false}');
+    // As the link's visitor, at its level and tab, carrying its code; the address stays the item's own.
+    expect(h.calls).toEqual(
+      expect.arrayContaining(['tabScope:"t1"', 'isOwner:false', 'role:"view"', 'shareCode:"code"']),
+    );
+    expect(window.location.pathname).toBe('/item/shared');
+  });
+
+  it('says a remembered password was changed when a protected item reopened with no code refuses it', async () => {
+    const h = harness(
+      {
+        loadShared: vi.fn(async () => ({ passwordRequired: true as const, invalid: true })),
+        passwordLink: vi.fn(async () => 'code'),
+      },
+      { cached: 'old' },
+    );
+    expect(await openOwnAddress(h.product, h.run, own)).toBe(false);
+    expect(h.calls).toContain('gate:{"invalid":false,"changed":true}');
+    expect(h.cache.get('code')).toBeNull();
+  });
+
+  it('retries behind the gate go straight through the link, never the refused own address, until it opens', async () => {
+    const gate = { passwordRequired: true as const, invalid: false };
+    const loadShared = vi
+      .fn<ArrivalProduct<Item, Role, Post, Community, 'item'>['loadShared']>()
+      .mockResolvedValueOnce(gate)
+      .mockResolvedValueOnce({ passwordRequired: true, invalid: true })
+      .mockResolvedValueOnce(resolved());
+    const h = harness({ loadShared, passwordLink: vi.fn(async () => 'code') });
+    expect(await openOwnAddress(h.product, h.run, own)).toBe(false);
+    // A wrong password, then the right one: neither repeats the own-address load or asks for the link again.
+    expect(await openOwnAddress(h.product, h.run, own)).toBe(false);
+    expect(h.calls).toContain('gate:{"invalid":true}');
+    expect(await openOwnAddress(h.product, h.run, own)).toBe(true);
+    expect(h.product.loadOwn).toHaveBeenCalledOnce();
+    expect(h.product.passwordLink).toHaveBeenCalledOnce();
+    expect(loadShared).toHaveBeenCalledTimes(3);
+    expect(loadShared).toHaveBeenLastCalledWith('code', 'me', 'i1');
+    // Opened: forgotten, so a later open asks the own address first again.
+    await openOwnAddress(h.product, h.run, own);
+    expect(h.product.loadOwn).toHaveBeenCalledTimes(2);
+  });
+
+  it('keeps the gated reopens bounded, and per reader', async () => {
+    const gate = { passwordRequired: true as const, invalid: false };
+    const h = harness({
+      loadShared: vi.fn(async () => gate),
+      passwordLink: vi.fn(async () => 'code'),
+    });
+    for (let n = 0; n <= GATED_REOPENS_MAX; n++) {
+      await openOwnAddress(h.product, h.run, { ...own, id: `i${n}` });
+    }
+    expect(h.product.loadOwn).toHaveBeenCalledTimes(GATED_REOPENS_MAX + 1);
+    // The oldest went; the newest is still remembered.
+    await openOwnAddress(h.product, h.run, { ...own, id: 'i0' });
+    expect(h.product.loadOwn).toHaveBeenCalledTimes(GATED_REOPENS_MAX + 2);
+    await openOwnAddress(h.product, h.run, { ...own, id: `i${GATED_REOPENS_MAX}` });
+    expect(h.product.loadOwn).toHaveBeenCalledTimes(GATED_REOPENS_MAX + 2);
+    // Another reader of the same item starts from the own address.
+    const other = { ...h.run, self: { id: 'someone-else' } };
+    await openOwnAddress(h.product, other, { ...own, id: `i${GATED_REOPENS_MAX}` });
+    expect(h.product.loadOwn).toHaveBeenCalledTimes(GATED_REOPENS_MAX + 3);
+  });
+
+  it('still ends on not found or the error screen when no link is named, or asking for one fails', async () => {
+    getItem.mockResolvedValue({ item: { trashedAt: null } });
+    const miss = harness({ passwordLink: vi.fn(async () => Promise.reject(new Error('down'))) });
+    expect(await openOwnAddress(miss.product, miss.run, own)).toBe(false);
+    expect(miss.calls).toContain('notFound:true');
+    const down = harness({
+      loadOwn: vi.fn(async () => Promise.reject(new Error('network'))),
+      passwordLink: vi.fn(async () => null),
+    });
+    expect(await openOwnAddress(down.product, down.run, own)).toBe(false);
+    expect(down.calls).toContain('loadError:true');
+    expect(down.product.loadShared).not.toHaveBeenCalled();
   });
 
   it('opens an Offline Mode item as its owner with no room, asking no grant', async () => {

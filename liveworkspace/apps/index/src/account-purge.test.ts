@@ -219,7 +219,9 @@ describe('POST /internal/purge-person', () => {
     );
     expect(new Set(told.map((c) => c.url)).size).toBe(told.length);
     const planner = told.find((c) => c.url.startsWith('https://liveplanner.app'))!;
-    expect(planner.body).toEqual({ items: ['ada-team', 'bea-1'] });
+    // With the guest she signed in from, so what she left as a guest goes too, and never Bea's (Work Tracker 1241).
+    expect(planner.body).toEqual({ items: ['ada-team', 'bea-1'], guests: ['guest_ada'] });
+    expect(told.every((c) => JSON.stringify(c.body).includes('"guests":["guest_ada"]'))).toBe(true);
     expect(count('SELECT COUNT(*) AS n FROM person_app_notices')).toBe(0);
 
     // Team work stays with the team, under an anonymised owner.
@@ -580,5 +582,43 @@ describe('telling the apps about a closed account', () => {
     vi.spyOn(console, 'warn').mockImplementation(() => {});
     await drainPersonNotices(h.db.env, 1 + NOTICE_GIVE_UP_MS + 1);
     expect(count('SELECT COUNT(*) AS n FROM person_app_notices')).toBe(0);
+  });
+
+  it('names her merged guests on every retry, after her aliases are gone, and forgets them once told', async () => {
+    arrange();
+    run(
+      `INSERT INTO person_aliases (guest_id, person_id, merged_at) VALUES ('guest_ada2', ?, 2)`,
+      ADA,
+    );
+    h.appAnswer = (c) =>
+      new Response(null, { status: c.url.includes('/api/internal/people/') ? 503 : 200 });
+    await purge({ personId: ADA, teamIds: ['D'] });
+    await settle();
+    // The aliases went with the account; the copy for the notices stays while one is waiting.
+    expect(count('SELECT COUNT(*) AS n FROM person_aliases WHERE person_id = ?', ADA)).toBe(0);
+    const kept = () =>
+      rows('SELECT guest_id FROM person_notice_guests WHERE person_id = ? ORDER BY guest_id', ADA);
+    expect(kept()).toEqual([{ guest_id: 'guest_ada' }, { guest_id: 'guest_ada2' }]);
+    const now = Date.now();
+    h.appCalls = [];
+    h.appAnswer = () => new Response(null, { status: 200 });
+    await drainPersonNotices(h.db.env, now + NOTICE_RETRY_AFTER_MS + 1);
+    const told = h.appCalls.filter((c) => c.url.includes('/api/internal/people/'));
+    expect(told.length).toBeGreaterThan(0);
+    for (const call of told) {
+      expect((call.body as { guests: string[] }).guests).toEqual(['guest_ada', 'guest_ada2']);
+    }
+    // Every notice confirmed: the next run forgets her guests, and Bea's alias was never copied.
+    await drainPersonNotices(h.db.env, now + NOTICE_RETRY_AFTER_MS + 2);
+    expect(count('SELECT COUNT(*) AS n FROM person_notice_guests')).toBe(0);
+    expect(count('SELECT COUNT(*) AS n FROM person_aliases WHERE person_id = ?', BEA)).toBe(1);
+  });
+
+  it('names no guests for a person who never signed in from one', async () => {
+    await purge({ personId: 'user_solo' });
+    await settle();
+    const told = h.appCalls.filter((c) => c.url.includes('/api/internal/people/'));
+    expect(told.length).toBeGreaterThan(0);
+    for (const call of told) expect((call.body as { guests: string[] }).guests).toEqual([]);
   });
 });

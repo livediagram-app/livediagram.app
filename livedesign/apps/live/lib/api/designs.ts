@@ -1,5 +1,6 @@
 // Design-level calls: load, create and save-meta, the shared-tabs summary, the snapshot, and the room ticket. Listing,
 // copying, deleting and sharing designs are the index's (@liveworkspace/workbench/lib/index-client.ts, the shared Explorer).
+import { isPasswordRefusal } from '@liveworkspace/workbench/lib/api/core';
 import {
   INDEX_GRANT_HEADER,
   DESIGN_CONVERSION_HEADER,
@@ -69,7 +70,9 @@ async function _apiLoadDesign(ownerId: string, id: string): Promise<LiveDoc | nu
   const res = await apiFetch(`${API_BASE}/designs/${id}`, {
     headers: await apiHeaders(ownerId),
   });
-  const body = await expectOkOrNull<DesignResponse>(res, 'load');
+  // A password asked of a link visitor reopening it with no code is the arrival's to handle (the gate), not an
+  // api error (share-password.md "Reopened by its own address").
+  const body = await expectOkOrNull<DesignResponse>(res, 'load', isPasswordRefusal);
   if (body?.design) indexTitles.set(id, body.design.name);
   return body?.design ?? null;
 }

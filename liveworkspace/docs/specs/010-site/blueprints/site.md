@@ -118,7 +118,9 @@ beside an editor's own Delete Account.
 ### Settings' Sign Out and Delete Account on an app's address (Work Tracker 1228)
 
 On an app's address (`pageApp()`), the site's `AccountHost` carries `onSignOut: () => appSignOut()` (`lib/explorer/
-app-session.ts`, the account menu's own app sign-out) and `deleteAccount`, which opens
+app-session.ts`, the account menu's own app sign-out: `POST /api/auth/sign-out?return=<this page>` on the page's own
+origin, then the accounts site's hop it answers; `lib/explorer/app-sign-out.test.ts` pins that it signs out
+everywhere, as the row's copy says, and `site-settings-app-account.test.tsx` pins the copy, Work Tracker 1283) and `deleteAccount`, which opens
 `components/settings/AppDeleteAccountDialog.tsx`, loaded with `next/dynamic` the first time it is asked for. That
 dialog is `DeleteAccountDialog` from `@liveworkspace/workbench/components/dialogs/DeleteAccountDialog`, unchanged,
 bound to the app: `appName` the app's name, `localItems` its `APP_ITEMS[app].nouns`, `sendCode` a `POST

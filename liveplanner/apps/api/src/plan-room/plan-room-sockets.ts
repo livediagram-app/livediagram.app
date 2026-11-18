@@ -15,15 +15,8 @@ import {
   type AccessCloseMatch,
 } from '@liveworkspace/api-kit/room-access';
 import { isItemsOp, splitItemsOp } from './items-op-split';
+import { appendToOpLog } from './op-log';
 import type { PlanRoom } from './plan-room';
-
-// How many recent mutation ops the room keeps for reconnect catch-up
-// (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1). A reconnecting client within this many ops of the
-// live tail replays the delta; further behind, it re-hydrates from the plan's stored content.
-// Bounded so an idle-but-connected room can't grow the buffer without end;
-// the log lives in memory (like opRates) and resets on hibernation, which
-// only ever forces the safe path (a resync), never data loss.
-const OP_LOG_LIMIT = 256;
 
 // DO storage key holding `{ epoch, seq }` so the room keeps its ordering
 // identity across a hibernation wake (docs/specs/012-collaboration/resync-without-reload.md).
@@ -46,8 +39,13 @@ const SHARE_LINK_CHANGED_CLOSE = 4003;
 // sockets on its own; a send that still throws means a socket that died
 // without the runtime noticing yet, so we just shed its rate entry — the
 // runtime reaps the socket itself.
-export function broadcast(room: PlanRoom, payload: ServerMessage, except?: WebSocket): void {
-  const serialized = JSON.stringify(payload);
+// `serialized` is the payload's JSON when the caller already made it (sequenceMutation, which sizes the log by it).
+export function broadcast(
+  room: PlanRoom,
+  payload: ServerMessage,
+  except?: WebSocket,
+  serialized: string = JSON.stringify(payload),
+): void {
   for (const ws of room.state.getWebSockets()) {
     if (ws === except) continue;
     const out = frameFor(room, ws, payload, serialized);
@@ -139,6 +137,7 @@ export function closeSessionsForAccessChange(room: PlanRoom, close: AccessCloseM
 // Put a mutation into the ordered stream: a seq, the catch-up log, every
 // socket but the sender's, and the ledger. One path for a peer's op and for
 // one the worker made (docs/specs/012-collaboration/collab-race-hardening.md), so the two can't drift. Returns the seq.
+// The log is capped by count and by size (op-log.ts; Work Tracker 1231).
 export function sequenceMutation(
   room: PlanRoom,
   from: string,
@@ -147,9 +146,11 @@ export function sequenceMutation(
 ): number {
   const seq = ++room.seq;
   persistOrder(room);
-  room.opLog.push({ seq, from, op });
-  if (room.opLog.length > OP_LOG_LIMIT) room.opLog.shift();
-  room.broadcast({ kind: 'op', from, op, seq, epoch: room.epoch }, except);
+  // Serialised once: the relay sends this text and the catch-up log sizes the op by it (op-log.ts).
+  const payload: ServerMessage = { kind: 'op', from, op, seq, epoch: room.epoch };
+  const serialized = JSON.stringify(payload);
+  appendToOpLog(room.opLog, { seq, from, op }, serialized.length);
+  broadcast(room, payload, except, serialized);
   room.ledger.record(op, seq);
   return seq;
 }

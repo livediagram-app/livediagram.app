@@ -1,17 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { ANONYMISED_NAME } from '@liveworkspace/index-app';
+import { ANONYMISED_NAME, anonymiseReactionsText } from '@liveworkspace/index-app';
 import { itemPersonId, type Item } from '@liveplanner/items';
 import { sqliteD1 } from '../test-sqlite-d1';
 import { appendItemHistory } from '../db/item-history';
 import { listItems } from '../db/items';
 import { readSheetHead } from '../db/sheets';
 import { listHomeThreads } from '../db/card-threads';
-import {
-  anonymisePlan,
-  anonymiseReactions,
-  anonymiseRun,
-  anonymiseTabReactions,
-} from './plan-anonymise';
+import { anonymisePlan, anonymiseRun } from './plan-anonymise';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 
 // A closed account's name off a plan that outlives them (plan-anonymise.ts): here, the card history they wrote
@@ -210,6 +205,92 @@ describe('anonymisePlan', () => {
     expect(await anonymisePlan(db.env, 'P', 'user_gone')).toBe(0);
   });
 
+  // What they left as a guest before signing in is recorded under the guest's id and its hashes; the index names the
+  // guests merged into the account (Work Tracker 1241), and each reads Deleted account as the account's does.
+  it('names what a closed account left as a merged guest Deleted account, and no other guest', async () => {
+    const db = sqliteD1();
+    db.sql.exec(`INSERT INTO test_plans (id, owner_id, name, shareable, saved_at, created_at)
+                 VALUES ('P', 'user_kept', 'Plan', 0, 1, 1)`);
+    const asGuest = await itemPersonId('guest_was');
+    const other = await itemPersonId('guest_other');
+    const reaction = (person: string, name: string) => ({
+      emoji: 'heart',
+      by: `k-${name}`,
+      name,
+      person,
+    });
+    const data = JSON.stringify({
+      id: 't1',
+      name: 'T',
+      elements: [
+        {
+          id: 'e1',
+          type: 'shape',
+          commentThread: {
+            resolved: false,
+            comments: [
+              {
+                id: 'c1',
+                authorId: 'guest_was',
+                authorName: 'Was A Guest',
+                text: 'hi',
+                at: 1,
+                reactions: [reaction(asGuest, 'Was A Guest'), reaction(other, 'Other Guest')],
+              },
+            ],
+          },
+        },
+      ],
+    });
+    db.sql
+      .prepare(`INSERT INTO tabs (id, name, data, updated_at, rev) VALUES ('t1', 'T', ?, 1, 0)`)
+      .run(data);
+    db.sql.exec(
+      `INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at) VALUES ('P', 't1', 0, 1)`,
+    );
+    const thread = JSON.stringify([
+      { id: 'c2', text: 'yo', at: 1, reactions: [reaction(asGuest, 'Was A Guest')] },
+    ]);
+    db.sql
+      .prepare(
+        `INSERT INTO card_threads (plan_id, id, resolved, resolved_by, resolved_by_id, resolved_at, comments,
+                                   created_at, created_by, updated_at, cards)
+         VALUES ('P', 'th', 1, 'Was A Guest', ?, 5, ?, 1, '{}', 1, '[]')`,
+      )
+      .run(asGuest, thread);
+    const guestCard = JSON.stringify({ id: asGuest, name: 'Was A Guest', color: '#2563eb' });
+    const otherCard = JSON.stringify({ id: other, name: 'Other Guest', color: '#dc2626' });
+    db.sql
+      .prepare(
+        `INSERT INTO items (plan_id, id, type, item_key, rank, fields, rev, created_at, updated_at, created_by,
+                            updated_by) VALUES ('P', 'a', 'task', 1, 'i', '{"owner":"guest_was"}', 1, 0, 0, ?, ?)`,
+      )
+      .run(guestCard, otherCard);
+
+    // The account alone leaves the guest's entries as they are.
+    expect(await anonymisePlan(db.env, 'P', 'user_closed')).toBe(0);
+    expect(await anonymisePlan(db.env, 'P', 'user_closed', ['guest_was'])).toBe(5);
+
+    const tab = JSON.parse(
+      (db.sql.prepare(`SELECT data FROM tabs WHERE id = 't1'`).get() as { data: string }).data,
+    ) as {
+      elements: {
+        commentThread: {
+          comments: { authorId: string; authorName: string; reactions: { name: string }[] }[];
+        };
+      }[];
+    };
+    const comment = tab.elements[0]!.commentThread.comments[0]!;
+    expect([comment.authorId, comment.authorName]).toEqual(['deleted', ANONYMISED_NAME]);
+    expect(comment.reactions.map((r) => r.name)).toEqual([ANONYMISED_NAME, 'Other Guest']);
+    const [home] = await listHomeThreads(db.env, 'P');
+    expect(home).toMatchObject({ resolvedBy: ANONYMISED_NAME, resolvedById: 'deleted' });
+    expect(home!.comments[0]!.reactions!.map((r) => r.name)).toEqual([ANONYMISED_NAME]);
+    const [card] = await listItems(db.env, 'P');
+    expect([card!.createdBy.name, card!.updatedBy.name]).toEqual([ANONYMISED_NAME, 'Other Guest']);
+    expect(await anonymisePlan(db.env, 'P', 'user_closed', ['guest_was'])).toBe(0);
+  });
+
   it('walks a big tab once, and skips one that never names the person', () => {
     const elements = Array.from({ length: 2000 }, (_, i) => ({
       id: `e${i}`,
@@ -223,14 +304,14 @@ describe('anonymisePlan', () => {
       },
     }));
     const text = JSON.stringify({ elements });
-    let out = anonymiseTabReactions(text, 'gone');
+    let out = anonymiseReactionsText(text, ['gone']);
     const cpu = cpuMsOf(() => {
-      out = anonymiseTabReactions(text, 'gone');
+      out = anonymiseReactionsText(text, ['gone']);
     });
     expect(out.changed).toBe(true);
     expect(cpu).toBeLessThan(cpuBudgetMs(100));
-    expect(anonymiseTabReactions(text, 'nobody')).toEqual({ value: text, changed: false });
-    expect(anonymiseTabReactions('{not json gone', 'gone')).toEqual({
+    expect(anonymiseReactionsText(text, ['nobody'])).toEqual({ value: text, changed: false });
+    expect(anonymiseReactionsText('{not json gone', ['gone'])).toEqual({
       value: '{not json gone',
       changed: false,
     });
@@ -243,7 +324,7 @@ describe('anonymisePlan', () => {
       '[{"id": "c", "text": "h1"}]',
       '[null, "h1"]',
     ]) {
-      expect(anonymiseReactions(text, 'h1')).toEqual({ value: text, changed: false });
+      expect(anonymiseReactionsText(text, ['h1'])).toEqual({ value: text, changed: false });
     }
   });
 
@@ -330,7 +411,7 @@ describe('anonymisePlan', () => {
         { text: 'Mention (Al) and Al-Smith' },
       ],
     };
-    const out = anonymiseRun(JSON.stringify(run), 'h1');
+    const out = anonymiseRun(JSON.stringify(run), ['h1']);
     expect(out.changed).toBe(true);
     expect((JSON.parse(out.value) as typeof run).steps.map((l) => l.text)).toEqual([
       `${ANONYMISED_NAME} moved it`,
@@ -341,7 +422,7 @@ describe('anonymisePlan', () => {
     // A name with characters a pattern reads specially is matched as written.
     const odd = anonymiseRun(
       JSON.stringify({ steps: [{ text: 'J. (Jo) moved it', by: { id: 'h1', name: 'J. (Jo)' } }] }),
-      'h1',
+      ['h1'],
     );
     expect((JSON.parse(odd.value) as typeof run).steps[0]!.text).toBe(
       `${ANONYMISED_NAME} moved it`,
@@ -350,10 +431,13 @@ describe('anonymisePlan', () => {
 
   it('leaves a run it cannot read, or one with no line of theirs, as it is', () => {
     for (const text of ['{not json h1', '{"id": "h1"}', '{"steps": [null, {"text": "h1"}]}'])
-      expect(anonymiseRun(text, 'h1')).toEqual({ value: text, changed: false });
-    expect(anonymiseRun('{"steps": []}', 'h1')).toEqual({ value: '{"steps": []}', changed: false });
+      expect(anonymiseRun(text, ['h1'])).toEqual({ value: text, changed: false });
+    expect(anonymiseRun('{"steps": []}', ['h1'])).toEqual({
+      value: '{"steps": []}',
+      changed: false,
+    });
     // A line of theirs with no name, beside lines with no text to rename.
-    const odd = anonymiseRun('{"steps": [null, {"by": {"id": "h1"}}, {"text": 5}]}', 'h1');
+    const odd = anonymiseRun('{"steps": [null, {"by": {"id": "h1"}}, {"text": 5}]}', ['h1']);
     expect(JSON.parse(odd.value)).toEqual({
       steps: [
         null,

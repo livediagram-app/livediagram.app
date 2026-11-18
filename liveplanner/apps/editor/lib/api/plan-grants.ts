@@ -36,6 +36,8 @@ export const planGrant: typeof grants.grant = (...args) =>
 export const heldPlanGrant = grants.held;
 /** Why the index last refused this plan (`password_required`, `password_invalid`, `not_found`, ...), or null. */
 export const planGrantRefusal = grants.refusal;
+/** The link to ask for the password through when the plan, reopened with no code, needs one, or null. */
+export const planPasswordLink = grants.passwordLink;
 /** Keeps the open plan's grant fresh while it stays open; answers the stop. Nothing to keep in a workbench frame. */
 export const keepPlanGrantFresh: typeof grants.keepFresh = (...args) =>
   isWorkbenchConfined() ? () => {} : grants.keepFresh(...args);

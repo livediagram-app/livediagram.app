@@ -42,6 +42,32 @@ export function itemStampPerson(
     : undefined;
 }
 
+// The person as the cards already show them (docs/specs/026-plan/items.md "One person, one colour on a card"): the
+// first stamp, Created By then Last Edited By, naming this hashed id. Undefined when no card does, or for no id.
+export function heldPerson(
+  id: string,
+  items: Iterable<Partial<Pick<Item, StampPersonField>>>,
+): ItemPerson | undefined {
+  if (!id) return undefined;
+  for (const item of items) {
+    const made = itemStampPerson(item, 'createdBy');
+    if (made?.id === id) return made;
+    const edited = itemStampPerson(item, 'updatedBy');
+    if (edited?.id === id) return edited;
+  }
+  return undefined;
+}
+
+// Who a write stamps (items.md "One person, one colour on a card"): the person signed in, in the colour the cards
+// already hold for them, so one account never wears two colours on a card. One rule for the editor, the api and agents.
+export function heldStampPerson(
+  by: ItemPerson,
+  items: Iterable<Partial<Pick<Item, StampPersonField>>>,
+): ItemPerson {
+  const held = heldPerson(by.id, items);
+  return held && held.color !== by.color ? { ...by, color: held.color } : by;
+}
+
 // Whether the card holds this stamp, so a face draws it (or leaves its row out).
 export function itemHasStamp(item: Partial<Pick<Item, StampField>>, field: StampField): boolean {
   return field === 'createdAt' || field === 'updatedAt'

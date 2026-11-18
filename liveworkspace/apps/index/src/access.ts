@@ -7,7 +7,7 @@ import { levelAtLeast, type Level } from '@liveworkspace/index-client';
 import type { Caller } from './auth';
 import type { Env } from './env';
 import { inTeamNow } from './fresh-teams';
-import { fail, notFound, unauthorized } from './http';
+import { fail, json, notFound, unauthorized } from './http';
 import { isRememberedSharePassword, verifySharePassword } from './password-hash';
 import { guessRefusal, wrongGuessRefusal } from './share-guesses';
 import { directAccess, getItemRow, LIVE_LINK, type Access, type ItemRow } from './rows';
@@ -48,16 +48,23 @@ async function linkFor(env: Env, itemId: string, caller: Caller): Promise<LinkRo
 // asks for one: behind a password it is closed, and answers as missing. A password this isolate hasn't already found
 // right is a guess (share-guesses.ts): counted against the visitor's network before it is checked, and, when wrong,
 // against the item. The right one opens the item even while others' wrong guesses hold the item over its limit.
+// `nameLink`: the caller sent no code and reached the link through their own Shared with me row, so a password asked
+// of them names the link's code (and nothing else), for their editor to ask for it ("Reopened without the code").
 export async function linkAccess(
   env: Env,
   itemId: string,
   link: LinkRow,
   password: string | null,
   visitor: string | null,
+  nameLink = false,
 ): Promise<Access | Response> {
   if (link.hash && link.public) return notFound();
   if (link.hash) {
-    if (!password) return fail(401, 'password_required');
+    if (!password) {
+      return nameLink
+        ? json({ error: 'password_required', link: link.code }, { status: 401 })
+        : fail(401, 'password_required');
+    }
     if (!(await isRememberedSharePassword(link.hash, password))) {
       const refused = await guessRefusal(env, itemId, visitor);
       if (refused) return refused;
@@ -94,6 +101,8 @@ export async function accessTo(env: Env, row: ItemRow, caller: Caller): Promise<
     link,
     caller.share?.password ?? null,
     caller.share?.visitor ?? null,
+    // No code sent: the link is the person's own Shared with me row (linkFor), so they opened it before.
+    !caller.share,
   );
 }
 

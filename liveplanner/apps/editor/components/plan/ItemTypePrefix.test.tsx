@@ -12,8 +12,14 @@ const types = defaultCatalogue().types;
 const task = types.find((t) => t.id === 'task')!;
 const seen: { draft?: TypePrefixDraft } = {};
 
-function Field({ type, label }: { type?: ItemTypeDef; label: string }) {
-  const draft = useTypePrefixDraft(type ?? { ...task, id: '', label: '' }, type, types, label);
+function Field({ type, label, next = 12 }: { type?: ItemTypeDef; label: string; next?: number }) {
+  const draft = useTypePrefixDraft(
+    type ?? { ...task, id: '', label: '' },
+    type,
+    types,
+    label,
+    next,
+  );
   useEffect(() => {
     seen.draft = draft;
   });
@@ -37,6 +43,12 @@ describe('the Prefix field', () => {
     expect(input().placeholder).toBe('WI');
     expect(screen.getByText('WI-12')).toBeTruthy();
     expect(seen.draft!.stored).toBe('WI');
+  });
+
+  it('previews the plan’s real next number, never a made-up one', () => {
+    render(<Field type={task} label="Task" next={101} />);
+    expect(screen.getByText('T-101')).toBeTruthy();
+    expect(screen.queryByText('T-12')).toBeNull();
   });
 
   it('steps a new type’s made prefix round the plan’s', () => {

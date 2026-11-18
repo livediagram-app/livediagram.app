@@ -110,6 +110,32 @@ describe('the card face', () => {
     expect(screen.getByText('A card')).toBeTruthy();
   });
 
+  // docs/specs/026-plan/plan-board.md "On a phone": a phone's Minimal card keeps the number the board's own size shows.
+  it('keeps a phone’s Minimal card numbered as the board’s own size shows it', () => {
+    const at = (item: Item, numberFrom?: 'minimal' | 'detailed', stacked = false) => {
+      render(
+        <PlanCardFace
+          item={item}
+          palette={planPalette('light', {})}
+          fields={ALL}
+          size="minimal"
+          {...(numberFrom ? { numberFrom } : {})}
+          stacked={stacked}
+        />,
+      );
+      const shown = screen.queryByText('#7') !== null;
+      cleanup();
+      return shown;
+    };
+    expect(at(card({}))).toBe(false);
+    expect(at(card({}), 'detailed')).toBe(true);
+    expect(at(card({}), 'detailed', true)).toBe(true);
+    // A Minimal board shows on a phone what it shows anywhere.
+    expect(at(card({}), 'minimal')).toBe(false);
+    // A Note's Detailed card shows no number, so neither does its phone card.
+    expect(at(card({}, 'note'), 'detailed')).toBe(false);
+  });
+
   it('heads a Detailed card with its type, number and priority, and ends it with pills', () => {
     face(
       card({

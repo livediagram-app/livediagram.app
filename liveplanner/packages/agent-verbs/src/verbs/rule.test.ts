@@ -180,7 +180,7 @@ describe('rule test, rule run and rule log', () => {
     });
     const tested = await ruleTest.run!(ctx, { project: DOC_A, rule: 'Done stamp', card: '#12' });
     expect(ruleTest.text!(tested)).toEqual([
-      '? tested "Done stamp" on #12: Done',
+      '? tested "Done stamp" on B-12: Done',
       '  Ana Costa moved #12 to Done',
       '  ✓ Card Type is Bug',
       '  ✓ Add Label shipped (Already so)',
@@ -190,7 +190,7 @@ describe('rule test, rule run and rule log', () => {
     await ruleTest.run!(ctx, { project: DOC_A, rule: 'DRAFT.JSON'.toLowerCase(), card: '12' });
     await ruleTest.run!(ctx, { project: DOC_A, rule: '-', card: '12' });
     const ran = await ruleRun.run!(ctx, { project: DOC_A, rule: 'r1', card: '#12' });
-    expect(ran.applied).toEqual(['> ran "Done stamp" on #12: Done']);
+    expect(ran.applied).toEqual(['> ran "Done stamp" on B-12: Done']);
     expect(sent).toEqual(['POST /test', 'POST /test', 'POST /test', 'POST /r1/run']);
   });
 
@@ -200,7 +200,7 @@ describe('rule test, rule run and rule log', () => {
       ruleLog.input.parse({ project: DOC_A, rule: 'r1', limit: '5' }),
     );
     const lines = ruleLog.text!(out);
-    expect(lines[0]).toMatch(/^2026-11-11 09:00:00\s+done\s+"Done stamp"\s+#12 Basket\s+7 ms$/);
+    expect(lines[0]).toMatch(/^2026-11-11 09:00:00\s+done\s+"Done stamp"\s+B-12 Basket\s+7 ms$/);
     expect(lines[1]).toBe('  Ana Costa moved #12 to Done');
     expect(lines.find((l) => l.includes('no card'))).toMatch(/no card\s+7 ms {2}Chain stopped$/);
     expect(ruleLog.quiet!(out)).toEqual(['run1', 'run2']);

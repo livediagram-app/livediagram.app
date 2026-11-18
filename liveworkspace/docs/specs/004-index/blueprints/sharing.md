@@ -107,20 +107,23 @@ counts the person's items in that app, Trash included, up to `OWNED_COUNT_MAX` (
 
 ## Errors and edge cases
 
-| Case                                   | Answer                                        |
-| -------------------------------------- | --------------------------------------------- |
-| A 101st link                           | `409 share_link_limit`                        |
-| A password set on a public link's item | the public link answers `404` while it is set |
-| A wrong password                       | `403 password_invalid`                        |
-| None sent where needed                 | `401 password_required`                       |
-| Too many guesses                       | `429 rate_limited`, `Retry-After: 60`         |
-| Extending a `never` link               | `400 never_expires`                           |
+| Case                                   | Answer                                         |
+| -------------------------------------- | ---------------------------------------------- |
+| A 101st link                           | `409 share_link_limit`                         |
+| A password set on a public link's item | the public link answers `404` while it is set  |
+| A wrong password                       | `403 password_invalid`                         |
+| None sent where needed                 | `401 password_required`                        |
+| None sent, reached through Shared      | `401 password_required` with `link` (the code) |
+| Too many guesses                       | `429 rate_limited`, `Retry-After: 60`          |
+| Extending a `never` link               | `400 never_expires`                            |
 
 ## Security and trust
 
 - Codes: 14 characters from a 32-letter alphabet without look-alikes, one random byte each (no modulo bias).
 - An item out of reach answers `404`; a link's holder never learns more than the link opens.
 - A new password reaches everyone already in: their rows go and their sessions reload.
+- A password refusal names the link's code only to a person reaching it through their own `shared_with` row (they
+  opened that link before); it never names the item's details, and nobody without a live link learns the item exists.
 
 ## Testing
 

@@ -10,6 +10,7 @@ import {
   stripUiTabFields,
   wsUrl,
   type ApiCoreConfig,
+  isPasswordRefusal,
 } from './core';
 import { ApiError } from './api-error';
 
@@ -324,10 +325,17 @@ describe('the response helpers', () => {
   });
 
   it('answers null for a 404 where asked', async () => {
-    const { core } = setup();
+    const { core, report } = setup();
     await expect(core.expectOkOrNull(json(404, {}), 'read')).resolves.toBeNull();
     await expect(core.expectOkOrNull(json(200, { a: 1 }), 'read')).resolves.toEqual({ a: 1 });
     await expect(core.expectOkOrNull(json(500, {}), 'read')).rejects.toBeInstanceOf(ApiError);
+    // A refusal the caller handles (a password asked of a reopen with no code) is thrown but never reported.
+    await expect(
+      core.expectOkOrNull(json(401, { error: 'password_required' }), 'load', isPasswordRefusal),
+    ).rejects.toMatchObject({ status: 401 });
+    // Only the 500 above was reported.
+    expect(report.apiError).toHaveBeenCalledTimes(1);
+    expect(isPasswordRefusal('not_found')).toBe(false);
     await expect(core.expectOkVoid(json(200, null), 'write')).resolves.toBeUndefined();
     await expect(core.expectOkVoid(json(500, {}), 'write')).rejects.toBeInstanceOf(ApiError);
   });

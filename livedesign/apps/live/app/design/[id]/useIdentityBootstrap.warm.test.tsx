@@ -62,7 +62,10 @@ vi.mock('@/lib/offline/offline-store', () => ({
   isOfflineId: () => offline.isOfflineId(),
   OFFLINE_OWNER_ID: '__offline__',
 }));
-vi.mock('@/lib/api/design-grants', () => ({ designGrant: async () => ({ level: 'edit' }) }));
+vi.mock('@/lib/api/design-grants', () => ({
+  designGrant: async () => ({ level: 'edit' }),
+  designPasswordLink: async () => null,
+}));
 vi.mock('@liveworkspace/workbench/lib/index-client', () => ({
   indexClient: { getItem: async () => ({ item: { trashedAt: null } }) },
 }));

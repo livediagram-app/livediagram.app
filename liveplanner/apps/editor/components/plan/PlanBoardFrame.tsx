@@ -153,6 +153,7 @@ export function PlanBoardFrame({ v }: { v: PlanBoardViewValues }) {
           drag={dragging}
           pointer={drag.pointer}
           size={cardSize}
+          {...(look.numberFrom ? { numberFrom: look.numberFrom } : {})}
           stacked={slotBoard}
           item={items.get(dragging.itemId)!}
           palette={palette}
