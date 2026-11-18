@@ -175,6 +175,7 @@ const base = {
   can: { level: 'edit' },
   isOwner: true,
   canToggleRole: false,
+  previewModes: ['edit'],
   selfParticipant: self,
   livePresence: [],
   documentOwnerId: 'me',

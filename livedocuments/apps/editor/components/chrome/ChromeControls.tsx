@@ -9,6 +9,10 @@ import { SettingsIcon, GithubIcon, SearchGlyph } from '@/components/chrome/tab-b
 import { REPO_URL, HoverCard } from '@livedocuments/ui';
 import { useVersionHistoryInTools } from '@/components/versions/history-tools-item';
 import {
+  EditingModeButton,
+  type EditingModeWiring,
+} from '@liveworkspace/workbench/components/chrome/EditingModeButton';
+import {
   ChromeToolsMenu,
   type ChromeToolsItem,
 } from '@liveworkspace/workbench/components/chrome/ChromeToolsMenu';
@@ -21,7 +25,7 @@ import {
 // so each host drops it straight into its own bar flex row.
 export function ChromeControls({
   onOpenSearch,
-  extraTools = [],
+  editingMode,
   onOpenHistory,
   onOpenSettings,
   settingsLabel = 'Settings',
@@ -30,8 +34,8 @@ export function ChromeControls({
   appearance = true,
 }: {
   onOpenSearch?: () => void;
-  // More rows for Tools (the editor's Editing Mode tool).
-  extraTools?: readonly (ChromeToolsItem | null)[];
+  // The Editing Mode button between Tools and Settings (EditingModeButton): the editor's, never the Explorer's.
+  editingMode?: EditingModeWiring | null;
   // Version History (docs/specs/006-document/version-history.md "In the editor"): the editor passes it on a
   // document stored on the server; the Explorer's bar never does.
   onOpenHistory?: () => void;
@@ -71,7 +75,10 @@ export function ChromeControls({
       <TourOfferButton labelled={labelled} />
       {/* Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md): the tools that work on the
           whole item, in one menu, drawn only while it holds one. */}
-      <ChromeToolsMenu labelled={labelled} items={[search, ...extraTools]} />
+      <ChromeToolsMenu labelled={labelled} items={[search]} />
+      {/* Editing Mode, between Tools and Settings (liveworkspace/docs/specs/004-index/footer-tools-menu.md
+          "The Editing Mode button"): the mode in force, a press moving to the next. */}
+      {editingMode ? <EditingModeButton {...editingMode} labelled={labelled} /> : null}
       {github ? (
         <>
           {/* Open-source repo link (the codebase is public + MIT, docs/specs/002-project-scope/open-source-and-business-model.md). An

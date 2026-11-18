@@ -71,3 +71,49 @@ describe('useViewPreview', () => {
     expect(renderHook(() => useViewPreview('view', vi.fn())).result.current.canEdit).toBe(false);
   });
 });
+
+// The Editing Mode button (docs/specs/007-editor/editor-app.md#role-pill, Work Tracker 1291): no Viewer step, so an
+// Editor steps Editor and Participant, and a Participant (or a legacy Viewer) has one mode.
+describe('useViewPreview modes', () => {
+  it('offers an Editor two modes and a Participant or a legacy Viewer one', () => {
+    expect(renderHook(() => useViewPreview('edit', vi.fn())).result.current.previewModes).toEqual([
+      'edit',
+      'participate',
+    ]);
+    const participant = renderHook(() => useViewPreview('participate', vi.fn()));
+    expect(participant.result.current.previewModes).toEqual(['participate']);
+    act(() => participant.result.current.toggleViewPreview());
+    act(() => participant.result.current.setViewPreview('view'));
+    expect(participant.result.current.previewLevel).toBe('participate');
+    expect(renderHook(() => useViewPreview('view', vi.fn())).result.current.previewModes).toEqual([
+      'view',
+    ]);
+  });
+
+  it('picks a level straight, and ignores the one in force and one the session may not take', () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const onEnter = vi.fn();
+    const { result } = renderHook(() => useViewPreview('edit', onEnter));
+    act(() => result.current.setViewPreview('edit'));
+    expect(onEnter).not.toHaveBeenCalled();
+    act(() => result.current.setViewPreview('view'));
+    expect(result.current.previewLevel).toBe('edit');
+    act(() => result.current.setViewPreview('participate'));
+    expect(result.current.previewLevel).toBe('participate');
+    act(() => result.current.setViewPreview('edit'));
+    expect(result.current.previewLevel).toBe('edit');
+    expect(onEnter).toHaveBeenCalledTimes(1);
+  });
+
+  it('falls back to the session role when the role narrows under a preview', () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const { result, rerender } = renderHook(
+      ({ role }: { role: 'edit' | 'participate' | 'view' }) => useViewPreview(role, vi.fn()),
+      { initialProps: { role: 'edit' } },
+    );
+    act(() => result.current.setViewPreview('participate'));
+    rerender({ role: 'view' });
+    expect(result.current.previewLevel).toBe('view');
+    expect(result.current.viewPreview).toBe(false);
+  });
+});

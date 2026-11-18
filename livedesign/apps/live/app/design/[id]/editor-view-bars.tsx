@@ -11,7 +11,6 @@ import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search
 import { track } from '@/lib/telemetry';
 import { addToDesignTargets } from '@/lib/add-to-design-targets';
 import { EditorCornerActions } from '@liveworkspace/workbench/components/chrome/EditorCornerActions';
-import { roleToolsItem } from '@liveworkspace/workbench/components/chrome/RoleTool';
 import { WorkbenchOpenLink } from '@/components/chrome/WorkbenchChrome';
 import { appHrefOfPlace } from '@/lib/workbench/workspace-place';
 import { TabBar } from '@/components/chrome/TabBar';
@@ -53,7 +52,7 @@ export function editorViewHeader(ctx: EditorContextValue): ReactNode {
     <PrototypeHeaderButton />
   ) : undefined;
   // Experiment: no header bar. The name, its visibility badge and the role pill are gone (the role's switch is the
-  // Editing Mode tool in Tools); Prototype, Copy, Share and the account float in a card at the top right.
+  // Editing Mode button in the tab bar); Prototype, Copy, Share and the account float in a card at the top right.
   return zenMode || !appChrome ? null : (
     <AreaErrorBoundary area="Header" fallback="panel">
       <EditorCornerActions
@@ -194,15 +193,15 @@ export function editorViewFooter(
             setSettingsOpen(true);
             track('UI', 'Opened', 'Settings');
           }}
-          extraTools={[
-            roleToolsItem({
-              role: view.role.role,
-              owner: roleOwnerLabel(view.role.ownerName, view.role.isSelf),
-              noun: 'design',
-              canSwitch: !!view.role.onToggle,
-              onPick: ctx.setViewPreview,
-            }),
-          ]}
+          // Editing Mode, between Tools and Settings (EditingModeButton): the mode in force, a press moving to the
+          // next this person may preview; no button with one mode.
+          editingMode={{
+            mode: view.role.role,
+            modes: ctx.previewModes,
+            noun: 'design',
+            owner: roleOwnerLabel(view.role.ownerName, view.role.isSelf),
+            onPick: ctx.setViewPreview,
+          }}
           onOpenSearch={() => openSearchWithPrefetch(setSearchOpen, loadAllTabs)}
           // Canvas right-click (desktop) + long-press (touch) open the active
           // tab's menu with the canvas sections folded in, rendered by the

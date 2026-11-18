@@ -94,6 +94,7 @@ export function editorView({
     canToggleRole: sessionSlice.canToggleRole,
     toggleViewPreview: sessionSlice.toggleViewPreview,
     setViewPreview: sessionSlice.setViewPreview,
+    previewModes: sessionSlice.previewModes,
     confirm: sessionSlice.confirm,
     // Clipboard copy, plus paste + its enabled flag for the canvas menu's Paste row.
     copySelection: inputSlice.copySelection,

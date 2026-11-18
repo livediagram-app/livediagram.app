@@ -1,8 +1,8 @@
 import type { Page } from '@playwright/test';
 import { dismissQuickTour, expect, expectNoPageErrors, test } from './fixtures';
 
-// Previewing a role (docs/specs/007-editor/editor-app.md#role-pill): with no header bar (experiment) the role pill is the Editing Mode tool in
-// Tools. And the chrome everyone gets now Power user mode is retired (docs/specs/007-editor/power-user-mode.md), in a real browser, dark mode.
+// Previewing a role (docs/specs/007-editor/editor-app.md#role-pill): the role pill is the Editing Mode button in the tab bar, between Tools and
+// Settings (Work Tracker 1291). And the chrome everyone gets now Power user mode is retired (docs/specs/007-editor/power-user-mode.md), in a real browser, dark mode.
 test.use({ colorScheme: 'dark' });
 
 const PREFS_KEY = 'livehuddle:user-preferences:v1';
@@ -10,21 +10,28 @@ const PREFS_KEY = 'livehuddle:user-preferences:v1';
 const dialog = (page: Page) => page.getByRole('dialog', { name: 'Settings' });
 const tabBar = (page: Page) => page.locator('[data-editor-tabbar]');
 const tools = (page: Page) => tabBar(page).getByRole('button', { name: /^Tools/ });
-const roleOption = (page: Page, role: string) => page.locator(`[data-role-option="${role}"]`);
+const modeButton = (page: Page) => tabBar(page).locator('[data-editing-mode]');
 
-// Tools, then Editing Mode, then the role: the tool closes on the pick. Opened again, the pick is the checked one.
-async function pickRole(page: Page, role: 'edit' | 'participate' | 'view') {
-  await tools(page).click();
-  await page.locator('[data-tools-item="role"]').click();
-  await roleOption(page, role).click();
-  await expect(roleOption(page, role)).toHaveCount(0);
-  await tools(page).click();
-  await page.locator('[data-tools-item="role"]').click();
-  await expect(roleOption(page, role)).toHaveAttribute('aria-checked', 'true');
-  // Back to the list, then closed.
-  await page.keyboard.press('Escape');
-  await page.keyboard.press('Escape');
-  await expect(page.locator('[data-tools-item="role"]')).toHaveCount(0);
+// The Editing Mode button, between Tools and Settings (Work Tracker 1291): it shows only the mode in force, and a press
+// moves to the next mode, wrapping round.
+async function step(page: Page, mode: 'edit' | 'participate' | 'view', word: string) {
+  await modeButton(page).click();
+  await expect(modeButton(page)).toHaveAttribute('data-editing-mode', mode);
+  await expect(modeButton(page)).toHaveText(word);
+}
+
+// Where the button sits among the bar's buttons: after Tools, before Settings.
+async function clusterOrder(page: Page) {
+  return tabBar(page).evaluate((bar) => {
+    const buttons = [...bar.querySelectorAll('button')];
+    const at = (selector: string) =>
+      buttons.indexOf(bar.querySelector(selector) as HTMLButtonElement);
+    return {
+      tools: at('[data-tools-button]'),
+      mode: at('[data-editing-mode]'),
+      settings: at('button[aria-label="Application settings"]'),
+    };
+  });
 }
 
 async function openEditor(page: Page) {
@@ -36,18 +43,37 @@ async function openEditor(page: Page) {
 }
 
 test.describe('Editing Mode', () => {
-  test('previews another role from Tools for the owner, and goes back to editing', async ({
+  test('steps the owner to Participant from the button, and back to Editor', async ({
     page,
     pageErrors,
   }) => {
     await openEditor(page);
     // No header bar, so no pill in one.
     await expect(page.locator('header[data-region="header"]')).toHaveCount(0);
+    // A button of its own showing only the mode in force, after Tools and before Settings.
+    await expect(modeButton(page)).toHaveText('Editor');
+    await expect(modeButton(page)).toHaveAccessibleName(
+      'Editing Mode: Editor. Switch to Participant.',
+    );
+    const order = await clusterOrder(page);
+    expect(order.tools).toBeGreaterThanOrEqual(0);
+    expect(order.mode).toBe(order.tools + 1);
+    expect(order.settings).toBeGreaterThan(order.mode);
+    // No longer a row in Tools.
+    await tools(page).click();
+    await expect(page.locator('[data-tools-item]').first()).toBeVisible();
+    await expect(page.locator('[data-tools-item="role"]')).toHaveCount(0);
+    await page.keyboard.press('Escape');
+    await expect(page.locator('[data-tools-item]')).toHaveCount(0);
     await expect(page.locator('[data-category-bar-button][aria-label="Write"]')).toBeVisible();
-    await pickRole(page, 'participate');
-    // Read-only for a Viewer, walking for a Participant: the building categories are gone.
+    await step(page, 'participate', 'Participant');
+    // Walking for a Participant: the building categories are gone.
     await expect(page.locator('[data-category-bar-button][aria-label="Write"]')).toHaveCount(0);
-    await pickRole(page, 'edit');
+    await expect(modeButton(page)).toHaveAccessibleName(
+      'Editing Mode: Participant. Switch to Editor.',
+    );
+    // No Viewer step: round to the real role.
+    await step(page, 'edit', 'Editor');
     await expect(page.locator('[data-category-bar-button][aria-label="Write"]')).toBeVisible();
     expectNoPageErrors(pageErrors);
   });

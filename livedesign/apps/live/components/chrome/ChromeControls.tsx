@@ -8,6 +8,10 @@ import { TourOfferButton } from '@liveworkspace/workbench/components/tour/TourOf
 import { SettingsIcon, GithubIcon, SearchGlyph } from '@/components/chrome/tab-bar-icons';
 import { REPO_URL, HoverCard } from '@livedesign/ui';
 import {
+  EditingModeButton,
+  type EditingModeWiring,
+} from '@liveworkspace/workbench/components/chrome/EditingModeButton';
+import {
   ChromeToolsMenu,
   type ChromeToolsItem,
 } from '@liveworkspace/workbench/components/chrome/ChromeToolsMenu';
@@ -25,7 +29,7 @@ export function ChromeControls({
   labelled = false,
   github = true,
   appearance = true,
-  extraTools = [],
+  editingMode,
 }: {
   onOpenSearch?: () => void;
   onOpenSettings?: () => void;
@@ -40,8 +44,8 @@ export function ChromeControls({
   // The Appearance control; withheld where the host sets the scheme itself (a workbench frame,
   // docs/specs/013-workspace/blueprints/workbench-embeds.md, WB15).
   appearance?: boolean;
-  // More rows for Tools (the editor's Editing Mode tool).
-  extraTools?: readonly (ChromeToolsItem | null)[];
+  // The Editing Mode button between Tools and Settings (EditingModeButton): the editor's, never the Explorer's.
+  editingMode?: EditingModeWiring | null;
 }) {
   const BTN = labelled ? `${CHROME_BTN} ${CHROME_BTN_LABELLED}` : CHROME_BTN;
   // Search, first in Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md).
@@ -64,7 +68,10 @@ export function ChromeControls({
       <TourOfferButton labelled={labelled} />
       {/* Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md): the tools that work on the
           whole item, in one menu, drawn only while it holds one. */}
-      <ChromeToolsMenu labelled={labelled} items={[search, ...extraTools]} />
+      <ChromeToolsMenu labelled={labelled} items={[search]} />
+      {/* Editing Mode, between Tools and Settings (liveworkspace/docs/specs/004-index/footer-tools-menu.md
+          "The Editing Mode button"): the mode in force, a press moving to the next. */}
+      {editingMode ? <EditingModeButton {...editingMode} labelled={labelled} /> : null}
       {github ? (
         <>
           {/* Open-source repo link (the codebase is public + MIT, docs/specs/002-project-scope/open-source-and-business-model.md). An

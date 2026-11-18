@@ -20,7 +20,7 @@ import { TabPresenceStack } from '@/components/chrome/TabPresenceStack';
 import { NameEditor } from '@liveworkspace/workbench/components/primitives/NameEditor';
 import { useTabReorderDrag } from '@liveworkspace/workbench/components/chrome/useTabReorderDrag';
 import { ChromeControls } from '@/components/chrome/ChromeControls';
-import type { ChromeToolsItem } from '@liveworkspace/workbench/components/chrome/ChromeToolsMenu';
+import type { EditingModeWiring } from '@liveworkspace/workbench/components/chrome/EditingModeButton';
 // Lazy: the tab context menu (and the 18 kB icon module it drags in)
 // only loads on the first right-click — it was the largest single
 // eager block left in the editor chunk after the dialogs went dynamic.
@@ -55,8 +55,8 @@ type TabBarProps = {
   // Optional callback that pops the global search panel. The
   // button sits to the LEFT of the dark-mode toggle.
   onOpenSearch?: () => void;
-  // More rows for the footer's Tools menu (the Editing Mode tool).
-  extraTools?: readonly (ChromeToolsItem | null)[];
+  // The Editing Mode button, between Tools and Settings (EditingModeButton).
+  editingMode?: EditingModeWiring | null;
   // Opens Version History (docs/specs/006-document/version-history.md "In the editor"): History sits between
   // Search and Settings while it is set, on a document stored on the server.
   onOpenHistory?: () => void;
@@ -182,7 +182,7 @@ export function TabBar({
   onOpenCollaborators,
   onOpenSettings,
   onOpenSearch,
-  extraTools,
+  editingMode,
   onOpenHistory,
   canvasMenu,
   onCloseCanvasMenu,
@@ -371,7 +371,7 @@ export function TabBar({
             desktop; icon-only on a phone. */}
         <ChromeControls
           onOpenSearch={onOpenSearch}
-          extraTools={extraTools}
+          editingMode={editingMode}
           onOpenHistory={onOpenHistory}
           onOpenSettings={onOpenSettings}
           settingsLabel="Application settings"

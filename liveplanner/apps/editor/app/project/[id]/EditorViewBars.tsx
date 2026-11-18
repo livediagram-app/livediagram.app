@@ -10,7 +10,6 @@ import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search
 import { track } from '@/lib/telemetry';
 import { appHrefOfPlace } from '@/lib/workbench/workspace-place';
 import { PlanCornerActions } from '@/components/chrome/EditorHeader';
-import { roleToolsItem } from '@liveworkspace/workbench/components/chrome/RoleTool';
 import { TabBar } from '@/components/chrome/TabBar';
 import { LandscapeBarFold } from '@/components/chrome/LandscapeBars';
 import { roleOwnerLabel } from '@/components/chrome/RoleIndicator';
@@ -45,7 +44,7 @@ export function renderEditorHeader(ctx: EditorContextValue): ReactNode {
   } = ctx;
   // Experiment (no header bar): no bar across the top. Share (or Share Form) and the account float in a card at the
   // canvas's top right (EditorCornerActions); the plan's name and badges go, the logo leads the menu box
-  // (ToolbarExplorerButton) and switching the role is the Editing Mode tool in Tools (RoleTool).
+  // (ToolbarExplorerButton) and switching the role is the Editing Mode button in the tab bar (EditingModeButton).
   return zenMode || !appChrome ? null : (
     <AreaErrorBoundary area="Header" fallback="panel">
       <PlanCornerActions
@@ -148,16 +147,15 @@ export function renderEditorTabBar(
                 )
               : undefined
           }
-          // The role pill's switch, as the Editing Mode tool (RoleTool).
-          extraTools={[
-            roleToolsItem({
-              role: role.role,
-              owner: roleOwnerLabel(role.ownerName, role.isSelf),
-              noun: 'plan',
-              canSwitch: !!role.onToggle,
-              onPick: ctx.setViewPreview,
-            }),
-          ]}
+          // Editing Mode, between Tools and Settings (EditingModeButton): the mode in force, a press moving to the
+          // next this person may preview; no button with one mode.
+          editingMode={{
+            mode: role.role,
+            modes: ctx.previewModes,
+            noun: 'plan',
+            owner: roleOwnerLabel(role.ownerName, role.isSelf),
+            onPick: ctx.setViewPreview,
+          }}
           tabs={tabs}
           activeId={activeId}
           // Clicking an avatar in a presence stack opens the Collaborators
