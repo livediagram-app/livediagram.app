@@ -1121,6 +1121,14 @@ for every app. An app keeps no participants table of its own.
 showPicture?, timeZone? }` with one handler; a guest's bearer is refused (`401 signed_out`), since a guest
   sets its name in the app itself. The [time zone](#the-send-window) is an account's only, set over these two
   doors; an app's own profile write (`POST /internal/profiles/write`) leaves it alone.
+- **A change reaches the room at once.** A name or colour saved in Settings › Profile while an editor is open is
+  that editor's own at once, and reaches everyone already in the document with it, live, not at their next load
+  (Work Tracker 1221): the editor tells the room over its open socket, the room checks it as it checks a hello and
+  sends the roster again, so their cursors, presence avatars and selection rings wear the new colour without a
+  reload or a rejoin. The same goes for a colour an editor yields to a peer already wearing it. livediagram,
+  liveplanner, livedocuments and livedesign send an `identity` frame (the hello's participant again, the frame Show
+  My Google Picture already sends, `useAnnounceSelf` in `@liveworkspace/workbench`); livehuddle, whose room picks
+  every name, sends `presence-colour` (its auth-and-guest-access.md "Presence colours").
 - **An editor never overwrites a stored name.** On opening, an editor uses the profile as it is; only a first
   visit with none seeds one (the account name, or a guest's placeholder), so a display name set anywhere stays.
 - A name is trimmed, 1 to 120 characters, with no control characters; a colour at most 64, and refused
@@ -1458,7 +1466,8 @@ A person closes their account from any app's Settings (Profile, **Delete Account
 product's docs/specs/014-identity/auth-and-guest-access.md "Deleting an account"). liveworkspace.app's own Settings
 says so where they would look for it: its Profile's **Your Account** has a Delete Account row that points to an app
 and links to that app's help article ([site.md](../010-site/site.md#settings), "Your Account"), since the site holds
-no app client to ask with.
+no app client to ask with. On an app's own address the Explorer's Settings is that app's, so its Delete Account opens
+the app's own dialog over the app's token, and Sign Out signs out of the app (Work Tracker 1228).
 
 An app's server asks (`POST /api/auth/delete-account`, with its client credentials, the person's access token and the
 code emailed to them, `src/delete-account.ts`), and the account closes for every app at once. Without the right code

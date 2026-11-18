@@ -159,7 +159,7 @@ const ROOM_KEEPALIVE_TICK_MS = 5_000;
 const RECONNECT_MAX_MS = 15_000;
 
 /** Who this client says it is to the room: the room overrides `id` (see connectRoom). */
-type RoomSelf = { id: string; key?: string; name: string; color: string };
+type RoomSelf = { id: string; key?: string; name: string; color: string; picture?: string };
 
 export function connectRoom(
   documentId: string,
@@ -167,7 +167,7 @@ export function connectRoom(
   // an answer saved on the document can be joined back to the person in the
   // roster. The room OVERRIDES `id` with its own per-socket presence id
   // (docs/specs/015-api/public-api-and-tokens.md §6), which is why the two are separate fields.
-  participant: RoomSelf,
+  initialParticipant: RoomSelf,
   handlers: RoomHandlers,
   options: RoomConnectOptions = {},
   // Read at every (re)connect rather than captured once: the baton can be
@@ -179,7 +179,10 @@ export function connectRoom(
   close: () => void;
   cursor: () => { epoch: string; seq: number } | null;
   sequence: (op: RoomOp) => Promise<boolean>;
+  updateSelf: (participant: RoomSelf) => void;
 } {
+  // Read at every (re)connect, and replaced by updateSelf, so a reconnect says hello as we are now.
+  let participant = initialParticipant;
   // The ticket rides the query string (see roomQueryString); every reconnect mints a fresh one,
   // even after a mint that failed.
   let ticket = options.ticket ?? null;
@@ -568,6 +571,15 @@ export function connectRoom(
     // what the client changed offline must not be overruled by the room.
     cursor: (): { epoch: string; seq: number } | null =>
       isOpen() && lastEpoch !== null ? { epoch: lastEpoch, seq: lastSeq } : null,
+    // A changed name, colour or picture over the open socket (liveworkspace/docs/specs/003-accounts/accounts.md
+    // "Profiles", "A change reaches the room at once"): the room updates the roster in place, so everyone already here
+    // sees it live. A closed socket just remembers it for the next hello.
+    updateSelf: (next) => {
+      participant = next;
+      if (ws && isOpen()) {
+        ws.send(JSON.stringify({ kind: 'identity', participant: next } satisfies RoomOutgoing));
+      }
+    },
     close: () => {
       closed = true;
       stopResuming();

@@ -1,4 +1,5 @@
 import { useEffect, useEffectEvent, useRef } from 'react';
+import { useAnnounceSelf } from '@liveworkspace/workbench/hooks/collab/useAnnounceSelf';
 import { emitSourceChanged } from '@liveworkspace/workbench/components/sheet-links/sheet-link-signal';
 import { noteAccessEnded } from '@/lib/access-notice';
 import { type AgentPresence } from '@livediagram/api-schema';
@@ -78,19 +79,23 @@ export function useRoomConnection(opts: RoomConnectionOptions) {
   //
   // A signed-in session says hello with its Google picture unless Show My Google Picture is off; the room keeps it
   // only from an account session and sends it only to account sessions (liveworkspace/docs/specs/003-accounts/accounts.md "Profile
-  // pictures"). A switch flipped mid-session reaches the room on the next connect.
+  // pictures").
   const authUser = useDeferredAuth().user;
   const helloPicture = authUser && !authUser.pictureHidden ? (authUser.picture ?? null) : null;
+  const selfForRoom = () => ({
+    id: selfParticipant.id,
+    key: selfParticipant.key,
+    name: selfParticipant.name,
+    color: selfParticipant.color,
+    ...(helloPicture ? { picture: helloPicture } : {}),
+  });
   const connectAs = useEffectEvent(() => ({
-    self: {
-      id: selfParticipant.id,
-      key: selfParticipant.key,
-      name: selfParticipant.name,
-      color: selfParticipant.color,
-      ...(helloPicture ? { picture: helloPicture } : {}),
-    },
+    self: selfForRoom(),
     shareCode: sessionShareCode,
   }));
+  // A changed name or colour (Settings › Profile, or one yielded to a peer), or the picture switch: told to the open
+  // room, which updates the roster in place, so everyone already here sees it live (Work Tracker 1221).
+  useAnnounceSelf(selfForRoom(), () => roomRef.current?.updateSelf(selfForRoom()));
   const announceAdderKey = useEffectEvent((key: string | null) => onAdderKey?.(key));
   // Each peer's server-verified role by presence id, refreshed with every presence list.
   const roleByPresenceRef = useRef<Map<string, string | undefined>>(new Map());
