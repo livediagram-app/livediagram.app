@@ -1015,7 +1015,7 @@ describe('items handed to an assistant', () => {
     const { ctx } = await handed();
     const all = await itemLs.run!(ctx, { project: DOC_A, handedToMe: true });
     expect(all.items.map((i) => [i.key, i.assistant])).toEqual([[1, 'Claude (Priya)']]);
-    expect(itemLs.text!(all)).toContain('#1  task  Doing  "Fix login"  → Claude (Priya)');
+    expect(itemLs.text!(all)).toContain('T-1  task  Doing  "Fix login"  → Claude (Priya)');
   });
 
   it('hands an item back to the token’s person', async () => {
@@ -1023,7 +1023,7 @@ describe('items handed to an assistant', () => {
     const out = await itemHandBack.run!(ctx, { project: DOC_A, item: '#1' });
     expect(seen.at(-1)?.body).toEqual({ set: { assignee: priya } });
     expect(itemHandBack.text!(out)).toEqual([expect.stringMatching(/handed back to Priya Shah$/)]);
-    expect(itemHandBack.quiet!(out)).toEqual(['#1']);
+    expect(itemHandBack.quiet!(out)).toEqual(['T-1']);
   });
 
   it('says its person when the api answers the item without one', async () => {

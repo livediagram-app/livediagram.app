@@ -184,7 +184,7 @@ describe('list_items and the cards handed to an assistant', () => {
       { includeClosed: false, includeRich: false, limit: 50, after: 0, handedTo: handed.handedTo! },
       { url: 'u' },
     );
-    expect(page.items.map((i) => [i.ref, i.handedToYou])).toEqual([['#1', true]]);
+    expect(page.items.map((i) => [i.ref, i.handedToYou])).toEqual([['T-1', true]]);
     // The done card it holds is closed: left out and counted.
     expect(page.omitted?.closed).toBe(1);
   });
@@ -246,7 +246,7 @@ describe('change_items hands cards over and back', () => {
     const r = await applyItemChanges(w.api, D, [{ op: 'hand_back', item: '#1' }], state);
     expect(r.refusal).toBeUndefined();
     expect(w.writes).toEqual([{ id: 'aaa111', set: { assignee: w.thomas } }]);
-    expect(r.applied[0]).toMatch(/^~ #1 .*Write copy.*; handed back to Thomas McClean$/);
+    expect(r.applied[0]).toMatch(/^~ T-1 .*Write copy.*; handed back to Thomas McClean$/);
   });
 
   it('refuses to hand back a card someone else, another assistant or no one holds', async () => {
