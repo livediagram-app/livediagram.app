@@ -190,10 +190,9 @@ export function TelemetryDashboardOverview() {
       <Label x={142} y={173} size={7} weight={700} tone="muted">
         DETAIL
       </Label>
-      <ViewTab x={172} w={38} label="Pages" />
-      <ViewTab x={212} w={44} label="Palette" />
-      <ViewTab x={258} w={40} label="Modes" />
-      <ViewTab x={300} w={64} label="Look & Feel" />
+      <ViewTab x={172} w={48} label="Features" />
+      <ViewTab x={222} w={68} label="Pages & Help" />
+      <ViewTab x={292} w={40} label="Health" />
       <path
         d="M398 168 l5 5 l-5 5"
         fill="none"

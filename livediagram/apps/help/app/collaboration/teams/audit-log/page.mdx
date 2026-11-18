@@ -5,7 +5,7 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Audit Log',
   description:
-    'What a team admin can look back on: who joined, left or changed role, who shared, moved or deleted the team’s canvases, and its webhooks.',
+    'What a team admin can look back on: who joined, left or changed role, who shared, moved, approved or deleted the team’s canvases, and its webhooks.',
   path: '/help/collaboration/teams/audit-log/',
 });
 
@@ -22,7 +22,7 @@ The **Audit Log** is for Admins and holds only team-level events, never what hap
 ## What it records
 
 - **People:** an invitation sent, someone joining (by email or the invite link), an invitation declined, a role changed between Admin and Member, someone removed or leaving, and the team renamed.
-- **Canvases:** a share link made (and its level, or a public link for a Community post) or removed, a canvas moved into or out of the team, sent to the Trash, restored, or deleted for good (including an owner's Take Offline).
+- **Canvases:** a share link made (and its level, or a public link for a Community post) or removed, a canvas moved into or out of the team, sent to the Trash, restored, or deleted for good (including an owner's Take Offline), and its [approvals](/help/collaboration/sharing/request-approval/): an approval requested, approved, sent back with changes requested, or cancelled.
 - **Webhooks:** a webhook added to or removed from one of the team's canvases, with the address it sends to and its kind (Slack, Microsoft Teams or signed JSON).
 
 Each row says who did it and what, the canvas or person it was about, which app it came from and when. Rows are grouped by day, newest first; hover a time to see it in UTC. Someone whose account has closed shows as **Deleted account**. API tokens and connected apps belong to a person, not a team, so they never show here.

@@ -118,7 +118,7 @@ livedocuments tab render "Launch deck" --png launch.png
 
 `document ls` covers your personal library and every team you have joined, newest first. Wherever a command takes a document, you can give its **name**, the start of its **id**, or a pasted **livedocuments link**; a share link acts through that link. A name that matches more than one document is refused with the candidates, rather than guessed. `--tab` takes a tab name or the start of its id, and the first tab is used when you leave it out.
 
-`tab view` reads a tab as text, the outline by default; `--view` picks `graph`, `layout`, `comments`, `show` (one element, with `--ref`) or `find` (with `--text`), and `--budget` fits it to about that many tokens. `tab render` writes a PNG or SVG preview and prints its path and size, never image bytes.
+`tab view` reads a tab as text, the outline by default; `--view` picks `graph`, `layout`, `comments`, `show` (one element, with `--ref`), `find` (with `--text`) or `pages` (a tab's pages and articles), and `--budget` fits it to about that many tokens. `tab render` writes a PNG or SVG preview and prints its path and size, never image bytes.
 
 A few commands read livedocuments's catalogues rather than your documents, which helps before writing anything:
 
@@ -139,6 +139,8 @@ livedocuments edit "Launch deck" -f ops.txt                   # many edit operat
 livedocuments changeset revert "Launch deck" cs_8k2m4q7d1x
 livedocuments tab add "Launch deck" Details -f detail.json    # a new tab, empty, from a file or --template
 livedocuments tab rm "Launch deck" Scratch                    # delete one tab; the others stay
+livedocuments document share "Launch deck" --role participate  # a share link: view (the default), participate or edit
+livedocuments image add chart.png                              # upload a picture and print its id for imageId=
 ```
 
 Every change is **one changeset**, applied all or nothing and checked against the version of the tab you last read, so the CLI never silently overwrites someone else's work. Each write prints what changed, the new revision, a lint summary and the command that reverts it. Add `--dry-run` to see the plan without writing anything, and `--summary` to say what the change is for. `livedocuments guide edit` explains how edit operations read.
@@ -158,7 +160,7 @@ livedocuments watch "Shop"                         # stream changes until you st
 
 ## Pages and Articles
 
-A tab's [pages](/help/pages/working-with-pages/) (infographics and slides) and articles have their own commands:
+A tab's [pages](/help/pages/working-with-pages/) (infographics, slides and flashcards) and articles have their own commands:
 
 ```bash
 livedocuments page ls "Pitch deck"                                  # each page, its refs, articles and layouts
@@ -167,7 +169,7 @@ livedocuments article get "Project brief" > brief.md                # an article
 livedocuments article set "Project brief" brief.md                  # write it back, or a new one
 ```
 
-`page set` makes one change from its flags, or up to 50 from a JSON list with `--changes`. `article set` writes over the article you name with `--article`, adds after its last block with `--append`, or starts another with `--new`, and the editor flows the text onto as many pages as it needs.
+`page set` makes one change from its flags, or up to 50 from a JSON list with `--changes`. `article set` writes over the article you name with `--article`, adds after its last block with `--append`, or starts another with `--new`, and the editor flows the text onto as many pages as it needs. When someone is typing in a paragraph the write would change, it is refused rather than overwriting them; `--wait-held 30` keeps trying for up to that many seconds.
 
 ## Files, Exports and Pictures
 

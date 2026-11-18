@@ -69,10 +69,10 @@ The feature categories group the feature guides by area:
 
 - **Explorer**: the document library (explorer/15, teams/32+35): The Explorer overview, Home (the Timeline), Recent, Shared With Me, My Work and folders, Team Spaces and Image Gallery, one guide per sidebar row.
 - **Palette**: the palette strip, in three sub-categories grouped on the index (see "Sub-category grouping" below): **Selection Modes** (one guide per tool-picker mode: Select, Hand, Avatar, Eraser, Format Painter), **Elements** (one guide per palette tab: Shapes (+ shape markers, style presets 48), Arrows (+ arrow styles, curve/elbow handles, arrow-to-arrow), Tools (+ drawing/shape-recognition, images, data elements 46+51+52+53), Components, Devices, Icons, Technology 41), and **Palette Settings** (one guide per palette setting: Auto-Attach Arrows, Alignment Guides, Panel Opacity, Toolbar Layout; Quick-add on Hover left with Quick Connect, [Not in livehuddle](../002-project-scope/not-in-livehuddle.md#quick-connect)).
-- **Canvas**: the infinite canvas (09), selecting many elements (multi-select), links and link cards (40), annotations (38), themes (29+42+44), templates, text and fonts (28), Undo and Redo.
+- **Canvas**: the infinite canvas (09), selecting many elements (multi-select), themes (29+42+44), templates, text and fonts (28), Undo and Redo. Animating Elements retired with the element animations (2026-11-18, [Element animations](../028-animation/element-animations.md)).
 - **Tabs**: multiple canvases (13+17+30): Tabs, Tab Folders, Linking Across Tabs, Add a Tab to Another Canvas, Importing (27), Exporting, and Cleanup (47), one guide per tab-menu action.
 - **Collaboration**: comments, live presence (07: live cursors / selections / per-tab presence), teams (32+35), sharing and embeds (24+33+34), session tools (39).
-- **Tools**: appearance / light-dark-system (07), Markdown import (27), layout cleanup (47).
+- **Tools**: appearance / light-dark-system (07), layout cleanup (47), and a Space's webhooks (Slack, Microsoft Teams or signed JSON, [Webhooks](../../../../liveworkspace/docs/specs/004-index/webhooks.md)). The footer's Tools menu itself is described in Quick Controls (User Interface).
 - **Search Panel**: the global search (09): an overview landing plus sub-articles for each thing search does, finding documents/folders, teams, tabs and elements, adding palette items to the canvas, and the Create-new-tab action.
 
 Where a feature's name would equal its category slug, the landing slug is distinguished (`the-canvas`, `the-explorer`, `using-tabs`) so a feature slug never equals a category slug (which would break the breadcrumb's parent link).
@@ -144,7 +144,7 @@ seeing them: a chair that read as a table, a button whose pointer swallowed it,
 and a sticker using the folded corner that already means a document here. The
 Canvas batch cost two more, both from colliding with a glyph already in the set:
 a magnet drawn as a shield, and a drop shadow that read first as "duplicate" and
-then, hatched, as the motion lines on `animations`. `shadows` is the one glyph
+then, hatched, as the motion lines on `animations` (since retired with its article). `shadows` is the one glyph
 that fills and fades, because it is the only one whose subject IS a fill and a
 fade; every stroke-only version of it meant something else. The Collaborate
 batch cost two: a tick drawn inside a circle rendered as a prohibition sign,
@@ -376,6 +376,7 @@ These features left livehuddle on purpose, and their articles with them; each ol
 | `/help/explorer/drawio-import/`                        | `/help/tabs/import-tabs/`               | The draw.io import left livehuddle (#423 part 4)                                    |
 | `/help/explorer/microsoft-whiteboard-import/`          | `/help/tabs/import-tabs/`               | The Microsoft Whiteboard import left livehuddle (#423 part 4)                       |
 | `/help/tools/markdown-import/`                         | `/help/tabs/import-tabs/`               | The Markdown import left livehuddle (#423 part 4)                                   |
+| `/help/canvas/animations/`                             | `/help/canvas/`                         | Element animations left livehuddle (2026-11-18); stored ones still play             |
 
 The **Self-Hosting** category (its landing and its four articles) was retired; every `/help/self-hosting/…` address lands on the help centre home, `/help/`, and so does a bare `/self-hosting/…` that lost its `/help` prefix.
 

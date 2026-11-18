@@ -1,54 +1,15 @@
-// The Public Roadmap article's scenes (docs/specs/026-plan/public-roadmap.md): the tab menu with Publish as Roadmap…
+// The Public Roadmap article's scenes (docs/specs/026-plan/public-roadmap.md): the Tools menu with Publish as Roadmap
 // under the pointer, the dialog's Published state (the live link, the chosen columns and fields as chips, Voting and
 // the privacy note), and the public page a visitor sees (the chosen columns, each card's vote button, Suggest an
 // Idea). Composed from the shared primitives so the house style holds.
 
 import { Scene, Label, Dialog, Button } from '@liveworkspace/help-site/art/primitives';
 import { Switch } from '@liveworkspace/help-site/art/illustrations/settings-dialog';
-import {
-  TabPill,
-  AddTabButton,
-  TabBar,
-  MenuRowList,
-} from '@liveworkspace/help-site/art/illustrations/tabs-parts';
+import { ToolsMenuFigure } from './tools-menu';
 
-/** The tab menu's rows, with Publish as Roadmap… under the pointer beside Subscribe to Calendar. */
+/** The footer's Tools menu with Publish as Roadmap, under Collaborate, under the pointer. */
 export function RoadmapMenu() {
-  const barY = 172;
-  const mx = 130;
-  const my = 22;
-  return (
-    <Scene w={420} h={224}>
-      <TabBar y={barY} w={420} />
-      <TabPill x={14} y={barY + 8} w={80} label="Roadmap" active />
-      <TabPill x={100} y={barY + 8} w={64} label="Bugs" />
-      <AddTabButton x={170} y={barY + 8} />
-      <rect
-        x={mx}
-        y={my}
-        width={212}
-        height={132}
-        rx={8}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      <MenuRowList
-        x={mx}
-        y={my + 6}
-        w={212}
-        rows={[
-          'Organise in Tab Folder',
-          null,
-          'Import…',
-          'Export',
-          'Subscribe to Calendar…',
-          'Publish as Roadmap…',
-          'Clear',
-        ]}
-        highlight="Publish as Roadmap…"
-      />
-    </Scene>
-  );
+  return <ToolsMenuFigure highlight="Publish as Roadmap" />;
 }
 
 // A chip that is on (tinted, ticked) or off (outlined), as the dialog's Columns and Fields draw them.

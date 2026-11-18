@@ -16,7 +16,7 @@ Markdown import takes an outline written in Markdown and turns it into a real, e
 
 ## What it reads
 
-Your canvas is treated as a hierarchical outline, and the importer is tolerant of how that hierarchy is expressed:
+Your file is treated as a hierarchical outline, and the importer is tolerant of how that hierarchy is expressed:
 
 - **Headings** (`#` to `######`) nest by depth, so a deeper heading sits under the nearest shallower one.
 - **List items** (`-`, `*`, `+`, or numbered) nest by indentation, and attach under the heading above them. Task-list checkboxes are kept as their text.
@@ -58,12 +58,12 @@ Everything is recoloured to a theme (the active tab's theme, or Default if it ha
 
 Import **replaces the current tab's contents**, including its elements, theme, and background, while keeping the tab's name. The dialog warns you before you commit. Because the replace is a single step, **Undo** (⌘Z / Ctrl+Z) restores the previous contents if you change your mind. To keep what is on the tab, add a new tab first and import into that.
 
-If the file has nothing the importer recognises, the dialog says "No headings, lists, or tables found in this Markdown." and leaves your tab untouched. Import is greyed out on a [locked tab](/help/tabs/locking-tabs/), and view-only visitors don't have the tab menu at all.
+If the file has nothing the importer recognises, the dialog says "No headings, lists, or tables found in this Markdown." and leaves your tab untouched. Import is greyed out on a [locked tab](/help/tabs/locking-tabs/), and Viewers and Participants don't have the tab menu at all.
 
 <Tip>
-  The same dialog imports a `.json` tab export, a Mermaid diagram, an Excalidraw scene, or a draw.io
-  file. Pick the format that matches your content: livediagram does not guess. See [Importing a
-  Tab](/help/tabs/import-tabs/).
+  The same dialog imports a `.json` tab export, a Mermaid diagram, an Excalidraw scene, a draw.io
+  diagram, a BPMN process, or a `wrangler.toml` or Compose file. Pick the format that matches your
+  content: livediagram does not guess. See [Importing a Tab](/help/tabs/import-tabs/).
 </Tip>
 
 </ArticleLayout>

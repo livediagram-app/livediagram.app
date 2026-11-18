@@ -3,46 +3,38 @@ import { helpMetadata } from '@/lib/seo';
 import { TitleBarParts } from '@liveworkspace/help-site/art/illustrations/title-bar';
 
 export const metadata = helpMetadata({
-  title: 'The Top Corners',
+  title: 'Share, Copy and Your Account',
   description:
-    'The two cards over the top of the editor: the logo and the menu at the left, Share or Copy and your account at the right.',
+    'The top-right card of the editor: Share or Copy, Prototype on a wireframe tab and your account.',
   path: '/help/user-interface/title-bar/',
 });
 
 <ArticleLayout
-  title="The Top Corners"
-  description="The menu card and the actions card over the top corners of the editor."
+  title="Share, Copy and Your Account"
+  description="The card at the top right of the canvas: Prototype, Share or Copy, and your account."
   categoryTitle="User Interface"
   categorySlug="user-interface"
 >
 
-There is no bar across the top of the editor: the canvas takes the whole height, and two cards float over its top corners. The **menu card** at the top left holds the logo and the menu button. The **actions card** at the top right holds **Prototype** on a wireframe tab, **Share** or **Copy** and your account. The [palette](/help/palette/) sits between them.
+livedesign has no title bar: the canvas runs all the way to the top of the window. The design's main actions float in a small card at the **top right** of the canvas, level with the palette strip and the menu button at the top left. Reading from left to right, it holds **Prototype** on a wireframe tab, then **Share** if the design is yours or **Copy** if it is someone else's, and your account at the end.
 
 <Figure caption="The top of a shared design, as its owner sees it: the menu card with the logo and the menu button, the palette, and the actions card with a solid Share button and the account.">
   <TitleBarParts product="livedesign" />
 </Figure>
 
-On a phone the menu card joins the palette's row and the actions card shows its glyphs alone, without names; in a window too narrow for the palette and the actions card's names side by side, the actions card drops its names first. [Zen mode](/help/tools/zen-mode/) and an [embed](/help/collaboration/sharing/embeds/) hide both cards.
-
-## The logo
-
-The logo at the left of the menu card opens the [Explorer](/help/explorer/explorer-page/) on the folder that holds this design. Its wordmark shows on a wide screen only.
-
-## The menu button
-
-The **≡** button beside the logo opens the [Explorer panel](/help/explorer/explorer-panel/) under it, and pressing it again closes the panel. The current design is at the top of the panel: its name, a badge saying who can see it and its **⋯** menu. Click the name there to rename the design: `Enter` keeps the new name and `Escape` the old one.
+On a computer each button shows its name beside its icon. On a phone, or when the top row is too crowded for names, the card shows its icons alone. The card hides in [Zen mode](/help/tools/zen-mode/) and inside an [embed](/help/collaboration/sharing/embeds/).
 
 ## Prototype
 
-On a wireframe tab, **Prototype** leads the actions card and plays the wireframe as a clickable prototype, for every role.
+On a [wireframe tab](/help/pages/wireframe-pages/), **Prototype** comes first in the card, for every role, and plays the screens as a clickable prototype.
 
 ## Share or Copy
 
-The actions card holds one main action, and which one you get depends on whose design it is.
+The card holds one main action, and which one you get depends on whose design it is.
 
-**Share** is for the owner. It opens the [Share dialog](/help/collaboration/sharing/), where you create and manage links. The button turns solid blue once the design has a live link, so you can tell at a glance that it is shared. On a [This Browser](/help/privacy-and-security/offline-mode/) design it asks you to save the design to your account first, since there is nothing on a server to share yet.
+**Share** is for the owner, and for a member of the team a [team design](/help/collaboration/teams/team-shared-designs/) belongs to, opening it from the team rather than through a share link. It opens the [Share dialog](/help/collaboration/sharing/), where you create and manage links. The button turns solid once the design has a live link, so you can tell at a glance that it is shared. On a [This Browser](/help/privacy-and-security/offline-mode/) design it asks you to save the design to your account first, since there is nothing on a server to share yet.
 
-**Copy** is for everyone else who has the design open: someone on a share link of any role, or a team member opening a design a teammate owns. It makes a copy of the design that belongs to you:
+**Copy** is for everyone else who has the design open: someone on a share link of any role. It makes a copy of the design that belongs to you:
 
 <Step n={1}>Click **Copy**. It reads **Copying** while the copy is made.</Step>
 <Step n={2}>The editor opens your copy, named "Copy of" and the original name.</Step>
@@ -50,10 +42,16 @@ The actions card holds one main action, and which one you get depends on whose d
   Find it again later at the top level of My Work in the [Explorer](/help/explorer/explorer-page/).
 </Step>
 
-Your copy starts **Private**: no share links come with it, and nothing you do to it touches the original. If you opened the design through a link to a single tab, the copy holds just that tab. You do not need an account to copy; as a guest the copy is saved under your [guest identity](/help/account-and-data/guest-identity/).
+Your copy starts **Private**: no share links come with it, and nothing you do to it touches the original. If you opened the design through a link to a single tab, the copy holds just that tab. You do not need an account to copy; as a guest the copy is saved under your [guest identity](/help/account-and-data/guest-identity/). On a design from the [Community](/help/collaboration/sharing/community/), Copy is in the Community bar along the top instead.
 
 ## Your account
 
-At the end of the actions card is your account. Signed in, it shows your initial; click it for a menu with your name and email, **Account** (which opens [Settings](/help/user-interface/settings/) on your account details, without leaving the design) and **Sign Out**. Not signed in, it shows **Sign in** instead (see [Signing In](/help/account-and-data/signing-in/)).
+At the end of the card is your account. Signed in, it shows your picture (or your initials) and first name; click it for a menu with your name and email, **Account** (which opens [Settings](/help/user-interface/settings/) on your account details, without leaving the design) and **Sign Out**. Not signed in, it shows **Sign in** instead (see [Signing In](/help/account-and-data/signing-in/)).
+
+## The design's name and who can see it
+
+The editor does not show the design's name: the menu card at the top left shows the open tab's name instead. To rename the design, use **Rename** on its **⋯** menu in the [Explorer](/help/explorer/explorer-page/). Names are capped at 60 characters.
+
+Who can see a design (Private, Shared, Team, Public in the Community, or This Browser) shows as a pill on the design in the Explorer, and the [Share dialog](/help/collaboration/sharing/) is where the owner changes it.
 
 </ArticleLayout>

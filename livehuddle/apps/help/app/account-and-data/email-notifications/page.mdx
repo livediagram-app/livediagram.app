@@ -11,7 +11,7 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Email Notifications" description="Optional emails for signed-in users, and how to control every kind of them in Settings." categoryTitle="Account and Data" categorySlug="account-and-data">
 
-Email is an optional capability of livehuddle. It only does anything when the deployment has been set up to send mail. Almost everything goes to signed-in users, because email needs an address and a [guest identity](/help/account-and-data/guest-identity/) has none. The exceptions are mail addressed to someone by email before they have an account: a team invite, and an action assigned to or a mention of a team member who has not signed up yet. The space itself never needs an account or an email, so this is purely additive.
+Email is an optional capability of livehuddle. It only does anything when the deployment has been set up to send mail. Almost everything goes to signed-in users, because email needs an address and a [guest identity](/help/account-and-data/guest-identity/) has none. The exception is a team invite, which is addressed to someone by email before they have an account. The space itself never needs an account or an email, so this is purely additive.
 
 ## What we might send
 
@@ -30,7 +30,7 @@ Notification emails keep your work out of your inbox where they can. A space-joi
 
 ## Turning them off
 
-Open **Settings**, go to **Account**, then **Notifications** beneath it (the account menu's **Account** opens Settings on **Account**, one step away). The **Email** section has one switch per optional kind: **Someone Joins My Space**, **Someone Comments on My Space**, **Someone Mentions Me in a Comment**, **Someone Assigns Me an Action**, **Someone Responds to a Team Invite**, **Tips and Check-Ins**, and **Milestones**. They are all on until you turn them off. The whole row is the switch, so click anywhere on it.
+Open **Settings** and choose **Notifications**, under the **Account** heading (the account menu's **Account** opens Settings on **Profile**, one step away). The **Email** section has one switch per optional kind, among them **Someone Joins My Space**, **Someone Responds to a Team Invite**, **Tips and Check-Ins** and **Milestones**. It also shows **Someone Comments on My Work**, **Someone Mentions Me in a Comment** and **Someone Assigns Me an Action**: those switches are your account's, for the liveworkspace apps that have comments and actions, and livehuddle never sends them. They are all on until you turn them off. The whole row is the switch, so click anywhere on it.
 
 <Figure
   caption="Settings, Account, Notifications: one switch per kind of optional email, under the in-editor notifications switch."
@@ -47,6 +47,6 @@ Open **Settings**, go to **Account**, then **Notifications** beneath it (the acc
 
 The switches are saved to your account, so they apply wherever you are signed in, and the change takes effect before the next email would go out. Account messages (the invite and its reminders, the deletion confirmation, and the token-expiry reminder) are not on this list, because they confirm something rather than nudge you.
 
-As a guest, the same place shows a short note asking you to sign in instead of the switches (on a deployment that sends email). **In-Editor Notifications**, above them, is a different thing: it controls the brief confirmations inside the editor and never sends email.
+As a guest, the same place shows a short note asking you to sign in instead of the switches (on a deployment that sends email). The **In the Editor** section above them never sends email: **In-Editor Notifications** controls the brief confirmations inside the editor, **Join and Leave Sounds** plays a soft chime when someone arrives in the Space you have open (and a softer one when they leave), and **Desktop Notifications** shows a notification on your computer when someone nudges you while the tab is in the background (your browser asks first).
 
 </ArticleLayout>

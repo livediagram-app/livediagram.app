@@ -33,7 +33,7 @@ Paths are relative to `https://livediagram.app/api`. For the exact request and r
 
 ## List your canvases
 
-A canvas **list** returns the canvases in your personal library (canvases in a team library are not included), as metadata only, not the tab contents:
+A canvas **list** returns the canvases in your personal library, as metadata only, not the tab contents. Add `team=all` to include every team you have joined, `q=` to search names, and `limit=` for one page of that many, newest first:
 
 ```bash
 curl https://livediagram.app/api/documents \
@@ -224,6 +224,8 @@ curl -X POST https://livediagram.app/api/trash/$DOC/restore \
 ```
 
 `DELETE /trash/$DOC` deletes one trashed canvas for good, and `DELETE /trash` empties your personal Trash (`?team=<id>` empties a team's). A read-only token can list the Trash but not restore or purge.
+
+To put a canvas you own away instead, `POST /documents/$DOC/archive` moves it to your Archived: out of every list, with its share links ended. `POST /documents/$DOC/unarchive` brings it back, to the top of My Work, or into the folder or team you name with `{ "folderId": "…" }` or `{ "teamId": "…" }`. `GET /documents?archived=1` lists what is archived.
 
 ## Share a canvas
 

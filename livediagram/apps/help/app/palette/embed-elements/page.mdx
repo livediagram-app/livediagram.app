@@ -1,12 +1,15 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { EmbedCardsIdle, EmbedPlayerControls } from '@liveworkspace/help-site/art/illustrations/embeds';
+import {
+  EmbedCardsIdle,
+  EmbedPlayerControls,
+} from '@liveworkspace/help-site/art/illustrations/embeds';
 
 export const metadata = helpMetadata({
   title: 'Embeds on the canvas',
   description:
-    'Put a YouTube or Vimeo video, a Loom recording, a Figma file, a Google Doc or any website on the canvas, and play or load it in place.',
+    'Put a YouTube or Vimeo video, a Loom, a Figma file, a Google Doc, any website or a live file from our apps on the canvas, and play or load it in place.',
   path: '/help/palette/embed-elements/',
 });
 
@@ -38,9 +41,11 @@ does, the embed comes up blank. A running website embed always carries an
 start. See [Website embeds](/help/palette/embed-elements/website/) for the
 detail.
 
+A seventh kind, the **Live Embed**, takes no link at all: it shows a canvas, plan, page or design from our own apps, live. See [Live embeds](#live-embeds) below.
+
 ## Adding one
 
-No mode's palette shows the Embed group (the Media category keeps Image and Avatar), but embeds work in every mode: search for "YouTube", "Figma" or "embed" in the **Search** at the end of the palette strip ([Toolbar Layout](/help/palette/toolbar-layout/#search)), or in the editor's [Search panel](/help/search-panel/the-search-panel/search-add-to-canvas/) under **Add to canvas**.
+No mode's palette shows the embeds (Image and Avatar sit at the end of the **Layout** category instead), but embeds work in every mode: search for "YouTube", "Figma", "live embed" or "embed" in the **Search** at the end of the palette strip ([Toolbar Layout](/help/palette/toolbar-layout/#search)), or in the editor's [Search panel](/help/search-panel/the-search-panel/search-add-to-canvas/) under **Add to canvas**.
 
 <Step n={1}>Search for the service by name ("YouTube", "Figma", "website") and pick it.</Step>
 
@@ -53,7 +58,7 @@ No mode's palette shows the Embed group (the Media category keeps Image and Avat
 
 **The service you picked is only a hint.** It names the empty card ("Add a Figma link") and the dialog, and the link is what actually decides: paste a Vimeo URL into a card you made as a Figma embed and you get Vimeo, because refusing a link that plainly works would be pedantry. There is no separate URL field to keep in step either, since an embed stores its address in the same place a [link card](/help/canvas/links/link-cards/) stores its own, which is why double-clicking is how you change it. A link the card can't use leaves it reading "Can't embed that link", with the address beneath.
 
-The dialog is deliberately narrower than a link card's: an embed can only point at a **web address**, never at a tab or another canvas, because a video pointed at a tab has nothing to play. It checks the address as you type and again when you save.
+The dialog is deliberately narrower than a link card's: an embed can only point at a **web address**, never at a tab, because a video pointed at a tab has nothing to play. To show another canvas, use a [Live Embed](#live-embeds). It checks the address as you type and again when you save.
 
 **Embed cards keep a 16:9 shape** as you resize them, for the same reason an icon is locked square: a letterboxed or stretched video frame is never what anyone wanted. And like images and stickies, an embed **keeps its own look across [themes](/help/canvas/themes/)**: somebody else's page is not yours to recolour.
 
@@ -86,5 +91,14 @@ When you want to use the player itself, hover it: two small buttons appear in it
   The link badge in the corner still opens the original page in a new tab. Playing something here
   and opening it at the source are different intentions, and both are worth having.
 </Note>
+
+## Live embeds
+
+A **Live Embed** shows a file from our own apps on the canvas: another canvas, a plan, a page or a design, live and read-only. Add it by searching for "live embed", then double-click it to open **Choose a File**: this canvas's connected files, your recent files across the apps, a search box, and a field for a pasted share link. Only an editor chooses the file; anyone else sees what was chosen.
+
+- **Everyone sees it with their own access.** A reader who can open the file sees it live. Anyone who can't sees a blurred snapshot, "Ask its owner to share it with you", and **Open in** its app. Nothing here creates a share link.
+- **It stays out of the way.** Like any embed it drags and selects as an element. Press **Use the file** to hand the pointer to it, and **Done using the file** to get dragging back. **Open in** its app opens the file in a new tab.
+- **It loads only while you can see it**, at most three at once on the page, and lets go a couple of seconds after it scrolls away.
+- **Exports show the snapshot**, not the live file.
 
 </ArticleLayout>

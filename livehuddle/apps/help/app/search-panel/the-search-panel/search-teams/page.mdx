@@ -19,31 +19,31 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles('the-search-panel').filter((a) => a.slug !== 'search-teams')}
 >
 
-When you are signed in and belong to one or more [teams](/help/collaboration/teams/), the [search panel](/help/search-panel/the-search-panel/) reaches into them as well, so team work is as findable as your own. It works the same from the editor and from the Explorer page.
+When you are signed in and belong to one or more [teams](/help/collaboration/teams/), the [search panel](/help/search-panel/the-search-panel/) reaches into them as well, so team work is as findable as your own.
 
-## What the Teams group matches
+## In the editor
 
-A single **Teams** group gathers three kinds of match, in this order:
+The **Teams** group matches the teams you belong to by name, up to 8. Picking one opens that team's page in the Explorer.
 
-- **Teams** themselves, by name. Picking one opens that team's page in the Explorer.
-- **Team folders** in a team's shared library. A folder is shown with its full path (for example "Marketing / Q3"), and it matches on any part of that path, so typing a parent folder's name also finds the folders inside it. Picking one opens the team page with that folder already open.
-- **Team spaces** in a team's shared library, by name. Picking one opens the space.
+A team's spaces are not listed under Teams in the editor: they are in the **Spaces** group, beside your own. See [Finding Spaces and Folders](/help/search-panel/the-search-panel/search-documents/).
 
-Team folders and spaces carry an **"in &lt;team&gt;"** suffix, so when a name appears in more than one place you can tell which team it belongs to at a glance. They also match on the team's name, so typing a team's name lists its folders and spaces alongside the team itself.
+## On the Explorer page
 
-<Figure caption="The Teams group: the team itself, plus its shared folders and spaces tagged with their team.">
+On the [Explorer page](/help/explorer/explorer-page/), a team's work is spread across the groups it belongs in:
+
+- **Teams** matches your teams by name. Picking one opens the team's page.
+- **Folders** lists team folders beside your own, each marked **"in &lt;team&gt;"** so you can tell which team it belongs to at a glance. Picking one opens the team's page with that folder already open.
+- **Items** finds a team's spaces by name, with everything else you can open.
+
+<Figure caption="On the Explorer page: a team's space under Items, its folder marked with the team, and the team itself.">
   <SearchTeams />
 </Figure>
 
-Each of the three kinds lists up to 8 matches, counted separately, so a team with many spaces can't crowd its folders out of the list.
-
-Team spaces only appear here, not in the **Spaces** group, which is for your personal spaces. See [Finding Spaces and Folders](/help/search-panel/the-search-panel/search-documents/).
+Each group lists up to 8 matches, so type a little more of a name to narrow a long list. Folders are read as the panel opens, so a folder made while it is open shows the next time you open it.
 
 ## Signed-in only
 
-Teams require an account, so this group only appears when you are signed in with teams to search. Guests, and signed-in users with no teams, simply will not see it. The rest of search, your [spaces and folders](/help/search-panel/the-search-panel/search-documents/), works the same either way.
-
-The team libraries are fetched in the background, one request per team, and their results arrive together. If you search the moment a page opens, or straight after joining a team, its folders and spaces can take a second to appear. If a team's library cannot be fetched, its folders and spaces are left out of the results until the libraries are fetched again (for example, when you reload the page), while the team itself still shows.
+Teams require an account, so team results only appear when you are signed in and belong to a team. Guests, and signed-in users with no teams, simply will not see them. The rest of search, your [spaces and folders](/help/search-panel/the-search-panel/search-documents/), works the same either way.
 
 <Tip>
   Searching is often faster than expanding the Teams tree in the Explorer: type a team or folder

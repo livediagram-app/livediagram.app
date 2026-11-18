@@ -1,0 +1,44 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'The Library',
+  description:
+    'Save elements to your Personal or a team library with Save to Library, then place copies of them on any tab, in livediagram, livedocuments and livedesign.',
+  path: '/help/palette/library/',
+});
+
+<ArticleLayout
+  title="The Library"
+  description="Keep the elements you reuse, for yourself or your team, and place a copy of one on any tab."
+  categoryTitle="Palette"
+  categorySlug="palette"
+>
+
+The **Library** keeps the elements you reach for again and again: a logo, a styled callout, a group of shapes that makes up a standard component. Save them once, and they are ready to place on any tab, by you or by everyone in a team. It is the same Library in livediagram, livedocuments and livedesign, so something saved in one is there in the others.
+
+## Saving to the Library
+
+1. Select one or more elements on the canvas.
+2. Press **Save to Library** on the selection toolbar. It sits at the right end of the toolbar, apart from the other buttons. It is also in the quick bar at the top of the element's menu.
+3. Give it a **Name**.
+4. Under **Save to**, choose **Personal** (only you) or one of your teams (everyone in the team can place it).
+5. Optionally type a **Folder**, such as "Logos" or "Icons". The folders already in that library are suggested.
+6. Press **Save**.
+
+The Library needs a canvas saved to your account, and you need to be able to edit the canvas: a Participant or a Viewer doesn't get **Save to Library**.
+
+## Placing From the Library
+
+Press the **Library** button on the palette, beside Search. **Personal** comes first, then each of your teams, each with its folders. **Search the library** finds an item by its name.
+
+- **Click an item** to place it in the middle of the view, or **drag it** to where you want it.
+- What you place is a copy. Changing it on the canvas never changes the Library, and changing the Library never changes what you already placed.
+
+The Library also holds your [shape libraries](/help/explorer/shape-libraries/), under **Personal**, each a folder named after the library.
+
+## Tidying the Library
+
+You tidy your Personal library. A team's library is tidied by the team's admins, marked **Admin** beside the team's name. Tidying means renaming an item or a folder in place, or deleting an item. Everyone else in the team can still place its items and save new ones to it.
+
+</ArticleLayout>

@@ -7,6 +7,8 @@
 export const FEATURE_ENTITY_HEX: Record<string, string> = {
   snapshots: '#0d9488',
   walkthroughs: '#e11d48',
+  webhooks: '#7e22ce',
+  library: '#be185d',
   'panel-layout': '#6366f1',
   toolbar: '#6366f1',
   'context-menus': '#6366f1',

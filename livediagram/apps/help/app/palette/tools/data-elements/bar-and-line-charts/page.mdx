@@ -70,9 +70,30 @@ Changes apply as you make them (a typed cell when you leave it); **Done** closes
 
 ## Display and colours
 
-Both charts share the pie chart's display options: in **Tools**, **Chart** places the legend (**Off**, **Top**, **Left**, **Right** or **Below**, the default) and sets its **Text Size**, and the **Animation** section offers **Grow**, **Pop**, **Spin** and **Pulse**. Hovering a bar or a point shows its label and value. **Show Values**, under the legend, prints each bar's or point's number on the chart; a column chart also names each column under it, so you can turn the legend off. Below it, **Show Axis** adds the value axis, with tick values and gridlines, to a column, bar, line or area chart. On a line chart of two or more series, **Right Axis** draws one series (or **None**) against a scale of its own on the right, for a series whose numbers sit far from the rest.
+Both charts share the pie chart's display options: in **Tools**, **Chart** places the legend (**Off**, **Top**, **Left**, **Right** or **Below**, the default) and sets its **Text Size**, and the **Animation** row's **Chart** section offers **Grow**, **Pop**, **Spin** and **Pulse**. Hovering a bar or a point shows its label and value. **Show Values**, under the legend, prints each bar's or point's number on the chart; a column chart also names each column under it, so you can turn the legend off. Below it, **Show Axis** adds the value axis, with tick values and gridlines, to a column, bar, line, area or scatter chart. On a line, area or scatter chart of two or more series, **Right Axis** draws one series (or **None**) against a scale of its own on the right, for a series whose numbers sit far from the rest.
 
-Colours default to variants of the theme, so a multi-series chart stays legible and on-brand. To recolour the whole chart at once, open **Style** and pick a palette from its **Presets**: **Vivid**, **Ocean**, **Forest**, **Sunset**, **Berry**, **Earth**, **Grey** or **Contrast**. A colour you set on one bar by hand wins over the palette. Animations freeze on export, so a still image looks right.
+Colours default to variants of the theme, so a multi-series chart stays legible and on-brand. To recolour the whole chart at once, open **Appearance** and pick a palette from its **Presets**: **Vivid**, **Ocean**, **Forest**, **Sunset**, **Berry**, **Earth**, **Grey** or **Contrast**. A colour you set on one bar by hand wins over the palette. Animations freeze on export, so a still image looks right.
+
+## Link a Chart to a liveplanner Sheet
+
+Instead of typing the numbers in, a pie, column, bar or line chart can take them from a range of a liveplanner Sheet and keep in step with it. It stays a livediagram chart, drawn in your theme and styled as usual; only its numbers come from the sheet.
+
+<Step n={1}>
+  Right-click the chart, open **Tools**, then **Data**, and choose **Link to Sheet…** under the
+  rows.
+</Step>
+<Step n={2}>
+  Pick one of your plans, one of its Sheets, and type a range as you would in a spreadsheet, such as
+  `B2:E9`. A preview shows what the chart will draw, or why the range can't be used.
+</Step>
+<Step n={3}>Press **Link**. The chart takes the sheet's values in one undoable step.</Step>
+
+While a linked chart is hovered or selected, a quiet line under it names the plan and how fresh the numbers are ("updated 2 min ago"). The chart reads the sheet again when the canvas opens, when you switch tabs and whenever the sheet changes. In **Data**, the sheet and range take the place of the rows, with **Update** (read again now), **Change…** and **Unlink**, which keeps the last values.
+
+- Everyone sees the numbers with their own access. Someone who can't open the plan sees the values last saved on the canvas, marked as saved.
+- If rows or columns at a corner of the range are deleted, the chart keeps its values and says the range is gone, so you can pick it again with **Change…**.
+- Exports draw the saved values and carry no link. A duplicate or a copy and paste within livediagram stays linked.
+- Linking, Update, Change and Unlink are an Editor's. Participants and Viewers see the line and the live values.
 
 <Tip>
   For a single percentage rather than a series, a [progress bar or

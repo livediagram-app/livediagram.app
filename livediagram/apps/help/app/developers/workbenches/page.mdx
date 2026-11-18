@@ -57,7 +57,7 @@ livediagram folder ls
 livediagram workbench open --workspace --folder Minigames --origin https://127.0.0.1:5175 --json
 ```
 
-The page asks **Allow Acme Editor at `https://127.0.0.1:5175` to open your whole workspace, and to create, move, share and trash canvases and folders in it, with the token livediagram CLI?** A token made read-only gives a workspace that browses and reads. `livediagram folder create <name> [--in <folder>]` makes a folder for a project and prints its id.
+The page asks **Allow Acme Editor at `https://127.0.0.1:5175` to open your whole workspace in livediagram, and to create, move, share and trash canvases and folders in it, with the token livediagram CLI?** A token made read-only gives a workspace that browses and reads. `livediagram folder create <name> [--in <folder>]` makes a folder for a project and prints its id.
 
 ## Talk to Your Agent About a Selection
 
@@ -73,6 +73,6 @@ With nothing selected, it names the whole tab. The block is plain text in your m
 
 ## Stop or Unpair
 
-A workbench session lasts a working day and renews itself while the tool is open. To stop a tool for good, go to **Settings**, then **API Tokens**: it lists your **Paired workbenches**, each with what it may open (**One canvas at a time** or **Whole workspace**), and **Unpair** turns their open diagrams read-only straight away. Revoking the token does the same for every tool it paired.
+A workbench session lasts a working day and renews itself while the tool is open. To stop a tool for good, go to **Settings**, then **API Tokens**: it lists your **Paired workbenches**, each with what it may open (**One canvas at a time** or **Whole workspace**), and **Unpair** (which asks first) turns their open diagrams read-only straight away, until you allow the tool again. Revoking the token does the same for every tool it paired.
 
 </ArticleLayout>

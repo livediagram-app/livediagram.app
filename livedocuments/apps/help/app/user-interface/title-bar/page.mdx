@@ -3,59 +3,60 @@ import { helpMetadata } from '@/lib/seo';
 import { TitleBarParts } from '@liveworkspace/help-site/art/illustrations/title-bar';
 
 export const metadata = helpMetadata({
-  title: 'The Top Corners',
+  title: 'The Title Bar',
   description:
-    'The two cards over the top of the editor: the logo and the menu at the left, Share or Copy and your account at the right.',
+    'livedocuments has no title bar: the logo and menu button float top left, and Copy, Present, Share and your account float in a card top right.',
   path: '/help/user-interface/title-bar/',
 });
 
 <ArticleLayout
-  title="The Top Corners"
-  description="The menu card and the actions card over the top corners of the editor."
+  title="The Title Bar"
+  description="Where the title bar's controls went: the logo top left, and Copy, Present, Share and your account in a card top right."
   categoryTitle="User Interface"
   categorySlug="user-interface"
 >
 
-There is no bar across the top of the editor: the canvas takes the whole height, and two cards float over its top corners. The **menu card** at the top left holds the logo and the menu button. The **actions card** at the top right holds **Present** when the document has a slide deck with a slide to show, **Share** or **Copy** and your account. The [palette](/help/palette/) sits between them.
+livedocuments has **no title bar** across the top of the editor. The canvas runs all the way up, and the few controls a title bar would hold float over it in two cards, in line with the [palette strip](/help/palette/toolbar-layout/):
+
+- **Top left**, the menu card: the livedocuments logo, the menu button that opens the [Explorer](/help/explorer/explorer-panel/), and on a computer the open tab's name.
+- **Top right**, the actions card: **Copy**, **Present** and **Share** when they apply, then your account.
 
 <Figure caption="The top of a shared document, as its owner sees it: the menu card with the logo and the menu button, the palette, and the actions card with a solid Share button and the account.">
   <TitleBarParts product="livedocuments" />
 </Figure>
 
-On a phone the menu card joins the palette's row and the actions card shows its glyphs alone, without names; in a window too narrow for the palette and the actions card's names side by side, the actions card drops its names first. [Zen mode](/help/tools/zen-mode/) and an [embed](/help/collaboration/sharing/embeds/) hide both cards.
+Both cards hide in [Zen mode](/help/tools/zen-mode/), and an [embed](/help/collaboration/sharing/embeds/) shows neither.
 
 ## The logo
 
-The logo at the left of the menu card opens the [Explorer](/help/explorer/explorer-page/) on the folder that holds this document. Its wordmark shows on a wide screen only.
+The logo opens the Explorer on the place that holds this document, so you land beside it in its folder. On a narrow screen it shows without its wordmark. The other parts of livedocuments (**Home**, **Help** and more) are links along the foot of the [Explorer panel](/help/explorer/explorer-panel/).
 
-## The menu button
+## The document's name and who can see it
 
-The **≡** button beside the logo opens the [Explorer panel](/help/explorer/explorer-panel/) under it, and pressing it again closes the panel. The current document is at the top of the panel: its name, a badge saying who can see it and its **⋯** menu. Click the name there to rename the document: `Enter` keeps the new name and `Escape` the old one.
-
-A new document names itself until you do: while it still has its starting name (such as "Untitled Infographic" or "Untitled Article"), the words you type on the first element of its first tab, or the Title of an article there, become its name. Once you rename it yourself, your name stays.
-
-## Present
-
-When the document's slide deck has a slide to show, **Present** sits before Share or Copy and starts the presentation. It is not offered on a phone.
+The editor itself does not show the document's name or a visibility pill. To rename a document, or see whether it is Private, Shared or in a team, use its row in the [Explorer](/help/explorer/explorer-page/). Whether it is shared also shows on the **Share** button, which turns solid once the document has a live link.
 
 ## Share or Copy
 
-The actions card holds one main action, and which one you get depends on whose document it is.
+The actions card holds the document's main action, and which one you get depends on whose document it is. On a computer each button shows its name beside its icon; on a phone, or when the strip needs the room, it shows the icon alone.
 
-**Share** is for the owner. It opens the [Share dialog](/help/collaboration/sharing/), where you create and manage links. The button turns solid blue once the document has a live link, so you can tell at a glance that it is shared. On a [This Browser](/help/privacy-and-security/offline-mode/) document it asks you to save the document to your account first, since there is nothing on a server to share yet.
+**Share** is for the owner (and the members of the team whose library holds it). It opens the [Share dialog](/help/collaboration/sharing/), where you create and manage links. The button turns solid once the document has a live link, so you can tell at a glance that it is shared. On a [This Browser](/help/privacy-and-security/offline-mode/) document it asks you to save the document to your account first, since there is nothing on a server to share yet.
 
-**Copy** is for everyone else who has the document open: someone on a share link of any role, or a team member opening a document a teammate owns. It makes a copy of the document that belongs to you:
+**Copy** is for everyone else who has the document open, on a share link of any role. It makes a copy of the document that belongs to you:
 
 <Step n={1}>Click **Copy**. It reads **Copying** while the copy is made.</Step>
-<Step n={2}>The editor opens your copy, named "Copy of" and the original name.</Step>
+<Step n={2}>The editor opens your copy, named after the original with **(copy)** at the end.</Step>
 <Step n={3}>
   Find it again later at the top level of My Work in the [Explorer](/help/explorer/explorer-page/).
 </Step>
 
 Your copy starts **Private**: no share links come with it, and nothing you do to it touches the original. If you opened the document through a link to a single tab, the copy holds just that tab. You do not need an account to copy; as a guest the copy is saved under your [guest identity](/help/account-and-data/guest-identity/).
 
+## Present
+
+While there are slides to present, a **Present** button joins the card on a computer, before **Share**. Hover it to see how many slides the deck has, and click it to start [presenting](/help/selection-modes/slide-deck/presenting/). It reads **Starting** while the deck gets ready.
+
 ## Your account
 
-At the end of the actions card is your account. Signed in, it shows your initial; click it for a menu with your name and email, **Account** (which opens [Settings](/help/user-interface/settings/) on your account details, without leaving the document) and **Sign Out**. Not signed in, it shows **Sign in** instead (see [Signing In](/help/account-and-data/signing-in/)).
+At the end of the card is your account. Signed in, it shows your picture or initials; click it for a menu with your name and email, **Account** (which opens [Settings](/help/user-interface/settings/) on your account details, without leaving the document) and **Sign Out**. Not signed in, it shows **Sign in** instead (see [Signing In](/help/account-and-data/signing-in/)).
 
 </ArticleLayout>

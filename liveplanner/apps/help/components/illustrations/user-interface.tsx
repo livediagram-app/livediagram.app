@@ -19,11 +19,12 @@ const GLYPH = {
   strokeLinejoin: 'round',
 } as const;
 
-function SearchGlyph({ x, y }: { x: number; y: number }) {
+// Tools is a toolbox (its lid's handle over a box with a clasp), as the footer's Tools button draws it.
+function ToolsGlyph({ x, y }: { x: number; y: number }) {
   return (
     <g transform={`translate(${x} ${y})`}>
-      <circle r={4.5} {...GLYPH} />
-      <path d="M3.4 3.4 L6.5 6.5" {...GLYPH} />
+      <rect x={-5.5} y={-2.5} width={11} height={7.5} rx={1.2} {...GLYPH} />
+      <path d="M-2 -2.5 v-2 h4 v2 M-5.5 1 h11" {...GLYPH} />
     </g>
   );
 }
@@ -111,13 +112,13 @@ function TabPill({
   );
 }
 
-/** The quick controls at the right-hand end of the bottom bar: Search,
- *  Settings and the appearance switch, labelled as on a computer. */
+/** The quick controls at the right-hand end of the bottom bar: Tools (Search
+ *  is its first row), Settings and the appearance switch, labelled as on a computer. */
 function QuickControlsRow({ x, y, labelled = true }: { x: number; y: number; labelled?: boolean }) {
   if (!labelled) {
     return (
       <g>
-        <SearchGlyph x={x + 8} y={y} />
+        <ToolsGlyph x={x + 8} y={y} />
         <SettingsGlyph x={x + 30} y={y} />
         <SunGlyph x={x + 52} y={y} />
       </g>
@@ -125,9 +126,9 @@ function QuickControlsRow({ x, y, labelled = true }: { x: number; y: number; lab
   }
   return (
     <g>
-      <SearchGlyph x={x + 8} y={y} />
+      <ToolsGlyph x={x + 8} y={y} />
       <Label x={x + 18} y={y + 1} size={10} tone="body">
-        Search
+        Tools
       </Label>
       <SettingsGlyph x={x + 66} y={y} />
       <Label x={x + 77} y={y + 1} size={10} tone="body">
@@ -252,16 +253,16 @@ export function TabBar() {
   );
 }
 
-/** The bottom-right cluster with the zoom presets open above the level:
- *  25% to 150% and Fit to screen. */
+/** The bottom-right cluster with a Sheet's zoom presets open above the level:
+ *  50% to 150% and Fit to screen. */
 export function ZoomControls() {
-  const presets = ['25%', '50%', '75%', '100%', '125%', '150%'];
+  const presets = ['50%', '75%', '100%', '125%', '150%'];
   const px = 231;
-  const py = 14;
+  const py = 36;
   return (
     <Scene w={420} h={240}>
       <Shape x={40} y={60} w={110} h={52} label="Detail" />
-      <Panel x={px} y={py} w={92} h={170}>
+      <Panel x={px} y={py} w={92} h={148}>
         {presets.map((p, i) => {
           const ry = py + 8 + i * 22;
           const on = p === '100%';
@@ -285,13 +286,13 @@ export function ZoomControls() {
         })}
         <line
           x1={px + 8}
-          y1={py + 143}
+          y1={py + 121}
           x2={px + 84}
-          y2={py + 143}
+          y2={py + 121}
           className="stroke-slate-200"
           strokeWidth={1.2}
         />
-        <Label x={px + 46} y={py + 157} size={10} weight={500} tone="body" anchor="middle">
+        <Label x={px + 46} y={py + 135} size={10} weight={500} tone="body" anchor="middle">
           Fit to screen
         </Label>
       </Panel>

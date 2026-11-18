@@ -1,24 +1,27 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { EmbedCardsIdle, EmbedPlayerControls } from '@liveworkspace/help-site/art/illustrations/embeds';
+import {
+  EmbedCardsIdle,
+  EmbedPlayerControls,
+} from '@liveworkspace/help-site/art/illustrations/embeds';
 
 export const metadata = helpMetadata({
-  title: 'Embeds on the canvas',
+  title: 'Embeds on the Canvas',
   description:
-    'Put a YouTube or Vimeo video, a Loom recording, a Figma file, a Google Doc or any website on the canvas, and play or load it in place.',
+    'Put a YouTube or Vimeo video, a Loom, a Figma file, a Google Doc, any website or a live file from our apps on the canvas, and play or load it in place.',
   path: '/help/palette/embed-elements/',
 });
 
 <ArticleLayout
-  title="Embeds on the canvas"
+  title="Embeds on the Canvas"
   description="Play a video, or open a Figma file, a Google Doc or any website right on the canvas."
   categoryTitle="Palette"
   categorySlug="palette"
   subArticles={getSubArticles("embed-elements")}
 >
 
-An **Embed** puts someone else's page on your canvas: a video that plays where it sits, a Figma file, a Google Doc, or any website at all.
+An **Embed** puts someone else's page on your canvas: a video that plays where it sits, a Figma file, a Google Doc, or any website at all. A **Live Embed** shows a file from our own apps instead, live: see [Live embeds](#live-embeds).
 
 | Service         | Links that work                                                   |
 | --------------- | ----------------------------------------------------------------- |
@@ -35,14 +38,14 @@ to be shown inside another page (news sites and banks especially): when one
 does, the embed comes up blank. A running website embed always carries an
 **open in a new tab** control for exactly that case, and a
 [link](/help/canvas/links/) on a shape or text is often the better tool from the
-start. See [Website embeds](/help/palette/embed-elements/website/) for the
+start. See [Website Embeds](/help/palette/embed-elements/website/) for the
 detail.
 
 ## Adding one
 
-Embeds live in the palette's **Media** category, behind the **Embed** row: open it and pick the service you want. A logo page's Media holds only the Image, but embeds still work there: search for "YouTube", "Figma" or "embed" in the editor's [search panel](/help/search-panel/the-search-panel/search-add-to-canvas/) and add one from **Add to canvas**.
+Embeds live in the palette's **Media** category, under **Embeds**: pick the service you want. A logo page's Media holds only the Image, but embeds still work there: search for "YouTube", "Figma" or "embed" in the editor's [search panel](/help/search-panel/the-search-panel/search-add-to-canvas/) and add one from **Add to canvas**.
 
-<Step n={1}>Open **Media**, then the **Embed** row, and pick a service.</Step>
+<Step n={1}>Open **Media** and pick a service under **Embeds**.</Step>
 
 <Step n={2}>
   Double-click the card and paste the link. It tells you straight away if it can't embed that
@@ -53,7 +56,7 @@ Embeds live in the palette's **Media** category, behind the **Embed** row: open 
 
 **The tile you picked is only a hint.** It names the empty card ("Add a Figma link") and the dialog, and the link is what actually decides: paste a Vimeo URL into a card you made from the Figma tile and you get Vimeo, because refusing a link that plainly works would be pedantry. There is no separate URL field to keep in step either: double-clicking the card is how you change its address. A link the card can't use leaves it reading "Can't embed that link", with the address beneath.
 
-The dialog is deliberately narrow: an embed can only point at a **web address**, never at a tab or another design, because a video pointed at a tab has nothing to play. It checks the address as you type and again when you save.
+The dialog is deliberately narrow: a link embed can only point at a **web address**, never at a tab or another design, because a video pointed at a tab has nothing to play. It checks the address as you type and again when you save. To show another design, a canvas, a plan or a page, use a [Live Embed](#live-embeds).
 
 **Embed cards keep a 16:9 shape** as you resize them, for the same reason an icon is locked square: a letterboxed or stretched video frame is never what anyone wanted. And like images and stickies, an embed **keeps its own look across [themes](/help/canvas/themes/)**: somebody else's page is not yours to recolour.
 
@@ -86,5 +89,14 @@ When you want to use the player itself, hover it: two small buttons appear in it
   The link badge in the corner still opens the original page in a new tab. Playing something here
   and opening it at the source are different intentions, and both are worth having.
 </Note>
+
+## Live embeds
+
+A **Live Embed** shows a file from our own apps on the canvas: a livediagram canvas, a liveplanner plan, a livedocuments page or another design, live and read-only. Pick **Live Embed** under **Embeds** in **Media**, then double-click it to open **Choose a File**: this design's connected files, your recent files across the apps, a search box, and a field to paste a share link. Only an Editor chooses the file; anyone else sees what was chosen.
+
+- **Everyone sees it with their own access.** A person who can open the file sees it live. Anyone who can't sees a blurred snapshot, "Ask its owner to share it with you", and **Open in** its app. Nothing here creates a share link.
+- **It stays out of the way.** It drags and selects like any embed. Press **Use the file** to hand the pointer to it, and **Done using the file** to get dragging back. **Open in** its app opens the file in a new tab.
+- **It loads only while you can see it**, at most three at once, and lets go a couple of seconds after it leaves the screen.
+- **Exports show the snapshot**, not the live file.
 
 </ArticleLayout>

@@ -5,7 +5,7 @@ import { ContextualToolbar, MultiSelectToolbar } from '@/components/illustration
 export const metadata = helpMetadata({
   title: 'The Toolbar',
   description:
-    'Use the selection toolbar for quick actions on selected elements: edit text, duplicate, change stacking order, delete, or open the full More menu.',
+    'Quick actions for selected elements: edit text, turn furniture, duplicate, change stacking order, delete, or open the full More menu.',
   path: '/help/user-interface/toolbar/',
 });
 
@@ -28,12 +28,15 @@ From left to right:
 
 - **More** (**⋯**): opens the element's full menu, the same one a right-click opens, with its colours, borders, text styling and the rest. See [Context Menus](/help/user-interface/context-menus/).
 - **Add Text** (or **Edit Text** once the element has some).
+- **Rotate Left** and **Rotate Right**, on a piece of furniture that turns, such as a chair or a desk: a quarter turn each way.
 - **Duplicate**.
 - **Format Painter**: takes this element's style, ready to paint onto the next elements you press. See [Format Painter](/help/selection-modes/format-painter/).
 - **Bring to Front** and **Send to Back**.
 - **Delete**.
 
-Which buttons show depends on the element: an image has no text to add. On a link that can't edit, a right-click opens a [short element menu](/help/user-interface/context-menus/) instead.
+Which buttons show depends on the element: an image has no text to add, and only furniture turns. An element from a feature livehuddle no longer has keeps **Delete** alone.
+
+The toolbar is an Editor's. On a Participant or Viewer link, selecting an element shows no toolbar, and a right-click opens a [short element menu](/help/user-interface/context-menus/#on-a-participant-or-viewer-link) instead.
 
 ## Several elements selected
 
@@ -41,6 +44,7 @@ Drag a marquee or Shift-click to select several, and the toolbar switches to the
 
 - **More** (**⋯**): the selection's menu, for styling everything at once.
 - **Filter Selection** (only when the selection mixes kinds): narrows it by type, so you can marquee over a busy area and keep, say, just the sticky notes. See [Multi-Select](/help/canvas/selecting-and-grouping/multi-select/).
+- **Rotate Left** and **Rotate Right**, when the selection holds furniture that turns: each piece turns about its own centre.
 - **Duplicate**.
 - **Export**: export just these elements.
 - **Delete**.
@@ -51,7 +55,7 @@ The caption reads "Selected Elements" with a count.
   <MultiSelectToolbar />
 </Figure>
 
-The toolbar follows your selection so the controls are always close to what they affect, and disappears the moment you deselect, handing the canvas back.
+The toolbar follows your selection so the controls are always close to what they affect, and disappears the moment you deselect, handing the canvas back. While you drag, resize or reshape the selection it steps aside, and comes back at the new place when you let go.
 
 <Tip>
   To copy one element's look onto others, select it and press **Format Painter** on this toolbar,

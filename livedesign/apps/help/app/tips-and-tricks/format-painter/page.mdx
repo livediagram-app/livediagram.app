@@ -18,8 +18,8 @@ The format painter copies the styling of one element and applies it to others, s
 The format painter is the **Format** tool in the Palette's selection-mode dropdown (in its **Edit** group, beside Select and Hand). Picking it opens the **Format** panel and walks you through two phases with an on-screen banner:
 
 <Step n={1}>
-  First the banner reads "Select a base element to copy its style". Click the element whose look you
-  want to reuse. The panel's preview, which read "Nothing loaded", now shows it.
+  First the banner reads "Select a base element or page to copy its style". Click the element whose
+  look you want to reuse. The panel's preview, which read "Nothing loaded", now shows it.
 </Step>
 
 <Step n={2}>
@@ -27,7 +27,7 @@ The format painter is the **Format** tool in the Palette's selection-mode dropdo
   takes on the base element's formatting, and the base stays loaded so you can keep going.
 </Step>
 
-Click **Done** in the banner, or click empty canvas, to put the brush down and return to the tool you had before. `Escape` puts it down too and returns you to Select.
+Click **Done** in the banner, or click the canvas off every page, to put the brush down and return to the tool you had before. `Escape` puts it down too and returns you to Select.
 
 <Figure caption="The format painter lifts a styled element's look and paints it onto the next element you click.">
   <FormatPainter />
@@ -53,9 +53,13 @@ The target ends up looking like the source in everything the brush carries that 
 
 Arrows join in too: load an arrow as the source to copy its line colour, thickness, pattern, path style (straight, curved or elbow), arrowheads (including their colour), whether it routes behind shapes, flow animation, and label styling onto other arrows. Because the path style comes along, painting can re-route the target's line. Styles paint between like kinds only: any boxed element to another (a shape onto a sticky note works), and arrow to arrow. Clicking a shape while an arrow is loaded paints nothing, since the two share almost no formatting (with **Paint once**, it still empties the brush).
 
+## Painting a page's background
+
+The brush carries a page's background too. Click a page's paper (anywhere on the page but on an element) and the banner reads "Tap pages to paint this background onto them": each page you click then takes that page's fill and pattern, while its size, content and name stay its own. **Keep the brush** and **Paint once** work as they do for elements; the **Copies** switches are an element's and don't narrow a page's paint. A page's background paints across kinds, except a picture background onto a logo page, and a locked page says so and keeps its own. To give every page of a kind one background at once, use **Apply to All** (**Apply to All Logo Pages**, for example) at the foot of a page's **Background** instead.
+
 One thing stays put by design: the painter never touches position, so where your elements sit on the canvas is never disturbed. Each paint is an ordinary edit, so `⌘Z` undoes it.
 
-Because it only changes elements, the format painter is available to Editors only: Participants and view-only visitors don't get it. It is greyed out on an empty canvas.
+Because it only changes elements and pages, the format painter is available to Editors only: Participants and view-only visitors don't get it. It is greyed out on an empty canvas.
 
 <Tip>
   Build one "reference" element with the exact colours, border, and text you want, then use the
