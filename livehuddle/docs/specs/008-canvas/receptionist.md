@@ -118,14 +118,22 @@ that agree to a second agree on the Receptionist.
   one"); they never scroll away. Escape closes it, and so does
   walking away: two strides (96 px) further from him than the nearest you have come since it opened, or more than
   400 px from him, so a shuffle beside him keeps it and turning to go closes it. It takes no focus, so the person carries on where they were.
+- **With no room over his head for his bubble** (he stands near the top of the screen, as on a phone), the view pans
+  down as it opens, flat and in 3D, until the whole bubble fits over his head clear of the toolbar, and it stands there
+  at its own height (Work Tracker 1256, the coordinator 2026-11-18). The pan never takes his feet, or a control his
+  bubble keeps clear of (below), off the screen; it moves the view once as the bubble opens, never again while it
+  stays open.
 - **His bubble never covers a control you may want while he talks**: a Reception Desk's Welcome bubble with its
-  **Ring Bell** (Work Tracker 1256), so you can ring again with his bubble open. It moves sideways off it, to the
-  nearer side with the room on screen, its tail still on his head; where no side has the room (a phone), it stands
-  shorter over his head, clear of it, its replies scrolling inside.
-- **In the 3D view, with no room over his head** (he stands near the top of the screen), his bubble stands beside
-  him instead, level with his head on the side with more room and without its tail, kept between the top and bottom
-  edges, so its topics always show; it never sits under his feet in 3D, where it would lie on the floor. Only where
-  neither side has room for it does it stand shorter over his head.
+  **Ring Bell** (Work Tracker 1256), so you can ring again with his bubble open, on a desktop and on a phone. It moves
+  sideways off it, to the nearer side with the room on screen, its tail still on his head; where no side has the room
+  (a phone), it stands shorter over his head, clear of it, its replies scrolling inside. It never goes under his feet
+  where it would cover one.
+- **Only where the view cannot make the room** does his bubble go elsewhere: flat, under his feet when there is more
+  room there; in 3D, beside him, level with his head on the side with more room and without its tail, since under his
+  feet it would lie on the floor. Wherever it stands, at least 160 px of its topics show (or of an answer), scrolling
+  past that: never a sliver.
+- **In the 3D view his bubble reads at its own size**, however near the camera he stands, as it does flat: it never
+  grows past a phone's sides.
 - **He types his lines**: each line he says (the welcome, a hello, an answer, his farewell) appears a letter at a
   time, about 90 letters a second, so even the longest answer is out in under two seconds. The bubble takes the whole
   line's size from the start, so nothing moves as he types, and the replies are there at once. A screen reader hears

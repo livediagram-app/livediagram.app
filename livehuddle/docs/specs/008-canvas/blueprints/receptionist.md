@@ -67,7 +67,21 @@ Derived from [the Receptionist](../receptionist.md). The spec decides; this file
   below the chrome along the top (`SPEECH_TOP_CLEAR`, as every speech bubble); otherwise it goes on whichever side of
   him has more room (under his feet without a tail), and the whole bubble scrolls when even that side is too short,
   keeping `SPEECH_TOP_CLEAR` off the bottom edge too, clear of the call dock.
-- In 3D (`useInSpace3D()`), when the whole card is taller than the room over his head and a side of him has room for
+- Room over his head comes first (Work Tracker 1256): when the whole card (`natural`) is taller than the room over his
+  head, the pass pans the viewport store down instead of placing (`setOffset`, the shortfall in screen px over the live
+  zoom, since the offset is in canvas px) and returns; the next pass measures again. The pan is capped so his feet and
+  the lowest `data-bubble-keep-clear` box stay `SPEECH_TOP_CLEAR` off the bottom, and runs at most `PAN_TRIES` (3)
+  times an opening (`pans`, reset as it opens): a 3D pan lands a little short under the tilt, so the next passes top it
+  up. No viewport store (a test), or the tries spent: the rules below place it where it is.
+- In 3D the camera's depth scales the card too: the pass scales it back by `fit` (`r.width / offsetWidth`, kept in
+  state and multiplied into the dialog's `scale(fit / zoom)`), so it reads at its flat size and its screen px are its
+  own px for the nudge, lift and caps.
+- A height cap never leaves fewer than `MIN_LIST_H` (160 px) of its scroller, beside him, over his head or trimmed
+  clear of a keep-clear box.
+- The card goes under his feet (flat only) only when the room over his head is still short after the pans, there is
+  more room below, and the card there could be moved clear of every `data-bubble-keep-clear` box (`clearNudge` is not
+  `null` for it); else it stays over his head, capped.
+- In 3D (`useInSpace3D()`), when the whole card is still taller than the room over his head and a side of him has room for
   the card's width, it stands beside him (`beside`): nudged `width / 2 + SIDE_GAP` (12 px) to the side with more room,
   its middle level with his head and clamped between `SPEECH_TOP_CLEAR` off the top and bottom (`lift`, a
   `translateY` on the card measured from where it would stand unlifted, so each pass gives the same answer), no tail,
@@ -77,11 +91,14 @@ Derived from [the Receptionist](../receptionist.md). The spec decides; this file
   or below him as placed), so each pass gives the same answer: `clearNudge` takes the in-canvas nudge when the card
   covers no marked box, else the nearest nudge that puts the card's edge `CLEAR_GAP` (8 px) past a box's and stays
   inside the canvas; when none fits (`null`, a phone) and the card is over his head, `clearTrim` caps its height so its
-  top stands `CLEAR_GAP` under the lowest covered box's foot (never under 80 px; the smaller of this and the fit cap).
-- It is placed after every render, and again (at most once a frame, while it is open) whenever the viewport store
-  changes or the window resizes: a pan, a camera fit or a phone turning leaves his head's canvas point and the zoom as
-  they were, so without that the card stayed where it was, off the screen's side (Work Tracker 912). Placing measures
-  the card and sets state only when its place changed.
+  top stands `CLEAR_GAP` under the lowest covered box's foot (never under `MIN_LIST_H`; the smaller of this and the fit
+  cap).
+- It is placed after every render, and again (at most once a frame, while it is open) as it opens and whenever the
+  viewport store changes or the window resizes: a pan, a camera fit or a phone turning leaves his head's canvas point
+  and the zoom as they were, so without that the card stayed where it was, off the screen's side (Work Tracker 912).
+  Each of those keeps placing it every frame until the card has stood still `SETTLE_STILL` (8) frames, at most
+  `SETTLE_MAX` (120): the 3D camera eases after a pan in DOM writes React never sees. Nothing runs while it is still
+  (Work Tracker 1257). Placing measures the card and sets state only when its place changed.
 - Topics are full-width rows (`ROW_H` 32 px, `ROW_GAP` 4 px) in a list capped at `VISIBLE_ROWS` (7) rows tall that
   scrolls past it, group headings sticky; a fade at its foot shows there is more until it is scrolled to the end. The
   bubble is a fixed `BUBBLE_W` (300 px) wide so every row is the same width. The action pills sit under the list.

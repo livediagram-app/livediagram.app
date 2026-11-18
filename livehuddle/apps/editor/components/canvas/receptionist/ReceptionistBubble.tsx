@@ -43,6 +43,15 @@ const UNDER_FEET = 10;
 const TAIL = 6;
 // Screen px between his head and the card when it stands beside him.
 const SIDE_GAP = 12;
+// The least of his topics (or an answer) a card shows when the view cannot give it its whole height: never a sliver.
+const MIN_LIST_H = 160;
+// How many times one opening pans the view to make room over his head: a pan in the 3D view lands a little short of
+// what it asked for (the tilt), so the passes after it top it up.
+const PAN_TRIES = 3;
+// After the view moves (or the card opens) the card is placed again each frame until it has stood still this many
+// frames: the 3D camera eases after a pan in DOM writes React never sees. Never more than SETTLE_MAX frames (2 s).
+const SETTLE_STILL = 8;
+const SETTLE_MAX = 120;
 
 /** The controls on screen his card keeps clear of (keep-clear.ts): each one's box, skipping any not laid out. */
 function keepClearBoxes(): ScreenBox[] {
@@ -190,10 +199,15 @@ export function ReceptionistBubble({
     maxH: 0,
     lift: 0,
     beside: false,
+    fit: 1,
   });
-  const { nudge, below, width, maxH, lift, beside } = place;
+  const { nudge, below, width, maxH, lift, beside, fit } = place;
   // In the 3D view the card is drawn in the overlay, standing over his head, and placed again whenever the view turns.
   const in3D = useInSpace3D();
+  // The view, to pan it when there is no room over his head (below), and to place the card again as it moves.
+  const viewport = useViewportStoreIfAny();
+  // The pans this opening has made (PAN_TRIES at most), reset as it opens.
+  const pans = useRef(0);
   function placeCard() {
     const el = card.current;
     const list = scroller.current;
@@ -201,6 +215,14 @@ export function ReceptionistBubble({
     const r = el.getBoundingClientRect();
     // Not laid out (hidden, or no layout at all): nothing to keep on screen.
     if (r.width === 0) return;
+    // In the 3D view the camera's depth scales the card too: it is scaled back to read at its own size, as flat, so it
+    // never grows past a phone's sides as he comes nearer, and the screen px below are its own px again.
+    const depth = in3D && el.offsetWidth > 0 ? r.width / el.offsetWidth : 1;
+    const nextFit = in3D ? fit / depth : 1;
+    if (Math.abs(nextFit - fit) > 0.02 * fit) {
+      setPlace({ ...place, fit: nextFit });
+      return;
+    }
     const box = el.closest('[data-canvas-root]')?.getBoundingClientRect();
     // The canvas, and never past the window (a phone's canvas can run wider than its screen).
     const minX = Math.max(box?.left ?? 0, 0) + EDGE;
@@ -229,9 +251,30 @@ export function ReceptionistBubble({
       hidden += Math.max(0, Math.min(c.scrollHeight, own) - c.clientHeight);
     }
     const natural = r.height + hidden;
-    // In the 3D view the card stands over his head facing you (docs/specs/008-canvas/3d-view.md): never under his
-    // feet, where it would lie on the floor under the walls.
-    const nextBelow = !in3D && natural > roomAbove && roomBelow > roomAbove;
+    // No room over his head for the whole card: the view pans down to make it, clear of the chrome along the top, before
+    // anything else, keeping his feet on screen (receptionist.md "His bubble", Work Tracker 1256). Then it stands over
+    // his head at its own height. In the 3D view as flat.
+    // Never so far that a control kept clear of the card (keep-clear.ts, a desk's Welcome with its Ring Bell) leaves
+    // the screen.
+    const keep = keepClearBoxes();
+    const lowest = keep.reduce((y, k) => Math.max(y, k.bottom), feetY);
+    if (natural > roomAbove + 1 && viewport && pans.current < PAN_TRIES && !below && !beside) {
+      const pan = Math.min(natural - roomAbove, bottom - lowest);
+      if (pan > 1) {
+        pans.current += 1;
+        // The offset is in canvas px, under the zoom (viewportTransform).
+        const z = viewport.get().zoom;
+        viewport.setOffset((o) => ({ x: o.x, y: o.y + pan / z }));
+        return;
+      }
+    }
+    // Under his feet only when the view could not make the room over his head, there is more room below, and the card
+    // there covers no such control even moved sideways. In the 3D view never (docs/specs/008-canvas/3d-view.md): it
+    // would lie on the floor under the walls.
+    const underTop = feetY + UNDER_FEET;
+    const under = { left, right, top: underTop, bottom: underTop + Math.min(natural, roomBelow) };
+    const underClear = keep.length === 0 || clearNudge(under, inside, keep, minX, maxX) !== null;
+    const nextBelow = !in3D && natural > roomAbove + 1 && roomBelow > roomAbove && underClear;
     const room = nextBelow ? roomBelow : roomAbove;
     // In 3D with too little room over his head for the whole card, it stands beside him instead, on the side with
     // more room, level with his head and kept between the top and bottom edges, its tail dropped (receptionist.md "His
@@ -239,22 +282,21 @@ export function ReceptionistBubble({
     const headX = (left + right) / 2;
     const roomLeft = headX - SIDE_GAP - minX;
     const roomRight = maxX - headX - SIDE_GAP;
-    const nextBeside = in3D && natural > roomAbove && Math.max(roomLeft, roomRight) >= r.width;
+    const nextBeside = in3D && natural > roomAbove + 1 && Math.max(roomLeft, roomRight) >= r.width;
     const sideH = Math.min(natural, bottom - top);
     const sideNudge = (roomRight >= roomLeft ? 1 : -1) * (r.width / 2 + SIDE_GAP);
     const sideTop = Math.min(Math.max(headY - sideH / 2, top), bottom - sideH);
     const nextLift = nextBeside ? Math.round(sideTop - (rBottom - sideH)) : 0;
     const fitH = nextBeside
       ? sideH < natural
-        ? Math.max(80, Math.floor(sideH - frame))
+        ? Math.max(MIN_LIST_H, Math.floor(sideH - frame))
         : 0
-      : natural > room
-        ? Math.max(80, Math.floor(room - frame))
+      : natural > room + 1
+        ? Math.max(MIN_LIST_H, Math.floor(room - frame))
         : 0;
-    // Never over a control that must stay pressable (keep-clear.ts, Work Tracker 1256): a desk's Welcome bubble with
-    // its Ring Bell. Judged on the whole card, uncapped, where it stands, so the answer is the same on every pass: off
-    // to the nearer side that has the room; else, over his head, shorter, its replies scrolling.
-    const keep = keepClearBoxes();
+    // Clear of those controls (Work Tracker 1256), judged on the whole card, uncapped, where it stands, so the answer is
+    // the same on every pass: off to the nearer side that has the room; else, over his head, shorter, its replies
+    // scrolling.
     const cardTop = nextBeside ? sideTop : nextBelow ? rTop : rBottom - natural;
     const whole = { left, right, top: cardTop, bottom: cardTop + (nextBeside ? sideH : natural) };
     const base = nextBeside ? sideNudge : inside;
@@ -264,7 +306,7 @@ export function ReceptionistBubble({
       sideways === null && !nextBelow && !nextBeside
         ? clearTrim({ ...whole, left: left + inside, right: right + inside }, keep)
         : 0;
-    const trimH = trim > 0 ? Math.max(80, Math.floor(natural - trim - frame)) : 0;
+    const trimH = trim > 0 ? Math.max(MIN_LIST_H, Math.floor(natural - trim - frame)) : 0;
     const nextMaxH = trimH && fitH ? Math.min(trimH, fitH) : trimH || fitH;
     if (
       Math.abs(nextNudge - nudge) > 0.5 ||
@@ -275,6 +317,7 @@ export function ReceptionistBubble({
       nextBeside !== beside
     )
       setPlace({
+        fit,
         nudge: nextNudge,
         below: nextBelow,
         width: r.width,
@@ -287,25 +330,40 @@ export function ReceptionistBubble({
   // sets state only when the place changed, so it settles in one more pass. The latest pass is kept for the view and
   // the window to run again (below).
   const placeAgain = useRef<() => void>(() => {});
+  const open = chat.open;
+  useLayoutEffect(() => {
+    if (open) pans.current = 0;
+  }, [open]);
   useLayoutEffect(() => {
     placeAgain.current = placeCard;
     placeCard();
   });
   // Placed again whenever the view pans or zooms under it, or the window resizes (Work Tracker 912): his head's canvas
   // point and the zoom stay the same through a pan, a camera fit or a phone turning, so the pass above would not run
-  // and the card was left where it was, off the screen's side. At most once a frame, and only while it is open.
-  const viewport = useViewportStoreIfAny();
-  const open = chat.open;
+  // and the card was left where it was, off the screen's side. At most once a frame, only while it is open, and only
+  // until it stands still (SETTLE_STILL, SETTLE_MAX): a still Space asks for no frames (Work Tracker 1257).
   useEffect(() => {
     if (!open) return;
     let frame = 0;
-    const again = () => {
-      if (frame) return;
-      frame = requestAnimationFrame(() => {
-        frame = 0;
-        placeAgain.current();
-      });
+    let left = 0;
+    let still = 0;
+    let last = '';
+    const tick = () => {
+      frame = 0;
+      placeAgain.current();
+      const b = card.current?.getBoundingClientRect();
+      const now = b ? `${Math.round(b.left)} ${Math.round(b.top)} ${Math.round(b.width)}` : '';
+      still = now === last ? still + 1 : 0;
+      last = now;
+      left -= 1;
+      if (left > 0 && still < SETTLE_STILL) frame = requestAnimationFrame(tick);
     };
+    const again = () => {
+      left = SETTLE_MAX;
+      still = 0;
+      if (!frame) frame = requestAnimationFrame(tick);
+    };
+    again();
     const off = viewport?.subscribe(again);
     window.addEventListener('resize', again);
     return () => {
@@ -343,7 +401,7 @@ export function ReceptionistBubble({
             top: below ? feet.y : head.y,
             transform: below
               ? `translate(-50%, ${UNDER_FEET / zoom}px) scale(${1 / zoom})`
-              : `translate(-50%, -100%) scale(${1 / zoom})`,
+              : `translate(-50%, -100%) scale(${fit / zoom})`,
             transformOrigin: below ? '50% 0' : '50% 100%',
             width: `min(${BUBBLE_W}px, calc(100vw - 32px))`,
           }}
