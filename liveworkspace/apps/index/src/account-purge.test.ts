@@ -61,7 +61,7 @@ const count = (query: string, ...args: (string | number | null)[]) =>
   Number((h.db.sql.prepare(query).get(...args) as { n: number }).n);
 
 // Ada's whole world, beside Bea's: personal items and folders, a team that outlives her (T) and one that
-// closed with her (D), favourites, opens, Shared with me, a placement default, and the Inbox.
+// closed with her (D), opens, Shared with me, a placement default, and the Inbox.
 function arrange() {
   addFolder('f-ada', ADA);
   addFolder('f-ada-team', ADA, 'T');
@@ -78,7 +78,6 @@ function arrange() {
     [BEA, 'bea-1'],
     [BEA, 'ada-1'],
   ]) {
-    run('INSERT INTO favourites (person_id, item_id, created_at) VALUES (?, ?, 1)', person!, item!);
     run('INSERT INTO opens (person_id, item_id, last_opened_at) VALUES (?, ?, 1)', person!, item!);
   }
   run(
@@ -156,7 +155,6 @@ function mentionsOfAda(): number {
   return (
     count('SELECT COUNT(*) AS n FROM items WHERE owner_id = ?', ADA) +
     count('SELECT COUNT(*) AS n FROM folders WHERE owner_id = ?', ADA) +
-    count('SELECT COUNT(*) AS n FROM favourites WHERE person_id = ?', ADA) +
     count('SELECT COUNT(*) AS n FROM opens WHERE person_id = ?', ADA) +
     count('SELECT COUNT(*) AS n FROM shared_with WHERE person_id = ?', ADA) +
     count('SELECT COUNT(*) AS n FROM placement_defaults WHERE person_id = ?', ADA) +
@@ -277,7 +275,6 @@ describe('POST /internal/purge-person', () => {
     ]);
 
     // Bea's own things are untouched.
-    expect(count('SELECT COUNT(*) AS n FROM favourites WHERE person_id = ?', BEA)).toBe(1);
     expect(count('SELECT COUNT(*) AS n FROM opens WHERE person_id = ?', BEA)).toBe(1);
     expect(count('SELECT COUNT(*) AS n FROM placement_defaults WHERE person_id = ?', BEA)).toBe(1);
     expect(count('SELECT COUNT(*) AS n FROM person_aliases WHERE person_id = ?', BEA)).toBe(1);
@@ -500,7 +497,7 @@ describe('POST /internal/purge-person', () => {
     expect(count('SELECT COUNT(*) AS n FROM purge_tombstones')).toBe(0);
   });
 
-  // Worst case: 50,000 items, each favourited and opened, plus 5,000 threads and actions on
+  // Worst case: 50,000 items, each opened, plus 5,000 threads and actions on
   // someone else's items. Measured, and the call budget must hold.
   it('purges 50,000 items within the per-call D1 budget', async () => {
     const N = 50_000;
@@ -513,7 +510,6 @@ describe('POST /internal/purge-person', () => {
     for (let i = 0; i < N; i++) {
       const id = `00000000-0000-4000-8000-${String(i).padStart(12, '0')}`;
       insert.run(id, ADA, `p:${ADA}`);
-      run('INSERT INTO favourites (person_id, item_id, created_at) VALUES (?, ?, 1)', ADA, id);
       run('INSERT INTO opens (person_id, item_id, last_opened_at) VALUES (?, ?, 1)', ADA, id);
     }
     for (let i = 0; i < 5_000; i++) {
@@ -552,7 +548,7 @@ describe('POST /internal/purge-person', () => {
     expect(calls).toBeLessThanOrEqual(300);
     expect(mentionsOfAda()).toBe(0);
     expect(count('SELECT COUNT(*) AS n FROM purge_tombstones')).toBe(N);
-    expect(count('SELECT COUNT(*) AS n FROM favourites')).toBe(0);
+    expect(count('SELECT COUNT(*) AS n FROM opens')).toBe(0);
     expect(count('SELECT COUNT(*) AS n FROM collab_threads')).toBe(5_000);
     // A generous ceiling for a slow CI machine; locally it is a few seconds.
     expect(ms).toBeLessThan(cpuBudgetMs(60_000));

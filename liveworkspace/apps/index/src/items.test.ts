@@ -324,7 +324,7 @@ describe('the Trash', () => {
     const ada = await person('user_a');
     const item = await makeItem(ada.auth);
     h.db.sql
-      .prepare('INSERT INTO favourites (person_id, item_id, created_at) VALUES (?, ?, 1)')
+      .prepare('INSERT INTO opens (person_id, item_id, last_opened_at) VALUES (?, ?, 1)')
       .run('user_a', item.id);
     const res = await call(`/items/${item.id}?permanent=true`, {
       method: 'DELETE',
@@ -333,7 +333,7 @@ describe('the Trash', () => {
     expect(res.status).toBe(204);
     await settle();
     expect(h.db.sql.prepare('SELECT COUNT(*) AS n FROM items').get()).toEqual({ n: 0 });
-    expect(h.db.sql.prepare('SELECT COUNT(*) AS n FROM favourites').get()).toEqual({ n: 0 });
+    expect(h.db.sql.prepare('SELECT COUNT(*) AS n FROM opens').get()).toEqual({ n: 0 });
     expect(h.appCalls).toHaveLength(1);
     expect(h.appCalls[0]).toMatchObject({
       method: 'DELETE',

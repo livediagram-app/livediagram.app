@@ -33,9 +33,6 @@ function seedLegacy() {
         'import', NULL, '{}', 1, 1)`,
     )
     .run(LEGACY, `p:${LEGACY}`);
-  h.db.sql
-    .prepare('INSERT INTO favourites (person_id, item_id, created_at) VALUES (?, ?, 1)')
-    .run(LEGACY, 'i-old');
 }
 
 const itemRow = (id: string) =>
