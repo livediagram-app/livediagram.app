@@ -17,6 +17,8 @@
 import {
   isExplorerTelemetryEvent,
   PLATFORM_TELEMETRY_APP,
+  type KitTelemetryAction,
+  type KitTelemetryType,
   type TelemetrySender,
 } from '@liveworkspace/telemetry';
 import { createTelemetryEngine, TELEMETRY_MAX_BUFFER } from '@liveworkspace/telemetry/emitter';
@@ -296,4 +298,14 @@ export function trackAppEvent(category: string, action: string, type: string | n
   const host = pageApp();
   if (!host) return;
   send(senderOfApp(host), category, action, type);
+}
+
+// ---------- liveworkspace.app's own events ------------------------------------------------------------------
+
+/** A project kit's step (liveworkspace/docs/specs/004-index/kits.md "Telemetry"), always in liveworkspace.app's own
+ *  name, whatever the page's sender: a run is every app's at once. The person's choice holds as for every event. On
+ *  an app's own address nothing is sent: the service takes liveworkspace.app's own events only from its origin. */
+export function trackKit(action: KitTelemetryAction, type: KitTelemetryType) {
+  if (pageApp()) return;
+  send(PLATFORM_TELEMETRY_APP, 'Kit', action, type);
 }

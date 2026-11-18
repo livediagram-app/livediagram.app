@@ -316,3 +316,72 @@ describe('Remove What Was Made', () => {
     expect(rows('SELECT * FROM items')).toHaveLength(4);
   });
 });
+
+describe('the run limit', () => {
+  // A stand-in for KIT_RUN_LIMITER: the first `allowed` calls pass, then every one is over.
+  const limiter = (allowed: number) => {
+    const keys: string[] = [];
+    return {
+      keys,
+      env: {
+        ...h.db.env,
+        KIT_RUN_LIMITER: {
+          limit: async ({ key }: { key: string }) => {
+            keys.push(key);
+            return { success: keys.length <= allowed };
+          },
+        },
+      },
+    };
+  };
+
+  it('answers 429 with Retry-After past the limit, per person, before anything is made', async () => {
+    const ada = await person('user_a');
+    answerDoors(ada.auth);
+    const { keys, env } = limiter(1);
+    const first = await call('/kits', { method: 'POST', auth: ada.auth, body: SOFTWARE, env });
+    expect(first.status).toBe(200);
+    const run = await body<KitRun>(first);
+    const made = rows('SELECT id FROM items').length;
+    const folders = rows('SELECT id FROM folders').length;
+
+    // A Retry counts as a run, and is refused as one.
+    const retry = await call('/kits', {
+      method: 'POST',
+      auth: ada.auth,
+      body: { ...SOFTWARE, folderId: run.folderId, made: madeOf(run) },
+      env,
+    });
+    expect(retry.status).toBe(429);
+    expect(retry.headers.get('Retry-After')).toBe('60');
+    expect(await body(retry)).toEqual({ error: 'rate_limited' });
+    const again = await call('/kits', { method: 'POST', auth: ada.auth, body: SOFTWARE, env });
+    expect(again.status).toBe(429);
+    expect(rows('SELECT id FROM items')).toHaveLength(made);
+    expect(rows('SELECT id FROM folders')).toHaveLength(folders);
+    expect(keys).toEqual(['kit:user_a', 'kit:user_a', 'kit:user_a']);
+  });
+
+  it('leaves Remove What Was Made unlimited', async () => {
+    const ada = await person('user_a');
+    answerDoors(ada.auth);
+    const run = await body<KitRun>(await start(ada.auth, SOFTWARE));
+    const { keys, env } = limiter(0);
+    const removed = await call('/kits/remove', {
+      method: 'POST',
+      auth: ada.auth,
+      body: { folderId: run.folderId, made: madeOf(run) },
+      env,
+    });
+    expect(removed.status).toBe(204);
+    expect(keys).toEqual([]);
+  });
+
+  it('does not count a refused guest', async () => {
+    const guest = await person('guest_g1', { guest: true });
+    const { keys, env } = limiter(0);
+    const res = await call('/kits', { method: 'POST', auth: guest.auth, body: SOFTWARE, env });
+    expect(res.status).toBe(403);
+    expect(keys).toEqual([]);
+  });
+});

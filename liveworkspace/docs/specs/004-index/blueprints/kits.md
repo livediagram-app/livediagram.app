@@ -16,6 +16,8 @@ the repository root.
 | `<app>/apps/api/src/routes/internal-template.ts`                | each app's file of a template, and its catalogue test                     |
 | `liveworkspace/apps/site/app/kits/page.tsx`                     | the page at `/kits`                                                       |
 | `liveworkspace/apps/site/components/kits/`                      | the kit screen: the picker, the setup, the run's states                   |
+| `packages/telemetry/src/platform-events.ts`                     | `PLATFORM_OWN_TELEMETRY_EVENTS`: the kit events and their tokens          |
+| `liveworkspace/apps/site/app/telemetry/_all/ProjectKits.tsx`    | the All apps view's Project Kits chart                                    |
 | `packages/explorer/src/hero/WorkKinds.tsx`                      | Home's **Start a Project** link under All Apps                            |
 
 ## The run on the wire
@@ -51,7 +53,10 @@ the repository root.
 ## Making a run (`liveworkspace/apps/index/src/kits.ts`)
 
 1. A person by their own token (`401` without); a guest is `403 sign_in_required`; an app acting for a person
-   (`person.app`, `drive`, `export`) is `403 forbidden`.
+   (`person.app`, `drive`, `export`) is `403 forbidden`. Then `KIT_RUN_LIMITER` (a Workers rate limit binding, the
+   index's pattern for `CONNECTION_OPEN_LIMITER`; `wrangler.toml` namespace 1110, staging 2110, `{ limit = 10,
+period = 60 }`), keyed `kit:<personId>`: over it, `429 { error: 'rate_limited' }` with `Retry-After:
+KIT_RUN_RETRY_AFTER_S` (60), before the body is read. Absent (tests, local), not limited. `/kits/remove` skips it.
 2. The kit, the level (`LEVELS`) and the name (`KIT_NAME_MAX`, 60, trimmed, not empty) are read whole before anything
    is written.
 3. The folder: a retry's `folderId` must be a folder in the person's personal scope (`404 folder_not_found` else);
@@ -109,4 +114,15 @@ liveplanner adds the card types the template's boards bring (`catalogueWithBoard
 - `liveworkspace/apps/index/src/kits.test.ts`: a whole run (folder, items, twelve connections, each pass at the
   chosen role, livehuddle's nearest role), a guest and a delegate refused, a failed part and a failed tab, a retry
   making only what is missing, a removal touching only the person's own items.
-- `liveworkspace/apps/site/components/kits/*.test.tsx`: the screen's states.
+- `liveworkspace/apps/site/components/kits/*.test.tsx`: the screen's states, the 429's words, and each telemetry
+  event (`useKitRun`'s `track`).
+
+## Telemetry (the site)
+
+`trackKit(action, kit)` (`liveworkspace/apps/site/lib/explorer/telemetry.ts`) sends `Kit·<action>` with the kit's
+token (`KIT_TELEMETRY_TYPES`, `kitTelemetryType`) as `liveworkspace.app`, through the Explorer's engine and consent
+(the page reads the person's `telemetryEnabled` with `useTelemetryConsent`). On an app's own address it sends nothing:
+the service takes liveworkspace.app's own events only from its origin. `useKitRun` calls it: Started on `start`,
+Retried on `retry`, Completed on any answer with `complete`, Removed after `removeKit` resolves. The All apps view's
+**Project Kits** chart (`app/telemetry/_all/ProjectKits.tsx`) reads `daily.byMetric` for each event, summed over the
+kit tokens.

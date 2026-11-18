@@ -601,7 +601,11 @@ Explorer does.
   folder; only what is missing is made) and **Remove What Was Made** (asks once, in place: "Delete the files this
   made? This can't be undone." Delete Them, Cancel; then the setup comes back). A run that made nothing at all
   ("Couldn't start your project.") offers Try Again alone.
-- **A refused run** (the network, the index) leaves the setup as it was with the reason under Create, in words.
+- **A refused run** (the network, the index) leaves the setup as it was with the reason under Create, in words. Too
+  many runs in a minute (the index's `429 rate_limited`) reads "You've started a lot of projects in the last minute.
+  Wait a minute, then try again."
+- **Telemetry.** Started, Retried, Completed and Removed, as liveworkspace.app's own events
+  ([../004-index/kits.md](../004-index/kits.md) "Telemetry").
 
 ### The Community (`/community`, `/community/post`)
 

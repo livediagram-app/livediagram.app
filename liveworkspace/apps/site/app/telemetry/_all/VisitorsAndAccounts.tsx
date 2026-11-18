@@ -32,7 +32,7 @@ import { emphasisProps, useEmphasisStore } from '../_shared/chart-hover/emphasis
 import { CARD, TABLE_CELL, TABLE_HEAD, TOTAL_ROW } from './styles';
 
 // The second line of each chart: neutral slate, dashed, so the two read apart by shape as well as colour.
-const SECOND: Pick<StackSeries, 'className' | 'dashed'> = {
+export const SECOND: Pick<StackSeries, 'className' | 'dashed'> = {
   className: 'text-slate-500 dark:text-slate-400',
   dashed: true,
 };
@@ -244,7 +244,7 @@ function ScopePicker({
 }
 
 // One figure for the scope and window, with its arrow against the span before when there is one.
-function Tile({
+export function Tile({
   label,
   value,
   now,
@@ -281,7 +281,7 @@ function Tile({
   );
 }
 
-function ChartBlock({
+export function ChartBlock({
   title,
   caption,
   days,

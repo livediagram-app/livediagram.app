@@ -88,6 +88,11 @@ Leaving the page keeps what was made, in its folder, as any items are kept.
   `SHARE_LINKS_PER_ITEM`.
 - An unknown kit, a role that is not a role, a project name that is empty or too long, or a folder that is not the
   person's own is refused before anything is made.
+- A person starts at most 10 runs a minute, a Retry counting as one (`POST /kits`, per person, the
+  index's `KIT_RUN_LIMITER`). Past it the index answers `429 rate_limited` with `Retry-After: 60` before anything is read or made, and the
+  page says "You've started a lot of projects in the last minute. Wait a minute, then try again." Ten leaves room to
+  retry a run that failed several times over; a tight loop makes at most forty items a minute. Remove What Was Made
+  is not limited: it only deletes the person's own run.
 
 ## The apps' door
 
@@ -100,8 +105,21 @@ template is a 404 (`unknown_template`), so a catalogue that drifted fails loudly
 
 ## Telemetry
 
-None yet. The site's telemetry speaks in an app's name, and a run is every app's at once, so counting runs waits for
-a vocabulary of liveworkspace.app's own (a follow-up).
+A run is every app's at once, so its events are liveworkspace.app's own (`PLATFORM_TELEMETRY_APP`), sent by the kits
+page with the Explorer's emitter and its consent rules, never in an app's name. Each carries the kit as its type
+(`SoftwareProject`, `ProductLaunch`, `TeamWorkshop`, `WebsiteBuild`):
+
+| Event           | When                                                                   |
+| --------------- | ---------------------------------------------------------------------- |
+| `Kit·Started`   | Create Project pressed                                                 |
+| `Kit·Retried`   | Retry (or Try Again) pressed                                           |
+| `Kit·Completed` | an answer, first or after a Retry, with every part and connection made |
+| `Kit·Removed`   | Remove What Was Made confirmed and done                                |
+
+A refused request (the network, a 429) sends nothing beyond its Started or Retried. The closed list is
+`PLATFORM_OWN_TELEMETRY_EVENTS` (`packages/telemetry`), the only events the service takes in liveworkspace.app's own
+name besides the Explorer's and the shared switches'. The dashboard's All apps view charts them as **Project Kits**
+([008-telemetry](../008-telemetry/telemetry.md) "The dashboard").
 
 ## Security
 
