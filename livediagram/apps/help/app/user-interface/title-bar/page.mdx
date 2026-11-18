@@ -5,20 +5,20 @@ import { TitleBarParts, VisibilityLegendFigure } from '@/components/illustration
 export const metadata = helpMetadata({
   title: 'The Title Bar',
   description:
-    'The strip across the top of the editor: the canvas name, who can see it, whether you are editing or viewing, and Share or Copy at the right.',
+    'The strip across the top of the editor: the canvas name, who can see it, and Share or Copy at the right.',
   path: '/help/user-interface/title-bar/',
 });
 
 <ArticleLayout
   title="The Title Bar"
-  description="The canvas's name, who can see it, your role in it, and Share or Copy, in the strip above the canvas."
+  description="The canvas's name, who can see it, and Share or Copy, in the strip above the canvas."
   categoryTitle="User Interface"
   categorySlug="user-interface"
 >
 
-The **title bar** is the strip across the top of the editor, above the canvas. Reading from left to right, it holds the logo, the canvas's name, a pill saying who can see the canvas, a pill saying whether you are editing or viewing it, and at the right edge **Present**, when the canvas has a slide deck with a slide to show, then the button that matters most for this canvas: **Share** if you can share it, **Copy** if you can't. Your account button sits at the very end.
+The **title bar** is the strip across the top of the editor, above the canvas. Reading from left to right, it holds the logo, the canvas's name, a pill saying who can see the canvas, and at the right edge **Present**, when the canvas has a slide deck with a slide to show, then the button that matters most for this canvas: **Share** if you can share it, **Copy** if you can't. Your account button sits at the very end.
 
-<Figure caption="The title bar of a shared canvas, as its owner sees it: the name, the Shared visibility pill, the Editing role pill, a solid Share button and the account button.">
+<Figure caption="The title bar of a shared canvas, as its owner sees it: the name, the Shared visibility pill, a solid Share button and the account button.">
   <TitleBarParts />
 </Figure>
 
@@ -54,23 +54,7 @@ If you can share the canvas (you own it, or it is in a team you belong to), the 
 
 The pill does not show on a phone (the bar has no room for it), while the welcome screen of a new canvas is open, in [Zen mode](/help/tools/zen-mode/), or inside an [embed](/help/collaboration/sharing/embeds/), which hides the whole title bar.
 
-## The role pill
-
-After the visibility pill comes a second pill saying what you can do here right now: **Editing**, **Participating** or **Viewing**. It follows your [share role](/help/collaboration/sharing/): the owner and anyone on an Editor link see **Editing**, a Participant link shows **Participating**, and a Viewer link shows **Viewing**.
-
-Hover the pill to see who owns the canvas: **Owned by you** on your own canvases, or **Owned by** and the owner's name on someone else's. When the owner's name is not known, the pill has no hover text.
-
-If your role lets you edit, the pill is a switch that steps through all three, so you can check what each kind of link will get before you send it:
-
-- Click **Editing** and it turns to **Participating**: you work the canvas as someone on a Participant link does, with their palette and their limits. You can add stickies and text and move or delete what you add, but not anyone else's.
-- Click **Participating** and it turns to **Viewing**: the canvas becomes read-only, exactly as someone on a Viewer link sees it.
-- Click **Viewing** to go back to editing.
-
-The preview only changes what you can do, in this browser tab: nobody else sees your role change, and reloading the page brings you back to **Editing**. Anything you add while participating stays in the canvas.
-
-For a Participant or a Viewer the pill is just a label. Clicking it does nothing, because their link does not allow editing.
-
-Like the visibility pill, the role pill is hidden on a phone, in Zen mode and in embeds.
+Switching between editing and previewing the canvas as a Participant or a Viewer is the **Editing Mode** button in the bottom bar: see [Quick Controls](/help/user-interface/quick-controls/#editing-mode).
 
 ## Present
 

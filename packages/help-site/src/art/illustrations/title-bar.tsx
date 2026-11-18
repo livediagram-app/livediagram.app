@@ -1,6 +1,6 @@
 // The editor's title bar for the User Interface › The Title Bar article (docs/specs/018-help/help-app.md).
 // Drawn from the live header (the editor's components/chrome/EditorHeader.tsx): the logo and its site switcher,
-// the work's name, the visibility pill (SharedBadge), the role pill (RoleIndicator), Share and the
+// the work's name, the visibility pill (SharedBadge), Share and the
 // account button; and the visibility pill's legend (VisibilityLegend). Labels are the real UI strings,
 // in capitals where the editor prints them in capitals.
 
@@ -131,7 +131,7 @@ function Callout({
 }
 
 /** The title bar as the owner of a shared piece of work (`noun`) sees it: the logo and its switcher
- *  with the product's name, the work's name, the SHARED visibility pill, the EDITING role pill, a
+ *  with the product's name, the work's name, the SHARED visibility pill, a
  *  solid Share button and the account button. */
 export function TitleBarParts({ product, noun }: { product: string; noun: string }) {
   const y = 14;
@@ -191,18 +191,6 @@ export function TitleBarParts({ product, noun }: { product: string; noun: string
       >
         SHARED
       </Label>
-      {/* The role pill (RolePill), Editing. */}
-      <rect x={264} y={y + 11} width={54} height={18} rx={9} className="fill-emerald-100" />
-      <Label
-        x={291}
-        y={y + 21}
-        size={8.5}
-        weight={700}
-        anchor="middle"
-        className="fill-emerald-800 dark:fill-emerald-200"
-      >
-        EDITING
-      </Label>
       {/* Share: full height, solid once the design has a live link. */}
       <rect x={336} y={y} width={58} height={40} className="fill-brand-700" />
       <ShareGlyph x={348} y={y + 20} />
@@ -215,7 +203,6 @@ export function TitleBarParts({ product, noun }: { product: string; noun: string
       <Callout x={40} row={2} text="Logo and menu" />
       <Callout x={157} row={1} text={`${capital(noun)} name`} />
       <Callout x={230} row={2} text="Visibility pill" />
-      <Callout x={291} row={1} text="Role pill" />
       <Callout x={365} row={2} text="Share" />
       <Callout x={407} row={1} text="Account" anchor="end" labelX={416} />
     </Scene>
