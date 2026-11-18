@@ -3,13 +3,8 @@
 // index's (liveworkspace/docs/specs/004-index/one-explorer.md); the doors an API client still calls for those are answered from it
 // (document-index-routes.ts).
 
-import type { Slide, Tab } from '@livediagram/document';
-import {
-  appendToStoredPresentation,
-  isValidTab,
-  migrateIncomingTab,
-  parseSlides,
-} from '@livediagram/document';
+import type { Tab } from '@livediagram/document';
+import { isValidTab, migrateIncomingTab, parseSlides } from '@livediagram/document';
 import {
   createItemGrant,
   itemSourceOf,
@@ -66,6 +61,7 @@ import {
   initDocument,
   readDocumentMeta,
   readDocumentTabs,
+  appendDocumentSlides,
   renameDocument,
   setDocumentPresentation,
 } from '../document-room/document-content';
@@ -466,27 +462,26 @@ export async function handleDocumentRequest(ctx: DocumentRouteContext): Promise<
       ) {
         return badRequest('presentation too large');
       }
-      // Appended slides (presentation-mode.md "Slides an agent appends"): merged into the stored deck here, by id, so
-      // a deck someone has open is never read and written back whole by the caller. Never with a whole deck.
-      let appended: { presentation: string | null; added: Slide[] } | null = null;
-      if (body.appendSlides !== undefined) {
-        const slides = parseSlides(body.appendSlides);
-        if (!slides || body.presentation !== undefined) return badRequest('invalid appendSlides');
-        appended = appendToStoredPresentation(existing.presentation, slides);
-        if ((appended.presentation?.length ?? 0) > MAX_DECK_LEN) {
-          return badRequest('presentation too large');
-        }
+      // Appended slides (presentation-mode.md "Slides an agent appends"): checked here, merged into the stored deck
+      // below by id (appendDocumentSlides), so a deck someone has open is never read and written back whole by the
+      // caller. Never with a whole deck.
+      const appendSlides =
+        body.appendSlides === undefined ? undefined : parseSlides(body.appendSlides);
+      if (appendSlides === null || (appendSlides && body.presentation !== undefined))
+        return badRequest('invalid appendSlides');
+      // First, so a refused append writes nothing else either.
+      if (appendSlides) {
+        const appended = await appendDocumentSlides(env, id, appendSlides, MAX_DECK_LEN);
+        if (appended === 'too_large') return badRequest('presentation too large');
+        if (appended === null) return json({ error: 'deck_busy' }, { status: 409 });
+        // Every open editor appends them too, so its next deck edit keeps them.
+        if (appended.added.length > 0) ctx.waitUntil?.(relayDeckSlides(env, id, appended.added));
       }
       await renameDocument(env, id, name, Date.now());
       // Only when the caller actually sent the field: `undefined` means "not my business", which is what every
       // existing client sends.
       if (body.presentation !== undefined)
         await setDocumentPresentation(env, id, body.presentation);
-      if (appended && appended.added.length > 0) {
-        await setDocumentPresentation(env, id, appended.presentation);
-        // Every open editor appends them too, so its next deck edit keeps them.
-        ctx.waitUntil?.(relayDeckSlides(env, id, appended.added));
-      }
       if (order) await reorderTabs(env, id, order);
       const liveDoc = await getDocument(env, id);
       // An agent's rename reaches the open editors (docs/specs/024-agents/agent-changesets.md "Whole-tab saves and

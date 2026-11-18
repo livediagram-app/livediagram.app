@@ -179,6 +179,18 @@ export function useSlideDeck({
     [isReadOnly, scheduleSave],
   );
 
+  /**
+   * The stored deck read back by a resync (useRoomResync), for slides whose `deck-slides` op the room could no longer
+   * replay: each one the deck lacks goes on after its own, and nothing is saved. Skipped while a deck save of ours is
+   * waiting or went out within DECK_ECHO_WINDOW_MS: the stored deck may predate it, and a slide deleted here would
+   * come back.
+   */
+  const receiveStoredDeck = useCallback((presentation: string | null) => {
+    if (saveTimer.current !== null || Date.now() - lastSaveAt.current < DECK_ECHO_WINDOW_MS) return;
+    const stored = firstDeck(parseStoredPresentation(presentation)).slides;
+    setDeck((prev) => mergeSlides(prev, stored));
+  }, []);
+
   useEffect(
     () => () => {
       if (saveTimer.current !== null) window.clearTimeout(saveTimer.current);
@@ -465,6 +477,7 @@ export function useSlideDeck({
     deck,
     hydrateDeck,
     receiveSlides,
+    receiveStoredDeck,
     openSlideId,
     openSlide,
     setOpenSlideId,

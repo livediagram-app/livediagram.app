@@ -119,3 +119,29 @@ describe('useSlideDeck receiveSlides', () => {
     expect(viewer.saveDeck).not.toHaveBeenCalled();
   });
 });
+
+// A resync reads the stored deck back (useRoomResync) when the room could no longer replay a deck-slides op.
+describe('useSlideDeck receiveStoredDeck', () => {
+  beforeEach(() => vi.useFakeTimers());
+  afterEach(() => vi.useRealTimers());
+
+  it("takes in the stored deck's slides it lacks, saving nothing", () => {
+    const doc = documentOpenIn();
+    doc.agentAppends([slide('t1')]);
+    act(() => doc.editor.result.current.receiveStoredDeck(doc.server.stored));
+    expect(doc.shownIds()).toEqual(['mine', 't1']);
+    doc.flush(DECK_ECHO_WINDOW_MS);
+    expect(doc.saveDeck).not.toHaveBeenCalled();
+  });
+
+  it('leaves the deck alone while a save of ours is waiting or just went out, so a deleted slide stays gone', () => {
+    const doc = documentOpenIn();
+    const before = doc.server.stored;
+    act(() => doc.editor.result.current.deleteSlide('mine'));
+    act(() => doc.editor.result.current.receiveStoredDeck(before));
+    expect(doc.shownIds()).toEqual([]);
+    doc.flush();
+    act(() => doc.editor.result.current.receiveStoredDeck(before));
+    expect(doc.shownIds()).toEqual([]);
+  });
+});

@@ -117,6 +117,8 @@ export function useEditorRoom({
   // Filled in useEditorPresentation, which owns the deck and is composed after the room: slides an agent appended
   // (docs/specs/012-collaboration/presentation-mode.md "Slides an agent appends").
   const receiveDeckSlidesRef = useRef<((slides: readonly Slide[]) => void) | null>(null);
+  // The same deck, given the stored one a resync read back (useRoomResync).
+  const receiveStoredDeckRef = useRef<((presentation: string | null) => void) | null>(null);
   // Live poll (docs/specs/012-collaboration/live-poll.md): the ephemeral pulse-check. Declared before the
   // room connection because that's what feeds it inbound ops. Nothing it
   // holds is persisted — no tab field, no autosave, no change log.
@@ -151,6 +153,7 @@ export function useEditorRoom({
     noteChangesetSeen: realtime.changesetSeen.noteSeen,
     setDocumentName,
     lastSavedNameRef,
+    receiveStoredDeck: (presentation) => receiveStoredDeckRef.current?.(presentation),
   });
   // Agent changesets relayed through the room (docs/specs/024-agents/agent-changesets.md "In the
   // editor"): applied, outlined, toasted. See useChangesetFeed.
@@ -372,6 +375,7 @@ export function useEditorRoom({
     reactions,
     receiveFocusRef,
     receiveDeckSlidesRef,
+    receiveStoredDeckRef,
     revealChangesetRef,
     view: {
       // The outlines relayed changesets draw (useChangesetFeed), for the canvas overlay.

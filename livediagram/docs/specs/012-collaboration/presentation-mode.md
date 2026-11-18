@@ -307,9 +307,13 @@ append is its own write and its own room op:
 - **The api appends.** `PUT /documents/:id` takes `appendSlides` (a list of slides, never with `presentation`): it
   adds each slide whose id the stored deck does not already hold after the first deck's own, keeps any later deck,
   and refuses a deck past the deck cap. Slides that are not slides (no id, no tab, no element list) refuse the
-  request (`invalid appendSlides`).
+  request (`invalid appendSlides`). The write lands only if the stored deck is still the one it read, so a person's
+  whole-deck save landing in between is merged into, never written over; it tries again on a lost race, five times at
+  most, then answers 409 `deck_busy` having written nothing.
 - **The room is told.** The slides it added go to the room as a `deck-slides` op, a system kind only the api sends
-  (a client socket's is dropped), sequenced so an editor whose socket blipped replays it. A tab-scoped session is
+  (a client socket's is dropped), sequenced so an editor whose socket blipped replays it. When the room can no longer replay the gap, the editor's
+  resync reads the stored deck back too and takes in the slides it lacks, saving nothing; it skips that while a deck
+  save of its own is waiting or went out in the last 10 seconds, so a slide deleted here does not come back. A tab-scoped session is
   not sent it, as it is not sent any other change that names no tab of its own.
 - **An open editor takes them in.** It appends each slide it does not hold (by id) after its deck's own, so a replay
   adds nothing twice. The appended slides are already stored, so taking them in saves nothing, unless this editor's

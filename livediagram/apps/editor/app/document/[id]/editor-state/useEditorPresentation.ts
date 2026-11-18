@@ -51,7 +51,7 @@ export function useEditorPresentation({
   const { isReadOnly, sessionShareCode } = fromCollaboration;
   const { documentPresentation, setDocumentPresentation, setUserPreferences, userPreferences } =
     fromPersistence;
-  const { loadAllTabs, receiveDeckSlidesRef } = fromRoom;
+  const { loadAllTabs, receiveDeckSlidesRef, receiveStoredDeckRef } = fromRoom;
   const { canvasMainRef, fitToBounds, viewport } = fromViewport;
 
   // Slide deck (docs/specs/012-collaboration/presentation-mode.md). Owns the deck, the panel's editing verbs, and the
@@ -85,6 +85,8 @@ export function useEditorPresentation({
   });
   // Slides an agent appended reach the deck through the room (presentation-mode.md "Slides an agent appends").
   useAssignRef(receiveDeckSlidesRef, slideDeck.receiveSlides);
+  // And from the stored deck a resync reads back, when the room could no longer replay that op.
+  useAssignRef(receiveStoredDeckRef, slideDeck.receiveStoredDeck);
   // Seed the deck once the document's stored blob arrives. Triggered only when a stored deck appears or
   // the document changes: hydrating on every deck edit would fight the editing verbs, so the blob itself
   // is read at that moment (an effect event), not depended on.

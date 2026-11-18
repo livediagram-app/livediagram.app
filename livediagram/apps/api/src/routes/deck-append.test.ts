@@ -5,6 +5,7 @@ import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocuments } from './documents';
+import { DECK_APPEND_ATTEMPTS } from '../document-room/document-content';
 
 // Slides an agent appends (docs/specs/012-collaboration/presentation-mode.md "Slides an agent appends"): the MCP's
 // add_tab sends `appendSlides`, the api merges them into the stored deck by id and tells the room, so an editor with
@@ -128,4 +129,68 @@ describe('appendSlides on the metadata PUT', () => {
       );
     },
   );
+});
+
+// Each time the append reads the deck, `between` runs before the read answers: a person's whole-deck save landing in
+// the gap between the append's read and its write.
+function raceEachRead(db: SqliteD1, between: (read: number) => Promise<void>) {
+  const real = db.env.DOCUMENT_DB;
+  let reads = 0;
+  const prepare = (sql: string) => {
+    const statement = real.prepare(sql);
+    if (!sql.startsWith('SELECT presentation FROM document')) return statement;
+    return {
+      bind: (...args: unknown[]) => {
+        const bound = statement.bind(...args);
+        return {
+          first: async <T>() => {
+            const row = await bound.first<T>();
+            await between(++reads);
+            return row;
+          },
+        };
+      },
+    };
+  };
+  const raced = new Proxy(real, {
+    get: (target, key) => (key === 'prepare' ? prepare : (Reflect.get(target, key) as unknown)),
+  });
+  (db.env as { DOCUMENT_DB: unknown }).DOCUMENT_DB = raced;
+  return () => reads;
+}
+
+describe('an append racing a whole-deck save', () => {
+  it("keeps both: the person's deck and the appended slides", async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const room = roomRecorder();
+    const db = await documentWithDeck(room, [slide('mine')]);
+    const personDeck = JSON.stringify({ decks: [{ slides: [slide('mine'), slide('theirs')] }] });
+    const reads = raceEachRead(db, async (read) => {
+      if (read === 1) await call(db, 'PUT', '/api/documents/D', { presentation: personDeck });
+    });
+    const res = await call(db, 'PUT', '/api/documents/D', { appendSlides: [slide('s1')] });
+    expect(res.status).toBe(200);
+    expect(reads()).toBe(2);
+    expect(await storedDecks(db)).toEqual([['mine', 'theirs', 's1']]);
+    const relayed = room.calls.filter((c) => c.url.endsWith('/mutation'));
+    expect(relayed.map((c) => c.body)).toEqual([
+      { op: { kind: 'deck-slides', slides: [slide('s1')] } },
+    ]);
+  });
+
+  it('gives up with a 409, writing nothing, when every attempt loses the race', async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const db = await documentWithDeck(roomRecorder(), [slide('mine')]);
+    raceEachRead(db, async (read) => {
+      const deck = JSON.stringify({ decks: [{ slides: [slide(`theirs-${read}`)] }] });
+      await call(db, 'PUT', '/api/documents/D', { presentation: deck });
+    });
+    const res = await call(db, 'PUT', '/api/documents/D', { appendSlides: [slide('s1')] });
+    expect(res.status).toBe(409);
+    expect(await storedDecks(db)).toEqual([[`theirs-${DECK_APPEND_ATTEMPTS}`]]);
+    expect(warn).toHaveBeenCalledWith('[deck-append] lost every race for the deck', {
+      documentId: 'D',
+    });
+  });
 });

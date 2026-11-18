@@ -24,7 +24,11 @@ const summary = (id: string, orderIndex: number) => ({
   updatedAt: 1,
 });
 
-function setUp(shareCode: string | null, names = { shown: 'Doc', saved: 'Doc' }) {
+function setUp(
+  shareCode: string | null,
+  names = { shown: 'Doc', saved: 'Doc' },
+  receiveStoredDeck?: (presentation: string | null) => void,
+) {
   let screen = [t('a'), t('gone'), t('b')];
   const lastSaved = { current: screen };
   let shownName = names.shown;
@@ -46,6 +50,7 @@ function setUp(shareCode: string | null, names = { shown: 'Doc', saved: 'Doc' })
         shownName = typeof next === 'function' ? next(shownName) : next;
       },
       lastSavedNameRef: lastSavedName,
+      receiveStoredDeck,
     }),
   );
   return {
@@ -124,5 +129,49 @@ describe('useRoomResync', () => {
     const before = nothing.screen();
     await act(() => nothing.resync());
     expect(nothing.screen()).toBe(before);
+  });
+});
+
+// docs/specs/012-collaboration/presentation-mode.md "Slides an agent appends": a deck-slides op the room could no
+// longer replay is lost with the gap, so a full resync hands the stored deck back to the deck.
+describe('useRoomResync and the slide deck', () => {
+  const deck = JSON.stringify({ decks: [{ slides: [{ id: 's1', tabId: 'a', elementIds: [] }] }] });
+
+  it('hands the stored deck on a full resync, for the owner and through a share link', async () => {
+    api.apiLoadTabRevisioned.mockResolvedValue({ tab: t('a'), rev: 3 });
+    api.apiLoadDocument.mockResolvedValue({
+      id: 'd1',
+      name: 'Doc',
+      tabs: [summary('a', 0)],
+      presentation: deck,
+    });
+    const owner = vi.fn();
+    const asOwner = setUp(null, undefined, owner);
+    await act(() => asOwner.resync());
+    expect(owner).toHaveBeenCalledWith(deck);
+
+    api.apiLoadShared.mockResolvedValue({
+      document: { id: 'd1', name: 'Doc', tabs: [summary('a', 0)] },
+      role: 'view',
+      tabId: null,
+      community: null,
+    });
+    const visitor = vi.fn();
+    const asVisitor = setUp('CODE', undefined, visitor);
+    await act(() => asVisitor.resync());
+    expect(visitor).toHaveBeenCalledWith(null);
+  });
+
+  it('leaves the deck alone on a narrowed refetch, or when the document cannot be read', async () => {
+    api.apiLoadTabRevisioned.mockResolvedValue({ tab: t('a'), rev: 3 });
+    const narrowed = vi.fn();
+    const scoped = setUp(null, undefined, narrowed);
+    await act(() => scoped.resync({ tabIds: ['a'] }));
+    expect(narrowed).not.toHaveBeenCalled();
+    api.apiLoadDocument.mockRejectedValueOnce(new Error('down'));
+    const failed = vi.fn();
+    const unread = setUp(null, undefined, failed);
+    await act(() => unread.resync());
+    expect(failed).not.toHaveBeenCalled();
   });
 });
