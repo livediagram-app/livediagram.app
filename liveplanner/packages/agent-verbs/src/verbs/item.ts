@@ -170,7 +170,7 @@ export const itemLs = defineVerb({
     handedToMe: z
       .boolean()
       .optional()
-      .describe("Only the items handed to this token's AI assistant"),
+      .describe("Only items handed to this token's assistant"),
   }),
   output: z.object({
     items: z.array(listedItemOut),
@@ -266,11 +266,11 @@ export const itemLs = defineVerb({
     positionals: ['project'],
     examples: [
       'liveplanner item ls 3f9c --status "To Do" --status Doing --type bug --type task',
-      'liveplanner item ls "Sprint 14" --query checkout --updated-since 2026-11-01 --handed-to-me',
+      'liveplanner item ls "Sprint 14" --updated-since 2026-11-01 --handed-to-me',
     ],
     prints:
-      'one item a line: #number, type, status, title, flagged on a flagged card, the AI assistant it is handed to, ' +
-      'then its pull requests with their states',
+      'one item a line: #number, type, status, title, flagged on a flagged card, its AI assistant, then its pull ' +
+      'requests with their states',
   },
 });
 
