@@ -140,6 +140,13 @@ Production lives at **`https://www.livedesign.app`**. Only two workers have a ho
 
 No worker has a `*.workers.dev` address or preview URLs: every `wrangler.toml` sets `workers_dev = false` and `preview_urls = false` at the top level and in each `[env.*]`, so nothing reaches a worker around the zone's WAF and rate-limit rules.
 
+A deployment of your own must also set two origins, or its links lead to livedesign.app: the mcp worker's
+`CONSENT_BASE_URL` (`[vars]` in `apps/mcp/wrangler.toml`: the editor origin that serves the OAuth consent page and
+hosts every tool's links, [MCP server §4.13](../015-api/mcp-server.md#413-worker-configuration)) and the api's
+`APP_BASE_URL` (the origin every email link points at, [Transactional email](../014-identity/transactional-email.md)).
+Local dev sets both to `http://localhost:3400` in the two dev scripts (`wrangler dev --var`), so a local run never
+links to production.
+
 ## Not covered here
 
 - Preview deploys for pull requests: staging, tracking `main`, is the one other environment ([Staging environment](staging-environment.md) "What staging is not").
