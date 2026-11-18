@@ -56,6 +56,19 @@ describe('the office amenities', () => {
     }
   });
 
+  // The drink machines block (walked round, never through) yet are still walked up to for a drink: standing in the strip
+  // at the front of the box, the feet are on the piece.
+  it('blocks a drink machine with its body and still stands you at its front for a drink', () => {
+    for (const shape of ['water-cooler', 'coffee-machine', 'drinks-cabinet', 'drinks-fridge']) {
+      const box = { x: 0, y: 0, width: 72, height: 120 };
+      const foot = officeFootprint({ ...box, shape })!;
+      expect(foot, shape).not.toBeNull();
+      const piece = { id: shape, type: 'shape', ...box, shape };
+      expect(elementUnderFeet([piece], { x: 36, y: 116 }), shape).toBe(shape);
+      expect(116 > foot.y + foot.height, shape).toBe(true);
+    }
+  });
+
   it('seats nobody', () => {
     for (const shape of [...SCENERY.map(([s]) => s), 'hand-dryer', 'microwave', 'kettle']) {
       expect(isFixedSeatShape(shape), shape).toBe(false);

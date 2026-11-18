@@ -3,7 +3,11 @@ import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
 import { STRIP_MORPH_MS } from '@/lib/strip-morph';
-import { space3DPreference } from '@/lib/space-3d/space-3d-preference';
+import {
+  SPACE_3D_OVERVIEW_MS,
+  space3DOverview,
+  space3DPreference,
+} from '@/lib/space-3d/space-3d-preference';
 import { useAvatarCamera } from './useAvatarCamera';
 
 // docs/specs/008-canvas/avatar-mode.md "The camera": entering and Fit centre the character at 100%, the zoom
@@ -19,6 +23,8 @@ beforeEach(() => {
   canvas.getBoundingClientRect = () =>
     ({ left: 10, top: 20, width: 1000, height: 800, right: 1010, bottom: 820 }) as DOMRect;
   document.body.append(canvas);
+  // These are the flat view's camera; the 3D view's arrival has its own test below.
+  space3DPreference.set(false);
 });
 
 afterEach(() => {
@@ -103,6 +109,10 @@ describe('useAvatarCamera', () => {
   // "The Edit | Walk toggle": switching to Walk glides in, as Edit glides out.
   it('glides to the character at 100% on entering the mode', () => {
     const { rerender, viewport } = setup(false);
+    // A switch from Edit, well after the load (a walk the load starts is an arrival).
+    act(() => {
+      vi.advanceTimersByTime(3001);
+    });
     rerender({ walking: true });
     act(() => {
       vi.advanceTimersByTime(STRIP_MORPH_MS / 2);
@@ -116,6 +126,22 @@ describe('useAvatarCamera', () => {
     expect(viewport.get()).toEqual({ zoom: 1, offset: { x: 400, y: 350 } });
   });
 
+  // 3d-view.md "Arriving": the whole tab, flat, for a moment, then a glide in to you as the view tilts.
+  it('shows the whole tab first when a load opens walking in 3D, then glides in', () => {
+    space3DPreference.set(true);
+    const { viewport, fitToScreen } = setup(true);
+    act(() => {
+      vi.advanceTimersByTime(20);
+    });
+    expect(fitToScreen).toHaveBeenCalledOnce();
+    expect(space3DOverview.get()).toBe(true);
+    act(() => {
+      vi.advanceTimersByTime(SPACE_3D_OVERVIEW_MS + 2000);
+    });
+    expect(space3DOverview.get()).toBe(false);
+    expect(viewport.get().zoom).toBe(1.4);
+  });
+
   it('lands at once when a load opens walking', () => {
     const { viewport } = setup(true);
     act(() => {
@@ -126,6 +152,10 @@ describe('useAvatarCamera', () => {
 
   it('stops the glide where it got to when the walk ends', () => {
     const { rerender, viewport } = setup(false);
+    // A switch from Edit, well after the load (a walk the load starts is an arrival).
+    act(() => {
+      vi.advanceTimersByTime(3001);
+    });
     rerender({ walking: true });
     act(() => {
       vi.advanceTimersByTime(STRIP_MORPH_MS / 2);

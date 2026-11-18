@@ -10,12 +10,17 @@ import { podWalls } from '@livehuddle/avatar/pod';
 import { fenceLine } from '@livehuddle/avatar/fence';
 import { AVATAR_HEIGHT } from '@livehuddle/avatar/walk';
 
-/** A Room, Corridor or Office Pod wall stands as tall as a character (DEFAULTS.md D137). */
-export const SPACE_WALL_HEIGHT = AVATAR_HEIGHT;
+/**
+ * A Room or Corridor wall stands as tall as the tallest piece that stands against it (a Toilet Cubicle, 152), so a
+ * bookshelf, a fridge or a Screen on it never rises over its top (DEFAULTS.md D137).
+ */
+export const SPACE_WALL_HEIGHT = 152;
+/** An Office Pod is a booth: its walls stand a little over a character, so its furniture shows over them. */
+export const SPACE_POD_WALL_HEIGHT = Math.round(AVATAR_HEIGHT * 1.3);
 /** A Fence is a low run. */
 export const SPACE_FENCE_HEIGHT = 22;
 /** A doorway's opening, and so a shut Door's leaf: a lintel of wall stands over it. */
-export const SPACE_DOOR_HEIGHT = 44;
+export const SPACE_DOOR_HEIGHT = 96;
 
 export type SpaceWallKind = 'wall' | 'glass' | 'fence' | 'picket' | 'doorway' | 'window' | 'grass';
 
@@ -39,6 +44,8 @@ export type SpaceWall = {
   label?: string;
   // A doorway's Door is shut: its leaf stands in the frame.
   shut?: boolean;
+  // A doorway in a glass wall: the panel over its frame is glass, as the wall is (3d-view.md "Doorways").
+  glass?: boolean;
 };
 
 // A wall within this of level can carry a room's name (DEFAULTS.md D140).
@@ -72,6 +79,8 @@ export function spaceWalls(elements: readonly Element[]): SpaceWall[] {
   const doorable: WallSegment[] = [];
   // The plaster walls a window can stand in (a glass room's walls are glass throughout).
   const plaster: WallSegment[] = [];
+  // The glass walls a Door can stand in: its doorway's panel over the frame is glass too.
+  const glassy: WallSegment[] = [];
   for (const el of shapes) {
     const push = (segs: readonly WallSegment[], kind: SpaceWallKind, label?: string) => {
       const start = out.length;
@@ -85,6 +94,7 @@ export function spaceWalls(elements: readonly Element[]): SpaceWall[] {
       const walls = roomWalls(el);
       doorable.push(...walls);
       if (!isGlassRoom(el)) plaster.push(...walls);
+      else glassy.push(...walls);
       const label = typeof el.label === 'string' ? el.label.trim() : '';
       const glass = isGlassRoom(el);
       // A plaster wall's windows are cut out of it and stand as windows; a glass wall is all window already.
@@ -99,8 +109,12 @@ export function spaceWalls(elements: readonly Element[]): SpaceWall[] {
       doorable.push(...walls);
       plaster.push(...walls);
       push(cutByDoors(cutByDoors(walls, doorLines), windowLines), 'wall');
-    } else if (el.shape === 'office-pod') push(podWalls(el), 'wall');
-    else if (el.shape === 'fence') push([fenceLine(el)], 'fence');
+    } else if (el.shape === 'office-pod') {
+      const start = out.length;
+      push(podWalls(el), 'wall');
+      for (let i = start; i < out.length; i++)
+        out[i] = { ...out[i]!, height: SPACE_POD_WALL_HEIGHT };
+    } else if (el.shape === 'fence') push([fenceLine(el)], 'fence');
     else if (el.shape === 'garden-fence') push([fenceLine(el)], 'picket');
     else if (el.shape === 'grass') push(grassRows(el, covers), 'grass');
   }
@@ -111,6 +125,7 @@ export function spaceWalls(elements: readonly Element[]): SpaceWall[] {
     const wall = facingCamera(`door:${i}`, line, 'doorway');
     if (!wall) return;
     if ((el as { doorClosed?: boolean }).doorClosed === true) wall.shut = true;
+    if (glassy.some((w) => doorSpanOnWall(w, line))) wall.glass = true;
     out.push(wall);
   });
   // Every Window on a plaster wall stands in it: sill, glazing and the wall over it.

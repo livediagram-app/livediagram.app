@@ -75,9 +75,9 @@ describe('the 3D view camera (docs/specs/008-canvas/3d-view.md "The camera")', (
     expect(floorPointAt({ x: 400, y: 0 }, tall, view, SPACE_3D_TILT_DEG)).toBeNull();
   });
 
-  it('tilts the stage by a variable, so the tilt transitions', () => {
+  it('tilts and turns the stage by variables, so both transition', () => {
     expect(stageTransform()).toBe(
-      `perspective(${SPACE_3D_PERSPECTIVE_PX}px) rotateX(var(--space-tilt))`,
+      `perspective(${SPACE_3D_PERSPECTIVE_PX}px) rotateX(var(--space-tilt)) rotateZ(var(--space-turn))`,
     );
   });
 

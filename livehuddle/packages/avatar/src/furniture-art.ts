@@ -59,7 +59,18 @@ export type FurniturePart = (
 // a sitter's feet go on it, as fractions of the grid (the package's SeatGrid), and what is painted.
 export type FurnitureDrawing = SeatGrid & {
   parts: readonly FurniturePart[];
+  /** How the 3D view builds it rather than standing it up whole (furniture-rows.ts); absent: it stands whole. */
+  rows3D?: readonly FurnitureRow3D[];
 };
+
+/**
+ * One row of a piece built in the 3D view (livehuddle 3d-view.md "Tables are built, not stood"), by part index: a
+ * `stand` row (a chair) stands up about its own lowest point; a `top` row lies its `slab` (a table's top, a bench's
+ * seat) level at its height, held up by its `skirt` (its front edge and legs), which stands from the floor to it.
+ */
+export type FurnitureRow3D =
+  | { kind: 'stand'; parts: readonly number[] }
+  | { kind: 'top'; slab: readonly number[]; skirt: readonly number[] };
 
 // A piece's three drawings: `front` with the sitter facing down the canvas ('n'), `back` facing up
 // ('s'), `side` facing left ('e'); facing right ('w') is the side drawing mirrored. Nothing is ever
@@ -97,6 +108,44 @@ export const path = (role: FurniturePartRole, d: string, fill?: string): Furnitu
   d,
   ...(fill ? { fill } : {}),
 });
+
+// Pieces the 3D view builds row by row (furniture-rows.ts): a drawing written as groups, each a row, so its paint
+// order is the flat plan's and the 3D view knows which parts stand where.
+/** One group of a drawing: lying on the floor (`flat`, a shadow), a chair (`stand`) or a top on legs (`top`). */
+export type FurnitureGroup =
+  | { flat: readonly FurniturePart[] }
+  | { stand: readonly FurniturePart[] }
+  | {
+      top: readonly FurniturePart[];
+    };
+
+// In a top's group its front edge and its legs hold it up; the rest (its top, what lies on it) is the slab.
+const holdsUp = (p: FurniturePart) => p.role === 'face' || p.role === 'line';
+
+/** The drawing's parts in the groups' order, and its rows. */
+export function rowed(groups: readonly FurnitureGroup[]): {
+  parts: FurniturePart[];
+  rows3D: FurnitureRow3D[];
+} {
+  const parts: FurniturePart[] = [];
+  const rows3D: FurnitureRow3D[] = [];
+  for (const g of groups) {
+    const from = parts.length;
+    if ('flat' in g) {
+      parts.push(...g.flat);
+    } else if ('stand' in g) {
+      parts.push(...g.stand);
+      rows3D.push({ kind: 'stand', parts: g.stand.map((_, i) => from + i) });
+    } else {
+      parts.push(...g.top);
+      const slab: number[] = [];
+      const skirt: number[] = [];
+      g.top.forEach((p, i) => (holdsUp(p) ? skirt : slab).push(from + i));
+      rows3D.push({ kind: 'top', slab, skirt });
+    }
+  }
+  return { parts, rows3D };
+}
 
 /** A drawing that reads the same from every side, so every facing shows it. */
 export const allSides = (view: FurnitureDrawing): FurnitureArt => ({
@@ -665,27 +714,40 @@ const profile = (cy: number, facingRight: boolean): Part[] => {
 export const MEETING_TABLE_VIEW: FurnitureDrawing & { tableSeats: readonly TableSeat[] } = {
   width: MEETING_TABLE_SEATS.width,
   height: MEETING_TABLE_SEATS.height,
-  parts: [
-    ellipse('shadow', 116, 160, 110, 6),
-    ...far(86),
-    ...far(146),
+  // Each chair a row of its own and the top on its legs, so the 3D view builds it (furniture-rows.ts).
+  ...rowed([
+    { flat: [ellipse('shadow', 116, 160, 110, 6)] },
+    { stand: far(86) },
+    { stand: far(146) },
     // The ends: seat, then the backrest on the outside.
-    path('line', 'M10 80v18M32 80v18', S.metal),
-    rect('panel', 6, 66, 30, 12, 4),
-    rect('panel', 2, 44, 8, 36, 3.5),
-    path('line', 'M200 80v18M222 80v18', S.metal),
-    rect('panel', 196, 66, 30, 12, 4),
-    rect('panel', 222, 44, 8, 36, 3.5),
+    {
+      stand: [
+        path('line', 'M10 80v18M32 80v18', S.metal),
+        rect('panel', 6, 66, 30, 12, 4),
+        rect('panel', 2, 44, 8, 36, 3.5),
+      ],
+    },
+    {
+      stand: [
+        path('line', 'M200 80v18M222 80v18', S.metal),
+        rect('panel', 196, 66, 30, 12, 4),
+        rect('panel', 222, 44, 8, 36, 3.5),
+      ],
+    },
     // The table: legs, its wooden top and front edge, a notebook at each place and a jug of water.
-    path('line', 'M50 110v20M182 110v20', S.metal),
-    rect('panel', 40, 56, 152, 44, 6, S.woodLight),
-    rect('face', 40, 96, 152, 12, 4, S.wood),
-    path('glint', 'M48 59h136'),
-    ...tablePapers([86, 146], 60, 84),
-    ...jug(116, 72),
-    ...near(86),
-    ...near(146),
-  ],
+    {
+      top: [
+        path('line', 'M50 110v20M182 110v20', S.metal),
+        rect('panel', 40, 56, 152, 44, 6, S.woodLight),
+        rect('face', 40, 96, 152, 12, 4, S.wood),
+        path('glint', 'M48 59h136'),
+        ...tablePapers([86, 146], 60, 84),
+        ...jug(116, 72),
+      ],
+    },
+    { stand: near(86) },
+    { stand: near(146) },
+  ]),
   seats: [],
   tableSeats: MEETING_TABLE_SEATS.seats,
 };
@@ -694,20 +756,24 @@ export const MEETING_TABLE_VIEW: FurnitureDrawing & { tableSeats: readonly Table
 // end's chair nearest you, its back to you.
 const MEETING_TABLE_SIDE: FurnitureDrawing = {
   ...MEETING_TABLE_SEATS_SIDE,
-  parts: [
-    ellipse('shadow', 84, 228, 78, 4),
-    ...far(84),
-    ...profile(86, true),
-    ...profile(134, true),
-    ...profile(86, false),
-    ...profile(134, false),
-    path('line', 'M56 178v20M112 178v20', S.metal),
-    rect('panel', 46, 50, 76, 120, 6, S.woodLight),
-    rect('face', 46, 166, 76, 12, 4, S.wood),
-    path('glint', 'M50 53.5h68'),
-    ...jug(84, 104),
-    ...near(84, 70),
-  ],
+  ...rowed([
+    { flat: [ellipse('shadow', 84, 228, 78, 4)] },
+    { stand: far(84) },
+    { stand: profile(86, true) },
+    { stand: profile(134, true) },
+    { stand: profile(86, false) },
+    { stand: profile(134, false) },
+    {
+      top: [
+        path('line', 'M56 178v20M112 178v20', S.metal),
+        rect('panel', 46, 50, 76, 120, 6, S.woodLight),
+        rect('face', 46, 166, 76, 12, 4, S.wood),
+        path('glint', 'M50 53.5h68'),
+        ...jug(84, 104),
+      ],
+    },
+    { stand: near(84, 70) },
+  ]),
 };
 
 // From behind, a table with six chairs reads the same, so its back is its front's drawing; only its seats have turned.
@@ -745,37 +811,53 @@ export function longTableArt(
   const end = L - MEETING_TABLE_SEATS.width;
   const front: FurnitureDrawing = {
     ...seats.front,
-    parts: [
-      ellipse('shadow', L / 2, 160, L / 2 - 6, 6),
-      ...sides.flatMap((x) => far(x)),
-      path('line', 'M10 80v18M32 80v18', S.metal),
-      rect('panel', 6, 66, 30, 12, 4),
-      rect('panel', 2, 44, 8, 36, 3.5),
-      path('line', `M${200 + end} 80v18M${222 + end} 80v18`, S.metal),
-      rect('panel', 196 + end, 66, 30, 12, 4),
-      rect('panel', 222 + end, 44, 8, 36, 3.5),
-      path('line', `M50 110v20M${L / 2} 110v20M${L - 50} 110v20`, S.metal),
-      rect('panel', 40, 56, L - 80, 44, 6, S.woodLight),
-      rect('face', 40, 96, L - 80, 12, 4, S.wood),
-      path('glint', `M48 59h${L - 96}`),
-      ...tablePapers(sides, 60, 84),
-      ...sides.flatMap((x) => near(x)),
-    ],
+    ...rowed([
+      { flat: [ellipse('shadow', L / 2, 160, L / 2 - 6, 6)] },
+      ...sides.map((x) => ({ stand: far(x) })),
+      {
+        stand: [
+          path('line', 'M10 80v18M32 80v18', S.metal),
+          rect('panel', 6, 66, 30, 12, 4),
+          rect('panel', 2, 44, 8, 36, 3.5),
+        ],
+      },
+      {
+        stand: [
+          path('line', `M${200 + end} 80v18M${222 + end} 80v18`, S.metal),
+          rect('panel', 196 + end, 66, 30, 12, 4),
+          rect('panel', 222 + end, 44, 8, 36, 3.5),
+        ],
+      },
+      {
+        top: [
+          path('line', `M50 110v20M${L / 2} 110v20M${L - 50} 110v20`, S.metal),
+          rect('panel', 40, 56, L - 80, 44, 6, S.woodLight),
+          rect('face', 40, 96, L - 80, 12, 4, S.wood),
+          path('glint', `M48 59h${L - 96}`),
+          ...tablePapers(sides, 60, 84),
+        ],
+      },
+      ...sides.map((x) => ({ stand: near(x) })),
+    ]),
   };
   const ys = longTableSideYs(L).map(r1);
   const side: FurnitureDrawing = {
     ...seats.side,
-    parts: [
-      ellipse('shadow', 84, L - 4, 78, 4),
-      ...far(84),
-      ...ys.flatMap((y) => profile(y, true)),
-      ...ys.flatMap((y) => profile(y, false)),
-      path('line', `M56 ${L - 54}v20M112 ${L - 54}v20`, S.metal),
-      rect('panel', 46, 50, 76, L - 112, 6, S.woodLight),
-      rect('face', 46, L - 66, 76, 12, 4, S.wood),
-      path('glint', 'M50 53.5h68'),
-      ...near(84, L - 162),
-    ],
+    ...rowed([
+      { flat: [ellipse('shadow', 84, L - 4, 78, 4)] },
+      { stand: far(84) },
+      ...ys.map((y) => ({ stand: profile(y, true) })),
+      ...ys.map((y) => ({ stand: profile(y, false) })),
+      {
+        top: [
+          path('line', `M56 ${L - 54}v20M112 ${L - 54}v20`, S.metal),
+          rect('panel', 46, 50, 76, L - 112, 6, S.woodLight),
+          rect('face', 46, L - 66, 76, 12, 4, S.wood),
+          path('glint', 'M50 53.5h68'),
+        ],
+      },
+      { stand: near(84, L - 162) },
+    ]),
   };
   const art: FurnitureArt = { front, back: { ...front, ...seats.back }, side };
   if (longTables.size >= 16) longTables.clear();

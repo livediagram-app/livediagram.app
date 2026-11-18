@@ -9,6 +9,8 @@ export const SPACE_3D_PERSPECTIVE_PX = 1100;
 /** How long the tilt (and the walls' fold) takes, in ms. */
 export const SPACE_3D_TILT_MS = 520;
 
+import { toCamera } from './space-3d-turn';
+
 type Point = { x: number; y: number };
 type View = { zoom: number; offset: Point };
 type Rect = { left: number; top: number; width: number; height: number };
@@ -18,7 +20,7 @@ const HORIZON_EPSILON = 1;
 
 /** The stage's transform while it is in 3D: the tilt itself is the `--space-tilt` variable, so it transitions. */
 export function stageTransform(perspective = SPACE_3D_PERSPECTIVE_PX): string {
-  return `perspective(${perspective}px) rotateX(var(--space-tilt))`;
+  return `perspective(${perspective}px) rotateX(var(--space-tilt)) rotateZ(var(--space-turn))`;
 }
 
 /**
@@ -32,6 +34,8 @@ export function floorPointAt(
   view: View,
   tiltDeg: number,
   perspective = SPACE_3D_PERSPECTIVE_PX,
+  // The camera's quarter turns (3d-view.md "Turning the camera"): the floor point is turned back by them.
+  turn = 0,
 ): Point | null {
   const cx = rect.width / 2;
   const cy = rect.height / 2;
@@ -43,7 +47,8 @@ export function floorPointAt(
   if (den <= HORIZON_EPSILON) return null;
   const fy = (Y * perspective) / den;
   const fx = (X * (perspective - fy * sin)) / perspective;
-  return { x: fx / view.zoom + cx - view.offset.x, y: fy / view.zoom + cy - view.offset.y };
+  const p = toCamera({ x: fx, y: fy }, -turn);
+  return { x: p.x / view.zoom + cx - view.offset.x, y: p.y / view.zoom + cy - view.offset.y };
 }
 
 /** Where a canvas point on the floor shows on the screen (relative to the canvas's box): `floorPointAt` forwards. */
@@ -53,11 +58,17 @@ export function screenPointOf(
   view: View,
   tiltDeg: number,
   perspective = SPACE_3D_PERSPECTIVE_PX,
+  turn = 0,
 ): Point {
   const cx = size.width / 2;
   const cy = size.height / 2;
-  const fx = (point.x + view.offset.x - cx) * view.zoom;
-  const fy = (point.y + view.offset.y - cy) * view.zoom;
+  const { x: fx, y: fy } = toCamera(
+    {
+      x: (point.x + view.offset.x - cx) * view.zoom,
+      y: (point.y + view.offset.y - cy) * view.zoom,
+    },
+    turn,
+  );
   const t = (tiltDeg * Math.PI) / 180;
   const w = perspective / (perspective - fy * Math.sin(t));
   return { x: cx + fx * w, y: cy + fy * Math.cos(t) * w };

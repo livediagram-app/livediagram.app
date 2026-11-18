@@ -5,6 +5,7 @@
 
 import type { Element, ShapeKind } from '@livehuddle/document';
 import type { SpaceArea } from './space-3d-cutaway';
+import { boxToCamera, toCamera, turnQuarter } from './space-3d-turn';
 
 /** The attribute a standing piece's box carries: `base` turns about its front edge, `centre` (a turned piece) its middle. */
 export const SPACE_STANDS_ATTR = 'data-space-stands';
@@ -56,12 +57,26 @@ export function standsInside3D(el: Element): el is Extract<Element, { type: 'sha
   return el.type === 'shape' && el.shape === 'office-pod';
 }
 
+// The pieces built row by row in the 3D view (3d-view.md "Tables are built, not stood"): their drawings carry rows.
+// The Car Park lies flat but its cars stand in their bays (3d-view.md "Cars stand in their bays").
+const ROWED_KINDS: ReadonlySet<string> = new Set(['meeting-table', 'picnic-table', 'car-park']);
+
+/** Whether a piece is built row by row in the 3D view: a table with its chairs or benches, not turned. */
+export function builtIn3D(el: Element): el is Extract<Element, { type: 'shape' }> {
+  return (
+    el.type === 'shape' &&
+    ROWED_KINDS.has(el.shape) &&
+    ((el as { rotation?: number }).rotation ?? 0) % 360 === 0
+  );
+}
+
 /**
  * The value of a standing piece's attribute: `base` or `centre` for a piece that stands, `inside` for one whose
- * furniture stands inside its walls, undefined for one that lies flat.
+ * furniture stands inside its walls, `rows` for one built row by row, undefined for one that lies flat.
  */
-export function standAttr(el: Element): 'base' | 'centre' | 'inside' | undefined {
+export function standAttr(el: Element): 'base' | 'centre' | 'inside' | 'rows' | undefined {
   if (standsInside3D(el)) return 'inside';
+  if (builtIn3D(el)) return 'rows';
   if (!standsIn3D(el)) return undefined;
   return ((el as { rotation?: number }).rotation ?? 0) % 360 === 0 ? 'base' : 'centre';
 }
@@ -70,7 +85,7 @@ export function standAttr(el: Element): 'base' | 'centre' | 'inside' | undefined
 export function standingIdsInArea(elements: readonly Element[], area: SpaceArea): Set<string> {
   const out = new Set<string>();
   for (const el of elements) {
-    if (!standsIn3D(el) && !standsInside3D(el)) continue;
+    if (!standsIn3D(el) && !standsInside3D(el) && !builtIn3D(el)) continue;
     if (
       el.x + el.width >= area.left &&
       el.x <= area.right &&
@@ -91,8 +106,10 @@ type Point = { x: number; y: number };
  * a sofa, a table's near side and its far side, behind a desk). The stylesheet turns it into a nudge towards the
  * camera; 0 for a sitter off the piece's box.
  */
-export function seatLift(piece: Box | null | undefined, feet: Point): number {
+export function seatLift(piece: Box | null | undefined, feet: Point, turn = 0): number {
   if (!piece) return 0;
+  // Turned (3d-view.md "Turning the camera"): measured along the camera's way.
+  if (turnQuarter(turn) !== 0) return seatLift(boxToCamera(piece, turn), toCamera(feet, turn));
   const depth = piece.y + piece.height - feet.y;
   return depth >= 0 && depth <= piece.height ? Math.ceil(depth) + 1 : 0;
 }
@@ -102,13 +119,21 @@ export function seatLift(piece: Box | null | undefined, feet: Point): number {
  * behind a desk): the piece then hides their legs, so they read as sitting behind it, not on it (3d-view.md "Pieces
  * stand up").
  */
-export function seatBehind(piece: Box | null | undefined, feet: Point): boolean {
-  if (!piece) return false;
+export function seatBehind(piece: Box | null | undefined, feet: Point, turn = 0): boolean {
+  // A piece built row by row hides a sitter's legs itself, with its own rows (3d-view.md "Tables are built").
+  if (!piece || (piece as { rows?: true }).rows) return false;
+  if (turnQuarter(turn) !== 0) return seatBehind(boxToCamera(piece, turn), toCamera(feet, turn));
   const depth = piece.y + piece.height - feet.y;
   return depth > piece.height * SPACE_SEAT_LIFT_SHARE && depth <= piece.height;
 }
 
 type Rect = { left: number; top: number; width: number; height: number };
+
+// How near the camera a box's nearest edge is, along the camera's way (bigger is nearer).
+function nearEdge(box: Box, turn: number): number {
+  const b = boxToCamera(box, turn);
+  return b.y + b.height;
+}
 
 /** A standing piece's box on the floor and where its drawing shows on the screen. */
 export type StandingOnScreen = { box: Box; rect: Rect; rotated: boolean };
@@ -121,6 +146,9 @@ export type StandingOnScreen = { box: Box; rect: Rect; rotated: boolean };
 export function standingPiecePointAt(
   pieces: readonly StandingOnScreen[],
   client: Point,
+  // The camera's quarter turns (3d-view.md "Turning the camera"): turned, the nearest is the camera's nearest, and a
+  // piece answers with its middle (its drawing no longer maps onto its box).
+  turn = 0,
 ): Point | null {
   let best: StandingOnScreen | null = null;
   for (const p of pieces) {
@@ -133,11 +161,12 @@ export function standingPiecePointAt(
       client.y > rect.top + rect.height
     )
       continue;
-    if (!best || p.box.y + p.box.height > best.box.y + best.box.height) best = p;
+    if (!best || nearEdge(p.box, turn) > nearEdge(best.box, turn)) best = p;
   }
   if (!best) return null;
   const { box, rect } = best;
-  if (best.rotated) return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+  if (best.rotated || turnQuarter(turn) !== 0)
+    return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
   return {
     x: box.x + ((client.x - rect.left) / rect.width) * box.width,
     y: box.y + ((client.y - rect.top) / rect.height) * box.height,
@@ -163,6 +192,22 @@ export const SPACE_HANG_REACH = 64;
 export const SPACE_HANG_LIFT = 10;
 
 type WallLine = { a: Point; b: Point; kind: string };
+
+/** Whether a piece of this kind hangs on a wall in the 3D view. */
+export function hangsOnWall(kind: string): boolean {
+  return HUNG_KINDS.has(kind);
+}
+
+/**
+ * Whether a piece is drawn as the turned camera sees it (3d-view.md "Turning the camera"): a piece that stands on its
+ * front edge or is built row by row, unturned on the canvas, not hung on a wall. It then shows the side the camera
+ * looks at (its back from behind) rather than turning with you.
+ */
+export function seenFromCamera(el: Element): boolean {
+  if (el.type !== 'shape' || hangsOnWall(el.shape) || standsInside3D(el)) return false;
+  if (((el as { rotation?: number }).rotation ?? 0) % 360 !== 0) return false;
+  return standsIn3D(el) || builtIn3D(el);
+}
 
 /**
  * Where a wall piece hangs in the 3D view: the back wall (a level wall facing the camera) just above it in the plan,

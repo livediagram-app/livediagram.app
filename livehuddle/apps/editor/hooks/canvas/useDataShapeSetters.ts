@@ -6,6 +6,7 @@ import {
   turnPieceBy,
   type ShapeElement,
   type RoomDoor,
+  type RoomFloor,
   type RoomWalls,
   GLASS_ROOM_VARIANT,
   type ClockZone,
@@ -60,6 +61,11 @@ export function useDataShapeSetters({
   // And its walls (office.md "Glass walls"): Glass stores `variant: 'glass'`, Solid clears it.
   const setRoomWalls = (walls: RoomWalls) =>
     setRoomDoorSelected({ variant: walls === 'glass' ? GLASS_ROOM_VARIANT : undefined }, 'Room');
+  // And its floor (office.md "Floors"): a type (Floorboards clears it) and a floor colour, which is the room's fill.
+  const setRoomFloor = (floor: RoomFloor) =>
+    setRoomDoorSelected({ floor: floor === 'boards' ? undefined : floor }, 'Room');
+  const setRoomFloorColour = (hex: string) =>
+    setRoomDoorSelected({ fillColor: hex, fillSwatch: undefined }, 'Room');
 
   // A piece's type (docs/specs/009-elements/office.md "A piece's type"): every selected piece of `kind` changed in
   // place, others left alone; a Door on a wall stays inside it, and keeps its type when the new one is wider than the
@@ -99,7 +105,7 @@ export function useDataShapeSetters({
       matches: (kind) => kind === 'screen',
     })({ screenUrl: url }, 'Screen');
   // An Avatar Pad's Receptionist (docs/specs/008-canvas/receptionist.md "Asking him to leave"): the menu's switch on
-  // the selected pad, and Ask Receptionist to Leave on his pad by id. Here clears the flag; leaving sets it.
+  // the selected pad, and Ask to Leave on his pad by id. Here clears the flag; leaving sets it.
   const receptionistPatch = (here: boolean) => ({ receptionistLeft: here ? undefined : true });
   const setReceptionistSelected = makeShapePatcher({
     currentSelectionIds,
@@ -135,6 +141,8 @@ export function useDataShapeSetters({
     turnSelected,
     setRoomDoorSelected: setRoomDoor,
     setRoomWallsSelected: setRoomWalls,
+    setRoomFloorSelected: setRoomFloor,
+    setRoomFloorColourSelected: setRoomFloorColour,
     setPieceTypeSelected,
     setStageSelected,
     setScreenUrlSelected,

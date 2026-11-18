@@ -28,7 +28,6 @@ import {
 } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { IconSizeTiles, IconWeightTiles } from '@/components/palette/context-menu-tiles';
 import { ColourRow } from '@/components/palette/context-menu-rows';
-import { AnimationSections } from '@/components/palette/AnimationSections';
 import { ShadowSection } from '@/components/palette/ShadowSection';
 import { FinishSection, resolveOwnFinish } from '@/components/palette/FinishSection';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
@@ -92,17 +91,6 @@ export function MultiStyleSections({
   );
   return (
     <>
-      {/* Animation (docs/specs/028-animation/element-animations.md): one category per animation set in
-          the selection, each applying to that set's members only. */}
-      {part === 'motion' ? (
-        <AnimationSections
-          elements={boxedSel}
-          keyPrefix="m-"
-          sectionProps={sectionProps}
-          flyoutProps={scaffold.flyoutProps}
-          handlers={props}
-        />
-      ) : null}
       {part === 'style' && colourable ? (
         <MenuAccordionSection
           title="Colours"

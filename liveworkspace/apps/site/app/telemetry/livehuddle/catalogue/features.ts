@@ -325,6 +325,16 @@ export const SPACE_3D_VIEW = chart(
   { types: ['Space3DView'] },
 );
 
+// A quarter turn of the 3D view's camera (livehuddle docs/specs/008-canvas/3d-view.md "Turning the camera"): Turn Left
+// or Turn Right, or [ and ].
+export const SPACE_3D_TURN = chart(
+  'Canvas',
+  'Used',
+  '3D View Turns',
+  "The 3D view's camera turned a quarter, left or right, to look at the Space from another side.",
+  { types: ['Space3DTurn'] },
+);
+
 export const IN_THE_SPACE: MetricStack = {
   stack: true,
   title: 'In the Space',
@@ -337,6 +347,7 @@ export const IN_THE_SPACE: MetricStack = {
     AVATAR_REACTIONS,
     SITS,
     SPACE_3D_VIEW,
+    SPACE_3D_TURN,
     OFFICE_DRINKS,
     WORKDAY_PIECES_USED,
     PING_PONG_GAMES,

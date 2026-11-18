@@ -11,13 +11,25 @@ import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-prefer
 import { walkInputBlocked } from '@livehuddle/avatar/walk-guard';
 import {
   setSpace3DTiltNow,
+  space3DOverview,
   space3DPreference,
   toggleSpace3D,
 } from '@/lib/space-3d/space-3d-preference';
 import { nextSpace3DPhase, type Space3DPhase } from '@/lib/space-3d/space-3d-phase';
-import { isSpace3DKey } from '@/lib/space-3d/space-3d-key';
+import { isSpace3DKey, space3DTurnKey } from '@/lib/space-3d/space-3d-key';
+import {
+  resetSpace3DTurn,
+  space3DTurn,
+  turnQuarter,
+  turnSpace3D,
+} from '@/lib/space-3d/space-3d-turn';
 import { SPACE_3D_TILT_DEG, SPACE_3D_TILT_MS } from '@/lib/space-3d/space-3d-camera';
 import { loadSpace3DWalls } from '@/lib/editor-deferred-code';
+
+/** The camera's quarter turns now (3d-view.md "Turning the camera"). */
+export function useSpace3DTurn(): number {
+  return useSyncExternalStore(space3DTurn.subscribe, space3DTurn.get, () => 0);
+}
 
 /** The remembered choice, as it changes. */
 export function useSpace3DPreference(): boolean {
@@ -25,7 +37,13 @@ export function useSpace3DPreference(): boolean {
 }
 
 export function useSpace3DView(walking: boolean): Space3DPhase {
-  const want = useSpace3DPreference() && walking;
+  // Held flat while the arrival's overview shows the whole tab (3d-view.md "Arriving").
+  const overview = useSyncExternalStore(
+    space3DOverview.subscribe,
+    space3DOverview.get,
+    () => false,
+  );
+  const want = useSpace3DPreference() && walking && !overview;
   const [phase, setPhase] = useState<Space3DPhase>('flat');
   // Moving on when the wish changes is a render-time update (no effect), so the first frame already shows it.
   // Starts unwanted, so a canvas that opens already walking with it on rises into it too.
@@ -63,6 +81,10 @@ export function useSpace3DView(walking: boolean): Space3DPhase {
     setSpace3DTiltNow(phase === 'tilted' || phase === 'rising' ? SPACE_3D_TILT_DEG : 0);
   }, [phase]);
   useEffect(() => () => setSpace3DTiltNow(0), []);
+  // The camera turns back as the view flattens, so the flat plan never turns (3d-view.md "Turning the camera").
+  useEffect(() => {
+    if (phase === 'falling' || phase === 'flat') resetSpace3DTurn();
+  }, [phase]);
   // The walls' code, fetched as soon as a walk will want it.
   useEffect(() => {
     if (want) void loadSpace3DWalls();
@@ -71,9 +93,17 @@ export function useSpace3DView(walking: boolean): Space3DPhase {
   useEffect(() => {
     if (!walking) return;
     const onKeyDown = (e: KeyboardEvent) => {
-      if (!isSpace3DKey(e)) return;
+      const turn = space3DTurnKey(e);
+      if (!isSpace3DKey(e) && turn === null) return;
       if (e.defaultPrevented || isTypingTarget(e.target) || walkInputBlocked()) return;
       if (isInMenuSurface(e.target)) return;
+      // `[` and `]` turn the camera while the view is 3D (3d-view.md "Turning the camera").
+      if (turn !== null) {
+        if (!space3DPreference.get()) return;
+        e.preventDefault();
+        turnSpace3D(turn);
+        return;
+      }
       e.preventDefault();
       toggleSpace3D();
     };
@@ -84,11 +114,18 @@ export function useSpace3DView(walking: boolean): Space3DPhase {
 }
 
 /** The stage's style for a phase: no transform while flat, the camera's tilt as a variable otherwise. */
-export function space3DStageStyle(phase: Space3DPhase): React.CSSProperties | undefined {
+export function space3DStageStyle(phase: Space3DPhase, turn = 0): React.CSSProperties | undefined {
   if (phase === 'flat') return undefined;
   const up = phase === 'tilted';
   return {
     ['--space-tilt' as string]: up ? `${SPACE_3D_TILT_DEG}deg` : '0deg',
     ['--space-stand' as string]: up ? '-90deg' : '0deg',
+    // The camera's quarter turns (3d-view.md "Turning the camera"), unbounded so a turn always goes the short way.
+    ['--space-turn' as string]: `${up ? turn * 90 : 0}deg`,
   };
+}
+
+/** The view's turned mark: set while the camera looks any way but up the screen (a built table then stands whole). */
+export function space3DTurned(phase: Space3DPhase, turn: number): '' | undefined {
+  return phase !== 'flat' && turnQuarter(turn) !== 0 ? '' : undefined;
 }

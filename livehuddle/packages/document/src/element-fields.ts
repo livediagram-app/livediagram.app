@@ -78,6 +78,7 @@ export const ELEMENT_FIELD_NAMES = {
     'portalTarget',
     'chairFacing',
     'roomDoor',
+    'floor',
     'roomOutline',
     'doorClosed',
     'receptionistLeft',

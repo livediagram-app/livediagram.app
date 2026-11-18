@@ -40,7 +40,10 @@ import { callPlacesOf } from '@/lib/calls/call-places';
 import { loadAvatarSpeechLayer } from '@/lib/editor-deferred-code';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import type { Element as CanvasElement } from '@livehuddle/document';
-import { seatBehind, seatLift, standsIn3D } from '@/lib/space-3d/space-3d-pieces';
+import { builtIn3D, seatBehind, seatLift, standsIn3D } from '@/lib/space-3d/space-3d-pieces';
+import { seatRowBox } from '@/lib/space-3d/space-3d-rows';
+import { turnQuarter } from '@/lib/space-3d/space-3d-turn';
+import { useSpace3DTurn } from '@/components/canvas/space-3d/useSpace3DView';
 import { useWayfindingPeople } from './wayfinding/useWayfindingPeople';
 import type { useCanvasAvatar } from './useCanvasAvatar';
 
@@ -105,10 +108,18 @@ export function CanvasCharactersLayer({
     for (const el of props.elements) if (standsIn3D(el)) byId.set(el.id, el);
     return byId;
   }, [props.elements]);
+  // A table built row by row lifts its sitter to the chair or bench they are on (3d-view.md "Tables are built").
+  // Turned (3d-view.md "Turning the camera"), a built table lies flat (no lift), and the lift follows the camera's side.
+  const turn = useSpace3DTurn();
+  const seatBox = (seatedOn: string, at: { x: number; y: number }) => {
+    const piece = piecesById.get(seatedOn);
+    if (!piece || !builtIn3D(piece)) return piece;
+    return turnQuarter(turn) === 0 ? seatRowBox(piece, at) : null;
+  };
   const liftOf = (seatedOn: string | null | undefined, at: { x: number; y: number } | null) =>
-    seatedOn && at ? seatLift(piecesById.get(seatedOn), at) : 0;
+    seatedOn && at ? seatLift(seatBox(seatedOn, at), at, turn) : 0;
   const behindOf = (seatedOn: string | null | undefined, at: { x: number; y: number } | null) =>
-    !!seatedOn && !!at && seatBehind(piecesById.get(seatedOn), at);
+    !!seatedOn && !!at && seatBehind(seatBox(seatedOn, at), at, turn);
   const { zoom: viewportZoom, offset: viewportOffset } = useViewportOf(wholeView);
   // The coarse copy (blueprint: peer-motion-store.md "The coarse copy"): everyone's characters and your feet at most
   // 10 times a second while people walk, at once when someone appears, leaves, sits, stands or crosses a wall or a

@@ -1,5 +1,7 @@
 'use client';
 
+import { roomFloorOf } from '@livehuddle/document';
+import { RoomFloorPattern } from './RoomFloorPattern';
 import { useId } from 'react';
 import {
   FURNITURE_PANEL_STROKE,
@@ -132,73 +134,77 @@ export function GlassRoomView({
         aria-label={`Glass room${element.label ? `, ${element.label}` : ''}`}
       >
         <path d={art.floor} fill={floor} />
-        {art.faces.map((f, i) => (
-          <rect
-            key={i}
-            x={f.x}
-            y={f.y}
-            width={f.w}
-            height={f.h}
-            rx={2}
-            fill={stroke}
-            fillOpacity={GLASS_WALL.face}
+        <RoomFloorPattern floor={roomFloorOf(element)} d={art.floor} />
+        {/* The back wall's face, which the 3D view stands up instead (3d-view.md "What it shows"). */}
+        <g data-room-back="">
+          {art.faces.map((f, i) => (
+            <rect
+              key={i}
+              x={f.x}
+              y={f.y}
+              width={f.w}
+              height={f.h}
+              rx={2}
+              fill={stroke}
+              fillOpacity={GLASS_WALL.face}
+              stroke={stroke}
+              strokeOpacity={GLASS_WALL.pane}
+              strokeWidth={1}
+            />
+          ))}
+          {art.doors.map((d, i) => (
+            <rect
+              key={`door-${i}`}
+              data-back-wall-door=""
+              x={d.x}
+              y={d.y}
+              width={d.w}
+              height={d.h}
+              rx={1.5}
+              fill={stroke}
+              fillOpacity={GLASS_WALL.face * 2}
+              stroke={stroke}
+              strokeOpacity={GLASS_WALL.pane}
+              strokeWidth={FURNITURE_PANEL_STROKE}
+            />
+          ))}
+          {art.glints ? (
+            <path
+              d={art.glints}
+              fill="none"
+              stroke="#ffffff"
+              strokeOpacity={surface === 'dark' ? GLASS_WALL.glintDark : GLASS_WALL.glint}
+              strokeWidth={2}
+              strokeLinecap="round"
+            />
+          ) : null}
+          <path
+            d={art.walls}
+            fill="none"
+            stroke={stroke}
+            strokeOpacity={GLASS_WALL.band}
+            strokeWidth={ROOM_WALL + 2 * FURNITURE_PANEL_STROKE}
+            strokeLinejoin="miter"
+            data-glass-walls=""
+          />
+          <path
+            d={art.walls}
+            fill="none"
             stroke={stroke}
             strokeOpacity={GLASS_WALL.pane}
             strokeWidth={1}
+            strokeLinejoin="miter"
           />
-        ))}
-        {art.doors.map((d, i) => (
-          <rect
-            key={`door-${i}`}
-            data-back-wall-door=""
-            x={d.x}
-            y={d.y}
-            width={d.w}
-            height={d.h}
-            rx={1.5}
-            fill={stroke}
-            fillOpacity={GLASS_WALL.face * 2}
-            stroke={stroke}
-            strokeOpacity={GLASS_WALL.pane}
-            strokeWidth={FURNITURE_PANEL_STROKE}
-          />
-        ))}
-        {art.glints ? (
-          <path
-            d={art.glints}
-            fill="none"
-            stroke="#ffffff"
-            strokeOpacity={surface === 'dark' ? GLASS_WALL.glintDark : GLASS_WALL.glint}
-            strokeWidth={2}
-            strokeLinecap="round"
-          />
-        ) : null}
-        <path
-          d={art.walls}
-          fill="none"
-          stroke={stroke}
-          strokeOpacity={GLASS_WALL.band}
-          strokeWidth={ROOM_WALL + 2 * FURNITURE_PANEL_STROKE}
-          strokeLinejoin="miter"
-          data-glass-walls=""
-        />
-        <path
-          d={art.walls}
-          fill="none"
-          stroke={stroke}
-          strokeOpacity={GLASS_WALL.pane}
-          strokeWidth={1}
-          strokeLinejoin="miter"
-        />
-        {art.mullions ? (
-          <path
-            d={art.mullions}
-            fill="none"
-            stroke={stroke}
-            strokeOpacity={GLASS_WALL.mullion}
-            strokeWidth={GLASS_WALL.mullionWidth}
-          />
-        ) : null}
+          {art.mullions ? (
+            <path
+              d={art.mullions}
+              fill="none"
+              stroke={stroke}
+              strokeOpacity={GLASS_WALL.mullion}
+              strokeWidth={GLASS_WALL.mullionWidth}
+            />
+          ) : null}
+        </g>
       </svg>
     </div>
   );

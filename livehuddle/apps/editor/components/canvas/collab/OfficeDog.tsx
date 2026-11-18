@@ -9,6 +9,7 @@ import {
   msToNextLeg,
   petLeg,
   petLegAt,
+  PET_TROT_MS,
   WORKDAY_TONES,
   type PetArea,
   type ShapeElement,
@@ -75,13 +76,24 @@ export function PetDog({ element }: { element: ShapeElement }) {
     if (Math.abs(at.x - last.current) > 1) setFacingLeft(at.x < last.current);
     last.current = at.x;
   }, [at.x]);
+  // Trotting: from the moment it sets off for its spot until it gets there (PET_TROT_MS), its legs step and it bobs.
+  const [trotting, setTrotting] = useState(false);
+  const from = useRef({ x: at.x, y: at.y });
+  useEffect(() => {
+    const moved = Math.hypot(at.x - from.current.x, at.y - from.current.y) > 1;
+    from.current = { x: at.x, y: at.y };
+    if (!moved || at.asleep) return;
+    setTrotting(true);
+    const t = setTimeout(() => setTrotting(false), PET_TROT_MS);
+    return () => clearTimeout(t);
+  }, [at.x, at.y, at.asleep]);
   const [pat, setPat] = useState(0);
   useEffect(() => {
     if (pat === 0) return;
     const t = setTimeout(() => setPat(0), PAT_MS);
     return () => clearTimeout(t);
   }, [pat]);
-  return (
+  const dog = (
     <div
       className="lh-pet-trot pointer-events-none absolute left-0 top-0"
       style={{
@@ -91,30 +103,46 @@ export function PetDog({ element }: { element: ShapeElement }) {
       }}
       data-pet={at.asleep ? 'asleep' : 'awake'}
     >
-      <button
-        type="button"
-        aria-label="Pat the Dog"
-        className="pointer-events-auto absolute inset-0 cursor-pointer rounded-full focus-visible:outline-2 focus-visible:outline-sky-500"
-        {...pieceControlProps}
-        onClick={(e) => {
-          e.stopPropagation();
-          track('Canvas', 'Used', 'PatPet');
-          setPat((n) => n + 1);
-        }}
-      >
-        <DogDrawing asleep={at.asleep} facingLeft={facingLeft} patted={pat > 0} />
-      </button>
-      {pat > 0 ? (
-        <span
-          key={pat}
-          aria-hidden
-          className="lh-pet-heart pointer-events-none absolute -top-2 left-1/2 text-[13px] leading-none text-rose-500"
-          style={{ transform: 'translate(-50%, -14px)' }}
-          data-pet-heart=""
+      <div className="absolute inset-0" data-pet-stand="">
+        <button
+          type="button"
+          aria-label="Pat the Dog"
+          className="pointer-events-auto absolute inset-0 cursor-pointer rounded-full focus-visible:outline-2 focus-visible:outline-sky-500"
+          {...pieceControlProps}
+          onClick={(e) => {
+            e.stopPropagation();
+            track('Canvas', 'Used', 'PatPet');
+            setPat((n) => n + 1);
+          }}
         >
-          ♥
-        </span>
-      ) : null}
+          <DogDrawing
+            asleep={at.asleep}
+            facingLeft={facingLeft}
+            patted={pat > 0}
+            trotting={trotting && !still}
+          />
+        </button>
+        {pat > 0 ? (
+          <span
+            key={pat}
+            aria-hidden
+            className="lh-pet-heart pointer-events-none absolute -top-2 left-1/2 text-[13px] leading-none text-rose-500"
+            style={{ transform: 'translate(-50%, -14px)' }}
+            data-pet-heart=""
+          >
+            ♥
+          </span>
+        ) : null}
+      </div>
+    </div>
+  );
+  // Out of its bed, the dog trots on the floor: in the 3D view its layer lies back down under the standing bed and
+  // the dog stands up about its own feet (docs/specs/008-canvas/3d-view.md "The office dog"; app/space-3d.css).
+  return at.asleep ? (
+    dog
+  ) : (
+    <div className="pointer-events-none absolute inset-0" data-pet-floor="">
+      {dog}
     </div>
   );
 }
@@ -125,12 +153,16 @@ function DogDrawing({
   asleep,
   facingLeft,
   patted,
+  trotting,
 }: {
   asleep: boolean;
   facingLeft: boolean;
   patted: boolean;
+  // On its way: the legs step in diagonal pairs and the body bobs (app/workday-motion.css).
+  trotting: boolean;
 }) {
   const light = '#f0d2a8';
+  const leg = (pair: 'a' | 'b') => (trotting ? `lh-pet-leg lh-pet-leg-${pair}` : undefined);
   return (
     <svg
       viewBox={`0 0 ${DOG_W} ${DOG_H}`}
@@ -138,55 +170,91 @@ function DogDrawing({
       aria-hidden
     >
       <g transform={facingLeft ? `translate(${DOG_W} 0) scale(-1 1)` : undefined}>
-        <ellipse cx={22} cy={30} rx={asleep ? 15 : 13} ry={2} fill="#000" opacity={0.14} />
-        {asleep ? (
-          <>
-            <path
-              d="M8 26C4 22 8 16 14 17"
-              stroke={T.dog}
-              strokeWidth={2.6}
-              fill="none"
-              strokeLinecap="round"
-            />
-            <ellipse className="lh-pet-breathe" cx={21} cy={23} rx={13} ry={6.5} fill={T.dog} />
-            <ellipse cx={32} cy={25} rx={6} ry={4.6} fill={T.dog} />
-            <ellipse cx={36.5} cy={26.2} rx={3} ry={2.2} fill={light} />
-            <circle cx={39.2} cy={25.6} r={1.1} fill={T.dogNose} />
-            <path d="M29 21.5Q27 26 30 28Q32 25 31.5 21.5Z" fill={T.dogDeep} />
-            <path
-              d="M32.5 23.8q1.4 0.9 2.8 0"
-              stroke={T.dogNose}
-              strokeWidth={0.8}
-              fill="none"
-              strokeLinecap="round"
-            />
-            <text x={36} y={14} fontSize={6} fontWeight={700} fill="#64748b">
-              z
-            </text>
-          </>
-        ) : (
-          <>
-            <path
-              className={`lh-pet-tail${patted ? ' lh-pet-tail-fast' : ''}`}
-              d="M10 16Q4.5 11 6 5"
-              stroke={T.dog}
-              strokeWidth={2.6}
-              fill="none"
-              strokeLinecap="round"
-            />
-            <rect x={11} y={20} width={2.8} height={9} rx={1.2} fill={T.dogDeep} />
-            <rect x={25} y={20} width={2.8} height={9} rx={1.2} fill={T.dogDeep} />
-            <ellipse cx={20} cy={18} rx={11.5} ry={6.5} fill={T.dog} />
-            <rect x={14.5} y={20} width={2.8} height={9.5} rx={1.2} fill={T.dog} />
-            <rect x={28.5} y={20} width={2.8} height={9.5} rx={1.2} fill={T.dog} />
-            <path d="M29 9.5L30.6 18" stroke="#ef4444" strokeWidth={1.8} strokeLinecap="round" />
-            <circle cx={34} cy={11} r={6.2} fill={T.dog} />
-            <ellipse cx={39.6} cy={13} rx={3.4} ry={2.5} fill={light} />
-            <circle cx={42.4} cy={12.2} r={1.2} fill={T.dogNose} />
-            <circle cx={35.6} cy={9.6} r={1} fill={T.dogNose} />
-            <path d="M30 5.5Q27 12 30.5 15.5Q33 11 32 5.5Z" fill={T.dogDeep} />
-          </>
-        )}
+        {/* The bob is CSS on a group of its own: on the mirrored group it would replace the mirror. */}
+        <g className={trotting ? 'lh-pet-bob' : undefined}>
+          <ellipse cx={22} cy={30} rx={asleep ? 15 : 13} ry={2} fill="#000" opacity={0.14} />
+          {asleep ? (
+            <>
+              <path
+                d="M8 26C4 22 8 16 14 17"
+                stroke={T.dog}
+                strokeWidth={2.6}
+                fill="none"
+                strokeLinecap="round"
+              />
+              <ellipse className="lh-pet-breathe" cx={21} cy={23} rx={13} ry={6.5} fill={T.dog} />
+              <ellipse cx={32} cy={25} rx={6} ry={4.6} fill={T.dog} />
+              <ellipse cx={36.5} cy={26.2} rx={3} ry={2.2} fill={light} />
+              <circle cx={39.2} cy={25.6} r={1.1} fill={T.dogNose} />
+              <path d="M29 21.5Q27 26 30 28Q32 25 31.5 21.5Z" fill={T.dogDeep} />
+              <path
+                d="M32.5 23.8q1.4 0.9 2.8 0"
+                stroke={T.dogNose}
+                strokeWidth={0.8}
+                fill="none"
+                strokeLinecap="round"
+              />
+              <text x={36} y={14} fontSize={6} fontWeight={700} fill="#64748b">
+                z
+              </text>
+            </>
+          ) : (
+            <>
+              <path
+                className={`lh-pet-tail${patted ? ' lh-pet-tail-fast' : ''}`}
+                d="M10 16Q4.5 11 6 5"
+                stroke={T.dog}
+                strokeWidth={2.6}
+                fill="none"
+                strokeLinecap="round"
+              />
+              {/* The far legs, then the body, then the near legs: each diagonal pair steps together. */}
+              <rect
+                className={leg('a')}
+                x={11}
+                y={20}
+                width={2.8}
+                height={9}
+                rx={1.2}
+                fill={T.dogDeep}
+              />
+              <rect
+                className={leg('b')}
+                x={25}
+                y={20}
+                width={2.8}
+                height={9}
+                rx={1.2}
+                fill={T.dogDeep}
+              />
+              <ellipse cx={20} cy={18} rx={11.5} ry={6.5} fill={T.dog} />
+              <rect
+                className={leg('b')}
+                x={14.5}
+                y={20}
+                width={2.8}
+                height={9.5}
+                rx={1.2}
+                fill={T.dog}
+              />
+              <rect
+                className={leg('a')}
+                x={28.5}
+                y={20}
+                width={2.8}
+                height={9.5}
+                rx={1.2}
+                fill={T.dog}
+              />
+              <path d="M29 9.5L30.6 18" stroke="#ef4444" strokeWidth={1.8} strokeLinecap="round" />
+              <circle cx={34} cy={11} r={6.2} fill={T.dog} />
+              <ellipse cx={39.6} cy={13} rx={3.4} ry={2.5} fill={light} />
+              <circle cx={42.4} cy={12.2} r={1.2} fill={T.dogNose} />
+              <circle cx={35.6} cy={9.6} r={1} fill={T.dogNose} />
+              <path d="M30 5.5Q27 12 30.5 15.5Q33 11 32 5.5Z" fill={T.dogDeep} />
+            </>
+          )}
+        </g>
       </g>
     </svg>
   );

@@ -1,5 +1,11 @@
 # Element animations
 
+> **Not offered in livehuddle** (the owner, 2026-11-18: "animation effects don't make sense in livehuddle, so remove
+> the ability to animate shapes/text etc from this app"). The element and multi-select context menus have no
+> Animation section: no Shape, Text, Sticky, Drawing, Media or Table animation and no arrow flow. A board that already
+> carries an animation (made before, or imported) still plays it and exports it frozen as below, so nothing in it
+> changes; it just cannot be set or changed here. The rest of this spec describes those stored values and how they play.
+
 An element can carry a looping or play-once **animation** to show flow, signal status, reveal content or draw the
 room's eye during a presentation. Each kind of element animates in ways that suit what it is: words type and ripple,
 shapes pulse and bounce, sticky notes flutter, drawings draw themselves on, photos pan and develop. The element context menu offers only the animations that fit what is selected.

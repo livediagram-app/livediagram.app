@@ -1,6 +1,7 @@
 /* The social pieces' loops (docs/specs/009-elements/social-pieces.md): a ping-pong rally, the arcade's screen, a fire's
-   flicker, the fountain's water, the jukebox's lights and a pond's ripple. Transform and opacity only, so the
-   compositor runs them; every one holds still under reduced motion, the OS setting or the preference. */
+   flicker, the fountain's water, the jukebox's lights and a pond's ripple. Transform and opacity, so the compositor
+   runs them, but for the fountain's running streams (a dash offset over a few small strokes, a tiny repaint); every
+   one holds still under reduced motion, the OS setting or the preference. */
 
 .lh-social-anim {
   transform-box: fill-box;
@@ -109,19 +110,43 @@
   }
 }
 
-/* The fountain: spray rising and falling, a shimmer drifting across the basin. */
-.lh-spray {
-  transform-origin: 50% 0%;
-  animation: lh-spray 1.8s ease-in-out infinite alternate;
+/* The fountain: its water running down every stream (the dashes travel one period, 9 units, a loop), rings rippling
+   out where it lands, a shimmer drifting across the basin. */
+.lh-water-run {
+  animation: lh-water-run 0.5s linear infinite;
 }
-@keyframes lh-spray {
+.lh-water-run-late {
+  animation-duration: 0.62s;
+}
+@keyframes lh-water-run {
   from {
-    transform: scaleY(0.9);
-    opacity: 0.55;
+    stroke-dashoffset: 0;
   }
   to {
-    transform: scaleY(1.06);
-    opacity: 0.95;
+    stroke-dashoffset: -9;
+  }
+}
+.lh-water-ring {
+  transform-origin: 50% 50%;
+  animation: lh-water-ring 1.6s ease-out infinite;
+}
+.lh-water-ring-late {
+  animation-delay: -0.4s;
+}
+.lh-water-ring-later {
+  animation-delay: -0.8s;
+}
+.lh-water-ring-latest {
+  animation-delay: -1.2s;
+}
+@keyframes lh-water-ring {
+  from {
+    transform: scale(0.6);
+    opacity: 0.85;
+  }
+  to {
+    transform: scale(3);
+    opacity: 0;
   }
 }
 .lh-shimmer {
@@ -222,12 +247,14 @@
 
 @media (prefers-reduced-motion: reduce) {
   .lh-social-anim,
+  .lh-water-run,
   .lh-coin-bubble,
   .lh-timer-flash {
     animation: none !important;
   }
 }
 :root.reduce-motion .lh-social-anim,
+:root.reduce-motion .lh-water-run,
 :root.reduce-motion .lh-coin-bubble,
 :root.reduce-motion .lh-timer-flash {
   animation: none !important;

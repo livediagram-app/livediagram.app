@@ -1,7 +1,12 @@
 'use client';
 
 import { seatPillBottom, type Sitter } from '@livehuddle/avatar/chair-sitters';
-import { useEffect, useId, useRef } from 'react';
+import { Fragment, useEffect, useId, useMemo, useRef, type CSSProperties } from 'react';
+import { rowLayouts, type RowLayout } from '@livehuddle/avatar/furniture-rows';
+import { turnFacing } from '@livehuddle/avatar/facing';
+import { seenFromCamera } from '@/lib/space-3d/space-3d-pieces';
+import { turnQuarter } from '@/lib/space-3d/space-3d-turn';
+import { useSpace3DTurn } from '@/components/canvas/space-3d/useSpace3DView';
 import { podClosed } from '@livehuddle/avatar/pod';
 import { IDENTITY_FILL, identityVars } from '@livehuddle/ui';
 import { useMachineAnswered } from '@/lib/machine-answer';
@@ -26,6 +31,7 @@ import {
   FURNITURE_PANEL_STROKE,
   FURNITURE_RAIL_STROKE,
   furnitureFrame,
+  type FurniturePart,
   isSeatingShape,
   OFFICE_ART,
   OFFICE_TONES,
@@ -166,15 +172,23 @@ function FurnitureDrawingView({
 }) {
   const kind = element.shape as keyof typeof NOUN;
   const seating = isSeatingShape(kind);
+  // The 3D camera's quarter turns (3d-view.md "Turning the camera"): turned, the piece is drawn as the camera sees it,
+  // the side it looks at (its back from behind), in a box turned back to face the camera that stands up on its own.
+  const quarter = turnQuarter(useSpace3DTurn());
+  const seen = quarter !== 0 && seenFromCamera(element);
+  const facing = seen ? turnFacing(pieceFacing(element), quarter) : pieceFacing(element);
+  const across = seen && quarter % 2 === 1;
+  const boxW = across ? element.height : element.width;
+  const boxH = across ? element.width : element.height;
   // A Long Table (office.md "Long Table") is drawn for its box at its facing.
   const art = isLongTable(element)
-    ? longTableArt(element.width, element.height, pieceFacing(element))
+    ? longTableArt(boxW, boxH, facing)
     : seating
       ? FURNITURE_ART[kind]
       : OFFICE_ART[kind as GridOfficeKind];
   // The drawing its facing shows (docs/specs/009-elements/furniture-facing.md "The camera").
-  const frame = furnitureFrame(art, pieceFacing(element));
-  const drawing = facingView(pieceFacing(element)).view;
+  const frame = furnitureFrame(art, facing);
+  const drawing = facingView(facing).view;
   // Seating is upholstered in its own fabric (furniture-art-style.md "Materials"); the rest take the theme's wash.
   const seat =
     kind === 'rug'
@@ -196,7 +210,17 @@ function FurnitureDrawingView({
   // An Office Pod's furniture is drawn on a layer of its own over its floor and walls, which the 3D view stands up
   // inside the walls (3d-view.md "Which pieces"); flat, the two layers draw exactly the one drawing.
   const pod = kind === 'office-pod' ? podFurniture(parts) : null;
-  const podParts = pod ? new Set(pod.indices) : null;
+  // A table with its chairs is drawn a row to a layer, which the 3D view builds (3d-view.md "Tables are built, not
+  // stood"); flat, the layers draw exactly the one drawing, in its order.
+  const rows = useMemo(
+    () => (frame.view.rows3D ? rowLayouts(parts, frame.view.rows3D) : null),
+    [parts, frame.view.rows3D],
+  );
+  const podParts = pod
+    ? new Set(pod.indices)
+    : rows
+      ? new Set(rows.flatMap((r) => [...r.parts, ...r.slab]))
+      : null;
   const drawingOf = (moving: MovingParts | null) => (
     <g transform={frame.transform || undefined}>
       {parts.map((p, i) => {
@@ -228,8 +252,8 @@ function FurnitureDrawingView({
       ) : null}
     </g>
   );
-  return (
-    <div className={`pointer-events-none absolute inset-0 ${animClass ?? ''}`}>
+  const body = (
+    <>
       <svg
         viewBox={frame.viewBox}
         className="absolute inset-0 h-full w-full overflow-visible"
@@ -257,12 +281,7 @@ function FurnitureDrawingView({
           drawingOf(null)
         )}
         {hasSocialArt(kind) ? (
-          <SocialArt
-            kind={kind}
-            id={element.id}
-            sitters={sitters.length}
-            facing={pieceFacing(element)}
-          />
+          <SocialArt kind={kind} id={element.id} sitters={sitters.length} facing={facing} />
         ) : null}
         {hasWorkdayArt(kind) ? (
           <WorkdayArt
@@ -271,7 +290,7 @@ function FurnitureDrawingView({
             sitters={sitters}
             box={element}
             grid={frame.view}
-            facing={pieceFacing(element)}
+            facing={facing}
           />
         ) : null}
         {/* A moment's parts sit on the front drawing (a stoked fire, a dropped can), so a turned piece keeps quiet. */}
@@ -279,6 +298,17 @@ function FurnitureDrawingView({
           <PieceMoment kind={kind} id={element.id} />
         ) : null}
       </svg>
+      {rows ? (
+        <FurnitureRows
+          rows={rows}
+          parts={parts}
+          frame={frame}
+          scale={boxH / frame.view.height}
+          seat={seat}
+          stroke={stroke}
+          light={light}
+        />
+      ) : null}
       {pod ? (
         <div
           aria-hidden
@@ -313,8 +343,78 @@ function FurnitureDrawingView({
           names={sitters.map((s) => s.name).join(', ')}
         />
       ) : null}
+    </>
+  );
+  return (
+    <div className={`pointer-events-none absolute inset-0 ${animClass ?? ''}`}>
+      {seen ? (
+        <div
+          data-space-seen=""
+          className="absolute"
+          style={{
+            width: boxW,
+            height: boxH,
+            left: (element.width - boxW) / 2,
+            top: (element.height - boxH) / 2,
+            transform: `rotate(${-quarter * 90}deg)`,
+          }}
+        >
+          {rows ? (
+            body
+          ) : (
+            <div data-space-seen-stand="" className="absolute inset-0">
+              {body}
+            </div>
+          )}
+        </div>
+      ) : (
+        body
+      )}
     </div>
   );
+}
+
+// A table's rows, each a layer over the floor (3d-view.md "Tables are built, not stood"): a chair stands about its own
+// foot; a top's front edge and legs stand about theirs and its slab rises to sit on them (app/space-3d.css).
+function FurnitureRows({
+  rows,
+  parts,
+  frame,
+  scale,
+  seat,
+  stroke,
+  light,
+}: {
+  rows: readonly RowLayout[];
+  parts: readonly FurniturePart[];
+  frame: { viewBox: string; transform: string };
+  // Canvas px per grid unit, for how far a slab rises.
+  scale: number;
+  seat: string;
+  stroke: string;
+  light: ReturnType<typeof useFurnitureLight>;
+}) {
+  const height = Number(frame.viewBox.split(' ')[3]);
+  const layer = (indices: readonly number[], kind: 'stand' | 'slab', style: CSSProperties) => (
+    <div key={kind} aria-hidden className="absolute inset-0" data-space-row={kind} style={style}>
+      <svg viewBox={frame.viewBox} className="absolute inset-0 h-full w-full overflow-visible">
+        <g transform={frame.transform || undefined}>
+          {indices.map((i) => (
+            <FurniturePartView key={i} part={parts[i]!} seat={seat} stroke={stroke} light={light} />
+          ))}
+        </g>
+      </svg>
+    </div>
+  );
+  return rows.map((r, n) => (
+    <Fragment key={n}>
+      {/* The slab under its front edge, as the flat drawing paints them. */}
+      {r.slab.length > 0
+        ? layer(r.slab, 'slab', { ['--row-lift' as string]: `${r.lift * scale}px` })
+        : null}
+      {layer(r.parts, 'stand', { ['--row-foot' as string]: `${(r.foot / height) * 100}%` })}
+    </Fragment>
+  ));
 }
 
 // The sitters' names above an occupied piece (docs/specs/009-elements/chair.md "The name pill clears the sitter's

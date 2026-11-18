@@ -130,7 +130,8 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
   ...Object.fromEntries(TURNING_SHAPES.map((kind) => [kind, ['chairFacing']])),
   // docs/specs/009-elements/office.md: which wall a room's doorway is in.
   // And its walls (office.md "Glass walls"): Solid or Glass.
-  room: ['roomDoor', 'variant'],
+  // And its floor (office.md "Floors"): its type.
+  room: ['roomDoor', 'variant', 'floor'],
   // docs/specs/009-elements/room-builder.md "Opening and closing": whether a door is shut.
   door: ['doorClosed', 'variant'],
   // docs/specs/009-elements/office.md "Rug types", corridor.md: a rug's pattern and a corridor's shape.

@@ -3,33 +3,36 @@
 Derived from [Element animations](../element-animations.md). Defaults applied where the spec is silent are rows
 EA1 onwards in [DEFAULTS.md](DEFAULTS.md).
 
+livehuddle offers no Animation section in its menus (the spec's "Not offered in livehuddle", 2026-11-18): what follows
+is how stored animations play and export.
+
 ## Domain and naming
 
-| Spec term                | Identifier                                                                                               |
-| ------------------------ | -------------------------------------------------------------------------------------------------------- |
-| animation set            | `AnimationSetId` = `'shape' \| 'sticky' \| 'drawing' \| 'media' \| 'text'`                               |
-| body set                 | `BodyAnimationSet` = `Exclude<AnimationSetId, 'text'>`                                                   |
-| the set of an element    | `bodyAnimationSetOf(el): BodyAnimationSet \| undefined`                                                  |
-| carries words            | `carriesWords(el): boolean`                                                                              |
-| a category acts on it    | `inAnimationSet(set, el): boolean`                                                                       |
-| Shape set values         | `ShapeAnimation`, `SHAPE_ANIMATIONS`                                                                     |
-| Shape motions            | `SHAPE_MOTIONS` (Blink, Heartbeat, Breathe, Bounce, Wobble, Shake, Jelly, Float, Swing)                  |
-| takes the motions        | `takesShapeMotions(el): boolean`                                                                         |
-| a Shape category's offer | `shapeAnimationsFor(el)`; a selection's overlap is `sharedShapeAnimations(elements)` (AnimationSections) |
-| the section of a value   | `animationSectionOf(el, value): BodyAnimationSet \| undefined`                                           |
-| Sticky set values        | `StickyAnimation`, `STICKY_ANIMATIONS`                                                                   |
-| Drawing set values       | `DrawingAnimation`, `DRAWING_ANIMATIONS`                                                                 |
-| Media set values         | `MediaAnimation`, `MEDIA_ANIMATIONS`                                                                     |
-| Text set values          | `TextAnimation`, `TEXT_ANIMATIONS`, `isTextAnimation`                                                    |
-| a set's offered values   | `ANIMATION_SET_VALUES: Record<AnimationSetId, readonly string[]>`, `isAnimationInSet`                    |
-| reveal                   | `isRevealAnimation(set, value)`                                                                          |
-| a value kept from before | `keptAnimation(set, value)`: the value when the set does not offer it, else undefined                    |
-| the body value union     | `ElementAnimation` = the union of the five body sets' values                                             |
-| section name             | `ANIMATION_SET_NAME[set]`: `'Shape'`, … `'Text'`; the parent row is `Animation`                          |
-| tile label               | `animationLabel(value)`: `Ken Burns` for `kenburns`, else the capitalised value                          |
-| telemetry type           | `ANIMATION_SET_TELEMETRY_TYPE[set]`                                                                      |
-| a set's class prefix     | `ANIMATION_CLASS_PREFIX[set]`: `lvd-anim-`, `lvd-tx-`, `lvd-note-`, `lvd-draw-`, `lvd-media-`            |
-| play once                | the `lvd-once` class (`ONCE_CLASS`), on a reveal whose Repeat is off                                     |
+| Spec term                | Identifier                                                                                    |
+| ------------------------ | --------------------------------------------------------------------------------------------- |
+| animation set            | `AnimationSetId` = `'shape' \| 'sticky' \| 'drawing' \| 'media' \| 'text'`                    |
+| body set                 | `BodyAnimationSet` = `Exclude<AnimationSetId, 'text'>`                                        |
+| the set of an element    | `bodyAnimationSetOf(el): BodyAnimationSet \| undefined`                                       |
+| carries words            | `carriesWords(el): boolean`                                                                   |
+| a category acts on it    | `inAnimationSet(set, el): boolean`                                                            |
+| Shape set values         | `ShapeAnimation`, `SHAPE_ANIMATIONS`                                                          |
+| Shape motions            | `SHAPE_MOTIONS` (Blink, Heartbeat, Breathe, Bounce, Wobble, Shake, Jelly, Float, Swing)       |
+| takes the motions        | `takesShapeMotions(el): boolean`                                                              |
+| a Shape category's offer | `shapeAnimationsFor(el)`; a selection's overlap is `sharedShapeAnimations(elements)`          |
+| the section of a value   | `animationSectionOf(el, value): BodyAnimationSet \| undefined`                                |
+| Sticky set values        | `StickyAnimation`, `STICKY_ANIMATIONS`                                                        |
+| Drawing set values       | `DrawingAnimation`, `DRAWING_ANIMATIONS`                                                      |
+| Media set values         | `MediaAnimation`, `MEDIA_ANIMATIONS`                                                          |
+| Text set values          | `TextAnimation`, `TEXT_ANIMATIONS`, `isTextAnimation`                                         |
+| a set's offered values   | `ANIMATION_SET_VALUES: Record<AnimationSetId, readonly string[]>`, `isAnimationInSet`         |
+| reveal                   | `isRevealAnimation(set, value)`                                                               |
+| a value kept from before | `keptAnimation(set, value)`: the value when the set does not offer it, else undefined         |
+| the body value union     | `ElementAnimation` = the union of the five body sets' values                                  |
+| section name             | `ANIMATION_SET_NAME[set]`: `'Shape'`, … `'Text'`; the parent row is `Animation`               |
+| tile label               | `animationLabel(value)`: `Ken Burns` for `kenburns`, else the capitalised value               |
+| telemetry type           | `ANIMATION_SET_TELEMETRY_TYPE[set]`                                                           |
+| a set's class prefix     | `ANIMATION_CLASS_PREFIX[set]`: `lvd-anim-`, `lvd-tx-`, `lvd-note-`, `lvd-draw-`, `lvd-media-` |
+| play once                | the `lvd-once` class (`ONCE_CLASS`), on a reveal whose Repeat is off                          |
 
 `ElementAnimation` keeps its name: it is the type of the stored `animation` field. `ELEMENT_ANIMATIONS` became
 `SHAPE_ANIMATIONS` (its values were exactly the Shape set).
@@ -43,8 +46,6 @@ EA1 onwards in [DEFAULTS.md](DEFAULTS.md).
 | `packages/document/src/animation-membership.ts`                      | `bodyAnimationSetOf`, `takesShapeMotions`, `shapeAnimationsFor`, `animationSectionOf`, `carriesWords`, `inAnimationSet`, `animationSetsOf` |
 | `apps/editor/lib/animation-set-writes.ts`                            | `withSetAnimation`, `withSetAnimationSpeed`, `withSetAnimationRepeat`, `withoutAnimations`, `setAnimationState`                            |
 | `apps/editor/lib/animation-classes.ts`                               | `ANIMATION_CLASS_PREFIX`, `setAnimationClass`, `bodySetClass`                                                                              |
-| `apps/editor/components/palette/AnimationSections.tsx`               | every animation category for a selection, `animationCategoriesOf` (single and multi menus)                                                 |
-| `apps/editor/components/palette/AnimationSetTiles.tsx`               | the tile grid + Speed / Repeat rows for any set, kept tile included                                                                        |
 | `apps/editor/components/canvas/useBoxedElementAnimation.ts`          | `wrapperShapeAnimation`; the wrapper's Shape / Sticky class, layer flag and variables                                                      |
 | `livediagram/apps/editor/components/canvas/useShapeSvgAnimation.tsx` | the SVG-rendered shape's Pulse ring, Glow halo, Trace copies and Gradient defs                                                             |
 | `../packages/workbench/src/components/canvas/useTraceDashes.ts`      | measures the SVG Trace copies' on-screen length onto them                                                                                  |
@@ -224,16 +225,9 @@ Wipe and Iris filter or clip the frame; Sheen sweeps the frame's `::after`.
 
 ## Interfaces and contracts
 
-`AnimationSetTiles` props: `set`, `values?` (the Shape section's `sharedShapeAnimations`), `current: string | null`, `speed`, `repeat`, `onSet`, `onSetSpeed`, `onSetRepeat`,
-`onPreview?`, `onPreviewEnd?`. The kept tile is captured at open (like the Speed gate) so hover previews never add or
-remove it, and a pick of anything else drops it. A Shape value outside `values` (an older Pulse) is the kept
-tile too. It replaced `AnimationTiles`.
-
-`AnimationSections` props: `elements`, `keyPrefix: '' | 'm-'`, `sectionProps`, `flyoutProps`, `handlers` (a `Pick`
-of `EditorContextMenuProps`). It renders one `MenuFlyoutSection` titled Animation (key `<prefix>animation`) holding a
-`MenuAccordionSection` per category, named by `nameOf` (`ANIMATION_SET_NAME`, or Icon / Arrow); with one
-category it renders that section alone, titled Animation. Section keys are `<prefix>animation-<category>`, and
-`<prefix>flow` for arrows.
+The menu's Animation sections and their tile grid (`AnimationSections`, `AnimationSetTiles`) are gone from livehuddle
+(the spec's "Not offered in livehuddle"): no menu sets or changes an animation. The stored values, their playback and
+their frozen export below are unchanged.
 
 `EditorContextMenuProps` gained `onSetSetAnimation(set, v)`, `onPreviewSetAnimation(set, v)`,
 `onSetSetAnimationSpeed(set, s)`, `onSetSetAnimationRepeat(set, r)` and lost `onSetAnimation`,
@@ -291,17 +285,15 @@ in liveworkspace/apps/site/app/telemetry/livehuddle/event-explanations.ts.
 
 ## Testing
 
-| Rule                                                                | Test                                                        |
-| ------------------------------------------------------------------- | ----------------------------------------------------------- |
-| Membership, Shape motions, carries words, set order, kept values    | `packages/document/src/animation-membership.test.ts`        |
-| Every option has a rule in its sheet, none orphaned, reduced motion | `apps/editor/app/animation-classes.test.ts`                 |
-| One category per set present                                        | `apps/editor/components/palette/AnimationSections.test.tsx` |
-| Tiles, labels, kept tile                                            | `apps/editor/components/palette/AnimationSetTiles.test.tsx` |
-| Writes act on members only; None per section; Text clears legacy    | `apps/editor/lib/animation-set-writes.test.ts`              |
-| A motion plays on a photo, the Timeline                             | `apps/editor/components/canvas/animation-routing.test.ts`   |
-| Painter copies within a set, a motion to its takers, Text to words  | `apps/editor/lib/format-painter.test.ts`                    |
-| Granularity, fallbacks, counting, determinism, aria, budget         | `apps/editor/components/canvas/animated-words.test.tsx`     |
-| New stylesheets kept out of the chrome motion budget                | `apps/editor/motion-budget.test.ts`                         |
+| Rule                                                                | Test                                                      |
+| ------------------------------------------------------------------- | --------------------------------------------------------- |
+| Membership, Shape motions, carries words, set order, kept values    | `packages/document/src/animation-membership.test.ts`      |
+| Every option has a rule in its sheet, none orphaned, reduced motion | `apps/editor/app/animation-classes.test.ts`               |
+| Writes act on members only; None per section; Text clears legacy    | `apps/editor/lib/animation-set-writes.test.ts`            |
+| A motion plays on a photo, the Timeline                             | `apps/editor/components/canvas/animation-routing.test.ts` |
+| Painter copies within a set, a motion to its takers, Text to words  | `apps/editor/lib/format-painter.test.ts`                  |
+| Granularity, fallbacks, counting, determinism, aria, budget         | `apps/editor/components/canvas/animated-words.test.tsx`   |
+| New stylesheets kept out of the chrome motion budget                | `apps/editor/motion-budget.test.ts`                       |
 
 ## Constants and configuration
 

@@ -54,12 +54,13 @@ describe('the office blocks like a fence', () => {
     roomDoor: 's',
   };
 
-  it('counts a room’s walls and a plant’s pot as lines, and a cooler as nothing', () => {
+  // A cooler is solid (office.md "Using it"): walked round and up to, never through.
+  it('counts a room’s walls, a plant’s pot and a cooler’s body as lines', () => {
     const plant: Element = { ...createShape('plant', 600, 0), id: 'p' };
     const cooler: Element = { ...createShape('water-cooler', 700, 0), id: 'c' };
     expect(fenceSegments([room])).toHaveLength(5);
     expect(fenceSegments([plant])).toHaveLength(4);
-    expect(fenceSegments([cooler])).toHaveLength(0);
+    expect(fenceSegments([cooler])).toHaveLength(4);
   });
 
   it('lets a character walk in through the doorway and not through a wall', () => {

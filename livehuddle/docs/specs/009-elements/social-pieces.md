@@ -520,8 +520,11 @@ Relaxed seating for breakout areas. Both seat people by the [Chair](chair.md) ru
 
 - **Garden Umbrella**: a striped parasol on a pole with a weighted base, to stand beside or over a Picnic Table. Only
   the base blocks.
-- **Fountain**: a round stone basin with a two-tier spout. The water shimmers and the spout's spray rises and falls
-  gently (CSS; still under reduced motion).
+- **Fountain**: a round stone basin with a two-tier spout, its water running (the owner, 2026-11-18: "the water
+  should be running"): two jets arc from the spout into the upper bowl and its overflow pours over the bowl's rim in
+  a curtain on either side, each stream's water travelling down it; where they land in the basin rings ripple out and
+  fade, and a shimmer drifts across it. The streams run on a dash offset, a repaint of the fountain's few small
+  strokes only, rings and shimmer on the compositor (CSS; still under reduced motion).
 - **Pond**: a pool of water with a stone rim and a lily pad or two, drawn to its size like Grass (the rim, water and
   pads are a fixed handful of shapes however big). Resizable, not aspect locked. A faint ripple drifts across it (CSS;
   still under reduced motion). The water blocks: its footprint is the pond less its rim's outer edge.

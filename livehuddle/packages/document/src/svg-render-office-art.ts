@@ -33,6 +33,7 @@ import {
   DEFAULT_ROOM_DOOR,
   isGridOfficeShape,
   OFFICE_ART,
+  roomFloorArea,
   roomParts,
   isLongTable,
   longTableArt,
@@ -41,6 +42,7 @@ import { chairSeatFill } from './shape-geometry';
 import { pieceMaterial } from './piece-material';
 import { plasterWallsSvg } from './svg-render-doors';
 import { outlinedRoomPaths } from './room-builder';
+import { rectPath, roomFloorOf, roomFloorSvg } from './room-floors';
 import { grassEdgePath } from './office-garden';
 import { GRASS_BLADES, GRASS_MOTTLE, GRASS_TILES } from './garden-ground';
 import { r2, xmlEscape } from './svg-render-primitives';
@@ -208,15 +210,20 @@ export function roomSvg(
     return (
       `<g transform="translate(${r2(el.x)} ${r2(el.y)})">` +
       `<path d="${area}" fill="${f}"/>` +
+      roomFloorSvg(el.id, roomFloorOf(el), area) +
       plasterWallsSvg(walls) +
       `</g>`
     );
   }
+  // Its floor type (office.md "Floors"): Floorboards are the room's own parts, another type a pattern laid on its floor.
+  const type = roomFloorOf(el);
+  const a = roomFloorArea(el.width, el.height);
   return sizedSvg(
     el,
-    roomParts(el.width, el.height, el.roomDoor ?? DEFAULT_ROOM_DOOR, backDoors),
+    roomParts(el.width, el.height, el.roomDoor ?? DEFAULT_ROOM_DOOR, backDoors, type === 'boards'),
     floor,
     stroke,
+    roomFloorSvg(el.id, type, rectPath(a.x, a.y, a.w, a.h)),
   );
 }
 
@@ -261,9 +268,13 @@ export function sizedSvg(
   parts: readonly FurniturePart[],
   floor: string,
   stroke: string,
+  // What lies on its floor, drawn just over its first part (a room's floor pattern, room-floors.ts).
+  onFloor = '',
 ): string {
   const light = lightOf(el.id, parts, floor);
-  const drawn = parts.map((p) => furniturePart(p, floor, xmlEscape(stroke), light)).join('');
+  const drawn = parts
+    .map((p, i) => furniturePart(p, floor, xmlEscape(stroke), light) + (i === 0 ? onFloor : ''))
+    .join('');
   return `<g transform="translate(${r2(el.x)} ${r2(el.y)})">${lightDefs(light)}${drawn}</g>`;
 }
 

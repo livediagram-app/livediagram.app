@@ -3,7 +3,8 @@
 // they keep their own strokes rather than the house icon weight
 // (docs/specs/004-interface-design/iconography.md, "Art").
 
-import { BORDER_STROKE_PX } from '@livehuddle/document';
+import { useId } from 'react';
+import { BORDER_STROKE_PX, FLOOR_TILES, type RoomFloor } from '@livehuddle/document';
 import type { BorderStroke, BorderStyle } from '@livehuddle/document';
 
 export function BorderStrokeIcon({ value }: { value: BorderStroke }) {
@@ -76,6 +77,58 @@ export function BorderStyleIcon({ value }: { value: BorderStyle }) {
         strokeWidth="2"
         strokeDasharray={dash}
         strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+// A room's floor type in miniature (docs/specs/009-elements/office.md "Floors"): a swatch of the room's own floor colour with that type's pattern laid on it, scaled
+// down (boards drawn as rows of planks), so the tiles show the floor you would get.
+export function FloorTypeSwatch({ floor, fill }: { floor: RoomFloor; fill: string }) {
+  const id = useId();
+  const tile = floor === 'boards' ? null : FLOOR_TILES[floor];
+  return (
+    <svg aria-hidden width={20} height={20} viewBox="0 0 20 20" className="rounded-[4px]">
+      <rect width={20} height={20} fill={fill} />
+      {tile ? (
+        <>
+          <defs>
+            <pattern
+              id={id}
+              width={tile.w}
+              height={tile.h}
+              patternUnits="userSpaceOnUse"
+              patternTransform={`scale(${floor === 'carpet' ? 0.8 : floor === 'concrete' ? 0.3 : 0.4})`}
+            >
+              {tile.marks.map((m, i) => (
+                <path
+                  key={i}
+                  d={m.d}
+                  fill={m.light ? '#fff' : '#000'}
+                  fillOpacity={Math.min(1, m.opacity * 2.5)}
+                />
+              ))}
+            </pattern>
+          </defs>
+          <rect width={20} height={20} fill={`url(#${id})`} />
+        </>
+      ) : (
+        <path
+          d="M0 5h20M0 10h20M0 15h20M8 0v5M14 5v5M5 10v5M12 15v5"
+          stroke="#000"
+          strokeOpacity={0.3}
+          strokeWidth={0.8}
+        />
+      )}
+      <rect
+        x={0.5}
+        y={0.5}
+        width={19}
+        height={19}
+        rx={3.5}
+        fill="none"
+        stroke="#000"
+        strokeOpacity={0.15}
       />
     </svg>
   );

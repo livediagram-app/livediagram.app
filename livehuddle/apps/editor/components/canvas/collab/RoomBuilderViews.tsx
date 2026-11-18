@@ -1,5 +1,7 @@
 'use client';
 
+import { roomFloorOf } from '@livehuddle/document';
+import { RoomFloorPattern } from './RoomFloorPattern';
 import type { SVGProps } from 'react';
 import {
   corridorPaths,
@@ -44,6 +46,7 @@ export function OutlinedRoomView({
         aria-label={`Room${element.label ? `, ${element.label}` : ''}`}
       >
         <path d={area} fill={floor} />
+        <RoomFloorPattern floor={roomFloorOf(element)} d={area} />
         <PlasterWalls d={walls} />
       </svg>
     </div>

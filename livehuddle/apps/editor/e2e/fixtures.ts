@@ -78,6 +78,14 @@ export async function markModeToursSeen(context: BrowserContext): Promise<void> 
     } catch {
       // No storage: nothing to mark.
     }
+    // Walks open flat, as the specs' presses are aimed (the 3D view is on by default, 3d-view.md "Turning it on and
+    // off"); a spec of the 3D view turns it on itself.
+    try {
+      if (localStorage.getItem('livehuddle:v2:space-3d') === null)
+        localStorage.setItem('livehuddle:v2:space-3d', '0');
+    } catch {
+      // No storage: nothing to set.
+    }
   });
 }
 
