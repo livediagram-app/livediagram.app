@@ -153,7 +153,10 @@ export function roomier(
     .sort((a, b) => area(a.from) - area(b.from));
   const holderOf = (b: Box) =>
     holders.find((h) => holds(h.from, b.x + b.width / 2, b.y + b.height / 2)) ?? null;
-
+  // The title, sticker and description over the plan (above every room and lawn) move as one, never tied to what
+  // stands beside the rooms (the Team Pod's Team Board, which the description's line once dragged along with it).
+  const planTop = Math.min(...holders.map((h) => h.from.y));
+  const above = (b: Box) => b.y + b.height <= planTop;
   // The furniture's groups: pieces standing within GROUP_GAP of each other in the same room.
   const loose = elements.map((_, i) => i).filter((i) => !grown.has(i) && isBoxed(elements[i]!));
   const parent = new Map<number, number>(loose.map((i) => [i, i]));
@@ -171,6 +174,7 @@ export function roomier(
       const ib = loose[b]!;
       if (ON_A_WALL.has(shapeOf(elements[ib]!) ?? '')) continue;
       if (home.get(ia) !== home.get(ib)) continue;
+      if (above(elements[ia] as Boxed) !== above(elements[ib] as Boxed)) continue;
       // A wall piece moves with what stands on it or beside it along the wall (a microwave on a counter, a sink
       // beside it), never with the floor's furniture in front of it.
       if (!togetherAtAWall(shapeOf(elements[ia]!), shapeOf(elements[ib]!))) continue;

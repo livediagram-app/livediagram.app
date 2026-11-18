@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { createShape, type Element, type ShapeElement } from '@livehuddle/document';
+import {
+  createShape,
+  createSticky,
+  createText,
+  type Element,
+  type ShapeElement,
+} from '@livehuddle/document';
 import { roomier, TEMPLATE_ROOMY } from './template-roomy';
 import { buildTemplate } from './build-template';
 import { TEMPLATES } from './templates';
@@ -49,6 +55,18 @@ describe('roomier', () => {
   it('leaves a plan with no rooms as drawn', () => {
     const els = [at('avatar-pad', 10, 10)];
     expect(roomier(els, 0, 0)).toBe(els);
+  });
+
+  it('moves the title over the plan apart from a board beside the room, so the room never grows under the board', () => {
+    // The title's line reaches over the board's heading, near enough to have tied them together.
+    const title = { ...createText(-400, -150), width: 1200, height: 30 };
+    const heading = { ...createText(520, -104), width: 300, height: 32 };
+    const note = { ...createSticky(520, -60), width: 146, height: 146 };
+    const out = roomier([room(0, -100, 500, 300), title, heading, note], 0, 0);
+    const [r, , h, n] = out as (Element & { x: number; y: number; width: number })[];
+    expect(n!.x).toBeGreaterThan(r!.x + r!.width);
+    expect(h!.x).toBe(n!.x);
+    expect(out[1]).not.toEqual(title);
   });
 
   it('keeps a Room Sign by its Door', () => {

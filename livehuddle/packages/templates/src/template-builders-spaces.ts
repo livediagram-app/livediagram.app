@@ -224,7 +224,8 @@ export function buildTeamPod(cx: number, cy: number): Element[] {
   const by = y0 + HEAD;
   const board: Element[] = [
     // The stand-up's Timer under the board: press it to timebox the round (docs/specs/009-elements/timer-and-stopwatch.md).
-    createShape('timer', bx, by + 44 + 2 * 154 + 16),
+    // Close enough under it (the stickies' own gap) to move with it when the plan opens out (template-roomy.ts).
+    createShape('timer', bx, by + 44 + 2 * 154),
     {
       ...createText(bx, by),
       width: BOARD_W,
