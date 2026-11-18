@@ -317,6 +317,7 @@ function PlayerBar({
   return (
     <section
       aria-label={`Walkthrough: ${title}`}
+      data-walkthrough-bar=""
       className="pointer-events-auto flex w-[min(36rem,100%)] items-center gap-3 rounded-2xl border border-slate-200 bg-white/95 py-2 pl-2 pr-2 shadow-2xl shadow-slate-900/15 backdrop-blur dark:border-slate-700 dark:bg-slate-900/95 dark:shadow-black/40"
     >
       {playing ? (

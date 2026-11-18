@@ -14,6 +14,8 @@ import { useEffect, useRef, useState, type ReactNode, type RefObject } from 'rea
 export const BUBBLE_PX = 132;
 // The voice chip's height: a label beside the canvas, not a picture.
 export const VOICE_CHIP_PX = 40;
+// The player's bar (Player.tsx), which a bottom corner's mark keeps clear of on a narrow window.
+export const PLAYER_BAR_SELECTOR = '[data-walkthrough-bar]';
 
 // Clear of each app's bottom chrome (the tab strip and zoom) and of the header.
 const CORNER_CLASS: Record<WalkthroughCorner, string> = {
@@ -37,13 +39,14 @@ type Size = { w: number; h: number };
 const BUBBLE_SIZE: Size = { w: BUBBLE_PX, h: BUBBLE_PX };
 
 /**
- * How far the bubble (or the voice chip, by its own `size`) moves from its corner (screen px) to stay clear of the Map
- * and a docked Contents sidebar.
+ * How far the bubble (or the voice chip, by its own `size`) moves from its corner (screen px) to stay clear of the Map,
+ * a docked Contents sidebar and the player's bar.
  */
 export function shiftClearOf(
   corner: WalkthroughCorner,
   frame: Box,
-  around: { map: Box | null; sidebar: Box | null },
+  // `bar`: the player's bar, centred along the bottom; absent while recording.
+  around: { map: Box | null; sidebar: Box | null; bar?: Box | null },
   size: Size = BUBBLE_SIZE,
 ): { x: number; y: number } {
   const bottom = corner.startsWith('bottom');
@@ -66,6 +69,18 @@ export function shiftClearOf(
   ) {
     y = bottom ? map.top - CLEARANCE_PX - (top + size.h) : map.bottom + CLEARANCE_PX - top;
   }
+  // On a narrow window a bottom corner reaches under the centred player bar: it goes up above the bar too.
+  const bar = around.bar;
+  if (
+    bar &&
+    bottom &&
+    left < bar.right &&
+    left + size.w > bar.left &&
+    top + y < bar.bottom &&
+    top + y + size.h > bar.top
+  ) {
+    y = bar.top - CLEARANCE_PX - (top + size.h);
+  }
   return { x, y };
 }
 
@@ -83,7 +98,11 @@ function useClearShift(frame: RefObject<HTMLDivElement | null>, corner: Walkthro
       const next = shiftClearOf(
         corner,
         parent.getBoundingClientRect(),
-        { map: boxOf(MAP_PANEL_SELECTOR), sidebar: boxOf(CONTENTS_SIDEBAR_SELECTOR) },
+        {
+          map: boxOf(MAP_PANEL_SELECTOR),
+          sidebar: boxOf(CONTENTS_SIDEBAR_SELECTOR),
+          bar: boxOf(PLAYER_BAR_SELECTOR),
+        },
         // Its own size, untouched by the shift's transform: the bubble's, or the chip's as its name sets it.
         { w: el.offsetWidth || BUBBLE_PX, h: el.offsetHeight || BUBBLE_PX },
       );

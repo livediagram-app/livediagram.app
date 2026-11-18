@@ -1052,6 +1052,35 @@ describe('the bubble', () => {
     );
   });
 
+  it('goes up above the player bar where a narrow window brings them together, and only then', () => {
+    // 700 px wide: the bar (36rem, centred) runs 62 to 638, its bottom 64 px up, 52 px tall.
+    const narrow = { left: 0, top: 0, right: 700, bottom: 800 };
+    const bar = { left: 62, top: 684, right: 638, bottom: 736 };
+    const chip = { w: 120, h: 40 };
+    const clear = 684 - 12 - (800 - 64);
+    expect(shiftClearOf('bottom-left', narrow, { map: null, sidebar: null, bar }, chip)).toEqual({
+      x: 0,
+      y: clear,
+    });
+    expect(shiftClearOf('bottom-right', narrow, { map: null, sidebar: null, bar })).toEqual({
+      x: 0,
+      y: clear,
+    });
+    // Already above it (clear of a Map): left there. A top corner never meets it; nor does a wide window's corner.
+    const map = { left: 4, top: 560, right: 260, bottom: 796 };
+    expect(shiftClearOf('bottom-left', narrow, { map, sidebar: null, bar }).y).toBe(
+      -(800 - 64 - 560 + 12),
+    );
+    expect(shiftClearOf('top-left', narrow, { map: null, sidebar: null, bar })).toEqual({
+      x: 0,
+      y: 0,
+    });
+    const wideBar = { left: 212, top: 684, right: 788, bottom: 736 };
+    expect(
+      shiftClearOf('bottom-left', frame, { map: null, sidebar: null, bar: wideBar }, chip),
+    ).toEqual({ x: 0, y: 0 });
+  });
+
   it('names the presenter on the chip when it can, and takes the initial from the title when not', () => {
     const { rerender } = render(
       <VoiceChip corner="top-left" name="You" fallback="Tour" playing={false} />,

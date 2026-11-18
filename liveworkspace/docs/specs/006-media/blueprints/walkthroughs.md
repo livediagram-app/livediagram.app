@@ -99,7 +99,9 @@ avatar with the initial (`(name ?? fallback).trim()[0]`, upper case, `?` when bl
 the bars run `walkthrough-voice` (`scaleY` 0.35 to 1, 0.9 s, each a quarter-cycle apart); paused they rest at 0.35;
 `prefers-reduced-motion` keeps them still. White over a slate border in light, slate-900 in dark, so it reads as a
 label beside the canvas, never a picture frame. Both share `CornerFrame`: the corner classes and `shiftClearOf`,
-which takes the frame's measured size (`offsetWidth`, `offsetHeight`) rather than assuming the bubble's.
+which takes the frame's measured size (`offsetWidth`, `offsetHeight`) rather than assuming the bubble's. A bottom
+corner's mark that would meet the player's bar (`[data-walkthrough-bar]`, on a narrow window: about 700 px) goes up
+above it by `CLEARANCE_PX`.
 
 Hidden elements are hidden by one `<style>` element: `[data-canvas-content] [data-element-id="<id>"] { visibility:
 hidden !important }` per id, through `CSS.escape`; while recording, the presenter's own view draws them at 0.35
