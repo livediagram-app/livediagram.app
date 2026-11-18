@@ -172,6 +172,7 @@ function CanvasView(props: CanvasProps) {
   const paletteDrop = usePaletteDrop({
     onDropPhoto: props.onDropPhoto,
     onDropFile: props.onDropFile,
+    onDropLibraryItem: props.onDropLibraryItem,
     onDropLibraryShape: props.onDropLibraryShape,
     onDropPalette: props.onDropPalette,
     viewportZoom,

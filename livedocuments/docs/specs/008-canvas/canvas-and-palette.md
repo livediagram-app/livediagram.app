@@ -935,6 +935,11 @@ A free-floating text element. The text **is** the element; there is no border or
 - **It hugs its words**: a style's box fits its text (`sizing: 'fit'`, a heading's) or wraps at a set width
   (`sizing: 'wrap'`, a paragraph's), its height always the text's ([Document structure](../006-document/document-structure.md)).
 - **Drag** to move; **resize** via the same handles as shapes: a side handle sets the width, so the text wraps.
+- **Empty, it shows where its words go.** A text with no words (Clear Example Content empties a template's sample
+  copy, [Template example content](../006-document/template-examples.md)) draws a faint **"Text"** in its own ink at
+  35%, at its size and alignment, the word its editor shows while typing, so a double-click there opens it without a
+  jump. Only an **Editor** sees it: a Participant, a Viewer, an embed and a locked tab or text see nothing, as before.
+  It is never content: not exported (image, vector, PDF, the animated GIF), not read aloud, never stored. A text that hugs its words (`sizing`) has none.
 
 **Text styles.** Write's text tiles are the styles a document is written in, each a plain `text` element whose fields
 are set as the style says (no style is stored: it is a starting point, and the context menu restyles it like any text).

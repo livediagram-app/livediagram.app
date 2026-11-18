@@ -7619,7 +7619,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Community",
       "Timing",
       "Snapshot",
-      "Walkthrough"
+      "Walkthrough",
+      "Library"
     ],
     "type": "string"
   },

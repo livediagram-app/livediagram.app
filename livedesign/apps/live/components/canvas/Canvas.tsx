@@ -164,6 +164,7 @@ function CanvasView(props: CanvasProps) {
   // usePaletteDrop so the canvas body keeps to layout + pointer routing.
   const paletteDrop = usePaletteDrop({
     onDropFile: props.onDropFile,
+    onDropLibraryItem: props.onDropLibraryItem,
     onDropPalette: props.onDropPalette,
     viewportZoom,
     wrapperRef,

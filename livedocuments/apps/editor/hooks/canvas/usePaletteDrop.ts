@@ -13,6 +13,10 @@ import { pointerToCanvas } from '@/lib/canvas';
 import { ICON_DND_MIME, PALETTE_DND_MIME, STICKER_DND_MIME, TECH_ICON_DND_MIME } from '@/lib/icons';
 import { getPaletteDragSnap, setPaletteDragSnap } from '@/lib/palette-drag-preview';
 import { overFloatingPanel } from '@liveworkspace/workbench/lib/canvas-pointer';
+import {
+  LIBRARY_ITEM_DND_MIME,
+  readLibraryItemDrop,
+} from '@liveworkspace/workbench/lib/library/library-dnd';
 
 type PaletteDropDeps = {
   // 'sticky' rides beside the shape kinds: a sticky is its own
@@ -32,6 +36,9 @@ type PaletteDropDeps = {
   // there as an image element (docs/specs/008-canvas/canvas-and-palette.md). Absent where the
   // canvas takes no files.
   onDropFile?: (file: File, at: { x: number; y: number }) => void;
+  // A Library item's tile (liveworkspace/docs/specs/006-media/libraries.md "Placing: a click or a drag"), by its id,
+  // with the canvas point it was released at. Absent where nothing can be placed.
+  onDropLibraryItem?: (id: string, at: { x: number; y: number }) => void;
 };
 
 export function usePaletteDrop({
@@ -39,6 +46,7 @@ export function usePaletteDrop({
   viewportZoom,
   wrapperRef,
   onDropFile,
+  onDropLibraryItem,
 }: PaletteDropDeps) {
   const onDragOver = (e: ReactDragEvent<HTMLElement>) => {
     // Something inside the canvas already took this drag (a folder in the Explorer panel taking a dragged
@@ -65,7 +73,8 @@ export function usePaletteDrop({
       e.dataTransfer.types.includes(PALETTE_DND_MIME) ||
       e.dataTransfer.types.includes(ICON_DND_MIME) ||
       e.dataTransfer.types.includes(TECH_ICON_DND_MIME) ||
-      e.dataTransfer.types.includes(STICKER_DND_MIME)
+      e.dataTransfer.types.includes(STICKER_DND_MIME) ||
+      (onDropLibraryItem && e.dataTransfer.types.includes(LIBRARY_ITEM_DND_MIME))
     ) {
       e.preventDefault();
       e.dataTransfer.dropEffect = 'copy';
@@ -86,6 +95,16 @@ export function usePaletteDrop({
       const rect = wrapperRef.current?.getBoundingClientRect();
       if (!rect) return;
       onDropFile?.(file, pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom));
+      return;
+    }
+    const libraryItem = onDropLibraryItem
+      ? readLibraryItemDrop(e.dataTransfer.getData(LIBRARY_ITEM_DND_MIME))
+      : null;
+    if (libraryItem) {
+      e.preventDefault();
+      const rect = wrapperRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      onDropLibraryItem?.(libraryItem, pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom));
       return;
     }
     const payload = e.dataTransfer.getData(PALETTE_DND_MIME);

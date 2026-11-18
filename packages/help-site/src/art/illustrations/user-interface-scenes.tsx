@@ -6,6 +6,7 @@
 
 import type { ReactNode } from 'react';
 import { Scene, Shape, Arrow, SelectionBox, Panel, Label } from '../primitives';
+import { FolderStackMark } from './tabs-parts';
 import {
   GLYPH,
   DotsGlyph,
@@ -60,21 +61,21 @@ export function TabBar() {
       <DotsGlyph x={122} y={y + 18} />
       <TabPill x={140} y={y + 8} w={40} label="Flow" />
       {/* A shut tab folder, as TabFolderGroup draws it: a shelf tinted in the folder's colour, shaped like a tab,
-          holding its header (a folder glyph, its name and a count badge) in the folder's ink. */}
+          holding its header (a folder glyph stacked two deep for its two tabs, and its name) in the folder's ink. */}
       <path
-        d={`M186 ${y + 36} V${y + 12} a7 7 0 0 1 7 -7 H247 a7 7 0 0 1 7 7 V${y + 36} Z`}
+        d={`M186 ${y + 36} V${y + 12} a7 7 0 0 1 7 -7 H235 a7 7 0 0 1 7 7 V${y + 36} Z`}
         className="fill-violet-50"
       />
-      <path
-        d="M-8 -5 h5 l2 2 h8 a1 1 0 0 1 1 1 v7 a1 1 0 0 1 -1 1 h-14 a1 1 0 0 1 -1 -1 v-9 a1 1 0 0 1 1 -1 Z"
-        transform={`translate(196 ${y + 18.5}) scale(0.6)`}
-        fill="none"
-        className="stroke-violet-700 dark:stroke-violet-300"
-        strokeWidth={2.2}
-        strokeLinejoin="round"
+      <FolderStackMark
+        x={196}
+        y={y + 18.5}
+        scale={0.6}
+        count={2}
+        stroke="stroke-violet-700 dark:stroke-violet-300"
+        backing="fill-violet-50"
       />
       <Label
-        x={205}
+        x={207}
         y={y + 19}
         size={9}
         weight={650}
@@ -82,25 +83,7 @@ export function TabBar() {
       >
         Ideas
       </Label>
-      <rect
-        x={233}
-        y={y + 12}
-        width={13}
-        height={13}
-        rx={4}
-        className="fill-violet-600 dark:fill-violet-300"
-      />
-      <Label
-        x={239.5}
-        y={y + 19}
-        anchor="middle"
-        size={8}
-        weight={700}
-        className="fill-white dark:fill-slate-950"
-      >
-        2
-      </Label>
-      <Label x={262} y={y + 19} size={15} weight={600} tone="muted" anchor="middle">
+      <Label x={252} y={y + 19} size={15} weight={600} tone="muted" anchor="middle">
         +
       </Label>
       {/* On a computer the quick controls carry their words, beside the TABS label. */}

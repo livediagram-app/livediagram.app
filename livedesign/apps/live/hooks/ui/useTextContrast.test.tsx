@@ -23,24 +23,31 @@ const wrapper = ({ children }: { children: ReactNode }) => (
 
 describe('useTextContrast', () => {
   it('works out the probe only while the picker is open', () => {
-    const { result, rerender } = renderHook(({ open }) => useTextContrast(t, open), {
+    const { result, rerender } = renderHook(({ open }) => useTextContrast([t], open), {
       wrapper,
       initialProps: { open: false },
     });
     expect(result.current).toBeUndefined();
     rerender({ open: true });
-    expect(result.current?.current).toBe('#fde047');
-    expect(result.current?.ground.on).toBe('page');
+    expect(result.current?.[0]?.current).toBe('#fde047');
+    expect(result.current?.[0]?.ground.on).toBe('page');
   });
 
   it('is undefined where nothing can be judged', () => {
     const away = { ...t, x: rect.x - 9000 } as Element;
-    const { result } = renderHook(() => useTextContrast(away, true), { wrapper });
+    const { result } = renderHook(() => useTextContrast([away], true), { wrapper });
     expect(result.current).toBeUndefined();
   });
 
   it('is undefined outside the editor', () => {
-    const { result } = renderHook(() => useTextContrast(t, true));
+    const { result } = renderHook(() => useTextContrast([t], true));
     expect(result.current).toBeUndefined();
+  });
+
+  it('judges every element whose ground can be judged, leaving the rest out', () => {
+    const away = { ...t, id: 'away', x: rect.x - 9000 } as Element;
+    const two = { ...t, id: 't2' };
+    const { result } = renderHook(() => useTextContrast([t, away, two], true), { wrapper });
+    expect(result.current).toHaveLength(2);
   });
 });

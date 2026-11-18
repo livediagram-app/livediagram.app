@@ -288,6 +288,7 @@ export function MultiSelectionContextMenu({
                   boxedSel={boxedSel}
                   arrowSrc={arrowSrc}
                   colourable={colourable}
+                  textSel={colourSrcs}
                   textSrc={textSrc}
                   fillSrc={fillSrc}
                   strokeSrc={strokeSrc}
@@ -309,6 +310,7 @@ export function MultiSelectionContextMenu({
               boxedSel={boxedSel}
               arrowSrc={arrowSrc}
               colourable={colourable}
+              textSel={colourSrcs}
               textSrc={textSrc}
               fillSrc={fillSrc}
               strokeSrc={strokeSrc}

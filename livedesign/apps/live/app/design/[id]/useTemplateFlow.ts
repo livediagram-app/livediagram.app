@@ -85,8 +85,13 @@ export function useTemplateFlow(opts: {
     // actually picks a template. The ~1700 lines of build* code stays
     // out of the editor's initial chunk; returning users opening an
     // existing design never download it.
-    const { templateTabs, templateCanvasOverrides, isDefaultDesignName, untitledNameForTemplate } =
-      await import('@/lib/template-builders');
+    const {
+      templateTabs,
+      templateCanvasOverrides,
+      templateExampleText,
+      isDefaultDesignName,
+      untitledNameForTemplate,
+    } = await import('@/lib/template-builders');
     // The first tab's template names a design still on a default name ("Untitled Flowchart"); a
     // name someone gave it stays.
     if (tabs[0]?.id === activeId && isDefaultDesignName(designName)) {
@@ -104,7 +109,11 @@ export function useTemplateFlow(opts: {
     const theme = getTheme(tabs.find((t) => t.id === activeId)?.theme);
     // Its example values are marked as they land (docs/specs/006-design/template-examples.md), so Clear Example
     // Content can empty them and nothing a person writes.
-    const elements = markTemplateExamples(recolourElementsForTheme(rawElements, theme));
+    const exampleText = templateExampleText(kind);
+    const elements = markTemplateExamples(
+      recolourElementsForTheme(rawElements, theme),
+      exampleText,
+    );
     const overrides = templateCanvasOverrides(kind);
     // The template's later tabs: built at the origin (a fresh tab frames itself), recoloured as the
     // first, named by the template.
@@ -115,7 +124,7 @@ export function useTemplateFlow(opts: {
       return {
         id: ids[i + 1]!,
         name: def.name ?? '',
-        elements: markTemplateExamples(recolourElementsForTheme(raw, theme)),
+        elements: markTemplateExamples(recolourElementsForTheme(raw, theme), exampleText),
       };
     });
     // Re-checked inside the commit (landTemplateOnTab): the tab may have gained a collaborator's

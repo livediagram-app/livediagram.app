@@ -50,6 +50,10 @@ const IDEAS: Idea[] = [
   },
 ];
 
+// Each tested idea's line placing it is the worked example's sample copy: Clear Example Content empties it
+// (template-example-text.ts).
+export const VENN_SAMPLE_COPY: readonly string[] = IDEAS.map((idea) => idea.why);
+
 export function buildVenn(cx0: number, cy: number): Element[] {
   const r = 330;
   // The rail hangs off the right, so the Venn shifts left by half of it to

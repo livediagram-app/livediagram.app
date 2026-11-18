@@ -207,7 +207,9 @@ liveplanner releases a picture a card no longer holds after a 15-minute grace, s
 An image is **used** when any app's document places it, as the apps last reported. The Explorer's Image
 Gallery lists the owner's images from every app, so its "Used in" badge counts every app's documents too:
 an image uploaded in livediagram and placed only in a livedocuments document reads "Used in 1 item" in any
-app's Gallery, never "Not used". `GET /usage` answers every app's references; each app's
+app's Gallery, never "Not used". A picture a Library item holds is used too (libraries.md "Pictures"): `GET /usage`
+answers those apart, as `library`, and the Gallery shows them **In Library**, never "Not used" or Unused.
+`GET /usage` answers every app's references; each app's
 `GET /api/images/usage` names them through the index (one index holds every app's items) with
 `@liveworkspace/media`'s `galleryUsage`, as `{ id, name, app }`, keeping its own rule on whose items show.
 The names come from the index in requests of 200 ids (`POST /api/index/items/lookup`), at most 4 at a time,

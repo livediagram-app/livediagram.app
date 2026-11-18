@@ -187,6 +187,10 @@ export const TELEMETRY_CATEGORIES = [
   // limit: 'TooLong' | 'TooLarge' | 'ItemFull' | 'AccountFull'), 'Played' and 'Deleted'. Never a title, an id or
   // a length.
   'Walkthrough',
+  // The Library (liveworkspace/docs/specs/006-media/libraries.md "Telemetry"): 'Created' when an item is saved to it,
+  // 'Added' when one is placed from it (a click or a drop), each typed by whose library: 'Personal' | 'Team'. Never a
+  // title, a folder, a team or an id.
+  'Library',
 ] as const;
 export type TelemetryCategory = (typeof TELEMETRY_CATEGORIES)[number];
 

@@ -52,6 +52,8 @@ export type CommunityRouteOptions = {
   communityUrl?: string;
   /** The router's way to liveworkspace.app's pages: its `routeToWorkspace` for this request. */
   forward: (request: Request) => Promise<Response> | null;
+  /** How the service is asked: the router's Community binding when it has one; unset, the public route. */
+  fetch?: typeof fetch;
 };
 
 /** Where the Community lives on an app's address: `/community`, anything under it, and its RSC payloads. */
@@ -134,7 +136,9 @@ export function routeCommunity(
 async function api<T>(options: CommunityRouteOptions, path: string): Promise<ApiResult<T>> {
   try {
     const url = communityServiceUrl(options.site.app, path, { base: options.communityUrl });
-    const res = await fetch(url, { signal: AbortSignal.timeout(API_TIMEOUT_MS) });
+    const res = await (options.fetch ?? fetch)(url, {
+      signal: AbortSignal.timeout(API_TIMEOUT_MS),
+    });
     if (res.status === 404) return { status: 'missing' };
     if (!res.ok) {
       console.warn('[community-route] api answered', res.status, path);

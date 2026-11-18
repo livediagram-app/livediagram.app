@@ -100,6 +100,9 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   // A Home pick (Most Used, Recent, See More) in the workbench frame (docs/specs/013-workspace/explorer-home.md).
   'Home·Selected',
   'Layer·Renamed',
+  // The Library (liveworkspace/docs/specs/006-media/libraries.md "Telemetry"): typed Personal or Team.
+  'Library·Added',
+  'Library·Created',
   // Note·* left with element notes (docs/specs/009-elements/links-and-notes-retired.md).
   'Participant·Created',
   'Participant·Returned',

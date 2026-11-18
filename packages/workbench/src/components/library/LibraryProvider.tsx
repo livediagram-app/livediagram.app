@@ -11,6 +11,7 @@ import type { LibraryItemSummary, LibraryTeam } from '@liveworkspace/media';
 import type { LibraryInsertItem } from '../../hooks/canvas/useLibraryItemInsert';
 import { libraryErrorMessage, type LibraryApi } from '../../lib/library/library-api';
 import type { LibraryGroup } from '../../lib/library/library-groups';
+import { libraryPictures, type LibraryPictureSource } from '../../lib/library/library-pictures';
 import { SaveToLibraryDialog, type SaveToLibraryChoice } from './SaveToLibraryDialog';
 
 // An item the editor holds itself (livediagram's own shape libraries), placed without a request.
@@ -59,38 +60,32 @@ const EMPTY: LibraryState = {
   legacyWritable: false,
 };
 
-export function LibraryProvider({
-  api,
-  localItems,
-  onSaved,
-  children,
-}: {
+type LibraryProviderProps = {
   api: LibraryApi | null;
   localItems?: readonly LocalLibraryItem[];
   // Told after each save, with where it went (for the app's own telemetry).
   onSaved?: (scope: 'personal' | 'team') => void;
+  // Told after each place the door answered (a click or a drop), with whose library it came from (the same).
+  onPlaced?: (scope: 'personal' | 'team') => void;
+  // Where the editor shows a picture from, so a save sends its small copies for the tile (libraries.md "Pictures").
+  pictures?: LibraryPictureSource;
   children: React.ReactNode;
-}) {
+};
+
+export function LibraryProvider(props: LibraryProviderProps) {
   // One element type whether or not there is an api, so the editor below never remounts when the api arrives (an
   // owner resolving after load) or goes.
-  return (
-    <LoadedLibraryProvider api={api} localItems={localItems} onSaved={onSaved}>
-      {children}
-    </LoadedLibraryProvider>
-  );
+  return <LoadedLibraryProvider {...props} />;
 }
 
 function LoadedLibraryProvider({
   api,
   localItems,
   onSaved,
+  onPlaced,
+  pictures,
   children,
-}: {
-  api: LibraryApi | null;
-  localItems?: readonly LocalLibraryItem[];
-  onSaved?: (scope: 'personal' | 'team') => void;
-  children: React.ReactNode;
-}) {
+}: LibraryProviderProps) {
   const [remote, setRemote] = useState<LibraryState>(EMPTY);
   const [copied, setCopied] = useState<ReadonlySet<string>>(new Set());
   const [notice, setNotice] = useState<string | null>(null);
@@ -162,10 +157,15 @@ function LoadedLibraryProvider({
   const place = useCallback(
     async (item: LibraryItemSummary) => {
       const held = local.find((l) => l.summary.id === item.id);
-      if (held) return { width: item.width, height: item.height, elements: held.elements };
-      return api ? attempt(() => api.place(item.id), false) : null;
+      const placed = held
+        ? { width: item.width, height: item.height, elements: held.elements }
+        : api
+          ? await attempt(() => api.place(item.id), false)
+          : null;
+      if (placed) onPlaced?.(item.scope);
+      return placed;
     },
-    [api, attempt, local],
+    [api, attempt, local, onPlaced],
   );
 
   const value = useMemo<LibraryContextValue | null>(
@@ -196,6 +196,8 @@ function LoadedLibraryProvider({
   const save = useCallback(
     async (choice: SaveToLibraryChoice) => {
       if (!draft || !api) return;
+      // The pictures' small copies for the tile; none when they can't be made, and the save goes on without them.
+      const copies = pictures ? await libraryPictures(draft, pictures).catch(() => ({})) : {};
       await api.save({
         scope: choice.scope,
         teamId: choice.teamId,
@@ -204,12 +206,13 @@ function LoadedLibraryProvider({
         width: draft.width,
         height: draft.height,
         elements: draft.elements,
+        ...(Object.keys(copies).length > 0 ? { pictures: copies } : {}),
       });
       onSaved?.(choice.scope);
       setDraft(null);
       reload();
     },
-    [api, draft, onSaved, reload],
+    [api, draft, onSaved, pictures, reload],
   );
 
   return (

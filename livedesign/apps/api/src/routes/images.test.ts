@@ -471,6 +471,7 @@ describe('handleImages', () => {
           b: [{ id: 'T', name: 'Board', app: 'livediagram', trashed: true }],
         },
         unchecked: [],
+        library: [],
       });
     });
 
@@ -480,6 +481,7 @@ describe('handleImages', () => {
       expect(await (await call('GET', '/api/images/usage')).json()).toEqual({
         usage: {},
         unchecked: ['a'],
+        library: [],
       });
     });
 
@@ -487,6 +489,7 @@ describe('handleImages', () => {
       expect(await (await call('GET', '/api/images/usage')).json()).toEqual({
         usage: {},
         unchecked: [],
+        library: [],
       });
       expect(clientFor).not.toHaveBeenCalled();
     });

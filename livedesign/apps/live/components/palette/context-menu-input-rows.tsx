@@ -68,7 +68,7 @@ export function ColourRow({
   // Lines and text take the strong colours; backgrounds the soft ones.
   tone?: StandardTone;
   // The Text row's ground: its picker says when a colour would be hard to read there.
-  contrast?: TextContrastProbe;
+  contrast?: readonly TextContrastProbe[];
 } & ColourPalette) {
   const surface = useCanvasSurface();
   // In state, not a ref: a row can mount already open, and the popover needs its anchor then.

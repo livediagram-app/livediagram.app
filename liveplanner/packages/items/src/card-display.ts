@@ -302,7 +302,7 @@ export function typeShowsVotes(
 }
 
 // The type with the built-in Votes field, placed last in its Detailed card's Footer when its layout leaves it out
-// (Publish as Roadmap's Add Votes). A type that shows it already comes back as it is.
+// (a published roadmap's types, Publish as Roadmap). A type that shows it already comes back as it is.
 export function withVotesShown<T extends ItemTypeDef>(type: T): T {
   if (typeShowsVotes(type)) return type;
   const withField = type.fields.includes('votes')

@@ -617,8 +617,12 @@ so none can hang a page the way the token answer did:
   assets, `/api/index`, Drive, previews), and an app API's workbench forward, stops waiting for the answer's headers
   after 30 s and answers **504** (`no-store`), naming what didn't answer. Only the headers are timed: a body that is
   still streaming, an upload (a body over 1 MB) and a WebSocket upgrade are never cut. A forward to a loopback
-  origin (a local stack, where a cold dev server can take longer than that to compile a page) is not timed. The
-  routers have no binding to liveworkspace's Workers, so these still go over the public route.
+  origin (a local stack, where a cold dev server can take longer than that to compile a page) is not timed. Each
+  router reaches liveworkspace's Workers over service bindings (`WORKSPACE_SITE`, `WORKSPACE_ACCOUNTS`,
+  `WORKSPACE_INDEX`, `WORKSPACE_DRIVE`, `WORKSPACE_MEDIA`, `WORKSPACE_COMMUNITY`), so these no longer take the public
+  route that stalled; the same 30 s deadline holds on a binding. Without a binding (a local run, a fork) the public
+  route is used. A binding that throws answers `502` as an unreachable origin does, and is never retried over the
+  public route, so a write is never sent twice.
   A page load (a `GET` or `HEAD` asking for HTML) whose forward to liveworkspace fails or times out gets a styled
   page rather than the plain line naming the origin: **This Page Couldn’t Load**, saying liveworkspace didn't answer
   and nothing made was lost, with **Try Again** (the same address) and the platform's status page

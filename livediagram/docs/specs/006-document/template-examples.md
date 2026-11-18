@@ -11,8 +11,13 @@ livedesign, is in [liveworkspace's blueprint](../../../../liveworkspace/docs/spe
 - **Example content** (cleared): a sticky note's text; a checklist's rows and ticks (the rows stay, empty and
   unticked); a table's body cells (its header row and header column stay); a chart's numbers (its slice and series
   names stay).
-- **Structure** (kept): everything else. Headings, a quadrant's or column's title and prompt, lanes, panels, shapes
-  and their labels, text boxes, arrows, icons and the template's note.
+- **Sample copy** (cleared): the free text a template writes as a worked example, where the template names it: the
+  Fishbone's causes, the Timeline's milestone lines, the Roadmap's outcomes and the Venn's tested ideas. An emptied text
+  shows a faint "Text" prompt to an Editor ([Text element](../008-canvas/canvas-and-palette.md#text-element)).
+- **Structure** (kept): everything else. Headings, a quadrant's or column's title and prompt, a key or legend, the
+  guide line under the title, lanes, panels, shapes and their labels, other text boxes, arrows, icons and the
+  template's note. A board's free text is mostly how to read it, so a template opts its sample copy in rather than
+  every text counting.
 
 ## Marked as it lands
 

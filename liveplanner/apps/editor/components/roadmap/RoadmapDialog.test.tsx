@@ -322,9 +322,9 @@ describe('the Tools row', () => {
   });
 });
 
-// Add Votes (public-roadmap.md "The settings"): with Voting on, a chosen type whose cards would not show a vote is
-// offered Votes, as one change to the plan's card types; the note goes once every chosen type shows them.
-describe('Add Votes', () => {
+// Votes on a public roadmap (public-roadmap.md "The settings"): once published with Voting on, every chosen type whose
+// cards would not show a vote gets Votes on its own, as one change to the plan's card types; it is never offered.
+describe('Votes on a public roadmap', () => {
   const type = (id: string, label: string, fields: string[]): ItemTypeDef => ({
     id,
     label,
@@ -335,10 +335,11 @@ describe('Add Votes', () => {
   });
   const FEATURE = type('feature', 'Feature', ['title', 'status']);
   const BUG = type('bug', 'Bug', ['title', 'status']);
+  const VOTED_BUG = type('bug', 'Bug', ['title', 'status', 'votes']);
   const saves = vi.fn();
 
-  // The plan's card types as the editor keeps them: a save shows at once.
-  function Harness({ types }: { types: ItemTypeDef[] }) {
+  // The plan's card types as the editor keeps them: a save shows at once, unless `sticks` is off.
+  function Harness({ types, sticks = true }: { types: ItemTypeDef[]; sticks?: boolean }) {
     const [catalogue, setCatalogue] = useState<ItemTypeCatalogue>({ version: 1, types });
     return (
       <RoadmapDialog
@@ -350,64 +351,101 @@ describe('Add Votes', () => {
           types: catalogue.types,
           saveCatalogue: (next) => {
             saves(next);
-            setCatalogue(next);
+            if (sticks) setCatalogue(next);
           },
         }}
       />
     );
   }
-  const openWith = async (types: ItemTypeDef[], r: Partial<RoadmapsResponse> = {}) => {
+  const openWith = async (
+    types: ItemTypeDef[],
+    r: Partial<RoadmapsResponse> = {},
+    sticks = true,
+  ) => {
     client.readRoadmaps.mockResolvedValue({ roadmaps: [], boards: [BOARD], forms: [], ...r });
-    render(<Harness types={types} />);
+    // A published roadmap's settings save as they change, answered as sent.
+    client.saveRoadmap.mockImplementation((_s: unknown, _b: unknown, next: RoadmapSettings) =>
+      Promise.resolve({ roadmap: live(next) }),
+    );
+    render(<Harness types={types} sticks={sticks} />);
     await waitFor(() => expect(stateOf()).not.toBe('loading'));
   };
-  const offer = () => document.querySelector('[data-roadmap-votes-offer]');
+  const saved = (n = 0) => saves.mock.calls[n]![0] as ItemTypeCatalogue;
+  const shows = (c: ItemTypeCatalogue, id: string) =>
+    typeShowsVotes(c.types.find((t) => t.id === id)!);
+  const added = (names: string) => screen.queryByText(`${names} cards now show their votes.`);
 
-  it('offers Votes for the chosen types that lack them, and adds them as one change', async () => {
+  it('adds nothing to a draft, then Votes for every chosen type at Publish, as one change', async () => {
     await openWith([FEATURE, BUG, type('note', 'Note', ['title'])]);
-    expect(offer()?.textContent).toContain('Feature and Bug cards don’t show votes yet.');
-    fireEvent.click(screen.getByRole('button', { name: 'Add Votes' }));
-    expect(saves).toHaveBeenCalledTimes(1);
-    const saved = saves.mock.calls[0]![0] as ItemTypeCatalogue;
-    const byId = (id: string) => saved.types.find((t) => t.id === id)!;
-    expect(typeShowsVotes(byId('feature'))).toBe(true);
-    expect(typeShowsVotes(byId('bug'))).toBe(true);
-    // A type the roadmap does not show is left as it was.
-    expect(byId('note').fields).toEqual(['title']);
-    expect(offer()).toBeNull();
-    expect(screen.getByText('Feature and Bug cards now show their votes.')).toBeTruthy();
-    // Nothing is published by it: the roadmap's settings are untouched.
-    expect(client.saveRoadmap).not.toHaveBeenCalled();
-  });
-
-  it('names only the chosen types, and says nothing with Voting off or every type showing votes', async () => {
-    await openWith([FEATURE, type('bug', 'Bug', ['title', 'status', 'votes'])]);
-    expect(offer()?.textContent).toContain('Feature cards don’t show votes yet.');
-    fireEvent.click(chip('Feature'));
-    expect(offer()).toBeNull();
-    fireEvent.click(chip('Feature'));
-    expect(offer()).not.toBeNull();
-    fireEvent.click(screen.getByRole('switch', { name: /Voting/ }));
-    expect(offer()).toBeNull();
+    expect(stateOf()).toBe('draft');
+    // Never offered.
+    expect(screen.queryByRole('button', { name: 'Add Votes' })).toBeNull();
+    expect(screen.queryByText(/don’t show votes yet/)).toBeNull();
     expect(saves).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Publish Roadmap' }));
+    await waitFor(() => expect(saves).toHaveBeenCalledTimes(1));
+    expect(shows(saved(), 'feature')).toBe(true);
+    expect(shows(saved(), 'bug')).toBe(true);
+    // A type the roadmap does not show is left as it was.
+    expect(saved().types.find((t) => t.id === 'note')!.fields).toEqual(['title']);
+    expect(added('Feature and Bug')).toBeTruthy();
   });
 
-  it('offers it on a published roadmap too, while its settings save as they change', async () => {
+  it('adds Votes on opening a roadmap published without them, to its chosen types only', async () => {
     await openWith([FEATURE, BUG], { roadmaps: [live({ types: ['bug'] })] });
     expect(stateOf()).toBe('published');
-    expect(offer()?.textContent).toContain('Bug cards don’t show votes yet.');
-    fireEvent.click(screen.getByRole('button', { name: 'Add Votes' }));
-    expect(screen.getByText('Bug cards now show their votes.')).toBeTruthy();
+    await waitFor(() => expect(saves).toHaveBeenCalledTimes(1));
+    expect(shows(saved(), 'bug')).toBe(true);
+    expect(shows(saved(), 'feature')).toBe(false);
+    expect(added('Bug')).toBeTruthy();
+    // The roadmap's own settings are not saved for it.
     expect(client.saveRoadmap).not.toHaveBeenCalled();
   });
 
-  it('offers nothing without the plan’s card types', async () => {
-    await open({});
-    expect(offer()).toBeNull();
+  it('adds Votes to a type a published roadmap gains later', async () => {
+    await openWith([FEATURE, VOTED_BUG], { roadmaps: [live({ types: ['bug'] })] });
+    expect(saves).not.toHaveBeenCalled();
+    fireEvent.click(chip('Feature'));
+    await waitFor(() => expect(saves).toHaveBeenCalledTimes(1));
+    expect(shows(saved(), 'feature')).toBe(true);
+    expect(added('Feature')).toBeTruthy();
+  });
+
+  it('adds nothing with Voting off, and Votes once it is turned back on', async () => {
+    await openWith([FEATURE, BUG], { roadmaps: [live({ voting: false })] });
+    expect(saves).not.toHaveBeenCalled();
+    expect(added('Feature and Bug')).toBeNull();
+    fireEvent.click(screen.getByRole('switch', { name: /Voting/ }));
+    await waitFor(() => expect(saves).toHaveBeenCalledTimes(1));
+    expect(shows(saved(), 'feature')).toBe(true);
+    expect(added('Feature and Bug')).toBeTruthy();
+    // Turned off, the line goes with it.
+    fireEvent.click(screen.getByRole('switch', { name: /Voting/ }));
+    await waitFor(() => expect(added('Feature and Bug')).toBeNull());
+  });
+
+  it('tries a type once per opening, so a save that does not take is not repeated', async () => {
+    await openWith([FEATURE, BUG], { roadmaps: [live()] }, false);
+    await waitFor(() => expect(saves).toHaveBeenCalledTimes(1));
+    fireEvent.click(screen.getByRole('switch', { name: /Voting/ }));
+    fireEvent.click(screen.getByRole('switch', { name: /Voting/ }));
+    await waitFor(() => expect(client.saveRoadmap).toHaveBeenCalledTimes(2));
+    expect(saves).toHaveBeenCalledTimes(1);
+  });
+
+  it('adds nothing when every chosen type shows votes, or without the plan’s card types', async () => {
+    await openWith([type('feature', 'Feature', ['title', 'votes']), VOTED_BUG], {
+      roadmaps: [live()],
+    });
+    expect(saves).not.toHaveBeenCalled();
+    cleanup();
+    await open({ roadmaps: [live()] });
+    expect(stateOf()).toBe('published');
+    expect(screen.queryByText(/now show their votes/)).toBeNull();
   });
 
   it('reaches the dialog from the host', async () => {
-    client.readRoadmaps.mockResolvedValue({ roadmaps: [], boards: [BOARD], forms: [] });
+    client.readRoadmaps.mockResolvedValue({ roadmaps: [live()], boards: [BOARD], forms: [] });
     const catalogue: ItemTypeCatalogue = { version: 1, types: [FEATURE, BUG] };
     render(
       <RoadmapHost
@@ -429,7 +467,8 @@ describe('Add Votes', () => {
       </RoadmapHost>,
     );
     fireEvent.click(screen.getByRole('button', { name: 'Publish as Roadmap' }));
-    await waitFor(() => expect(offer()).not.toBeNull());
+    await waitFor(() => expect(saves).toHaveBeenCalledTimes(1));
+    expect(shows(saved(), 'feature')).toBe(true);
   });
 
   it('joins names as a sentence', () => {

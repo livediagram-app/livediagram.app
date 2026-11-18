@@ -87,8 +87,38 @@ export function createTeamAccess() {
     return [...merged.values()];
   }
 
+  // The person's teams as they are now, for a list of them (the Library's teams, libraries.md "Who may do what"): the
+  // claim, with every team accounts answers beside it (a team made or joined since the token was minted, and its
+  // role as it is now). Always asks, unlike teamsOf, since a list has no one team to miss; the answer is reused for
+  // MISS_RECHECK_MS, so a burst of calls is one ask. Never narrows the claim; accounts unreachable, the claim stands.
+  async function currentTeams(
+    read: TeamReader | null,
+    userId: string,
+    claimed: readonly TeamClaim[] | null | undefined,
+    now = Date.now(),
+  ): Promise<TeamClaim[]> {
+    const base = [...(claimed ?? [])];
+    if (!userId.startsWith('user_')) return [];
+    if (!read) return base;
+    const cached = cache.get(userId);
+    let current: TeamClaim[];
+    if (cached && now - cached.at < MISS_RECHECK_MS) current = cached.teams;
+    else {
+      try {
+        current = await fresh(read, userId, now);
+      } catch (error) {
+        console.warn('[teams] accounts unreachable; the claim stands', { error: String(error) });
+        return base;
+      }
+    }
+    const merged = new Map(base.map((t) => [t.id, t]));
+    for (const t of current) merged.set(t.id, t);
+    return [...merged.values()];
+  }
+
   return {
     teamsOf,
+    currentTeams,
     // Whether the person is in this team now.
     async inTeam(
       read: TeamReader | null,

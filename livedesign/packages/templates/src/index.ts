@@ -35,3 +35,4 @@ export { carryPageContent, warmLayoutPlaceholders } from './page-layout-carry';
 export * from './template-tab';
 export { templateCatalogue } from './template-catalogue';
 export { templatePageKind } from './template-page-kinds';
+export { templateExampleText } from './template-example-text';
