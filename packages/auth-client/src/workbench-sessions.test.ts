@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { accountCredentials } from './api-tokens';
-import { createWorkbenchSessions, sessionPrefixOf } from './workbench-sessions';
+import { createTokenRooms, createWorkbenchSessions, sessionPrefixOf } from './workbench-sessions';
 
 // Sessions are liveworkspace's (liveworkspace/docs/specs/011-workbench/workbench.md): an api asks accounts about each
 // with its client credentials and reads the answer in its own words, here a `doc` and its `docId`.
@@ -152,6 +152,51 @@ describe('noteWorkbenchRoom', () => {
       noteWorkbenchRoom(ENV, { ownerId: 'user_1', sessionId: `s-${secret()}` }, 'doc1'),
     ).resolves.toBeUndefined();
     expect(warn).toHaveBeenCalledWith('[workbench] room note failed', {
+      error: 'TypeError: network down',
+    });
+  });
+});
+
+// public-api-and-tokens.md "Revoking a token": a token's room ticket notes the room at accounts until it lapses, from
+// a workbench api and from one with no sessions at all (livehuddle's) alike.
+describe('noteTokenRoom', () => {
+  const { noteTokenRoom } = createTokenRooms({ credentials: accountCredentials });
+  const input = (tokenId: string) => ({ ownerId: 'user_1', tokenId, itemId: 'doc1', until: 2e12 });
+
+  it('tells accounts once per token, item and lapse', async () => {
+    const calls = stubAccounts(() => new Response(null, { status: 204 }));
+    const tokenId = `tok-${secret()}`;
+    await noteTokenRoom(ENV, input(tokenId));
+    await noteTokenRoom(ENV, input(tokenId));
+    expect(calls).toEqual([
+      { path: '/api/account/internal/workbench/token-rooms', body: input(tokenId) },
+    ]);
+  });
+
+  it('is the same note through a workbench api', async () => {
+    const calls = stubAccounts(() => new Response(null, { status: 204 }));
+    const { noteTokenRoom: viaSessions } = createWorkbenchSessions({
+      credentials: accountCredentials,
+      reach: () => ({}),
+      unavailable: () => new Unavailable(),
+    });
+    await viaSessions(ENV, input(`tok-${secret()}`));
+    expect(calls.map((c) => c.path)).toEqual(['/api/account/internal/workbench/token-rooms']);
+  });
+
+  it('asks nothing with no accounts configured', async () => {
+    const calls = stubAccounts(() => new Response(null, { status: 204 }));
+    await noteTokenRoom({}, input(`tok-${secret()}`));
+    expect(calls).toEqual([]);
+  });
+
+  it('is best effort: an unreachable accounts is logged, never thrown', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.stubGlobal('fetch', async () => {
+      throw new TypeError('network down');
+    });
+    await expect(noteTokenRoom(ENV, input(`tok-${secret()}`))).resolves.toBeUndefined();
+    expect(warn).toHaveBeenCalledWith('[workbench] token room note failed', {
       error: 'TypeError: network down',
     });
   });
