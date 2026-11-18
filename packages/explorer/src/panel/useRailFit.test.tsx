@@ -1,38 +1,56 @@
 import { act, render } from '@testing-library/react';
 import { useRef } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { railContent, railPicture, useRailFit } from './useRailFit';
+import {
+  RAIL_PICTURE_FULL,
+  RAIL_PICTURE_RATIO,
+  railContent,
+  railPicture,
+  useRailFit,
+} from './useRailFit';
 
 // The signed-in rail's default content, measured in the livediagram editor's popover (Work Tracker 1205): 604 px
-// with the card's picture, 102 px of it the picture and its gap.
+// with the card's picture, 102 px of it the picture (then a 96 px strip) and its gap.
 const FULL = 604;
 const PICTURE = 102;
 
 describe('railPicture', () => {
   // The content without the picture, and the picture with its 6 px gap as drawn.
   const BASE = FULL - PICTURE;
+  const full = 96;
   it('keeps the full picture while the whole rail fits', () => {
-    expect(railPicture({ content: FULL, room: 636, shown: PICTURE, gap: 6 })).toBeNull();
-    expect(railPicture({ content: BASE, room: BASE + 6 + 96, shown: 0, gap: 6 })).toBeNull();
+    expect(railPicture({ content: FULL, room: 636, shown: PICTURE, gap: 6, full })).toBeNull();
+    expect(railPicture({ content: BASE, room: BASE + 6 + 96, shown: 0, gap: 6, full })).toBeNull();
   });
 
   it('shrinks the picture to the room left before the rail would scroll', () => {
-    expect(railPicture({ content: FULL, room: 597, shown: PICTURE, gap: 6 })).toBe(88);
-    expect(railPicture({ content: FULL, room: BASE + 6 + 49, shown: PICTURE, gap: 6 })).toBe(48);
+    expect(railPicture({ content: FULL, room: 597, shown: PICTURE, gap: 6, full })).toBe(88);
+    const room = BASE + 6 + 49;
+    expect(railPicture({ content: FULL, room, shown: PICTURE, gap: 6, full })).toBe(48);
   });
 
   it('drops the picture with under 48 px to spare, and takes it back once 48 fit', () => {
-    expect(railPicture({ content: FULL, room: BASE + 6 + 48, shown: PICTURE, gap: 6 })).toBe(0);
-    expect(railPicture({ content: BASE, room: BASE + 6 + 49, shown: 0, gap: 6 })).toBe(48);
+    const tight = BASE + 6 + 48;
+    expect(railPicture({ content: FULL, room: tight, shown: PICTURE, gap: 6, full })).toBe(0);
+    expect(railPicture({ content: BASE, room: BASE + 6 + 49, shown: 0, gap: 6, full })).toBe(48);
   });
 
   it('allows half a pixel of subpixel layout', () => {
-    expect(railPicture({ content: BASE, room: BASE + 6 + 95.6, shown: 0, gap: 6 })).toBeNull();
+    const room = BASE + 6 + 95.6;
+    expect(railPicture({ content: BASE, room, shown: 0, gap: 6, full })).toBeNull();
+  });
+
+  it("wants the pane cards' 16:9 height, not a fixed strip (Work Tracker 1293)", () => {
+    // The 240 px rail's card is 220 px wide: 16:9 of it is the 124 px the rail assumes until it measures.
+    expect(Math.round(220 * RAIL_PICTURE_RATIO)).toBe(RAIL_PICTURE_FULL);
+    // 100 px spare fitted the old 96 px strip; the 16:9 picture shrinks into it instead.
+    expect(railPicture({ content: BASE, room: BASE + 100, shown: 0, gap: 0 })).toBe(99);
+    expect(railPicture({ content: BASE, room: BASE + 124, shown: 0, gap: 0 })).toBeNull();
   });
 });
 
 // A rail of three blocks: a picture of `pic` px over the card's lines, then entries, laid out by hand.
-function stubLayout(nav: HTMLElement, room: { h: number }, pic: number) {
+function stubLayout(nav: HTMLElement, room: { h: number }, pic: number, width = 0) {
   const [card, mid, last] = [...nav.children] as HTMLElement[];
   const picture = nav.querySelector<HTMLElement>('[data-current-picture]')!;
   const shown = () => !nav.hasAttribute('data-rail-tight');
@@ -41,7 +59,9 @@ function stubLayout(nav: HTMLElement, room: { h: number }, pic: number) {
   vi.spyOn(card!, 'getBoundingClientRect').mockImplementation(() => rect(12, cardH()));
   vi.spyOn(mid!, 'getBoundingClientRect').mockImplementation(() => rect(12 + cardH(), 300));
   vi.spyOn(last!, 'getBoundingClientRect').mockImplementation(() => rect(312 + cardH(), 120));
-  vi.spyOn(picture, 'getBoundingClientRect').mockImplementation(() => rect(12, pic));
+  vi.spyOn(picture, 'getBoundingClientRect').mockImplementation(
+    () => ({ ...rect(12, pic), width }) as DOMRect,
+  );
   vi.spyOn(picture, 'getClientRects').mockImplementation(
     () => (shown() ? [rect(12, pic)] : []) as unknown as DOMRectList,
   );
@@ -101,11 +121,15 @@ describe('useRailFit', () => {
   });
 
   // The rail's content (its padding included) is 12 + 60 + 102 + 6 + 300 + 120 + 12 = 612 with the picture.
-  function mount(h: number, props: { enabled?: boolean; layoutKey?: string } = {}) {
+  function mount(
+    h: number,
+    props: { enabled?: boolean; layoutKey?: string } = {},
+    pic = { h: PICTURE, w: 0 },
+  ) {
     const room = { h };
     const view = render(<Probe {...props} />);
     const nav = view.container.querySelector('nav')!;
-    stubLayout(nav, room, PICTURE);
+    stubLayout(nav, room, pic.h, pic.w);
     view.rerender(<Probe {...props} layoutKey={`${props.layoutKey ?? 'a'}-laid-out`} />);
     const scrollHeight = () => Math.max(railContent(nav), room.h);
     return { view, nav, room, scrollHeight };
@@ -132,7 +156,7 @@ describe('useRailFit', () => {
   it('takes the picture back when the window grows, shrinks it, then drops it as the window shrinks', () => {
     const { nav, room } = mount(529);
     expect(nav.hasAttribute('data-rail-tight')).toBe(true);
-    room.h = 612;
+    room.h = 636;
     resize();
     expect(nav.getAttribute('data-rail-picture')).toBe('full');
     // A little short: the picture shrinks to what is left (560 less the 504 px rest, its 6 px gap and a spare pixel).
@@ -142,6 +166,16 @@ describe('useRailFit', () => {
     room.h = 550;
     resize();
     expect(nav.hasAttribute('data-rail-tight')).toBe(true);
+  });
+
+  it("takes the picture's full height as 16:9 of its width (Work Tracker 1293)", () => {
+    // A 224 px wide picture is 126 px tall at 16:9: the rail's content is 636 px with it.
+    const { nav, room } = mount(660, {}, { h: 126, w: 224 });
+    expect(nav.getAttribute('data-rail-picture')).toBe('full');
+    // 2 px short of the whole picture: it shrinks, where the 124 px default alone would keep it full.
+    room.h = 634;
+    resize();
+    expect(nav.getAttribute('data-rail-picture')).toBe('123');
   });
 
   it('measures nothing on a phone, and lets go of its observer on unmount', () => {
