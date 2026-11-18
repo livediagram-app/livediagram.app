@@ -334,6 +334,12 @@ function startMorph(
     i += 1;
   }
 
+  // One clock for every part (toolbar-layout.md "One clock"): started on their own, the riders' transform (run by the
+  // compositor) could begin a frame after the bar's size on a busy device, and the toggle drifted off the bar's edge
+  // until it caught up.
+  const now = document.timeline?.currentTime ?? null;
+  if (now !== null) for (const a of animations) a.startTime = now;
+
   let done = false;
   const finish = () => {
     if (done) return;

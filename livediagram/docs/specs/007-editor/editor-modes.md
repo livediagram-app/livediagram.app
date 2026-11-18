@@ -137,7 +137,9 @@ where it is and changes only how the next mark is made.
   tab): made from a Draw tab it is a Draw tab, from a Workshop tab a Workshop tab, and from an event-storming board, always Diagram, a Diagram tab. The
   **+** makes the tab straight away, with no picker: it is a general tab (never the source's kind) carrying the
   source's look ([Canvas and palette](../008-canvas/canvas-and-palette.md) "Selecting & adding"), and only its mode
-  follows. A new tab
+  follows. It is the maker's mode as the new tab is made, a switch still landing included: a mode picked on the start
+  (which switches as a cross-fading transition) and **+** pressed straight after gives a tab in the mode just picked,
+  never the one it is leaving. A new tab
   opens empty on its mode's own start (Start Diagramming, Start Drawing, Start a
   Workshop: [Template starts](start-diagramming.md); `newTabOpening` in `apps/editor/lib/new-tab-seed.ts`), whose
   search also finds every other mode's templates. Only the template chosen for it changes that:

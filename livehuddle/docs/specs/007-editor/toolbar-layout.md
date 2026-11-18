@@ -68,6 +68,9 @@ walk is jarring, no animation to soften the transition and size change on the pa
   measures its room between the menu card and the top-right corner card, and may shift). Until its left edge holds
   still for a frame (at most ten frames), it waits unseen behind a still copy of the outgoing strip, and the morph
   then starts from there, so the toggle never jumps (`playStripMorph` in `apps/editor/components/palette/strip-morph-dom.ts`).
+- **One clock.** Every part of the morph (the bar, the clip, the toggle's ride, the pill, both crossfades) starts at
+  the same moment. Left to start on their own, the toggle's ride (run by the compositor) could begin a frame after
+  the bar's resize on a busy device, and the toggle drifted a few pixels off the bar's edge before catching up.
 - **A flyout closes first.** A category's flyout, More or Search open at the switch goes with its strip and is not
   there when that strip comes back.
 - **Timing.** 240 ms (just inside the chrome ceiling, [Motion](../004-interface-design/motion.md)), a soft ease-out
