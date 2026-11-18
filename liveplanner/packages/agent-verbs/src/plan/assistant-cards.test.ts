@@ -106,6 +106,24 @@ describe('the calling assistant', () => {
     expect(read.assistant.color).toMatch(/^#[0-9a-f]{6}$/i);
   });
 
+  it('finds the person on a card they last changed, and names one with no account name Someone', async () => {
+    const w = await world();
+    const edited = { ...w.items[1]!, createdBy: OTHER, updatedBy: w.thomas };
+    expect(await callerAssistant(w.api, [edited])).toEqual({ ok: true, assistant: w.claude });
+    const api = fakeApi({
+      '/tokens/current': {
+        accountId: ACCOUNT,
+        accountName: ' ',
+        tokenId: 't',
+        tokenName: 'Claude',
+        role: 'full',
+        expiresAt: 1,
+      },
+    });
+    const read = await callerAssistant(api, []);
+    expect(read.ok && read.assistant.name).toBe('Claude (Someone)');
+  });
+
   it('is no assistant for a session, or a token without a name', async () => {
     for (const opts of [{ token: 'none' as const }, { tokenName: null }, { tokenName: '  ' }]) {
       const w = await world(opts);

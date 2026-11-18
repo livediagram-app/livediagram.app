@@ -1026,6 +1026,24 @@ describe('items handed to an assistant', () => {
     expect(itemHandBack.quiet!(out)).toEqual(['#1']);
   });
 
+  it('says its person when the api answers the item without one', async () => {
+    const claude = itemAssistantFor(
+      { id: await itemPersonId('acct_priya'), name: 'Priya Shah', color: '#7c3aed' },
+      'Claude',
+    )!;
+    const held = item(1, 'itembbb111', { title: 'Fix login', status: 'doing', assignee: claude });
+    const out = await itemHandBack.run!(
+      api({
+        [path]: () => Response.json({ items: [held], rev: 4 }),
+        '/tokens/current': CURRENT,
+        [`${path}/itembbb111`]: () =>
+          Response.json({ item: { ...held, fields: { title: 'Fix login' } } }),
+      }).ctx,
+      { project: DOC_A, item: '#1' },
+    );
+    expect(itemHandBack.text!(out)[0]).toMatch(/handed back to its person$/);
+  });
+
   it('refuses --handed-to-me for a session, and a hand-back of an item not handed to it', async () => {
     const { ctx } = await handed();
     await expect(itemHandBack.run!(ctx, { project: DOC_A, item: '#2' })).rejects.toMatchObject({
