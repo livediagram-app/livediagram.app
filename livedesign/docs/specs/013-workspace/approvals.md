@@ -15,7 +15,7 @@ what is livedesign's.
   owner and its link visitors.
 - **Save this version as a snapshot** is offered there whenever Snapshots are ([snapshots.md](snapshots.md)): the
   snapshot is taken first, named "Sent for approval", and the request points at it.
-- **The badge** sits after the role pill in the header; it opens the Share dialog on the Approval tab for an Editor
+- **The badge** sits after the visibility pill in the header; it opens the Share dialog on the Approval tab for an Editor
   of the whole design.
 - **The banner** sits under the header, for a signed-in, named approver of the open request, whatever their level.
 

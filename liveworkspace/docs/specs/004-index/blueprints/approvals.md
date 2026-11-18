@@ -23,7 +23,7 @@ Scope, by file:
 | `packages/explorer/src/dialogs/ShareDialog.tsx`, `share/ShareTabs.tsx`                    | the Approval tab beside Passes when a door is open                                                                                 |
 | `packages/explorer/src/library/history-*.ts`, `event-icons.tsx`, `explorer/audit/rows.ts` | the four kinds' History labels, tone, filter, glyphs and audit sentences                                                           |
 | each app's `apps/api/src/routes/internal-items.ts`, `email/*`                             | the notice handler and the email template                                                                                          |
-| each app's editor (`EditorView`, `editor-view-bars`, `EditorTabDialogs`)                  | the door from its gate, the badge after the role pill, the banner under the header                                                 |
+| each app's editor (`EditorView`, `editor-view-bars`, `EditorTabDialogs`)                  | the door from its gate, the badge after the visibility pill, the banner under the header                                           |
 
 ## Domain and naming
 

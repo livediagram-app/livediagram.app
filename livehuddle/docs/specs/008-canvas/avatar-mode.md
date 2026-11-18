@@ -68,8 +68,7 @@ replaced both the Selection Mode picker and the bottom-right cluster's Walk butt
   each, for the thumb). 36px tall like the strip's buttons, with a 44px tap area. Each side has a tooltip: **Edit**
   ("Select and build the board. Shortcut: E.") and **Walk** ("Walk round the board as your character. Shortcut:
   W."), the shortcut left out on a phone. A radio group named **Edit or Walk**, each side a radio.
-- **Who.** An Editor alone. Not a Participant or a Viewer, nor an Editor previewing either through the role pill:
-  they are always walking, so a switch that could only read Walk and do nothing is left out.
+- **Who.** An Editor alone. Not a Participant or a Viewer: they are always walking, so a switch that could only read Walk and do nothing is left out.
 - **Where not.** Not in an embed, which never walks ([Opening walking](#opening-walking)), and not while the welcome
   flow is open (the strip is away).
 - **Greyed over a start.** While Start a Space is open, **Walk** stays in place but greyed (`aria-disabled`, so its

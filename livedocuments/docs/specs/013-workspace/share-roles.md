@@ -81,7 +81,6 @@ once a document is open.
   its tab, and its code on every write. Edit with no link is the owner's or a team member's. The role never comes
   from the address, so a Viewer or Participant is never shown Editing for saves the api would refuse
   (`openOwnAddress`, `@liveworkspace/workbench/lib/editor-arrival`, shared by every editor).
-- The editor's role pill reads Editing, Participating or Viewing.
 - **Losing access is explained, never silent.** A session ended by an access change (a link turned off, a password
   set, a grant whose level or tab changed on renewal) reloads into the access check, and a refusal then reads **No
   Longer Shared With You** ("Your access to this document was removed while you had it open. Ask its owner to share
