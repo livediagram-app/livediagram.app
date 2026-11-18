@@ -1,7 +1,7 @@
 // Sign-in's plain helpers (SignInFlow.tsx): the Google return-trip mark in this tab's storage, the day's-codes
 // refusal message, and a form field's trimmed value.
 
-export type Step = 'email' | 'code' | 'name' | 'done';
+export type Step = 'email' | 'code' | 'name';
 export interface Names {
   givenName: string;
   familyName: string;

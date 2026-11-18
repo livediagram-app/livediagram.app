@@ -46,9 +46,10 @@ The card's line under the heading reads "One free account that works for every a
 
 The code step keeps the keyboard in the code: focus is on the first box when the step opens, after a wrong code,
 and after **Resend code** (sent or refused), so the new code can be typed at once; a sent Resend also empties the
-boxes and says "We sent you a new code." A sign-in opened at `/sign-in` itself, with nowhere to go back to, ends on
-a **You're signed in** card that drops the code step's banners and offers the way on: **Open Explorer**
-(`/explorer`) and **Go Home** (`/`), paths on the address it is on, so on an app's own address they are that app's.
+boxes and says "We sent you a new code." A sign-in or registration opened at `/sign-in` or `/sign-up` itself, with
+no app, CLI or page to go back to, goes straight on to the Explorer's Home (`/explorer`), a path on the address it is
+on, so on an app's own address it is that app's Explorer. There is no "You're signed in" card to close: for a new
+account this is the first thing after registering, and it lands where the work is.
 An address kept for the tab by the Explorer's Invites (an invitation email opened signed out,
 [accounts.md](accounts.md#invitations)) is filled into the email field of both pages, and forgotten once signed
 in.
