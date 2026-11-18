@@ -215,7 +215,9 @@ as malformed. The parts of an item an app names (a tab, the cards' `~cards`, an 
 | `POST /items/:id/grant`        | person or link      | `→ {grant, level, tabId, expiresAt, link?}`. A link visitor sends                      |
 |                                |                     | `X-Share-Code` (and `X-Share-Password` when set). `link` is the grant's `link` claim:  |
 |                                |                     | the code a link's access came through, sent or not, so an editor reopening the item by |
-|                                |                     | its own address opens it as that link's visitor ("Grants").                            |
+|                                |                     | its own address opens it as that link's visitor ("Grants"). Its refusal for a password |
+|                                |                     | asked of a person who sent no code names the link: `401 {error: "password_required",   |
+|                                |                     | link}` (only the code, which that person opened it by; "Reopened without the code").   |
 | `POST /items/:id/archive`      | owner               | To its owner's Archived (below) → `{item}`.                                            |
 | `GET /trash` / `DELETE /trash` | person              | List, empty (`?team=`; `?app=` empties that app's items only).                         |
 
@@ -317,7 +319,8 @@ holds for that person:
   days (Most Used), Shared with me rows, placement defaults, their calendar feeds ([Calendar feeds](#calendar-feeds)),
   their own old `favourited` events (what is left of Favourites, removed,
   [one-explorer.md "Favourites removed"](one-explorer.md#favourites-removed)), and the guests merged into them
-  (`person_aliases`, [Becoming an account](#guests)), so no grant names those keys again.
+  (`person_aliases`, [Becoming an account](#guests)), so no grant names those keys again (a copy stays only for
+  the apps' notices, below).
 - **Kept by the team**: an item or folder they made in a team stays with that team, its owner anonymised.
   `teamIds` names the teams that closed with the account (one it ran alone); their items and folders in
   those go too, while anyone else's stay theirs.
@@ -340,11 +343,21 @@ holds for that person:
   commented on, were given or gave an action on, or did something to in the event log, and, since that log keeps
   only 30 days, any they opened or reached by a link (a superset; an item that turns out not to name them changes
   nothing). It then
-  sends each app `POST /api/internal/people/:id/purge {items}` with the app's key, at most 100 items a
+  sends each app `POST /api/internal/people/:id/purge {items, guests}` with the app's key, at most 100 items a
   call. The app drops what it keeps for the person and takes their name off each item: their id becomes
   `deleted` and the name kept beside it becomes "Deleted account" (`@liveworkspace/index-app`,
-  `anonymiseJson`). The notices go when the app confirms. An app that answers anything else is asked
+  `anonymiseJson`), and their comment reactions (found by the reaction person each one stores) read "Deleted
+  account" too. The notices go when the app confirms. An app that answers anything else is asked
   again an hour later, and given up on after a week.
+- **Their guest days too** (Work Tracker 1241): what they left as a guest before they signed in (comments, reactions,
+  a meeting visit) is recorded under the guest's id, or a key made from it, which the merge never rewrote
+  ([Becoming an account](#guests)). So, in the same batch that records the notices and before the aliases go, the
+  index copies the person's aliases into `person_notice_guests`, and every call names them as `guests` (the guest
+  ids, at most 32). The app treats each guest id exactly as it treats the account's own: their id, their reaction
+  person and their collab key are anonymised wherever the account's are. Only the guests merged into this account
+  are named, never another person's; the copy goes once no notice for the person is left. Dots, done checks and
+  answers carry only a collab key and no name, the account's as well as the guests', so nothing in them names the
+  person and they are left as they are.
 
 Their rows in the team audit log ([team-audit-log.md](team-audit-log.md)) are anonymised the same way: where they
 acted, the actor is `deleted` with no name; where a team event is about them, its person is `deleted` and their name
@@ -503,7 +516,19 @@ the item again through Shared with no code sent). An app reads link access from 
 carried `X-Share-Code`: the caller can leave a header off, so a link's limits (a Community post's content-only pass,
 the owner-only "Add to <Item>") would fall away with it. The header only adds to a grant signed without the claim. The answer names the same code beside the grant (`link`), for the editor's chrome only: an editor that opens an
 item by its own address, with no code, takes the visitor's role, tab and code from it, never the owner's
-(`openOwnAddress` in `@liveworkspace/workbench/lib/editor-arrival`); the api and the room still read the claim. The item's Durable Object
+(`openOwnAddress` in `@liveworkspace/workbench/lib/editor-arrival`); the api and the room still read the claim.
+
+**Reopened without the code.** A person whose link is behind a password and who reopens the item by its own address
+(Shared with me, Recent, a bookmark) sends no code and no password, so the grant is refused `401 password_required`.
+That refusal, and only it, names the link beside the error, `{error: "password_required", link: "<code>"}`, so the
+editor can ask for the password: it opens the item through that link (`openShareLink`), which reads the password the
+browser remembers under the code and, when there is none or it changed, shows the password gate, never Not Found.
+While the gate is up its retries go straight through that link (`openOwnAddress` remembers it per reader and item,
+bounded), and the editor's api client does not report that `401` as an error (`isPasswordRefusal`,
+`@liveworkspace/workbench/lib/api/core`). It names only the code, never the item's title, owner or anything else, and only to the person the index already
+found in `shared_with` for that live link: someone who opened that very link before (and entered the password since
+it was last set, which clears `shared_with`). Anyone with no link, a revoked or expired one, a public link, or a
+request that sent a code of its own hears what they heard before (`404`, or `password_required` with no `link`). The item's Durable Object
 keeps its own copy of both (for its emails, its pushes and its alarm), and takes it from every grant it is handed
 (`@liveworkspace/index-app` `createItemHeadSync`), so a guest's merge into an account or a move to another team
 reaches the item the next time anyone opens it.

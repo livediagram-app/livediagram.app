@@ -16,6 +16,7 @@ import { compareRank, rankBetween } from './rank';
 import { ITEM_VOTERS_MAX, ITEM_VOTES_PER_PERSON_MAX } from './limits';
 import { stampStatusSince, statusSinceUndo } from './status-since';
 import { isItemEdit } from './item-edit';
+import { heldStampPerson } from './card-stamps';
 
 export interface WriteContext {
   now: number;
@@ -144,7 +145,7 @@ function edited(
 ): Pick<Item, 'updatedAt' | 'updatedBy'> {
   const touched = [...Object.keys(write.set ?? {}), ...(write.clear ?? [])];
   return isItemEdit(item, fields, type, touched)
-    ? { updatedAt: ctx.now, updatedBy: ctx.by }
+    ? { updatedAt: ctx.now, updatedBy: heldStampPerson(ctx.by, [item]) }
     : { updatedAt: item.updatedAt, updatedBy: item.updatedBy };
 }
 

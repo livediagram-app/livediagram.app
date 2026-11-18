@@ -4,6 +4,8 @@
 import { withArticle } from './indefinite-article';
 import { isItemPerson, itemAssignee, type Item, type ItemPerson } from './item';
 import { isAssistantId } from './assistant';
+import { isIdentityPersonId } from './person';
+import { itemStampPerson } from './card-stamps';
 import {
   builtInFieldOfKind,
   isEmailAddress,
@@ -122,6 +124,42 @@ export function assignedPeople(items: readonly Item[]): ItemPerson[] {
     if (p && !seen.has(p.id)) seen.set(p.id, p);
   }
   return [...seen.values()];
+}
+
+// The plan's members as its cards name them (docs/specs/026-plan/plan-agents.md "An assignee"): the accounts the cards
+// hold as maker, last editor or assignee, once each by id, as the cards first name them.
+export function planMembers(items: readonly Item[]): ItemPerson[] {
+  const seen = new Map<string, ItemPerson>();
+  const add = (p: ItemPerson | undefined) => {
+    if (p && isIdentityPersonId(p.id) && !seen.has(p.id)) seen.set(p.id, p);
+  };
+  for (const it of items) {
+    add(itemStampPerson(it, 'createdBy'));
+    add(itemStampPerson(it, 'updatedBy'));
+    add(itemAssignee(it));
+  }
+  return [...seen.values()];
+}
+
+// A person an agent or the CLI names (plan-agents.md "An assignee"): the one member of the plan with that name (case
+// aside), else as personNamed finds or makes them among `people` (those already picked in the same value, then the
+// project's assignees). A name two members share is refused naming each, so a card never goes to the wrong one.
+export function personByName(
+  name: string,
+  items: readonly Item[],
+  picked: readonly ItemPerson[] = [],
+): Named<{ person: ItemPerson }> {
+  const key = statusKey(name);
+  const members = planMembers(items).filter((p) => statusKey(p.name) === key);
+  if (members.length > 1)
+    return refuse(
+      'value_invalid',
+      `"${name.trim()}" is more than one person on this plan: ${list(
+        members.map((m) => `${m.name} (id ${m.id})`),
+      )}. Pass the person object list_items shows for the one you mean.`,
+    );
+  if (members.length === 1) return { ok: true, person: members[0]! };
+  return { ok: true, person: personNamed(name, [...picked, ...assignedPeople(items)]) };
 }
 
 // A person by name: one already assigned on the project, else a named person whose id comes from the name, so the
@@ -510,11 +548,10 @@ function severalNamed(
   if (field.kind === 'person') {
     const people: ItemPerson[] = [];
     for (const p of parts) {
-      const person = isItemPerson(p)
-        ? p
-        : typeof p === 'string'
-          ? personNamed(p, [...people, ...assignedPeople(naming.items)])
-          : undefined;
+      const named =
+        typeof p === 'string' && !isItemPerson(p) ? personByName(p, naming.items, people) : null;
+      if (named && !named.ok) return named;
+      const person = isItemPerson(p) ? p : named?.person;
       if (!person)
         return refuse('value_invalid', `${field.label} takes people by name, such as "Sam, Ana".`);
       if (!people.some((x) => x.id === person.id)) people.push(person);
@@ -535,8 +572,10 @@ function builtInValue(key: string, value: unknown, naming: FieldNaming): Named<{
     const s = resolveStatus(value, naming.statuses);
     return s.ok ? { ok: true, value: s.status } : s;
   }
-  if (key === 'assignee' && typeof value === 'string' && !isItemPerson(value))
-    return { ok: true, value: personNamed(value, assignedPeople(naming.items)) };
+  if (key === 'assignee' && typeof value === 'string' && !isItemPerson(value)) {
+    const named = personByName(value, naming.items);
+    return named.ok ? { ok: true, value: named.person } : named;
+  }
   // An assistant as list_items lists it (`assistant: true`), written back: the one a card holds by that id
   // (docs/specs/026-plan/plan-agents.md "Cards handed to an assistant"); any other is checked as given.
   if (key === 'assignee' && isItemPerson(value) && isAssistantId(value.id)) {

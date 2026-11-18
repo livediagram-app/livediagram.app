@@ -5,6 +5,7 @@ import { ApiError, type ApiClient } from '@liveworkspace/api-client';
 import type { CurrentTokenResponse } from '@liveplanner/api-schema';
 import {
   assignedPeople,
+  heldPerson,
   itemAssistantFor,
   itemPersonId,
   personNamed,
@@ -28,10 +29,8 @@ const refusal: AssistantRefusal = {
 // The person a token works for, as the plan's cards already show them (a card made or last edited by them, the stamp
 // the api writes for every write), else their account's name in a Plan swatch, as a new name would get.
 function personFor(id: string, accountName: string | null, items: readonly Item[]): ItemPerson {
-  for (const i of items) {
-    if (i.createdBy?.id === id) return { ...i.createdBy };
-    if (i.updatedBy?.id === id) return { ...i.updatedBy };
-  }
+  const held = heldPerson(id, items);
+  if (held) return { ...held };
   const name = accountName?.trim() || 'Someone';
   return { ...personNamed(name, assignedPeople(items)), id, name };
 }

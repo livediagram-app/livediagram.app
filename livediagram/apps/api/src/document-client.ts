@@ -81,8 +81,9 @@ export type DocumentRoomClient = {
   joined(personId: string): Promise<void>;
   // A Sheet a linked chart reads changed (the index's source-changed door): the room tells every open session.
   sourceChanged(change: SourceChange): Promise<void>;
-  // A closed account's name off the canvas (document-anonymise.ts): answers the rows changed.
-  anonymise(personId: string): Promise<number>;
+  // A closed account's name off the canvas (document-anonymise.ts), and the guests merged into it (`guestIds`) as its
+  // own: answers the rows changed.
+  anonymise(personId: string, guestIds?: readonly string[]): Promise<number>;
   // The emails of an action assigned and of a comment's mentions (routes/team-notify-routes.ts, which checked the
   // people and the canvas): sent from the canvas, which keeps their once-only claims and knows who is looking (an
   // action's phone notification skips an assignee already there). False for a canvas not started.
@@ -127,7 +128,7 @@ export function documentRoom(
     communityListing: (code) => room.communityListing(documentId, code),
     joined: (personId) => room.joined(documentId, personId),
     sourceChanged: (change) => room.sourceChanged(documentId, change),
-    anonymise: (personId) => room.anonymise(documentId, personId),
+    anonymise: (personId, guestIds = []) => room.anonymise(documentId, personId, guestIds),
     notifyAction: (input) => room.notifyAction(documentId, input),
     notifyMention: (input) => room.notifyMention(documentId, input),
     sharedTabCopy: (tabId) => room.sharedTabCopy(documentId, tabId),
@@ -170,7 +171,7 @@ export type DocumentRoomRpc = {
   ): Promise<{ postId: string; author: CommunityAuthor } | null>;
   joined(documentId: string, personId: string): Promise<void>;
   sourceChanged(documentId: string, change: SourceChange): Promise<void>;
-  anonymise(documentId: string, personId: string): Promise<number>;
+  anonymise(documentId: string, personId: string, guestIds: readonly string[]): Promise<number>;
   notifyAction(documentId: string, input: ActionNotice): Promise<boolean>;
   notifyMention(documentId: string, input: MentionNotice): Promise<boolean>;
   sharedTabCopy(documentId: string, tabId: string): Promise<SharedTabCopy | null>;

@@ -91,7 +91,7 @@ export function handleInternalItems(
         }
         await communityService.mergeCopier(env, guestId, userId);
       },
-      anonymise: (id, personId) => documentRoom(env, id).anonymise(personId),
+      anonymise: (id, personId, guestIds) => documentRoom(env, id).anonymise(personId, guestIds),
       // The document drawn, for liveworkspace's previews (document-room.ts `exportImage`), or its whole file, for
       // the Drive mirror (`exportFile`).
       export: (id, query) =>

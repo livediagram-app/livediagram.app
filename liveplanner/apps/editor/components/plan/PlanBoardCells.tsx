@@ -134,6 +134,7 @@ export const PlanBoardCard = memo(function PlanBoardCard({
   ships = false,
   setupFields,
   cardSize,
+  numberFrom,
   stacked = false,
   touch = 'touch-none',
   faceDown,
@@ -158,6 +159,8 @@ export const PlanBoardCard = memo(function PlanBoardCard({
   ships?: boolean;
   setupFields: Parameters<typeof PlanCardFace>[0]['fields'];
   cardSize: Parameters<typeof PlanCardFace>[0]['size'];
+  // On a phone, the board's own size: its number stays on a Minimal card (PlanCardFace `numberFrom`).
+  numberFrom?: Parameters<typeof PlanCardFace>[0]['numberFrom'] | undefined;
   // A slot board's narrow column: a Minimal card's title over its bits (PlanCardFace `stacked`).
   stacked?: boolean;
   // The card's touch-action (phone-board.ts cardTouch): touch-none but on a phone board one column a screen.
@@ -251,6 +254,7 @@ export const PlanBoardCard = memo(function PlanBoardCard({
           palette={palette}
           fields={setupFields}
           size={cardSize}
+          {...(numberFrom ? { numberFrom } : {})}
           stacked={stacked}
           faceDown={faceDown}
           muted={done}
@@ -302,6 +306,7 @@ export function PlanDragGhost({
   palette,
   fields,
   size,
+  numberFrom,
   stacked = false,
   count = 1,
 }: {
@@ -319,6 +324,8 @@ export function PlanDragGhost({
   palette: PlanPalette;
   fields: Parameters<typeof PlanCardFace>[0]['fields'];
   size: Parameters<typeof PlanCardFace>[0]['size'];
+  // As the card it carries was drawn (PlanBoardCard `numberFrom`).
+  numberFrom?: Parameters<typeof PlanCardFace>[0]['numberFrom'];
   // As the card it carries was drawn (PlanBoardCard `stacked`).
   stacked?: boolean;
   // A group carried together (docs/specs/026-plan/plan-board.md "Several cards at once"): copies stacked behind the held
@@ -355,7 +362,14 @@ export function PlanDragGhost({
         />
       ))}
       <div className="relative">
-        <PlanCardFace item={item} palette={palette} fields={fields} size={size} stacked={stacked} />
+        <PlanCardFace
+          item={item}
+          palette={palette}
+          fields={fields}
+          size={size}
+          {...(numberFrom ? { numberFrom } : {})}
+          stacked={stacked}
+        />
       </div>
       {count > 1 ? (
         // The board's surface on its focus colour: the pair each theme already keeps apart.

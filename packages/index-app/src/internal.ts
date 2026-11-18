@@ -22,8 +22,9 @@
 //                                                            tab) into a new item, for `by` (who copies) through link
 //                                                            `code` (if any), from address `ip` (if known), named
 //                                                            `title` (the new item's, at the index)
-//   POST   /api/internal/people/:id/purge     {items}        a closed account: drop what the app keeps for the
-//                                                            person, and anonymise them in up to 100 items
+//   POST   /api/internal/people/:id/purge     {items, guests?}  a closed account: drop what the app keeps for the
+//                                                            person, and anonymise them in up to 100 items, with
+//                                                            the guests merged into them (up to 32) as their own
 //   POST   /api/internal/people/:guest/merge  {into, legacy?}  a guest became an account: move what the app keeps
 //                                                            for the guest to the account. With `legacy: true` (a
 //                                                            returning guest of the old livediagram.app claiming

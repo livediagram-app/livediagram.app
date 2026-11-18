@@ -1,5 +1,6 @@
 // Document-level calls: load, create and save-meta, the shared-tabs summary, the snapshot, and the room ticket.
 // Listing, copying, deleting and sharing documents are the index's (@liveworkspace/workbench/lib/index-client.ts, the shared Explorer).
+import { isPasswordRefusal } from '@liveworkspace/workbench/lib/api/core';
 import {
   INDEX_GRANT_HEADER,
   indexIntentOf,
@@ -70,7 +71,9 @@ async function _apiLoadDocument(ownerId: string, id: string): Promise<LiveDoc | 
   const res = await apiFetch(`${API_BASE}/documents/${id}`, {
     headers: await apiHeaders(ownerId),
   });
-  const body = await expectOkOrNull<DocumentResponse>(res, 'load');
+  // A password asked of a link visitor reopening it with no code is the arrival's to handle (the gate), not an
+  // api error (share-password.md "Reopened by its own address").
+  const body = await expectOkOrNull<DocumentResponse>(res, 'load', isPasswordRefusal);
   if (body?.document) indexTitles.set(id, body.document.name);
   return body?.document ?? null;
 }

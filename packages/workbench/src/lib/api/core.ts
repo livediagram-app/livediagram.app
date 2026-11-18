@@ -18,6 +18,10 @@ import { xhrFetch, type UploadProgress } from './xhr-fetch';
 // connection with the newest content. The bound is a base for the round trip plus the time to upload the body at a
 // slow uplink, so a large tab on a poor connection still has its time. Safe ranges: base 10 s to 60 s, rate 8 to
 // 64 KB/s.
+// An own-address load refused for the item's share password (a link visitor reopening it with no code): handled by
+// the editor's arrival, so it is no api error (liveworkspace one-explorer-contracts.md "Reopened without the code").
+export const isPasswordRefusal = (code: string | null): boolean => code === 'password_required';
+
 export const SAVE_TIMEOUT_BASE_MS = 20_000;
 const SAVE_UPLOAD_BYTES_PER_SECOND = 16 * 1024;
 
@@ -352,10 +356,16 @@ export function createApiCore(config: ApiCoreConfig) {
 
   // Same as `expectOk`, but 404 means "doesn't exist" not "broken": used by read paths where a missing row is a
   // legitimate result the caller wants to handle (welcome flow, share-resolution etc.)
-  async function expectOkOrNull<T>(res: Response, action: string): Promise<T | null> {
+  // `expected`: a refusal the caller handles itself, thrown but never reported (an own-address load the index refused
+  // for a password: the editor opens it through the link instead, one-explorer-contracts.md "Reopened without the code").
+  async function expectOkOrNull<T>(
+    res: Response,
+    action: string,
+    expected?: (code: string | null) => boolean,
+  ): Promise<T | null> {
     if (res.status === 404) return null;
     if (!res.ok) {
-      throw await failedResponse(res, action);
+      throw await failedResponse(res, action, expected);
     }
     return (await res.json()) as T;
   }

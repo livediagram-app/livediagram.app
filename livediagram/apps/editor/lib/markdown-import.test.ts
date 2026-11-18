@@ -323,9 +323,13 @@ describe('buildTabFromMarkdown', () => {
 // Untrusted text stays linear: a long run of `[`, `![` or `<` once rescanned the line from each, and an emphasis
 // mark refused as no emphasis moves the scan on, never back.
 describe('cleanInline on hostile input', () => {
+  // 1,250 runs against 5,000, up to 25,000 characters. At 5,000 against 20,000 the emphasis passes read 6 to 7.3 with
+  // a small young generation (`--max-semi-space-size=1`), and over 8 on CI runners (Work Tracker 1127), where the same
+  // code timed alone in plain Node reads 4: the collector's share, not the scan, grew. At these sizes that run reads
+  // 3.6 to 6.1 and a plain one 3.5 to 4.5, while a link pass that rescans from each `[` still reads 15.
   it('costs about four times as much for four times the text, never sixteen', () => {
     for (const run of ['[', '![', '<', '[a](', '_a ', 'a_b ', '* a ', 'a__b ']) {
-      const ratio = growthOf(cleanInline, run.repeat(5_000), run.repeat(20_000));
+      const ratio = growthOf(cleanInline, run.repeat(1_250), run.repeat(5_000));
       expect(ratio, run).toBeLessThan(RATIO_CEILING);
     }
   });

@@ -144,7 +144,7 @@ its sessions and accounts.
 | ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | `liveworkspace/apps/accounts/src/otp-routes.test.ts` (2)      | the emailed sign-in code: only sign-in sends, unused routes are off                                                         |
 | `liveworkspace/apps/accounts/src/rate-limit.test.ts` (7)      | `overCodeLimit`; the network a code request comes from                                                                      |
-| `liveworkspace/apps/accounts/src/code-day.test.ts` (10)       | an address's day of codes, through Better Auth too                                                                          |
+| `liveworkspace/apps/accounts/src/code-day.test.ts` (15)       | an address's day of codes, through Better Auth too, at 23:59:59 and 00:00:01 on a pinned clock                              |
 | `liveworkspace/apps/accounts/src/sign-in-options.test.ts` (3) | sign-in options                                                                                                             |
 | `liveworkspace/apps/accounts/src/handoff.test.ts` (14)        | the sign-in pages on the app's address; the hand-off; where a sign-in may go back to; the app origin a request came through |
 | `liveworkspace/apps/accounts/src/auth-options.test.ts` (11)   | `withNames`; `idTokenClaims`; Google sign-in pictures                                                                       |

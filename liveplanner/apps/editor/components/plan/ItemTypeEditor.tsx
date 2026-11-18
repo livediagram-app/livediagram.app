@@ -86,6 +86,7 @@ export function ItemTypeEditor({
   template,
   types,
   itemCount,
+  nextNumber = 1,
   onSave,
   onDelete,
   onClose,
@@ -98,6 +99,9 @@ export function ItemTypeEditor({
   types: readonly ItemTypeDef[];
   // How many cards (out of the Trash) have this type: a delete says they go to the Trash with it.
   itemCount: number;
+  // The number the plan's next card takes: the Prefix hint's example reads it (item-types.md "Card number prefixes"); 1
+  // in a plan of no cards.
+  nextNumber?: number;
   // `retyped`: the built-ins made custom fields on this Save, new field id to built-in id (empty: none).
   onSave: (type: ItemTypeDef, retyped: Readonly<Record<string, string>>) => void;
   // Deletes the type and moves its cards to the Trash, once confirmed.
@@ -174,7 +178,7 @@ export function ItemTypeEditor({
   );
 
   // Its card prefix (item-types.md "Card number prefixes"), beside Name.
-  const prefix = useTypePrefixDraft(start, type, types, label);
+  const prefix = useTypePrefixDraft(start, type, types, label, nextNumber);
   const removedSome = start.fields.some((f) => !layout.fields.includes(f));
   const clash = others.some((t) => t.label.toLowerCase() === label.trim().toLowerCase());
   const draft = useMemo((): ItemTypeDef => {

@@ -34,6 +34,13 @@ through, and the gate says which. A room join carries no password: the grant the
   Plain text in the visitor's own browser matches the threat model: anyone able to read it can already open the
   canvas there. In an embed, browsers partition the iframe's storage, so the cache is per embedding site
   ([Read-only embeds](embeds.md)).
+- **Reopened by its own address.** A visitor who opened the canvas through a password-protected link and reopens it
+  by its own address (`/document/<id>`, from Shared with me, Recent or a bookmark) sends no code. The index's grant
+  refusal then names the link (`401 password_required` with `link`, liveworkspace
+  [one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "Reopened
+  without the code"), and `openOwnAddress` opens the canvas through that link: the password remembered under its code
+  opens it straight away, and with none (or a changed one) the password gate shows, never Not Found. Each try at the gate goes straight through that link, not the refused own-address load again, and that refusal is not counted as an api error. The address
+  stays the canvas's own; the visitor opens at the link's level and tab, carrying its code.
 - **Quiet while the gate is up.** The participant fetch, the capabilities check and the preferences sync wait until
   the gate passes, so a wrong password costs one request per attempt.
 - **A changed password ends link sessions.** Setting or changing it closes every room session a share code admitted

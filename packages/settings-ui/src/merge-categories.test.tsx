@@ -1,7 +1,12 @@
 // @vitest-environment jsdom
 import { fireEvent, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import {
+  cpuBudgetMs,
+  cpuGrowthRatio,
+  cpuMsOf,
+  cpuRatioCeiling,
+} from '@liveworkspace/vitest-config/cpu-time';
 import type { AppCatalogue, CatalogueRow } from '@liveworkspace/settings/catalogue';
 import { commonCatalogue } from '@liveworkspace/settings/common';
 import { CATALOGUE as LIVEDESIGN } from '@liveworkspace/settings/catalogues/livedesign';
@@ -51,6 +56,15 @@ const common = (categories: SettingsCategory[]): MergeSource => ({
 });
 
 const both = ['a.app', 'b.app'];
+
+// The large catalogue's growth checks: four times the categories, or the rows, under eight times the CPU, where a
+// quadratic step reads sixteen.
+const RATIO_CEILING = cpuRatioCeiling(8);
+// Merges of the large catalogue timed for its budget, the fastest kept: interference only adds CPU time.
+const BUDGET_RUNS = 5;
+// Merges a growth sample times together: one merge of a smaller catalogue takes about a millisecond, and timed alone
+// the same code read 2.0 to 6.5.
+const MERGES_A_SAMPLE = 4;
 
 describe('mergeAppCategories', () => {
   it('lists one category per place across Common and every app, nesting sub-categories the same way', () => {
@@ -296,42 +310,71 @@ describe('mergeAppCategories', () => {
     expect(searchSettings(onlyA, 'alignment').totalMatches).toBe(1);
   });
 
+  // Timed in CPU time, the fastest of several samples (cpuGrowthRatio warms each size and times them in turns), so the
+  // collector and a busy machine cannot pass for the merge: one merge of 40,000 rows timed once read 57 to 139 ms
+  // and failed 2 of 5 runs against 250 under load (Work Tracker 1127), where its fastest reads 22 to 26. Growth is
+  // checked both ways, more categories and more rows in each, so a quadratic step over either reads sixteen rather
+  // than hiding under the other's linear work. The rows switch through one plain function rather than a mock each:
+  // tens of thousands of mocks swelled the heap a full collection walks.
   it('stays linear on a large catalogue', () => {
-    const CATEGORIES = 400;
-    const ROWS = 25;
-    const source = (group: string) =>
-      app(
-        group,
-        Array.from({ length: CATEGORIES }, (_, c) => ({
-          id: `c${c}`,
-          label: `Category ${c}`,
-          ...(c % 4 ? { parent: `c${c - (c % 4)}` } : {}),
-          rows: Array.from({ length: ROWS }, (_, r) =>
-            // Half the rows are the same setting in every app, half each app's own, in five sections.
-            toggle(r % 2 ? `${group}-r${c}-${r}` : `r${c}-${r}`, `Row ${c}.${r}`, {
-              section: `Section ${r % 5}`,
-            }),
-          ),
-        })),
+    const noop = () => {};
+    // Four apps' catalogues of `categories` categories, every fourth one a parent, each holding `rows` rows: half the
+    // same setting in every app, half each app's own, in five sections.
+    const catalogue = (categories: number, rows: number) =>
+      ['a.app', 'b.app', 'c.app', 'd.app'].map((group) =>
+        app(
+          group,
+          Array.from({ length: categories }, (_, c) => ({
+            id: `c${c}`,
+            label: `Category ${c}`,
+            ...(c % 4 ? { parent: `c${c - (c % 4)}` } : {}),
+            rows: Array.from({ length: rows }, (_, r) =>
+              toggle(r % 2 ? `${group}-r${c}-${r}` : `r${c}-${r}`, `Row ${c}.${r}`, {
+                section: `Section ${r % 5}`,
+                onChange: noop,
+              }),
+            ),
+          })),
+        ),
       );
-    const sources = ['a.app', 'b.app', 'c.app', 'd.app'].map(source);
-    // Warm up, then time: 40,000 rows across 1,600 categories.
-    mergeAppCategories(sources, APPS_GROUP);
-    let merged: SettingsCategory[] = [];
-    const took = cpuMsOf(() => {
-      merged = mergeAppCategories(sources, APPS_GROUP);
-    });
-    expect(merged).toHaveLength(CATEGORIES);
+    // One sample: `merges` merges timed together, so the timer's noise reads small beside them.
+    const sample =
+      (sources: MergeSource[], only?: string, merges = 1) =>
+      () =>
+        cpuMsOf(() => {
+          for (let i = 0; i < merges; i++) mergeAppCategories(sources, APPS_GROUP, { only });
+        });
+    // Each side's larger input stays a few thousand categories or rows a category, so the collector stays out of it.
+    const growth = {
+      // Each app's 100 categories against 400, four rows each: 1,600 rows against 6,400.
+      categories: [catalogue(100, 4), catalogue(400, 4)],
+      // Each app's 250 rows a category against 1,000, in four categories: 4,000 rows against 16,000.
+      rows: [catalogue(4, 250), catalogue(4, 1000)],
+    };
+    for (const [side, [small, large]] of Object.entries(growth)) {
+      for (const only of [undefined, 'a.app']) {
+        const ratio = cpuGrowthRatio(
+          sample(small!, only, MERGES_A_SAMPLE),
+          sample(large!, only, MERGES_A_SAMPLE),
+          { ceiling: RATIO_CEILING },
+        );
+        expect(ratio, `${side}, ${only ?? 'every app'}`).toBeLessThan(RATIO_CEILING);
+      }
+    }
+    // The budget: 20,000 rows across 800 categories, the fastest of a few merges.
+    const large = catalogue(200, 25);
+    const merged = mergeAppCategories(large, APPS_GROUP);
+    expect(merged).toHaveLength(200);
     // Each category: 13 shared rows once, and 12 own rows for each of the 4 apps.
     expect(merged[0]!.rows).toHaveLength(13 + 12 * 4);
-    expect(took).toBeLessThan(cpuBudgetMs(250));
-    const onlyTook = cpuMsOf(() => {
-      merged = mergeAppCategories(sources, APPS_GROUP, { only: 'a.app' });
-    });
-    expect(merged[0]!.rows).toHaveLength(13 + 12);
-    expect(onlyTook).toBeLessThan(cpuBudgetMs(250));
-    // Three merges of 40,000 rows and the sources' build: more than the default 5 s on a loaded machine.
-  }, 30_000);
+    expect(mergeAppCategories(large, APPS_GROUP, { only: 'a.app' })[0]!.rows).toHaveLength(13 + 12);
+    for (const only of [undefined, 'a.app']) {
+      const fastest = Math.min(...Array.from({ length: BUDGET_RUNS }, sample(large, only)));
+      expect(fastest, only ?? 'every app').toBeLessThan(cpuBudgetMs(125));
+    }
+    // Up to thirty samples of each size four times over, and the sources' build: more than the default 5 s on a
+    // loaded machine.
+  }, 60_000);
 });
 
 describe('All in the Settings panel', () => {

@@ -434,8 +434,12 @@ export class DocumentRoom extends DurableObject<Env> {
     return joined(this, documentId, personId);
   }
 
-  anonymise(documentId: string, personId: string): Promise<number> {
-    return anonymise(this, documentId, personId);
+  anonymise(
+    documentId: string,
+    personId: string,
+    guestIds: readonly string[] = [],
+  ): Promise<number> {
+    return anonymise(this, documentId, personId, guestIds);
   }
 
   // Take the owner and team a grant names as the document's own copy. A failure is logged, never the caller's: the

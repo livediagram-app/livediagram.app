@@ -469,7 +469,7 @@ export async function applyItemChanges(
         const mine = await me();
         const held = itemAssistantOf(target);
         if (held?.id !== mine.id) {
-          const refused = handBackRefusal(target, mine);
+          const refused = handBackRefusal(target, mine, types);
           throw new Stop(refused.code, refused.message);
         }
         const person = assistantPersonOf(held);

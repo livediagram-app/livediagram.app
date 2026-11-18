@@ -10,6 +10,7 @@ import {
   labelUsage,
   linkedCardsOf,
   newItemId,
+  nextCardNumber,
   requiredFieldEmptied,
   typeIn,
 } from '@liveplanner/items';
@@ -94,6 +95,7 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
           {...(template ? { template } : {})}
           types={ctx.types}
           itemCount={ofType.length}
+          nextNumber={nextCardNumber(ctx.items.values())}
           onSave={(next, retyped) => {
             // A field whose type changed takes its cards' values and its filters with it, all or none, in the same
             // undo step (docs/specs/026-plan/item-types.md "Edit Field").
