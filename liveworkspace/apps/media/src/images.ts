@@ -1,7 +1,14 @@
 // The images index (liveworkspace/docs/specs/006-media/media.md "Storage"): one row per stored image, its bytes in R2
 // under the same id.
 
-import type { ImageSource, MediaApp, MediaImage, MediaUsage } from '@liveworkspace/media';
+import {
+  LIBRARY_REF_APP,
+  type ImageSource,
+  type MediaApp,
+  type MediaImage,
+  type MediaUsage,
+  type MediaUsageResponse,
+} from '@liveworkspace/media';
 import type { Env } from './env';
 
 export type ImageRow = {
@@ -114,17 +121,22 @@ export async function deleteImageRow(env: Env, id: string): Promise<void> {
   await env.MEDIA_DB.prepare('DELETE FROM images WHERE id = ?').bind(id).run();
 }
 
-// Which documents place each of the owner's images, in any app.
-export async function usageOf(env: Env, owner: string): Promise<MediaUsage> {
+// Which documents place each of the owner's images, in any app, and which of them a Library item holds
+// (libraries.md "Pictures": used, though no document places them). One read of the owner's references.
+export async function usageOf(env: Env, owner: string): Promise<MediaUsageResponse> {
   const { results } = await env.MEDIA_DB.prepare(
     `SELECT r.image_id, r.app, r.document FROM refs r JOIN images i ON i.id = r.image_id
-      WHERE i.owner = ? AND r.app != 'library' ORDER BY r.image_id, r.app, r.document`,
+      WHERE i.owner = ? ORDER BY r.image_id, r.app, r.document`,
   )
     .bind(owner)
-    .all<{ image_id: string; app: MediaApp; document: string }>();
+    .all<{ image_id: string; app: MediaApp | typeof LIBRARY_REF_APP; document: string }>();
   const usage: MediaUsage = {};
-  for (const r of results) (usage[r.image_id] ??= []).push({ app: r.app, document: r.document });
-  return usage;
+  const library = new Set<string>();
+  for (const r of results) {
+    if (r.app === LIBRARY_REF_APP) library.add(r.image_id);
+    else (usage[r.image_id] ??= []).push({ app: r.app, document: r.document });
+  }
+  return { usage, library: [...library] };
 }
 
 // A guest signed up: their images move to the account, in one statement, except those whose bytes the

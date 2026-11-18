@@ -6,6 +6,7 @@ import type {
   LibraryListResponse,
   LibraryPlaceResponse,
   MediaUploadResponse,
+  MediaUsageResponse,
 } from '@liveworkspace/media';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import worker from '../index';
@@ -233,6 +234,23 @@ describe('pictures', () => {
     // A second place reuses the copy (deduped by its bytes).
     await lib('place', { actor: actor('user_p', [MEMBER]), id: item.id });
     expect(galleryOf('user_p')).toHaveLength(1);
+  });
+
+  it('counts a picture only a Library item holds as used, apart from the documents placing it', async () => {
+    const held = await uploaded('user_u', png(3));
+    const loose = await uploaded('user_u', png(4));
+    const item = await saved({
+      actor: actor('user_u'),
+      scope: 'personal',
+      elements: [{ id: 'i', type: 'image', imageId: held.id, x: 0, y: 0, width: 40, height: 30 }],
+    });
+    const usage = async () =>
+      (await (await asDiagram('/app/usage?owner=user_u')).json()) as MediaUsageResponse;
+    expect(await usage()).toEqual({ usage: {}, library: [held.id] });
+    expect((await usage()).library).not.toContain(loose.id);
+    // Deleting the item lets the picture go.
+    await lib('delete', { actor: actor('user_u'), id: item.id });
+    expect(await usage()).toEqual({ usage: {}, library: [] });
   });
 
   it('keeps a Personal item naming the owner’s own picture, copying nothing', async () => {

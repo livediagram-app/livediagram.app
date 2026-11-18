@@ -59,6 +59,7 @@ describe('galleryUsage', () => {
         b: [{ id: 'd3', name: 'Poster', app: 'livedesign' }],
       },
       unchecked: [],
+      library: [],
     });
     expect(lookup).toHaveBeenCalledTimes(1);
     expect(lookup.mock.calls[0]![0]).toEqual(['d2', 'd1', 'd3']);
@@ -79,7 +80,11 @@ describe('galleryUsage', () => {
     ];
     expect(
       await galleryUsage(usage, withTheirs, { keep: (d) => d.ownerId === 'user_ada' }),
-    ).toEqual({ usage: { a: [{ id: 'd2', name: 'Brief', app: 'livedocuments' }] }, unchecked: [] });
+    ).toEqual({
+      usage: { a: [{ id: 'd2', name: 'Brief', app: 'livedocuments' }] },
+      unchecked: [],
+      library: [],
+    });
   });
 
   it('counts a document in the Trash as a use, marked, since a restore would bring the picture back', async () => {
@@ -88,7 +93,15 @@ describe('galleryUsage', () => {
     expect(await galleryUsage(usage, trashed)).toEqual({
       usage: { a: [{ id: 'binned', name: 'Old board', app: 'livediagram', trashed: true }] },
       unchecked: [],
+      library: [],
     });
+  });
+
+  it('passes on the pictures only a Library item holds, once each, with no lookup for them', async () => {
+    lookup.mockClear();
+    const answer = await galleryUsage({}, lookup, { library: ['p', 'p', 'q'] });
+    expect(answer).toEqual({ usage: {}, unchecked: [], library: ['p', 'q'] });
+    expect(lookup).not.toHaveBeenCalled();
   });
 
   it('marks images unchecked, not unused, when their lookup fails', async () => {
@@ -96,6 +109,7 @@ describe('galleryUsage', () => {
     expect(await galleryUsage(usage, () => Promise.reject(new Error('down')))).toEqual({
       usage: {},
       unchecked: ['a'],
+      library: [],
     });
   });
 
@@ -169,7 +183,7 @@ describe('galleryUsage', () => {
     const same = async (ids: string[]) =>
       ids.map((id) => doc(id, id === 'z' ? 'livediagram' : 'livedocuments', 'Same'));
     expect((await galleryUsage(usage, same)).usage.a!.map((u) => u.id)).toEqual(['z', 'x', 'y']);
-    expect(usageUnknown()).toEqual({ usage: {}, unchecked: [], unknown: true });
+    expect(usageUnknown()).toEqual({ usage: {}, unchecked: [], library: [], unknown: true });
   });
 
   it('marks the images past the bound unchecked, never unused', async () => {

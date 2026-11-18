@@ -471,6 +471,7 @@ describe('handleImages', () => {
           ],
         },
         unchecked: [],
+        library: [],
       });
     });
 
@@ -498,6 +499,23 @@ describe('handleImages', () => {
           ],
         },
         unchecked: [],
+        library: [],
+      });
+    });
+
+    // Work Tracker 1128: a picture only a Library item holds read "Not used", inviting its deletion.
+    it('lists a picture only a Library item holds as held, apart from the documents', async () => {
+      mediaImages(media, 'user_ada', ['a', 'b']);
+      media.sql
+        .prepare(
+          `INSERT INTO refs (app, document, image_id) VALUES ('library', 'item1', 'a'), ('livediagram.app', 'C', 'b')`,
+        )
+        .run();
+      index({ C: item('C', 'Board') });
+      expect(await (await call('GET', '/api/images/usage')).json()).toEqual({
+        usage: { b: [{ id: 'C', name: 'Board', app: 'livediagram' }] },
+        unchecked: [],
+        library: ['a'],
       });
     });
 
@@ -510,6 +528,7 @@ describe('handleImages', () => {
       expect(await (await call('GET', '/api/images/usage')).json()).toEqual({
         usage: {},
         unchecked: ['a'],
+        library: [],
       });
     });
 
@@ -522,6 +541,7 @@ describe('handleImages', () => {
       expect(await (await call('GET', '/api/images/usage')).json()).toEqual({
         usage: {},
         unchecked: [],
+        library: [],
         unknown: true,
       });
     });
@@ -531,6 +551,7 @@ describe('handleImages', () => {
       expect(await (await call('GET', '/api/images/usage')).json()).toEqual({
         usage: {},
         unchecked: [],
+        library: [],
       });
     });
   });

@@ -33,10 +33,13 @@ export type GalleryUse = {
 };
 
 /** Which items place each image, by image id (an image placed nowhere is absent), and the images whose usage could
- *  not be checked: listed, or 'all' when the usage could not be read at all. An unchecked image is never unused. */
+ *  not be checked: listed, or 'all' when the usage could not be read at all. An unchecked image is never unused.
+ *  `library`: the images a Library item holds (liveworkspace/docs/specs/006-media/libraries.md "Pictures"), used
+ *  though no item places them; absent from an older api. */
 export type GalleryUsage = {
   uses: Record<string, GalleryUse[]>;
   unchecked: ReadonlySet<string> | 'all';
+  library?: ReadonlySet<string>;
 };
 
 export type GalleryHost = {

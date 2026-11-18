@@ -13,16 +13,22 @@ import type { MediaUsage } from './wire';
 export type ImageUse = { id: string; name: string; app: AppName; trashed?: true };
 export type ImageUsage = Record<string, ImageUse[]>;
 
-/** The usage answer: the map, and the images with references but none named because their documents could not
- *  be checked (past the bound, or in a lookup that failed). Absent from both, an image is unused. */
-export type GalleryUsage = { usage: ImageUsage; unchecked: string[] };
+/** The usage answer: the map, the images with references but none named because their documents could not
+ *  be checked (past the bound, or in a lookup that failed), and the images a Library item holds (libraries.md
+ *  "Pictures": used, though no document places them). Absent from all three, an image is unused. */
+export type GalleryUsage = { usage: ImageUsage; unchecked: string[]; library: string[] };
 
 /** `GET /api/images/usage` as an app answers it: `unknown` when the usage could not be read at all (the service
  *  or the index unreachable), so every image is unchecked. An older client reads only `usage`. */
 export type GalleryUsageAnswer = GalleryUsage & { unknown?: true };
 
 /** The answer when nothing could be checked. */
-export const usageUnknown = (): GalleryUsageAnswer => ({ usage: {}, unchecked: [], unknown: true });
+export const usageUnknown = (): GalleryUsageAnswer => ({
+  usage: {},
+  unchecked: [],
+  library: [],
+  unknown: true,
+});
 
 /** A document as the index answers a lookup (an index `Item` is one): what the Gallery's rules read. */
 export type UsageDocument = {
@@ -61,7 +67,13 @@ export async function galleryUsage(
   {
     max = GALLERY_USAGE_DOCUMENTS_MAX,
     keep = () => true,
-  }: { max?: number; keep?: (document: UsageDocument) => boolean } = {},
+    library = [],
+  }: {
+    max?: number;
+    keep?: (document: UsageDocument) => boolean;
+    // The images a Library item holds, as the service answered them (MediaUsageResponse `library`).
+    library?: readonly string[];
+  } = {},
 ): Promise<GalleryUsage> {
   const key = (app: string, document: string) => `${app} ${document}`;
   const wanted = new Set<string>();
@@ -128,5 +140,5 @@ export async function galleryUsage(
         a.name.localeCompare(b.name) || a.app.localeCompare(b.app) || a.id.localeCompare(b.id),
     );
   }
-  return { usage: out, unchecked };
+  return { usage: out, unchecked, library: [...new Set(library)] };
 }

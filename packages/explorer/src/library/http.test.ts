@@ -28,7 +28,7 @@ describe("the Library's hosts over an app's API", () => {
   it("reads the gallery from the app's API by the workspace token, with each image's uses", async () => {
     const fetch = vi.fn(async (url: string) =>
       url.endsWith('/usage')
-        ? json({ usage: { i1: [{ id: 'd1', name: 'Roadmap' }] } })
+        ? json({ usage: { i1: [{ id: 'd1', name: 'Roadmap' }] }, library: ['i3'] })
         : json({
             images: [
               {
@@ -80,6 +80,7 @@ describe("the Library's hosts over an app's API", () => {
     const usage = await gallery.usage!();
     expect(usage.uses.i1![0]).toMatchObject({ id: 'd1', title: 'Roadmap' });
     expect(usage.uses.i1![0]!.href).toMatch(/\/document\/d1$/);
+    expect([...usage.library!]).toEqual(['i3']);
     const [url, init] = fetch.mock.calls[0] as unknown as [string, RequestInit];
     expect(url).toMatch(/livediagram.*\/api\/images$/);
     expect(new Headers(init.headers).get('Authorization')).toBe('Bearer tok');

@@ -4,7 +4,7 @@
 // apps' doors can't drift.
 //
 //   GET    /api/library               the list
-//   POST   /api/library               save `{ scope, teamId?, folder, title, width, height, elements }`
+//   POST   /api/library               save `{ scope, teamId?, folder, title, width, height, elements, pictures? }`
 //   POST   /api/library/:id/place     an item's elements, to place
 //   PUT    /api/library/:id           rename `{ title }`
 //   PUT    /api/library/folders       rename a folder `{ scope, teamId?, from, to }`
@@ -15,6 +15,7 @@ import {
   LIBRARY_ITEM_ELEMENTS_MAX,
   LIBRARY_PREVIEW_BYTES_MAX,
   isLibrarySide,
+  libraryPreviewPictures,
   normaliseLibraryFolder,
   normaliseLibraryTitle,
   type LibraryActor,
@@ -27,8 +28,9 @@ export type LibraryDoorKit = {
   kinds: ReadonlySet<string>;
   // The elements this app keeps of a list: each migrated, then checked; the ones that fail are left out.
   clean: (elements: readonly unknown[]) => unknown[];
-  // The elements drawn as an SVG by this app's server-side renderer, or null when it can't.
-  preview: (elements: readonly unknown[]) => string | null;
+  // The elements drawn as an SVG by this app's server-side renderer, or null when it can't; a picture is drawn from
+  // `pictures` (its small copy, by gallery id) where it has one, else as its name.
+  preview: (elements: readonly unknown[], pictures?: ReadonlyMap<string, string>) => string | null;
 };
 
 // An app's kit from its own parts: its kinds, its element migration and check, and its renderer.
@@ -36,12 +38,16 @@ export function libraryKitOf(parts: {
   kinds: ReadonlySet<string>;
   migrate: (elements: readonly unknown[]) => readonly unknown[];
   isValid: (element: unknown) => boolean;
-  render: (elements: readonly unknown[]) => string;
+  // `imageHref` is the renderer's ResolveImageHref: a picture's source by its gallery id, or undefined for its name.
+  render: (
+    elements: readonly unknown[],
+    imageHref: (imageId: string) => string | undefined,
+  ) => string;
 }): LibraryDoorKit {
   return {
     kinds: parts.kinds,
     clean: (elements) => parts.migrate(elements).filter((el) => parts.isValid(el)),
-    preview: (elements) => parts.render(elements),
+    preview: (elements, pictures) => parts.render(elements, (id) => pictures?.get(id)),
   };
 }
 
@@ -129,7 +135,7 @@ export async function handleLibraryDoor(input: LibraryDoorInput): Promise<Respon
     if (bytesOf(elements) > LIBRARY_ITEM_BYTES_MAX) return refuse('item_too_large', 413);
     let preview: string | null = null;
     try {
-      preview = kit.preview(elements);
+      preview = kit.preview(elements, libraryPreviewPictures(body.pictures, elements));
     } catch (error) {
       console.warn('[library] preview failed', { error: String(error) });
     }

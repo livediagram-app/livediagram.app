@@ -14,7 +14,13 @@ import { TrashIcon } from '../ui/icons';
 import { ImageIcon, UploadIcon } from '../ui/library-icons';
 import { isAbort } from '../data/errors';
 import { useBlobUrl } from './blobs';
-import { filterGallery, isUnchecked, UNKNOWN_USAGE, type GalleryFilter } from './gallery-filter';
+import {
+  filterGallery,
+  isLibraryHeld,
+  isUnchecked,
+  UNKNOWN_USAGE,
+  type GalleryFilter,
+} from './gallery-filter';
 import type { GalleryHost, GalleryImage, GalleryUsage, GalleryUse } from './types';
 import { quoted } from '../quoted';
 
@@ -121,6 +127,7 @@ export function GalleryContent({
     : 'grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4';
   const usageOf = (id: string) => (loaded.status === 'ready' ? (loaded.usage.uses[id] ?? []) : []);
   const uncheckedOf = (id: string) => loaded.status === 'ready' && isUnchecked(loaded.usage, id);
+  const heldOf = (id: string) => loaded.status === 'ready' && isLibraryHeld(loaded.usage, id);
   // One pass over at most the gallery's cap, again only when the list, its usage or the switch changes.
   const shown = useMemo(
     () => (loaded.status === 'ready' ? filterGallery(loaded.images, loaded.usage, filter) : []),
@@ -207,6 +214,7 @@ export function GalleryContent({
                 image={image}
                 usage={usageOf(image.id)}
                 unchecked={uncheckedOf(image.id)}
+                held={heldOf(image.id)}
                 kindMany={kindMany}
                 onDelete={() => setDeleting(image)}
               />
@@ -250,6 +258,7 @@ function GalleryCard({
   image,
   usage,
   unchecked,
+  held,
   kindMany,
   onDelete,
 }: {
@@ -258,6 +267,8 @@ function GalleryCard({
   usage: GalleryUse[];
   // Its usage couldn't be checked: neither used nor "Not used".
   unchecked: boolean;
+  // A Library item holds it: used, though nothing places it.
+  held: boolean;
   kindMany: { one: string; many: string };
   onDelete: () => void;
 }) {
@@ -304,7 +315,20 @@ function GalleryCard({
       </div>
       <div className="mt-1 flex flex-wrap items-center gap-1">
         {image.madeByAi ? <MadeByAiChip /> : null}
-        {usage.length === 0 ? (
+        {held ? (
+          <HoverCard
+            title="In Library"
+            description="A Library item holds this image, so it stays used while the item is kept."
+          >
+            <span
+              tabIndex={0}
+              className="inline-flex items-center rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-medium text-brand-700 dark:bg-brand-500/15 dark:text-brand-300"
+            >
+              In Library
+            </span>
+          </HoverCard>
+        ) : null}
+        {held && usage.length === 0 ? null : usage.length === 0 ? (
           <HoverCard
             title={unchecked ? 'Couldn’t check' : 'Not used'}
             description={

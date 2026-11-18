@@ -205,12 +205,18 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
 async function imageUsage(ctx: RouteContext, media: MediaClient, owner: string): Promise<Response> {
   const answered = await media.usage(await mediaOwner(owner));
   if (!answered.ok) return serviceAnswer(answered);
-  if (Object.keys(answered.value.usage).length === 0) return json({ usage: {}, unchecked: [] });
+  // Held by a Library item: used, though no document places them (libraries.md "Pictures").
+  const library = answered.value.library ?? [];
+  if (Object.keys(answered.value.usage).length === 0) {
+    return json({ usage: {}, unchecked: [], library });
+  }
   const client = clientFor(ctx);
   if (client instanceof Response) return client;
   // Gone, another app's id or not the caller's to open: the index leaves it out.
   return json(
-    await galleryUsage(answered.value.usage, async (ids) => (await client.lookupItems(ids)).items),
+    await galleryUsage(answered.value.usage, async (ids) => (await client.lookupItems(ids)).items, {
+      library,
+    }),
   );
 }
 

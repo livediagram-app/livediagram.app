@@ -325,6 +325,7 @@ describe('handleImages', () => {
           ],
         },
         unchecked: [],
+        library: [],
       });
     });
 
@@ -352,6 +353,7 @@ describe('handleImages', () => {
           ],
         },
         unchecked: [],
+        library: [],
       });
     });
 
@@ -364,6 +366,7 @@ describe('handleImages', () => {
       expect(await (await call('GET', '/api/images/usage')).json()).toEqual({
         usage: {},
         unchecked: ['a'],
+        library: [],
       });
     });
 
@@ -376,6 +379,7 @@ describe('handleImages', () => {
       expect(await (await call('GET', '/api/images/usage')).json()).toEqual({
         usage: {},
         unchecked: [],
+        library: [],
         unknown: true,
       });
     });
@@ -385,6 +389,7 @@ describe('handleImages', () => {
       expect(await (await call('GET', '/api/images/usage')).json()).toEqual({
         usage: {},
         unchecked: [],
+        library: [],
       });
     });
   });
