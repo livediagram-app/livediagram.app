@@ -76,23 +76,27 @@ function Pill({
 // Diagram's category bar, in order: category names, and '|' for the divider between the bands.
 const BAR: readonly string[] = [
   'Shapes',
+  'Write',
   'Draw',
   '|',
-  'Build',
+  'Diagrams',
   'Concepts',
+  'Layout',
   '|',
   'Icons',
   'Tech',
-  'Media',
 ];
-// A name's width at the strip's 8.5px type, and the padding either side of it. Tight enough that the whole
+// A name's width at the strip's 8px type, and the padding either side of it. Tight enough that the whole
 // strip, Search included, fits a 420-wide scene beside the menu card (the figure scan in help-pages.md).
-const charW = 4.5;
-const PAD = 5;
+const charW = 4.1;
+const PAD = 3.5;
+// A divider between the bands, and where the first category starts after the selection mode.
+const DIVIDER_W = 7;
+const LEAD = 47;
 const nameW = (name: string) => Math.round(name.length * charW + 2 * PAD);
 
 /** The width of the strip drawn by `Strip`. */
-export const STRIP_W = 49 + BAR.reduce((w, c) => w + (c === '|' ? 9 : nameW(c)), 0) + 36;
+export const STRIP_W = LEAD + BAR.reduce((w, c) => w + (c === '|' ? DIVIDER_W : nameW(c)), 0) + 30;
 
 /** The palette strip as Diagram's category bar, top-left corner at (x, y), STRIP_W wide and 32 tall: the selection
  *  mode, the categories by name (`open` pressed, its flyout showing), and Search. */
@@ -104,7 +108,7 @@ export function Strip({ x, y, open }: { x: number; y: number; open?: string }) {
       return (
         <path
           key={i}
-          d={`M${slot.left + 4} ${y + 8}v16`}
+          d={`M${slot.left + 3.5} ${y + 8}v16`}
           className="stroke-slate-200"
           strokeWidth={1}
         />
@@ -119,7 +123,7 @@ export function Strip({ x, y, open }: { x: number; y: number; open?: string }) {
         <Label
           x={at + w / 2}
           y={y + 19}
-          size={8.5}
+          size={8}
           weight={pressed ? 700 : 500}
           anchor="middle"
           className={pressed ? 'fill-brand-700' : 'fill-slate-600'}
@@ -154,14 +158,14 @@ export function Strip({ x, y, open }: { x: number; y: number; open?: string }) {
       {/* Search, last on the strip behind its own divider. */}
       <path d={`M${end + 5} ${y + 8}v16`} className="stroke-slate-200" strokeWidth={1} />
       <circle
-        cx={end + 19}
+        cx={end + 17}
         cy={y + 15}
         r={5}
         className="fill-none stroke-slate-500"
         strokeWidth={1.6}
       />
       <path
-        d={`M${end + 23} ${y + 19} l4 4`}
+        d={`M${end + 21} ${y + 19} l4 4`}
         className="stroke-slate-500"
         strokeWidth={1.6}
         strokeLinecap="round"
@@ -170,12 +174,12 @@ export function Strip({ x, y, open }: { x: number; y: number; open?: string }) {
   );
 }
 
-// Each of the bar's items on a strip drawn at x: its left edge and width (a divider is 9 wide).
+// Each of the bar's items on a strip drawn at x: its left edge and width (a divider is DIVIDER_W wide).
 function barSlots(x: number): { name: string; left: number; w: number }[] {
   return BAR.reduce<{ name: string; left: number; w: number }[]>((out, name) => {
     const prev = out.at(-1);
-    const left = prev ? prev.left + prev.w : x + 49;
-    return [...out, { name, left, w: name === '|' ? 9 : nameW(name) }];
+    const left = prev ? prev.left + prev.w : x + LEAD;
+    return [...out, { name, left, w: name === '|' ? DIVIDER_W : nameW(name) }];
   }, []);
 }
 

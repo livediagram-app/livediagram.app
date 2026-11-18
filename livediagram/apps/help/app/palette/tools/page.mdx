@@ -6,13 +6,13 @@ import { CommandPalette } from '@/components/illustrations/tips';
 export const metadata = helpMetadata({
   title: 'Palette Tools',
   description:
-    'Where each element lives in the palette: Write, Draw, Diagrams, Layout, Build, Components, Data, Collaborate, Media, Shapes, Icons, Stickers and Tech.',
+    'Where each element lives in the palette: Shapes, Write, Draw, Diagrams, Concepts, Layout, Data, Collaborate, Icons, Stickers and Tech, and search-only pieces.',
   path: '/help/palette/tools/',
 });
 
 <ArticleLayout
   title="Where each tool lives"
-  description="A map of the palette's categories: Build, Write, Draw, Components, Data, Collaborate, and Media, and where each tool lives."
+  description="A map of the palette's categories: Write, Draw, Diagrams, Layout, Data and Collaborate, and where each tool lives."
   categoryTitle="Palette"
   categorySlug="palette"
   subArticles={getSubArticles("tools")}
@@ -20,7 +20,7 @@ export const metadata = helpMetadata({
 
 The palette's tools are grouped into **categories**, each one press away on the palette strip. This page is a map of where each tool lives.
 
-The categories sit along the strip by name, in groups with a thin line between each: **Common**, **Structure**, **Decorate** and **Dynamic**, plus the session kit in Workshop mode. Rest on one, or click it, to see its elements.
+The categories sit along the strip by name, in groups with a thin line between each: **Common**, **Structure** and **Decorate**, plus the session kit and **Dynamic** (the charts) in Workshop mode. Rest on one, or click it, to see its elements.
 
 <Figure caption="The palette strip in Diagram mode: the selection mode, the categories by name, and Search.">
   <CommandPalette />
@@ -30,34 +30,35 @@ The categories sit along the strip by name, in groups with a thin line between e
 
 The palette is laid out per editor mode, so not every category appears everywhere:
 
-- **Diagram** (the default): Shapes, Write (text, notes, the Comment panel and the Action card), Draw (the pens and arrows), Build as two categories, **Diagrams** (mind nodes, org charts, flowcharts, sequence diagrams, tables, entities) and **Layout** (lanes, frames, stacks, boundaries, the diagram key, cards, badges and step numbers), after Concepts (with the Sankey and the Timeline), Icons, Tech and Media (Image and Avatar). **Library** (your shape libraries) joins Common once you have [imported a shape library](/help/explorer/shape-libraries/), and **Event Storming** joins Structure on an [Event Storming board](/help/canvas/event-storming-boards/).
-- **[Workshop](/help/canvas/workshop-mode/)**: Shapes, Write (text, notes, tables and checklists), Draw (the pens and arrows), Layout (as in Diagram, with the Timeline), then the session kit, **Ask**, and **Session**, which holds Tools, Record, React, Selection Mode and Navigate, then Icons (with a Stickers side), Media (Image and Avatar) and Data. Write and Draw leave out what a session does not need (Page, Annotation, Shape Pen, Polygon, Mind node, Flowchart and Sankey).
+- **Diagram** (the default): Shapes (with the BPMN notation), Write (pages, text, notes, annotations, pointer notes, the Callout, the Comment panel and the Action card), Draw (the pens and arrows), **Diagrams** (mind nodes, org charts, flowcharts, sequence diagrams, tables, entities and the C4 model's elements), **Concepts** (the concept graphics, the Timeline among them, and the Sankey), **Layout** (lanes, frames, stacks, boundaries, the diagram key, cards, badges and step numbers, then Image and Avatar), Icons and Tech. **Library** (your shape libraries) joins Common once you have [imported a shape library](/help/explorer/shape-libraries/), and **Event Storming** joins Structure on an [Event Storming board](/help/canvas/event-storming-boards/).
+- **[Workshop](/help/canvas/workshop-mode/)**: Shapes, Write (text, notes and pointer notes, then tables and checklists), Draw (the pens and arrows), Layout (as in Diagram, with the Timeline), then the session kit, **Ask**, and **Session**, which holds Tools, Record, React, Selection Mode and Navigate, then Icons (with a Stickers side) and Data. It leaves out what a session does not need: Page and Annotation from Write, the Shape Pen and Polygon from Draw, and the Diagrams, Concepts and Tech categories.
 - **[Draw mode](/help/canvas/draw-mode/)** swaps the palette for the whiteboard's own pens and shapes.
 
 Anything a mode leaves out is still one search away: the [search panel](/help/search-panel/the-search-panel/search-add-to-canvas/) (`⌘K` or `Ctrl+K`) can add any palette element by name, whatever the mode.
 
 ## Where each tool lives
 
-**Build** (in Diagram mode, **Diagrams** and **Layout**) holds the elements you lay a diagram out with, the ones that hold other work: **Mind Node** (Tab adds a child, Enter a sibling), **Table** (an editable grid of cells), **Lane** (a titled band that carries its steps) and **Frame** (a labelled box that groups a section, `F`). The **Timeline** is a [concept graphic](/help/palette/concept-graphics/timeline-rail/), in **Concepts**.
+**Diagrams** (Diagram mode) holds the structures that grow as you type: **Mind Node** (Tab adds a child, Enter a sibling), **Org Chart**, **Flowchart**, **Sequence Diagram**, **Table** (an editable grid of cells), **Entity**, and the C4 model's elements. **Layout** (both modes) holds what a diagram or board is arranged in: **Lane** (a titled band that carries its steps), **Frame** (a labelled box that groups a section, `F`), **Stack** and **Boundary**, then the **Diagram Key**, **Card**, **Badge** and **Step Number**, and at its end **Image** and **Avatar**. The **Timeline** is a [concept graphic](/help/palette/concept-graphics/timeline-rail/), in **Concepts** (in Workshop, which has no Concepts, it sits in Layout).
 
-**Write** holds the wordy elements: **Page** is a paper-sized sheet you write into, **Text** drops a free-standing label (`T`), **Note** is a coloured sticky note card (`N`), and **Annotation** is a small marker that holds a note. The coloured Event Storming workshop stickies live in [their own category](/help/palette/event-storming/), which appears on an Event Storming board.
+**Write** holds the wordy elements: **Page** is a paper-sized sheet you write into, **Text** drops a free-standing label (`T`), **Note** is a coloured sticky note card (`N`), **Annotation** is a small marker that holds a note, and **Pointer Note** is a note with a line out to the spot it is about. See [Write Elements](/help/palette/write/). The coloured Event Storming workshop stickies live in [their own category](/help/palette/event-storming/), which appears on an Event Storming board.
 
 **Draw** holds the gesture tools: **Freehand** (`P`) sketches a stroke and keeps it exactly as drawn, the **Shape Pen** (`6`) turns a rough sketch into a real shape, the **Highlighter** lays one wide translucent marker stroke, **Polygon** places straight-edged outlines point by point, **Arrow** (`A`) drops a connector with a pointer at its end that you position by hand, and **Line** drops the same without the pointer. See [Drawing and Sketch](/help/palette/tools/drawing/) and [Highlighter](/help/palette/tools/highlighter/).
 
-**Components** (on no palette strip; the strip's Search and the search panel add them) holds the ready-made pieces in three groups: **Layout** (Hero, Header, Banner and the Stack; Hero needs image uploads, like Image and Avatar), **Page Blocks** (Card, Badge, Step Number, Callout, Stat Row, Process) and **Code and Lists** (Code, Checklist). Entity is a Diagram element. In Diagram mode, **Entity** is in Build; add a **Code block** or a **Checklist** from the strip's Search or the search panel.
+**On no strip.** A few pieces are not in any category: the strip's Search and the search panel add them in any mode. They are the page blocks (**Hero**, **Header**, **Banner**, **Stat Row** and **Process**; Hero needs image uploads, like Image and Avatar), the **Code** block, the device frames (Browser, Monitor, Laptop, Phone, Tablet, Foldable and Watch) and the embeds. The **Checklist** is in Workshop's Write; in Diagram mode, search for it.
 
-**Data** (Workshop) holds the charts and meters: Pie, Bar, Line, Legend, Progress, Donut and Rating. See [Data and Chart Elements](/help/palette/tools/data-elements/).
+**Data** (Workshop) holds the charts and meters: Pie, Column, Line, Legend, Progress, Donut and Rating. See [Data and Chart Elements](/help/palette/tools/data-elements/).
 
 **Collaborate** (Workshop) is the elements that do something when somebody interacts with them, or that ask the room something, in six groups: **Ask** on the strip (dot vote, poll, quiz, estimate card, temperature check, idea box, Q&A board), and inside **Session**: **Tools** (timer, stopwatch, reveal zone, done check, picker), **Record** (comment panel, action panel, agenda, decision record, roll call), **React** (the five reaction pads), **Selection Mode** buttons, and **Navigate** (portal, bring focus, link card). See [Collaborate](/help/palette/behaviour/) and [Collaborate Elements](/help/palette/collaborate/).
 
-**Media** covers pictures and other people's pages: **Image** (`9`) and **Avatar**; the [embeds](/help/palette/embed-elements/) for YouTube, Vimeo, Loom, Figma, Google Docs and any website are added from the strip's Search or the search panel. Image and Avatar only appear where image uploads are available.
+**Pictures and embeds.** **Image** (`9`) and **Avatar** sit at the end of Layout, and only appear where image uploads are available. The [embeds](/help/palette/embed-elements/) for YouTube, Vimeo, Loom, Figma, Google Docs, any website, and the **Live Embed** (a canvas, plan, page or design from our other apps, shown live) are added from the strip's Search or the search panel.
 
 Each behaves like any other element once placed: select it, restyle it, multi-select it with others, and move it freely. Pick a tile and tap the canvas to drop the element at its default size, or drag to draw it at the size you want.
 
 <Note>
-  The palette is hidden for people with view-only access, since they can't add anything. See
-  [Toolbar Layout](/help/palette/toolbar-layout/) for how the strip shows the categories and opens
-  each one.
+  The palette is hidden for people with view-only access, since they can't add anything. A
+  Participant gets a single **Participate** category instead, holding the Sticky Note, Text and
+  Image tiles (on an Event Storming board, the notation's notes and Image). See [Toolbar
+  Layout](/help/palette/toolbar-layout/) for how the strip shows the categories and opens each one.
 </Note>
 
 ## Guides for these tools

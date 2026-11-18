@@ -5,69 +5,68 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Walkthroughs',
   description:
-    'Record yourself talking someone through the canvas, camera bubble and all, and let them play it back over the canvas, pausing to look around.',
+    'Record a video of yourself talking someone through the canvas, camera bubble and all, then let anyone who can open it watch, or share it by a public link.',
   path: '/help/collaboration/walkthroughs/',
 });
 
 <ArticleLayout
   title="Walkthroughs"
-  description="A recorded tour of the canvas: your voice, your camera and where you went, played back over the canvas as it is now."
+  description="A recorded video tour of the canvas: your voice, your camera and where you went, to watch in the editor or share by a link."
   categoryTitle="Collaboration"
   categorySlug="collaboration"
   subArticles={getSubArticles('walkthroughs')}
 >
 
-A walkthrough is a recording of you talking someone through the canvas. It keeps your voice, your camera if you leave it on (shown as a round bubble in a corner), your pointer, and every pan, zoom, tab change and slide step you make. Whoever plays it watches it over the canvas itself, not in a video, so they can pause, look around and resume.
+A walkthrough is a video of you talking someone through the canvas. It films this browser tab as you see it, with your voice and, if you turn it on, your camera in a round bubble in a corner. It is saved with the canvas for everyone who can open it, and you can share it with anyone by a public link.
 
-## Recording a walkthrough
+## Recording a Walkthrough
 
 <Step n={1}>
-  Open **Tools** in the footer, press **Walkthroughs**, then **Record Walkthrough**. The recording
-  dock opens at the bottom of the canvas.
+  Open **Tools** in the footer, press **Walkthroughs**, then **Record Walkthrough**. **Record a
+  Walkthrough** opens beside Tools.
 </Step>
 
 <Step n={2}>
   Pick your **Microphone**. The **Camera** switch starts off, so a walkthrough records your voice
   alone and the browser asks only for the microphone; turn it on to pick a camera and show yourself
-  in a round bubble. The dock remembers your choice in this browser. If the browser hasn't been
-  allowed to list your devices yet, press **Allow Microphone** (or **Allow Camera**) to ask it. The
-  level meter shows the microphone hears you.
+  in a round bubble, then pick its corner. The switch is remembered in this browser. If the browser
+  hasn't been allowed to list your devices yet, press **Allow Microphone** (or **Allow Camera**) to
+  ask it. **Mic Level** moves as you speak, so you know you are heard.
 </Step>
 
 <Step n={3}>
-  Press **Start Recording**. After a 3, 2, 1 countdown, talk and move around the canvas as you would
-  with someone beside you. Press **Finish** when you are done.
+  Press **Start Recording**. Your browser asks to share this tab: choose it. After a 3, 2, 1
+  countdown, talk and move around the canvas as you would with someone beside you. Press **Finish**
+  when you are done, or stop sharing from the browser's own bar.
 </Step>
 
 <Step n={4}>
-  Give it a **Title** and press **Save**. It is listed under Walkthroughs in Tools for everyone who
-  can open the canvas.
+  It saves straight away as "Walkthrough of" the tab you started on, and Tools opens at the
+  Walkthroughs list with it at the top. **Rename** it from its ⋯ menu.
 </Step>
 
-A walkthrough can run for up to ten minutes; the bar turns amber with a minute left and finishes on its own at ten. If saving is refused (it is too large, or you have reached your limit), the dock says why and offers **Download a Copy** so the recording isn't lost.
+A walkthrough can run for up to ten minutes; the time turns amber with "1 minute left" and the recording finishes on its own at ten. **Discard** in the recording bar throws it away, after asking. If your browser can't film its tab, or you don't share it, nothing is recorded and the set-up says so. If saving is refused (it is too large, the canvas already has 50 walkthroughs, or you have used all the walkthroughs you may keep), the card says why and offers **Try Again** and **Download a Copy**, so the recording isn't lost.
 
-## Hiding elements from the recording
+## Hiding Elements From the Recording
 
-Press **Hide From Recording** in the dock, then press each element viewers shouldn't see: a private note, an unfinished corner. **Hide Selection** hides what is already selected, and **Done** or `Esc` leaves the mode. You still see hidden elements, faded inside a dashed outline; people playing the walkthrough never do, and presses and pointer moves over them are left out of what is stored. They stay on the canvas itself for anyone who opens it.
+Before you start, press **Hide From Recording** in the set-up, then press each element viewers shouldn't see: a private note, an unfinished corner. Arrows attached to it go with it. **Hide Selection** hides what is already selected, and **Done** or `Esc` leaves the mode. While you set up you see hidden elements faded inside a dashed outline; while you record they are hidden from your screen too, so the video never shows them. They stay on the canvas itself for anyone who opens it. What is hidden can't be changed once recording starts.
 
-## Playing a walkthrough
+## Watching a Walkthrough
 
-Open **Tools** in the footer, press **Walkthroughs**, and press one to play it. The view follows the recording, fitted to your screen, with the presenter's pointer and their bubble in the corner.
+Open **Tools** in the footer, press **Walkthroughs**, and press one to watch it. It plays in a video player over the editor, with its title, length, who made it and when, **Full Screen**, and the browser's own video controls.
 
-- **Pause, look around, resume.** Pan, zoom or press on the canvas and it pauses, leaving the view with you. **Resume** puts the view back where the recording is and plays on.
-- **Keys.** `Space` plays and pauses, `←` and `→` skip five seconds, `Esc` closes. The bar also has a scrubber and a speed of 1x, 1.5x or 2x.
-- **Edited since recording.** If the canvas has changed since, a line says so and it still plays over the canvas as it is now.
+Walkthroughs recorded before videos came in play over the canvas itself: the view follows the recording, with the presenter's pointer and bubble. Pan, zoom or press on the canvas and it pauses, leaving the view with you; **Resume** plays on. `Space` plays and pauses, `←` and `→` skip five seconds, and `Esc` closes. If the canvas has changed since, a line says so and it plays over the canvas as it is now.
 
-Recorded while you present the slide deck, a walkthrough replays the deck too: it starts the presentation at the slide you were on, moves through the slides as you did, and leaves it when you left it.
+## Sharing a Walkthrough by Link
 
-Closing puts you back where you were.
+Press **Share** in the player, or **Share** on a walkthrough's ⋯ menu, and turn on **Public Link**. **Copy Link** copies it. Anyone with the link can watch the video without signing in: they see its title and who made it, never the canvas. Turn **Public Link** off and the link stops working at once; turning it on again makes a new one. A row with a link on shows a link mark. Only video walkthroughs can be shared this way.
 
-## Who can record and delete
+## Who Can Record and Manage
 
-Editors record walkthroughs and can delete any of them. Everyone who can open the canvas can play them, and anyone can delete one they recorded. Walkthroughs aren't offered on a phone, in an embed, for a canvas kept in **This Browser**, or through a link to one tab.
+Editors record walkthroughs, and can rename, share and delete any of them. Everyone who can open the canvas can watch them, and anyone can rename, share or delete one they recorded. Walkthroughs aren't offered on a phone, in an embed, in a workbench, for a canvas kept in **This Browser**, or through a link to one tab. Every walkthrough you have recorded is also listed in the Explorer, under **Walkthroughs** in the Library.
 
 ## Privacy
 
-Calls are never recorded. A walkthrough is only made when you press Start Recording, and it is stored with the canvas for the people who can open it. Deleting a walkthrough, purging its canvas from the Trash or deleting your account deletes it. See the [privacy policy](https://www.liveworkspace.app/privacy).
+Calls are never recorded. A walkthrough is only made when you press Start Recording and share the tab, and it is stored with the canvas for the people who can open it, or anyone you give its public link. Deleting a walkthrough, purging its canvas from the Trash or deleting your account deletes it. See the [privacy policy](https://www.liveworkspace.app/privacy).
 
 </ArticleLayout>

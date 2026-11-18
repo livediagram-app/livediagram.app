@@ -35,7 +35,7 @@ function ToolsFlyout({
         x={20}
         y={24}
         w={112}
-        items={['Style', 'Tools', 'Animation']}
+        items={['Appearance', 'Tools', 'Animation']}
         active={row === 'Tools' ? 1 : 2}
       />
       <Panel x={144} y={24} w={256} h={flyoutH}>

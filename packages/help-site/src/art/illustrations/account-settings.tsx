@@ -46,13 +46,13 @@ export function TrashView({ noun }: { noun: string }) {
       </Panel>
       <Panel x={14} y={154} w={392} h={62}>
         <Label x={30} y={176} size={11} weight={700} tone="strong">
-          This Browser only
+          Browser Storage
+        </Label>
+        <Label x={392} y={176} anchor="end" size={10} tone="muted">
+          Open one to restore or delete it.
         </Label>
         <Label x={30} y={198} size={10} tone="muted">
           Offline sketch · Deleted 3 Oct · 26 days left
-        </Label>
-        <Label x={392} y={176} anchor="end" size={10} weight={600} tone="muted">
-          Empty Trash
         </Label>
       </Panel>
     </Scene>
@@ -125,13 +125,13 @@ export function McpConsent({ product, noun }: { product: string; noun: string })
   );
 }
 
-/** Settings, Account, Notifications: the in-editor switch and the email
+/** Settings, Notifications (under the Account heading): the in-editor switch and the email
  *  switches a signed-in account gets, one whole-row toggle each. */
 export function NotificationSettings({ noun }: { noun: string }) {
   const rows: [string, boolean][] = [
-    [`Someone Joins My ${capital(noun)}`, true],
-    [`Someone Comments on My ${capital(noun)}`, true],
+    ['Someone Comments on My Work', true],
     ['Someone Mentions Me in a Comment', true],
+    [`Someone Joins My ${capital(noun)}`, true],
     ['Tips and Check-Ins', false],
   ];
   return (
@@ -141,7 +141,7 @@ export function NotificationSettings({ noun }: { noun: string }) {
         y={10}
         w={360}
         h={210}
-        title="Account › Notifications"
+        title="Notifications"
         sceneW={420}
         sceneH={230}
         scrim={false}
