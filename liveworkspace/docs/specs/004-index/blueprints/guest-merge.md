@@ -74,10 +74,10 @@ not taken`.
 
 ## Data and persistence
 
-| Table               | Key               | Indexes                                        | Written by                                   | Read by             |
-| ------------------- | ----------------- | ---------------------------------------------- | -------------------------------------------- | ------------------- |
-| `person_app_merges` | `(guest_id, app)` | `person_app_merges_due (last_attempt_at)`      | the merge                                    | `drainPersonMerges` |
-| `person_aliases`    | `guest_id`        | `person_aliases_person (person_id, merged_at)` | the merge; the person purge (deletes theirs) | grants (`aliases`)  |
+| Table               | Key               | Indexes                                        | Written by                                   | Read by                                                                      |
+| ------------------- | ----------------- | ---------------------------------------------- | -------------------------------------------- | ---------------------------------------------------------------------------- |
+| `person_app_merges` | `(guest_id, app)` | `person_app_merges_due (last_attempt_at)`      | the merge                                    | `drainPersonMerges`                                                          |
+| `person_aliases`    | `guest_id`        | `person_aliases_person (person_id, merged_at)` | the merge; the person purge (deletes theirs) | grants (`aliases`); the person purge (copies them to `person_notice_guests`) |
 
 Columns: `user_id`, `created_at`, `attempts` (default 0), `last_attempt_at`, and `legacy` (0006, `INTEGER NOT NULL
 DEFAULT 0`). `person_aliases` (0021): `person_id`, `merged_at`. The merge also writes every table listed in step 3 and

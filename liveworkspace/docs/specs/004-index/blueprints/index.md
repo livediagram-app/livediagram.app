@@ -160,7 +160,7 @@ closed, unreached }`.
 handoff 30 s). A `DELETE` answered `404` counts as done. Unconfigured is `app_not_configured`; else `status_<n>` or
 the error's name. Doors (`@liveworkspace/index-app` `internal.ts`): `DELETE /items/:id`, `POST /items/purge {ids}`,
 `POST /items/:id/revoke {codes, reason?}`, `POST /items/:id/notices`, `POST /items/:id/workbench-close`, `POST
-/items/:from/copy-to/:to {tabId?, by?, code?, ip?, title?}`, `POST /people/:id/purge {items}`, `POST /people/:guest/merge {into, legacy?}`, `PUT
+/items/:from/copy-to/:to {tabId?, by?, code?, ip?, title?}`, `POST /people/:id/purge {items, guests}`, `POST /people/:guest/merge {into, legacy?}`, `PUT
 /items/:id/migration`; and for previews and Drive, `GET /items/:id/export` and `POST /items/import`.
 
 ## Errors and edge cases
@@ -439,6 +439,7 @@ Migrations, in order:
 - `0021_person_aliases.sql`
 - `0022_access_requests.sql`
 - `0023_drop_favourites.sql` (drops the unread `favourites` table, Work Tracker 1199)
+- `0024_person_notice_guests.sql` (a closed account's merged guests, for its notices, Work Tracker 1241)
 
 | Table                  | Columns                                                                                                                                                                                                                                                                 | Created in                                       |
 | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
@@ -456,6 +457,7 @@ Migrations, in order:
 | `person_aliases`       | `guest_id`, `person_id`, `merged_at`                                                                                                                                                                                                                                    | `0021_person_aliases.sql`                        |
 | `person_app_merges`    | `guest_id`, `user_id`, `app`, `created_at`, `attempts`, `last_attempt_at`, `legacy (0006)`                                                                                                                                                                              | `0003_person_app_merges.sql`                     |
 | `person_app_notices`   | `person_id`, `app`, `item_id`, `created_at`, `attempts`, `last_attempt_at`                                                                                                                                                                                              | `0002_person_app_notices.sql`                    |
+| `person_notice_guests` | `person_id`, `guest_id`                                                                                                                                                                                                                                                 | `0024_person_notice_guests.sql`                  |
 | `person_purges`        | `person_id`, `team_ids`, `requested_at`, `finished_at`, `runs`                                                                                                                                                                                                          | `0001_index.sql`                                 |
 | `placement_defaults`   | `person_id`, `default_key`, `folder_id`, `updated_at`                                                                                                                                                                                                                   | `0001_index.sql`                                 |
 | `purge_tombstones`     | `item_id`, `app`, `created_at`, `attempts`, `last_attempt_at`, `last_error`                                                                                                                                                                                             | `0001_index.sql`                                 |
