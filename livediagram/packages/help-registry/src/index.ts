@@ -2386,6 +2386,17 @@ export const articles: Article[] = [
     categorySlug: 'canvas/links',
     parentSlug: 'links',
   },
+  {
+    slug: 'live-status',
+    title: 'Live Service Status',
+    description:
+      "A badge on a shape that shows whether its service's status URL says up, degraded or down.",
+    keywords:
+      'live status service health check uptime status page statuspage up down degraded outage architecture monitoring badge url',
+    category: 'Canvas',
+    categorySlug: 'canvas/links',
+    parentSlug: 'links',
+  },
 
   // ---- Sub-articles: Teams ----
   {

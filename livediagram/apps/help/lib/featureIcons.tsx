@@ -1245,6 +1245,14 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M6 16h12" />
     </Glyph>
   ),
+  // A service box with its status dot at the corner, and a pulse line through it: live status.
+  'live-status': (
+    <Glyph>
+      <rect x="3" y="4.5" width="15" height="12" rx="2" />
+      <path d="M6 10.5h2.5l1.5-3 2 6 1.5-3H15" />
+      <circle cx="18.5" cy="17" r="2.5" />
+    </Glyph>
+  ),
   'choosing-fonts': (
     <Glyph>
       <path d="M3 17.5L8 6.5l5 11" />

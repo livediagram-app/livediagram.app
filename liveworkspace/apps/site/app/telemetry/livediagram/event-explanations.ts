@@ -621,6 +621,9 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Grouped|': 'A multi-selection was grouped (before groups were removed).',
   'Element|Linked|ArrowPoint':
     "Someone dragged an arrow's end onto another element, pinning that end to it so the arrow follows if the element moves.",
+  'Element|Linked|LiveStatus':
+    "Someone bound a shape to a service's public status URL, so its badge shows whether the service is up.",
+  'Element|Cleared|LiveStatus': "Someone removed a shape's live status binding.",
   'Element|Linked|Document': 'Someone linked an element to another document.',
   'Element|Linked|Tab': 'Someone linked an element to another tab.',
   'Element|Linked|Url': 'Someone linked an element to a web address.',
@@ -2609,6 +2612,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Document|Used': 'A document was used in a particular way, such as with other people live in it.',
   'Element|Changed':
     "Someone changed a property of one or more selected elements, from a style panel, the right-click menu, or an element's own controls.",
+  'Element|Cleared': 'Someone cleared something off an element, such as its live status binding.',
   'Element|Copied': 'Someone copied one or more selected elements to the clipboard.',
   'Element|Deleted': 'An element was removed from the canvas.',
   'Element|Duplicated': 'Someone duplicated one or more elements on the canvas.',
