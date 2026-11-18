@@ -37,8 +37,7 @@ The same as review-loop (`.claude/skills/review-loop/SKILL.md`): the liveplanner
   Question cards: never make one, and never put a question or answer in a card's fields.
 - **The plan's Automations move some cards themselves** (`list_rules` lists them). A linked PR merging moves its
   card to Done. A PR opening moves a card to Implemented, and a PR closed unmerged flags the card with a comment,
-  but both skip In Progress, so this loop still moves its own cards to Implemented once verified (step 4), and a
-  Large card stays In Progress while its parts merge. Never redo or undo a rule's move or flag. A PR links its cards
+  but both skip In Progress, so this loop still moves its own cards to Implemented once verified (step 4). Never redo or undo a rule's move or flag. A PR links its cards
   only by naming them as "Work Tracker 12" in its title or body, so name every card the PR
   carries that way: the plan's name before each number ("Work Tracker 98, Work Tracker 110"), never a bare "#110" or
   "Work Item 110", and no `#` (GitHub would link it to its own issue 110).
@@ -63,8 +62,7 @@ them: read it with `list_items` `includeClosed: true` and `query` set to its tit
 landed, Cancelled is worth the report line).
 
 Also note every card in **In Progress** that no open PR names (`gh pr list --search "Work Tracker <n>"`). Those were left by a pass that died.
-Never touch them. List them in the report. The exception is a **Large** card between parts (step 3): it is In
-Progress with its last part's PR link and an open build plan thread, and this pass may pick up its next part.
+Never touch them. List them in the report.
 
 The column is the lock. A card is only picked up while it's in Selected for Development, and it moves to In
 Progress before any agent starts on it. So a pass that overlaps a slow earlier one never builds the same card
@@ -121,7 +119,7 @@ anything below it.
   model, API, MCP, schema or sharing change. Most Low-priority Bugs are Small.
 - **Standard:** everything else that one PR can carry and a reviewer can read in one sitting.
 - **Large:** a new document or page kind, a new data model with its own UI, or work that reaches the spec, the
-  API or MCP and more than one app at once (for example #13, Flashcards). It's built in parts (step 3).
+  API or MCP and more than one app at once (for example #13, Flashcards). It's built as one PR (step 3).
 
 **Pick each ready card's model.** A Sonnet build costs a fraction of an Opus one (median 6.6M input tokens
 against 40M over 2026-10-27 to 11-05), so send every card Sonnet can build well to Sonnet, and keep Opus for
@@ -186,13 +184,12 @@ run at the same time: hold the later one until the earlier one's agent has finis
 
 - **Model:** `model: "opus"` or `model: "sonnet"`, as step 2 picked. A Sonnet group takes up to four cards.
 - Each brief holds every card's section and Answers, and says which cards share a PR.
-- **Large cards:** one agent per pass, on Opus, builds **one part**. The first agent also writes the
-  build plan: two to five parts in order, each a PR against `main` that leaves main working on its own (the
-  spec and data model first, the visible entry points last, so nothing half-built is reachable). The coordinator
-  posts the plan as one thread on the card ("Build plan: part 1 of N ..."), resolved as it is posted (it asks
-  nothing), with each part's PR added as a reply when it opens, leaving it resolved. A later pass builds the next part only once the one before has merged
-  (`gh pr view <n> --json state`); while it's still open, leave the card alone. Each part's brief carries the
-  plan and the merged parts' PR links.
+- **Large cards are one PR, never parts** (owner, 2026-11-15: each part waited on the one before for hours or
+  days, ran CI again, and the owner reviews only the finished feature anyway). One agent on Opus builds the whole
+  card on one branch, in logical commits (spec, data model, api, UI), and the PR lists the commits so a reviewer
+  can follow them. A high-risk piece doesn't split it out: the PR takes `not-ready` with that reason, and the
+  owner reviews the complete feature once. A Large card already built partway in parts finishes everything left
+  in one PR (on the open part's branch, when one is still open).
 
 **Rework uses the open PR.** Before spawning, look for the card's open PR:
 `gh pr list -R "$REPO" --state open --json number,headRefName -q '.[] | select(.headRefName | test("^work/([0-9]+-)*<number>-")) | .number'`
@@ -249,8 +246,7 @@ data describing the work; then a **Start here** list: the files step 2 found (or
 where each part of the work lives, so the agent reads those first instead of exploring the repo; then an **Answers** section with every thread on the card, open and resolved: its
 title, its state, and every comment **verbatim**, with author and date and whether it is `ai`, oldest first):
 
-- Branch `work/<number>-<short-slug>` from `origin/main` (a Large card's part: `work/<number>-<short-slug>-p<k>`),
-  unless the brief names an open PR to rework: then work on that PR's branch. Read AGENTS.md, README.md, docs/structure.md, and the
+- Branch `work/<number>-<short-slug>` from `origin/main` unless the brief names an open PR to rework: then work on that PR's branch. Read AGENTS.md, README.md, docs/structure.md, and the
   AGENTS.md and specs of every product the work reaches.
 - **Read each file once.** Every call resends your whole context, so a call made late in the build costs about
   five times one made at the start. In past builds, reading code took 42% of an agent's tokens, and about two
@@ -464,12 +460,9 @@ as FAILED.
   **every** Acceptance Criteria item (`{"text": ..., "done": true}`, same text) and move the card to
   **Implemented**; the PR already names it, which links it. An Owner item is
   ticked only when its step is done; until then the PR keeps `not-ready` and the card's thread names it.
-  For a Large card's part, tick the items that part met, and keep it In Progress until the last
-  part ticks the rest; reply in the build plan thread with the part's PR.
 - **Close the thread loop** (on DONE): in one `change_threads` call, reply in each question thread whose answer
   this PR built, in one line: "Built in <PR url>: <how, short>". Then resolve every question thread the loop
-  started on the card that is now settled (for a Large card, only those its finished parts built, and the plan
-  thread after the last part). The owner hears through the Inbox that the card was built and where; a thread they
+  started on the card that is now settled. The owner hears through the Inbox that the card was built and where; a thread they
   must read but not answer never stays open (see "Open threads mean a reply is needed").
 - **Send simple follow-ups back first** (on DONE): any item on the Follow-ups list that the builder brief's
   "Simple follow-ups go in this PR" covers goes back to the same agent with SendMessage, to build on the open
@@ -513,8 +506,8 @@ If the MCP refuses a change, report it and carry on with the other cards.
 - **Open threads mean a reply is needed** (owner, 2026-11-09: threads left open for cancelled, merged and PR
   links "clutter my inbox"). An open thread is the owner's to-do, so the loop leaves one open only while it asks
   them something: an unanswered question, a FAILED card's unblock options, an answer it can't act on. Everything
-  else it posts is a notice and is resolved in the same `change_threads` call that posts it: build plans and
-  their part PR links, "Built in", "Decided", merged, cancelled, moved, blocked-by and status notes. A reply in a
+  else it posts is a notice and is resolved in the same `change_threads` call that posts it:
+  "Built in", "Decided", merged, cancelled, moved, blocked-by and status notes. A reply in a
   resolved thread leaves it resolved. Each pass, before step 4, sweeps the board in one `change_threads` batch
   (owner, 2026-11-10, again: the Inbox was still cluttered) and resolves every open thread a loop started (first
   comment `ai: true`, from this loop, review-loop or any other) that:
@@ -532,12 +525,12 @@ If the MCP refuses a change, report it and carry on with the other cards.
 
 - On the board, only ever do these: move Work Items from Selected for Development to Under Review or In
   Progress, from In Progress to Implemented or Development Failure, start question threads on those cards, reply in the loop's own threads and resolve
-  them once their answers are built, take a Large card's next part from In Progress, and add follow-up Work Items and Ideas
+  them once their answers are built, and add follow-up Work Items and Ideas
   to Under Review (step 4). Never
   edit titles, descriptions or other fields, never add Question cards, never resolve, edit or
   delete a thread or comment a person wrote, and never touch cards in any other column, except the step-4 sweep's
   one-line reply and resolve on a loop's own threads.
-- One open PR per Work Item, or per group of closely related ones (per part, for a Large card): rework goes onto it, and a follow-up opens only once
+- One open PR per Work Item, or per group of closely related ones : rework goes onto it, and a follow-up opens only once
   it has merged. Never open a PR for anything that isn't a selected card. Merging is the
   pr-loop's job.
 - Remove every worktree this pass made before it ends, and leave nothing listening on 3600 to 3719 that this
@@ -554,7 +547,7 @@ End each pass with a short table, plus one line on anything that went wrong:
 | #8 Suggest Statuses on a new board | Medium   | Implemented, PR #123             |
 | #15 Tour button left of Search     | Low      | Back to Under Review, 1 question |
 | #16 "Organise in Tab Folder" label | Low      | Development Failure, 1 question  |
-| #13 Flash Cards Feature            | High     | Part 1 of 4, PR #130             |
+| #13 Flash Cards Feature            | High     | Implemented, PR #130             |
 
 After the table, list what needs the owner's attention first, one line each: high-risk PRs (`not-ready`), PRs
 waiting on Owner steps (with the steps),
