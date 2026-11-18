@@ -7,6 +7,8 @@ import type { BlockingIndex } from './blocked-by';
 import { itemTitle, type Item, type ItemFieldValue } from './item';
 import { BUILT_IN_DATES, type ViewDates } from './view-fields';
 import { roleDay, roleDays } from './view-dates-write';
+import type { ItemTypeDef } from './item-types';
+import { cardRef } from './card-prefix';
 
 // Inclusive day numbers.
 export interface DaySpan {
@@ -39,9 +41,14 @@ export function ganttClashDays(
   return days >= 0 ? days : null;
 }
 
-// "Starts 3 days before #4 Design is due", or "Starts the day #4 Design is due".
-export function clashText(days: number, blocker: Pick<Item, 'key' | 'fields'>): string {
-  const named = `#${blocker.key} ${itemTitle(blocker).trim() || 'Untitled'}`;
+// "Starts 3 days before T-4 Design is due", or "Starts the day T-4 Design is due" ("#4" with no types to read its
+// prefix from).
+export function clashText(
+  days: number,
+  blocker: Pick<Item, 'key' | 'type' | 'fields'>,
+  types?: readonly ItemTypeDef[],
+): string {
+  const named = `${cardRef(blocker, types) || `#${blocker.key}`} ${itemTitle(blocker).trim() || 'Untitled'}`;
   if (days === 0) return `Starts the day ${named} is due`;
   return `Starts ${days} ${days === 1 ? 'day' : 'days'} before ${named} is due`;
 }

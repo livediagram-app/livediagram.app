@@ -9,6 +9,7 @@ import {
   type Item,
   type ItemTypeCatalogue,
   type ItemTypeDef,
+  cardRef,
 } from '@liveplanner/items';
 import type { ShapeElement, Tab } from './index';
 import { planBoardLayout } from './plan-board-layout';
@@ -37,11 +38,11 @@ export function tabExportItems(
   return out.sort((a, b) => a.key - b.key);
 }
 
-// `#12 Title (Task)`, a card as the Markdown outline lists it.
+// `T-12 Title (Task)`, a card as the Markdown outline lists it (its type's prefix: item-types.md "Card number prefixes").
 function cardLine(item: Item | undefined, types: readonly ItemTypeDef[]): string {
   if (!item) return '- _Card not found_';
   const title = itemTitle(item).trim() || 'Untitled';
-  return `- #${item.key} ${title} (${typeIn(types, item.type).label})`;
+  return `- ${cardRef(item, types) || `#${item.key}`} ${title} (${typeIn(types, item.type).label})`;
 }
 
 // The outline's Plan Boards and Plan Cards sections, top to bottom then left to right; empty when the tab has
