@@ -15,9 +15,10 @@ const STRIP_POPOVER_PX = 416;
 const INSIDE_SELECTOR = '[data-palette-dropdown-menu], [role="dialog"], [data-tour-popover]';
 
 /** Whether the primary pointer is a finger (phones, tablets), where focusing a field raises the on-screen keyboard:
- *  the rule every dialog follows too (useFocusTrap). Read once per opening, not subscribed. */
+ *  the rule every dialog follows too (useFocusTrap). Read once per opening, inside the focus effect, so always in a
+ *  browser; not subscribed. */
 export function touchScreen(): boolean {
-  return typeof window !== 'undefined' && !!window.matchMedia?.('(pointer: coarse)').matches;
+  return !!window.matchMedia?.('(pointer: coarse)').matches;
 }
 
 /** One strip popover's open state and where it hangs. `ownSelector` matches the popover and its
