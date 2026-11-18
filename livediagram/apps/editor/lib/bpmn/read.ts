@@ -100,7 +100,7 @@ const DI_TYPES = new Set(['BPMNDiagram', 'BPMNPlane', 'BPMNShape', 'BPMNEdge', '
 /** The file's elements and its first diagram's layout; throws BpmnRefused with the message to show. */
 export function readBpmn(text: string): BpmnFile {
   if (text.length > BPMN_MAX_FILE_BYTES) throw new BpmnRefused(BPMN_REFUSALS.tooLarge);
-  const trimmed = text.replace(/^﻿/, '').trim();
+  const trimmed = text.replace(/^\uFEFF/, '').trim();
   if (!trimmed.startsWith('<')) throw new BpmnRefused(BPMN_REFUSALS.notXml);
   const doc = parseInert(trimmed, 'application/xml');
   if (doc.getElementsByTagName('parsererror').length > 0)

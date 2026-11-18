@@ -92,7 +92,8 @@ and **Association**.
 - Search finds the tiles by "bpmn", "event", "gateway", "task", "pool", "message flow", "process" and the marker
   names.
 
-Workshop's Shapes keeps its own tiles: a session does not stop to draw BPMN.
+Workshop's Shapes keeps its own tiles, and Draw mode's shape catalogue leaves the BPMN group out: a session or a
+whiteboard does not stop to draw BPMN.
 
 ## Changing the symbol
 

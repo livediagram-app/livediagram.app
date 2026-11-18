@@ -233,8 +233,9 @@ describe('the keyboard', () => {
     expect(document.activeElement).toBe(
       within(flyout()!).getByRole('button', { name: 'Add Circle' }),
     );
+    // Diagram mode's Shapes ends with the BPMN group (docs/specs/009-elements/bpmn.md "The palette").
     fireEvent.keyDown(document.activeElement!, { key: 'End' });
-    expect(document.activeElement?.getAttribute('aria-label')).toBe('Add Speech Bubble');
+    expect(document.activeElement?.getAttribute('aria-label')).toBe('Add BPMN Association');
   });
 
   it('hands the focus back to the category on Escape', () => {

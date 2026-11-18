@@ -73,6 +73,13 @@ describe('a flyout’s groups', () => {
       'Basics',
       'Flowchart',
       'More Shapes',
+      'BPMN',
+    ]);
+    // Workshop's Shapes keeps its own three (docs/specs/009-elements/bpmn.md "The palette").
+    expect(flyoutGroups('shapes', tiles('workshop', 'shapes')).map((g) => g.title)).toEqual([
+      'Basics',
+      'Flowchart',
+      'More Shapes',
     ]);
     expect(flyoutGroups('draw', tiles('diagram', 'draw')).map((g) => g.title)).toEqual([
       'Pens',

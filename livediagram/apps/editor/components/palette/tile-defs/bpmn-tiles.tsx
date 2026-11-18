@@ -60,8 +60,8 @@ export const BPMN_TILES: PaletteTileDef[] = [
     section: 'bpmn',
     label: 'Add BPMN Task',
     caption: 'Task',
-    blurb: 'One piece of work',
-    description: `BPMN task. A rounded box for one piece of work; change its type to user, service, script or manual. ${BPMN_SEARCH}`,
+    blurb: 'One step of the work',
+    description: `BPMN task. A rounded box for one step of the work; change its type to user, service, script or manual. ${BPMN_SEARCH}`,
     filled: true,
     action: { type: 'shape', kind: 'square', variant: 'bpmn-task' },
     icon: (

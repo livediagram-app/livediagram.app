@@ -373,5 +373,8 @@ describe('importBpmn: a large worst-case file', () => {
     expect(result.tally.shapes).toBe(n);
     expect(result.tally.lines).toBe(0);
     expect(result.tally.leftOut).toBe(n - 1);
+    expect(JSON.stringify(bpmnImportOutcome(result.elements, result.tally))).toContain(
+      'Left out past the 2,000 element limit',
+    );
   });
 });

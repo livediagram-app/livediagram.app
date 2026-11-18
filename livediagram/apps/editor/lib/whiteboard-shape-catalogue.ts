@@ -43,8 +43,9 @@ export type WhiteboardShapeEntry = {
 };
 
 // The palette categories that are not shapes on a whiteboard (the spec's "not components"): Components, and the
-// Diagrams category's own tiles, the C4 model's elements, whose colours a board's plain ink would erase.
-const EXCLUDED_CATEGORIES = new Set(['components', 'diagrams']);
+// Diagrams category's own tiles, the C4 model's elements, whose colours a board's plain ink would erase, and the BPMN
+// notation (Diagram mode's alone, docs/specs/009-elements/bpmn.md "The palette").
+const EXCLUDED_CATEGORIES = new Set(['components', 'diagrams', 'bpmn']);
 
 // The palette tile behind each flyout shape that has one; Line and Arrow have none.
 const DOCK_TILE_KIND: Partial<Record<WhiteboardShapeId, ShapeKind>> = {
