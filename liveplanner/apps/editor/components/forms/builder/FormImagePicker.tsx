@@ -90,7 +90,7 @@ export function FormImagePicker({
         ) : (
           <ImageSearchPane
             ownerId={scope.ownerId}
-            documentId={scope.projectId}
+            itemId={scope.projectId}
             onPicked={(image, result) => {
               track('Form', 'Added', 'PictureSearch');
               const credit = creditFor(result)?.text;

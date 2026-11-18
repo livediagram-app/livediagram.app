@@ -29,22 +29,20 @@ export type ImageSearchDeps = {
    * Opens the editor's import session for a pick (its lib/import-images/browser), loaded on the first pick: the
    * pipeline's browser half is DOM-heavy.
    */
-  openImportSession: (ids: {
-    ownerId: string;
-    documentId: string;
-  }) => Promise<{ store: PickStore }>;
+  openImportSession: (ids: { ownerId: string; itemId: string }) => Promise<{ store: PickStore }>;
 };
 
 // Each editor binds it once, in its hooks/ui/useImageSearch.ts, with its telemetry and import session.
 export function createImageSearch({ track, openImportSession }: ImageSearchDeps) {
   return function useImageSearch({
     ownerId,
-    documentId,
+    itemId,
     onPicked,
     filters,
   }: {
     ownerId: string;
-    documentId: string;
+    // The id of the app's item (a diagram, document, plan...) whose gallery a pick is stored for.
+    itemId: string;
     // Told the stored picture and the result it came from.
     onPicked: (image: PickedImage, result: OpenverseImage) => void;
     // Openverse's shape and size filters (a page background's search); none in the picker.
@@ -135,7 +133,7 @@ export function createImageSearch({ track, openImportSession }: ImageSearchDeps)
         setPickError(null);
         let outcome: Awaited<ReturnType<typeof storeSearchResult>>;
         try {
-          const session = await openImportSession({ ownerId, documentId });
+          const session = await openImportSession({ ownerId, itemId });
           outcome = await storeSearchResult(
             result,
             (source) => session.store(source),
@@ -159,7 +157,7 @@ export function createImageSearch({ track, openImportSession }: ImageSearchDeps)
         track('Error', 'Warning', pickWarningType(outcome.failure));
         setPickError(pickFailureMessage(outcome.failure));
       },
-      [documentId, onPicked, ownerId, pickingId],
+      [itemId, onPicked, ownerId, pickingId],
     );
 
     return {

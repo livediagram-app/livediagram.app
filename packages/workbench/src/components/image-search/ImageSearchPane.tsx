@@ -45,7 +45,7 @@ type UseImageSearch = ReturnType<typeof createImageSearch>;
 export function createImageSearchPane(useImageSearch: UseImageSearch) {
   return function ImageSearchPane({
     ownerId,
-    documentId,
+    itemId,
     onPicked,
     filters,
     onPreview,
@@ -53,7 +53,7 @@ export function createImageSearchPane(useImageSearch: UseImageSearch) {
     autoFocus = true,
   }: {
     ownerId: string;
-    documentId: string;
+    itemId: string;
     onPicked: (image: PickedImage, result: OpenverseImage) => void;
     // Openverse's shape and size filters; the picker passes none.
     filters?: OpenverseFilters;
@@ -63,7 +63,7 @@ export function createImageSearchPane(useImageSearch: UseImageSearch) {
     autoFocus?: boolean;
   }) {
     const [draft, setDraft] = useState('');
-    const search = useImageSearch({ ownerId, documentId, onPicked, filters });
+    const search = useImageSearch({ ownerId, itemId, onPicked, filters });
     const grid = GRID_COLUMNS[columns];
     const loading = search.status === 'loading';
     // A new search swaps the grid for placeholders; a further page adds a row of them under it.

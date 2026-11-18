@@ -8,6 +8,9 @@ import { track } from '@/lib/telemetry';
 export const useImageSearch = createImageSearch({
   track,
   // The pipeline's browser half is DOM-heavy; load it on first pick.
-  openImportSession: async (ids) =>
-    (await import('@/lib/import-images/browser')).createBrowserImportImageSession(ids),
+  openImportSession: async ({ ownerId, itemId }) =>
+    (await import('@/lib/import-images/browser')).createBrowserImportImageSession({
+      ownerId,
+      documentId: itemId,
+    }),
 });
