@@ -1728,6 +1728,9 @@ whether the tab stands as a stack, not its kind. **Stack Pages** in Contents Opt
     caret out of sight again. A pan or zoom by hand still lets go
     onto a page.
   - For everyone who can see the pages, on a phone and a desktop alike; no setting.
+  - **At rest, said on the canvas**: once the tab has landed, with no glide under way and no rest's snap
+    waiting, the canvas carries `data-view-at-rest` (gone again the moment the view sets off), so whatever
+    reads where the view is (an end-to-end test) reads it settled, never between the landing and the glide.
 - **Back to the page you were on**: landing on a tab of pages (switching back to it, a reload) fits the page you were last on rather than the first, so moving between tabs
   never loses your place. The page you are on is the one under the middle of the view (else the
   nearest), taken once the view has rested for 400 ms (`LAST_PAGE_SETTLE_MS`), and

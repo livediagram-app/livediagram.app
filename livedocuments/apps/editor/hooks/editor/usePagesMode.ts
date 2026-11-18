@@ -154,6 +154,24 @@ export function usePagesMode(deps: {
   // the caret on a phone) glides there; the frame on entering the mode lands at once. A glide under
   // way gives way to the next, or to a finger's pan.
   const glide = useRef<(() => void) | null>(null);
+  // Whether the view is at rest on the tab (docs/specs/007-editor/pages-mode.md "Getting around the pages"): landed,
+  // with no glide under way and no rest's snap waiting. Marked on the canvas as `data-view-at-rest`, so a check of
+  // where the view is (an end-to-end test) reads it once it has come to rest, never mid-glide or before a snap.
+  const motion = useRef({ landed: false, gliding: false, snapping: false });
+  const markRest = () => {
+    const m = motion.current;
+    deps.canvasMainRef.current?.toggleAttribute(
+      'data-view-at-rest',
+      m.landed && !m.gliding && !m.snapping,
+    );
+  };
+  const stopGlide = () => {
+    glide.current?.();
+    glide.current = null;
+    if (!motion.current.gliding) return;
+    motion.current.gliding = false;
+    markRest();
+  };
   useEffect(() => () => glide.current?.(), []);
   // What shows of the canvas: below the Toolbar strip, beside the Contents panel wherever it sits
   // (docs/specs/007-editor/pages-mode.md "Contents"), so a page centres in what shows beside it.
@@ -182,10 +200,17 @@ export function usePagesMode(deps: {
     );
   };
   const glideTo = (to: ViewPose) => {
-    glide.current?.();
+    stopGlide();
+    motion.current.gliding = true;
+    markRest();
     glide.current = glideViewport(deps.getViewport(), to, {
       zoom: deps.setViewportZoom,
       offset: deps.setViewportOffset,
+      landed: () => {
+        glide.current = null;
+        motion.current.gliding = false;
+        markRest();
+      },
     });
   };
   // `lands`: the frame on landing on the tab, which never flips a card.
@@ -197,8 +222,7 @@ export function usePagesMode(deps: {
     const flips = !!page && stacksPages(pages, activeTab.pageArrangement);
     if (flips) toCard(page, !lands);
     const { zoom, offset } = frameFor(m, page, read);
-    glide.current?.();
-    glide.current = null;
+    stopGlide();
     if (glides && !flips) {
       glideTo({ zoom, offset });
     } else {
@@ -310,10 +334,13 @@ export function usePagesMode(deps: {
       else glideTo(to);
     },
     cancelGlide: () => {
-      glide.current?.();
-      glide.current = null;
+      stopGlide();
     },
     suspended: deps.snapSuspended ?? (() => false),
+    onRestPending: (pending) => {
+      motion.current.snapping = pending;
+      markRest();
+    },
     // The caret is in text on the canvas: an article's writing, or a label, cell or line being written on, which a
     // phone's keyboard pans into sight (useKeyboardAvoidance).
     writing: () =>
@@ -334,6 +361,8 @@ export function usePagesMode(deps: {
     const row = layOutPages(pagesOf(activeTab));
     frame(last.remembered(row) ?? row[0], false, false, true);
     last.arm();
+    motion.current.landed = true;
+    markRest();
   };
   // Centred on the page after the tab's own first fit (a frame later), so the page wins.
   const centre = useEffectEvent(frameLanding);
@@ -406,8 +435,7 @@ export function usePagesMode(deps: {
       true,
     );
   const panFrom = () => {
-    glide.current?.();
-    glide.current = null;
+    stopGlide();
     const from = deps.getViewport();
     return (dx: number, dy: number) =>
       deps.setViewportOffset({

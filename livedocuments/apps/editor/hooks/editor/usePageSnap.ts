@@ -67,6 +67,9 @@ export function usePageSnap(deps: {
   // a hand was moved for the caret (kept in sight, above a phone's keyboard), and is left where it is. A gesture
   // still snaps.
   writing?: () => boolean;
+  // Told when a rest's snap starts waiting (true) and when it stops (false: it ran, or a hand or the hook's end
+  // called it off), so the pages can say whether the view is at rest.
+  onRestPending?: (pending: boolean) => void;
 }): void {
   const latest = useLatest(deps);
   const { on, viewport } = deps;
@@ -82,6 +85,12 @@ export function usePageSnap(deps: {
     const pointers = new Set<number>();
     let timer: ReturnType<typeof setTimeout> | undefined;
     let raf = 0;
+    const stopTimer = () => {
+      if (timer === undefined) return;
+      clearTimeout(timer);
+      timer = undefined;
+      latest.current.onRestPending?.(false);
+    };
 
     const hereNow = () => {
       const m = latest.current.measure();
@@ -93,7 +102,7 @@ export function usePageSnap(deps: {
       });
     };
     const snap = (swipe: boolean) => {
-      clearTimeout(timer);
+      stopTimer();
       const d = latest.current;
       if (d.suspended() || canvasGestureNow() !== 'idle' || pointers.size > 0) return;
       const m = d.measure();
@@ -119,9 +128,14 @@ export function usePageSnap(deps: {
       d.glideTo(result.frame, result.pageId);
     };
     const settleSoon = () => {
+      if (latest.current.writing?.()) {
+        stopTimer();
+        return;
+      }
+      const waiting = timer !== undefined;
       clearTimeout(timer);
-      if (latest.current.writing?.()) return;
       timer = setTimeout(() => snap(false), VIEW_REST_MS);
+      if (!waiting) latest.current.onRestPending?.(true);
     };
     // A frame later, so the gesture's own last move (and its pointerup) has landed.
     const snapNextFrame = (swipe: boolean) => {
@@ -133,7 +147,7 @@ export function usePageSnap(deps: {
       const was = gesture;
       gesture = canvasGestureNow();
       if (was === 'idle' && gesture !== 'idle') {
-        clearTimeout(timer);
+        stopTimer();
         cancelAnimationFrame(raf);
         latest.current.cancelGlide();
         from = hereNow();
@@ -159,7 +173,7 @@ export function usePageSnap(deps: {
 
     const down = (e: PointerEvent) => {
       pointers.add(e.pointerId);
-      clearTimeout(timer);
+      stopTimer();
     };
     const up = (e: PointerEvent) => {
       if (!pointers.delete(e.pointerId) || pointers.size > 0) return;
@@ -181,7 +195,7 @@ export function usePageSnap(deps: {
     window.addEventListener('blur', lost);
     document.addEventListener('visibilitychange', lost);
     return () => {
-      clearTimeout(timer);
+      stopTimer();
       cancelAnimationFrame(raf);
       offGesture();
       offView();

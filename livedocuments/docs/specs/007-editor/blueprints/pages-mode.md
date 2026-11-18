@@ -274,6 +274,12 @@ cancels it), `cancelGlide`, and `suspended` (`snapSuspended`: `useEditorState` p
   `VIEW_REST_MS` timer that snaps without a swipe. Window capture `pointerdown` adds the pointer and
   clears the timer; `pointerup` / `pointercancel` removes it and, the last one gone, settles what was
   owed or restarts the timer; `blur` and `visibilitychange` forget held pointers.
+- **At rest** (`usePagesMode` `motion` ref: `landed`, `gliding`, `snapping`): the canvas main element toggles
+  `data-view-at-rest` to `landed && !gliding && !snapping` on each change. `landed` is set by the landing frame;
+  `gliding` is true from `glideTo` until `glideViewport`'s `landed` callback (never told after a cancel, so a
+  cancel through `stopGlide` clears it); `snapping` follows `usePageSnap`'s `onRestPending`, true when the
+  `VIEW_REST_MS` timer starts and false when it fires or is cleared (a gesture opening, a pointer down, the caret
+  in text, unmount). Read by `e2e/presentation-mode.spec.ts` before it takes the view to restore.
 - **Snap**: nothing while `suspended()`, a gesture is open, or a pointer is held. `pageSnap` picks
   `pageInView` beside the band; with a swipe (`from`, `velocity = flickVelocity(samples, now)`),
   when `from` is still that page and seen whole (`zoom <= fit x SNAP_FIT_TOLERANCE`), the band's

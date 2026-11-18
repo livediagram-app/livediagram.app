@@ -48,11 +48,27 @@ describe('glideViewport', () => {
     expect(frames).toHaveLength(0);
   });
 
+  it('says when it lands, and never after a cancel', () => {
+    const landed = vi.fn();
+    glideViewport(from, to, { zoom: () => {}, offset: () => {}, landed }, 240);
+    run(1120);
+    expect(landed).not.toHaveBeenCalled();
+    run(1240);
+    expect(landed).toHaveBeenCalledOnce();
+    const cancelled = vi.fn();
+    const cancel = glideViewport(from, to, { zoom: () => {}, offset: () => {}, landed: cancelled });
+    run(1100);
+    cancel();
+    expect(cancelled).not.toHaveBeenCalled();
+  });
+
   it('lands at once under reduced motion', () => {
     document.documentElement.classList.add('reduce-motion');
     const zoom = vi.fn();
     const offset = vi.fn();
-    glideViewport(from, to, { zoom, offset });
+    const landed = vi.fn();
+    glideViewport(from, to, { zoom, offset, landed });
+    expect(landed).toHaveBeenCalledOnce();
     expect(zoom).toHaveBeenCalledWith(0.8);
     expect(offset).toHaveBeenCalledWith({ x: 150, y: -30 });
     expect(frames).toHaveLength(0);
