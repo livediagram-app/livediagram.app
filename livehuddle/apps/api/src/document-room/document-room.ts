@@ -638,6 +638,9 @@ export class DocumentRoom extends DurableObject<Env> {
     // A verified account holds this session (X-Verified-Account): only such a session keeps a Google picture, and
     // its Attendance visits are not a guest's (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures").
     account = false,
+    // The API token whose ticket opened it (X-Verified-Api-Token, public-api-and-tokens.md "Revoking a token"):
+    // revoking the token closes it.
+    apiToken: string | null = null,
   ): void {
     ws.serializeAttachment(
       newSessionAttachment(
@@ -654,6 +657,7 @@ export class DocumentRoom extends DurableObject<Env> {
           adderKey,
           documentId,
           grantExp,
+          apiToken,
         },
         crypto.randomUUID(),
       ),

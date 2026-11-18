@@ -74,6 +74,9 @@ export type SessionAttachment = {
   //     row. The room is named after it, so every session carries the same value.
   adderKey?: string | null;
   designId?: string | null;
+  //   - `apiToken`: the API token whose ticket opened it (X-Verified-Api-Token, docs/specs/015-api/public-api-and-tokens.md
+  //     "Revoking a token"), so revoking the token closes exactly its sockets. Absent for every other session.
+  apiToken?: string | null;
   //   - `grantExp`: when the index's grant this session holds lapses (epoch ms), from X-Verified-Grant-Exp; the
   //     room asks for a fresh one ROOM_GRANT_ASK_BEFORE_MS before (`renewAsked`) and drops the socket after.
   //     Absent for a session admitted without one (tests).
@@ -83,6 +86,8 @@ export type SessionAttachment = {
 
 // A person tag is a SHA-256 hex digest; the clamp keeps a forged header from bloating the attachment.
 const MAX_PERSON_TAG_LEN = 64;
+// An API token id is a UUID; the clamp keeps a forged header from bloating the attachment.
+const MAX_API_TOKEN_ID_LEN = 64;
 // A workbench pairing id is a UUID.
 const MAX_PAIRING_ID_LEN = 36;
 // A design id is usually a UUID, but an API or MCP client may choose a longer one, up to the designs route's
@@ -102,6 +107,7 @@ type VerifiedSession = {
   workbenchPairing: string | null;
   adderKey: string | null;
   designId: string | null;
+  apiToken?: string | null;
   grantExp?: number | null;
   // The design's owner and team as the grant names them (null owner: a grant that names none). Not pinned to the
   // session: the room takes them as its own copy (design-room.ts takeHead).
@@ -134,6 +140,7 @@ export function verifiedSessionOf(request: Request): VerifiedSession {
     workbenchPairing: header('X-Verified-Workbench-Pairing'),
     adderKey: header('X-Verified-Adder'),
     designId: header('X-Verified-Design'),
+    apiToken: header('X-Verified-Api-Token'),
     grantExp: grantExpOf(request.headers.get('X-Verified-Grant-Exp')),
     head: { owner: header('X-Verified-Owner'), team: header('X-Verified-Team') },
   };
@@ -164,6 +171,7 @@ export function newSessionAttachment(v: VerifiedSession, presenceId: string): Se
     adderKey: v.adderKey?.slice(0, ADDER_KEY_LENGTH) ?? null,
     designId: v.designId?.slice(0, MAX_DESIGN_ID_LEN) ?? null,
     grantExp: v.grantExp ?? null,
+    ...(v.apiToken ? { apiToken: v.apiToken.slice(0, MAX_API_TOKEN_ID_LEN) } : {}),
   };
 }
 

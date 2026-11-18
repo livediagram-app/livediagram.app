@@ -26,7 +26,7 @@ import { deleteAccount } from '../db/account';
 import { purgePlanPreviews } from '../db/projects';
 import { mediaClient, mediaOwner } from '../media';
 import { planRoom } from '../plan-client';
-import { closeWorkbenchSessions } from '../room-access-client';
+import { closeTokenSessions, closeWorkbenchSessions } from '../room-access-client';
 import { reportServerEvent } from '../server-telemetry';
 import { importProjectFileFor } from './internal-file';
 import { projectFromTemplate } from './internal-template';
@@ -121,6 +121,8 @@ export function handleInternalItems(
         return planRoom(env, payload.id).importMigrated(payload);
       },
       workbenchClose: (id, pairingId) => closeWorkbenchSessions(env, id, pairingId),
+      // A revoked API token: the sockets its room tickets opened (public-api-and-tokens.md "Revoking a token").
+      tokenClose: (id, tokenId) => closeTokenSessions(env, id, tokenId),
       copy: async (from, to, tabId, copier, title) => {
         // The source as the copier may take it; through the plan's Community post's link, without its comments, its
         // people or its form responses' answers (community-redact.ts).

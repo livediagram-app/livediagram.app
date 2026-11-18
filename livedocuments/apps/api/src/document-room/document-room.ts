@@ -511,6 +511,7 @@ export class DocumentRoom extends DurableObject<Env> {
       v.account === true,
       v.collabKey ?? null,
       v.reactionPerson ?? null,
+      v.apiToken ?? null,
     );
     if (v.documentId) {
       this.bindDocument(v.documentId);
@@ -541,6 +542,9 @@ export class DocumentRoom extends DurableObject<Env> {
     // The person stamped on its reactions (X-Verified-Reaction-Person,
     // docs/specs/012-collaboration/comment-reactions.md).
     reactionPerson: string | null = null,
+    // The API token whose ticket opened it (X-Verified-Api-Token, public-api-and-tokens.md "Revoking a token"):
+    // revoking the token closes it.
+    apiToken: string | null = null,
   ): void {
     acceptSession(
       this,
@@ -555,6 +559,7 @@ export class DocumentRoom extends DurableObject<Env> {
       account,
       collabKey,
       reactionPerson,
+      apiToken,
     );
   }
 
