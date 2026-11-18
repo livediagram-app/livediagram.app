@@ -456,15 +456,21 @@ export const itemHandBack = defineVerb({
   input: z.object({ project: projectArg, item: itemArg }),
   output: lineOut,
   run: async (ctx, input) => {
-    const item = await changeOne(ctx, input.project, { op: 'hand_back', item: input.item });
+    const { item, types } = await changeOne(ctx, input.project, {
+      op: 'hand_back',
+      item: input.item,
+    });
     const person = item.fields['assignee'];
     const named =
       person && typeof person === 'object' && 'name' in person ? person.name : undefined;
     const name = typeof named === 'string' ? named : 'its person';
-    return { item: outOf(item), text: `~ ${itemSummary(item)} handed back to ${name}` };
+    return {
+      item: outOf(item, types),
+      text: `~ ${itemSummary(item, types)} handed back to ${name}`,
+    };
   },
   text: ({ text }) => [text],
-  quiet: ({ item }) => [`#${item.key}`],
+  quiet: ({ item }) => [item.ref],
   cli: {
     positionals: ['project', 'item'],
     examples: [
