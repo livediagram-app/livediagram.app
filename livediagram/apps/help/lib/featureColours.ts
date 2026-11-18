@@ -59,6 +59,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'multicolour-themes': '#ec4899',
   'multi-select': '#8b5cf6',
   'link-cards': '#10b981',
+  'live-status': '#10b981',
   'choosing-fonts': '#0284c7',
   // Canvas category: Undo / Redo
   undo: '#0ea5e9',
@@ -86,6 +87,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   collaborate: '#f59e0b',
   lanes: '#3b82f6',
   entities: '#0284c7',
+  bpmn: '#16a34a',
   'embed-elements': '#e11d48',
   behaviour: '#7c3aed',
   stickers: '#f43f5e',

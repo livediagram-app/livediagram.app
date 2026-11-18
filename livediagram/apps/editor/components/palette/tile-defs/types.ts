@@ -31,6 +31,8 @@ export type PaletteTileSection =
   // eight workshop note kinds, each an ordinary sticky in its semantic
   // colour.
   | 'event-storming'
+  // The BPMN notation (docs/specs/009-elements/bpmn.md): a group at the end of Diagram's Shapes, not a category.
+  | 'bpmn'
   | 'tools'
   | 'data'
   // 'collaborate' is GONE (docs/specs/010-palette/palette-top-level-categories.md). The collaboration family (docs/specs/012-collaboration/estimate-card.md to
@@ -81,7 +83,12 @@ type PaletteTileAction =
   | { type: 'sticker'; stickerId: string }
   | { type: 'polygon' }
   // `ends`: the Line tile's `'none'`; the Arrow tile leaves it to the tool's pointer at its end.
-  | { type: 'arrow'; ends?: import('@livediagram/document').ArrowEnds }
+  // `flow`: a BPMN line look (docs/specs/009-elements/bpmn.md "Lines"): the Message Flow and Association tiles.
+  | {
+      type: 'arrow';
+      ends?: import('@livediagram/document').ArrowEnds;
+      flow?: import('@livediagram/document').BpmnFlow;
+    }
   // `fill` rides the sticky action for the Event Storming tiles (docs/specs/021-event-storming/event-storming.md):
   // eight semantic colours over the one sticky type, one tile per note kind.
   // `fill` + `esKind` ride the sticky action for the Event Storming tiles

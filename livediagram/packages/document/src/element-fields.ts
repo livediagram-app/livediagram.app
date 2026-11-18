@@ -130,6 +130,7 @@ export const ELEMENT_FIELD_NAMES = {
     ...WEB_FIELDS,
     'marker',
     'markerSize',
+    'bpmn',
     'statusUrl',
     'aspectLocked',
     'opacity',

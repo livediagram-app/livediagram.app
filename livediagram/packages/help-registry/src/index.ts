@@ -127,7 +127,7 @@ export const categories: Category[] = [
     title: 'Palette',
     description:
       'Your launchpad for everything on the canvas: every element and palette setting explained.',
-    articleCount: 32,
+    articleCount: 33,
     kind: 'feature',
     groups: ['Everyday Elements', 'Diagram Kits', 'Workshop Kits', 'Palette Settings'],
   },
@@ -1139,6 +1139,17 @@ export const articles: Article[] = [
       'A title over fields with keys, joined field to field, for data models and class diagrams.',
     keywords:
       'entity class uml er erd record table schema model field attribute method database column inheritance aggregation composition fields popular primary foreign key pk fk unique relationship cardinality crows foot one many related',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Diagram Kits',
+  },
+  {
+    slug: 'bpmn',
+    title: 'BPMN',
+    description:
+      'Events, tasks, gateways, data and pools in BPMN 2.0, with message flows and a .bpmn import.',
+    keywords:
+      'bpmn bpmn2 business process model notation camunda bpmn.io signavio event start end intermediate timer message error terminate task user service script manual send receive sub-process subprocess gateway exclusive parallel inclusive xor and or data object data store pool lane message flow association workflow process modeler import',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Diagram Kits',
@@ -2382,6 +2393,17 @@ export const articles: Article[] = [
     title: 'Link Cards',
     description: 'Bookmark a URL as a card with title, favicon, and preview.',
     keywords: 'bookmark website url card preview embed reference',
+    category: 'Canvas',
+    categorySlug: 'canvas/links',
+    parentSlug: 'links',
+  },
+  {
+    slug: 'live-status',
+    title: 'Live Service Status',
+    description:
+      "A badge on a shape that shows whether its service's status URL says up, degraded or down.",
+    keywords:
+      'live status service health check uptime status page statuspage up down degraded outage architecture monitoring badge url',
     category: 'Canvas',
     categorySlug: 'canvas/links',
     parentSlug: 'links',

@@ -22,8 +22,11 @@ import {
   isRailShape,
   progressTrackColour,
   isRatingShape,
+  bpmnBodyGeometry,
+  bpmnSymbolOf,
   type ShapeKind,
 } from '@livediagram/document';
+import { BpmnMarkLayer } from '@/components/canvas/BpmnMarkLayer';
 import {
   SheetLinkLine,
   useChartAsSeen,
@@ -141,154 +144,177 @@ export function ShapeContentRouter({
         {node}
       </div>
     );
-  return element.type === 'shape' && element.shape === 'sticker' ? (
-    // Sticker (docs/specs/010-palette/stickers.md): its own die-cut art, drawn edge to edge. Takes no
-    // element colours and gets no caption band — a sticker says what it says
-    // in its own artwork.
-    // `animClass` carries the filter-based glow / pulse / trace (docs/specs/010-palette/stickers.md):
-    // a sticker's silhouette needs a drop-shadow, not the wrapper's
-    // box-shadow, which would ring its bounding rectangle.
-    art(<StickerView stickerId={element.stickerId} animClass={artAnimClass} />)
-  ) : element.type === 'shape' && element.shape === 'icon' && isTechIconId(element.iconId) ? (
-    // Technology (brand) icon: a fixed-colour tile + white glyph
-    // (docs/specs/010-palette/technology-icons.md). Same shape kind as a curated icon, but the id
-    // resolves in the tech catalogue, so it renders coloured rather
-    // than stroke-tinted.
-    art(
-      <TechIconGlyph
-        iconId={element.iconId}
-        hasLabel={iconCaptioned}
-        size={element.iconSize}
-        labelAlignX={element.textAlignX ?? 'center'}
-        labelAlignY={element.textAlignY ?? 'bottom'}
-        animation={element.iconAnimation}
-        animationSpeed={element.iconAnimationSpeed}
-        animationRepeat={element.iconAnimationRepeat}
-      />,
-    )
-  ) : element.type === 'shape' && element.shape === 'icon' ? (
-    // Curated glyph: line art tinted by the element's stroke
-    // colour. Rendered separately from ShapeSvgOverlay because it
-    // keeps aspect ratio (the catalogue art must not warp) and is
-    // data-driven by `iconId`.
-    art(
-      <IconGlyph
-        iconId={element.iconId}
+  const content =
+    element.type === 'shape' && element.shape === 'sticker' ? (
+      // Sticker (docs/specs/010-palette/stickers.md): its own die-cut art, drawn edge to edge. Takes no
+      // element colours and gets no caption band — a sticker says what it says
+      // in its own artwork.
+      // `animClass` carries the filter-based glow / pulse / trace (docs/specs/010-palette/stickers.md):
+      // a sticker's silhouette needs a drop-shadow, not the wrapper's
+      // box-shadow, which would ring its bounding rectangle.
+      art(<StickerView stickerId={element.stickerId} animClass={artAnimClass} />)
+    ) : element.type === 'shape' && element.shape === 'icon' && isTechIconId(element.iconId) ? (
+      // Technology (brand) icon: a fixed-colour tile + white glyph
+      // (docs/specs/010-palette/technology-icons.md). Same shape kind as a curated icon, but the id
+      // resolves in the tech catalogue, so it renders coloured rather
+      // than stroke-tinted.
+      art(
+        <TechIconGlyph
+          iconId={element.iconId}
+          hasLabel={iconCaptioned}
+          size={element.iconSize}
+          labelAlignX={element.textAlignX ?? 'center'}
+          labelAlignY={element.textAlignY ?? 'bottom'}
+          animation={element.iconAnimation}
+          animationSpeed={element.iconAnimationSpeed}
+          animationRepeat={element.iconAnimationRepeat}
+        />,
+      )
+    ) : element.type === 'shape' && element.shape === 'icon' ? (
+      // Curated glyph: line art tinted by the element's stroke
+      // colour. Rendered separately from ShapeSvgOverlay because it
+      // keeps aspect ratio (the catalogue art must not warp) and is
+      // data-driven by `iconId`.
+      art(
+        <IconGlyph
+          iconId={element.iconId}
+          stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)}
+          // Professional draws an icon that sets no weight thin (docs/specs/008-canvas/finish.md).
+          strokeWidth={
+            remoteBorderColor
+              ? ICON_REMOTE_HIGHLIGHT_PX
+              : iconWeightPx(finishIconWeight(element.iconWeight, finish))
+          }
+          hasLabel={iconCaptioned}
+          labelAlignX={element.textAlignX ?? 'center'}
+          labelAlignY={element.textAlignY ?? 'bottom'}
+          // Per-icon looping animation (docs/specs/008-canvas/canvas-and-palette.md). Picked from the icon context
+          // menu; undefined = static.
+          animation={element.iconAnimation}
+          animationSpeed={element.iconAnimationSpeed}
+          animationRepeat={element.iconAnimationRepeat}
+        />,
+      )
+    ) : element.type === 'shape' && isProgressShape(element.shape) ? (
+      // Progress elements (docs/specs/009-elements/progress.md): a bar / donut showing element.progress.
+      // The fill takes the stroke accent; the track takes the fill colour, else the paper's default.
+      <ProgressView
+        element={element}
+        accent={accent}
+        track={progressTrackColour(element, surface)}
+        textColor={textColor}
+      />
+    ) : element.type === 'shape' && isRatingShape(element.shape) ? (
+      // Rating (docs/specs/009-elements/rating.md): a row of stars showing element.rating.
+      <RatingView element={element} accent={accent} />
+    ) : element.type === 'shape' && isPieShape(element.shape) ? (
+      // Pie chart (docs/specs/009-elements/pie-chart.md): slices sized by value + a legend.
+      <>
+        <PieChartView
+          element={element}
+          fontFamily={fontFamily}
+          textColor={textColor}
+          palette={chartPalette}
+        />
+        <SheetLinkLine element={element} selected={!!isSelected} />
+      </>
+    ) : element.type === 'shape' && isBarShape(element.shape) ? (
+      // Bar chart (docs/specs/009-elements/pie-chart.md): bars sized by value + a legend.
+      <>
+        <BarChartView
+          element={element}
+          fontFamily={fontFamily}
+          textColor={textColor}
+          palette={chartPalette}
+        />
+        <SheetLinkLine element={element} selected={!!isSelected} />
+      </>
+    ) : element.type === 'shape' && isCodeBlockShape(element.shape) ? (
+      // Code block (docs/specs/009-elements/code-block.md): the fixed dark editor card. Deliberately takes
+      // no theme colours — the dark card is its identity.
+      <CodeBlockView element={element} />
+    ) : element.type === 'shape' && isLegendShape(element.shape) ? (
+      // Legend (docs/specs/009-elements/pie-chart.md): a key card of colour-coded rows, edited from the
+      // menu's Legend section.
+      <LegendView
+        element={element}
+        accent={accent}
+        fill={element.fillColor ?? defaultFillColor(element, surface)}
+        textColor={textColor}
+        fontFamily={fontFamily}
+        palette={chartPalette}
+      />
+    ) : element.type === 'shape' && isChecklistShape(element.shape) ? (
+      // Checklist (docs/specs/009-elements/checklist.md): themed card of checkbox rows; boxes toggle
+      // on-canvas for anyone with edit access (no select-first required).
+      <ChecklistView
+        element={element}
+        accent={accent}
+        fill={element.fillColor ?? defaultFillColor(element, surface)}
+        textColor={textColor}
+        fontFamily={fontFamily}
+        editable={!readOnly && !isLocked}
+        onToggle={onToggleChecklistItem}
+      />
+    ) : element.type === 'shape' && isSankeyShape(element.shape) ? (
+      // Sankey diagram (docs/specs/009-elements/sankey.md): flows between nodes, laid out in columns.
+      <SankeyView
+        element={element}
+        fontFamily={fontFamily}
+        textColor={textColor}
+        palette={chartPalette}
+        editable={!readOnly && !isLocked}
+        onCanvas
+      />
+    ) : element.type === 'shape' && isLineShape(element.shape) ? (
+      // Line chart (docs/specs/009-elements/pie-chart.md): multi-series lines + a legend.
+      <>
+        <LineChartView
+          element={element}
+          fontFamily={fontFamily}
+          textColor={textColor}
+          palette={chartPalette}
+        />
+        <SheetLinkLine element={element} selected={!!isSelected} />
+      </>
+    ) : element.type === 'shape' && isSvgRenderedShape(element.shape) && !isHandDrawn(finish) ? (
+      <ShapeSvgOverlay
+        shape={element.shape}
+        fill={element.fillColor ?? defaultFillColor(element, surface)}
         stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)}
-        // Professional draws an icon that sets no weight thin (docs/specs/008-canvas/finish.md).
         strokeWidth={
-          remoteBorderColor
-            ? ICON_REMOTE_HIGHLIGHT_PX
-            : iconWeightPx(finishIconWeight(element.iconWeight, finish))
+          remoteBorderColor ? 3 : BORDER_STROKE_PX[finishBorderStroke(element.strokeWidth, finish)]
         }
-        hasLabel={iconCaptioned}
-        labelAlignX={element.textAlignX ?? 'center'}
-        labelAlignY={element.textAlignY ?? 'bottom'}
-        // Per-icon looping animation (docs/specs/008-canvas/canvas-and-palette.md). Picked from the icon context
-        // menu; undefined = static.
-        animation={element.iconAnimation}
-        animationSpeed={element.iconAnimationSpeed}
-        animationRepeat={element.iconAnimationRepeat}
-      />,
-    )
-  ) : element.type === 'shape' && isProgressShape(element.shape) ? (
-    // Progress elements (docs/specs/009-elements/progress.md): a bar / donut showing element.progress.
-    // The fill takes the stroke accent; the track takes the fill colour, else the paper's default.
-    <ProgressView
-      element={element}
-      accent={accent}
-      track={progressTrackColour(element, surface)}
-      textColor={textColor}
-    />
-  ) : element.type === 'shape' && isRatingShape(element.shape) ? (
-    // Rating (docs/specs/009-elements/rating.md): a row of stars showing element.rating.
-    <RatingView element={element} accent={accent} />
-  ) : element.type === 'shape' && isPieShape(element.shape) ? (
-    // Pie chart (docs/specs/009-elements/pie-chart.md): slices sized by value + a legend.
-    <>
-      <PieChartView
-        element={element}
-        fontFamily={fontFamily}
-        textColor={textColor}
-        palette={chartPalette}
+        strokeDasharray={
+          BORDER_DASH_ARRAY[element.strokeStyle ?? DEFAULT_BORDER_STYLE] ?? undefined
+        }
+        aspect={element.height > 0 ? element.width / element.height : 1}
+        // trace / gradient / pulse / glow render against the true SVG
+        // geometry here; blink / bounce / wobble (shape-agnostic) stay on the
+        // wrapper. svgHandlesAnim above suppresses the wrapper class so these
+        // don't double up.
+        animation={svgAnim}
+        figure={element.shape === 'actor' ? actorFigureRect(element) : undefined}
+        geometry={bpmnBodyGeometry(element)}
       />
-      <SheetLinkLine element={element} selected={!!isSelected} />
-    </>
-  ) : element.type === 'shape' && isBarShape(element.shape) ? (
-    // Bar chart (docs/specs/009-elements/pie-chart.md): bars sized by value + a legend.
+    ) : null;
+  // A BPMN mark over the shape (docs/specs/009-elements/bpmn.md): drawn from the same parts the export draws.
+  const bpmn = element.type === 'shape' ? bpmnSymbolOf(element) : undefined;
+  if (!bpmn || element.type !== 'shape') return content;
+  return (
     <>
-      <BarChartView
-        element={element}
-        fontFamily={fontFamily}
-        textColor={textColor}
-        palette={chartPalette}
+      {content}
+      <BpmnMarkLayer
+        symbol={bpmn}
+        width={element.width}
+        height={element.height}
+        fill={
+          element.fillColor && element.fillColor !== 'transparent'
+            ? element.fillColor
+            : defaultFillColor(element, surface)
+        }
+        stroke={element.strokeColor ?? defaultStrokeColor(element, surface)}
       />
-      <SheetLinkLine element={element} selected={!!isSelected} />
     </>
-  ) : element.type === 'shape' && isCodeBlockShape(element.shape) ? (
-    // Code block (docs/specs/009-elements/code-block.md): the fixed dark editor card. Deliberately takes
-    // no theme colours — the dark card is its identity.
-    <CodeBlockView element={element} />
-  ) : element.type === 'shape' && isLegendShape(element.shape) ? (
-    // Legend (docs/specs/009-elements/pie-chart.md): a key card of colour-coded rows, edited from the
-    // menu's Legend section.
-    <LegendView
-      element={element}
-      accent={accent}
-      fill={element.fillColor ?? defaultFillColor(element, surface)}
-      textColor={textColor}
-      fontFamily={fontFamily}
-      palette={chartPalette}
-    />
-  ) : element.type === 'shape' && isChecklistShape(element.shape) ? (
-    // Checklist (docs/specs/009-elements/checklist.md): themed card of checkbox rows; boxes toggle
-    // on-canvas for anyone with edit access (no select-first required).
-    <ChecklistView
-      element={element}
-      accent={accent}
-      fill={element.fillColor ?? defaultFillColor(element, surface)}
-      textColor={textColor}
-      fontFamily={fontFamily}
-      editable={!readOnly && !isLocked}
-      onToggle={onToggleChecklistItem}
-    />
-  ) : element.type === 'shape' && isSankeyShape(element.shape) ? (
-    // Sankey diagram (docs/specs/009-elements/sankey.md): flows between nodes, laid out in columns.
-    <SankeyView
-      element={element}
-      fontFamily={fontFamily}
-      textColor={textColor}
-      palette={chartPalette}
-      editable={!readOnly && !isLocked}
-      onCanvas
-    />
-  ) : element.type === 'shape' && isLineShape(element.shape) ? (
-    // Line chart (docs/specs/009-elements/pie-chart.md): multi-series lines + a legend.
-    <>
-      <LineChartView
-        element={element}
-        fontFamily={fontFamily}
-        textColor={textColor}
-        palette={chartPalette}
-      />
-      <SheetLinkLine element={element} selected={!!isSelected} />
-    </>
-  ) : element.type === 'shape' && isSvgRenderedShape(element.shape) && !isHandDrawn(finish) ? (
-    <ShapeSvgOverlay
-      shape={element.shape}
-      fill={element.fillColor ?? defaultFillColor(element, surface)}
-      stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)}
-      strokeWidth={
-        remoteBorderColor ? 3 : BORDER_STROKE_PX[finishBorderStroke(element.strokeWidth, finish)]
-      }
-      strokeDasharray={BORDER_DASH_ARRAY[element.strokeStyle ?? DEFAULT_BORDER_STYLE] ?? undefined}
-      aspect={element.height > 0 ? element.width / element.height : 1}
-      // trace / gradient / pulse / glow render against the true SVG
-      // geometry here; blink / bounce / wobble (shape-agnostic) stay on the
-      // wrapper. svgHandlesAnim above suppresses the wrapper class so these
-      // don't double up.
-      animation={svgAnim}
-      figure={element.shape === 'actor' ? actorFigureRect(element) : undefined}
-    />
-  ) : null;
+  );
 }

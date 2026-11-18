@@ -9,6 +9,7 @@ import {
   stateOf,
   TIMEOUT_MS,
 } from '@liveworkspace/status';
+import { pooled } from '@liveworkspace/api-kit/pooled';
 import { PROBE_CONCURRENCY, USER_AGENT } from './config';
 
 export type Fetch = (request: Request) => Promise<Response>;
@@ -56,24 +57,6 @@ export async function probeOne(
   } finally {
     clearTimeout(timer);
   }
-}
-
-/** Run every task, at most `limit` at once, in their order. Each starts only when a slot is free, so a probe's clock
- *  starts when its request leaves. */
-export async function pooled<T>(
-  tasks: ReadonlyArray<() => Promise<T>>,
-  limit: number,
-): Promise<T[]> {
-  const out: T[] = Array.from({ length: tasks.length });
-  let next = 0;
-  async function lane() {
-    while (next < tasks.length) {
-      const i = next++;
-      out[i] = await tasks[i]!();
-    }
-  }
-  await Promise.all(Array.from({ length: Math.min(limit, tasks.length) }, lane));
-  return out;
 }
 
 export type ProbeTarget = { id: string; probe: Probe; url: string; fetch: Fetch };

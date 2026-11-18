@@ -373,6 +373,10 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: ['Bold', 'Italic', 'List', 'Heading'],
     open: 'the rich-text command a note applied',
   },
+  // The flyout's optional groups (category-flyout-groups OPTIONAL_GROUPS), BPMN alone today.
+  'apps/editor/components/palette/OptionalFlyoutGroup.tsx UI·Opened': {
+    values: ['BpmnGroup'],
+  },
   'apps/editor/components/palette/PaletteCategoryBrowser.tsx UI·Searched': {
     values: ['IconSearch', 'TechSearch', 'StickerSearch'],
   },

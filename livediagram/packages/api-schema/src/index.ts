@@ -262,6 +262,9 @@ export type CapabilitiesResponse = {
   // The Community's off switch (docs/specs/025-community/community.md "Turning the Community off"). Only an explicit
   // false hides it, so an older worker that omits it leaves the Community showing.
   communityEnabled?: boolean;
+  // Whether the document rooms check status URLs (docs/specs/009-elements/live-status.md "Scope"): true only with
+  // LIVE_STATUS_ENABLED "true". Optional so an older worker parses; absent reads as off.
+  liveStatusEnabled?: boolean;
 };
 
 // Per-day buckets for the trend charts on the dashboard. `days` is

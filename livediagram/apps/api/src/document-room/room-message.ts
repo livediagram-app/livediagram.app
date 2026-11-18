@@ -91,6 +91,8 @@ export function roomMessage(
     room.sendTo(ws, { kind: 'format', format: DOCUMENT_FORMAT, ...(build ? { build } : {}) });
     // The running poll, and every answer so far (docs/specs/012-collaboration/collab-race-hardening.md).
     for (const op of room.poll.replayOps()) room.sendTo(ws, { kind: 'op', from: 'system', op });
+    // The live status of the URLs bound on the tabs it may see (docs/specs/009-elements/live-status.md).
+    room.serviceStatus.join(ws);
     // A repeat hello that changes nothing on the roster sends nobody a new one, so one socket cannot make the
     // room rebuild every roster at the frame-rate cap. Nobody new is present either, so no multiplayer note.
     if (helloChangesRoster(session.presence, presence)) {

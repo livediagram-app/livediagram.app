@@ -82,6 +82,15 @@ const CONTENT_KINDS =
   'arrow end on an entity may add "field": a row index, with anchor "w" or "e", to join that field. ' +
   'shape "lane": a swimlane whose "label" is the title in its left strip; elements fully inside ' +
   'its box belong to it, lanes are placed one under another, and they paint behind everything. ' +
+  // BPMN (docs/specs/009-elements/bpmn.md).
+  'BPMN: "bpmn" marks a shape as a BPMN symbol drawn on its own kind: on a circle an event (start, ' +
+  'start-message, start-timer, intermediate, intermediate-message, intermediate-timer, intermediate-error, end, ' +
+  'end-message, end-error, end-terminate; about 48 px, its name a "text" under it), on a square a task (task, ' +
+  'task-user, task-service, task-script, task-manual, task-send, task-receive, task-business-rule, subprocess; ' +
+  'borderRadius md, its name the label), on a diamond a gateway (gateway, gateway-exclusive, gateway-parallel, ' +
+  'gateway-inclusive, gateway-event, gateway-complex; about 56 px), data-object on a "document", data-store on a ' +
+  '"cylinder". A pool is a lane. A message flow is an arrow with strokeStyle dashed, arrowEnds both, ' +
+  'arrowheadStartShape circle-hollow and arrowheadShape triangle-hollow; an association is dotted with arrowEnds none. ' +
   'shape "bar-chart" / "pie-chart": "pieSlices" is [{ "label", "value" }]; categories show in ' +
   'the legend. shape "line-chart": "lineCategories" is the x labels, "lineSeries" is ' +
   '[{ "name", "values" }] with one value per category. "chartVariant" picks the chart type: ' +
@@ -152,7 +161,8 @@ const STYLE_FIELDS =
   'and dash-dot as named: theme, soft, ' +
   'tinted, solid, bold, ghost, paper, muted, slate, inked, hairline, outline, dotted, dash-dot, frame, info, ' +
   'success, warning, danger, highlight); "iconId" (an id from search_icons) with "iconPosition"; "note" (detail ' +
-  'shown on the element); on text, wordmark type: "letterSpacing" (em between letters, -0.2 to 1), ' +
+  'shown on the element); "statusUrl" on a shape (a public https status or health URL; while the document is ' +
+  'open its badge shows Up, Degraded or Down; no IP address or internal host, never a secret); on text, wordmark type: "letterSpacing" (em between letters, -0.2 to 1), ' +
   '"fontWeight" (400, 500, 700), "textCase" (upper, lower), "textArc" (bends one line along a circle, -360 to ' +
   '360 degrees, positive bowing up: a badge\u2019s top line 180, its bottom -180); on an arrow "label", ' +
   '"strokeStyle", "arrowEnds", "arrowheadShape" (an ER line\u2019s ends: one, zero-or-one, many, zero-or-many, ' +

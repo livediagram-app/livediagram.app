@@ -216,6 +216,14 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M7.5 12h9M7.5 16h9" />
     </Glyph>
   ),
+  // A start event flowing into a gateway diamond: the BPMN notation at a glance.
+  bpmn: (
+    <Glyph>
+      <circle cx="5.5" cy="12" r="3" />
+      <path d="M8.5 12h3.5" />
+      <path d="M17 7l5 5-5 5-5-5z" />
+    </Glyph>
+  ),
   'embed-elements': (
     <Glyph>
       <rect x="3" y="5" width="18" height="14" rx="2" />
@@ -1243,6 +1251,14 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <rect x="6" y="7.5" width="5" height="5" rx="1" />
       <path d="M13.5 9h4.5M13.5 12h3" />
       <path d="M6 16h12" />
+    </Glyph>
+  ),
+  // A service box with its status dot at the corner, and a pulse line through it: live status.
+  'live-status': (
+    <Glyph>
+      <rect x="3" y="4.5" width="15" height="12" rx="2" />
+      <path d="M6 10.5h2.5l1.5-3 2 6 1.5-3H15" />
+      <circle cx="18.5" cy="17" r="2.5" />
     </Glyph>
   ),
   'choosing-fonts': (

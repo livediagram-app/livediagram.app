@@ -44,7 +44,8 @@ through `@liveworkspace/index-app` `createTeamAccess` `currentTeams`, as every a
 the claim lacks, with the role accounts gives. The answer is remembered for 2 seconds (`MISS_RECHECK_MS`), so one
 editor's burst of calls is one ask. The teams come only from accounts or the signed token, never from the browser; a
 guest has none. When accounts can't be reached the claim stands. Leaving a team takes effect when the token is next
-minted, as everywhere else.
+minted, as everywhere else. In the editor, each opening of Save to Library asks for the list again (one ask per opening,
+never a poll), so a team joined after the palette or the dialog first loaded is offered without a reload.
 
 | Action                              | Personal  | A team library                 |
 | ----------------------------------- | --------- | ------------------------------ |

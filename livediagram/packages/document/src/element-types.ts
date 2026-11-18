@@ -16,6 +16,7 @@ import type {
 } from '@liveworkspace/model-core/border-style';
 import type { ElementShadow } from './shadow';
 import type { ShapeMarker } from '@liveworkspace/model-core/shape-marker';
+import type { BpmnSymbol } from './bpmn';
 import type { AccentEdge } from './accent-edge';
 import type { CardMedia } from './card';
 import type { ChipLook } from './chip';
@@ -510,6 +511,10 @@ export type ShapeElement = {
   // is a TextSize preset where 'scale' tracks the element's text size (never a px: a marker is a dot).
   marker?: ShapeMarker;
   markerSize?: TextSizePreset;
+  // BPMN (docs/specs/009-elements/bpmn.md): the symbol this shape draws, its mark over its own kind (an event on a
+  // circle, a task on a square, a gateway on a diamond, a data object on a document, a data store on a cylinder).
+  // Drawn only on its own kind (`bpmnSymbolOf`); absent = an ordinary shape.
+  bpmn?: BpmnSymbol;
   // Live service status (docs/specs/009-elements/live-status.md): the public https URL the document's room checks
   // while it is open, shown as a read-only badge. An Editor's alone (the participant rule keeps it as stored);
   // absent = unbound. Checked by `isStatusUrl` in validate-shape.ts.

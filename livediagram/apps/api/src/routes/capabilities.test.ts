@@ -23,6 +23,14 @@ describe('aiEnabled (docs/specs/021-event-storming/note-reader.md)', () => {
   });
 });
 
+describe('liveStatusEnabled (docs/specs/009-elements/live-status.md "Scope")', () => {
+  it('is on only when LIVE_STATUS_ENABLED is "true"', async () => {
+    expect((await capabilities({})).liveStatusEnabled).toBe(false);
+    expect((await capabilities({ LIVE_STATUS_ENABLED: '1' })).liveStatusEnabled).toBe(false);
+    expect((await capabilities({ LIVE_STATUS_ENABLED: 'true' })).liveStatusEnabled).toBe(true);
+  });
+});
+
 describe('the route', () => {
   it('is only GET', () => {
     const res = handleCapabilities(

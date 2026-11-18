@@ -119,6 +119,18 @@ scrolling when long:
 Shapes`; `Pens`, `Outlines`, `Connectors`; `Diagrams`, `Layout and Parts`; `Charts`, `Meters`; `Desktop`,
   `Mobile`; `Pictures`, `Embeds`, `People`; ...). A category shows its groups only when every one is named, else one
   block, so a layout whose dividers fall elsewhere never shows half its groups headed and half bare.
+- **Optional groups** (owner, 2026-11-18): a notation group a specialist wants and most people scroll past (today
+  only Diagram's **BPMN**) shows as a **header row, closed by default**, so the flyout stays clean until someone
+  asks for more. The row is one button: the group's name and hairline as any group heading, its tile count as a
+  `CountBadge`, and a chevron that turns when open; a soft plate while closed, flat once open. Pressing it opens the
+  tiles in place, under the row, and pressing it again closes them. **Open or closed is remembered in this browser**
+  (`livediagram:v2:palette-group-open:<group>` in localStorage, `useStoredOpen` in `@liveworkspace/workbench`), so
+  an opened group stays open through page reloads until it is closed again; with storage blocked it still opens and
+  closes, for the visit. The row is a button with `aria-expanded` and `aria-controls`; a closed body is inert and
+  hidden from assistive tech, so the arrow keys stop on the row and skip its tiles, and Enter or Space toggles it.
+  On a touch screen the row is 44 px tall. **Search** ("Search: every element type") lists the group's tiles
+  whether it is open or not. Opening one reports `UI`/`Opened`/`<Group>Group` (`BpmnGroup`); a close reports
+  nothing. Another optional group needs only its first tile's entry in the flyout's list of optional groups.
 - **Pictures or cards**, by the palette's own rule ([Rows, not tiles](../010-palette/palette-top-level-categories.md#rows-not-tiles-for-most-categories)):
   Shapes as a five-column grid of 72 px picture tiles with their names under them; every other category as cards,
   the glyph on a plate beside the name and its one-line blurb, two to a row (one, in a narrower flyout, for a
@@ -291,7 +303,8 @@ every add.
 **Fixed dividers** split a category into its groups of related tiles (a tile's `dividerAfter`):
 
 - **Shapes**: the basics (Square, Circle, Diamond) | the flowchart shapes (Cylinder to Stadium) |
-  the rest (Cloud to Bubble).
+  the rest (Cloud to Bubble); Diagram's adds **BPMN** (Start Event to Association,
+  [BPMN](../009-elements/bpmn.md)) as a fourth group, an optional one, closed until opened ("Optional groups").
 - **Write**: Page, Text | Note, Annotation; Diagram's adds Pointer note and Callout to the notes, then Comment,
   Action as a third group, **Comments**.
 - **Draw**: Freehand, Shape Pen | Polygon | Arrow, Line.

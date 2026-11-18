@@ -9,6 +9,7 @@ import {
   ACTOR_VIEWBOX,
   PADDING_PX,
   actorNameRoom,
+  bpmnNameSitsUnder,
   labelFontPx,
   type ArrowElement,
   type Element,
@@ -72,6 +73,9 @@ function buildShape(
     boxHeight: box.height,
   });
   const caption = actorCaption ? actorCaptionBox(cell, box, text, ctx) : null;
+  // A BPMN event's, gateway's or data element's name sits under it as its own text (convert-page's caption), as BPMN
+  // writes it; the symbol keeps no label.
+  const nameOutside = !!cls.bpmn && bpmnNameSitsUnder(cls.bpmn) && labelSitsOutside(cell);
   return {
     id,
     type: 'shape',
@@ -86,6 +90,8 @@ function buildShape(
     ...(shapeName(cell.style) === 'endState' ? { strokeWidth: 'thick' as const } : {}),
     ...text,
     ...(caption ? { textAlignX: caption.textAlignX, textAlignY: caption.textAlignY } : {}),
+    ...(cls.bpmn ? { bpmn: cls.bpmn } : {}),
+    ...(nameOutside ? { label: '' } : {}),
   };
 }
 
@@ -195,6 +201,13 @@ function buildImage(cell: DrawioCell, rect: Rect, ctx: PageContext, id: string):
   };
 }
 
+/** Whether draw.io draws the cell's label outside its box (beside, above or below it). */
+export function labelSitsOutside(cell: DrawioCell): boolean {
+  const side = cell.style.str('labelPosition');
+  const vside = cell.style.str('verticalLabelPosition');
+  return side === 'left' || side === 'right' || vside === 'top' || vside === 'bottom';
+}
+
 /**
  * An image's label drawn outside it in draw.io (below by default): a `text` element in the band the
  * caption needs on that side; null when the label is empty or sits on the picture.
@@ -207,7 +220,7 @@ export function buildImageCaption(
 ): TextElement | null {
   const side = cell.style.str('labelPosition');
   const vside = cell.style.str('verticalLabelPosition');
-  const outside = side === 'left' || side === 'right' || vside === 'top' || vside === 'bottom';
+  const outside = labelSitsOutside(cell);
   const text = textProps(cell, ctx, { ...LABEL, outsideMovesIn: false });
   if (!outside || !text.label) return null;
   const { box, textAlignX, textAlignY } = captionBox(cell, rect, text.label, text.textSize, ctx);

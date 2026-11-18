@@ -4,7 +4,13 @@
 // graphic, a boundary, a badge or step number, a stack, a sequence diagram, a pointer note, a card and the web
 // components' rows. Split out of ElementDataSections, which renders it in the same place in the flyout.
 
-import { isConceptShape, type ConceptShape, type ShapeElement } from '@livediagram/document';
+import {
+  bpmnSymbolOf,
+  isConceptShape,
+  type ConceptShape,
+  type ShapeElement,
+} from '@livediagram/document';
+import { BpmnMenuSection } from '@/components/palette/BpmnMenuSection';
 import { CardMenuSection } from '@/components/palette/CardMenuSection';
 import { ChipMenuSection } from '@/components/palette/ChipMenuSection';
 import { PointerNoteMenuSection } from '@/components/palette/PointerNoteMenuSection';
@@ -33,8 +39,13 @@ export function ElementLayoutToolSections({
   isChip: boolean;
   sectionProps: Scaffold['sectionProps'];
 }) {
+  const bpmn = shapeTarget ? bpmnSymbolOf(shapeTarget) : undefined;
   return (
     <>
+      {/* A BPMN element's symbol (docs/specs/009-elements/bpmn.md "Changing the symbol"). */}
+      {bpmn ? (
+        <BpmnMenuSection symbol={bpmn} ops={props.elementStyle} sectionProps={sectionProps} />
+      ) : null}
       {/* Web components (docs/specs/009-elements/web-components-and-no-groups.md): a stat row's cards, a process's
         steps, a header's links: add / remove / reorder. */}
       {/* A concept graphic's variant; its animation is in the Animation row (docs/specs/009-elements/concept-graphics.md). */}

@@ -623,6 +623,9 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Grouped|': 'A multi-selection was grouped (before groups were removed).',
   'Element|Linked|ArrowPoint':
     "Someone dragged an arrow's end onto another element, pinning that end to it so the arrow follows if the element moves.",
+  'Element|Linked|LiveStatus':
+    "Someone bound a shape to a service's public status URL, so its badge shows whether the service is up.",
+  'Element|Cleared|LiveStatus': "Someone removed a shape's live status binding.",
   'Element|Linked|Document': 'Someone linked an element to another document.',
   'Element|Linked|Tab': 'Someone linked an element to another tab.',
   'Element|Linked|Url': 'Someone linked an element to a web address.',
@@ -1127,6 +1130,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Imported|Drawio':
     'Someone imported a draw.io file: its first page into a tab, any further pages as new tabs.',
   'Tab|Imported|Excalidraw': 'Someone imported a tab from an Excalidraw file.',
+  'Tab|Imported|Bpmn': 'Someone imported a tab from a BPMN file (.bpmn) made in a process modeler.',
   'Tab|Imported|Wrangler':
     'Someone drew an architecture diagram in a tab from a Cloudflare wrangler.toml file.',
   'Tab|Imported|Compose':
@@ -1548,6 +1552,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone opened Diagram mode's Tidy Up button in the bottom bar, the panel of layout styles and Auto-align. What they then picked counts as a tab being auto-arranged.",
   'UI|Opened|BehaviourGroup':
     "Someone opened one of Session's groups (Tools, Record, React, Selection Mode or Navigate) on Workshop mode's palette strip. Earlier, a category inside the palette's Collaborate tab (formerly Behaviours), before Workshop offered those categories one by one and then gathered them into Session.",
+  'UI|Opened|BpmnGroup':
+    "Someone opened the BPMN section at the end of Diagram mode's Shapes flyout, which stays closed until opened.",
   'UI|Opened|CanvasStyle':
     "Someone opened the tab's look-and-feel dialog on its Canvas tab, to change the background.",
   'UI|Opened|CollabGroup':
@@ -2612,6 +2618,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Document|Used': 'A document was used in a particular way, such as with other people live in it.',
   'Element|Changed':
     "Someone changed a property of one or more selected elements, from a style panel, the right-click menu, or an element's own controls.",
+  'Element|Cleared': 'Someone cleared something off an element, such as its live status binding.',
   'Element|Copied': 'Someone copied one or more selected elements to the clipboard.',
   'Element|Deleted': 'An element was removed from the canvas.',
   'Element|Duplicated': 'Someone duplicated one or more elements on the canvas.',

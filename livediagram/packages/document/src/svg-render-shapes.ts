@@ -7,6 +7,7 @@
 // without a scaled stroke. A silhouette changes in the table, never here.
 import { BORDER_DASH_ARRAY, BORDER_STROKE_PX } from '@liveworkspace/model-core/border-style';
 import { actorFigureRect } from './actor-figure';
+import { bpmnBodyGeometry } from './bpmn';
 import { finishBorderStroke, type Finish } from './finish';
 import type { BoxedElement, FreehandElement, PathElement } from './index';
 import { isCompoundPath, pathElementD } from './path-element';
@@ -94,7 +95,9 @@ export function svgShapeSilhouette(
   finish: Finish = 'flexible',
 ): string | null {
   if (!hasShapeSilhouette(el.shape)) return null;
-  const geometry = shapeGeometry(el.shape, el.height > 0 ? el.width / el.height : 1);
+  // A BPMN data object draws its folded page in place of the document's wave (docs/specs/009-elements/bpmn.md).
+  const geometry =
+    bpmnBodyGeometry(el) ?? shapeGeometry(el.shape, el.height > 0 ? el.width / el.height : 1);
   if (!geometry) return null;
   const strokeWidth = BORDER_STROKE_PX[finishBorderStroke(el.strokeWidth, finish)] || 2;
   const dash = BORDER_DASH_ARRAY[el.strokeStyle ?? 'solid'] ?? undefined;

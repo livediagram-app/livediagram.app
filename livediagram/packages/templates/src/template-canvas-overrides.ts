@@ -28,6 +28,7 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'decision-tree': 'graph',
   'approval-workflow': 'graph',
   'data-flow': 'graph',
+  'bpmn-process': 'graph',
   orgchart: 'graph',
   swot: 'graph',
   gantt: 'graph',

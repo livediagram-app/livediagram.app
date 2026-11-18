@@ -3,14 +3,16 @@
 // stencil lookups, and the container kinds; everything else is unmatched and
 // becomes a labelled box.
 
-import type { ShapeKind } from '@livediagram/document';
+import type { BpmnSymbol, ShapeKind } from '@livediagram/document';
+import { bpmnStencil } from './bpmn-stencils';
 import type { DrawioCell, DrawioGraph } from './cells';
 import { readColour, readFill } from './colour';
 import { shapeName, type DrawioStyle } from './style';
 import { azureImageIcon, readableStencilName, stencilIcon, type IconMatch } from './stencils';
 
 export type VertexClass =
-  | { kind: 'shape'; shape: ShapeKind; approximated: boolean }
+  // `bpmn`: a BPMN stencil's mark (bpmn-stencils.ts).
+  | { kind: 'shape'; shape: ShapeKind; approximated: boolean; bpmn?: BpmnSymbol }
   | { kind: 'text'; approximated: boolean }
   | { kind: 'sticky' }
   // `spine`: a curly bracket, drawn as the line down its middle.
@@ -50,7 +52,6 @@ const SHAPES: Record<string, Row> = {
   cylinder: exact('cylinder'),
   cylinder2: exact('cylinder'),
   cylinder3: exact('cylinder'),
-  datastore: exact('cylinder'),
   [f('database')]: exact('cylinder'),
   cloud: exact('cloud'),
   'mxgraph.networks.cloud': exact('cloud'),
@@ -79,7 +80,6 @@ const SHAPES: Record<string, Row> = {
   umlBoundary: near('circle'),
   umlEntity: near('circle'),
   umlControl: near('circle'),
-  'mxgraph.bpmn.event': near('circle'),
   [f('or')]: near('circle'),
   [f('or_2')]: near('circle'),
   [f('summing_function')]: near('circle'),
@@ -99,9 +99,6 @@ const SHAPES: Record<string, Row> = {
   [f('predefined_process')]: near('square'),
   [f('off-page_reference')]: near('square'),
   [f('card')]: near('square'),
-  'mxgraph.bpmn.task': near('square'),
-  'mxgraph.bpmn.task2': near('square'),
-  'mxgraph.bpmn.shape': near('square'),
   delay: near('stadium'),
   display: near('stadium'),
   [f('delay')]: near('stadium'),
@@ -119,7 +116,6 @@ const SHAPES: Record<string, Row> = {
   [f('stored_data')]: near('cylinder'),
   [f('direct_data')]: near('cylinder'),
   [f('sequential_data')]: near('cylinder'),
-  'mxgraph.bpmn.gateway2': near('diamond'),
   [f('sort')]: near('diamond'),
   [f('merge_or_storage')]: near('triangle'),
   [f('extract_or_measurement')]: near('triangle'),
@@ -167,6 +163,8 @@ export function classifyVertex(cell: DrawioCell, graph: DrawioGraph): VertexClas
   if (name === 'line') return { kind: 'line' };
   if (name === 'curlyBracket') return { kind: 'line', spine: true };
   if (name === 'umlFrame') return { kind: 'frame', approximated: false };
+  const bpmn = bpmnStencil(name, style);
+  if (bpmn) return { kind: 'shape', ...bpmn };
   const row = SHAPES[name];
   if (row) return { kind: 'shape', shape: row.shape, approximated: row.approximated === true };
   const inner =

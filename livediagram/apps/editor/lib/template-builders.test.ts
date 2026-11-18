@@ -37,6 +37,7 @@ const ALL_KINDS = [
   'decision-tree',
   'approval-workflow',
   'data-flow',
+  'bpmn-process',
   'swot',
   'timeline',
   'milestone-timeline',

@@ -67,6 +67,9 @@ export function useEditorUiState(
   // Which sequence diagram's dialog is open (docs/specs/009-elements/sequence-diagram.md "The Sequence dialog"), or
   // null. Opened by double-click on the diagram and by the menu's Edit Sequence.
   const [sequenceOpenForId, setSequenceOpenForId] = useState<string | null>(null);
+  // Which shape's Live Status dialog is open (docs/specs/009-elements/live-status.md "The Live Status dialog"), or
+  // null. Opened from the element menu's Resources row, an Editor's only.
+  const [liveStatusOpenForId, setLiveStatusOpenForId] = useState<string | null>(null);
 
   return {
     selectionStore,
@@ -91,5 +94,7 @@ export function useEditorUiState(
     setSankeyFlowsOpenForId,
     sequenceOpenForId,
     setSequenceOpenForId,
+    liveStatusOpenForId,
+    setLiveStatusOpenForId,
   };
 }

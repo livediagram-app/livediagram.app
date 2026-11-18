@@ -25,6 +25,8 @@ const GATE_KEEPERS = [
   'src/db/image-refs.ts',
   // Which documents may serve an image they don't own ("Placement grants").
   'src/db/image-grants.ts',
+  // The room's server-side fetches of status URLs people bound (docs/specs/009-elements/live-status.md).
+  'src/document-room/room-service-status.ts',
 ];
 
 export default defineProject({

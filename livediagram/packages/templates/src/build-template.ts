@@ -61,6 +61,7 @@ import {
   buildDecisionTree,
   buildSwimlane,
 } from './template-builders-flows';
+import { buildBpmnProcess } from './template-builders-bpmn';
 import { buildDataFlow } from './template-builders-dataflow';
 import { buildFlowchart, buildOrgChart } from './template-builders-trees';
 import { buildBubbleMap, buildMindMap, buildMindMapTree } from './template-builders-mindmaps';
@@ -129,6 +130,8 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
       return buildDecisionTree(cx, cy);
     case 'approval-workflow':
       return buildApprovalWorkflow(cx, cy);
+    case 'bpmn-process':
+      return buildBpmnProcess(cx, cy);
     case 'data-flow':
       return buildDataFlow(cx, cy);
     case 'swot':

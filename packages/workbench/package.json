@@ -426,6 +426,7 @@
     "./hooks/ui/useNewerEditorLive": "./src/hooks/ui/useNewerEditorLive.ts",
     "./hooks/ui/useLatest": "./src/hooks/ui/useLatest.ts",
     "./hooks/ui/useLocalStorageValue": "./src/hooks/ui/useLocalStorageValue.ts",
+    "./hooks/ui/useStoredOpen": "./src/hooks/ui/useStoredOpen.ts",
     "./hooks/ui/useLongPress": "./src/hooks/ui/useLongPress.ts",
     "./hooks/ui/useMenuDismiss": "./src/hooks/ui/useMenuDismiss.ts",
     "./hooks/ui/useMidnightPalette": "./src/hooks/ui/useMidnightPalette.ts",

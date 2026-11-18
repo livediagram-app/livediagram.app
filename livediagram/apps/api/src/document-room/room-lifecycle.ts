@@ -32,6 +32,7 @@ export async function purge(room: DocumentRoom, documentId?: string): Promise<vo
   room.shares.clear();
   room.maintenanceAt = null;
   room.communityAt = null;
+  room.serviceStatus.forget();
   room.head.forget();
   console.info('[room] purged');
 }
@@ -51,7 +52,8 @@ async function leaveShares(room: DocumentRoom): Promise<void> {
 
 // The room's one alarm, at the earliest of: the facilitator grace deadline, an agent presence expiry
 // (agent-presence I5, PR29), a session's grant to ask for or lapse, the outbox's next push, the next send to a
-// shared tab's holders, the Community post's next check, the document's next upkeep. None when nothing is due.
+// shared tab's holders, the Community post's next check, the document's next upkeep, the next live status round. None
+// when nothing is due.
 export function armAlarm(room: DocumentRoom): void {
   const due = [
     room.baton.deadline() ?? null,
@@ -61,6 +63,7 @@ export function armAlarm(room: DocumentRoom): void {
     room.shares.at,
     room.communityAt,
     room.maintenanceAt,
+    room.serviceStatus.at,
   ];
   // Never sooner than a second from now, and no write when it already stands there (api-kit room-alarm.ts).
   armRoomAlarm(room.state.storage, due, Date.now());
@@ -68,7 +71,7 @@ export function armAlarm(room: DocumentRoom): void {
 
 /**
  * Agent entries past their expiry go; then the grace clock ran out (or did not, if they came back); the outbox
- * pushes and the upkeep runs when due. Safe to call early.
+ * pushes, the upkeep and a live status round run when due. Safe to call early.
  */
 export async function alarm(room: DocumentRoom): Promise<void> {
   const expired = await room.agents.sweep();
@@ -83,5 +86,7 @@ export async function alarm(room: DocumentRoom): Promise<void> {
   if (room.shares.due(now)) await drainShares(room);
   if (room.communityAt !== null && room.communityAt <= now) await checkCommunity(room, now);
   if (room.maintenanceAt !== null && room.maintenanceAt <= now) await maintain(room, now);
+  // Last: a round waits on its checks (at most a few seconds each), and every duty above is owed first.
+  await room.serviceStatus.alarm(now);
   armAlarm(room);
 }

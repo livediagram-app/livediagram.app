@@ -125,6 +125,10 @@ export type Env = {
   // Absent/anything-else keeps telemetry fully off — the deployment
   // default, so OSS forks never send analytics unless they opt in.
   TELEMETRY_ENABLED?: string;
+  // Live service status on/off switch (docs/specs/009-elements/live-status.md): only the literal "true" lets a
+  // document's room check the status URLs its shapes are bound to. Set only by livediagram.app's hosted profile
+  // (hosted-vars.json), so a fork fetches nothing for a bound shape until it opts in.
+  LIVE_STATUS_ENABLED?: string;
   // The liveworkspace telemetry service (liveworkspace/docs/specs/008-telemetry/telemetry.md). Unset means production's,
   // https://www.liveworkspace.app/api/telemetry; staging and local development name their own.
   TELEMETRY_URL?: string;

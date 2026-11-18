@@ -73,6 +73,13 @@ describe('a flyout’s groups', () => {
       'Basics',
       'Flowchart',
       'More Shapes',
+      'BPMN',
+    ]);
+    // Workshop's Shapes keeps its own three (docs/specs/009-elements/bpmn.md "The palette").
+    expect(flyoutGroups('shapes', tiles('workshop', 'shapes')).map((g) => g.title)).toEqual([
+      'Basics',
+      'Flowchart',
+      'More Shapes',
     ]);
     expect(flyoutGroups('draw', tiles('diagram', 'draw')).map((g) => g.title)).toEqual([
       'Pens',
@@ -101,8 +108,19 @@ describe('a flyout’s groups', () => {
         id: 'a',
         title: null,
         tiles: [expect.objectContaining({ id: 'a' }), expect.objectContaining({ id: 'b' })],
+        optional: null,
       },
     ]);
+  });
+
+  it('marks BPMN, and only BPMN, as an optional group with its own storage key', () => {
+    // toolbar-layout.md "Optional groups".
+    const groups = flyoutGroups('shapes', tiles('diagram', 'shapes'));
+    expect(groups.filter((g) => g.optional).map((g) => g.title)).toEqual(['BPMN']);
+    expect(groups.at(-1)!.optional).toEqual({
+      storageKey: 'livediagram:v2:palette-group-open:bpmn',
+      telemetryType: 'BpmnGroup',
+    });
   });
 
   it('never splits Popular, and has nothing to show for no tiles', () => {

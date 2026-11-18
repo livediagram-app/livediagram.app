@@ -8,6 +8,7 @@ import { ARROWHEAD_SHAPES } from './arrow-style';
 import { ATTACH_POINTS } from './attachment';
 import { BORDER_DASH_ARRAY } from '@liveworkspace/model-core/border-style';
 import { BOUNDARY_STYLES } from './boundary';
+import { BPMN_SYMBOLS } from './bpmn';
 import { CARD_MEDIA } from './card';
 import { CHIP_LOOKS } from './chip';
 import { PYRAMID_VARIANTS } from './concept';
@@ -32,6 +33,8 @@ export const ELEMENT_FIELD_VALUES: Readonly<Record<string, readonly string[]>> =
   chipLook: CHIP_LOOKS,
   attachAt: ATTACH_POINTS,
   boundaryStyle: BOUNDARY_STYLES,
+  // A BPMN symbol (docs/specs/009-elements/bpmn.md).
+  bpmn: BPMN_SYMBOLS,
   pyramidVariant: PYRAMID_VARIANTS,
   // Round 2 (docs/specs/009-elements/stack.md, org-chart.md, sequence-diagram.md).
   stackDirection: STACK_DIRECTIONS,

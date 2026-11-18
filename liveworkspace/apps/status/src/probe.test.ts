@@ -1,7 +1,6 @@
 import type { Probe } from '@liveworkspace/status';
 import { describe, expect, it } from 'vitest';
-import { PROBE_CONCURRENCY } from './config';
-import { type Fetch, pooled, probeAll, probeOne } from './probe';
+import { type Fetch, probeAll, probeOne } from './probe';
 import { probeTargets } from './run';
 import { testEnv } from './test-env';
 
@@ -101,22 +100,6 @@ describe('probeOne', () => {
     });
     expect(seen[0]!.method).toBe('HEAD');
     expect(seen[0]!.headers.get('User-Agent')).toMatch(/^liveworkspace-status\//);
-  });
-});
-
-describe('pooled', () => {
-  it('keeps at most six requests waiting at once, and answers in order', async () => {
-    let inFlight = 0;
-    let most = 0;
-    const tasks = Array.from({ length: 27 }, (_, i) => async () => {
-      inFlight++;
-      most = Math.max(most, inFlight);
-      await new Promise((r) => setTimeout(r, 1));
-      inFlight--;
-      return i;
-    });
-    expect(await pooled(tasks, PROBE_CONCURRENCY)).toEqual(tasks.map((_, i) => i));
-    expect(most).toBe(PROBE_CONCURRENCY);
   });
 });
 

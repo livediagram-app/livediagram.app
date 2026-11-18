@@ -17,6 +17,8 @@ export type TemplateKind =
   | 'decision-tree'
   | 'approval-workflow'
   | 'data-flow'
+  // A business process in BPMN (docs/specs/009-elements/bpmn.md "The template").
+  | 'bpmn-process'
   | 'swot'
   | 'timeline'
   // Milestone timelines: the storytelling, presentation-ready siblings of
@@ -279,6 +281,12 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'data-flow',
     title: 'Data Flow Diagram',
     description: 'A level-1 DFD of an online shop, with a key to the notation.',
+    extra: true,
+  },
+  {
+    kind: 'bpmn-process',
+    title: 'BPMN Process',
+    description: 'An online order in BPMN: two pools, events, gateways, data and message flows.',
     extra: true,
   },
   {

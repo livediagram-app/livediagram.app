@@ -54,6 +54,7 @@ export function receiveRoomOp(
     receiveDeckSlides,
     receivePeerModeSwitch,
     receiveTabSaved,
+    receiveServiceStatus,
   } = opts;
   // Any op from a peer counts as "they're still here". Bumps
   // the idle timer used by the avatar's away/offline status
@@ -219,5 +220,9 @@ export function receiveRoomOp(
     // The document went to the Trash. System-only, like the share ops:
     // the room refuses it from a client socket.
     if (from === 'system') receiveDocumentTrashed();
+  } else if (op.kind === 'service-status') {
+    // The room's checks of the shapes' status URLs (docs/specs/009-elements/live-status.md). System-only: the room
+    // drops one from a client socket, so a peer can never paint the badges.
+    if (from === 'system') receiveServiceStatus?.(op.statuses);
   }
 }

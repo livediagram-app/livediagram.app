@@ -41,6 +41,24 @@ describe('quickBarItems', () => {
     ]);
   });
 
+  it('offers Live Status… only when the session may bind (docs/specs/009-elements/live-status.md)', () => {
+    expect(quickBarItems(square(), handlers()).map((i) => i.key)).not.toContain('live-status');
+    const onEditLiveStatus = vi.fn();
+    const unbound = quickBarItems(square(), { ...handlers(), onEditLiveStatus }).at(-1)!;
+    expect([unbound.key, unbound.label, unbound.on]).toEqual([
+      'live-status',
+      'Live Status…',
+      false,
+    ]);
+    unbound.run();
+    expect(onEditLiveStatus).toHaveBeenCalledWith('sq');
+    const bound = quickBarItems(square({ statusUrl: 'https://status.example.com/' }), {
+      ...handlers(),
+      onEditLiveStatus,
+    }).at(-1)!;
+    expect(bound.on).toBe(true);
+  });
+
   it('leaves Add Link to a link card’s own Link category', () => {
     const card = { ...square(), type: 'link-card' } as unknown as BoxedElement;
     expect(quickBarItems(card, handlers()).map((i) => i.key)).toEqual([

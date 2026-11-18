@@ -65,7 +65,7 @@ describe('template categories', () => {
       meetings: 4,
       people: 4,
       planning: 6,
-      processes: 4,
+      processes: 5,
       product: 12,
       games: 6,
       retros: 5,

@@ -106,7 +106,8 @@ item's own pictures that are base64 still images (`libraryPreviewPictures`) and 
 
 Each app's door reads the caller's teams with `createTeamAccess().currentTeams` (accounts' `teams/of`, kept 2 s,
 merged over the claim, never narrowed) before building the actor, so a team joined a moment ago lists and saves at
-once. The provider's `onSaved` and `onPlaced` carry the app's `Library·Created` and `Library·Added` telemetry, typed
+once; the provider's `requestSave` asks for the list on every opening of Save to Library (no poll), so an editor that
+loaded it earlier still offers the new team. The provider's `onSaved` and `onPlaced` carry the app's `Library·Created` and `Library·Added` telemetry, typed
 `Personal` or `Team`; the site's chart is `_shared/library-metrics.ts`.
 
 **Preview size, measured (Work Tracker 1128).** A list of 100 items, a quarter of them with a picture, is 410 KB of
