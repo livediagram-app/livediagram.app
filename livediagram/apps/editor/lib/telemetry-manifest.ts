@@ -75,6 +75,7 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Editor·Changed',
   'Element·Added',
   'Element·Changed',
+  'Element·Cleared',
   'Element·Copied',
   'Element·Created',
   'Element·Deleted',
