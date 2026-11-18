@@ -167,10 +167,7 @@ export const itemLs = defineVerb({
       .boolean()
       .optional()
       .describe('With --query or --updated-since, list closed items too'),
-    handedToMe: z
-      .boolean()
-      .optional()
-      .describe("Only items handed to this token's assistant"),
+    handedToMe: z.boolean().optional().describe("Only items handed to this token's assistant"),
   }),
   output: z.object({
     items: z.array(listedItemOut),
