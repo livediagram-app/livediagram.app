@@ -1,6 +1,6 @@
 'use client';
 
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from 'react';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { uiUnscaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import { tileDisplayName, type PaletteTileDef } from './palette-tile-defs';
@@ -45,6 +45,8 @@ export function sidePlacement(tile: HTMLElement, def: PaletteTileDef): SideOpen 
 
 export function CategoryFlyoutSide({
   side,
+  focusKey = 0,
+  onBack,
   isMobile,
   scale,
   actions,
@@ -53,6 +55,10 @@ export function CategoryFlyoutSide({
   hoverHandlers,
 }: {
   side: SideOpen;
+  // Bumped when the keyboard enters the panel (ArrowRight on its tile): its first card takes the focus.
+  focusKey?: number;
+  // ArrowLeft on a card, or Escape anywhere in it: the panel closes and the focus goes back to its tile.
+  onBack: () => void;
   isMobile: boolean;
   scale: number;
   actions: PaletteTileActions;
@@ -79,6 +85,25 @@ export function CategoryFlyoutSide({
     const over = box.bottom - (window.innerHeight - 8);
     setLift(over > 0 ? Math.min(over, side.top) : 0);
   }, [side.top]);
+  useLayoutEffect(() => {
+    if (focusKey)
+      bodyRef.current
+        ?.querySelector<HTMLElement>('[data-flyout-item]')
+        ?.focus({ preventScroll: true });
+  }, [focusKey]);
+  // Escape steps back out of the panel only, as out of a submenu. Window capture, so it runs before the strip
+  // popover's own Escape (useStripPopover, document capture), which would close the flyout too.
+  const back = useEffectEvent(onBack);
+  useEffect(() => {
+    const onKey = (e: globalThis.KeyboardEvent) => {
+      if (e.key !== 'Escape' || !panelRef.current?.contains(document.activeElement)) return;
+      e.stopPropagation();
+      e.preventDefault();
+      back();
+    };
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+  }, []);
   const variants = def.variants?.length ? visibleTiles([...def.variants], actions.hasImage) : null;
   return (
     <div
@@ -102,7 +127,16 @@ export function CategoryFlyoutSide({
         tagline={def.variantsHint ?? PRESETS_HINT}
         count={variants?.length}
       />
-      <div ref={bodyRef} onKeyDown={(e) => onFlyoutArrowKey(e, bodyRef.current)}>
+      <div
+        ref={bodyRef}
+        onKeyDown={(e) => {
+          // ArrowLeft on a card goes back to the tile; in a field it still moves the caret.
+          if (e.key !== 'ArrowLeft' || !(e.target as HTMLElement).matches('[data-flyout-item]'))
+            return onFlyoutArrowKey(e, bodyRef.current);
+          e.preventDefault();
+          onBack();
+        }}
+      >
         {variants ? (
           <div className="p-2">
             <CardList
