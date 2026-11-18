@@ -41,17 +41,23 @@ New to forms? With a Form tab open, press Start Forms Tour in the bottom bar, ju
 
 The tab shows the form as people will see it. Click a question (or Tab to it and press Enter) to edit it: type its question, a description under it, and its options, and choose its type. Its footer has **Answer goes to**, **Move Up**, **Move Down**, **Duplicate**, **Delete** and **Required**. Escape lets go of it.
 
-- **Add a question** with the bar under the selected question: it adds one of the same type. Its arrow opens **Add a Question**, a gallery of every type in five groups (**Text**, **Choices**, **Ratings and Numbers**, **Dates** and **Contact Details**), each with a picture of it being answered and a line on what it collects. Search it, or use the arrow keys and Enter, and the type you pick is added straight away.
-- **Add Section** splits the form after the selected question, so people answer it one page at a time with **Next** and **Back** and a progress bar.
+- **Add a question** with the bar at the foot of each section: it adds one of the same type as the selected question, after it when it is in that section, else at the section's end. Its arrow opens **Add a Question**, a gallery of every type in six groups (**Text**, **Choices**, **Ratings and Numbers**, **Dates**, **Contact Details** and **Content**), each with a picture of it being answered and a line on what it collects. Search it, or use the arrow keys and Enter, and the type you pick is added straight away.
+- **Add Section** adds a new section after that one, so people answer the form one page at a time with **Next** and **Back** and a progress bar.
+- **Reorder sections**: drag a section by the grip on its header, or use **Move Section Up** and **Move Section Down** beside it. Its questions go with it.
+- **Content blocks** explain or point somewhere without asking anything: **Text**, a **Callout** (Info, Tip or Warning), a **Link Button** that opens a page, or a **Picture** with a caption. Add them from the **Content** group.
+- **Default Answer**: a question that isn't required can have one, under its settings. It is used when someone leaves the question empty.
+- **Checkbox words**: a checkbox's **Words Beside the Box** replace "Tick if it applies".
 - **Drag** a question by the handle at its top to move it, into another section too.
 - **Options**: press Enter for the next one, Backspace in an empty one to remove it, Alt with the arrow keys to move it, and paste several lines to add one option per line. **Add “Other”** lets people type their own answer.
-- **The cover**: hover the top of the form and choose **Add Cover** for a colour band, plain, as a gradient or dotted.
+- **The cover**: hover the top of the form and choose **Add Cover** for a colour band, plain, as a gradient or dotted, or a **Picture**: upload one, pick one from **Your Images**, or **Search** for an openly licensed one (its credit shows on the cover). **Position** moves the picture up or down in the band.
 - **Show a section only sometimes**: under a later section's description, the badge reading **Always shown** opens its rule. Choose **Only when an earlier answer is…**, then the question and the answers that show the section, such as showing "Dietary Needs" only to people who answered **Yes** to "Are you coming?". People who answer otherwise skip it.
 - **The look**: a form wears its tab's style, in the editor and on its link alike. Change it with **Style**: the theme gives the form its colour and backdrop, the tab font its lettering, and the finish its boxes (square under Professional, drawn by hand under Sketch, in bold marker under Marker).
 
 ### Question types
 
-**Short Answer**, **Paragraph**, **Number** (with a minimum, a maximum and whole numbers only), **Email**, **Phone**, **Link**, **Date**, **Date and Time** (answered in the respondent's own time zone), **Date Range** (a From and a To, with times when you switch on **Include Time**), **Single Choice** (shown as a dropdown past seven options, or always), **Multiple Choice** (with the fewest and most picks), **Rating** (stars, or numbers from 1 to between 3 and 10 with a label at each end) and **Checkbox** (one box to tick, such as agreeing to terms).
+**Short Answer**, **Paragraph**, **Number** (with a minimum, a maximum and whole numbers only), **Email**, **Phone**, **Link**, **Date**, **Date and Time** (answered in the respondent's own time zone), **Date Range** (a From and a To, with times when you switch on **Include Time**), **Single Choice** (shown as a dropdown past seven options, or always), **Multiple Choice** (with the fewest and most picks), **Rating** (stars, or numbers from 1 to between 3 and 10 with a label at each end), **Checkbox** (one box to tick, such as agreeing to terms), **Duration** (typed as 2h 30m, 90m or 1.5h) and **Colour** (a swatch or any colour). Every card field people can fill in has a question type that fills it; Person, Image, Comments, Votes, Link to Card, Calculated and Time Spent fields are left to the plan.
+
+People filling in the form see roughly how long is left under its heading, counted again as they answer.
 
 ## Where answers go
 
@@ -61,7 +67,7 @@ The cog at the end of the bar above the form opens two more:
 
 - **Responses Go To**: the board, the card type and the column every response is made in. **Column** offers only the columns the card type uses, so responses show on that type's boards, and **+ New Board** makes its columns from the type's own states. Picking a card type, or a board (which picks its card type), on a form with no questions yet adds a question for each field people can fill in, already mapped (Undo takes them away and keeps your pick); on a form that has questions, **Add Questions for** the type's fields adds the ones no question asks. It works the other way too: **+ New Card Type** makes a type with a field for each question, named after it, and maps each answer there, and on a card type you already have, **Add Fields for Questions** adds a field for each question whose answer would otherwise land in the card's Description (a question going to the title keeps it, and the first paragraph question stays the card's Description). **Set Automatically** gives every card a field without asking: a choice that is always the same (such as Type: Bug), labels, text, a number, a priority, or a date from the day the response was sent, plus some days for a due date. For a sheet, **Extra Columns** does the same for columns. Removing an extra column (or a question) never deletes anything from the sheet: its column stays with the values earlier responses wrote, and new rows leave it empty.
 - **Card Type by Answer**: when the board takes more than one card type and the form has a choice or checkbox question, responses can make a different card type by an answer, such as a **Bug** card when "What type of request is this?" is Bug and a **Feature** card when it is Feature. Each rule picks the question, one or more answers, the card type and its column (only columns that type uses), and **Answers on** that type's cards maps answers to its own fields. Every other answer makes the card type chosen above. A rule whose question, answer, card type or column is removed is listed under **Problems with this Form**, and its responses use the card type chosen above until you fix it, so none is lost. The card type is always picked by liveplanner when a response arrives, never by the person filling in the form.
-- **Settings**: **Accepting Responses**, **Close On**, **Response Limit**, and the message people see after sending and once the form has closed.
+- **Settings**: **Accepting Responses**, **Close On**, **Response Limit**, **Width** (**Narrow** or **Wide**), and the message people see after sending and once the form has closed.
 
 You can also start a form from a board: open the board's cog and choose **New Form**. Its responses go to that board.
 
@@ -71,9 +77,9 @@ Responses can be **Cards on a Board** or **Rows in a Sheet**. A sheet needs no m
 
 - **Description**, the default: written into the card's description under its question.
 - **Title**: the card's name on the board. One question at most. With none, cards are named after the form and numbered, such as **Bug Report #14**.
-- **A field** of the card type that fits the answer, or **New Field**, which adds one named after the question. A choice question mapped to a Choice or Multiple Choice field keeps its options in step with the field.
+- **A field** of the card type that fits the answer, or **New Field**, which adds one: it starts with the question's words as its name, and you can type any name before **Create**. A choice question mapped to a Choice or Multiple Choice field keeps its options in step with the field.
 
-**Preview** at the top right shows the form exactly as people will, working. Submit in Preview makes a real card on your board, titled **Preview:** and then its title, so you can check every answer lands where you expect. Once the form is published, a preview counts as a response; delete its card when you're done.
+**Preview**, at the top right beside **Share Form**, shows the form exactly as people will, working; **Edit Form** takes you back. Submit in Preview makes a real card on your board, titled **Preview:** and then its title, so you can check every answer lands where you expect. Once the form is published, a preview counts as a response; delete its card when you're done.
 
 ## Share it
 
@@ -99,6 +105,6 @@ Editors build, publish, open and close forms. Participants and Viewers see the f
 
 ## Safety
 
-People can report a form they were sent from **Report This Form** under it. Reports from three different places suspend its link for good, and the owner is told by email. Forms never ask for passwords: don't use them to collect any.
+People can report a form they were sent from **Report This Form** under it. Reports from three different places suspend its link for good, and the owner is told by email. Don't use forms to collect passwords: people can report a form that asks for one.
 
 </ArticleLayout>

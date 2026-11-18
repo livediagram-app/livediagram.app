@@ -237,6 +237,8 @@ export function useFormFill(
     section: at,
     current,
     last,
+    // The sections these answers show, by index.
+    order,
     // Where this section sits among those that show, and how many show.
     position: Math.max(0, order.indexOf(at)),
     count: order.length,

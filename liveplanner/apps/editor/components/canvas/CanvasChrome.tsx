@@ -38,6 +38,10 @@ import { useCanvasCovered, usePlanTabKind } from '@/hooks/plan/plan-cover-store'
 // little more in, and past the element's bottom scrollbar up.
 const COVERED_CLUSTER_INSET = { x: 16, y: 20 };
 const NO_CLUSTER_INSET = { x: 0, y: 0 };
+// Over a Form tab on a desktop (docs/specs/030-forms/forms.md "Building a form"): in past the page's own scrollbar,
+// which runs down its right edge, and up off the bottom edge, so Style never sits on the scrollbar. A phone's
+// scrollbars float over the page and take no room.
+const FORM_CLUSTER_INSET = { x: 20, y: 12 };
 import { LayersThemeStrip } from '@/components/canvas/LayersThemeStrip';
 import { FormProblemsButton } from '@/components/forms/FormProblemsButton';
 import { UndoRedoClusterStrip } from '@liveworkspace/workbench/components/canvas/UndoRedoClusterStrip';
@@ -188,7 +192,11 @@ export function CanvasChrome(props: CanvasChromeProps) {
       : undefined;
   // A Dashboard's or a Form tab's page covers the canvas as a page, not an element.
   const elementCovers = canvasCovered && tabPlanKind !== 'dashboard' && tabPlanKind !== 'form';
-  const clusterInset = elementCovers ? COVERED_CLUSTER_INSET : NO_CLUSTER_INSET;
+  const clusterInset = elementCovers
+    ? COVERED_CLUSTER_INSET
+    : canvasCovered && tabPlanKind === 'form' && !isMobile
+      ? FORM_CLUSTER_INSET
+      : NO_CLUSTER_INSET;
   // Plan's Timer and Vote, only for a board made for voting (or a session running), never on a Dashboard.
   const planVoting = usePlanVoting(elements, !!props.tabVote || !!props.sessionTools?.timer);
   const stripTools = sessionStripTools(planVoting);

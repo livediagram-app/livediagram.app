@@ -177,7 +177,7 @@ describe('an Editor', () => {
 
   it('adds a question of another type from the Add a Question gallery, which closes', () => {
     render(<Harness canEdit />);
-    fireEvent.click(screen.getByRole('button', { name: 'More Question Types' }));
+    fireEvent.click(screen.getByRole('button', { name: 'More Question Types and Content' }));
     expect(screen.getByRole('dialog', { name: 'Add a Question' })).toBeTruthy();
     fireEvent.click(document.querySelector<HTMLButtonElement>('[data-picker-tile="rating"]')!);
     expect(questionsOf(latest).at(-1)).toMatchObject({ type: 'rating', scale: 5, style: 'stars' });

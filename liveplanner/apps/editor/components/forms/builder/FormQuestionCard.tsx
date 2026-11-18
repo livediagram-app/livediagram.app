@@ -7,6 +7,7 @@
 // Goes To), Move, Duplicate, Delete and Required. Everything about a question is edited in its card.
 import { useEffect, useLayoutEffect, useRef, useState, type PointerEvent } from 'react';
 import {
+  CONTENT_BLOCK_NAMES,
   HELP_MAX,
   PROMPT_MAX,
   effectiveTarget,
@@ -40,6 +41,7 @@ import { DraftText, type DraftTextHandle } from './DraftText';
 import { OptionsEditor } from './OptionsEditor';
 import { QuestionTypeMenu, TypeButtonFace } from './QuestionTypeMenu';
 import { AnswerGoesTo } from './AnswerGoesTo';
+import { ContentBlockEditor } from './ContentBlockEditor';
 import { FormSheet } from './FormSheet';
 import { QuestionSettings, hasQuestionSettings } from './QuestionSettings';
 import { useFormBuilder } from './form-builder-context';
@@ -48,6 +50,14 @@ import { PlaceholderField, takesPlaceholder } from './PlaceholderField';
 import { targetLabel } from './target-label';
 
 const GripIcon = lucideGlyph(lucideGripVertical, 16);
+
+// The edit button's name: a question by its prompt, a content block by its heading or its kind.
+const blockName = (q: FormQuestion) =>
+  `${CONTENT_BLOCK_NAMES[q.block ?? 'text']} block${q.prompt.trim() ? `: ${q.prompt.trim()}` : ''}`;
+const partName = (q: FormQuestion) =>
+  q.type === 'content' ? `Edit ${blockName(q)}` : `Edit question: ${promptOf(q)}`;
+// The drag handle's name: a question by its prompt, a content block as the edit button names it.
+const moveName = (q: FormQuestion) => `Move ${q.type === 'content' ? blockName(q) : promptOf(q)}`;
 const newId = (prefix: 'q' | 's') => newFormPartId(prefix);
 
 const ICON_BUTTON =
@@ -125,7 +135,7 @@ export function FormQuestionCard({
           // its own: a card that was itself a button held the grip, a control nested in a control.
           <button
             type="button"
-            aria-label={`Edit question: ${promptOf(q)}`}
+            aria-label={partName(q)}
             onClick={(e) => {
               e.stopPropagation();
               b.select(q.id);
@@ -136,7 +146,7 @@ export function FormQuestionCard({
         {b.canEdit ? (
           <button
             type="button"
-            aria-label={`Move ${promptOf(q)}`}
+            aria-label={moveName(q)}
             onPointerDown={(e) => onGrab(e, q.id)}
             onClick={(e) => e.stopPropagation()}
             className="absolute left-1/2 top-0 z-[1] flex h-6 w-10 -translate-x-1/2 cursor-grab touch-none items-center justify-center rounded text-slate-300 opacity-0 transition hover:text-slate-500 group-hover/q:opacity-100 [@media(hover:none)]:opacity-100 dark:text-slate-600 dark:hover:text-slate-400"
@@ -207,89 +217,99 @@ export function FormQuestionCard({
       <span aria-hidden className="absolute inset-y-0 left-0 w-1.5 bg-[var(--form-accent)]" />
       <button
         type="button"
-        aria-label={`Move ${promptOf(q)}`}
+        aria-label={moveName(q)}
         onPointerDown={(e) => onGrab(e, q.id)}
         className="absolute left-1/2 top-0.5 flex h-5 w-10 -translate-x-1/2 cursor-grab touch-none items-center justify-center rounded text-slate-300 hover:text-slate-500 dark:text-slate-600 dark:hover:text-slate-400"
       >
         <GripIcon className="rotate-90" />
       </button>
-      <div className="flex flex-col gap-3 px-6 pb-3 pt-6 max-sm:px-4">
-        <div className="flex items-start gap-3 max-sm:flex-col">
-          <div className="min-w-0 flex-1 rounded-md bg-slate-50 px-3 py-2 ring-[var(--form-accent)] focus-within:ring-2 dark:bg-slate-800/60">
-            <DraftText
-              ref={promptRef}
-              value={q.prompt}
-              placeholder="Question"
-              maxLength={PROMPT_MAX}
-              multiline
-              label="Question"
-              className="text-[16px] font-medium text-slate-900 dark:text-slate-50"
-              onSave={(text) => change((f) => updateQuestion(f, q.id, { prompt: text.trim() }))}
-            />
-          </div>
-          <QuestionTypeMenu
-            value={q.type}
-            label="Question type"
-            onPick={(t) => change((f) => setQuestionType(f, q.id, t))}
-            className="flex h-10 w-48 shrink-0 cursor-pointer items-center gap-2 rounded-md border border-slate-200 bg-white px-3 text-[13px] font-medium text-slate-700 hover:border-slate-300 max-sm:w-full dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-500"
-          >
-            <TypeButtonFace type={q.type} />
-          </QuestionTypeMenu>
-          {problemMark ? (
-            <span className="flex h-10 shrink-0 items-center max-sm:hidden">{problemMark}</span>
-          ) : null}
+      {q.type === 'content' ? (
+        <div className="px-6 pb-4 pt-6 max-sm:px-4">
+          <ContentBlockEditor block={q} headingRef={promptRef} />
         </div>
-        <DraftText
-          value={q.help ?? ''}
-          placeholder="Description (optional)"
-          maxLength={HELP_MAX}
-          multiline
-          label="Description"
-          className="px-3 text-[14px] text-slate-600 dark:text-slate-300"
-          onSave={(text) =>
-            change((f) => updateQuestion(f, q.id, { help: text.trim() || undefined }))
-          }
-        />
-        <div className="px-3">
-          {q.type === 'single' || q.type === 'multi' ? (
-            <OptionsEditor
-              question={q}
-              onOptions={(options) => {
-                change((f) => setOptions(f, q.id, options));
-                if (mapped) b.actions.syncFieldOptions(b.type!, mapped.id, options);
-              }}
-              onOther={(other) =>
-                change((f) => updateQuestion(f, q.id, { other: other || undefined }))
-              }
-            />
-          ) : takesPlaceholder(q) ? (
-            // The answer box as respondents see it, its placeholder typed straight into it.
-            <PlaceholderField question={q} />
-          ) : (
-            // The control alone, as respondents will see it: the prompt and help are edited just above.
-            <div className="cursor-not-allowed opacity-80 [&>*]:pointer-events-none" aria-hidden>
-              <QuestionControl
-                question={q}
-                value={undefined}
-                other=""
-                onChange={() => {}}
-                onOther={() => {}}
-                disabled
-                labelledBy=""
-                controlId={`preview-${q.id}`}
+      ) : (
+        <div className="flex flex-col gap-3 px-6 pb-3 pt-6 max-sm:px-4">
+          <div className="flex items-start gap-3 max-sm:flex-col">
+            <div className="min-w-0 flex-1 rounded-md bg-slate-50 px-3 py-2 ring-[var(--form-accent)] focus-within:ring-2 dark:bg-slate-800/60">
+              <DraftText
+                ref={promptRef}
+                value={q.prompt}
+                placeholder="Question"
+                maxLength={PROMPT_MAX}
+                multiline
+                label="Question"
+                className="text-[16px] font-medium text-slate-900 dark:text-slate-50"
+                onSave={(text) => change((f) => updateQuestion(f, q.id, { prompt: text.trim() }))}
               />
             </div>
-          )}
-        </div>
-        {hasQuestionSettings(q) ? (
-          <div className="mx-3 rounded-lg bg-slate-50 p-3 dark:bg-slate-800/50">
-            <QuestionSettings question={q} />
+            <QuestionTypeMenu
+              value={q.type}
+              label="Question type"
+              onPick={(t) => change((f) => setQuestionType(f, q.id, t))}
+              className="flex h-10 w-48 shrink-0 cursor-pointer items-center gap-2 rounded-md border border-slate-200 bg-white px-3 text-[13px] font-medium text-slate-700 hover:border-slate-300 max-sm:w-full dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-500"
+            >
+              <TypeButtonFace type={q.type} />
+            </QuestionTypeMenu>
+            {problemMark ? (
+              <span className="flex h-10 shrink-0 items-center max-sm:hidden">{problemMark}</span>
+            ) : null}
           </div>
-        ) : null}
-      </div>
+          <DraftText
+            value={q.help ?? ''}
+            placeholder="Description (optional)"
+            maxLength={HELP_MAX}
+            multiline
+            label="Description"
+            className="px-3 text-[14px] text-slate-600 dark:text-slate-300"
+            onSave={(text) =>
+              change((f) => updateQuestion(f, q.id, { help: text.trim() || undefined }))
+            }
+          />
+          <div className="px-3">
+            {q.type === 'single' || q.type === 'multi' ? (
+              <OptionsEditor
+                question={q}
+                onOptions={(options) => {
+                  change((f) => setOptions(f, q.id, options));
+                  if (mapped) b.actions.syncFieldOptions(b.type!, mapped.id, options);
+                }}
+                onOther={(other) =>
+                  change((f) => updateQuestion(f, q.id, { other: other || undefined }))
+                }
+              />
+            ) : takesPlaceholder(q) ? (
+              // The answer box as respondents see it, its placeholder typed straight into it.
+              <PlaceholderField question={q} />
+            ) : (
+              // The control alone, as respondents will see it: the prompt and help are edited just above.
+              <div className="cursor-not-allowed opacity-80 [&>*]:pointer-events-none" aria-hidden>
+                <QuestionControl
+                  question={q}
+                  value={undefined}
+                  other=""
+                  onChange={() => {}}
+                  onOther={() => {}}
+                  disabled
+                  labelledBy=""
+                  controlId={`preview-${q.id}`}
+                />
+              </div>
+            )}
+          </div>
+          {hasQuestionSettings(q) ? (
+            <div className="mx-3 rounded-lg bg-slate-50 p-3 dark:bg-slate-800/50">
+              <QuestionSettings question={q} />
+            </div>
+          ) : null}
+        </div>
+      )}
       <div className="flex flex-wrap items-center gap-1 border-t border-slate-100 px-4 py-2 dark:border-slate-800">
-        {/* A Sheet takes every answer in its own column: nothing to map. */}
-        {b.form.sheet ? (
+        {/* A content block asks nothing; a Sheet takes every answer in its own column: nothing to map. */}
+        {q.type === 'content' ? (
+          <span className="mr-auto text-[12px] text-slate-500 dark:text-slate-400">
+            Asks nothing: shown as it is
+          </span>
+        ) : b.form.sheet ? (
           <span className="mr-auto text-[12px] text-slate-500 dark:text-slate-400">
             Its own column in the sheet
           </span>
@@ -313,7 +333,13 @@ export function FormQuestionCard({
           </button>
         )}
         {goesTo ? (
-          <FormSheet anchor={goesTo} name="Answer Goes To" onClose={() => setGoesTo(null)}>
+          <FormSheet
+            anchor={goesTo}
+            name="Answer Goes To"
+            width={460}
+            titled
+            onClose={() => setGoesTo(null)}
+          >
             <AnswerGoesTo question={q} onChosen={() => setGoesTo(null)} />
           </FormSheet>
         ) : null}
@@ -363,17 +389,21 @@ export function FormQuestionCard({
             <TrashIcon size={16} />
           </button>
         </Tooltip>
-        <span aria-hidden className="mx-1 h-6 w-px bg-slate-200 dark:bg-slate-700" />
-        <SwitchRow
-          checked={!!q.required}
-          onChange={() =>
-            change((f) => updateQuestion(f, q.id, { required: q.required ? undefined : true }))
-          }
-          layout="flex h-8 items-center gap-2 rounded-md"
-          className="px-2 text-[13px] font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
-        >
-          Required
-        </SwitchRow>
+        {q.type === 'content' ? null : (
+          <>
+            <span aria-hidden className="mx-1 h-6 w-px bg-slate-200 dark:bg-slate-700" />
+            <SwitchRow
+              checked={!!q.required}
+              onChange={() =>
+                change((f) => updateQuestion(f, q.id, { required: q.required ? undefined : true }))
+              }
+              layout="flex h-8 items-center gap-2 rounded-md"
+              className="px-2 text-[13px] font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
+            >
+              Required
+            </SwitchRow>
+          </>
+        )}
       </div>
     </div>
   );

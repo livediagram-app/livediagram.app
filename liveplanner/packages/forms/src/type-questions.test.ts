@@ -22,13 +22,14 @@ const custom = [
   { id: 'f-os', label: 'Systems', kind: 'multichoice', options: ['Mac', 'Windows'] },
   { id: 'f-stars', label: 'Mood', kind: 'rating', scale: 7 },
   { id: 'f-ok', label: 'Agreed', kind: 'checkbox' },
+  // Asked too: Labels as a Multiple Choice, Percent as a whole Number from 0 to 100.
+  { id: 'f-tags', label: 'Tags', kind: 'labels' },
+  { id: 'f-pct', label: 'Done', kind: 'percent' },
   // Left out: none a respondent can sensibly fill.
   { id: 'f-who', label: 'Owner', kind: 'person' },
-  { id: 'f-tags', label: 'Tags', kind: 'labels' },
   { id: 'f-pr', label: 'Pull Request', kind: 'card' },
   { id: 'f-block', label: 'Blocked By', kind: 'card', blocks: true },
   { id: 'f-pics', label: 'Shots', kind: 'image' },
-  { id: 'f-pct', label: 'Done', kind: 'percent' },
   { id: 'f-calc', label: 'Sum', kind: 'calculated' },
   // A kind from a newer liveplanner.
   { id: 'f-new', label: 'Future', kind: 'hologram' },
@@ -79,6 +80,8 @@ describe('typeQuestionFields', () => {
       'f-os',
       'f-stars',
       'f-ok',
+      'f-tags',
+      'f-pct',
     ]);
   });
 
@@ -111,7 +114,10 @@ describe('withTypeQuestions on an empty form', () => {
       ['Systems', 'multi'],
       ['Mood', 'rating'],
       ['Agreed', 'checkbox'],
+      ['Tags', 'multi'],
+      ['Done', 'number'],
     ]);
+    expect(byPrompt.get('Done')).toMatchObject({ min: 0, max: 100, whole: true });
     // Each fits its field (fieldTakes), so none falls back to Description.
     for (const q of made) expect(effectiveTarget(q, workItem).broken).toBeUndefined();
     expect(byPrompt.get('Summary')?.goesTo).toEqual({ to: 'title' });

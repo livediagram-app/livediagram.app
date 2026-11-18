@@ -95,6 +95,14 @@ export function sampleAnswer(q: FormQuestion, now: Date = new Date()): AnswerVal
     }
     case 'checkbox':
       return true;
+    case 'duration':
+      // An hour and a half, as whole minutes.
+      return 90;
+    case 'colour':
+      return '#3b82f6';
+    case 'content':
+      // Asks nothing (questionsOf leaves it out).
+      return '';
   }
 }
 

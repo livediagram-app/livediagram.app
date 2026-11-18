@@ -441,7 +441,9 @@ export function readRuleBody(v: unknown): { body: AutomationRuleBody } | RuleRef
           ? { github: true }
           : trigger.kind === 'email_received'
             ? { email: true }
-            : {};
+            : trigger.kind === 'form_response'
+              ? { form: true }
+              : {};
     const steps = (r['steps'] as unknown[]).map((s, i) => readStep(s, `steps.${i}`, place));
     if (countActions(steps) > AUTOMATION_ACTIONS_MAX)
       refuse('steps', `a rule holds up to ${AUTOMATION_ACTIONS_MAX} actions`);

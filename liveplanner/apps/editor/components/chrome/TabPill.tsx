@@ -1,3 +1,4 @@
+import { TabModeIcon } from './editor-mode/TabModeIcon';
 import type { ComponentProps, Dispatch, MouseEvent, SetStateAction } from 'react';
 import { NameEditor } from '@liveworkspace/workbench/components/primitives/NameEditor';
 import type { Tab } from '@liveplanner/project';
@@ -24,6 +25,9 @@ import { connectionOf } from '@liveworkspace/workbench/components/connect/tab-co
 // (TabPillCtx, built once in TabBar) carries the shared state and handlers.
 export type TabPillCtx = {
   activeId: string;
+  // The plan holds tabs of more than one kind (docs/specs/026-plan/plan-tabs.md "Tab kinds"): each pill leads with its
+  // kind's icon, which tells them apart. A plan of one kind shows none (they would all be the same).
+  mixedKinds?: boolean;
   editingId: string | null;
   setEditingId: Dispatch<SetStateAction<string | null>>;
   menuFor: string | null;
@@ -149,6 +153,11 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
       // The open tab's name takes the tab theme's accent, made legible on its card; the others keep neutral ink.
       accent={isActive ? legibleTabAccent(tab, isDark) : undefined}
       lockIcon={tab.locked ? <TabLockIcon /> : null}
+      lead={
+        ctx.mixedKinds ? (
+          <TabModeIcon tab={tab} style={{ opacity: isActive ? 1 : 0.7 }} />
+        ) : undefined
+      }
       // Tour anchor (docs/specs/007-editor/editor-tour.md): the Tabs step highlights the open tab together with the
       // add button.
       tourId={isActive ? 'active-tab' : undefined}

@@ -3,9 +3,18 @@
 // The answers QuestionControl draws with more than one box (docs/specs/030-forms/forms.md "Question types"): the
 // radio buttons or checkboxes of a choice with Other and its text, the dropdown, and a Date Range's From and To.
 
-import { useId } from 'react';
+import { useId, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { OTHER_ANSWER, OTHER_MAX, type PublicQuestion } from '@liveplanner/forms';
 import { fromLocalInput, localInputValue } from '@liveplanner/items';
+import { PlusIcon, Tooltip } from '@liveplanner/ui';
+
+// The one colour picker (docs/specs/004-interface-design/colour-picker.md), loaded only when Custom is opened, so a
+// form without a Colour question, or a respondent who takes a swatch, never downloads it.
+const ColourPopover = dynamic(
+  () => import('../colour/ColourPopover').then((m) => m.ColourPopover),
+  { ssr: false },
+);
 import { FIELD, FIELD_BAD, FIELD_OK } from './answer-field';
 
 // Radio buttons or checkboxes, each option a row the whole width can be clicked on, with Other and its text.
@@ -252,6 +261,112 @@ export function RangeAnswer({
     <div role="group" aria-labelledby={labelledBy} className="flex max-w-lg flex-wrap gap-3">
       {box(0, 'From')}
       {box(1, 'To')}
+    </div>
+  );
+}
+
+// The swatches a Colour question offers (docs/specs/030-forms/forms.md "Question types"): a spread of hues that read on
+// light and dark alike, each named for a screen reader, then any colour from the one colour picker's custom editor.
+export const COLOUR_SWATCHES: readonly { hex: string; name: string }[] = [
+  { hex: '#ef4444', name: 'Red' },
+  { hex: '#f97316', name: 'Orange' },
+  { hex: '#f59e0b', name: 'Amber' },
+  { hex: '#84cc16', name: 'Lime' },
+  { hex: '#10b981', name: 'Green' },
+  { hex: '#14b8a6', name: 'Teal' },
+  { hex: '#0ea5e9', name: 'Sky' },
+  { hex: '#3b82f6', name: 'Blue' },
+  { hex: '#8b5cf6', name: 'Violet' },
+  { hex: '#ec4899', name: 'Pink' },
+  { hex: '#64748b', name: 'Slate' },
+  { hex: '#0f172a', name: 'Black' },
+];
+
+// A Colour answer: the swatches as a radio group (arrow keys move between them), and Custom, the one colour picker in
+// a popover, its pick shown as the last swatch.
+export function ColourAnswer({
+  value,
+  onChange,
+  disabled,
+  invalid,
+  labelledBy,
+  describedBy,
+}: {
+  value: string | undefined;
+  onChange: (hex: string) => void;
+  disabled: boolean;
+  invalid: boolean;
+  labelledBy: string;
+  describedBy?: string;
+}) {
+  const name = useId();
+  const [customAt, setCustomAt] = useState<HTMLButtonElement | null>(null);
+  const picked = value?.toLowerCase();
+  const custom = picked && !COLOUR_SWATCHES.some((s) => s.hex === picked) ? picked : null;
+  const swatch = (hex: string, label: string, key: string) => (
+    <Tooltip key={key} label={label}>
+      <label
+        className={`relative grid size-9 cursor-pointer place-items-center rounded-full has-[:disabled]:cursor-not-allowed has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[var(--form-accent)] has-[:focus-visible]:ring-offset-2 dark:has-[:focus-visible]:ring-offset-slate-900`}
+      >
+        <input
+          type="radio"
+          name={name}
+          value={hex}
+          checked={picked === hex}
+          disabled={disabled}
+          onChange={() => onChange(hex)}
+          aria-label={label}
+          className="peer sr-only"
+        />
+        <span
+          aria-hidden
+          className="size-7 rounded-full shadow-[inset_0_0_0_1px_rgb(0_0_0/0.12)] transition peer-checked:scale-110 peer-checked:ring-2 peer-checked:ring-slate-800 peer-checked:ring-offset-2 dark:peer-checked:ring-slate-100 dark:peer-checked:ring-offset-slate-900"
+          style={{ background: hex }}
+        />
+      </label>
+    </Tooltip>
+  );
+  return (
+    <div
+      role="radiogroup"
+      aria-labelledby={labelledBy}
+      aria-describedby={describedBy}
+      aria-invalid={invalid || undefined}
+      className="flex flex-wrap items-center gap-1.5"
+    >
+      {COLOUR_SWATCHES.map((s) => swatch(s.hex, s.name, s.hex))}
+      {custom ? swatch(custom, `Custom colour ${custom}`, 'custom') : null}
+      <button
+        type="button"
+        disabled={disabled}
+        aria-haspopup="dialog"
+        aria-expanded={customAt !== null}
+        onClick={(e) => setCustomAt(customAt ? null : e.currentTarget)}
+        className="form-box form-ink ml-1 flex h-9 cursor-pointer items-center gap-1.5 rounded-full border border-slate-300 px-3 text-[13px] font-medium text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--form-accent)] disabled:cursor-not-allowed dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800"
+      >
+        <PlusIcon size={14} aria-hidden />
+        <span className="text-optical-centre">Custom</span>
+      </button>
+      {customAt ? (
+        <ColourPopover
+          label="Custom Colour"
+          value={picked}
+          theme={[]}
+          standard={[
+            {
+              heading: 'Colours',
+              options: COLOUR_SWATCHES.map((s) => ({ id: s.hex, colour: s.hex, label: s.name })),
+            },
+          ]}
+          anchor={customAt}
+          onClose={() => setCustomAt(null)}
+          onPick={(hex) => {
+            onChange(hex.toLowerCase());
+            customAt.focus();
+            setCustomAt(null);
+          }}
+        />
+      ) : null}
     </div>
   );
 }

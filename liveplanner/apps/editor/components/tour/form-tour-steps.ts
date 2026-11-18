@@ -61,7 +61,7 @@ const TYPE: FormTourStep = opensFrom<FormTourApi, FormTourStep>(
 const PREVIEW: FormTourStep = {
   id: 'preview',
   title: 'Try It as They Will',
-  body: 'This is Preview: your form exactly as people will fill it in. Type an answer to our question to try it. Back to Editing, at the top, takes you back.',
+  body: 'This is Preview: your form exactly as people will fill it in. Type an answer to our question to try it. Edit Form, at the top beside Share Form, takes you back.',
   prepare: (api) => api.preview(true),
   cleanup: (api) => api.preview(false),
   selector: (api) => {

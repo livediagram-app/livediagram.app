@@ -12,7 +12,7 @@ import { getTab, planHasTab } from '../db/tabs';
 import { itemIdsShownOnTab, tabShowsEveryCard } from '@liveplanner/items';
 import { drawPlan } from '../thumbnail';
 import { planShares, type ShareAnswer, type ShareMessage } from './tab-shares';
-import { planGrantedImages, planServesImage } from './image-grants';
+import { formServesImage, planGrantedImages, planServesImage } from './image-grants';
 import { exportPlanCopy, readPlanMeta, readPlanOutline } from './plan-content';
 import { copiedPlacedImages, noteCopyClaim } from './copy-image-claims';
 import {
@@ -242,7 +242,12 @@ export async function servesImage(
     if (!tab) return false;
     if (!tabShowsEveryCard(tab.elements)) onlyCards = [...itemIdsShownOnTab(tab.elements, [])];
   }
-  return planServesImage(sql, planId, imageId, onlyCards);
+  // A card's picture first (the common read); only then a Form tab's cover or picture block
+  // (docs/specs/030-forms/forms.md "Pictures"), within the scope's tab when scoped, so card reads never scan tab data.
+  return (
+    planServesImage(sql, planId, imageId, onlyCards) ||
+    formServesImage(sql, planId, imageId, tabScope)
+  );
 }
 
 // Which of `imageIds` the plan holds a grant for (an agent's pictures, checked before a card is written). A plan never

@@ -6,6 +6,7 @@ import { createContext, useContext } from 'react';
 import type { FormDefinition } from '@liveplanner/forms';
 import type { ItemTypeDef } from '@liveplanner/items';
 import type { FormActions } from '@/hooks/forms/useFormActions';
+import type { ImagesScope } from '@/lib/api/images';
 import type { FormSettingsSection } from './FormSettingsButton';
 
 export type FormBuilderValue = {
@@ -30,6 +31,9 @@ export type FormBuilderValue = {
   types: readonly ItemTypeDef[];
   // Opens the status bar's cog on a section (Answer Goes To's "choose where responses go" opens Responses Go To).
   openSettings: (section: FormSettingsSection | null) => void;
+  // Where the form's pictures are stored and read (its plan, and the link an Editor is on); none for a plan not yet
+  // on the server, whose picker says pictures come once it is.
+  images?: ImagesScope | null;
 };
 
 export const FormBuilderContext = createContext<FormBuilderValue | null>(null);

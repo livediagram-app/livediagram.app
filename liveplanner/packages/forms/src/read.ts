@@ -30,10 +30,15 @@ import {
   UNTITLED_FORM,
 } from './limits';
 import { isBuiltInFixedId } from './fixed';
+import { checkAnswer } from './answers';
 import {
+  CALLOUT_TONES,
+  CONTENT_BLOCKS,
   FORM_VERSION,
   STARTER_IDS,
   isQuestionType,
+  type CalloutTone,
+  type ContentBlock,
   type AnswerTarget,
   type CardTypeRule,
   type FormCover,
@@ -48,6 +53,14 @@ import {
 } from './model';
 
 const FORM_ID_PATTERN = /^[a-z0-9-]{1,24}$/;
+// A picture's id at the media service (as an Image field holds it).
+export const FORM_IMAGE_ID = /^[A-Za-z0-9_-]{1,200}$/;
+// A content block's text, link address and button words.
+export const CONTENT_TEXT_MAX = 2000;
+export const LINK_URL_MAX = 2048;
+export const LINK_LABEL_MAX = 60;
+export const CHECK_LABEL_MAX = 120;
+export const CREDIT_MAX = 300;
 
 // A sheet form's remembered columns (forms.md "Linked by column, not by heading"): `#`, `at` or a question id, each to
 // a column id; anything else dropped, at most SHEET_COLUMNS_MAX kept, absent when none is left.
@@ -110,6 +123,7 @@ function readQuestion(v: unknown): FormQuestion | null {
   const { id, type } = v;
   if (typeof id !== 'string' || !FORM_ID_PATTERN.test(id) || !isQuestionType(type)) return null;
   const q: FormQuestion = { id, type, prompt: text(v['prompt'], PROMPT_MAX) ?? '' };
+  if (type === 'content') return readContent(q, v);
   const help = text(v['help'], HELP_MAX);
   if (help) q.help = help;
   if (v['required'] === true) q.required = true;
@@ -119,7 +133,8 @@ function readQuestion(v: unknown): FormQuestion | null {
     type === 'number' ||
     type === 'email' ||
     type === 'phone' ||
-    type === 'link'
+    type === 'link' ||
+    type === 'duration'
   ) {
     const placeholder = text(v['placeholder'], PLACEHOLDER_MAX);
     if (placeholder) q.placeholder = placeholder;
@@ -160,13 +175,65 @@ function readQuestion(v: unknown): FormQuestion | null {
       if (high) q.highLabel = high;
     }
   }
+  if (type === 'checkbox') {
+    const label = text(v['checkLabel'], CHECK_LABEL_MAX);
+    if (label) q.checkLabel = label;
+  }
+  // A default answer is kept only when the question would take it as typed (forms.md "A default answer").
+  const fallback = v['fallback'];
+  if (
+    !q.required &&
+    fallback !== undefined &&
+    type !== 'checkbox' &&
+    type !== 'daterange' &&
+    (typeof fallback === 'string' || typeof fallback === 'number' || Array.isArray(fallback))
+  ) {
+    const checked = checkAnswer(q, fallback);
+    if (!checked.error && checked.value !== undefined && typeof checked.value !== 'boolean')
+      q.fallback = checked.value;
+  }
   const goesTo = readTarget(v['goesTo']);
   if (goesTo) q.goesTo = goesTo;
   return q;
 }
 
+// A content block: its kind, an optional heading (`prompt`), its text, and what its kind holds. A link without a
+// safe https address and a picture without an id keep their block, empty, so the builder can finish them.
+function readContent(q: FormQuestion, v: Obj): FormQuestion {
+  const block = (CONTENT_BLOCKS as readonly unknown[]).includes(v['block'])
+    ? (v['block'] as ContentBlock)
+    : 'text';
+  q.block = block;
+  const body = text(v['help'], CONTENT_TEXT_MAX);
+  if (body) q.help = body;
+  if (block === 'callout')
+    q.tone = (CALLOUT_TONES as readonly unknown[]).includes(v['tone'])
+      ? (v['tone'] as CalloutTone)
+      : 'info';
+  if (block === 'link') {
+    const url = text(v['url'], LINK_URL_MAX);
+    if (url && /^https:\/\/[^\s]+$/i.test(url)) q.url = url;
+    const label = text(v['linkLabel'], LINK_LABEL_MAX);
+    if (label) q.linkLabel = label;
+  }
+  if (block === 'image' && typeof v['imageId'] === 'string' && FORM_IMAGE_ID.test(v['imageId']))
+    q.imageId = v['imageId'];
+  return q;
+}
+
 // The cover: a colour background (@liveworkspace/page-background), nothing kept when it is not one.
-const readCover = (v: unknown): FormCover | undefined => parseColourBackground(v);
+function readCover(v: unknown): FormCover | undefined {
+  const cover: FormCover = { ...parseColourBackground(v) };
+  if (isObj(v) && typeof v['imageId'] === 'string' && FORM_IMAGE_ID.test(v['imageId'])) {
+    cover.imageId = v['imageId'];
+    const focus = v['focus'];
+    if (Number.isInteger(focus) && (focus as number) >= 0 && (focus as number) <= 100)
+      cover.focus = focus as number;
+    const credit = text(v['credit'], CREDIT_MAX);
+    if (credit) cover.credit = credit;
+  }
+  return cover.fill || cover.pattern || cover.imageId ? cover : undefined;
+}
 
 // A time zone as Intl names one ("Europe/London", "UTC", "Etc/GMT+5"); an unknown one reads as UTC when used.
 const ZONE = /^[A-Za-z0-9_+\-/]{1,64}$/;
@@ -372,5 +439,6 @@ export function readForm(raw: unknown): FormDefinition | null {
   if (closedMessage) form.closedMessage = closedMessage;
   if ((STARTER_IDS as readonly unknown[]).includes(raw['starter']))
     form.starter = raw['starter'] as StarterId;
+  if (raw['width'] === 'wide') form.width = 'wide';
   return form;
 }

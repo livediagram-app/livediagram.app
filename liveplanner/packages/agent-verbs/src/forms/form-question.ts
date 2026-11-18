@@ -62,6 +62,9 @@ const TYPE_SETTINGS: Readonly<Record<QuestionType, readonly Setting[]>> = {
   multi: ['options', 'other', 'min', 'max'],
   rating: ['scale', 'style', 'lowLabel', 'highLabel'],
   checkbox: [],
+  duration: ['placeholder'],
+  colour: [],
+  content: [],
 };
 
 const SETTINGS: readonly Setting[] = [

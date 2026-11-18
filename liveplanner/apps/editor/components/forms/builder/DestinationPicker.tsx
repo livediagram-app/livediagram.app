@@ -19,7 +19,8 @@ import {
   type FormDestination,
 } from '@liveplanner/forms';
 import { boardAddTypes, ITEM_TYPE_CUSTOM_MAX, typeFieldLabel } from '@liveplanner/items';
-import { PencilIcon, PlusIcon, Select, Tooltip } from '@liveplanner/ui';
+import { PencilIcon, PlusIcon, Select, Tooltip, lucideGlyph } from '@liveplanner/ui';
+import { lucideArrowRight, lucideSquareKanban, lucideTable } from '@liveworkspace/icons/lucide';
 import { usePlan } from '@/components/plan/PlanContext';
 import { SettingsField } from '@/components/plan/settings-panel-parts';
 import { boardsOf, sheetsOf } from '@liveplanner/templates';
@@ -30,6 +31,10 @@ import { SetAutomatically } from './SetAutomatically';
 import { CardResponsePreview, SheetResponsePreview } from './ResponsePreview';
 import { CardTypeRules } from './CardTypeRules';
 import { ColumnChips } from './ChoiceChip';
+
+const BoardIcon = lucideGlyph(lucideSquareKanban, 18);
+const SheetIcon = lucideGlyph(lucideTable, 18);
+const ArrowIcon = lucideGlyph(lucideArrowRight, 14);
 
 // The value of each select's last choice, New Board or New Card Type.
 const NEW = '__new';
@@ -45,41 +50,35 @@ export function DestinationPicker({
   const b = useFormBuilder();
   const sheets = sheetsOf(tabs);
   const toSheet = !!b.form.sheet;
-  const tab = (on: boolean, label: string, pick: () => void) => (
-    <button
-      type="button"
-      role="radio"
-      aria-checked={on}
-      disabled={!b.canEdit}
-      onClick={pick}
-      className={`flex h-7 flex-1 cursor-pointer items-center justify-center rounded-md text-[12px] font-semibold transition disabled:cursor-default ${
-        on
-          ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-50'
-          : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100'
-      }`}
-    >
-      {label}
-    </button>
-  );
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4">
       {b.locked ? (
         <p className="text-[12px] text-slate-500 dark:text-slate-400">
           Locked while the form takes responses: Edit Form unlocks it.
         </p>
       ) : null}
       {/* A board makes a card per response, its answers mapped to fields; a Sheet a row, a column per question. */}
-      <div
-        role="radiogroup"
-        aria-label="Responses become"
-        className="flex gap-0.5 rounded-lg border border-slate-200 p-0.5 dark:border-slate-700"
-      >
-        {tab(!toSheet, 'Cards on a Board', () => b.actions.setResponsesTo({ kind: 'board' }))}
-        {tab(toSheet, 'Rows in a Sheet', () => {
-          const first = sheets[0];
-          if (first) b.actions.setResponsesTo({ kind: 'sheet', ...first });
-          else b.actions.newResponsesSheet();
-        })}
+      <div role="radiogroup" aria-label="Responses become" className="grid grid-cols-2 gap-2">
+        <KindTile
+          on={!toSheet}
+          disabled={!b.canEdit}
+          icon={<BoardIcon aria-hidden />}
+          name="Cards on a Board"
+          detail="A card per response, answers in its fields"
+          onPick={() => b.actions.setResponsesTo({ kind: 'board' })}
+        />
+        <KindTile
+          on={toSheet}
+          disabled={!b.canEdit}
+          icon={<SheetIcon aria-hidden />}
+          name="Rows in a Sheet"
+          detail="A row per response, a column per question"
+          onPick={() => {
+            const first = sheets[0];
+            if (first) b.actions.setResponsesTo({ kind: 'sheet', ...first });
+            else b.actions.newResponsesSheet();
+          }}
+        />
       </div>
       {toSheet ? (
         <SheetDestination tabs={tabs} />
@@ -97,7 +96,7 @@ function SheetDestination({ tabs }: { tabs: readonly Tab[] }) {
   const at = b.form.sheet;
   const current = sheets.find((s) => s.sheetId === at?.sheetId && s.tabId === at?.tabId);
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4">
       <SettingsField label="Sheet">
         <Select
           className="w-full"
@@ -122,10 +121,11 @@ function SheetDestination({ tabs }: { tabs: readonly Tab[] }) {
         </Select>
       </SettingsField>
       {current ? (
-        <p className="rounded-lg bg-slate-50 px-3 py-2 text-[13px] leading-relaxed text-slate-700 dark:bg-slate-800/60 dark:text-slate-200">
-          Each response becomes a row on <strong>{current.name}</strong>, a column per question. No
-          mapping needed.
-        </p>
+        <Flow
+          lead="Each response"
+          steps={['A row', current.name]}
+          read={`Each response becomes a row on ${current.name}, a column per question. No mapping needed.`}
+        />
       ) : (
         <p
           role="status"
@@ -185,68 +185,70 @@ function BoardDestination({ tabs, onLeave }: { tabs: readonly Tab[]; onLeave?: (
       ? questionsWantingFields(b.form, type).slice(0, Math.max(0, room))
       : [];
   return (
-    <div className="flex flex-col gap-3">
-      <SettingsField label="Board">
-        <Select
-          className="w-full"
-          selectClassName="text-[13px]"
-          value={destTab?.id ?? ''}
-          disabled={!b.canEdit}
-          onChange={(e) => {
-            if (e.target.value === NEW) return b.actions.newResponsesBoard();
-            // Its type, column and set values; an empty form then takes the type's questions, a step of its own.
-            b.actions.setDestinationBoard(e.target.value);
-          }}
-        >
-          <option value="" disabled>
-            {boardTabs.length ? 'Choose a board…' : 'No boards yet'}
-          </option>
-          {boardTabs.map((t) => (
-            <option key={t.id} value={t.id} disabled={boardsOf(t).length === 0}>
-              {t.name}
-            </option>
-          ))}
-          {b.canEdit ? <option value={NEW}>+ New Board</option> : null}
-        </Select>
-      </SettingsField>
-      <SettingsField label="Card Type">
-        <div className="flex items-center gap-1">
+    <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1 [&>*]:min-w-0">
+        <SettingsField label="Board">
           <Select
-            className="min-w-0 flex-1"
+            className="w-full"
             selectClassName="text-[13px]"
-            value={dest && takes.some((t) => t.id === dest.typeId) ? dest.typeId : ''}
-            disabled={!b.canEdit || !board}
+            value={destTab?.id ?? ''}
+            disabled={!b.canEdit}
             onChange={(e) => {
-              if (e.target.value === NEW) return b.actions.newCardType();
-              b.actions.setDestinationType(e.target.value);
+              if (e.target.value === NEW) return b.actions.newResponsesBoard();
+              // Its type, column and set values; an empty form then takes the type's questions, a step of its own.
+              b.actions.setDestinationBoard(e.target.value);
             }}
           >
             <option value="" disabled>
-              Choose a card type…
+              {boardTabs.length ? 'Choose a board…' : 'No boards yet'}
             </option>
-            {takes.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.label}
+            {boardTabs.map((t) => (
+              <option key={t.id} value={t.id} disabled={boardsOf(t).length === 0}>
+                {t.name}
               </option>
             ))}
-            {b.canEdit ? <option value={NEW}>+ New Card Type</option> : null}
+            {b.canEdit ? <option value={NEW}>+ New Board</option> : null}
           </Select>
-          {/* The card type's own editor (its fields, display and tabs), to shape it before mapping answers. */}
-          {b.canEdit && plan && b.type ? (
-            <button
-              type="button"
-              aria-label={`Edit card type ${b.type.label}`}
-              onClick={() => {
-                onLeave?.();
-                plan.editType({ id: b.type!.id });
+        </SettingsField>
+        <SettingsField label="Card Type">
+          <div className="flex items-center gap-1">
+            <Select
+              className="min-w-0 flex-1"
+              selectClassName="text-[13px]"
+              value={dest && takes.some((t) => t.id === dest.typeId) ? dest.typeId : ''}
+              disabled={!b.canEdit || !board}
+              onChange={(e) => {
+                if (e.target.value === NEW) return b.actions.newCardType();
+                b.actions.setDestinationType(e.target.value);
               }}
-              className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
             >
-              <PencilIcon />
-            </button>
-          ) : null}
-        </div>
-      </SettingsField>
+              <option value="" disabled>
+                Choose a card type…
+              </option>
+              {takes.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.label}
+                </option>
+              ))}
+              {b.canEdit ? <option value={NEW}>+ New Card Type</option> : null}
+            </Select>
+            {/* The card type's own editor (its fields, display and tabs), to shape it before mapping answers. */}
+            {b.canEdit && plan && b.type ? (
+              <button
+                type="button"
+                aria-label={`Edit card type ${b.type.label}`}
+                onClick={() => {
+                  onLeave?.();
+                  plan.editType({ id: b.type!.id });
+                }}
+                className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+              >
+                <PencilIcon />
+              </button>
+            ) : null}
+          </div>
+        </SettingsField>
+      </div>
       {b.canEdit && type && toAsk.length ? (
         <DashedAdd
           label={`Add Questions for ${type.label}’s Fields`}
@@ -301,11 +303,11 @@ function BoardDestination({ tabs, onLeave }: { tabs: readonly Tab[]; onLeave?: (
           {destinationWarningText(warning, type.label, destTab?.name ?? 'the board')}
         </p>
       ) : (
-        <p className="rounded-lg bg-slate-50 px-3 py-2 text-[13px] leading-relaxed text-slate-700 dark:bg-slate-800/60 dark:text-slate-200">
-          {ruled.length ? 'Otherwise, each' : 'Each'} response becomes a{' '}
-          <strong>{b.type?.label}</strong> card in <strong>{column?.name}</strong> on{' '}
-          <strong>{destTab?.name}</strong>.
-        </p>
+        <Flow
+          lead={ruled.length ? 'Otherwise, each response' : 'Each response'}
+          steps={[`${b.type?.label ?? ''} card`, column?.name ?? '', destTab?.name ?? '']}
+          read={`${ruled.length ? 'Otherwise, each' : 'Each'} response becomes a ${b.type?.label} card in ${column?.name} on ${destTab?.name}.`}
+        />
       )}
       {/* Other card types by an answer (forms.md "Choosing the card type by an answer"). */}
       {!problem && type ? <CardTypeRules boards={setups} takes={takes} /> : null}
@@ -351,5 +353,75 @@ function DashedAdd({
         </span>
       </button>
     </Tooltip>
+  );
+}
+
+// Cards on a Board or Rows in a Sheet: a tile each, its icon, name and what it makes.
+function KindTile({
+  on,
+  disabled,
+  icon,
+  name,
+  detail,
+  onPick,
+}: {
+  on: boolean;
+  disabled: boolean;
+  icon: React.ReactNode;
+  name: string;
+  detail: string;
+  onPick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      role="radio"
+      aria-checked={on}
+      disabled={disabled}
+      onClick={onPick}
+      className={`flex min-w-0 cursor-pointer flex-col items-start gap-1.5 rounded-xl border p-3 text-left transition disabled:cursor-default ${
+        on
+          ? 'border-brand-500 bg-brand-50 ring-1 ring-brand-500 dark:border-brand-400 dark:bg-brand-500/10 dark:ring-brand-400'
+          : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:hover:border-slate-500 dark:hover:bg-slate-800'
+      }`}
+    >
+      <span
+        className={`grid size-8 place-items-center rounded-lg ${
+          on
+            ? 'bg-brand-700 text-white dark:bg-brand-600'
+            : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+        }`}
+      >
+        {icon}
+      </span>
+      <span className="text-[13px] font-semibold text-slate-900 dark:text-slate-50">{name}</span>
+      <span className="text-[12px] leading-snug text-slate-500 dark:text-slate-400">{detail}</span>
+    </button>
+  );
+}
+
+// Where a response goes, read as a path: "Each response → Bug card → New → Bugs". `read` is the sentence a screen
+// reader hears in its place.
+function Flow({ lead, steps, read }: { lead: string; steps: readonly string[]; read: string }) {
+  return (
+    <div className="rounded-xl bg-slate-50 px-3 py-2.5 dark:bg-slate-800/60">
+      <p className="sr-only">{read}</p>
+      <p
+        aria-hidden
+        className="flex flex-wrap items-center gap-1.5 text-[13px] text-slate-600 dark:text-slate-300"
+      >
+        <span>{lead}</span>
+        {steps.filter(Boolean).map((step, i) => (
+          <span key={i} className="flex items-center gap-1.5">
+            <span className="text-slate-400">
+              <ArrowIcon />
+            </span>
+            <span className="rounded-md bg-white px-2 py-0.5 font-semibold text-slate-900 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:text-slate-50 dark:ring-slate-700">
+              {step}
+            </span>
+          </span>
+        ))}
+      </p>
+    </div>
   );
 }

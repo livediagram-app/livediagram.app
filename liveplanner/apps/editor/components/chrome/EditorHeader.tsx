@@ -12,7 +12,9 @@ import {
 import { explorerItemHref } from '@liveworkspace/workbench/lib/explorer-href';
 import { HoverCard } from '@liveplanner/ui';
 import { AuthControls } from '@liveworkspace/workbench/components/chrome/AuthControls';
-import { useFormShareHost } from '@/lib/form-share-store';
+import { useFormShareHost, type FormShareHost } from '@/lib/form-share-store';
+import { lucideEye, lucidePencil } from '@liveworkspace/icons/lucide';
+import { lucideGlyph } from '@liveplanner/ui';
 import {
   CORNER_BTN,
   CORNER_ON,
@@ -58,7 +60,14 @@ export function EditorHeader({
     <SharedEditorHeader
       {...rest}
       // A form tab's Share Form takes Share's place (docs/specs/030-forms/forms.md).
-      shareAction={formShare ? <ShareFormButton {...formShare} /> : undefined}
+      shareAction={
+        formShare ? (
+          <>
+            <PreviewFormButton {...formShare} corner={false} />
+            <ShareFormButton {...formShare} />
+          </>
+        ) : undefined
+      }
       app="liveplanner"
       logoHref={explorerItemHref(itemId)}
       words={WORDS}
@@ -71,7 +80,7 @@ export function EditorHeader({
 
 // Share Form (docs/specs/030-forms/forms.md): publishes the open form tab and copies its link, filled in brand while
 // the form is published, as Share is while the plan is shared.
-function ShareFormButton({ published, open }: { published: boolean; open: () => void }) {
+function ShareFormButton({ published, open }: FormShareHost) {
   return (
     <HoverCard
       title="Share Form"
@@ -105,12 +114,64 @@ export function PlanCornerActions(
     <EditorCornerActions
       {...props}
       copyDescription={WORDS.copyDescription}
-      shareAction={formShare ? <CornerShareFormButton {...formShare} /> : undefined}
+      shareAction={
+        formShare ? (
+          <>
+            <PreviewFormButton {...formShare} corner />
+            <CornerShareFormButton {...formShare} />
+          </>
+        ) : undefined
+      }
     />
   );
 }
 
-function CornerShareFormButton({ published, open }: { published: boolean; open: () => void }) {
+const EyeIcon = lucideGlyph(lucideEye, 16);
+const EditIcon = lucideGlyph(lucidePencil, 16);
+
+// Preview (docs/specs/030-forms/forms.md "Preview"), left of Share Form: the form as its link draws it, and Edit Form
+// back to the builder. Filled in brand while previewing.
+function PreviewFormButton({
+  preview,
+  togglePreview,
+  corner,
+}: FormShareHost & { corner: boolean }) {
+  const label = preview ? 'Edit Form' : 'Preview';
+  const Icon = preview ? EditIcon : EyeIcon;
+  return (
+    <HoverCard
+      title={label}
+      description={
+        preview ? 'Back to building the form.' : 'See the form as people who open its link will.'
+      }
+    >
+      <button
+        type="button"
+        data-tour-id="preview-form"
+        onClick={togglePreview}
+        aria-pressed={preview}
+        className={
+          corner
+            ? `${CORNER_BTN} ${preview ? CORNER_ON : CORNER_TONE}`
+            : `${HEADER_ACTION_BTN} ${headerActionTone(preview)}`
+        }
+      >
+        {corner ? (
+          <Icon aria-hidden />
+        ) : (
+          <HeaderGlyph>
+            <Icon aria-hidden />
+          </HeaderGlyph>
+        )}
+        <span className={corner ? 'phone:sr-only [[data-compact]_&]:sr-only' : undefined}>
+          {label}
+        </span>
+      </button>
+    </HoverCard>
+  );
+}
+
+function CornerShareFormButton({ published, open }: FormShareHost) {
   return (
     <HoverCard
       title="Share Form"

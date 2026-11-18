@@ -9,6 +9,8 @@
     "./styles/image-backing.css": "./src/styles/image-backing.css",
     "./styles/corner-actions.css": "./src/styles/corner-actions.css",
     "./components/chrome/EditorCornerActions": "./src/components/chrome/EditorCornerActions.tsx",
+    "./components/image-search/ImageSearchPane": "./src/components/image-search/ImageSearchPane.tsx",
+    "./components/image-search/ImageSearchLoader": "./src/components/image-search/ImageSearchLoader.tsx",
     "./components/chrome/RoleTool": "./src/components/chrome/RoleTool.tsx",
     "./components/chrome/MenuCardLogo": "./src/components/chrome/MenuCardLogo.tsx",
     "./bindings": "./src/bindings.ts",

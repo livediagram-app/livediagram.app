@@ -15,7 +15,11 @@ import {
 import { fromLocalInput, localInputValue } from '@liveplanner/items';
 import { RatingInput } from './RatingInput';
 import { FIELD, FIELD_BAD, FIELD_OK } from './answer-field';
-import { Choices, Dropdown, RangeAnswer } from './question-answers';
+import { Choices, ColourAnswer, Dropdown, RangeAnswer } from './question-answers';
+
+// What a Checkbox says beside its box when its builder wrote nothing (docs/specs/030-forms/forms.md "Question types").
+export const checkLabelOf = (q: Pick<PublicQuestion, 'checkLabel' | 'required'>) =>
+  q.checkLabel ?? (q.required ? 'Required' : 'Tick if it applies');
 
 // A text answer's box as respondents see it, for the builder's placeholder field to wear the same.
 export { ANSWER_FIELD } from './answer-field';
@@ -42,6 +46,7 @@ export function placeholderHint(q: PublicQuestion): string {
   if (q.type === 'email') return 'name@example.com';
   if (q.type === 'link') return 'https://';
   if (q.type === 'phone') return '+44 20 7946 0958';
+  if (q.type === 'duration') return 'Such as 2h 30m';
   return 'Your answer';
 }
 
@@ -271,10 +276,40 @@ export function QuestionControl({
           />
           <span className="sr-only">{q.prompt}</span>
           <span aria-hidden className="text-slate-600 dark:text-slate-300">
-            {q.required ? 'Required' : 'Tick if it applies'}
+            {checkLabelOf(q)}
           </span>
         </label>
       );
+    // Typed as people say it ("2h 30m"), read as whole minutes (forms.md "Question types").
+    case 'duration':
+      return (
+        <input
+          {...common}
+          type="text"
+          autoComplete="off"
+          className={`${field} max-w-xs`}
+          value={text}
+          placeholder={q.placeholder ?? placeholderHint(q)}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      );
+    case 'colour':
+      return (
+        <ColourAnswer
+          value={typeof value === 'string' ? value : undefined}
+          onChange={(c) => {
+            onChange(c);
+            onBlur?.();
+          }}
+          disabled={disabled}
+          invalid={invalid}
+          labelledBy={labelledBy}
+          describedBy={describedBy}
+        />
+      );
+    // A content block asks nothing (ContentBlockView draws it).
+    case 'content':
+      return null;
   }
 }
 
