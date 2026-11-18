@@ -89,26 +89,65 @@ export function withAppendedSlides(
 export function appendTemplateDeck(env, token, documentId, kind, tab): Promise<string | null>; // the note
 ```
 
+Slides an agent appends (spec "Slides an agent appends"):
+
+```ts
+// packages/document/src/slide-deck.ts
+export function parseSlides(raw: unknown): Slide[] | null; // null unless an array of slides, every one well formed
+export function mergeSlides(deck: Deck, added: readonly Slide[]): Deck; // ids it lacks, after its own; same deck if none
+export function appendToStoredPresentation(
+  presentation: string | null,
+  added: readonly Slide[],
+): { presentation: string | null; added: Slide[] }; // the first deck merged, later decks kept
+// packages/api-schema/src/room-op.ts: RoomOp gains { kind: 'deck-slides'; slides: Slide[] }, a SYSTEM_OP_KINDS kind
+// apps/api/src/routes/documents.ts: PUT body `appendSlides`; apps/api/src/room-client.ts relayDeckSlides(env, id, slides)
+// apps/api/src/room-internal.ts: WORKER_MUTATION_KINDS gains 'deck-slides'
+// apps/editor: room-op-receive.ts hands it to receiveDeckSlides (useEditorRoom's receiveDeckSlidesRef, filled by
+// useEditorPresentation) -> useSlideDeck(...).receiveSlides(slides)
+export const DECK_ECHO_WINDOW_MS = 10_000; // useSlideDeck: a deck save this recent is saved again with them
+```
+
+1. The MCP sends `PUT { appendSlides }`. The api's `appendDocumentSlides` (document-content.ts) reads the stored
+   deck, `appendToStoredPresentation`, refuses past `MAX_DECK_LEN`, and writes with
+   `UPDATE ... WHERE id = ? AND presentation IS <the text it read>`; no row changed means a save landed in between, so
+   it reads again, up to `DECK_APPEND_ATTEMPTS` (5), then logs `[deck-append] lost every race for the deck` and the
+   route answers 409 `deck_busy`. It runs before the rename, so a refused append writes nothing. When any slide was
+   added, `relayDeckSlides` with those alone (best-effort and logged, like the rename relay).
+2. The answer's `presentation` holding every slide id is the MCP's proof; without it (an api from before) it falls back
+   to `withAppendedSlides` and a whole-deck `PUT`.
+3. The editor checks the op's envelope (`room-op-shape.ts`: `slides` is an array), then `receiveSlides` keeps only
+   well-formed slides (`parseSlides` per slide) and `mergeSlides` them. Nothing new: nothing changes. Otherwise, when
+   not read-only and a save is pending or the last one went out within `DECK_ECHO_WINDOW_MS`, the merged deck is saved.
+4. A full resync (`useRoomResync`) reads the document's `presentation` with its tab list and hands it to
+   `useSlideDeck(...).receiveStoredDeck` (through `useEditorRoom`'s `receiveStoredDeckRef`): `mergeSlides` of the
+   stored first deck, never saved, skipped while a save is pending or within `DECK_ECHO_WINDOW_MS`.
+
 A slide's region is the union of its anchors (first line of a label or page title, whole match first, then as a
 prefix) and each anchor's panel: the smallest element round it under `PANEL_MAX_SHARE` of the board. Its members are
 the elements whose centre lies in the region and that are no bigger than it; arrows are left to `resolveSlide`.
 
 ## Errors and edge cases
 
-| Case                                               | Handling                                                             |
-| -------------------------------------------------- | -------------------------------------------------------------------- |
-| A press while a move animates                      | Counted from `asked`; React commits the latest target after the move |
-| A jump (the list, Home, End) while a move animates | Taken as given; `asked` becomes it                                   |
-| A step past the last slide                         | Clamped to `runnable.length` (the end state)                         |
-| The deck edited under the presenter                | `at` follows the slide by id; `asked` clears when they meet          |
-| No View Transitions in the browser                 | React applies the change; the slide cuts                             |
-| The tab hidden mid-move                            | The browser skips the animation; the state is already committed      |
-| Fullscreen refused or failing to exit              | Logged; the deck runs in the window                                  |
-| Leaving mid-move                                   | Unchanged: the exit restores the view in the same commit             |
-| A template slide's anchor is gone from the tab     | That slide is left out; the others seed                              |
-| A template lands on a tab with work on it          | Nothing lands, so no slides are appended                             |
-| `add_tab` cannot read or write the deck            | The tab stays made; the result's note says the slides were not added |
-| A viewer (read only) picks nothing                 | `appendSlides` is a no-op when read only                             |
+| Case                                                        | Handling                                                              |
+| ----------------------------------------------------------- | --------------------------------------------------------------------- |
+| A press while a move animates                               | Counted from `asked`; React commits the latest target after the move  |
+| A jump (the list, Home, End) while a move animates          | Taken as given; `asked` becomes it                                    |
+| A step past the last slide                                  | Clamped to `runnable.length` (the end state)                          |
+| The deck edited under the presenter                         | `at` follows the slide by id; `asked` clears when they meet           |
+| No View Transitions in the browser                          | React applies the change; the slide cuts                              |
+| The tab hidden mid-move                                     | The browser skips the animation; the state is already committed       |
+| Fullscreen refused or failing to exit                       | Logged; the deck runs in the window                                   |
+| Leaving mid-move                                            | Unchanged: the exit restores the view in the same commit              |
+| A template slide's anchor is gone from the tab              | That slide is left out; the others seed                               |
+| A template lands on a tab with work on it                   | Nothing lands, so no slides are appended                              |
+| `add_tab` cannot read or write the deck                     | The tab stays made; the result's note says the slides were not added  |
+| An appended slide the deck already holds                    | Skipped by id, on the api and in every editor; nothing added twice    |
+| `appendSlides` with `presentation`, or not slides           | 400 `invalid appendSlides`, nothing written                           |
+| The room cannot be reached after an append                  | The deck is stored; logged; open editors get the slides on reload     |
+| A whole-deck save lands between the append's read and write | The compare-and-set misses; the append reads again and merges into it |
+| Every attempt loses that race                               | 409 `deck_busy`, nothing written; the MCP's note says not added       |
+| The room cannot replay a `deck-slides` op                   | The resync reads the stored deck back and merges it                   |
+| A viewer (read only) picks nothing                          | `appendSlides` is a no-op when read only                              |
 
 ## Performance and limits
 

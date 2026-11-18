@@ -4,8 +4,7 @@
 // (the smallest element around it, short of a board-sized one) joins it, and the slide shows every element whose
 // centre lies in the region they cover. Arrows are left out: a slide shows an arrow whose two ends are on it.
 import {
-  firstDeck,
-  parseStoredPresentation,
+  appendToStoredPresentation,
   type Element,
   type Slide,
   type Tab,
@@ -149,14 +148,12 @@ function takeUnder(region: Box, boxed: { box: Box }[]): Box {
 
 /**
  * A stored presentation (the document row's serialised deck, or null) with slides appended to its first deck, after
- * whatever it already shows; any later deck is kept as it was.
+ * whatever it already shows; any later deck is kept as it was. A slide the deck already holds (by id) is not added
+ * again, so a retried append is harmless.
  */
 export function withAppendedSlides(
   presentation: string | null,
   added: readonly Slide[],
 ): string | null {
-  if (added.length === 0) return presentation;
-  const stored = parseStoredPresentation(presentation);
-  const slides = [...firstDeck(stored).slides, ...added];
-  return JSON.stringify({ decks: [{ slides }, ...(stored?.decks.slice(1) ?? [])] });
+  return appendToStoredPresentation(presentation, added).presentation;
 }

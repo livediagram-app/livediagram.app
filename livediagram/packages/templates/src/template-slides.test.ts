@@ -111,6 +111,11 @@ describe('withAppendedSlides', () => {
     expect(next?.decks.map((d) => d.slides.map((s) => s.id))).toEqual([['a', 'b', 'c'], ['z']]);
   });
 
+  it('adds a slide the deck already holds only once', () => {
+    const stored = withAppendedSlides(null, [slide('a')]);
+    expect(withAppendedSlides(stored, [slide('a')])).toBe(stored);
+  });
+
   it('leaves the stored deck alone when nothing is added', () => {
     expect(withAppendedSlides('{"decks":[]}', [])).toBe('{"decks":[]}');
     expect(withAppendedSlides(null, [])).toBeNull();

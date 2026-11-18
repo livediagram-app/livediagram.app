@@ -34,6 +34,7 @@ const WELL_FORMED: Record<string, unknown>[] = [
   { kind: 'tab-meta', tabId: 't1', patch: { name: 'x' }, clear: ['timer'] },
   { kind: 'tab-saved', tabId: 't1', rev: 3, digest: 'a'.repeat(64) },
   { kind: 'document-meta', name: 'Doc', tabs: [{ id: 't1', name: 'T', orderIndex: 0 }] },
+  { kind: 'deck-slides', slides: [{ id: 's', tabId: 't1', elementIds: [] }] },
   // Presence, and a kind this build does not know, pass as they always have.
   { kind: 'cursor', x: 1, y: 2 },
   { kind: 'from-a-newer-build', anything: true },
@@ -66,6 +67,7 @@ describe('roomOpIsWellFormed', () => {
       { kind: 'changeset', tabId: 't1', elementOps: [{ kind: 'patch', id: 'a', set: {} }] },
     ],
     ['a tab-meta without its patch', { kind: 'tab-meta', tabId: 't1' }],
+    ['a deck-slides without its slides', { kind: 'deck-slides', slides: 'x' }],
     [
       'a tab-saved without a whole revision',
       { kind: 'tab-saved', tabId: 't1', rev: 1.5, digest: 'a'.repeat(64) },

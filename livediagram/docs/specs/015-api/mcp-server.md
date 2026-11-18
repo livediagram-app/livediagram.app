@@ -318,8 +318,9 @@ Add a **new tab** (its own canvas) to an existing document, the motivating case:
 instead of `elements`, exactly like a `create_document` tab. Validates + lays out
 exactly like a `create_document` tab, then submits a [changeset](../024-agents/agent-changesets.md)
 that creates the tab, so anyone with the document open sees it arrive. A presented template's slides are then
-appended after the document's deck (read with `GET /documents/:id`, written back whole with `PUT`,
-[Decks a template seeds](../012-collaboration/presentation-mode.md#decks-a-template-seeds)); a note says so, or that
+appended after the document's deck (`PUT /documents/:id` with `appendSlides`, which tells everyone with the document
+open, [Slides an agent appends](../012-collaboration/presentation-mode.md#slides-an-agent-appends); against an api
+that does not know `appendSlides` yet, read with `GET` and written back whole as before); a note says so, or that
 the tab was made without them when the deck could not be written. A C4 `template` (`c4-context`, `c4-container`,
 `c4-component`) links its level to the levels already in the document, as the editor's template flow does
 ([Templates](../008-canvas/canvas-and-palette.md), the C4 levels link to each other): the new links are written as one

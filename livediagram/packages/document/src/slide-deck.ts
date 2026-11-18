@@ -250,3 +250,45 @@ export function firstDeck(stored: StoredPresentation | null): Deck {
 export function storePresentation(deck: Deck): StoredPresentation | null {
   return deck.slides.length === 0 ? null : { decks: [deck] };
 }
+
+// --- Slides an agent appends -------------------------------------------------
+//
+// docs/specs/012-collaboration/presentation-mode.md "Slides an agent appends": the api appends a presented
+// template's slides to the stored deck and tells the room, and every open editor takes them in. Both sides merge by
+// slide id, so a replayed op, or a retried append, adds nothing twice.
+
+/** A list of slides as sent: null unless it is an array whose every entry is a well-formed slide. */
+export function parseSlides(raw: unknown): Slide[] | null {
+  if (!Array.isArray(raw)) return null;
+  return raw.every(isSlide) ? raw : null;
+}
+
+/** The deck with each added slide it does not already hold (by id) after its own; the same deck when none is new. */
+export function mergeSlides(deck: Deck, added: readonly Slide[]): Deck {
+  const held = new Set(deck.slides.map((s) => s.id));
+  const fresh: Slide[] = [];
+  for (const slide of added) {
+    if (held.has(slide.id)) continue;
+    held.add(slide.id);
+    fresh.push(slide);
+  }
+  return fresh.length === 0 ? deck : { slides: [...deck.slides, ...fresh] };
+}
+
+/**
+ * A stored presentation (serialised, or null) with slides merged into its first deck (`mergeSlides`), any later deck
+ * kept as it was; and the slides that were actually added.
+ */
+export function appendToStoredPresentation(
+  presentation: string | null,
+  added: readonly Slide[],
+): { presentation: string | null; added: Slide[] } {
+  const stored = parseStoredPresentation(presentation);
+  const first = firstDeck(stored);
+  const merged = mergeSlides(first, added);
+  if (merged === first) return { presentation, added: [] };
+  return {
+    presentation: JSON.stringify({ decks: [merged, ...(stored?.decks.slice(1) ?? [])] }),
+    added: merged.slides.slice(first.slides.length),
+  };
+}

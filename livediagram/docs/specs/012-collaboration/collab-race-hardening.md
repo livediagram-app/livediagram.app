@@ -238,7 +238,10 @@ and the next save from anybody repairs it.
 - **Ops sent while the socket is down are held, not dropped.** The room
   client keeps an outbox of document ops and poll answers (bounded at 500)
   and flushes it, in order, right after the reconnect's hello and sync.
-  Cursors, selections and other presence ops are not held.
+  Cursors, selections and other presence ops are not held. A dot cast before
+  the room client even exists (the page just opened) is held by the editor for
+  its document and handed to the client as it is made
+  ([Session tools](session-tools.md), "A dot cast before the room opens").
 
 Residual, stated plainly: comment names are the sender's own choice; a comment carries the name of the session that
 posted it rather than of whoever saved first.

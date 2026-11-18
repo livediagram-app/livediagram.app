@@ -2,7 +2,12 @@
 // outline a document read carries, what the document knows of itself, the slide deck, the document row a create
 // makes, and a copy's export and import. Runs inside the document's Durable Object, on `env.DOCUMENT_DB`.
 
-import { remapTabLinks, type Element } from '@livediagram/document';
+import {
+  appendToStoredPresentation,
+  remapTabLinks,
+  type Element,
+  type Slide,
+} from '@livediagram/document';
 import { redactTabDataAuthors } from '../comments';
 import { redactTabDataForCommunity } from '@liveworkspace/community/app';
 import { servableImageIds } from '../db/image-grants';
@@ -216,6 +221,38 @@ export async function setDocumentPresentation(
   await env.DOCUMENT_DB.prepare('UPDATE document SET presentation = ?, saved_at = ? WHERE id = ?')
     .bind(presentation, Date.now(), documentId)
     .run();
+}
+
+// Slides appended to the deck (docs/specs/012-collaboration/presentation-mode.md "Slides an agent appends"): read,
+// merged by id and written only if the deck is still the one read (a compare-and-set on the stored text), so a whole
+// deck someone saves in between is merged into rather than written over. Tried again on a lost race, at most
+// DECK_APPEND_ATTEMPTS times (safe range 2 to 10: each loss needs another save inside one read-write gap). Answers
+// what was stored and the slides actually added; null when the deck would pass `maxLen` or the race was never won.
+export const DECK_APPEND_ATTEMPTS = 5;
+
+export async function appendDocumentSlides(
+  env: DocumentEnv,
+  documentId: string,
+  slides: readonly Slide[],
+  maxLen: number,
+): Promise<{ presentation: string | null; added: Slide[] } | 'too_large' | null> {
+  for (let attempt = 0; attempt < DECK_APPEND_ATTEMPTS; attempt++) {
+    const row = await env.DOCUMENT_DB.prepare('SELECT presentation FROM document WHERE id = ?')
+      .bind(documentId)
+      .first<{ presentation: string | null }>();
+    const read = row?.presentation ?? null;
+    const next = appendToStoredPresentation(read, slides);
+    if (next.added.length === 0) return next;
+    if ((next.presentation?.length ?? 0) > maxLen) return 'too_large';
+    const res = await env.DOCUMENT_DB.prepare(
+      'UPDATE document SET presentation = ?, saved_at = ? WHERE id = ? AND presentation IS ?',
+    )
+      .bind(next.presentation, Date.now(), documentId, read)
+      .run();
+    if (res.meta.changes === 1) return next;
+  }
+  console.warn('[deck-append] lost every race for the deck', { documentId });
+  return null;
 }
 
 // ---------- Copies --------------------------------------------------------------------------------------------

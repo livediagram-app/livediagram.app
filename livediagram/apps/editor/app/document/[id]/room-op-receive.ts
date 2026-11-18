@@ -51,6 +51,7 @@ export function receiveRoomOp(
     receiveQa,
     receiveDocumentTrashed,
     receiveChangeset,
+    receiveDeckSlides,
     receivePeerModeSwitch,
     receiveTabSaved,
   } = opts;
@@ -210,6 +211,10 @@ export function receiveRoomOp(
     // An agent's changeset, applied, outlined and toasted by useChangesetFeed. System-only, like
     // the share ops: the room refuses one from a client socket.
     if (from === 'system') receiveChangeset(op);
+  } else if (op.kind === 'deck-slides') {
+    // Slides an agent appended to the deck (docs/specs/012-collaboration/presentation-mode.md "Slides an agent
+    // appends"), taken in by the deck. System-only, like the changeset.
+    if (from === 'system') receiveDeckSlides?.(op.slides);
   } else if (op.kind === 'document-trashed') {
     // The document went to the Trash. System-only, like the share ops:
     // the room refuses it from a client socket.
