@@ -50,6 +50,7 @@ The token-callable surface mirrors the app:
 - **Sheets**: read and change the cells of a plan's Sheets, their rows and columns, and their titles.
 - **Comments**: read, add, reply to, resolve and reopen comment threads, on a tab or on a card.
 - **Forms**: build a Form tab's [form](/help/plan/forms/), publish or close its link, and send a test response, the same calls the CLI's `form` commands make.
+- **Automations**: list, add, change, switch on and off, test and run a plan's [Automations](/help/plan/automations/) rules, and read their Audit Trail. These need an Editor of the whole plan; a read-only token only lists rules and reads the Audit Trail.
 - **Sharing**: create, list, extend and revoke share links, and set or remove a share password.
 - **Trash**: list what you can restore, restore it, or delete it for good.
 
@@ -57,7 +58,7 @@ The token-callable surface mirrors the app:
 
 ## The full reference
 
-The complete, machine-readable description of every endpoint, request shape, and response shape is published as an **OpenAPI 3.1** plan, with no authentication required:
+The complete, machine-readable description of every endpoint, request shape, and response shape is published as **OpenAPI 3.1**, with no authentication required:
 
 ```bash
 curl https://www.liveplanner.app/api/openapi.json
@@ -66,8 +67,8 @@ curl https://www.liveplanner.app/api/openapi.json
 Point Postman, an OpenAPI viewer, or a client generator at that URL to explore the whole surface or scaffold a client. Endpoints an external token can use are tagged `x-token-usable`.
 
 <Tip>
-  The realtime collaboration WebSocket is not part of the REST reference. The OpenAPI plan lists the
-  upgrade endpoint, but the live message protocol is intentionally separate.
+  The realtime collaboration WebSocket is not part of the REST reference. The OpenAPI document lists
+  the upgrade endpoint, but the live message protocol is intentionally separate.
 </Tip>
 
 </ArticleLayout>

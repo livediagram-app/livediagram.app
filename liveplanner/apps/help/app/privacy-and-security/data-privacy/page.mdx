@@ -19,13 +19,16 @@ Plans are saved through a single Cloudflare Worker API. The browser never talks 
 
 - **Durable storage**: each plan lives in its own Cloudflare Durable Object, which keeps its tabs, cards, sheets and forms in its own storage. Where a plan is filed, its folders, its share links and its History (the last 30 days) are kept by liveworkspace's index, the service every liveworkspace app files its work in.
 - **Real-time state** (who is in the room, live cursors, in-flight edits) is handled by the same Durable Object, one room per plan. The room also keeps a working record of collaborative input (answers, ideas, ticks, votes and comments) in its own storage, so that saves made at the same moment can be merged.
-- **A cached picture of each plan**, used for its thumbnail, live image and share-link card, is stored in Cloudflare R2 object storage and served back through the same API. liveplanner takes no image uploads.
+- **A cached picture of each plan**, used for its thumbnail, live image and share-link card, is drawn and kept in Cloudflare R2 object storage by liveworkspace's media service, the one every liveworkspace app uses.
+- **Pictures you upload** to a card's Image field are kept by the same media service, in your own gallery. The plan records which pictures belong to it, so only people who can open the plan can see them.
 
 **Or nowhere but your own machine.** A plan created in [Offline Mode](/help/privacy-and-security/offline-mode/) lives only in this browser's IndexedDB. It is never stored by the API, so none of the storage above holds a copy of it, and it stays that way until you choose **Sync Plan** to move it to the cloud.
 
 liveplanner runs on Cloudflare, and its email goes out through Cloudflare Email Service too. Emails about your work name the plan, and a mention or an assigned action quotes a little of the comment or action (see [Email Notifications](/help/account-and-data/email-notifications/)). Your plan content goes anywhere else only when you choose a feature that needs it:
 
 - **AI tools you connect** yourself, through [MCP](/help/account-and-data/connect-ai-mcp/) or the [CLI](/help/developers/cli/), read the plans you let them reach, under their own terms.
+- **[Google Drive](/help/account-and-data/google-drive/)**, once you connect it, keeps a copy of each of your own plans in your Drive.
+- **[The Community](/help/collaboration/sharing/community/)** shows a plan to everyone only when you publish it there.
 
 <Figure caption="Your edits travel through one API to Cloudflare storage, never straight from the browser to storage.">
   <WorkStorage blobs="Snapshots" />
