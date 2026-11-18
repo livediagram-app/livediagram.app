@@ -25,6 +25,7 @@ import {
 import { track } from '@/lib/telemetry';
 import { RECEPTIONIST_COLOUR } from '@/lib/receptionist/receptionist-look';
 import { ReceptionistRing } from './ReceptionistRing';
+import { clearNudge, clearTrim, KEEP_CLEAR_ATTR, type ScreenBox } from './keep-clear';
 import { TypedLine } from './TypedLine';
 
 // His bubble's width in screen px (never past a phone's screen less 32), so every topic row is the same width.
@@ -40,6 +41,17 @@ const EDGE = 16;
 const UNDER_FEET = 10;
 // The tail's reach below the card, in screen px.
 const TAIL = 6;
+
+/** The controls on screen his card keeps clear of (keep-clear.ts): each one's box, skipping any not laid out. */
+function keepClearBoxes(): ScreenBox[] {
+  const out: ScreenBox[] = [];
+  for (const el of document.querySelectorAll(`[${KEEP_CLEAR_ATTR}]`)) {
+    const b = el.getBoundingClientRect();
+    if (b.width > 0 && b.height > 0)
+      out.push({ left: b.left, right: b.right, top: b.top, bottom: b.bottom });
+  }
+  return out;
+}
 
 /** His opening line: the welcome, a returning person's hello by their first name, Ask Receptionist, the bell, or goodbye. */
 export function receptionistLine(
@@ -186,7 +198,7 @@ export function ReceptionistBubble({
     const maxX = Math.min(box?.right ?? window.innerWidth, window.innerWidth) - EDGE;
     const left = r.left - nudge;
     const right = r.right - nudge;
-    const nextNudge = left < minX ? minX - left : right > maxX ? maxX - right : 0;
+    const inside = left < minX ? minX - left : right > maxX ? maxX - right : 0;
     // Where his head and feet are on screen, from wherever the card sits now.
     const tall = (feet.y - head.y) * zoom;
     const headY = below ? r.top - UNDER_FEET - tall : r.bottom + TAIL;
@@ -209,7 +221,21 @@ export function ReceptionistBubble({
     // feet, where it would lie on the floor under the walls.
     const nextBelow = !in3D && natural > roomAbove && roomBelow > roomAbove;
     const room = nextBelow ? roomBelow : roomAbove;
-    const nextMaxH = natural > room ? Math.max(80, Math.floor(room - frame)) : 0;
+    const fitH = natural > room ? Math.max(80, Math.floor(room - frame)) : 0;
+    // Never over a control that must stay pressable (keep-clear.ts, Work Tracker 1256): a desk's Welcome bubble with
+    // its Ring Bell. Judged on the whole card, uncapped, where it stands, so the answer is the same on every pass: off
+    // to the nearer side that has the room; else, over his head, shorter, its replies scrolling.
+    const keep = keepClearBoxes();
+    const cardTop = nextBelow ? r.top : r.bottom - natural;
+    const whole = { left, right, top: cardTop, bottom: cardTop + natural };
+    const sideways = keep.length > 0 ? clearNudge(whole, inside, keep, minX, maxX) : inside;
+    const nextNudge = sideways ?? inside;
+    const trim =
+      sideways === null && !nextBelow
+        ? clearTrim({ ...whole, left: left + inside, right: right + inside }, keep)
+        : 0;
+    const trimH = trim > 0 ? Math.max(80, Math.floor(natural - trim - frame)) : 0;
+    const nextMaxH = trimH && fitH ? Math.min(trimH, fitH) : trimH || fitH;
     if (
       Math.abs(nextNudge - nudge) > 0.5 ||
       nextBelow !== below ||
@@ -270,7 +296,9 @@ export function ReceptionistBubble({
           role="dialog"
           aria-label="Receptionist"
           data-receptionist-bubble=""
-          className="pointer-events-auto absolute z-10"
+          // The box stays where he stands while the card inside moves sideways, so only the card takes presses: a
+          // control the card moved off (a Ring Bell, Work Tracker 1256) stays pressable under the empty box.
+          className="pointer-events-none absolute z-10"
           style={{
             left: head.x,
             top: below ? feet.y : head.y,
@@ -280,9 +308,13 @@ export function ReceptionistBubble({
             transformOrigin: below ? '50% 0' : '50% 100%',
             width: `min(${BUBBLE_W}px, calc(100vw - 32px))`,
           }}
-          onPointerDown={(e) => e.stopPropagation()}
         >
-          <div ref={card} style={nudge ? { transform: `translateX(${nudge}px)` } : undefined}>
+          <div
+            ref={card}
+            className="pointer-events-auto"
+            style={nudge ? { transform: `translateX(${nudge}px)` } : undefined}
+            onPointerDown={(e) => e.stopPropagation()}
+          >
             <SpeechCard
               colour={RECEPTIONIST_COLOUR}
               maxWidth={BUBBLE_W}
