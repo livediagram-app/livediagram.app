@@ -333,7 +333,7 @@ function CanvasView(props: CanvasProps) {
   // A walking click on a reading piece opens it large (docs/specs/008-canvas/avatar-mode.md "The reader").
   const elementReader = useElementReader(elements, canvasTool === 'avatar');
   // The 3D view (docs/specs/008-canvas/3d-view.md): while you walk with it on, the stage tilts the world back.
-  const space3D = useSpace3DView(canvasTool === 'avatar');
+  const space3D = useSpace3DView(canvasTool === 'avatar', props.settings?.rotateIn3D === true);
   const spaceTurn = useSpace3DTurn();
   const offscreenContent = useOffscreenContent(elements, mainRef, undefined, {
     tilted: space3D !== 'flat',

@@ -514,7 +514,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 read-only sessions pass no handler): see ThemeStrip. Away while walking. */}
               {!chromeAway && !walking ? <ThemeStrip onOpenTheme={onOpenCanvasTheme} /> : null}
               {/* The 3D View switch (docs/specs/008-canvas/3d-view.md "Turning it on and off"): while walking. */}
-              {walking ? <Space3DButton /> : null}
+              {walking ? <Space3DButton turning={props.settings?.rotateIn3D === true} /> : null}
               <ViewZoomControls
                 onZoomIn={handleZoomIn}
                 onZoomOut={handleZoomOut}

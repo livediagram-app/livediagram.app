@@ -38,6 +38,7 @@ vi.mock('@liveworkspace/workbench/hooks/canvas/useViewportStore', () => ({
 
 import { space3DStageStyle, useSpace3DView } from './useSpace3DView';
 import { Space3DButton } from './Space3DButton';
+import { space3DTurn } from '@/lib/space-3d/space-3d-turn';
 import { Space3DWalls } from './Space3DWalls';
 import { useSpace3DZoom } from './useSpace3DZoom';
 import {
@@ -155,6 +156,36 @@ describe('Space3DButton', () => {
     expect(screen.getByRole('button', { name: '3D View' }).getAttribute('aria-pressed')).toBe(
       'true',
     );
+  });
+
+  // 3d-view.md "Turning the camera": off unless Rotate in 3D View is on.
+  it('offers Turn Left and Turn Right only with Rotate in 3D View on', () => {
+    space3DPreference.set(true);
+    render(<Space3DButton />);
+    expect(screen.queryByRole('button', { name: 'Turn Left' })).toBeNull();
+    cleanup();
+    render(<Space3DButton turning />);
+    expect(screen.getByRole('button', { name: 'Turn Left' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Turn Right' })).toBeTruthy();
+  });
+
+  it('leaves [ and ] alone unless Rotate in 3D View is on, and turns back when it goes off', () => {
+    space3DPreference.set(true);
+    space3DTurn.set(0);
+    const press = () =>
+      act(() => {
+        window.dispatchEvent(new KeyboardEvent('keydown', { code: 'BracketRight', bubbles: true }));
+      });
+    const { rerender } = renderHook(({ turning }) => useSpace3DView(true, turning), {
+      initialProps: { turning: false },
+    });
+    press();
+    expect(space3DTurn.get()).toBe(0);
+    rerender({ turning: true });
+    press();
+    expect(space3DTurn.get()).not.toBe(0);
+    rerender({ turning: false });
+    expect(space3DTurn.get()).toBe(0);
   });
 });
 

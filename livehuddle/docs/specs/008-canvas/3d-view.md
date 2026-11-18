@@ -208,6 +208,9 @@ way I can get an idea of where I am in the space right away".
 
 The owner, 2026-11-18: "quarter turns is fine". You can walk round to see the other side of the room.
 
+- **Off unless asked for** (the owner, 2026-11-18: hide it until it is right, keep the code). **Settings › Editor ›
+  Canvas › Rotate in 3D View** (`rotateIn3D`, missing means off) turns it on. While it is off there are no Turn
+  buttons, `[` and `]` do nothing, and the camera stays looking up the screen (turning the setting off turns it back).
 - **Turn Left and Turn Right** sit beside the 3D View switch while it is on (a curved arrow each, with tooltips), and
   `[` and `]` while walking do the same, with the action keys' guards. Each turns the camera a quarter turn about
   your character, over the tilt's 520 ms ease; turning on past a full turn keeps going round, never back.
