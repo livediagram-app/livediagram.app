@@ -89,13 +89,13 @@ says what a press picks:
   a press on the board's own frame or header hides the whole board.
 - **A Board tab**: its cards, one at a time. Hide Selection hides the cards picked on the board.
 - **A Dashboard tab**: its widgets (each filled slot: a metric, a chart, a note, a board, a list). An empty slot
-  shows nothing to hide.
+  has nothing to hide, so it can't be picked: a press on one while picking works it as usual.
 - **A Sheet tab, a Form tab**: nothing. Cells and questions carry no ids of their own, so they can't be picked.
 - **A Visualisation tab** (one view filling the tab) and **a Sheet filling a canvas tab**: nothing, as on a Sheet tab.
   A board filling a canvas tab offers its cards, as a Board tab does.
 
-- **No dead control.** On a tab with nothing to hide (a Sheet, a Form, an empty canvas, a Board tab while the plan has no
-  cards, a Dashboard with no filled slot, a Visualisation tab) Hide From Recording is not in the dock; it comes back on a tab that has something.
+- **No dead control.** On a tab with nothing to hide (a Sheet, a Form, an empty canvas, a Board tab whose board shows no
+  card, because the plan has none or its filter leaves none, a Dashboard with no filled slot, a Visualisation tab) Hide From Recording is not in the dock; it comes back on a tab that has something.
   Changing to such a tab mid-pick leaves the mode; what is already hidden stays hidden.
 - **The same look and the same rules everywhere.** A hidden card or widget is faded inside the dashed outline for
   the presenter and not drawn for viewers (its place stays empty, the board and the dashboard keep their layout), a
@@ -112,7 +112,8 @@ Pressing a walkthrough in the Walkthroughs panel plays it.
   same region) and the presenter's pointer, a soft dot with a ring for each press. The hidden
   elements are hidden.
 - **The presenter's bubble** sits in the corner they recorded it in, playing their camera, or, recorded with no
-  camera, a round mark with their initial that pulses while the walkthrough plays.
+  camera, a small voice chip instead: their initial, their name and four level bars that move while it plays. It is
+  far smaller than the camera bubble and a different shape, so it never looks like an empty camera.
 - **The player bar** at the bottom centre: play and pause, a scrubber you can drag or click (with a mark at each tab
   change), the time (`1:02 / 3:24`), the speed (1x, 1.5x, 2x), and close. `Space` plays and
   pauses, `←` and `→` skip five seconds, `Esc` closes.

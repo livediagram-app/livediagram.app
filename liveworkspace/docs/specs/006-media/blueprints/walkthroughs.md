@@ -92,17 +92,28 @@ latest `view`, `tab`, `slide` and `cursor` at or before it (binary search). `vie
 `fitView`. A slide showing suspends `view`. Any `wheel` or `pointerdown` on the canvas while playing pauses and sets
 `detached`; Resume clears it and re-applies the current state.
 
+The presenter's mark (`ui/Bubble.tsx`): with a camera, `PlaybackBubble`, the round `BUBBLE_PX` (132) frame holding the
+`<video>`. Without one, `VoiceChip`: a pill `VOICE_CHIP_PX` (40) tall, `data-walkthrough-voice`, holding a 32 px brand
+avatar with the initial (`(name ?? fallback).trim()[0]`, upper case, `?` when blank), the name truncated at 9rem
+(`You` for one's own, the list's `author` otherwise, left out when there is none) and four 3 px bars. While playing
+the bars run `walkthrough-voice` (`scaleY` 0.35 to 1, 0.9 s, each a quarter-cycle apart); paused they rest at 0.35;
+`prefers-reduced-motion` keeps them still. White over a slate border in light, slate-900 in dark, so it reads as a
+label beside the canvas, never a picture frame. Both share `CornerFrame`: the corner classes and `shiftClearOf`,
+which takes the frame's measured size (`offsetWidth`, `offsetHeight`) rather than assuming the bubble's.
+
 Hidden elements are hidden by one `<style>` element: `[data-canvas-content] [data-element-id="<id>"] { visibility:
 hidden !important }` per id, through `CSS.escape`; while recording, the presenter's own view draws them at 0.35
 opacity inside a dashed rose outline (`hiddenCss(ids, "presenter")`).
 
 Hideable marks (`host.hideable`, `WalkthroughHideable`): `marks` are attributes beside `data-element-id` (liveplanner:
-`data-plan-card`, `data-dashboard-slot`) whose value is an id, matched anywhere under the canvas root. `elementIdAt`
+`data-plan-card`, and `data-dashboard-widget` on a filled slot only) whose value is an id, matched anywhere under the canvas root. `elementIdAt`
 takes the nearest element carrying any of them (a card inside a board on the canvas is the card), `onHideableSurface`
 lets picking take presses on them outside `[data-canvas-content]`, `hiddenCss` adds `[<mark>="<id>"]` per mark, and
 `elementBox` rings the first visible match (`checkVisibility`), passing over a covered copy. `canHide()` is read as
 the dock draws: false leaves Hide From Recording out and the picking mode off. `selection()` adds to Hide Selection
-(liveplanner: the cards with `data-selected`). A host without `hideable` behaves as before.
+(liveplanner: the cards with `data-selected`). A host without `hideable` behaves as before. liveplanner answers
+`canHide()` for a Board tab from the cards its board draws after its filter: the board filling the tab registers that
+count (`useRegisterShownCards`, `board-shown-store.ts`), and until it has, the plan's card count stands in.
 
 The camera switch: `useRecorder` holds `cameraOn` (from `localStorage['liveworkspace:walkthrough-camera'] === 'on'`,
 false when absent or throwing) and writes it on each flip; `getUserMedia` gets `video: false` while it is off. A
@@ -208,6 +219,8 @@ site charts them (`apps/site/app/telemetry/_shared/snapshot-walkthrough-metrics.
 | `packages/capture/src/*.test.ts`                                                | constraints with a device, capture support, device lists and labels, the level meter                                                                            |
 | `packages/walkthrough/src/*.test.ts(x)`                                         | the timeline, `fitView`, the recorder's sampling and stop, the client, the UI's states and roles                                                                |
 | `packages/walkthrough/src/telemetry.test.ts`, `ui.test.tsx`                     | each event once, the limits, set-up closed counts nothing, a refused save by its code                                                                           |
+| `packages/walkthrough/src/ui.test.tsx`                                          | a sound-only replay shows the voice chip (initial, name, bars moving only while playing), never a camera-sized frame; `shiftClearOf` by the frame's size        |
+| `liveplanner/apps/editor/lib/walkthrough-hideable.test.ts`                      | a Board tab filtered to no cards has nothing to hide; an empty Dashboard slot can't be picked                                                                   |
 | `packages/walkthrough/src/upload-progress.test.ts`, `ui.test.tsx`, `io.test.ts` | the estimate and its wording, the save card's bar while the media goes, at the finish and after a failure (Download a Copy), the funnel handed `uploadProgress` |
 
 ## Constants and configuration
@@ -233,6 +246,8 @@ site charts them (`apps/site/app/telemetry/_shared/snapshot-walkthrough-metrics.
 | `ESTIMATE_AFTER_MS`               | `1_000`            | `packages/walkthrough` |
 | `PROGRESS_EVERY_MS`               | `500`              | `packages/walkthrough` |
 | `SKIP_MS`                         | `5_000`            | `packages/walkthrough` |
+| `BUBBLE_PX`                       | `132`              | `packages/walkthrough` |
+| `VOICE_CHIP_PX`                   | `40`               | `packages/walkthrough` |
 
 ## Defaults ledger
 
