@@ -248,6 +248,28 @@ describe('a written article read back', () => {
     ]);
   });
 
+  it("keeps a fenced code block's language through import and export", () => {
+    // The opening fence's first info word is the language; the rest of the info string is not kept.
+    expect(shape(blocksOf('```js title="a"\nlet a;\n```'))).toEqual([
+      { type: 'code', text: 'let a;', lang: 'js' },
+    ]);
+    const blocks: ArticleBlock[] = [
+      { id: 'c', type: 'code', text: 'let a;', lang: 'js' },
+      { id: 'd', type: 'code', text: 'x\n```py\ny', lang: 'c++' },
+      { id: 'e', type: 'code', text: 'plain' },
+    ];
+    const markdown = articleToMarkdown({ blocks });
+    expect(markdown).toContain('```js\nlet a;\n```');
+    expect(markdown).toContain('````c++\n');
+    expect(markdown).toContain('```\nplain\n```');
+    expect(roundTrip(blocks)).toEqual(shape(blocks));
+    // A word that is no language name (too long, or holding other characters) is dropped, the code kept.
+    expect(shape(blocksOf(`\`\`\`${'a'.repeat(33)}\nx\n\`\`\`\n\n\`\`\`<b>\ny\n\`\`\``))).toEqual([
+      { type: 'code', text: 'x' },
+      { type: 'code', text: 'y' },
+    ]);
+  });
+
   it('keeps a link whose address holds parentheses', () => {
     const href = 'https://en.wikipedia.org/wiki/Mercury_(planet)';
     const blocks: ArticleBlock[] = [

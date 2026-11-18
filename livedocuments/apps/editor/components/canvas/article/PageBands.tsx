@@ -5,7 +5,12 @@
 // centred, the right one on the right margin, each cut short with an ellipsis rather than running into
 // the next. A view of the style, never pressed. Laid out by pageBandLayout, as an export draws them.
 import type { CSSProperties } from 'react';
+import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import type { BandLine, PageBandLayout } from '@/lib/article/article-band-layout';
+
+/** The bands' muted ink on a light page and on a dark one: each holds 4.5:1 on its paper (white, and the dark
+ *  appearance's slate-900), as their 12 px type needs. */
+export const PAGE_BAND_INK = { light: 'rgb(71 85 105 / 0.8)', dark: 'rgb(255 255 255 / 0.55)' };
 
 const PARTS = ['left', 'center', 'right'] as const;
 
@@ -52,8 +57,11 @@ function Line({
   );
 }
 
-export function PageBands({ layout, dark }: { layout: PageBandLayout; dark: boolean }) {
-  const colour = dark ? 'rgb(255 255 255 / 0.55)' : 'rgb(71 85 105 / 0.8)';
+// `dark`: a page with a fill of its own, by its tone; absent, the plain paper, which is the canvas's own surface
+// (white in light, slate-900 in dark), as the writing on it is inked (ArticleFlows' inkOf).
+export function PageBands({ layout, dark }: { layout: PageBandLayout; dark?: boolean }) {
+  const surface = useCanvasSurface();
+  const colour = (dark ?? surface === 'dark') ? PAGE_BAND_INK.dark : PAGE_BAND_INK.light;
   return (
     <>
       {layout.header ? (

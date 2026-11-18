@@ -5,7 +5,8 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ArticleStyle } from '@livedocuments/document';
 import { ArticleBandsSection } from './ArticleBandsSection';
-import { PageBands } from './PageBands';
+import { CanvasSurfaceProvider } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
+import { PAGE_BAND_INK, PageBands } from './PageBands';
 import { TABLE_ENTRIES, TablePanel } from './page-toolbar-table';
 
 afterEach(cleanup);
@@ -162,5 +163,30 @@ describe('a page’s header and footer', () => {
     const footer = container.querySelector<HTMLElement>('[data-page-band="footer"]')!;
     expect(footer.hasAttribute('data-page-number')).toBe(false);
     expect(footer.style.color).toContain('255');
+  });
+
+  it("follows the canvas's own surface on the plain paper: the dark ink on dark mode's slate-900 (Work Tracker 1176)", () => {
+    const layout = { left: 0, right: 10, font: 'Inter', footer: { y: 9, parts: { left: 'x' } } };
+    const ink = (c: HTMLElement) =>
+      c.querySelector<HTMLElement>('[data-page-band="footer"]')!.style.color.replace(/\s/g, '');
+    const plain = (surface: 'light' | 'dark') =>
+      render(
+        <CanvasSurfaceProvider surface={surface}>
+          <PageBands layout={layout} />
+        </CanvasSurfaceProvider>,
+      ).container;
+    const flat = (v: string) => v.replace(/\s/g, '');
+    expect(ink(plain('dark'))).toBe(flat('rgba(255,255,255,0.55)'));
+    cleanup();
+    expect(ink(plain('light'))).toBe(flat('rgba(71,85,105,0.8)'));
+    cleanup();
+    // A page with a light fill of its own keeps the light ink in dark mode.
+    const filled = render(
+      <CanvasSurfaceProvider surface="dark">
+        <PageBands layout={layout} dark={false} />
+      </CanvasSurfaceProvider>,
+    ).container;
+    expect(ink(filled)).toBe(flat('rgba(71,85,105,0.8)'));
+    expect(PAGE_BAND_INK.dark).toContain('255');
   });
 });

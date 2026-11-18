@@ -342,7 +342,9 @@ export const CanvasPageSheet = memo(function CanvasPageSheet({
       {choosing && editable ? (
         <FirstPageChoice zoom={zoom} onChoose={(kind) => act.choosePageKind(id, kind)} />
       ) : null}
-      {bands ? <PageBands layout={bands} dark={pageIsDark(page)} /> : null}
+      {bands ? (
+        <PageBands layout={bands} {...(page.background?.fill ? { dark: pageIsDark(page) } : {})} />
+      ) : null}
       {stack && row && page.flow ? (
         <FlashcardFooter
           card={page}

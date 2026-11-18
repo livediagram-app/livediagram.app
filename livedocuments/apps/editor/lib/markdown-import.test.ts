@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   ARTICLE_MARKDOWN_MAX,
   MAX_ARTICLE_BLOCK_TEXT,
+  articleTabMarkdown,
   articlesOf,
   pagesOf,
 } from '@livedocuments/document';
@@ -49,6 +50,16 @@ describe('buildTabFromMarkdown', () => {
         ['1', '2'],
       ],
     );
+  });
+
+  it("keeps a fenced code block's language from the file through to its Markdown export", () => {
+    const md = '# Setup\n\n```js\nconst a = 1;\n```\n\n```\nplain\n```';
+    const { tab } = built(md);
+    const code = Object.values(articlesOf(tab))[0]!.blocks.filter((b) => b.type === 'code');
+    expect(code.map((b) => b.type === 'code' && b.lang)).toEqual(['js', undefined]);
+    const out = articleTabMarkdown(tab).markdown;
+    expect(out).toContain('```js\nconst a = 1;\n```');
+    expect(out).toContain('```\nplain\n```');
   });
 
   it('refuses a paragraph longer than a block holds, and Markdown longer than an article takes', () => {

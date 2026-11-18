@@ -72,17 +72,18 @@ test('a deck presents slide by slide and leaves the view as it was', async ({
           ?.getAttribute('style')
           ?.match(/transform:[^;]+/)?.[0] ?? null,
     );
-  // Opening the tab frames its page beside the Contents sidebar, a short glide (docs/specs/007-editor/pages-mode.md
-  // "Framing beside it"): the view the deck must leave as it was is the one at rest.
-  let before: string | null = null;
-  await expect
-    .poll(async () => {
-      const now = await camera();
-      const still = now !== null && now === before;
-      before = now;
-      return still;
-    })
-    .toBe(true);
+  // Opening the tab frames its page beside the Contents sidebar, then glides onto it once the view rests
+  // (docs/specs/007-editor/pages-mode.md "Framing beside it", "Getting around the pages"): the view the deck
+  // must leave as it was is the one at rest. The canvas says so itself (`data-view-at-rest`: landed, no glide
+  // under way and no rest's snap waiting), so a read between the landing and the glide is never taken for rest.
+  // Read two frames later, once the view's last move has been drawn.
+  await expect(page.locator('[data-view-at-rest]')).toHaveCount(1);
+  await page.evaluate(
+    () => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))),
+  );
+  await expect(page.locator('[data-view-at-rest]')).toHaveCount(1);
+  const before = await camera();
+  expect(before).not.toBeNull();
 
   // The header's Present starts the open tab's show at its slide 1; a stored deck's selection slides keep
   // presenting (presentation-mode.md "The header's Present button"; the Slide Deck panel is retired).

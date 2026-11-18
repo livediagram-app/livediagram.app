@@ -245,8 +245,10 @@ they see builds only by presenting.
   for a step of its own after them (not shown when the selection is already alone at the last step). Picking a step moves the selection to it; the element then comes in with whatever else is at that
   step.
 - **On the canvas** each built element carries a small numbered badge on its top-left corner: its place among the
-  slide's steps ("2" for the second step, whatever order number is stored). Like the lock badge it is editor chrome,
-  scaling with the canvas, hidden below the adornment zoom, and never drawn while presenting, in an embed, in a
+  slide's steps ("2" for the second step, whatever order number is stored): a white disc with a brand ring and
+  brand digits in light, a light brand disc with dark digits in dark (a dark disc vanished into the dark paper), its
+  digits at 4.5:1 on the disc and the disc at 3:1 on the paper. Like the lock badge it is editor chrome,
+  scaling with the canvas (but never under 18 px on screen, so its number reads with a whole slide in view), hidden below the adornment zoom, and never drawn while presenting, in an embed, in a
   thumbnail or in an export. Only an Editor sees badges: a Participant or a Viewer, who can't set builds, sees none.
   Elements that overlap and come in at the same step (an icon in its circle) share one badge, on the one drawn first,
   so the pair reads as one numbered thing.

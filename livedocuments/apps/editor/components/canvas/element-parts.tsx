@@ -40,16 +40,24 @@ export function LockBadge() {
 
 // An element's step among its slide's builds (docs/specs/012-collaboration/presentation-mode.md "Setting builds up"):
 // a small numbered disc on its top-left corner, moved along beside the lock badge when both show. Editor chrome like
-// the lock: an embed or a presented slide shows none, and it scales with the canvas and hides at overview zooms.
+// the lock: an embed or a presented slide shows none, and it scales with the canvas and hides at overview zooms, but
+// never shows smaller than BUILD_BADGE_MIN_PX on screen, so its number reads at a slide's zoom (a whole slide framed
+// sits near 60%, where a 20 px disc was a 12 px dot with 6 px digits). In dark it is a light disc with dark digits: a
+// slate-900 disc vanished into the slate-900 paper it sits on, leaving its ring as a dot.
+export const BUILD_BADGE_MIN_PX = 18;
+const BUILD_BADGE_PX = 20;
 export function BuildBadge({ step, besideLock }: { step: number; besideLock: boolean }) {
   const zoom = useCanvasZoom();
   const suppressed = useElementIndicatorsSuppressed();
   if (suppressed || zoom < ADORNMENT_MIN_ZOOM) return null;
+  const grow = BUILD_BADGE_MIN_PX / (BUILD_BADGE_PX * zoom);
   return (
     <div
       aria-hidden
       data-build-badge={step}
-      className={`pointer-events-none absolute -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-[10px] font-semibold tabular-nums leading-none text-brand-700 shadow-sm ring-1 ring-brand-500/70 dark:bg-slate-900 dark:text-brand-200 dark:ring-brand-400/70 ${
+      // Grown from its outer corner, so it stays on the element's corner and clear of the lock badge beside it.
+      style={grow > 1 ? { transform: `scale(${grow})`, transformOrigin: 'top left' } : undefined}
+      className={`pointer-events-none absolute -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-[10px] font-semibold tabular-nums leading-none text-brand-700 shadow-sm ring-1 ring-brand-500/70 dark:bg-brand-200 dark:text-slate-900 dark:ring-slate-950/40 ${
         besideLock ? 'left-4' : '-left-2'
       }`}
     >

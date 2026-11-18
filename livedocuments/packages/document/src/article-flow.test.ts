@@ -103,6 +103,22 @@ describe('article writing: reading it', () => {
     expect(parseArticleBlock({ id: 'a', type: 'video' })).toBeUndefined();
   });
 
+  it("keeps a code block's language when it is one, and reads a block without one as before", () => {
+    expect(parseArticleBlock({ id: 'a', type: 'code', text: 'x', lang: 'ts' })).toEqual({
+      id: 'a',
+      type: 'code',
+      text: 'x',
+      lang: 'ts',
+    });
+    for (const lang of [undefined, '', 'a b', 'x'.repeat(33), 7]) {
+      expect(parseArticleBlock({ id: 'a', type: 'code', text: 'x', lang })).toEqual({
+        id: 'a',
+        type: 'code',
+        text: 'x',
+      });
+    }
+  });
+
   it('reads a flow: repeats and junk dropped, never empty', () => {
     const flow = parseArticleFlow({
       blocks: [P('a'), P('a'), { id: 'z' }, { id: 'c', type: 'divider' }],

@@ -256,14 +256,22 @@ export const articleSchema = new Schema({
       marks: '',
       code: true,
       defining: true,
-      attrs: { id: { default: '' } },
-      parseDOM: [{ tag: 'pre', preserveWhitespace: 'full' }],
+      // `lang`: the language a Markdown fence named, kept so the block's Markdown names it again.
+      attrs: { id: { default: '' }, lang: { default: '' } },
+      parseDOM: [
+        {
+          tag: 'pre',
+          preserveWhitespace: 'full',
+          getAttrs: (dom) => ({ lang: dom.getAttribute('data-lang') ?? '' }),
+        },
+      ],
       toDOM(node): DOMOutputSpec {
         return [
           'pre',
           {
             class: 'article-block article-code',
             'data-block-id': textAttr(node.attrs, 'id'),
+            ...(textAttr(node.attrs, 'lang') ? { 'data-lang': textAttr(node.attrs, 'lang') } : {}),
             spellcheck: 'false',
           },
           ['code', 0],

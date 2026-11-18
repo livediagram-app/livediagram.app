@@ -7,6 +7,7 @@ import {
   ARTICLE_FOOTNOTE_REF,
   MAX_ARTICLE_CELL_RUNS,
   MAX_ARTICLE_CELL_TEXT,
+  isArticleCodeLang,
   isArticleHex,
   isSafeArticleHref,
   normaliseRuns,
@@ -87,7 +88,10 @@ function blockToNode(b: ArticleBlock): PMNode {
         inlineOf(b.runs),
       );
     case 'code':
-      return S.nodes.code_block.create({ id: b.id }, b.text ? S.text(b.text) : undefined);
+      return S.nodes.code_block.create(
+        { id: b.id, lang: b.lang ?? '' },
+        b.text ? S.text(b.text) : undefined,
+      );
     case 'divider':
       return S.nodes.divider.create({ id: b.id });
     case 'pageBreak':
@@ -215,7 +219,12 @@ function nodeToBlock(node: PMNode): ArticleBlock | undefined {
       };
     }
     case 'code_block':
-      return { id, type: 'code', text: node.textContent };
+      return {
+        id,
+        type: 'code',
+        text: node.textContent,
+        ...(isArticleCodeLang(node.attrs.lang) ? { lang: node.attrs.lang } : {}),
+      };
     case 'divider':
       return { id, type: 'divider' };
     case 'page_break':

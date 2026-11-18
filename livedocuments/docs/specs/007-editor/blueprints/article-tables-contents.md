@@ -177,7 +177,9 @@ article-toc" data-block-id aria-label="Contents">`.
   Numbers is on and the footer has no centre; fields filled by `fillBand`.
 - `PageBands` draws them in `CanvasPages` (replacing the page number span) from `pageBandLayout`, which
   returns null at once with no header, footer or page numbers; each line `data-page-band`, `aria-hidden`, in the
-  page number's look. `pageWriting` pushes the same layout as `text` ops (`bandOps`) for the exports. Today's
+  page number's look. Its ink is `PAGE_BAND_INK.dark` or `.light`: a filled page passes `dark = pageIsDark(page)`,
+  the plain paper passes none and follows `useCanvasSurface()`, as `ArticleFlows`' `inkOf` does (Work Tracker 1176;
+  `app/dark-palette.test.ts` "chrome on the dark paper" holds both at 4.5:1). `pageWriting` pushes the same layout as `text` ops (`bandOps`) for the exports. Today's
   date for `{date}` is worked out once a day (`toLocaleDateString` costs about 1 ms).
 - `ArticleBandsSection` in the Style popover: two rows of three inputs, the field buttons, the Different First
   Page switch; a draft per field previewed through `stylePreview`, committed on blur or Enter as one
