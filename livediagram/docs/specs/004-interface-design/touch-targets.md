@@ -20,22 +20,26 @@ floor at 24px; the editor aims past it, because a diagram editor is used with a 
   fails a class list that names either utility without a position.
 - **`touch-target-y` for packed rows.** Where neighbours sit closer than 44px apart (the palette
   strip's tiles, 2px apart) the pad reaches vertically only, so two pads never compete for one tap.
-  The toolbar cards apply it to their 36px items (`PHONE_TOOLBAR_ITEMS`).
+  The menu card and the bottom-right cluster apply it to their 36px items (`PHONE_TOOLBAR_ITEMS`).
 - **`touch-target-packed` where a packed row must still give 44 x 44.** The pad reaches 44px both ways, as
   `touch-target` does, but sits behind the controls (`z-index: -1`, inside a row that makes its own stacking context
   with `isolate`). Where two pads overlap, the drawn tile always wins its own box, and the gap and the pad's edges go
-  to the nearest tile's pad, so a tap beside a tile picks a tool rather than falling through. `PACKED_TOOLBAR_ITEMS`
-  (`@liveworkspace/workbench/components/chrome/phone-toolbar-items`) applies it to a row's 36px items with the
-  `isolate` it needs. The Draw dock's groups carry it ([Draw mode](../023-draw-mode/draw-mode.md) "On a touch
-  screen"); a row whose popovers hang inline from it keeps `touch-target-y`, since `isolate` would trap them.
+  to the nearest tile's pad, so a tap beside a tile picks a tile rather than falling through. `PACKED_TOOLBAR_ITEMS`
+  (`@liveworkspace/workbench/components/chrome/phone-toolbar-items`) applies it to a card's 36px items with the
+  `isolate` it needs, and makes each swiping rail in the card (`data-strip-rail`) a stacking context of its own, as is
+  the tile rail's row (`ToolbarStripRail`): a box that spans the gaps would otherwise sit over the pads and take the
+  tap. A swiping rail pads 4px above and below its tiles, the card's own inset, so its scroll clips no pad short of
+  44px. The Palette strip's cards carry it, as do the Draw dock's groups ([Draw mode](../023-draw-mode/draw-mode.md) "On a touch
+  screen"); their category flyouts (and their side panels), More, Search and the
+  Library hang beside the card in the strip, never inside it, so the card's `isolate` traps none of them. A row whose
+  popovers hang inline from it keeps `touch-target-y`, since `isolate` would trap them.
 - **Shared controls carry it**, so every caller does: the chrome buttons (`CHROME_BTN`), the
   `⋯` triggers (`EllipsisTriggerButton`, the tab menu), the help `?` (`HelpArticleLink`), panel
   header buttons (`MovablePanelHeader`, `SettingsPopover`), the dialog close in both shapes
   (`DialogCloseButton`), search clear and dismiss buttons, and Add tab. Resize handles have their
   own 16px pad on a coarse pointer (canvas element parts).
-- **Every canvas toolbar pads its items.** The Palette strip and the menu button's own card in Draw
-  (`ToolbarExplorerButton`) carry `PHONE_TOOLBAR_ITEMS`, the Draw dock's groups (`DockToolbar`)
-  `PACKED_TOOLBAR_ITEMS`;
+- **Every canvas toolbar pads its items.** The Palette strip's cards and the Draw dock's groups (`DockToolbar`)
+  carry `PACKED_TOOLBAR_ITEMS`, the menu button's own card in Draw (`ToolbarExplorerButton`) `PHONE_TOOLBAR_ITEMS`;
   the selection toolbar's 32px buttons (`SelectionPopover`) get `touch-target-y`, as do a tab's name,
   the role pill (Editing / Viewing), the tour card's buttons and a page's lock and cog.
 - **A tab's presence avatars** (`TabPresenceStack`) draw at 16px and overlap under a mouse. On a touch screen they
