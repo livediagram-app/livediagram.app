@@ -520,6 +520,11 @@ exporting. Linking the element again, or clearing its link, mends it.
 - On a phone the prototype fills the screen: the device frame steps aside and the screen alone fills the viewport
   (letterboxed on black where its shape differs), the bar shrinks to a small floating pill at the top (Previous, the
   place, Next, Close), and a tap follows a link.
+- **Safe areas on a phone.** While it is open the player goes edge to edge (the page takes `viewport-fit=cover`, and
+  gives it back on close), so the black runs under the notch or Dynamic Island, the home indicator and Safari's bars,
+  while what a person reads and presses stays clear of them: the screen fits inside the device's safe-area insets on
+  every side (portrait and landscape), and the pill sits 8 px from the top or below the top inset, whichever is lower,
+  and clear of a landscape notch.
 
 ### Flow view
 
@@ -540,12 +545,18 @@ so a team sees every path through the screens at once while it edits them.
     that gap (on its own screen's side of the gap's middle, so arcs leaving the two screens either side of one gap
     never share its column), over the row of screens (clear of their labels, higher the more screens it passes, and a
     lane higher again, up to four, where an earlier arc already runs over any of the same screens, so arcs never lie
-    on one another short of a crowd of them over one stretch) and down onto the target's top edge near its side, with rounded corners and an arrowhead pointing down
-    into it, so it never crosses a screen it passes;
+    on one another short of a crowd of them over one stretch), down the gap beside the target on the target's side
+    (clear of the arcs rising in that gap), and into the target's near side just below its top, with rounded corners
+    and an arrowhead pointing into it, so it never crosses a screen it passes, nor the target's label and toolbar
+    above it. Arcs into one side of a screen nest: the one on the higher lane drops nearest the screen and enters
+    highest, the next one out and a step lower, so they never cross one another;
   - a **back link**: the outline and a small **Back** tag beside the box, no arrow (where it goes depends on the walk);
   - a **broken** link: the outline dashed and in the warning red (dashed too, since the brand is a red), a short
-    dashed stub out of the box's right side and a **Broken** tag at its end, in the same red, never an arrow to
+    dashed stub out of the box's side and a **Broken** tag at its end, in the same red, never an arrow to
     anywhere;
+  - a tag (Back or Broken, with its stub) sits on the box's right, or on its left where the right would cover an
+    arrow's run (one rising or dropping in a gap, entering a screen, or crossing to the screen beside) and the left
+    would not, so a tag never hides where an arrow goes;
   - a link to the screen the element is on: the outline alone (it goes nowhere).
 - The strokes are 2 px at every zoom, edged with the canvas colour so they read over busy screens, and the tags hold
   their size. Only visible elements count (not those on a hidden layer), and only those on a screen.
