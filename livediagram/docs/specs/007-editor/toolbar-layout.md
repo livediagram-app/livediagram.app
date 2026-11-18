@@ -291,7 +291,8 @@ every add.
 **Fixed dividers** split a category into its groups of related tiles (a tile's `dividerAfter`):
 
 - **Shapes**: the basics (Square, Circle, Diamond) | the flowchart shapes (Cylinder to Stadium) |
-  the rest (Cloud to Bubble).
+  the rest (Cloud to Bubble); Diagram's adds **BPMN** (Start Event to Association,
+  [BPMN](../009-elements/bpmn.md)) as a fourth group.
 - **Write**: Page, Text | Note, Annotation; Diagram's adds Pointer note and Callout to the notes, then Comment,
   Action as a third group, **Comments**.
 - **Draw**: Freehand, Shape Pen | Polygon | Arrow, Line.
