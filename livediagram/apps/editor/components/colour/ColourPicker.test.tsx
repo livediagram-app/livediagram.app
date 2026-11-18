@@ -155,6 +155,10 @@ describe('ColourPicker', () => {
     expect(onPreview).toHaveBeenLastCalledWith(standardColours('soft', 'light')[5]!.hex);
     fireEvent.pointerEnter(screen.getByRole('button', { name: 'Blue' }), { pointerType: 'touch' });
     expect(onPreview).toHaveBeenCalledTimes(1);
+    // The focus the picker lands on as it opens previews nothing; focus a key moves does.
+    fireEvent.focus(screen.getByRole('button', { name: 'Teal' }));
+    expect(onPreview).toHaveBeenCalledTimes(1);
+    fireEvent.keyDown(screen.getByRole('group', { name: 'Fill' }), { key: 'Shift' });
     fireEvent.focus(screen.getByRole('button', { name: 'Teal' }));
     expect(onPreview).toHaveBeenCalledTimes(2);
     fireEvent.blur(screen.getByRole('button', { name: 'Teal' }), {

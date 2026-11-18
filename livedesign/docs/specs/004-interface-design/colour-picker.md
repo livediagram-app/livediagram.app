@@ -107,11 +107,14 @@ picker that colours text says when a colour would be hard to read where that tex
 reads. It is a **hint, never a block**: any colour can still be picked.
 
 - **Where it shows**: the element menu's **Text** row (one element or several), the Quick Style bar's Text
-  colour **More colours**, and the rich-text toolbar's **Text colour** (the selected words, judged where their
-  element sits).
+  colour **More colours**, the rich-text toolbar's **Text colour** (the selected words, judged where their
+  element sits), and a table cell menu's **Text** row (the selected cells).
 - **What it is judged against**: what the words sit on. A box's own fill (a shape, a sticky note); else the
   topmost filled box under the text; else the page's background: a solid colour, every colour a gradient runs
-  through under the text (the worst counts), or the plain white paper.
+  through under the text (the worst counts), or the plain white paper. A table cell's words sit on the cell's
+  own background, else the header band (a header cell), else the table's fill (a banded row tinted with the
+  grid colour), else what is under the table. A table's own **Text** row judges its body cells that have no
+  colour of their own (a header's ink is already kept readable on its band).
 - **The page as exported**: a page is judged as it exports. On a dark canvas the plain paper is drawn dark but
   exports white, so there the hint says **"Hard to read on the exported page"**, and its **Aa** tile shows the
   white page the words are judged on.
@@ -126,7 +129,10 @@ reads. It is a **hint, never a block**: any colour can still be picked.
   colour judged is the swatch the pointer or focus last rested on in this picker, else the colour in force.
   The swatches focus lands on as the picker opens are not judged (with no swatch the colour in force, that is
   the first one): the hint opens on the colour in force, and judges focus once a key moves it (see Previews).
-  While it falls short the row names the ground ("on this page", "on its fill"), the ratio and the target
+  A swatch the pointer only crosses on its way down to the row (on it for less than 150 ms) is not judged in
+  the end: as the pointer reaches the row, the hint and the live preview go back to the swatch it rested on
+  before (or the colour in force), so **Use** fixes the colour being looked at.
+  While it falls short the row names the ground ("on this page", "on its fill", "on its cell"), the ratio and the target
   ("1.9:1, aim for 4.5:1"), with the colour on its ground as a small **Aa** tile, and screen readers hear it
   arrive. While it reads, the row says so quietly ("Easy to read on this page", the ratio), and with no colour
   to judge (No colour) it is empty.
@@ -135,6 +141,9 @@ reads. It is a **hint, never a block**: any colour can still be picked.
   applies that shade as the text colour (one undoable edit) and closes the picker. It is not added to Custom
   colours: no one picked it with **Add a custom colour**. When no shade of that hue passes (a gradient from
   black to white), the hint shows without **Use**.
+- **When it is worked out**: only while a text picker is open, and again as the pointer or focus moves between
+  swatches, never per frame. The ground is read from the boxes under the text's own box, remembered while only
+  the text colour changes (a hover's live preview), so a hover costs a lookup, not a walk of the tab.
 - **Nothing is shown**, and no row is kept, where the ground can't be judged, rather than a wrong ratio: text on
   a picture (a page's picture background, an image or video under it) and text off every page.
 

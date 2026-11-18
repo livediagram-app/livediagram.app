@@ -2,15 +2,25 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createText, layOutPages, type BoxedElement, type Element } from '@livedesign/design';
+import {
+  contrastRatio,
+  createTable,
+  createText,
+  layOutPages,
+  type BoxedElement,
+  type Element,
+  type TableElement,
+} from '@livedesign/design';
 import { EditorContext } from '@/app/design/[id]/EditorContext';
 import { QuickMoreColours } from '@/components/canvas/QuickMoreColours';
 import { RichTextToolbar } from '@/components/canvas/RichTextToolbar';
+import { TableCellMenu } from '@/components/canvas/TableCellMenu';
 import { CanvasSurfaceProvider } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { standardGroup } from './colour-options';
 
 // docs/specs/004-interface-design/colour-picker.md "Reading on its ground": every picker that colours
-// text judges it, the Quick Style bar's Text colour More colours and the rich-text toolbar's Text colour.
+// text judges it, the Quick Style bar's Text colour More colours, the rich-text toolbar's Text colour and a
+// table cell menu's Text row.
 afterEach(cleanup);
 
 const PAGE = { id: 'p', orientation: 'portrait' } as const;
@@ -161,5 +171,47 @@ describe('rich-text Text colour', () => {
     );
     open();
     expect(hint()).toBeNull();
+  });
+});
+
+describe('table cell Text colour', () => {
+  // jsdom has no ResizeObserver; the cell menu observes its own size.
+  globalThis.ResizeObserver ??= class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  } as unknown as typeof ResizeObserver;
+  const table = {
+    ...createTable(0, 0),
+    id: 'tbl',
+    cellStyles: [[{ bg: '#1e293b', textColor: '#334155' }]],
+  } as TableElement;
+  const cellTab = { ...activeTab, elements: [...activeTab.elements, table] as Element[] };
+
+  it('judges the selected cells on their background, and Use colours their words', () => {
+    const applyStyle = vi.fn();
+    render(
+      <EditorContext.Provider value={{ activeTab: cellTab } as never}>
+        <TableCellMenu
+          element={table}
+          cells={[{ r: 0, c: 0 }]}
+          anchor={{ r: 0, c: 0 }}
+          position={{ x: 0, y: 0 }}
+          onClose={vi.fn()}
+          applyStyle={applyStyle}
+          onClear={vi.fn()}
+          textColor="#0f172a"
+        />
+      </EditorContext.Provider>,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /Colours/ }));
+    const row = screen
+      .getAllByRole('button', { name: /^Text/ })
+      .find((b) => !b.hasAttribute('data-menu-section'))!;
+    fireEvent.click(row);
+    expect(hint()!.textContent).toContain('Hard to read on its cell');
+    fireEvent.click(screen.getByRole('button', { name: /^Use #[0-9a-f]{6}, a lighter shade/ }));
+    const picked = (applyStyle.mock.calls.at(-1)![0] as { textColor: string }).textColor;
+    expect(contrastRatio(picked, '#1e293b')).toBeGreaterThanOrEqual(4.5);
   });
 });
