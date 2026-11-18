@@ -42,7 +42,7 @@ describe('runBin', () => {
       async () => {
         cons.log('[x]', 1);
         cons.info('info');
-        cons.debug('[arrow-label] a beside');
+        cons.debug('[layout] a debug line');
         return 0;
       },
       {},
