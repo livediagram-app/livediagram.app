@@ -262,6 +262,16 @@ async function api(request: Request): Promise<Response> {
     return json({ projects: [{ id: 'd1', name: 'Roadmap', savedAt: 1_700_000_000_000 }] });
   }
   if (path === '/teams') return json({ teams: [] });
+  // The calling token, named after its AI tool (docs/specs/026-plan/plan-agents.md "Cards handed to an assistant").
+  if (path === '/tokens/current')
+    return json({
+      accountId: 'acct_1',
+      accountName: 'Sam Lee',
+      tokenId: 'tok_1',
+      tokenName: 'Claude',
+      role: 'full',
+      expiresAt: 1,
+    });
   if (path.endsWith('/room-ticket') && url.searchParams.get('cap') === 'view')
     return json({ ticket: 'rt2~sealed', expiresAt: 1_800_000_000_000, level: 'edit' });
   if (path.endsWith('/sheets'))
@@ -422,6 +432,7 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
     args: { projectId: 'd1', teamId: 't1' },
   },
   { tool: 'list_items', output: 'listItemsOutput', args: { projectId: 'd1' } },
+  { tool: 'list_items', output: 'listItemsOutput', args: { projectId: 'd1', handedToMe: true } },
   { tool: 'view_tab', output: 'viewTabOutput', args: { projectId: 'd1' } },
   { tool: 'view_live', output: 'viewLiveOutput', args: { projectId: 'd1' } },
   // Work Tracker 900: several columns, text, a time, both switches and a page of one.
@@ -639,6 +650,20 @@ describe('tool output schemas', () => {
       expect(result.isError).toBe(true);
       expect(result.structuredContent).toBeUndefined();
     }
+  });
+
+  it('refuses handedToMe to a caller that is no AI assistant, in words', async () => {
+    const client = await connectTestClient(async (r) =>
+      new URL(r.url).pathname.endsWith('/tokens/current')
+        ? Response.json({ error: 'not_a_token' }, { status: 403 })
+        : api(r),
+    );
+    const result = await client.callTool({
+      name: 'list_items',
+      arguments: { projectId: 'd1', handedToMe: true },
+    });
+    expect(result.isError).toBe(true);
+    expect(JSON.stringify(result.content)).toContain('Only an AI tool or API token');
   });
 
   it('sends no structuredContent on an error result', async () => {

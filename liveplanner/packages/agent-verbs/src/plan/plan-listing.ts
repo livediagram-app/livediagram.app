@@ -77,6 +77,7 @@ import {
   type BlockingIndex,
   boardFields,
   isFieldWidgetKey,
+  itemAssistantOf,
   type BoardWidgetId,
 } from '@liveplanner/items';
 import { widgetName } from './board-widget-change';
@@ -136,6 +137,9 @@ export interface ListedItem {
   // Its linked pull requests with a state (docs/specs/026-plan/github-pull-requests.md "Agents"); only on a card with
   // any.
   pullRequests?: ListedPullRequest[];
+  // Handed to the calling assistant (plan-agents.md "Cards handed to an assistant"); only on a list_items call that
+  // asked handedToMe.
+  handedToYou?: true;
 }
 
 interface ListedRepeat {
@@ -390,6 +394,14 @@ function namedFields(
   for (const [key, value] of Object.entries(fields)) {
     // A repeat reads as its own entry (listedRepeat), in words.
     if (key === REPEAT_FIELD) continue;
+    // An AI assistant Assignee says it is one, and who it works for (plan-agents.md "Cards handed to an assistant").
+    if (key === 'assignee') {
+      const assistant = itemAssistantOf(item);
+      if (assistant) {
+        out[key] = listedAssistant(assistant);
+        continue;
+      }
+    }
     if (rich !== true && isRichFieldKey(key)) {
       richLeftOut = true;
       continue;
@@ -408,6 +420,15 @@ function namedFields(
   if (richLeftOut && rich !== true) rich.onLeftOut();
   return out;
 }
+
+// An assistant as agents read it: by name, marked, with the person it works for; never its client or person ids.
+const listedAssistant = (a: NonNullable<ReturnType<typeof itemAssistantOf>>) => ({
+  id: a.id,
+  name: a.name,
+  color: a.color,
+  assistant: true as const,
+  worksFor: a.assistant.person.name,
+});
 
 // Whether a card's formatting runs are listed: true, or left out with a word to the caller for each card that had some.
 export type RichFields = true | { onLeftOut: () => void };

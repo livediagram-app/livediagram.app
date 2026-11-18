@@ -3,6 +3,7 @@
 // custom field id, a person, an item id). Unknown names are refused with what is there, never stored.
 import { withArticle } from './indefinite-article';
 import { isItemPerson, itemAssignee, type Item, type ItemPerson } from './item';
+import { isAssistantId } from './assistant';
 import {
   builtInFieldOfKind,
   isEmailAddress,
@@ -535,6 +536,12 @@ function builtInValue(key: string, value: unknown, naming: FieldNaming): Named<{
   }
   if (key === 'assignee' && typeof value === 'string' && !isItemPerson(value))
     return { ok: true, value: personNamed(value, assignedPeople(naming.items)) };
+  // An assistant as list_items lists it (`assistant: true`), written back: the one a card holds by that id
+  // (docs/specs/026-plan/plan-agents.md "Cards handed to an assistant"); any other is checked as given.
+  if (key === 'assignee' && isItemPerson(value) && isAssistantId(value.id)) {
+    const held = assignedPeople(naming.items).find((p) => p.id === value.id);
+    return { ok: true, value: held ?? value };
+  }
   if (key === 'parent' && typeof value === 'string') {
     const parent = resolveItem(value, naming.items);
     return parent.ok ? { ok: true, value: parent.item.id } : parent;
