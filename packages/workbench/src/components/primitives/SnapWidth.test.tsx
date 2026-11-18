@@ -3,7 +3,6 @@
 // centred parent) stay on the pixel grid and render sharp.
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { easeNextStyleChange } from '../../lib/tab-style-ease';
 import { SnapWidth } from './SnapWidth';
 
 beforeAll(() => {
@@ -68,20 +67,33 @@ describe('SnapWidth', () => {
     expect(snapped({ matchParentParity: true })).toBe('');
   });
 
-  // docs/specs/008-canvas/canvas-performance.md "A theme pick on a big board": a render while a Tab Style change is
-  // drawn reads no rect (it would restyle the whole recoloured canvas inside the commit); one after it does.
-  it('reads no rect on a render while a Tab Style change is drawn', () => {
-    vi.useFakeTimers();
-    measureAs(61.39, 1440);
-    const view = render(<SnapWidth>label</SnapWidth>);
-    const rect = vi.mocked(HTMLElement.prototype.getBoundingClientRect);
-    rect.mockClear();
-    easeNextStyleChange();
-    view.rerender(<SnapWidth>label again</SnapWidth>);
-    expect(rect).not.toHaveBeenCalled();
-    vi.advanceTimersByTime(300);
-    view.rerender(<SnapWidth>label once more</SnapWidth>);
-    expect(rect).toHaveBeenCalled();
-    vi.useRealTimers();
+  // docs/specs/008-canvas/canvas-performance.md "Chrome after a gesture" (Work Tracker 911): a render of the box reads
+  // no rect inside React's commit, a Tab Style change or a drop alike; the observer measures a real size change.
+  it('reads no rect when its host renders again, and measures when the observer reports a change', () => {
+    let report = () => {};
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        constructor(cb: () => void) {
+          report = cb;
+        }
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      },
+    );
+    try {
+      measureAs(61.39, 1440);
+      const view = render(<SnapWidth>label</SnapWidth>);
+      const rect = vi.mocked(HTMLElement.prototype.getBoundingClientRect);
+      rect.mockClear();
+      view.rerender(<SnapWidth>label again</SnapWidth>);
+      expect(rect).not.toHaveBeenCalled();
+      measureAs(80.2, 1440);
+      report();
+      expect((view.container.firstElementChild as HTMLElement).style.width).toBe('81px');
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });

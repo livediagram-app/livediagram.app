@@ -1,12 +1,34 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '../../lib/clamp-to-viewport';
 import { noteToolbarObstacle } from './toolbar-obstacle';
 import { overlapsChrome, sidewaysClear, useEdgeAwarePlacement } from './useEdgeAwarePlacement';
 
 // Each editor's docs/specs/008-canvas/canvas-performance.md: a gesture frame never reads layout. While the selection
-// moves the box is suspended: it measures nothing, then places once when it resumes.
+// moves the box is suspended: it measures nothing, then places once when it resumes. It places in the next animation
+// frame, never inside the commit ("Chrome after a gesture"): these tests hold the frames and run them by hand.
+let frames: { id: number; cb: FrameRequestCallback | null }[] = [];
+beforeEach(() => {
+  frames = [];
+  vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
+    frames.push({ id: frames.length + 1, cb });
+    return frames.length;
+  });
+  vi.stubGlobal('cancelAnimationFrame', (id: number) => {
+    const f = frames.find((x) => x.id === id);
+    if (f) f.cb = null;
+  });
+});
+
+/** Runs every frame asked for so far, as the browser would before its next paint. */
+function nextFrame() {
+  act(() => {
+    const due = frames;
+    frames = [];
+    for (const f of due) f.cb?.(0);
+  });
+}
 
 const rect = (l: number, t: number, r: number, b: number) =>
   ({ left: l, top: t, right: r, bottom: b, width: r - l, height: b - t }) as DOMRect;
@@ -48,11 +70,18 @@ function setup(boxRect: () => DOMRect, opts: { noHost?: boolean; initial?: Parti
     },
     { initialProps },
   );
-  return { ...view, box, host, measures: () => measures };
+  nextFrame();
+  // A render and the frame after it, as most tests want; `commit` alone is the render without its frame.
+  const rerender = (props: Props) => {
+    view.rerender(props);
+    nextFrame();
+  };
+  return { ...view, rerender, commit: view.rerender, box, host, measures: () => measures };
 }
 
 afterEach(() => {
   document.body.replaceChildren();
+  vi.unstubAllGlobals();
 });
 
 describe('useEdgeAwarePlacement', () => {
@@ -71,13 +100,54 @@ describe('useEdgeAwarePlacement', () => {
     expect(h.measures()).toBe(before);
   });
 
-  it('places once when it resumes', () => {
+  // Work Tracker 911: neither the drop's commit nor a press's reads layout; the box places in the next frame.
+  it('places once when it resumes, in the next frame rather than inside the commit', () => {
     const h = setup(() => rect(400, 300, 500, 340));
     h.rerender({ x: 400, suspended: true });
     h.rerender({ x: 480, suspended: true });
     const before = h.measures();
+    h.commit({ x: 480, suspended: false });
+    expect(h.measures()).toBe(before);
+    nextFrame();
+    expect(h.measures()).toBe(before + 1);
+  });
+
+  it('reads nothing in the commit of a fresh geometry, and one frame serves every render before it', () => {
+    const h = setup(() => rect(400, 300, 500, 340));
+    const before = h.measures();
+    h.commit({ x: 420 });
+    h.commit({ x: 440 });
+    expect(h.measures()).toBe(before);
+    expect(frames.filter((f) => f.cb)).toHaveLength(1);
+    nextFrame();
+    expect(h.measures()).toBe(before + 1);
+  });
+
+  it('applies a flip found in that frame, and places again for it in the same frame', () => {
+    let top = 300;
+    const h = setup(() => rect(400, top, 500, top + 40));
+    h.rerender({ x: 400, suspended: true });
+    top = 0;
+    const before = h.measures();
     h.rerender({ x: 480, suspended: false });
-    expect(h.measures()).toBeGreaterThan(before);
+    expect(h.result.current.placeAbove).toBe(false);
+    // The flip's own render placed again inside the frame: no frame is left waiting.
+    expect(h.measures()).toBe(before + 2);
+    expect(frames.filter((f) => f.cb)).toHaveLength(0);
+  });
+
+  it('drops a pending frame when it is suspended again, or unmounted, before it comes', () => {
+    const h = setup(() => rect(400, 300, 500, 340));
+    h.rerender({ x: 400, suspended: true });
+    h.commit({ x: 480, suspended: false });
+    h.commit({ x: 500, suspended: true });
+    const before = h.measures();
+    nextFrame();
+    expect(h.measures()).toBe(before);
+    h.commit({ x: 500, suspended: false });
+    h.unmount();
+    nextFrame();
+    expect(h.measures()).toBe(before);
   });
 
   it('places above, centred, counter-scaled', () => {
@@ -171,6 +241,7 @@ describe('useEdgeAwarePlacement', () => {
     const view = renderHook(() =>
       useEdgeAwarePlacement({ x: 0, y: 0, width: 10, height: 10 }, { x: 0, y: 0 }, 1, 8),
     );
+    nextFrame();
     expect(view.result.current.placeAbove).toBe(true);
   });
 });

@@ -1,5 +1,6 @@
 'use client';
 
+import { flushSync } from 'react-dom';
 import {
   useEffect,
   useEffectEvent,
@@ -146,6 +147,11 @@ export function useEdgeAwarePlacement(
       flippedRef.current = false;
     }
     const rect = node.getBoundingClientRect();
+    // The chrome's boxes, read at most once a placement: the flip check and the sideways slide both use them, and each
+    // read walks the whole document (a 1,000-element board's every node) and measures every panel.
+    let chrome: Box[] | null = null;
+    const chromeNow = () => (chrome ??= chromeBoxes(node));
+    const onChrome = (r: Box) => chromeNow().some((b) => overlaps(r, b));
     // The flip / nudge boundaries are the CANVAS AREA's edges, not the raw
     // viewport: the header band sits above <main> and the tab bar below it,
     // so a viewport-relative test let the box pass while tucked under the
@@ -158,12 +164,12 @@ export function useEdgeAwarePlacement(
     if (!flippedRef.current) {
       // The floating chrome over the canvas (the palette, the panels) counts as an edge too: a box that would
       // sit on it flips to the selection's other side, as it does at the header.
-      if (placeAbove && (rect.top < area.top + EDGE || overlapsChrome(rect, node))) {
+      if (placeAbove && (rect.top < area.top + EDGE || onChrome(rect))) {
         flippedRef.current = true;
         setPlaceAbove(false);
         return;
       }
-      if (!placeAbove && (rect.bottom > area.bottom - EDGE || overlapsChrome(rect, node))) {
+      if (!placeAbove && (rect.bottom > area.bottom - EDGE || onChrome(rect))) {
         flippedRef.current = true;
         setPlaceAbove(true);
         return;
@@ -196,7 +202,7 @@ export function useEdgeAwarePlacement(
     // Worked from the un-nudged place every time, so a box kept clear stays clear as the view moves.
     dx += sidewaysClear(
       { left: left + dx, right: right + dx, top: top + dy, bottom: bottom + dy },
-      chromeBoxes(node),
+      chromeNow(),
       area,
     );
     const nx = dx / zoom;
@@ -214,8 +220,36 @@ export function useEdgeAwarePlacement(
     window.addEventListener(TOOLBAR_OBSTACLE_EVENT, onObstacle);
     return () => window.removeEventListener(TOOLBAR_OBSTACLE_EVENT, onObstacle);
   }, [suspended]);
+  // The box places in the next frame, before its paint, never inside the commit that drew it: a read there makes the
+  // browser lay out the whole board inside that task, and the commits that move this box are the canvas's own
+  // gestures (a press that selects, a drop that ends a drag), the tasks the canvas budget holds to 50 ms (each editor's
+  // docs/specs/008-canvas/canvas-performance.md "Chrome after a gesture", Work Tracker 911). In the frame the read is
+  // the layout the browser does anyway. flushSync applies a flip or nudge in that same frame, and the re-render a flip
+  // causes places again at once (the frame is already laid out), so the box is never drawn unplaced. One frame at a
+  // time: renders before it come share it, and a suspension or unmount cancels it.
+  const frame = useRef(0);
+  const inFrame = useRef(false);
+  useEffect(() => () => cancelAnimationFrame(frame.current), []);
   useLayoutEffect(() => {
-    if (!suspended) place();
+    if (suspended) {
+      cancelAnimationFrame(frame.current);
+      frame.current = 0;
+      return;
+    }
+    if (inFrame.current) {
+      place();
+      return;
+    }
+    if (frame.current) return;
+    frame.current = requestAnimationFrame(() => {
+      frame.current = 0;
+      inFrame.current = true;
+      try {
+        flushSync(() => place());
+      } finally {
+        inFrame.current = false;
+      }
+    });
   }, [
     bounds.x,
     bounds.y,
