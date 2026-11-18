@@ -189,8 +189,12 @@ draw the colour only when it is a plain hex, and are capped (I3). Placing a pad 
 - Drawing: a fixed 17 nodes per pad (`AVATAR_PAD_ART`, built once at module load) plus one static radial gradient
   (two stops) for the glow; no filters, nothing blurred per frame. The canvas view is memoised on the theme stroke,
   the animation class and the press handler. Export emits the same 17 nodes and gradient.
-- Shimmer: one opacity loop on the eight light nodes (glow, ring, ring highlight, five lamps), 10 steps each way per
-  1.6s, alternating, so it restyles only on its steps; no inherited custom properties.
+- Shimmer: one opacity loop (1 to 0.62 and back, eased, 1.6 s each way) on the two boxes that hold the light nodes:
+  the table is drawn as one SVG per run of light or unlit parts, back to front (`RUNS` in `AvatarPadView`: unlit,
+  the five lamps, unlit, glow / ring / ring highlight, unlit), and each run of lights sits in a `div` carrying
+  `avatar-pad-shimmer`, so the compositor fades it with no restyle on the page (Work Tracker 1257; a stepped fade on
+  the SVG nodes restyled and re-layerized the board about six times a second). Ten pulses to one 16 s iteration, so
+  the page handles an `animationiteration` once every 16 s. No inherited custom properties.
 - Arrival rule: runs only when the set of characters on screen changes (`presentKey`), O(people x pads); never per
   walked frame or presence packet.
 - Beam: three groups, 23 rects (five flash rows, four fading bands of three columns, six sparks), stepped keyframes (9, 7 and 8 steps), unmounted after 900ms (I3).

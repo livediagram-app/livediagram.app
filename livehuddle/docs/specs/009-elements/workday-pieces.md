@@ -160,7 +160,11 @@ a wagging tail.
 - **The same dog for everyone, with nothing sent.** Each leg's spot comes from the bed's id and the leg's number
   (the time, `floor(now / 9000)`), through a small seeded generator, so every screen with a clock right to a second
   sees the dog in the same place. Nothing is stored, nothing rides presence, and nothing runs per frame: each dog has
-  one timer that wakes once a leg and sets the next spot, and the trot between is a CSS transition.
+  one timer that wakes once a leg and sets the next spot, and the trot between is one animation along its route that
+  the browser's compositor plays, as are its steps, bob and wag ([Canvas performance](../008-canvas/canvas-performance.md#a-still-space-does-nothing)).
+- **Its tail wags as it trots**, a few wags as it stops, and fast for the length of a pat; sitting, it rests. Lying
+  down to nap it breathes a few slow breaths, then lies still under its "z". A dog sitting or asleep asks for no work
+  at all (Work Tracker 1257).
 - **Patting it**: a press on the dog pats it, for you: a small heart rises above it and its tail wags faster for a
   second and a half. Nobody else sees your pat. Its label for a screen reader is **Pat the Dog**.
 - **Under reduced motion** the dog stays curled up asleep in its bed: no wandering, no wag, and a pat shows the heart

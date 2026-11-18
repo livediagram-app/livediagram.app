@@ -67,6 +67,12 @@ Derived from [the Receptionist](../receptionist.md). The spec decides; this file
   below the chrome along the top (`SPEECH_TOP_CLEAR`, as every speech bubble); otherwise it goes on whichever side of
   him has more room (under his feet without a tail), and the whole bubble scrolls when even that side is too short,
   keeping `SPEECH_TOP_CLEAR` off the bottom edge too, clear of the call dock.
+- It keeps clear of every element marked `data-bubble-keep-clear` (`KEEP_CLEAR_ATTR`, `keep-clear.ts`; a Reception
+  Desk's Welcome bubble carries it, Work Tracker 1256). Judged on the whole card, uncapped (its natural height, above
+  or below him as placed), so each pass gives the same answer: `clearNudge` takes the in-canvas nudge when the card
+  covers no marked box, else the nearest nudge that puts the card's edge `CLEAR_GAP` (8 px) past a box's and stays
+  inside the canvas; when none fits (`null`, a phone) and the card is over his head, `clearTrim` caps its height so its
+  top stands `CLEAR_GAP` under the lowest covered box's foot (never under 80 px; the smaller of this and the fit cap).
 - It is placed after every render, and again (at most once a frame, while it is open) whenever the viewport store
   changes or the window resizes: a pan, a camera fit or a phone turning leaves his head's canvas point and the zoom as
   they were, so without that the card stayed where it was, off the screen's side (Work Tracker 912). Placing measures
