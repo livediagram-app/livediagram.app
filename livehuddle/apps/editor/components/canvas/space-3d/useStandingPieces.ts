@@ -57,8 +57,8 @@ export function useStandingPieces(
       } else {
         box.setAttribute(SPACE_HUNG_ATTR, '');
         box.style.setProperty('--space-hang-y', `${dy}px`);
-        // A piece taller than its wall is drawn no taller than the wall and a little over it.
-        const room = SPACE_WALL_HEIGHT + 40 - SPACE_HANG_LIFT;
+        // A piece taller than its wall is drawn smaller, so it hangs inside the wall with a hand's width over it.
+        const room = SPACE_WALL_HEIGHT - SPACE_HANG_LIFT - 12;
         box.style.setProperty(
           '--space-hang-scale',
           `${Math.min(1, room / Math.max(1, box.offsetHeight))}`,

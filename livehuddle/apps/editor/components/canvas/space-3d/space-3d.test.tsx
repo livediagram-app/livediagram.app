@@ -130,14 +130,17 @@ describe('useSpace3DView (docs/specs/008-canvas/3d-view.md "Turning it on and of
     expect(space3DStageStyle('rising')).toEqual({
       '--space-tilt': '0deg',
       '--space-stand': '0deg',
+      '--space-turn': '0deg',
     });
     expect(space3DStageStyle('tilted')).toEqual({
       '--space-tilt': '52deg',
       '--space-stand': '-90deg',
+      '--space-turn': '0deg',
     });
     expect(space3DStageStyle('falling')).toEqual({
       '--space-tilt': '0deg',
       '--space-stand': '0deg',
+      '--space-turn': '0deg',
     });
   });
 });

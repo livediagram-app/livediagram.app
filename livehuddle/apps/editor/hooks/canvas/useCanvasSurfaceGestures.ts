@@ -8,6 +8,7 @@ import { floorPointAt } from '@/lib/space-3d/space-3d-camera';
 import { standingPiecePointAt } from '@/lib/space-3d/space-3d-pieces';
 import { standingPiecesOnScreen } from '@/lib/space-3d/standing-pieces-on-screen';
 import { space3DTiltNow } from '@/lib/space-3d/space-3d-preference';
+import { space3DTurn } from '@/lib/space-3d/space-3d-turn';
 import { isDoubleTapZoomPointer } from '@liveworkspace/workbench/lib/double-tap-zoom';
 import { peerPushTarget } from '@livehuddle/avatar/walk';
 import { walkInputBlocked } from '@livehuddle/avatar/walk-guard';
@@ -159,10 +160,11 @@ export function useCanvasSurfaceGestures({
     if (tilt !== 0 && main)
       // A press over a standing piece is a press on that piece (3d-view.md "Pieces stand up"), else the floor.
       return (
-        standingPiecePointAt(standingPiecesOnScreen(main, elements ?? []), {
-          x: clientX,
-          y: clientY,
-        }) ??
+        standingPiecePointAt(
+          standingPiecesOnScreen(main, elements ?? []),
+          { x: clientX, y: clientY },
+          space3DTurn.get(),
+        ) ??
         floorPointAt(
           { x: clientX, y: clientY },
           main.getBoundingClientRect(),
@@ -171,6 +173,8 @@ export function useCanvasSurfaceGestures({
             offset: readViewportOffset(),
           },
           tilt,
+          undefined,
+          space3DTurn.get(),
         )
       );
     const rect = wrapperRef.current?.getBoundingClientRect();

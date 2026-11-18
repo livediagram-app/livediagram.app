@@ -15,7 +15,6 @@
 
 import { changesType, hasBuiltInDoorway } from '@livehuddle/document';
 import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
-import { AnimationSections } from '@/components/palette/AnimationSections';
 import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
 import { PortalMenuSection } from '@/components/palette/PortalMenuSection';
 import { StageMenuSection } from '@/components/palette/StageMenuSection';
@@ -29,6 +28,7 @@ import {
   // The office pieces' settings: a chair's facing and a room's doorway.
   ChairMenuSection,
   RoomMenuSection,
+  RoomFloorMenuSection,
   RoomWallsMenuSection,
 } from '@/components/palette/CollabMenuSections';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
@@ -104,6 +104,15 @@ export function ElementDataSections({
               onSetWalls={props.onSetRoomWalls}
             />
           ) : null}
+          {/* And its floor: its type and a floor colour (docs/specs/009-elements/office.md "Floors"). */}
+          {shapeTarget?.shape === 'room' ? (
+            <RoomFloorMenuSection
+              target={shapeTarget}
+              sectionProps={sectionProps}
+              onSetFloor={props.onSetRoomFloor}
+              onSetFloorColour={props.onSetRoomFloorColour}
+            />
+          ) : null}
           {shapeTarget?.shape === 'stage' ? (
             <StageMenuSection
               target={shapeTarget}
@@ -172,15 +181,6 @@ export function ElementDataSections({
           ) : null}
         </MenuFlyoutSection>
       ) : null}
-      {/* Animation (docs/specs/028-animation/element-animations.md): one category per animation set the
-            element takes, such as Shape Animation and Text Animation for a labelled shape. */}
-      <AnimationSections
-        elements={[target]}
-        keyPrefix=""
-        sectionProps={sectionProps}
-        flyoutProps={flyoutProps}
-        handlers={props}
-      />
     </>
   );
 }

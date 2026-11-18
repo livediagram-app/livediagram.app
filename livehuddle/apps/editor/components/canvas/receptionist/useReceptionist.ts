@@ -82,7 +82,7 @@ export function useReceptionist({
 }): ReceptionistView | null {
   const world = useReceptionistWorld(active, elements);
   const still = useReducedMotion();
-  const { chat, asks, setOff } = useReceptionistState();
+  const { chat, asks, setOff, welcomed } = useReceptionistState();
   // The detour he is on, kept with his pad's id: an edit to the tab keeps it, another tab (another pad) drops it.
   const [held, setHeld] = useState<{ padId: string | null; detour: ReceptionistDetour | null }>(
     NO_DETOUR,
@@ -115,6 +115,9 @@ export function useReceptionist({
     for (const a of arrivals) {
       if (a.padId !== world.padId || greeted.current.has(a.key)) continue;
       greeted.current.add(a.key);
+      // Welcomed already: your own arrival is not his to greet; he comes over only when asked or rung
+      // (receptionist.md "The welcome").
+      if (a.personId === SELF && getReceptionistState().welcomed) continue;
       const at = Date.now();
       if (still) {
         if (a.personId === SELF) noteReceptionistGreetedYou();
@@ -125,6 +128,14 @@ export function useReceptionist({
       setDetour(world.padId, next);
     }
   }, [arrivals, world, still, setDetour, currentDetour]);
+
+  // Your record arrived after your arrival did (the host loads on the first walk): a greeting set off for you is called
+  // off, since a welcomed person is never greeted on arrival (receptionist.md "The welcome").
+  useEffect(() => {
+    if (!welcomed || !greetingYou.current || !world) return;
+    greetingYou.current = false;
+    if (currentDetour(world.padId)?.kind === 'greet') setDetour(world.padId, null);
+  }, [welcomed, world, currentDetour, setDetour]);
 
   // Ask Receptionist: he walks over to you (on your screen only). The store records each ask he has set off on, so the
   // render that opens his bubble knows his walk has not started yet (ReceptionistView.setting).

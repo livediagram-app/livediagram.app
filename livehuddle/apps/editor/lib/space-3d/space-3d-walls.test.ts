@@ -73,6 +73,20 @@ describe('the 3D view walls (docs/specs/008-canvas/3d-view.md "What it shows")',
     expect(SPACE_DOOR_HEIGHT).toBeLessThan(SPACE_WALL_HEIGHT);
   });
 
+  it('puts a glass panel over a doorway in a glass wall, plaster over one in a solid wall', () => {
+    const glassOffice = office.map((el) =>
+      el.type === 'shape' && el.shape === 'room' ? { ...el, variant: 'glass' } : el,
+    );
+    const solidOffice = office.map((el) =>
+      el.type === 'shape' && el.shape === 'room' ? { ...el, variant: undefined } : el,
+    );
+    const solid = spaceWalls(solidOffice).filter((w) => w.kind === 'doorway');
+    const glass = spaceWalls(glassOffice).filter((w) => w.kind === 'doorway');
+    expect(solid.some((w) => w.glass)).toBe(false);
+    expect(glass.length).toBeGreaterThan(0);
+    expect(glass.filter((w) => w.glass).length).toBeGreaterThan(0);
+  });
+
   it('stands each window on a plaster wall in it, cut out of the wall, and none in a glass wall', () => {
     const walls = spaceWalls(office);
     const windows = shapes.filter((el) => el.shape === 'window');

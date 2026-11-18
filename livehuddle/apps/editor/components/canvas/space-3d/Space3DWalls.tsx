@@ -6,7 +6,7 @@
 // are drawn, chosen again when the view has moved far; the walls in front of your feet fade, written straight to the
 // DOM from your pose, so a step renders nothing here. Loaded the first time a walk wants the 3D view.
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import type { ReadableStore } from '@liveworkspace/workbench/lib/state-store';
 import { useViewportStore } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import type { AvatarPose } from '@livehuddle/avatar/pose';
@@ -20,24 +20,36 @@ import {
 import {
   areaMovedFar,
   cutAwayIds,
+  turnedArea,
   viewArea,
   wallsInArea,
   type SpaceArea,
 } from '@/lib/space-3d/space-3d-cutaway';
 import { useStandingPieces } from './useStandingPieces';
+import { useSpace3DTurn } from './useSpace3DView';
+import { turnQuarter } from '@/lib/space-3d/space-3d-turn';
 
 export function Space3DWalls({
   elements,
   poseStore,
   size,
+  floor,
 }: {
   elements: readonly Element[];
   poseStore: ReadableStore<AvatarPose>;
   size: { width: number; height: number };
+  // The tab's background, its pattern in canvas px, laid on the floor under the pieces (3d-view.md "What it shows").
+  floor?: CSSProperties;
 }) {
   const walls = useMemo(() => spaceWalls(elements), [elements]);
   const viewport = useViewportStore();
-  const [area, setArea] = useState<SpaceArea>(() => viewArea(viewport.get(), size));
+  // The camera's quarter turns (3d-view.md "Turning the camera"): turned, the area reaches every way, and the walls in
+  // front are the camera's way.
+  const turn = useSpace3DTurn();
+  const turned = turnQuarter(turn) !== 0;
+  const [ahead, setArea] = useState<SpaceArea>(() => viewArea(viewport.get(), size));
+  // Turned, the same middle reaches as far ahead every way.
+  const area = useMemo(() => (turned ? turnedArea(ahead) : ahead), [ahead, turned]);
   // The drawn area follows the view, but only re-renders this layer when the view has moved far.
   useEffect(() => {
     const check = () => {
@@ -56,7 +68,7 @@ export function Space3DWalls({
   const cut = useRef(new Set<string>());
   useEffect(() => {
     const apply = () => {
-      const next = cutAwayIds(drawn, poseStore.get().pos);
+      const next = cutAwayIds(drawn, poseStore.get().pos, turn);
       for (const id of cut.current)
         if (!next.has(id)) nodes.current.get(id)?.removeAttribute('data-cut');
       for (const id of next)
@@ -67,7 +79,7 @@ export function Space3DWalls({
     cut.current = new Set();
     apply();
     return poseStore.subscribe(apply);
-  }, [drawn, poseStore]);
+  }, [drawn, poseStore, turn]);
   return (
     <div
       ref={layer}
@@ -75,6 +87,20 @@ export function Space3DWalls({
       data-space-walls=""
       className="pointer-events-none absolute left-0 top-0"
     >
+      {floor ? (
+        <div
+          data-space-floor=""
+          style={{
+            ...floor,
+            position: 'absolute',
+            left: area.left,
+            top: area.top,
+            width: area.right - area.left,
+            height: area.bottom - area.top,
+            backgroundPosition: `${-area.left}px ${-area.top}px`,
+          }}
+        />
+      ) : null}
       {drawn.map((wall) => (
         <Wall
           key={wall.id}
@@ -95,6 +121,7 @@ function Wall({ wall, nodeRef }: { wall: SpaceWall; nodeRef: (node: HTMLElement 
     <div
       ref={nodeRef}
       data-space-wall={wall.kind}
+      data-space-glass={wall.glass ? '' : undefined}
       style={{
         width: length,
         transform: `translate(${x}px, ${y}px) rotate(${angle}deg)`,

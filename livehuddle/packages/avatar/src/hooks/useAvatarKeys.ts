@@ -12,6 +12,7 @@ import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { isTypingTarget } from '@liveworkspace/workbench/lib/typing-target';
 import { walkInputBlocked } from '../walk-guard';
 import { avatarKeyClaimed } from '../key-claims';
+import { planDir } from '../arrow-turn';
 
 export type AvatarHeldKeys = { up: boolean; down: boolean; left: boolean; right: boolean };
 
@@ -28,6 +29,13 @@ const ARROW_KEYS: Record<string, keyof AvatarHeldKeys> = {
   ArrowLeft: 'left',
   ArrowRight: 'right',
 };
+
+// The plan directions the held screen arrows steer.
+function heldFrom(pressed: ReadonlySet<keyof AvatarHeldKeys>): AvatarHeldKeys {
+  const held = { ...NO_KEYS_HELD };
+  for (const d of pressed) held[planDir(d)] = true;
+  return held;
+}
 
 export function useAvatarKeys({
   active,
@@ -51,6 +59,8 @@ export function useAvatarKeys({
 
   useEffect(() => {
     if (!active) return;
+    // The arrows held on the keyboard, by the screen; what they steer is read through the 3D camera's turn (arrow-turn).
+    const pressed = new Set<keyof AvatarHeldKeys>();
     const onKeyDown = (e: KeyboardEvent) => {
       // A panel input (search, rename), an open modal or a start screen in front of the canvas owns the keyboard
       // (walk-guard): arrowing through Start a Space's templates never walks the character behind it.
@@ -61,7 +71,8 @@ export function useAvatarKeys({
       if (dir) {
         e.preventDefault();
         liveRef.current.onSteer();
-        heldRef.current = { ...heldRef.current, [dir]: true };
+        pressed.add(dir);
+        heldRef.current = heldFrom(pressed);
         return;
       }
       // Space jumps. In every other mode Space is the hold-to-pan modifier
@@ -75,11 +86,15 @@ export function useAvatarKeys({
     };
     const onKeyUp = (e: KeyboardEvent) => {
       const dir = ARROW_KEYS[e.key];
-      if (dir) heldRef.current = { ...heldRef.current, [dir]: false };
+      if (dir) {
+        pressed.delete(dir);
+        heldRef.current = heldFrom(pressed);
+      }
     };
     // Held keys can't be trusted across a blur (the keyup lands on another
     // window), so drop them all rather than walking away forever.
     const onBlur = () => {
+      pressed.clear();
       heldRef.current = { ...NO_KEYS_HELD };
     };
     window.addEventListener('keydown', onKeyDown);

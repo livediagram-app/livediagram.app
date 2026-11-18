@@ -1,6 +1,7 @@
 // Which walls the 3D view draws and which it cuts away (docs/specs/008-canvas/3d-view.md "Walls in front of you are
 // cut away", "Performance"; blueprint: 3d-view.md). Pure: no React, no DOM.
 
+import { toCamera } from './space-3d-turn';
 import type { SpaceWall } from './space-3d-walls';
 
 /** How far to either side of your feet a wall in front of you is cut away, in canvas px (DEFAULTS.md D138). */
@@ -71,11 +72,21 @@ function segmentMeetsBox(
 }
 
 /** The ids of the walls standing in front of your feet, which fade so they never hide you. None without feet. */
-export function cutAwayIds(walls: readonly SpaceWall[], feet: Point | null): Set<string> {
+export function cutAwayIds(
+  walls: readonly SpaceWall[],
+  feet: Point | null,
+  // The camera's quarter turns (3d-view.md "Turning the camera"): in front is the camera's way.
+  turn = 0,
+): Set<string> {
   const out = new Set<string>();
   if (!feet) return out;
+  const f = toCamera(feet, turn);
   // Blades of grass are too low to hide anyone: never cut.
-  for (const wall of walls) if (wall.kind !== 'grass' && inFront(wall, feet)) out.add(wall.id);
+  for (const wall of walls) {
+    if (wall.kind === 'grass') continue;
+    const seen = { ...wall, a: toCamera(wall.a, turn), b: toCamera(wall.b, turn) };
+    if (inFront(seen, f)) out.add(wall.id);
+  }
   return out;
 }
 
@@ -97,6 +108,22 @@ export function viewArea(
     zoom: view.zoom,
     width: size.width,
     height: size.height,
+  };
+}
+
+/**
+ * The area for a turned camera (3d-view.md "Turning the camera"): ahead may be any side, so from the same middle it
+ * reaches as far as ahead does every way.
+ */
+export function turnedArea(area: SpaceArea): SpaceArea {
+  const reach = (Math.max(area.width, area.height) / area.zoom) * SPACE_AREA_AHEAD;
+  const { centre } = area;
+  return {
+    ...area,
+    left: centre.x - reach,
+    right: centre.x + reach,
+    top: centre.y - reach,
+    bottom: centre.y + reach,
   };
 }
 

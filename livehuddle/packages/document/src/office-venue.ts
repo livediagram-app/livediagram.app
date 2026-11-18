@@ -7,6 +7,7 @@
 import type { FurnitureDrawing, FurniturePart } from './seating';
 import { allSides, ellipse, path, rect } from './furniture-parts';
 import { poolDeck } from '@livehuddle/avatar/office-geometry';
+import { rowed, type FurnitureGroup } from '@livehuddle/avatar/furniture-rows';
 
 // Fixed colours, as SOCIAL_TONES: stone, tarmac and paint, the cars, steel, water and tile, velvet, gold and wood. A
 // pillar's body has none: it takes the piece's own colour, else a wash of the theme's stroke.
@@ -98,6 +99,12 @@ const COLUMN_VIEW: FurnitureDrawing = {
 // The car park's bays: three, 76 px apart, each between two painted lines.
 const BAY_LINES = [4, 80, 156, 232] as const;
 
+// A parked car's groups: its shadow on the tarmac, and the car itself, which stands up in the 3D view.
+const parked = ([shadow, ...body]: FurniturePart[]): FurnitureGroup[] => [
+  { flat: [shadow!] },
+  { stand: body },
+];
+
 // A car parked nose to the viewer in the bay centred on `cx`: wheels, the body and bonnet, the cabin and windscreen,
 // wing mirrors, headlights, a grille and a number plate.
 function car(cx: number, body: string, deep: string): FurniturePart[] {
@@ -134,15 +141,20 @@ function car(cx: number, body: string, deep: string): FurniturePart[] {
 const CAR_PARK_VIEW: FurnitureDrawing = {
   width: 240,
   height: 128,
-  parts: [
-    rect('panel', 0, 28, 240, 98, 3, T.tarmac),
-    path('mark', BAY_LINES.map((x) => `M${x} 34h4v86h-4z`).join(''), T.paint),
-    rect('panel', 0, 18, 240, 11, 2, T.kerb),
-    rect('face', 0, 26, 240, 5, 1, T.kerb),
-    rect('panel', 98, 40, 44, 6, 3, T.kerb),
-    ...car(44, T.carRed, T.carRedDeep),
-    ...car(196, T.carBlue, T.carBlueDeep),
-  ],
+  // The tarmac lies flat and each car stands up in its bay in the 3D view (3d-view.md "Cars stand in their bays").
+  ...rowed([
+    {
+      flat: [
+        rect('panel', 0, 28, 240, 98, 3, T.tarmac),
+        path('mark', BAY_LINES.map((x) => `M${x} 34h4v86h-4z`).join(''), T.paint),
+        rect('panel', 0, 18, 240, 11, 2, T.kerb),
+        rect('face', 0, 26, 240, 5, 1, T.kerb),
+        rect('panel', 98, 40, 44, 6, 3, T.kerb),
+      ],
+    },
+    ...parked(car(44, T.carRed, T.carRedDeep)),
+    ...parked(car(196, T.carBlue, T.carBlueDeep)),
+  ]),
   seats: [],
 };
 
@@ -181,15 +193,18 @@ function carRear(cx: number, body: string, deep: string): FurniturePart[] {
 const CAR_PARK_BACK: FurnitureDrawing = {
   width: 240,
   height: 128,
-  parts: [
-    rect('panel', 0, 4, 240, 108, 3, T.tarmac),
-    path('mark', BAY_LINES.map((x) => `M${x} 8h4v94h-4z`).join(''), T.paint),
-    rect('panel', 98, 92, 44, 6, 3, T.kerb),
-    ...carRear(44, T.carBlue, T.carBlueDeep),
-    ...carRear(196, T.carRed, T.carRedDeep),
-    rect('panel', 0, 106, 240, 12, 2, T.kerb),
-    rect('face', 0, 116, 240, 6, 1, T.kerb),
-  ],
+  ...rowed([
+    {
+      flat: [
+        rect('panel', 0, 4, 240, 108, 3, T.tarmac),
+        path('mark', BAY_LINES.map((x) => `M${x} 8h4v94h-4z`).join(''), T.paint),
+        rect('panel', 98, 92, 44, 6, 3, T.kerb),
+      ],
+    },
+    ...parked(carRear(44, T.carBlue, T.carBlueDeep)),
+    ...parked(carRear(196, T.carRed, T.carRedDeep)),
+    { flat: [rect('panel', 0, 106, 240, 12, 2, T.kerb), rect('face', 0, 116, 240, 6, 1, T.kerb)] },
+  ]),
   seats: [],
 };
 
@@ -229,15 +244,19 @@ const CAR_PARK_SIDE_LINES = [4, 80, 156, 232] as const;
 const CAR_PARK_SIDE: FurnitureDrawing = {
   width: 128,
   height: 240,
-  parts: [
-    rect('panel', 0, 0, 114, 240, 3, T.tarmac),
-    path('mark', CAR_PARK_SIDE_LINES.map((y) => `M4 ${y}h100v4h-100z`).join(''), T.paint),
-    rect('face', 108, 0, 8, 240, 1, T.kerb),
-    rect('panel', 112, 0, 14, 240, 2, T.kerb),
-    rect('panel', 96, 98, 6, 44, 3, T.kerb),
-    ...carSide(46, T.carRed, T.carRedDeep),
-    ...carSide(198, T.carBlue, T.carBlueDeep),
-  ],
+  ...rowed([
+    {
+      flat: [
+        rect('panel', 0, 0, 114, 240, 3, T.tarmac),
+        path('mark', CAR_PARK_SIDE_LINES.map((y) => `M4 ${y}h100v4h-100z`).join(''), T.paint),
+        rect('face', 108, 0, 8, 240, 1, T.kerb),
+        rect('panel', 112, 0, 14, 240, 2, T.kerb),
+        rect('panel', 96, 98, 6, 44, 3, T.kerb),
+      ],
+    },
+    ...parked(carSide(46, T.carRed, T.carRedDeep)),
+    ...parked(carSide(198, T.carBlue, T.carBlueDeep)),
+  ]),
   seats: [],
 };
 

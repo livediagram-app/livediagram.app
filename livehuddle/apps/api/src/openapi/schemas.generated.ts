@@ -3737,6 +3737,16 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "RoomFloor": {
+    "enum": [
+      "boards",
+      "tiles",
+      "carpet",
+      "stone",
+      "concrete"
+    ],
+    "type": "string"
+  },
   "RunHeading": {
     "enum": [
       1,
@@ -3850,6 +3860,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "fixedSize": {
         "type": "boolean"
+      },
+      "floor": {
+        "$ref": "#/components/schemas/RoomFloor"
       },
       "font": {
         "type": "string"

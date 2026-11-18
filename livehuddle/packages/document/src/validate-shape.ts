@@ -8,6 +8,7 @@
 // @liveworkspace/element-model/shape-field-checks; this list keeps this product's order and its own checks.
 
 import { isRoomDoor, isStageSpeakers } from './office';
+import { isRoomFloor } from './room-floors';
 import { isPieceVariant, PIECE_VARIANT_MAX } from './piece-variants';
 import {
   CLOCK_LABEL_MAX,
@@ -39,6 +40,11 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
   { field: 'mode', valid: isSelectionMode, rule: oneOfRule(SELECTION_MODES) },
   { field: 'chairFacing', valid: isChairFacing, rule: 'a chair facing' },
   { field: 'roomDoor', valid: isRoomDoor, rule: 'a room doorway (n, e, s, w or none)' },
+  {
+    field: 'floor',
+    valid: isRoomFloor,
+    rule: 'a room floor (boards, tiles, carpet, stone or concrete)',
+  },
   {
     field: 'roomOutline',
     valid: isRoomOutline,

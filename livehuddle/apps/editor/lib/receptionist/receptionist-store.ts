@@ -32,6 +32,8 @@ export type ReceptionistState = {
   heard: readonly string[];
   // The person's first name, for "Welcome back, <name>!", or null when they have none.
   name: string | null;
+  // Welcomed already (the synced record): he no longer comes over when you arrive, only when asked or rung.
+  welcomed: boolean;
 };
 
 const listeners = createListeners();
@@ -44,6 +46,7 @@ let state: ReceptionistState = {
   can: { speak: false, edit: false },
   heard: [],
   name: null,
+  welcomed: false,
 };
 
 function set(next: Partial<ReceptionistState>): void {
@@ -94,6 +97,10 @@ export function noteReceptionistGreetedYou(): void {
   set({ greets: state.greets + 1 });
 }
 
+export function setReceptionistWelcomed(welcomed: boolean): void {
+  if (state.welcomed !== welcomed) set({ welcomed });
+}
+
 export function setReceptionistHere(here: boolean): void {
   if (state.here !== here) set({ here });
 }
@@ -125,6 +132,7 @@ export function resetReceptionistState(): void {
     can: { speak: false, edit: false },
     heard: [],
     name: null,
+    welcomed: false,
   };
   listeners.notify();
 }

@@ -25,10 +25,13 @@ export function useFlatBillboards(world: RefObject<HTMLElement | null>, zoom: nu
         ':scope > [data-space-stage]:not([data-space-overlay])',
       );
       if (!camera || !stage.closest('[data-space-view]')) return;
-      // The camera's tilt now, mid-turn too: its matrix's second diagonal entry is the tilt's cosine.
+      // The camera's tilt and turn now, mid-move too: Rx(tilt)·Rz(turn)'s third column is (0, -sin, cos) of the tilt
+      // alone, and its first is (cos turn, sin turn · cos tilt, …) (3d-view.md "Turning the camera").
       const m = getComputedStyle(camera).transform;
-      const cos = m.startsWith('matrix3d(') ? parseFloat(m.slice(9).split(',')[5] ?? '1') : 1;
+      const v = m.startsWith('matrix3d(') ? m.slice(9).split(',').map(parseFloat) : null;
+      const cos = v ? (v[10] ?? 1) : 1;
       const tilt = (Math.acos(Math.min(1, Math.max(-1, cos))) * 180) / Math.PI;
+      const turn = v && cos > 0.01 ? Math.atan2((v[1] ?? 0) / cos, v[0] ?? 1) : 0;
       const box = stage.getBoundingClientRect();
       const size = { width: box.width, height: box.height };
       const cards = node.querySelectorAll<HTMLElement>('[data-space-billboard]');
@@ -43,7 +46,15 @@ export function useFlatBillboards(world: RefObject<HTMLElement | null>, zoom: nu
           x: r.left - box.left + ox * zoom * was.scale - was.dx,
           y: r.top - box.top + oy * zoom * was.scale - was.dy,
         };
-        const s = standingShift(flat, size, tilt);
+        // Where the turned floor carries the feet, then where the tilt stands them.
+        const cx = size.width / 2;
+        const cy = size.height / 2;
+        const turned = {
+          x: cx + (flat.x - cx) * Math.cos(turn) - (flat.y - cy) * Math.sin(turn),
+          y: cy + (flat.x - cx) * Math.sin(turn) + (flat.y - cy) * Math.cos(turn),
+        };
+        const t = standingShift(turned, size, tilt);
+        const s = { dx: turned.x - flat.x + t.dx, dy: turned.y - flat.y + t.dy, scale: t.scale };
         // Whole pixels once settled, so the words sit on the pixel grid; mid-turn, exact, so nothing steps.
         const settled = Math.abs(tilt - SPACE_3D_TILT_DEG) < 0.01;
         const px = (v: number) => (settled ? Math.round(v) : v);

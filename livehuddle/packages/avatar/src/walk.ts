@@ -4,7 +4,13 @@
 // keeps it on screen, and what it is standing on. No React, no DOM, so
 // the walk behaviour is unit-testable without a canvas.
 
-import { isFloorShape, isSceneryShape, isWallPieceShape, seatsACharacter } from './office-geometry';
+import {
+  drinkFrom,
+  isFloorShape,
+  isSceneryShape,
+  isWallPieceShape,
+  seatsACharacter,
+} from './office-geometry';
 import { isLecternShape, lecternArea } from './lectern';
 import { hasSceneBox, isSceneShape, type AvatarSceneElement } from './scene';
 
@@ -369,7 +375,8 @@ export function elementUnderFeet(
     if (
       shape !== null &&
       (isFloorShape(shape) ||
-        (isSceneryShape(shape) && !seatsACharacter(shape)) ||
+        // A drink machine blocks but is still walked up to: its front strip is where you take a drink.
+        (isSceneryShape(shape) && !seatsACharacter(shape) && !drinkFrom(shape)) ||
         isWallPieceShape(shape))
     )
       continue;

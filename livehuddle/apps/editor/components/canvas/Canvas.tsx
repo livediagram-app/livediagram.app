@@ -62,7 +62,12 @@ import { isPieceControlPress } from '@/lib/piece-control';
 import { useElementReader } from '@/components/canvas/collab/ElementReader';
 import dynamic from 'next/dynamic';
 import { loadSpace3DWalls } from '@/lib/editor-deferred-code';
-import { space3DStageStyle, useSpace3DView } from './space-3d/useSpace3DView';
+import {
+  space3DStageStyle,
+  space3DTurned,
+  useSpace3DTurn,
+  useSpace3DView,
+} from './space-3d/useSpace3DView';
 import { useSpace3DZoom } from './space-3d/useSpace3DZoom';
 import { Space3DOverlayProvider, Space3DOverlayStage } from './space-3d/Space3DOverlay';
 
@@ -143,6 +148,25 @@ function CanvasView(props: CanvasProps) {
       tabBackgroundOpacity,
       tabBackgroundPatternScale * v.zoom,
     );
+  // The same backdrop for the 3D view's floor, in canvas px (Space3DWalls): one object per look, so a render keeps it.
+  const spaceFloor = useMemo(
+    () =>
+      tabBackgroundStyle(
+        tabBackgroundPattern,
+        { x: 0, y: 0 },
+        tabBackgroundColor,
+        tabPatternColor,
+        tabBackgroundOpacity,
+        tabBackgroundPatternScale,
+      ),
+    [
+      tabBackgroundPattern,
+      tabBackgroundColor,
+      tabPatternColor,
+      tabBackgroundOpacity,
+      tabBackgroundPatternScale,
+    ],
+  );
   // The view now, for this render's wrapper and backdrop; every pan after it is written straight to
   // them (docs/specs/008-canvas/blueprints/viewport-store.md "Inside the canvas").
   const view = useViewportTransform(wrapperRef, mainRef, (v) => {
@@ -311,6 +335,7 @@ function CanvasView(props: CanvasProps) {
   const elementReader = useElementReader(elements, canvasTool === 'avatar');
   // The 3D view (docs/specs/008-canvas/3d-view.md): while you walk with it on, the stage tilts the world back.
   const space3D = useSpace3DView(canvasTool === 'avatar');
+  const spaceTurn = useSpace3DTurn();
   // 3D is closer than the flat plan: switching it on while walking zooms you in, off zooms you back out.
   useSpace3DZoom(canvasTool === 'avatar', viewportZoom, setViewportZoom);
   // The overlay's world layer, where what floats over a head is drawn while the view is 3D (Space3DOverlay).
@@ -385,6 +410,7 @@ function CanvasView(props: CanvasProps) {
         data-canvas-root=""
         data-canvas-busy={canvasIsBusy(elements.length) ? '' : undefined}
         data-space-view={space3D === 'flat' ? undefined : space3D}
+        data-space-turned={space3DTurned(space3D, spaceTurn)}
         onContextMenuCapture={surface.onContextMenuCapture}
         onContextMenu={surface.onContextMenu}
         onPointerUp={surface.onContextMenuPointerUp}
@@ -426,7 +452,7 @@ function CanvasView(props: CanvasProps) {
         <div
           data-space-stage=""
           className="pointer-events-none absolute inset-0"
-          style={space3DStageStyle(space3D)}
+          style={space3DStageStyle(space3D, spaceTurn)}
         >
           <div
             ref={wrapperRef}
@@ -515,7 +541,13 @@ function CanvasView(props: CanvasProps) {
             INSIDE the transformed wrapper so they pan / zoom with the canvas, and after the element layer so
             they stand in front of the content they walk over. */}
             {space3D === 'flat' ? null : (
-              <Space3DWalls elements={elements} poseStore={avatar.poseStore} size={mainSize} />
+              <Space3DWalls
+                elements={elements}
+                poseStore={avatar.poseStore}
+                size={mainSize}
+                // The tab's background on the tilted floor (3d-view.md "What it shows"): in canvas px, unzoomed.
+                floor={spaceFloor}
+              />
             )}
             <Space3DOverlayProvider value={space3DOverlay}>
               <CanvasCharactersLayer
@@ -537,7 +569,7 @@ function CanvasView(props: CanvasProps) {
         {/* Over the world and its horizon: speech, cards, call bubbles and hands, never hidden by a wall. */}
         {space3D === 'flat' ? null : (
           <Space3DOverlayStage
-            style={space3DStageStyle(space3D)}
+            style={space3DStageStyle(space3D, spaceTurn)}
             zoom={viewportZoom}
             onNode={setSpace3DOverlayNode}
           />

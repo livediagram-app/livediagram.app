@@ -3,6 +3,7 @@
 // or open, a window with its light, a corridor's floor and walls, a room's glass walls. Its own module beside
 // svg-render-faces.ts, which routes to it.
 
+import { roomFloorOf, roomFloorSvg } from './room-floors';
 import { doorArt, doorPoseTransform, type DoorArtPart } from './door-art';
 import { corridorPaths } from './piece-variants';
 import { GLASS_WALL, glassRoomArt } from './glass-walls';
@@ -150,6 +151,7 @@ export function glassRoomSvg(
   return (
     `<g transform="translate(${r2(el.x)} ${r2(el.y)})">` +
     `<path d="${art.floor}" fill="${f}"/>` +
+    roomFloorSvg(el.id, roomFloorOf(el), art.floor) +
     faces +
     doors +
     (art.glints

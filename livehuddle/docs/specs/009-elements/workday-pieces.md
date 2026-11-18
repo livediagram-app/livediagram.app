@@ -150,6 +150,9 @@ a wagging tail.
 - **It wanders its room.** The dog's room is the innermost Room whose floor holds the bed's middle; a bed in no room
   lets it wander a circle 240 px round the bed. Every 9 seconds is a **leg**: the dog trots to a spot in its room for
   the first 3 seconds of the leg, then sits there. Every fourth leg it goes back to its bed and naps.
+- **It walks, it does not glide** (the owner, 2026-11-18: "rather than just sliding across the floor like a ghost"):
+  it faces the way it is going, and while it trots its legs step in diagonal pairs, swinging from the hip, and its
+  body bobs once a step, at a steady pace with a short start and stop. Under reduced motion it stays in its bed.
 - **Never behind or under a piece.** A spot where the dog's body would overlap any piece's box (a coffee machine, a
   desk, a plant, a fence) or another room inside its own is passed over for the generator's next spot, up to 12 tries;
   a room with no clear spot in 12 keeps the dog napping that leg. Floors are walked over: rugs, grass, paths, stages,

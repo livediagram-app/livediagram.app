@@ -12,6 +12,10 @@ not laggy.
 
 ## What it shows
 
+- **The tab's background lies on the floor**: its colour and its pattern (dots, a grid, a floor) are laid on the
+  floor under every piece, so they tilt and turn with it, around you as far as the walls are drawn; past that the
+  background's colour carries on to the horizon (the owner, 2026-11-18: "in 3d mode I seem to lose the canvas
+  background").
 - **The floor** is the board as it is drawn flat (rooms' floors, rugs, furniture, stickies, text, everything), tilted
   back about the middle of the screen with perspective: what is nearer the top of the screen is further away and
   smaller. What covers the floor stays on it: rugs, grass, garden paths, the Stage, ponds and pools, the Car Park,
@@ -22,7 +26,9 @@ not laggy.
   what blocks you.
   - **Doorways are framed.** A Door standing on a wall ([Room builder](../009-elements/room-builder.md#door)) cuts it,
     and stands in its gap as a doorway: a dark wooden frame with a lintel of plaster over it, so the way through reads
-    from across the room (the owner, 2026-11-17: "the doors should be more visible"). A **shut** Door's leaf stands in
+    from across the room (the owner, 2026-11-17: "the doors should be more visible"). In a glass wall the panel over
+    the frame is glass, as the wall is, never plaster, and the door is a glass door: a slim pale metal frame and a
+    shut leaf of glass with a bar handle (the owner, 2026-11-18). A **shut** Door's leaf stands in
     the frame, two raised panels and a brass handle; an open one leaves the opening clear.
   - **Windows are windows.** A Window on a plaster wall ([Room builder](../009-elements/room-builder.md#window)) is
     cut out of it and stands in it as a window: plaster below its sill and over its head, a painted frame with a
@@ -30,15 +36,18 @@ not laggy.
     throughout, so a window on one adds nothing. (The owner, 2026-11-17: "the windows don't look like windows".)
   - **Wall pieces hang on the wall.** A Notice Board, World Clock, Dartboard, Calendar Wall, Photo Wall, Hand Dryer,
     Screen and Room Sign placed against a room's back wall (its top within 64 px below the wall's line, its middle
-    along it) hangs on that wall: upright in the wall's plane, its foot 10 px up it, drawn no taller than 40 px over
-    the wall's top. One with no back wall near stands where it is, as any piece. (The owner, 2026-11-17: "not just
+    along it) hangs on that wall: upright in the wall's plane, its foot 10 px up it, drawn small enough to stay inside
+    the wall with 12 px of wall over it (the owner, 2026-11-18: "items placed on them like screens and bookshelfs etc
+    don't go higher than the wall"). One with no back wall near stands where it is, as any piece. (The owner, 2026-11-17: "not just
     floating in the air".)
   - **Fences stand as fences**: a Fence's run stands as wooden rails and posts, a Garden Fence's as white pickets on
     two rails, the picket fence its flat drawing shows. A fence's flat drawing on the floor is hidden while the view
     shows (as a room's flat name is), so the fence is never drawn twice, once standing and once lying under it (the
     owner, 2026-11-17: "what is the white stuff under the garden fences").
-  - **Heights**: a Room or Corridor wall is as tall as a character (56 canvas px); a Fence is a low run
-    (22 canvas px); a doorway's opening is 44, under a 12 px lintel.
+  - **Heights**: a Room or Corridor wall is 152 canvas px, as tall as the tallest piece that stands against a wall
+    (a Toilet Cubicle), so a bookshelf, a fridge or lockers never rise over it; an Office Pod is a booth, its walls a
+    little over a character (73); a Fence is a low run (22 canvas px); a doorway's opening is 96, under a 56 px lintel.
+    A window sits in the middle of its wall, a fifth of the wall over it and a third under it.
   - **Glass rooms** ([Office](../009-elements/office.md#glass-walls)) stand up as glass: a pale, see-through face.
   - **Lit from the front**: a wall facing the camera is lightest, one running away from it darker, so the corners
     read without outlines. Each wall has a lighter top edge, its thickness seen from above.
@@ -46,6 +55,11 @@ not laggy.
     flat plan) is written on the back wall as a sign, facing the camera, so it stays readable however far away the
     room is. A room drawn with the Room Builder writes it on its furthest wall that faces the camera. Its flat name on the floor is
     hidden while the view shows, so the name is never written twice.
+  - **The plan's walls give way to the standing ones** (the owner, 2026-11-18: "one wall of every room ... is a
+    different size" and "weird bits of wall poking out the back"): the flat plan's wall tops and the back wall's deep
+    face are hidden while the view shows, with plain floor under the back wall's face, so every wall stands the same
+    height and nothing flat pokes past them from any side the camera turns to. A glass room's flat panes and frames
+    give way the same.
 - **The pieces stand up** (the owner, 2026-11-17: "none of the furniture and items are 3d, they remain 2d
   in 3d mode"): every piece of the Space drawn upright in the flat plan (furniture, seats, desks, tables, plants and
   trees, machines, shelves, signs, screens, boards, portals, everything with legs or a pot on the ground) rises from
@@ -62,6 +76,9 @@ not laggy.
 - **The characters stand upright**: yours, every peer's and the Receptionist, each turned to face the camera
   (billboarded) about their feet, so they stand on the spot they walk on, in their four facings, walking, sitting and
   hopping as in the flat view. Their name chips and status chips ride with them, upright and readable.
+- **The office dog trots on the floor** (the owner, 2026-11-18: "the dog flies into the air and goes through the
+  floor"): asleep it lies in its Pet Bed as the bed's drawing shows it; out of its bed it walks on the floor itself,
+  standing up about its own feet as a character does, however far it trots from the standing bed.
 - **Sitters are drawn over their piece**, as the flat plan draws them: a sitter on a chair, a sofa, a bench or
   either side of a table stands just in front of the standing piece. One sitting behind it (further back than 60 % of
   its depth: a table's far side, behind a desk turned to face you) has their legs hidden under its front, so they read
@@ -88,6 +105,16 @@ not laggy.
   its walls**: its walls stand as a room's do, and its benches, table and mug stand up together about the table's
   front edge, as a piece does, so the booth's inside reads as furniture rather than a floor plan (the owner,
   2026-11-17: "I meant the furniture inside"). Its sitters are drawn over its benches.
+- **Tables are built, not stood** (the owner, 2026-11-18: "the chairs are floating in the air, they need to still be
+  connected to the ground but look 3d"): a Meeting Table, a Long Table and a Picnic Table are not stood up as one
+  drawing, which hung their far chairs and far bench in the air over the table. Each chair stands up about its own
+  feet, where it stands on the floor; a table's top and a bench's seat lie level at their height, held up by their
+  front edge and legs, which stand from the floor to it. So every chair and leg meets the floor, the far chairs stand
+  behind the table, and its top is seen from above as a table's is. A sitter sits at the chair or bench they are on:
+  on the far side the table hides their legs and they look over it, on the near side they sit in front of it.
+- **Cars stand in their bays** (the owner, 2026-11-18: "cars aren't 3d"): a Car Park's tarmac, lines and kerb lie
+  on the floor, and each car stands up in its bay about its wheels, nose, tail or side to the camera as the facing
+  draws it, its shadow on the tarmac.
 - **About its front edge**: a piece turns up about the bottom edge of its box, the line its legs, base or pot stand
   on, and faces the camera. Being no taller than its box is deep, it never leans back past its own footprint, so a
   piece against a wall never pokes through it. A turned piece (one with a rotation) stands about its middle instead.
@@ -111,6 +138,18 @@ A wall between the camera and your own character would hide you, so it fades out
 fades to a ghost (18% opacity) while you stand there, and comes back as you walk away. Only your own character cuts
 walls; peers behind a wall are hidden by it, as people are.
 
+## Arriving
+
+The owner, 2026-11-18: "first view should fit the whole room for a second then zoom in smoothly into 3d mode. This
+way I can get an idea of where I am in the space right away".
+
+- **Arriving on a tab with the 3D view on** (opening a Space walking, or travelling to another tab) shows the whole tab
+  flat, framed as Fit frames it, for a second (SPACE_3D_OVERVIEW_MS, 1000 ms); then the camera glides in to your
+  character over 900 ms while the view tilts up, landing at the walking camera's 3D zoom.
+- **Not on the Edit | Walk switch**: switching to Walk on the tab you are on glides straight in, as before, since you
+  were just looking at the whole tab. Not with reduced motion: it lands at once.
+- Walking, clicking and steering work throughout; the tilt waits for the overview.
+
 ## The camera
 
 - **It looks down at 52 degrees from straight down**, with a perspective of 1100 screen px: the angle of a map
@@ -123,6 +162,26 @@ walls; peers behind a wall are hidden by it, as people are.
 - **Click or tap a spot on the floor to walk there**, as in the flat view: the press is traced back through the camera
   to the floor point under it. A press above the horizon finds no floor and walks nowhere. Arrow keys steer exactly as
   in the flat view (up is away from the camera).
+
+## Turning the camera
+
+The owner, 2026-11-18: "quarter turns is fine". You can walk round to see the other side of the room.
+
+- **Turn Left and Turn Right** sit beside the 3D View switch while it is on (a curved arrow each, with tooltips), and
+  `[` and `]` while walking do the same, with the action keys' guards. Each turns the camera a quarter turn about
+  your character, over the tilt's 520 ms ease; turning on past a full turn keeps going round, never back.
+- **It is yours, in this browser tab**: never synced, never remembered, and back to looking up the screen when the view
+  goes flat (it turns back as it flattens), so the flat plan never turns.
+- **What turns with it**: the floor and the walls (they are 3D, so you see a room from its other sides), and every
+  piece that stands on the floor: it keeps its place and its facing on the floor, so the camera sees the side it
+  looks at, a piece's side drawing from the side and its back drawing from behind (the owner: "the bookcase shouldn't
+  always face me, it should show me the back if I rotate behind it"), standing on the edge of its box nearest the
+  camera. A table built row by row is built from the drawing the camera sees, row by row as from the front.
+  Characters face the camera. Click or tap to walk traces the press back through the turned camera; the arrow keys
+  steer by the screen (up is still away from the camera); the walls in front of you, in the camera's direction, are
+  the ones cut away; a sitter's lift and legs follow the camera's side of their piece. Pieces hung on a wall stay on
+  it. The office dog's bed lies flat on the floor while the dog is out of it.
+- **Out of scope**: free orbiting.
 
 ## Turning it on and off
 
@@ -143,8 +202,10 @@ walls; peers behind a wall are hidden by it, as people are.
   mid-ease takes over. The zoom is the canvas's own, so the zoom controls show it and every zoom works on it. Only the switch
   zooms: a walk that starts in 3D lands at the walking camera's 3D zoom, 140% with you in the middle (where the flat
   walk lands at 100%, [Avatar mode](avatar-mode.md) "The camera"), and a walk that ends is framed by Edit as always.
-- **It is remembered per person, in this browser** (Browser Storage, `livehuddle:v2:space-3d`): turn it on and every
-  walk on every board opens in 3D until you turn it off. Nothing is sent to the server or to anyone else.
+- **It is on by default** (the owner, 2026-11-18: "3d should be the default mode, but if people toggle to 2d remember it
+  for the next time they come back"): every walk opens in 3D until you turn it off.
+- **It is remembered per person, in this browser** (Browser Storage, `livehuddle:v2:space-3d`): turn it off and every
+  walk on every board opens flat until you turn it back on. Nothing is sent to the server or to anyone else.
 
 ## What stays editable
 
@@ -206,7 +267,7 @@ Office, and 30 fps or better on a phone.
 
 ## Out of scope
 
-- Turning the camera (orbiting or rotating the view); the camera always looks up the screen.
+- Orbiting the camera freely; it turns only in quarter turns ([Turning the camera](#turning-the-camera)).
 - A 3D model of any piece (sides, a top, turning to show its back as the camera moves): pieces stand as their flat
   drawing, facing the camera.
 - People arrows ([People arrows](people-arrows.md)) aimed through the 3D camera: they still point from the flat view.

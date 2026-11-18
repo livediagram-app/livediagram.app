@@ -257,15 +257,50 @@ function Flicker({
 function FountainWater() {
   const { x, y } = FOUNTAIN_SPOUT;
   const { cx, cy, rx } = FOUNTAIN_WATER;
-  return (
-    <g aria-hidden fill="none" strokeLinecap="round">
+  // The jets from the spout into the upper bowl, and the overflow pouring over its rim into the basin.
+  const jets = `M${x} ${y - 2}C${x - 6} ${y - 12} ${x - 14} ${y - 8} ${x - 18} ${y + 20}M${x} ${y - 2}C${x + 6} ${y - 12} ${x + 14} ${y - 8} ${x + 18} ${y + 20}`;
+  const pour = `M${cx - 25} ${y + 25}C${cx - 31} ${y + 30} ${cx - 33} ${y + 44} ${cx - 33} ${cy - 2}M${cx + 25} ${y + 25}C${cx + 31} ${y + 30} ${cx + 33} ${y + 44} ${cx + 33} ${cy - 2}`;
+  const stream = (d: string, key: string) => (
+    <g key={key}>
+      {/* The body of the stream, then its water running down it in two offset trains. */}
+      <path d={d} stroke={T.water} strokeWidth={3.2} opacity={0.55} />
       <path
-        d={`M${x} ${y - 2}C${x - 6} ${y - 12} ${x - 14} ${y - 8} ${x - 18} ${y + 18}M${x} ${y - 2}C${x + 6} ${y - 12} ${x + 14} ${y - 8} ${x + 18} ${y + 18}`}
-        stroke={T.waterDeep}
-        strokeWidth={2}
-        strokeDasharray="5 4"
-        className="lh-social-anim lh-spray"
+        d={d}
+        stroke="#ffffff"
+        strokeWidth={1.6}
+        strokeDasharray="3 6"
+        opacity={0.9}
+        className="lh-water-run"
       />
+      <path
+        d={d}
+        stroke={T.waterDeep}
+        strokeWidth={1.4}
+        strokeDasharray="2 7"
+        className="lh-water-run lh-water-run-late"
+      />
+    </g>
+  );
+  const ring = (rx0: number, delay: string) => (
+    <ellipse
+      key={`${rx0}${delay}`}
+      cx={rx0}
+      cy={cy - 1}
+      rx={4}
+      ry={1.4}
+      stroke="#ffffff"
+      strokeWidth={0.9}
+      className={`lh-social-anim lh-water-ring ${delay}`}
+    />
+  );
+  return (
+    <g aria-hidden fill="none" strokeLinecap="round" data-fountain-water="">
+      {stream(jets, 'jets')}
+      {stream(pour, 'pour')}
+      {ring(cx - 33, '')}
+      {ring(cx + 33, 'lh-water-ring-late')}
+      {ring(cx - 33, 'lh-water-ring-later')}
+      {ring(cx + 33, 'lh-water-ring-latest')}
       <path
         d={`M${cx - rx * 0.6} ${cy - 2}q8 -3 16 0M${cx + rx * 0.1} ${cy + 5}q8 -3 16 0`}
         stroke="#ffffff"

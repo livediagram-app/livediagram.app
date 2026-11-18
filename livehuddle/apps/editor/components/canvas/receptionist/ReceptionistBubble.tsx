@@ -138,7 +138,7 @@ function TopicList({ label, children }: { label: string; children: React.ReactNo
       ref={ref}
       role="group"
       aria-label={label}
-      className={`mt-2 touch-pan-y overflow-y-auto overscroll-contain ${
+      className={`mt-2 min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain ${
         more ? '[mask-image:linear-gradient(to_bottom,black_calc(100%-28px),transparent)]' : ''
       }`}
       style={{ maxHeight: LIST_MAX_H }}
@@ -159,7 +159,7 @@ export function ReceptionistBubble({
   head: AvatarPoint;
   feet: AvatarPoint;
   zoom: number;
-  // An Editor's Ask Receptionist to Leave; absent for everyone else.
+  // An Editor's Ask to Leave; absent for everyone else.
   onLeave?: () => void;
 }) {
   const { chat, can, heard, name } = useReceptionistState();
@@ -196,9 +196,15 @@ export function ReceptionistBubble({
       Math.min(box?.bottom ?? window.innerHeight, window.innerHeight) - SPEECH_TOP_CLEAR;
     const roomAbove = headY - TAIL - top;
     const roomBelow = bottom - feetY - UNDER_FEET;
-    // Its whole height uncapped: the card round the list, plus all of the list.
+    // Its whole height uncapped: the card as it is, plus what its scroller (the topic list, up to its own seven rows, or
+    // a long answer) hides while it is capped.
     const frame = r.height - list.clientHeight;
-    const natural = frame + list.scrollHeight;
+    let hidden = 0;
+    for (const c of Array.from(list.children) as HTMLElement[]) {
+      const own = c.style.maxHeight ? parseFloat(c.style.maxHeight) : Infinity;
+      hidden += Math.max(0, Math.min(c.scrollHeight, own) - c.clientHeight);
+    }
+    const natural = r.height + hidden;
     // In the 3D view the card stands over his head facing you (docs/specs/008-canvas/3d-view.md): never under his
     // feet, where it would lie on the floor under the walls.
     const nextBelow = !in3D && natural > roomAbove && roomBelow > roomAbove;
@@ -284,31 +290,41 @@ export function ReceptionistBubble({
               tail={!below}
               tailShift={tailOffset(nudge, width)}
             >
+              {/* One scroller at a time (the topic list, or a long answer), the replies pinned at the foot
+                  (receptionist.md "The card"). */}
               <div
                 ref={scroller}
-                className={maxH ? 'overscroll-contain overflow-y-auto' : undefined}
+                className="flex min-h-0 flex-col"
                 style={maxH ? { maxHeight: maxH } : undefined}
               >
-                <TypedLine className="text-[13px] leading-snug" text={line} />
                 {topic ? (
-                  <div className="mt-2 flex flex-wrap gap-1.5">
-                    <Reply onClick={() => showReceptionistTopic(null)}>Another Topic</Reply>
-                    <Reply tone="quiet" onClick={closeReceptionist}>
-                      I&apos;ll Explore
-                    </Reply>
-                  </div>
-                ) : chat.reason === 'farewell' ? null : (
                   <>
+                    <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+                      <TypedLine className="text-[13px] leading-snug" text={line} />
+                    </div>
+                    <div className="mt-2 flex shrink-0 flex-wrap gap-1.5">
+                      <Reply onClick={() => showReceptionistTopic(null)}>Another Topic</Reply>
+                      <Reply tone="quiet" onClick={closeReceptionist}>
+                        I&apos;ll Explore
+                      </Reply>
+                    </div>
+                  </>
+                ) : chat.reason === 'farewell' ? (
+                  <TypedLine className="text-[13px] leading-snug" text={line} />
+                ) : (
+                  <>
+                    <TypedLine className="shrink-0 text-[13px] leading-snug" text={line} />
                     <TopicList label="Topics">
                       {RECEPTIONIST_TOPIC_GROUPS.map((group) => {
                         const inGroup = topics.filter((t) => t.group === group);
                         if (inGroup.length === 0) return null;
                         return (
-                          <section key={group} aria-label={group} className="mb-1.5 last:mb-0">
-                            <h3 className="sticky top-0 z-[1] bg-white pb-1 pt-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-amber-600 dark:bg-slate-900 dark:text-amber-300">
+                          <section key={group} aria-label={group} className="mb-2 last:mb-0">
+                            <h3 className="sticky top-0 z-[1] bg-white pb-1.5 pt-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-amber-600 dark:bg-slate-900 dark:text-amber-300">
                               {group}
                             </h3>
-                            <ul className="flex flex-col" style={{ gap: ROW_GAP }}>
+                            {/* A pixel under the heading, so the first row's top border is never under it. */}
+                            <ul className="flex flex-col pt-px" style={{ gap: ROW_GAP }}>
                               {inGroup.map((t) => (
                                 <TopicRow
                                   key={t.id}
@@ -322,13 +338,13 @@ export function ReceptionistBubble({
                         );
                       })}
                     </TopicList>
-                    <div className="mt-2 flex flex-wrap gap-1.5">
+                    <div className="mt-2 flex shrink-0 flex-wrap gap-1.5 border-t border-slate-200 pt-2 dark:border-slate-700">
                       <Reply tone="quiet" onClick={closeReceptionist}>
                         I&apos;ll Explore
                       </Reply>
                       {onLeave ? (
                         <Reply tone="leave" onClick={onLeave}>
-                          Ask Receptionist to Leave
+                          Ask to Leave
                         </Reply>
                       ) : null}
                     </div>

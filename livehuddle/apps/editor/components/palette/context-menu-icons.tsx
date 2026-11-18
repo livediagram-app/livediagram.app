@@ -137,6 +137,15 @@ export function WallsMenuGlyph() {
     </Glyph>
   );
 }
+// A room's Floor section (docs/specs/009-elements/office.md "Floors"): a square of boards laid in offset rows.
+export function FloorMenuGlyph() {
+  return (
+    <Glyph size={MENU_ICON_PX} units={24}>
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <path d="M3 9h18M3 15h18M10 3v6M15 9v6M8 15v6" />
+    </Glyph>
+  );
+}
 // The piece menu's "Type" section (docs/specs/009-elements/office.md "A piece's type"): two arrows passing, a piece
 // swapped for another of its kind in place.
 export const TypeMenuGlyph = lucideGlyph(lucideArrowLeftRight, MENU_ICON_PX);
