@@ -15,5 +15,7 @@ export const BPMN_LANE_GUTTER_PX = 30;
 /** A name drawn under a symbol, when the file gives no label bounds: its box. */
 export const BPMN_NAME_WIDTH_PX = 120;
 export const BPMN_NAME_HEIGHT_PX = 20;
+/** The widest a name grows to hold itself on one line before it wraps. */
+export const BPMN_NAME_MAX_WIDTH_PX = 160;
 /** At most this many unmatched element types are named in the report. */
 export const BPMN_REPORT_NAMES_MAX = 5;

@@ -21,6 +21,8 @@ import {
   withBpmnSymbol,
 } from './bpmn';
 import { bpmnMarkFace, svgBpmnMarks } from './svg-render-bpmn';
+import { boxedNeedsSvgRaster } from './svg-render';
+import { createShape } from './shape-factory';
 import { applyShapeVariant } from './shape-variants';
 import { elementValidationIssue, isValidElement } from './validate';
 
@@ -173,6 +175,13 @@ describe('the mark', () => {
       expect(svgBpmnMarks(el, 'transparent', '#000')).toContain('<path');
     }
     expect(paints.size).toBeGreaterThanOrEqual(3);
+  });
+
+  // The PNG and PDF exports draw plain boxes on a canvas; a mark only the SVG draws must rasterise through it.
+  it('rasterises a marked shape through its SVG in the PNG export, and leaves a plain one alone', () => {
+    const marked = { ...createShape('diamond', 0, 0), bpmn: 'gateway-exclusive' as const };
+    expect(boxedNeedsSvgRaster(marked)).toBe(true);
+    expect(boxedNeedsSvgRaster(createShape('diamond', 0, 0))).toBe(false);
   });
 
   it('gives a transparent shape a white face', () => {

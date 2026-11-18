@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import type { ArrowElement, Element, ShapeElement } from '@livediagram/document';
+import type { ArrowElement, Element, ShapeElement, TextElement } from '@livediagram/document';
 import { BPMN_REPORT_SUBTITLE, bpmnImportOutcome, importBpmn } from './import';
 import { BPMN_MAX_DRAWN, BPMN_MAX_FILE_BYTES, BPMN_MAX_XML_ELEMENTS } from './limits';
 import { BPMN_REFUSALS } from './read';
@@ -162,10 +162,35 @@ describe('importBpmn: the mapping', () => {
   });
 
   it('puts an event, gateway and data name in text under it, at the label bounds when given', () => {
-    expect(textOf(elements, 'Order in')).toMatchObject({ x: 170, y: 225 });
+    // Widened about the label's centre to hold the name in the canvas's type.
+    const orderIn = textOf(elements, 'Order in') as TextElement;
+    expect(orderIn).toMatchObject({ y: 225 });
+    expect(orderIn.x + orderIn.width / 2).toBe(200);
+    expect(orderIn.width).toBeGreaterThan(60);
     expect(textOf(elements, 'In stock?')).toMatchObject({ y: 229 });
     expect(textOf(elements, 'Stock')).toBeDefined();
     expect(byBpmn(elements, 'gateway-exclusive').label).toBe('');
+  });
+
+  it("grows a name sized to a modeler's small type, wrapping a long one and growing up from a label above", () => {
+    const label = (x: number, y: number, w: number) =>
+      `<bpmndi:BPMNLabel><dc:Bounds x="${x}" y="${y}" width="${w}" height="14" /></bpmndi:BPMNLabel>`;
+    const text = file(
+      '<bpmn:process id="P"><bpmn:startEvent id="S" name="Needs a loan" />' +
+        '<bpmn:endEvent id="E" name="Customer received the signed loan agreement" /></bpmn:process>',
+      shape('S', 100, 100, 36, 36, '', label(90, 143, 56)) +
+        shape('E', 400, 100, 36, 36, '', label(380, 70, 76)),
+    );
+    const { elements } = imported(text);
+    const under = textOf(elements, 'Needs a loan') as TextElement;
+    expect(under.width).toBeGreaterThan(56);
+    expect(under.height).toBe(20);
+    expect(under.y).toBe(143);
+    const above = textOf(elements, 'Customer received the signed loan agreement') as TextElement;
+    expect(above.width).toBe(160);
+    expect(above.height).toBeGreaterThan(20);
+    // Its bottom stays where the modeler put it, clear of the symbol under it.
+    expect(above.y + above.height).toBe(84);
   });
 
   it('draws pools and lanes as lanes, upright unless vertical, under everything', () => {

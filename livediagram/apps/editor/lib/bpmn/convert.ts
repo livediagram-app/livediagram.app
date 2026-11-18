@@ -10,6 +10,8 @@ import {
   createShape,
   createText,
   isBpmnSymbol,
+  labelFontPx,
+  PADDING_PX,
   type ArrowElement,
   type BoxedElement,
   type BpmnSymbol,
@@ -24,10 +26,12 @@ import {
   simplifyRoute,
   snapRouteEnds,
 } from '@/lib/drawio/arrow-route';
+import { LABEL_LINE_HEIGHT, labelTextWidth } from '@/lib/drawio/text-size';
 import {
   BPMN_LANE_GUTTER_PX,
   BPMN_MAX_DRAWN,
   BPMN_NAME_HEIGHT_PX,
+  BPMN_NAME_MAX_WIDTH_PX,
   BPMN_NAME_WIDTH_PX,
 } from './limits';
 import type { BpmnFile, BpmnNode, Bounds, DiShape, Pt } from './read';
@@ -135,7 +139,9 @@ function colours(di: DiShape): Partial<ShapeElement> {
   };
 }
 
-// A name BPMN writes outside its symbol: in the file's label bounds, else centred under the symbol.
+// A name BPMN writes outside its symbol: in the file's label bounds, else centred under the symbol. A modeler sizes
+// those bounds to its own small type, so the box widens about their centre to hold the name in the canvas's text
+// (up to BPMN_NAME_MAX_WIDTH_PX, then it wraps) and grows a line per wrap, upward when the name sits above.
 function nameUnder(name: string, b: Bounds, label: Bounds | undefined): Element {
   const at = label ?? {
     x: b.x + b.width / 2 - BPMN_NAME_WIDTH_PX / 2,
@@ -143,10 +149,17 @@ function nameUnder(name: string, b: Bounds, label: Bounds | undefined): Element 
     width: BPMN_NAME_WIDTH_PX,
     height: BPMN_NAME_HEIGHT_PX,
   };
+  const px = labelFontPx('sm');
+  const longest = Math.max(...name.split('\n').map((line) => line.length));
+  const need = labelTextWidth(longest + 1, px) + 2 * PADDING_PX.sm;
+  const width = Math.max(at.width, 40, Math.min(need, BPMN_NAME_MAX_WIDTH_PX));
+  const lines = name.split('\n').length + Math.max(0, Math.ceil(need / width) - 1);
+  const height = Math.max(at.height, BPMN_NAME_HEIGHT_PX + (lines - 1) * px * LABEL_LINE_HEIGHT);
+  const above = at.y + at.height <= b.y;
   return {
-    ...createText(at.x, at.y),
-    width: Math.max(at.width, 40),
-    height: Math.max(at.height, BPMN_NAME_HEIGHT_PX),
+    ...createText(at.x + at.width / 2 - width / 2, above ? at.y + at.height - height : at.y),
+    width,
+    height,
     label: name,
     textSize: 'sm',
   };

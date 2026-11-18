@@ -102,6 +102,7 @@ import { themeChartPalette } from './theme-presets';
 import { resolvedAccentEdge } from './accent-edge';
 import { isPointerNote, pointerTipOf } from './pointer-note';
 import { isPersonNode } from './person-node';
+import { bpmnSymbolOf } from './bpmn';
 import { drawnBounds, rotationOf, supportsRotation } from './rotation';
 import { tagColoursOf } from './tag-colours';
 
@@ -212,6 +213,8 @@ export function boxedNeedsSvgRaster(
   if (el.type === 'shape' && shapeHasBespokeBody(el.shape)) return true;
   // A person node's disc and lines (docs/specs/009-elements/org-chart.md) are drawn by the SVG alone.
   if (isPersonNode(el)) return true;
+  // A BPMN mark (docs/specs/009-elements/bpmn.md "How it looks") is drawn by the SVG alone (svgBpmnMarks).
+  if (el.type === 'shape' && bpmnSymbolOf(el)) return true;
   if (el.type === 'shape' && el.shape === 'icon' && el.iconId && resolveIconArt?.(el.iconId))
     return true;
   // An inline icon beside a label (svg-render-inline-icon) is drawn by the SVG alone.

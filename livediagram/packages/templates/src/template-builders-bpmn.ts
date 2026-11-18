@@ -46,7 +46,7 @@ const WAREHOUSE_ROW = SHOP_TOP + SALES_H + 90;
 // pool of two lanes (Sales, Warehouse). It shows every common symbol once: a plain and a message start, user,
 // service, manual and send tasks, an exclusive gateway with its Yes and No flows, a parallel split and join, a timer,
 // message, plain and end events, a data store and a data object on associations, and two message flows between the
-// pools. An event's, gateway's and data element's name is a text under it (above it where a flow leaves downward),
+// pools. An event's, gateway's and data element's name is a text under it (above it where a flow meets it from below),
 // as BPMN writes them; a task's name is its label.
 export function buildBpmnProcess(cx: number, cy: number): Element[] {
   const titleH = 40;
@@ -171,7 +171,7 @@ export function buildBpmnProcess(cx: number, cy: number): Element[] {
   ];
   const names: Element[] = [
     nameOf(wants, 'Wants a lamp'),
-    nameOf(parcelArrives, 'Parcel arrives'),
+    nameOf(parcelArrives, 'Parcel arrives', true),
     nameOf(received, 'Lamp received'),
     nameOf(orderIn, 'Order in'),
     nameOf(inStock, 'In stock?', true),

@@ -65,11 +65,16 @@ function Body({ symbol, w, h }: { symbol: BpmnSymbol; w: number; h: number }) {
   }
 }
 
+// An end event's heavy ring is a wide part over the body: kept heavy in the tile, or End reads as Start.
+const HEAVY_PART = 3;
+const HEAVY_STROKE_PX = 2.5;
+
 // A tile's picture: the silhouette with the symbol's mark, drawn from the same parts the canvas and export draw, in
-// the chrome icon weight (Glyph strokes do not scale).
+// the chrome icon weight (Glyph strokes do not scale), a heavy ring heavier.
 function SymbolPreview({ symbol }: { symbol: BpmnSymbol }) {
   const { w, h } = PREVIEW[bpmnFamilyOf(symbol)];
   const units = Math.max(w, h);
+  const heavyRing = bpmnFamilyOf(symbol) === 'event';
   return (
     <Glyph size={22} units={units}>
       <g transform={`translate(${(units - w) / 2} ${(units - h) / 2})`}>
@@ -82,6 +87,7 @@ function SymbolPreview({ symbol }: { symbol: BpmnSymbol }) {
               d={part.d}
               fill={part.paint === 'ink' ? 'currentColor' : 'none'}
               stroke={part.paint === 'ink' ? 'none' : undefined}
+              strokeWidth={heavyRing && part.width >= HEAVY_PART ? HEAVY_STROKE_PX : undefined}
             />
           ))}
       </g>
