@@ -566,9 +566,10 @@ How an app takes the grant is its own business; liveplanner's is the first, and 
   same index door: `POST /api/index/internal/workbench-close {app, tokenId, itemIds}`, and the app's
   `POST <app>/api/internal/items/:id/workbench-close {tokenId}` (`tokenClose` in `@liveworkspace/index-app`),
   which closes exactly the sockets that token's tickets opened (`{match: 'token'}`, 4005). The body names a pairing
-  or a token, never both. An app that seals no token answers 404 for `{tokenId}`. Today that is livediagram's alone:
-  livedocuments, livedesign and liveplanner seal no token, so revoking it stops their views at the next mint, within
-  the ticket's 10 minutes.
+  or a token, never both. An app that seals no token answers 404 for `{tokenId}`. Every product's api seals it
+  (livediagram, livedocuments, livedesign, liveplanner and livehuddle), each noting the room through
+  `noteTokenRoom` (`@liveworkspace/auth-client/workbench-sessions`) and closing through `closeTokenSessions`
+  (`@liveworkspace/api-kit/room-access-client`), so revoking a token closes its views in every app at once.
 - **Renewal**: the room sends `{kind: "grant-renew", expiresAt}` 30 seconds before a socket's grant runs out; the
   editor answers `{kind: "grant", grant}` with a fresh one (a paired tool's session answers with a fresh sealed
   ticket). A fresh grant saying the same moves the lapse on; one with another level, tab or pairing (a paired
