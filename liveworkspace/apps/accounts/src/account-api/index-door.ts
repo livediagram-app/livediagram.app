@@ -1,6 +1,11 @@
 // The account API's door for the index (account-api.ts).
 
+import {
+  ACCOUNTS_BINDING_ORIGIN,
+  GUEST_SEEN_BACKFILL_PAGE,
+} from '@liveworkspace/auth-client/guest-seen-backfill';
 import type { Env } from '../env.ts';
+import { backfillGuestSeen } from '../guest-sweep.ts';
 import { USER_ID } from '../ids.ts';
 import { sameSecret } from '../secrets.ts';
 import { MAX_PROFILE_IDS, readProfiles } from '../profiles.ts';
@@ -30,6 +35,24 @@ export async function handleIndexPeople(request: Request, env: Env): Promise<Res
   const accounts = ids.filter((v): v is string => typeof v === 'string' && USER_ID.test(v));
   const profiles = await readProfiles(env.AUTH_DB, accounts);
   return json({ people: profiles.map((p) => ({ id: p.id, name: p.name })) });
+}
+
+// POST /api/account/index/guests-seen {ids}: the index's guest owners, up to GUEST_SEEN_BACKFILL_PAGE a call, each
+// dated if accounts has never seen it (guest-sweep.ts backfillGuestSeen; accounts.md "Guests from before the stamp").
+// Only over the index's service binding: the request's host is the binding's own, which no public request can
+// carry, else it is a plain 404 before anything else is read.
+const BINDING_HOST = new URL(ACCOUNTS_BINDING_ORIGIN).host;
+
+export async function handleIndexGuestsSeen(request: Request, env: Env): Promise<Response> {
+  if (new URL(request.url).host !== BINDING_HOST) return error(404, 'not_found');
+  const refused = await refuseIndexCall(request, env);
+  if (refused) return refused;
+  const { ids } = await readBody(request);
+  if (!Array.isArray(ids) || ids.length > GUEST_SEEN_BACKFILL_PAGE) {
+    return error(400, 'too_many_ids');
+  }
+  const guests = ids.filter((v): v is string => typeof v === 'string');
+  return json({ added: await backfillGuestSeen(env.AUTH_DB, guests) });
 }
 
 // The index's doors: a POST with the key it shares with accounts, or a refusal.

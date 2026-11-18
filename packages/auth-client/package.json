@@ -15,7 +15,8 @@
     "./sign-out": "./src/sign-out.ts",
     "./token-answer": "./src/token-answer.ts",
     "./api-tokens": "./src/api-tokens.ts",
-    "./workbench-sessions": "./src/workbench-sessions.ts"
+    "./workbench-sessions": "./src/workbench-sessions.ts",
+    "./guest-seen-backfill": "./src/guest-seen-backfill.ts"
   },
   "scripts": {
     "lint": "oxlint",

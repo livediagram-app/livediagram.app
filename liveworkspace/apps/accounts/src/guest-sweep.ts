@@ -5,7 +5,8 @@
 // unseen, its token has lapsed and browsers have dropped its cookie (Chrome caps a cookie at 400
 // days), so no app can be handed it again: its settings and profile are deleted, and a purge request is
 // queued in pending_purges, which the 15-minute cron sends to the index (index-purge.ts) to delete every
-// item the guest owns, as a closed account's are.
+// item the guest owns, as a closed account's are. A guest from before the stamping began is dated by
+// `backfillGuestSeen`, from the guest owners the index sends.
 import { GUEST_ID } from './ids.ts';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -54,4 +55,31 @@ export async function sweepIdleGuests(db: D1Database, now = Date.now()): Promise
     db.prepare(`DELETE FROM guest_seen WHERE guest_id ${idle}`).bind(ids, cutoff),
   ]);
   return results.length;
+}
+
+// Guests from before the stamp ("Guests from before the stamp"). The end of 2026-10-25, UTC: stamping began that
+// afternoon, so a guest with no row was last handed its token and cookie before then, and both are gone 400 days on.
+export const GUEST_SEEN_FROM = Date.UTC(2026, 9, 26) - 1;
+// The end of 2026-10-27, UTC, the day the old livediagram.app closed: the latest an old guest who never claimed their
+// work (legacy-guests.ts) could have used it.
+export const OLD_SITE_CLOSED = Date.UTC(2026, 9, 28) - 1;
+
+// Dates each guest id without a guest_seen row, in one statement, and never touches a row already there. A returning
+// guest of the old site gets OLD_SITE_CLOSED; one already claimed gets nothing, since its work is its claimer's.
+// Answers how many rows it wrote.
+export async function backfillGuestSeen(db: D1Database, ids: readonly string[]): Promise<number> {
+  const guests = [...new Set(ids.filter((id) => GUEST_ID.test(id)))];
+  if (guests.length === 0) return 0;
+  // The WHERE is needed anyway: SQLite reads an upsert's ON after a SELECT with a join only when one is there.
+  const result = await db
+    .prepare(
+      `INSERT INTO guest_seen (guest_id, seen_at)
+       SELECT j.value, CASE WHEN l.id IS NULL THEN ?2 ELSE ?3 END
+       FROM json_each(?1) AS j LEFT JOIN legacy_guest AS l ON l.id = j.value
+       WHERE l.claimedAt IS NULL
+       ON CONFLICT (guest_id) DO NOTHING`,
+    )
+    .bind(JSON.stringify(guests), GUEST_SEEN_FROM, OLD_SITE_CLOSED)
+    .run();
+  return result.meta.changes;
 }

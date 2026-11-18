@@ -171,7 +171,7 @@ async function mergeDelegateApp(request: Request, env: Env): Promise<App | null>
 }
 
 // A new guest's id, as accounts mints it: `guest_` and a lowercase UUID.
-const GUEST_ID = /^guest_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+export const GUEST_ID = /^guest_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 // The person livediagram's api hands a migration part off for (migration-handoff.ts), from X-Index-Person: an
 // account, or on that route alone a guest, since a browser's Local only documents are usually a guest's. The

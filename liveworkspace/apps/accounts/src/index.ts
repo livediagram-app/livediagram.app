@@ -116,6 +116,7 @@ const routeLabel = createApiRouteLabel(
     'workbench',
     'index',
     'legacy-guests',
+    'guests-seen',
     'claim',
     'data-export',
     'download',

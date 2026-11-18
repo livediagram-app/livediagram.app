@@ -30,6 +30,7 @@ import { handleWorkbenchClose } from './workbench-close';
 import { handleAccountEvents } from './event-push';
 import { sweepEvents } from './events';
 import { sweepTeamAudit } from './team-audit';
+import { backfillGuestSeen } from './guest-seen-backfill';
 import { kickWebhooks, queuedCount } from './webhooks/outbox';
 import { handleItemWebhooks, handleWebhooks } from './webhooks/routes';
 import { handleKits } from './kits';
@@ -270,7 +271,8 @@ const worker = {
 
   // Every 15 minutes: carry on closed accounts' purges, and tell the apps what was purged and which guests
   // became accounts. Once a day: move empty, unchanged items to the Trash, purge items 30 days in it, retry apps that missed a purge, and
-  // delete events past their 30 days (events.ts) and team audit rows past their year (team-audit.ts).
+  // delete events past their 30 days (events.ts) and team audit rows past their year (team-audit.ts), and send accounts
+  // the guests it has never seen (guest-seen-backfill.ts).
   async scheduled(event: ScheduledController, env: Env): Promise<void> {
     if (!indexEnabled(env)) return;
     if (event.cron === FREQUENT_CRON) {
@@ -307,6 +309,11 @@ const worker = {
     await step('team audit', async () => {
       const { deleted, more } = await sweepTeamAudit(env);
       console.info(`[index] team audit swept: ${deleted}${more ? ', more left for tomorrow' : ''}`);
+    });
+    // Guests from before accounts stamped them, sent to it once (guest-seen-backfill.ts).
+    await step('guest seen', async () => {
+      const run = await backfillGuestSeen(env);
+      if (!('skipped' in run)) console.info('[index] guest seen backfill', JSON.stringify(run));
     });
   },
 };
