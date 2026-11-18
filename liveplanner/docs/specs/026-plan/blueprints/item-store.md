@@ -957,7 +957,17 @@ one after another, so the catch-up log replays the parts in order and a client a
 `mergeItemChanges` keeps the higher per-card `rev`, a part at the `rev` it already holds is no gap, and the removals
 come last as in the whole op. An op that fits goes out whole, as before; a card larger than a part alone goes in a
 part of its own. A reconnect's catch-up frame bundles the ops it missed: one that would pass `ROOM_FRAME_MAX_BYTES`
-answers `resync: true` with no ops instead (`sendCatchup`, `plan-room-frames.ts`), and the client re-fetches. Presence on cards is a separate ephemeral op, `plan-presence` (`{ tabId, itemId | null, state }`), in
+answers `resync: true` with no ops instead (`sendCatchup`, `plan-room-frames.ts`), and the client re-fetches.
+
+Catch-up log cap (Work Tracker 1231): the room's in-memory catch-up log (`plan-room/op-log.ts`) is capped twice, at
+256 ops (`OP_LOG_LIMIT`) and at 4 MiB (`OP_LOG_MAX_BYTES`, four times `ROOM_FRAME_MAX_BYTES`), dropping its oldest
+ops first. An op's size is the length of the op frame's JSON text the room relays, measured from the one
+serialisation the relay already makes (a floor on its UTF-8 bytes, so nothing is encoded twice). By count alone, a
+burst of split parts (each up to 1 MiB) could hold about 256 MiB in the object's memory; the byte cap holds it to
+4 MiB of JSON. A client whose `lastSeq` falls behind the trimmed log gets `resync: true` (`resolveCatchup`) and
+re-fetches. The cap sends no extra client to a resync: a dropped op means the ops after it pass 4 MiB, so a catch-up
+reaching it would already pass the 1 MiB frame and resync; the room keeps four frames' worth so a tab-scoped
+session, whose catch-up holds only its own tab's ops, can still replay past other tabs' big writes. Presence on cards is a separate ephemeral op, `plan-presence` (`{ tabId, itemId | null, state }`), in
 `PRESENCE_OP_KINDS`.
 
 ## Editor slice
