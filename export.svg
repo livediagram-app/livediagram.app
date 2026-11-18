@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="184" height="184" viewBox="628 358 184 184">
+<rect x="628" y="358" width="184" height="184" fill="#fbfaf7"/>
+<defs><pattern id="lvd-export-bg" patternUnits="userSpaceOnUse" width="24" height="24"><circle cx='12' cy='12' r='1' fill='#cbd5e1'/></pattern></defs>
+<rect x="628" y="358" width="184" height="184" fill="url(#lvd-export-bg)"/>
+<g><rect x="661" y="391" width="118" height="118" rx="7" fill="#f0f9ff" stroke="#0ea5e9" stroke-width="2"/></g>
+</svg>
