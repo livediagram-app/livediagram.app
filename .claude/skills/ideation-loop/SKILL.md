@@ -262,7 +262,7 @@ Add every idea that survives the check in **one** `change_items` batch:
   `Standards`, `Owner Notes`). One value, even when several sources agree; the description lists them all. The
   Lessons track which kinds and sources the owner accepts most.
 - **Effort** (`f-effort`): a rough size from reading the code it would touch: `Small` (about a day), `Medium` (a
-  few days) or `Large` (needs splitting into parts).
+  few days) or `Large` (a big feature, still built as one PR).
 - **Priority** (built-in `priority`, written lowercase: `low`, `medium`, `high`): calibrated, not inflated.
   `high` only for a clear, evidenced gap that costs users today; `medium` for a solid improvement; `low` for nice
   to have. `urgent` (shown as Critical) is never right for an idea.
