@@ -61,32 +61,43 @@ const shown = (c: HTMLElement) =>
   Array.from(c.querySelectorAll('[data-tab-folder] > [data-collapse-width="open"]')).map(
     (el) => el.textContent,
   );
-const count = () => chip().querySelector('[data-folder-count]') as HTMLElement;
+const stack = () => chip().querySelector('[data-folder-stack]')?.getAttribute('data-folder-stack');
 
 describe('TabFolderGroup', () => {
   it('names the chip with its count, collapsed, and tucks every tab away', () => {
     const { container } = render(<TabFolderGroup {...props()} />);
     expect(chip().getAttribute('aria-expanded')).toBe('false');
     expect(chip().getAttribute('aria-label')).toBe('Planning, 3 tabs');
-    expect(count().textContent).toBe('3');
-    // No chevron: the chip is a folder glyph, the name and the count.
+    // No badge and no chevron: the chip is a stacked folder glyph and the name.
+    expect(stack()).toBe('3');
     expect(chip().querySelectorAll('svg')).toHaveLength(1);
+    expect(chip().textContent).toBe('Planning');
     expect(shown(container)).toEqual([]);
     expect(container.querySelectorAll('[data-tab-folder] > [inert]')).toHaveLength(3);
     // No popover, ever.
     expect(document.querySelector('[data-tab-folder-fan]')).toBeNull();
   });
 
-  it('counts one tab in the singular', () => {
+  it('counts one tab in the singular, with a single folder', () => {
     render(<TabFolderGroup {...props({ tabs: [TABS[0]!] })} />);
     expect(chip().getAttribute('aria-label')).toBe('Planning, 1 tab');
+    expect(stack()).toBe('1');
   });
 
-  it('opens its tabs inline after the chip, in order, keeping its count', () => {
+  it('stacks two folders for two tabs and three for three or more', () => {
+    const many = [...TABS, { id: 'd', name: 'Q3 Goals' }, { id: 'e', name: 'Q4 Goals' }];
+    const { rerender } = render(<TabFolderGroup {...props({ tabs: TABS.slice(0, 2) })} />);
+    expect(stack()).toBe('2');
+    rerender(<TabFolderGroup {...props({ tabs: many })} />);
+    expect(stack()).toBe('3');
+    expect(chip().getAttribute('aria-label')).toBe('Planning, 5 tabs');
+  });
+
+  it('opens its tabs inline after the chip, in order, keeping its stack', () => {
     const { container } = render(<TabFolderGroup {...props({ expanded: true })} />);
     expect(chip().getAttribute('aria-expanded')).toBe('true');
     expect(shown(container)).toEqual(['Roadmap', 'Q1 Goals', 'Q2 Goals']);
-    expect(count().textContent).toBe('3');
+    expect(stack()).toBe('3');
     expect(container.querySelector('[data-tab-folder]')?.hasAttribute('data-expanded')).toBe(true);
   });
 
