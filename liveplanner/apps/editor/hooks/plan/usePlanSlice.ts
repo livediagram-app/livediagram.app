@@ -33,6 +33,7 @@ import { moveStatusRefusal } from './status-refusal';
 import { usePlanItemWrites } from './usePlanItemWrites';
 import { usePlanElementWrites } from './usePlanElementWrites';
 import type { WarmRights } from '@/lib/last-seen-plan';
+import { armFreshTitleKeys } from '@/components/plan/fresh-title-keys';
 
 // The editor's Plan slice (docs/specs/026-plan/blueprints/plan-board.md "Editor components"): the
 // open item panel and board set-up, and the actions boards and cards take, composed into the value
@@ -224,6 +225,8 @@ export function usePlanSlice(opts: {
     (itemId: string, via?: ItemOpenVia) => {
       openItem(itemId, via);
       setFreshItemId(itemId);
+      // Keys typed before its title takes focus are held for it (fresh-title-keys.ts).
+      armFreshTitleKeys();
     },
     [openItem],
   );
