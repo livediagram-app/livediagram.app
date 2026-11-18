@@ -105,6 +105,9 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Home·Opened',
   'Home·Selected',
   'Layer·Renamed',
+  // The Library (liveworkspace/docs/specs/006-media/libraries.md "Telemetry"): typed Personal or Team.
+  'Library·Added',
+  'Library·Created',
   'Note·Added',
   'Note·Changed',
   'Note·Deleted',
