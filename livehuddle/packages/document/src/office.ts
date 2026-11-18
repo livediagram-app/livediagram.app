@@ -328,21 +328,45 @@ export function floorBoards(x: number, y: number, w: number, h: number): Furnitu
   return d ? [path('tint', d)] : [];
 }
 
-export function roomParts(
+/** A rectangular room's floor area inside its walls, in its own px (where a floor pattern lies). */
+export function roomFloorArea(
   width: number,
   height: number,
+): { x: number; y: number; w: number; h: number } {
+  return {
+    x: ROOM_WALL,
+    y: ROOM_BACK_FACE,
+    w: width - 2 * ROOM_WALL,
+    h: height - ROOM_BACK_FACE - ROOM_WALL,
+  };
+}
+
+/** A rectangular room's side walls and front wall as the flat plan draws them: their tops. */
+export function roomSideParts(width: number, height: number, door: RoomDoor): FurniturePart[] {
+  const W = ROOM_WALL;
+  const parts: FurniturePart[] = [];
+  for (const [a, b] of brokenRun(height, door === 'w' ? roomDoorSpan(height, 'w') : null))
+    parts.push(rect('panel', 0, a, W, b - a, 2, ROOM_TONES.wallTop));
+  for (const [a, b] of brokenRun(height, door === 'e' ? roomDoorSpan(height, 'e') : null))
+    parts.push(rect('panel', width - W, a, W, b - a, 2, ROOM_TONES.wallTop));
+  for (const [a, b] of brokenRun(width, door === 's' ? roomDoorSpan(width, 's') : null))
+    parts.push(rect('panel', a, height - W, b - a, W, 2, ROOM_TONES.wallTop));
+  return parts.filter((p) => p.tag !== 'rect' || (p.w > 0 && p.h > 0));
+}
+
+/**
+ * A rectangular room's back wall as the flat plan draws it (office.md "Room"): its top, then its face standing up from
+ * the floor, broken at an open doorway, with a shut Door's leaf in it. The 3D view stands the wall up instead, so the
+ * canvas draws these apart and lays plain floor over the band there (3d-view.md "What it shows").
+ */
+export function roomBackParts(
+  width: number,
   door: RoomDoor,
   backDoors: readonly BackWallDoor[] = [],
 ): FurniturePart[] {
   const W = ROOM_WALL;
   const F = ROOM_BACK_FACE;
-  const parts: FurniturePart[] = [
-    rect('floor', 0, F - W, width, height - F + W, 3),
-    ...floorBoards(W, F, width - 2 * W, height - F - W),
-    // The back wall's shadow on the floor at its foot.
-    rect('tint', W, F, Math.max(0, width - 2 * W), 5, 0),
-  ];
-  // The back wall: its top, then its face standing up from the floor, broken at an open doorway.
+  const parts: FurniturePart[] = [];
   for (const [a, b] of backWallRuns(
     width,
     backDoors,
@@ -361,13 +385,30 @@ export function roomParts(
     parts.push(rect('dye', leaf.x, leaf.y, leaf.w, leaf.h, 1.5));
     parts.push(ellipse('panel', knob.cx, knob.cy, knob.r, knob.r));
   }
-  // The side walls and the front wall, which you see the top of.
-  for (const [a, b] of brokenRun(height, door === 'w' ? roomDoorSpan(height, 'w') : null))
-    parts.push(rect('panel', 0, a, W, b - a, 2, ROOM_TONES.wallTop));
-  for (const [a, b] of brokenRun(height, door === 'e' ? roomDoorSpan(height, 'e') : null))
-    parts.push(rect('panel', width - W, a, W, b - a, 2, ROOM_TONES.wallTop));
-  for (const [a, b] of brokenRun(width, door === 's' ? roomDoorSpan(width, 's') : null))
-    parts.push(rect('panel', a, height - W, b - a, W, 2, ROOM_TONES.wallTop));
+  return parts.filter((p) => p.tag !== 'rect' || (p.w > 0 && p.h > 0));
+}
+
+export function roomParts(
+  width: number,
+  height: number,
+  door: RoomDoor,
+  backDoors: readonly BackWallDoor[] = [],
+  // Its floor type (office.md "Floors"): Floorboards draw here; the others are a pattern over the floor (room-floors.ts).
+  boards = true,
+  // Its walls as the plan draws them (roomBackParts, roomSideParts): the canvas draws them apart, so the 3D view, which
+  // stands them up, can leave them out.
+  back = true,
+): FurniturePart[] {
+  const W = ROOM_WALL;
+  const F = ROOM_BACK_FACE;
+  const parts: FurniturePart[] = [
+    rect('floor', 0, F - W, width, height - F + W, 3),
+    ...(boards ? floorBoards(W, F, width - 2 * W, height - F - W) : []),
+    // The back wall's shadow on the floor at its foot.
+    rect('tint', W, F, Math.max(0, width - 2 * W), 5, 0),
+    ...(back ? roomBackParts(width, door, backDoors) : []),
+  ];
+  if (back) parts.push(...roomSideParts(width, height, door));
   // A mat across the doorway.
   const span = door === 'n' || door === 's' ? roomDoorSpan(width, door) : null;
   const side = door === 'e' || door === 'w' ? roomDoorSpan(height, door) : null;

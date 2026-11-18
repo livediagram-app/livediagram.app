@@ -4,6 +4,7 @@
 // public `@livehuddle/document` surface is unchanged. ElementLink + the enums
 // stay in index.ts and are imported here (type-only, so no runtime cycle).
 import type { RoomDoor, StageSpeakers } from './office';
+import type { RoomFloor } from './room-floors';
 import type { ClockZone, NoticeNote } from './office-social';
 import type { PieceTimer } from './timer-pieces';
 import type { ArcadeScore } from './arcade-scores';
@@ -193,6 +194,8 @@ export type ShapeElement = {
   // Room (docs/specs/009-elements/office.md "Room"): the wall its doorway is in, or 'none' for a closed room.
   // Absent = DEFAULT_ROOM_DOOR ('s', the front wall).
   roomDoor?: RoomDoor;
+  // Room (docs/specs/009-elements/office.md "Floors"): its floor type. Absent = Floorboards.
+  floor?: RoomFloor;
   // A room drawn with the Room Builder (docs/specs/009-elements/room-builder.md): its walls' centre line, the corners
   // as 0..1 fractions of the box. Absent on a rectangular Room.
   roomOutline?: { x: number; y: number }[];

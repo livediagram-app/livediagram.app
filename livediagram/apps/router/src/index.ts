@@ -13,6 +13,8 @@ import { LIVE_ROUTE_SEGMENTS, SIGNED_IN_HINT_COOKIE } from '@livediagram/api-sch
 import { openExplorerRedirect } from '@liveworkspace/sites/open-explorer';
 import {
   forwardOr502,
+  viaBinding,
+  type WorkspaceBindings,
   routeToWorkspace,
   routeToPreviews,
   forwardToDrive,
@@ -28,7 +30,10 @@ import { siteOfApp } from '@liveworkspace/sites';
 import { routeCommunity, type CommunityRouteSite } from '@liveworkspace/community-site/router';
 import { createOEmbed } from '@liveworkspace/media/oembed';
 
-export interface Env {
+// The service bindings to liveworkspace's Workers (WORKSPACE_SITE, WORKSPACE_ACCOUNTS, WORKSPACE_INDEX, WORKSPACE_DRIVE,
+// WORKSPACE_MEDIA, WORKSPACE_COMMUNITY), absent in the `local` env and in forks, where the *_ORIGIN vars below are
+// fetched instead (docs/specs/016-platform/router-app.md).
+export interface Env extends WorkspaceBindings {
   // Production service bindings (absent in the `local` env).
   MARKETING?: Fetcher;
   EDITOR?: Fetcher;
@@ -281,11 +286,13 @@ async function route(request: Request, env: Env): Promise<Response> {
   const community = routeCommunity(request, {
     site: COMMUNITY_SITE,
     communityUrl: env.COMMUNITY_URL,
+    fetch: viaBinding(env.WORKSPACE_COMMUNITY),
     forward: (req) =>
       routeToWorkspace(req, {
         app: 'livediagram',
         origin: env.WORKSPACE_ORIGIN,
         proxySecret: env.WORKSPACE_PROXY_SECRET,
+        bindings: env,
       }),
   });
   if (community) return community;
@@ -295,22 +302,33 @@ async function route(request: Request, env: Env): Promise<Response> {
     app: 'livediagram',
     origin: env.WORKSPACE_ORIGIN,
     proxySecret: env.WORKSPACE_PROXY_SECRET,
+    bindings: env,
   });
   if (workspace) return workspace;
-  if (isOEmbedPath(url.pathname)) return oembed(request, { previewsOrigin: env.PREVIEWS_ORIGIN });
+  if (isOEmbedPath(url.pathname))
+    return oembed(request, {
+      previewsOrigin: env.PREVIEWS_ORIGIN,
+      fetch: viaBinding(env.WORKSPACE_MEDIA),
+    });
   // Every item's preview, and a share link's live image and card, are liveworkspace's (liveworkspace/docs/specs/006-media/previews.md).
-  const preview = routeToPreviews(request, env.PREVIEWS_ORIGIN);
+  const preview = routeToPreviews(request, env.PREVIEWS_ORIGIN, viaBinding(env.WORKSPACE_MEDIA));
   if (preview) return preview;
   // The Explorer's own calls (liveworkspace/docs/specs/004-index/one-explorer-contracts.md): the index answers them.
   if (hasPrefix(url.pathname, INDEX_PATH)) {
     return forwardToIndex(request, url, env.INDEX_ORIGIN || PRODUCTION_INDEX_ORIGIN, {
       proxySecret: env.WORKSPACE_PROXY_SECRET,
+      fetch: viaBinding(env.WORKSPACE_INDEX),
     });
   }
   // Cloud Sync and the Explorer's sync marks (liveworkspace/docs/specs/005-drive/drive.md): the Drive mirror answers them, cookies
   // dropped.
   if (isDrivePath(url.pathname)) {
-    return forwardToDrive(request, url, env.DRIVE_ORIGIN || PRODUCTION_DRIVE_ORIGIN);
+    return forwardToDrive(
+      request,
+      url,
+      env.DRIVE_ORIGIN || PRODUCTION_DRIVE_ORIGIN,
+      viaBinding(env.WORKSPACE_DRIVE),
+    );
   }
   // /api/* is forwarded as-is to the api worker. The API worker handles
   // the full pathname (it expects `/api/...`) so there's no prefix

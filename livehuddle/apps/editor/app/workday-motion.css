@@ -28,9 +28,39 @@
   }
 }
 
-/* The dog's trot to its next spot over PET_TROT_MS (3 s): the move is a transition on the dog's own transform. */
+/* The dog's trot to its next spot over PET_TROT_MS (3 s): the move is a transition on the dog's own transform, at a
+   steady pace with a short start and stop, so it walks rather than glides. */
 .lh-pet-trot {
-  transition: transform 3s ease-in-out;
+  transition: transform 3s cubic-bezier(0.3, 0, 0.75, 1);
+}
+
+/* On its way its legs step in diagonal pairs, swinging from the hip, and its body bobs once a step. */
+.lh-pet-leg {
+  transform-box: fill-box;
+  transform-origin: 50% 0%;
+  animation: lh-pet-step 0.32s ease-in-out infinite alternate;
+}
+.lh-pet-leg-b {
+  animation-delay: -0.32s;
+}
+@keyframes lh-pet-step {
+  from {
+    transform: rotate(-24deg);
+  }
+  to {
+    transform: rotate(24deg);
+  }
+}
+.lh-pet-bob {
+  animation: lh-pet-bob 0.32s ease-in-out infinite alternate;
+}
+@keyframes lh-pet-bob {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-1.2px);
+  }
 }
 
 /* The tail wags; faster for a moment after a pat. */
@@ -125,6 +155,8 @@
   .lh-belt-run,
   .lh-belt-run-along,
   .lh-pet-tail,
+  .lh-pet-leg,
+  .lh-pet-bob,
   .lh-pet-breathe,
   .lh-pet-heart,
   .lh-bell-wave,
@@ -138,6 +170,8 @@
 :root.reduce-motion .lh-belt-run,
 :root.reduce-motion .lh-belt-run-along,
 :root.reduce-motion .lh-pet-tail,
+:root.reduce-motion .lh-pet-leg,
+:root.reduce-motion .lh-pet-bob,
 :root.reduce-motion .lh-pet-breathe,
 :root.reduce-motion .lh-pet-heart,
 :root.reduce-motion .lh-bell-wave,

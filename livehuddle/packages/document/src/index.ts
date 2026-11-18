@@ -217,6 +217,7 @@ export * from './door-art';
 export * from './back-wall-doors';
 export * from './window-art';
 export * from './glass-walls';
+export * from './room-floors';
 export * from './rug-art';
 export * from './room-preset-shapes';
 export * from '@liveworkspace/model-core/title-caption';

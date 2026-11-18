@@ -3,6 +3,12 @@
 import {
   DEFAULT_ROOM_DOOR,
   isGlassRoom,
+  rectPath,
+  roomFloorArea,
+  roomFloorOf,
+  ROOM_BACK_FACE,
+  roomBackParts,
+  roomSideParts,
   roomParts,
   type FurniturePart,
   type ShapeElement,
@@ -11,6 +17,7 @@ import { LitParts } from './furniture-paint';
 import { useRoomBackDoors } from './back-wall-doors-store';
 import { OutlinedRoomView } from './RoomBuilderViews';
 import { GlassRoomView } from './WindowView';
+import { RoomFloorPattern } from './RoomFloorPattern';
 
 // A room (docs/specs/009-elements/office.md "Room"): a floor in the element's fill, the back wall standing up
 // with the room's name on it (the element's own label, which sits in the wall's face), the side and front walls
@@ -52,15 +59,51 @@ export function RoomView({
         animClass={animClass}
       />
     );
+  // Its floor type (office.md "Floors"): Floorboards are its own parts, another type a pattern laid on its floor.
+  const type = roomFloorOf(element);
+  const area = roomFloorArea(width, height);
   return (
     <SizedPieceView
-      parts={roomParts(width, height, element.roomDoor ?? DEFAULT_ROOM_DOOR, backDoors)}
+      parts={roomParts(
+        width,
+        height,
+        element.roomDoor ?? DEFAULT_ROOM_DOOR,
+        backDoors,
+        type === 'boards',
+        false,
+      )}
       width={width}
       height={height}
       stroke={stroke}
       floor={floor}
       animClass={animClass}
       label={`Room${element.label ? `, ${element.label}` : ''}`}
+      onFloor={<RoomFloorPattern floor={type} d={rectPath(area.x, area.y, area.w, area.h)} />}
+      after={
+        <>
+          {/* Its walls as the plan draws them, which the 3D view stands up instead: there, plain floor lies under the
+            back wall's face, so every wall is the same and none pokes past the standing ones (3d-view.md "What it
+            shows"). */}
+          <g data-room-back="">
+            <LitParts
+              parts={[
+                ...roomBackParts(width, element.roomDoor ?? DEFAULT_ROOM_DOOR, backDoors),
+                ...roomSideParts(width, height, element.roomDoor ?? DEFAULT_ROOM_DOOR),
+              ]}
+              seat={floor}
+              stroke={stroke}
+            />
+          </g>
+          <rect
+            data-room-back-floor=""
+            x={0}
+            y={0}
+            width={width}
+            height={ROOM_BACK_FACE}
+            fill={floor}
+          />
+        </>
+      }
     />
   );
 }
@@ -78,6 +121,8 @@ export function SizedPieceView({
   floor,
   animClass,
   label,
+  onFloor,
+  after,
 }: {
   parts: readonly FurniturePart[];
   width: number;
@@ -86,6 +131,10 @@ export function SizedPieceView({
   floor: string;
   animClass?: string;
   label: string;
+  // What lies on its floor, drawn over its first part (a room's floor pattern).
+  onFloor?: React.ReactNode;
+  // What is drawn over every part (a room's back wall).
+  after?: React.ReactNode;
 }) {
   return (
     <div className={`pointer-events-none absolute inset-0 ${animClass ?? ''}`}>
@@ -96,7 +145,16 @@ export function SizedPieceView({
         role="img"
         aria-label={label}
       >
-        <LitParts parts={parts} seat={floor} stroke={stroke} />
+        {onFloor ? (
+          <>
+            <LitParts parts={parts.slice(0, 1)} seat={floor} stroke={stroke} />
+            {onFloor}
+            <LitParts parts={parts.slice(1)} seat={floor} stroke={stroke} />
+          </>
+        ) : (
+          <LitParts parts={parts} seat={floor} stroke={stroke} />
+        )}
+        {after}
       </svg>
     </div>
   );

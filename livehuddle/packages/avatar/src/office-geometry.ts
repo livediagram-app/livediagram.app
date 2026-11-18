@@ -143,6 +143,14 @@ const OFFICE_FOOTPRINT: Partial<Record<string, GridFraction>> = {
   bookshelf: { x0: 0.03, x1: 0.97, y0: 0.75, y1: 0.96 },
   // livehuddle's bar and garden (its docs/specs/009-elements/office.md): the counter, the planter, the trunk's base.
   bar: { x0: 0.02, x1: 0.98, y0: 0.5, y1: 0.92 },
+  // The drink machines and the bar's cabinets (the owner, 2026-11-18: "don't let me walk through objects like bars,
+  // cabinets and fridges"): their whole body from just under the top down to a strip at the front, where you stand to
+  // take a drink, so you walk round them and up to them, never through. The strip is about 32px at the placed size:
+  // the fence's reach plus a walking grid cell, so a walk to the machine can end on it.
+  'water-cooler': { x0: 0.1, x1: 0.9, y0: 0.3, y1: 0.71 },
+  'coffee-machine': { x0: 0.06, x1: 0.94, y0: 0.3, y1: 0.66 },
+  'drinks-cabinet': { x0: 0.04, x1: 0.96, y0: 0.2, y1: 0.73 },
+  'drinks-fridge': { x0: 0.05, x1: 0.95, y0: 0.2, y1: 0.75 },
   'outdoor-plant': { x0: 14 / 72, x1: 58 / 72, y0: 56 / 80, y1: 76 / 80 },
   tree: { x0: 48 / 120, x1: 72 / 120, y0: 136 / 160, y1: 152 / 160 },
   // livehuddle's social pieces (its docs/specs/009-elements/social-pieces.md): a base, a hearth, a basin, the water.

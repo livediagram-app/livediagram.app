@@ -11,3 +11,17 @@ export function isSpace3DKey(e: {
 }): boolean {
   return e.code === 'Digit3' && e.shiftKey && !e.metaKey && !e.ctrlKey && !e.altKey && !e.repeat;
 }
+
+/** Turn Left (`[`) or Turn Right (`]`) while walking in the 3D view (3d-view.md "Turning the camera"), else null. */
+export function space3DTurnKey(e: {
+  code: string;
+  shiftKey: boolean;
+  metaKey: boolean;
+  ctrlKey: boolean;
+  altKey: boolean;
+}): -1 | 1 | null {
+  if (e.shiftKey || e.metaKey || e.ctrlKey || e.altKey) return null;
+  if (e.code === 'BracketLeft') return -1;
+  if (e.code === 'BracketRight') return 1;
+  return null;
+}

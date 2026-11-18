@@ -17,6 +17,7 @@ import {
   openReceptionist,
   setReceptionistPerson,
   useReceptionistState,
+  setReceptionistWelcomed,
 } from '@/lib/receptionist/receptionist-store';
 import { withTopicHeard } from '@/lib/receptionist/receptionist-topics';
 
@@ -37,6 +38,7 @@ export function ReceptionistHost() {
   useEffect(() => {
     setReceptionistPerson({ speak: ctx.can.takePart, edit: ctx.can.addContent }, heard, firstName);
   }, [ctx.can.takePart, ctx.can.addContent, heard, firstName]);
+  useEffect(() => setReceptionistWelcomed(welcomed), [welcomed]);
   // Leaving closes his bubble; what the canvas reported (here, greets) is the canvas's to keep.
   useEffect(() => () => closeReceptionist(), []);
 
@@ -48,7 +50,8 @@ export function ReceptionistHost() {
   };
   const writeRef = useLatest(writePrefs);
 
-  // He reached the pad to greet you: your welcome the first time (recorded as it opens), a hello after that.
+  // He reached the pad to greet you: your welcome, the first time only (recorded as it opens). Once welcomed he no
+  // longer comes over on arrival (receptionist.md "The welcome"), so nothing opens here after that.
   // From 0, so a greeting that came before this host loaded (it loads on the first walk) still opens the welcome.
   const greets = useRef(0);
   const welcomedRef = useLatest(welcomed);
@@ -59,7 +62,7 @@ export function ReceptionistHost() {
       track('UI', 'Opened', 'ReceptionistWelcome');
       openReceptionist('welcome');
       writeRef.current({ avatarTourSeen: true });
-    } else openReceptionist('back');
+    }
   }, [receptionist.greets, welcomedRef, writeRef]);
 
   // A topic heard is kept, so his next list leads with the ones you have not.

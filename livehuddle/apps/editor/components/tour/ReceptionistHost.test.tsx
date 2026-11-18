@@ -8,6 +8,7 @@ import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { requestAvatarTourRelaunch } from '@/lib/avatar-tour';
 import {
+  closeReceptionist,
   getReceptionistState,
   noteReceptionistGreetedYou,
   resetReceptionistState,
@@ -94,7 +95,7 @@ describe('ReceptionistHost', () => {
     expect(tourOffer()).toBeNull();
   });
 
-  it('gives the welcome on his first greeting, recorded as seen, then a hello that asks what they want', () => {
+  it('gives the welcome on his first greeting, recorded as seen, and nothing on a greeting after that', () => {
     editor();
     const { rerender } = render(<ReceptionistHost />);
     act(() => noteReceptionistGreetedYou());
@@ -103,15 +104,13 @@ describe('ReceptionistHost', () => {
     expect(lastWrite()).toMatchObject({ avatarTourSeen: true });
     expect(writeUserPreferences.mock.calls.at(-1)?.[1]).toBe('me');
 
+    // Welcomed: the canvas is told, and a later greeting opens nothing (receptionist.md "The welcome").
+    act(() => closeReceptionist());
     editor({ userPreferences: { avatarTourSeen: true } });
     rerender(<ReceptionistHost />);
+    expect(getReceptionistState().welcomed).toBe(true);
     act(() => noteReceptionistGreetedYou());
-    expect(getReceptionistState().chat).toMatchObject({ open: true, reason: 'back' });
-    // It waits for a choice or I'll Explore rather than closing itself.
-    act(() => {
-      vi.advanceTimersByTime(10_000);
-    });
-    expect(getReceptionistState().chat.open).toBe(true);
+    expect(getReceptionistState().chat.open).toBe(false);
   });
 
   it('opens the welcome for a greeting that came before it loaded', () => {

@@ -6,6 +6,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./workspace-proxy": "./src/workspace-proxy.ts",
+    "./router-bindings-testing": "./src/router-bindings-testing.ts",
     "./https-redirect": "./src/https-redirect.ts",
     "./open-explorer": "./src/open-explorer.ts",
     "./network": "./src/network.ts",

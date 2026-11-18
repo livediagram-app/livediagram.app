@@ -1,6 +1,10 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it, vi } from 'vitest';
+import {
+  recordingBindings,
+  ROUTER_BINDING_CASES,
+} from '@liveworkspace/sites/router-bindings-testing';
 import { APP_BARE_HOSTS } from '@liveworkspace/sites/workspace-proxy';
 import router, { type Env } from './index';
 
@@ -964,4 +968,41 @@ describe('only over HTTPS', () => {
     });
     expect(REDIRECTS.has(local.status)).toBe(false);
   });
+});
+
+// liveworkspace's Workers over the router's service bindings (Work Tracker 1069): each target reaches its own binding
+// with the path the public route would see, and with no bindings (a local run, a fork) the public route instead.
+describe("liveworkspace's Workers over service bindings", () => {
+  it.each(ROUTER_BINDING_CASES)('$path goes to $binding', async ({ binding, path, target }) => {
+    const { bindings, calls } = recordingBindings();
+    vi.stubGlobal('fetch', () => Promise.reject(new Error('the public route was used')));
+    try {
+      await dispatch(path, { ...makeEnv().env, ...bindings });
+    } finally {
+      vi.unstubAllGlobals();
+    }
+    expect(calls[binding].map((url) => `${url.host}${url.pathname}`)).toEqual([
+      `www.liveworkspace.app${target}`,
+    ]);
+    expect(Object.values(calls).flat()).toHaveLength(1);
+  });
+
+  it.each(ROUTER_BINDING_CASES)(
+    '$path takes the public route without one',
+    async ({ path, target }) => {
+      const seen: URL[] = [];
+      vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) => {
+        seen.push(new URL(input instanceof Request ? input.url : new Request(input, init).url));
+        return Promise.resolve(Response.json({ posts: [] }));
+      });
+      try {
+        await dispatch(path, makeEnv().env);
+      } finally {
+        vi.unstubAllGlobals();
+      }
+      expect(seen.map((url) => `${url.host}${url.pathname}`)).toEqual([
+        `www.liveworkspace.app${target}`,
+      ]);
+    },
+  );
 });

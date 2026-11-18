@@ -78,6 +78,8 @@ export function EditorContextMenuHost() {
     setChairFacingSelected,
     setRoomDoorSelected,
     setRoomWallsSelected,
+    setRoomFloorSelected,
+    setRoomFloorColourSelected,
     setPieceTypeSelected,
     setStageSelected,
     setPadReceptionistSelected,
@@ -204,6 +206,8 @@ export function EditorContextMenuHost() {
       onSetChairFacing={setChairFacingSelected}
       onSetRoomDoor={setRoomDoorSelected}
       onSetRoomWalls={setRoomWallsSelected}
+      onSetRoomFloor={setRoomFloorSelected}
+      onSetRoomFloorColour={setRoomFloorColourSelected}
       onSetPieceType={setPieceTypeSelected}
       onSetStage={setStageSelected}
       onSetPadReceptionist={setPadReceptionistSelected}

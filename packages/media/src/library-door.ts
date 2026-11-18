@@ -4,7 +4,7 @@
 // apps' doors can't drift.
 //
 //   GET    /api/library               the list
-//   POST   /api/library               save `{ scope, teamId?, folder, title, width, height, elements }`
+//   POST   /api/library               save `{ scope, teamId?, folder, title, width, height, elements, pictures? }`
 //   POST   /api/library/:id/place     an item's elements, to place
 //   PUT    /api/library/:id           rename `{ title }`
 //   PUT    /api/library/folders       rename a folder `{ scope, teamId?, from, to }`
@@ -15,6 +15,7 @@ import {
   LIBRARY_ITEM_ELEMENTS_MAX,
   LIBRARY_PREVIEW_BYTES_MAX,
   isLibrarySide,
+  libraryPreviewPictures,
   normaliseLibraryFolder,
   normaliseLibraryTitle,
   type LibraryActor,
@@ -27,8 +28,9 @@ export type LibraryDoorKit = {
   kinds: ReadonlySet<string>;
   // The elements this app keeps of a list: each migrated, then checked; the ones that fail are left out.
   clean: (elements: readonly unknown[]) => unknown[];
-  // The elements drawn as an SVG by this app's server-side renderer, or null when it can't.
-  preview: (elements: readonly unknown[]) => string | null;
+  // The elements drawn as an SVG by this app's server-side renderer, or null when it can't; a picture is drawn from
+  // `pictures` (its small copy, by gallery id) where it has one, else as its name.
+  preview: (elements: readonly unknown[], pictures?: ReadonlyMap<string, string>) => string | null;
 };
 
 // An app's kit from its own parts: its kinds, its element migration and check, and its renderer.
@@ -36,12 +38,16 @@ export function libraryKitOf(parts: {
   kinds: ReadonlySet<string>;
   migrate: (elements: readonly unknown[]) => readonly unknown[];
   isValid: (element: unknown) => boolean;
-  render: (elements: readonly unknown[]) => string;
+  // `imageHref` is the renderer's ResolveImageHref: a picture's source by its gallery id, or undefined for its name.
+  render: (
+    elements: readonly unknown[],
+    imageHref: (imageId: string) => string | undefined,
+  ) => string;
 }): LibraryDoorKit {
   return {
     kinds: parts.kinds,
     clean: (elements) => parts.migrate(elements).filter((el) => parts.isValid(el)),
-    preview: (elements) => parts.render(elements),
+    preview: (elements, pictures) => parts.render(elements, (id) => pictures?.get(id)),
   };
 }
 
@@ -68,6 +74,9 @@ export type LibraryDoorInput = {
   actor: LibraryActor | null;
   // The service's calls, or null when this deploy has no media key.
   library: LibraryCalls | null;
+  // The actor as it is now (a team joined since the caller's token was minted, read by the app from accounts),
+  // asked only once a route is matched and about to reach the service, so a refused request costs no lookup.
+  currentActor?: (actor: LibraryActor) => Promise<LibraryActor>;
   kit: LibraryDoorKit;
   // The request's JSON object, or null when it isn't one.
   readBody: () => Promise<Record<string, unknown> | null>;
@@ -100,11 +109,12 @@ export async function handleLibraryDoor(input: LibraryDoorInput): Promise<Respon
   };
   if (!actor) return refuse('unauthorized', 401);
   if (!library) return refuse('library_unavailable', 503);
+  const current = () => (input.currentActor ? input.currentActor(actor) : Promise.resolve(actor));
   const answer = <T>(result: LibraryResult<T>, status = 200) =>
     result.ok ? json(result.value, { status }) : json(result.body, { status: result.status });
 
   if (path.length === 0 && method === 'GET') {
-    return answer(await library.list(actor, [...kit.kinds]));
+    return answer(await library.list(await current(), [...kit.kinds]));
   }
 
   if (path.length === 0 && method === 'POST') {
@@ -129,13 +139,13 @@ export async function handleLibraryDoor(input: LibraryDoorInput): Promise<Respon
     if (bytesOf(elements) > LIBRARY_ITEM_BYTES_MAX) return refuse('item_too_large', 413);
     let preview: string | null = null;
     try {
-      preview = kit.preview(elements);
+      preview = kit.preview(elements, libraryPreviewPictures(body.pictures, elements));
     } catch (error) {
       console.warn('[library] preview failed', { error: String(error) });
     }
     if (preview !== null && encoder.encode(preview).length > LIBRARY_PREVIEW_BYTES_MAX)
       preview = null;
-    const saved = await library.save(actor, {
+    const saved = await library.save(await current(), {
       ...scope,
       folder,
       title,
@@ -157,14 +167,14 @@ export async function handleLibraryDoor(input: LibraryDoorInput): Promise<Respon
     const to = normaliseLibraryFolder(body.to);
     if (!scope) return refuse('invalid_scope', 400);
     if (from === null || to === null || to === '') return refuse('invalid_folder', 400);
-    return answer(await library.renameFolder(actor, { ...scope, from, to }));
+    return answer(await library.renameFolder(await current(), { ...scope, from, to }));
   }
 
   const id = path[0];
   if (!id) return refuse('not_found', 404);
 
   if (path.length === 2 && path[1] === 'place' && method === 'POST') {
-    const placed = await library.place(actor, id);
+    const placed = await library.place(await current(), id);
     if (!placed.ok) return answer(placed);
     // Placed as this app keeps elements: any it can't draw are left out.
     const elements = kit.clean(placed.value.elements);
@@ -177,10 +187,10 @@ export async function handleLibraryDoor(input: LibraryDoorInput): Promise<Respon
     const body = await input.readBody();
     const title = normaliseLibraryTitle(body?.title);
     if (!title) return refuse('invalid_title', 400);
-    return answer(await library.rename(actor, id, title));
+    return answer(await library.rename(await current(), id, title));
   }
 
-  if (method === 'DELETE') return answer(await library.remove(actor, id));
+  if (method === 'DELETE') return answer(await library.remove(await current(), id));
 
   return refuse('not_found', 404);
 }

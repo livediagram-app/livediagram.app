@@ -69,7 +69,9 @@ export type MediaImageResponse = { image: MediaImage; owner: string };
 // Which documents, in which apps, place each of the owner's images. An image no document places is
 // absent.
 export type MediaUsage = Record<string, { app: MediaApp; document: string }[]>;
-export type MediaUsageResponse = { usage: MediaUsage };
+// `library`: the owner's images a Library item holds (libraries.md "Pictures"), used though no document places them.
+// An older service leaves it out.
+export type MediaUsageResponse = { usage: MediaUsage; library?: string[] };
 
 // `POST /app/refs`: the images each listed document places now, replacing what the service held for
 // it. An empty list means the document places none, or is gone. `complete` says every document the

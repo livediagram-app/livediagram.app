@@ -124,6 +124,9 @@ export type EditorContextMenuProps = {
   onSetRoomDoor: (door: import('@livehuddle/document').RoomDoor) => void;
   // And its walls (docs/specs/009-elements/office.md "Glass walls"): Solid or Glass.
   onSetRoomWalls: (walls: import('@livehuddle/document').RoomWalls) => void;
+  // A room's floor type and floor colour (docs/specs/009-elements/office.md "Floors").
+  onSetRoomFloor: (floor: import('@livehuddle/document').RoomFloor) => void;
+  onSetRoomFloorColour: (hex: string) => void;
   // A Door's, Rug's, Corridor's or Meeting Table's type, changed in place (docs/specs/009-elements/office.md "A piece's
   // type"): every selected piece of `kind` becomes `type`.
   onSetPieceType?: (kind: string, type: string) => void;

@@ -370,6 +370,7 @@ describe('handleImages', () => {
           ],
         },
         unchecked: [],
+        library: [],
       });
     });
 
@@ -382,6 +383,7 @@ describe('handleImages', () => {
       expect(await (await call('GET', '/api/images/usage')).json()).toEqual({
         usage: { a: [{ id: 'C', name: 'Board', app: 'livediagram' }] },
         unchecked: [],
+        library: [],
       });
     });
 
@@ -487,6 +489,7 @@ describe('handleImages', () => {
       expect(await (await call('GET', '/api/images/usage')).json()).toEqual({
         usage: {},
         unchecked: ['a'],
+        library: [],
       });
     });
 
@@ -501,6 +504,7 @@ describe('handleImages', () => {
       expect(await (await call('GET', '/api/images/usage')).json()).toEqual({
         usage: {},
         unchecked: [],
+        library: [],
         unknown: true,
       });
     });
@@ -510,6 +514,7 @@ describe('handleImages', () => {
       expect(await (await call('GET', '/api/images/usage')).json()).toEqual({
         usage: {},
         unchecked: [],
+        library: [],
       });
     });
   });

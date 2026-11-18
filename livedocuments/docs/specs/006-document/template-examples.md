@@ -11,9 +11,13 @@ for a canvas (Work Tracker 1181). The engineering detail, shared by livediagram,
 - **Example content** (cleared): a sticky note's text; a checklist's rows and ticks (the rows stay, empty and
   unticked); a table's body cells (its header row and header column stay); a chart's numbers (its slice and series
   names stay).
-- **Structure** (kept): everything else. A page's headings, text and copy, shapes and their labels, images, icons,
-  arrows and the template's note. An infographic's or a slide's words are its design, and a text box emptied would
-  draw nothing, so they stay.
+- **Sample copy** (cleared): a text box's body copy and sample sentences, the words a page is filled with: a slide's
+  subtitle and bullet lines, a poster's strapline, a résumé's job lines, a recipe's steps. Body copy is text that is
+  not bold, carries no wordmark type, draws at a body size (48 px or less) and holds two or more words. An emptied
+  text shows a faint "Text" prompt to an Editor ([Text element](../008-canvas/canvas-and-palette.md#text-element)),
+  so the page shows where its words go.
+- **Structure** (kept): everything else. A page's titles and headings (bold, or display-sized), single words and
+  figures (a page number, a price, a label), shapes and their labels, images, icons, arrows and the template's note.
 
 ## Marked as it lands
 

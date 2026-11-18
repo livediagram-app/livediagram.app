@@ -188,6 +188,26 @@ Work Tracker #539.
   hearing check treats it as any room. Glass is seen through, never heard through.
 - **Export** draws glass walls as the canvas does.
 
+### Floors
+
+A room's floor is chosen like its walls (the owner, 2026-11-18: "I want to be able to edit the floor type and color
+styles of rooms, like Carpet, Tiles, Floorboards etc, like I can edit the walls in the context menu").
+
+- **A room's floor type**, stored as the room's `floor`: absent is **Floorboards**, the boards every room had; the
+  others are **Tiles** (square tiles with pale grout), **Carpet** (a soft woven fleck), **Stone** (large flags laid in
+  offset rows) and **Concrete** (wide poured panels with a faint seam). A value it does not know draws as
+  Floorboards, so an older client reading a carpeted room sees boards and nothing breaks. Any room takes it: a
+  rectangle, a preset, a glass room, a room drawn with the [Room Builder](room-builder.md).
+- **The floor's colour** is the room's fill, as before: the pattern is drawn over it in light and shade, so every
+  type works in every colour, on light and dark paper.
+- **Where it is set**: every room's element menu has a **Floor** section after **Walls**, its glyph a square of
+  boards: a row of five tiles, one per type, each a small swatch of that floor, and under them a row of **floor
+  colours** that suit floors: Oak, Walnut, Ash, Cream, Slate, Charcoal, Sage, Navy and Berry (each sets the room's
+  fill, the one shown as chosen when it matches). A selection of several rooms sets them all; other kinds are left
+  alone; one undoable change, `Element · Changed · Room`. Editors only, as Walls.
+- **Drawn the same everywhere**: the canvas, the 3D view (it is the floor) and export draw it, from one pattern
+  description, its seams fixed in canvas px whatever the room's size, never scaled with the room.
+
 ## Meeting Table
 
 A table with six chairs round it, every seat facing the table.
@@ -255,6 +275,11 @@ Walk up to one and your character **gets a drink**.
 - **Coffee Machine**: a coffee machine with a carafe, on a little counter. Default 72 × 96.
 - **Turned**: the cooler shows its vent from behind and, facing left, its taps and drip tray down its left; the coffee
   machine shows its vents from behind and, facing left, its screen and carafe down its left, its mug at the near end.
+- **Solid** (the owner, 2026-11-18: "don't let me walk through objects like bars, cabinets and fridges"): a Water
+  Cooler, Coffee Machine, Drinks Cabinet and Drinks Fridge block walking with their body, from just under the top of
+  the box down to a strip at its front, about 32 canvas px deep at the placed size (the walking grid's step plus a
+  character's reach), where you stand to take a drink: a walk to the machine always ends on it. So you walk round
+  them and up to them, never through.
 - **Using it**: walking a character onto it (the same arrival as a chair or a portal) gives it a cup, **water** or
   **coffee**, held in its hand for **60 seconds**. Every 8 seconds it takes a sip (the arm lifts the cup for a
   moment). A coffee steams. Using it again, or the other machine, swaps or refreshes the cup. Sitting keeps the

@@ -57,7 +57,7 @@ describe('ReceptionistBubble', () => {
     expect(said()).toBe("Welcome in! I'm the receptionist. What should I show you?");
     const all = replies();
     expect(all).toHaveLength(17);
-    expect(all.slice(-2)).toEqual(["I'll Explore", 'Ask Receptionist to Leave']);
+    expect(all.slice(-2)).toEqual(["I'll Explore", 'Ask to Leave']);
     expect(all).not.toContain('More Topics ›');
     for (const group of ['Talk', 'Meet', 'Move', 'You', 'Space'])
       expect(screen.getByText(group)).toBeTruthy();
@@ -99,7 +99,7 @@ describe('ReceptionistBubble', () => {
     expect(heard.textContent).toMatch(/^✓/);
     expect(screen.getByRole('button', { name: 'Talking to People' })).toBeTruthy();
     // Only an Editor's bubble with somewhere to send him offers Leave.
-    expect(screen.queryByRole('button', { name: 'Ask Receptionist to Leave' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Ask to Leave' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: "I'll Explore" }));
     expect(getReceptionistState().chat.open).toBe(false);
   });
@@ -129,7 +129,7 @@ describe('ReceptionistBubble', () => {
         onLeave={leave}
       />,
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Ask Receptionist to Leave' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Ask to Leave' }));
     expect(leave).toHaveBeenCalledOnce();
     act(() => sayReceptionistFarewell());
     expect(said()).toBe("Of course. Bring me back any time from the Avatar Pad's menu.");

@@ -1,7 +1,7 @@
 # Template example content
 
 A template a person picks lands with example values that show how it is used: the Dashboard wireframe's chart
-figures. **Clear Example Content** empties them in one step and keeps the design: every element, where it is and how
+figures, a wireframe's sample sentences. **Clear Example Content** empties them in one step and keeps the design: every element, where it is and how
 it looks, ready to fill in fresh. It is liveplanner's Clear Example Cards for a canvas (Work Tracker 1181). The
 engineering detail, shared by livediagram, livedocuments and livedesign, is in
 [liveworkspace's blueprint](../../../../liveworkspace/docs/specs/002-architecture/blueprints/template-examples.md).
@@ -11,9 +11,14 @@ engineering detail, shared by livediagram, livedocuments and livedesign, is in
 - **Example content** (cleared): a sticky note's text; a checklist's rows and ticks (the rows stay, empty and
   unticked); a table's body cells (its header row and header column stay); a chart's numbers (its slice and series
   names stay).
-- **Structure** (kept): everything else. A logo's wordmark, a wireframe's or a post's copy and labels, shapes, images,
-  icons, arrows and the template's note. Those words are the design itself, and a text box emptied would draw
-  nothing, so they stay.
+- **Sample copy** (cleared): a text box's body copy and sample sentences: a wireframe's subtitle and list lines
+  ("Sign in to Harbour", "8 min · Saved by 940 people"), a post's caption. Body copy is text that is not bold, carries
+  no wordmark type, draws at a body size (48 px or less) and holds two or more words. An emptied text shows a faint
+  "Text" prompt to an Editor ([Text element](../008-canvas/canvas-and-palette.md#text-element)), so the screen shows
+  where its words go.
+- **Structure** (kept): everything else. Titles and headings (bold, or display-sized), single words and figures (a
+  nav item, a button, a price, a time), every word of a logo template (the wordmark is the mark), shapes, images,
+  icons, arrows and the template's note.
 
 ## Marked as it lands
 

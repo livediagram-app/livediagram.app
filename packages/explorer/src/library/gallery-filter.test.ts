@@ -1,6 +1,12 @@
 // The Image Gallery's Show switch (liveworkspace/docs/specs/004-index/one-explorer.md "The Library and Settings").
 import { describe, expect, it } from 'vitest';
-import { filterGallery, isUnchecked, isUnused, UNKNOWN_USAGE } from './gallery-filter';
+import {
+  filterGallery,
+  isLibraryHeld,
+  isUnchecked,
+  isUnused,
+  UNKNOWN_USAGE,
+} from './gallery-filter';
 import type { GalleryImage, GalleryUsage, GalleryUse } from './types';
 
 const image = (i: number): GalleryImage => ({
@@ -31,6 +37,16 @@ describe('filterGallery', () => {
     expect(isUnused(usage, 'img-4')).toBe(false);
     expect(isUnchecked(usage, 'img-4')).toBe(true);
     expect(isUnchecked(usage, 'img-2')).toBe(false);
+  });
+
+  // Work Tracker 1128: a picture only a Library item holds was listed Unused, inviting its deletion.
+  it('never keeps a picture only a Library item holds on Unused', () => {
+    const held: GalleryUsage = { ...usage, library: new Set(['img-2']) };
+    expect(isLibraryHeld(held, 'img-2')).toBe(true);
+    expect(isUnused(held, 'img-2')).toBe(false);
+    expect(filterGallery(images, held, 'unused').map((i) => i.id)).toEqual(['img-3']);
+    // An older api says nothing of the Library.
+    expect(isLibraryHeld(usage, 'img-2')).toBe(false);
   });
 
   it('keeps nothing on Unused when the usage could not be read at all', () => {

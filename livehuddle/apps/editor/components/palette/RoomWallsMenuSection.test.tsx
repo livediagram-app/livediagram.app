@@ -53,12 +53,13 @@ const tile = (name: string) =>
   screen.getAllByRole('button').find((b) => b.textContent?.trim() === name)!;
 
 describe('a room’s Walls', () => {
-  // A new Room's way in is a Door piece, so it has no doorway section to bring the Tools row with it.
-  it('has a Walls row in a new Room’s element menu', () => {
+  // A new Room's way in is a Door piece, so it has no doorway section: its Tools are its Walls and its Floor.
+  it('has Walls and Floor rows under a new Room’s Tools', () => {
     openMenu(room({ roomDoor: 'none' }));
-    expect(screen.queryAllByRole('button').some((b) => b.textContent?.trim() === 'Walls')).toBe(
-      true,
-    );
+    fireEvent.click(tile('Tools'));
+    const rows = screen.queryAllByRole('button').map((b) => b.textContent?.trim());
+    expect(rows).toContain('Walls');
+    expect(rows).toContain('Floor');
   });
 
   it('sets Glass, and back to Solid', () => {

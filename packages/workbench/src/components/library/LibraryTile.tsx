@@ -1,7 +1,7 @@
 'use client';
 
 // One item in the palette's Library (liveworkspace/docs/specs/006-media/libraries.md): its preview over its title. A
-// click (or Enter / Space) places it at the middle of the view. Someone who may tidy it (its owner for Personal, an
+// click (or Enter / Space) places it at the middle of the view; a drag carries it to where it is dropped. Someone who may tidy it (its owner for Personal, an
 // admin for a team) gets a More button on the tile's corner: Rename in place, or Delete after a confirm.
 
 import { useRef, useState, type ReactNode } from 'react';
@@ -31,7 +31,7 @@ export function LibraryTile({
   tidy: boolean;
   // The editor's own drawing, for an item with no stored preview (its own shape libraries).
   thumbnail?: ReactNode;
-  // A drag payload the editor's canvas takes (its own shape libraries' tiles keep their drag), else no drag.
+  // A drag payload the editor's canvas takes: the Library's (library-dnd.ts), or livediagram's own shape libraries'.
   drag?: LibraryTileDrag | null;
   onInsert: () => void;
   onRename: (title: string) => void;

@@ -115,8 +115,11 @@ describe('scenery that blocks', () => {
     expect(plant.x).toBeGreaterThan(10);
     const shelf = officeFootprint({ x: 0, y: 0, width: 120, height: 132, shape: 'bookshelf' })!;
     expect(shelf.y / 132).toBeCloseTo(0.75, 2);
-    for (const shape of ['water-cooler', 'coffee-machine', 'rug', 'meeting-table', 'room'])
+    for (const shape of ['rug', 'meeting-table', 'room'])
       expect(officeFootprint({ x: 0, y: 0, width: 50, height: 50, shape })).toBeNull();
+    // A drink machine blocks with its body, short of the strip at its front where a drink is taken.
+    const cooler = officeFootprint({ x: 0, y: 0, width: 56, height: 112, shape: 'water-cooler' })!;
+    expect(cooler.y + cooler.height).toBeLessThan(112 - 12);
   });
 
   it('outlines a footprint with its four edges', () => {
@@ -168,7 +171,9 @@ describe('the pod, the bar and the garden', () => {
     expect(planter.height).toBeCloseTo(20);
     for (const kind of ['plant', 'bookshelf', 'bar', 'outdoor-plant', 'tree'])
       expect(isSceneryShape(kind)).toBe(true);
-    expect(isSceneryShape('drinks-fridge')).toBe(false);
+    // The drinks cabinet and fridge block too, walked round, never through (2026-11-18).
+    expect(isSceneryShape('drinks-fridge') && isSceneryShape('drinks-cabinet')).toBe(true);
+    expect(isSceneryShape('sofa')).toBe(false);
   });
 
   // docs/specs/009-elements/furniture-facing.md "A turn": what blocks turns with it.

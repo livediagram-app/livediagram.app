@@ -261,5 +261,7 @@ async function usageOf(
   return galleryUsage(answered.value.usage, async (ids) => (await client.lookupItems(ids)).items, {
     // Not theirs: not in the badge (gone, or another app's id, the index leaves out).
     keep: (item) => item.ownerId === owner,
+    // Held by a Library item: used, though no document places them (libraries.md "Pictures").
+    library: answered.value.library,
   });
 }

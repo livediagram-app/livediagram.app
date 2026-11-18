@@ -229,7 +229,7 @@ export async function handleApp(
   // GET /app/usage?owner=: which documents, in any app, place each of the owner's images.
   if (segments[0] === 'usage' && segments.length === 1 && method === 'GET') {
     if (!isId(owner)) return badRequest('invalid_owner');
-    return json({ usage: await usageOf(env, owner) });
+    return json(await usageOf(env, owner));
   }
 
   // POST /app/refs: the images each listed document places now.

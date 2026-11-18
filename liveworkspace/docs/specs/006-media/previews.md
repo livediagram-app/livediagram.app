@@ -58,7 +58,9 @@ stays the app's. When the previews service can't be reached at all (locally, a s
 failed forward used to throw out of the router as a bare `500` ("Network connection lost"); a picture then falls back
 as for any failed preview. Every other forward a router makes answers the same way (`forwardOr502`). A deployed
 router stops waiting for a preview's headers after 30 s and answers `504` (`no-store`), as it does for every forward
-to liveworkspace ([accounts.md](../003-accounts/accounts.md#when-the-accounts-site-doesnt-answer)).
+to liveworkspace ([accounts.md](../003-accounts/accounts.md#when-the-accounts-site-doesnt-answer)). A deployed router
+reaches the previews service over its `WORKSPACE_MEDIA` service binding (`liveworkspace-media`, `-staging` on staging),
+the pasted link's embed (`/oembed`) too; without one (a local run) it fetches `PREVIEWS_ORIGIN`.
 
 ### `GET /api/previews/items/:id?v=<updatedAt>[&appearance=light|dark]`
 

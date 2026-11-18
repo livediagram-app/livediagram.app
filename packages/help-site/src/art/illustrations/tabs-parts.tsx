@@ -127,33 +127,74 @@ export function FolderIcon({ open = false }: { open?: boolean }) {
 }
 
 /** A folder's colour, as the editor derives it from the name (folder-colour.ts): a pale shelf
- *  behind its tabs, the chip a deeper tint with the name and count badge in the hue. */
+ *  behind its tabs, the chip a deeper tint with the stacked folder glyph and the name in the hue. */
 export const FOLDER_TONES = {
   rose: {
     shelf: 'fill-rose-50',
     chip: 'fill-rose-100',
     ink: 'fill-rose-700 dark:fill-rose-300',
-    badge: 'fill-rose-600 dark:fill-rose-300',
     stroke: 'stroke-rose-700 dark:stroke-rose-300',
   },
   violet: {
     shelf: 'fill-violet-50',
     chip: 'fill-violet-100',
     ink: 'fill-violet-700 dark:fill-violet-300',
-    badge: 'fill-violet-600 dark:fill-violet-300',
     stroke: 'stroke-violet-700 dark:stroke-violet-300',
   },
 } as const;
 
+const FOLDER_OUTLINE =
+  'M-8 -5 h5 l2 2 h8 a1 1 0 0 1 1 1 v7 a1 1 0 0 1 -1 1 h-14 a1 1 0 0 1 -1 -1 v-9 a1 1 0 0 1 1 -1 Z';
+
+/** A tab folder's glyph as the chip draws it (FolderStackGlyph): one folder for one tab, two stacked for two, three
+ *  for three or more, each behind stepping up and to the right, fainter, and hidden where the ones in front sit (a
+ *  backing in the shelf's tint does here what the app's mask does). Centred on (x, y). */
+export function FolderStackMark({
+  x,
+  y,
+  count,
+  scale,
+  stroke,
+  backing,
+}: {
+  x: number;
+  y: number;
+  count: number;
+  scale: number;
+  stroke: string;
+  backing: string;
+}) {
+  const layers = Math.max(1, Math.min(3, count));
+  const step = 3.5;
+  const opacity = [1, 0.6, 0.35];
+  return (
+    <g transform={`translate(${x} ${y}) scale(${scale})`}>
+      {Array.from({ length: layers }, (_, i) => layers - 1 - i).map((k) => (
+        <g key={k} transform={`translate(${k * step} ${-k * step})`}>
+          {k < layers - 1 ? <path d={FOLDER_OUTLINE} className={backing} strokeWidth={0} /> : null}
+          <path
+            d={FOLDER_OUTLINE}
+            fill="none"
+            className={stroke}
+            strokeWidth={2.2}
+            strokeLinejoin="round"
+            opacity={opacity[k]}
+          />
+        </g>
+      ))}
+    </g>
+  );
+}
+
 /** A folder on the bar (TabFolderGroup): a shelf tinted in the folder's colour and shaped like a tab, always there,
- *  holding its header (a folder glyph, the name and the count badge, open or shut) and then whichever of its tabs
+ *  holding its header (a folder glyph that stacks one, two or three deep for its tabs, and the name, open or shut) and then whichever of its tabs
  *  show. Shut, only the tab you are on stays beside the header; open, every tab sits after it, in order. */
 export function FolderGroup({
   x,
   y,
   name,
   count,
-  chipW = 80,
+  chipW = 70,
   tabs = [],
   tone = 'rose',
 }: {
@@ -172,34 +213,23 @@ export function FolderGroup({
   const r = 7;
   const mid = y + 15;
   const tabsX = x + chipW + 2;
-  const badgeX = x + chipW - 20;
+  const layers = Math.min(count, 3) - 1;
   return (
     <g>
       <path
         d={`M${x} ${bottom} V${top + r} a${r} ${r} 0 0 1 ${r} ${-r} H${x + w - r} a${r} ${r} 0 0 1 ${r} ${r} V${bottom} Z`}
         className={t.shelf}
       />
-      <path
-        d="M-8 -5 h5 l2 2 h8 a1 1 0 0 1 1 1 v7 a1 1 0 0 1 -1 1 h-14 a1 1 0 0 1 -1 -1 v-9 a1 1 0 0 1 1 -1 Z"
-        transform={`translate(${x + 14} ${mid + 0.5}) scale(0.65)`}
-        fill="none"
-        className={t.stroke}
-        strokeWidth={2.2}
-        strokeLinejoin="round"
-      />
-      <Label x={x + 25} y={mid + 1} size={10.5} weight={650} className={t.ink}>
-        {name}
-      </Label>
-      <rect x={badgeX} y={mid - 7} width={14} height={14} rx={4} className={t.badge} />
-      <Label
-        x={badgeX + 7}
+      <FolderStackMark
+        x={x + 14}
         y={mid + 0.5}
-        anchor="middle"
-        size={9}
-        weight={700}
-        className="fill-white dark:fill-slate-950"
-      >
-        {String(count)}
+        scale={0.65}
+        count={count}
+        stroke={t.stroke}
+        backing={t.shelf}
+      />
+      <Label x={x + 25 + layers * 1.5} y={mid + 1} size={10.5} weight={650} className={t.ink}>
+        {name}
       </Label>
       {tabs.map((tab, i) => (
         <TabPill

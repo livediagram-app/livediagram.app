@@ -1,19 +1,14 @@
 'use client';
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { HoverCard, lucideGlyph } from '@liveworkspace/ui';
-import { lucideFolder } from '@liveworkspace/icons/lucide';
+import { HoverCard } from '@liveworkspace/ui';
 import { CollapseWidth, COLLAPSE_WIDTH_MS } from '../primitives/CollapseWidth';
-import {
-  FOLDER_BADGE_CLASS,
-  FOLDER_CHIP_CLASS,
-  FOLDER_SHELF_CLASS,
-  folderStyle,
-} from './folder-colour';
+import { FOLDER_CHIP_CLASS, FOLDER_SHELF_CLASS, folderStyle } from './folder-colour';
+import { FolderStackGlyph } from './FolderStackGlyph';
 
 // One tab folder in the strip (docs/specs/006-document/tab-folders.md "Tab bar rendering"), the same in every editor.
 // It stands on its shelf, a tinted container shaped like a tab. Its chip, the folder's header, comes first: a folder
-// glyph, the name and the count badge, open or shut. Its tabs follow inline and open or shut in place, each easing its
+// glyph that stacks to say how many tabs it holds (one, two, or three for three or more) and the name, open or shut. Its tabs follow inline and open or shut in place, each easing its
 // own width so the whole group slides as one. A 4px margin each side, on top of the strip's own 2px gap, keeps the
 // shelf off the tabs and folders beside it (two folders in a row share one, the second's left margin dropped). The open tab never tucks away: in a collapsed folder it stays on the
 // shelf beside the chip.
@@ -166,14 +161,12 @@ export function TabFolderGroup<T extends { id: string }>({
               }
               className={`${FOLDER_CHIP_CLASS}${dropOver ? ' outline-2 -outline-offset-2 outline-brand-500' : ''}`}
             >
+              {/* The glyph stacks to say how many tabs the folder holds, open or shut; the exact count is in its
+                  name and hover card. */}
               <span aria-hidden className="flex shrink-0 opacity-85">
-                <FolderGlyph />
+                <FolderStackGlyph count={tabs.length} />
               </span>
               <span className="text-optical-line max-w-[10rem] truncate">{name}</span>
-              {/* The count stays, open or shut: how many tabs the folder holds. */}
-              <span data-folder-count="" className={FOLDER_BADGE_CLASS}>
-                {tabs.length}
-              </span>
             </button>
           </HoverCard>
         )}
@@ -189,5 +182,3 @@ export function TabFolderGroup<T extends { id: string }>({
     </div>
   );
 }
-
-const FolderGlyph = lucideGlyph(lucideFolder, 14);

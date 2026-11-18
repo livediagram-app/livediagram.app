@@ -38,6 +38,14 @@ The app vouches for the caller: their media owner, and their teams with their ro
 token's `teams` claim (accounts.md "How an app and the index know someone's teams"). The service trusts the app's word,
 as it does for pictures, and checks each action against it.
 
+**A team joined a moment ago is there at once.** A token's claim can be up to 15 minutes old, so the door doesn't stop
+at it: for a signed-in person it asks accounts for their teams as they are now (`POST /api/account/internal/teams/of`,
+through `@liveworkspace/index-app` `createTeamAccess` `currentTeams`, as every app's team routes do) and adds any team
+the claim lacks, with the role accounts gives. The answer is remembered for 2 seconds (`MISS_RECHECK_MS`), so one
+editor's burst of calls is one ask. The teams come only from accounts or the signed token, never from the browser; a
+guest has none. When accounts can't be reached the claim stands. Leaving a team takes effect when the token is next
+minted, as everywhere else.
+
 | Action                              | Personal  | A team library                 |
 | ----------------------------------- | --------- | ------------------------------ |
 | See and place its items             | its owner | every member (admin or member) |
@@ -55,6 +63,12 @@ livedocuments, which has no toolbar for one element, in the element menu's quick
 a Participant's and a Viewer's toolbars carry comments and growing a map, never Duplicate, and saving copies the
 document's content out of it. Placing an item is adding to the canvas, so the Library is a palette category like any
 other: an Editor's palette has it, a Participant's (Participate alone) and a Viewer's (none) do not.
+
+**Placing: a click or a drag.** A click on a tile places a copy at the middle of the view; dragging the tile onto the
+canvas places it centred where it is dropped, in every app (the drag carries the item's id,
+`application/x-liveworkspace-library-item`; livediagram's own shape library items keep their own drag). The drop asks
+the door for the item's elements and lands them in one commit when the answer comes back, so a refused or failed
+fetch places nothing at all, and the Library says why. A tile's preview shows its pictures (below, "Pictures").
 
 **The Library sits beside Search.** On the Toolbar strip it is not a category: it holds what people saved, not
 what the app ships, so it is an icon-only button at the strip's far right, just before Search (`ToolbarLibraryButton`,
@@ -76,6 +90,13 @@ Placing an item runs its elements through the app's own migration and element ch
 
 An item's pictures are gallery images (media.md). They are kept like this:
 
+- **Shown in its tile**: saving sends, beside the elements, a small copy of each picture the selection shows (at most
+  `LIBRARY_PICTURE_EDGE` 128 px on its longest side, as a JPEG on white, the tile's own ground), read by the editor
+  from the picture it already shows. The app's renderer draws the item's preview with those copies in place of the
+  file name it would otherwise show. The copies live only inside the preview, never in the gallery; a picture whose
+  copy can't be made (or that would take the preview past `LIBRARY_PREVIEW_BYTES_MAX`, 32 KB) shows its name as
+  before.
+
 - **Saved to Personal**: the item names the owner's own images; nothing is copied.
 - **Saved to a team**: each image element's picture that the saver owns is **copied under the team's grant** into the
   team's own gallery (owner `team:<teamId>`, deduped on the bytes' hash like any owner's), and the item names the copies.
@@ -86,6 +107,9 @@ An item's pictures are gallery images (media.md). They are kept like this:
   canvas holds a placement grant for it).
 - **Kept**: every item records a reference from `library:<itemId>` to each image it names (`refs`, app `library`), so the
   daily sweep never takes a picture a library still holds. Deleting the item removes its references.
+- **Counted as used**: the gallery's usage answer lists the pictures a Library item holds (`library`), and the gallery
+  counts them as used: its Unused filter and count leave them out, and the card says **In Library** where it would
+  have said Not used, so nobody is invited to delete a picture their Library still needs.
 
 ## The old shape libraries, read in place
 
@@ -143,6 +167,21 @@ The editor asks for the list the first time something needs it: the palette's Li
 editor session that never opens either makes no request. The list is asked again after each save, rename or delete.
 A document kept only in this browser has no owner on the api, so its editor mounts no Library (livediagram's palette
 then shows My shapes as before).
+
+## Telemetry
+
+Each app counts, under its own name, saving to the Library and placing from it, with whose library as the type and
+nothing else (never a title, a folder, a team or an id):
+
+| Event                      | When                                                               |
+| -------------------------- | ------------------------------------------------------------------ |
+| `Library·Created·Personal` | an item saved to Personal                                          |
+| `Library·Created·Team`     | an item saved to a team's library                                  |
+| `Library·Added·Personal`   | a Personal item placed (a click or a drop), once the door answered |
+| `Library·Added·Team`       | a team's item placed                                               |
+
+The workbench's provider reports both through the app's `onSaved` and `onPlaced`; each app's telemetry dashboard has a
+Library chart.
 
 ## Account and guest lifecycle
 

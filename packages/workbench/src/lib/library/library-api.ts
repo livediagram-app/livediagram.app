@@ -34,6 +34,8 @@ export type LibrarySaveRequest = {
   width: number;
   height: number;
   elements: readonly unknown[];
+  // Small copies of the pictures it places, by gallery id, for its tile's preview (library-pictures.ts).
+  pictures?: Record<string, string>;
 };
 
 async function answer<T>(res: Response): Promise<T> {

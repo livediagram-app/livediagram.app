@@ -7,6 +7,7 @@
 // (the seats, the footprints) is @livehuddle/avatar's. Pure: no React, no DOM.
 
 import type { FurnitureDrawing, FurniturePart } from './seating';
+import { rowed } from '@livehuddle/avatar/furniture-rows';
 import { allSides, ellipse, path, rect } from './furniture-parts';
 import {
   BENCH_SEATS,
@@ -503,19 +504,32 @@ const BENCH_SIDE: FurnitureDrawing = {
 const PICNIC_TABLE_VIEW: FurnitureDrawing = {
   width: PICNIC_TABLE_SEATS.width,
   height: PICNIC_TABLE_SEATS.height,
-  parts: [
-    ellipse('shadow', 100, 148, 96, 4),
-    path('line', 'M30 40v8M170 40v8'),
-    rect('panel', 20, 24, 160, 12, 3, T.wood),
-    rect('face', 20, 34, 160, 4, 2, T.wood),
-    path('line', 'M44 104l-12 30M156 104l12 30'),
-    rect('panel', 12, 50, 176, 48, 4, T.wood),
-    path('rail', 'M16 66H184M16 82H184'),
-    rect('face', 12, 96, 176, 8, 3, T.wood),
-    path('line', 'M30 126v14M170 126v14'),
-    rect('panel', 20, 112, 160, 12, 3, T.wood),
-    rect('face', 20, 122, 160, 5, 2, T.wood),
-  ],
+  // Each bench and the table a top on its legs, so the 3D view builds it (@livehuddle/avatar/furniture-rows).
+  ...rowed([
+    { flat: [ellipse('shadow', 100, 148, 96, 4)] },
+    {
+      top: [
+        path('line', 'M30 40v8M170 40v8'),
+        rect('panel', 20, 24, 160, 12, 3, T.wood),
+        rect('face', 20, 34, 160, 4, 2, T.wood),
+      ],
+    },
+    {
+      top: [
+        path('line', 'M44 104l-12 30M156 104l12 30'),
+        rect('panel', 12, 50, 176, 48, 4, T.wood),
+        path('rail', 'M16 66H184M16 82H184'),
+        rect('face', 12, 96, 176, 8, 3, T.wood),
+      ],
+    },
+    {
+      top: [
+        path('line', 'M30 126v14M170 126v14'),
+        rect('panel', 20, 112, 160, 12, 3, T.wood),
+        rect('face', 20, 122, 160, 5, 2, T.wood),
+      ],
+    },
+  ]),
   seats: PICNIC_TABLE_SEATS.seats.map(({ u, v }) => ({ u, v })),
 };
 
@@ -526,18 +540,31 @@ const PICNIC_TABLE_BACK: FurnitureDrawing = { ...PICNIC_TABLE_VIEW, ...PICNIC_TA
 // Facing left: the table's top down the middle, a bench down each side, the near end's legs under them.
 const PICNIC_TABLE_SIDE: FurnitureDrawing = {
   ...PICNIC_TABLE_SEATS_SIDE,
-  parts: [
-    ellipse('shadow', 72, 202, 68, 4),
-    path('line', 'M17 183v14M127 183v14'),
-    path('line', 'M52 188l-8 16M92 188l8 16'),
-    rect('panel', 8, 20, 18, 160, 3, T.wood),
-    rect('face', 8, 178, 18, 5, 2, T.wood),
-    rect('panel', 118, 20, 18, 160, 3, T.wood),
-    rect('face', 118, 178, 18, 5, 2, T.wood),
-    rect('panel', 40, 8, 64, 176, 4, T.wood),
-    path('rail', 'M61 12V180M83 12V180'),
-    rect('face', 40, 182, 64, 8, 3, T.wood),
-  ],
+  ...rowed([
+    { flat: [ellipse('shadow', 72, 202, 68, 4)] },
+    {
+      top: [
+        path('line', 'M17 183v14'),
+        rect('panel', 8, 20, 18, 160, 3, T.wood),
+        rect('face', 8, 178, 18, 5, 2, T.wood),
+      ],
+    },
+    {
+      top: [
+        path('line', 'M127 183v14'),
+        rect('panel', 118, 20, 18, 160, 3, T.wood),
+        rect('face', 118, 178, 18, 5, 2, T.wood),
+      ],
+    },
+    {
+      top: [
+        path('line', 'M52 188l-8 16M92 188l8 16'),
+        rect('panel', 40, 8, 64, 176, 4, T.wood),
+        path('rail', 'M61 12V180M83 12V180'),
+        rect('face', 40, 182, 64, 8, 3, T.wood),
+      ],
+    },
+  ]),
 };
 
 // A striped hammock slung between two posts on ropes: one seat.

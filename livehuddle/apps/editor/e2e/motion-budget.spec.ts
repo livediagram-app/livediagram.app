@@ -160,9 +160,9 @@ test.describe('Motion budget', () => {
     // The flat walk this morph is measured on: the 3D view off (docs/specs/008-canvas/3d-view.md, DEFAULTS D141).
     await page.addInitScript(() => {
       try {
-        localStorage.removeItem('livehuddle:v2:space-3d');
+        localStorage.setItem('livehuddle:v2:space-3d', '0');
       } catch {
-        // No storage on this document: nothing to clear.
+        // No storage on this document: nothing to set.
       }
     });
     await startBlank(page);

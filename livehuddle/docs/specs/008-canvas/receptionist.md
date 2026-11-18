@@ -90,10 +90,11 @@ that agree to a second agree on the Receptionist.
   screen: "Welcome in! I'm the receptionist. What should I show you?", with every topic as replies, then **I'll
   Explore**. Nobody else sees your bubble; they see the Receptionist wave.
 - **Welcomed once, on every device**: the synced `avatarTourSeen` preference records it as the bubble opens (the
-  Avatar tour's record, kept so nobody who took that tour is welcomed again). After that an arrival gets "Welcome back,
-  <your first name>! What can I help with?" (the first word of your display name; plain "Welcome back!" when you have
-  none) with the topics as replies straight away, and the bubble stays until you choose or press **I'll Explore**
-  (owner, 2026-11-09: "why not just move right into asking what they want", not a pointer to a button).
+  Avatar tour's record, kept so nobody who took that tour is welcomed again). After that he **never comes over on his
+  own** when you arrive (the owner, 2026-11-18: "only walk up and talk to you automatically the first time you join a
+  room, never again unless I trigger it"): your arrival is not greeted on your screen, and no bubble opens. He comes
+  to you only when you ask (**Ask Receptionist**), ring a reception bell, or rerun the welcome from Settings. Other
+  people's arrivals he still greets with a wave.
 - **Rerun from Settings**: Tours › **Receptionist's Welcome**, built like the other tour switches (on means not welcomed
   yet). Turning it on and closing Settings opens the welcome straight away when you are walking on a tab with the Receptionist.
 
@@ -110,8 +111,11 @@ that agree to a second agree on the Receptionist.
 - **His bubble** sits over his head, in the speech-bubble look with an amber edge (no name under it: his name tag is over his head), and
   holds replies. Each topic is a full-width row (a tick on one you have heard, a chevron on its right), in a list that
   shows seven rows and scrolls past that: every topic he has for you, in their groups, whose headings stay pinned as you
-  scroll (no second screen for more topics). Under the list sits **I'll Explore**, which closes it, and for an Editor
-  **Ask Receptionist to Leave** (below); they never scroll away. Escape closes it, and so does
+  scroll (no second screen for more topics). The list is the card's one scroller (a long answer, the answer's): it
+  scrolls inside the card, never the card round it, so there is one scrollbar. Each group's heading has a little room
+  under it, so its first row's top edge shows. Pinned at the card's foot, over a hairline, sit **I'll Explore**, which
+  closes it, and for an Editor **Ask to Leave** (below; the owner, 2026-11-18: "should be sticky bottom", "shorten that
+  one"); they never scroll away. Escape closes it, and so does
   walking away: two strides (96 px) further from him than the nearest you have come since it opened, or more than
   400 px from him, so a shuffle beside him keeps it and turning to go closes it. It takes no focus, so the person carries on where they were.
 - **He types his lines**: each line he says (the welcome, a hello, an answer, his farewell) appears a letter at a
@@ -141,7 +145,7 @@ that agree to a second agree on the Receptionist.
 
 ## Asking him to leave
 
-- **Ask Receptionist to Leave**, under his list, is an Editor's: he leaves this Space's pad for good, for everyone.
+- **Ask to Leave**, under his list, is an Editor's: he leaves this Space's pad for good, for everyone.
   It is stored on his Avatar Pad (`receptionistLeft: true`), so it syncs to everyone at once and is one undo step.
 - **His farewell**: his bubble says "Of course. Bring me back any time from the Avatar Pad's menu.", and
   after two seconds he is gone. The footer's Ask Receptionist goes with him.

@@ -71,6 +71,29 @@ describe('template example content', () => {
     expect(hasUntouchedExamples(kept!.elements)).toBe(false);
   });
 
+  it("the Fishbone's causes clear as sample copy; its title, guide line and labels stay", () => {
+    const tab = buildTemplatedTab('fishbone', 'slate', 't1', 'Tab 1');
+    // Six bones, two causes each.
+    expect(untouchedExampleCount(tab.elements)).toBe(12);
+    const [cleared] = clearTabExamples([tab], 't1');
+    const texts = cleared!.elements.filter((el) => el.type === 'text').map(textOf);
+    expect(texts.filter((t) => t === '')).toHaveLength(12);
+    expect(texts).not.toContain('Peak days run understaffed');
+    expect(texts).not.toContain('Courier cut-off is 3pm');
+    expect(texts).toContain('The problem');
+    expect(texts).toContain('FreshBox · why do orders ship late?');
+    expect(texts).toContain('Likely root cause: test these two first');
+    expect(hasUntouchedExamples(cleared!.elements)).toBe(false);
+  });
+
+  it('the Timeline, the Roadmap and the Venn offer their sample copy too', () => {
+    for (const kind of ['timeline', 'roadmap', 'venn'] as const) {
+      expect(hasUntouchedExamples(buildTemplatedTab(kind, 'slate', 't1', 'Tab 1').elements)).toBe(
+        true,
+      );
+    }
+  });
+
   it('a template without example values carries no mark', () => {
     const tab = buildTemplatedTab('flowchart', 'slate', 't1', 'Tab 1');
     expect(tab.elements.some((el) => 'templateExample' in el)).toBe(false);

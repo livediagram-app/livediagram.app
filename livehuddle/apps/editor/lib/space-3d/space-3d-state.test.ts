@@ -66,24 +66,25 @@ describe('the remembered choice (Browser Storage)', () => {
   });
   afterEach(() => localStorage.clear());
 
-  it('is off until turned on, then remembered in this browser', async () => {
+  it('is on until turned off, and 2D is remembered in this browser', async () => {
     const pref = await import('./space-3d-preference');
-    expect(pref.space3DPreference.get()).toBe(false);
-    pref.toggleSpace3D();
     expect(pref.space3DPreference.get()).toBe(true);
-    expect(localStorage.getItem(pref.SPACE_3D_STORAGE_KEY)).toBe('1');
-    expect(track).toHaveBeenCalledWith('Canvas', 'Used', 'Space3DView');
     pref.toggleSpace3D();
     expect(pref.space3DPreference.get()).toBe(false);
     expect(localStorage.getItem(pref.SPACE_3D_STORAGE_KEY)).toBe('0');
     // Turning it off is not counted.
+    expect(track).not.toHaveBeenCalled();
+    pref.toggleSpace3D();
+    expect(pref.space3DPreference.get()).toBe(true);
+    expect(localStorage.getItem(pref.SPACE_3D_STORAGE_KEY)).toBe('1');
+    expect(track).toHaveBeenCalledWith('Canvas', 'Used', 'Space3DView');
     expect(track).toHaveBeenCalledTimes(1);
   });
 
-  it('starts on when this browser left it on', async () => {
-    localStorage.setItem('livehuddle:v2:space-3d', '1');
+  it('starts in 2D when this browser chose 2D', async () => {
+    localStorage.setItem('livehuddle:v2:space-3d', '0');
     const pref = await import('./space-3d-preference');
-    expect(pref.space3DPreference.get()).toBe(true);
+    expect(pref.space3DPreference.get()).toBe(false);
   });
 
   it('holds the tilt a walking press is traced back through', async () => {

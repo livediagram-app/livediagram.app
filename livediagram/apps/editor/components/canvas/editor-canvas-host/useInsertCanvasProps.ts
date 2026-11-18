@@ -3,6 +3,8 @@ import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import type { LibraryShapeRef } from '@/lib/shape-library-dnd';
 import type { useQuickConnectStart } from '@/hooks/canvas/useQuickConnectStart';
 import { dropThenDisarm } from '@liveworkspace/workbench/lib/palette-drop';
+import { useLibraryDrop } from '@liveworkspace/workbench/components/library/useLibraryDrop';
+import type { ShapeLibraryItem } from '@livediagram/api-schema';
 
 // The Canvas props for putting things on the canvas (EditorCanvasHost): the palette's adds and drops,
 // the event-storming board, the draw tools and their commits, the eraser, and quick connect.
@@ -63,6 +65,11 @@ export function useInsertCanvasProps({
     pendingDraw,
     spawnConnectSelected,
   } = useEditorContext();
+  // A Library tile dropped on the canvas lands where it was dropped, once the door answers (libraries.md); the door
+  // hands back elements this app's own migration and checks passed.
+  const dropLibraryItem = useLibraryDrop((item, at) =>
+    insertLibraryShape(item as Pick<ShapeLibraryItem, 'width' | 'height' | 'elements'>, at),
+  );
   return {
     onEraseStart: isReadOnly ? undefined : beginErase,
     onAddShape: addShape,
@@ -92,6 +99,10 @@ export function useInsertCanvasProps({
     onDropPhoto: readPhotoFile,
     onDropFile: isReadOnly ? undefined : dropBoardFile,
     onDropLibraryShape: isReadOnly ? undefined : dropLibraryShape,
+    onDropLibraryItem:
+      isReadOnly || !dropLibraryItem
+        ? undefined
+        : (id: string, at: { x: number; y: number }) => void dropLibraryItem(id, at),
     createBlocked: createBlocked,
     onAddImage: addImage,
     onAddArrow: addArrow,

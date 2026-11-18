@@ -93,6 +93,12 @@ const CARD_BORDER: { strokeWidth: 'thick' | 'medium'; strokeStyle: 'solid' | 'da
   { strokeWidth: 'medium', strokeStyle: 'dashed' },
 ];
 
+// Each card's outcome is the worked example's sample copy: Clear Example Content empties it
+// (template-example-text.ts).
+export const ROADMAP_SAMPLE_COPY: readonly string[] = THEMES.flatMap((theme) =>
+  theme.cards.map((card) => card.outcome),
+);
+
 export function buildRoadmap(cx: number, cy: number): Element[] {
   const gutter = 184; // the lane's title strip, wide enough for Collaboration
   const colW = 320;

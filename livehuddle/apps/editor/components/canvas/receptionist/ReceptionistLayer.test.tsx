@@ -12,6 +12,7 @@ import {
   askReceptionist,
   getReceptionistState,
   resetReceptionistState,
+  setReceptionistWelcomed,
   showReceptionistTopic,
 } from '@/lib/receptionist/receptionist-store';
 import { receiveBellOp, resetBell, ringBell } from '@/lib/office/reception-bell';
@@ -147,6 +148,20 @@ describe('ReceptionistLayer', () => {
     expect(getReceptionistState().greets).toBe(1);
     rerender(layer({ arrivals: [arrival, peer, other] }));
     expect(getReceptionistState().greets).toBe(1);
+  });
+
+  it('never greets your own arrival once you are welcomed, but still greets others', () => {
+    setReceptionistWelcomed(true);
+    const mine = {
+      key: 'b1',
+      personId: 'self',
+      padId: 'pad-1',
+      x: 40,
+      y: 40,
+    } as unknown as PadArrival;
+    const { rerender } = render(layer());
+    rerender(layer({ arrivals: [mine] }));
+    expect(getReceptionistState().greets).toBe(0);
   });
 
   it('says he has gone when it unmounts', () => {

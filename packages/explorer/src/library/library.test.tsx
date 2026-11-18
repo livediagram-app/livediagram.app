@@ -193,6 +193,23 @@ describe('the Image Gallery', () => {
     expect(within(grid).queryByText('photo-1.png')).toBeNull();
   });
 
+  it('shows a picture only a Library item holds as In Library, never Not used or Unused', async () => {
+    const host = galleryHost([image(1), image(2), image(3)], {
+      usage: vi.fn(async () => ({
+        uses: { 'img-1': [{ id: 'd1', title: 'Roadmap', href: '/d/d1' }] },
+        unchecked: new Set<string>(),
+        library: new Set(['img-2']),
+      })),
+    });
+    page({ kind: 'gallery' }, { gallery: host });
+    expect(await screen.findByText('In Library')).toBeTruthy();
+    expect(screen.getAllByText('Not used')).toHaveLength(1);
+    fireEvent.click(screen.getByRole('button', { name: 'Unused' }));
+    const grid = screen.getByRole('list', { name: 'Unused images' });
+    expect(within(grid).getByText('photo-3.png')).toBeTruthy();
+    expect(within(grid).queryByText('photo-2.png')).toBeNull();
+  });
+
   it('shows nothing under Unused when the usage could not be read, and warns on delete', async () => {
     const host = galleryHost([image(1), image(2)], {
       usage: vi.fn(async () => Promise.reject(new Error('down'))),

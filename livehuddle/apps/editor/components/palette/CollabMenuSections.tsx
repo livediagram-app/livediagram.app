@@ -24,11 +24,21 @@ import {
   roomWallsOf,
   type RoomWalls,
   type RoomDoor,
+  ROOM_FLOOR_COLOURS,
+  ROOM_FLOOR_LABELS,
+  ROOM_FLOORS,
+  roomFloorOf,
+  type RoomFloor,
 } from '@livehuddle/document';
 import { Glyph } from '@livehuddle/ui';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@liveworkspace/workbench/components/primitives/MenuTiles';
-import { ToolsMenuGlyph, WallsMenuGlyph } from '@/components/palette/context-menu-icons';
+import { FloorTypeSwatch } from '@/components/palette/palette-style-previews';
+import {
+  FloorMenuGlyph,
+  ToolsMenuGlyph,
+  WallsMenuGlyph,
+} from '@/components/palette/context-menu-icons';
 
 // Each kind contributes exactly ONE section to the Tools group: a chair has Chair and nothing else.
 // `MenuFlyoutSection` promotes a lone section into the host menu (docs/specs/008-canvas/canvas-and-palette.md),
@@ -171,6 +181,62 @@ export function RoomWallsMenuSection({
         Glass walls let everyone see who is inside. They still block walking, and nobody outside
         hears the room.
       </p>
+    </MenuAccordionSection>
+  );
+}
+
+// --- Floor (docs/specs/009-elements/office.md "Floors") -------------------------------------------------------------
+
+// A floor colour's swatch on its tile.
+function FloorColourSwatch({ hex }: { hex: string }) {
+  return (
+    <span
+      aria-hidden
+      className="block size-3.5 rounded-[4px] ring-1 ring-black/15 dark:ring-white/20"
+      style={{ background: hex }}
+    />
+  );
+}
+
+export function RoomFloorMenuSection({
+  target,
+  sectionProps,
+  onSetFloor,
+  onSetFloorColour,
+}: {
+  target: ShapeElement | undefined;
+  sectionProps: (id: string) => { open: boolean; onToggle: () => void };
+  onSetFloor: (floor: RoomFloor) => void;
+  onSetFloorColour: (hex: string) => void;
+}) {
+  const floor = target ? roomFloorOf(target) : 'boards';
+  const fill = target?.fillColor?.toLowerCase();
+  return (
+    <MenuAccordionSection title="Floor" icon={<FloorMenuGlyph />} {...sectionProps('room-floor')}>
+      <MenuTileGrid cols={3}>
+        {ROOM_FLOORS.map((f) => (
+          <MenuTile
+            key={f}
+            icon={
+              <FloorTypeSwatch floor={f} fill={target?.fillColor ?? ROOM_FLOOR_COLOURS[0]!.hex} />
+            }
+            label={ROOM_FLOOR_LABELS[f]}
+            active={floor === f}
+            onClick={() => onSetFloor(f)}
+          />
+        ))}
+      </MenuTileGrid>
+      <MenuTileGrid cols={3}>
+        {ROOM_FLOOR_COLOURS.map((c) => (
+          <MenuTile
+            key={c.hex}
+            icon={<FloorColourSwatch hex={c.hex} />}
+            label={c.name}
+            active={fill === c.hex}
+            onClick={() => onSetFloorColour(c.hex)}
+          />
+        ))}
+      </MenuTileGrid>
     </MenuAccordionSection>
   );
 }

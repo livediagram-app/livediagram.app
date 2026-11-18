@@ -950,6 +950,11 @@ text` keeps its own default (centred, Small) until it sets the fields.
 - **It hugs its words**: a style's box fits its text (`sizing: 'fit'`, a heading's) or wraps at a set width
   (`sizing: 'wrap'`, a paragraph's), its height always the text's ([Design structure](../006-design/design-structure.md)).
 - **Drag** to move; **resize** via the same handles as shapes: a side handle sets the width, so the text wraps.
+- **Empty, it shows where its words go.** A text with no words (Clear Example Content empties a template's sample
+  copy, [Template example content](../006-design/template-examples.md)) draws a faint **"Text"** in its own ink at
+  35%, at its size and alignment, the word its editor shows while typing, so a double-click there opens it without a
+  jump. Only an **Editor** sees it: a Participant, a Viewer, an embed and a locked tab or text see nothing, as before.
+  It is never content: not exported (image, vector, PDF), not read aloud, never stored. A text that hugs its words (`sizing`) has none.
 
 **Text styles.** Write's text tiles are the kinds of text a screen or a mark is set in, each a plain `text` element
 whose fields are set as the style says (no style is stored: it is a starting point, and the Text Style section below
