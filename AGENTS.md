@@ -11,6 +11,10 @@ The liveworkspace monorepo. Read README.md and docs/structure.md first.
   runs on the liveworkspace Cloudflare account (`851be7d244b76a6557bcbe6c4ded80f5`); each
   `wrangler.toml` pins it as `account_id`. Deploys, and the remote D1 migrations they apply, run only
   through CI (docs/ci.md "Deploys").
+- One piece of work, one PR. Never split a card or feature into "part 1 of N" PRs that wait on each other, and
+  never write a build plan of parts: build it whole on one branch in logical commits (spec, data, api, UI). A
+  risky piece doesn't split it out; that PR takes `not-ready` with the reason. The owner reviews the finished
+  feature once (owner, 2026-11-15, again 2026-11-18).
 - Specs first, everywhere. A product change updates that product's `docs/specs/` first; a platform change
   (anything under `liveworkspace/` or a service's contract in `packages/`) updates
   [liveworkspace/docs/specs](liveworkspace/docs/specs/README.md) first, then its blueprint, then the code.

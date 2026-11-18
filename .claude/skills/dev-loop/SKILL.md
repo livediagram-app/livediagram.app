@@ -353,6 +353,9 @@ title, its state, and every comment **verbatim**, with author and date and wheth
   PR keeps `not-ready` with "Owner steps below" as the reason; the owner ticks the boxes, removes the label and
   merges. After merging lines don't block, they stay on the PR as the record. First do whatever you can yourself
   (an emulated phone shot, a local check) and only leave the owner what truly needs them.
+- **Never split it into parts.** Build every Acceptance Criteria item in this one PR. Never open a "part 1 of N"
+  PR, write a build plan of parts, or leave the rest of the card to a later PR (AGENTS.md). However big the card,
+  it is one PR; a high-risk piece takes `not-ready` on it instead.
 - **If you can't deliver it** (a blocker turns up, or tests or the build won't pass after a real attempt):
   close any PR you opened, delete any branch you pushed, and report FAILED with what blocked you, what you tried, and what
   would unblock it.
