@@ -39,7 +39,7 @@ export function OfflineBanner({ readOnly }: { readOnly: boolean }) {
           ? 'You’re offline. You’ll see changes when you reconnect.'
           : 'You’re offline. Changes stay in this tab and save when you reconnect.';
   return (
-    <TopCenterRow>
+    <TopCenterRow across>
       {/* A card, not a pill: on a phone the line wraps, and stays inside the corners. */}
       <TopCenterBanner
         tone="neutral"

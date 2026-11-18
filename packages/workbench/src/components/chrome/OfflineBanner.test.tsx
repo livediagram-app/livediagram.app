@@ -32,6 +32,14 @@ describe('OfflineBanner', () => {
     expect(screen.queryByRole('status')).toBeNull();
   });
 
+  // Card 1219: at ~450 px the one-line banner kept 24 px on the left and 12 px on the right.
+  it('spans the stack on a phone, so it sits centred between equal insets', () => {
+    act(() => setOnline(false));
+    const { container } = render(<OfflineBanner readOnly={false} />);
+    const row = (container.firstElementChild as HTMLElement).className.split(' ');
+    expect(row).toEqual(expect.arrayContaining(['self-stretch', 'justify-center', 'sm:self-auto']));
+  });
+
   it('tells a viewer they will see changes on reconnect', () => {
     act(() => setOnline(false));
     render(<OfflineBanner readOnly />);

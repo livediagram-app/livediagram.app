@@ -16,7 +16,7 @@ export function OfflineBanner({ readOnly }: { readOnly: boolean }) {
   const saveFailing = useSaveFailing();
   if (online && (readOnly || !saveFailing)) return null;
   return (
-    <TopCenterRow>
+    <TopCenterRow across>
       {/* A card, not a pill: on a phone the line wraps, and stays inside the corners (as liveplanner's). */}
       <TopCenterBanner
         tone="neutral"
