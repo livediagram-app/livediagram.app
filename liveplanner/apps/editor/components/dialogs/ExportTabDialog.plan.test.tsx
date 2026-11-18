@@ -70,7 +70,7 @@ describe('ExportTabDialog, Plan', () => {
     open();
     fireEvent.click(screen.getByRole('button', { name: /Markdown/ }));
     expect(screen.getByRole<HTMLTextAreaElement>('textbox').value).toContain(
-      '- #7 Write the spec (Task)',
+      '- T-7 Write the spec (Task)',
     );
   });
 });
