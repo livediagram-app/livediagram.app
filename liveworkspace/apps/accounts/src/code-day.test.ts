@@ -28,6 +28,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  vi.useRealTimers();
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
 });
@@ -100,8 +101,18 @@ describe('the refusal', () => {
   });
 });
 
+// The clock these run at, pinned (Work Tracker 1127: the day's-codes check read the real clock and failed near
+// midnight): a second before midnight and a second after, UTC, as a Worker's clock reads. Only `Date` is faked, so
+// Better Auth's promises and the test D1 run as they do.
+const NEAR_MIDNIGHT = {
+  '23:59:59': Date.UTC(2026, 10, 18, 23, 59, 59),
+  '00:00:01': Date.UTC(2026, 10, 19, 0, 0, 1),
+};
+// How far the clock moves between two sends: twenty of them run on past midnight from 23:59:59.
+const BETWEEN_SENDS_MS = 100;
+
 // Through Better Auth itself, as index.ts runs it.
-describe('with Better Auth', () => {
+describe.each(Object.entries(NEAR_MIDNIGHT))('with Better Auth at %s', (_, now) => {
   let codes: Map<string, string>;
   const build = () =>
     betterAuth(
@@ -122,6 +133,7 @@ describe('with Better Auth', () => {
   let auth: ReturnType<typeof build>;
 
   beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'], now });
     codes = new Map();
     // Turnstile always passes.
     vi.stubGlobal('fetch', async () => Response.json({ success: true }));
@@ -139,7 +151,12 @@ describe('with Better Auth', () => {
 
   it('mails no more than the day’s codes, and the last one still signs in', async () => {
     const email = 'ada@example.com';
-    for (let i = 0; i < CODE_SENDS_PER_DAY; i++) expect((await send(email)).status).toBe(200);
+    for (let i = 0; i < CODE_SENDS_PER_DAY; i++) {
+      expect((await send(email)).status).toBe(200);
+      vi.setSystemTime(Date.now() + BETWEEN_SENDS_MS);
+    }
+    // The day is the address's own 24 hours from its first code, not the calendar's: midnight starts nothing.
+    expect((await rowOf(email))!).toMatchObject({ windowStart: now, sends: CODE_SENDS_PER_DAY });
     const last = codes.get(email)!;
     codes.clear();
     const refused = await send(email);

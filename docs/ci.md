@@ -230,11 +230,27 @@ read a median 6.9 for four times the text against a ceiling of 8, and failed `ma
 (2026-11-09). At two and eight times their sweep's length they read 4.1 (worst 4.7 of 20 runs), and a
 quadratic scan still reads 16.
 
+What "small enough" means depends on V8's young generation, which a machine sizes by its memory: a CI runner's is
+smaller than a developer's, so a check that reads 5 locally can read over 8 there. Each sample's allocations are
+collected while it runs, and the larger input's live set makes each of its collections costlier, so the
+collector's share grows faster than the input. To find the line, run the check with
+`NODE_OPTIONS=--max-semi-space-size=1`, a harsher young generation than any runner's: the container order at 1,200
+against 4,800 elements read 5.0 to 7.6 that way and 8.04 to 8.9 on CI, and at 600 against 2,400 reads 4.6 to 5.2;
+cleanInline's emphasis passes at 5,000 against 20,000 runs read up to 7.3, and at 1,250 against 5,000 up to 6.1
+(Work Tracker 1127). Longer samples do not help: the share is per collection, not per sample.
+
 A growth check whose smaller input takes about a millisecond times several runs a sample, and times its two sizes
 in turns after one warm-up run of each, the best sample of each kept: timed one size after the other, the smaller
 pays the first compile and the larger whatever collection lands on it. livehuddle's lint growth (75 to 300 boxes
 and arrows) read 0.66 to 7.06 against 8 that way, and 3.8 to 4.1 in turns; the container order (1,200 to 4,800
 elements) read 1.3 to 8.3, and 4.3 to 5.9 in turns.
+
+A budget on one timing (not a ratio) takes the fastest of several runs after an untimed one, for the same reason:
+the first run pays the compile of the path it takes, and any single run can take a collection. The shared vote
+overlay's zoom steps over 2,000 notes read 67 ms against a budget of 60 timed once under load, 20 on a quiet
+machine, and 3.3 to 3.8 as the fastest of five warmed passes, while one part re-rendered per note per step reads 93.
+The Settings merge of 40,000 rows read 57 to 139 ms timed once and 22 to 26 as the fastest of several. Its rows switch through one plain
+function rather than a `vi.fn()` each: tens of thousands of mocks only swell the heap a full collection walks.
 
 `cpuGrowthRatio(small, large, { ceiling })` in `@liveworkspace/vitest-config/cpu-time` does this for a check whose
 two sizes each time one sample: a warm-up of each, then five samples of each in turns, the fastest of each kept,

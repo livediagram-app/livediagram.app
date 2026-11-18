@@ -836,8 +836,8 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
     old id lands on the merged category. On the app's side a category id that another app's rows alone held is gone with them; a link to it
     opens the first category, as any id the panel does not know does. The merge is linear in rows and categories,
     rebuilt only when what it reads changes, the same build for both sides (the app's side passes `only`, which
-    keeps a row after it is merged, so a merged row keeps every app's logo there too); the timed budgets on 40,000
-    rows and on the five apps' catalogues are in `merge-categories.test.tsx`.
+    keeps a row after it is merged, so a merged row keeps every app's logo there too); its growth in categories and in
+    rows a category, its budget on 20,000 rows and the five apps' catalogues are timed in `merge-categories.test.tsx`.
 - **Webhooks** are not in Settings (since 8 November 2026): they are set per document, from a document's ⋯ menu in
   the Explorer (**Webhooks**), see [webhooks.md](../004-index/webhooks.md). The old id `webhooks` is an alias of
   Profile, so an old `?settings=webhooks` link opens Profile.
