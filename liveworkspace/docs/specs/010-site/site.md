@@ -929,7 +929,10 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
     from, with every app's tokens from that session, and answers the hop through the accounts site that clears its
     cookie there; so the row's "Sign out of every liveworkspace app in this browser." holds. Only when the accounts
     site doesn't answer (or there is no refresh token) is it this app alone, remembered by its signed-out mark, as in
-    the editors ([accounts.md](../003-accounts/accounts.md#signing-out)). And **Delete Account**, "Permanently deletes your liveworkspace account and everything you own
+    the editors ([accounts.md](../003-accounts/accounts.md#signing-out)), and then the page it reloads to says so
+    under its account control: "Signed out of livediagram only" (the app's name), with what that means and a Dismiss
+    button (`SignedOutHereNotice`, accounts.md "Signed out of this app only"), so the row's promise is never broken
+    in silence. The header's account menu on this address does the same. And **Delete Account**, "Permanently deletes your liveworkspace account and everything you own
     in every liveworkspace app.", whose **Delete Account** button (`AccountHost.deleteAccount`) opens that app's own
     Delete Account dialog, the one its editor opens (`DeleteAccountDialog` in `@liveworkspace/workbench`, with the
     app's name and its This Browser items), its confirmation unchanged: the typed email, then the code emailed to the

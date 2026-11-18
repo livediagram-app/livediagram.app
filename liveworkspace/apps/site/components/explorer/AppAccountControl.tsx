@@ -4,10 +4,12 @@
 // session rather than liveworkspace.app's. Signed in, the same menu as everywhere on the site, its Settings the
 // Explorer's panel in place on this address (`settings`, the bottom bar's) and its Sign out the app's (the page
 // reloads as a guest); signed out, the same control as Guest, its Sign in and Create account the app's own, which
-// come back here, and Settings, the guest's settings for this app kept in this browser (the same panel).
+// come back here, and Settings, the guest's settings for this app kept in this browser (the same panel). Under it
+// hangs the "Signed out of <app> only" notice after a sign-out of this app alone (the menu's or Settings' Sign Out,
+// liveworkspace/docs/specs/003-accounts/accounts.md "Signed out of this app only").
 
 import { useEffect, useState, useSyncExternalStore } from 'react';
-import { AccountMenu } from '@liveworkspace/account-menu';
+import { AccountMenu, SignedOutHereNotice } from '@liveworkspace/account-menu';
 import type { SettingsControl } from '@/components/AccountControl';
 import {
   appAccount,
@@ -16,10 +18,21 @@ import {
   appSignUpHref,
   onAppAccountChange,
 } from '@/lib/explorer/app-session';
+import { pageApp } from '@/lib/explorer/page-app';
 
 const noChange = () => () => {};
 
 export function AppAccountControl({ settings = null }: { settings?: SettingsControl | null }) {
+  const app = useSyncExternalStore(noChange, pageApp, () => null);
+  return (
+    <div className="relative flex shrink-0 items-center">
+      <AppAccount settings={settings} />
+      {app ? <SignedOutHereNotice app={app} /> : null}
+    </div>
+  );
+}
+
+function AppAccount({ settings }: { settings: SettingsControl | null }) {
   const [state, setState] = useState<
     | { name: string; fullName: string | null; colour: string | null; picture: string | null }
     | 'out'

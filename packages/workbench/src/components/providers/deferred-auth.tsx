@@ -38,7 +38,8 @@ export type DeferredAuthState = {
   // Identity is stable once published. `skipCache` refreshes instead of
   // returning the held token.
   getToken: (opts?: { skipCache?: boolean }) => Promise<string | null>;
-  signOut: (opts?: { redirectUrl?: string }) => Promise<void>;
+  // `accountClosed`: the sign-out after Delete Account, which never says "Signed out of this app only".
+  signOut: (opts?: { redirectUrl?: string; accountClosed?: boolean }) => Promise<void>;
   // Ends the session after the api has deleted the account's data
   // (DeleteAccountDialog). Null until the bridge publishes it / when disabled.
   deleteAccount: (() => Promise<void>) | null;

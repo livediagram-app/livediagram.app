@@ -87,11 +87,12 @@ async function forgetAccount(): Promise<void> {
 
 // Ends the session here and, with it, the liveworkspace one and every app's in this browser
 // (liveworkspace/docs/specs/003-accounts/accounts.md "Signing out"). Resolves the accounts site's hop, coming
-// back to `returnTo`, or null when there is none to take.
-async function endSession(returnTo = '/'): Promise<string | null> {
+// back to `returnTo`, or null when there is none to take. `noteHereOnly`: a person's own Sign Out, so a sign-out of
+// this app alone is noted for the landing page to say so ("Signed out of this app only" in accounts.md).
+async function endSession(returnTo = '/', noteHereOnly = false): Promise<string | null> {
   current = null;
   await forgetAccount();
-  return (await askSignOut(returnTo, { apiBase: API_BASE })).next;
+  return (await askSignOut(returnTo, { apiBase: API_BASE, noteHereOnly })).next;
 }
 
 // The names the app shows, the shared rule (@liveworkspace/auth-client/account-names): the first and last name
@@ -121,7 +122,8 @@ function stateOf(session: Session | null): DeferredAuthState {
     // (docs/specs/019-marketing/returning-visitor.md). A full load, so nothing keeps the old session.
     signOut: async (opts) => {
       const to = opts?.redirectUrl ?? '/';
-      window.location.assign((await endSession(to)) ?? to);
+      // After Delete Account (`accountClosed`) no app is left signed in, so there is nothing to note.
+      window.location.assign((await endSession(to, opts?.accountClosed !== true)) ?? to);
     },
     // The api has already deleted this account's liveplanner data and closed its liveworkspace
     // account (DeleteAccountDialog); what is left is this tab's session.

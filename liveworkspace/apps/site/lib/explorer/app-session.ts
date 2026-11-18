@@ -229,9 +229,13 @@ export function forgetAppAccount() {
 
 /** Signs out of the app, and so of every liveworkspace app in this browser (liveworkspace/docs/specs/003-accounts/
  *  accounts.md "Signing out"), then goes through the accounts site's hop, or straight back to this page, as a visitor
- *  (the account menu's own sign-out, `@liveworkspace/account-menu`). Resolves false when the API refused. */
-export async function appSignOut(go?: (to: string) => void): Promise<boolean> {
-  const left = await signOutOfApp(go);
+ *  (the account menu's own sign-out, `@liveworkspace/account-menu`). Resolves false when the API refused. Signed out
+ *  of this app alone, the page it lands on says so, unless `noteHereOnly` is false (after Delete Account). */
+export async function appSignOut(
+  go?: (to: string) => void,
+  options?: { noteHereOnly?: boolean },
+): Promise<boolean> {
+  const left = await signOutOfApp(go, options);
   if (left) account = null;
   return left;
 }
