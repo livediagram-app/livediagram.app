@@ -25,9 +25,8 @@ import {
   guardRequest,
   UNAVAILABLE_RETRY_AFTER_SECONDS,
 } from '@liveworkspace/api-kit/request-failure';
-import { MAX_BODY_BYTES } from './limits';
+import { writeBodyCap } from './limits';
 import { withCappedBody } from '@liveworkspace/api-kit/request-body';
-import { MAX_IMAGE_BYTES } from '@liveworkspace/media';
 import { handleImages } from './routes/images';
 import { handleWalkthroughs } from './routes/walkthroughs';
 import { handleAccount } from './routes/account';
@@ -207,8 +206,9 @@ async function routeApiRequest(
   if (isWrite) {
     const len = Number(request.headers.get('content-length'));
     // An Image field's upload carries raw bytes with its own, larger cap (docs/specs/026-plan/item-types.md
-    // "Image fields"); the route checks it again and answers file_too_large with limitBytes.
-    const cap = segments[1] === 'images' ? MAX_IMAGE_BYTES : MAX_BODY_BYTES;
+    // "Image fields"; the route answers file_too_large with limitBytes), and a whole plan's file its own (the route
+    // answers too_large): writeBodyCap.
+    const cap = writeBodyCap(request.method, segments.length, segments[1], segments[3]);
     if (Number.isFinite(len) && len > cap) {
       return payloadTooLarge();
     }

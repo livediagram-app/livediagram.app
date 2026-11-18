@@ -466,8 +466,9 @@ export class PlanRoom extends DurableObject<Env> {
     planId: string,
     onlyTabId: string | null,
     copier: Copier | null,
+    copyId: string | null = null,
   ): Promise<CopySource | null> {
-    return exportCopy(this, planId, onlyTabId, copier);
+    return exportCopy(this, planId, onlyTabId, copier, copyId);
   }
 
   async importCopy(planId: string, copy: PlanCopy): Promise<void> {

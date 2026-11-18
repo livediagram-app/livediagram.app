@@ -1004,7 +1004,9 @@ Budget * 100`), and a Rollup or a Lookup may read a Formula on the cards it read
     readers as the original does. Only a picture the source holds a grant for is granted in the copy, so a copy never
     serves more than the plan it came from. The copy reports those pictures in use under its own id (items.md
     "Images in use"): the original dropping one never lets the sweep take the copy's, the copy dropping one never
-    takes the original's, and deleting the copy for good releases only the copy's reference. A Drive file and the
+    takes the original's, and deleting the copy for good releases only the copy's reference. Until the copy's own
+    report lands, the original vouches for it (items.md "Images in use", "A copy is vouched for by its source"), so
+    the original releasing a picture never takes one the copy still shows. A Drive file and the
     migration door carry no grants (a file is the person's own bytes and could name any id): what they bring shows
     to its uploader, and to the plan's readers once someone who may edit it uploads it there again. A copy made
     before grants were copied keeps none, as before.

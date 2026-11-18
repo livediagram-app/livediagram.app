@@ -24,6 +24,7 @@ vi.mock('./routes/projects', () => ({ handleProjects: handleProjectsMock }));
 import worker from './index';
 import type { RouteContext, WorkbenchContext } from './routes/context';
 import type { Env } from './types';
+import { PROJECT_FILE_MAX_BYTES } from '@liveplanner/project';
 
 function env(): Env {
   return {} as unknown as Env;
@@ -368,7 +369,12 @@ describe('workbench sessions at the front door', () => {
 // no Content-Length (Number(null) is 0, which used to pass), so the gate counts the bytes it reads.
 describe('the write body cap', () => {
   // A body of `chunks` pieces of `size` bytes that declares no length, as a chunked upload does.
-  const chunkedPut = (chunks: number, size: number, extra: Record<string, string> = {}) => {
+  const chunkedPut = (
+    chunks: number,
+    size: number,
+    extra: Record<string, string> = {},
+    target: { method: string; path: string } = { method: 'PUT', path: '/api/projects/doc1' },
+  ) => {
     let sent = 0;
     const body = new ReadableStream<Uint8Array>({
       pull(controller) {
@@ -377,8 +383,8 @@ describe('the write body cap', () => {
         controller.enqueue(new TextEncoder().encode('x'.repeat(size)));
       },
     });
-    return new Request('https://api.test/api/projects/doc1', {
-      method: 'PUT',
+    return new Request(`https://api.test${target.path}`, {
+      method: target.method,
       headers: { 'Content-Type': 'application/json', ...extra },
       body,
       duplex: 'half',
@@ -429,6 +435,42 @@ describe('the write body cap', () => {
     );
     expect([chunked.status, declared.status]).toEqual([204, 204]);
     expect(seen).toEqual(['x'.repeat(12), JSON.stringify({ name: 'Roadmap' })]);
+    handleProjectsMock.mockImplementation(async () => new Response(null, { status: 204 }));
+  });
+
+  // A whole plan's file has its own, larger cap (Work Tracker 1019): a full plan's export imports back.
+  it('lets a plan file past MAX_BODY_BYTES reach its route, up to its own cap, and no other write', async () => {
+    const file = { method: 'POST', path: '/api/projects/doc1/file' };
+    let read = 0;
+    handleProjectsMock.mockImplementation((async (ctx: RouteContext) => {
+      read = (await ctx.request.arrayBuffer()).byteLength;
+      return new Response(null, { status: 201 });
+    }) as never);
+    const under = await worker.fetch(chunkedPut(19, 1024 * 1024, {}, file), env());
+    expect(under.status).toBe(201);
+    expect(read).toBe(19 * 1024 * 1024);
+    handleProjectsMock.mockClear();
+    const past = await worker.fetch(chunkedPut(21, 1024 * 1024, {}, file), env());
+    expect(past.status).toBe(413);
+    const declared = await worker.fetch(
+      new Request(`https://api.test${file.path}`, {
+        method: 'POST',
+        headers: { 'Content-Length': String(PROJECT_FILE_MAX_BYTES + 1) },
+        body: '{}',
+      }),
+      env(),
+    );
+    expect(declared.status).toBe(413);
+    // The file's export, another route under the plan and a create keep the outer cap.
+    for (const other of [
+      { method: 'PUT', path: '/api/projects/doc1/file' },
+      { method: 'POST', path: '/api/projects/doc1/items' },
+      { method: 'POST', path: '/api/projects' },
+    ]) {
+      const res = await worker.fetch(chunkedPut(9, 1024 * 1024, {}, other), env());
+      expect(res.status, `${other.method} ${other.path}`).toBe(413);
+    }
+    expect(handleProjectsMock).not.toHaveBeenCalled();
     handleProjectsMock.mockImplementation(async () => new Response(null, { status: 204 }));
   });
 });

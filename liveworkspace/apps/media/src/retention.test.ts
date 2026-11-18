@@ -1,5 +1,5 @@
 // The unused-image sweep (liveworkspace/docs/specs/006-media/media.md "Retention"), against the real schema.
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { claimRef, syncRefs } from './refs';
 import { sweepTripped, sweepUnusedImages } from './retention';
 import { testDb, type TestDb } from './test-sqlite-d1';
@@ -137,6 +137,30 @@ describe('sweepUnusedImages with an app that reports per document', () => {
     await claimRef(db.env, 'liveplanner.app', 'plan-c', 'back');
     expect(await sweepUnusedImages(withPlanner(), CUTOFF)).toBe(0);
     expect(ids()).toEqual(['back']);
+  });
+
+  // A copy of a plan whose own report keeps failing (media.md "Unconfirmed references", Work Tracker 1190).
+  it('never takes a picture a copy is vouched for until its own report lands, and logs how many it kept', async () => {
+    await allReported();
+    await planPicture('copied', 'plan-a');
+    await planPicture('alone', 'plan-a');
+    await syncRefs(db.env, 'liveplanner.app', [{ document: 'plan-a', images: [] }], false, [
+      { document: 'plan-copy', images: ['copied'] },
+    ]);
+    const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+    try {
+      expect(await sweepUnusedImages(withPlanner(), CUTOFF)).toBe(1);
+      expect(ids()).toEqual(['copied']);
+      expect(info).toHaveBeenCalledWith(
+        "[media] sweep kept 1 images awaiting a document's own report",
+      );
+      // The copy's own report confirms it: dropped there too, it goes.
+      await syncRefs(db.env, 'liveplanner.app', [{ document: 'plan-copy', images: [] }], false);
+      expect(await sweepUnusedImages(withPlanner(), CUTOFF)).toBe(1);
+      expect(ids()).toEqual([]);
+    } finally {
+      info.mockRestore();
+    }
   });
 });
 

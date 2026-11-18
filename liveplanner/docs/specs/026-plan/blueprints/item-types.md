@@ -756,6 +756,19 @@ dots }` under the field's id. `votesFieldsOf(type)` lists the type's Votes field
   `pushImageRefs` from the outbox's drain, never `complete` and nothing past `MEDIA_REFS_SYNC_MAX`; `forgetImageRefs`
   from the room's purge). `routes/images.ts` names the plan as the upload's `document`, so the media service claims
   the picture for it (none for a This Browser upload).
+  A copy's pictures are vouched for by its source (items.md "Images in use", Work Tracker 1190) in
+  `plan-room/copy-image-claims.ts`: schema step V37 makes `copy_image_claims (plan_id, copy_id, images, noted_at)`, keyed by the two ids.
+  `internal-items.ts`'s `copy` passes the target id to the source's `exportCopy(tabId, copier, copyId)`, whose door
+  (`plan-room-doors.ts`) reads the pictures the copied cards hold (`placedImagesSql`, scoped to a tab copy's cards)
+  and, when any, `noteCopyClaim` upserts the row and queues the `images` outbox key in one batch, then `noteWrite`
+  arms the drain. The drain's `images` step runs `pushCopyClaims` before `pushImageRefs`: every row, in syncs of
+  `MEDIA_REFS_SYNC_MAX` entries, as `pending`, each row deleted only once its sync is answered and only while it is
+  unchanged (`images` and `noted_at` matched); a refusal throws, so the key stays and retries.
+  `planStillHolds` also holds an id any `copy_image_claims.images` names (`instr`), so a release never asks for a
+  picture a note not yet taken names. The copy side: `importPlanCopy` writes `media_refs (plan_id, '"unconfirmed"')`
+  when its insert queued an `images` key (`ON CONFLICT DO NOTHING`), a value no real set equals, so the copy's first
+  report always sends, and `forgetImageRefs` at its purge sends an empty set. A purge of the source sends its
+  unsent notes with its own empty set (`forgetImageRefs(env, planId, images, claims)`).
   Removed pictures (items.md "Removed pictures") are `plan-room/image-release.ts`: schema step V35 makes
   `image_releases (plan_id, image_id, due_at NULL, attempts)` and the triggers `image_releases_update` (AFTER UPDATE OF
   fields) and `image_releases_delete` (AFTER DELETE) on `items`, firing as the `outbox_images_*` triggers do, which

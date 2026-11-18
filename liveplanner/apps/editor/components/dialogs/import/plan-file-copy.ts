@@ -8,6 +8,8 @@ export const PLAN_SECTION = 'A Whole Plan';
 // Why the row is dimmed while the browser is offline: the new plan is made on the server.
 export const PLAN_OFFLINE = 'You’re offline. Connect to import a whole plan.';
 // What the picker asks for: the file Export saves, or the same JSON renamed.
+// A plan's file by its name, as Export names it.
+export const PLAN_FILE_EXTENSION = '.liveplanner';
 export const PROJECT_FILE_ACCEPT =
   '.liveplanner,application/vnd.liveplanner+json,.json,application/json';
 
@@ -15,7 +17,7 @@ export const PLAN_NOT_A_PLAN =
   'That file isn’t a liveplanner plan. Export one with Whole Plan, then import it.';
 export const PLAN_NEWER =
   'That plan was exported by a newer liveplanner. Reload the page, then try again.';
-export const PLAN_TOO_BIG = 'That plan’s file is over 8 MB, the most an import reads.';
+export const PLAN_TOO_BIG = 'That plan’s file is over 20 MB, the most an import reads.';
 export const PLAN_DAMAGED =
   'Couldn’t import that plan: its file is damaged or holds more than a plan can.';
 export const PLAN_FAILED = 'Couldn’t import that plan. Try again.';
