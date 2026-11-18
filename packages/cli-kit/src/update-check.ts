@@ -24,7 +24,7 @@ export const updateFile = (io: CliIo, product: Pick<CliProduct, 'name'>) =>
   `${configDir(io, product)}/update.json`;
 
 export const registryUrl = (npmPackage: string) =>
-  `https://registry.npmjs.org/-/package/${npmPackage.replace('/', '%2F')}/dist-tags`;
+  `https://registry.npmjs.org/-/package/${npmPackage.replaceAll('/', '%2F')}/dist-tags`;
 
 // Why the check does not run here, or null when it may.
 export function skipReason(io: CliIo, product: Pick<CliProduct, 'envPrefix'>): string | null {

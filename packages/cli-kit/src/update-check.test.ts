@@ -234,6 +234,7 @@ describe('helpers', () => {
     expect(registryUrl('@livediagram/cli')).toBe(
       'https://registry.npmjs.org/-/package/@livediagram%2Fcli/dist-tags',
     );
+    expect(registryUrl('a/b/c')).toBe('https://registry.npmjs.org/-/package/a%2Fb%2Fc/dist-tags');
     expect(updateNotice(PRODUCT, '2.0.0')).toBe(
       'example 2.0.0 is out (you have 1.2.1). Update: npm i -g @example/cli',
     );
