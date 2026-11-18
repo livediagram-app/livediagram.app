@@ -1,0 +1,46 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Phone Notifications',
+  description:
+    'Get a notification on your phone or computer when someone mentions you, assigns you an action, replies in your thread or comments on your work.',
+  path: '/help/account-and-data/phone-notifications/',
+});
+
+<ArticleLayout title="Phone Notifications" description="A notification on your device for a mention, an assignment, a reply or a comment, from every app." categoryTitle="Account and Data" categorySlug="account-and-data">
+
+Phone notifications tell you the moment someone needs you, without waiting for an email. Turn them on once on a device and every liveworkspace app can reach it: a comment in livedocuments, an action assigned in liveplanner, a mention in livediagram. Tap a notification to open what it is about.
+
+They are for signed-in users, like [email notifications](/help/account-and-data/email-notifications/): a guest sees no Phone section.
+
+## Turning Them On
+
+<Step n={1}>Open **Settings**, then **Notifications**.</Step>
+<Step n={2}>
+  Under **Phone**, press **Turn On** beside **Phone Notifications**. Your browser asks for
+  permission first; allow it.
+</Step>
+<Step n={3}>The row reads **On**, and this device joins the list of devices under it.</Step>
+
+One device is enough, and you can add as many as you like. Each one is listed with its browser and system, the app it was turned on in, and when it last got a notification, with this one marked **This Device**. **Remove** stops notifications to that device from every app.
+
+## On iPhone and iPad
+
+Safari only shows notifications from an app on your Home Screen. If the row says **Add to Home Screen**, tap **Share**, then **Add to Home Screen**, then open livedocuments from its new icon and turn notifications on there. Installing it also gives livedocuments its own window, without the browser's bars.
+
+## What You Get
+
+Four switches under **Phone** choose what reaches your devices. Each is on until you turn it off:
+
+- **Someone Comments on My Work**: a comment on a document, diagram, plan, design or space you own.
+- **Someone Mentions Me in a Comment**: a teammate @mentions you.
+- **Someone Assigns Me an Action**: on an element, or a card on a board.
+- **Replies to Threads I Commented In**: someone replies in a thread you started or replied to.
+
+## If It Doesn't Work
+
+- **Blocked** means this browser has refused notifications for the site. Allow them in the browser's site settings, then come back to Settings.
+- **Not Available** means this browser can't show notifications from a website, or they are not set up on this server. Try another browser, or your phone.
+
+</ArticleLayout>

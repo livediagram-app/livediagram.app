@@ -37,13 +37,33 @@ The charts and meters live in the palette's **Data** category on the palette str
 
 ## Take the tour
 
-Select a chart and press Start Chart Tour in the bar at the bottom of the editor, just left of **Search**, for a short walkthrough on your own chart: reading it, a preview of the Grow animation, the chart's menu (Chart Type, Data and Chart), and on a line, area or scatter chart its data grid, which the tour opens for you and closes when you finish. Once you've taken it, the button makes room for other tours; to take it again, switch it back on in **Settings**, under **Getting Started** (**Show Me**). It isn't offered on a phone.
+Select a chart and press **Get Started** in the bar at the bottom of the editor, just left of **Tools**, then **Chart Tour**, for a short walkthrough on your own chart: reading it, a preview of the Grow animation, the chart's menu (Chart Type, Data and Chart), and on a line, area or scatter chart its data grid, which the tour opens for you and closes when you finish. Once you've taken it, the button makes room for other tours; to take it again, switch it back on in **Settings**, under **Getting Started** (**Show Me**). It isn't offered on a phone.
 
 ## How they work
 
-Pick a tile, then tap the canvas to drop the element with sensible sample values, or drag to draw it at a size, so you always start from something that looks finished. From there you tune it in the element's context menu: right-click (or long-press on a touch screen), open **Tools**, and you'll find a section for that element's data, whether that's a percentage slider, a star picker, editable value rows, or a points stepper.
+Pick a tile, then tap the canvas to drop the element with sensible sample values, or drag to draw it at a size, so you always start from something that looks finished. From there you tune it in the element's context menu: right-click (or long-press on a touch screen) and open its own section, **Progress**, **Rating** or **Legend**; a chart gathers its **Chart Type**, **Data** and **Chart** sections under **Tools**. There you'll find a percentage slider, a star picker or editable value rows.
 
 Because they are ordinary canvas elements underneath, everything you already know carries over. Charts and meters take their colours from the active theme (a rating keeps its amber stars), so they read as part of the page out of the box, and animations respect your system's reduce-motion setting and freeze when you export, so a still image looks right.
+
+## Charts linked to a sheet
+
+A chart can take its numbers from a range of a liveplanner Sheet and keep in step with it, so a weekly report or a deck never goes stale. It stays a native chart: drawn in your theme, styled and exported like any other, with only its numbers coming from the sheet.
+
+<Step n={1}>
+  Right-click the chart, open **Tools**, then **Data**, and press **Link to Sheet**.
+</Step>
+<Step n={2}>
+  Pick one of your plans (search them with **Search your plans**), one of its sheets, and type a
+  **Range** as in a spreadsheet, such as `B2:E9`. The first row names each series and the first
+  column labels each slice, bar or point.
+</Step>
+<Step n={3}>
+  Check the **Preview** of what the chart will draw, then press **Link**. It is one step to undo.
+</Step>
+
+While the document is open, a linked chart reads the sheet again whenever the sheet changes, with no refresh needed. Hover or select it and a line under it says which plan it follows and when it was last updated. While it is linked, its **Data** section shows a Sheet row in place of the rows, naming the sheet and range, and offers **Update** (read again now), **Change** (pick another range) and **Unlink**, which keeps the last values. If the range is deleted from the sheet, the chart keeps its values and says the linked range is gone.
+
+The values are saved in the document, so everyone who can open it sees them. Someone who can open the plan sees its numbers as they are now; someone who can't sees the values last saved. Only Editors can link, update or unlink a chart. Exports draw the saved values.
 
 <Tip>
   Mix data elements with regular shapes and text to build an infographic: drop a progress ring next

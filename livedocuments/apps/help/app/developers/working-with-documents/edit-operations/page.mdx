@@ -68,10 +68,10 @@ A few rules hold for every operation:
 
 - **Kinds.** `add` and `insert` take a shape kind (`square`, `circle`, `diamond`, `cylinder`, `stadium`, `hexagon` and the rest) or `text`, `sticky`, `table` or `link-card`. A shape kind it does not know is turned into the nearest one, with a `shape_coerced` warning. Arrows are made with `connect`; images, videos and drawn strokes are not made by name, but an `add` in the JSON form can carry a whole element (`{ "op": "add", "element": { … } }`), which is how an uploaded image goes on a tab.
 - **Ids.** `id=` names a new element so later operations in the same changeset can use it. It is a short slug: a lowercase letter, then up to 23 lowercase letters, digits, `-` or `_`. Without one, the element takes the slug of its label (or of its kind, as `arrow`, `arrow-2`).
-- **Fields.** `label`, `note`, `shape`, `fill`, `stroke`, `text-color`, `border`, `text` (a size: `sm`, `md`, `lg` or `scale`), `font` and `line` (`straight`, `angled` or `curved`) work on the kinds that have them, beside any stored field of the element. `fill=` takes a colour slot of the tab's theme by name (such as `theme`), which follows a theme change; a hex colour works too, with a `colour_overrides_theme` warning. A sticky takes its own colour names instead. A number, `true` or `false` is read as JSON, and a value starting with `[` or `{` is read as JSON as written.
+- **Fields.** `label`, `shape`, `fill`, `stroke`, `text-color`, `border`, `text` (a size: `sm`, `md`, `lg`, `scale`, or a whole px within the element's Size range), `font` and `line` (`straight`, `angled` or `curved`) work on the kinds that have them, beside any stored field of the element. Element notes and links are retired, so `note` is refused (a link card's and a video's own link still work). `fill=` takes a colour slot of the tab's theme by name (such as `theme`), which follows a theme change; a hex colour works too, with a `colour_overrides_theme` warning. A sticky takes its own colour names instead. A number, `true` or `false` is read as JSON, and a value starting with `[` or `{` is read as JSON as written.
 - **Comments are not fields.** Comment threads travel live between people, so edit operations never change them; comments have their own [endpoints](/help/developers/agent-comments-presence/).
 - **Locks.** A changeset on a locked tab, or one that would change a locked element or an element on a locked layer, is refused with `element_locked`.
-- **Flashcards.** A flashcard holds text only: a changeset that would add an element onto a card, or move one onto it, is refused with `text_only`. Write a card's text with `write_article`.
+- **Flashcards.** A flashcard holds text only: a changeset that would add an element onto a card, or move one onto it, is refused with `text_only`. Write a card's text with an article write instead (`write_article` over MCP, `article set` in the CLI, or the [pages endpoint](/help/developers/working-with-documents/images-and-pages/#pages-and-articles)).
 
 ## Selectors
 
@@ -156,7 +156,7 @@ rev 41→42 · cs_8k2m4q7d1x · lint clean · revert: livedocuments changeset re
 
 The last line carries the tab's new revision, the changeset's id, the lint verdict and the command that reverts it. A changeset that changes nothing answers `nothing changed`.
 
-**Warnings** do not stop a changeset: `shape_coerced` (an unknown shape kind became a known one), `value_coerced`, `label_capped` (a shape's label over 40 characters kept its heading and moved the full text into the note), `colour_overrides_theme`, `arrows_freed` (from `keep-arrows`), and `no_base` (sent without a `base` revision).
+**Warnings** do not stop a changeset: `shape_coerced` (an unknown shape kind became a known one), `value_coerced`, `label_capped` (a shape's or an arrow's label over 40 characters kept its heading and the rest was cut), `colour_overrides_theme`, `arrows_freed` (from `keep-arrows`), and `no_base` (sent without a `base` revision).
 
 ## Refusals
 
@@ -200,19 +200,18 @@ Every changeset lints the whole tab it leaves behind, and `GET /documents/{id}/t
 W arrow-behind-box   orders→bus passes behind pay  fix: set orders->bus line=angled
 ```
 
-| Code               | Severity | Finding                                                          | Suggested fix                              |
-| ------------------ | -------- | ---------------------------------------------------------------- | ------------------------------------------ |
-| `box-overlap`      | error    | Two boxes that arrows connect partly overlap                     | `move b right-of:a`                        |
-| `arrow-dangling`   | error    | An arrow is pinned to an element that is gone                    | `rm <arrow>`                               |
-| `arrow-behind-box` | warning  | An arrow passes through a box it does not connect                | `set <arrow> line=angled`                  |
-| `edge-crossings`   | warning  | More crossing arrow pairs than a quarter of the arrows           | `layout type:shape`                        |
-| `label-collision`  | warning  | An arrow's label overlaps a box                                  | A shorter arrow label                      |
-| `label-overflow`   | warning  | A label needs more lines than its box holds                      | `text=sm`, or a shorter label and a `note` |
-| `node-isolated`    | warning  | A shape with no arrows, on a tab that is otherwise a graph       | `connect <ref> -> a`                       |
-| `duplicate-label`  | info     | Two boxes share a label                                          | Rename one                                 |
-| `flow-backwards`   | info     | An arrow points against the drawing's flow                       | `rewire <arrow> from=y to=x`               |
-| `aspect-extreme`   | info     | The drawing is more than 3 times wider than tall, or the reverse | `layout type:shape direction=down`         |
-| `colour-on-themed` | info     | A fill or stroke the theme would not paint, bound to no swatch   | `set a fill=` to give it back to the theme |
+| Code               | Severity | Finding                                                                                | Suggested fix                                          |
+| ------------------ | -------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| `box-overlap`      | error    | Two boxes that arrows connect partly overlap                                           | `move b right-of:a`                                    |
+| `arrow-dangling`   | error    | An arrow is pinned to an element that is gone                                          | `rm <arrow>`                                           |
+| `arrow-behind-box` | warning  | An arrow passes through a box it does not connect                                      | `set <arrow> line=angled`                              |
+| `edge-crossings`   | warning  | More crossing arrow pairs than a quarter of the arrows                                 | `layout type:shape`                                    |
+| `label-collision`  | warning  | An arrow's label overlaps a box                                                        | A shorter arrow label                                  |
+| `label-overflow`   | warning  | A label needs more lines than its box holds                                            | `text=sm`, or a shorter label                          |
+| `node-isolated`    | warning  | A shape with no arrows, on a tab that is otherwise a graph                             | `connect <ref> -> a`                                   |
+| `text-overflow`    | warning  | A text needs more lines than its box holds, breaks a word, or prints over another text | `set <ref> height=…` or `width=…`, or `move b below:a` |
+| `duplicate-label`  | info     | Two boxes share a label                                                                | Rename one                                             |
+| `flow-backwards`   | info     | An arrow points against the drawing's flow                                             | `rewire <arrow> from=y to=x`                           |
 
 Boxes no arrow connects count as decoration and may overlap. Above 300 arrows the crossing check is skipped (the summary says so) and every other check still runs. The verdict on a changeset's last line reads `lint clean` or, say, `lint 2 warnings, 1 info`.
 

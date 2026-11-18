@@ -40,7 +40,7 @@ The **Format** panel decides what the brush carries. Under **Copies**, five swit
 - **Fill**: the fill colour, a header's fill, and its theme preset.
 - **Border**: stroke colour, width, pattern and corners, and an arrow's line.
 - **Text**: colour, size, weight, italic, underline, strikethrough, font and alignment.
-- **Effects**: shadow, opacity, and animations (including an arrow's flow).
+- **Effects**: shadow, finish, opacity, and animations (including an arrow's flow).
 - **Size**: width, height, aspect-ratio lock, padding, and an icon's size and weight.
 
 Switch every one off and the panel warns you that the brush has nothing to paint.
@@ -53,9 +53,17 @@ The target ends up looking like the source in everything the brush carries that 
 
 Arrows join in too: load an arrow as the source to copy its line colour, thickness, pattern, path style (straight, curved or elbow), arrowheads (including their colour), whether it routes behind shapes, flow animation, and label styling onto other arrows. Because the path style comes along, painting can re-route the target's line. Styles paint between like kinds only: any boxed element to another (a shape onto a sticky note works), and arrow to arrow. Clicking a shape while an arrow is loaded paints nothing, since the two share almost no formatting (with **Paint once**, it still empties the brush).
 
+## Painting a page's background
+
+The brush also carries a page's background from one page to another. With the Format tool on, click a page's paper (anywhere on the page but on an element) to load its background: its fill (a colour, a gradient, an animated background or a picture) and its pattern. The banner then reads "Tap pages to paint this background onto them", and each page you click takes it on. The page's size, orientation, content and name stay its own, and painting crosses kinds, so a slide's background can go onto an infographic page. **Keep the brush** and **Paint once** work as for elements; the **Copies** switches are for elements and don't narrow a page's paint. A locked page says so and keeps its own background.
+
+To give every page of one kind the same background in one go, use **Apply to All Slides** (or **Apply to All Infographic Pages**, and so on) at the foot of a page's **Background** instead.
+
+## What stays put
+
 One thing stays put by design: the painter never touches position, so where your elements sit on the canvas is never disturbed. Each paint is an ordinary edit, so `⌘Z` undoes it.
 
-Because it only changes elements, the format painter is available to Editors only: Participants and view-only visitors don't get it. It is greyed out on an empty canvas.
+Because it changes elements and pages, the format painter is available to Editors only: Participants and view-only visitors don't get it. It is greyed out on an empty canvas.
 
 <Tip>
   Build one "reference" element with the exact colours, border, and text you want, then use the

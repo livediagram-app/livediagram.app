@@ -5,34 +5,36 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'The Pages Tour',
   description:
-    'Take the Pages tour: a walkthrough for each kind of page (slides, infographics, articles) that opens the real layouts, backgrounds and deck.',
+    'Take the Pages tour: a walkthrough for each kind of page (slides, infographics, articles, flashcards) that opens the real layouts, backgrounds and deck.',
   path: '/help/pages/pages-tour/',
 });
 
 <ArticleLayout
   title="The Pages Tour"
-  description="A short, optional walkthrough for each kind of page, started from Start Pages Tour at the bottom of the editor, or from Show Me on any page."
+  description="A short, optional walkthrough for each kind of page, started from Get Started at the bottom of the editor, or from Show Me on any page."
   categoryTitle="Pages"
   categorySlug="pages"
   subArticles={getSubArticles('pages-tour')}
 >
 
-The Pages tour shows you how each kind of page is made, on your own page. There is one tour for each kind: **slides**, **infographics** and **articles**. It works on the real editor rather than screenshots, and it opens the real controls for you: the Layout and Background popovers, the page's settings, the Slide Deck. Anything you pick while a step is open is kept. It takes under a minute, and you can leave at any point.
+The Pages tour shows you how each kind of page is made, on your own page. There is one tour for each kind: **slides**, **infographics**, **articles** and **flashcards**. It works on the real editor rather than screenshots, and it opens the real controls for you: the Layout and Background popovers, the page's settings, the Slide Deck. Anything you pick while a step is open is kept. It takes under a minute, and you can leave at any point.
 
 ## Starting the Tour
 
 <Step n={1}>Open a tab you can edit, with at least one page whose kind you've chosen.</Step>
 
 <Step n={2}>
-  Press Start Pages Tour in the bar at the bottom of the editor, just left of **Search**. On a phone
+  Press **Get Started** in the bar at the bottom of the editor, just left of **Tools**. On a phone
   it shows as a play button on its own.
 </Step>
 
+<Step n={3}>Pick **Pages Tour** in the Get Started list.</Step>
+
 The tour starts straight away, on the page you can see most of. If several kinds of page are on screen, a kind you haven't taken the tour of yet goes first.
 
-The button waits while **Start Making Pages** is open and while a new tab's first page asks **What Is This Page For?**. It isn't there on a locked tab, in an embed, or for someone who can only view or take part. While you have an element selected that has its own tour (a chart, a Sankey, a stack), the button offers that tour instead; select nothing to get the Pages tour back.
+The button waits while **Start Making Pages** is open and while a new tab's first page asks **What Is This Page For?**. It isn't there on a locked tab, in an embed, or for someone who can only view or take part. While you have an element selected that has its own tour (a chart, a Sankey, a stack), Get Started lists that tour first, with the Pages tour below it.
 
-The tour never pops up on its own. Once you've taken the tour of every kind of page on the tab, the button makes room for other tours (or isn't shown); switch a kind back on in **Settings** to take it again (see below).
+The tour never pops up on its own. Once you've taken the tour of every kind of page on the tab, Pages Tour leaves the Get Started list (and Get Started goes when no other tour is on offer); switch a kind back on in **Settings** to take it again (see below).
 
 ## What Each Tour Covers
 
@@ -48,6 +50,8 @@ The tour never pops up on its own. Once you've taken the tour of every kind of p
 
 **Articles**: writing on the page, the page toolbar (held up for you while its step is showing), and the article's style and its fonts and spacing (the page's **Style** and **Text** settings). See [Articles](/help/pages/articles/).
 
+**Flashcards**: writing on the card, its page toolbar, **+** for another card, and the card's **Style**. See [Flashcards](/help/pages/flashcards/).
+
 A step whose control isn't on screen when the tour starts (**Slides** on a phone, say) is left out, so the count stays honest. Each step has **Next**, **Back** and **Skip tour**; leaving a step closes whatever it opened. If you switch tab, or delete or lock the page mid-tour, it ends as skipped.
 
 ## Show Me on Any Page
@@ -56,7 +60,7 @@ Every page's settings (its cog) carry **Show Me** at the top, which runs that pa
 
 ## Taken Tours in Settings
 
-**Settings**, under **Getting Started**, has a switch for each kind of page (**Slides Tour**, **Infographic Tour**, **Article Tour** and **Flashcards Tour**) under **Pages Tours**, which switches them all. Each switch turns itself off once you finish or skip that kind's tour, and if you're signed in that follows you to every device. A kind you've taken is off the Start Pages Tour button until you switch it back on, and the button goes once every kind of page on the tab has been taken.
+**Settings**, under **Getting Started**, has a switch for each kind of page (**Slides Tour**, **Infographic Tour**, **Article Tour** and **Flashcards Tour**) under **Pages Tours**, which switches them all. Each switch turns itself off once you finish or skip that kind's tour, and if you're signed in that follows you to every device. A kind you've taken is no longer offered until you switch it back on, and Pages Tour leaves Get Started once every kind of page on the tab has been taken.
 
 Switch one back on and close Settings while a document is open, and the tour starts straight away.
 

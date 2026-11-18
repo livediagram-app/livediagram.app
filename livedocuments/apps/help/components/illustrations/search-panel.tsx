@@ -11,7 +11,6 @@ import {
   FolderIcon,
   HelpIcon,
   SearchOverlay,
-  SharedIcon,
   TabIcon,
   TeamIcon,
 } from '@liveworkspace/help-site/art/illustrations/search-panel-frame';
@@ -72,22 +71,21 @@ export function SearchOverview() {
   );
 }
 
-/** Results limited to documents, folders, and shared documents. */
+/** The Explorer page's search: matching items (yours and shared with you) and folders. */
 export function SearchDocuments() {
   return (
     <SearchOverlay
       query="onboarding"
       groups={[
         {
-          title: 'Documents',
-          rows: [{ icon: <DocumentIcon />, label: 'Onboarding flow', active: true }],
+          title: 'Items',
+          rows: [
+            { icon: <DocumentIcon />, label: 'Onboarding flow', active: true },
+            { icon: <DocumentIcon />, label: 'Onboarding v2' },
+          ],
         },
         {
-          title: 'Shared with You',
-          rows: [{ icon: <SharedIcon />, label: 'Onboarding v2' }],
-        },
-        {
-          title: 'My Work',
+          title: 'Folders',
           rows: [{ icon: <FolderIcon />, label: 'Onboarding' }],
         },
       ]}
@@ -95,19 +93,23 @@ export function SearchDocuments() {
   );
 }
 
-/** Results showing teams plus their shared folders and documents. */
+/** The Explorer page's search for a team: its document, its folder tagged with the team, and the team itself. */
 export function SearchTeams() {
   return (
     <SearchOverlay
       query="platform"
       groups={[
         {
+          title: 'Items',
+          rows: [{ icon: <DocumentIcon />, label: 'Platform overview', active: true }],
+        },
+        {
+          title: 'Folders',
+          rows: [{ icon: <FolderIcon />, label: 'Platform services', meta: 'in Platform team' }],
+        },
+        {
           title: 'Teams',
-          rows: [
-            { icon: <TeamIcon />, label: 'Platform team', active: true },
-            { icon: <FolderIcon />, label: 'Architecture / Services', meta: 'in Platform team' },
-            { icon: <DocumentIcon />, label: 'Platform overview', meta: 'in Platform team' },
-          ],
+          rows: [{ icon: <TeamIcon />, label: 'Platform team' }],
         },
       ]}
     />

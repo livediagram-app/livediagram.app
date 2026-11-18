@@ -5,69 +5,77 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Walkthroughs',
   description:
-    'Record yourself talking someone through the document, camera bubble and all, and let them play it back over the document, pausing to look around.',
+    'Record a video of yourself talking someone through the document, camera bubble and all, then play it in the editor or share it with a public link.',
   path: '/help/collaboration/walkthroughs/',
 });
 
 <ArticleLayout
   title="Walkthroughs"
-  description="A recorded tour of the document: your voice, your camera and where you went, played back over the document as it is now."
+  description="A video of you talking through the document: your screen, your voice and your camera if you turn it on."
   categoryTitle="Collaboration"
   categorySlug="collaboration"
   subArticles={getSubArticles('walkthroughs')}
 >
 
-A walkthrough is a recording of you talking someone through the document. It keeps your voice, your camera if you leave it on (shown as a round bubble in a corner), your pointer, and every pan, zoom, tab change and slide step you make. Whoever plays it watches it over the document itself, not in a video, so they can pause, look around and resume.
+A walkthrough is a video of you talking someone through the document. It films this browser tab as you see it, with your voice and, if you turn it on, your camera in a round bubble in a corner. It is kept with the document for everyone who can open it, and you can share it with anyone by a public link.
 
 ## Recording a walkthrough
 
 <Step n={1}>
-  Open **Tools** in the footer, press **Walkthroughs**, then **Record Walkthrough**. The recording
-  dock opens at the bottom of the document.
+  Open **Tools** in the footer, press **Walkthroughs**, then **Record Walkthrough**. The **Record a
+  Walkthrough** card opens beside Tools.
 </Step>
 
 <Step n={2}>
   Pick your **Microphone**. The **Camera** switch starts off, so a walkthrough records your voice
-  alone and the browser asks only for the microphone; turn it on to pick a camera and show yourself
-  in a round bubble. The dock remembers your choice in this browser. If the browser hasn't been
-  allowed to list your devices yet, press **Allow Microphone** (or **Allow Camera**) to ask it. The
-  level meter shows the microphone hears you.
+  alone; turn it on to pick a camera, show yourself in a round bubble and choose the **Bubble
+  Corner**. The card remembers the switch in this browser. If the browser hasn't been allowed to
+  list your devices yet, press **Allow Microphone** (or **Allow Camera**) to ask it. **Mic Level**
+  moves as you speak, so you know you are heard.
 </Step>
 
 <Step n={3}>
-  Press **Start Recording**. After a 3, 2, 1 countdown, talk and move around the document as you
-  would with someone beside you. Press **Finish** when you are done.
+  To keep something out of the video, press **Hide From Recording** now (see below). You can't
+  change it once the recording starts.
 </Step>
 
 <Step n={4}>
-  Give it a **Title** and press **Save**. It is listed under Walkthroughs in Tools for everyone who
-  can open the document.
+  Press **Start Recording** and let the browser share this tab when it asks. After a 3, 2, 1
+  countdown, talk and move around the document as you would with someone beside you. A small bar
+  under the palette shows the time, the level, **Discard** and **Finish**.
 </Step>
 
-A walkthrough can run for up to ten minutes; the bar turns amber with a minute left and finishes on its own at ten. If saving is refused (it is too large, or you have reached your limit), the dock says why and offers **Download a Copy** so the recording isn't lost.
+<Step n={5}>
+  Press **Finish** (or stop sharing from the browser's own bar). The walkthrough saves straight away
+  as "Walkthrough of" the tab's name, and is listed under Walkthroughs in Tools.
+</Step>
+
+A walkthrough can run for up to ten minutes; the clock turns amber with a minute left and finishes on its own at ten. If saving fails (it is too large, or you have reached your limit), a card at the foot of the document says why and offers **Try Again** and **Download a Copy**, so the recording isn't lost. **Discard** asks first, since a discarded recording can't be recovered. Recording needs a browser that can film its own tab, such as Chrome, Edge, Brave or Firefox on a computer.
 
 ## Hiding elements from the recording
 
-Press **Hide From Recording** in the dock, then press each element viewers shouldn't see: a private note, an unfinished corner. **Hide Selection** hides what is already selected, and **Done** or `Esc` leaves the mode. You still see hidden elements, faded inside a dashed outline; people playing the walkthrough never do, and presses and pointer moves over them are left out of what is stored. They stay on the document itself for anyone who opens it.
+Press **Hide From Recording** in the card, then press each element viewers shouldn't see: a private note, an unfinished corner. Arrows attached to it go with it. **Hide Selection** hides what is already selected, and **Done** leaves the mode. Before you start you see hidden elements faded inside a dashed outline; while the tab is filmed they are hidden from your screen too, so the video never holds them. They stay on the document itself for anyone who opens it.
 
 ## Playing a walkthrough
 
-Open **Tools** in the footer, press **Walkthroughs**, and press one to play it. The view follows the recording, fitted to your screen, with the presenter's pointer and their bubble in the corner.
+Open **Tools** in the footer, press **Walkthroughs**, and press one to play it. It opens in a video player over the editor, with its title, who made it and when, **Full Screen**, and the usual play, seek and speed controls.
 
-- **Pause, look around, resume.** Pan, zoom or press on the document and it pauses, leaving the view with you. **Resume** puts the view back where the recording is and plays on.
-- **Keys.** `Space` plays and pauses, `←` and `→` skip five seconds, `Esc` closes. The bar also has a scrubber and a speed of 1x, 1.5x or 2x.
-- **Edited since recording.** If the document has changed since, a line says so and it still plays over the document as it is now.
+A walkthrough recorded before walkthroughs became videos still plays as it did, over the document itself: pan, zoom or press on the document to pause and look around, then **Resume**. `Space` plays and pauses, `←` and `→` skip five seconds, and `Esc` closes.
 
-Recorded while you present the slide deck, a walkthrough replays the deck too: it starts the presentation at the slide you were on, moves through the slides as you did, and leaves it when you left it.
+## Renaming, sharing and deleting
 
-Closing puts you back where you were.
+Each walkthrough in the list has a **⋯** menu:
 
-## Who can record and delete
+- **Rename** edits its title in place (up to 120 characters).
+- **Share** (on a video) turns on a **Public Link**, with **Copy Link**. Anyone with the link can watch the video without signing in; they see its title and who made it, never the document. Turn the link off and it stops working at once. **Share** is also in the video player.
+- **Delete** asks first, then deletes it for everyone who can open the document.
 
-Editors record walkthroughs and can delete any of them. Everyone who can open the document can play them, and anyone can delete one they recorded. Walkthroughs aren't offered on a phone, in an embed, for a document kept in **This Browser**, or through a link to one tab.
+## Who can record and manage
+
+Editors record walkthroughs, and can rename, share and delete any of them. Everyone who can open the document can play them, and you can always rename, share or delete one you recorded. Walkthroughs aren't offered on a phone, in an embed, for a document kept in **This Browser**, or through a link to one tab.
 
 ## Privacy
 
-Calls are never recorded. A walkthrough is only made when you press Start Recording, and it is stored with the document for the people who can open it. Deleting a walkthrough, purging its document from the Trash or deleting your account deletes it. See the [privacy policy](https://www.liveworkspace.app/privacy).
+Calls are never recorded. A walkthrough is only made when you press Start Recording, and the browser shows that it is sharing the tab for as long as it records. It is stored with the document for the people who can open it, and reaches anyone else only through a public link you turn on. Deleting a walkthrough, purging its document from the Trash or deleting your account deletes it. See the [privacy policy](https://www.liveworkspace.app/privacy).
 
 </ArticleLayout>
