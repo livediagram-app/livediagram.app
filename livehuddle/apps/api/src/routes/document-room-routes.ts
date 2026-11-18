@@ -11,6 +11,7 @@ import {
 } from '@livehuddle/api-schema';
 import { openRoomTicket, roomTicketLevel, sealRoomTicket } from '@liveworkspace/index-app';
 import { adderKeyFor } from '../adder-key';
+import { noteTokenRoom } from '../auth/token-rooms';
 import { indexService, linkCodeOf } from '../index-service';
 import {
   COLLAB_KEY_HEADER,
@@ -51,7 +52,26 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     if (!grant) return notFound();
     if (grant.trashed) return documentTrashed();
     if (await isCommunityCode(env, id, grant.shareCode)) return forbidden('community_link');
-    const ticket = await sealRoomTicket(env, grant.token, null);
+    // The API token minting it (a script): sealed into the ticket, so revoking the token closes the sockets it opens.
+    const token = ctx.token?.id ?? null;
+    const ticket = await sealRoomTicket(
+      env,
+      grant.token,
+      token ? { pairing: null, cap: null, token } : null,
+    );
+    // ...and liveworkspace notes the room against the token until the ticket's grant lapses, which is how a revoke
+    // finds the rooms to close without asking every canvas (public-api-and-tokens.md "Revoking a token").
+    const owner = token ? ctx.resolveOwner() : null;
+    if (token && owner) {
+      const noted = noteTokenRoom(env, {
+        ownerId: owner,
+        tokenId: token,
+        itemId: id,
+        until: grant.exp * 1000,
+      });
+      if (ctx.waitUntil) ctx.waitUntil(noted);
+      else await noted;
+    }
     const person = linkCodeOf(grant.sub) ? null : grant.sub;
     const adderKey = await adderKeyOf(id, grant.level, person);
     const answer: RoomTicketResponse = adderKey ? { ticket, adderKey } : { ticket };
@@ -86,7 +106,7 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     const id = segments[2]!;
     const opened = await openRoomTicket(indexService, env, url.searchParams.get('t'), id);
     if (!opened) return forbidden();
-    const { claims } = opened;
+    const { claims, token } = opened;
     if (claims.trashed) return documentTrashed();
     const role: AccessLevel = roomTicketLevel(opened);
     const linkCode = linkCodeOf(claims.sub);
@@ -123,6 +143,9 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     // and be sent others' (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures"). Set on every path, like the rest.
     forwarded.headers.set('X-Verified-Account', person && isAccountIdShape(person) ? '1' : '0');
     forwarded.headers.set('X-Verified-Adder', (await adderKeyOf(id, role, person)) ?? '');
+    // The API token whose ticket this is (public-api-and-tokens.md "Revoking a token"), so revoking it closes the
+    // socket. Empty for every other session, over whatever the client sent.
+    forwarded.headers.set('X-Verified-Api-Token', token ?? '');
     forwarded.headers.set(
       PRESENCE_NAME_HEADER,
       presenceNameHeader(typedPresenceName((await profile)?.name)),

@@ -36,6 +36,7 @@ import { useBoardCollapsed } from '@/hooks/plan/useBoardCollapsed';
 import { centreCardColumn, shownQuick } from './phone-board';
 import { COLUMN_ATTR } from './column-move-flip';
 import { useRegisterConfigurableBoard } from '@/hooks/plan/board-configure-store';
+import { useRegisterShownCards } from '@/hooks/plan/board-shown-store';
 import { RunRevealContext } from '@/hooks/plan/useCardRunReveal';
 import { usePlan } from './PlanContext';
 import { slotCardSize, slotColumnTemplate, slotColumnUnit, slotSetup } from './slot-board';
@@ -174,7 +175,7 @@ export function PlanBoardView({
   const focusNextRef = useRef<string | null>(null);
   const items = plan?.items ?? NO_ITEMS;
   const statusNames = plan?.statusNames;
-  const { projection, busy, pickable, shownItems, hidesAll } = usePlanBoardProjection(
+  const { projection, busy, pickable, shownItems, hidesAll, showsAny } = usePlanBoardProjection(
     drawnSetup,
     items,
     shownFilter,
@@ -194,6 +195,8 @@ export function PlanBoardView({
   // (plan-board.md "Configure"). The cog stays on a board on an ordinary tab and in a Dashboard slot.
   const configuredFromCluster = filled && interactive && !slot && !!plan?.canEdit;
   useRegisterConfigurableBoard(element.id, configuredFromCluster);
+  // A Board tab's board says whether it shows any card, for Hide From Recording (board-shown-store.ts).
+  useRegisterShownCards(element.id, showsAny, filled && interactive && !slot);
   // The tab's session vote, when this board's cards take dots in it (its layer, under a layer-scoped vote).
   const tabCardVote = useCardVote();
   const cardVote =

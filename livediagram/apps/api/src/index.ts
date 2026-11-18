@@ -24,7 +24,7 @@ import {
   createTokenBearer,
   createWorkbenchBearer,
 } from '@liveworkspace/api-kit/bearer-credentials';
-import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
+import { callerRateKey, clientRateKey } from '@liveworkspace/api-kit/client-ip';
 import { isViewOnlyRoomTicketMint } from '@liveworkspace/index-app';
 import {
   guardRequest,
@@ -233,9 +233,10 @@ async function routeApiRequest(
   // unbounded work, so it isn't a quota-exhaustion vector.
   const isRoomTicketMint = segments[1] === 'documents' && segments[3] === 'room-ticket';
   // ...but not unthrottled: each mint is a D1 write. Its own bucket per
-  // caller network, so a flood is bounded without touching anyone's autosave budget.
+  // caller network, or per API token for a token's mint (an MCP server's arrives over the service binding with no
+  // address: api.md "Rate limiting"), so a flood is bounded without touching anyone's autosave budget.
   if (isRoomTicketMint && isWrite && env.WRITE_RATE_LIMITER) {
-    if (await isWriteRateLimited(env, `room-ticket:${clientRateKey(request)}`))
+    if (await isWriteRateLimited(env, `room-ticket:${callerRateKey(request, tokenAuth?.tokenId)}`))
       return rateLimited();
   }
   if (isWrite && url.pathname !== '/api/events' && !isRoomTicketMint) {

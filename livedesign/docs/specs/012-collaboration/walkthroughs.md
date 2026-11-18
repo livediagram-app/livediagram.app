@@ -90,7 +90,8 @@ Pressing a walkthrough in the Walkthroughs panel plays it.
   same region) and the presenter's pointer, a soft dot with a ring for each press. The hidden
   elements are hidden.
 - **The presenter's bubble** sits in the corner they recorded it in, playing their camera, or, recorded with no
-  camera, a round mark with their initial that pulses while the walkthrough plays.
+  camera, a small voice chip instead: their initial, their name and four level bars that move while it plays. It is
+  far smaller than the camera bubble and a different shape, so it never looks like an empty camera.
 - **The player bar** at the bottom centre: play and pause, a scrubber you can drag or click (with a mark at each tab
   change), the time (`1:02 / 3:24`), the speed (1x, 1.5x, 2x), and close. `Space` plays and
   pauses, `←` and `→` skip five seconds, `Esc` closes.

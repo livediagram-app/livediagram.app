@@ -125,6 +125,9 @@ export function acceptSession(
   // The person stamped on its reactions (X-Verified-Reaction-Person,
   // docs/specs/012-collaboration/comment-reactions.md).
   reactionPerson: string | null = null,
+  // The API token whose ticket opened it (X-Verified-Api-Token, public-api-and-tokens.md "Revoking a token"):
+  // revoking the token closes it.
+  apiToken: string | null = null,
 ): void {
   // The room's size (docs/specs/015-api/api.md "Room size"): past ROOM_MAX_CONNECTIONS the socket is accepted
   // only to be closed with ROOM_FULL_CLOSE, which a browser can read where a refused upgrade says nothing. A
@@ -142,6 +145,7 @@ export function acceptSession(
         verifiedRole,
         collabKey,
         reactionPerson,
+        apiToken,
         tabScope,
         shareCode,
         personTag,

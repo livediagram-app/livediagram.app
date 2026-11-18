@@ -296,6 +296,22 @@ token_limit_reached`.
 user's data, tokens included: the tokens are the liveworkspace account's, and closing the account there deletes
 them, so no credential outlives the account. livehuddle keeps no copy.
 
+### Revoking a token
+
+A revoke ends every live thing the token holds, at once, not when it next calls:
+
+- Its REST calls fail on the next request (the lookup above).
+- Its own room tickets' sockets close. A room ticket minted through a token (`POST /api/documents/:id/room-ticket`,
+  a script's ticket) is sealed with the token's id beside its grant (`rt2~`, `@liveworkspace/index-app/room-ticket`), and the
+  upgrade forwards it to the room as `X-Verified-Api-Token`, kept on the socket (`apiToken`, `room-session.ts`). Off
+  the mint's path the api tells liveworkspace the room it opened (`POST
+/api/account/internal/workbench/token-rooms {ownerId, tokenId, itemId, until}`, `until` being the ticket's grant
+  lapse; `noteTokenRoom`, `@liveworkspace/auth-client/workbench-sessions`). On revoke accounts closes each noted room
+  through the index (`/internal/workbench-close {app, tokenId, itemIds}`), the index calls this app's door
+  (`POST /api/internal/items/:id/workbench-close {tokenId}`, `tokenClose`), and the room closes the sockets carrying
+  that token (`{match: 'token'}`, `4005 access-changed`). No other token's sockets and no person's are touched, and
+  no canvas that token never opened is asked: the fan-out is the noted rooms only.
+
 ### 3.6a A token's view of itself
 
 A token may read and revoke **itself**, which escalates nothing, so a script can show who it is and sign

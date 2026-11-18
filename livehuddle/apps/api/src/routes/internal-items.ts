@@ -25,7 +25,7 @@ import { countCommunityCopy } from '../community-service';
 import { deleteAccount, mergeGuest } from '../db/account';
 import { purgeDocumentPreviews } from '../db/documents';
 import { documentRoom } from '../document-client';
-import { tellTrashed } from '../room-access-client';
+import { closeTokenSessions, tellTrashed } from '../room-access-client';
 import { forgetImageRefs } from '../document-room/document-outbox';
 import { notifyFirstShare } from '../email/notifications';
 import { personStore } from '../person-client';
@@ -79,6 +79,9 @@ export function handleInternalItems(
       // A rescoped link (another level or tab) reloads its visitors into what it now opens; a revoked one sends
       // them away.
       revoke: (id, codes, reason) => documentRoom(env, id).revokeCodes(codes, reason),
+      // An API token was revoked at liveworkspace: the sockets its room tickets opened here close
+      // (public-api-and-tokens.md "Revoking a token").
+      tokenClose: (id, tokenId) => closeTokenSessions(env, id, tokenId),
       notice: (id, notice) =>
         notice.type === 'shared'
           ? notifyFirstShare(env, notice.actorId)

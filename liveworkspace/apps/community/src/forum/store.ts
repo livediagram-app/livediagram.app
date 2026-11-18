@@ -388,6 +388,19 @@ export async function recordForumReport(
   return (hidden.meta?.changes ?? 0) > 0;
 }
 
+/** Drops the reports made before `before`, and any whose post is gone. A post the reports hid stays hidden: the state is
+ *  on the post, and reports are only counted while the post is listed. Answers how many went. */
+export async function pruneForumReports(env: Env, before: number): Promise<number> {
+  const result = await env.COMMUNITY_DB.prepare(
+    `DELETE FROM forum_reports
+      WHERE created_at < ?1
+         OR NOT EXISTS (SELECT 1 FROM forum_posts p WHERE p.id = forum_reports.post_id)`,
+  )
+    .bind(before)
+    .run();
+  return result.meta?.changes ?? 0;
+}
+
 /** A closed account: every topic (with its replies), reply and reaction it wrote in the Forum, and its counters. */
 export async function forgetForumAuthor(env: Env, accountId: string): Promise<void> {
   await env.COMMUNITY_DB.batch([

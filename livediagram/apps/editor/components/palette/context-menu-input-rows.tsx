@@ -6,6 +6,7 @@ import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/Can
 import { ColourPopover } from '@/components/colour/ColourPopover';
 import { noColour, standardGroup, themeOptions } from '@/components/colour/colour-options';
 import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
+import type { TextContrastProbe } from '@/lib/text-contrast-probe';
 
 // Shared by every editor; re-exported for the rows that import it from here.
 export { MenuToggleRow } from '@liveworkspace/workbench/components/palette/MenuToggleRow';
@@ -46,6 +47,7 @@ export function ColourRow({
   onPreviewEnd,
   ink,
   tone = 'strong',
+  contrast,
 }: {
   label: string;
   // A mark for what this row paints: "Text", "Background", "Border" and "Heading" are four words of
@@ -65,6 +67,8 @@ export function ColourRow({
   ink?: string;
   // Lines and text take the strong colours; backgrounds the soft ones.
   tone?: StandardTone;
+  // The Text row's grounds: its picker says when a colour would be hard to read there.
+  contrast?: readonly TextContrastProbe[];
 } & ColourPalette) {
   const surface = useCanvasSurface();
   // In state, not a ref: a row can mount already open, and the popover needs its anchor then.
@@ -110,6 +114,7 @@ export function ColourRow({
           boardWarning={ink !== undefined}
           onPreview={onPreview}
           onPreviewEnd={onPreviewEnd}
+          contrast={contrast}
           onPick={(id) => {
             (onCommit ?? onChange)(id);
             onToggle();

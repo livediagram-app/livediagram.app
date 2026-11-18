@@ -8,7 +8,7 @@ import {
   type AccessLevel,
   type RoomTicketResponse,
 } from '@livedocuments/api-schema';
-import { noteWorkbenchRoom } from '../auth/workbench-session';
+import { noteTokenRoom, noteWorkbenchRoom } from '../auth/workbench-session';
 import { indexService, linkCodeOf } from '../index-service';
 import { badRequest, forbidden, json, notFound } from '../responses';
 import {
@@ -57,18 +57,34 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     if (!grant) return notFound();
     if (await isCommunityCode(env, id, grant.shareCode)) return forbidden('community_link');
     const workbench = ctx.workbench ?? null;
+    // The API token minting it (an MCP server's live view, a CLI), outside a workbench session (whose pairing closes
+    // with its token already): sealed into the ticket, so revoking the token closes the sockets it opens.
+    const token = workbench ? null : (ctx.token?.id ?? null);
     // A workbench session is sealed to its pairing at its own cap (held to view when it asks for a view-only
     // ticket); a view-only ticket otherwise is the grant sealed with the cap alone, so its holder never has the
-    // grant bare.
+    // grant bare; a token's ticket carries the token, with the cap it asked for or none.
     const ticket = await sealRoomTicket(
       env,
       grant.token,
       workbench
         ? { pairing: workbench.pairingId, cap: cap ?? workbench.level }
-        : cap
-          ? { pairing: null, cap }
+        : cap || token
+          ? { pairing: null, cap, token }
           : null,
     );
+    // ...and liveworkspace notes the room against the token until the ticket's grant lapses, which is how a revoke
+    // finds the rooms to close without asking every document (public-api-and-tokens.md "Revoking a token").
+    const owner = token ? ctx.resolveOwner() : null;
+    if (token && owner) {
+      const noted = noteTokenRoom(env, {
+        ownerId: owner,
+        tokenId: token,
+        itemId: id,
+        until: grant.exp * 1000,
+      });
+      if (ctx.waitUntil) ctx.waitUntil(noted);
+      else await noted;
+    }
     // A workspace session joins many rooms; each is recorded at liveworkspace, off the response's path, so ending
     // its access closes them all (WB55).
     if (workbench?.scope === 'workspace') {
@@ -91,7 +107,7 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     const id = segments[2]!;
     const opened = await openRoomTicket(indexService, env, url.searchParams.get('t'), id);
     if (!opened) return forbidden();
-    const { claims, workbench } = opened;
+    const { claims, workbench, token } = opened;
     const role: AccessLevel = roomTicketLevel(opened);
     const person = linkCodeOf(claims.sub) ? null : claims.sub;
     // The share code a session came in by, from the grant the index signed (its `link` claim, set for a person who
@@ -116,6 +132,9 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     // a Google picture in the room and see others' (docs/specs/014-identity/profile-picture.md §2).
     forwarded.headers.set('X-Verified-Account', person && isAccountOwner(person) ? '1' : '0');
     forwarded.headers.set('X-Verified-Workbench-Pairing', workbench?.pairing ?? '');
+    // The API token whose ticket this is (public-api-and-tokens.md "Revoking a token"), so revoking it closes the
+    // socket. Empty for every other session, over whatever the client sent.
+    forwarded.headers.set('X-Verified-Api-Token', token ?? '');
     forwarded.headers.set('X-Verified-Document', id);
     // When the grant lapses (epoch seconds): the room asks for a fresh one before then, and drops the socket
     // after (document-room.ts).

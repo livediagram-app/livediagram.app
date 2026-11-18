@@ -28,6 +28,9 @@ export type WorkbenchSessionResolution<Reach> =
   | { ok: true; workbench: WorkbenchSessionFields & Reach }
   | { ok: false; reason: WorkbenchSessionRefusal; sessionPrefix?: string };
 
+// One cache per accounts and client, for the life of the isolate.
+const keyOf = (c: ClientCredentials) => `${c.accountsUrl} ${c.clientId}`;
+
 export function createWorkbenchSessions<Env, Reach>(deps: {
   credentials: (env: Env) => ClientCredentials | null;
   // What the session reaches, as this api names it. An item session always names its item: the checker refuses
@@ -36,11 +39,9 @@ export function createWorkbenchSessions<Env, Reach>(deps: {
   // Thrown when liveworkspace can't answer, so the caller answers 503 rather than calling a good session bad.
   unavailable: () => Error;
 }) {
-  const keyOf = (c: ClientCredentials) => `${c.accountsUrl} ${c.clientId}`;
   // One checker (and one room noter) per credentials for the life of the isolate: they hold the caches.
   const checkers = new Map<string, WorkbenchSessionChecker>();
   const noters = new Map<string, ReturnType<typeof createWorkbenchRoomNoter>>();
-  const tokenNoters = new Map<string, ReturnType<typeof createTokenRoomNoter>>();
 
   function checkerFor(credentials: ClientCredentials): WorkbenchSessionChecker {
     const key = keyOf(credentials);
@@ -107,8 +108,18 @@ export function createWorkbenchSessions<Env, Reach>(deps: {
     }
   }
 
-  // An API token's room ticket opened an item's room until `until`: liveworkspace notes it, so revoking the token
-  // closes the room's sockets at once. Best effort, off the response's path.
+  return { resolveWorkbenchSession, noteWorkbenchRoom, ...createTokenRooms(deps) };
+}
+
+// An API token's room ticket opened an item's room until `until`: liveworkspace notes it, so revoking the token
+// closes the room's sockets at once (each product's docs/specs/015-api/public-api-and-tokens.md "Revoking a token").
+// Its own factory, so an api with no workbench sessions (livehuddle's) notes its token rooms the same way.
+export function createTokenRooms<Env>(deps: {
+  credentials: (env: Env) => ClientCredentials | null;
+}) {
+  const noters = new Map<string, ReturnType<typeof createTokenRoomNoter>>();
+
+  // Best effort, off the response's path: a note that fails leaves the room's sockets to lapse with their ticket.
   async function noteTokenRoom(
     env: Env,
     input: { ownerId: string; tokenId: string; itemId: string; until: number },
@@ -116,10 +127,10 @@ export function createWorkbenchSessions<Env, Reach>(deps: {
     const credentials = deps.credentials(env);
     if (!credentials) return;
     const key = keyOf(credentials);
-    let note = tokenNoters.get(key);
+    let note = noters.get(key);
     if (!note) {
       note = createTokenRoomNoter(credentials);
-      tokenNoters.set(key, note);
+      noters.set(key, note);
     }
     try {
       await note(input);
@@ -128,5 +139,5 @@ export function createWorkbenchSessions<Env, Reach>(deps: {
     }
   }
 
-  return { resolveWorkbenchSession, noteWorkbenchRoom, noteTokenRoom };
+  return { noteTokenRoom };
 }

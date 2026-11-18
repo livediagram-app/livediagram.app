@@ -50,8 +50,13 @@ const room = () => plan().room;
 const card = async (id: string) => (await w.items('A')).find((i) => i.id === id)!;
 const runs = async (query = '') =>
   (await (await w.call('GET', `/runs${query}`)).json<{ runs: AutomationRun[] }>()).runs;
-// The last quarter hour, as a rule's time in UTC.
-const moment = () => Math.floor(Date.now() / QUARTER) * QUARTER;
+// The last quarter hour, as a rule's time in UTC, fixed when each test starts: read live, a test that ran across a
+// quarter hour made its rule for one moment and expected the next.
+let pinned = 0;
+beforeEach(() => {
+  pinned = Math.floor(Date.now() / QUARTER) * QUARTER;
+});
+const moment = () => pinned;
 const clock = (ms: number) => new Date(ms).toISOString().slice(11, 16);
 const today = () => localDay(moment(), 'UTC');
 const nextAt = (ruleId: string) =>

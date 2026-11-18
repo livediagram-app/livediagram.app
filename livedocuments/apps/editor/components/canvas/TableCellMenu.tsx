@@ -23,6 +23,7 @@ import {
   TextColourIcon,
 } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import { useColourPalette } from '@/hooks/ui/useColourPalette';
+import { useCellTextContrast } from '@/hooks/ui/useTextContrast';
 import { presetPxFor, TextSizeControl } from '@/components/palette/TextSizeControl';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
@@ -80,6 +81,8 @@ export function TableCellMenu({
   });
   const { swatches } = useColourPalette();
   const [openColour, setOpenColour] = useState<string | null>(null);
+  // Whether the cells' words read on their backgrounds, judged only while the Text row's picker is open.
+  const textContrast = useCellTextContrast(element, cells, openColour === 'text');
   const sc = element.cellStyles?.[anchor.r]?.[anchor.c] ?? null;
   const isHeaderAnchor =
     (element.headerRow && anchor.r === 0) || (element.headerColumn && anchor.c === 0);
@@ -161,6 +164,7 @@ export function TableCellMenu({
           value={sc?.textColor ?? textColor}
           open={openColour === 'text'}
           onToggle={() => setOpenColour((c) => (c === 'text' ? null : 'text'))}
+          contrast={textContrast}
           onChange={(color) => applyStyle({ textColor: color })}
           onPreview={(textColor) => onPreviewStyle?.({ textColor })}
           onPreviewEnd={() => onPreviewStyle?.(null)}

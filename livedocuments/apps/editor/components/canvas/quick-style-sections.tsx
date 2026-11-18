@@ -198,6 +198,8 @@ export function QuickSectionRow({
               surface,
               row.role === 'fill' ? 'hex' : 'name',
             )}
+            // The Text colour row judges whether its colours read where the selected text sits.
+            judgeIds={row.role === 'text' ? view.targetIds : undefined}
             onPick={(colour) => quickStyle.setColour(row.role, colour)}
           />
         }

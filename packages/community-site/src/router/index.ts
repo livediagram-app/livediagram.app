@@ -7,6 +7,10 @@
 //   /community               the gallery, its <head> made the app's own (its title, description and canonical);
 //   /community/post          the post shell, its <head> filled in with the post `?id=` names (./post-head.ts), or
 //                            answered 404 when there is no such public post, so a dead post link never indexes;
+//   /community/forum/topic   the Forum topic shell, its <head> filled in with the topic `?id=` names (./forum-head.ts)
+//                            when it is listed: a preview for the link, indexable once it has an answer. Any other
+//                            topic (Pending, refused, hidden, gone, or the service down) keeps the shell's generic
+//                            noindex head and is never named;
 //   /community/sitemap.xml   every public post of the app, at its canonical address, from the service's /sitemap.
 //
 // The posts are the liveworkspace Community service's, asked over HTTPS for the app's posts only: production's, or the
@@ -15,10 +19,14 @@
 
 import {
   communityServiceUrl,
+  FORUM_API_PATH,
+  FORUM_HOME_PATH,
   type CommunityPostResponse,
   type CommunitySitemapResponse,
+  type ForumTopicResponse,
 } from '@liveworkspace/community';
 import { COMMUNITY_HOME_PATH } from '@liveworkspace/community/paths';
+import { forumTopicHead, type ForumTopicHead } from './forum-head';
 import {
   API_TIMEOUT_MS,
   escapeHtml,
@@ -59,6 +67,7 @@ export type CommunityRouteOptions = {
 /** Where the Community lives on an app's address: `/community`, anything under it, and its RSC payloads. */
 export const COMMUNITY_PATH = COMMUNITY_HOME_PATH;
 const POST_PATH = `${COMMUNITY_PATH}/post`;
+const TOPIC_PATH = `${FORUM_HOME_PATH}/topic`;
 const SITEMAP_PATH = `${COMMUNITY_PATH}/sitemap.xml`;
 
 export function isCommunityPath(pathname: string): boolean {
@@ -103,6 +112,29 @@ function withPostHead(shell: Response, head: PostHead): Response {
     .transform(shell);
 }
 
+// The topic shell's head, rewritten to name the topic. The shell is noindex with no canonical; only an answered topic
+// is let into the index, the rest are named for a link's preview alone.
+function withTopicHead(shell: Response, head: ForumTopicHead): Response {
+  return withTitle(new HTMLRewriter(), head.title, head.description)
+    .on('meta[name="robots"]', {
+      element(el) {
+        el.setAttribute('content', head.indexable ? 'index, follow' : 'noindex, follow');
+      },
+    })
+    .on('head', {
+      element(el) {
+        el.append(
+          `<meta property="og:url" content="${escapeHtml(head.canonical)}"/>` +
+            (head.indexable
+              ? `<link rel="canonical" href="${escapeHtml(head.canonical)}"/>${jsonLdScript(head.jsonLd)}`
+              : ''),
+          { html: true },
+        );
+      },
+    })
+    .transform(shell);
+}
+
 // The gallery shell's head, made the app's: liveworkspace.app's All Apps canonical and name become the app's.
 function withGalleryHead(shell: Response, head: GalleryHead): Response {
   const set = (name: string, value: string) => ({
@@ -130,6 +162,7 @@ export function routeCommunity(
   if (request.method !== 'GET') return page;
   if (url.pathname === COMMUNITY_PATH) return page.then((res) => galleryPage(res, options));
   if (url.pathname === POST_PATH) return page.then((res) => postPage(res, url, options));
+  if (url.pathname === TOPIC_PATH) return page.then((res) => topicPage(res, url, options));
   return page;
 }
 
@@ -170,6 +203,23 @@ async function postPage(
     return new Response(shell.body, { status: 404, headers: shell.headers });
   }
   return withPostHead(shell, postHead(options.site, post.body.post));
+}
+
+async function topicPage(
+  shell: Response,
+  url: URL,
+  options: CommunityRouteOptions,
+): Promise<Response> {
+  const id = url.searchParams.get('id');
+  if (!id || !shell.ok || !isHtml(shell)) return shell;
+  // Asked without a token, so the service answers listed topics only: anything else is missing, and keeps the shell.
+  const topic = await api<ForumTopicResponse>(
+    options,
+    `${FORUM_API_PATH}/topics/${encodeURIComponent(id)}`,
+  );
+  if (topic.status !== 'ok') return shell;
+  const head = forumTopicHead(options.site, topic.body);
+  return head ? withTopicHead(shell, head) : shell;
 }
 
 async function sitemap(options: CommunityRouteOptions): Promise<Response> {

@@ -17,6 +17,7 @@ const KEYFRAMES = `
 @keyframes walkthrough-count{0%{transform:scale(.6);opacity:0}25%{transform:scale(1);opacity:1}85%{opacity:1}100%{transform:scale(1.15);opacity:0}}
 @keyframes walkthrough-upload{0%{transform:translateX(-100%)}100%{transform:translateX(300%)}}
 @keyframes walkthrough-ring{0%{transform:scale(.85);opacity:1}100%{transform:scale(1.12);opacity:0}}
+@keyframes walkthrough-voice{0%{transform:scaleY(.35)}100%{transform:scaleY(1)}}
 `;
 
 const NOTICE_MS = 4000;

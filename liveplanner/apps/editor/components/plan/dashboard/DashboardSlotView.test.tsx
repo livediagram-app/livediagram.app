@@ -221,3 +221,19 @@ describe('the slot’s one cog', () => {
     expect(screen.getByRole('button', { name: 'Remove Slot' })).toBeTruthy();
   });
 });
+
+// docs/specs/012-collaboration/walkthroughs.md "What can be hidden": a filled slot is a widget Hide From Recording
+// picks; an empty one carries no mark, so it can't be picked or faded.
+describe('Hide From Recording', () => {
+  it('marks a filled slot as a widget and leaves an empty one unmarked', () => {
+    show({ id: 'full', span: 6, content: { type: 'note', title: 'N', text: '' } });
+    expect(
+      document.querySelector('[data-dashboard-slot="full"]')?.getAttribute('data-dashboard-widget'),
+    ).toBe('full');
+    cleanup();
+    show({ id: 'empty', span: 6 });
+    const empty = document.querySelector('[data-dashboard-slot="empty"]');
+    expect(empty).toBeTruthy();
+    expect(empty?.hasAttribute('data-dashboard-widget')).toBe(false);
+  });
+});

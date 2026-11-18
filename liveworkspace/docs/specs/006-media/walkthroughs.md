@@ -85,8 +85,11 @@ microphone, **off** until the person turns it on, and the browser remembers it p
 `liveworkspace:walkthrough-camera`, `on` or `off`; storage that throws reads as off and keeps nothing). While it is
 off the recorder asks the browser for the microphone alone (`getUserMedia({ audio, video: false })`), so no camera
 permission is asked; turning it on asks for the camera and shows its device list. A sound-only walkthrough has no
-camera bubble while recording and plays back with no video frame (the player's round mark with the presenter's
-initial, as before). A camera that won't start turns the switch off for that recording only, says "The camera
+camera bubble while recording and plays back with no video frame. In its place the player shows the **voice chip**, in
+the recorded corner: a small pill holding the presenter's initial in a small round avatar, their name ("You" for your
+own; none when the list has no name for them) and four level bars that move while it plays and rest while it is
+paused. It is a fraction of the camera bubble's size and a different shape, so it never reads as an empty camera
+(Work Tracker 1208; it replaces the camera-sized round mark with the initial). A camera that won't start turns the switch off for that recording only, says "The camera
 couldn't start, so this walkthrough records sound only." and records sound; the remembered choice stays on. No
 camera at all (the default camera answers `NotFoundError`) is not a failure: the switch stays on, its list says
 **No Camera Found** (disabled) and the recording is sound alone; turning the switch off and on, or a camera plugged in,
@@ -113,10 +116,11 @@ In every canvas app an element is anything marked `data-element-id` inside the c
 content (`data-canvas-content`). An app whose tabs draw other things over the canvas (liveplanner's Board and
 Dashboard tabs, laid over it rather than in it) names them to `@liveworkspace/walkthrough` as **hideable marks**:
 further attributes whose value is the id of a thing that can be hidden (liveplanner's `data-plan-card` and
-`data-dashboard-slot`), wherever under the canvas root they are drawn. Picking, the presenter's and the viewer's
+`data-dashboard-widget`, the latter on a filled Dashboard slot alone, so an empty slot can't be picked), wherever under
+the canvas root they are drawn. Picking, the presenter's and the viewer's
 hiding, the pointer's `cursor-out` and the player's press rings all read them like `data-element-id`, and a `point`
 may name one. The app also says whether the tab showing has **anything to hide** at all: where it has nothing (a
-liveplanner Sheet or Form tab, an empty canvas), the set-up leaves Hide From Recording out rather than offering a mode
+liveplanner Sheet or Form tab, an empty canvas, a Board tab whose filter leaves no card showing), the set-up leaves Hide From Recording out rather than offering a mode
 in which no press can do anything. An app that says neither (livediagram, livedocuments, livedesign) hides canvas
 elements alone and always offers the control, as before.
 
@@ -149,7 +153,7 @@ walkthrough was **edited since recording** and still plays it over the canvas as
   didn't share this tab, so nothing was recorded." and stays open; nothing is recorded. Shared, the count runs and
   `MediaRecorder` records the tab's video track with the microphone's sound (through `steadyAudio`) as one WebM.
   The camera, when on, is the round bubble on screen, filmed with the rest. Without the camera there is no bubble
-  (the sound-only initial is a replay's). The browser's own "sharing this tab" bar shows while it records. Stopping
+  (the voice chip is a replay's). The browser's own "sharing this tab" bar shows while it records. Stopping
   the share from the browser's bar is Finish.
 - **What it films.** The whole tab as the presenter sees it. **Hide From Recording** hides the chosen elements on the
   presenter's own screen for the length of the recording (fully, not the faded presenter view a replay used), so the

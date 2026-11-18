@@ -44,6 +44,8 @@ const picked = vi.fn();
 const selected = vi.fn();
 
 beforeEach(() => {
+  // The Forum Checks card reads the Community service: unreachable here, which it shows as unavailable.
+  vi.stubGlobal('fetch', () => Promise.reject(new Error('offline')));
   host = document.createElement('div');
   document.body.append(host);
   root = createRoot(host);
@@ -52,6 +54,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  vi.unstubAllGlobals();
   act(() => root?.unmount());
   host?.remove();
   root = null;

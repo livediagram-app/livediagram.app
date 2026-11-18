@@ -291,6 +291,7 @@ export function RichTextEditor({
           onColor={(color) => onPatch({ color })}
           onEffect={(patch) => onPatch(patch, 'highlight' in patch ? 'Highlight' : 'Gradient')}
           onSetAlign={(x, y) => onSetAlign?.(x, y)}
+          element={element}
         />
       </div>
     </div>

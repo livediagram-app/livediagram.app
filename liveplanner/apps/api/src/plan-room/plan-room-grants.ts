@@ -125,6 +125,9 @@ export function acceptSession(
   // The person stamped on its reactions (X-Verified-Reaction-Person,
   // docs/specs/012-collaboration/comment-reactions.md).
   reactionPerson: string | null = null,
+  // The API token whose ticket opened it (X-Verified-Api-Token, public-api-and-tokens.md "Revoking a token"):
+  // revoking the token closes it.
+  apiToken: string | null = null,
 ): void {
   // A full room (ROOM_MAX_CONNECTIONS, docs/specs/015-api/api.md "A room holds 100 connections") turns the
   // newcomer away with a close the browser can read: accepted, closed at once, never a session.
@@ -140,6 +143,7 @@ export function acceptSession(
         verifiedRole,
         collabKey,
         reactionPerson,
+        apiToken,
         tabScope,
         shareCode,
         personTag,

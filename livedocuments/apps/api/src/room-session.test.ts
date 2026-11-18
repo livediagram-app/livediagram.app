@@ -31,6 +31,7 @@ describe('verifiedSessionOf', () => {
       account: true,
       workbenchPairing: 'w',
       documentId: 'd',
+      apiToken: null,
       grantExp: null,
       head: { owner: 'user_o', team: null },
     });
@@ -122,5 +123,22 @@ describe('readSessionAttachment', () => {
         }),
       ),
     ).toBeNull();
+  });
+});
+
+// docs/specs/015-api/public-api-and-tokens.md "Revoking a token": the token whose ticket opened a view rides on its
+// socket, clamped, and a session with none carries no field at all.
+describe('the API token on a session', () => {
+  const TOKEN = '9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d';
+  it('reads it, keeps it clamped, and adds nothing for a session without one', () => {
+    const v = verifiedSessionOf(upgrade({ 'X-Verified-Api-Token': TOKEN }));
+    expect(v.apiToken).toBe(TOKEN);
+    expect(newSessionAttachment(v, 'p1').apiToken).toBe(TOKEN);
+    expect(newSessionAttachment({ ...v, apiToken: 'x'.repeat(500) }, 'p1').apiToken).toHaveLength(
+      64,
+    );
+    const none = verifiedSessionOf(upgrade({ 'X-Verified-Api-Token': '' }));
+    expect(none.apiToken).toBeNull();
+    expect('apiToken' in newSessionAttachment(none, 'p2')).toBe(false);
   });
 });
