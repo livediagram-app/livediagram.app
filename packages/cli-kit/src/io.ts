@@ -34,6 +34,8 @@ export type CliIo = {
   readStdin: () => Promise<string>;
   stdinIsTTY: boolean;
   stdoutIsTTY: boolean;
+  // Whether stderr is a terminal: the update notice is for a person, never a log.
+  stderrIsTTY: boolean;
   // Writes `prompt` to stderr and reads one line from stdin (the terminal's own line editing); null at end of input.
   readLine: (prompt: string) => Promise<string | null>;
   fetch: (request: Request) => Promise<Response>;
@@ -59,6 +61,9 @@ export type CliIo = {
   // Runs a system tool with `input` on its stdin (never a secret in `args`) and collects its stdout; null when the
   // tool could not be started.
   runTool: (command: string, args: readonly string[], input: string) => Promise<ToolRun | null>;
+  // Starts a detached copy of this CLI with `args` (the update check's background ask), its output ignored; never
+  // waited for, and never keeping this process alive.
+  runBackground: (args: readonly string[]) => void;
 };
 
 export type ToolRun = { code: number; stdout: string };

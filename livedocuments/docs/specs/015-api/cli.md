@@ -190,6 +190,13 @@ test fails when a verb is exposed by neither, or a tool's schema drifts from its
   bundled ESM file plus the resvg wasm and font, Node 22 or later, run with `npx @livedocuments/cli@latest` or installed.
   Versioned on its own.
 
+### Update check
+
+Once a day at most, in the background, the CLI asks npm for the newest version, and after a later command succeeds it
+says so in one line on stderr, at most once a day: `livedocuments 1.4.0 is out (you have 1.2.1). Update: npm i -g
+@livedocuments/cli`. Never in CI, when stderr is not a terminal, or with `LIVEDOCUMENTS_NO_UPDATE_CHECK=1`; it never
+slows or fails a command, and when it last asked is kept in the CLI's config folder (`update.json`).
+
 ## Telemetry
 
 - Category `Cli`, action `Used`, type the verb (`TabView`), sent after a command succeeds, never for help, mirroring

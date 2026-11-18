@@ -90,11 +90,12 @@ help article.
   both send as `livediagram <hello@liveplanner.app>` until it moves
   ([Email](../../../../liveworkspace/docs/specs/003-accounts/email.md) "Senders until the domains move"). Unset, it defaults to
   `livediagram <hello@livediagram.app>`.
-- `APP_BASE_URL` (plain var, optional): public origin for links in emails.
-  Default `https://livediagram.app`.
+- `APP_BASE_URL` (plain var): public origin for links in emails. Default `https://www.livediagram.app`, so a
+  deployment of your own sets it; livediagram.app's production and staging values are in `apps/api/hosted-vars.json`.
 
 Local dev: nothing to set. `wrangler dev` simulates the binding, printing each email and saving its HTML
-to a file, so nothing is sent. Production and staging: the binding in `wrangler.toml` is all there is.
+to a file, so nothing is sent, and the api's dev script passes `APP_BASE_URL` as `http://localhost:3100`, so a local
+email's links open the local editor. Production and staging: the binding in `wrangler.toml` is all there is.
 
 ## 3. Data model
 

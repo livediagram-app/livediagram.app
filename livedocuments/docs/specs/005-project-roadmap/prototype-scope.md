@@ -52,7 +52,7 @@ The editor is real. Every tab is Pages ([Pages mode](../007-editor/pages-mode.md
   edit operations based on read copies; creates, renames, shares and removes documents and tabs; comments, shows its
   presence, and waits on or watches a document's room; pulls a document to a file and pushes it back, exports every
   document, and draws tabs as SVG or PNG. It counts its commands like the MCP's tools, and the MCP's
-  tools are verbs of the same catalogue. Published on npm as `@livedocuments/cli`, by hand outside CI.
+  tools are verbs of the same catalogue. Published on npm as `@livedocuments/cli`, by hand outside CI. Once a day at most it tells a person when a newer version is out.
 - **Workbench embeds** ([Workbench embeds](../013-workspace/workbench-embeds.md)): a developer tool, once paired in the
   person's browser, opens a document signed in inside its own frame through a ticket the person's CLI mints; the
   frame is confined to that one document, and the person's selection reaches their agent as a selection reference.
@@ -77,7 +77,6 @@ The editor is real. Every tab is Pages ([Pages mode](../007-editor/pages-mode.md
 
 **Status: Planned.** Not built yet; Participant links, a look-only Viewer, and the agent changesets, views, edit operations, presence and [CLI](../015-api/cli.md) are built.
 
-- **Agents as collaborators** ([Agents](../024-agents/README.md)): the CLI's update check.
 - **Access levels, the rest** ([Share roles](../013-workspace/share-roles.md#later)): token levels and ownership as separate powers.
 
 ## Later

@@ -2,7 +2,7 @@
 
 **Status: published.** `@livedesign/cli` is on npm (0.1.0, 2026-10-06; 0.2.0 adds `workbench`; 0.3.0, not yet on npm, adds `folder` and `workbench --workspace`). Every command below signs in through the
 browser, a device code or a token kept in the system's keychain, and is counted on the dashboard. The help centre
-article is `/help/developers/cli/` (Developers). The update check is planned ([Update check](#update-check)).
+article is `/help/developers/cli/` (Developers).
 
 `livedesign` is a command-line front door to the api, built first for **agents** (a coding agent in a repo, a chat
 agent changing a wireframe while a person talks to it) and second for people (scripts, pulling designs to files).
@@ -197,10 +197,10 @@ test fails when a verb is exposed by neither, or a tool's schema drifts from its
 
 ## Update check
 
-**Status: Planned.** Not built yet; the published CLI makes no npm request.
-
-Once a day at most, after a command, the CLI checks npm for a newer version and says so on stderr; never in CI, when
-stderr is not a terminal, or with `LIVEDESIGN_NO_UPDATE_CHECK=1`.
+Once a day at most, in the background, the CLI asks npm for the newest version, and after a later command succeeds it
+says so in one line on stderr, at most once a day: `livedesign 1.4.0 is out (you have 1.2.1). Update: npm i -g
+@livedesign/cli`. Never in CI, when stderr is not a terminal, or with `LIVEDESIGN_NO_UPDATE_CHECK=1`; it never slows
+or fails a command, and when it last asked is kept in the CLI's config folder (`update.json`).
 
 ## Telemetry
 
