@@ -315,6 +315,12 @@ describe('steadyFacing keeps a diagonal walk steady (avatar-mode.md "Arrow keys"
     expect(steadyFacing(1, 1.05, 'right')).toBe('right');
     expect(steadyFacing(1.05, 1, 'down')).toBe('down');
   });
+  it('keeps left and up on a diagonal heading that way, and turns when the heading opposes the facing', () => {
+    expect(steadyFacing(-1, -1.05, 'left')).toBe('left');
+    expect(steadyFacing(-1.05, -1, 'up')).toBe('up');
+    expect(steadyFacing(1, -1.05, 'left')).toBe('up');
+    expect(steadyFacing(1.05, 1, 'up')).toBe('right');
+  });
   it('turns to the larger axis when the current facing runs along neither', () => {
     expect(steadyFacing(1.05, 1, 'up')).toBe('right');
   });
