@@ -6,12 +6,14 @@
 // While the person purge runs (account-purge.ts), before it rewrites the rows that name them, it records here
 // one row per app for the person and one per item of someone else's that names them. The frequent cron (and the
 // purge request itself, at once) sends each app `POST /api/internal/people/:id/purge {items}` with up to
-// PERSON_ITEMS_PER_CALL of them; the rows go when the app confirms. An app that can't be reached is tried
+// PERSON_ITEMS_PER_CALL of them, and the guests merged into the person (`guests`, person_notice_guests); the rows go
+// when the app confirms, and the guests once no row for the person is left. An app that can't be reached is tried
 // again an hour later, and given up on after NOTICE_GIVE_UP_MS.
 
 import { APPS, type App } from '@liveworkspace/index-client';
 import { callApp } from './app-calls';
 import type { Env } from './env';
+import { PERSON_ALIASES_MAX } from './person-aliases';
 
 export const PERSON_ITEMS_PER_CALL = 100;
 // Items recorded per source per pass: a bound on one statement; a later pass records the rest.
@@ -55,6 +57,15 @@ export function recordPersonNotices(
          SELECT ?, value, '', ? FROM json_each(?)`,
       )
       .bind(person, now, JSON.stringify(APPS)),
+    // The guests merged into them (person-aliases.ts), read before the purge deletes the aliases: every call names
+    // them, so each app anonymises what they left as a guest as it does the account's (Work Tracker 1241).
+    db
+      .prepare(
+        `INSERT OR IGNORE INTO person_notice_guests (person_id, guest_id)
+         SELECT person_id, guest_id FROM person_aliases WHERE person_id = ?
+          ORDER BY merged_at DESC, guest_id LIMIT ?`,
+      )
+      .bind(person, PERSON_ALIASES_MAX),
   ];
 }
 
@@ -63,11 +74,15 @@ type Group = { person_id: string; app: App };
 // One run: up to GROUPS_PER_RUN (person, app) pairs that are due, one call each. Returns the pairs confirmed.
 export async function drainPersonNotices(env: Env, now = Date.now()): Promise<number> {
   const db = env.INDEX_DB;
-  const stale = await db
-    .prepare('DELETE FROM person_app_notices WHERE created_at < ?')
-    .bind(now - NOTICE_GIVE_UP_MS)
-    .run();
-  if ((stale.meta.changes ?? 0) > 0) {
+  // In the same call, the guests of every person with no notice left (confirmed or given up) go.
+  const [stale] = await db.batch([
+    db.prepare('DELETE FROM person_app_notices WHERE created_at < ?').bind(now - NOTICE_GIVE_UP_MS),
+    db.prepare(
+      `DELETE FROM person_notice_guests
+        WHERE person_id NOT IN (SELECT person_id FROM person_app_notices)`,
+    ),
+  ]);
+  if ((stale!.meta.changes ?? 0) > 0) {
     console.warn('[index] person notices given up', { rows: stale.meta.changes });
   }
   const { results: groups } = await db
@@ -79,21 +94,28 @@ export async function drainPersonNotices(env: Env, now = Date.now()): Promise<nu
     .all<Group>();
   let confirmed = 0;
   for (const group of groups) {
-    const { results } = await db
-      .prepare(
-        `SELECT item_id FROM person_app_notices WHERE person_id = ? AND app = ?
-          ORDER BY item_id LIMIT ?`,
-      )
-      .bind(group.person_id, group.app, PERSON_ITEMS_PER_CALL + 1)
-      .all<{ item_id: string }>();
-    const rows = results.map((r) => r.item_id);
+    const [notices, guestRows] = await db.batch([
+      db
+        .prepare(
+          `SELECT item_id FROM person_app_notices WHERE person_id = ? AND app = ?
+            ORDER BY item_id LIMIT ?`,
+        )
+        .bind(group.person_id, group.app, PERSON_ITEMS_PER_CALL + 1),
+      db
+        .prepare(
+          'SELECT guest_id FROM person_notice_guests WHERE person_id = ? ORDER BY guest_id LIMIT ?',
+        )
+        .bind(group.person_id, PERSON_ALIASES_MAX),
+    ]);
+    const rows = (notices!.results as { item_id: string }[]).map((r) => r.item_id);
     const items = rows.filter((id) => id !== '').slice(0, PERSON_ITEMS_PER_CALL);
+    const guests = (guestRows!.results as { guest_id: string }[]).map((r) => r.guest_id);
     const outcome = await callApp(
       env,
       group.app,
       'POST',
       `/people/${encodeURIComponent(group.person_id)}/purge`,
-      { items },
+      { items, guests },
     );
     // An app this deployment does not run has nothing to hear.
     if (outcome.ok || outcome.error === 'app_not_configured') {
