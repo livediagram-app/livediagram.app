@@ -1,6 +1,6 @@
 // The template catalogue's categories (docs/specs/008-canvas/canvas-and-palette.md "Template categories"): the kind of
 // place a Space is, Campus, Events, Games Rooms, Homes, Office, Outdoor, Recreation and Venues, each holding two to seven
-// of the thirty Spaces
+// of the thirty-two Spaces
 // (docs/specs/007-editor/templates-by-mode.md "The catalogue"). Every template but the blank has exactly one primary category and may be cross-listed in others where
 // people would genuinely look for it. Read by Start a Space, the marketing gallery and the agents' catalogue. Pure
 // data plus three lookups; a Record over every non-blank kind, so a new template does not compile until it has a home.
@@ -119,6 +119,8 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, 'blank-session'>, Template
   'client-lounge': 'office',
   classroom: 'events',
   'hackathon-hall': 'events',
+  'art-gallery': 'events',
+  'wellness-studio': 'recreation',
 };
 
 // Cross-listing: the other categories a template is also shown in, where someone would genuinely look for it there.

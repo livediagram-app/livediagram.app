@@ -11,11 +11,11 @@ import { TEAM_POD } from '../hero-space-cast';
 import { HALL, OFFICE } from '../hero-space-places';
 import { SpaceShot, at, headOf, shotPoint } from './space-shot';
 
-const POD_TABLE = [-260, -150, 560, 190] as const;
+const POD_TABLE = [-215, -221, 560, 190] as const;
 // The Meeting Room down to its table, so the three sat round it are in the shot with room above them for a bubble.
-const OFFICE_MEETING = [290, -420, 580, 186] as const;
-const OFFICE_DESKS = [-300, -445, 470, 170] as const;
-const HALL_FRONT = [-510, -580, 1020, 322] as const;
+const OFFICE_MEETING = [435, -527, 580, 186] as const;
+const OFFICE_DESKS = [-375, -552, 470, 170] as const;
+const HALL_FRONT = [-728, -720, 1394, 440] as const;
 
 /** A label pill in the canvas's own type: a coloured face, an optional dot, white words. */
 function Tag({
@@ -159,8 +159,8 @@ export function PrivateRoomArt() {
       cast={[{ name: 'Priya' }, { name: 'Maya' }, { name: 'Sam' }]}
     >
       <Tag
-        x={610}
-        y={-395}
+        x={705}
+        y={-502}
         text="Meeting Room · 3 in a call"
         colour="#047857"
         dot="#a7f3d0"

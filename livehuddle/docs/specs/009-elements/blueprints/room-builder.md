@@ -130,7 +130,7 @@ Derived from [Window](../room-builder.md#window), [Glass walls](../office.md#gla
 | `packages/document/src/window-art.ts`                            | `windowArt(width, height)`: frame, pane, mullion, sill and the light patch (`WINDOW_LIGHT`), for the canvas and the export              |
 | `packages/document/src/glass-walls.ts`                           | `GLASS_ROOM_VARIANT`, `isGlassRoom`, `glassRoomArt(el)`: a glass room's floor, wall band, pane line, mullions, back face and glints     |
 | `packages/document/src/piece-variants.ts`                        | `room: ['solid', 'glass']` in the stored variants, so `pieceVariant` reads a room's wall style                                          |
-| `packages/document/src/room-preset-shapes.ts`, `room-presets.ts` | The Meeting Booth preset (`variant: 'glass'` on the room) and its table and plant                                                       |
+| `packages/document/src/room-preset-shapes.ts`, `room-presets.ts` | The Glass Room preset (`variant: 'glass'` on the room), empty                                                                           |
 | `packages/document/src/svg-render-doors.ts`                      | The export's `windowSvg` and `glassRoomSvg`                                                                                             |
 | `apps/editor/components/canvas/collab/WindowView.tsx`            | `WindowView` (light patch by `useCanvasSurface`), `GlassRoomView`                                                                       |
 | `apps/editor/components/palette/CollabMenuSections.tsx`          | `RoomWallsMenuSection`: Solid and Glass tiles, every room; `setRoomWallsSelected` in `useDataShapeSetters`                              |

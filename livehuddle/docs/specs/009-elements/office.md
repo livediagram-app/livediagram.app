@@ -103,58 +103,37 @@ Four walls round a floor, with a doorway, and the room's name on its back wall.
 
 ### Room presets
 
-The Room tile opens six rooms to start from, the way the Card tile opens its presets ([Card presets](card.md#card-presets)):
-on the Toolbar strip and in the Rooms flyout it is an opener whose side panel lists them, one card each, and each places,
-drags and previews as the Room tile did (dropped at its own size, lining up with its neighbours). Every preset is an
-ordinary Room (`shape: 'room'`) placed already furnished, as the [Restroom](office-amenities.md#the-restroom-preset) is:
-the room, its Door and the pieces that show what the room is for arrive in one change (one undo). Nothing about the
-preset is stored on the room or its pieces: each is an ordinary element, so a placed one is moved, resized, renamed,
-recoloured, refurnished or emptied like any room, and its pieces like any piece.
+The Room tile opens rooms of different shapes and sizes to start from, the way the Card tile opens its presets
+([Card presets](card.md#card-presets)): on the Toolbar strip and in the Rooms flyout it is an opener whose side panel
+lists them, one card each, and each places, drags and previews as the Room tile did (dropped at its own size, lining up
+with its neighbours). Every preset is an ordinary, empty Room (`shape: 'room'`): the room and its Door arrive in one
+change (one undo), to furnish as you like (the owner, 2026-11-18: "I also didn't want the room types in the palette to
+be fully furnished, but different shapes and sizes of rooms, like maybe I wanted a hexagon shaped room"; a furnished
+Office, Boardroom, Open Plan, Kitchen, Lounge and Meeting Booth came before). Nothing about the preset is stored on the
+room but the Glass Room's walls: a placed one is moved, resized, renamed and recoloured like any room.
 
-| Preset        | Variant         | Shape                                                     | Size      | Name          | Door                    |
-| ------------- | --------------- | --------------------------------------------------------- | --------- | ------------- | ----------------------- |
-| Room          | (none)          | A rectangle with its back wall standing up                | 480 × 320 | Room          | The front wall's middle |
-| Office        | `office`        | A small rectangle for one or two desks                    | 360 × 240 | Office        | The front wall's middle |
-| Boardroom     | `boardroom`     | A long rectangle round a big table                        | 800 × 400 | Boardroom     | The front wall's middle |
-| Open Plan     | `open-plan`     | An L: a wide floor with a wing down the left              | 720 × 520 | Open Plan     | The wing's front wall   |
-| Kitchen       | `kitchen`       | A rectangle with its front right corner cut at 45 degrees | 440 × 340 | Kitchen       | The cut corner's wall   |
-| Lounge        | `lounge`        | An octagon, every wall the same length                    | 440 × 440 | Lounge        | The front wall          |
-| Meeting Booth | `meeting-booth` | A rectangle with [glass walls](#glass-walls)              | 360 × 300 | Meeting Booth | The front wall's middle |
+| Preset          | Variant      | Shape                                                     | Size       | Name            | Door                    |
+| --------------- | ------------ | --------------------------------------------------------- | ---------- | --------------- | ----------------------- |
+| Small Room      | (none)       | A rectangle with its back wall standing up                | 480 × 320  | Room            | The front wall's middle |
+| Room            | `medium`     | A rectangle, roomy enough to furnish without crowding     | 640 × 440  | Room            | The front wall's middle |
+| Large Room      | `large`      | A big rectangle                                           | 960 × 640  | Large Room      | The front wall's middle |
+| Long Room       | `long`       | A long, narrow rectangle                                  | 1080 × 400 | Long Room       | The front wall's middle |
+| L-Shaped Room   | `l-shape`    | An L: a wide floor along the top, a wing down the left    | 880 × 640  | L-Shaped Room   | The wing's front wall   |
+| Hexagon Room    | `hexagon`    | Six walls, flat top and bottom, pointed at its sides      | 680 × 560  | Hexagon Room    | The front wall          |
+| Octagon Room    | `octagon`    | An octagon, every wall the same length                    | 600 × 600  | Octagon Room    | The front wall          |
+| Cut Corner Room | `cut-corner` | A rectangle with its front right corner cut at 45 degrees | 720 × 520  | Cut Corner Room | The cut corner's wall   |
+| Glass Room      | `glass`      | A rectangle with [glass walls](#glass-walls)              | 640 × 440  | Glass Room      | The front wall's middle |
 
-- The rectangles (Room, Office, Boardroom) are rectangular Rooms with a back wall face and a name plate. The shaped
-  ones (Open Plan, Kitchen, Lounge) are [custom rooms](room-builder.md#the-custom-room): their walls along a stored
-  `roomOutline`, aspect locked so their 45-degree walls stay at 45, their name inside their walls: at the top left
-  where the floor reaches it (the Open Plan, the Kitchen), else centred along the top (the Lounge's octagon). A room
-  drawn with the Room Builder places its name the same way.
+- The rectangles are rectangular Rooms with a back wall face and a name plate. The shaped ones (L-Shaped, Hexagon,
+  Octagon, Cut Corner) are [custom rooms](room-builder.md#the-custom-room): their walls along a stored `roomOutline`,
+  aspect locked so their angled walls keep their angle, their name inside their walls: at the top left where the floor
+  reaches it (the L, the Cut Corner), else centred along the top (the Hexagon, the Octagon). A room drawn with the Room
+  Builder places its name the same way.
 - Each comes with one [Door](room-builder.md#door), where the table says, snapped onto that wall as every Door is, in
-  the room's stroke: one change, one undo, every piece selected
+  the room's stroke: one change, one undo, both selected
   ([Placing selects every piece](#placing-selects-every-piece)).
-- Each preset but the plain Room brings its furnishings, laid out inside its walls and clear of its Door's swing
-  (DEFAULTS.md D226):
-
-  | Preset        | Furnishings                                                                                                                                         |
-  | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-  | Room          | None: the empty room to furnish from scratch                                                                                                        |
-  | Office        | A desk against the back wall, a plant and a bookshelf                                                                                               |
-  | Boardroom     | A Long Table for sixteen down the middle, a Screen on the back wall above its head, plants in the back corners, a water cooler and a coffee machine |
-  | Open Plan     | Five pods of two desks face to face; a printer, a coffee machine, a water cooler and two plants in the wing                                         |
-  | Kitchen       | A fridge, a sink, a counter with a microwave and a coffee machine; three bar stools; a water cooler                                                 |
-  | Lounge        | A fireplace on the back wall, a Bordered rug, two sofas facing in across it, plants either side of the door                                         |
-  | Meeting Booth | A Meeting Table for six, a Screen on the back wall above it and a plant in a back corner                                                            |
-
-  A preset always lands at its own size (a Room is [dropped, then sized](#room), never drawn out to a size), so its
-  pieces stand where this table puts them. Resizing the room after it lands moves none of them: they are ordinary
-  pieces, selected with the room as it lands, so the first drag moves them all together, and each is moved or resized
-  on its own after that. (Work Tracker 628 chose this over drawing a preset out to a size: the owner made a Room
-  dropped, then sized, to keep building simple, and a preset drawn smaller than itself would crowd its pieces into its
-  walls.)
-
-  A Screen on the back wall (the Boardroom's, the Meeting Booth's) hangs just below the wall's face
-  (`PRESET_SCREEN_TOP`, 2 px under `ROOM_BACK_FACE`), centred over its table, so the room's name band on that face is
-  never covered (Work Tracker 638).
-
-- The Meeting Booth is the one preset that stores something: its walls are glass (`variant: 'glass'`, below), the
-  room's own wall style, which stays when the room is moved, resized or refurnished.
+- The Glass Room is the one preset that stores something: its walls are glass (`variant: 'glass'`, below), the room's
+  own wall style, which stays when the room is moved or resized. Any room can be glass from its menu.
 - The [Restroom](office-amenities.md#the-restroom-preset) stays in **Perks** with the restroom pieces it brings.
 - For a passage between rooms there is the [Corridor](corridor.md), its own piece beside the Room.
 
@@ -167,7 +146,7 @@ Work Tracker #539.
   use): absent is **Solid**, the walls every room had; `glass` is **Glass**. Any room takes it: a rectangle, a preset,
   a room drawn with the [Room Builder](room-builder.md). A value a room does not take draws as Solid, so an older
   client reading a glass room sees a solid one, and a newer client reading an old room sees what it always did.
-- **Where it is set**: the Room tile's **Meeting Booth** preset arrives glass, and every room's element menu has a
+- **Where it is set**: the Room tile's **Glass Room** preset arrives glass, and every room's element menu has a
   **Walls** section (its glyph a run of bricks, `WallsMenuGlyph`, its own beside the Room section's wrench) with two
   tiles, **Solid** and **Glass** (a selection of several rooms sets them all; other kinds
   are left alone; one undoable change, `Element · Changed · Room`). Editors only: a Participant's short menu has no

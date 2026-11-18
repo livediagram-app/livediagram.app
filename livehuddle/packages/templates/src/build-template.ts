@@ -29,6 +29,7 @@ import { buildMusicHall } from './template-builders-venues';
 import { buildFestivalField } from './template-builders-festival';
 import { buildClientLounge, buildInterviewSuite } from './template-builders-office-suites';
 import { buildClassroom, buildHackathonHall } from './template-builders-events-more';
+import { buildArtGallery, buildWellnessStudio } from './template-builders-gallery-wellness';
 import {
   AVATAR_PAD_DEFAULT_SIZE,
   createShape,
@@ -36,11 +37,13 @@ import {
   type Element,
 } from '@livehuddle/document';
 import type { TemplateKind } from './templates';
+import { roomier } from './template-roomy';
 
 // Build the elements for a given template, centred on the supplied canvas
 // point. Each template is intentionally small and editable; users grow them.
 export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Element[] {
-  return floorsFirst(buildElements(kind, cx, cy));
+  // Opened out to roomier rooms, one rule for every Space (template-roomy.ts).
+  return floorsFirst(roomier(buildElements(kind, cx, cy), cx, cy));
 }
 
 const isFloor = (el: Element) => el.type === 'shape' && isFloorShape(el.shape);
@@ -124,6 +127,10 @@ function buildElements(kind: TemplateKind, cx: number, cy: number): Element[] {
       return buildClassroom(cx, cy);
     case 'hackathon-hall':
       return buildHackathonHall(cx, cy);
+    case 'art-gallery':
+      return buildArtGallery(cx, cy);
+    case 'wellness-studio':
+      return buildWellnessStudio(cx, cy);
     // The blank holds only its entrance (docs/specs/009-elements/avatar-pad.md "Every Space and blank tab has one"): an
     // Avatar Pad a little below the middle, where people arrive; the user adds the rest from the palette.
     case 'blank-session':

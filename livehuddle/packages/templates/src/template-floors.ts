@@ -2,6 +2,7 @@
 // its first, each with its own name, floor pattern and builder. Only the buildings and the Homes have floors; the first
 // floor is buildTemplate's, named by templateFirstFloorName (template-floor-names.ts).
 
+import { roomier } from './template-roomy';
 import type { Element, FloorPattern } from '@livehuddle/document';
 import type { TemplateKind } from './templates';
 import { buildHotelRooftop, buildHotelSuites } from './template-builders-hotel';
@@ -37,9 +38,20 @@ const BUILDINGS: Partial<Record<TemplateKind, readonly TemplateFloor[]>> = {
   'country-cottage': [{ name: 'Upstairs', floor: 'carpet', build: buildCottageUpstairs }],
 };
 
+// Each floor opened out as its first is (template-roomy.ts), about the same centre, so its stairs line up.
+const ROOMY: Partial<Record<TemplateKind, readonly TemplateFloor[]>> = Object.fromEntries(
+  Object.entries(BUILDINGS).map(([kind, floors]) => [
+    kind,
+    floors.map((f) => ({
+      ...f,
+      build: (cx: number, cy: number) => roomier(f.build(cx, cy), cx, cy),
+    })),
+  ]),
+);
+
 /** The floors after a template's first, in order; empty for a template on one tab. */
 export function templateFloors(kind: TemplateKind): readonly TemplateFloor[] {
-  return BUILDINGS[kind] ?? [];
+  return ROOMY[kind] ?? [];
 }
 
 export { templateFirstFloorName } from './template-floor-names';

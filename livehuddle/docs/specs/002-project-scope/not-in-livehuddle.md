@@ -347,6 +347,9 @@ carry a **Gone from livehuddle** banner and record what livehuddle had.
   had no keyboard shortcut, dock button or tour step, so none goes.
 - **Not the dock's Style button.** The bottom-right **Style** button opens **Tab Style** (the tab's look: theme,
   colours, finish, text and canvas), a different panel. It stays.
+- **A Space's own Quick Style came back** (the owner, 2026-11-18): a panel at the same edge holding a room's Walls,
+  Floor and Floor Colour and a piece's Type, the element menu's Tools choices beside the selection
+  ([space-quick-style.md](../008-canvas/space-quick-style.md)). The colour swatch rows and everything above stay gone.
 - **A stored `quickStylePanelEnabled`** is not read. The key is kept in the preferences blob, unread, like any key
   this version does not know, so no migration is needed. Stored custom swatches (`quickSwatchOverrides`) are kept the
   same way; nothing in livehuddle shows or edits them any more.

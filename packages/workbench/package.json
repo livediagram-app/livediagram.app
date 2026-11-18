@@ -423,6 +423,8 @@
     "./hooks/ui/useIconCatalogs": "./src/hooks/ui/useIconCatalogs.ts",
     "./hooks/ui/usePressWithoutDrag": "./src/hooks/ui/usePressWithoutDrag.ts",
     "./hooks/ui/useIsMobileViewport": "./src/hooks/ui/useIsMobileViewport.ts",
+    "./hooks/ui/useQuickStylePlacement": "./src/hooks/ui/useQuickStylePlacement.ts",
+    "./lib/quick-style-placement": "./src/lib/quick-style-placement.ts",
     "./hooks/ui/usePageContents": "./src/hooks/ui/usePageContents.ts",
     "./hooks/ui/useNewerEditorLive": "./src/hooks/ui/useNewerEditorLive.ts",
     "./hooks/ui/useLatest": "./src/hooks/ui/useLatest.ts",

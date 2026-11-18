@@ -139,7 +139,7 @@ export function RoomMenuSection({
 // --- A room's walls (docs/specs/009-elements/office.md "Glass walls") ---------------------------------
 
 // Solid: a filled wall; Glass: a pane you see through.
-function WallsGlyph({ walls }: { walls: RoomWalls }) {
+export function WallsGlyph({ walls }: { walls: RoomWalls }) {
   return (
     <Glyph size={14} units={16}>
       {walls === 'solid' ? (
@@ -188,7 +188,7 @@ export function RoomWallsMenuSection({
 // --- Floor (docs/specs/009-elements/office.md "Floors") -------------------------------------------------------------
 
 // A floor colour's swatch on its tile.
-function FloorColourSwatch({ hex }: { hex: string }) {
+export function FloorColourSwatch({ hex }: { hex: string }) {
   return (
     <span
       aria-hidden

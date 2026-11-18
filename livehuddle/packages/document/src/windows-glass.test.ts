@@ -203,25 +203,13 @@ describe('glass walls', () => {
     expect(isGlassRoom({ shape: 'corridor', variant: 'glass' })).toBe(false);
   });
 
-  it('the Meeting Booth arrives glass with its Door, a table and a plant, in one change', () => {
-    expect(ROOM_PRESETS['meeting-booth']).toMatchObject({ width: 360, height: 300 });
-    const booth = applyShapeVariant(createShape('room', 100, 100), 'meeting-booth');
-    expect(booth).toMatchObject({ label: 'Meeting Booth', variant: 'glass', width: 360 });
-    const placed = withDoorPiece(booth, 'meeting-booth') as ShapeElement[];
-    expect(placed.map((e) => e.shape)).toEqual([
-      'room',
-      'door',
-      'screen',
-      'meeting-table',
-      'plant',
-    ]);
+  it('the Glass Room arrives glass with its Door, empty, in one change', () => {
+    expect(ROOM_PRESETS.glass).toMatchObject({ width: 640, height: 440 });
+    const glass = applyShapeVariant(createShape('room', 100, 100), 'glass');
+    expect(glass).toMatchObject({ label: 'Glass Room', variant: 'glass', width: 640 });
+    const placed = withDoorPiece(glass, 'glass') as ShapeElement[];
+    expect(placed.map((e) => e.shape)).toEqual(['room', 'door']);
     expect(isGlassRoom(placed[0]!)).toBe(true);
-    // Every piece inside the walls.
-    for (const p of placed.slice(2)) {
-      expect(p.x).toBeGreaterThanOrEqual(110);
-      expect(p.x + p.width).toBeLessThanOrEqual(450);
-      expect(p.y + p.height).toBeLessThanOrEqual(390);
-    }
   });
 
   it('block walking and keep their call exactly as solid walls do', () => {

@@ -46,7 +46,7 @@ describe('the floor presets', () => {
       expect(t.blurb!.length).toBeLessThanOrEqual(40);
       expect(t.description.length).toBeGreaterThan(t.blurb!.length);
     }
-    expect(ROOM_PRESET_TILES.map((t) => t.label)).toContain('Add Boardroom');
+    expect(ROOM_PRESET_TILES.map((t) => t.label)).toContain('Add Hexagon Room');
     expect(DOOR_PRESET_TILES.map((t) => t.label)).toEqual([
       'Add Door',
       'Add Double Door',

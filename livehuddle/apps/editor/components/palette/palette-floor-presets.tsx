@@ -38,78 +38,85 @@ const preset =
 
 const room = preset('room', 'room', '');
 
+// Rooms of different shapes and sizes, all empty, to furnish as you like (docs/specs/009-elements/office.md "Room
+// presets").
 export const ROOM_PRESET_TILES: readonly PaletteTileDef[] = [
   room(
     undefined,
+    'Small Room',
+    'A snug room, 480 by 320',
+    'An empty small room for one or two: an office, a phone room or a quiet corner. Four walls, a door in the front wall, and its name over the door.',
+    <>
+      <path d="M10.5 18H6V8h12v10h-4.5" />
+      <path d="M6 10.5h12" />
+    </>,
+  ),
+  room(
+    'medium',
     'Room',
-    'Four walls and a door, 480 by 320',
-    'A room for a meeting or a team: four walls, a door in the front wall, and its name on the back wall.',
+    'Four walls and a door, 640 by 440',
+    'An empty room for a meeting or a team, roomy enough to furnish without crowding. Its door is in the front wall.',
     <>
       <path d="M10 19H3V5h18v14h-7" />
       <path d="M3 8.5h18" />
     </>,
   ),
   room(
-    'office',
-    'Office',
-    'A desk, a plant and a bookshelf',
-    'A small office, furnished: a desk against the back wall, a plant and a bookshelf, its door in the front wall.',
+    'large',
+    'Large Room',
+    'A big room, 960 by 640',
+    'An empty large room: an open-plan floor, a hall or a big meeting room. Its door is in the front wall.',
     <>
-      <path d="M10.5 18H5V7h14v11h-5.5" />
-      <path d="M5 9.5h14" />
-      <rect x="8" y="12" width="5" height="2.5" rx="0.6" />
+      <path d="M10 21H1.5V3h21v18H14" />
+      <path d="M1.5 6.5h21" />
     </>,
   ),
   room(
-    'boardroom',
-    'Boardroom',
-    'A long table for sixteen',
-    'A boardroom, furnished: a long table for sixteen down the middle with a screen on the wall above its head, plants in the back corners, and a water cooler and a coffee machine by the door.',
+    'long',
+    'Long Room',
+    'Long and narrow, 1080 by 400',
+    'An empty long room: a gallery, a row of desks or a long table. Its door is in the front wall.',
     <>
-      <path d="M9.5 18H1.5V7h21v11h-8" />
-      <path d="M1.5 9.5h21" />
-      <rect x="6" y="12" width="12" height="2.5" rx="1.25" />
+      <path d="M10 17H1V7h22v10h-9" />
+      <path d="M1 9.5h22" />
     </>,
   ),
   room(
-    'open-plan',
-    'Open Plan',
-    'Ten desks in pods, an L of floor',
-    'An open-plan floor shaped like an L: five pods of two desks face to face across the wide part, and a printer, a coffee machine, a water cooler and plants in the wing by the door.',
-    <>
-      <path d="M5.5 20H3V4h18v9H11v7H8.5" />
-      <path d="M14 7h4M14 9.5h4" opacity="0.5" />
-    </>,
+    'l-shape',
+    'L-Shaped Room',
+    'A wide floor and a wing',
+    'An empty L-shaped room: a wide floor along the top and a wing down the left, its door in the wing.',
+    <path d="M5.5 20H3V4h18v9H11v7H8.5" />,
   ),
   room(
-    'kitchen',
-    'Kitchen',
-    'Fridge, sink, counter and stools',
-    'A kitchen, furnished: a fridge, a sink, a counter with a microwave and a coffee machine along the back wall, three bar stools at the counter and a water cooler. Its front corner is cut at 45 degrees, with the door in the cut.',
-    <>
-      <path d="M16.5 18.5 15 20H3V4h18v10l-1.5 1.5" />
-      <path d="M5.5 6.5h13v2.5h-13z" opacity="0.5" />
-    </>,
+    'hexagon',
+    'Hexagon Room',
+    'Six walls, 680 by 560',
+    'An empty room with six walls, pointed at its sides: a lounge, a workshop or a meeting room with a difference. Its door is in the front wall.',
+    <path d="M10 20H7.5L3 12l4.5-8h9l4.5 8-4.5 8H14" />,
   ),
   room(
-    'lounge',
-    'Lounge',
-    'Sofas round a fire',
-    'A lounge with eight equal walls, furnished: a fireplace on the back wall, a round rug before it, two sofas facing in across it and plants either side of the door.',
-    <>
-      <path d="M10 21H8.5L3 15.5v-7L8.5 3h7L21 8.5v7L15.5 21H14" />
-      <circle cx="12" cy="12" r="3" opacity="0.5" />
-    </>,
+    'octagon',
+    'Octagon Room',
+    'Eight equal walls',
+    'An empty room with eight walls of the same length, its door in the front wall.',
+    <path d="M10 21H8.5L3 15.5v-7L8.5 3h7L21 8.5v7L15.5 21H14" />,
   ),
   room(
-    'meeting-booth',
-    'Meeting Booth',
-    'Glass walls, a table for six',
-    'A meeting booth with glass walls: everyone outside sees who is meeting, nobody outside hears them. A meeting table for six and a plant, its door in the front wall. Any room can be glass from its menu.',
+    'cut-corner',
+    'Cut Corner Room',
+    'A corner cut at 45 degrees',
+    'An empty room with its front right corner cut at 45 degrees, the door in the cut.',
+    <path d="M16.5 18.5 15 20H3V4h18v10l-1.5 1.5" />,
+  ),
+  room(
+    'glass',
+    'Glass Room',
+    'See-through walls, 640 by 440',
+    'An empty room with glass walls: everyone outside sees who is inside, nobody outside hears them. Any room can be glass from its menu.',
     <>
       <path d="M10 19H4V6h16v13h-6" opacity="0.55" />
       <path d="M4 9h16M8 6v13M16 6v13" opacity="0.3" />
-      <rect x="9" y="11.5" width="6" height="3.5" rx="1" />
     </>,
   ),
 ];

@@ -99,6 +99,8 @@ const TABS: [string, TemplateKind, Element[], boolean][] = [
   'client-lounge' as TemplateKind,
   'classroom' as TemplateKind,
   'hackathon-hall' as TemplateKind,
+  'art-gallery' as TemplateKind,
+  'wellness-studio' as TemplateKind,
 ].flatMap((kind) => [
   [kind, kind, buildTemplate(kind, 0, 0), true] as [string, TemplateKind, Element[], boolean],
   ...templateFloors(kind).map(
@@ -240,13 +242,13 @@ describe.each(TABS)('the %s site', (_name, kind, els, first) => {
     expect(lifts.length).toBeGreaterThan(0);
     const directory = all.find((e) => e.shape === 'directory')!;
     expect(directory).toBeDefined();
-    const near = lifts.some((l) => Math.hypot(l.x - directory.x, l.y - directory.y) < 300);
+    const near = lifts.some((l) => Math.hypot(l.x - directory.x, l.y - directory.y) < 380);
     expect(near).toBe(true);
     // Changing floor from the tab bar arrives on the pad, by the lifts (docs/specs/009-elements/avatar-pad.md "Every
     // Space and blank tab has one").
     const pad = all.find((e) => e.shape === 'avatar-pad')!;
     expect(pad).toBeDefined();
-    expect(lifts.some((l) => Math.hypot(l.x - pad.x, l.y - pad.y) < 300)).toBe(true);
+    expect(lifts.some((l) => Math.hypot(l.x - pad.x, l.y - pad.y) < 380)).toBe(true);
   });
 
   // docs/specs/007-editor/templates-by-mode.md "Every Space is roomy": seats side by side are one row or an aisle
