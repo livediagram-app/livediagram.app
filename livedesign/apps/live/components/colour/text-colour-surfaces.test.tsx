@@ -6,6 +6,7 @@ import { createText, layOutPages, type BoxedElement, type Element } from '@lived
 import { EditorContext } from '@/app/design/[id]/EditorContext';
 import { QuickMoreColours } from '@/components/canvas/QuickMoreColours';
 import { RichTextToolbar } from '@/components/canvas/RichTextToolbar';
+import { CanvasSurfaceProvider } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { standardGroup } from './colour-options';
 
 // docs/specs/004-interface-design/colour-picker.md "Reading on its ground": every picker that colours
@@ -111,6 +112,37 @@ describe('rich-text Text colour', () => {
     expect(document.activeElement?.getAttribute('aria-label')).not.toBe('Text colour');
     expect(hint()!.childElementCount).toBe(0);
     expect(document.querySelector('[data-contrast-reads]')!.textContent).toContain('Easy to read');
+  });
+
+  it('judges the stored element on a dark canvas, not the light ink it is drawn in', () => {
+    // Words with no colour of their own: the editor's element is projected for the dark canvas, its text
+    // drawn in light ink, while the page exports white with the dark default ink.
+    const plain = text('plain');
+    const projected = { ...plain, textColor: '#ffffff' } as BoxedElement;
+    const tab = { elements: [plain] as Element[], pages: [PAGE] };
+    render(
+      <EditorContext.Provider value={{ activeTab: tab } as never}>
+        <CanvasSurfaceProvider surface="dark">
+          <RichTextToolbar
+            active={{ color: '#ffffff' } as never}
+            alignX="left"
+            alignY="top"
+            onToggle={vi.fn()}
+            onApplyList={vi.fn()}
+            onApplyHeading={vi.fn()}
+            listStyle="none"
+            onColor={vi.fn()}
+            onSetAlign={vi.fn()}
+            element={projected}
+          />
+        </CanvasSurfaceProvider>
+      </EditorContext.Provider>,
+    );
+    open();
+    expect(hint()!.childElementCount).toBe(0);
+    expect(document.querySelector('[data-contrast-reads]')!.textContent).toContain(
+      'Easy to read on the exported page',
+    );
   });
 
   it('judges nothing without an element', () => {
