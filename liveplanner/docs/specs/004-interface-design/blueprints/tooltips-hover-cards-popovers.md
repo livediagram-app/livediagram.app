@@ -100,7 +100,7 @@ which, for a tooltip or a preview, stamps that kind's warm-up clock.
   (`PREVIEW_OPEN_DELAY_MS`) unless warm.
 - **I3:** keyboard-visible focus opens either hint in the same task; mouse focus opens nothing.
 - **I4:** Escape never calls `stopPropagation` or `preventDefault`.
-- **I5:** a hint never mounts anything into the trigger's layout; its surface is portalled to `document.body`.
+- **I5:** a hint never mounts anything into the trigger's layout; its surface is portalled to the `body` of the trigger's own document (`ownerDocument`) and placed against that document's window (`hintHost` in `HintSurface.tsx`), so a trigger in a Document Picture-in-Picture window (livehuddle's mini view) draws its hint there, never in the tab that opened it (Work Tracker 1109); a trigger in the page portals to `document.body` as before. Escape is heard in that document too.
 - **I6:** a touch tap (no long press) never opens a hint and never has its click suppressed.
 - **I7:** a tooltip never opens from touch (long press included), never opens while a pointer button is held
   (`buttons !== 0` on enter), and its surface is `pointer-events: none`, so it never takes a press; hover cards and
