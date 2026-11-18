@@ -3,6 +3,7 @@ import { renderHook } from '@testing-library/react';
 import type { DragEvent as ReactDragEvent } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { LIBRARY_SHAPE_DND_MIME } from '@/lib/shape-library-dnd';
+import { LIBRARY_ITEM_DND_MIME } from '@liveworkspace/workbench/lib/library/library-dnd';
 import { usePaletteDrop } from './usePaletteDrop';
 
 // A file dropped on the canvas (docs/specs/020-import-export/excalidraw-import-export.md "Paste"):
@@ -159,5 +160,56 @@ describe('a drag a panel inside the canvas already took', () => {
     const h = setup();
     h.onDrop(panelDrag());
     expect(h.onDropFile).not.toHaveBeenCalled();
+  });
+});
+
+// A Library tile dropped on the canvas (liveworkspace/docs/specs/006-media/libraries.md "Placing: a click or a drag",
+// Work Tracker 1128): its id handed over with the canvas point it was released at.
+describe('dropping a Library item on the canvas', () => {
+  const libraryDrag = (data: string) =>
+    ({
+      target: document.createElement('div'),
+      clientX: 300,
+      clientY: 250,
+      preventDefault: vi.fn(),
+      dataTransfer: {
+        files: [],
+        types: [LIBRARY_ITEM_DND_MIME],
+        getData: (type: string) => (type === LIBRARY_ITEM_DND_MIME ? data : ''),
+        dropEffect: 'none',
+      },
+    }) as unknown as ReactDragEvent<HTMLElement>;
+  const hook = (onDropLibraryItem?: (id: string, at: { x: number; y: number }) => void) => {
+    const wrapper = document.createElement('div');
+    wrapper.getBoundingClientRect = () => ({ left: 100, top: 50 }) as DOMRect;
+    return renderHook(() =>
+      usePaletteDrop({
+        viewportZoom: 2,
+        wrapperRef: { current: wrapper },
+        ...(onDropLibraryItem ? { onDropLibraryItem } : {}),
+      }),
+    ).result.current;
+  };
+
+  it('accepts the drag and hands the item over at its canvas point', () => {
+    const onDropLibraryItem = vi.fn();
+    const h = hook(onDropLibraryItem);
+    const over = libraryDrag(JSON.stringify({ id: 'item_1' }));
+    h.onDragOver(over);
+    expect(over.dataTransfer.dropEffect).toBe('copy');
+    const drop = libraryDrag(JSON.stringify({ id: 'item_1' }));
+    h.onDrop(drop);
+    expect(drop.preventDefault).toHaveBeenCalled();
+    expect(onDropLibraryItem).toHaveBeenCalledWith('item_1', { x: 100, y: 100 });
+  });
+
+  it('ignores a malformed payload, and takes nothing where nothing can be placed', () => {
+    const onDropLibraryItem = vi.fn();
+    hook(onDropLibraryItem).onDrop(libraryDrag('not json'));
+    expect(onDropLibraryItem).not.toHaveBeenCalled();
+    const h = hook();
+    const over = libraryDrag(JSON.stringify({ id: 'item_1' }));
+    h.onDragOver(over);
+    expect(over.preventDefault).not.toHaveBeenCalled();
   });
 });

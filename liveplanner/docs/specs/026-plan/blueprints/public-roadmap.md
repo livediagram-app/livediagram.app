@@ -48,8 +48,8 @@ the public read and vote, the vote field and its sort, the editor's Publish as R
   (`roadmapScopeFor`), `roadmap-defaults.ts` (`defaultRoadmapSettings`, `TRIAGE_NAMES`), `RoadmapContext.tsx`,
   `RoadmapHost.tsx` (the door; the dialog loads on first open), `RoadmapDialog.tsx`, `RoadmapSettingsForm.tsx`,
   `roadmap-tools-item.tsx` (the Tools row, `useRoadmapToolsItem`). `RoadmapHost` takes the plan's `itemTypes`
-  (`ItemTypesSlice`, from `ctx.plan.context`) and hands it to the dialog as `cardTypes` for Add Votes; `namesOf` joins
-  type names.
+  (`ItemTypesSlice`, from `ctx.plan.context`) and hands it to the dialog as `cardTypes`, which it changes to add Votes
+  to a published roadmap's types (an effect, each type tried once per opening); `namesOf` joins type names.
 - `packages/items/src/card-display.ts`: `typeShowsVotes(type)` (the built-in Votes in its fields and its Detailed
   layout), `withVotesShown(type)` (the field added, then placed last in the Detailed Footer when the layout leaves it
   out). The built-in Project type carries `votes` (`item-types.ts`) and its Detailed default places it after

@@ -49,6 +49,7 @@ import type { useContextMenuScaffold } from '@liveworkspace/workbench/components
 import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { inkSwatch, shownColour } from '@/components/palette/ink-row';
 import { useTextContrast } from '@/hooks/ui/useTextContrast';
+import { useMemo } from 'react';
 
 type Scaffold = ReturnType<typeof useContextMenuScaffold>;
 
@@ -89,7 +90,8 @@ export function ElementColourBorderSections({
   // shape.
   const surface = useCanvasSurface();
   // Whether the text reads where it sits, judged only while the Text row's picker is open.
-  const textContrast = useTextContrast(target, colorProps('text').open);
+  const targets = useMemo(() => [target], [target]);
+  const textContrast = useTextContrast(targets, colorProps('text').open);
   const finishSrc = supportsFinish(target) ? target : undefined;
   const borderStrokeVal: BorderStroke =
     (target as { strokeWidth?: BorderStroke }).strokeWidth ??

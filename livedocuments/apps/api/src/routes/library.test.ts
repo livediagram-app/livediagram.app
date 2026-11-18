@@ -4,6 +4,7 @@ import { makeTestRouteContext } from './test-route-context';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { mediaServiceFor, type TestMediaService } from '../test-media-service';
 import { clearMediaOwnersForTests } from '../media';
+import { ACCOUNTS_ON, stubAccounts } from '../test-accounts';
 import { handleLibrary } from './library';
 
 // livedocuments's door onto the Library (liveworkspace/docs/specs/006-media/libraries.md "Each app's door"), over the
@@ -134,6 +135,56 @@ describe('/api/library', () => {
     const listed = await list();
     expect(listed.items.map((i) => i.title)).toEqual(['Payments']);
     expect(listed.hidden).toBe(1);
+  });
+
+  // Work Tracker 1128: a team joined since the token was minted showed up to 15 minutes late.
+  it('lists a team joined a moment ago, read from accounts, and lets its member save there', async () => {
+    const accounts = stubAccounts();
+    accounts.teams.set('team_new', [
+      {
+        id: 'm-ada',
+        userId: 'user_ada',
+        email: 'ada@x.test',
+        name: 'ada',
+        role: 'member',
+        status: 'joined',
+      },
+    ]);
+    db = sqliteD1(ACCOUNTS_ON);
+    media = mediaServiceFor(db.env, { passOn: true });
+    // The token's claim names no team yet.
+    const listed = await list({ teams: [] });
+    expect(listed.teams).toEqual([{ id: 'team_new', name: 'Team', role: 'member' }]);
+    const saved = await call(
+      'POST',
+      '/api/library',
+      { teams: [] },
+      { ...SAVE, scope: 'team', teamId: 'team_new' },
+    );
+    expect(saved.status).toBe(201);
+    // Someone accounts doesn't put in the team gets nothing of it, whatever they send.
+    const other = await call(
+      'POST',
+      '/api/library',
+      { owner: 'user_bo', teams: [] },
+      { ...SAVE, scope: 'team', teamId: 'team_new' },
+    );
+    expect(other.status).toBe(404);
+    expect((await list({ owner: 'user_bo', teams: [] })).teams).toEqual([]);
+  });
+
+  it('draws a saved picture from the copy the save sent', async () => {
+    const image = { id: 'p', type: 'image', imageId: 'img_1', x: 0, y: 0, width: 40, height: 30 };
+    const picture = 'data:image/jpeg;base64,QUJD';
+    const saved = await call(
+      'POST',
+      '/api/library',
+      {},
+      { ...SAVE, elements: [image], width: 40, height: 30, pictures: { img_1: picture } },
+    );
+    expect(saved.status).toBe(201);
+    const { items } = await list();
+    expect(items[0]!.preview).toContain(picture);
   });
 
   it('refuses elements livedocuments doesn’t keep, and an API token', async () => {

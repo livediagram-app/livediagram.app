@@ -135,6 +135,29 @@ The index (`forwardToIndex`, `INDEX_ORIGIN`), Drive (`forwardToDrive`) and previ
 own forwards in the same file, each dropping the app's cookies and carrying the visitor's address. The index's also
 carries the router's secret; Drive's and previews' never do (they count no address), and drop any copy the caller sent.
 
+### Which Worker a forward reaches
+
+A router reaches liveworkspace's Workers over service bindings (`WorkspaceBindings` in `workspace-proxy.ts`), declared
+in each router's `wrangler.toml` at the top level and again, `-staging`, under `[env.staging]`. `[env.local]` declares
+none.
+
+| Binding               | Production Worker         | Staging Worker                    | Carries                                                                     |
+| --------------------- | ------------------------- | --------------------------------- | --------------------------------------------------------------------------- |
+| `WORKSPACE_SITE`      | `liveworkspace-site`      | `liveworkspace-site-staging`      | the Explorer, the Community page, the sign-in pages, `/_liveworkspace`      |
+| `WORKSPACE_ACCOUNTS`  | `liveworkspace-accounts`  | `liveworkspace-accounts-staging`  | a workspace route whose target is under `/api/auth` or `/api/account`       |
+| `WORKSPACE_INDEX`     | `liveworkspace-index`     | `liveworkspace-index-staging`     | `/api/index/*` (`forwardToIndex`)                                           |
+| `WORKSPACE_DRIVE`     | `liveworkspace-drive`     | `liveworkspace-drive-staging`     | `/api/drive/*` (`forwardToDrive`)                                           |
+| `WORKSPACE_MEDIA`     | `liveworkspace-media`     | `liveworkspace-media-staging`     | previews and the share doors (`routeToPreviews`), `/oembed`'s card          |
+| `WORKSPACE_COMMUNITY` | `liveworkspace-community` | `liveworkspace-community-staging` | the Community page's post head and sitemap reads (`routeCommunity`'s fetch) |
+
+`routeToWorkspace` picks the binding by the target path, as the zone's routes would (`workspaceBindingFor`: accounts
+for `/api/auth` and `/api/account`, the site otherwise). `viaBinding(binding)` gives the forward its fetch: the
+binding's when there is one, else the public route. The request is unchanged either way: the URL (so the host the
+Worker sees) is the target on `WORKSPACE_ORIGIN` or the service's origin, with the same headers and body, so
+`X-Forwarded-Host`, the visitor's address and the proxy secret arrive as over the public route. `forwardOr502`'s
+deadline applies to both. A binding that throws is answered `502`, never retried over the public route (a request's
+body can be read once, and a write must not go twice).
+
 ## Interfaces and contracts
 
 The tables below are read from each `wrangler.toml`, the root `package.json`, `apps/site/next.config.ts` and
@@ -242,7 +265,8 @@ env var:
 The visitor's address travels as `X-Liveworkspace-Client-IP` (`WORKSPACE_CLIENT_IP_HEADER`), set from
 `CF-Connecting-IP`, never from what the caller sent. `workspace-proxy.test.ts` holds all four routers to this.
 
-Every forward goes through `forwardOr502`: `502` (`no-store`) when the origin can't be reached, and `504` (`no-store`)
+Every forward goes through `forwardOr502`, over the target's service binding when the router has one ("Which Worker a
+forward reaches"): `502` (`no-store`) when the origin can't be reached, and `504` (`no-store`)
 when its headers haven't come back within `FORWARD_DEADLINE_MS` (30 s). The deadline is the request's own timer
 (`forwardDeadlineFor`), cleared once the headers arrive, so a streaming body is never cut; it is skipped for an
 `Upgrade`, a body over `FORWARD_UPLOAD_BYTES` (1 MiB) and a loopback origin (a local stack). `forward-or-502.test.ts`

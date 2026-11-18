@@ -22,49 +22,52 @@ const MUTED = '#64748b';
 const ROOT = '#e11d48';
 const ROOT_CAUSES = new Set(['Orders batched daily, not hourly', 'Courier cut-off is 3pm']);
 
-export function buildFishbone(cx: number, cy: number): Element[] {
-  type Bone = { label: string; fill: string; ink: string; causes: [string, string] };
-  // Columns left to right; the first three bones sit above the spine, the
-  // last three below, each column pairing an above and a below bone.
-  const bones: Bone[] = [
-    {
-      label: 'People',
-      fill: '#ffe4e6',
-      ink: '#be123c',
-      causes: ['New packers not trained on scanners', 'Peak days run understaffed'],
-    },
-    {
-      label: 'Process',
-      fill: '#fef3c7',
-      ink: '#b45309',
-      causes: ['Orders batched daily, not hourly', 'Addresses checked by hand'],
-    },
-    {
-      label: 'Tools',
-      fill: '#dbeafe',
-      ink: '#1d4ed8',
-      causes: ['Label printer jams at volume', 'Stock system slows after 4pm'],
-    },
-    {
-      label: 'Materials',
-      fill: '#dcfce7',
-      ink: '#15803d',
-      causes: ['Common box sizes run out', 'Supplier sends mixed SKUs'],
-    },
-    {
-      label: 'Measurement',
-      fill: '#ede9fe',
-      ink: '#6d28d9',
-      causes: ['Clock starts at payment, not order', 'No alert when an SLA slips'],
-    },
-    {
-      label: 'Environment',
-      fill: '#e2e8f0',
-      ink: '#334155',
-      causes: ['Pick routes cross the whole floor', 'Courier cut-off is 3pm'],
-    },
-  ];
+type Bone = { label: string; fill: string; ink: string; causes: [string, string] };
+// Columns left to right; the first three bones sit above the spine, the
+// last three below, each column pairing an above and a below bone.
+const BONES: Bone[] = [
+  {
+    label: 'People',
+    fill: '#ffe4e6',
+    ink: '#be123c',
+    causes: ['New packers not trained on scanners', 'Peak days run understaffed'],
+  },
+  {
+    label: 'Process',
+    fill: '#fef3c7',
+    ink: '#b45309',
+    causes: ['Orders batched daily, not hourly', 'Addresses checked by hand'],
+  },
+  {
+    label: 'Tools',
+    fill: '#dbeafe',
+    ink: '#1d4ed8',
+    causes: ['Label printer jams at volume', 'Stock system slows after 4pm'],
+  },
+  {
+    label: 'Materials',
+    fill: '#dcfce7',
+    ink: '#15803d',
+    causes: ['Common box sizes run out', 'Supplier sends mixed SKUs'],
+  },
+  {
+    label: 'Measurement',
+    fill: '#ede9fe',
+    ink: '#6d28d9',
+    causes: ['Clock starts at payment, not order', 'No alert when an SLA slips'],
+  },
+  {
+    label: 'Environment',
+    fill: '#e2e8f0',
+    ink: '#334155',
+    causes: ['Pick routes cross the whole floor', 'Courier cut-off is 3pm'],
+  },
+];
 
+// The causes are the worked example's sample copy: Clear Example Content empties them (template-example-text.ts).
+export const FISHBONE_SAMPLE_COPY: readonly string[] = BONES.flatMap((bone) => bone.causes);
+
+export function buildFishbone(cx: number, cy: number): Element[] {
   // Geometry. Bones meet the spine at three evenly spaced joints; each bone
   // rises (or falls) boneH over boneDX, a consistent 60° slant.
   const boneH = 300;
@@ -108,7 +111,7 @@ export function buildFishbone(cx: number, cy: number): Element[] {
     });
   }
 
-  bones.forEach((b, i) => {
+  BONES.forEach((b, i) => {
     const above = i < 3;
     const col = i % 3;
     const jointX = ox + firstJoint + col * jointGap;

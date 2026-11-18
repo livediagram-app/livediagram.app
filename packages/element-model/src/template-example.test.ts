@@ -6,9 +6,11 @@ import {
   keepTabExamples,
   exampleValuesOf,
   hasUntouchedExamples,
+  isSampleCopy,
   isUntouchedExample,
   keepTemplateExamples,
   markTemplateExamples,
+  sampleCopyNamed,
   TEMPLATE_EXAMPLE_FIELD,
   untouchedExampleCount,
 } from './template-example';
@@ -46,7 +48,7 @@ const chart = (extra: Partial<El>): El => ({
 });
 
 describe('exampleValuesOf', () => {
-  it('reads a sticky, a checklist, a table body and a chart, and nothing else', () => {
+  it("reads a sticky, a text's words, a checklist, a table body and a chart, and nothing else", () => {
     expect(exampleValuesOf(sticky('Ship it'))).toContain('Ship it');
     expect(exampleValuesOf(sticky('  '))).toBeNull();
     expect(exampleValuesOf({ id: 's', type: 'sticky' })).toBeNull();
@@ -61,7 +63,8 @@ describe('exampleValuesOf', () => {
     expect(exampleValuesOf(chart({ pieSlices: [{ label: 'A', value: 0 }] }))).toBeNull();
     expect(exampleValuesOf(chart({ lineSeries: [{ name: 'S', values: [0] }] }))).toBeNull();
     expect(exampleValuesOf({ id: 'b', type: 'shape', shape: 'rectangle', label: 'Do' })).toBeNull();
-    expect(exampleValuesOf({ id: 'x', type: 'text', label: 'Title' })).toBeNull();
+    expect(exampleValuesOf({ id: 'x', type: 'text', label: 'Some words' })).toContain('Some words');
+    expect(exampleValuesOf({ id: 'x', type: 'text', label: ' ' })).toBeNull();
     expect(exampleValuesOf({ id: 'a', type: 'arrow', label: 'yes' })).toBeNull();
   });
 
@@ -77,12 +80,110 @@ describe('exampleValuesOf', () => {
   });
 });
 
+const text = (label: string, extra: Partial<El> = {}): El => ({
+  id: 'x',
+  type: 'text',
+  x: 0,
+  y: 0,
+  width: 300,
+  height: 40,
+  label,
+  ...extra,
+});
+
+describe('isSampleCopy', () => {
+  it('is body copy: plain words at a body size, two or more of them', () => {
+    expect(isSampleCopy(text('Sign in to Harbour'))).toBe(true);
+    expect(isSampleCopy(text('8 min · Saved by 940 people'))).toBe(true);
+    expect(isSampleCopy(text('Line one\nline two'))).toBe(true);
+    expect(isSampleCopy(text('Café olé'))).toBe(true);
+    expect(isSampleCopy(text('A body line', { textSize: 22, textScale: 1.5 }))).toBe(true);
+    expect(isSampleCopy(text('A body line', { textSize: 48 }))).toBe(true);
+  });
+
+  it('is never a title, a heading, a wordmark, display type or a lone word or figure', () => {
+    expect(isSampleCopy(text('Our Year in Review', { textBold: true }))).toBe(false);
+    expect(isSampleCopy(text('Our Year in Review', { fontWeight: 700 }))).toBe(false);
+    expect(isSampleCopy(text('Light for spaces', { fontWeight: 500 }))).toBe(false);
+    expect(
+      isSampleCopy(
+        text('Two runs', {
+          richText: [
+            { text: 'Two ', bold: true },
+            { text: 'runs', bold: true },
+          ],
+        }),
+      ),
+    ).toBe(false);
+    expect(
+      isSampleCopy(
+        text('Two runs', { richText: [{ text: 'Two ', bold: true }, { text: 'runs' }] }),
+      ),
+    ).toBe(true);
+    expect(isSampleCopy(text('Light for spaces', { letterSpacing: 0.1 }))).toBe(false);
+    expect(isSampleCopy(text('Light for spaces', { textCase: 'upper' }))).toBe(false);
+    expect(isSampleCopy(text('Light for spaces', { textArc: 90 }))).toBe(false);
+    expect(isSampleCopy(text('Night Market tonight', { textSize: 48, textScale: 2.4 }))).toBe(
+      false,
+    );
+    expect(isSampleCopy(text('Night Market tonight', { textSize: 'lg', textScale: 3 }))).toBe(
+      false,
+    );
+    expect(isSampleCopy(text('Pricing'))).toBe(false);
+    expect(isSampleCopy(text('2 / 6'))).toBe(false);
+    expect(isSampleCopy(text('$48.00'))).toBe(false);
+    expect(isSampleCopy(text('Word 42'))).toBe(false);
+    expect(isSampleCopy(text(''))).toBe(false);
+    const unlabelled: El = { id: 'x', type: 'text' };
+    expect(isSampleCopy(unlabelled)).toBe(false);
+    expect(isSampleCopy(sticky('Two words'))).toBe(false);
+  });
+
+  it('reads a very long label in one pass, within budget', () => {
+    const spaces = `a${' '.repeat(50_000)}`;
+    const digits = '1 '.repeat(50_000);
+    expect(cpuMsOf(() => isSampleCopy(text(spaces)))).toBeLessThan(100);
+    expect(cpuMsOf(() => isSampleCopy(text(digits)))).toBeLessThan(100);
+    expect(isSampleCopy(text(`${spaces}b`))).toBe(true);
+  });
+});
+
+describe('marking a large page of body copy', () => {
+  it('reads and marks 5,000 texts within budget', () => {
+    const texts = Array.from({ length: 5000 }, (_, i) =>
+      text(`Sample sentence number ${i} for a page`, { id: `t${i}`, textSize: 22 }),
+    );
+    expect(cpuMsOf(() => markTemplateExamples(texts, isSampleCopy))).toBeLessThan(400);
+  });
+});
+
+describe('sampleCopyNamed', () => {
+  it('names the texts holding one of its words, and nothing else', () => {
+    const rule = sampleCopyNamed(['Peak days run understaffed']);
+    expect(rule(text('Peak days run understaffed'))).toBe(true);
+    expect(rule(text('The problem'))).toBe(false);
+    expect(rule(sticky('Peak days run understaffed'))).toBe(false);
+    expect(rule({ type: 'text' })).toBe(false);
+  });
+});
+
 describe('markTemplateExamples', () => {
   it('marks only what holds example values, and keeps the rest the same objects', () => {
     const title = { id: 'x', type: 'text', label: 'Title' };
     const [marked, plain] = markTemplateExamples<El>([sticky('Ship it'), title]);
     expect(typeof marked![TEMPLATE_EXAMPLE_FIELD]).toBe('string');
     expect(plain).toBe(title);
+  });
+
+  it("marks a free text only where the template's rule names it", () => {
+    const body = text('Sweet tomatoes and creamy beans');
+    const heading = text('How to make it', { id: 'h', textBold: true });
+    const blank = text('', { id: 'b' });
+    const [b, h, e] = markTemplateExamples<El>([body, heading, blank], isSampleCopy);
+    expect(typeof b![TEMPLATE_EXAMPLE_FIELD]).toBe('string');
+    expect(h).toBe(heading);
+    expect(e).toBe(blank);
+    expect(markTemplateExamples<El>([body])[0]).toBe(body);
   });
 });
 
@@ -187,6 +288,34 @@ describe('clearTemplateExamples', () => {
     );
     expect(cpuMsOf(() => untouchedExampleCount(many))).toBeLessThan(200);
     expect(cpuMsOf(() => clearTemplateExamples(many))).toBeLessThan(400);
+  });
+});
+
+describe('clearing sample copy', () => {
+  it("empties a marked text's words and runs, keeping its box, size and look", () => {
+    const body = text('Sweet tomatoes and creamy beans', {
+      textSize: 26,
+      textColor: '#334155',
+      richText: [{ text: 'Sweet tomatoes and creamy beans', italic: true }],
+    });
+    const [marked] = markTemplateExamples<El>([body], () => true);
+    expect(isUntouchedExample(marked!)).toBe(true);
+    const { elements, cleared } = clearTemplateExamples([marked!]);
+    expect(cleared).toBe(1);
+    const { richText: _runs, ...rest } = body;
+    expect(elements[0]).toEqual({ ...rest, label: '' });
+  });
+
+  it('never clears a text a person retyped, and leaves an old, unmarked text the same object', () => {
+    const [marked] = markTemplateExamples<El>([text('Sample words here')], () => true);
+    const retyped = { ...marked!, label: 'Our real words' };
+    const old = text('Words from before templates marked text');
+    const { elements, cleared } = clearTemplateExamples([retyped, old]);
+    expect(cleared).toBe(0);
+    expect(elements[0]!.label).toBe('Our real words');
+    expect(TEMPLATE_EXAMPLE_FIELD in elements[0]!).toBe(false);
+    expect(elements[1]).toBe(old);
+    expect(hasUntouchedExamples([old])).toBe(false);
   });
 });
 

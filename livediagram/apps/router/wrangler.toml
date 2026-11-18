@@ -37,6 +37,40 @@ service = "livediagram-api"
 binding = "HELP"
 service = "livediagram-help"
 
+# liveworkspace's Workers, reached over bindings rather than their public routes, which can stall Worker to
+# Worker (liveworkspace/docs/specs/002-architecture/blueprints/architecture.md "Which Worker a forward reaches").
+# Each name must be a deployed Worker on this account, or the deploy fails.
+
+# the Explorer, the Community page, the sign-in pages and /_liveworkspace
+[[services]]
+binding = "WORKSPACE_SITE"
+service = "liveworkspace-site"
+
+# the sign-in, account and workbench calls (/api/auth/*, /api/account/*)
+[[services]]
+binding = "WORKSPACE_ACCOUNTS"
+service = "liveworkspace-accounts"
+
+# /api/index/*
+[[services]]
+binding = "WORKSPACE_INDEX"
+service = "liveworkspace-index"
+
+# /api/drive/*
+[[services]]
+binding = "WORKSPACE_DRIVE"
+service = "liveworkspace-drive"
+
+# previews, the share doors and /oembed's card
+[[services]]
+binding = "WORKSPACE_MEDIA"
+service = "liveworkspace-media"
+
+# the Community page's head and sitemap reads
+[[services]]
+binding = "WORKSPACE_COMMUNITY"
+service = "liveworkspace-community"
+
 
 # /telemetry is not a downstream: it redirects to the liveworkspace telemetry
 # dashboard (docs/specs/017-telemetry/telemetry.md).
@@ -77,10 +111,10 @@ PREVIEWS_ORIGIN = "http://127.0.0.1:8792"
 # non-inheritable, so production's two never reach staging).
 #
 # EVERY `service` below carries the `-staging` suffix. Service bindings are
-# non-inheritable, so these four are the staging router's only downstreams,
+# non-inheritable, so these ten are the staging router's only downstreams,
 # but a suffix dropped from one of them is the worst failure this repo can
 # produce: a staging frontend writing to the PRODUCTION database, with
-# nothing in the UI to say so. Read them against the four above before
+# nothing in the UI to say so. Read them against the ten above before
 # changing anything here; `pnpm staging:check` prints the resolved binding table.
 # ---------------------------------------------------------------------------
 
@@ -108,6 +142,40 @@ service = "livediagram-api-staging"
 [[env.staging.services]]
 binding = "HELP"
 service = "livediagram-help-staging"
+
+# liveworkspace's Workers, reached over bindings rather than their public routes, which can stall Worker to
+# Worker (liveworkspace/docs/specs/002-architecture/blueprints/architecture.md "Which Worker a forward reaches").
+# Each name must be a deployed Worker on this account, or the deploy fails.
+
+# the Explorer, the Community page, the sign-in pages and /_liveworkspace
+[[env.staging.services]]
+binding = "WORKSPACE_SITE"
+service = "liveworkspace-site-staging"
+
+# the sign-in, account and workbench calls (/api/auth/*, /api/account/*)
+[[env.staging.services]]
+binding = "WORKSPACE_ACCOUNTS"
+service = "liveworkspace-accounts-staging"
+
+# /api/index/*
+[[env.staging.services]]
+binding = "WORKSPACE_INDEX"
+service = "liveworkspace-index-staging"
+
+# /api/drive/*
+[[env.staging.services]]
+binding = "WORKSPACE_DRIVE"
+service = "liveworkspace-drive-staging"
+
+# previews, the share doors and /oembed's card
+[[env.staging.services]]
+binding = "WORKSPACE_MEDIA"
+service = "liveworkspace-media-staging"
+
+# the Community page's head and sitemap reads
+[[env.staging.services]]
+binding = "WORKSPACE_COMMUNITY"
+service = "liveworkspace-community-staging"
 
 
 # Marks this router as the staging one. The worker reads it to stamp

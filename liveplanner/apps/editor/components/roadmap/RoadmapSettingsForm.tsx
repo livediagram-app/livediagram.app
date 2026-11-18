@@ -14,7 +14,7 @@ import {
   type RoadmapForm,
   type RoadmapSettings,
 } from '@liveplanner/api-schema';
-import { Button, Select, SettingsToggleRow, TextInput, lucideGlyph } from '@liveplanner/ui';
+import { Select, SettingsToggleRow, TextInput, lucideGlyph } from '@liveplanner/ui';
 import {
   lucideCalendarCheck,
   lucideCalendarClock,
@@ -29,11 +29,6 @@ import { ToggleList } from '@/components/primitives/ToggleList';
 import { formFits, toggled, withColumnToggled } from './roadmap-defaults';
 
 const DoneIcon = lucideGlyph(lucideCircleCheck, 14);
-
-/** Add Votes under the Voting toggle: offered for the chosen types whose cards would not show a vote, or said once
- *  it is done (public-roadmap.md "The settings"). */
-export type RoadmapVotesNote =
-  { kind: 'offer'; names: string; add: () => void } | { kind: 'added'; names: string };
 
 // No suggestion form, and the option that makes one when the roadmap is published.
 const NO_FORM = '';
@@ -75,7 +70,7 @@ export function RoadmapSettingsForm({
   settings,
   disabled,
   onChange,
-  votes = null,
+  votesAdded = null,
   createForm,
 }: {
   board: RoadmapBoard;
@@ -83,7 +78,9 @@ export function RoadmapSettingsForm({
   settings: RoadmapSettings;
   disabled: boolean;
   onChange: (next: RoadmapSettings) => void;
-  votes?: RoadmapVotesNote | null;
+  // The card types a published roadmap just gave Votes to, named for the line that says so (public-roadmap.md "The
+  // settings"); it is never offered.
+  votesAdded?: string | null;
   // Create a Suggestion Form, where the editor can make one: the dropdown's last option. Chosen, the form is made when
   // the roadmap is published (or at once on one already out). `hiddenColumn` is where its cards wait (null: none is
   // hidden yet, so it can't be offered).
@@ -233,33 +230,11 @@ export function RoadmapSettingsForm({
           disabled={disabled}
           onToggle={() => onChange({ ...settings, voting: !settings.voting })}
         />
-        {votes?.kind === 'offer' ? (
-          <div
-            className="mx-2 mt-1 flex flex-col gap-2.5 rounded-lg bg-slate-50 px-3 py-2.5 ring-1 ring-slate-200 sm:flex-row sm:items-center sm:justify-between sm:gap-4 dark:bg-slate-800/60 dark:ring-slate-700"
-            data-roadmap-votes-offer=""
-          >
-            <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">
-              <span className="font-medium text-slate-800 dark:text-slate-100">
-                {votes.names} cards don’t show votes yet.
-              </span>{' '}
-              Add Votes so your team sees each card’s count and can sort by it.
-            </p>
-            <Button
-              size="xs"
-              variant="secondary"
-              disabled={disabled}
-              onClick={votes.add}
-              className="shrink-0 self-start sm:self-auto"
-            >
-              Add Votes
-            </Button>
-          </div>
-        ) : null}
         <p role="status" className="mx-2 empty:hidden">
-          {votes?.kind === 'added' ? (
+          {votesAdded ? (
             <span className="mt-1 flex items-center gap-1.5 text-xs text-emerald-700 dark:text-emerald-300">
               <DoneIcon />
-              {votes.names} cards now show their votes.
+              {votesAdded} cards now show their votes.
             </span>
           ) : null}
         </p>

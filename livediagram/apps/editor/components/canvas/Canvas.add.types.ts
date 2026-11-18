@@ -52,6 +52,9 @@ export type CanvasAddProps = {
   // Any other file dropped on the canvas, at its canvas point (an Excalidraw file or export,
   // docs/specs/020-import-export/excalidraw-import-export.md "Paste"). Absent where files are refused.
   onDropFile?: (file: File, at: { x: number; y: number }) => void;
+  // A Library tile dropped on the canvas (libraries.md "Placing: a click or a drag"): placed there once the door
+  // answers. Absent where nothing can be placed.
+  onDropLibraryItem?: (id: string, at: { x: number; y: number }) => void;
   // A shape dragged from My shapes, at its canvas point (docs/specs/013-workspace/shape-libraries.md).
   // Absent where nothing can be placed.
   onDropLibraryShape?: (ref: LibraryShapeRef, at: { x: number; y: number }) => void;

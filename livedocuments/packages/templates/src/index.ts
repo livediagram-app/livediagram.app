@@ -21,3 +21,4 @@ export * from './template-tab';
 export { templateCatalogue } from './template-catalogue';
 export { withBlankPageThemed } from './blank-page-templates';
 export { templatePageKind } from './template-page-kinds';
+export { templateExampleText } from './template-example-text';

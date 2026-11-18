@@ -221,6 +221,9 @@ export type CanvasProps = {
   // Any other file dropped on the canvas, at its canvas point (an image lands there). Absent where files are
   // refused.
   onDropFile?: (file: File, at: { x: number; y: number }) => void;
+  // A Library tile dropped on the canvas (libraries.md "Placing: a click or a drag"): placed there once the door
+  // answers. Absent where nothing can be placed.
+  onDropLibraryItem?: (id: string, at: { x: number; y: number }) => void;
   // Spawn an empty image placeholder + open the picker. Optional so
   // view-role visitors / no-R2 deployments can simply omit it; the
   // Palette's Image entry hides when missing (docs/specs/009-elements/images.md).

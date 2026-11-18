@@ -31,6 +31,7 @@ import type { TextHugLabel } from './useTextHug';
 import type { TextAnimView } from './useTextAnimation';
 import { wordmarkTextStyle } from './label-style';
 import { WordmarkArcLabel } from './WordmarkArcLabel';
+import { EmptyTextPrompt } from '@liveworkspace/workbench/components/canvas/EmptyTextPrompt';
 
 export function renderLabel(
   element: BoxedElement,
@@ -69,6 +70,9 @@ export function renderLabel(
   // Told the editor's live content on every change, for a label that sizes its box without the
   // rest of `hug`: a mind node growing to fit its lines (useMindLabelFit).
   onLiveText?: (editor: HTMLElement) => void,
+  // An empty text draws its faint "Text" prompt (EmptyTextPrompt): on for an Editor only, the tab and the element not
+  // locked (docs/specs/008-canvas/canvas-and-palette.md "Text element").
+  emptyPrompt = false,
 ) {
   const isSticky = element.type === 'sticky';
   // A Shift-resized whiteboard text box draws its text scaled (docs/specs/023-draw-mode/draw-mode.md).
@@ -155,6 +159,20 @@ export function renderLabel(
         onSetAlign={onSetAlign}
         inline={inlineIcon}
         maxLength={chipLabelMax(element) ?? undefined}
+      />
+    );
+  }
+
+  // An empty text shows an Editor where its words go. The flag is checked first, so a text with words, a Viewer's
+  // canvas and every other kind pay nothing.
+  if (emptyPrompt && element.type === 'text' && !hug && label.trim() === '') {
+    return (
+      <EmptyTextPrompt
+        px={textSize === 'scale' ? labelFontPx('sm') : labelFontPx(textSize) * textScale}
+        alignX={alignX}
+        alignY={alignY}
+        padding={padding}
+        fontFamily={fontFamily}
       />
     );
   }

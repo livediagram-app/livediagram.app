@@ -215,3 +215,22 @@ describe('the Community step: the sitemap', () => {
     expect(res.headers.get('Retry-After')).toBe('3600');
   });
 });
+
+describe('the Community step: over the router binding', () => {
+  it("asks the service through the router's fetch (its binding), never the public route", async () => {
+    const { options } = makeRoute(() => {
+      throw new Error('the public route was used');
+    });
+    const asked: string[] = [];
+    const bound: CommunityRouteOptions = {
+      ...options,
+      fetch: async (input) => {
+        asked.push(new URL(input instanceof Request ? input.url : input).pathname);
+        return Response.json({ posts: [] });
+      },
+    };
+    const res = (await get('/community/sitemap.xml', bound))!;
+    expect(res.status).toBe(200);
+    expect(asked).toEqual(['/api/community/sitemap']);
+  });
+});

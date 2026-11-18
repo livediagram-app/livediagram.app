@@ -7,9 +7,11 @@ import { useState } from 'react';
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { LibraryError, type LibraryApi } from '../../lib/library/library-api';
+import { LIBRARY_ITEM_DND_MIME, readLibraryItemDrop } from '../../lib/library/library-dnd';
 import { LibraryPaletteTab } from './LibraryPaletteTab';
 import { LibraryProvider, useLibrary } from './LibraryProvider';
 import { SaveToLibraryButton } from './SaveToLibraryButton';
+import { useLibraryDrop, type LibraryItemDrop } from './useLibraryDrop';
 
 afterEach(() => {
   cleanup();
@@ -273,7 +275,139 @@ describe('folders and drags', () => {
   });
 });
 
+describe('dragging onto the canvas', () => {
+  it('gives every new item the Library’s drag, carrying its id', async () => {
+    render(<Editor api={fakeApi()} />);
+    const tile = await screen.findByRole('button', { name: 'Insert Logo from Platform' });
+    const setData = vi.fn();
+    fireEvent.dragStart(tile, { dataTransfer: { setData, effectAllowed: '' } });
+    expect(setData).toHaveBeenCalledWith(LIBRARY_ITEM_DND_MIME, JSON.stringify({ id: 'team-a' }));
+    expect(readLibraryItemDrop(setData.mock.calls[0]![1] as string)).toBe('team-a');
+  });
+
+  it('reads only a well-formed drop', () => {
+    expect(readLibraryItemDrop('')).toBeNull();
+    expect(readLibraryItemDrop('not json')).toBeNull();
+    expect(readLibraryItemDrop('null')).toBeNull();
+    expect(readLibraryItemDrop(JSON.stringify({ id: 3 }))).toBeNull();
+    expect(readLibraryItemDrop(JSON.stringify({ id: 'x'.repeat(300) }))).toBeNull();
+  });
+
+  // The canvas's drop handler, as an editor mounts it.
+  function Dropper({
+    insert,
+    onReady,
+  }: {
+    insert: (item: unknown, at: { x: number; y: number }) => boolean;
+    onReady: (drop: LibraryItemDrop | null) => void;
+  }) {
+    const drop = useLibraryDrop(insert);
+    onReady(drop);
+    return <Palette onInsert={vi.fn()} />;
+  }
+
+  it('places a dropped item where it lands once the door answers, counting it', async () => {
+    const api = fakeApi();
+    const insert = vi.fn(() => true);
+    const onPlaced = vi.fn();
+    let drop: LibraryItemDrop | null = null;
+    render(
+      <LibraryProvider api={api} onPlaced={onPlaced}>
+        <Dropper insert={insert} onReady={(d) => (drop = d)} />
+      </LibraryProvider>,
+    );
+    await screen.findByText('Logo');
+    let landed = false;
+    await act(async () => {
+      landed = await drop!('team-a', { x: 40, y: 50 });
+    });
+    expect(landed).toBe(true);
+    expect(api.place).toHaveBeenCalledWith('team-a');
+    expect(insert).toHaveBeenCalledWith(
+      { elements: [{ id: 'p' }], width: 10, height: 10 },
+      { x: 40, y: 50 },
+    );
+    expect(onPlaced).toHaveBeenCalledWith('team');
+  });
+
+  it('lands nothing when the fetch fails, says why, and ignores an item it doesn’t hold', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const api = fakeApi({
+      place: vi.fn(async () => Promise.reject(new LibraryError('not_found', 404))),
+    });
+    const insert = vi.fn(() => true);
+    const onPlaced = vi.fn();
+    let drop: LibraryItemDrop | null = null;
+    render(
+      <LibraryProvider api={api} onPlaced={onPlaced}>
+        <Dropper insert={insert} onReady={(d) => (drop = d)} />
+      </LibraryProvider>,
+    );
+    await screen.findByText('Logo');
+    await act(async () => {
+      expect(await drop!('team-a', { x: 0, y: 0 })).toBe(false);
+      expect(await drop!('nope', { x: 0, y: 0 })).toBe(false);
+    });
+    expect(insert).not.toHaveBeenCalled();
+    expect(onPlaced).not.toHaveBeenCalled();
+    expect(screen.getByRole('alert').textContent).toBe('That item is no longer in the library.');
+  });
+
+  it('takes no drop in an editor without the Library', () => {
+    let drop: LibraryItemDrop | null | undefined;
+    render(
+      <LibraryProvider api={null}>
+        <Dropper insert={vi.fn()} onReady={(d) => (drop = d)} />
+      </LibraryProvider>,
+    );
+    expect(drop).toBeNull();
+  });
+});
+
 describe('Save to Library', () => {
+  it('counts a save by where it went, and a click’s place by whose it was', async () => {
+    const api = fakeApi();
+    const onSaved = vi.fn();
+    const onPlaced = vi.fn();
+    render(
+      <LibraryProvider api={api} onSaved={onSaved} onPlaced={onPlaced}>
+        <SaveToLibraryButton draft={() => DRAFT} className="btn" />
+        <Palette onInsert={vi.fn()} />
+      </LibraryProvider>,
+    );
+    fireEvent.click(await screen.findByRole('button', { name: 'Insert My Box from Personal' }));
+    await waitFor(() => expect(onPlaced).toHaveBeenCalledWith('personal'));
+    fireEvent.click(screen.getByRole('button', { name: 'Save to Library' }));
+    await screen.findByRole('dialog');
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    });
+    expect(onSaved).toHaveBeenCalledWith('personal');
+  });
+
+  it('asks for its pictures’ copies, and saves without any it can’t make', async () => {
+    const api = fakeApi();
+    const picture = { id: 'i', type: 'image', imageId: 'img_1', width: 10, height: 10 };
+    const release = vi.fn();
+    const pictures = { url: vi.fn(async () => 'blob:one'), release };
+    render(
+      <LibraryProvider api={api} pictures={pictures}>
+        <SaveToLibraryButton draft={() => ({ ...DRAFT, elements: [picture] })} className="btn" />
+      </LibraryProvider>,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Save to Library' }));
+    await screen.findByRole('dialog');
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    });
+    // jsdom can't decode the picture, so no copy is made, the URL is still given back, and the save goes on.
+    expect(pictures.url).toHaveBeenCalledWith('img_1');
+    expect(release).toHaveBeenCalledWith('blob:one');
+    expect(api.save).toHaveBeenCalledWith(
+      expect.not.objectContaining({ pictures: expect.anything() }),
+    );
+  });
+
   it('saves the selection to the team chosen, with its name and folder', async () => {
     const api = fakeApi();
     render(<Editor api={api} />);

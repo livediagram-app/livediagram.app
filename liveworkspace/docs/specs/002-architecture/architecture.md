@@ -36,6 +36,15 @@ carry `X-Liveworkspace-Proxy-Secret`, the secret `WORKSPACE_PROXY_SECRET` the ro
 they are publicly routed, so a named address counts as the visitor's only beside it, and a request without it is
 counted by its own connection. Each router names its environment's platform with `WORKSPACE_ORIGIN`.
 
+Each router reaches those Workers over **service bindings** (`[[services]]`, never leaving the account), one per
+Worker it forwards to: `WORKSPACE_SITE` (the site's pages and assets), `WORKSPACE_ACCOUNTS` (the sign-in, account
+and workbench calls), `WORKSPACE_INDEX`, `WORKSPACE_DRIVE`, `WORKSPACE_MEDIA` (previews and a pasted link's embed)
+and `WORKSPACE_COMMUNITY` (the Community page's head and sitemap), each `-staging` under `[env.staging]`. A Worker's
+fetch to another Worker's public route can stall (2026-11-13, 2026-11-15); a binding call doesn't take that path.
+The request is the one the public route would get (the same URL, host, path, headers and body), so nothing
+downstream can tell the two apart. Without a binding (a local run, whose `[env.local]` declares none, or a fork)
+the router fetches the public route at `WORKSPACE_ORIGIN` and the other origins, as before.
+
 ## Who calls whom
 
 - **A browser** calls a service with an accounts access token or a guest token as `Authorization: Bearer`, checked
@@ -43,7 +52,8 @@ counted by its own connection. Each router names its environment's platform with
 - **An app's server** calls a service with its key for that service (`INDEX_KEY`, `MEDIA_KEY`, `COMMUNITY_KEY`,
   `TELEMETRY_KEY`), over HTTPS. Each service holds one secret per app (`<SERVICE>_KEY_<APP>`).
 - **A service calls another** over a service binding where both are platform Workers (accounts to the index,
-  telemetry and Drive; the index to Drive; Drive and media to the index; status to livediagram's router and MCP).
+  telemetry and Drive; the index to Drive; Drive and media to the index; status to livediagram's router and MCP;
+  every app's router to the site, accounts, the index, Drive, media and the Community).
 - **The index, Drive and the Community call an app back** at the app's internal routes (`/api/internal/items/…`): the
   index with the app's `INDEX_KEY` to copy and purge, Drive with the app's `DRIVE_KEY` to export and import, and the
   Community's sweep with the app's `COMMUNITY_KEY` to ask where its posts' items stand

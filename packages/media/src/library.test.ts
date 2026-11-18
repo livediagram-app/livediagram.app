@@ -1,7 +1,9 @@
 // The Library's contract (liveworkspace/docs/specs/006-media/libraries.md): its rules, each app's door (validation,
 // kinds, previews) and the internal door the old shape libraries are read through.
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import {
+  LIBRARY_PICTURES_BYTES_MAX,
   LIBRARY_PREVIEW_BYTES_MAX,
   canTidyScope,
   canUseScope,
@@ -10,6 +12,7 @@ import {
   isLibrarySide,
   legacyItemId,
   libraryImageIds,
+  libraryPreviewPictures,
   normaliseLibraryFolder,
   normaliseLibraryTitle,
   parseLegacyItemId,
@@ -71,6 +74,49 @@ describe('rules', () => {
     expect(libraryImageIds(swapped)).toEqual(['img2']);
     expect(withLibraryImageIds(els, new Map())).toEqual(els);
     expect(teamMediaOwner('t1')).toBe('team:t1');
+  });
+
+  it('keeps a save’s picture copies only for its own pictures, as still base64 images, within the budget', () => {
+    const els = [
+      { type: 'image', imageId: 'img1' },
+      { type: 'image', imageId: 'img2' },
+      { type: 'image', imageId: 'img3' },
+      { type: 'image', imageId: 'img4' },
+      { type: 'image', imageId: 'img5' },
+    ];
+    const jpeg = 'data:image/jpeg;base64,QUJD';
+    const kept = libraryPreviewPictures(
+      {
+        img1: jpeg,
+        img2: 'data:image/svg+xml;base64,QUJD',
+        img3: 'data:image/png;base64,QU!D',
+        img4: 'data:image/webp;base64,QUI=',
+        img5: 'data:image/png;base64,QUJ',
+        other: jpeg,
+      },
+      els,
+    );
+    expect([...kept.keys()]).toEqual(['img1', 'img4']);
+    expect(libraryPreviewPictures(null, els).size).toBe(0);
+    expect(libraryPreviewPictures({ img1: 3 }, els).size).toBe(0);
+    expect(libraryPreviewPictures({ img1: 'data:image/png;base64,' }, els).size).toBe(0);
+    expect(libraryPreviewPictures({ img1: 'data:image/png;base64,QQ==' }, els).size).toBe(1);
+    // Past the budget, the later pictures are left out.
+    const half = `data:image/jpeg;base64,${'A'.repeat(Math.floor(LIBRARY_PICTURES_BYTES_MAX / 2 / 4) * 4)}`;
+    expect([...libraryPreviewPictures({ img1: half, img2: half, img3: jpeg }, els).keys()]).toEqual(
+      ['img1', 'img3'],
+    );
+  });
+
+  it('reads the longest copy it takes in linear time', () => {
+    // A bad character only at the very end, so every one before it is read.
+    const body = 'A'.repeat(Math.floor((LIBRARY_PICTURES_BYTES_MAX - 30) / 4) * 4 - 1);
+    const ms = cpuMsOf(() =>
+      libraryPreviewPictures({ img1: `data:image/png;base64,${body}!` }, [
+        { type: 'image', imageId: 'img1' },
+      ]),
+    );
+    expect(ms).toBeLessThan(cpuBudgetMs(100));
   });
 
   it('round-trips an old shape library item’s id, and refuses any other', () => {
@@ -193,6 +239,21 @@ describe('an app’s door', () => {
     expect(lib.list).toHaveBeenCalledWith(member, ['shape', 'arrow']);
   });
 
+  it('asks for the actor as it is now only once a route reaches the service', async () => {
+    const lib = service();
+    const fresh: LibraryActor = {
+      owner: 'user_m',
+      teams: [...member.teams, { id: 't9', name: 'New', role: 'member' }],
+    };
+    const currentActor = vi.fn(async () => fresh);
+    await door({ library: lib as never, currentActor });
+    expect(lib.list).toHaveBeenCalledWith(fresh, ['shape', 'arrow']);
+    currentActor.mockClear();
+    expect((await door({ method: 'PATCH', path: ['x'], currentActor })).status).toBe(404);
+    expect((await door({ method: 'PUT', path: [], currentActor })).status).toBe(404);
+    expect(currentActor).not.toHaveBeenCalled();
+  });
+
   it('turns away no caller, and answers 503 without the service', async () => {
     expect((await door({ actor: null })).status).toBe(401);
     expect((await door({ library: null })).status).toBe(503);
@@ -249,6 +310,34 @@ describe('an app’s door', () => {
       expect(res.status).toBe(201);
       expect(lib.save).toHaveBeenCalledWith(member, expect.objectContaining({ preview: null }));
     }
+  });
+
+  it('draws a save’s pictures from the copies it sent', async () => {
+    const render = vi.fn(
+      (_els: readonly unknown[], href: (id: string) => string | undefined) =>
+        href('img1') ?? 'none',
+    );
+    const lib = service();
+    const elements = [{ type: 'image', imageId: 'img1' }];
+    await door({
+      method: 'POST',
+      library: lib as never,
+      kit: libraryKitOf({
+        kinds: new Set(['image']),
+        migrate: (e) => e,
+        isValid: () => true,
+        render,
+      }),
+      readBody: async () => ({
+        ...SAVE,
+        elements,
+        pictures: { img1: 'data:image/jpeg;base64,QUJD' },
+      }),
+    });
+    expect(lib.save).toHaveBeenCalledWith(
+      member,
+      expect.objectContaining({ preview: 'data:image/jpeg;base64,QUJD' }),
+    );
   });
 
   it('leaves out of a placed item what this app can’t draw', async () => {

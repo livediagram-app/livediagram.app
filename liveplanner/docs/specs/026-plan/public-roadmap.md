@@ -75,12 +75,15 @@ write fails, the dialog stays as it was and says "Couldn't save. Try again."
   board shows one type.
 - **Fields**: the allowlist below, each with its glyph and a line saying what it shows; **Title** always shows (no
   row). To begin with only **Description** is on.
-- **Voting**: on to begin with: visitors may upvote. While it is on and a chosen card type has no **Votes** field,
-  or has it but not on its card face, the dialog says so under the toggle ("Project cards don't show votes yet.",
-  naming the types) with **Add Votes**, which gives each of them the built-in Votes field and puts it in its
-  Detailed card's Footer, as one change to the plan's card types (one undo step), so the team sees each card's count
-  and can sort by it. The note goes once every chosen type carries Votes. The board's own Roadmap preset needs no
-  offer: its Project type carries Votes from the start ([items.md](items.md) "Item types").
+- **Voting**: on to begin with: visitors may upvote. **Votes is added for you, never offered**: once the roadmap is
+  published with Voting on, every chosen card type that has no **Votes** field, or has it but not on its card face,
+  gets the built-in Votes field, placed in its Detailed card's Footer, as one change to the plan's card types (one
+  undo step), so the team sees each card's count and can sort by it. It happens at **Publish Roadmap**, when a
+  published roadmap gains a type or has Voting turned back on, and when the dialog opens on a published roadmap whose
+  types lack it (one published before this rule). A line under the toggle says so once ("Project cards now show their
+  votes."). Nothing is added while the roadmap is only a draft, or with Voting off, and a type is tried once per
+  opening, so a save that does not take is not repeated. The board's own Roadmap preset needs nothing: its Project
+  type carries Votes from the start ([items.md](items.md) "Item types").
 - **Suggest an Idea**: **None**, or one of the plan's published forms whose responses become cards in a column the
   roadmap does not show. A form whose responses would land in a shown column is listed but cannot be picked, with
   "Its cards would show on the roadmap at once."; a form with no live link or one sending to a Sheet is not listed.
