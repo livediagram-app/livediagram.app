@@ -1,8 +1,9 @@
 // Who sees Email to Board (docs/specs/026-plan/email-to-board.md "Who may manage an address"): an Editor of the whole
 // plan (its owner, a team member, an Editor link with no tab), in person, on a plan saved to the server, outside an
-// embed and a workbench frame. A guest may manage, so signing in is not asked. A Participant, a Viewer, a link to one
-// tab and a plan in This Browser see no row; the api refuses them all the same (403 `email_intake_needs_editor`), so
-// this is presentation, never the rule. Pure.
+// embed and a workbench frame, signed in (an address is an account's). A guest Editor, and one on a plan in This
+// Browser, sees the row badged and gated (emailIntakeGateFor); a Participant, a Viewer and a link to one tab see no
+// row. The api refuses them all the same (403 `email_intake_needs_editor`), so this is presentation, never the rule.
+// Pure.
 import type { AccessLevel } from '@liveplanner/api-schema';
 
 /** Who is asking, about which plan: an Editor link's code rides along. */

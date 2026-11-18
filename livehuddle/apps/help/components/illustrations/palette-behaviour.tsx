@@ -86,6 +86,33 @@ function CoffeeGlyph() {
     </Lucide>
   );
 }
+/** A wine glass, the Play glyph. */
+function WineGlyph() {
+  return (
+    <Lucide>
+      <path d="M8 22h8M7 10h10M12 15v7" />
+      <path d="M12 15a5 5 0 0 0 5-5c0-2-.5-4-2-8H9c-1.5 4-2 6-2 8a5 5 0 0 0 5 5Z" />
+    </Lucide>
+  );
+}
+/** A pine tree, the Garden glyph. */
+function TreeGlyph() {
+  return (
+    <Lucide>
+      <path d="m17 14 3 3.3a1 1 0 0 1-.7 1.7H4.7a1 1 0 0 1-.7-1.7L7 14h-.3a1 1 0 0 1-.7-1.7L9 9h-.2A1 1 0 0 1 8 7.3L12 3l4 4.3a1 1 0 0 1-.8 1.7H15l3 3.3a1 1 0 0 1-.7 1.7H17Z" />
+      <path d="M12 22v-3" />
+    </Lucide>
+  );
+}
+/** A wall screen, the Meet glyph. */
+function ScreenGlyph() {
+  return (
+    <Lucide>
+      <rect x="2" y="4" width="20" height="13" rx="2" />
+      <path d="M8 21h8M12 17v4" />
+    </Lucide>
+  );
+}
 /** An arrow through a doorway, the Travel glyph. */
 function DoorGlyph() {
   return (
@@ -107,28 +134,33 @@ function AvatarGlyph() {
 
 // --- Scenes ----------------------------------------------------------------
 
-/** The meeting palette's Meet band on the strip: **Travel**, **Seats**, **Rooms** and **Perks**,
- *  one of them open (the first named in `lit`, else Travel) with its elements in the flyout under it. */
+/** The meeting elements' part of the strip, in its order: **Rooms**, **Seats**, **Perks**, **Play**, **Garden** and
+ *  **Meet**, then **Travel** set apart by a divider; one of them open (the first named in `lit`, else Travel) with its
+ *  elements in the flyout under it. */
 export function MeetingCategories({ lit = [] }: { lit?: readonly string[] }) {
   const categories: { label: string; icon: ReactNode; x: number; w: number }[] = [
-    { label: 'Travel', icon: <DoorGlyph />, x: 22, w: 66 },
-    { label: 'Seats', icon: <ArmchairGlyph />, x: 92, w: 72 },
-    { label: 'Rooms', icon: <PanelsGlyph />, x: 168, w: 66 },
-    { label: 'Perks', icon: <CoffeeGlyph />, x: 238, w: 84 },
+    { label: 'Rooms', icon: <PanelsGlyph />, x: 22, w: 54 },
+    { label: 'Seats', icon: <ArmchairGlyph />, x: 78, w: 52 },
+    { label: 'Perks', icon: <CoffeeGlyph />, x: 132, w: 52 },
+    { label: 'Play', icon: <WineGlyph />, x: 186, w: 46 },
+    { label: 'Garden', icon: <TreeGlyph />, x: 234, w: 60 },
+    { label: 'Meet', icon: <ScreenGlyph />, x: 296, w: 48 },
+    { label: 'Travel', icon: <DoorGlyph />, x: 352, w: 56 },
   ];
-  const open = categories.find((c) => lit.includes(c.label)) ?? categories[0]!;
+  const open = categories.find((c) => lit.includes(c.label)) ?? categories.at(-1)!;
   return (
     <Scene w={420} h={236} bg="plain">
-      {/* The Meet band of the strip, the open category pressed. */}
+      {/* The strip's meeting categories, the open category pressed; Travel sits apart past a divider. */}
       <rect
         x={16}
         y={10}
-        width={312}
+        width={398}
         height={32}
         rx={9}
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
+      <rect x={348} y={16} width={1} height={20} className="fill-slate-200" />
       {categories.map((c) => {
         const on = c === open;
         return (

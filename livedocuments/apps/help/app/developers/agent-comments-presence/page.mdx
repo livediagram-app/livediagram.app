@@ -106,7 +106,7 @@ curl -X POST https://www.livedocuments.app/api/documents/$DOC/tabs/$TAB/comments
   -H "Authorization: Bearer $TOKEN"
 ```
 
-- Adding and replying answer `201` with the new `comment`. A comment is at most 2,000 characters, and a reply to a resolved thread reopens it, as it does in the editor.
+- Adding and replying answer `201` with the new `comment`. A comment is at most 2,000 characters, and a reply to a resolved thread reopens it, as it does in the editor. A thread holds up to 500 comments; past that, adding answers `409 thread_full`.
 - Resolving and reopening answer `204`. Resolving a resolved thread, or reopening an open one, changes nothing.
 - `PUT …/comments/$COMMENT` with `{ "text": "…" }` changes a comment you wrote and marks it **Edited**; `DELETE …/comments/$COMMENT` deletes one. A token changes only comments an agent wrote (marked `ai`): one you typed yourself answers `403 not_ai_comment`. Removing someone else's is left to the editor.
 - Through the [MCP server](/help/account-and-data/connect-ai-mcp/) the same work is `list_threads` and `change_threads`, naming each thread by its element's ref.

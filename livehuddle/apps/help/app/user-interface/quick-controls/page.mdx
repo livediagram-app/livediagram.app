@@ -5,7 +5,7 @@ import { QuickControls } from '@/components/illustrations/user-interface';
 export const metadata = helpMetadata({
   title: 'Quick Controls',
   description:
-    'The quick controls at the end of the bottom bar gather the always-available actions: search, settings, and the dark-mode toggle.',
+    'The quick controls at the end of the bottom bar gather the always-available actions: Get Started, Tools (with Search), Settings and the dark-mode toggle.',
   path: '/help/user-interface/quick-controls/',
 });
 
@@ -18,22 +18,28 @@ export const metadata = helpMetadata({
 
 The **quick controls** sit at the right-hand end of the bottom bar, after the [tab bar](/help/user-interface/tab-bar/)'s tabs, and gather the actions you want reachable at any moment, whatever you are doing on the canvas. They stay put while the rest of the interface comes and goes with your selection, and a matching cluster appears at the bottom of the full-page [Explorer](/help/explorer/explorer-page/), so the two screens don't hide their controls in different places.
 
-<Figure caption="The quick controls at the right-hand end of the bottom bar: Search, Settings and the appearance switch.">
+<Figure caption="The quick controls at the right-hand end of the bottom bar: Tools, Settings and the appearance switch.">
   <QuickControls />
 </Figure>
 
 ## What lives here
 
-Three controls, left to right, with a fourth while a tour is on offer:
+Three controls, left to right, with **Get Started** ahead of them while there is something to show you:
 
-- **Search**: open the [search panel](/help/search-panel/) to jump to any space, tab, or element, to drop something onto the canvas, or to run a command. `⌘K` (Ctrl+K) opens it from the keyboard.
-- **Start Tour**, just left of Settings, only while a guided tour is on offer for the tab or the selected element (Start Portal Tour and so on), or **Ask Receptionist** while you walk on a tab with the Receptionist. See [The Receptionist](/help/selection-modes/avatar-mode/avatar-tour/).
+- **Get Started**, only while a tour or the Receptionist is on offer: a play button that opens a short list of what is on offer, such as **Ask Receptionist** while you walk on a tab with the Receptionist, or a **Portal Tour** while a portal is selected. Pick one to start it. See [The Receptionist](/help/selection-modes/avatar-mode/avatar-tour/).
+- **Tools**: a toolbox that opens a panel of the tools that work on the whole space, grouped under small headings. What it holds depends on what you may do here:
+  - **Search…**, to open the [search panel](/help/search-panel/) and jump to any space, tab, or element, drop something onto the canvas, or run a command. `⌘K` (Ctrl+K) opens it straight from the keyboard.
+  - **Editing Mode**, if you can edit: see the space as a Participant or a Viewer would, without leaving it.
+  - **History**, with your [Snapshots](/help/collaboration/snapshots/) in it, and **Webhooks**. Signed out, both are listed and ask you to sign in.
+
+  Choosing a tool opens it inside the panel, with a back button to the list (Search closes Tools and opens the search panel). `Escape` steps back, then closes Tools.
+
 - **Settings**: the [Settings dialog](/help/user-interface/settings/): the preferences that follow you between devices, plus the **Keyboard** category with the full [shortcut reference](/help/tips-and-tricks/keyboard-shortcuts/) and the switch that turns shortcuts off.
-- **Appearance**: click to step the [interface between Light, Dark, and System](/help/tools/dark-mode/) (System follows your device). This is the app's own chrome, not the board's theme, which lives behind the **Theme & canvas** button in the bottom-right corner.
+- **Appearance**: click to step the [interface between Light, Dark, and System](/help/tools/dark-mode/) (System follows your device). Its icon shows the mode in force, and hovering it names it. This is the app's own chrome, not the board's theme, which lives behind the **Theme & canvas** button in the bottom-right corner.
 
-The Explorer's cluster also carries a link to livehuddle's source on GitHub, on a computer.
+The Explorer's cluster holds Tools with **Search…** alone, and a link to livehuddle's source on GitHub, on a computer.
 
-On a computer each control in the editor's bar shows its name beside the icon (the appearance switch names the mode in force: Light, Dark, or System), and hovering one shows what it does. On a phone the bar is tight, so the controls are icons only.
+On a computer, Get Started, Tools and Settings show their names beside their icons (switch **Button Labels** off in **Settings › Appearance** for icons alone). On a phone the bar is tight, so the controls are icons only, and Get Started and Tools open as sheets from the bottom of the screen.
 
 Because they are fixed in the corner rather than tied to a selection, the quick controls are the dependable starting point when you are not sure where an action lives: search finds both things and commands.
 

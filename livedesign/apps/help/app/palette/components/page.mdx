@@ -22,9 +22,9 @@ The **Components** category holds ready-made web components. Instead of building
 
 ## Finding them
 
-Rest on **Components** on the palette strip, or click it, to see its three groups. **Layout** comes first, with the **Hero**, **Header** and **Banner** a page is laid out with and the **Stack** that lines blocks up. **Page Blocks** holds the **Card**, **Badge** and **Step Number** ([Cards and Callouts](/help/palette/cards-and-callouts/), [Badges and Step Numbers](/help/palette/badges-and-step-numbers/)), the **Callout**, the **Stat Row** and **Process**. **Code and Lists** holds **Code** (a syntax-highlighted code card) and the **Checklist** (tickable to-do rows). Tap one to add it, or drag it to where you want it.
+Rest on **Components** on the palette strip, or click it, to see its groups. For an Editor, **In This Design** comes first, with [your own components](#your-own-components). **Layout** follows, with the **Hero**, **Header** and **Banner** a page is laid out with, the **Stack** that lines blocks up, and the [Devices](/help/palette/devices/) row of device frames. **Page Blocks** holds the **Card**, **Badge** and **Step Number** ([Cards and Callouts](/help/palette/cards-and-callouts/), [Badges and Step Numbers](/help/palette/badges-and-step-numbers/)), the **Callout**, the **Stat Row** and **Process**. **Code and Lists** holds **Code** (a syntax-highlighted code card) and the **Checklist** (tickable to-do rows). Tap one to add it, or drag it to where you want it.
 
-On a wireframe page, Components comes first on the strip, before **Elements**. The Card, the Badge and the Checklist are in Elements there, so Components leaves them out.
+On a wireframe page, Components comes straight after **Popular**, before **Elements**. The Card, the Badge and the Checklist are in Elements there, so Components leaves them out, and it has no Devices row, since a wireframe is its device already.
 
 <Figure caption="The Components category: Layout, then Page Blocks, then Code and Lists.">
   <ComponentsCategory />
@@ -58,7 +58,7 @@ The main text (a banner's title, a callout's body, a header's brand name) is the
 
 ## Adding and removing rows
 
-A Stat row, a Process and a Header carry rows: stats, steps and links. To add one, select the component, open any of the quick-add **+** buttons around it and choose **Add Stat**, **Add Step** or **Add Link**. To remove, reorder or retype rows in one place, right-click the component and open **Tools**, then the **Stats**, **Steps** or **Links** section.
+A Stat row, a Process and a Header carry rows: stats, steps and links. To add one, select the component, open any of the quick-add **+** buttons around it and choose **Add Stat**, **Add Step** or **Add Link**. To remove, reorder or retype rows in one place, right-click the component and open its **Stats**, **Steps** or **Links** section.
 
 Each has limits, so the layout stays readable: a stat row holds 1 to 6 stats, a process 2 to 8 steps, and a header up to 6 links.
 
@@ -73,9 +73,19 @@ Each component is one element that lays itself out, so resizing changes the room
 
 ## Colours and images
 
-Components follow the tab theme when you drop them. A banner and a header paint their bar in the theme's accent and keep white text through a theme change; pick a **Background** colour in the right-click menu's **Style → Colours** section to use your own. A callout, a stat row and a process are ordinary cards that use the accent for the badge, the numbers and the step circles.
+Components follow the tab theme when you drop them. A banner and a header paint their bar in the theme's accent and keep white text through a theme change; pick a **Background** colour in the right-click menu's **Appearance**, then **Colours**, to use your own. A callout, a stat row and a process are ordinary cards that use the accent for the badge, the numbers and the step circles.
 
 Drop an icon on a header to make it the logo, or on a callout to replace its badge. To set a hero's picture, double-click the image; its caption card can be turned off (or added to any image) with **Caption Card** in the image's right-click menu, under **Image**.
+
+## Your own components
+
+Make a nav bar, a tab bar or a footer once and use it on every screen. Select the elements and choose **Make Component** from the right-click menu (`⌥⌘K`, or `Ctrl+Alt+K` on Windows and Linux). The selection becomes one **instance** of the new component, and the component joins **In This Design** at the top of this category, on every tab of the design. Press its tile to place another copy.
+
+- **Change it once, change it everywhere.** Double-click an instance, or pick **Edit Component** in its menu, to lay its parts out on the canvas and edit them with the usual tools. A bar reads "Editing" with the component's name; every copy redraws as you go, for everyone on the design. Press **Done**, or Escape with nothing selected, to finish.
+- **Change one copy only.** The instance's menu section, named after the component, lists **Overrides**: a copy's text, colours and icon, each with a reset arrow back to the component's own. **Reset Overrides** clears them all. An override survives later changes to the component.
+- **Detach** (`⌥⌘B`) turns a copy back into plain elements, leaving the component alone. **Rename** it in the same section, and **Remove from Library** takes it out of In This Design while placed copies keep drawing.
+
+Images, videos, embeds, link cards and tab windows can't go in a component yet. A component holds up to 200 elements. Only an Editor makes, places, edits or overrides components; a Participant or a Viewer sees the copies.
 
 <Tip>
   Drop a component to get the structure right, then retype the placeholder text in place. It is

@@ -4,6 +4,7 @@ import {
   PlanGanttSwimlanesScene,
   PlanVisualisationsPickerScene,
 } from '@/components/illustrations/plan-visualisations';
+import { PlanGanttClashScene } from '@/components/illustrations/plan-gantt-clash';
 
 export const metadata = helpMetadata({
   title: 'Charts of Your Cards',
@@ -72,6 +73,25 @@ Every other chart is a picture of today. The three **flow charts** show how work
 
 The flow charts need a plan saved to your account: plans kept in **This Browser** keep no history, and show **Flow Needs a Cloud Plan**. History is kept for 180 days, so no range is longer. Days run midnight to midnight UTC. A card in the Trash is never counted; an archived card still counts where it stood, so the Done band never drops when you archive finished cards.
 
+## Dependency Clashes on a Gantt Chart
+
+A Gantt chart draws an arrow from each card to the cards it blocks (their **Blocked By** links, see [Card Types](/help/plan/card-types/)). When a blocked card starts on or before the day an unfinished blocker is due, the two **clash**:
+
+- The arrow turns **amber**.
+- The blocked card's bar (or diamond) gets a small amber **!** at its left end. Hover or focus it to read the clash, such as "Starts 3 days before #4 Design is due", worst first when it has more than one blocker.
+- The card's panel says the same under that blocker in its **Blocked By** list.
+- A done blocker, or a done card, never clashes. The mark follows a bar as you drag it, so you see the clash come and go.
+
+### Move the Cards That Follow
+
+When you drag or draw a bar so that cards which follow it now clash, a message offers to put them right: "2 cards that follow #4 Design now start before it is due." Press **Move 2 Cards** to push each one later, just far enough to start the day after its latest open blocker is due, keeping its length, then on down the chain. Press **Leave Them** to keep the dates as they are.
+
+The move never shifts a card earlier, a done card, or the card you dragged, and it is one step of [Undo](/help/user-interface/undo/). It is worked out again when you press it, so a teammate's change in between is respected.
+
+<Figure caption="Design runs late: the arrow to Build turns amber, Build's mark names the clash, and the message offers to move the cards that follow.">
+  <PlanGanttClashScene />
+</Figure>
+
 ## Reorder the Gantt Rows
 
 Hover a row's name to show a six-dot grip at its left edge. Drag the grip up or down: a line marks where the row will land, and letting go puts it there for everyone. Press Escape mid-drag to leave it where it was. With a row's name focused, **Alt+↑** and **Alt+↓** move it one place. In swimlanes, a row moves only within its own lane. A new card joins at the end, in date order.
@@ -86,7 +106,7 @@ Every chart here can be one slot of a [Dashboard](/help/plan/dashboards/): press
 
 ## Who Can Do What
 
-- **Editors** change a chart's settings (a flow chart's Range among them), rename it, reorder Gantt rows, drag Gantt bars, set Card Search filters, and do everything a Participant can.
+- **Editors** change a chart's settings (a flow chart's Range among them), rename it, reorder Gantt rows, drag Gantt bars (and so get the offer to move the cards that follow), set Card Search filters, and do everything a Participant can.
 - **Participants** can open cards, move cards on the Due and Start Calendars, and add cards with the Gantt's **Add Card**. They see no cog.
 - **Viewers** see the charts live, the flow charts included, step through months and scales, and open cards to read them, but change nothing.
 
@@ -95,7 +115,7 @@ Stepping through months, picking a Gantt scale, folding a lane and maximising ar
 ## Good to Know
 
 - Exported images of a Visualisation tab, or of a Dashboard with a chart on it, draw the chart as it looks. A flow chart draws its frame and name only, since an image has no history to read. See [Exporting tabs](/help/tabs/export-tabs/#formats-for-each-kind-of-tab).
-- Archived cards and cards in the Trash are left out of every chart.
+- Archived cards and cards in the Trash are left out of every chart, except that the flow charts still count an archived card where it stood (above).
 - A **Status Breakdown** chart (a donut of cards by status) placed in the past still draws as it did, but nothing offers a new one; use **Cards by Field** grouped by **Status** instead.
 
 </ArticleLayout>

@@ -5,7 +5,7 @@ import { QuickControls } from '@/components/illustrations/user-interface';
 export const metadata = helpMetadata({
   title: 'Quick Controls',
   description:
-    'The quick controls at the end of the bottom bar gather the always-available actions: search, settings, and the dark-mode toggle.',
+    'The quick controls at the end of the bottom bar gather the always-available actions: Get Started, Tools (with Search), Settings and the appearance switch.',
   path: '/help/user-interface/quick-controls/',
 });
 
@@ -16,23 +16,32 @@ export const metadata = helpMetadata({
   categorySlug="user-interface"
 >
 
-The **quick controls** sit at the right-hand end of the bottom bar, after the [tab bar](/help/user-interface/tab-bar/)'s tabs, and gather the actions you want reachable at any moment, whatever you are doing on the canvas. They stay put while the rest of the interface comes and goes with your selection, and a matching cluster appears at the bottom of the full-page [Explorer](/help/explorer/explorer-page/), so the two screens don't hide their controls in different places.
+The **quick controls** sit at the right-hand end of the bottom bar, after the [tab bar](/help/user-interface/tab-bar/)'s tabs, and gather the actions you want reachable at any moment, whatever you are doing on the canvas. They stay put while the rest of the interface comes and goes with your selection.
 
-<Figure caption="The quick controls at the right-hand end of the bottom bar: Search, Settings and the appearance switch.">
+<Figure caption="The quick controls at the right-hand end of the bottom bar: Get Started, Tools, Settings and the appearance switch.">
   <QuickControls />
 </Figure>
 
 ## What lives here
 
-Three controls, left to right:
+Left to right:
 
-- **Search**: open the [search panel](/help/search-panel/) to jump to any design, tab, or element, to drop something onto the canvas, or to run a command. `⌘K` (Ctrl+K) opens it from the keyboard.
+- **Get Started**: shown while a guided tour is on offer, such as the tour of the kind of page you are on, or of a complex element you have selected. Press it to pick a tour and start it. Once you have taken a tour it leaves the button; **Getting Started** in [Settings](/help/user-interface/settings/#getting-started) offers it again.
+- **Tools**: one menu for the tools that work on the whole design, in groups:
+  - **Search…** opens the [search panel](/help/search-panel/) to jump to any design, tab, or element, to drop something onto the canvas, or to run a command. `⌘K` (Ctrl+K) opens it from the keyboard too.
+  - **Webhooks**, if you can manage the design's webhooks: tell [other services](/help/collaboration/webhooks/) when the design changes.
+  - **Editing Mode**, if your role lets you edit: see the design as a Participant or a Viewer would, then switch back. See [Share, Copy and Your Account](/help/user-interface/title-bar/#editing-mode).
+  - **Walkthroughs**: record a [walkthrough](/help/collaboration/walkthroughs/) of the design, or play one.
+  - **History**, unless you opened the design through a share link: [who changed what and when](/help/collaboration/history/), with the design's [snapshots](/help/collaboration/snapshots/) pinned on its timeline.
+
+  History, Webhooks and Walkthroughs need you signed in, and a design in [This Browser](/help/privacy-and-security/offline-mode/) saved to your account first: until then their rows carry a **Sign In** or **Sync Design** badge, and pressing one asks you to do that.
+
 - **Settings**: the [Settings dialog](/help/user-interface/settings/): the preferences that follow you between devices, plus the **Keyboard** category with the full [shortcut reference](/help/tips-and-tricks/keyboard-shortcuts/) and the switch that turns shortcuts off.
-- **Appearance**: click to step the [interface between Light, Dark, and System](/help/tools/dark-mode/) (System follows your device). This is the app's own chrome, not the tab's theme, which lives behind the **Theme & canvas** button in the bottom-right corner.
+- **Appearance**: click to step the [interface between Light, Dark, and System](/help/tools/dark-mode/) (System follows your device). Hover it to see which is in force. This is the app's own chrome, not the tab's theme, which lives behind the **Theme & canvas** button in the bottom-right corner.
 
-The Explorer's cluster also carries a link to livedesign's source on GitHub, on a computer.
+On a computer, Get Started, Tools and Settings show their names beside their icons (turn **Button Labels** off under **Appearance** in Settings for icons alone), and hovering a control shows what it does. On a phone the bar is tight, so the controls are icons only.
 
-On a computer each control in the editor's bar shows its name beside the icon (the appearance switch names the mode in force: Light, Dark, or System), and hovering one shows what it does. On a phone the bar is tight, so the controls are icons only.
+The full-page [Explorer](/help/explorer/explorer-page/) has its own bar at the bottom, with **Search**, **Settings** and the appearance switch.
 
 Because they are fixed in the corner rather than tied to a selection, the quick controls are the dependable starting point when you are not sure where an action lives: search finds both things and commands.
 

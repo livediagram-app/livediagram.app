@@ -6,7 +6,7 @@ import { Scene, Label, Dialog, Button } from '@liveworkspace/help-site/art/primi
 import { Switch } from '@liveworkspace/help-site/art/illustrations/settings-dialog';
 
 /** Subscribe to Calendar just after Make Calendar Link: the link with Copy Link, Google Calendar and Apple Calendar,
- *  What It Shows (Board, Only My Cards, Include Done Cards) and the amber privacy note. */
+ *  What It Shows (Card Types, Only My Cards, Include Done Cards) and the amber privacy note. */
 export function CalendarFeedDialog() {
   const W = 420;
   const H = 300;
@@ -58,25 +58,35 @@ export function CalendarFeedDialog() {
           WHAT IT SHOWS
         </Label>
         <Label x={x + 4} y={dy + 144} size={10} weight={600} tone="strong">
-          Board
+          Card Types
         </Label>
-        <rect
-          x={x + w - 110}
-          y={dy + 135}
-          width={110}
-          height={18}
-          rx={4}
-          className="fill-white stroke-slate-300"
-        />
-        <Label x={x + w - 102} y={dy + 145} size={9.5} tone="body">
-          All Boards
-        </Label>
-        <path
-          d={`M${x + w - 14} ${dy + 142}l3 3 3-3`}
-          fill="none"
-          className="stroke-slate-400"
-          strokeWidth={1.4}
-        />
+        {/* The card-type pills: All Types pressed, the plan's own types beside it. */}
+        {[
+          { label: 'All Types', px: x + 80, pw: 62, on: true },
+          { label: 'Bug', px: x + 148, pw: 40, on: false },
+          { label: 'Task', px: x + 194, pw: 44, on: false },
+        ].map((p) => (
+          <g key={p.label}>
+            <rect
+              x={p.px}
+              y={dy + 135}
+              width={p.pw}
+              height={18}
+              rx={9}
+              className={p.on ? 'fill-brand-600' : 'fill-white stroke-slate-300'}
+            />
+            <Label
+              x={p.px + p.pw / 2}
+              y={dy + 145}
+              size={9}
+              weight={600}
+              anchor="middle"
+              tone={p.on ? 'onAccent' : 'body'}
+            >
+              {p.label}
+            </Label>
+          </g>
+        ))}
         {row(dy + 162, 'Only My Cards', true)}
         {row(dy + 186, 'Include Done Cards', false)}
         {/* The privacy note. */}

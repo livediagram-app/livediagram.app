@@ -171,8 +171,8 @@ export function KeyboardEssentials() {
 }
 
 // Start a Space's rail (apps/editor/components/start/start-template-items.ts): Recommended first and open, then the
-// catalogue's categories.
-const START_RAIL = ['Recommended', 'Campus', 'Events', 'Office', 'Outdoor', 'Recreation'];
+// catalogue's categories in their alphabetical order (TEMPLATE_CATEGORIES), the first five shown.
+const START_RAIL = ['Recommended', 'Campus', 'Events', 'Games Rooms', 'Homes', 'Office'];
 // Recommended's first cards: the blank, then the Popular picks.
 const START_CARDS = ['Blank Space', 'Virtual Office', 'Team Pod', 'Coworking Space'];
 

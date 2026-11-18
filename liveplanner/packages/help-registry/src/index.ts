@@ -102,7 +102,7 @@ export const categories: Category[] = [
     title: 'Plan',
     description:
       'Run the work: boards of cards, sheets with real formulas, forms that fill a board, and dashboards drawn from it all.',
-    articleCount: 20,
+    articleCount: 21,
     kind: 'feature',
     groups: ['Getting Going', 'Boards and Cards', 'Sheets', 'Forms and Dashboards'],
   },
@@ -110,7 +110,7 @@ export const categories: Category[] = [
     slug: 'user-interface',
     title: 'User Interface',
     description:
-      'Get your bearings in the editor: the title and tab bars, quick controls, settings, themes, undo and redo, and zoom.',
+      'Get your bearings in the editor: the top corners and tab bar, quick controls, settings, themes, undo and redo, and zoom.',
     articleCount: 9,
     kind: 'feature',
   },
@@ -161,9 +161,9 @@ export const articles: Article[] = [
     slug: 'panel-layout',
     title: 'Panel Layout',
     description:
-      'Where the header, board header, bottom-right buttons and tab bar sit around your work.',
+      'Where the top corners, board header, bottom-right buttons and tab bar sit around your work.',
     keywords:
-      'ui window layout interface chrome header board header menu button bottom right buttons cluster undo redo trash new find types style tab bar phone',
+      'ui window layout interface chrome header board header menu button bottom right buttons cluster undo redo trash types board style tools top corners tab bar phone',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -188,8 +188,9 @@ export const articles: Article[] = [
     slug: 'quick-controls',
     title: 'Quick Controls',
     description:
-      'The always-available Search, Settings and appearance controls at the end of the bottom bar.',
-    keywords: 'corner buttons actions settings search bottom bar cluster appearance light dark',
+      'The always-available Tools (with Search), Settings and appearance controls at the end of the bottom bar.',
+    keywords:
+      'corner buttons actions tools toolbox search settings bottom bar cluster appearance light dark automations webhooks history walkthroughs editing mode sign in sync plan badge get started tour',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -204,10 +205,11 @@ export const articles: Article[] = [
   },
   {
     slug: 'title-bar',
-    title: 'The Title Bar',
-    description: 'Rename the plan, see who can see it, preview as a viewer, and Share or Copy.',
+    title: 'The Top Corners',
+    description:
+      'The logo and the menu at the top left, and Share or Copy and your account at the top right.',
     keywords:
-      'header top bar project name rename visibility private shared team public local only role pill editing viewing participating owner preview read only share copy make a copy account plan',
+      'title bar header top bar corners logo menu button explorer project name rename role editing mode viewing participating owner preview read only share share form copy make a copy account plan',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -423,9 +425,10 @@ export const articles: Article[] = [
   {
     slug: 'plan-sheets-images',
     title: 'Plan Items, Sheets and More',
-    description: 'API examples for Plan cards, card types, Sheets, forms, copies and themes.',
+    description:
+      'API examples for Plan cards, card types, card pictures, Sheets, forms, copies and themes.',
     keywords:
-      'items cards plan board card types sheets cells spreadsheet forms form link render svg copy themes api',
+      'items cards plan board card types sheets cells spreadsheet forms form link render svg copy themes api image images picture pictures upload upload_image cover image field gallery',
     category: 'Developers',
     categorySlug: 'developers/working-with-projects',
     parentSlug: 'working-with-projects',
@@ -500,7 +503,8 @@ export const articles: Article[] = [
     slug: 'data-privacy',
     title: 'Data Privacy',
     description: 'Where your plans live and how they are handled.',
-    keywords: 'storage stored cloudflare security where data location safe project',
+    keywords:
+      'storage stored cloudflare security where data location safe images uploads media google drive community project',
     category: 'Privacy and Security',
     categorySlug: 'privacy-and-security',
     parentSlug: 'privacy-and-security',
@@ -510,7 +514,7 @@ export const articles: Article[] = [
     title: 'Offline Mode',
     description: 'Plans kept only in this browser, and moving them to your account.',
     keywords:
-      'local only pill this browser browser storage private no sync device localstorage disconnect save location clear site data lost guest default start move to account after sign in share upload local folders new folder move to folder project',
+      'local only pill this browser browser storage private no sync device localstorage disconnect save location clear site data lost guest default start move to account after sign in share upload local folders new folder move to folder take offline sync plan to server switch project',
     category: 'Privacy and Security',
     categorySlug: 'privacy-and-security',
     parentSlug: 'privacy-and-security',
@@ -665,6 +669,17 @@ export const articles: Article[] = [
     group: 'Boards and Cards',
   },
   {
+    slug: 'configure-board',
+    title: 'Configure a Board',
+    description:
+      'Pick a suggested layout for a Board tab, then fine-tune its columns, swimlanes, sorting and cards.',
+    keywords:
+      'configure board board button cog set up setup layout layouts preset presets suggested for this board fine tune swimlanes sort cards supported cards card layout card size simple columns compact overview by person most urgent first deadlines first by card type by priority by label quick wins first biggest first starting soon newest first recently changed create form style bottom right',
+    category: 'Plan',
+    categorySlug: 'plan',
+    group: 'Boards and Cards',
+  },
+  {
     slug: 'cards',
     title: 'Cards',
     description:
@@ -791,7 +806,7 @@ export const articles: Article[] = [
     description:
       'A guided walkthrough of your own board or sheet, offered once and replayable from Settings.',
     keywords:
-      'plan tour tour walkthrough onboarding intro introduction show me around getting started guide tutorial example board example cards example sheet first time learn kanban board cards spreadsheet spreadsheets sheet sheets formulas replay rerun settings accessibility',
+      'plan tour tour walkthrough onboarding intro introduction show me around getting started guide tutorial example board example cards example sheet first time learn kanban board cards spreadsheet spreadsheets sheet sheets formulas replay rerun settings accessibility get started button',
     category: 'Plan',
     categorySlug: 'plan',
     group: 'Getting Going',
@@ -824,7 +839,7 @@ export const articles: Article[] = [
     description:
       'A spreadsheet tab: setup and templates, cells, formulas, formatting, dropdowns, checkboxes, conditional formatting, sort, filter, find, charts, card tables and CSV.',
     keywords:
-      'sheet sheets spreadsheet spreadsheets excel google sheets workbook table grid cell cells row rows column columns formula formulas function functions sum average reference references a1 range ranges number format currency percent date bold italic border borders merge merged freeze frozen sort sorting filter filtering find replace csv tsv import export download upload paste copy fill handle series autofill maximise maximize full screen restore spill setup chart charts bar line pie card table cards linked save focus fill tab templates template budget invoice expense report expenses loan calculator mortgage sales pipeline inventory stock guest list rsvp grade book habit tracker timesheet contacts tracker cell size compact roomy dropdown drop down select picklist pick list list chip chips checkbox check box tick box tickbox validation data validation rule rules conditional formatting conditional format highlight colour scale color scale heat map paint format format painter custom number format format code',
+      'sheet sheets spreadsheet spreadsheets excel google sheets workbook table grid cell cells row rows column columns formula formulas function functions sum average reference references a1 range ranges number format currency percent date bold italic border borders merge merged freeze frozen sort sorting filter filtering find replace csv tsv import export download upload paste copy fill handle series autofill maximise maximize full screen restore spill setup chart charts bar line pie card table cards linked save focus fill tab templates template budget invoice expense report expenses loan calculator mortgage sales pipeline inventory stock guest list rsvp grade book habit tracker timesheet contacts tracker cell size compact roomy dropdown drop down select picklist pick list list chip chips checkbox check box tick box tickbox validation data validation rule rules conditional formatting conditional format highlight colour scale color scale heat map paint format format painter custom number format format code link to sheet linked chart other apps livedocuments livediagram livedesign report live figures',
     category: 'Plan',
     categorySlug: 'plan',
     group: 'Sheets',
@@ -844,7 +859,7 @@ export const articles: Article[] = [
     title: 'Charts of Your Cards',
     description: 'Visualisation tabs: a Gantt chart, calendars and more, live from every card.',
     keywords:
-      'visualisation visualisations visualization chart charts graph gantt gantt chart timeline roadmap due calendar start calendar calendar cards by field workload priority by status priority matrix card search filter filters swimlanes swimlane lanes row order reorder drag to reorder sort by date chart settings cog card types group by statuses maximise maximize view restore view dashboard slot status breakdown',
+      'visualisation visualisations visualization chart charts graph gantt gantt chart timeline roadmap due calendar start calendar calendar cards by field workload priority by status priority matrix card search filter filters swimlanes swimlane lanes row order reorder drag to reorder sort by date chart settings cog card types group by statuses maximise maximize view restore view dashboard slot status breakdown dependency dependencies blocked by blocker clash clashes conflict amber warning move following cards move cards leave them schedule slip',
     category: 'Plan',
     categorySlug: 'plan',
     group: 'Forms and Dashboards',
@@ -872,7 +887,7 @@ export const articles: Article[] = [
     description:
       'Add a tab that opens a file from any liveworkspace app, among its canvases, plans, documents and designs.',
     keywords:
-      'connect connected file tab livediagram livedocuments livedesign livehuddle other app canvas design link share both ways role editor viewer participant remove connect again',
+      'connect connected file tab livediagram livedocuments livedesign livehuddle other app canvas design link share both ways role editor viewer participant remove connect again start a project kit kits software project product launch team workshop website build folder',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
@@ -1083,7 +1098,7 @@ export const articles: Article[] = [
   {
     slug: 'zen-mode',
     title: 'Zen Mode',
-    description: 'Hide the header, tab bar and corner buttons to focus on your work.',
+    description: 'Hide the corner cards, tab bar and corner buttons to focus on your work.',
     keywords: 'distraction free fullscreen hide ui focus clean minimal presentation screen share',
     category: 'Tools',
     categorySlug: 'tools',
@@ -1114,7 +1129,7 @@ export const articles: Article[] = [
     title: 'Snapshots',
     description: 'Save points for the whole plan: take one, keep five, revert to one.',
     keywords:
-      'snapshot save point restore revert undo backup checkpoint version rollback go back earlier copy',
+      'snapshot save point restore revert undo backup checkpoint version rollback go back earlier copy history timeline tools',
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },
@@ -1322,7 +1337,7 @@ export const articles: Article[] = [
     slug: 'search-projects',
     title: 'Finding Plans',
     description: 'Search your plans by name, and where to search folders and shared items.',
-    keywords: 'find lookup locate files library open diagrams project',
+    keywords: 'find lookup locate files library open plans shared team every app project',
     category: 'Search Panel',
     categorySlug: 'search-panel/the-search-panel',
     parentSlug: 'the-search-panel',

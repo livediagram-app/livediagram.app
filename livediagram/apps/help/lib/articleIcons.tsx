@@ -104,6 +104,23 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
       <Prims prims={lucideMail} />
     </Glyph>
   ),
+  // A phone with a dot on its corner: a notification arriving on the device. `mobile` is the plain phone.
+  'phone-notifications': (
+    <Glyph>
+      <rect x="4" y="3" width="11" height="18" rx="2" />
+      <path d="M8 18h3" />
+      <circle cx="18.5" cy="6.5" r="2.8" />
+    </Glyph>
+  ),
+  // An archive box with an arrow going down into it: everything, packed to take away. A single item's
+  // export is `exporting-diagrams`' tray with its arrow rising.
+  'download-your-data': (
+    <Glyph>
+      <rect x="3" y="4" width="18" height="5" rx="1" />
+      <path d="M5 9v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9" />
+      <path d="M12 11.5v6M9.5 15 12 17.5 14.5 15" />
+    </Glyph>
+  ),
   // ---- Supported devices ----
   // Three siblings, told apart by proportion: that IS the subject.
   desktop: (

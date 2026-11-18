@@ -87,6 +87,15 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <rect x="15.5" y="10" width="4" height="7" rx="0.6" />
     </Glyph>
   ),
+  // Three columns with a cog over the corner: a board being set up.
+  'configure-board': (
+    <Glyph>
+      <path d="M12 20H4.5A1.5 1.5 0 0 1 3 18.5v-14A1.5 1.5 0 0 1 4.5 3h14A1.5 1.5 0 0 1 20 4.5V11" />
+      <path d="M8.5 3v17M14.5 3v8" />
+      <circle cx="17.5" cy="17.5" r="2" />
+      <path d="M17.5 13.5v1.5M17.5 20v1.5M13.5 17.5H15M20 17.5h1.5M14.7 14.7l1 1M19.3 19.3l1 1M14.7 20.3l1-1M19.3 15.7l1-1" />
+    </Glyph>
+  ),
   // A card opened up: its title, a description line and a checklist tick.
   cards: (
     <Glyph>

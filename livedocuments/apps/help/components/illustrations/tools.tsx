@@ -4,31 +4,19 @@
 
 import { useId } from 'react';
 import { Scene, Shape, Arrow, Label } from '@liveworkspace/help-site/art/primitives';
-import { STRIP_W, Strip } from './toolbar-layout';
+import { MenuCard, Strip } from './toolbar-layout';
 
 // --- Zen mode ---------------------------------------------------------------
 
-/** The editor with full chrome (header, tab bar, palette, zoom dock) over the
+/** The editor with full chrome (menu card, palette strip, Share card, tab bar, zoom dock) over the
  *  canvas, before zen mode is turned on. */
 export function ZenBefore() {
   const grid = `grid-zenbefore-${useId().replace(/:/g, '')}`;
   return (
     <Scene w={420} h={240} bg="none">
       <rect x={0} y={0} width={420} height={240} className="fill-slate-50" />
-      {/* Header */}
-      <rect
-        x={0}
-        y={0}
-        width={420}
-        height={26}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      <Label x={14} y={14} size={11} weight={700} tone="strong">
-        livedocuments
-      </Label>
       {/* Canvas */}
-      <rect x={0} y={26} width={420} height={192} fill={`url(#${grid})`} />
+      <rect x={0} y={0} width={420} height={218} fill={`url(#${grid})`} />
       {/* Tab bar, along the bottom */}
       <rect
         x={0}
@@ -56,35 +44,45 @@ export function ZenBefore() {
       <Shape x={96} y={108} w={80} h={44} label="A" />
       <Shape x={232} y={108} w={80} h={44} accent label="B" />
       <Arrow from={[176, 130]} to={[232, 130]} />
-      {/* Palette: one horizontal strip pinned to the top centre (the selection mode, the category bar, Search) */}
-      <Strip x={(420 - STRIP_W) / 2} y={34} />
-      {/* Undo / Redo and Layers, left of the zoom dock */}
+      {/* The menu card top-left, the palette strip beside it (the selection mode, the category bar, Search), and
+          the Share and account card top-right. */}
+      <MenuCard x={8} y={8} menuOnly />
+      <Strip x={48} y={8} />
       <rect
-        x={218}
+        x={350}
+        y={8}
+        width={62}
+        height={32}
+        rx={9}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.5}
+      />
+      <rect x={355} y={13} width={34} height={22} rx={6} className="fill-brand-500" />
+      <Label x={372} y={24} size={9} weight={600} tone="onAccent" anchor="middle">
+        Share
+      </Label>
+      <circle cx={401} cy={24} r={7} className="fill-slate-200" />
+      {/* Undo / Redo, left of the zoom dock */}
+      <rect
+        x={242}
         y={186}
-        width={74}
+        width={50}
         height={24}
         rx={7}
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
       <path
-        d="M232 198 a5 5 0 1 1 3 4.5 M232 198 l-2.5 -3 M232 198 l3.5 -1.5"
+        d="M256 198 a5 5 0 1 1 3 4.5 M256 198 l-2.5 -3 M256 198 l3.5 -1.5"
         className="fill-none stroke-slate-400"
         strokeWidth={1.4}
         strokeLinecap="round"
       />
       <path
-        d="M256 198 a5 5 0 1 0 -3 4.5 M256 198 l2.5 -3 M256 198 l-3.5 -1.5"
+        d="M280 198 a5 5 0 1 0 -3 4.5 M280 198 l2.5 -3 M280 198 l-3.5 -1.5"
         className="fill-none stroke-slate-400"
         strokeWidth={1.4}
         strokeLinecap="round"
-      />
-      <path
-        d="M272 195 l8 -4 l8 4 l-8 4 Z M272 200 l8 4 l8 -4"
-        className="fill-none stroke-slate-400"
-        strokeWidth={1.3}
-        strokeLinejoin="round"
       />
       {/* Zoom dock */}
       <rect
@@ -242,8 +240,9 @@ function ChromeButton({
   );
 }
 
-/** The Appearance button in the tab bar's right-hand cluster, beside Search
- *  and Settings, and the Light → Dark → System cycle each click steps through. */
+/** The Appearance button at the end of the tab bar's right-hand cluster, after Tools
+ *  and Settings, drawn as its glyph alone (as the editor draws it), and the
+ *  Light → Dark → System cycle each click steps through. */
 export function LightDarkToggle() {
   return (
     <Scene w={420} h={210} bg="canvas">
@@ -268,9 +267,9 @@ export function LightDarkToggle() {
       <Label x={49} y={173} size={11} weight={600} anchor="middle" tone="onAccent">
         Tab 1
       </Label>
-      <ChromeButton x={190} y={159} w={66} label="Search" />
-      <ChromeButton x={262} y={159} w={70} label="Settings" />
-      <ChromeButton x={338} y={159} w={70} label="Light" glyph="sun" />
+      <ChromeButton x={226} y={159} w={66} label="Tools" />
+      <ChromeButton x={298} y={159} w={70} label="Settings" />
+      <ChromeButton x={374} y={159} w={30} label="" glyph="sun" />
       {/* The cycle each click walks through. */}
       <ChromeButton x={58} y={44} w={74} label="Light" glyph="sun" on />
       <Arrow from={[138, 57]} to={[168, 57]} tone="muted" />

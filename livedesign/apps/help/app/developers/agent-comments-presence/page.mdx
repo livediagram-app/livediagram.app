@@ -106,7 +106,7 @@ curl -X POST https://www.livedesign.app/api/designs/$DOC/tabs/$TAB/comments/$COM
   -H "Authorization: Bearer $TOKEN"
 ```
 
-- Adding and replying answer `201` with the new `comment`. A comment is at most 2,000 characters, and a reply to a resolved thread reopens it, as it does in the editor.
+- Adding and replying answer `201` with the new `comment`. A comment is at most 2,000 characters, and a thread holds at most 500 (`409 thread_full`). A reply to a resolved thread reopens it, as it does in the editor.
 - Resolving and reopening answer `204`. Resolving a resolved thread, or reopening an open one, changes nothing.
 - `PUT …/comments/$COMMENT` with `{ "text": "…" }` changes a comment you wrote and marks it **Edited**; `DELETE …/comments/$COMMENT` deletes one. A token changes only comments an agent wrote (marked `ai`): one you typed yourself answers `403 not_ai_comment`. Removing someone else's is left to the editor.
 - Through the [MCP server](/help/account-and-data/connect-ai-mcp/) the same work is `list_threads` and `change_threads`, naming each thread by its element's ref.
@@ -161,7 +161,7 @@ Presence shows in the editor as an avatar of its own, named after its owner ("We
 
 - **The status line** appears in the agent's hover card, on its row in Collaborators, and in what a screen reader announces. It never shows as text in the tab bar. Without one, the hover card says "Working on this tab".
 - **The focus** is outlined with a thin ring in the owner's colour. It never locks anything: people keep working on those elements.
-- An agent is listed in Collaborators under its tab, but it is not counted as a person, cannot be followed.
+- An agent is listed in Collaborators under its tab, but it is not counted as a person and cannot be followed.
 - Two of your tokens on one tab show as one avatar, with the status set last. A private design's presence stack, otherwise hidden, shows while your agent is on it.
 
 [Live Presence](/help/collaboration/live-presence/#agents-at-work) has what this looks like for the people working beside your agent.

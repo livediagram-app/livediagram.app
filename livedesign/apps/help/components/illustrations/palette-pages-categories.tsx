@@ -5,7 +5,7 @@
 // category dropdown on the right, then the category body. Components and
 // Devices are rows (a glyph chip, the tile's caption and its one-line blurb),
 // Components under its group headings (Layout, Page Blocks, Code and Lists); Icons is a search
-// box over a grid of category tiles. Captions and blurbs are the editor's own
+// box over its categories down the left and the open one's icons. Captions and blurbs are the editor's own
 // (palette-tile-defs.tsx, lib/icons.ts).
 
 import type { ReactNode } from 'react';
@@ -152,8 +152,8 @@ function Row({
 
 const g = { className: 'fill-none stroke-brand-600', strokeWidth: 1.4 } as const;
 
-/** The Components category as the Pages palette shows it: its Layout group first (Hero, Header, Banner and
- *  the Stack), then Page Blocks, then Code and Lists. */
+/** The Components category as the Pages palette shows it: its Layout group first (Hero, Header, Banner, the
+ *  Stack and the Devices row), then Page Blocks, then Code and Lists. */
 export function ComponentsCategory() {
   const x = PX + 12;
   const groups: [string, [string, string, ReactNode][]][] = [
@@ -179,6 +179,11 @@ export function ComponentsCategory() {
           'Stack',
           'Lines things up with even gaps',
           <path key="s" d="M-6 -3h3v6h-3zM-1.5 -3h3v6h-3zM3 -3h3v6h-3z" {...g} />,
+        ],
+        [
+          'Devices',
+          'Browser, laptop, phone and more',
+          <path key="dv" d="M-7 -5h9v7h-9zM4 -4h3.5v8h-3.5z" {...g} />,
         ],
       ],
     ],
@@ -300,8 +305,8 @@ export function DevicesCategory() {
   );
 }
 
-/** The Icons category: a search box across the whole catalogue over a grid
- *  of category tiles, each wearing its first glyph. */
+/** The Icons category: a search box across the whole catalogue (icons and stickers, where the page has stickers) over
+ *  its categories down the left and the open one's icons on the right. Category names are lib/icons.ts's. */
 export function IconsCategory() {
   const cats = [
     'Animated',
@@ -312,9 +317,16 @@ export function IconsCategory() {
     'Charts',
     'Arrows',
     'Furniture',
+    'Food & Drink',
+    'Shopping & Money',
+    'Business',
+    'Travel',
+    'Nature & Weather',
+    'Life & Health',
+    'Learning & Media',
     'UI',
   ];
-  // A tiny stand-in glyph per tile: line art in the accent.
+  // A tiny stand-in glyph per grid cell: line art in the accent.
   const glyphs: ReactNode[] = [
     <circle key="0" r={5} strokeDasharray="20 8" {...g} />,
     <path key="1" d="M-6 -4h12v3h-12zM-6 1h12v3h-12z" {...g} />,
@@ -324,17 +336,19 @@ export function IconsCategory() {
     <path key="5" d="M-6 6v-4M-2 6v-9M2 6v-6M6 6v-11" {...g} />,
     <path key="6" d="M-6 0h11M2 -3l3 3-3 3" {...g} />,
     <path key="7" d="M-6 2h12v-4h-12zM-6 2v3M6 2v3" {...g} />,
-    <g key="8">
-      <circle r={2.2} {...g} />
-      <path
-        d="M0 -6v2M0 4v2M-6 0h2M4 0h2M-4.2 -4.2l1.4 1.4M2.8 2.8l1.4 1.4M-4.2 4.2l1.4 -1.4M2.8 -2.8l1.4 -1.4"
-        {...g}
-      />
-    </g>,
   ];
   const left = PX + 14;
+  const railW = 112;
+  const rowH = 15;
+  const top = 94;
+  const gridX = left + railW + 10;
+  const cell = 34;
   return (
-    <PaletteFrame category="Icons" h={330} sceneH={354}>
+    <PaletteFrame
+      category="Icons"
+      h={top + cats.length * rowH + 2}
+      sceneH={top + cats.length * rowH + 26}
+    >
       <rect
         x={left}
         y={58}
@@ -353,27 +367,52 @@ export function IconsCategory() {
       />
       <path d={`M${left + 16} ${73} l4 4`} className="stroke-slate-400" strokeWidth={1.5} />
       <Label x={left + 26} y={71} size={10} tone="muted">
-        Search icons
+        Search icons and stickers
       </Label>
       {cats.map((c, i) => {
-        // Two to a row, short and wide, as the app lays its category tiles out.
-        const tx = left + (i % 2) * 140;
-        const ty = 94 + Math.floor(i / 2) * 50;
+        const ty = top + i * rowH;
+        const open = i === 0;
         return (
           <g key={c}>
-            <rect
-              x={tx}
-              y={ty}
-              width={132}
-              height={44}
-              rx={9}
-              className="fill-white stroke-slate-200"
-              strokeWidth={1.5}
-            />
-            <g transform={`translate(${tx + 66} ${ty + 15})`}>{glyphs[i]}</g>
-            <Label x={tx + 66} y={ty + 34} anchor="middle" size={10} weight={500} tone="body">
+            {open && (
+              <rect
+                x={left - 2}
+                y={ty - 2}
+                width={railW}
+                height={rowH - 1}
+                rx={4}
+                className="fill-brand-50"
+              />
+            )}
+            <Label
+              x={left + 4}
+              y={ty + 5.5}
+              size={9}
+              weight={open ? 600 : 500}
+              tone={open ? 'accent' : 'body'}
+            >
               {c}
             </Label>
+          </g>
+        );
+      })}
+      {Array.from({ length: 12 }, (_, i) => {
+        const cx = gridX + (i % 4) * (cell + 4);
+        const cy = top + Math.floor(i / 4) * (cell + 4);
+        return (
+          <g key={i}>
+            <rect
+              x={cx}
+              y={cy}
+              width={cell}
+              height={cell}
+              rx={7}
+              className="fill-white stroke-slate-200"
+              strokeWidth={1.2}
+            />
+            <g transform={`translate(${cx + cell / 2} ${cy + cell / 2})`}>
+              {glyphs[i % glyphs.length]}
+            </g>
           </g>
         );
       })}

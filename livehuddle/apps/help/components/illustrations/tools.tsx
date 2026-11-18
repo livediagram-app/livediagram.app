@@ -95,7 +95,7 @@ function ChromeButton({
   );
 }
 
-/** The Appearance button in the tab bar's right-hand cluster, beside Search
+/** The Appearance button, last in the tab bar's right-hand cluster after Tools
  *  and Settings, and the Light → Dark → System cycle each click steps through. */
 export function LightDarkToggle() {
   return (
@@ -121,9 +121,10 @@ export function LightDarkToggle() {
       <Label x={49} y={173} size={11} weight={600} anchor="middle" tone="onAccent">
         Tab 1
       </Label>
-      <ChromeButton x={190} y={159} w={66} label="Search" />
-      <ChromeButton x={262} y={159} w={70} label="Settings" />
-      <ChromeButton x={338} y={159} w={70} label="Light" glyph="sun" />
+      <ChromeButton x={236} y={159} w={66} label="Tools" />
+      <ChromeButton x={308} y={159} w={70} label="Settings" />
+      {/* The Appearance button itself is icon-only. */}
+      <ChromeButton x={384} y={159} w={30} label="" glyph="sun" />
       {/* The cycle each click walks through. */}
       <ChromeButton x={58} y={44} w={74} label="Light" glyph="sun" on />
       <Arrow from={[138, 57]} to={[168, 57]} tone="muted" />

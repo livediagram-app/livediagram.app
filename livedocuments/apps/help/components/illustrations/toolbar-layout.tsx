@@ -152,10 +152,10 @@ const SLOT_W = 20;
 const DIVIDER_W = 9;
 
 /** The width of the strip drawn by `Strip`. */
-export const STRIP_W = 49 + BAR.reduce((w, c) => w + (c === '|' ? DIVIDER_W : SLOT_W), 0) + 36;
+export const STRIP_W = 49 + BAR.reduce((w, c) => w + (c === '|' ? DIVIDER_W : SLOT_W), 0) + 56;
 
 /** The palette strip, top-left corner at (x, y), STRIP_W wide and 32 tall: the selection mode, the category bar (its
- *  categories as glyphs, `open` pressed with its flyout showing), and Search. */
+ *  categories as glyphs, `open` pressed with its flyout showing), the Library and Search. */
 export function Strip({ x, y, open }: { x: number; y: number; open?: string }) {
   const slots = barSlots(x);
   const end = slots.at(-1)!.left + slots.at(-1)!.w;
@@ -204,17 +204,23 @@ export function Strip({ x, y, open }: { x: number; y: number; open?: string }) {
       </Pill>
       <path d={`M${x + 43} ${y + 8}v16`} className="stroke-slate-200" strokeWidth={1} />
       {items}
-      {/* Search, last on the strip behind its own divider. */}
+      {/* The Library (its books, icon only), then Search, last on the strip behind their own divider. */}
       <path d={`M${end + 5} ${y + 8}v16`} className="stroke-slate-200" strokeWidth={1} />
+      <path
+        d={`M${end + 13} ${y + 10}v12M${end + 17} ${y + 10}v12M${end + 21} ${y + 11}l3 10.5M${end + 12} ${y + 22}h13`}
+        className="fill-none stroke-slate-500"
+        strokeWidth={1.4}
+        strokeLinecap="round"
+      />
       <circle
-        cx={end + 19}
+        cx={end + 39}
         cy={y + 15}
         r={5}
         className="fill-none stroke-slate-500"
         strokeWidth={1.6}
       />
       <path
-        d={`M${end + 23} ${y + 19} l4 4`}
+        d={`M${end + 43} ${y + 19} l4 4`}
         className="stroke-slate-500"
         strokeWidth={1.6}
         strokeLinecap="round"

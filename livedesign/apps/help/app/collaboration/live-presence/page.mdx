@@ -1,7 +1,10 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { LiveCursors, PresenceSelection } from '@liveworkspace/help-site/art/illustrations/collaboration';
+import {
+  LiveCursors,
+  PresenceSelection,
+} from '@liveworkspace/help-site/art/illustrations/collaboration';
 import { ReleaseHold } from '@liveworkspace/help-site/art/illustrations/release-hold';
 
 export const metadata = helpMetadata({
@@ -33,7 +36,7 @@ If a cursor or its name is in the way of what you want to see, move your pointer
 
 ## Moving things together
 
-When someone drags, resizes or reshapes something, you see it move as they do, with any arrows attached to it following along, and it settles where they let go. If they press Escape halfway, it simply goes back. Editors can move anything, Participants only what they added themselves, and Viewers nothing.
+When someone drags, resizes or reshapes something, you see it move as they do, with any arrows attached to it following along, and it settles where they let go. If they press Escape halfway, it simply goes back. Editors can move anything, Participants any sticky or image plus what they added themselves, and Viewers nothing.
 
 ## Who is here, and where
 
@@ -73,7 +76,7 @@ The lock clears by itself when the person clicks away, switches tab or leaves. W
   <ReleaseHold />
 </Figure>
 
-**Who can do it.** Any Editor can. Participants and Viewers can't free a hold: for them, right-clicking a locked element opens nothing.
+**Who can do it.** Any Editor can. Participants and Viewers can't free a hold: for them, right-clicking a locked element opens their usual short menu, without **Edit Text** while someone else holds it.
 
 **What the holder sees.** As the menu says: "They keep their work; it just stops being theirs to edit." Their selection is dropped, and if they were typing into the element, that editing ends too, but the element itself is not changed. A short notification tells them their hold was freed, so it doesn't look like a glitch. Nobody else in the room is told anything; the element simply stops looking locked.
 

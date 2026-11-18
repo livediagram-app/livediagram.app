@@ -70,9 +70,39 @@ Changes apply as you make them (a typed cell when you leave it); **Done** closes
 
 ## Display and colours
 
-Both charts share the pie chart's display options: in **Tools**, **Chart** places the legend (**Off**, **Top**, **Left**, **Right** or **Below**, the default) and sets its **Text Size**, and the **Animation** section offers **Grow**, **Pop**, **Spin** and **Pulse**. Hovering a bar or a point shows its label and value. **Show Values**, under the legend, prints each bar's or point's number on the chart; a column chart also names each column under it, so you can turn the legend off.
+Both charts share the pie chart's display options: in **Tools**, **Chart** places the legend (**Off**, **Top**, **Left**, **Right** or **Below**, the default) and sets its **Text Size**. Hovering a bar or a point shows its label and value. **Show Values**, under the legend, prints each bar's or point's number on the chart; a column chart also names each column under it, so you can turn the legend off.
 
-Colours default to variants of the theme, so a multi-series chart stays legible and on-brand. To recolour the whole chart at once, open **Style** and pick a palette from its **Presets**: **Vivid**, **Ocean**, **Forest**, **Sunset**, **Berry**, **Earth**, **Grey** or **Contrast**. A colour you set on one bar by hand wins over the palette. Animations freeze on export, so a still image looks right.
+Two more rows sit under Show Values:
+
+- **Show Axis** draws the value axis, with its tick values and gridlines.
+- **Right Axis**, on a line, area or scatter chart with two or more series, draws one series against a scale of its own on the right, for two measures of very different sizes (revenue and headcount, say). Pick the series, or **None** to put everything back on one scale. The series list in **Data** marks it **(right)**.
+
+To animate a chart, right-click it and open **Animation**, then **Chart**: **Grow**, **Pop**, **Spin** or **Pulse**. The **Shape** section beside it moves the whole chart instead, such as a bounce or a float.
+
+Colours default to variants of the theme, so a multi-series chart stays legible and on-brand. To recolour the whole chart at once, open **Appearance** and pick a palette from its **Presets**: **Vivid**, **Ocean**, **Forest**, **Sunset**, **Berry**, **Earth**, **Grey** or **Contrast**. A colour you set on one bar by hand wins over the palette. Animations freeze on export, so a still image looks right.
+
+## Linking to a sheet
+
+Instead of typing the numbers in, a chart can take them from a range of a [liveplanner](https://www.liveplanner.app) Sheet and keep in step with it. It stays a native chart, drawn in your theme and styled and exported like any other: only its numbers come from the sheet.
+
+<Step n={1}>
+  Right-click the chart, open **Tools**, then **Data**, and choose **Link to Sheet…** under the
+  rows.
+</Step>
+<Step n={2}>
+  Pick one of your plans, then one of its Sheets, and type the range as in a spreadsheet, such as
+  `B2:E9` (it starts filled with the sheet's filled cells). A preview shows what the chart will
+  draw.
+</Step>
+<Step n={3}>Press **Link**. The chart takes the range's values in one undo step.</Step>
+
+While the design is open, a linked chart reads its sheet again whenever the sheet changes, so an edit in liveplanner shows on the chart without you doing anything. A line below the chart, while it is hovered or selected, says where the numbers come from and how fresh they are ("Linked to Q3 Budget · updated 2 min ago").
+
+- **The Data section changes.** While linked it shows the plan, the sheet and the range in place of the rows, since the next read would overwrite a hand edit. Chart type, palette, legend, values, axis and animation stay yours to set.
+- **Update**, **Change…** and **Unlink** sit under it. Unlink keeps the last values and turns the chart back into one you edit by hand.
+- **Everyone sees the numbers.** The values are saved in the design, so someone who can't open the plan still sees the chart as last saved (the line says "saved" rather than "updated"). Exports draw the saved values too.
+- **Only an Editor** can link, update, change or unlink. A Participant or a Viewer sees the chart and its line but changes nothing.
+- If a row or column at a corner of the range is deleted, the chart keeps its values and the line says **The linked range is gone**: use **Change…** to pick it again.
 
 <Tip>
   For a single percentage rather than a series, a [progress bar or

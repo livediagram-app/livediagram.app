@@ -123,7 +123,7 @@ curl -X PUT https://www.liveplanner.app/api/projects/$DOC/item-types \
   }'
 ```
 
-Up to 32 types. A custom field's `kind` is `text`, `longtext`, `number`, `currency`, `date`, `checkbox`, `link`, `email`, `choice`, `multichoice`, `rating` or `card`, and its id starts `f-`. `"required": true` makes a field (any kind but `checkbox`) required: a new card must give it a value and no change may empty it, while a card restored or synced with its `key` is let through. `"itemTypes": null` goes back to the default types (Project, Task, Note, Idea, Action). If someone changed the types since you read them, the answer is `409 item_types_stale` with the stored catalogue and revision, to apply your change to again. This needs edit access to the whole plan.
+Up to 32 types. A custom field's `kind` is one of `text`, `longtext`, `number`, `currency`, `percent`, `duration`, `date`, `datetime`, `daterange`, `checkbox`, `link`, `pullrequest`, `email`, `phone`, `choice`, `multichoice`, `rating`, `card`, `calculated`, `person`, `labels`, `colour`, `checklist`, `image`, `comments` or `votes`, and its id starts `f-`. `"required": true` makes a field required (any kind but `checkbox`, `calculated`, `image`, `comments` and `votes`): a new card must give it a value and no change may empty it, while a card restored or synced with its `key` is let through. `"itemTypes": null` goes back to the default types (Project, Task, Note, Idea, Action). If someone changed the types since you read them, the answer is `409 item_types_stale` with the stored catalogue and revision, to apply your change to again. This needs edit access to the whole plan.
 
 The [CLI](/help/developers/cli/) (`item add`, `item set`, `item move`, `type ls`) and the MCP server's `change_items` and `change_card_types` do all of this by column and type **names**, which is easier for an agent than status ids.
 
@@ -187,6 +187,18 @@ curl -X POST https://www.liveplanner.app/api/projects/$DOC/tabs/$TAB/form \
 ```
 
 This needs edit access to the tab. To publish the form, `POST /projects/$DOC/tabs/$TAB/form-link` makes its public link; `PUT` on the same path opens or closes it while keeping the link, and `DELETE` removes the link (publishing again makes a new one). The [CLI](/help/developers/cli/#forms)'s `form` commands and the MCP server's `change_form` and `share_form` make these calls by question name, which is easier than writing the form by hand.
+
+## Card Pictures
+
+A card's **Image** field and its attachments hold pictures uploaded for the plan. Upload one with `POST /images?p=$DOC`, the picture's own bytes as the body:
+
+```bash
+curl -X POST "https://www.liveplanner.app/api/images?p=$DOC"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: image/png"   --data-binary @cover.png
+```
+
+It answers with `{ "image": { "id": …, … }, "deduped": false }`. The picture lands in your Image Gallery, and the plan shows it to everyone who can read the plan. Then write the `id` to the card's Image field, such as `"f-cover": "<id>"`, or a list of ids for a field that holds several. PNG, JPEG, WebP and GIF are taken, up to 10 MB each; anything else answers `415 unsupported_type`, and a bigger file `413 file_too_large`. Uploading needs the right to change the plan's cards, so an Editor or a Participant can, and a Viewer can't.
+
+An AI assistant does the same with `upload_image` (from a public web address or the picture itself), then places the id with `change_items`; see [Connect an AI Tool (MCP)](/help/account-and-data/connect-ai-mcp/). On the command line, it's `image add`.
 
 ## A Tab as a Picture
 

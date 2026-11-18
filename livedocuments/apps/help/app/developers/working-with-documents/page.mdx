@@ -27,7 +27,7 @@ Paths are relative to `https://www.livedocuments.app/api`. For the exact request
 
 ## List your documents
 
-A document **list** returns the documents in your personal library (documents in a team library are not included), as metadata only, not the tab contents:
+A document **list** returns the documents in your personal library, as metadata only, not the tab contents. Add `?team=all` to include every team you have joined, `q=` to search by name and `limit=` for one page of results, or `archived=1` to list your Archived documents instead:
 
 ```bash
 curl https://www.livedocuments.app/api/documents \
@@ -91,8 +91,9 @@ Other views answer other questions:
 - `view=comments` shows the open comment threads in full; add `all=1` for resolved ones too.
 - `view=show&ref=n1` prints one element with every field and its arrows both ways.
 - `view=find&q=api` lists the elements whose text contains `api`.
+- `view=pages` lists the tab's pages and articles.
 
-`view=lint` checks how the tab is drawn: boxes that overlap, arrows that cross or run behind boxes, labels too long for their box. One summary line, then one finding a line, each ending with a fix you can send as a changeset:
+`view=lint` checks how the tab is drawn: boxes that overlap, arrows that cross or run behind boxes, labels too long for their box, and text that overflows its box or prints over other text. One summary line, then one finding a line, each ending with a fix you can send as a changeset:
 
 ```text
 5 crossings · 2 behind · 0 overlaps · 1317×1196 → 3 warnings, 6 info
@@ -221,7 +222,7 @@ curl -X POST https://www.livedocuments.app/api/trash/$DOC/restore \
 
 ## Share a document
 
-Create a share link with a role of `view`, `participate` or `edit`:
+Create a share link with a role of `view`, `participate` or `edit`. Add `"tabId"` to share one tab, and `"expiry"` (`never`, the default, `week`, `month` or `sixMonths`) to make the link lapse:
 
 ```bash
 curl -X POST https://www.livedocuments.app/api/documents/$DOC/share \
@@ -232,9 +233,9 @@ curl -X POST https://www.livedocuments.app/api/documents/$DOC/share \
 The response includes the share code to build a link from. See [Sharing and Embeds](/help/collaboration/sharing/) for what the different roles allow.
 
 <Note>
-  **Send the `role` explicitly.** Omitting it does not mean "view": a body with no role mints an
-  **edit** link, which is the app's own default. An unrecognised role is rejected outright rather
-  than quietly falling back, so a typo fails loudly, but an absent one does not.
+  **Send the `role` explicitly, spelled exactly.** Omitting it does not mean "view": a body with no
+  role mints an **edit** link, which is the app's own default, and so does a role the API does not
+  recognise, such as `viewer`. Check the `role` in the answer.
 </Note>
 
 <Tip>
