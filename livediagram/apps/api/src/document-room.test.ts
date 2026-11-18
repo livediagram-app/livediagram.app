@@ -998,6 +998,24 @@ describe('DocumentRoom op-role enforcement', () => {
     expect(opsReceived(victim.ws)).toHaveLength(0);
   });
 
+  it("never relays 'service-status' from a client socket, even at edit role", () => {
+    // docs/specs/009-elements/live-status.md "A forged state": a peer could otherwise paint everyone's badges.
+    const { room } = newRoom();
+    const editor = connect(room, 'editor', 'edit');
+    const victim = connect(room, 'victim', 'view');
+    victim.ws.sent.length = 0;
+
+    sendFrame(room, editor.ws, {
+      kind: 'op',
+      op: {
+        kind: 'service-status',
+        statuses: { 'https://status.example.com/': { state: 'up', checkedAt: 1 } },
+      },
+    });
+
+    expect(opsReceived(victim.ws)).toHaveLength(0);
+  });
+
   it('drops frames over the size cap before they fan out', () => {
     const { room } = newRoom();
     const editor = connect(room, 'editor', 'edit');

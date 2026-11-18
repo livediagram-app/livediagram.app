@@ -656,6 +656,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "emailEnabled": {
         "type": "boolean"
       },
+      "liveStatusEnabled": {
+        "type": "boolean"
+      },
       "oauthIssuer": {
         "type": "string"
       }
