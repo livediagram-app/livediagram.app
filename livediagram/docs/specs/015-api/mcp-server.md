@@ -1058,10 +1058,10 @@ Every post (these reports and `Mcp·Used`) is handed to the request's
 The MCP worker reads three bindings and two out-of-band values. Bindings
 (`API` service binding, `OAUTH_KV`) are declared in `wrangler.toml`; the rest:
 
-| Name               | Where                          | Absent means                                                                                                                                                                      |
-| ------------------ | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CONSENT_BASE_URL` | `[vars]` (not secret)          | Defaults to `https://livediagram.app`, so a deployment's OAuth callers land on the hosted consent screen instead of their own. Also the host of every tool's `url` and share link |
-| `TELEMETRY_KEY`    | worker secret, **also on api** | livediagram's key on the liveworkspace telemetry service; unset, this worker sends no telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))      |
+| Name               | Where                          | Absent means                                                                                                                                                                                                                                                                                                                                             |
+| ------------------ | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CONSENT_BASE_URL` | `[vars]` (not secret)          | Required on a deployment of your own: unset, it is `https://www.livediagram.app`, so the deployment's OAuth callers land on the hosted consent screen instead of their own. Also the host of every tool's `url` and share link. Local dev (`pnpm dev`) passes `http://localhost:3100` with `--var`; production and staging set theirs in `wrangler.toml` |
+| `TELEMETRY_KEY`    | worker secret, **also on api** | livediagram's key on the liveworkspace telemetry service; unset, this worker sends no telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))                                                                                                                                                                             |
 
 `TELEMETRY_KEY` is what lets §4.12's telemetry posts reach the liveworkspace
 telemetry service directly: a Worker sends no Origin, so the key is how the

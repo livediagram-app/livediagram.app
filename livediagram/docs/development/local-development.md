@@ -49,6 +49,10 @@ Turbo spins up livediagram's seven dev servers in parallel, in its port block (3
 | `apps/api`       | `http://localhost:8687/api`                                                                        |
 | `apps/mcp`       | `http://localhost:8788` (MCP server, [MCP server](../specs/015-api/mcp-server.md); signed-in only) |
 
+Links the local workers hand out point at the local editor: the mcp's dev script passes `CONSENT_BASE_URL` and the
+api's passes `APP_BASE_URL`, both `http://localhost:3100`, so a tool's document link, the OAuth consent page and an
+email's links stay on this machine rather than livediagram.app.
+
 The telemetry dashboard is not one of them: it is liveworkspace's (`liveworkspace/apps/telemetry`, [Telemetry](../specs/017-telemetry/telemetry.md)), and `localhost:3100/telemetry` redirects to the local service. To see events locally, run that service and set `NEXT_PUBLIC_TELEMETRY_URL`, `TELEMETRY_URL` and `TELEMETRY_KEY` as the `.env.example` files describe.
 
 The `router` dev server (`wrangler dev --env local`, port 3100) gives you the production URL shape locally: `/` is marketing, `/new` and `/document/*` are the editor, plus `/telemetry`, `/help`, `/community`, and `/api`, with no per-app port to remember. It has no service bindings in dev; the `[env.local]` environment in `apps/router/wrangler.toml` points it at the localhost origins above and it proxies plain HTTP (see [Router app](../specs/016-platform/router-app.md)).
