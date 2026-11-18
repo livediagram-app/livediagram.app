@@ -13,6 +13,7 @@ import {
   isFlagged,
   type Item,
   type ItemPatchOf,
+  type ItemPerson,
   type PlanBoardSetup,
 } from '@liveplanner/items';
 import { CloseIcon, TrashIcon, Tooltip, lucideGlyph } from '@liveplanner/ui';
@@ -69,6 +70,9 @@ const MENU_NAMES: Record<Menu, string> = {
   labels: 'Labels',
   field: 'Set Field',
 };
+
+// The plan's AI assistants, after its people in Assign To (docs/specs/026-plan/items.md "The Assignee picker").
+const NO_ASSISTANTS: readonly ItemPerson[] = [];
 
 export function BoardSelectionBar({
   plan,
@@ -244,6 +248,7 @@ export function BoardSelectionBar({
           ) : open.menu === 'assign' ? (
             <AssignMenu
               people={plan.people}
+              assistants={plan.assistants ?? NO_ASSISTANTS}
               onPick={(p) =>
                 write(
                   assignPatches(selected, types, p),

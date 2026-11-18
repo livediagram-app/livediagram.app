@@ -57,13 +57,18 @@ export function MoveToMenu({
 
 export function AssignMenu({
   people,
+  assistants = [],
   onPick,
 }: {
   people: readonly ItemPerson[];
+  // The plan's AI assistants, after the people, each with its AI disc (docs/specs/026-plan/items.md "The Assignee
+  // picker").
+  assistants?: readonly ItemPerson[];
   onPick: (person: ItemPerson | null) => void;
 }) {
+  const everyone = [...people, ...assistants];
   const rows: OptionRow[] = [
-    ...people.map((p) => ({ id: p.id, label: p.name, icon: <PersonDisc person={p} /> })),
+    ...everyone.map((p) => ({ id: p.id, label: p.name, icon: <PersonDisc person={p} /> })),
     { id: '', label: 'Unassign' },
   ];
   return (
@@ -73,7 +78,7 @@ export function AssignMenu({
         kind="action"
         label="Assign the selected cards to"
         rows={rows}
-        onPick={(id) => onPick(id ? (people.find((p) => p.id === id) ?? null) : null)}
+        onPick={(id) => onPick(id ? (everyone.find((p) => p.id === id) ?? null) : null)}
       />
     </div>
   );
