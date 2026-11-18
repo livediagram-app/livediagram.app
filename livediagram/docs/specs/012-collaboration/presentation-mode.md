@@ -88,10 +88,10 @@ hand with the template (`template-slides-data.ts` in `@livediagram/templates`), 
   workspace frame's New document, the MCP's `create_document`) is created with the deck (`newDocumentPresentation`,
   the create's `presentation`). A presented template picked on an empty tab of a document that already exists, in the
   editor or through the MCP's `add_tab`, **appends** its slides after the deck's own, so slides someone already made
-  keep their places. The editor appends through the deck's own save (`appendSlides`); `add_tab` reads the document's
-  deck and writes it back whole (`withAppendedSlides`), which is last-write-wins like every deck edit: someone with
-  the document open who then edits their deck without reloading writes over the appended slides (see
-  [Deck edits are ordinary document data](#deck-edits-are-ordinary-document-data)).
+  keep their places. The editor appends through the deck's own save (`appendSlides`); `add_tab` asks the api to append them
+  (`PUT /documents/:id` with `appendSlides`), which adds them after the stored deck's own and tells the room, so
+  everyone with the document open gets them at once and their next deck edit keeps them (see
+  [Slides an agent appends](#slides-an-agent-appends)).
 - **The others seed nothing.** Workshop boards are run, not presented, and a diagram is read whole; neither touches
   the deck.
 
@@ -295,7 +295,29 @@ What it saves is real. Presenting needs **no room op, no api-schema change, and 
 
 The deck itself IS shared: a teammate opening the document sees your slides and can edit them. Deck changes ride the normal document save and arrive for other people on their next load, like the document's name does.
 
-**No live `deck` room op in v1.** It was specced and dropped once presenting went local: a deck is small, rarely touched, and in practice authored by one person for one meeting, so the realtime path would be carrying a message almost nobody sends. The cost is last-write-wins at whole-deck granularity if two people edit slides in the same session without reloading, which is the same exposure the document name already has and is proportionate to how often it will happen. If it turns out to bite, a `deck` op carrying the whole (small) deck is a small addition, deliberately unlike the granular per-element merge in [Realtime conflict resolution](realtime-conflict-resolution.md).
+**No live `deck` room op for a person's edits.** It was specced and dropped once presenting went local: a deck is small, rarely touched, and in practice authored by one person for one meeting, so the realtime path would be carrying a message almost nobody sends. The cost is last-write-wins at whole-deck granularity if two people edit slides in the same session without reloading, which is the same exposure the document name already has and is proportionate to how often it will happen. If it turns out to bite, a `deck` op carrying the whole (small) deck is a small addition, deliberately unlike the granular per-element merge in [Realtime conflict resolution](realtime-conflict-resolution.md).
+
+### Slides an agent appends
+
+The one deck write that is not a person's is an agent's: `add_tab` with a presented template appends that template's
+slides ([Decks a template seeds](#decks-a-template-seeds)). The person with the document open did not make them and
+would not know to reload, so last-write-wins there meant their next deck edit wrote the agent's slides away. So an
+append is its own write and its own room op:
+
+- **The api appends.** `PUT /documents/:id` takes `appendSlides` (a list of slides, never with `presentation`): it
+  adds each slide whose id the stored deck does not already hold after the first deck's own, keeps any later deck,
+  and refuses a deck past the deck cap. Slides that are not slides (no id, no tab, no element list) refuse the
+  request (`invalid appendSlides`).
+- **The room is told.** The slides it added go to the room as a `deck-slides` op, a system kind only the api sends
+  (a client socket's is dropped), sequenced so an editor whose socket blipped replays it. A tab-scoped session is
+  not sent it, as it is not sent any other change that names no tab of its own.
+- **An open editor takes them in.** It appends each slide it does not hold (by id) after its deck's own, so a replay
+  adds nothing twice. The appended slides are already stored, so taking them in saves nothing, unless this editor's
+  own deck save is waiting to go or went out within the last 10 seconds: that save may have been written after the
+  append without them, so the editor saves its deck again with them in. A Viewer takes them in and never saves.
+- **Older clients keep working.** An editor from before the op ignores it (as before, its next deck edit can write
+  the slides away until it reloads). An MCP worker that meets an api from before `appendSlides` sees the slides
+  missing from the answer and falls back to writing the whole deck, as it did.
 
 ## Implementation shape
 
