@@ -121,6 +121,13 @@ never reads past the main's elements.
   members.
 - `finishComponentEdit(elements, instanceId)`: removes members, clears `componentEditBy`. With no members left it
   removes the instance too.
+- `endEmptiedSessions(prev, next)`: a session whose members were in `prev` and are all gone from `next` loses its
+  instance in the same commit (the main keeps its last derived state). Runs at the commit choke point after
+  `stampSessionMembers`, so deleting the last member ends the session at once and the session bar (shown only for
+  `useComponentSession`'s `sessionInstanceId`) goes with it. A session just started (no members in `prev`) is left
+  alone.
+- `isEditedInstance(el)`: an instance with `componentEditBy`. `CanvasElementsLayer` drops it from the paint order
+  (no DOM, no hit-testing), so only its members are drawn; arrows pinned to it still resolve through the element index.
 
 ### Patch
 

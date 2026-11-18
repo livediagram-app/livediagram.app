@@ -13,6 +13,7 @@ import {
   elementFontId,
   resolveFontStack,
   buildElementIndex,
+  isEditedInstance,
   layerBands,
   layerOpacityOf,
   createElementGridTracker,
@@ -214,7 +215,11 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     () =>
       layerBands(elements, tabLayers).flatMap((band) => {
         const layerOpacity = layerOpacityOf(band.layer);
-        return band.elements.map((element) => ({ element, layerOpacity }));
+        // An instance with its edit session open is never drawn (docs/specs/009-elements/components.md "Editing the
+        // main"): its members draw in its place, and arrows still pin to it through the index.
+        return band.elements.flatMap((element) =>
+          isEditedInstance(element) ? [] : [{ element, layerOpacity }],
+        );
       }),
     [elements, tabLayers],
   );
