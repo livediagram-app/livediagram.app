@@ -181,6 +181,7 @@ The owner, 2026-11-18: "quarter turns is fine". You can walk round to see the ot
   steer by the screen (up is still away from the camera); the walls in front of you, in the camera's direction, are
   the ones cut away; a sitter's lift and legs follow the camera's side of their piece. Pieces hung on a wall stay on
   it. The office dog's bed lies flat on the floor while the dog is out of it.
+- **Telemetry**: each turn sends `Canvas · Used · Space3DTurn`, charted as 3D View Turns.
 - **Out of scope**: free orbiting.
 
 ## Turning it on and off
