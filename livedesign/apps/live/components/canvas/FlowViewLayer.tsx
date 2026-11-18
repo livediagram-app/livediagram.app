@@ -11,8 +11,6 @@ import { BackLinkGlyph, BrokenScreenLinkGlyph } from './screen-link-glyphs';
 // The arrows' stroke and the canvas-coloured edge under it (screen px).
 export const FLOW_STROKE_PX = 2;
 export const FLOW_HALO_PX = 6;
-// The gap (screen px) between a box and its tag.
-const TAG_GAP_PX = 6;
 
 const BRAND = 'stroke-brand-500';
 const BROKEN = 'stroke-rose-600 dark:stroke-rose-400';
@@ -36,16 +34,20 @@ function BoxOutline({ box, broken, zoom }: { box: FlowRect; broken: boolean; zoo
 
 function Tag({
   at,
+  side,
   zoom,
   kind,
 }: {
   at: { x: number; y: number };
+  // Which way it runs from `at`: right, or left (where the right would cover an arrow).
+  side: 1 | -1;
   zoom: number;
   kind: 'back' | 'broken';
 }) {
   return (
     <div
       data-flow-tag={kind}
+      data-flow-tag-side={side > 0 ? 'right' : 'left'}
       className="pointer-events-none absolute"
       style={{
         left: at.x,
@@ -55,7 +57,7 @@ function Tag({
       }}
     >
       <div
-        className={`flex -translate-y-1/2 items-center gap-1 whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-semibold shadow-sm ring-1 ${
+        className={`flex -translate-y-1/2 ${side > 0 ? '' : '-translate-x-full'} items-center gap-1 whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-semibold shadow-sm ring-1 ${
           kind === 'broken'
             ? 'bg-white text-rose-700 ring-rose-300 dark:bg-slate-900 dark:text-rose-300 dark:ring-rose-500/50'
             : 'bg-white text-brand-700 ring-brand-200 dark:bg-slate-900 dark:text-brand-200 dark:ring-brand-500/40'
@@ -123,7 +125,6 @@ export const FlowViewLayer = memo(function FlowViewLayer({
     [elements, layers, pages, zoom],
   );
   if (links.length === 0) return null;
-  const gap = TAG_GAP_PX / zoom;
   return (
     <>
       <svg
@@ -166,20 +167,8 @@ export const FlowViewLayer = memo(function FlowViewLayer({
         ))}
       </svg>
       {links.map((link) =>
-        link.state === 'back' ? (
-          <Tag
-            key={link.elementId}
-            kind="back"
-            zoom={zoom}
-            at={{ x: link.box.x + link.box.width + gap, y: link.box.y + link.box.height / 2 }}
-          />
-        ) : link.state === 'broken' ? (
-          <Tag
-            key={link.elementId}
-            kind="broken"
-            zoom={zoom}
-            at={{ x: link.stub.to.x + gap / 2, y: link.stub.to.y }}
-          />
+        link.state === 'back' || link.state === 'broken' ? (
+          <Tag key={link.elementId} kind={link.state} side={link.side} zoom={zoom} at={link.at} />
         ) : null,
       )}
     </>

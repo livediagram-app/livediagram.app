@@ -69,4 +69,25 @@ describe('FlowViewLayer', () => {
     // A box outline for each of the four.
     expect(container.querySelectorAll('svg[data-flow-view] > g > rect')).toHaveLength(4);
   });
+
+  it('runs a tag leftwards from its anchor where an arc rises past its right', () => {
+    const s = pageScreenRect(pages[0]!);
+    const edge: ShapeElement = {
+      ...linked('x', 0, { kind: 'page', pageId: 'gone' }),
+      x: s.x + s.width - 30,
+      width: 20,
+      height: 20,
+    };
+    const { container } = render(
+      <FlowViewLayer
+        elements={[edge, linked('a', 0, { kind: 'page', pageId: 'p3' }, 600)]}
+        layers={undefined}
+        pages={pages}
+        zoom={1}
+      />,
+    );
+    const tag = container.querySelector('[data-flow-tag="broken"]')!;
+    expect(tag.getAttribute('data-flow-tag-side')).toBe('left');
+    expect(tag.firstElementChild!.className).toContain('-translate-x-full');
+  });
 });
