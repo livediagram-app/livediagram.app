@@ -1099,6 +1099,15 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
   (PlanSheetsHost `onAddLinked`). PlanSheetsHost passes `fresh={freshItemId === item.id}` to ItemPanel, whose
   `useTitleFocus` (desktop and `canEdit` only, a frame after the Dialog's `initialFocus="container"` trap)
   focuses the title input with the caret at its end, or selects it when `fresh`.
+- Typing ahead of a new card's panel (`fresh-title-keys.ts`): `openNewItem` calls `armFreshTitleKeys()`, which
+  listens to `keydown` on `window` in the capture phase, ahead of every board and canvas shortcut. Until it is
+  taken, each key of one printable character (no Ctrl, Cmd or Alt) is appended to a buffer and its default and
+  propagation stopped; Backspace takes the last buffered character back (with nothing held, it passes through).
+  A key whose target is a text field, a composing key (`isComposing`, `Process`, `Dead`) or Escape disarms it and
+  passes through; so does `FRESH_TITLE_KEYS_MS` (2000 ms) passing. `useTitleFocus` calls `takeFreshTitleKeys()` in
+  its frame: when `fresh`, a non-empty buffer replaces the selected title through the field's native value setter
+  and an `input` event (so the field's `onChange` saves it as typing), the caret at its end; when the title takes
+  no focus (a phone, no `canEdit`) it takes and drops the buffer at once, so a phone holds nothing back.
 
 ## Several cards at once (`plan-board.md` "Several cards at once")
 

@@ -43,7 +43,9 @@ board of the template shows some, and every plan view on its Dashboard has somet
   delete.
 - **Clearing them.** While the project holds an example card that is not in the Trash, every board showing one
   carries a one-line notice under its header: an info glyph, **"Example cards show how this board runs."**, and two
-  buttons, **Clear Example Cards** and **Keep Them**.
+  buttons, **Clear Example Cards** and **Keep Them**. The two buttons keep together: where the board is too narrow
+  for the sentence and both on one line (a phone, a 450 px window), they move together to a line of their own under
+  the sentence, at its right, never one button alone on a line.
   - **Clear Example Cards** sends every example card of the project (every board, every tab) to the Trash as one
     write and one undo step, and announces "N example cards moved to the Trash". The Trash restores any of them.
   - **Keep Them** takes the flag off every example card, one write and one undo step: they are ordinary cards from

@@ -4,6 +4,7 @@ import { act, renderHook } from '@testing-library/react';
 import { ITEM_TYPES } from '@liveplanner/items';
 import type { Element, Tab } from '@liveplanner/project';
 import { usePlanSlice } from './usePlanSlice';
+import { takeFreshTitleKeys } from '@/components/plan/fresh-title-keys';
 import { registerPlanBoardTarget, type PlanBoardTarget } from './plan-board-targets';
 
 // docs/specs/026-plan/plan-mode.md "Cost": the Plan context keeps its identity across editor renders
@@ -275,6 +276,9 @@ describe('usePlanSlice', () => {
     act(() => result.current.context.openNewItem('made'));
     expect(result.current.openItemId).toBe('made');
     expect(result.current.freshItemId).toBe('made');
+    // Keys typed before its title takes focus are held for it (fresh-title-keys.ts).
+    document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'F', bubbles: true }));
+    expect(takeFreshTitleKeys()).toBe('F');
     act(() => result.current.context.openItem('other'));
     expect(result.current.freshItemId).toBeNull();
     act(() => result.current.context.openNewItem('made-2'));

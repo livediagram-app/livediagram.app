@@ -75,22 +75,26 @@ export function ExampleCardsNotice({
       </span>
       {/* A basis of its own, so on a narrow board the buttons wrap under the sentence rather than crush it. */}
       <span className="min-w-0 flex-1 basis-48">Example cards show how this board runs.</span>
-      <button
-        type="button"
-        className={button}
-        style={{ borderColor: palette.focus, color: palette.focus }}
-        onClick={clear}
-      >
-        Clear Example Cards
-      </button>
-      <button
-        type="button"
-        className={button}
-        style={{ borderColor: palette.border, color: palette.text }}
-        onClick={keep}
-      >
-        Keep Them
-      </button>
+      {/* The buttons keep together (plan-templates.md "Clearing them"): too narrow for one line, both move under the
+          sentence, at its right, rather than leaving Keep Them on a line alone. */}
+      <span data-example-cards-actions className="ml-auto flex shrink-0 items-center gap-2">
+        <button
+          type="button"
+          className={button}
+          style={{ borderColor: palette.focus, color: palette.focus }}
+          onClick={clear}
+        >
+          Clear Example Cards
+        </button>
+        <button
+          type="button"
+          className={button}
+          style={{ borderColor: palette.border, color: palette.text }}
+          onClick={keep}
+        >
+          Keep Them
+        </button>
+      </span>
     </div>
   );
 }

@@ -10,6 +10,7 @@
 import { CardPullRequests } from './CardPullRequests';
 import { useEffect, useState, type ReactNode } from 'react';
 import { markResponseOpened } from '@/components/forms/fresh-responses';
+import { takeFreshTitleKeys, typeIntoField } from './fresh-title-keys';
 import {
   BUILT_IN_FIELD_IDS,
   commentsFieldsOf,
@@ -146,15 +147,25 @@ type ItemPanelProps = {
 // On a desktop, the title takes focus as a card opens (each card: the content is keyed by it): the caret at its
 // end, or the whole title selected on a card just made, so typing replaces "New task". A frame later than the
 // Dialog's focus trap, which first lands on the panel itself.
+// Keys typed on a card just made before its title took focus (fresh-title-keys.ts) replace "New task" as typing
+// would; where the title takes no focus (a phone, a Viewer), they are let go at once.
 function useTitleFocus(id: string, on: boolean, select: boolean): void {
   useEffect(() => {
-    if (!on) return;
+    if (!on) {
+      if (select) takeFreshTitleKeys();
+      return;
+    }
     const frame = requestAnimationFrame(() => {
       const field = document.getElementById(id);
       if (!(field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement)) return;
       field.focus({ preventScroll: true });
-      if (select) field.select();
-      else field.setSelectionRange(field.value.length, field.value.length);
+      if (!select) {
+        field.setSelectionRange(field.value.length, field.value.length);
+        return;
+      }
+      field.select();
+      const typed = takeFreshTitleKeys();
+      if (typed) typeIntoField(field, typed);
     });
     return () => cancelAnimationFrame(frame);
   }, [id, on, select]);
