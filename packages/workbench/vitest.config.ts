@@ -93,6 +93,8 @@ const HELD_AT_100 = [
   // The new version prompt all five editors bind (docs/specs/016-platform/new-version-prompt.md).
   'src/components/chrome/NewVersionPrompt.tsx',
   'src/hooks/ui/useNewerEditorLive.ts',
+  // A changed name or colour said to the room live, in four editors (liveworkspace accounts.md "Profiles").
+  'src/hooks/collab/useAnnounceSelf.ts',
   'src/lib/live-editor-build.ts',
   // Round 12: editor copies the products held byte for byte, one home each.
   'src/hooks/collab/useFollowMe.ts',

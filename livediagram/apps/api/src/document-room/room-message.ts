@@ -64,6 +64,21 @@ export function roomMessage(
     room.state.waitUntil(room.renewGrant(ws, (msg as { grant?: unknown }).grant));
     return;
   }
+  if (msg.kind === 'identity') {
+    // A changed name, colour or picture over the open socket (liveworkspace/docs/specs/003-accounts/accounts.md
+    // "Profiles", "A change reaches the room at once"; Work Tracker 1221): the hello rules again, keeping the tabs this
+    // session is on, then a fresh roster so everyone already here sees it. Not a join, so none of the join's side
+    // effects run; before hello there is nothing to update, and one that changes nothing on the roster sends nothing.
+    const before = session.presence;
+    if (!before) return;
+    const next = helloPresence(msg.participant, session);
+    if (before.tabId !== undefined) next.tabId = before.tabId;
+    if (before.besideTabId !== undefined) next.besideTabId = before.besideTabId;
+    if (!helloChangesRoster(before, next)) return;
+    ws.serializeAttachment({ ...session, presence: next } satisfies SessionAttachment);
+    room.broadcastPresence();
+    return;
+  }
   if (msg.kind === 'hello') {
     // Force the server-resolved role AND the server-assigned ephemeral id
     // onto the stored presence: the hello frame's own `role` / `id` are

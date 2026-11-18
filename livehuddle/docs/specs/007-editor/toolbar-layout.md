@@ -237,8 +237,7 @@ A strip shows one category at a time, so finding an element means knowing which 
   it; Escape hands the focus back to the button that opened it (a press leaves focus where it landed), where it
   had fallen to the page. **S** opens it too, wherever the strip is shown (an editor, the chrome not hidden); everywhere else S keeps its old meaning, the legacy
   alias of Select. The field's clear button (×, once there is text) clears the query and returns to
-  the tab's own types. Opening it focuses its search field (not on a phone, where focusing raises the keyboard over
-  it).
+  the tab's own types. Opening it focuses its search field at every width, so what is typed straight after goes into the query, never to the canvas's shortcuts (at 450 px typing "pie" once switched the tool to Hand, Work Tracker 1224); only on a touch screen (a coarse primary pointer: phones and tablets) does it wait for a tap, since focusing there raises the on-screen keyboard over it.
 - **What it searches:** the element **tiles** (`PALETTE_TILES`) of the palette layout,
   each once however many categories hold it, and the tiles on no strip (`SEARCH_ONLY_TILE_IDS` in
   `palette-layouts.ts`: the Code block, the six embeds and the page blocks Hero, Header, Banner,
@@ -307,8 +306,9 @@ wide (26rem) rather than tall, so a body rarely has to scroll. Picking a tile
 from it closes it, so the canvas is clear to draw on; switching category
 closes it too, since it was showing the old one. Opening it focuses the body's
 search field, when the category has one, so typing filters straight away (a category that loads
-its catalogue a moment later focuses the field as soon as it appears); on a phone it does not,
-because focusing would raise the keyboard over the popover.
+its catalogue a moment later focuses the field as soon as it appears); it does so at every width,
+and waits for a tap only on a touch screen (a coarse primary pointer), where focusing would raise the
+on-screen keyboard over the popover.
 
 More appears when the category has more than twelve tiles, and always for
 Icons, Stickers, Behaviour and My shapes, whose bodies carry

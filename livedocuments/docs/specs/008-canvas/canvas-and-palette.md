@@ -635,19 +635,26 @@ telemetry, so it never changes.
 
 The **Project Brief** is written the same way (`packages/templates/src/article-template.ts`): a header with the document's name and page numbers, goals and milestones in tables, open questions as a to-do list. **Working Backwards** carries a "Confidential draft" footer with "Page n of m". The written templates (`packages/templates/src/article-templates.ts`) are articles ([Article pages](../007-editor/article-pages.md)), each written as Markdown and read by the article's own Markdown reader, so the words stay easy to edit. Each shows off what an article can hold, as a real document of its kind would use it:
 
-| Template            | What it shows                                                                                                                                                  |
-| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Meeting Notes       | A header with the document's name and the date; attendees and decisions in tables; actions as a to-do list.                                                    |
-| Lesson Plan         | The lesson's timings in a table, objectives as a numbered list, a footer with the page number.                                                                 |
-| Business Proposal   | A title page with no header or footer, a table of contents, a timeline and a pricing table, a footnote on the case it cites, "Page n of m" footers.            |
-| Design Doc          | A table of contents, a code block, a table of the options weighed, a header with the doc's status, footnotes on the evidence.                                  |
-| Status Report       | A header and page numbers, the workstreams' status in a table, a footnote on the budget, risks and next steps.                                                 |
-| Cover Letter        | A one-page letter in the Classic look: the sender's details, the date, the recipient's address block (one line each), three paragraphs and a sign-off.         |
-| Product One-Pager   | One page in the Clean look, narrow margins: the problem, who it is for, what we build in a table, the measures of success in a table, and what we will not do. |
-| Research Report     | A title page with no header or footer, contents, the method in a table, findings, footnotes for every source, "Page n of m" footers.                           |
-| Newsletter          | The Bold look, a header with the issue and date, an "In this issue" contents, a lead story, a table of new arrivals, a quote and what is on.                   |
-| Case Study          | The Report look: the project at a glance in a table, the challenge, what was done, the results in a table with a footnote on their source, the client's words. |
-| Onboarding Handbook | Contents, the first week as a to-do list, who to ask and the tools in tables, footnotes on the details, "Page n of m" footers.                                 |
+| Template            | What it shows                                                                                                                                                                                     |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Meeting Notes       | A header with the document's name and the date; attendees and decisions in tables; actions as a to-do list.                                                                                       |
+| Lesson Plan         | The lesson's timings in a table, objectives as a numbered list, a footer with the page number.                                                                                                    |
+| Business Proposal   | A title page with no header or footer, a table of contents, a timeline and a pricing table, a footnote on the case it cites, "Page n of m" footers.                                               |
+| Design Doc          | A table of contents, a code block, a table of the options weighed, a header with the doc's status, footnotes on the evidence.                                                                     |
+| Status Report       | A header and page numbers, the workstreams' status in a table, a footnote on the budget, spend by month as a bar chart, risks and next steps.                                                     |
+| Cover Letter        | A one-page letter in the Classic look: the sender's details, the date, the recipient's address block (one line each), three paragraphs and a sign-off.                                            |
+| Product One-Pager   | One page in the Clean look, narrow margins: the problem, who it is for, what we build in a table, the measures of success in a table, and what we will not do.                                    |
+| Research Report     | A title page with no header or footer, contents, the method in a table, findings with output as a line chart, footnotes for every source, "Page n of m" footers.                                  |
+| Newsletter          | The Bold look, a header with the issue and date, an "In this issue" contents, a lead story, a table of new arrivals, a quote and what is on.                                                      |
+| Case Study          | The Report look: the project at a glance in a table, the challenge, what was done, the results in a table with a footnote on their source and orders a month as a line chart, the client's words. |
+| Onboarding Handbook | Contents, the first week as a to-do list, who to ask and the tools in tables, footnotes on the details, "Page n of m" footers.                                                                    |
+
+A written template charts a figure the way the real document would (Work Tracker 1177): a line of its own in the
+Markdown, `{chart:<key>}`, becomes an inline object zone the width of the text, holding a native chart from the
+template's `charts` (`packages/templates/src/article-template-charts.ts`). The chart is an element of the tab, first
+standing in its zone on the first page; the editor settles the zone where the writing lays it out on the first open by
+anyone who may edit ([Article pages](../007-editor/article-pages.md) "Only the writer of a change"), and the chart
+moves with it. A written template with a chart does not open with it selected: the writing is what it is for.
 
 ### Template categories
 

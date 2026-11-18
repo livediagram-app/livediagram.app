@@ -21,6 +21,8 @@
  * panel here puts its dark classes in this sheet, after the light ones. */
 @source '../../components/settings';
 @source '../../../../../packages/settings-ui/src';
+/* The app's own Delete Account dialog the panel opens on an app's address (Work Tracker 1228), for the same reason. */
+@source '../../../../../packages/workbench/src/components/dialogs/DeleteAccountDialog.tsx';
 /* The header's app logo ("Back to liveplanner" on an app's address), from @liveworkspace/brand: its dark accent
  * (`dark:text-violet-400`) must sort after this sheet's own `text-brand-700`, or the logo's "live" stays at the
  * light ink on the dark header (2.7:1). */

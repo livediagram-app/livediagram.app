@@ -9,6 +9,7 @@ import { useRef } from 'react';
 import { resolveEditorCapabilities } from '@/lib/editor-capabilities';
 import { fixtureTab, rowsOf } from '@/test/find-fixture';
 import { FIND_DEBOUNCE_MS, type FindDoor } from '@/hooks/editor/useFindReplace';
+import { beginCanvasGesture } from '@liveworkspace/workbench/lib/canvas-gesture';
 import { EditorFindHost, FindHost } from './FindHost';
 import {
   createEditorChromeStore,
@@ -117,5 +118,74 @@ describe('FindHost', () => {
     act(() => openerRef.current(false));
     fireEvent.change(screen.getByRole('textbox', { name: 'Find' }), { target: { value: 'teh' } });
     expect(await screen.findByText('1 of 2')).toBeTruthy();
+  });
+
+  // Work Tracker 1052: open over a page's title bar (its Lock page and cog at the right end), the bar steps under it,
+  // and follows it as the canvas moves it (a wheel, a pan or a zoom), back under the strip once it is out of the way.
+  it('steps under a page title bar it would cover, and follows it as the canvas moves', () => {
+    vi.useFakeTimers({ toFake: ['requestAnimationFrame', 'cancelAnimationFrame', 'performance'] });
+    const titleBar = document.createElement('div');
+    titleBar.setAttribute('data-page-title-bar', '');
+    document.body.append(titleBar);
+    let titleTop = 85;
+    const rect = (left: number, top: number, right: number, bottom: number) =>
+      ({ left, top, right, bottom, width: right - left, height: bottom - top }) as DOMRect;
+    const spy = vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: Element,
+    ) {
+      if (this === titleBar) return rect(1119, titleTop, 1439, titleTop + 34);
+      if (this.hasAttribute('data-find-bar')) return rect(859, 68, 1279, 114);
+      // The canvas's main.
+      return rect(0, 0, 1295, 820);
+    });
+    try {
+      const { unmount } = render(<Editor />);
+      act(() => openerRef.current(false));
+      const bar = document.querySelector<HTMLElement>('[data-find-bar]')!;
+      expect(bar.style.top).toBe('127px');
+      // The canvas moves the title bar down out of the way: the next frames put the bar back under the strip.
+      titleTop = 400;
+      act(() => {
+        window.dispatchEvent(new Event('wheel'));
+        // A second cause before the next frame waits for the frame already asked for.
+        window.dispatchEvent(new Event('keyup'));
+        vi.advanceTimersByTime(100);
+      });
+      expect(bar.style.top).toBe('68px');
+      // A pan under way keeps it following, frame by frame, until the pan ends and the canvas settles.
+      const endPan = beginCanvasGesture('pan');
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+      titleTop = 85;
+      act(() => {
+        vi.advanceTimersByTime(50);
+      });
+      expect(bar.style.top).toBe('127px');
+      titleTop = 400;
+      act(() => {
+        endPan();
+        vi.advanceTimersByTime(100);
+      });
+      expect(bar.style.top).toBe('68px');
+      // Long after, nothing more is placed (no idle frames).
+      act(() => {
+        vi.advanceTimersByTime(2000);
+      });
+      titleTop = 85;
+      act(() => {
+        vi.advanceTimersByTime(2000);
+      });
+      expect(bar.style.top).toBe('68px');
+      act(() => {
+        window.dispatchEvent(new Event('pointerup'));
+        vi.advanceTimersByTime(100);
+      });
+      expect(bar.style.top).toBe('127px');
+      unmount();
+    } finally {
+      spy.mockRestore();
+      titleBar.remove();
+    }
   });
 });

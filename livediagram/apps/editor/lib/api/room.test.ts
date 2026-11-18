@@ -140,6 +140,35 @@ describe('connectRoom reconnect cursor', () => {
     room.close();
   });
 
+  // Work Tracker 1221: a new colour reaches the room over the open socket, and a reconnect says hello as we are now.
+  it('says a changed self over the open socket, and remembers it for the next hello while down', () => {
+    const room = connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {} },
+    );
+    const first = FakeSocket.all[0]!;
+    first.fire('open');
+    room.updateSelf({ id: 'me', name: 'Me', color: '#dc2626' });
+    expect(first.sent.at(-1)).toEqual({
+      kind: 'identity',
+      participant: { id: 'me', name: 'Me', color: '#dc2626' },
+    });
+    first.readyState = 3;
+    const sentWhileDown = first.sent.length;
+    room.updateSelf({ id: 'me', name: 'Me Too', color: '#16a34a' });
+    expect(first.sent).toHaveLength(sentWhileDown);
+    first.fire('close');
+    vi.runOnlyPendingTimers();
+    const second = FakeSocket.all[1]!;
+    second.fire('open');
+    expect(second.sent[0]).toMatchObject({
+      kind: 'hello',
+      participant: { name: 'Me Too', color: '#16a34a' },
+    });
+    room.close();
+  });
+
   it("ignores another epoch's cursor, leaving the catch-up to reconcile", () => {
     expect(
       reconnectSync([

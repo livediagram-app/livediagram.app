@@ -71,6 +71,21 @@ Team leads with back-to-back meetings, who keep their notes in Lumen but never h
       differentFirstPage: true,
     },
     columns: [[0.2, 0.52, 0.28]],
+    charts: {
+      output: {
+        shape: 'line-chart',
+        height: 240,
+        fields: {
+          lineCategories: ['Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov'],
+          lineSeries: [
+            { name: 'Projects, 2025', values: [3, 4, 3, 4, 3, 3] },
+            { name: 'Projects, 2026 trial', values: [4, 3, 4, 3, 4, 3] },
+          ],
+          chartLegend: true,
+          chartLegendPosition: 'bottom',
+        },
+      },
+    },
     markdown: `
 # Four Days, Same Work?
 
@@ -108,6 +123,8 @@ We compared the six months of the trial with the same six months of 2025.
 ## Output held steady
 
 The studio delivered 21 projects in the trial against 20 in the same months of 2025, with 4% fewer billable hours.[^3]
+
+{chart:output}
 
 ## People were healthier
 
@@ -189,6 +206,21 @@ Thank you for reading, and for every cup. Reply to this email and tell us what y
       [0.24, 0.24, 0.28, 0.24],
       [0.4, 0.2, 0.2, 0.2],
     ],
+    charts: {
+      orders: {
+        shape: 'line-chart',
+        height: 240,
+        fields: {
+          lineCategories: ['Jan', 'Feb', 'Mar'],
+          lineSeries: [
+            { name: '2025, before', values: [2100, 2150, 2200] },
+            { name: '2026, after', values: [3300, 3550, 3740] },
+          ],
+          chartLegend: true,
+          chartLegendPosition: 'bottom',
+        },
+      },
+    },
     markdown: `
 # Field Bakery: Online Orders Up 64%
 
@@ -218,6 +250,10 @@ In the first quarter after launch, against the same quarter a year before:[^1]
 | Online orders a month | 2,150 | 3,530 | +64% |
 | Checkouts completed | 58% | 81% | +23 points |
 | Bread subscribers | 410 | 960 | +134% |
+
+**Online orders a month.** The lift came in the first month and held.
+
+{chart:orders}
 
 > "Our regulars order on the bus now, not on a Sunday evening. The new shop pays for itself every month." Hannah Reid, founder of Field Bakery
 

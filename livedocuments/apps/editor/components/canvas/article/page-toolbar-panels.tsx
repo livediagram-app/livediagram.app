@@ -8,6 +8,8 @@ import { keyLabel } from '@liveworkspace/workbench/lib/key-label';
 import type { ReactNode } from 'react';
 import {
   lucideChartColumn,
+  lucideChartLine,
+  lucideChartPie,
   lucideCode,
   lucideFileText,
   lucideHash,
@@ -68,6 +70,8 @@ const PanelIcons = {
   toc: I(lucideListTree),
   footnote: I(lucideHash),
   chart: I(lucideChartColumn),
+  pie: I(lucideChartPie),
+  line: I(lucideChartLine),
 };
 
 const Keys = ({ k }: { k?: string }) =>
@@ -411,7 +415,7 @@ export function MorePanel({
 }
 
 export type BlockInsert = 'table' | 'toc' | 'footnote' | 'divider' | 'pageBreak' | 'quote' | 'code';
-export type ObjectInsert = 'image' | 'chart' | 'drawing';
+export type ObjectInsert = 'image' | 'chart' | 'pie' | 'line' | 'drawing';
 
 // The Insert menu, dressed as the palette's rows (a glyph chip, the name, a line on what it is,
 // the slash menu's own: lib/article/article-slash-items.ts): the objects, then the blocks.
@@ -428,6 +432,9 @@ const INSERT_OBJECTS: readonly {
     blurb: 'Compare values',
     icon: <PanelIcons.chart />,
   },
+  // The slash menu's other two charts, here too (Work Tracker 1090).
+  { id: 'pie', label: 'Pie Chart', blurb: 'Parts of a whole', icon: <PanelIcons.pie /> },
+  { id: 'line', label: 'Line Chart', blurb: 'A trend over time', icon: <PanelIcons.line /> },
 ];
 const INSERT_BLOCKS: readonly { id: BlockInsert; label: string; blurb: string; icon: ReactNode }[] =
   [

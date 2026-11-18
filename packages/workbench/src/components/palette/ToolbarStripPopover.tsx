@@ -14,6 +14,13 @@ const STRIP_POPOVER_PX = 416;
 
 const INSIDE_SELECTOR = '[data-palette-dropdown-menu], [role="dialog"], [data-tour-popover]';
 
+/** Whether the primary pointer is a finger (phones, tablets), where focusing a field raises the on-screen keyboard:
+ *  the rule every dialog follows too (useFocusTrap). Read once per opening, inside the focus effect, so always in a
+ *  browser; not subscribed. */
+export function touchScreen(): boolean {
+  return !!window.matchMedia?.('(pointer: coarse)').matches;
+}
+
 /** One strip popover's open state and where it hangs. `ownSelector` matches the popover and its
  *  button: a press anywhere else (the pickers, a tile, another strip button, the canvas) closes it,
  *  so two strip menus are never open at once, and so does Escape. */
@@ -86,9 +93,10 @@ export function useStripPopover(rootRef: RefObject<HTMLElement | null>, ownSelec
 /** The popover's card. Hangs from its button, not the middle of the strip; wide rather than tall,
  *  so a body rarely has to scroll, and capped to the window so a long one scrolls rather than
  *  running off it. A phone has no room to hang it from the button: it spans the screen between the
- *  side gutters instead. Opening it focuses its first text field, so typing filters straight away
- *  (a body that loads its catalogue lazily mounts the field a beat later, so it watches for it);
- *  not on a phone, where focusing would raise the keyboard over it. */
+ *  side gutters instead. Opening it focuses its first text field at every width, so typing filters straight away and
+ *  never reaches the canvas's shortcuts (a body that loads its catalogue lazily mounts the field a beat later, so it
+ *  watches for it); not on a touch screen, where focusing would raise the on-screen keyboard over it (Work Tracker
+ *  1224: at 450px a narrow desktop window read as a phone, so "pie" typed after opening Search ran the shortcuts). */
 export function StripPopover({
   right,
   isMobile,
@@ -125,9 +133,10 @@ export function StripPopover({
   children: ReactNode;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  // Once per opening: a width crossing the phone breakpoint while it is open moves nothing.
   useEffect(() => {
     const popover = ref.current;
-    if (isMobile || !popover) return;
+    if (!popover || touchScreen()) return;
     const focusSearch = () => {
       const field = popover.querySelector<HTMLInputElement>(
         'input[type="search"], input[type="text"], input:not([type])',
@@ -142,7 +151,7 @@ export function StripPopover({
     });
     observer.observe(popover, { childList: true, subtree: true });
     return () => observer.disconnect();
-  }, [isMobile]);
+  }, []);
   return (
     <div
       ref={ref}

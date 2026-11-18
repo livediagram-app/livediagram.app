@@ -12,7 +12,11 @@ vi.mock('../../lib/index-client', () => ({ indexClient: { readSheetRange } }));
 
 import { emitSourceChanged } from './sheet-link-signal';
 import type { SheetChart, SheetLinkStatus } from './sheet-links';
-import { readSheetLink, useSheetLinkedCharts } from './useSheetLinkedCharts';
+import {
+  readSheetLink,
+  SHEET_LINK_READY_TIMEOUT_MS,
+  useSheetLinkedCharts,
+} from './useSheetLinkedCharts';
 
 // An element of any product: the hook keeps each one's own type.
 type Element = SheetChart | { id: string; type: 'arrow' };
@@ -118,7 +122,15 @@ describe('useSheetLinkedCharts', () => {
     });
     const hook = renderHook(
       ({ elements }) =>
-        useSheetLinkedCharts({ elements, itemId: 'doc_1', canSave, tick, grantOf, read }),
+        useSheetLinkedCharts({
+          elements,
+          itemId: 'doc_1',
+          canSave,
+          tick,
+          grantOf,
+          read,
+          ready: true,
+        }),
       { initialProps: { elements: els } },
     );
     return { hook, read, tick, els: () => els };
@@ -207,6 +219,7 @@ describe('useSheetLinkedCharts', () => {
         canSave: false,
         tick: () => {},
         grantOf,
+        ready: true,
       }),
     );
     await waitFor(() => expect(hook.result.current.statusOf(source).kind).toBe('live'));
@@ -215,5 +228,101 @@ describe('useSheetLinkedCharts', () => {
       { sheetId: 'sheet0001', range: source.range },
       { grant: 'G', watch: 'doc_1' },
     );
+  });
+
+  // Work Tracker 1215: the first read used to go out before sign-in had answered (an anonymous read that 404s, then a
+  // second with the token) and before the grant, so the plan never counted the document as watching.
+  it('waits for a late sign-in and a late grant: one read per range, with the grant and watch, live after', async () => {
+    // One grant request, shared by both ranges (as the product's item grants share one in flight), answering late.
+    let giveGrant: (g: string) => void = () => {};
+    const lateGrant = new Promise<string>((resolve) => {
+      giveGrant = resolve;
+    });
+    grantOf.mockImplementation(() => lateGrant);
+    readSheetRange.mockResolvedValue(readOf([5, 6]));
+    const other = { ...source, sheetId: 'sheet0002' };
+    const elements: Element[] = [
+      chart('a'),
+      chart('b'),
+      { ...chart('c'), chartSheetSource: other },
+    ];
+    const hook = renderHook(
+      ({ ready }) =>
+        useSheetLinkedCharts({
+          elements,
+          itemId: 'doc_1',
+          canSave: false,
+          tick: () => {},
+          grantOf,
+          ready,
+        }),
+      { initialProps: { ready: false } },
+    );
+    // Signed out so far: nothing is read, nor asked for, and a frame reads nothing either.
+    act(() => emitSourceChanged({ app: 'liveplanner', itemId: 'plan_1', sheetIds: ['sheet0001'] }));
+    expect(grantOf).not.toHaveBeenCalled();
+    expect(readSheetRange).not.toHaveBeenCalled();
+    expect(hook.result.current.statusOf(source)).toEqual({ kind: 'reading' });
+    hook.rerender({ ready: true });
+    await waitFor(() => expect(grantOf).toHaveBeenCalledTimes(2));
+    // The grant is late: still no read.
+    expect(readSheetRange).not.toHaveBeenCalled();
+    await act(async () => giveGrant('G'));
+    await waitFor(() => expect(hook.result.current.statusOf(other).kind).toBe('live'));
+    expect(hook.result.current.statusOf(source).kind).toBe('live');
+    // One read per range, each with the grant and the watch.
+    expect(readSheetRange).toHaveBeenCalledTimes(2);
+    for (const call of readSheetRange.mock.calls) {
+      expect(call[2]).toEqual({ grant: 'G', watch: 'doc_1' });
+    }
+    // Live after: the first change to the sheet reads it again.
+    grantOf.mockResolvedValue('G');
+    readSheetRange.mockResolvedValue(readOf([8, 9]));
+    act(() => emitSourceChanged({ app: 'liveplanner', itemId: 'plan_1', sheetIds: ['sheet0001'] }));
+    await waitFor(() => expect(readSheetRange).toHaveBeenCalledTimes(3));
+    await waitFor(() => {
+      const status = hook.result.current.statusOf(source);
+      expect(status.kind === 'live' && status.read.table.series[0]?.values).toEqual([8, 9]);
+    });
+    hook.unmount();
+  });
+
+  it('shows the saved values when sign-in has not answered in time, and reads once it does', async () => {
+    vi.useFakeTimers();
+    try {
+      const read = vi.fn(async (): Promise<SheetLinkStatus> => ({
+        kind: 'live',
+        read: readOf([3, 4]),
+      }));
+      const hook = renderHook(
+        ({ ready }) =>
+          useSheetLinkedCharts({
+            elements: [chart('a')],
+            itemId: 'doc_1',
+            canSave: false,
+            tick: () => {},
+            grantOf,
+            read,
+            ready,
+          }),
+        { initialProps: { ready: false } },
+      );
+      act(() => {
+        vi.advanceTimersByTime(SHEET_LINK_READY_TIMEOUT_MS - 1);
+      });
+      expect(hook.result.current.statusOf(source)).toEqual({ kind: 'reading' });
+      act(() => {
+        vi.advanceTimersByTime(1);
+      });
+      expect(hook.result.current.statusOf(source)).toEqual({ kind: 'saved' });
+      expect(read).not.toHaveBeenCalled();
+      hook.rerender({ ready: true });
+      await act(async () => {});
+      expect(read).toHaveBeenCalledTimes(1);
+      expect(hook.result.current.statusOf(source).kind).toBe('live');
+      hook.unmount();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

@@ -220,13 +220,23 @@ describe('ToolbarPalette', () => {
     );
   });
 
-  it('leaves focus alone on a phone, where it would raise the keyboard', () => {
+  it('leaves focus alone on a touch screen, where it would raise the keyboard (Work Tracker 1224)', () => {
     mobile.value = true;
-    show({ mode: 'workshop' });
-    const popover = openFlyout('Icons');
-    expect(document.activeElement).not.toBe(
-      within(popover).getByPlaceholderText('Search icons and stickers'),
-    );
+    vi.stubGlobal('matchMedia', (query: string) => ({
+      matches: query === '(pointer: coarse)',
+      media: query,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    }));
+    try {
+      show({ mode: 'workshop' });
+      const popover = openFlyout('Icons');
+      expect(document.activeElement).not.toBe(
+        within(popover).getByPlaceholderText('Search icons and stickers'),
+      );
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 
   it('switches the flyout to the category pressed next', () => {

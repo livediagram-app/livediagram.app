@@ -112,7 +112,9 @@ livedocuments file that holds tabs ([Document](../006-document/document.md)). Th
   writing, or press / for blocks". An empty list item keeps its bullet, number or to-do box from
   the moment it exists: its placeholder ("List", or "To-do" for a to-do) sits after the marker,
   where the text will go, whole and never in the marker's place. A ticked empty to-do shows its
-  tick and no placeholder.
+  tick and no placeholder. Markers are always the ones a fresh editor would draw, however the writing
+  last changed (a collaborator, an undo, the document moved into an account on sign-in), so no
+  reload is ever needed to bring them back.
 - **Empty headings and header cells are named for a screen reader.** The title is drawn as the page's
   h1 and Heading 1, 2 and 3 as h2, h3 and h4. An empty one carries its placeholder as its accessible
   name ("Title", "Heading 1") to someone writing, and is hidden from a screen reader for anyone who
@@ -137,7 +139,8 @@ footnote's reference (see "Footnotes"). Code blocks keep plain text.
 
 - **A press on the writing puts the caret there**, at once, in any tool that is not a drawing
   tool; a drag selects text across blocks and pages; double-click selects a word, triple-click a
-  block. Text selection spans blocks, lists and pages freely.
+  block. Text selection spans blocks, lists and pages freely. Typing straight after a press lands at the caret and
+  leaves every letter already in the block as it was (`e2e/article-click-type.spec.ts`).
 - **The caret stays in sight.** After the writer types or moves the caret (the arrow keys, Page Down, a paste), the
   view pans the least it must to show the caret, as the canvas brings any element into view (`scrollIntoView`), so
   writing that runs onto the next page, below the window or behind a phone's on-screen keyboard (what shows ends 24 px
@@ -249,9 +252,10 @@ footnote's reference (see "Footnotes"). Code blocks keep plain text.
   - **More Formatting** (a menu: strikethrough, inline code, superscript, subscript, clear
     formatting, Article style, which opens the page panel on Style, and at its foot the article's
     **Word Count**);
-  - **Insert** (a menu: Image, Chart, then Table, Table of Contents, Footnote, Divider, Page break, Quote,
-    Code; a drawing starts from a shape dropped on the page or the slash menu's **Drawing**, a
-    callout from the slash menu).
+  - **Insert** (a menu: Image, Bar Chart, Pie Chart, Line Chart, then Table, Table of Contents, Footnote, Divider,
+    Page break, Quote, Code; a drawing starts from a shape dropped on the page or the slash menu's **Drawing**, a
+    callout from the slash menu). An object always goes in: at the caret, or, when the writing has no caret it can
+    measure, under its first line (Work Tracker 1090).
   - **Table** (a menu, shown only while the caret or a cell selection is in a table: Insert Row
     Above, Insert Row Below, Insert Column Left, Insert Column Right, Delete Row, Delete Column,
     Header Row (on or off), Delete Table);
@@ -734,7 +738,11 @@ ink").
   caret in it is not writing: two people in one article never both add a page for one overflow.
   The exceptions, an agent's write, a Participant's writing (a Participant never adds pages) and
   a writer who left before settling, are grown by the first editor to lay the article out
-  ([Pages for agents](../024-agents/pages-for-agents.md#pages-for-the-writing)).
+  ([Pages for agents](../024-agents/pages-for-agents.md#pages-for-the-writing)). Once its pages are right, that
+  editor also settles its zones where the writing lays them out (each zone's elements moving with it), as a quiet
+  change with no undo step and only for zones that moved, so a written template's charts stand in their zones from
+  the first open by anyone who may edit (Work Tracker 1177). An article that arrives after the tab did (a template
+  applied to the open tab) counts as loading then. A locked page holds its zones as they are.
 - **Agents** read an article as Markdown and write it from Markdown
   ([Pages for agents](../024-agents/pages-for-agents.md)); their writing arrives as anyone's, and
   never over a paragraph someone holds.
