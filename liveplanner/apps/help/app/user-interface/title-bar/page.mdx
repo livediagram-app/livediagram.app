@@ -5,20 +5,20 @@ import { TitleBarParts, VisibilityLegendFigure } from '@/components/illustration
 export const metadata = helpMetadata({
   title: 'The Title Bar',
   description:
-    'The strip across the top of the editor: the plan name, who can see it, whether you are editing or viewing, and Share or Copy at the right.',
+    'The strip across the top of the editor: the plan name, who can see it, and Share or Copy at the right.',
   path: '/help/user-interface/title-bar/',
 });
 
 <ArticleLayout
   title="The Title Bar"
-  description="The plan's name, who can see it, your role in it, and Share or Copy, in the strip across the top of the editor."
+  description="The plan's name, who can see it, and Share or Copy, in the strip across the top of the editor."
   categoryTitle="User Interface"
   categorySlug="user-interface"
 >
 
-The **title bar** is the strip across the top of the editor, above the tab you are working on. Reading from left to right, it holds the logo, the plan's name, a pill saying who can see the plan, a pill saying whether you are editing or viewing it, and at the right edge the button that matters most for this plan: **Share** if it is yours, **Copy** if it is someone else's. Your account button sits at the very end.
+The **title bar** is the strip across the top of the editor, above the tab you are working on. Reading from left to right, it holds the logo, the plan's name, a pill saying who can see the plan, and at the right edge the button that matters most for this plan: **Share** if it is yours, **Copy** if it is someone else's. Your account button sits at the very end.
 
-<Figure caption="The title bar of a shared plan, as its owner sees it: the name, the Shared visibility pill, the Editing role pill, a solid Share button and the account button.">
+<Figure caption="The title bar of a shared plan, as its owner sees it: the name, the Shared visibility pill, a solid Share button and the account button.">
   <TitleBarParts />
 </Figure>
 
@@ -50,24 +50,6 @@ Hover the pill, or tab to it with the keyboard, and a legend opens beneath it. A
 If the plan is yours, the pill is also a button: clicking it opens the Share dialog, and the legend ends with a **Change Who Can See This** button that does the same. Everyone else gets the legend to read but no button, since only the owner decides who can see a plan.
 
 The pill does not show on a phone (the bar has no room for it), in [Zen mode](/help/tools/zen-mode/), or inside an [embed](/help/collaboration/sharing/embeds/), which hides the whole title bar.
-
-## The role pill
-
-After the visibility pill comes a second pill saying what you can do here right now: **Editing**, **Participating** or **Viewing**. It follows your [share role](/help/collaboration/sharing/): the owner and anyone on an Editor link see **Editing**, a Participant link shows **Participating**, and a Viewer link shows **Viewing**.
-
-Hover the pill to see who owns the plan: **Owned by you** on your own plans, or **Owned by** and the owner's name on someone else's. When the owner's name is not known, the pill has no hover text.
-
-If your role lets you edit, the pill is a switch that steps through all three, so you can check what each kind of link will get before you send it:
-
-- Click **Editing** and it turns to **Participating**: you work the plan as someone on a Participant link does, with their limits. You can comment, take part in a vote or a timer, add and work with cards and type into Sheet cells, but not change how a board, sheet, dashboard or form is set up.
-- Click **Participating** and it turns to **Viewing**: the plan becomes read-only, exactly as someone on a Viewer link sees it.
-- Click **Viewing** to go back to editing.
-
-The preview only changes what you can do, in this browser tab: nobody else sees your role change, and reloading the page brings you back to **Editing**. Anything you add while participating stays in the plan.
-
-For a Participant or a Viewer the pill is just a label. Clicking it does nothing, because their link does not allow editing.
-
-Like the visibility pill, the role pill is hidden on a phone, in Zen mode and in embeds.
 
 ## Share or Copy
 
