@@ -125,14 +125,18 @@ export function useTabImport({
   // path (which reads the file then hands the text here), so both routes run the exact same parse + replace. The
   // parser is lazy-loaded so its code stays out of the editor's initial bundle. Never throws — returns the
   // outcome the dialog renders (close / stay / show error).
-  const importTextIntoActiveTab = async (text: string): Promise<ImportOutcome> => {
+  // `from`: the file path says so, so a refusal names a file; the paste editor's text is pasted text.
+  const importTextIntoActiveTab = async (
+    text: string,
+    from: 'file' | 'paste' = 'paste',
+  ): Promise<ImportOutcome> => {
     const active = tabs.find((t) => t.id === activeId);
     if (active?.locked) {
       return { status: 'error', error: 'This tab is locked. Unlock it before importing.' };
     }
 
     const { parseImportedTab } = await import('@/lib/import-tab');
-    const result = parseImportedTab(text);
+    const result = parseImportedTab(text, from);
     if (!result.ok) return { status: 'error', error: result.error };
     // A Dashboard takes only a Dashboard's JSON (docs/specs/026-plan/plan-tabs.md "Import and Export of a Dashboard").
     if (active?.kind === 'dashboard' && result.tab.kind !== 'dashboard') {
@@ -159,7 +163,7 @@ export function useTabImport({
     const { pickTabFile } = await import('@/lib/import-tab');
     const picked = await pickTabFile();
     if (!picked) return { status: 'cancelled' };
-    return importTextIntoActiveTab(picked.text);
+    return importTextIntoActiveTab(picked.text, 'file');
   };
 
   return { replaceActiveTabContent, importIntoActiveTab, importTextIntoActiveTab };

@@ -57,7 +57,7 @@ describe('importing into a tab', () => {
     const { api, deps } = setup();
     expect(await api.importTextIntoActiveTab('json', 'not json')).toEqual({
       status: 'error',
-      error: "File isn't valid JSON.",
+      error: "This pasted text isn't valid JSON.",
     });
     expect(deps.commitTabs).not.toHaveBeenCalled();
   });
