@@ -167,10 +167,10 @@ describe('the events', () => {
     expect(read?.name).toBe('Relaunch');
     expect(read?.truncated).toBe(false);
     expect(read?.events.map((e) => [e.summary, e.startDay - TODAY, e.endDay - TODAY])).toEqual([
-      ['#1 Build', 0, 3],
-      ['Starts: #3 Kick off', 1, 1],
-      ['#2 Ship', 5, 5],
-      ['#4 Untitled', 7, 7],
+      ['T-1 Build', 0, 3],
+      ['Starts: T-3 Kick off', 1, 1],
+      ['T-2 Ship', 5, 5],
+      ['T-4 Untitled', 7, 7],
     ]);
     expect(read?.events[0]).toMatchObject({
       uid: 'span.P@liveplanner.app',
@@ -192,8 +192,8 @@ describe('the events', () => {
     ]);
     const titles = async (feed: CalendarFeed) =>
       (await feedEventsOf(env, 'P', feed, NOW))?.events.map((e) => e.summary);
-    expect(await titles(ALL)).toEqual(['#1 Open']);
-    expect(await titles({ ...ALL, includeDone: true })).toEqual(['#1 Open', '#2 Done']);
+    expect(await titles(ALL)).toEqual(['T-1 Open']);
+    expect(await titles({ ...ALL, includeDone: true })).toEqual(['T-1 Open', 'T-2 Done']);
   });
 
   it('shows only the card types picked, across every board', async () => {
@@ -206,8 +206,8 @@ describe('the events', () => {
     const titles = async (feed: CalendarFeed) =>
       (await feedEventsOf(env, 'P', feed, NOW))?.events.map((e) => e.summary);
     expect(await titles({ ...ALL, typeIds: ['bug'] })).toEqual(['#2 A bug']);
-    expect(await titles({ ...ALL, typeIds: ['bug', 'task'] })).toEqual(['#1 A task', '#2 A bug']);
-    expect(await titles(ALL)).toEqual(['#1 A task', '#2 A bug']);
+    expect(await titles({ ...ALL, typeIds: ['bug', 'task'] })).toEqual(['T-1 A task', '#2 A bug']);
+    expect(await titles(ALL)).toEqual(['T-1 A task', '#2 A bug']);
   });
 
   // A feed made before card types keeps its one board until its options are next saved.
@@ -223,8 +223,8 @@ describe('the events', () => {
     ]);
     const titles = async (feed: CalendarFeed) =>
       (await feedEventsOf(env, 'P', feed, NOW))?.events.map((e) => e.summary);
-    expect(await titles({ ...ALL, boardId: 'b2' })).toEqual(['#2 Hers', '#3 Nobody']);
-    expect(await titles({ ...ALL, mine: true })).toEqual(['#1 Mine']);
+    expect(await titles({ ...ALL, boardId: 'b2' })).toEqual(['T-2 Hers', 'T-3 Nobody']);
+    expect(await titles({ ...ALL, mine: true })).toEqual(['T-1 Mine']);
     expect(await titles({ ...ALL, boardId: 'gone' })).toEqual([]);
   });
 
@@ -242,7 +242,7 @@ describe('the events', () => {
       card('b', 2, { title: 'Kanban only', status: 'b1-done', due: iso(TODAY) }),
     ]);
     const read = await feedEventsOf(env, 'P', { ...ALL, boardId: 'b3', includeDone: true }, NOW);
-    expect(read?.events.map((e) => e.summary)).toEqual(['#1 Both']);
+    expect(read?.events.map((e) => e.summary)).toEqual(['T-1 Both']);
     expect(read?.events[0]?.description).toBe(
       'To-do list · Doing\nhttps://plan.test/project/P#item=a',
     );

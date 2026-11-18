@@ -112,6 +112,20 @@ describe('prefixesOf', () => {
     expect(map.get('c')).toBe('G');
   });
 
+  it('works out the largest catalogue of clashing names, and names 5,000 cards, within budget', () => {
+    // 32 types (ITEM_TYPES_MAX) all named alike, so every made prefix walks its letters and digits.
+    const fresh = () => Array.from({ length: 32 }, (_, i) => t(`t${i}`, 'Tt'));
+    const catalogue = fresh();
+    expect(new Set(prefixesOf(catalogue).values()).size).toBe(32);
+    const cards = Array.from({ length: 5000 }, (_, i) => ({ key: i + 1, type: `t${i % 32}` }));
+    expect(
+      cpuMsOf(() => {
+        for (let n = 0; n < 100; n++) prefixesOf(fresh());
+        for (const c of cards) cardRef(c, catalogue);
+      }),
+    ).toBeLessThan(cpuBudgetMs(100));
+  });
+
   it('works a catalogue out once', () => {
     const types = [t('task', 'Task')];
     expect(prefixesOf(types)).toBe(prefixesOf(types));

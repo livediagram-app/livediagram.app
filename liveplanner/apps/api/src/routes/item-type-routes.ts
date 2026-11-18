@@ -44,7 +44,10 @@ async function put(ctx: PlanRouteContext, projectId: string): Promise<Response> 
     // (item-types.md "Card number prefixes"); checked again, so a prefix set over another type's made one is refused.
     const result = sent.ok
       ? validateItemTypeCatalogue(
-          { ...sent.catalogue, types: withPinnedPrefixes(typesOf(doc.itemTypes), sent.catalogue.types) },
+          {
+            ...sent.catalogue,
+            types: withPinnedPrefixes(typesOf(doc.itemTypes), sent.catalogue.types),
+          },
           { newerFields: 'refuse' },
         )
       : sent;
