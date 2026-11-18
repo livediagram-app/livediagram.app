@@ -1,10 +1,8 @@
 # Live service status
 
-Status: **in progress** (Work Tracker 932). Built so far: the binding's data (part 1 of 4): `statusUrl` on a shape,
-its validation and role rule, the shared address check, and the pure answer reader; and the room's polling (part 2),
-which checks bound URLs and sends `service-status` on a deployment with `LIVE_STATUS_ENABLED`. Not built yet: the
-badge (part 3) and the Live Status dialog (part 4). Until part 4 nothing in the editor offers a binding, and until
-part 3 nothing shows the states the room sends.
+Status: **built** (Work Tracker 932): the binding (`statusUrl` on a shape, its validation and role rule, the shared
+address check, the answer reader), the room's checks on a deployment with `LIVE_STATUS_ENABLED`, the badge, and the
+Editor's Live Status dialog, with its help article, telemetry and MCP field.
 
 ## What
 
@@ -35,7 +33,8 @@ connection and no stored secret, and keeps the diagram the source of the picture
 - **Off by default on forks.** The checks run only on a deployment whose api has `LIVE_STATUS_ENABLED` set to
   `true`, which only livediagram.app's [hosted profile](../016-platform/deployment.md#hosted-profile) sets. Anywhere
   else a bound shape is an ordinary shape: the binding is kept, nothing is fetched, no badge shows and the dialog is
-  not offered.
+  not offered. The editor learns which from the api's `GET /api/capabilities`, whose `liveStatusEnabled` is true
+  only when `LIVE_STATUS_ENABLED` is `true` ([API app](../015-api/api.md) "Capabilities").
 
 ## The binding
 
@@ -129,18 +128,63 @@ A state carries `checkedAt` (ms) and, for anything but Up, a `reason`: `http_sta
 
 ## The badge
 
-- A small pill at the shape's **top-right corner**, half outside it like an attached badge: a coloured dot and the
-  state's word. Up is the status green, Degraded amber, Down red, Unknown a neutral grey, each meeting contrast in
-  light and dark themes.
+- A small pill on the shape's **bottom-right corner**, half outside it like a status dot on an avatar: a coloured dot
+  and the state's word. The top corners are taken (the lock badge and remote selectors top-left, the element
+  indicators top-right), and the bottom right is where a status reads on a person's avatar. Up is the status green,
+  Degraded amber, Down red, Unknown a neutral grey, each meeting contrast in light and dark themes: the word is in
+  the state's dark ink on a white pill (its light ink on a slate pill in dark mode), so it reads on any shape fill,
+  and the dot is never the only cue.
+- It scales with the canvas like the other on-element adornments and hides below their overview zoom
+  (`ADORNMENT_MIN_ZOOM`, 40%), where it would be too small to read.
 - **Stale is Unknown.** A state older than three rounds (3 minutes) reads Unknown ("Not checked recently"), so a
-  room that stopped checking never leaves a green dot behind.
+  room that stopped checking never leaves a green dot behind. The badge's clock moves every 15 seconds while any
+  state is held, so a stale state turns Unknown without a new message.
 - **Tooltip:** the state, the reason in words ("Answered 503", "No answer in 5 seconds"), when it was checked
   ("Checked 40 seconds ago") and the URL's host.
-- Shown to every role, in the editor, on a share link and in Present, **read-only**. It never takes a click: a click
-  on it selects the shape as before.
+- Shown to every role, in the editor, on a share link and in Present, **read-only**. It never takes a click: a press
+  on it selects the shape as before. It is not one of the element indicators, which an embed and a presented slide
+  hide: a live state is the content, so a presented slide shows it.
 - **Not in exports.** A PNG, SVG or PDF is a still picture of the drawing; a live state frozen into it would mislead.
+  Exports draw from the document, which holds no state, so they never show it.
 - Nothing shows while the room hasn't checked a URL yet (first seconds), on a deployment with polling off, in a
   document opened without its room (offline), or to a Community post's readers, who never join the author's room.
+- **Accessibility.** The pill is an image to assistive technology, named "Live status: Up" (or Degraded, Down,
+  Unknown), and its tooltip is the shared hover card, which a keyboard reaches through the shape. Words carry the
+  state, never colour alone. It has no motion, so reduced motion changes nothing.
+
+## The Live Status dialog
+
+- **Where.** The element menu's Resources row, beside Assign Action, Comment, Link and Note: **Live Status…** (it
+  reads the same whether bound or not; the row's mark shows when one is). Offered only to an **Editor**, only on a
+  shape that takes a badge (not a self-drawing kind, not a locked shape), and only when the deployment checks
+  (`liveStatusEnabled`). A Participant and a Viewer never see it: their element menu is the read-only one.
+- **What it holds.** A title "Live Status" with the help link, one sentence of purpose ("Show whether the service
+  this shape stands for is up. While the canvas is open, it's checked about once a minute."), a **Status URL**
+  field, a note that the address is part of the canvas ("Anyone who can open this canvas can read the address, so
+  never put a key or token in it."), and, when the shape is bound, its current badge and when it was checked.
+- **Checking as you type.** The field is read through the same `parsePublicHttpsUrl` the document's validation uses,
+  after adding `https://` to an address typed without a scheme: a malformed or non-https address reads "Enter an
+  https address, like https://status.example.com/api/v2/status.json"; an IP address or an internal name reads
+  "Private and internal addresses can't be checked. Use the service's public address." Save is disabled until the
+  address passes, and Enter saves.
+- **Saving** writes the parsed URL (`URL.href`, so one address is one source however it was typed) as the shape's
+  `statusUrl` in one undo step and closes. **Remove** (when bound) deletes the field in one undo step. Cancel and
+  Escape change nothing. The badge appears within seconds: the save brings the room's next round forward.
+- The dialog closes itself if its shape goes, is locked or the session stops being an Editor.
+
+## Telemetry
+
+- `Element · Linked · LiveStatus` when a status URL is saved on a shape, and `Element · Cleared · LiveStatus` when
+  one is removed. Never the URL or its host. The liveworkspace telemetry page charts both as "Live Status Bindings".
+- The room's checks send no telemetry; they log a debug line per round (blueprint "Observability").
+
+## Help and agents
+
+- The help article **Live Service Status** (`/help/canvas/links/live-status/`, under Links) says what a binding is,
+  which addresses work, what each state means, who sees the badge, and that it is off on deployments that don't
+  check.
+- The MCP server and the CLI write `statusUrl` like any shape field (the element format names it); the api's
+  validation holds it to the same rules, and an agent's write brings the room's round like a person's.
 
 ## Errors and edge cases
 
@@ -148,8 +192,11 @@ A state carries `checkedAt` (ms) and, for anything but Up, a `reason`: `http_sta
   shows the room's checks failing as anything but the badge.
 - **A binding on a tab outside a tab-scoped link's scope** is never sent to that link's sessions: each session gets
   the states of URLs bound on the tabs it may see.
-- **Polling off** (`LIVE_STATUS_ENABLED` unset): the room runs no rounds and sends no `service-status`; the editor
-  hides the dialog; bound shapes open, save, copy and export exactly as unbound ones.
+- **Polling off** (`LIVE_STATUS_ENABLED` unset): the room runs no rounds and sends no `service-status`; the
+  capabilities answer `liveStatusEnabled: false`, so the editor offers no dialog; bound shapes open, save, copy and
+  export exactly as unbound ones.
+- **A forged state.** `service-status` is a system op: the room drops one sent by a client socket, and the editor
+  takes it only `from: 'system'`, so no collaborator can paint another's badges.
 - **An old client** that doesn't know `statusUrl` keeps it, since an element update carries the whole element.
 
 ## Cost
@@ -168,5 +215,9 @@ A state carries `checkedAt` (ms) and, for anything but Up, a `reason`: `http_sta
 - The answer reader: every row of the table above, malformed JSON, huge and empty bodies, and a CPU-time budget on a
   64 KiB body.
 - The participant rule's leak test holds `statusUrl` to Editors.
-- The room (part 2): one fetch per distinct URL per round across viewers and tabs, no round with no sockets, none
-  with polling off, the per-round cap, scope filtering, and a stale state turning Unknown.
+- The room: one fetch per distinct URL per round across viewers and tabs, no round with no sockets, none with
+  polling off, the per-round cap, scope filtering, and a forged `service-status` from a client dropped.
+- The badge: each state's word and tooltip, a stale state reading Unknown as the clock moves, nothing for an unbound
+  or unchecked shape, shown read-only to a Viewer and in Present.
+- The dialog: refusals as typed, save and remove as one step each, the menu row for an Editor only and never with
+  polling off.

@@ -872,7 +872,9 @@ wrongly:
 **Style fields.** The element format names the style fields a box or arrow takes beyond its geometry, as facts:
 every closed vocabulary from `ELEMENT_FIELD_VALUES` (text size and alignment, icon position, arrow style, ends and
 heads, border style and radius, font) with its values, bold and italic, `colorPreset` with the theme's preset looks,
-`iconId` (from `search_icons`) and `note`. Before, these were discoverable only by reading a template's JSON, and
+`iconId` (from `search_icons`), `note` and a shape's `statusUrl` (a public https status URL whose badge shows while the
+canvas is open, [Live service status](../009-elements/live-status.md)). Before, these were discoverable only by
+reading a template's JSON, and
 an agent hand-placing a dashboard guessed `textAlign` and `textSize: "xl"`.
 
 **Facilitation kinds.** The format also names what the session kinds hold: a `session-button`'s `session` (a timer

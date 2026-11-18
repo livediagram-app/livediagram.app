@@ -1,29 +1,41 @@
 # Live service status: blueprint
 
 Derived from [Live service status](../live-status.md). The spec decides; this file only adds engineering precision.
-Part 2 (the room's rounds) is here; parts 3 and 4 (the badge, the dialog) add their rows as they land.
 
 Scope, by file:
 
-| File                                                  | Role                                                                                                                                                                                                                             |
-| ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `../packages/model-core/src/public-https-url.ts`      | `parsePublicHttpsUrl`, `INTERNAL_HOST_SUFFIXES`: the address shape check, shared with liveworkspace's webhooks                                                                                                                   |
-| `packages/document/src/element-types.ts`              | `ShapeElement.statusUrl`                                                                                                                                                                                                         |
-| `packages/document/src/status-source.ts`              | `STATUS_URL_MAX`, `isStatusUrl`, `statusUrlsOf`                                                                                                                                                                                  |
-| `packages/document/src/validate-shape.ts`             | The `statusUrl` field check                                                                                                                                                                                                      |
-| `packages/document/src/element-fields.ts`             | `statusUrl` in the shape's field list, so edit operations may set it                                                                                                                                                             |
-| `packages/document/src/participant-content.ts`        | `PARTICIPANT_NEVER_FIELDS`: kept as stored on a Participant's update, dropped from its add                                                                                                                                       |
-| `packages/api-schema/src/service-status.ts`           | `ServiceState`, `ServiceStatus`, `ServiceStatusReason`, the constants, `classifyStatusAnswer`, `readStatusBody`, `currentServiceState`                                                                                           |
-| `../liveworkspace/apps/index/src/webhooks/address.ts` | `parseWebhookUrl` over `parsePublicHttpsUrl`, adding its Slack and Teams host rules                                                                                                                                              |
-| `apps/api/src/openapi/schemas.generated.ts`           | Regenerated: `statusUrl` on the shape schema                                                                                                                                                                                     |
-| `apps/api/src/document-room/room-service-status.ts`   | `RoomServiceStatus` (rounds, join, save, leave, restore), `roomServiceStatus(room)` (its wiring to the room and the `LIVE_STATUS_ENABLED` switch), `readStatusSources`, `checkStatusUrl`, `SERVICE_STATUS_KEY` and the constants |
-| `apps/api/src/document-room/document-room.ts`         | `serviceStatus = roomServiceStatus(this)`, restored behind the order state                                                                                                                                                       |
-| `apps/api/src/document-room/room-lifecycle.ts`        | `serviceStatus.at` among the alarm's times; the round last in `alarm`; `forget` on purge                                                                                                                                         |
-| `apps/api/src/document-room/room-message.ts`          | `serviceStatus.join(ws)` on hello                                                                                                                                                                                                |
-| `apps/api/src/document-room/room-content-state.ts`    | `serviceStatus.noteWrite()` on every content write                                                                                                                                                                               |
-| `apps/api/src/document-room/room-roster.ts`           | `serviceStatus.left(ws)` when a socket closes                                                                                                                                                                                    |
-| `apps/api/src/types.ts`, `apps/api/hosted-vars.json`  | `LIVE_STATUS_ENABLED`: on the `Env`, and `"true"` in the hosted profile's shared vars only                                                                                                                                       |
-| `../packages/api-kit/src/pooled.ts`                   | `pooled(tasks, limit)`: a round's checks three at a time (shared with the status Worker and the index)                                                                                                                           |
+| File                                                                                     | Role                                                                                                                                                                                                                             |
+| ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `../packages/model-core/src/public-https-url.ts`                                         | `parsePublicHttpsUrl`, `INTERNAL_HOST_SUFFIXES`: the address shape check, shared with liveworkspace's webhooks                                                                                                                   |
+| `packages/document/src/element-types.ts`                                                 | `ShapeElement.statusUrl`                                                                                                                                                                                                         |
+| `packages/document/src/status-source.ts`                                                 | `STATUS_URL_MAX`, `isStatusUrl`, `statusUrlsOf`                                                                                                                                                                                  |
+| `packages/document/src/validate-shape.ts`                                                | The `statusUrl` field check                                                                                                                                                                                                      |
+| `packages/document/src/element-fields.ts`                                                | `statusUrl` in the shape's field list, so edit operations may set it                                                                                                                                                             |
+| `packages/document/src/participant-content.ts`                                           | `PARTICIPANT_NEVER_FIELDS`: kept as stored on a Participant's update, dropped from its add                                                                                                                                       |
+| `packages/api-schema/src/service-status.ts`                                              | `ServiceState`, `ServiceStatus`, `ServiceStatusReason`, the constants, `classifyStatusAnswer`, `readStatusBody`, `currentServiceState`                                                                                           |
+| `../liveworkspace/apps/index/src/webhooks/address.ts`                                    | `parseWebhookUrl` over `parsePublicHttpsUrl`, adding its Slack and Teams host rules                                                                                                                                              |
+| `apps/api/src/openapi/schemas.generated.ts`                                              | Regenerated: `statusUrl` on the shape schema                                                                                                                                                                                     |
+| `apps/api/src/document-room/room-service-status.ts`                                      | `RoomServiceStatus` (rounds, join, save, leave, restore), `roomServiceStatus(room)` (its wiring to the room and the `LIVE_STATUS_ENABLED` switch), `readStatusSources`, `checkStatusUrl`, `SERVICE_STATUS_KEY` and the constants |
+| `apps/api/src/document-room/document-room.ts`                                            | `serviceStatus = roomServiceStatus(this)`, restored behind the order state                                                                                                                                                       |
+| `apps/api/src/document-room/room-lifecycle.ts`                                           | `serviceStatus.at` among the alarm's times; the round last in `alarm`; `forget` on purge                                                                                                                                         |
+| `apps/api/src/document-room/room-message.ts`                                             | `serviceStatus.join(ws)` on hello                                                                                                                                                                                                |
+| `apps/api/src/document-room/room-content-state.ts`                                       | `serviceStatus.noteWrite()` on every content write                                                                                                                                                                               |
+| `apps/api/src/document-room/room-roster.ts`                                              | `serviceStatus.left(ws)` when a socket closes                                                                                                                                                                                    |
+| `apps/api/src/types.ts`, `apps/api/hosted-vars.json`                                     | `LIVE_STATUS_ENABLED`: on the `Env`, and `"true"` in the hosted profile's shared vars only                                                                                                                                       |
+| `../packages/api-kit/src/pooled.ts`                                                      | `pooled(tasks, limit)`: a round's checks three at a time (shared with the status Worker and the index)                                                                                                                           |
+| `packages/api-schema/src/room-op-kinds.ts`, `room-op.ts`                                 | `service-status` in `SYSTEM_OP_KINDS`; `ServiceStatusOp` in `RoomOp`                                                                                                                                                             |
+| `packages/api-schema/src/index.ts`, `apps/api/src/routes/capabilities.ts`                | `CapabilitiesResponse.liveStatusEnabled`: `env.LIVE_STATUS_ENABLED === 'true'`                                                                                                                                                   |
+| `apps/editor/lib/service-status-store.ts`                                                | `parseServiceStatuses`, `createServiceStatusStore`, `ServiceStatusContext`, `SERVICE_STATUS_TICK_MS`                                                                                                                             |
+| `apps/editor/lib/service-status-copy.ts`                                                 | `serviceStatusCopy(status, url, now)`: the badge's word, name and tooltip lines                                                                                                                                                  |
+| `apps/editor/lib/live-status-input.ts`                                                   | `readStatusUrlInput(raw)`: the dialog's check, over `parsePublicHttpsUrl`; `canBindLiveStatus(el)`                                                                                                                               |
+| `apps/editor/app/document/[id]/room-op-receive.ts`                                       | The `service-status` branch, `from: 'system'` only, to `receiveServiceStatus`                                                                                                                                                    |
+| `apps/editor/app/document/[id]/editor-state/useEditorRoom.ts`                            | The page's one store, fed by the room, in the view as `serviceStatuses`                                                                                                                                                          |
+| `apps/editor/app/document/[id]/EditorView.tsx`                                           | `ServiceStatusContext.Provider` around the canvas                                                                                                                                                                                |
+| `apps/editor/components/canvas/ServiceStatusBadge.tsx`                                   | The badge, drawn by `boxed-element-chrome.tsx` on a bound shape                                                                                                                                                                  |
+| `apps/editor/components/dialogs/LiveStatusDialog.tsx`                                    | The Editor's dialog, opened from `EditorElementDialogs.tsx` on `liveStatusOpenForId` (`editor-ui-state.ts`)                                                                                                                      |
+| `apps/editor/components/palette/ElementMenuQuickBar.tsx`, `EditorContextMenuHost.tsx`    | `quickBarItems`' Live Status row, offered through `onEditLiveStatus` when `canBindLiveStatus` and `liveStatusEnabled`                                                                                                            |
+| `packages/help-registry/src/index.ts`, `apps/help/app/canvas/links/live-status/page.mdx` | The help article                                                                                                                                                                                                                 |
+| `packages/agent-verbs/src/mcp/schema.ts`                                                 | `statusUrl` named among the element format's fields                                                                                                                                                                              |
 
 ## Domain and naming
 
@@ -144,25 +156,75 @@ reason: 'too_many_sources' }`. Nothing is sent when that is empty. The frame is 
   Worst case, every URL hanging: nine waves of 5 s, about 45 s of Durable Object duration a minute while open.
 - One `service-status` frame per session per round that checked anything: a few hundred bytes per bound URL.
 
+## Presentation and UX
+
+- **The store.** `createServiceStatusStore()` holds `{ statuses: Record<url, ServiceStatus>, now }`. `receive(raw)`
+  replaces `statuses` with `parseServiceStatuses(raw)` (each entry a string key at most `STATUS_URL_MAX`, a known
+  `state`, a finite `checkedAt`, an optional known `reason` and integer `httpStatus`; anything else dropped) and sets
+  `now`. While it holds any status and has a subscriber, one interval of `SERVICE_STATUS_TICK_MS` (15 s) moves `now`;
+  it stops when the last subscriber leaves or the statuses empty. `getSnapshot` returns the same object until either
+  changes. `useEditorRoom` makes one per page (`useState`), and `EditorView` provides it as `ServiceStatusContext`.
+- **The badge.** `boxed-element-chrome.tsx` draws `<ServiceStatusBadge url />` for a `shape` whose `statusUrl` is a
+  string and whose kind is not `isSelfDrawingShape`. The badge reads the context (`useSyncExternalStore`); no store, no
+  status for its URL, or a zoom under `ADORNMENT_MIN_ZOOM` draws nothing. Otherwise `currentServiceState(status,
+now)` picks the look. It is absolute at the bottom-right (`right: 10px`, `bottom: 0`, moved down half its height),
+  18 px tall, fully rounded, white with a hairline ring (slate-800 in dark), a 6 px dot and a 10 px semibold word: Up
+  emerald, Degraded amber, Down rose, Unknown slate, each the 700 ink in light and the 300 ink in dark. It sits in the
+  shared `HoverCard` (title the state, description the reason, the time and the host), taking the pointer so the card
+  opens, with no handler, so a press bubbles to the shape.
+- `serviceStatusCopy(status, url, now)`: `{ state, word, label, title, detail }`. Words: Up, Degraded, Down, Unknown.
+  The reason's words: `reported` "The service reports it", `http_status` "Answered {code}" (or "Answered with an
+  error"), `timeout` "No answer in 5 seconds", `unreachable` "Couldn't connect", `unresolved` "The address doesn't
+  resolve", `redirect` "This address redirects: use the address it moves to", `refused` "This address can't be
+  checked", `too_many_sources` "Too many status links in this document"; stale: "Not checked recently". The time is
+  "Checked just now" under 10 s, else "Checked {n} seconds ago" or "Checked {n} minute(s) ago". The host is
+  `new URL(url).host`.
+- **The dialog.** `LiveStatusDialog({ url, status, now, onSave, onRemove, onClose })` on the shared `Dialog` with
+  `DialogHeader` (title "Live Status", the purpose line, `HelpArticleLink article="liveStatus"`, the close button), a
+  `TextInput` (`type="url"`, autofocus, the current URL), the message line (the refusal in rose, else the secret
+  note), the current badge row when bound, and a footer: Remove (bound only) at the left, Cancel and Save at the
+  right. `readStatusUrlInput(raw)`: trimmed; empty is `{ ok: false, error: 'empty' }` (no message); an input with no
+  `scheme://` gets `https://`; then `parsePublicHttpsUrl(…, STATUS_URL_MAX)`: `invalid` and `private` map to the
+  spec's two messages; ok returns `url.href`. Enter and Save run the same check.
+- **Who sees the row.** `canBindLiveStatus(el)`: a `shape`, not `isSelfDrawingShape`, not locked. The context menu
+  host passes `onEditLiveStatus` only when `can.level === 'edit'`, `useCapabilities().liveStatusEnabled` and
+  `canBindLiveStatus(target)`; `quickBarItems` adds the `live-status` row (label "Live Status…", detail "Whether its
+  service is up", `on` when bound) only when it is passed. `EditorElementDialogs` renders the dialog for
+  `liveStatusOpenForId` while `can.level === 'edit'` and the element passes `canBindLiveStatus`, and
+  `useCloseVanishedDialogs` closes it otherwise.
+- **Writes.** Save: `commitElements` mapping the one id to `{ ...el, statusUrl }`, then `track('Element', 'Linked',
+'LiveStatus')`. Remove: the same, deleting the field, then `track('Element', 'Cleared', 'LiveStatus')`.
+
+## Accessibility
+
+- The badge: `role="img"`, `aria-label` from `serviceStatusCopy` ("Live status: Down"); the word is visible text, so
+  colour is never the only cue; no motion.
+- The dialog: the shared `Dialog`'s focus trap and Escape; the field's `aria-invalid` and `aria-describedby` point at
+  the message line; Save's disabled state follows the check.
+
 ## Observability
 
 - `[service-status] round` (debug) with `checked`, `down` and `overflow` counts after each round that checked
   anything; never a URL or a body.
+- Telemetry: `Element · Linked · LiveStatus` on save and `Element · Cleared · LiveStatus` on remove, charted on the
+  liveworkspace telemetry page as "Live Status Bindings"
+  (`../liveworkspace/apps/site/app/telemetry/livediagram/catalogue/content.ts`).
 
 ## Constants and configuration
 
-| Name                    | Value                                                   | Where                    |
-| ----------------------- | ------------------------------------------------------- | ------------------------ |
-| `STATUS_URL_MAX`        | 2,048                                                   | `status-source.ts`       |
-| `STATUS_POLL_MS`        | 60,000                                                  | `service-status.ts`      |
-| `STATUS_STALE_MS`       | 180,000                                                 | `service-status.ts`      |
-| `STATUS_SOURCES_MAX`    | 25                                                      | `service-status.ts`      |
-| `STATUS_TIMEOUT_MS`     | 5,000                                                   | `service-status.ts`      |
-| `STATUS_BODY_MAX`       | 65,536                                                  | `service-status.ts`      |
-| `STATUS_BIND_DELAY_MS`  | 3,000                                                   | `service-status.ts`      |
-| `STATUS_CHECKS_AT_ONCE` | 3                                                       | `room-service-status.ts` |
-| `STATUS_USER_AGENT`     | `livediagram-status/1.0 (+https://www.livediagram.app)` | `room-service-status.ts` |
-| `SERVICE_STATUS_KEY`    | `service-status`                                        | `room-service-status.ts` |
+| Name                     | Value                                                   | Where                     |
+| ------------------------ | ------------------------------------------------------- | ------------------------- |
+| `STATUS_URL_MAX`         | 2,048                                                   | `status-source.ts`        |
+| `STATUS_POLL_MS`         | 60,000                                                  | `service-status.ts`       |
+| `STATUS_STALE_MS`        | 180,000                                                 | `service-status.ts`       |
+| `STATUS_SOURCES_MAX`     | 25                                                      | `service-status.ts`       |
+| `STATUS_TIMEOUT_MS`      | 5,000                                                   | `service-status.ts`       |
+| `STATUS_BODY_MAX`        | 65,536                                                  | `service-status.ts`       |
+| `STATUS_BIND_DELAY_MS`   | 3,000                                                   | `service-status.ts`       |
+| `STATUS_CHECKS_AT_ONCE`  | 3                                                       | `room-service-status.ts`  |
+| `STATUS_USER_AGENT`      | `livediagram-status/1.0 (+https://www.livediagram.app)` | `room-service-status.ts`  |
+| `SERVICE_STATUS_KEY`     | `service-status`                                        | `room-service-status.ts`  |
+| `SERVICE_STATUS_TICK_MS` | 15,000                                                  | `service-status-store.ts` |
 
 ## Testing
 
@@ -180,3 +242,12 @@ reason: 'too_many_sources' }`. Nothing is sent when that is empty. The frame is 
   refusing a host resolving private without fetching it, following no redirect, sending no credentials; and the real
   `DocumentRoom` wired end to end, on and off.
 - `hosted-vars.test.ts`: the hosted profile sets `LIVE_STATUS_ENABLED`; `wrangler.toml` commits it nowhere.
+- `document-room.test.ts`: a `service-status` from a client socket is dropped, even at edit role;
+  `capabilities.test.ts`: `liveStatusEnabled` only for `"true"`.
+- `service-status-store.test.ts`, `service-status-copy.test.ts`, `live-status-input.test.ts`: parsing, the clock,
+  every reason's words, every refusal (and a CPU-time budget on a long input).
+- `room-op-receive.test.ts`: a `service-status` from the system reaches the store; one from a peer is ignored.
+- `ServiceStatusBadge.test.tsx`: each state, stale to Unknown as the clock moves, nothing unbound, unchecked or at
+  overview zoom, drawn on a read-only (Viewer) canvas and inside `SuppressElementIndicators` (Present).
+- `LiveStatusDialog.test.tsx`: refusals as typed, save and remove, Enter, the bound badge row;
+  `ElementMenuQuickBar.test.tsx`: the row only with `onEditLiveStatus`.
