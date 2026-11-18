@@ -13,7 +13,10 @@ Derived from [BPMN](../bpmn.md). Defaults in [DEFAULTS.md](DEFAULTS.md) as `Dn`.
 | `apps/editor/components/canvas/BpmnMarkLayer.tsx`                                        | The canvas mark over the shape                                       |
 | `apps/editor/components/canvas/ShapeContentRouter.tsx`, `shape-svg-overlay.tsx`          | Mounts the layer; the geometry override for the data object          |
 | `apps/editor/components/palette/tile-defs/bpmn-tiles.tsx`                                | The 14 tiles, section `bpmn`                                         |
-| `apps/editor/components/palette/palette-layouts.ts`, `category-flyout-groups.ts`         | Diagram's Shapes gains the group; its name and tagline               |
+| `apps/editor/components/palette/palette-layouts.ts`, `category-flyout-groups.ts`         | Diagram's Shapes gains the group; its name, tagline, optional entry  |
+| `apps/editor/components/palette/OptionalFlyoutGroup.tsx`, `CategoryFlyout.tsx`           | The closed-by-default BPMN header row and its remembered state       |
+| `../packages/workbench/src/hooks/ui/useStoredOpen.ts`                                    | The remembered open state (`@liveworkspace/workbench`)               |
+| `../packages/workbench/src/components/primitives/AccordionSection.tsx`                   | The accordion it drives; `aria-controls`, `headerProps`              |
 | `apps/editor/components/palette/BpmnMenuSection.tsx`                                     | Tools > BPMN                                                         |
 | `apps/editor/lib/draw-mode.ts`, `draw-commit.ts`, `app/document/[id]/useArrowConnect.ts` | The arrow intent's `flow` and its look                               |
 | `packages/templates/src/template-builders-bpmn.ts`                                       | The BPMN Process template                                            |
@@ -52,6 +55,12 @@ Banned: "BPMN shape kind" (there is none), "swimlane" for a pool in code.
   the smaller side, task markers in an 18 px cell at (6, 6), the sub-process's 14 px box centred on the bottom edge,
   gateway markers centred at about half the width. Paints: `line`, `solid` (the face), `ink` (the line colour as a
   fill), `knock` (a stroke in the face colour). The face is the fill, white when transparent (`bpmnMarkFace`).
+- **The section.** `flyoutGroups` sets `optional: { storageKey, telemetryType }` on a group whose first tile is in
+  `OPTIONAL_GROUPS` (`'bpmn:start-event'` → `livediagram:v2:palette-group-open:bpmn`, `BpmnGroup`); `CategoryFlyout`
+  renders such a group as `OptionalFlyoutGroup` (an `AccordionSection` whose header carries `data-flyout-item` and
+  `data-optional-group`). States: closed (the default: nothing stored, or anything but `'open'`) and open; a press
+  flips it through `useStoredOpen`, writing `'open'` or `'closed'` via `writeLocalStorageValue`. `onFlyoutArrowKey`
+  drops items inside an `[inert]` body, so a closed section's header is the arrows' stop.
 
 ## Interfaces and contracts
 
@@ -65,6 +74,10 @@ Banned: "BPMN shape kind" (there is none), "swimlane" for a pool in code.
 
 One optional field on a shape, persisted as written; absent for every shape drawn before. No migration: an unknown
 value is refused on write, and an old reader draws the plain kind.
+
+The section's open state is per browser, never synced: `localStorage['livediagram:v2:palette-group-open:bpmn']`,
+`'open'` or `'closed'`. A read or write that throws (storage blocked, quota) falls back to the session's memory
+(`useLocalStorageValue`), so the section still opens and closes.
 
 ## Errors and edge cases
 
@@ -85,23 +98,32 @@ per-frame work. The export adds the same paths per BPMN element. The data object
 
 ## Presentation and UX
 
-Tiles, captions and blurbs as in `bpmn-tiles.tsx`; the group heads "BPMN"; Diagram's Shapes tagline reads "The basics,
+Tiles, captions and blurbs as in `bpmn-tiles.tsx`; the group is a header row "BPMN" with a `CountBadge` (14, spoken
+"14 elements") and a `ChevronIcon`, a slate plate while closed, flat while open, hover, focus-visible outline and
+pressed states, 44 px tall on a coarse pointer (`pointer-coarse:min-h-11`); its tiles open under it. Diagram's Shapes tagline reads "The basics,
 the flowchart vocabulary, BPMN and more." and Workshop keeps its own. The menu section is "BPMN", its grid titled by
 family ("Event", "Task", "Gateway", "Data"), each tile's tooltip the symbol's `BPMN_SYMBOL_LABELS` name.
 
 ## Accessibility
 
 Tiles and menu buttons carry their names (`label`); previews are `aria-hidden` Glyphs in `currentColor`, so they follow
-the theme's contrast. Nothing animates.
+the theme's contrast. The section header is a `button` with `aria-expanded` and `aria-controls` naming its body; the
+closed body is `inert` and `aria-hidden`. Its height eases on the shared accordion transition (`duration-short`),
+which reduced motion makes instant like every other (`globals.css`).
 
 ## Observability
 
-Placing a tile reports `Element·Added` with the kind's type; a symbol change `Element·Changed·Bpmn`.
+Placing a tile reports `Element·Added` with the kind's type; a symbol change `Element·Changed·Bpmn`; opening the
+palette section `UI·Opened·BpmnGroup` (counted in Palette Groups Opened).
 
 ## Testing
 
 `packages/document/src/bpmn.test.ts`: vocabulary, kinds, sizes, the variant chain, the change rule, flows, mark
 geometry finite for every symbol, export markup, validation. Template kind lists and preview bounds cover the template.
+The section: `CategoryBar.test.tsx` (closed by default, open and closed remembered across a remount, storage that
+throws, the arrows stopping on the closed header), `category-flyout-groups.test.ts` (BPMN alone is optional, its key),
+`ToolbarPalette.test.tsx` (Search finds BPMN tiles while it is closed), and in workbench `useStoredOpen.test.tsx` and
+`AccordionSection.test.tsx`.
 
 ## Constants and configuration
 

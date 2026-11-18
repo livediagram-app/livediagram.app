@@ -121,6 +121,10 @@ const HELD_AT_100 = [
   // (docs/specs/007-editor/split-view.md "Opening", Work Tracker 1223).
   'src/lib/tab-drag-store.ts',
   'src/components/chrome/useTabReorderDrag.ts',
+  // A disclosure's open state remembered per browser: livediagram's optional palette groups, BPMN first
+  // (livediagram docs/specs/007-editor/toolbar-layout.md "Optional groups", Work Tracker 973).
+  'src/hooks/ui/useStoredOpen.ts',
+  'src/components/primitives/AccordionSection.tsx',
 ];
 
 export default defineProject({

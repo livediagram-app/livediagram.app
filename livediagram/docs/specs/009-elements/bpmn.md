@@ -76,8 +76,10 @@ a text element under the symbol, as bpmn.io keeps an external label. A task's na
 
 ## The palette
 
-One group, **BPMN**, at the end of Diagram mode's **Shapes** category: no new category, no new toolbar button. Its
-tiles, each a [shape variant](../010-palette/build-category.md) placed by the one variant path every placement takes
+One group, **BPMN**, at the end of Diagram mode's **Shapes** category: no new category, no new toolbar button. It is
+an **optional group** ([Toolbar layout](../007-editor/toolbar-layout.md) "Optional groups"): a **BPMN** header row
+with its count and a chevron, **closed by default**, that opens the tiles in place and stays open (in this browser,
+through reloads) until closed again. The palette's Search finds its tiles either way. Its tiles, each a [shape variant](../010-palette/build-category.md) placed by the one variant path every placement takes
 (tap, drag, drop):
 
 **Start Event**, **Intermediate Event**, **End Event**, **Task**, **User Task**, **Sub-Process**, **Exclusive

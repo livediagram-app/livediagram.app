@@ -24,7 +24,11 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.useRealTimers();
+  vi.restoreAllMocks();
   cleanup();
+  localStorage.clear();
+  // The remembered-open store keeps this tab's writes in memory too; a clear from "another tab" drops them.
+  window.dispatchEvent(new StorageEvent('storage', { key: null }));
 });
 
 function show(mode: EditorMode = 'diagram') {
@@ -233,9 +237,62 @@ describe('the keyboard', () => {
     expect(document.activeElement).toBe(
       within(flyout()!).getByRole('button', { name: 'Add Circle' }),
     );
-    // Diagram mode's Shapes ends with the BPMN group (docs/specs/009-elements/bpmn.md "The palette").
+    // Diagram mode's Shapes ends with the BPMN section (docs/specs/009-elements/bpmn.md "The palette"): closed, its
+    // header is the last stop; open, its last tile is.
+    fireEvent.keyDown(document.activeElement!, { key: 'End' });
+    expect(document.activeElement?.getAttribute('data-optional-group')).toBe('BPMN');
+    fireEvent.click(document.activeElement!);
     fireEvent.keyDown(document.activeElement!, { key: 'End' });
     expect(document.activeElement?.getAttribute('aria-label')).toBe('Add BPMN Association');
+  });
+
+  it('keeps the BPMN section closed by default, and remembers it open and closed across a remount', () => {
+    // docs/specs/007-editor/toolbar-layout.md "Optional groups".
+    const KEY = 'livediagram:v2:palette-group-open:bpmn';
+    // Queried by attribute: role queries over the whole Shapes flyout, three mounts over, outrun the time budget.
+    const section = () => flyout()!.querySelector<HTMLButtonElement>('[data-optional-group]')!;
+    const tileHidden = () =>
+      !!flyout()!.querySelector('[aria-label="Add BPMN Task"]')!.closest('[inert][aria-hidden]');
+    show();
+    fireEvent.click(button('Shapes'), { detail: 0 });
+    expect(section().textContent).toContain('BPMN');
+    expect(section().getAttribute('aria-expanded')).toBe('false');
+    // Closed, its tiles are out of reach (inert), so neither Tab nor a screen reader lands on them.
+    expect(tileHidden()).toBe(true);
+    expect(document.getElementById(section().getAttribute('aria-controls')!)).toBeTruthy();
+    fireEvent.click(section());
+    expect(section().getAttribute('aria-expanded')).toBe('true');
+    expect(tileHidden()).toBe(false);
+    expect(localStorage.getItem(KEY)).toBe('open');
+
+    cleanup();
+    show();
+    fireEvent.click(button('Shapes'), { detail: 0 });
+    expect(section().getAttribute('aria-expanded')).toBe('true');
+    fireEvent.click(section());
+    expect(localStorage.getItem(KEY)).toBe('closed');
+
+    cleanup();
+    show();
+    fireEvent.click(button('Shapes'), { detail: 0 });
+    expect(section().getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('still opens and closes the BPMN section when storage is blocked', () => {
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new Error('SecurityError');
+    });
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('SecurityError');
+    });
+    show();
+    fireEvent.click(button('Shapes'), { detail: 0 });
+    const section = flyout()!.querySelector<HTMLButtonElement>('[data-optional-group="BPMN"]')!;
+    expect(section.getAttribute('aria-expanded')).toBe('false');
+    fireEvent.click(section);
+    expect(section.getAttribute('aria-expanded')).toBe('true');
+    fireEvent.click(section);
+    expect(section.getAttribute('aria-expanded')).toBe('false');
   });
 
   it('hands the focus back to the category on Escape', () => {

@@ -32,4 +32,23 @@ describe('AccordionSection', () => {
     expect(option.closest('[inert]')).toBeNull();
     expect(option.closest('[aria-hidden]')).toBeNull();
   });
+
+  it('points its header at the body it controls, and passes the host its own header props', () => {
+    render(
+      <AccordionSection
+        title="BPMN"
+        open={false}
+        onToggle={() => {}}
+        headerProps={{ title: 'Show BPMN', 'data-flyout-item': true }}
+      >
+        <span>Tiles</span>
+      </AccordionSection>,
+    );
+    const header = screen.getByRole('button', { name: 'BPMN' });
+    expect(header.getAttribute('aria-expanded')).toBe('false');
+    expect(header.getAttribute('title')).toBe('Show BPMN');
+    expect(header.hasAttribute('data-flyout-item')).toBe(true);
+    const body = document.getElementById(header.getAttribute('aria-controls')!);
+    expect(body?.contains(screen.getByText('Tiles'))).toBe(true);
+  });
 });

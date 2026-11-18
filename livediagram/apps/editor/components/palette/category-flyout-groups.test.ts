@@ -108,8 +108,19 @@ describe('a flyout’s groups', () => {
         id: 'a',
         title: null,
         tiles: [expect.objectContaining({ id: 'a' }), expect.objectContaining({ id: 'b' })],
+        optional: null,
       },
     ]);
+  });
+
+  it('marks BPMN, and only BPMN, as an optional group with its own storage key', () => {
+    // toolbar-layout.md "Optional groups".
+    const groups = flyoutGroups('shapes', tiles('diagram', 'shapes'));
+    expect(groups.filter((g) => g.optional).map((g) => g.title)).toEqual(['BPMN']);
+    expect(groups.at(-1)!.optional).toEqual({
+      storageKey: 'livediagram:v2:palette-group-open:bpmn',
+      telemetryType: 'BpmnGroup',
+    });
   });
 
   it('never splits Popular, and has nothing to show for no tiles', () => {
