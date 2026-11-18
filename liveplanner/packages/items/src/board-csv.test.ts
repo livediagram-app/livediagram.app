@@ -148,7 +148,7 @@ describe('boardCsvRows', () => {
     const rows = boardCsvRows(setup, items, types);
     expect(rows.slice(1).map((r) => r[1])).toEqual(['Earlier', 'Ship it, "now"', 'Epic', 'Crash']);
     expect(rows[2]).toEqual([
-      String(first.key),
+      `T-${first.key}`,
       'Ship it, "now"',
       'Task',
       'To Do',

@@ -6,6 +6,7 @@
 // Existing, LinkExistingCardDialog). The host computes
 // the groups (linkedCardsOf in packages/items), so this only draws them.
 import { useId, useState } from 'react';
+import { cardRefIn } from './card-ref';
 import {
   isArchived,
   itemAssignee,
@@ -159,7 +160,7 @@ function ChildRow({
     <li key={child.id}>
       <button
         type="button"
-        aria-label={`Open #${child.key} ${title}, ${statusName}`}
+        aria-label={`Open ${cardRefIn(types)(child)} ${title}, ${statusName}`}
         onClick={() => onOpen(child.id)}
         className="group flex w-full items-center gap-2.5 px-3 py-2 text-left transition hover:bg-slate-50 focus-visible:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-400 dark:hover:bg-slate-800/60 dark:focus-visible:bg-slate-800/60"
       >
@@ -167,7 +168,7 @@ function ChildRow({
           <PlanTypeGlyph glyph={type.glyph} size={14} />
         </span>
         <span className="shrink-0 text-[12px] tabular-nums text-slate-500 dark:text-slate-400">
-          #{child.key}
+          {cardRefIn(types)(child)}
         </span>
         <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-slate-800 dark:text-slate-100">
           {title}

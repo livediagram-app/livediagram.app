@@ -1,7 +1,8 @@
 'use client';
 
 // The type editor's Configuration tab (docs/specs/026-plan/item-types.md "Editing a type"): one scrolling panel of
-// two sections under their own headings, General (the name field, holding the glyph and the colour) then Fields (the Fields
+// two sections under their own headings, General (the name field, holding the glyph and the colour, and the card
+// prefix beside it) then Fields (the Fields
 // and Tabs list). The editor owns the draft; this only lays it out.
 import { useId, type ReactNode } from 'react';
 import { ITEM_TYPE_LABEL_MAX, type ItemTypeDef, type PlanGlyphId } from '@liveplanner/items';
@@ -16,6 +17,7 @@ export function ItemTypeConfiguration({
   isNew,
   label,
   onLabel,
+  prefixField,
   glyph,
   onGlyph,
   color,
@@ -38,6 +40,8 @@ export function ItemTypeConfiguration({
   isNew: boolean;
   label: string;
   onLabel: (next: string) => void;
+  // The Prefix field (ItemTypePrefix.tsx), beside Name.
+  prefixField?: ReactNode;
   glyph: ItemTypeDef['glyph'];
   onGlyph: (next: PlanGlyphId) => void;
   color: string;
@@ -82,6 +86,7 @@ export function ItemTypeConfiguration({
               <TypeColourButton value={color} onChange={onColor} />
             </div>
           </SheetRow>
+          {prefixField}
           {inheritance}
         </div>
         {inheritanceNote}

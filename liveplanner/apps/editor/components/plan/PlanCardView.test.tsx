@@ -84,10 +84,10 @@ describe('PlanCardView', () => {
 
   it('draws at its own Card Size: Minimal leaves the number off, Detailed shows it', () => {
     setup({ ...card, planCard: { itemId: item.id, size: 'minimal' } });
-    expect(screen.queryByText('#3')).toBeNull();
+    expect(screen.queryByText('T-3')).toBeNull();
     cleanup();
     setup();
-    expect(screen.getByText('#3')).toBeTruthy();
+    expect(screen.getByText('T-3')).toBeTruthy();
   });
 
   // docs/specs/004-interface-design/fonts.md "Text size on boards and cards".

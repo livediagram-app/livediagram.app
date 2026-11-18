@@ -170,7 +170,12 @@ export async function blockersRefused(
   if (!loop) return null;
   console.info('[items] items.blocks.cycle', { projectId: caller.projectId, id: loop.itemId });
   return json(
-    { error: 'blocks_cycle', id: loop.itemId, field, message: blockingLoopMessage(loop.chain) },
+    {
+      error: 'blocks_cycle',
+      id: loop.itemId,
+      field,
+      message: blockingLoopMessage(loop.chain, types),
+    },
     { status: 400 },
   );
 }

@@ -9780,6 +9780,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "prefix": {
+        "type": "string"
+      },
       "statuses": {
         "items": {
           "type": "string"

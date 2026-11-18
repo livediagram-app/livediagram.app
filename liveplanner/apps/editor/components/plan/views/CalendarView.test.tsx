@@ -113,7 +113,7 @@ describe('moving a card on the Due Calendar', () => {
     fireEvent.pointerUp(window, AT_14_OCT);
     expect(plan.patchItem).toHaveBeenCalledTimes(1);
     expect(plan.patchItem).toHaveBeenCalledWith(card.id, { set: { due: '2026-10-14' } });
-    expect(plan.announce).toHaveBeenCalledWith(`Moved #${card.key} Ship it to 14 October`);
+    expect(plan.announce).toHaveBeenCalledWith(`Moved T-${card.key} Ship it to 14 October`);
     expect(track).toHaveBeenCalledWith('Plan', 'Changed', 'CalendarDue');
     expect(document.querySelector('[data-calendar-ghost]')).toBeNull();
     // The click the release makes never opens the card.
@@ -130,7 +130,7 @@ describe('moving a card on the Due Calendar', () => {
       set: { due: '2026-10-14', start: '2026-10-12' },
     });
     expect(plan.announce).toHaveBeenCalledWith(
-      `Moved #${card.key} Ship it to 14 October, its Start too`,
+      `Moved T-${card.key} Ship it to 14 October, its Start too`,
     );
   });
 
@@ -181,7 +181,7 @@ describe('moving a card on the Due Calendar', () => {
     expect(plan.patchItem).toHaveBeenLastCalledWith(card.id, { set: { due: '2026-10-15' } });
     fireEvent.keyDown(entry(/Ship it/), { key: 'ArrowUp', altKey: true });
     expect(plan.patchItem).toHaveBeenLastCalledWith(card.id, { set: { due: '2026-10-07' } });
-    expect(plan.announce).toHaveBeenLastCalledWith(`Moved #${card.key} Ship it to 7 October`);
+    expect(plan.announce).toHaveBeenLastCalledWith(`Moved T-${card.key} Ship it to 7 October`);
     // Without Alt an arrow is left alone.
     fireEvent.keyDown(entry(/Ship it/), { key: 'ArrowLeft' });
     expect(plan.patchItem).toHaveBeenCalledTimes(2);

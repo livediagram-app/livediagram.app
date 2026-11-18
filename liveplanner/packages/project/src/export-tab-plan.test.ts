@@ -99,9 +99,9 @@ describe('tabToMarkdownText with a plan', () => {
     expect(md).toContain('## Plan Boards');
     expect(md).toContain('### Kanban');
     expect(md).toContain('#### To Do · 1');
-    expect(md).toContain('- #2 Write spec (Task)');
+    expect(md).toContain('- T-2 Write spec (Task)');
     expect(md).toContain('#### Done · 1');
-    expect(md).toContain('- #1 Ship (Note)');
+    expect(md).toContain('- N-1 Ship (Note)');
     expect(md).toContain('#### Backlog · 0\n\n_No cards._');
     expect(md).not.toContain('Gone');
     expect(md).not.toContain('_No labelled content._');
@@ -109,7 +109,7 @@ describe('tabToMarkdownText with a plan', () => {
 
   it('lists Plan cards, top to bottom, naming a missing item', () => {
     const md = tabToMarkdownText(tabOf(card('missing', 900), card('a', 100)), plan);
-    expect(md).toContain('## Plan Cards\n\n- #2 Write spec (Task)\n- _Card not found_');
+    expect(md).toContain('## Plan Cards\n\n- T-2 Write spec (Task)\n- _Card not found_');
   });
 
   it("names a custom type by the project's label", () => {
@@ -120,7 +120,7 @@ describe('tabToMarkdownText with a plan', () => {
       types: [...ITEM_TYPES, custom],
       catalogue: null,
     });
-    expect(md).toContain('- #9 Crash (Bug)');
+    expect(md).toContain('- B-9 Crash (Bug)');
   });
 
   it('is unchanged without a plan', () => {

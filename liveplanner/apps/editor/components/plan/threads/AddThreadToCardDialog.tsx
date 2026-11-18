@@ -54,7 +54,7 @@ export function AddThreadToCardDialog({
     });
     setBusy(false);
     if (made === false) return;
-    ctx.announce(ANNOUNCE.added(`#${card.key}`));
+    ctx.announce(ANNOUNCE.added(card.ref));
     onClose();
   };
 

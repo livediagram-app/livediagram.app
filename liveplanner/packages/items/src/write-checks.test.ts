@@ -148,7 +148,7 @@ describe('a Blocked By loop', () => {
     expect(writtenItemsRefusal(patch, [a, b], [closing], blocking)).toEqual({
       error: 'blocks_cycle',
       id: a.id,
-      message: `#${b.key} Launch already waits on #${a.key} Website, so it can't block it.`,
+      message: `T-${b.key} Launch already waits on T-${a.key} Website, so it can't block it.`,
     });
     // An undo is checked too.
     expect(writtenItemsRefusal({ ...patch, undo: true }, [a, b], [closing], blocking)?.error).toBe(

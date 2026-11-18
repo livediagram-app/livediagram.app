@@ -327,6 +327,6 @@ function loopRefusal(
   });
   const loop = blockingCycleOf(before, types, changes);
   return loop
-    ? { error: 'blocks_cycle', id: loop.itemId, message: blockingLoopMessage(loop.chain) }
+    ? { error: 'blocks_cycle', id: loop.itemId, message: blockingLoopMessage(loop.chain, types) }
     : null;
 }

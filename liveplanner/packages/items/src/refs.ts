@@ -1,16 +1,17 @@
 // How agents name an item (docs/specs/026-plan/plan-mode.md "Agents"): its key as people say it
-// ("#12" or "12"), or its id, or an id prefix that names one item. Shared by the CLI's item verbs and
-// the MCP's item tools, so both read a ref the same way.
+// ("#12", "12", or with its type's prefix, "WI-12": item-types.md "Card number prefixes"), or its id, or an id prefix
+// that names one item. Shared by the CLI's item verbs and the MCP's item tools, so both read a ref the same way.
 import type { Item } from './item';
+import { cardRefKey } from './card-prefix';
 
 type ItemRefResult =
   { ok: true; item: Item } | { ok: false; reason: 'none' | 'ambiguous'; matches: Item[] };
 
 export function resolveItemRef(items: readonly Item[], ref: string): ItemRefResult {
   const r = ref.trim();
-  const key = /^#?(\d+)$/.exec(r);
-  if (key) {
-    const item = items.find((i) => i.key === Number(key[1]));
+  const key = cardRefKey(r);
+  if (key !== null) {
+    const item = items.find((i) => i.key === key);
     if (item) return { ok: true, item };
   }
   const exact = items.find((i) => i.id === r);

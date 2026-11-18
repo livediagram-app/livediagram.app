@@ -6748,6 +6748,9 @@ importers:
       '@liveworkspace/media':
         specifier: workspace:*
         version: link:../media
+      '@liveworkspace/model-core':
+        specifier: workspace:*
+        version: link:../model-core
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../sites

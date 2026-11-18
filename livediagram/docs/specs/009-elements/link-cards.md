@@ -40,10 +40,14 @@ soft (null → the card shows the bare URL).
 The endpoint is **SSRF-safe** (public repo):
 
 - Accepts only `http:` / `https:`; rejects everything else.
-- Blocks non-public hosts before fetching: `localhost` / `*.local`, loopback,
-  private ranges (10/8, 172.16/12, 192.168/16, 127/8, CGNAT 100.64/10), and
-  link-local / cloud-metadata (`169.254.0.0/16`, incl. `169.254.169.254`), plus
-  IPv6 ULA / link-local. Re-validates the **final** post-redirect URL.
+- Blocks non-public hosts before fetching, by the platform's one rule for every
+  server fetch of a URL someone gave
+  ([architecture.md](../../../../liveworkspace/docs/specs/002-architecture/architecture.md#fetching-a-url-someone-gave)):
+  `localhost`, single-label and internal names (`*.local`, `*.internal`, `*.lan`, ...),
+  and private, loopback, carrier NAT, link-local / cloud-metadata
+  (`169.254.169.254`), documentation, multicast and reserved addresses, IPv4 or
+  IPv6, so a host the webhooks or image uploads refuse is refused here too. A
+  public IP literal stays allowed. Re-validates the **final** post-redirect URL.
 - 8s `AbortController` timeout, ~512 KB read cap, HTML-only `Accept`, a
   descriptive `User-Agent`. Parses with **`HTMLRewriter`** (streaming: there's
   no DOMParser in Workers): `<title>`, `og:title|image|site_name|description`,

@@ -42,6 +42,15 @@ const statuses = [
 ];
 
 describe('listedType', () => {
+  // docs/specs/026-plan/item-types.md "Card number prefixes".
+  it('lists its card prefix as the plan reads it, or from its own name outside the catalogue', () => {
+    const task = ITEM_TYPES.find((t) => t.id === 'task')!;
+    const theme = { ...task, id: 'theme', label: 'Theme' };
+    expect(listedType(theme, [], [task, theme]).prefix).toBe('TH');
+    expect(listedType(theme, [], [task]).prefix).toBe('T');
+    expect(listedType({ ...task, prefix: 'TK' }).prefix).toBe('TK');
+  });
+
   it('lists a built-in type with its look, display by name, tabs and Details', () => {
     const task = listedType(ITEM_TYPES.find((t) => t.id === 'task')!);
     expect(task).toMatchObject({

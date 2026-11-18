@@ -6,6 +6,7 @@
 // done; pressed, it opens. Under an open blocker the card starts before, an amber line says so (docs/specs/026-plan/
 // plan-views.md "Dependency clashes"). Read-only: the field's own control is where a link is set.
 import { useId } from 'react';
+import { cardRefIn } from './card-ref';
 import {
   blocksFieldsOf,
   clashText,
@@ -69,7 +70,7 @@ export function BlockedBySections({
   const clashes = new Map(
     clashesOf(item, planBlocking(plan), doneCard).map((c) => [
       c.blocker.id,
-      clashText(c.days, c.blocker),
+      clashText(c.days, c.blocker, plan.types),
     ]),
   );
   return (
@@ -139,7 +140,7 @@ function BlockedByGroup({
             <li key={card.id}>
               <button
                 type="button"
-                aria-label={`Open #${card.key} ${title}, ${statusName}${done ? ', done' : ''}${clash ? `. ${clash}` : ''}`}
+                aria-label={`Open ${cardRefIn(types)(card)} ${title}, ${statusName}${done ? ', done' : ''}${clash ? `. ${clash}` : ''}`}
                 onClick={() => onOpen(card.id)}
                 className="group flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-left transition hover:bg-slate-50 focus-visible:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-400 pointer-coarse:py-3 dark:hover:bg-slate-800/60 dark:focus-visible:bg-slate-800/60"
               >
@@ -147,7 +148,7 @@ function BlockedByGroup({
                   <PlanTypeGlyph glyph={type.glyph} size={14} />
                 </span>
                 <span className="shrink-0 text-[12px] tabular-nums text-slate-500 dark:text-slate-400">
-                  #{card.key}
+                  {cardRefIn(types)(card)}
                 </span>
                 <span
                   className={`min-w-0 flex-1 truncate text-[13px] font-medium ${done ? 'text-slate-500 line-through decoration-slate-300 dark:text-slate-400 dark:decoration-slate-600' : 'text-slate-800 dark:text-slate-100'}`}

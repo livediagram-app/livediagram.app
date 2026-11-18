@@ -15,6 +15,7 @@ const TYPE_KEYS = {
   newTitle: true,
   glyph: true,
   color: true,
+  prefix: true,
   fields: true,
   custom: true,
   detailsLabel: true,

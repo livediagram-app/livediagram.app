@@ -7,6 +7,7 @@
 // row, deletes them all at once. An empty Trash is a small popover holding the small empty state. A popover above
 // its button in Plan mode's bottom-right cluster.
 import { useMemo, useState } from 'react';
+import { cardRefIn } from './card-ref';
 import {
   TRASHED_FROM_FIELD,
   isTrashed,
@@ -51,10 +52,11 @@ export function TrashPanel({
   onPopoverClose: () => void;
 }) {
   const plan = usePlan();
+  const refOf = cardRefIn(plan?.types);
   // When the panel opened: each row says how long ago its card was trashed from here.
   const [now] = useState(() => Date.now());
   // The card whose Delete is asking "for good?", and the button it points at.
-  const [purging, setPurging] = useState<{ id: string; key: number; anchor: HTMLElement } | null>(
+  const [purging, setPurging] = useState<{ id: string; ref: string; anchor: HTMLElement } | null>(
     null,
   );
   const trashed = useMemo(
@@ -120,14 +122,15 @@ export function TrashPanel({
           >
             {trashed.map((it) => {
               const type = typeIn(plan.types, it.type);
+              const ref = refOf(it);
               const fromField = it.fields[TRASHED_FROM_FIELD];
               const from =
                 typeof fromField === 'string' && plan.statusNames.has(fromField)
                   ? statusLabel(fromField, plan.statusNames)
                   : null;
               const title = itemTitle(it) || 'Untitled';
-              const restoreLabel = from ? `Restore #${it.key} to ${from}` : `Restore #${it.key}`;
-              const deleteLabel = `Delete #${it.key} Forever`;
+              const restoreLabel = from ? `Restore ${ref} to ${from}` : `Restore ${ref}`;
+              const deleteLabel = `Delete ${ref} Forever`;
               return (
                 <li
                   key={it.id}
@@ -145,7 +148,7 @@ export function TrashPanel({
                       {title}
                     </p>
                     <p className="mt-0.5 truncate text-[11px] leading-snug text-slate-500 dark:text-slate-400">
-                      {type.label} #{it.key}
+                      {type.label} {ref}
                       {from ? ` · from ${from}` : ''}
                     </p>
                     <p className="truncate text-[11px] leading-snug text-slate-500 dark:text-slate-400">
@@ -162,7 +165,7 @@ export function TrashPanel({
                           className={ICON_BUTTON}
                           onClick={() => {
                             plan.restoreItem(it.id);
-                            plan.announce(`#${it.key} restored`);
+                            plan.announce(`${ref} restored`);
                           }}
                         >
                           <UndoIcon size={14} />
@@ -176,7 +179,7 @@ export function TrashPanel({
                           aria-expanded={purging?.id === it.id}
                           className={`${ICON_BUTTON} ${DANGER_HOVER}`}
                           onClick={(e) =>
-                            setPurging({ id: it.id, key: it.key, anchor: e.currentTarget })
+                            setPurging({ id: it.id, ref: refOf(it), anchor: e.currentTarget })
                           }
                         >
                           <TrashIcon size={14} />
@@ -193,7 +196,7 @@ export function TrashPanel({
       {purging ? (
         <ConfirmPopover
           anchor={purging.anchor}
-          message={`Delete #${purging.key} for good? This cannot be undone.`}
+          message={`Delete ${purging.ref} for good? This cannot be undone.`}
           confirmLabel="Delete"
           onConfirm={() => {
             plan.deleteItem(purging.id);

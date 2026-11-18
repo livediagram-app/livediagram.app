@@ -100,15 +100,16 @@ export function resolveType(
   );
 }
 
-// An item by number or id prefix, as people say it; "#12 Fix login", as list_items reads a card link, by its number.
+// An item by number or id prefix, as people say it; "#12 Fix login" or "WI-12 Fix login", as list_items reads a card
+// link, by its number.
 export function resolveItem(input: string, items: readonly Item[]): Named<{ item: Item }> {
-  const titled = /^(#\d+)\s+\S/.exec(input.trim());
+  const titled = /^(#\d+|#?[A-Za-z][A-Za-z0-9]{0,5}-\d+)\s+\S/.exec(input.trim());
   const found = resolveItemRef(items, titled ? titled[1]! : input);
   if (found.ok) return { ok: true, item: found.item };
   return refuse(
     'item_unknown',
     found.reason === 'ambiguous'
-      ? `"${input}" names more than one item: ${found.matches.map(itemSummary).join('; ')}`
+      ? `"${input}" names more than one item: ${found.matches.map((m) => itemSummary(m)).join('; ')}`
       : `No item "${input}". List them with list_items.`,
   );
 }

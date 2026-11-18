@@ -26,6 +26,7 @@ import {
 import { colourFieldOf } from '../item-colour';
 import { isTrashed } from '../board-model';
 import { blockingCycleOf, isBlocksField } from '../blocked-by';
+import { cardRefOrKey } from '../card-prefix';
 import { linkedCardIds } from '../several-values';
 import { validateFields } from '../fields';
 import { isEmptyFieldValue, requiredCustomFieldsOf } from '../required-fields';
@@ -375,7 +376,7 @@ function linkCard(a: Extract<AutomationAction, { kind: 'link_card' }>, w: Walk) 
     if (blockingCycleOf(ctx.items, ctx.outline.types, [{ before, next: plan.card }]))
       fail('That link would close a Blocked By loop');
   }
-  const title = to ? `#${to.key}` : 'a card';
+  const title = to ? cardRefOrKey(to, ctx.outline.types) : 'a card';
   return plan.line(`Link ${def.label} to ${title}`, changed);
 }
 
@@ -422,12 +423,16 @@ function branch(s: AutomationBranch, top: Walk) {
   const failed: string[] = [];
   for (const card of found.cards) {
     const url = ctx.urlOf?.(card.id) ?? ctx.url;
-    const w = walkOf(card, run, { ...ctx, card, url }, `#${card.key} `);
+    const w = walkOf(card, run, { ...ctx, card, url }, `${cardRefOrKey(card, ctx.outline.types)} `);
     w.values = { ...w.values, url, trigger: { card: top.plan.card, url: ctx.url } };
     const held = allHold(s.conditions, { ...ctx, card });
     const miss = held.lines.find((l) => !l.ok);
     if (miss) {
-      run.lines.push({ kind: 'condition', ok: false, text: `#${card.key} ${miss.text}` });
+      run.lines.push({
+        kind: 'condition',
+        ok: false,
+        text: `${cardRefOrKey(card, ctx.outline.types)} ${miss.text}`,
+      });
       continue;
     }
     let reason: string | undefined;
@@ -439,7 +444,7 @@ function branch(s: AutomationBranch, top: Walk) {
       reason = error.message;
       gone = error.gone;
       w.plan.failure(reason, gone);
-      failed.push(`#${card.key}`);
+      failed.push(cardRefOrKey(card, ctx.outline.types));
     }
     run.related.push({
       card,
