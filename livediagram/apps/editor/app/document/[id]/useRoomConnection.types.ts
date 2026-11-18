@@ -127,6 +127,9 @@ export type RoomConnectionOptions = {
   // A peer's save landed (docs/specs/006-document/delta-saves.md "A peer's save moves the base copy"): the tab as
   // the autosave's baseline holds it, and the revision and digest the save announced. Absent, nothing is taken.
   receiveTabSaved?: (tab: Tab, rev: number, digest: string) => void;
+  // The room's live service states (docs/specs/009-elements/live-status.md): the op's `statuses`, unchecked; the
+  // store parses them. Absent, they are dropped.
+  receiveServiceStatus?: (statuses: unknown) => void;
   // The room has greeted this connection (its first presence list): what was relayed before it
   // joined is caught up through the api (useChangesetFeed's checkSinceLoad).
   onRoomJoined: () => void;

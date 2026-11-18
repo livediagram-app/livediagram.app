@@ -5,4 +5,8 @@
 import { createCapabilities } from '@liveworkspace/workbench/hooks/persistence/useCapabilities';
 import { apiGetCapabilities } from '@/lib/api-client';
 
-export const useCapabilities = createCapabilities(() => apiGetCapabilities(), ['aiEnabled']);
+export const useCapabilities = createCapabilities(
+  () => apiGetCapabilities(),
+  // docs/specs/009-elements/live-status.md "Scope": the Live Status dialog only where the room checks.
+  ['aiEnabled', 'liveStatusEnabled'],
+);

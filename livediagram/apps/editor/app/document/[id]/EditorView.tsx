@@ -16,6 +16,7 @@ import { CanvasFinishProvider } from '@liveworkspace/workbench/components/canvas
 import { SketchFilterDefs } from '@/components/canvas/SketchFilterDefs';
 import { ChangesetRevealContext } from '@/components/canvas/ChangesetRevealOverlay';
 import { AgentFocusContext } from '@/components/canvas/AgentFocusOverlay';
+import { ServiceStatusContext } from '@/lib/service-status-store';
 import { SelectionStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { SheetLinksHost } from '@liveworkspace/workbench/components/sheet-links/SheetLinkedCharts';
 import { track } from '@/lib/telemetry';
@@ -371,29 +372,32 @@ export function EditorView() {
                                 fallback="panel"
                                 fallbackClassName="flex-1"
                               >
-                                {/* The outlines relayed changesets draw (docs/specs/024-agents/agent-changesets.md). */}
-                                <ChangesetRevealContext.Provider value={ctx.changesetReveals}>
-                                  {/* The focus rings of the agents present (docs/specs/024-agents/agent-presence.md). */}
-                                  <AgentFocusContext.Provider value={ctx.agentFocusByElement}>
-                                    {/* No comment badges for a viewer in an embed (docs/specs/013-workspace/embeds.md). */}
-                                    <CommentBadgesContext.Provider
-                                      value={!(embedMode && isReadOnly) && !sessionCommunity}
-                                    >
-                                      {/* Indicators are editor chrome: an embed never draws them (docs/specs/008-canvas/element-indicators.md). */}
-                                      {/* A connected tab's page stands in the canvas's place (connected-tabs.md), once a visitor's name prompt (drawn by the canvas host) is answered. */}
-                                      {ctx.activeTabConnected && !anyWelcomeOpen ? (
-                                        <ConnectedTabHost />
-                                      ) : (
-                                        <SuppressElementIndicators when={embedMode}>
-                                          {/* Watch It Built's demo, drawn in for the canvas only (watch-it-built.md). */}
-                                          <ReplayScope>
-                                            <EditorCanvasHost />
-                                          </ReplayScope>
-                                        </SuppressElementIndicators>
-                                      )}
-                                    </CommentBadgesContext.Provider>
-                                  </AgentFocusContext.Provider>
-                                </ChangesetRevealContext.Provider>
+                                {/* The room's live service states, for bound shapes' badges (docs/specs/009-elements/live-status.md). */}
+                                <ServiceStatusContext.Provider value={ctx.serviceStatuses}>
+                                  {/* The outlines relayed changesets draw (docs/specs/024-agents/agent-changesets.md). */}
+                                  <ChangesetRevealContext.Provider value={ctx.changesetReveals}>
+                                    {/* The focus rings of the agents present (docs/specs/024-agents/agent-presence.md). */}
+                                    <AgentFocusContext.Provider value={ctx.agentFocusByElement}>
+                                      {/* No comment badges for a viewer in an embed (docs/specs/013-workspace/embeds.md). */}
+                                      <CommentBadgesContext.Provider
+                                        value={!(embedMode && isReadOnly) && !sessionCommunity}
+                                      >
+                                        {/* Indicators are editor chrome: an embed never draws them (docs/specs/008-canvas/element-indicators.md). */}
+                                        {/* A connected tab's page stands in the canvas's place (connected-tabs.md), once a visitor's name prompt (drawn by the canvas host) is answered. */}
+                                        {ctx.activeTabConnected && !anyWelcomeOpen ? (
+                                          <ConnectedTabHost />
+                                        ) : (
+                                          <SuppressElementIndicators when={embedMode}>
+                                            {/* Watch It Built's demo, drawn in for the canvas only (watch-it-built.md). */}
+                                            <ReplayScope>
+                                              <EditorCanvasHost />
+                                            </ReplayScope>
+                                          </SuppressElementIndicators>
+                                        )}
+                                      </CommentBadgesContext.Provider>
+                                    </AgentFocusContext.Provider>
+                                  </ChangesetRevealContext.Provider>
+                                </ServiceStatusContext.Provider>
                               </AreaErrorBoundary>
                               {/* Presenting (docs/specs/012-collaboration/presentation-mode.md) renders over everything and takes the keyboard.
             Nothing at all when no deck is running. */}

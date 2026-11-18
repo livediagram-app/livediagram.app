@@ -1,7 +1,8 @@
 'use client';
 
 import { ROOM_FULL_NOTICE } from '@/lib/api/room';
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import { createServiceStatusStore } from '@/lib/service-status-store';
 import type { Tab } from '@livediagram/document';
 import { peerModeSwitchMessage } from '@/lib/peer-mode-switch';
 import { useQaBoard } from '@/hooks/canvas/useQaBoard';
@@ -168,6 +169,9 @@ export function useEditorRoom({
     toast,
     canUndo: canEdit,
   });
+  // The live service states the room checks (docs/specs/009-elements/live-status.md "The badge"): one store a page,
+  // read by each bound shape's badge, so a round re-renders the badges and nothing else.
+  const [serviceStatuses] = useState(createServiceStatusStore);
   // Realtime room: WebSocket per shared document (presence + ops). See
   // useRoomConnection.
   // Reaction bursts (docs/specs/009-elements/reaction-pad.md): ephemeral, per-client, never document state.
@@ -282,6 +286,7 @@ export function useEditorRoom({
     receiveDocumentTrashed: () => documentTrashed.setDocumentTrashed(true),
     resyncFromServer,
     receiveChangeset: changesetFeed.receiveChangeset,
+    receiveServiceStatus: serviceStatuses.receive,
     // A peer's landed save moves this Editor's delta base copy, when its baseline proves to hold what was stored
     // (docs/specs/006-document/delta-saves.md "A peer's save moves the base copy"). Nobody else saves deltas.
     receiveTabSaved: (tab, rev, digest) => {
@@ -370,6 +375,8 @@ export function useEditorRoom({
     view: {
       // The outlines relayed changesets draw (useChangesetFeed), for the canvas overlay.
       changesetReveals: changesetFeed.reveals,
+      // The room's live service states, for the canvas's badges (ServiceStatusContext).
+      serviceStatuses,
       // The facilitator baton (docs/specs/012-collaboration/facilitator.md): who is running this session.
       facilitator,
       reactionBursts: reactions.bursts,

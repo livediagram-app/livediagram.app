@@ -21,6 +21,8 @@ import { canEditSequence } from '@/lib/sequence-edit';
 import { getTheme, themeChartPalette } from '@/lib/themes';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useCloseVanishedDialogs } from '@/components/dialogs/useCloseVanishedDialogs';
+import { LiveStatusDialogHost } from '@/components/dialogs/LiveStatusDialogHost';
+import { canBindLiveStatus } from '@/lib/live-status-input';
 
 const LiveEmbedPicker = dynamic(
   () =>
@@ -89,6 +91,8 @@ export function EditorElementDialogs() {
     setSankeyFlowsOpenForId,
     sequenceOpenForId,
     setSequenceOpenForId,
+    liveStatusOpenForId,
+    setLiveStatusOpenForId,
     sankey,
     sequence,
     mindOutline,
@@ -134,6 +138,11 @@ export function EditorElementDialogs() {
         sequenceOpenForId,
         () => setSequenceOpenForId(null),
         (el) => el.type === 'shape' && el.shape === 'sequence' && canEditSequence(can, el),
+      ],
+      [
+        liveStatusOpenForId,
+        () => setLiveStatusOpenForId(null),
+        (el) => can.level === 'edit' && canBindLiveStatus(el),
       ],
       [
         imagePickerOpenFor?.forElementId ?? null,
@@ -339,6 +348,8 @@ export function EditorElementDialogs() {
             );
           })()
         : null}
+      {/* The Live Status dialog (docs/specs/009-elements/live-status.md "The Live Status dialog"): an Editor's. */}
+      <LiveStatusDialogHost />
       {/* A Participant places images and swaps their pictures (docs/specs/013-workspace/share-roles.md). */}
       {imagePickerOpenFor && documentId && (!isReadOnly || can.addContent) ? (
         <ImagePicker

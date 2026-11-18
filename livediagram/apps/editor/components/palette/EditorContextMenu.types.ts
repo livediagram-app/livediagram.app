@@ -207,6 +207,9 @@ export type EditorContextMenuProps = {
   // A sequence diagram's Edit Sequence (docs/specs/009-elements/sequence-diagram.md "The menu"): present only when this
   // session may edit it (an Editor, on an unlocked diagram), so the section shows no button otherwise.
   onEditSequence?: (elementId: string) => void;
+  // A shape's Live Status dialog (docs/specs/009-elements/live-status.md "The Live Status dialog"): present only for an
+  // Editor, on a shape that takes a badge, on a deployment that checks, so the Resources row shows it otherwise never.
+  onEditLiveStatus?: (elementId: string) => void;
   // The tab theme's chart ramp (themeChartPalette), so a chart or legend's data-row swatches show the colours the
   // canvas draws (chartRamp). Absent falls back to the built-in ramp.
   chartThemeRamp?: readonly string[];

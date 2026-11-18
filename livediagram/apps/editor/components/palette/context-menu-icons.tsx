@@ -22,6 +22,7 @@ import {
   lucideChartNoAxesColumnIncreasing,
   lucideCircleCheck,
   lucideClipboardPaste,
+  lucideHeartPulse,
   lucideImage,
   lucideLayers,
   lucidePalette,
@@ -70,6 +71,9 @@ export function CommentMenuIcon() {
 export function LinkMenuIcon() {
   return <LinkIcon size={MENU_ICON_PX} />;
 }
+
+// The Resources row's Live Status (docs/specs/009-elements/live-status.md "The Live Status dialog"): a service's pulse.
+export const LiveStatusMenuIcon = lucideGlyph(lucideHeartPulse, MENU_ICON_PX);
 
 // The "Shape" section: the element's outline.
 export const SquareMenuIcon = lucideGlyph(lucideShapes, MENU_ICON_PX);
