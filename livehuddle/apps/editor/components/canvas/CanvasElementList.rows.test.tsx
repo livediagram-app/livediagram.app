@@ -3,6 +3,7 @@ import { cleanup, render } from '@testing-library/react';
 import { memo, type ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Element } from '@livehuddle/document';
+import { createSittersSource } from './chair-sitters-source';
 
 // docs/specs/008-canvas/canvas-performance.md "A drop redraws what it reached": each row of the element layer is
 // memoised on what it draws, so a row carried over from the last commit must draw what a row drawn afresh does. The
@@ -63,7 +64,7 @@ const { SelectionStoreProvider } =
 afterEach(cleanup);
 
 const STABLE = {
-  chairSitters: () => [],
+  chairSitters: createSittersSource(),
   selfParticipant: { id: 'me', name: 'Me', color: '#000000' },
   settings: {},
   peers: {

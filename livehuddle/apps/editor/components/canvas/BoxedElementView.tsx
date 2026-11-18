@@ -406,7 +406,7 @@ function BoxedElementViewImpl({
               element={element}
               stroke={own.stroke ?? defaultStrokeColor(element, surface)}
               fill={own.fill ?? defaultFillColor(element, surface)}
-              sitters={chairSitters?.(element.id)}
+              sittersSource={chairSitters}
               animClass={artAnimClass}
               // While walking a pad is walked onto, not pressed, and a reading piece opens large
               // (docs/specs/008-canvas/avatar-mode.md "Clicking a piece").

@@ -106,7 +106,11 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
   - `onOpenElementSettings`, `onEnterPortal`, `onFireReaction`, `onReactionBurstDone`: into the
     layer's `useStableHandlers` bag. (The timer, panel-action, session and collab props went with the
     Collaborate faces in Work Tracker #423 part 4.)
-  - `chairSitters`: a `useCallback` over the sitters map in `Canvas`.
+  - `chairSitters`: one `SittersSource` for the canvas's life (`components/canvas/chair-sitters-source.ts`,
+    `createSittersSource` in `useCanvasAvatar`, written in a layout effect from the by-value sitters map). `PieceArt`
+    reads its own row with `useChairSitters(source, element.id)`; `set` keeps each chair's array while
+    `sameSitterList` holds, so only the chairs whose sitters changed render (Work Tracker 1185: a `useCallback` over the
+    map changed on every sit or stand and rendered all 25 element views of Team Pod, 75 to 85 ms at 4x on a phone).
 - `zoom` leaves `BoxedElementView`'s props. `CanvasZoomProvider` (in `Canvas`, around the element
   layer) carries it; every child that sizes by zoom reads `useCanvasZoom()`: `LaneGutter`, `ShapeHitOutline`,
   `RemoteSelectorsStrip`, `ElementIndicators`, `SelectionChromeLayer`,
@@ -219,7 +223,8 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   the board in its first task and the Map's picture is built in a background render after it.
 - `Canvas` keeps the chair sitters by value (`useByValue(sittersByChair(...), sameSitters)`,
   `packages/avatar/src/chair-sitters.ts`): presence rebuilds the peers' list after opening, and a new map handed every
-  element view a new `chairSitters` and rendered all of them again.
+  element view a new `chairSitters` and rendered all of them again. Since Work Tracker 1185 the map only feeds the
+  sitters source, so even a real change renders the chairs it concerns.
 
 ### Opening animates nothing across the board
 

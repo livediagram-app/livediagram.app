@@ -94,9 +94,7 @@ export type CanvasProps = {
   followingName?: string | null;
   onStopFollowing?: () => void;
   // Chair (docs/specs/009-elements/chair.md): who presence says is seated on a given chair.
-  chairSitters?: (
-    elementId: string,
-  ) => import('@/components/canvas/collab/FurnitureView').ChairSitter[];
+  chairSitters?: import('@/components/canvas/chair-sitters-source').SittersSource;
   // Portal (docs/specs/009-elements/portal-element.md): resolve a portal's pairing — the paired portal's name and, when
   // it has one, the action that travels there.
   onEnterPortal?: (element: import('@livehuddle/document').ShapeElement) => {
