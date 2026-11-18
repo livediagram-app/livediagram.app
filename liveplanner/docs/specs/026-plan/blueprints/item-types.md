@@ -28,6 +28,17 @@ src/type-catalogue.ts  ItemTypeCatalogue, limits, PLAN_TYPE_COLOURS, BUILT_IN_FI
                        typesOf, typeIn, customFieldOf, isBuiltInFieldId, slugOf,
                        newItemTypeId, newCustomFieldId, defaultNewTitle, validateItemTypeCatalogue,
                        readItemTypeCatalogue, builtInCatalogue
+src/card-prefix.ts    Card number prefixes (spec "Card number prefixes"): CARD_PREFIX_MAX (6), normalPrefix(input)
+                       (trimmed, upper case, 1 to 6 letters and digits starting with a letter, else null),
+                       autoPrefix(label, taken) (initials, then the last word's next letters, then a digit 2..),
+                       prefixesOf(types): Map<typeId, prefix> (stored ones claim first in order, a repeated or
+                       invalid stored one is made instead; memoised per catalogue array in a WeakMap), prefixOf(types,
+                       typeId), cardRef(item, types) ("WI-100"; "#100" for an unknown type or no types; "" for key 0),
+                       cardRefKey(text) (the number "WI-100", "#100", "100" name, else null; one anchored regex,
+                       bounded repeats), prefixOwner(types, typeId, prefix) (the other type holding it),
+                       prefixTaken(prefix, owner) (the refusal's words), withPinnedPrefixes(before, after) (each
+                       type of `after` with no stored prefix whose made one would change from `before` stores its
+                       `before` one; a type new in `after` stores its own)
 src/required-fields.ts canBeRequired, requiredCustomFieldsOf (a type's required custom fields it still offers),
                        isEmptyFieldValue, missingRequiredFields(type, fields), requiredCleared(type, before, after),
                        requiredFieldsMessage(type, fields)
@@ -296,6 +307,12 @@ now), [id]).ids)` per landed file; "N images added" announced at the end. The ca
   reads it back. Duplicate (both paths), Sync to Cloud, Take Offline and the Drive envelope
   (`ProjectEnvelope.project.itemTypes?`, still version 1) carry it.
 
+- Card prefixes ride on each type as `prefix?` (`ItemTypeDef`, listed in `stored-keys.ts`, `PROJECT_FORMAT` raised
+  for it): no column or migration. `readType` keeps a valid one upper case and placed after `color`; an invalid one
+  is refused on a write (`newerFields: 'refuse'`, reason `types[n].prefix`) and dropped on a read.
+  `validateItemTypeCatalogue` refuses two stored prefixes equal ignoring case on a write and drops the later one on a
+  read, so a stored catalogue always opens. `resolveChild` keeps an inherited type's own prefix (never its base's).
+
 ## Interfaces and contracts
 
 | Method | Path                            | Gate                | Body               | Answer              |
@@ -303,6 +320,8 @@ now), [id]).ids)` per landed file; "N images added" announced at the end. The ca
 | PUT    | `/api/projects/{id}/item-types` | edit, whole project | `ItemTypesRequest` | `ItemTypesResponse` |
 
 - `ItemTypesRequest = { itemTypes, expectedRev? }`; `ItemTypesResponse = { itemTypes, itemTypesRev }`.
+- The PUT stores `withPinnedPrefixes(stored, sent)`: a type whose made prefix the change would shift keeps the one
+  it had, stored, and a new type stores its own; the answer and the relay carry that catalogue.
 - 400 `{ error: 'item_types_invalid', reason }` for a catalogue that fails; 400 for no `itemTypes` key, bad JSON or
   an `expectedRev` that is not a whole number from 0; 403 for a view grant or a tab-scoped one; 405 for any other
   method; 409 `ItemTypesStale` `{ error: 'item_types_stale', itemTypes, itemTypesRev }` (what is stored) when
